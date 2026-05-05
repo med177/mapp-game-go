@@ -186,8 +186,9 @@ func DrawEventLog(screen *ebiten.Image, events []string) {
 
 // ── Minimap (sağ alt, alt barın üstünde) ─────────────────────────────
 
-// DrawMinimap küçük ölçekli dünya haritasını ve fraksiyon sahipliğini çizer.
-func DrawMinimap(screen *ebiten.Image, gs *state.GameState) {
+// DrawMinimap küçük ölçekli dünya haritasını, fraksiyon sahipliğini ve
+// kamera viewport dikdörtgenini çizer.
+func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale float64) {
 	mx := minimapX()
 	my := minimapY()
 
@@ -202,6 +203,31 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState) {
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
 	drawMinimapOwnership(screen, gs, float32(scaleX), float32(scaleY), mx, my)
+
+	// Viewport dikdörtgeni: o an ekranda görünen dünya alanını gösterir
+	vpW := float32((ScreenWidth / camScale) * scaleX)
+	vpH := float32((ScreenHeight / camScale) * scaleY)
+	vpX := mx + float32((camX-ScreenWidth/(2*camScale))*scaleX)
+	vpY := my + float32((camY-ScreenHeight/(2*camScale))*scaleY)
+
+	// Minimap sınırları içinde kes
+	if vpX < mx {
+		vpW -= mx - vpX
+		vpX = mx
+	}
+	if vpY < my {
+		vpH -= my - vpY
+		vpY = my
+	}
+	if vpX+vpW > mx+minimapW {
+		vpW = mx + minimapW - vpX
+	}
+	if vpY+vpH > my+minimapH {
+		vpH = my + minimapH - vpY
+	}
+	if vpW > 1 && vpH > 1 {
+		vector.StrokeRect(screen, vpX, vpY, vpW, vpH, 1.5, color.RGBA{255, 220, 60, 220}, false)
+	}
 }
 
 // drawMinimapPolygons ülke sınırlarını poligon olarak çizer.
@@ -215,61 +241,24 @@ func drawMinimapPolygons(screen *ebiten.Image, gs *state.GameState, offsetX, off
 	scaleX := minimapW / mapW
 	scaleY := minimapH / mapH
 
-	landCol := color.RGBA{45, 40, 30, 255}
 	borderCol := color.RGBA{70, 60, 50, 255}
-	seaCol := color.RGBA{20, 35, 50, 255}
 
-	var path vector.Path
 	for _, region := range gs.Regions {
-		isOwned := region.OwnerID != ""
-		col := landCol
-		if isOwned {
-			c := factionColor(gs, region.OwnerID)
-			c.A = 200
-			col = c
-		}
 		if region.IsSea {
-			col = seaCol
+			continue
 		}
-
 		for _, polygon := range region.Shape {
 			if len(polygon) < 3 {
 				continue
 			}
-			path.Reset()
-			for i, p := range polygon {
-				px := offsetX + (p[0]-bounds.MinX)*scaleX
-				py := offsetY + (p[1]-bounds.MinY)*scaleY
-				if i == 0 {
-					path.MoveTo(px, py)
-				} else {
-					path.LineTo(px, py)
-				}
-			}
-			path.Close()
-
-			vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
-			for i := range vs {
-				vs[i].ColorR, vs[i].ColorG, vs[i].ColorB, vs[i].ColorA = colorToScale(col)
-			}
-			screen.DrawTriangles(vs, is, whiteImage, &ebiten.DrawTrianglesOptions{
-				FillRule: ebiten.EvenOdd,
-			})
-
-			// Sınır çizgileri
-			if !region.IsSea {
-				// Ebiten v2.2+ path.Stroke metodu var
-				// path.Stroke(screen, 1.0, borderCol, true)
-				// Şimdilik manuel çizim:
-				for i := 0; i < len(polygon); i++ {
-					p1 := polygon[i]
-					p2 := polygon[(i+1)%len(polygon)]
-					x1 := offsetX + (p1[0]-bounds.MinX)*scaleX
-					y1 := offsetY + (p1[1]-bounds.MinY)*scaleY
-					x2 := offsetX + (p2[0]-bounds.MinX)*scaleX
-					y2 := offsetY + (p2[1]-bounds.MinY)*scaleY
-					vector.StrokeLine(screen, x1, y1, x2, y2, 1, borderCol, true)
-				}
+			for i := 0; i < len(polygon); i++ {
+				p1 := polygon[i]
+				p2 := polygon[(i+1)%len(polygon)]
+				x1 := offsetX + (p1[0]-bounds.MinX)*scaleX
+				y1 := offsetY + (p1[1]-bounds.MinY)*scaleY
+				x2 := offsetX + (p2[0]-bounds.MinX)*scaleX
+				y2 := offsetY + (p2[1]-bounds.MinY)*scaleY
+				vector.StrokeLine(screen, x1, y1, x2, y2, 1, borderCol, true)
 			}
 		}
 	}

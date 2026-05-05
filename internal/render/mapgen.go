@@ -3,8 +3,8 @@ package render
 import (
 	"encoding/json"
 	"image"
-	_ "image/png"
 	"image/color"
+	_ "image/png"
 	"log"
 	"os"
 	"sort"
@@ -74,7 +74,13 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		regionPx:   make(map[world.RegionID][]int),
 	}
 
-	{
+	if true { // arka plan resmi devre dışı
+		if bgPixels, ok := loadPNGAsBasePixels("assets/maps/world_map_background.png"); ok {
+			copy(wm.basePixels, bgPixels)
+			wm.hasBgImage = true
+			log.Println("Arka plan harita resmi yüklendi")
+		}
+	} else {
 		// Fallback: düz okyanus mavisi
 		const oR, oG, oB byte = 28, 88, 168
 		for i := 0; i < WorldW*WorldH; i++ {

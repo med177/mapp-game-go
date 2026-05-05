@@ -22,8 +22,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 461,
-    "world_y": 234
+    "world_x": 463,
+    "world_y": 235
   },
   {
     "active_event_id": "",
@@ -73,8 +73,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 409,
-    "world_y": 251
+    "world_x": 410,
+    "world_y": 249
   },
   {
     "active_event_id": "",
@@ -116,7 +116,9 @@
       "france_south",
       "hre_west",
       "flanders",
-      "holland"
+      "holland",
+      "brittany",
+      "burgundy"
     ],
     "owner_id": "france",
     "population": 1100,
@@ -127,8 +129,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 479,
-    "world_y": 318
+    "world_x": 520,
+    "world_y": 313
   },
   {
     "active_event_id": "",
@@ -144,6 +146,8 @@
       "aragon",
       "savoy",
       "hre_west",
+      "burgundy",
+      "navarre",
       "_sea_med_west",
       "corsica"
     ],
@@ -156,8 +160,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 577,
-    "world_y": 347
+    "world_x": 576,
+    "world_y": 382
   },
   {
     "active_event_id": "",
@@ -175,7 +179,9 @@
       "switzerland",
       "savoy",
       "flanders",
-      "luxembourg"
+      "luxembourg",
+      "bavaria",
+      "burgundy"
     ],
     "owner_id": "",
     "population": 900,
@@ -186,8 +192,8 @@
     "terrain": "forest",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 640,
-    "world_y": 260
+    "world_x": 625,
+    "world_y": 261
   },
   {
     "active_event_id": "",
@@ -205,7 +211,9 @@
       "hre_east",
       "poland",
       "flanders",
-      "holland"
+      "holland",
+      "saxony",
+      "brandon"
     ],
     "owner_id": "",
     "population": 1100,
@@ -216,8 +224,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 719,
-    "world_y": 237
+    "world_x": 672,
+    "world_y": 232
   },
   {
     "active_event_id": "",
@@ -232,7 +240,9 @@
       "hre_north",
       "poland",
       "bohemia",
-      "austria"
+      "austria",
+      "bavaria",
+      "saxony"
     ],
     "owner_id": "",
     "population": 1000,
@@ -243,8 +253,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 692,
-    "world_y": 305
+    "world_x": 657,
+    "world_y": 302
   },
   {
     "active_event_id": "",
@@ -285,7 +295,8 @@
       "hre_west",
       "savoy",
       "venice",
-      "austria"
+      "austria",
+      "bavaria"
     ],
     "owner_id": "",
     "population": 400,
@@ -312,6 +323,8 @@
       "france_south",
       "switzerland",
       "venice",
+      "genoa",
+      "milan",
       "_sea_med_west"
     ],
     "owner_id": "",
@@ -323,7 +336,7 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 500,
+    "world_x": 495,
     "world_y": 391
   },
   {
@@ -364,7 +377,9 @@
     "neighbors": [
       "portugal",
       "aragon",
-      "morocco"
+      "morocco",
+      "granada",
+      "navarre"
     ],
     "owner_id": "",
     "population": 1200,
@@ -375,8 +390,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 365,
-    "world_y": 472
+    "world_x": 361,
+    "world_y": 434
   },
   {
     "active_event_id": "",
@@ -391,6 +406,8 @@
       "france_south",
       "castile",
       "naples",
+      "granada",
+      "navarre",
       "_sea_med_west",
       "mallorca"
     ],
@@ -403,8 +420,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 450,
-    "world_y": 463
+    "world_x": 428,
+    "world_y": 492
   },
   {
     "active_event_id": "",
@@ -421,6 +438,8 @@
       "papal_states",
       "austria",
       "hungary",
+      "milan",
+      "florence",
       "_sea_adriatic",
       "slovenia",
       "croatia"
@@ -434,8 +453,8 @@
     "terrain": "coast",
     "trade_capacity": 8,
     "unlock_turn": 0,
-    "world_x": 686,
-    "world_y": 382
+    "world_x": 716,
+    "world_y": 361
   },
   {
     "active_event_id": "",
@@ -449,6 +468,7 @@
     "neighbors": [
       "venice",
       "naples",
+      "florence",
       "_sea_med_west",
       "_sea_adriatic"
     ],
@@ -461,8 +481,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 657,
-    "world_y": 487
+    "world_x": 751,
+    "world_y": 438
   },
   {
     "active_event_id": "",
@@ -489,8 +509,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 775,
-    "world_y": 454
+    "world_x": 801,
+    "world_y": 471
   },
   {
     "active_event_id": "",
@@ -507,7 +527,8 @@
       "hungary",
       "venice",
       "switzerland",
-      "slovenia"
+      "slovenia",
+      "bavaria"
     ],
     "owner_id": "",
     "population": 800,
@@ -534,7 +555,9 @@
       "hre_east",
       "poland",
       "austria",
-      "hungary"
+      "hungary",
+      "saxony",
+      "bavaria"
     ],
     "owner_id": "",
     "population": 700,
@@ -565,7 +588,9 @@
       "lithuania",
       "_sea_baltic",
       "konigsberg",
-      "ukraine"
+      "ukraine",
+      "saxony",
+      "brandon"
     ],
     "owner_id": "",
     "population": 1500,
@@ -624,6 +649,7 @@
       "poland",
       "serbia",
       "wallachia",
+      "transylvania",
       "slovenia",
       "croatia"
     ],
@@ -685,7 +711,8 @@
       "bulgaria",
       "crimea",
       "moldova",
-      "ukraine"
+      "ukraine",
+      "transylvania"
     ],
     "owner_id": "",
     "population": 500,
@@ -696,8 +723,8 @@
     "terrain": "plain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 975,
-    "world_y": 364
+    "world_x": 1009,
+    "world_y": 366
   },
   {
     "active_event_id": "",
@@ -714,7 +741,8 @@
       "constantinople",
       "greece",
       "macedonia",
-      "thrace"
+      "thrace",
+      "rumeli"
     ],
     "owner_id": "ottoman",
     "population": 700,
@@ -725,8 +753,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 980,
-    "world_y": 422
+    "world_x": 1007,
+    "world_y": 420
   },
   {
     "active_event_id": "",
@@ -741,6 +769,7 @@
       "portugal",
       "castile",
       "algiers",
+      "granada",
       "_sea_atlantic",
       "_sea_med_west"
     ],
@@ -850,6 +879,7 @@
       "serbia",
       "bulgaria",
       "constantinople",
+      "rumeli",
       "_sea_aegean",
       "_sea_adriatic",
       "albania",
@@ -894,8 +924,8 @@
     "terrain": "coast",
     "trade_capacity": 7,
     "unlock_turn": 0,
-    "world_x": 1070,
-    "world_y": 498
+    "world_x": 1072,
+    "world_y": 476
   },
   {
     "active_event_id": "",
@@ -908,11 +938,10 @@
     "name_tr": "Anadolu",
     "neighbors": [
       "constantinople",
-      "karaman",
-      "trebizond",
-      "_sea_black",
-      "_sea_med_east",
-      "armenia"
+      "germiyan",
+      "candaroglu",
+      "eretna",
+      "_sea_black"
     ],
     "owner_id": "ottoman",
     "population": 900,
@@ -923,34 +952,38 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1174,
-    "world_y": 492
+    "world_x": 1153,
+    "world_y": 460
   },
   {
+    "active_event_id": "",
+    "base_gold_income": 40,
+    "base_grain_output": 30,
     "id": "karaman",
+    "is_locked": false,
+    "is_sea": false,
     "name": "Karaman",
     "name_tr": "Karaman",
-    "terrain": "mountain",
-    "owner_id": "",
     "neighbors": [
-      "anatolia",
+      "germiyan",
+      "hamit",
+      "teke",
+      "ramazanoglu",
+      "eretna",
       "syria",
       "_sea_med_east"
     ],
-    "world_x": 1138,
-    "world_y": 698,
-    "is_sea": false,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 40,
-    "base_grain_output": 30,
-    "trade_capacity": 2,
-    "satisfaction": 60,
-    "tax_rate": 30,
+    "owner_id": "",
     "population": 500,
     "religion": "sunni",
-    "active_event_id": "",
-    "shape_id": "TUR"
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "mountain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1172,
+    "world_y": 512
   },
   {
     "active_event_id": "",
@@ -1002,7 +1035,7 @@
     "trade_capacity": 2,
     "unlock_turn": 0,
     "world_x": 1293,
-    "world_y": 178
+    "world_y": 177
   },
   {
     "active_event_id": "",
@@ -1026,7 +1059,7 @@
     "terrain": "plain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 1686,
+    "world_x": 1687,
     "world_y": 115
   },
   {
@@ -1037,9 +1070,11 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Trebizond",
-    "name_tr": "Trabzon",
+    "name_tr": "Trabzon Rum İmparatorluğu",
     "neighbors": [
-      "anatolia",
+      "candaroglu",
+      "eretna",
+      "akkoyunlu",
       "georgia",
       "_sea_black",
       "armenia"
@@ -1053,8 +1088,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1295,
-    "world_y": 493
+    "world_x": 1312,
+    "world_y": 469
   },
   {
     "active_event_id": "",
@@ -1153,7 +1188,8 @@
     "name": "Syria",
     "name_tr": "Suriye",
     "neighbors": [
-      "karaman",
+      "ramazanoglu",
+      "dulkadir",
       "palestine",
       "iraq",
       "jordan",
@@ -1225,8 +1261,8 @@
     "terrain": "mountain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1610,
-    "world_y": 578
+    "world_x": 1611,
+    "world_y": 577
   },
   {
     "active_event_id": "",
@@ -1251,8 +1287,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1457,
-    "world_y": 581
+    "world_x": 1458,
+    "world_y": 580
   },
   {
     "active_event_id": "",
@@ -1279,7 +1315,7 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1627,
+    "world_x": 1626,
     "world_y": 689
   },
   {
@@ -1496,7 +1532,8 @@
       "kosovo",
       "albania",
       "greece",
-      "bulgaria"
+      "bulgaria",
+      "rumeli"
     ],
     "owner_id": "",
     "population": 350,
@@ -1522,7 +1559,8 @@
     "neighbors": [
       "wallachia",
       "crimea",
-      "ukraine"
+      "ukraine",
+      "transylvania"
     ],
     "owner_id": "",
     "population": 350,
@@ -1801,7 +1839,8 @@
       "bohemia",
       "poland",
       "hungary",
-      "austria"
+      "austria",
+      "transylvania"
     ],
     "owner_id": "",
     "population": 500,
@@ -1990,6 +2029,7 @@
       "bulgaria",
       "constantinople",
       "greece",
+      "rumeli",
       "_sea_aegean",
       "_sea_black"
     ],
@@ -2046,6 +2086,7 @@
       "georgia",
       "armenia",
       "persia_north",
+      "akkoyunlu",
       "_sea_caspian"
     ],
     "owner_id": "",
@@ -2073,7 +2114,8 @@
       "georgia",
       "azerbaijan",
       "persia_north",
-      "anatolia"
+      "anatolia",
+      "akkoyunlu"
     ],
     "owner_id": "",
     "population": 300,
@@ -2288,6 +2330,7 @@
     "neighbors": [
       "poland",
       "lithuania",
+      "brandon",
       "_sea_baltic"
     ],
     "owner_id": "",
@@ -2765,5 +2808,619 @@
     "unlock_turn": 0,
     "world_x": 535,
     "world_y": 482
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 35,
+    "base_grain_output": 25,
+    "id": "germiyan",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Germiyan",
+    "name_tr": "Germiyan Beyliği",
+    "neighbors": [
+      "anatolia",
+      "karaman",
+      "aydinoglu",
+      "candaroglu",
+      "mentese",
+      "hamit",
+      "eretna"
+    ],
+    "owner_id": "",
+    "population": 380,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1084,
+    "world_y": 521
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 40,
+    "base_grain_output": 20,
+    "id": "aydinoglu",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Aydinoglu",
+    "name_tr": "Aydınoğlu Beyliği",
+    "neighbors": [
+      "germiyan",
+      "mentese",
+      "_sea_aegean",
+      "_sea_med_east"
+    ],
+    "owner_id": "",
+    "population": 320,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1025,
+    "world_y": 486
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 32,
+    "base_grain_output": 22,
+    "id": "candaroglu",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Candaroglu",
+    "name_tr": "Candaroğulları Beyliği",
+    "neighbors": [
+      "anatolia",
+      "germiyan",
+      "trebizond",
+      "eretna",
+      "_sea_black"
+    ],
+    "owner_id": "",
+    "population": 280,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1200,
+    "world_y": 470
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 38,
+    "base_grain_output": 35,
+    "id": "ramazanoglu",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Cilician Armenia",
+    "name_tr": "Küçük Ermeni Krallığı",
+    "neighbors": [
+      "karaman",
+      "eretna",
+      "dulkadir",
+      "syria",
+      "_sea_med_east"
+    ],
+    "owner_id": "",
+    "population": 420,
+    "religion": "orthodox",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1221,
+    "world_y": 518
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 30,
+    "base_grain_output": 20,
+    "id": "akkoyunlu",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Akkoyunlu",
+    "name_tr": "Akkoyunlu Devleti",
+    "neighbors": [
+      "trebizond",
+      "eretna",
+      "dulkadir",
+      "armenia",
+      "azerbaijan",
+      "syria"
+    ],
+    "owner_id": "",
+    "population": 420,
+    "religion": "sunni",
+    "satisfaction": 55,
+    "shape_id": "TUR",
+    "tax_rate": 25,
+    "terrain": "mountain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1340,
+    "world_y": 503
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 85,
+    "base_grain_output": 35,
+    "id": "florence",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Florence",
+    "name_tr": "Floransa",
+    "neighbors": [
+      "venice",
+      "milan",
+      "genoa",
+      "papal_states",
+      "_sea_med_west"
+    ],
+    "owner_id": "",
+    "population": 750,
+    "religion": "catholic",
+    "satisfaction": 68,
+    "shape_id": "ITA",
+    "tax_rate": 35,
+    "terrain": "plain",
+    "trade_capacity": 5,
+    "unlock_turn": 0,
+    "world_x": 711,
+    "world_y": 410
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 110,
+    "base_grain_output": 15,
+    "id": "genoa",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Genoa",
+    "name_tr": "Ceneviz Cumhuriyeti",
+    "neighbors": [
+      "florence",
+      "milan",
+      "savoy",
+      "_sea_med_west"
+    ],
+    "owner_id": "",
+    "population": 600,
+    "religion": "catholic",
+    "satisfaction": 70,
+    "shape_id": "ITA",
+    "tax_rate": 35,
+    "terrain": "coast",
+    "trade_capacity": 7,
+    "unlock_turn": 0,
+    "world_x": 635,
+    "world_y": 379
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 80,
+    "base_grain_output": 50,
+    "id": "milan",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Milan",
+    "name_tr": "Milano Dükalığı",
+    "neighbors": [
+      "venice",
+      "genoa",
+      "savoy",
+      "switzerland",
+      "florence",
+      "hre_west"
+    ],
+    "owner_id": "",
+    "population": 850,
+    "religion": "catholic",
+    "satisfaction": 65,
+    "shape_id": "ITA",
+    "tax_rate": 35,
+    "terrain": "plain",
+    "trade_capacity": 5,
+    "unlock_turn": 0,
+    "world_x": 677,
+    "world_y": 375
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 55,
+    "base_grain_output": 40,
+    "id": "granada",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Granada",
+    "name_tr": "Gırnata Emirliği",
+    "neighbors": [
+      "castile",
+      "aragon",
+      "morocco",
+      "_sea_med_west"
+    ],
+    "owner_id": "",
+    "population": 700,
+    "religion": "sunni",
+    "satisfaction": 65,
+    "shape_id": "ESP",
+    "tax_rate": 30,
+    "terrain": "mountain",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 365,
+    "world_y": 508
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 30,
+    "base_grain_output": 30,
+    "id": "navarre",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Navarre",
+    "name_tr": "Navarra Krallığı",
+    "neighbors": [
+      "france_south",
+      "castile",
+      "aragon"
+    ],
+    "owner_id": "",
+    "population": 280,
+    "religion": "catholic",
+    "satisfaction": 65,
+    "shape_id": "ESP",
+    "tax_rate": 30,
+    "terrain": "mountain",
+    "trade_capacity": 1,
+    "unlock_turn": 0,
+    "world_x": 468,
+    "world_y": 441
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 60,
+    "base_grain_output": 55,
+    "id": "burgundy",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Burgundy",
+    "name_tr": "Burgonya Dükalığı",
+    "neighbors": [
+      "france_north",
+      "france_south",
+      "hre_west",
+      "switzerland"
+    ],
+    "owner_id": "",
+    "population": 950,
+    "religion": "catholic",
+    "satisfaction": 68,
+    "shape_id": "FRA",
+    "tax_rate": 35,
+    "terrain": "plain",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 587,
+    "world_y": 320
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 35,
+    "base_grain_output": 30,
+    "id": "brittany",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Brittany",
+    "name_tr": "Bretanya Dükalığı",
+    "neighbors": [
+      "france_north",
+      "_sea_atlantic",
+      "_sea_north"
+    ],
+    "owner_id": "",
+    "population": 600,
+    "religion": "catholic",
+    "satisfaction": 62,
+    "shape_id": "FRA",
+    "tax_rate": 30,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 448,
+    "world_y": 327
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 48,
+    "base_grain_output": 45,
+    "id": "bavaria",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Bavaria",
+    "name_tr": "Bavyera Dükalığı",
+    "neighbors": [
+      "hre_west",
+      "hre_east",
+      "austria",
+      "bohemia",
+      "switzerland"
+    ],
+    "owner_id": "",
+    "population": 850,
+    "religion": "catholic",
+    "satisfaction": 65,
+    "shape_id": "DEU",
+    "tax_rate": 32,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 708,
+    "world_y": 304
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 45,
+    "base_grain_output": 50,
+    "id": "saxony",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Saxony",
+    "name_tr": "Saksonya Markgrafluğu",
+    "neighbors": [
+      "hre_north",
+      "hre_east",
+      "bohemia",
+      "brandon",
+      "poland"
+    ],
+    "owner_id": "",
+    "population": 900,
+    "religion": "catholic",
+    "satisfaction": 65,
+    "shape_id": "DEU",
+    "tax_rate": 32,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 737,
+    "world_y": 257
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 35,
+    "base_grain_output": 45,
+    "id": "brandon",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Brandenburg",
+    "name_tr": "Brandenburg Markgrafluğu",
+    "neighbors": [
+      "hre_north",
+      "saxony",
+      "poland",
+      "konigsberg",
+      "_sea_baltic"
+    ],
+    "owner_id": "",
+    "population": 700,
+    "religion": "catholic",
+    "satisfaction": 62,
+    "shape_id": "DEU",
+    "tax_rate": 30,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 728,
+    "world_y": 223
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 40,
+    "base_grain_output": 45,
+    "id": "transylvania",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Transylvania",
+    "name_tr": "Erdel / Transilvanya",
+    "neighbors": [
+      "hungary",
+      "wallachia",
+      "moldova",
+      "slovakia"
+    ],
+    "owner_id": "",
+    "population": 650,
+    "religion": "orthodox",
+    "satisfaction": 58,
+    "shape_id": "ROU",
+    "tax_rate": 28,
+    "terrain": "mountain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 940,
+    "world_y": 362
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 32,
+    "base_grain_output": 28,
+    "id": "mentese",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Mentese",
+    "name_tr": "Menteşeoğulları Beyliği",
+    "neighbors": [
+      "aydinoglu",
+      "germiyan",
+      "hamit",
+      "teke",
+      "_sea_aegean",
+      "_sea_med_east"
+    ],
+    "owner_id": "",
+    "population": 300,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 28,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1044,
+    "world_y": 517
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 28,
+    "base_grain_output": 22,
+    "id": "teke",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Teke",
+    "name_tr": "Teke Beyliği",
+    "neighbors": [
+      "mentese",
+      "hamit",
+      "karaman",
+      "_sea_med_east"
+    ],
+    "owner_id": "",
+    "population": 260,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 28,
+    "terrain": "coast",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1132,
+    "world_y": 524
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 30,
+    "base_grain_output": 30,
+    "id": "hamit",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Hamit",
+    "name_tr": "Hamidoğulları Beyliği",
+    "neighbors": [
+      "germiyan",
+      "mentese",
+      "teke",
+      "karaman",
+      "eretna"
+    ],
+    "owner_id": "",
+    "population": 310,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 28,
+    "terrain": "mountain",
+    "trade_capacity": 1,
+    "unlock_turn": 0,
+    "world_x": 1114,
+    "world_y": 477
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 55,
+    "base_grain_output": 60,
+    "id": "eretna",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Eretna",
+    "name_tr": "Eretna Devleti",
+    "neighbors": [
+      "anatolia",
+      "candaroglu",
+      "germiyan",
+      "hamit",
+      "karaman",
+      "ramazanoglu",
+      "dulkadir",
+      "trebizond",
+      "akkoyunlu"
+    ],
+    "owner_id": "",
+    "population": 800,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "plain",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1253,
+    "world_y": 477
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 38,
+    "base_grain_output": 35,
+    "id": "dulkadir",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Dulkadir",
+    "name_tr": "Dulkadiroğulları Beyliği",
+    "neighbors": [
+      "eretna",
+      "ramazanoglu",
+      "akkoyunlu",
+      "syria",
+      "_sea_med_east"
+    ],
+    "owner_id": "",
+    "population": 380,
+    "religion": "sunni",
+    "satisfaction": 58,
+    "shape_id": "TUR",
+    "tax_rate": 28,
+    "terrain": "mountain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1280,
+    "world_y": 513
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 30,
+    "base_grain_output": 28,
+    "id": "rumeli",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Rumeli",
+    "name_tr": "Rumeli",
+    "neighbors": [
+      "thrace",
+      "bulgaria",
+      "greece",
+      "macedonia"
+    ],
+    "owner_id": "",
+    "population": 450,
+    "religion": "orthodox",
+    "satisfaction": 55,
+    "shape_id": "BGR",
+    "tax_rate": 28,
+    "terrain": "plain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 954,
+    "world_y": 425
   }
 ]

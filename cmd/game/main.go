@@ -12,6 +12,7 @@ func main() {
 	ebiten.SetWindowTitle("Mapp — Orta Çağ Strateji")
 	ebiten.SetWindowSize(1920, 1080)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.MaximizeWindow()
 
 	g := game.New()
 	if err := ebiten.RunGame(g); err != nil {

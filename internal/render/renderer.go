@@ -80,13 +80,17 @@ func New(gs *state.GameState) *Renderer {
 		prevKeys:  make(map[ebiten.Key]bool),
 		prevMouse: make(map[ebiten.MouseButton]bool),
 	}
-	// Kamerayı başlangıçta düz 2D haritayı ekrana sığdıracak şekilde ayarla
+	r.resetCamera()
+	return r
+}
+
+// resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
+func (r *Renderer) resetCamera() {
 	scaleX := ScreenWidth / float64(WorldW)
 	scaleY := ScreenHeight / float64(WorldH)
-	r.camScale = math.Min(scaleX, scaleY) * 0.98
+	r.camScale = math.Min(scaleX, scaleY)
 	r.camX = float64(WorldW) / 2
 	r.camY = float64(WorldH) / 2
-	return r
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
@@ -160,9 +164,11 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 
 // Draw her frame çağrılır.
 func (r *Renderer) Draw(screen *ebiten.Image) {
-	// İlk frame için özel bir ayara gerek kalmadı, New içinde yapılıyor.
+	// İlk frame'de Layout() zaten gerçek pencere boyutunu güncellemiştir;
+	// kamerayı bu boyuta göre yeniden ayarla.
 	if !r.firstDraw {
 		r.firstDraw = true
+		r.resetCamera()
 	}
 
 	// Ana menü
@@ -223,7 +229,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech)
 	DrawRegionPanel(screen, r.gs, r.SelectedRegion)
 	DrawArmyPanel(screen, r.gs, r.SelectedArmy)
-	DrawMinimap(screen, r.gs)
+	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	DrawEventLog(screen, r.eventLog)
 
 	// 7. Diplomasi paneli (üst katman)
