@@ -1,0 +1,206 @@
+package render
+
+import (
+	"fmt"
+	"image/color"
+	"sort"
+
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/tech"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
+var techCategoryLabels = map[tech.Category]string{
+	tech.CategoryMilitary:  "Askeri",
+	tech.CategoryEconomy:   "Ekonomi",
+	tech.CategoryDiplomacy: "Diplomasi",
+	tech.CategoryNaval:     "Denizcilik",
+	tech.CategoryReligion:  "Din",
+}
+
+var techCategoryOrder = []tech.Category{
+	tech.CategoryMilitary,
+	tech.CategoryEconomy,
+	tech.CategoryDiplomacy,
+	tech.CategoryNaval,
+	tech.CategoryReligion,
+}
+
+type techEntry struct {
+	t        *tech.Technology
+	unlocked bool
+	done     bool
+}
+
+func (r *Renderer) buildTechEntries(f *faction.Faction) []techEntry {
+	var entries []techEntry
+	for _, cat := range techCategoryOrder {
+		var catTechs []*tech.Technology
+		for _, t := range r.gs.TechTypes {
+			if t.Category == cat {
+				catTechs = append(catTechs, t)
+			}
+		}
+		sort.Slice(catTechs, func(i, j int) bool { return catTechs[i].ID < catTechs[j].ID })
+		for _, t := range catTechs {
+			entries = append(entries, techEntry{
+				t:        t,
+				unlocked: tech.IsUnlocked(&f.Research, t),
+				done:     f.Research.Completed[t.ID],
+			})
+		}
+	}
+	return entries
+}
+
+// DrawTechPanel teknoloji araştırma panelini çizer. [T] ile açılır.
+func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
+	if r.gs.TechTypes == nil {
+		return
+	}
+	f := r.gs.Factions[r.gs.PlayerFactionID]
+	if f == nil {
+		return
+	}
+
+	px, py := float32(60), float32(40)
+	pw, ph := float32(ScreenWidth-120), float32(ScreenHeight-80)
+
+	vector.FillRect(screen, px, py, pw, ph, color.RGBA{20, 20, 40, 230}, false)
+	vector.FillRect(screen, px, py, pw, 2, color.RGBA{180, 150, 60, 255}, false)
+
+	DrawText(screen, "[ TEKNOLOJİ AĞACI ]   [T] kapat", float64(px)+20, float64(py)+10, FaceMed, ColorYellow)
+
+	activeY := float64(py) + 30
+	if f.Research.ActiveID != "" {
+		if t, ok := r.gs.TechTypes[f.Research.ActiveID]; ok {
+			msg := fmt.Sprintf("Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
+			DrawText(screen, msg, float64(px)+20, activeY, FaceMed, color.RGBA{100, 220, 100, 255})
+		}
+	} else {
+		DrawText(screen, "Aktif araştırma yok — Enter ile başlat", float64(px)+20, activeY, FaceSmall, ColorGray)
+	}
+
+	entries := r.buildTechEntries(f)
+
+	rowH := 36
+	listY := int(py) + 56
+	visibleRows := (int(ph) - 70) / rowH
+	colW := int(pw) / 2
+
+	if r.techCursor < 0 {
+		r.techCursor = 0
+	}
+	if len(entries) > 0 && r.techCursor >= len(entries) {
+		r.techCursor = len(entries) - 1
+	}
+
+	offset := 0
+	if r.techCursor >= visibleRows {
+		offset = r.techCursor - visibleRows + 1
+	}
+
+	for i := offset; i < len(entries) && i < offset+visibleRows; i++ {
+		e := entries[i]
+		rowY := float32(listY + (i-offset)*rowH)
+
+		if i == r.techCursor {
+			vector.FillRect(screen, px+10, rowY-2, pw-20, float32(rowH-2), color.RGBA{60, 60, 100, 180}, false)
+		}
+
+		var nameCol color.RGBA
+		var statusStr string
+		switch {
+		case e.done:
+			nameCol = color.RGBA{100, 220, 100, 255}
+			statusStr = "Tamamlandi"
+		case !e.unlocked:
+			nameCol = color.RGBA{120, 120, 120, 255}
+			statusStr = "Kilitli"
+		case f.Research.ActiveID == e.t.ID:
+			nameCol = color.RGBA{255, 220, 80, 255}
+			statusStr = fmt.Sprintf("Arastiriliyor (%d tur)", f.Research.TurnsLeft)
+		default:
+			nameCol = color.RGBA{220, 200, 160, 255}
+			statusStr = fmt.Sprintf("%dg / %d tur", e.t.GoldCost, e.t.TurnsRequired)
+		}
+
+		catLabel := techCategoryLabels[e.t.Category]
+		DrawText(screen, fmt.Sprintf("[%s] %s", catLabel, e.t.NameTR), float64(px)+18, float64(rowY)+4, FaceMed, nameCol)
+		DrawText(screen, e.t.DescriptionTR, float64(px)+18, float64(rowY)+18, FaceSmall, ColorGray)
+		DrawText(screen, statusStr, float64(px)+float64(colW)+10, float64(rowY)+4, FaceSmall, ColorGold)
+
+		if len(e.t.Requires) > 0 && !e.done {
+			reqStr := "Gerekir: "
+			for j, req := range e.t.Requires {
+				if j > 0 {
+					reqStr += ", "
+				}
+				if rt, ok := r.gs.TechTypes[req]; ok {
+					reqStr += rt.NameTR
+				} else {
+					reqStr += req
+				}
+			}
+			DrawText(screen, reqStr, float64(px)+float64(colW)+10, float64(rowY)+18, FaceSmall, color.RGBA{140, 120, 80, 255})
+		}
+	}
+
+	hintY := float64(py) + float64(ph) - 18
+	DrawText(screen, "Up/Down: Gezin   Enter: Arastir   [T] Kapat   Altin: "+fmt.Sprintf("%d", f.Gold),
+		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
+}
+
+// handleTechInput teknoloji paneli klavye ve fare girişlerini işler.
+func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
+	if r.gs.TechTypes == nil {
+		return InputAction{}
+	}
+	entries := r.buildTechEntries(f)
+
+	// Fare hover → satır seç
+	mx, my := ebiten.CursorPosition()
+	px, py := float32(60), float32(40)
+	pw := float32(ScreenWidth - 120)
+	rowH := 36
+	listY := int(py) + 56
+	visibleRows := (int(float32(ScreenHeight-80)) - 70) / rowH
+	offset := 0
+	if r.techCursor >= visibleRows {
+		offset = r.techCursor - visibleRows + 1
+	}
+	for i := offset; i < len(entries) && i < offset+visibleRows; i++ {
+		rowY := float32(listY + (i-offset)*rowH)
+		if float64(my) >= float64(rowY-2) && float64(my) <= float64(rowY+float32(rowH)-2) &&
+			float64(mx) >= float64(px+10) && float64(mx) <= float64(px+pw-20) {
+			r.techCursor = i
+			break
+		}
+	}
+
+	// Sol tık → araştırmayı başlat (uygunsa)
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if r.techCursor < len(entries) {
+			e := entries[r.techCursor]
+			if e.unlocked && !e.done && f.Research.ActiveID == "" {
+				return InputAction{Kind: ActionResearch, BuildingID: e.t.ID}
+			}
+		}
+	}
+
+	if r.keyJustPressed(ebiten.KeyArrowUp) && r.techCursor > 0 {
+		r.techCursor--
+	}
+	if r.keyJustPressed(ebiten.KeyArrowDown) && r.techCursor < len(entries)-1 {
+		r.techCursor++
+	}
+	if r.keyJustPressed(ebiten.KeyEnter) && r.techCursor < len(entries) {
+		e := entries[r.techCursor]
+		if e.unlocked && !e.done && f.Research.ActiveID == "" {
+			return InputAction{Kind: ActionResearch, BuildingID: e.t.ID}
+		}
+	}
+	return InputAction{}
+}
