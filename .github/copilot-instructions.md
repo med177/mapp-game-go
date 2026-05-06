@@ -1,7 +1,7 @@
 # Copilot.md — Mapp Game Go (Proje Hafızası)
 
 ## Proje Özeti
-Orta Çağ temalı (1300–1600) 2.5D izometrik, sıra tabanlı strateji oyunu.
+Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu.
 Total War serisinin kampanya haritasına benzer oynanış — taktik savaş sahnesi yok,
 tüm çarpışmalar harita üzerinde otomatik hesaplanır.
 Tek oyunculu, karşısında stratejik yapay zeka var.
@@ -129,7 +129,7 @@ Tek oyunculu, karşısında stratejik yapay zeka var.
   - Pusu (geçit noktasında hazır bekleyen = ciddi atak bonusu)
 
 ### Hareket
-- Belirli yollar/güzergahlar üzerinden ilerlenebilir (Total War kampanya haritası gibi).
+- Belirli yollar/güzergahlar üzerinden ilerlenebilir (Total War sefer haritası gibi).
 - Arazi tiplerine göre hareket puanı tüketilir.
 - Dağ geçitleri tek yol → stratejik tıkama noktaları.
 
@@ -193,38 +193,93 @@ Tek oyunculu, karşısında stratejik yapay zeka var.
 ```
 mapp-game-go/
 ├── CLAUDE.md
-├── main.go
+├── AGENTS.md
 ├── go.mod
+├── go.sum
+├── game.exe               # Kök dizindeki geçici build çıktısı
+├── cmd/
+│   └── game/
+│       └── main.go        # Uygulama giriş noktası
+├── bin/
+│   └── game.exe           # Kalıcı build çıktısı
 ├── assets/
-│   ├── sprites/       # İzometrik sprite'lar
-│   ├── maps/          # Harita verileri
-│   ├── sounds/        # Müzik ve efektler
+│   ├── maps/              # Harita görselleri
+│   │   ├── world_map_background.png
+│   │   ├── mini-map.png
+│   │   └── debug_alignment*.png
 │   └── data/
 │       ├── regions.json
 │       ├── factions.json
 │       ├── units.json
 │       ├── technologies.json
 │       ├── buildings.json
-│       └── events.json
+│       ├── events.json
+│       └── generated/
+│           └── country_shapes.json   # Ülke poligon verileri (üretilmiş)
 ├── internal/
-│   ├── game/          # Ana oyun döngüsü, tur yönetimi
-│   ├── world/         # Harita, bölge, arazi, görüş
-│   ├── faction/       # Fraksiyon verisi, ilişkiler
-│   ├── diplomacy/     # Diplomasi sistemi
-│   ├── army/          # Ordu, birlik, hareket
-│   ├── combat/        # Çarpışma hesaplama motoru
-│   ├── economy/       # Kaynak, vergi, ticaret
-│   ├── city/          # Şehir, kale, bina sistemi
-│   ├── tech/          # Teknoloji ağacı
-│   ├── religion/      # Din sistemi
-│   ├── events/        # Tarihsel olaylar motoru
-│   ├── ai/            # Yapay zeka stratejisi
-│   ├── season/        # Mevsim mekaniği
-│   ├── victory/       # Zafer koşulları kontrolü
-│   ├── save/          # Kayıt/yükleme
-│   ├── ui/            # Kullanıcı arayüzü bileşenleri
-│   └── render/        # Ebitengine render katmanı
-└── saves/             # Oyun kayıt dosyaları
+│   ├── game/              # Ana oyun döngüsü, tur yönetimi
+│   │   ├── game.go
+│   │   └── resolution.go
+│   ├── state/             # Merkezi oyun durumu (GameState)
+│   │   └── state.go
+│   ├── world/             # Harita, bölge, arazi, görüş
+│   │   ├── region.go
+│   │   ├── terrain.go
+│   │   └── loader.go
+│   ├── faction/           # Fraksiyon verisi, ilişkiler
+│   │   ├── faction.go
+│   │   └── loader.go
+│   ├── army/              # Ordu, birlik, hareket
+│   │   ├── army.go
+│   │   ├── unit.go
+│   │   └── loader.go
+│   ├── combat/            # Çarpışma hesaplama motoru
+│   │   └── combat.go
+│   ├── economy/           # Kaynak, vergi, ticaret
+│   │   └── economy.go
+│   ├── city/              # Şehir, kale, bina sistemi
+│   │   └── building.go
+│   ├── tech/              # Teknoloji ağacı
+│   │   └── tech.go
+│   ├── events/            # Tarihsel olaylar motoru
+│   │   └── events.go
+│   ├── ai/                # Yapay zeka stratejisi
+│   │   └── ai.go
+│   ├── season/            # Mevsim mekaniği
+│   │   └── season.go
+│   ├── victory/           # Zafer koşulları kontrolü
+│   │   └── victory.go
+│   ├── save/              # Kayıt/yükleme
+│   │   └── save.go
+│   └── render/            # Ebitengine render katmanı
+│       ├── renderer.go    # Ana render döngüsü
+│       ├── assets.go      # Görsel varlık yükleyici
+│       ├── font.go        # Font yönetimi
+│       ├── tile.go        # Harita tile render
+│       ├── mapgen.go      # Harita üretimi/şekiller
+│       ├── panel.go       # UI panelleri
+│       ├── cursor.go      # Fare imleci
+│       ├── action.go      # Oyuncu aksiyonları UI
+│       ├── diplom.go      # Diplomasi paneli
+│       ├── faction_select.go  # Fraksiyon seçim ekranı
+│       ├── main_menu.go   # Ana menü
+│       ├── settings.go    # Ayarlar paneli
+│       ├── tech_panel.go  # Teknoloji ağacı paneli
+│       └── victory_select.go  # Zafer koşulu seçimi
+├── tools/                 # Harita/veri üretim araçları (Python/JS)
+│   ├── centroids/
+│   │   └── main.go        # Bölge merkezleri hesaplama (Go)
+│   ├── add_regions*.py
+│   ├── populate_all_shapes.py
+│   ├── update_shapes_from_ne.py
+│   ├── fix_*.py
+│   ├── extract_islands.py
+│   ├── debug_alignment.py
+│   └── add_missing_countries.js
+├── _REFERENCE/            # Tasarım referans görselleri ve şekil verileri
+│   ├── *.png / *.jpg / *.webp
+│   └── ne_10m_admin_0_countries/   # Natural Earth ülke sınırları
+└── saves/                 # Oyun kayıt dosyaları
 ```
 
 ---
