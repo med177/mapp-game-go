@@ -23,3 +23,17 @@ func loadImage(path string) *ebiten.Image {
 	}
 	return ebiten.NewImageFromImage(img)
 }
+
+// tryLoadImage resim dosyasını yüklemeyi dener; bulunamazsa nil döner.
+func tryLoadImage(path string) *ebiten.Image {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	img, _, err := image.Decode(f)
+	if err != nil {
+		return nil
+	}
+	return ebiten.NewImageFromImage(img)
+}

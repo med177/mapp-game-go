@@ -11,8 +11,8 @@ OUT_PATH    = "assets/maps/debug_alignment.png"
 
 # Kalibrasyon sabitleri - mapgen.go ile ayni tutulmali
 SHAPE_W, SHAPE_H = 1828, 997
-BG_PX0, BG_PY0 = 22.0, 12.0
-BG_PX1, BG_PY1 = 2794.0, 1524.0
+BG_PX0, BG_PY0 = 22.0, 67.0
+BG_PX1, BG_PY1 = 2794.0, 1579.0
 
 SCALE_X = (BG_PX1 - BG_PX0) / SHAPE_W
 SCALE_Y = (BG_PY1 - BG_PY0) / SHAPE_H

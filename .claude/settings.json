@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i 's/wc\\(region\\\\.WorldX\\), wc\\(region\\\\.WorldY\\)/wcX\\(region.WorldX\\), wcY\\(region.WorldY\\)/g' internal/render/renderer.go internal/render/cursor.go)",
+      "Bash(sed -i 's/wc\\(nRegion\\\\.WorldX\\), wc\\(nRegion\\\\.WorldY\\)/wcX\\(nRegion.WorldX\\), wcY\\(nRegion.WorldY\\)/g' internal/render/renderer.go)"
+    ]
+  }
+}

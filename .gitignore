@@ -21,7 +21,6 @@ go.work
 
 # IDEs
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
@@ -35,3 +34,6 @@ build/
 # Local environment
 .env
 .env.local
+
+# Exlude dirs and files
+_REFERENCE/

@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
@@ -90,7 +91,8 @@ func (r *Renderer) resetCamera() {
 	scaleY := ScreenHeight / float64(WorldH)
 	r.camScale = math.Min(scaleX, scaleY)
 	r.camX = float64(WorldW) / 2
-	r.camY = float64(WorldH) / 2
+	// Haritanın üst kenarını ekranın üstüne hizala
+	r.camY = ScreenHeight / (2 * r.camScale)
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
@@ -266,7 +268,7 @@ func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 		return
 	}
 
-	sx, sy := r.worldToScreen(wc(region.WorldX), wc(region.WorldY))
+	sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 	vector.StrokeCircle(screen, float32(sx), float32(sy+4), 16, 3, color.RGBA{255, 220, 70, 230}, true)
 	vector.StrokeCircle(screen, float32(sx), float32(sy+4), 22, 1.5, color.RGBA{30, 20, 5, 180}, true)
 }
@@ -284,15 +286,25 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 	for _, nid := range src.Neighbors {
 		nRegion, ok := r.gs.Regions[nid]
-		if !ok || nRegion.IsSea {
+		if !ok || nRegion.IsSea || nRegion.IsLocked {
 			continue
 		}
-		sx, sy := r.worldToScreen(wc(nRegion.WorldX), wc(nRegion.WorldY))
+		sx, sy := r.worldToScreen(wcX(nRegion.WorldX), wcY(nRegion.WorldY))
 
-		// Renk: düşman = kırmızı, diğer = yeşil
-		col := color.RGBA{60, 220, 60, 180}
-		if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
-			col = color.RGBA{220, 60, 60, 180}
+		var col color.RGBA
+		switch {
+		case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
+			rel, exists := r.gs.Relations[key]
+			if exists && rel.Stance == faction.StanceWar {
+				col = color.RGBA{220, 60, 60, 200} // düşman, savaş halinde — saldır
+			} else {
+				col = color.RGBA{140, 140, 140, 130} // düşman ama barış — girilmez
+			}
+		case nRegion.OwnerID == "":
+			col = color.RGBA{60, 220, 60, 200} // sahipsiz — fetih
+		default:
+			col = color.RGBA{80, 160, 255, 160} // kendi bölgesi — salt hareket
 		}
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
@@ -306,7 +318,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image) {
 		if !ok {
 			continue
 		}
-		sx, sy := r.worldToScreen(wc(region.WorldX), wc(region.WorldY))
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 		// İkon şehir noktasının üstünde
 		iconX := float32(sx)
 		iconY := float32(sy) - 22
@@ -349,7 +361,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image) {
 		if region.IsSea || region.IsLocked {
 			continue
 		}
-		sx, sy := r.worldToScreen(wc(region.WorldX), wc(region.WorldY))
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 
 		if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
 			continue
@@ -590,7 +602,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if !ok {
 			continue
 		}
-		sx, sy := r.worldToScreen(wc(region.WorldX), wc(region.WorldY))
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 		dx := fx - sx
 		dy := fy - (sy - 22)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {

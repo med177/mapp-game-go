@@ -17,8 +17,8 @@ import (
 const (
 	bottomBarH = float32(80)
 
-	minimapW = float32(205)
-	minimapH = float32(155)
+	minimapW = float32(240)
+	minimapH = float32(165)
 
 	evLogW = float32(255)
 	evLogH = float32(190)
@@ -50,7 +50,19 @@ var (
 		img.Fill(color.White)
 		return img
 	}()
+
+	// miniMapBg minimap arka plan görseli (assets/maps/mini-map.png)
+	miniMapBg     *ebiten.Image
+	miniMapLoaded bool
 )
+
+func ensureMiniMapBg() {
+	if miniMapLoaded {
+		return
+	}
+	miniMapLoaded = true
+	miniMapBg = tryLoadImage("assets/maps/mini-map.png")
+}
 
 // BottomButtonRects Total War stilinde sağ alt aksiyon butonlarının piksel dikdörtgenlerini döner.
 // [0]=Diplomasi  [1]=Teknoloji  [2]=Tur Bitir
@@ -79,38 +91,43 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 
 	f, hasPlayer := gs.Factions[gs.PlayerFactionID]
 
-	// Sol: fraksiyon amblemi + isim + tarih
+	// Sol blok: fraksiyon amblemi + isim (satır 1) + tarih (satır 2) + sezon/tur (satır 3)
 	if hasPlayer {
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		cx := float32(34)
 		cy := by + bottomBarH/2
 		vector.FillCircle(screen, cx, cy, 22, fc, true)
 		vector.StrokeCircle(screen, cx, cy, 22, 2, panelBorder, true)
-		// İlk harf
 		initial := string([]rune(f.NameTR)[:1])
 		DrawTextCentered(screen, initial, float64(cx), float64(cy)-8, FaceLarge, color.RGBA{255, 255, 255, 240})
 
-		DrawText(screen, f.NameTR, 64, float64(by)+10, FaceLarge, fc)
+		DrawText(screen, f.NameTR, 64, float64(by)+8, FaceLarge, fc)
 
 		months := [...]string{"", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
 			"Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"}
 		sea := gs.CurrentSeason()
 		dateStr := months[gs.Month] + " " + itoa(gs.Year)
-		DrawText(screen, dateStr, 64, float64(by)+34, FaceMed, ColorGold)
-		DrawText(screen, sea.DisplayName()+"  Tur "+itoa(gs.Turn), 64+130, float64(by)+34, FaceSmall, color.RGBA{160, 200, 100, 220})
+		DrawText(screen, dateStr, 64, float64(by)+30, FaceMed, ColorGold)
+		DrawText(screen, sea.DisplayName()+"  •  Tur "+itoa(gs.Turn), 64, float64(by)+52, FaceSmall,
+			color.RGBA{160, 200, 100, 220})
 	}
 
-	// Orta: kaynaklar
+	// Kaynaklar: 3 sütun — sol kenarı sol bloktan yeterince uzakta
 	if hasPlayer {
-		rx := float64(260)
+		// Sütun 1: Altın / Tahıl
+		rx1 := float64(310)
+		// Sütun 2: Demir / Kereste
+		rx2 := float64(450)
+		// Sütun 3: Gelir / Faz
+		rx3 := float64(590)
 		ry := float64(by) + 12
-		drawResRow(screen, rx, ry, "✦ Altın", itoa(f.Gold), ColorGold)
-		drawResRow(screen, rx, ry+26, "◈ Tahıl", itoa(f.Grain), ColorWhite)
 
-		drawResRow(screen, rx+160, ry, "⚙ Demir", itoa(f.Iron), color.RGBA{180, 180, 220, 255})
-		drawResRow(screen, rx+160, ry+26, "🪵 Kereste", itoa(f.Timber), color.RGBA{180, 140, 80, 255})
+		drawResRow(screen, rx1, ry, "Altin", itoa(f.Gold), ColorGold)
+		drawResRow(screen, rx1, ry+26, "Tahil", itoa(f.Grain), ColorWhite)
 
-		// Gelir tahmini
+		drawResRow(screen, rx2, ry, "Demir", itoa(f.Iron), color.RGBA{180, 180, 220, 255})
+		drawResRow(screen, rx2, ry+26, "Kereste", itoa(f.Timber), color.RGBA{180, 140, 80, 255})
+
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
 		if income < 0 {
@@ -120,11 +137,11 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		if income < 0 {
 			sign = ""
 		}
-		drawResRow(screen, rx+320, ry, "↑ Gelir", sign+itoa(income)+"/tur", incCol)
-		DrawText(screen, phaseLabel(gs.Phase), rx+320, ry+26, FaceSmall, ColorGray)
+		drawResRow(screen, rx3, ry, "Gelir", sign+itoa(income)+"/tur", incCol)
+		DrawText(screen, phaseLabel(gs.Phase), rx3, ry+26, FaceSmall, ColorGray)
 	}
 
-	// Orta: zafer göstergesi
+	// Zafer göstergesi — kaynak sütunundan sonra başlar
 	if hasPlayer {
 		drawVictoryProgress(screen, gs)
 	}
@@ -189,28 +206,62 @@ func DrawEventLog(screen *ebiten.Image, events []string) {
 // DrawMinimap küçük ölçekli dünya haritasını, fraksiyon sahipliğini ve
 // kamera viewport dikdörtgenini çizer.
 func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale float64) {
+	ensureMiniMapBg()
+
 	mx := minimapX()
 	my := minimapY()
 
-	// Çerçeve + arka plan
-	vector.FillRect(screen, mx-2, my-2, minimapW+4, minimapH+4, panelBorder, false)
-	vector.FillRect(screen, mx, my, minimapW, minimapH, color.RGBA{8, 12, 18, 255}, false)
+	const borderThick = float32(3)
+	const cornerSize = float32(8)
 
-	// Harita poligonlarını çiz
-	drawMinimapPolygons(screen, gs, mx, my)
+	// Dış gölge efekti
+	vector.FillRect(screen, mx-4, my-4, minimapW+8, minimapH+8, color.RGBA{0, 0, 0, 100}, false)
 
-	// Sahiplik noktalarını çiz
+	// Dış çerçeve — altın rengi
+	vector.FillRect(screen, mx-borderThick, my-borderThick, minimapW+borderThick*2, minimapH+borderThick*2,
+		color.RGBA{140, 110, 50, 255}, false)
+
+	// Minimap içi — görsel varsa onu kullan, yoksa koyu arka plan
+	if miniMapBg != nil {
+		bw, bh := miniMapBg.Bounds().Dx(), miniMapBg.Bounds().Dy()
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(float64(minimapW)/float64(bw), float64(minimapH)/float64(bh))
+		op.GeoM.Translate(float64(mx), float64(my))
+		// Hafif karartma — sahiplik renkleri daha net görünsün
+		op.ColorScale.Scale(0.72, 0.72, 0.72, 1.0)
+		screen.DrawImage(miniMapBg, op)
+	} else {
+		vector.FillRect(screen, mx, my, minimapW, minimapH, color.RGBA{15, 22, 35, 255}, false)
+		drawMinimapPolygons(screen, gs, mx, my)
+	}
+
+	// Sahiplik renk katmanı — yarı saydam doldurulmuş daireler
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
-	drawMinimapOwnership(screen, gs, float32(scaleX), float32(scaleY), mx, my)
+	drawMinimapOwnershipOverlay(screen, gs, float32(scaleX), float32(scaleY), mx, my)
 
-	// Viewport dikdörtgeni: o an ekranda görünen dünya alanını gösterir
+	// İç kenara ince koyu çizgi
+	vector.StrokeRect(screen, mx, my, minimapW, minimapH, 1, color.RGBA{30, 25, 15, 200}, false)
+
+	// Köşe süslemeleri
+	drawMinimapCorner(screen, mx, my, cornerSize, cornerSize)
+	drawMinimapCorner(screen, mx+minimapW, my, -cornerSize, cornerSize)
+	drawMinimapCorner(screen, mx, my+minimapH, cornerSize, -cornerSize)
+	drawMinimapCorner(screen, mx+minimapW, my+minimapH, -cornerSize, -cornerSize)
+
+	// Başlık etiketi
+	titleW := float32(MeasureText("MİNİ HARİTA", FaceSmall))
+	DrawText(screen, "MİNİ HARİTA",
+		float64(mx)+float64(minimapW)/2-float64(titleW)/2,
+		float64(my)-14,
+		FaceSmall, color.RGBA{200, 170, 80, 200})
+
+	// Viewport dikdörtgeni
 	vpW := float32((ScreenWidth / camScale) * scaleX)
 	vpH := float32((ScreenHeight / camScale) * scaleY)
 	vpX := mx + float32((camX-ScreenWidth/(2*camScale))*scaleX)
 	vpY := my + float32((camY-ScreenHeight/(2*camScale))*scaleY)
 
-	// Minimap sınırları içinde kes
 	if vpX < mx {
 		vpW -= mx - vpX
 		vpX = mx
@@ -226,8 +277,35 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 		vpH = my + minimapH - vpY
 	}
 	if vpW > 1 && vpH > 1 {
-		vector.StrokeRect(screen, vpX, vpY, vpW, vpH, 1.5, color.RGBA{255, 220, 60, 220}, false)
+		// Viewport kenarlığı — parlak sarı, iç kısmı tamamen şeffaf
+		vector.StrokeRect(screen, vpX, vpY, vpW, vpH, 2, color.RGBA{255, 225, 55, 240}, false)
+		// Köşe vurguları
+		cLen := float32(5)
+		vgold := color.RGBA{255, 245, 130, 255}
+		vector.StrokeLine(screen, vpX, vpY, vpX+cLen, vpY, 2, vgold, false)
+		vector.StrokeLine(screen, vpX, vpY, vpX, vpY+cLen, 2, vgold, false)
+		vector.StrokeLine(screen, vpX+vpW, vpY, vpX+vpW-cLen, vpY, 2, vgold, false)
+		vector.StrokeLine(screen, vpX+vpW, vpY, vpX+vpW, vpY+cLen, 2, vgold, false)
+		vector.StrokeLine(screen, vpX, vpY+vpH, vpX+cLen, vpY+vpH, 2, vgold, false)
+		vector.StrokeLine(screen, vpX, vpY+vpH, vpX, vpY+vpH-cLen, 2, vgold, false)
+		vector.StrokeLine(screen, vpX+vpW, vpY+vpH, vpX+vpW-cLen, vpY+vpH, 2, vgold, false)
+		vector.StrokeLine(screen, vpX+vpW, vpY+vpH, vpX+vpW, vpY+vpH-cLen, 2, vgold, false)
 	}
+}
+
+// drawMinimapCorner köşe L şeklinde süsleme çizer. dx/dy negatifse ters yöne çizer.
+func drawMinimapCorner(screen *ebiten.Image, x, y, dx, dy float32) {
+	col := color.RGBA{200, 165, 60, 255}
+	absX := dx
+	if absX < 0 {
+		absX = -absX
+	}
+	absY := dy
+	if absY < 0 {
+		absY = -absY
+	}
+	vector.StrokeLine(screen, x, y, x+absX*(dx/absX), y, 2, col, false)
+	vector.StrokeLine(screen, x, y, x, y+absY*(dy/absY), 2, col, false)
 }
 
 // drawMinimapPolygons ülke sınırlarını poligon olarak çizer.
@@ -280,11 +358,44 @@ func drawMinimapOwnership(screen *ebiten.Image, gs *state.GameState, scaleX, sca
 		if region.IsSea || region.OwnerID == "" {
 			continue
 		}
-		px := offsetX + float32(region.WorldX*MapScale)*scaleX
-		py := offsetY + float32(region.WorldY*MapScale)*scaleY
+		px := offsetX + float32(wcX(region.WorldX))*scaleX
+		py := offsetY + float32(wcY(region.WorldY))*scaleY
 		col := factionColor(gs, region.OwnerID)
 		col.A = 200
 		vector.FillCircle(screen, px, py, 3, col, true)
+	}
+}
+
+// drawMinimapOwnershipOverlay fraksiyon sahipliğini mini-map.png üstüne yarı saydam
+// renkli daireler olarak katmanlar; oyuncu bölgeleri biraz daha büyük gösterilir.
+func drawMinimapOwnershipOverlay(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
+	for _, region := range gs.Regions {
+		if region.IsSea || region.OwnerID == "" {
+			continue
+		}
+		px := offsetX + float32(wcX(region.WorldX))*scaleX
+		py := offsetY + float32(wcY(region.WorldY))*scaleY
+
+		col := factionColor(gs, region.OwnerID)
+
+		isPlayer := region.OwnerID == string(gs.PlayerFactionID)
+		radius := float32(4)
+		if isPlayer {
+			radius = 5.5
+		}
+
+		// Hafif gölge
+		shadow := color.RGBA{0, 0, 0, 80}
+		vector.FillCircle(screen, px+1, py+1, radius+1, shadow, true)
+
+		// Dolu daire — yarı saydam fraksiyon rengi
+		col.A = 180
+		vector.FillCircle(screen, px, py, radius, col, true)
+
+		// Oyuncu bölgesi ise parlak kenarlık
+		if isPlayer {
+			vector.StrokeCircle(screen, px, py, radius, 1.5, color.RGBA{255, 240, 120, 230}, true)
+		}
 	}
 }
 
@@ -578,9 +689,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState) {
 		return
 	}
 
-	vx := float64(580)
+	vx := float64(730)
 	vy := float64(bottomBarTop()) + 8
-	barW := float32(160)
+	barW := float32(150)
 
 	titleCol := color.RGBA{220, 190, 100, 220}
 	DrawText(screen, "Zafer Hedefi", vx, vy, FaceSmall, titleCol)

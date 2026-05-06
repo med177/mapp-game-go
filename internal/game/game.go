@@ -504,6 +504,16 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 		g.renderer.ShowCombatResult("Kara ordusu denize giremez! (Nakliye gemisi gerekir)")
 		return
 	}
+	// Sahipli düşman bölgeye girmek için savaş hali zorunlu
+	if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+		rel, exists := g.gs.Relations[key]
+		if !exists || rel.Stance != faction.StanceWar {
+			g.renderer.ShowCombatResult("Savaş ilan edilmeden düşman topraklarına girilemez!")
+			return
+		}
+	}
+
 	var enemyArmy *army.Army
 	for _, ea := range g.gs.Armies {
 		if ea.RegionID == target && ea.OwnerID != a.OwnerID {

@@ -162,7 +162,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool { // Alt panel tuşları
 		if !ok {
 			continue
 		}
-		sx, sy := r.worldToScreen(wc(region.WorldX), wc(region.WorldY))
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 		dx := fx - sx
 		dy := fy - (sy - 22)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {

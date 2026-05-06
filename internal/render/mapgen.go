@@ -15,29 +15,27 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// shape koordinat uzayı boyutları (Python araçlarıyla eşleşmeli)
+// Oyun dünyası boyutu = arka plan PNG boyutu (piksel başına 1 world piksel)
 const (
-	shapeW = 1828
-	shapeH = 997
+	WorldW = 2892
+	WorldH = 1440
 )
 
-// PNG arka plan kalibrasyon sabitleri.
-// PNG'nin gösterdiği coğrafi alan shape koordinat formülüyle farklıysa
-// bu 4 değeri ayarlayın: lon_to_px=20*lon+476, lat_to_py=-18.98*lat+1234.8
+// Shape koordinat uzayını world pikseline dönüştürme sabitleri.
+// Bu 4 değeri değiştirerek poligon hizalamasını ayarlayabilirsiniz:
+//
+//	shapeOffX/Y  → poligonları sağa/sola veya aşağı/yukarı kaydırır
+//	shapeScaleX/Y → poligon ölçeğini büyütür/küçültür
 const (
-	// Shape (0,0) noktasının karşılık geldiği PNG pikseli (sol-üst)
-	bgPx0 float64 = 22
-	bgPy0 float64 = 12
-	// Shape (shapeW, shapeH) noktasının karşılık geldiği PNG pikseli (sağ-alt)
-	bgPx1 float64 = 2794
-	bgPy1 float64 = 1524
+	shapeOffX   float64 = -530  // shape X=0 noktasının world piksel X karşılığı
+	shapeOffY   float64 = -180  // shape Y=0 noktasının world piksel Y karşılığı
+	shapeScaleX float64 = 2.025 // bir shape X birimi kaç world pikseli
+	shapeScaleY float64 = 2.025 // bir shape Y birimi kaç world pikseli
 )
 
-const (
-	MapScale = 2
-	WorldW   = 1920 * MapScale
-	WorldH   = 1080 * MapScale
-)
+// MapScale artık shape↔world dönüşümünde kullanılmıyor;
+// sadece geriye dönük uyumluluk için tutuldu.
+const MapScale = 1
 
 // WorldMap ülke shape'lerinden üretilen dünya harita dokusunu yönetir.
 type WorldMap struct {
@@ -119,7 +117,6 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 	for i := 0; i < WorldW*WorldH; i++ {
 		pixels[i*4], pixels[i*4+1], pixels[i*4+2], pixels[i*4+3] = 28, 88, 168, 255
 	}
-
 	// Hızlı erişim için NRGBA Pix dizisini dene, aksi halde At() kullan
 	type pngGetter func(x, y int) (byte, byte, byte)
 	var getPixel pngGetter
@@ -141,30 +138,15 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 		}
 	}
 
-	// game piksel (gx,gy) → shape koordinat (sx,sy) → PNG piksel via kalibrasyon
-	scaleX := (bgPx1 - bgPx0) / float64(shapeW)
-	scaleY := (bgPy1 - bgPy0) / float64(shapeH)
-
+	// WorldW=PNG genişliği, WorldH=PNG yüksekliği → 1:1 piksel eşleme
 	for gy := 0; gy < WorldH; gy++ {
-		sy := gy / MapScale
-		if sy >= shapeH {
-			continue
-		}
-		pngY := int(bgPy0 + float64(sy)*scaleY)
-		if pngY < 0 {
-			pngY = 0
-		} else if pngY >= srcH {
+		pngY := gy
+		if pngY >= srcH {
 			pngY = srcH - 1
 		}
 		for gx := 0; gx < WorldW; gx++ {
-			sx := gx / MapScale
-			if sx >= shapeW {
-				continue
-			}
-			pngX := int(bgPx0 + float64(sx)*scaleX)
-			if pngX < 0 {
-				pngX = 0
-			} else if pngX >= srcW {
+			pngX := gx
+			if pngX >= srcW {
 				pngX = srcW - 1
 			}
 			r, g, bl := getPixel(pngX, pngY)
@@ -258,10 +240,12 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 	if len(regions) == 0 || len(ring) < 3 {
 		return
 	}
-	// Koordinatları MapScale ile büyüt
 	scaled := make([][2]int, len(ring))
 	for i, pt := range ring {
-		scaled[i] = [2]int{pt[0] * MapScale, pt[1] * MapScale}
+		scaled[i] = [2]int{
+			int(shapeOffX + float64(pt[0])*shapeScaleX),
+			int(shapeOffY + float64(pt[1])*shapeScaleY),
+		}
 	}
 	minX, minY, maxX, maxY := intPolygonBounds(scaled)
 	if minX < 0 {
@@ -314,8 +298,8 @@ func nearestShapeRegion(regions []*world.Region, px, py int) *world.Region {
 	best := regions[0]
 	bestDist := int64(1<<63 - 1)
 	for _, r := range regions {
-		dx := int64(px - r.WorldX*MapScale)
-		dy := int64(py - r.WorldY*MapScale)
+		dx := int64(px) - int64(shapeOffX+float64(r.WorldX)*shapeScaleX)
+		dy := int64(py) - int64(shapeOffY+float64(r.WorldY)*shapeScaleY)
 		dist := dx*dx + dy*dy
 		if dist < bestDist {
 			best = r
@@ -341,9 +325,9 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 		if !ok && rid != selected {
 			continue
 		}
-		alpha := byte(36)
+		alpha := byte(80)
 		if rid == selected {
-			alpha = 96
+			alpha = 140
 			if !ok {
 				fc = [3]byte{245, 205, 80}
 			}
@@ -374,9 +358,7 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 				continue
 			}
 			isBorder := wm.regionAt[pIdx+1] != curIdx ||
-				wm.regionAt[pIdx-1] != curIdx ||
-				wm.regionAt[pIdx+WorldW] != curIdx ||
-				wm.regionAt[pIdx-WorldW] != curIdx
+				wm.regionAt[pIdx+WorldW] != curIdx
 			if !isBorder {
 				continue
 			}
@@ -541,5 +523,5 @@ func maxF(a, b float64) float64 {
 	return b
 }
 
-// wc bölge WorldX/WorldY koordinatlarını harita dokusunun ölçeğine dönüştürür.
-func wc(v int) float64 { return float64(v * MapScale) }
+func wcX(v int) float64 { return shapeOffX + float64(v)*shapeScaleX }
+func wcY(v int) float64 { return shapeOffY + float64(v)*shapeScaleY }
