@@ -1,4 +1,4 @@
-# AGENTS.md — Mapp Game Go (Proje Hafızası)
+# Mapp Game Go (Proje Hafızası)
 
 ## Proje Özeti
 Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu.
@@ -310,3 +310,54 @@ mapp-game-go/
 - Veri (bölge, birim, olay) JSON dosyalarından okunmalı — hardcode edilmemeli
 - Kayıt formatı da JSON (insan okunabilir, debug kolaylığı)
 - AI için ilk aşamada `internal/ai` paketi soyut `Strategy` interface üzerinden çalışmalı
+
+---
+
+## Wiki Bakım Kuralları
+
+Proje, `wiki/` dizininde Obsidian uyumlu bir LLM wiki'si tutar.
+
+### Yapı
+```
+wiki/
+├── HOME.md               ← Ana index
+├── architecture/         ← Teknik mimari sayfaları
+├── systems/              ← Oyun sistemleri (combat, economy, vb.)
+├── world/                ← Dünya içeriği (bölgeler, fraksiyonlar)
+└── dev/                  ← Geliştirme durumu, veri formatları
+```
+
+### Sayfa Formatı (zorunlu)
+Her sayfa YAML frontmatter ile başlar:
+```markdown
+---
+type: architecture | system | world | dev | index
+tags: [tag1, tag2]
+last_updated: YYYY-MM-DD
+related: [other/page, systems/combat]
+---
+```
+Sayfalar arası bağlantı: `[[systems/combat]]` (Obsidian wikilink sözdizimi).
+Kod konumları: `internal/game/game.go:160` formatıyla belirt.
+
+### Ne Zaman Güncellenir
+| Değişiklik | Güncellenmesi gereken wiki sayfası |
+|---|---|
+| `internal/state/state.go` değişti | `architecture/state-management` |
+| `internal/combat/combat.go` değişti | `systems/combat` |
+| `internal/ai/ai.go` değişti | `systems/ai` |
+| `internal/faction/faction.go` değişti | `world/factions`, `systems/diplomacy` |
+| `internal/render/` değişti | `architecture/render-pipeline` |
+| `internal/economy/economy.go` değişti | `systems/economy` |
+| `internal/tech/tech.go` değişti | `systems/tech-tree` |
+| `internal/victory/victory.go` değişti | `systems/victory` |
+| `internal/season/season.go` değişti | `systems/seasons` |
+| `internal/events/events.go` değişti | `systems/events` |
+| Yeni sistem paketi eklendi | Yeni wiki sayfası aç + HOME.md'ye ekle |
+| Özellik tamamlandı / bug çözüldü | `dev/progress.md` güncelle |
+
+### Kurallar
+- `last_updated` tarihini her düzenlemede güncelle
+- Yeni bağlantı eklersen hedef sayfanın `related` listesine de ekle
+- Tamamlanan özelliği `dev/progress.md`'de ✅ yap
+- Eksik/planlanan özelliği `dev/progress.md`'de ⬜ listesine ekle
