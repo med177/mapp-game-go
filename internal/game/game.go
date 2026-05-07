@@ -13,6 +13,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/save"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/victory"
@@ -28,23 +29,25 @@ type Game struct {
 	evts     []*events.Event
 }
 
-// New oyunu başlatır, veri dosyalarını yükler.
+const scenarioBaseDir = "assets/scenarios"
+
+// New oyunu başlatır, senaryo listesini yükler, ana menüde bekler.
 func New() *Game {
-	gs, err := loadGameState()
+	gs := &state.GameState{Phase: state.PhaseMainMenu}
+
+	// Senaryo listesini yükle — render paketinin global değişkenine yaz
+	scenarios, err := scenario.LoadAll(scenarioBaseDir)
 	if err != nil {
-		log.Fatalf("Oyun verisi yüklenemedi: %v", err)
+		log.Printf("Senaryolar yüklenemedi: %v", err)
 	}
-	evts, err := events.LoadEvents("assets/data/events.json")
-	if err != nil {
-		log.Printf("Olaylar yüklenemedi: %v", err)
-	}
+	render.ScenarioList = scenarios
+
 	r := render.New(gs)
 	r.HasSave = save.AnySlotExists()
 	r.CurrentSettings = render.DefaultSettings()
 	return &Game{
 		gs:       gs,
 		renderer: r,
-		evts:     evts,
 	}
 }
 
@@ -88,20 +91,29 @@ func (g *Game) Update() error {
 			g.renderer.SetCursor(0)
 		}
 
+	case state.PhaseScenarioSelect:
+		switch action.Kind {
+		case render.ActionSelectScenario:
+			g.loadScenario(action.BuildingID)
+		case render.ActionBack:
+			g.gs.Phase = state.PhaseMainMenu
+			g.renderer.SetCursor(0)
+		}
+
 	case state.PhaseFactionSelect:
 		switch action.Kind {
 		case render.ActionSelectFaction:
 			g.gs.PlayerFactionID = action.TargetFaction
 			g.gs.Phase = state.PhaseVictorySelect
 		case render.ActionBack:
-			g.gs.Phase = state.PhaseMainMenu
+			g.gs.Phase = state.PhaseScenarioSelect
 			g.renderer.SetCursor(0)
 		}
 
 	case state.PhaseVictorySelect:
 		switch action.Kind {
 		case render.ActionSelectVictory:
-			g.applyVictoryChoice(state.VictoryType(action.BuildingID))
+			g.applyVictoryChoice(action.BuildingID)
 			g.gs.Phase = state.PhasePlayerTurn
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseFactionSelect
@@ -382,7 +394,7 @@ func (g *Game) loadGame() {
 
 // loadSlot belirtilen slottan oyunu yükler ve oyuncu turuna geçer.
 func (g *Game) loadSlot(slotName string) {
-	gs, err := save.LoadSlot(slotName, "assets/data/units.json", "assets/data/buildings.json")
+	gs, err := save.LoadSlot(slotName)
 	if err != nil {
 		g.renderer.ShowCombatResult("Yükleme hatası: " + err.Error())
 		g.gs.Phase = state.PhaseMainMenu
@@ -395,17 +407,94 @@ func (g *Game) loadSlot(slotName string) {
 	g.renderer.ShowCombatResult("Oyun yüklendi!")
 }
 
-// resetToNewGame tüm state'i sıfırlayıp fraksiyon seçimine geçer.
+// resetToNewGame state'i temizler ve senaryo seçimine geçer.
 func (g *Game) resetToNewGame() {
-	gs, err := loadGameState()
+	difficulty := g.gs.Difficulty
+	gs := &state.GameState{
+		Phase:      state.PhaseScenarioSelect,
+		Difficulty: difficulty,
+	}
+	g.gs = gs
+	g.renderer.ReloadGameState(gs)
+	g.renderer.SetCursor(0)
+}
+
+// loadScenario seçilen senaryo klasöründen tüm oyun verilerini yükler.
+func (g *Game) loadScenario(scenarioPath string) {
+	sc := scenarioByPath(scenarioPath)
+
+	dp := func(f string) string { return scenarioPath + "/data/" + f }
+
+	regions, err := world.LoadRegions(dp("regions.json"))
 	if err != nil {
-		log.Printf("Yeni oyun başlatılamadı: %v", err)
+		log.Printf("Bölgeler yüklenemedi: %v", err)
 		return
 	}
-	gs.Phase = state.PhaseFactionSelect
-	gs.Difficulty = g.gs.Difficulty // ayarlardan zorluk koru
+	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), regions)
+	if err != nil {
+		log.Printf("Ülke sınırları yüklenemedi: %v", err)
+	}
+	factions, err := faction.LoadFactions(dp("factions.json"))
+	if err != nil {
+		log.Printf("Fraksiyonlar yüklenemedi: %v", err)
+		return
+	}
+	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
+	if err != nil {
+		log.Printf("Birim tipleri yüklenemedi: %v", err)
+	}
+	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
+	if err != nil {
+		log.Printf("Binalar yüklenemedi: %v", err)
+	}
+	techTypes, err := tech.LoadTechnologies(dp("technologies.json"))
+	if err != nil {
+		log.Printf("Teknolojiler yüklenemedi: %v", err)
+	}
+	evts, err := events.LoadEvents(dp("events.json"))
+	if err != nil {
+		log.Printf("Olaylar yüklenemedi: %v", err)
+	}
+	armies, err := army.LoadArmies(dp("armies.json"))
+	if err != nil {
+		log.Printf("Ordular yüklenemedi: %v", err)
+		armies = map[army.ArmyID]*army.Army{}
+	}
 
-	// Difficulty 3: AI fraksiyonlara başlangıç kaynak bonusu ver
+	devMode := os.Getenv("DEV_MODE") == "true"
+
+	year := 1300
+	month := 3
+	var victoryOpts []scenario.VictoryOptionDef
+	if sc != nil {
+		year = sc.Year
+		month = sc.Month
+		victoryOpts = sc.VictoryConditions
+	}
+
+	gs := &state.GameState{
+		Turn:               1,
+		Year:               year,
+		Month:              month,
+		StartYear:          year,
+		Phase:              state.PhaseFactionSelect,
+		Difficulty:         g.gs.Difficulty,
+		DevelopmentMode:    devMode,
+		ScenarioID:         scenarioIDFromPath(scenarioPath),
+		ScenarioPath:       scenarioPath,
+		Regions:            regions,
+		Factions:           factions,
+		Armies:             armies,
+		ShapeData:          shapeData,
+		UnitTypes:          unitTypes,
+		BuildingTypes:      buildingTypes,
+		TechTypes:          techTypes,
+		AvailableVictories: victoryOpts,
+		Relations:          faction.BuildInitialRelations(factions),
+		NextArmySeq:        len(armies),
+		FiredEventIDs:   map[string]bool{},
+	}
+
 	if gs.Difficulty >= 3 {
 		for fid, f := range gs.Factions {
 			if fid != gs.PlayerFactionID {
@@ -416,8 +505,29 @@ func (g *Game) resetToNewGame() {
 	}
 
 	g.gs = gs
+	g.evts = evts
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetCursor(0)
+}
+
+// scenarioByPath ScenarioList içinde verilen path'e sahip senaryoyu bulur.
+func scenarioByPath(path string) *scenario.Scenario {
+	for _, s := range render.ScenarioList {
+		if s.Path == path {
+			return s
+		}
+	}
+	return nil
+}
+
+// scenarioIDFromPath klasör yolundan senaryo ID'sini çıkarır.
+func scenarioIDFromPath(path string) string {
+	for i := len(path) - 1; i >= 0; i-- {
+		if path[i] == '/' || path[i] == '\\' {
+			return path[i+1:]
+		}
+	}
+	return path
 }
 
 // saveExists autosave dosyasının var olup olmadığını kontrol eder.
@@ -896,23 +1006,32 @@ func (g *Game) adjustTax(rid world.RegionID, delta int) {
 	r.TaxRate = clamp(r.TaxRate+delta, 0, 100)
 }
 
-// applyVictoryChoice seçilen zafer koşulunu GameState'e yazar.
-func (g *Game) applyVictoryChoice(vtype state.VictoryType) {
-	vc := state.VictoryCondition{Type: vtype}
-	switch vtype {
-	case state.VictoryDomination:
-		vc.TargetRegionCount = 20
-		vc.RequiredRegions = []world.RegionID{"constantinople", "rome", "paris", "cairo", "jerusalem"}
-	case state.VictoryEconomic:
-		vc.TargetGoldIncome = 500
-		vc.GoldHoldTurns = 5
-	case state.VictoryMilitary:
-		vc.TargetDefeated = 3
-		vc.TargetArmyStrength = 200
-	case state.VictoryReligious:
-		vc.RequiredRegions = []world.RegionID{"jerusalem", "rome", "mecca"}
+// applyVictoryChoice seçilen zafer koşulunu senaryodan okuyarak GameState'e yazar.
+func (g *Game) applyVictoryChoice(optionID string) {
+	opt, ok := render.VictoryOptionByID(g.gs, optionID)
+	if !ok {
+		return
 	}
-	g.gs.Victory = vc
+
+	requiredRegions := make([]world.RegionID, len(opt.RequiredRegions))
+	for i, r := range opt.RequiredRegions {
+		requiredRegions[i] = world.RegionID(r)
+	}
+	// conquer_city: tek hedef bölgeyi required listesine çevir
+	if opt.Type == "conquer_city" && opt.Target != "" {
+		requiredRegions = []world.RegionID{world.RegionID(opt.Target)}
+	}
+
+	g.gs.Victory = state.VictoryCondition{
+		Type:               state.VictoryType(opt.Type),
+		TargetRegionCount:  opt.TargetRegionCount,
+		RequiredRegions:    requiredRegions,
+		TargetGoldIncome:   opt.TargetGoldIncome,
+		GoldHoldTurns:      opt.GoldHoldTurns,
+		TargetArmyStrength: opt.TargetArmyStrength,
+		TargetDefeated:     opt.TargetDefeated,
+		DeadlineTurn:       opt.DeadlineTurn,
+	}
 }
 
 // startResearch oyuncu fraksiyonu için teknolojiyi araştırmaya başlar.
@@ -944,62 +1063,3 @@ func ownerReligion(gs *state.GameState, ownerID string) string {
 	return ""
 }
 
-// loadGameState JSON dosyalarından tam bir oyun state'i yükler.
-func loadGameState() (*state.GameState, error) {
-	devMode := os.Getenv("DEV_MODE") == "true"
-
-	regions, err := world.LoadRegions("assets/data/regions.json")
-	if err != nil {
-		return nil, fmt.Errorf("bölgeler: %w", err)
-	}
-	shapeData, err := world.LoadCountryShapes("assets/data/generated/country_shapes.json", regions)
-	if err != nil {
-		return nil, fmt.Errorf("ülke sınırları: %w", err)
-	}
-
-	factions, err := faction.LoadFactions("assets/data/factions.json")
-	if err != nil {
-		return nil, fmt.Errorf("fraksiyonlar: %w", err)
-	}
-
-	unitTypes, err := army.LoadUnitTypes("assets/data/units.json")
-	if err != nil {
-		return nil, fmt.Errorf("birim tipleri: %w", err)
-	}
-	buildingTypes, err := city.LoadBuildings("assets/data/buildings.json")
-	if err != nil {
-		return nil, fmt.Errorf("binalar: %w", err)
-	}
-
-	techTypes, err := tech.LoadTechnologies("assets/data/technologies.json")
-	if err != nil {
-		return nil, fmt.Errorf("teknolojiler: %w", err)
-	}
-
-	relations := faction.BuildInitialRelations(factions)
-
-	armies, err := army.LoadArmies("assets/data/armies.json")
-	if err != nil {
-		return nil, fmt.Errorf("ordular: %w", err)
-	}
-
-	return &state.GameState{
-		Turn:            1,
-		Year:            1300,
-		Month:           3,
-		StartYear:       1300,
-		Phase:           state.PhaseMainMenu,
-		PlayerFactionID: "",
-		Difficulty:      2,
-		DevelopmentMode: devMode,
-		Regions:         regions,
-		Factions:        factions,
-		Armies:          armies,
-		ShapeData:       shapeData,
-		UnitTypes:       unitTypes,
-		BuildingTypes:   buildingTypes,
-		TechTypes:       techTypes,
-		Relations:       relations,
-		NextArmySeq:     len(armies), // başlangıç orduları _1 ile biter; yeni ID'ler bundan devam eder
-	}, nil
-}

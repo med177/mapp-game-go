@@ -122,14 +122,15 @@ func (r *Renderer) factionCardHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) victoryCardHoverIndex(fx, fy float64) int {
+	opts := r.gs.AvailableVictories
 	cardW, cardH := 520.0, 100.0
 	gap := 12.0
-	n := float64(len(victoryOptions))
+	n := float64(len(opts))
 	totalH := n*cardH + (n-1)*gap
 	headerH := 80.0
 	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
 	cx := ScreenWidth/2 - cardW/2
-	for i := range victoryOptions {
+	for i := range opts {
 		y := startY + float64(i)*(cardH+gap)
 		if fx >= cx && fx <= cx+cardW && fy >= y && fy <= y+cardH {
 			return i

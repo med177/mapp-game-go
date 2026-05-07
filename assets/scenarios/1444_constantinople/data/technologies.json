@@ -1,0 +1,152 @@
+[
+  {
+    "id": "iron_weapons",
+    "name_tr": "Demir Silahlar",
+    "category": "military",
+    "description_tr": "Piyade birimlerinin saldırı gücü +10%",
+    "gold_cost": 150,
+    "turns_required": 3,
+    "requires": [],
+    "effects": { "infantry_attack_mod": 0.10 }
+  },
+  {
+    "id": "steel_blades",
+    "name_tr": "Çelik Kılıçlar",
+    "category": "military",
+    "description_tr": "Piyade birimlerinin saldırı gücü +20%",
+    "gold_cost": 300,
+    "turns_required": 4,
+    "requires": ["iron_weapons"],
+    "effects": { "infantry_attack_mod": 0.20 }
+  },
+  {
+    "id": "heavy_armor",
+    "name_tr": "Ağır Zırh",
+    "category": "military",
+    "description_tr": "Tüm kara birimlerinin savunması +15%",
+    "gold_cost": 250,
+    "turns_required": 4,
+    "requires": ["iron_weapons"],
+    "effects": { "land_defense_mod": 0.15 }
+  },
+  {
+    "id": "siege_engines",
+    "name_tr": "Kuşatma Makineleri",
+    "category": "military",
+    "description_tr": "Topçu birimlerinin gücü +25%",
+    "gold_cost": 350,
+    "turns_required": 5,
+    "requires": ["steel_blades"],
+    "effects": { "siege_attack_mod": 0.25 }
+  },
+  {
+    "id": "cavalry_tactics",
+    "name_tr": "Süvari Taktikleri",
+    "category": "military",
+    "description_tr": "Süvari birimlerinin saldırı gücü +20%",
+    "gold_cost": 200,
+    "turns_required": 3,
+    "requires": [],
+    "effects": { "cavalry_attack_mod": 0.20 }
+  },
+  {
+    "id": "trade_routes",
+    "name_tr": "Ticaret Yolları",
+    "category": "economy",
+    "description_tr": "Her bölgeden altın geliri +5",
+    "gold_cost": 120,
+    "turns_required": 3,
+    "requires": [],
+    "effects": { "gold_per_region": 5 }
+  },
+  {
+    "id": "banking",
+    "name_tr": "Bankacılık",
+    "category": "economy",
+    "description_tr": "Her bölgeden altın geliri +10",
+    "gold_cost": 280,
+    "turns_required": 4,
+    "requires": ["trade_routes"],
+    "effects": { "gold_per_region": 10 }
+  },
+  {
+    "id": "crop_rotation",
+    "name_tr": "Nöbetleşe Ekim",
+    "category": "economy",
+    "description_tr": "Tüm bölgelerden tahıl üretimi +20%",
+    "gold_cost": 180,
+    "turns_required": 4,
+    "requires": [],
+    "effects": { "grain_mod": 0.20 }
+  },
+  {
+    "id": "guilds",
+    "name_tr": "Loncalar",
+    "category": "economy",
+    "description_tr": "Pazar geliri iki katına çıkar",
+    "gold_cost": 400,
+    "turns_required": 5,
+    "requires": ["banking"],
+    "effects": { "market_gold_mod": 1.0 }
+  },
+  {
+    "id": "diplomacy",
+    "name_tr": "Diplomasi Sanatı",
+    "category": "diplomacy",
+    "description_tr": "Barış teklifleri daha kolay kabul edilir; ilişki puanı +10 bonus",
+    "gold_cost": 100,
+    "turns_required": 2,
+    "requires": [],
+    "effects": { "peace_relation_bonus": 10 }
+  },
+  {
+    "id": "espionage",
+    "name_tr": "Casusluk",
+    "category": "diplomacy",
+    "description_tr": "Düşman ordularının güçlerini gör",
+    "gold_cost": 200,
+    "turns_required": 3,
+    "requires": ["diplomacy"],
+    "effects": { "reveal_enemy_strength": true }
+  },
+  {
+    "id": "navigation",
+    "name_tr": "Denizcilik",
+    "category": "naval",
+    "description_tr": "Deniz birimlerinin hareket puanı +1",
+    "gold_cost": 160,
+    "turns_required": 3,
+    "requires": [],
+    "effects": { "naval_move_bonus": 1 }
+  },
+  {
+    "id": "cartography",
+    "name_tr": "Kartografya",
+    "category": "naval",
+    "description_tr": "Tüm ordulara +1 hareket puanı",
+    "gold_cost": 220,
+    "turns_required": 4,
+    "requires": ["navigation"],
+    "effects": { "move_bonus": 1 }
+  },
+  {
+    "id": "theology",
+    "name_tr": "İlahiyat",
+    "category": "religion",
+    "description_tr": "Halk memnuniyeti +5 tüm bölgelerde",
+    "gold_cost": 130,
+    "turns_required": 3,
+    "requires": [],
+    "effects": { "satisfaction_bonus": 5 }
+  },
+  {
+    "id": "proselytism",
+    "name_tr": "Misyonerlik",
+    "category": "religion",
+    "description_tr": "Din dönüşümü hızı iki katına çıkar",
+    "gold_cost": 240,
+    "turns_required": 4,
+    "requires": ["theology"],
+    "effects": { "conversion_speed_mod": 1.0 }
+  }
+]

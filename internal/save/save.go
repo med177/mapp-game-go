@@ -112,7 +112,7 @@ func SaveToSlot(gs *state.GameState, slotName string) error {
 }
 
 // LoadSlot isimli slottan oyun durumunu yükler.
-func LoadSlot(slotName, unitTypesPath, buildingsPath string) (*state.GameState, error) {
+func LoadSlot(slotName string) (*state.GameState, error) {
 	path := autoSavePath
 	for _, def := range slotDefs {
 		if def.name == slotName {
@@ -120,7 +120,7 @@ func LoadSlot(slotName, unitTypesPath, buildingsPath string) (*state.GameState, 
 			break
 		}
 	}
-	return loadFromPath(path, unitTypesPath, buildingsPath)
+	return loadFromPath(path)
 }
 
 // Save otomatik kayıt slotuna yazar (geriye dönük uyumluluk).
@@ -129,8 +129,8 @@ func Save(gs *state.GameState) error {
 }
 
 // Load otomatik kayıt slotundan yükler (geriye dönük uyumluluk).
-func Load(unitTypesPath, buildingsPath string) (*state.GameState, error) {
-	return LoadSlot("autosave", unitTypesPath, buildingsPath)
+func Load() (*state.GameState, error) {
+	return LoadSlot("autosave")
 }
 
 // DeleteSlot isimli slot dosyasını siler.
@@ -152,7 +152,7 @@ func SaveExists() bool {
 	return err == nil
 }
 
-func loadFromPath(path, unitTypesPath, buildingsPath string) (*state.GameState, error) {
+func loadFromPath(path string) (*state.GameState, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("kayıt dosyası bulunamadı (%s): %w", filepath.Base(path), err)
@@ -161,19 +161,21 @@ func loadFromPath(path, unitTypesPath, buildingsPath string) (*state.GameState, 
 	if err := json.Unmarshal(data, &gs); err != nil {
 		return nil, fmt.Errorf("kayıt dosyası okunamadı: %w", err)
 	}
-	unitTypes, err := army.LoadUnitTypes(unitTypesPath)
+	dp := func(f string) string { return gs.ScenarioPath + "/data/" + f }
+
+	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
 		return nil, err
 	}
 	gs.UnitTypes = unitTypes
 
-	buildingTypes, err := city.LoadBuildings(buildingsPath)
+	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
 	if err != nil {
 		return nil, err
 	}
 	gs.BuildingTypes = buildingTypes
 
-	techTypes, err := tech.LoadTechnologies("assets/data/technologies.json")
+	techTypes, err := tech.LoadTechnologies(dp("technologies.json"))
 	if err != nil {
 		return nil, err
 	}

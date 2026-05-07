@@ -38,6 +38,9 @@ type Renderer struct {
 	SelectedRegion world.RegionID
 	SelectedArmy   army.ArmyID
 
+	// Senaryo seçim ekranı
+	scenarioCursor int
+
 	// Fraksiyon seçim ekranı
 	factionCursor int
 
@@ -122,8 +125,18 @@ func (r *Renderer) SetCursor(n int) { r.factionCursor = n }
 func (r *Renderer) MarkMapDirty() { r.worldMap.MarkDirty() }
 
 // ReloadGameState yükleme sonrası yeni state ve yeni worldmap ile günceller.
+// ActiveScenarioPath aktif senaryonun klasör yolu; asset yükleyiciler buradan türetir.
+var ActiveScenarioPath string
+
 func (r *Renderer) ReloadGameState(gs *state.GameState) {
 	r.gs = gs
+	if gs.ScenarioPath != "" {
+		ActiveScenarioPath = gs.ScenarioPath
+		// Senaryo değişince asset cache'lerini sıfırla
+		buildingSheetLoaded = false
+		miniMapLoaded = false
+		armySheetLoaded = false
+	}
 	r.worldMap = NewWorldMap(gs)
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
@@ -206,6 +219,12 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		return
 	}
 
+	// Senaryo seçim ekranı
+	if r.gs.Phase == state.PhaseScenarioSelect {
+		DrawScenarioSelect(screen, ScenarioList, r.scenarioCursor)
+		return
+	}
+
 	// Fraksiyon seçim ekranı
 	if r.gs.Phase == "faction_select" {
 		DrawFactionSelect(screen, r.gs, r.factionCursor)
@@ -214,7 +233,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// Zafer koşulu seçim ekranı
 	if r.gs.Phase == "victory_select" {
-		DrawVictorySelect(screen, r.factionCursor)
+		DrawVictorySelect(screen, r.gs, r.factionCursor)
 		return
 	}
 
@@ -560,6 +579,11 @@ func (r *Renderer) HandleInput() InputAction {
 	// Ayarlar ekranı inputu
 	if r.gs.Phase == state.PhaseSettings {
 		return r.handleSettingsInput(&r.CurrentSettings)
+	}
+
+	// Senaryo seçim ekranı inputu
+	if r.gs.Phase == state.PhaseScenarioSelect {
+		return r.handleScenarioSelectInput()
 	}
 
 	// Fraksiyon seçim ekranı inputu

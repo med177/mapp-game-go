@@ -5,6 +5,7 @@ import (
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -40,6 +41,10 @@ type GameState struct {
 	Month     int `json:"month"` // 1-12
 	StartYear int `json:"start_year"`
 
+	// Senaryo
+	ScenarioID   string `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath string `json:"scenario_path"` // aktif senaryo klasörü
+
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
 	Difficulty      int               `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
@@ -57,9 +62,10 @@ type GameState struct {
 	ShapeData world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
-	UnitTypes     map[string]*army.UnitType   `json:"-"`
-	BuildingTypes map[string]*city.Building   `json:"-"`
-	TechTypes     map[string]*tech.Technology `json:"-"`
+	UnitTypes          map[string]*army.UnitType        `json:"-"`
+	BuildingTypes      map[string]*city.Building        `json:"-"`
+	TechTypes          map[string]*tech.Technology      `json:"-"`
+	AvailableVictories []scenario.VictoryOptionDef      `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int `json:"economic_victory_turns"`
@@ -89,8 +95,9 @@ type GameState struct {
 type Phase string
 
 const (
-	PhaseMainMenu       Phase = "main_menu" // ana menü
-	PhaseSettings       Phase = "settings"  // ayarlar ekranı
+	PhaseMainMenu       Phase = "main_menu"       // ana menü
+	PhaseSettings       Phase = "settings"        // ayarlar ekranı
+	PhaseScenarioSelect Phase = "scenario_select" // senaryo seçim ekranı
 	PhaseFactionSelect  Phase = "faction_select"
 	PhaseVictorySelect  Phase = "victory_select"
 	PhasePlayerTurn     Phase = "player_turn"

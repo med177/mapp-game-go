@@ -1,0 +1,19 @@
+{
+  "id": "1444_constantinople",
+  "name": "1444: Konstantinopolis",
+  "description": "1444 yılı. Osmanlı İmparatorluğu, Balkanlar'da hızla genişliyor. Bizans İmparatorluğu'nun başkenti Konstantinopolis, Osmanlı'nın hedefinde. Avrupa'nın büyük güçleri, Osmanlı'nın ilerleyişini durdurmak için birleşiyor. Tarih yazılacak, ya da yeniden yazılacak.",
+  "year": 1444,
+  "month": 6,
+  "version": 1.0,
+  "author": "Mapp Team",
+  "victory_conditions": [
+    {
+      "id": "conquer_constantinople",
+      "title": "Konstantinopolis'i Fethet",
+      "description": "Konstantinopolis'i Osmanlı'nın eline geçir.",
+      "detail": "Hedef: Konstantinopolis (CON)",
+      "type": "conquer_city",
+      "target": "CON"
+    }
+  ]
+}

@@ -3,54 +3,22 @@ package render
 import (
 	"image/color"
 
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
-	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-type victoryOption struct {
-	vtype   state.VictoryType
-	title   string
-	desc    string
-	detail  string
-}
-
-var victoryOptions = []victoryOption{
-	{
-		state.VictoryDomination,
-		"Toprak Hakimiyeti",
-		"20+ bölge ve 5 kritik şehri ele geçir",
-		"Roma, Konstantinopolis, Kahire, İstanbul, Paris",
-	},
-	{
-		state.VictoryEconomic,
-		"Ekonomik Güç",
-		"Tur başı 500+ altın gelire ulaş ve 5 tur koru",
-		"Ticaret ağları kur, bölgelerini geliştir",
-	},
-	{
-		state.VictoryMilitary,
-		"Askeri Üstünlük",
-		"3 büyük fraksiyonu yenilgiye uğrat",
-		"Düşman fraksiyonların son bölgelerini al",
-	},
-	{
-		state.VictoryReligious,
-		"Dinî Zafer",
-		"Kudüs, Roma ve Mekke'yi aynı anda tut",
-		"Kutsal şehirleri sürdürülebilir biçimde koru",
-	},
-}
-
 // DrawVictorySelect zafer koşulu seçim ekranını çizer.
-func DrawVictorySelect(screen *ebiten.Image, cursor int) {
+// Seçenekler gs.AvailableVictories'ten okunur — hardcode değil.
+func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
+	opts := gs.AvailableVictories
 	screen.Fill(color.RGBA{10, 10, 20, 255})
 
 	cardW, cardH := 520.0, 100.0
 	gap := 12.0
-	n := float64(len(victoryOptions))
+	n := float64(len(opts))
 	totalH := n*cardH + (n-1)*gap
 	headerH := 80.0
 
@@ -60,7 +28,12 @@ func DrawVictorySelect(screen *ebiten.Image, cursor int) {
 	DrawTextCentered(screen, "ZAFER KOŞULUNU SEÇ", ScreenWidth/2, startY-headerH+10, FaceLarge, ColorYellow)
 	DrawTextCentered(screen, "Nasıl kazanmak istiyorsun?", ScreenWidth/2, startY-headerH+38, FaceSmall, ColorGray)
 
-	for i, opt := range victoryOptions {
+	if len(opts) == 0 {
+		DrawTextCentered(screen, "Bu senaryo için zafer koşulu tanımlanmamış.", ScreenWidth/2, ScreenHeight/2, FaceMed, ColorGray)
+		return
+	}
+
+	for i, opt := range opts {
 		y := startY + float64(i)*(cardH+gap)
 
 		bg := color.RGBA{25, 25, 45, 220}
@@ -77,9 +50,9 @@ func DrawVictorySelect(screen *ebiten.Image, cursor int) {
 		if i == cursor {
 			titleCol = ColorYellow
 		}
-		DrawText(screen, opt.title, cx+18, y+14, FaceLarge, titleCol)
-		DrawText(screen, opt.desc, cx+18, y+38, FaceMed, ColorGray)
-		DrawText(screen, opt.detail, cx+18, y+60, FaceSmall, color.RGBA{140, 120, 80, 220})
+		DrawText(screen, opt.Title, cx+18, y+14, FaceLarge, titleCol)
+		DrawText(screen, opt.Description, cx+18, y+38, FaceMed, ColorGray)
+		DrawText(screen, opt.Detail, cx+18, y+60, FaceSmall, color.RGBA{140, 120, 80, 220})
 
 		if i == cursor {
 			DrawText(screen, "← SEÇİLİ", cx+cardW-110, y+14, FaceSmall, ColorGold)
@@ -91,9 +64,15 @@ func DrawVictorySelect(screen *ebiten.Image, cursor int) {
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.
 func (r *Renderer) handleVictorySelectInput() InputAction {
-	n := len(victoryOptions)
+	opts := r.gs.AvailableVictories
+	n := len(opts)
+	if n == 0 {
+		if r.keyJustPressed(ebiten.KeyEscape) {
+			return InputAction{Kind: ActionBack}
+		}
+		return InputAction{}
+	}
 
-	// Hover ile kart vurgusunu güncelle
 	mx, my := ebiten.CursorPosition()
 	if i := r.victoryCardHoverIndex(float64(mx), float64(my)); i >= 0 {
 		r.factionCursor = i
@@ -106,13 +85,11 @@ func (r *Renderer) handleVictorySelectInput() InputAction {
 		r.factionCursor = (r.factionCursor - 1 + n) % n
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
-		opt := victoryOptions[r.factionCursor]
-		return InputAction{Kind: ActionSelectVictory, BuildingID: string(opt.vtype)}
+		return InputAction{Kind: ActionSelectVictory, BuildingID: opts[r.factionCursor].ID}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if i := r.victoryCardHoverIndex(float64(mx), float64(my)); i >= 0 {
-			opt := victoryOptions[i]
-			return InputAction{Kind: ActionSelectVictory, BuildingID: string(opt.vtype)}
+			return InputAction{Kind: ActionSelectVictory, BuildingID: opts[i].ID}
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
@@ -122,13 +99,12 @@ func (r *Renderer) handleVictorySelectInput() InputAction {
 	return InputAction{}
 }
 
-// victoryRegions zafer tipine göre hedef bölgeleri döner.
-func victoryRegions(vtype state.VictoryType) []world.RegionID {
-	switch vtype {
-	case state.VictoryReligious:
-		return []world.RegionID{"jerusalem", "rome", "mecca"}
-	case state.VictoryDomination:
-		return []world.RegionID{"constantinople", "rome", "paris", "cairo", "jerusalem"}
+// VictoryOptionByID gs.AvailableVictories içinden ID'ye göre seçenek bulur.
+func VictoryOptionByID(gs *state.GameState, id string) (scenario.VictoryOptionDef, bool) {
+	for _, v := range gs.AvailableVictories {
+		if v.ID == id {
+			return v, true
+		}
 	}
-	return nil
+	return scenario.VictoryOptionDef{}, false
 }

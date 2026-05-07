@@ -23,7 +23,7 @@ func ensureArmySheet() {
 		return
 	}
 	armySheetLoaded = true
-	armySheet = tryLoadImage("assets/sprites/army.png")
+	armySheet = tryLoadImage(ActiveScenarioPath + "/sprites/army.png")
 }
 
 // unitDisplayOrder panel slotlarının sırasını belirler (3 sütun × 4 satır).

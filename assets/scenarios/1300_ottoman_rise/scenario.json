@@ -1,0 +1,45 @@
+{
+  "id": "1300_ottoman_rise",
+  "name": "Osmanlı'nın Yükselişi",
+  "description": "1300 yılı. Küçük bir Anadolu beyliğinden başlayarak tüm Akdeniz'i fetheden bir imparatorluk kur. Bizans çöküyor, Haçlılar zayıflıyor — vakit senin vaktin.",
+  "version": 1.0,
+  "author": "Mapp Team",
+  "year": 1300,
+  "month": 3,
+  "victory_conditions": [
+    {
+      "id": "ottoman_rise",
+      "title": "Osmanlı'nın Yükselişi",
+      "description": "Konstantinopolis'i fethederek Doğu Roma'ya son ver",
+      "detail": "Hedef: Konstantinopolis (CON)",
+      "type": "conquer_city",
+      "target": "CON"
+    },
+    {
+      "id": "domination",
+      "title": "Toprak Hakimiyeti",
+      "description": "20+ bölge ve 5 kritik şehri ele geçir",
+      "detail": "Konstantinopolis, Roma, Kahire, Paris, Kudüs",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": ["CON", "ROM", "CAI", "PAR", "JER"]
+    },
+    {
+      "id": "economic",
+      "title": "Ekonomik Güç",
+      "description": "Tur başı 500+ altın gelire ulaş ve 5 tur koru",
+      "detail": "Ticaret yollarını kontrol et, limanları geliştir",
+      "type": "economic",
+      "target_gold_income": 500,
+      "gold_hold_turns": 5
+    },
+    {
+      "id": "religious",
+      "title": "Dinî Zafer",
+      "description": "Kudüs, Roma ve Mekke'yi aynı anda tut",
+      "detail": "Üç kutsal şehri sürdürülebilir biçimde koru",
+      "type": "religious",
+      "required_regions": ["JER", "ROM", "MEC"]
+    }
+  ]
+}

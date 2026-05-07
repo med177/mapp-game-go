@@ -70,7 +70,7 @@ func ensureBuildingSheet() {
 		return
 	}
 	buildingSheetLoaded = true
-	buildingSheet = tryLoadImage("assets/sprites/buildings.jpg")
+	buildingSheet = tryLoadImage(ActiveScenarioPath + "/sprites/buildings.jpg")
 }
 
 // buildingSpriteRect sprite sheet'in gerçek boyutlarına göre bina hücresini döner.
@@ -98,7 +98,7 @@ func ensureMiniMapBg() {
 		return
 	}
 	miniMapLoaded = true
-	miniMapBg = tryLoadImage("assets/maps/mini-map.png")
+	miniMapBg = tryLoadImage(ActiveScenarioPath + "/maps/mini-map.png")
 }
 
 // BottomButtonRects Total War stilinde sağ alt aksiyon butonlarının piksel dikdörtgenlerini döner.

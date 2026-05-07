@@ -75,7 +75,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	}
 
 	if true { // arka plan resmi devre dışı
-		if bgPixels, ok := loadPNGAsBasePixels("assets/maps/world_map_background.png"); ok {
+		if bgPixels, ok := loadPNGAsBasePixels(gs.ScenarioPath + "/maps/world_map_background.png"); ok {
 			copy(wm.basePixels, bgPixels)
 			wm.hasBgImage = true
 			log.Println("Arka plan harita resmi yüklendi")
@@ -91,7 +91,11 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		}
 	}
 
-	wm.buildCountryShapes(gs, loadCountryShapes("assets/data/generated/country_shapes.json"))
+	shapesPath := ""
+	if gs.ScenarioPath != "" {
+		shapesPath = gs.ScenarioPath + "/data/country_shapes.json"
+	}
+	wm.buildCountryShapes(gs, loadCountryShapes(shapesPath))
 	wm.buildSeaRegions(gs)
 	wm.applyOwnership(gs, "")
 	return wm
