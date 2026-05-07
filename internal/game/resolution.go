@@ -100,6 +100,10 @@ func applyEconomyTick(gs *state.GameState) {
 
 	incomeByFaction := make(map[string]int)
 	grainByFaction := make(map[string]int)
+	ironByFaction := make(map[string]int)
+	timberByFaction := make(map[string]int)
+	spiceByFaction := make(map[string]int)
+	clothByFaction := make(map[string]int)
 
 	for _, r := range gs.Regions {
 		if r.IsSea || r.OwnerID == "" {
@@ -123,6 +127,10 @@ func applyEconomyTick(gs *state.GameState) {
 
 		incomeByFaction[r.OwnerID] += income
 		grainByFaction[r.OwnerID] += grain
+		ironByFaction[r.OwnerID] += r.BaseIronOutput
+		timberByFaction[r.OwnerID] += r.BaseTimberOutput
+		spiceByFaction[r.OwnerID] += r.BaseSpiceOutput
+		clothByFaction[r.OwnerID] += r.BaseClothOutput
 
 		// Vergi memnuniyet etkisi + bina bonusu
 		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
@@ -160,6 +168,10 @@ func applyEconomyTick(gs *state.GameState) {
 		f.Gold += incomeByFaction[fidStr] + techGold
 		netGrain := int(float64(grainByFaction[fidStr]) * (1.0 + fx.GrainMod))
 		f.Grain += netGrain - upkeepByFaction[fidStr]
+		f.Iron += ironByFaction[fidStr]
+		f.Timber += timberByFaction[fidStr]
+		f.Spice += spiceByFaction[fidStr]
+		f.Cloth += clothByFaction[fidStr]
 
 		// Memnuniyet tech bonusu tüm bölgelere
 		if fx.SatisfactionBonus > 0 {

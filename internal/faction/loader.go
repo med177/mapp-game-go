@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"mapp-game-go/internal/religion"
 )
 
 // LoadFactions assets/data/factions.json dosyasını okur ve map döner.
@@ -38,12 +40,12 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 		for j := i + 1; j < len(ids); j++ {
 			a := factions[ids[i]]
 			b := factions[ids[j]]
-			score := ReligionRelation(a.Religion, b.Religion)
+			score := religion.Relation(a.Religion, b.Religion)
 
 			stance := StancePeace
 			// Sünni-Şii arasını baştan gergin başlat
-			if (a.Religion == ReligionSunni && b.Religion == ReligionShia) ||
-				(a.Religion == ReligionShia && b.Religion == ReligionSunni) {
+			if (a.Religion == religion.Sunni && b.Religion == religion.Shia) ||
+				(a.Religion == religion.Shia && b.Religion == religion.Sunni) {
 				stance = StanceWar
 			}
 

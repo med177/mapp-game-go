@@ -9,6 +9,7 @@ import (
 	"os"
 	"sort"
 
+	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
@@ -466,6 +467,8 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 		factionColors[string(fid)] = f.Color
 	}
 
+	currentSeason := season.FromMonth(gs.Month)
+
 	for rid, r := range gs.Regions {
 		if r.IsSea {
 			// Seçili deniz bölgesini belirgin açık mavi tintleyle vurgula
@@ -479,6 +482,26 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 			}
 			continue
 		}
+		
+		// Mevsim tint'i uygula (sadece karalarda)
+		var sr, sg, sb, sAlpha byte
+		switch currentSeason {
+		case season.SeasonWinter:
+			sr, sg, sb, sAlpha = 240, 240, 255, 60 // Kar/buz
+		case season.SeasonAutumn:
+			sr, sg, sb, sAlpha = 200, 140, 60, 40 // Sararmış yapraklar
+		case season.SeasonSpring:
+			sr, sg, sb, sAlpha = 100, 200, 100, 30 // Canlı yeşil
+		}
+		
+		if sAlpha > 0 {
+			for _, pIdx := range wm.regionPx[rid] {
+				wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], sr, sAlpha)
+				wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], sg, sAlpha)
+				wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], sb, sAlpha)
+			}
+		}
+
 		fc, ok := factionColors[r.OwnerID]
 		if !ok && rid != selected {
 			continue

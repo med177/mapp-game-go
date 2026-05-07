@@ -62,6 +62,9 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 	// Birim alımı ve kışla inşası (elite birimler dahil)
 	aiRecruitAndBuild(gs, fid)
 
+	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
+	aiConsolidateArmies(gs, fid)
+
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
 	for _, a := range gs.Armies {
@@ -374,13 +377,82 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 			bestTarget = nid
 		}
 	}
+
+	// Eğer komşularda mantıklı bir hedef yoksa, uzun menzilli planlama yap (BFS)
+	if bestScore == 0 {
+		bestTarget = findLongRangeMove(gs, a, src)
+	}
+
 	return bestTarget
+}
+
+// findLongRangeMove BFS kullanarak en yakın değerli (score > 0) bölgeye giden ilk adımı bulur.
+func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) world.RegionID {
+	type queueItem struct {
+		id   world.RegionID
+		path []world.RegionID
+	}
+	
+	visited := make(map[world.RegionID]bool)
+	queue := []queueItem{{id: start.ID, path: nil}}
+	visited[start.ID] = true
+	
+	maxDepth := 8 // En fazla 8 bölge uzağa bak
+
+	for len(queue) > 0 {
+		curr := queue[0]
+		queue = queue[1:]
+
+		if len(curr.path) > maxDepth {
+			continue
+		}
+
+		r, ok := gs.Regions[curr.id]
+		if !ok {
+			continue
+		}
+
+		// Kendi bölgesi değilse ve score > 0 ise hedef bulduk demektir
+		if curr.id != start.ID {
+			score := scoreMove(gs, a, r)
+			if score > 0 {
+				return curr.path[0] // Hedefe giden ilk adımı dön
+			}
+			// Düşman toprağıysa daha ileri gitme
+			if r.OwnerID != a.OwnerID && r.OwnerID != "" {
+				continue
+			}
+		}
+
+		for _, nid := range r.Neighbors {
+			n, ok := gs.Regions[nid]
+			if !ok || n.IsSea || visited[nid] {
+				continue
+			}
+			visited[nid] = true
+			
+			newPath := make([]world.RegionID, len(curr.path))
+			copy(newPath, curr.path)
+			newPath = append(newPath, nid)
+			
+			queue = append(queue, queueItem{id: nid, path: newPath})
+		}
+	}
+	return ""
 }
 
 // scoreMove bir hedefe yapılacak hareketin değerini puanlar.
 func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 	fid := faction.FactionID(a.OwnerID)
 	if target.OwnerID == a.OwnerID {
+		// Dost bölgede birleşebileceğimiz ordu var mı? (Konsolidasyon)
+		for _, ea := range gs.Armies {
+			if ea.RegionID == target.ID && ea.OwnerID == a.OwnerID && ea.ID != a.ID && ea.IsNaval == a.IsNaval {
+				if len(a.Units)+len(ea.Units) <= army.MaxArmySize {
+					return 60 // Birleşmek için iyi bir hedef
+				}
+			}
+		}
 		return 0
 	}
 
@@ -476,6 +548,12 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 	a.RegionID = target
 	a.MovePoints--
 	targetRegion.OwnerID = a.OwnerID
+
+	// Konsolidasyon (Dost orduyla birleşme)
+	if tryMergeAIArmies(gs, a) {
+		return false // Ordu başka bir orduya katıldı ve silindi
+	}
+
 	return true
 }
 
@@ -747,4 +825,62 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 		f.Gold -= transportType.GoldCost
 		return // Bir gemi aldık, turu bitir
 	}
+}
+
+// aiConsolidateArmies aynı bölgedeki aynı tipteki (kara/deniz) kendi ordularını birleştirir.
+func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
+	var armies []*army.Army
+	for _, a := range gs.Armies {
+		if a.OwnerID == string(fid) {
+			armies = append(armies, a)
+		}
+	}
+
+	for i := 0; i < len(armies); i++ {
+		a1 := armies[i]
+		if _, ok := gs.Armies[a1.ID]; !ok {
+			continue
+		}
+		for j := i + 1; j < len(armies); j++ {
+			a2 := armies[j]
+			if _, ok := gs.Armies[a2.ID]; !ok {
+				continue
+			}
+			if a1.RegionID == a2.RegionID && a1.IsNaval == a2.IsNaval {
+				if len(a1.Units)+len(a2.Units) <= army.MaxArmySize {
+					a1.Units = append(a1.Units, a2.Units...)
+					delete(gs.Armies, a2.ID)
+				} else {
+					transfer := army.MaxArmySize - len(a1.Units)
+					if transfer > 0 {
+						a1.Units = append(a1.Units, a2.Units[:transfer]...)
+						a2.Units = a2.Units[transfer:]
+					}
+				}
+			}
+		}
+	}
+}
+
+// tryMergeAIArmies hareket sonrası dost bölgede başka dost ordu varsa kapasite dahilinde birleşir.
+// Birleşme sonucu ordu tamamen silinirse true döner.
+func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
+	for otherID, other := range gs.Armies {
+		if otherID == a.ID || other.RegionID != a.RegionID || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+			continue
+		}
+		if len(a.Units)+len(other.Units) <= army.MaxArmySize {
+			other.Units = append(other.Units, a.Units...)
+			delete(gs.Armies, a.ID)
+			return true
+		} else {
+			// Kapasite kadar aktar
+			transfer := army.MaxArmySize - len(other.Units)
+			if transfer > 0 {
+				other.Units = append(other.Units, a.Units[:transfer]...)
+				a.Units = a.Units[transfer:]
+			}
+		}
+	}
+	return false
 }

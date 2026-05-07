@@ -7,6 +7,7 @@ import (
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/events"
@@ -54,6 +55,10 @@ func New() *Game {
 // Update oyun mantığını günceller — 60 TPS.
 func (g *Game) Update() error {
 	action := g.renderer.HandleInput()
+
+	if action.Kind != render.ActionNone {
+		audio.PlaySound("click")
+	}
 
 	switch g.gs.Phase {
 	case state.PhaseMainMenu:
@@ -506,6 +511,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 
 	g.gs = gs
 	g.evts = evts
+	audio.LoadScenarioSounds(scenarioPath)
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetCursor(0)
 }

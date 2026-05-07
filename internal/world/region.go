@@ -29,9 +29,13 @@ type Region struct {
 	UnlockTurn int  `json:"unlock_turn"`
 
 	// Ekonomi
-	BaseGoldIncome  int `json:"base_gold_income"`
-	BaseGrainOutput int `json:"base_grain_output"`
-	TradeCapacity   int `json:"trade_capacity"`
+	BaseGoldIncome   int `json:"base_gold_income"`
+	BaseGrainOutput  int `json:"base_grain_output"`
+	BaseIronOutput   int `json:"base_iron_output"`
+	BaseTimberOutput int `json:"base_timber_output"`
+	BaseSpiceOutput  int `json:"base_spice_output"`
+	BaseClothOutput  int `json:"base_cloth_output"`
+	TradeCapacity    int `json:"trade_capacity"`
 
 	// Durum
 	Satisfaction int `json:"satisfaction"` // 0-100

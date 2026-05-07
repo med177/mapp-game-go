@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -90,15 +91,15 @@ func selectableFactions(gs *state.GameState) []faction.FactionID {
 	return fids
 }
 
-func religionTR(r faction.Religion) string {
+func religionTR(r religion.Type) string {
 	switch r {
-	case faction.ReligionCatholic:
+	case religion.Catholic:
 		return "Katolik"
-	case faction.ReligionOrthodox:
+	case religion.Orthodox:
 		return "Ortodoks"
-	case faction.ReligionSunni:
+	case religion.Sunni:
 		return "Sünni İslam"
-	case faction.ReligionShia:
+	case religion.Shia:
 		return "Şii İslam"
 	}
 	return string(r)

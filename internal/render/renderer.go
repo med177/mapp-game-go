@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -155,6 +156,7 @@ func (r *Renderer) ShowCombatResult(msg string) {
 	r.combatLog = msg
 	r.combatLogTimer = 180
 	r.AddEvent(msg)
+	audio.PlaySound("combat")
 }
 
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.

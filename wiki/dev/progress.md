@@ -53,6 +53,8 @@ related: [HOME, architecture/render-pipeline]
 | Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `scenarios.json` index + senaryo klasörü yapısı |
 | Senaryo seçim ekranı | ✅ | `render/scenario_select.go`, `PhaseScenarioSelect` fazı |
 | Development mode | ✅ | `GameState.DevelopmentMode` bool alanı |
+| AI çoklu ordu konsolidasyonu | ✅ | `ai.go:aiConsolidateArmies` eklendi, ordu birleşimi |
+| Görsel mevsim değişimi | ✅ | `mapgen.go:applyOwnership` tint eklendi (Kış, İlkbahar, Sonbahar) |
 
 ---
 
@@ -60,14 +62,12 @@ related: [HOME, architecture/render-pipeline]
 
 | Özellik | Öncelik | Notlar |
 |---|---|---|
-| AI çoklu ordu konsolidasyonu | 🟡 Orta | AI orduları dağınık, ana ordu oluşturmuyor |
-| AI uzun menzilli planlama | 🟢 Düşük | AI sadece komşu bölgelere hareket ediyor |
-| Görsel mevsim değişimi | 🟢 Düşük | Arka plan swap |
-| İkincil mal döngüsü | 🟢 Düşük | Tahıl/demir/kereste |
+| AI uzun menzilli planlama | ✅ | BFS kullanılarak uzaktaki hedeflere doğru hareket (8 derinlik) |
+| İkincil mal döngüsü | ✅ | Tahıl/demir/kereste toplama ve saklama döngüsü eklendi |
 | Olay zincirleme | 🟢 Düşük | |
 | Oyuncu tepki seçenekleri (A/B) | 🟢 Düşük | |
-| `religion/` paketi ayrıştırması | 🟢 Düşük | `faction.go` ve `resolution.go` inline, ayrı paket yok |
-| Ses efektleri | 🟢 Düşük | |
+| `religion/` paketi ayrıştırması | ✅ | `faction.go` ve `resolution.go` inline, ayrı paket yok |
+| Ses efektleri | ✅ | `audio` paketi eklendi, `click.wav` ve `combat.wav` entegrasyonu tamamlandı |
 | ~~Tek seferlik kayıt → çoklu slot~~ | ✅ | Tamamlandı (2026-05-07) |
 
 ---

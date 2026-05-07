@@ -1,28 +1,6 @@
 package faction
 
-// Religion fraksiyon dini.
-type Religion string
-
-const (
-	ReligionCatholic Religion = "catholic"
-	ReligionOrthodox Religion = "orthodox"
-	ReligionSunni    Religion = "sunni"
-	ReligionShia     Religion = "shia"
-)
-
-// ReligionRelation iki mezhep arasındaki diplomatik çarpanı döner (-50..+30).
-func ReligionRelation(a, b Religion) int {
-	if a == b {
-		return 25
-	}
-	if (a == ReligionSunni && b == ReligionShia) || (a == ReligionShia && b == ReligionSunni) {
-		return -40
-	}
-	if (a == ReligionCatholic && b == ReligionOrthodox) || (a == ReligionOrthodox && b == ReligionCatholic) {
-		return -20
-	}
-	return -30
-}
+import "mapp-game-go/internal/religion"
 
 // FactionID fraksiyon benzersiz kimliği.
 type FactionID string
@@ -40,7 +18,7 @@ type Faction struct {
 	ID           FactionID `json:"id"`
 	Name         string    `json:"name"`
 	NameTR       string    `json:"name_tr"`
-	Religion     Religion  `json:"religion"`
+	Religion     religion.Type `json:"religion"`
 	Color        [3]uint8  `json:"color"`
 	IsPlayable   bool      `json:"is_playable"`
 	IsEliminated bool      `json:"is_eliminated"`

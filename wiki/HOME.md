@@ -53,7 +53,7 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 
 `internal/scenario/scenario.go` — `assets/scenarios/` altındaki senaryo klasörlerini yükler.
 
-Her senaryo: `scenario.json` (meta + zafer koşulları) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/`
+Her senaryo: `scenario.json` (meta + zafer koşulları) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/` + `sounds/`
 
 Mevcut senaryolar: `1300_ottoman_rise` · `1444_constantinople`
 
