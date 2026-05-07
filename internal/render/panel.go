@@ -489,7 +489,12 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		return
 	}
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea {
+	if !ok {
+		return
+	}
+
+	if region.IsSea {
+		DrawSeaRegionPanel(screen, gs, region)
 		return
 	}
 
@@ -507,6 +512,14 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
+
+	// Development mode bilgileri
+	if gs.DevelopmentMode {
+		DrawText(screen, "ID: "+string(region.ID), lx, ly, FaceSmall, ColorGray)
+		ly += 16
+		DrawText(screen, "Koordinat: "+itoa(region.WorldX)+","+itoa(region.WorldY), lx, ly, FaceSmall, ColorGray)
+		ly += 18
+	}
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
 	DrawText(screen, "Sahip: "+ownerName, lx, ly, FaceSmall, ownerCol)
@@ -1083,4 +1096,77 @@ func itoa(n int) string {
 		buf[pos] = '-'
 	}
 	return string(buf[pos:])
+}
+
+// DrawSeaRegionPanel deniz bölgesi bilgisini sol altta gösterir.
+func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region) {
+	px := infoPanelX()
+	py := infoPanelY()
+	pw := infoPanelW
+	ph := infoPanelH
+
+	// Panel arka plan
+	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
+	drawPanelBorder(screen, px, py, pw, ph)
+	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+
+	lx := float64(px) + panelPad
+	ly := float64(py) + 10
+
+	// Başlık
+	DrawText(screen, region.NameTR, lx, ly, FaceLarge, color.RGBA{100, 180, 255, 255})
+	ly += 24
+
+	// Development mode bilgileri
+	if gs.DevelopmentMode {
+		DrawText(screen, "ID: "+string(region.ID), lx, ly, FaceSmall, ColorGray)
+		ly += 16
+		DrawText(screen, "Koordinat: "+itoa(region.WorldX)+","+itoa(region.WorldY), lx, ly, FaceSmall, ColorGray)
+		ly += 18
+	}
+
+	// Deniz bölgesi (italik vurgu)
+	DrawText(screen, "Deniz Bölgesi", lx, ly, FaceSmall, color.RGBA{120, 160, 200, 200})
+	ly += 18
+
+	sepW := pw - float32(panelPad*2)
+	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	ly += 8
+
+	// Komşu bölgeler
+	neighborTitle := "Komşu Bölgeler:"
+	if len(region.Neighbors) == 0 {
+		neighborTitle = "Komşu: Yok"
+	} else if len(region.Neighbors) <= 5 {
+		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + "):"
+	} else {
+		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
+	}
+	DrawText(screen, neighborTitle, lx, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+	ly += 18
+
+	// İlk 4 komşuyu listele
+	displayCount := len(region.Neighbors)
+	if displayCount > 4 {
+		displayCount = 4
+	}
+	for i := 0; i < displayCount; i++ {
+		neighborID := region.Neighbors[i]
+		neighborRegion, ok := gs.Regions[neighborID]
+		if ok {
+			col := color.RGBA{180, 180, 180, 200}
+			if neighborRegion.IsSea {
+				col = color.RGBA{100, 160, 220, 200}
+			}
+			DrawText(screen, "• "+neighborRegion.NameTR, lx+15, ly, FaceSmall, col)
+			ly += 16
+		}
+	}
+
+	ly += 10
+	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	ly += 8
+
+	// Bilgi
+	DrawText(screen, "Tıkla: Özel fırsat yok", lx, ly, FaceSmall, color.RGBA{100, 200, 100, 150})
 }

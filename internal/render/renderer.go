@@ -261,10 +261,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.applyMapGeoM(mapOp, WorldW, WorldH)
 	screen.DrawImage(r.worldMap.Image(), mapOp)
 
-	// 2. Seçim vurgusu (bölge)
-	if r.SelectedRegion != "" {
-		r.drawSelectionHighlight(screen)
-	}
+	// 2. Seçim vurgusu (bölge) kaldırıldı
 
 	// 3. Ordu hareket hedefleri
 	if r.SelectedArmy != "" {

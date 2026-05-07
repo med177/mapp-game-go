@@ -46,7 +46,7 @@ type WorldMap struct {
 	regionIDs  []world.RegionID // regionIDs[0] = "" (boş)
 	regionIdx  map[world.RegionID]uint16
 	regionPx   map[world.RegionID][]int
-	seaIdx     map[uint16]bool  // deniz bölgesi indeksleri
+	seaIdx     map[uint16]bool // deniz bölgesi indeksleri
 	hasBgImage bool
 	ownerDirty bool
 	selected   world.RegionID
@@ -347,34 +347,27 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 			cy = WorldH - 1
 		}
 
-		// Spiral arama: merkezden dışa doğru arayan en yakın boş pikseli bul
+		// Mesafeye göre en yakın boş deniz pikselini bul
 		seed := -1
-		for radius := 0; radius <= 200 && seed < 0; radius++ {
-			for dy := -radius; dy <= radius && seed < 0; dy++ {
-				for dx := -radius; dx <= radius && seed < 0; dx++ {
-					// radius > 0 olduğunda, sadece dış halkayı kontrol et (iç pikselleri atla)
-					if radius > 0 {
-						dx_abs := dx
-						if dx < 0 {
-							dx_abs = -dx
-						}
-						dy_abs := dy
-						if dy < 0 {
-							dy_abs = -dy
-						}
-						if dx_abs != radius && dy_abs != radius {
-							continue
-						}
-					}
-
-					nx, ny := cx+dx, cy+dy
-					if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
-						continue
-					}
-					nIdx := ny*WorldW + nx
-					if wm.regionAt[nIdx] == 0 { // 0 = atanmamış (deniz)
-						seed = nIdx
-					}
+		bestDist := int64(1<<63 - 1)
+		const maxRadius = 200
+		for dy := -maxRadius; dy <= maxRadius; dy++ {
+			for dx := -maxRadius; dx <= maxRadius; dx++ {
+				d := int64(dx*dx + dy*dy)
+				if d > int64(maxRadius*maxRadius) {
+					continue
+				}
+				nx, ny := cx+dx, cy+dy
+				if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
+					continue
+				}
+				nIdx := ny*WorldW + nx
+				if wm.regionAt[nIdx] != 0 {
+					continue
+				}
+				if d < bestDist {
+					bestDist = d
+					seed = nIdx
 				}
 			}
 		}
@@ -437,7 +430,7 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 			down := wm.regionAt[pIdx+WorldW]
 			if (wm.seaIdx[right] && right != cur) || (wm.seaIdx[down] && down != cur) {
 				bake(pIdx)
-				bake(pIdx + 1)       // 2px genişlik için komşuyu da işaretle
+				bake(pIdx + 1) // 2px genişlik için komşuyu da işaretle
 				bake(pIdx + WorldW)
 			}
 		}

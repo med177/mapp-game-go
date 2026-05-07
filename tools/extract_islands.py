@@ -47,11 +47,9 @@ def all_rings_for_iso(iso):
         if d.get("ADM0_A3") != iso: continue
         shape = sr.shape
         parts = list(shape.parts) + [len(shape.points)]
-        rings = [shape.points[parts[i]:parts[i+1]]
-                 for i in range(len(parts)-1) if parts[i+1]-parts[i] >= 4]
+        rings = [shape.points[parts[i]:parts[i+1]] for i in range(len(parts)-1)]
         return rings
     return []
-
 
 def find_ring_near(rings, target_lon, target_lat, min_px_area=200):
     best, best_dist = None, float("inf")
@@ -111,6 +109,19 @@ KON_RING = [
     (844, 198), (848, 183),
 ]
 
+# Ege adalari (kucuk olduklari icin manuel)
+LES_RING = [
+    (1010, 425), (1035, 425), (1040, 445), (1015, 450), (1005, 440), (1010, 425)
+]
+
+CHS_RING = [
+    (1015, 485), (1030, 488), (1032, 510), (1018, 515), (1010, 505), (1015, 485)
+]
+
+EUB_RING = [
+    (895, 459), (915, 465), (930, 485), (945, 520), (935, 535), (910, 505), (895, 480), (895, 459)
+]
+
 
 def main():
     with open(SHAPES_PATH, "r", encoding="utf-8") as f:
@@ -167,6 +178,9 @@ def main():
     upsert(manual("TRA", "Thrace",  TRA_RING))
     upsert(manual("CRM", "Crimea",  CRM_RING))
     upsert(manual("KON", "Konigsberg", KON_RING))
+    upsert(manual("LES", "Lesbos", LES_RING))
+    upsert(manual("CHS", "Chios", CHS_RING))
+    upsert(manual("EUB", "Euboea", EUB_RING))
 
     shape_file["shapes"].sort(key=lambda s: s["id"])
     with open(SHAPES_PATH, "w", encoding="utf-8") as f:

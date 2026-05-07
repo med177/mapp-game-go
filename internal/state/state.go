@@ -44,6 +44,9 @@ type GameState struct {
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
 	Difficulty      int               `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
 
+	// Development mode
+	DevelopmentMode bool `json:"development_mode"`
+
 	// Zafer koşulu
 	Victory VictoryCondition `json:"victory"`
 
@@ -94,9 +97,9 @@ const (
 	PhaseAITurn         Phase = "ai_turn"
 	PhaseTurnResolution Phase = "resolution"
 	PhaseGameOver       Phase = "game_over"
-	PhasePauseMenu      Phase = "pause_menu"   // oyun içi duraklama menüsü
-	PhaseLoadSelect     Phase = "load_select"  // kayıt seçim ekranı
-	PhaseSaveSelect     Phase = "save_select"  // slot seçerek kaydetme ekranı
+	PhasePauseMenu      Phase = "pause_menu"  // oyun içi duraklama menüsü
+	PhaseLoadSelect     Phase = "load_select" // kayıt seçim ekranı
+	PhaseSaveSelect     Phase = "save_select" // slot seçerek kaydetme ekranı
 )
 
 // CurrentSeason mevcut mevsimi döner.
@@ -133,8 +136,8 @@ func (s *GameState) IsEliminated(fid faction.FactionID) bool {
 // ── Askeri Kapasite ───────────────────────────────────────────────────────
 
 const (
-	ManpowerPerRegion    = 5 // kara bölgesi başına temel birim kapasitesi
-	ManpowerBarracksAdd  = 5 // kışlası olan bölgenin ekstra kapasitesi
+	ManpowerPerRegion   = 5 // kara bölgesi başına temel birim kapasitesi
+	ManpowerBarracksAdd = 5 // kışlası olan bölgenin ekstra kapasitesi
 )
 
 // ManpowerCap bir fraksiyonun toplam kara birimi kapasitesini döner.

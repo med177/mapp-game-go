@@ -132,6 +132,8 @@ func (g *Game) Update() error {
 			g.declareWar(action.TargetFaction)
 		case render.ActionDeclareWarAndMove:
 			g.declareWar(action.TargetFaction)
+			// Savaş ilan edildikten sonra relation map güncelleniyor,
+			// moveArmy içinde bu güncel durum kontrol edilecek.
 			g.moveArmy(action.ArmyID, action.TargetRegion)
 		case render.ActionProposePeace:
 			g.proposePeace(action.TargetFaction)
@@ -641,8 +643,8 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 			g.gs.Armies[newID] = &army.Army{
 				ID: newID, OwnerID: string(g.gs.PlayerFactionID),
 				RegionID: seaRegion, IsNaval: true,
-				Units:         []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
-				MovePoints:    3, MaxMovePoints: 3,
+				Units:      []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
+				MovePoints: 3, MaxMovePoints: 3,
 			}
 		}
 		g.renderer.ShowCombatResult(fmt.Sprintf("%s denize indi! Kalan altın: %d", utype.NameTR, f.Gold))
@@ -683,8 +685,8 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(pid), g.gs.NextArmySeq))
 		g.gs.Armies[newID] = &army.Army{
 			ID: newID, OwnerID: string(pid),
-			RegionID: rid,
-			Units:    []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
+			RegionID:   rid,
+			Units:      []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
 			MovePoints: 2, MaxMovePoints: 2,
 		}
 	}
@@ -944,6 +946,8 @@ func ownerReligion(gs *state.GameState, ownerID string) string {
 
 // loadGameState JSON dosyalarından tam bir oyun state'i yükler.
 func loadGameState() (*state.GameState, error) {
+	devMode := os.Getenv("DEV_MODE") == "true"
+
 	regions, err := world.LoadRegions("assets/data/regions.json")
 	if err != nil {
 		return nil, fmt.Errorf("bölgeler: %w", err)
@@ -987,6 +991,7 @@ func loadGameState() (*state.GameState, error) {
 		Phase:           state.PhaseMainMenu,
 		PlayerFactionID: "",
 		Difficulty:      2,
+		DevelopmentMode: devMode,
 		Regions:         regions,
 		Factions:        factions,
 		Armies:          armies,
@@ -998,4 +1003,3 @@ func loadGameState() (*state.GameState, error) {
 		NextArmySeq:     len(armies), // başlangıç orduları _1 ile biter; yeni ID'ler bundan devam eder
 	}, nil
 }
-
