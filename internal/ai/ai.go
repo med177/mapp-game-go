@@ -1,12 +1,20 @@
 package ai
 
 import (
+	"fmt"
+
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
+)
+
+const (
+	aiMilitiaID      = "militia"
+	aiMilitiaCost    = 60  // units.json'daki milis maliyeti
+	aiMinGoldReserve = 80  // AI bu miktarın altına düşmemeli
 )
 
 // coalitionThreshold oyuncunun bu kadar bölgeyi geçmesi koalisyon tetikler.
@@ -41,6 +49,9 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 		FormCoalitionAgainstPlayer(gs, fid)
 	}
 
+	// Birim alımı ve kışla inşası
+	aiRecruitAndBuild(gs, fid)
+
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
 	for _, a := range gs.Armies {
@@ -56,6 +67,120 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 		}
 		moveArmy(gs, a)
 	}
+}
+
+// aiRecruitAndBuild AI fraksiyonu için kışla inşa eder ve manpower sınırına kadar birim alır.
+func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
+	f, ok := gs.Factions[fid]
+	if !ok || f.IsEliminated {
+		return
+	}
+
+	// Manpower dar ve altın yeterliyse kışla inşa et
+	cap := gs.ManpowerCap(fid)
+	deployed := gs.DeployedLandUnits(fid)
+	barracksCost := 150
+	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
+		barracksCost = b.GoldCost
+	}
+	if cap-deployed <= state.ManpowerPerRegion && f.Gold >= barracksCost+aiMinGoldReserve {
+		aiBuildBarracks(gs, fid, barracksCost)
+	}
+
+	// Kapasite dolana veya altın bitene kadar birim al
+	for {
+		if gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid) {
+			break
+		}
+		if f.Gold < aiMilitiaCost+aiMinGoldReserve {
+			break
+		}
+		if !aiRecruitOne(gs, fid) {
+			break
+		}
+	}
+}
+
+// aiBuildBarracks kışlası olmayan ilk uygun bölgeye kışla inşa eder.
+func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost int) {
+	f := gs.Factions[fid]
+	for _, r := range gs.Regions {
+		if r.OwnerID != string(fid) || r.IsSea {
+			continue
+		}
+		hasBarracks := false
+		for _, bid := range r.Buildings {
+			if bid == "barracks" {
+				hasBarracks = true
+				break
+			}
+		}
+		if hasBarracks {
+			continue
+		}
+		r.Buildings = append(r.Buildings, "barracks")
+		f.Gold -= cost
+		return
+	}
+}
+
+// aiRecruitOne kışlası olan bir bölgede tek bir milis birimi alır.
+// Başarılıysa true, koşul sağlanamadıysa false döner.
+func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
+	f := gs.Factions[fid]
+
+	// Kışlası olan bir bölge bul
+	var recruitRegion world.RegionID
+	for _, r := range gs.Regions {
+		if r.OwnerID != string(fid) || r.IsSea {
+			continue
+		}
+		for _, bid := range r.Buildings {
+			if bid == "barracks" {
+				recruitRegion = r.ID
+				break
+			}
+		}
+		if recruitRegion != "" {
+			break
+		}
+	}
+	if recruitRegion == "" {
+		return false
+	}
+
+	// Bölgedeki mevcut kara ordusu
+	var targetArmy *army.Army
+	for _, a := range gs.Armies {
+		if a.RegionID == recruitRegion && a.OwnerID == string(fid) && !a.IsNaval {
+			targetArmy = a
+			break
+		}
+	}
+
+	if targetArmy != nil {
+		if len(targetArmy.Units) >= army.MaxArmySize {
+			return false
+		}
+	} else {
+		// Yeni ordu limiti kontrolü
+		if gs.CurrentLandArmies(fid) >= gs.MaxLandArmies(fid) {
+			return false
+		}
+		gs.NextArmySeq++
+		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(fid), gs.NextArmySeq))
+		targetArmy = &army.Army{
+			ID: newID, OwnerID: string(fid),
+			RegionID:      recruitRegion,
+			MovePoints:    2,
+			MaxMovePoints: 2,
+		}
+		gs.Armies[newID] = targetArmy
+	}
+
+	targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: aiMilitiaID, CurrentHP: 100})
+	f.Gold -= aiMilitiaCost
+	return true
 }
 
 // FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
@@ -141,6 +266,7 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 
 // scoreMove bir hedefe yapılacak hareketin değerini puanlar.
 func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
+	fid := faction.FactionID(a.OwnerID)
 	if target.OwnerID == a.OwnerID {
 		return 0
 	}
@@ -152,6 +278,9 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 			return -1
 		}
 	}
+
+	// Kapasite doluysa fetih yaparak manpower artırmak öncelikli
+	atCapacity := gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid)
 
 	// Düşman ordusu var mı?
 	for _, ea := range gs.Armies {
@@ -171,12 +300,19 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		return -1
 	}
 
+	// Kapasite doluysa sahipsiz bölge almak çok değerli (manpower genişler)
 	if target.OwnerID == "" {
+		if atCapacity {
+			return 70
+		}
 		return 50
 	}
 	// Düşman bölgesi, ordu yok — ilişkiye göre puanla
 	score, stance := relationScore(gs, a.OwnerID, target.OwnerID)
 	if stance == faction.StanceWar || score < -40 {
+		if atCapacity {
+			return 100
+		}
 		return 90
 	}
 	return 30
