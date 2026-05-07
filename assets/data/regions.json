@@ -913,7 +913,8 @@
       "anatolia",
       "_sea_aegean",
       "_sea_black",
-      "thrace"
+      "thrace",
+      "hamit"
     ],
     "owner_id": "",
     "population": 1000,
@@ -941,7 +942,9 @@
       "germiyan",
       "candaroglu",
       "eretna",
-      "_sea_black"
+      "_sea_black",
+      "hamit",
+      "karaman"
     ],
     "owner_id": "ottoman",
     "population": 900,
@@ -971,7 +974,8 @@
       "ramazanoglu",
       "eretna",
       "syria",
-      "_sea_med_east"
+      "_sea_med_east",
+      "anatolia"
     ],
     "owner_id": "",
     "population": 500,
@@ -3322,7 +3326,9 @@
       "mentese",
       "teke",
       "karaman",
-      "eretna"
+      "eretna",
+      "constantinople",
+      "anatolia"
     ],
     "owner_id": "",
     "population": 310,

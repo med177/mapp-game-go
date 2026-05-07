@@ -39,7 +39,7 @@ func New() *Game {
 		log.Printf("Olaylar yüklenemedi: %v", err)
 	}
 	r := render.New(gs)
-	r.HasSave = saveExists()
+	r.HasSave = save.AnySlotExists()
 	r.CurrentSettings = render.DefaultSettings()
 	return &Game{
 		gs:       gs,
@@ -57,13 +57,28 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionNewGame:
 			g.resetToNewGame()
-		case render.ActionContinue:
-			g.loadGame()
+		case render.ActionOpenLoadSelect:
+			render.SaveSlots = save.ListSlots()
+			g.gs.Phase = state.PhaseLoadSelect
 		case render.ActionOpenSettings:
 			g.gs.Phase = state.PhaseSettings
 			g.renderer.SetCursor(0)
 		case render.ActionQuit:
 			os.Exit(0)
+		}
+
+	case state.PhaseLoadSelect:
+		switch action.Kind {
+		case render.ActionSelectSave:
+			g.loadSlot(action.BuildingID)
+		case render.ActionDeleteSave:
+			if err := save.DeleteSlot(action.BuildingID); err != nil {
+				g.renderer.ShowCombatResult("Silme hatası: " + err.Error())
+			}
+			render.SaveSlots = save.ListSlots()
+			g.renderer.HasSave = save.AnySlotExists()
+		case render.ActionBack:
+			g.gs.Phase = state.PhaseMainMenu
 		}
 
 	case state.PhaseSettings:
@@ -103,12 +118,17 @@ func (g *Game) Update() error {
 			g.recruitUnit(action.TargetRegion)
 		case render.ActionRecruitNaval:
 			g.recruitNaval(action.TargetRegion)
+		case render.ActionRecruitSpecific:
+			g.recruitSpecific(action.TargetRegion, action.BuildingID)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
 			g.startResearch(action.BuildingID) // BuildingID alanını tech ID için yeniden kullanıyoruz
 		case render.ActionDeclareWar:
 			g.declareWar(action.TargetFaction)
+		case render.ActionDeclareWarAndMove:
+			g.declareWar(action.TargetFaction)
+			g.moveArmy(action.ArmyID, action.TargetRegion)
 		case render.ActionProposePeace:
 			g.proposePeace(action.TargetFaction)
 		case render.ActionProposeAlliance:
@@ -121,6 +141,8 @@ func (g *Game) Update() error {
 			g.loadGame()
 		case render.ActionAdjustTax:
 			g.adjustTax(action.TargetRegion, action.Delta)
+		case render.ActionOpenPauseMenu:
+			g.gs.Phase = state.PhasePauseMenu
 		}
 
 	case state.PhaseAITurn:
@@ -135,6 +157,42 @@ func (g *Game) Update() error {
 
 	case state.PhaseTurnResolution:
 		g.resolveTurn()
+
+	case state.PhasePauseMenu:
+		switch action.Kind {
+		case render.ActionResume:
+			g.gs.Phase = state.PhasePlayerTurn
+		case render.ActionOpenSaveSelect:
+			render.SaveSlots = save.ListSlots()
+			g.gs.Phase = state.PhaseSaveSelect
+		case render.ActionLoadFromPause:
+			render.SaveSlots = save.ListSlots()
+			g.gs.Phase = state.PhaseLoadSelect
+		case render.ActionGoMainMenu:
+			g.resetToNewGame()
+		case render.ActionQuit:
+			os.Exit(0)
+		}
+
+	case state.PhaseSaveSelect:
+		switch action.Kind {
+		case render.ActionSelectSave:
+			if err := save.SaveToSlot(g.gs, action.BuildingID); err != nil {
+				g.renderer.ShowCombatResult("Kayıt hatası: " + err.Error())
+			} else {
+				g.renderer.HasSave = true
+				g.renderer.ShowCombatResult("Kaydedildi!")
+			}
+			g.gs.Phase = state.PhasePlayerTurn
+		case render.ActionDeleteSave:
+			if err := save.DeleteSlot(action.BuildingID); err != nil {
+				g.renderer.ShowCombatResult("Silme hatası: " + err.Error())
+			}
+			render.SaveSlots = save.ListSlots()
+			g.renderer.HasSave = save.AnySlotExists()
+		case render.ActionBack:
+			g.gs.Phase = state.PhasePauseMenu
+		}
 
 	case state.PhaseGameOver:
 		if action.Kind == render.ActionBack || action.Kind == render.ActionQuit {
@@ -311,15 +369,23 @@ func (g *Game) saveGame() {
 	g.renderer.ShowCombatResult("Oyun kaydedildi!")
 }
 
-// loadGame kaydedilmiş oyunu yükler.
+// loadGame otomatik kayıt slotundan yükler.
 func (g *Game) loadGame() {
-	gs, err := save.Load("assets/data/units.json", "assets/data/buildings.json")
+	g.loadSlot("autosave")
+}
+
+// loadSlot belirtilen slottan oyunu yükler ve oyuncu turuna geçer.
+func (g *Game) loadSlot(slotName string) {
+	gs, err := save.LoadSlot(slotName, "assets/data/units.json", "assets/data/buildings.json")
 	if err != nil {
 		g.renderer.ShowCombatResult("Yükleme hatası: " + err.Error())
+		g.gs.Phase = state.PhaseMainMenu
 		return
 	}
+	gs.Phase = state.PhasePlayerTurn
 	g.gs = gs
 	g.renderer.ReloadGameState(gs)
+	g.renderer.HasSave = save.AnySlotExists()
 	g.renderer.ShowCombatResult("Oyun yüklendi!")
 }
 
@@ -420,6 +486,17 @@ func (g *Game) recruitUnit(rid world.RegionID) {
 		g.renderer.ShowCombatResult("Sadece kendi bölgene asker alabilirsin!")
 		return
 	}
+	hasBarracks := false
+	for _, bid := range region.Buildings {
+		if bid == "barracks" {
+			hasBarracks = true
+			break
+		}
+	}
+	if !hasBarracks {
+		g.renderer.ShowCombatResult("Asker almak için kışla gerekli!")
+		return
+	}
 	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
 	if !ok {
 		return
@@ -461,6 +538,126 @@ func (g *Game) recruitUnit(rid world.RegionID) {
 
 	f.Gold -= cost
 	g.renderer.ShowCombatResult(fmt.Sprintf("Milis alındı! Kalan altın: %d", f.Gold))
+}
+
+// recruitSpecific seçili bölgede belirli türde bir birim alır.
+func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
+	region, ok := g.gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
+		g.renderer.ShowCombatResult("Sadece kendi bölgende asker alabilirsin!")
+		return
+	}
+	utype, ok := g.gs.UnitTypes[unitTypeID]
+	if !ok {
+		return
+	}
+	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
+	if !ok {
+		return
+	}
+
+	// Bina kontrolü
+	hasBldg := false
+	for _, bid := range region.Buildings {
+		if bid == utype.RequiredBldg {
+			hasBldg = true
+			break
+		}
+	}
+	if !hasBldg {
+		bldgName := utype.RequiredBldg
+		if b, ok2 := g.gs.BuildingTypes[bldgName]; ok2 {
+			bldgName = b.NameTR
+		}
+		g.renderer.ShowCombatResult("Bu birlik için " + bldgName + " gerekli!")
+		return
+	}
+
+	// Teknoloji kontrolü
+	if utype.RequiredTech != "" && !f.Research.Completed[utype.RequiredTech] {
+		g.renderer.ShowCombatResult("Araştırma gerekli: " + utype.RequiredTech)
+		return
+	}
+
+	// Altın kontrolü
+	if f.Gold < utype.GoldCost {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+		return
+	}
+
+	// Deniz birimi — komşu deniz bölgesine yerleş
+	if utype.RequiredBldg == "port" {
+		if !region.IsCoastal(g.gs.Regions) {
+			g.renderer.ShowCombatResult("Bu bölge kıyıda değil!")
+			return
+		}
+		var seaRegion world.RegionID
+		for _, nid := range region.Neighbors {
+			if n, ok2 := g.gs.Regions[nid]; ok2 && n.IsSea {
+				seaRegion = nid
+				break
+			}
+		}
+		if seaRegion == "" {
+			g.renderer.ShowCombatResult("Komşu deniz bölgesi bulunamadı!")
+			return
+		}
+		// Mevcut filo var mı?
+		var fleet *army.Army
+		for _, a := range g.gs.Armies {
+			if a.RegionID == seaRegion && a.OwnerID == string(g.gs.PlayerFactionID) && a.IsNaval {
+				fleet = a
+				break
+			}
+		}
+		f.Gold -= utype.GoldCost
+		if fleet != nil {
+			if len(fleet.Units) >= army.MaxArmySize {
+				g.renderer.ShowCombatResult("Filo dolu! (max 20 birim)")
+				return
+			}
+			fleet.Units = append(fleet.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
+		} else {
+			g.gs.NextArmySeq++
+			newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
+			g.gs.Armies[newID] = &army.Army{
+				ID: newID, OwnerID: string(g.gs.PlayerFactionID),
+				RegionID: seaRegion, IsNaval: true,
+				Units:         []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
+				MovePoints:    3, MaxMovePoints: 3,
+			}
+		}
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s denize indi! Kalan altın: %d", utype.NameTR, f.Gold))
+		return
+	}
+
+	// Kara birimi — bölgedeki orduya ekle ya da yeni ordu kur
+	var targetArmy *army.Army
+	for _, a := range g.gs.Armies {
+		if a.RegionID == rid && a.OwnerID == string(g.gs.PlayerFactionID) && !a.IsNaval {
+			targetArmy = a
+			break
+		}
+	}
+	f.Gold -= utype.GoldCost
+	if targetArmy != nil {
+		if len(targetArmy.Units) >= army.MaxArmySize {
+			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
+			f.Gold += utype.GoldCost // geri iade
+			return
+		}
+		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
+	} else {
+		g.gs.NextArmySeq++
+		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
+		g.gs.Armies[newID] = &army.Army{
+			ID: newID, OwnerID: string(g.gs.PlayerFactionID),
+			RegionID: rid,
+			Units:    []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
+			MovePoints: 2, MaxMovePoints: 2,
+		}
+	}
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s alındı! Kalan altın: %d", utype.NameTR, f.Gold))
 }
 
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.
@@ -670,6 +867,7 @@ func loadGameState() (*state.GameState, error) {
 		BuildingTypes:   buildingTypes,
 		TechTypes:       techTypes,
 		Relations:       relations,
+		NextArmySeq:     len(armies), // başlangıç orduları _1 ile biter; yeni ID'ler bundan devam eder
 	}, nil
 }
 

@@ -97,20 +97,16 @@ func calculateOutcome(atkStr, defStr float64) (attackerWins bool, atkCasualtyRat
 	return false, 0.80, 0.10
 }
 
-// applyCasualties ordudaki birimlere kayıp uygular; hayatta kalanları döner.
+// applyCasualties ordudaki birim sayısını ratio kadar azaltır.
+// Ratio doğrudan "ölen birim oranı" olarak yorumlanır (HP fraksiyonu değil).
 func applyCasualties(a *army.Army, ratio float64) (lost int) {
-	surviving := a.Units[:0]
-	for _, u := range a.Units {
-		remaining := int(float64(u.CurrentHP) * (1.0 - ratio))
-		if remaining <= 0 {
-			lost++
-			continue
-		}
-		u.CurrentHP = remaining
-		surviving = append(surviving, u)
+	n := len(a.Units)
+	toKill := int(float64(n)*ratio + 0.5) // yuvarla
+	if toKill > n {
+		toKill = n
 	}
-	a.Units = surviving
-	return lost
+	a.Units = a.Units[:n-toKill]
+	return toKill
 }
 
 func outcomeDescription(wins bool, atkLoss, defLoss float64) string {

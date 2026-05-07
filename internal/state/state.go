@@ -94,6 +94,9 @@ const (
 	PhaseAITurn         Phase = "ai_turn"
 	PhaseTurnResolution Phase = "resolution"
 	PhaseGameOver       Phase = "game_over"
+	PhasePauseMenu      Phase = "pause_menu"   // oyun içi duraklama menüsü
+	PhaseLoadSelect     Phase = "load_select"  // kayıt seçim ekranı
+	PhaseSaveSelect     Phase = "save_select"  // slot seçerek kaydetme ekranı
 )
 
 // CurrentSeason mevcut mevsimi döner.

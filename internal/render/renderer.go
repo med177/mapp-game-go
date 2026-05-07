@@ -53,6 +53,14 @@ type Renderer struct {
 	HasSave         bool
 	CurrentSettings Settings
 
+	// Duraklama menüsü
+	pauseCursor int
+
+	// Kayıt/yükleme slot seçim ekranı
+	slotCursor        int
+	saveSelectMode    bool   // true=kaydetme, false=yükleme
+	pendingDeleteSlot string // onay bekleyen slot adı ("" = onay yok)
+
 	// Olay logu (sağ üst panel)
 	eventLog []string
 
@@ -71,6 +79,17 @@ type Renderer struct {
 	// Input state (just-pressed takibi)
 	prevKeys  map[ebiten.Key]bool
 	prevMouse map[ebiten.MouseButton]bool
+
+	// Savaş ilan onay diyalogu
+	warConfirm warConfirmState
+}
+
+type warConfirmState struct {
+	show        bool
+	factionName string
+	factionID   string
+	pendingArmy army.ArmyID
+	pendingDest world.RegionID
 }
 
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
@@ -204,6 +223,27 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		return
 	}
 
+	// Kayıt/yükleme slot seçim ekranı
+	if r.gs.Phase == state.PhaseLoadSelect {
+		DrawSlotSelectScreen(screen, r.slotCursor, false, r.pendingDeleteSlot)
+		return
+	}
+	if r.gs.Phase == state.PhaseSaveSelect {
+		DrawSlotSelectScreen(screen, r.slotCursor, true, r.pendingDeleteSlot)
+		return
+	}
+
+	// Duraklama menüsü — haritayı altta çiz, üstüne overlay
+	if r.gs.Phase == state.PhasePauseMenu {
+		r.worldMap.Refresh(r.gs, r.SelectedRegion)
+		mapOp := &ebiten.DrawImageOptions{}
+		r.applyMapGeoM(mapOp, WorldW, WorldH)
+		screen.DrawImage(r.worldMap.Image(), mapOp)
+		r.menuTick++
+		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick)
+		return
+	}
+
 	r.worldMap.Refresh(r.gs, r.SelectedRegion)
 
 	// 1. Üretilen dünya haritası
@@ -230,7 +270,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 6. UI panelleri
 	DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech)
 	DrawRegionPanel(screen, r.gs, r.SelectedRegion)
-	DrawArmyPanel(screen, r.gs, r.SelectedArmy)
+	DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
+	DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	DrawEventLog(screen, r.eventLog)
 
@@ -255,7 +296,12 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.combatLogTimer--
 	}
 
-	// 10. Tarihsel olay tam ekran popup
+	// 10. Savaş ilan onay diyalogu (diğer popupların altında kalmaması için üst katman)
+	if r.warConfirm.show {
+		r.drawWarConfirmDialog(screen)
+	}
+
+	// 11. Tarihsel olay tam ekran popup
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc)
 	}
@@ -299,7 +345,7 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			if exists && rel.Stance == faction.StanceWar {
 				col = color.RGBA{220, 60, 60, 200} // düşman, savaş halinde — saldır
 			} else {
-				col = color.RGBA{140, 140, 140, 130} // düşman ama barış — girilmez
+				col = color.RGBA{220, 140, 30, 210} // düşman ama barış — savaş ilanıyla girilebilir
 			}
 		case nRegion.OwnerID == "":
 			col = color.RGBA{60, 220, 60, 200} // sahipsiz — fetih
@@ -308,6 +354,15 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		}
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
+
+		// Barış halindeki düşman bölgeye sağ tık ipucu — kılıç ikonu
+		if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
+			rel, exists := r.gs.Relations[key]
+			if !exists || rel.Stance != faction.StanceWar {
+				DrawTextCentered(screen, "⚔", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
+			}
+		}
 	}
 }
 
@@ -407,6 +462,11 @@ func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, s
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
 
+	// Savaş ilan onay diyalogu açıkken normal input engellenir
+	if r.warConfirm.show {
+		return r.handleWarConfirmInput()
+	}
+
 	// Oyun sonu ekranı inputu
 	if r.gs.Phase == state.PhaseGameOver {
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) {
@@ -444,6 +504,19 @@ func (r *Renderer) HandleInput() InputAction {
 		return r.handleVictorySelectInput()
 	}
 
+	// Duraklama menüsü inputu
+	if r.gs.Phase == state.PhasePauseMenu {
+		return r.handlePauseMenuInput()
+	}
+
+	// Kayıt seçim ekranları inputu
+	if r.gs.Phase == state.PhaseLoadSelect {
+		return r.handleSlotSelectInput(false)
+	}
+	if r.gs.Phase == state.PhaseSaveSelect {
+		return r.handleSlotSelectInput(true)
+	}
+
 	// Diplomasi paneli açıkken ayrı input
 	if r.showDiplomacy {
 		return r.handleDiplomacyInput()
@@ -458,8 +531,15 @@ func (r *Renderer) HandleInput() InputAction {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
-		r.SelectedArmy = ""
-		r.SelectedRegion = ""
+		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
+			r.SelectedArmy = ""
+			r.SelectedRegion = ""
+			r.showDiplomacy = false
+			r.showTech = false
+		} else {
+			r.pauseCursor = 0
+			return InputAction{Kind: ActionOpenPauseMenu}
+		}
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		r.showDiplomacy = true
@@ -596,6 +676,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
+	// Asker al paneli tıklaması — bölge seçiminden önce kontrol edilmeli
+	if uid := RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion); uid != "" {
+		return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: uid}
+	}
+
 	// Ordu ikonu tıklaması → seç / seçimi kaldır
 	for aid, a := range r.gs.Armies {
 		region, ok := r.gs.Regions[a.RegionID]
@@ -656,11 +741,35 @@ func (r *Renderer) handleRightClick() InputAction {
 		return InputAction{}
 	}
 	for _, n := range src.Neighbors {
-		if n == rid {
-			act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
-			r.SelectedArmy = ""
-			return act
+		if n != rid {
+			continue
 		}
+		target, ok := r.gs.Regions[rid]
+		if !ok {
+			break
+		}
+		// Düşman bölge ama savaş yok → onay diyalogu aç
+		if target.OwnerID != "" && target.OwnerID != a.OwnerID {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
+			rel, exists := r.gs.Relations[key]
+			if !exists || rel.Stance != faction.StanceWar {
+				name := target.OwnerID
+				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
+					name = f.NameTR
+				}
+				r.warConfirm = warConfirmState{
+					show:        true,
+					factionName: name,
+					factionID:   target.OwnerID,
+					pendingArmy: r.SelectedArmy,
+					pendingDest: rid,
+				}
+				return InputAction{}
+			}
+		}
+		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
+		r.SelectedArmy = ""
+		return act
 	}
 	return InputAction{}
 }
@@ -723,6 +832,92 @@ func (r *Renderer) mouseJustPressed(btn ebiten.MouseButton) bool {
 	was := r.prevMouse[btn]
 	r.prevMouse[btn] = pressed
 	return pressed && !was
+}
+
+// --- Savaş ilan onay diyalogu ---
+
+func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
+	const (
+		dlgW  = float32(380)
+		dlgH  = float32(130)
+		btnDW = float32(110)
+		btnDH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+
+	// Arka plan
+	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
+	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+
+	// Mesaj
+	msg := r.warConfirm.factionName + " ile savaş ilan edilsin mi?"
+	tw := MeasureText(msg, FaceMed)
+	DrawText(screen, msg, float64(cx)+(float64(dlgW)-tw)/2, float64(cy)+18, FaceMed, color.RGBA{255, 220, 100, 255})
+
+	// Evet butonu
+	yesX := cx + dlgW/2 - btnDW - 10
+	btnY := cy + dlgH - btnDH - 16
+	vector.FillRect(screen, yesX, btnY, btnDW, btnDH, color.RGBA{160, 40, 40, 230}, false)
+	tw2 := MeasureText("Evet - Savaş İlan Et", FaceSmall)
+	DrawText(screen, "Evet - Savaş İlan Et", float64(yesX)+(float64(btnDW)-tw2)/2, float64(btnY)+10, FaceSmall, color.RGBA{255, 220, 220, 255})
+
+	// Hayır butonu
+	noX := cx + dlgW/2 + 10
+	vector.FillRect(screen, noX, btnY, btnDW, btnDH, color.RGBA{50, 50, 50, 230}, false)
+	tw3 := MeasureText("Hayır", FaceSmall)
+	DrawText(screen, "Hayır", float64(noX)+(float64(btnDW)-tw3)/2, float64(btnY)+10, FaceSmall, color.RGBA{200, 200, 200, 255})
+}
+
+func (r *Renderer) handleWarConfirmInput() InputAction {
+	const (
+		dlgW  = float32(380)
+		dlgH  = float32(130)
+		btnDW = float32(110)
+		btnDH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+	btnY := cy + dlgH - btnDH - 16
+	yesX := cx + dlgW/2 - btnDW - 10
+	noX := cx + dlgW/2 + 10
+
+	mxi, myi := ebiten.CursorPosition()
+	mx, my := float32(mxi), float32(myi)
+
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if mx >= yesX && mx <= yesX+btnDW && my >= btnY && my <= btnY+btnDH {
+			// Evet: savaş ilan et ve orduyu taşı
+			wc := r.warConfirm
+			r.warConfirm = warConfirmState{}
+			r.SelectedArmy = ""
+			return InputAction{
+				Kind:          ActionDeclareWarAndMove,
+				ArmyID:        wc.pendingArmy,
+				TargetRegion:  wc.pendingDest,
+				TargetFaction: faction.FactionID(wc.factionID),
+			}
+		}
+		if mx >= noX && mx <= noX+btnDW && my >= btnY && my <= btnY+btnDH {
+			r.warConfirm = warConfirmState{}
+			return InputAction{}
+		}
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyN) {
+		r.warConfirm = warConfirmState{}
+	}
+	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
+		wc := r.warConfirm
+		r.warConfirm = warConfirmState{}
+		r.SelectedArmy = ""
+		return InputAction{
+			Kind:          ActionDeclareWarAndMove,
+			ArmyID:        wc.pendingArmy,
+			TargetRegion:  wc.pendingDest,
+			TargetFaction: faction.FactionID(wc.factionID),
+		}
+	}
+	return InputAction{}
 }
 
 // --- Alt çizim yardımcıları ---

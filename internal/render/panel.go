@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 
 	"mapp-game-go/internal/army"
@@ -24,7 +25,7 @@ const (
 	evLogH = float32(190)
 
 	infoPanelW = float32(265)
-	infoPanelH = float32(200)
+	infoPanelH = float32(355)
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -54,7 +55,43 @@ var (
 	// miniMapBg minimap arka plan görseli (assets/maps/mini-map.png)
 	miniMapBg     *ebiten.Image
 	miniMapLoaded bool
+
+	// buildingSheet bina sprite sheet'i (assets/sprites/buildings.jpg)
+	// 3×2 grid: market/farm/barracks üst sıra, port/walls/temple alt sıra
+	buildingSheet       *ebiten.Image
+	buildingSheetLoaded bool
 )
+
+// buildingDisplayOrder bina slotlarının sırasını belirler.
+var buildingDisplayOrder = []string{"market", "farm", "barracks", "port", "walls", "temple"}
+
+func ensureBuildingSheet() {
+	if buildingSheetLoaded {
+		return
+	}
+	buildingSheetLoaded = true
+	buildingSheet = tryLoadImage("assets/sprites/buildings.jpg")
+}
+
+// buildingSpriteRect sprite sheet'in gerçek boyutlarına göre bina hücresini döner.
+// Görüntü 3 sütun × 2 satır eşit hücrelerden oluşur; alt %10 label alanı kırpılır.
+func buildingSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
+	idx := map[string]int{
+		"market": 0, "farm": 1, "barracks": 2,
+		"port": 3, "walls": 4, "temple": 5,
+	}[id]
+	w := sheet.Bounds().Dx()
+	h := sheet.Bounds().Dy()
+	cellW := w / 3
+	cellH := h / 2
+	col := idx % 3
+	row := idx / 3
+	x0 := col * cellW
+	y0 := row * cellH
+	// Alt %10 kırpılır — label metni hariç tutulur
+	spriteH := cellH * 9 / 10
+	return image.Rect(x0, y0, x0+cellW, y0+spriteH)
+}
 
 func ensureMiniMapBg() {
 	if miniMapLoaded {
@@ -452,20 +489,6 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		color.RGBA{200, 140, 40, 255})
 	ly += 18
 
-	if len(region.Buildings) > 0 {
-		var built string
-		for i, bid := range region.Buildings {
-			if b, ok2 := gs.BuildingTypes[bid]; ok2 {
-				if i > 0 {
-					built += ", "
-				}
-				built += b.NameTR
-			}
-		}
-		DrawText(screen, built, lx, ly, FaceSmall, ColorGold)
-		ly += 16
-	}
-
 	// Din dönüşüm ilerlemesi
 	if region.ConversionTurns > 0 {
 		ownerRel := ""
@@ -488,14 +511,26 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		}
 	}
 
-	if region.OwnerID == string(gs.PlayerFactionID) {
-		DrawText(screen, "[R] Milis  [1-6] Bina  [,.] Vergi", lx, ly, FaceSmall,
-			color.RGBA{100, 200, 100, 200})
-		ly += 14
-	}
-
 	if region.IsRebellionRisk() {
 		DrawText(screen, "⚠  İSYAN RİSKİ!", lx, ly, FaceMed, ColorRed)
+		ly += 18
+	}
+
+	// ── Binalar bölümü ────────────────────────────────────────────────
+	ly += 4
+	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	ly += 6
+
+	bldTitleW := MeasureText("BİNALAR", FaceSmall)
+	DrawText(screen, "BİNALAR", float64(px)+float64(pw)/2-bldTitleW/2, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+	ly += 17
+
+	drawBuildingGrid(screen, gs, region, px, float32(ly), pw)
+
+	// Oyuncu ipucu — panelin en altına sabitlendi
+	if region.OwnerID == string(gs.PlayerFactionID) {
+		DrawText(screen, "[R] Milis  [1-6] Bina  [,.] Vergi", lx, float64(py)+float64(ph)-14, FaceSmall,
+			color.RGBA{100, 200, 100, 170})
 	}
 }
 
@@ -796,6 +831,75 @@ func calcPlayerIncome(gs *state.GameState) int {
 		}
 	}
 	return total
+}
+
+// drawBuildingGrid bölgedeki binaları sprite thumbnail'leri olarak 3×2 ızgarada çizer.
+// İnşa edilmiş binalar renkli sprite ile, boş slotlar soluk çerçeve ile gösterilir.
+func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.Region, panelX, startY, panelW float32) {
+	ensureBuildingSheet()
+
+	builtSet := make(map[string]bool, len(region.Buildings))
+	for _, bid := range region.Buildings {
+		builtSet[bid] = true
+	}
+
+	const cols = 3
+	pad := float32(panelPad)
+	availW := panelW - pad*2
+	slotW := availW / float32(cols)
+	spriteH := float32(54)
+	nameH := float32(16)
+	rowH := spriteH + nameH + 5
+
+	for i, bid := range buildingDisplayOrder {
+		col := i % cols
+		row := i / cols
+
+		sx := panelX + pad + float32(col)*slotW
+		sy := startY + float32(row)*rowH
+		innerW := slotW - 3
+
+		isBuilt := builtSet[bid]
+
+		// Arka plan ve çerçeve
+		slotBg := color.RGBA{20, 16, 12, 200}
+		borderCol := color.RGBA{55, 45, 30, 200}
+		if isBuilt {
+			slotBg = color.RGBA{42, 34, 18, 245}
+			borderCol = panelBorder
+		}
+		vector.FillRect(screen, sx, sy, innerW, spriteH, slotBg, false)
+		vector.StrokeRect(screen, sx, sy, innerW, spriteH, 1, borderCol, false)
+
+		if isBuilt && buildingSheet != nil {
+			r := buildingSpriteRect(bid, buildingSheet)
+			sub := buildingSheet.SubImage(r).(*ebiten.Image)
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(
+				float64(innerW-2)/float64(r.Dx()),
+				float64(spriteH-2)/float64(r.Dy()),
+			)
+			op.GeoM.Translate(float64(sx+1), float64(sy+1))
+			screen.DrawImage(sub, op)
+
+			// İnce altın vurgu çerçevesi
+			vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
+		} else {
+			// Boş slot — kilitli görünüm
+			DrawTextCentered(screen, "—", float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-8, FaceLarge, color.RGBA{55, 45, 35, 180})
+		}
+
+		// Bina adı
+		bname := bid
+		if b, ok := gs.BuildingTypes[bid]; ok {
+			bname = b.NameTR
+		}
+		nameCol := color.RGBA{75, 65, 50, 200}
+		if isBuilt {
+			nameCol = ColorGold
+		}
+		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
+	}
 }
 
 func drawPanelBorder(screen *ebiten.Image, x, y, w, h float32) {

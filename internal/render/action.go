@@ -26,7 +26,9 @@ const (
 	ActionSelectVictory  ActionKind = "select_victory" // BuildingID = VictoryType
 	ActionProposeAlliance ActionKind = "propose_alliance"
 	ActionProposeTrade    ActionKind = "propose_trade"
-	ActionRecruitNaval   ActionKind = "recruit_naval"
+	ActionRecruitNaval      ActionKind = "recruit_naval"
+	ActionRecruitSpecific   ActionKind = "recruit_specific" // BuildingID = unit type ID
+	ActionDeclareWarAndMove ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
 	// Ana menü
 	ActionNewGame       ActionKind = "new_game"
 	ActionContinue      ActionKind = "continue"
@@ -34,6 +36,14 @@ const (
 	ActionQuit          ActionKind = "quit"
 	ActionSaveSettings  ActionKind = "save_settings"
 	ActionBack          ActionKind = "back"
+	ActionResume        ActionKind = "resume"           // duraklama menüsünden devam
+	ActionGoMainMenu    ActionKind = "go_main_menu"     // oyundan ana menüye dön
+	ActionLoadFromPause ActionKind = "load_from_pause"  // duraklama menüsünden yükle
+	ActionOpenPauseMenu  ActionKind = "open_pause_menu"   // duraklama menüsünü aç
+	ActionOpenLoadSelect ActionKind = "open_load_select"  // kayıt seçim ekranını aç
+	ActionOpenSaveSelect ActionKind = "open_save_select"  // slot seçerek kaydetme ekranını aç
+	ActionSelectSave     ActionKind = "select_save"        // belirli slotu yükle/kaydet (BuildingID = slot adı)
+	ActionDeleteSave     ActionKind = "delete_save"        // belirli slotu sil (BuildingID = slot adı)
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

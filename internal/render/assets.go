@@ -2,7 +2,8 @@ package render
 
 import (
 	"image"
-	_ "image/png" // PNG decoder
+	_ "image/jpeg" // JPEG decoder
+	_ "image/png"  // PNG decoder
 	"log"
 	"os"
 

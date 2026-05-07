@@ -72,7 +72,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 func buildMenuItems(hasSave bool) []menuItem {
 	return []menuItem{
 		{"Yeni Oyun", ActionNewGame, false},
-		{"Devam Et", ActionContinue, !hasSave},
+		{"Kayıttan Yükle", ActionOpenLoadSelect, !hasSave},
 		{"Ayarlar", ActionOpenSettings, false},
 		{"Çıkış", ActionQuit, false},
 	}

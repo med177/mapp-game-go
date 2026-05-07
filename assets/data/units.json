@@ -12,7 +12,7 @@
     "gold_cost": 60,
     "grain_upkeep": 2,
     "required_tech": "",
-    "required_bldg": "",
+    "required_bldg": "barracks",
     "embarkable": true
   },
   {
@@ -44,7 +44,7 @@
     "gold_cost": 220,
     "grain_upkeep": 5,
     "required_tech": "advanced_tactics",
-    "required_bldg": "armory",
+    "required_bldg": "barracks",
     "embarkable": true
   },
   {
@@ -60,7 +60,7 @@
     "gold_cost": 150,
     "grain_upkeep": 4,
     "required_tech": "",
-    "required_bldg": "stable",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
@@ -76,7 +76,7 @@
     "gold_cost": 250,
     "grain_upkeep": 6,
     "required_tech": "horsemanship",
-    "required_bldg": "stable",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
@@ -92,7 +92,7 @@
     "gold_cost": 400,
     "grain_upkeep": 8,
     "required_tech": "armored_cavalry",
-    "required_bldg": "armory",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
@@ -108,7 +108,7 @@
     "gold_cost": 200,
     "grain_upkeep": 3,
     "required_tech": "",
-    "required_bldg": "siege_workshop",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
@@ -124,7 +124,7 @@
     "gold_cost": 350,
     "grain_upkeep": 5,
     "required_tech": "gunpowder",
-    "required_bldg": "siege_workshop",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
@@ -140,7 +140,7 @@
     "gold_cost": 600,
     "grain_upkeep": 8,
     "required_tech": "field_artillery",
-    "required_bldg": "arsenal",
+    "required_bldg": "barracks",
     "embarkable": false
   },
   {
