@@ -47,6 +47,9 @@ related: [HOME, architecture/render-pipeline]
 | Ticaret güzergahları | ✅ | Fraksiyonlar arası pasif gelir, `TradeRoutes` |
 | Din dönüşümü | ✅ | 24 turda bölge dini değişir, memnuniyet -20 |
 | Din diplomasisi | ✅ | `ReligionRelation` aynı din +25, Sünni-Şii -40, farklı din -30 |
+| İngiltere bölgeleri | ✅ | 6 tarihi bölge: London, Yorkshire, Lancashire, Mercia, East Anglia, Wessex |
+| Fransa bölgeleri | ✅ | 8 tarihi bölge: Paris, Normandy, Brittany, Anjou, Champagne, Burgundy, Provence, Languedoc |
+| HRE prenslikleri | ✅ | 6 prenslik: Brandenburg, Saxony, Bavaria, Westphalia, Thuringia, Palatinate |
 
 ---
 

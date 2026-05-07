@@ -96,5 +96,36 @@ Zafer koşulları ve olaylar için referans alınan bölgeler:
 | `rome` | Domination + Dini zafer |
 | `jerusalem` | Domination + Dini zafer |
 | `cairo` | Domination |
-| `paris` | Domination |
+| `paris` | Domination (Fransa başkenti) |
+| `london` | Domination (İngiltere başkenti) |
 | `mecca` | Dini zafer |
+
+---
+
+## 1300'lü Yıllar Tarihi Bölgeler
+
+### İngiltere Krallığı (6 bölge)
+- `london` — Başkent, yüksek gelir (60)
+- `yorkshire` — Kuzey, tahıl üretimi (50)
+- `lancashire` — Kuzeybatı, dağlık (30)
+- `mercia` — Orta, ormanlık (45)
+- `east_anglia` — Doğu, tahıl ambarı (40)
+- `wessex` — Güneybatı, verimli ovalar (35)
+
+### Fransa Krallığı (8 bölge)
+- `paris` — Başkent, Île-de-France (70)
+- `normandy` — Normandiya Dükalığı, kıyı (45)
+- `brittany` — Bretonya, yarımada (35)
+- `anjou` — Anjou Kontluğu, Loire vadisi (40)
+- `champagne` — Şampanya, ticaret merkezi (50)
+- `burgundy` — Burgonya Dükalığı (55)
+- `provence` — Provence, Akdeniz kıyısı (50)
+- `languedoc` — Languedoc, Toulouse (45)
+
+### Kutsal Roma İmparatorluğu (6 prenslik)
+- `brandenburg` — Brandenburg Markgrafluğu, kuzeydoğu
+- `saxony` — Saksonya Dükalığı, kuzey orta
+- `bavaria` — Bavyera Dükalığı, güney
+- `westphalia` — Vestfalya, batı (Ren bölgesi)
+- `thuringia` — Turingiya, orta
+- `palatinate` — Palatinate, orta-batı
