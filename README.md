@@ -56,7 +56,7 @@ Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita st
 
 ```bash
 # Repoyu klonla
-git clone https://github.com/<kullanici>/mapp-game-go.git
+git clone https://github.com/med177/mapp-game-go.git
 cd mapp-game-go
 
 # Bağımlılıkları indir
