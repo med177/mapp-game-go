@@ -46,6 +46,7 @@ type WorldMap struct {
 	regionIDs  []world.RegionID // regionIDs[0] = "" (boş)
 	regionIdx  map[world.RegionID]uint16
 	regionPx   map[world.RegionID][]int
+	seaIdx     map[uint16]bool  // deniz bölgesi indeksleri
 	hasBgImage bool
 	ownerDirty bool
 	selected   world.RegionID
@@ -70,6 +71,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		regionIDs:  []world.RegionID{""}, // indeks 0 = boş
 		regionIdx:  make(map[world.RegionID]uint16),
 		regionPx:   make(map[world.RegionID][]int),
+		seaIdx:     make(map[uint16]bool),
 	}
 
 	if true { // arka plan resmi devre dışı
@@ -90,6 +92,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	}
 
 	wm.buildCountryShapes(gs, loadCountryShapes("assets/data/generated/country_shapes.json"))
+	wm.buildSeaRegions(gs)
 	wm.applyOwnership(gs, "")
 	return wm
 }
@@ -292,6 +295,68 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 	}
 }
 
+// buildSeaRegions kara şekilleriyle atanmamış (okyanus) pikselleri
+// en yakın deniz bölgesine Voronoi yöntemiyle atar; ardından sınır çizgilerini
+// basePixels'a bake eder (her frame yeniden çizilmez).
+func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
+	var seaRegs []*world.Region
+	for _, r := range gs.Regions {
+		if r.IsSea && r.WorldX > 0 && r.WorldY > 0 {
+			seaRegs = append(seaRegs, r)
+		}
+	}
+	if len(seaRegs) == 0 {
+		return
+	}
+
+	// ── 1. Voronoi ataması ────────────────────────────────────────
+	for py := 0; py < WorldH; py++ {
+		for px := 0; px < WorldW; px++ {
+			pIdx := py*WorldW + px
+			if wm.regionAt[pIdx] != 0 {
+				continue
+			}
+			r := nearestShapeRegion(seaRegs, px, py)
+			ridx, ok := wm.regionIdx[r.ID]
+			if !ok {
+				ridx = uint16(len(wm.regionIDs))
+				wm.regionIDs = append(wm.regionIDs, r.ID)
+				wm.regionIdx[r.ID] = ridx
+			}
+			wm.regionAt[pIdx] = ridx
+			wm.regionPx[r.ID] = append(wm.regionPx[r.ID], pIdx)
+			wm.seaIdx[ridx] = true
+		}
+	}
+
+	// ── 2. Sınır tespiti ve basePixels'a bake ────────────────────
+	// Farklı deniz bölgelerine ait 4-komşu piksel çiftleri → sınır çizgisi
+	const bR, bG, bB byte = 100, 160, 220 // açık mavi sınır rengi
+	const bAlpha = byte(160)
+	bake := func(pIdx int) {
+		wm.basePixels[pIdx*4] = blend(wm.basePixels[pIdx*4], bR, bAlpha)
+		wm.basePixels[pIdx*4+1] = blend(wm.basePixels[pIdx*4+1], bG, bAlpha)
+		wm.basePixels[pIdx*4+2] = blend(wm.basePixels[pIdx*4+2], bB, bAlpha)
+	}
+	for py := 1; py < WorldH-1; py++ {
+		for px := 1; px < WorldW-1; px++ {
+			pIdx := py*WorldW + px
+			cur := wm.regionAt[pIdx]
+			if !wm.seaIdx[cur] {
+				continue
+			}
+			// Sağ veya alt komşu farklı deniz bölgesindeyse bu piksel sınırda
+			right := wm.regionAt[pIdx+1]
+			down := wm.regionAt[pIdx+WorldW]
+			if (wm.seaIdx[right] && right != cur) || (wm.seaIdx[down] && down != cur) {
+				bake(pIdx)
+				bake(pIdx + 1)       // 2px genişlik için komşuyu da işaretle
+				bake(pIdx + WorldW)
+			}
+		}
+	}
+}
+
 // nearestShapeRegion piksel koordinatına en yakın bölgeyi döner.
 // WorldX/WorldY orijinal 1920×1080 uzayında olduğundan MapScale ile çarpılır.
 func nearestShapeRegion(regions []*world.Region, px, py int) *world.Region {
@@ -319,6 +384,15 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 
 	for rid, r := range gs.Regions {
 		if r.IsSea {
+			// Seçili deniz bölgesini belirgin açık mavi tintleyle vurgula
+			if rid == selected {
+				for _, pIdx := range wm.regionPx[rid] {
+					wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], 80, 120)
+					wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], 180, 120)
+					wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], 255, 120)
+					wm.dispPixels[pIdx*4+3] = 255
+				}
+			}
 			continue
 		}
 		fc, ok := factionColors[r.OwnerID]

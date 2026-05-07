@@ -395,6 +395,7 @@ func colorToScale(clr color.Color) (float32, float32, float32, float32) {
 }
 
 // drawMinimapArmies ordu konumlarını minimap üzerinde fraksiyon rengiyle gösterir.
+// Kara ordusu → kare, deniz donanması → daire.
 func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
 	for _, a := range gs.Armies {
 		region, ok := gs.Regions[a.RegionID]
@@ -406,22 +407,29 @@ func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY
 
 		col := factionColor(gs, a.OwnerID)
 		isPlayer := a.OwnerID == string(gs.PlayerFactionID)
+		col.A = 220
 
-		radius := float32(4)
+		borderCol := color.RGBA{0, 0, 0, 100}
 		if isPlayer {
-			radius = 5.5
+			borderCol = color.RGBA{255, 240, 120, 255}
 		}
 
-		// Gölge
-		vector.FillCircle(screen, px+1, py+1, radius+1, color.RGBA{0, 0, 0, 100}, true)
-		// Dolu daire — fraksiyon rengi
-		col.A = 220
-		vector.FillCircle(screen, px, py, radius, col, true)
-		// İç beyaz nokta — ordu simgesi olduğunu belirtir
-		vector.FillCircle(screen, px, py, radius*0.35, color.RGBA{255, 255, 255, 200}, true)
-		// Oyuncu ordusuna altın kenarlık
-		if isPlayer {
-			vector.StrokeCircle(screen, px, py, radius, 1.5, color.RGBA{255, 240, 120, 255}, true)
+		if a.IsNaval {
+			r := float32(4)
+			if isPlayer {
+				r = 5.5
+			}
+			vector.FillCircle(screen, px+1, py+1, r+1, color.RGBA{0, 0, 0, 80}, true)
+			vector.FillCircle(screen, px, py, r, col, true)
+			vector.StrokeCircle(screen, px, py, r, 1.2, borderCol, true)
+		} else {
+			h := float32(3.5)
+			if isPlayer {
+				h = 5
+			}
+			vector.FillRect(screen, px-h-1, py-h-1, h*2+2, h*2+2, color.RGBA{0, 0, 0, 80}, false)
+			vector.FillRect(screen, px-h, py-h, h*2, h*2, col, false)
+			vector.StrokeRect(screen, px-h-0.5, py-h-0.5, h*2+1, h*2+1, 1.2, borderCol, false)
 		}
 	}
 }

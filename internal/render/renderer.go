@@ -245,7 +245,16 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	r.worldMap.Refresh(r.gs, r.SelectedRegion)
+	// Seçili bölge veya donanmanın deniz bölgesini vurgula
+	highlightRegion := world.RegionID(r.SelectedRegion)
+	if r.SelectedArmy != "" {
+		if a, ok := r.gs.Armies[r.SelectedArmy]; ok {
+			if reg, ok2 := r.gs.Regions[a.RegionID]; ok2 && reg.IsSea {
+				highlightRegion = a.RegionID
+			}
+		}
+	}
+	r.worldMap.Refresh(r.gs, highlightRegion)
 
 	// 1. Üretilen dünya haritası
 	mapOp := &ebiten.DrawImageOptions{}
@@ -308,16 +317,24 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 }
 
-// drawSelectionHighlight seçili bölgenin kenar piksellerini vurgular.
+// drawSelectionHighlight seçili bölgenin üstüne vurgu çizer.
 func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 	region, ok := r.gs.Regions[r.SelectedRegion]
-	if !ok || region.IsSea {
+	if !ok {
 		return
 	}
 
 	sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-	vector.StrokeCircle(screen, float32(sx), float32(sy+4), 16, 3, color.RGBA{255, 220, 70, 230}, true)
-	vector.StrokeCircle(screen, float32(sx), float32(sy+4), 22, 1.5, color.RGBA{30, 20, 5, 180}, true)
+
+	if region.IsSea {
+		// Deniz bölgesi seçimi: büyük beyaz daire halkası
+		vector.StrokeCircle(screen, float32(sx), float32(sy), 28, 2.5, color.RGBA{180, 230, 255, 200}, true)
+		vector.StrokeCircle(screen, float32(sx), float32(sy), 20, 1.5, color.RGBA{100, 200, 255, 160}, true)
+	} else {
+		// Kara bölgesi seçimi
+		vector.StrokeCircle(screen, float32(sx), float32(sy+4), 16, 3, color.RGBA{255, 220, 70, 230}, true)
+		vector.StrokeCircle(screen, float32(sx), float32(sy+4), 22, 1.5, color.RGBA{30, 20, 5, 180}, true)
+	}
 }
 
 // drawMoveTargets seçili ordunun gidebileceği komşu bölgeleri vurgular.
@@ -333,37 +350,49 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 	for _, nid := range src.Neighbors {
 		nRegion, ok := r.gs.Regions[nid]
-		if !ok || nRegion.IsSea || nRegion.IsLocked {
+		if !ok || nRegion.IsLocked {
 			continue
 		}
+		// Naval: sadece deniz bölgelerine gidebilir; kara: sadece kara bölgelerine
+		if a.IsNaval && !nRegion.IsSea {
+			continue
+		}
+		if !a.IsNaval && nRegion.IsSea {
+			continue
+		}
+
 		sx, sy := r.worldToScreen(wcX(nRegion.WorldX), wcY(nRegion.WorldY))
 
 		var col color.RGBA
-		switch {
-		case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
-			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
-			rel, exists := r.gs.Relations[key]
-			if exists && rel.Stance == faction.StanceWar {
-				col = color.RGBA{220, 60, 60, 200} // düşman, savaş halinde — saldır
-			} else {
-				col = color.RGBA{220, 140, 30, 210} // düşman ama barış — savaş ilanıyla girilebilir
+		if a.IsNaval {
+			// Deniz bölgeleri için sabit açık mavi — tarafsız su
+			col = color.RGBA{100, 200, 255, 220}
+		} else {
+			switch {
+			case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
+				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
+				rel, exists := r.gs.Relations[key]
+				if exists && rel.Stance == faction.StanceWar {
+					col = color.RGBA{220, 60, 60, 200}
+				} else {
+					col = color.RGBA{220, 140, 30, 210}
+				}
+			case nRegion.OwnerID == "":
+				col = color.RGBA{60, 220, 60, 200}
+			default:
+				col = color.RGBA{80, 160, 255, 160}
 			}
-		case nRegion.OwnerID == "":
-			col = color.RGBA{60, 220, 60, 200} // sahipsiz — fetih
-		default:
-			col = color.RGBA{80, 160, 255, 160} // kendi bölgesi — salt hareket
+			// Barış halindeki düşman bölgeye kılıç ikonu
+			if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
+				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
+				rel, exists := r.gs.Relations[key]
+				if !exists || rel.Stance != faction.StanceWar {
+					DrawTextCentered(screen, "⚔", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
+				}
+			}
 		}
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
-
-		// Barış halindeki düşman bölgeye sağ tık ipucu — kılıç ikonu
-		if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
-			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
-			rel, exists := r.gs.Relations[key]
-			if !exists || rel.Stance != faction.StanceWar {
-				DrawTextCentered(screen, "⚔", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
-			}
-		}
 	}
 }
 
@@ -416,20 +445,28 @@ func (r *Renderer) drawArmies(screen *ebiten.Image) {
 		}
 		fc := factionColor(r.gs, a.OwnerID)
 		isSelected := pos.ArmyID == r.SelectedArmy
-		r.drawArmyIcon(screen, pos.X, pos.Y, fc, len(a.Units), isSelected)
+		r.drawArmyIcon(screen, pos.X, pos.Y, fc, len(a.Units), isSelected, a.IsNaval)
 	}
 }
 
 // drawArmyIcon tek bir ordu ikonunu çizer.
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.RGBA, unitCount int, selected bool) {
-	// Dış kare arka plan
-	half := float32(10)
+// Kara ordusu → kare, deniz donanması → daire.
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
 	borderCol := color.RGBA{200, 200, 200, 220}
 	if selected {
 		borderCol = color.RGBA{255, 215, 0, 255}
 	}
-	vector.FillRect(screen, cx-half-2, cy-half-2, half*2+4, half*2+4, borderCol, false)
-	vector.FillRect(screen, cx-half, cy-half, half*2, half*2, col, false)
+
+	if isNaval {
+		// Dış daire (border) + iç daire (fraksiyon rengi)
+		vector.FillCircle(screen, cx, cy, 13, borderCol, false)
+		vector.FillCircle(screen, cx, cy, 11, col, false)
+	} else {
+		// Dış kare (border) + iç kare (fraksiyon rengi)
+		half := float32(10)
+		vector.FillRect(screen, cx-half-2, cy-half-2, half*2+4, half*2+4, borderCol, false)
+		vector.FillRect(screen, cx-half, cy-half, half*2, half*2, col, false)
+	}
 
 	// Birim sayısı
 	countStr := itoa(unitCount)
@@ -739,12 +776,21 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 
-	// Bölge seçimi
+	// Bölge / deniz bölgesi seçimi
 	wx, wy := r.screenToWorld(fx, fy)
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-			rid = ""
+			// Naval donanma seçiliyse deniz bölgesine tıklama = hareket komutu
+			if r.SelectedArmy != "" {
+				if a, ok2 := r.gs.Armies[r.SelectedArmy]; ok2 && a.IsNaval {
+					return InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
+				}
+			}
+			// Seçili donanma yoksa deniz bölgesini seç (highlight için)
+			r.SelectedArmy = ""
+			r.SelectedRegion = rid
+			return InputAction{}
 		}
 	}
 	r.SelectedArmy = ""
