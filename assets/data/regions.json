@@ -24,7 +24,7 @@
     "terrain": "plain",
     "trade_capacity": 5,
     "unlock_turn": 0,
-    "world_x": 478,
+    "world_x": 490,
     "world_y": 260
   },
   {
@@ -51,8 +51,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 419,
-    "world_y": 244
+    "world_x": 440,
+    "world_y": 285
   },
   {
     "active_event_id": "",
@@ -78,8 +78,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 486,
-    "world_y": 237
+    "world_x": 520,
+    "world_y": 230
   },
   {
     "active_event_id": "",
@@ -107,8 +107,8 @@
     "terrain": "forest",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 450,
-    "world_y": 249
+    "world_x": 470,
+    "world_y": 240
   },
   {
     "active_event_id": "",
@@ -135,8 +135,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 447,
-    "world_y": 212
+    "world_x": 485,
+    "world_y": 195
   },
   {
     "active_event_id": "",
@@ -163,8 +163,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 412,
-    "world_y": 187
+    "world_x": 445,
+    "world_y": 210
   },
   {
     "active_event_id": "",
@@ -190,8 +190,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 392,
-    "world_y": 149
+    "world_x": 399,
+    "world_y": 163
   },
   {
     "active_event_id": "",
@@ -218,8 +218,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 392,
-    "world_y": 262
+    "world_x": 410,
+    "world_y": 249
   },
   {
     "active_event_id": "",
@@ -272,8 +272,8 @@
     "terrain": "plain",
     "trade_capacity": 6,
     "unlock_turn": 0,
-    "world_x": 526,
-    "world_y": 346
+    "world_x": 520,
+    "world_y": 313
   },
   {
     "active_event_id": "",
@@ -300,8 +300,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 483,
-    "world_y": 314
+    "world_x": 480,
+    "world_y": 295
   },
   {
     "active_event_id": "",
@@ -326,8 +326,8 @@
     "terrain": "coast",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 429,
-    "world_y": 322
+    "world_x": 445,
+    "world_y": 320
   },
   {
     "active_event_id": "",
@@ -354,8 +354,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 477,
-    "world_y": 357
+    "world_x": 485,
+    "world_y": 340
   },
   {
     "active_event_id": "",
@@ -384,8 +384,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 526,
-    "world_y": 293
+    "world_x": 565,
+    "world_y": 285
   },
   {
     "active_event_id": "",
@@ -415,8 +415,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 574,
-    "world_y": 358
+    "world_x": 595,
+    "world_y": 330
   },
   {
     "active_event_id": "",
@@ -443,8 +443,8 @@
     "terrain": "coast",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 593,
-    "world_y": 393
+    "world_x": 620,
+    "world_y": 385
   },
   {
     "active_event_id": "",
@@ -472,8 +472,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 528,
-    "world_y": 399
+    "world_x": 555,
+    "world_y": 410
   },
   {
     "active_event_id": "",
@@ -502,8 +502,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 744,
-    "world_y": 254
+    "world_x": 720,
+    "world_y": 245
   },
   {
     "active_event_id": "",
@@ -533,7 +533,7 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 688,
+    "world_x": 685,
     "world_y": 260
   },
   {
@@ -563,8 +563,8 @@
     "terrain": "forest",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 711,
-    "world_y": 308
+    "world_x": 690,
+    "world_y": 310
   },
   {
     "active_event_id": "",
@@ -592,8 +592,8 @@
     "terrain": "forest",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 658,
-    "world_y": 223
+    "world_x": 645,
+    "world_y": 240
   },
   {
     "active_event_id": "",
@@ -620,8 +620,8 @@
     "terrain": "forest",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 659,
-    "world_y": 307
+    "world_x": 670,
+    "world_y": 280
   },
   {
     "active_event_id": "",
@@ -653,8 +653,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 625,
-    "world_y": 269
+    "world_x": 635,
+    "world_y": 290
   },
   {
     "active_event_id": "",
@@ -680,7 +680,7 @@
     "trade_capacity": 4,
     "unlock_turn": 0,
     "world_x": 674,
-    "world_y": 170
+    "world_y": 171
   },
   {
     "active_event_id": "",
@@ -738,8 +738,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 475,
-    "world_y": 401
+    "world_x": 495,
+    "world_y": 391
   },
   {
     "active_event_id": "",
@@ -855,8 +855,8 @@
     "terrain": "coast",
     "trade_capacity": 8,
     "unlock_turn": 0,
-    "world_x": 725,
-    "world_y": 360
+    "world_x": 728,
+    "world_y": 358
   },
   {
     "active_event_id": "",
@@ -885,8 +885,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 776,
-    "world_y": 452
+    "world_x": 752,
+    "world_y": 444
   },
   {
     "active_event_id": "",
@@ -914,8 +914,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 801,
-    "world_y": 488
+    "world_x": 793,
+    "world_y": 474
   },
   {
     "active_event_id": "",
@@ -946,8 +946,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 790,
-    "world_y": 326
+    "world_x": 782,
+    "world_y": 322
   },
   {
     "active_event_id": "",
@@ -977,8 +977,8 @@
     "terrain": "forest",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 757,
-    "world_y": 288
+    "world_x": 758,
+    "world_y": 280
   },
   {
     "active_event_id": "",
@@ -1010,8 +1010,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 862,
-    "world_y": 248
+    "world_x": 865,
+    "world_y": 228
   },
   {
     "active_event_id": "",
@@ -1074,8 +1074,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 836,
-    "world_y": 344
+    "world_x": 864,
+    "world_y": 339
   },
   {
     "active_event_id": "",
@@ -1105,8 +1105,8 @@
     "terrain": "mountain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 909,
-    "world_y": 407
+    "world_x": 882,
+    "world_y": 382
   },
   {
     "active_event_id": "",
@@ -1136,8 +1136,8 @@
     "terrain": "plain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 982,
-    "world_y": 360
+    "world_x": 1009,
+    "world_y": 366
   },
   {
     "active_event_id": "",
@@ -1165,8 +1165,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1008,
-    "world_y": 420
+    "world_x": 1015,
+    "world_y": 415
   },
   {
     "active_event_id": "",
@@ -1335,8 +1335,8 @@
     "terrain": "coast",
     "trade_capacity": 7,
     "unlock_turn": 0,
-    "world_x": 1075,
-    "world_y": 500
+    "world_x": 1072,
+    "world_y": 476
   },
   {
     "active_event_id": "",
@@ -1363,8 +1363,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1185,
-    "world_y": 468
+    "world_x": 1175,
+    "world_y": 472
   },
   {
     "active_event_id": "",
@@ -1394,8 +1394,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1189,
-    "world_y": 518
+    "world_x": 1172,
+    "world_y": 512
   },
   {
     "active_event_id": "",
@@ -1419,8 +1419,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1165,
-    "world_y": 379
+    "world_x": 1162,
+    "world_y": 374
   },
   {
     "active_event_id": "",
@@ -1449,8 +1449,8 @@
     "terrain": "forest",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1341,
-    "world_y": 299
+    "world_x": 1293,
+    "world_y": 177
   },
   {
     "active_event_id": "",
@@ -1475,8 +1475,8 @@
     "terrain": "plain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 1771,
-    "world_y": 107
+    "world_x": 1687,
+    "world_y": 115
   },
   {
     "active_event_id": "",
@@ -1504,8 +1504,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1316,
-    "world_y": 468
+    "world_x": 1312,
+    "world_y": 469
   },
   {
     "active_event_id": "",
@@ -1620,8 +1620,8 @@
     "terrain": "plain",
     "trade_capacity": 5,
     "unlock_turn": 0,
-    "world_x": 1275,
-    "world_y": 558
+    "world_x": 1242,
+    "world_y": 580
   },
   {
     "active_event_id": "",
@@ -1648,8 +1648,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1306,
-    "world_y": 611
+    "world_x": 1345,
+    "world_y": 600
   },
   {
     "active_event_id": "",
@@ -1826,8 +1826,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 827,
-    "world_y": 371
+    "world_x": 820,
+    "world_y": 366
   },
   {
     "active_event_id": "",
@@ -1854,8 +1854,8 @@
     "terrain": "mountain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 814,
-    "world_y": 389
+    "world_x": 833,
+    "world_y": 388
   },
   {
     "active_event_id": "",
@@ -1942,8 +1942,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 874,
-    "world_y": 440
+    "world_x": 862,
+    "world_y": 447
   },
   {
     "active_event_id": "",
@@ -2013,23 +2013,22 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "ireland",
-      "portugal",
-      "anjou",
-      "brittany",
-      "scotland",
-      "_sea_atlantic_open_3",
-      "_shore_atlantic_4",
-      "wessex",
-      "_shore_atlantic_0",
-      "_sea_med_west",
-      "_sea_north",
-      "_sea_irish",
-      "_sea_atlantic_open_2",
-      "lancashire",
-      "_sea_biscay",
       "morocco",
-      "norway"
+      "_sea_irish",
+      "_sea_biscay",
+      "_sea_north",
+      "_shore_atlantic_0",
+      "brittany",
+      "_sea_med_west",
+      "_sea_atlantic_open_3",
+      "norway",
+      "portugal",
+      "lancashire",
+      "ireland",
+      "_sea_atlantic_open_2",
+      "scotland",
+      "anjou",
+      "wessex"
     ],
     "world_x": 280,
     "world_y": 490,
@@ -2052,16 +2051,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_shore_atlantic_3",
-      "ireland",
-      "wales",
-      "_sea_atlantic",
-      "_shore_atlantic_4",
-      "_shore_atlantic_1",
-      "_sea_atlantic_open_5",
-      "_sea_north",
       "_shore_atlantic_2",
-      "_sea_atlantic_open_4"
+      "_sea_north",
+      "_sea_atlantic",
+      "_sea_atlantic_open_4",
+      "_sea_atlantic_open_5",
+      "ireland",
+      "_shore_atlantic_1",
+      "wales"
     ],
     "world_x": 400,
     "world_y": 240,
@@ -2084,28 +2081,27 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "finland",
-      "_sea_atlantic",
-      "brandenburg",
-      "flanders",
-      "_shore_atlantic_2",
-      "holland",
-      "denmark",
-      "_sea_norwegian",
-      "normandy",
-      "_sea_irish",
-      "norway",
-      "estonia",
-      "_sea_baltic",
       "paris",
-      "_shore_atlantic_3",
-      "east_anglia",
-      "yorkshire",
-      "scotland",
-      "_sea_atlantic_open_0",
+      "_sea_irish",
+      "_sea_baltic",
+      "friesland",
+      "norway",
       "_sea_atlantic_open_5",
       "london",
-      "friesland"
+      "scotland",
+      "_sea_atlantic_open_0",
+      "brandenburg",
+      "yorkshire",
+      "estonia",
+      "_sea_atlantic",
+      "denmark",
+      "normandy",
+      "finland",
+      "holland",
+      "flanders",
+      "_shore_atlantic_2",
+      "east_anglia",
+      "_sea_norwegian"
     ],
     "world_x": 555,
     "world_y": 195,
@@ -2164,35 +2160,29 @@
     "owner_id": "",
     "neighbors": [
       "genoa",
-      "naples",
-      "_sea_atlantic",
-      "provence",
-      "florence",
-      "granada",
-      "papal_states",
-      "_sea_ligurian",
-      "malta",
-      "_sea_med_east",
-      "_shore_mediterranean_0",
-      "algiers",
-      "_sea_tyrrhenian",
-      "_sea_adriatic",
-      "siena",
-      "morocco",
-      "sardinia",
       "languedoc",
       "sicily",
-      "aragon",
-      "_sea_mediterranean_open_3",
-      "_sea_med_west_atlantic",
-      "_sea_med_west_north_2",
-      "_sea_med_west_north_3",
-      "_sea_med_west_center",
-      "_sea_med_west_inner",
-      "_sea_med_west_south",
-      "tunis",
       "mallorca",
-      "corsica"
+      "_shore_mediterranean_0",
+      "algiers",
+      "papal_states",
+      "malta",
+      "tunis",
+      "granada",
+      "_sea_med_east",
+      "_sea_mediterranean_open_3",
+      "_sea_tyrrhenian",
+      "siena",
+      "aragon",
+      "morocco",
+      "corsica",
+      "_sea_ligurian",
+      "florence",
+      "_sea_atlantic",
+      "_sea_adriatic",
+      "sardinia",
+      "naples",
+      "provence"
     ],
     "world_x": 570,
     "world_y": 635,
@@ -2209,284 +2199,33 @@
     "active_event_id": ""
   },
   {
-    "id": "_sea_med_west_atlantic",
-    "name": "Western Mediterranean Atlantic",
-    "name_tr": "Batı Akdeniz Atlas",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_atlantic",
-      "_sea_med_west",
-      "_sea_mediterranean_open_3",
-      "mallorca",
-      "granada",
-      "morocco"
-    ],
-    "world_x": 529,
-    "world_y": 600,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_north_1",
-    "name": "Western Mediterranean North 1",
-    "name_tr": "Batı Akdeniz Kuzey 1",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "provence",
-      "languedoc",
-      "_sea_ligurian",
-      "_sea_med_west_north_2"
-    ],
-    "world_x": 555,
-    "world_y": 510,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_north_2",
-    "name": "Western Mediterranean North 2",
-    "name_tr": "Batı Akdeniz Kuzey 2",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "genoa",
-      "corsica",
-      "_sea_ligurian",
-      "_sea_med_west",
-      "_sea_med_west_north_1",
-      "_sea_med_west_north_3"
-    ],
-    "world_x": 620,
-    "world_y": 485,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_north_3",
-    "name": "Western Mediterranean North 3",
-    "name_tr": "Batı Akdeniz Kuzey 3",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "florence",
-      "sardinia",
-      "_sea_tyrrhenian",
-      "_sea_med_west",
-      "_sea_med_west_north_2"
-    ],
-    "world_x": 697,
-    "world_y": 513,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_center",
-    "name": "Western Mediterranean Center",
-    "name_tr": "Batı Akdeniz Merkez",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "naples",
-      "papal_states",
-      "malta",
-      "siena",
-      "_sea_tyrrhenian",
-      "_sea_med_west",
-      "_sea_med_east",
-      "_sea_adriatic"
-    ],
-    "world_x": 652,
-    "world_y": 544,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_inner",
-    "name": "Western Mediterranean Inner",
-    "name_tr": "Batı Akdeniz İç",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "malta",
-      "sicily",
-      "papal_states",
-      "naples",
-      "_sea_tyrrhenian",
-      "_sea_med_west",
-      "_sea_med_east"
-    ],
-    "world_x": 693,
-    "world_y": 574,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_med_west_south",
-    "name": "Western Mediterranean South",
-    "name_tr": "Batı Akdeniz Güney",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "granada",
-      "morocco",
-      "algiers",
-      "tunis",
-      "sicily",
-      "_sea_med_west",
-      "_sea_atlantic",
-      "_sea_mediterranean_open_3"
-    ],
-    "world_x": 666,
-    "world_y": 486,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_adriatic_1",
-    "name": "Northern Adriatic Sea",
-    "name_tr": "Kuzey Adriyatik Denizi",
+    "id": "_sea_adriatic",
+    "name": "Adriatic Sea",
+    "name_tr": "Adriyatik Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "venice",
-      "slovenia",
-      "croatia",
-      "dalmatia",
       "papal_states",
-      "_sea_adriatic_2"
-    ],
-    "world_x": 753,
-    "world_y": 358,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_adriatic_2",
-    "name": "Central Adriatic Sea",
-    "name_tr": "Orta Adriyatik Denizi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "papal_states",
-      "dalmatia",
-      "hum",
-      "montenegro",
+      "_sea_ligurian",
       "puglia",
-      "_sea_adriatic_1",
-      "_sea_adriatic_3"
-    ],
-    "world_x": 777,
-    "world_y": 444,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_adriatic_3",
-    "name": "Southern Adriatic Sea",
-    "name_tr": "Güney Adriyatik Denizi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "puglia",
-      "montenegro",
       "albania",
-      "epirus",
-      "greece",
-      "_sea_adriatic_2",
-      "_sea_ionian",
       "_shore_mediterranean_1",
-      "_shore_mediterranean_4",
-      "_sea_mediterranean_open_4_1",
-      "_sea_mediterranean_open_4_2",
-      "_sea_mediterranean_open_4_3",
-      "_sea_mediterranean_open_4_4",
-      "_sea_mediterranean_open_4_5"
+      "_sea_med_west",
+      "_sea_med_east",
+      "croatia",
+      "greece",
+      "montenegro",
+      "_sea_aegean",
+      "slovenia",
+      "hum",
+      "epirus",
+      "_sea_mediterranean_open_4",
+      "_sea_tyrrhenian",
+      "dalmatia"
     ],
-    "world_x": 880,
-    "world_y": 462,
+    "world_x": 770,
+    "world_y": 540,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -2506,32 +2245,31 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "naples",
-      "palestine",
-      "aydinoglu",
-      "israel",
-      "_sea_med_west",
-      "lebanon",
-      "north_cyprus",
-      "_shore_mediterranean_6",
-      "_sea_red",
-      "karaman",
-      "ramazanoglu",
-      "tripolitania",
-      "crete",
-      "_sea_adriatic",
-      "cyprus",
-      "dulkadir",
-      "_sea_aegean",
-      "_sea_mediterranean_open_0",
-      "_sea_ionian",
-      "_shore_mediterranean_3",
-      "teke",
       "puglia",
+      "lebanon",
+      "_sea_ionian",
+      "_sea_med_west",
+      "cyprus",
+      "israel",
       "egypt",
-      "morea",
+      "rhodes",
+      "ramazanoglu",
       "mentese",
-      "rhodes"
+      "crete",
+      "_sea_mediterranean_open_0",
+      "aydinoglu",
+      "palestine",
+      "north_cyprus",
+      "_shore_mediterranean_3",
+      "_sea_red",
+      "_sea_adriatic",
+      "morea",
+      "tripolitania",
+      "karaman",
+      "naples",
+      "_sea_aegean",
+      "teke",
+      "dulkadir"
     ],
     "world_x": 1010,
     "world_y": 700,
@@ -2548,86 +2286,36 @@
     "active_event_id": ""
   },
   {
-    "id": "_sea_aegean_1",
-    "name": "Northern Aegean Sea",
-    "name_tr": "Kuzey Ege Denizi",
+    "id": "_sea_aegean",
+    "name": "Aegean Sea",
+    "name_tr": "Ege Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "chalcidice",
-      "thrace",
       "constantinople",
-      "bithynia",
-      "nicomedia",
-      "_sea_marmara",
-      "_sea_black",
-      "thessaly",
-      "saruhan",
-      "_sea_aegean_2"
-    ],
-    "world_x": 960,
-    "world_y": 462,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_aegean_2",
-    "name": "Central Aegean Sea",
-    "name_tr": "Orta Ege Denizi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
       "greece",
-      "aydinoglu",
-      "mentese",
-      "epirus",
-      "_sea_aegean_1",
-      "_sea_aegean_3"
-    ],
-    "world_x": 1002,
-    "world_y": 503,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": ""
-  },
-  {
-    "id": "_sea_aegean_3",
-    "name": "Southern Aegean Sea",
-    "name_tr": "Güney Ege Denizi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "morea",
-      "crete",
-      "rhodes",
+      "nicomedia",
+      "thrace",
+      "saruhan",
       "_sea_med_east",
-      "_sea_adriatic",
+      "rhodes",
+      "bithynia",
+      "mentese",
+      "crete",
       "_sea_mediterranean_open_0",
-      "_shore_mediterranean_2",
+      "aydinoglu",
+      "_sea_black",
       "_shore_mediterranean_3",
-      "_shore_mediterranean_5",
-      "_shore_mediterranean_6",
-      "_sea_aegean_2"
+      "_sea_adriatic",
+      "chalcidice",
+      "morea",
+      "thessaly",
+      "epirus",
+      "_shore_mediterranean_2",
+      "_sea_marmara"
     ],
-    "world_x": 958,
-    "world_y": 518,
+    "world_x": 975,
+    "world_y": 615,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -2642,32 +2330,30 @@
   },
   {
     "id": "_sea_black",
-    "name": "Central Black Sea (West)",
-    "name_tr": "Orta Karadeniz (Batı)",
+    "name": "Black Sea",
+    "name_tr": "Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "chrysopolis",
-      "constantinople",
-      "candaroglu",
-      "trebizond",
-      "thrace",
-      "_shore_black_1",
-      "crimea",
       "nicomedia",
-      "_sea_aegean",
-      "bulgaria",
-      "dobruja",
-      "_shore_black_2",
-      "_sea_marmara",
       "_sea_black_open_1",
+      "_sea_marmara",
+      "chrysopolis",
+      "candaroglu",
+      "_sea_black_open_0",
       "georgia",
+      "dobruja",
       "paphlagonia",
+      "constantinople",
+      "_sea_aegean",
+      "crimea",
+      "bulgaria",
       "_sea_black_open_2",
-      "_sea_black_open_0"
+      "trebizond",
+      "thrace"
     ],
-    "world_x": 1142,
-    "world_y": 410,
+    "world_x": 1145,
+    "world_y": 455,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -2687,16 +2373,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "yemen",
       "_shore_red_0",
+      "djibouti",
       "_sea_red_open_0",
-      "egypt",
-      "_sea_persian",
+      "yemen",
       "_sea_red_open_1",
-      "eritrea",
+      "egypt",
       "_sea_med_east",
-      "hejaz",
-      "djibouti"
+      "_sea_persian",
+      "eritrea",
+      "hejaz"
     ],
     "world_x": 1200,
     "world_y": 755,
@@ -2719,12 +2405,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_caspian_open_1",
+      "persia_north",
+      "azerbaijan",
       "_shore_caspian_0",
       "_sea_caspian_open_0",
-      "azerbaijan",
       "georgia",
-      "persia_north"
+      "_sea_caspian_open_1"
     ],
     "world_x": 1565,
     "world_y": 500,
@@ -2747,17 +2433,17 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "oman",
-      "kuwait",
-      "persia_south",
-      "qatar",
-      "_sea_red",
-      "_sea_persian_open_0",
-      "basra",
-      "bahrain",
       "_sea_persian_open_1",
+      "oman",
+      "bahrain",
+      "qatar",
+      "persia_south",
+      "_sea_red",
       "uae",
-      "_shore_persian_0"
+      "basra",
+      "kuwait",
+      "_shore_persian_0",
+      "_sea_persian_open_0"
     ],
     "world_x": 1515,
     "world_y": 755,
@@ -2994,8 +2680,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1026,
-    "world_y": 448
+    "world_x": 1022,
+    "world_y": 451
   },
   {
     "active_event_id": "",
@@ -3215,8 +2901,8 @@
     "terrain": "coast",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 578,
-    "world_y": 248
+    "world_x": 588,
+    "world_y": 242
   },
   {
     "active_event_id": "",
@@ -3272,8 +2958,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1200,
-    "world_y": 312
+    "world_x": 1160,
+    "world_y": 305
   },
   {
     "active_event_id": "",
@@ -3794,8 +3480,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1110,
-    "world_y": 518
+    "world_x": 1084,
+    "world_y": 498
   },
   {
     "active_event_id": "",
@@ -3821,7 +3507,7 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1018,
+    "world_x": 1025,
     "world_y": 486
   },
   {
@@ -3851,8 +3537,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1220,
-    "world_y": 475
+    "world_x": 1200,
+    "world_y": 470
   },
   {
     "active_event_id": "",
@@ -3879,8 +3565,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1236,
-    "world_y": 517
+    "world_x": 1221,
+    "world_y": 518
   },
   {
     "active_event_id": "",
@@ -3909,8 +3595,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1341,
-    "world_y": 504
+    "world_x": 1340,
+    "world_y": 503
   },
   {
     "active_event_id": "",
@@ -3938,8 +3624,8 @@
     "terrain": "plain",
     "trade_capacity": 5,
     "unlock_turn": 0,
-    "world_x": 698,
-    "world_y": 401
+    "world_x": 697,
+    "world_y": 413
   },
   {
     "active_event_id": "",
@@ -3966,8 +3652,8 @@
     "terrain": "coast",
     "trade_capacity": 7,
     "unlock_turn": 0,
-    "world_x": 632,
-    "world_y": 379
+    "world_x": 633,
+    "world_y": 385
   },
   {
     "active_event_id": "",
@@ -3994,8 +3680,8 @@
     "terrain": "plain",
     "trade_capacity": 5,
     "unlock_turn": 0,
-    "world_x": 666,
-    "world_y": 375
+    "world_x": 668,
+    "world_y": 372
   },
   {
     "active_event_id": "",
@@ -4075,8 +3761,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 723,
-    "world_y": 222
+    "world_x": 728,
+    "world_y": 223
   },
   {
     "active_event_id": "",
@@ -4105,7 +3791,7 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 931,
+    "world_x": 940,
     "world_y": 362
   },
   {
@@ -4136,8 +3822,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1039,
-    "world_y": 518
+    "world_x": 1044,
+    "world_y": 517
   },
   {
     "active_event_id": "",
@@ -4164,8 +3850,8 @@
     "terrain": "coast",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1144,
-    "world_y": 531
+    "world_x": 1132,
+    "world_y": 524
   },
   {
     "active_event_id": "",
@@ -4194,8 +3880,8 @@
     "terrain": "mountain",
     "trade_capacity": 1,
     "unlock_turn": 0,
-    "world_x": 1148,
-    "world_y": 493
+    "world_x": 1114,
+    "world_y": 477
   },
   {
     "active_event_id": "",
@@ -4226,7 +3912,7 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1265,
+    "world_x": 1253,
     "world_y": 477
   },
   {
@@ -4255,7 +3941,7 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1288,
+    "world_x": 1280,
     "world_y": 513
   },
   {
@@ -4283,8 +3969,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 954,
-    "world_y": 425
+    "world_x": 955,
+    "world_y": 408
   },
   {
     "active_event_id": "",
@@ -4311,8 +3997,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 751,
-    "world_y": 334
+    "world_x": 775,
+    "world_y": 352
   },
   {
     "active_event_id": "",
@@ -4339,7 +4025,7 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 697,
+    "world_x": 700,
     "world_y": 338
   },
   {
@@ -4368,8 +4054,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 810,
-    "world_y": 293
+    "world_x": 808,
+    "world_y": 292
   },
   {
     "active_event_id": "",
@@ -4398,8 +4084,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 803,
-    "world_y": 236
+    "world_x": 792,
+    "world_y": 265
   },
   {
     "active_event_id": "",
@@ -4428,8 +4114,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 919,
-    "world_y": 250
+    "world_x": 910,
+    "world_y": 215
   },
   {
     "active_event_id": "",
@@ -4455,8 +4141,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 602,
-    "world_y": 233
+    "world_x": 610,
+    "world_y": 212
   },
   {
     "active_event_id": "",
@@ -4484,8 +4170,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 565,
-    "world_y": 311
+    "world_x": 615,
+    "world_y": 275
   },
   {
     "active_event_id": "",
@@ -4511,8 +4197,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 606,
-    "world_y": 319
+    "world_x": 638,
+    "world_y": 295
   },
   {
     "active_event_id": "",
@@ -4539,8 +4225,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 890,
-    "world_y": 334
+    "world_x": 905,
+    "world_y": 348
   },
   {
     "active_event_id": "",
@@ -4567,8 +4253,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 696,
-    "world_y": 364
+    "world_x": 698,
+    "world_y": 373
   },
   {
     "active_event_id": "",
@@ -4594,8 +4280,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 723,
-    "world_y": 414
+    "world_x": 735,
+    "world_y": 395
   },
   {
     "active_event_id": "",
@@ -4621,8 +4307,8 @@
     "terrain": "plain",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 742,
-    "world_y": 434
+    "world_x": 710,
+    "world_y": 432
   },
   {
     "active_event_id": "",
@@ -4648,8 +4334,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 816,
-    "world_y": 463
+    "world_x": 855,
+    "world_y": 462
   },
   {
     "active_event_id": "",
@@ -4678,8 +4364,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 876,
-    "world_y": 385
+    "world_x": 858,
+    "world_y": 412
   },
   {
     "active_event_id": "",
@@ -4707,8 +4393,8 @@
     "terrain": "coast",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 787,
-    "world_y": 382
+    "world_x": 792,
+    "world_y": 396
   },
   {
     "active_event_id": "",
@@ -4735,8 +4421,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 843,
-    "world_y": 401
+    "world_x": 848,
+    "world_y": 415
   },
   {
     "active_event_id": "",
@@ -4763,8 +4449,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 878,
-    "world_y": 464
+    "world_x": 882,
+    "world_y": 470
   },
   {
     "active_event_id": "",
@@ -4819,8 +4505,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 914,
-    "world_y": 514
+    "world_x": 918,
+    "world_y": 518
   },
   {
     "active_event_id": "",
@@ -4846,8 +4532,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1027,
-    "world_y": 372
+    "world_x": 1042,
+    "world_y": 395
   },
   {
     "active_event_id": "",
@@ -4878,8 +4564,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1105,
-    "world_y": 480
+    "world_x": 1090,
+    "world_y": 468
   },
   {
     "active_event_id": "",
@@ -4909,8 +4595,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 990,
-    "world_y": 289
+    "world_x": 992,
+    "world_y": 262
   },
   {
     "active_event_id": "",
@@ -4938,8 +4624,8 @@
     "terrain": "plain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1102,
-    "world_y": 302
+    "world_x": 1092,
+    "world_y": 262
   },
   {
     "active_event_id": "",
@@ -4968,7 +4654,7 @@
     "trade_capacity": 4,
     "unlock_turn": 0,
     "world_x": 1222,
-    "world_y": 579
+    "world_y": 547
   },
   {
     "active_event_id": "",
@@ -4997,7 +4683,7 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1349,
+    "world_x": 1328,
     "world_y": 564
   },
   {
@@ -5025,8 +4711,8 @@
     "terrain": "coast",
     "trade_capacity": 4,
     "unlock_turn": 0,
-    "world_x": 1386,
-    "world_y": 642
+    "world_x": 1390,
+    "world_y": 652
   },
   {
     "active_event_id": "",
@@ -5054,8 +4740,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1074,
-    "world_y": 466
+    "world_x": 1078,
+    "world_y": 450
   },
   {
     "active_event_id": "",
@@ -5081,8 +4767,8 @@
     "terrain": "coast",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1156,
-    "world_y": 453
+    "world_x": 1142,
+    "world_y": 452
   },
   {
     "active_event_id": "",
@@ -5108,8 +4794,8 @@
     "terrain": "mountain",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 1073,
-    "world_y": 531
+    "world_x": 1082,
+    "world_y": 516
   },
   {
     "active_event_id": "",
@@ -5136,8 +4822,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1046,
-    "world_y": 485
+    "world_x": 1057,
+    "world_y": 480
   },
   {
     "active_event_id": "",
@@ -5148,6 +4834,10 @@
     "is_sea": false,
     "name": "Chrysopolis",
     "name_tr": "Hrisopolis (Bizans Asya Yakasi)",
+    "world_x": 1090,
+    "world_y": 445,
+    "shape_id": "TUR",
+    "owner_id": "byzantine",
     "neighbors": [
       "nicomedia",
       "paphlagonia",
@@ -5155,17 +4845,13 @@
       "constantinople",
       "_sea_black"
     ],
-    "owner_id": "byzantine",
     "population": 180,
     "religion": "orthodox",
     "satisfaction": 65,
-    "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
     "trade_capacity": 3,
-    "unlock_turn": 0,
-    "world_x": 1125,
-    "world_y": 460
+    "unlock_turn": 0
   },
   {
     "active_event_id": "",
@@ -5193,8 +4879,8 @@
     "terrain": "forest",
     "trade_capacity": 5,
     "unlock_turn": 0,
-    "world_x": 1199,
-    "world_y": 115
+    "world_x": 1155,
+    "world_y": 135
   },
   {
     "active_event_id": "",
@@ -5218,8 +4904,8 @@
     "terrain": "forest",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 1509,
-    "world_y": 122
+    "world_x": 1440,
+    "world_y": 185
   },
   {
     "active_event_id": "",
@@ -5246,8 +4932,8 @@
     "terrain": "coast",
     "trade_capacity": 2,
     "unlock_turn": 0,
-    "world_x": 962,
-    "world_y": 457
+    "world_x": 968,
+    "world_y": 460
   },
   {
     "terrain": "sea",
@@ -5264,11 +4950,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_1",
-      "_sea_atlantic_open_5",
+      "_shore_atlantic_2",
       "_sea_atlantic_open_1",
-      "_sea_north",
-      "_shore_atlantic_2"
+      "_shore_atlantic_1",
+      "_sea_north"
     ],
     "id": "_sea_atlantic_open_0",
     "name": "Atlantic Open 1",
@@ -5291,10 +4976,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_4",
+      "_shore_atlantic_0",
       "_sea_atlantic_open_0",
       "_shore_atlantic_1",
-      "_shore_atlantic_0",
       "_sea_biscay"
     ],
     "id": "_sea_atlantic_open_1",
@@ -5318,10 +5002,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_atlantic",
-      "_sea_atlantic_open_3",
-      "_shore_atlantic_4",
       "_shore_atlantic_0",
+      "_sea_atlantic_open_3",
+      "_sea_atlantic",
       "_sea_biscay"
     ],
     "id": "_sea_atlantic_open_2",
@@ -5345,11 +5028,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_4",
-      "_shore_atlantic_1",
-      "_sea_atlantic_open_2",
+      "_sea_irish",
       "_shore_atlantic_0",
-      "_sea_irish"
+      "_sea_atlantic_open_2",
+      "_shore_atlantic_1"
     ],
     "id": "_sea_atlantic_open_3",
     "name": "Atlantic Open 4",
@@ -5372,11 +5054,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_3",
-      "_sea_atlantic_open_3",
-      "_shore_atlantic_1",
+      "_sea_irish",
       "_sea_atlantic_open_5",
-      "_sea_irish"
+      "_shore_atlantic_1",
+      "_sea_atlantic_open_3"
     ],
     "id": "_sea_atlantic_open_4",
     "name": "Atlantic Open 5",
@@ -5399,10 +5080,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_3",
-      "_sea_norwegian",
       "_sea_north",
       "_sea_irish",
+      "_sea_norwegian",
       "_shore_atlantic_2"
     ],
     "id": "_sea_atlantic_open_5",
@@ -5426,10 +5106,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
+      "_sea_atlantic_open_2",
       "_sea_atlantic",
       "_sea_atlantic_open_3",
-      "_shore_atlantic_4",
-      "_sea_atlantic_open_2",
       "_sea_biscay"
     ],
     "id": "_shore_atlantic_0",
@@ -5453,9 +5132,8 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_4",
-      "_shore_atlantic_0",
       "_sea_irish",
+      "_shore_atlantic_0",
       "_shore_atlantic_2",
       "_sea_biscay"
     ],
@@ -5480,11 +5158,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_3",
-      "_shore_atlantic_1",
-      "_sea_atlantic_open_5",
       "_sea_north",
-      "_sea_irish"
+      "_sea_irish",
+      "_sea_atlantic_open_5",
+      "_shore_atlantic_1"
     ],
     "id": "_shore_atlantic_2",
     "name": "North Sea Shore",
@@ -5507,12 +5184,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_mediterranean_6",
-      "_shore_mediterranean_3",
-      "_shore_mediterranean_2",
       "_sea_aegean",
-      "_shore_mediterranean_5",
-      "_sea_med_east"
+      "_shore_mediterranean_3",
+      "_sea_med_east",
+      "_shore_mediterranean_2"
     ],
     "id": "_sea_mediterranean_open_0",
     "name": "Mediterranean Open 1",
@@ -5535,12 +5210,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_mediterranean_6",
       "_sea_ionian",
       "_shore_mediterranean_3",
-      "_shore_mediterranean_2",
-      "_shore_mediterranean_5",
-      "_sea_med_east"
+      "_sea_med_east",
+      "_shore_mediterranean_2"
     ],
     "id": "_sea_mediterranean_open_1",
     "name": "Mediterranean Open 2",
@@ -5563,11 +5236,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
       "_sea_ionian",
+      "_shore_mediterranean_0",
       "_sea_mediterranean_open_3",
-      "_shore_mediterranean_4",
-      "_shore_mediterranean_0"
+      "_sea_tyrrhenian"
     ],
     "id": "_sea_mediterranean_open_2",
     "name": "Mediterranean Open 3",
@@ -5590,11 +5262,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
       "_sea_ligurian",
+      "_shore_mediterranean_0",
       "_sea_med_west",
-      "_shore_mediterranean_4",
-      "_shore_mediterranean_0"
+      "_sea_tyrrhenian"
     ],
     "id": "_sea_mediterranean_open_3",
     "name": "Mediterranean Open 4",
@@ -5617,145 +5288,36 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
-      "_sea_adriatic_3",
       "_shore_mediterranean_1",
-      "_sea_ligurian",
-      "_shore_mediterranean_4",
-      "_sea_mediterranean_open_4_2",
-      "_sea_mediterranean_open_4_5"
-    ],
-    "id": "_sea_mediterranean_open_4_1",
-    "name": "Mediterranean Open 5-1",
-    "name_tr": "Mediterranean Acik 5-1",
-    "world_x": 710,
-    "world_y": 440
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_adriatic_3",
-      "_shore_mediterranean_1",
-      "_sea_mediterranean_open_4_1",
-      "_sea_mediterranean_open_4_3"
-    ],
-    "id": "_sea_mediterranean_open_4_2",
-    "name": "Mediterranean Open 5-2",
-    "name_tr": "Mediterranean Acik 5-2",
-    "world_x": 730,
-    "world_y": 450
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_adriatic_3",
-      "_shore_mediterranean_1",
-      "_sea_mediterranean_open_4_2",
-      "_sea_mediterranean_open_4_4"
-    ],
-    "id": "_sea_mediterranean_open_4_3",
-    "name": "Mediterranean Open 5-3",
-    "name_tr": "Mediterranean Acik 5-3",
-    "world_x": 745,
-    "world_y": 460
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_adriatic_3",
-      "_shore_mediterranean_4",
-      "_sea_mediterranean_open_4_3",
-      "_sea_mediterranean_open_4_5"
-    ],
-    "id": "_sea_mediterranean_open_4_4",
-    "name": "Mediterranean Open 5-4",
-    "name_tr": "Mediterranean Acik 5-4",
-    "world_x": 760,
-    "world_y": 470
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_tyrrhenian",
-      "_sea_ligurian",
-      "_sea_adriatic_3",
-      "_sea_mediterranean_open_4_1",
-      "_sea_mediterranean_open_4_4"
-    ],
-    "id": "_sea_mediterranean_open_4_5",
-    "name": "Mediterranean Open 5-5",
-    "name_tr": "Mediterranean Acik 5-5",
-    "world_x": 725,
-    "world_y": 480
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
       "_sea_adriatic",
+      "_sea_ligurian",
+      "_sea_tyrrhenian"
+    ],
+    "id": "_sea_mediterranean_open_4",
+    "name": "Mediterranean Open 5",
+    "name_tr": "Mediterranean Acik 5",
+    "world_x": 734,
+    "world_y": 455
+  },
+  {
+    "terrain": "sea",
+    "owner_id": "",
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 0,
+    "population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "neighbors": [
       "_shore_mediterranean_1",
-      "_shore_mediterranean_2",
       "_sea_aegean",
-      "_shore_mediterranean_5"
+      "_sea_adriatic",
+      "_shore_mediterranean_2"
     ],
     "id": "_sea_mediterranean_open_5",
     "name": "Mediterranean Open 6",
@@ -5778,11 +5340,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
       "_sea_ligurian",
-      "_sea_med_west",
       "_sea_mediterranean_open_3",
-      "_shore_mediterranean_4"
+      "_sea_med_west",
+      "_sea_tyrrhenian"
     ],
     "id": "_shore_mediterranean_0",
     "name": "Western Mediterranean Shore",
@@ -5805,12 +5366,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
       "_sea_ionian",
       "_sea_adriatic",
       "_shore_mediterranean_2",
-      "_shore_mediterranean_5",
-      "_shore_mediterranean_4"
+      "_sea_tyrrhenian"
     ],
     "id": "_shore_mediterranean_1",
     "name": "Adriatic Sea Shore",
@@ -5833,12 +5392,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_mediterranean_6",
       "_sea_ionian",
-      "_shore_mediterranean_3",
+      "_sea_aegean",
       "_shore_mediterranean_1",
-      "_shore_mediterranean_5",
-      "_sea_aegean"
+      "_shore_mediterranean_3"
     ],
     "id": "_shore_mediterranean_2",
     "name": "Aegean Sea Shore",
@@ -5861,12 +5418,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_mediterranean_6",
       "_sea_ionian",
-      "_shore_mediterranean_2",
       "_sea_aegean",
-      "_shore_mediterranean_5",
-      "_sea_med_east"
+      "_sea_med_east",
+      "_shore_mediterranean_2"
     ],
     "id": "_shore_mediterranean_3",
     "name": "Eastern Mediterranean Shore",
@@ -5889,18 +5444,16 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_azov",
-      "_shore_black_2",
-      "_sea_black_open_1",
       "_sea_black",
+      "_sea_black_open_1",
+      "_sea_azov",
       "_shore_black_0"
     ],
     "id": "_sea_black_open_0",
-    "name": "Central Black Sea (East)",
-    "name_tr": "Orta Karadeniz (Doğu)",
-    "world_x": 1200,
-    "world_y": 410
+    "name": "Black Open 1",
+    "name_tr": "Black Acik 1",
+    "world_x": 1215,
+    "world_y": 455
   },
   {
     "terrain": "sea",
@@ -5917,18 +5470,16 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_shore_black_2",
-      "_sea_marmara",
       "_sea_black",
       "_sea_black_open_2",
+      "_sea_marmara",
       "_sea_black_open_0"
     ],
     "id": "_sea_black_open_1",
-    "name": "Crimean Shore",
-    "name_tr": "Kırım Açıkları",
-    "world_x": 1142,
-    "world_y": 370
+    "name": "Black Open 2",
+    "name_tr": "Black Acik 2",
+    "world_x": 1145,
+    "world_y": 525
   },
   {
     "terrain": "sea",
@@ -5945,18 +5496,16 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_black_open_3",
-      "_shore_black_2",
-      "_sea_marmara",
+      "_sea_black",
       "_sea_black_open_1",
-      "_sea_black"
+      "_sea_marmara",
+      "_sea_black_open_3"
     ],
     "id": "_sea_black_open_2",
-    "name": "Thrace Shore",
-    "name_tr": "Trakya Açıkları",
-    "world_x": 1060,
-    "world_y": 430
+    "name": "Black Open 3",
+    "name_tr": "Black Acik 3",
+    "world_x": 1075,
+    "world_y": 455
   },
   {
     "terrain": "sea",
@@ -5973,18 +5522,16 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_azov",
-      "_shore_black_2",
       "_sea_black",
       "_sea_black_open_2",
+      "_sea_azov",
       "_sea_black_open_0"
     ],
     "id": "_sea_black_open_3",
-    "name": "Dobrujan Shore",
-    "name_tr": "Dobruca Açıkları",
-    "world_x": 1060,
-    "world_y": 350
+    "name": "Black Open 4",
+    "name_tr": "Black Acik 4",
+    "world_x": 1145,
+    "world_y": 385
   },
   {
     "terrain": "sea",
@@ -6001,18 +5548,16 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_azov",
-      "_shore_black_2",
-      "_sea_black_open_1",
       "_sea_black",
+      "_sea_black_open_1",
+      "_sea_azov",
       "_sea_black_open_0"
     ],
     "id": "_shore_black_0",
-    "name": "Eretna Shore",
-    "name_tr": "Eretna Açıkları",
-    "world_x": 1253,
-    "world_y": 410
+    "name": "Black Sea Shore",
+    "name_tr": "Karadeniz Kiyisi",
+    "world_x": 1245,
+    "world_y": 455
   },
   {
     "terrain": "sea",
@@ -6029,9 +5574,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
+      "_shore_red_0",
       "_sea_red_open_1",
-      "_sea_red",
-      "_shore_red_0"
+      "_sea_red"
     ],
     "id": "_sea_red_open_0",
     "name": "Red Open 1",
@@ -6054,9 +5599,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_red",
       "_shore_red_0",
-      "_sea_red_open_0"
+      "_sea_red_open_0",
+      "_sea_red"
     ],
     "id": "_sea_red_open_1",
     "name": "Red Open 2",
@@ -6079,9 +5624,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_red",
       "_sea_red_open_1",
-      "_sea_red_open_0"
+      "_sea_red_open_0",
+      "_sea_red"
     ],
     "id": "_shore_red_0",
     "name": "Red Sea Shore",
@@ -6104,9 +5649,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_persian",
+      "_shore_persian_0",
       "_sea_persian_open_1",
-      "_shore_persian_0"
+      "_sea_persian"
     ],
     "id": "_sea_persian_open_0",
     "name": "Persian Open 1",
@@ -6129,9 +5674,9 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_persian",
       "_sea_persian_open_0",
-      "_shore_persian_0"
+      "_shore_persian_0",
+      "_sea_persian"
     ],
     "id": "_sea_persian_open_1",
     "name": "Persian Open 2",
@@ -6229,8 +5774,8 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_caspian_open_1",
       "_sea_caspian_open_0",
+      "_sea_caspian_open_1",
       "_sea_caspian"
     ],
     "id": "_shore_caspian_0",
@@ -6256,9 +5801,8 @@
     "neighbors": [
       "_sea_adriatic",
       "_sea_ligurian",
-      "_sea_mediterranean_open_3",
-      "_shore_mediterranean_4",
-      "_shore_mediterranean_0"
+      "_shore_mediterranean_0",
+      "_sea_mediterranean_open_3"
     ],
     "id": "_sea_tyrrhenian",
     "name": "Tyrrhenian Sea",
@@ -6281,12 +5825,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_mediterranean_6",
-      "_shore_mediterranean_3",
-      "_shore_mediterranean_1",
-      "_shore_mediterranean_2",
       "_sea_aegean",
-      "_shore_mediterranean_5"
+      "_shore_mediterranean_1",
+      "_shore_mediterranean_3",
+      "_shore_mediterranean_2"
     ],
     "id": "_sea_ionian",
     "name": "Ionian Sea",
@@ -6309,11 +5851,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_tyrrhenian",
-      "_sea_adriatic",
-      "_sea_med_west",
+      "_shore_mediterranean_0",
       "_sea_mediterranean_open_3",
-      "_shore_mediterranean_0"
+      "_sea_med_west",
+      "_sea_tyrrhenian"
     ],
     "id": "_sea_ligurian",
     "name": "Ligurian Sea",
@@ -6336,13 +5877,11 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_black_open_3",
-      "_sea_aegean",
-      "_shore_black_2",
-      "_sea_black_open_1",
       "_sea_black",
-      "_sea_black_open_2"
+      "_sea_black_open_2",
+      "_sea_black_open_3",
+      "_sea_black_open_1",
+      "_sea_aegean"
     ],
     "id": "_sea_marmara",
     "name": "Sea of Marmara",
@@ -6365,12 +5904,10 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_black_1",
-      "_sea_black_open_3",
-      "_shore_black_2",
       "_sea_black",
-      "_shore_black_0",
-      "_sea_black_open_0"
+      "_sea_black_open_3",
+      "_sea_black_open_0",
+      "_shore_black_0"
     ],
     "id": "_sea_azov",
     "name": "Sea of Azov",
@@ -6393,12 +5930,11 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_sea_atlantic",
-      "_shore_atlantic_4",
-      "_shore_atlantic_1",
-      "_shore_atlantic_0",
+      "_sea_atlantic_open_1",
       "_sea_atlantic_open_2",
-      "_sea_atlantic_open_1"
+      "_shore_atlantic_0",
+      "_shore_atlantic_1",
+      "_sea_atlantic"
     ],
     "id": "_sea_biscay",
     "name": "Bay of Biscay",
@@ -6421,9 +5957,8 @@
     "religion": "",
     "active_event_id": "",
     "neighbors": [
-      "_shore_atlantic_3",
-      "_sea_atlantic_open_5",
       "_sea_north",
+      "_sea_atlantic_open_5",
       "_sea_irish",
       "_shore_atlantic_2"
     ],
@@ -6432,270 +5967,5 @@
     "name_tr": "Norvec Denizi",
     "world_x": 510,
     "world_y": 85
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_norwegian",
-      "_sea_atlantic_open_5",
-      "_sea_north",
-      "_sea_irish",
-      "_shore_atlantic_2"
-    ],
-    "id": "_shore_atlantic_3",
-    "name": "Norwegian Sea Shore",
-    "name_tr": "Norvec Denizi Kıyısı",
-    "world_x": 481,
-    "world_y": 154
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_shore_atlantic_1",
-      "_shore_atlantic_0",
-      "_sea_irish",
-      "_shore_atlantic_2",
-      "_sea_biscay"
-    ],
-    "id": "_shore_atlantic_4",
-    "name": "Bay of Biscay Shore",
-    "name_tr": "Biscay Korpezi Kıyısı",
-    "world_x": 408,
-    "world_y": 352
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_tyrrhenian",
-      "_sea_adriatic",
-      "_shore_mediterranean_1",
-      "_shore_mediterranean_2",
-      "_shore_mediterranean_5"
-    ],
-    "id": "_shore_mediterranean_4",
-    "name": "Adriatic Sea Shore",
-    "name_tr": "Adriyatik Denizi Kıyısı",
-    "world_x": 791,
-    "world_y": 612
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_shore_mediterranean_6",
-      "_sea_ionian",
-      "_shore_mediterranean_3",
-      "_shore_mediterranean_2",
-      "_sea_aegean"
-    ],
-    "id": "_shore_mediterranean_5",
-    "name": "Aegean Sea Shore",
-    "name_tr": "Ege Denizi Kıyısı",
-    "world_x": 900,
-    "world_y": 619
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_ionian",
-      "_shore_mediterranean_3",
-      "_shore_mediterranean_5",
-      "_sea_aegean",
-      "_shore_mediterranean_2"
-    ],
-    "id": "_shore_mediterranean_6",
-    "name": "Eastern Mediterranean Shore",
-    "name_tr": "Doğu Akdeniz Kıyısı",
-    "world_x": 939,
-    "world_y": 675
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_sea_black_open_3",
-      "_shore_black_2",
-      "_sea_marmara",
-      "_sea_black",
-      "_sea_black_open_0"
-    ],
-    "id": "_shore_black_1",
-    "name": "Caucasian Shore",
-    "name_tr": "Kafkasya Açıkları",
-    "world_x": 1345,
-    "world_y": 410
-  },
-  {
-    "terrain": "sea",
-    "owner_id": "",
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "neighbors": [
-      "_shore_black_1",
-      "_sea_black_open_3",
-      "_sea_azov",
-      "_sea_black",
-      "_sea_black_open_0"
-    ],
-    "id": "_shore_black_2",
-    "name": "Crimean Shore",
-    "name_tr": "Kırım Açıkları",
-    "world_x": 1240,
-    "world_y": 350
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 30,
-    "base_grain_output": 25,
-    "id": "lesbos",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Lesbos",
-    "name_tr": "Midilli",
-    "neighbors": [
-      "_sea_aegean_1",
-      "_sea_aegean_2"
-    ],
-    "owner_id": "byzantine",
-    "population": 250,
-    "religion": "orthodox",
-    "satisfaction": 60,
-    "shape_id": "LES",
-    "tax_rate": 30,
-    "terrain": "coast",
-    "trade_capacity": 3,
-    "unlock_turn": 0,
-    "world_x": 1022,
-    "world_y": 436
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 30,
-    "base_grain_output": 25,
-    "id": "chios",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Chios",
-    "name_tr": "Sakız",
-    "neighbors": [
-      "_sea_aegean_2"
-    ],
-    "owner_id": "genoa",
-    "population": 250,
-    "religion": "catholic",
-    "satisfaction": 60,
-    "shape_id": "CHS",
-    "tax_rate": 30,
-    "terrain": "coast",
-    "trade_capacity": 4,
-    "unlock_turn": 0,
-    "world_x": 1021,
-    "world_y": 500
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 35,
-    "base_grain_output": 30,
-    "id": "euboea",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Euboea",
-    "name_tr": "Eğriboz",
-    "neighbors": [
-      "greece",
-      "thessaly",
-      "_sea_aegean_1",
-      "_sea_aegean_2"
-    ],
-    "owner_id": "venice",
-    "population": 300,
-    "religion": "catholic",
-    "satisfaction": 60,
-    "shape_id": "EUB",
-    "tax_rate": 30,
-    "terrain": "coast",
-    "trade_capacity": 3,
-    "unlock_turn": 0,
-    "world_x": 918,
-    "world_y": 494
   }
 ]
