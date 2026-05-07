@@ -272,10 +272,10 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 		drawMinimapPolygons(screen, gs, mx, my)
 	}
 
-	// Sahiplik renk katmanı — yarı saydam doldurulmuş daireler
+	// Ordu konumları katmanı
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
-	drawMinimapOwnershipOverlay(screen, gs, float32(scaleX), float32(scaleY), mx, my)
+	drawMinimapArmies(screen, gs, float32(scaleX), float32(scaleY), mx, my)
 
 	// İç kenara ince koyu çizgi
 	vector.StrokeRect(screen, mx, my, minimapW, minimapH, 1, color.RGBA{30, 25, 15, 200}, false)
@@ -387,6 +387,38 @@ func colorToScale(clr color.Color) (float32, float32, float32, float32) {
 	bf := float32(b) / 0xffff
 	af := float32(a) / 0xffff
 	return rf, gf, bf, af
+}
+
+// drawMinimapArmies ordu konumlarını minimap üzerinde fraksiyon rengiyle gösterir.
+func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
+	for _, a := range gs.Armies {
+		region, ok := gs.Regions[a.RegionID]
+		if !ok {
+			continue
+		}
+		px := offsetX + float32(wcX(region.WorldX))*scaleX
+		py := offsetY + float32(wcY(region.WorldY))*scaleY
+
+		col := factionColor(gs, a.OwnerID)
+		isPlayer := a.OwnerID == string(gs.PlayerFactionID)
+
+		radius := float32(4)
+		if isPlayer {
+			radius = 5.5
+		}
+
+		// Gölge
+		vector.FillCircle(screen, px+1, py+1, radius+1, color.RGBA{0, 0, 0, 100}, true)
+		// Dolu daire — fraksiyon rengi
+		col.A = 220
+		vector.FillCircle(screen, px, py, radius, col, true)
+		// İç beyaz nokta — ordu simgesi olduğunu belirtir
+		vector.FillCircle(screen, px, py, radius*0.35, color.RGBA{255, 255, 255, 200}, true)
+		// Oyuncu ordusuna altın kenarlık
+		if isPlayer {
+			vector.StrokeCircle(screen, px, py, radius, 1.5, color.RGBA{255, 240, 120, 255}, true)
+		}
+	}
 }
 
 // drawMinimapOwnership fraksiyon sahipliğini minimap üzerinde küçük daireler olarak gösterir.
