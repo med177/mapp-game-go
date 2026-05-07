@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -45,17 +45,25 @@ applyCasualties(ordu, kayıpOranı) → gerçek birim kayıpları
 
 ---
 
-## calculateOutcome — ⚠️ Eksik Uygulama
+## calculateOutcome — Uygulama
 
-`calculateOutcome()` fonksiyonu şu an **kullanıcı tarafından yazılmayı bekliyor.**
+`calculateOutcome()` — `internal/combat/combat.go:85`
 
-`internal/combat/combat.go:63-100` arası hazır iskelet:
-- Parametre: `atkStr, defStr float64`
-- Döner: `(kazandıMı bool, atkKayıpOranı float64, defKayıpOranı float64)`
-- Düşünülecek tasarım kararları:
-  - Tamamen deterministik mi? → `ratio >= 1.0 = zafer`
-  - Hafif rastgele sonuç mu? → `rand.Float64()` ile varyasyon
-  - Ezici zafer vs. dar zafer ayrımı mı? → farklı kayıp oranları
+±%15 rastgele zar dalgalanması içerir; zayıf ordu nadir de olsa kazanabilir.
+
+```
+dice  := rand.Float64()*2 - 1) * 0.15   // [-0.15, +0.15]
+ratio := (atkStr / (defStr + 1)) * (1 + dice)
+```
+
+| Koşul | Sonuç | Saldıran Kayıp | Savunucu Kayıp |
+|---|---|---|---|
+| `ratio > 1.5` | Ezici Zafer | %10 | %80 |
+| `ratio >= 1.0` | Dar Zafer | %35 | %50 |
+| `ratio >= 0.7` | Geri Çekilme | %50 | %30 |
+| `ratio < 0.7` | Ağır Yenilgi | %80 | %10 |
+
+`outcomeDescription()` sonuca göre `"Ezici Zafer"`, `"Dar Zafer"`, `"Geri Çekilme"`, `"Ağır Yenilgi"` metin üretir.
 
 ---
 

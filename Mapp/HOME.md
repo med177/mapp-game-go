@@ -1,7 +1,7 @@
 ---
 type: index
 tags: [home, navigation]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 ---
 
 # Mapp Game Go — Wiki
@@ -31,7 +31,7 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 | [[systems/events]] | Tarihsel olaylar, tetikleme koşulları |
 | [[systems/tech-tree]] | Teknoloji araştırma, etkiler, bağımlılıklar |
 | [[systems/victory]] | 4 zafer tipi, kontrol mantığı |
-| [[systems/ai]] | AI tur mantığı, koalisyon, zorluk seviyeleri |
+| [[systems/ai]] | AI tur mantığı, koalisyon, birim alımı, teknoloji |
 
 ## Dünya
 
@@ -49,7 +49,19 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 
 ---
 
+## Senaryo Sistemi
+
+`internal/scenario/scenario.go` — `assets/scenarios/` altındaki senaryo klasörlerini yükler.
+
+Her senaryo: `scenario.json` (meta + zafer koşulları) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/`
+
+Mevcut senaryolar: `1300_ottoman_rise` · `1444_constantinople`
+
+---
+
 ## Hızlı Referans
+
+**Akış:** `PhaseMainMenu` → `PhaseScenarioSelect` → `PhaseFactionSelect` → `PhaseVictorySelect` → oyun
 
 **Tur sırası:** `PhasePlayerTurn` → `PhaseAITurn` → `PhaseTurnResolution` → `PhasePlayerTurn`
 

@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "main",
+    "type": "split",
+    "children": [
+      {
+        "id": "c10a1f1206e6764a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "left",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "systems/combat.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "combat"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "sidebar",
+    "type": "split",
+    "children": [
+      {
+        "id": "1a053db264a58985",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "file-explorer",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Dosya Gezgini"
+            }
+          },
+          {
+            "id": "d6175698063d373e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Ara"
+            }
+          },
+          {
+            "id": "74cb55829ca63998",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Yer İmleri"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d0bd8d5dd9e85757",
+    "type": "split",
+    "children": [
+      {
+        "id": "670d1dbdc45ca1f0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "241ab130f4a0ae8e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "systems/combat.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "combat için geri bağlantılar"
+            }
+          },
+          {
+            "id": "081a0e7b33239e95",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "systems/combat.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "combat'dan giden bağlantılar"
+            }
+          },
+          {
+            "id": "38ae840c0a4023d1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiketler"
+            }
+          },
+          {
+            "id": "9613683952fa3375",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Tüm özellikler"
+            }
+          },
+          {
+            "id": "aa404227fc50fefc",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "systems/combat.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "combat ana hatları"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Hızlı geçişi aç": false,
+      "graph:Grafik görünümünü aç": false,
+      "canvas:Yeni tuval oluşturun": false,
+      "daily-notes:Bugünün Notunu Aç": false,
+      "templates:Şablon ekle": false,
+      "command-palette:Komut paletini aç": false,
+      "bases:Yeni taban oluştur": false
+    }
+  },
+  "active": "left",
+  "lastOpenFiles": [
+    "dev/progress.md.tmp.36248.89bc282ae96d",
+    "HOME.md.tmp.36248.354e02f5ed81",
+    "systems/diplomacy.md",
+    "systems/economy.md",
+    "world/factions.md",
+    "HOME.md.tmp.36248.f7656c08add9",
+    "world/regions.md",
+    "architecture/state-management.md",
+    "architecture/render-pipeline.md",
+    "architecture/game-loop.md",
+    "HOME.md",
+    "HOME.md.tmp.36248.0fdf0370fb69",
+    "dev/data-format.md.tmp.36248.496843948b78",
+    "dev/data-format.md.tmp.36248.55fda05f8300"
+  ]
+}

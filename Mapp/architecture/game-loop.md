@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [state-management, render-pipeline]
 ---
 
@@ -31,6 +31,8 @@ Layout()  → pencere boyutu bildirir
 ```
 PhaseMainMenu
     ↓ YeniOyun
+PhaseScenarioSelect
+    ↓ SenaryoSeç
 PhaseFactionSelect
     ↓ FraksiyonSeç
 PhaseVictorySelect
@@ -45,7 +47,7 @@ PhaseTurnResolution                    │
     └─ oyun bitti → PhaseGameOver
 ```
 
-**Ayrıca:** `PhaseSettings` (ana menüden, ana menüye döner)
+**Ayrıca:** `PhaseSettings` (ana menüden, ana menüye döner) · `PhasePauseMenu` (ESC ile)
 
 ---
 

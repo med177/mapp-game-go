@@ -50,6 +50,9 @@ related: [HOME, architecture/render-pipeline]
 | İngiltere bölgeleri | ✅ | 6 tarihi bölge: London, Yorkshire, Lancashire, Mercia, East Anglia, Wessex |
 | Fransa bölgeleri | ✅ | 8 tarihi bölge: Paris, Normandy, Brittany, Anjou, Champagne, Burgundy, Provence, Languedoc |
 | HRE prenslikleri | ✅ | 6 prenslik: Brandenburg, Saxony, Bavaria, Westphalia, Thuringia, Palatinate |
+| Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `scenarios.json` index + senaryo klasörü yapısı |
+| Senaryo seçim ekranı | ✅ | `render/scenario_select.go`, `PhaseScenarioSelect` fazı |
+| Development mode | ✅ | `GameState.DevelopmentMode` bool alanı |
 
 ---
 

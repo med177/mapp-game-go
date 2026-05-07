@@ -1,15 +1,47 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [architecture/state-management, world/regions, world/factions]
 ---
 
 # JSON Veri Formatları
 
-Tüm oyun tanım verisi `assets/data/` altında JSON olarak tutulur. Kod bu dosyaları okur — hiçbir tanım hardcode edilmez.
+Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` altında JSON olarak tutulur. Kod bu dosyaları `scenario.DataPath()` üzerinden okur — hiçbir tanım hardcode edilmez.
+
+## Senaryo Yapısı
+
+`assets/scenarios/scenarios.json` — yükleme sırası listesi:
+```json
+["1300_ottoman_rise", "1444_constantinople"]
+```
+
+`assets/scenarios/<id>/scenario.json` — senaryo meta verisi:
+```json
+{
+  "id": "1300_ottoman_rise",
+  "name": "Osmanlı'nın Yükselişi",
+  "description": "...",
+  "year": 1300,
+  "month": 3,
+  "victory_conditions": [
+    {
+      "id": "ottoman_rise",
+      "title": "Osmanlı'nın Yükselişi",
+      "type": "conquer_city",
+      "target": "CON"
+    }
+  ]
+}
+```
+
+`type` değerleri: `domination`, `economic`, `military`, `religious`, `conquer_city`
 
 ---
+
+## Veri Dosyaları (`data/` klasörü)
+
+Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
 
 ## regions.json
 
@@ -119,8 +151,10 @@ Bölge listesi. Her kayıt:
 
 ---
 
-## generated/country_shapes.json
+## country_shapes.json
 
 `tools/populate_all_shapes.py` tarafından Natural Earth `ne_10m_admin_0_countries` şekillerinden üretilir. Manuel düzenleme **yapma** — araçla yeniden üret.
 
 Format: bölge ID → poligon nokta dizisi `[[x, y], ...]` (dünya koordinatları).
+
+> **Not:** Eski `assets/data/generated/country_shapes.json` yolu artık kullanılmıyor. Her senaryo kendi `data/country_shapes.json` dosyasına sahip.

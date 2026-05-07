@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -64,7 +64,7 @@ type Relation struct {
 | İttifak | +30 |
 | `applyRelationDecay()` | Her tur sıfıra doğru çekme |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
-| Din farkı | Kalıcı ceza çarpanı (TODO) |
+| Din bonusu/cezası | `ReligionRelation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
 
 → `applyRelationDecay` tur çözümleme sırası: [[architecture/game-loop]]
 
@@ -90,7 +90,6 @@ Oyuncu `coalitionThreshold = 8` bölgeyi geçince AI fraksiyonları aralarında 
 
 ## Eksik / Planlanan
 
-- [ ] AI kabul/red mantığı (ilişki skoruna göre)
-- [ ] Din ceza çarpanı uygulanması
+- [ ] AI kabul/red mantığı (ilişki skoruna göre — şu an tüm teklifler otomatik kabul)
 - [ ] Komşu bölge tehdidi algısı → puan cezası
-- [ ] `religion/` paketi ayrıştırılması (şu an `game.go` içinde inline)
+- [ ] `religion/` paketi ayrıştırılması (şu an `faction.go` + `resolution.go` içinde inline)

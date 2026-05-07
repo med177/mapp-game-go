@@ -15,26 +15,46 @@ related: [game-loop, render-pipeline]
 
 ```go
 type GameState struct {
-    Turn, Year, Month, StartYear int          // Zaman
-    PlayerFactionID               FactionID   // Oyuncu
-    Difficulty                    int         // 1=kolay 2=normal 3=zor
-    Victory                       VictoryCondition
+    // Zaman
+    Turn, Year, Month, StartYear int
 
-    Regions   map[RegionID]*Region            // Dünya verisi
+    // Senaryo
+    ScenarioID   string   // ör. "1300_ottoman_rise"
+    ScenarioPath string   // senaryo klasörü tam yolu
+
+    // Oyuncu
+    PlayerFactionID FactionID
+    Difficulty      int       // 1=kolay 2=normal 3=zor
+    DevelopmentMode bool
+
+    Victory VictoryCondition
+
+    // Dünya verisi
+    Regions   map[RegionID]*Region
     Factions  map[FactionID]*Faction
     Armies    map[ArmyID]*Army
-    ShapeData CountryShapeJSON                // json:"-" — kaydedilmez
+    ShapeData CountryShapeJSON           // json:"-"
 
-    UnitTypes     map[string]*UnitType        // json:"-" — assets'ten yüklenir
-    BuildingTypes map[string]*Building        // json:"-"
-    TechTypes     map[string]*Technology      // json:"-"
+    // Runtime-only (json:"-")
+    UnitTypes          map[string]*UnitType
+    BuildingTypes      map[string]*Building
+    TechTypes          map[string]*Technology
+    AvailableVictories []VictoryOptionDef  // scenario.json'dan
 
-    Relations   map[string]*Relation          // Diplomatik ilişkiler
-    TradeRoutes []*TradeRoute
-    FiredEventIDs map[string]bool             // Tekrar tetiklenmesin diye
+    // Zafer takibi
+    EconomicVictoryTurns  int
+    FactionsEliminated    int
+    ReligiousVictoryTurns int
 
-    Phase    Phase                            // State machine pozisyonu
-    WinnerID FactionID                        // Boşsa oyun devam ediyor
+    // Diplomatik & ticaret
+    Relations     map[string]*Relation
+    TradeRoutes   []*TradeRoute
+    FiredEventIDs map[string]bool
+
+    NextArmySeq int  // ordu ID üretici sayaç
+
+    Phase    Phase
+    WinnerID FactionID
 }
 ```
 
@@ -46,10 +66,11 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 | Alan | Yükleme kaynağı |
 |---|---|
-| `UnitTypes` | `assets/data/units.json` |
-| `BuildingTypes` | `assets/data/buildings.json` |
-| `TechTypes` | `assets/data/technologies.json` |
-| `ShapeData` | `assets/data/generated/country_shapes.json` |
+| `UnitTypes` | `assets/scenarios/<id>/data/units.json` |
+| `BuildingTypes` | `assets/scenarios/<id>/data/buildings.json` |
+| `TechTypes` | `assets/scenarios/<id>/data/technologies.json` |
+| `ShapeData` | `assets/scenarios/<id>/data/country_shapes.json` |
+| `AvailableVictories` | `assets/scenarios/<id>/scenario.json` |
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
 
@@ -65,21 +86,33 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `IsEliminated(fid) bool` — bölgesi yoksa `true`
 
+`ManpowerCap(fid) int` — kara bölgesi başı 5 + kışlalı bölge başı +5 ek kapasite
+
+`DeployedLandUnits(fid) int` — fraksiyonun aktif kara birim sayısı
+
+`MaxLandArmies(fid) int` — `ceil(kara_bölge_sayısı / 2)` (minimum 1)
+
+`CurrentLandArmies(fid) int` — fraksiyonun aktif kara ordu sayısı
+
 ---
 
 ## Veri Yükleme Akışı
 
-`loadGameState()` — `internal/game/game.go:614`
+`loadGameState()` — `internal/game/game.go`
+
+Tüm yollar `gs.ScenarioPath` üzerinden senaryo klasörüne yönelir:
 
 ```
-world.LoadRegions()           → regions.json
-world.LoadCountryShapes()     → generated/country_shapes.json
-faction.LoadFactions()        → factions.json
-army.LoadUnitTypes()          → units.json
-city.LoadBuildings()          → buildings.json
-tech.LoadTechnologies()       → technologies.json
-faction.BuildInitialRelations() → ilişki map'i oluştur
-buildStartingArmies()         → başlangıç orduları
+scenario.LoadAll("assets/scenarios")  → senaryo listesi
+    ↓ senaryo seçilince
+world.LoadRegions(scenario.DataPath("regions.json"))
+world.LoadCountryShapes(scenario.DataPath("country_shapes.json"))
+faction.LoadFactions(scenario.DataPath("factions.json"))
+army.LoadUnitTypes(scenario.DataPath("units.json"))
+city.LoadBuildings(scenario.DataPath("buildings.json"))
+tech.LoadTechnologies(scenario.DataPath("technologies.json"))
+faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
+buildStartingArmies()            → başlangıç orduları
 ```
 
 ---
@@ -108,6 +141,7 @@ Detaylar → [[systems/victory]]
 ```go
 PhaseMainMenu       // ana menü
 PhaseSettings       // ayarlar ekranı
+PhaseScenarioSelect // senaryo seçim ekranı  ← YENİ
 PhaseFactionSelect  // fraksiyon seçim
 PhaseVictorySelect  // zafer koşulu seçim
 PhasePlayerTurn     // oyuncu aksiyonları
