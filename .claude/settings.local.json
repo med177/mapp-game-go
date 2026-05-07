@@ -3,7 +3,9 @@
     "allow": [
       "Bash(go version *)",
       "Bash(go mod *)",
-      "Bash(go get *)"
+      "Bash(go get *)",
+      "Bash(python -c \"import json; data=json.load\\(open\\('assets/data/regions.json'\\)\\); hre=[r for r in data['regions'] if 'hre' in r.get\\('id',''\\).lower\\(\\) or 'holy' in r.get\\('name',''\\).lower\\(\\) or r.get\\('controller',''\\)=='hre' or 'german' in r.get\\('name',''\\).lower\\(\\) or 'bohemia' in r.get\\('name',''\\).lower\\(\\) or 'austria' in r.get\\('name',''\\).lower\\(\\) or 'bavaria' in r.get\\('name',''\\).lower\\(\\) or 'saxony' in r.get\\('name',''\\).lower\\(\\) or 'prussia' in r.get\\('name',''\\).lower\\(\\) or 'silesia' in r.get\\('name',''\\).lower\\(\\) or 'moravia' in r.get\\('name',''\\).lower\\(\\)]; print\\(f'HRE bölge sayisi: {len\\(hre\\)}'\\); [print\\(f'  {r[\\\\\"id\\\\\"]} | {r[\\\\\"name\\\\\"]} | owner={r.get\\(\\\\\"owner\\\\\",\\\\\"?\\\\\"\\)} | shape={r.get\\(\\\\\"shape_source\\\\\",\\\\\"?\\\\\"\\)}'\\) for r in hre[:30]]\")",
+      "Bash(python -c ' *)"
     ]
   }
 }
