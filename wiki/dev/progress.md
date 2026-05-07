@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [HOME]
 ---
 
@@ -27,8 +27,10 @@ related: [HOME]
 | AI turu | ✅ | Temel hareket mantığı, koalisyon (zor) |
 | Tarihsel olaylar | ✅ | JSON tetikleyici, tek-seferlik |
 | Zafer koşulları | ✅ | 4 tip, Check() döngüsü |
-| Kayıt/yükleme | ✅ | JSON autosave |
-| Ana menü / ayarlar | ✅ | Fraksiyon & zafer seçim ekranı |
+| Kayıt/yükleme | ✅ | 4 slot (autosave + slot1-3), slot silme, metadata önizleme |
+| Ana menü / ayarlar | ✅ | Fraksiyon & zafer seçim ekranı; "Kayıttan Yükle" slot seçim ekranına açılır |
+| Pause menüsü | ✅ | ESC ile açılır; Devam Et / Kaydet / Yükle / Ana Menü / Çıkış |
+| Ordu detay paneli (20 slot) | ✅ | Boş slotlar silik, HP çubuğu, deneyim çubuğu |
 | Minimap | ✅ | Sağ alt köşe, kamera konumu |
 | Vergi ayarlama | ✅ | . / , tuşları, ±5% |
 | Deniz birimi | ✅ | Nakliye gemisi, liman koşulu |
@@ -50,7 +52,7 @@ related: [HOME]
 | `religion/` paketi ayrıştırması | 🟢 Düşük | game.go'da inline |
 | Sprite'lar | 🟢 Düşük | Şu an renkli poligonlar |
 | Ses efektleri | 🟢 Düşük | |
-| Tek seferlik kayıt → çoklu slot | 🟢 Düşük | |
+| ~~Tek seferlik kayıt → çoklu slot~~ | ✅ | Tamamlandı (2026-05-07) |
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [game-loop, render-pipeline]
 ---
 
@@ -114,6 +114,13 @@ PhasePlayerTurn     // oyuncu aksiyonları
 PhaseAITurn         // AI tur işlemi
 PhaseTurnResolution // tur çözümleme
 PhaseGameOver       // oyun sonu
+PhasePauseMenu      // oyun içi duraklama menüsü (ESC)
+PhaseLoadSelect     // kayıt slot seçim ekranı (yükleme)
+PhaseSaveSelect     // kayıt slot seçim ekranı (kaydetme)
 ```
+
+**ESC akışı (PhasePlayerTurn'de):**
+- Seçili bölge/ordu/panel varsa → iptal et (faz değişmez)
+- Hiçbir şey seçili değilse → `PhasePauseMenu`
 
 → Geçiş diyagramı için [[architecture/game-loop]]

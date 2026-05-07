@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 related: [game-loop, state-management]
 ---
 
@@ -25,6 +25,14 @@ type Renderer struct {
     showDiplomacy, showTech bool
     eventLog []string           // son 8 olay
     combatLog string            // 3 saniyelik bildirim
+
+    // Duraklama menüsü
+    pauseCursor int
+
+    // Kayıt/yükleme slot seçim ekranı
+    slotCursor        int
+    saveSelectMode    bool
+    pendingDeleteSlot string  // onay bekleyen slot adı
 }
 ```
 
@@ -36,17 +44,21 @@ type Renderer struct {
 
 | Sıra | Katman | Dosya |
 |---|---|---|
-| 0 | Özel ekranlar (menü, ayarlar, seçim, game over) | `main_menu.go`, `settings.go`, `faction_select.go`, `victory_select.go` |
+| 0 | Özel tam ekranlar: ana menü, ayarlar, fraksiyon seçim, zafer seçim, game over | `main_menu.go`, `settings.go`, `faction_select.go`, `victory_select.go` |
+| 0 | Kayıt slot seçim ekranları (PhaseLoadSelect / PhaseSaveSelect) | `load_select.go` |
+| 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası | `renderer.go` |
 | 5 | Ordu ikonları | `renderer.go` |
-| 6 | UI panelleri (alt bar, bölge paneli, ordu paneli, minimap, event log) | `panel.go` |
+| 6 | UI panelleri (alt bar, bölge/ordu/minimap/event log) | `panel.go` |
+| 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 7 | Diplomasi paneli (Tab) | `diplom.go` |
 | 8 | Teknoloji paneli (T) | `tech_panel.go` |
 | 9 | Bildirim mesajı (combatLog) | `renderer.go` |
-| 10 | Tarihsel olay popup | `renderer.go` |
+| 10 | Savaş ilan onay diyalogu | `renderer.go` |
+| 11 | Tarihsel olay popup | `renderer.go` |
 
 ---
 
@@ -108,13 +120,17 @@ ShowHistoricalEvent(title,desc) → tam ekran popup, herhangi tuş/tık ile kapa
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `tile.go` | Arazi renk/doku katmanı |
 | `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri |
+| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, dolu/boş kart, HP çubuğu |
 | `diplom.go` | Diplomasi paneli UI + input |
 | `tech_panel.go` | Teknoloji ağacı paneli + input |
-| `action.go` | `InputAction` tanımları |
+| `pause_menu.go` | Oyun içi duraklama menüsü (ESC) |
+| `load_select.go` | Kayıt slot seçim ekranı (yükleme + kaydetme + silme) |
+| `recruit_panel.go` | Birlik alım paneli |
+| `action.go` | `InputAction` ve `ActionKind` tanımları |
 | `font.go` | Font yükleme, `DrawText`, `MeasureText` |
 | `assets.go` | Görsel varlık yükleme |
 | `cursor.go` | İmleç şekli yönetimi |
 | `faction_select.go` | Fraksiyon seçim ekranı |
 | `victory_select.go` | Zafer koşulu seçim ekranı |
-| `main_menu.go` | Ana menü |
+| `main_menu.go` | Ana menü ("Kayıttan Yükle" → slot seçim ekranı) |
 | `settings.go` | Ayarlar ekranı |
