@@ -85,6 +85,19 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+6, FaceSmall, mpCol)
 
+	// Aksiyon butonları — BÖLDÜR ve BİRLEŞTİR
+	mergeTarget := FindMergeTarget(gs, aid)
+	hasMerge := mergeTarget != ""
+	canSplit := len(a.Units) >= 2
+	if canSplit || hasMerge {
+		drawArmyActionButton(screen, px, py, panelW, "✂ BÖLDÜR", canSplit, hasMerge, true)
+	}
+	if hasMerge {
+		other := gs.Armies[mergeTarget]
+		canMerge := len(other.Units) < army.MaxArmySize
+		drawArmyActionButton(screen, px, py, panelW, "⊕ BİRLEŞTİR", canMerge, true, false)
+	}
+
 	// Ayırıcı
 	sepY := py + armyPanelHdrH
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
@@ -175,4 +188,107 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.FillRect(screen, cx+1, hpY+hpBarH, xpW, 2, color.RGBA{80, 160, 255, 180}, false)
 		}
 	}
+}
+
+const (
+	actionBtnW   = float32(92)
+	actionBtnH   = float32(18)
+	actionBtnGap = float32(8)
+)
+
+// armyPanelGeometry panel px/py/panelW değerlerini hesaplar.
+func armyPanelGeometry() (px, py, panelW float32) {
+	const totalSlots = army.MaxArmySize
+	cols := maxCols
+	rows := (totalSlots + maxCols - 1) / maxCols
+	panelW = float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	px = float32(ScreenWidth)/2 - panelW/2
+	py = bottomBarTop() - panelH - 5
+	return
+}
+
+// splitButtonRect BÖLDÜR butonunun piksel dikdörtgenini döner.
+// hasMerge true ise iki buton yan yana olacak şekilde sola kayar.
+func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
+	bw, bh = actionBtnW, actionBtnH
+	by = py + 4
+	if hasMerge {
+		bx = px + panelW/2 - actionBtnGap/2 - bw
+	} else {
+		bx = px + panelW/2 - bw/2
+	}
+	return
+}
+
+// mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
+func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
+	bw, bh = actionBtnW, actionBtnH
+	by = py + 4
+	bx = px + panelW/2 + actionBtnGap/2
+	return
+}
+
+// drawArmyActionButton tek bir aksiyon butonunu çizer.
+// isSplit true → sol buton (BÖLDÜR), false → sağ buton (BİRLEŞTİR).
+func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label string, active, hasMerge, isSplit bool) {
+	var bx, by, bw, bh float32
+	if isSplit {
+		bx, by, bw, bh = splitButtonRect(px, py, panelW, hasMerge)
+	} else {
+		bx, by, bw, bh = mergeButtonRect(px, py, panelW)
+	}
+	bg := color.RGBA{50, 35, 12, 220}
+	border := color.RGBA{160, 120, 40, 200}
+	txt := color.RGBA{220, 185, 70, 255}
+	if !active {
+		bg = color.RGBA{30, 25, 18, 140}
+		border = color.RGBA{55, 45, 28, 120}
+		txt = color.RGBA{90, 80, 55, 160}
+	}
+	vector.FillRect(screen, bx, by, bw, bh, bg, false)
+	vector.StrokeRect(screen, bx, by, bw, bh, 1, border, false)
+	tw := float32(MeasureText(label, FaceSmall))
+	DrawText(screen, label, float64(bx)+float64(bw)/2-float64(tw)/2, float64(by)+3, FaceSmall, txt)
+}
+
+// FindMergeTarget aynı bölgede aynı türde (naval/kara) başka dost ordu varsa ID'sini döner.
+func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
+	a, ok := gs.Armies[aid]
+	if !ok {
+		return ""
+	}
+	for otherID, other := range gs.Armies {
+		if otherID == aid || other.RegionID != a.RegionID ||
+			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+			continue
+		}
+		return otherID
+	}
+	return ""
+}
+
+// SplitButtonHitTest fare BÖLDÜR butonuna denk geliyorsa true döner.
+func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	if aid == "" {
+		return false
+	}
+	a, ok := gs.Armies[aid]
+	if !ok || len(a.Units) < 2 {
+		return false
+	}
+	px, py, panelW := armyPanelGeometry()
+	hasMerge := FindMergeTarget(gs, aid) != ""
+	bx, by, bw, bh := splitButtonRect(px, py, panelW, hasMerge)
+	return fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh)
+}
+
+// MergeButtonHitTest fare BİRLEŞTİR butonuna denk geliyorsa true döner.
+func MergeButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	if FindMergeTarget(gs, aid) == "" {
+		return false
+	}
+	px, py, panelW := armyPanelGeometry()
+	bx, by, bw, bh := mergeButtonRect(px, py, panelW)
+	return fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh)
 }

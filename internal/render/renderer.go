@@ -3,6 +3,7 @@ package render
 import (
 	"image/color"
 	"math"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
@@ -366,23 +367,56 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 	}
 }
 
-// drawArmies tüm orduları harita üzerinde çizer.
-func (r *Renderer) drawArmies(screen *ebiten.Image) {
+// armyIconPos bir ordunun ekrandaki ikon koordinatlarını tutar.
+type armyIconPos struct {
+	ArmyID army.ArmyID
+	X, Y   float32
+}
+
+// armyIconPositions tüm orduların ekran koordinatlarını hesaplar.
+// Aynı bölgedeki birden fazla ordu yan yana offset'lenir.
+func (r *Renderer) armyIconPositions() []armyIconPos {
+	const iconStep = float32(26) // ikon genişliği 20 + 6px boşluk
+
+	byRegion := map[world.RegionID][]army.ArmyID{}
 	for aid, a := range r.gs.Armies {
-		region, ok := r.gs.Regions[a.RegionID]
+		byRegion[a.RegionID] = append(byRegion[a.RegionID], aid)
+	}
+
+	var result []armyIconPos
+	for rid, aids := range byRegion {
+		region, ok := r.gs.Regions[rid]
 		if !ok {
 			continue
 		}
 		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-		// İkon şehir noktasının üstünde
-		iconX := float32(sx)
-		iconY := float32(sy) - 22
+		baseY := float32(sy) - 22
 
-		// Fraksiyon rengi
+		sort.Slice(aids, func(i, j int) bool { return aids[i] < aids[j] })
+
+		n := float32(len(aids))
+		startX := float32(sx) - (n-1)*iconStep/2
+		for i, aid := range aids {
+			result = append(result, armyIconPos{
+				ArmyID: aid,
+				X:      startX + float32(i)*iconStep,
+				Y:      baseY,
+			})
+		}
+	}
+	return result
+}
+
+// drawArmies tüm orduları harita üzerinde çizer.
+func (r *Renderer) drawArmies(screen *ebiten.Image) {
+	for _, pos := range r.armyIconPositions() {
+		a, ok := r.gs.Armies[pos.ArmyID]
+		if !ok {
+			continue
+		}
 		fc := factionColor(r.gs, a.OwnerID)
-
-		isSelected := aid == r.SelectedArmy
-		r.drawArmyIcon(screen, iconX, iconY, fc, len(a.Units), isSelected)
+		isSelected := pos.ArmyID == r.SelectedArmy
+		r.drawArmyIcon(screen, pos.X, pos.Y, fc, len(a.Units), isSelected)
 	}
 }
 
@@ -676,28 +710,32 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
+	// BÖLDÜR butonu tıklaması
+	if r.SelectedArmy != "" && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+		return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
+	}
+	// BİRLEŞTİR butonu tıklaması
+	if r.SelectedArmy != "" && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+		return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
+	}
+
 	// Asker al paneli tıklaması — bölge seçiminden önce kontrol edilmeli
 	if uid := RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion); uid != "" {
 		return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: uid}
 	}
 
 	// Ordu ikonu tıklaması → seç / seçimi kaldır
-	for aid, a := range r.gs.Armies {
-		region, ok := r.gs.Regions[a.RegionID]
-		if !ok {
-			continue
-		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-		dx := fx - sx
-		dy := fy - (sy - 22)
+	for _, pos := range r.armyIconPositions() {
+		dx := fx - float64(pos.X)
+		dy := fy - float64(pos.Y)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
-			if r.SelectedArmy == aid {
+			if r.SelectedArmy == pos.ArmyID {
 				r.SelectedArmy = ""
 				return InputAction{}
 			}
-			r.SelectedArmy = aid
+			r.SelectedArmy = pos.ArmyID
 			r.SelectedRegion = ""
-			return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+			return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
 		}
 	}
 

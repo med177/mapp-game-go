@@ -44,6 +44,8 @@ const (
 	ActionOpenSaveSelect ActionKind = "open_save_select"  // slot seçerek kaydetme ekranını aç
 	ActionSelectSave     ActionKind = "select_save"        // belirli slotu yükle/kaydet (BuildingID = slot adı)
 	ActionDeleteSave     ActionKind = "delete_save"        // belirli slotu sil (BuildingID = slot adı)
+	ActionSplitArmy     ActionKind = "split_army"         // seçili orduyu ikiye böl
+	ActionMergeArmies   ActionKind = "merge_armies"       // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

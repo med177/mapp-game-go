@@ -2,7 +2,7 @@
 type: system
 tags: [combat, battle, terrain, casualties]
 last_updated: 2026-05-06
-related: [systems/ai, world/regions, systems/tech-tree]
+related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
 # Çarpışma Sistemi

@@ -178,6 +178,11 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		DrawText(screen, phaseLabel(gs.Phase), rx3, ry+26, FaceSmall, ColorGray)
 	}
 
+	// Askeri kapasite göstergesi
+	if hasPlayer {
+		drawManpowerDisplay(screen, gs)
+	}
+
 	// Zafer göstergesi — kaynak sütunundan sonra başlar
 	if hasPlayer {
 		drawVictoryProgress(screen, gs)
@@ -749,6 +754,38 @@ func victoryTypeLabel(vtype state.VictoryType) string {
 }
 
 // ── Zafer İlerleme Göstergesi ─────────────────────────────────────────
+
+// drawManpowerDisplay alt barda savaşçı kapasitesini ve ordu sayısını gösterir.
+func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState) {
+	pid := gs.PlayerFactionID
+	deployed := gs.DeployedLandUnits(pid)
+	cap := gs.ManpowerCap(pid)
+	armies := gs.CurrentLandArmies(pid)
+	maxArmies := gs.MaxLandArmies(pid)
+
+	mx := float64(885)
+	my := float64(bottomBarTop()) + 8
+
+	DrawText(screen, "Savaşçı", mx, my, FaceSmall, ColorGray)
+	unitStr := itoa(deployed) + "/" + itoa(cap)
+	unitCol := ColorGold
+	if cap > 0 && deployed >= cap {
+		unitCol = ColorRed
+	}
+	DrawText(screen, unitStr, mx+65, my, FaceMed, unitCol)
+
+	DrawText(screen, "Ordu", mx, my+28, FaceSmall, ColorGray)
+	armyStr := itoa(armies) + "/" + itoa(maxArmies)
+	armyCol := ColorGold
+	if armies >= maxArmies {
+		armyCol = ColorRed
+	}
+	DrawText(screen, armyStr, mx+65, my+28, FaceMed, armyCol)
+
+	// İnce ayraç
+	by := float32(bottomBarTop())
+	vector.StrokeLine(screen, float32(mx)-8, by+8, float32(mx)-8, by+bottomBarH-8, 1, color.RGBA{80, 65, 35, 120}, false)
+}
 
 // drawVictoryProgress alt barda seçilen zafer tipine göre ilerlemeyi gösterir.
 func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState) {

@@ -129,3 +129,66 @@ func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 func (s *GameState) IsEliminated(fid faction.FactionID) bool {
 	return len(s.RegionsOwnedBy(fid)) == 0
 }
+
+// ── Askeri Kapasite ───────────────────────────────────────────────────────
+
+const (
+	ManpowerPerRegion    = 5 // kara bölgesi başına temel birim kapasitesi
+	ManpowerBarracksAdd  = 5 // kışlası olan bölgenin ekstra kapasitesi
+)
+
+// ManpowerCap bir fraksiyonun toplam kara birimi kapasitesini döner.
+func (s *GameState) ManpowerCap(fid faction.FactionID) int {
+	cap := 0
+	for _, r := range s.Regions {
+		if r.OwnerID != string(fid) || r.IsSea {
+			continue
+		}
+		cap += ManpowerPerRegion
+		for _, bid := range r.Buildings {
+			if bid == "barracks" {
+				cap += ManpowerBarracksAdd
+				break
+			}
+		}
+	}
+	return cap
+}
+
+// DeployedLandUnits bir fraksiyonun aktif kara ordu birim sayısını döner.
+func (s *GameState) DeployedLandUnits(fid faction.FactionID) int {
+	total := 0
+	for _, a := range s.Armies {
+		if a.OwnerID == string(fid) && !a.IsNaval {
+			total += len(a.Units)
+		}
+	}
+	return total
+}
+
+// MaxLandArmies bir fraksiyonun sahip olabileceği maksimum kara ordu sayısını döner.
+// Her 2 kara bölgesi için 1 ordu; minimum 1.
+func (s *GameState) MaxLandArmies(fid faction.FactionID) int {
+	landCount := 0
+	for _, r := range s.Regions {
+		if r.OwnerID == string(fid) && !r.IsSea {
+			landCount++
+		}
+	}
+	max := (landCount + 1) / 2 // ceil(landCount/2)
+	if max < 1 {
+		max = 1
+	}
+	return max
+}
+
+// CurrentLandArmies bir fraksiyonun aktif kara ordu sayısını döner.
+func (s *GameState) CurrentLandArmies(fid faction.FactionID) int {
+	count := 0
+	for _, a := range s.Armies {
+		if a.OwnerID == string(fid) && !a.IsNaval {
+			count++
+		}
+	}
+	return count
+}

@@ -114,6 +114,10 @@ func (g *Game) Update() error {
 			g.gs.Phase = state.PhaseAITurn
 		case render.ActionMoveArmy:
 			g.moveArmy(action.ArmyID, action.TargetRegion)
+		case render.ActionSplitArmy:
+			g.splitArmy(action.ArmyID)
+		case render.ActionMergeArmies:
+			g.mergeArmiesManual(action.ArmyID)
 		case render.ActionRecruitUnit:
 			g.recruitUnit(action.TargetRegion)
 		case render.ActionRecruitNaval:
@@ -507,10 +511,19 @@ func (g *Game) recruitUnit(rid world.RegionID) {
 		return
 	}
 
+	// Manpower kontrolü
+	pid := g.gs.PlayerFactionID
+	deployed := g.gs.DeployedLandUnits(pid)
+	cap := g.gs.ManpowerCap(pid)
+	if deployed >= cap {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
+		return
+	}
+
 	// Bölgede mevcut ordu var mı?
 	var targetArmy *army.Army
 	for _, a := range g.gs.Armies {
-		if a.RegionID == rid && a.OwnerID == string(g.gs.PlayerFactionID) {
+		if a.RegionID == rid && a.OwnerID == string(pid) && !a.IsNaval {
 			targetArmy = a
 			break
 		}
@@ -523,12 +536,17 @@ func (g *Game) recruitUnit(rid world.RegionID) {
 		}
 		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: "militia", CurrentHP: 100})
 	} else {
+		// Ordu sayısı limiti
+		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d) — Daha fazla bölge gerekli.", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
+			return
+		}
 		// Yeni ordu oluştur
 		g.gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
+		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(pid), g.gs.NextArmySeq))
 		g.gs.Armies[newID] = &army.Army{
 			ID:            newID,
-			OwnerID:       string(g.gs.PlayerFactionID),
+			OwnerID:       string(pid),
 			RegionID:      rid,
 			Units:         []army.Unit{{TypeID: "militia", CurrentHP: 100}},
 			MovePoints:    2,
@@ -631,10 +649,18 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 		return
 	}
 
-	// Kara birimi — bölgedeki orduya ekle ya da yeni ordu kur
+	// Kara birimi — manpower ve ordu sayısı kontrolü
+	pid := g.gs.PlayerFactionID
+	deployed := g.gs.DeployedLandUnits(pid)
+	cap := g.gs.ManpowerCap(pid)
+	if deployed >= cap {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
+		return
+	}
+
 	var targetArmy *army.Army
 	for _, a := range g.gs.Armies {
-		if a.RegionID == rid && a.OwnerID == string(g.gs.PlayerFactionID) && !a.IsNaval {
+		if a.RegionID == rid && a.OwnerID == string(pid) && !a.IsNaval {
 			targetArmy = a
 			break
 		}
@@ -643,15 +669,20 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 	if targetArmy != nil {
 		if len(targetArmy.Units) >= army.MaxArmySize {
 			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
-			f.Gold += utype.GoldCost // geri iade
+			f.Gold += utype.GoldCost
 			return
 		}
 		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
 	} else {
+		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
+			f.Gold += utype.GoldCost
+			return
+		}
 		g.gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
+		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(pid), g.gs.NextArmySeq))
 		g.gs.Armies[newID] = &army.Army{
-			ID: newID, OwnerID: string(g.gs.PlayerFactionID),
+			ID: newID, OwnerID: string(pid),
 			RegionID: rid,
 			Units:    []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
 			MovePoints: 2, MaxMovePoints: 2,
@@ -757,7 +788,101 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 			targetRegion.ApplyConquest(a.OwnerID, attackerReligion)
 			g.renderer.MarkMapDirty()
 		}
+		// Dost bölgede başka ordu varsa birleştir
+		if merged := g.tryMergeArmies(aid, target); merged != "" {
+			g.renderer.SelectedArmy = merged
+		}
 	}
+}
+
+// tryMergeArmies taşınan orduyu hedefteki dost orduyla birleştirir.
+// Birleşme olursa hayatta kalan ordu ID'sini döner; yoksa "".
+func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) army.ArmyID {
+	moving, ok := g.gs.Armies[movingID]
+	if !ok {
+		return ""
+	}
+	for otherID, other := range g.gs.Armies {
+		if otherID == movingID || other.RegionID != regionID ||
+			other.OwnerID != moving.OwnerID || other.IsNaval != moving.IsNaval {
+			continue
+		}
+		if len(moving.Units)+len(other.Units) <= army.MaxArmySize {
+			// Taşınanı hedefe ekle, taşınanı sil
+			other.Units = append(other.Units, moving.Units...)
+			delete(g.gs.Armies, movingID)
+			g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(other.Units)) + " birim")
+			return otherID
+		}
+		// 20'yi aşıyor — iki ayrı ordu olarak bırak
+		return ""
+	}
+	return ""
+}
+
+// splitArmy seçili orduyu birim sayısına göre ikiye böler.
+func (g *Game) splitArmy(aid army.ArmyID) {
+	a, ok := g.gs.Armies[aid]
+	if !ok || len(a.Units) < 2 {
+		return
+	}
+	half := len(a.Units) / 2
+	newUnits := make([]army.Unit, half)
+	copy(newUnits, a.Units[len(a.Units)-half:])
+	a.Units = a.Units[:len(a.Units)-half]
+
+	g.gs.NextArmySeq++
+	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
+	g.gs.Armies[newID] = &army.Army{
+		ID:            newID,
+		OwnerID:       a.OwnerID,
+		RegionID:      a.RegionID,
+		Units:         newUnits,
+		MovePoints:    a.MovePoints,
+		MaxMovePoints: a.MaxMovePoints,
+		IsNaval:       a.IsNaval,
+	}
+	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
+}
+
+// mergeArmiesManual seçili orduyu aynı bölgedeki dost orduya elle birleştirir (20 kapasitesine kadar).
+func (g *Game) mergeArmiesManual(aid army.ArmyID) {
+	a, ok := g.gs.Armies[aid]
+	if !ok {
+		return
+	}
+	// Aynı bölgede dost ordu bul
+	var target *army.Army
+	var targetID army.ArmyID
+	for oid, other := range g.gs.Armies {
+		if oid == aid || other.RegionID != a.RegionID ||
+			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+			continue
+		}
+		target = other
+		targetID = oid
+		break
+	}
+	if target == nil {
+		return
+	}
+	capacity := army.MaxArmySize - len(target.Units)
+	if capacity <= 0 {
+		g.renderer.ShowCombatResult("Hedef ordu dolu!")
+		return
+	}
+	transfer := a.Units
+	if len(transfer) > capacity {
+		transfer = transfer[:capacity]
+	}
+	target.Units = append(target.Units, transfer...)
+	a.Units = a.Units[len(transfer):]
+
+	if len(a.Units) == 0 {
+		delete(g.gs.Armies, aid)
+		g.renderer.SelectedArmy = targetID
+	}
+	g.renderer.AddEvent(fmt.Sprintf("Ordular birleşti: %d birim", len(target.Units)))
 }
 
 // adjustTax oyuncunun bölgesinde vergi oranını ayarlar.

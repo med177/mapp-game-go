@@ -2,7 +2,7 @@
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
 last_updated: 2026-05-07
-related: [game-loop, state-management]
+related: [game-loop, state-management, systems/combat]
 ---
 
 # Render Pipeline
@@ -96,8 +96,10 @@ Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve
 **Tık öncelik sırası:**
 1. Alt panel butonları (tıklandı mı?)
 2. UI bölgesi (alt bar / sağ panel) → geçersiz say
-3. Ordu ikonuna tıklama (14px yarıçap)
-4. Bölge seçimi (WorldMap pixel lookup)
+3. BÖLDÜR butonu (seçili ordu varsa, `army_panel.go:SplitButtonHitTest`)
+4. Asker alım paneli (`recruit_panel.go:RecruitPanelHitTest`)
+5. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
+6. Bölge seçimi (WorldMap pixel lookup)
 
 ---
 
@@ -112,15 +114,55 @@ ShowHistoricalEvent(title,desc) → tam ekran popup, herhangi tuş/tık ile kapa
 
 ---
 
+## Ordu İkon Sistemi
+
+Aynı bölgede birden fazla ordu bulunabilir. `armyIconPositions()` (`renderer.go`) tüm orduları `RegionID`'ye göre gruplar, her grubun ikonlarını 26px aralıklarla yatayda ortalar. Hem `drawArmies` hem `handleLeftClick` hem de `cursor.go:inGameHovering` bu tek fonksiyonu kullanır — tutarsızlık riski yoktur.
+
+```
+Tek ordu  →  bölge merkezinde
+İki ordu  →  merkez ±13px
+Üç ordu   →  merkez -26px, 0px, +26px
+```
+
+---
+
+## Minimap — Ordu Konumları
+
+`panel.go:drawMinimapArmies` bölge sahiplik noktaları yerine orduların konumlarını çizer. Her ordu fraksiyon rengiyle dolu bir daire + ortada beyaz nokta olarak gösterilir; oyuncunun orduları altın kenarlıkla ayrışır.
+
+---
+
+## Ordu Bölme (Split)
+
+`army_panel.go:DrawArmyDetailPanel` seçili ordunun panel başlığında "✂ BÖLDÜR" butonu gösterir (≥2 birim şartı). `SplitButtonHitTest()` hit-test fonksiyonu `renderer.go` ve `cursor.go` tarafından kullanılır. Buton tıklandığında `ActionSplitArmy` üretilir; `game.go:splitArmy()` birimleri ikiye böler ve yeni ordu oluşturur.
+
+---
+
+## İmleç Yönetimi (`cursor.go`)
+
+`updateCursorShape()` her frame çalışır. Aşağıdaki fazlarda parmak imleci gösterilir:
+
+| Faz | Koşul |
+|---|---|
+| PhaseMainMenu | `mainMenuHoverIndex >= 0` |
+| PhaseFactionSelect | `factionCardHoverIndex >= 0` |
+| PhaseVictorySelect | `victoryCardHoverIndex >= 0` |
+| PhasePlayerTurn | `inGameHovering` (butonlar, ordu ikonları, BÖLDÜR butonu) |
+| PhasePauseMenu | `pauseMenuHoverIndex >= 0` |
+| PhaseLoadSelect / PhaseSaveSelect | `slotHoverIndex >= 0` |
+| PhaseSettings | `settingsHovering` |
+
+---
+
 ## Dosya Sorumlulukları
 
 | Dosya | İçerik |
 |---|---|
-| `renderer.go` | Kamera, draw döngüsü, input ana yönlendirici |
+| `renderer.go` | Kamera, draw döngüsü, input ana yönlendirici, `armyIconPositions()` |
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `tile.go` | Arazi renk/doku katmanı |
-| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri |
-| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, dolu/boş kart, HP çubuğu |
+| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; minimap'te ordu konumları |
+| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖLDÜR butonu |
 | `diplom.go` | Diplomasi paneli UI + input |
 | `tech_panel.go` | Teknoloji ağacı paneli + input |
 | `pause_menu.go` | Oyun içi duraklama menüsü (ESC) |
@@ -129,7 +171,7 @@ ShowHistoricalEvent(title,desc) → tam ekran popup, herhangi tuş/tık ile kapa
 | `action.go` | `InputAction` ve `ActionKind` tanımları |
 | `font.go` | Font yükleme, `DrawText`, `MeasureText` |
 | `assets.go` | Görsel varlık yükleme |
-| `cursor.go` | İmleç şekli yönetimi |
+| `cursor.go` | İmleç şekli yönetimi (tüm fazlar) |
 | `faction_select.go` | Fraksiyon seçim ekranı |
 | `victory_select.go` | Zafer koşulu seçim ekranı |
 | `main_menu.go` | Ana menü ("Kayıttan Yükle" → slot seçim ekranı) |

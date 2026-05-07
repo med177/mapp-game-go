@@ -2,7 +2,7 @@
 type: dev
 tags: [progress, status, todo, known-issues]
 last_updated: 2026-05-07
-related: [HOME]
+related: [HOME, architecture/render-pipeline]
 ---
 
 # Geliştirme Durumu
@@ -30,8 +30,13 @@ related: [HOME]
 | Kayıt/yükleme | ✅ | 4 slot (autosave + slot1-3), slot silme, metadata önizleme |
 | Ana menü / ayarlar | ✅ | Fraksiyon & zafer seçim ekranı; "Kayıttan Yükle" slot seçim ekranına açılır |
 | Pause menüsü | ✅ | ESC ile açılır; Devam Et / Kaydet / Yükle / Ana Menü / Çıkış |
-| Ordu detay paneli (20 slot) | ✅ | Boş slotlar silik, HP çubuğu, deneyim çubuğu |
-| Minimap | ✅ | Sağ alt köşe, kamera konumu |
+| Ordu detay paneli (20 slot) | ✅ | Boş slotlar silik, HP çubuğu, deneyim çubuğu, BÖLDÜR butonu |
+| Askeri kapasite (manpower) sistemi | ✅ | Bölge başı 5 + kışla +5 birim; ordu sayısı = ceil(bölge/2); `state.go:ManpowerCap` |
+| Ordu birleşme (merge) | ✅ | Dost bölgeye taşınınca ≤20 birimse otomatik birleşir; `game.go:tryMergeArmies` |
+| Ordu bölme (split) | ✅ | "✂ BÖLDÜR" butonu, birimleri ikiye böler; `game.go:splitArmy` |
+| Çoklu ordu yan yana render | ✅ | `renderer.go:armyIconPositions()` — aynı bölgedeki ordular 26px aralıkla |
+| Minimap | ✅ | Sağ alt köşe, kamera konumu, ordu konumları gösterimi |
+| Tüm menülerde parmak imleci | ✅ | Pause, load/save, settings, in-game dahil tüm fazlar |
 | Vergi ayarlama | ✅ | . / , tuşları, ±5% |
 | Deniz birimi | ✅ | Nakliye gemisi, liman koşulu |
 

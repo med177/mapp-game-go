@@ -57,6 +57,21 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
+	case state.PhasePauseMenu:
+		if r.pauseMenuHoverIndex(fx, fy) >= 0 {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+	case state.PhaseLoadSelect, state.PhaseSaveSelect:
+		if r.slotHoverIndex(fx, fy) >= 0 {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+	case state.PhaseSettings:
+		if r.settingsHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 	}
 
 	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
@@ -149,7 +164,22 @@ func (r *Renderer) techPanelHovering(fx, fy float64) bool {
 	return fx >= float64(px) && fx <= float64(px+pw) && fy >= float64(py) && fy <= float64(py+ph)
 }
 
-func (r *Renderer) inGameHovering(fx, fy float64) bool { // Alt panel tuşları
+func (r *Renderer) settingsHovering(fx, fy float64) bool {
+	rowH := 60.0
+	rowCount := 4
+	startY := ScreenHeight/2 - float64(rowCount)*rowH/2
+	bw := 500.0
+	bx := ScreenWidth/2 - bw/2
+	for i := 0; i < rowCount; i++ {
+		y := startY + float64(i)*rowH
+		if fx >= bx && fx <= bx+bw && fy >= y-8 && fy <= y+rowH-4 {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	for _, rect := range BottomButtonRects() {
 		if fx >= float64(rect[0]) && fx <= float64(rect[0]+rect[2]) &&
 			fy >= float64(rect[1]) && fy <= float64(rect[1]+rect[3]) {
@@ -157,17 +187,19 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool { // Alt panel tuşları
 		}
 	}
 	// Ordu ikonu üzerinde mi?
-	for _, a := range r.gs.Armies {
-		region, ok := r.gs.Regions[a.RegionID]
-		if !ok {
-			continue
-		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-		dx := fx - sx
-		dy := fy - (sy - 22)
+	for _, pos := range r.armyIconPositions() {
+		dx := fx - float64(pos.X)
+		dy := fy - float64(pos.Y)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
 			return true
 		}
+	}
+	// BÖLDÜR / BİRLEŞTİR butonları
+	if SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+		return true
+	}
+	if MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+		return true
 	}
 	// Sağ minimap / event log alanı üzerinde mi?
 	if fx > float64(evLogX()) {
