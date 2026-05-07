@@ -296,8 +296,9 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 }
 
 // buildSeaRegions kara şekilleriyle atanmamış (okyanus) pikselleri
-// en yakın deniz bölgesine Voronoi yöntemiyle atar; ardından sınır çizgilerini
-// basePixels'a bake eder (her frame yeniden çizilmez).
+// multi-source BFS flood fill ile atar: her deniz bölgesi merkezinden başlayarak,
+// komşu su piksellere yayılır (kara pikseller bariyerdir). Bu, deniz bölgelerinin
+// kara engelleri geçerek diğer tarafa uzanmasını otomatik olarak önler.
 func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 	var seaRegs []*world.Region
 	for _, r := range gs.Regions {
@@ -309,27 +310,113 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 		return
 	}
 
-	// ── 1. Voronoi ataması ────────────────────────────────────────
-	for py := 0; py < WorldH; py++ {
-		for px := 0; px < WorldW; px++ {
-			pIdx := py*WorldW + px
-			if wm.regionAt[pIdx] != 0 {
-				continue
-			}
-			r := nearestShapeRegion(seaRegs, px, py)
-			ridx, ok := wm.regionIdx[r.ID]
-			if !ok {
-				ridx = uint16(len(wm.regionIDs))
-				wm.regionIDs = append(wm.regionIDs, r.ID)
-				wm.regionIdx[r.ID] = ridx
-			}
-			wm.regionAt[pIdx] = ridx
-			wm.regionPx[r.ID] = append(wm.regionPx[r.ID], pIdx)
+	// ── 1. Tüm deniz bölgelerini önceden kayıt et ──────────────────
+	for _, r := range seaRegs {
+		if _, ok := wm.regionIdx[r.ID]; !ok {
+			ridx := uint16(len(wm.regionIDs))
+			wm.regionIDs = append(wm.regionIDs, r.ID)
+			wm.regionIdx[r.ID] = ridx
 			wm.seaIdx[ridx] = true
 		}
 	}
 
-	// ── 2. Sınır tespiti ve basePixels'a bake ────────────────────
+	// ── 2. BFS sırasında kullanılacak kuyruk türü ──────────────────
+	type qEntry struct {
+		pIdx int
+		ridx uint16
+	}
+	queue := make([]qEntry, 0, WorldW*WorldH/2)
+
+	// ── 3. Her deniz bölgesi için başlangıç pikseli (seed) bul ──────
+	// Merkez koordinatlarına spiral arama yaparak, atanmamış (deniz) olan
+	// ilk pikseli bulur ve BFS kuyruğuna ekler.
+	for _, r := range seaRegs {
+		ridx := wm.regionIdx[r.ID]
+		cx := int(shapeOffX + float64(r.WorldX)*shapeScaleX)
+		cy := int(shapeOffY + float64(r.WorldY)*shapeScaleY)
+		if cx < 0 {
+			cx = 0
+		}
+		if cx >= WorldW {
+			cx = WorldW - 1
+		}
+		if cy < 0 {
+			cy = 0
+		}
+		if cy >= WorldH {
+			cy = WorldH - 1
+		}
+
+		// Spiral arama: merkezden dışa doğru arayan en yakın boş pikseli bul
+		seed := -1
+		for radius := 0; radius <= 200 && seed < 0; radius++ {
+			for dy := -radius; dy <= radius && seed < 0; dy++ {
+				for dx := -radius; dx <= radius && seed < 0; dx++ {
+					// radius > 0 olduğunda, sadece dış halkayı kontrol et (iç pikselleri atla)
+					if radius > 0 {
+						dx_abs := dx
+						if dx < 0 {
+							dx_abs = -dx
+						}
+						dy_abs := dy
+						if dy < 0 {
+							dy_abs = -dy
+						}
+						if dx_abs != radius && dy_abs != radius {
+							continue
+						}
+					}
+
+					nx, ny := cx+dx, cy+dy
+					if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
+						continue
+					}
+					nIdx := ny*WorldW + nx
+					if wm.regionAt[nIdx] == 0 { // 0 = atanmamış (deniz)
+						seed = nIdx
+					}
+				}
+			}
+		}
+		if seed < 0 {
+			log.Printf("Deniz bölgesi seed pikseli bulunamadı: %s (wx=%d, wy=%d)",
+				r.ID, r.WorldX, r.WorldY)
+			continue
+		}
+
+		rid := r.ID
+		wm.regionAt[seed] = ridx
+		wm.regionPx[rid] = append(wm.regionPx[rid], seed)
+		queue = append(queue, qEntry{seed, ridx})
+	}
+
+	// ── 4. Multi-source BFS flood fill (4-komşu): kara pikseller bariyerdir ──
+	// Tüm seed pikselleri aynı anda kuyruğa girmiş olur, böylece Voronoi-benzeri
+	// sınırlar oluşur, ancak kara bariyerleri geçilemez hale gelir.
+	dx4 := [4]int{1, -1, 0, 0}
+	dy4 := [4]int{0, 0, 1, -1}
+
+	for i := 0; i < len(queue); i++ {
+		e := queue[i]
+		py, px := e.pIdx/WorldW, e.pIdx%WorldW
+		rid := wm.regionIDs[e.ridx]
+
+		for d := 0; d < 4; d++ {
+			nx, ny := px+dx4[d], py+dy4[d]
+			if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
+				continue
+			}
+			nIdx := ny*WorldW + nx
+			if wm.regionAt[nIdx] != 0 {
+				continue // Zaten atanmış (kara veya başka deniz bölgesi)
+			}
+			wm.regionAt[nIdx] = e.ridx
+			wm.regionPx[rid] = append(wm.regionPx[rid], nIdx)
+			queue = append(queue, qEntry{nIdx, e.ridx})
+		}
+	}
+
+	// ── 5. Sınır tespiti ve basePixels'a bake ───────────────────────
 	// Farklı deniz bölgelerine ait 4-komşu piksel çiftleri → sınır çizgisi
 	const bR, bG, bB byte = 100, 160, 220 // açık mavi sınır rengi
 	const bAlpha = byte(160)
