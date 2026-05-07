@@ -15,6 +15,7 @@ const (
 	aiMilitiaID      = "militia"
 	aiMilitiaCost    = 60  // units.json'daki milis maliyeti
 	aiMinGoldReserve = 80  // AI bu miktarın altına düşmemeli
+	aiTechReserve    = 100 // Teknoloji için ayırılacak minimum altın
 )
 
 // coalitionThreshold oyuncunun bu kadar bölgeyi geçmesi koalisyon tetikler.
@@ -49,7 +50,16 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 		FormCoalitionAgainstPlayer(gs, fid)
 	}
 
-	// Birim alımı ve kışla inşası
+	// Teknoloji araştırma (önce yap, altın biterse diğerlerini etkilemesin)
+	aiResearch(gs, fid)
+
+	// Ekonomi optimizasyonu (pazar, çiftlik)
+	aiEconomyBuild(gs, fid)
+
+	// Deniz stratejisi (liman + gemi)
+	aiNavalStrategy(gs, fid)
+
+	// Birim alımı ve kışla inşası (elite birimler dahil)
 	aiRecruitAndBuild(gs, fid)
 
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
@@ -124,10 +134,14 @@ func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost int) {
 	}
 }
 
-// aiRecruitOne kışlası olan bir bölgede tek bir milis birimi alır.
+// aiRecruitOne kışlası olan bir bölgede en iyi uygun birimi alır.
+// Askeri teknoloji ve altın durumuna göre milis, piyade, süvari veya topçu seçer.
 // Başarılıysa true, koşul sağlanamadıysa false döner.
 func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 	f := gs.Factions[fid]
+	if gs.UnitTypes == nil {
+		return false
+	}
 
 	// Kışlası olan bir bölge bul
 	var recruitRegion world.RegionID
@@ -178,9 +192,108 @@ func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 		gs.Armies[newID] = targetArmy
 	}
 
-	targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: aiMilitiaID, CurrentHP: 100})
-	f.Gold -= aiMilitiaCost
+	// En iyi birimi seç (stratejik karar)
+	unitTypeID := aiSelectBestUnit(gs, f)
+	if unitTypeID == "" {
+		return false
+	}
+
+	utype, ok := gs.UnitTypes[unitTypeID]
+	if !ok {
+		return false
+	}
+
+	targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
+	f.Gold -= utype.GoldCost
 	return true
+}
+
+// aiSelectBestUnit altın ve teknoloji durumuna göre en uygun birim tipini seçer.
+// Öncelik: piyade > süvari > milis. Topçu sadece zengin AI'ler için.
+func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
+	// Askeri güç istatistiği
+	armyCount := 0
+	cavalryCount := 0
+	for _, a := range gs.Armies {
+		if a.OwnerID == string(f.ID) && !a.IsNaval {
+			armyCount++
+			for _, u := range a.Units {
+				if ut, ok := gs.UnitTypes[u.TypeID]; ok && ut.Category == "cavalry" {
+					cavalryCount++
+				}
+			}
+		}
+	}
+
+	// Tier 3 elite piyade (seçkin piyade) - çok zenginse ve teknolojisi varsa
+	if f.Gold >= 350+aiMinGoldReserve {
+		if ut, ok := gs.UnitTypes["elite_infantry"]; ok {
+			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				return "elite_infantry"
+			}
+		}
+	}
+
+	// Ağır süvari - zengin ve teknolojisi varsa
+	if f.Gold >= 450+aiMinGoldReserve && cavalryCount < armyCount*2 {
+		if ut, ok := gs.UnitTypes["heavy_cavalry"]; ok {
+			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				return "heavy_cavalry"
+			}
+		}
+	}
+
+	// Tier 2 piyade (normal piyade) - orta düzey altın ve teknoloji
+	if f.Gold >= 180+aiMinGoldReserve {
+		if ut, ok := gs.UnitTypes["infantry"]; ok {
+			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				return "infantry"
+			}
+		}
+	}
+
+	// Süvari - teknolojisi varsa ve altın yeterliyse
+	if f.Gold >= 300+aiMinGoldReserve && cavalryCount < armyCount*3 {
+		if ut, ok := gs.UnitTypes["cavalry"]; ok {
+			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				return "cavalry"
+			}
+		}
+	}
+
+	// Hafif süvari - her zaman uygun
+	if f.Gold >= 200+aiMinGoldReserve && cavalryCount < armyCount*4 {
+		if _, ok := gs.UnitTypes["light_cavalry"]; ok {
+			return "light_cavalry"
+		}
+	}
+
+	// Topçu - çok zenginse ve savaşta ise
+	if f.Gold >= 650+aiMinGoldReserve {
+		// Savaş halinde mi kontrol et
+		atWar := false
+		for _, rel := range gs.Relations {
+			if (rel.FactionA == f.ID || rel.FactionB == f.ID) && rel.Stance == faction.StanceWar {
+				atWar = true
+				break
+			}
+		}
+		if atWar {
+			if ut, ok := gs.UnitTypes["cannon"]; ok {
+				if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+					return "cannon"
+				}
+			}
+			if ut, ok := gs.UnitTypes["bombard"]; ok {
+				if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+					return "bombard"
+				}
+			}
+		}
+	}
+
+	// Varsayılan: milis
+	return "militia"
 }
 
 // FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
@@ -364,4 +477,274 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 	a.MovePoints--
 	targetRegion.OwnerID = a.OwnerID
 	return true
+}
+
+// aiResearch aktif araştırma yoksa stratejik teknoloji seçer ve başlatır.
+// Öncelik: askeri > ekonomi > diplomasi > diğer
+func aiResearch(gs *state.GameState, fid faction.FactionID) {
+	f := gs.Factions[fid]
+	if f.IsEliminated || gs.TechTypes == nil {
+		return
+	}
+	// Zaten araştırma var mı?
+	if f.Research.ActiveID != "" {
+		return
+	}
+	// Yeterli altın var mı?
+	if f.Gold < aiTechReserve {
+		return
+	}
+
+	// Uygun teknolojileri puanla
+	type scoredTech struct {
+		t     *tech.Technology
+		score int
+	}
+	var candidates []scoredTech
+
+	for _, t := range gs.TechTypes {
+		// Zaten tamamlandı mı?
+		if f.Research.Completed[t.ID] {
+			continue
+		}
+		// Gereksinimler sağlanıyor mu?
+		if !tech.IsUnlocked(&f.Research, t) {
+			continue
+		}
+		// Yeterli altın var mı?
+		if f.Gold < t.GoldCost+aiMinGoldReserve {
+			continue
+		}
+
+		score := 0
+		switch t.Category {
+		case tech.CategoryMilitary:
+			score = 100 // Askeri teknolojiler en yüksek öncelik
+			if t.Effects.InfantryAttackMod > 0 || t.Effects.CavalryAttackMod > 0 {
+				score += 20
+			}
+		case tech.CategoryEconomy:
+			score = 70 // Ekonomi ikinci öncelik
+			if t.Effects.GoldPerRegion > 0 {
+				score += 15
+			}
+		case tech.CategoryNaval:
+			score = 50 // Deniz teknolojisi (kıyı fraksiyonları için daha yüksek olabilir)
+		case tech.CategoryDiplomacy:
+			score = 40
+		case tech.CategoryReligion:
+			score = 30
+		}
+
+		// Daha kısa süren teknolojilere hafif bonus
+		score -= t.TurnsRequired / 2
+
+		candidates = append(candidates, scoredTech{t, score})
+	}
+
+	if len(candidates) == 0 {
+		return
+	}
+
+	// En yüksek puanlı teknolojiyi seç
+	var best *tech.Technology
+	bestScore := -1
+	for _, c := range candidates {
+		if c.score > bestScore {
+			bestScore = c.score
+			best = c.t
+		}
+	}
+
+	if best != nil {
+		if tech.StartResearch(&f.Research, best, &f.Gold) {
+			// Araştırma başladı
+		}
+	}
+}
+
+// aiEconomyBuild ekonomik binalar inşa eder (pazar, çiftlik).
+// Her tur sadece bir bina inşa eder (limitli).
+func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
+	f := gs.Factions[fid]
+	if f.IsEliminated || gs.BuildingTypes == nil {
+		return
+	}
+	if f.Gold < 200+aiMinGoldReserve {
+		return
+	}
+
+	// Bina öncelikleri ve maliyet kontrolü
+	type buildingPlan struct {
+		id     string
+		needFn func(*world.Region) bool
+		prio   int
+	}
+
+	plans := []buildingPlan{
+		{"farm", func(r *world.Region) bool {
+			// Tahıl üretimi düşük bölgelere çiftlik
+			return r.BaseGrainOutput < 20
+		}, 60},
+		{"market", func(r *world.Region) bool {
+			// Geliri artırmak için pazar
+			return true
+		}, 80},
+		{"walls", func(r *world.Region) bool {
+			// Sınır bölgelerine sur
+			for _, nid := range r.Neighbors {
+				if n, ok := gs.Regions[nid]; ok && n.OwnerID != "" && n.OwnerID != string(fid) {
+					return true
+				}
+			}
+			return false
+		}, 50},
+	}
+
+	for _, plan := range plans {
+		btype, ok := gs.BuildingTypes[plan.id]
+		if !ok {
+			continue
+		}
+		if f.Gold < btype.GoldCost+aiMinGoldReserve {
+			continue
+		}
+
+		// Uygun bölge bul
+		for _, r := range gs.Regions {
+			if r.OwnerID != string(fid) || r.IsSea {
+				continue
+			}
+			// Zaten var mı?
+			hasIt := false
+			for _, bid := range r.Buildings {
+				if bid == plan.id {
+					hasIt = true
+					break
+				}
+			}
+			if hasIt {
+				continue
+			}
+			// Max per region kontrolü
+			count := 0
+			for _, bid := range r.Buildings {
+				if bid == plan.id {
+					count++
+				}
+			}
+			if count >= btype.MaxPerRegion {
+				continue
+			}
+			// İhtiyaç var mı?
+			if plan.needFn(r) {
+				r.Buildings = append(r.Buildings, plan.id)
+				f.Gold -= btype.GoldCost
+				return // Bir bina inşa ettik, turu bitir
+			}
+		}
+	}
+}
+
+// aiNavalStrategy kıyı fraksiyonları için liman ve gemi inşası yapar.
+func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
+	f := gs.Factions[fid]
+	if f.IsEliminated || gs.BuildingTypes == nil || gs.UnitTypes == nil {
+		return
+	}
+
+	// Kıyı bölgesi var mı?
+	var coastalRegions []*world.Region
+	for _, r := range gs.Regions {
+		if r.OwnerID == string(fid) && !r.IsSea && r.IsCoastal(gs.Regions) {
+			coastalRegions = append(coastalRegions, r)
+		}
+	}
+	if len(coastalRegions) == 0 {
+		return
+	}
+
+	// Liman tipi var mı?
+	portType, hasPort := gs.BuildingTypes["port"]
+	if !hasPort {
+		return
+	}
+	transportType, hasTransport := gs.UnitTypes["transport"]
+	if !hasTransport {
+		return
+	}
+
+	// Liman inşası (en az bir liman olsun)
+	for _, r := range coastalRegions {
+		hasPortBldg := false
+		for _, bid := range r.Buildings {
+			if bid == "port" {
+				hasPortBldg = true
+				break
+			}
+		}
+		if !hasPortBldg && f.Gold >= portType.GoldCost+aiMinGoldReserve {
+			r.Buildings = append(r.Buildings, "port")
+			f.Gold -= portType.GoldCost
+			break // Bir liman yeter bu tur
+		}
+	}
+
+	// Gemi alımı (liman olan bölgelerden)
+	const fleetLimit = 2 // AI en fazla 2 filo
+	fleetCount := 0
+	for _, a := range gs.Armies {
+		if a.OwnerID == string(fid) && a.IsNaval {
+			fleetCount++
+		}
+	}
+	if fleetCount >= fleetLimit {
+		return
+	}
+
+	for _, r := range coastalRegions {
+		// Liman var mı?
+		hasPortBldg := false
+		for _, bid := range r.Buildings {
+			if bid == "port" {
+				hasPortBldg = true
+				break
+			}
+		}
+		if !hasPortBldg {
+			continue
+		}
+
+		// Komşu deniz bölgesi bul
+		var seaRegion world.RegionID
+		for _, nid := range r.Neighbors {
+			if n, ok := gs.Regions[nid]; ok && n.IsSea {
+				seaRegion = nid
+				break
+			}
+		}
+		if seaRegion == "" {
+			continue
+		}
+
+		// Altın kontrolü
+		if f.Gold < transportType.GoldCost+aiMinGoldReserve {
+			return
+		}
+
+		// Yeni filo oluştur
+		gs.NextArmySeq++
+		newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(fid), gs.NextArmySeq))
+		gs.Armies[newID] = &army.Army{
+			ID:            newID,
+			OwnerID:       string(fid),
+			RegionID:      seaRegion,
+			Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+			MovePoints:    3,
+			MaxMovePoints: 3,
+			IsNaval:       true,
+		}
+		f.Gold -= transportType.GoldCost
+		return // Bir gemi aldık, turu bitir
+	}
 }

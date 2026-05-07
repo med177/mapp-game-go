@@ -2,6 +2,7 @@
 type: dev
 tags: [progress, status, todo, known-issues]
 last_updated: 2026-05-07
+# Combat sistemi güncellendi — calculateOutcome() implemente edildi
 related: [HOME, architecture/render-pipeline]
 ---
 
@@ -18,13 +19,17 @@ related: [HOME, architecture/render-pipeline]
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı |
 | Fraksiyon sistemi | ✅ | 9 fraksiyon, renk, din |
 | Ordu hareketi | ✅ | Komşuluk kısıtı, naval/kara ayrımı |
-| Çarpışma motoru | ⚠️ | `calculateOutcome()` taslak — doldurul mast |
+| Çarpışma motoru | ✅ | `calculateOutcome()` ±%15 rastgele dice, 4 sonuç kategorisi (ezici/dar zafer, yakın/ağır mağlubiyet) |
 | Ekonomi tick | ✅ | Vergi geliri, ticaret güzergahları |
 | Bina inşası | ✅ | 6 bina tipi, maliyet, kısıt |
 | Teknoloji ağacı | ✅ | Araştırma sayacı, efekt hesabı |
 | Mevsim mekaniği | ✅ | Kış hasarı, sonbahar bonusu |
-| Diplomasi | ✅ | 4 duruş, puanlama, decay |
-| AI turu | ✅ | Temel hareket mantığı, koalisyon (zor) |
+| Diplomasi | ✅ | 4 duruş, puanlama, decay, din ilişkisi başlangıç bonus/ceza |
+| AI teknoloji araştırma | ✅ | Askeri > ekonomi > deniz öncelikli, maliyet/tur optimize |
+| AI ekonomi stratejisi | ✅ | Pazar (80% prio), çiftlik (düşük tahıl), sur (sınır) |
+| AI deniz stratejisi | ✅ | Liman inşası, nakliye gemisi alımı (max 2 filo) |
+| AI elite birim stratejisi | ✅ | Altın/teknolojiye göre: seçkin piyade > ağır süvari > piyade > süvari > milis |
+| AI turu | ✅ | Stratejik hareket, koalisyon (zor), ittifak kurma |
 | Tarihsel olaylar | ✅ | JSON tetikleyici, tek-seferlik |
 | Zafer koşulları | ✅ | 4 tip, Check() döngüsü |
 | Kayıt/yükleme | ✅ | 4 slot (autosave + slot1-3), slot silme, metadata önizleme |
@@ -39,23 +44,23 @@ related: [HOME, architecture/render-pipeline]
 | Tüm menülerde parmak imleci | ✅ | Pause, load/save, settings, in-game dahil tüm fazlar |
 | Vergi ayarlama | ✅ | . / , tuşları, ±5% |
 | Deniz birimi | ✅ | Nakliye gemisi, liman koşulu |
+| Ticaret güzergahları | ✅ | Fraksiyonlar arası pasif gelir, `TradeRoutes` |
+| Din dönüşümü | ✅ | 24 turda bölge dini değişir, memnuniyet -20 |
+| Din diplomasisi | ✅ | `ReligionRelation` aynı din +25, Sünni-Şii -40, farklı din -30 |
 
 ---
 
-## Eksik / Planlanan ⬜
+## Eksik / Planlanan 
 
 | Özellik | Öncelik | Notlar |
 |---|---|---|
-| `calculateOutcome()` implementasyonu | 🔴 Kritik | Combat sistemi çalışmıyor |
-| Din ceza/bonus sistemi | 🟡 Orta | Veri hazır, mantık yok |
-| AI teknoloji araştırma kararı | 🟡 Orta | Sadece ordu hareketi var |
-| AI bina inşa stratejisi | 🟡 Orta | |
+| AI çoklu ordu konsolidasyonu | 🟡 Orta | AI orduları dağınık, ana ordu oluşturmuyor |
+| AI uzun menzilli planlama | 🟢 Düşük | AI sadece komşu bölgelere hareket ediyor |
 | Görsel mevsim değişimi | 🟢 Düşük | Arka plan swap |
 | İkincil mal döngüsü | 🟢 Düşük | Tahıl/demir/kereste |
 | Olay zincirleme | 🟢 Düşük | |
 | Oyuncu tepki seçenekleri (A/B) | 🟢 Düşük | |
-| `religion/` paketi ayrıştırması | 🟢 Düşük | game.go'da inline |
-| Sprite'lar | 🟢 Düşük | Şu an renkli poligonlar |
+| `religion/` paketi ayrıştırması | 🟢 Düşük | `faction.go` ve `resolution.go` inline, ayrı paket yok |
 | Ses efektleri | 🟢 Düşük | |
 | ~~Tek seferlik kayıt → çoklu slot~~ | ✅ | Tamamlandı (2026-05-07) |
 
@@ -65,9 +70,8 @@ related: [HOME, architecture/render-pipeline]
 
 | Sorun | Dosya | Açıklama |
 |---|---|---|
-| `calculateOutcome` taslak | `internal/combat/combat.go:63` | İskelet var, uygulama yok |
-| `religion/diplomacy` paket eksikliği | `internal/game/game.go` | Logic inline, paket yok |
 | `game.exe` kök dizinde geçici | `game.exe` | `bin/game.exe` kalıcı olmalı |
+| `religion/` paketi inline | `faction.go`, `resolution.go` | Din mantığı `faction` ve `game` paketlerine dağılmış |
 
 ---
 
