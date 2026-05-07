@@ -2,7 +2,7 @@
   {
     "id": "ottoman",
     "name": "Ottoman Empire",
-    "name_tr": "Osmanlı İmparatorluğu",
+    "name_tr": "Devleti Aliyye-i Osmaniye",
     "religion": "sunni",
     "color": [
       220,
@@ -856,5 +856,137 @@
     "tech_points": 0,
     "researched_techs": [],
     "ai_aggressiveness": 55
+  },
+  {
+    "id": "saruhan_bey",
+    "name": "Principality of Saruhan",
+    "name_tr": "Saruhanogullari Beyligi",
+    "religion": "sunni",
+    "color": [
+      160,
+      120,
+      60
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 200,
+    "grain": 120,
+    "iron": 50,
+    "timber": 40,
+    "spice": 20,
+    "cloth": 45,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 55
+  },
+  {
+    "id": "novgorod_rep",
+    "name": "Republic of Novgorod",
+    "name_tr": "Novgorod Cumhuriyeti",
+    "religion": "orthodox",
+    "color": [
+      60,
+      120,
+      160
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 300,
+    "iron": 80,
+    "timber": 200,
+    "spice": 30,
+    "cloth": 90,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 45
+  },
+  {
+    "id": "teutonic_order",
+    "name": "Teutonic Order",
+    "name_tr": "Toton Sovalyeleri",
+    "religion": "catholic",
+    "color": [
+      220,
+      220,
+      220
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 400,
+    "grain": 220,
+    "iron": 120,
+    "timber": 160,
+    "spice": 10,
+    "cloth": 50,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 70
+  },
+  {
+    "id": "georgia_kingdom",
+    "name": "Kingdom of Georgia",
+    "name_tr": "Gurcistan Kralligi",
+    "religion": "orthodox",
+    "color": [
+      180,
+      60,
+      60
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 320,
+    "grain": 200,
+    "iron": 70,
+    "timber": 90,
+    "spice": 40,
+    "cloth": 50,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 55
+  },
+  {
+    "id": "achaea_principality",
+    "name": "Principality of Achaea",
+    "name_tr": "Akhaia Prensligi (Mora, Latin)",
+    "religion": "catholic",
+    "color": [
+      200,
+      160,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 260,
+    "grain": 180,
+    "iron": 50,
+    "timber": 60,
+    "spice": 30,
+    "cloth": 60,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 45
+  },
+  {
+    "id": "savoy_county",
+    "name": "County of Savoy",
+    "name_tr": "Savoy Kontlugu",
+    "religion": "catholic",
+    "color": [
+      220,
+      60,
+      60
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 250,
+    "grain": 150,
+    "iron": 60,
+    "timber": 80,
+    "spice": 20,
+    "cloth": 50,
+    "tech_points": 0,
+    "researched_techs": [],
+    "ai_aggressiveness": 40
   }
 ]

@@ -234,7 +234,7 @@
       "_sea_irish",
       "_sea_atlantic"
     ],
-    "owner_id": "",
+    "owner_id": "england",
     "population": 500,
     "religion": "catholic",
     "satisfaction": 55,
@@ -729,7 +729,7 @@
       "provence",
       "burgundy"
     ],
-    "owner_id": "france",
+    "owner_id": "savoy_county",
     "population": 350,
     "religion": "catholic",
     "satisfaction": 65,
@@ -1029,7 +1029,8 @@
       "_sea_baltic",
       "konigsberg",
       "galicia",
-      "kiev"
+      "kiev",
+      "novgorod"
     ],
     "owner_id": "lithuanian_gd",
     "population": 1200,
@@ -1287,13 +1288,12 @@
     "name": "Greece",
     "name_tr": "Atina Dukali (Latin)",
     "neighbors": [
-      "epirus",
       "thessaly",
       "morea",
       "macedonia",
-      "thrace",
       "_sea_aegean",
-      "_sea_adriatic"
+      "_sea_adriatic",
+      "chalcidice"
     ],
     "owner_id": "byzantine",
     "population": 600,
@@ -1304,8 +1304,8 @@
     "terrain": "coast",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 948,
-    "world_y": 492
+    "world_x": 962,
+    "world_y": 503
   },
   {
     "active_event_id": "",
@@ -1322,7 +1322,9 @@
       "greece",
       "thrace",
       "_sea_aegean",
-      "_sea_black"
+      "_sea_black",
+      "nicomedia",
+      "chrysopolis"
     ],
     "owner_id": "byzantine",
     "population": 1000,
@@ -1340,20 +1342,19 @@
     "active_event_id": "",
     "base_gold_income": 60,
     "base_grain_output": 50,
-    "id": "anatolia",
+    "id": "konya",
     "is_locked": false,
     "is_sea": false,
-    "name": "Sultanate of Rum",
-    "name_tr": "Anadolu Selcuklu Sultanligi",
+    "name": "Konya",
+    "name_tr": "Konya (Karamanogullari)",
     "neighbors": [
       "bithynia",
       "candaroglu",
       "eretna",
       "hamit",
-      "karaman",
-      "_sea_black"
+      "karaman"
     ],
-    "owner_id": "",
+    "owner_id": "karaman_bey",
     "population": 900,
     "religion": "sunni",
     "satisfaction": 70,
@@ -1363,7 +1364,7 @@
     "trade_capacity": 4,
     "unlock_turn": 0,
     "world_x": 1175,
-    "world_y": 462
+    "world_y": 472
   },
   {
     "active_event_id": "",
@@ -1382,7 +1383,7 @@
       "eretna",
       "syria",
       "_sea_med_east",
-      "anatolia"
+      "konya"
     ],
     "owner_id": "karaman_bey",
     "population": 500,
@@ -1435,7 +1436,9 @@
       "crimea",
       "kazan",
       "kiev",
-      "ukraine"
+      "ukraine",
+      "novgorod",
+      "nizhny_novgorod"
     ],
     "owner_id": "russia",
     "population": 1000,
@@ -1460,9 +1463,10 @@
     "name_tr": "Kazan",
     "neighbors": [
       "moscow",
-      "persia_north"
+      "persia_north",
+      "nizhny_novgorod"
     ],
-    "owner_id": "",
+    "owner_id": "golden_horde",
     "population": 600,
     "religion": "sunni",
     "satisfaction": 55,
@@ -1520,7 +1524,7 @@
       "azerbaijan",
       "armenia"
     ],
-    "owner_id": "",
+    "owner_id": "georgia_kingdom",
     "population": 300,
     "religion": "orthodox",
     "satisfaction": 55,
@@ -1959,7 +1963,8 @@
       "albania",
       "epirus",
       "greece",
-      "thessaly"
+      "thessaly",
+      "chalcidice"
     ],
     "owner_id": "serbian_empire",
     "population": 350,
@@ -1989,7 +1994,7 @@
       "transylvania",
       "ukraine"
     ],
-    "owner_id": "",
+    "owner_id": "golden_horde",
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 55,
@@ -2295,9 +2300,10 @@
     "neighbors": [
       "latvia",
       "_sea_baltic",
-      "_sea_north"
+      "_sea_north",
+      "novgorod"
     ],
-    "owner_id": "",
+    "owner_id": "teutonic_order",
     "population": 200,
     "religion": "catholic",
     "satisfaction": 60,
@@ -2322,9 +2328,10 @@
       "estonia",
       "lithuania",
       "belarus",
-      "_sea_baltic"
+      "_sea_baltic",
+      "novgorod"
     ],
-    "owner_id": "",
+    "owner_id": "teutonic_order",
     "population": 250,
     "religion": "catholic",
     "satisfaction": 60,
@@ -2433,7 +2440,7 @@
       "_sea_baltic",
       "_sea_north"
     ],
-    "owner_id": "",
+    "owner_id": "denmark_kingdom",
     "population": 300,
     "religion": "catholic",
     "satisfaction": 65,
@@ -2460,7 +2467,8 @@
       "constantinople",
       "greece",
       "_sea_aegean",
-      "_sea_black"
+      "_sea_black",
+      "chalcidice"
     ],
     "owner_id": "byzantine",
     "population": 400,
@@ -2518,7 +2526,7 @@
       "akkoyunlu",
       "_sea_caspian"
     ],
-    "owner_id": "",
+    "owner_id": "ilkhanate",
     "population": 450,
     "religion": "sunni",
     "satisfaction": 60,
@@ -2543,7 +2551,7 @@
       "georgia",
       "azerbaijan",
       "persia_north",
-      "anatolia",
+      "konya",
       "akkoyunlu"
     ],
     "owner_id": "",
@@ -2767,7 +2775,7 @@
       "pomerania",
       "_sea_baltic"
     ],
-    "owner_id": "",
+    "owner_id": "teutonic_order",
     "population": 300,
     "religion": "catholic",
     "satisfaction": 60,
@@ -2843,7 +2851,7 @@
       "languedoc",
       "_sea_med_west"
     ],
-    "owner_id": "",
+    "owner_id": "genoa",
     "population": 200,
     "religion": "catholic",
     "satisfaction": 60,
@@ -2868,7 +2876,7 @@
       "_sea_aegean",
       "_sea_med_east"
     ],
-    "owner_id": "",
+    "owner_id": "venice",
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 60,
@@ -3254,13 +3262,13 @@
     "name": "Germiyan",
     "name_tr": "Germiyan Beyliği",
     "neighbors": [
-      "anatolia",
+      "konya",
       "karaman",
-      "aydinoglu",
-      "candaroglu",
       "mentese",
       "hamit",
-      "eretna"
+      "eretna",
+      "lycia",
+      "saruhan"
     ],
     "owner_id": "germiyan_bey",
     "population": 380,
@@ -3284,10 +3292,10 @@
     "name": "Aydinoglu",
     "name_tr": "Aydınoğlu Beyliği",
     "neighbors": [
-      "germiyan",
       "mentese",
       "_sea_aegean",
-      "_sea_med_east"
+      "_sea_med_east",
+      "saruhan"
     ],
     "owner_id": "aydin_bey",
     "population": 320,
@@ -3311,11 +3319,13 @@
     "name": "Candaroglu",
     "name_tr": "Candaroğulları Beyliği",
     "neighbors": [
-      "anatolia",
+      "konya",
       "germiyan",
       "trebizond",
       "eretna",
-      "_sea_black"
+      "_sea_black",
+      "nicomedia",
+      "paphlagonia"
     ],
     "owner_id": "candar_bey",
     "population": 280,
@@ -3598,7 +3608,9 @@
       "hamit",
       "teke",
       "_sea_aegean",
-      "_sea_med_east"
+      "_sea_med_east",
+      "lycia",
+      "saruhan"
     ],
     "owner_id": "mentese_bey",
     "population": 300,
@@ -3625,7 +3637,8 @@
       "mentese",
       "hamit",
       "karaman",
-      "_sea_med_east"
+      "_sea_med_east",
+      "lycia"
     ],
     "owner_id": "teke_bey",
     "population": 260,
@@ -3654,7 +3667,8 @@
       "teke",
       "karaman",
       "eretna",
-      "bithynia"
+      "bithynia",
+      "lycia"
     ],
     "owner_id": "hamid_bey",
     "population": 310,
@@ -3678,7 +3692,7 @@
     "name": "Eretna",
     "name_tr": "Eretna Devleti",
     "neighbors": [
-      "anatolia",
+      "konya",
       "candaroglu",
       "germiyan",
       "hamit",
@@ -4220,7 +4234,6 @@
     "name_tr": "Epir Despotlugu",
     "neighbors": [
       "albania",
-      "greece",
       "thessaly",
       "macedonia",
       "_sea_adriatic",
@@ -4252,7 +4265,8 @@
       "greece",
       "morea",
       "macedonia",
-      "_sea_aegean"
+      "_sea_aegean",
+      "chalcidice"
     ],
     "owner_id": "byzantine",
     "population": 340,
@@ -4263,8 +4277,8 @@
     "terrain": "plain",
     "trade_capacity": 3,
     "unlock_turn": 0,
-    "world_x": 928,
-    "world_y": 470
+    "world_x": 920,
+    "world_y": 462
   },
   {
     "active_event_id": "",
@@ -4281,7 +4295,7 @@
       "_sea_aegean",
       "_sea_med_east"
     ],
-    "owner_id": "",
+    "owner_id": "achaea_principality",
     "population": 350,
     "religion": "catholic",
     "satisfaction": 60,
@@ -4308,7 +4322,7 @@
       "bulgaria",
       "_sea_black"
     ],
-    "owner_id": "",
+    "owner_id": "bulgarian_empire",
     "population": 280,
     "religion": "orthodox",
     "satisfaction": 60,
@@ -4328,15 +4342,17 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Bithynia",
-    "name_tr": "Bitinya (Erken Osmanli Beyligi)",
+    "name_tr": "Bitinya",
     "neighbors": [
       "constantinople",
-      "anatolia",
+      "konya",
       "hamit",
       "germiyan",
-      "candaroglu",
-      "_sea_black",
-      "_sea_aegean"
+      "_sea_aegean",
+      "nicomedia",
+      "paphlagonia",
+      "saruhan",
+      "chrysopolis"
     ],
     "owner_id": "ottoman",
     "population": 380,
@@ -4496,5 +4512,226 @@
     "unlock_turn": 0,
     "world_x": 1390,
     "world_y": 652
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 42,
+    "base_grain_output": 30,
+    "id": "nicomedia",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Nicomedia",
+    "name_tr": "Nikomedia (Bizans Sinir Kenti)",
+    "neighbors": [
+      "bithynia",
+      "candaroglu",
+      "constantinople",
+      "_sea_black",
+      "_sea_aegean",
+      "chrysopolis"
+    ],
+    "owner_id": "byzantine",
+    "population": 280,
+    "religion": "orthodox",
+    "satisfaction": 62,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1078,
+    "world_y": 450
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 28,
+    "base_grain_output": 35,
+    "id": "paphlagonia",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Paphlagonia",
+    "name_tr": "Paflagonia (Candarogullari Bati Kiyisi)",
+    "neighbors": [
+      "bithynia",
+      "candaroglu",
+      "_sea_black",
+      "chrysopolis"
+    ],
+    "owner_id": "candar_bey",
+    "population": 220,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 28,
+    "terrain": "coast",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1142,
+    "world_y": 452
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 28,
+    "base_grain_output": 28,
+    "id": "lycia",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Lycia",
+    "name_tr": "Likya (Teke Beyligi Kuzeyi)",
+    "neighbors": [
+      "germiyan",
+      "mentese",
+      "hamit",
+      "teke"
+    ],
+    "owner_id": "teke_bey",
+    "population": 220,
+    "religion": "sunni",
+    "satisfaction": 60,
+    "shape_id": "TUR",
+    "tax_rate": 25,
+    "terrain": "mountain",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 1082,
+    "world_y": 516
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 45,
+    "base_grain_output": 35,
+    "id": "saruhan",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Saruhan",
+    "name_tr": "Saruhanogullari Beyligi",
+    "neighbors": [
+      "aydinoglu",
+      "germiyan",
+      "bithynia",
+      "mentese",
+      "_sea_aegean"
+    ],
+    "owner_id": "saruhan_bey",
+    "population": 300,
+    "religion": "sunni",
+    "satisfaction": 62,
+    "shape_id": "TUR",
+    "tax_rate": 30,
+    "terrain": "plain",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1057,
+    "world_y": 480
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 35,
+    "base_grain_output": 20,
+    "id": "chrysopolis",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Chrysopolis",
+    "name_tr": "Hrisopolis (Bizans Asya Yakasi)",
+    "world_x": 1090,
+    "world_y": 445,
+    "shape_id": "TUR",
+    "owner_id": "byzantine",
+    "neighbors": [
+      "nicomedia",
+      "paphlagonia",
+      "bithynia",
+      "constantinople",
+      "_sea_black"
+    ],
+    "population": 180,
+    "religion": "orthodox",
+    "satisfaction": 65,
+    "tax_rate": 28,
+    "terrain": "coast",
+    "trade_capacity": 3,
+    "unlock_turn": 0
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 120,
+    "base_grain_output": 60,
+    "id": "novgorod",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Novgorod",
+    "name_tr": "Novgorod Cumhuriyeti",
+    "neighbors": [
+      "moscow",
+      "koenigsberg",
+      "latvia",
+      "estonia",
+      "lithuania",
+      "_sea_baltic"
+    ],
+    "owner_id": "novgorod_rep",
+    "population": 800,
+    "religion": "orthodox",
+    "satisfaction": 70,
+    "shape_id": "RUS",
+    "tax_rate": 30,
+    "terrain": "forest",
+    "trade_capacity": 5,
+    "unlock_turn": 0,
+    "world_x": 1155,
+    "world_y": 135
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 55,
+    "base_grain_output": 70,
+    "id": "nizhny_novgorod",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Nizhny Novgorod",
+    "name_tr": "Nizhny Novgorod (Volga-Oka Kavşağı)",
+    "neighbors": [
+      "moscow",
+      "kazan"
+    ],
+    "owner_id": "russia",
+    "population": 320,
+    "religion": "orthodox",
+    "satisfaction": 62,
+    "shape_id": "RUS",
+    "tax_rate": 25,
+    "terrain": "forest",
+    "trade_capacity": 3,
+    "unlock_turn": 0,
+    "world_x": 1440,
+    "world_y": 185
+  },
+  {
+    "active_event_id": "",
+    "base_gold_income": 30,
+    "base_grain_output": 35,
+    "id": "chalcidice",
+    "is_locked": false,
+    "is_sea": false,
+    "name": "Chalcidice",
+    "name_tr": "Halkidiki (Kutsal Dag / Bizans)",
+    "neighbors": [
+      "thessaly",
+      "greece",
+      "thrace",
+      "macedonia",
+      "_sea_aegean"
+    ],
+    "owner_id": "byzantine",
+    "population": 180,
+    "religion": "orthodox",
+    "satisfaction": 72,
+    "shape_id": "GRC",
+    "tax_rate": 20,
+    "terrain": "coast",
+    "trade_capacity": 2,
+    "unlock_turn": 0,
+    "world_x": 968,
+    "world_y": 460
   }
 ]

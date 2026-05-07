@@ -974,7 +974,10 @@ func loadGameState() (*state.GameState, error) {
 
 	relations := faction.BuildInitialRelations(factions)
 
-	armies := buildStartingArmies()
+	armies, err := army.LoadArmies("assets/data/armies.json")
+	if err != nil {
+		return nil, fmt.Errorf("ordular: %w", err)
+	}
 
 	return &state.GameState{
 		Turn:            1,
@@ -996,44 +999,3 @@ func loadGameState() (*state.GameState, error) {
 	}, nil
 }
 
-// buildStartingArmies her fraksiyon için başlangıç ordularını oluşturur.
-func buildStartingArmies() map[army.ArmyID]*army.Army {
-	armies := make(map[army.ArmyID]*army.Army)
-
-	type armySpec struct {
-		id      army.ArmyID
-		owner   string
-		region  world.RegionID
-		militia int
-		cavalry int
-	}
-
-	specs := []armySpec{
-		{"army_ottoman_1", "ottoman", "anatolia", 5, 2},
-		{"army_france_1", "france", "france", 4, 1},
-		{"army_england_1", "england", "england", 4, 0},
-		{"army_venice_1", "venice", "venice", 3, 1},
-		{"army_mamluk_1", "mamluk", "cairo", 4, 1},
-		{"army_safavid_1", "safavid", "tabriz", 4, 1},
-		{"army_russia_1", "russia", "moscow", 4, 0},
-		{"army_aragon_1", "aragon", "aragon", 3, 1},
-		{"army_portugal_1", "portugal", "portugal", 3, 0},
-	}
-
-	for _, s := range specs {
-		units := army.MakeUnits("militia", s.militia)
-		if s.cavalry > 0 {
-			units = append(units, army.MakeUnits("light_cavalry", s.cavalry)...)
-		}
-		armies[s.id] = &army.Army{
-			ID:            s.id,
-			OwnerID:       s.owner,
-			RegionID:      s.region,
-			Units:         units,
-			MovePoints:    2,
-			MaxMovePoints: 2,
-		}
-	}
-
-	return armies
-}

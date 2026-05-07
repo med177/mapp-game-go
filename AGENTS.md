@@ -313,6 +313,50 @@ mapp-game-go/
 
 ---
 
+## Harita Voronoi Render Kuralları
+
+### Temel İlke
+Her bölgenin haritadaki renk alanı **saf koordinat mesafesine** göre belirlenir (`world_x`, `world_y`).
+`internal/render/mapgen.go` → `nearestShapeRegion()`: her piksel için en yakın merkezi bulur.
+**Komşu (neighbors) listesi render'ı ETKİLEMEZ** — sadece ordu hareketi ve ticaret için kullanılır.
+
+### Voronoi Sınır Formülü
+İki bölge A ve B arasındaki görsel sınır, her eksen için orta noktada geçer:
+```
+sınır_wy = (A.world_y + B.world_y) / 2
+```
+A, B'den **daha küçük wy** değerine sahipse (daha kuzeyde), A'nın Voronoi hücresi kuzeye uzanır.
+
+### Bölge Denize/Kıyıya Ulaşıyor Sorunu
+**Belirti:** Bir bölgenin rengi deniz/kıyı piksellerine kadar uzanıyor.
+**Neden:** O bölge ile deniz arasında başka hiçbir bölge merkezi yok.
+**Çözüm:** Araya yeni bir bölge ekle:
+1. Sorunlu bölgenin `world_x` değerine yakın, `world_y` değerinden daha küçük (daha kuzey) bir nokta seç
+2. Geçiş çizgisi = `(yeni_wy + sorunlu_wy) / 2` — bu değerin kıyı wy'sinden **büyük** olduğunu doğrula
+3. Bölgeyi tarihsel olarak doğru bir fraksiyon/isimle ekle
+4. Komşu listelerini **her iki yönde** güncelle
+5. `neighbors` listesinden `_sea_black` / `_sea_aegean` gibi deniz komşularını kaldır (artık kıyıya ulaşamadığı için)
+
+### Uygulama Örneği (1300 Anadolu)
+```
+Bithynia    (wx=1090, wy=468) → Karadeniz'e ulaşıyordu
+Chrysopolis (wx=1090, wy=445) eklendi → geçiş: wy=456.5
+=> wy<456: Chrysopolis (Bizans), wy>456: Bithynia (Osmanlı) ✓
+
+Germiyan    (wx=1084, wy=498) → Akdeniz'e ulaşıyordu
+Lycia       (wx=1082, wy=516) eklendi → geçiş: wy=507
+=> wy<507: Germiyan, wy>507: Lycia (Teke) ✓
+```
+
+### Voronoi Komşuluk Testi
+İki bölge A ve B'nin arasına C eklenecekse, A-B artık komşu **değildir**:
+```
+midpoint = ((A.wx+B.wx)/2, (A.wy+B.wy)/2)
+d²(C, midpoint) < d²(A, midpoint) → C araya giriyor, A-B neighbors'tan kaldır
+```
+
+---
+
 ## Wiki Bakım Kuralları
 
 Proje, `wiki/` dizininde Obsidian uyumlu bir LLM wiki'si tutar.
