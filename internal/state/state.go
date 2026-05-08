@@ -53,15 +53,17 @@ type GameState struct {
 
 	// Development mode
 	DevelopmentMode bool `json:"development_mode"`
+	EditMode        bool `json:"edit_mode"`
 
 	// Zafer koşulu
 	Victory VictoryCondition `json:"victory"`
 
 	// Dünya verisi
-	Regions   map[world.RegionID]*world.Region       `json:"regions"`
-	Factions  map[faction.FactionID]*faction.Faction `json:"factions"`
-	Armies    map[army.ArmyID]*army.Army             `json:"armies"`
-	ShapeData world.CountryShapeJSON                 `json:"-"`
+	Regions     map[world.RegionID]*world.Region       `json:"regions"`
+	RegionOrder []world.RegionID                       `json:"-"`
+	Factions    map[faction.FactionID]*faction.Faction `json:"factions"`
+	Armies      map[army.ArmyID]*army.Army             `json:"armies"`
+	ShapeData   world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
 	UnitTypes          map[string]*army.UnitType   `json:"-"`
@@ -124,6 +126,7 @@ const (
 	PhasePauseMenu      Phase = "pause_menu"  // oyun içi duraklama menüsü
 	PhaseLoadSelect     Phase = "load_select" // kayıt seçim ekranı
 	PhaseSaveSelect     Phase = "save_select" // slot seçerek kaydetme ekranı
+	PhaseEditMode       Phase = "edit_mode"   // senaryo veri düzenleme modu
 )
 
 // CurrentSeason mevcut mevsimi döner.

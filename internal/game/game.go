@@ -1,9 +1,11 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
@@ -265,6 +267,14 @@ func (g *Game) Update() error {
 			g.renderer.HasAutoSave = save.SaveExists()
 		case render.ActionBack:
 			g.gs.Phase = state.PhasePauseMenu
+		}
+
+	case state.PhaseEditMode:
+		switch action.Kind {
+		case render.ActionSaveScenario:
+			g.saveScenarioRegions()
+		case render.ActionGoMainMenu:
+			g.resetToNewGame()
 		}
 
 	case state.PhaseGameOver:
@@ -535,6 +545,49 @@ func (g *Game) saveGame() {
 	g.renderer.ShowCombatResult("Oyun kaydedildi!")
 }
 
+func (g *Game) saveScenarioRegions() {
+	if g.gs.ScenarioPath == "" {
+		g.renderer.ShowCombatResult("Senaryo yolu yok; kaydedilemedi.")
+		return
+	}
+	if err := writeScenarioRegions(g.gs); err != nil {
+		g.renderer.ShowCombatResult("Senaryo kayıt hatası: " + err.Error())
+		return
+	}
+	g.renderer.MarkEditSaved()
+	g.renderer.ShowCombatResult("regions.json kaydedildi.")
+}
+
+func writeScenarioRegions(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "regions.json")
+	regions := make([]*world.Region, 0, len(gs.Regions))
+	if len(gs.RegionOrder) > 0 {
+		seen := make(map[world.RegionID]bool, len(gs.RegionOrder))
+		for _, rid := range gs.RegionOrder {
+			if region, ok := gs.Regions[rid]; ok {
+				regions = append(regions, region)
+				seen[rid] = true
+			}
+		}
+		for rid, region := range gs.Regions {
+			if !seen[rid] {
+				regions = append(regions, region)
+			}
+		}
+	} else {
+		for _, region := range gs.Regions {
+			regions = append(regions, region)
+		}
+	}
+
+	data, err := json.MarshalIndent(regions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
 // loadGame otomatik kayıt slotundan yükler.
 func (g *Game) loadGame() {
 	g.startLoadSlot("autosave", state.PhasePlayerTurn)
@@ -595,7 +648,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 
 	dp := func(f string) string { return scenarioPath + "/data/" + f }
 
-	regions, err := world.LoadRegions(dp("regions.json"))
+	regions, regionOrder, err := world.LoadRegionsWithOrder(dp("regions.json"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
 	}
@@ -630,6 +683,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	}
 
 	devMode := os.Getenv("DEV_MODE") == "true"
+	editMode := os.Getenv("EDIT_MODE") == "true"
 
 	year := 1300
 	month := 3
@@ -650,10 +704,12 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		Phase:              state.PhaseFactionSelect,
 		Difficulty:         difficulty,
 		DevelopmentMode:    devMode,
+		EditMode:           editMode,
 		ScenarioID:         scenarioIDFromPath(scenarioPath),
 		ScenarioPath:       scenarioPath,
 		MapConfig:          mapConfig,
 		Regions:            regions,
+		RegionOrder:        regionOrder,
 		Factions:           factions,
 		Armies:             armies,
 		ShapeData:          shapeData,
@@ -664,6 +720,9 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		Relations:          faction.BuildInitialRelations(factions),
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
+	}
+	if editMode {
+		gs.Phase = state.PhaseEditMode
 	}
 
 	if gs.Difficulty >= 3 {

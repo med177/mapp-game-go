@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -23,6 +23,7 @@ type Region struct {
     IsLocked  bool             // henüz keşfedilmemiş
     WorldX, WorldY int         // harita koordinatı
     ShapeID string             // Natural Earth kaynak ID'si
+    Settlements []Settlement   // görsel şehir/kasaba/kale noktaları
 
     Buildings    []string      // inşa edilmiş bina ID'leri
     TaxRate      int           // 0-100
@@ -34,6 +35,20 @@ type Region struct {
     ActiveEventID   string
 }
 ```
+
+`WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_capital` ile seçilir. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
+
+```go
+type Settlement struct {
+    ID        string
+    NameTR    string
+    X, Y      int     // world_x/world_y ile aynı koordinat uzayı
+    Type      string  // city, town, port, fortress
+    IsCapital bool
+}
+```
+
+Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
 
 ---
 

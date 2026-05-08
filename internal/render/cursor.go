@@ -70,6 +70,11 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
+	case state.PhaseEditMode:
+		if _, _, ok := r.editSettlementAt(fx, fy); ok {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 	case state.PhasePauseMenu:
 		if r.pauseMenuHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)

@@ -41,7 +41,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
 | Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
-| Düşman ordu istihbaratı | ✅ | Menzildeki düşman orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
+| Rakip ordu istihbaratı | ✅ | Menzildeki rakip orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
 | Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |
 | Askeri kapasite | ✅ | Kara bölgesi başı 5 + kışla başı 5; ordu sayısı `ceil(kara_bölge/2)` |
 | Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü; JSON `turns_required` ile üretim kuyruğunda tamamlanır, tekrar tıklanınca iptal edilip altın iade edilir |
@@ -77,6 +77,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |
 | Render başlangıç log temizliği | ✅ | Boş senaryo path'inde shape dosyası okunmaz; deniz seed araması ham `world_x/world_y` fallback kullanır |
 | Deniz anchor ve çakışma stabilizasyonu | ✅ | Deniz orduları gerçek su piksel anchor'ına çizilir; ordu/etiket çizim sırası deterministik, çakışan etiket metinleri bastırılır |
+| Çoklu yerleşim noktaları | ✅ | `regions.json` içinde `settlements[]`; ana yerleşim ordu/etiket anchor'ı, yakın zoom'da ek yerleşim noktaları/isimleri, bölge dışı koordinatta log + nearest-region fallback |
+| Settlement edit mode | ✅ | `.env` `EDIT_MODE=true`; senaryo seçince harita editörü açılır, settlement sürükleme, bölge arası taşıma, isim düzenleme ve Ctrl+S ile `regions.json` kaydı |
 
 ## Bilinen Sorunlar
 

@@ -49,6 +49,7 @@ const (
 	ActionSplitArmy      ActionKind = "split_army"       // seçili orduyu ikiye böl
 	ActionMergeArmies    ActionKind = "merge_armies"     // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
 	ActionSelectScenario ActionKind = "select_scenario"  // BuildingID = senaryo klasör yolu
+	ActionSaveScenario   ActionKind = "save_scenario"    // edit mode: aktif senaryo JSON verisini kaydet
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

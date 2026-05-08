@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 related: [state-management, render-pipeline]
 ---
 
@@ -33,6 +33,8 @@ PhaseMainMenu
     ↓ YeniOyun
 PhaseScenarioSelect
     ↓ SenaryoSeç
+    ├─ EDIT_MODE=true → PhaseEditMode
+    ↓ normal oyun
 PhaseFactionSelect
     ↓ FraksiyonSeç
 PhaseVictorySelect
@@ -47,7 +49,21 @@ PhaseTurnResolution                    │
     └─ oyun bitti → PhaseGameOver
 ```
 
-**Ayrıca:** `PhaseSettings` (ana menüden, ana menüye döner) · `PhasePauseMenu` (ESC ile)
+**Ayrıca:** `PhaseSettings` (ana menüden, ana menüye döner) · `PhasePauseMenu` (ESC ile) · `PhaseEditMode` (`.env` içinde `EDIT_MODE=true` ise senaryo seçildikten sonra açılır)
+
+## Edit Mode
+
+`EDIT_MODE=true` ile senaryo seçildikten sonra oyun bağımsız harita düzenleyici açılır. İlk araç settlement düzenleme içindir:
+
+| Aksiyon | Tetikleyici | Açıklama |
+|---|---|---|
+| Yerleşim seç | Sol tık | En yakın settlement noktasını seçer |
+| Yerleşim taşı | Sol tık sürükle | `regions.json` içindeki settlement `x/y` değerlerini canlı günceller; başka kara bölgeye sürüklenirse settlement o bölgenin `settlements[]` listesine aktarılır |
+| Yerleşim ismi değiştir | F2 veya Enter | Seçili settlement adını düzenler; Enter kaydeder, Esc iptal eder |
+| Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
+| Ana menüye dön | Esc | Edit mode'dan çıkar |
+
+Kamera kontrolleri normal harita ile aynıdır.
 
 ---
 

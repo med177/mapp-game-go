@@ -46,18 +46,20 @@ const MapScale = 1
 
 // WorldMap ülke shape'lerinden üretilen dünya harita dokusunu yönetir.
 type WorldMap struct {
-	img          *ebiten.Image
-	basePixels   []byte
-	dispPixels   []byte
-	regionAt     []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
-	regionIDs    []world.RegionID // regionIDs[0] = "" (boş)
-	regionIdx    map[world.RegionID]uint16
-	regionPx     map[world.RegionID][]int
-	regionAnchor map[world.RegionID][2]int
-	seaIdx       map[uint16]bool // deniz bölgesi indeksleri
-	hasBgImage   bool
-	ownerDirty   bool
-	selected     world.RegionID
+	img               *ebiten.Image
+	basePixels        []byte
+	dispPixels        []byte
+	regionAt          []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
+	regionIDs         []world.RegionID // regionIDs[0] = "" (boş)
+	regionIdx         map[world.RegionID]uint16
+	regionPx          map[world.RegionID][]int
+	regionAnchor      map[world.RegionID][2]int
+	settlementAnchor  map[settlementAnchorKey][2]int
+	primarySettlement map[world.RegionID][2]int
+	seaIdx            map[uint16]bool // deniz bölgesi indeksleri
+	hasBgImage        bool
+	ownerDirty        bool
+	selected          world.RegionID
 }
 
 type countryShapeFile struct {
@@ -70,18 +72,25 @@ type countryShape struct {
 	Rings [][][2]int `json:"rings"`
 }
 
+type settlementAnchorKey struct {
+	Region world.RegionID
+	Index  int
+}
+
 func NewWorldMap(gs *state.GameState) *WorldMap {
 	applyMapConfig(gs)
 	wm := &WorldMap{
-		img:          ebiten.NewImage(WorldW, WorldH),
-		basePixels:   make([]byte, WorldW*WorldH*4),
-		dispPixels:   make([]byte, WorldW*WorldH*4),
-		regionAt:     make([]uint16, WorldW*WorldH),
-		regionIDs:    []world.RegionID{""}, // indeks 0 = boş
-		regionIdx:    make(map[world.RegionID]uint16),
-		regionPx:     make(map[world.RegionID][]int),
-		regionAnchor: make(map[world.RegionID][2]int),
-		seaIdx:       make(map[uint16]bool),
+		img:               ebiten.NewImage(WorldW, WorldH),
+		basePixels:        make([]byte, WorldW*WorldH*4),
+		dispPixels:        make([]byte, WorldW*WorldH*4),
+		regionAt:          make([]uint16, WorldW*WorldH),
+		regionIDs:         []world.RegionID{""}, // indeks 0 = boş
+		regionIdx:         make(map[world.RegionID]uint16),
+		regionPx:          make(map[world.RegionID][]int),
+		regionAnchor:      make(map[world.RegionID][2]int),
+		settlementAnchor:  make(map[settlementAnchorKey][2]int),
+		primarySettlement: make(map[world.RegionID][2]int),
+		seaIdx:            make(map[uint16]bool),
 	}
 
 	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
@@ -105,6 +114,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	wm.buildCountryShapes(gs, loadCountryShapes(shapesPath))
 	wm.buildSeaRegions(gs)
 	wm.computeRegionAnchors()
+	wm.computeSettlementAnchors(gs)
 	wm.applyOwnership(gs, "")
 	return wm
 }
@@ -208,6 +218,43 @@ func (wm *WorldMap) Image() *ebiten.Image                  { return wm.img }
 func (wm *WorldMap) RegionAnchor(rid world.RegionID) (int, int, bool) {
 	p, ok := wm.regionAnchor[rid]
 	return p[0], p[1], ok
+}
+
+func (wm *WorldMap) SettlementAnchor(rid world.RegionID, index int) (int, int, bool) {
+	p, ok := wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: index}]
+	return p[0], p[1], ok
+}
+
+func (wm *WorldMap) PrimarySettlementAnchor(rid world.RegionID) (int, int, bool) {
+	p, ok := wm.primarySettlement[rid]
+	return p[0], p[1], ok
+}
+
+func (wm *WorldMap) UpdateSettlementAnchor(gs *state.GameState, rid world.RegionID, index int) {
+	region, ok := gs.Regions[rid]
+	if !ok || region == nil || index < 0 || index >= len(region.Settlements) {
+		return
+	}
+	settlement := region.Settlements[index]
+	wx := int(shapeOffX + float64(settlement.X)*shapeScaleX)
+	wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
+	ax, ay := wx, wy
+	if wm.RegionAt(wx, wy) != rid {
+		if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
+			ax, ay = fx, fy
+		}
+	}
+
+	wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: index}] = [2]int{ax, ay}
+	if settlement.IsCapital || index == 0 {
+		wm.primarySettlement[rid] = [2]int{ax, ay}
+	}
+}
+
+func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
+	clear(wm.settlementAnchor)
+	clear(wm.primarySettlement)
+	wm.computeSettlementAnchors(gs)
 }
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID) {
@@ -520,6 +567,59 @@ func (wm *WorldMap) computeRegionAnchors() {
 		}
 		wm.regionAnchor[rid] = [2]int{best % WorldW, best / WorldW}
 	}
+}
+
+func (wm *WorldMap) computeSettlementAnchors(gs *state.GameState) {
+	for rid, region := range gs.Regions {
+		if region == nil || region.IsSea || len(region.Settlements) == 0 {
+			continue
+		}
+
+		primarySet := false
+		for i, settlement := range region.Settlements {
+			wx := int(shapeOffX + float64(settlement.X)*shapeScaleX)
+			wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
+			ax, ay := wx, wy
+			if wm.RegionAt(wx, wy) != rid {
+				fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy)
+				if !ok {
+					log.Printf("yerlesim fallback bulunamadi: region=%s settlement=%s x=%d y=%d",
+						rid, settlement.ID, settlement.X, settlement.Y)
+					continue
+				}
+				log.Printf("yerlesim koordinati bolge disinda, fallback uygulandi: region=%s settlement=%s x=%d y=%d -> pixel=%d,%d",
+					rid, settlement.ID, settlement.X, settlement.Y, fx, fy)
+				ax, ay = fx, fy
+			}
+
+			wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: i}] = [2]int{ax, ay}
+			if settlement.IsCapital || !primarySet {
+				wm.primarySettlement[rid] = [2]int{ax, ay}
+				primarySet = true
+			}
+		}
+	}
+}
+
+func (wm *WorldMap) nearestRegionPixel(rid world.RegionID, wx, wy int) (int, int, bool) {
+	pixels := wm.regionPx[rid]
+	if len(pixels) == 0 {
+		return 0, 0, false
+	}
+
+	best := pixels[0]
+	bestDist := int64(1<<63 - 1)
+	for _, pIdx := range pixels {
+		px, py := pIdx%WorldW, pIdx/WorldW
+		dx := int64(px - wx)
+		dy := int64(py - wy)
+		dist := dx*dx + dy*dy
+		if dist < bestDist {
+			best = pIdx
+			bestDist = dist
+		}
+	}
+	return best % WorldW, best / WorldW, true
 }
 
 // nearestShapeRegion piksel koordinatına en yakın bölgeyi döner.

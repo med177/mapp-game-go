@@ -222,7 +222,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 		location = r.NameTR
 	}
 
-	DrawText(screen, "Düşman Ordu", float64(px)+14, float64(py)+10, FaceMed, factionCol)
+	DrawText(screen, "Rakip Ordu", float64(px)+14, float64(py)+10, FaceMed, factionCol)
 	DrawText(screen, factionName+"  —  "+location, float64(px)+14, float64(py)+34, FaceSmall, ColorGray)
 	DrawText(screen, "Birim ve hareket detayları bilinmiyor", float64(px)+14, float64(py)+56, FaceSmall, color.RGBA{160, 140, 100, 210})
 	DrawText(screen, "Bu orduya hareket emri verilemez", float64(px)+14, float64(py)+74, FaceSmall, color.RGBA{180, 100, 90, 210})

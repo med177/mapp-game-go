@@ -19,6 +19,10 @@ type Region struct {
 	// Natural Earth kaynaklı ülke sınırı ID'si (ISO_A3).
 	ShapeID string `json:"shape_id,omitempty"`
 
+	// Settlements bölge içindeki şehir/kasaba/kaleleri temsil eder.
+	// X/Y koordinatları world_x/world_y ile aynı senaryo koordinat uzayındadır.
+	Settlements []Settlement `json:"settlements,omitempty"`
+
 	// Shape[poligon_idx][nokta_idx]
 	Shape [][][2]float32 `json:"-"`
 
@@ -50,6 +54,16 @@ type Region struct {
 
 	// İnşa edilmiş bina ID listesi
 	Buildings []string `json:"buildings"`
+}
+
+type Settlement struct {
+	ID        string `json:"id"`
+	Name      string `json:"name,omitempty"`
+	NameTR    string `json:"name_tr"`
+	X         int    `json:"x"`
+	Y         int    `json:"y"`
+	Type      string `json:"type,omitempty"`
+	IsCapital bool   `json:"is_capital,omitempty"`
 }
 
 // IsCoastal komşularda deniz olan kara bölgesiyse true döner.

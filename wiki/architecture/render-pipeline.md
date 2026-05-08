@@ -94,6 +94,8 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 
 Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. Deniz orduları ve deniz hareket hedefleri JSON merkez koordinatı yerine bu gerçek piksel anchor'ını kullanır; anchor, bölgenin kendi piksel alanı içinden seçildiği için kıyıda kara poligonunun kapattığı deniz bölgelerinde filo ikonları karanın üstüne düşmez.
 
+Kara bölgelerde görünen şehir noktaları `regions.json` içindeki `settlements[]` alanından gelir. `WorldMap` her yerleşim için `SettlementAnchor` hesaplar; koordinat yanlışlıkla bölge dışına verilirse log uyarısı basılır ve aynı region içindeki en yakın piksele fallback yapılır. Ordu ikonları ve hareket hedefleri ana yerleşim (`is_capital`) anchor'ını kullanır, `world_x/world_y` ise bölge geometrisi için korunur.
+
 ---
 
 ## Input Yönetimi
@@ -114,13 +116,15 @@ Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. D
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
+Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap ve küçük edit HUD görünür. Sol tık settlement seçer, sürükleme settlement koordinatını canlı taşır; başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır.
 
 Üst-sol durum paneli `internal/render/panel.go:185` içinde çizilir. Sağ taraftaki zafer hedefi ve askeri kapasite alanları, sabit ölçülü iç kartlar ve kendi ilerleme barı çizimiyle sınırlandırılır; böylece zafer barı askeri kapasite ayırıcısına veya panel sağ sınırına taşmaz.
 
 Uzun sürebilen senaryo/kayıt yükleme işleri `PhaseLoading` ekranına geçer. `internal/game/game.go` yükleme işini arka planda başlatır; renderer bu sırada `loading.go` içindeki gerçek zaman tabanlı spinner'ı çizer ve sonuç hazır olduğunda state ana thread üzerinde uygulanır.
 
-Düşman orduları seçilebilir ama emir verilemez. Renderer düşman ordusu için hareket hedefi çizmez ve sağ/sol tık hareket aksiyonu üretmez. Oyuncu ordularından birinin mevcut hareket menzilindeki düşman ordularda ikon birim sayısını gösterir; detay panelinde birimlerin yaklaşık yarısı görünür, kalanları `Gizli` kartlarıyla saklanır. Menzil dışındaki düşman ordularda birim sayısı ve hareket/birim detayları gizli kalır.
+Rakip orduları seçilebilir ama emir verilemez. Renderer rakip ordusu için hareket hedefi çizmez ve sağ/sol tık hareket aksiyonu üretmez. Oyuncu ordularından birinin mevcut hareket menzilindeki rakip ordularda ikon birim sayısını gösterir; detay panelinde birimlerin yaklaşık yarısı görünür, kalanları `Gizli` kartlarıyla saklanır. Menzil dışındaki rakip ordularda birim sayısı ve hareket/birim detayları gizli kalır.
 
 Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez.
 

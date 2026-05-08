@@ -8,21 +8,28 @@ import (
 
 // LoadRegions assets/data/regions.json dosyasını okur ve map döner.
 func LoadRegions(path string) (map[RegionID]*Region, error) {
+	result, _, err := LoadRegionsWithOrder(path)
+	return result, err
+}
+
+func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("regions dosyası okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("regions dosyası okunamadı: %w", err)
 	}
 
 	var list []*Region
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("regions JSON parse hatası: %w", err)
+		return nil, nil, fmt.Errorf("regions JSON parse hatası: %w", err)
 	}
 
 	result := make(map[RegionID]*Region, len(list))
+	order := make([]RegionID, 0, len(list))
 	for _, r := range list {
 		result[r.ID] = r
+		order = append(order, r.ID)
 	}
-	return result, nil
+	return result, order, nil
 }
 
 // countryShapeEntry JSON dosyasındaki tek bir ülke girişini temsil eder.

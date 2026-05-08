@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 related: [architecture/state-management, world/regions, world/factions]
 ---
 
@@ -68,6 +68,23 @@ Bölge listesi. Her kayıt:
   "is_locked": false,
   "world_x": 490,
   "world_y": 260,
+  "settlements": [
+    {
+      "id": "london",
+      "name_tr": "Londra",
+      "x": 490,
+      "y": 260,
+      "type": "city",
+      "is_capital": true
+    },
+    {
+      "id": "westminster",
+      "name_tr": "Westminster",
+      "x": 486,
+      "y": 262,
+      "type": "town"
+    }
+  ],
   "tax_rate": 50,
   "religion": "catholic",
   "base_gold_income": 60,
@@ -75,6 +92,10 @@ Bölge listesi. Her kayıt:
   "trade_capacity": 5
 }
 ```
+
+`world_x` / `world_y` bölgenin Voronoi/raster bölünmesindeki merkezidir. Haritada görünen şehir noktaları ve isimleri `settlements[]` üzerinden çizilir. Yerleşim `x` / `y` değerleri aynı senaryo koordinat uzayındadır; renderer bu koordinatı gerçek region piksel alanı dışında bulursa log uyarısı basar ve aynı region içindeki en yakın piksele fallback yapar. `settlements` eksikse eski davranış korunur ve bölge adı `world_x/world_y` noktasından çizilir.
+
+Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, `port`, `fortress`. `is_capital: true` ana yerleşimi belirtir ve ordu/etiket anchor'ı için önceliklidir.
 
 ---
 
