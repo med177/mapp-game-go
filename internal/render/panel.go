@@ -1149,8 +1149,14 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	armies := gs.CurrentLandArmies(pid)
 	maxArmies := gs.MaxLandArmies(pid)
 
-	mx := float64(885)
-	my := panelY + 8
+	cardX := float32(878)
+	cardY := float32(panelY) + 7
+	cardW := float32(112)
+	cardH := topStatusH - 14
+	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
+
+	mx := float64(cardX) + 12
+	my := panelY + 16
 
 	DrawText(screen, "Savaşçı", mx, my, FaceSmall, ColorGray)
 	unitStr := itoa(deployed) + "/" + itoa(cap)
@@ -1158,7 +1164,8 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	if cap > 0 && deployed >= cap {
 		unitCol = ColorRed
 	}
-	DrawText(screen, unitStr, mx+65, my, FaceMed, unitCol)
+	unitW := MeasureText(unitStr, FaceMed)
+	DrawText(screen, unitStr, float64(cardX+cardW)-12-unitW, my, FaceMed, unitCol)
 
 	DrawText(screen, "Ordu", mx, my+28, FaceSmall, ColorGray)
 	armyStr := itoa(armies) + "/" + itoa(maxArmies)
@@ -1166,11 +1173,8 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	if armies >= maxArmies {
 		armyCol = ColorRed
 	}
-	DrawText(screen, armyStr, mx+65, my+28, FaceMed, armyCol)
-
-	// İnce ayraç
-	by := float32(panelY)
-	vector.StrokeLine(screen, float32(mx)-8, by+8, float32(mx)-8, by+topStatusH-8, 1, color.RGBA{80, 65, 35, 120}, false)
+	armyW := MeasureText(armyStr, FaceMed)
+	DrawText(screen, armyStr, float64(cardX+cardW)-12-armyW, my+28, FaceMed, armyCol)
 }
 
 // drawVictoryProgress seçilen zafer tipine göre ilerlemeyi gösterir.
@@ -1179,14 +1183,20 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		return
 	}
 
-	vx := float64(730)
-	vy := panelY + 8
-	barW := float32(142)
-	barX := float32(vx) + 4
+	cardX := float32(718)
+	cardY := float32(panelY) + 7
+	cardW := float32(150)
+	cardH := topStatusH - 14
+	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
+
+	vx := float64(cardX) + 12
+	vy := panelY + 14
+	barW := cardW - 24
+	barX := cardX + 12
 
 	titleCol := color.RGBA{220, 190, 100, 220}
 	DrawText(screen, "Zafer Hedefi", vx, vy, FaceSmall, titleCol)
-	vy += 18
+	vy += 17
 
 	switch gs.Victory.Type {
 	case state.VictoryDomination, "":
@@ -1195,9 +1205,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 			target = 20
 		}
 		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
-		DrawText(screen, "⚑ Bölge: "+itoa(current)+"/"+itoa(target), vx, vy, FaceMed, ColorWhite)
+		DrawText(screen, "Hedef: "+itoa(current)+"/"+itoa(target), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(current)/float64(target)), ColorGold)
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(current)/float64(target)), ColorGold)
 
 	case state.VictoryEconomic:
 		threshold := gs.Victory.TargetGoldIncome
@@ -1212,9 +1222,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		if f, ok := gs.Factions[gs.PlayerFactionID]; ok {
 			gold = f.Gold
 		}
-		DrawText(screen, "✦ Altın: "+itoa(gold)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
+		DrawText(screen, "Altın: "+itoa(gold)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
 		vy += 18
-		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(gold)/float64(threshold)), ColorGold)
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(gold)/float64(threshold)), ColorGold)
 		vy += 12
 		turnsStr := itoa(gs.EconomicVictoryTurns) + "/" + itoa(holdTurns) + " tur korundu"
 		DrawText(screen, turnsStr, vx, vy, FaceSmall, ColorGray)
@@ -1240,9 +1250,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				eliminated++
 			}
 		}
-		DrawText(screen, "⚔ Güç: "+itoa(totalStr)+"/"+itoa(targetStr), vx, vy, FaceMed, ColorWhite)
+		DrawText(screen, "Güç: "+itoa(totalStr)+"/"+itoa(targetStr), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
 		vy += 12
 		DrawText(screen, "Yenilgi: "+itoa(eliminated)+"/"+itoa(targetDef), vx, vy, FaceSmall, ColorGray)
 
@@ -1254,9 +1264,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				held++
 			}
 		}
-		DrawText(screen, "✝ Kutsal Şehir: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, color.RGBA{200, 160, 255, 255})
+		DrawText(screen, "Kutsal: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, color.RGBA{200, 160, 255, 255})
 		vy += 18
-		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
 		vy += 12
 		DrawText(screen, itoa(gs.ReligiousVictoryTurns)+"/12 tur", vx, vy, FaceSmall, ColorGray)
 
@@ -1271,10 +1281,25 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				held++
 			}
 		}
-		DrawText(screen, "⚑ Hedef: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, ColorWhite)
+		DrawText(screen, "Hedef: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(held)/float64(total)), ColorGold)
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total)), ColorGold)
 	}
+}
+
+func drawTopStatusCard(screen *ebiten.Image, x, y, w, h float32) {
+	vector.FillRect(screen, x, y, w, h, color.RGBA{18, 16, 12, 150}, false)
+	vector.FillRect(screen, x, y, w, 1, color.RGBA{170, 135, 60, 80}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{95, 78, 42, 115}, false)
+}
+
+func drawTopProgressBar(screen *ebiten.Image, x, y, w, h float32, fill float64, col color.Color) {
+	fill = clampF(fill)
+	vector.FillRect(screen, x, y, w, h, color.RGBA{42, 42, 40, 210}, false)
+	if fill > 0 {
+		vector.FillRect(screen, x, y, float32(float64(w)*fill), h, col, false)
+	}
+	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{120, 100, 55, 150}, false)
 }
 
 // clampF 0.0–1.0 aralığına sıkıştırır.

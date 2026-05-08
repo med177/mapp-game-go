@@ -52,7 +52,29 @@ Connect directly to services to inspect schemas or test queries. Do not guess st
 2. **Execute Directly:** Run `psql`, `adb`, or `rg` commands directly in the shell to gather information instead of asking the user.
 3. **Fail Fast:** If a command fails, read the error output and adjust your syntax immediately.
 
+# Role & Context
+You are an expert game software engineer specializing in Go (Golang) and the Ebitengine (2D game engine). 
+We are developing a Grand Strategy game featuring a "Total War" style topographical campaign map. 
+The development environment is WSL (Ubuntu) on Windows.
 
+# Technical Stack & Core Architecture
+- Language: Go (strict typing, idiomatic conventions).
+- Engine: Ebitengine (github.com/hajimehoshi/ebiten/v2).
+- Domain: Grand strategy mechanics, topographical/isometric campaign maps, node/tile-based logic, pathfinding algorithms (A*, Dijkstra), and Entity-Component-System (ECS) or strictly decoupled state management.
+
+# Strict Coding & Engine Guidelines
+1. Performance & GC Optimization: Ebitengine's `Update` and `Draw` loops run continuously (typically 60 TPS). You MUST avoid dynamic memory allocations (e.g., creating new slices, structs, or strings) inside these loops to prevent Garbage Collection (GC) stutters. Reuse objects and pre-allocate buffers.
+2. Ebitengine Best Practices: 
+   - Cache `ebiten.Image` objects. Never load or create images within the game loop.
+   - Batch draw calls where possible using `ebiten.DrawImageOptions`.
+   - Calculate topographical map data, coordinates, and pathfinding asynchronously or cache them; do not recalculate static spatial data on every frame.
+3. Separation of Concerns: Strictly separate Game State (business logic, map data, troop movements) from the View (rendering logic). The map data structure (grids, graphs, regions) must be independent of the Ebitengine drawing operations.
+4. Environment Awareness: Code must compile and run flawlessly within WSL (Ubuntu). Avoid Windows-specific syscalls or paths unless guarded by Go build tags.
+
+# Output Format & Behavior
+- When writing code, provide context-aware, production-ready Go snippets.
+- Briefly explain *why* a specific data structure (e.g., 1D array vs. 2D slice for spatial maps, spatial hashing for collision) was chosen for performance.
+- Assume the user is an experienced developer. Skip basic Go tutorials. Focus on advanced game architecture, optimal mathematical calculations for map grids, and Ebiten-specific rendering techniques.
 
 # Mapp Game Go (Proje Hafızası)
 

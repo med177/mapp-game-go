@@ -18,7 +18,7 @@ Mevcut veri seti iki senaryoda da aynı genişlikte:
 | `1300_ottoman_rise` | 210 | 52 | 45 | 30 | 49 |
 | `1444_constantinople` | 210 | 52 | 45 | 30 | 49 |
 
-Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden tamamlanmadı. Eksikler: `X11/Xlib.h` ve `alsa.pc`. Bu, Go paketlerinden çok Ebitengine/oto native bağımlılığı.
+Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çalıştı.
 
 ## Tamamlanan Sistemler
 
@@ -67,7 +67,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |
 | Olay paneli | ✅ | Sağ üst olay paneli daha fazla kayıt tutar, uzun liste mouse wheel ile kaydırılır |
 | Minimap | ✅ | Sağ alt köşe, kamera ve ordu konumları |
-| Üst-sol durum paneli | ✅ | Fraksiyon, kaynak, zafer ve ordu özeti haritanın üst-solunda ayrı panel |
+| Üst-sol durum paneli | ✅ | Fraksiyon, kaynak, zafer ve ordu özeti haritanın üst-solunda ayrı panel; zafer/askeri özet kompakt iç kartlarla taşmadan çizilir |
 | Sağ-üst tarih/menü HUD | ✅ | Tarih, mevsim, tur ve duraklama menüsü butonu sağ üstte ayrı panel |
 | Alt-orta aksiyon HUD | ✅ | Diplomasi, Teknoloji ve Tur Bitir butonları ayrı HUD içinde alt-ortada |
 | Olay logu akordiyonu | ✅ | Panel daraltılıp genişletilir; uzun metinler wrap edilir; kartlar X ile kapanır, tıklanınca detay popup açılır |
