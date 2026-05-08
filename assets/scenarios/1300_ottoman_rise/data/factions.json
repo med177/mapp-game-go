@@ -53,7 +53,7 @@
       80,
       180
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 900,
     "grain": 300,
@@ -75,7 +75,7 @@
       30,
       30
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 750,
     "grain": 250,
@@ -119,7 +119,7 @@
       180,
       80
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 700,
     "grain": 180,
@@ -141,7 +141,7 @@
       80,
       180
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 600,
     "grain": 350,
@@ -185,7 +185,7 @@
       160,
       80
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 700,
     "grain": 160,
@@ -207,7 +207,7 @@
       40,
       180
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 700,
     "grain": 180,
@@ -229,7 +229,7 @@
       195,
       45
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 900,
     "grain": 300,
@@ -251,7 +251,7 @@
       35,
       35
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 400,
     "grain": 220,
@@ -273,7 +273,7 @@
       110,
       200
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 350,
     "grain": 250,
@@ -295,7 +295,7 @@
       75,
       35
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 600,
     "grain": 350,
@@ -317,7 +317,7 @@
       175,
       45
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 550,
     "grain": 200,
@@ -339,7 +339,7 @@
       95,
       45
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 650,
     "grain": 280,
@@ -361,7 +361,7 @@
       215,
       215
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 900,
     "grain": 80,
@@ -383,7 +383,7 @@
       175,
       120
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 350,
     "grain": 120,
@@ -405,7 +405,7 @@
       75,
       200
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 450,
     "grain": 200,
@@ -427,7 +427,7 @@
       55,
       55
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 1100,
     "grain": 100,
@@ -449,7 +449,7 @@
       45,
       45
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 450,
     "grain": 300,
@@ -713,7 +713,7 @@
       150,
       80
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 350,
     "grain": 250,
@@ -757,7 +757,7 @@
       50,
       180
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 400,
     "grain": 130,
@@ -779,7 +779,7 @@
       90,
       160
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 600,
     "grain": 160,
@@ -801,7 +801,7 @@
       40,
       40
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 350,
     "grain": 200,
@@ -823,7 +823,7 @@
       170,
       40
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 500,
     "grain": 200,
@@ -845,7 +845,7 @@
       90,
       170
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 220,
     "grain": 150,
@@ -889,7 +889,7 @@
       120,
       160
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 500,
     "grain": 300,
@@ -911,7 +911,7 @@
       220,
       220
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 400,
     "grain": 220,
@@ -933,7 +933,7 @@
       60,
       60
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "gold": 320,
     "grain": 200,
