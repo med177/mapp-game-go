@@ -56,6 +56,7 @@ type Renderer struct {
 	// Ana menü
 	menuTick        int
 	HasSave         bool
+	HasAutoSave     bool
 	CurrentSettings Settings
 	LoadingMessage  string
 
@@ -71,6 +72,7 @@ type Renderer struct {
 	eventLog          []string
 	eventLogCollapsed bool
 	eventDetail       string
+	eventLogScroll    int
 
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog      string
@@ -164,14 +166,16 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
+	r.eventLogScroll = 0
 }
 
-// AddEvent olay loguna yeni bir giriş ekler (maksimum 8).
+// AddEvent olay loguna yeni bir giriş ekler.
 func (r *Renderer) AddEvent(msg string) {
 	r.eventLog = append([]string{msg}, r.eventLog...)
-	if len(r.eventLog) > 8 {
-		r.eventLog = r.eventLog[:8]
+	if len(r.eventLog) > maxEventLogEntries {
+		r.eventLog = r.eventLog[:maxEventLogEntries]
 	}
+	r.eventLogScroll = 0
 }
 
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
@@ -239,7 +243,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// Ana menü
 	if r.gs.Phase == state.PhaseMainMenu {
 		r.menuTick++
-		DrawMainMenu(screen, r.factionCursor, r.HasSave, r.menuTick)
+		DrawMainMenu(screen, r.factionCursor, r.HasSave, r.HasAutoSave, r.menuTick)
 		return
 	}
 
@@ -335,7 +339,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
 	DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
-	DrawEventLog(screen, r.eventLog, r.eventLogCollapsed)
+	DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll)
 	DrawHoverTooltip(screen, r.gs, r.SelectedRegion)
 
 	// 7. Diplomasi paneli (üst katman)
@@ -676,7 +680,7 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Ana menü inputu
 	if r.gs.Phase == state.PhaseMainMenu {
-		return r.handleMainMenuInput(r.HasSave)
+		return r.handleMainMenuInput(r.HasSave, r.HasAutoSave)
 	}
 
 	// Ayarlar ekranı inputu
@@ -859,11 +863,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.eventLogCollapsed = !r.eventLogCollapsed
 		return InputAction{}
 	}
-	if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed); idx >= 0 {
+	if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
 		r.eventLog = append(r.eventLog[:idx], r.eventLog[idx+1:]...)
+		r.clampEventLogScroll()
 		return InputAction{}
 	}
-	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed); idx >= 0 {
+	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
 		r.eventDetail = r.eventLog[idx]
 		return InputAction{}
 	}
@@ -1060,6 +1065,10 @@ func (r *Renderer) handleCamera() {
 
 	_, dy := ebiten.Wheel()
 	if dy != 0 {
+		if eventLogPanelHit(float64(mx), float64(my), r.eventLogCollapsed) && !r.eventLogCollapsed {
+			r.scrollEventLog(dy)
+			return
+		}
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
 		minScale := minCameraScale()
 		if dy > 0 && r.camScale < 3.0 {
@@ -1076,6 +1085,25 @@ func (r *Renderer) handleCamera() {
 		afterWX, afterWY := r.screenToWorld(float64(mx), float64(my))
 		r.camX += mouseWX - afterWX
 		r.camY += mouseWY - afterWY
+	}
+}
+
+func (r *Renderer) scrollEventLog(dy float64) {
+	if dy > 0 {
+		r.eventLogScroll--
+	} else if dy < 0 {
+		r.eventLogScroll++
+	}
+	r.clampEventLogScroll()
+}
+
+func (r *Renderer) clampEventLogScroll() {
+	maxScroll := eventLogMaxScroll(len(r.eventLog), r.eventLogCollapsed)
+	if r.eventLogScroll < 0 {
+		r.eventLogScroll = 0
+	}
+	if r.eventLogScroll > maxScroll {
+		r.eventLogScroll = maxScroll
 	}
 }
 

@@ -28,11 +28,12 @@ const (
 	minimapW = float32(240)
 	minimapH = float32(165)
 
-	evLogW       = float32(255)
-	evLogH       = float32(260)
-	evLogMinH    = float32(36)
-	eventCardH   = float32(52)
-	eventCardGap = float32(7)
+	evLogW             = float32(255)
+	evLogH             = float32(520)
+	evLogMinH          = float32(36)
+	eventCardH         = float32(52)
+	eventCardGap       = float32(7)
+	maxEventLogEntries = 16
 
 	infoPanelW = float32(305)
 	infoPanelH = float32(355)
@@ -318,7 +319,7 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
 
 // DrawEventLog sağ üst köşede son olayları kartlar halinde listeler.
-func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool) {
+func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll int) {
 	ex := evLogX()
 	ey := evLogY()
 	eh := eventLogPanelH(collapsed)
@@ -356,15 +357,25 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool) {
 		return
 	}
 
-	for i, ev := range events {
-		cardX, cardY, cardW, cardH := eventLogCardRect(i)
-		if cardY+cardH > ey+eventLogPanelH(false)-8 {
+	visibleCount := eventLogVisibleCount()
+	if scroll < 0 {
+		scroll = 0
+	}
+	maxScroll := eventLogMaxScroll(len(events), collapsed)
+	if scroll > maxScroll {
+		scroll = maxScroll
+	}
+	for visibleIndex := 0; visibleIndex < visibleCount; visibleIndex++ {
+		eventIndex := scroll + visibleIndex
+		if eventIndex >= len(events) {
 			break
 		}
+		ev := events[eventIndex]
+		cardX, cardY, cardW, cardH := eventLogCardRect(visibleIndex)
 		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, color.RGBA{24, 20, 14, 225})
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
 
-		x, y, w, _ := eventLogCloseRect(i)
+		x, y, w, _ := eventLogCloseRect(visibleIndex)
 		DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, ColorGray)
 
 		lines := wrapTextLines(ev, FaceSmall, float64(cardW-34))
@@ -377,11 +388,19 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool) {
 				color.RGBA{220, 210, 185, 235})
 		}
 	}
+	drawEventLogScrollbar(screen, len(events), scroll)
 }
 
 func eventLogPanelH(collapsed bool) float32 {
 	if collapsed {
 		return evLogMinH
+	}
+	maxH := minimapY() - evLogY() - 8
+	if maxH < evLogMinH {
+		return evLogMinH
+	}
+	if evLogH > maxH {
+		return maxH
 	}
 	return evLogH
 }
@@ -423,36 +442,81 @@ func eventLogCloseRect(index int) (x, y, w, h float32) {
 	return x, y, w, h
 }
 
-func eventLogCardHit(mx, my float64, eventCount int, collapsed bool) int {
+func eventLogCardHit(mx, my float64, eventCount int, collapsed bool, scroll int) int {
 	if collapsed {
 		return -1
 	}
-	for i := 0; i < eventCount; i++ {
-		x, y, w, h := eventLogCardRect(i)
-		if y+h > evLogY()+eventLogPanelH(false)-8 {
+	visibleCount := eventLogVisibleCount()
+	for i := 0; i < visibleCount; i++ {
+		eventIndex := scroll + i
+		if eventIndex >= eventCount {
 			break
 		}
+		x, y, w, h := eventLogCardRect(i)
 		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
-			return i
+			return eventIndex
 		}
 	}
 	return -1
 }
 
-func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool) int {
+func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool, scroll int) int {
 	if collapsed {
 		return -1
 	}
-	for i := 0; i < eventCount; i++ {
-		x, y, w, h := eventLogCloseRect(i)
-		if y+h > evLogY()+eventLogPanelH(false)-8 {
+	visibleCount := eventLogVisibleCount()
+	for i := 0; i < visibleCount; i++ {
+		eventIndex := scroll + i
+		if eventIndex >= eventCount {
 			break
 		}
+		x, y, w, h := eventLogCloseRect(i)
 		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
-			return i
+			return eventIndex
 		}
 	}
 	return -1
+}
+
+func eventLogVisibleCount() int {
+	available := eventLogPanelH(false) - 31 - 8
+	if available <= 0 {
+		return 0
+	}
+	return int((available + eventCardGap) / (eventCardH + eventCardGap))
+}
+
+func eventLogMaxScroll(eventCount int, collapsed bool) int {
+	if collapsed {
+		return 0
+	}
+	maxScroll := eventCount - eventLogVisibleCount()
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func drawEventLogScrollbar(screen *ebiten.Image, eventCount int, scroll int) {
+	visibleCount := eventLogVisibleCount()
+	if eventCount <= visibleCount || visibleCount <= 0 {
+		return
+	}
+	trackX := evLogX() + evLogW - 5
+	trackY := evLogY() + 34
+	trackH := eventLogPanelH(false) - 44
+	vector.FillRect(screen, trackX, trackY, 2, trackH, color.RGBA{70, 58, 38, 160}, false)
+
+	thumbH := trackH * float32(visibleCount) / float32(eventCount)
+	if thumbH < 24 {
+		thumbH = 24
+	}
+	maxScroll := eventLogMaxScroll(eventCount, false)
+	thumbY := trackY
+	if maxScroll > 0 {
+		thumbY += (trackH - thumbH) * float32(scroll) / float32(maxScroll)
+	}
+	vector.FillRect(screen, trackX-1, thumbY, 4, thumbH, color.RGBA{180, 145, 70, 210}, false)
 }
 
 func eventDetailPopupRect() (x, y, w, h float32) {

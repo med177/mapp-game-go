@@ -67,6 +67,7 @@ func New() *Game {
 
 	r := render.New(gs)
 	r.HasSave = save.AnySlotExists()
+	r.HasAutoSave = save.SaveExists()
 	r.CurrentSettings = render.DefaultSettings()
 	return &Game{
 		gs:       gs,
@@ -92,6 +93,8 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionNewGame:
 			g.resetToNewGame()
+		case render.ActionContinue:
+			g.startLoadSlot("autosave", state.PhaseMainMenu)
 		case render.ActionOpenLoadSelect:
 			render.SaveSlots = save.ListSlots()
 			g.gs.Phase = state.PhaseLoadSelect
@@ -112,6 +115,7 @@ func (g *Game) Update() error {
 			}
 			render.SaveSlots = save.ListSlots()
 			g.renderer.HasSave = save.AnySlotExists()
+			g.renderer.HasAutoSave = save.SaveExists()
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseMainMenu
 		}
@@ -248,6 +252,7 @@ func (g *Game) Update() error {
 				g.renderer.ShowCombatResult("Kayıt hatası: " + err.Error())
 			} else {
 				g.renderer.HasSave = true
+				g.renderer.HasAutoSave = save.SaveExists()
 				g.renderer.ShowCombatResult("Kaydedildi!")
 			}
 			g.gs.Phase = state.PhasePlayerTurn
@@ -257,6 +262,7 @@ func (g *Game) Update() error {
 			}
 			render.SaveSlots = save.ListSlots()
 			g.renderer.HasSave = save.AnySlotExists()
+			g.renderer.HasAutoSave = save.SaveExists()
 		case render.ActionBack:
 			g.gs.Phase = state.PhasePauseMenu
 		}
@@ -311,6 +317,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs = res.gs
 		g.renderer.ReloadGameState(res.gs)
 		g.renderer.HasSave = save.AnySlotExists()
+		g.renderer.HasAutoSave = save.SaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
 	}
 }
@@ -489,6 +496,7 @@ func (g *Game) saveGame() {
 		return
 	}
 	g.renderer.HasSave = true
+	g.renderer.HasAutoSave = true
 	g.renderer.ShowCombatResult("Oyun kaydedildi!")
 }
 

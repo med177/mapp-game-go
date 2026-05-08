@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-09
+last_updated: 2026-05-08
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -62,9 +62,10 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
 | Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında gerçek zaman tabanlı hareketli spinner gösteriliyor |
-| Ana menü / ayarlar | ✅ | Yeni oyun, kayıt yükleme, ayarlar, çıkış |
+| Ana menü / ayarlar | ✅ | Yeni oyun, autosave varsa devam et, kayıt yükleme, ayarlar, çıkış |
 | Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
 | Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |
+| Olay paneli | ✅ | Sağ üst olay paneli daha fazla kayıt tutar, uzun liste mouse wheel ile kaydırılır |
 | Minimap | ✅ | Sağ alt köşe, kamera ve ordu konumları |
 | Üst-sol durum paneli | ✅ | Fraksiyon, kaynak, zafer ve ordu özeti haritanın üst-solunda ayrı panel |
 | Sağ-üst tarih/menü HUD | ✅ | Tarih, mevsim, tur ve duraklama menüsü butonu sağ üstte ayrı panel |

@@ -180,7 +180,7 @@ Tek ordu  →  bölge merkezinde
 | `renderer.go` | Kamera, draw döngüsü, input ana yönlendirici, `armyIconPositions()` |
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `tile.go` | Arazi renk/doku katmanı |
-| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; minimap'te ordu konumları |
+| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; event log kaydırma geometrisi; minimap'te ordu konumları |
 | `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL butonu |
 | `diplom.go` | Diplomasi paneli UI + input |
 | `tech_panel.go` | Teknoloji ağacı paneli + input |
@@ -193,5 +193,5 @@ Tek ordu  →  bölge merkezinde
 | `cursor.go` | İmleç şekli yönetimi (tüm fazlar) |
 | `faction_select.go` | Fraksiyon seçim ekranı |
 | `victory_select.go` | Zafer koşulu seçim ekranı |
-| `main_menu.go` | Ana menü ("Kayıttan Yükle" → slot seçim ekranı) |
+| `main_menu.go` | Ana menü ("Devam et" → autosave yükleme, "Kayıttan Yükle" → slot seçim ekranı) |
 | `settings.go` | Ayarlar ekranı |

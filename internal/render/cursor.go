@@ -93,7 +93,7 @@ func (r *Renderer) updateCursorShape() {
 // --- Hit-test yardımcıları ---
 
 func (r *Renderer) mainMenuHoverIndex(fx, fy float64) int {
-	items := buildMenuItems(r.HasSave)
+	items := buildMenuItems(r.HasSave, r.HasAutoSave)
 	itemH := 52.0
 	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
 	barW := 280.0
@@ -189,10 +189,10 @@ func (r *Renderer) techPanelHovering(fx, fy float64) bool {
 	}
 
 	levels := r.buildTechTree(f)
-	treeStartY := 80.0
 	levelHeight := 120.0
 	nodeWidth := 180.0
 	nodeHeight := 60.0
+	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
 	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
 
 	for _, levelNodes := range levels {

@@ -18,7 +18,10 @@
     "spice": 50,
     "cloth": 60,
     "tech_points": 0,
-    "researched_techs": [],
+    "researched_techs": [
+      "steel_blades",
+      "heavy_armor"
+    ],
     "ai_aggressiveness": 75
   },
   {

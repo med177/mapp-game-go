@@ -11,11 +11,11 @@ import (
 type menuItem struct {
 	label    string
 	action   ActionKind
-	disabled bool // kayıt yoksa "Devam Et" devre dışı
+	disabled bool
 }
 
 // DrawMainMenu ana menü ekranını çizer.
-func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
+func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bool, tick int) {
 	screen.Fill(color.RGBA{8, 10, 18, 255})
 
 	// Animasyonlu arka plan — yavaş titreşen renk şeritleri
@@ -41,7 +41,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 	vector.FillRect(screen, float32(ScreenWidth/2)-120, sepY, 240, 1, color.RGBA{120, 100, 50, 180}, false)
 
 	// Menü maddeleri
-	items := buildMenuItems(hasSave)
+	items := buildMenuItems(hasSave, hasAutoSave)
 	itemH := 52.0
 	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
 
@@ -69,9 +69,10 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
 
-func buildMenuItems(hasSave bool) []menuItem {
+func buildMenuItems(hasSave bool, hasAutoSave bool) []menuItem {
 	return []menuItem{
 		{"Yeni Oyun", ActionNewGame, false},
+		{"Devam et", ActionContinue, !hasAutoSave},
 		{"Kayıttan Yükle", ActionOpenLoadSelect, !hasSave},
 		{"Ayarlar", ActionOpenSettings, false},
 		{"Çıkış", ActionQuit, false},
@@ -89,8 +90,8 @@ func menuItemColor(selected, disabled bool) color.RGBA {
 }
 
 // handleMainMenuInput ana menü klavye ve fare girişini işler.
-func (r *Renderer) handleMainMenuInput(hasSave bool) InputAction {
-	items := buildMenuItems(hasSave)
+func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool) InputAction {
+	items := buildMenuItems(hasSave, hasAutoSave)
 	n := len(items)
 
 	// Hover ile satır vurgusunu güncelle
