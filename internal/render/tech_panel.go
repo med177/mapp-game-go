@@ -65,16 +65,20 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		return
 	}
 
-	px, py := float32(60), float32(40)
-	pw, ph := float32(ScreenWidth-120), float32(ScreenHeight-80)
+	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
+	overlay.Fill(color.RGBA{8, 6, 4, 220})
+	screen.DrawImage(overlay, nil)
+
+	px, py := float32(0), float32(0)
+	pw, ph := float32(ScreenWidth), float32(ScreenHeight)
 
 	vector.FillRect(screen, px, py, pw, ph, color.RGBA{20, 20, 40, 230}, false)
 	vector.FillRect(screen, px, py, pw, 2, color.RGBA{180, 150, 60, 255}, false)
-	drawTechCloseButton(screen, px, py, pw)
+	drawTechCloseButton(screen)
 
-	DrawText(screen, "[ TEKNOLOJİ AĞACI ]", float64(px)+20, float64(py)+10, FaceMed, ColorYellow)
+	DrawTextCentered(screen, "── Teknoloji Ağacı ──", ScreenWidth/2, 24, FaceLarge, ColorYellow)
 
-	activeY := float64(py) + 30
+	activeY := float64(py) + 50
 	if f.Research.ActiveID != "" {
 		if t, ok := r.gs.TechTypes[f.Research.ActiveID]; ok {
 			msg := fmt.Sprintf("Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
@@ -87,8 +91,8 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	entries := r.buildTechEntries(f)
 
 	rowH := 36
-	listY := int(py) + 56
-	visibleRows := (int(ph) - 70) / rowH
+	listY := int(py) + 80
+	visibleRows := (int(ph) - 110) / rowH
 	colW := int(pw) / 2
 
 	if r.techCursor < 0 {
@@ -154,22 +158,20 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
 }
 
-func techCloseRect(px, py, pw float32) (x, y, w, h float32) {
-	return px + pw - 34, py + 9, 24, 22
+func techCloseRect() (x, y, w, h float32) {
+	return float32(ScreenWidth) - 58, 20, 30, 26
 }
 
-func drawTechCloseButton(screen *ebiten.Image, px, py, pw float32) {
-	x, y, w, h := techCloseRect(px, py, pw)
+func drawTechCloseButton(screen *ebiten.Image) {
+	x, y, w, h := techCloseRect()
 	vector.FillRect(screen, x, y, w, h, color.RGBA{45, 34, 25, 230}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
 	tw := MeasureText("X", FaceSmall)
-	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, ColorGold)
+	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+6, FaceSmall, ColorGold)
 }
 
 func techCloseHit(mx, my float64) bool {
-	px, py := float32(60), float32(40)
-	pw := float32(ScreenWidth - 120)
-	x, y, w, h := techCloseRect(px, py, pw)
+	x, y, w, h := techCloseRect()
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
 }
 
@@ -182,11 +184,11 @@ func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
 
 	// Fare hover → satır seç
 	mx, my := ebiten.CursorPosition()
-	px, py := float32(60), float32(40)
-	pw := float32(ScreenWidth - 120)
+	px, py := float32(0), float32(0)
+	pw := float32(ScreenWidth)
 	rowH := 36
-	listY := int(py) + 56
-	visibleRows := (int(float32(ScreenHeight-80)) - 70) / rowH
+	listY := int(py) + 80
+	visibleRows := (int(float32(ScreenHeight)) - 110) / rowH
 	offset := 0
 	if r.techCursor >= visibleRows {
 		offset = r.techCursor - visibleRows + 1

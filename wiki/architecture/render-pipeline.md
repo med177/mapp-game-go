@@ -56,8 +56,8 @@ type Renderer struct {
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
-| 7 | Diplomasi paneli (Tab) | `diplom.go` |
-| 8 | Teknoloji paneli (T) | `tech_panel.go` |
+| 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
+| 8 | Teknoloji paneli (T) — tam ekran overlay | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan onay diyalogu | `renderer.go` |
 | 11 | Tarihsel olay popup | `renderer.go` |
