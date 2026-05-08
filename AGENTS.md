@@ -1,3 +1,59 @@
+# AI Agent Environment & Capability Rules
+
+**CRITICAL INSTRUCTION FOR ALL AGENTS:** 
+Identify your environment before taking any action. Read the section below that applies to your operating environment.
+
+---
+
+## 1. Rules for Claude, Copilot, and Windows-based Agents
+If you are operating directly on the **Windows host OS** (via VS Code, Cursor, Windsurf, or Visual Studio):
+* **Environment:** You are in a Windows environment (PowerShell / CMD).
+* **Paths:** Use standard Windows file paths (e.g., `C:\...`).
+* **Execution:** Do NOT attempt to run Linux-specific bash scripts or WSL binaries. 
+* **Focus:** Focus on standard code generation, IDE integrations, and cross-platform Node.js/Python scripts if automation is needed.
+
+---
+
+## 2. Rules for Codex (WSL / Ubuntu Sandbox)
+If you are **Codex**, you are operating within an **Ubuntu WSL sandbox**. You have access to a specialized set of high-performance CLI tools. 
+
+**CRITICAL RULE FOR CODEX:** Do NOT attempt to write custom Python or Bash scripts for tasks that can be natively handled by the tools listed below.
+
+### A. Search, Navigation & System
+* **`rg` (ripgrep):** Fast text and code searching.
+* **`fd` (fd-find):** Use instead of `find` for file discovery.
+* **`tree`:** Visualize directory structures.
+* **`tldr`:** Run `tldr <command>` if you forget syntax.
+
+### B. Data Parsing
+* **`jq` & `yq`:** Use exclusively for parsing JSON and YAML files or API responses. 
+
+### C. Networking & APIs
+* **`curl` & `httpie`:** Test REST APIs or download resources. Prefer `http` for readable outputs.
+
+### D. Databases & Caching
+Connect directly to services to inspect schemas or test queries. Do not guess structures:
+* **`postgresql-client` (psql):** For PostgreSQL / Supabase operations.
+* **`mysql-client`:** For MySQL operations.
+* **`redis-tools` (`redis-cli`):** For cache inspection.
+
+### E. Development & Build Tools
+* **`git`:** Version control and diffs.
+* **`build-essential`:** C/C++ compilers and `make`.
+* **`python3-venv`:** Create isolated Python virtual environments if needed.
+* **`golang-go`:** Build or test Go services.
+
+### F. Infrastructure & Mobile Debugging
+* **`rclone`:** Use for cloud synchronization and backups.
+* **`adb` (Android Debug Bridge):** Connect to emulators/devices. Pull `logcat` to debug mobile apps, analyze crashes, or inspect Bluetooth/plugin communications (e.g., ESC/POS printers) directly from the terminal.
+
+### Operating Guidelines (Codex Only)
+1. **Explore First:** Use `tree` or `fd` to understand context before making changes.
+2. **Execute Directly:** Run `psql`, `adb`, or `rg` commands directly in the shell to gather information instead of asking the user.
+3. **Fail Fast:** If a command fails, read the error output and adjust your syntax immediately.
+
+
+
 # Mapp Game Go (Proje Hafızası)
 
 ## Proje Özeti

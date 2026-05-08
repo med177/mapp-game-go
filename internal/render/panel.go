@@ -30,6 +30,7 @@ const (
 
 	evLogW       = float32(255)
 	evLogH       = float32(260)
+	evLogMinH    = float32(36)
 	eventCardH   = float32(52)
 	eventCardGap = float32(7)
 
@@ -307,24 +308,47 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
 
 // DrawEventLog sağ üst köşede son olayları kartlar halinde listeler.
-func DrawEventLog(screen *ebiten.Image, events []string) {
-	if len(events) == 0 {
-		return
-	}
+func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool) {
 	ex := evLogX()
 	ey := evLogY()
+	eh := eventLogPanelH(collapsed)
 
-	vector.FillRect(screen, ex, ey, evLogW, evLogH, panelBg, false)
-	drawPanelBorder(screen, ex, ey, evLogW, evLogH)
+	vector.FillRect(screen, ex, ey, evLogW, eh, panelBg, false)
+	drawPanelBorder(screen, ex, ey, evLogW, eh)
 	vector.FillRect(screen, ex, ey, evLogW, 3, panelBorder, false)
 
 	titleW := MeasureText("Olay Mesajları", FaceMed)
-	DrawText(screen, "Olay Mesajları", float64(ex)+float64(evLogW)/2-titleW/2, float64(ey)+8, FaceMed,
+	DrawText(screen, "Olay Mesajları", float64(ex)+12, float64(ey)+8, FaceMed,
 		color.RGBA{220, 190, 100, 255})
+	if len(events) > 0 {
+		count := "(" + itoa(len(events)) + ")"
+		DrawText(screen, count, float64(ex)+18+titleW, float64(ey)+9, FaceSmall, ColorGray)
+	}
+
+	tx, ty, tw, th := eventLogToggleRect()
+	vector.FillRect(screen, tx, ty, tw, th, color.RGBA{42, 34, 24, 220}, false)
+	vector.StrokeRect(screen, tx, ty, tw, th, 1, panelBorder, false)
+	toggleLabel := "−"
+	if collapsed {
+		toggleLabel = "+"
+	}
+	DrawTextCentered(screen, toggleLabel, float64(tx)+float64(tw)/2, float64(ty)+2, FaceMed, ColorGold)
+
+	if collapsed {
+		return
+	}
+
+	if len(events) == 0 {
+		DrawTextCentered(screen, "Henüz olay yok", float64(ex)+float64(evLogW)/2, float64(ey)+58, FaceSmall,
+			color.RGBA{150, 140, 120, 190})
+		DrawTextCentered(screen, "Oyun olayları burada listelenir", float64(ex)+float64(evLogW)/2, float64(ey)+76, FaceSmall,
+			color.RGBA{110, 105, 95, 170})
+		return
+	}
 
 	for i, ev := range events {
 		cardX, cardY, cardW, cardH := eventLogCardRect(i)
-		if cardY+cardH > ey+evLogH-8 {
+		if cardY+cardH > ey+eventLogPanelH(false)-8 {
 			break
 		}
 		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, color.RGBA{24, 20, 14, 225})
@@ -345,6 +369,31 @@ func DrawEventLog(screen *ebiten.Image, events []string) {
 	}
 }
 
+func eventLogPanelH(collapsed bool) float32 {
+	if collapsed {
+		return evLogMinH
+	}
+	return evLogH
+}
+
+func eventLogPanelHit(mx, my float64, collapsed bool) bool {
+	x, y := evLogX(), evLogY()
+	h := eventLogPanelH(collapsed)
+	return mx >= float64(x) && mx <= float64(x+evLogW) && my >= float64(y) && my <= float64(y+h)
+}
+
+func eventLogToggleRect() (x, y, w, h float32) {
+	w, h = 24, 22
+	x = evLogX() + evLogW - w - 8
+	y = evLogY() + 7
+	return x, y, w, h
+}
+
+func eventLogToggleHit(mx, my float64, collapsed bool) bool {
+	x, y, w, h := eventLogToggleRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
 func eventLogCardRect(index int) (x, y, w, h float32) {
 	x = evLogX() + 8
 	y = evLogY() + 31 + float32(index)*(eventCardH+eventCardGap)
@@ -361,10 +410,13 @@ func eventLogCloseRect(index int) (x, y, w, h float32) {
 	return x, y, w, h
 }
 
-func eventLogCardHit(mx, my float64, eventCount int) int {
+func eventLogCardHit(mx, my float64, eventCount int, collapsed bool) int {
+	if collapsed {
+		return -1
+	}
 	for i := 0; i < eventCount; i++ {
 		x, y, w, h := eventLogCardRect(i)
-		if y+h > evLogY()+evLogH-8 {
+		if y+h > evLogY()+eventLogPanelH(false)-8 {
 			break
 		}
 		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
@@ -374,10 +426,13 @@ func eventLogCardHit(mx, my float64, eventCount int) int {
 	return -1
 }
 
-func eventLogCloseHit(mx, my float64, eventCount int) int {
+func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool) int {
+	if collapsed {
+		return -1
+	}
 	for i := 0; i < eventCount; i++ {
 		x, y, w, h := eventLogCloseRect(i)
-		if y+h > evLogY()+evLogH-8 {
+		if y+h > evLogY()+eventLogPanelH(false)-8 {
 			break
 		}
 		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
@@ -411,6 +466,11 @@ func eventDetailCloseRect() (x, y, w, h float32) {
 func eventDetailCloseHit(mx, my float64) bool {
 	x, y, w, h := eventDetailCloseRect()
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func minimapHit(mx, my float64) bool {
+	x, y := minimapX(), minimapY()
+	return mx >= float64(x) && mx <= float64(x+minimapW) && my >= float64(y) && my <= float64(y+minimapH)
 }
 
 func drawEventDetailPopup(screen *ebiten.Image, message string) {

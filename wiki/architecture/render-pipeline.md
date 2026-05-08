@@ -55,7 +55,7 @@ type Renderer struct {
 | 5 | Ordu ikonları | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
-| 6 | Olay logu kartları — wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
+| 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
 | 7 | Diplomasi paneli (Tab) | `diplom.go` |
 | 8 | Teknoloji paneli (T) | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
@@ -102,7 +102,7 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 **Tık öncelik sırası:**
 1. Açık detay paneli kapatma düğmeleri (bölge/ordu)
 2. Alt-orta aksiyon HUD butonları (diplomasi, teknoloji, tur bitir)
-3. Olay logu kartları: kart X'i olayı kapatır, kart gövdesi detay popup açar
+3. Olay logu akordiyonu: başlık butonu paneli daraltır/genişletir, kart X'i olayı kapatır, kart gövdesi detay popup açar
 4. UI bölgesi (üst-sol durum paneli / sağ-üst tarih-menü HUD / alt-orta aksiyon HUD / sağ panel) → geçersiz say
 5. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa
 6. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez

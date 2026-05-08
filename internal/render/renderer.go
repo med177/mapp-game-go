@@ -68,8 +68,9 @@ type Renderer struct {
 	pendingDeleteSlot string // onay bekleyen slot adı ("" = onay yok)
 
 	// Olay logu (sağ üst panel)
-	eventLog    []string
-	eventDetail string
+	eventLog          []string
+	eventLogCollapsed bool
+	eventDetail       string
 
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog      string
@@ -317,7 +318,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
 	DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
-	DrawEventLog(screen, r.eventLog)
+	DrawEventLog(screen, r.eventLog, r.eventLogCollapsed)
 	DrawHoverTooltip(screen, r.gs, r.SelectedRegion)
 
 	// 7. Diplomasi paneli (üst katman)
@@ -832,11 +833,15 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
-	if idx := eventLogCloseHit(fx, fy, len(r.eventLog)); idx >= 0 {
+	if eventLogToggleHit(fx, fy, r.eventLogCollapsed) {
+		r.eventLogCollapsed = !r.eventLogCollapsed
+		return InputAction{}
+	}
+	if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed); idx >= 0 {
 		r.eventLog = append(r.eventLog[:idx], r.eventLog[idx+1:]...)
 		return InputAction{}
 	}
-	if idx := eventLogCardHit(fx, fy, len(r.eventLog)); idx >= 0 {
+	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed); idx >= 0 {
 		r.eventDetail = r.eventLog[idx]
 		return InputAction{}
 	}
@@ -868,10 +873,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// UI alanlarında tıklama işleme
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) {
-		return InputAction{}
-	}
-	if fx > float64(evLogX()) {
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) ||
+		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}
 
@@ -949,7 +952,8 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || float64(mx) > float64(evLogX()) {
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) ||
+		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}
 

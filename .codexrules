@@ -1,0 +1,38 @@
+# AI Agent Environment & Available Tools (For Codex)
+
+You are operating within an **Ubuntu WSL sandbox** environment on a Windows host machine. You have access to a specific set of high-performance CLI tools. 
+
+**CRITICAL RULE:** Do NOT attempt to write custom Python or Bash scripts for tasks that can be natively handled by the tools listed below. Always use these pre-installed tools to maximize speed and accuracy.
+
+## 1. Search, Navigation & System
+* **`rg` (ripgrep):** Use for lightning-fast text and code searching across the project.
+* **`fd` (fd-find):** Use instead of `find` for file and directory discovery.
+* **`tree`:** Use to visualize directory structures before making file modifications.
+* **`tldr`:** If you forget the syntax of any command, run `tldr <command>` instead of guessing.
+
+## 2. Data Parsing
+* **`jq` & `yq`:** Use exclusively for parsing, querying, and manipulating JSON and YAML files or API responses. Do not write custom scripts for JSON/YAML extraction.
+
+## 3. Networking & APIs
+* **`curl` & `httpie`:** Use for testing REST APIs, downloading resources, or verifying endpoint responses. Prefer `http` (HTTPie) for readable, formatted outputs when debugging.
+
+## 4. Databases & Caching
+Do not guess data structures. Connect directly to the services to inspect schemas or test queries:
+* **`postgresql-client` (psql):** Use for interacting with PostgreSQL databases (e.g., inspecting Supabase instances).
+* **`mysql-client`:** Use for MySQL database operations and schema inspections.
+* **`redis-tools` (`redis-cli`):** Use for inspecting or clearing cache keys.
+
+## 5. Development & Build Tools
+* **`git`:** Available for version control operations, reading diffs, and checking file history.
+* **`build-essential`:** C/C++ compilers and `make` are available for building native dependencies.
+* **`python3-venv`:** Use to create isolated Python virtual environments if Python execution is required.
+* **`golang-go`:** Go compiler and toolchain are available for building or testing Go services.
+
+## 6. Infrastructure & Mobile Debugging
+* **`rclone`:** Use for cloud synchronization and backup tasks (e.g., syncing database dumps to external drives).
+* **`adb` (Android Debug Bridge):** Use to connect to emulators or physical Android devices. Pull `logcat` to debug mobile applications, analyze crashes, or inspect Bluetooth/plugin communications (like ESC/POS thermal printer services) directly from the terminal.
+
+## Operating Guidelines
+1. **Explore First:** Always use `tree` or `fd` to understand the workspace context before proposing changes.
+2. **Execute Directly:** If you have shell execution permissions, run the necessary `psql`, `adb`, or `rg` commands directly to gather information instead of asking the user to run them.
+3. **Fail Fast:** If a command fails, read the error output and adjust your syntax immediately.

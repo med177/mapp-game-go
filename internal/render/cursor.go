@@ -177,7 +177,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) {
 		return true
 	}
-	if eventLogCloseHit(fx, fy, len(r.eventLog)) >= 0 || eventLogCardHit(fx, fy, len(r.eventLog)) >= 0 {
+	if eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return true
 	}
 	if r.SelectedRegion != "" {
@@ -201,10 +201,6 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		return true
 	}
 	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-		return true
-	}
-	// Sağ minimap / event log alanı üzerinde mi?
-	if fx > float64(evLogX()) {
 		return true
 	}
 	return false
