@@ -559,7 +559,8 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Oyun sonu ekranı inputu
 	if r.gs.Phase == state.PhaseGameOver {
-		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) {
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
+			r.mouseJustPressed(ebiten.MouseButtonLeft) {
 			return InputAction{Kind: ActionBack}
 		}
 		return InputAction{}
@@ -726,6 +727,10 @@ func (r *Renderer) handleFactionSelectInput() InputAction {
 		return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[r.factionCursor]}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+			r.factionCursor = 0
+			return InputAction{Kind: ActionBack}
+		}
 		if i := r.factionCardHoverIndex(float64(mx), float64(my)); i >= 0 {
 			return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[i]}
 		}
@@ -741,6 +746,15 @@ func (r *Renderer) handleFactionSelectInput() InputAction {
 func (r *Renderer) handleLeftClick() InputAction {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+
+	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
+		r.SelectedArmy = ""
+		return InputAction{}
+	}
+	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
+		r.SelectedRegion = ""
+		return InputAction{}
+	}
 
 	// --- Alt panel butonları ---
 	rects := BottomButtonRects()
@@ -769,6 +783,21 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if fx > float64(evLogX()) {
 		return InputAction{}
+	}
+
+	if r.SelectedRegion != "" {
+		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
+			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
+		}
+		switch regionActionButtonHit(fx, fy, r.gs, r.SelectedRegion) {
+		case 0:
+			return InputAction{Kind: ActionRecruitUnit, TargetRegion: r.SelectedRegion}
+		case 1:
+			return InputAction{Kind: ActionRecruitNaval, TargetRegion: r.SelectedRegion}
+		}
+		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion); bid != "" {
+			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
+		}
 	}
 
 	// BÖLDÜR butonu tıklaması

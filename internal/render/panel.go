@@ -506,6 +506,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
 	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10
@@ -545,6 +546,10 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, "Vergi: %"+itoa(region.TaxRate), lx, ly, FaceSmall, ColorGray)
 	drawBar(screen, float32(lx+100), float32(ly)+1, sepW-100, 9, float64(region.TaxRate)/100,
 		color.RGBA{200, 140, 40, 255})
+	if region.OwnerID == string(gs.PlayerFactionID) {
+		drawTinyPanelButton(screen, px+pw-58, float32(ly)-3, 22, 16, "-", true)
+		drawTinyPanelButton(screen, px+pw-31, float32(ly)-3, 22, 16, "+", true)
+	}
 	ly += 18
 
 	// Din dönüşüm ilerlemesi
@@ -587,8 +592,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	// Oyuncu ipucu — panelin en altına sabitlendi
 	if region.OwnerID == string(gs.PlayerFactionID) {
-		DrawText(screen, "[R] Milis  [1-6] Bina  [,.] Vergi", lx, float64(py)+float64(ph)-14, FaceSmall,
-			color.RGBA{100, 200, 100, 170})
+		drawRegionActionButtons(screen, px, py, pw, ph, region)
 	}
 }
 
@@ -610,6 +614,7 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
 	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10
@@ -1009,6 +1014,203 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 	}
 }
 
+func drawPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
+	x, y, w, h := panelCloseRect(px, py, pw)
+	drawTinyPanelButton(screen, x, y, w, h, "X", true)
+}
+
+func panelCloseRect(px, py, pw float32) (x, y, w, h float32) {
+	return px + pw - 24, py + 6, 18, 18
+}
+
+func drawTinyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
+	bg := color.RGBA{34, 26, 15, 230}
+	border := panelBorder
+	txt := ColorGold
+	if !active {
+		bg = color.RGBA{18, 16, 12, 180}
+		border = color.RGBA{45, 38, 25, 160}
+		txt = color.RGBA{85, 78, 62, 190}
+	}
+	vector.FillRect(screen, x, y, w, h, bg, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
+	tw := MeasureText(label, FaceSmall)
+	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+2, FaceSmall, txt)
+}
+
+func drawRegionActionButtons(screen *ebiten.Image, px, py, pw, ph float32, region *world.Region) {
+	buttons := regionActionRects(px, py, pw, ph)
+	labels := []string{"Milis Al", "Gemi İnşa"}
+	for i, b := range buttons {
+		active := true
+		if i == 1 {
+			active = regionHasBuilding(region, "port")
+		}
+		drawPanelButton(screen, b[0], b[1], b[2], b[3], labels[i], active)
+	}
+}
+
+func regionHasBuilding(region *world.Region, buildingID string) bool {
+	for _, bid := range region.Buildings {
+		if bid == buildingID {
+			return true
+		}
+	}
+	return false
+}
+
+func drawPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
+	bg := color.RGBA{38, 50, 28, 225}
+	border := color.RGBA{105, 130, 65, 220}
+	txt := color.RGBA{220, 235, 190, 255}
+	if !active {
+		bg = color.RGBA{18, 16, 12, 180}
+		border = color.RGBA{45, 38, 25, 160}
+		txt = color.RGBA{90, 82, 66, 190}
+	}
+	vector.FillRect(screen, x, y, w, h, bg, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
+	tw := MeasureText(label, FaceSmall)
+	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+5, FaceSmall, txt)
+}
+
+func regionActionRects(px, py, pw, ph float32) [2][4]float32 {
+	const gap = float32(7)
+	w := (pw - float32(panelPad*2) - gap) / 2
+	h := float32(24)
+	x := px + float32(panelPad)
+	y := py + ph - h - 8
+	return [2][4]float32{
+		{x, y, w, h},
+		{x + w + gap, y, w, h},
+	}
+}
+
+func panelCloseHit(mx, my float64, px, py, pw float32) bool {
+	x, y, w, h := panelCloseRect(px, py, pw)
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func regionPanelCloseHit(mx, my float64) bool {
+	px := infoPanelX()
+	return panelCloseHit(mx, my, px, infoPanelY(), infoPanelW)
+}
+
+func armyPanelCloseHit(mx, my float64) bool {
+	px := infoPanelX()
+	py := infoPanelY() + infoPanelH - 130
+	return panelCloseHit(mx, my, px, py, infoPanelW)
+}
+
+func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
+	region, ok := gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+		return 0
+	}
+	px := infoPanelX()
+	py := infoPanelY()
+	pw := infoPanelW
+	xDec := px + pw - 58
+	xInc := px + pw - 31
+	ly := float64(py) + 10
+	ly += 24
+	if gs.DevelopmentMode {
+		ly += 16 + 16 + 18
+	}
+	ly += 18 + 16 + 8 + 18 + 18
+	y := float32(ly - 3)
+	if mx >= float64(xDec) && mx <= float64(xDec+22) && my >= float64(y) && my <= float64(y+16) {
+		return -5
+	}
+	if mx >= float64(xInc) && mx <= float64(xInc+22) && my >= float64(y) && my <= float64(y+16) {
+		return 5
+	}
+	return 0
+}
+
+func regionActionButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
+	region, ok := gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+		return -1
+	}
+	px := infoPanelX()
+	rects := regionActionRects(px, infoPanelY(), infoPanelW, infoPanelH)
+	for i, r := range rects {
+		if mx >= float64(r[0]) && mx <= float64(r[0]+r[2]) && my >= float64(r[1]) && my <= float64(r[1]+r[3]) {
+			return i
+		}
+	}
+	return -1
+}
+
+func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
+	if rid == "" {
+		return ""
+	}
+	region, ok := gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+		return ""
+	}
+	builtSet := make(map[string]bool, len(region.Buildings))
+	for _, bid := range region.Buildings {
+		builtSet[bid] = true
+	}
+
+	px := infoPanelX()
+	py := infoPanelY()
+	pw := infoPanelW
+	ly := float64(py) + 10
+	ly += 24
+	if gs.DevelopmentMode {
+		ly += 16 + 16 + 18
+	}
+	ly += 18 + 16 + 8 + 18 + 18 + 18
+	if region.ConversionTurns > 0 {
+		ownerRel := ""
+		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
+			ownerRel = string(f.Religion)
+		} else {
+			for fid, f := range gs.Factions {
+				if string(fid) == region.OwnerID {
+					ownerRel = string(f.Religion)
+					break
+				}
+			}
+		}
+		if ownerRel != "" && ownerRel != region.Religion {
+			ly += 14 + 12
+		}
+	}
+	if region.IsRebellionRisk() {
+		ly += 18
+	}
+	ly += 4 + 6 + 17
+	startY := float32(ly)
+
+	const cols = 3
+	pad := float32(panelPad)
+	availW := pw - pad*2
+	slotW := availW / float32(cols)
+	spriteH := float32(54)
+	nameH := float32(16)
+	rowH := spriteH + nameH + 5
+
+	for i, bid := range buildingDisplayOrder {
+		if builtSet[bid] {
+			continue
+		}
+		col := i % cols
+		row := i / cols
+		sx := px + pad + float32(col)*slotW
+		sy := startY + float32(row)*rowH
+		innerW := slotW - 3
+		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
+			return bid
+		}
+	}
+	return ""
+}
+
 func drawPanelBorder(screen *ebiten.Image, x, y, w, h float32) {
 	vector.StrokeLine(screen, x, y, x+w, y, 1.5, panelBorder, false)
 	vector.StrokeLine(screen, x, y+h, x+w, y+h, 1.5, panelBorder, false)
@@ -1126,6 +1328,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
 	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10

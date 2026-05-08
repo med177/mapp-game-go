@@ -84,7 +84,7 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 			y+8, FaceLarge, col)
 	}
 
-	DrawTextCentered(screen, "[↑↓] Seç   [Enter] Onayla   [Esc] Devam Et",
+	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et",
 		ScreenWidth/2, float64(by)+float64(bh)-22, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
 

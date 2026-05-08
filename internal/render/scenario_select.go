@@ -22,8 +22,9 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
 
 	titleY := 40.0
+	drawBackButton(screen)
 	DrawTextCentered(screen, "MAPP — Senaryo Seç", ScreenWidth/2, titleY, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "[↑↓] Seç   [Enter] Onayla   [Esc] Geri", ScreenWidth/2, titleY+30, FaceSmall, ColorGray)
+	DrawTextCentered(screen, "Senaryo kartını seçmek için tıkla", ScreenWidth/2, titleY+30, FaceSmall, ColorGray)
 
 	if len(scenarios) == 0 {
 		DrawTextCentered(screen, "Senaryo bulunamadı!", ScreenWidth/2, ScreenHeight/2, FaceLarge, ColorRed)
@@ -145,6 +146,9 @@ func (r *Renderer) handleScenarioSelectInput() InputAction {
 		return InputAction{Kind: ActionBack}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+			return InputAction{Kind: ActionBack}
+		}
 		if i := r.scenarioHoverIndex(float64(mx), float64(my)); i >= 0 {
 			return InputAction{
 				Kind:       ActionSelectScenario,

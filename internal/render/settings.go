@@ -9,7 +9,7 @@ import (
 
 // Settings oyun ayarlarını tutar — renderer aracılığıyla game'e iletilir.
 type Settings struct {
-	Difficulty int  // 1=Kolay 2=Normal 3=Zor
+	Difficulty int // 1=Kolay 2=Normal 3=Zor
 	MusicOn    bool
 	SoundOn    bool
 }
@@ -62,7 +62,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		}
 	}
 
-	DrawTextCentered(screen, "[↑↓] Seç   [←►] Değiştir   [Esc] Geri", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
+	DrawTextCentered(screen, "Fareyle seç / değiştir", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
 
 func boolLabel(b bool) string {
@@ -75,6 +75,10 @@ func boolLabel(b bool) string {
 // handleSettingsInput ayarlar ekranı girişini işler.
 func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 	rowCount := 4 // zorluk, müzik, ses, geri dön
+	mx, my := ebiten.CursorPosition()
+	if i := r.settingsHoverIndex(float64(mx), float64(my)); i >= 0 {
+		r.factionCursor = i
+	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
 		r.factionCursor = (r.factionCursor + 1) % rowCount
@@ -110,5 +114,36 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 		r.factionCursor = 0
 		return InputAction{Kind: ActionSaveSettings}
 	}
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		switch r.factionCursor {
+		case 0:
+			s.Difficulty++
+			if s.Difficulty > 3 {
+				s.Difficulty = 1
+			}
+		case 1:
+			s.MusicOn = !s.MusicOn
+		case 2:
+			s.SoundOn = !s.SoundOn
+		case 3:
+			r.factionCursor = 0
+			return InputAction{Kind: ActionSaveSettings}
+		}
+	}
 	return InputAction{}
+}
+
+func (r *Renderer) settingsHoverIndex(fx, fy float64) int {
+	rowH := 60.0
+	rowCount := 4
+	startY := ScreenHeight/2 - float64(rowCount)*rowH/2
+	bw := 500.0
+	bx := ScreenWidth/2 - bw/2
+	for i := 0; i < rowCount; i++ {
+		y := startY + float64(i)*rowH
+		if fx >= bx && fx <= bx+bw && fy >= y-8 && fy <= y+rowH-4 {
+			return i
+		}
+	}
+	return -1
 }

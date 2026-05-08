@@ -66,7 +66,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 	}
 
 	// Alt bilgi
-	DrawTextCentered(screen, "[↑↓] Seç   [Enter] Onayla   [F11] Tam Ekran", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
+	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
 
 func buildMenuItems(hasSave bool) []menuItem {

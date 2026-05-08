@@ -25,6 +25,7 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
 	cx := ScreenWidth/2 - cardW/2
 
+	drawBackButton(screen)
 	DrawTextCentered(screen, "ZAFER KOŞULUNU SEÇ", ScreenWidth/2, startY-headerH+10, FaceLarge, ColorYellow)
 	DrawTextCentered(screen, "Nasıl kazanmak istiyorsun?", ScreenWidth/2, startY-headerH+38, FaceSmall, ColorGray)
 
@@ -59,7 +60,7 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		}
 	}
 
-	DrawTextCentered(screen, "[↑↓] Seç   [Enter] Onayla   [Esc] Geri", ScreenWidth/2, startY+totalH+20, FaceSmall, ColorGray)
+	DrawTextCentered(screen, "Zafer koşulunu seçmek için tıkla", ScreenWidth/2, startY+totalH+20, FaceSmall, ColorGray)
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.
@@ -88,6 +89,10 @@ func (r *Renderer) handleVictorySelectInput() InputAction {
 		return InputAction{Kind: ActionSelectVictory, BuildingID: opts[r.factionCursor].ID}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+			r.factionCursor = 0
+			return InputAction{Kind: ActionBack}
+		}
 		if i := r.victoryCardHoverIndex(float64(mx), float64(my)); i >= 0 {
 			return InputAction{Kind: ActionSelectVictory, BuildingID: opts[i].ID}
 		}

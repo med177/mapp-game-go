@@ -29,10 +29,11 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 	}
 	DrawTextCentered(screen, title, ScreenWidth/2, 50, FaceLarge, ColorYellow)
 	DrawTextCentered(screen, "Bir slot seçin", ScreenWidth/2, 84, FaceSmall, color.RGBA{160, 140, 90, 200})
+	drawBackButton(screen)
 
 	if len(SaveSlots) == 0 {
 		DrawTextCentered(screen, "Kayıt bulunamadı.", ScreenWidth/2, ScreenHeight/2, FaceMed, ColorGray)
-		DrawTextCentered(screen, "[Esc] Geri", ScreenWidth/2, ScreenHeight-40, FaceSmall, ColorGray)
+		DrawTextCentered(screen, "Geri düğmesiyle ana menüye dön", ScreenWidth/2, ScreenHeight-40, FaceSmall, ColorGray)
 		return
 	}
 
@@ -90,8 +91,9 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				// Onay sorusu kartın içine yerleşir
 				DrawTextCentered(screen, "Silinecek! Emin misiniz?", cx+cardW/2, cy+40,
 					FaceMed, color.RGBA{255, 100, 100, 255})
-				DrawTextCentered(screen, "[Enter] Evet   [Esc] Hayır", cx+cardW/2, cy+62,
-					FaceSmall, color.RGBA{200, 160, 160, 220})
+				yes, no := slotDeleteConfirmRects(cx, cy)
+				drawSlotMiniButton(screen, yes, "Sil", color.RGBA{130, 35, 35, 230})
+				drawSlotMiniButton(screen, no, "İptal", color.RGBA{45, 45, 45, 230})
 			} else {
 				faction := slot.FactionName
 				if faction == "" {
@@ -108,9 +110,8 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 
 				// Sil butonu göstergesi (sadece dolu ve seçili slotta)
 				if isSelected {
-					delW := MeasureText("[Del] Sil", FaceSmall)
-					DrawText(screen, "[Del] Sil", cx+cardW-delW-18, cy+44, FaceSmall,
-						color.RGBA{180, 70, 70, 220})
+					del := slotDeleteButtonRect(cx, cy)
+					drawSlotMiniButton(screen, del, "Sil", color.RGBA{95, 35, 35, 220})
 				}
 			}
 		} else {
@@ -122,9 +123,9 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 		}
 	}
 
-	hint := "[↑↓] Seç   [Enter] Onayla   [Del] Sil   [Esc] Geri"
+	hint := "Slotu seçmek veya silmek için tıkla"
 	if pendingDelete != "" {
-		hint = "[Enter] Silmeyi Onayla   [Esc] İptal"
+		hint = "Sil veya İptal düğmesine tıkla"
 	}
 	DrawTextCentered(screen, hint, ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
@@ -133,6 +134,10 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 	n := len(SaveSlots)
 	if n == 0 {
+		mx, my := ebiten.CursorPosition()
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) && uiRectHit(float64(mx), float64(my), backButtonRect()) {
+			return InputAction{Kind: ActionBack}
+		}
 		if r.keyJustPressed(ebiten.KeyEscape) {
 			return InputAction{Kind: ActionBack}
 		}
@@ -141,6 +146,22 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 
 	// Onay bekleniyor: sadece Enter (onayla) ve Esc (iptal) çalışır
 	if r.pendingDeleteSlot != "" {
+		mx, my := ebiten.CursorPosition()
+		if i := r.slotHoverIndex(float64(mx), float64(my)); i >= 0 {
+			r.slotCursor = i
+		}
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			yes, no := pendingDeleteConfirmRects(r.pendingDeleteSlot)
+			if rectHit(float64(mx), float64(my), yes) {
+				slot := r.pendingDeleteSlot
+				r.pendingDeleteSlot = ""
+				return InputAction{Kind: ActionDeleteSave, BuildingID: slot}
+			}
+			if rectHit(float64(mx), float64(my), no) {
+				r.pendingDeleteSlot = ""
+				return InputAction{}
+			}
+		}
 		if r.keyJustPressed(ebiten.KeyEnter) {
 			slot := r.pendingDeleteSlot
 			r.pendingDeleteSlot = ""
@@ -192,14 +213,70 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 		}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+			return InputAction{Kind: ActionBack}
+		}
 		if i := r.slotHoverIndex(float64(mx), float64(my)); i >= 0 {
 			slot := SaveSlots[i]
+			if slot.Exists && rectHit(float64(mx), float64(my), deleteButtonRectForSlot(i)) {
+				r.pendingDeleteSlot = slot.Name
+				return InputAction{}
+			}
 			if saveMode || slot.Exists {
 				return InputAction{Kind: ActionSelectSave, BuildingID: slot.Name}
 			}
 		}
 	}
 	return InputAction{}
+}
+
+type slotRect [4]float64
+
+func drawSlotMiniButton(screen *ebiten.Image, r slotRect, label string, bg color.RGBA) {
+	vector.FillRect(screen, float32(r[0]), float32(r[1]), float32(r[2]), float32(r[3]), bg, false)
+	vector.StrokeRect(screen, float32(r[0]), float32(r[1]), float32(r[2]), float32(r[3]), 1, panelBorder, false)
+	tw := MeasureText(label, FaceSmall)
+	DrawText(screen, label, r[0]+r[2]/2-tw/2, r[1]+5, FaceSmall, ColorWhite)
+}
+
+func slotDeleteButtonRect(cx, cy float64) slotRect {
+	return slotRect{cx + 396, cy + 50, 58, 24}
+}
+
+func slotDeleteConfirmRects(cx, cy float64) (slotRect, slotRect) {
+	return slotRect{cx + 166, cy + 54, 70, 24}, slotRect{cx + 244, cy + 54, 70, 24}
+}
+
+func deleteButtonRectForSlot(i int) slotRect {
+	cardW := 480.0
+	cardH := 88.0
+	gap := 14.0
+	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
+	startY := ScreenHeight/2 - totalH/2
+	cx := ScreenWidth/2 - cardW/2
+	cy := startY + float64(i)*(cardH+gap)
+	return slotDeleteButtonRect(cx, cy)
+}
+
+func pendingDeleteConfirmRects(pendingSlot string) (slotRect, slotRect) {
+	cardW := 480.0
+	cardH := 88.0
+	gap := 14.0
+	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
+	startY := ScreenHeight/2 - totalH/2
+	cx := ScreenWidth/2 - cardW/2
+	for i, slot := range SaveSlots {
+		if slot.Name != pendingSlot {
+			continue
+		}
+		cy := startY + float64(i)*(cardH+gap)
+		return slotDeleteConfirmRects(cx, cy)
+	}
+	return slotRect{}, slotRect{}
+}
+
+func rectHit(mx, my float64, r slotRect) bool {
+	return mx >= r[0] && mx <= r[0]+r[2] && my >= r[1] && my <= r[1]+r[3]
 }
 
 // slotHoverIndex fareye göre hangi slot kartının üzerinde olduğunu döner.

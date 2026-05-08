@@ -47,7 +47,8 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx int)
 	screen.DrawImage(overlay, nil)
 
 	DrawTextCentered(screen, "── Diplomasi ──", ScreenWidth/2, 24, FaceLarge, ColorYellow)
-	DrawText(screen, "Sol tık: Seç   Butonlarla aksiyon   [TAB/Esc] Kapat",
+	drawDiplomacyCloseButton(screen)
+	DrawText(screen, "Sol tık: Seç   Butonlarla aksiyon",
 		30, 50, FaceSmall, ColorGray)
 
 	factions := sortedFactions(gs)
@@ -100,6 +101,23 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx int)
 	}
 }
 
+func diplomacyCloseRect() (x, y, w, h float32) {
+	return float32(ScreenWidth) - 58, 20, 30, 26
+}
+
+func drawDiplomacyCloseButton(screen *ebiten.Image) {
+	x, y, w, h := diplomacyCloseRect()
+	vector.FillRect(screen, x, y, w, h, color.RGBA{45, 34, 25, 230}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+	tw := MeasureText("X", FaceSmall)
+	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+6, FaceSmall, ColorGold)
+}
+
+func diplomacyCloseHit(mx, my float64) bool {
+	x, y, w, h := diplomacyCloseRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
 func (r *Renderer) handleDiplomacyInput() InputAction {
 	factions := sortedFactions(r.gs)
@@ -119,6 +137,10 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 
 	// Sol tık → aksiyon butonu veya satır seçimi
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if diplomacyCloseHit(fx, fy) {
+			r.showDiplomacy = false
+			return InputAction{}
+		}
 		if r.diplomacyFocus < len(factions) {
 			target := factions[r.diplomacyFocus]
 			y := diplomStartY + float64(r.diplomacyFocus)*diplomRowH

@@ -55,7 +55,7 @@ func (r *Renderer) buildTechEntries(f *faction.Faction) []techEntry {
 	return entries
 }
 
-// DrawTechPanel teknoloji araştırma panelini çizer. [T] ile açılır.
+// DrawTechPanel teknoloji araştırma panelini çizer. Alt bardaki Teknoloji tuşu veya [T] ile açılır.
 func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	if r.gs.TechTypes == nil {
 		return
@@ -70,8 +70,9 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 
 	vector.FillRect(screen, px, py, pw, ph, color.RGBA{20, 20, 40, 230}, false)
 	vector.FillRect(screen, px, py, pw, 2, color.RGBA{180, 150, 60, 255}, false)
+	drawTechCloseButton(screen, px, py, pw)
 
-	DrawText(screen, "[ TEKNOLOJİ AĞACI ]   [T] kapat", float64(px)+20, float64(py)+10, FaceMed, ColorYellow)
+	DrawText(screen, "[ TEKNOLOJİ AĞACI ]", float64(px)+20, float64(py)+10, FaceMed, ColorYellow)
 
 	activeY := float64(py) + 30
 	if f.Research.ActiveID != "" {
@@ -80,7 +81,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			DrawText(screen, msg, float64(px)+20, activeY, FaceMed, color.RGBA{100, 220, 100, 255})
 		}
 	} else {
-		DrawText(screen, "Aktif araştırma yok — Enter ile başlat", float64(px)+20, activeY, FaceSmall, ColorGray)
+		DrawText(screen, "Aktif araştırma yok", float64(px)+20, activeY, FaceSmall, ColorGray)
 	}
 
 	entries := r.buildTechEntries(f)
@@ -149,8 +150,27 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	}
 
 	hintY := float64(py) + float64(ph) - 18
-	DrawText(screen, "Up/Down: Gezin   Enter: Arastir   [T] Kapat   Altin: "+fmt.Sprintf("%d", f.Gold),
+	DrawText(screen, "Bir teknolojiyi tıklayarak araştır   Altin: "+fmt.Sprintf("%d", f.Gold),
 		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
+}
+
+func techCloseRect(px, py, pw float32) (x, y, w, h float32) {
+	return px + pw - 34, py + 9, 24, 22
+}
+
+func drawTechCloseButton(screen *ebiten.Image, px, py, pw float32) {
+	x, y, w, h := techCloseRect(px, py, pw)
+	vector.FillRect(screen, x, y, w, h, color.RGBA{45, 34, 25, 230}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+	tw := MeasureText("X", FaceSmall)
+	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, ColorGold)
+}
+
+func techCloseHit(mx, my float64) bool {
+	px, py := float32(60), float32(40)
+	pw := float32(ScreenWidth - 120)
+	x, y, w, h := techCloseRect(px, py, pw)
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
 }
 
 // handleTechInput teknoloji paneli klavye ve fare girişlerini işler.
@@ -182,6 +202,10 @@ func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
 
 	// Sol tık → araştırmayı başlat (uygunsa)
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if techCloseHit(float64(mx), float64(my)) {
+			r.showTech = false
+			return InputAction{}
+		}
 		if r.techCursor < len(entries) {
 			e := entries[r.techCursor]
 			if e.unlocked && !e.done && f.Research.ActiveID == "" {

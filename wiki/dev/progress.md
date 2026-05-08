@@ -61,6 +61,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
 | Ana menü / ayarlar | ✅ | Yeni oyun, kayıt yükleme, ayarlar, çıkış |
 | Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
+| Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |
 | Minimap | ✅ | Sağ alt köşe, kamera ve ordu konumları |
 | Ses efektleri | ✅ | `internal/audio`, senaryo `sounds/` altından `click.wav` ve `combat.wav` yükleme |
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |

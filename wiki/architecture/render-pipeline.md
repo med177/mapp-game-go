@@ -96,12 +96,16 @@ Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve
 **Just-pressed takibi:** `prevKeys`, `prevMouse` map'leri tutulur; `keyJustPressed()` / `mouseJustPressed()` bir frame'lik tetikleme sağlar.
 
 **Tık öncelik sırası:**
-1. Alt panel butonları (tıklandı mı?)
-2. UI bölgesi (alt bar / sağ panel) → geçersiz say
-3. BÖLDÜR butonu (seçili ordu varsa, `army_panel.go:SplitButtonHitTest`)
-4. Asker alım paneli (`recruit_panel.go:RecruitPanelHitTest`)
-5. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
-6. Bölge seçimi (WorldMap pixel lookup)
+1. Açık detay paneli kapatma düğmeleri (bölge/ordu)
+2. Alt panel butonları (diplomasi, teknoloji, tur bitir)
+3. UI bölgesi (alt bar / sağ panel) → geçersiz say
+4. Bölge paneli aksiyonları: vergi +/- düğmeleri, milis/gemi düğmeleri, boş bina slotuna tıklayarak inşa
+5. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
+6. Asker alım paneli (`recruit_panel.go:RecruitPanelHitTest`)
+7. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
+8. Bölge seçimi (WorldMap pixel lookup)
+
+Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır.
 
 ---
 

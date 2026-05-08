@@ -42,13 +42,18 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
+	case state.PhaseScenarioSelect:
+		if uiRectHit(fx, fy, backButtonRect()) || r.scenarioHoverIndex(fx, fy) >= 0 {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 	case state.PhaseFactionSelect:
-		if r.factionCardHoverIndex(fx, fy) >= 0 {
+		if uiRectHit(fx, fy, backButtonRect()) || r.factionCardHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 	case state.PhaseVictorySelect:
-		if r.victoryCardHoverIndex(fx, fy) >= 0 {
+		if uiRectHit(fx, fy, backButtonRect()) || r.victoryCardHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -63,12 +68,12 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseLoadSelect, state.PhaseSaveSelect:
-		if r.slotHoverIndex(fx, fy) >= 0 {
+		if uiRectHit(fx, fy, backButtonRect()) || r.slotHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 	case state.PhaseSettings:
-		if r.settingsHovering(fx, fy) {
+		if r.settingsHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -140,6 +145,9 @@ func (r *Renderer) victoryCardHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
+	if diplomacyCloseHit(fx, fy) {
+		return true
+	}
 	factions := sortedFactions(r.gs)
 	for i := range factions {
 		y := diplomStartY + float64(i)*diplomRowH
@@ -165,27 +173,21 @@ func (r *Renderer) techPanelHovering(fx, fy float64) bool {
 	return fx >= float64(px) && fx <= float64(px+pw) && fy >= float64(py) && fy <= float64(py+ph)
 }
 
-func (r *Renderer) settingsHovering(fx, fy float64) bool {
-	rowH := 60.0
-	rowCount := 4
-	startY := ScreenHeight/2 - float64(rowCount)*rowH/2
-	bw := 500.0
-	bx := ScreenWidth/2 - bw/2
-	for i := 0; i < rowCount; i++ {
-		y := startY + float64(i)*rowH
-		if fx >= bx && fx <= bx+bw && fy >= y-8 && fy <= y+rowH-4 {
-			return true
-		}
-	}
-	return false
-}
-
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	for _, rect := range BottomButtonRects() {
 		if fx >= float64(rect[0]) && fx <= float64(rect[0]+rect[2]) &&
 			fy >= float64(rect[1]) && fy <= float64(rect[1]+rect[3]) {
 			return true
 		}
+	}
+	if r.SelectedRegion != "" {
+		if regionPanelCloseHit(fx, fy) || regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion) != 0 || regionActionButtonHit(fx, fy, r.gs, r.SelectedRegion) >= 0 ||
+			BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
+			return true
+		}
+	}
+	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
+		return true
 	}
 	// Ordu ikonu üzerinde mi?
 	for _, pos := range r.armyIconPositions() {

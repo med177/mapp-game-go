@@ -31,8 +31,9 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	startX := float32(ScreenWidth)/2 - gridW/2
 	startY := float32(ScreenHeight)/2 - (gridH+headerH)/2
 
+	drawBackButton(screen)
 	DrawTextCentered(screen, "MAPP — Fraksiyon Seç", ScreenWidth/2, float64(startY)+4, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "[↑↓] Seç   [Enter] Onayla   [F11] Tam Ekran", ScreenWidth/2, float64(startY)+30, FaceSmall, ColorGray)
+	DrawTextCentered(screen, "Fraksiyon kartını seçmek için tıkla", ScreenWidth/2, float64(startY)+30, FaceSmall, ColorGray)
 
 	startY += headerH
 
