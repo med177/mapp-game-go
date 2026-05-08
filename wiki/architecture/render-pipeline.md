@@ -53,11 +53,12 @@ type Renderer struct {
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası | `renderer.go` |
 | 5 | Ordu ikonları | `renderer.go` |
-| 6 | UI panelleri (alt bar, bölge/ordu/minimap/event log) | `panel.go` |
+| 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
+| 6 | Olay logu kartları — wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
 | 7 | Diplomasi paneli (Tab) | `diplom.go` |
 | 8 | Teknoloji paneli (T) | `tech_panel.go` |
-| 9 | Bildirim mesajı (combatLog) | `renderer.go` |
+| 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan onay diyalogu | `renderer.go` |
 | 11 | Tarihsel olay popup | `renderer.go` |
 
@@ -100,14 +101,15 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 
 **Tık öncelik sırası:**
 1. Açık detay paneli kapatma düğmeleri (bölge/ordu)
-2. Alt panel butonları (diplomasi, teknoloji, tur bitir)
-3. UI bölgesi (alt bar / sağ panel) → geçersiz say
-4. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa
-5. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
-6. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
-7. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
-8. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
-9. Bölge seçimi (WorldMap pixel lookup)
+2. Alt-orta aksiyon HUD butonları (diplomasi, teknoloji, tur bitir)
+3. Olay logu kartları: kart X'i olayı kapatır, kart gövdesi detay popup açar
+4. UI bölgesi (üst-sol durum paneli / sağ-üst tarih-menü HUD / alt-orta aksiyon HUD / sağ panel) → geçersiz say
+5. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa
+6. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
+7. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
+8. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
+9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
+10. Bölge seçimi (WorldMap pixel lookup)
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır.
 
@@ -122,8 +124,9 @@ Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, t
 ## Bildirim Sistemi
 
 ```
-ShowCombatResult(msg)          → combatLogTimer = 180 frame (~3 sn), eventLog'a da ekler
+ShowCombatResult(msg)          → combatLogTimer = 180 frame (~3 sn), ayrı info popup; eventLog'a eklemez
 ShowHistoricalEvent(title,desc) → tam ekran popup, herhangi tuş/tık ile kapatılır
+AddEvent(msg)                  → sağ olay logundaki kalıcı kart listesine ekler
 ```
 
 `eventLog` maksimum 8 girdi tutar; yeniler öne eklenir, sondan taşanlar düşer.

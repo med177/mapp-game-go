@@ -174,11 +174,11 @@ func (r *Renderer) techPanelHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	for _, rect := range BottomButtonRects() {
-		if fx >= float64(rect[0]) && fx <= float64(rect[0]+rect[2]) &&
-			fy >= float64(rect[1]) && fy <= float64(rect[1]+rect[3]) {
-			return true
-		}
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) {
+		return true
+	}
+	if eventLogCloseHit(fx, fy, len(r.eventLog)) >= 0 || eventLogCardHit(fx, fy, len(r.eventLog)) >= 0 {
+		return true
 	}
 	if r.SelectedRegion != "" {
 		if regionPanelHit(fx, fy) || RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {

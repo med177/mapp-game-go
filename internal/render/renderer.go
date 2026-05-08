@@ -68,7 +68,8 @@ type Renderer struct {
 	pendingDeleteSlot string // onay bekleyen slot adı ("" = onay yok)
 
 	// Olay logu (sağ üst panel)
-	eventLog []string
+	eventLog    []string
+	eventDetail string
 
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog      string
@@ -161,11 +162,10 @@ func (r *Renderer) AddEvent(msg string) {
 	}
 }
 
-// ShowCombatResult savaş sonuç mesajını ekranda ~3 saniye gösterir.
+// ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
 func (r *Renderer) ShowCombatResult(msg string) {
 	r.combatLog = msg
 	r.combatLogTimer = 180
-	r.AddEvent(msg)
 	audio.PlaySound("combat")
 }
 
@@ -336,8 +336,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.combatLogTimer < 60 {
 			alpha = uint8(r.combatLogTimer * 255 / 60)
 		}
-		DrawText(screen, r.combatLog, ScreenWidth/2-150, ScreenHeight/2-40, FaceLarge,
-			color.RGBA{255, 220, 80, alpha})
+		drawInfoPopup(screen, r.combatLog, alpha)
 		r.combatLogTimer--
 	}
 
@@ -349,6 +348,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 11. Tarihsel olay tam ekran popup
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc)
+	}
+
+	if r.eventDetail != "" {
+		drawEventDetailPopup(screen, r.eventDetail)
 	}
 }
 
@@ -638,6 +641,16 @@ func (r *Renderer) HandleInput() InputAction {
 		return InputAction{}
 	}
 
+	if r.eventDetail != "" {
+		mx, my := ebiten.CursorPosition()
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
+			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
+			(eventDetailCloseHit(float64(mx), float64(my)) || !eventDetailPopupHit(float64(mx), float64(my)))) {
+			r.eventDetail = ""
+		}
+		return InputAction{}
+	}
+
 	// Ana menü inputu
 	if r.gs.Phase == state.PhaseMainMenu {
 		return r.handleMainMenuInput(r.HasSave)
@@ -819,6 +832,20 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
+	if idx := eventLogCloseHit(fx, fy, len(r.eventLog)); idx >= 0 {
+		r.eventLog = append(r.eventLog[:idx], r.eventLog[idx+1:]...)
+		return InputAction{}
+	}
+	if idx := eventLogCardHit(fx, fy, len(r.eventLog)); idx >= 0 {
+		r.eventDetail = r.eventLog[idx]
+		return InputAction{}
+	}
+
+	if topDateHudMenuButtonHit(fx, fy) {
+		r.pauseCursor = 0
+		return InputAction{Kind: ActionOpenPauseMenu}
+	}
+
 	// --- Alt panel butonları ---
 	rects := BottomButtonRects()
 	if fx >= float64(rects[0][0]) && fx <= float64(rects[0][0]+rects[0][2]) &&
@@ -840,8 +867,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{Kind: ActionEndTurn}
 	}
 
-	// Alt bar ve sağ taraf (minimap/eventlog) alanlarında tıklama işleme
-	if fy > float64(bottomBarTop()) {
+	// UI alanlarında tıklama işleme
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) {
 		return InputAction{}
 	}
 	if fx > float64(evLogX()) {
@@ -921,7 +948,8 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 
 	mx, my := ebiten.CursorPosition()
-	if float64(my) > float64(bottomBarTop()) || float64(mx) > float64(evLogX()) {
+	fx, fy := float64(mx), float64(my)
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || float64(mx) > float64(evLogX()) {
 		return InputAction{}
 	}
 

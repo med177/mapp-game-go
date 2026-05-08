@@ -3,6 +3,7 @@ package render
 import (
 	"image"
 	"image/color"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
@@ -16,13 +17,21 @@ import (
 // ── Layout sabitleri ────────────────────────────────────────────────
 
 const (
-	bottomBarH = float32(80)
+	bottomBarH   = float32(80)
+	topStatusW   = float32(1000)
+	topStatusH   = float32(80)
+	topDateHudW  = float32(255)
+	topDateHudH  = float32(80)
+	actionHudPad = float32(8)
+	actionHudGap = float32(5)
 
 	minimapW = float32(240)
 	minimapH = float32(165)
 
-	evLogW = float32(255)
-	evLogH = float32(190)
+	evLogW       = float32(255)
+	evLogH       = float32(260)
+	eventCardH   = float32(52)
+	eventCardGap = float32(7)
 
 	infoPanelW = float32(305)
 	infoPanelH = float32(355)
@@ -35,10 +44,11 @@ const (
 
 func bottomBarTop() float32 { return float32(ScreenHeight) - bottomBarH }
 func minimapX() float32     { return float32(ScreenWidth) - minimapW - 5 }
-func minimapY() float32     { return bottomBarTop() - minimapH - 5 }
+func minimapY() float32     { return float32(ScreenHeight) - minimapH }
 func evLogX() float32       { return float32(ScreenWidth) - evLogW - 5 }
+func evLogY() float32       { return topDateHudH + 8 }
 func infoPanelX() float32   { return 5 }
-func infoPanelY() float32   { return bottomBarTop() - infoPanelH - 5 }
+func infoPanelY() float32   { return float32(ScreenHeight) - infoPanelH }
 
 var (
 	panelBg     = color.RGBA{12, 10, 8, 230}
@@ -99,13 +109,25 @@ func ensureMiniMapBg() {
 	miniMapBg = tryLoadImage(ActiveScenarioPath + "/maps/mini-map.png")
 }
 
-// BottomButtonRects Total War stilinde sağ alt aksiyon butonlarının piksel dikdörtgenlerini döner.
+func bottomActionHudRect() (x, y, w, h float32) {
+	w = btnW*3 + actionHudGap*2 + actionHudPad*2
+	h = btnH + actionHudPad*2
+	x = float32(ScreenWidth)/2 - w/2
+	y = float32(ScreenHeight) - h
+	if x < 0 {
+		x = 0
+	}
+	return x, y, w, h
+}
+
+// BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
 // [0]=Diplomasi  [1]=Teknoloji  [2]=Tur Bitir
 func BottomButtonRects() [3][4]float32 {
-	by := bottomBarTop() + (bottomBarH-btnH)/2
-	endX := float32(ScreenWidth) - btnW - 5
-	techX := endX - btnW - 5
-	diplX := techX - btnW - 5
+	hudX, hudY, _, _ := bottomActionHudRect()
+	by := hudY + actionHudPad
+	diplX := hudX + actionHudPad
+	techX := diplX + btnW + actionHudGap
+	endX := techX + btnW + actionHudGap
 	return [3][4]float32{
 		{diplX, by, btnW, btnH},
 		{techX, by, btnW, btnH},
@@ -113,20 +135,66 @@ func BottomButtonRects() [3][4]float32 {
 	}
 }
 
+func bottomActionHudHit(fx, fy float64) bool {
+	x, y, w, h := bottomActionHudRect()
+	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+}
+
+func topStatusPanelHit(fx, fy float64) bool {
+	w := float64(topStatusW)
+	if w > ScreenWidth {
+		w = ScreenWidth
+	}
+	return fx >= 0 && fx <= w && fy >= 0 && fy <= float64(topStatusH)
+}
+
+func topDateHudRect() (x, y, w, h float32) {
+	w = topDateHudW
+	h = topDateHudH
+	x = float32(ScreenWidth) - w
+	if x < 0 {
+		x = 0
+	}
+	return x, 0, w, h
+}
+
+func topDateHudHit(fx, fy float64) bool {
+	x, y, w, h := topDateHudRect()
+	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+}
+
+func topDateHudMenuButtonRect() (x, y, w, h float32) {
+	hudX, hudY, hudW, _ := topDateHudRect()
+	w = 72
+	h = 34
+	x = hudX + hudW - w - 10
+	y = hudY + 23
+	return x, y, w, h
+}
+
+func topDateHudMenuButtonHit(fx, fy float64) bool {
+	x, y, w, h := topDateHudMenuButtonRect()
+	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+}
+
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
-// DrawBottomPanel Total War stilinde tam genişlik alt kaynak/aksiyon barını çizer.
+// DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
 func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, showTech bool) {
-	by := bottomBarTop()
-	bw := float32(ScreenWidth)
+	by := float32(0)
+	bw := topStatusW
+	if bw > float32(ScreenWidth) {
+		bw = float32(ScreenWidth)
+	}
 
-	vector.FillRect(screen, 0, by, bw, bottomBarH, panelBg, false)
+	vector.FillRect(screen, 0, by, bw, topStatusH, panelBg, false)
 	vector.FillRect(screen, 0, by, bw, 3, panelBorder, false)
-	vector.StrokeLine(screen, 0, by, bw, by, 1.5, panelBorder, false)
+	vector.StrokeLine(screen, 0, by+topStatusH, bw, by+topStatusH, 1.5, panelBorder, false)
+	vector.StrokeLine(screen, bw, by+4, bw, by+topStatusH, 1, color.RGBA{80, 65, 35, 120}, false)
 
 	f, hasPlayer := gs.Factions[gs.PlayerFactionID]
 
-	// Sol blok: fraksiyon amblemi + isim (satır 1) + tarih (satır 2) + sezon/tur (satır 3)
+	// Sol blok: fraksiyon amblemi + isim
 	if hasPlayer {
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		cx := float32(34)
@@ -136,15 +204,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		initial := string([]rune(f.NameTR)[:1])
 		DrawTextCentered(screen, initial, float64(cx), float64(cy)-8, FaceLarge, color.RGBA{255, 255, 255, 240})
 
-		DrawText(screen, f.NameTR, 64, float64(by)+8, FaceLarge, fc)
-
-		months := [...]string{"", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-			"Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"}
-		sea := gs.CurrentSeason()
-		dateStr := months[gs.Month] + " " + itoa(gs.Year)
-		DrawText(screen, dateStr, 64, float64(by)+30, FaceMed, ColorGold)
-		DrawText(screen, sea.DisplayName()+"  •  Tur "+itoa(gs.Turn), 64, float64(by)+52, FaceSmall,
-			color.RGBA{160, 200, 100, 220})
+		DrawText(screen, f.NameTR, 64, float64(by)+25, FaceLarge, fc)
 	}
 
 	// Kaynaklar: 3 sütun — sol kenarı sol bloktan yeterince uzakta
@@ -178,15 +238,20 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 
 	// Askeri kapasite göstergesi
 	if hasPlayer {
-		drawManpowerDisplay(screen, gs)
+		drawManpowerDisplay(screen, gs, float64(by))
 	}
 
 	// Zafer göstergesi — kaynak sütunundan sonra başlar
 	if hasPlayer {
-		drawVictoryProgress(screen, gs)
+		drawVictoryProgress(screen, gs, float64(by))
 	}
 
-	// Sağ: aksiyon butonları
+	// Alt-orta: aksiyon HUD'u
+	hudX, hudY, hudW, hudH := bottomActionHudRect()
+	vector.FillRect(screen, hudX, hudY, hudW, hudH, panelBg, false)
+	drawPanelBorder(screen, hudX, hudY, hudW, hudH)
+	vector.FillRect(screen, hudX, hudY, hudW, 3, panelBorder, false)
+
 	rects := BottomButtonRects()
 	labels := [3]string{"Diplomasi", "Teknoloji", "Tur Bitir ►"}
 	active := [3]bool{showDiplomacy, showTech, false}
@@ -210,17 +275,44 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		tw := MeasureText(labels[i], FaceMed)
 		DrawText(screen, labels[i], float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, ColorWhite)
 	}
+
+	drawDateMenuHud(screen, gs)
+}
+
+func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
+	x, y, w, h := topDateHudRect()
+	vector.FillRect(screen, x, y, w, h, panelBg, false)
+	drawPanelBorder(screen, x, y, w, h)
+	vector.FillRect(screen, x, y, w, 3, panelBorder, false)
+
+	months := [...]string{"", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+		"Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"}
+	month := ""
+	if gs.Month >= 1 && gs.Month <= 12 {
+		month = months[gs.Month]
+	}
+	dateStr := month + " " + itoa(gs.Year)
+	DrawText(screen, dateStr, float64(x)+12, float64(y)+13, FaceMed, ColorGold)
+	DrawText(screen, gs.CurrentSeason().DisplayName()+"  •  Tur "+itoa(gs.Turn),
+		float64(x)+12, float64(y)+42, FaceSmall, color.RGBA{160, 200, 100, 220})
+
+	bx, by, bw, bh := topDateHudMenuButtonRect()
+	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{45, 38, 28, 230}, false)
+	vector.StrokeRect(screen, bx, by, bw, bh, 1.5, panelBorder, false)
+	label := "Menü"
+	tw := MeasureText(label, FaceMed)
+	DrawText(screen, label, float64(bx)+float64(bw)/2-tw/2, float64(by)+8, FaceMed, ColorWhite)
 }
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
 
-// DrawEventLog sağ üst köşede son olayları listeler.
+// DrawEventLog sağ üst köşede son olayları kartlar halinde listeler.
 func DrawEventLog(screen *ebiten.Image, events []string) {
 	if len(events) == 0 {
 		return
 	}
 	ex := evLogX()
-	ey := float32(10)
+	ey := evLogY()
 
 	vector.FillRect(screen, ex, ey, evLogW, evLogH, panelBg, false)
 	drawPanelBorder(screen, ex, ey, evLogW, evLogH)
@@ -230,18 +322,153 @@ func DrawEventLog(screen *ebiten.Image, events []string) {
 	DrawText(screen, "Olay Mesajları", float64(ex)+float64(evLogW)/2-titleW/2, float64(ey)+8, FaceMed,
 		color.RGBA{220, 190, 100, 255})
 
-	lx := float64(ex) + 10
-	ly := float64(ey) + 30
-	for _, ev := range events {
-		if ly > float64(ey)+float64(evLogH)-18 {
+	for i, ev := range events {
+		cardX, cardY, cardW, cardH := eventLogCardRect(i)
+		if cardY+cardH > ey+evLogH-8 {
 			break
 		}
-		DrawText(screen, "• "+ev, lx, ly, FaceSmall, color.RGBA{210, 200, 180, 230})
-		ly += 18
+		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, color.RGBA{24, 20, 14, 225})
+		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
+
+		x, y, w, _ := eventLogCloseRect(i)
+		DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, ColorGray)
+
+		lines := wrapTextLines(ev, FaceSmall, float64(cardW-34))
+		if len(lines) > 2 {
+			lines = lines[:2]
+			lines[1] = trimTextToWidth(lines[1]+"...", FaceSmall, float64(cardW-34))
+		}
+		for li, line := range lines {
+			DrawText(screen, line, float64(cardX)+10, float64(cardY)+8+float64(li)*15, FaceSmall,
+				color.RGBA{220, 210, 185, 235})
+		}
 	}
 }
 
-// ── Minimap (sağ alt, alt barın üstünde) ─────────────────────────────
+func eventLogCardRect(index int) (x, y, w, h float32) {
+	x = evLogX() + 8
+	y = evLogY() + 31 + float32(index)*(eventCardH+eventCardGap)
+	w = evLogW - 16
+	h = eventCardH
+	return x, y, w, h
+}
+
+func eventLogCloseRect(index int) (x, y, w, h float32) {
+	cardX, cardY, cardW, _ := eventLogCardRect(index)
+	w, h = 18, 18
+	x = cardX + cardW - w - 5
+	y = cardY + 5
+	return x, y, w, h
+}
+
+func eventLogCardHit(mx, my float64, eventCount int) int {
+	for i := 0; i < eventCount; i++ {
+		x, y, w, h := eventLogCardRect(i)
+		if y+h > evLogY()+evLogH-8 {
+			break
+		}
+		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+			return i
+		}
+	}
+	return -1
+}
+
+func eventLogCloseHit(mx, my float64, eventCount int) int {
+	for i := 0; i < eventCount; i++ {
+		x, y, w, h := eventLogCloseRect(i)
+		if y+h > evLogY()+evLogH-8 {
+			break
+		}
+		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+			return i
+		}
+	}
+	return -1
+}
+
+func eventDetailPopupRect() (x, y, w, h float32) {
+	w = 620
+	h = 300
+	x = float32(ScreenWidth)/2 - w/2
+	y = float32(ScreenHeight)/2 - h/2
+	return x, y, w, h
+}
+
+func eventDetailPopupHit(mx, my float64) bool {
+	x, y, w, h := eventDetailPopupRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func eventDetailCloseRect() (x, y, w, h float32) {
+	px, py, pw, _ := eventDetailPopupRect()
+	w, h = 30, 26
+	x = px + pw - w - 12
+	y = py + 10
+	return x, y, w, h
+}
+
+func eventDetailCloseHit(mx, my float64) bool {
+	x, y, w, h := eventDetailCloseRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func drawEventDetailPopup(screen *ebiten.Image, message string) {
+	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
+	overlay.Fill(color.RGBA{0, 0, 0, 120})
+	screen.DrawImage(overlay, nil)
+
+	px, py, pw, ph := eventDetailPopupRect()
+	drawRoundedRect(screen, px, py, pw, ph, 8, panelBg)
+	drawPanelBorder(screen, px, py, pw, ph)
+	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+
+	DrawText(screen, "Olay Detayı", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
+
+	cx, cy, cw, ch := eventDetailCloseRect()
+	vector.FillRect(screen, cx, cy, cw, ch, color.RGBA{44, 34, 24, 230}, false)
+	vector.StrokeRect(screen, cx, cy, cw, ch, 1, panelBorder, false)
+	DrawTextCentered(screen, "X", float64(cx)+float64(cw)/2, float64(cy)+5, FaceMed, ColorGray)
+
+	lines := wrapTextLines(message, FaceMed, float64(pw-40))
+	maxLines := int((ph - 78) / 19)
+	if len(lines) > maxLines {
+		lines = lines[:maxLines]
+		lines[len(lines)-1] = trimTextToWidth(lines[len(lines)-1]+"...", FaceMed, float64(pw-40))
+	}
+	for i, line := range lines {
+		DrawText(screen, line, float64(px)+20, float64(py)+60+float64(i)*19, FaceMed,
+			color.RGBA{230, 224, 205, 240})
+	}
+}
+
+func drawInfoPopup(screen *ebiten.Image, message string, alpha uint8) {
+	pw := float32(430)
+	px := float32(ScreenWidth)/2 - pw/2
+	lines := wrapTextLines(message, FaceMed, float64(pw-40))
+	if len(lines) > 3 {
+		lines = lines[:3]
+		lines[len(lines)-1] = trimTextToWidth(lines[len(lines)-1]+"...", FaceMed, float64(pw-40))
+	}
+	ph := float32(48 + len(lines)*20)
+	py := float32(ScreenHeight)*0.22 - ph/2
+
+	bgAlpha := alpha
+	if bgAlpha > 235 {
+		bgAlpha = 235
+	}
+	drawRoundedRect(screen, px, py, pw, ph, 8, color.RGBA{18, 14, 10, bgAlpha})
+	vector.StrokeRect(screen, px, py, pw, ph, 1.5, color.RGBA{130, 105, 55, alpha}, false)
+	vector.FillRect(screen, px, py, pw, 3, color.RGBA{210, 170, 65, alpha}, false)
+
+	DrawText(screen, "Bilgi", float64(px)+16, float64(py)+12, FaceSmall, color.RGBA{220, 190, 100, alpha})
+	for i, line := range lines {
+		DrawText(screen, line, float64(px)+20, float64(py)+34+float64(i)*20, FaceMed,
+			color.RGBA{240, 230, 205, alpha})
+	}
+}
+
+// ── Minimap (sağ alt, alt kenara yapışık) ────────────────────────────
 
 // DrawMinimap küçük ölçekli dünya haritasını, fraksiyon sahipliğini ve
 // kamera viewport dikdörtgenini çizer.
@@ -777,8 +1004,8 @@ func victoryTypeLabel(vtype state.VictoryType) string {
 
 // ── Zafer İlerleme Göstergesi ─────────────────────────────────────────
 
-// drawManpowerDisplay alt barda savaşçı kapasitesini ve ordu sayısını gösterir.
-func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState) {
+// drawManpowerDisplay savaşçı kapasitesini ve ordu sayısını gösterir.
+func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float64) {
 	pid := gs.PlayerFactionID
 	deployed := gs.DeployedLandUnits(pid)
 	cap := gs.ManpowerCap(pid)
@@ -786,7 +1013,7 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState) {
 	maxArmies := gs.MaxLandArmies(pid)
 
 	mx := float64(885)
-	my := float64(bottomBarTop()) + 8
+	my := panelY + 8
 
 	DrawText(screen, "Savaşçı", mx, my, FaceSmall, ColorGray)
 	unitStr := itoa(deployed) + "/" + itoa(cap)
@@ -805,18 +1032,18 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState) {
 	DrawText(screen, armyStr, mx+65, my+28, FaceMed, armyCol)
 
 	// İnce ayraç
-	by := float32(bottomBarTop())
-	vector.StrokeLine(screen, float32(mx)-8, by+8, float32(mx)-8, by+bottomBarH-8, 1, color.RGBA{80, 65, 35, 120}, false)
+	by := float32(panelY)
+	vector.StrokeLine(screen, float32(mx)-8, by+8, float32(mx)-8, by+topStatusH-8, 1, color.RGBA{80, 65, 35, 120}, false)
 }
 
-// drawVictoryProgress alt barda seçilen zafer tipine göre ilerlemeyi gösterir.
-func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState) {
+// drawVictoryProgress seçilen zafer tipine göre ilerlemeyi gösterir.
+func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float64) {
 	if gs.PlayerFactionID == "" {
 		return
 	}
 
 	vx := float64(730)
-	vy := float64(bottomBarTop()) + 8
+	vy := panelY + 8
 	barW := float32(150)
 
 	titleCol := color.RGBA{220, 190, 100, 220}
@@ -1201,6 +1428,85 @@ func drawPanelBorder(screen *ebiten.Image, x, y, w, h float32) {
 	vector.StrokeLine(screen, x, y+h, x+w, y+h, 1.5, panelBorder, false)
 	vector.StrokeLine(screen, x, y, x, y+h, 1.5, panelBorder, false)
 	vector.StrokeLine(screen, x+w, y, x+w, y+h, 1.5, panelBorder, false)
+}
+
+func drawRoundedRect(screen *ebiten.Image, x, y, w, h, r float32, col color.Color) {
+	if r <= 0 {
+		vector.FillRect(screen, x, y, w, h, col, false)
+		return
+	}
+	if r*2 > w {
+		r = w / 2
+	}
+	if r*2 > h {
+		r = h / 2
+	}
+	vector.FillRect(screen, x+r, y, w-r*2, h, col, false)
+	vector.FillRect(screen, x, y+r, w, h-r*2, col, false)
+	vector.FillCircle(screen, x+r, y+r, r, col, false)
+	vector.FillCircle(screen, x+w-r, y+r, r, col, false)
+	vector.FillCircle(screen, x+r, y+h-r, r, col, false)
+	vector.FillCircle(screen, x+w-r, y+h-r, r, col, false)
+}
+
+func wrapTextLines(s string, face *text.GoTextFace, maxWidth float64) []string {
+	words := strings.Fields(s)
+	if len(words) == 0 {
+		return nil
+	}
+	lines := make([]string, 0, 3)
+	line := words[0]
+	for _, word := range words[1:] {
+		candidate := line + " " + word
+		if MeasureText(candidate, face) <= maxWidth {
+			line = candidate
+			continue
+		}
+		lines = append(lines, line)
+		line = word
+	}
+	lines = append(lines, line)
+
+	out := make([]string, 0, len(lines))
+	for _, ln := range lines {
+		if MeasureText(ln, face) <= maxWidth {
+			out = append(out, ln)
+			continue
+		}
+		out = append(out, splitLongWord(ln, face, maxWidth)...)
+	}
+	return out
+}
+
+func splitLongWord(s string, face *text.GoTextFace, maxWidth float64) []string {
+	runes := []rune(s)
+	lines := []string{}
+	start := 0
+	for start < len(runes) {
+		end := start + 1
+		for end <= len(runes) && MeasureText(string(runes[start:end]), face) <= maxWidth {
+			end++
+		}
+		if end == start+1 {
+			lines = append(lines, string(runes[start:end]))
+			start = end
+			continue
+		}
+		lines = append(lines, string(runes[start:end-1]))
+		start = end - 1
+	}
+	return lines
+}
+
+func trimTextToWidth(s string, face *text.GoTextFace, maxWidth float64) string {
+	if MeasureText(s, face) <= maxWidth {
+		return s
+	}
+	runes := []rune(s)
+	for len(runes) > 0 && MeasureText(string(runes), face) > maxWidth {
+		runes = runes[:len(runes)-1]
+	}
+	return string(runes)
 }
 
 func drawBar(screen *ebiten.Image, x, y, w, h float32, fill float64, col color.Color) {
