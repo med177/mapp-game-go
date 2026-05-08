@@ -22,6 +22,13 @@ var (
 	mapShearX            = 0.0 // Harita bükme/yatıklık şimdilik kapalı
 )
 
+const (
+	confirmDialogW    = float32(460)
+	confirmDialogH    = float32(166)
+	confirmDialogBtnW = float32(120)
+	confirmDialogBtnH = float32(36)
+)
+
 // Renderer kamerayı ve dünya haritasını yönetir.
 type Renderer struct {
 	gs       *state.GameState
@@ -99,6 +106,7 @@ type confirmDialogState struct {
 	show          bool
 	title         string
 	message       string
+	messageLines  []string
 	acceptLabel   string
 	declineLabel  string
 	pendingAction InputAction
@@ -1214,6 +1222,7 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 		show:          true,
 		title:         title,
 		message:       message,
+		messageLines:  wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
 		acceptLabel:   acceptLabel,
 		declineLabel:  declineLabel,
 		pendingAction: action,
@@ -1222,57 +1231,51 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 }
 
 func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
-	const (
-		dlgW  = float32(420)
-		dlgH  = float32(150)
-		btnDW = float32(120)
-		btnDH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
+	cx := float32(ScreenWidth)/2 - confirmDialogW/2
+	cy := float32(ScreenHeight)/2 - confirmDialogH/2
 
-	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
-	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+	vector.FillRect(screen, cx-2, cy-2, confirmDialogW+4, confirmDialogH+4, color.RGBA{110, 90, 50, 255}, false)
+	vector.FillRect(screen, cx, cy, confirmDialogW, confirmDialogH, color.RGBA{12, 10, 8, 245}, false)
 
 	DrawText(screen, r.confirmDialog.title, float64(cx)+20, float64(cy)+28, FaceLarge, color.RGBA{255, 220, 100, 255})
-	DrawText(screen, r.confirmDialog.message, float64(cx)+20, float64(cy)+58, FaceMed, color.RGBA{220, 220, 220, 255})
+	lines := r.confirmDialog.messageLines
+	for i, line := range lines {
+		if i >= 3 {
+			break
+		}
+		DrawText(screen, line, float64(cx)+20, float64(cy)+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
+	}
 
-	btnY := cy + dlgH - btnDH - 16
-	yesX := cx + dlgW/2 - btnDW - 10
-	noX := cx + dlgW/2 + 10
+	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
+	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
+	noX := cx + confirmDialogW/2 + 10
 
-	vector.FillRect(screen, yesX, btnY, btnDW, btnDH, color.RGBA{70, 140, 70, 240}, false)
+	vector.FillRect(screen, yesX, btnY, confirmDialogBtnW, confirmDialogBtnH, color.RGBA{70, 140, 70, 240}, false)
 	wYes := MeasureText(r.confirmDialog.acceptLabel, FaceSmall)
-	DrawText(screen, r.confirmDialog.acceptLabel, float64(yesX)+(float64(btnDW)-wYes)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+	DrawText(screen, r.confirmDialog.acceptLabel, float64(yesX)+(float64(confirmDialogBtnW)-wYes)/2, float64(btnY)+10, FaceSmall, ColorWhite)
 
-	vector.FillRect(screen, noX, btnY, btnDW, btnDH, color.RGBA{70, 70, 70, 220}, false)
+	vector.FillRect(screen, noX, btnY, confirmDialogBtnW, confirmDialogBtnH, color.RGBA{70, 70, 70, 220}, false)
 	wNo := MeasureText(r.confirmDialog.declineLabel, FaceSmall)
-	DrawText(screen, r.confirmDialog.declineLabel, float64(noX)+(float64(btnDW)-wNo)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+	DrawText(screen, r.confirmDialog.declineLabel, float64(noX)+(float64(confirmDialogBtnW)-wNo)/2, float64(btnY)+10, FaceSmall, ColorWhite)
 }
 
 func (r *Renderer) handleConfirmDialogInput() InputAction {
-	const (
-		dlgW  = float32(420)
-		dlgH  = float32(150)
-		btnDW = float32(120)
-		btnDH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnDH - 16
-	yesX := cx + dlgW/2 - btnDW - 10
-	noX := cx + dlgW/2 + 10
+	cx := float32(ScreenWidth)/2 - confirmDialogW/2
+	cy := float32(ScreenHeight)/2 - confirmDialogH/2
+	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
+	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
+	noX := cx + confirmDialogW/2 + 10
 
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float32(mxi), float32(myi)
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if mx >= yesX && mx <= yesX+btnDW && my >= btnY && my <= btnY+btnDH {
+		if mx >= yesX && mx <= yesX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
 			action := r.confirmDialog.pendingAction
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
-		if mx >= noX && mx <= noX+btnDW && my >= btnY && my <= btnY+btnDH {
+		if mx >= noX && mx <= noX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
 			if r.confirmDialog.declineHook != nil {
 				r.confirmDialog.declineHook()
 			}

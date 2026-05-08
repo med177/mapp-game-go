@@ -41,6 +41,21 @@ func (g *Game) enqueueProduction(kind string, rid world.RegionID, typeID string,
 	return order
 }
 
+func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) bool {
+	for i := len(g.gs.ProductionQueue) - 1; i >= 0; i-- {
+		order := g.gs.ProductionQueue[i]
+		if order.Kind != kind || order.RegionID != rid || order.TypeID != typeID || order.FactionID != string(ownerID) {
+			continue
+		}
+		copy(g.gs.ProductionQueue[i:], g.gs.ProductionQueue[i+1:])
+		last := len(g.gs.ProductionQueue) - 1
+		g.gs.ProductionQueue[last] = state.ProductionOrder{}
+		g.gs.ProductionQueue = g.gs.ProductionQueue[:last]
+		return true
+	}
+	return false
+}
+
 func (g *Game) applyProductionTicks() []productionResult {
 	queue := g.gs.ProductionQueue
 	remaining := queue[:0]

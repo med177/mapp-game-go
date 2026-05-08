@@ -900,18 +900,24 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, "◈ "+itoa(region.BaseGrainOutput)+" Tahıl", lx+120, ly, FaceSmall, ColorWhite)
 	ly += 18
 
+	statBarX := float32(lx) + 122
 	DrawText(screen, "Memnuniyet: "+itoa(region.Satisfaction)+"%", lx, ly, FaceSmall, ColorGray)
-	drawBar(screen, float32(lx+100), float32(ly)+1, sepW-100, 9, float64(region.Satisfaction)/100,
+	drawBar(screen, statBarX, float32(ly)+1, sepW-(statBarX-float32(lx)), 9, float64(region.Satisfaction)/100,
 		satisfactionColor(region.Satisfaction))
 	ly += 18
 
 	DrawText(screen, "Vergi: %"+itoa(region.TaxRate), lx, ly, FaceSmall, ColorGray)
-	drawBar(screen, float32(lx+100), float32(ly)+1, sepW-150, 9, float64(region.TaxRate)/100,
-		color.RGBA{200, 140, 40, 255})
+	taxBarW := sepW - (statBarX - float32(lx))
 	if region.OwnerID == string(gs.PlayerFactionID) {
 		dec, inc := regionTaxButtonRects(gs)
+		taxBarW = dec[0] - statBarX - 8
+		drawBar(screen, statBarX, float32(ly)+1, taxBarW, 9, float64(region.TaxRate)/100,
+			color.RGBA{200, 140, 40, 255})
 		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
 		drawTinyPanelButton(screen, inc[0], inc[1], inc[2], inc[3], "+", true)
+	} else {
+		drawBar(screen, statBarX, float32(ly)+1, taxBarW, 9, float64(region.TaxRate)/100,
+			color.RGBA{200, 140, 40, 255})
 	}
 	ly += 18
 
@@ -1542,13 +1548,6 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	for _, bid := range region.Buildings {
 		builtSet[bid] = true
 	}
-	queuedSet := make(map[string]bool)
-	for _, order := range gs.ProductionQueue {
-		if order.Kind == "building" && order.RegionID == region.ID {
-			queuedSet[order.TypeID] = true
-		}
-	}
-
 	px := infoPanelX()
 	pw := infoPanelW
 	startY := buildingGridStartY(gs, region)
@@ -1563,7 +1562,7 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 
 	display := visibleBuildingIDs(gs, region)
 	for i, bid := range display {
-		if builtSet[bid] || queuedSet[bid] {
+		if builtSet[bid] {
 			continue
 		}
 		col := i % cols

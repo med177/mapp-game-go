@@ -76,9 +76,9 @@ PhaseTurnResolution                    │
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | AI turuna geç |
 | `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı / savaş |
-| `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al |
-| `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al (liman gerekli) |
-| `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al |
+| `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
+| `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
+| `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al; kuyruktaki binaya tekrar basılırsa iptal edip altını iade eder |
 | `ActionResearch` | Tech panelinden | Teknoloji araştır |
 | `ActionDeclareWar` | Diplomasi paneli | Savaş ilan et |
 | `ActionProposePeace` | Diplomasi paneli | Barış teklif et |

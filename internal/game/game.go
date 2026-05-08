@@ -422,6 +422,11 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		return
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
+	if g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID) {
+		f.Gold += b.GoldCost
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. %d altın iade edildi.", b.NameTR, b.GoldCost))
+		return
+	}
 	if f.Gold < b.GoldCost {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Yeterli altın yok! Gerekli: %d", b.GoldCost))
 		return
@@ -722,6 +727,11 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 	}
 	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
 	if !ok {
+		return
+	}
+	if g.cancelProduction(productionKindUnit, rid, unitTypeID, g.gs.PlayerFactionID) {
+		f.Gold += utype.GoldCost
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi iptal edildi. %d altın iade edildi.", utype.NameTR, utype.GoldCost))
 		return
 	}
 

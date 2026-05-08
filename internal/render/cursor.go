@@ -213,22 +213,20 @@ func (r *Renderer) techPanelHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
-	const (
-		dlgW  = 420.0
-		dlgH  = 150.0
-		btnDW = 120.0
-		btnDH = 36.0
-	)
+	dlgW := float64(confirmDialogW)
+	dlgH := float64(confirmDialogH)
+	btnW := float64(confirmDialogBtnW)
+	btnH := float64(confirmDialogBtnH)
 	cx := float64(ScreenWidth)/2 - dlgW/2
 	cy := float64(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnDH - 16
-	yesX := cx + dlgW/2 - btnDW - 10
+	btnY := cy + dlgH - btnH - 16
+	yesX := cx + dlgW/2 - btnW - 10
 	noX := cx + dlgW/2 + 10
 
-	if fx >= yesX && fx <= yesX+btnDW && fy >= btnY && fy <= btnY+btnDH {
+	if fx >= yesX && fx <= yesX+btnW && fy >= btnY && fy <= btnY+btnH {
 		return true
 	}
-	if fx >= noX && fx <= noX+btnDW && fy >= btnY && fy <= btnY+btnDH {
+	if fx >= noX && fx <= noX+btnW && fy >= btnY && fy <= btnY+btnH {
 		return true
 	}
 	return false
