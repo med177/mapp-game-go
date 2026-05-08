@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-05-06
+last_updated: 2026-05-08
 related: [architecture/state-management, architecture/game-loop]
 ---
 
@@ -9,7 +9,7 @@ related: [architecture/state-management, architecture/game-loop]
 
 **Kaynak:** `internal/victory/victory.go`, `internal/state/state.go:14`
 
-## 4 Zafer Tipi
+## Zafer Tipleri
 
 Oyun başında oyuncu bir zafer koşulu seçer (`PhaseVictorySelect`).
 
@@ -25,11 +25,11 @@ RequiredRegions   = [constantinople, rome, paris, cairo, jerusalem]
 ### 2. Ekonomik Güç (`economic`)
 
 ```
-TargetGoldIncome = 500  (tur başına net altın geliri)
+TargetGoldIncome = 500
 GoldHoldTurns    = 5    (bu geliri 5 tur boyunca koru)
 ```
 
-`EconomicVictoryTurns` sayacı `GameState`'te tutulur.
+`EconomicVictoryTurns` sayacı `GameState`'te tutulur. Dikkat: mevcut kod `TargetGoldIncome` alanını isim/metin aksine tur başı gelir olarak değil, fraksiyonun mevcut altını (`f.Gold`) olarak kontrol ediyor. Bu uyumsuzluk [[dev/progress]] içinde kritik takip işidir.
 
 ### 3. Askeri Üstünlük (`military`)
 
@@ -46,7 +46,7 @@ TargetDefeated     = 3    (elenen fraksiyon sayısı)
 RequiredRegions = [jerusalem, rome, mecca]
 ```
 
-3 kutsal şehri aynı anda kontrol et.
+3 kutsal şehri 12 tur boyunca kontrol et.
 
 `ReligiousVictoryTurns` sayacı `GameState`'te tutulur.
 
@@ -63,9 +63,17 @@ RequiredRegions = [jerusalem, rome, mecca]
 
 ---
 
+### Senaryo Özel Hedef (`conquer_city`)
+
+Senaryo JSON'larında `conquer_city` tipi var ve `applyVictoryChoice()` bunu tek hedef bölgeyi `RequiredRegions` listesine çevirerek state'e yazar. Ancak `internal/victory/victory.go` henüz bu tipi `Check()` içinde ele almıyor. Bu yüzden `conquer_city` şu an seçilebilir ama kazanımı tetiklemeyen kritik eksiktir.
+
+Ek veri riski: mevcut senaryo hedefleri `CON`, `ROM`, `CAI`, `PAR`, `JER`, `MEC` gibi kısa ID'ler kullanıyor; `regions.json` içinde bölge ID'leri `constantinople`, `paris`, `london` gibi uzun formda. Zafer sistemi düzeltilirken senaryo hedefleri de gerçek region ID'leriyle eşitlenmeli.
+
+---
+
 ## Zafer Koşulu Uygulama
 
-`applyVictoryChoice(vtype)` — `internal/game/game.go:566`
+`applyVictoryChoice(optionID)` — `internal/game/game.go`
 
 Seçilen tipe göre `VictoryCondition` struct'ı doldurulur ve `gs.Victory`'ye yazılır.
 

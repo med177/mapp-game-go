@@ -1,7 +1,7 @@
 ---
 type: index
 tags: [home, navigation]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 ---
 
 # Mapp Game Go — Wiki
@@ -65,7 +65,7 @@ Mevcut senaryolar: `1300_ottoman_rise` · `1444_constantinople`
 
 **Tur sırası:** `PhasePlayerTurn` → `PhaseAITurn` → `PhaseTurnResolution` → `PhasePlayerTurn`
 
-**Tur çözümleme sırası** (`internal/game/game.go:160`):
+**Tur çözümleme sırası** (`internal/game/game.go:230`):
 `applySeasonEffects` → `applyEconomyTick` → `applyTechTicks` → `applyReligionConversion` → `checkRegionUnlocks` → `checkRebellions` → `checkEliminations` → `applyRelationDecay` → `victory.Check` → `events.Tick`
 
 **Klavye kısayolları:** `Enter/Space` tur sonu · `Tab` diplomasi · `T` teknoloji · `R` asker al · `N` gemi inşa · `1-6` bina · `S/L` kaydet/yükle · `F11` tam ekran

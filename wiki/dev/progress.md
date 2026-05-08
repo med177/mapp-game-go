@@ -1,87 +1,107 @@
 ---
 type: dev
-tags: [progress, status, todo, known-issues]
-last_updated: 2026-05-07
-# Combat sistemi güncellendi — calculateOutcome() implemente edildi
-related: [HOME, architecture/render-pipeline]
+tags: [progress, status, todo, known-issues, next-steps]
+last_updated: 2026-05-08
+related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
 
-## Tamamlanan Sistemler ✅
+## Denetim Özeti (2026-05-08)
+
+Proje artık oynanabilir dikey kesite yakın: ana menüden senaryo seçiliyor, fraksiyon ve zafer koşulu seçilip kampanya başlıyor, tur döngüsü çalışıyor, AI turu işleniyor, harita ve paneller render ediliyor, kayıt/yükleme slotları var.
+
+Mevcut veri seti iki senaryoda da aynı genişlikte:
+
+| Senaryo | Bölge | Deniz | Fraksiyon | Oynanabilir | Başlangıç ordusu |
+|---|---:|---:|---:|---:|---:|
+| `1300_ottoman_rise` | 210 | 52 | 45 | 30 | 49 |
+| `1444_constantinople` | 210 | 52 | 45 | 30 | 49 |
+
+Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden tamamlanmadı. Eksikler: `X11/Xlib.h` ve `alsa.pc`. Bu, Go paketlerinden çok Ebitengine/oto native bağımlılığı.
+
+## Tamamlanan Sistemler
 
 | Sistem | Durum | Notlar |
 |---|---|---|
 | Ebitengine kurulum | ✅ | `cmd/game/main.go`, 60 TPS |
 | GameState merkezi yapı | ✅ | `internal/state/state.go` |
-| Phase state machine | ✅ | 8 fase, tam geçiş |
-| Harita render (2D) | ✅ | WorldMap cache, poligon doldurma |
-| Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı |
-| Fraksiyon sistemi | ✅ | 9 fraksiyon, renk, din |
-| Ordu hareketi | ✅ | Komşuluk kısıtı, naval/kara ayrımı |
-| Çarpışma motoru | ✅ | `calculateOutcome()` ±%15 rastgele dice, 4 sonuç kategorisi (ezici/dar zafer, yakın/ağır mağlubiyet) |
-| Ekonomi tick | ✅ | Vergi geliri, ticaret güzergahları |
-| Bina inşası | ✅ | 6 bina tipi, maliyet, kısıt |
-| Teknoloji ağacı | ✅ | Araştırma sayacı, efekt hesabı |
-| Mevsim mekaniği | ✅ | Kış hasarı, sonbahar bonusu |
-| Diplomasi | ✅ | 4 duruş, puanlama, decay, din ilişkisi başlangıç bonus/ceza |
-| AI teknoloji araştırma | ✅ | Askeri > ekonomi > deniz öncelikli, maliyet/tur optimize |
-| AI ekonomi stratejisi | ✅ | Pazar (80% prio), çiftlik (düşük tahıl), sur (sınır) |
-| AI deniz stratejisi | ✅ | Liman inşası, nakliye gemisi alımı (max 2 filo) |
-| AI elite birim stratejisi | ✅ | Altın/teknolojiye göre: seçkin piyade > ağır süvari > piyade > süvari > milis |
-| AI turu | ✅ | Stratejik hareket, koalisyon (zor), ittifak kurma |
-| Tarihsel olaylar | ✅ | JSON tetikleyici, tek-seferlik |
-| Zafer koşulları | ✅ | 4 tip, Check() döngüsü |
-| Kayıt/yükleme | ✅ | 4 slot (autosave + slot1-3), slot silme, metadata önizleme |
-| Ana menü / ayarlar | ✅ | Fraksiyon & zafer seçim ekranı; "Kayıttan Yükle" slot seçim ekranına açılır |
-| Pause menüsü | ✅ | ESC ile açılır; Devam Et / Kaydet / Yükle / Ana Menü / Çıkış |
-| Ordu detay paneli (20 slot) | ✅ | Boş slotlar silik, HP çubuğu, deneyim çubuğu, BÖLDÜR butonu |
-| Askeri kapasite (manpower) sistemi | ✅ | Bölge başı 5 + kışla +5 birim; ordu sayısı = ceil(bölge/2); `state.go:ManpowerCap` |
-| Ordu birleşme (merge) | ✅ | Dost bölgeye taşınınca ≤20 birimse otomatik birleşir; `game.go:tryMergeArmies` |
-| Ordu bölme (split) | ✅ | "✂ BÖLDÜR" butonu, birimleri ikiye böler; `game.go:splitArmy` |
-| Çoklu ordu yan yana render | ✅ | `renderer.go:armyIconPositions()` — aynı bölgedeki ordular 26px aralıkla |
-| Minimap | ✅ | Sağ alt köşe, kamera konumu, ordu konumları gösterimi |
-| Tüm menülerde parmak imleci | ✅ | Pause, load/save, settings, in-game dahil tüm fazlar |
-| Vergi ayarlama | ✅ | . / , tuşları, ±5% |
-| Deniz birimi | ✅ | Nakliye gemisi, liman koşulu |
-| Ticaret güzergahları | ✅ | Fraksiyonlar arası pasif gelir, `TradeRoutes` |
-| Din dönüşümü | ✅ | 24 turda bölge dini değişir, memnuniyet -20 |
-| Din diplomasisi | ✅ | `ReligionRelation` aynı din +25, Sünni-Şii -40, farklı din -30 |
-| İngiltere bölgeleri | ✅ | 6 tarihi bölge: London, Yorkshire, Lancashire, Mercia, East Anglia, Wessex |
-| Fransa bölgeleri | ✅ | 8 tarihi bölge: Paris, Normandy, Brittany, Anjou, Champagne, Burgundy, Provence, Languedoc |
-| HRE prenslikleri | ✅ | 6 prenslik: Brandenburg, Saxony, Bavaria, Westphalia, Thuringia, Palatinate |
-| Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `scenarios.json` index + senaryo klasörü yapısı |
-| Senaryo seçim ekranı | ✅ | `render/scenario_select.go`, `PhaseScenarioSelect` fazı |
-| Development mode | ✅ | `GameState.DevelopmentMode` bool alanı |
-| AI çoklu ordu konsolidasyonu | ✅ | `ai.go:aiConsolidateArmies` eklendi, ordu birleşimi |
-| Görsel mevsim değişimi | ✅ | `mapgen.go:applyOwnership` tint eklendi (Kış, İlkbahar, Sonbahar) |
+| Phase state machine | ✅ | 12 faz: ana menü, ayarlar, senaryo, fraksiyon, zafer, oyun, AI, çözümleme, game over, pause, load, save |
+| Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `assets/scenarios/scenarios.json` index + bağımsız senaryo klasörleri |
+| Senaryo seçim ekranı | ✅ | `internal/render/scenario_select.go`, `PhaseScenarioSelect` |
+| Harita render | ✅ | `WorldMap` cache, ülke/deniz şekilleri, sahiplik rengi, seçili bölge vurgusu |
+| Görsel mevsim değişimi | ✅ | `internal/render/mapgen.go:applyOwnership`; kış/ilkbahar/sonbahar tint |
+| Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
+| Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
+| Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
+| Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü |
+| Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
+| Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi |
+| Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
+| Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
+| Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
+| Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |
+| Askeri kapasite | ✅ | Kara bölgesi başı 5 + kışla başı 5; ordu sayısı `ceil(kara_bölge/2)` |
+| Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü |
+| Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi oluşturma |
+| Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
+| Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
+| Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları |
+| Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
+| Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri |
+| Diplomasi | ✅ | Savaş, barış, ittifak, ticaret; ilişki puanı ve duruş sistemi |
+| Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
+| Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
+| Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme |
+| Zafer koşulları | ⚠️ | `domination`, `economic`, `military`, `religious` çalışıyor; `conquer_city` seçeneği kodda kontrol edilmiyor |
+| AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon ve hedefe hareket |
+| AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
+| AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
+| Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
+| Ana menü / ayarlar | ✅ | Yeni oyun, kayıt yükleme, ayarlar, çıkış |
+| Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
+| Minimap | ✅ | Sağ alt köşe, kamera ve ordu konumları |
+| Ses efektleri | ✅ | `internal/audio`, senaryo `sounds/` altından `click.wav` ve `combat.wav` yükleme |
+| Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |
 
----
+## Bilinen Sorunlar
 
-## Eksik / Planlanan 
+| Öncelik | Sorun | Dosya | Etki |
+|---|---|---|---|
+| 🔴 Kritik | `conquer_city` zafer tipi `victory.Check` içinde yok | `internal/victory/victory.go`, `internal/game/game.go:1026` | Senaryolardaki ilk hedef olan Konstantinopolis'i fethetme zaferi seçilirse oyun kazanımı tetiklenmez |
+| 🔴 Kritik | Senaryo zafer hedef ID'leri region ID'leriyle eşleşmiyor | `assets/scenarios/*/scenario.json`, `assets/scenarios/*/data/regions.json` | `CON`, `ROM`, `CAI`, `PAR`, `JER`, `MEC` hedefleri mevcut bölge ID'leri değil; zafer kontrolleri hedef bulamaz |
+| 🔴 Kritik | Ekonomik zafer metni gelir diyor, kod hazineyi kontrol ediyor | `internal/victory/victory.go:83`, `internal/render/panel.go:837` | Oyuncu hedefi yanlış anlar; `TargetGoldIncome` isim/metin/kod uyumsuz |
+| 🟠 Yüksek | Save load sadece runtime tanımlarını kısmen geri yüklüyor | `internal/save/save.go` | `ShapeData` ve `AvailableVictories` kayıt yüklemede yeniden doldurulmuyor; render şu an dosyadan tekrar okuyarak haritayı kurtarıyor ama state eksik kalıyor |
+| 🟠 Yüksek | Başlangıç zor zorluk bonusu oyuncu seçilmeden uygulanıyor | `internal/game/game.go:499` | `PlayerFactionID` boş olduğu için tüm fraksiyonlar AI bonusu alıyor; oyuncu seçilince bu bonus oyuncuda da kalabilir |
+| 🟡 Orta | Deniz taşıma mekaniği yok | `internal/game/game.go:700` | Kara ordusu denize giremiyor; nakliye gemisi üretiliyor ama ordu taşıma akışı henüz yok |
+| 🟡 Orta | Diplomasi teklifleri otomatik kabul | `internal/game/game.go` | AI kabul/red, pazarlık ve tehdit hesabı yok |
+| 🟡 Orta | Olaylar oyuncu seçimi sunmuyor | `internal/events/events.go` | Olay sistemi tek yönlü etki uyguluyor, A/B kararları yok |
+| 🟢 Düşük | Kök dizinde geçici `game.exe` olabilir | `game.exe` | Kalıcı çıktı `bin/game.exe` olmalı |
 
-| Özellik | Öncelik | Notlar |
+## Sonraki Adım Planı
+
+1. **Zafer sistemi düzeltmesi:** `conquer_city` için ya ayrı `VictoryConquerCity` tipi ekle ya da seçim sırasında `domination` + tek required region'a normalize et. Aynı işte senaryo hedef ID'leri gerçek region ID'leriyle eşitlenmeli. Ekonomik zaferin gerçekten gelir mi hazine mi kontrol edeceği netleştirilmeli.
+2. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `ShapeData`, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
+3. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
+4. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
+5. **AI ve diplomasi derinliği:** Otomatik kabul yerine ilişki, güç dengesi, ortak düşman ve komşu tehdit algısına göre kabul/red skoru ekle.
+6. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
+7. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
+
+## Yakın Sprint Önerisi
+
+İlk sprintin hedefi "seçilen kampanya hedefi güvenilir çalışıyor ve kayıt yükleme bozmuyor" olmalı:
+
+| Sıra | İş | Kabul Kriteri |
 |---|---|---|
-| AI uzun menzilli planlama | ✅ | BFS kullanılarak uzaktaki hedeflere doğru hareket (8 derinlik) |
-| İkincil mal döngüsü | ✅ | Tahıl/demir/kereste toplama ve saklama döngüsü eklendi |
-| Olay zincirleme | 🟢 Düşük | |
-| Oyuncu tepki seçenekleri (A/B) | 🟢 Düşük | |
-| `religion/` paketi ayrıştırması | ✅ | `faction.go` ve `resolution.go` inline, ayrı paket yok |
-| Ses efektleri | ✅ | `audio` paketi eklendi, `click.wav` ve `combat.wav` entegrasyonu tamamlandı |
-| ~~Tek seferlik kayıt → çoklu slot~~ | ✅ | Tamamlandı (2026-05-07) |
+| 1 | Zafer hedef ID normalizasyonu | Senaryo hedefleri gerçek region ID'leriyle eşleşiyor (`constantinople`, `rome`, vb.) |
+| 2 | `conquer_city` zafer fix | `ottoman_rise` seçilip Konstantinopolis oyuncuya geçince `PhaseGameOver` + oyuncu kazandı |
+| 3 | Ekonomik zafer kararını netleştir | UI, JSON alanı ve `victory.Check` aynı şeyi ölçüyor |
+| 4 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
+| 5 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
+| 6 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
 
----
-
-## Bilinen Sorunlar 🐛
-
-| Sorun | Dosya | Açıklama |
-|---|---|---|
-| `game.exe` kök dizinde geçici | `game.exe` | `bin/game.exe` kalıcı olmalı |
-| `religion/` paketi inline | `faction.go`, `resolution.go` | Din mantığı `faction` ve `game` paketlerine dağılmış |
-
----
-
-## Araçlar (tools/)
+## Araçlar
 
 | Araç | Amaç |
 |---|---|
@@ -91,3 +111,4 @@ related: [HOME, architecture/render-pipeline]
 | `tools/fix_*.py` | Belirli bölge düzeltmeleri |
 | `tools/add_regions*.py` | Yeni bölge ekleme |
 | `tools/add_missing_countries.js` | Eksik ülke tamamlama |
+| `tools/audit_map.py` | Harita/veri denetimi |

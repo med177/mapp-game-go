@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -19,7 +19,7 @@ type Relation struct {
 }
 ```
 
-`RelationKey(a, b)` → her zaman alfabetik sırada `"a_b"` string'i üretir (çift kayıt önler).
+`RelationKey(a, b)` → her zaman sıralı `"a|b"` string'i üretir (çift kayıt önler).
 
 ---
 
@@ -64,7 +64,7 @@ type Relation struct {
 | İttifak | +30 |
 | `applyRelationDecay()` | Her tur sıfıra doğru çekme |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
-| Din bonusu/cezası | `ReligionRelation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
+| Din bonusu/cezası | `religion.Relation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
 
 → `applyRelationDecay` tur çözümleme sırası: [[architecture/game-loop]]
 
@@ -72,9 +72,9 @@ type Relation struct {
 
 ## Başlangıç İlişkileri
 
-`faction.BuildInitialRelations(factions)` — `internal/faction/faction.go`
+`faction.BuildInitialRelations(factions)` — `internal/faction/loader.go`
 
-Tüm fraksiyon çiftleri için `Stance = StancePeace, Score = 0` başlatılır. Tarihsel düşmanlıklar JSON'dan veya başlangıç bonuslarıyla eklenebilir.
+Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla başlatılır. Varsayılan duruş barıştır; Sünni-Şii çiftleri başlangıçta savaş durumuna alınır.
 
 ---
 
@@ -92,4 +92,4 @@ Oyuncu `coalitionThreshold = 8` bölgeyi geçince AI fraksiyonları aralarında 
 
 - [ ] AI kabul/red mantığı (ilişki skoruna göre — şu an tüm teklifler otomatik kabul)
 - [ ] Komşu bölge tehdidi algısı → puan cezası
-- [ ] `religion/` paketi ayrıştırılması (şu an `faction.go` + `resolution.go` içinde inline)
+- [x] `internal/religion` paketi ayrıştırıldı

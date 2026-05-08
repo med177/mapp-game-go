@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [architecture/state-management, world/regions, world/factions]
 ---
 
@@ -49,17 +49,20 @@ Bölge listesi. Her kayıt:
 
 ```json
 {
-  "id": "anatolia",
-  "name_tr": "Anadolu",
-  "owner_id": "ottoman",
+  "id": "london",
+  "name_tr": "Londra",
+  "owner_id": "england",
   "terrain": "plain",
-  "neighbors": ["constantinople", "armenia", "black_sea"],
+  "neighbors": ["wessex", "east_anglia", "_sea_north"],
   "is_sea": false,
   "is_locked": false,
-  "world_x": 412.5,
-  "world_y": 218.3,
+  "world_x": 490,
+  "world_y": 260,
   "tax_rate": 50,
-  "religion": "sunni_islam"
+  "religion": "catholic",
+  "base_gold_income": 60,
+  "base_grain_output": 35,
+  "trade_capacity": 5
 }
 ```
 
@@ -71,12 +74,18 @@ Bölge listesi. Her kayıt:
 {
   "id": "ottoman",
   "name_tr": "Osmanlı",
-  "religion": "SunniIslam",
+  "religion": "sunni",
   "color": [220, 80, 40],
   "gold": 200,
-  "grain": 50
+  "grain": 200,
+  "iron": 100,
+  "timber": 80,
+  "spice": 50,
+  "cloth": 60
 }
 ```
+
+Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
 
 ---
 
@@ -148,6 +157,26 @@ Bölge listesi. Her kayıt:
   }
 }
 ```
+
+---
+
+## armies.json
+
+Başlangıç orduları senaryo verisidir:
+
+```json
+{
+  "id": "army_ottoman_1",
+  "owner_id": "ottoman",
+  "region_id": "bithynia",
+  "units": [
+    { "type_id": "militia", "count": 5 },
+    { "type_id": "light_cavalry", "count": 2 }
+  ]
+}
+```
+
+`internal/army/loader.go` `count` değerlerini `army.Unit` listesine açar.
 
 ---
 

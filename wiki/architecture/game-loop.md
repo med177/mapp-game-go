@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [state-management, render-pipeline]
 ---
 
@@ -53,7 +53,7 @@ PhaseTurnResolution                    │
 
 ## Tur Çözümleme Sırası
 
-`resolveTurn()` — `internal/game/game.go:160`
+`resolveTurn()` — `internal/game/game.go:230`
 
 1. `applySeasonEffects(gs)` — kış hasarı, ilkbahar bonusu → [[systems/seasons]]
 2. `applyEconomyTick(gs)` — vergi geliri, ticaret → [[systems/economy]]
@@ -90,15 +90,6 @@ PhaseTurnResolution                    │
 
 ## Başlangıç Orduları
 
-`buildStartingArmies()` — `internal/game/game.go:667`
+`army.LoadArmies()` — `internal/army/loader.go`
 
-Her fraksiyon başlangıçta kendi bölgesinde 3–7 birimlik bir orduyla başlar:
-- Osmanlı: Anadolu, 5 milis + 2 süvari
-- Fransa: France, 4 milis + 1 süvari
-- İngiltere: England, 4 milis
-- Venedik: Venice, 3 milis + 1 süvari
-- Memlük: Cairo, 4 milis + 1 süvari
-- Safevi: Tabriz, 4 milis + 1 süvari
-- Rusya: Moscow, 4 milis
-- Aragon: Aragon, 3 milis + 1 süvari
-- Portekiz: Portugal, 3 milis
+Başlangıç orduları artık kodda üretilmiyor. Her senaryo `data/armies.json` dosyasında ordu ID'si, sahip fraksiyon, başlangıç bölgesi ve birim sayımlarını tanımlar; yükleyici `count` değerlerini tek tek `army.Unit` kayıtlarına açar.

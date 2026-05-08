@@ -1,27 +1,17 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
 # Fraksiyonlar
 
-**Kaynak:** `internal/faction/faction.go`, `assets/data/factions.json`
+**Kaynak:** `internal/faction/faction.go`, `internal/faction/loader.go`, `internal/religion/religion.go`, `assets/scenarios/<id>/data/factions.json`
 
-## 9 Oynanabilir Fraksiyon
+## Fraksiyon Verisi
 
-| ID | Ad | Din | Başlangıç Bölgesi | Başlangıç Ordusu |
-|---|---|---|---|---|
-| `ottoman` | Osmanlı | Sünni İslam | `anatolia` | 5 milis + 2 süvari |
-| `france` | Fransa | Katolik | `france` | 4 milis + 1 süvari |
-| `england` | İngiltere | Katolik | `england` | 4 milis |
-| `venice` | Venedik | Katolik | `venice` | 3 milis + 1 süvari |
-| `mamluk` | Memlük | Sünni İslam | `cairo` | 4 milis + 1 süvari |
-| `safavid` | Safevi | Şii İslam | `tabriz` | 4 milis + 1 süvari |
-| `russia` | Rusya | Ortodoks | `moscow` | 4 milis |
-| `aragon` | Aragon | Katolik | `aragon` | 3 milis + 1 süvari |
-| `portugal` | Portekiz | Katolik | `portugal` | 3 milis |
+Her aktif senaryo 45 fraksiyon içeriyor; 30 tanesi oynanabilir (`is_playable=true`). Başlangıç orduları fraksiyon dosyasında değil, aynı senaryonun `data/armies.json` dosyasında tutulur.
 
 ---
 
@@ -32,7 +22,7 @@ type Faction struct {
     ID           FactionID
     Name         string
     NameTR       string
-    Religion     Religion      // catholic | orthodox | sunni | shia
+    Religion     religion.Type // catholic | orthodox | sunni | shia
     Color        [3]uint8      // harita rengi (RGB)
     IsPlayable   bool
     IsEliminated bool
@@ -53,7 +43,7 @@ type Faction struct {
 
 ## Din Sistemi
 
-`Religion` — `internal/faction/faction.go`
+`religion.Type` — `internal/religion/religion.go`
 
 | Din | Sabit | Fraksiyonlar |
 |---|---|---|
@@ -62,7 +52,7 @@ type Faction struct {
 | Sünni İslam | `sunni` | Osmanlı, Memlük |
 | Şii İslam | `shia` | Safevi |
 
-**`ReligionRelation(a, b Religion) int`** — `internal/faction/faction.go:14`
+**`religion.Relation(a, b religion.Type) int`** — `internal/religion/religion.go`
 
 | Kombinasyon | Puan |
 |---|---|
@@ -73,13 +63,13 @@ type Faction struct {
 
 Bu puan `BuildInitialRelations()` sırasında ilişki skorlarına eklenir.
 
-**Mezhep değişimi:** Ele geçirilen bölge `ConversionProgress` sayacıyla 24 turda yeni sahip dinine geçer, memnuniyet -20 uygular. → [[world/regions]]
+**Mezhep değişimi:** Ele geçirilen bölge `ConversionTurns` sayacıyla 24 turda yeni sahip dinine geçer, memnuniyet -20 uygular. → [[world/regions]]
 
 ---
 
 ## Başlangıç İlişkileri
 
-`faction.BuildInitialRelations(factions)` — tüm çiftler `StancePeace` başlar. Skor, `ReligionRelation()` sonucuyla başlatılır (din bonusu/cezası dahil).
+`faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
 
 Tarihsel düşmanlıklar (Osmanlı–Safevi, İngiltere–Fransa vb.) şu an `factions.json`'a hardcode edilmemiş; `initial_relations` alanı eklenebilir.
 

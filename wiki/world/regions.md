@@ -1,13 +1,13 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-05-06
+last_updated: 2026-05-08
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
 # Bölge Sistemi
 
-**Kaynak:** `internal/world/region.go`, `internal/world/terrain.go`, `assets/data/regions.json`
+**Kaynak:** `internal/world/region.go`, `internal/world/terrain.go`, `assets/scenarios/<id>/data/regions.json`
 
 ## Region Yapısı
 
@@ -21,17 +21,17 @@ type Region struct {
 
     IsSea     bool             // deniz bölgesi
     IsLocked  bool             // henüz keşfedilmemiş
-    IsCoastal func() bool      // komşuda deniz var mı?
-
-    WorldX, WorldY float64     // harita koordinatı
+    WorldX, WorldY int         // harita koordinatı
+    ShapeID string             // Natural Earth kaynak ID'si
 
     Buildings    []string      // inşa edilmiş bina ID'leri
     TaxRate      int           // 0-100
     Satisfaction int           // halk memnuniyeti
+    Population   int
 
-    Religion    string         // mevcut bölge dini
-    BaseReligion string        // fetihten önce gelen din
-    ConversionProgress int     // din dönüşüm sayacı
+    Religion        string     // mevcut bölge dini
+    ConversionTurns int        // din dönüşüm sayacı
+    ActiveEventID   string
 }
 ```
 
@@ -67,8 +67,9 @@ type Region struct {
 `ApplyConquest(ownerID, religion)` — savaş sonrası sahiplik transferi
 
 1. `OwnerID = ownerID` → sahip değişir
-2. `Religion` mevcut değilse saldıranın dinine ayarlanır
-3. Farklı dindeyse `ConversionProgress = 0` → yavaş dönüşüm başlar
+2. Memnuniyet -10 düşer
+3. Saldıranın dini bölgeden farklıysa ekstra -15 memnuniyet cezası uygulanır
+4. Din dönüşümü tur çözümlemede `ConversionTurns` ile ilerler; 24 tur sonunda bölge dini yeni sahibin dinine döner
 
 ---
 
@@ -99,6 +100,8 @@ Zafer koşulları ve olaylar için referans alınan bölgeler:
 | `paris` | Domination (Fransa başkenti) |
 | `london` | Domination (İngiltere başkenti) |
 | `mecca` | Dini zafer |
+
+Not: Senaryo zafer hedefleri şu an bazı yerlerde `CON`, `ROM`, `JER` gibi kısa ID'ler kullanıyor. Bunlar `regions.json` ID'leriyle eşleşmeli; takip işi [[dev/progress]] altında.
 
 ---
 

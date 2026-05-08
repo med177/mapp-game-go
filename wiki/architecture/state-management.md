@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [game-loop, render-pipeline]
 ---
 
@@ -98,7 +98,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 ## Veri Yükleme Akışı
 
-`loadGameState()` — `internal/game/game.go`
+`loadScenario()` — `internal/game/game.go`
 
 Tüm yollar `gs.ScenarioPath` üzerinden senaryo klasörüne yönelir:
 
@@ -112,8 +112,10 @@ army.LoadUnitTypes(scenario.DataPath("units.json"))
 city.LoadBuildings(scenario.DataPath("buildings.json"))
 tech.LoadTechnologies(scenario.DataPath("technologies.json"))
 faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
-buildStartingArmies()            → başlangıç orduları
+army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
+
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` alanlarını yeniden doldurur. `ShapeData` ve `AvailableVictories` şu an kayıttan yüklemede state'e geri yazılmıyor; takip işi [[dev/progress]] altında listeli.
 
 ---
 
@@ -124,8 +126,8 @@ type VictoryCondition struct {
     Type               VictoryType      // domination | economic | military | religious
     TargetRegionCount  int              // domination: 20+ bölge
     RequiredRegions    []RegionID       // domination: constantinople, rome, paris, cairo, jerusalem
-    TargetGoldIncome   int              // economic: 500 altın/tur
-    GoldHoldTurns      int             // economic: 5 tur boyunca koru
+    TargetGoldIncome   int              // economic: mevcut kodda hazine eşiği gibi kontrol ediliyor
+    GoldHoldTurns      int              // economic: kaç tur koru
     TargetArmyStrength int             // military: 200 güç puanı
     TargetDefeated     int             // military: 3 fraksiyon yenilgisi
     DeadlineTurn       int             // 0 = süresiz
@@ -141,7 +143,7 @@ Detaylar → [[systems/victory]]
 ```go
 PhaseMainMenu       // ana menü
 PhaseSettings       // ayarlar ekranı
-PhaseScenarioSelect // senaryo seçim ekranı  ← YENİ
+PhaseScenarioSelect // senaryo seçim ekranı
 PhaseFactionSelect  // fraksiyon seçim
 PhaseVictorySelect  // zafer koşulu seçim
 PhasePlayerTurn     // oyuncu aksiyonları
