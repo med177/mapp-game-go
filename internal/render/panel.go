@@ -1528,7 +1528,7 @@ func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 		ly += 16 + 16 + 18
 	}
 	ly += 18 + 16 + 8 + 18 + 18
-	y := float32(ly - 7)
+	y := float32(ly - 12)
 	return [4]float32{px + pw - 70, y, 26, 18}, [4]float32{px + pw - 38, y, 26, 18}
 }
 

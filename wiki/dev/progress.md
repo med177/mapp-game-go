@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -72,7 +72,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Alt-orta aksiyon HUD | ✅ | Diplomasi, Teknoloji ve Tur Bitir butonları ayrı HUD içinde alt-ortada |
 | Olay logu akordiyonu | ✅ | Panel daraltılıp genişletilir; uzun metinler wrap edilir; kartlar X ile kapanır, tıklanınca detay popup açılır |
 | Info popup bildirimi | ✅ | Altın yetersiz gibi oyun içi uyarılar olay loguna yazılmaz, ayrı geçici popup olarak görünür |
-| Kompakt UI taşma düzeltmeleri | ✅ | Genel onay modalı mesaj wrap eder; bölge panelinde memnuniyet/vergi barları metin ve butonlarla çakışmaz |
+| Kompakt UI taşma düzeltmeleri | ✅ | Genel onay modalı mesaj wrap eder; bölge panelinde memnuniyet/vergi barları metin, buton ve alt çizgiyle çakışmaz |
 | Ses efektleri | ✅ | `internal/audio`, senaryo `sounds/` altından `click.wav` ve `combat.wav` yükleme |
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |
 | Render başlangıç log temizliği | ✅ | Boş senaryo path'inde shape dosyası okunmaz; deniz seed araması ham `world_x/world_y` fallback kullanır |

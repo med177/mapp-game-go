@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 related: [game-loop, state-management, systems/combat]
 ---
 
