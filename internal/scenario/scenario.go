@@ -38,6 +38,16 @@ type VictoryOptionDef struct {
 	DeadlineTurn int `json:"deadline_turn"`
 }
 
+// MapConfig senaryonun arka plan ve shape hizalama ayarlarını tanımlar.
+type MapConfig struct {
+	WorldWidth   *int     `json:"world_width,omitempty"`
+	WorldHeight  *int     `json:"world_height,omitempty"`
+	ShapeOffsetX *float64 `json:"shape_offset_x,omitempty"`
+	ShapeOffsetY *float64 `json:"shape_offset_y,omitempty"`
+	ShapeScaleX  *float64 `json:"shape_scale_x,omitempty"`
+	ShapeScaleY  *float64 `json:"shape_scale_y,omitempty"`
+}
+
 // Scenario oyun başında seçilebilen bir tarihsel senaryoyu tanımlar.
 type Scenario struct {
 	ID          string  `json:"id"`
@@ -48,6 +58,7 @@ type Scenario struct {
 	Year        int     `json:"year"`
 	Month       int     `json:"month"`
 
+	MapConfig         MapConfig          `json:"map"`
 	VictoryConditions []VictoryOptionDef `json:"victory_conditions"`
 
 	// Path: runtime-only, klasörün tam yolu (JSON'da yok)

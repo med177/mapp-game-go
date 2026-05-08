@@ -15,10 +15,11 @@ import (
 type VictoryType string
 
 const (
-	VictoryDomination VictoryType = "domination" // bölge sayısı + kritik şehirler
-	VictoryEconomic   VictoryType = "economic"   // altın gelir hedefi
-	VictoryMilitary   VictoryType = "military"   // ordu gücü + yenilgiler
-	VictoryReligious  VictoryType = "religious"  // kutsal şehirleri tut
+	VictoryDomination  VictoryType = "domination"   // bölge sayısı + kritik şehirler
+	VictoryEconomic    VictoryType = "economic"     // altın gelir hedefi
+	VictoryMilitary    VictoryType = "military"     // ordu gücü + yenilgiler
+	VictoryReligious   VictoryType = "religious"    // kutsal şehirleri tut
+	VictoryConquerCity VictoryType = "conquer_city" // tek hedef bölgeyi ele geçir
 )
 
 // VictoryCondition seçilen zafer koşulunu tutar.
@@ -42,8 +43,9 @@ type GameState struct {
 	StartYear int `json:"start_year"`
 
 	// Senaryo
-	ScenarioID   string `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath string `json:"scenario_path"` // aktif senaryo klasörü
+	ScenarioID   string             `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath string             `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig    scenario.MapConfig `json:"map"`           // aktif senaryonun harita hizalama ayarları
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
@@ -62,10 +64,10 @@ type GameState struct {
 	ShapeData world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
-	UnitTypes          map[string]*army.UnitType        `json:"-"`
-	BuildingTypes      map[string]*city.Building        `json:"-"`
-	TechTypes          map[string]*tech.Technology      `json:"-"`
-	AvailableVictories []scenario.VictoryOptionDef      `json:"-"`
+	UnitTypes          map[string]*army.UnitType   `json:"-"`
+	BuildingTypes      map[string]*city.Building   `json:"-"`
+	TechTypes          map[string]*tech.Technology `json:"-"`
+	AvailableVictories []scenario.VictoryOptionDef `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int `json:"economic_victory_turns"`

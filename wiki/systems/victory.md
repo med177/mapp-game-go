@@ -17,7 +17,7 @@ Oyun başında oyuncu bir zafer koşulu seçer (`PhaseVictorySelect`).
 
 ```
 TargetRegionCount = 20
-RequiredRegions   = [constantinople, rome, paris, cairo, jerusalem]
+RequiredRegions   = [constantinople, papal_states, egypt, paris, palestine]
 ```
 
 20+ bölge **ve** kritik şehirlerin tümünü aynı anda tut.
@@ -43,7 +43,7 @@ TargetDefeated     = 3    (elenen fraksiyon sayısı)
 ### 4. Dinî Zafer (`religious`)
 
 ```
-RequiredRegions = [jerusalem, rome, mecca]
+RequiredRegions = [palestine, papal_states, yemen]
 ```
 
 3 kutsal şehri 12 tur boyunca kontrol et.
@@ -65,9 +65,9 @@ RequiredRegions = [jerusalem, rome, mecca]
 
 ### Senaryo Özel Hedef (`conquer_city`)
 
-Senaryo JSON'larında `conquer_city` tipi var ve `applyVictoryChoice()` bunu tek hedef bölgeyi `RequiredRegions` listesine çevirerek state'e yazar. Ancak `internal/victory/victory.go` henüz bu tipi `Check()` içinde ele almıyor. Bu yüzden `conquer_city` şu an seçilebilir ama kazanımı tetiklemeyen kritik eksiktir.
+Senaryo JSON'larında `conquer_city` tipi var ve `applyVictoryChoice()` bunu tek hedef bölgeyi `RequiredRegions` listesine çevirerek state'e yazar. `internal/victory/victory.go` bu tipte ilk hedef bölge oyuncuya geçtiğinde oyunu oyuncu zaferiyle bitirir.
 
-Ek veri riski: mevcut senaryo hedefleri `CON`, `ROM`, `CAI`, `PAR`, `JER`, `MEC` gibi kısa ID'ler kullanıyor; `regions.json` içinde bölge ID'leri `constantinople`, `paris`, `london` gibi uzun formda. Zafer sistemi düzeltilirken senaryo hedefleri de gerçek region ID'leriyle eşitlenmeli.
+Senaryo hedefleri gerçek `regions.json` ID'leriyle eşleşmelidir; kısa kodlar (`CON`, `ROM`, vb.) kullanılmaz.
 
 ---
 

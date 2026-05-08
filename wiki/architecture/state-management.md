@@ -21,6 +21,7 @@ type GameState struct {
     // Senaryo
     ScenarioID   string   // ör. "1300_ottoman_rise"
     ScenarioPath string   // senaryo klasörü tam yolu
+    MapConfig    scenario.MapConfig
 
     // Oyuncu
     PlayerFactionID FactionID
@@ -74,6 +75,8 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
 
+`MapConfig` senaryo metadata'sından gelir ve kayıt dosyasına da yazılır. Böylece senaryo değiştiğinde aktif kaydın harita hizalama ayarı korunur.
+
 ---
 
 ## Yardımcı Metodlar
@@ -115,7 +118,7 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` alanlarını yeniden doldurur. `ShapeData` ve `AvailableVictories` şu an kayıttan yüklemede state'e geri yazılmıyor; takip işi [[dev/progress]] altında listeli.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` alanlarını yeniden doldurur. Senaryo metadata'sı da tekrar okunur; eski kayıtta `MapConfig` yoksa `scenario.json` içindeki `map` alanı uygulanır ve `AvailableVictories` güncellenir. `ShapeData` şu an kayıttan yüklemede state'e geri yazılmıyor; takip işi [[dev/progress]] altında listeli.
 
 ---
 

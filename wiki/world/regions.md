@@ -94,14 +94,14 @@ Zafer koşulları ve olaylar için referans alınan bölgeler:
 | Bölge ID | Önem |
 |---|---|
 | `constantinople` | Domination + Bizans teknoloji dalı |
-| `rome` | Domination + Dini zafer |
-| `jerusalem` | Domination + Dini zafer |
-| `cairo` | Domination |
+| `papal_states` | Domination + Dini zafer (Roma bölgesi temsili) |
+| `palestine` | Domination + Dini zafer (Kudüs bölgesi temsili) |
+| `egypt` | Domination (Kahire/Mısır bölgesi temsili) |
 | `paris` | Domination (Fransa başkenti) |
 | `london` | Domination (İngiltere başkenti) |
-| `mecca` | Dini zafer |
+| `yemen` | Dini zafer için Arap yarımadası temsili |
 
-Not: Senaryo zafer hedefleri şu an bazı yerlerde `CON`, `ROM`, `JER` gibi kısa ID'ler kullanıyor. Bunlar `regions.json` ID'leriyle eşleşmeli; takip işi [[dev/progress]] altında.
+Not: Senaryo zafer hedefleri `regions.json` içindeki gerçek ID'leri kullanır; örnek: `constantinople`, `papal_states`, `egypt`, `palestine`.
 
 ---
 

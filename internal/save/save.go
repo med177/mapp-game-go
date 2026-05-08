@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 )
@@ -161,6 +162,8 @@ func loadFromPath(path string) (*state.GameState, error) {
 	if err := json.Unmarshal(data, &gs); err != nil {
 		return nil, fmt.Errorf("kayıt dosyası okunamadı: %w", err)
 	}
+	applyScenarioMetadata(&gs)
+
 	dp := func(f string) string { return gs.ScenarioPath + "/data/" + f }
 
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
@@ -181,4 +184,31 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	gs.TechTypes = techTypes
 	return &gs, nil
+}
+
+func applyScenarioMetadata(gs *state.GameState) {
+	if gs.ScenarioPath == "" {
+		return
+	}
+	data, err := os.ReadFile(filepath.Join(gs.ScenarioPath, "scenario.json"))
+	if err != nil {
+		return
+	}
+	var sc scenario.Scenario
+	if err := json.Unmarshal(data, &sc); err != nil {
+		return
+	}
+	if mapConfigEmpty(gs.MapConfig) {
+		gs.MapConfig = sc.MapConfig
+	}
+	gs.AvailableVictories = sc.VictoryConditions
+}
+
+func mapConfigEmpty(cfg scenario.MapConfig) bool {
+	return cfg.WorldWidth == nil &&
+		cfg.WorldHeight == nil &&
+		cfg.ShapeOffsetX == nil &&
+		cfg.ShapeOffsetY == nil &&
+		cfg.ShapeScaleX == nil &&
+		cfg.ShapeScaleY == nil
 }

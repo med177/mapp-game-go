@@ -39,6 +39,8 @@ func Check(gs *state.GameState) {
 		checkMilitary(gs)
 	case state.VictoryReligious:
 		checkReligious(gs, playerRegions)
+	case state.VictoryConquerCity:
+		checkConquerCity(gs)
 	}
 
 	if gs.Phase == state.PhaseGameOver {
@@ -56,6 +58,20 @@ func Check(gs *state.GameState) {
 			return
 		}
 	}
+}
+
+// checkConquerCity tek hedef bölge oyuncuya geçtiğinde zafer verir.
+func checkConquerCity(gs *state.GameState) {
+	if len(gs.Victory.RequiredRegions) == 0 {
+		return
+	}
+	targetID := gs.Victory.RequiredRegions[0]
+	region, ok := gs.Regions[targetID]
+	if !ok || region.OwnerID != string(gs.PlayerFactionID) {
+		return
+	}
+	gs.Phase = state.PhaseGameOver
+	gs.WinnerID = gs.PlayerFactionID
 }
 
 // checkDomination bölge sayısına ve kritik bölgelere göre zafer kontrol eder.

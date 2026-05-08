@@ -30,6 +30,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `assets/scenarios/scenarios.json` index + bağımsız senaryo klasörleri |
 | Senaryo seçim ekranı | ✅ | `internal/render/scenario_select.go`, `PhaseScenarioSelect` |
 | Harita render | ✅ | `WorldMap` cache, ülke/deniz şekilleri, sahiplik rengi, seçili bölge vurgusu |
+| Senaryo bazlı harita hizalama | ✅ | `scenario.json` içindeki `map` alanı `WorldW/WorldH` ve shape offset/scale değerlerini belirler |
 | Görsel mevsim değişimi | ✅ | `internal/render/mapgen.go:applyOwnership`; kış/ilkbahar/sonbahar tint |
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
 | Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
@@ -53,7 +54,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
 | Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
 | Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme |
-| Zafer koşulları | ⚠️ | `domination`, `economic`, `military`, `religious` çalışıyor; `conquer_city` seçeneği kodda kontrol edilmiyor |
+| Zafer koşulları | ✅ | `domination`, `economic`, `military`, `religious`, `conquer_city` kontrol ediliyor |
 | AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon ve hedefe hareket |
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
@@ -68,10 +69,8 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 
 | Öncelik | Sorun | Dosya | Etki |
 |---|---|---|---|
-| 🔴 Kritik | `conquer_city` zafer tipi `victory.Check` içinde yok | `internal/victory/victory.go`, `internal/game/game.go:1026` | Senaryolardaki ilk hedef olan Konstantinopolis'i fethetme zaferi seçilirse oyun kazanımı tetiklenmez |
-| 🔴 Kritik | Senaryo zafer hedef ID'leri region ID'leriyle eşleşmiyor | `assets/scenarios/*/scenario.json`, `assets/scenarios/*/data/regions.json` | `CON`, `ROM`, `CAI`, `PAR`, `JER`, `MEC` hedefleri mevcut bölge ID'leri değil; zafer kontrolleri hedef bulamaz |
 | 🔴 Kritik | Ekonomik zafer metni gelir diyor, kod hazineyi kontrol ediyor | `internal/victory/victory.go:83`, `internal/render/panel.go:837` | Oyuncu hedefi yanlış anlar; `TargetGoldIncome` isim/metin/kod uyumsuz |
-| 🟠 Yüksek | Save load sadece runtime tanımlarını kısmen geri yüklüyor | `internal/save/save.go` | `ShapeData` ve `AvailableVictories` kayıt yüklemede yeniden doldurulmuyor; render şu an dosyadan tekrar okuyarak haritayı kurtarıyor ama state eksik kalıyor |
+| 🟠 Yüksek | Save load shape datasını state'e geri yazmıyor | `internal/save/save.go` | `ShapeData` kayıt yüklemede yeniden doldurulmuyor; render şu an dosyadan tekrar okuyarak haritayı kurtarıyor ama state eksik kalıyor |
 | 🟠 Yüksek | Başlangıç zor zorluk bonusu oyuncu seçilmeden uygulanıyor | `internal/game/game.go:499` | `PlayerFactionID` boş olduğu için tüm fraksiyonlar AI bonusu alıyor; oyuncu seçilince bu bonus oyuncuda da kalabilir |
 | 🟡 Orta | Deniz taşıma mekaniği yok | `internal/game/game.go:700` | Kara ordusu denize giremiyor; nakliye gemisi üretiliyor ama ordu taşıma akışı henüz yok |
 | 🟡 Orta | Diplomasi teklifleri otomatik kabul | `internal/game/game.go` | AI kabul/red, pazarlık ve tehdit hesabı yok |
@@ -80,7 +79,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 
 ## Sonraki Adım Planı
 
-1. **Zafer sistemi düzeltmesi:** `conquer_city` için ya ayrı `VictoryConquerCity` tipi ekle ya da seçim sırasında `domination` + tek required region'a normalize et. Aynı işte senaryo hedef ID'leri gerçek region ID'leriyle eşitlenmeli. Ekonomik zaferin gerçekten gelir mi hazine mi kontrol edeceği netleştirilmeli.
+1. **Ekonomik zafer kararını netleştir:** `TargetGoldIncome` gerçekten tur başı gelir mi, mevcut hazine mi ölçmeli? Kod, UI ve senaryo metni aynı anlama çekilmeli.
 2. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `ShapeData`, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
 3. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
 4. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
@@ -94,12 +93,10 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 
 | Sıra | İş | Kabul Kriteri |
 |---|---|---|
-| 1 | Zafer hedef ID normalizasyonu | Senaryo hedefleri gerçek region ID'leriyle eşleşiyor (`constantinople`, `rome`, vb.) |
-| 2 | `conquer_city` zafer fix | `ottoman_rise` seçilip Konstantinopolis oyuncuya geçince `PhaseGameOver` + oyuncu kazandı |
-| 3 | Ekonomik zafer kararını netleştir | UI, JSON alanı ve `victory.Check` aynı şeyi ölçüyor |
-| 4 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
-| 5 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
-| 6 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
+| 1 | Ekonomik zafer kararını netleştir | UI, JSON alanı ve `victory.Check` aynı şeyi ölçüyor |
+| 2 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
+| 3 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
+| 4 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
 
 ## Araçlar
 

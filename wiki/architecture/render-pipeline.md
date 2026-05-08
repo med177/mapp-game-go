@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 related: [game-loop, state-management, systems/combat]
 ---
 
@@ -65,6 +65,8 @@ type Renderer struct {
 ## Kamera Sistemi
 
 **Koordinat sistemi:** Dünya uzayı `(WorldW × WorldH)` px, ekran uzayına dönüşüm:
+
+`WorldW`, `WorldH`, `shape_offset_*` ve `shape_scale_*` aktif senaryonun `scenario.json` içindeki `map` alanından okunur. Alan eksikse renderer eski varsayılanları kullanır (`2892×1440`, offset `-530/-180`, scale `2.025/2.025`).
 
 ```
 screenX = (worldX - camX + worldY * mapShearX) * camScale + ScreenWidth/2

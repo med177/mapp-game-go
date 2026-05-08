@@ -770,6 +770,8 @@ func victoryTypeLabel(vtype state.VictoryType) string {
 		return "Askeri Üstünlük Zaferi"
 	case state.VictoryReligious:
 		return "Dinî Zafer"
+	case state.VictoryConquerCity:
+		return "Fetih Zaferi"
 	}
 	return "Zafer"
 }
@@ -893,6 +895,21 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState) {
 		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
 		vy += 12
 		DrawText(screen, itoa(gs.ReligiousVictoryTurns)+"/12 tur", vx, vy, FaceSmall, ColorGray)
+
+	case state.VictoryConquerCity:
+		held := 0
+		total := len(gs.Victory.RequiredRegions)
+		if total == 0 {
+			return
+		}
+		for _, rid := range gs.Victory.RequiredRegions {
+			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+				held++
+			}
+		}
+		DrawText(screen, "⚑ Hedef: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, ColorWhite)
+		vy += 18
+		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(held)/float64(total)), ColorGold)
 	}
 }
 

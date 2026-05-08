@@ -16,22 +16,28 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Oyun dünyası boyutu = arka plan PNG boyutu (piksel başına 1 world piksel)
 const (
-	WorldW = 2892
-	WorldH = 1440
+	defaultWorldW = 2892
+	defaultWorldH = 1440
 )
 
-// Shape koordinat uzayını world pikseline dönüştürme sabitleri.
-// Bu 4 değeri değiştirerek poligon hizalamasını ayarlayabilirsiniz:
-//
-//	shapeOffX/Y  → poligonları sağa/sola veya aşağı/yukarı kaydırır
-//	shapeScaleX/Y → poligon ölçeğini büyütür/küçültür
 const (
-	shapeOffX   float64 = -530  // shape X=0 noktasının world piksel X karşılığı
-	shapeOffY   float64 = -180  // shape Y=0 noktasının world piksel Y karşılığı
-	shapeScaleX float64 = 2.025 // bir shape X birimi kaç world pikseli
-	shapeScaleY float64 = 2.025 // bir shape Y birimi kaç world pikseli
+	defaultShapeOffX   float64 = -530
+	defaultShapeOffY   float64 = -180
+	defaultShapeScaleX float64 = 2.025
+	defaultShapeScaleY float64 = 2.025
+)
+
+// Oyun dünyası boyutu ve shape dönüşümü aktif senaryodan gelir.
+// Eksik alanlar eski sabitlerle tamamlanır.
+var (
+	WorldW = defaultWorldW
+	WorldH = defaultWorldH
+
+	shapeOffX   = defaultShapeOffX
+	shapeOffY   = defaultShapeOffY
+	shapeScaleX = defaultShapeScaleX
+	shapeScaleY = defaultShapeScaleY
 )
 
 // MapScale artık shape↔world dönüşümünde kullanılmıyor;
@@ -64,6 +70,7 @@ type countryShape struct {
 }
 
 func NewWorldMap(gs *state.GameState) *WorldMap {
+	applyMapConfig(gs)
 	wm := &WorldMap{
 		img:        ebiten.NewImage(WorldW, WorldH),
 		basePixels: make([]byte, WorldW*WorldH*4),
@@ -75,21 +82,18 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		seaIdx:     make(map[uint16]bool),
 	}
 
-	if true { // arka plan resmi devre dışı
-		if bgPixels, ok := loadPNGAsBasePixels(gs.ScenarioPath + "/maps/world_map_background.png"); ok {
-			copy(wm.basePixels, bgPixels)
-			wm.hasBgImage = true
-			log.Println("Arka plan harita resmi yüklendi")
-		}
-	} else {
-		// Fallback: düz okyanus mavisi
-		const oR, oG, oB byte = 28, 88, 168
-		for i := 0; i < WorldW*WorldH; i++ {
-			wm.basePixels[i*4] = oR
-			wm.basePixels[i*4+1] = oG
-			wm.basePixels[i*4+2] = oB
-			wm.basePixels[i*4+3] = 255
-		}
+	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
+	const oR, oG, oB byte = 28, 88, 168
+	for i := 0; i < WorldW*WorldH; i++ {
+		wm.basePixels[i*4] = oR
+		wm.basePixels[i*4+1] = oG
+		wm.basePixels[i*4+2] = oB
+		wm.basePixels[i*4+3] = 255
+	}
+	if bgPixels, ok := loadPNGAsBasePixels(gs.ScenarioPath + "/maps/world_map_background.png"); ok {
+		copy(wm.basePixels, bgPixels)
+		wm.hasBgImage = true
+		log.Println("Arka plan harita resmi yüklendi")
 	}
 
 	shapesPath := ""
@@ -100,6 +104,35 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	wm.buildSeaRegions(gs)
 	wm.applyOwnership(gs, "")
 	return wm
+}
+
+func applyMapConfig(gs *state.GameState) {
+	cfg := gs.MapConfig
+	WorldW = defaultWorldW
+	WorldH = defaultWorldH
+	shapeOffX = defaultShapeOffX
+	shapeOffY = defaultShapeOffY
+	shapeScaleX = defaultShapeScaleX
+	shapeScaleY = defaultShapeScaleY
+
+	if cfg.WorldWidth != nil && *cfg.WorldWidth > 0 {
+		WorldW = *cfg.WorldWidth
+	}
+	if cfg.WorldHeight != nil && *cfg.WorldHeight > 0 {
+		WorldH = *cfg.WorldHeight
+	}
+	if cfg.ShapeOffsetX != nil {
+		shapeOffX = *cfg.ShapeOffsetX
+	}
+	if cfg.ShapeOffsetY != nil {
+		shapeOffY = *cfg.ShapeOffsetY
+	}
+	if cfg.ShapeScaleX != nil && *cfg.ShapeScaleX != 0 {
+		shapeScaleX = *cfg.ShapeScaleX
+	}
+	if cfg.ShapeScaleY != nil && *cfg.ShapeScaleY != 0 {
+		shapeScaleY = *cfg.ShapeScaleY
+	}
 }
 
 // loadPNGAsBasePixels, arka plan PNG'sini WorldW×WorldH piksel tamponuna yükler.
@@ -482,7 +515,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 			}
 			continue
 		}
-		
+
 		// Mevsim tint'i uygula (sadece karalarda)
 		var sr, sg, sb, sAlpha byte
 		switch currentSeason {
@@ -493,7 +526,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 		case season.SeasonSpring:
 			sr, sg, sb, sAlpha = 100, 200, 100, 30 // Canlı yeşil
 		}
-		
+
 		if sAlpha > 0 {
 			for _, pIdx := range wm.regionPx[rid] {
 				wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], sr, sAlpha)

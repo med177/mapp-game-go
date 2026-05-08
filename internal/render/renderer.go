@@ -139,6 +139,7 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 		armySheetLoaded = false
 	}
 	r.worldMap = NewWorldMap(gs)
+	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
 }
@@ -259,7 +260,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase == state.PhasePauseMenu {
 		r.worldMap.Refresh(r.gs, r.SelectedRegion)
 		mapOp := &ebiten.DrawImageOptions{}
-		r.applyMapGeoM(mapOp, WorldW, WorldH)
+		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
 		r.menuTick++
 		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick)
@@ -279,7 +280,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 1. Üretilen dünya haritası
 	mapOp := &ebiten.DrawImageOptions{}
-	r.applyMapGeoM(mapOp, WorldW, WorldH)
+	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı

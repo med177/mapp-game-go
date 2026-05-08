@@ -6,14 +6,22 @@
   "author": "Mapp Team",
   "year": 1300,
   "month": 3,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
   "victory_conditions": [
     {
       "id": "ottoman_rise",
       "title": "Osmanlı'nın Yükselişi",
       "description": "Konstantinopolis'i fethederek Doğu Roma'ya son ver",
-      "detail": "Hedef: Konstantinopolis (CON)",
+      "detail": "Hedef: Konstantinopolis",
       "type": "conquer_city",
-      "target": "CON"
+      "target": "constantinople"
     },
     {
       "id": "domination",
@@ -22,7 +30,7 @@
       "detail": "Konstantinopolis, Roma, Kahire, Paris, Kudüs",
       "type": "domination",
       "target_region_count": 20,
-      "required_regions": ["CON", "ROM", "CAI", "PAR", "JER"]
+      "required_regions": ["constantinople", "papal_states", "egypt", "paris", "palestine"]
     },
     {
       "id": "economic",
@@ -39,7 +47,7 @@
       "description": "Kudüs, Roma ve Mekke'yi aynı anda tut",
       "detail": "Üç kutsal şehri sürdürülebilir biçimde koru",
       "type": "religious",
-      "required_regions": ["JER", "ROM", "MEC"]
+      "required_regions": ["palestine", "papal_states", "yemen"]
     }
   ]
 }

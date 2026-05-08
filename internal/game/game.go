@@ -470,10 +470,12 @@ func (g *Game) loadScenario(scenarioPath string) {
 
 	year := 1300
 	month := 3
+	var mapConfig scenario.MapConfig
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
 		month = sc.Month
+		mapConfig = sc.MapConfig
 		victoryOpts = sc.VictoryConditions
 	}
 
@@ -487,6 +489,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 		DevelopmentMode:    devMode,
 		ScenarioID:         scenarioIDFromPath(scenarioPath),
 		ScenarioPath:       scenarioPath,
+		MapConfig:          mapConfig,
 		Regions:            regions,
 		Factions:           factions,
 		Armies:             armies,
@@ -497,7 +500,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 		AvailableVictories: victoryOpts,
 		Relations:          faction.BuildInitialRelations(factions),
 		NextArmySeq:        len(armies),
-		FiredEventIDs:   map[string]bool{},
+		FiredEventIDs:      map[string]bool{},
 	}
 
 	if gs.Difficulty >= 3 {
@@ -1068,4 +1071,3 @@ func ownerReligion(gs *state.GameState, ownerID string) string {
 	}
 	return ""
 }
-

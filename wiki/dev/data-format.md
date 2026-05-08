@@ -24,18 +24,28 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
   "description": "...",
   "year": 1300,
   "month": 3,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
   "victory_conditions": [
     {
       "id": "ottoman_rise",
       "title": "Osmanlı'nın Yükselişi",
       "type": "conquer_city",
-      "target": "CON"
+      "target": "constantinople"
     }
   ]
 }
 ```
 
 `type` değerleri: `domination`, `economic`, `military`, `religious`, `conquer_city`
+
+`map` alanı opsiyoneldir. Verilmeyen alanlar renderer'ın geriye dönük uyumlu varsayılanlarıyla tamamlanır. `world_width` / `world_height` arka plan PNG dünya boyutunu, `shape_offset_*` ve `shape_scale_*` ise `country_shapes.json` koordinatlarının world pikseline dönüşümünü belirler.
 
 ---
 
