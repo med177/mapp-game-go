@@ -920,7 +920,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
-	// BÖLDÜR butonu tıklaması
+	// BÖL butonu tıklaması
 	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
 	}

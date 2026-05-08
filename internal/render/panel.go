@@ -46,9 +46,9 @@ const (
 func bottomBarTop() float32 { return float32(ScreenHeight) - bottomBarH }
 func minimapX() float32     { return float32(ScreenWidth) - minimapW - 5 }
 func minimapY() float32     { return float32(ScreenHeight) - minimapH }
-func evLogX() float32       { return float32(ScreenWidth) - evLogW - 5 }
+func evLogX() float32       { return float32(ScreenWidth) - evLogW }
 func evLogY() float32       { return topDateHudH + 8 }
-func infoPanelX() float32   { return 5 }
+func infoPanelX() float32   { return 0 }
 func infoPanelY() float32   { return float32(ScreenHeight) - infoPanelH }
 
 var (
@@ -1117,7 +1117,8 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 
 	vx := float64(730)
 	vy := panelY + 8
-	barW := float32(150)
+	barW := float32(142)
+	barX := float32(vx) + 4
 
 	titleCol := color.RGBA{220, 190, 100, 220}
 	DrawText(screen, "Zafer Hedefi", vx, vy, FaceSmall, titleCol)
@@ -1132,7 +1133,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
 		DrawText(screen, "⚑ Bölge: "+itoa(current)+"/"+itoa(target), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(current)/float64(target)), ColorGold)
+		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(current)/float64(target)), ColorGold)
 
 	case state.VictoryEconomic:
 		threshold := gs.Victory.TargetGoldIncome
@@ -1149,7 +1150,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		}
 		DrawText(screen, "✦ Altın: "+itoa(gold)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
 		vy += 18
-		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(gold)/float64(threshold)), ColorGold)
+		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(gold)/float64(threshold)), ColorGold)
 		vy += 12
 		turnsStr := itoa(gs.EconomicVictoryTurns) + "/" + itoa(holdTurns) + " tur korundu"
 		DrawText(screen, turnsStr, vx, vy, FaceSmall, ColorGray)
@@ -1177,7 +1178,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		}
 		DrawText(screen, "⚔ Güç: "+itoa(totalStr)+"/"+itoa(targetStr), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
+		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
 		vy += 12
 		DrawText(screen, "Yenilgi: "+itoa(eliminated)+"/"+itoa(targetDef), vx, vy, FaceSmall, ColorGray)
 
@@ -1191,7 +1192,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		}
 		DrawText(screen, "✝ Kutsal Şehir: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, color.RGBA{200, 160, 255, 255})
 		vy += 18
-		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
+		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
 		vy += 12
 		DrawText(screen, itoa(gs.ReligiousVictoryTurns)+"/12 tur", vx, vy, FaceSmall, ColorGray)
 
@@ -1208,7 +1209,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		}
 		DrawText(screen, "⚑ Hedef: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, ColorWhite)
 		vy += 18
-		drawBar(screen, float32(vx), float32(vy), barW, 8, clampF(float64(held)/float64(total)), ColorGold)
+		drawBar(screen, barX, float32(vy), barW, 8, clampF(float64(held)/float64(total)), ColorGold)
 	}
 }
 

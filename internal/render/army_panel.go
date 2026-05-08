@@ -93,12 +93,12 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+6, FaceSmall, mpCol)
 
-	// Aksiyon butonları — BÖLDÜR ve BİRLEŞTİR
+	// Aksiyon butonları — BÖL ve BİRLEŞTİR
 	mergeTarget := FindMergeTarget(gs, aid)
 	hasMerge := mergeTarget != ""
 	canSplit := len(a.Units) >= 2
 	if canSplit || hasMerge {
-		drawArmyActionButton(screen, px, py, panelW, "✂ BÖLDÜR", canSplit, hasMerge, true)
+		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
 	}
 	if hasMerge {
 		other := gs.Armies[mergeTarget]
@@ -352,7 +352,7 @@ func armyPanelGeometry() (px, py, panelW float32) {
 	return
 }
 
-// splitButtonRect BÖLDÜR butonunun piksel dikdörtgenini döner.
+// splitButtonRect BÖL butonunun piksel dikdörtgenini döner.
 // hasMerge true ise iki buton yan yana olacak şekilde sola kayar.
 func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
@@ -374,7 +374,7 @@ func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
 }
 
 // drawArmyActionButton tek bir aksiyon butonunu çizer.
-// isSplit true → sol buton (BÖLDÜR), false → sağ buton (BİRLEŞTİR).
+// isSplit true → sol buton (BÖL), false → sağ buton (BİRLEŞTİR).
 func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label string, active, hasMerge, isSplit bool) {
 	var bx, by, bw, bh float32
 	if isSplit {
@@ -412,7 +412,7 @@ func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
 	return ""
 }
 
-// SplitButtonHitTest fare BÖLDÜR butonuna denk geliyorsa true döner.
+// SplitButtonHitTest fare BÖL butonuna denk geliyorsa true döner.
 func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
 	if aid == "" {
 		return false

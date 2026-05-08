@@ -257,7 +257,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 			return true
 		}
 	}
-	// BÖLDÜR / BİRLEŞTİR butonları
+	// BÖL / BİRLEŞTİR butonları
 	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return true
 	}

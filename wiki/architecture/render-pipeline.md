@@ -107,7 +107,7 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 5. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa
 6. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
 7. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
-8. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
+8. BÖL/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
@@ -153,7 +153,7 @@ Tek ordu  →  bölge merkezinde
 
 ## Ordu Bölme (Split)
 
-`army_panel.go:DrawArmyDetailPanel` seçili ordunun panel başlığında "✂ BÖLDÜR" butonu gösterir (≥2 birim şartı). `SplitButtonHitTest()` hit-test fonksiyonu `renderer.go` ve `cursor.go` tarafından kullanılır. Buton tıklandığında `ActionSplitArmy` üretilir; `game.go:splitArmy()` birimleri ikiye böler ve yeni ordu oluşturur.
+`army_panel.go:DrawArmyDetailPanel` seçili ordunun panel başlığında "✂ BÖL" butonu gösterir (≥2 birim şartı). `SplitButtonHitTest()` hit-test fonksiyonu `renderer.go` ve `cursor.go` tarafından kullanılır. Buton tıklandığında `ActionSplitArmy` üretilir; `game.go:splitArmy()` birimleri ikiye böler ve yeni ordu oluşturur.
 
 ---
 
@@ -166,7 +166,7 @@ Tek ordu  →  bölge merkezinde
 | PhaseMainMenu | `mainMenuHoverIndex >= 0` |
 | PhaseFactionSelect | `factionCardHoverIndex >= 0` |
 | PhaseVictorySelect | `victoryCardHoverIndex >= 0` |
-| PhasePlayerTurn | `inGameHovering` (butonlar, ordu ikonları, BÖLDÜR butonu) |
+| PhasePlayerTurn | `inGameHovering` (butonlar, ordu ikonları, BÖL butonu) |
 | PhasePauseMenu | `pauseMenuHoverIndex >= 0` |
 | PhaseLoadSelect / PhaseSaveSelect | `slotHoverIndex >= 0` |
 | PhaseSettings | `settingsHovering` |
@@ -181,7 +181,7 @@ Tek ordu  →  bölge merkezinde
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `tile.go` | Arazi renk/doku katmanı |
 | `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; minimap'te ordu konumları |
-| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖLDÜR butonu |
+| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL butonu |
 | `diplom.go` | Diplomasi paneli UI + input |
 | `tech_panel.go` | Teknoloji ağacı paneli + input |
 | `pause_menu.go` | Oyun içi duraklama menüsü (ESC) |

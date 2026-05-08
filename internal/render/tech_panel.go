@@ -110,6 +110,15 @@ func layoutTechTree(levels [][]techNode, screenWidth, nodeWidth, nodeHeight, tre
 	}
 }
 
+func techTreeStartY(levelCount, levelHeight float64) float64 {
+	totalHeight := levelCount * levelHeight
+	centeredY := (float64(ScreenHeight) - totalHeight) / 2
+	if centeredY < 80.0 {
+		return 80.0
+	}
+	return centeredY
+}
+
 // DrawTechPanel teknoloji araştırma panelini çizer. Alt bardaki Teknoloji tuşu veya [T] ile açılır.
 func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	if r.gs.TechTypes == nil {
@@ -146,10 +155,10 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	levels := r.buildTechTree(f)
 
 	// Ağaç çizimi için koordinatlar
-	treeStartY := 80.0
 	levelHeight := 120.0
 	nodeWidth := 180.0
 	nodeHeight := 60.0
+	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
 
 	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
 
@@ -266,10 +275,10 @@ func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
 	levels := r.buildTechTree(f)
 
 	// Ağaç pozisyonlarını yeniden hesapla, böylece tıklama doğru çalışır
-	treeStartY := 80.0
 	levelHeight := 120.0
 	nodeWidth := 180.0
 	nodeHeight := 60.0
+	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
 	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
 
 	mx, my := ebiten.CursorPosition()
