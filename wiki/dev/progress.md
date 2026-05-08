@@ -44,12 +44,12 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Düşman ordu istihbaratı | ✅ | Menzildeki düşman orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
 | Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |
 | Askeri kapasite | ✅ | Kara bölgesi başı 5 + kışla başı 5; ordu sayısı `ceil(kara_bölge/2)` |
-| Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü |
+| Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü; JSON `turns_required` ile üretim kuyruğunda tamamlanır |
 | Bina/birim hover bilgisi | ✅ | Kart tooltipleri maliyet, gereksinim, etki/istatistik ve görsel gösterir |
-| Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi oluşturma |
+| Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi üretimini kuyruğa alma |
 | Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
-| Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları |
+| Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu |
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |
 | Diplomasi | ✅ | Savaş, barış, ittifak, ticaret; ilişki puanı ve duruş sistemi |

@@ -83,6 +83,10 @@ type GameState struct {
 	// Ticaret güzergahları
 	TradeRoutes []*economy.TradeRoute `json:"trade_routes"`
 
+	// Devam eden üretimler
+	ProductionQueue   []ProductionOrder `json:"production_queue"`
+	NextProductionSeq int               `json:"next_production_seq"`
+
 	// Sıradaki ordu ID üretmek için sayaç
 	NextArmySeq int `json:"next_army_seq"`
 
@@ -91,6 +95,16 @@ type GameState struct {
 
 	// Kazanan (boş = oyun devam ediyor)
 	WinnerID faction.FactionID `json:"winner_id"`
+}
+
+// ProductionOrder bina ve birim üretimlerinin tur bazlı kuyruğunu tutar.
+type ProductionOrder struct {
+	ID        string         `json:"id"`
+	Kind      string         `json:"kind"` // "building" veya "unit"
+	FactionID string         `json:"faction_id"`
+	RegionID  world.RegionID `json:"region_id"`
+	TypeID    string         `json:"type_id"`
+	TurnsLeft int            `json:"turns_left"`
 }
 
 // Phase oyun aşaması.

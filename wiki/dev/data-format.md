@@ -105,14 +105,21 @@ Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox
 {
   "id": "militia",
   "name_tr": "Milis",
+  "gold_cost": 60,
+  "grain_upkeep": 2,
+  "turns_required": 1,
   "attack": 10,
   "defense": 8,
   "hp": 100,
-  "move_cost": 1,
   "category": "infantry",
-  "tier": 1
+  "tier": 1,
+  "required_tech": "",
+  "required_bldg": "barracks",
+  "embarkable": true
 }
 ```
+
+`turns_required` üretim kuyruğunda kaç tur sonra birimin ordu/filoya ekleneceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `1` kabul eder.
 
 ---
 
@@ -123,11 +130,14 @@ Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox
   "id": "market",
   "name_tr": "Pazar",
   "gold_cost": 120,
+  "turns_required": 2,
   "max_per_region": 1,
   "required_terrain": "",
   "effects": { "gold_income": 30 }
 }
 ```
+
+`turns_required` bina inşaatının kaç tur süreceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `2` kabul eder.
 
 ---
 

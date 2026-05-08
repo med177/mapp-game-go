@@ -55,6 +55,7 @@ type Renderer struct {
 | 5 | Ordu ikonları | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
+| 6 | Bölge üretim UI — bina kartlarında kuyruktaki inşaatın kalan tur etiketi, birim kartlarında üretim turu | `panel.go`, `recruit_panel.go` |
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |

@@ -20,6 +20,9 @@ func LoadUnitTypes(path string) (map[string]*UnitType, error) {
 	}
 	m := make(map[string]*UnitType, len(list))
 	for _, t := range list {
+		if t.TurnsRequired <= 0 {
+			t.TurnsRequired = 1
+		}
 		m[t.ID] = t
 	}
 	return m, nil
@@ -27,10 +30,10 @@ func LoadUnitTypes(path string) (map[string]*UnitType, error) {
 
 // armySpecJSON armies.json'daki tek ordu tanımını temsil eder.
 type armySpecJSON struct {
-	ID      string            `json:"id"`
-	OwnerID string            `json:"owner_id"`
-	Region  world.RegionID    `json:"region_id"`
-	Units   []unitCountJSON   `json:"units"`
+	ID      string          `json:"id"`
+	OwnerID string          `json:"owner_id"`
+	Region  world.RegionID  `json:"region_id"`
+	Units   []unitCountJSON `json:"units"`
 }
 
 type unitCountJSON struct {

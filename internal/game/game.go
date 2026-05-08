@@ -338,6 +338,7 @@ func (g *Game) resolveTurn() {
 	applySeasonEffects(g.gs)
 	applyEconomyTick(g.gs)
 	completedTechs := applyTechTicks(g.gs)
+	productionResults := g.applyProductionTicks()
 	applyReligionConversion(g.gs)
 	checkRegionUnlocks(g.gs)
 	checkRebellions(g.gs)
@@ -353,6 +354,31 @@ func (g *Game) resolveTurn() {
 				g.renderer.ShowCombatResult(msg)
 				g.renderer.AddEvent("🔬 " + msg)
 			}
+		}
+	}
+
+	for _, pr := range productionResults {
+		if pr.factionID != g.gs.PlayerFactionID {
+			continue
+		}
+		name := g.productionName(pr)
+		regionName := string(pr.regionID)
+		if r, ok := g.gs.Regions[pr.regionID]; ok {
+			regionName = r.NameTR
+		}
+		switch {
+		case pr.delayed:
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s hazır, ancak %s nedeniyle bekliyor.", name, pr.reason))
+		case pr.canceled:
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi iptal oldu: %s.", name, pr.reason))
+		case pr.kind == productionKindBuilding:
+			msg := fmt.Sprintf("%s bölgesinde %s tamamlandı!", regionName, name)
+			g.renderer.ShowCombatResult(msg)
+			g.renderer.AddEvent("🏗 " + msg)
+		case pr.kind == productionKindUnit:
+			msg := fmt.Sprintf("%s bölgesinde %s hazır!", regionName, name)
+			g.renderer.ShowCombatResult(msg)
+			g.renderer.AddEvent("⚔ " + msg)
 		}
 	}
 
@@ -400,9 +426,13 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Yeterli altın yok! Gerekli: %d", b.GoldCost))
 		return
 	}
+	if count+g.queuedBuildingCount(rid, buildingID) >= b.MaxPerRegion {
+		g.renderer.ShowCombatResult(b.NameTR + " bu bölgede zaten inşa kuyruğunda!")
+		return
+	}
 	f.Gold -= b.GoldCost
-	region.Buildings = append(region.Buildings, buildingID)
-	g.renderer.ShowCombatResult(b.NameTR + " inşa edildi!")
+	g.enqueueProduction(productionKindBuilding, rid, buildingID, b.TurnsRequired)
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı başladı! (%d tur)", b.NameTR, b.TurnsRequired))
 }
 
 // declareWar hedef fraksiyona savaş ilan eder.
@@ -671,136 +701,12 @@ func saveExists() bool {
 
 // recruitNaval kıyı bölgesinde nakliye gemisi oluşturur.
 func (g *Game) recruitNaval(rid world.RegionID) {
-	region, ok := g.gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
-		g.renderer.ShowCombatResult("Sadece kendi kıyı bölgene gemi yapabilirsin!")
-		return
-	}
-	// Liman gereksinimi
-	hasPort := false
-	for _, bid := range region.Buildings {
-		if bid == "port" {
-			hasPort = true
-			break
-		}
-	}
-	if !hasPort {
-		g.renderer.ShowCombatResult("Gemi için liman gerekli!")
-		return
-	}
-	// Kıyı bölgesi mi?
-	if !region.IsCoastal(g.gs.Regions) {
-		g.renderer.ShowCombatResult("Bu bölge kıyıda değil!")
-		return
-	}
-	f := g.gs.Factions[g.gs.PlayerFactionID]
-	const cost = 200
-	if f.Gold < cost {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Nakliye gemisi için %d altın gerekli!", cost))
-		return
-	}
-
-	// Komşu deniz bölgesini bul
-	var seaRegion world.RegionID
-	for _, nid := range region.Neighbors {
-		if n, ok := g.gs.Regions[nid]; ok && n.IsSea {
-			seaRegion = nid
-			break
-		}
-	}
-	if seaRegion == "" {
-		g.renderer.ShowCombatResult("Komşu deniz bölgesi bulunamadı!")
-		return
-	}
-
-	f.Gold -= cost
-	g.gs.NextArmySeq++
-	newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
-	g.gs.Armies[newID] = &army.Army{
-		ID:            newID,
-		OwnerID:       string(g.gs.PlayerFactionID),
-		RegionID:      seaRegion,
-		Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
-		MovePoints:    3,
-		MaxMovePoints: 3,
-		IsNaval:       true,
-	}
-	g.renderer.ShowCombatResult(fmt.Sprintf("Nakliye gemisi denize indi! Kalan altın: %d", f.Gold))
+	g.recruitSpecific(rid, "transport")
 }
 
 // recruitUnit seçili bölgede oyuncu adına bir milis birimi alır.
 func (g *Game) recruitUnit(rid world.RegionID) {
-	region, ok := g.gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
-		g.renderer.ShowCombatResult("Sadece kendi bölgene asker alabilirsin!")
-		return
-	}
-	hasBarracks := false
-	for _, bid := range region.Buildings {
-		if bid == "barracks" {
-			hasBarracks = true
-			break
-		}
-	}
-	if !hasBarracks {
-		g.renderer.ShowCombatResult("Asker almak için kışla gerekli!")
-		return
-	}
-	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
-	if !ok {
-		return
-	}
-	const cost = 60
-	if f.Gold < cost {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Yeterli altın yok! Gerekli: %d, Mevcut: %d", cost, f.Gold))
-		return
-	}
-
-	// Manpower kontrolü
-	pid := g.gs.PlayerFactionID
-	deployed := g.gs.DeployedLandUnits(pid)
-	cap := g.gs.ManpowerCap(pid)
-	if deployed >= cap {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
-		return
-	}
-
-	// Bölgede mevcut ordu var mı?
-	var targetArmy *army.Army
-	for _, a := range g.gs.Armies {
-		if a.RegionID == rid && a.OwnerID == string(pid) && !a.IsNaval {
-			targetArmy = a
-			break
-		}
-	}
-
-	if targetArmy != nil {
-		if len(targetArmy.Units) >= army.MaxArmySize {
-			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
-			return
-		}
-		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: "militia", CurrentHP: 100})
-	} else {
-		// Ordu sayısı limiti
-		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d) — Daha fazla bölge gerekli.", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
-			return
-		}
-		// Yeni ordu oluştur
-		g.gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(pid), g.gs.NextArmySeq))
-		g.gs.Armies[newID] = &army.Army{
-			ID:            newID,
-			OwnerID:       string(pid),
-			RegionID:      rid,
-			Units:         []army.Unit{{TypeID: "militia", CurrentHP: 100}},
-			MovePoints:    2,
-			MaxMovePoints: 2,
-		}
-	}
-
-	f.Gold -= cost
-	g.renderer.ShowCombatResult(fmt.Sprintf("Milis alındı! Kalan altın: %d", f.Gold))
+	g.recruitSpecific(rid, "militia")
 }
 
 // recruitSpecific seçili bölgede belirli türde bir birim alır.
@@ -848,7 +754,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 		return
 	}
 
-	// Deniz birimi — komşu deniz bölgesine yerleş
+	// Deniz birimi — tamamlandığında komşu deniz bölgesine yerleşir.
 	if utype.RequiredBldg == "port" {
 		if !region.IsCoastal(g.gs.Regions) {
 			g.renderer.ShowCombatResult("Bu bölge kıyıda değil!")
@@ -865,38 +771,27 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 			g.renderer.ShowCombatResult("Komşu deniz bölgesi bulunamadı!")
 			return
 		}
-		// Mevcut filo var mı?
-		var fleet *army.Army
+		queued := 0
 		for _, a := range g.gs.Armies {
 			if a.RegionID == seaRegion && a.OwnerID == string(g.gs.PlayerFactionID) && a.IsNaval {
-				fleet = a
+				queued = len(a.Units)
 				break
 			}
 		}
-		f.Gold -= utype.GoldCost
-		if fleet != nil {
-			if len(fleet.Units) >= army.MaxArmySize {
-				g.renderer.ShowCombatResult("Filo dolu! (max 20 birim)")
-				return
-			}
-			fleet.Units = append(fleet.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
-		} else {
-			g.gs.NextArmySeq++
-			newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
-			g.gs.Armies[newID] = &army.Army{
-				ID: newID, OwnerID: string(g.gs.PlayerFactionID),
-				RegionID: seaRegion, IsNaval: true,
-				Units:      []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
-				MovePoints: 3, MaxMovePoints: 3,
-			}
+		queued += g.pendingNavalUnitCount(seaRegion, g.gs.PlayerFactionID)
+		if queued >= army.MaxArmySize {
+			g.renderer.ShowCombatResult("Filo dolu veya üretim kuyruğuyla dolacak! (max 20 birim)")
+			return
 		}
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s denize indi! Kalan altın: %d", utype.NameTR, f.Gold))
+		f.Gold -= utype.GoldCost
+		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! (%d tur) Kalan altın: %d", utype.NameTR, utype.TurnsRequired, f.Gold))
 		return
 	}
 
 	// Kara birimi — manpower ve ordu sayısı kontrolü
 	pid := g.gs.PlayerFactionID
-	deployed := g.gs.DeployedLandUnits(pid)
+	deployed := g.gs.DeployedLandUnits(pid) + g.pendingLandUnitCount(pid)
 	cap := g.gs.ManpowerCap(pid)
 	if deployed >= cap {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
@@ -910,30 +805,20 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 			break
 		}
 	}
-	f.Gold -= utype.GoldCost
 	if targetArmy != nil {
 		if len(targetArmy.Units) >= army.MaxArmySize {
 			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
-			f.Gold += utype.GoldCost
 			return
 		}
-		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
 	} else {
 		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
 			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
-			f.Gold += utype.GoldCost
 			return
 		}
-		g.gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(pid), g.gs.NextArmySeq))
-		g.gs.Armies[newID] = &army.Army{
-			ID: newID, OwnerID: string(pid),
-			RegionID:   rid,
-			Units:      []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
-			MovePoints: 2, MaxMovePoints: 2,
-		}
 	}
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s alındı! Kalan altın: %d", utype.NameTR, f.Gold))
+	f.Gold -= utype.GoldCost
+	g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! (%d tur) Kalan altın: %d", utype.NameTR, utype.TurnsRequired, f.Gold))
 }
 
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.

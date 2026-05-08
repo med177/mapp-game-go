@@ -264,7 +264,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		DrawTextCentered(screen, utype.NameTR, nameX, float64(sy)+float64(nameY_off), FaceSmall, nameCol)
 
 		// Maliyet
-		costStr := itoa(utype.GoldCost) + " ✦"
+		costStr := itoa(utype.GoldCost) + " ✦  " + itoa(utype.TurnsRequired) + "t"
 		costCol := color.RGBA{180, 160, 60, 220}
 		if !fullyAvail {
 			costCol = color.RGBA{70, 62, 48, 180}

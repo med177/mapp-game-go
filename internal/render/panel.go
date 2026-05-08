@@ -1338,6 +1338,12 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 	for _, bid := range region.Buildings {
 		builtSet[bid] = true
 	}
+	queuedSet := make(map[string]int)
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == "building" && order.RegionID == region.ID {
+			queuedSet[order.TypeID] = order.TurnsLeft
+		}
+	}
 
 	const cols = 3
 	pad := float32(panelPad)
@@ -1358,6 +1364,8 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 
 		b, hasDef := gs.BuildingTypes[bid]
 		isBuilt := builtSet[bid]
+		turnsLeft := queuedSet[bid]
+		isQueued := turnsLeft > 0
 		canAfford := false
 		if f := gs.Factions[gs.PlayerFactionID]; f != nil && hasDef {
 			canAfford = f.Gold >= b.GoldCost
@@ -1370,6 +1378,9 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		case isBuilt:
 			slotBg = color.RGBA{42, 34, 18, 245}
 			borderCol = panelBorder
+		case isQueued:
+			slotBg = color.RGBA{35, 32, 24, 235}
+			borderCol = color.RGBA{120, 105, 70, 210}
 		case canAfford:
 			slotBg = color.RGBA{32, 25, 14, 225}
 			borderCol = color.RGBA{120, 95, 45, 200}
@@ -1397,6 +1408,10 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 
 			if isBuilt {
 				vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
+			} else if isQueued {
+				DrawTextCentered(screen, itoa(turnsLeft)+" tur",
+					float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-7,
+					FaceSmall, color.RGBA{235, 210, 125, 235})
 			}
 		}
 
@@ -1409,6 +1424,8 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		switch {
 		case isBuilt:
 			nameCol = ColorGold
+		case isQueued:
+			nameCol = color.RGBA{210, 190, 120, 230}
 		case canAfford:
 			nameCol = color.RGBA{170, 145, 85, 220}
 		}
@@ -1525,6 +1542,12 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	for _, bid := range region.Buildings {
 		builtSet[bid] = true
 	}
+	queuedSet := make(map[string]bool)
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == "building" && order.RegionID == region.ID {
+			queuedSet[order.TypeID] = true
+		}
+	}
 
 	px := infoPanelX()
 	pw := infoPanelW
@@ -1540,7 +1563,7 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 
 	display := visibleBuildingIDs(gs, region)
 	for i, bid := range display {
-		if builtSet[bid] {
+		if builtSet[bid] || queuedSet[bid] {
 			continue
 		}
 		col := i % cols

@@ -52,12 +52,16 @@ type GameState struct {
     TradeRoutes   []*TradeRoute
     FiredEventIDs map[string]bool
 
-    NextArmySeq int  // ordu ID üretici sayaç
+    ProductionQueue []ProductionOrder // devam eden bina/birim üretimleri
+    NextProductionSeq int             // üretim ID sayacı
+    NextArmySeq int                   // ordu ID üretici sayaç
 
     Phase    Phase
     WinnerID FactionID
 }
 ```
+
+`ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; sıfırlandığında üretim uygulanır.
 
 ---
 

@@ -13,7 +13,8 @@
     "grain_upkeep": 2,
     "required_tech": "",
     "required_bldg": "barracks",
-    "embarkable": true
+    "embarkable": true,
+    "turns_required": 1
   },
   {
     "id": "infantry",
@@ -29,7 +30,8 @@
     "grain_upkeep": 3,
     "required_tech": "basic_tactics",
     "required_bldg": "barracks",
-    "embarkable": true
+    "embarkable": true,
+    "turns_required": 1
   },
   {
     "id": "elite_infantry",
@@ -45,7 +47,8 @@
     "grain_upkeep": 5,
     "required_tech": "advanced_tactics",
     "required_bldg": "barracks",
-    "embarkable": true
+    "embarkable": true,
+    "turns_required": 1
   },
   {
     "id": "light_cavalry",
@@ -61,7 +64,8 @@
     "grain_upkeep": 4,
     "required_tech": "",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "cavalry",
@@ -77,7 +81,8 @@
     "grain_upkeep": 6,
     "required_tech": "horsemanship",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "heavy_cavalry",
@@ -93,7 +98,8 @@
     "grain_upkeep": 8,
     "required_tech": "armored_cavalry",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "catapult",
@@ -109,7 +115,8 @@
     "grain_upkeep": 3,
     "required_tech": "",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "bombard",
@@ -125,7 +132,8 @@
     "grain_upkeep": 5,
     "required_tech": "gunpowder",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "cannon",
@@ -141,7 +149,8 @@
     "grain_upkeep": 8,
     "required_tech": "field_artillery",
     "required_bldg": "barracks",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "warship",
@@ -157,7 +166,8 @@
     "grain_upkeep": 6,
     "required_tech": "naval_warfare",
     "required_bldg": "port",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "transport",
@@ -173,7 +183,8 @@
     "grain_upkeep": 3,
     "required_tech": "",
     "required_bldg": "port",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   },
   {
     "id": "merchant_ship",
@@ -189,6 +200,7 @@
     "grain_upkeep": 2,
     "required_tech": "",
     "required_bldg": "port",
-    "embarkable": false
+    "embarkable": false,
+    "turns_required": 1
   }
 ]

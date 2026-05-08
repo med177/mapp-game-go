@@ -4,10 +4,10 @@ package army
 type UnitCategory string
 
 const (
-	CategoryInfantry  UnitCategory = "infantry"
-	CategoryCavalry   UnitCategory = "cavalry"
-	CategorySiege     UnitCategory = "siege"
-	CategoryNavalWar  UnitCategory = "naval_war"
+	CategoryInfantry   UnitCategory = "infantry"
+	CategoryCavalry    UnitCategory = "cavalry"
+	CategorySiege      UnitCategory = "siege"
+	CategoryNavalWar   UnitCategory = "naval_war"
 	CategoryNavalTrans UnitCategory = "naval_trans"
 	CategoryNavalTrade UnitCategory = "naval_trade"
 )
@@ -17,25 +17,26 @@ type UnitTier int
 
 // UnitType bir birim türünü tanımlar (JSON'dan yüklenir).
 type UnitType struct {
-	ID           string       `json:"id"`
-	Name         string       `json:"name"`
-	NameTR       string       `json:"name_tr"`
-	Category     UnitCategory `json:"category"`
-	Tier         UnitTier     `json:"tier"`
+	ID       string       `json:"id"`
+	Name     string       `json:"name"`
+	NameTR   string       `json:"name_tr"`
+	Category UnitCategory `json:"category"`
+	Tier     UnitTier     `json:"tier"`
 
 	// Savaş değerleri
-	Attack       int `json:"attack"`
-	Defense      int `json:"defense"`
-	Morale       int `json:"morale"`    // bozguna dayanıklılık
-	HP           int `json:"hp"`        // başlangıç can puanı
+	Attack  int `json:"attack"`
+	Defense int `json:"defense"`
+	Morale  int `json:"morale"` // bozguna dayanıklılık
+	HP      int `json:"hp"`     // başlangıç can puanı
 
 	// Maliyet
-	GoldCost     int `json:"gold_cost"`
-	GrainUpkeep  int `json:"grain_upkeep"` // tur başına bakım
+	GoldCost      int `json:"gold_cost"`
+	GrainUpkeep   int `json:"grain_upkeep"` // tur başına bakım
+	TurnsRequired int `json:"turns_required"`
 
 	// Gereksinimler
-	RequiredTech  string `json:"required_tech"`   // "" = gerek yok
-	RequiredBldg  string `json:"required_bldg"`   // gerekli bina ID
+	RequiredTech string `json:"required_tech"` // "" = gerek yok
+	RequiredBldg string `json:"required_bldg"` // gerekli bina ID
 
 	// Denizde taşınabilir mi?
 	Embarkable bool `json:"embarkable"`
@@ -43,9 +44,9 @@ type UnitType struct {
 
 // Unit ordu içindeki tek bir birim örneğini temsil eder.
 type Unit struct {
-	TypeID  string `json:"type_id"`
-	CurrentHP int  `json:"current_hp"`
-	Experience int `json:"experience"` // 0-100, savaşlarla artar
+	TypeID     string `json:"type_id"`
+	CurrentHP  int    `json:"current_hp"`
+	Experience int    `json:"experience"` // 0-100, savaşlarla artar
 }
 
 // EffectiveAttack deneyim bonusunu dahil eder.
