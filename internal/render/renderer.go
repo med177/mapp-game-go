@@ -100,6 +100,10 @@ type Renderer struct {
 	// Genel onay diyaloğu
 	warConfirm    warConfirmState
 	confirmDialog confirmDialogState
+
+	armyIconBuf    []armyIconPos
+	regionLabelBuf []regionLabelDraw
+	labelRectBuf   []screenRect
 }
 
 type confirmDialogState struct {
@@ -335,11 +339,13 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawMoveTargets(screen)
 	}
 
+	armyPositions := r.armyIconPositions()
+
 	// 4. Bölge etiketleri
-	r.drawRegionLabels(screen)
+	r.drawRegionLabels(screen, armyPositions)
 
 	// 5. Ordu ikonları
-	r.drawArmies(screen)
+	r.drawArmies(screen, armyPositions)
 
 	// 6. UI panelleri
 	DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech)
@@ -394,7 +400,7 @@ func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 		return
 	}
 
-	sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+	sx, sy := r.regionScreenPos(region)
 
 	if region.IsSea {
 		// Deniz bölgesi seçimi: büyük beyaz daire halkası
@@ -471,7 +477,7 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			continue
 		}
 
-		sx, sy := r.worldToScreen(wcX(nRegion.WorldX), wcY(nRegion.WorldY))
+		sx, sy := r.regionScreenPos(nRegion)
 
 		var col color.RGBA
 		if a.IsNaval {
@@ -512,6 +518,32 @@ type armyIconPos struct {
 	X, Y   float32
 }
 
+type regionLabelDraw struct {
+	Region *world.Region
+	Text   string
+	X, Y   float64
+	W, H   float64
+	SX, SY float64
+}
+
+type screenRect struct {
+	X, Y, W, H float64
+}
+
+func (r *Renderer) regionScreenPos(region *world.Region) (float64, float64) {
+	wx, wy := r.regionWorldPos(region)
+	return r.worldToScreen(wx, wy)
+}
+
+func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
+	if region != nil && region.IsSea {
+		if ax, ay, ok := r.worldMap.RegionAnchor(region.ID); ok {
+			return float64(ax), float64(ay)
+		}
+	}
+	return wcX(region.WorldX), wcY(region.WorldY)
+}
+
 // armyIconPositions tüm orduların ekran koordinatlarını hesaplar.
 // Aynı bölgedeki birden fazla ordu yan yana offset'lenir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
@@ -522,13 +554,13 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		byRegion[a.RegionID] = append(byRegion[a.RegionID], aid)
 	}
 
-	var result []armyIconPos
+	r.armyIconBuf = r.armyIconBuf[:0]
 	for rid, aids := range byRegion {
 		region, ok := r.gs.Regions[rid]
 		if !ok {
 			continue
 		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		sx, sy := r.regionScreenPos(region)
 		baseY := float32(sy) - 22
 
 		sort.Slice(aids, func(i, j int) bool { return aids[i] < aids[j] })
@@ -536,19 +568,28 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		n := float32(len(aids))
 		startX := float32(sx) - (n-1)*iconStep/2
 		for i, aid := range aids {
-			result = append(result, armyIconPos{
+			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
 				ArmyID: aid,
 				X:      startX + float32(i)*iconStep,
 				Y:      baseY,
 			})
 		}
 	}
-	return result
+	sort.SliceStable(r.armyIconBuf, func(i, j int) bool {
+		if r.armyIconBuf[i].Y != r.armyIconBuf[j].Y {
+			return r.armyIconBuf[i].Y < r.armyIconBuf[j].Y
+		}
+		if r.armyIconBuf[i].X != r.armyIconBuf[j].X {
+			return r.armyIconBuf[i].X < r.armyIconBuf[j].X
+		}
+		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
+	})
+	return r.armyIconBuf
 }
 
 // drawArmies tüm orduları harita üzerinde çizer.
-func (r *Renderer) drawArmies(screen *ebiten.Image) {
-	for _, pos := range r.armyIconPositions() {
+func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
+	for _, pos := range positions {
 		a, ok := r.gs.Armies[pos.ArmyID]
 		if !ok {
 			continue
@@ -592,7 +633,7 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.
 }
 
 // drawRegionLabels zoom yeterliyse bölge isimlerini merkeze yazar.
-func (r *Renderer) drawRegionLabels(screen *ebiten.Image) {
+func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIconPos) {
 	if r.camScale < 0.5 {
 		return
 	}
@@ -600,11 +641,12 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image) {
 	labelCol := color.RGBA{255, 255, 255, 220}
 	shadowCol := color.RGBA{0, 0, 0, 160}
 
+	r.regionLabelBuf = r.regionLabelBuf[:0]
 	for _, region := range r.gs.Regions {
 		if region.IsSea || region.IsLocked {
 			continue
 		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		sx, sy := r.regionScreenPos(region)
 
 		if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
 			continue
@@ -617,12 +659,72 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image) {
 
 		w := MeasureText(region.NameTR, face)
 		lx := sx - w/2
-
-		DrawText(screen, region.NameTR, lx+1, sy-6, face, shadowCol)
-		DrawText(screen, region.NameTR, lx, sy-7, face, labelCol)
-
-		r.drawCityDot(screen, region, float32(sx), float32(sy))
+		h := float64(16)
+		if face == FaceMed {
+			h = 20
+		}
+		r.regionLabelBuf = append(r.regionLabelBuf, regionLabelDraw{
+			Region: region,
+			Text:   region.NameTR,
+			X:      lx,
+			Y:      sy - 7,
+			W:      w,
+			H:      h,
+			SX:     sx,
+			SY:     sy,
+		})
 	}
+
+	sort.SliceStable(r.regionLabelBuf, func(i, j int) bool {
+		if r.regionLabelBuf[i].SY != r.regionLabelBuf[j].SY {
+			return r.regionLabelBuf[i].SY < r.regionLabelBuf[j].SY
+		}
+		if r.regionLabelBuf[i].SX != r.regionLabelBuf[j].SX {
+			return r.regionLabelBuf[i].SX < r.regionLabelBuf[j].SX
+		}
+		return r.regionLabelBuf[i].Region.ID < r.regionLabelBuf[j].Region.ID
+	})
+
+	r.labelRectBuf = r.labelRectBuf[:0]
+	for _, item := range r.regionLabelBuf {
+		rect := screenRect{X: item.X, Y: item.Y, W: item.W, H: item.H}
+		drawText := true
+		for _, used := range r.labelRectBuf {
+			if rectIntersects(expandRect(rect, 4), expandRect(used, 4)) {
+				drawText = false
+				break
+			}
+		}
+		if drawText {
+			for _, pos := range armyPositions {
+				armyRect := screenRect{X: float64(pos.X) - 15, Y: float64(pos.Y) - 15, W: 30, H: 30}
+				if rectIntersects(expandRect(rect, 3), armyRect) {
+					drawText = false
+					break
+				}
+			}
+		}
+
+		if drawText {
+			face := FaceSmall
+			if r.camScale >= 1.0 {
+				face = FaceMed
+			}
+			DrawText(screen, item.Text, item.X+1, item.Y+1, face, shadowCol)
+			DrawText(screen, item.Text, item.X, item.Y, face, labelCol)
+			r.labelRectBuf = append(r.labelRectBuf, rect)
+		}
+
+		r.drawCityDot(screen, item.Region, float32(item.SX), float32(item.SY))
+	}
+}
+
+func expandRect(r screenRect, pad float64) screenRect {
+	return screenRect{X: r.X - pad, Y: r.Y - pad, W: r.W + pad*2, H: r.H + pad*2}
+}
+
+func rectIntersects(a, b screenRect) bool {
+	return a.X < b.X+b.W && a.X+a.W > b.X && a.Y < b.Y+b.H && a.Y+a.H > b.Y
 }
 
 // drawCityDot bölge merkezine küçük iyon çizer.
@@ -943,7 +1045,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// Ordu ikonu tıklaması → seç / seçimi kaldır
-	for _, pos := range r.armyIconPositions() {
+	armyPositions := r.armyIconPositions()
+	for i := len(armyPositions) - 1; i >= 0; i-- {
+		pos := armyPositions[i]
 		dx := fx - float64(pos.X)
 		dy := fy - float64(pos.Y)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {

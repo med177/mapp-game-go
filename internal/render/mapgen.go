@@ -46,17 +46,18 @@ const MapScale = 1
 
 // WorldMap ülke shape'lerinden üretilen dünya harita dokusunu yönetir.
 type WorldMap struct {
-	img        *ebiten.Image
-	basePixels []byte
-	dispPixels []byte
-	regionAt   []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
-	regionIDs  []world.RegionID // regionIDs[0] = "" (boş)
-	regionIdx  map[world.RegionID]uint16
-	regionPx   map[world.RegionID][]int
-	seaIdx     map[uint16]bool // deniz bölgesi indeksleri
-	hasBgImage bool
-	ownerDirty bool
-	selected   world.RegionID
+	img          *ebiten.Image
+	basePixels   []byte
+	dispPixels   []byte
+	regionAt     []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
+	regionIDs    []world.RegionID // regionIDs[0] = "" (boş)
+	regionIdx    map[world.RegionID]uint16
+	regionPx     map[world.RegionID][]int
+	regionAnchor map[world.RegionID][2]int
+	seaIdx       map[uint16]bool // deniz bölgesi indeksleri
+	hasBgImage   bool
+	ownerDirty   bool
+	selected     world.RegionID
 }
 
 type countryShapeFile struct {
@@ -72,14 +73,15 @@ type countryShape struct {
 func NewWorldMap(gs *state.GameState) *WorldMap {
 	applyMapConfig(gs)
 	wm := &WorldMap{
-		img:        ebiten.NewImage(WorldW, WorldH),
-		basePixels: make([]byte, WorldW*WorldH*4),
-		dispPixels: make([]byte, WorldW*WorldH*4),
-		regionAt:   make([]uint16, WorldW*WorldH),
-		regionIDs:  []world.RegionID{""}, // indeks 0 = boş
-		regionIdx:  make(map[world.RegionID]uint16),
-		regionPx:   make(map[world.RegionID][]int),
-		seaIdx:     make(map[uint16]bool),
+		img:          ebiten.NewImage(WorldW, WorldH),
+		basePixels:   make([]byte, WorldW*WorldH*4),
+		dispPixels:   make([]byte, WorldW*WorldH*4),
+		regionAt:     make([]uint16, WorldW*WorldH),
+		regionIDs:    []world.RegionID{""}, // indeks 0 = boş
+		regionIdx:    make(map[world.RegionID]uint16),
+		regionPx:     make(map[world.RegionID][]int),
+		regionAnchor: make(map[world.RegionID][2]int),
+		seaIdx:       make(map[uint16]bool),
 	}
 
 	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
@@ -102,6 +104,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	}
 	wm.buildCountryShapes(gs, loadCountryShapes(shapesPath))
 	wm.buildSeaRegions(gs)
+	wm.computeRegionAnchors()
 	wm.applyOwnership(gs, "")
 	return wm
 }
@@ -201,6 +204,11 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 func (wm *WorldMap) MarkDirty()                            { wm.ownerDirty = true }
 func (wm *WorldMap) RegionPixels(rid world.RegionID) []int { return wm.regionPx[rid] }
 func (wm *WorldMap) Image() *ebiten.Image                  { return wm.img }
+
+func (wm *WorldMap) RegionAnchor(rid world.RegionID) (int, int, bool) {
+	p, ok := wm.regionAnchor[rid]
+	return p[0], p[1], ok
+}
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID) {
 	if !wm.ownerDirty && wm.selected == selected {
@@ -482,6 +490,36 @@ func (wm *WorldMap) findSeaSeed(cx, cy int) int {
 		}
 	}
 	return seed
+}
+
+func (wm *WorldMap) computeRegionAnchors() {
+	for rid, pixels := range wm.regionPx {
+		if len(pixels) == 0 {
+			continue
+		}
+
+		sumX, sumY := int64(0), int64(0)
+		for _, pIdx := range pixels {
+			sumX += int64(pIdx % WorldW)
+			sumY += int64(pIdx / WorldW)
+		}
+		cx := int(sumX / int64(len(pixels)))
+		cy := int(sumY / int64(len(pixels)))
+
+		best := pixels[0]
+		bestDist := int64(1<<63 - 1)
+		for _, pIdx := range pixels {
+			px, py := pIdx%WorldW, pIdx/WorldW
+			dx := int64(px - cx)
+			dy := int64(py - cy)
+			dist := dx*dx + dy*dy
+			if dist < bestDist {
+				best = pIdx
+				bestDist = dist
+			}
+		}
+		wm.regionAnchor[rid] = [2]int{best % WorldW, best / WorldW}
+	}
 }
 
 // nearestShapeRegion piksel koordinatına en yakın bölgeyi döner.

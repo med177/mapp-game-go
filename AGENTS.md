@@ -21,7 +21,7 @@ If you are **Codex**, you are operating within an **Ubuntu WSL sandbox**. You ha
 
 ### A. Search, Navigation & System
 * **`rg` (ripgrep):** Fast text and code searching.
-* **`fd` (fd-find):** Use instead of `find` for file discovery.
+* **`fd` / `fdfind` (fd-find):** Use instead of `find` for file discovery. In Codex non-interactive WSL shells, aliases may not load; if `fd` is unavailable, use the Debian/Ubuntu binary name `fdfind` directly.
 * **`tree`:** Visualize directory structures.
 * **`tldr`:** Run `tldr <command>` if you forget syntax.
 
@@ -48,7 +48,7 @@ Connect directly to services to inspect schemas or test queries. Do not guess st
 * **`adb` (Android Debug Bridge):** Connect to emulators/devices. Pull `logcat` to debug mobile apps, analyze crashes, or inspect Bluetooth/plugin communications (e.g., ESC/POS printers) directly from the terminal.
 
 ### Operating Guidelines (Codex Only)
-1. **Explore First:** Use `tree` or `fd` to understand context before making changes.
+1. **Explore First:** Use `tree`, `fd`, or `fdfind` to understand context before making changes.
 2. **Execute Directly:** Run `psql`, `adb`, or `rg` commands directly in the shell to gather information instead of asking the user.
 3. **Fail Fast:** If a command fails, read the error output and adjust your syntax immediately.
 

@@ -51,8 +51,8 @@ type Renderer struct {
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
-| 4 | Bölge etiketleri + şehir noktası | `renderer.go` |
-| 5 | Ordu ikonları | `renderer.go` |
+| 4 | Bölge etiketleri + şehir noktası; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
+| 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Bölge üretim UI — bina kartlarında kuyruktaki inşaatın kalan tur etiketi ve tekrar tıklayınca iptal, birim kartlarında üretim turu | `panel.go`, `recruit_panel.go` |
@@ -91,6 +91,8 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve bir sonraki `Refresh()` çağrısında yeniden üretilir. Bölge poligonları `country_shapes.json`'dan gelir; renkler fraksiyon rengiyle doldurulur.
 
 Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara pikselleri bariyer kabul eden multi-source BFS ile üretilir. Seed araması önce mevcut shape dönüşümlü koordinatı, sonuç çıkmazsa ham `world_x/world_y` koordinatını dener; bu, senaryo verisindeki deniz merkezlerinin dünya pikseli olarak tutulduğu durumlarda `_sea_*` seed uyarılarını engeller.
+
+Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. Deniz orduları ve deniz hareket hedefleri JSON merkez koordinatı yerine bu gerçek piksel anchor'ını kullanır; anchor, bölgenin kendi piksel alanı içinden seçildiği için kıyıda kara poligonunun kapattığı deniz bölgelerinde filo ikonları karanın üstüne düşmez.
 
 ---
 

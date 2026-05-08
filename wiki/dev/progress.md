@@ -76,6 +76,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Ses efektleri | ✅ | `internal/audio`, senaryo `sounds/` altından `click.wav` ve `combat.wav` yükleme |
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |
 | Render başlangıç log temizliği | ✅ | Boş senaryo path'inde shape dosyası okunmaz; deniz seed araması ham `world_x/world_y` fallback kullanır |
+| Deniz anchor ve çakışma stabilizasyonu | ✅ | Deniz orduları gerçek su piksel anchor'ına çizilir; ordu/etiket çizim sırası deterministik, çakışan etiket metinleri bastırılır |
 
 ## Bilinen Sorunlar
 
