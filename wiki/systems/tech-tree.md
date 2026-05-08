@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-05-06
+last_updated: 2026-05-09
 related: [systems/combat, systems/economy, architecture/state-management]
 ---
 
@@ -38,15 +38,28 @@ type ResearchState struct {
 
 ---
 
-## Araştırma Akışı
+## Görselleştirme
 
-`tech.StartResearch(research, tech, gold)` — `internal/tech/tech.go`
+Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterilir:
 
-Koşullar:
-- Zaten başka araştırma aktif değil
-- Gerekli altın mevcut
-- Bağımlı teknolojiler tamamlanmış
-- Gerekli bina bölgede var
+- **Seviyeler:** Gereksinimlere göre hiyerarşik seviyeler (0 = temel teknolojiler)
+- **Renk Kodlaması:**
+  - Askeri: Kırmızımsı (200,100,100)
+  - Ekonomi: Yeşil (100,200,100) 
+  - Diplomasi: Mavi (100,100,200)
+  - Denizcilik: Sarı (200,200,100)
+- **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
+- **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
+- **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün
+- **Tur Bitir Uyarısı:** Aktif araştırma yoksa panel açılır ve uyarı verilir
+  - Din: Magenta (200,100,200)
+- **Durum Göstergeleri:**
+  - Tamamlandı: Yeşil
+  - Araştırılıyor: Sarı
+  - Kilitli: Gri
+  - Kullanılabilir: Kategori rengi
+- **Bağlantılar:** Gereksinim teknolojileri arasındaki çizgiler
+- **Etkileşim:** Düğüm tıklayarak araştırma başlatma
 
 `applyTechTicks(gs)` — her tur `Progress++`, `TurnsRequired`'e ulaşınca tamamlanır.
 

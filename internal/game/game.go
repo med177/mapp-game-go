@@ -155,6 +155,21 @@ func (g *Game) Update() error {
 	case state.PhasePlayerTurn:
 		switch action.Kind {
 		case render.ActionEndTurn:
+			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok && f.Research.ActiveID == "" {
+				g.renderer.ShowConfirmDialog(
+					"Araştırma Yok",
+					"Teknoloji araştırması seçilmedi. Turu yine de bitirmek istiyor musunuz?",
+					"Evet",
+					"Hayır",
+					render.InputAction{Kind: render.ActionConfirmEndTurn},
+					func() {
+						g.renderer.ShowTechPanel()
+					},
+				)
+				break
+			}
+			g.gs.Phase = state.PhaseAITurn
+		case render.ActionConfirmEndTurn:
 			g.gs.Phase = state.PhaseAITurn
 		case render.ActionMoveArmy:
 			g.moveArmy(action.ArmyID, action.TargetRegion)
@@ -172,6 +187,8 @@ func (g *Game) Update() error {
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
 			g.startResearch(action.BuildingID) // BuildingID alanını tech ID için yeniden kullanıyoruz
+		case render.ActionCancelResearch:
+			g.cancelResearch()
 		case render.ActionDeclareWar:
 			g.declareWar(action.TargetFaction)
 		case render.ActionDeclareWarAndMove:
@@ -313,13 +330,24 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func (g *Game) resolveTurn() {
 	applySeasonEffects(g.gs)
 	applyEconomyTick(g.gs)
-	applyTechTicks(g.gs)
+	completedTechs := applyTechTicks(g.gs)
 	applyReligionConversion(g.gs)
 	checkRegionUnlocks(g.gs)
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
 	applyRelationDecay(g.gs)
 	victory.Check(g.gs)
+
+	// Tamamlanan teknolojiler için mesaj göster
+	for _, ct := range completedTechs {
+		if t, ok := g.gs.TechTypes[ct.techID]; ok {
+			if f, ok := g.gs.Factions[faction.FactionID(ct.factionID)]; ok {
+				msg := f.NameTR + ": " + t.NameTR + " teknolojisi tamamlandı!"
+				g.renderer.ShowCombatResult(msg)
+				g.renderer.AddEvent("🔬 " + msg)
+			}
+		}
+	}
 
 	// Olaylar
 	if name, desc := events.Tick(g.gs, g.evts); name != "" {
@@ -1158,4 +1186,25 @@ func ownerReligion(gs *state.GameState, ownerID string) string {
 		}
 	}
 	return ""
+}
+
+// cancelResearch aktif teknoloji araştırmasını iptal eder.
+func (g *Game) cancelResearch() {
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	if f.Research.ActiveID == "" {
+		g.renderer.ShowCombatResult("Aktif araştırma yok!")
+		return
+	}
+	refundedGold := 0
+	if tech, ok := g.gs.TechTypes[f.Research.ActiveID]; ok {
+		refundedGold = tech.GoldCost
+	}
+	f.Gold += refundedGold
+	f.Research.ActiveID = ""
+	f.Research.TurnsLeft = 0
+	if refundedGold > 0 {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Araştırma iptal edildi! %d altın iade edildi.", refundedGold))
+	} else {
+		g.renderer.ShowCombatResult("Araştırma iptal edildi!")
+	}
 }

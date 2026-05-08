@@ -235,6 +235,16 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		}
 		drawResRow(screen, rx3, ry, "Gelir", sign+itoa(income)+"/tur", incCol)
 		DrawText(screen, phaseLabel(gs.Phase), rx3, ry+26, FaceSmall, ColorGray)
+
+		// Teknoloji bilgisi
+		if f.Research.ActiveID != "" {
+			if tech, ok := gs.TechTypes[f.Research.ActiveID]; ok {
+				techStr := tech.NameTR + " (" + itoa(f.Research.TurnsLeft) + " tur)"
+				DrawText(screen, techStr, rx3, ry+40, FaceSmall, color.RGBA{100, 220, 100, 255})
+			}
+		} else {
+			DrawText(screen, "Teknoloji yok", rx3, ry+40, FaceSmall, ColorGray)
+		}
 	}
 
 	// Askeri kapasite göstergesi
@@ -390,6 +400,9 @@ func eventLogToggleRect() (x, y, w, h float32) {
 }
 
 func eventLogToggleHit(mx, my float64, collapsed bool) bool {
+	if collapsed {
+
+	}
 	x, y, w, h := eventLogToggleRect()
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
 }

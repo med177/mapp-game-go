@@ -19,6 +19,14 @@ func (r *Renderer) updateCursorShape() {
 	}
 
 	// Açık paneller öncelikli kontrol
+	if r.confirmDialog.show {
+		if r.confirmDialogHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.showDiplomacy {
 		if r.diplomaPanelHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -167,10 +175,63 @@ func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) techPanelHovering(fx, fy float64) bool {
-	px, py := float32(60), float32(40)
-	pw := float32(ScreenWidth - 120)
-	ph := float32(ScreenHeight - 80)
-	return fx >= float64(px) && fx <= float64(px+pw) && fy >= float64(py) && fy <= float64(py+ph)
+	if r.gs.TechTypes == nil {
+		return false
+	}
+	f := r.gs.Factions[r.gs.PlayerFactionID]
+	if f == nil {
+		return false
+	}
+
+	// Close button her zaman tıklanabilir
+	if techCloseHit(fx, fy) {
+		return true
+	}
+
+	levels := r.buildTechTree(f)
+	treeStartY := 80.0
+	levelHeight := 120.0
+	nodeWidth := 180.0
+	nodeHeight := 60.0
+	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
+
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			if !node.unlocked || node.done {
+				continue
+			}
+			nodeLeft := node.x - nodeWidth/2
+			nodeRight := node.x + nodeWidth/2
+			nodeTop := node.y - nodeHeight/2
+			nodeBottom := node.y + nodeHeight/2
+			if fx >= nodeLeft && fx <= nodeRight && fy >= nodeTop && fy <= nodeBottom {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
+	const (
+		dlgW  = 420.0
+		dlgH  = 150.0
+		btnDW = 120.0
+		btnDH = 36.0
+	)
+	cx := float64(ScreenWidth)/2 - dlgW/2
+	cy := float64(ScreenHeight)/2 - dlgH/2
+	btnY := cy + dlgH - btnDH - 16
+	yesX := cx + dlgW/2 - btnDW - 10
+	noX := cx + dlgW/2 + 10
+
+	if fx >= yesX && fx <= yesX+btnDW && fy >= btnY && fy <= btnY+btnDH {
+		return true
+	}
+	if fx >= noX && fx <= noX+btnDW && fy >= btnY && fy <= btnY+btnDH {
+		return true
+	}
+	return false
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {

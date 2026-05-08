@@ -20,6 +20,14 @@ var techCategoryLabels = map[tech.Category]string{
 	tech.CategoryReligion:  "Din",
 }
 
+var techCategoryColors = map[tech.Category]color.RGBA{
+	tech.CategoryMilitary:  {200, 100, 100, 255}, // Kırmızımsı
+	tech.CategoryEconomy:   {100, 200, 100, 255}, // Yeşil
+	tech.CategoryDiplomacy: {100, 100, 200, 255}, // Mavi
+	tech.CategoryNaval:     {200, 200, 100, 255}, // Sarı
+	tech.CategoryReligion:  {200, 100, 200, 255}, // Magenta
+}
+
 var techCategoryOrder = []tech.Category{
 	tech.CategoryMilitary,
 	tech.CategoryEconomy,
@@ -28,31 +36,78 @@ var techCategoryOrder = []tech.Category{
 	tech.CategoryReligion,
 }
 
-type techEntry struct {
+type techNode struct {
 	t        *tech.Technology
 	unlocked bool
 	done     bool
+	level    int
+	x, y     float64 // Ağaç pozisyonu
 }
 
-func (r *Renderer) buildTechEntries(f *faction.Faction) []techEntry {
-	var entries []techEntry
-	for _, cat := range techCategoryOrder {
-		var catTechs []*tech.Technology
-		for _, t := range r.gs.TechTypes {
-			if t.Category == cat {
-				catTechs = append(catTechs, t)
-			}
+func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
+	// Teknolojiyi seviyelere göre gruplandır
+	levels := make(map[int][]techNode)
+	maxLevel := 0
+
+	// Önce tüm teknolojileri işle
+	for _, t := range r.gs.TechTypes {
+		level := r.getTechLevel(t, r.gs.TechTypes)
+		if level > maxLevel {
+			maxLevel = level
 		}
-		sort.Slice(catTechs, func(i, j int) bool { return catTechs[i].ID < catTechs[j].ID })
-		for _, t := range catTechs {
-			entries = append(entries, techEntry{
-				t:        t,
-				unlocked: tech.IsUnlocked(&f.Research, t),
-				done:     f.Research.Completed[t.ID],
+		node := techNode{
+			t:        t,
+			unlocked: tech.IsUnlocked(&f.Research, t),
+			done:     f.Research.Completed[t.ID],
+			level:    level,
+		}
+		levels[level] = append(levels[level], node)
+	}
+
+	// Seviyeleri sırala
+	var result [][]techNode
+	for i := 0; i <= maxLevel; i++ {
+		if nodes, ok := levels[i]; ok {
+			// Her seviyedeki teknolojileri kategoriye göre sırala
+			sort.Slice(nodes, func(a, b int) bool {
+				if nodes[a].t.Category != nodes[b].t.Category {
+					return nodes[a].t.Category < nodes[b].t.Category
+				}
+				return nodes[a].t.ID < nodes[b].t.ID
 			})
+			result = append(result, nodes)
 		}
 	}
-	return entries
+
+	return result
+}
+
+func (r *Renderer) getTechLevel(t *tech.Technology, allTechs map[string]*tech.Technology) int {
+	if len(t.Requires) == 0 {
+		return 0
+	}
+	maxReqLevel := 0
+	for _, reqID := range t.Requires {
+		if req, ok := allTechs[reqID]; ok {
+			reqLevel := r.getTechLevel(req, allTechs)
+			if reqLevel > maxReqLevel {
+				maxReqLevel = reqLevel
+			}
+		}
+	}
+	return maxReqLevel + 1
+}
+
+func layoutTechTree(levels [][]techNode, screenWidth, nodeWidth, nodeHeight, treeStartY, levelHeight float64) {
+	for levelIdx, levelNodes := range levels {
+		levelY := treeStartY + float64(levelIdx)*levelHeight
+		levelWidth := float64(len(levelNodes)) * nodeWidth
+		startX := (screenWidth - levelWidth) / 2
+		for nodeIdx := range levelNodes {
+			levels[levelIdx][nodeIdx].x = startX + float64(nodeIdx)*nodeWidth + nodeWidth/2
+			levels[levelIdx][nodeIdx].y = levelY + nodeHeight/2
+		}
+	}
 }
 
 // DrawTechPanel teknoloji araştırma panelini çizer. Alt bardaki Teknoloji tuşu veya [T] ile açılır.
@@ -88,73 +143,100 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		DrawText(screen, "Aktif araştırma yok", float64(px)+20, activeY, FaceSmall, ColorGray)
 	}
 
-	entries := r.buildTechEntries(f)
+	levels := r.buildTechTree(f)
 
-	rowH := 36
-	listY := int(py) + 80
-	visibleRows := (int(ph) - 110) / rowH
-	colW := int(pw) / 2
+	// Ağaç çizimi için koordinatlar
+	treeStartY := 80.0
+	levelHeight := 120.0
+	nodeWidth := 180.0
+	nodeHeight := 60.0
 
-	if r.techCursor < 0 {
-		r.techCursor = 0
-	}
-	if len(entries) > 0 && r.techCursor >= len(entries) {
-		r.techCursor = len(entries) - 1
-	}
+	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
 
-	offset := 0
-	if r.techCursor >= visibleRows {
-		offset = r.techCursor - visibleRows + 1
-	}
+	// Her seviye için düğümleri çiz
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			// Düğüm rengi
+			var nodeColor color.RGBA
+			baseCategoryColor := techCategoryColors[node.t.Category]
+			if !node.unlocked {
+				nodeColor = color.RGBA{80, 80, 80, 255} // Kilitli - gri
+			} else if f.Research.ActiveID == node.t.ID {
+				nodeColor = color.RGBA{255, 220, 80, 255} // Araştırılıyor - sarı
+			} else if node.done {
+				nodeColor = color.RGBA{baseCategoryColor.R, baseCategoryColor.G, baseCategoryColor.B, 200}
+			} else {
+				nodeColor = baseCategoryColor // Kategori rengi
+			}
 
-	for i := offset; i < len(entries) && i < offset+visibleRows; i++ {
-		e := entries[i]
-		rowY := float32(listY + (i-offset)*rowH)
+			// Düğüm arka planı
+			vector.FillRect(screen, float32(node.x-nodeWidth/2), float32(node.y-nodeHeight/2),
+				float32(nodeWidth-4), float32(nodeHeight-4), nodeColor, false)
 
-		if i == r.techCursor {
-			vector.FillRect(screen, px+10, rowY-2, pw-20, float32(rowH-2), color.RGBA{60, 60, 100, 180}, false)
-		}
+			// Düğüm çerçevesi
+			vector.StrokeRect(screen, float32(node.x-nodeWidth/2), float32(node.y-nodeHeight/2),
+				float32(nodeWidth-4), float32(nodeHeight-4), 2, color.RGBA{255, 255, 255, 255}, false)
 
-		var nameCol color.RGBA
-		var statusStr string
-		switch {
-		case e.done:
-			nameCol = color.RGBA{100, 220, 100, 255}
-			statusStr = "Tamamlandi"
-		case !e.unlocked:
-			nameCol = color.RGBA{120, 120, 120, 255}
-			statusStr = "Kilitli"
-		case f.Research.ActiveID == e.t.ID:
-			nameCol = color.RGBA{255, 220, 80, 255}
-			statusStr = fmt.Sprintf("Arastiriliyor (%d tur)", f.Research.TurnsLeft)
-		default:
-			nameCol = color.RGBA{220, 200, 160, 255}
-			statusStr = fmt.Sprintf("%dg / %d tur", e.t.GoldCost, e.t.TurnsRequired)
-		}
+			// Teknoloji adı
+			nameY := node.y - nodeHeight/2 + 8
+			textColor := ColorWhite
+			if node.unlocked && !node.done {
+				textColor = color.RGBA{uint8(nodeColor.R / 3), uint8(nodeColor.G / 3), uint8(nodeColor.B / 3), 255}
+			}
+			DrawTextCentered(screen, node.t.NameTR, node.x, nameY, FaceMed, textColor)
 
-		catLabel := techCategoryLabels[e.t.Category]
-		DrawText(screen, fmt.Sprintf("[%s] %s", catLabel, e.t.NameTR), float64(px)+18, float64(rowY)+4, FaceMed, nameCol)
-		DrawText(screen, e.t.DescriptionTR, float64(px)+18, float64(rowY)+18, FaceSmall, ColorGray)
-		DrawText(screen, statusStr, float64(px)+float64(colW)+10, float64(rowY)+4, FaceSmall, ColorGold)
+			// Kategori etiketi
+			catLabel := techCategoryLabels[node.t.Category]
+			catY := node.y - 8
+			catColor := techCategoryColors[node.t.Category]
+			catColor.A = 200
+			DrawTextCentered(screen, fmt.Sprintf("[%s]", catLabel), node.x, catY, FaceSmall, catColor)
 
-		if len(e.t.Requires) > 0 && !e.done {
-			reqStr := "Gerekir: "
-			for j, req := range e.t.Requires {
-				if j > 0 {
-					reqStr += ", "
-				}
-				if rt, ok := r.gs.TechTypes[req]; ok {
-					reqStr += rt.NameTR
-				} else {
-					reqStr += req
+			// Maliyet bilgisi (kilitli değilse)
+			if node.unlocked && !node.done {
+				costY := node.y + nodeHeight/2 - 20
+				costStr := fmt.Sprintf("%dg/%dt", node.t.GoldCost, node.t.TurnsRequired)
+				DrawTextCentered(screen, costStr, node.x, costY, FaceSmall, ColorGold)
+			}
+
+			// Tamamlandı tik rozeti
+			if node.done {
+				badgeW := 24.0
+				badgeH := 18.0
+				badgeX := node.x + nodeWidth/2 - badgeW - 8
+				badgeY := node.y - nodeHeight/2 + 8
+				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{35, 35, 35, 220}, false)
+				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{220, 220, 220, 255}, false)
+				tw := MeasureText("✓", FaceSmall)
+				DrawText(screen, "✓", badgeX+badgeW/2-tw/2, badgeY+2, FaceSmall, ColorWhite)
+			}
+
+			// Bağlantı çizgileri (gereksinimlere)
+			if len(node.t.Requires) > 0 {
+				for _, reqID := range node.t.Requires {
+					if reqTech, ok := r.gs.TechTypes[reqID]; ok {
+						// Gereksinim teknolojisinin pozisyonunu bul
+						reqLevel := r.getTechLevel(reqTech, r.gs.TechTypes)
+						if reqLevel < len(levels) {
+							for _, reqNode := range levels[reqLevel] {
+								if reqNode.t.ID == reqID {
+									// Çizgi çiz
+									vector.StrokeLine(screen,
+										float32(reqNode.x), float32(reqNode.y+nodeHeight/2),
+										float32(node.x), float32(node.y-nodeHeight/2),
+										2, color.RGBA{150, 150, 150, 255}, false)
+									break
+								}
+							}
+						}
+					}
 				}
 			}
-			DrawText(screen, reqStr, float64(px)+float64(colW)+10, float64(rowY)+18, FaceSmall, color.RGBA{140, 120, 80, 255})
 		}
 	}
 
-	hintY := float64(py) + float64(ph) - 18
-	DrawText(screen, "Bir teknolojiyi tıklayarak araştır   Altin: "+fmt.Sprintf("%d", f.Gold),
+	hintY := float64(ph) - 18
+	DrawText(screen, "Teknoloji düğümlerine tıklayarak araştır   Altin: "+fmt.Sprintf("%d", f.Gold),
 		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
 }
 
@@ -180,53 +262,47 @@ func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
 	if r.gs.TechTypes == nil {
 		return InputAction{}
 	}
-	entries := r.buildTechEntries(f)
 
-	// Fare hover → satır seç
+	levels := r.buildTechTree(f)
+
+	// Ağaç pozisyonlarını yeniden hesapla, böylece tıklama doğru çalışır
+	treeStartY := 80.0
+	levelHeight := 120.0
+	nodeWidth := 180.0
+	nodeHeight := 60.0
+	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
+
 	mx, my := ebiten.CursorPosition()
-	px, py := float32(0), float32(0)
-	pw := float32(ScreenWidth)
-	rowH := 36
-	listY := int(py) + 80
-	visibleRows := (int(float32(ScreenHeight)) - 110) / rowH
-	offset := 0
-	if r.techCursor >= visibleRows {
-		offset = r.techCursor - visibleRows + 1
-	}
-	for i := offset; i < len(entries) && i < offset+visibleRows; i++ {
-		rowY := float32(listY + (i-offset)*rowH)
-		if float64(my) >= float64(rowY-2) && float64(my) <= float64(rowY+float32(rowH)-2) &&
-			float64(mx) >= float64(px+10) && float64(mx) <= float64(px+pw-20) {
-			r.techCursor = i
-			break
-		}
+	fx, fy := float64(mx), float64(my)
+
+	// Close button kontrolü
+	if techCloseHit(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		r.showTech = false
+		return InputAction{}
 	}
 
-	// Sol tık → araştırmayı başlat (uygunsa)
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if techCloseHit(float64(mx), float64(my)) {
-			r.showTech = false
-			return InputAction{}
-		}
-		if r.techCursor < len(entries) {
-			e := entries[r.techCursor]
-			if e.unlocked && !e.done && f.Research.ActiveID == "" {
-				return InputAction{Kind: ActionResearch, BuildingID: e.t.ID}
+	// Ağaç düğümlerine tıklama
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			nodeLeft := node.x - nodeWidth/2
+			nodeRight := node.x + nodeWidth/2
+			nodeTop := node.y - nodeHeight/2
+			nodeBottom := node.y + nodeHeight/2
+
+			if fx >= nodeLeft && fx <= nodeRight && fy >= nodeTop && fy <= nodeBottom {
+				if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+					if node.unlocked && !node.done {
+						if f.Research.ActiveID == node.t.ID {
+							return InputAction{Kind: ActionCancelResearch}
+						} else {
+							return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
+						}
+					}
+				}
+				break
 			}
 		}
 	}
 
-	if r.keyJustPressed(ebiten.KeyArrowUp) && r.techCursor > 0 {
-		r.techCursor--
-	}
-	if r.keyJustPressed(ebiten.KeyArrowDown) && r.techCursor < len(entries)-1 {
-		r.techCursor++
-	}
-	if r.keyJustPressed(ebiten.KeyEnter) && r.techCursor < len(entries) {
-		e := entries[r.techCursor]
-		if e.unlocked && !e.done && f.Research.ActiveID == "" {
-			return InputAction{Kind: ActionResearch, BuildingID: e.t.ID}
-		}
-	}
 	return InputAction{}
 }

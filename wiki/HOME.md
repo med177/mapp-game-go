@@ -1,7 +1,7 @@
 ---
 type: index
 tags: [home, navigation]
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 ---
 
 # Mapp Game Go — Wiki

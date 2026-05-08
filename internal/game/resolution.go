@@ -54,13 +54,27 @@ func checkRegionUnlocks(gs *state.GameState) {
 }
 
 // applyTechTicks tüm fraksiyonların aktif araştırmalarını bir tur ilerletir.
-func applyTechTicks(gs *state.GameState) {
-	for _, f := range gs.Factions {
+// Tamamlanan teknolojileri (fraksiyonID, techID) çiftleri olarak döner.
+func applyTechTicks(gs *state.GameState) []struct {
+	factionID string
+	techID    string
+} {
+	var completed []struct {
+		factionID string
+		techID    string
+	}
+	for fid, f := range gs.Factions {
 		if f.IsEliminated {
 			continue
 		}
-		tech.Tick(&f.Research)
+		if completedID := tech.Tick(&f.Research); completedID != "" {
+			completed = append(completed, struct {
+				factionID string
+				techID    string
+			}{string(fid), completedID})
+		}
 	}
+	return completed
 }
 
 // applySeasonEffects mevsim etkilerini tüm ordulara uygular.

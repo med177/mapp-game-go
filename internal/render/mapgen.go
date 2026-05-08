@@ -93,7 +93,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	if bgPixels, ok := loadPNGAsBasePixels(gs.ScenarioPath + "/maps/world_map_background.png"); ok {
 		copy(wm.basePixels, bgPixels)
 		wm.hasBgImage = true
-		log.Println("Arka plan harita resmi yüklendi")
+		// log.Println("Arka plan harita resmi yüklendi")
 	}
 
 	shapesPath := ""

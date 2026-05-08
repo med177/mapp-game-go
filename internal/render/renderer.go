@@ -88,8 +88,19 @@ type Renderer struct {
 	prevKeys  map[ebiten.Key]bool
 	prevMouse map[ebiten.MouseButton]bool
 
-	// Savaş ilan onay diyalogu
-	warConfirm warConfirmState
+	// Genel onay diyaloğu
+	warConfirm    warConfirmState
+	confirmDialog confirmDialogState
+}
+
+type confirmDialogState struct {
+	show          bool
+	title         string
+	message       string
+	acceptLabel   string
+	declineLabel  string
+	pendingAction InputAction
+	declineHook   func()
 }
 
 type warConfirmState struct {
@@ -176,6 +187,12 @@ func (r *Renderer) ShowHistoricalEvent(title, desc string) {
 	r.historicalEventDesc = desc
 	r.showHistoricalEvent = true
 	r.AddEvent(title)
+}
+
+// ShowTechPanel teknoloji panelini açar.
+func (r *Renderer) ShowTechPanel() {
+	r.showTech = true
+	r.techCursor = 0
 }
 
 // --- Kamera dönüşümleri ---
@@ -341,8 +358,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.combatLogTimer--
 	}
 
-	// 10. Savaş ilan onay diyalogu (diğer popupların altında kalmaması için üst katman)
-	if r.warConfirm.show {
+	// 10. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
+	if r.confirmDialog.show {
+		r.drawConfirmDialog(screen)
+	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
 	}
 
@@ -619,7 +638,10 @@ func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, s
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
 
-	// Savaş ilan onay diyalogu açıkken normal input engellenir
+	// Onay diyaloğu açıkken normal input engellenir
+	if r.confirmDialog.show {
+		return r.handleConfirmDialogInput()
+	}
 	if r.warConfirm.show {
 		return r.handleWarConfirmInput()
 	}
@@ -1098,8 +1120,8 @@ func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
 	yesX := cx + dlgW/2 - btnDW - 10
 	btnY := cy + dlgH - btnDH - 16
 	vector.FillRect(screen, yesX, btnY, btnDW, btnDH, color.RGBA{160, 40, 40, 230}, false)
-	tw2 := MeasureText("Evet - Savaş İlan Et", FaceSmall)
-	DrawText(screen, "Evet - Savaş İlan Et", float64(yesX)+(float64(btnDW)-tw2)/2, float64(btnY)+10, FaceSmall, color.RGBA{255, 220, 220, 255})
+	tw2 := MeasureText("Savaş İlan Et", FaceSmall)
+	DrawText(screen, "Savaş İlan Et", float64(yesX)+(float64(btnDW)-tw2)/2, float64(btnY)+10, FaceSmall, color.RGBA{255, 220, 220, 255})
 
 	// Hayır butonu
 	noX := cx + dlgW/2 + 10
@@ -1155,6 +1177,91 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			TargetRegion:  wc.pendingDest,
 			TargetFaction: faction.FactionID(wc.factionID),
 		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel string, action InputAction, declineHook func()) {
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         title,
+		message:       message,
+		acceptLabel:   acceptLabel,
+		declineLabel:  declineLabel,
+		pendingAction: action,
+		declineHook:   declineHook,
+	}
+}
+
+func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
+	const (
+		dlgW  = float32(420)
+		dlgH  = float32(150)
+		btnDW = float32(120)
+		btnDH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+
+	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
+	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+
+	DrawText(screen, r.confirmDialog.title, float64(cx)+20, float64(cy)+28, FaceLarge, color.RGBA{255, 220, 100, 255})
+	DrawText(screen, r.confirmDialog.message, float64(cx)+20, float64(cy)+58, FaceMed, color.RGBA{220, 220, 220, 255})
+
+	btnY := cy + dlgH - btnDH - 16
+	yesX := cx + dlgW/2 - btnDW - 10
+	noX := cx + dlgW/2 + 10
+
+	vector.FillRect(screen, yesX, btnY, btnDW, btnDH, color.RGBA{70, 140, 70, 240}, false)
+	wYes := MeasureText(r.confirmDialog.acceptLabel, FaceSmall)
+	DrawText(screen, r.confirmDialog.acceptLabel, float64(yesX)+(float64(btnDW)-wYes)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+
+	vector.FillRect(screen, noX, btnY, btnDW, btnDH, color.RGBA{70, 70, 70, 220}, false)
+	wNo := MeasureText(r.confirmDialog.declineLabel, FaceSmall)
+	DrawText(screen, r.confirmDialog.declineLabel, float64(noX)+(float64(btnDW)-wNo)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+}
+
+func (r *Renderer) handleConfirmDialogInput() InputAction {
+	const (
+		dlgW  = float32(420)
+		dlgH  = float32(150)
+		btnDW = float32(120)
+		btnDH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+	btnY := cy + dlgH - btnDH - 16
+	yesX := cx + dlgW/2 - btnDW - 10
+	noX := cx + dlgW/2 + 10
+
+	mxi, myi := ebiten.CursorPosition()
+	mx, my := float32(mxi), float32(myi)
+
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if mx >= yesX && mx <= yesX+btnDW && my >= btnY && my <= btnY+btnDH {
+			action := r.confirmDialog.pendingAction
+			r.confirmDialog = confirmDialogState{}
+			return action
+		}
+		if mx >= noX && mx <= noX+btnDW && my >= btnY && my <= btnY+btnDH {
+			if r.confirmDialog.declineHook != nil {
+				r.confirmDialog.declineHook()
+			}
+			r.confirmDialog = confirmDialogState{}
+			return InputAction{}
+		}
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyN) {
+		if r.confirmDialog.declineHook != nil {
+			r.confirmDialog.declineHook()
+		}
+		r.confirmDialog = confirmDialogState{}
+	}
+	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
+		action := r.confirmDialog.pendingAction
+		r.confirmDialog = confirmDialogState{}
+		return action
 	}
 	return InputAction{}
 }
