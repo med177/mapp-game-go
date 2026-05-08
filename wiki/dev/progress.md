@@ -61,7 +61,7 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
-| Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında `Yükleniyor...` spinner ekranı gösteriliyor |
+| Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında gerçek zaman tabanlı hareketli spinner gösteriliyor |
 | Ana menü / ayarlar | ✅ | Yeni oyun, kayıt yükleme, ayarlar, çıkış |
 | Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
 | Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |

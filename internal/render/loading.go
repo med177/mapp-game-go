@@ -3,6 +3,7 @@ package render
 import (
 	"image/color"
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -19,8 +20,9 @@ func DrawLoadingScreen(screen *ebiten.Image, message string, tick int) {
 	cx := float32(ScreenWidth / 2)
 	cy := float32(ScreenHeight/2 - 18)
 	radius := float32(28)
+	phase := float64(time.Now().UnixNano()%int64(60*time.Second)) / float64(time.Second) * 4.5
 	for i := 0; i < 12; i++ {
-		angle := float64(i)/12*math.Pi*2 + float64(tick)*0.11
+		angle := float64(i)/12*math.Pi*2 + phase + float64(tick)*0.01
 		alpha := uint8(60 + i*14)
 		x := cx + float32(math.Cos(angle))*radius
 		y := cy + float32(math.Sin(angle))*radius
