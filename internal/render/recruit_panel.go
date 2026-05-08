@@ -31,60 +31,41 @@ var unitDisplayOrder = []string{
 	"militia", "infantry", "elite_infantry",
 	"light_cavalry", "cavalry", "heavy_cavalry",
 	"catapult", "bombard", "cannon",
-	"warship", "transport", "merchant_ship",
+	"transport", "merchant_ship", "warship",
 }
 
 // unitSpriteLoc sprite sheet içindeki hücre konumunu tanımlar.
 type unitSpriteLoc struct {
-	row, col  int
-	largeGrid bool // true = 3-sütunlu büyük ızgara, false = 6-sütunlu küçük ızgara
+	row, col int
 }
 
 var unitSpriteLocs = map[string]unitSpriteLoc{
-	"militia":        {0, 0, true},
-	"infantry":       {0, 1, true},
-	"elite_infantry": {0, 2, true},
-	"light_cavalry":  {1, 0, true},
-	"cavalry":        {1, 1, true},
-	"heavy_cavalry":  {1, 2, true},
-	"catapult":       {2, 0, false},
-	"bombard":        {2, 1, false},
-	"cannon":         {2, 2, false},
-	"warship":        {2, 3, false},
-	"transport":      {2, 4, false},
-	"merchant_ship":  {2, 5, false},
+	"militia":        {0, 0},
+	"infantry":       {0, 1},
+	"elite_infantry": {0, 2},
+	"light_cavalry":  {1, 0},
+	"cavalry":        {1, 1},
+	"heavy_cavalry":  {1, 2},
+	"catapult":       {2, 0},
+	"bombard":        {2, 1},
+	"cannon":         {2, 2},
+	"transport":      {3, 0},
+	"merchant_ship":  {3, 1},
+	"warship":        {3, 2},
 }
 
 // unitSpriteRect görüntü boyutuna göre sprite koordinatlarını döner.
-// Üst 2 satır: 3 sütun × ~38% yükseklik (piyade/süvari).
-// Alt satır: 6 sütun × kalan alan (kuşatma/deniz).
+// Görüntü 4 satır × 3 sütun eşit hücrelerden oluşur.
 func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	loc, ok := unitSpriteLocs[id]
 	if !ok {
 		return image.Rectangle{}
 	}
-	W := float64(sheet.Bounds().Dx())
-	H := float64(sheet.Bounds().Dy())
-
-	largeRowH := H * 0.37
-	largeColW := W / 3
-	smallRowY := H * 0.73
-	smallRowH := H - smallRowY
-	smallColW := W / 6
-
-	var x0, y0, x1, y1 float64
-	if loc.largeGrid {
-		x0 = float64(loc.col) * largeColW
-		y0 = float64(loc.row) * largeRowH
-		x1 = x0 + largeColW
-		y1 = y0 + largeRowH*0.87 // alt label alanını kırp
-	} else {
-		x0 = float64(loc.col) * smallColW
-		y0 = smallRowY
-		x1 = x0 + smallColW
-		y1 = smallRowY + smallRowH*0.83
-	}
-	return image.Rect(int(x0), int(y0), int(x1), int(y1))
+	cellW := sheet.Bounds().Dx() / 3
+	cellH := sheet.Bounds().Dy() / 4
+	x0 := loc.col * cellW
+	y0 := loc.row * cellH
+	return image.Rect(x0, y0, x0+cellW, y0+cellH)
 }
 
 // ── Panel layout sabitleri ─────────────────────────────────────────────
@@ -111,14 +92,13 @@ func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	if !RecruitPanelVisible(gs, rid) {
 		return ""
 	}
+	if !RecruitPanelBoundsHit(mx, my, gs, rid) {
+		return ""
+	}
 	px := float64(recruitPanelX())
 	py := float64(recruitPanelY())
 	pw := float64(recruitPanelW)
 	ph := float64(recruitPanelH)
-
-	if mx < px || mx > px+pw || my < py || my > py+ph {
-		return ""
-	}
 
 	const headerH = 28.0
 	pad := panelPad
@@ -138,10 +118,22 @@ func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 		return ""
 	}
 	idx := row*3 + col
-	if idx >= len(unitDisplayOrder) {
+	display := visibleUnitIDs(gs, gs.Regions[rid])
+	if idx >= len(display) {
 		return ""
 	}
-	return unitDisplayOrder[idx]
+	return display[idx]
+}
+
+func RecruitPanelBoundsHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if !RecruitPanelVisible(gs, rid) {
+		return false
+	}
+	px := float64(recruitPanelX())
+	py := float64(recruitPanelY())
+	pw := float64(recruitPanelW)
+	ph := float64(recruitPanelH)
+	return mx >= px && mx <= px+pw && my >= py && my <= py+ph
 }
 
 // DrawRecruitPanel birim seçim ızgarasını bölge panelinin sağına çizer.
@@ -165,8 +157,8 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
 
 	// Başlık
-	titleW := MeasureText("ASKER AL", FaceSmall)
-	DrawText(screen, "ASKER AL",
+	titleW := MeasureText("BİRİM OLUŞTUR", FaceSmall)
+	DrawText(screen, "BİRİM OLUŞTUR",
 		float64(px)+float64(pw)/2-titleW/2, float64(py)+8,
 		FaceSmall, color.RGBA{200, 170, 90, 220})
 	sepY := py + 24
@@ -194,7 +186,8 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	nameY_off := spriteH + 2
 	costY_off := nameY_off + 13
 
-	for i, uid := range unitDisplayOrder {
+	display := visibleUnitIDs(gs, region)
+	for i, uid := range display {
 		col := i % cols
 		row := i / cols
 
@@ -280,4 +273,20 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		}
 		DrawTextCentered(screen, costStr, nameX, float64(sy)+float64(costY_off), FaceSmall, costCol)
 	}
+}
+
+func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
+	showNaval := region != nil && region.IsCoastal(gs.Regions)
+	ids := make([]string, 0, len(unitDisplayOrder))
+	for _, uid := range unitDisplayOrder {
+		utype := gs.UnitTypes[uid]
+		if utype == nil {
+			continue
+		}
+		if utype.RequiredBldg == "port" && !showNaval {
+			continue
+		}
+		ids = append(ids, uid)
+	}
+	return ids
 }

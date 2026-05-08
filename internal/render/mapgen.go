@@ -223,6 +223,9 @@ func (wm *WorldMap) RegionAt(wx, wy int) world.RegionID {
 }
 
 func loadCountryShapes(path string) map[string]countryShape {
+	if path == "" {
+		return nil
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Printf("country shape dosyası okunamadı: %v", err)
@@ -370,44 +373,9 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 	// ilk pikseli bulur ve BFS kuyruğuna ekler.
 	for _, r := range seaRegs {
 		ridx := wm.regionIdx[r.ID]
-		cx := int(shapeOffX + float64(r.WorldX)*shapeScaleX)
-		cy := int(shapeOffY + float64(r.WorldY)*shapeScaleY)
-		if cx < 0 {
-			cx = 0
-		}
-		if cx >= WorldW {
-			cx = WorldW - 1
-		}
-		if cy < 0 {
-			cy = 0
-		}
-		if cy >= WorldH {
-			cy = WorldH - 1
-		}
-
-		// Mesafeye göre en yakın boş deniz pikselini bul
-		seed := -1
-		bestDist := int64(1<<63 - 1)
-		const maxRadius = 200
-		for dy := -maxRadius; dy <= maxRadius; dy++ {
-			for dx := -maxRadius; dx <= maxRadius; dx++ {
-				d := int64(dx*dx + dy*dy)
-				if d > int64(maxRadius*maxRadius) {
-					continue
-				}
-				nx, ny := cx+dx, cy+dy
-				if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
-					continue
-				}
-				nIdx := ny*WorldW + nx
-				if wm.regionAt[nIdx] != 0 {
-					continue
-				}
-				if d < bestDist {
-					bestDist = d
-					seed = nIdx
-				}
-			}
+		seed := wm.findSeaSeed(int(shapeOffX+float64(r.WorldX)*shapeScaleX), int(shapeOffY+float64(r.WorldY)*shapeScaleY))
+		if seed < 0 {
+			seed = wm.findSeaSeed(r.WorldX, r.WorldY)
 		}
 		if seed < 0 {
 			log.Printf("Deniz bölgesi seed pikseli bulunamadı: %s (wx=%d, wy=%d)",
@@ -473,6 +441,47 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 			}
 		}
 	}
+}
+
+func (wm *WorldMap) findSeaSeed(cx, cy int) int {
+	if cx < 0 {
+		cx = 0
+	}
+	if cx >= WorldW {
+		cx = WorldW - 1
+	}
+	if cy < 0 {
+		cy = 0
+	}
+	if cy >= WorldH {
+		cy = WorldH - 1
+	}
+
+	// Mesafeye göre en yakın boş deniz pikselini bul
+	seed := -1
+	bestDist := int64(1<<63 - 1)
+	const maxRadius = 200
+	for dy := -maxRadius; dy <= maxRadius; dy++ {
+		for dx := -maxRadius; dx <= maxRadius; dx++ {
+			d := int64(dx*dx + dy*dy)
+			if d > int64(maxRadius*maxRadius) {
+				continue
+			}
+			nx, ny := cx+dx, cy+dy
+			if nx < 0 || nx >= WorldW || ny < 0 || ny >= WorldH {
+				continue
+			}
+			nIdx := ny*WorldW + nx
+			if wm.regionAt[nIdx] != 0 {
+				continue
+			}
+			if d < bestDist {
+				bestDist = d
+				seed = nIdx
+			}
+		}
+	}
+	return seed
 }
 
 // nearestShapeRegion piksel koordinatına en yakın bölgeyi döner.

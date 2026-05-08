@@ -235,21 +235,6 @@
     ]
   },
   {
-    "id": "army_golden_horde_2",
-    "owner_id": "golden_horde",
-    "region_id": "kazan",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 3
-      }
-    ]
-  },
-  {
     "id": "army_ilkhanate_1",
     "owner_id": "ilkhanate",
     "region_id": "persia_north",

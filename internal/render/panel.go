@@ -24,7 +24,7 @@ const (
 	evLogW = float32(255)
 	evLogH = float32(190)
 
-	infoPanelW = float32(265)
+	infoPanelW = float32(305)
 	infoPanelH = float32(355)
 
 	btnW = float32(90)
@@ -56,29 +56,29 @@ var (
 	miniMapBg     *ebiten.Image
 	miniMapLoaded bool
 
-	// buildingSheet bina sprite sheet'i (assets/sprites/buildings.jpg)
-	// 3×2 grid: market/farm/barracks üst sıra, port/walls/temple alt sıra
+	// buildingSheet bina sprite sheet'i (assets/sprites/buildings.png)
+	// 3×2 grid: [barracks, market, temple] / [walls, farm, port]
 	buildingSheet       *ebiten.Image
 	buildingSheetLoaded bool
 )
 
 // buildingDisplayOrder bina slotlarının sırasını belirler.
-var buildingDisplayOrder = []string{"market", "farm", "barracks", "port", "walls", "temple"}
+var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port"}
 
 func ensureBuildingSheet() {
 	if buildingSheetLoaded {
 		return
 	}
 	buildingSheetLoaded = true
-	buildingSheet = tryLoadImage(ActiveScenarioPath + "/sprites/buildings.jpg")
+	buildingSheet = tryLoadImage(ActiveScenarioPath + "/sprites/buildings.png")
 }
 
 // buildingSpriteRect sprite sheet'in gerçek boyutlarına göre bina hücresini döner.
-// Görüntü 3 sütun × 2 satır eşit hücrelerden oluşur; alt %10 label alanı kırpılır.
+// Görüntü 3 sütun × 2 satır eşit hücrelerden oluşur.
 func buildingSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	idx := map[string]int{
-		"market": 0, "farm": 1, "barracks": 2,
-		"port": 3, "walls": 4, "temple": 5,
+		"barracks": 0, "market": 1, "temple": 2,
+		"walls": 3, "farm": 4, "port": 5,
 	}[id]
 	w := sheet.Bounds().Dx()
 	h := sheet.Bounds().Dy()
@@ -88,9 +88,7 @@ func buildingSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	row := idx / 3
 	x0 := col * cellW
 	y0 := row * cellH
-	// Alt %10 kırpılır — label metni hariç tutulur
-	spriteH := cellH * 9 / 10
-	return image.Rect(x0, y0, x0+cellW, y0+spriteH)
+	return image.Rect(x0, y0, x0+cellW, y0+cellH)
 }
 
 func ensureMiniMapBg() {
@@ -544,11 +542,12 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 18
 
 	DrawText(screen, "Vergi: %"+itoa(region.TaxRate), lx, ly, FaceSmall, ColorGray)
-	drawBar(screen, float32(lx+100), float32(ly)+1, sepW-100, 9, float64(region.TaxRate)/100,
+	drawBar(screen, float32(lx+100), float32(ly)+1, sepW-150, 9, float64(region.TaxRate)/100,
 		color.RGBA{200, 140, 40, 255})
 	if region.OwnerID == string(gs.PlayerFactionID) {
-		drawTinyPanelButton(screen, px+pw-58, float32(ly)-3, 22, 16, "-", true)
-		drawTinyPanelButton(screen, px+pw-31, float32(ly)-3, 22, 16, "+", true)
+		dec, inc := regionTaxButtonRects(gs)
+		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
+		drawTinyPanelButton(screen, inc[0], inc[1], inc[2], inc[3], "+", true)
 	}
 	ly += 18
 
@@ -589,11 +588,6 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 17
 
 	drawBuildingGrid(screen, gs, region, px, float32(ly), pw)
-
-	// Oyuncu ipucu — panelin en altına sabitlendi
-	if region.OwnerID == string(gs.PlayerFactionID) {
-		drawRegionActionButtons(screen, px, py, pw, ph, region)
-	}
 }
 
 // DrawArmyPanel seçili ordu bilgisini sol altta gösterir.
@@ -963,7 +957,8 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 	nameH := float32(16)
 	rowH := spriteH + nameH + 5
 
-	for i, bid := range buildingDisplayOrder {
+	display := visibleBuildingIDs(gs, region)
+	for i, bid := range display {
 		col := i % cols
 		row := i / cols
 
@@ -971,19 +966,28 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		sy := startY + float32(row)*rowH
 		innerW := slotW - 3
 
+		b, hasDef := gs.BuildingTypes[bid]
 		isBuilt := builtSet[bid]
+		canAfford := false
+		if f := gs.Factions[gs.PlayerFactionID]; f != nil && hasDef {
+			canAfford = f.Gold >= b.GoldCost
+		}
 
 		// Arka plan ve çerçeve
 		slotBg := color.RGBA{20, 16, 12, 200}
 		borderCol := color.RGBA{55, 45, 30, 200}
-		if isBuilt {
+		switch {
+		case isBuilt:
 			slotBg = color.RGBA{42, 34, 18, 245}
 			borderCol = panelBorder
+		case canAfford:
+			slotBg = color.RGBA{32, 25, 14, 225}
+			borderCol = color.RGBA{120, 95, 45, 200}
 		}
 		vector.FillRect(screen, sx, sy, innerW, spriteH, slotBg, false)
 		vector.StrokeRect(screen, sx, sy, innerW, spriteH, 1, borderCol, false)
 
-		if isBuilt && buildingSheet != nil {
+		if buildingSheet != nil {
 			r := buildingSpriteRect(bid, buildingSheet)
 			sub := buildingSheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
@@ -992,13 +996,18 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 				float64(spriteH-2)/float64(r.Dy()),
 			)
 			op.GeoM.Translate(float64(sx+1), float64(sy+1))
+			if !isBuilt {
+				if canAfford {
+					op.ColorScale.Scale(0.65, 0.65, 0.65, 0.9)
+				} else {
+					op.ColorScale.Scale(0.35, 0.35, 0.35, 0.85)
+				}
+			}
 			screen.DrawImage(sub, op)
 
-			// İnce altın vurgu çerçevesi
-			vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
-		} else {
-			// Boş slot — kilitli görünüm
-			DrawTextCentered(screen, "—", float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-8, FaceLarge, color.RGBA{55, 45, 35, 180})
+			if isBuilt {
+				vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
+			}
 		}
 
 		// Bina adı
@@ -1007,11 +1016,32 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			bname = b.NameTR
 		}
 		nameCol := color.RGBA{75, 65, 50, 200}
-		if isBuilt {
+		switch {
+		case isBuilt:
 			nameCol = ColorGold
+		case canAfford:
+			nameCol = color.RGBA{170, 145, 85, 220}
 		}
 		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
 	}
+}
+
+func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
+	builtSet := make(map[string]bool, len(region.Buildings))
+	for _, bid := range region.Buildings {
+		builtSet[bid] = true
+	}
+	ids := make([]string, 0, len(buildingDisplayOrder))
+	for _, bid := range buildingDisplayOrder {
+		b, ok := gs.BuildingTypes[bid]
+		if !ok {
+			continue
+		}
+		if builtSet[bid] || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain {
+			ids = append(ids, bid)
+		}
+	}
+	return ids
 }
 
 func drawPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
@@ -1038,57 +1068,15 @@ func drawTinyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string,
 	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+2, FaceSmall, txt)
 }
 
-func drawRegionActionButtons(screen *ebiten.Image, px, py, pw, ph float32, region *world.Region) {
-	buttons := regionActionRects(px, py, pw, ph)
-	labels := []string{"Milis Al", "Gemi İnşa"}
-	for i, b := range buttons {
-		active := true
-		if i == 1 {
-			active = regionHasBuilding(region, "port")
-		}
-		drawPanelButton(screen, b[0], b[1], b[2], b[3], labels[i], active)
-	}
-}
-
-func regionHasBuilding(region *world.Region, buildingID string) bool {
-	for _, bid := range region.Buildings {
-		if bid == buildingID {
-			return true
-		}
-	}
-	return false
-}
-
-func drawPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
-	bg := color.RGBA{38, 50, 28, 225}
-	border := color.RGBA{105, 130, 65, 220}
-	txt := color.RGBA{220, 235, 190, 255}
-	if !active {
-		bg = color.RGBA{18, 16, 12, 180}
-		border = color.RGBA{45, 38, 25, 160}
-		txt = color.RGBA{90, 82, 66, 190}
-	}
-	vector.FillRect(screen, x, y, w, h, bg, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
-	tw := MeasureText(label, FaceSmall)
-	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+5, FaceSmall, txt)
-}
-
-func regionActionRects(px, py, pw, ph float32) [2][4]float32 {
-	const gap = float32(7)
-	w := (pw - float32(panelPad*2) - gap) / 2
-	h := float32(24)
-	x := px + float32(panelPad)
-	y := py + ph - h - 8
-	return [2][4]float32{
-		{x, y, w, h},
-		{x + w + gap, y, w, h},
-	}
-}
-
 func panelCloseHit(mx, my float64, px, py, pw float32) bool {
 	x, y, w, h := panelCloseRect(px, py, pw)
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func regionPanelHit(mx, my float64) bool {
+	px := infoPanelX()
+	py := infoPanelY()
+	return mx >= float64(px) && mx <= float64(px+infoPanelW) && my >= float64(py) && my <= float64(py+infoPanelH)
 }
 
 func regionPanelCloseHit(mx, my float64) bool {
@@ -1107,40 +1095,32 @@ func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID)
 	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
 		return 0
 	}
+	dec, inc := regionTaxButtonRects(gs)
+	if rectF32Hit(mx, my, dec) {
+		return -5
+	}
+	if rectF32Hit(mx, my, inc) {
+		return 5
+	}
+	return 0
+}
+
+func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 	px := infoPanelX()
 	py := infoPanelY()
 	pw := infoPanelW
-	xDec := px + pw - 58
-	xInc := px + pw - 31
 	ly := float64(py) + 10
 	ly += 24
 	if gs.DevelopmentMode {
 		ly += 16 + 16 + 18
 	}
 	ly += 18 + 16 + 8 + 18 + 18
-	y := float32(ly - 3)
-	if mx >= float64(xDec) && mx <= float64(xDec+22) && my >= float64(y) && my <= float64(y+16) {
-		return -5
-	}
-	if mx >= float64(xInc) && mx <= float64(xInc+22) && my >= float64(y) && my <= float64(y+16) {
-		return 5
-	}
-	return 0
+	y := float32(ly - 7)
+	return [4]float32{px + pw - 70, y, 26, 18}, [4]float32{px + pw - 38, y, 26, 18}
 }
 
-func regionActionButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
-	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
-		return -1
-	}
-	px := infoPanelX()
-	rects := regionActionRects(px, infoPanelY(), infoPanelW, infoPanelH)
-	for i, r := range rects {
-		if mx >= float64(r[0]) && mx <= float64(r[0]+r[2]) && my >= float64(r[1]) && my <= float64(r[1]+r[3]) {
-			return i
-		}
-	}
-	return -1
+func rectF32Hit(mx, my float64, r [4]float32) bool {
+	return mx >= float64(r[0]) && mx <= float64(r[0]+r[2]) && my >= float64(r[1]) && my <= float64(r[1]+r[3])
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
@@ -1157,8 +1137,36 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	}
 
 	px := infoPanelX()
-	py := infoPanelY()
 	pw := infoPanelW
+	startY := buildingGridStartY(gs, region)
+
+	const cols = 3
+	pad := float32(panelPad)
+	availW := pw - pad*2
+	slotW := availW / float32(cols)
+	spriteH := float32(54)
+	nameH := float32(16)
+	rowH := spriteH + nameH + 5
+
+	display := visibleBuildingIDs(gs, region)
+	for i, bid := range display {
+		if builtSet[bid] {
+			continue
+		}
+		col := i % cols
+		row := i / cols
+		sx := px + pad + float32(col)*slotW
+		sy := startY + float32(row)*rowH
+		innerW := slotW - 3
+		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
+			return bid
+		}
+	}
+	return ""
+}
+
+func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
+	py := infoPanelY()
 	ly := float64(py) + 10
 	ly += 24
 	if gs.DevelopmentMode {
@@ -1185,30 +1193,7 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 		ly += 18
 	}
 	ly += 4 + 6 + 17
-	startY := float32(ly)
-
-	const cols = 3
-	pad := float32(panelPad)
-	availW := pw - pad*2
-	slotW := availW / float32(cols)
-	spriteH := float32(54)
-	nameH := float32(16)
-	rowH := spriteH + nameH + 5
-
-	for i, bid := range buildingDisplayOrder {
-		if builtSet[bid] {
-			continue
-		}
-		col := i % cols
-		row := i / cols
-		sx := px + pad + float32(col)*slotW
-		sy := startY + float32(row)*rowH
-		innerW := slotW - 3
-		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
-			return bid
-		}
-	}
-	return ""
+	return float32(ly)
 }
 
 func drawPanelBorder(screen *ebiten.Image, x, y, w, h float32) {

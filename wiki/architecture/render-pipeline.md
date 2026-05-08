@@ -45,6 +45,7 @@ type Renderer struct {
 | Sıra | Katman | Dosya |
 |---|---|---|
 | 0 | Özel tam ekranlar: ana menü, ayarlar, fraksiyon seçim, zafer seçim, game over | `main_menu.go`, `settings.go`, `faction_select.go`, `victory_select.go` |
+| 0 | Yükleme ekranı: spinner + durum metni | `loading.go` |
 | 0 | Kayıt slot seçim ekranları (PhaseLoadSelect / PhaseSaveSelect) | `load_select.go` |
 | 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
@@ -75,7 +76,7 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 
 `mapPitchY = 1.0`, `mapShearX = 0.0` → şu an düz 2D (izometrik bükme kapalı)
 
-**Zoom:** Fare tekerleği ile 0.25–3.0 arası, fare pozisyonuna odaklanarak büyütür.
+**Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. Yakınlaşma üst sınırı `3.0`.
 
 **Sürükleme:** Orta fare tuşu basılıyken dünya uzayı delta hesaplanır.
 
@@ -86,6 +87,8 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 `WorldMap` — `internal/render/mapgen.go`
 
 Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve bir sonraki `Refresh()` çağrısında yeniden üretilir. Bölge poligonları `country_shapes.json`'dan gelir; renkler fraksiyon rengiyle doldurulur.
+
+Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara pikselleri bariyer kabul eden multi-source BFS ile üretilir. Seed araması önce mevcut shape dönüşümlü koordinatı, sonuç çıkmazsa ham `world_x/world_y` koordinatını dener; bu, senaryo verisindeki deniz merkezlerinin dünya pikseli olarak tutulduğu durumlarda `_sea_*` seed uyarılarını engeller.
 
 ---
 
@@ -99,13 +102,20 @@ Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve
 1. Açık detay paneli kapatma düğmeleri (bölge/ordu)
 2. Alt panel butonları (diplomasi, teknoloji, tur bitir)
 3. UI bölgesi (alt bar / sağ panel) → geçersiz say
-4. Bölge paneli aksiyonları: vergi +/- düğmeleri, milis/gemi düğmeleri, boş bina slotuna tıklayarak inşa
-5. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
-6. Asker alım paneli (`recruit_panel.go:RecruitPanelHitTest`)
-7. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
-8. Bölge seçimi (WorldMap pixel lookup)
+4. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa
+5. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
+6. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
+7. BÖLDÜR/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)
+8. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
+9. Bölge seçimi (WorldMap pixel lookup)
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır.
+
+Uzun sürebilen senaryo/kayıt yükleme işleri `PhaseLoading` ekranına geçer. `internal/game/game.go` yükleme işini arka planda başlatır; renderer bu sırada `loading.go` içindeki spinner'ı çizer ve sonuç hazır olduğunda state ana thread üzerinde uygulanır.
+
+Düşman orduları seçilebilir ama emir verilemez. Renderer düşman ordusu için hareket hedefi çizmez ve sağ/sol tık hareket aksiyonu üretmez. Oyuncu ordularından birinin mevcut hareket menzilindeki düşman ordularda ikon birim sayısını gösterir; detay panelinde birimlerin yaklaşık yarısı görünür, kalanları `Gizli` kartlarıyla saklanır. Menzil dışındaki düşman ordularda birim sayısı ve hareket/birim detayları gizli kalır.
+
+Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez.
 
 ---
 

@@ -57,6 +57,7 @@ type Renderer struct {
 	menuTick        int
 	HasSave         bool
 	CurrentSettings Settings
+	LoadingMessage  string
 
 	// Duraklama menüsü
 	pauseCursor int
@@ -111,12 +112,16 @@ func New(gs *state.GameState) *Renderer {
 
 // resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
 func (r *Renderer) resetCamera() {
-	scaleX := ScreenWidth / float64(WorldW)
-	scaleY := ScreenHeight / float64(WorldH)
-	r.camScale = math.Min(scaleX, scaleY)
+	r.camScale = minCameraScale()
 	r.camX = float64(WorldW) / 2
 	// Haritanın üst kenarını ekranın üstüne hizala
 	r.camY = ScreenHeight / (2 * r.camScale)
+}
+
+func minCameraScale() float64 {
+	scaleX := ScreenWidth / float64(WorldW)
+	scaleY := ScreenHeight / float64(WorldH)
+	return math.Min(scaleX, scaleY)
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
@@ -124,6 +129,10 @@ func (r *Renderer) SetCursor(n int) { r.factionCursor = n }
 
 // MarkMapDirty sahiplik değiştiğinde çağrılır.
 func (r *Renderer) MarkMapDirty() { r.worldMap.MarkDirty() }
+
+func (r *Renderer) SetLoadingMessage(message string) {
+	r.LoadingMessage = message
+}
 
 // ReloadGameState yükleme sonrası yeni state ve yeni worldmap ile günceller.
 // ActiveScenarioPath aktif senaryonun klasör yolu; asset yükleyiciler buradan türetir.
@@ -216,6 +225,12 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		return
 	}
 
+	if r.gs.Phase == state.PhaseLoading {
+		r.menuTick++
+		DrawLoadingScreen(screen, r.LoadingMessage, r.menuTick)
+		return
+	}
+
 	// Ayarlar ekranı
 	if r.gs.Phase == state.PhaseSettings {
 		DrawSettingsScreen(screen, r.CurrentSettings, r.factionCursor)
@@ -286,7 +301,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
 	// 3. Ordu hareket hedefleri
-	if r.SelectedArmy != "" {
+	if r.selectedArmyIsPlayerOwned() {
 		r.drawMoveTargets(screen)
 	}
 
@@ -303,6 +318,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	DrawEventLog(screen, r.eventLog)
+	DrawHoverTooltip(screen, r.gs, r.SelectedRegion)
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
@@ -356,10 +372,50 @@ func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 	}
 }
 
+func (r *Renderer) selectedArmyIsPlayerOwned() bool {
+	a, ok := r.gs.Armies[r.SelectedArmy]
+	return ok && a.OwnerID == string(r.gs.PlayerFactionID)
+}
+
+func armyCanEnterRegion(a *army.Army, target *world.Region) bool {
+	if target == nil || target.IsLocked {
+		return false
+	}
+	if a.IsNaval {
+		return target.CanNavalEnter()
+	}
+	return target.CanLandEnter()
+}
+
+func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool {
+	if targetArmy == nil || targetArmy.OwnerID == string(gs.PlayerFactionID) {
+		return false
+	}
+	for _, playerArmy := range gs.Armies {
+		if playerArmy.OwnerID != string(gs.PlayerFactionID) || playerArmy.MovePoints <= 0 {
+			continue
+		}
+		src, ok := gs.Regions[playerArmy.RegionID]
+		if !ok {
+			continue
+		}
+		for _, nid := range src.Neighbors {
+			if nid != targetArmy.RegionID {
+				continue
+			}
+			targetRegion, ok := gs.Regions[nid]
+			if ok && armyCanEnterRegion(playerArmy, targetRegion) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // drawMoveTargets seçili ordunun gidebileceği komşu bölgeleri vurgular.
 func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 	a, ok := r.gs.Armies[r.SelectedArmy]
-	if !ok || a.MovePoints <= 0 {
+	if !ok || a.OwnerID != string(r.gs.PlayerFactionID) || a.MovePoints <= 0 {
 		return
 	}
 	src, ok := r.gs.Regions[a.RegionID]
@@ -464,7 +520,11 @@ func (r *Renderer) drawArmies(screen *ebiten.Image) {
 		}
 		fc := factionColor(r.gs, a.OwnerID)
 		isSelected := pos.ArmyID == r.SelectedArmy
-		r.drawArmyIcon(screen, pos.X, pos.Y, fc, len(a.Units), isSelected, a.IsNaval)
+		unitCount := len(a.Units)
+		if a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
+			unitCount = -1
+		}
+		r.drawArmyIcon(screen, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
 	}
 }
 
@@ -488,7 +548,10 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.
 	}
 
 	// Birim sayısı
-	countStr := itoa(unitCount)
+	countStr := "?"
+	if unitCount >= 0 {
+		countStr = itoa(unitCount)
+	}
 	tw := MeasureText(countStr, FaceSmall)
 	DrawText(screen, countStr, float64(cx)-tw/2, float64(cy)-5, FaceSmall, color.RGBA{255, 255, 255, 255})
 }
@@ -789,29 +852,29 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
-		switch regionActionButtonHit(fx, fy, r.gs, r.SelectedRegion) {
-		case 0:
-			return InputAction{Kind: ActionRecruitUnit, TargetRegion: r.SelectedRegion}
-		case 1:
-			return InputAction{Kind: ActionRecruitNaval, TargetRegion: r.SelectedRegion}
-		}
 		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion); bid != "" {
 			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
 		}
 	}
 
+	// Birim oluştur paneli tıklaması — bölge seçiminden önce kontrol edilmeli
+	if uid := RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion); uid != "" {
+		return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: uid}
+	}
+	if RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
+		return InputAction{}
+	}
+	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
+		return InputAction{}
+	}
+
 	// BÖLDÜR butonu tıklaması
-	if r.SelectedArmy != "" && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
 	}
 	// BİRLEŞTİR butonu tıklaması
-	if r.SelectedArmy != "" && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
-	}
-
-	// Asker al paneli tıklaması — bölge seçiminden önce kontrol edilmeli
-	if uid := RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion); uid != "" {
-		return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: uid}
 	}
 
 	// Ordu ikonu tıklaması → seç / seçimi kaldır
@@ -835,7 +898,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
 			// Naval donanma seçiliyse deniz bölgesine tıklama = hareket komutu
-			if r.SelectedArmy != "" {
+			if r.selectedArmyIsPlayerOwned() {
 				if a, ok2 := r.gs.Armies[r.SelectedArmy]; ok2 && a.IsNaval {
 					return InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
 				}
@@ -863,7 +926,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 
 	a, ok := r.gs.Armies[r.SelectedArmy]
-	if !ok || a.MovePoints <= 0 {
+	if !ok || a.OwnerID != string(r.gs.PlayerFactionID) || a.MovePoints <= 0 {
 		return InputAction{}
 	}
 
@@ -944,10 +1007,17 @@ func (r *Renderer) handleCamera() {
 	_, dy := ebiten.Wheel()
 	if dy != 0 {
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
+		minScale := minCameraScale()
 		if dy > 0 && r.camScale < 3.0 {
 			r.camScale *= 1.12
-		} else if dy < 0 && r.camScale > 0.25 {
+			if r.camScale > 3.0 {
+				r.camScale = 3.0
+			}
+		} else if dy < 0 && r.camScale > minScale {
 			r.camScale /= 1.12
+			if r.camScale < minScale {
+				r.camScale = minScale
+			}
 		}
 		afterWX, afterWY := r.screenToWorld(float64(mx), float64(my))
 		r.camX += mouseWX - afterWX

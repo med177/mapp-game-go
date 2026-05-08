@@ -12,13 +12,13 @@ import (
 
 // Kart boyutları
 const (
-	cardW   = float32(60)
+	cardW    = float32(60)
 	spriteHc = float32(50) // kart içindeki sprite yüksekliği
-	nameHc  = float32(13)
-	hpBarH  = float32(7)
-	cardH   = spriteHc + nameHc + hpBarH + 5 // ≈75px
-	cardGap = float32(3)
-	maxCols = 10
+	nameHc   = float32(13)
+	hpBarH   = float32(7)
+	cardH    = spriteHc + nameHc + hpBarH + 5 // ≈75px
+	cardGap  = float32(3)
+	maxCols  = 10
 
 	armyPanelPadX = float32(12)
 	armyPanelPadY = float32(8)
@@ -34,6 +34,14 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	a, ok := gs.Armies[aid]
 	if !ok {
+		return
+	}
+	if a.OwnerID != string(gs.PlayerFactionID) {
+		if enemyArmyInPlayerMoveRange(gs, a) {
+			drawScoutedEnemyArmyDetailPanel(screen, gs, a)
+		} else {
+			drawEnemyArmyDetailPanel(screen, gs, a)
+		}
 		return
 	}
 
@@ -188,6 +196,142 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.FillRect(screen, cx+1, hpY+hpBarH, xpW, 2, color.RGBA{80, 160, 255, 180}, false)
 		}
 	}
+}
+
+func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army) {
+	panelW := float32(380)
+	panelH := float32(96)
+	px := float32(ScreenWidth)/2 - panelW/2
+	py := bottomBarTop() - panelH - 5
+
+	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
+	drawPanelBorder(screen, px, py, panelW, panelH)
+	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+
+	factionName := "Bilinmeyen Fraksiyon"
+	factionCol := ColorGold
+	for fid, f := range gs.Factions {
+		if string(fid) == a.OwnerID {
+			factionName = f.NameTR
+			factionCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			break
+		}
+	}
+	location := "Bilinmeyen konum"
+	if r, ok := gs.Regions[a.RegionID]; ok {
+		location = r.NameTR
+	}
+
+	DrawText(screen, "Düşman Ordu", float64(px)+14, float64(py)+10, FaceMed, factionCol)
+	DrawText(screen, factionName+"  —  "+location, float64(px)+14, float64(py)+34, FaceSmall, ColorGray)
+	DrawText(screen, "Birim ve hareket detayları bilinmiyor", float64(px)+14, float64(py)+56, FaceSmall, color.RGBA{160, 140, 100, 210})
+	DrawText(screen, "Bu orduya hareket emri verilemez", float64(px)+14, float64(py)+74, FaceSmall, color.RGBA{180, 100, 90, 210})
+}
+
+func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army) {
+	ensureArmySheet()
+
+	const totalSlots = army.MaxArmySize
+	cols := maxCols
+	rows := (totalSlots + maxCols - 1) / maxCols
+
+	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	px := float32(ScreenWidth)/2 - panelW/2
+	py := bottomBarTop() - panelH - 5
+
+	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
+	drawPanelBorder(screen, px, py, panelW, panelH)
+	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+
+	factionName := "Bilinmeyen Fraksiyon"
+	factionCol := ColorGold
+	for fid, f := range gs.Factions {
+		if string(fid) == a.OwnerID {
+			factionName = f.NameTR
+			factionCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			break
+		}
+	}
+	location := ""
+	if r, ok := gs.Regions[a.RegionID]; ok {
+		location = r.NameTR
+	}
+	headerLeft := "Keşfedilen Düşman: " + factionName
+	if location != "" {
+		headerLeft += "  —  " + location
+	}
+	DrawText(screen, headerLeft, float64(px)+float64(armyPanelPadX), float64(py)+6, FaceSmall, factionCol)
+
+	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat"
+	countW := MeasureText(countStr, FaceSmall)
+	DrawText(screen, countStr,
+		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
+		float64(py)+6, FaceSmall, color.RGBA{190, 160, 90, 230})
+
+	sepY := py + armyPanelHdrH
+	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
+
+	revealed := (len(a.Units) + 1) / 2
+	if revealed < 1 && len(a.Units) > 0 {
+		revealed = 1
+	}
+	for i := 0; i < totalSlots; i++ {
+		col := i % maxCols
+		row := i / maxCols
+		cx := px + armyPanelPadX + float32(col)*(cardW+cardGap)
+		cy := sepY + armyPanelPadY/2 + float32(row)*(cardH+cardGap)
+
+		if i >= len(a.Units) {
+			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 90}, false)
+			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 95}, false)
+			continue
+		}
+		if i >= revealed {
+			drawUnknownEnemyUnitCard(screen, cx, cy)
+			continue
+		}
+		drawScoutedEnemyUnitCard(screen, gs, a.Units[i], cx, cy)
+	}
+}
+
+func drawUnknownEnemyUnitCard(screen *ebiten.Image, cx, cy float32) {
+	vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{24, 20, 16, 220}, false)
+	vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{95, 75, 45, 210}, false)
+	DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, color.RGBA{210, 180, 90, 230})
+	DrawTextCentered(screen, "Gizli", float64(cx)+float64(cardW)/2, float64(cy)+float64(spriteHc)+1, FaceSmall, color.RGBA{150, 130, 90, 220})
+	drawBar(screen, cx+1, cy+spriteHc+nameHc+1, cardW-2, hpBarH-1, 1, color.RGBA{80, 70, 55, 180})
+}
+
+func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, u army.Unit, cx, cy float32) {
+	utype := gs.UnitTypes[u.TypeID]
+	vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{28, 22, 14, 225}, false)
+	vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{115, 85, 45, 220}, false)
+
+	if armySheet != nil && utype != nil {
+		r := unitSpriteRect(u.TypeID, armySheet)
+		if !r.Empty() {
+			sub := armySheet.SubImage(r).(*ebiten.Image)
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(
+				float64(cardW-2)/float64(r.Dx()),
+				float64(spriteHc-2)/float64(r.Dy()),
+			)
+			op.GeoM.Translate(float64(cx+1), float64(cy+1))
+			op.ColorScale.Scale(0.85, 0.85, 0.85, 1)
+			screen.DrawImage(sub, op)
+		}
+	}
+
+	unitName := u.TypeID
+	if utype != nil {
+		unitName = utype.NameTR
+	}
+	DrawTextCentered(screen, unitName,
+		float64(cx)+float64(cardW)/2,
+		float64(cy)+float64(spriteHc)+1,
+		FaceSmall, ColorWhite)
+	drawBar(screen, cx+1, cy+spriteHc+nameHc+1, cardW-2, hpBarH-1, 1, color.RGBA{120, 110, 85, 210})
 }
 
 const (

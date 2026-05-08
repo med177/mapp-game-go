@@ -28,9 +28,31 @@ type Game struct {
 	gs       *state.GameState
 	renderer *render.Renderer
 	evts     []*events.Event
+	loading  *loadingJob
 }
 
 const scenarioBaseDir = "assets/scenarios"
+
+type loadingKind int
+
+const (
+	loadingScenario loadingKind = iota + 1
+	loadingSave
+)
+
+type loadingJob struct {
+	kind loadingKind
+	done chan loadingResult
+}
+
+type loadingResult struct {
+	gs           *state.GameState
+	evts         []*events.Event
+	scenarioPath string
+	successMsg   string
+	fallback     state.Phase
+	err          error
+}
 
 // New oyunu başlatır, senaryo listesini yükler, ana menüde bekler.
 func New() *Game {
@@ -54,6 +76,11 @@ func New() *Game {
 
 // Update oyun mantığını günceller — 60 TPS.
 func (g *Game) Update() error {
+	if g.loading != nil {
+		g.pollLoading()
+		return nil
+	}
+
 	action := g.renderer.HandleInput()
 
 	if action.Kind != render.ActionNone {
@@ -78,7 +105,7 @@ func (g *Game) Update() error {
 	case state.PhaseLoadSelect:
 		switch action.Kind {
 		case render.ActionSelectSave:
-			g.loadSlot(action.BuildingID)
+			g.startLoadSlot(action.BuildingID, state.PhaseMainMenu)
 		case render.ActionDeleteSave:
 			if err := save.DeleteSlot(action.BuildingID); err != nil {
 				g.renderer.ShowCombatResult("Silme hatası: " + err.Error())
@@ -99,7 +126,7 @@ func (g *Game) Update() error {
 	case state.PhaseScenarioSelect:
 		switch action.Kind {
 		case render.ActionSelectScenario:
-			g.loadScenario(action.BuildingID)
+			g.startLoadScenario(action.BuildingID)
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseMainMenu
 			g.renderer.SetCursor(0)
@@ -161,7 +188,7 @@ func (g *Game) Update() error {
 		case render.ActionSave:
 			g.saveGame()
 		case render.ActionLoad:
-			g.loadGame()
+			g.startLoadSlot("autosave", state.PhasePlayerTurn)
 		case render.ActionAdjustTax:
 			g.adjustTax(action.TargetRegion, action.Delta)
 		case render.ActionOpenPauseMenu:
@@ -224,6 +251,51 @@ func (g *Game) Update() error {
 	}
 
 	return nil
+}
+
+func (g *Game) startLoading(kind loadingKind, message string, fn func() loadingResult) {
+	g.gs.Phase = state.PhaseLoading
+	g.renderer.SetLoadingMessage(message)
+	done := make(chan loadingResult, 1)
+	g.loading = &loadingJob{kind: kind, done: done}
+	go func() {
+		done <- fn()
+	}()
+}
+
+func (g *Game) pollLoading() {
+	select {
+	case res := <-g.loading.done:
+		kind := g.loading.kind
+		g.loading = nil
+		g.finishLoading(kind, res)
+	default:
+	}
+}
+
+func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
+	if res.err != nil {
+		g.renderer.ShowCombatResult("Yükleme hatası: " + res.err.Error())
+		if res.fallback == "" {
+			res.fallback = state.PhaseMainMenu
+		}
+		g.gs.Phase = res.fallback
+		return
+	}
+	switch kind {
+	case loadingScenario:
+		g.gs = res.gs
+		g.evts = res.evts
+		audio.LoadScenarioSounds(res.scenarioPath)
+		g.renderer.ReloadGameState(res.gs)
+		g.renderer.SetCursor(0)
+	case loadingSave:
+		res.gs.Phase = state.PhasePlayerTurn
+		g.gs = res.gs
+		g.renderer.ReloadGameState(res.gs)
+		g.renderer.HasSave = save.AnySlotExists()
+		g.renderer.ShowCombatResult(res.successMsg)
+	}
 }
 
 // Draw ekranı çizer.
@@ -394,22 +466,25 @@ func (g *Game) saveGame() {
 
 // loadGame otomatik kayıt slotundan yükler.
 func (g *Game) loadGame() {
-	g.loadSlot("autosave")
+	g.startLoadSlot("autosave", state.PhasePlayerTurn)
 }
 
 // loadSlot belirtilen slottan oyunu yükler ve oyuncu turuna geçer.
 func (g *Game) loadSlot(slotName string) {
-	gs, err := save.LoadSlot(slotName)
-	if err != nil {
-		g.renderer.ShowCombatResult("Yükleme hatası: " + err.Error())
-		g.gs.Phase = state.PhaseMainMenu
-		return
-	}
-	gs.Phase = state.PhasePlayerTurn
-	g.gs = gs
-	g.renderer.ReloadGameState(gs)
-	g.renderer.HasSave = save.AnySlotExists()
-	g.renderer.ShowCombatResult("Oyun yüklendi!")
+	g.startLoadSlot(slotName, state.PhaseMainMenu)
+}
+
+func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
+	g.startLoading(loadingSave, "Kayıt yükleniyor...", func() loadingResult {
+		gs, err := save.LoadSlot(slotName)
+		if err != nil {
+			return loadingResult{err: err, fallback: fallback}
+		}
+		return loadingResult{
+			gs:         gs,
+			successMsg: "Oyun yüklendi!",
+		}
+	})
 }
 
 // resetToNewGame state'i temizler ve senaryo seçimine geçer.
@@ -426,14 +501,32 @@ func (g *Game) resetToNewGame() {
 
 // loadScenario seçilen senaryo klasöründen tüm oyun verilerini yükler.
 func (g *Game) loadScenario(scenarioPath string) {
+	g.startLoadScenario(scenarioPath)
+}
+
+func (g *Game) startLoadScenario(scenarioPath string) {
+	difficulty := g.gs.Difficulty
+	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func() loadingResult {
+		gs, evts, err := loadScenarioData(scenarioPath, difficulty)
+		if err != nil {
+			return loadingResult{err: err, fallback: state.PhaseScenarioSelect}
+		}
+		return loadingResult{
+			gs:           gs,
+			evts:         evts,
+			scenarioPath: scenarioPath,
+		}
+	})
+}
+
+func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []*events.Event, error) {
 	sc := scenarioByPath(scenarioPath)
 
 	dp := func(f string) string { return scenarioPath + "/data/" + f }
 
 	regions, err := world.LoadRegions(dp("regions.json"))
 	if err != nil {
-		log.Printf("Bölgeler yüklenemedi: %v", err)
-		return
+		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
 	}
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), regions)
 	if err != nil {
@@ -441,8 +534,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 	}
 	factions, err := faction.LoadFactions(dp("factions.json"))
 	if err != nil {
-		log.Printf("Fraksiyonlar yüklenemedi: %v", err)
-		return
+		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
@@ -485,7 +577,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 		Month:              month,
 		StartYear:          year,
 		Phase:              state.PhaseFactionSelect,
-		Difficulty:         g.gs.Difficulty,
+		Difficulty:         difficulty,
 		DevelopmentMode:    devMode,
 		ScenarioID:         scenarioIDFromPath(scenarioPath),
 		ScenarioPath:       scenarioPath,
@@ -512,11 +604,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 		}
 	}
 
-	g.gs = gs
-	g.evts = evts
-	audio.LoadScenarioSounds(scenarioPath)
-	g.renderer.ReloadGameState(gs)
-	g.renderer.SetCursor(0)
+	return gs, evts, nil
 }
 
 // scenarioByPath ScenarioList içinde verilen path'e sahip senaryoyu bulur.

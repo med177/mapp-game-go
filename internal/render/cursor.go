@@ -181,8 +181,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 	}
 	if r.SelectedRegion != "" {
-		if regionPanelCloseHit(fx, fy) || regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion) != 0 || regionActionButtonHit(fx, fy, r.gs, r.SelectedRegion) >= 0 ||
-			BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
+		if regionPanelHit(fx, fy) || RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
 			return true
 		}
 	}
@@ -198,10 +197,10 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 	}
 	// BÖLDÜR / BİRLEŞTİR butonları
-	if SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return true
 	}
-	if MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return true
 	}
 	// Sağ minimap / event log alanı üzerinde mi?

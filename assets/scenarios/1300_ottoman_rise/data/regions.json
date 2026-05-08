@@ -1434,7 +1434,6 @@
     "neighbors": [
       "lithuania",
       "crimea",
-      "kazan",
       "kiev",
       "ukraine",
       "novgorod",
@@ -1451,32 +1450,6 @@
     "unlock_turn": 0,
     "world_x": 1293,
     "world_y": 177
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 30,
-    "base_grain_output": 40,
-    "id": "kazan",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Kazan",
-    "name_tr": "Kazan",
-    "neighbors": [
-      "moscow",
-      "persia_north",
-      "nizhny_novgorod"
-    ],
-    "owner_id": "golden_horde",
-    "population": 600,
-    "religion": "sunni",
-    "satisfaction": 55,
-    "shape_id": "RUS",
-    "tax_rate": 25,
-    "terrain": "plain",
-    "trade_capacity": 1,
-    "unlock_turn": 0,
-    "world_x": 1687,
-    "world_y": 115
   },
   {
     "active_event_id": "",
@@ -1550,8 +1523,7 @@
       "palestine",
       "_sea_med_east",
       "_sea_red",
-      "israel",
-      "sudan"
+      "israel"
     ],
     "owner_id": "mamluk",
     "population": 1800,
@@ -1663,7 +1635,6 @@
     "neighbors": [
       "georgia",
       "persia_west",
-      "kazan",
       "_sea_caspian",
       "azerbaijan",
       "armenia"
@@ -1721,7 +1692,6 @@
       "iraq",
       "persia_west",
       "_sea_persian",
-      "oman",
       "uae"
     ],
     "owner_id": "safavid",
@@ -1750,8 +1720,6 @@
       "_sea_red",
       "jordan",
       "kuwait",
-      "yemen",
-      "oman",
       "uae",
       "qatar",
       "bahrain"
@@ -2096,7 +2064,6 @@
       "_sea_atlantic",
       "denmark",
       "normandy",
-      "finland",
       "holland",
       "flanders",
       "_shore_atlantic_2",
@@ -2131,7 +2098,6 @@
       "estonia",
       "latvia",
       "sweden",
-      "finland",
       "konigsberg",
       "pomerania",
       "mazovia",
@@ -2374,14 +2340,11 @@
     "owner_id": "",
     "neighbors": [
       "_shore_red_0",
-      "djibouti",
       "_sea_red_open_0",
-      "yemen",
       "_sea_red_open_1",
       "egypt",
       "_sea_med_east",
       "_sea_persian",
-      "eritrea",
       "hejaz"
     ],
     "world_x": 1200,
@@ -2434,7 +2397,6 @@
     "owner_id": "",
     "neighbors": [
       "_sea_persian_open_1",
-      "oman",
       "bahrain",
       "qatar",
       "persia_south",
@@ -2611,7 +2573,6 @@
     "neighbors": [
       "norway",
       "denmark",
-      "finland",
       "_sea_baltic"
     ],
     "owner_id": "denmark_kingdom",
@@ -2625,33 +2586,6 @@
     "unlock_turn": 0,
     "world_x": 782,
     "world_y": 78
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 20,
-    "base_grain_output": 20,
-    "id": "finland",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Finland",
-    "name_tr": "Finlandiya",
-    "neighbors": [
-      "sweden",
-      "estonia",
-      "_sea_baltic",
-      "_sea_north"
-    ],
-    "owner_id": "denmark_kingdom",
-    "population": 300,
-    "religion": "catholic",
-    "satisfaction": 65,
-    "shape_id": "FIN",
-    "tax_rate": 25,
-    "terrain": "forest",
-    "trade_capacity": 2,
-    "unlock_turn": 0,
-    "world_x": 997,
-    "world_y": 47
   },
   {
     "active_event_id": "",
@@ -3144,162 +3078,6 @@
   },
   {
     "active_event_id": "",
-    "base_gold_income": 15,
-    "base_grain_output": 14,
-    "id": "sudan",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Sudan",
-    "name_tr": "Sudan",
-    "neighbors": [
-      "egypt",
-      "eritrea",
-      "ethiopia"
-    ],
-    "owner_id": "",
-    "population": 350,
-    "religion": "sunni",
-    "satisfaction": 60,
-    "shape_id": "SDN",
-    "tax_rate": 30,
-    "terrain": "desert",
-    "trade_capacity": 2,
-    "unlock_turn": 0,
-    "world_x": 1074,
-    "world_y": 931
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 12,
-    "base_grain_output": 10,
-    "id": "eritrea",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Eritrea",
-    "name_tr": "Eritre",
-    "neighbors": [
-      "sudan",
-      "ethiopia",
-      "_sea_red"
-    ],
-    "owner_id": "",
-    "population": 200,
-    "religion": "orthodox",
-    "satisfaction": 60,
-    "shape_id": "ERI",
-    "tax_rate": 30,
-    "terrain": "coast",
-    "trade_capacity": 2,
-    "unlock_turn": 0,
-    "world_x": 1252,
-    "world_y": 943
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 18,
-    "base_grain_output": 22,
-    "id": "ethiopia",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Ethiopia",
-    "name_tr": "Etiyopya",
-    "neighbors": [
-      "sudan",
-      "eritrea"
-    ],
-    "owner_id": "",
-    "population": 500,
-    "religion": "orthodox",
-    "satisfaction": 60,
-    "shape_id": "ETH",
-    "tax_rate": 30,
-    "terrain": "mountain",
-    "trade_capacity": 2,
-    "unlock_turn": 0,
-    "world_x": 1253,
-    "world_y": 1030
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 10,
-    "base_grain_output": 6,
-    "id": "djibouti",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Djibouti",
-    "name_tr": "Cibuti",
-    "neighbors": [
-      "eritrea",
-      "ethiopia",
-      "_sea_red"
-    ],
-    "owner_id": "",
-    "population": 80,
-    "religion": "sunni",
-    "satisfaction": 60,
-    "shape_id": "DJI",
-    "tax_rate": 30,
-    "terrain": "coast",
-    "trade_capacity": 3,
-    "unlock_turn": 0,
-    "world_x": 1327,
-    "world_y": 1011
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 20,
-    "base_grain_output": 14,
-    "id": "yemen",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Yemen",
-    "name_tr": "Yemen",
-    "neighbors": [
-      "hejaz",
-      "oman",
-      "_sea_red"
-    ],
-    "owner_id": "",
-    "population": 400,
-    "religion": "sunni",
-    "satisfaction": 60,
-    "shape_id": "YEM",
-    "tax_rate": 30,
-    "terrain": "mountain",
-    "trade_capacity": 3,
-    "unlock_turn": 0,
-    "world_x": 1426,
-    "world_y": 932
-  },
-  {
-    "active_event_id": "",
-    "base_gold_income": 22,
-    "base_grain_output": 8,
-    "id": "oman",
-    "is_locked": false,
-    "is_sea": false,
-    "name": "Oman",
-    "name_tr": "Umman",
-    "neighbors": [
-      "hejaz",
-      "uae",
-      "yemen",
-      "_sea_persian"
-    ],
-    "owner_id": "",
-    "population": 300,
-    "religion": "sunni",
-    "satisfaction": 60,
-    "shape_id": "OMN",
-    "tax_rate": 30,
-    "terrain": "desert",
-    "trade_capacity": 4,
-    "unlock_turn": 0,
-    "world_x": 1597,
-    "world_y": 844
-  },
-  {
-    "active_event_id": "",
     "base_gold_income": 20,
     "base_grain_output": 6,
     "id": "uae",
@@ -3308,7 +3086,6 @@
     "name": "Uae",
     "name_tr": "BAE",
     "neighbors": [
-      "oman",
       "qatar",
       "hejaz",
       "_sea_persian"
@@ -4892,8 +4669,7 @@
     "name": "Nizhny Novgorod",
     "name_tr": "Nizhny Novgorod (Volga-Oka Kavşağı)",
     "neighbors": [
-      "moscow",
-      "kazan"
+      "moscow"
     ],
     "owner_id": "russia",
     "population": 320,

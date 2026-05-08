@@ -47,7 +47,7 @@
       "description": "Kudüs, Roma ve Mekke'yi aynı anda tut",
       "detail": "Üç kutsal şehri sürdürülebilir biçimde koru",
       "type": "religious",
-      "required_regions": ["palestine", "papal_states", "yemen"]
+      "required_regions": ["palestine", "papal_states"]
     }
   ]
 }

@@ -106,6 +106,7 @@ const (
 	PhaseAITurn         Phase = "ai_turn"
 	PhaseTurnResolution Phase = "resolution"
 	PhaseGameOver       Phase = "game_over"
+	PhaseLoading        Phase = "loading"
 	PhasePauseMenu      Phase = "pause_menu"  // oyun içi duraklama menüsü
 	PhaseLoadSelect     Phase = "load_select" // kayıt seçim ekranı
 	PhaseSaveSelect     Phase = "save_select" // slot seçerek kaydetme ekranı

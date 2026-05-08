@@ -41,9 +41,11 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
 | Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
+| Düşman ordu istihbaratı | ✅ | Menzildeki düşman orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
 | Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |
 | Askeri kapasite | ✅ | Kara bölgesi başı 5 + kışla başı 5; ordu sayısı `ceil(kara_bölge/2)` |
 | Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü |
+| Bina/birim hover bilgisi | ✅ | Kart tooltipleri maliyet, gereksinim, etki/istatistik ve görsel gösterir |
 | Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi oluşturma |
 | Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
@@ -59,12 +61,14 @@ Doğrulama: `go test ./...` WSL ortamında sistem bağımlılığı yüzünden t
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
+| Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında `Yükleniyor...` spinner ekranı gösteriliyor |
 | Ana menü / ayarlar | ✅ | Yeni oyun, kayıt yükleme, ayarlar, çıkış |
 | Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
 | Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |
 | Minimap | ✅ | Sağ alt köşe, kamera ve ordu konumları |
 | Ses efektleri | ✅ | `internal/audio`, senaryo `sounds/` altından `click.wav` ve `combat.wav` yükleme |
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |
+| Render başlangıç log temizliği | ✅ | Boş senaryo path'inde shape dosyası okunmaz; deniz seed araması ham `world_x/world_y` fallback kullanır |
 
 ## Bilinen Sorunlar
 
