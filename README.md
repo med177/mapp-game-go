@@ -78,12 +78,14 @@ go build -o bin/game.exe ./cmd/game
 mapp-game-go/
 ├── cmd/game/main.go          # Uygulama giriş noktası
 ├── assets/
+│   ├── sounds/               # Paylaşılan oyun efektleri
 │   └── scenarios/            # Senaryo veri paketleri
 │       ├── scenarios.json
 │       ├── 1300_ottoman_rise/
 │       │   ├── scenario.json
 │       │   ├── data/         # regions, factions, armies, events …
-│       │   └── maps/         # Harita PNG dosyaları
+│       │   ├── maps/         # Harita PNG dosyaları
+│       │   └── musics/       # scenario.json playlist müzikleri
 │       └── 1444_constantinople/
 └── internal/
     ├── game/                 # Oyun döngüsü, tur yönetimi

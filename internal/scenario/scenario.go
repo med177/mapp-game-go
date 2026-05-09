@@ -48,6 +48,18 @@ type MapConfig struct {
 	ShapeScaleY  *float64 `json:"shape_scale_y,omitempty"`
 }
 
+// MusicTrackDef senaryo musics/ klasöründeki bir playlist parçasını tanımlar.
+type MusicTrackDef struct {
+	File   string `json:"file"`
+	Weight int    `json:"weight,omitempty"`
+}
+
+// MusicConfig senaryo bazlı müzik playlistlerini tanımlar.
+type MusicConfig struct {
+	DefaultPlaylist string                     `json:"default_playlist"`
+	Playlists       map[string][]MusicTrackDef `json:"playlists"`
+}
+
 // Scenario oyun başında seçilebilen bir tarihsel senaryoyu tanımlar.
 type Scenario struct {
 	ID          string  `json:"id"`
@@ -59,6 +71,7 @@ type Scenario struct {
 	Month       int     `json:"month"`
 
 	MapConfig         MapConfig          `json:"map"`
+	Music             MusicConfig        `json:"music"`
 	VictoryConditions []VictoryOptionDef `json:"victory_conditions"`
 
 	// Path: runtime-only, klasörün tam yolu (JSON'da yok)
@@ -70,7 +83,7 @@ func (s *Scenario) DataPath(filename string) string {
 	return filepath.Join(s.Path, "data", filename)
 }
 
-// AssetPath senaryo içindeki bir varlık alt klasörünün yolunu döner (maps, sounds, sprites).
+// AssetPath senaryo içindeki bir varlık alt klasörünün yolunu döner (maps, sprites, musics).
 func (s *Scenario) AssetPath(subdir, filename string) string {
 	return filepath.Join(s.Path, subdir, filename)
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
@@ -142,6 +143,15 @@ func bottomActionHudHit(fx, fy float64) bool {
 	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
 }
 
+func bottomActionButtonHit(fx, fy float64) bool {
+	for _, r := range BottomButtonRects() {
+		if rectF32Hit(fx, fy, r) {
+			return true
+		}
+	}
+	return false
+}
+
 func topStatusPanelHit(fx, fy float64) bool {
 	w := float64(topStatusW)
 	if w > ScreenWidth {
@@ -176,6 +186,47 @@ func topDateHudMenuButtonRect() (x, y, w, h float32) {
 
 func topDateHudMenuButtonHit(fx, fy float64) bool {
 	x, y, w, h := topDateHudMenuButtonRect()
+	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+}
+
+func musicHudRect() (x, y, w, h float32) {
+	w = 430
+	h = 36
+	x = topStatusW
+	y = 0
+	if x+w > float32(ScreenWidth) {
+		x = float32(ScreenWidth) - w
+		if x < 0 {
+			x = 0
+		}
+	}
+	return x, y, w, h
+}
+
+func musicHudToggleRect() [4]float32 {
+	x, y, _, _ := musicHudRect()
+	return [4]float32{x + 310, y + 7, 46, 22}
+}
+
+func musicHudNextRect() [4]float32 {
+	x, y, _, _ := musicHudRect()
+	return [4]float32{x + 362, y + 7, 54, 22}
+}
+
+func musicHudInteractiveHit(fx, fy float64) bool {
+	status := audio.MusicStatusNow()
+	if !status.HasPlaylist {
+		return false
+	}
+	return rectF32Hit(fx, fy, musicHudToggleRect()) || rectF32Hit(fx, fy, musicHudNextRect())
+}
+
+func musicHudHit(fx, fy float64) bool {
+	status := audio.MusicStatusNow()
+	if !status.HasPlaylist {
+		return false
+	}
+	x, y, w, h := musicHudRect()
 	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
 }
 
@@ -289,6 +340,36 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 	}
 
 	drawDateMenuHud(screen, gs)
+	drawMusicHud(screen)
+}
+
+func drawMusicHud(screen *ebiten.Image) {
+	status := audio.MusicStatusNow()
+	if !status.HasPlaylist {
+		return
+	}
+	x, y, w, h := musicHudRect()
+	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 12, 9, 220}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+
+	track := status.Track
+	if track == "" {
+		track = "Playlist hazir"
+	}
+	track = strings.TrimSuffix(track, ".ogg")
+	track = strings.TrimSuffix(track, ".mp3")
+	track = strings.TrimSuffix(track, ".wav")
+	label := trimTextToWidth("Muzik: "+track, FaceSmall, 292)
+	DrawText(screen, label, float64(x)+10, float64(y)+11, FaceSmall, ColorGray)
+
+	toggle := "Dur"
+	if !status.Playing {
+		toggle = "Cal"
+	}
+	tr := musicHudToggleRect()
+	nr := musicHudNextRect()
+	drawTinyPanelButton(screen, tr[0], tr[1], tr[2], tr[3], toggle, true)
+	drawTinyPanelButton(screen, nr[0], nr[1], nr[2], nr[3], "Sonr", true)
 }
 
 func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
@@ -476,6 +557,16 @@ func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool, scroll int
 		}
 	}
 	return -1
+}
+
+func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int) bool {
+	if eventLogToggleHit(mx, my, collapsed) {
+		return true
+	}
+	if eventLogCloseHit(mx, my, eventCount, collapsed, scroll) >= 0 {
+		return true
+	}
+	return eventLogCardHit(mx, my, eventCount, collapsed, scroll) >= 0
 }
 
 func eventLogVisibleCount() int {
@@ -1497,6 +1588,19 @@ func regionPanelCloseHit(mx, my float64) bool {
 	return panelCloseHit(mx, my, px, infoPanelY(), infoPanelW)
 }
 
+func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if rid == "" {
+		return false
+	}
+	if regionPanelCloseHit(mx, my) {
+		return true
+	}
+	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
+		return true
+	}
+	return buildingGridHitTest(mx, my, gs, rid) != ""
+}
+
 func armyPanelCloseHit(mx, my float64) bool {
 	px := infoPanelX()
 	py := infoPanelY() + infoPanelH - 130
@@ -1528,7 +1632,7 @@ func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 		ly += 16 + 16 + 18
 	}
 	ly += 18 + 16 + 8 + 18 + 18
-	y := float32(ly - 12)
+	y := float32(ly - 17)
 	return [4]float32{px + pw - 70, y, 26, 18}, [4]float32{px + pw - 38, y, 26, 18}
 }
 
@@ -1537,16 +1641,16 @@ func rectF32Hit(mx, my float64, r [4]float32) bool {
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
+	return buildingGridHitTest(mx, my, gs, rid)
+}
+
+func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
 	if rid == "" {
 		return ""
 	}
 	region, ok := gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
 		return ""
-	}
-	builtSet := make(map[string]bool, len(region.Buildings))
-	for _, bid := range region.Buildings {
-		builtSet[bid] = true
 	}
 	px := infoPanelX()
 	pw := infoPanelW
@@ -1560,21 +1664,43 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	nameH := float32(16)
 	rowH := spriteH + nameH + 5
 
-	display := visibleBuildingIDs(gs, region)
-	for i, bid := range display {
-		if builtSet[bid] {
+	displayIdx := 0
+	for _, bid := range buildingDisplayOrder {
+		if !buildingVisibleInRegion(gs, region, bid) {
 			continue
 		}
-		col := i % cols
-		row := i / cols
+		if regionHasBuilding(region, bid) {
+			displayIdx++
+			continue
+		}
+		col := displayIdx % cols
+		row := displayIdx / cols
 		sx := px + pad + float32(col)*slotW
 		sy := startY + float32(row)*rowH
 		innerW := slotW - 3
 		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
 			return bid
 		}
+		displayIdx++
 	}
 	return ""
+}
+
+func regionHasBuilding(region *world.Region, bid string) bool {
+	for _, builtID := range region.Buildings {
+		if builtID == bid {
+			return true
+		}
+	}
+	return false
+}
+
+func buildingVisibleInRegion(gs *state.GameState, region *world.Region, bid string) bool {
+	b, ok := gs.BuildingTypes[bid]
+	if !ok {
+		return false
+	}
+	return regionHasBuilding(region, bid) || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain
 }
 
 func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {

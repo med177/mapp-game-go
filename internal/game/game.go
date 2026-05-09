@@ -59,6 +59,7 @@ type loadingResult struct {
 // New oyunu başlatır, senaryo listesini yükler, ana menüde bekler.
 func New() *Game {
 	gs := &state.GameState{Phase: state.PhaseMainMenu}
+	audio.LoadGlobalSounds("assets/sounds")
 
 	// Senaryo listesini yükle — render paketinin global değişkenine yaz
 	scenarios, err := scenario.LoadAll(scenarioBaseDir)
@@ -71,6 +72,10 @@ func New() *Game {
 	r.HasSave = save.AnySlotExists()
 	r.HasAutoSave = save.SaveExists()
 	r.CurrentSettings = render.DefaultSettings()
+	audio.SetMusicEnabled(r.CurrentSettings.MusicOn)
+	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
+	audio.SetSoundEnabled(r.CurrentSettings.SoundOn)
+	audio.SetSoundVolume(r.CurrentSettings.SoundVolume)
 	return &Game{
 		gs:       gs,
 		renderer: r,
@@ -80,9 +85,11 @@ func New() *Game {
 // Update oyun mantığını günceller — 60 TPS.
 func (g *Game) Update() error {
 	if g.loading != nil {
+		audio.UpdateMusic()
 		g.pollLoading()
 		return nil
 	}
+	audio.UpdateMusic()
 
 	action := g.renderer.HandleInput()
 
@@ -125,6 +132,10 @@ func (g *Game) Update() error {
 	case state.PhaseSettings:
 		if action.Kind == render.ActionSaveSettings {
 			g.gs.Difficulty = g.renderer.CurrentSettings.Difficulty
+			audio.SetMusicEnabled(g.renderer.CurrentSettings.MusicOn)
+			audio.SetMusicVolume(g.renderer.CurrentSettings.MusicVolume)
+			audio.SetSoundEnabled(g.renderer.CurrentSettings.SoundOn)
+			audio.SetSoundVolume(g.renderer.CurrentSettings.SoundVolume)
 			g.gs.Phase = state.PhaseMainMenu
 			g.renderer.SetCursor(0)
 		}
@@ -216,6 +227,10 @@ func (g *Game) Update() error {
 			g.adjustTax(action.TargetRegion, action.Delta)
 		case render.ActionOpenPauseMenu:
 			g.gs.Phase = state.PhasePauseMenu
+		case render.ActionToggleMusic:
+			g.renderer.CurrentSettings.MusicOn = audio.ToggleMusic()
+		case render.ActionNextMusic:
+			audio.NextMusic()
 		}
 
 	case state.PhaseAITurn:
@@ -241,6 +256,10 @@ func (g *Game) Update() error {
 		case render.ActionLoadFromPause:
 			render.SaveSlots = save.ListSlots()
 			g.gs.Phase = state.PhaseLoadSelect
+		case render.ActionToggleMusic:
+			g.renderer.CurrentSettings.MusicOn = audio.ToggleMusic()
+		case render.ActionAdjustMusic:
+			g.renderer.CurrentSettings.MusicVolume = audio.AdjustMusicVolume(action.Delta)
 		case render.ActionGoMainMenu:
 			g.resetToNewGame()
 		case render.ActionQuit:
@@ -319,13 +338,14 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingScenario:
 		g.gs = res.gs
 		g.evts = res.evts
-		audio.LoadScenarioSounds(res.scenarioPath)
 		g.renderer.ReloadGameState(res.gs)
+		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.SetCursor(0)
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
 		g.renderer.ReloadGameState(res.gs)
+		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
 		g.renderer.HasAutoSave = save.SaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
@@ -614,6 +634,7 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 // resetToNewGame state'i temizler ve senaryo seçimine geçer.
 func (g *Game) resetToNewGame() {
 	difficulty := g.gs.Difficulty
+	audio.StopMusic()
 	gs := &state.GameState{
 		Phase:      state.PhaseScenarioSelect,
 		Difficulty: difficulty,
@@ -621,6 +642,34 @@ func (g *Game) resetToNewGame() {
 	g.gs = gs
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetCursor(0)
+}
+
+func (g *Game) startScenarioMusic(scenarioPath string) {
+	sc := scenarioByPath(scenarioPath)
+	if sc == nil {
+		audio.StopMusic()
+		return
+	}
+	playlistName := sc.Music.DefaultPlaylist
+	if playlistName == "" {
+		playlistName = "campaign"
+	}
+	defs := sc.Music.Playlists[playlistName]
+	if len(defs) == 0 {
+		audio.StopMusic()
+		return
+	}
+	tracks := make([]audio.MusicTrack, 0, len(defs))
+	for _, def := range defs {
+		if def.File == "" {
+			continue
+		}
+		tracks = append(tracks, audio.MusicTrack{
+			File:   def.File,
+			Weight: def.Weight,
+		})
+	}
+	audio.StartMusicPlaylist(filepath.Join(scenarioPath, "musics"), tracks)
 }
 
 // loadScenario seçilen senaryo klasöründen tüm oyun verilerini yükler.

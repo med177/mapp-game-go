@@ -279,6 +279,25 @@ func rectHit(mx, my float64, r slotRect) bool {
 	return mx >= r[0] && mx <= r[0]+r[2] && my >= r[1] && my <= r[1]+r[3]
 }
 
+func (r *Renderer) slotSelectHovering(mx, my float64, saveMode bool) bool {
+	if r.pendingDeleteSlot != "" {
+		yes, no := pendingDeleteConfirmRects(r.pendingDeleteSlot)
+		return rectHit(mx, my, yes) || rectHit(mx, my, no)
+	}
+	if uiRectHit(mx, my, backButtonRect()) {
+		return true
+	}
+	i := r.slotHoverIndex(mx, my)
+	if i < 0 || i >= len(SaveSlots) {
+		return false
+	}
+	slot := SaveSlots[i]
+	if slot.Exists && rectHit(mx, my, deleteButtonRectForSlot(i)) {
+		return true
+	}
+	return saveMode || slot.Exists
+}
+
 // slotHoverIndex fareye göre hangi slot kartının üzerinde olduğunu döner.
 func (r *Renderer) slotHoverIndex(mx, my float64) int {
 	cardW := 480.0

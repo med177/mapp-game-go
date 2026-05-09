@@ -50,6 +50,9 @@ const (
 	ActionMergeArmies    ActionKind = "merge_armies"     // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
 	ActionSelectScenario ActionKind = "select_scenario"  // BuildingID = senaryo klasör yolu
 	ActionSaveScenario   ActionKind = "save_scenario"    // edit mode: aktif senaryo JSON verisini kaydet
+	ActionToggleMusic    ActionKind = "toggle_music"
+	ActionNextMusic      ActionKind = "next_music"
+	ActionAdjustMusic    ActionKind = "adjust_music" // Delta: müzik ses seviyesi
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

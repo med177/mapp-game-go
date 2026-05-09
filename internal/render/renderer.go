@@ -321,7 +321,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
 		r.menuTick++
-		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick)
+		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick, r.CurrentSettings)
 		return
 	}
 
@@ -1277,6 +1277,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
 	}
+	if musicHudInteractiveHit(fx, fy) {
+		if rectF32Hit(fx, fy, musicHudToggleRect()) {
+			return InputAction{Kind: ActionToggleMusic}
+		}
+		if rectF32Hit(fx, fy, musicHudNextRect()) {
+			return InputAction{Kind: ActionNextMusic}
+		}
+	}
 
 	// --- Alt panel butonları ---
 	rects := BottomButtonRects()
@@ -1300,7 +1308,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// UI alanlarında tıklama işleme
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) ||
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}
@@ -1381,7 +1389,7 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) ||
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}

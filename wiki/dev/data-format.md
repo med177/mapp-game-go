@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-09
+last_updated: 2026-05-10
 related: [architecture/state-management, world/regions, world/factions]
 ---
 
@@ -32,6 +32,15 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
     "shape_scale_x": 2.025,
     "shape_scale_y": 2.025
   },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        { "file": "ottoman_theme_01.ogg", "weight": 3 },
+        { "file": "anatolia_ambient_01.mp3", "weight": 1 }
+      ]
+    }
+  },
   "victory_conditions": [
     {
       "id": "ottoman_rise",
@@ -46,6 +55,8 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 `type` değerleri: `domination`, `economic`, `military`, `religious`, `conquer_city`
 
 `map` alanı opsiyoneldir. Verilmeyen alanlar renderer'ın geriye dönük uyumlu varsayılanlarıyla tamamlanır. `world_width` / `world_height` arka plan PNG dünya boyutunu, `shape_offset_*` ve `shape_scale_*` ise `country_shapes.json` koordinatlarının world pikseline dönüşümünü belirler.
+
+`music` alanı opsiyoneldir. `default_playlist` senaryo yüklendikten sonra başlatılacak listeyi belirtir; `playlists` içindeki dosya adları senaryonun `musics/` klasörüne göre çözülür. Desteklenen formatlar: `.ogg`, `.mp3`, `.wav`. `weight` eksik veya `0` ise `1` kabul edilir. Paylaşılan tıklama/uyarı efektleri bu alanın parçası değildir; `assets/sounds/` altından yüklenir.
 
 ---
 

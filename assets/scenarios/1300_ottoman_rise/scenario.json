@@ -14,6 +14,37 @@
     "shape_scale_x": 2.025,
     "shape_scale_y": 2.025
   },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "03 It Will Never be the Same.mp3",
+          "weight": 1
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
+    }
+  },
   "victory_conditions": [
     {
       "id": "ottoman_rise",
@@ -30,7 +61,13 @@
       "detail": "Konstantinopolis, Roma, Kahire, Paris, Kudüs",
       "type": "domination",
       "target_region_count": 20,
-      "required_regions": ["constantinople", "papal_states", "egypt", "paris", "palestine"]
+      "required_regions": [
+        "constantinople",
+        "papal_states",
+        "egypt",
+        "paris",
+        "palestine"
+      ]
     },
     {
       "id": "economic",
@@ -47,7 +84,10 @@
       "description": "Kudüs, Roma ve Mekke'yi aynı anda tut",
       "detail": "Üç kutsal şehri sürdürülebilir biçimde koru",
       "type": "religious",
-      "required_regions": ["palestine", "papal_states"]
+      "required_regions": [
+        "palestine",
+        "papal_states"
+      ]
     }
   ]
 }

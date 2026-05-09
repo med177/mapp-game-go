@@ -1,7 +1,7 @@
 ---
 type: index
 tags: [home, navigation]
-last_updated: 2026-05-09
+last_updated: 2026-05-10
 ---
 
 # Mapp Game Go — Wiki
@@ -53,7 +53,9 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 
 `internal/scenario/scenario.go` — `assets/scenarios/` altındaki senaryo klasörlerini yükler.
 
-Her senaryo: `scenario.json` (meta + zafer koşulları) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/` + `sounds/`
+Her senaryo: `scenario.json` (meta + zafer koşulları + müzik playlistleri) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/` + `musics/`
+
+Paylaşılan oyun içi efektler senaryodan bağımsızdır ve `assets/sounds/` altından yüklenir.
 
 Mevcut senaryolar: `1300_ottoman_rise` · `1444_constantinople`
 

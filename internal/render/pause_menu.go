@@ -12,20 +12,23 @@ type pauseMenuItem struct {
 	label    string
 	action   ActionKind
 	disabled bool
+	delta    int
 }
 
 func buildPauseItems(hasSave bool) []pauseMenuItem {
 	return []pauseMenuItem{
-		{"Devam Et", ActionResume, false},
-		{"Kaydet", ActionOpenSaveSelect, false},
-		{"Yükle", ActionLoadFromPause, !hasSave},
-		{"Ana Menü", ActionGoMainMenu, false},
-		{"Oyundan Çık", ActionQuit, false},
+		{"Devam Et", ActionResume, false, 0},
+		{"Müzik", ActionToggleMusic, false, 0},
+		{"Müzik Seviyesi", ActionAdjustMusic, false, 10},
+		{"Kaydet", ActionOpenSaveSelect, false, 0},
+		{"Yükle", ActionLoadFromPause, !hasSave, 0},
+		{"Ana Menü", ActionGoMainMenu, false, 0},
+		{"Oyundan Çık", ActionQuit, false, 0},
 	}
 }
 
 // DrawPauseMenu oyun içi duraklama menüsünü yarı saydam overlay üzerine çizer.
-func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
+func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, settings Settings) {
 	// Karartma katmanı
 	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
 	overlay.Fill(color.RGBA{0, 0, 0, 170})
@@ -33,7 +36,7 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 
 	items := buildPauseItems(hasSave)
 
-	bw := float32(360)
+	bw := float32(390)
 	bh := float32(float64(len(items))*64 + 110)
 	bx := float32(ScreenWidth/2) - bw/2
 	by := float32(ScreenHeight/2) - bh/2
@@ -78,8 +81,14 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int) {
 		if isSelected && !item.disabled {
 			prefix = "► "
 		}
-		tw := MeasureText(prefix+item.label, FaceLarge)
-		DrawText(screen, prefix+item.label,
+		label := item.label
+		if item.action == ActionToggleMusic {
+			label = "Müzik: " + boolLabel(settings.MusicOn)
+		} else if item.action == ActionAdjustMusic {
+			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
+		}
+		tw := MeasureText(prefix+label, FaceLarge)
+		DrawText(screen, prefix+label,
 			float64(bx)+float64(bw)/2-tw/2,
 			y+8, FaceLarge, col)
 	}
@@ -110,18 +119,26 @@ func (r *Renderer) handlePauseMenuInput() InputAction {
 			r.pauseCursor = (r.pauseCursor - 1 + n) % n
 		}
 	}
+	if items[r.pauseCursor].action == ActionAdjustMusic {
+		if r.keyJustPressed(ebiten.KeyArrowLeft) {
+			return InputAction{Kind: ActionAdjustMusic, Delta: -5}
+		}
+		if r.keyJustPressed(ebiten.KeyArrowRight) {
+			return InputAction{Kind: ActionAdjustMusic, Delta: 5}
+		}
+	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		return InputAction{Kind: ActionResume}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
 		item := items[r.pauseCursor]
 		if !item.disabled {
-			return InputAction{Kind: item.action}
+			return InputAction{Kind: item.action, Delta: item.delta}
 		}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if i := r.pauseMenuHoverIndex(float64(mx), float64(my)); i >= 0 && !items[i].disabled {
-			return InputAction{Kind: items[i].action}
+			return InputAction{Kind: items[i].action, Delta: items[i].delta}
 		}
 	}
 	return InputAction{}
@@ -130,7 +147,7 @@ func (r *Renderer) handlePauseMenuInput() InputAction {
 // pauseMenuHoverIndex fareye göre hangi menü maddesinin üzerinde olduğunu döner.
 func (r *Renderer) pauseMenuHoverIndex(mx, my float64) int {
 	items := buildPauseItems(r.HasSave)
-	bw := float64(360)
+	bw := float64(390)
 	bh := float64(len(items))*64 + 110
 	bx := ScreenWidth/2 - bw/2
 	by := ScreenHeight/2 - bh/2

@@ -27,6 +27,22 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.warConfirm.show {
+		if r.warConfirmHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
+	if r.eventDetail != "" {
+		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.showDiplomacy {
 		if r.diplomaPanelHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -80,8 +96,13 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
-	case state.PhaseLoadSelect, state.PhaseSaveSelect:
-		if uiRectHit(fx, fy, backButtonRect()) || r.slotHoverIndex(fx, fy) >= 0 {
+	case state.PhaseLoadSelect:
+		if r.slotSelectHovering(fx, fy, false) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+	case state.PhaseSaveSelect:
+		if r.slotSelectHovering(fx, fy, true) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -237,15 +258,32 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 	return false
 }
 
+func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
+	const (
+		dlgW  = float32(380)
+		dlgH  = float32(130)
+		btnDW = float32(110)
+		btnDH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+	btnY := cy + dlgH - btnDH - 16
+	yesX := cx + dlgW/2 - btnDW - 10
+	noX := cx + dlgW/2 + 10
+	yes := [4]float32{yesX, btnY, btnDW, btnDH}
+	no := [4]float32{noX, btnY, btnDW, btnDH}
+	return rectF32Hit(fx, fy, yes) || rectF32Hit(fx, fy, no)
+}
+
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) {
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) {
 		return true
 	}
-	if eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
+	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll) {
 		return true
 	}
 	if r.SelectedRegion != "" {
-		if regionPanelHit(fx, fy) || RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
+		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) || RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
 			return true
 		}
 	}

@@ -3,19 +3,23 @@ package render
 import (
 	"image/color"
 
+	"mapp-game-go/internal/audio"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // Settings oyun ayarlarını tutar — renderer aracılığıyla game'e iletilir.
 type Settings struct {
-	Difficulty int // 1=Kolay 2=Normal 3=Zor
-	MusicOn    bool
-	SoundOn    bool
+	Difficulty  int // 1=Kolay 2=Normal 3=Zor
+	MusicOn     bool
+	MusicVolume int // 0-100
+	SoundOn     bool
+	SoundVolume int // 0-100
 }
 
 func DefaultSettings() Settings {
-	return Settings{Difficulty: 2, MusicOn: true, SoundOn: true}
+	return Settings{Difficulty: 2, MusicOn: true, MusicVolume: 45, SoundOn: true, SoundVolume: 35}
 }
 
 var difficultyLabels = []string{"", "Kolay", "Normal", "Zor"}
@@ -34,7 +38,9 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 	rows := []row{
 		{"Zorluk", difficultyLabels[s.Difficulty]},
 		{"Müzik", boolLabel(s.MusicOn)},
+		{"Müzik Seviyesi", itoa(s.MusicVolume) + "%"},
 		{"Ses Efektleri", boolLabel(s.SoundOn)},
+		{"Ses Seviyesi", itoa(s.SoundVolume) + "%"},
 		{"← Geri Dön", ""},
 	}
 
@@ -74,7 +80,7 @@ func boolLabel(b bool) string {
 
 // handleSettingsInput ayarlar ekranı girişini işler.
 func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
-	rowCount := 4 // zorluk, müzik, ses, geri dön
+	rowCount := 6 // zorluk, müzik, müzik seviyesi, ses, ses seviyesi, geri dön
 	mx, my := ebiten.CursorPosition()
 	if i := r.settingsHoverIndex(float64(mx), float64(my)); i >= 0 {
 		r.factionCursor = i
@@ -98,12 +104,32 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 	case 1: // Müzik
 		if r.keyJustPressed(ebiten.KeyArrowLeft) || r.keyJustPressed(ebiten.KeyArrowRight) || r.keyJustPressed(ebiten.KeyEnter) {
 			s.MusicOn = !s.MusicOn
+			applyAudioSettings(*s)
 		}
-	case 2: // Ses efektleri
+	case 2: // Müzik seviyesi
+		if r.keyJustPressed(ebiten.KeyArrowRight) {
+			s.MusicVolume = clampVolume(s.MusicVolume + 5)
+			applyAudioSettings(*s)
+		}
+		if r.keyJustPressed(ebiten.KeyArrowLeft) {
+			s.MusicVolume = clampVolume(s.MusicVolume - 5)
+			applyAudioSettings(*s)
+		}
+	case 3: // Ses efektleri
 		if r.keyJustPressed(ebiten.KeyArrowLeft) || r.keyJustPressed(ebiten.KeyArrowRight) || r.keyJustPressed(ebiten.KeyEnter) {
 			s.SoundOn = !s.SoundOn
+			applyAudioSettings(*s)
 		}
-	case 3: // Geri dön
+	case 4: // Ses seviyesi
+		if r.keyJustPressed(ebiten.KeyArrowRight) {
+			s.SoundVolume = clampVolume(s.SoundVolume + 5)
+			applyAudioSettings(*s)
+		}
+		if r.keyJustPressed(ebiten.KeyArrowLeft) {
+			s.SoundVolume = clampVolume(s.SoundVolume - 5)
+			applyAudioSettings(*s)
+		}
+	case 5: // Geri dön
 		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeyEscape) {
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
@@ -115,7 +141,12 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 		return InputAction{Kind: ActionSaveSettings}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		switch r.factionCursor {
+		hover := r.settingsHoverIndex(float64(mx), float64(my))
+		if hover < 0 {
+			return InputAction{}
+		}
+		r.factionCursor = hover
+		switch hover {
 		case 0:
 			s.Difficulty++
 			if s.Difficulty > 3 {
@@ -123,9 +154,23 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			}
 		case 1:
 			s.MusicOn = !s.MusicOn
+			applyAudioSettings(*s)
 		case 2:
-			s.SoundOn = !s.SoundOn
+			s.MusicVolume += 10
+			if s.MusicVolume > 100 {
+				s.MusicVolume = 0
+			}
+			applyAudioSettings(*s)
 		case 3:
+			s.SoundOn = !s.SoundOn
+			applyAudioSettings(*s)
+		case 4:
+			s.SoundVolume += 10
+			if s.SoundVolume > 100 {
+				s.SoundVolume = 0
+			}
+			applyAudioSettings(*s)
+		case 5:
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
 		}
@@ -135,7 +180,7 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 
 func (r *Renderer) settingsHoverIndex(fx, fy float64) int {
 	rowH := 60.0
-	rowCount := 4
+	rowCount := 6
 	startY := ScreenHeight/2 - float64(rowCount)*rowH/2
 	bw := 500.0
 	bx := ScreenWidth/2 - bw/2
@@ -146,4 +191,21 @@ func (r *Renderer) settingsHoverIndex(fx, fy float64) int {
 		}
 	}
 	return -1
+}
+
+func clampVolume(v int) int {
+	if v < 0 {
+		return 0
+	}
+	if v > 100 {
+		return 100
+	}
+	return v
+}
+
+func applyAudioSettings(s Settings) {
+	audio.SetMusicEnabled(s.MusicOn)
+	audio.SetMusicVolume(s.MusicVolume)
+	audio.SetSoundEnabled(s.SoundOn)
+	audio.SetSoundVolume(s.SoundVolume)
 }
