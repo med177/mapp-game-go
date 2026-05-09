@@ -1002,8 +1002,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+	leftJustPressed := r.mouseJustPressed(ebiten.MouseButtonLeft)
 
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if leftJustPressed {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
 			return action
 		}
@@ -1014,7 +1015,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.rebuildEditWorldMap()
 	}
 
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if leftJustPressed {
 		if editModifierPressed() {
 			rid := r.editRegionAt(fx, fy)
 			if rid != "" {
