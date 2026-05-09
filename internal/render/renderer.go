@@ -108,6 +108,7 @@ type Renderer struct {
 	editSelectedRegion     world.RegionID
 	editSelectedSettlement int
 	editDraggingSettlement bool
+	editDraggingRegion     bool
 	editRenaming           bool
 	editNameRunes          []rune
 	editDirty              bool
@@ -352,6 +353,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 4. Bölge etiketleri
 	r.drawRegionLabels(screen, armyPositions)
+	if r.gs.Phase == state.PhaseEditMode {
+		r.drawEditRegionCenters(screen)
+	}
 
 	// 5. Ordu ikonları
 	r.drawArmies(screen, armyPositions)
@@ -369,6 +373,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawHoverTooltip(screen, r.gs, r.SelectedRegion)
 	} else {
 		r.drawEditModeHud(screen)
+		r.drawEditInspector(screen)
 	}
 
 	// 7. Diplomasi paneli (üst katman)
@@ -807,7 +812,7 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		title += " *"
 	}
 	DrawText(screen, title, float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	DrawText(screen, "Sol tik: yerlesim sec   Surukle: tasi/bolge degistir   F2/Enter: isim   Ctrl+S: kaydet",
+	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: bolge merkezi   Ctrl+S: kaydet",
 		float64(x)+14, float64(y)+36, FaceSmall, ColorWhite)
 
 	info := "Secili: yok"
@@ -815,12 +820,156 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		r.editSelectedSettlement >= 0 && r.editSelectedSettlement < len(region.Settlements) {
 		s := region.Settlements[r.editSelectedSettlement]
 		info = region.NameTR + " / " + s.NameTR + "  (" + itoa(s.X) + "," + itoa(s.Y) + ")"
+	} else if region, ok := r.gs.Regions[r.editSelectedRegion]; ok && region != nil {
+		info = "Merkez: " + region.NameTR + "  (" + itoa(region.WorldX) + "," + itoa(region.WorldY) + ")"
 	}
 	DrawText(screen, info, float64(x)+14, float64(y)+58, FaceSmall, ColorGray)
 	if r.editRenaming {
 		DrawText(screen, "Isim: "+string(r.editNameRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
 	} else {
 		DrawText(screen, "Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
+	}
+}
+
+func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
+	x, y, w, h := editInspectorRect()
+	drawRoundedRect(screen, x, y, w, h, 8, color.RGBA{16, 20, 24, 226})
+	drawPanelBorder(screen, x, y, w, h)
+
+	DrawText(screen, "BILGI", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
+	ly := float64(y) + 38
+
+	region := r.gs.Regions[r.editSelectedRegion]
+	if r.SelectedArmy != "" {
+		if a, ok := r.gs.Armies[r.SelectedArmy]; ok && a != nil {
+			DrawText(screen, "Ordu: "+string(a.ID), float64(x)+14, ly, FaceSmall, ColorWhite)
+			ly += 18
+			DrawText(screen, "Bolge: "+string(a.RegionID), float64(x)+14, ly, FaceSmall, ColorGray)
+			ly += 18
+			DrawText(screen, "Birim: "+itoa(len(a.Units))+" / 20", float64(x)+14, ly, FaceSmall, ColorGray)
+			r.drawEditInspectorButtons(screen, nil)
+			return
+		}
+	}
+
+	if region == nil {
+		DrawText(screen, "Haritadan bir bolge veya yerlesim sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+		r.drawEditInspectorButtons(screen, nil)
+		return
+	}
+
+	name := region.NameTR
+	if name == "" {
+		name = region.Name
+	}
+	DrawText(screen, name, float64(x)+14, ly, FaceSmall, ColorWhite)
+	ly += 18
+	DrawText(screen, "ID: "+string(region.ID), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 18
+	DrawText(screen, "Sahip: "+region.OwnerID+"   Arazi: "+string(region.Terrain), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 18
+	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+itoa(len(region.Settlements)), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 22
+
+	if r.hasEditSelection() {
+		settlement := region.Settlements[r.editSelectedSettlement]
+		sName := settlement.NameTR
+		if sName == "" {
+			sName = settlement.Name
+		}
+		DrawText(screen, "Secili yerlesim: "+sName, float64(x)+14, ly, FaceSmall, ColorGold)
+		ly += 18
+		DrawText(screen, settlement.ID+"  "+settlement.Type+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
+			float64(x)+14, ly, FaceSmall, ColorGray)
+		if settlement.IsCapital {
+			ly += 18
+			DrawText(screen, "Ana yerlesim", float64(x)+14, ly, FaceSmall, ColorGray)
+		}
+	} else {
+		DrawText(screen, "Yerlesim secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
+	}
+
+	r.drawEditInspectorButtons(screen, region)
+}
+
+func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
+	canAdd := region != nil && !region.IsSea
+	canSettlement := r.hasEditSelection()
+	drawEditInspectorButton(screen, editButtonAddSettlement, "Yerlesim Ekle", canAdd)
+	drawEditInspectorButton(screen, editButtonRenameSettlement, "Isim", canSettlement)
+	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Sil", canSettlement)
+	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+}
+
+func drawEditInspectorButton(screen *ebiten.Image, kind editInspectorButton, label string, active bool) {
+	rect := editInspectorButtonRect(kind)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, active)
+}
+
+type editInspectorButton int
+
+const (
+	editButtonNone editInspectorButton = iota
+	editButtonAddSettlement
+	editButtonRenameSettlement
+	editButtonDeleteSettlement
+	editButtonSaveScenario
+)
+
+func editInspectorRect() (float32, float32, float32, float32) {
+	const w, h = float32(340), float32(214)
+	return 18, float32(ScreenHeight) - h - 18, w, h
+}
+
+func editInspectorHit(mx, my float64) bool {
+	x, y, w, h := editInspectorRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func editInspectorButtonRect(kind editInspectorButton) uiRect {
+	x, y, _, h := editInspectorRect()
+	const bw, bh, gap = float64(145), float64(26), float64(8)
+	left := float64(x) + 14
+	right := left + bw + gap
+	top := float64(y) + float64(h) - 68
+	bottom := top + bh + gap
+	switch kind {
+	case editButtonAddSettlement:
+		return uiRect{left, top, bw, bh}
+	case editButtonRenameSettlement:
+		return uiRect{right, top, bw, bh}
+	case editButtonDeleteSettlement:
+		return uiRect{left, bottom, bw, bh}
+	case editButtonSaveScenario:
+		return uiRect{right, bottom, bw, bh}
+	default:
+		return uiRect{}
+	}
+}
+
+func editInspectorButtonAt(mx, my float64) editInspectorButton {
+	for kind := editButtonAddSettlement; kind <= editButtonSaveScenario; kind++ {
+		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+			return kind
+		}
+	}
+	return editButtonNone
+}
+
+func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
+	for _, region := range r.gs.Regions {
+		if region == nil || region.IsSea || region.IsLocked {
+			continue
+		}
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		col := color.RGBA{80, 220, 255, 190}
+		if region.ID == r.editSelectedRegion && r.editSelectedSettlement < 0 {
+			col = color.RGBA{255, 190, 45, 240}
+		}
+		x, y := float32(sx), float32(sy)
+		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
+		vector.StrokeLine(screen, x-8, y, x+8, y, 1.5, col, true)
+		vector.StrokeLine(screen, x, y-8, x, y+8, 1.5, col, true)
 	}
 }
 
@@ -841,6 +990,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)) {
 		return InputAction{Kind: ActionSaveScenario}
 	}
+	if r.keyJustPressed(ebiten.KeyDelete) && r.hasEditSelection() {
+		r.deleteSelectedSettlement()
+		return InputAction{}
+	}
 	if (r.keyJustPressed(ebiten.KeyF2) || r.keyJustPressed(ebiten.KeyEnter)) && r.hasEditSelection() {
 		r.beginEditRename()
 		return InputAction{}
@@ -848,22 +1001,81 @@ func (r *Renderer) handleEditModeInput() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
+			return action
+		}
+	}
+
+	if r.editDraggingRegion && !leftPressed {
+		r.editDraggingRegion = false
+		r.rebuildEditWorldMap()
+	}
+
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if editModifierPressed() {
+			rid := r.editRegionAt(fx, fy)
+			if rid != "" {
+				r.editSelectedRegion = rid
+				r.editSelectedSettlement = -1
+				r.editDraggingRegion = true
+				r.editDraggingSettlement = false
+				r.editRenaming = false
+				r.moveSelectedRegionCenterTo(fx, fy)
+				return InputAction{}
+			}
+		}
+		if editAddModifierPressed() {
+			r.addSettlementAt(fx, fy)
+			return InputAction{}
+		}
+
+		if aid, ok := r.editArmyAt(fx, fy); ok {
+			r.SelectedArmy = aid
+			if a := r.gs.Armies[aid]; a != nil {
+				r.editSelectedRegion = a.RegionID
+			}
+			r.editSelectedSettlement = -1
+			r.editDraggingSettlement = false
+			r.editDraggingRegion = false
+			r.editRenaming = false
+			return InputAction{}
+		}
+
 		rid, idx, ok := r.editSettlementAt(fx, fy)
 		if ok {
+			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
 			r.editSelectedSettlement = idx
 			r.editDraggingSettlement = true
+			r.editDraggingRegion = false
 			return InputAction{}
 		}
+		if rid := r.editRegionAt(fx, fy); rid != "" {
+			r.SelectedArmy = ""
+			r.editSelectedRegion = rid
+			r.editSelectedSettlement = -1
+			r.editRenaming = false
+			r.editDraggingRegion = false
+			r.editDraggingSettlement = false
+			return InputAction{}
+		}
+		r.SelectedArmy = ""
 		r.editSelectedRegion = ""
 		r.editSelectedSettlement = -1
 		r.editRenaming = false
+		r.editDraggingRegion = false
 	}
 
-	if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if !leftPressed {
 		r.editDraggingSettlement = false
+	}
+
+	if r.editDraggingRegion {
+		r.moveSelectedRegionCenterTo(fx, fy)
+		return InputAction{}
 	}
 
 	if r.editDraggingSettlement {
@@ -871,6 +1083,27 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	return InputAction{}
+}
+
+func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) {
+	if !editInspectorHit(fx, fy) {
+		return InputAction{}, false
+	}
+	switch editInspectorButtonAt(fx, fy) {
+	case editButtonAddSettlement:
+		r.addSettlementToSelectedRegion()
+	case editButtonRenameSettlement:
+		if r.hasEditSelection() {
+			r.beginEditRename()
+		}
+	case editButtonDeleteSettlement:
+		if r.hasEditSelection() {
+			r.deleteSelectedSettlement()
+		}
+	case editButtonSaveScenario:
+		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	return InputAction{}, true
 }
 
 func (r *Renderer) hasEditSelection() bool {
@@ -949,6 +1182,28 @@ func (r *Renderer) editSettlementAt(fx, fy float64) (world.RegionID, int, bool) 
 	return bestRegion, bestIndex, bestIndex >= 0
 }
 
+func (r *Renderer) editRegionAt(fx, fy float64) world.RegionID {
+	wx, wy := r.screenToWorld(fx, fy)
+	rid := r.worldMap.RegionAt(int(wx), int(wy))
+	if region, ok := r.gs.Regions[rid]; ok && region != nil && !region.IsSea {
+		return rid
+	}
+	return ""
+}
+
+func (r *Renderer) editArmyAt(fx, fy float64) (army.ArmyID, bool) {
+	armyPositions := r.armyIconPositions()
+	for i := len(armyPositions) - 1; i >= 0; i-- {
+		pos := armyPositions[i]
+		dx := fx - float64(pos.X)
+		dy := fy - float64(pos.Y)
+		if dx*dx+dy*dy < 14*14 {
+			return pos.ArmyID, true
+		}
+	}
+	return "", false
+}
+
 func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
 	if !ok || region == nil || r.editSelectedSettlement < 0 ||
@@ -956,8 +1211,7 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 		return
 	}
 	wx, wy := r.screenToWorld(fx, fy)
-	newX := int((wx-shapeOffX)/shapeScaleX + 0.5)
-	newY := int((wy-shapeOffY)/shapeScaleY + 0.5)
+	newX, newY := scenarioCoordsFromWorld(wx, wy)
 	targetRegionID := r.worldMap.RegionAt(int(wx), int(wy))
 	if targetRegion, ok := r.gs.Regions[targetRegionID]; ok && targetRegion != nil &&
 		!targetRegion.IsSea && targetRegion.ID != region.ID {
@@ -968,6 +1222,120 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 	region.Settlements[r.editSelectedSettlement].Y = newY
 	r.worldMap.UpdateSettlementAnchor(r.gs, r.editSelectedRegion, r.editSelectedSettlement)
 	r.editDirty = true
+}
+
+func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	newX, newY := scenarioCoordsFromWorld(wx, wy)
+	if region.WorldX == newX && region.WorldY == newY {
+		return
+	}
+	region.WorldX = newX
+	region.WorldY = newY
+	r.editDirty = true
+}
+
+func (r *Renderer) addSettlementAt(fx, fy float64) {
+	wx, wy := r.screenToWorld(fx, fy)
+	rid := r.worldMap.RegionAt(int(wx), int(wy))
+	x, y := scenarioCoordsFromWorld(wx, wy)
+	r.addSettlement(rid, x, y)
+}
+
+func (r *Renderer) addSettlementToSelectedRegion() {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+	r.addSettlement(region.ID, region.WorldX, region.WorldY)
+}
+
+func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
+	region, ok := r.gs.Regions[rid]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+
+	name := region.NameTR
+	if name == "" {
+		name = region.Name
+	}
+	if len(region.Settlements) > 0 {
+		name += " " + itoa(len(region.Settlements)+1)
+	}
+	settlement := world.Settlement{
+		ID:        nextSettlementID(region),
+		NameTR:    name,
+		X:         x,
+		Y:         y,
+		Type:      "city",
+		IsCapital: len(region.Settlements) == 0,
+	}
+	region.Settlements = append(region.Settlements, settlement)
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = len(region.Settlements) - 1
+	r.editDraggingSettlement = false
+	r.editDraggingRegion = false
+	r.worldMap.UpdateSettlementAnchor(r.gs, rid, r.editSelectedSettlement)
+	r.editDirty = true
+}
+
+func (r *Renderer) deleteSelectedSettlement() {
+	if !r.hasEditSelection() {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	removedCapital := region.Settlements[r.editSelectedSettlement].IsCapital
+	region.Settlements = append(region.Settlements[:r.editSelectedSettlement], region.Settlements[r.editSelectedSettlement+1:]...)
+	if removedCapital {
+		ensurePrimarySettlement(region)
+	}
+	r.editSelectedSettlement = -1
+	r.editDraggingSettlement = false
+	r.editDraggingRegion = false
+	r.worldMap.RebuildSettlementAnchors(r.gs)
+	r.editDirty = true
+}
+
+func (r *Renderer) rebuildEditWorldMap() {
+	r.worldMap = NewWorldMap(r.gs)
+}
+
+func scenarioCoordsFromWorld(wx, wy float64) (int, int) {
+	return int((wx-shapeOffX)/shapeScaleX + 0.5), int((wy-shapeOffY)/shapeScaleY + 0.5)
+}
+
+func editModifierPressed() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyShift) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftRight)
+}
+
+func editAddModifierPressed() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyAlt) ||
+		ebiten.IsKeyPressed(ebiten.KeyAltLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyAltRight)
+}
+
+func nextSettlementID(region *world.Region) string {
+	base := string(region.ID) + "_settlement_"
+	for n := len(region.Settlements) + 1; ; n++ {
+		id := base + itoa(n)
+		used := false
+		for _, settlement := range region.Settlements {
+			if settlement.ID == id {
+				used = true
+				break
+			}
+		}
+		if !used {
+			return id
+		}
+	}
 }
 
 func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int) {

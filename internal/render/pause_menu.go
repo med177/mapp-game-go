@@ -82,9 +82,10 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 			prefix = "► "
 		}
 		label := item.label
-		if item.action == ActionToggleMusic {
+		switch item.action {
+		case ActionToggleMusic:
 			label = "Müzik: " + boolLabel(settings.MusicOn)
-		} else if item.action == ActionAdjustMusic {
+		case ActionAdjustMusic:
 			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
 		}
 		tw := MeasureText(prefix+label, FaceLarge)

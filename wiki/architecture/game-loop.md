@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-09
+last_updated: 2026-05-10
 related: [state-management, render-pipeline]
 ---
 
@@ -53,15 +53,20 @@ PhaseTurnResolution                    │
 
 ## Edit Mode
 
-`EDIT_MODE=true` ile senaryo seçildikten sonra oyun bağımsız harita düzenleyici açılır. İlk araç settlement düzenleme içindir:
+`EDIT_MODE=true` ile senaryo seçildikten sonra oyun bağımsız harita düzenleyici açılır. İlk araçlar settlement ve bölge merkezi düzenleme içindir:
 
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | Yerleşim seç | Sol tık | En yakın settlement noktasını seçer |
 | Yerleşim taşı | Sol tık sürükle | `regions.json` içindeki settlement `x/y` değerlerini canlı günceller; başka kara bölgeye sürüklenirse settlement o bölgenin `settlements[]` listesine aktarılır |
+| Yerleşim ekle | Alt + sol tık | Tıklanan kara bölgeye yeni `city` settlement ekler; ID region içinde çakışmayacak şekilde üretilir |
+| Yerleşim sil | Delete | Seçili settlement'ı kaldırır; silinen settlement capital ise kalan ilk settlement capital yapılır |
 | Yerleşim ismi değiştir | F2 veya Enter | Seçili settlement adını düzenler; Enter kaydeder, Esc iptal eder |
+| Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
 | Ana menüye dön | Esc | Edit mode'dan çıkar |
+
+Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Isim`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
 
 Kamera kontrolleri normal harita ile aynıdır.
 

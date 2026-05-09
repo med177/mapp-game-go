@@ -567,8 +567,8 @@
       "london",
       "lorraine"
     ],
-    "world_x": 565,
-    "world_y": 285,
+    "world_x": 568,
+    "world_y": 289,
     "shape_id": "FRA",
     "settlements": [
       {
@@ -745,8 +745,8 @@
       "pomerania",
       "silesia"
     ],
-    "world_x": 720,
-    "world_y": 245,
+    "world_x": 752,
+    "world_y": 253,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -791,8 +791,8 @@
       "pomerania",
       "silesia"
     ],
-    "world_x": 685,
-    "world_y": 260,
+    "world_x": 684,
+    "world_y": 238,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -836,8 +836,8 @@
       "austria",
       "tyrol"
     ],
-    "world_x": 690,
-    "world_y": 310,
+    "world_x": 725,
+    "world_y": 315,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -880,8 +880,8 @@
       "flanders",
       "luxembourg"
     ],
-    "world_x": 645,
-    "world_y": 240,
+    "world_x": 649,
+    "world_y": 223,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -971,8 +971,8 @@
       "lorraine",
       "alsace"
     ],
-    "world_x": 635,
-    "world_y": 290,
+    "world_x": 629,
+    "world_y": 278,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -1395,8 +1395,8 @@
       "_sea_med_west",
       "_sea_med_east"
     ],
-    "world_x": 793,
-    "world_y": 474,
+    "world_x": 774,
+    "world_y": 464,
     "shape_id": "ITA",
     "settlements": [
       {
@@ -1488,8 +1488,8 @@
       "moravia",
       "silesia"
     ],
-    "world_x": 758,
-    "world_y": 280,
+    "world_x": 776,
+    "world_y": 284,
     "shape_id": "CZE",
     "settlements": [
       {
@@ -1536,8 +1536,8 @@
       "silesia",
       "mazovia"
     ],
-    "world_x": 865,
-    "world_y": 228,
+    "world_x": 864,
+    "world_y": 244,
     "shape_id": "POL",
     "settlements": [
       {
@@ -1630,8 +1630,8 @@
       "alfold",
       "rascia"
     ],
-    "world_x": 864,
-    "world_y": 339,
+    "world_x": 866,
+    "world_y": 349,
     "shape_id": "HUN",
     "settlements": [
       {
@@ -1838,8 +1838,8 @@
       "_sea_atlantic",
       "_sea_med_west"
     ],
-    "world_x": 308,
-    "world_y": 667,
+    "world_x": 349,
+    "world_y": 581,
     "shape_id": "MAR",
     "settlements": [
       {
@@ -1923,8 +1923,8 @@
       "sicily",
       "malta"
     ],
-    "world_x": 666,
-    "world_y": 586,
+    "world_x": 672,
+    "world_y": 538,
     "shape_id": "TUN",
     "settlements": [
       {
@@ -2008,8 +2008,8 @@
       "_sea_adriatic",
       "chalcidice"
     ],
-    "world_x": 962,
-    "world_y": 503,
+    "world_x": 952,
+    "world_y": 513,
     "shape_id": "GRC",
     "settlements": [
       {
@@ -2068,8 +2068,8 @@
       "nicomedia",
       "chrysopolis"
     ],
-    "world_x": 1072,
-    "world_y": 476,
+    "world_x": 1059,
+    "world_y": 473,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -2125,8 +2125,8 @@
       "hamit",
       "karaman"
     ],
-    "world_x": 1175,
-    "world_y": 472,
+    "world_x": 1176,
+    "world_y": 474,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -2178,8 +2178,8 @@
       "_sea_med_east",
       "konya"
     ],
-    "world_x": 1172,
-    "world_y": 512,
+    "world_x": 1141,
+    "world_y": 507,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -2304,8 +2304,8 @@
       "novgorod",
       "nizhny_novgorod"
     ],
-    "world_x": 1293,
-    "world_y": 177,
+    "world_x": 1256,
+    "world_y": 202,
     "shape_id": "RUS",
     "settlements": [
       {
@@ -2348,8 +2348,8 @@
       "_sea_black",
       "armenia"
     ],
-    "world_x": 1312,
-    "world_y": 469,
+    "world_x": 1296,
+    "world_y": 454,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -2406,8 +2406,8 @@
       "azerbaijan",
       "armenia"
     ],
-    "world_x": 1345,
-    "world_y": 434,
+    "world_x": 1312,
+    "world_y": 430,
     "shape_id": "GEO",
     "settlements": [
       {
@@ -2558,8 +2558,8 @@
       "mosul",
       "basra"
     ],
-    "world_x": 1242,
-    "world_y": 580,
+    "world_x": 1207,
+    "world_y": 604,
     "shape_id": "SYR",
     "settlements": [
       {
@@ -2601,8 +2601,8 @@
       "persia_west",
       "kuwait"
     ],
-    "world_x": 1345,
-    "world_y": 600,
+    "world_x": 1372,
+    "world_y": 610,
     "shape_id": "IRQ",
     "settlements": [
       {
@@ -3146,8 +3146,8 @@
       "transylvania",
       "ukraine"
     ],
-    "world_x": 1045,
-    "world_y": 339,
+    "world_x": 1050,
+    "world_y": 347,
     "shape_id": "MDA",
     "settlements": [
       {
@@ -4118,8 +4118,8 @@
       {
         "id": "armenia_main",
         "name_tr": "Ermenistan",
-        "x": 1369,
-        "y": 461,
+        "x": 1361,
+        "y": 462,
         "type": "city",
         "is_capital": true
       }
@@ -4280,8 +4280,8 @@
       "luxembourg",
       "_sea_north"
     ],
-    "world_x": 568,
-    "world_y": 273,
+    "world_x": 589,
+    "world_y": 279,
     "shape_id": "BEL",
     "settlements": [
       {
@@ -4410,8 +4410,8 @@
       "crimea",
       "moscow"
     ],
-    "world_x": 1160,
-    "world_y": 305,
+    "world_x": 1178,
+    "world_y": 291,
     "shape_id": "UKR",
     "settlements": [
       {
@@ -5048,8 +5048,8 @@
       "_sea_med_east",
       "saruhan"
     ],
-    "world_x": 1025,
-    "world_y": 486,
+    "world_x": 1019,
+    "world_y": 500,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5107,8 +5107,8 @@
       "nicomedia",
       "paphlagonia"
     ],
-    "world_x": 1200,
-    "world_y": 470,
+    "world_x": 1212,
+    "world_y": 458,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5157,8 +5157,8 @@
       "aleppo",
       "_sea_med_east"
     ],
-    "world_x": 1221,
-    "world_y": 518,
+    "world_x": 1230,
+    "world_y": 524,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5216,8 +5216,8 @@
       "syria",
       "mosul"
     ],
-    "world_x": 1340,
-    "world_y": 503,
+    "world_x": 1326,
+    "world_y": 490,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5472,8 +5472,8 @@
       "konigsberg",
       "_sea_baltic"
     ],
-    "world_x": 728,
-    "world_y": 223,
+    "world_x": 736,
+    "world_y": 216,
     "shape_id": "DEU",
     "settlements": [
       {
@@ -5517,8 +5517,8 @@
       "vidin",
       "serbia"
     ],
-    "world_x": 940,
-    "world_y": 362,
+    "world_x": 950,
+    "world_y": 364,
     "shape_id": "ROU",
     "settlements": [
       {
@@ -5563,8 +5563,8 @@
       "lycia",
       "saruhan"
     ],
-    "world_x": 1044,
-    "world_y": 517,
+    "world_x": 1031,
+    "world_y": 530,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5620,8 +5620,8 @@
       "_sea_med_east",
       "lycia"
     ],
-    "world_x": 1132,
-    "world_y": 524,
+    "world_x": 1119,
+    "world_y": 538,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -5855,8 +5855,8 @@
       "bulgaria",
       "macedonia"
     ],
-    "world_x": 955,
-    "world_y": 408,
+    "world_x": 943,
+    "world_y": 413,
     "shape_id": "BGR",
     "settlements": [
       {
@@ -5985,8 +5985,8 @@
       "silesia",
       "poland"
     ],
-    "world_x": 808,
-    "world_y": 292,
+    "world_x": 825,
+    "world_y": 299,
     "shape_id": "CZE",
     "settlements": [
       {
@@ -6030,8 +6030,8 @@
       "brandenburg",
       "pomerania"
     ],
-    "world_x": 792,
-    "world_y": 265,
+    "world_x": 806,
+    "world_y": 247,
     "shape_id": "POL",
     "settlements": [
       {
@@ -6075,8 +6075,8 @@
       "_sea_baltic",
       "kiev"
     ],
-    "world_x": 910,
-    "world_y": 215,
+    "world_x": 921,
+    "world_y": 245,
     "shape_id": "POL",
     "settlements": [
       {
@@ -6161,8 +6161,8 @@
       "luxembourg",
       "palatinate"
     ],
-    "world_x": 615,
-    "world_y": 275,
+    "world_x": 602,
+    "world_y": 300,
     "shape_id": "FRA",
     "settlements": [
       {
@@ -6203,15 +6203,15 @@
       "switzerland",
       "burgundy"
     ],
-    "world_x": 638,
-    "world_y": 295,
+    "world_x": 628,
+    "world_y": 309,
     "shape_id": "FRA",
     "settlements": [
       {
         "id": "alsace_main",
         "name_tr": "Alsas",
-        "x": 625,
-        "y": 309,
+        "x": 627,
+        "y": 312,
         "type": "city",
         "is_capital": true
       }
@@ -6246,8 +6246,8 @@
       "croatia",
       "rascia"
     ],
-    "world_x": 905,
-    "world_y": 348,
+    "world_x": 901,
+    "world_y": 330,
     "shape_id": "HUN",
     "settlements": [
       {
@@ -6415,8 +6415,8 @@
       "_sea_adriatic",
       "_sea_med_east"
     ],
-    "world_x": 855,
-    "world_y": 462,
+    "world_x": 847,
+    "world_y": 437,
     "shape_id": "ITA",
     "settlements": [
       {
@@ -6634,8 +6634,8 @@
       "_sea_aegean",
       "chalcidice"
     ],
-    "world_x": 920,
-    "world_y": 462,
+    "world_x": 911,
+    "world_y": 491,
     "shape_id": "GRC",
     "settlements": [
       {
@@ -6676,8 +6676,8 @@
       "_sea_aegean",
       "_sea_med_east"
     ],
-    "world_x": 918,
-    "world_y": 518,
+    "world_x": 914,
+    "world_y": 523,
     "shape_id": "GRC",
     "settlements": [
       {
@@ -6765,8 +6765,8 @@
       "saruhan",
       "chrysopolis"
     ],
-    "world_x": 1090,
-    "world_y": 468,
+    "world_x": 1079,
+    "world_y": 481,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -6870,7 +6870,7 @@
       "moscow"
     ],
     "world_x": 1092,
-    "world_y": 262,
+    "world_y": 269,
     "shape_id": "UKR",
     "settlements": [
       {
@@ -6913,8 +6913,8 @@
       "lebanon",
       "mosul"
     ],
-    "world_x": 1222,
-    "world_y": 547,
+    "world_x": 1212,
+    "world_y": 550,
     "shape_id": "SYR",
     "settlements": [
       {
@@ -6979,8 +6979,8 @@
       "dulkadir",
       "eretna"
     ],
-    "world_x": 1328,
-    "world_y": 564,
+    "world_x": 1344,
+    "world_y": 552,
     "shape_id": "IRQ",
     "settlements": [
       {
@@ -7029,8 +7029,8 @@
       "kuwait",
       "_sea_persian"
     ],
-    "world_x": 1390,
-    "world_y": 652,
+    "world_x": 1434,
+    "world_y": 659,
     "shape_id": "IRQ",
     "settlements": [
       {
@@ -7136,8 +7136,8 @@
       "_sea_black",
       "chrysopolis"
     ],
-    "world_x": 1142,
-    "world_y": 452,
+    "world_x": 1145,
+    "world_y": 441,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -7192,8 +7192,8 @@
       "hamit",
       "teke"
     ],
-    "world_x": 1082,
-    "world_y": 516,
+    "world_x": 1073,
+    "world_y": 532,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -7263,8 +7263,8 @@
       "mentese",
       "_sea_aegean"
     ],
-    "world_x": 1057,
-    "world_y": 480,
+    "world_x": 1042,
+    "world_y": 491,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -7336,7 +7336,7 @@
         "id": "chalcedon",
         "name_tr": "Kadıköy / Khalkedon",
         "x": 1109,
-        "y": 450,
+        "y": 451,
         "type": "port"
       }
     ],
@@ -7371,8 +7371,8 @@
       "lithuania",
       "_sea_baltic"
     ],
-    "world_x": 1155,
-    "world_y": 135,
+    "world_x": 1068,
+    "world_y": 92,
     "shape_id": "RUS",
     "settlements": [
       {
@@ -7410,8 +7410,8 @@
     "neighbors": [
       "moscow"
     ],
-    "world_x": 1440,
-    "world_y": 185,
+    "world_x": 1400,
+    "world_y": 288,
     "shape_id": "RUS",
     "settlements": [
       {
@@ -7453,8 +7453,8 @@
       "macedonia",
       "_sea_aegean"
     ],
-    "world_x": 968,
-    "world_y": 460,
+    "world_x": 950,
+    "world_y": 457,
     "shape_id": "GRC",
     "settlements": [
       {

@@ -51,12 +51,13 @@ type Renderer struct {
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
-| 4 | Bölge etiketleri + şehir noktası; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
+| 4 | Bölge etiketleri + şehir noktası; edit mode'da bölge merkezi işaretleri; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
 | 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Bölge üretim UI — bina kartlarında kuyruktaki inşaatın kalan tur etiketi ve tekrar tıklayınca iptal, birim kartlarında üretim turu | `panel.go`, `recruit_panel.go` |
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
+| 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
@@ -96,6 +97,8 @@ Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. D
 
 Kara bölgelerde görünen şehir noktaları `regions.json` içindeki `settlements[]` alanından gelir. `WorldMap` her yerleşim için `SettlementAnchor` hesaplar; koordinat yanlışlıkla bölge dışına verilirse log uyarısı basılır ve aynı region içindeki en yakın piksele fallback yapılır. Ordu ikonları ve hareket hedefleri ana yerleşim (`is_capital`) anchor'ını kullanır, `world_x/world_y` ise bölge geometrisi için korunur.
 
+Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Shift + sol sürükleme bu koordinatları değiştirir; Voronoi sınırları `WorldMap` raster cache'ine bağlı olduğu için sürükleme sırasında sadece merkez işareti güncellenir, fare bırakıldığında cache bir kez yeniden oluşturulur.
+
 ---
 
 ## Input Yönetimi
@@ -116,7 +119,7 @@ Kara bölgelerde görünen şehir noktaları `regions.json` içindeki `settlemen
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
-Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap ve küçük edit HUD görünür. Sol tık settlement seçer, sürükleme settlement koordinatını canlı taşır; başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap, üst edit HUD ve alt-sol bilgi HUD'u görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler, Delete seçili settlement'ı siler. Shift + sol sürükleme kara bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Alt-sol HUD'daki `Yerlesim Ekle`, `Isim`, `Sil` ve `Kaydet` butonları aynı işlemleri doğrudan çalıştırır. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
 

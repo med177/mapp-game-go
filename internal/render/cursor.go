@@ -87,7 +87,23 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseEditMode:
+		if editInspectorButtonAt(fx, fy) != editButtonNone {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if editModifierPressed() && r.editRegionAt(fx, fy) != "" {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if editAddModifierPressed() && r.editRegionAt(fx, fy) != "" {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if _, _, ok := r.editSettlementAt(fx, fy); ok {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if _, ok := r.editArmyAt(fx, fy); ok {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
