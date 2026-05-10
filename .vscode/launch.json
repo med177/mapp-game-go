@@ -2,14 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Game",
+      "name": "Debug Game",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/bin/game"
+      "output": "${workspaceFolder}/mapp.exe"
+    },
+    {
+      "name": "Build Game",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/game",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "output": "${workspaceFolder}/bin/game/mapp.exe"
     }
   ]
 }
