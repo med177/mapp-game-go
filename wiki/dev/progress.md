@@ -84,6 +84,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Edit mode Voronoi debug overlay | ✅ | Edit mode'da `V` ile aç/kapatılır; seçili/hover bölgenin raster/Voronoi sınırını ve görsel komşularını JSON `neighbors` ile karşılaştırır, merkezler arası çizgiler ve hover koordinat paneli gösterir |
 | Edit mode dirty exit uyarısı | ✅ | `editDirty` true iken ESC ile çıkışta ortak modal açılır; `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekleriyle kayıp veri engellenir |
 | Edit mode cleanup | ✅ | `Tip`, `Arazi`, `Sahip` butonları dropdown davranışına göre adlandırıldı; eski cycle helper'ları kaldırıldı |
+| Edit mode undo/redo | ✅ | `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo; settlement ekle/sil/taşı/bölge arası taşı, region center, owner/terrain/type/capital/name değişiklikleri küçük snapshot command'leriyle geri alınır |
 
 ## Edit Mode Devam Planı
 
@@ -91,9 +92,8 @@ Bir sonraki oturumda edit mode'a buradan devam et. HUD/dropdown tabanlı temel s
 
 | Öncelik | İş | Not |
 |---|---|---|
-| 1 | Undo/redo | Settlement ekle/sil/taşı, region center taşı, owner/terrain/type/capital/name değişikliklerini command stack ile geri al/ileri al. Büyük JSON kopyaları yerine küçük alan bazlı snapshot tut. |
-| 2 | Bölge metadata editörü | Region `name`, `name_tr`, `neighbors`, kilit/açılma alanları gibi `regions.json` verilerini düzenle. `neighbors` için iki yönlü güncelleme ve Voronoi komşuluk testi yardımcı uyarısı ekle. |
-| 3 | Geniş veri editorleri | Region dışındaki scenario verileri için sonraki paneller: başlangıç orduları, binalar, event seedleri veya faction başlangıç değerleri. Bunlar ayrı edit sekmeleri/panelleri olmalı, temel map editor ile karıştırılmamalı. |
+| 1 | Bölge metadata editörü | Region `name`, `name_tr`, `neighbors`, kilit/açılma alanları gibi `regions.json` verilerini düzenle. `neighbors` için iki yönlü güncelleme ve Voronoi komşuluk testi yardımcı uyarısı ekle. |
+| 2 | Geniş veri editorleri | Region dışındaki scenario verileri için sonraki paneller: başlangıç orduları, binalar, event seedleri veya faction başlangıç değerleri. Bunlar ayrı edit sekmeleri/panelleri olmalı, temel map editor ile karıştırılmamalı. |
 
 ## Bilinen Sorunlar
 

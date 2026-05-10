@@ -68,6 +68,7 @@ PhaseTurnResolution                    │
 | Bölge sahibi seç | HUD `Sahip` | Fraksiyon dropdown'ını açar; listeden doğrudan `owner_id` seçilir, boş sahip de seçilebilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |
+| Geri al / ileri al | Ctrl+Z / Ctrl+Y veya Ctrl+Shift+Z | Edit command stack üzerinden settlement, bölge merkezi ve temel alan değişikliklerini geri alır veya yeniden uygular |
 | Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
 | Ana menüye dön | Esc | Değişiklik yoksa edit mode'dan çıkar; kaydedilmemiş değişiklik varsa `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekli modal açar |
 

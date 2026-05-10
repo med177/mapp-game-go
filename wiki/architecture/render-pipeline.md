@@ -156,6 +156,8 @@ Voronoi debug overlay `V` ile açılıp kapanır. Overlay `WorldMap.BoundaryPixe
 
 Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı üç seçenekle açılır: `Kaydet` önce `ActionSaveScenarioAndGoMainMenu` üretir, kayıt başarılıysa ana menüye döner; `Kaydetmeden Cik` doğrudan `ActionGoMainMenu` üretir; `Iptal` modalı kapatır.
 
+Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name değişiklikleri ilgili alan snapshot'ını tutar. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
+
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
 
 Üst-sol durum paneli `internal/render/panel.go:185` içinde çizilir. Sağ taraftaki zafer hedefi ve askeri kapasite alanları, sabit ölçülü iç kartlar ve kendi ilerleme barı çizimiyle sınırlandırılır; böylece zafer barı askeri kapasite ayırıcısına veya panel sağ sınırına taşmaz.

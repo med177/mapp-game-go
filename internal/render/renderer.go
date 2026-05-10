@@ -118,6 +118,10 @@ type Renderer struct {
 	editSettlementTypeDropdown *Dropdown
 	editVisualNeighborBuf      []world.RegionID
 	editBoundaryPixelBuf       []int
+	editUndoStack              []editCommand
+	editRedoStack              []editCommand
+	editRegionDragStart        *editRegionCenterSnapshot
+	editSettlementDragStart    []editRegionSettlementsSnapshot
 }
 
 type confirmDialogState struct {
@@ -131,6 +135,22 @@ type confirmDialogState struct {
 	pendingAction InputAction
 	thirdAction   InputAction
 	declineHook   func()
+}
+
+type editCommand struct {
+	undo func(*Renderer)
+	redo func(*Renderer)
+}
+
+type editRegionCenterSnapshot struct {
+	Region world.RegionID
+	X      int
+	Y      int
+}
+
+type editRegionSettlementsSnapshot struct {
+	Region      world.RegionID
+	Settlements []world.Settlement
 }
 
 type warConfirmState struct {
@@ -285,6 +305,8 @@ func New(gs *state.GameState) *Renderer {
 		editVoronoiDebug:           true,
 		editVisualNeighborBuf:      make([]world.RegionID, 0, 16),
 		editBoundaryPixelBuf:       make([]int, 0, 4096),
+		editUndoStack:              make([]editCommand, 0, 64),
+		editRedoStack:              make([]editCommand, 0, 64),
 		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
 		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
 		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
@@ -961,7 +983,7 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		title += " *"
 	}
 	DrawText(screen, title, float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: bolge merkezi   V: Voronoi   Ctrl+S: kaydet",
+	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: merkez   Ctrl+Z/Y: geri/ileri   Ctrl+S: kaydet",
 		float64(x)+14, float64(y)+36, FaceSmall, ColorWhite)
 
 	info := "Secili: yok"
@@ -977,10 +999,11 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	if r.editVoronoiDebug {
 		debugState = "Voronoi debug: acik"
 	}
+	historyState := "Geri/Ileri: " + itoa(len(r.editUndoStack)) + "/" + itoa(len(r.editRedoStack))
 	if r.editRenaming {
 		DrawText(screen, "Isim: "+string(r.editNameRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
 	} else {
-		DrawText(screen, debugState+"   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
+		DrawText(screen, debugState+"   "+historyState+"   V: debug   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
 	}
 }
 
@@ -1310,6 +1333,164 @@ func visualNeighborContains(neighbors []world.RegionID, rid world.RegionID) bool
 	return false
 }
 
+func (r *Renderer) pushEditCommand(cmd editCommand) {
+	if cmd.undo == nil || cmd.redo == nil {
+		return
+	}
+	r.editUndoStack = append(r.editUndoStack, cmd)
+	r.editRedoStack = r.editRedoStack[:0]
+	r.editDirty = true
+}
+
+func (r *Renderer) undoEditCommand() {
+	if len(r.editUndoStack) == 0 {
+		return
+	}
+	last := len(r.editUndoStack) - 1
+	cmd := r.editUndoStack[last]
+	r.editUndoStack = r.editUndoStack[:last]
+	cmd.undo(r)
+	r.editRedoStack = append(r.editRedoStack, cmd)
+	r.editDirty = true
+}
+
+func (r *Renderer) redoEditCommand() {
+	if len(r.editRedoStack) == 0 {
+		return
+	}
+	last := len(r.editRedoStack) - 1
+	cmd := r.editRedoStack[last]
+	r.editRedoStack = r.editRedoStack[:last]
+	cmd.redo(r)
+	r.editUndoStack = append(r.editUndoStack, cmd)
+	r.editDirty = true
+}
+
+func cloneSettlements(settlements []world.Settlement) []world.Settlement {
+	clone := make([]world.Settlement, len(settlements))
+	copy(clone, settlements)
+	return clone
+}
+
+func (r *Renderer) settlementSnapshot(rid world.RegionID) editRegionSettlementsSnapshot {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return editRegionSettlementsSnapshot{Region: rid}
+	}
+	return editRegionSettlementsSnapshot{
+		Region:      rid,
+		Settlements: cloneSettlements(region.Settlements),
+	}
+}
+
+func uniqueSettlementSnapshots(snaps []editRegionSettlementsSnapshot) []editRegionSettlementsSnapshot {
+	out := snaps[:0]
+	for _, snap := range snaps {
+		seen := false
+		for _, existing := range out {
+			if existing.Region == snap.Region {
+				seen = true
+				break
+			}
+		}
+		if !seen {
+			out = append(out, snap)
+		}
+	}
+	return out
+}
+
+func (r *Renderer) restoreSettlementSnapshots(snaps []editRegionSettlementsSnapshot) {
+	for _, snap := range snaps {
+		region := r.gs.Regions[snap.Region]
+		if region == nil {
+			continue
+		}
+		region.Settlements = cloneSettlements(snap.Settlements)
+	}
+	r.editDraggingSettlement = false
+	r.editDraggingRegion = false
+	r.editRenaming = false
+	r.worldMap.RebuildSettlementAnchors(r.gs)
+}
+
+func (r *Renderer) pushSettlementSnapshots(before, after []editRegionSettlementsSnapshot, selectedRegion world.RegionID, selectedSettlement int) {
+	before = uniqueSettlementSnapshots(before)
+	after = uniqueSettlementSnapshots(after)
+	if len(before) == 0 || len(after) == 0 || settlementSnapshotsEqual(before, after) {
+		return
+	}
+	beforeCopy := cloneSettlementSnapshots(before)
+	afterCopy := cloneSettlementSnapshots(after)
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.restoreSettlementSnapshots(beforeCopy)
+			rr.editSelectedRegion = selectedRegion
+			rr.editSelectedSettlement = -1
+		},
+		redo: func(rr *Renderer) {
+			rr.restoreSettlementSnapshots(afterCopy)
+			rr.editSelectedRegion = selectedRegion
+			rr.editSelectedSettlement = selectedSettlement
+		},
+	})
+}
+
+func cloneSettlementSnapshots(snaps []editRegionSettlementsSnapshot) []editRegionSettlementsSnapshot {
+	out := make([]editRegionSettlementsSnapshot, len(snaps))
+	for i, snap := range snaps {
+		out[i] = editRegionSettlementsSnapshot{
+			Region:      snap.Region,
+			Settlements: cloneSettlements(snap.Settlements),
+		}
+	}
+	return out
+}
+
+func settlementSnapshotsEqual(a, b []editRegionSettlementsSnapshot) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Region != b[i].Region || !settlementsEqual(a[i].Settlements, b[i].Settlements) {
+			return false
+		}
+	}
+	return true
+}
+
+func settlementsEqual(a, b []world.Settlement) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func editUndoPressed() bool {
+	ctrl := ebiten.IsKeyPressed(ebiten.KeyControl) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlRight)
+	shift := ebiten.IsKeyPressed(ebiten.KeyShift) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftRight)
+	return ctrl && !shift
+}
+
+func editRedoPressed() bool {
+	ctrl := ebiten.IsKeyPressed(ebiten.KeyControl) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlRight)
+	shift := ebiten.IsKeyPressed(ebiten.KeyShift) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyShiftRight)
+	return ctrl && shift
+}
+
 func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editRenaming {
 		return r.handleEditRenameInput()
@@ -1354,6 +1535,20 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyV) {
 		r.editVoronoiDebug = !r.editVoronoiDebug
 	}
+	if r.keyJustPressed(ebiten.KeyZ) {
+		if editRedoPressed() {
+			r.redoEditCommand()
+			return InputAction{}
+		}
+		if editUndoPressed() {
+			r.undoEditCommand()
+			return InputAction{}
+		}
+	}
+	if r.keyJustPressed(ebiten.KeyY) && editUndoPressed() {
+		r.redoEditCommand()
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editOwnerDropdown.Close()
 		r.editTerrainDropdown.Close()
@@ -1384,6 +1579,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if r.editDraggingRegion && !leftPressed {
+		r.finishRegionCenterDrag()
 		r.editDraggingRegion = false
 		r.rebuildEditWorldMap()
 	}
@@ -1400,6 +1596,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 				r.editDraggingRegion = true
 				r.editDraggingSettlement = false
 				r.editRenaming = false
+				r.beginRegionCenterDrag(rid)
 				r.moveSelectedRegionCenterTo(fx, fy)
 				return InputAction{}
 			}
@@ -1437,6 +1634,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editSelectedSettlement = idx
 			r.editDraggingSettlement = true
 			r.editDraggingRegion = false
+			r.beginSettlementDrag(rid)
 			return InputAction{}
 		}
 		if rid := r.editRegionAt(fx, fy); rid != "" {
@@ -1462,6 +1660,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if !leftPressed {
+		if r.editDraggingSettlement {
+			r.finishSettlementDrag()
+		}
 		r.editDraggingSettlement = false
 	}
 
@@ -1651,9 +1852,20 @@ func (r *Renderer) commitEditRename() {
 		return
 	}
 	region := r.gs.Regions[r.editSelectedRegion]
+	idx := r.editSelectedSettlement
 	newName := string(r.editNameRunes)
-	if newName != "" && region.Settlements[r.editSelectedSettlement].NameTR != newName {
-		region.Settlements[r.editSelectedSettlement].NameTR = newName
+	oldName := region.Settlements[idx].NameTR
+	if newName != "" && oldName != newName {
+		region.Settlements[idx].NameTR = newName
+		rid := region.ID
+		r.pushEditCommand(editCommand{
+			undo: func(rr *Renderer) {
+				rr.setSettlementNameTR(rid, idx, oldName)
+			},
+			redo: func(rr *Renderer) {
+				rr.setSettlementNameTR(rid, idx, newName)
+			},
+		})
 		r.editDirty = true
 	}
 	r.editRenaming = false
@@ -1705,6 +1917,85 @@ func (r *Renderer) editArmyAt(fx, fy float64) (army.ArmyID, bool) {
 		}
 	}
 	return "", false
+}
+
+func (r *Renderer) beginRegionCenterDrag(rid world.RegionID) {
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		r.editRegionDragStart = nil
+		return
+	}
+	r.editRegionDragStart = &editRegionCenterSnapshot{
+		Region: rid,
+		X:      region.WorldX,
+		Y:      region.WorldY,
+	}
+}
+
+func (r *Renderer) finishRegionCenterDrag() {
+	start := r.editRegionDragStart
+	r.editRegionDragStart = nil
+	if start == nil {
+		return
+	}
+	region := r.gs.Regions[start.Region]
+	if region == nil || region.IsSea || (region.WorldX == start.X && region.WorldY == start.Y) {
+		return
+	}
+	begin := *start
+	end := editRegionCenterSnapshot{Region: start.Region, X: region.WorldX, Y: region.WorldY}
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.restoreRegionCenter(begin)
+		},
+		redo: func(rr *Renderer) {
+			rr.restoreRegionCenter(end)
+		},
+	})
+}
+
+func (r *Renderer) restoreRegionCenter(snapshot editRegionCenterSnapshot) {
+	region := r.gs.Regions[snapshot.Region]
+	if region == nil || region.IsSea {
+		return
+	}
+	region.WorldX = snapshot.X
+	region.WorldY = snapshot.Y
+	r.editSelectedRegion = snapshot.Region
+	r.editSelectedSettlement = -1
+	r.editDraggingRegion = false
+	r.editDraggingSettlement = false
+	r.rebuildEditWorldMap()
+}
+
+func (r *Renderer) beginSettlementDrag(rid world.RegionID) {
+	r.editSettlementDragStart = r.editSettlementDragStart[:0]
+	r.editSettlementDragStart = append(r.editSettlementDragStart, r.settlementSnapshot(rid))
+}
+
+func (r *Renderer) ensureSettlementDragSnapshot(rid world.RegionID) {
+	for _, snap := range r.editSettlementDragStart {
+		if snap.Region == rid {
+			return
+		}
+	}
+	r.editSettlementDragStart = append(r.editSettlementDragStart, r.settlementSnapshot(rid))
+}
+
+func (r *Renderer) finishSettlementDrag() {
+	if len(r.editSettlementDragStart) == 0 {
+		return
+	}
+	before := cloneSettlementSnapshots(r.editSettlementDragStart)
+	after := make([]editRegionSettlementsSnapshot, 0, len(before)+1)
+	for _, snap := range before {
+		after = append(after, r.settlementSnapshot(snap.Region))
+	}
+	if r.editSelectedRegion != "" {
+		after = append(after, r.settlementSnapshot(r.editSelectedRegion))
+	}
+	r.pushSettlementSnapshots(before, after, r.editSelectedRegion, r.editSelectedSettlement)
+	r.editSettlementDragStart = r.editSettlementDragStart[:0]
 }
 
 func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
@@ -1762,6 +2053,7 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	if !ok || region == nil || region.IsSea {
 		return
 	}
+	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
 
 	name := region.NameTR
 	if name == "" {
@@ -1785,6 +2077,8 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	r.editDraggingRegion = false
 	r.worldMap.UpdateSettlementAnchor(r.gs, rid, r.editSelectedSettlement)
 	r.editDirty = true
+	after := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
+	r.pushSettlementSnapshots(before, after, rid, r.editSelectedSettlement)
 }
 
 func (r *Renderer) deleteSelectedSettlement() {
@@ -1792,6 +2086,8 @@ func (r *Renderer) deleteSelectedSettlement() {
 		return
 	}
 	region := r.gs.Regions[r.editSelectedRegion]
+	rid := region.ID
+	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
 	removedCapital := region.Settlements[r.editSelectedSettlement].IsCapital
 	region.Settlements = append(region.Settlements[:r.editSelectedSettlement], region.Settlements[r.editSelectedSettlement+1:]...)
 	if removedCapital {
@@ -1802,6 +2098,8 @@ func (r *Renderer) deleteSelectedSettlement() {
 	r.editDraggingRegion = false
 	r.worldMap.RebuildSettlementAnchors(r.gs)
 	r.editDirty = true
+	after := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
+	r.pushSettlementSnapshots(before, after, rid, -1)
 }
 
 func (r *Renderer) setSelectedSettlementCapital() {
@@ -1809,6 +2107,7 @@ func (r *Renderer) setSelectedSettlementCapital() {
 		return
 	}
 	region := r.gs.Regions[r.editSelectedRegion]
+	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(region.ID)}
 	changed := false
 	for i := range region.Settlements {
 		isCapital := i == r.editSelectedSettlement
@@ -1820,6 +2119,8 @@ func (r *Renderer) setSelectedSettlementCapital() {
 	if changed {
 		r.worldMap.RebuildSettlementAnchors(r.gs)
 		r.editDirty = true
+		after := []editRegionSettlementsSnapshot{r.settlementSnapshot(region.ID)}
+		r.pushSettlementSnapshots(before, after, region.ID, r.editSelectedSettlement)
 	}
 }
 
@@ -1831,7 +2132,17 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 	if region.Terrain == terrain {
 		return
 	}
+	rid := region.ID
+	old := region.Terrain
 	region.Terrain = terrain
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.setRegionTerrainValue(rid, old)
+		},
+		redo: func(rr *Renderer) {
+			rr.setRegionTerrainValue(rid, terrain)
+		},
+	})
 	r.editDirty = true
 }
 
@@ -1845,7 +2156,18 @@ func (r *Renderer) setSelectedSettlementType(typ string) {
 	if settlement.Type == st {
 		return
 	}
+	rid := region.ID
+	idx := r.editSelectedSettlement
+	old := settlement.Type
 	settlement.Type = st
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.setSettlementTypeValue(rid, idx, old)
+		},
+		redo: func(rr *Renderer) {
+			rr.setSettlementTypeValue(rid, idx, st)
+		},
+	})
 	r.editDirty = true
 }
 
@@ -1857,9 +2179,60 @@ func (r *Renderer) setSelectedRegionOwner(ownerID string) {
 	if region.OwnerID == ownerID {
 		return
 	}
+	rid := region.ID
+	old := region.OwnerID
 	region.OwnerID = ownerID
 	r.worldMap.MarkDirty()
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.setRegionOwnerValue(rid, old)
+		},
+		redo: func(rr *Renderer) {
+			rr.setRegionOwnerValue(rid, ownerID)
+		},
+	})
 	r.editDirty = true
+}
+
+func (r *Renderer) setSettlementNameTR(rid world.RegionID, index int, name string) {
+	region := r.gs.Regions[rid]
+	if region == nil || index < 0 || index >= len(region.Settlements) {
+		return
+	}
+	region.Settlements[index].NameTR = name
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = index
+}
+
+func (r *Renderer) setSettlementTypeValue(rid world.RegionID, index int, typ world.SettlementType) {
+	region := r.gs.Regions[rid]
+	if region == nil || index < 0 || index >= len(region.Settlements) {
+		return
+	}
+	region.Settlements[index].Type = typ
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = index
+}
+
+func (r *Renderer) setRegionTerrainValue(rid world.RegionID, terrain world.TerrainType) {
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return
+	}
+	region.Terrain = terrain
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+}
+
+func (r *Renderer) setRegionOwnerValue(rid world.RegionID, ownerID string) {
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return
+	}
+	region.OwnerID = ownerID
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+	r.worldMap.MarkDirty()
 }
 
 func (r *Renderer) rebuildEditWorldMap() {
@@ -1942,6 +2315,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 		r.editSelectedSettlement >= len(source.Settlements) {
 		return
 	}
+	r.ensureSettlementDragSnapshot(targetID)
 
 	settlement := source.Settlements[r.editSelectedSettlement]
 	settlement.X = x
