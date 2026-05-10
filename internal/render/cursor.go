@@ -87,6 +87,14 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseEditMode:
+		if r.editFactionForm.show {
+			if editFactionFormHit(fx, fy) {
+				ebiten.SetCursorShape(ebiten.CursorShapePointer)
+				return
+			}
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			return
+		}
 		if r.editOwnerDropdown.IsOpen() && r.editOwnerDropdown.HitTest(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
@@ -99,7 +107,7 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
-		if editInspectorButtonAt(fx, fy) != editButtonNone {
+		if r.editInspectorActiveButtonAt(fx, fy) != editButtonNone {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}

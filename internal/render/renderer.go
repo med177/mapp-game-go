@@ -4,10 +4,13 @@ import (
 	"image/color"
 	"math"
 	"sort"
+	"strconv"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
@@ -107,10 +110,13 @@ type Renderer struct {
 
 	editSelectedRegion         world.RegionID
 	editSelectedSettlement     int
+	editSelectedFaction        faction.FactionID
 	editDraggingSettlement     bool
 	editDraggingRegion         bool
 	editRenaming               bool
-	editNameRunes              []rune
+	editTextTarget             editTextTarget
+	editTextRunes              []rune
+	editInspectorTab           editInspectorTab
 	editDirty                  bool
 	editVoronoiDebug           bool
 	editOwnerDropdown          *Dropdown
@@ -122,6 +128,7 @@ type Renderer struct {
 	editRedoStack              []editCommand
 	editRegionDragStart        *editRegionCenterSnapshot
 	editSettlementDragStart    []editRegionSettlementsSnapshot
+	editFactionForm            editFactionFormState
 }
 
 type confirmDialogState struct {
@@ -152,6 +159,75 @@ type editRegionSettlementsSnapshot struct {
 	Region      world.RegionID
 	Settlements []world.Settlement
 }
+
+type editWorldSnapshot struct {
+	Regions     map[world.RegionID]*world.Region
+	RegionOrder []world.RegionID
+	Factions    map[faction.FactionID]*faction.Faction
+	Armies      map[army.ArmyID]*army.Army
+	Relations   map[string]*faction.Relation
+	Selected    world.RegionID
+	Settlement  int
+	Faction     faction.FactionID
+	Army        army.ArmyID
+	Player      faction.FactionID
+}
+
+type editFactionFormState struct {
+	show           bool
+	create         bool
+	active         editFactionFormField
+	originalID     faction.FactionID
+	id             string
+	name           string
+	nameTR         string
+	religion       religion.Type
+	color          [3]uint8
+	playable       bool
+	gold           string
+	grain          string
+	iron           string
+	timber         string
+	spice          string
+	cloth          string
+	ai             string
+	relationTarget faction.FactionID
+	relationScore  string
+	relationStance faction.DiplomaticStance
+	errorText      string
+}
+
+type editFactionFormField int
+
+const (
+	editFactionFieldNone editFactionFormField = iota
+	editFactionFieldID
+	editFactionFieldName
+	editFactionFieldNameTR
+	editFactionFieldGold
+	editFactionFieldGrain
+	editFactionFieldIron
+	editFactionFieldTimber
+	editFactionFieldSpice
+	editFactionFieldCloth
+	editFactionFieldAI
+)
+
+type editTextTarget int
+
+const (
+	editTextNone editTextTarget = iota
+	editTextSettlementNameTR
+	editTextRegionNameTR
+	editTextRegionName
+)
+
+type editInspectorTab int
+
+const (
+	editInspectorMap editInspectorTab = iota
+	editInspectorData
+)
 
 type warConfirmState struct {
 	show        bool
@@ -537,14 +613,15 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
 		DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
+		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	}
-	DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll)
 		DrawHoverTooltip(screen, r.gs, r.SelectedRegion)
 	} else {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)
+		r.drawEditFactionForm(screen)
 	}
 
 	// 7. Diplomasi paneli (üst katman)
@@ -983,7 +1060,7 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		title += " *"
 	}
 	DrawText(screen, title, float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: merkez   Ctrl+Z/Y: geri/ileri   Ctrl+S: kaydet",
+	DrawText(screen, "Sol: sec/tasi   Alt+sol: yerlesim   Ctrl+Alt+sol: bolge   Shift+sol: merkez   Ctrl+Z/Y: geri/ileri",
 		float64(x)+14, float64(y)+36, FaceSmall, ColorWhite)
 
 	info := "Secili: yok"
@@ -1001,7 +1078,7 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	}
 	historyState := "Geri/Ileri: " + itoa(len(r.editUndoStack)) + "/" + itoa(len(r.editRedoStack))
 	if r.editRenaming {
-		DrawText(screen, "Isim: "+string(r.editNameRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
+		DrawText(screen, r.editTextLabel()+": "+string(r.editTextRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
 	} else {
 		DrawText(screen, debugState+"   "+historyState+"   V: debug   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
 	}
@@ -1012,8 +1089,15 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawRoundedRect(screen, x, y, w, h, 8, color.RGBA{16, 20, 24, 226})
 	drawPanelBorder(screen, x, y, w, h)
 
-	DrawText(screen, "BILGI", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	ly := float64(y) + 38
+	DrawText(screen, "EDITOR", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
+	drawEditInspectorTab(screen, editInspectorMap, "Harita")
+	drawEditInspectorTab(screen, editInspectorData, "Veri")
+	ly := float64(y) + 58
+
+	if r.editInspectorTab == editInspectorData {
+		r.drawEditDataInspector(screen, ly)
+		return
+	}
 
 	region := r.gs.Regions[r.editSelectedRegion]
 	if r.SelectedArmy != "" {
@@ -1046,6 +1130,8 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	ly += 18
 	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+itoa(len(region.Settlements)), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 22
+	DrawText(screen, "Kilit: "+editBoolLabel(region.IsLocked)+"   Acilis: "+itoa(region.UnlockTurn)+"   Komsu: "+itoa(len(region.Neighbors)), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 20
 
 	if r.hasEditSelection() {
 		settlement := region.Settlements[r.editSelectedSettlement]
@@ -1081,8 +1167,246 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	drawEditInspectorButton(screen, editButtonRenameSettlement, "Isim", canSettlement)
 	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
-	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Sil", canSettlement)
+	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionName, "Ad EN", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
+	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
+	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
+	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komsu Sync", canRegion)
+	drawEditInspectorButton(screen, editButtonAddRegion, "Bolge Ekle", canRegion)
+	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bolge Sil", canRegion)
+	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Yerlesim Sil", canSettlement)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+}
+
+func drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
+	rect := editInspectorTabRect(tab)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, true)
+}
+
+func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
+	x, _, _, _ := editInspectorRect()
+	region := r.gs.Regions[r.editSelectedRegion]
+	f := r.selectedEditFaction()
+
+	DrawText(screen, "GENIS VERI EDITORU", float64(x)+14, ly, FaceSmall, ColorGold)
+	ly += 22
+	if f == nil {
+		DrawText(screen, "Sahipli bolge veya ordu sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+		ly += 20
+	} else {
+		name := f.NameTR
+		if name == "" {
+			name = f.Name
+		}
+		DrawText(screen, "Fraksiyon: "+name+" ["+string(f.ID)+"]", float64(x)+14, ly, FaceSmall, ColorWhite)
+		ly += 18
+		DrawText(screen, "Altin "+itoa(f.Gold)+"  Tahil "+itoa(f.Grain)+"  Demir "+itoa(f.Iron), float64(x)+14, ly, FaceSmall, ColorGray)
+		ly += 18
+		DrawText(screen, "Kereste "+itoa(f.Timber)+"  Baharat "+itoa(f.Spice)+"  Kumas "+itoa(f.Cloth), float64(x)+14, ly, FaceSmall, ColorGray)
+		ly += 18
+		DrawText(screen, "Playable: "+editBoolLabel(f.IsPlayable)+"  AI: "+itoa(f.AIAggressiveness), float64(x)+14, ly, FaceSmall, ColorGray)
+	}
+	ly += 24
+
+	if r.SelectedArmy != "" {
+		if a := r.gs.Armies[r.SelectedArmy]; a != nil {
+			DrawText(screen, "Ordu: "+string(a.ID), float64(x)+14, ly, FaceSmall, ColorGold)
+			ly += 18
+			DrawText(screen, "Sahip: "+a.OwnerID+"  Bolge: "+string(a.RegionID)+"  Birim: "+itoa(len(a.Units)), float64(x)+14, ly, FaceSmall, ColorGray)
+			ly += 18
+			DrawText(screen, "Secili bolgeye tasima ve sahibi bolge sahibinden alma desteklenir.", float64(x)+14, ly, FaceSmall, ColorGray)
+		}
+	} else {
+		DrawText(screen, "Ordu secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
+	}
+
+	drawEditInspectorButton(screen, editButtonAddFaction, "Faction Ekle", true)
+	drawEditInspectorButton(screen, editButtonEditFaction, "Faction Duzenle", f != nil)
+	drawEditInspectorButton(screen, editButtonDeleteFaction, "Faction Sil", f != nil)
+	drawEditInspectorButton(screen, editButtonArmyMoveToRegion, "Orduyu Tasi", r.SelectedArmy != "" && r.editSelectedRegion != "")
+	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
+	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+}
+
+func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
+	if !r.editFactionForm.show {
+		return
+	}
+	x, y, w, h := editFactionFormRect()
+	drawRoundedRect(screen, x, y, w, h, 8, color.RGBA{14, 18, 22, 244})
+	drawPanelBorder(screen, x, y, w, h)
+	title := "FACTION EKLE"
+	if !r.editFactionForm.create {
+		title = "FACTION DUZENLE"
+	}
+	DrawText(screen, title, float64(x)+18, float64(y)+14, FaceLarge, ColorGold)
+
+	r.drawFactionFormField(screen, editFactionFieldID, "ID", r.editFactionForm.id)
+	r.drawFactionFormField(screen, editFactionFieldNameTR, "Ad TR", r.editFactionForm.nameTR)
+	r.drawFactionFormField(screen, editFactionFieldName, "Ad EN", r.editFactionForm.name)
+	r.drawFactionFormField(screen, editFactionFieldGold, "Altin", r.editFactionForm.gold)
+	r.drawFactionFormField(screen, editFactionFieldGrain, "Tahil", r.editFactionForm.grain)
+	r.drawFactionFormField(screen, editFactionFieldIron, "Demir", r.editFactionForm.iron)
+	r.drawFactionFormField(screen, editFactionFieldTimber, "Kereste", r.editFactionForm.timber)
+	r.drawFactionFormField(screen, editFactionFieldSpice, "Baharat", r.editFactionForm.spice)
+	r.drawFactionFormField(screen, editFactionFieldCloth, "Kumas", r.editFactionForm.cloth)
+	r.drawFactionFormField(screen, editFactionFieldAI, "AI", r.editFactionForm.ai)
+
+	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+string(r.editFactionForm.religion))
+	drawEditFactionFormButton(screen, editFactionFormPlayable, "Playable: "+editBoolLabel(r.editFactionForm.playable))
+	relationTitle := "Iliski: yok"
+	if r.editFactionForm.relationTarget != "" {
+		relationTitle = "Iliski: " + string(r.editFactionForm.relationTarget)
+	}
+	drawEditFactionFormButton(screen, editFactionFormRelationTarget, relationTitle)
+	drawEditFactionFormButton(screen, editFactionFormRelationStance, "Durum: "+string(r.editFactionForm.relationStance))
+	drawEditFactionFormButton(screen, editFactionFormRelationScoreMinus, "Skor -10")
+	drawEditFactionFormButton(screen, editFactionFormRelationScorePlus, "Skor +10")
+	DrawText(screen, "Skor: "+r.editFactionForm.relationScore, float64(x)+18, float64(y)+304, FaceSmall, ColorGray)
+
+	col := r.editFactionForm.color
+	preview := editFactionFormColorPreviewRect()
+	vector.FillRect(screen, float32(preview[0]), float32(preview[1]), float32(preview[2]), float32(preview[3]), color.RGBA{col[0], col[1], col[2], 255}, false)
+	vector.StrokeRect(screen, float32(preview[0]), float32(preview[1]), float32(preview[2]), float32(preview[3]), 1, ColorGold, false)
+	DrawText(screen, "Renk "+itoa(int(col[0]))+","+itoa(int(col[1]))+","+itoa(int(col[2])), float64(x)+338, float64(y)+332, FaceSmall, ColorGray)
+	drawEditFactionFormButton(screen, editFactionFormRedMinus, "R-")
+	drawEditFactionFormButton(screen, editFactionFormRedPlus, "R+")
+	drawEditFactionFormButton(screen, editFactionFormGreenMinus, "G-")
+	drawEditFactionFormButton(screen, editFactionFormGreenPlus, "G+")
+	drawEditFactionFormButton(screen, editFactionFormBlueMinus, "B-")
+	drawEditFactionFormButton(screen, editFactionFormBluePlus, "B+")
+
+	if r.editFactionForm.errorText != "" {
+		DrawText(screen, r.editFactionForm.errorText, float64(x)+18, float64(y)+float64(h)-74, FaceSmall, ColorRed)
+	}
+	drawEditFactionFormButton(screen, editFactionFormSave, "Kaydet")
+	drawEditFactionFormButton(screen, editFactionFormCancel, "Iptal")
+}
+
+func drawEditFactionFormButton(screen *ebiten.Image, kind editFactionFormButton, label string) {
+	x, y, w, h := rectXYWH(editFactionFormButtonRect(kind))
+	drawTinyPanelButton(screen, x, y, w, h, label, true)
+}
+
+func (r *Renderer) drawFactionFormField(screen *ebiten.Image, field editFactionFormField, label, value string) {
+	rect := editFactionFieldRect(field)
+	col := color.RGBA{28, 32, 38, 235}
+	if r.editFactionForm.active == field {
+		col = color.RGBA{44, 48, 54, 245}
+	}
+	vector.FillRect(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), col, false)
+	vector.StrokeRect(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), 1, color.RGBA{120, 105, 60, 210}, false)
+	DrawText(screen, label, rect[0], rect[1]-16, FaceSmall, ColorGray)
+	DrawText(screen, value, rect[0]+8, rect[1]+7, FaceSmall, ColorWhite)
+}
+
+func rectXYWH(rect uiRect) (float32, float32, float32, float32) {
+	return float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3])
+}
+
+func editFactionFormRect() (float32, float32, float32, float32) {
+	const w, h = float32(640), float32(520)
+	return float32(ScreenWidth)/2 - w/2, float32(ScreenHeight)/2 - h/2, w, h
+}
+
+func editFactionFormHit(mx, my float64) bool {
+	x, y, w, h := editFactionFormRect()
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func editFactionFieldRect(field editFactionFormField) uiRect {
+	x, y, _, _ := editFactionFormRect()
+	left := float64(x) + 18
+	right := float64(x) + 338
+	top := float64(y) + 78
+	const fw, fh, gap = float64(284), float64(30), float64(24)
+	row := func(n int) float64 { return top + float64(n)*(fh+gap) }
+	switch field {
+	case editFactionFieldID:
+		return uiRect{left, row(0), fw, fh}
+	case editFactionFieldNameTR:
+		return uiRect{right, row(0), fw, fh}
+	case editFactionFieldName:
+		return uiRect{left, row(1), fw, fh}
+	case editFactionFieldGold:
+		return uiRect{right, row(1), fw/2 - 6, fh}
+	case editFactionFieldGrain:
+		return uiRect{right + fw/2 + 6, row(1), fw/2 - 6, fh}
+	case editFactionFieldIron:
+		return uiRect{left, row(2), fw/2 - 6, fh}
+	case editFactionFieldTimber:
+		return uiRect{left + fw/2 + 6, row(2), fw/2 - 6, fh}
+	case editFactionFieldSpice:
+		return uiRect{right, row(2), fw/2 - 6, fh}
+	case editFactionFieldCloth:
+		return uiRect{right + fw/2 + 6, row(2), fw/2 - 6, fh}
+	case editFactionFieldAI:
+		return uiRect{left, row(3), fw/2 - 6, fh}
+	default:
+		return uiRect{}
+	}
+}
+
+type editFactionFormButton int
+
+const (
+	editFactionFormSave editFactionFormButton = iota
+	editFactionFormCancel
+	editFactionFormReligion
+	editFactionFormPlayable
+	editFactionFormRelationTarget
+	editFactionFormRelationStance
+	editFactionFormRelationScoreMinus
+	editFactionFormRelationScorePlus
+	editFactionFormRedMinus
+	editFactionFormRedPlus
+	editFactionFormGreenMinus
+	editFactionFormGreenPlus
+	editFactionFormBlueMinus
+	editFactionFormBluePlus
+)
+
+func editFactionFormButtonRect(kind editFactionFormButton) uiRect {
+	x, y, w, h := editFactionFormRect()
+	right := float64(x) + 338
+	switch kind {
+	case editFactionFormReligion:
+		return uiRect{right, float64(y) + 240, 136, 28}
+	case editFactionFormPlayable:
+		return uiRect{right + 148, float64(y) + 240, 136, 28}
+	case editFactionFormRelationTarget:
+		return uiRect{float64(x) + 18, float64(y) + 240, 284, 28}
+	case editFactionFormRelationStance:
+		return uiRect{float64(x) + 18, float64(y) + 272, 136, 28}
+	case editFactionFormRelationScoreMinus:
+		return uiRect{float64(x) + 166, float64(y) + 272, 64, 28}
+	case editFactionFormRelationScorePlus:
+		return uiRect{float64(x) + 238, float64(y) + 272, 64, 28}
+	case editFactionFormRedMinus:
+		return uiRect{right, float64(y) + 382, 42, 26}
+	case editFactionFormRedPlus:
+		return uiRect{right + 48, float64(y) + 382, 42, 26}
+	case editFactionFormGreenMinus:
+		return uiRect{right + 100, float64(y) + 382, 42, 26}
+	case editFactionFormGreenPlus:
+		return uiRect{right + 148, float64(y) + 382, 42, 26}
+	case editFactionFormBlueMinus:
+		return uiRect{right + 200, float64(y) + 382, 42, 26}
+	case editFactionFormBluePlus:
+		return uiRect{right + 248, float64(y) + 382, 42, 26}
+	case editFactionFormSave:
+		return uiRect{float64(x) + float64(w) - 264, float64(y) + float64(h) - 52, 116, 32}
+	case editFactionFormCancel:
+		return uiRect{float64(x) + float64(w) - 136, float64(y) + float64(h) - 52, 116, 32}
+	default:
+		return uiRect{}
+	}
+}
+
+func editFactionFormColorPreviewRect() uiRect {
+	x, y, _, _ := editFactionFormRect()
+	return uiRect{float64(x) + 338, float64(y) + 352, 284, 22}
 }
 
 func drawEditInspectorButton(screen *ebiten.Image, kind editInspectorButton, label string, active bool) {
@@ -1100,12 +1424,25 @@ const (
 	editButtonRenameSettlement
 	editButtonRegionTerrain
 	editButtonRegionOwner
+	editButtonRegionNameTR
+	editButtonRegionName
+	editButtonRegionLock
+	editButtonUnlockMinus
+	editButtonUnlockPlus
+	editButtonSyncNeighbors
+	editButtonAddRegion
+	editButtonDeleteRegion
 	editButtonDeleteSettlement
 	editButtonSaveScenario
+	editButtonAddFaction
+	editButtonEditFaction
+	editButtonDeleteFaction
+	editButtonArmyMoveToRegion
+	editButtonArmyOwnerFromRegion
 )
 
 func editInspectorRect() (float32, float32, float32, float32) {
-	const w, h = float32(340), float32(282)
+	const w, h = float32(360), float32(452)
 	return 18, float32(ScreenHeight) - h - 18, w, h
 }
 
@@ -1116,13 +1453,17 @@ func editInspectorHit(mx, my float64) bool {
 
 func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	x, y, _, h := editInspectorRect()
-	const bw, bh, gap = float64(145), float64(26), float64(8)
+	const bw, bh, gap = float64(158), float64(24), float64(8)
 	left := float64(x) + 14
 	right := left + bw + gap
-	row1 := float64(y) + float64(h) - 136
+	row1 := float64(y) + float64(h) - 264
 	row2 := row1 + bh + gap
 	row3 := row2 + bh + gap
 	row4 := row3 + bh + gap
+	row5 := row4 + bh + gap
+	row6 := row5 + bh + gap
+	row7 := row6 + bh + gap
+	row8 := row7 + bh + gap
 	switch kind {
 	case editButtonAddSettlement:
 		return uiRect{left, row1, bw, bh}
@@ -1136,22 +1477,88 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row3, bw, bh}
 	case editButtonRegionOwner:
 		return uiRect{right, row3, bw, bh}
-	case editButtonDeleteSettlement:
+	case editButtonRegionNameTR:
 		return uiRect{left, row4, bw, bh}
+	case editButtonRegionName:
+		return uiRect{right, row4, bw, bh}
+	case editButtonRegionLock:
+		return uiRect{left, row5, bw, bh}
+	case editButtonUnlockMinus:
+		return uiRect{right, row5, (bw - gap) / 2, bh}
+	case editButtonUnlockPlus:
+		return uiRect{right + (bw+gap)/2, row5, (bw - gap) / 2, bh}
+	case editButtonSyncNeighbors:
+		return uiRect{left, row6, bw, bh}
+	case editButtonAddRegion:
+		return uiRect{right, row6, bw, bh}
+	case editButtonDeleteRegion:
+		return uiRect{left, row7, bw, bh}
+	case editButtonDeleteSettlement:
+		return uiRect{right, row7, bw, bh}
 	case editButtonSaveScenario:
+		return uiRect{left, row8, bw*2 + gap, bh}
+	case editButtonAddFaction:
+		return uiRect{left, row1, bw, bh}
+	case editButtonEditFaction:
+		return uiRect{right, row1, bw, bh}
+	case editButtonDeleteFaction:
+		return uiRect{left, row2, bw, bh}
+	case editButtonArmyMoveToRegion:
+		return uiRect{left, row4, bw, bh}
+	case editButtonArmyOwnerFromRegion:
 		return uiRect{right, row4, bw, bh}
 	default:
 		return uiRect{}
 	}
 }
 
+func editInspectorTabRect(tab editInspectorTab) uiRect {
+	x, y, _, _ := editInspectorRect()
+	const tw, th, gap = float64(78), float64(24), float64(8)
+	left := float64(x) + 96
+	if tab == editInspectorData {
+		left += tw + gap
+	}
+	return uiRect{left, float64(y) + 9, tw, th}
+}
+
 func editInspectorButtonAt(mx, my float64) editInspectorButton {
+	if kind := editMapInspectorButtonAt(mx, my); kind != editButtonNone {
+		return kind
+	}
+	return editDataInspectorButtonAt(mx, my)
+}
+
+func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 	for kind := editButtonAddSettlement; kind <= editButtonSaveScenario; kind++ {
 		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
 			return kind
 		}
 	}
 	return editButtonNone
+}
+
+func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
+	for kind := editButtonAddFaction; kind <= editButtonArmyOwnerFromRegion; kind++ {
+		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+			return kind
+		}
+	}
+	if uiRectHit(mx, my, editInspectorButtonRect(editButtonSaveScenario)) {
+		return editButtonSaveScenario
+	}
+	return editButtonNone
+}
+
+func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButton {
+	if uiRectHit(mx, my, editInspectorTabRect(editInspectorMap)) ||
+		uiRectHit(mx, my, editInspectorTabRect(editInspectorData)) {
+		return editButtonSaveScenario
+	}
+	if r.editInspectorTab == editInspectorData {
+		return editDataInspectorButtonAt(mx, my)
+	}
+	return editMapInspectorButtonAt(mx, my)
 }
 
 const (
@@ -1367,6 +1774,9 @@ func (r *Renderer) redoEditCommand() {
 }
 
 func cloneSettlements(settlements []world.Settlement) []world.Settlement {
+	if settlements == nil {
+		return nil
+	}
 	clone := make([]world.Settlement, len(settlements))
 	copy(clone, settlements)
 	return clone
@@ -1495,6 +1905,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editRenaming {
 		return r.handleEditRenameInput()
 	}
+	if r.editFactionForm.show {
+		return r.handleEditFactionFormInput()
+	}
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
@@ -1563,12 +1976,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)) {
 		return InputAction{Kind: ActionSaveScenario}
 	}
+	if r.keyJustPressed(ebiten.KeyDelete) && !r.hasEditSelection() && r.editSelectedRegion != "" {
+		r.deleteSelectedRegion()
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyDelete) && r.hasEditSelection() {
 		r.deleteSelectedSettlement()
 		return InputAction{}
 	}
 	if (r.keyJustPressed(ebiten.KeyF2) || r.keyJustPressed(ebiten.KeyEnter)) && r.hasEditSelection() {
-		r.beginEditRename()
+		r.beginEditRename(editTextSettlementNameTR)
 		return InputAction{}
 	}
 
@@ -1592,6 +2009,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 				r.editTerrainDropdown.Close()
 				r.editSettlementTypeDropdown.Close()
 				r.editSelectedRegion = rid
+				r.setEditFactionFromRegion(rid)
 				r.editSelectedSettlement = -1
 				r.editDraggingRegion = true
 				r.editDraggingSettlement = false
@@ -1605,6 +2023,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editOwnerDropdown.Close()
 			r.editTerrainDropdown.Close()
 			r.editSettlementTypeDropdown.Close()
+			if editCreateRegionModifierPressed() {
+				r.addRegionAt(fx, fy)
+				return InputAction{}
+			}
 			r.addSettlementAt(fx, fy)
 			return InputAction{}
 		}
@@ -1616,6 +2038,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.SelectedArmy = aid
 			if a := r.gs.Armies[aid]; a != nil {
 				r.editSelectedRegion = a.RegionID
+				r.setEditFactionFromArmy(a)
 			}
 			r.editSelectedSettlement = -1
 			r.editDraggingSettlement = false
@@ -1631,6 +2054,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editSettlementTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
+			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = idx
 			r.editDraggingSettlement = true
 			r.editDraggingRegion = false
@@ -1643,6 +2067,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editSettlementTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
+			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = -1
 			r.editRenaming = false
 			r.editDraggingRegion = false
@@ -1654,6 +2079,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.editSettlementTypeDropdown.Close()
 		r.SelectedArmy = ""
 		r.editSelectedRegion = ""
+		r.editSelectedFaction = ""
 		r.editSelectedSettlement = -1
 		r.editRenaming = false
 		r.editDraggingRegion = false
@@ -1724,7 +2150,18 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
-	switch editInspectorButtonAt(fx, fy) {
+	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorMap)) {
+		r.editInspectorTab = editInspectorMap
+		return InputAction{}, true
+	}
+	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorData)) {
+		r.editInspectorTab = editInspectorData
+		return InputAction{}, true
+	}
+	if r.editInspectorTab == editInspectorData {
+		return r.handleEditDataInspectorClick(fx, fy)
+	}
+	switch editMapInspectorButtonAt(fx, fy) {
 	case editButtonAddSettlement:
 		r.addSettlementToSelectedRegion()
 	case editButtonSettlementType:
@@ -1737,16 +2174,50 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		}
 	case editButtonRenameSettlement:
 		if r.hasEditSelection() {
-			r.beginEditRename()
+			r.beginEditRename(editTextSettlementNameTR)
 		}
 	case editButtonRegionTerrain:
 		r.toggleEditTerrainDropdown()
 	case editButtonRegionOwner:
 		r.toggleEditOwnerDropdown()
+	case editButtonRegionNameTR:
+		r.beginEditRename(editTextRegionNameTR)
+	case editButtonRegionName:
+		r.beginEditRename(editTextRegionName)
+	case editButtonRegionLock:
+		r.toggleSelectedRegionLock()
+	case editButtonUnlockMinus:
+		r.adjustSelectedRegionUnlockTurn(-10)
+	case editButtonUnlockPlus:
+		r.adjustSelectedRegionUnlockTurn(10)
+	case editButtonSyncNeighbors:
+		r.syncSelectedRegionNeighborsFromVisual()
+	case editButtonAddRegion:
+		r.addRegionNearSelected()
+	case editButtonDeleteRegion:
+		r.deleteSelectedRegion()
 	case editButtonDeleteSettlement:
 		if r.hasEditSelection() {
 			r.deleteSelectedSettlement()
 		}
+	case editButtonSaveScenario:
+		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	return InputAction{}, true
+}
+
+func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bool) {
+	switch editDataInspectorButtonAt(fx, fy) {
+	case editButtonAddFaction:
+		r.openFactionCreateForm()
+	case editButtonEditFaction:
+		r.openFactionEditForm()
+	case editButtonDeleteFaction:
+		r.deleteSelectedFaction()
+	case editButtonArmyMoveToRegion:
+		r.moveSelectedArmyToEditRegion()
+	case editButtonArmyOwnerFromRegion:
+		r.setSelectedArmyOwnerFromRegion()
 	case editButtonSaveScenario:
 		return InputAction{Kind: ActionSaveScenario}, true
 	}
@@ -1816,13 +2287,23 @@ func (r *Renderer) hasEditSelection() bool {
 		r.editSelectedSettlement < len(region.Settlements)
 }
 
-func (r *Renderer) beginEditRename() {
+func (r *Renderer) beginEditRename(target editTextTarget) {
 	region := r.gs.Regions[r.editSelectedRegion]
-	name := region.Settlements[r.editSelectedSettlement].NameTR
-	if name == "" {
-		name = region.Settlements[r.editSelectedSettlement].Name
+	if region == nil {
+		return
 	}
-	r.editNameRunes = append(r.editNameRunes[:0], []rune(name)...)
+	switch target {
+	case editTextSettlementNameTR:
+		if !r.hasEditSelection() {
+			return
+		}
+	case editTextRegionNameTR:
+	case editTextRegionName:
+	default:
+		return
+	}
+	r.editTextTarget = target
+	r.editTextRunes = r.editTextRunes[:0]
 	r.editRenaming = true
 	r.editDraggingSettlement = false
 }
@@ -1830,45 +2311,85 @@ func (r *Renderer) beginEditRename() {
 func (r *Renderer) handleEditRenameInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editRenaming = false
+		r.editTextTarget = editTextNone
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
 		r.commitEditRename()
 		return InputAction{}
 	}
-	if r.keyJustPressed(ebiten.KeyBackspace) && len(r.editNameRunes) > 0 {
-		r.editNameRunes = r.editNameRunes[:len(r.editNameRunes)-1]
+	if r.keyJustPressed(ebiten.KeyBackspace) && len(r.editTextRunes) > 0 {
+		r.editTextRunes = r.editTextRunes[:len(r.editTextRunes)-1]
 	}
-	r.editNameRunes = ebiten.AppendInputChars(r.editNameRunes)
-	if len(r.editNameRunes) > 48 {
-		r.editNameRunes = r.editNameRunes[:48]
+	r.editTextRunes = ebiten.AppendInputChars(r.editTextRunes)
+	if len(r.editTextRunes) > 64 {
+		r.editTextRunes = r.editTextRunes[:64]
 	}
 	return InputAction{}
 }
 
 func (r *Renderer) commitEditRename() {
-	if !r.hasEditSelection() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil {
 		r.editRenaming = false
+		r.editTextTarget = editTextNone
 		return
 	}
-	region := r.gs.Regions[r.editSelectedRegion]
-	idx := r.editSelectedSettlement
-	newName := string(r.editNameRunes)
-	oldName := region.Settlements[idx].NameTR
-	if newName != "" && oldName != newName {
-		region.Settlements[idx].NameTR = newName
-		rid := region.ID
-		r.pushEditCommand(editCommand{
-			undo: func(rr *Renderer) {
-				rr.setSettlementNameTR(rid, idx, oldName)
-			},
-			redo: func(rr *Renderer) {
-				rr.setSettlementNameTR(rid, idx, newName)
-			},
-		})
-		r.editDirty = true
+	newName := strings.TrimSpace(string(r.editTextRunes))
+	rid := region.ID
+	switch r.editTextTarget {
+	case editTextSettlementNameTR:
+		if !r.hasEditSelection() {
+			break
+		}
+		idx := r.editSelectedSettlement
+		oldName := region.Settlements[idx].NameTR
+		if newName != "" && oldName != newName {
+			region.Settlements[idx].NameTR = newName
+			r.pushEditCommand(editCommand{
+				undo: func(rr *Renderer) {
+					rr.setSettlementNameTR(rid, idx, oldName)
+				},
+				redo: func(rr *Renderer) {
+					rr.setSettlementNameTR(rid, idx, newName)
+				},
+			})
+			r.editDirty = true
+		}
+	case editTextRegionNameTR:
+		oldName := region.NameTR
+		if newName != "" && oldName != newName {
+			region.NameTR = newName
+			r.pushEditCommand(editCommand{
+				undo: func(rr *Renderer) { rr.setRegionNameTR(rid, oldName) },
+				redo: func(rr *Renderer) { rr.setRegionNameTR(rid, newName) },
+			})
+			r.editDirty = true
+		}
+	case editTextRegionName:
+		oldName := region.Name
+		if newName != "" && oldName != newName {
+			region.Name = newName
+			r.pushEditCommand(editCommand{
+				undo: func(rr *Renderer) { rr.setRegionName(rid, oldName) },
+				redo: func(rr *Renderer) { rr.setRegionName(rid, newName) },
+			})
+			r.editDirty = true
+		}
 	}
 	r.editRenaming = false
+	r.editTextTarget = editTextNone
+}
+
+func (r *Renderer) editTextLabel() string {
+	switch r.editTextTarget {
+	case editTextRegionNameTR:
+		return "Bolge Ad TR"
+	case editTextRegionName:
+		return "Bolge Ad EN"
+	default:
+		return "Isim"
+	}
 }
 
 func (r *Renderer) editSettlementAt(fx, fy float64) (world.RegionID, int, bool) {
@@ -2102,6 +2623,106 @@ func (r *Renderer) deleteSelectedSettlement() {
 	r.pushSettlementSnapshots(before, after, rid, -1)
 }
 
+func (r *Renderer) addRegionAt(fx, fy float64) {
+	sourceID := r.editRegionAt(fx, fy)
+	if sourceID == "" {
+		return
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	x, y := scenarioCoordsFromWorld(wx, wy)
+	r.addRegionFromSource(sourceID, x, y)
+}
+
+func (r *Renderer) addRegionNearSelected() {
+	source := r.gs.Regions[r.editSelectedRegion]
+	if source == nil || source.IsSea {
+		return
+	}
+	r.addRegionFromSource(source.ID, source.WorldX+12, source.WorldY+12)
+}
+
+func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
+	source := r.gs.Regions[sourceID]
+	if source == nil || source.IsSea {
+		return
+	}
+	before := r.worldSnapshot()
+	rid := nextRegionID(r.gs)
+	nameNo := itoa(len(r.gs.Regions) + 1)
+	region := &world.Region{
+		ID:               rid,
+		Name:             "New Region " + nameNo,
+		NameTR:           "Yeni Bolge " + nameNo,
+		Terrain:          source.Terrain,
+		OwnerID:          source.OwnerID,
+		WorldX:           x,
+		WorldY:           y,
+		ShapeID:          source.ShapeID,
+		IsSea:            false,
+		IsLocked:         source.IsLocked,
+		UnlockTurn:       source.UnlockTurn,
+		BaseGoldIncome:   source.BaseGoldIncome,
+		BaseGrainOutput:  source.BaseGrainOutput,
+		BaseIronOutput:   source.BaseIronOutput,
+		BaseTimberOutput: source.BaseTimberOutput,
+		BaseSpiceOutput:  source.BaseSpiceOutput,
+		BaseClothOutput:  source.BaseClothOutput,
+		TradeCapacity:    source.TradeCapacity,
+		Satisfaction:     source.Satisfaction,
+		TaxRate:          source.TaxRate,
+		Population:       source.Population,
+		Religion:         source.Religion,
+		ActiveEventID:    source.ActiveEventID,
+		Buildings:        cloneStringSlice(source.Buildings),
+	}
+	if region.Terrain == "" {
+		region.Terrain = world.TerrainPlain
+	}
+	if region.Satisfaction == 0 {
+		region.Satisfaction = 70
+	}
+	if region.TaxRate == 0 {
+		region.TaxRate = 45
+	}
+	r.gs.Regions[rid] = region
+	r.insertRegionOrderAfter(sourceID, rid)
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+	r.SelectedArmy = ""
+	r.rebuildEditWorldMap()
+	visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
+	r.applyVisualNeighbors(rid, visual)
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) deleteSelectedRegion() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea {
+		return
+	}
+	before := r.worldSnapshot()
+	rid := region.ID
+	for _, other := range r.gs.Regions {
+		removeNeighborID(other, rid)
+	}
+	delete(r.gs.Regions, rid)
+	r.removeRegionFromOrder(rid)
+	for aid, a := range r.gs.Armies {
+		if a != nil && a.RegionID == rid {
+			delete(r.gs.Armies, aid)
+		}
+	}
+	r.editSelectedRegion = ""
+	r.editSelectedSettlement = -1
+	r.SelectedArmy = ""
+	r.rebuildEditWorldMap()
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
 func (r *Renderer) setSelectedSettlementCapital() {
 	if !r.hasEditSelection() {
 		return
@@ -2182,6 +2803,7 @@ func (r *Renderer) setSelectedRegionOwner(ownerID string) {
 	rid := region.ID
 	old := region.OwnerID
 	region.OwnerID = ownerID
+	r.editSelectedFaction = faction.FactionID(ownerID)
 	r.worldMap.MarkDirty()
 	r.pushEditCommand(editCommand{
 		undo: func(rr *Renderer) {
@@ -2202,6 +2824,83 @@ func (r *Renderer) setSettlementNameTR(rid world.RegionID, index int, name strin
 	region.Settlements[index].NameTR = name
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = index
+}
+
+func (r *Renderer) setRegionNameTR(rid world.RegionID, name string) {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	region.NameTR = name
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+}
+
+func (r *Renderer) setRegionName(rid world.RegionID, name string) {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	region.Name = name
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+}
+
+func (r *Renderer) toggleSelectedRegionLock() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea {
+		return
+	}
+	rid := region.ID
+	old := region.IsLocked
+	region.IsLocked = !region.IsLocked
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setRegionLockValue(rid, old) },
+		redo: func(rr *Renderer) { rr.setRegionLockValue(rid, !old) },
+	})
+	r.editDirty = true
+}
+
+func (r *Renderer) setRegionLockValue(rid world.RegionID, locked bool) {
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return
+	}
+	region.IsLocked = locked
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+}
+
+func (r *Renderer) adjustSelectedRegionUnlockTurn(delta int) {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea {
+		return
+	}
+	old := region.UnlockTurn
+	next := old + delta
+	if next < 0 {
+		next = 0
+	}
+	if old == next {
+		return
+	}
+	rid := region.ID
+	region.UnlockTurn = next
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setRegionUnlockTurn(rid, old) },
+		redo: func(rr *Renderer) { rr.setRegionUnlockTurn(rid, next) },
+	})
+	r.editDirty = true
+}
+
+func (r *Renderer) setRegionUnlockTurn(rid world.RegionID, turn int) {
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return
+	}
+	region.UnlockTurn = turn
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
 }
 
 func (r *Renderer) setSettlementTypeValue(rid world.RegionID, index int, typ world.SettlementType) {
@@ -2231,8 +2930,985 @@ func (r *Renderer) setRegionOwnerValue(rid world.RegionID, ownerID string) {
 	}
 	region.OwnerID = ownerID
 	r.editSelectedRegion = rid
+	r.editSelectedFaction = faction.FactionID(ownerID)
 	r.editSelectedSettlement = -1
 	r.worldMap.MarkDirty()
+}
+
+func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea {
+		return
+	}
+	visual := r.worldMap.VisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
+	before := r.neighborSnapshot(region.ID, visual)
+	r.applyVisualNeighbors(region.ID, visual)
+	after := r.neighborSnapshot(region.ID, visual)
+	if neighborSnapshotsEqual(before, after) {
+		return
+	}
+	rid := region.ID
+	beforeCopy := cloneNeighborSnapshots(before)
+	afterCopy := cloneNeighborSnapshots(after)
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.restoreNeighborSnapshots(beforeCopy)
+			rr.editSelectedRegion = rid
+			rr.editSelectedSettlement = -1
+		},
+		redo: func(rr *Renderer) {
+			rr.restoreNeighborSnapshots(afterCopy)
+			rr.editSelectedRegion = rid
+			rr.editSelectedSettlement = -1
+		},
+	})
+	r.editDirty = true
+}
+
+func (r *Renderer) worldSnapshot() editWorldSnapshot {
+	return editWorldSnapshot{
+		Regions:     cloneRegionMap(r.gs.Regions),
+		RegionOrder: cloneRegionIDSlice(r.gs.RegionOrder),
+		Factions:    cloneFactionMap(r.gs.Factions),
+		Armies:      cloneArmyMap(r.gs.Armies),
+		Relations:   cloneRelationMap(r.gs.Relations),
+		Selected:    r.editSelectedRegion,
+		Settlement:  r.editSelectedSettlement,
+		Faction:     r.editSelectedFaction,
+		Army:        r.SelectedArmy,
+		Player:      r.gs.PlayerFactionID,
+	}
+}
+
+func (r *Renderer) pushWorldSnapshotCommand(before, after editWorldSnapshot) {
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.restoreWorldSnapshot(before) },
+		redo: func(rr *Renderer) { rr.restoreWorldSnapshot(after) },
+	})
+}
+
+func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
+	r.gs.Regions = cloneRegionMap(snapshot.Regions)
+	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
+	r.gs.Factions = cloneFactionMap(snapshot.Factions)
+	r.gs.Armies = cloneArmyMap(snapshot.Armies)
+	r.gs.Relations = cloneRelationMap(snapshot.Relations)
+	r.editSelectedRegion = snapshot.Selected
+	r.editSelectedSettlement = snapshot.Settlement
+	r.editSelectedFaction = snapshot.Faction
+	r.SelectedArmy = snapshot.Army
+	r.gs.PlayerFactionID = snapshot.Player
+	r.editDraggingSettlement = false
+	r.editDraggingRegion = false
+	r.editRenaming = false
+	r.rebuildEditWorldMap()
+}
+
+func cloneRegionMap(src map[world.RegionID]*world.Region) map[world.RegionID]*world.Region {
+	dst := make(map[world.RegionID]*world.Region, len(src))
+	for rid, region := range src {
+		if region == nil {
+			continue
+		}
+		copyRegion := *region
+		copyRegion.Neighbors = cloneRegionIDSlice(region.Neighbors)
+		copyRegion.Settlements = cloneSettlements(region.Settlements)
+		copyRegion.Buildings = cloneStringSlice(region.Buildings)
+		if len(region.Shape) > 0 {
+			copyRegion.Shape = make([][][2]float32, len(region.Shape))
+			for i := range region.Shape {
+				copyRegion.Shape[i] = make([][2]float32, len(region.Shape[i]))
+				copy(copyRegion.Shape[i], region.Shape[i])
+			}
+		}
+		dst[rid] = &copyRegion
+	}
+	return dst
+}
+
+func cloneArmyMap(src map[army.ArmyID]*army.Army) map[army.ArmyID]*army.Army {
+	dst := make(map[army.ArmyID]*army.Army, len(src))
+	for aid, a := range src {
+		if a == nil {
+			continue
+		}
+		copyArmy := *a
+		copyArmy.Units = make([]army.Unit, len(a.Units))
+		copy(copyArmy.Units, a.Units)
+		dst[aid] = &copyArmy
+	}
+	return dst
+}
+
+func cloneFactionMap(src map[faction.FactionID]*faction.Faction) map[faction.FactionID]*faction.Faction {
+	dst := make(map[faction.FactionID]*faction.Faction, len(src))
+	for fid, f := range src {
+		if f == nil {
+			continue
+		}
+		copyFaction := *f
+		if f.Research.Completed != nil {
+			copyFaction.Research.Completed = make(map[string]bool, len(f.Research.Completed))
+			for id, done := range f.Research.Completed {
+				copyFaction.Research.Completed[id] = done
+			}
+		}
+		dst[fid] = &copyFaction
+	}
+	return dst
+}
+
+func cloneRelationMap(src map[string]*faction.Relation) map[string]*faction.Relation {
+	dst := make(map[string]*faction.Relation, len(src))
+	for key, rel := range src {
+		if rel == nil {
+			continue
+		}
+		copyRel := *rel
+		dst[key] = &copyRel
+	}
+	return dst
+}
+
+func cloneRegionIDSlice(src []world.RegionID) []world.RegionID {
+	if src == nil {
+		return nil
+	}
+	dst := make([]world.RegionID, len(src))
+	copy(dst, src)
+	return dst
+}
+
+func cloneStringSlice(src []string) []string {
+	if src == nil {
+		return nil
+	}
+	dst := make([]string, len(src))
+	copy(dst, src)
+	return dst
+}
+
+func (r *Renderer) insertRegionOrderAfter(after, rid world.RegionID) {
+	r.removeRegionFromOrder(rid)
+	if len(r.gs.RegionOrder) == 0 {
+		r.gs.RegionOrder = append(r.gs.RegionOrder, rid)
+		return
+	}
+	for i, existing := range r.gs.RegionOrder {
+		if existing == after {
+			r.gs.RegionOrder = append(r.gs.RegionOrder, "")
+			copy(r.gs.RegionOrder[i+2:], r.gs.RegionOrder[i+1:])
+			r.gs.RegionOrder[i+1] = rid
+			return
+		}
+	}
+	r.gs.RegionOrder = append(r.gs.RegionOrder, rid)
+}
+
+func (r *Renderer) removeRegionFromOrder(rid world.RegionID) {
+	out := r.gs.RegionOrder[:0]
+	for _, existing := range r.gs.RegionOrder {
+		if existing != rid {
+			out = append(out, existing)
+		}
+	}
+	r.gs.RegionOrder = out
+}
+
+type editRegionNeighborsSnapshot struct {
+	Region    world.RegionID
+	Neighbors []world.RegionID
+}
+
+func (r *Renderer) neighborSnapshot(rid world.RegionID, affected []world.RegionID) []editRegionNeighborsSnapshot {
+	snaps := make([]editRegionNeighborsSnapshot, 0, len(affected)+1)
+	snaps = append(snaps, r.singleNeighborSnapshot(rid))
+	for _, nrid := range affected {
+		if nrid != rid {
+			snaps = append(snaps, r.singleNeighborSnapshot(nrid))
+		}
+	}
+	return uniqueNeighborSnapshots(snaps)
+}
+
+func (r *Renderer) singleNeighborSnapshot(rid world.RegionID) editRegionNeighborsSnapshot {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return editRegionNeighborsSnapshot{Region: rid}
+	}
+	neighbors := make([]world.RegionID, len(region.Neighbors))
+	copy(neighbors, region.Neighbors)
+	return editRegionNeighborsSnapshot{Region: rid, Neighbors: neighbors}
+}
+
+func (r *Renderer) applyVisualNeighbors(rid world.RegionID, visual []world.RegionID) {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	oldNeighbors := region.Neighbors
+	region.Neighbors = sortedRegionIDs(visual)
+	for _, oldID := range oldNeighbors {
+		if !regionIDContains(visual, oldID) {
+			removeNeighborID(r.gs.Regions[oldID], rid)
+		}
+	}
+	for _, nrid := range visual {
+		addNeighborID(r.gs.Regions[nrid], rid)
+	}
+}
+
+func (r *Renderer) restoreNeighborSnapshots(snaps []editRegionNeighborsSnapshot) {
+	for _, snap := range snaps {
+		region := r.gs.Regions[snap.Region]
+		if region == nil {
+			continue
+		}
+		region.Neighbors = make([]world.RegionID, len(snap.Neighbors))
+		copy(region.Neighbors, snap.Neighbors)
+	}
+	r.editDraggingSettlement = false
+	r.editDraggingRegion = false
+	r.editRenaming = false
+}
+
+func uniqueNeighborSnapshots(snaps []editRegionNeighborsSnapshot) []editRegionNeighborsSnapshot {
+	out := snaps[:0]
+	for _, snap := range snaps {
+		seen := false
+		for _, existing := range out {
+			if existing.Region == snap.Region {
+				seen = true
+				break
+			}
+		}
+		if !seen {
+			out = append(out, snap)
+		}
+	}
+	return out
+}
+
+func cloneNeighborSnapshots(snaps []editRegionNeighborsSnapshot) []editRegionNeighborsSnapshot {
+	out := make([]editRegionNeighborsSnapshot, len(snaps))
+	for i, snap := range snaps {
+		out[i].Region = snap.Region
+		out[i].Neighbors = make([]world.RegionID, len(snap.Neighbors))
+		copy(out[i].Neighbors, snap.Neighbors)
+	}
+	return out
+}
+
+func neighborSnapshotsEqual(a, b []editRegionNeighborsSnapshot) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Region != b[i].Region || !regionIDSlicesEqual(a[i].Neighbors, b[i].Neighbors) {
+			return false
+		}
+	}
+	return true
+}
+
+func sortedRegionIDs(ids []world.RegionID) []world.RegionID {
+	out := make([]world.RegionID, 0, len(ids))
+	for _, rid := range ids {
+		if rid != "" && !regionIDContains(out, rid) {
+			out = append(out, rid)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	return out
+}
+
+func addNeighborID(region *world.Region, rid world.RegionID) {
+	if region == nil || rid == "" || regionHasNeighbor(region, rid) {
+		return
+	}
+	region.Neighbors = append(region.Neighbors, rid)
+	sort.Slice(region.Neighbors, func(i, j int) bool { return region.Neighbors[i] < region.Neighbors[j] })
+}
+
+func removeNeighborID(region *world.Region, rid world.RegionID) {
+	if region == nil {
+		return
+	}
+	out := region.Neighbors[:0]
+	for _, nrid := range region.Neighbors {
+		if nrid != rid {
+			out = append(out, nrid)
+		}
+	}
+	region.Neighbors = out
+}
+
+func regionIDContains(ids []world.RegionID, rid world.RegionID) bool {
+	for _, id := range ids {
+		if id == rid {
+			return true
+		}
+	}
+	return false
+}
+
+func regionIDSlicesEqual(a, b []world.RegionID) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *Renderer) selectedEditFaction() *faction.Faction {
+	if r.editSelectedFaction != "" {
+		if f := r.gs.Factions[r.editSelectedFaction]; f != nil {
+			return f
+		}
+	}
+	if region := r.gs.Regions[r.editSelectedRegion]; region != nil && region.OwnerID != "" {
+		return r.gs.Factions[faction.FactionID(region.OwnerID)]
+	}
+	if r.SelectedArmy != "" {
+		if a := r.gs.Armies[r.SelectedArmy]; a != nil && a.OwnerID != "" {
+			return r.gs.Factions[faction.FactionID(a.OwnerID)]
+		}
+	}
+	return nil
+}
+
+func (r *Renderer) setEditFactionFromRegion(rid world.RegionID) {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		r.editSelectedFaction = ""
+		return
+	}
+	r.editSelectedFaction = faction.FactionID(region.OwnerID)
+}
+
+func (r *Renderer) setEditFactionFromArmy(a *army.Army) {
+	if a == nil {
+		r.editSelectedFaction = ""
+		return
+	}
+	r.editSelectedFaction = faction.FactionID(a.OwnerID)
+}
+
+func (r *Renderer) deleteSelectedFaction() {
+	f := r.selectedEditFaction()
+	if f == nil {
+		return
+	}
+	before := r.worldSnapshot()
+	fid := f.ID
+	delete(r.gs.Factions, fid)
+	for _, region := range r.gs.Regions {
+		if region != nil && region.OwnerID == string(fid) {
+			region.OwnerID = ""
+		}
+	}
+	for aid, a := range r.gs.Armies {
+		if a != nil && a.OwnerID == string(fid) {
+			delete(r.gs.Armies, aid)
+		}
+	}
+	if r.gs.PlayerFactionID == fid {
+		r.gs.PlayerFactionID = ""
+	}
+	for key, rel := range r.gs.Relations {
+		if rel != nil && (rel.FactionA == fid || rel.FactionB == fid) {
+			delete(r.gs.Relations, key)
+		}
+	}
+	r.editSelectedFaction = ""
+	r.SelectedArmy = ""
+	r.worldMap.MarkDirty()
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) openFactionCreateForm() {
+	fid := nextFactionID(r.gs)
+	form := editFactionFormState{
+		show:     true,
+		create:   true,
+		active:   editFactionFieldNameTR,
+		id:       string(fid),
+		name:     "New Faction",
+		nameTR:   "",
+		religion: religion.Catholic,
+		color:    editFactionColor(len(r.gs.Factions) + 1),
+		playable: true,
+		gold:     "500",
+		grain:    "100",
+		iron:     "50",
+		timber:   "50",
+		spice:    "0",
+		cloth:    "0",
+		ai:       "50",
+	}
+	if f := r.selectedEditFaction(); f != nil {
+		form.religion = f.Religion
+	}
+	r.editFactionForm = form
+	r.setFactionFormRelationTarget(firstRelationTarget(r.gs, fid))
+}
+
+func (r *Renderer) openFactionEditForm() {
+	f := r.selectedEditFaction()
+	if f == nil {
+		return
+	}
+	r.editFactionForm = editFactionFormState{
+		show:       true,
+		create:     false,
+		active:     editFactionFieldNameTR,
+		originalID: f.ID,
+		id:         string(f.ID),
+		name:       f.Name,
+		nameTR:     f.NameTR,
+		religion:   f.Religion,
+		color:      f.Color,
+		playable:   f.IsPlayable,
+		gold:       itoa(f.Gold),
+		grain:      itoa(f.Grain),
+		iron:       itoa(f.Iron),
+		timber:     itoa(f.Timber),
+		spice:      itoa(f.Spice),
+		cloth:      itoa(f.Cloth),
+		ai:         itoa(f.AIAggressiveness),
+	}
+	r.setFactionFormRelationTarget(firstRelationTarget(r.gs, f.ID))
+}
+
+func (r *Renderer) saveFactionForm() bool {
+	form := &r.editFactionForm
+	fid := faction.FactionID(strings.TrimSpace(form.id))
+	if fid == "" {
+		form.errorText = "ID bos olamaz."
+		return false
+	}
+	if existing := r.gs.Factions[fid]; existing != nil && (form.create || fid != form.originalID) {
+		form.errorText = "Bu faction ID zaten var."
+		return false
+	}
+	name := strings.TrimSpace(form.name)
+	nameTR := strings.TrimSpace(form.nameTR)
+	if name == "" && nameTR == "" {
+		form.errorText = "En az bir isim gir."
+		return false
+	}
+	gold, ok := parseEditInt(form.gold, 0, 999999)
+	if !ok {
+		form.errorText = "Altin sayisi gecersiz."
+		return false
+	}
+	grain, ok := parseEditInt(form.grain, 0, 999999)
+	if !ok {
+		form.errorText = "Tahil sayisi gecersiz."
+		return false
+	}
+	iron, ok := parseEditInt(form.iron, 0, 999999)
+	if !ok {
+		form.errorText = "Demir sayisi gecersiz."
+		return false
+	}
+	timber, ok := parseEditInt(form.timber, 0, 999999)
+	if !ok {
+		form.errorText = "Kereste sayisi gecersiz."
+		return false
+	}
+	spice, ok := parseEditInt(form.spice, 0, 999999)
+	if !ok {
+		form.errorText = "Baharat sayisi gecersiz."
+		return false
+	}
+	cloth, ok := parseEditInt(form.cloth, 0, 999999)
+	if !ok {
+		form.errorText = "Kumas sayisi gecersiz."
+		return false
+	}
+	aiValue, ok := parseEditInt(form.ai, 0, 100)
+	if !ok {
+		form.errorText = "AI 0-100 araliginda olmali."
+		return false
+	}
+	relationScore, ok := parseEditInt(form.relationScore, -100, 100)
+	if !ok && form.relationTarget != "" {
+		form.errorText = "Iliski skoru -100 ile 100 arasinda olmali."
+		return false
+	}
+
+	before := r.worldSnapshot()
+	var existingFaction *faction.Faction
+	if !form.create && form.originalID != "" {
+		existingFaction = r.gs.Factions[form.originalID]
+	}
+	if !form.create && form.originalID != "" && form.originalID != fid {
+		delete(r.gs.Factions, form.originalID)
+		r.renameFactionRelations(form.originalID, fid)
+		for _, region := range r.gs.Regions {
+			if region != nil && region.OwnerID == string(form.originalID) {
+				region.OwnerID = string(fid)
+			}
+		}
+		for _, a := range r.gs.Armies {
+			if a != nil && a.OwnerID == string(form.originalID) {
+				a.OwnerID = string(fid)
+			}
+		}
+		if r.gs.PlayerFactionID == form.originalID {
+			r.gs.PlayerFactionID = fid
+		}
+	}
+	next := &faction.Faction{
+		ID:               fid,
+		Name:             name,
+		NameTR:           nameTR,
+		Religion:         form.religion,
+		Color:            form.color,
+		IsPlayable:       form.playable,
+		Gold:             gold,
+		Grain:            grain,
+		Iron:             iron,
+		Timber:           timber,
+		Spice:            spice,
+		Cloth:            cloth,
+		AIAggressiveness: aiValue,
+	}
+	if existingFaction != nil {
+		next.IsEliminated = existingFaction.IsEliminated
+		next.Research = existingFaction.Research
+	}
+	r.gs.Factions[fid] = next
+	r.ensureRelationsForFaction(fid)
+	if form.relationTarget != "" && r.gs.Factions[form.relationTarget] != nil && form.relationTarget != fid {
+		r.setRelationValue(fid, form.relationTarget, relationScore, form.relationStance)
+	}
+	r.editSelectedFaction = fid
+	r.worldMap.MarkDirty()
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editFactionForm = editFactionFormState{}
+	r.editDirty = true
+	return true
+}
+
+func (r *Renderer) handleEditFactionFormInput() InputAction {
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.editFactionForm = editFactionFormState{}
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyEnter) {
+		if r.saveFactionForm() {
+			return InputAction{Kind: ActionSaveScenario}
+		}
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyBackspace) {
+		r.editFactionFormBackspace()
+	}
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if r.handleFactionFormClick(fx, fy) {
+			return InputAction{Kind: ActionSaveScenario}
+		}
+	}
+	if r.editFactionForm.active != editFactionFieldNone {
+		for _, ch := range ebiten.AppendInputChars(nil) {
+			r.appendFactionFormRune(ch)
+		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
+	if !editFactionFormHit(fx, fy) {
+		return false
+	}
+	for field := editFactionFieldID; field <= editFactionFieldAI; field++ {
+		if uiRectHit(fx, fy, editFactionFieldRect(field)) {
+			r.editFactionForm.active = field
+			r.editFactionForm.errorText = ""
+			return false
+		}
+	}
+	switch {
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormSave)):
+		return r.saveFactionForm()
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormCancel)):
+		r.editFactionForm = editFactionFormState{}
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormReligion)):
+		r.editFactionForm.religion = nextEditReligion(r.editFactionForm.religion)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormPlayable)):
+		r.editFactionForm.playable = !r.editFactionForm.playable
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationTarget)):
+		r.cycleFactionFormRelationTarget()
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationStance)):
+		r.editFactionForm.relationStance = nextEditStance(r.editFactionForm.relationStance)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationScoreMinus)):
+		r.adjustFactionFormRelationScore(-10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationScorePlus)):
+		r.adjustFactionFormRelationScore(10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRedMinus)):
+		r.adjustFactionFormColor(0, -10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRedPlus)):
+		r.adjustFactionFormColor(0, 10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormGreenMinus)):
+		r.adjustFactionFormColor(1, -10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormGreenPlus)):
+		r.adjustFactionFormColor(1, 10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormBlueMinus)):
+		r.adjustFactionFormColor(2, -10)
+	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormBluePlus)):
+		r.adjustFactionFormColor(2, 10)
+	}
+	return false
+}
+
+func (r *Renderer) editFactionFormBackspace() {
+	switch r.editFactionForm.active {
+	case editFactionFieldID:
+		r.editFactionForm.id = trimLastRune(r.editFactionForm.id)
+	case editFactionFieldName:
+		r.editFactionForm.name = trimLastRune(r.editFactionForm.name)
+	case editFactionFieldNameTR:
+		r.editFactionForm.nameTR = trimLastRune(r.editFactionForm.nameTR)
+	case editFactionFieldGold:
+		r.editFactionForm.gold = trimLastRune(r.editFactionForm.gold)
+	case editFactionFieldGrain:
+		r.editFactionForm.grain = trimLastRune(r.editFactionForm.grain)
+	case editFactionFieldIron:
+		r.editFactionForm.iron = trimLastRune(r.editFactionForm.iron)
+	case editFactionFieldTimber:
+		r.editFactionForm.timber = trimLastRune(r.editFactionForm.timber)
+	case editFactionFieldSpice:
+		r.editFactionForm.spice = trimLastRune(r.editFactionForm.spice)
+	case editFactionFieldCloth:
+		r.editFactionForm.cloth = trimLastRune(r.editFactionForm.cloth)
+	case editFactionFieldAI:
+		r.editFactionForm.ai = trimLastRune(r.editFactionForm.ai)
+	}
+}
+
+func (r *Renderer) appendFactionFormRune(ch rune) {
+	if r.editFactionForm.active >= editFactionFieldGold && r.editFactionForm.active <= editFactionFieldAI {
+		if ch < '0' || ch > '9' {
+			return
+		}
+	}
+	switch r.editFactionForm.active {
+	case editFactionFieldID:
+		if (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-' {
+			r.editFactionForm.id = limitStringRunes(r.editFactionForm.id+string(ch), 40)
+		}
+	case editFactionFieldName:
+		r.editFactionForm.name = limitStringRunes(r.editFactionForm.name+string(ch), 64)
+	case editFactionFieldNameTR:
+		r.editFactionForm.nameTR = limitStringRunes(r.editFactionForm.nameTR+string(ch), 64)
+	case editFactionFieldGold:
+		r.editFactionForm.gold = limitStringRunes(r.editFactionForm.gold+string(ch), 8)
+	case editFactionFieldGrain:
+		r.editFactionForm.grain = limitStringRunes(r.editFactionForm.grain+string(ch), 8)
+	case editFactionFieldIron:
+		r.editFactionForm.iron = limitStringRunes(r.editFactionForm.iron+string(ch), 8)
+	case editFactionFieldTimber:
+		r.editFactionForm.timber = limitStringRunes(r.editFactionForm.timber+string(ch), 8)
+	case editFactionFieldSpice:
+		r.editFactionForm.spice = limitStringRunes(r.editFactionForm.spice+string(ch), 8)
+	case editFactionFieldCloth:
+		r.editFactionForm.cloth = limitStringRunes(r.editFactionForm.cloth+string(ch), 8)
+	case editFactionFieldAI:
+		r.editFactionForm.ai = limitStringRunes(r.editFactionForm.ai+string(ch), 3)
+	}
+}
+
+func trimLastRune(value string) string {
+	runes := []rune(value)
+	if len(runes) == 0 {
+		return value
+	}
+	return string(runes[:len(runes)-1])
+}
+
+func limitStringRunes(value string, max int) string {
+	runes := []rune(value)
+	if len(runes) <= max {
+		return value
+	}
+	return string(runes[:max])
+}
+
+func (r *Renderer) adjustFactionFormColor(index int, delta int) {
+	value := int(r.editFactionForm.color[index]) + delta
+	if value < 0 {
+		value = 0
+	}
+	if value > 255 {
+		value = 255
+	}
+	r.editFactionForm.color[index] = uint8(value)
+}
+
+func nextEditReligion(current religion.Type) religion.Type {
+	options := []religion.Type{religion.Catholic, religion.Orthodox, religion.Sunni, religion.Shia}
+	for i, option := range options {
+		if option == current {
+			return options[(i+1)%len(options)]
+		}
+	}
+	return religion.Catholic
+}
+
+func nextEditStance(current faction.DiplomaticStance) faction.DiplomaticStance {
+	options := []faction.DiplomaticStance{
+		faction.StancePeace,
+		faction.StanceWar,
+		faction.StanceAllied,
+		faction.StanceTrade,
+	}
+	for i, option := range options {
+		if option == current {
+			return options[(i+1)%len(options)]
+		}
+	}
+	return faction.StancePeace
+}
+
+func nextFactionID(gs *state.GameState) faction.FactionID {
+	for n := len(gs.Factions) + 1; ; n++ {
+		fid := faction.FactionID("new_faction_" + itoa(n))
+		if _, used := gs.Factions[fid]; !used {
+			return fid
+		}
+	}
+}
+
+func editFactionColor(seed int) [3]uint8 {
+	return [3]uint8{
+		uint8(70 + (seed*53)%160),
+		uint8(70 + (seed*97)%150),
+		uint8(70 + (seed*139)%150),
+	}
+}
+
+func parseEditInt(value string, minValue, maxValue int) (int, bool) {
+	n, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil || n < minValue || n > maxValue {
+		return 0, false
+	}
+	return n, true
+}
+
+func firstRelationTarget(gs *state.GameState, self faction.FactionID) faction.FactionID {
+	for _, fid := range sortedFactionIDs(gs.Factions) {
+		if fid != self {
+			return fid
+		}
+	}
+	return ""
+}
+
+func sortedFactionIDs(factions map[faction.FactionID]*faction.Faction) []faction.FactionID {
+	ids := make([]faction.FactionID, 0, len(factions))
+	for fid := range factions {
+		ids = append(ids, fid)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
+}
+
+func (r *Renderer) setFactionFormRelationTarget(target faction.FactionID) {
+	r.editFactionForm.relationTarget = target
+	if target == "" {
+		r.editFactionForm.relationScore = "0"
+		r.editFactionForm.relationStance = faction.StancePeace
+		return
+	}
+	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	if self == "" {
+		self = r.editFactionForm.originalID
+	}
+	if rel := r.relationForForm(self, target); rel != nil {
+		r.editFactionForm.relationScore = itoa(rel.Score)
+		r.editFactionForm.relationStance = rel.Stance
+		return
+	}
+	targetFaction := r.gs.Factions[target]
+	score := 0
+	stance := faction.StancePeace
+	if targetFaction != nil {
+		score = religion.Relation(r.editFactionForm.religion, targetFaction.Religion)
+		if (r.editFactionForm.religion == religion.Sunni && targetFaction.Religion == religion.Shia) ||
+			(r.editFactionForm.religion == religion.Shia && targetFaction.Religion == religion.Sunni) {
+			stance = faction.StanceWar
+		}
+	}
+	r.editFactionForm.relationScore = itoa(score)
+	r.editFactionForm.relationStance = stance
+}
+
+func (r *Renderer) relationForForm(self, target faction.FactionID) *faction.Relation {
+	if self == "" || target == "" || self == target {
+		return nil
+	}
+	return r.gs.Relations[faction.RelationKey(self, target)]
+}
+
+func (r *Renderer) cycleFactionFormRelationTarget() {
+	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	ids := sortedFactionIDs(r.gs.Factions)
+	if len(ids) == 0 {
+		r.setFactionFormRelationTarget("")
+		return
+	}
+	current := r.editFactionForm.relationTarget
+	start := 0
+	for i, fid := range ids {
+		if fid == current {
+			start = i + 1
+			break
+		}
+	}
+	for offset := 0; offset < len(ids); offset++ {
+		fid := ids[(start+offset)%len(ids)]
+		if fid != self {
+			r.setFactionFormRelationTarget(fid)
+			return
+		}
+	}
+	r.setFactionFormRelationTarget("")
+}
+
+func (r *Renderer) adjustFactionFormRelationScore(delta int) {
+	score, ok := parseEditInt(r.editFactionForm.relationScore, -100, 100)
+	if !ok {
+		score = 0
+	}
+	score += delta
+	if score < -100 {
+		score = -100
+	}
+	if score > 100 {
+		score = 100
+	}
+	r.editFactionForm.relationScore = itoa(score)
+}
+
+func (r *Renderer) ensureRelationsForFaction(fid faction.FactionID) {
+	if r.gs.Relations == nil {
+		r.gs.Relations = make(map[string]*faction.Relation)
+	}
+	self := r.gs.Factions[fid]
+	for otherID, other := range r.gs.Factions {
+		if otherID == fid || other == nil {
+			continue
+		}
+		key := faction.RelationKey(fid, otherID)
+		if r.gs.Relations[key] != nil {
+			continue
+		}
+		score := 0
+		stance := faction.StancePeace
+		if self != nil {
+			score = religion.Relation(self.Religion, other.Religion)
+			if (self.Religion == religion.Sunni && other.Religion == religion.Shia) ||
+				(self.Religion == religion.Shia && other.Religion == religion.Sunni) {
+				stance = faction.StanceWar
+			}
+		}
+		r.gs.Relations[key] = &faction.Relation{FactionA: fid, FactionB: otherID, Score: score, Stance: stance}
+	}
+}
+
+func (r *Renderer) setRelationValue(a, b faction.FactionID, score int, stance faction.DiplomaticStance) {
+	key := faction.RelationKey(a, b)
+	r.gs.Relations[key] = &faction.Relation{FactionA: a, FactionB: b, Score: score, Stance: stance}
+}
+
+func (r *Renderer) renameFactionRelations(oldID, newID faction.FactionID) {
+	next := make(map[string]*faction.Relation, len(r.gs.Relations))
+	for _, rel := range r.gs.Relations {
+		if rel == nil {
+			continue
+		}
+		copyRel := *rel
+		if copyRel.FactionA == oldID {
+			copyRel.FactionA = newID
+		}
+		if copyRel.FactionB == oldID {
+			copyRel.FactionB = newID
+		}
+		if copyRel.FactionA == copyRel.FactionB {
+			continue
+		}
+		next[faction.RelationKey(copyRel.FactionA, copyRel.FactionB)] = &copyRel
+	}
+	r.gs.Relations = next
+}
+
+func (r *Renderer) moveSelectedArmyToEditRegion() {
+	a := r.gs.Armies[r.SelectedArmy]
+	region := r.gs.Regions[r.editSelectedRegion]
+	if a == nil || region == nil || region.IsSea || a.RegionID == region.ID {
+		return
+	}
+	aid := a.ID
+	old := a.RegionID
+	next := region.ID
+	a.RegionID = next
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setArmyRegion(aid, old) },
+		redo: func(rr *Renderer) { rr.setArmyRegion(aid, next) },
+	})
+	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedArmyOwnerFromRegion() {
+	a := r.gs.Armies[r.SelectedArmy]
+	region := r.gs.Regions[r.editSelectedRegion]
+	if a == nil || region == nil || region.OwnerID == "" || a.OwnerID == region.OwnerID {
+		return
+	}
+	aid := a.ID
+	old := a.OwnerID
+	next := region.OwnerID
+	a.OwnerID = next
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setArmyOwner(aid, old) },
+		redo: func(rr *Renderer) { rr.setArmyOwner(aid, next) },
+	})
+	r.editDirty = true
+}
+
+func (r *Renderer) setArmyRegion(aid army.ArmyID, rid world.RegionID) {
+	if a := r.gs.Armies[aid]; a != nil {
+		a.RegionID = rid
+		r.SelectedArmy = aid
+		r.editSelectedRegion = rid
+		r.editSelectedSettlement = -1
+	}
+}
+
+func (r *Renderer) setArmyOwner(aid army.ArmyID, ownerID string) {
+	if a := r.gs.Armies[aid]; a != nil {
+		a.OwnerID = ownerID
+		r.SelectedArmy = aid
+		r.editSelectedFaction = faction.FactionID(ownerID)
+	}
+}
+
+func editBoolLabel(value bool) string {
+	if value {
+		return "evet"
+	}
+	return "hayir"
 }
 
 func (r *Renderer) rebuildEditWorldMap() {
@@ -2253,6 +3929,12 @@ func editAddModifierPressed() bool {
 	return ebiten.IsKeyPressed(ebiten.KeyAlt) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltLeft) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltRight)
+}
+
+func editCreateRegionModifierPressed() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyControl) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlRight)
 }
 
 func editOwnerOptions(factions map[faction.FactionID]*faction.Faction) []string {
@@ -2304,6 +3986,15 @@ func nextSettlementID(region *world.Region) string {
 		}
 		if !used {
 			return id
+		}
+	}
+}
+
+func nextRegionID(gs *state.GameState) world.RegionID {
+	for n := len(gs.Regions) + 1; ; n++ {
+		rid := world.RegionID("new_region_" + itoa(n))
+		if _, used := gs.Regions[rid]; !used {
+			return rid
 		}
 	}
 }

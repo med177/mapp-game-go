@@ -131,6 +131,31 @@ Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox
 
 ---
 
+## relations.json
+
+Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temelli varsayılanlarla üretilir.
+
+```json
+[
+  {
+    "faction_a": "ottoman",
+    "faction_b": "venice",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "venice",
+    "faction_b": "byzantine",
+    "score": 35,
+    "stance": "trade"
+  }
+]
+```
+
+`stance` değerleri: `war`, `peace`, `allied`, `trade`. `score` aralığı editörde `-100..100` olarak tutulur.
+
+---
+
 ## units.json
 
 ```json

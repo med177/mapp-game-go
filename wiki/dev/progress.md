@@ -85,15 +85,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Edit mode dirty exit uyarısı | ✅ | `editDirty` true iken ESC ile çıkışta ortak modal açılır; `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekleriyle kayıp veri engellenir |
 | Edit mode cleanup | ✅ | `Tip`, `Arazi`, `Sahip` butonları dropdown davranışına göre adlandırıldı; eski cycle helper'ları kaldırıldı |
 | Edit mode undo/redo | ✅ | `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo; settlement ekle/sil/taşı/bölge arası taşı, region center, owner/terrain/type/capital/name değişiklikleri küçük snapshot command'leriyle geri alınır |
-
-## Edit Mode Devam Planı
-
-Bir sonraki oturumda edit mode'a buradan devam et. HUD/dropdown tabanlı temel scenario editor tamamlandı; doğal sonraki işler:
-
-| Öncelik | İş | Not |
-|---|---|---|
-| 1 | Bölge metadata editörü | Region `name`, `name_tr`, `neighbors`, kilit/açılma alanları gibi `regions.json` verilerini düzenle. `neighbors` için iki yönlü güncelleme ve Voronoi komşuluk testi yardımcı uyarısı ekle. |
-| 2 | Geniş veri editorleri | Region dışındaki scenario verileri için sonraki paneller: başlangıç orduları, binalar, event seedleri veya faction başlangıç değerleri. Bunlar ayrı edit sekmeleri/panelleri olmalı, temel map editor ile karıştırılmamalı. |
+| Edit mode bölge metadata editörü | ✅ | Inspector `Harita` sekmesinde region `name_tr`, `name`, `is_locked`, `unlock_turn` ve görsel Voronoi komşularından iki yönlü `neighbors` sync düzenlenir |
+| Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır; undo/redo destekli |
+| Edit mode geniş veri editörü | ✅ | Inspector `Veri` sekmesinde faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç diplomasi `stance/score` ve seçili ordunun başlangıç region/owner alanı düzenlenir; form `Kaydet` ve Ctrl+S `regions.json`, `factions.json`, `relations.json`, `armies.json` yazar |
 
 ## Bilinen Sorunlar
 

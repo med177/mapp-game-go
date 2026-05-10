@@ -61,18 +61,24 @@ PhaseTurnResolution                    │
 | Yerleşim taşı | Sol tık sürükle | `regions.json` içindeki settlement `x/y` değerlerini canlı günceller; başka kara bölgeye sürüklenirse settlement o bölgenin `settlements[]` listesine aktarılır |
 | Yerleşim ekle | Alt + sol tık | Tıklanan kara bölgeye yeni `city` settlement ekler; ID region içinde çakışmayacak şekilde üretilir |
 | Yerleşim sil | Delete | Seçili settlement'ı kaldırır; silinen settlement capital ise kalan ilk settlement capital yapılır |
+| Bölge ekle | Ctrl + Alt + sol tık veya HUD `Bolge Ekle` | Tıklanan/seçili region'ın `shape_id` alanını paylaşan yeni kara region seed'i oluşturur; Voronoi cache'i yenilenir ve görsel komşular iki yönlü yazılır |
+| Bölge sil | HUD `Bolge Sil` veya settlement seçili değilken Delete | Seçili kara region'ı siler; diğer region'lardan neighbor referansı ve o region'daki başlangıç orduları kaldırılır |
 | Yerleşim ismi değiştir | F2 veya Enter | Seçili settlement adını düzenler; Enter kaydeder, Esc iptal eder |
 | Yerleşim tipi değiştir | HUD `Tip` | Yerleşim tipi dropdown'ını açar; `city`, `town`, `fortress`, `port` değerlerinden doğrudan seçilir |
 | Ana yerleşim yap | HUD `Ana Yap` | Seçili settlement'ı tek `is_capital` yerleşim yapar |
 | Bölge arazisi değiştir | HUD `Arazi` | Arazi tipi dropdown'ını açar; `plain`, `forest`, `mountain`, `pass`, `coast` değerlerinden doğrudan seçilir |
 | Bölge sahibi seç | HUD `Sahip` | Fraksiyon dropdown'ını açar; listeden doğrudan `owner_id` seçilir, boş sahip de seçilebilir |
+| Bölge adı değiştir | HUD `Ad TR` / `Ad EN` | Region `name_tr` veya `name` alanını inline metin girişiyle düzenler |
+| Bölge kilidi düzenle | HUD `Kilit`, `-10 Tur`, `+10 Tur` | `is_locked` ve `unlock_turn` alanlarını düzenler |
+| Komşuları senkronize et | HUD `Komsu Sync` | Seçili region'ın raster/Voronoi görsel komşularını JSON `neighbors` listesine yazar ve karşı tarafı iki yönlü günceller |
+| Geniş veri düzenle | HUD `Veri` sekmesi | Faction ekleme/düzenleme formu açılır; ID, adlar, din, renk, playable, kaynaklar, AI değeri ve seçili hedef faction ile başlangıç diplomasi `stance/score` değeri formdan girilir. Faction silme ve seçili ordunun başlangıç region/owner alanı da buradadır |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |
 | Geri al / ileri al | Ctrl+Z / Ctrl+Y veya Ctrl+Shift+Z | Edit command stack üzerinden settlement, bölge merkezi ve temel alan değişikliklerini geri alır veya yeniden uygular |
-| Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
+| Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json`, `data/factions.json`, `data/relations.json` ve `data/armies.json` dosyalarına yazar |
 | Ana menüye dön | Esc | Değişiklik yoksa edit mode'dan çıkar; kaydedilmemiş değişiklik varsa `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekli modal açar |
 
-Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. `Tip`, `Arazi` ve `Sahip` seçimleri dropdown ile yapılır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
+Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Harita` sekmesi settlement/region metadata araçlarını, `Veri` sekmesi region dışı başlangıç verisi araçlarını gösterir. `Tip`, `Arazi` ve `Sahip` seçimleri dropdown ile yapılır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
 
 Voronoi debug overlay açıkken camgöbeği pikseller seçili/hover bölgenin gerçek raster sınırını gösterir. Yeşil çizgi hem raster/Voronoi komşusu hem JSON komşusu olan bölgeyi, kırmızı çizgi sadece görsel komşu olan bölgeyi, gri çizgi ise sadece JSON `neighbors` listesinde olan bölgeyi gösterir. Sağ üst debug paneli hover edilen pixel'in `RegionAt` sonucunu ve senaryo koordinatını gösterir.
 

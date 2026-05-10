@@ -28,7 +28,7 @@
     "hp": 100,
     "gold_cost": 120,
     "grain_upkeep": 3,
-    "required_tech": "basic_tactics",
+    "required_tech": "iron_weapons",
     "required_bldg": "barracks",
     "embarkable": true,
     "turns_required": 1
@@ -45,7 +45,7 @@
     "hp": 100,
     "gold_cost": 220,
     "grain_upkeep": 5,
-    "required_tech": "advanced_tactics",
+    "required_tech": "steel_blades",
     "required_bldg": "barracks",
     "embarkable": true,
     "turns_required": 1
@@ -79,7 +79,7 @@
     "hp": 100,
     "gold_cost": 250,
     "grain_upkeep": 6,
-    "required_tech": "horsemanship",
+    "required_tech": "cavalry_tactics",
     "required_bldg": "barracks",
     "embarkable": false,
     "turns_required": 1
@@ -96,7 +96,7 @@
     "hp": 100,
     "gold_cost": 400,
     "grain_upkeep": 8,
-    "required_tech": "armored_cavalry",
+    "required_tech": "heavy_armor",
     "required_bldg": "barracks",
     "embarkable": false,
     "turns_required": 1
@@ -130,7 +130,7 @@
     "hp": 100,
     "gold_cost": 350,
     "grain_upkeep": 5,
-    "required_tech": "gunpowder",
+    "required_tech": "siege_engines",
     "required_bldg": "barracks",
     "embarkable": false,
     "turns_required": 1
@@ -147,7 +147,7 @@
     "hp": 100,
     "gold_cost": 600,
     "grain_upkeep": 8,
-    "required_tech": "field_artillery",
+    "required_tech": "siege_engines",
     "required_bldg": "barracks",
     "embarkable": false,
     "turns_required": 1
@@ -164,7 +164,7 @@
     "hp": 100,
     "gold_cost": 400,
     "grain_upkeep": 6,
-    "required_tech": "naval_warfare",
+    "required_tech": "navigation",
     "required_bldg": "port",
     "embarkable": false,
     "turns_required": 1

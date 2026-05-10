@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
@@ -574,13 +575,26 @@ func (g *Game) saveScenarioRegions() bool {
 		g.renderer.ShowCombatResult("Senaryo yolu yok; kaydedilemedi.")
 		return false
 	}
-	if err := writeScenarioRegions(g.gs); err != nil {
+	if err := writeScenarioEditData(g.gs); err != nil {
 		g.renderer.ShowCombatResult("Senaryo kayıt hatası: " + err.Error())
 		return false
 	}
 	g.renderer.MarkEditSaved()
-	g.renderer.ShowCombatResult("regions.json kaydedildi.")
+	g.renderer.ShowCombatResult("Senaryo verileri kaydedildi.")
 	return true
+}
+
+func writeScenarioEditData(gs *state.GameState) error {
+	if err := writeScenarioRegions(gs); err != nil {
+		return err
+	}
+	if err := writeScenarioFactions(gs); err != nil {
+		return err
+	}
+	if err := writeScenarioRelations(gs); err != nil {
+		return err
+	}
+	return writeScenarioArmies(gs)
 }
 
 func writeScenarioRegions(gs *state.GameState) error {
@@ -606,6 +620,104 @@ func writeScenarioRegions(gs *state.GameState) error {
 	}
 
 	data, err := json.MarshalIndent(regions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioFactions(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "factions.json")
+	ids := make([]faction.FactionID, 0, len(gs.Factions))
+	for fid := range gs.Factions {
+		ids = append(ids, fid)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+
+	factions := make([]*faction.Faction, 0, len(ids))
+	for _, fid := range ids {
+		if f := gs.Factions[fid]; f != nil {
+			factions = append(factions, f)
+		}
+	}
+	data, err := json.MarshalIndent(factions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioRelations(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "relations.json")
+	keys := make([]string, 0, len(gs.Relations))
+	for key := range gs.Relations {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	relations := make([]*faction.Relation, 0, len(keys))
+	for _, key := range keys {
+		rel := gs.Relations[key]
+		if rel == nil || gs.Factions[rel.FactionA] == nil || gs.Factions[rel.FactionB] == nil {
+			continue
+		}
+		relations = append(relations, rel)
+	}
+	data, err := json.MarshalIndent(relations, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioArmies(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "armies.json")
+	ids := make([]army.ArmyID, 0, len(gs.Armies))
+	for aid := range gs.Armies {
+		ids = append(ids, aid)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+
+	type unitCountJSON struct {
+		TypeID string `json:"type_id"`
+		Count  int    `json:"count"`
+	}
+	type armySpecJSON struct {
+		ID      string          `json:"id"`
+		OwnerID string          `json:"owner_id"`
+		Region  world.RegionID  `json:"region_id"`
+		Units   []unitCountJSON `json:"units"`
+	}
+	specs := make([]armySpecJSON, 0, len(ids))
+	for _, aid := range ids {
+		a := gs.Armies[aid]
+		if a == nil {
+			continue
+		}
+		counts := make(map[string]int, len(a.Units))
+		for _, u := range a.Units {
+			counts[u.TypeID]++
+		}
+		unitIDs := make([]string, 0, len(counts))
+		for typeID := range counts {
+			unitIDs = append(unitIDs, typeID)
+		}
+		sort.Strings(unitIDs)
+		units := make([]unitCountJSON, 0, len(unitIDs))
+		for _, typeID := range unitIDs {
+			units = append(units, unitCountJSON{TypeID: typeID, Count: counts[typeID]})
+		}
+		specs = append(specs, armySpecJSON{
+			ID:      string(a.ID),
+			OwnerID: a.OwnerID,
+			Region:  a.RegionID,
+			Units:   units,
+		})
+	}
+	data, err := json.MarshalIndent(specs, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -714,6 +826,10 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	if err != nil {
 		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
+	relations, err := faction.LoadRelations(dp("relations.json"), factions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ilişkiler yüklenemedi: %w", err)
+	}
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
@@ -771,7 +887,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		BuildingTypes:      buildingTypes,
 		TechTypes:          techTypes,
 		AvailableVictories: victoryOpts,
-		Relations:          faction.BuildInitialRelations(factions),
+		Relations:          relations,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
