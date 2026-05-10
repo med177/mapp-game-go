@@ -2068,31 +2068,31 @@
       "nicomedia",
       "chrysopolis"
     ],
-    "world_x": 1059,
-    "world_y": 473,
+    "world_x": 1054,
+    "world_y": 476,
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "constantinople",
-        "name_tr": "Roma Bölgesi",
-        "x": 1072,
-        "y": 481,
-        "type": "city",
+        "id": "nicaea",
+        "name_tr": "İznik",
+        "x": 1058,
+        "y": 467,
+        "type": "town",
         "is_capital": true
       },
       {
-        "id": "nicaea",
-        "name_tr": "İznik",
-        "x": 1064,
-        "y": 464,
-        "type": "town"
+        "id": "constantinople_settlement_3",
+        "name_tr": "Bursa",
+        "x": 1048,
+        "y": 474,
+        "type": "city"
       },
       {
-        "id": "prainetos",
-        "name_tr": "Prainetos",
-        "x": 1074,
-        "y": 470,
-        "type": "port"
+        "id": "yenisehir",
+        "name_tr": "Yenişehir",
+        "x": 1059,
+        "y": 473,
+        "type": "town"
       }
     ],
     "is_sea": false,
@@ -2117,7 +2117,7 @@
     "name": "Konya",
     "name_tr": "Konya (Karamanogullari)",
     "terrain": "plain",
-    "owner_id": "karaman_bey",
+    "owner_id": "candar_bey",
     "neighbors": [
       "bithynia",
       "candaroglu",
@@ -2140,9 +2140,9 @@
       {
         "id": "amasra",
         "name_tr": "Amasra",
-        "x": 1179,
+        "x": 1182,
         "y": 460,
-        "type": "port"
+        "type": "city"
       }
     ],
     "is_sea": false,
@@ -3943,7 +3943,7 @@
     "id": "thrace",
     "name": "Thrace",
     "name_tr": "Trakya",
-    "terrain": "plain",
+    "terrain": "coast",
     "owner_id": "byzantine",
     "neighbors": [
       "bulgaria",
@@ -3961,10 +3961,9 @@
       {
         "id": "edirne",
         "name_tr": "Edirne",
-        "x": 1034,
+        "x": 1033,
         "y": 450,
-        "type": "city",
-        "is_capital": true
+        "type": "city"
       },
       {
         "id": "gelibolu",
@@ -3993,6 +3992,14 @@
         "x": 1042,
         "y": 448,
         "type": "town"
+      },
+      {
+        "id": "constantinople",
+        "name_tr": "Roma Bölgesi",
+        "x": 1054,
+        "y": 454,
+        "type": "city",
+        "is_capital": true
       }
     ],
     "is_sea": false,
@@ -4999,23 +5006,23 @@
       {
         "id": "kutahya",
         "name_tr": "Kütahya",
-        "x": 1084,
-        "y": 498,
+        "x": 1073,
+        "y": 492,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "karahisar",
         "name_tr": "Karahisar",
-        "x": 1104,
-        "y": 505,
+        "x": 1081,
+        "y": 510,
         "type": "fortress"
       },
       {
         "id": "usak",
         "name_tr": "Uşak",
-        "x": 1066,
-        "y": 502,
+        "x": 1068,
+        "y": 500,
         "type": "town"
       }
     ],
@@ -5672,15 +5679,15 @@
       "bithynia",
       "lycia"
     ],
-    "world_x": 1114,
-    "world_y": 477,
+    "world_x": 1115,
+    "world_y": 476,
     "shape_id": "TUR",
     "settlements": [
       {
         "id": "egirdir",
         "name_tr": "Eğirdir",
-        "x": 1118,
-        "y": 469,
+        "x": 1127,
+        "y": 477,
         "type": "city",
         "is_capital": true
       },
@@ -5688,14 +5695,14 @@
         "id": "isparta",
         "name_tr": "Karaca Hisar",
         "x": 1105,
-        "y": 482,
-        "type": "town"
+        "y": 483,
+        "type": "fortress"
       },
       {
         "id": "ankara",
         "name_tr": "Ankara",
         "x": 1120,
-        "y": 482,
+        "y": 483,
         "type": "city"
       }
     ],
@@ -6765,31 +6772,17 @@
       "saruhan",
       "chrysopolis"
     ],
-    "world_x": 1079,
+    "world_x": 1078,
     "world_y": 481,
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "bursa",
-        "name_tr": "Bursa",
-        "x": 1083,
-        "y": 468,
-        "type": "city",
-        "is_capital": true
-      },
-      {
         "id": "sogut",
         "name_tr": "Söğüt",
-        "x": 1092,
-        "y": 479,
-        "type": "town"
-      },
-      {
-        "id": "yenisehir",
-        "name_tr": "Yenişehir",
-        "x": 1085,
+        "x": 1084,
         "y": 474,
-        "type": "town"
+        "type": "city",
+        "is_capital": true
       }
     ],
     "is_sea": false,
@@ -7280,7 +7273,7 @@
         "name_tr": "Akhisar",
         "x": 1053,
         "y": 495,
-        "type": "town"
+        "type": "fortress"
       },
       {
         "id": "focea",

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-10
+last_updated: 2024-12-19
 related: [game-loop, state-management, systems/combat]
 ---
 
@@ -66,6 +66,37 @@ type Renderer struct {
 
 ---
 
+## UI Components
+
+### Dropdown Component
+
+**Kaynak:** `internal/render/renderer.go:Dropdown`
+
+Edit mode'da kullanılan yeniden kullanılabilir dropdown component. Sahip, arazi ve yerleşim tipi seçimlerinde kullanılır.
+
+```go
+type Dropdown struct {
+    x, y, w, h int
+    options    []string
+    selected   string
+    scroll     int
+    open       bool
+}
+```
+
+**Metodlar:**
+- `SetPosition(x, y float32)` — dropdown konumunu ayarlar
+- `SetOptions(options []string, selected string)` — seçenekleri ve seçili değeri ayarlar
+- `Toggle()` — aç/kapat
+- `Close()` — kapat
+- `IsOpen() bool` — açık mı kontrolü
+- `HitTest(mx, my float64) bool` — fare pozisyonu dropdown içinde mi
+- `Scroll(dy float64)` — tekerlek ile kaydırma
+- `GetSelectedOption(mx, my float64) (int, bool)` — tıklanan seçeneği döndürür
+- `Draw(screen *ebiten.Image)` — render
+
+---
+
 ## Kamera Sistemi
 
 **Koordinat sistemi:** Dünya uzayı `(WorldW × WorldH)` px, ekran uzayına dönüşüm:
@@ -119,7 +150,7 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Shift + s
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
-Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap, üst edit HUD ve alt-sol bilgi HUD'u görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler, Delete seçili settlement'ı siler. Shift + sol sürükleme kara bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Alt-sol HUD'daki `Yerlesim Ekle`, `Isim`, `Sil` ve `Kaydet` butonları aynı işlemleri doğrudan çalıştırır. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap, üst edit HUD ve alt-sol bilgi HUD'u görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler, Delete seçili settlement'ı siler. Shift + sol sürükleme kara bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Alt-sol HUD'daki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Sil` ve `Kaydet` butonları aynı işlemleri doğrudan çalıştırır. `Tip`, seçili settlement türünü `city`, `town`, `fortress`, `port`; `Arazi`, seçili bölge terrain'ini `plain`, `forest`, `mountain`, `pass`, `coast` sırasıyla döndürür. `Sahip`, inspector yanında kaydırılabilir fraksiyon dropdown'ı açar; seçilen satır doğrudan `owner_id` olur ve boş sahip de listede bulunur. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
 

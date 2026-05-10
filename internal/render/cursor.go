@@ -87,6 +87,18 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseEditMode:
+		if r.editOwnerDropdown.IsOpen() && r.editOwnerDropdown.HitTest(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if r.editTerrainDropdown.IsOpen() && r.editTerrainDropdown.HitTest(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if r.editSettlementTypeDropdown.IsOpen() && r.editSettlementTypeDropdown.HitTest(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if editInspectorButtonAt(fx, fy) != editButtonNone {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return

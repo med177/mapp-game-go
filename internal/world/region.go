@@ -56,14 +56,32 @@ type Region struct {
 	Buildings []string `json:"buildings"`
 }
 
+type SettlementType string
+
+const (
+	SettlementCity     SettlementType = "city"
+	SettlementTown     SettlementType = "town"
+	SettlementFortress SettlementType = "fortress"
+	SettlementPort     SettlementType = "port"
+)
+
+func AllSettlementTypes() []string {
+	return []string{
+		string(SettlementCity),
+		string(SettlementTown),
+		string(SettlementFortress),
+		string(SettlementPort),
+	}
+}
+
 type Settlement struct {
-	ID        string `json:"id"`
-	Name      string `json:"name,omitempty"`
-	NameTR    string `json:"name_tr"`
-	X         int    `json:"x"`
-	Y         int    `json:"y"`
-	Type      string `json:"type,omitempty"`
-	IsCapital bool   `json:"is_capital,omitempty"`
+	ID        string         `json:"id"`
+	Name      string         `json:"name,omitempty"`
+	NameTR    string         `json:"name_tr"`
+	X         int            `json:"x"`
+	Y         int            `json:"y"`
+	Type      SettlementType `json:"type,omitempty"`
+	IsCapital bool           `json:"is_capital,omitempty"`
 }
 
 // IsCoastal komşularda deniz olan kara bölgesiyse true döner.

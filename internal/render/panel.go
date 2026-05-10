@@ -979,7 +979,19 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, "Sahip: "+ownerName, lx, ly, FaceSmall, ownerCol)
 	ly += 18
 
-	DrawText(screen, terrainLabel(region.Terrain)+"  │  "+religionLabel(region.Religion), lx, ly, FaceSmall, ColorGray)
+	var stypeStr string
+	if len(region.Settlements) > 0 {
+		capital := region.Settlements[0]
+		for _, s := range region.Settlements {
+			if s.IsCapital {
+				capital = s
+				break
+			}
+		}
+		stypeStr = "  │  " + settlementTypeLabel(capital.Type)
+	}
+
+	DrawText(screen, terrainLabel(region.Terrain)+"  │  "+religionLabel(string(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
 	ly += 16
 
 	sepW := pw - float32(panelPad*2)
@@ -1882,6 +1894,21 @@ func religionLabel(r string) string {
 		return "Şii İslam"
 	}
 	return r
+}
+
+func settlementTypeLabel(t world.SettlementType) string {
+	switch t {
+	case world.SettlementCity:
+		return "Şehir"
+	case world.SettlementTown:
+		return "Kasaba"
+	case world.SettlementFortress:
+		return "Kale"
+	case world.SettlementPort:
+		return "Liman"
+	default:
+		return string(t)
+	}
 }
 
 func phaseLabel(p state.Phase) string {

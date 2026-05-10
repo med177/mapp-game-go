@@ -105,13 +105,16 @@ type Renderer struct {
 	regionLabelBuf []settlementDraw
 	labelRectBuf   []screenRect
 
-	editSelectedRegion     world.RegionID
-	editSelectedSettlement int
-	editDraggingSettlement bool
-	editDraggingRegion     bool
-	editRenaming           bool
-	editNameRunes          []rune
-	editDirty              bool
+	editSelectedRegion         world.RegionID
+	editSelectedSettlement     int
+	editDraggingSettlement     bool
+	editDraggingRegion         bool
+	editRenaming               bool
+	editNameRunes              []rune
+	editDirty                  bool
+	editOwnerDropdown          *Dropdown
+	editTerrainDropdown        *Dropdown
+	editSettlementTypeDropdown *Dropdown
 }
 
 type confirmDialogState struct {
@@ -133,13 +136,150 @@ type warConfirmState struct {
 	pendingDest world.RegionID
 }
 
+// Dropdown component for reusable dropdown UI
+type Dropdown struct {
+	open       bool
+	scroll     int
+	options    []string
+	selected   string
+	x, y, w, h float32
+	title      string
+}
+
+// NewDropdown creates a new dropdown with given position and size
+func NewDropdown(x, y, w, h float32, title string) *Dropdown {
+	return &Dropdown{
+		x: x, y: y, w: w, h: h,
+		title: title,
+	}
+}
+
+// SetPosition sets the dropdown position
+func (d *Dropdown) SetPosition(x, y float32) {
+	d.x, d.y = x, y
+}
+
+// SetOptions sets the dropdown options and resets selection
+func (d *Dropdown) SetOptions(options []string, selected string) {
+	d.options = make([]string, len(options))
+	copy(d.options, options)
+	d.selected = selected
+	d.scroll = 0
+}
+
+// Toggle opens/closes the dropdown
+func (d *Dropdown) Toggle() {
+	d.open = !d.open
+	if d.open {
+		d.scroll = 0
+	}
+}
+
+// Close closes the dropdown
+func (d *Dropdown) Close() {
+	d.open = false
+	d.scroll = 0
+}
+
+// IsOpen returns whether dropdown is open
+func (d *Dropdown) IsOpen() bool {
+	return d.open
+}
+
+// HitTest checks if point is inside dropdown
+func (d *Dropdown) HitTest(mx, my float64) bool {
+	return mx >= float64(d.x) && mx <= float64(d.x+d.w) && my >= float64(d.y) && my <= float64(d.y+d.h)
+}
+
+// Scroll adjusts scroll position
+func (d *Dropdown) Scroll(dy float64) {
+	if dy > 0 {
+		d.scroll--
+	} else if dy < 0 {
+		d.scroll++
+	}
+	maxScroll := len(d.options) - editOwnerDropdownVisibleRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if d.scroll < 0 {
+		d.scroll = 0
+	}
+	if d.scroll > maxScroll {
+		d.scroll = maxScroll
+	}
+}
+
+// GetSelectedOption returns the selected option index and whether valid
+func (d *Dropdown) GetSelectedOption(mx, my float64) (int, bool) {
+	if mx < float64(d.x+8) || mx > float64(d.x+d.w-8) {
+		return 0, false
+	}
+	startY := float64(d.y + editOwnerDropdownHeaderH)
+	if my < startY {
+		return 0, false
+	}
+	row := int((my - startY) / float64(editOwnerDropdownRowH))
+	if row < 0 || row >= editOwnerDropdownVisibleRows {
+		return 0, false
+	}
+	idx := d.scroll + row
+	if idx < 0 || idx >= len(d.options) {
+		return 0, false
+	}
+	return idx, true
+}
+
+// Draw renders the dropdown
+func (d *Dropdown) Draw(screen *ebiten.Image) {
+	if !d.open {
+		return
+	}
+	drawRoundedRect(screen, d.x, d.y, d.w, d.h, 6, color.RGBA{16, 20, 24, 242})
+	drawPanelBorder(screen, d.x, d.y, d.w, d.h)
+	DrawText(screen, d.title, float64(d.x)+10, float64(d.y)+8, FaceSmall, ColorGold)
+
+	rowX := float64(d.x) + 8
+	rowY := float64(d.y) + float64(editOwnerDropdownHeaderH)
+	rowW := float64(d.w) - 16
+	for i := 0; i < editOwnerDropdownVisibleRows; i++ {
+		optionIndex := d.scroll + i
+		if optionIndex >= len(d.options) {
+			break
+		}
+		option := d.options[optionIndex]
+		oy := rowY + float64(i)*float64(editOwnerDropdownRowH)
+		bg := color.RGBA{28, 24, 18, 220}
+		txt := ColorWhite
+		if option == d.selected {
+			bg = color.RGBA{86, 64, 24, 238}
+			txt = ColorGold
+		}
+		vector.FillRect(screen, float32(rowX), float32(oy), float32(rowW), editOwnerDropdownRowH-2, bg, false)
+		DrawText(screen, option, rowX+8, oy+5, FaceSmall, txt)
+	}
+	if len(d.options) > editOwnerDropdownVisibleRows {
+		DrawText(screen, itoa(d.scroll+1)+"-"+itoa(editMinInt(d.scroll+editOwnerDropdownVisibleRows, len(d.options)))+"/"+itoa(len(d.options)),
+			float64(d.x)+float64(d.w)-68, float64(d.y)+8, FaceSmall, ColorGray)
+	}
+}
+
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
 func New(gs *state.GameState) *Renderer {
+	x, y, w, _ := editInspectorRect()
+	dropW := float32(292)
+	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
+	dropX := x + w + 8
+	dropY := y
+
 	r := &Renderer{
-		gs:        gs,
-		worldMap:  NewWorldMap(gs),
-		prevKeys:  make(map[ebiten.Key]bool),
-		prevMouse: make(map[ebiten.MouseButton]bool),
+		gs:                         gs,
+		worldMap:                   NewWorldMap(gs),
+		prevKeys:                   make(map[ebiten.Key]bool),
+		prevMouse:                  make(map[ebiten.MouseButton]bool),
+		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
+		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
+		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
 	}
 	r.resetCamera()
 	return r
@@ -879,7 +1019,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		}
 		DrawText(screen, "Secili yerlesim: "+sName, float64(x)+14, ly, FaceSmall, ColorGold)
 		ly += 18
-		DrawText(screen, settlement.ID+"  "+settlement.Type+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
+		DrawText(screen, settlement.ID+"  "+string(settlement.Type)+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
 			float64(x)+14, ly, FaceSmall, ColorGray)
 		if settlement.IsCapital {
 			ly += 18
@@ -890,13 +1030,22 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	}
 
 	r.drawEditInspectorButtons(screen, region)
+	r.editOwnerDropdown.Draw(screen)
+	r.editTerrainDropdown.Draw(screen)
+	r.editSettlementTypeDropdown.Draw(screen)
+	r.editSettlementTypeDropdown.Draw(screen)
 }
 
 func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
 	canAdd := region != nil && !region.IsSea
+	canRegion := region != nil && !region.IsSea
 	canSettlement := r.hasEditSelection()
 	drawEditInspectorButton(screen, editButtonAddSettlement, "Yerlesim Ekle", canAdd)
+	drawEditInspectorButton(screen, editButtonCycleSettlementType, "Tip", canSettlement)
+	drawEditInspectorButton(screen, editButtonSetCapitalSettlement, "Ana Yap", canSettlement)
 	drawEditInspectorButton(screen, editButtonRenameSettlement, "Isim", canSettlement)
+	drawEditInspectorButton(screen, editButtonCycleRegionTerrain, "Arazi", canRegion)
+	drawEditInspectorButton(screen, editButtonCycleRegionOwner, "Sahip", canRegion)
 	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Sil", canSettlement)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
@@ -911,13 +1060,17 @@ type editInspectorButton int
 const (
 	editButtonNone editInspectorButton = iota
 	editButtonAddSettlement
+	editButtonCycleSettlementType
+	editButtonSetCapitalSettlement
 	editButtonRenameSettlement
+	editButtonCycleRegionTerrain
+	editButtonCycleRegionOwner
 	editButtonDeleteSettlement
 	editButtonSaveScenario
 )
 
 func editInspectorRect() (float32, float32, float32, float32) {
-	const w, h = float32(340), float32(214)
+	const w, h = float32(340), float32(282)
 	return 18, float32(ScreenHeight) - h - 18, w, h
 }
 
@@ -931,17 +1084,27 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	const bw, bh, gap = float64(145), float64(26), float64(8)
 	left := float64(x) + 14
 	right := left + bw + gap
-	top := float64(y) + float64(h) - 68
-	bottom := top + bh + gap
+	row1 := float64(y) + float64(h) - 136
+	row2 := row1 + bh + gap
+	row3 := row2 + bh + gap
+	row4 := row3 + bh + gap
 	switch kind {
 	case editButtonAddSettlement:
-		return uiRect{left, top, bw, bh}
+		return uiRect{left, row1, bw, bh}
+	case editButtonCycleSettlementType:
+		return uiRect{right, row1, bw, bh}
+	case editButtonSetCapitalSettlement:
+		return uiRect{left, row2, bw, bh}
 	case editButtonRenameSettlement:
-		return uiRect{right, top, bw, bh}
+		return uiRect{right, row2, bw, bh}
+	case editButtonCycleRegionTerrain:
+		return uiRect{left, row3, bw, bh}
+	case editButtonCycleRegionOwner:
+		return uiRect{right, row3, bw, bh}
 	case editButtonDeleteSettlement:
-		return uiRect{left, bottom, bw, bh}
+		return uiRect{left, row4, bw, bh}
 	case editButtonSaveScenario:
-		return uiRect{right, bottom, bw, bh}
+		return uiRect{right, row4, bw, bh}
 	default:
 		return uiRect{}
 	}
@@ -954,6 +1117,47 @@ func editInspectorButtonAt(mx, my float64) editInspectorButton {
 		}
 	}
 	return editButtonNone
+}
+
+const (
+	editOwnerDropdownVisibleRows = 10
+	editOwnerDropdownRowH        = float32(24)
+	editOwnerDropdownHeaderH     = float32(30)
+)
+
+func editOwnerDropdownRect() (float32, float32, float32, float32) {
+	x, y, w, _ := editInspectorRect()
+	dropW := float32(292)
+	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
+	return x + w + 8, y, dropW, dropH
+}
+
+func editTerrainDropdownRect() (float32, float32, float32, float32) {
+	x, y, w, _ := editInspectorRect()
+	dropW := float32(292)
+	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
+	return x + w + 8, y, dropW, dropH
+}
+
+func editSettlementTypeDropdownRect() (float32, float32, float32, float32) {
+	x, y, w, _ := editInspectorRect()
+	dropW := float32(292)
+	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
+	return x + w + 8, y, dropW, dropH
+}
+
+func (r *Renderer) updateEditDropdownPositions() {
+	dx, dy, _, _ := editOwnerDropdownRect()
+	r.editOwnerDropdown.SetPosition(dx, dy)
+	r.editTerrainDropdown.SetPosition(dx, dy)
+	r.editSettlementTypeDropdown.SetPosition(dx, dy)
+}
+
+func editMinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
@@ -978,12 +1182,46 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		return r.handleEditRenameInput()
 	}
 
-	r.handleCamera()
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+	leftJustPressed := r.mouseJustPressed(ebiten.MouseButtonLeft)
+
+	if r.editOwnerDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editOwnerDropdown.HitTest(fx, fy) {
+			r.editOwnerDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+	}
+
+	if r.editTerrainDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editTerrainDropdown.HitTest(fx, fy) {
+			r.editTerrainDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+	}
+
+	if r.editSettlementTypeDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editSettlementTypeDropdown.HitTest(fx, fy) {
+			r.editSettlementTypeDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+	}
+
+	if !r.editOwnerDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() {
+		r.handleCamera()
+	}
 
 	if r.keyJustPressed(ebiten.KeyF11) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.editOwnerDropdown.Close()
+		r.editTerrainDropdown.Close()
+		r.editSettlementTypeDropdown.Close()
 		return InputAction{Kind: ActionGoMainMenu}
 	}
 	if r.keyJustPressed(ebiten.KeyS) && (ebiten.IsKeyPressed(ebiten.KeyControl) ||
@@ -998,11 +1236,6 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.beginEditRename()
 		return InputAction{}
 	}
-
-	mx, my := ebiten.CursorPosition()
-	fx, fy := float64(mx), float64(my)
-	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
-	leftJustPressed := r.mouseJustPressed(ebiten.MouseButtonLeft)
 
 	if leftJustPressed {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
@@ -1019,6 +1252,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		if editModifierPressed() {
 			rid := r.editRegionAt(fx, fy)
 			if rid != "" {
+				r.editOwnerDropdown.Close()
+				r.editTerrainDropdown.Close()
+				r.editSettlementTypeDropdown.Close()
 				r.editSelectedRegion = rid
 				r.editSelectedSettlement = -1
 				r.editDraggingRegion = true
@@ -1029,11 +1265,17 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			}
 		}
 		if editAddModifierPressed() {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
 			r.addSettlementAt(fx, fy)
 			return InputAction{}
 		}
 
 		if aid, ok := r.editArmyAt(fx, fy); ok {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
 			r.SelectedArmy = aid
 			if a := r.gs.Armies[aid]; a != nil {
 				r.editSelectedRegion = a.RegionID
@@ -1047,6 +1289,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 
 		rid, idx, ok := r.editSettlementAt(fx, fy)
 		if ok {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
 			r.editSelectedSettlement = idx
@@ -1055,6 +1300,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			return InputAction{}
 		}
 		if rid := r.editRegionAt(fx, fy); rid != "" {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
 			r.editSelectedSettlement = -1
@@ -1063,6 +1311,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editDraggingSettlement = false
 			return InputAction{}
 		}
+		r.editOwnerDropdown.Close()
+		r.editTerrainDropdown.Close()
+		r.editSettlementTypeDropdown.Close()
 		r.SelectedArmy = ""
 		r.editSelectedRegion = ""
 		r.editSelectedSettlement = -1
@@ -1087,16 +1338,70 @@ func (r *Renderer) handleEditModeInput() InputAction {
 }
 
 func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) {
+	if r.editOwnerDropdown.IsOpen() {
+		if idx, ok := r.editOwnerDropdown.GetSelectedOption(fx, fy); ok {
+			r.setSelectedRegionOwner(r.editOwnerDropdown.options[idx])
+			r.editOwnerDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editOwnerDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editOwnerDropdown.Close()
+			return InputAction{}, false
+		}
+	}
+	if r.editTerrainDropdown.IsOpen() {
+		if idx, ok := r.editTerrainDropdown.GetSelectedOption(fx, fy); ok {
+			r.setSelectedRegionTerrain(world.TerrainType(r.editTerrainDropdown.options[idx]))
+			r.editTerrainDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editTerrainDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editTerrainDropdown.Close()
+			return InputAction{}, false
+		}
+	}
+	if r.editSettlementTypeDropdown.IsOpen() {
+		if idx, ok := r.editSettlementTypeDropdown.GetSelectedOption(fx, fy); ok {
+			r.setSelectedSettlementType(r.editSettlementTypeDropdown.options[idx])
+			r.editSettlementTypeDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editSettlementTypeDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editSettlementTypeDropdown.Close()
+			return InputAction{}, false
+		}
+	}
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
 	switch editInspectorButtonAt(fx, fy) {
 	case editButtonAddSettlement:
 		r.addSettlementToSelectedRegion()
+	case editButtonCycleSettlementType:
+		if r.hasEditSelection() {
+			r.toggleEditSettlementTypeDropdown()
+		}
+	case editButtonSetCapitalSettlement:
+		if r.hasEditSelection() {
+			r.setSelectedSettlementCapital()
+		}
 	case editButtonRenameSettlement:
 		if r.hasEditSelection() {
 			r.beginEditRename()
 		}
+	case editButtonCycleRegionTerrain:
+		r.toggleEditTerrainDropdown()
+	case editButtonCycleRegionOwner:
+		r.toggleEditOwnerDropdown()
 	case editButtonDeleteSettlement:
 		if r.hasEditSelection() {
 			r.deleteSelectedSettlement()
@@ -1105,6 +1410,63 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		return InputAction{Kind: ActionSaveScenario}, true
 	}
 	return InputAction{}, true
+}
+
+func (r *Renderer) toggleEditOwnerDropdown() {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		r.editOwnerDropdown.Close()
+		return
+	}
+
+	// Position dropdown below the owner button
+	buttonRect := editInspectorButtonRect(editButtonCycleRegionOwner)
+	dropX := float32(buttonRect[0])
+	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
+
+	r.editOwnerDropdown.SetPosition(dropX, dropY)
+	r.editOwnerDropdown.SetOptions(editOwnerOptions(r.gs.Factions), region.OwnerID)
+	r.editOwnerDropdown.Toggle()
+}
+
+func (r *Renderer) toggleEditTerrainDropdown() {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		r.editTerrainDropdown.Close()
+		return
+	}
+
+	// Position dropdown below the terrain button
+	buttonRect := editInspectorButtonRect(editButtonCycleRegionTerrain)
+	dropX := float32(buttonRect[0])
+	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
+
+	r.editTerrainDropdown.SetPosition(dropX, dropY)
+	terrainOptions := editTerrainOptions()
+	stringOptions := make([]string, len(terrainOptions))
+	for i, t := range terrainOptions {
+		stringOptions[i] = string(t)
+	}
+	r.editTerrainDropdown.SetOptions(stringOptions, string(region.Terrain))
+	r.editTerrainDropdown.Toggle()
+}
+
+func (r *Renderer) toggleEditSettlementTypeDropdown() {
+	if !r.hasEditSelection() {
+		r.editSettlementTypeDropdown.Close()
+		return
+	}
+
+	// Position dropdown below the settlement type button
+	buttonRect := editInspectorButtonRect(editButtonCycleSettlementType)
+	dropX := float32(buttonRect[0])
+	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
+
+	region := r.gs.Regions[r.editSelectedRegion]
+	settlement := region.Settlements[r.editSelectedSettlement]
+	r.editSettlementTypeDropdown.SetPosition(dropX, dropY)
+	r.editSettlementTypeDropdown.SetOptions(world.AllSettlementTypes(), string(settlement.Type))
+	r.editSettlementTypeDropdown.Toggle()
 }
 
 func (r *Renderer) hasEditSelection() bool {
@@ -1302,6 +1664,100 @@ func (r *Renderer) deleteSelectedSettlement() {
 	r.editDirty = true
 }
 
+func (r *Renderer) cycleSelectedSettlementType() {
+	if !r.hasEditSelection() {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	settlement := &region.Settlements[r.editSelectedSettlement]
+	opts := world.AllSettlementTypes()
+	idx := -1
+	for i, t := range opts {
+		if string(settlement.Type) == t {
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		settlement.Type = world.SettlementCity
+	} else {
+		nextIdx := (idx + 1) % len(opts)
+		settlement.Type = world.SettlementType(opts[nextIdx])
+	}
+	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedSettlementCapital() {
+	if !r.hasEditSelection() {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	changed := false
+	for i := range region.Settlements {
+		isCapital := i == r.editSelectedSettlement
+		if region.Settlements[i].IsCapital != isCapital {
+			region.Settlements[i].IsCapital = isCapital
+			changed = true
+		}
+	}
+	if changed {
+		r.worldMap.RebuildSettlementAnchors(r.gs)
+		r.editDirty = true
+	}
+}
+
+func (r *Renderer) cycleSelectedRegionTerrain() {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+	next := nextRegionTerrain(region.Terrain)
+	if region.Terrain == next {
+		return
+	}
+	region.Terrain = next
+	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+	if region.Terrain == terrain {
+		return
+	}
+	region.Terrain = terrain
+	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedSettlementType(typ string) {
+	if !r.hasEditSelection() {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	settlement := &region.Settlements[r.editSelectedSettlement]
+	st := world.SettlementType(typ)
+	if settlement.Type == st {
+		return
+	}
+	settlement.Type = st
+	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedRegionOwner(ownerID string) {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		return
+	}
+	if region.OwnerID == ownerID {
+		return
+	}
+	region.OwnerID = ownerID
+	r.worldMap.MarkDirty()
+	r.editDirty = true
+}
+
 func (r *Renderer) rebuildEditWorldMap() {
 	r.worldMap = NewWorldMap(r.gs)
 }
@@ -1320,6 +1776,58 @@ func editAddModifierPressed() bool {
 	return ebiten.IsKeyPressed(ebiten.KeyAlt) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltLeft) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltRight)
+}
+
+func nextRegionTerrain(current world.TerrainType) world.TerrainType {
+	types := [...]world.TerrainType{
+		world.TerrainPlain,
+		world.TerrainForest,
+		world.TerrainMountain,
+		world.TerrainPass,
+		world.TerrainCoast,
+	}
+	for i, typ := range types {
+		if current == typ {
+			return types[(i+1)%len(types)]
+		}
+	}
+	return types[0]
+}
+
+func editOwnerOptions(factions map[faction.FactionID]*faction.Faction) []string {
+	ids := make([]string, 0, len(factions)+1)
+	ids = append(ids, "")
+	for fid := range factions {
+		ids = append(ids, string(fid))
+	}
+	sort.Strings(ids[1:])
+	return ids
+}
+
+func editTerrainOptions() []world.TerrainType {
+	return []world.TerrainType{
+		world.TerrainPlain,
+		world.TerrainForest,
+		world.TerrainMountain,
+		world.TerrainPass,
+		world.TerrainCoast,
+	}
+}
+
+func (r *Renderer) editOwnerLabel(ownerID string) string {
+	if ownerID == "" {
+		return "(sahipsiz)"
+	}
+	if f, ok := r.gs.Factions[faction.FactionID(ownerID)]; ok && f != nil {
+		name := f.NameTR
+		if name == "" {
+			name = f.Name
+		}
+		if name != "" {
+			return name + "  [" + ownerID + "]"
+		}
+	}
+	return ownerID
 }
 
 func nextSettlementID(region *world.Region) string {
@@ -1407,6 +1915,7 @@ func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, s
 // HandleInput kamera ve oyun girişlerini işler, InputAction döner.
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
+	r.updateEditDropdownPositions()
 
 	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
@@ -2015,8 +2524,8 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 			break
 		}
 		DrawText(screen, line, float64(cx)+20, float64(cy)+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
-	}
 
+	}
 	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
 	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
 	noX := cx + confirmDialogW/2 + 10

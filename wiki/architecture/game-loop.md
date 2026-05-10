@@ -62,11 +62,15 @@ PhaseTurnResolution                    │
 | Yerleşim ekle | Alt + sol tık | Tıklanan kara bölgeye yeni `city` settlement ekler; ID region içinde çakışmayacak şekilde üretilir |
 | Yerleşim sil | Delete | Seçili settlement'ı kaldırır; silinen settlement capital ise kalan ilk settlement capital yapılır |
 | Yerleşim ismi değiştir | F2 veya Enter | Seçili settlement adını düzenler; Enter kaydeder, Esc iptal eder |
+| Yerleşim tipi değiştir | HUD `Tip` | Seçili settlement `city → town → fortress → port` sırasıyla döner |
+| Ana yerleşim yap | HUD `Ana Yap` | Seçili settlement'ı tek `is_capital` yerleşim yapar |
+| Bölge arazisi değiştir | HUD `Arazi` | Seçili bölge `plain → forest → mountain → pass → coast` sırasıyla döner |
+| Bölge sahibi seç | HUD `Sahip` | Fraksiyon dropdown'ını açar; listeden doğrudan `owner_id` seçilir, boş sahip de seçilebilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
 | Ana menüye dön | Esc | Edit mode'dan çıkar |
 
-Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Isim`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
+Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
 
 Kamera kontrolleri normal harita ile aynıdır.
 
