@@ -276,8 +276,18 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 	btnY := cy + dlgH - btnH - 16
 	yesX := cx + dlgW/2 - btnW - 10
 	noX := cx + dlgW/2 + 10
+	var thirdX float64
+	if r.confirmDialog.thirdLabel != "" {
+		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(cx))
+		yesX = float64(saveX)
+		thirdX = float64(discardX)
+		noX = float64(cancelX)
+	}
 
 	if fx >= yesX && fx <= yesX+btnW && fy >= btnY && fy <= btnY+btnH {
+		return true
+	}
+	if r.confirmDialog.thirdLabel != "" && fx >= thirdX && fx <= thirdX+btnW && fy >= btnY && fy <= btnY+btnH {
 		return true
 	}
 	if fx >= noX && fx <= noX+btnW && fy >= btnY && fy <= btnY+btnH {

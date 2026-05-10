@@ -112,9 +112,12 @@ type Renderer struct {
 	editRenaming               bool
 	editNameRunes              []rune
 	editDirty                  bool
+	editVoronoiDebug           bool
 	editOwnerDropdown          *Dropdown
 	editTerrainDropdown        *Dropdown
 	editSettlementTypeDropdown *Dropdown
+	editVisualNeighborBuf      []world.RegionID
+	editBoundaryPixelBuf       []int
 }
 
 type confirmDialogState struct {
@@ -124,7 +127,9 @@ type confirmDialogState struct {
 	messageLines  []string
 	acceptLabel   string
 	declineLabel  string
+	thirdLabel    string
 	pendingAction InputAction
+	thirdAction   InputAction
 	declineHook   func()
 }
 
@@ -277,6 +282,9 @@ func New(gs *state.GameState) *Renderer {
 		worldMap:                   NewWorldMap(gs),
 		prevKeys:                   make(map[ebiten.Key]bool),
 		prevMouse:                  make(map[ebiten.MouseButton]bool),
+		editVoronoiDebug:           true,
+		editVisualNeighborBuf:      make([]world.RegionID, 0, 16),
+		editBoundaryPixelBuf:       make([]int, 0, 4096),
 		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
 		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
 		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
@@ -495,6 +503,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.drawRegionLabels(screen, armyPositions)
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
+		r.drawEditVoronoiDebug(screen)
 	}
 
 	// 5. Ordu ikonları
@@ -952,7 +961,7 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		title += " *"
 	}
 	DrawText(screen, title, float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: bolge merkezi   Ctrl+S: kaydet",
+	DrawText(screen, "Sol: sec/tasi   Alt+sol: ekle   Delete: sil   Shift+sol: bolge merkezi   V: Voronoi   Ctrl+S: kaydet",
 		float64(x)+14, float64(y)+36, FaceSmall, ColorWhite)
 
 	info := "Secili: yok"
@@ -964,10 +973,14 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		info = "Merkez: " + region.NameTR + "  (" + itoa(region.WorldX) + "," + itoa(region.WorldY) + ")"
 	}
 	DrawText(screen, info, float64(x)+14, float64(y)+58, FaceSmall, ColorGray)
+	debugState := "Voronoi debug: kapali"
+	if r.editVoronoiDebug {
+		debugState = "Voronoi debug: acik"
+	}
 	if r.editRenaming {
 		DrawText(screen, "Isim: "+string(r.editNameRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
 	} else {
-		DrawText(screen, "Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
+		DrawText(screen, debugState+"   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
 	}
 }
 
@@ -1033,7 +1046,6 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	r.editOwnerDropdown.Draw(screen)
 	r.editTerrainDropdown.Draw(screen)
 	r.editSettlementTypeDropdown.Draw(screen)
-	r.editSettlementTypeDropdown.Draw(screen)
 }
 
 func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
@@ -1041,11 +1053,11 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	canRegion := region != nil && !region.IsSea
 	canSettlement := r.hasEditSelection()
 	drawEditInspectorButton(screen, editButtonAddSettlement, "Yerlesim Ekle", canAdd)
-	drawEditInspectorButton(screen, editButtonCycleSettlementType, "Tip", canSettlement)
+	drawEditInspectorButton(screen, editButtonSettlementType, "Tip", canSettlement)
 	drawEditInspectorButton(screen, editButtonSetCapitalSettlement, "Ana Yap", canSettlement)
 	drawEditInspectorButton(screen, editButtonRenameSettlement, "Isim", canSettlement)
-	drawEditInspectorButton(screen, editButtonCycleRegionTerrain, "Arazi", canRegion)
-	drawEditInspectorButton(screen, editButtonCycleRegionOwner, "Sahip", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
 	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Sil", canSettlement)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
@@ -1060,11 +1072,11 @@ type editInspectorButton int
 const (
 	editButtonNone editInspectorButton = iota
 	editButtonAddSettlement
-	editButtonCycleSettlementType
+	editButtonSettlementType
 	editButtonSetCapitalSettlement
 	editButtonRenameSettlement
-	editButtonCycleRegionTerrain
-	editButtonCycleRegionOwner
+	editButtonRegionTerrain
+	editButtonRegionOwner
 	editButtonDeleteSettlement
 	editButtonSaveScenario
 )
@@ -1091,15 +1103,15 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	switch kind {
 	case editButtonAddSettlement:
 		return uiRect{left, row1, bw, bh}
-	case editButtonCycleSettlementType:
+	case editButtonSettlementType:
 		return uiRect{right, row1, bw, bh}
 	case editButtonSetCapitalSettlement:
 		return uiRect{left, row2, bw, bh}
 	case editButtonRenameSettlement:
 		return uiRect{right, row2, bw, bh}
-	case editButtonCycleRegionTerrain:
+	case editButtonRegionTerrain:
 		return uiRect{left, row3, bw, bh}
-	case editButtonCycleRegionOwner:
+	case editButtonRegionOwner:
 		return uiRect{right, row3, bw, bh}
 	case editButtonDeleteSettlement:
 		return uiRect{left, row4, bw, bh}
@@ -1177,6 +1189,127 @@ func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 	}
 }
 
+func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
+	if !r.editVoronoiDebug {
+		return
+	}
+	rid := r.editSelectedRegion
+	if rid == "" {
+		mx, my := ebiten.CursorPosition()
+		rid = r.editRegionAt(float64(mx), float64(my))
+	}
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		r.drawEditVoronoiLegend(screen, "", nil)
+		return
+	}
+
+	r.editVisualNeighborBuf = r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf)
+	r.editBoundaryPixelBuf = r.worldMap.BoundaryPixels(rid, r.editBoundaryPixelBuf)
+	r.drawEditVoronoiBoundary(screen, r.editBoundaryPixelBuf)
+
+	cx, cy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+	for _, nrid := range r.editVisualNeighborBuf {
+		neighbor := r.gs.Regions[nrid]
+		if neighbor == nil || neighbor.IsSea {
+			continue
+		}
+		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
+		col := color.RGBA{90, 220, 125, 205}
+		if !regionHasNeighbor(region, nrid) {
+			col = color.RGBA{235, 80, 80, 220}
+		}
+		vector.StrokeLine(screen, float32(cx), float32(cy), float32(nx), float32(ny), 1.5, col, true)
+		mx, my := (cx+nx)/2, (cy+ny)/2
+		vector.FillRect(screen, float32(mx)-3, float32(my)-3, 6, 6, col, true)
+	}
+
+	for _, nrid := range region.Neighbors {
+		if visualNeighborContains(r.editVisualNeighborBuf, nrid) {
+			continue
+		}
+		neighbor := r.gs.Regions[nrid]
+		if neighbor == nil || neighbor.IsSea {
+			continue
+		}
+		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
+		col := color.RGBA{180, 180, 180, 150}
+		vector.StrokeLine(screen, float32(cx), float32(cy), float32(nx), float32(ny), 1, col, true)
+	}
+
+	vector.StrokeCircle(screen, float32(cx), float32(cy), 12, 2.5, color.RGBA{255, 220, 70, 245}, true)
+	r.drawEditVoronoiLegend(screen, rid, r.editVisualNeighborBuf)
+}
+
+func (r *Renderer) drawEditVoronoiBoundary(screen *ebiten.Image, pixels []int) {
+	step := 1
+	if r.camScale < 0.8 {
+		step = 2
+	}
+	if r.camScale < 0.45 {
+		step = 4
+	}
+	size := float32(2)
+	if r.camScale >= 1.25 {
+		size = 3
+	}
+	col := color.RGBA{80, 210, 255, 215}
+	for i := 0; i < len(pixels); i += step {
+		pIdx := pixels[i]
+		wx := float64(pIdx % WorldW)
+		wy := float64(pIdx / WorldW)
+		sx, sy := r.worldToScreen(wx, wy)
+		if sx < -4 || sx > ScreenWidth+4 || sy < -4 || sy > ScreenHeight+4 {
+			continue
+		}
+		vector.FillRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, size, col, true)
+	}
+}
+
+func (r *Renderer) drawEditVoronoiLegend(screen *ebiten.Image, rid world.RegionID, visual []world.RegionID) {
+	const panelW, panelH = float32(360), float32(104)
+	x := float32(ScreenWidth) - panelW - 18
+	y := float32(18)
+	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 20, 24, 218})
+	drawPanelBorder(screen, x, y, panelW, panelH)
+	DrawText(screen, "VORONOI DEBUG", float64(x)+12, float64(y)+10, FaceSmall, ColorGold)
+	DrawText(screen, "camgobegi: raster sinir", float64(x)+12, float64(y)+31, FaceSmall, ColorGray)
+	DrawText(screen, "yesil: gorunen+JSON   kirmizi: sadece gorunen", float64(x)+12, float64(y)+48, FaceSmall, ColorGray)
+
+	mx, my := ebiten.CursorPosition()
+	wx, wy := r.screenToWorld(float64(mx), float64(my))
+	hover := r.worldMap.RegionAt(int(wx), int(wy))
+	sx, sy := scenarioCoordsFromWorld(wx, wy)
+	DrawText(screen, "Hover: "+string(hover)+"  "+itoa(sx)+","+itoa(sy), float64(x)+12, float64(y)+68, FaceSmall, ColorWhite)
+	if rid != "" {
+		region := r.gs.Regions[rid]
+		jsonCount := 0
+		if region != nil {
+			jsonCount = len(region.Neighbors)
+		}
+		DrawText(screen, "Secili: "+string(rid)+"  visual/json: "+itoa(len(visual))+"/"+itoa(jsonCount),
+			float64(x)+12, float64(y)+85, FaceSmall, ColorWhite)
+	}
+}
+
+func regionHasNeighbor(region *world.Region, rid world.RegionID) bool {
+	for _, nrid := range region.Neighbors {
+		if nrid == rid {
+			return true
+		}
+	}
+	return false
+}
+
+func visualNeighborContains(neighbors []world.RegionID, rid world.RegionID) bool {
+	for _, nrid := range neighbors {
+		if nrid == rid {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editRenaming {
 		return r.handleEditRenameInput()
@@ -1218,10 +1351,17 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyF11) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
+	if r.keyJustPressed(ebiten.KeyV) {
+		r.editVoronoiDebug = !r.editVoronoiDebug
+	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editOwnerDropdown.Close()
 		r.editTerrainDropdown.Close()
 		r.editSettlementTypeDropdown.Close()
+		if r.editDirty {
+			r.showEditExitConfirm()
+			return InputAction{}
+		}
 		return InputAction{Kind: ActionGoMainMenu}
 	}
 	if r.keyJustPressed(ebiten.KeyS) && (ebiten.IsKeyPressed(ebiten.KeyControl) ||
@@ -1386,7 +1526,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	switch editInspectorButtonAt(fx, fy) {
 	case editButtonAddSettlement:
 		r.addSettlementToSelectedRegion()
-	case editButtonCycleSettlementType:
+	case editButtonSettlementType:
 		if r.hasEditSelection() {
 			r.toggleEditSettlementTypeDropdown()
 		}
@@ -1398,9 +1538,9 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		if r.hasEditSelection() {
 			r.beginEditRename()
 		}
-	case editButtonCycleRegionTerrain:
+	case editButtonRegionTerrain:
 		r.toggleEditTerrainDropdown()
-	case editButtonCycleRegionOwner:
+	case editButtonRegionOwner:
 		r.toggleEditOwnerDropdown()
 	case editButtonDeleteSettlement:
 		if r.hasEditSelection() {
@@ -1420,7 +1560,7 @@ func (r *Renderer) toggleEditOwnerDropdown() {
 	}
 
 	// Position dropdown below the owner button
-	buttonRect := editInspectorButtonRect(editButtonCycleRegionOwner)
+	buttonRect := editInspectorButtonRect(editButtonRegionOwner)
 	dropX := float32(buttonRect[0])
 	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
 
@@ -1437,7 +1577,7 @@ func (r *Renderer) toggleEditTerrainDropdown() {
 	}
 
 	// Position dropdown below the terrain button
-	buttonRect := editInspectorButtonRect(editButtonCycleRegionTerrain)
+	buttonRect := editInspectorButtonRect(editButtonRegionTerrain)
 	dropX := float32(buttonRect[0])
 	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
 
@@ -1458,7 +1598,7 @@ func (r *Renderer) toggleEditSettlementTypeDropdown() {
 	}
 
 	// Position dropdown below the settlement type button
-	buttonRect := editInspectorButtonRect(editButtonCycleSettlementType)
+	buttonRect := editInspectorButtonRect(editButtonSettlementType)
 	dropX := float32(buttonRect[0])
 	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
 
@@ -1664,29 +1804,6 @@ func (r *Renderer) deleteSelectedSettlement() {
 	r.editDirty = true
 }
 
-func (r *Renderer) cycleSelectedSettlementType() {
-	if !r.hasEditSelection() {
-		return
-	}
-	region := r.gs.Regions[r.editSelectedRegion]
-	settlement := &region.Settlements[r.editSelectedSettlement]
-	opts := world.AllSettlementTypes()
-	idx := -1
-	for i, t := range opts {
-		if string(settlement.Type) == t {
-			idx = i
-			break
-		}
-	}
-	if idx == -1 {
-		settlement.Type = world.SettlementCity
-	} else {
-		nextIdx := (idx + 1) % len(opts)
-		settlement.Type = world.SettlementType(opts[nextIdx])
-	}
-	r.editDirty = true
-}
-
 func (r *Renderer) setSelectedSettlementCapital() {
 	if !r.hasEditSelection() {
 		return
@@ -1704,19 +1821,6 @@ func (r *Renderer) setSelectedSettlementCapital() {
 		r.worldMap.RebuildSettlementAnchors(r.gs)
 		r.editDirty = true
 	}
-}
-
-func (r *Renderer) cycleSelectedRegionTerrain() {
-	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
-		return
-	}
-	next := nextRegionTerrain(region.Terrain)
-	if region.Terrain == next {
-		return
-	}
-	region.Terrain = next
-	r.editDirty = true
 }
 
 func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
@@ -1776,22 +1880,6 @@ func editAddModifierPressed() bool {
 	return ebiten.IsKeyPressed(ebiten.KeyAlt) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltLeft) ||
 		ebiten.IsKeyPressed(ebiten.KeyAltRight)
-}
-
-func nextRegionTerrain(current world.TerrainType) world.TerrainType {
-	types := [...]world.TerrainType{
-		world.TerrainPlain,
-		world.TerrainForest,
-		world.TerrainMountain,
-		world.TerrainPass,
-		world.TerrainCoast,
-	}
-	for i, typ := range types {
-		if current == typ {
-			return types[(i+1)%len(types)]
-		}
-	}
-	return types[0]
 }
 
 func editOwnerOptions(factions map[faction.FactionID]*faction.Faction) []string {
@@ -2510,6 +2598,20 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 	}
 }
 
+func (r *Renderer) showEditExitConfirm() {
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         "Kaydedilmemis Degisiklik",
+		message:       "Edit mode degisiklikleri kaydedilmedi. Cikmadan once ne yapmak istiyorsunuz?",
+		messageLines:  wrapTextLines("Edit mode degisiklikleri kaydedilmedi. Cikmadan once ne yapmak istiyorsunuz?", FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   "Kaydet",
+		thirdLabel:    "Kaydetmeden Cik",
+		declineLabel:  "Iptal",
+		pendingAction: InputAction{Kind: ActionSaveScenarioAndGoMainMenu},
+		thirdAction:   InputAction{Kind: ActionGoMainMenu},
+	}
+}
+
 func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 	cx := float32(ScreenWidth)/2 - confirmDialogW/2
 	cy := float32(ScreenHeight)/2 - confirmDialogH/2
@@ -2526,17 +2628,37 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 		DrawText(screen, line, float64(cx)+20, float64(cy)+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
 
 	}
+	r.drawConfirmDialogButtons(screen, cx, cy)
+}
+
+func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image, cx, cy float32) {
 	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
+	if r.confirmDialog.thirdLabel != "" {
+		saveX, discardX, cancelX := confirmDialogThreeButtonXs(cx)
+		drawConfirmDialogButton(screen, saveX, btnY, r.confirmDialog.acceptLabel, color.RGBA{70, 140, 70, 240})
+		drawConfirmDialogButton(screen, discardX, btnY, r.confirmDialog.thirdLabel, color.RGBA{145, 95, 45, 235})
+		drawConfirmDialogButton(screen, cancelX, btnY, r.confirmDialog.declineLabel, color.RGBA{70, 70, 70, 220})
+		return
+	}
 	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
 	noX := cx + confirmDialogW/2 + 10
+	drawConfirmDialogButton(screen, yesX, btnY, r.confirmDialog.acceptLabel, color.RGBA{70, 140, 70, 240})
+	drawConfirmDialogButton(screen, noX, btnY, r.confirmDialog.declineLabel, color.RGBA{70, 70, 70, 220})
+}
 
-	vector.FillRect(screen, yesX, btnY, confirmDialogBtnW, confirmDialogBtnH, color.RGBA{70, 140, 70, 240}, false)
-	wYes := MeasureText(r.confirmDialog.acceptLabel, FaceSmall)
-	DrawText(screen, r.confirmDialog.acceptLabel, float64(yesX)+(float64(confirmDialogBtnW)-wYes)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+func drawConfirmDialogButton(screen *ebiten.Image, x, y float32, label string, bg color.RGBA) {
+	vector.FillRect(screen, x, y, confirmDialogBtnW, confirmDialogBtnH, bg, false)
+	w := MeasureText(label, FaceSmall)
+	DrawText(screen, label, float64(x)+(float64(confirmDialogBtnW)-w)/2, float64(y)+10, FaceSmall, ColorWhite)
+}
 
-	vector.FillRect(screen, noX, btnY, confirmDialogBtnW, confirmDialogBtnH, color.RGBA{70, 70, 70, 220}, false)
-	wNo := MeasureText(r.confirmDialog.declineLabel, FaceSmall)
-	DrawText(screen, r.confirmDialog.declineLabel, float64(noX)+(float64(confirmDialogBtnW)-wNo)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {
+	gap := float32(14)
+	totalW := confirmDialogBtnW*3 + gap*2
+	saveX := cx + (confirmDialogW-totalW)/2
+	discardX := saveX + confirmDialogBtnW + gap
+	cancelX := discardX + confirmDialogBtnW + gap
+	return saveX, discardX, cancelX
 }
 
 func (r *Renderer) handleConfirmDialogInput() InputAction {
@@ -2545,6 +2667,10 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
 	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
 	noX := cx + confirmDialogW/2 + 10
+	var thirdX float32
+	if r.confirmDialog.thirdLabel != "" {
+		yesX, thirdX, noX = confirmDialogThreeButtonXs(cx)
+	}
 
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float32(mxi), float32(myi)
@@ -2552,6 +2678,12 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if mx >= yesX && mx <= yesX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
 			action := r.confirmDialog.pendingAction
+			r.confirmDialog = confirmDialogState{}
+			return action
+		}
+		if r.confirmDialog.thirdLabel != "" &&
+			mx >= thirdX && mx <= thirdX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
+			action := r.confirmDialog.thirdAction
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}

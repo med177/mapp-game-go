@@ -62,15 +62,18 @@ PhaseTurnResolution                    │
 | Yerleşim ekle | Alt + sol tık | Tıklanan kara bölgeye yeni `city` settlement ekler; ID region içinde çakışmayacak şekilde üretilir |
 | Yerleşim sil | Delete | Seçili settlement'ı kaldırır; silinen settlement capital ise kalan ilk settlement capital yapılır |
 | Yerleşim ismi değiştir | F2 veya Enter | Seçili settlement adını düzenler; Enter kaydeder, Esc iptal eder |
-| Yerleşim tipi değiştir | HUD `Tip` | Seçili settlement `city → town → fortress → port` sırasıyla döner |
+| Yerleşim tipi değiştir | HUD `Tip` | Yerleşim tipi dropdown'ını açar; `city`, `town`, `fortress`, `port` değerlerinden doğrudan seçilir |
 | Ana yerleşim yap | HUD `Ana Yap` | Seçili settlement'ı tek `is_capital` yerleşim yapar |
-| Bölge arazisi değiştir | HUD `Arazi` | Seçili bölge `plain → forest → mountain → pass → coast` sırasıyla döner |
+| Bölge arazisi değiştir | HUD `Arazi` | Arazi tipi dropdown'ını açar; `plain`, `forest`, `mountain`, `pass`, `coast` değerlerinden doğrudan seçilir |
 | Bölge sahibi seç | HUD `Sahip` | Fraksiyon dropdown'ını açar; listeden doğrudan `owner_id` seçilir, boş sahip de seçilebilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
+| Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |
 | Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json` dosyasına yazar |
-| Ana menüye dön | Esc | Edit mode'dan çıkar |
+| Ana menüye dön | Esc | Değişiklik yoksa edit mode'dan çıkar; kaydedilmemiş değişiklik varsa `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekli modal açar |
 
-Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
+Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Sil` ve `Kaydet` butonları aynı işlemleri klavye kısayolu gerektirmeden çalıştırır. `Tip`, `Arazi` ve `Sahip` seçimleri dropdown ile yapılır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
+
+Voronoi debug overlay açıkken camgöbeği pikseller seçili/hover bölgenin gerçek raster sınırını gösterir. Yeşil çizgi hem raster/Voronoi komşusu hem JSON komşusu olan bölgeyi, kırmızı çizgi sadece görsel komşu olan bölgeyi, gri çizgi ise sadece JSON `neighbors` listesinde olan bölgeyi gösterir. Sağ üst debug paneli hover edilen pixel'in `RegionAt` sonucunu ve senaryo koordinatını gösterir.
 
 Kamera kontrolleri normal harita ile aynıdır.
 

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2024-12-19
+last_updated: 2026-05-10
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -81,6 +81,19 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Çoklu yerleşim noktaları | ✅ | `regions.json` içinde `settlements[]`; ana yerleşim ordu/etiket anchor'ı, yakın zoom'da ek yerleşim noktaları/isimleri, bölge dışı koordinatta log + nearest-region fallback |
 | Settlement edit mode | ✅ | `.env` `EDIT_MODE=true`; senaryo seçince harita editörü açılır, alt-sol bilgi/aksiyon HUD'u, settlement ekleme/silme, tip/capital değiştirme, bölge terrain/owner değiştirme, sürükleme, bölge arası taşıma, isim düzenleme, Shift+sürükle ile bölge merkezi taşıma ve Ctrl+S ile `regions.json` kaydı |
 | Dropdown component | ✅ | `internal/render/renderer.go:Dropdown`; edit mode'da sahip/arazi/yerleşim tipi seçimlerinde yeniden kullanılabilir dropdown, scroll ve tam içerik desteği |
+| Edit mode Voronoi debug overlay | ✅ | Edit mode'da `V` ile aç/kapatılır; seçili/hover bölgenin raster/Voronoi sınırını ve görsel komşularını JSON `neighbors` ile karşılaştırır, merkezler arası çizgiler ve hover koordinat paneli gösterir |
+| Edit mode dirty exit uyarısı | ✅ | `editDirty` true iken ESC ile çıkışta ortak modal açılır; `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekleriyle kayıp veri engellenir |
+| Edit mode cleanup | ✅ | `Tip`, `Arazi`, `Sahip` butonları dropdown davranışına göre adlandırıldı; eski cycle helper'ları kaldırıldı |
+
+## Edit Mode Devam Planı
+
+Bir sonraki oturumda edit mode'a buradan devam et. HUD/dropdown tabanlı temel scenario editor tamamlandı; doğal sonraki işler:
+
+| Öncelik | İş | Not |
+|---|---|---|
+| 1 | Undo/redo | Settlement ekle/sil/taşı, region center taşı, owner/terrain/type/capital/name değişikliklerini command stack ile geri al/ileri al. Büyük JSON kopyaları yerine küçük alan bazlı snapshot tut. |
+| 2 | Bölge metadata editörü | Region `name`, `name_tr`, `neighbors`, kilit/açılma alanları gibi `regions.json` verilerini düzenle. `neighbors` için iki yönlü güncelleme ve Voronoi komşuluk testi yardımcı uyarısı ekle. |
+| 3 | Geniş veri editorleri | Region dışındaki scenario verileri için sonraki paneller: başlangıç orduları, binalar, event seedleri veya faction başlangıç değerleri. Bunlar ayrı edit sekmeleri/panelleri olmalı, temel map editor ile karıştırılmamalı. |
 
 ## Bilinen Sorunlar
 

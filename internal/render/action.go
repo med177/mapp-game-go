@@ -32,27 +32,28 @@ const (
 	ActionRecruitSpecific   ActionKind = "recruit_specific"     // BuildingID = unit type ID
 	ActionDeclareWarAndMove ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
 	// Ana menü
-	ActionNewGame        ActionKind = "new_game"
-	ActionContinue       ActionKind = "continue"
-	ActionOpenSettings   ActionKind = "open_settings"
-	ActionQuit           ActionKind = "quit"
-	ActionSaveSettings   ActionKind = "save_settings"
-	ActionBack           ActionKind = "back"
-	ActionResume         ActionKind = "resume"           // duraklama menüsünden devam
-	ActionGoMainMenu     ActionKind = "go_main_menu"     // oyundan ana menüye dön
-	ActionLoadFromPause  ActionKind = "load_from_pause"  // duraklama menüsünden yükle
-	ActionOpenPauseMenu  ActionKind = "open_pause_menu"  // duraklama menüsünü aç
-	ActionOpenLoadSelect ActionKind = "open_load_select" // kayıt seçim ekranını aç
-	ActionOpenSaveSelect ActionKind = "open_save_select" // slot seçerek kaydetme ekranını aç
-	ActionSelectSave     ActionKind = "select_save"      // belirli slotu yükle/kaydet (BuildingID = slot adı)
-	ActionDeleteSave     ActionKind = "delete_save"      // belirli slotu sil (BuildingID = slot adı)
-	ActionSplitArmy      ActionKind = "split_army"       // seçili orduyu ikiye böl
-	ActionMergeArmies    ActionKind = "merge_armies"     // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
-	ActionSelectScenario ActionKind = "select_scenario"  // BuildingID = senaryo klasör yolu
-	ActionSaveScenario   ActionKind = "save_scenario"    // edit mode: aktif senaryo JSON verisini kaydet
-	ActionToggleMusic    ActionKind = "toggle_music"
-	ActionNextMusic      ActionKind = "next_music"
-	ActionAdjustMusic    ActionKind = "adjust_music" // Delta: müzik ses seviyesi
+	ActionNewGame                   ActionKind = "new_game"
+	ActionContinue                  ActionKind = "continue"
+	ActionOpenSettings              ActionKind = "open_settings"
+	ActionQuit                      ActionKind = "quit"
+	ActionSaveSettings              ActionKind = "save_settings"
+	ActionBack                      ActionKind = "back"
+	ActionResume                    ActionKind = "resume"                         // duraklama menüsünden devam
+	ActionGoMainMenu                ActionKind = "go_main_menu"                   // oyundan ana menüye dön
+	ActionLoadFromPause             ActionKind = "load_from_pause"                // duraklama menüsünden yükle
+	ActionOpenPauseMenu             ActionKind = "open_pause_menu"                // duraklama menüsünü aç
+	ActionOpenLoadSelect            ActionKind = "open_load_select"               // kayıt seçim ekranını aç
+	ActionOpenSaveSelect            ActionKind = "open_save_select"               // slot seçerek kaydetme ekranını aç
+	ActionSelectSave                ActionKind = "select_save"                    // belirli slotu yükle/kaydet (BuildingID = slot adı)
+	ActionDeleteSave                ActionKind = "delete_save"                    // belirli slotu sil (BuildingID = slot adı)
+	ActionSplitArmy                 ActionKind = "split_army"                     // seçili orduyu ikiye böl
+	ActionMergeArmies               ActionKind = "merge_armies"                   // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
+	ActionSelectScenario            ActionKind = "select_scenario"                // BuildingID = senaryo klasör yolu
+	ActionSaveScenario              ActionKind = "save_scenario"                  // edit mode: aktif senaryo JSON verisini kaydet
+	ActionSaveScenarioAndGoMainMenu ActionKind = "save_scenario_and_go_main_menu" // edit mode: kaydet ve ana menüye dön
+	ActionToggleMusic               ActionKind = "toggle_music"
+	ActionNextMusic                 ActionKind = "next_music"
+	ActionAdjustMusic               ActionKind = "adjust_music" // Delta: müzik ses seviyesi
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

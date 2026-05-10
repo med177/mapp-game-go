@@ -277,6 +277,63 @@ func (wm *WorldMap) RegionAt(wx, wy int) world.RegionID {
 	return wm.regionIDs[idx]
 }
 
+func (wm *WorldMap) VisualNeighbors(rid world.RegionID, dst []world.RegionID) []world.RegionID {
+	dst = dst[:0]
+	idx := wm.regionIdx[rid]
+	if idx == 0 {
+		return dst
+	}
+	for _, pIdx := range wm.regionPx[rid] {
+		px := pIdx % WorldW
+		py := pIdx / WorldW
+		if px > 0 {
+			dst = appendVisualNeighbor(dst, wm.regionAt[pIdx-1], idx, wm.regionIDs)
+		}
+		if px < WorldW-1 {
+			dst = appendVisualNeighbor(dst, wm.regionAt[pIdx+1], idx, wm.regionIDs)
+		}
+		if py > 0 {
+			dst = appendVisualNeighbor(dst, wm.regionAt[pIdx-WorldW], idx, wm.regionIDs)
+		}
+		if py < WorldH-1 {
+			dst = appendVisualNeighbor(dst, wm.regionAt[pIdx+WorldW], idx, wm.regionIDs)
+		}
+	}
+	return dst
+}
+
+func (wm *WorldMap) BoundaryPixels(rid world.RegionID, dst []int) []int {
+	dst = dst[:0]
+	idx := wm.regionIdx[rid]
+	if idx == 0 {
+		return dst
+	}
+	for _, pIdx := range wm.regionPx[rid] {
+		px := pIdx % WorldW
+		py := pIdx / WorldW
+		if (px > 0 && wm.regionAt[pIdx-1] != idx) ||
+			(px < WorldW-1 && wm.regionAt[pIdx+1] != idx) ||
+			(py > 0 && wm.regionAt[pIdx-WorldW] != idx) ||
+			(py < WorldH-1 && wm.regionAt[pIdx+WorldW] != idx) {
+			dst = append(dst, pIdx)
+		}
+	}
+	return dst
+}
+
+func appendVisualNeighbor(dst []world.RegionID, idx, self uint16, ids []world.RegionID) []world.RegionID {
+	if idx == 0 || idx == self {
+		return dst
+	}
+	rid := ids[idx]
+	for _, existing := range dst {
+		if existing == rid {
+			return dst
+		}
+	}
+	return append(dst, rid)
+}
+
 func loadCountryShapes(path string) map[string]countryShape {
 	if path == "" {
 		return nil

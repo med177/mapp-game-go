@@ -292,6 +292,10 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionSaveScenario:
 			g.saveScenarioRegions()
+		case render.ActionSaveScenarioAndGoMainMenu:
+			if g.saveScenarioRegions() {
+				g.resetToNewGame()
+			}
 		case render.ActionGoMainMenu:
 			g.resetToNewGame()
 		}
@@ -565,17 +569,18 @@ func (g *Game) saveGame() {
 	g.renderer.ShowCombatResult("Oyun kaydedildi!")
 }
 
-func (g *Game) saveScenarioRegions() {
+func (g *Game) saveScenarioRegions() bool {
 	if g.gs.ScenarioPath == "" {
 		g.renderer.ShowCombatResult("Senaryo yolu yok; kaydedilemedi.")
-		return
+		return false
 	}
 	if err := writeScenarioRegions(g.gs); err != nil {
 		g.renderer.ShowCombatResult("Senaryo kayıt hatası: " + err.Error())
-		return
+		return false
 	}
 	g.renderer.MarkEditSaved()
 	g.renderer.ShowCombatResult("regions.json kaydedildi.")
+	return true
 }
 
 func writeScenarioRegions(gs *state.GameState) error {
