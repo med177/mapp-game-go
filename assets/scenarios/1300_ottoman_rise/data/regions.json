@@ -2110,6 +2110,7 @@
     "neighbors": [
       "candaroglu",
       "new_region_202",
+      "new_region_206",
       "paphlagonia",
       "ramazanoglu"
     ],
@@ -4873,7 +4874,7 @@
     "owner_id": "germiyan_bey",
     "neighbors": [
       "bithynia",
-      "new_region_202",
+      "new_region_205",
       "teke"
     ],
     "world_x": 1084,
@@ -4921,11 +4922,45 @@
     "buildings": null
   },
   {
+    "id": "new_region_205",
+    "name": "New Region 203",
+    "name_tr": "Yeni Bolge 203",
+    "terrain": "plain",
+    "owner_id": "germiyan_bey",
+    "neighbors": [
+      "bithynia",
+      "chrysopolis",
+      "germiyan",
+      "new_region_202",
+      "nicomedia",
+      "teke"
+    ],
+    "world_x": 1091,
+    "world_y": 494,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 35,
+    "base_grain_output": 25,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 2,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 380,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "aydinoglu",
     "name": "karesioglu",
     "name_tr": "Karesioğulları",
     "terrain": "coast",
-    "owner_id": "aydin_bey",
+    "owner_id": "karesioglu_bey",
     "neighbors": [
       "_sea_aegean",
       "_sea_marmara",
@@ -4982,7 +5017,7 @@
     "name": "saruhanoglu",
     "name_tr": "Saruhanoğulları",
     "terrain": "coast",
-    "owner_id": "aydin_bey",
+    "owner_id": "saruhan_bey",
     "neighbors": [
       "_sea_aegean",
       "_sea_mediterranean_open_0",
@@ -5022,7 +5057,8 @@
       "bithynia",
       "constantinople",
       "mentese",
-      "new_region_201"
+      "new_region_201",
+      "teke"
     ],
     "world_x": 1027,
     "world_y": 516,
@@ -5108,7 +5144,8 @@
       "candaroglu",
       "dulkadir",
       "eretna",
-      "konya"
+      "konya",
+      "new_region_206"
     ],
     "world_x": 1230,
     "world_y": 524,
@@ -5509,7 +5546,8 @@
     "owner_id": "mentese_bey",
     "neighbors": [
       "_sea_mediterranean_open_0",
-      "new_region_203"
+      "new_region_203",
+      "teke"
     ],
     "world_x": 1031,
     "world_y": 530,
@@ -5560,12 +5598,16 @@
     "name": "teke",
     "name_tr": "Hamitoğulları",
     "terrain": "coast",
-    "owner_id": "teke_bey",
+    "owner_id": "hamid_bey",
     "neighbors": [
       "_sea_black_open_1",
       "bithynia",
       "germiyan",
-      "new_region_202"
+      "mentese",
+      "new_region_202",
+      "new_region_203",
+      "new_region_205",
+      "new_region_206"
     ],
     "world_x": 1083,
     "world_y": 523,
@@ -5611,15 +5653,48 @@
     "terrain": "coast",
     "owner_id": "teke_bey",
     "neighbors": [
-      "_sea_black_open_1",
       "chrysopolis",
-      "germiyan",
       "konya",
+      "new_region_205",
+      "new_region_206",
       "paphlagonia",
       "teke"
     ],
     "world_x": 1122,
-    "world_y": 500,
+    "world_y": 496,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 28,
+    "base_grain_output": 22,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 2,
+    "satisfaction": 60,
+    "tax_rate": 28,
+    "population": 260,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_206",
+    "name": "New Region 204",
+    "name_tr": "Yeni Bolge 204",
+    "terrain": "coast",
+    "owner_id": "teke_bey",
+    "neighbors": [
+      "_sea_black_open_1",
+      "konya",
+      "new_region_202",
+      "ramazanoglu",
+      "teke"
+    ],
+    "world_x": 1139,
+    "world_y": 522,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6679,6 +6754,7 @@
       "germiyan",
       "new_region_201",
       "new_region_203",
+      "new_region_205",
       "nicomedia",
       "teke"
     ],
@@ -6988,6 +7064,7 @@
       "bithynia",
       "chrysopolis",
       "constantinople",
+      "new_region_205",
       "thrace"
     ],
     "world_x": 1075,
@@ -7093,6 +7170,7 @@
     "neighbors": [
       "_sea_black",
       "new_region_202",
+      "new_region_205",
       "nicomedia",
       "paphlagonia"
     ],
@@ -7961,7 +8039,7 @@
       "egypt",
       "israel",
       "lebanon",
-      "new_region_202",
+      "new_region_206",
       "north_cyprus",
       "ramazanoglu",
       "syria",

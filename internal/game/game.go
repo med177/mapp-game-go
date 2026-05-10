@@ -72,7 +72,7 @@ func New() *Game {
 	r := render.New(gs)
 	r.HasSave = save.AnySlotExists()
 	r.HasAutoSave = save.SaveExists()
-	r.CurrentSettings = render.DefaultSettings()
+	r.CurrentSettings = render.LoadSettings()
 	audio.SetMusicEnabled(r.CurrentSettings.MusicOn)
 	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
 	audio.SetSoundEnabled(r.CurrentSettings.SoundOn)
@@ -137,6 +137,7 @@ func (g *Game) Update() error {
 			audio.SetMusicVolume(g.renderer.CurrentSettings.MusicVolume)
 			audio.SetSoundEnabled(g.renderer.CurrentSettings.SoundOn)
 			audio.SetSoundVolume(g.renderer.CurrentSettings.SoundVolume)
+			render.SaveSettingsToFile(g.renderer.CurrentSettings)
 			g.gs.Phase = state.PhaseMainMenu
 			g.renderer.SetCursor(0)
 		}
@@ -230,6 +231,7 @@ func (g *Game) Update() error {
 			g.gs.Phase = state.PhasePauseMenu
 		case render.ActionToggleMusic:
 			g.renderer.CurrentSettings.MusicOn = audio.ToggleMusic()
+			render.SaveSettingsToFile(g.renderer.CurrentSettings)
 		case render.ActionNextMusic:
 			audio.NextMusic()
 		}
@@ -259,8 +261,10 @@ func (g *Game) Update() error {
 			g.gs.Phase = state.PhaseLoadSelect
 		case render.ActionToggleMusic:
 			g.renderer.CurrentSettings.MusicOn = audio.ToggleMusic()
+			render.SaveSettingsToFile(g.renderer.CurrentSettings)
 		case render.ActionAdjustMusic:
 			g.renderer.CurrentSettings.MusicVolume = audio.AdjustMusicVolume(action.Delta)
+			render.SaveSettingsToFile(g.renderer.CurrentSettings)
 		case render.ActionGoMainMenu:
 			g.resetToNewGame()
 		case render.ActionQuit:

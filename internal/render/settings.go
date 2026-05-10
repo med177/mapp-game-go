@@ -1,7 +1,9 @@
 package render
 
 import (
+	"encoding/json"
 	"image/color"
+	"os"
 
 	"mapp-game-go/internal/audio"
 
@@ -23,6 +25,25 @@ func DefaultSettings() Settings {
 }
 
 var difficultyLabels = []string{"", "Kolay", "Normal", "Zor"}
+
+const settingsPath = "saves/settings.json"
+
+// LoadSettings ayarları dosyadan yükler, yoksa varsayılanı döner.
+func LoadSettings() Settings {
+	s := DefaultSettings()
+	data, err := os.ReadFile(settingsPath)
+	if err == nil {
+		json.Unmarshal(data, &s)
+	}
+	return s
+}
+
+// SaveSettings ayarları dosyaya kaydeder.
+func SaveSettingsToFile(s Settings) {
+	os.MkdirAll("saves", 0755)
+	data, _ := json.MarshalIndent(s, "", "  ")
+	os.WriteFile(settingsPath, data, 0644)
+}
 
 // DrawSettingsScreen ayarlar ekranını çizer.
 func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {

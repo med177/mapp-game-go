@@ -132,6 +132,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "achaea_principality",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "achaea_principality",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -390,6 +396,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "aragon",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "aragon",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -642,6 +654,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "aydin_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "aydin_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -888,6 +906,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "bulgarian_empire",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bulgarian_empire",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -1128,6 +1152,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "byzantine",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "byzantine",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -1362,6 +1392,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "candar_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "candar_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -1590,6 +1626,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "castile_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "castile_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -1812,6 +1854,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "denmark_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "denmark_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -2028,6 +2076,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "dulkadir_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "dulkadir_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -2238,6 +2292,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "england",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "england",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -2442,6 +2502,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "eretna_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "eretna_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -2640,6 +2706,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "florence_rep",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "florence_rep",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -2832,6 +2904,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "france",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "france",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -3018,6 +3096,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "genoa",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "genoa",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -3198,6 +3282,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "georgia_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "georgia_kingdom",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -3372,6 +3462,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "germiyan_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "germiyan_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -3540,6 +3636,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "golden_horde",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "golden_horde",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -3702,6 +3804,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "granada_emirate",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "granada_emirate",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -3858,6 +3966,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "hamid_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hamid_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -4008,6 +4122,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "hre",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hre",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -4152,6 +4272,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "hungarian_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hungarian_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -4290,6 +4416,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "ilkhanate",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "ilkhanate",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -4422,6 +4554,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "karaman_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "karaman_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -4549,6 +4687,138 @@
   },
   {
     "faction_a": "karaman_bey",
+    "faction_b": "wallachia_prince",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "lithuanian_gd",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "mamluk",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "mentese_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "milan_duchy",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "naples_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "novgorod_rep",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "ottoman",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "papal_states_f",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "polish_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "portugal",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "ramazan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "russia",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "safavid",
+    "score": -40,
+    "stance": "war"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "saruhan_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "savoy_county",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "scotland_kingdom",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "serbian_empire",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "teke_bey",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "teutonic_order",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "trebizond_emp",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "venice",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karesioglu_bey",
     "faction_b": "wallachia_prince",
     "score": -30,
     "stance": "peace"

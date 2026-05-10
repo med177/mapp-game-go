@@ -575,6 +575,31 @@
     "ai_aggressiveness": 65
   },
   {
+    "id": "karesioglu_bey",
+    "name": "karesioglu",
+    "name_tr": "Karesioğulları",
+    "religion": "sunni",
+    "color": [
+      208,
+      202,
+      104
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
     "id": "lithuanian_gd",
     "name": "Grand Duchy of Lithuania",
     "name_tr": "Litvanya Büyük Prensliği",
