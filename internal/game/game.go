@@ -690,11 +690,13 @@ func writeScenarioArmies(gs *state.GameState) error {
 		Count  int    `json:"count"`
 	}
 	type armySpecJSON struct {
-		ID      string          `json:"id"`
-		OwnerID string          `json:"owner_id"`
-		Region  world.RegionID  `json:"region_id"`
-		IsNaval bool            `json:"is_naval,omitempty"`
-		Units   []unitCountJSON `json:"units"`
+		ID                 string          `json:"id"`
+		OwnerID            string          `json:"owner_id"`
+		Region             world.RegionID  `json:"region_id"`
+		DockedRegion       world.RegionID  `json:"docked_region_id,omitempty"`
+		DockedSettlementID string          `json:"docked_settlement_id,omitempty"`
+		IsNaval            bool            `json:"is_naval,omitempty"`
+		Units              []unitCountJSON `json:"units"`
 	}
 	specs := make([]armySpecJSON, 0, len(ids))
 	for _, aid := range ids {
@@ -716,11 +718,13 @@ func writeScenarioArmies(gs *state.GameState) error {
 			units = append(units, unitCountJSON{TypeID: typeID, Count: counts[typeID]})
 		}
 		specs = append(specs, armySpecJSON{
-			ID:      string(a.ID),
-			OwnerID: a.OwnerID,
-			Region:  a.RegionID,
-			IsNaval: a.IsNaval,
-			Units:   units,
+			ID:                 string(a.ID),
+			OwnerID:            a.OwnerID,
+			Region:             a.RegionID,
+			DockedRegion:       a.DockedRegionID,
+			DockedSettlementID: a.DockedSettlementID,
+			IsNaval:            a.IsNaval,
+			Units:              units,
 		})
 	}
 	data, err := json.MarshalIndent(specs, "", "  ")
@@ -897,6 +901,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
+	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
@@ -1137,6 +1142,8 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 			}
 			if len(a.Units) > 0 {
 				a.RegionID = target
+				a.DockedRegionID = ""
+				a.DockedSettlementID = ""
 				attackerReligion := ownerReligion(g.gs, a.OwnerID)
 				targetRegion.ApplyConquest(a.OwnerID, attackerReligion)
 				a.MovePoints--
@@ -1157,6 +1164,8 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	} else {
 		// --- Savaşsız hareket ve bölge ele geçirme ---
 		a.RegionID = target
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
 		a.MovePoints--
 		if targetRegion.OwnerID != a.OwnerID {
 			attackerReligion := ownerReligion(g.gs, a.OwnerID)
@@ -1209,13 +1218,15 @@ func (g *Game) splitArmy(aid army.ArmyID) {
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
 	g.gs.Armies[newID] = &army.Army{
-		ID:            newID,
-		OwnerID:       a.OwnerID,
-		RegionID:      a.RegionID,
-		Units:         newUnits,
-		MovePoints:    a.MovePoints,
-		MaxMovePoints: a.MaxMovePoints,
-		IsNaval:       a.IsNaval,
+		ID:                 newID,
+		OwnerID:            a.OwnerID,
+		RegionID:           a.RegionID,
+		DockedRegionID:     a.DockedRegionID,
+		DockedSettlementID: a.DockedSettlementID,
+		Units:              newUnits,
+		MovePoints:         a.MovePoints,
+		MaxMovePoints:      a.MaxMovePoints,
+		IsNaval:            a.IsNaval,
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
 }

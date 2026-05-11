@@ -124,6 +124,7 @@ type Renderer struct {
 	editSettlementTypeDropdown *Dropdown
 	editUnitTypeDropdown       *Dropdown
 	editSelectedUnitType       string
+	armyNeighborBuf            []world.RegionID
 	editVisualNeighborBuf      []world.RegionID
 	editBoundaryPixelBuf       []int
 	editUndoStack              []editCommand
@@ -381,6 +382,7 @@ func New(gs *state.GameState) *Renderer {
 		prevKeys:                   make(map[ebiten.Key]bool),
 		prevMouse:                  make(map[ebiten.MouseButton]bool),
 		editVoronoiDebug:           true,
+		armyNeighborBuf:            make([]world.RegionID, 0, 16),
 		editVisualNeighborBuf:      make([]world.RegionID, 0, 16),
 		editBoundaryPixelBuf:       make([]int, 0, 4096),
 		editUndoStack:              make([]editCommand, 0, 64),
@@ -789,6 +791,13 @@ type armyIconPos struct {
 	X, Y   float32
 }
 
+type armyDisplayGroupKey struct {
+	RegionID world.RegionID
+	AnchorX  int
+	AnchorY  int
+	Anchored bool
+}
+
 type settlementDraw struct {
 	Region    *world.Region
 	Index     int
@@ -823,33 +832,36 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 }
 
 // armyIconPositions tüm orduların ekran koordinatlarını hesaplar.
-// Aynı bölgedeki birden fazla ordu yan yana offset'lenir.
+// Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
+// liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
 	const iconStep = float32(26) // ikon genişliği 20 + 6px boşluk
 
-	byRegion := map[world.RegionID][]army.ArmyID{}
+	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
+	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {
-		byRegion[a.RegionID] = append(byRegion[a.RegionID], aid)
-	}
-
-	r.armyIconBuf = r.armyIconBuf[:0]
-	for rid, aids := range byRegion {
-		region, ok := r.gs.Regions[rid]
+		key, sx, sy, ok := r.armyDisplayGroup(a)
 		if !ok {
 			continue
 		}
-		sx, sy := r.regionScreenPos(region)
-		baseY := float32(sy) - 22
+		byGroup[key] = append(byGroup[key], aid)
+		if _, exists := groupBase[key]; !exists {
+			groupBase[key] = [2]float32{sx, sy - 22}
+		}
+	}
 
+	r.armyIconBuf = r.armyIconBuf[:0]
+	for key, aids := range byGroup {
+		base := groupBase[key]
 		sort.Slice(aids, func(i, j int) bool { return aids[i] < aids[j] })
 
 		n := float32(len(aids))
-		startX := float32(sx) - (n-1)*iconStep/2
+		startX := base[0] - (n-1)*iconStep/2
 		for i, aid := range aids {
 			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
 				ArmyID: aid,
 				X:      startX + float32(i)*iconStep,
-				Y:      baseY,
+				Y:      base[1],
 			})
 		}
 	}
@@ -863,6 +875,64 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
 	})
 	return r.armyIconBuf
+}
+
+func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32, float32, bool) {
+	if a == nil {
+		return armyDisplayGroupKey{}, 0, 0, false
+	}
+	region := r.gs.Regions[a.RegionID]
+	if region == nil {
+		return armyDisplayGroupKey{}, 0, 0, false
+	}
+	if a.IsNaval && region.IsSea {
+		if ax, ay, ok := r.dockedFleetAnchor(a, region); ok {
+			sx, sy := r.worldToScreen(float64(ax), float64(ay))
+			return armyDisplayGroupKey{AnchorX: ax, AnchorY: ay, Anchored: true}, float32(sx), float32(sy), true
+		}
+	}
+	sx, sy := r.regionScreenPos(region)
+	return armyDisplayGroupKey{RegionID: region.ID}, float32(sx), float32(sy), true
+}
+
+func (r *Renderer) dockedFleetAnchor(a *army.Army, seaRegion *world.Region) (int, int, bool) {
+	if a == nil || seaRegion == nil || !a.IsNaval || !seaRegion.IsSea || a.DockedRegionID == "" {
+		return 0, 0, false
+	}
+	dockedRegion := r.gs.Regions[a.DockedRegionID]
+	if dockedRegion == nil || dockedRegion.IsSea {
+		return 0, 0, false
+	}
+	return r.dockedSettlementAnchor(dockedRegion, a.DockedSettlementID)
+}
+
+func (r *Renderer) dockedSettlementAnchor(region *world.Region, settlementID string) (int, int, bool) {
+	if region == nil {
+		return 0, 0, false
+	}
+	if settlementID != "" {
+		for i, settlement := range region.Settlements {
+			if settlement.ID != settlementID {
+				continue
+			}
+			if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i); ok {
+				return ax, ay, true
+			}
+			break
+		}
+	}
+	for i, settlement := range region.Settlements {
+		if settlement.Type != world.SettlementPort {
+			continue
+		}
+		if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i); ok {
+			return ax, ay, true
+		}
+	}
+	if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(region.ID); ok {
+		return ax, ay, true
+	}
+	return 0, 0, false
 }
 
 // drawArmies tüm orduları harita üzerinde çizer.
@@ -907,7 +977,22 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.
 		countStr = itoa(unitCount)
 	}
 	tw := MeasureText(countStr, FaceSmall)
-	DrawText(screen, countStr, float64(cx)-tw/2, float64(cy)-5, FaceSmall, color.RGBA{255, 255, 255, 255})
+	tx := float64(cx) - tw/2
+	ty := float64(cy) - 5
+	textCol, shadowCol := armyIconCountColors(col)
+	DrawText(screen, countStr, tx-1, ty, FaceSmall, shadowCol)
+	DrawText(screen, countStr, tx+1, ty, FaceSmall, shadowCol)
+	DrawText(screen, countStr, tx, ty-1, FaceSmall, shadowCol)
+	DrawText(screen, countStr, tx, ty+1, FaceSmall, shadowCol)
+	DrawText(screen, countStr, tx, ty, FaceSmall, textCol)
+}
+
+func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {
+	luminance := 0.299*float64(bg.R) + 0.587*float64(bg.G) + 0.114*float64(bg.B)
+	if luminance >= 160 {
+		return color.RGBA{20, 16, 12, 255}, color.RGBA{245, 240, 230, 210}
+	}
+	return color.RGBA{255, 255, 255, 255}, color.RGBA{12, 10, 8, 220}
 }
 
 // drawRegionLabels zoom yeterliyse bölgedeki yerleşim noktalarını ve adlarını yazar.
@@ -3990,11 +4075,15 @@ func (r *Renderer) moveSelectedArmyToEditRegion() {
 	}
 	aid := a.ID
 	old := a.RegionID
+	oldDockedRegion := a.DockedRegionID
+	oldDockedSettlement := a.DockedSettlementID
 	next := region.ID
 	a.RegionID = next
+	a.DockedRegionID = ""
+	a.DockedSettlementID = ""
 	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) { rr.setArmyRegion(aid, old) },
-		redo: func(rr *Renderer) { rr.setArmyRegion(aid, next) },
+		undo: func(rr *Renderer) { rr.setArmyLocation(aid, old, oldDockedRegion, oldDockedSettlement) },
+		redo: func(rr *Renderer) { rr.setArmyLocation(aid, next, "", "") },
 	})
 	r.editDirty = true
 }
@@ -4042,13 +4131,15 @@ func (r *Renderer) addEditFleet() {
 	before := r.worldSnapshot()
 	aid := nextEditArmyID(r.gs)
 	r.gs.Armies[aid] = &army.Army{
-		ID:            aid,
-		OwnerID:       ownerID,
-		RegionID:      seaID,
-		Units:         army.MakeUnits(unitTypeID, 1),
-		MovePoints:    2,
-		MaxMovePoints: 2,
-		IsNaval:       true,
+		ID:                 aid,
+		OwnerID:            ownerID,
+		RegionID:           seaID,
+		DockedRegionID:     region.ID,
+		DockedSettlementID: r.editPreferredDockSettlementID(region),
+		Units:              army.MakeUnits(unitTypeID, 1),
+		MovePoints:         2,
+		MaxMovePoints:      2,
+		IsNaval:            true,
 	}
 	r.SelectedArmy = aid
 	r.editSelectedFaction = faction.FactionID(ownerID)
@@ -4268,13 +4359,36 @@ func (r *Renderer) setSelectedArmyOwnerFromRegion() {
 	r.editDirty = true
 }
 
-func (r *Renderer) setArmyRegion(aid army.ArmyID, rid world.RegionID) {
+func (r *Renderer) setArmyLocation(aid army.ArmyID, rid, dockedRegionID world.RegionID, dockedSettlementID string) {
 	if a := r.gs.Armies[aid]; a != nil {
 		a.RegionID = rid
+		a.DockedRegionID = dockedRegionID
+		a.DockedSettlementID = dockedSettlementID
 		r.SelectedArmy = aid
 		r.editSelectedRegion = rid
 		r.editSelectedSettlement = -1
 	}
+}
+
+func (r *Renderer) editPreferredDockSettlementID(region *world.Region) string {
+	if region == nil {
+		return ""
+	}
+	if r.editSelectedSettlement >= 0 && r.editSelectedSettlement < len(region.Settlements) {
+		settlement := region.Settlements[r.editSelectedSettlement]
+		if settlement.Type == world.SettlementPort {
+			return settlement.ID
+		}
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return settlement.ID
+		}
+	}
+	if len(region.Settlements) > 0 {
+		return region.Settlements[0].ID
+	}
+	return ""
 }
 
 func (r *Renderer) setArmyOwner(aid army.ArmyID, ownerID string) {

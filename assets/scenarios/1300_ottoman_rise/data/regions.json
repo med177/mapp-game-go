@@ -5709,8 +5709,8 @@
   },
   {
     "id": "mentese",
-    "name": "mentese",
-    "name_tr": "Menteşeoğulları",
+    "name": "Alanya Harbour",
+    "name_tr": "Alanya Limanı",
     "terrain": "coast",
     "owner_id": "mentese_bey",
     "neighbors": [
@@ -5729,10 +5729,17 @@
       {
         "id": "milas",
         "name_tr": "Milas",
-        "x": 1069,
-        "y": 540,
+        "x": 1062,
+        "y": 520,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "mentese_settlement_2",
+        "name_tr": "Menteşeoğulları 2",
+        "x": 1088,
+        "y": 553,
+        "type": "port"
       }
     ],
     "is_sea": false,

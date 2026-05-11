@@ -392,11 +392,11 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 		id   world.RegionID
 		path []world.RegionID
 	}
-	
+
 	visited := make(map[world.RegionID]bool)
 	queue := []queueItem{{id: start.ID, path: nil}}
 	visited[start.ID] = true
-	
+
 	maxDepth := 8 // En fazla 8 bölge uzağa bak
 
 	for len(queue) > 0 {
@@ -430,11 +430,11 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 				continue
 			}
 			visited[nid] = true
-			
+
 			newPath := make([]world.RegionID, len(curr.path))
 			copy(newPath, curr.path)
 			newPath = append(newPath, nid)
-			
+
 			queue = append(queue, queueItem{id: nid, path: newPath})
 		}
 	}
@@ -530,6 +530,8 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 			}
 			if len(a.Units) > 0 {
 				a.RegionID = target
+				a.DockedRegionID = ""
+				a.DockedSettlementID = ""
 				targetRegion.OwnerID = a.OwnerID
 				a.MovePoints--
 				return true
@@ -546,6 +548,8 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 
 	// Savaşsız hareket
 	a.RegionID = target
+	a.DockedRegionID = ""
+	a.DockedSettlementID = ""
 	a.MovePoints--
 	targetRegion.OwnerID = a.OwnerID
 
@@ -814,13 +818,15 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 		gs.NextArmySeq++
 		newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(fid), gs.NextArmySeq))
 		gs.Armies[newID] = &army.Army{
-			ID:            newID,
-			OwnerID:       string(fid),
-			RegionID:      seaRegion,
-			Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
-			MovePoints:    3,
-			MaxMovePoints: 3,
-			IsNaval:       true,
+			ID:                 newID,
+			OwnerID:            string(fid),
+			RegionID:           seaRegion,
+			DockedRegionID:     r.ID,
+			DockedSettlementID: aiPreferredDockSettlementID(r),
+			Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+			MovePoints:         3,
+			MaxMovePoints:      3,
+			IsNaval:            true,
 		}
 		f.Gold -= transportType.GoldCost
 		return // Bir gemi aldık, turu bitir
@@ -883,4 +889,19 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 		}
 	}
 	return false
+}
+
+func aiPreferredDockSettlementID(region *world.Region) string {
+	if region == nil {
+		return ""
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return settlement.ID
+		}
+	}
+	if len(region.Settlements) > 0 {
+		return region.Settlements[0].ID
+	}
+	return ""
 }

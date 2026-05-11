@@ -52,7 +52,7 @@ type Renderer struct {
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası; edit mode'da bölge merkezi işaretleri ve Voronoi debug overlay; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
-| 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür | `renderer.go` |
+| 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür; ikon üstü sayı metni fraksiyon rengine göre kontrast uyarlamalıdır | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Bölge üretim UI — bina kartlarında kuyruktaki inşaatın kalan tur etiketi ve tekrar tıklayınca iptal, birim kartlarında üretim turu | `panel.go`, `recruit_panel.go` |
@@ -186,7 +186,7 @@ AddEvent(msg)                  → sağ olay logundaki kalıcı kart listesine e
 
 ## Ordu İkon Sistemi
 
-Aynı bölgede birden fazla ordu bulunabilir. `armyIconPositions()` (`renderer.go`) tüm orduları `RegionID`'ye göre gruplar, her grubun ikonlarını 26px aralıklarla yatayda ortalar. Hem `drawArmies` hem `handleLeftClick` hem de `cursor.go:inGameHovering` bu tek fonksiyonu kullanır — tutarsızlık riski yoktur.
+Aynı bölgede birden fazla ordu bulunabilir. `armyIconPositions()` (`renderer.go`) kara ordularını `RegionID`/yerleşim anchor'ına göre, donanmaları ise sadece `docked_region_id` / `docked_settlement_id` doluyken bağlı liman anchor'ında; aksi halde deniz bölgesi anchor'ında gruplar. Dock state varsa renderer bunu doğrudan kullanır. Her grubun ikonlarını 26px aralıklarla yatayda ortalar. Hem `drawArmies` hem `handleLeftClick` hem de `cursor.go:inGameHovering` bu tek fonksiyonu kullanır — tutarsızlık riski yoktur.
 
 ```
 Tek ordu  →  bölge merkezinde

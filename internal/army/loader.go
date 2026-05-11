@@ -30,11 +30,13 @@ func LoadUnitTypes(path string) (map[string]*UnitType, error) {
 
 // armySpecJSON armies.json'daki tek ordu tanımını temsil eder.
 type armySpecJSON struct {
-	ID      string          `json:"id"`
-	OwnerID string          `json:"owner_id"`
-	Region  world.RegionID  `json:"region_id"`
-	IsNaval bool            `json:"is_naval,omitempty"`
-	Units   []unitCountJSON `json:"units"`
+	ID                 string          `json:"id"`
+	OwnerID            string          `json:"owner_id"`
+	Region             world.RegionID  `json:"region_id"`
+	DockedRegion       world.RegionID  `json:"docked_region_id,omitempty"`
+	DockedSettlementID string          `json:"docked_settlement_id,omitempty"`
+	IsNaval            bool            `json:"is_naval,omitempty"`
+	Units              []unitCountJSON `json:"units"`
 }
 
 type unitCountJSON struct {
@@ -60,13 +62,15 @@ func LoadArmies(path string) (map[ArmyID]*Army, error) {
 		}
 		id := ArmyID(s.ID)
 		armies[id] = &Army{
-			ID:            id,
-			OwnerID:       s.OwnerID,
-			RegionID:      s.Region,
-			Units:         units,
-			MovePoints:    2,
-			MaxMovePoints: 2,
-			IsNaval:       s.IsNaval,
+			ID:                 id,
+			OwnerID:            s.OwnerID,
+			RegionID:           s.Region,
+			DockedRegionID:     s.DockedRegion,
+			DockedSettlementID: s.DockedSettlementID,
+			Units:              units,
+			MovePoints:         2,
+			MaxMovePoints:      2,
+			IsNaval:            s.IsNaval,
 		}
 	}
 	return armies, nil

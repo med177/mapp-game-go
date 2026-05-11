@@ -169,13 +169,30 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(ownerID), g.gs.NextArmySeq))
 	g.gs.Armies[newID] = &army.Army{
-		ID:            newID,
-		OwnerID:       string(ownerID),
-		RegionID:      seaRegion,
-		Units:         []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
-		MovePoints:    3,
-		MaxMovePoints: 3,
-		IsNaval:       true,
+		ID:                 newID,
+		OwnerID:            string(ownerID),
+		RegionID:           seaRegion,
+		DockedRegionID:     region.ID,
+		DockedSettlementID: preferredDockSettlementID(region),
+		Units:              []army.Unit{{TypeID: unitTypeID, CurrentHP: 100}},
+		MovePoints:         3,
+		MaxMovePoints:      3,
+		IsNaval:            true,
+	}
+	return ""
+}
+
+func preferredDockSettlementID(region *world.Region) string {
+	if region == nil {
+		return ""
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return settlement.ID
+		}
+	}
+	if len(region.Settlements) > 0 {
+		return region.Settlements[0].ID
 	}
 	return ""
 }

@@ -140,11 +140,17 @@
     "id": "army_edit_48",
     "owner_id": "hamid_bey",
     "region_id": "_sea_black_open_1",
+    "docked_region_id": "teke",
+    "docked_settlement_id": "elmali",
     "is_naval": true,
     "units": [
       {
         "type_id": "transport",
         "count": 9
+      },
+      {
+        "type_id": "warship",
+        "count": 10
       }
     ]
   },
@@ -155,6 +161,24 @@
     "units": [
       {
         "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_edit_50",
+    "owner_id": "mentese_bey",
+    "region_id": "_sea_black_open_1",
+    "docked_region_id": "mentese",
+    "docked_settlement_id": "mentese_settlement_2",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 9
+      },
+      {
+        "type_id": "transport",
         "count": 1
       }
     ]
@@ -581,6 +605,10 @@
     "owner_id": "hamid_bey",
     "region_id": "teke",
     "units": [
+      {
+        "type_id": "bombard",
+        "count": 5
+      },
       {
         "type_id": "militia",
         "count": 2

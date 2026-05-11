@@ -9,16 +9,18 @@ type ArmyID string
 
 // Army harita üzerindeki bir orduyu temsil eder.
 type Army struct {
-	ID         ArmyID          `json:"id"`
-	OwnerID    string          `json:"owner_id"` // fraksiyon ID
-	RegionID   world.RegionID  `json:"region_id"`
-	Units      []Unit          `json:"units"`
-	MovePoints int             `json:"move_points"` // bu turda kalan hareket puanı
-	MaxMovePoints int          `json:"max_move_points"`
-	IsNaval    bool            `json:"is_naval"`  // deniz ordusu mu?
+	ID                 ArmyID         `json:"id"`
+	OwnerID            string         `json:"owner_id"` // fraksiyon ID
+	RegionID           world.RegionID `json:"region_id"`
+	DockedRegionID     world.RegionID `json:"docked_region_id,omitempty"`
+	DockedSettlementID string         `json:"docked_settlement_id,omitempty"`
+	Units              []Unit         `json:"units"`
+	MovePoints         int            `json:"move_points"` // bu turda kalan hareket puanı
+	MaxMovePoints      int            `json:"max_move_points"`
+	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
 
 	// Pusu durumu: geçit bölgesinde bekliyorsa true
-	InAmbush   bool `json:"in_ambush"`
+	InAmbush bool `json:"in_ambush"`
 }
 
 // Size ordu boyutunu döner.
@@ -72,4 +74,35 @@ func (a *Army) ApplyWinterAttrition() (lost int) {
 func (a *Army) ResetMovePoints() {
 	a.MovePoints = a.MaxMovePoints
 	a.InAmbush = false
+}
+
+// InitializeLegacyFleetDocking eski veri dosyalarında dock bilgisi olmayan
+// filolar için komşu sahipli limandan başlangıç dock konumu türetir.
+func InitializeLegacyFleetDocking(armies map[ArmyID]*Army, regions map[world.RegionID]*world.Region) {
+	for _, a := range armies {
+		if a == nil || !a.IsNaval || a.DockedRegionID != "" {
+			continue
+		}
+		seaRegion := regions[a.RegionID]
+		if seaRegion == nil || !seaRegion.IsSea {
+			continue
+		}
+		for _, nid := range seaRegion.Neighbors {
+			region := regions[nid]
+			if region == nil || region.IsSea || region.OwnerID != a.OwnerID {
+				continue
+			}
+			for _, settlement := range region.Settlements {
+				if settlement.Type != world.SettlementPort {
+					continue
+				}
+				a.DockedRegionID = region.ID
+				a.DockedSettlementID = settlement.ID
+				break
+			}
+			if a.DockedRegionID != "" {
+				break
+			}
+		}
+	}
 }
