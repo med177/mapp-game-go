@@ -378,7 +378,7 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	}
 	const panelW, panelH = float32(290), float32(92)
 	x := float32(ScreenWidth) - panelW - 18
-	y := float32(18)
+	y := float32(140) // Aşağı alındı, diğer panellerle çakışmayı önlemek için
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 20, 24, 218})
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	DrawText(screen, "SHAPE YARDIM", float64(x)+12, float64(y)+10, FaceSmall, ColorGold)

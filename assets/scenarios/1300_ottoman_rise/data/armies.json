@@ -132,7 +132,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 11
+        "count": 20
       }
     ]
   },
@@ -514,7 +514,7 @@
       },
       {
         "type_id": "militia",
-        "count": 5
+        "count": 8
       }
     ]
   },
