@@ -60,6 +60,31 @@ func TestShapePaintStrokeTracksLivePreviewDiff(t *testing.T) {
 	}
 }
 
+func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
+	r := newLandShapeEditRenderer()
+	r.editInspectorTab = editInspectorShape
+	r.editSelectedRegion = "land_test"
+	r.editShapeTool = editShapeToolRegion
+	r.editShapeBrushMode = editShapeBrushPaint
+	r.editShapeBrushRadius = 1
+
+	if got := r.worldMap.RegionAt(14, 10); got != "" {
+		t.Fatalf("paint oncesi piksel bos olmali, got=%q", got)
+	}
+	sx, sy := r.worldToScreen(wcX(14), wcY(10))
+	if !r.beginShapePaintStroke(sx, sy) {
+		t.Fatal("region paint stroke baslatilamadi")
+	}
+	r.finishShapePaintStroke()
+
+	if got := r.worldMap.RegionAt(14, 10); got != "land_test" {
+		t.Fatalf("paint sonrasi piksel region'a baglanmadi: got=%q", got)
+	}
+	if len(r.editRegionPaintOverrides) == 0 {
+		t.Fatal("region paint overrides kayit edilmedi")
+	}
+}
+
 func TestWorldSnapshotClonesShapeData(t *testing.T) {
 	r := newLandShapeEditRenderer()
 	snap := r.worldSnapshot()

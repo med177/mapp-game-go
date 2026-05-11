@@ -129,9 +129,16 @@ type Renderer struct {
 	editBoundaryPixelBuf       []int
 	editShapeSession           *shapeEditSession
 	editShapePainting          bool
+	editShapeTool              editShapeTool
 	editShapeBrushMode         editShapeBrushMode
 	editShapeBrushRadius       int
 	editShapeStrokeBefore      *editWorldSnapshot
+	editShapeStrokeLastX       int
+	editShapeStrokeLastY       int
+	editShapeStrokeHasLast     bool
+	editShapeStrokeDirty       bool
+	editRegionPaintOverrides   map[int]world.RegionID
+	editRegionPaintBaseline    []uint16
 	editUndoStack              []editCommand
 	editRedoStack              []editCommand
 	editRegionDragStart        *editRegionCenterSnapshot
@@ -163,23 +170,31 @@ type editRegionCenterSnapshot struct {
 	Y      int
 }
 
+type editShapeTool int
+
+const (
+	editShapeToolShape editShapeTool = iota
+	editShapeToolRegion
+)
+
 type editRegionSettlementsSnapshot struct {
 	Region      world.RegionID
 	Settlements []world.Settlement
 }
 
 type editWorldSnapshot struct {
-	Regions     map[world.RegionID]*world.Region
-	RegionOrder []world.RegionID
-	Factions    map[faction.FactionID]*faction.Faction
-	Armies      map[army.ArmyID]*army.Army
-	Relations   map[string]*faction.Relation
-	ShapeData   world.CountryShapeJSON
-	Selected    world.RegionID
-	Settlement  int
-	Faction     faction.FactionID
-	Army        army.ArmyID
-	Player      faction.FactionID
+	Regions              map[world.RegionID]*world.Region
+	RegionOrder          []world.RegionID
+	Factions             map[faction.FactionID]*faction.Faction
+	Armies               map[army.ArmyID]*army.Army
+	Relations            map[string]*faction.Relation
+	ShapeData            world.CountryShapeJSON
+	RegionPaintOverrides map[int]world.RegionID
+	Selected             world.RegionID
+	Settlement           int
+	Faction              faction.FactionID
+	Army                 army.ArmyID
+	Player               faction.FactionID
 }
 
 type editFactionFormState struct {
@@ -396,6 +411,7 @@ func New(gs *state.GameState) *Renderer {
 		editShapeBrushRadius:       6,
 		editUndoStack:              make([]editCommand, 0, 64),
 		editRedoStack:              make([]editCommand, 0, 64),
+		editRegionPaintOverrides:   make(map[int]world.RegionID),
 		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
 		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
 		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
@@ -450,6 +466,15 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
 	r.eventLogScroll = 0
+	// Oyun durumundan region paint overrides'ı geri yükle
+	if gs.RegionPaintOverrides != nil {
+		r.editRegionPaintOverrides = make(map[int]world.RegionID, len(gs.RegionPaintOverrides))
+		for k, v := range gs.RegionPaintOverrides {
+			r.editRegionPaintOverrides[k] = v
+		}
+		// Overrides'ı visual haritaya uygula
+		r.rebuildEditWorldMap()
+	}
 }
 
 // AddEvent olay loguna yeni bir giriş ekler.
@@ -1632,6 +1657,8 @@ const (
 	editButtonSaveScenario
 	editButtonShapePaint
 	editButtonShapeErase
+	editButtonShapeRegionPaint
+	editButtonShapeRegionErase
 	editButtonShapeBrushMinus
 	editButtonShapeBrushPlus
 	editButtonAddFaction
@@ -1706,10 +1733,14 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row1, bw, bh}
 	case editButtonShapeErase:
 		return uiRect{right, row1, bw, bh}
-	case editButtonShapeBrushMinus:
+	case editButtonShapeRegionPaint:
 		return uiRect{left, row2, bw, bh}
-	case editButtonShapeBrushPlus:
+	case editButtonShapeRegionErase:
 		return uiRect{right, row2, bw, bh}
+	case editButtonShapeBrushMinus:
+		return uiRect{left, row3, bw, bh}
+	case editButtonShapeBrushPlus:
+		return uiRect{right, row3, bw, bh}
 	case editButtonAddFaction:
 		return uiRect{left, row1, bw, bh}
 	case editButtonEditFaction:
@@ -3281,17 +3312,18 @@ func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
 
 func (r *Renderer) worldSnapshot() editWorldSnapshot {
 	return editWorldSnapshot{
-		Regions:     cloneRegionMap(r.gs.Regions),
-		RegionOrder: cloneRegionIDSlice(r.gs.RegionOrder),
-		Factions:    cloneFactionMap(r.gs.Factions),
-		Armies:      cloneArmyMap(r.gs.Armies),
-		Relations:   cloneRelationMap(r.gs.Relations),
-		ShapeData:   cloneCountryShapeJSON(r.gs.ShapeData),
-		Selected:    r.editSelectedRegion,
-		Settlement:  r.editSelectedSettlement,
-		Faction:     r.editSelectedFaction,
-		Army:        r.SelectedArmy,
-		Player:      r.gs.PlayerFactionID,
+		Regions:              cloneRegionMap(r.gs.Regions),
+		RegionOrder:          cloneRegionIDSlice(r.gs.RegionOrder),
+		Factions:             cloneFactionMap(r.gs.Factions),
+		Armies:               cloneArmyMap(r.gs.Armies),
+		Relations:            cloneRelationMap(r.gs.Relations),
+		ShapeData:            cloneCountryShapeJSON(r.gs.ShapeData),
+		RegionPaintOverrides: cloneRegionPaintOverrides(r.editRegionPaintOverrides),
+		Selected:             r.editSelectedRegion,
+		Settlement:           r.editSelectedSettlement,
+		Faction:              r.editSelectedFaction,
+		Army:                 r.SelectedArmy,
+		Player:               r.gs.PlayerFactionID,
 	}
 }
 
@@ -3309,6 +3341,18 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
 	r.gs.ShapeData = cloneCountryShapeJSON(snapshot.ShapeData)
+	r.editRegionPaintOverrides = cloneRegionPaintOverrides(snapshot.RegionPaintOverrides)
+	// Region paint overrides'ı oyun durumuna da senkronize et
+	if len(r.editRegionPaintOverrides) > 0 {
+		if r.gs.RegionPaintOverrides == nil {
+			r.gs.RegionPaintOverrides = make(map[int]world.RegionID)
+		}
+		for k, v := range r.editRegionPaintOverrides {
+			r.gs.RegionPaintOverrides[k] = v
+		}
+	} else {
+		r.gs.RegionPaintOverrides = nil
+	}
 	r.editSelectedRegion = snapshot.Selected
 	r.editSelectedSettlement = snapshot.Settlement
 	r.editSelectedFaction = snapshot.Faction
@@ -4516,6 +4560,71 @@ func editBoolLabel(value bool) string {
 func (r *Renderer) rebuildEditWorldMap() {
 	r.invalidateShapeEditSession()
 	r.worldMap = NewWorldMap(r.gs)
+	r.buildRegionPaintBaseline()
+	r.applyRegionPaintOverrides()
+}
+
+func (r *Renderer) buildRegionPaintBaseline() {
+	if r.worldMap == nil {
+		r.editRegionPaintBaseline = nil
+		return
+	}
+	r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
+	copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
+}
+
+func (r *Renderer) applyRegionPaintOverrides() {
+	if r.worldMap == nil || len(r.editRegionPaintOverrides) == 0 {
+		return
+	}
+	for pIdx, rid := range r.editRegionPaintOverrides {
+		r.applyRegionOverride(pIdx, rid)
+	}
+}
+
+func cloneRegionPaintOverrides(src map[int]world.RegionID) map[int]world.RegionID {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[int]world.RegionID, len(src))
+	for k, v := range src {
+		dst[k] = v
+	}
+	return dst
+}
+
+func (r *Renderer) applyRegionOverride(pIdx int, rid world.RegionID) {
+	if r.worldMap == nil || pIdx < 0 || pIdx >= len(r.worldMap.regionAt) {
+		return
+	}
+	if rid == "" {
+		return
+	}
+	newIdx, ok := r.worldMap.regionIdx[rid]
+	if !ok {
+		newIdx = uint16(len(r.worldMap.regionIDs))
+		r.worldMap.regionIDs = append(r.worldMap.regionIDs, rid)
+		r.worldMap.regionIdx[rid] = newIdx
+	}
+	oldIdx := r.worldMap.regionAt[pIdx]
+	if oldIdx == newIdx {
+		return
+	}
+	if oldIdx != 0 {
+		oldID := r.worldMap.regionIDs[oldIdx]
+		r.worldMap.regionPx[oldID] = removePixelIndex(r.worldMap.regionPx[oldID], pIdx)
+	}
+	r.worldMap.regionAt[pIdx] = newIdx
+	r.worldMap.regionPx[rid] = append(r.worldMap.regionPx[rid], pIdx)
+}
+
+func removePixelIndex(slice []int, value int) []int {
+	for i, v := range slice {
+		if v == value {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
 }
 
 func scenarioCoordsFromWorld(wx, wy float64) (int, int) {

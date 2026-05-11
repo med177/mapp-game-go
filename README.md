@@ -163,7 +163,9 @@ Henüz lisanslanmamıştır. Proje tamamlandığında uygun bir açık kaynak li
 
 ## AI Katkısı
 - Bu proje genel itibariyle AI modellerinden faydalanılarak geliştirilmektedir. Kod, veri formatları ve dokümantasyon LLM tarafından güncellenir ve sürdürülür.
-- Büyük ölçüde GPT-5.4 ve GPT-5.5 modelleri kullanılmıştır. Kodun %90'ından fazlası LLM tarafından yazılmıştır; insan katkısı esas olarak rehberlik, inceleme ve testtir.
+- Büyük ölçüde GPT-5.4, GPT-5.5, Claude Sonnet 4.6, Raptor Mini, Qwen 3.6 vb. modelleri kullanılmıştır. Kodun %90'ından fazlası LLM tarafından yazılmıştır; insan katkısı esas olarak rehberlik, inceleme ve testtir.
 - LLM yapısı gereği, kodun bazı bölümleri stil veya yapısal olarak tutarsız olabilir. Ancak, genel mimari ve veri formatları tutarlı kalmaya çalışılmıştır.
 - LLM tarafından üretilen kodun doğruluğu ve güvenilirliği için kapsamlı testler yapılmıştır. Ancak, bazı hatalar veya tutarsızlıklar olabilir; bu nedenle kullanıcı geri bildirimi önemlidir.
 - Çok az yerde AI tarafından yapılamayan ya da insan müdahalesi gerektiren bölümler olabilir. Bu durumlarda, kodun geri kalanıyla uyumlu olacak şekilde manuel olarak müdahale edilmiştir.
+- Proje Genelinde Vscode üzerinde Copilot, Codex, Claude, Augment gibi araçlar kullanılmıştır. Bu araçlar kod tamamlama, hata düzeltme, veri formatlama ve dokümantasyon oluşturma gibi görevlerde yardımcı olmuştur.
+- Codex aracı ile GPT-5.5 modeli bu projede çok daha başarılı bulunmuştur; özellikle karmaşık veri yapıları ve oyun mekaniği kodlarında daha tutarlı sonuçlar vermiştir. Diğer modeller bazen stil veya yapısal tutarsızlıklara neden olabilir. Ancak, tüm modellerin çıktıları kapsamlı testler ve incelemelerle doğrulanmıştır.

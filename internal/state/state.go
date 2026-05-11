@@ -97,6 +97,9 @@ type GameState struct {
 
 	// Kazanan (boş = oyun devam ediyor)
 	WinnerID faction.FactionID `json:"winner_id"`
+
+	// Region paint overrides - edit modunda bölge boyama değişiklikleri (piksel indeksi -> bölge ID)
+	RegionPaintOverrides map[int]world.RegionID `json:"region_paint_overrides,omitempty"`
 }
 
 // ProductionOrder bina ve birim üretimlerinin tur bazlı kuyruğunu tutar.
