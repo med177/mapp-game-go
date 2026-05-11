@@ -25,6 +25,31 @@
     "ai_aggressiveness": 45
   },
   {
+    "id": "ahiler",
+    "name": "ahiler",
+    "name_tr": "Ahiler",
+    "religion": "sunni",
+    "color": [
+      54,
+      0,
+      255
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
     "id": "aragon",
     "name": "Crown of Aragon",
     "name_tr": "Aragon Krallığı",
@@ -50,6 +75,56 @@
     "ai_aggressiveness": 55
   },
   {
+    "id": "arnavut_des",
+    "name": "arnavut",
+    "name_tr": "Arnavut Despotluğu",
+    "religion": "catholic",
+    "color": [
+      100,
+      60,
+      0
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
+    "id": "athena_duk",
+    "name": "atinaduk",
+    "name_tr": "Atina Dükalığı",
+    "religion": "catholic",
+    "color": [
+      24,
+      166,
+      142
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
     "id": "aydin_bey",
     "name": "Aydinids",
     "name_tr": "Aydınoğulları Beyliği",
@@ -57,7 +132,7 @@
     "color": [
       95,
       175,
-      135
+      255
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -148,6 +223,31 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 50
+  },
+  {
+    "id": "canik_bey",
+    "name": "canik",
+    "name_tr": "Canik",
+    "religion": "sunni",
+    "color": [
+      35,
+      255,
+      0
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 220,
+    "grain": 140,
+    "iron": 65,
+    "timber": 50,
+    "spice": 30,
+    "cloth": 45,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60
   },
   {
     "id": "castile_kingdom",
@@ -250,29 +350,54 @@
     "ai_aggressiveness": 65
   },
   {
-    "id": "eretna_bey",
-    "name": "Eretnids",
-    "name_tr": "Eretna Devleti",
-    "religion": "sunni",
+    "id": "epir",
+    "name": "epir",
+    "name_tr": "Epir Despotluğu",
+    "religion": "catholic",
     "color": [
-      165,
-      95,
-      75
+      107,
+      213,
+      11
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
-    "gold": 220,
-    "grain": 140,
-    "iron": 65,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
     "timber": 50,
-    "spice": 30,
-    "cloth": 45,
+    "spice": 0,
+    "cloth": 0,
     "research": {
       "completed": null,
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 50
+  },
+  {
+    "id": "esrefoglu_bey",
+    "name": "esrefoglu",
+    "name_tr": "Eşrefoğlu Byeliği",
+    "religion": "sunni",
+    "color": [
+      65,
+      110,
+      65
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 170,
+    "grain": 100,
+    "iron": 40,
+    "timber": 45,
+    "spice": 25,
+    "cloth": 35,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 55
   },
   {
     "id": "florence_rep",
@@ -455,9 +580,9 @@
     "name_tr": "Hamidoğulları Beyliği",
     "religion": "sunni",
     "color": [
-      155,
-      135,
-      75
+      255,
+      95,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -555,9 +680,9 @@
     "name_tr": "Karamanoğulları Beyliği",
     "religion": "sunni",
     "color": [
-      175,
-      115,
-      45
+      25,
+      0,
+      255
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -580,9 +705,9 @@
     "name_tr": "Karesioğulları",
     "religion": "sunni",
     "color": [
-      208,
-      202,
-      104
+      255,
+      112,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -655,9 +780,9 @@
     "name_tr": "Menteşeoğulları Beyliği",
     "religion": "sunni",
     "color": [
-      75,
-      155,
-      165
+      255,
+      255,
+      155
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -855,9 +980,9 @@
     "name_tr": "Ramazanoğulları / Kilikya",
     "religion": "catholic",
     "color": [
-      185,
-      135,
-      55
+      255,
+      0,
+      255
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -931,7 +1056,7 @@
     "religion": "sunni",
     "color": [
       160,
-      120,
+      255,
       60
     ],
     "is_playable": false,
@@ -1005,9 +1130,9 @@
     "name_tr": "Sırp İmparatorluğu",
     "religion": "orthodox",
     "color": [
-      190,
-      35,
-      35
+      255,
+      0,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -1023,31 +1148,6 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 65
-  },
-  {
-    "id": "teke_bey",
-    "name": "Teke Beylik",
-    "name_tr": "Teke Beyliği",
-    "religion": "sunni",
-    "color": [
-      115,
-      160,
-      85
-    ],
-    "is_playable": false,
-    "is_eliminated": false,
-    "gold": 170,
-    "grain": 100,
-    "iron": 40,
-    "timber": 45,
-    "spice": 25,
-    "cloth": 35,
-    "research": {
-      "completed": null,
-      "active_id": "",
-      "turns_left": 0
-    },
-    "ai_aggressiveness": 55
   },
   {
     "id": "teutonic_order",

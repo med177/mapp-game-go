@@ -138,7 +138,7 @@
   },
   {
     "id": "army_eretna_1",
-    "owner_id": "eretna_bey",
+    "owner_id": "canik_bey",
     "region_id": "eretna",
     "units": [
       {
@@ -536,7 +536,7 @@
   },
   {
     "id": "army_teke_1",
-    "owner_id": "teke_bey",
+    "owner_id": "esrefoglu_bey",
     "region_id": "teke",
     "units": [
       {
