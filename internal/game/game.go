@@ -693,6 +693,7 @@ func writeScenarioArmies(gs *state.GameState) error {
 		ID      string          `json:"id"`
 		OwnerID string          `json:"owner_id"`
 		Region  world.RegionID  `json:"region_id"`
+		IsNaval bool            `json:"is_naval,omitempty"`
 		Units   []unitCountJSON `json:"units"`
 	}
 	specs := make([]armySpecJSON, 0, len(ids))
@@ -718,6 +719,7 @@ func writeScenarioArmies(gs *state.GameState) error {
 			ID:      string(a.ID),
 			OwnerID: a.OwnerID,
 			Region:  a.RegionID,
+			IsNaval: a.IsNaval,
 			Units:   units,
 		})
 	}

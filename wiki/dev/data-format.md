@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-10
+last_updated: 2026-05-11
 related: [architecture/state-management, world/regions, world/factions]
 ---
 
@@ -246,6 +246,7 @@ Başlangıç orduları senaryo verisidir:
   "id": "army_ottoman_1",
   "owner_id": "ottoman",
   "region_id": "bithynia",
+  "is_naval": false,
   "units": [
     { "type_id": "militia", "count": 5 },
     { "type_id": "light_cavalry", "count": 2 }
@@ -253,7 +254,7 @@ Başlangıç orduları senaryo verisidir:
 }
 ```
 
-`internal/army/loader.go` `count` değerlerini `army.Unit` listesine açar.
+`is_naval` opsiyoneldir; eksikse `false` kabul edilir. Donanmalar `is_naval: true` ile deniz region'larında tutulur. `internal/army/loader.go` `count` değerlerini `army.Unit` listesine açar.
 
 ---
 

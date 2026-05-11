@@ -122,6 +122,8 @@ type Renderer struct {
 	editOwnerDropdown          *Dropdown
 	editTerrainDropdown        *Dropdown
 	editSettlementTypeDropdown *Dropdown
+	editUnitTypeDropdown       *Dropdown
+	editSelectedUnitType       string
 	editVisualNeighborBuf      []world.RegionID
 	editBoundaryPixelBuf       []int
 	editUndoStack              []editCommand
@@ -386,6 +388,7 @@ func New(gs *state.GameState) *Renderer {
 		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
 		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
 		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
+		editUnitTypeDropdown:       NewDropdown(dropX, dropY, dropW, dropH, "Birim Tipi"),
 	}
 	r.resetCamera()
 	return r
@@ -872,7 +875,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		fc := factionColor(r.gs, a.OwnerID)
 		isSelected := pos.ArmyID == r.SelectedArmy
 		unitCount := len(a.Units)
-		if a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
+		if r.gs.Phase != state.PhaseEditMode && a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
 			unitCount = -1
 		}
 		r.drawArmyIcon(screen, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
@@ -1155,6 +1158,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	r.editOwnerDropdown.Draw(screen)
 	r.editTerrainDropdown.Draw(screen)
 	r.editSettlementTypeDropdown.Draw(screen)
+	r.editUnitTypeDropdown.Draw(screen)
 }
 
 func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
@@ -1211,11 +1215,18 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 
 	if r.SelectedArmy != "" {
 		if a := r.gs.Armies[r.SelectedArmy]; a != nil {
+			r.ensureEditSelectedUnitType(a)
 			DrawText(screen, "Ordu: "+string(a.ID), float64(x)+14, ly, FaceSmall, ColorGold)
 			ly += 18
-			DrawText(screen, "Sahip: "+a.OwnerID+"  Bolge: "+string(a.RegionID)+"  Birim: "+itoa(len(a.Units)), float64(x)+14, ly, FaceSmall, ColorGray)
+			kind := "Kara"
+			if a.IsNaval {
+				kind = "Donanma"
+			}
+			DrawText(screen, "Tip: "+kind+"  Sahip: "+a.OwnerID+"  Bolge: "+string(a.RegionID), float64(x)+14, ly, FaceSmall, ColorGray)
 			ly += 18
-			DrawText(screen, "Secili bolgeye tasima ve sahibi bolge sahibinden alma desteklenir.", float64(x)+14, ly, FaceSmall, ColorGray)
+			DrawText(screen, "Birim: "+itoa(len(a.Units))+" / "+itoa(army.MaxArmySize)+"  Secili: "+r.editSelectedUnitType, float64(x)+14, ly, FaceSmall, ColorGray)
+			ly += 18
+			r.drawEditArmyUnitCounts(screen, a, float64(x)+14, ly)
 		}
 	} else {
 		DrawText(screen, "Ordu secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
@@ -1224,9 +1235,66 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 	drawEditInspectorButton(screen, editButtonAddFaction, "Faction Ekle", true)
 	drawEditInspectorButton(screen, editButtonEditFaction, "Faction Duzenle", f != nil)
 	drawEditInspectorButton(screen, editButtonDeleteFaction, "Faction Sil", f != nil)
-	drawEditInspectorButton(screen, editButtonArmyMoveToRegion, "Orduyu Tasi", r.SelectedArmy != "" && r.editSelectedRegion != "")
+	drawEditInspectorButton(screen, editButtonAddArmy, "Ordu Ekle", r.canAddEditLandArmy(region))
+	drawEditInspectorButton(screen, editButtonAddFleet, "Donanma Ekle", r.canAddEditFleet(region))
+	drawEditInspectorButton(screen, editButtonDeleteArmy, "Ordu Sil", r.SelectedArmy != "")
+	unitTypeLabel := "Birim Tipi"
+	if r.editSelectedUnitType != "" {
+		unitTypeLabel = "Birim Tipi: " + r.editSelectedUnitType
+	}
+	drawEditInspectorButton(screen, editButtonArmyUnitType, unitTypeLabel, r.SelectedArmy != "")
+	drawEditInspectorButton(screen, editButtonArmyUnitMinus, "Birim -", r.canRemoveSelectedArmyUnit())
+	drawEditInspectorButton(screen, editButtonArmyUnitPlus, "Birim +", r.canAddSelectedArmyUnit())
 	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+	r.editUnitTypeDropdown.Draw(screen)
+}
+
+func (r *Renderer) drawEditArmyUnitCounts(screen *ebiten.Image, a *army.Army, x, y float64) {
+	if len(a.Units) == 0 {
+		DrawText(screen, "Birim yok.", x, y, FaceSmall, ColorGray)
+		return
+	}
+	var types [army.MaxArmySize]string
+	var counts [army.MaxArmySize]int
+	typeCount := 0
+	for _, unit := range a.Units {
+		found := -1
+		for i := 0; i < typeCount; i++ {
+			if types[i] == unit.TypeID {
+				found = i
+				break
+			}
+		}
+		if found >= 0 {
+			counts[found]++
+			continue
+		}
+		if typeCount < len(types) {
+			types[typeCount] = unit.TypeID
+			counts[typeCount] = 1
+			typeCount++
+		}
+	}
+	drawn := 0
+	for i := 0; i < typeCount; i++ {
+		typeID := types[i]
+		name := typeID
+		if utype := r.gs.UnitTypes[typeID]; utype != nil {
+			name = utype.NameTR
+			if name == "" {
+				name = utype.Name
+			}
+		}
+		DrawText(screen, name+": "+itoa(counts[i]), x, y+float64(drawn*16), FaceSmall, ColorGray)
+		drawn++
+		if drawn >= 4 {
+			if typeCount > drawn {
+				DrawText(screen, "...", x, y+float64(drawn*16), FaceSmall, ColorGray)
+			}
+			return
+		}
+	}
 }
 
 func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
@@ -1437,12 +1505,17 @@ const (
 	editButtonAddFaction
 	editButtonEditFaction
 	editButtonDeleteFaction
-	editButtonArmyMoveToRegion
+	editButtonAddArmy
+	editButtonAddFleet
+	editButtonDeleteArmy
+	editButtonArmyUnitType
+	editButtonArmyUnitMinus
+	editButtonArmyUnitPlus
 	editButtonArmyOwnerFromRegion
 )
 
 func editInspectorRect() (float32, float32, float32, float32) {
-	const w, h = float32(360), float32(452)
+	const w, h = float32(360), float32(580)
 	return 18, float32(ScreenHeight) - h - 18, w, h
 }
 
@@ -1503,10 +1576,20 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{right, row1, bw, bh}
 	case editButtonDeleteFaction:
 		return uiRect{left, row2, bw, bh}
-	case editButtonArmyMoveToRegion:
+	case editButtonAddArmy:
+		return uiRect{right, row2, bw, bh}
+	case editButtonAddFleet:
+		return uiRect{left, row3, bw, bh}
+	case editButtonDeleteArmy:
+		return uiRect{right, row3, bw, bh}
+	case editButtonArmyUnitType:
 		return uiRect{left, row4, bw, bh}
+	case editButtonArmyUnitMinus:
+		return uiRect{right, row4, (bw - gap) / 2, bh}
+	case editButtonArmyUnitPlus:
+		return uiRect{right + (bw+gap)/2, row4, (bw - gap) / 2, bh}
 	case editButtonArmyOwnerFromRegion:
-		return uiRect{right, row4, bw, bh}
+		return uiRect{right, row5, bw, bh}
 	default:
 		return uiRect{}
 	}
@@ -1593,6 +1676,7 @@ func (r *Renderer) updateEditDropdownPositions() {
 	r.editOwnerDropdown.SetPosition(dx, dy)
 	r.editTerrainDropdown.SetPosition(dx, dy)
 	r.editSettlementTypeDropdown.SetPosition(dx, dy)
+	r.editUnitTypeDropdown.SetPosition(dx, dy)
 }
 
 func editMinInt(a, b int) int {
@@ -1938,7 +2022,15 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
-	if !r.editOwnerDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() {
+	if r.editUnitTypeDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editUnitTypeDropdown.HitTest(fx, fy) {
+			r.editUnitTypeDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+	}
+
+	if !r.editOwnerDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() && !r.editUnitTypeDropdown.IsOpen() {
 		r.handleCamera()
 	}
 
@@ -1966,6 +2058,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.editOwnerDropdown.Close()
 		r.editTerrainDropdown.Close()
 		r.editSettlementTypeDropdown.Close()
+		r.editUnitTypeDropdown.Close()
 		if r.editDirty {
 			r.showEditExitConfirm()
 			return InputAction{}
@@ -2008,6 +2101,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 				r.editOwnerDropdown.Close()
 				r.editTerrainDropdown.Close()
 				r.editSettlementTypeDropdown.Close()
+				r.editUnitTypeDropdown.Close()
 				r.editSelectedRegion = rid
 				r.setEditFactionFromRegion(rid)
 				r.editSelectedSettlement = -1
@@ -2023,6 +2117,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editOwnerDropdown.Close()
 			r.editTerrainDropdown.Close()
 			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
 			if editCreateRegionModifierPressed() {
 				r.addRegionAt(fx, fy)
 				return InputAction{}
@@ -2035,10 +2130,12 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editOwnerDropdown.Close()
 			r.editTerrainDropdown.Close()
 			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = aid
 			if a := r.gs.Armies[aid]; a != nil {
 				r.editSelectedRegion = a.RegionID
 				r.setEditFactionFromArmy(a)
+				r.ensureEditSelectedUnitType(a)
 			}
 			r.editSelectedSettlement = -1
 			r.editDraggingSettlement = false
@@ -2052,6 +2149,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editOwnerDropdown.Close()
 			r.editTerrainDropdown.Close()
 			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
 			r.setEditFactionFromRegion(rid)
@@ -2065,6 +2163,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editOwnerDropdown.Close()
 			r.editTerrainDropdown.Close()
 			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
 			r.setEditFactionFromRegion(rid)
@@ -2077,6 +2176,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.editOwnerDropdown.Close()
 		r.editTerrainDropdown.Close()
 		r.editSettlementTypeDropdown.Close()
+		r.editUnitTypeDropdown.Close()
 		r.SelectedArmy = ""
 		r.editSelectedRegion = ""
 		r.editSelectedFaction = ""
@@ -2147,6 +2247,20 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 			return InputAction{}, false
 		}
 	}
+	if r.editUnitTypeDropdown.IsOpen() {
+		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
+			r.editSelectedUnitType = r.editUnitTypeDropdown.options[idx]
+			r.editUnitTypeDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editUnitTypeDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editUnitTypeDropdown.Close()
+			return InputAction{}, false
+		}
+	}
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
@@ -2207,6 +2321,20 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 }
 
 func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bool) {
+	if r.editUnitTypeDropdown.IsOpen() {
+		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
+			r.editSelectedUnitType = r.editUnitTypeDropdown.options[idx]
+			r.editUnitTypeDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editUnitTypeDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editUnitTypeDropdown.Close()
+			return InputAction{}, false
+		}
+	}
 	switch editDataInspectorButtonAt(fx, fy) {
 	case editButtonAddFaction:
 		r.openFactionCreateForm()
@@ -2214,8 +2342,18 @@ func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bo
 		r.openFactionEditForm()
 	case editButtonDeleteFaction:
 		r.deleteSelectedFaction()
-	case editButtonArmyMoveToRegion:
-		r.moveSelectedArmyToEditRegion()
+	case editButtonAddArmy:
+		r.addEditLandArmy()
+	case editButtonAddFleet:
+		r.addEditFleet()
+	case editButtonDeleteArmy:
+		r.deleteSelectedArmy()
+	case editButtonArmyUnitType:
+		r.toggleEditUnitTypeDropdown()
+	case editButtonArmyUnitMinus:
+		r.removeSelectedArmyUnit()
+	case editButtonArmyUnitPlus:
+		r.addSelectedArmyUnit()
 	case editButtonArmyOwnerFromRegion:
 		r.setSelectedArmyOwnerFromRegion()
 	case editButtonSaveScenario:
@@ -2231,12 +2369,8 @@ func (r *Renderer) toggleEditOwnerDropdown() {
 		return
 	}
 
-	// Position dropdown below the owner button
-	buttonRect := editInspectorButtonRect(editButtonRegionOwner)
-	dropX := float32(buttonRect[0])
-	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
-
-	r.editOwnerDropdown.SetPosition(dropX, dropY)
+	dx, dy, _, _ := editOwnerDropdownRect()
+	r.editOwnerDropdown.SetPosition(dx, dy)
 	r.editOwnerDropdown.SetOptions(editOwnerOptions(r.gs.Factions), region.OwnerID)
 	r.editOwnerDropdown.Toggle()
 }
@@ -2248,12 +2382,8 @@ func (r *Renderer) toggleEditTerrainDropdown() {
 		return
 	}
 
-	// Position dropdown below the terrain button
-	buttonRect := editInspectorButtonRect(editButtonRegionTerrain)
-	dropX := float32(buttonRect[0])
-	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
-
-	r.editTerrainDropdown.SetPosition(dropX, dropY)
+	dx, dy, _, _ := editTerrainDropdownRect()
+	r.editTerrainDropdown.SetPosition(dx, dy)
 	terrainOptions := editTerrainOptions()
 	stringOptions := make([]string, len(terrainOptions))
 	for i, t := range terrainOptions {
@@ -2269,14 +2399,10 @@ func (r *Renderer) toggleEditSettlementTypeDropdown() {
 		return
 	}
 
-	// Position dropdown below the settlement type button
-	buttonRect := editInspectorButtonRect(editButtonSettlementType)
-	dropX := float32(buttonRect[0])
-	dropY := float32(buttonRect[1] + buttonRect[3] + 4) // Below the button with small gap
-
+	dx, dy, _, _ := editSettlementTypeDropdownRect()
+	r.editSettlementTypeDropdown.SetPosition(dx, dy)
 	region := r.gs.Regions[r.editSelectedRegion]
 	settlement := region.Settlements[r.editSelectedSettlement]
-	r.editSettlementTypeDropdown.SetPosition(dropX, dropY)
 	r.editSettlementTypeDropdown.SetOptions(world.AllSettlementTypes(), string(settlement.Type))
 	r.editSettlementTypeDropdown.Toggle()
 }
@@ -3856,7 +3982,10 @@ func (r *Renderer) renameFactionRelations(oldID, newID faction.FactionID) {
 func (r *Renderer) moveSelectedArmyToEditRegion() {
 	a := r.gs.Armies[r.SelectedArmy]
 	region := r.gs.Regions[r.editSelectedRegion]
-	if a == nil || region == nil || region.IsSea || a.RegionID == region.ID {
+	if a == nil || region == nil || a.RegionID == region.ID {
+		return
+	}
+	if (a.IsNaval && !region.IsSea) || (!a.IsNaval && region.IsSea) {
 		return
 	}
 	aid := a.ID
@@ -3868,6 +3997,258 @@ func (r *Renderer) moveSelectedArmyToEditRegion() {
 		redo: func(rr *Renderer) { rr.setArmyRegion(aid, next) },
 	})
 	r.editDirty = true
+}
+
+func (r *Renderer) addEditLandArmy() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if !r.canAddEditLandArmy(region) {
+		return
+	}
+	ownerID := r.editOwnerForRegion(region)
+	unitTypeID := r.defaultEditUnitType(false)
+	if ownerID == "" || unitTypeID == "" {
+		return
+	}
+	before := r.worldSnapshot()
+	aid := nextEditArmyID(r.gs)
+	r.gs.Armies[aid] = &army.Army{
+		ID:            aid,
+		OwnerID:       ownerID,
+		RegionID:      region.ID,
+		Units:         army.MakeUnits(unitTypeID, 1),
+		MovePoints:    2,
+		MaxMovePoints: 2,
+		IsNaval:       false,
+	}
+	r.SelectedArmy = aid
+	r.editSelectedFaction = faction.FactionID(ownerID)
+	r.editSelectedUnitType = unitTypeID
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) addEditFleet() {
+	region := r.gs.Regions[r.editSelectedRegion]
+	if !r.canAddEditFleet(region) {
+		return
+	}
+	ownerID := r.editOwnerForRegion(region)
+	seaID := r.editFleetSeaRegion(region)
+	unitTypeID := r.defaultEditUnitType(true)
+	if ownerID == "" || seaID == "" || unitTypeID == "" {
+		return
+	}
+	before := r.worldSnapshot()
+	aid := nextEditArmyID(r.gs)
+	r.gs.Armies[aid] = &army.Army{
+		ID:            aid,
+		OwnerID:       ownerID,
+		RegionID:      seaID,
+		Units:         army.MakeUnits(unitTypeID, 1),
+		MovePoints:    2,
+		MaxMovePoints: 2,
+		IsNaval:       true,
+	}
+	r.SelectedArmy = aid
+	r.editSelectedFaction = faction.FactionID(ownerID)
+	r.editSelectedUnitType = unitTypeID
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) deleteSelectedArmy() {
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil {
+		return
+	}
+	before := r.worldSnapshot()
+	delete(r.gs.Armies, a.ID)
+	r.SelectedArmy = ""
+	r.editSelectedUnitType = ""
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) addSelectedArmyUnit() {
+	a := r.gs.Armies[r.SelectedArmy]
+	if !r.canAddSelectedArmyUnit() || a == nil {
+		return
+	}
+	before := r.worldSnapshot()
+	a.Units = append(a.Units, army.Unit{TypeID: r.editSelectedUnitType, CurrentHP: 100})
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) removeSelectedArmyUnit() {
+	a := r.gs.Armies[r.SelectedArmy]
+	if !r.canRemoveSelectedArmyUnit() || a == nil {
+		return
+	}
+	before := r.worldSnapshot()
+	for i := len(a.Units) - 1; i >= 0; i-- {
+		if a.Units[i].TypeID == r.editSelectedUnitType {
+			a.Units = append(a.Units[:i], a.Units[i+1:]...)
+			break
+		}
+	}
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func (r *Renderer) toggleEditUnitTypeDropdown() {
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil {
+		r.editUnitTypeDropdown.Close()
+		return
+	}
+	r.ensureEditSelectedUnitType(a)
+	dx, dy, _, _ := editOwnerDropdownRect()
+	r.editUnitTypeDropdown.SetPosition(dx, dy)
+	r.editUnitTypeDropdown.SetOptions(r.editUnitTypeOptions(a.IsNaval), r.editSelectedUnitType)
+	r.editUnitTypeDropdown.Toggle()
+}
+
+func (r *Renderer) canAddEditLandArmy(region *world.Region) bool {
+	return region != nil && !region.IsSea && !region.IsLocked && r.editOwnerForRegion(region) != "" && r.defaultEditUnitType(false) != ""
+}
+
+func (r *Renderer) canAddEditFleet(region *world.Region) bool {
+	return region != nil && !region.IsSea && r.editOwnerForRegion(region) != "" &&
+		r.selectedRegionHasPortSettlement(region) && r.editFleetSeaRegion(region) != "" && r.defaultEditUnitType(true) != ""
+}
+
+func (r *Renderer) canAddSelectedArmyUnit() bool {
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil || len(a.Units) >= army.MaxArmySize {
+		return false
+	}
+	r.ensureEditSelectedUnitType(a)
+	return r.editSelectedUnitType != "" && r.unitTypeMatchesArmy(a, r.editSelectedUnitType)
+}
+
+func (r *Renderer) canRemoveSelectedArmyUnit() bool {
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil || len(a.Units) == 0 {
+		return false
+	}
+	r.ensureEditSelectedUnitType(a)
+	for _, u := range a.Units {
+		if u.TypeID == r.editSelectedUnitType {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) ensureEditSelectedUnitType(a *army.Army) {
+	if a == nil {
+		r.editSelectedUnitType = ""
+		return
+	}
+	if r.editSelectedUnitType != "" && r.unitTypeMatchesArmy(a, r.editSelectedUnitType) {
+		return
+	}
+	if len(a.Units) > 0 && r.unitTypeMatchesArmy(a, a.Units[0].TypeID) {
+		r.editSelectedUnitType = a.Units[0].TypeID
+		return
+	}
+	r.editSelectedUnitType = r.defaultEditUnitType(a.IsNaval)
+}
+
+func (r *Renderer) editUnitTypeOptions(isNaval bool) []string {
+	options := make([]string, 0, len(r.gs.UnitTypes))
+	for typeID := range r.gs.UnitTypes {
+		if r.unitTypeIsNaval(typeID) == isNaval {
+			options = append(options, typeID)
+		}
+	}
+	sort.Strings(options)
+	return options
+}
+
+func (r *Renderer) unitTypeMatchesArmy(a *army.Army, typeID string) bool {
+	if a == nil || r.gs.UnitTypes[typeID] == nil {
+		return false
+	}
+	return r.unitTypeIsNaval(typeID) == a.IsNaval
+}
+
+func (r *Renderer) unitTypeIsNaval(typeID string) bool {
+	utype := r.gs.UnitTypes[typeID]
+	return utype != nil && utype.RequiredBldg == "port"
+}
+
+func (r *Renderer) defaultEditUnitType(isNaval bool) string {
+	preferred := "militia"
+	if isNaval {
+		preferred = "transport"
+	}
+	if r.gs.UnitTypes[preferred] != nil && r.unitTypeIsNaval(preferred) == isNaval {
+		return preferred
+	}
+	options := r.editUnitTypeOptions(isNaval)
+	if len(options) == 0 {
+		return ""
+	}
+	return options[0]
+}
+
+func (r *Renderer) selectedRegionHasPortSettlement(region *world.Region) bool {
+	if region == nil {
+		return false
+	}
+	if r.editSelectedSettlement >= 0 && r.editSelectedSettlement < len(region.Settlements) {
+		return region.Settlements[r.editSelectedSettlement].Type == world.SettlementPort
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) editFleetSeaRegion(region *world.Region) world.RegionID {
+	if region == nil {
+		return ""
+	}
+	for _, nid := range region.Neighbors {
+		if n := r.gs.Regions[nid]; n != nil && n.IsSea {
+			return n.ID
+		}
+	}
+	visual := r.worldMap.VisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
+	for _, nid := range visual {
+		if n := r.gs.Regions[nid]; n != nil && n.IsSea {
+			return n.ID
+		}
+	}
+	return ""
+}
+
+func (r *Renderer) editOwnerForRegion(region *world.Region) string {
+	if region != nil && region.OwnerID != "" {
+		return region.OwnerID
+	}
+	if r.editSelectedFaction != "" {
+		return string(r.editSelectedFaction)
+	}
+	return ""
+}
+
+func nextEditArmyID(gs *state.GameState) army.ArmyID {
+	for i := len(gs.Armies) + 1; ; i++ {
+		id := army.ArmyID("army_edit_" + itoa(i))
+		if gs.Armies[id] == nil {
+			return id
+		}
+	}
 }
 
 func (r *Renderer) setSelectedArmyOwnerFromRegion() {

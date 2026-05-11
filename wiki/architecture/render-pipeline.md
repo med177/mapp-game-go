@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-10
+last_updated: 2026-05-11
 related: [game-loop, state-management, systems/combat]
 ---
 
@@ -52,7 +52,7 @@ type Renderer struct {
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası; edit mode'da bölge merkezi işaretleri ve Voronoi debug overlay; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
-| 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir | `renderer.go` |
+| 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Bölge üretim UI — bina kartlarında kuyruktaki inşaatın kalan tur etiketi ve tekrar tıklayınca iptal, birim kartlarında üretim turu | `panel.go`, `recruit_panel.go` |
@@ -72,7 +72,7 @@ type Renderer struct {
 
 **Kaynak:** `internal/render/renderer.go:Dropdown`
 
-Edit mode'da kullanılan yeniden kullanılabilir dropdown component. Sahip, arazi ve yerleşim tipi seçimlerinde kullanılır.
+Edit mode'da kullanılan yeniden kullanılabilir dropdown component. Sahip, arazi, yerleşim tipi ve veri editöründeki birim tipi seçimlerinde kullanılır.
 
 ```go
 type Dropdown struct {
@@ -150,13 +150,13 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Shift + s
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
-Edit mode'da oyun HUD/panelleri çizilmez; harita, minimap, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; Ctrl + Alt + sol tık tıklanan kara bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme kara bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri ve seçili ordunun başlangıç region/owner alanını düzenler. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+Edit mode'da oyun HUD/panelleri çizilmez; harita, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; Ctrl + Alt + sol tık tıklanan kara bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme kara bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim tip-sayılarını düzenler. Donanma ekleme liman tipli yerleşimin kara region'ından komşu deniz region'ına `is_naval: true` ordu yerleştirir. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
 
 Voronoi debug overlay `V` ile açılıp kapanır. Overlay `WorldMap.BoundaryPixels` ile seçili veya hover bölgenin gerçek raster sınırını camgöbeği piksellerle çizer. `WorldMap.VisualNeighbors` üzerinden raster sınır komşularını çıkarır ve JSON `neighbors` listesiyle karşılaştırır: yeşil çizgi görsel+JSON komşu, kırmızı çizgi sadece görsel komşu, gri çizgi sadece JSON komşudur. Sağ üst panel hover pixel'in `RegionAt` sonucunu, senaryo koordinatını ve seçili bölgenin visual/json komşu sayısını gösterir. `Komsu Sync`, seçili region'ın görsel komşularını JSON `neighbors` listesine yazar; eklenen/çıkarılan her komşuda karşı region listesi de iki yönlü güncellenir.
 
 Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı üç seçenekle açılır: `Kaydet` önce `ActionSaveScenarioAndGoMainMenu` üretir, kayıt başarılıysa ana menüye döner; `Kaydetmeden Cik` doğrudan `ActionGoMainMenu` üretir; `Iptal` modalı kapatır.
 
-Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme region map, order ve başlangıç orduları için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
+Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme ve ordu/donanma ekleme-silme/birim sayısı değişiklikleri region map, order ve başlangıç orduları için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
 

@@ -33,6 +33,7 @@ type armySpecJSON struct {
 	ID      string          `json:"id"`
 	OwnerID string          `json:"owner_id"`
 	Region  world.RegionID  `json:"region_id"`
+	IsNaval bool            `json:"is_naval,omitempty"`
 	Units   []unitCountJSON `json:"units"`
 }
 
@@ -65,6 +66,7 @@ func LoadArmies(path string) (map[ArmyID]*Army, error) {
 			Units:         units,
 			MovePoints:    2,
 			MaxMovePoints: 2,
+			IsNaval:       s.IsNaval,
 		}
 	}
 	return armies, nil

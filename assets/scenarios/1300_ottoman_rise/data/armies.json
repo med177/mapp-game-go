@@ -126,6 +126,40 @@
     ]
   },
   {
+    "id": "army_edit_47",
+    "owner_id": "ottoman",
+    "region_id": "new_region_213",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 11
+      }
+    ]
+  },
+  {
+    "id": "army_edit_48",
+    "owner_id": "hamid_bey",
+    "region_id": "_sea_black_open_1",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 9
+      }
+    ]
+  },
+  {
+    "id": "army_edit_49",
+    "owner_id": "venice",
+    "region_id": "venice",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
     "id": "army_england_1",
     "owner_id": "england",
     "region_id": "london",
@@ -306,7 +340,7 @@
   },
   {
     "id": "army_karaman_1",
-    "owner_id": "karaman_bey",
+    "owner_id": "ilkhanate",
     "region_id": "konya",
     "units": [
       {
@@ -369,6 +403,14 @@
     "owner_id": "mentese_bey",
     "region_id": "mentese",
     "units": [
+      {
+        "type_id": "catapult",
+        "count": 6
+      },
+      {
+        "type_id": "cavalry",
+        "count": 10
+      },
       {
         "type_id": "militia",
         "count": 2
@@ -521,7 +563,7 @@
   },
   {
     "id": "army_serbian_empire_1",
-    "owner_id": "serbian_empire",
+    "owner_id": "hungarian_kingdom",
     "region_id": "serbia",
     "units": [
       {
@@ -536,7 +578,7 @@
   },
   {
     "id": "army_teke_1",
-    "owner_id": "esrefoglu_bey",
+    "owner_id": "hamid_bey",
     "region_id": "teke",
     "units": [
       {
@@ -582,7 +624,7 @@
       },
       {
         "type_id": "militia",
-        "count": 3
+        "count": 16
       }
     ]
   },
