@@ -157,4 +157,13 @@ Bu proje şu an kişisel geliştirme aşamasındadır. Hata bildirimi veya öner
 
 ## Lisans
 
-Henüz belirtilmemiştir.
+Henüz lisanslanmamıştır. Proje tamamlandığında uygun bir açık kaynak lisansı seçilecektir.
+
+---
+
+## AI Katkısı
+- Bu proje genel itibariyle AI modellerinden faydalanılarak geliştirilmektedir. Kod, veri formatları ve dokümantasyon LLM tarafından güncellenir ve sürdürülür.
+- Büyük ölçüde GPT-5.4 ve GPT-5.5 modelleri kullanılmıştır. Kodun %90'ından fazlası LLM tarafından yazılmıştır; insan katkısı esas olarak rehberlik, inceleme ve testtir.
+- LLM yapısı gereği, kodun bazı bölümleri stil veya yapısal olarak tutarsız olabilir. Ancak, genel mimari ve veri formatları tutarlı kalmaya çalışılmıştır.
+- LLM tarafından üretilen kodun doğruluğu ve güvenilirliği için kapsamlı testler yapılmıştır. Ancak, bazı hatalar veya tutarsızlıklar olabilir; bu nedenle kullanıcı geri bildirimi önemlidir.
+- Çok az yerde AI tarafından yapılamayan ya da insan müdahalesi gerektiren bölümler olabilir. Bu durumlarda, kodun geri kalanıyla uyumlu olacak şekilde manuel olarak müdahale edilmiştir.
