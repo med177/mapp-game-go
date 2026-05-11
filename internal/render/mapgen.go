@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/color"
 	_ "image/png"
@@ -115,8 +116,22 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		}
 		shapes = loadCountryShapes(shapesPath)
 	}
+
+	// region_shapes.json (paint overrides) yükle ve uygula
+	var regionPaintOverrides map[int]world.RegionID
+	if gs.ScenarioPath != "" {
+		regionPaintOverrides = loadRegionPaintOverrides(gs.ScenarioPath + "/data/region_shapes.json")
+	}
+	if len(regionPaintOverrides) > 0 {
+		gs.RegionPaintOverrides = regionPaintOverrides
+	}
+
 	wm.buildCountryShapes(gs, shapes)
 	wm.buildSeaRegions(gs)
+	// region_shapes.json paint overrides'larını kalıcı olarak uygula
+	if len(gs.RegionPaintOverrides) > 0 {
+		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
+	}
 	wm.computeRegionAnchors()
 	wm.computeSettlementAnchors(gs)
 	wm.applyOwnership(gs, "")
@@ -975,3 +990,106 @@ func maxF(a, b float64) float64 {
 
 func wcX(v int) float64 { return shapeOffX + float64(v)*shapeScaleX }
 func wcY(v int) float64 { return shapeOffY + float64(v)*shapeScaleY }
+
+// regionShapeOverridesFile region_shapes.json formatı (paint overrides)
+type regionShapeOverridesFile struct {
+	PaintOverrides map[string]world.RegionID `json:"paint_overrides"`
+}
+
+// loadRegionPaintOverrides region_shapes.json'ı yükler ve paint overrides'ı döner
+func loadRegionPaintOverrides(path string) map[int]world.RegionID {
+	if path == "" {
+		return nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+
+	var data regionShapeOverridesFile
+	if err := json.NewDecoder(f).Decode(&data); err != nil {
+		log.Printf("region_shapes.json decode hatası: %v", err)
+		return nil
+	}
+
+	// String keys'i int keys'e dönüştür
+	result := make(map[int]world.RegionID, len(data.PaintOverrides))
+	for keyStr, rid := range data.PaintOverrides {
+		var keyInt int
+		if _, err := fmt.Sscanf(keyStr, "%d", &keyInt); err == nil {
+			result[keyInt] = rid
+		}
+	}
+	return result
+}
+
+// SaveRegionPaintOverrides bölge paint overrides'ları region_shapes.json'a kaydet
+func SaveRegionPaintOverrides(path string, paintOverrides map[int]world.RegionID) error {
+	if len(paintOverrides) == 0 {
+		// Boş ise dosyayı silmek yerine boş content kaydet
+		data := regionShapeOverridesFile{PaintOverrides: make(map[string]world.RegionID)}
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		enc := json.NewEncoder(f)
+		enc.SetIndent("", "  ")
+		return enc.Encode(&data)
+	}
+
+	// String keys'e dönüştür
+	strKeys := make(map[string]world.RegionID, len(paintOverrides))
+	for keyInt, rid := range paintOverrides {
+		strKeys[fmt.Sprintf("%d", keyInt)] = rid
+	}
+
+	data := regionShapeOverridesFile{PaintOverrides: strKeys}
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	return enc.Encode(&data)
+}
+
+// applyRegionPaintOverridesToWorldMap, region_shapes.json'dan gelen paint overrides'ları
+// doğrudan WorldMap'in regionAt dizisine kalıcı olarak uygular.
+// Bu sayede normal oyunda da paint edilmiş sınırlar kalıcı olarak görünür.
+func (wm *WorldMap) applyRegionPaintOverridesToWorldMap(overrides map[int]world.RegionID) {
+	for pIdx, rid := range overrides {
+		if rid == "" {
+			continue
+		}
+		if pIdx < 0 || pIdx >= len(wm.regionAt) {
+			continue
+		}
+		newIdx, ok := wm.regionIdx[rid]
+		if !ok {
+			newIdx = uint16(len(wm.regionIDs))
+			wm.regionIDs = append(wm.regionIDs, rid)
+			wm.regionIdx[rid] = newIdx
+		}
+		oldIdx := wm.regionAt[pIdx]
+		if oldIdx == newIdx {
+			continue
+		}
+		if oldIdx != 0 {
+			oldID := wm.regionIDs[oldIdx]
+			// removePixelIndex inline: dilimden belirli bir değeri kaldır
+			oldPx := wm.regionPx[oldID]
+			for i, v := range oldPx {
+				if v == pIdx {
+					wm.regionPx[oldID] = append(oldPx[:i], oldPx[i+1:]...)
+					break
+				}
+			}
+		}
+		wm.regionAt[pIdx] = newIdx
+		wm.regionPx[rid] = append(wm.regionPx[rid], pIdx)
+	}
+}

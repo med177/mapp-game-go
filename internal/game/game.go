@@ -649,7 +649,17 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioRelations(gs); err != nil {
 		return err
 	}
-	return writeScenarioArmies(gs)
+	if err := writeScenarioArmies(gs); err != nil {
+		return err
+	}
+	// Region paint overrides'larını region_shapes.json'a kaydet
+	if gs.RegionPaintOverrides != nil {
+		path := filepath.Join(gs.ScenarioPath, "data", "region_shapes.json")
+		if err := render.SaveRegionPaintOverrides(path, gs.RegionPaintOverrides); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func writeScenarioRegions(gs *state.GameState) error {
