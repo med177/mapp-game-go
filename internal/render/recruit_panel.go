@@ -84,7 +84,7 @@ func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {
 		return false
 	}
 	r, ok := gs.Regions[rid]
-	return ok && !r.IsSea && r.OwnerID == string(gs.PlayerFactionID)
+	return ok && !r.IsSea && !r.IsLocked && r.OwnerID == string(gs.PlayerFactionID)
 }
 
 // RecruitPanelHitTest fare koordinatına denk gelen unit ID'sini döner; boş = tıklama yok.

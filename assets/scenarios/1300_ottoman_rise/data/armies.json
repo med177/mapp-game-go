@@ -184,6 +184,35 @@
     ]
   },
   {
+    "id": "army_edit_51",
+    "owner_id": "venice",
+    "region_id": "cyprus",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_52",
+    "owner_id": "venice",
+    "region_id": "_sea_black_open_1",
+    "docked_region_id": "north_cyprus",
+    "docked_settlement_id": "north_cyprus_settlement_2",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 3
+      },
+      {
+        "type_id": "warship",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "army_england_1",
     "owner_id": "england",
     "region_id": "london",

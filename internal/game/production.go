@@ -82,6 +82,14 @@ func (g *Game) applyProductionTicks() []productionResult {
 			results = append(results, result)
 			continue
 		}
+		if region.IsLocked {
+			order.TurnsLeft = 1
+			remaining = append(remaining, order)
+			result.delayed = true
+			result.reason = "bölge kilitli"
+			results = append(results, result)
+			continue
+		}
 
 		switch order.Kind {
 		case productionKindBuilding:

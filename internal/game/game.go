@@ -379,7 +379,6 @@ func (g *Game) resolveTurn() {
 	completedTechs := applyTechTicks(g.gs)
 	productionResults := g.applyProductionTicks()
 	applyReligionConversion(g.gs)
-	checkRegionUnlocks(g.gs)
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
 	applyRelationDecay(g.gs)
@@ -427,10 +426,55 @@ func (g *Game) resolveTurn() {
 	}
 
 	g.gs.AdvanceTurn()
+	unlocked := checkRegionUnlocks(g.gs)
+	g.showRegionUnlockNotifications(unlocked)
 	if g.gs.Phase != state.PhaseGameOver {
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.MarkMapDirty()
 	}
+}
+
+func (g *Game) showRegionUnlockNotifications(ids []world.RegionID) {
+	if len(ids) == 0 {
+		return
+	}
+	names := make([]string, 0, len(ids))
+	seen := make(map[world.RegionID]bool, len(ids))
+	for _, rid := range ids {
+		if seen[rid] {
+			continue
+		}
+		seen[rid] = true
+		name := string(rid)
+		if region := g.gs.Regions[rid]; region != nil {
+			if region.NameTR != "" {
+				name = region.NameTR
+			} else if region.Name != "" {
+				name = region.Name
+			}
+		}
+		names = append(names, name)
+	}
+	if len(names) == 0 {
+		return
+	}
+	sort.Strings(names)
+	msg := "Yeni bölge açıldı: " + names[0]
+	if len(names) > 1 {
+		msg = "Yeni bölgeler açıldı: " + names[0]
+		limit := len(names)
+		if limit > 3 {
+			limit = 3
+		}
+		for i := 1; i < limit; i++ {
+			msg += ", " + names[i]
+		}
+		if len(names) > limit {
+			msg += fmt.Sprintf(" +%d", len(names)-limit)
+		}
+	}
+	g.renderer.ShowCombatResult(msg)
+	g.renderer.AddEvent("🔓 " + msg)
 }
 
 // buildBuilding oyuncunun kendi bölgesine bina inşa eder.
@@ -438,6 +482,10 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	region, ok := g.gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
 		g.renderer.ShowCombatResult("Sadece kendi bölgene bina yapabilirsin!")
+		return
+	}
+	if region.IsLocked {
+		g.renderer.ShowCombatResult("Bu bölge kilitli; inşa açılamaz.")
 		return
 	}
 	b, ok := g.gs.BuildingTypes[buildingID]
@@ -592,6 +640,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioRegions(gs); err != nil {
 		return err
 	}
+	if err := writeScenarioShapes(gs); err != nil {
+		return err
+	}
 	if err := writeScenarioFactions(gs); err != nil {
 		return err
 	}
@@ -646,6 +697,57 @@ func writeScenarioFactions(gs *state.GameState) error {
 		}
 	}
 	data, err := json.MarshalIndent(factions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioShapes(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "country_shapes.json")
+	type shapeEntryJSON struct {
+		ID    string     `json:"id"`
+		Name  string     `json:"name,omitempty"`
+		Rings [][][2]int `json:"rings"`
+	}
+	type shapeFileJSON struct {
+		Shapes []shapeEntryJSON `json:"shapes"`
+	}
+
+	ids := make([]string, 0, len(gs.ShapeData.Shapes))
+	for id := range gs.ShapeData.Shapes {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+
+	entries := make([]shapeEntryJSON, 0, len(ids))
+	for _, id := range ids {
+		rings := gs.ShapeData.Shapes[id]
+		intRings := make([][][2]int, 0, len(rings))
+		for _, ring := range rings {
+			if len(ring) < 3 {
+				continue
+			}
+			intRing := make([][2]int, 0, len(ring))
+			for _, pt := range ring {
+				intRing = append(intRing, [2]int{int(pt[0] + 0.5), int(pt[1] + 0.5)})
+			}
+			if len(intRing) >= 3 {
+				intRings = append(intRings, intRing)
+			}
+		}
+		if len(intRings) == 0 {
+			continue
+		}
+		entry := shapeEntryJSON{ID: id, Rings: intRings}
+		if name := gs.ShapeData.Names[id]; name != "" {
+			entry.Name = name
+		}
+		entries = append(entries, entry)
+	}
+
+	data, err := json.MarshalIndent(shapeFileJSON{Shapes: entries}, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -902,6 +1004,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		FiredEventIDs:      map[string]bool{},
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+	gs.SyncTimedRegionUnlocks()
 	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
@@ -959,6 +1062,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 	region, ok := g.gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
 		g.renderer.ShowCombatResult("Sadece kendi bölgende asker alabilirsin!")
+		return
+	}
+	if region.IsLocked {
+		g.renderer.ShowCombatResult("Bu bölge kilitli; asker alımı yapılamaz.")
 		return
 	}
 	utype, ok := g.gs.UnitTypes[unitTypeID]
@@ -1274,7 +1381,7 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 // adjustTax oyuncunun bölgesinde vergi oranını ayarlar.
 func (g *Game) adjustTax(rid world.RegionID, delta int) {
 	r, ok := g.gs.Regions[rid]
-	if !ok || r.OwnerID != string(g.gs.PlayerFactionID) {
+	if !ok || r.OwnerID != string(g.gs.PlayerFactionID) || r.IsLocked {
 		return
 	}
 	r.TaxRate = clamp(r.TaxRate+delta, 0, 100)

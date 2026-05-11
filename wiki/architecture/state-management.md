@@ -1,8 +1,8 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-08
-related: [game-loop, render-pipeline]
+last_updated: 2026-05-11
+related: [game-loop, render-pipeline, shape-editor]
 ---
 
 # State Yönetimi
@@ -89,6 +89,8 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `AdvanceTurn()` — `Turn++`, `Month++`, Ocak geçince `Year++`
 
+`SyncTimedRegionUnlocks() []RegionID` — `is_locked=true` ve `unlock_turn>0` olan bölgelerde aktif tur `unlock_turn` değerine ulaştıysa kilidi kaldırır; save/load ve tur ilerlemesinde senkron için kullanılır
+
 `RegionsOwnedBy(fid) []*Region` — fraksiyon bölge listesi
 
 `IsEliminated(fid) bool` — bölgesi yoksa `true`
@@ -122,7 +124,7 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` alanlarını yeniden doldurur. Senaryo metadata'sı da tekrar okunur; eski kayıtta `MapConfig` yoksa `scenario.json` içindeki `map` alanı uygulanır ve `AvailableVictories` güncellenir. `ShapeData` şu an kayıttan yüklemede state'e geri yazılmıyor; takip işi [[dev/progress]] altında listeli.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` ve `ShapeData` alanlarını yeniden doldurur. Senaryo metadata'sı da tekrar okunur; eski kayıtta `MapConfig` yoksa `scenario.json` içindeki `map` alanı uygulanır ve `AvailableVictories` güncellenir. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
 
 ---
 

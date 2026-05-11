@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
 
 // techModsFor bir fraksiyonun araştırdığı teknolojilerden savaş modlarını hesaplar.
@@ -23,15 +24,12 @@ func techModsFor(gs *state.GameState, ownerID string) combat.TechMods {
 }
 
 // checkRegionUnlocks kilidi kalkan bölgeleri açar.
-// Bölge, bir ordunun komşusuna ulaşmasıyla veya UnlockTurn gelince açılır.
-func checkRegionUnlocks(gs *state.GameState) {
+// UnlockTurn atanmış bölgeler sadece zamanla açılır; UnlockTurn=0 ise keşif tipi
+// kilit sayılır ve komşuya ulaşan ordu ile açılabilir.
+func checkRegionUnlocks(gs *state.GameState) []world.RegionID {
+	unlocked := gs.SyncTimedRegionUnlocks()
 	for _, r := range gs.Regions {
-		if !r.IsLocked {
-			continue
-		}
-		// Tur bazlı kilit açma
-		if r.UnlockTurn > 0 && gs.Turn >= r.UnlockTurn {
-			r.IsLocked = false
+		if !r.IsLocked || r.UnlockTurn > 0 {
 			continue
 		}
 		// Komşuya ulaşan ordu kilidi açar
@@ -43,6 +41,7 @@ func checkRegionUnlocks(gs *state.GameState) {
 			for _, nid := range src.Neighbors {
 				if nid == r.ID {
 					r.IsLocked = false
+					unlocked = append(unlocked, r.ID)
 					break
 				}
 			}
@@ -51,6 +50,7 @@ func checkRegionUnlocks(gs *state.GameState) {
 			}
 		}
 	}
+	return unlocked
 }
 
 // applyTechTicks tüm fraksiyonların aktif araştırmalarını bir tur ilerletir.

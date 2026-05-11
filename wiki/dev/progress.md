@@ -85,16 +85,17 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Edit mode dirty exit uyarısı | ✅ | `editDirty` true iken ESC ile çıkışta ortak modal açılır; `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekleriyle kayıp veri engellenir |
 | Edit mode cleanup | ✅ | `Tip`, `Arazi`, `Sahip` butonları dropdown davranışına göre adlandırıldı; eski cycle helper'ları kaldırıldı |
 | Edit mode undo/redo | ✅ | `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo; settlement ekle/sil/taşı/bölge arası taşı, region center, owner/terrain/type/capital/name değişiklikleri küçük snapshot command'leriyle geri alınır |
-| Edit mode bölge metadata editörü | ✅ | Inspector `Harita` sekmesinde region `name_tr`, `name`, `is_locked`, `unlock_turn` ve görsel Voronoi komşularından iki yönlü `neighbors` sync düzenlenir |
-| Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır; undo/redo destekli |
+| Zaman kilitli bölge açılışı | ✅ | `is_locked=true` ve `unlock_turn>0` olan region aktif tur eşik değerine gelince otomatik açılır; unlock bildirimi gösterilir; load/save sonrası geçmiş unlock'lar senkronlanır |
+| Edit mode bölge metadata editörü | ✅ | Inspector `Harita` sekmesinde region `name_tr`, `name`, `is_locked`, `unlock_turn` ve görsel Voronoi komşularından iki yönlü `neighbors` sync düzenlenir; deniz region seçiminde inspector `Deniz Bolgesi`, yerleşim olmadığını ve pasif `Denizde Yok` buton etiketini açıkça gösterir; settlement odaklı pasif butonlar da bağlama göre `Tip Yok` / `Isim Yok` / `Silinmez` ya da `Tip Sec` / `Isim Sec` / `Sil Sec` etiketine döner; kara/deniz odak noktası renkleri edit modda ayrıdır |
+| Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; kara ve deniz region'ları seçilip merkezleri taşınabilir, çoğaltılabilir ve silinebilir; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır; undo/redo destekli |
 | Edit mode geniş veri editörü | ✅ | Inspector `Veri` sekmesinde faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç diplomasi `stance/score`, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim sayıları düzenlenir; `Birim Tipi` dropdown'ı veri sekmesinde görünür; harita üstünde tüm ordu/donanma sayıları edit mode'da gizlenmeden görünür ve açık fraksiyon renklerinde kontrastlı metinle okunur; limanda demirli filolar liman anchor'ında, denize açılanlar deniz bölgesi anchor'ında çizilir; form `Kaydet` ve Ctrl+S `regions.json`, `factions.json`, `relations.json`, `armies.json` yazar |
+| Edit mode shape paint editor | ✅ | Inspector `Shape` sekmesi seçili kara region'ın `shape_id` verisini sağ mouse drag ile boya/sil düzenler; stroke sırasında yeşil/kırmızı canlı preview overlay ve yardım paneli görünür; stroke bitince mask contour'ları yeniden ring'e çevrilir, `ShapeData` + `Region.Shape` güncellenir, undo/redo world snapshot'a shape verisini de alır; `Kaydet` artık `country_shapes.json` da yazar |
 
 ## Bilinen Sorunlar
 
 | Öncelik | Sorun | Dosya | Etki |
 |---|---|---|---|
 | 🔴 Kritik | Ekonomik zafer metni gelir diyor, kod hazineyi kontrol ediyor | `internal/victory/victory.go:83`, `internal/render/panel.go:837` | Oyuncu hedefi yanlış anlar; `TargetGoldIncome` isim/metin/kod uyumsuz |
-| 🟠 Yüksek | Save load shape datasını state'e geri yazmıyor | `internal/save/save.go` | `ShapeData` kayıt yüklemede yeniden doldurulmuyor; render şu an dosyadan tekrar okuyarak haritayı kurtarıyor ama state eksik kalıyor |
 | 🟠 Yüksek | Başlangıç zor zorluk bonusu oyuncu seçilmeden uygulanıyor | `internal/game/game.go:499` | `PlayerFactionID` boş olduğu için tüm fraksiyonlar AI bonusu alıyor; oyuncu seçilince bu bonus oyuncuda da kalabilir |
 | 🟡 Orta | Deniz taşıma mekaniği yok | `internal/game/game.go:700` | Kara ordusu denize giremiyor; nakliye gemisi üretiliyor ama ordu taşıma akışı henüz yok |
 | 🟡 Orta | Diplomasi teklifleri otomatik kabul | `internal/game/game.go` | AI kabul/red, pazarlık ve tehdit hesabı yok |
@@ -104,7 +105,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 ## Sonraki Adım Planı
 
 1. **Ekonomik zafer kararını netleştir:** `TargetGoldIncome` gerçekten tur başı gelir mi, mevcut hazine mi ölçmeli? Kod, UI ve senaryo metni aynı anlama çekilmeli.
-2. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `ShapeData`, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
+2. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
 3. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
 4. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
 5. **AI ve diplomasi derinliği:** Otomatik kabul yerine ilişki, güç dengesi, ortak düşman ve komşu tehdit algısına göre kabul/red skoru ekle.

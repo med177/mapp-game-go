@@ -2,7 +2,7 @@
 type: dev
 tags: [data, json, schema, assets]
 last_updated: 2026-05-11
-related: [architecture/state-management, world/regions, world/factions]
+related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
 # JSON Veri Formatları
@@ -260,8 +260,8 @@ Başlangıç orduları senaryo verisidir:
 
 ## country_shapes.json
 
-`tools/populate_all_shapes.py` tarafından Natural Earth `ne_10m_admin_0_countries` şekillerinden üretilir. Manuel düzenleme **yapma** — araçla yeniden üret.
+`tools/populate_all_shapes.py` tarafından Natural Earth `ne_10m_admin_0_countries` şekillerinden üretilir. Büyük toplu üretimler hâlâ araç tarafında yapılır; küçük kıyı/sınır düzeltmeleri edit mode `Shape` sekmesinden oyun içi paint editor ile yapılabilir.
 
-Format: bölge ID → poligon nokta dizisi `[[x, y], ...]` (dünya koordinatları).
+Format: `{"shapes": [{"id": string, "name": string, "rings": [[[x, y], ...]]}]}`. `rings` içindeki koordinatlar shape/scenario uzayındadır; aktif senaryonun `map.shape_offset_*` ve `map.shape_scale_*` alanlarıyla world pikseline dönüştürülür.
 
 > **Not:** Eski `assets/data/generated/country_shapes.json` yolu artık kullanılmıyor. Her senaryo kendi `data/country_shapes.json` dosyasına sahip.

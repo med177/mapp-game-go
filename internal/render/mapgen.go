@@ -107,16 +107,48 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		// log.Println("Arka plan harita resmi yüklendi")
 	}
 
-	shapesPath := ""
-	if gs.ScenarioPath != "" {
-		shapesPath = gs.ScenarioPath + "/data/country_shapes.json"
+	shapes := countryShapeMapFromState(gs.ShapeData)
+	if len(shapes) == 0 {
+		shapesPath := ""
+		if gs.ScenarioPath != "" {
+			shapesPath = gs.ScenarioPath + "/data/country_shapes.json"
+		}
+		shapes = loadCountryShapes(shapesPath)
 	}
-	wm.buildCountryShapes(gs, loadCountryShapes(shapesPath))
+	wm.buildCountryShapes(gs, shapes)
 	wm.buildSeaRegions(gs)
 	wm.computeRegionAnchors()
 	wm.computeSettlementAnchors(gs)
 	wm.applyOwnership(gs, "")
 	return wm
+}
+
+func countryShapeMapFromState(shapeData world.CountryShapeJSON) map[string]countryShape {
+	if len(shapeData.Shapes) == 0 {
+		return nil
+	}
+	shapes := make(map[string]countryShape, len(shapeData.Shapes))
+	for id, rings := range shapeData.Shapes {
+		if len(rings) == 0 {
+			continue
+		}
+		intRings := make([][][2]int, 0, len(rings))
+		for _, ring := range rings {
+			if len(ring) < 3 {
+				continue
+			}
+			intRing := make([][2]int, len(ring))
+			for i, pt := range ring {
+				intRing[i] = [2]int{int(pt[0] + 0.5), int(pt[1] + 0.5)}
+			}
+			intRings = append(intRings, intRing)
+		}
+		if len(intRings) == 0 {
+			continue
+		}
+		shapes[id] = countryShape{ID: id, Name: shapeData.Names[id], Rings: intRings}
+	}
+	return shapes
 }
 
 func applyMapConfig(gs *state.GameState) {

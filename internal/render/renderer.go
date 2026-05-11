@@ -127,6 +127,11 @@ type Renderer struct {
 	armyNeighborBuf            []world.RegionID
 	editVisualNeighborBuf      []world.RegionID
 	editBoundaryPixelBuf       []int
+	editShapeSession           *shapeEditSession
+	editShapePainting          bool
+	editShapeBrushMode         editShapeBrushMode
+	editShapeBrushRadius       int
+	editShapeStrokeBefore      *editWorldSnapshot
 	editUndoStack              []editCommand
 	editRedoStack              []editCommand
 	editRegionDragStart        *editRegionCenterSnapshot
@@ -169,6 +174,7 @@ type editWorldSnapshot struct {
 	Factions    map[faction.FactionID]*faction.Faction
 	Armies      map[army.ArmyID]*army.Army
 	Relations   map[string]*faction.Relation
+	ShapeData   world.CountryShapeJSON
 	Selected    world.RegionID
 	Settlement  int
 	Faction     faction.FactionID
@@ -229,6 +235,7 @@ type editInspectorTab int
 
 const (
 	editInspectorMap editInspectorTab = iota
+	editInspectorShape
 	editInspectorData
 )
 
@@ -385,6 +392,8 @@ func New(gs *state.GameState) *Renderer {
 		armyNeighborBuf:            make([]world.RegionID, 0, 16),
 		editVisualNeighborBuf:      make([]world.RegionID, 0, 16),
 		editBoundaryPixelBuf:       make([]int, 0, 4096),
+		editShapeBrushMode:         editShapeBrushPaint,
+		editShapeBrushRadius:       6,
 		editUndoStack:              make([]editCommand, 0, 64),
 		editRedoStack:              make([]editCommand, 0, 64),
 		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
@@ -436,6 +445,7 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 		armySheetLoaded = false
 	}
 	r.worldMap = NewWorldMap(gs)
+	r.invalidateShapeEditSession()
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
@@ -607,6 +617,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
 		r.drawEditVoronoiDebug(screen)
+		r.drawEditShapeOverlay(screen)
 	}
 
 	// 5. Ordu ikonları
@@ -1179,8 +1190,14 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 
 	DrawText(screen, "EDITOR", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
 	drawEditInspectorTab(screen, editInspectorMap, "Harita")
+	drawEditInspectorTab(screen, editInspectorShape, "Shape")
 	drawEditInspectorTab(screen, editInspectorData, "Veri")
 	ly := float64(y) + 58
+
+	if r.editInspectorTab == editInspectorShape {
+		r.drawEditShapeInspector(screen, ly)
+		return
+	}
 
 	if r.editInspectorTab == editInspectorData {
 		r.drawEditDataInspector(screen, ly)
@@ -1210,13 +1227,23 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	if name == "" {
 		name = region.Name
 	}
+	regionKind := "Kara Bolgesi"
+	ownerLabel := region.OwnerID
+	settlementLabel := itoa(len(region.Settlements))
+	if region.IsSea {
+		regionKind = "Deniz Bolgesi"
+		if ownerLabel == "" {
+			ownerLabel = "-"
+		}
+		settlementLabel = "yok"
+	}
 	DrawText(screen, name, float64(x)+14, ly, FaceSmall, ColorWhite)
 	ly += 18
 	DrawText(screen, "ID: "+string(region.ID), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Sahip: "+region.OwnerID+"   Arazi: "+string(region.Terrain), float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Tur: "+regionKind+"   Sahip: "+ownerLabel+"   Arazi: "+string(region.Terrain), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+itoa(len(region.Settlements)), float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+settlementLabel, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 22
 	DrawText(screen, "Kilit: "+editBoolLabel(region.IsLocked)+"   Acilis: "+itoa(region.UnlockTurn)+"   Komsu: "+itoa(len(region.Neighbors)), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 20
@@ -1235,6 +1262,8 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			ly += 18
 			DrawText(screen, "Ana yerlesim", float64(x)+14, ly, FaceSmall, ColorGray)
 		}
+	} else if region.IsSea {
+		DrawText(screen, "Deniz bolgesinde yerlesim yok.", float64(x)+14, ly, FaceSmall, ColorGray)
 	} else {
 		DrawText(screen, "Yerlesim secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
 	}
@@ -1248,12 +1277,26 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 
 func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
 	canAdd := region != nil && !region.IsSea
-	canRegion := region != nil && !region.IsSea
+	canRegion := region != nil
 	canSettlement := r.hasEditSelection()
-	drawEditInspectorButton(screen, editButtonAddSettlement, "Yerlesim Ekle", canAdd)
-	drawEditInspectorButton(screen, editButtonSettlementType, "Tip", canSettlement)
+	addSettlementLabel := "Yerlesim Ekle"
+	settlementTypeLabel := "Tip"
+	renameSettlementLabel := "Isim"
+	deleteSettlementLabel := "Yerlesim Sil"
+	if region != nil && region.IsSea {
+		addSettlementLabel = "Denizde Yok"
+		settlementTypeLabel = "Tip Yok"
+		renameSettlementLabel = "Isim Yok"
+		deleteSettlementLabel = "Silinmez"
+	} else if !canSettlement {
+		settlementTypeLabel = "Tip Sec"
+		renameSettlementLabel = "Isim Sec"
+		deleteSettlementLabel = "Sil Sec"
+	}
+	drawEditInspectorButton(screen, editButtonAddSettlement, addSettlementLabel, canAdd)
+	drawEditInspectorButton(screen, editButtonSettlementType, settlementTypeLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonSetCapitalSettlement, "Ana Yap", canSettlement)
-	drawEditInspectorButton(screen, editButtonRenameSettlement, "Isim", canSettlement)
+	drawEditInspectorButton(screen, editButtonRenameSettlement, renameSettlementLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
@@ -1264,7 +1307,7 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komsu Sync", canRegion)
 	drawEditInspectorButton(screen, editButtonAddRegion, "Bolge Ekle", canRegion)
 	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bolge Sil", canRegion)
-	drawEditInspectorButton(screen, editButtonDeleteSettlement, "Yerlesim Sil", canSettlement)
+	drawEditInspectorButton(screen, editButtonDeleteSettlement, deleteSettlementLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
 
@@ -1587,6 +1630,10 @@ const (
 	editButtonDeleteRegion
 	editButtonDeleteSettlement
 	editButtonSaveScenario
+	editButtonShapePaint
+	editButtonShapeErase
+	editButtonShapeBrushMinus
+	editButtonShapeBrushPlus
 	editButtonAddFaction
 	editButtonEditFaction
 	editButtonDeleteFaction
@@ -1655,6 +1702,14 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{right, row7, bw, bh}
 	case editButtonSaveScenario:
 		return uiRect{left, row8, bw*2 + gap, bh}
+	case editButtonShapePaint:
+		return uiRect{left, row1, bw, bh}
+	case editButtonShapeErase:
+		return uiRect{right, row1, bw, bh}
+	case editButtonShapeBrushMinus:
+		return uiRect{left, row2, bw, bh}
+	case editButtonShapeBrushPlus:
+		return uiRect{right, row2, bw, bh}
 	case editButtonAddFaction:
 		return uiRect{left, row1, bw, bh}
 	case editButtonEditFaction:
@@ -1682,11 +1737,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 
 func editInspectorTabRect(tab editInspectorTab) uiRect {
 	x, y, _, _ := editInspectorRect()
-	const tw, th, gap = float64(78), float64(24), float64(8)
-	left := float64(x) + 96
-	if tab == editInspectorData {
-		left += tw + gap
-	}
+	const tw, th, gap = float64(68), float64(24), float64(8)
+	left := float64(x) + 82 + float64(tab)*(tw+gap)
 	return uiRect{left, float64(y) + 9, tw, th}
 }
 
@@ -1706,6 +1758,18 @@ func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 	return editButtonNone
 }
 
+func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
+	for kind := editButtonShapePaint; kind <= editButtonShapeBrushPlus; kind++ {
+		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+			return kind
+		}
+	}
+	if uiRectHit(mx, my, editInspectorButtonRect(editButtonSaveScenario)) {
+		return editButtonSaveScenario
+	}
+	return editButtonNone
+}
+
 func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
 	for kind := editButtonAddFaction; kind <= editButtonArmyOwnerFromRegion; kind++ {
 		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
@@ -1720,8 +1784,12 @@ func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
 
 func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButton {
 	if uiRectHit(mx, my, editInspectorTabRect(editInspectorMap)) ||
+		uiRectHit(mx, my, editInspectorTabRect(editInspectorShape)) ||
 		uiRectHit(mx, my, editInspectorTabRect(editInspectorData)) {
 		return editButtonSaveScenario
+	}
+	if r.editInspectorTab == editInspectorShape {
+		return editShapeInspectorButtonAt(mx, my)
 	}
 	if r.editInspectorTab == editInspectorData {
 		return editDataInspectorButtonAt(mx, my)
@@ -1773,13 +1841,20 @@ func editMinInt(a, b int) int {
 
 func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 	for _, region := range r.gs.Regions {
-		if region == nil || region.IsSea || region.IsLocked {
+		if region == nil || region.IsLocked {
 			continue
 		}
 		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 		col := color.RGBA{80, 220, 255, 190}
+		if region.IsSea {
+			col = color.RGBA{120, 210, 255, 210}
+		}
 		if region.ID == r.editSelectedRegion && r.editSelectedSettlement < 0 {
-			col = color.RGBA{255, 190, 45, 240}
+			if region.IsSea {
+				col = color.RGBA{70, 235, 255, 245}
+			} else {
+				col = color.RGBA{255, 190, 45, 240}
+			}
 		}
 		x, y := float32(sx), float32(sy)
 		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
@@ -1798,7 +1873,7 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 		rid = r.editRegionAt(float64(mx), float64(my))
 	}
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		r.drawEditVoronoiLegend(screen, "", nil)
 		return
 	}
@@ -1810,7 +1885,7 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 	cx, cy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 	for _, nrid := range r.editVisualNeighborBuf {
 		neighbor := r.gs.Regions[nrid]
-		if neighbor == nil || neighbor.IsSea {
+		if neighbor == nil {
 			continue
 		}
 		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
@@ -1828,7 +1903,7 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 			continue
 		}
 		neighbor := r.gs.Regions[nrid]
-		if neighbor == nil || neighbor.IsSea {
+		if neighbor == nil {
 			continue
 		}
 		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
@@ -2082,6 +2157,8 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	fx, fy := float64(mx), float64(my)
 	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 	leftJustPressed := r.mouseJustPressed(ebiten.MouseButtonLeft)
+	rightPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
+	rightJustPressed := r.mouseJustPressed(ebiten.MouseButtonRight)
 
 	if r.editOwnerDropdown.IsOpen() {
 		_, wheelY := ebiten.Wheel()
@@ -2117,6 +2194,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 
 	if !r.editOwnerDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() && !r.editUnitTypeDropdown.IsOpen() {
 		r.handleCamera()
+	}
+
+	if r.editShapePainting && !rightPressed {
+		r.finishShapePaintStroke()
+		return InputAction{}
 	}
 
 	if r.keyJustPressed(ebiten.KeyF11) {
@@ -2170,6 +2252,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if leftJustPressed {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
 			return action
+		}
+	}
+
+	if r.editInspectorTab == editInspectorShape {
+		if rightJustPressed && r.beginShapePaintStroke(fx, fy) {
+			return InputAction{}
+		}
+		if r.editShapePainting {
+			r.continueShapePaintStroke(fx, fy)
+			return InputAction{}
 		}
 	}
 
@@ -2353,9 +2445,16 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.editInspectorTab = editInspectorMap
 		return InputAction{}, true
 	}
+	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorShape)) {
+		r.editInspectorTab = editInspectorShape
+		return InputAction{}, true
+	}
 	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorData)) {
 		r.editInspectorTab = editInspectorData
 		return InputAction{}, true
+	}
+	if r.editInspectorTab == editInspectorShape {
+		return r.handleEditShapeInspectorClick(fx, fy)
 	}
 	if r.editInspectorTab == editInspectorData {
 		return r.handleEditDataInspectorClick(fx, fy)
@@ -2449,7 +2548,7 @@ func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bo
 
 func (r *Renderer) toggleEditOwnerDropdown() {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || region == nil {
 		r.editOwnerDropdown.Close()
 		return
 	}
@@ -2462,7 +2561,7 @@ func (r *Renderer) toggleEditOwnerDropdown() {
 
 func (r *Renderer) toggleEditTerrainDropdown() {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || region == nil {
 		r.editTerrainDropdown.Close()
 		return
 	}
@@ -2632,7 +2731,7 @@ func (r *Renderer) editSettlementAt(fx, fy float64) (world.RegionID, int, bool) 
 func (r *Renderer) editRegionAt(fx, fy float64) world.RegionID {
 	wx, wy := r.screenToWorld(fx, fy)
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
-	if region, ok := r.gs.Regions[rid]; ok && region != nil && !region.IsSea {
+	if region, ok := r.gs.Regions[rid]; ok && region != nil {
 		return rid
 	}
 	return ""
@@ -2653,7 +2752,7 @@ func (r *Renderer) editArmyAt(fx, fy float64) (army.ArmyID, bool) {
 
 func (r *Renderer) beginRegionCenterDrag(rid world.RegionID) {
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		r.editRegionDragStart = nil
 		return
 	}
@@ -2671,7 +2770,7 @@ func (r *Renderer) finishRegionCenterDrag() {
 		return
 	}
 	region := r.gs.Regions[start.Region]
-	if region == nil || region.IsSea || (region.WorldX == start.X && region.WorldY == start.Y) {
+	if region == nil || (region.WorldX == start.X && region.WorldY == start.Y) {
 		return
 	}
 	begin := *start
@@ -2688,7 +2787,7 @@ func (r *Renderer) finishRegionCenterDrag() {
 
 func (r *Renderer) restoreRegionCenter(snapshot editRegionCenterSnapshot) {
 	region := r.gs.Regions[snapshot.Region]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	region.WorldX = snapshot.X
@@ -2752,7 +2851,7 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 
 func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || region == nil {
 		return
 	}
 	wx, wy := r.screenToWorld(fx, fy)
@@ -2846,7 +2945,7 @@ func (r *Renderer) addRegionAt(fx, fy float64) {
 
 func (r *Renderer) addRegionNearSelected() {
 	source := r.gs.Regions[r.editSelectedRegion]
-	if source == nil || source.IsSea {
+	if source == nil {
 		return
 	}
 	r.addRegionFromSource(source.ID, source.WorldX+12, source.WorldY+12)
@@ -2854,7 +2953,7 @@ func (r *Renderer) addRegionNearSelected() {
 
 func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 	source := r.gs.Regions[sourceID]
-	if source == nil || source.IsSea {
+	if source == nil {
 		return
 	}
 	before := r.worldSnapshot()
@@ -2869,7 +2968,7 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 		WorldX:           x,
 		WorldY:           y,
 		ShapeID:          source.ShapeID,
-		IsSea:            false,
+		IsSea:            source.IsSea,
 		IsLocked:         source.IsLocked,
 		UnlockTurn:       source.UnlockTurn,
 		BaseGoldIncome:   source.BaseGoldIncome,
@@ -2887,7 +2986,11 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 		Buildings:        cloneStringSlice(source.Buildings),
 	}
 	if region.Terrain == "" {
-		region.Terrain = world.TerrainPlain
+		if region.IsSea {
+			region.Terrain = world.TerrainSea
+		} else {
+			region.Terrain = world.TerrainPlain
+		}
 	}
 	if region.Satisfaction == 0 {
 		region.Satisfaction = 70
@@ -2910,7 +3013,7 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 
 func (r *Renderer) deleteSelectedRegion() {
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	before := r.worldSnapshot()
@@ -2958,7 +3061,7 @@ func (r *Renderer) setSelectedSettlementCapital() {
 
 func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || region == nil {
 		return
 	}
 	if region.Terrain == terrain {
@@ -3005,7 +3108,7 @@ func (r *Renderer) setSelectedSettlementType(typ string) {
 
 func (r *Renderer) setSelectedRegionOwner(ownerID string) {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || region == nil {
 		return
 	}
 	if region.OwnerID == ownerID {
@@ -3059,7 +3162,7 @@ func (r *Renderer) setRegionName(rid world.RegionID, name string) {
 
 func (r *Renderer) toggleSelectedRegionLock() {
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	rid := region.ID
@@ -3074,7 +3177,7 @@ func (r *Renderer) toggleSelectedRegionLock() {
 
 func (r *Renderer) setRegionLockValue(rid world.RegionID, locked bool) {
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	region.IsLocked = locked
@@ -3084,7 +3187,7 @@ func (r *Renderer) setRegionLockValue(rid world.RegionID, locked bool) {
 
 func (r *Renderer) adjustSelectedRegionUnlockTurn(delta int) {
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	old := region.UnlockTurn
@@ -3106,7 +3209,7 @@ func (r *Renderer) adjustSelectedRegionUnlockTurn(delta int) {
 
 func (r *Renderer) setRegionUnlockTurn(rid world.RegionID, turn int) {
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	region.UnlockTurn = turn
@@ -3126,7 +3229,7 @@ func (r *Renderer) setSettlementTypeValue(rid world.RegionID, index int, typ wor
 
 func (r *Renderer) setRegionTerrainValue(rid world.RegionID, terrain world.TerrainType) {
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	region.Terrain = terrain
@@ -3136,7 +3239,7 @@ func (r *Renderer) setRegionTerrainValue(rid world.RegionID, terrain world.Terra
 
 func (r *Renderer) setRegionOwnerValue(rid world.RegionID, ownerID string) {
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	region.OwnerID = ownerID
@@ -3148,7 +3251,7 @@ func (r *Renderer) setRegionOwnerValue(rid world.RegionID, ownerID string) {
 
 func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region == nil || region.IsSea {
+	if region == nil {
 		return
 	}
 	visual := r.worldMap.VisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
@@ -3183,6 +3286,7 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		Factions:    cloneFactionMap(r.gs.Factions),
 		Armies:      cloneArmyMap(r.gs.Armies),
 		Relations:   cloneRelationMap(r.gs.Relations),
+		ShapeData:   cloneCountryShapeJSON(r.gs.ShapeData),
 		Selected:    r.editSelectedRegion,
 		Settlement:  r.editSelectedSettlement,
 		Faction:     r.editSelectedFaction,
@@ -3204,6 +3308,7 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
+	r.gs.ShapeData = cloneCountryShapeJSON(snapshot.ShapeData)
 	r.editSelectedRegion = snapshot.Selected
 	r.editSelectedSettlement = snapshot.Settlement
 	r.editSelectedFaction = snapshot.Faction
@@ -3211,6 +3316,8 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.PlayerFactionID = snapshot.Player
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
+	r.editShapePainting = false
+	r.editShapeStrokeBefore = nil
 	r.editRenaming = false
 	r.rebuildEditWorldMap()
 }
@@ -4407,6 +4514,7 @@ func editBoolLabel(value bool) string {
 }
 
 func (r *Renderer) rebuildEditWorldMap() {
+	r.invalidateShapeEditSession()
 	r.worldMap = NewWorldMap(r.gs)
 }
 

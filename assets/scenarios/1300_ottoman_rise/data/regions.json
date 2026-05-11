@@ -48,10 +48,10 @@
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
+      "_shore_atlantic_1",
       "london",
       "mercia",
-      "wales",
-      "_sea_atlantic"
+      "wales"
     ],
     "world_x": 440,
     "world_y": 285,
@@ -90,10 +90,10 @@
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
+      "_shore_atlantic_2",
       "london",
       "mercia",
-      "yorkshire",
-      "_sea_north"
+      "yorkshire"
     ],
     "world_x": 520,
     "world_y": 230,
@@ -177,10 +177,10 @@
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
-      "mercia",
+      "_shore_atlantic_2",
       "east_anglia",
       "lancashire",
-      "_sea_north"
+      "mercia"
     ],
     "world_x": 485,
     "world_y": 195,
@@ -436,11 +436,12 @@
     "terrain": "coast",
     "owner_id": "france",
     "neighbors": [
-      "paris",
-      "brittany",
+      "_shore_atlantic_1",
+      "_shore_atlantic_2",
       "anjou",
+      "brittany",
       "london",
-      "_sea_north"
+      "paris"
     ],
     "world_x": 480,
     "world_y": 295,
@@ -479,9 +480,10 @@
     "terrain": "coast",
     "owner_id": "france",
     "neighbors": [
-      "normandy",
+      "_sea_biscay",
+      "_shore_atlantic_1",
       "anjou",
-      "_sea_atlantic"
+      "normandy"
     ],
     "world_x": 445,
     "world_y": 320,
@@ -782,8 +784,8 @@
     "terrain": "plain",
     "owner_id": "hre",
     "neighbors": [
-      "_sea_baltic",
       "brandenburg",
+      "new_region_226",
       "pomerania",
       "thuringia",
       "westphalia"
@@ -869,11 +871,11 @@
     "terrain": "forest",
     "owner_id": "hre",
     "neighbors": [
-      "_sea_baltic",
       "_sea_north",
       "denmark",
       "friesland",
       "holland",
+      "new_region_226",
       "palatinate",
       "saxony",
       "thuringia"
@@ -1006,8 +1008,7 @@
     "terrain": "coast",
     "owner_id": "denmark_kingdom",
     "neighbors": [
-      "_sea_baltic",
-      "_sea_north",
+      "new_region_226",
       "westphalia"
     ],
     "world_x": 674,
@@ -1094,6 +1095,7 @@
     "terrain": "mountain",
     "owner_id": "savoy_county",
     "neighbors": [
+      "_sea_biscay",
       "anjou",
       "languedoc",
       "navarre",
@@ -1138,6 +1140,7 @@
     "neighbors": [
       "_sea_atlantic",
       "_sea_atlantic_open_2",
+      "_sea_atlantic_open_3",
       "_shore_atlantic_0",
       "castile",
       "granada"
@@ -1179,7 +1182,7 @@
     "terrain": "plain",
     "owner_id": "castile_kingdom",
     "neighbors": [
-      "_sea_atlantic",
+      "_sea_atlantic_open_3",
       "_sea_biscay",
       "_shore_atlantic_0",
       "aragon",
@@ -1266,8 +1269,8 @@
     "terrain": "coast",
     "owner_id": "venice",
     "neighbors": [
-      "_sea_adriatic",
       "ferrara",
+      "new_region_225",
       "slovenia",
       "styria",
       "tyrol",
@@ -1324,10 +1327,10 @@
     "terrain": "plain",
     "owner_id": "papal_states_f",
     "neighbors": [
-      "_sea_adriatic",
       "_sea_mediterranean_open_4",
       "ferrara",
       "naples",
+      "new_region_225",
       "siena"
     ],
     "world_x": 752,
@@ -1384,6 +1387,7 @@
       "_sea_adriatic",
       "_sea_mediterranean_open_1",
       "_sea_mediterranean_open_4",
+      "new_region_225",
       "papal_states",
       "puglia"
     ],
@@ -1928,7 +1932,6 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "_sea_adriatic",
       "_sea_ligurian",
       "_sea_med_west",
       "_sea_mediterranean_open_1",
@@ -1937,6 +1940,7 @@
       "_shore_mediterranean_0",
       "_shore_mediterranean_1",
       "algiers",
+      "new_region_224",
       "tripolitania"
     ],
     "world_x": 672,
@@ -1976,9 +1980,8 @@
     "terrain": "plain",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
-      "_sea_ionian",
       "_sea_med_east",
+      "_sea_mediterranean_open_0",
       "_sea_mediterranean_open_2",
       "_sea_tyrrhenian",
       "_shore_mediterranean_1",
@@ -1986,6 +1989,7 @@
       "_shore_mediterranean_3",
       "algiers",
       "egypt",
+      "new_region_224",
       "tunis"
     ],
     "world_x": 836,
@@ -2025,9 +2029,10 @@
     "terrain": "coast",
     "owner_id": "athena_duk",
     "neighbors": [
+      "_sea_adriatic",
       "_sea_aegean",
-      "_shore_mediterranean_2",
       "morea",
+      "new_region_225",
       "thessaly"
     ],
     "world_x": 964,
@@ -2084,18 +2089,18 @@
       "_sea_marmara",
       "aydinoglu",
       "bithynia",
-      "new_region_219",
+      "new_region_213",
       "nicomedia"
     ],
-    "world_x": 1050,
-    "world_y": 469,
+    "world_x": 1054,
+    "world_y": 475,
     "shape_id": "TUR",
     "settlements": [
       {
         "id": "constantinople_settlement_3",
         "name_tr": "Bursa",
-        "x": 1046,
-        "y": 468,
+        "x": 1047,
+        "y": 470,
         "type": "city",
         "is_capital": true
       },
@@ -2172,8 +2177,10 @@
     "terrain": "coast",
     "owner_id": "genoa",
     "neighbors": [
-      "ukraine",
-      "_sea_black"
+      "_sea_azov",
+      "_sea_black",
+      "_sea_black_open_3",
+      "ukraine"
     ],
     "world_x": 1162,
     "world_y": 374,
@@ -2204,7 +2211,7 @@
     ],
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 0,
+    "unlock_turn": 10,
     "base_gold_income": 35,
     "base_grain_output": 30,
     "base_iron_output": 0,
@@ -2226,15 +2233,12 @@
     "terrain": "forest",
     "owner_id": "russia",
     "neighbors": [
-      "_sea_azov",
-      "belarus",
-      "kiev",
       "nizhny_novgorod",
       "novgorod",
       "ukraine"
     ],
-    "world_x": 1256,
-    "world_y": 202,
+    "world_x": 1269,
+    "world_y": 162,
     "shape_id": "RUS",
     "settlements": [
       {
@@ -2407,7 +2411,6 @@
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
-      "_sea_aegean",
       "_sea_black_open_1",
       "_sea_med_east",
       "_sea_mediterranean_open_0",
@@ -2468,9 +2471,8 @@
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
-      "_sea_med_east",
-      "jordan",
-      "israel"
+      "israel",
+      "jordan"
     ],
     "world_x": 1181,
     "world_y": 628,
@@ -2516,7 +2518,6 @@
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
-      "_sea_black_open_1",
       "aleppo",
       "israel",
       "jordan",
@@ -2524,7 +2525,7 @@
       "mosul"
     ],
     "world_x": 1207,
-    "world_y": 604,
+    "world_y": 607,
     "shape_id": "SYR",
     "settlements": [
       {
@@ -2617,8 +2618,6 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "_sea_caspian",
-      "_sea_caspian_open_0",
-      "_shore_caspian_0",
       "persia_south",
       "persia_west"
     ],
@@ -2660,7 +2659,6 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "_sea_caspian",
-      "_sea_caspian_open_1",
       "_sea_persian_open_1",
       "akkoyunlu",
       "armenia",
@@ -2755,9 +2753,7 @@
       "_sea_persian",
       "_sea_persian_open_1",
       "_sea_red",
-      "_sea_red_open_0",
       "_sea_red_open_1",
-      "_shore_red_0",
       "basra",
       "iraq",
       "jordan",
@@ -2803,10 +2799,10 @@
     "terrain": "forest",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
-      "_sea_adriatic",
       "croatia",
       "dalmatia",
       "hungary",
+      "new_region_225",
       "styria",
       "venice"
     ],
@@ -2937,6 +2933,7 @@
       "albania",
       "hum",
       "kosovo",
+      "new_region_225",
       "rascia"
     ],
     "world_x": 855,
@@ -3023,7 +3020,8 @@
       "epirus",
       "kosovo",
       "macedonia",
-      "montenegro"
+      "montenegro",
+      "new_region_225"
     ],
     "world_x": 862,
     "world_y": 447,
@@ -3150,22 +3148,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic_open_2",
+      "_sea_atlantic_open_1",
       "_sea_atlantic_open_3",
-      "_sea_biscay",
-      "_sea_irish",
-      "_sea_med_west",
-      "_sea_north",
-      "_shore_atlantic_0",
-      "brittany",
-      "castile",
       "granada",
       "morocco",
-      "portugal",
-      "wessex"
+      "portugal"
     ],
     "world_x": 280,
-    "world_y": 490,
+    "world_y": 586,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3190,19 +3180,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic",
+      "_sea_atlantic_open_3",
       "_sea_atlantic_open_4",
-      "_sea_atlantic_open_5",
-      "_sea_north",
       "_shore_atlantic_1",
-      "_shore_atlantic_2",
       "ireland",
       "lancashire",
       "scotland",
       "wales"
     ],
-    "world_x": 400,
-    "world_y": 240,
+    "world_x": 372,
+    "world_y": 224,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3227,23 +3214,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic",
-      "_sea_atlantic_open_0",
       "_sea_atlantic_open_5",
-      "_sea_baltic",
-      "_sea_irish",
       "_sea_norwegian",
       "_shore_atlantic_2",
-      "denmark",
-      "east_anglia",
-      "estonia",
       "friesland",
       "holland",
-      "normandy",
-      "norway",
-      "sweden",
-      "westphalia",
-      "yorkshire"
+      "new_region_226",
+      "westphalia"
     ],
     "world_x": 555,
     "world_y": 195,
@@ -3265,29 +3242,60 @@
     "buildings": null
   },
   {
+    "id": "new_region_226",
+    "name": "New Region 218",
+    "name_tr": "Yeni Bolge 218",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "_sea_baltic",
+      "_sea_north",
+      "_sea_norwegian",
+      "denmark",
+      "norway",
+      "pomerania",
+      "saxony",
+      "sweden",
+      "westphalia"
+    ],
+    "world_x": 647,
+    "world_y": 138,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "_sea_baltic",
     "name": "Baltic Sea",
     "name_tr": "Baltık Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_north",
-      "denmark",
-      "estonia",
-      "friesland",
       "konigsberg",
       "latvia",
       "lithuania",
-      "novgorod",
+      "new_region_226",
+      "new_region_227",
       "poland",
       "pomerania",
-      "saxony",
       "silesia",
-      "sweden",
-      "westphalia"
+      "sweden"
     ],
-    "world_x": 845,
-    "world_y": 140,
+    "world_x": 857,
+    "world_y": 155,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3300,6 +3308,38 @@
     "trade_capacity": 0,
     "satisfaction": 100,
     "tax_rate": 0,
+    "population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_227",
+    "name": "New Region 219",
+    "name_tr": "Yeni Bolge 219",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "_sea_baltic",
+      "estonia",
+      "latvia",
+      "novgorod",
+      "sweden"
+    ],
+    "world_x": 887,
+    "world_y": 122,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
     "population": 0,
     "religion": "",
     "active_event_id": "",
@@ -3321,8 +3361,6 @@
       "_sea_tyrrhenian",
       "corsica",
       "_sea_ligurian",
-      "_sea_atlantic",
-      "_sea_adriatic",
       "sardinia"
     ],
     "world_x": 570,
@@ -3351,29 +3389,21 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
-      "_sea_ligurian",
-      "_sea_med_east",
-      "_sea_med_west",
-      "_sea_mediterranean_open_4",
-      "_sea_tyrrhenian",
       "_shore_mediterranean_1",
+      "_shore_mediterranean_2",
       "albania",
-      "dalmatia",
       "epirus",
-      "ferrara",
-      "hum",
+      "greece",
       "montenegro",
+      "morea",
       "naples",
-      "papal_states",
+      "new_region_224",
+      "new_region_225",
       "puglia",
-      "sicily",
-      "slovenia",
-      "tunis",
-      "venice"
+      "thessaly"
     ],
-    "world_x": 770,
-    "world_y": 540,
+    "world_x": 849,
+    "world_y": 523,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3392,23 +3422,93 @@
     "buildings": null
   },
   {
+    "id": "new_region_225",
+    "name": "New Region 222",
+    "name_tr": "Yeni Bolge 222",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "_sea_adriatic",
+      "_shore_mediterranean_1",
+      "albania",
+      "dalmatia",
+      "epirus",
+      "ferrara",
+      "greece",
+      "hum",
+      "montenegro",
+      "morea",
+      "naples",
+      "papal_states",
+      "puglia",
+      "slovenia",
+      "thessaly",
+      "venice"
+    ],
+    "world_x": 766,
+    "world_y": 405,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_224",
+    "name": "New Region 221",
+    "name_tr": "Yeni Bolge 221",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "_sea_adriatic",
+      "_sea_mediterranean_open_1",
+      "_shore_mediterranean_1",
+      "tripolitania",
+      "tunis"
+    ],
+    "world_x": 781,
+    "world_y": 573,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "_sea_med_east",
     "name": "Eastern Mediterranean",
     "name_tr": "Doğu Akdeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_ionian",
       "_sea_med_west",
       "egypt",
       "rhodes",
-      "_sea_mediterranean_open_0",
-      "palestine",
       "_shore_mediterranean_3",
       "_sea_red",
-      "_sea_adriatic",
-      "tripolitania",
-      "_sea_aegean"
+      "tripolitania"
     ],
     "world_x": 1010,
     "world_y": 700,
@@ -3436,30 +3536,23 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_adriatic",
-      "_sea_black",
-      "_sea_marmara",
-      "_sea_med_east",
       "_sea_mediterranean_open_0",
       "_shore_mediterranean_2",
-      "_shore_mediterranean_3",
       "aydinoglu",
       "chalcidice",
       "crete",
-      "egypt",
       "greece",
       "morea",
       "new_region_201",
       "new_region_203",
+      "new_region_211",
       "new_region_220",
       "new_region_221",
       "new_region_223",
-      "rhodes",
-      "thessaly",
-      "tripolitania"
+      "thessaly"
     ],
-    "world_x": 975,
-    "world_y": 615,
+    "world_x": 981,
+    "world_y": 508,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3484,17 +3577,15 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
+      "_sea_azov",
       "_sea_black_open_0",
-      "_sea_black_open_1",
       "_sea_black_open_2",
-      "_sea_marmara",
       "crimea",
       "new_region_208",
       "paphlagonia"
     ],
-    "world_x": 1145,
-    "world_y": 455,
+    "world_x": 1138,
+    "world_y": 415,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3519,16 +3610,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_shore_red_0",
-      "_sea_red_open_0",
       "_sea_red_open_1",
       "egypt",
       "_sea_med_east",
-      "_sea_persian",
       "hejaz"
     ],
-    "world_x": 1200,
-    "world_y": 755,
+    "world_x": 1199,
+    "world_y": 760,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3553,14 +3641,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_caspian_open_0",
       "_sea_caspian_open_1",
-      "_shore_caspian_0",
-      "nizhny_novgorod",
+      "azerbaijan",
       "persia_north",
       "persia_west"
     ],
-    "world_x": 1565,
+    "world_x": 1522,
     "world_y": 500,
     "is_sea": true,
     "is_locked": false,
@@ -3588,17 +3674,14 @@
     "neighbors": [
       "_sea_persian_open_0",
       "_sea_persian_open_1",
-      "_sea_red",
-      "_shore_persian_0",
       "bahrain",
       "hejaz",
-      "kuwait",
       "persia_south",
       "qatar",
       "uae"
     ],
-    "world_x": 1515,
-    "world_y": 755,
+    "world_x": 1530,
+    "world_y": 740,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3669,8 +3752,7 @@
     "owner_id": "teutonic_order",
     "neighbors": [
       "latvia",
-      "_sea_baltic",
-      "_sea_north",
+      "new_region_227",
       "novgorod"
     ],
     "world_x": 992,
@@ -3714,6 +3796,7 @@
       "belarus",
       "estonia",
       "lithuania",
+      "new_region_227",
       "novgorod"
     ],
     "world_x": 973,
@@ -3758,7 +3841,6 @@
       "latvia",
       "lithuania",
       "mazovia",
-      "moscow",
       "novgorod"
     ],
     "world_x": 1036,
@@ -3798,12 +3880,12 @@
     "terrain": "mountain",
     "owner_id": "denmark_kingdom",
     "neighbors": [
-      "_sea_north",
       "_sea_norwegian",
+      "new_region_226",
       "sweden"
     ],
-    "world_x": 663,
-    "world_y": 70,
+    "world_x": 665,
+    "world_y": 98,
     "shape_id": "NOR",
     "settlements": [
       {
@@ -3840,11 +3922,12 @@
     "owner_id": "denmark_kingdom",
     "neighbors": [
       "_sea_baltic",
-      "_sea_north",
+      "new_region_226",
+      "new_region_227",
       "norway"
     ],
-    "world_x": 782,
-    "world_y": 78,
+    "world_x": 806,
+    "world_y": 101,
     "shape_id": "SWE",
     "settlements": [
       {
@@ -3994,7 +4077,6 @@
     "neighbors": [
       "_sea_black_open_2",
       "_sea_marmara",
-      "constantinople",
       "thrace"
     ],
     "world_x": 1055,
@@ -4068,6 +4150,7 @@
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
+      "_sea_caspian",
       "_sea_caspian_open_1",
       "armenia",
       "georgia",
@@ -4155,6 +4238,7 @@
     "owner_id": "mamluk",
     "neighbors": [
       "_sea_black_open_1",
+      "aleppo",
       "israel",
       "syria"
     ],
@@ -4195,7 +4279,7 @@
     "terrain": "desert",
     "owner_id": "",
     "neighbors": [
-      "_sea_persian",
+      "_sea_persian_open_1",
       "basra",
       "hejaz",
       "uae"
@@ -4412,7 +4496,9 @@
       "_sea_black_open_3",
       "crimea",
       "kiev",
-      "moscow"
+      "moscow",
+      "nizhny_novgorod",
+      "novgorod"
     ],
     "world_x": 1178,
     "world_y": 291,
@@ -4494,7 +4580,6 @@
     "terrain": "coast",
     "owner_id": "aragon",
     "neighbors": [
-      "_sea_adriatic",
       "_sea_mediterranean_open_1"
     ],
     "world_x": 759,
@@ -4534,7 +4619,9 @@
     "terrain": "mountain",
     "owner_id": "aragon",
     "neighbors": [
-      "_sea_med_west"
+      "_sea_med_west",
+      "_sea_mediterranean_open_1",
+      "_sea_mediterranean_open_4"
     ],
     "world_x": 656,
     "world_y": 473,
@@ -4573,9 +4660,10 @@
     "terrain": "mountain",
     "owner_id": "genoa",
     "neighbors": [
-      "provence",
+      "_sea_med_west",
+      "_sea_mediterranean_open_4",
       "languedoc",
-      "_sea_med_west"
+      "provence"
     ],
     "world_x": 657,
     "world_y": 434,
@@ -4614,7 +4702,9 @@
     "terrain": "coast",
     "owner_id": "venice",
     "neighbors": [
-      "_sea_aegean"
+      "_sea_aegean",
+      "_sea_mediterranean_open_0",
+      "_shore_mediterranean_2"
     ],
     "world_x": 973,
     "world_y": 566,
@@ -4700,8 +4790,8 @@
       "palestine",
       "syria"
     ],
-    "world_x": 1175,
-    "world_y": 638,
+    "world_x": 1170,
+    "world_y": 635,
     "shape_id": "ISR",
     "settlements": [
       {
@@ -4827,8 +4917,9 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "qatar",
-      "_sea_persian"
+      "_sea_persian",
+      "_sea_persian_open_1",
+      "qatar"
     ],
     "world_x": 1486,
     "world_y": 740,
@@ -4865,7 +4956,7 @@
     "name": "North Cyprus",
     "name_tr": "Kuzey Kıbrıs",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "venice",
     "neighbors": [
       "_sea_black_open_1",
       "cyprus"
@@ -4881,6 +4972,13 @@
         "y": 565,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "north_cyprus_settlement_2",
+        "name_tr": "Kuzey Kıbrıs 2",
+        "x": 1161,
+        "y": 553,
+        "type": "port"
       }
     ],
     "is_sea": false,
@@ -4907,8 +5005,8 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
-      "_sea_med_east"
+      "_sea_med_east",
+      "_sea_mediterranean_open_0"
     ],
     "world_x": 1034,
     "world_y": 547,
@@ -5123,7 +5221,6 @@
     "owner_id": "aydin_bey",
     "neighbors": [
       "_sea_aegean",
-      "_sea_mediterranean_open_0",
       "new_region_201",
       "new_region_211",
       "new_region_212"
@@ -5172,6 +5269,7 @@
     "terrain": "coast",
     "owner_id": "mentese_bey",
     "neighbors": [
+      "_sea_aegean",
       "_sea_mediterranean_open_0",
       "mentese",
       "new_region_203",
@@ -5628,6 +5726,7 @@
       "_sea_baltic",
       "brandenburg",
       "konigsberg",
+      "new_region_226",
       "saxony",
       "silesia"
     ],
@@ -5991,7 +6090,7 @@
       "ramazanoglu",
       "teke"
     ],
-    "world_x": 1140,
+    "world_x": 1138,
     "world_y": 525,
     "shape_id": "TUR",
     "settlements": [
@@ -6061,6 +6160,7 @@
     "terrain": "plain",
     "owner_id": "canik_bey",
     "neighbors": [
+      "_sea_black_open_0",
       "_shore_black_0",
       "candaroglu",
       "new_region_204",
@@ -6517,7 +6617,6 @@
     "terrain": "plain",
     "owner_id": "hre",
     "neighbors": [
-      "_sea_baltic",
       "_sea_north",
       "denmark",
       "holland",
@@ -6733,8 +6832,8 @@
     "terrain": "plain",
     "owner_id": "papal_states_f",
     "neighbors": [
-      "_sea_adriatic",
       "florence",
+      "new_region_225",
       "papal_states",
       "siena",
       "venice",
@@ -6820,7 +6919,8 @@
     "owner_id": "naples_kingdom",
     "neighbors": [
       "_sea_adriatic",
-      "naples"
+      "naples",
+      "new_region_225"
     ],
     "world_x": 847,
     "world_y": 437,
@@ -6903,10 +7003,10 @@
     "terrain": "coast",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
-      "_sea_adriatic",
       "bosnia",
       "croatia",
       "hum",
+      "new_region_225",
       "slovenia"
     ],
     "world_x": 792,
@@ -6946,10 +7046,10 @@
     "terrain": "mountain",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
-      "_sea_adriatic",
       "bosnia",
       "dalmatia",
       "montenegro",
+      "new_region_225",
       "rascia"
     ],
     "world_x": 848,
@@ -6990,10 +7090,10 @@
     "owner_id": "epir",
     "neighbors": [
       "_sea_adriatic",
-      "_shore_mediterranean_2",
       "albania",
       "macedonia",
       "new_region_223",
+      "new_region_225",
       "thessaly"
     ],
     "world_x": 882,
@@ -7033,12 +7133,13 @@
     "terrain": "plain",
     "owner_id": "epir",
     "neighbors": [
+      "_sea_adriatic",
       "_sea_aegean",
-      "_shore_mediterranean_2",
       "epirus",
       "greece",
       "morea",
-      "new_region_223"
+      "new_region_223",
+      "new_region_225"
     ],
     "world_x": 911,
     "world_y": 481,
@@ -7111,9 +7212,11 @@
     "terrain": "coast",
     "owner_id": "achaea_principality",
     "neighbors": [
+      "_sea_adriatic",
       "_sea_aegean",
       "_shore_mediterranean_2",
       "greece",
+      "new_region_225",
       "thessaly"
     ],
     "world_x": 905,
@@ -7200,11 +7303,10 @@
       "constantinople",
       "germiyan",
       "new_region_212",
-      "new_region_213",
-      "nicomedia"
+      "new_region_213"
     ],
-    "world_x": 1050,
-    "world_y": 474,
+    "world_x": 1054,
+    "world_y": 476,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -7320,13 +7422,12 @@
     "terrain": "plain",
     "owner_id": "golden_horde",
     "neighbors": [
-      "_sea_black_open_2",
       "_sea_black_open_3",
       "belarus",
       "dobruja",
       "galicia",
       "moldova",
-      "moscow",
+      "novgorod",
       "ukraine"
     ],
     "world_x": 1092,
@@ -7369,6 +7470,7 @@
       "_sea_black_open_1",
       "akkoyunlu",
       "dulkadir",
+      "lebanon",
       "mosul",
       "new_region_207",
       "ramazanoglu",
@@ -7543,13 +7645,12 @@
     "neighbors": [
       "_sea_black_open_2",
       "_sea_marmara",
-      "bithynia",
       "chrysopolis",
       "constantinople",
       "new_region_213"
     ],
     "world_x": 1075,
-    "world_y": 456,
+    "world_y": 457,
     "shape_id": "TUR",
     "settlements": [
       {
@@ -7594,6 +7695,7 @@
     "neighbors": [
       "bithynia",
       "chrysopolis",
+      "constantinople",
       "germiyan",
       "new_region_209",
       "nicomedia"
@@ -7626,7 +7728,6 @@
     "owner_id": "candar_bey",
     "neighbors": [
       "_sea_black",
-      "_sea_black_open_2",
       "chrysopolis",
       "new_region_208",
       "new_region_215"
@@ -7777,14 +7878,16 @@
     "terrain": "forest",
     "owner_id": "novgorod_rep",
     "neighbors": [
-      "_sea_baltic",
       "belarus",
       "estonia",
+      "kiev",
       "latvia",
-      "moscow"
+      "moscow",
+      "new_region_227",
+      "ukraine"
     ],
-    "world_x": 1068,
-    "world_y": 92,
+    "world_x": 1090,
+    "world_y": 113,
     "shape_id": "RUS",
     "settlements": [
       {
@@ -7821,14 +7924,12 @@
     "owner_id": "russia",
     "neighbors": [
       "_sea_azov",
-      "_sea_caspian",
-      "_sea_caspian_open_0",
       "_sea_caspian_open_1",
       "_shore_black_0",
-      "_shore_caspian_0",
       "azerbaijan",
       "georgia",
-      "moscow"
+      "moscow",
+      "ukraine"
     ],
     "world_x": 1400,
     "world_y": 288,
@@ -7943,8 +8044,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic_open_1",
-      "_sea_north",
       "_shore_atlantic_1",
       "_shore_atlantic_2",
       "flanders"
@@ -7975,10 +8074,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic_open_0",
-      "_sea_biscay",
-      "_shore_atlantic_0",
-      "_shore_atlantic_1",
+      "_sea_atlantic",
+      "_sea_mediterranean_open_1",
+      "_sea_mediterranean_open_4",
       "algiers",
       "aragon",
       "granada",
@@ -7988,8 +8086,8 @@
       "navarre",
       "provence"
     ],
-    "world_x": 502,
-    "world_y": 465,
+    "world_x": 516,
+    "world_y": 491,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8014,9 +8112,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic",
-      "_sea_atlantic_open_3",
-      "_sea_biscay",
       "_shore_atlantic_0",
       "portugal"
     ],
@@ -8046,14 +8141,17 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic_open_2",
+      "_sea_atlantic",
+      "_sea_atlantic_open_4",
+      "_sea_biscay",
       "_sea_irish",
-      "_shore_atlantic_0",
       "_shore_atlantic_1",
-      "ireland"
+      "castile",
+      "ireland",
+      "portugal"
     ],
-    "world_x": 262,
-    "world_y": 308,
+    "world_x": 281,
+    "world_y": 304,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8081,12 +8179,12 @@
       "_sea_atlantic_open_3",
       "_sea_atlantic_open_5",
       "_sea_irish",
-      "_shore_atlantic_1",
+      "_sea_norwegian",
       "ireland",
       "scotland"
     ],
-    "world_x": 321,
-    "world_y": 151,
+    "world_x": 301,
+    "world_y": 126,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8111,7 +8209,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_irish",
+      "_sea_atlantic_open_4",
       "_sea_north",
       "_sea_norwegian",
       "_shore_atlantic_2",
@@ -8144,10 +8242,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic",
       "_sea_atlantic_open_2",
-      "_sea_atlantic_open_3",
-      "_sea_biscay",
       "castile",
       "portugal"
     ],
@@ -8177,14 +8272,17 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_atlantic_open_3",
       "_sea_biscay",
       "_sea_irish",
-      "_shore_atlantic_0",
       "_shore_atlantic_2",
-      "wales"
+      "brittany",
+      "normandy",
+      "wales",
+      "wessex"
     ],
-    "world_x": 413,
-    "world_y": 318,
+    "world_x": 416,
+    "world_y": 293,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8210,18 +8308,20 @@
     "owner_id": "",
     "neighbors": [
       "_sea_atlantic_open_5",
-      "_sea_irish",
       "_sea_north",
       "_shore_atlantic_1",
+      "east_anglia",
       "flanders",
       "holland",
       "lancashire",
       "london",
       "mercia",
-      "paris"
+      "normandy",
+      "paris",
+      "yorkshire"
     ],
-    "world_x": 492,
-    "world_y": 244,
+    "world_x": 519,
+    "world_y": 240,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8247,16 +8347,17 @@
     "owner_id": "",
     "neighbors": [
       "_sea_aegean",
-      "_sea_med_east",
+      "_sea_black_open_1",
       "_shore_mediterranean_2",
-      "_shore_mediterranean_3",
+      "crete",
       "egypt",
       "mentese",
-      "new_region_203",
-      "new_region_211"
+      "new_region_211",
+      "rhodes",
+      "tripolitania"
     ],
-    "world_x": 1024,
-    "world_y": 622,
+    "world_x": 1027,
+    "world_y": 609,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8281,17 +8382,17 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_ionian",
-      "_sea_med_east",
-      "_shore_mediterranean_2",
-      "_shore_mediterranean_3",
+      "_sea_atlantic_open_1",
+      "_sea_mediterranean_open_4",
       "algiers",
       "naples",
+      "new_region_224",
+      "sardinia",
       "sicily",
       "tunis"
     ],
-    "world_x": 927,
-    "world_y": 789,
+    "world_x": 694,
+    "world_y": 503,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8316,7 +8417,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_ionian",
       "_sea_mediterranean_open_3",
       "_sea_tyrrhenian",
       "_shore_mediterranean_0",
@@ -8382,16 +8482,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_adriatic",
-      "_sea_ligurian",
-      "_sea_tyrrhenian",
-      "_shore_mediterranean_1",
+      "_sea_atlantic_open_1",
+      "_sea_mediterranean_open_1",
+      "corsica",
       "florence",
       "genoa",
       "milan",
       "naples",
       "papal_states",
       "provence",
+      "sardinia",
       "siena"
     ],
     "world_x": 734,
@@ -8489,9 +8589,10 @@
     "owner_id": "",
     "neighbors": [
       "_sea_adriatic",
-      "_sea_ionian",
       "_sea_tyrrhenian",
       "_shore_mediterranean_2",
+      "new_region_224",
+      "new_region_225",
       "tripolitania",
       "tunis"
     ],
@@ -8521,18 +8622,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_adriatic",
       "_sea_aegean",
-      "_sea_ionian",
+      "_sea_mediterranean_open_0",
       "_shore_mediterranean_1",
-      "_shore_mediterranean_3",
-      "epirus",
-      "greece",
+      "crete",
       "morea",
-      "thessaly",
       "tripolitania"
     ],
-    "world_x": 895,
-    "world_y": 619,
+    "world_x": 906,
+    "world_y": 594,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8557,10 +8656,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
-      "_sea_ionian",
       "_sea_med_east",
-      "_shore_mediterranean_2",
       "egypt",
       "tripolitania"
     ],
@@ -8592,13 +8688,14 @@
     "neighbors": [
       "_sea_azov",
       "_sea_black",
-      "_sea_black_open_1",
+      "_sea_black_open_3",
       "_shore_black_0",
       "candaroglu",
+      "eretna",
       "new_region_208"
     ],
-    "world_x": 1215,
-    "world_y": 455,
+    "world_x": 1211,
+    "world_y": 429,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8623,10 +8720,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_black",
-      "_sea_black_open_0",
-      "_sea_black_open_2",
-      "_sea_marmara",
+      "_sea_mediterranean_open_0",
       "aleppo",
       "cyprus",
       "egypt",
@@ -8636,11 +8730,10 @@
       "new_region_206",
       "north_cyprus",
       "ramazanoglu",
-      "syria",
       "teke"
     ],
-    "world_x": 1145,
-    "world_y": 525,
+    "world_x": 1121,
+    "world_y": 582,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8666,20 +8759,16 @@
     "owner_id": "",
     "neighbors": [
       "_sea_black",
-      "_sea_black_open_1",
       "_sea_black_open_3",
-      "_sea_marmara",
       "bulgaria",
       "chrysopolis",
       "dobruja",
-      "kiev",
       "new_region_219",
       "nicomedia",
-      "paphlagonia",
       "thrace"
     ],
-    "world_x": 1075,
-    "world_y": 455,
+    "world_x": 1042,
+    "world_y": 421,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8708,11 +8797,12 @@
       "_sea_black",
       "_sea_black_open_0",
       "_sea_black_open_2",
+      "crimea",
       "kiev",
       "ukraine"
     ],
-    "world_x": 1145,
-    "world_y": 385,
+    "world_x": 1118,
+    "world_y": 380,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8747,39 +8837,8 @@
       "nizhny_novgorod",
       "trebizond"
     ],
-    "world_x": 1245,
-    "world_y": 455,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "_sea_red_open_0",
-    "name": "Red Open 1",
-    "name_tr": "Red Acik 1",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_red",
-      "_sea_red_open_1",
-      "_shore_red_0",
-      "hejaz"
-    ],
-    "world_x": 1270,
-    "world_y": 755,
+    "world_x": 1265,
+    "world_y": 433,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8805,46 +8864,13 @@
     "owner_id": "",
     "neighbors": [
       "_sea_red",
-      "_sea_red_open_0",
-      "_shore_red_0",
       "egypt",
       "hejaz",
       "israel",
       "jordan"
     ],
-    "world_x": 1130,
-    "world_y": 755,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "_shore_red_0",
-    "name": "Red Sea Shore",
-    "name_tr": "Kızıldeniz Kiyisi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_red",
-      "_sea_red_open_0",
-      "_sea_red_open_1",
-      "hejaz"
-    ],
-    "world_x": 1300,
-    "world_y": 755,
+    "world_x": 1167,
+    "world_y": 716,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8870,13 +8896,12 @@
     "owner_id": "",
     "neighbors": [
       "_sea_persian",
-      "_sea_persian_open_1",
       "_shore_persian_0",
       "persia_south",
       "uae"
     ],
-    "world_x": 1585,
-    "world_y": 755,
+    "world_x": 1593,
+    "world_y": 731,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8902,15 +8927,15 @@
     "owner_id": "",
     "neighbors": [
       "_sea_persian",
-      "_sea_persian_open_0",
-      "_shore_persian_0",
+      "bahrain",
       "basra",
       "hejaz",
+      "kuwait",
       "persia_south",
       "persia_west"
     ],
-    "world_x": 1445,
-    "world_y": 755,
+    "world_x": 1479,
+    "world_y": 704,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8935,46 +8960,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_persian",
       "_sea_persian_open_0",
-      "_sea_persian_open_1",
       "persia_south",
       "uae"
     ],
-    "world_x": 1615,
-    "world_y": 755,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "_sea_caspian_open_0",
-    "name": "Caspian Open 1",
-    "name_tr": "Caspian Acik 1",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_caspian",
-      "_sea_caspian_open_1",
-      "_shore_caspian_0",
-      "nizhny_novgorod",
-      "persia_north"
-    ],
-    "world_x": 1635,
-    "world_y": 500,
+    "world_x": 1660,
+    "world_y": 784,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9000,46 +8991,11 @@
     "owner_id": "",
     "neighbors": [
       "_sea_caspian",
-      "_sea_caspian_open_0",
-      "_shore_caspian_0",
       "azerbaijan",
-      "nizhny_novgorod",
-      "persia_west"
+      "nizhny_novgorod"
     ],
-    "world_x": 1495,
-    "world_y": 500,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "_shore_caspian_0",
-    "name": "Caspian Sea Shore",
-    "name_tr": "Hazar Denizi Kiyisi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_caspian",
-      "_sea_caspian_open_0",
-      "_sea_caspian_open_1",
-      "nizhny_novgorod",
-      "persia_north"
-    ],
-    "world_x": 1665,
-    "world_y": 500,
+    "world_x": 1485,
+    "world_y": 410,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9064,7 +9020,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_adriatic",
       "_sea_ligurian",
       "_sea_mediterranean_open_3",
       "_shore_mediterranean_0",
@@ -9073,38 +9028,6 @@
     ],
     "world_x": 710,
     "world_y": 620,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "_sea_ionian",
-    "name": "Ionian Sea",
-    "name_tr": "Ionian Denizi",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "_sea_aegean",
-      "_shore_mediterranean_1",
-      "_shore_mediterranean_2",
-      "_shore_mediterranean_3",
-      "tripolitania"
-    ],
-    "world_x": 890,
-    "world_y": 685,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9162,11 +9085,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_aegean",
-      "_sea_black",
-      "_sea_black_open_1",
-      "_sea_black_open_2",
-      "_sea_black_open_3",
       "aydinoglu",
       "constantinople",
       "new_region_219",
@@ -9174,8 +9092,8 @@
       "nicomedia",
       "thrace"
     ],
-    "world_x": 1083,
-    "world_y": 475,
+    "world_x": 1040,
+    "world_y": 462,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9204,7 +9122,7 @@
       "_sea_black_open_0",
       "_sea_black_open_3",
       "_shore_black_0",
-      "moscow",
+      "crimea",
       "nizhny_novgorod",
       "ukraine"
     ],
@@ -9234,17 +9152,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_atlantic",
-      "_sea_atlantic_open_1",
-      "_sea_atlantic_open_2",
-      "_shore_atlantic_0",
+      "_sea_atlantic_open_3",
       "_shore_atlantic_1",
       "anjou",
+      "brittany",
       "castile",
-      "navarre"
+      "navarre",
+      "savoy"
     ],
-    "world_x": 388,
-    "world_y": 425,
+    "world_x": 392,
+    "world_y": 394,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9269,14 +9186,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_atlantic_open_4",
       "_sea_atlantic_open_5",
       "_sea_irish",
       "_sea_north",
       "_shore_atlantic_2",
+      "new_region_226",
       "norway"
     ],
-    "world_x": 510,
-    "world_y": 85,
+    "world_x": 517,
+    "world_y": 95,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,

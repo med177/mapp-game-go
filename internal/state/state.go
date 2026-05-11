@@ -144,6 +144,22 @@ func (s *GameState) AdvanceTurn() {
 	}
 }
 
+// SyncTimedRegionUnlocks aktif tur UnlockTurn'a ulaşmış kilitli bölgeleri açar.
+// UnlockTurn=0 olan bölgeler zaman bazlı değil, başka sistemlerle açılır.
+func (s *GameState) SyncTimedRegionUnlocks() []world.RegionID {
+	unlocked := make([]world.RegionID, 0)
+	for _, r := range s.Regions {
+		if r == nil || !r.IsLocked || r.UnlockTurn <= 0 {
+			continue
+		}
+		if s.Turn >= r.UnlockTurn {
+			r.IsLocked = false
+			unlocked = append(unlocked, r.ID)
+		}
+	}
+	return unlocked
+}
+
 // RegionsOwnedBy bir fraksiyonun sahip olduğu bölge listesini döner.
 func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	var result []*world.Region

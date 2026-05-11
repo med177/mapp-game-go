@@ -976,7 +976,17 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	}
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
-	DrawText(screen, "Sahip: "+ownerName, lx, ly, FaceSmall, ownerCol)
+	ownerLine := "Sahip: " + ownerName
+	if region.IsLocked {
+		if region.UnlockTurn > 0 {
+			ownerLine += "  🔒 Tur " + itoa(region.UnlockTurn)
+		} else {
+			ownerLine += "  🔒 Kilitli"
+		}
+	} else if region.UnlockTurn > 0 {
+		ownerLine += "  🔓 Açık"
+	}
+	DrawText(screen, ownerLine, lx, ly, FaceSmall, ownerCol)
 	ly += 18
 
 	var stypeStr string
@@ -1011,7 +1021,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	DrawText(screen, "Vergi: %"+itoa(region.TaxRate), lx, ly, FaceSmall, ColorGray)
 	taxBarW := sepW - (statBarX - float32(lx))
-	if region.OwnerID == string(gs.PlayerFactionID) {
+	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
 		dec, inc := regionTaxButtonRects(gs)
 		taxBarW = dec[0] - statBarX - 8
 		drawBar(screen, statBarX, float32(ly)+1, taxBarW, 9, float64(region.TaxRate)/100,
@@ -1621,7 +1631,7 @@ func armyPanelCloseHit(mx, my float64) bool {
 
 func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
 		return 0
 	}
 	dec, inc := regionTaxButtonRects(gs)
@@ -1661,7 +1671,7 @@ func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 		return ""
 	}
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
 		return ""
 	}
 	px := infoPanelX()
@@ -1977,6 +1987,14 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	// Deniz bölgesi (italik vurgu)
 	DrawText(screen, "Deniz Bölgesi", lx, ly, FaceSmall, color.RGBA{120, 160, 200, 200})
 	ly += 18
+	if region.IsLocked {
+		lockLine := "Durum: Kilitli"
+		if region.UnlockTurn > 0 {
+			lockLine += "  │  Açılış Turu: " + itoa(region.UnlockTurn)
+		}
+		DrawText(screen, lockLine, lx, ly, FaceSmall, color.RGBA{220, 150, 90, 220})
+		ly += 18
+	}
 
 	sepW := pw - float32(panelPad*2)
 	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)

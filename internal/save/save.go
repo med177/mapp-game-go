@@ -12,6 +12,7 @@ import (
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
 
 const saveDir = "saves"
@@ -163,6 +164,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 		return nil, fmt.Errorf("kayıt dosyası okunamadı: %w", err)
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+	gs.SyncTimedRegionUnlocks()
 	applyScenarioMetadata(&gs)
 
 	dp := func(f string) string { return gs.ScenarioPath + "/data/" + f }
@@ -184,6 +186,12 @@ func loadFromPath(path string) (*state.GameState, error) {
 		return nil, err
 	}
 	gs.TechTypes = techTypes
+
+	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), gs.Regions)
+	if err != nil {
+		return nil, err
+	}
+	gs.ShapeData = shapeData
 	return &gs, nil
 }
 

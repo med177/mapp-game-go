@@ -52,6 +52,7 @@ type ShapeBounds struct {
 // CountryShapeJSON işlenmiş harita poligon verilerini tutar.
 type CountryShapeJSON struct {
 	Shapes map[string][][][2]float32
+	Names  map[string]string
 	Bounds ShapeBounds
 }
 
@@ -71,10 +72,15 @@ func LoadCountryShapes(path string, regions map[RegionID]*Region) (CountryShapeJ
 
 	// id → rings map'i oluştur
 	shapeMap := make(map[string][][][2]float32, len(file.Shapes))
+	nameMap := make(map[string]string, len(file.Shapes))
 	for _, entry := range file.Shapes {
 		shapeMap[entry.ID] = entry.Rings
+		if entry.Name != "" {
+			nameMap[entry.ID] = entry.Name
+		}
 	}
 	result.Shapes = shapeMap
+	result.Names = nameMap
 
 	// Tüm koordinatların sınırlarını hesapla
 	first := true
