@@ -533,9 +533,8 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 	for _, r := range seaRegs {
 		ridx := wm.regionIdx[r.ID]
 		seed := wm.findSeaSeed(int(shapeOffX+float64(r.WorldX)*shapeScaleX), int(shapeOffY+float64(r.WorldY)*shapeScaleY))
-		if seed < 0 {
-			seed = wm.findSeaSeed(r.WorldX, r.WorldY)
-		}
+		// Eğer ilk (scaled) aramada seed bulunamazsa, r.WorldX (saf koordinat) vererek pixel araması
+		// yapmak hatalı olduğu için o fallback kaldırıldı. Zaten aşağıda uyarı logu basılıyor.
 		if seed < 0 {
 			log.Printf("Deniz bölgesi seed pikseli bulunamadı: %s (wx=%d, wy=%d)",
 				r.ID, r.WorldX, r.WorldY)
@@ -727,13 +726,18 @@ func (wm *WorldMap) nearestRegionPixel(rid world.RegionID, wx, wy int) (int, int
 }
 
 // nearestShapeRegion piksel koordinatına en yakın bölgeyi döner.
-// WorldX/WorldY orijinal 1920×1080 uzayında olduğundan MapScale ile çarpılır.
+// Her bölgenin haritadaki Voronoi renk alanı "saf koordinat mesafesine" (world_x, world_y) göre belirlenir.
 func nearestShapeRegion(regions []*world.Region, px, py int) *world.Region {
 	best := regions[0]
-	bestDist := int64(1<<63 - 1)
+	bestDist := 1e30 // float64 için yeterince büyük bir başlangıç değeri
+
+	// Ekran pikselinin merkezini (px+0.5, py+0.5) saf koordinat uzayına çeviriyoruz
+	pureX := (float64(px) + 0.5 - shapeOffX) / shapeScaleX
+	pureY := (float64(py) + 0.5 - shapeOffY) / shapeScaleY
+
 	for _, r := range regions {
-		dx := int64(px) - int64(shapeOffX+float64(r.WorldX)*shapeScaleX)
-		dy := int64(py) - int64(shapeOffY+float64(r.WorldY)*shapeScaleY)
+		dx := pureX - float64(r.WorldX)
+		dy := pureY - float64(r.WorldY)
 		dist := dx*dx + dy*dy
 		if dist < bestDist {
 			best = r
@@ -822,17 +826,40 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 			if curRegion == nil || curRegion.IsSea {
 				continue
 			}
-			isBorder := wm.regionAt[pIdx+1] != curIdx ||
-				wm.regionAt[pIdx+WorldW] != curIdx
-			if !isBorder {
+
+			rightIdx := wm.regionAt[pIdx+1]
+			downIdx := wm.regionAt[pIdx+WorldW]
+			leftIdx := wm.regionAt[pIdx-1]
+			upIdx := wm.regionAt[pIdx-WorldW]
+
+			// Eğer seçili bölgeysek, dört komşudan biri bile farklıysa tam kapalı sarı border (highlight) çiziyoruz.
+			if cur == selected {
+				if rightIdx != curIdx || leftIdx != curIdx || downIdx != curIdx || upIdx != curIdx {
+					wm.setOverlayPixel(pIdx, 255, 222, 72, 245)
+				}
 				continue
 			}
 
-			if cur == selected {
-				wm.setOverlayPixel(pIdx, 255, 222, 72, 245)
-				continue
+			// Seçili olmayan bölgeler için standart border mantığı:
+			// Komşu karalarla aramızda 1 px çizgi olması için sadece Sağ ve Alt'a border atıyoruz.
+			isBorder := rightIdx != curIdx || downIdx != curIdx
+
+			// Ancak Sol veya Üst komşumuz deniz ise, deniz bölgeleri border ÇİZMEDİĞİ için,
+			// kıyı şeridinin eksik kalmaması adına o yönlerde de border çizmeliyiz.
+			if !isBorder && leftIdx != curIdx {
+				if leftIdx == 0 || gs.Regions[wm.regionIDs[leftIdx]].IsSea {
+					isBorder = true
+				}
 			}
-			wm.setOverlayPixel(pIdx, 35, 22, 10, 170)
+			if !isBorder && upIdx != curIdx {
+				if upIdx == 0 || gs.Regions[wm.regionIDs[upIdx]].IsSea {
+					isBorder = true
+				}
+			}
+
+			if isBorder {
+				wm.setOverlayPixel(pIdx, 35, 22, 10, 170)
+			}
 		}
 	}
 }
