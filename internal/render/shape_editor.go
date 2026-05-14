@@ -885,9 +885,14 @@ func mapTurnScore(turn int) int {
 }
 
 func simplifyIntRing(ring [][2]int) [][2]int {
+	// Bölge boyama çizgisi için: daha köşeli olmayan (daha az noktalı) polygon üret.
+	// Buradaki sadeleştirme, testlerin beklediği temel şekil doğruluğunu bozmayacak şekilde
+	// daha "hafif" tutulur: yakın nokta/çok küçük dönüşleri sadece kollineer çıktıda azalt.
 	if len(ring) < 3 {
 		return ring
 	}
+
+	// 1) Tam kollineer noktaları at (mevcut davranış)
 	changed := true
 	for changed && len(ring) >= 3 {
 		changed = false
@@ -904,6 +909,33 @@ func simplifyIntRing(ring [][2]int) [][2]int {
 		}
 		ring = out
 	}
+
+	// 2) Ek sadeleştirme: ardışık çok yakın noktaları at.
+	// Not: Bölge boyamasında hedef, koordinat sayısını belirgin düşürmek olduğu için burada threshold agresif tutulur.
+	const minKeepDist2 = 4 // daha agresif ~2px
+	for {
+		if len(ring) < 3 {
+			return ring
+		}
+		changed = false
+		out := make([][2]int, 0, len(ring))
+		for i := range ring {
+			prev := ring[(i+len(ring)-1)%len(ring)]
+			cur := ring[i]
+			dx := cur[0] - prev[0]
+			dy := cur[1] - prev[1]
+			if dx*dx+dy*dy <= minKeepDist2 {
+				changed = true
+				continue
+			}
+			out = append(out, cur)
+		}
+		ring = out
+		if !changed {
+			break
+		}
+	}
+
 	return ring
 }
 
