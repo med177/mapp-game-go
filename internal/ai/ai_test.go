@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -153,6 +154,96 @@ func TestAIMoveArmyDisembarksFromFleet(t *testing.T) {
 	}
 	if _, ok := gs.Armies["army_ai_1_11"]; !ok {
 		t.Fatalf("çıkarma sonrası yeni kara ordusu bekleniyordu")
+	}
+}
+
+func TestAIMoveArmyDisembarksToEnemyCoastWhenAtWar(t *testing.T) {
+	rand.Seed(1)
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     40,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":      {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"enemy_land"}},
+			"enemy_land": {ID: "enemy_land", OwnerID: "player", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_fleet": {
+				ID:            "ai_fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -70, Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"elite":     {ID: "elite", Embarkable: true, Attack: 120, Defense: 90, Morale: 90},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+
+	moveArmy(gs, gs.Armies["ai_fleet"])
+
+	if gs.Regions["enemy_land"].OwnerID != "ai_1" {
+		t.Fatalf("savaşta düşman kıyı çıkarma sonrası sahiplik değişmeli, got=%s", gs.Regions["enemy_land"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_ai_1_41"]; !ok {
+		t.Fatalf("savaşta düşman kıyı çıkarma sonrası kara ordusu oluşmalı")
+	}
+}
+
+func TestAIMoveArmyDoesNotDisembarkToEnemyCoastAtPeace(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     50,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":      {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"enemy_land"}},
+			"enemy_land": {ID: "enemy_land", OwnerID: "player", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_fleet": {
+				ID:            "ai_fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: 5, Stance: faction.StancePeace},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+
+	moveArmy(gs, gs.Armies["ai_fleet"])
+
+	if gs.Regions["enemy_land"].OwnerID != "player" {
+		t.Fatalf("barışta düşman kıyıya çıkarma olmamalı, got=%s", gs.Regions["enemy_land"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_ai_1_51"]; ok {
+		t.Fatalf("barışta düşman kıyıya yeni kara ordusu oluşmamalı")
+	}
+	if len(gs.Armies["ai_fleet"].EmbarkedUnits) != 1 {
+		t.Fatalf("barışta çıkarma olmamalı, cargo korunmalı")
 	}
 }
 

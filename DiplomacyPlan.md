@@ -92,28 +92,61 @@ Bu plan diplomasi planından bağımsızdır ve yalnızca denizden düşman kıy
 
 ## Uygulama Adımları
 
-1. Çıkarma geçerlilik kurallarını netleştir.
+1. ✅ Çıkarma geçerlilik kurallarını netleştir.
    - Filo `EmbarkedUnits` taşıyor olmalı.
    - Hedef kara bölgesi filo ile komşu deniz bölgesinde olmalı.
    - Hedef düşmansa savaş hali zorunlu olmalı (`relations` kontrolü).
 
-2. Çıkarma çatışması çözümünü ekle.
+2. ✅ Çıkarma çatışması çözümünü ekle.
    - Hedefte düşman ordu varsa `combat.ResolveBattleWithMods` ile çöz.
    - Kazanırsa kara ordusu karaya iner ve bölge ele geçirilir.
    - Kaybederse çıkarma ordusu kaybedilir; filo denizde kalır.
 
-3. Hedefte düşman ordu yoksa çıkarma işleyişini tanımla.
+3. ✅ Hedefte düşman ordu yoksa çıkarma işleyişini tanımla.
    - Taşınan birimler yeni kara ordusu olarak hedefte doğar.
    - Bölge düşmansa savaş hali varsa sahiplik güncellenir.
    - Filo cargo temizlenir, deniz bölgesinde kalır.
 
-4. UI ve mesajları güncelle.
+4. ✅ UI ve mesajları güncelle.
    - Mevcut hareket akışı korunur, ayrı buton eklenmez.
    - Çıkarma sonucu için net bilgi mesajları gösterilir (başarılı/başarısız).
 
-5. AI entegrasyonu.
+5. ✅ AI entegrasyonu.
    - AI, savaşta olduğu kıyı hedefleri için filo çıkarma denesin.
    - Uygun olmayan hedeflerde (savaş yok, güç yetersiz) gereksiz çıkarma denemesin.
+
+## Durum
+
+- Genel durum: ✅ **Tamamlandı (V1)**
+- Doğrulama: `go test ./...` temiz geçti.
+
+## V2 Backlog (İyileştirme)
+
+### P1 (Sonraki Sprint)
+
+1. Deniz savaşı katmanı
+   - Filo vs filo çarpışması (taşıma filosu korunma/kaçış kuralları).
+   - Çıkarma öncesi deniz üstünlüğü kontrolü.
+
+2. Çıkarma denge ayarları
+   - Çıkarma turunda geçici saldırı/savunma modifiyeri.
+   - Kıyı arazi tipine göre farklı çıkarma zorluğu.
+
+### P2 (Orta Vadeli)
+
+3. AI amfibi strateji derinliği
+   - Çoklu filo koordinasyonu ve eşzamanlı çıkarma.
+   - Uzak hedef puanlama (kritik liman, kutsal şehir, ekonomik merkez).
+
+4. Lojistik ve sürdürülebilirlik
+   - Çıkarma sonrası ikmal hattı kontrolü.
+   - İkmal kesilirse attrition/moral cezası.
+
+### P3 (Polish)
+
+5. UI/telemetri geliştirmeleri
+   - Çıkarma önizleme paneli (tahmini güç karşılaştırması).
+   - Event log’da amfibi operasyon filtreleme etiketi.
 
 ## Test Planı
 

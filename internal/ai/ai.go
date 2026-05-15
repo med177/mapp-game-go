@@ -433,6 +433,62 @@ func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) i
 	return best
 }
 
+func aiCanDisembarkToLand(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
+	if gs == nil || fleet == nil || target == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return false
+	}
+	if target.OwnerID == "" || target.OwnerID == fleet.OwnerID {
+		return true
+	}
+	_, stance := relationScore(gs, fleet.OwnerID, target.OwnerID)
+	return stance == faction.StanceWar
+}
+
+func aiLandingStrength(gs *state.GameState, fleet *army.Army) int {
+	if gs == nil || fleet == nil || len(fleet.EmbarkedUnits) == 0 {
+		return 0
+	}
+	tmp := &army.Army{OwnerID: fleet.OwnerID, Units: fleet.EmbarkedUnits}
+	return tmp.TotalStrength(gs.UnitTypes)
+}
+
+func aiEnemyArmyInRegion(gs *state.GameState, ownerID string, rid world.RegionID) *army.Army {
+	for _, ea := range gs.Armies {
+		if ea.RegionID == rid && ea.OwnerID != ownerID {
+			return ea
+		}
+	}
+	return nil
+}
+
+func aiSpawnDisembarkedArmy(gs *state.GameState, ownerID string, target world.RegionID, units []army.Unit) {
+	if gs == nil || len(units) == 0 {
+		return
+	}
+	gs.NextArmySeq++
+	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", ownerID, gs.NextArmySeq))
+	gs.Armies[newID] = &army.Army{
+		ID:            newID,
+		OwnerID:       ownerID,
+		RegionID:      target,
+		Units:         units,
+		MovePoints:    0,
+		MaxMovePoints: 2,
+		IsNaval:       false,
+	}
+}
+
+func aiOwnerReligion(gs *state.GameState, ownerID string) string {
+	if gs == nil {
+		return ""
+	}
+	f, ok := gs.Factions[faction.FactionID(ownerID)]
+	if !ok {
+		return ""
+	}
+	return string(f.Religion)
+}
+
 // chooseBestMove ordunun komşuları arasında en iyi hedefi seçer.
 // Negatif skor dönen hedefler atlanır; hiç geçerli hedef yoksa "" döner.
 func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
@@ -469,10 +525,21 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 				}
 				continue
 			}
-			if len(a.EmbarkedUnits) == 0 || n.OwnerID != "" && n.OwnerID != a.OwnerID {
+			if !aiCanDisembarkToLand(gs, a, n) {
 				continue
 			}
-			score := 50
+			score := 40
+			enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, n.ID)
+			if enemyArmy != nil {
+				landingStr := aiLandingStrength(gs, a)
+				defStr := enemyArmy.TotalStrength(gs.UnitTypes)
+				if landingStr <= defStr {
+					continue
+				}
+				score = 75
+			} else if n.OwnerID != "" && n.OwnerID != a.OwnerID {
+				score = 60
+			}
 			if score > bestScore {
 				bestScore = score
 				bestTarget = nid
@@ -635,22 +702,35 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 	}
 
 	if a.IsNaval && targetRegion.CanLandEnter() {
-		if len(a.EmbarkedUnits) == 0 || (targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID) {
+		if !aiCanDisembarkToLand(gs, a, targetRegion) {
+			return true
+		}
+		enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target)
+		if enemyArmy != nil {
+			landing := &army.Army{
+				OwnerID: a.OwnerID,
+				Units:   append([]army.Unit(nil), a.EmbarkedUnits...),
+			}
+			atkMods := aiTechMods(gs, a.OwnerID)
+			defMods := aiTechMods(gs, enemyArmy.OwnerID)
+			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+			a.EmbarkedUnits = a.EmbarkedUnits[:0]
+			a.MovePoints--
+			if result.AttackerWins {
+				if len(enemyArmy.Units) == 0 {
+					delete(gs.Armies, enemyArmy.ID)
+				}
+				aiSpawnDisembarkedArmy(gs, a.OwnerID, target, landing.Units)
+				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+			}
 			return true
 		}
 		units := make([]army.Unit, len(a.EmbarkedUnits))
 		copy(units, a.EmbarkedUnits)
 		a.EmbarkedUnits = a.EmbarkedUnits[:0]
-		gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", a.OwnerID, gs.NextArmySeq))
-		gs.Armies[newID] = &army.Army{
-			ID:            newID,
-			OwnerID:       a.OwnerID,
-			RegionID:      target,
-			Units:         units,
-			MovePoints:    0,
-			MaxMovePoints: 2,
-			IsNaval:       false,
+		aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
+		if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+			targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
 		}
 		a.MovePoints--
 		return true

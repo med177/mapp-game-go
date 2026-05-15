@@ -1251,9 +1251,9 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 		if targetRegion.CanLandEnter() {
 			if !g.canDisembarkToLand(a, targetRegion) {
 				if len(a.EmbarkedUnits) == 0 {
-					g.renderer.ShowCombatResult("Karaya çıkmak için filoda taşınan kara ordusu olmalı!")
+					g.renderer.ShowCombatResult("Çıkarma emri reddedildi: filoda taşınan kara birimi yok.")
 				} else {
-					g.renderer.ShowCombatResult("Düşman kıyıya çıkarma için savaş halinde olmalısın!")
+					g.renderer.ShowCombatResult("Çıkarma emri reddedildi: düşman kıyıya çıkarmak için savaş halinde olmalısın.")
 				}
 				return
 			}
@@ -1283,16 +1283,27 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 					attackerReligion := ownerReligion(g.gs, a.OwnerID)
 					targetRegion.ApplyConquest(a.OwnerID, attackerReligion)
 					g.renderer.MarkMapDirty()
-					g.renderer.ShowCombatResult(fmt.Sprintf("%s: +%d / -%d birim (Çıkarma başarılı)", result.Description, result.DefenderLost, result.AttackerLost))
+					g.renderer.ShowCombatResult(fmt.Sprintf("Çıkarma savaşı kazanıldı (%s): düşman kaybı %d, çıkarma kaybı %d.", result.Description, result.DefenderLost, result.AttackerLost))
+					g.renderer.AddEvent(fmt.Sprintf("Amfibi zafer: %s (%d/%d kayıp)", targetRegion.NameTR, result.AttackerLost, result.DefenderLost))
 					return
 				}
 
-				g.renderer.ShowCombatResult(fmt.Sprintf("%s: +%d / -%d birim (Çıkarma başarısız)", result.Description, result.DefenderLost, result.AttackerLost))
+				g.renderer.ShowCombatResult(fmt.Sprintf("Çıkarma savaşı kaybedildi (%s): düşman kaybı %d, çıkarma kaybı %d.", result.Description, result.DefenderLost, result.AttackerLost))
+				g.renderer.AddEvent(fmt.Sprintf("Amfibi yenilgi: %s (%d/%d kayıp)", targetRegion.NameTR, result.AttackerLost, result.DefenderLost))
 				return
 			}
 			g.disembarkFleet(a, target)
 			a.MovePoints--
-			g.renderer.ShowCombatResult("Çıkarma tamamlandı.")
+			if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+				attackerReligion := ownerReligion(g.gs, a.OwnerID)
+				targetRegion.ApplyConquest(a.OwnerID, attackerReligion)
+				g.renderer.MarkMapDirty()
+				g.renderer.ShowCombatResult("Çıkarma tamamlandı: kıyı bölgesi savaşsız ele geçirildi.")
+				g.renderer.AddEvent(fmt.Sprintf("Amfibi fetih: %s", targetRegion.NameTR))
+				return
+			}
+			g.renderer.ShowCombatResult("Çıkarma tamamlandı: birlikler karaya indi.")
+			g.renderer.AddEvent(fmt.Sprintf("Birlikler karaya çıktı: %s", targetRegion.NameTR))
 			return
 		}
 		if !targetRegion.CanNavalEnter() {

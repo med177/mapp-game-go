@@ -37,6 +37,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
 | Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü |
 | Deniz taşıma akışı | ✅ | Kara ordusu uygun `transport` filosuna binebilir, filo `EmbarkedUnits` ile taşır, komşu dost/boş karaya çıkarma yapılır; oyuncu ve AI aynı kural setini kullanır |
+| Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
@@ -102,8 +103,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 ## Sonraki Adım Planı
 
 1. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
-2. **Amfibi savaş fazı:** Düşman kıyıya çıkarma ve çıkarma anı çatışma kurallarını ekle.
-3. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
+2. **WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
+3. **AI strateji derinliği:** Uzun menzilli amfibi hedefleme ve çoklu filo koordinasyonunu geliştir.
 
 ## Yakın Sprint Önerisi
 
@@ -112,8 +113,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Sıra | İş | Kabul Kriteri |
 |---|---|---|
 | 1 | Olay seçenekleri | Tarihsel olaylarda A/B kararları ve farklı sonuçlar var |
-| 2 | Amfibi savaş fazı | Donanma düşman kıyıya çıkarma yapabiliyor ve çatışma doğru çözülüyor |
-| 3 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
+| 2 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
+| 3 | AI amfibi derinlik | AI zayıf çıkarma denemelerini azaltıp hedef seçimini daha tutarlı yapıyor |
 
 ## Araçlar
 
