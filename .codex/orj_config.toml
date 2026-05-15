@@ -1,0 +1,23 @@
+personality = "pragmatic"
+
+model_reasoning_effort = "medium"
+model = "gpt-5.4"
+
+[projects."/mnt/d/mezat-restapi-go"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-mobile-vue"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-chrome-extension"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-web-vue"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mapp-game-go"]
+trust_level = "trusted"
+
+[features]
+memories = true
+
