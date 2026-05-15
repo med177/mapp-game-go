@@ -39,7 +39,7 @@ const (
 	maxEventLogEntries = 16
 
 	infoPanelW = float32(305)
-	infoPanelH = float32(355)
+	infoPanelH = float32(380)
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -1080,11 +1080,11 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 }
 
 func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
-	btnW := float32(74)
+	btnW := float32(70)
 	btnH := float32(20)
 	gap := float32(6)
 	totalW := btnW*4 + gap*3
-	x = px + pw - totalW - 10 + float32(i)*(btnW+gap)
+	x = px + pw - totalW - 5 + float32(i)*(btnW+gap)
 	y = py + ph - btnH - 8
 	return x, y, btnW, btnH
 }
