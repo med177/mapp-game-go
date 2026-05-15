@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -1331,19 +1332,16 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 	case state.VictoryEconomic:
 		threshold := gs.Victory.TargetGoldIncome
 		if threshold == 0 {
-			threshold = 5000
+			threshold = 500
 		}
 		holdTurns := gs.Victory.GoldHoldTurns
 		if holdTurns == 0 {
 			holdTurns = 5
 		}
-		gold := 0
-		if f, ok := gs.Factions[gs.PlayerFactionID]; ok {
-			gold = f.Gold
-		}
-		DrawText(screen, "Altın: "+itoa(gold)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
+		goldIncome := victory.CurrentGoldIncome(gs)
+		DrawText(screen, "Gelir: "+itoa(goldIncome)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
 		vy += 18
-		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(gold)/float64(threshold)), ColorGold)
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(goldIncome)/float64(threshold)), ColorGold)
 		vy += 12
 		turnsStr := itoa(gs.EconomicVictoryTurns) + "/" + itoa(holdTurns) + " tur korundu"
 		DrawText(screen, turnsStr, vx, vy, FaceSmall, ColorGray)

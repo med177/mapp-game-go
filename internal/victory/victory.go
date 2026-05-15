@@ -2,13 +2,14 @@ package victory
 
 import (
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
 )
 
 const (
 	defaultDominationTarget = 15
-	defaultGoldThreshold    = 5000
-	defaultGoldHoldTurns    = 3
+	defaultGoldThreshold    = 500
+	defaultGoldHoldTurns    = 5
 	defaultArmyStrength     = 200
 	defaultDefeated         = 3
 	aiDominationLimit       = 20
@@ -105,11 +106,10 @@ func checkEconomic(gs *state.GameState) {
 		holdTurns = defaultGoldHoldTurns
 	}
 
-	f, ok := gs.Factions[gs.PlayerFactionID]
-	if !ok {
+	if gs.Factions[gs.PlayerFactionID] == nil {
 		return
 	}
-	if f.Gold >= threshold {
+	if CurrentGoldIncome(gs) >= threshold {
 		gs.EconomicVictoryTurns++
 		if gs.EconomicVictoryTurns >= holdTurns {
 			gs.Phase = state.PhaseGameOver
@@ -118,6 +118,51 @@ func checkEconomic(gs *state.GameState) {
 	} else {
 		gs.EconomicVictoryTurns = 0
 	}
+}
+
+// CurrentGoldIncome oyuncunun mevcut tur başı altın gelirini hesaplar.
+func CurrentGoldIncome(gs *state.GameState) int {
+	if gs == nil {
+		return 0
+	}
+	fid := gs.PlayerFactionID
+	if gs.Factions[fid] == nil {
+		return 0
+	}
+
+	income := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		goldMod := 1.0
+		for _, bid := range region.Buildings {
+			if building, ok := gs.BuildingTypes[bid]; ok {
+				goldMod *= building.GoldMod
+			}
+		}
+		income += int(float64(region.GoldIncome()) * goldMod)
+	}
+
+	for _, route := range gs.TradeRoutes {
+		if route != nil && route.FromFactionID == string(fid) {
+			income += route.GoldEarned()
+		}
+	}
+
+	if gs.TechTypes != nil {
+		fx := tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
+		income += fx.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
+	}
+
+	return max(income, 0)
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 // checkMilitary ordu gücü ve fraksiyon yenilgisi sayısına göre zafer kontrol eder.

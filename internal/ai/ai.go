@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -36,8 +37,7 @@ func aiTechMods(gs *state.GameState, ownerID string) combat.TechMods {
 
 // relationScore iki fraksiyon arasındaki ilişki puanını döner; yoksa 0.
 func relationScore(gs *state.GameState, a, b string) (int, faction.DiplomaticStance) {
-	key := faction.RelationKey(faction.FactionID(a), faction.FactionID(b))
-	if rel, ok := gs.Relations[key]; ok {
+	if rel := diplomacy.Relation(gs, faction.FactionID(a), faction.FactionID(b)); rel != nil {
 		return rel.Score, rel.Stance
 	}
 	return 0, faction.StancePeace
@@ -49,6 +49,8 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 	if gs.Difficulty >= 3 {
 		FormCoalitionAgainstPlayer(gs, fid)
 	}
+
+	aiHandleDiplomacy(gs, fid)
 
 	// Teknoloji araştırma (önce yap, altın biterse diğerlerini etkilemesin)
 	aiResearch(gs, fid)
@@ -79,6 +81,37 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 			continue
 		}
 		moveArmy(gs, a)
+	}
+}
+
+func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return
+	}
+
+	for otherID, other := range gs.Factions {
+		if otherID == fid || other == nil || other.IsEliminated {
+			continue
+		}
+
+		rel := diplomacy.EnsureRelation(gs, fid, otherID)
+		switch rel.Stance {
+		case faction.StanceWar:
+			selfPower := diplomacy.MilitaryPower(gs, fid)
+			otherPower := diplomacy.MilitaryPower(gs, otherID)
+			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
+				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+			}
+		case faction.StancePeace:
+			if rel.Score >= 20 && diplomacy.HasCommonEnemy(gs, fid, otherID) && !diplomacy.HasDirectThreat(gs, fid, otherID) {
+				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
+				continue
+			}
+			if rel.Score >= 0 {
+				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
+			}
+		}
 	}
 }
 
@@ -306,14 +339,7 @@ func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
 		return
 	}
 
-	// Bu fraksiyon oyuncuyla savaş halinde değilse; savaş ilan et
-	playerKey := faction.RelationKey(fid, gs.PlayerFactionID)
-	if rel, ok := gs.Relations[playerKey]; ok {
-		if rel.Stance == faction.StancePeace || rel.Stance == faction.StanceAllied {
-			rel.Stance = faction.StanceWar
-			rel.Score = -80
-		}
-	}
+	diplomacy.Execute(gs, fid, gs.PlayerFactionID, diplomacy.ActionDeclareWar)
 
 	// Diğer AI fraksiyonlarla ittifak kur (düşman değillerse)
 	for otherFID := range gs.Factions {
@@ -323,21 +349,14 @@ func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
 		if gs.Factions[otherFID].IsEliminated {
 			continue
 		}
-		key := faction.RelationKey(fid, otherFID)
-		rel, ok := gs.Relations[key]
-		if !ok {
-			continue
-		}
+		rel := diplomacy.EnsureRelation(gs, fid, otherFID)
 		if rel.Stance == faction.StanceWar {
 			continue
 		}
-		// Skor yeterince iyiyse ittifak kur
-		if rel.Score >= -20 {
-			rel.Stance = faction.StanceAllied
-			if rel.Score < 30 {
-				rel.Score = 30
-			}
+		if rel.Score < 20 {
+			rel.Score = 20
 		}
+		diplomacy.Execute(gs, fid, otherFID, diplomacy.ActionProposeAlliance)
 	}
 }
 
@@ -456,10 +475,10 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		return 0
 	}
 
-	// Barış halindeki fraksiyona saldırma
+	// Yalnızca savaş halindeki fraksiyona saldır.
 	if target.OwnerID != "" {
 		_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
-		if stance == faction.StancePeace || stance == faction.StanceAllied {
+		if stance != faction.StanceWar {
 			return -1
 		}
 	}
@@ -492,15 +511,15 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		}
 		return 50
 	}
-	// Düşman bölgesi, ordu yok — ilişkiye göre puanla
-	score, stance := relationScore(gs, a.OwnerID, target.OwnerID)
-	if stance == faction.StanceWar || score < -40 {
+	// Düşman bölgesi, ordu yok — savaş halindeyse puanla
+	_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+	if stance == faction.StanceWar {
 		if atCapacity {
 			return 100
 		}
 		return 90
 	}
-	return 30
+	return -1
 }
 
 // executeMove hareketi ve varsa savaşı uygular.

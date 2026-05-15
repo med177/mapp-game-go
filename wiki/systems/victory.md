@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-05-08
+last_updated: 2026-05-15
 related: [architecture/state-management, architecture/game-loop]
 ---
 
@@ -29,7 +29,7 @@ TargetGoldIncome = 500
 GoldHoldTurns    = 5    (bu geliri 5 tur boyunca koru)
 ```
 
-`EconomicVictoryTurns` sayacı `GameState`'te tutulur. Dikkat: mevcut kod `TargetGoldIncome` alanını isim/metin aksine tur başı gelir olarak değil, fraksiyonun mevcut altını (`f.Gold`) olarak kontrol ediyor. Bu uyumsuzluk [[dev/progress]] içinde kritik takip işidir.
+`EconomicVictoryTurns` sayacı `GameState`'te tutulur. Ekonomik zafer artık oyuncunun mevcut hazinesini değil, o turdaki toplam altın gelirini kontrol eder. Hesaba bölge vergi geliri, bina `gold_mod` çarpanları, aktif ticaret rotaları ve teknoloji `gold_per_region` bonusları dahildir.
 
 ### 3. Askeri Üstünlük (`military`)
 

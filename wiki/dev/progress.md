@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-11
+last_updated: 2026-05-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -52,12 +52,12 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu; kuyruktaki bina tekrar tıklanınca iptal/iade |
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |
-| Diplomasi | ✅ | Savaş, barış, ittifak, ticaret; ilişki puanı ve duruş sistemi |
+| Diplomasi | ✅ | `internal/diplomacy` ortak motoru ile savaş/barış/ittifak/ticaret; deterministik kabul-red, ilişki decay'i ve ticaret rotası senkronu |
 | Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
 | Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
 | Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme |
 | Zafer koşulları | ✅ | `domination`, `economic`, `military`, `religious`, `conquer_city` kontrol ediliyor |
-| AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon ve hedefe hareket |
+| AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon, diplomasi taraması ve hedefe hareket |
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + slot1-3, metadata önizleme, silme |
@@ -95,22 +95,18 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Öncelik | Sorun | Dosya | Etki |
 |---|---|---|---|
-| 🔴 Kritik | Ekonomik zafer metni gelir diyor, kod hazineyi kontrol ediyor | `internal/victory/victory.go:83`, `internal/render/panel.go:837` | Oyuncu hedefi yanlış anlar; `TargetGoldIncome` isim/metin/kod uyumsuz |
 | 🟠 Yüksek | Başlangıç zor zorluk bonusu oyuncu seçilmeden uygulanıyor | `internal/game/game.go:499` | `PlayerFactionID` boş olduğu için tüm fraksiyonlar AI bonusu alıyor; oyuncu seçilince bu bonus oyuncuda da kalabilir |
 | 🟡 Orta | Deniz taşıma mekaniği yok | `internal/game/game.go:700` | Kara ordusu denize giremiyor; nakliye gemisi üretiliyor ama ordu taşıma akışı henüz yok |
-| 🟡 Orta | Diplomasi teklifleri otomatik kabul | `internal/game/game.go` | AI kabul/red, pazarlık ve tehdit hesabı yok |
 | 🟡 Orta | Olaylar oyuncu seçimi sunmuyor | `internal/events/events.go` | Olay sistemi tek yönlü etki uyguluyor, A/B kararları yok |
 | 🟢 Düşük | Kök dizinde geçici `game.exe` olabilir | `game.exe` | Kalıcı çıktı `bin/game.exe` olmalı |
 
 ## Sonraki Adım Planı
 
-1. **Ekonomik zafer kararını netleştir:** `TargetGoldIncome` gerçekten tur başı gelir mi, mevcut hazine mi ölçmeli? Kod, UI ve senaryo metni aynı anlama çekilmeli.
-2. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
-3. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
-4. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
-5. **AI ve diplomasi derinliği:** Otomatik kabul yerine ilişki, güç dengesi, ortak düşman ve komşu tehdit algısına göre kabul/red skoru ekle.
-6. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
-7. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
+1. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
+2. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
+3. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
+4. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
+5. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
 
 ## Yakın Sprint Önerisi
 
@@ -118,10 +114,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Sıra | İş | Kabul Kriteri |
 |---|---|---|
-| 1 | Ekonomik zafer kararını netleştir | UI, JSON alanı ve `victory.Check` aynı şeyi ölçüyor |
-| 2 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
-| 3 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
-| 4 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
+| 1 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
+| 2 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
+| 3 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
 
 ## Araçlar
 

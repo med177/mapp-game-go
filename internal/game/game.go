@@ -13,6 +13,7 @@ import (
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/combat"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
@@ -165,6 +166,7 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionSelectVictory:
 			g.applyVictoryChoice(action.BuildingID)
+			g.applyAIDifficultyStartBonus()
 			g.gs.Phase = state.PhasePlayerTurn
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseFactionSelect
@@ -529,86 +531,26 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 
 // declareWar hedef fraksiyona savaş ilan eder.
 func (g *Game) declareWar(targetID faction.FactionID) {
-	key := faction.RelationKey(g.gs.PlayerFactionID, targetID)
-	rel, ok := g.gs.Relations[key]
-	if !ok {
-		rel = &faction.Relation{FactionA: g.gs.PlayerFactionID, FactionB: targetID}
-		g.gs.Relations[key] = rel
-	}
-	if rel.Stance == faction.StanceWar {
-		g.renderer.ShowCombatResult("Zaten savaş halindeyiz!")
-		return
-	}
-	rel.Stance = faction.StanceWar
-	rel.Score = -80
-	if f, ok := g.gs.Factions[targetID]; ok {
-		g.renderer.ShowCombatResult(f.NameTR + "'a savaş ilan edildi!")
-	}
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionDeclareWar)
+	g.renderer.ShowCombatResult(result.Message)
 }
 
 // proposeAlliance hedefe ittifak teklif eder (savaş halinde değilse kabul edilir).
 func (g *Game) proposeAlliance(targetID faction.FactionID) {
-	key := faction.RelationKey(g.gs.PlayerFactionID, targetID)
-	rel, ok := g.gs.Relations[key]
-	if !ok {
-		rel = &faction.Relation{FactionA: g.gs.PlayerFactionID, FactionB: targetID}
-		g.gs.Relations[key] = rel
-	}
-	if rel.Stance == faction.StanceWar {
-		g.renderer.ShowCombatResult("Savaş halindeyken ittifak kurulamaz!")
-		return
-	}
-	if rel.Stance == faction.StanceAllied {
-		g.renderer.ShowCombatResult("Zaten müttefiksiniz.")
-		return
-	}
-	if rel.Score < -20 {
-		g.renderer.ShowCombatResult("İlişki çok düşük — önce ilişkileri iyileştir.")
-		return
-	}
-	rel.Stance = faction.StanceAllied
-	rel.Score = clamp(rel.Score+30, -100, 100)
-	if f, ok := g.gs.Factions[targetID]; ok {
-		g.renderer.ShowCombatResult(f.NameTR + " ile ittifak kuruldu!")
-	}
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposeAlliance)
+	g.renderer.ShowCombatResult(result.Message)
 }
 
 // proposeTrade hedefe ticaret anlaşması teklif eder.
 func (g *Game) proposeTrade(targetID faction.FactionID) {
-	key := faction.RelationKey(g.gs.PlayerFactionID, targetID)
-	rel, ok := g.gs.Relations[key]
-	if !ok {
-		rel = &faction.Relation{FactionA: g.gs.PlayerFactionID, FactionB: targetID}
-		g.gs.Relations[key] = rel
-	}
-	if rel.Stance == faction.StanceWar {
-		g.renderer.ShowCombatResult("Savaş halindeyken ticaret yapılamaz!")
-		return
-	}
-	if rel.Stance == faction.StanceTrade || rel.Stance == faction.StanceAllied {
-		g.renderer.ShowCombatResult("Zaten ticaret anlaşması var.")
-		return
-	}
-	rel.Stance = faction.StanceTrade
-	rel.Score = clamp(rel.Score+15, -100, 100)
-	if f, ok := g.gs.Factions[targetID]; ok {
-		g.renderer.ShowCombatResult(f.NameTR + " ile ticaret anlaşması imzalandı!")
-	}
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposeTrade)
+	g.renderer.ShowCombatResult(result.Message)
 }
 
 // proposePeace hedefe barış teklif eder (her zaman kabul edilir — basit versiyon).
 func (g *Game) proposePeace(targetID faction.FactionID) {
-	key := faction.RelationKey(g.gs.PlayerFactionID, targetID)
-	rel, ok := g.gs.Relations[key]
-	if !ok || rel.Stance != faction.StanceWar {
-		g.renderer.ShowCombatResult("Savaş halinde olmadığınız bir fraksiyona barış teklifiniz geçersiz.")
-		return
-	}
-	rel.Stance = faction.StancePeace
-	rel.Score = -20
-	if f, ok := g.gs.Factions[targetID]; ok {
-		g.renderer.ShowCombatResult(f.NameTR + " barışı kabul etti.")
-	}
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposePeace)
+	g.renderer.ShowCombatResult(result.Message)
 }
 
 // saveGame oyunu kaydeder.
@@ -1019,15 +961,6 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		gs.Phase = state.PhaseEditMode
 	}
 
-	if gs.Difficulty >= 3 {
-		for fid, f := range gs.Factions {
-			if fid != gs.PlayerFactionID {
-				f.Gold += 300
-				f.Grain += 100
-			}
-		}
-	}
-
 	return gs, evts, nil
 }
 
@@ -1422,6 +1355,19 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		TargetArmyStrength: opt.TargetArmyStrength,
 		TargetDefeated:     opt.TargetDefeated,
 		DeadlineTurn:       opt.DeadlineTurn,
+	}
+}
+
+func (g *Game) applyAIDifficultyStartBonus() {
+	if g.gs == nil || g.gs.Difficulty < 3 || g.gs.PlayerFactionID == "" {
+		return
+	}
+	for fid, f := range g.gs.Factions {
+		if fid == g.gs.PlayerFactionID || f == nil || f.IsEliminated {
+			continue
+		}
+		f.Gold += 300
+		f.Grain += 100
 	}
 }
 

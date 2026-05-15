@@ -1,0 +1,30 @@
+personality = "pragmatic"
+
+model = "gpt-oss:120b-cloud"
+model_reasoning_effort = "medium"
+model_provider = "ollama_windows"
+
+[model_providers.ollama_windows]
+name = "Ollama on Windows"
+base_url = "http://172.30.176.1:11434/v1"
+
+[analytics]
+enabled = false
+
+[projects."/mnt/d/mezat-restapi-go"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-mobile-vue"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-chrome-extension"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mezat-web-vue"]
+trust_level = "trusted"
+
+[projects."/mnt/d/mapp-game-go"]
+trust_level = "trusted"
+
+[features]
+memories = true

@@ -2,6 +2,7 @@ package game
 
 import (
 	"mapp-game-go/internal/combat"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/season"
@@ -252,19 +253,7 @@ func checkEliminations(gs *state.GameState) {
 
 // applyRelationDecay savaş halindeki ilişkileri kötüleştirir, barış halindekini iyileştirir.
 func applyRelationDecay(gs *state.GameState) {
-	for _, rel := range gs.Relations {
-		switch rel.Stance {
-		case faction.StanceWar:
-			rel.Score--
-			if rel.Score < -100 {
-				rel.Score = -100
-			}
-		case faction.StancePeace:
-			if rel.Score < 0 {
-				rel.Score++
-			}
-		}
-	}
+	diplomacy.ApplyRelationDecay(gs)
 }
 
 func clamp(v, min, max int) int {

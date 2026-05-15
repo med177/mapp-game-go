@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-05-07
+last_updated: 2026-05-15
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -22,11 +22,12 @@ for fid := range gs.Factions {
 
 `TakeTurn` sırasıyla şu adımları yapar:
 1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`
-2. Teknoloji araştırma → `aiResearch()`
-3. Ekonomik bina inşası → `aiEconomyBuild()`
-4. Deniz stratejisi → `aiNavalStrategy()`
-5. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
-6. Ordu hareketi → `moveArmy()` (her ordu için)
+2. Diplomasi taraması → `aiHandleDiplomacy()`
+3. Teknoloji araştırma → `aiResearch()`
+4. Ekonomik bina inşası → `aiEconomyBuild()`
+5. Deniz stratejisi → `aiNavalStrategy()`
+6. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
+7. Ordu hareketi → `moveArmy()` (her ordu için)
 
 ---
 
@@ -39,7 +40,7 @@ for fid := range gs.Factions {
 | Koşul | Puan |
 |---|---|
 | Kendi bölgesi | 0 (hareket etme) |
-| Barış/ittifak halindeki bölge | -1 (atla) |
+| Barış/ittifak/ticaret halindeki bölge | -1 (atla) |
 | Savaş halinde + üstün güç | 95 |
 | Daha güçlü düşman var | -1 |
 | Sahipsiz bölge (kapasite doluysa) | 70 |
@@ -59,9 +60,25 @@ AI de oyuncu ile aynı `combat.ResolveBattleWithMods()` kullanır.
 
 **Tetikleme koşulu:** Oyuncunun bölge sayısı `coalitionThreshold = 8`'i geçmesi.
 
-**Etki:** AI fraksiyonlar birbiriyle ittifak kurmaya çalışır → oyuncuya karşı koordineli hareket.
+**Etki:** AI fraksiyon oyuncuya savaş açar ve aynı diplomasi motoru üzerinden diğer AI'larla ittifak kurmaya çalışır.
 
 → İttifak mekanizması: [[systems/diplomacy]]
+
+---
+
+## Diplomasi Safhası
+
+`aiHandleDiplomacy()` her AI turunda ilişkileri tarar:
+
+- `war` ilişkisinde skor çok düşmüşse veya AI askeri/bölgesel olarak gerideyse barış teklif eder
+- `peace` ilişkisinde ortak düşman ve yeterli skor varsa ittifak dener
+- `peace` ilişkisinde skor nötr veya pozitifse ticaret dener
+
+AI ve oyuncu aynı `internal/diplomacy` motorunu kullandığı için:
+
+- kabul/red kuralları tutarlıdır
+- ticaret rotaları aynı şekilde açılıp kapanır
+- AI barışta olan veya ticaret yaptığı hedefe saldırmaz
 
 ---
 
@@ -145,3 +162,4 @@ Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile 
 
 - [ ] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın)
 - [ ] AI uzun menzilli planlama (sadece komşu değil, stratejik hedef)
+- [ ] Diplomasi teklif önceliklerini tehdit seviyesi ve teknoloji farkıyla daha da zenginleştir
