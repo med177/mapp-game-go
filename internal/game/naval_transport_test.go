@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math/rand"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -200,5 +201,122 @@ func TestMoveArmyDisembarkEnemyCoastRequiresWar(t *testing.T) {
 	}
 	if _, ok := gs.Armies["army_p1_4"]; ok {
 		t.Fatalf("savaş yokken yeni kara ordusu oluşmamalıydı")
+	}
+}
+
+func TestMoveArmyDisembarkEnemyArmyBattleWin(t *testing.T) {
+	rand.Seed(1)
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     11,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_e"}},
+			"land_e": {ID: "land_e", OwnerID: "p2", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+			"enemy_army": {
+				ID:            "enemy_army",
+				OwnerID:       "p2",
+				RegionID:      "land_e",
+				Units:         []army.Unit{{TypeID: "weak", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+			"p2": {ID: "p2"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: -90, Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"elite":     {ID: "elite", Embarkable: true, Attack: 100, Defense: 100, Morale: 100},
+			"weak":      {ID: "weak", Attack: 1, Defense: 1, Morale: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "land_e")
+
+	if _, ok := gs.Armies["enemy_army"]; ok {
+		t.Fatalf("kazanılan çıkarma savaşında düşman ordusu silinmeliydi")
+	}
+	if gs.Regions["land_e"].OwnerID != "p1" {
+		t.Fatalf("başarılı çıkarma sonrası bölge ele geçirilmeli, got=%s", gs.Regions["land_e"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_p1_12"]; !ok {
+		t.Fatalf("başarılı çıkarma sonrası yeni kara ordusu bekleniyordu")
+	}
+	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 {
+		t.Fatalf("savaş sonrası filo cargo'su boş olmalı")
+	}
+}
+
+func TestMoveArmyDisembarkEnemyArmyBattleLose(t *testing.T) {
+	rand.Seed(2)
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     21,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_e"}},
+			"land_e": {ID: "land_e", OwnerID: "p2", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "weak", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+			"enemy_army": {
+				ID:            "enemy_army",
+				OwnerID:       "p2",
+				RegionID:      "land_e",
+				Units:         []army.Unit{{TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}, {TypeID: "elite", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+			"p2": {ID: "p2"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: -90, Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"elite":     {ID: "elite", Attack: 100, Defense: 100, Morale: 100},
+			"weak":      {ID: "weak", Embarkable: true, Attack: 1, Defense: 1, Morale: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "land_e")
+
+	if gs.Regions["land_e"].OwnerID != "p2" {
+		t.Fatalf("başarısız çıkarma sonrası sahiplik değişmemeli, got=%s", gs.Regions["land_e"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_p1_22"]; ok {
+		t.Fatalf("başarısız çıkarma sonrası kara ordusu oluşmamalı")
+	}
+	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 {
+		t.Fatalf("başarısız çıkarma sonrası cargo tüketilmeli")
 	}
 }

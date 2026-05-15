@@ -439,7 +439,12 @@ func minCameraScale() float64 {
 func (r *Renderer) SetCursor(n int) { r.factionCursor = n }
 
 // MarkMapDirty sahiplik değiştiğinde çağrılır.
-func (r *Renderer) MarkMapDirty() { r.worldMap.MarkDirty() }
+func (r *Renderer) MarkMapDirty() {
+	if r == nil || r.worldMap == nil {
+		return
+	}
+	r.worldMap.MarkDirty()
+}
 
 func (r *Renderer) MarkEditSaved() { r.editDirty = false }
 

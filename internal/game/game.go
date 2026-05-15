@@ -1182,11 +1182,18 @@ func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
 	units := make([]army.Unit, len(fleet.EmbarkedUnits))
 	copy(units, fleet.EmbarkedUnits)
 	fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
+	g.spawnDisembarkedArmy(fleet.OwnerID, target, units)
+}
+
+func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units []army.Unit) {
+	if len(units) == 0 {
+		return
+	}
 	g.gs.NextArmySeq++
-	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", fleet.OwnerID, g.gs.NextArmySeq))
+	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", ownerID, g.gs.NextArmySeq))
 	g.gs.Armies[newID] = &army.Army{
 		ID:            newID,
-		OwnerID:       fleet.OwnerID,
+		OwnerID:       ownerID,
 		RegionID:      target,
 		Units:         units,
 		MovePoints:    0,
@@ -1248,6 +1255,39 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 				} else {
 					g.renderer.ShowCombatResult("Düşman kıyıya çıkarma için savaş halinde olmalısın!")
 				}
+				return
+			}
+			var enemyArmy *army.Army
+			for _, ea := range g.gs.Armies {
+				if ea.RegionID == target && ea.OwnerID != a.OwnerID {
+					enemyArmy = ea
+					break
+				}
+			}
+			if enemyArmy != nil {
+				landing := &army.Army{
+					OwnerID: a.OwnerID,
+					Units:   append([]army.Unit(nil), a.EmbarkedUnits...),
+				}
+				atkMods := techModsFor(g.gs, a.OwnerID)
+				defMods := techModsFor(g.gs, enemyArmy.OwnerID)
+				result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods)
+				a.EmbarkedUnits = a.EmbarkedUnits[:0]
+				a.MovePoints--
+
+				if result.AttackerWins {
+					if len(enemyArmy.Units) == 0 {
+						delete(g.gs.Armies, enemyArmy.ID)
+					}
+					g.spawnDisembarkedArmy(a.OwnerID, target, landing.Units)
+					attackerReligion := ownerReligion(g.gs, a.OwnerID)
+					targetRegion.ApplyConquest(a.OwnerID, attackerReligion)
+					g.renderer.MarkMapDirty()
+					g.renderer.ShowCombatResult(fmt.Sprintf("%s: +%d / -%d birim (Çıkarma başarılı)", result.Description, result.DefenderLost, result.AttackerLost))
+					return
+				}
+
+				g.renderer.ShowCombatResult(fmt.Sprintf("%s: +%d / -%d birim (Çıkarma başarısız)", result.Description, result.DefenderLost, result.AttackerLost))
 				return
 			}
 			g.disembarkFleet(a, target)
