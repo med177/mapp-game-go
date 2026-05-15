@@ -36,6 +36,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
 | Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
 | Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü |
+| Deniz taşıma akışı | ✅ | Kara ordusu uygun `transport` filosuna binebilir, filo `EmbarkedUnits` ile taşır, komşu dost/boş karaya çıkarma yapılır; oyuncu ve AI aynı kural setini kullanır |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
@@ -95,18 +96,14 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Öncelik | Sorun | Dosya | Etki |
 |---|---|---|---|
-| 🟠 Yüksek | Başlangıç zor zorluk bonusu oyuncu seçilmeden uygulanıyor | `internal/game/game.go:499` | `PlayerFactionID` boş olduğu için tüm fraksiyonlar AI bonusu alıyor; oyuncu seçilince bu bonus oyuncuda da kalabilir |
-| 🟡 Orta | Deniz taşıma mekaniği yok | `internal/game/game.go:700` | Kara ordusu denize giremiyor; nakliye gemisi üretiliyor ama ordu taşıma akışı henüz yok |
 | 🟡 Orta | Olaylar oyuncu seçimi sunmuyor | `internal/events/events.go` | Olay sistemi tek yönlü etki uyguluyor, A/B kararları yok |
 | 🟢 Düşük | Kök dizinde geçici `game.exe` olabilir | `game.exe` | Kalıcı çıktı `bin/game.exe` olmalı |
 
 ## Sonraki Adım Planı
 
-1. **Kayıt/yükleme bütünlüğü:** `LoadSlot` içinde senaryo metadata, `AvailableVictories` ve ses/senaryo asset yolu tutarlı şekilde geri yüklenmeli.
-2. **Zorluk bonusu sıralaması:** Zor mod AI bonusunu fraksiyon seçildikten sonra, oyuncu hariç uygulanacak hale getir.
-3. **Deniz taşıma akışı:** Nakliye gemisine kara ordusu bindirme/indirme, deniz geçişi ve kıyıdan çıkarma kurallarını ekle.
-4. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
-5. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
+1. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
+2. **Amfibi savaş fazı:** Düşman kıyıya çıkarma ve çıkarma anı çatışma kurallarını ekle.
+3. **Linux/WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
 
 ## Yakın Sprint Önerisi
 
@@ -114,8 +111,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Sıra | İş | Kabul Kriteri |
 |---|---|---|
-| 1 | Zor mod bonus fix | Oyuncu seçilen fraksiyon AI başlangıç bonusu almıyor |
-| 2 | Save load state tamamlama | Slot yükleyince harita, zafer hedefi, runtime tanımlar ve senaryo assetleri tutarlı |
+| 1 | Olay seçenekleri | Tarihsel olaylarda A/B kararları ve farklı sonuçlar var |
+| 2 | Amfibi savaş fazı | Donanma düşman kıyıya çıkarma yapabiliyor ve çatışma doğru çözülüyor |
 | 3 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
 
 ## Araçlar

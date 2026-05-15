@@ -18,6 +18,8 @@ import (
 const saveDir = "saves"
 const autoSavePath = "saves/autosave.json"
 
+var scenarioBaseDir = filepath.Join("assets", "scenarios")
+
 // slotDefs tüm kayıt slotlarını tanımlar; sıra UI'da gösterim sırasıdır.
 var slotDefs = []struct {
 	name        string
@@ -165,9 +167,16 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	gs.SyncTimedRegionUnlocks()
+	ensureScenarioIdentity(&gs)
 	applyScenarioMetadata(&gs)
+	if gs.ScenarioPath == "" {
+		return nil, fmt.Errorf("senaryo yolu çözümlenemedi")
+	}
 
 	dp := func(f string) string { return gs.ScenarioPath + "/data/" + f }
+	if _, order, err := world.LoadRegionsWithOrder(dp("regions.json")); err == nil {
+		gs.RegionOrder = order
+	}
 
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
@@ -193,6 +202,21 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	gs.ShapeData = shapeData
 	return &gs, nil
+}
+
+func ensureScenarioIdentity(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	if gs.ScenarioID == "" && gs.ScenarioPath != "" {
+		gs.ScenarioID = filepath.Base(gs.ScenarioPath)
+	}
+	if gs.ScenarioPath == "" && gs.ScenarioID != "" {
+		candidate := filepath.Join(scenarioBaseDir, gs.ScenarioID)
+		if _, err := os.Stat(filepath.Join(candidate, "scenario.json")); err == nil {
+			gs.ScenarioPath = candidate
+		}
+	}
 }
 
 func applyScenarioMetadata(gs *state.GameState) {

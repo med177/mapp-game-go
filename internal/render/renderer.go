@@ -727,12 +727,60 @@ func (r *Renderer) selectedArmyIsPlayerOwned() bool {
 	return ok && a.OwnerID == string(r.gs.PlayerFactionID)
 }
 
-func armyCanEnterRegion(a *army.Army, target *world.Region) bool {
-	if target == nil || target.IsLocked {
+func armyCanEmbark(gs *state.GameState, a *army.Army) bool {
+	if gs == nil || a == nil || a.IsNaval || len(a.Units) == 0 {
+		return false
+	}
+	for _, u := range a.Units {
+		ut, ok := gs.UnitTypes[u.TypeID]
+		if !ok || !ut.Embarkable {
+			return false
+		}
+	}
+	return true
+}
+
+func hasFriendlyEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID) bool {
+	if gs == nil {
+		return false
+	}
+	for _, candidate := range gs.Armies {
+		if candidate == nil || candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
+			continue
+		}
+		if len(candidate.EmbarkedUnits) > 0 {
+			continue
+		}
+		for _, u := range candidate.Units {
+			ut, ok := gs.UnitTypes[u.TypeID]
+			if ok && ut.Category == army.CategoryNavalTrans {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region) bool {
+	if target == nil || target.IsLocked || a == nil {
 		return false
 	}
 	if a.IsNaval {
+		if target.CanLandEnter() {
+			if len(a.EmbarkedUnits) == 0 {
+				return false
+			}
+			if target.OwnerID == "" || target.OwnerID == a.OwnerID {
+				return true
+			}
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
+			rel, ok := gs.Relations[key]
+			return ok && rel.Stance == faction.StanceWar
+		}
 		return target.CanNavalEnter()
+	}
+	if target.CanNavalEnter() {
+		return armyCanEmbark(gs, a) && hasFriendlyEmbarkFleet(gs, a.OwnerID, target.ID)
 	}
 	return target.CanLandEnter()
 }
@@ -754,7 +802,7 @@ func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool
 				continue
 			}
 			targetRegion, ok := gs.Regions[nid]
-			if ok && armyCanEnterRegion(playerArmy, targetRegion) {
+			if ok && armyCanEnterRegion(gs, playerArmy, targetRegion) {
 				return true
 			}
 		}
@@ -778,11 +826,7 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		if !ok || nRegion.IsLocked {
 			continue
 		}
-		// Naval: sadece deniz bölgelerine gidebilir; kara: sadece kara bölgelerine
-		if a.IsNaval && !nRegion.IsSea {
-			continue
-		}
-		if !a.IsNaval && nRegion.IsSea {
+		if !armyCanEnterRegion(r.gs, a, nRegion) {
 			continue
 		}
 
@@ -790,9 +834,19 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 		var col color.RGBA
 		if a.IsNaval {
-			// Deniz bölgeleri için sabit açık mavi — tarafsız su
-			col = color.RGBA{100, 200, 255, 220}
+			if nRegion.CanLandEnter() {
+				col = color.RGBA{255, 215, 110, 220}
+			} else {
+				// Deniz bölgeleri için sabit açık mavi — tarafsız su
+				col = color.RGBA{100, 200, 255, 220}
+			}
 		} else {
+			if nRegion.IsSea {
+				col = color.RGBA{120, 230, 240, 220}
+				vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
+				DrawTextCentered(screen, "⛴", sx, sy-8, FaceSmall, color.RGBA{200, 240, 255, 220})
+				continue
+			}
 			switch {
 			case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
 				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
@@ -5107,9 +5161,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-			// Naval donanma seçiliyse deniz bölgesine tıklama = hareket komutu
+			// Seçili ordu denize geçebiliyorsa deniz bölgesine tıklama = hareket komutu
 			if r.selectedArmyIsPlayerOwned() {
-				if a, ok2 := r.gs.Armies[r.SelectedArmy]; ok2 && a.IsNaval {
+				if a, ok2 := r.gs.Armies[r.SelectedArmy]; ok2 && armyCanEnterRegion(r.gs, a, region) {
 					return InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
 				}
 			}

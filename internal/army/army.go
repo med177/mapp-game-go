@@ -15,7 +15,8 @@ type Army struct {
 	DockedRegionID     world.RegionID `json:"docked_region_id,omitempty"`
 	DockedSettlementID string         `json:"docked_settlement_id,omitempty"`
 	Units              []Unit         `json:"units"`
-	MovePoints         int            `json:"move_points"` // bu turda kalan hareket puanı
+	EmbarkedUnits      []Unit         `json:"embarked_units,omitempty"` // filo içindeki kara birimleri
+	MovePoints         int            `json:"move_points"`              // bu turda kalan hareket puanı
 	MaxMovePoints      int            `json:"max_move_points"`
 	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
 

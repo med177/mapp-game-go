@@ -374,6 +374,65 @@ func moveArmy(gs *state.GameState, a *army.Army) {
 	}
 }
 
+func aiCanEmbarkArmy(gs *state.GameState, a *army.Army) bool {
+	if gs == nil || a == nil || a.IsNaval || len(a.Units) == 0 {
+		return false
+	}
+	for _, u := range a.Units {
+		ut, ok := gs.UnitTypes[u.TypeID]
+		if !ok || !ut.Embarkable {
+			return false
+		}
+	}
+	return true
+}
+
+func aiFleetHasTransportCapacity(gs *state.GameState, fleet *army.Army) bool {
+	if gs == nil || fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) > 0 {
+		return false
+	}
+	for _, u := range fleet.Units {
+		ut, ok := gs.UnitTypes[u.TypeID]
+		if ok && ut.Category == army.CategoryNavalTrans {
+			return true
+		}
+	}
+	return false
+}
+
+func aiFindEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID) *army.Army {
+	for _, candidate := range gs.Armies {
+		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
+			continue
+		}
+		if aiFleetHasTransportCapacity(gs, candidate) {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) int {
+	if gs == nil || a == nil || seaRegion == nil || !seaRegion.IsSea {
+		return 0
+	}
+	if !aiCanEmbarkArmy(gs, a) || aiFindEmbarkFleet(gs, a.OwnerID, seaRegion.ID) == nil {
+		return 0
+	}
+	best := 10
+	for _, nid := range seaRegion.Neighbors {
+		land, ok := gs.Regions[nid]
+		if !ok || land.IsSea {
+			continue
+		}
+		score := scoreMove(gs, a, land)
+		if score > best {
+			best = score
+		}
+	}
+	return best
+}
+
 // chooseBestMove ordunun komşuları arasında en iyi hedefi seçer.
 // Negatif skor dönen hedefler atlanır; hiç geçerli hedef yoksa "" döner.
 func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
@@ -385,9 +444,54 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 	bestScore := 0
 	var bestTarget world.RegionID
 
+	if a.IsNaval {
+		for _, nid := range src.Neighbors {
+			n, ok := gs.Regions[nid]
+			if !ok {
+				continue
+			}
+			if n.IsSea {
+				score := 15
+				if len(a.EmbarkedUnits) > 0 {
+					for _, landID := range n.Neighbors {
+						land, ok := gs.Regions[landID]
+						if !ok || land.IsSea {
+							continue
+						}
+						if land.OwnerID != "" && land.OwnerID != a.OwnerID {
+							score += 20
+						}
+					}
+				}
+				if score > bestScore {
+					bestScore = score
+					bestTarget = nid
+				}
+				continue
+			}
+			if len(a.EmbarkedUnits) == 0 || n.OwnerID != "" && n.OwnerID != a.OwnerID {
+				continue
+			}
+			score := 50
+			if score > bestScore {
+				bestScore = score
+				bestTarget = nid
+			}
+		}
+		return bestTarget
+	}
+
 	for _, nid := range src.Neighbors {
 		n, ok := gs.Regions[nid]
-		if !ok || n.IsSea {
+		if !ok {
+			continue
+		}
+		if n.IsSea {
+			score := aiEmbarkScore(gs, a, n)
+			if score > bestScore {
+				bestScore = score
+				bestTarget = nid
+			}
 			continue
 		}
 		score := scoreMove(gs, a, n)
@@ -528,6 +632,43 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 	targetRegion, ok := gs.Regions[target]
 	if !ok {
 		return true
+	}
+
+	if a.IsNaval && targetRegion.CanLandEnter() {
+		if len(a.EmbarkedUnits) == 0 || (targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID) {
+			return true
+		}
+		units := make([]army.Unit, len(a.EmbarkedUnits))
+		copy(units, a.EmbarkedUnits)
+		a.EmbarkedUnits = a.EmbarkedUnits[:0]
+		gs.NextArmySeq++
+		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", a.OwnerID, gs.NextArmySeq))
+		gs.Armies[newID] = &army.Army{
+			ID:            newID,
+			OwnerID:       a.OwnerID,
+			RegionID:      target,
+			Units:         units,
+			MovePoints:    0,
+			MaxMovePoints: 2,
+			IsNaval:       false,
+		}
+		a.MovePoints--
+		return true
+	}
+	if !a.IsNaval && targetRegion.IsSea {
+		if !aiCanEmbarkArmy(gs, a) {
+			return true
+		}
+		fleet := aiFindEmbarkFleet(gs, a.OwnerID, target)
+		if fleet == nil {
+			return true
+		}
+		fleet.EmbarkedUnits = append(fleet.EmbarkedUnits[:0], a.Units...)
+		if fleet.MovePoints > 0 {
+			fleet.MovePoints--
+		}
+		delete(gs.Armies, a.ID)
+		return false
 	}
 
 	// Hedefte düşman ordusu var mı?

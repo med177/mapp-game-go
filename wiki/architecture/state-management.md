@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-11
+last_updated: 2026-05-15
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -124,7 +124,7 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes` ve `ShapeData` alanlarını yeniden doldurur. Senaryo metadata'sı da tekrar okunur; eski kayıtta `MapConfig` yoksa `scenario.json` içindeki `map` alanı uygulanır ve `AvailableVictories` güncellenir. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData` ve `RegionOrder` alanlarını yeniden doldurur. `ScenarioPath` eksik ama `ScenarioID` varsa senaryo klasörü yeniden çözülür; ardından `scenario.json` tekrar okunur, `MapConfig` fallback uygulanır ve `AvailableVictories` güncellenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
 
 ---
 
@@ -135,7 +135,7 @@ type VictoryCondition struct {
     Type               VictoryType      // domination | economic | military | religious
     TargetRegionCount  int              // domination: 20+ bölge
     RequiredRegions    []RegionID       // domination: constantinople, rome, paris, cairo, jerusalem
-    TargetGoldIncome   int              // economic: mevcut kodda hazine eşiği gibi kontrol ediliyor
+    TargetGoldIncome   int              // economic: tur başı gelir eşiği
     GoldHoldTurns      int              // economic: kaç tur koru
     TargetArmyStrength int             // military: 200 güç puanı
     TargetDefeated     int             // military: 3 fraksiyon yenilgisi

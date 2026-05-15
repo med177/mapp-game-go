@@ -74,3 +74,63 @@ Mevcut `DiplomacyPlan.md` kısmen eskimiş durumda; diplomasi panelinde ilişki 
 - İttifakın askeri geçiş izni ve ortak savaş bonusu sonraki faza bırakılacak.
 - Ticaret rotaları harita üstü pathfinding ile değil, soyut anlaşma modeliyle üretilecek.
 - Mevcut `DiplomacyPlan.md` tamamen bu yeni planla değiştirilecek; eski "UI'de ilişki bilgisi yok" ve "ittifak/ticaret ikonları eksik" maddeleri kaldırılacak.
+
+---
+
+# Amfibi Savaş V1 Planı (Ayrı Plan)
+
+## Özet
+
+Bu plan diplomasi planından bağımsızdır ve yalnızca denizden düşman kıyısına çıkarma + çıkarma anı çatışma kurallarını kapsar.
+
+## Kapsam
+
+- Mevcut taşıma akışı (embark/disembark) korunur.
+- Yeni faz: düşman sahipli kara bölgesine denizden çıkarma yapılabilsin.
+- Çıkarma sırasında savaş çözümlemesi tek yerden, mevcut combat motoruyla çalışsın.
+- Save formatı korunur; `GameState` JSON şeması kırılmaz.
+
+## Uygulama Adımları
+
+1. Çıkarma geçerlilik kurallarını netleştir.
+   - Filo `EmbarkedUnits` taşıyor olmalı.
+   - Hedef kara bölgesi filo ile komşu deniz bölgesinde olmalı.
+   - Hedef düşmansa savaş hali zorunlu olmalı (`relations` kontrolü).
+
+2. Çıkarma çatışması çözümünü ekle.
+   - Hedefte düşman ordu varsa `combat.ResolveBattleWithMods` ile çöz.
+   - Kazanırsa kara ordusu karaya iner ve bölge ele geçirilir.
+   - Kaybederse çıkarma ordusu kaybedilir; filo denizde kalır.
+
+3. Hedefte düşman ordu yoksa çıkarma işleyişini tanımla.
+   - Taşınan birimler yeni kara ordusu olarak hedefte doğar.
+   - Bölge düşmansa savaş hali varsa sahiplik güncellenir.
+   - Filo cargo temizlenir, deniz bölgesinde kalır.
+
+4. UI ve mesajları güncelle.
+   - Mevcut hareket akışı korunur, ayrı buton eklenmez.
+   - Çıkarma sonucu için net bilgi mesajları gösterilir (başarılı/başarısız).
+
+5. AI entegrasyonu.
+   - AI, savaşta olduğu kıyı hedefleri için filo çıkarma denesin.
+   - Uygun olmayan hedeflerde (savaş yok, güç yetersiz) gereksiz çıkarma denemesin.
+
+## Test Planı
+
+- Oyun kural testleri:
+  - savaş hali yokken düşman kıyıya çıkarma reddi
+  - düşman orduya karşı başarılı çıkarma
+  - düşman orduya karşı başarısız çıkarma
+  - düşman ordusuz kıyıya başarılı çıkarma ve sahiplik güncellemesi
+- AI testleri:
+  - savaşta uygun kıyıya çıkarma girişimi
+  - barışta çıkarma girişimi yapmaması
+- Regresyon:
+  - mevcut embark/disembark dost/boş kıyı davranışı bozulmamalı
+  - `go test ./...` temiz geçmeli
+
+## Varsayımlar
+
+- Bu fazda deniz savaşları (filo vs filo) genişletilmeyecek.
+- Çıkarma için ekstra moral/ikmal sistemi eklenmeyecek.
+- Çok turlu çıkarma hazırlığı yok; tek tur karar modeli korunacak.

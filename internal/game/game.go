@@ -355,6 +355,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
+		g.evts = res.evts
 		g.renderer.ReloadGameState(res.gs)
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
@@ -805,8 +806,13 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 		if err != nil {
 			return loadingResult{err: err, fallback: fallback}
 		}
+		evts, err := loadScenarioEvents(gs.ScenarioPath)
+		if err != nil {
+			return loadingResult{err: err, fallback: fallback}
+		}
 		return loadingResult{
 			gs:         gs,
+			evts:       evts,
 			successMsg: "Oyun yüklendi!",
 		}
 	})
@@ -962,6 +968,17 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	}
 
 	return gs, evts, nil
+}
+
+func loadScenarioEvents(scenarioPath string) ([]*events.Event, error) {
+	if scenarioPath == "" {
+		return nil, fmt.Errorf("senaryo yolu yok")
+	}
+	evts, err := events.LoadEvents(filepath.Join(scenarioPath, "data", "events.json"))
+	if err != nil {
+		return nil, fmt.Errorf("olaylar yüklenemedi: %w", err)
+	}
+	return evts, nil
 }
 
 // scenarioByPath ScenarioList içinde verilen path'e sahip senaryoyu bulur.
@@ -1121,6 +1138,75 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! (%d tur) Kalan altın: %d", utype.NameTR, utype.TurnsRequired, f.Gold))
 }
 
+func (g *Game) fleetHasTransportCapacity(fleet *army.Army) bool {
+	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) > 0 {
+		return false
+	}
+	for _, u := range fleet.Units {
+		if ut, ok := g.gs.UnitTypes[u.TypeID]; ok && ut.Category == army.CategoryNavalTrans {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) canEmbarkLandArmy(a *army.Army) bool {
+	if a == nil || a.IsNaval || len(a.Units) == 0 {
+		return false
+	}
+	for _, u := range a.Units {
+		ut, ok := g.gs.UnitTypes[u.TypeID]
+		if !ok || !ut.Embarkable {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) findFriendlyEmbarkFleet(ownerID string, seaRegionID world.RegionID) *army.Army {
+	for _, candidate := range g.gs.Armies {
+		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
+			continue
+		}
+		if g.fleetHasTransportCapacity(candidate) {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
+	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return
+	}
+	units := make([]army.Unit, len(fleet.EmbarkedUnits))
+	copy(units, fleet.EmbarkedUnits)
+	fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
+	g.gs.NextArmySeq++
+	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", fleet.OwnerID, g.gs.NextArmySeq))
+	g.gs.Armies[newID] = &army.Army{
+		ID:            newID,
+		OwnerID:       fleet.OwnerID,
+		RegionID:      target,
+		Units:         units,
+		MovePoints:    0,
+		MaxMovePoints: 2,
+		IsNaval:       false,
+	}
+}
+
+func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) bool {
+	if fleet == nil || targetRegion == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return false
+	}
+	if targetRegion.OwnerID == "" || targetRegion.OwnerID == fleet.OwnerID {
+		return true
+	}
+	key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
+	rel, ok := g.gs.Relations[key]
+	return ok && rel.Stance == faction.StanceWar
+}
+
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.
 func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	a, ok := g.gs.Armies[aid]
@@ -1154,13 +1240,47 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	}
 
 	// Naval/kara uyumluluk kontrolü
-	if a.IsNaval && !targetRegion.CanNavalEnter() {
-		g.renderer.ShowCombatResult("Deniz ordusu sadece deniz bölgelerine gidebilir!")
-		return
-	}
-	if !a.IsNaval && !targetRegion.CanLandEnter() {
-		g.renderer.ShowCombatResult("Kara ordusu denize giremez! (Nakliye gemisi gerekir)")
-		return
+	if a.IsNaval {
+		if targetRegion.CanLandEnter() {
+			if !g.canDisembarkToLand(a, targetRegion) {
+				if len(a.EmbarkedUnits) == 0 {
+					g.renderer.ShowCombatResult("Karaya çıkmak için filoda taşınan kara ordusu olmalı!")
+				} else {
+					g.renderer.ShowCombatResult("Düşman kıyıya çıkarma için savaş halinde olmalısın!")
+				}
+				return
+			}
+			g.disembarkFleet(a, target)
+			a.MovePoints--
+			g.renderer.ShowCombatResult("Çıkarma tamamlandı.")
+			return
+		}
+		if !targetRegion.CanNavalEnter() {
+			g.renderer.ShowCombatResult("Deniz ordusu sadece deniz bölgelerine gidebilir!")
+			return
+		}
+	} else {
+		if targetRegion.CanNavalEnter() {
+			if !g.canEmbarkLandArmy(a) {
+				g.renderer.ShowCombatResult("Bu ordudaki bazı birimler denizden taşınamaz.")
+				return
+			}
+			fleet := g.findFriendlyEmbarkFleet(a.OwnerID, target)
+			if fleet == nil {
+				g.renderer.ShowCombatResult("Embark için komşu denizde uygun nakliye filosu yok!")
+				return
+			}
+			fleet.EmbarkedUnits = append(fleet.EmbarkedUnits[:0], a.Units...)
+			fleet.MovePoints = max(0, fleet.MovePoints-1)
+			delete(g.gs.Armies, aid)
+			g.renderer.SelectedArmy = fleet.ID
+			g.renderer.ShowCombatResult("Ordu nakliye filosuna bindi.")
+			return
+		}
+		if !targetRegion.CanLandEnter() {
+			g.renderer.ShowCombatResult("Kara ordusu denize giremez! (Nakliye gemisi gerekir)")
+			return
+		}
 	}
 	// Sahipli düşman bölgeye girmek için savaş hali zorunlu
 	if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {

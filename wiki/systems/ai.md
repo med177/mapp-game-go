@@ -142,6 +142,26 @@ Kıyı bölgesi varsa:
 
 ---
 
+## AI Deniz Taşıma Akışı
+
+AI artık kara ordularını nakliye filosuna bindirip indirebilir:
+
+- Kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o denizde uygun `transport` filosu varsa ve karşı kıyıda pozitif hedef skoru varsa seçer.
+- `executeMove()` kara → deniz geçişinde birimleri filonun `EmbarkedUnits` alanına taşır ve kara ordusunu haritadan kaldırır.
+- Donanma `EmbarkedUnits` taşıyorsa komşu dost/boş kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir.
+- Düşman kıyıya doğrudan çıkarma bu sürümde kapalıdır; çıkarma güvenli kıyı lojistiği için tarafsız/dost kara ile sınırlıdır.
+
+Kaynak kod:
+- `internal/ai/ai.go:377`
+- `internal/ai/ai.go:438`
+- `internal/ai/ai.go:631`
+
+Testler:
+- `internal/ai/ai_test.go:67`
+- `internal/ai/ai_test.go:119`
+
+---
+
 ## Birim Alımı (`aiRecruitAndBuild`)
 
 Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile birim seçer:

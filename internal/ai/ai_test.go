@@ -64,6 +64,98 @@ func TestCoalitionUsesDiplomacyEngine(t *testing.T) {
 	}
 }
 
+func TestAIMoveArmyEmbarksIntoFriendlyTransportFleet(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     1,
+		Regions: map[world.RegionID]*world.Region{
+			"ai_land":    {ID: "ai_land", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":      {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"ai_land", "enemy_land"}},
+			"enemy_land": {ID: "enemy_land", OwnerID: "player", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_army": {
+				ID:            "ai_army",
+				OwnerID:       "ai_1",
+				RegionID:      "ai_land",
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"ai_fleet": {
+				ID:            "ai_fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Catholic},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -30, Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+
+	moveArmy(gs, gs.Armies["ai_army"])
+
+	if _, ok := gs.Armies["ai_army"]; ok {
+		t.Fatalf("AI kara ordusu embark sonrası haritadan kalkmalıydı")
+	}
+	fleet := gs.Armies["ai_fleet"]
+	if fleet == nil || len(fleet.EmbarkedUnits) != 1 {
+		t.Fatalf("AI filosunda embark birimi bekleniyordu, got=%+v", fleet)
+	}
+}
+
+func TestAIMoveArmyDisembarksFromFleet(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     10,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":   {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"ai_land"}},
+			"ai_land": {ID: "ai_land", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_fleet": {
+				ID:            "ai_fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Catholic},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+
+	moveArmy(gs, gs.Armies["ai_fleet"])
+
+	if len(gs.Armies["ai_fleet"].EmbarkedUnits) != 0 {
+		t.Fatalf("AI çıkarma sonrası filonun embarked birimleri boş olmalı")
+	}
+	if _, ok := gs.Armies["army_ai_1_11"]; !ok {
+		t.Fatalf("çıkarma sonrası yeni kara ordusu bekleniyordu")
+	}
+}
+
 func aiTestState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
