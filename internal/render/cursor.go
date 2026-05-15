@@ -219,8 +219,13 @@ func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
 		return true
 	}
 	factions := sortedFactions(r.gs)
-	for i := range factions {
-		y := diplomStartY + float64(i)*diplomRowH
+	start := clampDiplomScroll(len(factions), r.diplomacyScroll)
+	end := start + diplomVisibleRows()
+	if end > len(factions) {
+		end = len(factions)
+	}
+	for row, i := 0, start; i < end; i, row = i+1, row+1 {
+		y := diplomStartY + float64(row)*diplomRowH
 		if fy >= y && fy <= y+diplomRowH-4 && fx >= 28 && fx <= ScreenWidth-56 {
 			return true
 		}

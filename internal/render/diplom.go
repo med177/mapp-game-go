@@ -16,6 +16,55 @@ const (
 	diplomRowH   = 52.0
 )
 
+func diplomVisibleRows() int {
+	rows := int((ScreenHeight - diplomStartY - 24) / diplomRowH)
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func diplomMaxScroll(total int) int {
+	max := total - diplomVisibleRows()
+	if max < 0 {
+		return 0
+	}
+	return max
+}
+
+func clampDiplomScroll(total, scroll int) int {
+	if scroll < 0 {
+		return 0
+	}
+	max := diplomMaxScroll(total)
+	if scroll > max {
+		return max
+	}
+	return scroll
+}
+
+func clampDiplomFocus(v, min, max int) int {
+	if v < min {
+		return min
+	}
+	if v > max {
+		return max
+	}
+	return v
+}
+
+func ensureDiplomFocusVisible(total, focus, scroll int) int {
+	scroll = clampDiplomScroll(total, scroll)
+	visible := diplomVisibleRows()
+	if focus < scroll {
+		return focus
+	}
+	if focus >= scroll+visible {
+		return focus - visible + 1
+	}
+	return scroll
+}
+
 type diplomAction struct {
 	label  string
 	color  color.RGBA
@@ -41,7 +90,7 @@ func diplomActionRect(rowY float64, i int) (x, y, w, h float32) {
 }
 
 // DrawDiplomacyPanel diplomasi panelini çizer.
-func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx int) {
+func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll int) {
 	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
 	overlay.Fill(color.RGBA{8, 6, 4, 220})
 	screen.DrawImage(overlay, nil)
@@ -52,12 +101,19 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx int)
 		30, 50, FaceSmall, ColorGray)
 
 	factions := sortedFactions(gs)
+	scroll = clampDiplomScroll(len(factions), scroll)
+	start := scroll
+	end := start + diplomVisibleRows()
+	if end > len(factions) {
+		end = len(factions)
+	}
 
-	for i, fid := range factions {
+	for row, i := 0, start; i < end; i, row = i+1, row+1 {
+		fid := factions[i]
 		f := gs.Factions[fid]
 		rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
 
-		y := diplomStartY + float64(i)*diplomRowH
+		y := diplomStartY + float64(row)*diplomRowH
 		rowCol := color.RGBA{25, 20, 14, 200}
 		if i == focusIdx {
 			rowCol = color.RGBA{55, 45, 25, 230}
@@ -99,6 +155,12 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx int)
 			}
 		}
 	}
+
+	// Basit sayfa göstergesi
+	if len(factions) > end-start {
+		info := "Liste: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
+		DrawText(screen, info, 30, ScreenHeight-20, FaceSmall, ColorGray)
+	}
 }
 
 func diplomacyCloseRect() (x, y, w, h float32) {
@@ -122,13 +184,32 @@ func diplomacyCloseHit(mx, my float64) bool {
 func (r *Renderer) handleDiplomacyInput() InputAction {
 	factions := sortedFactions(r.gs)
 	n := len(factions)
+	if n == 0 {
+		return InputAction{}
+	}
+	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
+	r.diplomacyFocus = clampDiplomFocus(r.diplomacyFocus, 0, n-1)
+	r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	_, wheelY := ebiten.Wheel()
+	if wheelY > 0 {
+		r.diplomacyScroll--
+	}
+	if wheelY < 0 {
+		r.diplomacyScroll++
+	}
+	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 
 	// Hover → satır güncelle
-	for i := range factions {
-		y := diplomStartY + float64(i)*diplomRowH
+	start := r.diplomacyScroll
+	end := start + diplomVisibleRows()
+	if end > n {
+		end = n
+	}
+	for row, i := 0, start; i < end; i, row = i+1, row+1 {
+		y := diplomStartY + float64(row)*diplomRowH
 		if fy >= y && fy <= y+diplomRowH-4 && fx >= 28 && fx <= ScreenWidth-56 {
 			r.diplomacyFocus = i
 			break
@@ -143,7 +224,7 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 		}
 		if r.diplomacyFocus < len(factions) {
 			target := factions[r.diplomacyFocus]
-			y := diplomStartY + float64(r.diplomacyFocus)*diplomRowH
+			y := diplomStartY + float64(r.diplomacyFocus-r.diplomacyScroll)*diplomRowH
 			for j, da := range diplomActions {
 				bx, by, bw, bh := diplomActionRect(y, j)
 				if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
@@ -156,9 +237,11 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) && r.diplomacyFocus < n-1 {
 		r.diplomacyFocus++
+		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) && r.diplomacyFocus > 0 {
 		r.diplomacyFocus--
+		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) || r.keyJustPressed(ebiten.KeyEscape) {
 		r.showDiplomacy = false

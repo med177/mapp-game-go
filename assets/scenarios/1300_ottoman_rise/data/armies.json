@@ -213,6 +213,24 @@
     ]
   },
   {
+    "id": "army_edit_53",
+    "owner_id": "mamluk",
+    "region_id": "_sea_black_open_1",
+    "docked_region_id": "egypt",
+    "docked_settlement_id": "alexandria",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 10
+      },
+      {
+        "type_id": "warship",
+        "count": 10
+      }
+    ]
+  },
+  {
     "id": "army_england_1",
     "owner_id": "england",
     "region_id": "london",

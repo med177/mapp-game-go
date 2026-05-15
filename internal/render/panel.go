@@ -7,6 +7,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
@@ -1072,6 +1073,57 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 17
 
 	drawBuildingGrid(screen, gs, region, px, float32(ly), pw)
+
+	if region.OwnerID != "" && region.OwnerID != string(gs.PlayerFactionID) {
+		drawRegionDiplomacyButtons(screen, gs, region.OwnerID, px, py, pw, ph)
+	}
+}
+
+func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
+	btnW := float32(74)
+	btnH := float32(20)
+	gap := float32(6)
+	totalW := btnW*4 + gap*3
+	x = px + pw - totalW - 10 + float32(i)*(btnW+gap)
+	y = py + ph - btnH - 8
+	return x, y, btnW, btnH
+}
+
+func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, ownerID string, px, py, pw, ph float32) {
+	labels := []string{"Savaş", "Barış", "İttifak", "Ticaret"}
+	colors := []color.RGBA{
+		{180, 50, 50, 220},
+		{50, 120, 180, 220},
+		{50, 160, 80, 220},
+		{160, 130, 50, 220},
+	}
+	active := [4]bool{true, true, true, true}
+	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, faction.FactionID(ownerID))]
+	if rel != nil {
+		switch rel.Stance {
+		case faction.StanceWar:
+			active[0] = false
+			active[2] = false
+			active[3] = false
+		case faction.StanceTrade:
+			active[3] = false
+		case faction.StanceAllied:
+			active[2] = false
+		}
+	}
+	for i := 0; i < 4; i++ {
+		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
+		btnCol := colors[i]
+		txtCol := ColorWhite
+		if !active[i] {
+			btnCol.A = 110
+			txtCol = ColorGray
+		}
+		vector.FillRect(screen, x, y, w, h, btnCol, false)
+		vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+		tw := MeasureText(labels[i], FaceSmall)
+		DrawText(screen, labels[i], float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
+	}
 }
 
 // DrawArmyPanel seçili ordu bilgisini sol altta gösterir.
@@ -1618,7 +1670,30 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
 		return true
 	}
+	if idx := regionDiplomacyButtonHit(mx, my, gs, rid); idx >= 0 {
+		return true
+	}
 	return buildingGridHitTest(mx, my, gs, rid) != ""
+}
+
+// regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki hızlı diplomasi butonunu döner.
+// 0=Savaş, 1=Barış, 2=İttifak, 3=Ticaret, -1=hiçbiri.
+func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
+	if rid == "" || gs == nil {
+		return -1
+	}
+	region, ok := gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
+		return -1
+	}
+	px, py, pw, ph := infoPanelX(), infoPanelY(), infoPanelW, infoPanelH
+	for i := 0; i < 4; i++ {
+		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
+		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+			return i
+		}
+	}
+	return -1
 }
 
 func armyPanelCloseHit(mx, my float64) bool {

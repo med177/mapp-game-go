@@ -56,8 +56,9 @@ type Renderer struct {
 	factionCursor int
 
 	// Diplomasi paneli
-	showDiplomacy  bool
-	diplomacyFocus int
+	showDiplomacy   bool
+	diplomacyFocus  int
+	diplomacyScroll int
 
 	// Teknoloji paneli
 	showTech   bool
@@ -672,7 +673,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus)
+		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll)
 	}
 
 	// 8. Teknoloji paneli (üst katman)
@@ -4945,6 +4946,7 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyTab) {
 		r.showDiplomacy = true
 		r.diplomacyFocus = 0
+		r.diplomacyScroll = 0
 		return InputAction{}
 	}
 	// T: teknoloji paneli
@@ -5095,6 +5097,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showDiplomacy = !r.showDiplomacy
 		r.showTech = false
 		r.diplomacyFocus = 0
+		r.diplomacyScroll = 0
 		return InputAction{}
 	}
 	if fx >= float64(rects[1][0]) && fx <= float64(rects[1][0]+rects[1][2]) &&
@@ -5118,6 +5121,26 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if r.SelectedRegion != "" {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
+		}
+		if idx := regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion); idx >= 0 {
+			region := r.gs.Regions[r.SelectedRegion]
+			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {
+				target := faction.FactionID(region.OwnerID)
+				switch idx {
+				case 0:
+					r.showDiplomacy = false
+					return InputAction{Kind: ActionDeclareWar, TargetFaction: target}
+				case 1:
+					r.showDiplomacy = false
+					return InputAction{Kind: ActionProposePeace, TargetFaction: target}
+				case 2:
+					r.showDiplomacy = false
+					return InputAction{Kind: ActionProposeAlliance, TargetFaction: target}
+				case 3:
+					r.showDiplomacy = false
+					return InputAction{Kind: ActionProposeTrade, TargetFaction: target}
+				}
+			}
 		}
 		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion); bid != "" {
 			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
@@ -5166,13 +5189,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-			// Seçili ordu denize geçebiliyorsa deniz bölgesine tıklama = hareket komutu
-			if r.selectedArmyIsPlayerOwned() {
-				if a, ok2 := r.gs.Armies[r.SelectedArmy]; ok2 && armyCanEnterRegion(r.gs, a, region) {
-					return InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
-				}
-			}
-			// Seçili donanma yoksa deniz bölgesini seç (highlight için)
+			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
 			r.SelectedArmy = ""
 			r.SelectedRegion = rid
 			return InputAction{}
