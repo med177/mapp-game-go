@@ -1097,25 +1097,12 @@ func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, owner
 		{50, 160, 80, 220},
 		{160, 130, 50, 220},
 	}
-	active := [4]bool{true, true, true, true}
-	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, faction.FactionID(ownerID))]
-	if rel != nil {
-		switch rel.Stance {
-		case faction.StanceWar:
-			active[0] = false
-			active[2] = false
-			active[3] = false
-		case faction.StanceTrade:
-			active[3] = false
-		case faction.StanceAllied:
-			active[2] = false
-		}
-	}
 	for i := 0; i < 4; i++ {
 		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
+		active := regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
 		btnCol := colors[i]
 		txtCol := ColorWhite
-		if !active[i] {
+		if !active {
 			btnCol.A = 110
 			txtCol = ColorGray
 		}
@@ -1124,6 +1111,41 @@ func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, owner
 		tw := MeasureText(labels[i], FaceSmall)
 		DrawText(screen, labels[i], float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
 	}
+}
+
+func regionDiplomacyButtonDisabledReason(gs *state.GameState, ownerID string, idx int) string {
+	if gs == nil || ownerID == "" || idx < 0 || idx > 3 {
+		return ""
+	}
+	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, faction.FactionID(ownerID))]
+	if rel == nil {
+		return ""
+	}
+	switch idx {
+	case 0:
+		if rel.Stance == faction.StanceWar {
+			return "Zaten savaş halindesin."
+		}
+	case 1:
+		if rel.Stance != faction.StanceWar {
+			return "Barış teklifi sadece savaşta yapılır."
+		}
+	case 2:
+		if rel.Stance == faction.StanceWar {
+			return "Savaş halindeyken ittifak teklif edilemez."
+		}
+		if rel.Stance == faction.StanceAllied {
+			return "Zaten müttefiksin."
+		}
+	case 3:
+		if rel.Stance == faction.StanceWar {
+			return "Savaş halindeyken ticaret teklif edilemez."
+		}
+		if rel.Stance == faction.StanceTrade {
+			return "Zaten ticaret anlaşması aktif."
+		}
+	}
+	return ""
 }
 
 // DrawArmyPanel seçili ordu bilgisini sol altta gösterir.

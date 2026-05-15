@@ -5125,6 +5125,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if idx := regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion); idx >= 0 {
 			region := r.gs.Regions[r.SelectedRegion]
 			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {
+				if reason := regionDiplomacyButtonDisabledReason(r.gs, region.OwnerID, idx); reason != "" {
+					r.ShowCombatResult(reason)
+					return InputAction{}
+				}
 				target := faction.FactionID(region.OwnerID)
 				switch idx {
 				case 0:

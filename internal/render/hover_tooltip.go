@@ -16,6 +16,16 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
+	if idx := regionDiplomacyButtonHit(fx, fy, gs, rid); idx >= 0 {
+		region := gs.Regions[rid]
+		if region != nil {
+			if reason := regionDiplomacyButtonDisabledReason(gs, region.OwnerID, idx); reason != "" {
+				drawSmallHoverHint(screen, reason, fx, fy)
+				return
+			}
+		}
+	}
+
 	if bid := BuildingGridHoverID(fx, fy, gs, rid); bid != "" {
 		drawBuildingTooltip(screen, gs, rid, bid, fx, fy)
 		return
@@ -200,4 +210,14 @@ func unitRequirementText(gs *state.GameState, buildingID, techID string) string 
 		}
 	}
 	return req
+}
+
+func drawSmallHoverHint(screen *ebiten.Image, message string, mx, my float64) {
+	w := MeasureText(message, FaceSmall) + 20
+	if w < 220 {
+		w = 220
+	}
+	x, y, ww, hh := tooltipRect(mx, my, w, 40)
+	drawTooltipBox(screen, x, y, ww, hh)
+	DrawText(screen, message, x+10, y+12, FaceSmall, ColorGray)
 }
