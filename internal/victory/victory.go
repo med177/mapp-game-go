@@ -12,7 +12,7 @@ const (
 	defaultGoldHoldTurns    = 5
 	defaultArmyStrength     = 200
 	defaultDefeated         = 3
-	aiDominationLimit       = 20
+	aiDominationLimit       = 30
 )
 
 // Check her tur sonunda zafer/mağlubiyet koşullarını kontrol eder.

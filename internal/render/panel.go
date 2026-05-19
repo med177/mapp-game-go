@@ -125,6 +125,25 @@ func bottomActionHudRect() (x, y, w, h float32) {
 	return x, y, w, h
 }
 
+func mapModeHudRect() (x, y, w, h float32) {
+	ax, ay, aw, _ := bottomActionHudRect()
+	w = 230
+	h = 30
+	x = ax + aw/2 - w/2
+	y = ay - h - 6
+	return x, y, w, h
+}
+
+// mapModeButtonRects [0]=Normal [1]=Ticaret
+func mapModeButtonRects() [2][4]float32 {
+	x, y, w, h := mapModeHudRect()
+	half := (w - 6) / 2
+	return [2][4]float32{
+		{x + 2, y + 2, half, h - 4},
+		{x + 4 + half, y + 2, half, h - 4},
+	}
+}
+
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
 // [0]=Diplomasi  [1]=Teknoloji  [2]=Tur Bitir
 func BottomButtonRects() [3][4]float32 {
@@ -142,11 +161,20 @@ func BottomButtonRects() [3][4]float32 {
 
 func bottomActionHudHit(fx, fy float64) bool {
 	x, y, w, h := bottomActionHudRect()
-	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+	if fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h) {
+		return true
+	}
+	mx, my, mw, mh := mapModeHudRect()
+	return fx >= float64(mx) && fx <= float64(mx+mw) && fy >= float64(my) && fy <= float64(my+mh)
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
 	for _, r := range BottomButtonRects() {
+		if rectF32Hit(fx, fy, r) {
+			return true
+		}
+	}
+	for _, r := range mapModeButtonRects() {
 		if rectF32Hit(fx, fy, r) {
 			return true
 		}
@@ -235,7 +263,7 @@ func musicHudHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, showTech bool) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, showTech bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -340,9 +368,31 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		tw := MeasureText(labels[i], FaceMed)
 		DrawText(screen, labels[i], float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, ColorWhite)
 	}
+	drawMapModeHud(screen, mapMode)
 
-	drawDateMenuHud(screen, gs)
+	drawDateMenuHud(screen, gs, mapMode)
 	drawMusicHud(screen)
+}
+
+func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
+	x, y, w, h := mapModeHudRect()
+	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 14, 18, 220}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1.2, panelBorder, false)
+	buttons := mapModeButtonRects()
+	labels := [2]string{"Normal", "Ticaret"}
+	for i, b := range buttons {
+		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
+		fill := color.RGBA{44, 48, 56, 220}
+		txt := color.RGBA{184, 194, 204, 220}
+		if active {
+			fill = color.RGBA{66, 90, 122, 240}
+			txt = color.RGBA{235, 245, 255, 240}
+		}
+		vector.FillRect(screen, b[0], b[1], b[2], b[3], fill, false)
+		vector.StrokeRect(screen, b[0], b[1], b[2], b[3], 1, color.RGBA{120, 96, 54, 210}, false)
+		tw := MeasureText(labels[i], FaceSmall)
+		DrawText(screen, labels[i], float64(b[0])+float64(b[2])/2-tw/2, float64(b[1])+6, FaceSmall, txt)
+	}
 }
 
 func drawMusicHud(screen *ebiten.Image) {
@@ -374,7 +424,7 @@ func drawMusicHud(screen *ebiten.Image) {
 	drawTinyPanelButton(screen, nr[0], nr[1], nr[2], nr[3], "Sonr", true)
 }
 
-func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
+func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode) {
 	x, y, w, h := topDateHudRect()
 	vector.FillRect(screen, x, y, w, h, panelBg, false)
 	drawPanelBorder(screen, x, y, w, h)
@@ -390,6 +440,8 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState) {
 	DrawText(screen, dateStr, float64(x)+12, float64(y)+13, FaceMed, ColorGold)
 	DrawText(screen, gs.CurrentSeason().DisplayName()+"  •  Tur "+itoa(gs.Turn),
 		float64(x)+12, float64(y)+42, FaceSmall, color.RGBA{160, 200, 100, 220})
+
+	_ = mapMode
 
 	bx, by, bw, bh := topDateHudMenuButtonRect()
 	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{45, 38, 28, 230}, false)

@@ -70,6 +70,7 @@ type Renderer struct {
 	tradeScroll       int
 	tradeFactionFocus int
 	tradeGoodFocus    int
+	mapMode           MapMode
 
 	// Ana menü
 	menuTick        int
@@ -115,6 +116,10 @@ type Renderer struct {
 	armyIconBuf    []armyIconPos
 	regionLabelBuf []settlementDraw
 	labelRectBuf   []screenRect
+	tradeCorridors []tradeCorridorInfo
+	tradeHoverIdx  int
+	tradeCenters   []tradeCenterVisual
+	tradeCenterIdx int
 
 	editSelectedRegion         world.RegionID
 	editSelectedSettlement     int
@@ -424,6 +429,10 @@ func New(gs *state.GameState) *Renderer {
 		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
 		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
 		editUnitTypeDropdown:       NewDropdown(dropX, dropY, dropW, dropH, "Birim Tipi"),
+		tradeCorridors:             make([]tradeCorridorInfo, 0, 96),
+		tradeHoverIdx:              -1,
+		tradeCenters:               make([]tradeCenterVisual, 0, 12),
+		tradeCenterIdx:             -1,
 	}
 	r.resetCamera()
 	return r
@@ -643,8 +652,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
-	// 3. Ticaret rotaları (harita üstü, ordu ikonlarının altında)
-	r.drawTradeRoutes(screen)
+	// 3. Ticaret rotaları (yalnızca ticaret harita modunda)
+	if r.mapMode == MapModeTrade {
+		r.drawTradeModeBackdrop(screen)
+		r.drawTradeRoutes(screen)
+	}
 
 	// 4. Ordu hareket hedefleri
 	if r.selectedArmyIsPlayerOwned() {
@@ -666,7 +678,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 6. UI panelleri
 	if r.gs.Phase != state.PhaseEditMode {
-		DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech)
+		DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech, r.mapMode)
 		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
 		DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
@@ -717,7 +729,12 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		drawEventDetailPopup(screen, r.eventDetail)
 	}
 
-	// 12. Ticaret paneli (üst katman)
+	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
+	if r.mapMode == MapModeTrade && !r.showTrade {
+		r.drawTradeHoverTooltip(screen)
+	}
+
+	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
 		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll)
 	}
@@ -831,69 +848,699 @@ func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool
 	return false
 }
 
-// drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde çizgi olarak çizer.
-// Her TradeRoute için kaynak ve hedef fraksiyonun başkent/ilk bölgesi arasına
-// altın sarısı noktalı çizgi çizilir. Zoom 0.5'in altında gizlenir.
-func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
-	if r.camScale < 0.5 || len(r.gs.TradeRoutes) == 0 {
-		return
+type tradeRouteVisual struct {
+	factionA string
+	factionB string
+	goodName string
+	amount   int
+	bestFlow int
+}
+
+type tradeCenterVisual struct {
+	regionID world.RegionID
+	nameTR   string
+	tier     world.TradeCenterTier
+	worldX   float64
+	worldY   float64
+	x        float64
+	y        float64
+}
+
+type tradeCorridorInfo struct {
+	fromName string
+	toName   string
+	amount   int
+	factions int
+	goods    string
+	sx       float64
+	sy       float64
+	cx       float64
+	cy       float64
+	dx       float64
+	dy       float64
+	hitWidth float64
+}
+
+func tradeRoutePairKey(a, b string) string {
+	if a > b {
+		a, b = b, a
 	}
-	for _, tr := range r.gs.TradeRoutes {
-		srcRegion := r.factionPrimaryRegion(tr.FromFactionID)
-		dstRegion := r.factionPrimaryRegion(tr.ToFactionID)
-		if srcRegion == nil || dstRegion == nil {
+	return a + "|" + b
+}
+
+func routeCurveOffset(key string, dist float64) float64 {
+	if dist <= 0 {
+		return 0
+	}
+	h := 0
+	for i := 0; i < len(key); i++ {
+		h = (h*31 + int(key[i])) & 0x7fffffff
+	}
+	sign := 1.0
+	if h%2 == 0 {
+		sign = -1.0
+	}
+	mag := dist * 0.11
+	if mag < 18 {
+		mag = 18
+	}
+	if mag > 96 {
+		mag = 96
+	}
+	return sign * mag
+}
+
+func quadBezierPoint(x0, y0, cx, cy, x1, y1, t float64) (float64, float64) {
+	u := 1 - t
+	x := u*u*x0 + 2*u*t*cx + t*t*x1
+	y := u*u*y0 + 2*u*t*cy + t*t*y1
+	return x, y
+}
+
+func (r *Renderer) drawTradeModeBackdrop(screen *ebiten.Image) {
+	w := float32(ScreenWidth)
+	h := float32(ScreenHeight)
+	vector.FillRect(screen, 0, 0, w, h, color.RGBA{18, 26, 34, 52}, false)
+	vector.FillRect(screen, 0, h*0.64, w, h*0.36, color.RGBA{20, 32, 44, 35}, false)
+}
+
+func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
+	if maxCenters <= 0 || len(r.gs.TradeCenters.Centers) == 0 {
+		return nil
+	}
+	centers := make([]tradeCenterVisual, 0, maxCenters)
+	for _, def := range r.gs.TradeCenters.Centers {
+		if len(centers) >= maxCenters {
+			break
+		}
+		reg := r.gs.Regions[def.ID]
+		if reg == nil || reg.IsSea || reg.TradeCapacity <= 0 {
 			continue
 		}
-		sx, sy := r.regionScreenPos(srcRegion)
-		dx, dy := r.regionScreenPos(dstRegion)
-		// Çizgiyi iki nokta arasına çiz
-		col := color.RGBA{220, 180, 60, 160} // altın sarısı, yarı saydam
-		// Noktalı efekt: ana çizgi + ara noktalar
-		segments := 20
+		sx, sy := r.regionScreenPos(reg)
+		centers = append(centers, tradeCenterVisual{
+			regionID: reg.ID,
+			nameTR:   chooseRegionLabel(reg),
+			tier:     def.Tier,
+			worldX:   float64(reg.WorldX),
+			worldY:   float64(reg.WorldY),
+			x:        sx,
+			y:        sy,
+		})
+	}
+	return centers
+}
+
+func chooseRegionLabel(region *world.Region) string {
+	if region == nil {
+		return ""
+	}
+	if region.NameTR != "" {
+		return region.NameTR
+	}
+	if region.Name != "" {
+		return region.Name
+	}
+	return string(region.ID)
+}
+
+func sqDistPointSegment(px, py, ax, ay, bx, by float64) float64 {
+	abx := bx - ax
+	aby := by - ay
+	den := abx*abx + aby*aby
+	if den <= 1e-6 {
+		dx := px - ax
+		dy := py - ay
+		return dx*dx + dy*dy
+	}
+	t := ((px-ax)*abx + (py-ay)*aby) / den
+	if t < 0 {
+		t = 0
+	} else if t > 1 {
+		t = 1
+	}
+	cx := ax + abx*t
+	cy := ay + aby*t
+	dx := px - cx
+	dy := py - cy
+	return dx*dx + dy*dy
+}
+
+func (r *Renderer) tradeCorridorAt(fx, fy float64) int {
+	bestIdx := -1
+	bestD2 := math.MaxFloat64
+	for i := range r.tradeCorridors {
+		c := r.tradeCorridors[i]
+		segments := 24
+		threshold := c.hitWidth * c.hitWidth
+		prevX, prevY := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 0)
+		for s := 1; s <= segments; s++ {
+			t := float64(s) / float64(segments)
+			x, y := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t)
+			d2 := sqDistPointSegment(fx, fy, prevX, prevY, x, y)
+			if d2 <= threshold && d2 < bestD2 {
+				bestD2 = d2
+				bestIdx = i
+			}
+			prevX, prevY = x, y
+		}
+	}
+	return bestIdx
+}
+
+func (r *Renderer) tradeCenterAt(fx, fy float64) int {
+	bestIdx := -1
+	best := math.MaxFloat64
+	for i := range r.tradeCenters {
+		c := r.tradeCenters[i]
+		d := math.Hypot(fx-c.x, fy-c.y)
+		if d <= 12 && d < best {
+			best = d
+			bestIdx = i
+		}
+	}
+	return bestIdx
+}
+
+func (r *Renderer) updateTradeHover() {
+	r.tradeHoverIdx = -1
+	r.tradeCenterIdx = -1
+	if r.mapMode != MapModeTrade || (len(r.tradeCorridors) == 0 && len(r.tradeCenters) == 0) {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	r.tradeHoverIdx = r.tradeCorridorAt(fx, fy)
+	if r.tradeHoverIdx < 0 {
+		r.tradeCenterIdx = r.tradeCenterAt(fx, fy)
+	}
+}
+
+func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
+	if r.tradeHoverIdx < 0 || r.tradeHoverIdx >= len(r.tradeCorridors) {
+		return
+	}
+	c := r.tradeCorridors[r.tradeHoverIdx]
+	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{6, 10, 14, 54}, false)
+	segments := 28
+	for i := 0; i < segments; i++ {
+		t1 := float64(i) / float64(segments)
+		t2 := float64(i+1) / float64(segments)
+		x1, y1 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t1)
+		x2, y2 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t2)
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, color.RGBA{255, 228, 144, 56}, false)
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, color.RGBA{255, 241, 192, 230}, false)
+	}
+	vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, color.RGBA{255, 236, 180, 230}, true)
+	vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, color.RGBA{255, 236, 180, 230}, true)
+
+	mx, my := ebiten.CursorPosition()
+	x := float32(mx + 14)
+	y := float32(my + 16)
+	w := float32(292)
+	h := float32(90)
+	if x+w > float32(ScreenWidth)-6 {
+		x = float32(mx) - w - 14
+	}
+	if y+h > float32(ScreenHeight)-6 {
+		y = float32(my) - h - 12
+	}
+	vector.FillRect(screen, x, y, w, h, color.RGBA{10, 14, 20, 230}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
+	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 240})
+	DrawText(screen, c.fromName+" ↔ "+c.toName, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
+	DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+	DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
+}
+
+func (r *Renderer) nearestTradeCenterIndex(region *world.Region, centers []tradeCenterVisual) int {
+	if region == nil || len(centers) == 0 {
+		return -1
+	}
+	rx := float64(region.WorldX)
+	ry := float64(region.WorldY)
+	bestIdx := -1
+	bestDist := math.MaxFloat64
+	for i, c := range centers {
+		d := math.Hypot(rx-c.worldX, ry-c.worldY)
+		if d < bestDist {
+			bestDist = d
+			bestIdx = i
+		}
+	}
+	return bestIdx
+}
+
+func (r *Renderer) buildTradeCenterAdjacency(centers []tradeCenterVisual) map[int][]int {
+	adj := make(map[int][]int, len(centers))
+	if len(centers) == 0 {
+		return adj
+	}
+	indexByID := make(map[world.RegionID]int, len(centers))
+	for i := range centers {
+		indexByID[centers[i].regionID] = i
+	}
+
+	// explicit links from scenario data
+	for _, def := range r.gs.TradeCenters.Centers {
+		from, ok := indexByID[def.ID]
+		if !ok {
+			continue
+		}
+		for _, lid := range def.Links {
+			to, ok := indexByID[lid]
+			if !ok || to == from {
+				continue
+			}
+			adj[from] = append(adj[from], to)
+			adj[to] = append(adj[to], from)
+		}
+	}
+
+	// dedup + sort
+	for i := range centers {
+		neighbors := adj[i]
+		if len(neighbors) == 0 {
+			continue
+		}
+		sort.Ints(neighbors)
+		uniq := neighbors[:0]
+		prev := -1
+		for _, n := range neighbors {
+			if n == prev {
+				continue
+			}
+			prev = n
+			uniq = append(uniq, n)
+		}
+		adj[i] = uniq
+	}
+	return adj
+}
+
+func shortestCenterPath(adj map[int][]int, from, to int) []int {
+	if from < 0 || to < 0 {
+		return nil
+	}
+	if from == to {
+		return []int{from}
+	}
+	queue := []int{from}
+	prev := map[int]int{from: -1}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, nxt := range adj[cur] {
+			if _, seen := prev[nxt]; seen {
+				continue
+			}
+			prev[nxt] = cur
+			if nxt == to {
+				path := []int{to}
+				for p := cur; p >= 0; p = prev[p] {
+					path = append(path, p)
+				}
+				// reverse
+				for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+					path[i], path[j] = path[j], path[i]
+				}
+				return path
+			}
+			queue = append(queue, nxt)
+		}
+	}
+	return nil
+}
+
+// drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde sade koridorlar olarak çizer.
+// Çift yönlü rotalar (A->B ve B->A) tek bir görsel hatta birleştirilir.
+// Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
+func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
+	if r.camScale < 0.6 || len(r.gs.TradeRoutes) == 0 {
+		return
+	}
+	playerID := string(r.gs.PlayerFactionID)
+	onlyPlayerRoutes := r.camScale < 0.85
+	showLabels := r.camScale >= 1.05
+
+	merged := make(map[string]tradeRouteVisual, len(r.gs.TradeRoutes))
+	for _, tr := range r.gs.TradeRoutes {
+		if tr == nil || tr.FromFactionID == "" || tr.ToFactionID == "" || tr.FromFactionID == tr.ToFactionID {
+			continue
+		}
+		if onlyPlayerRoutes && tr.FromFactionID != playerID && tr.ToFactionID != playerID {
+			continue
+		}
+		key := tradeRoutePairKey(tr.FromFactionID, tr.ToFactionID)
+		route := merged[key]
+		if route.factionA == "" {
+			if tr.FromFactionID < tr.ToFactionID {
+				route.factionA = tr.FromFactionID
+				route.factionB = tr.ToFactionID
+			} else {
+				route.factionA = tr.ToFactionID
+				route.factionB = tr.FromFactionID
+			}
+		}
+		route.amount += tr.AmountPerTurn
+		candidateGood := goodDisplayName(tr.Good)
+		if route.goodName == "" || tr.AmountPerTurn > route.bestFlow {
+			route.goodName = candidateGood
+			route.bestFlow = tr.AmountPerTurn
+		}
+		merged[key] = route
+	}
+	if len(merged) == 0 {
+		r.tradeCorridors = r.tradeCorridors[:0]
+		r.tradeHoverIdx = -1
+		return
+	}
+
+	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
+	if len(centers) == 0 {
+		r.tradeCorridors = r.tradeCorridors[:0]
+		r.tradeHoverIdx = -1
+		r.tradeCenters = r.tradeCenters[:0]
+		r.tradeCenterIdx = -1
+		return
+	}
+	r.tradeCorridors = r.tradeCorridors[:0]
+	r.tradeCenters = append(r.tradeCenters[:0], centers...)
+	mx, my := ebiten.CursorPosition()
+	preFocusCenter := -1
+	bestD := 13.0
+	for i := range centers {
+		d := math.Hypot(float64(mx)-centers[i].x, float64(my)-centers[i].y)
+		if d < bestD {
+			bestD = d
+			preFocusCenter = i
+		}
+	}
+	adj := r.buildTradeCenterAdjacency(centers)
+	factionHub := make(map[string]*world.Region, len(merged)*2)
+	factionCenter := make(map[string]int, len(merged)*2)
+	type linkAgg struct {
+		flow     int
+		factions map[string]struct{}
+		goods    map[string]int
+	}
+	centerLinkFlow := map[string]*linkAgg{}
+	centerSpokeFlow := map[string]int{}
+	mergedKeys := make([]string, 0, len(merged))
+	for key := range merged {
+		mergedKeys = append(mergedKeys, key)
+	}
+	sort.Strings(mergedKeys)
+	for _, key := range mergedKeys {
+		route := merged[key]
+		if factionHub[route.factionA] == nil {
+			factionHub[route.factionA] = r.factionPrimaryRegion(route.factionA)
+		}
+		if factionHub[route.factionB] == nil {
+			factionHub[route.factionB] = r.factionPrimaryRegion(route.factionB)
+		}
+		ca, ok := factionCenter[route.factionA]
+		if !ok {
+			ca = r.nearestTradeCenterIndex(factionHub[route.factionA], centers)
+			factionCenter[route.factionA] = ca
+		}
+		cb, ok := factionCenter[route.factionB]
+		if !ok {
+			cb = r.nearestTradeCenterIndex(factionHub[route.factionB], centers)
+			factionCenter[route.factionB] = cb
+		}
+		if ca >= 0 {
+			centerSpokeFlow[route.factionA] += route.amount
+		}
+		if cb >= 0 {
+			centerSpokeFlow[route.factionB] += route.amount
+		}
+			if ca < 0 || cb < 0 || ca == cb {
+				continue
+			}
+			path := shortestCenterPath(adj, ca, cb)
+			if len(path) < 2 {
+				continue
+			}
+			for pi := 0; pi < len(path)-1; pi++ {
+				ka, kb := path[pi], path[pi+1]
+				if ka > kb {
+					ka, kb = kb, ka
+				}
+				key := itoa(ka) + "|" + itoa(kb)
+				agg := centerLinkFlow[key]
+				if agg == nil {
+					agg = &linkAgg{
+						factions: make(map[string]struct{}, 4),
+						goods:    make(map[string]int, 4),
+					}
+					centerLinkFlow[key] = agg
+				}
+				agg.flow += route.amount
+				agg.factions[route.factionA] = struct{}{}
+				agg.factions[route.factionB] = struct{}{}
+				if route.goodName != "" {
+					agg.goods[route.goodName] += route.amount
+				}
+			}
+		}
+
+	// Faction -> trade center spokes (çok hafif)
+	if r.camScale >= 0.95 {
+		factionIDs := make([]string, 0, len(factionHub))
+		for fid := range factionHub {
+			factionIDs = append(factionIDs, fid)
+		}
+		sort.Strings(factionIDs)
+		for _, fid := range factionIDs {
+			hub := factionHub[fid]
+			if hub == nil {
+				continue
+			}
+			centerIdx := factionCenter[fid]
+			if centerIdx < 0 || centerIdx >= len(centers) {
+				continue
+			}
+			flow := centerSpokeFlow[fid]
+			if flow <= 0 {
+				continue
+			}
+			hx, hy := r.regionScreenPos(hub)
+			c := centers[centerIdx]
+			w := float32(0.8)
+			if flow >= 12 {
+				w = 1.2
+			}
+			col := color.RGBA{180, 195, 220, 62}
+			if preFocusCenter >= 0 && centerIdx != preFocusCenter {
+				col = color.RGBA{120, 135, 160, 18}
+			}
+			vector.StrokeLine(screen, float32(hx), float32(hy), float32(c.x), float32(c.y), w, col, false)
+		}
+	}
+
+	// Trade center <-> trade center corridors (ana ağ)
+	linkKeys := make([]string, 0, len(centerLinkFlow))
+	for key := range centerLinkFlow {
+		linkKeys = append(linkKeys, key)
+	}
+	sort.Strings(linkKeys)
+	for _, key := range linkKeys {
+		agg := centerLinkFlow[key]
+		if agg == nil || agg.flow <= 0 {
+			continue
+		}
+		amount := agg.flow
+		parts := strings.Split(key, "|")
+		if len(parts) != 2 {
+			continue
+		}
+		i, errI := strconv.Atoi(parts[0])
+		j, errJ := strconv.Atoi(parts[1])
+		if errI != nil || errJ != nil {
+			continue
+		}
+		if i < 0 || j < 0 || i >= len(centers) || j >= len(centers) || i == j {
+			continue
+		}
+		sx, sy := centers[i].x, centers[i].y
+		dx, dy := centers[j].x, centers[j].y
+		mx := (sx + dx) / 2
+		my := (sy + dy) / 2
+		vx := dx - sx
+		vy := dy - sy
+		dist := math.Hypot(vx, vy)
+		if dist < 1 {
+			continue
+		}
+		px := -vy / dist
+		py := vx / dist
+		curve := routeCurveOffset(key, dist)
+		cx := mx + px*curve
+		cy := my + py*curve
+
+		glow := color.RGBA{255, 224, 138, 44}
+		core := color.RGBA{247, 232, 176, 190}
+		coreW := float32(1.5)
+		glowW := float32(5.0)
+		if amount >= 14 {
+			coreW = 2.1
+			glowW = 7.0
+		} else if amount >= 8 {
+			coreW = 1.8
+			glowW = 6.0
+		}
+		if preFocusCenter >= 0 && i != preFocusCenter && j != preFocusCenter {
+			glow = color.RGBA{180, 170, 130, 10}
+			core = color.RGBA{170, 165, 140, 34}
+			coreW = 1.1
+			glowW = 3.4
+		}
+		segments := 22
 		for i := 0; i < segments; i++ {
 			t1 := float64(i) / float64(segments)
 			t2 := float64(i+1) / float64(segments)
-			x1 := sx + (dx-sx)*t1
-			y1 := sy + (dy-sy)*t1
-			x2 := sx + (dx-sx)*t2
-			y2 := sy + (dy-sy)*t2
-			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 2.5, col, false)
-			_ = y2
+			x1, y1 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t1)
+			x2, y2 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t2)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 		}
-		// Orta noktada mal ikonu
-		mx := (sx + dx) / 2
-		my := (sy + dy) / 2
-		goodName := goodDisplayName(tr.Good)
-		tw := MeasureText(goodName, FaceSmall)
-		DrawText(screen, goodName, mx-tw/2, my-18, FaceSmall, ColorGold)
-		// Miktar bilgisi
-		qtyStr := itoa(tr.AmountPerTurn) + "/tur"
-		tw2 := MeasureText(qtyStr, FaceSmall)
-		DrawText(screen, qtyStr, mx-tw2/2, my-2, FaceSmall, color.RGBA{180, 160, 80, 220})
-		_ = tw2
+		if showLabels {
+			lx, ly := quadBezierPoint(sx, sy, cx, cy, dx, dy, 0.5)
+			qtyStr := itoa(amount) + "/tur"
+			tw2 := MeasureText(qtyStr, FaceSmall)
+			DrawText(screen, qtyStr, lx-tw2/2, ly-8, FaceSmall, color.RGBA{225, 204, 144, 230})
+		}
+		goodsList := make([]struct {
+			name string
+			flow int
+		}, 0, len(agg.goods))
+		for name, flow := range agg.goods {
+			goodsList = append(goodsList, struct {
+				name string
+				flow int
+			}{name: name, flow: flow})
+		}
+		sort.Slice(goodsList, func(a, b int) bool {
+			if goodsList[a].flow != goodsList[b].flow {
+				return goodsList[a].flow > goodsList[b].flow
+			}
+			return goodsList[a].name < goodsList[b].name
+		})
+		goodsSummary := "-"
+		if len(goodsList) > 0 {
+			goodsSummary = goodsList[0].name
+			if len(goodsList) > 1 {
+				goodsSummary += ", " + goodsList[1].name
+			}
+		}
+		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
+			fromName: centers[i].nameTR,
+			toName:   centers[j].nameTR,
+			amount:   amount,
+			factions: len(agg.factions),
+			goods:    goodsSummary,
+			sx:       sx,
+			sy:       sy,
+			cx:       cx,
+			cy:       cy,
+			dx:       dx,
+			dy:       dy,
+			hitWidth: float64(glowW) + 4,
+		})
+	}
+	r.updateTradeHover()
+
+	focusCenter := r.tradeCenterIdx
+	if r.tradeHoverIdx >= 0 && r.tradeHoverIdx < len(r.tradeCorridors) {
+		c := r.tradeCorridors[r.tradeHoverIdx]
+		for i := range centers {
+			if centers[i].nameTR == c.fromName || centers[i].nameTR == c.toName {
+				focusCenter = i
+				break
+			}
+		}
+	}
+
+	for i := range centers {
+		rOuter := float32(11)
+		rInner := float32(4.5)
+		if centers[i].tier == world.TradeCenterPrimary {
+			rOuter = 13
+			rInner = 5.4
+		}
+		alphaOuter := uint8(26)
+		alphaInner := uint8(190)
+		if focusCenter >= 0 {
+			alphaOuter = 10
+			alphaInner = 90
+			for _, c := range r.tradeCorridors {
+				if c.fromName == centers[i].nameTR || c.toName == centers[i].nameTR {
+					if c.fromName == centers[focusCenter].nameTR || c.toName == centers[focusCenter].nameTR || i == focusCenter {
+						alphaOuter = 42
+						alphaInner = 240
+						break
+					}
+				}
+			}
+		}
+		vector.FillCircle(screen, float32(centers[i].x), float32(centers[i].y), rOuter, color.RGBA{255, 214, 128, alphaOuter}, true)
+		vector.FillCircle(screen, float32(centers[i].x), float32(centers[i].y), rInner, color.RGBA{255, 232, 172, alphaInner}, true)
 	}
 }
 
 // factionPrimaryRegion bir fraksiyonun görsel temsili için ana bölgesini döner.
 // Önce başkent settlement'ı olan bölgeyi, yoksa ilk bulunan bölgeyi döner.
 func (r *Renderer) factionPrimaryRegion(factionID string) *world.Region {
-	for _, region := range r.gs.Regions {
-		if region == nil || region.OwnerID != factionID || region.IsSea {
-			continue
+	candidates := make([]*world.Region, 0, 16)
+	if len(r.gs.RegionOrder) > 0 {
+		for _, rid := range r.gs.RegionOrder {
+			region := r.gs.Regions[rid]
+			if region == nil || region.OwnerID != factionID || region.IsSea {
+				continue
+			}
+			candidates = append(candidates, region)
 		}
+	} else {
+		ids := make([]string, 0, len(r.gs.Regions))
+		for rid := range r.gs.Regions {
+			ids = append(ids, string(rid))
+		}
+		sort.Strings(ids)
+		for _, id := range ids {
+			region := r.gs.Regions[world.RegionID(id)]
+			if region == nil || region.OwnerID != factionID || region.IsSea {
+				continue
+			}
+			candidates = append(candidates, region)
+		}
+	}
+	if len(candidates) == 0 {
+		return nil
+	}
+	best := candidates[0]
+	bestCapital := false
+	bestScore := -1
+	for _, region := range candidates {
+		capital := false
 		for _, settlement := range region.Settlements {
 			if settlement.IsCapital {
-				return region
+				capital = true
+				break
 			}
 		}
-	}
-	// Başkent yoksa ilk kara bölgesini döndür
-	for _, region := range r.gs.Regions {
-		if region != nil && region.OwnerID == factionID && !region.IsSea {
-			return region
+		if capital && !bestCapital {
+			best = region
+			bestCapital = true
+			bestScore = region.TradeCapacity
+			continue
+		}
+		if capital == bestCapital && region.TradeCapacity > bestScore {
+			best = region
+			bestScore = region.TradeCapacity
 		}
 	}
-	return nil
+	return best
 }
 
 // drawMoveTargets seçili ordunun gidebileceği komşu bölgeleri vurgular.
@@ -5075,6 +5722,10 @@ func (r *Renderer) HandleInput() InputAction {
 		r.diplomacyScroll = 0
 		return InputAction{}
 	}
+	if r.keyJustPressed(ebiten.KeyM) {
+		r.mapMode = r.mapMode.Next()
+		return InputAction{}
+	}
 	// T: teknoloji paneli (ticaret paneli açıkken T paneli kapatır)
 	if r.keyJustPressed(ebiten.KeyT) {
 		if r.showTrade {
@@ -5222,6 +5873,35 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if topDateHudMenuButtonHit(fx, fy) {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
+	}
+	modeRects := mapModeButtonRects()
+	if rectF32Hit(fx, fy, modeRects[0]) {
+		r.mapMode = MapModeNormal
+		return InputAction{}
+	}
+	if rectF32Hit(fx, fy, modeRects[1]) {
+		r.mapMode = MapModeTrade
+		return InputAction{}
+	}
+	if r.mapMode == MapModeTrade {
+		if idx := r.tradeCorridorAt(fx, fy); idx >= 0 && idx < len(r.tradeCorridors) {
+			c := r.tradeCorridors[idx]
+			r.ShowCombatResult("Koridor: " + c.fromName + " ↔ " + c.toName + " | " + itoa(c.amount) + "/tur | " + itoa(c.factions) + " fraksiyon")
+			return InputAction{}
+		}
+		if cidx := r.tradeCenterAt(fx, fy); cidx >= 0 && cidx < len(r.tradeCenters) {
+			centerName := r.tradeCenters[cidx].nameTR
+			connected := 0
+			total := 0
+			for _, c := range r.tradeCorridors {
+				if c.fromName == centerName || c.toName == centerName {
+					connected++
+					total += c.amount
+				}
+			}
+			r.ShowCombatResult("Merkez: " + centerName + " | " + itoa(connected) + " koridor | " + itoa(total) + "/tur")
+			return InputAction{}
+		}
 	}
 	if musicHudInteractiveHit(fx, fy) {
 		if rectF32Hit(fx, fy, musicHudToggleRect()) {

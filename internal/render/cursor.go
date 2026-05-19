@@ -341,6 +341,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		return true
 	}
+	if r.mapMode == MapModeTrade && (r.tradeCorridorAt(fx, fy) >= 0 || r.tradeCenterAt(fx, fy) >= 0) {
+		return true
+	}
 	// Ordu ikonu üzerinde mi?
 	for _, pos := range r.armyIconPositions() {
 		dx := fx - float64(pos.X)

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-11
+last_updated: 2026-05-20
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -63,6 +63,32 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 ## Veri Dosyaları (`data/` klasörü)
 
 Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
+
+## trade_centers.json
+
+Ticaret harita modunda kullanılacak tarihsel merkez düğümleri ve aralarındaki koridor graph'ı.
+
+```json
+{
+  "centers": [
+    { "id": "venice", "tier": "primary", "links": ["genoa", "constantinople"] },
+    { "id": "constantinople", "tier": "primary", "links": ["venice", "aleppo"] },
+    { "id": "aleppo", "tier": "secondary", "links": ["constantinople", "basra"] }
+  ]
+}
+```
+
+Alanlar:
+- `id`: `regions.json` içindeki bölge ID'si
+- `tier`: `primary` veya `secondary` (görsel vurgu seviyesi)
+- `links`: merkezin doğrudan bağlı olduğu diğer merkez ID'leri
+
+Kurallar:
+- Sıra önemlidir; renderer merkezleri dosyadaki sırayla alır.
+- Geçersiz, deniz veya `trade_capacity <= 0` olan merkezler atlanır.
+- `links` içinde geçersiz/tekrarlı/self link girdileri temizlenir.
+- Koridor akışı doğrudan her merkez çifti arasında değil, bu link graph'ı üzerindeki kısa yol boyunca dağıtılır.
+- Dosya yoksa merkez listesi boş kalır (trade map çizimi yapılmaz).
 
 ## regions.json
 

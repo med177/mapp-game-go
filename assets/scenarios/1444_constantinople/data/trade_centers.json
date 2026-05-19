@@ -1,0 +1,15 @@
+{
+  "centers": [
+    { "id": "venice", "tier": "primary", "links": ["genoa", "constantinople", "flanders"] },
+    { "id": "constantinople", "tier": "primary", "links": ["venice", "aleppo", "egypt", "novgorod"] },
+    { "id": "flanders", "tier": "primary", "links": ["london", "paris", "genoa", "venice"] },
+    { "id": "genoa", "tier": "primary", "links": ["flanders", "venice", "constantinople"] },
+
+    { "id": "london", "tier": "secondary", "links": ["flanders"] },
+    { "id": "paris", "tier": "secondary", "links": ["flanders"] },
+    { "id": "aleppo", "tier": "secondary", "links": ["constantinople", "basra", "egypt"] },
+    { "id": "egypt", "tier": "secondary", "links": ["constantinople", "aleppo"] },
+    { "id": "basra", "tier": "secondary", "links": ["aleppo"] },
+    { "id": "novgorod", "tier": "secondary", "links": ["constantinople", "flanders"] }
+  ]
+}

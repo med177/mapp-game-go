@@ -83,7 +83,8 @@ type GameState struct {
 	Relations map[string]*faction.Relation `json:"relations"`
 
 	// Ticaret güzergahları
-	TradeRoutes []*economy.TradeRoute `json:"trade_routes"`
+	TradeRoutes []*economy.TradeRoute  `json:"trade_routes"`
+	TradeCenters world.TradeCenterConfig `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
 	MarketPrices economy.CurrentMarketPrice `json:"-"`

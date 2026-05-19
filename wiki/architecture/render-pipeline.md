@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-11
+last_updated: 2026-05-19
 related: [game-loop, state-management, shape-editor, systems/combat]
 ---
 
@@ -50,6 +50,7 @@ type Renderer struct {
 | 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
+| 3 | Ticaret koridorları (çift yön rotalar tek hatta birleştirilir; uzak zoom'da yalnızca oyuncuya bağlı koridorlar çizilir) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası; edit mode'da bölge merkezi işaretleri, Voronoi debug overlay ve `Shape` sekmesi aktifken country shape outline/brush overlay'i; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
 | 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür; ikon üstü sayı metni fraksiyon rengine göre kontrast uyarlamalıdır | `renderer.go` |
@@ -159,6 +160,14 @@ Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı ü
 Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme, shape paint commit'i ve ordu/donanma ekleme-silme/birim sayısı değişiklikleri region map, order, başlangıç orduları ve `ShapeData` için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
+
+Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
+
+`Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir. Merkezler arası akış doğrudan her çift arasında çizilmez; senaryoda tanımlı `links` graph'ı üzerindeki kısa yol boyunca dağıtılır (ör. Halep -> Konstantinopolis -> Venedik). Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
+
+Ticaret koridorları etkileşimlidir: koridor üzerine hover yapıldığında koridor focus moduna geçilir (arka ağ karartılır, seçili hat parlatılır) ve tooltip `merkez A ↔ merkez B`, `hacim/tur`, `bağlı fraksiyon` ve baskın emtia özeti gösterir; sol tık aynı bilgiyi kısa bildirim olarak yazar.
+
+Merkez odak modu: Ticaret merkezi düğümlerinden birinin üzerine hover yapıldığında yalnız o merkeze bağlı koridorlar belirgin tutulur, diğer ağ düşük alpha ile geri plana atılır. Merkeze tıklama, bağlı koridor sayısı ve toplam hacim özetini verir.
 
 Üst-sol durum paneli `internal/render/panel.go:185` içinde çizilir. Sağ taraftaki zafer hedefi ve askeri kapasite alanları, sabit ölçülü iç kartlar ve kendi ilerleme barı çizimiyle sınırlandırılır; böylece zafer barı askeri kapasite ayırıcısına veya panel sağ sınırına taşmaz.
 

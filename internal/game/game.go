@@ -921,6 +921,10 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
 	}
+	tradeCenters, err := world.LoadTradeCenters(dp("trade_centers.json"), regions)
+	if err != nil {
+		log.Printf("Ticaret merkezleri yüklenemedi: %v", err)
+	}
 
 	devMode := os.Getenv("DEV_MODE") == "true"
 	editMode := os.Getenv("EDIT_MODE") == "true"
@@ -958,6 +962,7 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 		TechTypes:          techTypes,
 		AvailableVictories: victoryOpts,
 		Relations:          relations,
+		TradeCenters:       tradeCenters,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
