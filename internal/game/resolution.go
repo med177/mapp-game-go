@@ -109,6 +109,7 @@ func applySeasonEffects(gs *state.GameState) {
 }
 
 // applyEconomyTick tur başında her fraksiyonun ekonomisini günceller.
+// Artık ticaret rotalarını işletir, mal transferi yapar ve piyasa fiyatlarını günceller.
 func applyEconomyTick(gs *state.GameState) {
 	s := gs.CurrentSeason()
 	harvestMod := s.HarvestMod()
@@ -128,11 +129,13 @@ func applyEconomyTick(gs *state.GameState) {
 		// Bina çarpanları
 		goldMod := 1.0
 		grainMod := 1.0
+		tradeCapMod := 1.0
 		satBonus := 0
 		for _, bid := range r.Buildings {
 			if b, ok := gs.BuildingTypes[bid]; ok {
 				goldMod *= b.GoldMod
 				grainMod *= b.GrainMod
+				tradeCapMod *= b.TradeCapacityMod
 				satBonus += b.SatBonus
 			}
 		}
@@ -140,7 +143,13 @@ func applyEconomyTick(gs *state.GameState) {
 		income := int(float64(r.GoldIncome()) * goldMod * float64(harvestMod) / 100)
 		grain := int(float64(r.BaseGrainOutput) * grainMod)
 
-		incomeByFaction[r.OwnerID] += income
+		// Pasif ticaret geliri (TradeCapacity bazlı)
+		// TradeCapacityMod: pazar ve liman gibi binalar ticaret kapasitesini artırır
+		tradeIncome := economy.RegionTradeIncome(r.TradeCapacity, tradeCapMod)
+		// Mevsimsel ticaret modu uygula
+		tradeIncome = tradeIncome * s.TradeMod() / 100
+
+		incomeByFaction[r.OwnerID] += income + tradeIncome
 		grainByFaction[r.OwnerID] += grain
 		ironByFaction[r.OwnerID] += r.BaseIronOutput
 		timberByFaction[r.OwnerID] += r.BaseTimberOutput
@@ -152,9 +161,13 @@ func applyEconomyTick(gs *state.GameState) {
 		r.Satisfaction = clamp(r.Satisfaction+delta, 0, 100)
 	}
 
-	// Ticaret geliri
-	for _, tr := range gs.TradeRoutes {
-		incomeByFaction[tr.FromFactionID] += tr.GoldEarned()
+	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
+	tradeLogs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
+	for _, log := range tradeLogs {
+		// Ticaret logları oyuncuya aitse göster
+		if gs.PlayerFactionID != "" {
+			_ = log // ileride oyuncuya bildirim gösterilebilir
+		}
 	}
 
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep)
@@ -204,6 +217,9 @@ func applyEconomyTick(gs *state.GameState) {
 			f.Grain = 0
 		}
 	}
+
+	// --- Dinamik piyasa fiyatlarını güncelle ---
+	gs.MarketPrices = economy.ComputeMarketPrices(gs.Factions)
 }
 
 // checkRebellions isyan riski olan bölgeleri kontrol eder.

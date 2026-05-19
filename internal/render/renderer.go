@@ -64,6 +64,13 @@ type Renderer struct {
 	showTech   bool
 	techCursor int
 
+	// Ticaret paneli
+	showTrade         bool
+	tradeTab          TradeTab
+	tradeScroll       int
+	tradeFactionFocus int
+	tradeGoodFocus    int
+
 	// Ana menü
 	menuTick        int
 	HasSave         bool
@@ -636,7 +643,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
-	// 3. Ordu hareket hedefleri
+	// 3. Ticaret rotaları (harita üstü, ordu ikonlarının altında)
+	r.drawTradeRoutes(screen)
+
+	// 4. Ordu hareket hedefleri
 	if r.selectedArmyIsPlayerOwned() {
 		r.drawMoveTargets(screen)
 	}
@@ -705,6 +715,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.eventDetail != "" {
 		drawEventDetailPopup(screen, r.eventDetail)
+	}
+
+	// 12. Ticaret paneli (üst katman)
+	if r.showTrade {
+		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll)
 	}
 }
 
@@ -814,6 +829,71 @@ func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool
 		}
 	}
 	return false
+}
+
+// drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde çizgi olarak çizer.
+// Her TradeRoute için kaynak ve hedef fraksiyonun başkent/ilk bölgesi arasına
+// altın sarısı noktalı çizgi çizilir. Zoom 0.5'in altında gizlenir.
+func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
+	if r.camScale < 0.5 || len(r.gs.TradeRoutes) == 0 {
+		return
+	}
+	for _, tr := range r.gs.TradeRoutes {
+		srcRegion := r.factionPrimaryRegion(tr.FromFactionID)
+		dstRegion := r.factionPrimaryRegion(tr.ToFactionID)
+		if srcRegion == nil || dstRegion == nil {
+			continue
+		}
+		sx, sy := r.regionScreenPos(srcRegion)
+		dx, dy := r.regionScreenPos(dstRegion)
+		// Çizgiyi iki nokta arasına çiz
+		col := color.RGBA{220, 180, 60, 160} // altın sarısı, yarı saydam
+		// Noktalı efekt: ana çizgi + ara noktalar
+		segments := 20
+		for i := 0; i < segments; i++ {
+			t1 := float64(i) / float64(segments)
+			t2 := float64(i+1) / float64(segments)
+			x1 := sx + (dx-sx)*t1
+			y1 := sy + (dy-sy)*t1
+			x2 := sx + (dx-sx)*t2
+			y2 := sy + (dy-sy)*t2
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 2.5, col, false)
+			_ = y2
+		}
+		// Orta noktada mal ikonu
+		mx := (sx + dx) / 2
+		my := (sy + dy) / 2
+		goodName := goodDisplayName(tr.Good)
+		tw := MeasureText(goodName, FaceSmall)
+		DrawText(screen, goodName, mx-tw/2, my-18, FaceSmall, ColorGold)
+		// Miktar bilgisi
+		qtyStr := itoa(tr.AmountPerTurn) + "/tur"
+		tw2 := MeasureText(qtyStr, FaceSmall)
+		DrawText(screen, qtyStr, mx-tw2/2, my-2, FaceSmall, color.RGBA{180, 160, 80, 220})
+		_ = tw2
+	}
+}
+
+// factionPrimaryRegion bir fraksiyonun görsel temsili için ana bölgesini döner.
+// Önce başkent settlement'ı olan bölgeyi, yoksa ilk bulunan bölgeyi döner.
+func (r *Renderer) factionPrimaryRegion(factionID string) *world.Region {
+	for _, region := range r.gs.Regions {
+		if region == nil || region.OwnerID != factionID || region.IsSea {
+			continue
+		}
+		for _, settlement := range region.Settlements {
+			if settlement.IsCapital {
+				return region
+			}
+		}
+	}
+	// Başkent yoksa ilk kara bölgesini döndür
+	for _, region := range r.gs.Regions {
+		if region != nil && region.OwnerID == factionID && !region.IsSea {
+			return region
+		}
+	}
+	return nil
 }
 
 // drawMoveTargets seçili ordunun gidebileceği komşu bölgeleri vurgular.
@@ -4924,6 +5004,52 @@ func (r *Renderer) HandleInput() InputAction {
 		return r.handleDiplomacyInput()
 	}
 
+	// Ticaret paneli açıkken: ESC veya tıklama kapatır
+	if r.showTrade {
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyC) {
+			r.showTrade = false
+			return InputAction{}
+		}
+		mx, my := ebiten.CursorPosition()
+		fx, fy := float64(mx), float64(my)
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			if tradeCloseHit(fx, fy) {
+				r.showTrade = false
+				return InputAction{}
+			}
+			// Panel dışına tıklama da kapatır
+			px, py, pw, ph := tradePanelRect()
+			if !(fx >= float64(px) && fx <= float64(px+pw) && fy >= float64(py) && fy <= float64(py+ph)) {
+				r.showTrade = false
+				return InputAction{}
+			}
+		}
+		// Sekme değiştirme
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 {
+			r.tradeScroll += int(-wheelY)
+			if r.tradeScroll < 0 {
+				r.tradeScroll = 0
+			}
+		}
+		// Sekme tıklaması
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			px, py, pw, _ := tradePanelRect()
+			tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
+			tabW := (pw - 16) / float32(len(tabLabels))
+			tabY := py + 40
+			for i := 0; i < len(tabLabels); i++ {
+				tx := px + 8 + float32(i)*tabW
+				if fx >= float64(tx) && fx <= float64(tx+tabW-4) && fy >= float64(tabY) && fy <= float64(tabY+tradeTabH) {
+					r.tradeTab = TradeTab(i)
+					r.tradeScroll = 0
+					return InputAction{}
+				}
+			}
+		}
+		return InputAction{}
+	}
+
 	r.handleCamera()
 
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
@@ -4949,10 +5075,26 @@ func (r *Renderer) HandleInput() InputAction {
 		r.diplomacyScroll = 0
 		return InputAction{}
 	}
-	// T: teknoloji paneli
+	// T: teknoloji paneli (ticaret paneli açıkken T paneli kapatır)
 	if r.keyJustPressed(ebiten.KeyT) {
+		if r.showTrade {
+			r.showTrade = false
+			return InputAction{}
+		}
 		r.showTech = !r.showTech
 		r.techCursor = 0
+		return InputAction{}
+	}
+	// C: ticaret paneli (tech paneli açıkken ticareti açar)
+	if r.keyJustPressed(ebiten.KeyC) {
+		if r.showTech {
+			r.showTech = false
+		}
+		r.showTrade = !r.showTrade
+		r.tradeTab = TradeTabRoutes
+		r.tradeScroll = 0
+		r.tradeFactionFocus = 0
+		r.tradeGoodFocus = 0
 		return InputAction{}
 	}
 	// Tech panel aktifken girişi yönlendir

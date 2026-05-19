@@ -78,8 +78,8 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,
 		Factions: map[faction.FactionID]*faction.Faction{
-			"a": {ID: "a", Religion: religion.Catholic, Gold: 10, Grain: 0},
-			"b": {ID: "b", Religion: religion.Catholic, Gold: 5, Grain: 0},
+			"a": {ID: "a", Religion: religion.Catholic, Gold: 10, Grain: 0, Spice: 10},
+			"b": {ID: "b", Religion: religion.Catholic, Gold: 30, Grain: 0, Spice: 0},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"a1": {ID: "a1", OwnerID: "a", TaxRate: 50, Satisfaction: 50},
@@ -94,10 +94,18 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 
 	applyEconomyTick(gs)
 
+	// a: 10 (başlangıç) + 24 (2 spice * 12 gold, b'den ödeme) = 34, spice: 10 - 2 = 8
 	if gs.Factions["a"].Gold != 34 {
 		t.Fatalf("ticaret geliri altına eklenmedi, got=%d", gs.Factions["a"].Gold)
 	}
-	if gs.Factions["b"].Gold != 5 {
-		t.Fatalf("ticaret rotası yalnız göndereni etkilemeliydi, got=%d", gs.Factions["b"].Gold)
+	if gs.Factions["a"].Spice != 8 {
+		t.Fatalf("ticaret rotası malı kaynaktan çıkarmalıydı, got=%d", gs.Factions["a"].Spice)
+	}
+	// b: 30 (başlangıç) - 24 (ticaret ödemesi) = 6, spice: 0 + 2 = 2
+	if gs.Factions["b"].Gold != 6 {
+		t.Fatalf("ticaret rotası hedeften altın çıkarmalıydı, got=%d", gs.Factions["b"].Gold)
+	}
+	if gs.Factions["b"].Spice != 2 {
+		t.Fatalf("ticaret rotası malı hedefe eklemeliydi, got=%d", gs.Factions["b"].Spice)
 	}
 }

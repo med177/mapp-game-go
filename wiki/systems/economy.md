@@ -65,14 +65,47 @@ Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
 
 ```go
 type TradeRoute struct {
-    FactionA, FactionB FactionID
-    GoldPerTurn        int
+    FromFactionID string   `json:"from_faction_id"`
+    ToFactionID   string   `json:"to_faction_id"`
+    Good          GoodType `json:"good"`
+    AmountPerTurn int      `json:"amount_per_turn"`
+    GoldPerUnit   int      `json:"gold_per_unit"`
 }
 ```
 
-Ticaret anlaşması kurulunca aktif olur. `applyEconomyTick()` her tur bu geliri fraksiyonlara ekler.
+Ticaret anlaşması kurulunca aktif olur. `ApplyTradeRoutes()` her tur:
+1. Kaynak fraksiyondan **mal çıkar** (yetersizse rota atlanır)
+2. Hedef fraksiyona **mal ekler**
+3. Hedef fraksiyondan **altın çıkar** (yetersizse rota atlanır)
+4. Kaynak fraksiyona **altın ekler**
 
 → Diplomasi anlaşmaları: [[systems/diplomacy]]
+
+## Dinamik Piyasa Fiyatlandırması
+
+`ComputeMarketPrices()` her tur sonu tüm fraksiyonların stoklarına göre fiyatları günceller:
+
+- **Arz artışı → fiyat düşer** (bol mal değersizleşir)
+- **Arz azalışı → fiyat yükselir** (kıt mal pahalanır)
+- Fiyat sınırları: basePrice × %25 (min) – basePrice × %300 (max)
+- Her aktif fraksiyon varsayılan talep üretir (10 birim/mal)
+
+Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur yeniden hesaplanır).
+
+## Pasif Ticaret Geliri
+
+Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:
+
+```
+tradeIncome = TradeCapacity × 2 × goldMod
+```
+
+Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artırır.
+
+## Tek Seferlik Mal Transferi
+
+`TransferGoods()` dinamik piyasa fiyatını kullanarak iki fraksiyon arasında anlık takas yapar.
+Kullanım senaryosu: diplomasi panelinde oyuncunun elindeki malları satması.
 
 ---
 

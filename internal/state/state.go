@@ -85,6 +85,9 @@ type GameState struct {
 	// Ticaret güzergahları
 	TradeRoutes []*economy.TradeRoute `json:"trade_routes"`
 
+	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
+	MarketPrices economy.CurrentMarketPrice `json:"-"`
+
 	// Devam eden üretimler
 	ProductionQueue   []ProductionOrder `json:"production_queue"`
 	NextProductionSeq int               `json:"next_production_seq"`

@@ -48,6 +48,38 @@ func (s Season) HarvestMod() int {
 	return 100
 }
 
+// TradeMod mevsime göre ticaret geliri çarpanı döner (yüzde).
+// İlkbahar: %110 (+10), Yaz: %100, Sonbahar: %110 (+10), Kış: %70 (-30)
+func (s Season) TradeMod() int {
+	switch s {
+	case SeasonSpring:
+		return 110
+	case SeasonSummer:
+		return 100
+	case SeasonAutumn:
+		return 110
+	case SeasonWinter:
+		return 70
+	}
+	return 100
+}
+
+// PirateMod mevsime göre korsan baskını olasılık çarpanı (yüzde).
+// Kışın deniz trafiği azalır → korsan az, yazın artar → korsan çok.
+func (s Season) PirateMod() int {
+	switch s {
+	case SeasonSpring:
+		return 80
+	case SeasonSummer:
+		return 120
+	case SeasonAutumn:
+		return 90
+	case SeasonWinter:
+		return 50
+	}
+	return 100
+}
+
 // IsWinter kış mevsimi mi?
 func (s Season) IsWinter() bool {
 	return s == SeasonWinter

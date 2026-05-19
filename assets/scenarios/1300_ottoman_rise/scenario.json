@@ -49,44 +49,48 @@
     {
       "id": "ottoman_rise",
       "title": "Osmanlı'nın Yükselişi",
-      "description": "Konstantinopolis'i fethederek Doğu Roma'ya son ver",
-      "detail": "Hedef: Konstantinopolis",
+      "description": "Konstantinopolis'i ve Ankara'yı fethederek imparatorluk kur",
+      "detail": "Hedef: Konstantinopolis ve Ankara",
       "type": "conquer_city",
-      "target": "constantinople"
+      "target": "constantinople",
+      "additional_target": "ankara"
     },
     {
       "id": "domination",
       "title": "Toprak Hakimiyeti",
-      "description": "20+ bölge ve 5 kritik şehri ele geçir",
-      "detail": "Konstantinopolis, Roma, Kahire, Paris, Kudüs",
+      "description": "30+ bölge ve 6 kritik şehri ele geçir",
+      "detail": "Konstantinopolis, Roma, Kahire, Paris, Kudüs, Venedik",
       "type": "domination",
-      "target_region_count": 20,
+      "target_region_count": 30,
       "required_regions": [
         "constantinople",
         "papal_states",
         "egypt",
         "paris",
-        "palestine"
+        "palestine",
+        "venice"
       ]
     },
     {
       "id": "economic",
       "title": "Ekonomik Güç",
-      "description": "Tur başı 500+ altın gelire ulaş ve 5 tur koru",
+      "description": "Tur başı 800+ altın gelire ulaş ve 8 tur koru",
       "detail": "Ticaret yollarını kontrol et, limanları geliştir",
       "type": "economic",
-      "target_gold_income": 500,
-      "gold_hold_turns": 5
+      "target_gold_income": 800,
+      "gold_hold_turns": 8
     },
     {
       "id": "religious",
       "title": "Dinî Zafer",
-      "description": "Kudüs, Roma ve Mekke'yi aynı anda tut",
-      "detail": "Üç kutsal şehri sürdürülebilir biçimde koru",
+      "description": "Kudüs, Roma, Mekke ve Konstantinopolis'i aynı anda tut",
+      "detail": "Dört kutsal şehri sürdürülebilir biçimde koru",
       "type": "religious",
       "required_regions": [
         "palestine",
-        "papal_states"
+        "papal_states",
+        "constantinople",
+        "mecca"
       ]
     }
   ]

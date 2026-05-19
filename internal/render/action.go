@@ -54,6 +54,15 @@ const (
 	ActionToggleMusic               ActionKind = "toggle_music"
 	ActionNextMusic                 ActionKind = "next_music"
 	ActionAdjustMusic               ActionKind = "adjust_music" // Delta: müzik ses seviyesi
+
+	// Ticaret paneli
+	ActionOpenTradeView    ActionKind = "open_trade_view"
+	ActionCloseTradeView   ActionKind = "close_trade_view"
+	ActionCreateTradeRoute ActionKind = "create_trade_route" // BuildingID = mal tipi, TargetFaction = hedef, Delta = miktar
+	ActionCancelTradeRoute ActionKind = "cancel_trade_route" // BuildingID = rota indeksi
+	ActionOneTimeTrade     ActionKind = "one_time_trade"     // BuildingID = mal tipi, Delta = miktar
+	ActionTradeScroll      ActionKind = "trade_scroll"       // Delta: +1/-1
+	ActionTradeTabSwitch   ActionKind = "trade_tab_switch"   // Delta: hangi sekme
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.
