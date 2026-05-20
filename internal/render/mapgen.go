@@ -7,6 +7,7 @@ import (
 	"image/color"
 	_ "image/png"
 	"log"
+	"math"
 	"os"
 	"sort"
 
@@ -61,6 +62,7 @@ type WorldMap struct {
 	hasBgImage        bool
 	ownerDirty        bool
 	selected          world.RegionID
+	currentMode       MapMode
 }
 
 type countryShapeFile struct {
@@ -92,6 +94,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		settlementAnchor:  make(map[settlementAnchorKey][2]int),
 		primarySettlement: make(map[world.RegionID][2]int),
 		seaIdx:            make(map[uint16]bool),
+		currentMode:       MapModeNormal,
 	}
 
 	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
@@ -134,7 +137,7 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	}
 	wm.computeRegionAnchors()
 	wm.computeSettlementAnchors(gs)
-	wm.applyOwnership(gs, "")
+	wm.applyOwnership(gs, "", MapModeNormal)
 	return wm
 }
 
@@ -304,13 +307,14 @@ func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
 	wm.computeSettlementAnchors(gs)
 }
 
-func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID) {
-	if !wm.ownerDirty && wm.selected == selected {
+func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode MapMode) {
+	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode {
 		return
 	}
-	wm.applyOwnership(gs, selected)
+	wm.applyOwnership(gs, selected, mode)
 	wm.ownerDirty = false
 	wm.selected = selected
+	wm.currentMode = mode
 }
 
 func (wm *WorldMap) RegionAt(wx, wy int) world.RegionID {
@@ -747,7 +751,45 @@ func nearestShapeRegion(regions []*world.Region, px, py int) *world.Region {
 	return best
 }
 
-func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID) {
+// Curated harmonious colors for each historical trade center (HSL-tailored palette)
+	var tradeNodeColors = [][3]byte{
+		{255, 120, 120}, // Venice (Vibrant Red)
+		{120, 255, 120}, // Genoa (Vibrant Green)
+		{120, 120, 255}, // Flanders (Vibrant Blue)
+		{255, 215, 0},   // Constantinople (Gold)
+		{200, 100, 255}, // London (Purple)
+		{0, 200, 200},   // Paris (Cyan)
+		{255, 140, 0},   // Aleppo (Orange)
+		{150, 255, 150}, // Egypt (Light Mint)
+		{210, 180, 100}, // Basra (Sand)
+		{100, 100, 255}, // Novgorod (Deep Blue)
+	}
+
+func nearestTradeCenterIndex(region *world.Region, centers []world.TradeCenterDef, regions map[world.RegionID]*world.Region) int {
+	if region == nil || len(centers) == 0 {
+		return -1
+	}
+	rx := float64(region.WorldX)
+	ry := float64(region.WorldY)
+	bestIdx := -1
+	bestDist := 1e30
+	for i, c := range centers {
+		targetReg, ok := regions[c.ID]
+		if !ok {
+			continue
+		}
+		cx := float64(targetReg.WorldX)
+		cy := float64(targetReg.WorldY)
+		d := math.Hypot(rx-cx, ry-cy)
+		if d < bestDist {
+			bestDist = d
+			bestIdx = i
+		}
+	}
+	return bestIdx
+}
+
+func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID, mode MapMode) {
 	copy(wm.dispPixels, wm.basePixels)
 
 	factionColors := make(map[string][3]byte)
@@ -756,6 +798,14 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 	}
 
 	currentSeason := season.FromMonth(gs.Month)
+
+	// Pre-build region to trade center mapping if we are in Trade map mode
+	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
+	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+		for rid, r := range gs.Regions {
+			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions)
+		}
+	}
 
 	for rid, r := range gs.Regions {
 		if r.IsSea {
@@ -790,11 +840,29 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 			}
 		}
 
-		fc, ok := factionColors[r.OwnerID]
+		var fc [3]byte
+		var ok bool
+		alpha := byte(80)
+
+		if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+			tcIdx := regionTradeNode[rid]
+			if tcIdx >= 0 && tcIdx < len(gs.TradeCenters.Centers) {
+				fc = tradeNodeColors[tcIdx%len(tradeNodeColors)]
+				ok = true
+			} else {
+				fc = [3]byte{140, 140, 140} // Unknown/fallback gray
+				ok = true
+			}
+		} else {
+			var fcVal [3]byte
+			fcVal, ok = factionColors[r.OwnerID]
+			fc = fcVal
+		}
+
 		if !ok && rid != selected {
 			continue
 		}
-		alpha := byte(80)
+
 		if rid == selected {
 			alpha = 140
 			if !ok {
@@ -809,11 +877,19 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID)
 		}
 	}
 
-	wm.drawRegionBorders(gs, selected)
+	wm.drawRegionBorders(gs, selected, mode)
 	wm.img.WritePixels(wm.dispPixels)
 }
 
-func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID) {
+func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID, mode MapMode) {
+	// Pre-build region to trade center mapping
+	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
+	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+		for rid, r := range gs.Regions {
+			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions)
+		}
+	}
+
 	for py := 1; py < WorldH-1; py++ {
 		for px := 1; px < WorldW-1; px++ {
 			pIdx := py*WorldW + px
@@ -858,7 +934,28 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 			}
 
 			if isBorder {
-				wm.setOverlayPixel(pIdx, 35, 22, 10, 170)
+				if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+					curTC := regionTradeNode[cur]
+					var other world.RegionID
+					if rightIdx != curIdx && rightIdx != 0 {
+						other = wm.regionIDs[rightIdx]
+					} else if downIdx != curIdx && downIdx != 0 {
+						other = wm.regionIDs[downIdx]
+					}
+					otherTC := -1
+					if other != "" {
+						otherTC = regionTradeNode[other]
+					}
+					if otherTC != curTC && otherTC != -1 {
+						// Farklı ticaret bölgesi sınırı -> Altın/krem parıltı
+						wm.setOverlayPixel(pIdx, 242, 226, 174, 230)
+					} else {
+						// Aynı ticaret bölgesi içindeki idari bölge sınırı -> Çok silik ince kahverengi
+						wm.setOverlayPixel(pIdx, 35, 22, 10, 80)
+					}
+				} else {
+					wm.setOverlayPixel(pIdx, 35, 22, 10, 170)
+				}
 			}
 		}
 	}

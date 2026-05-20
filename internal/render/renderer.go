@@ -71,6 +71,7 @@ type Renderer struct {
 	tradeFactionFocus int
 	tradeGoodFocus    int
 	mapMode           MapMode
+	animationTick     int
 
 	// Ana menü
 	menuTick        int
@@ -625,7 +626,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// Duraklama menüsü — haritayı altta çiz, üstüne overlay
 	if r.gs.Phase == state.PhasePauseMenu {
-		r.worldMap.Refresh(r.gs, r.SelectedRegion)
+		r.worldMap.Refresh(r.gs, r.SelectedRegion, r.mapMode)
 		mapOp := &ebiten.DrawImageOptions{}
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
@@ -643,7 +644,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
-	r.worldMap.Refresh(r.gs, highlightRegion)
+	r.worldMap.Refresh(r.gs, highlightRegion, r.mapMode)
 
 	// 1. Üretilen dünya haritası
 	mapOp := &ebiten.DrawImageOptions{}
@@ -920,8 +921,8 @@ func quadBezierPoint(x0, y0, cx, cy, x1, y1, t float64) (float64, float64) {
 func (r *Renderer) drawTradeModeBackdrop(screen *ebiten.Image) {
 	w := float32(ScreenWidth)
 	h := float32(ScreenHeight)
-	vector.FillRect(screen, 0, 0, w, h, color.RGBA{18, 26, 34, 52}, false)
-	vector.FillRect(screen, 0, h*0.64, w, h*0.36, color.RGBA{20, 32, 44, 35}, false)
+	vector.FillRect(screen, 0, 0, w, h, color.RGBA{18, 26, 34, 255}, false)
+
 }
 
 func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
@@ -1067,7 +1068,7 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	}
 	vector.FillRect(screen, x, y, w, h, color.RGBA{10, 14, 20, 230}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
-	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 240})
+	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
 	DrawText(screen, c.fromName+" ↔ "+c.toName, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
 	DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
 	DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
@@ -1176,6 +1177,7 @@ func shortestCenterPath(adj map[int][]int, from, to int) []int {
 // Çift yönlü rotalar (A->B ve B->A) tek bir görsel hatta birleştirilir.
 // Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
 func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
+	r.animationTick += 12
 	if r.camScale < 0.6 || len(r.gs.TradeRoutes) == 0 {
 		return
 	}
@@ -1379,8 +1381,12 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		cx := mx + px*curve
 		cy := my + py*curve
 
-		glow := color.RGBA{255, 224, 138, 44}
-		core := color.RGBA{247, 232, 176, 190}
+		baseGlow := color.RGBA{255, 224, 138, 255}
+		baseCore := color.RGBA{247, 232, 176, 255}
+		alphaScale := uint8(80 + (amount * 12))
+		if alphaScale > 255 { alphaScale = 255 }
+		glow := color.RGBA{baseGlow.R, baseGlow.G, baseGlow.B, alphaScale}
+		core := color.RGBA{baseCore.R, baseCore.G, baseCore.B, alphaScale}
 		coreW := float32(1.5)
 		glowW := float32(5.0)
 		if amount >= 14 {
@@ -1390,6 +1396,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			coreW = 1.8
 			glowW = 6.0
 		}
+
 		if preFocusCenter >= 0 && i != preFocusCenter && j != preFocusCenter {
 			glow = color.RGBA{180, 170, 130, 10}
 			core = color.RGBA{170, 165, 140, 34}
@@ -1462,30 +1469,83 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 	}
 
-	for i := range centers {
-		rOuter := float32(11)
-		rInner := float32(4.5)
-		if centers[i].tier == world.TradeCenterPrimary {
-			rOuter = 13
-			rInner = 5.4
+	// Compute active volume for each trade center (local capacity + trade route activity)
+	centerVolume := make([]int, len(centers))
+	for idx, c := range centers {
+		vol := 0
+		reg := r.gs.Regions[c.regionID]
+		if reg != nil {
+			vol += reg.TradeCapacity
 		}
-		alphaOuter := uint8(26)
-		alphaInner := uint8(190)
-		if focusCenter >= 0 {
-			alphaOuter = 10
-			alphaInner = 90
-			for _, c := range r.tradeCorridors {
-				if c.fromName == centers[i].nameTR || c.toName == centers[i].nameTR {
-					if c.fromName == centers[focusCenter].nameTR || c.toName == centers[focusCenter].nameTR || i == focusCenter {
-						alphaOuter = 42
-						alphaInner = 240
-						break
+		for _, tr := range r.gs.TradeRoutes {
+			if tr.ToFactionID != "" && tr.FromFactionID != "" {
+				fromHub := r.factionPrimaryRegion(tr.FromFactionID)
+				toHub := r.factionPrimaryRegion(tr.ToFactionID)
+				if fromHub != nil && toHub != nil {
+					ca := r.nearestTradeCenterIndex(fromHub, centers)
+					cb := r.nearestTradeCenterIndex(toHub, centers)
+					if ca == idx || cb == idx {
+						vol += tr.AmountPerTurn
 					}
 				}
 			}
 		}
-		vector.FillCircle(screen, float32(centers[i].x), float32(centers[i].y), rOuter, color.RGBA{255, 214, 128, alphaOuter}, true)
-		vector.FillCircle(screen, float32(centers[i].x), float32(centers[i].y), rInner, color.RGBA{255, 232, 172, alphaInner}, true)
+		centerVolume[idx] = vol
+	}
+
+	for i := range centers {
+		alphaBg := uint8(235)
+		alphaBorder := uint8(235)
+		alphaText := uint8(255)
+		if focusCenter >= 0 {
+			isFocus := false
+			if i == focusCenter {
+				isFocus = true
+			} else {
+				for _, c := range r.tradeCorridors {
+					if c.fromName == centers[i].nameTR || c.toName == centers[i].nameTR {
+						if c.fromName == centers[focusCenter].nameTR || c.toName == centers[focusCenter].nameTR {
+							isFocus = true
+							break
+						}
+					}
+				}
+			}
+			if !isFocus {
+				alphaBg = 100
+				alphaBorder = 100
+				alphaText = 140
+			}
+		}
+
+		w := float32(116)
+		h := float32(38)
+		x := float32(centers[i].x) - w/2
+		y := float32(centers[i].y) - h/2
+
+		// semi-transparent dark wood background
+		vector.FillRect(screen, x, y, w, h, color.RGBA{18, 14, 10, alphaBg}, false)
+
+		// Border: gold for primary, bronze for secondary
+		borderColor := color.RGBA{197, 160, 89, alphaBorder}
+		if centers[i].tier == world.TradeCenterPrimary {
+			vector.StrokeRect(screen, x-1, y-1, w+2, h+2, 1.2, color.RGBA{235, 200, 110, alphaBorder}, false)
+			vector.StrokeRect(screen, x+1, y+1, w-2, h-2, 0.8, color.RGBA{150, 110, 50, alphaBorder}, false)
+		} else {
+			borderColor = color.RGBA{160, 130, 90, alphaBorder}
+		}
+		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
+
+		// Center Name
+		nameCol := color.RGBA{242, 226, 174, 255}
+		if centers[i].tier == world.TradeCenterPrimary {
+			nameCol = color.RGBA{255, 235, 170, 255}
+		}
+		DrawText(screen, centers[i].nameTR, float64(x)+28, float64(y)+4, FaceSmall, nameCol)
+
+		// Volume indicator with full opacity
+		volStr := "Hacim: " + itoa(centerVolume[i])
+		DrawText(screen, volStr, float64(x)+28, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, 255})
 	}
 }
 
