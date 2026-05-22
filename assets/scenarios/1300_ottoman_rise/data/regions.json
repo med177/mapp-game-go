@@ -2169,8 +2169,8 @@
     "buildings": null
   },
   {
-    "id": "constantinople",
-    "name": "Constantinople",
+    "id": "bursa",
+    "name": "bursa",
     "name_tr": "Konstantinopolis",
     "terrain": "coast",
     "owner_id": "byzantine",
@@ -4064,7 +4064,7 @@
       "_sea_black_open_2",
       "_sea_marmara",
       "bulgaria",
-      "new_region_219",
+      "constantinople",
       "new_region_221"
     ],
     "world_x": 1024,
@@ -4107,7 +4107,7 @@
         "type": "town"
       },
       {
-        "id": "constantinople",
+        "id": "bursa",
         "name_tr": "Roma Bölgesi",
         "x": 1054,
         "y": 454,
@@ -4167,9 +4167,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_219",
-    "name": "New Region 216",
-    "name_tr": "Yeni Bolge 216",
+    "id": "constantinople",
+    "name": "bursa",
+    "name_tr": "Konstantiniyye",
     "terrain": "coast",
     "owner_id": "byzantine",
     "neighbors": [
@@ -5248,7 +5248,7 @@
       "_sea_aegean",
       "_sea_marmara",
       "bithynia",
-      "constantinople",
+      "bursa",
       "new_region_201",
       "new_region_212",
       "new_region_221"
@@ -7422,7 +7422,7 @@
     "owner_id": "ottoman",
     "neighbors": [
       "aydinoglu",
-      "constantinople",
+      "bursa",
       "germiyan",
       "new_region_212",
       "new_region_213"
@@ -7769,7 +7769,7 @@
       "_sea_black_open_2",
       "_sea_marmara",
       "chrysopolis",
-      "constantinople",
+      "bursa",
       "new_region_213"
     ],
     "world_x": 1075,
@@ -7818,7 +7818,7 @@
     "neighbors": [
       "bithynia",
       "chrysopolis",
-      "constantinople",
+      "bursa",
       "germiyan",
       "new_region_209",
       "nicomedia"
@@ -8952,7 +8952,7 @@
       "bulgaria",
       "chrysopolis",
       "dobruja",
-      "new_region_219",
+      "constantinople",
       "nicomedia",
       "thrace"
     ],
@@ -9272,8 +9272,8 @@
     "owner_id": "",
     "neighbors": [
       "aydinoglu",
+      "bursa",
       "constantinople",
-      "new_region_219",
       "new_region_221",
       "nicomedia",
       "thrace"

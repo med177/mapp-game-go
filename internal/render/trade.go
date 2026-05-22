@@ -260,7 +260,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 }
 
 // drawTradePricesTab piyasa fiyatlarını gösterir.
-func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y float32, w float32, h float32) {
+func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y float32, w float32, _ float32) {
 	if gs.MarketPrices == nil {
 		DrawTextCentered(screen, "Piyasa fiyatları henüz oluşturulmadı.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
 		return
