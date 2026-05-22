@@ -653,20 +653,22 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
-	// 3. Ticaret rotaları (yalnızca ticaret harita modunda)
+	// 3. Ticaret mod backdrop (rotalar/tabelalar daha sonra en üste çizilecek)
 	if r.mapMode == MapModeTrade {
 		r.drawTradeModeBackdrop(screen)
-		r.drawTradeRoutes(screen)
 	}
 
-	// 4. Ordu hareket hedefleri
-	if r.selectedArmyIsPlayerOwned() {
+	var armyPositions []armyIconPos
+	if r.mapMode != MapModeTrade {
+		armyPositions = r.armyIconPositions()
+	}
+
+	// 4. Ordu hareket hedefleri (ticaret modunda gizlenir)
+	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() {
 		r.drawMoveTargets(screen)
 	}
 
-	armyPositions := r.armyIconPositions()
-
-	// 4. Bölge etiketleri
+	// 5. Bölge etiketleri
 	r.drawRegionLabels(screen, armyPositions)
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
@@ -674,10 +676,17 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditShapeOverlay(screen)
 	}
 
-	// 5. Ordu ikonları
-	r.drawArmies(screen, armyPositions)
+	// 6. Ordu ikonları (ticaret modunda gizlenir)
+	if r.mapMode != MapModeTrade {
+		r.drawArmies(screen, armyPositions)
+	}
 
-	// 6. UI panelleri
+	// 7. Ticaret rotaları + ticaret merkezi tabelaları (en üst harita katmanı)
+	if r.mapMode == MapModeTrade {
+		r.drawTradeRoutes(screen)
+	}
+
+	// 8. UI panelleri
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech, r.mapMode)
 		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
@@ -921,7 +930,8 @@ func quadBezierPoint(x0, y0, cx, cy, x1, y1, t float64) (float64, float64) {
 func (r *Renderer) drawTradeModeBackdrop(screen *ebiten.Image) {
 	w := float32(ScreenWidth)
 	h := float32(ScreenHeight)
-	vector.FillRect(screen, 0, 0, w, h, color.RGBA{18, 26, 34, 255}, false)
+	// Trade modunda haritayı tamamen kapatmak yerine hafif tint uygula.
+	vector.FillRect(screen, 0, 0, w, h, color.RGBA{18, 26, 34, 72}, false)
 
 }
 
@@ -1277,35 +1287,35 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if cb >= 0 {
 			centerSpokeFlow[route.factionB] += route.amount
 		}
-			if ca < 0 || cb < 0 || ca == cb {
-				continue
+		if ca < 0 || cb < 0 || ca == cb {
+			continue
+		}
+		path := shortestCenterPath(adj, ca, cb)
+		if len(path) < 2 {
+			continue
+		}
+		for pi := 0; pi < len(path)-1; pi++ {
+			ka, kb := path[pi], path[pi+1]
+			if ka > kb {
+				ka, kb = kb, ka
 			}
-			path := shortestCenterPath(adj, ca, cb)
-			if len(path) < 2 {
-				continue
+			key := itoa(ka) + "|" + itoa(kb)
+			agg := centerLinkFlow[key]
+			if agg == nil {
+				agg = &linkAgg{
+					factions: make(map[string]struct{}, 4),
+					goods:    make(map[string]int, 4),
+				}
+				centerLinkFlow[key] = agg
 			}
-			for pi := 0; pi < len(path)-1; pi++ {
-				ka, kb := path[pi], path[pi+1]
-				if ka > kb {
-					ka, kb = kb, ka
-				}
-				key := itoa(ka) + "|" + itoa(kb)
-				agg := centerLinkFlow[key]
-				if agg == nil {
-					agg = &linkAgg{
-						factions: make(map[string]struct{}, 4),
-						goods:    make(map[string]int, 4),
-					}
-					centerLinkFlow[key] = agg
-				}
-				agg.flow += route.amount
-				agg.factions[route.factionA] = struct{}{}
-				agg.factions[route.factionB] = struct{}{}
-				if route.goodName != "" {
-					agg.goods[route.goodName] += route.amount
-				}
+			agg.flow += route.amount
+			agg.factions[route.factionA] = struct{}{}
+			agg.factions[route.factionB] = struct{}{}
+			if route.goodName != "" {
+				agg.goods[route.goodName] += route.amount
 			}
 		}
+	}
 
 	// Faction -> trade center spokes (çok hafif)
 	if r.camScale >= 0.95 {
@@ -1383,8 +1393,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 
 		baseGlow := color.RGBA{255, 224, 138, 255}
 		baseCore := color.RGBA{247, 232, 176, 255}
-		alphaScale := uint8(80 + (amount * 12))
-		if alphaScale > 255 { alphaScale = 255 }
+		alphaScale := min(uint8(80+(amount*12)), 255)
 		glow := color.RGBA{baseGlow.R, baseGlow.G, baseGlow.B, alphaScale}
 		core := color.RGBA{baseCore.R, baseCore.G, baseCore.B, alphaScale}
 		coreW := float32(1.5)
@@ -1518,7 +1527,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 
-		w := float32(116)
+		volStr := "Hacim: " + itoa(centerVolume[i])
+		nameW := float32(MeasureText(centers[i].nameTR, FaceSmall))
+		volW := float32(MeasureText(volStr, FaceSmall))
+		contentW := nameW
+		if volW > contentW {
+			contentW = volW
+		}
+		w := contentW + 40 // yatay padding + ikon/kenar payı
+		if w < 116 {
+			w = 116
+		}
 		h := float32(38)
 		x := float32(centers[i].x) - w/2
 		y := float32(centers[i].y) - h/2
@@ -1537,15 +1556,14 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
 
 		// Center Name
-		nameCol := color.RGBA{242, 226, 174, 255}
+		nameCol := color.RGBA{242, 226, 174, alphaText}
 		if centers[i].tier == world.TradeCenterPrimary {
-			nameCol = color.RGBA{255, 235, 170, 255}
+			nameCol = color.RGBA{255, 235, 170, alphaText}
 		}
-		DrawText(screen, centers[i].nameTR, float64(x)+28, float64(y)+4, FaceSmall, nameCol)
+		DrawText(screen, centers[i].nameTR, float64(x)+20, float64(y)+4, FaceSmall, nameCol)
 
-		// Volume indicator with full opacity
-		volStr := "Hacim: " + itoa(centerVolume[i])
-		DrawText(screen, volStr, float64(x)+28, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, 255})
+		// Volume indicator
+		DrawText(screen, volStr, float64(x)+20, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, alphaText})
 	}
 }
 
@@ -1888,9 +1906,20 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 	shadowCol := color.RGBA{0, 0, 0, 160}
 
 	r.regionLabelBuf = r.regionLabelBuf[:0]
+	tradeCenterRegion := map[world.RegionID]struct{}{}
+	if r.mapMode == MapModeTrade {
+		for _, def := range r.gs.TradeCenters.Centers {
+			tradeCenterRegion[def.ID] = struct{}{}
+		}
+	}
 	for _, region := range r.gs.Regions {
 		if region.IsSea || region.IsLocked {
 			continue
+		}
+		if r.mapMode == MapModeTrade {
+			if _, isTradeCenter := tradeCenterRegion[region.ID]; isTradeCenter {
+				continue
+			}
 		}
 		r.appendSettlementDraws(region)
 	}

@@ -643,6 +643,29 @@ func (wm *WorldMap) findSeaSeed(cx, cy int) int {
 			}
 		}
 	}
+	if seed >= 0 {
+		return seed
+	}
+
+	// Local arama başarısızsa global fallback:
+	// En yakın atanmamış pikseli tüm haritada tarayarak bulur.
+	// Bu yol yalnızca nadir fallback durumunda çalışır.
+	for ny := 0; ny < WorldH; ny++ {
+		row := ny * WorldW
+		dy := int64(ny - cy)
+		for nx := 0; nx < WorldW; nx++ {
+			nIdx := row + nx
+			if wm.regionAt[nIdx] != 0 {
+				continue
+			}
+			dx := int64(nx - cx)
+			d := dx*dx + dy*dy
+			if d < bestDist {
+				bestDist = d
+				seed = nIdx
+			}
+		}
+	}
 	return seed
 }
 
@@ -752,18 +775,18 @@ func nearestShapeRegion(regions []*world.Region, px, py int) *world.Region {
 }
 
 // Curated harmonious colors for each historical trade center (HSL-tailored palette)
-	var tradeNodeColors = [][3]byte{
-		{255, 120, 120}, // Venice (Vibrant Red)
-		{120, 255, 120}, // Genoa (Vibrant Green)
-		{120, 120, 255}, // Flanders (Vibrant Blue)
-		{255, 215, 0},   // Constantinople (Gold)
-		{200, 100, 255}, // London (Purple)
-		{0, 200, 200},   // Paris (Cyan)
-		{255, 140, 0},   // Aleppo (Orange)
-		{150, 255, 150}, // Egypt (Light Mint)
-		{210, 180, 100}, // Basra (Sand)
-		{100, 100, 255}, // Novgorod (Deep Blue)
-	}
+var tradeNodeColors = [][3]byte{
+	{255, 120, 120}, // Venice (Vibrant Red)
+	{120, 255, 120}, // Genoa (Vibrant Green)
+	{120, 120, 255}, // Flanders (Vibrant Blue)
+	{255, 215, 0},   // Constantinople (Gold)
+	{200, 100, 255}, // London (Purple)
+	{0, 200, 200},   // Paris (Cyan)
+	{255, 140, 0},   // Aleppo (Orange)
+	{150, 255, 150}, // Egypt (Light Mint)
+	{210, 180, 100}, // Basra (Sand)
+	{100, 100, 255}, // Novgorod (Deep Blue)
+}
 
 func nearestTradeCenterIndex(region *world.Region, centers []world.TradeCenterDef, regions map[world.RegionID]*world.Region) int {
 	if region == nil || len(centers) == 0 {
@@ -882,6 +905,18 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 }
 
 func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID, mode MapMode) {
+	isSeaOrEmpty := func(idx uint16) bool {
+		if idx == 0 {
+			return true
+		}
+		if int(idx) >= len(wm.regionIDs) {
+			return true
+		}
+		rid := wm.regionIDs[idx]
+		r := gs.Regions[rid]
+		return r == nil || r.IsSea
+	}
+
 	// Pre-build region to trade center mapping
 	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
 	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
@@ -923,12 +958,12 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 			// Ancak Sol veya Üst komşumuz deniz ise, deniz bölgeleri border ÇİZMEDİĞİ için,
 			// kıyı şeridinin eksik kalmaması adına o yönlerde de border çizmeliyiz.
 			if !isBorder && leftIdx != curIdx {
-				if leftIdx == 0 || gs.Regions[wm.regionIDs[leftIdx]].IsSea {
+				if isSeaOrEmpty(leftIdx) {
 					isBorder = true
 				}
 			}
 			if !isBorder && upIdx != curIdx {
-				if upIdx == 0 || gs.Regions[wm.regionIDs[upIdx]].IsSea {
+				if isSeaOrEmpty(upIdx) {
 					isBorder = true
 				}
 			}

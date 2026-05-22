@@ -196,6 +196,12 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	gs.TechTypes = techTypes
 
+	tradeCenters, err := world.LoadTradeCenters(dp("trade_centers.json"), gs.Regions)
+	if err != nil {
+		return nil, err
+	}
+	gs.TradeCenters = tradeCenters
+
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), gs.Regions)
 	if err != nil {
 		return nil, err
