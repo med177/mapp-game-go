@@ -275,6 +275,9 @@ func sortedFactions(gs *state.GameState) []faction.FactionID {
 		if fid == gs.PlayerFactionID {
 			continue
 		}
+		if f := gs.Factions[fid]; f == nil || f.IsEliminated {
+			continue
+		}
 		fids = append(fids, fid)
 	}
 	sort.Slice(fids, func(i, j int) bool { return fids[i] < fids[j] })

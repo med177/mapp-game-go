@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -108,6 +108,30 @@ AI:
 - koalisyon anında oyuncuya savaş açıp diğer AI'larla ittifak kurmaya çalışır
 
 → Detaylar: [[systems/ai]]
+
+---
+
+## Elenen Fraksiyon Temizliği
+
+`internal/game/resolution.go:255` içindeki `checkEliminations()` artık bir fraksiyonun bölgesi kalmadığında:
+
+- `IsEliminated=true` işaretler
+- o fraksiyona ait tüm orduları kaldırır
+- `GameState.Relations` içindeki o fraksiyonu içeren tüm diplomasi kayıtlarını siler
+
+Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam etmez.
+
+---
+
+## Gelen Teklif Paneli (Oyuncu)
+
+AI artık oyuncuya doğrudan barış sonucu dayatmaz. Savaş baskısı şartı oluştuğunda teklif `GameState.DiplomaticOffers` kuyruğuna eklenir:
+
+- kaynak: `internal/ai/ai.go:87`
+- kuyruk/çözümleme: `internal/diplomacy/offers.go`
+- UI paneli: `internal/render/renderer.go` (`drawDiplomacyOfferDialog`, `handleDiplomacyOfferInput`)
+
+Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde standart diplomasi motoru (`Execute`) çalışır, redde ise teklif kuyruktan düşer ve savaş sürer.
 
 ---
 

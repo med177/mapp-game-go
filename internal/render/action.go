@@ -63,6 +63,7 @@ const (
 	ActionOneTimeTrade     ActionKind = "one_time_trade"     // BuildingID = mal tipi, Delta = miktar
 	ActionTradeScroll      ActionKind = "trade_scroll"       // Delta: +1/-1
 	ActionTradeTabSwitch   ActionKind = "trade_tab_switch"   // Delta: hangi sekme
+	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.
@@ -76,4 +77,6 @@ type InputAction struct {
 	BuildingID    string
 	TargetFaction faction.FactionID
 	Delta         int // AdjustTax için: +5 veya -5
+	OfferIndex    int
+	OfferAccepted bool
 }

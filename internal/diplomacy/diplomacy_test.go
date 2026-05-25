@@ -99,6 +99,36 @@ func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	}
 }
 
+func TestQueueAndResolveOfferForPlayer(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+	gs.Factions["b"].Gold = 40
+
+	if !QueueOffer(gs, "a", "b", ActionProposePeace) {
+		t.Fatal("teklif kuyruğa alınmalıydı")
+	}
+	if QueueOffer(gs, "a", "b", ActionProposePeace) {
+		t.Fatal("aynı teklif ikinci kez kuyruğa alınmamalı")
+	}
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("tek bekleyen teklif bekleniyordu, got=%d", len(gs.DiplomaticOffers))
+	}
+
+	result := ResolveOffer(gs, 0, true)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("kabul edilen teklif uygulanmalıydı: %+v", result)
+	}
+	if len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("teklif kabul sonrası kuyruktan düşmeli, got=%d", len(gs.DiplomaticOffers))
+	}
+	if rel.Stance != faction.StancePeace {
+		t.Fatalf("barış sonrası stance peace olmalı, got=%s", rel.Stance)
+	}
+}
+
 func testGameState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

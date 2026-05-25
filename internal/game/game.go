@@ -223,6 +223,8 @@ func (g *Game) Update() error {
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
 			g.proposeTrade(action.TargetFaction)
+		case render.ActionRespondDiplomacyOffer:
+			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
 		case render.ActionSave:
 			g.saveGame()
 		case render.ActionLoad:
@@ -552,6 +554,14 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 func (g *Game) proposePeace(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposePeace)
 	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) respondDiplomacyOffer(index int, accepted bool) {
+	result := diplomacy.ResolveOffer(g.gs, index, accepted)
+	g.renderer.ShowCombatResult(result.Message)
+	if accepted && result.Applied {
+		g.renderer.AddEvent("📜 Diplomasi: " + result.Message)
+	}
 }
 
 // saveGame oyunu kaydeder.

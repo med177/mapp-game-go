@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-19
+last_updated: 2026-05-25
 related: [game-loop, state-management, shape-editor, systems/combat]
 ---
 
@@ -64,6 +64,9 @@ type Renderer struct {
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan ve genel onay diyalogları; genel onay mesajı açılışta satırlara bölünür, buton hitbox'ları aynı sabitlerden hesaplanır | `renderer.go`, `cursor.go` |
 | 11 | Tarihsel olay popup | `renderer.go` |
+
+Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
+Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) harita üstünde modal anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 
 ---
 

@@ -101,7 +101,11 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 			selfPower := diplomacy.MilitaryPower(gs, fid)
 			otherPower := diplomacy.MilitaryPower(gs, otherID)
 			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
-				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+				if otherID == gs.PlayerFactionID {
+					diplomacy.QueueOffer(gs, fid, otherID, diplomacy.ActionProposePeace)
+				} else {
+					diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+				}
 			}
 		case faction.StancePeace:
 			if rel.Score >= 20 && diplomacy.HasCommonEnemy(gs, fid, otherID) && !diplomacy.HasDirectThreat(gs, fid, otherID) {

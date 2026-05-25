@@ -1,6 +1,6 @@
 {
   "Difficulty": 2,
-  "MusicOn": false,
+  "MusicOn": true,
   "MusicVolume": 100,
   "SoundOn": true,
   "SoundVolume": 35

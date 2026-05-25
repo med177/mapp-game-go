@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -23,6 +24,28 @@ func TestAIHandlesPeaceWhenWarPressureIsHigh(t *testing.T) {
 
 	if rel.Stance != faction.StancePeace {
 		t.Fatalf("AI barış aramalıydı, got=%s", rel.Stance)
+	}
+}
+
+func TestAIQueuesPeaceOfferToPlayer(t *testing.T) {
+	gs := aiTestState()
+	gs.PlayerFactionID = "player"
+	rel := gs.Relations[faction.RelationKey("ai_1", "player")]
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+	gs.Factions["player"].Gold = 30
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("oyuncuya barış teklifi kuyruğu bekleniyordu, got=%d", len(gs.DiplomaticOffers))
+	}
+	offer := gs.DiplomaticOffers[0]
+	if offer.FromFactionID != "ai_1" || offer.ToFactionID != "player" || offer.Action != string(diplomacy.ActionProposePeace) {
+		t.Fatalf("beklenmeyen teklif kaydı: %+v", offer)
+	}
+	if rel.Stance != faction.StanceWar {
+		t.Fatalf("oyuncu yanıtlayana kadar savaş stance'i korunmalı, got=%s", rel.Stance)
 	}
 }
 

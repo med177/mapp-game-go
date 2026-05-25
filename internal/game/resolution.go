@@ -263,6 +263,12 @@ func checkEliminations(gs *state.GameState) {
 					delete(gs.Armies, aid)
 				}
 			}
+			// Elenen fraksiyonun tüm diplomasi kayıtlarını kaldır.
+			for key, rel := range gs.Relations {
+				if rel == nil || rel.FactionA == fid || rel.FactionB == fid {
+					delete(gs.Relations, key)
+				}
+			}
 		}
 	}
 }

@@ -113,6 +113,7 @@ type Renderer struct {
 	// Genel onay diyaloğu
 	warConfirm    warConfirmState
 	confirmDialog confirmDialogState
+	offerCursor   int
 
 	armyIconBuf    []armyIconPos
 	regionLabelBuf []settlementDraw
@@ -728,6 +729,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
+	} else if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
+		r.drawDiplomacyOfferDialog(screen, offerIdx)
 	}
 
 	// 11. Tarihsel olay tam ekran popup
@@ -5665,6 +5668,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.warConfirm.show {
 		return r.handleWarConfirmInput()
 	}
+	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
+		return r.handleDiplomacyOfferInput(offerIdx)
+	}
 
 	// Oyun sonu ekranı inputu
 	if r.gs.Phase == state.PhaseGameOver {
@@ -6349,6 +6355,101 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			TargetRegion:  wc.pendingDest,
 			TargetFaction: faction.FactionID(wc.factionID),
 		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
+	if r.gs == nil || len(r.gs.DiplomaticOffers) == 0 {
+		return 0, false
+	}
+	for i, offer := range r.gs.DiplomaticOffers {
+		if offer.ToFactionID == r.gs.PlayerFactionID {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) {
+	const (
+		dlgW = float32(520)
+		dlgH = float32(190)
+		btnW = float32(120)
+		btnH = float32(36)
+	)
+	offer := r.gs.DiplomaticOffers[offerIdx]
+	fromName := string(offer.FromFactionID)
+	if f := r.gs.Factions[offer.FromFactionID]; f != nil && f.NameTR != "" {
+		fromName = f.NameTR
+	}
+	actionLabel := "teklif"
+	switch offer.Action {
+	case "propose_peace":
+		actionLabel = "barış"
+	case "propose_alliance":
+		actionLabel = "ittifak"
+	case "propose_trade":
+		actionLabel = "ticaret"
+	}
+
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
+	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+
+	title := "Anlaşma Teklifi"
+	DrawText(screen, title, float64(cx)+20, float64(cy)+30, FaceLarge, color.RGBA{255, 220, 100, 255})
+	message := fromName + " devleti size " + actionLabel + " teklif etti."
+	lines := wrapTextLines(message, FaceMed, float64(dlgW)-40)
+	for i, line := range lines {
+		if i >= 3 {
+			break
+		}
+		DrawText(screen, line, float64(cx)+20, float64(cy)+64+float64(i)*20, FaceMed, color.RGBA{220, 220, 220, 255})
+	}
+	DrawText(screen, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.",
+		float64(cx)+20, float64(cy)+124, FaceSmall, ColorGray)
+
+	btnY := cy + dlgH - btnH - 16
+	acceptX := cx + dlgW/2 - btnW - 12
+	rejectX := cx + dlgW/2 + 12
+	vector.FillRect(screen, acceptX, btnY, btnW, btnH, color.RGBA{70, 140, 70, 240}, false)
+	vector.FillRect(screen, rejectX, btnY, btnW, btnH, color.RGBA{140, 70, 70, 240}, false)
+	aw := MeasureText("Kabul Et", FaceSmall)
+	rw := MeasureText("Reddet", FaceSmall)
+	DrawText(screen, "Kabul Et", float64(acceptX)+(float64(btnW)-aw)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+	DrawText(screen, "Reddet", float64(rejectX)+(float64(btnW)-rw)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+}
+
+func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
+	const (
+		dlgW = float32(520)
+		dlgH = float32(190)
+		btnW = float32(120)
+		btnH = float32(36)
+	)
+	cx := float32(ScreenWidth)/2 - dlgW/2
+	cy := float32(ScreenHeight)/2 - dlgH/2
+	btnY := cy + dlgH - btnH - 16
+	acceptX := cx + dlgW/2 - btnW - 12
+	rejectX := cx + dlgW/2 + 12
+
+	mxi, myi := ebiten.CursorPosition()
+	mx, my := float32(mxi), float32(myi)
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if mx >= acceptX && mx <= acceptX+btnW && my >= btnY && my <= btnY+btnH {
+			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
+		}
+		if mx >= rejectX && mx <= rejectX+btnW && my >= btnY && my <= btnY+btnH {
+			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: false}
+		}
+	}
+	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
+		return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
+	}
+	if r.keyJustPressed(ebiten.KeyN) || r.keyJustPressed(ebiten.KeyEscape) {
+		return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: false}
 	}
 	return InputAction{}
 }

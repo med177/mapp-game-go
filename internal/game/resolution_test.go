@@ -109,3 +109,44 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 		t.Fatalf("ticaret rotası malı hedefe eklemeliydi, got=%d", gs.Factions["b"].Spice)
 	}
 }
+
+func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+			"c": {ID: "c"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"b1": {ID: "b1", OwnerID: "b"},
+			"c1": {ID: "c1", OwnerID: "c"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "a"},
+			"b1": {ID: "b1", OwnerID: "b"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", Stance: faction.StanceWar},
+			faction.RelationKey("a", "c"): {FactionA: "a", FactionB: "c", Stance: faction.StancePeace},
+			faction.RelationKey("b", "c"): {FactionA: "b", FactionB: "c", Stance: faction.StanceAllied},
+		},
+	}
+
+	checkEliminations(gs)
+
+	if !gs.Factions["a"].IsEliminated {
+		t.Fatal("bölgesi kalmayan fraksiyon elenmiş işaretlenmeli")
+	}
+	if _, ok := gs.Armies["a1"]; ok {
+		t.Fatal("elenen fraksiyonun ordusu temizlenmeliydi")
+	}
+	if _, ok := gs.Relations[faction.RelationKey("a", "b")]; ok {
+		t.Fatal("elenen fraksiyonun ilişkileri temizlenmeliydi (a|b)")
+	}
+	if _, ok := gs.Relations[faction.RelationKey("a", "c")]; ok {
+		t.Fatal("elenen fraksiyonun ilişkileri temizlenmeliydi (a|c)")
+	}
+	if _, ok := gs.Relations[faction.RelationKey("b", "c")]; !ok {
+		t.Fatal("elenmeyen fraksiyonlar arası ilişki korunmalı")
+	}
+}

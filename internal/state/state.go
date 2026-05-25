@@ -34,6 +34,14 @@ type VictoryCondition struct {
 	DeadlineTurn       int              `json:"deadline_turn"`        // 0 = süresiz
 }
 
+// DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
+type DiplomaticOffer struct {
+	FromFactionID faction.FactionID `json:"from_faction_id"`
+	ToFactionID   faction.FactionID `json:"to_faction_id"`
+	Action        string            `json:"action"`
+	CreatedTurn   int               `json:"created_turn"`
+}
+
 // GameState oyunun tüm anlık durumunu tutar. Save/load bu struct'ı serialize eder.
 type GameState struct {
 	// Zaman
@@ -81,6 +89,8 @@ type GameState struct {
 
 	// Diplomatik ilişkiler (key: RelationKey)
 	Relations map[string]*faction.Relation `json:"relations"`
+	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
+	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 
 	// Ticaret güzergahları
 	TradeRoutes []*economy.TradeRoute  `json:"trade_routes"`
