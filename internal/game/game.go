@@ -397,7 +397,7 @@ func (g *Game) resolveTurn() {
 	if !prevVictoryAchieved && g.gs.VictoryAchieved && g.gs.WinnerID == g.gs.PlayerFactionID {
 		msg := "Zafer hedefi tamamlandı: " + victoryLabel(g.gs.Victory.Type) + ". Oyun devam ediyor."
 		g.renderer.ShowCombatResult(msg)
-		g.renderer.AddEvent("🏆 " + msg)
+		g.renderer.AddEvent("[ZAFER] " + msg)
 	}
 
 	// Tamamlanan teknolojiler için mesaj göster
@@ -406,7 +406,7 @@ func (g *Game) resolveTurn() {
 			if f, ok := g.gs.Factions[faction.FactionID(ct.factionID)]; ok {
 				msg := f.NameTR + ": " + t.NameTR + " teknolojisi tamamlandı!"
 				g.renderer.ShowCombatResult(msg)
-				g.renderer.AddEvent("🔬 " + msg)
+				g.renderer.AddEvent("[TEKNOLOJI] " + msg)
 			}
 		}
 	}
@@ -428,17 +428,17 @@ func (g *Game) resolveTurn() {
 		case pr.kind == productionKindBuilding:
 			msg := fmt.Sprintf("%s bölgesinde %s tamamlandı!", regionName, name)
 			g.renderer.ShowCombatResult(msg)
-			g.renderer.AddEvent("🏗 " + msg)
+			g.renderer.AddEvent("[INSA] " + msg)
 		case pr.kind == productionKindUnit:
 			msg := fmt.Sprintf("%s bölgesinde %s hazır!", regionName, name)
 			g.renderer.ShowCombatResult(msg)
-			g.renderer.AddEvent("⚔ " + msg)
+			g.renderer.AddEvent("[BIRIM] " + msg)
 		}
 	}
 
 	// Olaylar
 	if name, desc := events.Tick(g.gs, g.evts); name != "" {
-		g.renderer.ShowCombatResult("📜 " + name + ": " + desc)
+		g.renderer.ShowCombatResult("OLAY: " + name + ": " + desc)
 	}
 
 	g.gs.AdvanceTurn()
@@ -524,7 +524,7 @@ func (g *Game) showRegionUnlockNotifications(ids []world.RegionID) {
 		}
 	}
 	g.renderer.ShowCombatResult(msg)
-	g.renderer.AddEvent("🔓 " + msg)
+	g.renderer.AddEvent("[UNLOCK] " + msg)
 }
 
 // buildBuilding oyuncunun kendi bölgesine bina inşa eder.
@@ -605,7 +605,7 @@ func (g *Game) respondDiplomacyOffer(index int, accepted bool) {
 	result := diplomacy.ResolveOffer(g.gs, index, accepted)
 	g.renderer.ShowCombatResult(result.Message)
 	if accepted && result.Applied {
-		g.renderer.AddEvent("📜 Diplomasi: " + result.Message)
+		g.renderer.AddEvent("[DIPLOMASI] " + result.Message)
 	}
 }
 

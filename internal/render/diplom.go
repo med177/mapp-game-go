@@ -429,13 +429,13 @@ func sortedFactions(gs *state.GameState) []faction.FactionID {
 func stanceDisplay(s faction.DiplomaticStance) (color.Color, string) {
 	switch s {
 	case faction.StanceWar:
-		return ColorRed, "⚔  Savaş"
+		return ColorRed, "WAR Savas"
 	case faction.StanceAllied:
-		return color.RGBA{60, 220, 60, 255}, "🤝 Müttefik"
+		return color.RGBA{60, 220, 60, 255}, "ALLY Muttefik"
 	case faction.StanceTrade:
-		return ColorGold, "📦 Ticaret"
+		return ColorGold, "TRADE Ticaret"
 	default:
-		return ColorGray, "— Barış"
+		return ColorGray, "Baris"
 	}
 }
 
@@ -481,7 +481,7 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		if stance != faction.StanceWar {
 			chance = 0
 		} else {
-			chance = 35 + (-score/2) + regionDelta*4
+			chance = 35 + (-score / 2) + regionDelta*4
 		}
 	case ActionProposeAlliance:
 		if stance == faction.StanceWar {

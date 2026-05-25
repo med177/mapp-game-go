@@ -1679,12 +1679,12 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			default:
 				col = color.RGBA{80, 160, 255, 160}
 			}
-			// Barış halindeki düşman bölgeye kılıç ikonu
+			// Baris halindeki dusman bolgeye savas isareti
 			if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
 				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
 				rel, exists := r.gs.Relations[key]
 				if !exists || rel.Stance != faction.StanceWar {
-					DrawTextCentered(screen, "⚔", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
+					DrawTextCentered(screen, "WAR", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
 				}
 			}
 		}

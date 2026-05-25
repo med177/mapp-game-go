@@ -1040,12 +1040,12 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ownerLine := "Sahip: " + ownerName
 	if region.IsLocked {
 		if region.UnlockTurn > 0 {
-			ownerLine += "  🔒 Tur " + itoa(region.UnlockTurn)
+			ownerLine += "  LOCK Tur " + itoa(region.UnlockTurn)
 		} else {
-			ownerLine += "  🔒 Kilitli"
+			ownerLine += "  LOCK Kilitli"
 		}
 	} else if region.UnlockTurn > 0 {
-		ownerLine += "  🔓 Açık"
+		ownerLine += "  ACIK"
 	}
 	DrawText(screen, ownerLine, lx, ly, FaceSmall, ownerCol)
 	ly += 18
@@ -1059,10 +1059,10 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 				break
 			}
 		}
-		stypeStr = "  │  " + settlementTypeLabel(capital.Type)
+		stypeStr = "  |  " + settlementTypeLabel(capital.Type)
 	}
 
-	DrawText(screen, terrainLabel(region.Terrain)+"  │  "+religionLabel(string(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
+	DrawText(screen, terrainLabel(region.Terrain)+"  |  "+religionLabel(string(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
 	ly += 16
 
 	sepW := pw - float32(panelPad*2)
@@ -1070,8 +1070,8 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 8
 
 	// Kaynaklar — iki sütun
-	DrawText(screen, "✦ "+itoa(region.GoldIncome())+" Altın", lx, ly, FaceSmall, ColorGold)
-	DrawText(screen, "◈ "+itoa(region.BaseGrainOutput)+" Tahıl", lx+120, ly, FaceSmall, ColorWhite)
+	DrawText(screen, "G "+itoa(region.GoldIncome())+" Altin", lx, ly, FaceSmall, ColorGold)
+	DrawText(screen, "T "+itoa(region.BaseGrainOutput)+" Tahil", lx+120, ly, FaceSmall, ColorWhite)
 	ly += 18
 
 	statBarX := float32(lx) + 122
@@ -1296,8 +1296,8 @@ func drawGameOver(screen *ebiten.Image, gs *state.GameState) {
 			armyCount++
 		}
 	}
-	stats := "Tur: " + itoa(gs.Turn) + "  │  Yıl: " + itoa(gs.Year) +
-		"  │  Bölge: " + itoa(regionCount) + "  │  Ordu: " + itoa(armyCount)
+	stats := "Tur: " + itoa(gs.Turn) + "  |  Yil: " + itoa(gs.Year) +
+		"  |  Bolge: " + itoa(regionCount) + "  |  Ordu: " + itoa(armyCount)
 	DrawTextCentered(screen, stats, ScreenWidth/2, cy, FaceSmall, ColorGray)
 	cy += 30
 	DrawTextCentered(screen, "[Esc] Ana Menü", ScreenWidth/2, cy, FaceSmall, color.RGBA{160, 160, 160, 200})
@@ -1320,7 +1320,7 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc string) {
 	vector.FillRect(screen, bx, by, bw, 4, color.RGBA{220, 170, 50, 255}, false)
 
 	cy := float64(by) + 28
-	DrawTextCentered(screen, "— TARİHSEL OLAY —", ScreenWidth/2, cy, FaceSmall, color.RGBA{180, 140, 50, 200})
+	DrawTextCentered(screen, "- TARIHSEL OLAY -", ScreenWidth/2, cy, FaceSmall, color.RGBA{180, 140, 50, 200})
 	cy += 26
 	DrawTextCentered(screen, title, ScreenWidth/2, cy, FaceLarge, color.RGBA{255, 220, 80, 255})
 	cy += 30
@@ -2186,7 +2186,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	if region.IsLocked {
 		lockLine := "Durum: Kilitli"
 		if region.UnlockTurn > 0 {
-			lockLine += "  │  Açılış Turu: " + itoa(region.UnlockTurn)
+			lockLine += "  |  Acilis Turu: " + itoa(region.UnlockTurn)
 		}
 		DrawText(screen, lockLine, lx, ly, FaceSmall, color.RGBA{220, 150, 90, 220})
 		ly += 18

@@ -1,6 +1,6 @@
 {
-  "turn": 115,
-  "year": 1309,
+  "turn": 127,
+  "year": 1310,
   "month": 9,
   "start_year": 1300,
   "scenario_id": "1300_ottoman_rise",
@@ -35,7 +35,7 @@
       "name": "Adriatic Sea",
       "name_tr": "Adriyatik Denizi",
       "terrain": "sea",
-      "owner_id": "naples_kingdom",
+      "owner_id": "hungarian_kingdom",
       "neighbors": [
         "_shore_mediterranean_1",
         "_shore_mediterranean_2",
@@ -115,7 +115,7 @@
       "name": "Atlantic Ocean",
       "name_tr": "Atlas Okyanusu",
       "terrain": "sea",
-      "owner_id": "aragon",
+      "owner_id": "france",
       "neighbors": [
         "_sea_atlantic_open_1",
         "_sea_atlantic_open_3",
@@ -177,7 +177,7 @@
       "name": "Atlantic Open 2",
       "name_tr": "Atlantic Acik 2",
       "terrain": "sea",
-      "owner_id": "aragon",
+      "owner_id": "france",
       "neighbors": [
         "_sea_atlantic",
         "algiers",
@@ -241,7 +241,7 @@
       "name": "Atlantic Open 4",
       "name_tr": "Atlantic Acik 4",
       "terrain": "sea",
-      "owner_id": "england",
+      "owner_id": "france",
       "neighbors": [
         "_sea_atlantic",
         "_sea_atlantic_open_4",
@@ -276,7 +276,7 @@
       "name": "Atlantic Open 5",
       "name_tr": "Atlantic Acik 5",
       "terrain": "sea",
-      "owner_id": "england",
+      "owner_id": "hre",
       "neighbors": [
         "_sea_atlantic_open_3",
         "_sea_atlantic_open_5",
@@ -471,7 +471,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 100,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -577,7 +577,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 100,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -856,7 +856,7 @@
       "name": "Mediterranean Open 1",
       "name_tr": "Mediterranean Acik 1",
       "terrain": "sea",
-      "owner_id": "mamluk",
+      "owner_id": "venice",
       "neighbors": [
         "_sea_aegean",
         "_sea_black_open_1",
@@ -892,7 +892,7 @@
       "name": "Mediterranean Open 2",
       "name_tr": "Mediterranean Acik 2",
       "terrain": "sea",
-      "owner_id": "florence_rep",
+      "owner_id": "milan_duchy",
       "neighbors": [
         "_sea_mediterranean_open_4",
         "algiers",
@@ -1496,7 +1496,7 @@
       "name": "Adriatic Sea Shore",
       "name_tr": "Adriyatik Denizi Kiyisi",
       "terrain": "sea",
-      "owner_id": "naples_kingdom",
+      "owner_id": "hungarian_kingdom",
       "neighbors": [
         "_sea_adriatic",
         "_shore_mediterranean_2",
@@ -2453,7 +2453,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 99,
+      "satisfaction": 100,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -2815,12 +2815,13 @@
       "tax_rate": 30,
       "population": 1000,
       "religion": "orthodox",
-      "conversion_turns": 5,
+      "conversion_turns": 17,
       "active_event_id": "",
       "buildings": [
         "port",
         "market",
-        "walls"
+        "walls",
+        "barracks"
       ]
     },
     "candaroglu": {
@@ -2968,7 +2969,7 @@
       "tax_rate": 20,
       "population": 180,
       "religion": "orthodox",
-      "conversion_turns": 7,
+      "conversion_turns": 19,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -3069,8 +3070,7 @@
       "satisfaction": 100,
       "tax_rate": 28,
       "population": 180,
-      "religion": "orthodox",
-      "conversion_turns": 16,
+      "religion": "sunni",
       "active_event_id": "",
       "buildings": [
         "market",
@@ -5378,7 +5378,7 @@
       "tax_rate": 25,
       "population": 350,
       "religion": "orthodox",
-      "conversion_turns": 6,
+      "conversion_turns": 18,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -6124,7 +6124,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 96,
+      "satisfaction": 100,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -6161,7 +6161,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 95,
+      "satisfaction": 100,
       "tax_rate": 58,
       "population": 260,
       "religion": "sunni",
@@ -6214,7 +6214,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 98,
+      "satisfaction": 100,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -6439,7 +6439,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 97,
+      "satisfaction": 100,
       "tax_rate": 73,
       "population": 260,
       "religion": "sunni",
@@ -6571,7 +6571,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 99,
+      "satisfaction": 100,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -6843,12 +6843,13 @@
       "tax_rate": 20,
       "population": 180,
       "religion": "orthodox",
-      "conversion_turns": 8,
+      "conversion_turns": 20,
       "active_event_id": "",
       "buildings": [
         "port",
         "market",
-        "walls"
+        "walls",
+        "barracks"
       ]
     },
     "new_region_221": {
@@ -6881,13 +6882,13 @@
       "satisfaction": 100,
       "tax_rate": 30,
       "population": 400,
-      "religion": "orthodox",
-      "conversion_turns": 16,
+      "religion": "sunni",
       "active_event_id": "",
       "buildings": [
         "port",
         "market",
-        "walls"
+        "walls",
+        "barracks"
       ]
     },
     "new_region_222": {
@@ -6960,7 +6961,7 @@
       "tax_rate": 25,
       "population": 340,
       "religion": "orthodox",
-      "conversion_turns": 7,
+      "conversion_turns": 19,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -7009,7 +7010,7 @@
       "name": "New Region 222",
       "name_tr": "Yeni Bolge 222",
       "terrain": "sea",
-      "owner_id": "athena_duk",
+      "owner_id": "venice",
       "neighbors": [
         "_sea_adriatic",
         "albania",
@@ -7350,8 +7351,7 @@
       "satisfaction": 100,
       "tax_rate": 30,
       "population": 280,
-      "religion": "orthodox",
-      "conversion_turns": 16,
+      "religion": "sunni",
       "active_event_id": "",
       "buildings": [
         "market",
@@ -9309,12 +9309,13 @@
       "tax_rate": 30,
       "population": 400,
       "religion": "orthodox",
-      "conversion_turns": 7,
+      "conversion_turns": 19,
       "active_event_id": "",
       "buildings": [
         "market",
         "port",
-        "walls"
+        "walls",
+        "barracks"
       ]
     },
     "thuringia": {
@@ -10143,8 +10144,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 141,
-      "grain": 3520,
+      "gold": 166,
+      "grain": 3968,
       "iron": 96,
       "timber": 60,
       "spice": 48,
@@ -10211,8 +10212,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 2904,
-      "grain": 15877,
+      "gold": 3303,
+      "grain": 17743,
       "iron": 154,
       "timber": 110,
       "spice": 98,
@@ -10253,7 +10254,7 @@
       "is_playable": true,
       "is_eliminated": false,
       "gold": 145,
-      "grain": 1394,
+      "grain": 1542,
       "iron": 0,
       "timber": 50,
       "spice": 16,
@@ -10293,8 +10294,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 169,
-      "grain": 1742,
+      "gold": 295,
+      "grain": 1946,
       "iron": 0,
       "timber": 50,
       "spice": 20,
@@ -10363,8 +10364,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 330,
-      "grain": 14829,
+      "gold": 270,
+      "grain": 16458,
       "iron": 0,
       "timber": 159,
       "spice": 59,
@@ -10404,8 +10405,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 14972,
-      "grain": 31136,
+      "gold": 2546,
+      "grain": 30961,
       "iron": 123,
       "timber": 156,
       "spice": 1,
@@ -10525,8 +10526,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 238,
-      "grain": 4926,
+      "gold": 224,
+      "grain": 5664,
       "iron": 142,
       "timber": 70,
       "spice": 58,
@@ -10566,8 +10567,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 418,
-      "grain": 9648,
+      "gold": 437,
+      "grain": 10752,
       "iron": 150,
       "timber": 120,
       "spice": 51,
@@ -10648,8 +10649,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 32329,
-      "grain": 37744,
+      "gold": 36502,
+      "grain": 41926,
       "iron": 188,
       "timber": 300,
       "spice": 51,
@@ -10689,8 +10690,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 295,
-      "grain": 9807,
+      "gold": 175,
+      "grain": 10902,
       "iron": 1,
       "timber": 50,
       "spice": 15,
@@ -10759,8 +10760,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2381,
-      "grain": 7742,
+      "gold": 2618,
+      "grain": 8639,
       "iron": 155,
       "timber": 60,
       "spice": 134,
@@ -10800,8 +10801,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 37992,
-      "grain": 44837,
+      "gold": 42594,
+      "grain": 49934,
       "iron": 214,
       "timber": 200,
       "spice": 62,
@@ -10841,8 +10842,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 6660,
-      "grain": 8695,
+      "gold": 7458,
+      "grain": 9658,
       "iron": 158,
       "timber": 100,
       "spice": 0,
@@ -10882,8 +10883,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 137,
-      "grain": 1165,
+      "gold": 215,
+      "grain": 1281,
       "iron": 89,
       "timber": 115,
       "spice": 0,
@@ -10950,8 +10951,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 264,
-      "grain": 11967,
+      "gold": 214,
+      "grain": 13608,
       "iron": 80,
       "timber": 50,
       "spice": 60,
@@ -10991,8 +10992,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 176,
-      "grain": 2571,
+      "gold": 150,
+      "grain": 3000,
       "iron": 70,
       "timber": 50,
       "spice": 60,
@@ -11073,8 +11074,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 72520,
-      "grain": 81999,
+      "gold": 81930,
+      "grain": 91164,
       "iron": 0,
       "timber": 180,
       "spice": 75,
@@ -11114,8 +11115,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 22274,
-      "grain": 46801,
+      "gold": 25382,
+      "grain": 52240,
       "iron": 0,
       "timber": 130,
       "spice": 54,
@@ -11155,8 +11156,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 67730,
-      "grain": 54822,
+      "gold": 75240,
+      "grain": 59196,
       "iron": 148,
       "timber": 60,
       "spice": 4,
@@ -11267,8 +11268,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 182,
-      "grain": 12122,
+      "gold": 301,
+      "grain": 13634,
       "iron": 0,
       "timber": 160,
       "spice": 33,
@@ -11308,8 +11309,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 63297,
-      "grain": 46840,
+      "gold": 71174,
+      "grain": 52330,
       "iron": 80,
       "timber": 40,
       "spice": 38,
@@ -11390,8 +11391,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 324,
-      "grain": 12304,
+      "gold": 296,
+      "grain": 13672,
       "iron": 188,
       "timber": 80,
       "spice": 81,
@@ -11431,8 +11432,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 255,
-      "grain": 14701,
+      "gold": 217,
+      "grain": 16354,
       "iron": 137,
       "timber": 60,
       "spice": 1,
@@ -11472,8 +11473,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 251,
-      "grain": 5991,
+      "gold": 241,
+      "grain": 6644,
       "iron": 123,
       "timber": 272,
       "spice": 69,
@@ -11513,8 +11514,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 29930,
-      "grain": 56673,
+      "gold": 52922,
+      "grain": 72643,
       "iron": 142,
       "timber": 80,
       "spice": 1,
@@ -11554,8 +11555,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 298,
-      "grain": 11554,
+      "gold": 398,
+      "grain": 12850,
       "iron": 122,
       "timber": 50,
       "spice": 69,
@@ -11595,8 +11596,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1143,
-      "grain": 28247,
+      "gold": 1221,
+      "grain": 31499,
       "iron": 0,
       "timber": 150,
       "spice": 45,
@@ -11636,8 +11637,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 203,
-      "grain": 4113,
+      "gold": 186,
+      "grain": 4611,
       "iron": 126,
       "timber": 180,
       "spice": 0,
@@ -11718,8 +11719,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 332,
-      "grain": 27309,
+      "gold": 445,
+      "grain": 30417,
       "iron": 143,
       "timber": 0,
       "spice": 53,
@@ -11817,8 +11818,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 208,
-      "grain": 395,
+      "gold": 197,
+      "grain": 401,
       "iron": 110,
       "timber": 80,
       "spice": 40,
@@ -11858,8 +11859,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 178,
-      "grain": 1321,
+      "gold": 197,
+      "grain": 1393,
       "iron": 0,
       "timber": 100,
       "spice": 28,
@@ -11899,8 +11900,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 7418,
-      "grain": 11296,
+      "gold": 8513,
+      "grain": 12520,
       "iron": 0,
       "timber": 148,
       "spice": 58,
@@ -11940,8 +11941,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 223,
-      "grain": 7990,
+      "gold": 235,
+      "grain": 9034,
       "iron": 0,
       "timber": 160,
       "spice": 36,
@@ -12022,8 +12023,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 402,
-      "grain": 6444,
+      "gold": 512,
+      "grain": 7662,
       "iron": 137,
       "timber": 120,
       "spice": 0,
@@ -12063,8 +12064,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 10884,
-      "grain": 13406,
+      "gold": 12414,
+      "grain": 14954,
       "iron": 96,
       "timber": 122,
       "spice": 40,
@@ -12094,49 +12095,34 @@
     }
   },
   "armies": {
-    "army_achaea_principality_1919": {
-      "id": "army_achaea_principality_1919",
+    "army_achaea_principality_2355": {
+      "id": "army_achaea_principality_2355",
       "owner_id": "achaea_principality",
       "region_id": "morea",
       "units": [
         {
           "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
           "current_hp": 81,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 90,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
           "experience": 0
         },
         {
@@ -12172,6 +12158,41 @@
       "units": [
         {
           "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 81,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 90,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
           "current_hp": 100,
           "experience": 0
         },
@@ -12186,24 +12207,19 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_france_1": {
-      "id": "army_france_1",
-      "owner_id": "france",
-      "region_id": "paris",
-      "units": [],
-      "move_points": 3,
-      "max_move_points": 3,
-      "is_naval": false,
-      "in_ambush": false
-    },
-    "army_georgia_1": {
-      "id": "army_georgia_1",
-      "owner_id": "georgia_kingdom",
-      "region_id": "georgia",
+    "army_athena_duk_2259": {
+      "id": "army_athena_duk_2259",
+      "owner_id": "athena_duk",
+      "region_id": "greece",
       "units": [
         {
           "type_id": "militia",
-          "current_hp": 57,
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
           "experience": 0
         },
         {
@@ -12235,6 +12251,138 @@
           "type_id": "militia",
           "current_hp": 100,
           "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_castile_kingdom_2411": {
+      "id": "army_castile_kingdom_2411",
+      "owner_id": "castile_kingdom",
+      "region_id": "castile",
+      "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_france_1": {
+      "id": "army_france_1",
+      "owner_id": "france",
+      "region_id": "paris",
+      "units": [],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_georgia_1": {
+      "id": "army_georgia_1",
+      "owner_id": "georgia_kingdom",
+      "region_id": "georgia",
+      "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 40,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 51,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 51,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 51,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 57,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 3,
@@ -12252,11 +12400,16 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_granada_emirate_2112": {
-      "id": "army_granada_emirate_2112",
+    "army_granada_emirate_2356": {
+      "id": "army_granada_emirate_2356",
       "owner_id": "granada_emirate",
       "region_id": "granada",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 81,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 90,
@@ -12343,67 +12496,6 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_novgorod_rep_2159": {
-      "id": "army_novgorod_rep_2159",
-      "owner_id": "novgorod_rep",
-      "region_id": "novgorod",
-      "units": [
-        {
-          "type_id": "infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        }
-      ],
-      "move_points": 3,
-      "max_move_points": 3,
-      "is_naval": false,
-      "in_ambush": false
-    },
     "army_ottoman_1631": {
       "id": "army_ottoman_1631",
       "owner_id": "ottoman",
@@ -12411,87 +12503,77 @@
       "units": [
         {
           "type_id": "cannon",
-          "current_hp": 32,
+          "current_hp": 22,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 32,
+          "current_hp": 22,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "bombard",
-          "current_hp": 3,
-          "experience": 0
-        },
-        {
-          "type_id": "bombard",
-          "current_hp": 3,
-          "experience": 0
-        },
-        {
-          "type_id": "bombard",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 40,
+          "current_hp": 28,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 32,
+          "current_hp": 22,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 32,
+          "current_hp": 22,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 32,
+          "current_hp": 22,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 40,
+          "current_hp": 28,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 40,
+          "current_hp": 28,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 40,
+          "current_hp": 28,
           "experience": 0
         }
       ],
@@ -12507,92 +12589,82 @@
       "units": [
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "heavy_cavalry",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "heavy_cavalry",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 40,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 40,
-          "experience": 0
-        },
-        {
-          "type_id": "heavy_cavalry",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
           "current_hp": 11,
           "experience": 0
         },
         {
-          "type_id": "cavalry",
-          "current_hp": 3,
+          "type_id": "cannon",
+          "current_hp": 51,
           "experience": 0
         },
         {
-          "type_id": "infantry",
-          "current_hp": 3,
+          "type_id": "heavy_cavalry",
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 17,
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
+          "type_id": "heavy_cavalry",
+          "current_hp": 36,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 17,
+          "current_hp": 28,
+          "experience": 0
+        },
+        {
+          "type_id": "elite_infantry",
+          "current_hp": 28,
+          "experience": 0
+        },
+        {
+          "type_id": "heavy_cavalry",
+          "current_hp": 11,
+          "experience": 0
+        },
+        {
+          "type_id": "elite_infantry",
+          "current_hp": 11,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 7,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 11,
+          "experience": 0
+        },
+        {
+          "type_id": "elite_infantry",
+          "current_hp": 11,
           "experience": 0
         }
       ],
@@ -12608,62 +12680,62 @@
       "units": [
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "heavy_cavalry",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
           "current_hp": 51,
           "experience": 0
         },
         {
+          "type_id": "heavy_cavalry",
+          "current_hp": 51,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 36,
+          "experience": 0
+        },
+        {
           "type_id": "elite_infantry",
-          "current_hp": 17,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 17,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 17,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 17,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 17,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
           "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 11,
+          "current_hp": 7,
+          "experience": 0
+        },
+        {
+          "type_id": "cannon",
+          "current_hp": 7,
           "experience": 0
         }
       ],
@@ -12679,47 +12751,79 @@
       "units": [
         {
           "type_id": "cannon",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "cannon",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "heavy_cavalry",
-          "current_hp": 11,
+          "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "cavalry",
-          "current_hp": 11,
+          "current_hp": 7,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_ottoman_2404": {
+      "id": "army_ottoman_2404",
+      "owner_id": "ottoman",
+      "region_id": "new_region_212",
+      "units": [
+        {
+          "type_id": "infantry",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_ottoman_2424": {
+      "id": "army_ottoman_2424",
+      "owner_id": "ottoman",
+      "region_id": "new_region_213",
+      "units": [
+        {
+          "type_id": "elite_infantry",
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -12738,11 +12842,31 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_portugal_2219": {
-      "id": "army_portugal_2219",
+    "army_portugal_2405": {
+      "id": "army_portugal_2405",
       "owner_id": "portugal",
       "region_id": "portugal",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -12774,11 +12898,31 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_savoy_county_2189": {
-      "id": "army_savoy_county_2189",
+    "army_savoy_county_2375": {
+      "id": "army_savoy_county_2375",
       "owner_id": "savoy_county",
       "region_id": "savoy",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 90,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 90,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -12822,27 +12966,52 @@
       "units": [
         {
           "type_id": "militia",
+          "current_hp": 57,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
           "current_hp": 81,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
+          "current_hp": 90,
           "experience": 0
         }
       ],
@@ -12871,29 +13040,39 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_venice_2114": {
-      "id": "army_venice_2114",
+    "army_venice_2141": {
+      "id": "army_venice_2141",
       "owner_id": "venice",
-      "region_id": "venice",
+      "region_id": "crete",
       "units": [
         {
           "type_id": "infantry",
-          "current_hp": 90,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 72,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 100,
+          "current_hp": 72,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 100,
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 72,
           "experience": 0
         }
       ],
@@ -12902,33 +13081,13 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_venice_2141": {
-      "id": "army_venice_2141",
+    "army_venice_2481": {
+      "id": "army_venice_2481",
       "owner_id": "venice",
-      "region_id": "crete",
+      "region_id": "venice",
       "units": [
         {
           "type_id": "infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
           "current_hp": 100,
           "experience": 0
         },
@@ -12953,24 +13112,8 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "fleet_aragon_2255": {
-      "id": "fleet_aragon_2255",
-      "owner_id": "aragon",
-      "region_id": "_sea_atlantic",
-      "units": [
-        {
-          "type_id": "transport",
-          "current_hp": 100,
-          "experience": 0
-        }
-      ],
-      "move_points": 3,
-      "max_move_points": 3,
-      "is_naval": true,
-      "in_ambush": false
-    },
-    "fleet_bulgarian_empire_2256": {
-      "id": "fleet_bulgarian_empire_2256",
+    "fleet_bulgarian_empire_2498": {
+      "id": "fleet_bulgarian_empire_2498",
       "owner_id": "bulgarian_empire",
       "region_id": "_sea_black",
       "units": [
@@ -12992,69 +13135,7 @@
       "units": [
         {
           "type_id": "transport",
-          "current_hp": 11,
-          "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 3,
-          "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 3,
-          "experience": 0
-        }
-      ],
-      "embarked_units": [
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 7,
           "experience": 0
         }
       ],
@@ -13063,10 +13144,10 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_florence_rep_2242": {
-      "id": "fleet_florence_rep_2242",
+    "fleet_florence_rep_2463": {
+      "id": "fleet_florence_rep_2463",
       "owner_id": "florence_rep",
-      "region_id": "_sea_mediterranean_open_1",
+      "region_id": "_sea_mediterranean_open_4",
       "units": [
         {
           "type_id": "transport",
@@ -13080,12 +13161,12 @@
         },
         {
           "type_id": "transport",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 81,
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -13094,29 +13175,60 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_genoa_1400": {
-      "id": "fleet_genoa_1400",
+    "fleet_france_2502": {
+      "id": "fleet_france_2502",
+      "owner_id": "france",
+      "region_id": "_sea_atlantic_open_1",
+      "units": [
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": true,
+      "in_ambush": false
+    },
+    "fleet_genoa_2464": {
+      "id": "fleet_genoa_2464",
       "owner_id": "genoa",
       "region_id": "_sea_med_west",
       "units": [
         {
           "type_id": "transport",
-          "current_hp": 17,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 7,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 7,
+          "current_hp": 11,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 3,
+          "current_hp": 4,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 4,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -13125,11 +13237,21 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_hre_2098": {
-      "id": "fleet_hre_2098",
+    "fleet_hre_2496": {
+      "id": "fleet_hre_2496",
       "owner_id": "hre",
-      "region_id": "_sea_baltic",
+      "region_id": "new_region_226",
       "units": [
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "transport",
           "current_hp": 81,
@@ -13142,12 +13264,38 @@
         },
         {
           "type_id": "transport",
-          "current_hp": 72,
+          "current_hp": 57,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": true,
+      "in_ambush": false
+    },
+    "fleet_hungarian_kingdom_2403": {
+      "id": "fleet_hungarian_kingdom_2403",
+      "owner_id": "hungarian_kingdom",
+      "region_id": "_shore_mediterranean_1",
+      "units": [
+        {
+          "type_id": "transport",
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 72,
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
           "experience": 0
         },
         {
@@ -13168,27 +13316,22 @@
       "units": [
         {
           "type_id": "transport",
-          "current_hp": 100,
+          "current_hp": 72,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 100,
+          "current_hp": 72,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 81,
+          "current_hp": 57,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 40,
+          "current_hp": 36,
           "experience": 0
         }
       ],
@@ -13197,14 +13340,14 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_ilkhanate_2239": {
-      "id": "fleet_ilkhanate_2239",
+    "fleet_ilkhanate_2310": {
+      "id": "fleet_ilkhanate_2310",
       "owner_id": "ilkhanate",
-      "region_id": "_sea_persian",
+      "region_id": "_sea_persian_open_0",
       "units": [
         {
           "type_id": "transport",
-          "current_hp": 100,
+          "current_hp": 72,
           "experience": 0
         }
       ],
@@ -13220,28 +13363,12 @@
       "units": [
         {
           "type_id": "transport",
-          "current_hp": 7,
+          "current_hp": 4,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 17,
-          "experience": 0
-        }
-      ],
-      "move_points": 3,
-      "max_move_points": 3,
-      "is_naval": true,
-      "in_ambush": false
-    },
-    "fleet_naples_kingdom_2253": {
-      "id": "fleet_naples_kingdom_2253",
-      "owner_id": "naples_kingdom",
-      "region_id": "_shore_mediterranean_1",
-      "units": [
-        {
-          "type_id": "transport",
-          "current_hp": 100,
+          "current_hp": 11,
           "experience": 0
         }
       ],
@@ -13257,22 +13384,22 @@
       "units": [
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         }
       ],
@@ -13288,22 +13415,22 @@
       "units": [
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         },
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         }
       ],
@@ -13319,7 +13446,7 @@
       "units": [
         {
           "type_id": "warship",
-          "current_hp": 72,
+          "current_hp": 51,
           "experience": 0
         }
       ],
@@ -13335,22 +13462,22 @@
       "units": [
         {
           "type_id": "transport",
+          "current_hp": 4,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
           "current_hp": 7,
           "experience": 0
         },
         {
           "type_id": "transport",
-          "current_hp": 11,
+          "current_hp": 9,
           "experience": 0
         },
         {
           "type_id": "transport",
           "current_hp": 15,
-          "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 22,
           "experience": 0
         }
       ],
@@ -14490,7 +14617,7 @@
     "byzantine|ottoman": {
       "faction_a": "byzantine",
       "faction_b": "ottoman",
-      "score": -16,
+      "score": -4,
       "stance": "peace"
     },
     "byzantine|papal_states_f": {
@@ -31000,35 +31127,10 @@
       }
     ]
   },
-  "production_queue": [
-    {
-      "id": "prod_175",
-      "kind": "building",
-      "faction_id": "ottoman",
-      "region_id": "thrace",
-      "type_id": "barracks",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_176",
-      "kind": "building",
-      "faction_id": "ottoman",
-      "region_id": "new_region_221",
-      "type_id": "barracks",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_177",
-      "kind": "building",
-      "faction_id": "ottoman",
-      "region_id": "new_region_220",
-      "type_id": "barracks",
-      "turns_left": 1
-    }
-  ],
-  "next_production_seq": 177,
-  "next_army_seq": 2257,
-  "phase": "player_turn",
+  "production_queue": [],
+  "next_production_seq": 185,
+  "next_army_seq": 2502,
+  "phase": "save_select",
   "winner_id": "",
   "region_paint_overrides": {
     "2306720": "new_region_215",

@@ -100,7 +100,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 					faction = "Bilinmiyor"
 				}
 				DrawText(screen, "Fraksiyon: "+faction, cx+18, cy+44, FaceSmall, detailCol)
-				DrawText(screen, "Tur: "+itoa(slot.Turn)+"  │  "+itoa(slot.Year),
+				DrawText(screen, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year),
 					cx+cardW/2, cy+44, FaceSmall, detailCol)
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")
@@ -119,7 +119,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			if saveMode && isSelected {
 				emptyCol = color.RGBA{140, 160, 80, 220}
 			}
-			DrawTextCentered(screen, "— Boş Slot —", cx+cardW/2, cy+cardH/2-8, FaceMed, emptyCol)
+			DrawTextCentered(screen, "- Bos Slot -", cx+cardW/2, cy+cardH/2-8, FaceMed, emptyCol)
 		}
 	}
 

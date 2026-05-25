@@ -212,9 +212,11 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	availW := float32(pw) - pad*2
 	slotW := availW / float32(cols)
 	slotH := (float32(ph) - headerH - pad) / 4
-	spriteH := slotH * 0.62
-	nameY_off := spriteH + 2
-	costY_off := nameY_off + 13
+	spriteH := slotH * 0.50
+	nameYOff := spriteH + 1
+	costYOff := nameYOff + 12
+	queueYOff := costYOff + 11
+	ctrlBandYOff := slotH - 16
 
 	display := visibleUnitIDs(gs, region)
 	for i, uid := range display {
@@ -276,9 +278,9 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 				}
 				screen.DrawImage(sub, op)
 
-				// Kilit ikonu — teknoloji eksik
+				// Kilit ibaresi — teknoloji eksik
 				if needsTech && !needsBuilding {
-					DrawTextCentered(screen, "🔒",
+					DrawTextCentered(screen, "KLT",
 						float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-8,
 						FaceMed, color.RGBA{200, 180, 80, 220})
 				}
@@ -291,22 +293,22 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		if !fullyAvail {
 			nameCol = color.RGBA{80, 70, 55, 190}
 		}
-		DrawTextCentered(screen, utype.NameTR, nameX, float64(sy)+float64(nameY_off), FaceSmall, nameCol)
+		DrawTextCentered(screen, utype.NameTR, nameX, float64(sy)+float64(nameYOff), FaceSmall, nameCol)
 
 		// Maliyet
-		costStr := itoa(utype.GoldCost) + " ✦  " + itoa(utype.TurnsRequired) + "t"
+		costStr := itoa(utype.GoldCost) + " G  " + itoa(utype.TurnsRequired) + "T"
 		costCol := color.RGBA{180, 160, 60, 220}
 		if !fullyAvail {
 			costCol = color.RGBA{70, 62, 48, 180}
 		} else if !canAfford {
 			costCol = ColorRed
 		}
-		DrawTextCentered(screen, costStr, nameX, float64(sy)+float64(costY_off), FaceSmall, costCol)
+		DrawTextCentered(screen, costStr, nameX, float64(sy)+float64(costYOff), FaceSmall, costCol)
 
 		// Kuyruk bilgisi (aynı birim için bekleme görünürlüğü)
 		if queued, firstTurn := queuedUnitInfo(gs, rid, uid); queued > 0 {
-			qStr := fmt.Sprintf("Kuyruk x%d  ilk:%dt", queued, firstTurn)
-			DrawTextCentered(screen, qStr, nameX, float64(sy)+float64(costY_off)+12, FaceSmall, color.RGBA{130, 125, 100, 210})
+			qStr := fmt.Sprintf("Qx%d %dT", queued, firstTurn)
+			DrawTextCentered(screen, qStr, nameX, float64(sy)+float64(queueYOff), FaceSmall, color.RGBA{125, 120, 98, 215})
 		}
 
 		// Total War benzeri adet kontrolü: - xN +
@@ -314,7 +316,10 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 			if selectedQty < 1 {
 				selectedQty = 1
 			}
-			qtyY := float64(sy) + float64(slotH) - 15
+			ctrlY := sy + ctrlBandYOff
+			vector.FillRect(screen, sx+1, ctrlY, innerW-2, 14, color.RGBA{18, 15, 12, 235}, false)
+			vector.StrokeRect(screen, sx+1, ctrlY, innerW-2, 14, 1, color.RGBA{120, 98, 56, 220}, false)
+			qtyY := float64(ctrlY) + 2
 			mx, my, mw, mh := recruitPanelStepButtonRect(gs, rid, uid, false)
 			px, py, pw, ph := recruitPanelStepButtonRect(gs, rid, uid, true)
 			drawTinyPanelButton(screen, mx, my, mw, mh, "-", true)
@@ -384,8 +389,8 @@ func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid str
 	sx := px + pad + float32(col)*slotW
 	sy := py + headerH + float32(row)*slotH
 	innerW := slotW - 3
-	btnW, btnH := float32(16), float32(12)
-	btnY := sy + slotH - btnH - 3
+	btnW, btnH := float32(16), float32(10)
+	btnY := sy + slotH - 14
 	if plus {
 		return sx + innerW - btnW - 2, btnY, btnW, btnH
 	}
