@@ -30,7 +30,7 @@ const (
 	ActionProposeTrade       ActionKind = "propose_trade"
 	ActionRecruitNaval       ActionKind = "recruit_naval"
 	ActionRecruitSpecific    ActionKind = "recruit_specific"     // BuildingID = unit type ID
-	ActionCancelRecruitQueue ActionKind = "cancel_recruit_queue" // BuildingID = unit type ID (seçili bölgede kuyruktaki tüm emirleri iptal et)
+	ActionCancelRecruitOrder ActionKind = "cancel_recruit_order" // BuildingID = production order ID (tek emir iptal)
 	ActionDeclareWarAndMove  ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"

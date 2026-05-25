@@ -206,8 +206,8 @@ func (g *Game) Update() error {
 			g.recruitNaval(action.TargetRegion)
 		case render.ActionRecruitSpecific:
 			g.recruitSpecific(action.TargetRegion, action.BuildingID, action.Quantity)
-		case render.ActionCancelRecruitQueue:
-			g.cancelRecruitQueue(action.TargetRegion, action.BuildingID)
+		case render.ActionCancelRecruitOrder:
+			g.cancelRecruitOrder(action.TargetRegion, action.BuildingID)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
@@ -1226,12 +1226,17 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
 }
 
-func (g *Game) cancelRecruitQueue(rid world.RegionID, unitTypeID string) {
+func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {
 	region, ok := g.gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
 		return
 	}
-	utype, ok := g.gs.UnitTypes[unitTypeID]
+	order, ok := g.cancelProductionByID(orderID, productionKindUnit, rid, g.gs.PlayerFactionID)
+	if !ok {
+		g.renderer.ShowCombatResult("Iptal edilecek emir bulunamadi.")
+		return
+	}
+	utype, ok := g.gs.UnitTypes[order.TypeID]
 	if !ok {
 		return
 	}
@@ -1239,14 +1244,9 @@ func (g *Game) cancelRecruitQueue(rid world.RegionID, unitTypeID string) {
 	if !ok {
 		return
 	}
-	canceled := g.cancelAllProduction(productionKindUnit, rid, unitTypeID, g.gs.PlayerFactionID)
-	if canceled <= 0 {
-		g.renderer.ShowCombatResult("Iptal edilecek birim emri bulunamadi.")
-		return
-	}
-	refund := canceled * utype.GoldCost
+	refund := utype.GoldCost
 	f.Gold += refund
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s kuyrugu iptal edildi: %d emir, %d altin iade.", utype.NameTR, canceled, refund))
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s emri iptal edildi. %d altin iade.", utype.NameTR, refund))
 }
 
 func (g *Game) regionUnitProductionCapacity(region *world.Region) int {

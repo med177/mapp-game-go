@@ -56,21 +56,19 @@ func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, 
 	return false
 }
 
-func (g *Game) cancelAllProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) int {
-	kept := g.gs.ProductionQueue[:0]
-	canceled := 0
-	for _, order := range g.gs.ProductionQueue {
-		if order.Kind == kind && order.RegionID == rid && order.TypeID == typeID && order.FactionID == string(ownerID) {
-			canceled++
+func (g *Game) cancelProductionByID(orderID, kind string, rid world.RegionID, ownerID faction.FactionID) (state.ProductionOrder, bool) {
+	for i := len(g.gs.ProductionQueue) - 1; i >= 0; i-- {
+		order := g.gs.ProductionQueue[i]
+		if order.ID != orderID || order.Kind != kind || order.RegionID != rid || order.FactionID != string(ownerID) {
 			continue
 		}
-		kept = append(kept, order)
+		copy(g.gs.ProductionQueue[i:], g.gs.ProductionQueue[i+1:])
+		last := len(g.gs.ProductionQueue) - 1
+		g.gs.ProductionQueue[last] = state.ProductionOrder{}
+		g.gs.ProductionQueue = g.gs.ProductionQueue[:last]
+		return order, true
 	}
-	for i := len(kept); i < len(g.gs.ProductionQueue); i++ {
-		g.gs.ProductionQueue[i] = state.ProductionOrder{}
-	}
-	g.gs.ProductionQueue = kept
-	return canceled
+	return state.ProductionOrder{}, false
 }
 
 func (g *Game) applyProductionTicks() []productionResult {
