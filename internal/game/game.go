@@ -350,6 +350,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.ReloadGameState(res.gs)
 		g.startScenarioMusic(res.gs.ScenarioPath)
@@ -357,6 +358,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
+		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.ReloadGameState(res.gs)
 		g.startScenarioMusic(res.gs.ScenarioPath)
@@ -379,6 +381,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) resolveTurn() {
+	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
 	applyEconomyTick(g.gs)
 	completedTechs := applyTechTicks(g.gs)
@@ -1274,6 +1277,29 @@ func (g *Game) nearestSeaRegionForFleet(fleet *army.Army, capturedRegionID world
 	return ""
 }
 
+// sanitizeDockedFleets limana bağlı donanmaların geçerli sahiplikte olmasını zorunlu tutar.
+// Donanma kendi sahip olmadığı limana bağlıysa limandan ayrılır ve en yakın deniz bölgesine çıkar.
+func (g *Game) sanitizeDockedFleets() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	for _, fleet := range g.gs.Armies {
+		if fleet == nil || !fleet.IsNaval || fleet.DockedRegionID == "" {
+			continue
+		}
+		dockedRegion := g.gs.Regions[fleet.DockedRegionID]
+		invalidDock := dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID != fleet.OwnerID
+		if !invalidDock {
+			continue
+		}
+		if nearestSea := g.nearestSeaRegionForFleet(fleet, fleet.DockedRegionID); nearestSea != "" {
+			fleet.RegionID = nearestSea
+		}
+		fleet.DockedRegionID = ""
+		fleet.DockedSettlementID = ""
+	}
+}
+
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.
 func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	a, ok := g.gs.Armies[aid]
@@ -1290,6 +1316,17 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	if !ok {
 		return
 	}
+
+	// Limana bağlı donanma, bulunduğu deniz bölgesinin merkezine çıkabilir (undock).
+	if a.IsNaval && a.DockedRegionID != "" && target == a.RegionID && src.IsSea {
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+		a.MovePoints--
+		g.renderer.MarkMapDirty()
+		g.renderer.ShowCombatResult("Donanma limandan ayrılıp açık denize çıktı.")
+		return
+	}
+
 	isNeighbor := false
 	for _, n := range src.Neighbors {
 		if n == target {
@@ -1305,6 +1342,7 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	if !ok {
 		return
 	}
+	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
 
 	// Naval/kara uyumluluk kontrolü
 	if a.IsNaval {
@@ -1391,8 +1429,9 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 			return
 		}
 	}
-	// Sahipli düşman bölgeye girmek için savaş hali zorunlu
-	if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+	// Sahipli düşman kara bölgesine girmek için savaş hali zorunlu.
+	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
+	if !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
 		rel, exists := g.gs.Relations[key]
 		if !exists || rel.Stance != faction.StanceWar {
@@ -1403,10 +1442,19 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 
 	var enemyArmy *army.Army
 	for _, ea := range g.gs.Armies {
-		if ea.RegionID == target && ea.OwnerID != a.OwnerID {
-			enemyArmy = ea
-			break
+		if ea.RegionID != target || ea.OwnerID == a.OwnerID {
+			continue
 		}
+		if navalSeaMove {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(ea.OwnerID))
+			rel, exists := g.gs.Relations[key]
+			if !exists || rel.Stance != faction.StanceWar {
+				// Denizde savaş halinde değilsek düşman donanmayla çarpışma tetiklenmez.
+				continue
+			}
+		}
+		enemyArmy = ea
+		break
 	}
 
 	if enemyArmy != nil {

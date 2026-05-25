@@ -35,7 +35,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
 | Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
 | Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
-| Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü |
+| Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü; donanmalar deniz bölgeleri arasında savaş ilanı olmadan dolaşır, deniz çatışması sadece `StanceWar` durumunda tetiklenir |
 | Deniz taşıma akışı | ✅ | Kara ordusu uygun `transport` filosuna binebilir, filo `EmbarkedUnits` ile taşır, komşu dost/boş karaya çıkarma yapılır; oyuncu ve AI aynı kural setini kullanır |
 | Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
@@ -49,6 +49,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü; JSON `turns_required` ile üretim kuyruğunda tamamlanır, tekrar tıklanınca iptal edilip altın iade edilir |
 | Bina/birim hover bilgisi | ✅ | Kart tooltipleri maliyet, gereksinim, etki/istatistik ve görsel gösterir |
 | Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi üretimini kuyruğa alma; tekrar tıklanınca iptal/iade |
+| Limandan denize çıkış (undock) | ✅ | Limana bağlı donanma aynı deniz bölgesine hareket emri aldığında liman bağını bırakıp deniz merkezine çıkar; hareket puanı tüketir |
 | Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
 | Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu; kuyruktaki bina tekrar tıklanınca iptal/iade |

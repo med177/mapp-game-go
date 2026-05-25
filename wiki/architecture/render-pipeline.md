@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-25
+last_updated: 2026-05-26
 related: [game-loop, state-management, shape-editor, systems/combat]
 ---
 
@@ -68,6 +68,7 @@ type Renderer struct {
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) harita üstünde modal anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür.
+Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir.
 
 ---
 

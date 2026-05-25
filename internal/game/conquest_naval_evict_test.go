@@ -46,3 +46,39 @@ func TestApplyConquestWithNavalEvictionUndocksPreviousOwnerFleet(t *testing.T) {
 		t.Fatalf("bolge sahipligi degismeliydi, got=%s", gs.Regions["land_a"].OwnerID)
 	}
 }
+
+func TestSanitizeDockedFleetsUndocksForeignFleetFromOwnedPort(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"land_my": {ID: "land_my", OwnerID: "player", Neighbors: []world.RegionID{"sea_near"}},
+			"sea_near": {
+				ID:    "sea_near",
+				IsSea: true,
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_foreign": {
+				ID:                 "fleet_foreign",
+				OwnerID:            "other",
+				IsNaval:            true,
+				RegionID:           "sea_near",
+				DockedRegionID:     "land_my",
+				DockedSettlementID: "port_my",
+			},
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.sanitizeDockedFleets()
+
+	fleet := gs.Armies["fleet_foreign"]
+	if fleet == nil {
+		t.Fatal("fleet_foreign bulunamadı")
+	}
+	if fleet.RegionID != "sea_near" {
+		t.Fatalf("filo en yakin deniz bolgesine cikmaliydi, got=%s", fleet.RegionID)
+	}
+	if fleet.DockedRegionID != "" || fleet.DockedSettlementID != "" {
+		t.Fatalf("yabanci liman bagi temizlenmeliydi, docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+}

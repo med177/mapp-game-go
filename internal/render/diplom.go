@@ -290,6 +290,23 @@ func diplomacyCloseHit(mx, my float64) bool {
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
 }
 
+func diplomacyListRowAt(gs *state.GameState, scroll int, fx, fy float64) int {
+	factions := sortedFactions(gs)
+	start := clampDiplomScroll(len(factions), scroll)
+	end := start + diplomVisibleRows()
+	if end > len(factions) {
+		end = len(factions)
+	}
+	lr := listPageRect()
+	for row, i := 0, start; i < end; i, row = i+1, row+1 {
+		y := listRowStartY() + float64(row)*diplomRowH
+		if fy >= y && fy <= y+diplomRowH-4 && fx >= lr.x+8 && fx <= lr.x+lr.w-8 {
+			return i
+		}
+	}
+	return -1
+}
+
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
 func (r *Renderer) handleDiplomacyInput() InputAction {
 	factions := sortedFactions(r.gs)
@@ -313,20 +330,9 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 	}
 	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 
-	start := r.diplomacyScroll
-	end := start + diplomVisibleRows()
-	if end > n {
-		end = n
-	}
-	for row, i := 0, start; i < end; i, row = i+1, row+1 {
-		y := listRowStartY() + float64(row)*diplomRowH
-		if fy >= y && fy <= y+diplomRowH-4 {
-			rr := listPageRect()
-			if fx >= rr.x+8 && fx <= rr.x+rr.w-8 {
-				r.diplomacyFocus = i
-				break
-			}
-		}
+	hoverIdx := diplomacyListRowAt(r.gs, r.diplomacyScroll, fx, fy)
+	if hoverIdx >= 0 {
+		r.diplomacyFocus = hoverIdx
 	}
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
@@ -336,7 +342,7 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 			return InputAction{}
 		}
 		if r.diplomacyTargetFaction == "" {
-			if r.diplomacyFocus < len(factions) {
+			if hoverIdx >= 0 && r.diplomacyFocus < len(factions) {
 				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
 				r.diplomacyActionFocus = 0
 				return InputAction{}

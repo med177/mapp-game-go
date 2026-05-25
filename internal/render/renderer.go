@@ -1697,6 +1697,11 @@ type armyIconPos struct {
 	X, Y   float32
 }
 
+type armyIconCoordKey struct {
+	X int
+	Y int
+}
+
 type armyDisplayGroupKey struct {
 	RegionID world.RegionID
 	AnchorX  int
@@ -1771,6 +1776,38 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			})
 		}
 	}
+
+	// Aynı ekran merkezine düşen farklı grupları (örn. kara + donanma)
+	// yatayda ayırarak ikon çakışmasını engeller.
+	byCoord := map[armyIconCoordKey][]int{}
+	for i := range r.armyIconBuf {
+		key := armyIconCoordKey{
+			X: int(r.armyIconBuf[i].X * 100),
+			Y: int(r.armyIconBuf[i].Y * 100),
+		}
+		byCoord[key] = append(byCoord[key], i)
+	}
+	for _, idxs := range byCoord {
+		if len(idxs) <= 1 {
+			continue
+		}
+		sort.Slice(idxs, func(i, j int) bool {
+			ai := r.gs.Armies[r.armyIconBuf[idxs[i]].ArmyID]
+			aj := r.gs.Armies[r.armyIconBuf[idxs[j]].ArmyID]
+			// Kara solda, donanma sağda dursun.
+			if ai != nil && aj != nil && ai.IsNaval != aj.IsNaval {
+				return !ai.IsNaval
+			}
+			return r.armyIconBuf[idxs[i]].ArmyID < r.armyIconBuf[idxs[j]].ArmyID
+		})
+		baseX := r.armyIconBuf[idxs[0]].X
+		n := float32(len(idxs))
+		startX := baseX - (n-1)*iconStep/2
+		for j, idx := range idxs {
+			r.armyIconBuf[idx].X = startX + float32(j)*iconStep
+		}
+	}
+
 	sort.SliceStable(r.armyIconBuf, func(i, j int) bool {
 		if r.armyIconBuf[i].Y != r.armyIconBuf[j].Y {
 			return r.armyIconBuf[i].Y < r.armyIconBuf[j].Y
@@ -6156,6 +6193,12 @@ func (r *Renderer) handleRightClick() InputAction {
 	if !srcOK {
 		return InputAction{}
 	}
+	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
+	// bölgenin deniz merkezine geçiş (undock) emri verebilir.
+	if a.IsNaval && a.DockedRegionID != "" && rid == a.RegionID {
+		r.SelectedArmy = ""
+		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
+	}
 	for _, n := range src.Neighbors {
 		if n != rid {
 			continue
@@ -6164,8 +6207,9 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !ok {
 			break
 		}
-		// Düşman bölge ama savaş yok → onay diyalogu aç
-		if target.OwnerID != "" && target.OwnerID != a.OwnerID {
+		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
+		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
+		if !(a.IsNaval && target.CanNavalEnter()) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 			rel, exists := r.gs.Relations[key]
 			if !exists || rel.Stance != faction.StanceWar {

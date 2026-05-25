@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-05-07
+last_updated: 2026-05-26
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -94,6 +94,11 @@ else:
 ```
 
 `ApplyConquest` bölgeyi yeni fraksiyona devreder ve din dönüşüm sayacını başlatır.
+
+## Deniz Hareketi ve Çatışma Kuralı
+
+Donanmalar deniz bölgeleri arasında savaş ilanı olmadan serbest hareket eder.
+Denizde çatışma yalnızca iki fraksiyon arasında `StanceWar` varsa tetiklenir; barış/ittifak/trade durumunda aynı deniz bölgesine girildiğinde savaş açılmaz.
 
 ---
 

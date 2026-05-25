@@ -367,3 +367,99 @@ func TestMoveArmyDisembarkEnemyCoastNoArmyConquersOnWar(t *testing.T) {
 		t.Fatalf("çıkarma sonrası filo cargo'su boş olmalı")
 	}
 }
+
+func TestMoveNavalIntoEnemySeaAtPeaceNoWarDeclarationNoBattle(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"sea_a": {ID: "sea_a", IsSea: true, OwnerID: "p1", Neighbors: []world.RegionID{"sea_b"}},
+			"sea_b": {ID: "sea_b", IsSea: true, OwnerID: "p2", Neighbors: []world.RegionID{"sea_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1": {
+				ID:            "fleet_p1",
+				OwnerID:       "p1",
+				RegionID:      "sea_a",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+			"fleet_p2": {
+				ID:            "fleet_p2",
+				OwnerID:       "p2",
+				RegionID:      "sea_b",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+			"p2": {ID: "p2"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: 10, Stance: faction.StancePeace},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1", "sea_b")
+
+	if gs.Armies["fleet_p1"].RegionID != "sea_b" {
+		t.Fatalf("barışta donanma düşman deniz bölgesine girebilmeli, got=%s", gs.Armies["fleet_p1"].RegionID)
+	}
+	if gs.Armies["fleet_p1"].MovePoints != 2 {
+		t.Fatalf("hareket sonrası move point 1 düşmeli, got=%d", gs.Armies["fleet_p1"].MovePoints)
+	}
+	if _, ok := gs.Armies["fleet_p2"]; !ok {
+		t.Fatalf("barışta düşman donanma ile karşılaşmada savaş olmamalı, fleet_p2 silinmemeli")
+	}
+}
+
+func TestMoveArmyUndockFleetToSeaCenterOnSameRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:                 "fleet_p1_1",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "sea_1")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if fleet.DockedRegionID != "" || fleet.DockedSettlementID != "" {
+		t.Fatalf("undock sonrası liman bağı temizlenmeli, docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+	if fleet.RegionID != "sea_1" {
+		t.Fatalf("undock sonrası filo aynı deniz bölgesinde kalmalı, got=%s", fleet.RegionID)
+	}
+	if fleet.MovePoints != 2 {
+		t.Fatalf("undock hareketi 1 puan tüketmeli, got=%d", fleet.MovePoints)
+	}
+}
