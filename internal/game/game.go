@@ -176,7 +176,9 @@ func (g *Game) Update() error {
 	case state.PhasePlayerTurn:
 		switch action.Kind {
 		case render.ActionEndTurn:
-			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok && f.Research.ActiveID == "" {
+			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok &&
+				f.Research.ActiveID == "" &&
+				g.playerHasRemainingTechs() {
 				g.renderer.ShowConfirmDialog(
 					"Araştırma Yok",
 					"Teknoloji araştırması seçilmedi. Turu yine de bitirmek istiyor musunuz?",
@@ -203,7 +205,7 @@ func (g *Game) Update() error {
 		case render.ActionRecruitNaval:
 			g.recruitNaval(action.TargetRegion)
 		case render.ActionRecruitSpecific:
-			g.recruitSpecific(action.TargetRegion, action.BuildingID)
+			g.recruitSpecific(action.TargetRegion, action.BuildingID, action.Quantity)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
@@ -465,6 +467,23 @@ func victoryLabel(vtype state.VictoryType) string {
 	}
 }
 
+func (g *Game) playerHasRemainingTechs() bool {
+	if g == nil || g.gs == nil {
+		return false
+	}
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	if f == nil {
+		return false
+	}
+	completed := f.Research.Completed
+	for techID := range g.gs.TechTypes {
+		if completed == nil || !completed[techID] {
+			return true
+		}
+	}
+	return false
+}
+
 func (g *Game) showRegionUnlockNotifications(ids []world.RegionID) {
 	if len(ids) == 0 {
 		return
@@ -528,7 +547,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult(b.NameTR + " sadece " + b.RequiredTerrain + " arazisine yapılır!")
 		return
 	}
-	// Zaten inşa edilmiş mi?
+	// Maks seviye kontrolü
 	count := 0
 	for _, bid := range region.Buildings {
 		if bid == buildingID {
@@ -536,7 +555,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		}
 	}
 	if count >= b.MaxPerRegion {
-		g.renderer.ShowCombatResult(b.NameTR + " bu bölgede zaten var!")
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s maksimum seviyede! (Lv%d)", b.NameTR, b.MaxPerRegion))
 		return
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
@@ -550,12 +569,12 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		return
 	}
 	if count+g.queuedBuildingCount(rid, buildingID) >= b.MaxPerRegion {
-		g.renderer.ShowCombatResult(b.NameTR + " bu bölgede zaten inşa kuyruğunda!")
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s için seviye kuyruğu dolu! (Lv%d)", b.NameTR, b.MaxPerRegion))
 		return
 	}
 	f.Gold -= b.GoldCost
 	g.enqueueProduction(productionKindBuilding, rid, buildingID, b.TurnsRequired)
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı başladı! (%d tur)", b.NameTR, b.TurnsRequired))
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s seviye inşaatı başladı! Lv%d→Lv%d (%d tur)", b.NameTR, count+1, count+2, b.TurnsRequired))
 }
 
 // declareWar hedef fraksiyona savaş ilan eder.
@@ -1050,16 +1069,19 @@ func saveExists() bool {
 
 // recruitNaval kıyı bölgesinde nakliye gemisi oluşturur.
 func (g *Game) recruitNaval(rid world.RegionID) {
-	g.recruitSpecific(rid, "transport")
+	g.recruitSpecific(rid, "transport", 1)
 }
 
 // recruitUnit seçili bölgede oyuncu adına bir milis birimi alır.
 func (g *Game) recruitUnit(rid world.RegionID) {
-	g.recruitSpecific(rid, "militia")
+	g.recruitSpecific(rid, "militia", 1)
 }
 
 // recruitSpecific seçili bölgede belirli türde bir birim alır.
-func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
+func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity int) {
+	if quantity < 1 {
+		quantity = 1
+	}
 	region, ok := g.gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
 		g.renderer.ShowCombatResult("Sadece kendi bölgende asker alabilirsin!")
@@ -1112,6 +1134,18 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 		return
 	}
 
+	// Bölgesel üretim kapasitesi: nüfus + kışla etkisi
+	capacity := g.regionUnitProductionCapacity(region)
+	queuedInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
+	freeSlots := capacity - queuedInRegion
+	if freeSlots <= 0 {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Bu bölgede üretim kapasitesi dolu! (%d/%d)", queuedInRegion, capacity))
+		return
+	}
+	if quantity > freeSlots {
+		quantity = freeSlots
+	}
+
 	// Deniz birimi — tamamlandığında komşu deniz bölgesine yerleşir.
 	if utype.RequiredBldg == "port" {
 		if !region.IsCoastal(g.gs.Regions) {
@@ -1141,9 +1175,23 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 			g.renderer.ShowCombatResult("Filo dolu veya üretim kuyruğuyla dolacak! (max 20 birim)")
 			return
 		}
-		f.Gold -= utype.GoldCost
-		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! (%d tur) Kalan altın: %d", utype.NameTR, utype.TurnsRequired, f.Gold))
+		seaFree := army.MaxArmySize - queued
+		if quantity > seaFree {
+			quantity = seaFree
+		}
+		maxByGold := f.Gold / utype.GoldCost
+		if maxByGold <= 0 || quantity <= 0 {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+			return
+		}
+		if quantity > maxByGold {
+			quantity = maxByGold
+		}
+		for i := 0; i < quantity; i++ {
+			f.Gold -= utype.GoldCost
+			g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
+		}
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
 		return
 	}
 
@@ -1154,6 +1202,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 	if deployed >= cap {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
 		return
+	}
+	availableManpower := cap - deployed
+	if quantity > availableManpower {
+		quantity = availableManpower
 	}
 
 	var targetArmy *army.Army
@@ -1174,9 +1226,35 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string) {
 			return
 		}
 	}
-	f.Gold -= utype.GoldCost
-	g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! (%d tur) Kalan altın: %d", utype.NameTR, utype.TurnsRequired, f.Gold))
+	maxByGold := f.Gold / utype.GoldCost
+	if maxByGold <= 0 || quantity <= 0 {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+		return
+	}
+	if quantity > maxByGold {
+		quantity = maxByGold
+	}
+	for i := 0; i < quantity; i++ {
+		f.Gold -= utype.GoldCost
+		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
+	}
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
+}
+
+func (g *Game) regionUnitProductionCapacity(region *world.Region) int {
+	if region == nil || region.IsSea {
+		return 0
+	}
+	capacity := region.Population / 100
+	if capacity < 1 {
+		capacity = 1
+	}
+	for _, bid := range region.Buildings {
+		if bid == "barracks" {
+			capacity++
+		}
+	}
+	return capacity
 }
 
 func (g *Game) fleetHasTransportCapacity(fleet *army.Army) bool {

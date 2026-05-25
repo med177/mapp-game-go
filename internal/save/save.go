@@ -165,7 +165,6 @@ func loadFromPath(path string) (*state.GameState, error) {
 	if err := json.Unmarshal(data, &gs); err != nil {
 		return nil, fmt.Errorf("kayıt dosyası okunamadı: %w", err)
 	}
-	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	gs.SyncTimedRegionUnlocks()
 	ensureScenarioIdentity(&gs)
 	applyScenarioMetadata(&gs)

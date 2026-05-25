@@ -48,6 +48,8 @@ type Renderer struct {
 	// Seçim
 	SelectedRegion world.RegionID
 	SelectedArmy   army.ArmyID
+	recruitUnitID  string
+	recruitQty     int
 
 	// Senaryo seçim ekranı
 	scenarioCursor int
@@ -56,10 +58,10 @@ type Renderer struct {
 	factionCursor int
 
 	// Diplomasi paneli
-	showDiplomacy   bool
-	diplomacyFocus  int
-	diplomacyScroll int
-	diplomacyActionFocus int
+	showDiplomacy          bool
+	diplomacyFocus         int
+	diplomacyScroll        int
+	diplomacyActionFocus   int
 	diplomacyTargetFaction faction.FactionID
 
 	// Teknoloji paneli
@@ -693,7 +695,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech, r.mapMode)
 		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
-		DrawRecruitPanel(screen, r.gs, r.SelectedRegion)
+		DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	}
@@ -5843,6 +5845,7 @@ func (r *Renderer) HandleInput() InputAction {
 		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
 			r.SelectedArmy = ""
 			r.SelectedRegion = ""
+			r.resetRecruitSelection()
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
 			r.showTech = false
@@ -5990,6 +5993,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
+		r.resetRecruitSelection()
 		return InputAction{}
 	}
 
@@ -6113,8 +6117,24 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// Birim oluştur paneli tıklaması — bölge seçiminden önce kontrol edilmeli
-	if uid := RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion); uid != "" {
-		return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: uid}
+	if act := RecruitPanelActionHitTest(fx, fy, r.gs, r.SelectedRegion); act.Kind != RecruitPanelActionNone {
+		switch act.Kind {
+		case RecruitPanelActionIncrease:
+			r.ensureRecruitSelection(act.UnitID)
+			if r.recruitQty < 9 {
+				r.recruitQty++
+			}
+			return InputAction{}
+		case RecruitPanelActionDecrease:
+			r.ensureRecruitSelection(act.UnitID)
+			if r.recruitQty > 1 {
+				r.recruitQty--
+			}
+			return InputAction{}
+		case RecruitPanelActionRecruit:
+			r.ensureRecruitSelection(act.UnitID)
+			return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: act.UnitID, Quantity: r.recruitQty}
+		}
 	}
 	if RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
 		return InputAction{}
@@ -6145,6 +6165,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			}
 			r.SelectedArmy = pos.ArmyID
 			r.SelectedRegion = ""
+			r.resetRecruitSelection()
 			return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
 		}
 	}
@@ -6157,12 +6178,33 @@ func (r *Renderer) handleLeftClick() InputAction {
 			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
 			r.SelectedArmy = ""
 			r.SelectedRegion = rid
+			r.resetRecruitSelection()
 			return InputAction{}
 		}
 	}
 	r.SelectedArmy = ""
 	r.SelectedRegion = rid
+	r.resetRecruitSelection()
 	return InputAction{}
+}
+
+func (r *Renderer) ensureRecruitSelection(unitID string) {
+	if unitID == "" {
+		return
+	}
+	if r.recruitUnitID != unitID {
+		r.recruitUnitID = unitID
+		r.recruitQty = 1
+		return
+	}
+	if r.recruitQty < 1 {
+		r.recruitQty = 1
+	}
+}
+
+func (r *Renderer) resetRecruitSelection() {
+	r.recruitUnitID = ""
+	r.recruitQty = 1
 }
 
 // handleRightClick sağ tıklamayı yorumlar: seçili ordunun hareket/saldırı emri.

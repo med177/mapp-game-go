@@ -80,9 +80,9 @@ type GameState struct {
 	AvailableVictories []scenario.VictoryOptionDef `json:"-"`
 
 	// Zafer takibi
-	EconomicVictoryTurns  int `json:"economic_victory_turns"`
-	FactionsEliminated    int `json:"factions_eliminated"`
-	ReligiousVictoryTurns int `json:"religious_victory_turns"`
+	EconomicVictoryTurns  int  `json:"economic_victory_turns"`
+	FactionsEliminated    int  `json:"factions_eliminated"`
+	ReligiousVictoryTurns int  `json:"religious_victory_turns"`
 	VictoryAchieved       bool `json:"victory_achieved"`
 	VictoryAchievedTurn   int  `json:"victory_achieved_turn"`
 
@@ -95,7 +95,7 @@ type GameState struct {
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 
 	// Ticaret güzergahları
-	TradeRoutes []*economy.TradeRoute  `json:"trade_routes"`
+	TradeRoutes  []*economy.TradeRoute   `json:"trade_routes"`
 	TradeCenters world.TradeCenterConfig `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
@@ -224,7 +224,6 @@ func (s *GameState) ManpowerCap(fid faction.FactionID) int {
 		for _, bid := range r.Buildings {
 			if bid == "barracks" {
 				cap += ManpowerBarracksAdd
-				break
 			}
 		}
 	}

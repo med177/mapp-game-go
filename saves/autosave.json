@@ -1,7 +1,7 @@
 {
-  "turn": 110,
+  "turn": 114,
   "year": 1309,
-  "month": 4,
+  "month": 8,
   "start_year": 1300,
   "scenario_id": "1300_ottoman_rise",
   "scenario_path": "assets\\scenarios\\1300_ottoman_rise",
@@ -103,7 +103,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 100,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -345,7 +345,7 @@
       "name": "Sea of Azov",
       "name_tr": "Azov Denizi",
       "terrain": "sea",
-      "owner_id": "golden_horde",
+      "owner_id": "bulgarian_empire",
       "neighbors": [
         "_sea_black",
         "_sea_black_open_0",
@@ -448,7 +448,7 @@
       "name": "Black Sea",
       "name_tr": "Karadeniz",
       "terrain": "sea",
-      "owner_id": "ottoman",
+      "owner_id": "bulgarian_empire",
       "neighbors": [
         "_sea_azov",
         "_sea_black_open_0",
@@ -471,7 +471,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 75,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -577,7 +577,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 75,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -880,7 +880,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 0,
-      "satisfaction": 80,
+      "satisfaction": 100,
       "tax_rate": 0,
       "population": 0,
       "religion": "",
@@ -1655,7 +1655,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 25,
       "population": 420,
       "religion": "sunni",
@@ -2155,7 +2155,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -2453,7 +2453,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -2766,7 +2766,7 @@
       "name": "bursa",
       "name_tr": "Konstantinopolis",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "ottoman",
       "neighbors": [
         "_sea_marmara",
         "aydinoglu",
@@ -2811,10 +2811,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 7,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 1000,
       "religion": "orthodox",
+      "conversion_turns": 4,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -2865,7 +2866,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 280,
       "religion": "sunni",
@@ -2963,11 +2964,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 20,
       "population": 180,
       "religion": "orthodox",
-      "conversion_turns": 2,
+      "conversion_turns": 6,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -3065,11 +3066,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 180,
       "religion": "orthodox",
-      "conversion_turns": 11,
+      "conversion_turns": 15,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -3551,7 +3552,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -3764,7 +3765,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 800,
       "religion": "sunni",
@@ -4211,7 +4212,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 70,
       "population": 380,
       "religion": "sunni",
@@ -4854,7 +4855,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 4,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 40,
       "population": 900,
       "religion": "sunni",
@@ -5373,11 +5374,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 1,
-      "satisfaction": 90,
+      "satisfaction": 85,
       "tax_rate": 25,
       "population": 350,
       "religion": "orthodox",
-      "conversion_turns": 1,
+      "conversion_turns": 5,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -5557,7 +5558,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 300,
       "religion": "sunni",
@@ -6123,7 +6124,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -6160,7 +6161,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 58,
       "population": 260,
       "religion": "sunni",
@@ -6213,7 +6214,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -6251,7 +6252,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 280,
       "religion": "sunni",
@@ -6298,7 +6299,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 260,
       "religion": "sunni",
@@ -6350,7 +6351,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 800,
       "religion": "sunni",
@@ -6399,7 +6400,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 220,
       "religion": "sunni",
@@ -6438,7 +6439,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 73,
       "population": 260,
       "religion": "sunni",
@@ -6476,7 +6477,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 260,
       "religion": "sunni",
@@ -6530,7 +6531,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 320,
       "religion": "sunni",
@@ -6570,7 +6571,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -6608,7 +6609,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 70,
       "population": 280,
       "religion": "sunni",
@@ -6648,7 +6649,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 260,
       "religion": "sunni",
@@ -6689,7 +6690,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 260,
       "religion": "sunni",
@@ -6725,7 +6726,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 380,
       "religion": "sunni",
@@ -6762,7 +6763,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 58,
       "population": 260,
       "religion": "sunni",
@@ -6801,7 +6802,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 300,
       "religion": "sunni",
@@ -6838,11 +6839,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 20,
       "population": 180,
       "religion": "orthodox",
-      "conversion_turns": 3,
+      "conversion_turns": 7,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -6877,11 +6878,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 400,
       "religion": "orthodox",
-      "conversion_turns": 11,
+      "conversion_turns": 15,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -6955,11 +6956,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 25,
       "population": 340,
       "religion": "orthodox",
-      "conversion_turns": 2,
+      "conversion_turns": 6,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -7008,7 +7009,7 @@
       "name": "New Region 222",
       "name_tr": "Yeni Bolge 222",
       "terrain": "sea",
-      "owner_id": "venice",
+      "owner_id": "arnavut_des",
       "neighbors": [
         "_sea_adriatic",
         "albania",
@@ -7346,11 +7347,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 280,
       "religion": "orthodox",
-      "conversion_turns": 11,
+      "conversion_turns": 15,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -7811,7 +7812,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 28,
       "population": 220,
       "religion": "sunni",
@@ -8354,7 +8355,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 420,
       "religion": "sunni",
@@ -9171,7 +9172,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 53,
       "population": 260,
       "religion": "sunni",
@@ -9304,11 +9305,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 400,
       "religion": "orthodox",
-      "conversion_turns": 2,
+      "conversion_turns": 6,
       "active_event_id": "",
       "buildings": [
         "market",
@@ -9465,7 +9466,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 100,
+      "satisfaction": 85,
       "tax_rate": 30,
       "population": 300,
       "religion": "sunni",
@@ -10142,8 +10143,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 164,
-      "grain": 3380,
+      "gold": 294,
+      "grain": 3492,
       "iron": 96,
       "timber": 60,
       "spice": 48,
@@ -10210,8 +10211,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 2710,
-      "grain": 15100,
+      "gold": 2851,
+      "grain": 15724,
       "iron": 154,
       "timber": 110,
       "spice": 98,
@@ -10251,8 +10252,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 245,
-      "grain": 1300,
+      "gold": 170,
+      "grain": 1374,
       "iron": 0,
       "timber": 50,
       "spice": 16,
@@ -10292,8 +10293,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 267,
-      "grain": 1672,
+      "gold": 297,
+      "grain": 1712,
       "iron": 0,
       "timber": 50,
       "spice": 20,
@@ -10362,8 +10363,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 360,
-      "grain": 14153,
+      "gold": 367,
+      "grain": 14695,
       "iron": 0,
       "timber": 159,
       "spice": 59,
@@ -10403,8 +10404,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 24262,
-      "grain": 31109,
+      "gold": 15119,
+      "grain": 31120,
       "iron": 123,
       "timber": 156,
       "spice": 1,
@@ -10524,8 +10525,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 221,
-      "grain": 4638,
+      "gold": 335,
+      "grain": 4854,
       "iron": 142,
       "timber": 70,
       "spice": 58,
@@ -10565,8 +10566,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 362,
-      "grain": 9191,
+      "gold": 257,
+      "grain": 9556,
       "iron": 150,
       "timber": 120,
       "spice": 51,
@@ -10647,8 +10648,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 30633,
-      "grain": 35997,
+      "gold": 31982,
+      "grain": 37394,
       "iron": 188,
       "timber": 300,
       "spice": 51,
@@ -10688,8 +10689,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 283,
-      "grain": 9347,
+      "gold": 213,
+      "grain": 9715,
       "iron": 1,
       "timber": 50,
       "spice": 15,
@@ -10758,8 +10759,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2317,
-      "grain": 7370,
+      "gold": 2363,
+      "grain": 7667,
       "iron": 155,
       "timber": 60,
       "spice": 134,
@@ -10799,8 +10800,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 36076,
-      "grain": 42716,
+      "gold": 37636,
+      "grain": 44411,
       "iron": 214,
       "timber": 200,
       "spice": 62,
@@ -10840,8 +10841,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 6354,
-      "grain": 8285,
+      "gold": 6600,
+      "grain": 8613,
       "iron": 158,
       "timber": 100,
       "spice": 0,
@@ -10881,8 +10882,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 152,
-      "grain": 1089,
+      "gold": 116,
+      "grain": 1151,
       "iron": 89,
       "timber": 115,
       "spice": 0,
@@ -10949,8 +10950,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 314,
-      "grain": 11282,
+      "gold": 357,
+      "grain": 11830,
       "iron": 80,
       "timber": 50,
       "spice": 60,
@@ -10990,8 +10991,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 199,
-      "grain": 2394,
+      "gold": 169,
+      "grain": 2540,
       "iron": 70,
       "timber": 50,
       "spice": 60,
@@ -11072,8 +11073,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 68802,
-      "grain": 78180,
+      "gold": 71772,
+      "grain": 81237,
       "iron": 0,
       "timber": 180,
       "spice": 75,
@@ -11113,8 +11114,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 21052,
-      "grain": 44514,
+      "gold": 22039,
+      "grain": 46343,
       "iron": 0,
       "timber": 130,
       "spice": 54,
@@ -11154,8 +11155,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 65676,
-      "grain": 52991,
+      "gold": 67295,
+      "grain": 54460,
       "iron": 148,
       "timber": 60,
       "spice": 4,
@@ -11266,8 +11267,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 307,
-      "grain": 11492,
+      "gold": 290,
+      "grain": 11996,
       "iron": 0,
       "timber": 160,
       "spice": 33,
@@ -11307,8 +11308,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 59640,
-      "grain": 44562,
+      "gold": 62662,
+      "grain": 46382,
       "iron": 80,
       "timber": 40,
       "spice": 38,
@@ -11389,8 +11390,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 450,
-      "grain": 11734,
+      "gold": 350,
+      "grain": 12190,
       "iron": 188,
       "timber": 80,
       "spice": 81,
@@ -11430,8 +11431,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 248,
-      "grain": 14017,
+      "gold": 316,
+      "grain": 14566,
       "iron": 137,
       "timber": 60,
       "spice": 1,
@@ -11471,8 +11472,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 264,
-      "grain": 5716,
+      "gold": 242,
+      "grain": 5944,
       "iron": 123,
       "timber": 272,
       "spice": 69,
@@ -11512,8 +11513,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 20663,
-      "grain": 50118,
+      "gold": 28078,
+      "grain": 55352,
       "iron": 142,
       "timber": 80,
       "spice": 1,
@@ -11553,8 +11554,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 289,
-      "grain": 11014,
+      "gold": 377,
+      "grain": 11446,
       "iron": 122,
       "timber": 50,
       "spice": 69,
@@ -11594,8 +11595,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1131,
-      "grain": 26892,
+      "gold": 1141,
+      "grain": 27976,
       "iron": 0,
       "timber": 150,
       "spice": 45,
@@ -11635,8 +11636,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 166,
-      "grain": 3901,
+      "gold": 180,
+      "grain": 4066,
       "iron": 126,
       "timber": 180,
       "spice": 0,
@@ -11717,8 +11718,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 368,
-      "grain": 26014,
+      "gold": 343,
+      "grain": 27050,
       "iron": 143,
       "timber": 0,
       "spice": 53,
@@ -11816,8 +11817,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 343,
-      "grain": 369,
+      "gold": 183,
+      "grain": 393,
       "iron": 110,
       "timber": 80,
       "spice": 40,
@@ -11857,8 +11858,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 143,
-      "grain": 1241,
+      "gold": 135,
+      "grain": 1307,
       "iron": 0,
       "timber": 100,
       "spice": 28,
@@ -11898,8 +11899,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 6963,
-      "grain": 10786,
+      "gold": 7327,
+      "grain": 11194,
       "iron": 0,
       "timber": 148,
       "spice": 58,
@@ -11939,8 +11940,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 318,
-      "grain": 7555,
+      "gold": 322,
+      "grain": 7903,
       "iron": 0,
       "timber": 160,
       "spice": 36,
@@ -12021,8 +12022,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 435,
-      "grain": 5933,
+      "gold": 391,
+      "grain": 6347,
       "iron": 137,
       "timber": 120,
       "spice": 0,
@@ -12062,8 +12063,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 10254,
-      "grain": 12761,
+      "gold": 10758,
+      "grain": 13277,
       "iron": 96,
       "timber": 122,
       "spice": 40,
@@ -12142,6 +12143,11 @@
           "type_id": "militia",
           "current_hp": 100,
           "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 3,
@@ -12159,59 +12165,14 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_arnavut_des_1769": {
-      "id": "army_arnavut_des_1769",
+    "army_arnavut_des_2229": {
+      "id": "army_arnavut_des_2229",
       "owner_id": "arnavut_des",
       "region_id": "albania",
       "units": [
         {
           "type_id": "militia",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 51,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 57,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -12281,10 +12242,10 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_byzantine_2135": {
-      "id": "army_byzantine_2135",
+    "army_byzantine_2217": {
+      "id": "army_byzantine_2217",
       "owner_id": "byzantine",
-      "region_id": "bursa",
+      "region_id": "constantinople",
       "units": [
         {
           "type_id": "elite_infantry",
@@ -12371,6 +12332,31 @@
           "type_id": "militia",
           "current_hp": 100,
           "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 3,
@@ -12417,6 +12403,16 @@
           "type_id": "militia",
           "current_hp": 81,
           "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 3,
@@ -12442,6 +12438,31 @@
         {
           "type_id": "militia",
           "current_hp": 90,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
           "experience": 0
         },
         {
@@ -12495,10 +12516,61 @@
       "is_naval": false,
       "in_ambush": false
     },
+    "army_novgorod_rep_2159": {
+      "id": "army_novgorod_rep_2159",
+      "owner_id": "novgorod_rep",
+      "region_id": "novgorod",
+      "units": [
+        {
+          "type_id": "infantry",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": false,
+      "in_ambush": false
+    },
     "army_ottoman_1631": {
       "id": "army_ottoman_1631",
       "owner_id": "ottoman",
-      "region_id": "aydinoglu",
+      "region_id": "chalcidice",
       "units": [
         {
           "type_id": "cannon",
@@ -12584,16 +12656,6 @@
           "type_id": "heavy_cavalry",
           "current_hp": 40,
           "experience": 0
-        },
-        {
-          "type_id": "heavy_cavalry",
-          "current_hp": 40,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 72,
-          "experience": 0
         }
       ],
       "move_points": 3,
@@ -12604,7 +12666,7 @@
     "army_ottoman_1695": {
       "id": "army_ottoman_1695",
       "owner_id": "ottoman",
-      "region_id": "nicomedia",
+      "region_id": "new_region_221",
       "units": [
         {
           "type_id": "heavy_cavalry",
@@ -12693,16 +12755,6 @@
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
-          "current_hp": 17,
-          "experience": 0
-        },
-        {
-          "type_id": "cannon",
           "current_hp": 17,
           "experience": 0
         }
@@ -12849,51 +12901,11 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_portugal_2029": {
-      "id": "army_portugal_2029",
+    "army_portugal_2219": {
+      "id": "army_portugal_2219",
       "owner_id": "portugal",
       "region_id": "portugal",
       "units": [
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 81,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 90,
-          "experience": 0
-        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -12920,59 +12932,34 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_savoy_county_1922": {
-      "id": "army_savoy_county_1922",
+    "army_savoy_county_2189": {
+      "id": "army_savoy_county_2189",
       "owner_id": "savoy_county",
       "region_id": "savoy",
       "units": [
         {
           "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -12989,6 +12976,21 @@
         {
           "type_id": "militia",
           "current_hp": 81,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
           "experience": 0
         },
         {
@@ -13031,6 +13033,16 @@
           "type_id": "infantry",
           "current_hp": 90,
           "experience": 0
+        },
+        {
+          "type_id": "elite_infantry",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 3,
@@ -13045,6 +13057,21 @@
       "units": [
         {
           "type_id": "infantry",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
           "current_hp": 100,
           "experience": 0
         },
@@ -13074,6 +13101,22 @@
       "is_naval": false,
       "in_ambush": false
     },
+    "fleet_bulgarian_empire_2230": {
+      "id": "fleet_bulgarian_empire_2230",
+      "owner_id": "bulgarian_empire",
+      "region_id": "_sea_black",
+      "units": [
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 3,
+      "max_move_points": 3,
+      "is_naval": true,
+      "in_ambush": false
+    },
     "fleet_byzantine_1255": {
       "id": "fleet_byzantine_1255",
       "owner_id": "byzantine",
@@ -13100,8 +13143,8 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_england_2148": {
-      "id": "fleet_england_2148",
+    "fleet_england_2233": {
+      "id": "fleet_england_2233",
       "owner_id": "england",
       "region_id": "_sea_atlantic",
       "units": [
@@ -13143,7 +13186,7 @@
         },
         {
           "type_id": "transport",
-          "current_hp": 72,
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -13152,16 +13195,11 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_france_2117": {
-      "id": "fleet_france_2117",
+    "fleet_france_2227": {
+      "id": "fleet_france_2227",
       "owner_id": "france",
       "region_id": "_sea_atlantic_open_1",
       "units": [
-        {
-          "type_id": "transport",
-          "current_hp": 90,
-          "experience": 0
-        },
         {
           "type_id": "transport",
           "current_hp": 100,
@@ -13228,11 +13266,6 @@
           "type_id": "transport",
           "current_hp": 72,
           "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 100,
-          "experience": 0
         }
       ],
       "move_points": 3,
@@ -13240,8 +13273,8 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_hungarian_kingdom_2149": {
-      "id": "fleet_hungarian_kingdom_2149",
+    "fleet_hungarian_kingdom_2228": {
+      "id": "fleet_hungarian_kingdom_2228",
       "owner_id": "hungarian_kingdom",
       "region_id": "_sea_adriatic",
       "units": [
@@ -13256,11 +13289,21 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_ilkhanate_2099": {
-      "id": "fleet_ilkhanate_2099",
+    "fleet_ilkhanate_2223": {
+      "id": "fleet_ilkhanate_2223",
       "owner_id": "ilkhanate",
       "region_id": "_sea_caspian_open_1",
       "units": [
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "transport",
           "current_hp": 81,
@@ -13275,11 +13318,6 @@
           "type_id": "transport",
           "current_hp": 40,
           "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 7,
-          "experience": 0
         }
       ],
       "move_points": 3,
@@ -13287,10 +13325,10 @@
       "is_naval": true,
       "in_ambush": false
     },
-    "fleet_mamluk_2147": {
-      "id": "fleet_mamluk_2147",
+    "fleet_mamluk_2207": {
+      "id": "fleet_mamluk_2207",
       "owner_id": "mamluk",
-      "region_id": "_sea_persian_open_0",
+      "region_id": "_sea_persian",
       "units": [
         {
           "type_id": "transport",
@@ -13350,7 +13388,7 @@
           "experience": 0
         }
       ],
-      "move_points": 2,
+      "move_points": 3,
       "max_move_points": 3,
       "is_naval": true,
       "in_ambush": false
@@ -13381,7 +13419,7 @@
           "experience": 0
         }
       ],
-      "move_points": 2,
+      "move_points": 3,
       "max_move_points": 3,
       "is_naval": true,
       "in_ambush": false
@@ -13425,6 +13463,11 @@
         {
           "type_id": "transport",
           "current_hp": 22,
+          "experience": 0
+        },
+        {
+          "type_id": "transport",
+          "current_hp": 100,
           "experience": 0
         }
       ],
@@ -13477,34 +13520,6 @@
         {
           "type_id": "militia",
           "current_hp": 40,
-          "experience": 0
-        }
-      ],
-      "move_points": 3,
-      "max_move_points": 3,
-      "is_naval": true,
-      "in_ambush": false
-    },
-    "fleet_venice_2092": {
-      "id": "fleet_venice_2092",
-      "owner_id": "venice",
-      "region_id": "new_region_225",
-      "units": [
-        {
-          "type_id": "transport",
-          "current_hp": 81,
-          "experience": 0
-        },
-        {
-          "type_id": "transport",
-          "current_hp": 72,
-          "experience": 0
-        }
-      ],
-      "embarked_units": [
-        {
-          "type_id": "militia",
-          "current_hp": 90,
           "experience": 0
         }
       ],
@@ -14592,7 +14607,7 @@
     "byzantine|ottoman": {
       "faction_a": "byzantine",
       "faction_b": "ottoman",
-      "score": -20,
+      "score": -17,
       "stance": "peace"
     },
     "byzantine|papal_states_f": {
@@ -31102,9 +31117,34 @@
       }
     ]
   },
-  "production_queue": [],
-  "next_production_seq": 174,
-  "next_army_seq": 2149,
+  "production_queue": [
+    {
+      "id": "prod_175",
+      "kind": "building",
+      "faction_id": "ottoman",
+      "region_id": "thrace",
+      "type_id": "barracks",
+      "turns_left": 2
+    },
+    {
+      "id": "prod_176",
+      "kind": "building",
+      "faction_id": "ottoman",
+      "region_id": "new_region_221",
+      "type_id": "barracks",
+      "turns_left": 2
+    },
+    {
+      "id": "prod_177",
+      "kind": "building",
+      "faction_id": "ottoman",
+      "region_id": "new_region_220",
+      "type_id": "barracks",
+      "turns_left": 2
+    }
+  ],
+  "next_production_seq": 177,
+  "next_army_seq": 2234,
   "phase": "player_turn",
   "winner_id": "",
   "region_paint_overrides": {

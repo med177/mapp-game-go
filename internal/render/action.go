@@ -56,13 +56,13 @@ const (
 	ActionAdjustMusic               ActionKind = "adjust_music" // Delta: müzik ses seviyesi
 
 	// Ticaret paneli
-	ActionOpenTradeView    ActionKind = "open_trade_view"
-	ActionCloseTradeView   ActionKind = "close_trade_view"
-	ActionCreateTradeRoute ActionKind = "create_trade_route" // BuildingID = mal tipi, TargetFaction = hedef, Delta = miktar
-	ActionCancelTradeRoute ActionKind = "cancel_trade_route" // BuildingID = rota indeksi
-	ActionOneTimeTrade     ActionKind = "one_time_trade"     // BuildingID = mal tipi, Delta = miktar
-	ActionTradeScroll      ActionKind = "trade_scroll"       // Delta: +1/-1
-	ActionTradeTabSwitch   ActionKind = "trade_tab_switch"   // Delta: hangi sekme
+	ActionOpenTradeView         ActionKind = "open_trade_view"
+	ActionCloseTradeView        ActionKind = "close_trade_view"
+	ActionCreateTradeRoute      ActionKind = "create_trade_route" // BuildingID = mal tipi, TargetFaction = hedef, Delta = miktar
+	ActionCancelTradeRoute      ActionKind = "cancel_trade_route" // BuildingID = rota indeksi
+	ActionOneTimeTrade          ActionKind = "one_time_trade"     // BuildingID = mal tipi, Delta = miktar
+	ActionTradeScroll           ActionKind = "trade_scroll"       // Delta: +1/-1
+	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"   // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 )
 
@@ -75,6 +75,7 @@ type InputAction struct {
 	ArmyID        army.ArmyID
 	TargetRegion  world.RegionID
 	BuildingID    string
+	Quantity      int
 	TargetFaction faction.FactionID
 	Delta         int // AdjustTax için: +5 veya -5
 	OfferIndex    int

@@ -85,12 +85,23 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 
 	status := "İnşa edilebilir"
 	statusCol := color.RGBA{120, 210, 120, 230}
+	level := 0
 	for _, builtID := range region.Buildings {
 		if builtID == bid {
-			status = "Bu bölgede mevcut"
-			statusCol = ColorGold
-			break
+			level++
 		}
+	}
+	maxLevel := 1
+	if b.MaxPerRegion > 0 {
+		maxLevel = b.MaxPerRegion
+	}
+	if level > 0 {
+		status = fmt.Sprintf("Seviye: Lv%d/%d", level, maxLevel)
+		statusCol = ColorGold
+	}
+	if level >= maxLevel {
+		status = fmt.Sprintf("Maksimum seviye (Lv%d)", level)
+		statusCol = color.RGBA{190, 170, 110, 230}
 	}
 	DrawText(screen, status, x+84, y+52, FaceSmall, statusCol)
 

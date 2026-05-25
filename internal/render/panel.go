@@ -1606,14 +1606,18 @@ func calcPlayerIncome(gs *state.GameState) int {
 func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.Region, panelX, startY, panelW float32) {
 	ensureBuildingSheet()
 
-	builtSet := make(map[string]bool, len(region.Buildings))
+	builtCount := make(map[string]int, len(region.Buildings))
 	for _, bid := range region.Buildings {
-		builtSet[bid] = true
+		builtCount[bid]++
 	}
 	queuedSet := make(map[string]int)
+	queuedTurnsMin := make(map[string]int)
 	for _, order := range gs.ProductionQueue {
 		if order.Kind == "building" && order.RegionID == region.ID {
-			queuedSet[order.TypeID] = order.TurnsLeft
+			queuedSet[order.TypeID]++
+			if queuedTurnsMin[order.TypeID] == 0 || order.TurnsLeft < queuedTurnsMin[order.TypeID] {
+				queuedTurnsMin[order.TypeID] = order.TurnsLeft
+			}
 		}
 	}
 
@@ -1635,13 +1639,20 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		innerW := slotW - 3
 
 		b, hasDef := gs.BuildingTypes[bid]
-		isBuilt := builtSet[bid]
-		turnsLeft := queuedSet[bid]
-		isQueued := turnsLeft > 0
+		level := builtCount[bid]
+		queuedCount := queuedSet[bid]
+		turnsLeft := queuedTurnsMin[bid]
+		isQueued := queuedCount > 0
 		canAfford := false
 		if f := gs.Factions[gs.PlayerFactionID]; f != nil && hasDef {
 			canAfford = f.Gold >= b.GoldCost
 		}
+		isBuilt := level > 0
+		maxLevel := 1
+		if hasDef && b.MaxPerRegion > 0 {
+			maxLevel = b.MaxPerRegion
+		}
+		isMaxLevel := level >= maxLevel
 
 		// Arka plan ve çerçeve
 		slotBg := color.RGBA{20, 16, 12, 200}
@@ -1680,8 +1691,14 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 
 			if isBuilt {
 				vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
-			} else if isQueued {
-				DrawTextCentered(screen, itoa(turnsLeft)+" tur",
+				DrawText(screen, "Lv"+itoa(level), float64(sx)+6, float64(sy)+4, FaceSmall, color.RGBA{245, 225, 160, 235})
+			}
+			if isQueued {
+				qLabel := itoa(turnsLeft) + " tur"
+				if queuedCount > 1 {
+					qLabel = "x" + itoa(queuedCount) + " " + qLabel
+				}
+				DrawTextCentered(screen, qLabel,
 					float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-7,
 					FaceSmall, color.RGBA{235, 210, 125, 235})
 			}
@@ -1702,13 +1719,16 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			nameCol = color.RGBA{170, 145, 85, 220}
 		}
 		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
+		if isMaxLevel {
+			DrawTextCentered(screen, "Maks", float64(sx)+float64(innerW)/2, float64(sy+spriteH)+16, FaceSmall, color.RGBA{170, 155, 95, 210})
+		}
 	}
 }
 
 func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
-	builtSet := make(map[string]bool, len(region.Buildings))
+	builtCount := make(map[string]int, len(region.Buildings))
 	for _, bid := range region.Buildings {
-		builtSet[bid] = true
+		builtCount[bid]++
 	}
 	ids := make([]string, 0, len(buildingDisplayOrder))
 	for _, bid := range buildingDisplayOrder {
@@ -1716,7 +1736,7 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 		if !ok {
 			continue
 		}
-		if builtSet[bid] || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain {
+		if builtCount[bid] > 0 || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain {
 			ids = append(ids, bid)
 		}
 	}

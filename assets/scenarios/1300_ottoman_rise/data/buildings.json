@@ -9,7 +9,7 @@
     "trade_capacity_mod": 1.3,
     "sat_bonus": 2,
     "def_bonus": 0,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "",
     "turns_required": 2
   },
@@ -22,7 +22,7 @@
     "grain_mod": 1.5,
     "sat_bonus": 3,
     "def_bonus": 0,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "",
     "turns_required": 2
   },
@@ -35,7 +35,7 @@
     "grain_mod": 1.0,
     "sat_bonus": 0,
     "def_bonus": 5,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "",
     "turns_required": 2
   },
@@ -49,7 +49,7 @@
     "trade_capacity_mod": 1.5,
     "sat_bonus": 1,
     "def_bonus": 0,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "coast",
     "turns_required": 2
   },
@@ -62,7 +62,7 @@
     "grain_mod": 1.0,
     "sat_bonus": 5,
     "def_bonus": 15,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "",
     "turns_required": 2
   },
@@ -75,7 +75,7 @@
     "grain_mod": 1.0,
     "sat_bonus": 8,
     "def_bonus": 0,
-    "max_per_region": 1,
+    "max_per_region": 3,
     "required_terrain": "",
     "turns_required": 2
   }

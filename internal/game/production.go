@@ -259,6 +259,16 @@ func (g *Game) pendingLandUnitCount(fid faction.FactionID) int {
 	return count
 }
 
+func (g *Game) pendingUnitCountByRegion(rid world.RegionID, fid faction.FactionID) int {
+	count := 0
+	for _, order := range g.gs.ProductionQueue {
+		if order.Kind == productionKindUnit && order.RegionID == rid && order.FactionID == string(fid) {
+			count++
+		}
+	}
+	return count
+}
+
 func (g *Game) pendingNavalUnitCount(seaRegion world.RegionID, fid faction.FactionID) int {
 	count := 0
 	for _, order := range g.gs.ProductionQueue {

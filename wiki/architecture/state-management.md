@@ -97,7 +97,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 
-`ManpowerCap(fid) int` — kara bölgesi başı 5 + kışlalı bölge başı +5 ek kapasite
+`ManpowerCap(fid) int` — kara bölgesi başı 5 + kışla seviyesi başına +5 ek kapasite
 
 `DeployedLandUnits(fid) int` — fraksiyonun aktif kara birim sayısı
 
