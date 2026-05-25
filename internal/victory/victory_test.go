@@ -37,11 +37,14 @@ func TestConquerCityVictoryTriggersWhenTargetOwned(t *testing.T) {
 
 	Check(gs)
 
-	if gs.Phase != state.PhaseGameOver {
-		t.Fatalf("expected game over, got %s", gs.Phase)
+	if gs.Phase != state.PhasePlayerTurn {
+		t.Fatalf("expected game to continue, got %s", gs.Phase)
 	}
 	if gs.WinnerID != gs.PlayerFactionID {
 		t.Fatalf("expected winner %s, got %s", gs.PlayerFactionID, gs.WinnerID)
+	}
+	if !gs.VictoryAchieved {
+		t.Fatal("expected victory achieved flag")
 	}
 }
 
@@ -71,7 +74,7 @@ func TestConquerCityVictoryWaitsForTargetOwnership(t *testing.T) {
 
 	Check(gs)
 
-	if gs.Phase == state.PhaseGameOver {
+	if gs.VictoryAchieved {
 		t.Fatal("expected game to continue before target ownership")
 	}
 }
@@ -131,15 +134,18 @@ func TestEconomicVictoryUsesIncomeThreshold(t *testing.T) {
 	if gs.EconomicVictoryTurns != 1 {
 		t.Fatalf("ilk tur sayaci 1 olmali, got=%d", gs.EconomicVictoryTurns)
 	}
-	if gs.Phase == state.PhaseGameOver {
+	if gs.VictoryAchieved {
 		t.Fatal("tek turda ekonomik zafer olmamali")
 	}
 
 	Check(gs)
-	if gs.Phase != state.PhaseGameOver {
-		t.Fatalf("ikinci tur sonunda oyun bitmeli, got=%s", gs.Phase)
+	if gs.Phase != state.PhasePlayerTurn {
+		t.Fatalf("zaferden sonra oyun devam etmeli, got=%s", gs.Phase)
 	}
 	if gs.WinnerID != "ottoman" {
 		t.Fatalf("kazanan ottoman olmali, got=%s", gs.WinnerID)
+	}
+	if !gs.VictoryAchieved {
+		t.Fatal("victory achieved bekleniyordu")
 	}
 }

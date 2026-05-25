@@ -390,7 +390,13 @@ func (g *Game) resolveTurn() {
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
 	applyRelationDecay(g.gs)
+	prevVictoryAchieved := g.gs.VictoryAchieved
 	victory.Check(g.gs)
+	if !prevVictoryAchieved && g.gs.VictoryAchieved && g.gs.WinnerID == g.gs.PlayerFactionID {
+		msg := "Zafer hedefi tamamlandı: " + victoryLabel(g.gs.Victory.Type) + ". Oyun devam ediyor."
+		g.renderer.ShowCombatResult(msg)
+		g.renderer.AddEvent("🏆 " + msg)
+	}
 
 	// Tamamlanan teknolojiler için mesaj göster
 	for _, ct := range completedTechs {
@@ -439,6 +445,23 @@ func (g *Game) resolveTurn() {
 	if g.gs.Phase != state.PhaseGameOver {
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.MarkMapDirty()
+	}
+}
+
+func victoryLabel(vtype state.VictoryType) string {
+	switch vtype {
+	case state.VictoryDomination:
+		return "Toprak Hakimiyeti"
+	case state.VictoryEconomic:
+		return "Ekonomik Üstünlük"
+	case state.VictoryMilitary:
+		return "Askeri Üstünlük"
+	case state.VictoryReligious:
+		return "Dinî Zafer"
+	case state.VictoryConquerCity:
+		return "Fetih"
+	default:
+		return "Zafer"
 	}
 }
 

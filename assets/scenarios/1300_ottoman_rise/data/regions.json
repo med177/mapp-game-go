@@ -3633,6 +3633,7 @@
     "neighbors": [
       "_sea_mediterranean_open_0",
       "_shore_mediterranean_2",
+      "_sea_marmara",
       "aydinoglu",
       "chalcidice",
       "crete",
@@ -3672,6 +3673,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_marmara",
       "_sea_azov",
       "_sea_black_open_0",
       "_sea_black_open_2",
@@ -9271,6 +9273,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_aegean",
+      "_sea_black",
       "aydinoglu",
       "bursa",
       "constantinople",

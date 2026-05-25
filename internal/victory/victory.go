@@ -44,7 +44,7 @@ func Check(gs *state.GameState) {
 		checkConquerCity(gs)
 	}
 
-	if gs.Phase == state.PhaseGameOver {
+	if gs.Phase == state.PhaseGameOver || gs.VictoryAchieved {
 		return
 	}
 
@@ -71,8 +71,7 @@ func checkConquerCity(gs *state.GameState) {
 	if !ok || region.OwnerID != string(gs.PlayerFactionID) {
 		return
 	}
-	gs.Phase = state.PhaseGameOver
-	gs.WinnerID = gs.PlayerFactionID
+	markPlayerVictory(gs)
 }
 
 // checkDomination bölge sayısına ve kritik bölgelere göre zafer kontrol eder.
@@ -91,8 +90,7 @@ func checkDomination(gs *state.GameState, playerRegions []*world.Region) {
 			return
 		}
 	}
-	gs.Phase = state.PhaseGameOver
-	gs.WinnerID = gs.PlayerFactionID
+	markPlayerVictory(gs)
 }
 
 // checkEconomic altın miktarını belirli tur süre boyunca koruma zaferini kontrol eder.
@@ -112,8 +110,7 @@ func checkEconomic(gs *state.GameState) {
 	if CurrentGoldIncome(gs) >= threshold {
 		gs.EconomicVictoryTurns++
 		if gs.EconomicVictoryTurns >= holdTurns {
-			gs.Phase = state.PhaseGameOver
-			gs.WinnerID = gs.PlayerFactionID
+			markPlayerVictory(gs)
 		}
 	} else {
 		gs.EconomicVictoryTurns = 0
@@ -194,8 +191,7 @@ func checkMilitary(gs *state.GameState) {
 	}
 
 	if totalStr >= targetStr && eliminated >= targetDefeated {
-		gs.Phase = state.PhaseGameOver
-		gs.WinnerID = gs.PlayerFactionID
+		markPlayerVictory(gs)
 	}
 }
 
@@ -218,10 +214,18 @@ func checkReligious(gs *state.GameState, _ []*world.Region) {
 		gs.ReligiousVictoryTurns++
 		// 12 tur (~1 yıl) kutsal şehirleri tutmak = zafer
 		if gs.ReligiousVictoryTurns >= 12 {
-			gs.Phase = state.PhaseGameOver
-			gs.WinnerID = gs.PlayerFactionID
+			markPlayerVictory(gs)
 		}
 	} else {
 		gs.ReligiousVictoryTurns = 0
 	}
+}
+
+func markPlayerVictory(gs *state.GameState) {
+	if gs == nil || gs.VictoryAchieved {
+		return
+	}
+	gs.VictoryAchieved = true
+	gs.VictoryAchievedTurn = gs.Turn
+	gs.WinnerID = gs.PlayerFactionID
 }

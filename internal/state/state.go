@@ -83,6 +83,8 @@ type GameState struct {
 	EconomicVictoryTurns  int `json:"economic_victory_turns"`
 	FactionsEliminated    int `json:"factions_eliminated"`
 	ReligiousVictoryTurns int `json:"religious_victory_turns"`
+	VictoryAchieved       bool `json:"victory_achieved"`
+	VictoryAchievedTurn   int  `json:"victory_achieved_turn"`
 
 	// Tetiklenmiş tek seferlik olay ID'leri
 	FiredEventIDs map[string]bool `json:"fired_event_ids"`

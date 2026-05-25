@@ -343,6 +343,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 	// Zafer göstergesi — kaynak sütunundan sonra başlar
 	if hasPlayer {
 		drawVictoryProgress(screen, gs, float64(by))
+		drawVictoryAchievedBanner(screen, gs)
 	}
 
 	// Alt-orta: aksiyon HUD'u
@@ -1549,6 +1550,28 @@ func drawTopProgressBar(screen *ebiten.Image, x, y, w, h float32, fill float64, 
 		vector.FillRect(screen, x, y, float32(float64(w)*fill), h, col, false)
 	}
 	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{120, 100, 55, 150}, false)
+}
+
+func drawVictoryAchievedBanner(screen *ebiten.Image, gs *state.GameState) {
+	if gs == nil || !gs.VictoryAchieved || gs.WinnerID != gs.PlayerFactionID {
+		return
+	}
+	msg := "Kalıcı Olay: " + victoryTypeLabel(gs.Victory.Type) + " gerçekleşti (Tur " + itoa(gs.VictoryAchievedTurn) + ")"
+	maxW := ScreenWidth - 320
+	if maxW < 260 {
+		maxW = 260
+	}
+	msg = trimTextToWidth(msg, FaceSmall, maxW)
+	w := float32(MeasureText(msg, FaceSmall) + 24)
+	if w > float32(maxW)+24 {
+		w = float32(maxW) + 24
+	}
+	h := float32(24)
+	x := float32(ScreenWidth)/2 - w/2
+	y := topStatusH + 6
+	vector.FillRect(screen, x, y, w, h, color.RGBA{42, 34, 16, 220}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{190, 150, 70, 230}, false)
+	DrawText(screen, msg, float64(x)+12, float64(y)+6, FaceSmall, color.RGBA{245, 215, 140, 255})
 }
 
 // clampF 0.0–1.0 aralığına sıkıştırır.
