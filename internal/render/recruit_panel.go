@@ -12,8 +12,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-// ── Sprite sheet yükleyici ─────────────────────────────────────────────
-
 var (
 	armySheet       *ebiten.Image
 	armySheetLoaded bool
@@ -27,7 +25,6 @@ func ensureArmySheet() {
 	armySheet = tryLoadImage(ActiveScenarioPath + "/sprites/army.png")
 }
 
-// unitDisplayOrder panel slotlarının sırasını belirler (3 sütun × 4 satır).
 var unitDisplayOrder = []string{
 	"militia", "infantry", "elite_infantry",
 	"light_cavalry", "cavalry", "heavy_cavalry",
@@ -35,7 +32,6 @@ var unitDisplayOrder = []string{
 	"transport", "merchant_ship", "warship",
 }
 
-// unitSpriteLoc sprite sheet içindeki hücre konumunu tanımlar.
 type unitSpriteLoc struct {
 	row, col int
 }
@@ -55,8 +51,6 @@ var unitSpriteLocs = map[string]unitSpriteLoc{
 	"warship":        {3, 2},
 }
 
-// unitSpriteRect görüntü boyutuna göre sprite koordinatlarını döner.
-// Görüntü 4 satır × 3 sütun eşit hücrelerden oluşur.
 func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	loc, ok := unitSpriteLocs[id]
 	if !ok {
@@ -69,17 +63,44 @@ func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	return image.Rect(x0, y0, x0+cellW, y0+cellH)
 }
 
-// ── Panel layout sabitleri ─────────────────────────────────────────────
-
 const (
-	recruitPanelW  = infoPanelW + 170
-	recruitPanelH  = infoPanelH + 230
-	recruitHeaderH = float32(52)
-	recruitGridH   = float32(360)
+	recruitMaxCards   = 20
+	recruitCardW      = float32(78)
+	recruitCardH      = float32(112)
+	recruitCardGap    = float32(6)
+	recruitPanelPad   = float32(14)
+	recruitHeaderH    = float32(52)
+	recruitSectionH   = float32(156)
+	recruitSectionGap = float32(10)
+	recruitPanelH     = int(recruitHeaderH + recruitSectionH + recruitSectionGap + recruitSectionH + 18)
+	recruitBottomGap  = float32(150)
 )
 
-func recruitPanelX() float32 { return infoPanelX() + infoPanelW + 5 }
-func recruitPanelY() float32 { return float32(ScreenHeight) - recruitPanelH }
+func recruitPanelX(slots int) float32 {
+	pw := recruitPanelW(slots)
+	x := (float32(ScreenWidth) - pw) * 0.5
+	if x < 8 {
+		return 8
+	}
+	return x
+}
+func recruitPanelY() float32 {
+	return float32(ScreenHeight) - float32(recruitPanelH) - recruitBottomGap
+}
+func recruitPanelW(slots int) float32 {
+	if slots < 1 {
+		slots = 1
+	}
+	if slots > recruitMaxCards {
+		slots = recruitMaxCards
+	}
+	w := recruitPanelPad*2 + recruitCardW*float32(slots) + recruitCardGap*float32(slots-1)
+	maxW := float32(ScreenWidth) - 16
+	if w > maxW {
+		w = maxW
+	}
+	return w
+}
 
 type RecruitPanelActionKind int
 
@@ -97,7 +118,6 @@ type RecruitPanelAction struct {
 	OrderID string
 }
 
-// RecruitPanelVisible oyuncunun kendi bölgesi seçiliyken true döner.
 func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {
 	if rid == "" {
 		return false
@@ -106,106 +126,62 @@ func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {
 	return ok && !r.IsSea && !r.IsLocked && r.OwnerID == string(gs.PlayerFactionID)
 }
 
-// RecruitPanelHitTest fare koordinatına denk gelen unit ID'sini döner; boş = tıklama yok.
 func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
 	if !RecruitPanelVisible(gs, rid) {
 		return ""
 	}
-	if !RecruitPanelBoundsHit(mx, my, gs, rid) {
-		return ""
-	}
-	px := float64(recruitPanelX())
-	py := float64(recruitPanelY())
-	pw := float64(recruitPanelW)
-	_ = float64(recruitPanelH)
-
-	pad := panelPad
-	availW := pw - pad*2
-	slotW := availW / 3
-	slotH := (float64(recruitGridH) - pad) / 4
-
-	relX := mx - px - pad
-	relY := my - py - float64(recruitHeaderH)
-	if relX < 0 || relY < 0 {
-		return ""
-	}
-
-	col := int(relX / slotW)
-	row := int(relY / slotH)
-	if col < 0 || col > 2 || row < 0 || row > 3 {
-		return ""
-	}
-	idx := row*3 + col
-	display := visibleUnitIDs(gs, gs.Regions[rid])
-	if idx >= len(display) {
-		return ""
-	}
-	return display[idx]
+	return recruitUnitCardHitTest(mx, my, gs, rid)
 }
 
-// RecruitPanelActionHitTest panel içinde tıklanan eylemi döner.
 func RecruitPanelActionHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) RecruitPanelAction {
 	if orderID := recruitQueueCancelHitTest(mx, my, gs, rid); orderID != "" {
 		return RecruitPanelAction{Kind: RecruitPanelActionCancel, OrderID: orderID}
 	}
-	uid := RecruitPanelHitTest(mx, my, gs, rid)
-	if uid == "" {
-		return RecruitPanelAction{}
+	if uid := recruitUnitCardHitTest(mx, my, gs, rid); uid != "" {
+		return RecruitPanelAction{Kind: RecruitPanelActionRecruit, UnitID: uid}
 	}
-	if recruitPanelStepButtonHit(mx, my, gs, rid, uid, true) {
-		return RecruitPanelAction{Kind: RecruitPanelActionIncrease, UnitID: uid}
-	}
-	if recruitPanelStepButtonHit(mx, my, gs, rid, uid, false) {
-		return RecruitPanelAction{Kind: RecruitPanelActionDecrease, UnitID: uid}
-	}
-	return RecruitPanelAction{Kind: RecruitPanelActionRecruit, UnitID: uid}
+	return RecruitPanelAction{}
 }
 
 func RecruitPanelBoundsHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
 	if !RecruitPanelVisible(gs, rid) {
 		return false
 	}
-	px := float64(recruitPanelX())
+	slots := recruitPanelSlots(gs, rid)
+	px := float64(recruitPanelX(slots))
 	py := float64(recruitPanelY())
-	pw := float64(recruitPanelW)
+	pw := float64(recruitPanelW(slots))
 	ph := float64(recruitPanelH)
 	return mx >= px && mx <= px+pw && my >= py && my <= py+ph
 }
 
-// DrawRecruitPanel birim seçim ızgarasını bölge panelinin sağına çizer.
 func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, selectedUnitID string, selectedQty int) {
 	if !RecruitPanelVisible(gs, rid) {
 		return
 	}
 	region := gs.Regions[rid]
-	f := gs.Factions[gs.PlayerFactionID]
-
 	ensureArmySheet()
+	slots := recruitPanelSlots(gs, rid)
 
-	px := recruitPanelX()
+	px := recruitPanelX(slots)
 	py := recruitPanelY()
-	pw := recruitPanelW
-	ph := recruitPanelH
+	pw := recruitPanelW(slots)
+	ph := float32(recruitPanelH)
 
-	// Arka plan ve çerçeve
 	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
 	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
 
-	// Başlık
-	titleW := MeasureText("BİRİM OLUŞTUR", FaceSmall)
-	DrawText(screen, "BİRİM OLUŞTUR",
-		float64(px)+float64(pw)/2-titleW/2, float64(py)+8,
-		FaceSmall, color.RGBA{200, 170, 90, 220})
+	titleW := MeasureText("BIRIM OLUSTUR", FaceSmall)
+	DrawText(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2-titleW/2, float64(py)+8, FaceSmall, color.RGBA{200, 170, 90, 220})
 	limit := recruitRegionProductionLimit(region)
 	queuedTotal := queuedUnitTotal(gs, rid)
 	infoStr := fmt.Sprintf("Tur limiti: %d  |  Sirada: %d", limit, queuedTotal)
 	infoW := MeasureText(infoStr, FaceSmall)
-	DrawText(screen, infoStr, float64(px)+float64(pw)/2-infoW/2, float64(py)+28, FaceSmall, color.RGBA{145, 132, 98, 220})
-	sepY := py + 46
-	vector.StrokeLine(screen, px+12, sepY, px+float32(pw)-12, sepY, 1, panelBorder, false)
+	DrawText(screen, infoStr, float64(px)+float64(pw)/2-infoW/2, float64(py)+24, FaceSmall, color.RGBA{145, 132, 98, 220})
+	sepY := py + recruitHeaderH - 2
+	vector.StrokeLine(screen, px+12, sepY, px+pw-12, sepY, 1, panelBorder, false)
 
-	// Bölge binaları
 	hasBarracks, hasPort := false, false
 	for _, bid := range region.Buildings {
 		switch bid {
@@ -216,150 +192,118 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		}
 	}
 
-	// Izgara boyutları
-	const cols = 3
-	pad := float32(panelPad + 2)
-	availW := float32(pw) - pad*2
-	slotW := availW / float32(cols)
-	slotH := (recruitGridH - pad) / 4
-	spriteH := slotH * 0.66
-	nameYOff := spriteH + 3
-	costYOff := nameYOff + 15
-	queueYOff := costYOff + 14
-	ctrlBandYOff := slotH - 20
-
 	display := visibleUnitIDs(gs, region)
-	for i, uid := range display {
-		col := i % cols
-		row := i / cols
+	topY := py + recruitHeaderH + 4
+	cardW, cardH, gap := recruitCardMetrics(slots, pw)
+	x := px + recruitPanelPad
+	maxTop := len(display)
+	if maxTop > slots {
+		maxTop = slots
+	}
+	for i := 0; i < maxTop; i++ {
+		uid := display[i]
+		drawRecruitCard(screen, gs, rid, uid, hasBarracks, hasPort, x, topY, cardW, cardH)
+		x += cardW + gap
+	}
 
-		sx := px + pad + float32(col)*slotW
-		sy := py + recruitHeaderH + float32(row)*slotH
-		innerW := slotW - 3
+	queueY := topY + recruitSectionH + recruitSectionGap
+	drawRecruitQueueSection(screen, gs, rid, slots, px, queueY, pw, recruitSectionH)
+}
 
-		utype := gs.UnitTypes[uid]
-		if utype == nil {
-			continue
-		}
+func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
+	if slots < 1 {
+		slots = 1
+	}
+	gap = recruitCardGap
+	avail := panelW - recruitPanelPad*2 - gap*float32(slots-1)
+	cardW = avail / float32(slots)
+	if cardW > recruitCardW {
+		cardW = recruitCardW
+	}
+	if cardW < 40 {
+		cardW = 40
+	}
+	cardH = recruitCardH
+	return cardW, cardH, gap
+}
 
-		// Kullanılabilirlik kontrolü
-		var needsBuilding bool
-		switch utype.RequiredBldg {
-		case "barracks":
-			needsBuilding = !hasBarracks
-		case "port":
-			needsBuilding = !hasPort
-		}
+func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, hasBarracks, hasPort bool, sx, sy, cardW, cardH float32) {
+	utype := gs.UnitTypes[uid]
+	if utype == nil {
+		return
+	}
+	var needsBuilding bool
+	switch utype.RequiredBldg {
+	case "barracks":
+		needsBuilding = !hasBarracks
+	case "port":
+		needsBuilding = !hasPort
+	}
+	ff := gs.Factions[gs.PlayerFactionID]
+	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
+	canAfford := ff != nil && ff.Gold >= utype.GoldCost
+	fullyAvail := !needsBuilding && !needsTech
+	queued, firstTurn := queuedUnitInfo(gs, rid, uid)
 
-		needsTech := utype.RequiredTech != "" &&
-			(f == nil || !f.Research.Completed[utype.RequiredTech])
+	slotBg := color.RGBA{20, 16, 12, 200}
+	borderCol := color.RGBA{55, 45, 30, 200}
+	if fullyAvail {
+		slotBg = color.RGBA{38, 30, 15, 235}
+		borderCol = panelBorder
+	}
+	vector.FillRect(screen, sx, sy, cardW, cardH, slotBg, false)
+	vector.StrokeRect(screen, sx, sy, cardW, cardH, 1, borderCol, false)
 
-		canAfford := f != nil && f.Gold >= utype.GoldCost
-		fullyAvail := !needsBuilding && !needsTech
-		queued, firstTurn := queuedUnitInfo(gs, rid, uid)
-
-		// Slot arka plan
-		slotBg := color.RGBA{20, 16, 12, 200}
-		borderCol := color.RGBA{55, 45, 30, 200}
-		if fullyAvail {
-			slotBg = color.RGBA{38, 30, 15, 235}
-			borderCol = panelBorder
-		}
-		vector.FillRect(screen, sx, sy, innerW, spriteH, slotBg, false)
-		vector.StrokeRect(screen, sx, sy, innerW, spriteH, 1, borderCol, false)
-
-		// Sprite
-		if armySheet != nil {
-			r := unitSpriteRect(uid, armySheet)
-			if !r.Empty() {
-				sub := armySheet.SubImage(r).(*ebiten.Image)
-				op := &ebiten.DrawImageOptions{}
-				fitW := float64(innerW - 6)
-				fitH := float64(spriteH - 6)
-				scale := fitW / float64(r.Dx())
-				if hScale := fitH / float64(r.Dy()); hScale < scale {
-					scale = hScale
-				}
-				drawW := float64(r.Dx()) * scale
-				drawH := float64(r.Dy()) * scale
-				op.GeoM.Scale(scale, scale)
-				op.GeoM.Translate(
-					float64(sx)+float64(innerW)/2-drawW/2,
-					float64(sy)+float64(spriteH)/2-drawH/2,
-				)
-				switch {
-				case needsBuilding:
-					op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
-				case needsTech:
-					op.ColorScale.Scale(0.45, 0.45, 0.45, 1.0)
-				case !canAfford:
-					op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
-				}
-				screen.DrawImage(sub, op)
-
-				// Birim görseli üzerinde kalan ilk kuyruk süresi (yoksa taban süre)
-				turnsShown := utype.TurnsRequired
-				if queued > 0 && firstTurn > 0 {
-					turnsShown = firstTurn
-				}
-				turnBadge := itoa(turnsShown) + " Tur"
-				bx := sx + innerW - 50
-				by := sy + 4
-				vector.FillRect(screen, bx, by, 48, 13, color.RGBA{18, 16, 12, 230}, false)
-				vector.StrokeRect(screen, bx, by, 48, 13, 1, color.RGBA{120, 98, 56, 220}, false)
-				DrawTextCentered(screen, turnBadge, float64(bx)+24, float64(by)+2, FaceSmall, color.RGBA{220, 195, 120, 235})
-
-				// Kilit ibaresi — teknoloji eksik
-				if needsTech && !needsBuilding {
-					DrawTextCentered(screen, "KLT",
-						float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-8,
-						FaceMed, color.RGBA{200, 180, 80, 220})
-				}
+	spriteH := float32(76)
+	if armySheet != nil {
+		r := unitSpriteRect(uid, armySheet)
+		if !r.Empty() {
+			sub := armySheet.SubImage(r).(*ebiten.Image)
+			op := &ebiten.DrawImageOptions{}
+			fitW := float64(cardW - 8)
+			fitH := float64(spriteH - 6)
+			scale := fitW / float64(r.Dx())
+			if hScale := fitH / float64(r.Dy()); hScale < scale {
+				scale = hScale
 			}
-		}
-
-		// Birim adı
-		nameX := float64(sx) + float64(innerW)/2
-		nameCol := ColorGold
-		if !fullyAvail {
-			nameCol = color.RGBA{80, 70, 55, 190}
-		}
-		DrawTextCentered(screen, utype.NameTR, nameX, float64(sy)+float64(nameYOff), FaceSmall, nameCol)
-
-		// Maliyet
-		costStr := itoa(utype.GoldCost) + " G  " + itoa(utype.TurnsRequired) + "T"
-		costCol := color.RGBA{180, 160, 60, 220}
-		if !fullyAvail {
-			costCol = color.RGBA{70, 62, 48, 180}
-		} else if !canAfford {
-			costCol = ColorRed
-		}
-		DrawTextCentered(screen, costStr, nameX, float64(sy)+float64(costYOff), FaceSmall, costCol)
-
-		// Kuyruk bilgisi (aynı birim için bekleme görünürlüğü)
-		if queued > 0 {
-			qStr := fmt.Sprintf("Qx%d %dT", queued, firstTurn)
-			DrawTextCentered(screen, qStr, nameX, float64(sy)+float64(queueYOff), FaceSmall, color.RGBA{125, 120, 98, 215})
-		}
-
-		// Total War benzeri adet kontrolü: - xN +
-		if uid == selectedUnitID {
-			if selectedQty < 1 {
-				selectedQty = 1
+			drawW := float64(r.Dx()) * scale
+			drawH := float64(r.Dy()) * scale
+			op.GeoM.Scale(scale, scale)
+			op.GeoM.Translate(float64(sx)+float64(cardW)/2-drawW/2, float64(sy)+float64(spriteH)/2-drawH/2)
+			switch {
+			case needsBuilding:
+				op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
+			case needsTech:
+				op.ColorScale.Scale(0.45, 0.45, 0.45, 1.0)
+			case !canAfford:
+				op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
 			}
-			ctrlY := sy + ctrlBandYOff
-			vector.FillRect(screen, sx+1, ctrlY, innerW-2, 18, color.RGBA{18, 15, 12, 235}, false)
-			vector.StrokeRect(screen, sx+1, ctrlY, innerW-2, 18, 1, color.RGBA{120, 98, 56, 220}, false)
-			qtyY := float64(ctrlY) + 2
-			mx, my, mw, mh := recruitPanelStepButtonRect(gs, rid, uid, false)
-			px, py, pw, ph := recruitPanelStepButtonRect(gs, rid, uid, true)
-			drawTinyPanelButton(screen, mx, my, mw, mh, "-", true)
-			drawTinyPanelButton(screen, px, py, pw, ph, "+", true)
-			DrawTextCentered(screen, "x"+itoa(selectedQty), nameX, qtyY, FaceSmall, ColorGold)
+			screen.DrawImage(sub, op)
+			turnsShown := utype.TurnsRequired
+			if queued > 0 && firstTurn > 0 {
+				turnsShown = firstTurn
+			}
+			badge := itoa(turnsShown) + " Tur"
+			bx, by := sx+cardW-52, sy+4
+			vector.FillRect(screen, bx, by, 42, 13, color.RGBA{18, 16, 12, 230}, false)
+			vector.StrokeRect(screen, bx, by, 42, 13, 1, color.RGBA{120, 98, 56, 220}, false)
+			DrawTextCentered(screen, badge, float64(bx)+21, float64(by)+2, FaceSmall, color.RGBA{220, 195, 120, 235})
 		}
 	}
 
-	drawRecruitQueueSection(screen, gs, rid, px, py+recruitHeaderH+recruitGridH+8, pw, ph-(recruitHeaderH+recruitGridH+16))
+	nameCol := ColorGold
+	if !fullyAvail {
+		nameCol = color.RGBA{80, 70, 55, 190}
+	}
+	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+80, FaceSmall, nameCol)
+	cost := itoa(utype.GoldCost) + " G  " + itoa(utype.TurnsRequired) + "T"
+	costCol := color.RGBA{180, 160, 60, 220}
+	if !fullyAvail {
+		costCol = color.RGBA{70, 62, 48, 180}
+	} else if !canAfford {
+		costCol = ColorRed
+	}
+	DrawTextCentered(screen, cost, float64(sx)+float64(cardW)/2, float64(sy)+96, FaceSmall, costCol)
 }
 
 func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
@@ -418,110 +362,34 @@ func recruitRegionProductionLimit(region *world.Region) int {
 	return limit
 }
 
-func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid string, plus bool) (x, y, w, h float32) {
-	px := recruitPanelX()
+func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
+	if !RecruitPanelVisible(gs, rid) {
+		return ""
+	}
+	region := gs.Regions[rid]
+	display := visibleUnitIDs(gs, region)
+	if len(display) == 0 {
+		return ""
+	}
 	py := recruitPanelY()
-	pw := recruitPanelW
-
-	const cols = 3
-	pad := float32(panelPad)
-	availW := float32(pw) - pad*2
-	slotW := availW / float32(cols)
-	slotH := (recruitGridH - pad) / 4
-
-	display := visibleUnitIDs(gs, gs.Regions[rid])
-	idx := -1
-	for i := range display {
-		if display[i] == uid {
-			idx = i
-			break
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	topY := py + recruitHeaderH + 4
+	pw := recruitPanelW(slots)
+	cardW, cardH, gap := recruitCardMetrics(slots, pw)
+	x := px + recruitPanelPad
+	maxTop := len(display)
+	if maxTop > slots {
+		maxTop = slots
+	}
+	for i := 0; i < maxTop; i++ {
+		uid := display[i]
+		if mx >= float64(x) && mx <= float64(x+cardW) && my >= float64(topY) && my <= float64(topY+cardH) {
+			return uid
 		}
+		x += cardW + gap
 	}
-	if idx < 0 {
-		return 0, 0, 0, 0
-	}
-
-	col := idx % cols
-	row := idx / cols
-	sx := px + pad + float32(col)*slotW
-	sy := py + recruitHeaderH + float32(row)*slotH
-	innerW := slotW - 3
-	btnW, btnH := float32(18), float32(14)
-	btnY := sy + slotH - 18
-	if plus {
-		return sx + innerW - btnW - 2, btnY, btnW, btnH
-	}
-	return sx + 2, btnY, btnW, btnH
-}
-
-func recruitPanelStepButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID, uid string, plus bool) bool {
-	x, y, w, h := recruitPanelStepButtonRect(gs, rid, uid, plus)
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
-}
-
-func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, x, y, w, h float32) {
-	vector.FillRect(screen, x+8, y, w-16, h, color.RGBA{14, 12, 10, 220}, false)
-	vector.StrokeRect(screen, x+8, y, w-16, h, 1, color.RGBA{88, 72, 44, 220}, false)
-	DrawText(screen, "ORDU + EGITIM SIRASI", float64(x)+16, float64(y)+6, FaceSmall, color.RGBA{190, 165, 100, 230})
-
-	type queueItem struct {
-		uid     string
-		count   int
-		queued  bool
-		turns   int
-		orderID string
-	}
-	items := make([]queueItem, 0, 32)
-	for _, it := range recruitQueueItems(gs, rid) {
-		items = append(items, queueItem{uid: it.uid, count: it.count, queued: it.queued, turns: it.turns, orderID: it.orderID})
-	}
-
-	cardW, cardH := float32(52), float32(68)
-	gap := float32(6)
-	startX := x + 14
-	startY := y + 20
-	maxCols := int((w - 28 + gap) / (cardW + gap))
-	if maxCols < 1 {
-		maxCols = 1
-	}
-	for i, it := range items {
-		col := i % maxCols
-		row := i / maxCols
-		cx := startX + float32(col)*(cardW+gap)
-		cy := startY + float32(row)*(cardH+gap)
-		if cy+cardH > y+h-4 {
-			break
-		}
-		vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{24, 21, 16, 235}, false)
-		vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{118, 97, 58, 225}, false)
-		if armySheet != nil {
-			r := unitSpriteRect(it.uid, armySheet)
-			if !r.Empty() {
-				sub := armySheet.SubImage(r).(*ebiten.Image)
-				op := &ebiten.DrawImageOptions{}
-				fitW := float64(cardW - 6)
-				fitH := float64(40)
-				scale := fitW / float64(r.Dx())
-				if hScale := fitH / float64(r.Dy()); hScale < scale {
-					scale = hScale
-				}
-				drawW := float64(r.Dx()) * scale
-				drawH := float64(r.Dy()) * scale
-				op.GeoM.Scale(scale, scale)
-				op.GeoM.Translate(float64(cx)+float64(cardW)/2-drawW/2, float64(cy)+3+fitH/2-drawH/2)
-				if it.queued {
-					op.ColorScale.Scale(0.82, 0.82, 0.82, 1.0)
-				}
-				screen.DrawImage(sub, op)
-			}
-		}
-		label := "x" + itoa(it.count)
-		if it.queued {
-			label = "+" + itoa(it.turns) + "T"
-			drawTinyPanelButton(screen, cx+cardW-13, cy+2, 11, 11, "X", true)
-		}
-		DrawTextCentered(screen, label, float64(cx)+float64(cardW)/2, float64(cy)+48, FaceSmall, color.RGBA{220, 195, 120, 235})
-	}
+	return ""
 }
 
 type recruitQueueItem struct {
@@ -557,42 +425,130 @@ func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueIt
 	return items
 }
 
+func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, slots int, x, y, w, h float32) {
+	mx, my := ebiten.CursorPosition()
+	fmx, fmy := float64(mx), float64(my)
+	vector.FillRect(screen, x+8, y, w-16, h, color.RGBA{14, 12, 10, 220}, false)
+	vector.StrokeRect(screen, x+8, y, w-16, h, 1, color.RGBA{88, 72, 44, 220}, false)
+	DrawText(screen, "ORDU + EGITIM SIRASI", float64(x)+16, float64(y)+6, FaceSmall, color.RGBA{190, 165, 100, 230})
+	items := recruitQueueItems(gs, rid)
+	cardW, cardH, gap := recruitCardMetrics(slots, w)
+	startX := x + recruitPanelPad
+	cy := y + 26
+	maxItems := len(items)
+	if maxItems > slots {
+		maxItems = slots
+	}
+	for i := 0; i < maxItems; i++ {
+		it := items[i]
+		if startX+cardW > x+w-recruitPanelPad {
+			break
+		}
+		vector.FillRect(screen, startX, cy, cardW, cardH, color.RGBA{24, 21, 16, 235}, false)
+		vector.StrokeRect(screen, startX, cy, cardW, cardH, 1, color.RGBA{118, 97, 58, 225}, false)
+		if armySheet != nil {
+			r := unitSpriteRect(it.uid, armySheet)
+			if !r.Empty() {
+				sub := armySheet.SubImage(r).(*ebiten.Image)
+				op := &ebiten.DrawImageOptions{}
+				fitW := float64(cardW - 6)
+				fitH := float64(76)
+				scale := fitW / float64(r.Dx())
+				if hScale := fitH / float64(r.Dy()); hScale < scale {
+					scale = hScale
+				}
+				drawW := float64(r.Dx()) * scale
+				drawH := float64(r.Dy()) * scale
+				op.GeoM.Scale(scale, scale)
+				op.GeoM.Translate(float64(startX)+float64(cardW)/2-drawW/2, float64(cy)+8+fitH/2-drawH/2)
+				if it.queued {
+					op.ColorScale.Scale(0.82, 0.82, 0.82, 1.0)
+				}
+				screen.DrawImage(sub, op)
+			}
+		}
+		label := "x" + itoa(it.count)
+		if it.queued {
+			label = "+" + itoa(it.turns) + "T"
+			bx, by, bw, bh := startX+cardW-19, cy+2, float32(17), float32(17)
+			hovered := fmx >= float64(bx) && fmx <= float64(bx+bw) && fmy >= float64(by) && fmy <= float64(by+bh)
+			drawQueueCancelButton(screen, bx, by, bw, bh, hovered)
+		}
+		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cy)+98, FaceSmall, color.RGBA{220, 195, 120, 235})
+		startX += cardW + gap
+	}
+}
+
+func drawQueueCancelButton(screen *ebiten.Image, x, y, w, h float32, hovered bool) {
+	bg := color.RGBA{70, 26, 22, 235}
+	border := color.RGBA{170, 88, 76, 235}
+	txt := color.RGBA{255, 220, 210, 240}
+	if hovered {
+		bg = color.RGBA{128, 40, 30, 245}
+		border = color.RGBA{240, 140, 120, 245}
+		txt = color.RGBA{255, 245, 235, 255}
+	}
+	vector.FillRect(screen, x, y, w, h, bg, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
+	DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, txt)
+}
+
 func recruitQueueCancelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
 	if !RecruitPanelVisible(gs, rid) {
 		return ""
 	}
-	px := recruitPanelX()
 	py := recruitPanelY()
-	pw := recruitPanelW
-	ph := recruitPanelH
-	x := px + 8
-	y := py + recruitHeaderH + recruitGridH + 8
-	w := pw - 16
-	h := ph - (recruitHeaderH + recruitGridH + 16)
-	cardW, cardH := float32(52), float32(68)
-	gap := float32(6)
-	startX := x + 14
-	startY := y + 20
-	maxCols := int((w - 28 + gap) / (cardW + gap))
-	if maxCols < 1 {
-		maxCols = 1
-	}
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	pw := recruitPanelW(slots)
+	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
 	items := recruitQueueItems(gs, rid)
-	for i, it := range items {
-		if !it.queued || it.orderID == "" {
-			continue
-		}
-		col := i % maxCols
-		row := i / maxCols
-		cx := startX + float32(col)*(cardW+gap)
-		cy := startY + float32(row)*(cardH+gap)
-		if cy+cardH > y+h-4 {
+	cardW, _, gap := recruitCardMetrics(slots, pw)
+	x := px + recruitPanelPad
+	maxItems := len(items)
+	if maxItems > slots {
+		maxItems = slots
+	}
+	for i := 0; i < maxItems; i++ {
+		it := items[i]
+		if x+cardW > px+pw-recruitPanelPad {
 			break
 		}
-		bx, by, bw, bh := cx+cardW-13, cy+2, float32(11), float32(11)
-		if mx >= float64(bx) && mx <= float64(bx+bw) && my >= float64(by) && my <= float64(by+bh) {
-			return it.orderID
+		if it.queued && it.orderID != "" {
+			bx, by, bw, bh := x+cardW-19, queueY+26+2, float32(17), float32(17)
+			if mx >= float64(bx) && mx <= float64(bx+bw) && my >= float64(by) && my <= float64(by+bh) {
+				return it.orderID
+			}
 		}
+		x += cardW + gap
 	}
 	return ""
+}
+
+func recruitPanelSlots(gs *state.GameState, rid world.RegionID) int {
+	region := gs.Regions[rid]
+	displayCount := len(visibleUnitIDs(gs, region))
+	queueCount := len(recruitQueueItems(gs, rid))
+	slots := displayCount
+	if queueCount > slots {
+		slots = queueCount
+	}
+	if slots < 1 {
+		slots = 1
+	}
+	if slots > recruitMaxCards {
+		slots = recruitMaxCards
+	}
+	return slots
+}
+
+func shortUnitName(name string, maxRunes int) string {
+	r := []rune(name)
+	if len(r) <= maxRunes {
+		return name
+	}
+	if maxRunes < 2 {
+		return string(r[:maxRunes])
+	}
+	return string(r[:maxRunes-1]) + "."
 }

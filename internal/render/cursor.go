@@ -341,7 +341,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		return true
 	}
 	if r.SelectedRegion != "" {
-		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) || RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
+		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
+			RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
+			recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
 			return true
 		}
 	}
