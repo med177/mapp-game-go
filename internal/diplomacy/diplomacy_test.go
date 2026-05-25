@@ -129,6 +129,26 @@ func TestQueueAndResolveOfferForPlayer(t *testing.T) {
 	}
 }
 
+func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -81
+	gs.Factions["b"].Gold = 500
+
+	if !QueueOffer(gs, "a", "b", ActionProposePeace) {
+		t.Fatal("barış teklifi kuyruğa alınmalıydı")
+	}
+	result := ResolveOffer(gs, 0, true)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("oyuncu kabul ettiğinde barış kesin uygulanmalıydı: %+v", result)
+	}
+	if rel.Stance != faction.StancePeace || rel.Score != -20 {
+		t.Fatalf("barış kabulünde relation peace/-20 olmalıydı: %+v", rel)
+	}
+}
+
 func testGameState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

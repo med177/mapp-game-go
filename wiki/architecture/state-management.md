@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-15
+last_updated: 2026-05-26
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -93,7 +93,9 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `RegionsOwnedBy(fid) []*Region` — fraksiyon bölge listesi
 
-`IsEliminated(fid) bool` — bölgesi yoksa `true`
+`LandRegionsOwnedBy(fid) []*Region` — fraksiyonun yalnızca kara bölgeleri
+
+`IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 
 `ManpowerCap(fid) int` — kara bölgesi başı 5 + kışlalı bölge başı +5 ek kapasite
 

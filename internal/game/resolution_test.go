@@ -150,3 +150,39 @@ func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
 		t.Fatal("elenmeyen fraksiyonlar arası ilişki korunmalı")
 	}
 }
+
+func TestCheckEliminationsRemovesSeaOnlyFactionWithFleets(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_a":  {ID: "sea_a", OwnerID: "a", IsSea: true},
+			"land_b": {ID: "land_b", OwnerID: "b", IsSea: false},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a_fleet": {ID: "a_fleet", OwnerID: "a", IsNaval: true},
+			"a_land":  {ID: "a_land", OwnerID: "a", IsNaval: false},
+			"b_land":  {ID: "b_land", OwnerID: "b", IsNaval: false},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", Stance: faction.StanceWar},
+		},
+	}
+
+	checkEliminations(gs)
+
+	if !gs.Factions["a"].IsEliminated {
+		t.Fatal("sadece deniz bölgesi kalan fraksiyon elenmeli")
+	}
+	if _, ok := gs.Armies["a_fleet"]; ok {
+		t.Fatal("elenen fraksiyonun donanması temizlenmeliydi")
+	}
+	if _, ok := gs.Armies["a_land"]; ok {
+		t.Fatal("elenen fraksiyonun kara ordusu temizlenmeliydi")
+	}
+	if _, ok := gs.Relations[faction.RelationKey("a", "b")]; ok {
+		t.Fatal("elenen fraksiyonun diplomasi ilişkileri temizlenmeliydi")
+	}
+}

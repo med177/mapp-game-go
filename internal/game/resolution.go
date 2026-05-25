@@ -249,13 +249,13 @@ func checkRebellions(gs *state.GameState) {
 	}
 }
 
-// checkEliminations bölgesi kalmayan fraksiyonları elendi olarak işaretler ve ordularını kaldırır.
+// checkEliminations kara toprağı kalmayan fraksiyonları elendi olarak işaretler ve ordularını kaldırır.
 func checkEliminations(gs *state.GameState) {
 	for fid, f := range gs.Factions {
 		if f.IsEliminated {
 			continue
 		}
-		if len(gs.RegionsOwnedBy(fid)) == 0 {
+		if len(gs.LandRegionsOwnedBy(fid)) == 0 {
 			f.IsEliminated = true
 			// Tüm ordularını haritadan kaldır
 			for aid, a := range gs.Armies {

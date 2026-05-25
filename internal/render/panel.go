@@ -322,6 +322,12 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 		if f.Research.ActiveID != "" {
 			if tech, ok := gs.TechTypes[f.Research.ActiveID]; ok {
 				techStr := tech.NameTR + " (" + itoa(f.Research.TurnsLeft) + " tur)"
+				const victoryCardX = 718.0
+				maxTechW := victoryCardX - rx3 - 12
+				if maxTechW < 40 {
+					maxTechW = 40
+				}
+				techStr = trimTextToWidth(techStr, FaceSmall, maxTechW)
 				DrawText(screen, techStr, rx3, ry+40, FaceSmall, color.RGBA{100, 220, 100, 255})
 			}
 		} else {

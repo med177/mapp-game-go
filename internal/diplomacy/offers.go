@@ -48,5 +48,27 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 			Message:  factionLabel(gs, offer.FromFactionID) + " teklifiniz reddedildi.",
 		}
 	}
-	return Execute(gs, offer.FromFactionID, offer.ToFactionID, action)
+	if action == ActionProposePeace {
+		rel := EnsureRelation(gs, offer.FromFactionID, offer.ToFactionID)
+		if rel.Stance != faction.StanceWar {
+			return Result{Message: "Barış teklifi artık geçerli değil."}
+		}
+		rel.Stance = faction.StancePeace
+		rel.Score = -20
+		removeTradeRoutesBetween(gs, offer.FromFactionID, offer.ToFactionID)
+		return Result{
+			Accepted: true,
+			Applied:  true,
+			Message:  factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
+		}
+	}
+	result := Execute(gs, offer.FromFactionID, offer.ToFactionID, action)
+	if accepted && !result.Applied {
+		return Result{
+			Accepted: false,
+			Applied:  false,
+			Message:  "Teklif koşulları değiştiği için uygulanamadı.",
+		}
+	}
+	return result
 }

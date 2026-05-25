@@ -188,9 +188,20 @@ func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	return result
 }
 
+// LandRegionsOwnedBy bir fraksiyonun sahip olduğu kara bölgelerini döner.
+func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
+	var result []*world.Region
+	for _, r := range s.Regions {
+		if r.OwnerID == string(fid) && !r.IsSea {
+			result = append(result, r)
+		}
+	}
+	return result
+}
+
 // IsEliminated bir fraksiyon elenmiş mi kontrol eder.
 func (s *GameState) IsEliminated(fid faction.FactionID) bool {
-	return len(s.RegionsOwnedBy(fid)) == 0
+	return len(s.LandRegionsOwnedBy(fid)) == 0
 }
 
 // ── Askeri Kapasite ───────────────────────────────────────────────────────

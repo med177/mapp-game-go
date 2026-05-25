@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-25
+last_updated: 2026-05-26
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -56,7 +56,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |
 | Diplomasi | ✅ | `internal/diplomacy` ortak motoru ile savaş/barış/ittifak/ticaret; deterministik kabul-red, ilişki decay'i ve ticaret rotası senkronu |
 | Diplomasi paneli modern akış | ✅ | Solda devlet seçimi + sağda teklif paneli; savaş/barış/ittifak/ticaret için muallak kabul olasılığı (%) ve durum göstergesi bulunur |
-| Elenen fraksiyon diplomasi temizliği | ✅ | Bölgesi biten fraksiyonlar elendiğinde orduları kaldırılır, tüm diplomasi ilişkileri silinir ve diplomasi panelinde artık listelenmez |
+| Elenen fraksiyon diplomasi temizliği | ✅ | Kara toprağı biten fraksiyonlar (sadece deniz bölgesi kalsa bile) elendiğinde kara orduları + donanmaları kaldırılır, tüm diplomasi ilişkileri silinir ve diplomasi panelinde artık listelenmez |
+| Liman işgalinde donanma tahliyesi | ✅ | Bölge el değiştirince, ele geçirilen limana bağlı eski sahip filoları otomatik limandan çıkarılır ve en yakın deniz bölgesine bırakılır |
 | Oyuncuya gelen diplomasi teklif paneli | ✅ | AI barış teklifleri `diplomatic_offers` kuyruğuna düşer; oyuncu modal anlaşma panelinden kabul/red verir, kabulde standart diplomasi motoru uygulanır |
 | Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
 | Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
