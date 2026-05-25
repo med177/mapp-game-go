@@ -56,10 +56,28 @@ func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, 
 	return false
 }
 
+func (g *Game) cancelAllProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) int {
+	kept := g.gs.ProductionQueue[:0]
+	canceled := 0
+	for _, order := range g.gs.ProductionQueue {
+		if order.Kind == kind && order.RegionID == rid && order.TypeID == typeID && order.FactionID == string(ownerID) {
+			canceled++
+			continue
+		}
+		kept = append(kept, order)
+	}
+	for i := len(kept); i < len(g.gs.ProductionQueue); i++ {
+		g.gs.ProductionQueue[i] = state.ProductionOrder{}
+	}
+	g.gs.ProductionQueue = kept
+	return canceled
+}
+
 func (g *Game) applyProductionTicks() []productionResult {
 	queue := g.gs.ProductionQueue
 	remaining := queue[:0]
 	var results []productionResult
+	completedUnitsByRegion := make(map[world.RegionID]int)
 
 	for _, order := range queue {
 		order.TurnsLeft--
@@ -99,11 +117,22 @@ func (g *Game) applyProductionTicks() []productionResult {
 			}
 			results = append(results, result)
 		case productionKindUnit:
+			capacity := g.regionUnitProductionCapacity(region)
+			if completedUnitsByRegion[region.ID] >= capacity {
+				order.TurnsLeft = 1
+				remaining = append(remaining, order)
+				result.delayed = true
+				result.reason = "bolgesel uretim limiti"
+				results = append(results, result)
+				continue
+			}
 			if reason := g.completeUnit(region, faction.FactionID(order.FactionID), order.TypeID); reason != "" {
 				order.TurnsLeft = 1
 				remaining = append(remaining, order)
 				result.delayed = true
 				result.reason = reason
+			} else {
+				completedUnitsByRegion[region.ID]++
 			}
 			results = append(results, result)
 		default:

@@ -72,12 +72,12 @@ func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 // ── Panel layout sabitleri ─────────────────────────────────────────────
 
 const (
-	recruitPanelW = infoPanelW
-	recruitPanelH = infoPanelH
+	recruitPanelW = infoPanelW + 170
+	recruitPanelH = infoPanelH + 140
 )
 
 func recruitPanelX() float32 { return infoPanelX() + infoPanelW + 5 }
-func recruitPanelY() float32 { return infoPanelY() }
+func recruitPanelY() float32 { return float32(ScreenHeight) - recruitPanelH }
 
 type RecruitPanelActionKind int
 
@@ -86,6 +86,7 @@ const (
 	RecruitPanelActionRecruit
 	RecruitPanelActionIncrease
 	RecruitPanelActionDecrease
+	RecruitPanelActionCancel
 )
 
 type RecruitPanelAction struct {
@@ -115,7 +116,7 @@ func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	pw := float64(recruitPanelW)
 	ph := float64(recruitPanelH)
 
-	const headerH = 28.0
+	const headerH = 52.0
 	pad := panelPad
 	availW := pw - pad*2
 	slotW := availW / 3
@@ -151,6 +152,9 @@ func RecruitPanelActionHitTest(mx, my float64, gs *state.GameState, rid world.Re
 	}
 	if recruitPanelStepButtonHit(mx, my, gs, rid, uid, false) {
 		return RecruitPanelAction{Kind: RecruitPanelActionDecrease, UnitID: uid}
+	}
+	if recruitPanelCancelButtonHit(mx, my, gs, rid, uid) {
+		return RecruitPanelAction{Kind: RecruitPanelActionCancel, UnitID: uid}
 	}
 	return RecruitPanelAction{Kind: RecruitPanelActionRecruit, UnitID: uid}
 }
@@ -191,7 +195,12 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	DrawText(screen, "BİRİM OLUŞTUR",
 		float64(px)+float64(pw)/2-titleW/2, float64(py)+8,
 		FaceSmall, color.RGBA{200, 170, 90, 220})
-	sepY := py + 24
+	limit := recruitRegionProductionLimit(region)
+	queuedTotal := queuedUnitTotal(gs, rid)
+	infoStr := fmt.Sprintf("Tur limiti: %d  |  Sirada: %d", limit, queuedTotal)
+	infoW := MeasureText(infoStr, FaceSmall)
+	DrawText(screen, infoStr, float64(px)+float64(pw)/2-infoW/2, float64(py)+28, FaceSmall, color.RGBA{145, 132, 98, 220})
+	sepY := py + 46
 	vector.StrokeLine(screen, px+12, sepY, px+float32(pw)-12, sepY, 1, panelBorder, false)
 
 	// Bölge binaları
@@ -207,16 +216,16 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 
 	// Izgara boyutları
 	const cols = 3
-	const headerH = float32(28)
-	pad := float32(panelPad)
+	const headerH = float32(52)
+	pad := float32(panelPad + 2)
 	availW := float32(pw) - pad*2
 	slotW := availW / float32(cols)
 	slotH := (float32(ph) - headerH - pad) / 4
-	spriteH := slotH * 0.50
-	nameYOff := spriteH + 1
-	costYOff := nameYOff + 12
-	queueYOff := costYOff + 11
-	ctrlBandYOff := slotH - 16
+	spriteH := slotH * 0.66
+	nameYOff := spriteH + 3
+	costYOff := nameYOff + 15
+	queueYOff := costYOff + 14
+	ctrlBandYOff := slotH - 20
 
 	display := visibleUnitIDs(gs, region)
 	for i, uid := range display {
@@ -246,6 +255,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 
 		canAfford := f != nil && f.Gold >= utype.GoldCost
 		fullyAvail := !needsBuilding && !needsTech
+		queued, firstTurn := queuedUnitInfo(gs, rid, uid)
 
 		// Slot arka plan
 		slotBg := color.RGBA{20, 16, 12, 200}
@@ -263,11 +273,19 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 			if !r.Empty() {
 				sub := armySheet.SubImage(r).(*ebiten.Image)
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Scale(
-					float64(innerW-2)/float64(r.Dx()),
-					float64(spriteH-2)/float64(r.Dy()),
+				fitW := float64(innerW - 6)
+				fitH := float64(spriteH - 6)
+				scale := fitW / float64(r.Dx())
+				if hScale := fitH / float64(r.Dy()); hScale < scale {
+					scale = hScale
+				}
+				drawW := float64(r.Dx()) * scale
+				drawH := float64(r.Dy()) * scale
+				op.GeoM.Scale(scale, scale)
+				op.GeoM.Translate(
+					float64(sx)+float64(innerW)/2-drawW/2,
+					float64(sy)+float64(spriteH)/2-drawH/2,
 				)
-				op.GeoM.Translate(float64(sx+1), float64(sy+1))
 				switch {
 				case needsBuilding:
 					op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
@@ -277,6 +295,18 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 					op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
 				}
 				screen.DrawImage(sub, op)
+
+				// Birim görseli üzerinde kalan ilk kuyruk süresi (yoksa taban süre)
+				turnsShown := utype.TurnsRequired
+				if queued > 0 && firstTurn > 0 {
+					turnsShown = firstTurn
+				}
+				turnBadge := itoa(turnsShown) + " Tur"
+				bx := sx + innerW - 50
+				by := sy + 4
+				vector.FillRect(screen, bx, by, 48, 13, color.RGBA{18, 16, 12, 230}, false)
+				vector.StrokeRect(screen, bx, by, 48, 13, 1, color.RGBA{120, 98, 56, 220}, false)
+				DrawTextCentered(screen, turnBadge, float64(bx)+24, float64(by)+2, FaceSmall, color.RGBA{220, 195, 120, 235})
 
 				// Kilit ibaresi — teknoloji eksik
 				if needsTech && !needsBuilding {
@@ -306,7 +336,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		DrawTextCentered(screen, costStr, nameX, float64(sy)+float64(costYOff), FaceSmall, costCol)
 
 		// Kuyruk bilgisi (aynı birim için bekleme görünürlüğü)
-		if queued, firstTurn := queuedUnitInfo(gs, rid, uid); queued > 0 {
+		if queued > 0 {
 			qStr := fmt.Sprintf("Qx%d %dT", queued, firstTurn)
 			DrawTextCentered(screen, qStr, nameX, float64(sy)+float64(queueYOff), FaceSmall, color.RGBA{125, 120, 98, 215})
 		}
@@ -317,14 +347,18 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 				selectedQty = 1
 			}
 			ctrlY := sy + ctrlBandYOff
-			vector.FillRect(screen, sx+1, ctrlY, innerW-2, 14, color.RGBA{18, 15, 12, 235}, false)
-			vector.StrokeRect(screen, sx+1, ctrlY, innerW-2, 14, 1, color.RGBA{120, 98, 56, 220}, false)
+			vector.FillRect(screen, sx+1, ctrlY, innerW-2, 18, color.RGBA{18, 15, 12, 235}, false)
+			vector.StrokeRect(screen, sx+1, ctrlY, innerW-2, 18, 1, color.RGBA{120, 98, 56, 220}, false)
 			qtyY := float64(ctrlY) + 2
 			mx, my, mw, mh := recruitPanelStepButtonRect(gs, rid, uid, false)
 			px, py, pw, ph := recruitPanelStepButtonRect(gs, rid, uid, true)
 			drawTinyPanelButton(screen, mx, my, mw, mh, "-", true)
 			drawTinyPanelButton(screen, px, py, pw, ph, "+", true)
 			DrawTextCentered(screen, "x"+itoa(selectedQty), nameX, qtyY, FaceSmall, ColorGold)
+			if queued > 0 {
+				cx, cy, cw, ch := recruitPanelCancelButtonRect(gs, rid, uid)
+				drawTinyPanelButton(screen, cx, cy, cw, ch, "IPT", true)
+			}
 		}
 	}
 }
@@ -359,6 +393,32 @@ func queuedUnitInfo(gs *state.GameState, rid world.RegionID, uid string) (count 
 	return count, firstTurn
 }
 
+func queuedUnitTotal(gs *state.GameState, rid world.RegionID) int {
+	total := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == "unit" && order.RegionID == rid && order.FactionID == string(gs.PlayerFactionID) {
+			total++
+		}
+	}
+	return total
+}
+
+func recruitRegionProductionLimit(region *world.Region) int {
+	if region == nil || region.IsSea {
+		return 0
+	}
+	limit := region.Population / 100
+	if limit < 1 {
+		limit = 1
+	}
+	for _, bid := range region.Buildings {
+		if bid == "barracks" {
+			limit++
+		}
+	}
+	return limit
+}
+
 func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid string, plus bool) (x, y, w, h float32) {
 	px := recruitPanelX()
 	py := recruitPanelY()
@@ -366,7 +426,7 @@ func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid str
 	ph := recruitPanelH
 
 	const cols = 3
-	const headerH = float32(28)
+	const headerH = float32(52)
 	pad := float32(panelPad)
 	availW := float32(pw) - pad*2
 	slotW := availW / float32(cols)
@@ -389,8 +449,8 @@ func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid str
 	sx := px + pad + float32(col)*slotW
 	sy := py + headerH + float32(row)*slotH
 	innerW := slotW - 3
-	btnW, btnH := float32(16), float32(10)
-	btnY := sy + slotH - 14
+	btnW, btnH := float32(18), float32(14)
+	btnY := sy + slotH - 18
 	if plus {
 		return sx + innerW - btnW - 2, btnY, btnW, btnH
 	}
@@ -399,5 +459,46 @@ func recruitPanelStepButtonRect(gs *state.GameState, rid world.RegionID, uid str
 
 func recruitPanelStepButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID, uid string, plus bool) bool {
 	x, y, w, h := recruitPanelStepButtonRect(gs, rid, uid, plus)
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func recruitPanelCancelButtonRect(gs *state.GameState, rid world.RegionID, uid string) (x, y, w, h float32) {
+	px := recruitPanelX()
+	py := recruitPanelY()
+	pw := recruitPanelW
+	ph := recruitPanelH
+
+	const cols = 3
+	const headerH = float32(52)
+	pad := float32(panelPad)
+	availW := float32(pw) - pad*2
+	slotW := availW / float32(cols)
+	slotH := (float32(ph) - headerH - pad) / 4
+
+	display := visibleUnitIDs(gs, gs.Regions[rid])
+	idx := -1
+	for i := range display {
+		if display[i] == uid {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return 0, 0, 0, 0
+	}
+	col := idx % cols
+	row := idx / cols
+	sx := px + pad + float32(col)*slotW
+	sy := py + headerH + float32(row)*slotH
+	innerW := slotW - 3
+	return sx + innerW - 40, sy + slotH - 18, 38, 14
+}
+
+func recruitPanelCancelButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID, uid string) bool {
+	queued, _ := queuedUnitInfo(gs, rid, uid)
+	if queued <= 0 {
+		return false
+	}
+	x, y, w, h := recruitPanelCancelButtonRect(gs, rid, uid)
 	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
 }

@@ -1625,9 +1625,9 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 	pad := float32(panelPad)
 	availW := panelW - pad*2
 	slotW := availW / float32(cols)
-	spriteH := float32(54)
-	nameH := float32(16)
-	rowH := spriteH + nameH + 5
+	spriteH := float32(60)
+	nameH := float32(18)
+	rowH := spriteH + nameH + 7
 
 	display := visibleBuildingIDs(gs, region)
 	for i, bid := range display {
@@ -1675,11 +1675,19 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			r := buildingSpriteRect(bid, buildingSheet)
 			sub := buildingSheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Scale(
-				float64(innerW-2)/float64(r.Dx()),
-				float64(spriteH-2)/float64(r.Dy()),
+			fitW := float64(innerW - 6)
+			fitH := float64(spriteH - 6)
+			scale := fitW / float64(r.Dx())
+			if hScale := fitH / float64(r.Dy()); hScale < scale {
+				scale = hScale
+			}
+			drawW := float64(r.Dx()) * scale
+			drawH := float64(r.Dy()) * scale
+			op.GeoM.Scale(scale, scale)
+			op.GeoM.Translate(
+				float64(sx)+float64(innerW)/2-drawW/2,
+				float64(sy)+float64(spriteH)/2-drawH/2,
 			)
-			op.GeoM.Translate(float64(sx+1), float64(sy+1))
 			if !isBuilt {
 				if canAfford {
 					op.ColorScale.Scale(0.65, 0.65, 0.65, 0.9)
@@ -1694,7 +1702,7 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 				DrawText(screen, "Lv"+itoa(level), float64(sx)+6, float64(sy)+4, FaceSmall, color.RGBA{245, 225, 160, 235})
 			}
 			if isQueued {
-				qLabel := itoa(turnsLeft) + " tur"
+				qLabel := itoa(turnsLeft) + " Tur"
 				if queuedCount > 1 {
 					qLabel = "x" + itoa(queuedCount) + " " + qLabel
 				}

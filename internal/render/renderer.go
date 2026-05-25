@@ -6134,6 +6134,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		case RecruitPanelActionRecruit:
 			r.ensureRecruitSelection(act.UnitID)
 			return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: act.UnitID, Quantity: r.recruitQty}
+		case RecruitPanelActionCancel:
+			r.ensureRecruitSelection(act.UnitID)
+			return InputAction{Kind: ActionCancelRecruitQueue, TargetRegion: r.SelectedRegion, BuildingID: act.UnitID}
 		}
 	}
 	if RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {

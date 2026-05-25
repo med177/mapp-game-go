@@ -10,27 +10,28 @@ import (
 type ActionKind string
 
 const (
-	ActionNone              ActionKind = ""
-	ActionEndTurn           ActionKind = "end_turn"
-	ActionConfirmEndTurn    ActionKind = "confirm_end_turn"
-	ActionSelectArmy        ActionKind = "select_army"
-	ActionMoveArmy          ActionKind = "move_army"
-	ActionRecruitUnit       ActionKind = "recruit_unit"
-	ActionBuild             ActionKind = "build"
-	ActionDeclareWar        ActionKind = "declare_war"
-	ActionProposePeace      ActionKind = "propose_peace"
-	ActionSave              ActionKind = "save"
-	ActionLoad              ActionKind = "load"
-	ActionSelectFaction     ActionKind = "select_faction"
-	ActionAdjustTax         ActionKind = "adjust_tax"      // Delta: +5 veya -5
-	ActionResearch          ActionKind = "research"        // BuildingID = tech ID
-	ActionCancelResearch    ActionKind = "cancel_research" // teknoloji araştırmasını iptal et
-	ActionSelectVictory     ActionKind = "select_victory"  // BuildingID = VictoryType
-	ActionProposeAlliance   ActionKind = "propose_alliance"
-	ActionProposeTrade      ActionKind = "propose_trade"
-	ActionRecruitNaval      ActionKind = "recruit_naval"
-	ActionRecruitSpecific   ActionKind = "recruit_specific"     // BuildingID = unit type ID
-	ActionDeclareWarAndMove ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
+	ActionNone               ActionKind = ""
+	ActionEndTurn            ActionKind = "end_turn"
+	ActionConfirmEndTurn     ActionKind = "confirm_end_turn"
+	ActionSelectArmy         ActionKind = "select_army"
+	ActionMoveArmy           ActionKind = "move_army"
+	ActionRecruitUnit        ActionKind = "recruit_unit"
+	ActionBuild              ActionKind = "build"
+	ActionDeclareWar         ActionKind = "declare_war"
+	ActionProposePeace       ActionKind = "propose_peace"
+	ActionSave               ActionKind = "save"
+	ActionLoad               ActionKind = "load"
+	ActionSelectFaction      ActionKind = "select_faction"
+	ActionAdjustTax          ActionKind = "adjust_tax"      // Delta: +5 veya -5
+	ActionResearch           ActionKind = "research"        // BuildingID = tech ID
+	ActionCancelResearch     ActionKind = "cancel_research" // teknoloji araştırmasını iptal et
+	ActionSelectVictory      ActionKind = "select_victory"  // BuildingID = VictoryType
+	ActionProposeAlliance    ActionKind = "propose_alliance"
+	ActionProposeTrade       ActionKind = "propose_trade"
+	ActionRecruitNaval       ActionKind = "recruit_naval"
+	ActionRecruitSpecific    ActionKind = "recruit_specific"     // BuildingID = unit type ID
+	ActionCancelRecruitQueue ActionKind = "cancel_recruit_queue" // BuildingID = unit type ID (seçili bölgede kuyruktaki tüm emirleri iptal et)
+	ActionDeclareWarAndMove  ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"
 	ActionContinue                  ActionKind = "continue"

@@ -206,6 +206,8 @@ func (g *Game) Update() error {
 			g.recruitNaval(action.TargetRegion)
 		case render.ActionRecruitSpecific:
 			g.recruitSpecific(action.TargetRegion, action.BuildingID, action.Quantity)
+		case render.ActionCancelRecruitQueue:
+			g.cancelRecruitQueue(action.TargetRegion, action.BuildingID)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
@@ -1099,11 +1101,6 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	if !ok {
 		return
 	}
-	if g.cancelProduction(productionKindUnit, rid, unitTypeID, g.gs.PlayerFactionID) {
-		f.Gold += utype.GoldCost
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi iptal edildi. %d altın iade edildi.", utype.NameTR, utype.GoldCost))
-		return
-	}
 
 	// Bina kontrolü
 	hasBldg := false
@@ -1132,18 +1129,6 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	if f.Gold < utype.GoldCost {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
 		return
-	}
-
-	// Bölgesel üretim kapasitesi: nüfus + kışla etkisi
-	capacity := g.regionUnitProductionCapacity(region)
-	queuedInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
-	freeSlots := capacity - queuedInRegion
-	if freeSlots <= 0 {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Bu bölgede üretim kapasitesi dolu! (%d/%d)", queuedInRegion, capacity))
-		return
-	}
-	if quantity > freeSlots {
-		quantity = freeSlots
 	}
 
 	// Deniz birimi — tamamlandığında komşu deniz bölgesine yerleşir.
@@ -1239,6 +1224,29 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
 	}
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
+}
+
+func (g *Game) cancelRecruitQueue(rid world.RegionID, unitTypeID string) {
+	region, ok := g.gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
+		return
+	}
+	utype, ok := g.gs.UnitTypes[unitTypeID]
+	if !ok {
+		return
+	}
+	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
+	if !ok {
+		return
+	}
+	canceled := g.cancelAllProduction(productionKindUnit, rid, unitTypeID, g.gs.PlayerFactionID)
+	if canceled <= 0 {
+		g.renderer.ShowCombatResult("Iptal edilecek birim emri bulunamadi.")
+		return
+	}
+	refund := canceled * utype.GoldCost
+	f.Gold += refund
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s kuyrugu iptal edildi: %d emir, %d altin iade.", utype.NameTR, canceled, refund))
 }
 
 func (g *Game) regionUnitProductionCapacity(region *world.Region) int {

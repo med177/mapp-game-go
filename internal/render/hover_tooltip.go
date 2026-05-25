@@ -161,8 +161,19 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 		if !r.Empty() {
 			sub := armySheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Scale(70/float64(r.Dx()), 58/float64(r.Dy()))
-			op.GeoM.Translate(x+10, y+14)
+			fitW := 70.0
+			fitH := 58.0
+			scale := fitW / float64(r.Dx())
+			if hScale := fitH / float64(r.Dy()); hScale < scale {
+				scale = hScale
+			}
+			drawW := float64(r.Dx()) * scale
+			drawH := float64(r.Dy()) * scale
+			op.GeoM.Scale(scale, scale)
+			op.GeoM.Translate(
+				x+10+(fitW-drawW)/2,
+				y+14+(fitH-drawH)/2,
+			)
 			screen.DrawImage(sub, op)
 		}
 	}
