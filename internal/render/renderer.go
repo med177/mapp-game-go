@@ -59,6 +59,8 @@ type Renderer struct {
 	showDiplomacy   bool
 	diplomacyFocus  int
 	diplomacyScroll int
+	diplomacyActionFocus int
+	diplomacyTargetFaction faction.FactionID
 
 	// Teknoloji paneli
 	showTech   bool
@@ -706,7 +708,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll)
+		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction)
 	}
 
 	// 8. Teknoloji paneli (üst katman)
@@ -5805,6 +5807,7 @@ func (r *Renderer) HandleInput() InputAction {
 			r.SelectedArmy = ""
 			r.SelectedRegion = ""
 			r.showDiplomacy = false
+			r.diplomacyTargetFaction = ""
 			r.showTech = false
 		} else {
 			r.pauseCursor = 0
@@ -5815,6 +5818,8 @@ func (r *Renderer) HandleInput() InputAction {
 		r.showDiplomacy = true
 		r.diplomacyFocus = 0
 		r.diplomacyScroll = 0
+		r.diplomacyActionFocus = 0
+		r.diplomacyTargetFaction = ""
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyM) {
@@ -6015,6 +6020,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showTech = false
 		r.diplomacyFocus = 0
 		r.diplomacyScroll = 0
+		r.diplomacyActionFocus = 0
+		r.diplomacyTargetFaction = ""
 		return InputAction{}
 	}
 	if fx >= float64(rects[1][0]) && fx <= float64(rects[1][0]+rects[1][2]) &&

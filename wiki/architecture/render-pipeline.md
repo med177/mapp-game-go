@@ -67,6 +67,7 @@ type Renderer struct {
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) harita üstünde modal anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
+Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür.
 
 ---
 

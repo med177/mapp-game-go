@@ -12,12 +12,66 @@ import (
 )
 
 const (
-	diplomStartY = 80.0
-	diplomRowH   = 52.0
+	diplomRowH = 58.0
 )
 
+type diplomAction struct {
+	label  string
+	color  color.RGBA
+	action ActionKind
+}
+
+var diplomActions = []diplomAction{
+	{"Savaş", color.RGBA{180, 50, 50, 220}, ActionDeclareWar},
+	{"Barış", color.RGBA{50, 120, 180, 220}, ActionProposePeace},
+	{"İttifak", color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
+	{"Ticaret", color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
+}
+
+func minF(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+type rectF struct {
+	x float64
+	y float64
+	w float64
+	h float64
+}
+
+func listPageRect() rectF {
+	w := minF(ScreenWidth-80, 1100)
+	h := ScreenHeight - 190
+	if h < 240 {
+		h = 240
+	}
+	x := (ScreenWidth - w) / 2
+	y := (ScreenHeight - h) / 2
+	return rectF{x: x, y: y, w: w, h: h}
+}
+
+func offerPageRect() rectF {
+	w := minF(ScreenWidth-120, 760)
+	h := minF(ScreenHeight-180, 600)
+	if h < 360 {
+		h = 360
+	}
+	x := (ScreenWidth - w) / 2
+	y := (ScreenHeight - h) / 2
+	return rectF{x: x, y: y, w: w, h: h}
+}
+
+func listRowStartY() float64 {
+	return listPageRect().y + 52
+}
+
 func diplomVisibleRows() int {
-	rows := int((ScreenHeight - diplomStartY - 24) / diplomRowH)
+	r := listPageRect()
+	usable := r.h - 70
+	rows := int(usable / diplomRowH)
 	if rows < 1 {
 		return 1
 	}
@@ -65,102 +119,158 @@ func ensureDiplomFocusVisible(total, focus, scroll int) int {
 	return scroll
 }
 
-type diplomAction struct {
-	label  string
-	color  color.RGBA
-	action ActionKind
-}
-
-var diplomActions = []diplomAction{
-	{"Savaş", color.RGBA{180, 50, 50, 220}, ActionDeclareWar},
-	{"Barış", color.RGBA{50, 120, 180, 220}, ActionProposePeace},
-	{"İttifak", color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
-	{"Ticaret", color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
-}
-
-// diplomRowRect seçili satırdaki i. aksiyon butonunun dikdörtgenini döner.
-func diplomActionRect(rowY float64, i int) (x, y, w, h float32) {
-	btnW := float32(80)
-	btnH := float32(22)
-	gap := float32(6)
-	rightEdge := float32(ScreenWidth) - 60
-	x = rightEdge - float32(len(diplomActions))*(btnW+gap) + float32(i)*(btnW+gap)
-	y = float32(rowY) + float32((diplomRowH-float64(btnH))/2)
+func diplomActionRect(i int) (x, y, w, h float32) {
+	p := offerPageRect()
+	btnW := float32(p.w - 40)
+	btnH := float32(42)
+	gap := float32(12)
+	x = float32(p.x + 20)
+	y = float32(p.y + 190 + float64(i)*(float64(btnH)+float64(gap)))
 	return x, y, btnW, btnH
 }
 
+func diplomSendRect() (x, y, w, h float32) {
+	p := offerPageRect()
+	w = float32((p.w - 52) / 2)
+	h = 40
+	x = float32(p.x + p.w - 20 - float64(w))
+	y = float32(p.y + p.h - 64)
+	return x, y, w, h
+}
+
+func diplomBackRect() (x, y, w, h float32) {
+	p := offerPageRect()
+	w = float32((p.w - 52) / 2)
+	h = 40
+	x = float32(p.x + 20)
+	y = float32(p.y + p.h - 64)
+	return x, y, w, h
+}
+
 // DrawDiplomacyPanel diplomasi panelini çizer.
-func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll int) {
+func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) {
 	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
 	overlay.Fill(color.RGBA{8, 6, 4, 220})
 	screen.DrawImage(overlay, nil)
 
 	DrawTextCentered(screen, "── Diplomasi ──", ScreenWidth/2, 24, FaceLarge, ColorYellow)
 	drawDiplomacyCloseButton(screen)
-	DrawText(screen, "Sol tık: Seç   Butonlarla aksiyon",
-		30, 50, FaceSmall, ColorGray)
 
 	factions := sortedFactions(gs)
 	scroll = clampDiplomScroll(len(factions), scroll)
+	focusIdx = clampDiplomFocus(focusIdx, 0, len(factions)-1)
 	start := scroll
 	end := start + diplomVisibleRows()
 	if end > len(factions) {
 		end = len(factions)
 	}
 
+	if target == "" {
+		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end)
+	} else {
+		drawDiplomacyOfferPanel(screen, gs, target, actionFocus)
+	}
+
+	if target == "" && len(factions) > end-start {
+		info := "Liste: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
+		DrawText(screen, info, listPageRect().x+8, listPageRect().y+listPageRect().h-18, FaceSmall, ColorGray)
+	}
+}
+
+func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int) {
+	r := listPageRect()
+	vector.FillRect(screen, float32(r.x), float32(r.y), float32(r.w), float32(r.h), color.RGBA{18, 16, 12, 210}, false)
+	vector.StrokeRect(screen, float32(r.x), float32(r.y), float32(r.w), float32(r.h), 1, panelBorder, false)
+	DrawText(screen, "Devlet seçin", r.x+14, r.y+14, FaceSmall, ColorGray)
+
 	for row, i := 0, start; i < end; i, row = i+1, row+1 {
 		fid := factions[i]
 		f := gs.Factions[fid]
 		rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
 
-		y := diplomStartY + float64(row)*diplomRowH
+		y := listRowStartY() + float64(row)*diplomRowH
 		rowCol := color.RGBA{25, 20, 14, 200}
 		if i == focusIdx {
-			rowCol = color.RGBA{55, 45, 25, 230}
+			rowCol = color.RGBA{70, 58, 30, 235}
 		}
-		vector.FillRect(screen, 28, float32(y), float32(ScreenWidth)-56, float32(diplomRowH-4), rowCol, false)
+		vector.FillRect(screen, float32(r.x+8), float32(y), float32(r.w-16), float32(diplomRowH-4), rowCol, false)
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-		vector.FillRect(screen, 28, float32(y), 6, float32(diplomRowH-4), fc, false)
+		vector.FillRect(screen, float32(r.x+8), float32(y), 6, float32(diplomRowH-4), fc, false)
 
-		DrawText(screen, f.NameTR, 42, y+6, FaceMed, ColorWhite)
+		DrawText(screen, f.NameTR, r.x+16, y+7, FaceMed, ColorWhite)
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		DrawText(screen, itoa(regionCount)+" bölge", 42, y+24, FaceSmall, ColorGray)
+		DrawText(screen, itoa(regionCount)+" bölge", r.x+16, y+29, FaceSmall, ColorGray)
 
+		statusX := r.x + r.w - 240
 		if rel != nil {
 			stanceCol, stanceTR := stanceDisplay(rel.Stance)
-			DrawText(screen, stanceTR, 300, y+6, FaceMed, stanceCol)
+			DrawText(screen, stanceTR, statusX, y+7, FaceMed, stanceCol)
 			scoreCol := scoreColor(rel.Score)
-			DrawText(screen, "İlişki: "+itoa(rel.Score), 300, y+24, FaceSmall, scoreCol)
+			DrawText(screen, "İlişki: "+itoa(rel.Score), statusX, y+29, FaceSmall, scoreCol)
 		} else {
-			DrawText(screen, "Tarafsız", 300, y+6, FaceMed, ColorGray)
-		}
-
-		armyCount := 0
-		for _, a := range gs.Armies {
-			if a.OwnerID == string(fid) {
-				armyCount++
-			}
-		}
-		DrawText(screen, itoa(armyCount)+" ordu", 500, y+6, FaceSmall, ColorGray)
-
-		// Seçili satırda aksiyon butonları
-		if i == focusIdx {
-			for j, da := range diplomActions {
-				bx, by, bw, bh := diplomActionRect(y, j)
-				vector.FillRect(screen, bx, by, bw, bh, da.color, false)
-				vector.StrokeRect(screen, bx, by, bw, bh, 1, panelBorder, false)
-				tw := MeasureText(da.label, FaceSmall)
-				DrawText(screen, da.label, float64(bx)+float64(bw)/2-tw/2, float64(by)+4, FaceSmall, ColorWhite)
-			}
+			DrawText(screen, "Tarafsız", statusX, y+7, FaceMed, ColorGray)
 		}
 	}
+}
 
-	// Basit sayfa göstergesi
-	if len(factions) > end-start {
-		info := "Liste: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
-		DrawText(screen, info, 30, ScreenHeight-20, FaceSmall, ColorGray)
+func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID, actionFocus int) {
+	f := gs.Factions[target]
+	if f == nil {
+		return
 	}
+	p := offerPageRect()
+	vector.FillRect(screen, float32(p.x), float32(p.y), float32(p.w), float32(p.h), color.RGBA{16, 14, 10, 220}, false)
+	vector.StrokeRect(screen, float32(p.x), float32(p.y), float32(p.w), float32(p.h), 1, panelBorder, false)
+
+	DrawText(screen, "Teklif Paneli", p.x+20, p.y+20, FaceLarge, ColorGold)
+	bx, by, bw, bh := diplomBackRect()
+	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{70, 70, 70, 230}, false)
+	vector.StrokeRect(screen, bx, by, bw, bh, 1, panelBorder, false)
+	backLabel := "← Geri"
+	blw := MeasureText(backLabel, FaceMed)
+	DrawText(screen, backLabel, float64(bx)+float64(bw)/2-blw/2, float64(by)+10, FaceMed, ColorWhite)
+	DrawText(screen, "Hedef: "+f.NameTR, p.x+20, p.y+52, FaceMed, ColorWhite)
+
+	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
+	relScore := 0
+	relStance := faction.StancePeace
+	if rel != nil {
+		relScore = rel.Score
+		relStance = rel.Stance
+	}
+	DrawText(screen, "Durum: "+stanceDisplayText(relStance), p.x+20, p.y+76, FaceSmall, ColorGray)
+	DrawText(screen, "İlişki Skoru: "+itoa(relScore), p.x+20, p.y+96, FaceSmall, scoreColor(relScore))
+
+	DrawText(screen, "Teklif Türü", p.x+20, p.y+126, FaceMed, ColorGray)
+	for i, da := range diplomActions {
+		chance, status := estimateDiplomacyChance(gs, target, da.action)
+		bx, by, bw, bh := diplomActionRect(i)
+		bg := da.color
+		if i != actionFocus {
+			bg.A = 170
+		}
+		vector.FillRect(screen, bx, by, bw, bh, bg, false)
+		vector.StrokeRect(screen, bx, by, bw, bh, 1, panelBorder, false)
+		DrawText(screen, da.label, float64(bx)+14, float64(by)+7, FaceMed, ColorWhite)
+		chanceText := "%" + itoa(chance)
+		cw := MeasureText(chanceText, FaceMed)
+		DrawText(screen, chanceText, float64(bx)+float64(bw)-cw-14, float64(by)+7, FaceMed, ColorWhite)
+		DrawText(screen, status, float64(bx)+14, float64(by)+25, FaceSmall, color.RGBA{235, 230, 210, 230})
+	}
+
+	_, lastBY, _, lastBH := diplomActionRect(len(diplomActions) - 1)
+	selected := "Seçili teklif: " + diplomActions[actionFocus].label
+	slw := MeasureText(selected, FaceSmall)
+	selectedY := float64(lastBY + lastBH + 24)
+	DrawText(screen, selected, p.x+p.w/2-slw/2, selectedY, FaceSmall, ColorGray)
+
+	sx, sy, sw, sh := diplomSendRect()
+	vector.FillRect(screen, sx, sy, sw, sh, color.RGBA{48, 130, 72, 235}, false)
+	vector.StrokeRect(screen, sx, sy, sw, sh, 1, panelBorder, false)
+	sendLabel := "Teklif Gönder"
+	lw := MeasureText(sendLabel, FaceMed)
+	DrawText(screen, sendLabel, float64(sx)+float64(sw)/2-lw/2, float64(sy)+10, FaceMed, ColorWhite)
 }
 
 func diplomacyCloseRect() (x, y, w, h float32) {
@@ -189,6 +299,7 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 	}
 	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 	r.diplomacyFocus = clampDiplomFocus(r.diplomacyFocus, 0, n-1)
+	r.diplomacyActionFocus = clampDiplomFocus(r.diplomacyActionFocus, 0, len(diplomActions)-1)
 	r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 
 	mx, my := ebiten.CursorPosition()
@@ -202,35 +313,53 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 	}
 	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 
-	// Hover → satır güncelle
 	start := r.diplomacyScroll
 	end := start + diplomVisibleRows()
 	if end > n {
 		end = n
 	}
 	for row, i := 0, start; i < end; i, row = i+1, row+1 {
-		y := diplomStartY + float64(row)*diplomRowH
-		if fy >= y && fy <= y+diplomRowH-4 && fx >= 28 && fx <= ScreenWidth-56 {
-			r.diplomacyFocus = i
-			break
+		y := listRowStartY() + float64(row)*diplomRowH
+		if fy >= y && fy <= y+diplomRowH-4 {
+			rr := listPageRect()
+			if fx >= rr.x+8 && fx <= rr.x+rr.w-8 {
+				r.diplomacyFocus = i
+				break
+			}
 		}
 	}
 
-	// Sol tık → aksiyon butonu veya satır seçimi
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if diplomacyCloseHit(fx, fy) {
 			r.showDiplomacy = false
+			r.diplomacyTargetFaction = ""
 			return InputAction{}
 		}
-		if r.diplomacyFocus < len(factions) {
-			target := factions[r.diplomacyFocus]
-			y := diplomStartY + float64(r.diplomacyFocus-r.diplomacyScroll)*diplomRowH
-			for j, da := range diplomActions {
-				bx, by, bw, bh := diplomActionRect(y, j)
-				if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
-					r.showDiplomacy = false
-					return InputAction{Kind: da.action, TargetFaction: target}
+		if r.diplomacyTargetFaction == "" {
+			if r.diplomacyFocus < len(factions) {
+				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
+				r.diplomacyActionFocus = 0
+				return InputAction{}
+			}
+		} else {
+			bx, by, bw, bh := diplomBackRect()
+			if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
+				r.diplomacyTargetFaction = ""
+				return InputAction{}
+			}
+			for j := range diplomActions {
+				ax, ay, aw, ah := diplomActionRect(j)
+				if fx >= float64(ax) && fx <= float64(ax+aw) && fy >= float64(ay) && fy <= float64(ay+ah) {
+					r.diplomacyActionFocus = j
+					return InputAction{}
 				}
+			}
+			sx, sy, sw, sh := diplomSendRect()
+			if fx >= float64(sx) && fx <= float64(sx+sw) && fy >= float64(sy) && fy <= float64(sy+sh) {
+				target := r.diplomacyTargetFaction
+				r.showDiplomacy = false
+				r.diplomacyTargetFaction = ""
+				return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
 			}
 		}
 	}
@@ -243,27 +372,34 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 		r.diplomacyFocus--
 		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
+	if r.diplomacyTargetFaction != "" {
+		if r.keyJustPressed(ebiten.KeyArrowRight) && r.diplomacyActionFocus < len(diplomActions)-1 {
+			r.diplomacyActionFocus++
+		}
+		if r.keyJustPressed(ebiten.KeyArrowLeft) && r.diplomacyActionFocus > 0 {
+			r.diplomacyActionFocus--
+		}
+	}
 	if r.keyJustPressed(ebiten.KeyTab) || r.keyJustPressed(ebiten.KeyEscape) {
-		r.showDiplomacy = false
+		if r.diplomacyTargetFaction != "" {
+			r.diplomacyTargetFaction = ""
+		} else {
+			r.showDiplomacy = false
+		}
 		return InputAction{}
 	}
-	if r.diplomacyFocus < len(factions) {
-		target := factions[r.diplomacyFocus]
-		if r.keyJustPressed(ebiten.KeyW) {
+	if r.keyJustPressed(ebiten.KeyEnter) {
+		if r.diplomacyTargetFaction == "" {
+			if r.diplomacyFocus < len(factions) {
+				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
+				r.diplomacyActionFocus = 0
+				return InputAction{}
+			}
+		} else {
+			target := r.diplomacyTargetFaction
 			r.showDiplomacy = false
-			return InputAction{Kind: ActionDeclareWar, TargetFaction: target}
-		}
-		if r.keyJustPressed(ebiten.KeyP) {
-			r.showDiplomacy = false
-			return InputAction{Kind: ActionProposePeace, TargetFaction: target}
-		}
-		if r.keyJustPressed(ebiten.KeyA) {
-			r.showDiplomacy = false
-			return InputAction{Kind: ActionProposeAlliance, TargetFaction: target}
-		}
-		if r.keyJustPressed(ebiten.KeyC) {
-			r.showDiplomacy = false
-			return InputAction{Kind: ActionProposeTrade, TargetFaction: target}
+			r.diplomacyTargetFaction = ""
+			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
 		}
 	}
 	return InputAction{}
@@ -297,6 +433,11 @@ func stanceDisplay(s faction.DiplomaticStance) (color.Color, string) {
 	}
 }
 
+func stanceDisplayText(s faction.DiplomaticStance) string {
+	_, label := stanceDisplay(s)
+	return label
+}
+
 func scoreColor(score int) color.Color {
 	if score >= 50 {
 		return color.RGBA{60, 220, 60, 255}
@@ -308,4 +449,61 @@ func scoreColor(score int) color.Color {
 		return color.RGBA{220, 160, 60, 255}
 	}
 	return ColorRed
+}
+
+func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, action ActionKind) (int, string) {
+	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
+	score := 0
+	stance := faction.StancePeace
+	if rel != nil {
+		score = rel.Score
+		stance = rel.Stance
+	}
+	playerRegions := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
+	targetRegions := len(gs.RegionsOwnedBy(target))
+	regionDelta := playerRegions - targetRegions
+
+	chance := 50 + score/2
+	switch action {
+	case ActionDeclareWar:
+		if stance == faction.StanceWar {
+			chance = 0
+		} else {
+			chance = 100
+		}
+	case ActionProposePeace:
+		if stance != faction.StanceWar {
+			chance = 0
+		} else {
+			chance = 35 + (-score/2) + regionDelta*4
+		}
+	case ActionProposeAlliance:
+		if stance == faction.StanceWar {
+			chance = 0
+		} else {
+			chance = 15 + score + regionDelta*2
+		}
+	case ActionProposeTrade:
+		if stance == faction.StanceWar {
+			chance = 0
+		} else {
+			chance = 40 + score + regionDelta
+		}
+	}
+	if chance < 0 {
+		chance = 0
+	}
+	if chance > 100 {
+		chance = 100
+	}
+	switch {
+	case chance == 0:
+		return chance, "Geçersiz / Mümkün değil"
+	case chance >= 75:
+		return chance, "Yüksek kabul olasılığı"
+	case chance >= 45:
+		return chance, "Orta kabul olasılığı"
+	default:
+		return chance, "Düşük kabul olasılığı"
+	}
 }

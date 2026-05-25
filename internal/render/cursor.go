@@ -218,6 +218,20 @@ func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
 	if diplomacyCloseHit(fx, fy) {
 		return true
 	}
+	if r.diplomacyTargetFaction != "" {
+		bx, by, bw, bh := diplomBackRect()
+		if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
+			return true
+		}
+		for j := range diplomActions {
+			ax, ay, aw, ah := diplomActionRect(j)
+			if fx >= float64(ax) && fx <= float64(ax+aw) && fy >= float64(ay) && fy <= float64(ay+ah) {
+				return true
+			}
+		}
+		sx, sy, sw, sh := diplomSendRect()
+		return fx >= float64(sx) && fx <= float64(sx+sw) && fy >= float64(sy) && fy <= float64(sy+sh)
+	}
 	factions := sortedFactions(r.gs)
 	start := clampDiplomScroll(len(factions), r.diplomacyScroll)
 	end := start + diplomVisibleRows()
@@ -225,17 +239,10 @@ func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
 		end = len(factions)
 	}
 	for row, i := 0, start; i < end; i, row = i+1, row+1 {
-		y := diplomStartY + float64(row)*diplomRowH
-		if fy >= y && fy <= y+diplomRowH-4 && fx >= 28 && fx <= ScreenWidth-56 {
+		y := listRowStartY() + float64(row)*diplomRowH
+		lr := listPageRect()
+		if fy >= y && fy <= y+diplomRowH-4 && fx >= lr.x+8 && fx <= lr.x+lr.w-8 {
 			return true
-		}
-		if i == r.diplomacyFocus {
-			for j := range diplomActions {
-				bx, by, bw, bh := diplomActionRect(y, j)
-				if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
-					return true
-				}
-			}
 		}
 	}
 	return false
