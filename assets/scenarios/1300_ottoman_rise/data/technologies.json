@@ -44,7 +44,7 @@
     "name_tr": "Kuşatma Makineleri",
     "category": "military",
     "description_tr": "Topçu birimlerinin gücü +25%",
-    "gold_cost": 3,
+    "gold_cost": 30,
     "turns_required": 5,
     "requires": [
       "steel_blades"
@@ -193,6 +193,165 @@
     ],
     "effects": {
       "conversion_speed_mod": 1.0
+    }
+  },
+  {
+    "id": "horse_breeding",
+    "name_tr": "At Yetiştiriciliği",
+    "category": "military",
+    "description_tr": "Süvari eğitim altyapısı kurulumu; hafif süvari açılır.",
+    "gold_cost": 16,
+    "turns_required": 3,
+    "requires": [],
+    "effects": {
+      "cavalry_attack_mod": 0.05
+    }
+  },
+  {
+    "id": "plate_armor",
+    "name_tr": "Plaka Zırh",
+    "category": "military",
+    "description_tr": "Ağır süvari ve elit piyade için zırh standardı.",
+    "gold_cost": 34,
+    "turns_required": 5,
+    "requires": [
+      "heavy_armor",
+      "steel_blades"
+    ],
+    "effects": {
+      "land_defense_mod": 0.10
+    }
+  },
+  {
+    "id": "engineering_corps",
+    "name_tr": "Mühendis Ocakları",
+    "category": "military",
+    "description_tr": "Kuşatma ekipleri ve istihkâm organizasyonu.",
+    "gold_cost": 22,
+    "turns_required": 4,
+    "requires": [
+      "iron_weapons"
+    ],
+    "effects": {
+      "siege_attack_mod": 0.10
+    }
+  },
+  {
+    "id": "gunpowder",
+    "name_tr": "Barut Formülleri",
+    "category": "military",
+    "description_tr": "Bombarda gibi erken barutlu kuşatma silahlarını açar.",
+    "gold_cost": 38,
+    "turns_required": 6,
+    "requires": [
+      "siege_engines",
+      "engineering_corps"
+    ],
+    "effects": {
+      "siege_attack_mod": 0.15
+    }
+  },
+  {
+    "id": "cast_bronze_cannon",
+    "name_tr": "Bronz Top Dökümü",
+    "category": "military",
+    "description_tr": "Tam ölçekli top üretim teknikleri.",
+    "gold_cost": 55,
+    "turns_required": 7,
+    "requires": [
+      "gunpowder"
+    ],
+    "effects": {
+      "siege_attack_mod": 0.20
+    }
+  },
+  {
+    "id": "harbor_administration",
+    "name_tr": "Liman İdaresi",
+    "category": "naval",
+    "description_tr": "Ticaret filolarının kayıt ve ikmal sistemi.",
+    "gold_cost": 16,
+    "turns_required": 3,
+    "requires": [
+      "trade_routes"
+    ],
+    "effects": {
+      "gold_per_region": 2
+    }
+  },
+  {
+    "id": "naval_doctrine",
+    "name_tr": "Donanma Doktrini",
+    "category": "naval",
+    "description_tr": "Savaş gemisi manevra ve çatışma doktrini.",
+    "gold_cost": 28,
+    "turns_required": 4,
+    "requires": [
+      "navigation"
+    ],
+    "effects": {
+      "naval_move_bonus": 1,
+      "naval_attack_mod": 0.10,
+      "naval_defense_mod": 0.08
+    }
+  },
+  {
+    "id": "open_sea_convoys",
+    "name_tr": "Açık Deniz Konvoyları",
+    "category": "naval",
+    "description_tr": "Uzak deniz ticaret hatlarını güvenli hale getirir.",
+    "gold_cost": 30,
+    "turns_required": 5,
+    "requires": [
+      "harbor_administration",
+      "cartography"
+    ],
+    "effects": {
+      "gold_per_region": 3
+    }
+  },
+  {
+    "id": "state_granaries",
+    "name_tr": "Devlet Ambarları",
+    "category": "economy",
+    "description_tr": "Kıtlık şoklarını azaltan tahıl depolama reformu.",
+    "gold_cost": 24,
+    "turns_required": 4,
+    "requires": [
+      "crop_rotation"
+    ],
+    "effects": {
+      "grain_mod": 0.15
+    }
+  },
+  {
+    "id": "tax_registers",
+    "name_tr": "Tahrir Defterleri",
+    "category": "economy",
+    "description_tr": "Vergi kaydı standardizasyonu ile gelir artışı.",
+    "gold_cost": 22,
+    "turns_required": 4,
+    "requires": [
+      "trade_routes"
+    ],
+    "effects": {
+      "gold_per_region": 4
+    }
+  },
+  {
+    "id": "latin_naval_architecture",
+    "name_tr": "Latin Deniz Mimarisi",
+    "category": "naval",
+    "description_tr": "Venedik ve Ceneviz tersane geleneğiyle kadırga savaş kapasitesi artar.",
+    "gold_cost": 34,
+    "turns_required": 5,
+    "requires": [
+      "naval_doctrine",
+      "harbor_administration"
+    ],
+    "effects": {
+      "naval_attack_mod": 0.22,
+      "naval_defense_mod": 0.16
     }
   }
 ]

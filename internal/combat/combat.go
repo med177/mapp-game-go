@@ -9,8 +9,10 @@ import (
 
 // TechMods savaşa etki eden teknoloji çarpanları.
 type TechMods struct {
-	AttackMod  float64 // toplam saldırı çarpanı (ör. 0.10 = +10%)
-	DefenseMod float64 // toplam savunma çarpanı
+	AttackMod       float64 // kara saldırı çarpanı (ör. 0.10 = +10%)
+	DefenseMod      float64 // kara savunma çarpanı
+	NavalAttackMod  float64 // deniz saldırı çarpanı
+	NavalDefenseMod float64 // deniz savunma çarpanı
 }
 
 // Result savaşın sonucunu özetler.
@@ -28,8 +30,14 @@ func ResolveBattle(atk, def *army.Army, terrain world.TerrainType, types map[str
 
 // ResolveBattleWithMods teknoloji modlarını dahil ederek savaşı hesaplar.
 func ResolveBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods) Result {
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkMods.AttackMod)
-	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defMods.DefenseMod)
+	atkAttackMod := atkMods.AttackMod
+	defDefenseMod := defMods.DefenseMod
+	if atk.IsNaval {
+		atkAttackMod = atkMods.NavalAttackMod
+		defDefenseMod = defMods.NavalDefenseMod
+	}
+	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod)
+	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod)
 
 	attackerWins, atkLoss, defLoss := calculateOutcome(atkStr, defStr)
 

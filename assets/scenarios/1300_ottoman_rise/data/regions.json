@@ -40,7 +40,9 @@
     "population": 400,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "wessex",
@@ -375,8 +377,8 @@
   },
   {
     "id": "new_region_228",
-    "name": "ireland",
-    "name_tr": "İrlanda",
+    "name": "the_pale",
+    "name_tr": "The Pale (İrlanda İngiliz Bölgesi)",
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
@@ -390,19 +392,19 @@
     "shape_id": "IRL",
     "settlements": [
       {
-        "id": "ireland_main",
-        "name_tr": "İrlanda",
-        "x": 347,
-        "y": 232,
-        "type": "city",
+        "id": "dublin_pale",
+        "name_tr": "Dublin (The Pale)",
+        "x": 322,
+        "y": 212,
+        "type": "town",
         "is_capital": true
       }
     ],
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
-    "base_grain_output": 30,
+    "base_gold_income": 32,
+    "base_grain_output": 26,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
@@ -410,7 +412,7 @@
     "trade_capacity": 2,
     "satisfaction": 55,
     "tax_rate": 25,
-    "population": 500,
+    "population": 420,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": null
@@ -459,7 +461,10 @@
     "population": 500,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "normandy",
@@ -893,7 +898,10 @@
     "population": 600,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "westphalia",
@@ -1204,7 +1212,9 @@
     "population": 900,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "castile",
@@ -1249,7 +1259,10 @@
     "population": 1200,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "aragon",
@@ -1291,7 +1304,9 @@
     "population": 1100,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "venice",
@@ -1349,7 +1364,9 @@
     "population": 800,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "papal_states",
@@ -1582,7 +1599,10 @@
     "population": 1500,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "lithuania",
@@ -1671,7 +1691,10 @@
     "population": 1100,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "serbia",
@@ -1715,12 +1738,15 @@
     "population": 600,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "new_region_222",
-    "name": "New Region 219",
-    "name_tr": "Yeni Bolge 219",
+    "name": "nis",
+    "name_tr": "Niş",
     "terrain": "mountain",
     "owner_id": "serbian_empire",
     "neighbors": [
@@ -1739,19 +1765,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 25,
-    "base_iron_output": 0,
+    "base_gold_income": 32,
+    "base_grain_output": 30,
+    "base_iron_output": 6,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 1,
     "satisfaction": 55,
     "tax_rate": 25,
-    "population": 600,
+    "population": 520,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "nis",
+        "name_tr": "Niş",
+        "x": 897,
+        "y": 391,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "wallachia",
@@ -1802,8 +1838,8 @@
   },
   {
     "id": "new_region_232",
-    "name": "New Region 224",
-    "name_tr": "Yeni Bolge 224",
+    "name": "oltenia",
+    "name_tr": "Oltenya",
     "terrain": "plain",
     "owner_id": "wallachia_prince",
     "neighbors": [
@@ -1819,7 +1855,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
+    "base_gold_income": 34,
     "base_grain_output": 40,
     "base_iron_output": 0,
     "base_timber_output": 0,
@@ -1828,15 +1864,25 @@
     "trade_capacity": 1,
     "satisfaction": 50,
     "tax_rate": 25,
-    "population": 500,
+    "population": 460,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "craiova",
+        "name_tr": "Krayova",
+        "x": 975,
+        "y": 393,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_231",
-    "name": "New Region 223",
-    "name_tr": "Yeni Bolge 223",
+    "name": "bessarabia",
+    "name_tr": "Besarabya",
     "terrain": "plain",
     "owner_id": "wallachia_prince",
     "neighbors": [
@@ -1851,8 +1897,8 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
-    "base_grain_output": 40,
+    "base_gold_income": 34,
+    "base_grain_output": 42,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
@@ -1860,10 +1906,20 @@
     "trade_capacity": 1,
     "satisfaction": 50,
     "tax_rate": 25,
-    "population": 500,
+    "population": 460,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "cetatea_alba",
+        "name_tr": "Akkerman",
+        "x": 1018,
+        "y": 339,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "bulgaria",
@@ -2257,7 +2313,9 @@
     "population": 900,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "crimea",
@@ -2354,7 +2412,9 @@
     "population": 1000,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "trebizond",
@@ -2416,9 +2476,9 @@
   },
   {
     "id": "new_region_218",
-    "name": "New Region 215",
-    "name_tr": "Yeni Bolge 215",
-    "terrain": "coast",
+    "name": "erzurum",
+    "name_tr": "Erzurum",
+    "terrain": "mountain",
     "owner_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
@@ -2434,19 +2494,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
-    "base_grain_output": 25,
-    "base_iron_output": 0,
+    "base_gold_income": 38,
+    "base_grain_output": 24,
+    "base_iron_output": 10,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 300,
+    "population": 380,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "erzurum",
+        "name_tr": "Erzurum",
+        "x": 1300,
+        "y": 480,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "georgia",
@@ -2551,7 +2621,10 @@
     "population": 1800,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "palestine",
@@ -2641,7 +2714,9 @@
     "population": 900,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "iraq",
@@ -2739,7 +2814,10 @@
     "population": 600,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "persia_west",
@@ -2831,7 +2909,10 @@
     "population": 900,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "hejaz",
@@ -3335,8 +3416,8 @@
   },
   {
     "id": "new_region_226",
-    "name": "New Region 218",
-    "name_tr": "Yeni Bolge 218",
+    "name": "kattegat",
+    "name_tr": "Kattegat",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3407,8 +3488,8 @@
   },
   {
     "id": "new_region_227",
-    "name": "New Region 219",
-    "name_tr": "Yeni Bolge 219",
+    "name": "gulf_of_finland",
+    "name_tr": "Fin Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3515,8 +3596,8 @@
   },
   {
     "id": "new_region_225",
-    "name": "New Region 222",
-    "name_tr": "Yeni Bolge 222",
+    "name": "central_mediterranean",
+    "name_tr": "Orta Akdeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3557,8 +3638,8 @@
   },
   {
     "id": "new_region_224",
-    "name": "New Region 221",
-    "name_tr": "Yeni Bolge 221",
+    "name": "ionian_sea",
+    "name_tr": "İyon Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3631,9 +3712,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "_sea_marmara",
       "_sea_mediterranean_open_0",
       "_shore_mediterranean_2",
-      "_sea_marmara",
       "aydinoglu",
       "chalcidice",
       "crete",
@@ -3673,11 +3754,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "_sea_marmara",
       "_sea_azov",
       "_sea_black_open_0",
       "_sea_black_open_2",
       "_sea_black_open_3",
+      "_sea_marmara",
       "chrysopolis",
       "crimea",
       "new_region_208",
@@ -4132,12 +4213,14 @@
     "population": 400,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "new_region_221",
-    "name": "New Region 218",
-    "name_tr": "Yeni Bolge 218",
+    "name": "gallipoli",
+    "name_tr": "Gelibolu",
     "terrain": "coast",
     "owner_id": "byzantine",
     "neighbors": [
@@ -4154,19 +4237,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 25,
+    "base_gold_income": 36,
+    "base_grain_output": 26,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 400,
+    "population": 320,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "gallipoli",
+        "name_tr": "Gelibolu",
+        "x": 1019,
+        "y": 456,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "constantinople",
@@ -4197,7 +4290,9 @@
     "population": 400,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "jordan",
@@ -4285,7 +4380,9 @@
     "population": 450,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "armenia",
@@ -4452,7 +4549,9 @@
     "population": 350,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "flanders",
@@ -4628,7 +4727,10 @@
     "population": 600,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "konigsberg",
@@ -4671,7 +4773,9 @@
     "population": 300,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "sicily",
@@ -5287,8 +5391,8 @@
   },
   {
     "id": "new_region_201",
-    "name": "saruhanoglu",
-    "name_tr": "Saruhanoğulları",
+    "name": "saruhan",
+    "name_tr": "Saruhan (Manisa)",
     "terrain": "coast",
     "owner_id": "saruhan_bey",
     "neighbors": [
@@ -5303,24 +5407,34 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
-    "base_grain_output": 20,
+    "base_gold_income": 42,
+    "base_grain_output": 28,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 6,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 320,
+    "population": 360,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "manisa",
+        "name_tr": "Manisa",
+        "x": 1020,
+        "y": 494,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_203",
-    "name": "aydinoglu",
-    "name_tr": "Aydınoğulları",
+    "name": "izmir",
+    "name_tr": "İzmir (Aydınoğulları)",
     "terrain": "coast",
     "owner_id": "aydin_bey",
     "neighbors": [
@@ -5334,42 +5448,35 @@
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "smyrna",
-        "name_tr": "Smyrna / İzmir",
-        "x": 1018,
-        "y": 505,
-        "type": "port",
+        "id": "izmir",
+        "name_tr": "İzmir",
+        "x": 1023,
+        "y": 507,
+        "type": "town",
         "is_capital": true
-      },
-      {
-        "id": "ayasuluk",
-        "name_tr": "Ayasuluk / Efes",
-        "x": 1024,
-        "y": 514,
-        "type": "town"
       }
     ],
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
-    "base_grain_output": 20,
+    "base_gold_income": 45,
+    "base_grain_output": 24,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 4,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 320,
+    "population": 360,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
   },
   {
     "id": "new_region_211",
-    "name": "New Region 209",
-    "name_tr": "Yeni Bolge 209",
+    "name": "mentese_hinterland",
+    "name_tr": "Menteşe İçleri",
     "terrain": "coast",
     "owner_id": "mentese_bey",
     "neighbors": [
@@ -5384,34 +5491,27 @@
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "mugla",
-        "name_tr": "Muğla",
-        "x": 1041,
-        "y": 522,
+        "id": "milas",
+        "name_tr": "Milas",
+        "x": 1033,
+        "y": 523,
         "type": "town",
         "is_capital": true
-      },
-      {
-        "id": "bodrum",
-        "name_tr": "Bodrum / Halikarnassos",
-        "x": 1040,
-        "y": 535,
-        "type": "port"
       }
     ],
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
-    "base_grain_output": 20,
+    "base_gold_income": 38,
+    "base_grain_output": 24,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 320,
+    "population": 340,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
@@ -5468,9 +5568,9 @@
   },
   {
     "id": "new_region_204",
-    "name": "New Region 204",
-    "name_tr": "Yeni Bolge 204",
-    "terrain": "coast",
+    "name": "sivas",
+    "name_tr": "Sivas Ucu",
+    "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
       "candaroglu",
@@ -5485,19 +5585,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 32,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
+    "base_gold_income": 36,
+    "base_grain_output": 32,
+    "base_iron_output": 8,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 280,
+    "population": 420,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "sivas",
+        "name_tr": "Sivas",
+        "x": 1212,
+        "y": 486,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "ramazanoglu",
@@ -5688,7 +5798,9 @@
     "population": 600,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks"
+    ]
   },
   {
     "id": "milan",
@@ -6018,9 +6130,9 @@
   },
   {
     "id": "new_region_217",
-    "name": "New Region 214",
-    "name_tr": "Yeni Bolge 214",
-    "terrain": "coast",
+    "name": "hamideli",
+    "name_tr": "Hamideli (Isparta)",
+    "terrain": "mountain",
     "owner_id": "hamid_bey",
     "neighbors": [
       "germiyan",
@@ -6034,25 +6146,35 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
+    "base_gold_income": 30,
+    "base_grain_output": 28,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 320,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "isparta",
+        "name_tr": "Isparta",
+        "x": 1089,
+        "y": 502,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_202",
-    "name": "eskisehir",
-    "name_tr": "Eskişehir",
-    "terrain": "coast",
+    "name": "beysehir",
+    "name_tr": "Beyşehir (Eşrefoğulları)",
+    "terrain": "plain",
     "owner_id": "esrefoglu_bey",
     "neighbors": [
       "germiyan",
@@ -6067,25 +6189,35 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
+    "base_gold_income": 26,
+    "base_grain_output": 30,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 300,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "beysehir",
+        "name_tr": "Beyşehir",
+        "x": 1097,
+        "y": 491,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_214",
-    "name": "New Region 211",
-    "name_tr": "Yeni Bolge 211",
-    "terrain": "coast",
+    "name": "aksaray",
+    "name_tr": "Aksaray",
+    "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
       "new_region_202",
@@ -6101,25 +6233,35 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
+    "base_gold_income": 32,
+    "base_grain_output": 30,
+    "base_iron_output": 4,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 340,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "aksaray",
+        "name_tr": "Aksaray",
+        "x": 1120,
+        "y": 490,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_209",
-    "name": "New Region 207",
-    "name_tr": "Yeni Bolge 207",
-    "terrain": "coast",
+    "name": "ankara",
+    "name_tr": "Ankara (Ahiler)",
+    "terrain": "plain",
     "owner_id": "ahiler",
     "neighbors": [
       "chrysopolis",
@@ -6135,25 +6277,35 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
+    "base_gold_income": 34,
+    "base_grain_output": 32,
+    "base_iron_output": 6,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 360,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "ankara",
+        "name_tr": "Ankara",
+        "x": 1096,
+        "y": 479,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_215",
-    "name": "New Region 212",
-    "name_tr": "Yeni Bolge 212",
-    "terrain": "coast",
+    "name": "cankiri",
+    "name_tr": "Çankırı",
+    "terrain": "forest",
     "owner_id": "ilkhanate",
     "neighbors": [
       "chrysopolis",
@@ -6170,28 +6322,37 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 28,
+    "base_iron_output": 4,
+    "base_timber_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 320,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "cankiri",
+        "name_tr": "Çankırı",
+        "x": 1132,
+        "y": 474,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "new_region_206",
-    "name": "karamanoglu",
-    "name_tr": "Karamanoğulları",
-    "terrain": "coast",
+    "name": "karaman",
+    "name_tr": "Karaman (Larende)",
+    "terrain": "plain",
     "owner_id": "karaman_bey",
     "neighbors": [
-      "_sea_black_open_1",
       "new_region_210",
       "new_region_214",
       "ramazanoglu",
@@ -6202,36 +6363,36 @@
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "konya",
-        "name_tr": "Konya",
-        "x": 1131,
-        "y": 514,
-        "type": "city",
+        "id": "larende",
+        "name_tr": "Larende",
+        "x": 1138,
+        "y": 525,
+        "type": "town",
         "is_capital": true
       }
     ],
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_gold_income": 34,
+    "base_grain_output": 34,
+    "base_iron_output": 6,
+    "base_timber_output": 4,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 380,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
   },
   {
     "id": "new_region_210",
-    "name": "New Region 208",
-    "name_tr": "Yeni Bolge 208",
-    "terrain": "coast",
+    "name": "kayseri",
+    "name_tr": "Kayseri",
+    "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
       "konya",
@@ -6246,19 +6407,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 22,
-    "base_iron_output": 0,
+    "base_gold_income": 36,
+    "base_grain_output": 34,
+    "base_iron_output": 6,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 260,
+    "population": 360,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "kayseri",
+        "name_tr": "Kayseri",
+        "x": 1146,
+        "y": 508,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "eretna",
@@ -6313,8 +6484,8 @@
   },
   {
     "id": "new_region_207",
-    "name": "New Region 205",
-    "name_tr": "Yeni Bolge 205",
+    "name": "malatya",
+    "name_tr": "Malatya",
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -6332,10 +6503,10 @@
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "tokat",
-        "name_tr": "Tokat",
-        "x": 1236,
-        "y": 484,
+        "id": "malatya",
+        "name_tr": "Malatya",
+        "x": 1247,
+        "y": 496,
         "type": "town",
         "is_capital": true
       }
@@ -6343,16 +6514,16 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 55,
-    "base_grain_output": 60,
-    "base_iron_output": 0,
+    "base_gold_income": 42,
+    "base_grain_output": 46,
+    "base_iron_output": 10,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 800,
+    "population": 620,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
@@ -6423,8 +6594,8 @@
   },
   {
     "id": "new_region_216",
-    "name": "New Region 213",
-    "name_tr": "Yeni Bolge 213",
+    "name": "erzincan",
+    "name_tr": "Erzincan",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -6438,19 +6609,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 38,
-    "base_grain_output": 35,
-    "base_iron_output": 0,
+    "base_gold_income": 34,
+    "base_grain_output": 28,
+    "base_iron_output": 8,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 380,
+    "population": 360,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "erzincan",
+        "name_tr": "Erzincan",
+        "x": 1275,
+        "y": 489,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "vidin",
@@ -7295,9 +7476,9 @@
   },
   {
     "id": "new_region_223",
-    "name": "New Region 220",
-    "name_tr": "Yeni Bolge 220",
-    "terrain": "plain",
+    "name": "thessaloniki_hinterland",
+    "name_tr": "Selanik Hinterlandı",
+    "terrain": "coast",
     "owner_id": "byzantine",
     "neighbors": [
       "_sea_aegean",
@@ -7313,8 +7494,8 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 32,
-    "base_grain_output": 42,
+    "base_gold_income": 34,
+    "base_grain_output": 40,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
@@ -7322,10 +7503,20 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 25,
-    "population": 340,
+    "population": 420,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "langadas",
+        "name_tr": "Langaza",
+        "x": 913,
+        "y": 460,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "morea",
@@ -7457,12 +7648,15 @@
     "population": 380,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ]
   },
   {
     "id": "new_region_212",
-    "name": "New Region 210",
-    "name_tr": "Yeni Bolge 210",
+    "name": "kutahya",
+    "name_tr": "Kütahya (Germiyan)",
     "terrain": "plain",
     "owner_id": "germiyan_bey",
     "neighbors": [
@@ -7480,19 +7674,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
-    "base_grain_output": 42,
-    "base_iron_output": 0,
+    "base_gold_income": 38,
+    "base_grain_output": 44,
+    "base_iron_output": 6,
     "base_timber_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 380,
+    "population": 420,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "kutahya",
+        "name_tr": "Kütahya",
+        "x": 1051,
+        "y": 494,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "galicia",
@@ -7813,9 +8017,9 @@
   },
   {
     "id": "new_region_213",
-    "name": "New Region 211",
-    "name_tr": "Yeni Bolge 211",
-    "terrain": "coast",
+    "name": "bilecik_frontier",
+    "name_tr": "Bilecik Uçları",
+    "terrain": "forest",
     "owner_id": "ottoman",
     "neighbors": [
       "bithynia",
@@ -7831,19 +8035,32 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 42,
-    "base_grain_output": 30,
+    "base_gold_income": 36,
+    "base_grain_output": 34,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 10,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 30,
-    "population": 280,
+    "population": 330,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks"
+    ],
+    "settlements": [
+      {
+        "id": "bilecik",
+        "name_tr": "Bilecik",
+        "x": 1084,
+        "y": 469,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "paphlagonia",
@@ -7903,8 +8120,8 @@
   },
   {
     "id": "new_region_208",
-    "name": "New Region 206",
-    "name_tr": "Yeni Bolge 206",
+    "name": "sinop",
+    "name_tr": "Sinop (Canik)",
     "terrain": "coast",
     "owner_id": "candar_bey",
     "neighbors": [
@@ -7920,27 +8137,27 @@
     "shape_id": "TUR",
     "settlements": [
       {
-        "id": "amasra",
-        "name_tr": "Amasra",
-        "x": 1182,
-        "y": 455,
-        "type": "city",
+        "id": "sinop",
+        "name_tr": "Sinop",
+        "x": 1171,
+        "y": 441,
+        "type": "town",
         "is_capital": true
       }
     ],
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 28,
-    "base_grain_output": 35,
+    "base_gold_income": 34,
+    "base_grain_output": 30,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 10,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 220,
+    "population": 280,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
@@ -8090,9 +8307,9 @@
   },
   {
     "id": "new_region_229",
-    "name": "New Region 221",
-    "name_tr": "Yeni Bolge 221",
-    "terrain": "forest",
+    "name": "dagestan",
+    "name_tr": "Dağıstan Hazar Kıyısı",
+    "terrain": "coast",
     "owner_id": "russia",
     "neighbors": [
       "_sea_caspian",
@@ -8106,19 +8323,29 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 55,
-    "base_grain_output": 70,
+    "base_gold_income": 34,
+    "base_grain_output": 34,
     "base_iron_output": 0,
-    "base_timber_output": 0,
+    "base_timber_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 25,
-    "population": 320,
+    "population": 360,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "derbent",
+        "name_tr": "Derbent",
+        "x": 1616,
+        "y": 343,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "chalcidice",
@@ -8165,8 +8392,8 @@
   },
   {
     "id": "new_region_220",
-    "name": "New Region 217",
-    "name_tr": "Yeni Bolge 217",
+    "name": "serres",
+    "name_tr": "Serez",
     "terrain": "coast",
     "owner_id": "byzantine",
     "neighbors": [
@@ -8182,8 +8409,8 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 35,
+    "base_gold_income": 34,
+    "base_grain_output": 28,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_spice_output": 0,
@@ -8191,10 +8418,20 @@
     "trade_capacity": 2,
     "satisfaction": 72,
     "tax_rate": 20,
-    "population": 180,
+    "population": 280,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": null,
+    "settlements": [
+      {
+        "id": "serres",
+        "name_tr": "Serez",
+        "x": 988,
+        "y": 455,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "id": "_sea_atlantic_open_0",
@@ -8263,8 +8500,8 @@
   },
   {
     "id": "new_region_230",
-    "name": "New Region 222",
-    "name_tr": "Yeni Bolge 222",
+    "name": "gulf_of_lion",
+    "name_tr": "Lion Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [

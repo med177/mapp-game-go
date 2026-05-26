@@ -580,13 +580,23 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult(fmt.Sprintf("Yeterli altın yok! Gerekli: %d", b.GoldCost))
 		return
 	}
-	if count+g.queuedBuildingCount(rid, buildingID) >= b.MaxPerRegion {
+	queuedLevels := g.queuedBuildingCount(rid, buildingID)
+	if count+queuedLevels >= b.MaxPerRegion {
 		g.renderer.ShowCombatResult(fmt.Sprintf("%s için seviye kuyruğu dolu! (Lv%d)", b.NameTR, b.MaxPerRegion))
 		return
 	}
+
+	// Seviye arttıkça inşa süresini uzat:
+	// Lv1 için base, Lv2 için base+1, Lv3 için base+2 ...
+	targetLevel := count + queuedLevels + 1
+	turnsRequired := b.TurnsRequired + (targetLevel - 1)
+	if turnsRequired < 1 {
+		turnsRequired = 1
+	}
+
 	f.Gold -= b.GoldCost
-	g.enqueueProduction(productionKindBuilding, rid, buildingID, b.TurnsRequired)
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s seviye inşaatı başladı! Lv%d→Lv%d (%d tur)", b.NameTR, count+1, count+2, b.TurnsRequired))
+	g.enqueueProduction(productionKindBuilding, rid, buildingID, turnsRequired)
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s seviye inşaatı başladı! Lv%d→Lv%d (%d tur)", b.NameTR, count+1, count+2, turnsRequired))
 }
 
 // declareWar hedef fraksiyona savaş ilan eder.
@@ -1125,20 +1135,23 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		return
 	}
 
-	// Bina kontrolü
-	hasBldg := false
+	// Bina seviyesi kontrolü (aynı ID'nin tekrar sayısı = seviye)
+	requiredLevel := utype.RequiredBldgLevel
+	if utype.RequiredBldg != "" && requiredLevel <= 0 {
+		requiredLevel = 1
+	}
+	bldgLevel := 0
 	for _, bid := range region.Buildings {
 		if bid == utype.RequiredBldg {
-			hasBldg = true
-			break
+			bldgLevel++
 		}
 	}
-	if !hasBldg {
+	if utype.RequiredBldg != "" && bldgLevel < requiredLevel {
 		bldgName := utype.RequiredBldg
 		if b, ok2 := g.gs.BuildingTypes[bldgName]; ok2 {
 			bldgName = b.NameTR
 		}
-		g.renderer.ShowCombatResult("Bu birlik için " + bldgName + " gerekli!")
+		g.renderer.ShowCombatResult(fmt.Sprintf("Bu birlik için %s Lv%d gerekli! (mevcut: Lv%d)", bldgName, requiredLevel, bldgLevel))
 		return
 	}
 

@@ -30,8 +30,10 @@ func aiTechMods(gs *state.GameState, ownerID string) combat.TechMods {
 	}
 	fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
 	return combat.TechMods{
-		AttackMod:  fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod,
-		DefenseMod: fx.LandDefenseMod,
+		AttackMod:       fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod,
+		DefenseMod:      fx.LandDefenseMod,
+		NavalAttackMod:  fx.NavalAttackMod,
+		NavalDefenseMod: fx.NavalDefenseMod,
 	}
 }
 

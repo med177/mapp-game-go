@@ -35,8 +35,9 @@ type UnitType struct {
 	TurnsRequired int `json:"turns_required"`
 
 	// Gereksinimler
-	RequiredTech string `json:"required_tech"` // "" = gerek yok
-	RequiredBldg string `json:"required_bldg"` // gerekli bina ID
+	RequiredTech      string `json:"required_tech"`       // "" = gerek yok
+	RequiredBldg      string `json:"required_bldg"`       // gerekli bina ID
+	RequiredBldgLevel int    `json:"required_bldg_level"` // 0/1 = Lv1, 2 = Lv2 ...
 
 	// Denizde taşınabilir mi?
 	Embarkable bool `json:"embarkable"`

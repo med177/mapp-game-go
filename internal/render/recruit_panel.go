@@ -132,13 +132,13 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 	if region == nil || ff == nil {
 		return false
 	}
-	hasBarracks, hasPort := false, false
+	barracksLevel, portLevel := 0, 0
 	for _, bid := range region.Buildings {
 		switch bid {
 		case "barracks":
-			hasBarracks = true
+			barracksLevel++
 		case "port":
-			hasPort = true
+			portLevel++
 		}
 	}
 	for _, uid := range visibleUnitIDs(gs, region) {
@@ -146,13 +146,17 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 		if utype == nil {
 			continue
 		}
+		requiredLevel := utype.RequiredBldgLevel
+		if utype.RequiredBldg != "" && requiredLevel <= 0 {
+			requiredLevel = 1
+		}
 		switch utype.RequiredBldg {
 		case "barracks":
-			if !hasBarracks {
+			if barracksLevel < requiredLevel {
 				continue
 			}
 		case "port":
-			if !hasPort {
+			if portLevel < requiredLevel {
 				continue
 			}
 		}
@@ -238,13 +242,13 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	sepY := py + recruitHeaderH - 2
 	vector.StrokeLine(screen, px+12, sepY, px+pw-12, sepY, 1, panelBorder, false)
 
-	hasBarracks, hasPort := false, false
+	barracksLevel, portLevel := 0, 0
 	for _, bid := range region.Buildings {
 		switch bid {
 		case "barracks":
-			hasBarracks = true
+			barracksLevel++
 		case "port":
-			hasPort = true
+			portLevel++
 		}
 	}
 
@@ -261,7 +265,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		col := i % recruitCardsPerRow
 		x := px + recruitPanelPad + float32(col)*(cardW+gap)
 		y := topY + float32(row)*(cardH+gap)
-		drawRecruitCard(screen, gs, rid, uid, hasBarracks, hasPort, x, y, cardW, cardH)
+		drawRecruitCard(screen, gs, rid, uid, barracksLevel, portLevel, x, y, cardW, cardH)
 	}
 
 	queueY := topY + recruitSectionH + recruitSectionGap
@@ -320,17 +324,21 @@ func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
 	return cardW, cardH, gap
 }
 
-func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, hasBarracks, hasPort bool, sx, sy, cardW, cardH float32) {
+func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, barracksLevel, portLevel int, sx, sy, cardW, cardH float32) {
 	utype := gs.UnitTypes[uid]
 	if utype == nil {
 		return
 	}
+	requiredLevel := utype.RequiredBldgLevel
+	if utype.RequiredBldg != "" && requiredLevel <= 0 {
+		requiredLevel = 1
+	}
 	var needsBuilding bool
 	switch utype.RequiredBldg {
 	case "barracks":
-		needsBuilding = !hasBarracks
+		needsBuilding = barracksLevel < requiredLevel
 	case "port":
-		needsBuilding = !hasPort
+		needsBuilding = portLevel < requiredLevel
 	}
 	ff := gs.Factions[gs.PlayerFactionID]
 	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])

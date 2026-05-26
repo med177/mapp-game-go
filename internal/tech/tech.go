@@ -23,6 +23,8 @@ type Effects struct {
 	InfantryAttackMod   float64 `json:"infantry_attack_mod"`
 	CavalryAttackMod    float64 `json:"cavalry_attack_mod"`
 	SiegeAttackMod      float64 `json:"siege_attack_mod"`
+	NavalAttackMod      float64 `json:"naval_attack_mod"`
+	NavalDefenseMod     float64 `json:"naval_defense_mod"`
 	LandDefenseMod      float64 `json:"land_defense_mod"`
 	GoldPerRegion       int     `json:"gold_per_region"`
 	GrainMod            float64 `json:"grain_mod"`
@@ -108,6 +110,8 @@ func ComputeEffects(completed map[string]bool, allTechs map[string]*Technology) 
 		total.InfantryAttackMod += e.InfantryAttackMod
 		total.CavalryAttackMod += e.CavalryAttackMod
 		total.SiegeAttackMod += e.SiegeAttackMod
+		total.NavalAttackMod += e.NavalAttackMod
+		total.NavalDefenseMod += e.NavalDefenseMod
 		total.LandDefenseMod += e.LandDefenseMod
 		total.GoldPerRegion += e.GoldPerRegion
 		total.GrainMod += e.GrainMod

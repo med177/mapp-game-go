@@ -12,9 +12,10 @@
     "gold_cost": 60,
     "grain_upkeep": 2,
     "required_tech": "",
-    "required_bldg": "barracks",
+    "required_bldg": "",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 2,
+    "required_bldg_level": 0
   },
   {
     "id": "infantry",
@@ -31,7 +32,8 @@
     "required_tech": "iron_weapons",
     "required_bldg": "barracks",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 2,
+    "required_bldg_level": 1
   },
   {
     "id": "elite_infantry",
@@ -48,7 +50,8 @@
     "required_tech": "steel_blades",
     "required_bldg": "barracks",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 3,
+    "required_bldg_level": 2
   },
   {
     "id": "light_cavalry",
@@ -62,10 +65,11 @@
     "hp": 100,
     "gold_cost": 150,
     "grain_upkeep": 4,
-    "required_tech": "",
+    "required_tech": "horse_breeding",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 2,
+    "required_bldg_level": 1
   },
   {
     "id": "cavalry",
@@ -82,7 +86,8 @@
     "required_tech": "cavalry_tactics",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 3,
+    "required_bldg_level": 2
   },
   {
     "id": "heavy_cavalry",
@@ -96,10 +101,11 @@
     "hp": 100,
     "gold_cost": 400,
     "grain_upkeep": 8,
-    "required_tech": "heavy_armor",
+    "required_tech": "plate_armor",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 4,
+    "required_bldg_level": 3
   },
   {
     "id": "catapult",
@@ -113,10 +119,11 @@
     "hp": 100,
     "gold_cost": 200,
     "grain_upkeep": 3,
-    "required_tech": "",
+    "required_tech": "engineering_corps",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 3,
+    "required_bldg_level": 2
   },
   {
     "id": "bombard",
@@ -130,10 +137,11 @@
     "hp": 100,
     "gold_cost": 350,
     "grain_upkeep": 5,
-    "required_tech": "siege_engines",
+    "required_tech": "gunpowder",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 4,
+    "required_bldg_level": 3
   },
   {
     "id": "cannon",
@@ -147,10 +155,11 @@
     "hp": 100,
     "gold_cost": 600,
     "grain_upkeep": 8,
-    "required_tech": "siege_engines",
+    "required_tech": "cast_bronze_cannon",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 5,
+    "required_bldg_level": 3
   },
   {
     "id": "warship",
@@ -164,10 +173,11 @@
     "hp": 100,
     "gold_cost": 400,
     "grain_upkeep": 6,
-    "required_tech": "navigation",
+    "required_tech": "naval_doctrine",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 4,
+    "required_bldg_level": 3
   },
   {
     "id": "transport",
@@ -181,10 +191,11 @@
     "hp": 100,
     "gold_cost": 200,
     "grain_upkeep": 3,
-    "required_tech": "",
+    "required_tech": "navigation",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 2,
+    "required_bldg_level": 1
   },
   {
     "id": "merchant_ship",
@@ -198,9 +209,10 @@
     "hp": 100,
     "gold_cost": 180,
     "grain_upkeep": 2,
-    "required_tech": "",
+    "required_tech": "harbor_administration",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 3,
+    "required_bldg_level": 2
   }
 ]

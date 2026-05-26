@@ -1,15 +1,174 @@
 {
   "centers": [
-    { "id": "venice", "tier": "primary", "links": ["genoa", "constantinople", "flanders"] },
-    { "id": "constantinople", "tier": "primary", "links": ["venice", "aleppo", "egypt", "novgorod"] },
-    { "id": "flanders", "tier": "primary", "links": ["london", "paris", "genoa", "venice"] },
-    { "id": "genoa", "tier": "primary", "links": ["flanders", "venice", "constantinople"] },
-
-    { "id": "london", "tier": "secondary", "links": ["flanders"] },
-    { "id": "paris", "tier": "secondary", "links": ["flanders"] },
-    { "id": "aleppo", "tier": "secondary", "links": ["constantinople", "basra", "egypt"] },
-    { "id": "egypt", "tier": "secondary", "links": ["constantinople", "aleppo"] },
-    { "id": "basra", "tier": "secondary", "links": ["aleppo"] },
-    { "id": "novgorod", "tier": "secondary", "links": ["constantinople", "flanders"] }
+    {
+      "id": "venice",
+      "tier": "primary",
+      "links": [
+        "genoa",
+        "constantinople",
+        "flanders"
+      ]
+    },
+    {
+      "id": "constantinople",
+      "tier": "primary",
+      "links": [
+        "aleppo",
+        "egypt",
+        "novgorod",
+        "trebizond",
+        "venice"
+      ]
+    },
+    {
+      "id": "flanders",
+      "tier": "primary",
+      "links": [
+        "london",
+        "paris",
+        "genoa",
+        "venice"
+      ]
+    },
+    {
+      "id": "genoa",
+      "tier": "primary",
+      "links": [
+        "flanders",
+        "venice",
+        "constantinople"
+      ]
+    },
+    {
+      "id": "london",
+      "tier": "secondary",
+      "links": [
+        "flanders"
+      ]
+    },
+    {
+      "id": "paris",
+      "tier": "secondary",
+      "links": [
+        "flanders"
+      ]
+    },
+    {
+      "id": "aleppo",
+      "tier": "secondary",
+      "links": [
+        "basra",
+        "constantinople",
+        "egypt",
+        "iraq"
+      ]
+    },
+    {
+      "id": "egypt",
+      "tier": "secondary",
+      "links": [
+        "aleppo",
+        "basra",
+        "constantinople"
+      ]
+    },
+    {
+      "id": "basra",
+      "tier": "secondary",
+      "links": [
+        "aleppo",
+        "iraq",
+        "kuwait",
+        "persia_south"
+      ]
+    },
+    {
+      "id": "novgorod",
+      "tier": "secondary",
+      "links": [
+        "constantinople",
+        "flanders"
+      ]
+    },
+    {
+      "id": "azerbaijan",
+      "tier": "secondary",
+      "links": [
+        "iraq",
+        "persia_north",
+        "persia_west",
+        "trebizond"
+      ]
+    },
+    {
+      "id": "persia_west",
+      "tier": "secondary",
+      "links": [
+        "azerbaijan",
+        "iraq",
+        "persia_south"
+      ]
+    },
+    {
+      "id": "persia_south",
+      "tier": "secondary",
+      "links": [
+        "kuwait",
+        "persia_west",
+        "uae"
+      ]
+    },
+    {
+      "id": "iraq",
+      "tier": "secondary",
+      "links": [
+        "aleppo",
+        "basra",
+        "persia_west"
+      ]
+    },
+    {
+      "id": "trebizond",
+      "tier": "secondary",
+      "links": [
+        "azerbaijan",
+        "constantinople"
+      ]
+    },
+    {
+      "id": "kuwait",
+      "tier": "secondary",
+      "links": [
+        "basra",
+        "persia_south",
+        "uae"
+      ]
+    },
+    {
+      "id": "uae",
+      "tier": "secondary",
+      "links": [
+        "bahrain",
+        "kuwait",
+        "persia_south",
+        "qatar"
+      ]
+    },
+    {
+      "id": "qatar",
+      "tier": "secondary",
+      "links": [
+        "bahrain",
+        "uae"
+      ]
+    },
+    {
+      "id": "bahrain",
+      "tier": "secondary",
+      "links": [
+        "qatar",
+        "uae"
+      ]
+    }
   ]
 }

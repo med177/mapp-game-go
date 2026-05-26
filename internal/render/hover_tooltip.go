@@ -207,7 +207,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
-	DrawText(screen, unitRequirementText(gs, utype.RequiredBldg, utype.RequiredTech), x+12, y+160, FaceSmall, color.RGBA{170, 145, 90, 230})
+	DrawText(screen, unitRequirementText(gs, utype.RequiredBldg, utype.RequiredBldgLevel, utype.RequiredTech), x+12, y+160, FaceSmall, color.RGBA{170, 145, 90, 230})
 }
 
 func tooltipRect(mx, my float64, w, h float64) (float64, float64, float64, float64) {
@@ -234,7 +234,7 @@ func drawTooltipBox(screen *ebiten.Image, x, y, w, h float64) {
 	vector.FillRect(screen, float32(x), float32(y), float32(w), 3, panelBorder, false)
 }
 
-func unitRequirementText(gs *state.GameState, buildingID, techID string) string {
+func unitRequirementText(gs *state.GameState, buildingID string, buildingLevel int, techID string) string {
 	req := "Gereksinim: "
 	if buildingID == "" && techID == "" {
 		return req + "Yok"
@@ -245,6 +245,10 @@ func unitRequirementText(gs *state.GameState, buildingID, techID string) string 
 		if b := gs.BuildingTypes[buildingID]; b != nil {
 			name = b.NameTR
 		}
+		if buildingLevel <= 0 {
+			buildingLevel = 1
+		}
+		name += " Lv" + itoa(buildingLevel)
 		req += name
 		first = false
 	}
