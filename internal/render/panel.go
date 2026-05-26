@@ -7,6 +7,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/victory"
@@ -39,7 +40,7 @@ const (
 	maxEventLogEntries = 16
 
 	infoPanelW = float32(305)
-	infoPanelH = float32(380)
+	infoPanelH = float32(600)
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -815,13 +816,6 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 	drawMinimapCorner(screen, mx, my+minimapH, cornerSize, -cornerSize)
 	drawMinimapCorner(screen, mx+minimapW, my+minimapH, -cornerSize, -cornerSize)
 
-	// Başlık etiketi
-	titleW := float32(MeasureText("MİNİ HARİTA", FaceSmall))
-	DrawText(screen, "MİNİ HARİTA",
-		float64(mx)+float64(minimapW)/2-float64(titleW)/2,
-		float64(my)-14,
-		FaceSmall, color.RGBA{200, 170, 80, 200})
-
 	// Viewport dikdörtgeni
 	vpW := float32((ScreenWidth / camScale) * scaleX)
 	vpH := float32((ScreenHeight / camScale) * scaleY)
@@ -921,6 +915,7 @@ func colorToScale(clr color.Color) (float32, float32, float32, float32) {
 // drawMinimapArmies ordu konumlarını minimap üzerinde fraksiyon rengiyle gösterir.
 // Kara ordusu → kare, deniz donanması → daire.
 func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
+	playerID := gs.PlayerFactionID
 	for _, a := range gs.Armies {
 		region, ok := gs.Regions[a.RegionID]
 		if !ok {
@@ -929,28 +924,30 @@ func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY
 		px := offsetX + float32(wcX(region.WorldX))*scaleX
 		py := offsetY + float32(wcY(region.WorldY))*scaleY
 
+		if faction.FactionID(a.OwnerID) == playerID {
+			// Oyuncu orduları/donanmaları minimap'te yeşil nokta olarak gösterilir.
+			vector.FillCircle(screen, px+1, py+1, 3.5, color.RGBA{0, 0, 0, 90}, true)
+			vector.FillCircle(screen, px, py, 2.5, color.RGBA{80, 220, 120, 240}, true)
+			vector.StrokeCircle(screen, px, py, 2.5, 1, color.RGBA{20, 60, 30, 220}, true)
+			continue
+		}
+		rel := gs.Relations[faction.RelationKey(playerID, faction.FactionID(a.OwnerID))]
+		if rel == nil || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied) {
+			continue
+		}
+
 		col := factionColor(gs, a.OwnerID)
-		isPlayer := a.OwnerID == string(gs.PlayerFactionID)
 		col.A = 220
 
 		borderCol := color.RGBA{0, 0, 0, 100}
-		if isPlayer {
-			borderCol = color.RGBA{255, 240, 120, 255}
-		}
 
 		if a.IsNaval {
 			r := float32(4)
-			if isPlayer {
-				r = 5.5
-			}
 			vector.FillCircle(screen, px+1, py+1, r+1, color.RGBA{0, 0, 0, 80}, true)
 			vector.FillCircle(screen, px, py, r, col, true)
 			vector.StrokeCircle(screen, px, py, r, 1.2, borderCol, true)
 		} else {
 			h := float32(3.5)
-			if isPlayer {
-				h = 5
-			}
 			vector.FillRect(screen, px-h-1, py-h-1, h*2+2, h*2+2, color.RGBA{0, 0, 0, 80}, false)
 			vector.FillRect(screen, px-h, py-h, h*2, h*2, col, false)
 			vector.StrokeRect(screen, px-h-0.5, py-h-0.5, h*2+1, h*2+1, 1.2, borderCol, false)
@@ -1130,6 +1127,38 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	if region.IsRebellionRisk() {
 		DrawText(screen, "⚠  İSYAN RİSKİ!", lx, ly, FaceMed, ColorRed)
 		ly += 18
+	}
+
+	if gs.DevelopmentMode {
+		// Komşu bölgeler (deniz paneliyle aynı görünüm)
+		neighborTitle := "Komşu Bölgeler:"
+		if len(region.Neighbors) == 0 {
+			neighborTitle = "Komşu: Yok"
+		} else if len(region.Neighbors) <= 5 {
+			neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + "):"
+		} else {
+			neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
+		}
+		DrawText(screen, neighborTitle, lx, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+		ly += 18
+
+		displayCount := len(region.Neighbors)
+		if displayCount > 4 {
+			displayCount = 4
+		}
+		for i := 0; i < displayCount; i++ {
+			neighborID := region.Neighbors[i]
+			neighborRegion, ok := gs.Regions[neighborID]
+			if !ok {
+				continue
+			}
+			col := color.RGBA{180, 180, 180, 200}
+			if neighborRegion.IsSea {
+				col = color.RGBA{100, 160, 220, 200}
+			}
+			DrawText(screen, "• "+neighborRegion.NameTR, lx+15, ly, FaceSmall, col)
+			ly += 16
+		}
 	}
 
 	// ── Binalar bölümü ────────────────────────────────────────────────
@@ -1635,7 +1664,7 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 	pad := float32(panelPad)
 	availW := panelW - pad*2
 	slotW := availW / float32(cols)
-	spriteH := float32(60)
+	spriteH := float32(76)
 	nameH := float32(18)
 	rowH := spriteH + nameH + 7
 
@@ -1665,18 +1694,18 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		isMaxLevel := level >= maxLevel
 
 		// Arka plan ve çerçeve
-		slotBg := color.RGBA{20, 16, 12, 200}
-		borderCol := color.RGBA{55, 45, 30, 200}
+		slotBg := color.RGBA{250, 250, 250, 240}
+		borderCol := color.RGBA{160, 160, 160, 220}
 		switch {
 		case isBuilt:
-			slotBg = color.RGBA{42, 34, 18, 245}
-			borderCol = panelBorder
+			slotBg = color.RGBA{255, 255, 255, 245}
+			borderCol = color.RGBA{150, 130, 85, 230}
 		case isQueued:
-			slotBg = color.RGBA{35, 32, 24, 235}
-			borderCol = color.RGBA{120, 105, 70, 210}
+			slotBg = color.RGBA{248, 248, 248, 240}
+			borderCol = color.RGBA{145, 145, 145, 220}
 		case canAfford:
-			slotBg = color.RGBA{32, 25, 14, 225}
-			borderCol = color.RGBA{120, 95, 45, 200}
+			slotBg = color.RGBA{252, 252, 252, 242}
+			borderCol = color.RGBA{165, 165, 165, 220}
 		}
 		vector.FillRect(screen, sx, sy, innerW, spriteH, slotBg, false)
 		vector.StrokeRect(screen, sx, sy, innerW, spriteH, 1, borderCol, false)
@@ -1685,8 +1714,8 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			r := buildingSpriteRect(bid, buildingSheet)
 			sub := buildingSheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			fitW := float64(innerW - 6)
-			fitH := float64(spriteH - 6)
+			fitW := float64(innerW - 2)
+			fitH := float64(spriteH - 2)
 			scale := fitW / float64(r.Dx())
 			if hScale := fitH / float64(r.Dy()); hScale < scale {
 				scale = hScale
@@ -1709,7 +1738,14 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 
 			if isBuilt {
 				vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
-				DrawText(screen, "Lv"+itoa(level), float64(sx)+6, float64(sy)+4, FaceSmall, color.RGBA{245, 225, 160, 235})
+				lvText := "Lv" + itoa(level)
+				lvX := float64(sx) + 6
+				lvY := float64(sy) + 4
+				lvW := float32(MeasureText(lvText, FaceSmall) + 8)
+				lvH := float32(14)
+				vector.FillRect(screen, float32(lvX)-3, float32(lvY)-2, lvW, lvH, color.RGBA{18, 14, 8, 225}, false)
+				vector.StrokeRect(screen, float32(lvX)-3, float32(lvY)-2, lvW, lvH, 1, color.RGBA{170, 140, 75, 220}, false)
+				DrawText(screen, lvText, lvX, lvY, FaceSmall, color.RGBA{255, 245, 220, 250})
 			}
 			if isQueued {
 				qLabel := itoa(turnsLeft) + " Tur"
@@ -1754,7 +1790,7 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 		if !ok {
 			continue
 		}
-		if builtCount[bid] > 0 || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain {
+		if builtCount[bid] > 0 || buildingVisibleByRegionRules(gs, region, bid, b) {
 			ids = append(ids, bid)
 		}
 	}
@@ -1896,9 +1932,9 @@ func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	pad := float32(panelPad)
 	availW := pw - pad*2
 	slotW := availW / float32(cols)
-	spriteH := float32(54)
-	nameH := float32(16)
-	rowH := spriteH + nameH + 5
+	spriteH := float32(76)
+	nameH := float32(18)
+	rowH := spriteH + nameH + 7
 
 	displayIdx := 0
 	for _, bid := range buildingDisplayOrder {
@@ -1936,7 +1972,14 @@ func buildingVisibleInRegion(gs *state.GameState, region *world.Region, bid stri
 	if !ok {
 		return false
 	}
-	return regionHasBuilding(region, bid) || b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain
+	return regionHasBuilding(region, bid) || buildingVisibleByRegionRules(gs, region, bid, b)
+}
+
+func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid string, b *city.Building) bool {
+	if bid == "port" && !region.IsCoastal(gs.Regions) {
+		return false
+	}
+	return b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain
 }
 
 func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
@@ -1965,6 +2008,14 @@ func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
 	}
 	if region.IsRebellionRisk() {
 		ly += 18
+	}
+	if gs.DevelopmentMode {
+		ly += 18 // Komşu başlığı
+		displayCount := len(region.Neighbors)
+		if displayCount > 4 {
+			displayCount = 4
+		}
+		ly += float64(displayCount) * 16
 	}
 	ly += 4 + 6 + 17
 	return float32(ly)

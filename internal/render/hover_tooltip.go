@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 
 	"mapp-game-go/internal/city"
@@ -54,9 +55,9 @@ func BuildingGridHoverID(mx, my float64, gs *state.GameState, rid world.RegionID
 	pad := float32(panelPad)
 	availW := pw - pad*2
 	slotW := availW / float32(cols)
-	spriteH := float32(54)
-	nameH := float32(16)
-	rowH := spriteH + nameH + 5
+	spriteH := float32(76)
+	nameH := float32(18)
+	rowH := spriteH + nameH + 7
 
 	display := visibleBuildingIDs(gs, region)
 	for i, bid := range display {
@@ -108,6 +109,8 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	DrawText(screen, status, x+84, y+52, FaceSmall, statusCol)
 
 	if buildingSheet != nil {
+		vector.FillRect(screen, float32(x+10), float32(y+14), 70, 58, color.RGBA{252, 252, 252, 242}, false)
+		vector.StrokeRect(screen, float32(x+10), float32(y+14), 70, 58, 1, color.RGBA{160, 160, 160, 225}, false)
 		r := buildingSpriteRect(bid, buildingSheet)
 		sub := buildingSheet.SubImage(r).(*ebiten.Image)
 		op := &ebiten.DrawImageOptions{}
@@ -151,11 +154,15 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 		return
 	}
 	ensureArmySheet()
-	x, y, w, h := tooltipRect(mx, my, 300, 166)
+	x, y, w, h := tooltipRect(mx, my, 320, 188)
 	drawTooltipBox(screen, x, y, w, h)
 	iconX, iconY := x+10.0, y+14.0
-	iconW, iconH := 100.0, 80.0
+	iconW, iconH := float64(recruitCardW), 76.0
 	textX := iconX + iconW + 12
+
+	// Yetiştirme panelindeki kartla aynı beyaz kutu stili.
+	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
+	vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
 
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
 	DrawText(screen, fmt.Sprintf("Maliyet: %d altın", utype.GoldCost), textX, y+34, FaceSmall, ColorWhite)
@@ -166,26 +173,41 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 		if !r.Empty() {
 			sub := armySheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-				fitW := iconW
-				fitH := iconH
+			// Yetiştirme kartındaki gibi daha iri sprite fit + kırpma.
+			fitW := iconW + 50
+			fitH := iconH + 40
 			scale := fitW / float64(r.Dx())
 			if hScale := fitH / float64(r.Dy()); hScale < scale {
 				scale = hScale
 			}
 			drawW := float64(r.Dx()) * scale
 			drawH := float64(r.Dy()) * scale
-				op.GeoM.Scale(scale, scale)
-				op.GeoM.Translate(
-					iconX+(fitW-drawW)/2,
-					iconY+(fitH-drawH)/2,
-				)
-			screen.DrawImage(sub, op)
+			if recruitClipBuf != nil {
+				clipW := int(iconW - 2)
+				clipH := int(iconH - 2)
+				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
+					recruitClipBuf.Clear()
+					op.GeoM.Scale(scale, scale)
+					op.GeoM.Translate(float64(clipW)/2-drawW/2, float64(clipH)/2-drawH/2)
+					recruitClipBuf.DrawImage(sub, op)
+					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
+					dst := &ebiten.DrawImageOptions{}
+					dst.GeoM.Translate(iconX+1, iconY+1)
+					screen.DrawImage(cropped, dst)
+				}
+			}
 		}
 	}
 
-	DrawText(screen, fmt.Sprintf("Saldırı: %d   Savunma: %d", utype.Attack, utype.Defense), x+12, y+84, FaceSmall, ColorGray)
-	DrawText(screen, fmt.Sprintf("Moral: %d   Can: %d", utype.Morale, utype.HP), x+12, y+102, FaceSmall, ColorGray)
-	DrawText(screen, unitRequirementText(gs, utype.RequiredBldg, utype.RequiredTech), x+12, y+124, FaceSmall, color.RGBA{170, 145, 90, 230})
+	statY := y + 70
+	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
+	DrawText(screen, unitRequirementText(gs, utype.RequiredBldg, utype.RequiredTech), x+12, y+160, FaceSmall, color.RGBA{170, 145, 90, 230})
 }
 
 func tooltipRect(mx, my float64, w, h float64) (float64, float64, float64, float64) {

@@ -14515,8 +14515,8 @@
     "byzantine|ottoman": {
       "faction_a": "byzantine",
       "faction_b": "ottoman",
-      "score": -6,
-      "stance": "peace"
+      "score": -5,
+      "stance": "trade"
     },
     "byzantine|papal_states_f": {
       "faction_a": "byzantine",
@@ -30933,6 +30933,22 @@
       "to_faction_id": "ilkhanate",
       "good": "grain",
       "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "byzantine",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "byzantine",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 2,
       "gold_per_unit": 2,
       "suspended_turns": 0
     }

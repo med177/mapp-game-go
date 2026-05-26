@@ -550,6 +550,10 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	if !ok {
 		return
 	}
+	if buildingID == "port" && !region.IsCoastal(g.gs.Regions) {
+		g.renderer.ShowCombatResult("Liman sadece kıyı bölgelerinde inşa edilebilir!")
+		return
+	}
 	// Gerekli arazi kontrolü
 	if b.RequiredTerrain != "" && string(region.Terrain) != b.RequiredTerrain {
 		g.renderer.ShowCombatResult(b.NameTR + " sadece " + b.RequiredTerrain + " arazisine yapılır!")

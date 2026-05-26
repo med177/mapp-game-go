@@ -56,7 +56,7 @@ type Renderer struct {
 | 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür; ikon üstü sayı metni fraksiyon rengine göre kontrast uyarlamalıdır | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
-| 6 | Bölge üretim UI — bina kartlarında seviye (`Lv`) + kuyruk adet/ilk tamamlanma turu etiketi ve tekrar tıklayınca iptal, birim kartlarında üretim turu + kuyrukta ilk tamamlanma turu ve `- xN +` çoklu eğitim kontrolü | `panel.go`, `recruit_panel.go` |
+| 6 | Bölge üretim UI — bina kartlarında seviye (`Lv`) + kuyruk adet/ilk tamamlanma turu etiketi ve tekrar tıklayınca iptal; kıyısı olmayan kara bölgelerinde `port` kartı gizlenir; birim kartlarında üretim turu + kuyrukta ilk tamamlanma turu ve `- xN +` çoklu eğitim kontrolü | `panel.go`, `recruit_panel.go` |
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
@@ -183,6 +183,10 @@ Rakip orduları seçilebilir ama emir verilemez. Renderer rakip ordusu için har
 Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez.
 
 Bölge bilgi panelinde parmak imleci panelin tamamında değil, yalnızca kapatma düğmesi, vergi `-/+` düğmeleri ve inşa edilebilir bina kartları üzerinde gösterilir. Oyun içi HUD/panel cursor davranışı gerçek etkileşim alanlarına bağlıdır: sağ üstte yalnızca `Menü`, alt HUD'da yalnızca üç aksiyon butonu, olay logunda toggle/kart/X, birim panelinde yalnızca birim kartları pointer üretir. Boş panel alanları tıklamayı tüketmeye devam eder ama clickable cursor üretmez.
+
+Kara bölge paneli de deniz paneliyle aynı komşu başlığını (`Komşu Bölgeler`) içerir; toplam komşu sayısını yazar ve ilk 4 komşuyu listeler, deniz komşuları mavi tonla ayrıştırılır (`internal/render/panel.go:1154` civarı).
+
+Bina kartı görselleri slot içine daha sıkı fit edilir (`innerW-2`, `spriteH-2`) ve inşa edilmiş kartların `Lv` etiketi koyu zemin + açık metinle çizilir; parlak sprite arka planlarında okunabilirlik korunur (`internal/render/panel.go:1689` civarı). Bina/birim kart gövdeleri beyaz tabanlı palette taşınmıştır; hover tooltip kutusu eski koyu panel temasını korur. Tooltip içinde yalnız ikon alanı beyaz kart stili çerçeve ile çizilir (`internal/render/hover_tooltip.go`). Bina hover/hit-test ölçüleri kart çizim ölçüleriyle eşitlenmiştir (`spriteH=76`, `nameH=18`, `rowH=+7`) ve dev mode komşu listesi satır yüksekliği `buildingGridStartY` hesabına dahil edilmiştir (`internal/render/panel.go`).
 
 ---
 

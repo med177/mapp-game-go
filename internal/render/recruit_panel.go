@@ -336,11 +336,11 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
 	canAfford := ff != nil && ff.Gold >= utype.GoldCost
 	fullyAvail := !needsBuilding && !needsTech
-	slotBg := color.RGBA{20, 16, 12, 200}
-	borderCol := color.RGBA{55, 45, 30, 200}
+	slotBg := color.RGBA{250, 250, 250, 240}
+	borderCol := color.RGBA{160, 160, 160, 220}
 	if fullyAvail {
-		slotBg = color.RGBA{38, 30, 15, 235}
-		borderCol = panelBorder
+		slotBg = color.RGBA{255, 255, 255, 245}
+		borderCol = color.RGBA{145, 145, 145, 225}
 	}
 	vector.FillRect(screen, sx, sy, cardW, cardH, slotBg, false)
 	vector.StrokeRect(screen, sx, sy, cardW, cardH, 1, borderCol, false)
@@ -386,15 +386,15 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		}
 	}
 
-	nameCol := ColorGold
+	nameCol := color.RGBA{70, 60, 42, 235}
 	if !fullyAvail {
-		nameCol = color.RGBA{80, 70, 55, 190}
+		nameCol = color.RGBA{110, 105, 95, 210}
 	}
 	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+80, FaceSmall, nameCol)
 	cost := itoa(utype.GoldCost) + " G  " + itoa(utype.TurnsRequired) + "T"
-	costCol := color.RGBA{180, 160, 60, 220}
+	costCol := color.RGBA{95, 82, 46, 235}
 	if !fullyAvail {
-		costCol = color.RGBA{70, 62, 48, 180}
+		costCol = color.RGBA{118, 110, 96, 205}
 	} else if !canAfford {
 		costCol = ColorRed
 	}
@@ -530,8 +530,8 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 		col := i % recruitCardsPerRow
 		startX := x + recruitPanelPad + float32(col)*(cardW+gap)
 		cardY := cy + float32(row)*(cardH+gap)
-		vector.FillRect(screen, startX, cardY, cardW, cardH, color.RGBA{24, 21, 16, 235}, false)
-		vector.StrokeRect(screen, startX, cardY, cardW, cardH, 1, color.RGBA{118, 97, 58, 225}, false)
+		vector.FillRect(screen, startX, cardY, cardW, cardH, color.RGBA{252, 252, 252, 242}, false)
+		vector.StrokeRect(screen, startX, cardY, cardW, cardH, 1, color.RGBA{160, 160, 160, 225}, false)
 		if armySheet != nil {
 			r := unitSpriteRect(it.uid, armySheet)
 			if !r.Empty() {
@@ -572,7 +572,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 			hovered := fmx >= float64(bx) && fmx <= float64(bx+bw) && fmy >= float64(by) && fmy <= float64(by+bh)
 			drawQueueCancelButton(screen, bx, by, bw, bh, hovered)
 		}
-		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+98, FaceSmall, color.RGBA{220, 195, 120, 235})
+		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+98, FaceSmall, color.RGBA{85, 75, 50, 240})
 	}
 }
 
