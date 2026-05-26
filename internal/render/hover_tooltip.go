@@ -12,7 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID) {
+func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, recruitPanelOpen bool) {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
@@ -30,8 +30,10 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		drawBuildingTooltip(screen, gs, rid, bid, fx, fy)
 		return
 	}
-	if uid := RecruitPanelHitTest(fx, fy, gs, rid); uid != "" {
+	if recruitPanelOpen {
+		if uid := RecruitPanelHitTest(fx, fy, gs, rid); uid != "" {
 		drawUnitTooltip(screen, gs, uid, fx, fy)
+		}
 	}
 }
 
