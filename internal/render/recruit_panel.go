@@ -15,6 +15,7 @@ import (
 var (
 	armySheet       *ebiten.Image
 	armySheetLoaded bool
+	recruitClipBuf  *ebiten.Image
 )
 
 func ensureArmySheet() {
@@ -23,6 +24,7 @@ func ensureArmySheet() {
 	}
 	armySheetLoaded = true
 	armySheet = tryLoadImage(ActiveScenarioPath + "/sprites/army.png")
+	recruitClipBuf = ebiten.NewImage(160, 120)
 }
 
 var unitDisplayOrder = []string{
@@ -64,16 +66,19 @@ func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 }
 
 const (
-	recruitMaxCards   = 20
-	recruitCardW      = float32(78)
-	recruitCardH      = float32(112)
-	recruitCardGap    = float32(6)
-	recruitPanelPad   = float32(14)
-	recruitHeaderH    = float32(52)
-	recruitSectionH   = float32(156)
-	recruitSectionGap = float32(10)
-	recruitPanelH     = int(recruitHeaderH + recruitSectionH + recruitSectionGap + recruitSectionH + 18)
-	recruitBottomGap  = float32(150)
+	recruitMaxCards       = 20
+	recruitCardsPerRow    = 10
+	recruitMaxRows        = 2
+	recruitQueueMaxOrders = 20
+	recruitCardW          = float32(78)
+	recruitCardH          = float32(112)
+	recruitCardGap        = float32(6)
+	recruitPanelPad       = float32(14)
+	recruitHeaderH        = float32(52)
+	recruitSectionH       = float32(262)
+	recruitSectionGap     = float32(10)
+	recruitPanelH         = int(recruitHeaderH + recruitSectionH + recruitSectionGap + recruitSectionH + 18)
+	recruitBottomGap      = float32(150)
 )
 
 func recruitPanelX(slots int) float32 {
@@ -88,12 +93,7 @@ func recruitPanelY() float32 {
 	return float32(ScreenHeight) - float32(recruitPanelH) - recruitBottomGap
 }
 func recruitPanelW(slots int) float32 {
-	if slots < 1 {
-		slots = 1
-	}
-	if slots > recruitMaxCards {
-		slots = recruitMaxCards
-	}
+	slots = recruitCardsPerRow
 	w := recruitPanelPad*2 + recruitCardW*float32(slots) + recruitCardGap*float32(slots-1)
 	maxW := float32(ScreenWidth) - 16
 	if w > maxW {
@@ -110,12 +110,61 @@ const (
 	RecruitPanelActionIncrease
 	RecruitPanelActionDecrease
 	RecruitPanelActionCancel
+	RecruitPanelActionClose
 )
 
 type RecruitPanelAction struct {
 	Kind    RecruitPanelActionKind
 	UnitID  string
 	OrderID string
+}
+
+func recruitQueueIsFull(gs *state.GameState, rid world.RegionID) bool {
+	return len(recruitQueueItems(gs, rid)) >= recruitQueueMaxOrders
+}
+
+func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
+	if !RecruitPanelVisible(gs, rid) || recruitQueueIsFull(gs, rid) {
+		return false
+	}
+	region := gs.Regions[rid]
+	ff := gs.Factions[gs.PlayerFactionID]
+	if region == nil || ff == nil {
+		return false
+	}
+	hasBarracks, hasPort := false, false
+	for _, bid := range region.Buildings {
+		switch bid {
+		case "barracks":
+			hasBarracks = true
+		case "port":
+			hasPort = true
+		}
+	}
+	for _, uid := range visibleUnitIDs(gs, region) {
+		utype := gs.UnitTypes[uid]
+		if utype == nil {
+			continue
+		}
+		switch utype.RequiredBldg {
+		case "barracks":
+			if !hasBarracks {
+				continue
+			}
+		case "port":
+			if !hasPort {
+				continue
+			}
+		}
+		if utype.RequiredTech != "" && !ff.Research.Completed[utype.RequiredTech] {
+			continue
+		}
+		if ff.Gold < utype.GoldCost {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {
@@ -134,8 +183,14 @@ func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 }
 
 func RecruitPanelActionHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) RecruitPanelAction {
+	if recruitPanelCloseHitTest(mx, my, gs, rid) {
+		return RecruitPanelAction{Kind: RecruitPanelActionClose}
+	}
 	if orderID := recruitQueueCancelHitTest(mx, my, gs, rid); orderID != "" {
 		return RecruitPanelAction{Kind: RecruitPanelActionCancel, OrderID: orderID}
+	}
+	if recruitQueueIsFull(gs, rid) {
+		return RecruitPanelAction{}
 	}
 	if uid := recruitUnitCardHitTest(mx, my, gs, rid); uid != "" {
 		return RecruitPanelAction{Kind: RecruitPanelActionRecruit, UnitID: uid}
@@ -171,6 +226,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
 	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawRecruitPanelCloseButton(screen, px, py, pw)
 
 	titleW := MeasureText("BIRIM OLUSTUR", FaceSmall)
 	DrawText(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2-titleW/2, float64(py)+8, FaceSmall, color.RGBA{200, 170, 90, 220})
@@ -195,25 +251,62 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	display := visibleUnitIDs(gs, region)
 	topY := py + recruitHeaderH + 4
 	cardW, cardH, gap := recruitCardMetrics(slots, pw)
-	x := px + recruitPanelPad
 	maxTop := len(display)
-	if maxTop > slots {
-		maxTop = slots
+	if maxTop > recruitMaxCards {
+		maxTop = recruitMaxCards
 	}
 	for i := 0; i < maxTop; i++ {
 		uid := display[i]
-		drawRecruitCard(screen, gs, rid, uid, hasBarracks, hasPort, x, topY, cardW, cardH)
-		x += cardW + gap
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		x := px + recruitPanelPad + float32(col)*(cardW+gap)
+		y := topY + float32(row)*(cardH+gap)
+		drawRecruitCard(screen, gs, rid, uid, hasBarracks, hasPort, x, y, cardW, cardH)
 	}
 
 	queueY := topY + recruitSectionH + recruitSectionGap
 	drawRecruitQueueSection(screen, gs, rid, slots, px, queueY, pw, recruitSectionH)
 }
 
-func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
-	if slots < 1 {
-		slots = 1
+func recruitPanelCloseRect(px, py, pw float32) (x, y, w, h float32) {
+	w = 18
+	h = 18
+	x = px + pw - w - 8
+	y = py + 7
+	return x, y, w, h
+}
+
+func drawRecruitPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
+	x, y, w, h := recruitPanelCloseRect(px, py, pw)
+	mx, my := ebiten.CursorPosition()
+	hovered := float64(mx) >= float64(x) && float64(mx) <= float64(x+w) && float64(my) >= float64(y) && float64(my) <= float64(y+h)
+	bg := color.RGBA{70, 26, 22, 235}
+	border := color.RGBA{170, 88, 76, 235}
+	txt := color.RGBA{255, 220, 210, 240}
+	if hovered {
+		bg = color.RGBA{128, 40, 30, 245}
+		border = color.RGBA{240, 140, 120, 245}
+		txt = color.RGBA{255, 245, 235, 255}
 	}
+	vector.FillRect(screen, x, y, w, h, bg, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
+	DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, txt)
+}
+
+func recruitPanelCloseHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if !RecruitPanelVisible(gs, rid) {
+		return false
+	}
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	py := recruitPanelY()
+	pw := recruitPanelW(slots)
+	x, y, w, h := recruitPanelCloseRect(px, py, pw)
+	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+}
+
+func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
+	slots = recruitCardsPerRow
 	gap = recruitCardGap
 	avail := panelW - recruitPanelPad*2 - gap*float32(slots-1)
 	cardW = avail / float32(slots)
@@ -243,8 +336,6 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
 	canAfford := ff != nil && ff.Gold >= utype.GoldCost
 	fullyAvail := !needsBuilding && !needsTech
-	queued, firstTurn := queuedUnitInfo(gs, rid, uid)
-
 	slotBg := color.RGBA{20, 16, 12, 200}
 	borderCol := color.RGBA{55, 45, 30, 200}
 	if fullyAvail {
@@ -260,34 +351,38 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		if !r.Empty() {
 			sub := armySheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			fitW := float64(cardW - 8)
-			fitH := float64(spriteH - 6)
+			// Biraz daha büyük görünmesi için kart genişliğinden taşan hedef alan.
+			// Taşan kısım kart içinde gizlenmiş/kırpılmış gibi görünür.
+			fitW := float64(cardW + 50)
+			fitH := float64(spriteH + 40)
 			scale := fitW / float64(r.Dx())
 			if hScale := fitH / float64(r.Dy()); hScale < scale {
 				scale = hScale
 			}
 			drawW := float64(r.Dx()) * scale
 			drawH := float64(r.Dy()) * scale
-			op.GeoM.Scale(scale, scale)
-			op.GeoM.Translate(float64(sx)+float64(cardW)/2-drawW/2, float64(sy)+float64(spriteH)/2-drawH/2)
-			switch {
-			case needsBuilding:
-				op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
-			case needsTech:
-				op.ColorScale.Scale(0.45, 0.45, 0.45, 1.0)
-			case !canAfford:
-				op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
+			if recruitClipBuf != nil {
+				clipW := int(cardW - 2)
+				clipH := int(spriteH - 2)
+				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
+					recruitClipBuf.Clear()
+					op.GeoM.Scale(scale, scale)
+					op.GeoM.Translate(float64(clipW)/2-drawW/2, float64(clipH)/2-drawH/2)
+					switch {
+					case needsBuilding:
+						op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
+					case needsTech:
+						op.ColorScale.Scale(0.45, 0.45, 0.45, 1.0)
+					case !canAfford:
+						op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
+					}
+					recruitClipBuf.DrawImage(sub, op)
+					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
+					dst := &ebiten.DrawImageOptions{}
+					dst.GeoM.Translate(float64(sx)+1, float64(sy)+1)
+					screen.DrawImage(cropped, dst)
+				}
 			}
-			screen.DrawImage(sub, op)
-			turnsShown := utype.TurnsRequired
-			if queued > 0 && firstTurn > 0 {
-				turnsShown = firstTurn
-			}
-			badge := itoa(turnsShown) + " Tur"
-			bx, by := sx+cardW-52, sy+4
-			vector.FillRect(screen, bx, by, 42, 13, color.RGBA{18, 16, 12, 230}, false)
-			vector.StrokeRect(screen, bx, by, 42, 13, 1, color.RGBA{120, 98, 56, 220}, false)
-			DrawTextCentered(screen, badge, float64(bx)+21, float64(by)+2, FaceSmall, color.RGBA{220, 195, 120, 235})
 		}
 	}
 
@@ -377,17 +472,19 @@ func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.Regio
 	topY := py + recruitHeaderH + 4
 	pw := recruitPanelW(slots)
 	cardW, cardH, gap := recruitCardMetrics(slots, pw)
-	x := px + recruitPanelPad
 	maxTop := len(display)
-	if maxTop > slots {
-		maxTop = slots
+	if maxTop > recruitMaxCards {
+		maxTop = recruitMaxCards
 	}
 	for i := 0; i < maxTop; i++ {
 		uid := display[i]
-		if mx >= float64(x) && mx <= float64(x+cardW) && my >= float64(topY) && my <= float64(topY+cardH) {
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		x := px + recruitPanelPad + float32(col)*(cardW+gap)
+		y := topY + float32(row)*(cardH+gap)
+		if mx >= float64(x) && mx <= float64(x+cardW) && my >= float64(y) && my <= float64(y+cardH) {
 			return uid
 		}
-		x += cardW + gap
 	}
 	return ""
 }
@@ -401,24 +498,13 @@ type recruitQueueItem struct {
 }
 
 func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueItem {
-	items := make([]recruitQueueItem, 0, 32)
-	existingCounts := make(map[string]int)
-	for _, a := range gs.Armies {
-		if a.OwnerID != string(gs.PlayerFactionID) || a.RegionID != rid || a.IsNaval {
-			continue
-		}
-		for _, u := range a.Units {
-			existingCounts[u.TypeID]++
-		}
-	}
-	for _, uid := range unitDisplayOrder {
-		if c := existingCounts[uid]; c > 0 {
-			items = append(items, recruitQueueItem{uid: uid, count: c})
-		}
-	}
+	items := make([]recruitQueueItem, 0, recruitQueueMaxOrders)
 	for _, order := range gs.ProductionQueue {
 		if order.Kind != "unit" || order.RegionID != rid || order.FactionID != string(gs.PlayerFactionID) {
 			continue
+		}
+		if len(items) >= recruitQueueMaxOrders {
+			break
 		}
 		items = append(items, recruitQueueItem{uid: order.TypeID, count: 1, queued: true, turns: order.TurnsLeft, orderID: order.ID})
 	}
@@ -430,52 +516,63 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 	fmx, fmy := float64(mx), float64(my)
 	vector.FillRect(screen, x+8, y, w-16, h, color.RGBA{14, 12, 10, 220}, false)
 	vector.StrokeRect(screen, x+8, y, w-16, h, 1, color.RGBA{88, 72, 44, 220}, false)
-	DrawText(screen, "ORDU + EGITIM SIRASI", float64(x)+16, float64(y)+6, FaceSmall, color.RGBA{190, 165, 100, 230})
+	DrawText(screen, "EGITIM SIRASI", float64(x)+16, float64(y)+6, FaceSmall, color.RGBA{190, 165, 100, 230})
 	items := recruitQueueItems(gs, rid)
 	cardW, cardH, gap := recruitCardMetrics(slots, w)
-	startX := x + recruitPanelPad
 	cy := y + 26
 	maxItems := len(items)
-	if maxItems > slots {
-		maxItems = slots
+	if maxItems > recruitQueueMaxOrders {
+		maxItems = recruitQueueMaxOrders
 	}
 	for i := 0; i < maxItems; i++ {
 		it := items[i]
-		if startX+cardW > x+w-recruitPanelPad {
-			break
-		}
-		vector.FillRect(screen, startX, cy, cardW, cardH, color.RGBA{24, 21, 16, 235}, false)
-		vector.StrokeRect(screen, startX, cy, cardW, cardH, 1, color.RGBA{118, 97, 58, 225}, false)
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		startX := x + recruitPanelPad + float32(col)*(cardW+gap)
+		cardY := cy + float32(row)*(cardH+gap)
+		vector.FillRect(screen, startX, cardY, cardW, cardH, color.RGBA{24, 21, 16, 235}, false)
+		vector.StrokeRect(screen, startX, cardY, cardW, cardH, 1, color.RGBA{118, 97, 58, 225}, false)
 		if armySheet != nil {
 			r := unitSpriteRect(it.uid, armySheet)
 			if !r.Empty() {
 				sub := armySheet.SubImage(r).(*ebiten.Image)
 				op := &ebiten.DrawImageOptions{}
-				fitW := float64(cardW - 6)
-				fitH := float64(76)
+				// Kuyruk kartlarında da daha iri sprite gösterimi.
+				fitW := float64(cardW + 70)
+				fitH := float64(140)
 				scale := fitW / float64(r.Dx())
 				if hScale := fitH / float64(r.Dy()); hScale < scale {
 					scale = hScale
 				}
 				drawW := float64(r.Dx()) * scale
 				drawH := float64(r.Dy()) * scale
-				op.GeoM.Scale(scale, scale)
-				op.GeoM.Translate(float64(startX)+float64(cardW)/2-drawW/2, float64(cy)+8+fitH/2-drawH/2)
-				if it.queued {
-					op.ColorScale.Scale(0.82, 0.82, 0.82, 1.0)
+				if recruitClipBuf != nil {
+					clipW := int(cardW - 2)
+					clipH := 75
+					if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
+						recruitClipBuf.Clear()
+						op.GeoM.Scale(scale, scale)
+						op.GeoM.Translate(float64(clipW)/2-drawW/2, float64(clipH)/2-drawH/2)
+						if it.queued {
+							op.ColorScale.Scale(0.82, 0.82, 0.82, 1.0)
+						}
+						recruitClipBuf.DrawImage(sub, op)
+						cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
+						dst := &ebiten.DrawImageOptions{}
+						dst.GeoM.Translate(float64(startX)+1, float64(cardY)+1)
+						screen.DrawImage(cropped, dst)
+					}
 				}
-				screen.DrawImage(sub, op)
 			}
 		}
 		label := "x" + itoa(it.count)
 		if it.queued {
 			label = "+" + itoa(it.turns) + "T"
-			bx, by, bw, bh := startX+cardW-19, cy+2, float32(17), float32(17)
+			bx, by, bw, bh := startX+cardW-19, cardY+2, float32(17), float32(17)
 			hovered := fmx >= float64(bx) && fmx <= float64(bx+bw) && fmy >= float64(by) && fmy <= float64(by+bh)
 			drawQueueCancelButton(screen, bx, by, bw, bh, hovered)
 		}
-		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cy)+98, FaceSmall, color.RGBA{220, 195, 120, 235})
-		startX += cardW + gap
+		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+98, FaceSmall, color.RGBA{220, 195, 120, 235})
 	}
 }
 
@@ -504,42 +601,28 @@ func recruitQueueCancelHitTest(mx, my float64, gs *state.GameState, rid world.Re
 	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
 	items := recruitQueueItems(gs, rid)
 	cardW, _, gap := recruitCardMetrics(slots, pw)
-	x := px + recruitPanelPad
 	maxItems := len(items)
-	if maxItems > slots {
-		maxItems = slots
+	if maxItems > recruitQueueMaxOrders {
+		maxItems = recruitQueueMaxOrders
 	}
 	for i := 0; i < maxItems; i++ {
 		it := items[i]
-		if x+cardW > px+pw-recruitPanelPad {
-			break
-		}
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		x := px + recruitPanelPad + float32(col)*(cardW+gap)
+		y := queueY + 26 + float32(row)*(recruitCardH+gap)
 		if it.queued && it.orderID != "" {
-			bx, by, bw, bh := x+cardW-19, queueY+26+2, float32(17), float32(17)
+			bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
 			if mx >= float64(bx) && mx <= float64(bx+bw) && my >= float64(by) && my <= float64(by+bh) {
 				return it.orderID
 			}
 		}
-		x += cardW + gap
 	}
 	return ""
 }
 
 func recruitPanelSlots(gs *state.GameState, rid world.RegionID) int {
-	region := gs.Regions[rid]
-	displayCount := len(visibleUnitIDs(gs, region))
-	queueCount := len(recruitQueueItems(gs, rid))
-	slots := displayCount
-	if queueCount > slots {
-		slots = queueCount
-	}
-	if slots < 1 {
-		slots = 1
-	}
-	if slots > recruitMaxCards {
-		slots = recruitMaxCards
-	}
-	return slots
+	return recruitCardsPerRow
 }
 
 func shortUnitName(name string, maxRunes int) string {

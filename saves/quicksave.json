@@ -11514,7 +11514,7 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 47851,
+      "gold": 46261,
       "grain": 69862,
       "iron": 142,
       "timber": 80,
@@ -31025,8 +31025,73 @@
       }
     ]
   },
-  "production_queue": [],
-  "next_production_seq": 189,
+  "production_queue": [
+    {
+      "id": "prod_190",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "militia",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_191",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "infantry",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_192",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "infantry",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_193",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "infantry",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_194",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "infantry",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_195",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "cavalry",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_196",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "cannon",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_197",
+      "kind": "unit",
+      "faction_id": "ottoman",
+      "region_id": "germiyan",
+      "type_id": "catapult",
+      "turns_left": 1
+    }
+  ],
+  "next_production_seq": 197,
   "next_army_seq": 2471,
   "phase": "player_turn",
   "winner_id": "",

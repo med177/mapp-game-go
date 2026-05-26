@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-10
+last_updated: 2026-05-26
 related: [state-management, render-pipeline]
 ---
 
@@ -109,7 +109,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
-| `ActionEndTurn` | Enter/Space | AI turuna geç |
+| `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
 | `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı / savaş |
 | `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
@@ -119,7 +119,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 | `ActionProposePeace` | Diplomasi paneli | Barış teklif et |
 | `ActionProposeAlliance` | Diplomasi paneli | İttifak kur |
 | `ActionProposeTrade` | Diplomasi paneli | Ticaret anlaşması |
-| `ActionSave` / `ActionLoad` | S / L | Kaydet / Yükle |
+| `ActionSave` / `ActionLoad` | S veya Ctrl+S / L | `quicksave` slotuna kaydet / `autosave` slotundan yükle |
 | `ActionAdjustTax` | . / , | Vergi ±5% |
 
 ---

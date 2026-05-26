@@ -27,6 +27,7 @@ var slotDefs = []struct {
 	path        string
 }{
 	{"autosave", "Otomatik Kayıt", "saves/autosave.json"},
+	{"quicksave", "Hızlı Kayıt", "saves/quicksave.json"},
 	{"slot1", "Kayıt 1", "saves/slot1.json"},
 	{"slot2", "Kayıt 2", "saves/slot2.json"},
 	{"slot3", "Kayıt 3", "saves/slot3.json"},

@@ -151,29 +151,32 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 	ensureArmySheet()
 	x, y, w, h := tooltipRect(mx, my, 300, 166)
 	drawTooltipBox(screen, x, y, w, h)
+	iconX, iconY := x+10.0, y+14.0
+	iconW, iconH := 100.0, 80.0
+	textX := iconX + iconW + 12
 
-	DrawText(screen, utype.NameTR, x+84, y+12, FaceMed, ColorGold)
-	DrawText(screen, fmt.Sprintf("Maliyet: %d altın", utype.GoldCost), x+84, y+34, FaceSmall, ColorWhite)
-	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), x+84, y+52, FaceSmall, ColorGray)
+	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
+	DrawText(screen, fmt.Sprintf("Maliyet: %d altın", utype.GoldCost), textX, y+34, FaceSmall, ColorWhite)
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, y+52, FaceSmall, ColorGray)
 
 	if armySheet != nil {
 		r := unitSpriteRect(uid, armySheet)
 		if !r.Empty() {
 			sub := armySheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			fitW := 70.0
-			fitH := 58.0
+				fitW := iconW
+				fitH := iconH
 			scale := fitW / float64(r.Dx())
 			if hScale := fitH / float64(r.Dy()); hScale < scale {
 				scale = hScale
 			}
 			drawW := float64(r.Dx()) * scale
 			drawH := float64(r.Dy()) * scale
-			op.GeoM.Scale(scale, scale)
-			op.GeoM.Translate(
-				x+10+(fitW-drawW)/2,
-				y+14+(fitH-drawH)/2,
-			)
+				op.GeoM.Scale(scale, scale)
+				op.GeoM.Translate(
+					iconX+(fitW-drawW)/2,
+					iconY+(fitH-drawH)/2,
+				)
 			screen.DrawImage(sub, op)
 		}
 	}

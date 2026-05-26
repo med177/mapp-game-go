@@ -340,13 +340,14 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll) {
 		return true
 	}
-	if r.SelectedRegion != "" {
-		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
-			RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
-			recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" {
-			return true
+		if r.SelectedRegion != "" {
+			if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
+				RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
+				recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
+				recruitPanelCloseHitTest(fx, fy, r.gs, r.SelectedRegion) {
+				return true
+			}
 		}
-	}
 	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		return true
 	}

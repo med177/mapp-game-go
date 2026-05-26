@@ -30,6 +30,7 @@ const (
 	confirmDialogH    = float32(166)
 	confirmDialogBtnW = float32(120)
 	confirmDialogBtnH = float32(36)
+	regionDoubleClickFrames = 18
 )
 
 // Renderer kamerayı ve dünya haritasını yönetir.
@@ -48,8 +49,11 @@ type Renderer struct {
 	// Seçim
 	SelectedRegion world.RegionID
 	SelectedArmy   army.ArmyID
+	showRecruitPanel bool
 	recruitUnitID  string
 	recruitQty     int
+	lastRegionClickID   world.RegionID
+	lastRegionClickTick int
 
 	// Senaryo seçim ekranı
 	scenarioCursor int
@@ -693,9 +697,12 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 8. UI panelleri
 	if r.gs.Phase != state.PhaseEditMode {
-		DrawBottomPanel(screen, r.gs, r.showDiplomacy, r.showTech, r.mapMode)
-		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
-		DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
+			recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion)
+			DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, r.showDiplomacy, r.showTech, r.mapMode)
+			DrawRegionPanel(screen, r.gs, r.SelectedRegion)
+			if r.mapMode != MapModeTrade && r.showRecruitPanel {
+				DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
+			}
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	}
@@ -5841,12 +5848,13 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyF11) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
-	if r.keyJustPressed(ebiten.KeyEscape) {
-		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
-			r.SelectedArmy = ""
-			r.SelectedRegion = ""
-			r.resetRecruitSelection()
-			r.showDiplomacy = false
+		if r.keyJustPressed(ebiten.KeyEscape) {
+			if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
+				r.SelectedArmy = ""
+				r.SelectedRegion = ""
+				r.showRecruitPanel = false
+				r.resetRecruitSelection()
+				r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
 			r.showTech = false
 		} else {
@@ -5993,6 +6001,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
+		r.showRecruitPanel = false
 		r.resetRecruitSelection()
 		return InputAction{}
 	}
@@ -6057,7 +6066,17 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rects := BottomButtonRects()
 	if fx >= float64(rects[0][0]) && fx <= float64(rects[0][0]+rects[0][2]) &&
 		fy >= float64(rects[0][1]) && fy <= float64(rects[0][1]+rects[0][3]) {
+		if RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) {
+			r.showRecruitPanel = !r.showRecruitPanel
+			r.showDiplomacy = false
+			r.showTech = false
+		}
+		return InputAction{}
+	}
+	if fx >= float64(rects[1][0]) && fx <= float64(rects[1][0]+rects[1][2]) &&
+		fy >= float64(rects[1][1]) && fy <= float64(rects[1][1]+rects[1][3]) {
 		r.showDiplomacy = !r.showDiplomacy
+		r.showRecruitPanel = false
 		r.showTech = false
 		r.diplomacyFocus = 0
 		r.diplomacyScroll = 0
@@ -6065,15 +6084,16 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyTargetFaction = ""
 		return InputAction{}
 	}
-	if fx >= float64(rects[1][0]) && fx <= float64(rects[1][0]+rects[1][2]) &&
-		fy >= float64(rects[1][1]) && fy <= float64(rects[1][1]+rects[1][3]) {
+	if fx >= float64(rects[2][0]) && fx <= float64(rects[2][0]+rects[2][2]) &&
+		fy >= float64(rects[2][1]) && fy <= float64(rects[2][1]+rects[2][3]) {
 		r.showTech = !r.showTech
+		r.showRecruitPanel = false
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
 	}
-	if fx >= float64(rects[2][0]) && fx <= float64(rects[2][0]+rects[2][2]) &&
-		fy >= float64(rects[2][1]) && fy <= float64(rects[2][1]+rects[2][3]) {
+	if fx >= float64(rects[3][0]) && fx <= float64(rects[3][0]+rects[3][2]) &&
+		fy >= float64(rects[3][1]) && fy <= float64(rects[3][1]+rects[3][3]) {
 		return InputAction{Kind: ActionEndTurn}
 	}
 
@@ -6116,30 +6136,35 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 
-	// Birim oluştur paneli tıklaması — bölge seçiminden önce kontrol edilmeli
-	if act := RecruitPanelActionHitTest(fx, fy, r.gs, r.SelectedRegion); act.Kind != RecruitPanelActionNone {
-		switch act.Kind {
-		case RecruitPanelActionIncrease:
-			r.ensureRecruitSelection(act.UnitID)
-			if r.recruitQty < 9 {
-				r.recruitQty++
+	if r.mapMode != MapModeTrade && r.showRecruitPanel {
+		// Birim oluştur paneli tıklaması — bölge seçiminden önce kontrol edilmeli
+		if act := RecruitPanelActionHitTest(fx, fy, r.gs, r.SelectedRegion); act.Kind != RecruitPanelActionNone {
+			switch act.Kind {
+			case RecruitPanelActionIncrease:
+				r.ensureRecruitSelection(act.UnitID)
+				if r.recruitQty < 9 {
+					r.recruitQty++
+				}
+				return InputAction{}
+			case RecruitPanelActionDecrease:
+				r.ensureRecruitSelection(act.UnitID)
+				if r.recruitQty > 1 {
+					r.recruitQty--
+				}
+				return InputAction{}
+			case RecruitPanelActionRecruit:
+				r.ensureRecruitSelection(act.UnitID)
+				return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: act.UnitID, Quantity: r.recruitQty}
+			case RecruitPanelActionCancel:
+				return InputAction{Kind: ActionCancelRecruitOrder, TargetRegion: r.SelectedRegion, BuildingID: act.OrderID}
+			case RecruitPanelActionClose:
+				r.showRecruitPanel = false
+				return InputAction{}
 			}
-			return InputAction{}
-		case RecruitPanelActionDecrease:
-			r.ensureRecruitSelection(act.UnitID)
-			if r.recruitQty > 1 {
-				r.recruitQty--
-			}
-			return InputAction{}
-		case RecruitPanelActionRecruit:
-			r.ensureRecruitSelection(act.UnitID)
-			return InputAction{Kind: ActionRecruitSpecific, TargetRegion: r.SelectedRegion, BuildingID: act.UnitID, Quantity: r.recruitQty}
-		case RecruitPanelActionCancel:
-			return InputAction{Kind: ActionCancelRecruitOrder, TargetRegion: r.SelectedRegion, BuildingID: act.OrderID}
 		}
-	}
-	if RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
-		return InputAction{}
+		if RecruitPanelBoundsHit(fx, fy, r.gs, r.SelectedRegion) {
+			return InputAction{}
+		}
 	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
 		return InputAction{}
@@ -6165,10 +6190,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 				r.SelectedArmy = ""
 				return InputAction{}
 			}
-			r.SelectedArmy = pos.ArmyID
-			r.SelectedRegion = ""
-			r.resetRecruitSelection()
-			return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
+				r.SelectedArmy = pos.ArmyID
+				r.SelectedRegion = ""
+				r.showRecruitPanel = false
+				r.resetRecruitSelection()
+				return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
 		}
 	}
 
@@ -6177,15 +6203,29 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
-			r.SelectedArmy = ""
-			r.SelectedRegion = rid
-			r.resetRecruitSelection()
-			return InputAction{}
+				// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
+				r.SelectedArmy = ""
+				r.SelectedRegion = rid
+				r.showRecruitPanel = false
+				r.resetRecruitSelection()
+				return InputAction{}
 		}
 	}
 	r.SelectedArmy = ""
 	r.SelectedRegion = rid
+	if !RecruitPanelVisible(r.gs, rid) {
+		r.showRecruitPanel = false
+	}
+	isDoubleClick := rid != "" &&
+		rid == r.lastRegionClickID &&
+		r.animationTick-r.lastRegionClickTick <= regionDoubleClickFrames
+	r.lastRegionClickID = rid
+	r.lastRegionClickTick = r.animationTick
+	if isDoubleClick && RecruitPanelButtonEnabled(r.gs, rid) {
+		r.showRecruitPanel = true
+		r.showDiplomacy = false
+		r.showTech = false
+	}
 	r.resetRecruitSelection()
 	return InputAction{}
 }

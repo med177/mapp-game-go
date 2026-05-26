@@ -191,8 +191,14 @@ func (g *Game) Update() error {
 				)
 				break
 			}
+			if !g.saveToSlot("autosave", false, "") {
+				break
+			}
 			g.gs.Phase = state.PhaseAITurn
 		case render.ActionConfirmEndTurn:
+			if !g.saveToSlot("autosave", false, "") {
+				break
+			}
 			g.gs.Phase = state.PhaseAITurn
 		case render.ActionMoveArmy:
 			g.moveArmy(action.ArmyID, action.TargetRegion)
@@ -230,7 +236,7 @@ func (g *Game) Update() error {
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
 		case render.ActionSave:
-			g.saveGame()
+			g.saveToSlot("quicksave", true, "Hızlı kayıt alındı.")
 		case render.ActionLoad:
 			g.startLoadSlot("autosave", state.PhasePlayerTurn)
 		case render.ActionAdjustTax:
@@ -611,15 +617,28 @@ func (g *Game) respondDiplomacyOffer(index int, accepted bool) {
 	}
 }
 
-// saveGame oyunu kaydeder.
-func (g *Game) saveGame() {
-	if err := save.Save(g.gs); err != nil {
+func (g *Game) saveToSlot(slotName string, showSuccess bool, successMsg string) bool {
+	if err := save.SaveToSlot(g.gs, slotName); err != nil {
 		g.renderer.ShowCombatResult("Kayıt hatası: " + err.Error())
-		return
+		return false
 	}
 	g.renderer.HasSave = true
-	g.renderer.HasAutoSave = true
-	g.renderer.ShowCombatResult("Oyun kaydedildi!")
+	if slotName == "autosave" {
+		g.renderer.HasAutoSave = true
+	}
+	if showSuccess {
+		msg := successMsg
+		if msg == "" {
+			msg = "Oyun kaydedildi!"
+		}
+		g.renderer.ShowCombatResult(msg)
+	}
+	return true
+}
+
+// saveGame oyunu otomatik kayıt slotuna kaydeder (geriye dönük çağrılar için).
+func (g *Game) saveGame() {
+	g.saveToSlot("autosave", true, "Oyun kaydedildi!")
 }
 
 func (g *Game) saveScenarioRegions() bool {
@@ -1160,15 +1179,24 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			g.renderer.ShowCombatResult("Filo dolu veya üretim kuyruğuyla dolacak! (max 20 birim)")
 			return
 		}
-		seaFree := army.MaxArmySize - queued
-		if quantity > seaFree {
-			quantity = seaFree
-		}
-		maxByGold := f.Gold / utype.GoldCost
-		if maxByGold <= 0 || quantity <= 0 {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
-			return
-		}
+			seaFree := army.MaxArmySize - queued
+			if quantity > seaFree {
+				quantity = seaFree
+			}
+			pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
+			if pendingInRegion >= 20 {
+				g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+				return
+			}
+			queueFree := 20 - pendingInRegion
+			if quantity > queueFree {
+				quantity = queueFree
+			}
+			maxByGold := f.Gold / utype.GoldCost
+			if maxByGold <= 0 || quantity <= 0 {
+				g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+				return
+			}
 		if quantity > maxByGold {
 			quantity = maxByGold
 		}
@@ -1205,17 +1233,26 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
 			return
 		}
-	} else {
-		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
+		} else {
+			if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
+				g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
+				return
+			}
+		}
+		pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
+		if pendingInRegion >= 20 {
+			g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
 			return
 		}
-	}
-	maxByGold := f.Gold / utype.GoldCost
-	if maxByGold <= 0 || quantity <= 0 {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
-		return
-	}
+		queueFree := 20 - pendingInRegion
+		if quantity > queueFree {
+			quantity = queueFree
+		}
+		maxByGold := f.Gold / utype.GoldCost
+		if maxByGold <= 0 || quantity <= 0 {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+			return
+		}
 	if quantity > maxByGold {
 		quantity = maxByGold
 	}

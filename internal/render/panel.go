@@ -115,7 +115,7 @@ func ensureMiniMapBg() {
 }
 
 func bottomActionHudRect() (x, y, w, h float32) {
-	w = btnW*3 + actionHudGap*2 + actionHudPad*2
+	w = btnW*4 + actionHudGap*3 + actionHudPad*2
 	h = btnH + actionHudPad*2
 	x = float32(ScreenWidth)/2 - w/2
 	y = float32(ScreenHeight) - h
@@ -145,14 +145,16 @@ func mapModeButtonRects() [2][4]float32 {
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
-// [0]=Diplomasi  [1]=Teknoloji  [2]=Tur Bitir
-func BottomButtonRects() [3][4]float32 {
+// [0]=Ordu [1]=Diplomasi [2]=Teknoloji [3]=Tur Bitir
+func BottomButtonRects() [4][4]float32 {
 	hudX, hudY, _, _ := bottomActionHudRect()
 	by := hudY + actionHudPad
-	diplX := hudX + actionHudPad
+	armyX := hudX + actionHudPad
+	diplX := armyX + btnW + actionHudGap
 	techX := diplX + btnW + actionHudGap
 	endX := techX + btnW + actionHudGap
-	return [3][4]float32{
+	return [4][4]float32{
+		{armyX, by, btnW, btnH},
 		{diplX, by, btnW, btnH},
 		{techX, by, btnW, btnH},
 		{endX, by, btnW, btnH},
@@ -263,7 +265,7 @@ func musicHudHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, showTech bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled, showDiplomacy, showTech bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -353,27 +355,35 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showDiplomacy, s
 	vector.FillRect(screen, hudX, hudY, hudW, 3, panelBorder, false)
 
 	rects := BottomButtonRects()
-	labels := [3]string{"Diplomasi", "Teknoloji", "Tur Bitir ►"}
-	active := [3]bool{showDiplomacy, showTech, false}
-	bgNorm := [3]color.RGBA{
+	labels := [4]string{"Ordu", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
+	active := [4]bool{showRecruit, showDiplomacy, showTech, false}
+	enabled := [4]bool{recruitEnabled, true, true, true}
+	bgNorm := [4]color.RGBA{
+		{88, 62, 30, 220},
 		{40, 65, 110, 215},
 		{60, 40, 95, 215},
 		{40, 90, 40, 230},
 	}
-	bgAct := [3]color.RGBA{
+	bgAct := [4]color.RGBA{
+		{150, 106, 48, 245},
 		{80, 130, 200, 240},
 		{110, 70, 170, 240},
 		{70, 150, 70, 255},
 	}
 	for i, r := range rects {
 		bg := bgNorm[i]
+		txtCol := ColorWhite
+		if !enabled[i] {
+			bg = color.RGBA{34, 30, 24, 180}
+			txtCol = color.RGBA{120, 112, 96, 210}
+		}
 		if active[i] {
 			bg = bgAct[i]
 		}
 		vector.FillRect(screen, r[0], r[1], r[2], r[3], bg, false)
 		vector.StrokeRect(screen, r[0], r[1], r[2], r[3], 1.5, panelBorder, false)
 		tw := MeasureText(labels[i], FaceMed)
-		DrawText(screen, labels[i], float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, ColorWhite)
+		DrawText(screen, labels[i], float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, txtCol)
 	}
 	drawMapModeHud(screen, mapMode)
 
