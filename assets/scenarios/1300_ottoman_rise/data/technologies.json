@@ -1,357 +1,357 @@
 [
   {
-    "id": "iron_weapons",
-    "name_tr": "Demir Silahlar",
     "category": "military",
     "description_tr": "Piyade birimlerinin saldırı gücü +10%",
-    "gold_cost": 15,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
-      "infantry_attack_mod": 0.10
-    }
+      "infantry_attack_mod": 0.1
+    },
+    "gold_cost": 15,
+    "id": "iron_weapons",
+    "name_tr": "Demir Silahlar",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "steel_blades",
-    "name_tr": "Çelik Kılıçlar",
     "category": "military",
     "description_tr": "Piyade birimlerinin saldırı gücü +20%",
+    "effects": {
+      "infantry_attack_mod": 0.2
+    },
     "gold_cost": 30,
-    "turns_required": 4,
+    "id": "steel_blades",
+    "name_tr": "Çelik Kılıçlar",
     "requires": [
       "iron_weapons"
     ],
-    "effects": {
-      "infantry_attack_mod": 0.20
-    }
+    "turns_required": 4
   },
   {
-    "id": "heavy_armor",
-    "name_tr": "Ağır Zırh",
     "category": "military",
     "description_tr": "Tüm kara birimlerinin savunması +15%",
+    "effects": {
+      "land_defense_mod": 0.15
+    },
     "gold_cost": 20,
-    "turns_required": 4,
+    "id": "heavy_armor",
+    "name_tr": "Ağır Zırh",
     "requires": [
       "iron_weapons"
     ],
-    "effects": {
-      "land_defense_mod": 0.15
-    }
+    "turns_required": 4
   },
   {
-    "id": "siege_engines",
-    "name_tr": "Kuşatma Makineleri",
     "category": "military",
     "description_tr": "Topçu birimlerinin gücü +25%",
+    "effects": {
+      "siege_attack_mod": 0.25
+    },
     "gold_cost": 30,
-    "turns_required": 5,
+    "id": "siege_engines",
+    "name_tr": "Kuşatma Makineleri",
     "requires": [
       "steel_blades"
     ],
-    "effects": {
-      "siege_attack_mod": 0.25
-    }
+    "turns_required": 5
   },
   {
-    "id": "cavalry_tactics",
-    "name_tr": "Süvari Taktikleri",
     "category": "military",
     "description_tr": "Süvari birimlerinin saldırı gücü +20%",
-    "gold_cost": 20,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
-      "cavalry_attack_mod": 0.20
-    }
+      "cavalry_attack_mod": 0.2
+    },
+    "gold_cost": 20,
+    "id": "cavalry_tactics",
+    "name_tr": "Süvari Taktikleri",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "trade_routes",
-    "name_tr": "Ticaret Yolları",
     "category": "economy",
     "description_tr": "Her bölgeden altın geliri +5",
-    "gold_cost": 12,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
       "gold_per_region": 5
-    }
+    },
+    "gold_cost": 12,
+    "id": "trade_routes",
+    "name_tr": "Ticaret Yolları",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "banking",
-    "name_tr": "Bankacılık",
     "category": "economy",
     "description_tr": "Her bölgeden altın geliri +10",
+    "effects": {
+      "gold_per_region": 10
+    },
     "gold_cost": 28,
-    "turns_required": 4,
+    "id": "banking",
+    "name_tr": "Bankacılık",
     "requires": [
       "trade_routes"
     ],
-    "effects": {
-      "gold_per_region": 10
-    }
+    "turns_required": 4
   },
   {
-    "id": "crop_rotation",
-    "name_tr": "Nöbetleşe Ekim",
     "category": "economy",
     "description_tr": "Tüm bölgelerden tahıl üretimi +20%",
-    "gold_cost": 18,
-    "turns_required": 4,
-    "requires": [],
     "effects": {
-      "grain_mod": 0.20
-    }
+      "grain_mod": 0.2
+    },
+    "gold_cost": 18,
+    "id": "crop_rotation",
+    "name_tr": "Nöbetleşe Ekim",
+    "requires": [],
+    "turns_required": 4
   },
   {
-    "id": "guilds",
-    "name_tr": "Loncalar",
     "category": "economy",
     "description_tr": "Pazar geliri iki katına çıkar",
+    "effects": {
+      "market_gold_mod": 1
+    },
     "gold_cost": 40,
-    "turns_required": 5,
+    "id": "guilds",
+    "name_tr": "Loncalar",
     "requires": [
       "banking"
     ],
-    "effects": {
-      "market_gold_mod": 1.0
-    }
+    "turns_required": 5
   },
   {
-    "id": "diplomacy",
-    "name_tr": "Diplomasi Sanatı",
     "category": "diplomacy",
     "description_tr": "Barış teklifleri daha kolay kabul edilir; ilişki puanı +10 bonus",
-    "gold_cost": 10,
-    "turns_required": 2,
-    "requires": [],
     "effects": {
       "peace_relation_bonus": 10
-    }
+    },
+    "gold_cost": 10,
+    "id": "diplomacy",
+    "name_tr": "Diplomasi Sanatı",
+    "requires": [],
+    "turns_required": 2
   },
   {
-    "id": "espionage",
-    "name_tr": "Casusluk",
     "category": "diplomacy",
     "description_tr": "Düşman ordularının güçlerini gör",
+    "effects": {
+      "reveal_enemy_strength": true
+    },
     "gold_cost": 20,
-    "turns_required": 3,
+    "id": "espionage",
+    "name_tr": "Casusluk",
     "requires": [
       "diplomacy"
     ],
-    "effects": {
-      "reveal_enemy_strength": true
-    }
+    "turns_required": 3
   },
   {
-    "id": "navigation",
-    "name_tr": "Denizcilik",
     "category": "naval",
     "description_tr": "Deniz birimlerinin hareket puanı +1",
-    "gold_cost": 15,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
       "naval_move_bonus": 1
-    }
+    },
+    "gold_cost": 15,
+    "id": "navigation",
+    "name_tr": "Denizcilik",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "cartography",
-    "name_tr": "Kartografya",
     "category": "naval",
     "description_tr": "Tüm ordulara +1 hareket puanı",
+    "effects": {
+      "move_bonus": 1
+    },
     "gold_cost": 20,
-    "turns_required": 4,
+    "id": "cartography",
+    "name_tr": "Kartografya",
     "requires": [
       "navigation"
     ],
-    "effects": {
-      "move_bonus": 1
-    }
+    "turns_required": 4
   },
   {
-    "id": "theology",
-    "name_tr": "İlahiyat",
     "category": "religion",
     "description_tr": "Halk memnuniyeti +5 tüm bölgelerde",
-    "gold_cost": 10,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
       "satisfaction_bonus": 5
-    }
+    },
+    "gold_cost": 10,
+    "id": "theology",
+    "name_tr": "İlahiyat",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "proselytism",
-    "name_tr": "Misyonerlik",
     "category": "religion",
     "description_tr": "Din dönüşümü hızı iki katına çıkar",
+    "effects": {
+      "conversion_speed_mod": 1
+    },
     "gold_cost": 25,
-    "turns_required": 4,
+    "id": "proselytism",
+    "name_tr": "Misyonerlik",
     "requires": [
       "theology"
     ],
-    "effects": {
-      "conversion_speed_mod": 1.0
-    }
+    "turns_required": 4
   },
   {
-    "id": "horse_breeding",
-    "name_tr": "At Yetiştiriciliği",
     "category": "military",
     "description_tr": "Süvari eğitim altyapısı kurulumu; hafif süvari açılır.",
-    "gold_cost": 16,
-    "turns_required": 3,
-    "requires": [],
     "effects": {
       "cavalry_attack_mod": 0.05
-    }
+    },
+    "gold_cost": 16,
+    "id": "horse_breeding",
+    "name_tr": "At Yetiştiriciliği",
+    "requires": [],
+    "turns_required": 3
   },
   {
-    "id": "plate_armor",
-    "name_tr": "Plaka Zırh",
     "category": "military",
     "description_tr": "Ağır süvari ve elit piyade için zırh standardı.",
+    "effects": {
+      "land_defense_mod": 0.1
+    },
     "gold_cost": 34,
-    "turns_required": 5,
+    "id": "plate_armor",
+    "name_tr": "Plaka Zırh",
     "requires": [
       "heavy_armor",
       "steel_blades"
     ],
-    "effects": {
-      "land_defense_mod": 0.10
-    }
+    "turns_required": 5
   },
   {
-    "id": "engineering_corps",
-    "name_tr": "Mühendis Ocakları",
     "category": "military",
     "description_tr": "Kuşatma ekipleri ve istihkâm organizasyonu.",
+    "effects": {
+      "siege_attack_mod": 0.1
+    },
     "gold_cost": 22,
-    "turns_required": 4,
+    "id": "engineering_corps",
+    "name_tr": "Mühendis Ocakları",
     "requires": [
       "iron_weapons"
     ],
-    "effects": {
-      "siege_attack_mod": 0.10
-    }
+    "turns_required": 4
   },
   {
-    "id": "gunpowder",
-    "name_tr": "Barut Formülleri",
     "category": "military",
     "description_tr": "Bombarda gibi erken barutlu kuşatma silahlarını açar.",
+    "effects": {
+      "siege_attack_mod": 0.15
+    },
     "gold_cost": 38,
-    "turns_required": 6,
+    "id": "gunpowder",
+    "name_tr": "Barut Formülleri",
     "requires": [
       "siege_engines",
       "engineering_corps"
     ],
-    "effects": {
-      "siege_attack_mod": 0.15
-    }
+    "turns_required": 6
   },
   {
-    "id": "cast_bronze_cannon",
-    "name_tr": "Bronz Top Dökümü",
     "category": "military",
     "description_tr": "Tam ölçekli top üretim teknikleri.",
+    "effects": {
+      "siege_attack_mod": 0.2
+    },
     "gold_cost": 55,
-    "turns_required": 7,
+    "id": "cast_bronze_cannon",
+    "name_tr": "Bronz Top Dökümü",
     "requires": [
       "gunpowder"
     ],
-    "effects": {
-      "siege_attack_mod": 0.20
-    }
+    "turns_required": 7
   },
   {
-    "id": "harbor_administration",
-    "name_tr": "Liman İdaresi",
     "category": "naval",
     "description_tr": "Ticaret filolarının kayıt ve ikmal sistemi.",
+    "effects": {
+      "gold_per_region": 2
+    },
     "gold_cost": 16,
-    "turns_required": 3,
+    "id": "harbor_administration",
+    "name_tr": "Liman İdaresi",
     "requires": [
       "trade_routes"
     ],
-    "effects": {
-      "gold_per_region": 2
-    }
+    "turns_required": 3
   },
   {
-    "id": "naval_doctrine",
-    "name_tr": "Donanma Doktrini",
     "category": "naval",
     "description_tr": "Savaş gemisi manevra ve çatışma doktrini.",
+    "effects": {
+      "naval_attack_mod": 0.1,
+      "naval_defense_mod": 0.08,
+      "naval_move_bonus": 1
+    },
     "gold_cost": 28,
-    "turns_required": 4,
+    "id": "naval_doctrine",
+    "name_tr": "Donanma Doktrini",
     "requires": [
       "navigation"
     ],
-    "effects": {
-      "naval_move_bonus": 1,
-      "naval_attack_mod": 0.10,
-      "naval_defense_mod": 0.08
-    }
+    "turns_required": 4
   },
   {
-    "id": "open_sea_convoys",
-    "name_tr": "Açık Deniz Konvoyları",
     "category": "naval",
     "description_tr": "Uzak deniz ticaret hatlarını güvenli hale getirir.",
+    "effects": {
+      "gold_per_region": 3
+    },
     "gold_cost": 30,
-    "turns_required": 5,
+    "id": "open_sea_convoys",
+    "name_tr": "Açık Deniz Konvoyları",
     "requires": [
       "harbor_administration",
       "cartography"
     ],
-    "effects": {
-      "gold_per_region": 3
-    }
+    "turns_required": 5
   },
   {
-    "id": "state_granaries",
-    "name_tr": "Devlet Ambarları",
     "category": "economy",
     "description_tr": "Kıtlık şoklarını azaltan tahıl depolama reformu.",
+    "effects": {
+      "grain_mod": 0.15
+    },
     "gold_cost": 24,
-    "turns_required": 4,
+    "id": "state_granaries",
+    "name_tr": "Devlet Ambarları",
     "requires": [
       "crop_rotation"
     ],
-    "effects": {
-      "grain_mod": 0.15
-    }
+    "turns_required": 4
   },
   {
-    "id": "tax_registers",
-    "name_tr": "Tahrir Defterleri",
     "category": "economy",
     "description_tr": "Vergi kaydı standardizasyonu ile gelir artışı.",
+    "effects": {
+      "gold_per_region": 4
+    },
     "gold_cost": 22,
-    "turns_required": 4,
+    "id": "tax_registers",
+    "name_tr": "Tahrir Defterleri",
     "requires": [
       "trade_routes"
     ],
-    "effects": {
-      "gold_per_region": 4
-    }
+    "turns_required": 4
   },
   {
-    "id": "latin_naval_architecture",
-    "name_tr": "Latin Deniz Mimarisi",
     "category": "naval",
     "description_tr": "Venedik ve Ceneviz tersane geleneğiyle kadırga savaş kapasitesi artar.",
+    "effects": {
+      "naval_attack_mod": 0.22,
+      "naval_defense_mod": 0.16
+    },
     "gold_cost": 34,
-    "turns_required": 5,
+    "id": "latin_naval_architecture",
+    "name_tr": "Latin Deniz Mimarisi",
     "requires": [
       "naval_doctrine",
       "harbor_administration"
     ],
-    "effects": {
-      "naval_attack_mod": 0.22,
-      "naval_defense_mod": 0.16
-    }
+    "turns_required": 5
   }
 ]
