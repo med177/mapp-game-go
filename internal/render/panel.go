@@ -1941,10 +1941,6 @@ func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 		if !buildingVisibleInRegion(gs, region, bid) {
 			continue
 		}
-		if regionHasBuilding(region, bid) {
-			displayIdx++
-			continue
-		}
 		col := displayIdx % cols
 		row := displayIdx / cols
 		sx := px + pad + float32(col)*slotW

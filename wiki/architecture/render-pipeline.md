@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-26
+last_updated: 2026-05-27
 related: [game-loop, state-management, shape-editor, systems/combat]
 ---
 
@@ -149,7 +149,7 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve d
 2. Alt-orta aksiyon HUD butonları (diplomasi, teknoloji, tur bitir)
 3. Olay logu akordiyonu: başlık butonu paneli daraltır/genişletir, kart X'i olayı kapatır, kart gövdesi detay popup açar
 4. UI bölgesi (üst-sol durum paneli / sağ-üst tarih-menü HUD / alt-orta aksiyon HUD / sağ panel) → geçersiz say
-5. Bölge paneli aksiyonları: vergi +/- düğmeleri, oluşturulabilir bina kartına tıklayarak inşa; `is_locked=true` bölgelerde vergi/inşa/birim alımı hit-test'te kapatılır
+5. Bölge paneli aksiyonları: vergi +/- düğmeleri, bina kartına (kurulu kartlar dahil) tıklayarak inşa/yükseltme veya kuyruk iptali; `is_locked=true` bölgelerde vergi/inşa/birim alımı hit-test'te kapatılır
 6. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
 7. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
 8. BÖL/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)

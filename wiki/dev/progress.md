@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-26
+last_updated: 2026-05-27
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -54,7 +54,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
 | Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu; kuyruktaki bina tekrar tıklanınca iptal/iade |
-| Bina seviye sistemi | ✅ | Binalar `max_per_region` kadar seviye alır (Lv1..LvN); panelde `Lv` ve kuyruk adedi görünür, inşa mesajları seviye geçişini (`LvX→LvY`) gösterir; manpower ve üretim kapasitesi kışla seviyesiyle artar |
+| Bina seviye sistemi | ✅ | Binalar `max_per_region` kadar seviye alır (Lv1..LvN); panelde `Lv` ve kuyruk adedi görünür, inşa mesajları seviye geçişini (`LvX→LvY`) gösterir; kurulu bina kartları da tıklanabildiği için yükseltme/iptal akışı doğrudan kart üzerinden çalışır; manpower ve üretim kapasitesi kışla seviyesiyle artar |
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |
 | Diplomasi | ✅ | `internal/diplomacy` ortak motoru ile savaş/barış/ittifak/ticaret; deterministik kabul-red, ilişki decay'i ve ticaret rotası senkronu |
