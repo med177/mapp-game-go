@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+type SettlementListEntry struct {
+	RegionID    RegionID     `json:"region_id"`
+	Settlements []Settlement `json:"settlements"`
+}
+
 // LoadRegions assets/data/regions.json dosyasını okur ve map döner.
 func LoadRegions(path string) (map[RegionID]*Region, error) {
 	result, _, err := LoadRegionsWithOrder(path)
@@ -30,6 +35,35 @@ func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error)
 		order = append(order, r.ID)
 	}
 	return result, order, nil
+}
+
+// LoadRegionSettlements settlements.json dosyasını okur ve bölgelere yerleşimleri uygular.
+// Dosya yoksa veya boşsa geriye uyumluluk için hata dönmeden devam eder.
+func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("settlements dosyası okunamadı: %w", err)
+	}
+
+	var entries []SettlementListEntry
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return fmt.Errorf("settlements JSON parse hatası: %w", err)
+	}
+
+	for _, region := range regions {
+		region.Settlements = nil
+	}
+	for _, entry := range entries {
+		region, ok := regions[entry.RegionID]
+		if !ok || region == nil {
+			continue
+		}
+		region.Settlements = append(region.Settlements[:0], entry.Settlements...)
+	}
+	return nil
 }
 
 // countryShapeEntry JSON dosyasındaki tek bir ülke girişini temsil eder.

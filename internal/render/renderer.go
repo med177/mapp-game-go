@@ -26,10 +26,10 @@ var (
 )
 
 const (
-	confirmDialogW    = float32(460)
-	confirmDialogH    = float32(166)
-	confirmDialogBtnW = float32(120)
-	confirmDialogBtnH = float32(36)
+	confirmDialogW          = float32(460)
+	confirmDialogH          = float32(166)
+	confirmDialogBtnW       = float32(120)
+	confirmDialogBtnH       = float32(36)
 	regionDoubleClickFrames = 18
 )
 
@@ -47,13 +47,15 @@ type Renderer struct {
 	isDragging     bool
 
 	// Seçim
-	SelectedRegion world.RegionID
-	SelectedArmy   army.ArmyID
-	showRecruitPanel bool
-	recruitUnitID  string
-	recruitQty     int
-	lastRegionClickID   world.RegionID
-	lastRegionClickTick int
+	SelectedRegion           world.RegionID
+	SelectedArmy             army.ArmyID
+	selectedSettlementRegion world.RegionID
+	selectedSettlementIndex  int
+	showRecruitPanel         bool
+	recruitUnitID            string
+	recruitQty               int
+	lastRegionClickID        world.RegionID
+	lastRegionClickTick      int
 
 	// Senaryo seçim ekranı
 	scenarioCursor int
@@ -443,6 +445,7 @@ func New(gs *state.GameState) *Renderer {
 		tradeHoverIdx:              -1,
 		tradeCenters:               make([]tradeCenterVisual, 0, 12),
 		tradeCenterIdx:             -1,
+		selectedSettlementIndex:    -1,
 	}
 	r.resetCamera()
 	return r
@@ -491,12 +494,15 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 		buildingSheetLoaded = false
 		miniMapLoaded = false
 		armySheetLoaded = false
+		settlementImageCache = map[string]*ebiten.Image{}
+		settlementImageLoaded = map[string]bool{}
 	}
 	r.worldMap = NewWorldMap(gs)
 	r.invalidateShapeEditSession()
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
+	r.clearSelectedSettlement()
 	r.eventLogScroll = 0
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
@@ -697,18 +703,21 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 8. UI panelleri
 	if r.gs.Phase != state.PhaseEditMode {
-			recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion)
-			DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, r.showDiplomacy, r.showTech, r.mapMode)
-			DrawRegionPanel(screen, r.gs, r.SelectedRegion)
-			if r.mapMode != MapModeTrade && r.showRecruitPanel {
-				DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
-			}
+		recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen()
+		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, r.showDiplomacy, r.showTech, r.mapMode)
+		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
+		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
+			DrawSettlementPanel(screen, r.gs, region, settlement)
+		}
+		if r.mapMode != MapModeTrade && r.showRecruitPanel {
+			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
+		}
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll)
-			DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.showRecruitPanel)
+		DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.showRecruitPanel)
 	} else {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)
@@ -1726,6 +1735,7 @@ type settlementDraw struct {
 	W, H      float64
 	SX, SY    float64
 	DrawLabel bool
+	Priority  int
 }
 
 type screenRect struct {
@@ -1976,6 +1986,9 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 	}
 
 	sort.SliceStable(r.regionLabelBuf, func(i, j int) bool {
+		if r.regionLabelBuf[i].Priority != r.regionLabelBuf[j].Priority {
+			return r.regionLabelBuf[i].Priority > r.regionLabelBuf[j].Priority
+		}
 		if r.regionLabelBuf[i].SY != r.regionLabelBuf[j].SY {
 			return r.regionLabelBuf[i].SY < r.regionLabelBuf[j].SY
 		}
@@ -1985,9 +1998,14 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		return r.regionLabelBuf[i].Region.ID < r.regionLabelBuf[j].Region.ID
 	})
 
+	hoverRID, hoverIdx := r.settlementHoverCandidate()
+	selectedRID, selectedIdx, selectedOK := r.selectedSettlementIdentity()
+
 	r.labelRectBuf = r.labelRectBuf[:0]
 	for _, item := range r.regionLabelBuf {
-		if !item.DrawLabel {
+		forceLabel := item.Region != nil && ((selectedOK && item.Region.ID == selectedRID && item.Index == selectedIdx) ||
+			(item.Region.ID == hoverRID && item.Index == hoverIdx))
+		if !item.DrawLabel && !forceLabel {
 			r.drawCityDot(screen, item.Region, float32(item.SX), float32(item.SY))
 			if r.gs.Phase == state.PhaseEditMode && item.Region != nil &&
 				item.Region.ID == r.editSelectedRegion && item.Index == r.editSelectedSettlement {
@@ -1998,13 +2016,15 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 
 		rect := screenRect{X: item.X, Y: item.Y, W: item.W, H: item.H}
 		drawText := true
-		for _, used := range r.labelRectBuf {
-			if rectIntersects(expandRect(rect, 4), expandRect(used, 4)) {
-				drawText = false
-				break
+		if !forceLabel {
+			for _, used := range r.labelRectBuf {
+				if rectIntersects(expandRect(rect, 4), expandRect(used, 4)) {
+					drawText = false
+					break
+				}
 			}
 		}
-		if drawText {
+		if drawText && !forceLabel {
 			for _, pos := range armyPositions {
 				armyRect := screenRect{X: float64(pos.X) - 15, Y: float64(pos.Y) - 15, W: 30, H: 30}
 				if rectIntersects(expandRect(rect, 3), armyRect) {
@@ -2035,15 +2055,12 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 func (r *Renderer) appendSettlementDraws(region *world.Region) {
 	if len(region.Settlements) == 0 {
 		sx, sy := r.regionScreenPos(region)
-		r.appendSettlementDraw(region, -1, region.NameTR, sx, sy, true)
+		r.appendSettlementDraw(region, -1, region.NameTR, sx, sy, true, 10)
 		return
 	}
 
 	for i, settlement := range region.Settlements {
 		isPrimary := settlement.IsCapital || i == 0
-		if !isPrimary && r.camScale < 0.85 {
-			continue
-		}
 
 		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
 		if !ok {
@@ -2057,12 +2074,12 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 		if name == "" {
 			name = region.NameTR
 		}
-		drawLabel := isPrimary || r.camScale >= 1.25
-		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel)
+		drawLabel := r.shouldDrawSettlementLabel(settlement, isPrimary)
+		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel, settlementLabelPriority(settlement, isPrimary))
 	}
 }
 
-func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool) {
+func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool, priority int) {
 	if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
 		return
 	}
@@ -2079,17 +2096,89 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 		h = 20
 	}
 	r.regionLabelBuf = append(r.regionLabelBuf, settlementDraw{
-		Region:    region,
-		Index:     index,
-		Text:      text,
-		X:         lx,
-		Y:         sy - 7,
+		Region: region,
+		Index:  index,
+		Text:   text,
+		X:      lx,
+		// Etiket noktaların altına çizilir; okunabilirlik artar.
+		Y:         sy + 16,
 		W:         w,
 		H:         h,
 		SX:        sx,
 		SY:        sy,
 		DrawLabel: drawLabel,
+		Priority:  priority,
 	})
+}
+
+func settlementLabelPriority(settlement world.Settlement, isPrimary bool) int {
+	if settlement.IsCapital {
+		return 100
+	}
+	switch settlement.Type {
+	case world.SettlementCity:
+		return 90
+	case world.SettlementPort:
+		return 70
+	case world.SettlementFortress:
+		return 60
+	case world.SettlementTown:
+		return 50
+	default:
+		if isPrimary {
+			return 80
+		}
+		return 40
+	}
+}
+
+func (r *Renderer) shouldDrawSettlementLabel(settlement world.Settlement, isPrimary bool) bool {
+	// Zoom düşükken sadece başkent/şehir etiketleri.
+	if r.camScale < 0.8 {
+		return settlement.IsCapital || settlement.Type == world.SettlementCity
+	}
+	// Orta zoomda liman ve kaleler de açılır.
+	if r.camScale < 1.05 {
+		return settlement.IsCapital || settlement.Type == world.SettlementCity ||
+			settlement.Type == world.SettlementPort || settlement.Type == world.SettlementFortress
+	}
+	// Yüksek zoomda tüm yerleşim etiketleri açılır.
+	if r.camScale >= 1.05 {
+		return true
+	}
+	return isPrimary
+}
+
+func (r *Renderer) selectedSettlementIdentity() (world.RegionID, int, bool) {
+	if region, _, ok := r.selectedSettlement(); ok && region != nil {
+		return region.ID, r.selectedSettlementIndex, true
+	}
+	if r.gs.Phase == state.PhaseEditMode && r.editSelectedRegion != "" && r.editSelectedSettlement >= 0 {
+		return r.editSelectedRegion, r.editSelectedSettlement, true
+	}
+	return "", -1, false
+}
+
+func (r *Renderer) settlementHoverCandidate() (world.RegionID, int) {
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	bestRID := world.RegionID("")
+	bestIdx := -1
+	bestDist := 14.0 * 14.0
+	for _, item := range r.regionLabelBuf {
+		if item.Region == nil || item.Index < 0 {
+			continue
+		}
+		dx := fx - item.SX
+		dy := fy - (item.SY + 4)
+		dist := dx*dx + dy*dy
+		if dist <= bestDist {
+			bestDist = dist
+			bestRID = item.Region.ID
+			bestIdx = item.Index
+		}
+	}
+	return bestRID, bestIdx
 }
 
 func expandRect(r screenRect, pad float64) screenRect {
@@ -5685,8 +5774,8 @@ func ensurePrimarySettlement(region *world.Region) {
 
 // drawCityDot bölge merkezine küçük iyon çizer.
 func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, sy float32) {
-	outerR := float32(4)
-	innerR := float32(2.5)
+	outerR := float32(5.5)
+	innerR := float32(3.5)
 
 	outerCol := color.RGBA{220, 220, 220, 200}
 	if region.OwnerID != "" {
@@ -5848,13 +5937,14 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyF11) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
-		if r.keyJustPressed(ebiten.KeyEscape) {
-			if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
-				r.SelectedArmy = ""
-				r.SelectedRegion = ""
-				r.showRecruitPanel = false
-				r.resetRecruitSelection()
-				r.showDiplomacy = false
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
+			r.SelectedArmy = ""
+			r.SelectedRegion = ""
+			r.clearSelectedSettlement()
+			r.showRecruitPanel = false
+			r.resetRecruitSelection()
+			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
 			r.showTech = false
 		} else {
@@ -5999,8 +6089,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedArmy = ""
 		return InputAction{}
 	}
+	if settlementPanelCloseHit(fx, fy) {
+		r.clearSelectedSettlement()
+		return InputAction{}
+	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
+		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
 		return InputAction{}
@@ -6066,8 +6161,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rects := BottomButtonRects()
 	if fx >= float64(rects[0][0]) && fx <= float64(rects[0][0]+rects[0][2]) &&
 		fy >= float64(rects[0][1]) && fy <= float64(rects[0][1]+rects[0][3]) {
-		if RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) {
+		if RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen() {
 			r.showRecruitPanel = !r.showRecruitPanel
+			if r.showRecruitPanel {
+				r.clearSelectedSettlement()
+			}
 			r.showDiplomacy = false
 			r.showTech = false
 		}
@@ -6166,6 +6264,19 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
+	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
+		r.SelectedArmy = ""
+		r.SelectedRegion = rid
+		r.selectSettlement(rid, idx)
+		if !RecruitPanelVisible(r.gs, rid) {
+			r.showRecruitPanel = false
+		}
+		r.resetRecruitSelection()
+		return InputAction{}
+	}
+	if settlementPanelHit(fx, fy) {
+		return InputAction{}
+	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
 		return InputAction{}
 	}
@@ -6190,11 +6301,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 				r.SelectedArmy = ""
 				return InputAction{}
 			}
-				r.SelectedArmy = pos.ArmyID
-				r.SelectedRegion = ""
-				r.showRecruitPanel = false
-				r.resetRecruitSelection()
-				return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
+			r.SelectedArmy = pos.ArmyID
+			r.SelectedRegion = ""
+			r.clearSelectedSettlement()
+			r.showRecruitPanel = false
+			r.resetRecruitSelection()
+			return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
 		}
 	}
 
@@ -6203,19 +6315,20 @@ func (r *Renderer) handleLeftClick() InputAction {
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-				// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
-				r.SelectedArmy = ""
-				r.SelectedRegion = rid
-				r.showRecruitPanel = false
-				r.resetRecruitSelection()
-				return InputAction{}
+			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
+			r.SelectedArmy = ""
+			r.SelectedRegion = rid
+			r.clearSelectedSettlement()
+			r.showRecruitPanel = false
+			r.resetRecruitSelection()
+			return InputAction{}
 		}
 	}
 	r.SelectedArmy = ""
 	r.SelectedRegion = rid
-	if !RecruitPanelVisible(r.gs, rid) {
-		r.showRecruitPanel = false
-	}
+	r.clearSelectedSettlement()
+	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.
+	r.showRecruitPanel = false
 	isDoubleClick := rid != "" &&
 		rid == r.lastRegionClickID &&
 		r.animationTick-r.lastRegionClickTick <= regionDoubleClickFrames
@@ -6223,6 +6336,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	r.lastRegionClickTick = r.animationTick
 	if isDoubleClick && RecruitPanelButtonEnabled(r.gs, rid) {
 		r.showRecruitPanel = true
+		r.clearSelectedSettlement()
 		r.showDiplomacy = false
 		r.showTech = false
 	}
@@ -6242,6 +6356,65 @@ func (r *Renderer) ensureRecruitSelection(unitID string) {
 	if r.recruitQty < 1 {
 		r.recruitQty = 1
 	}
+}
+
+func (r *Renderer) clearSelectedSettlement() {
+	r.selectedSettlementRegion = ""
+	r.selectedSettlementIndex = -1
+}
+
+func (r *Renderer) selectSettlement(rid world.RegionID, idx int) {
+	r.selectedSettlementRegion = rid
+	r.selectedSettlementIndex = idx
+}
+
+func (r *Renderer) selectedSettlement() (*world.Region, *world.Settlement, bool) {
+	if r.selectedSettlementRegion == "" || r.selectedSettlementIndex < 0 {
+		return nil, nil, false
+	}
+	region := r.gs.Regions[r.selectedSettlementRegion]
+	if region == nil {
+		return nil, nil, false
+	}
+	if r.selectedSettlementIndex >= len(region.Settlements) {
+		return nil, nil, false
+	}
+	return region, &region.Settlements[r.selectedSettlementIndex], true
+}
+
+func (r *Renderer) isSettlementPanelOpen() bool {
+	region, _, ok := r.selectedSettlement()
+	return ok && region != nil && region.ID == r.SelectedRegion
+}
+
+func (r *Renderer) settlementHitAt(mx, my float64) (world.RegionID, int, bool) {
+	bestRID := world.RegionID("")
+	bestIdx := -1
+	bestDist := math.MaxFloat64
+
+	for i := len(r.regionLabelBuf) - 1; i >= 0; i-- {
+		item := r.regionLabelBuf[i]
+		if item.Region == nil || item.Index < 0 || item.Index >= len(item.Region.Settlements) {
+			continue
+		}
+		dx := mx - item.SX
+		dy := my - (item.SY + 4)
+		dist := math.Sqrt(dx*dx + dy*dy)
+		if dist > 13 {
+			continue
+		}
+		// Aynı pikselde birden çok aday varsa en yakınını seç.
+		// Eşitlikte seçili bölgeye öncelik ver.
+		if dist < bestDist || (dist == bestDist && item.Region.ID == r.SelectedRegion) {
+			bestDist = dist
+			bestRID = item.Region.ID
+			bestIdx = item.Index
+		}
+	}
+	if bestIdx >= 0 {
+		return bestRID, bestIdx, true
+	}
+	return "", -1, false
 }
 
 func (r *Renderer) resetRecruitSelection() {

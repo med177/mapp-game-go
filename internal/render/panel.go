@@ -3,6 +3,7 @@ package render
 import (
 	"image"
 	"image/color"
+	"path/filepath"
 	"strings"
 
 	"mapp-game-go/internal/army"
@@ -55,6 +56,8 @@ func evLogX() float32       { return float32(ScreenWidth) - evLogW }
 func evLogY() float32       { return topDateHudH + 8 }
 func infoPanelX() float32   { return 0 }
 func infoPanelY() float32   { return float32(ScreenHeight) - infoPanelH }
+func settlementPanelX() float32 { return infoPanelX() + infoPanelW + 8 }
+func settlementPanelY() float32 { return infoPanelY() }
 
 var (
 	panelBg     = color.RGBA{12, 10, 8, 230}
@@ -76,6 +79,9 @@ var (
 	// 3×2 grid: [barracks, market, temple] / [walls, farm, port]
 	buildingSheet       *ebiten.Image
 	buildingSheetLoaded bool
+
+	settlementImageCache  = map[string]*ebiten.Image{}
+	settlementImageLoaded = map[string]bool{}
 )
 
 // buildingDisplayOrder bina slotlarının sırasını belirler.
@@ -1837,6 +1843,16 @@ func regionPanelCloseHit(mx, my float64) bool {
 	return panelCloseHit(mx, my, px, infoPanelY(), infoPanelW)
 }
 
+func settlementPanelHit(mx, my float64) bool {
+	px := settlementPanelX()
+	py := settlementPanelY()
+	return mx >= float64(px) && mx <= float64(px+infoPanelW) && my >= float64(py) && my <= float64(py+infoPanelH)
+}
+
+func settlementPanelCloseHit(mx, my float64) bool {
+	return panelCloseHit(mx, my, settlementPanelX(), settlementPanelY(), infoPanelW)
+}
+
 func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
 	if rid == "" {
 		return false
@@ -1851,6 +1867,127 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 		return true
 	}
 	return buildingGridHitTest(mx, my, gs, rid) != ""
+}
+
+func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region, settlement *world.Settlement) {
+	if gs == nil || region == nil || settlement == nil {
+		return
+	}
+
+	px := settlementPanelX()
+	py := settlementPanelY()
+	pw := infoPanelW
+	ph := infoPanelH
+
+	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
+	drawPanelBorder(screen, px, py, pw, ph)
+	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawPanelCloseButton(screen, px, py, pw)
+
+	lx := float64(px) + panelPad
+	ly := float64(py) + 10
+
+	name := settlement.NameTR
+	if name == "" {
+		name = settlement.Name
+	}
+	if name == "" {
+		name = "Yerleşim"
+	}
+	DrawText(screen, name, lx, ly, FaceLarge, ColorYellow)
+	ly += 24
+
+	DrawText(screen, "Bölge: "+region.NameTR, lx, ly, FaceSmall, ColorGray)
+	ly += 18
+	DrawText(screen, "Tip: "+settlementTypeLabel(settlement.Type), lx, ly, FaceSmall, ColorGray)
+	ly += 18
+	DrawText(screen, "Koordinat: "+itoa(settlement.X)+","+itoa(settlement.Y), lx, ly, FaceSmall, ColorGray)
+	ly += 20
+
+	// Üst görsel alanı (asset varsa göster, yoksa placeholder).
+	imgX := float32(lx)
+	imgY := float32(ly)
+	imgW := pw - float32(panelPad*2)
+	imgH := float32(170)
+	vector.FillRect(screen, imgX, imgY, imgW, imgH, panelBg2, false)
+	vector.StrokeRect(screen, imgX, imgY, imgW, imgH, 1, panelBorder, false)
+	if sImg := loadSettlementImage(region, settlement); sImg != nil {
+		b := sImg.Bounds()
+		sw := float64(b.Dx())
+		sh := float64(b.Dy())
+		if sw > 0 && sh > 0 {
+			scale := minFloat64(float64(imgW)/sw, float64(imgH)/sh)
+			dw := sw * scale
+			dh := sh * scale
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(scale, scale)
+			op.GeoM.Translate(float64(imgX)+(float64(imgW)-dw)/2, float64(imgY)+(float64(imgH)-dh)/2)
+			screen.DrawImage(sImg, op)
+		}
+	} else {
+		phText := "Yerleşim Görseli"
+		tw := MeasureText(phText, FaceMed)
+		DrawText(screen, phText, float64(imgX)+float64(imgW)/2-tw/2, float64(imgY)+72, FaceMed, ColorGray)
+	}
+
+	ly += float64(imgH) + 16
+	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+imgW, float32(ly), 1, panelBorder, false)
+	ly += 10
+	DrawText(screen, "Tarihçe", lx, ly, FaceMed, ColorYellow)
+	ly += 18
+	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
+}
+
+func loadSettlementImage(region *world.Region, settlement *world.Settlement) *ebiten.Image {
+	if region == nil || settlement == nil || ActiveScenarioPath == "" {
+		return nil
+	}
+	cacheKey := string(region.ID) + "::" + settlement.ID
+	if settlementImageLoaded[cacheKey] {
+		return settlementImageCache[cacheKey]
+	}
+
+	candidates := settlementImageCandidates(region, settlement)
+	for _, p := range candidates {
+		if img := tryLoadImage(p); img != nil {
+			settlementImageLoaded[cacheKey] = true
+			settlementImageCache[cacheKey] = img
+			return img
+		}
+	}
+
+	settlementImageLoaded[cacheKey] = true
+	settlementImageCache[cacheKey] = nil
+	return nil
+}
+
+func settlementImageCandidates(region *world.Region, settlement *world.Settlement) []string {
+	base := filepath.Join(ActiveScenarioPath, "images", "settlements")
+	id := strings.TrimSpace(settlement.ID)
+	rid := strings.TrimSpace(string(region.ID))
+	out := make([]string, 0, 8)
+	if id != "" {
+		out = append(out,
+			filepath.Join(base, id+".png"),
+			filepath.Join(base, id+".jpg"),
+			filepath.Join(base, id+".jpeg"),
+		)
+	}
+	if rid != "" {
+		out = append(out,
+			filepath.Join(base, rid+".png"),
+			filepath.Join(base, rid+".jpg"),
+			filepath.Join(base, rid+".jpeg"),
+		)
+	}
+	return out
+}
+
+func minFloat64(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki hızlı diplomasi butonunu döner.

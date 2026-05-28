@@ -342,6 +342,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 		if r.SelectedRegion != "" {
 			if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
+				settlementPanelHit(fx, fy) || settlementPanelCloseHit(fx, fy) ||
 				RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
 				recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
 				recruitPanelCloseHitTest(fx, fy, r.gs, r.SelectedRegion) {
@@ -361,6 +362,10 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
 			return true
 		}
+	}
+	// Yerleşim noktası üzerinde mi?
+	if _, _, ok := r.settlementHitAt(fx, fy); ok {
+		return true
 	}
 	// BÖL / BİRLEŞTİR butonları
 	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {

@@ -194,8 +194,8 @@
     "iron": 85,
     "is_eliminated": false,
     "is_playable": false,
-    "name": "Byzantine Empire",
-    "name_tr": "Bizans İmparatorluğu",
+    "name": "Eastern Roman Empire",
+    "name_tr": "Doğu Roma İmparatorluğu",
     "religion": "orthodox",
     "research": {
       "active_id": "",

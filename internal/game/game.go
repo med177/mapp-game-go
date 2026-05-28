@@ -673,6 +673,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioRegions(gs); err != nil {
 		return err
 	}
+	if err := writeScenarioSettlements(gs); err != nil {
+		return err
+	}
 	if err := writeScenarioShapes(gs); err != nil {
 		return err
 	}
@@ -697,27 +700,129 @@ func writeScenarioEditData(gs *state.GameState) error {
 
 func writeScenarioRegions(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "regions.json")
-	regions := make([]*world.Region, 0, len(gs.Regions))
+	type regionExport struct {
+		ID               world.RegionID    `json:"id"`
+		Name             string            `json:"name"`
+		NameTR           string            `json:"name_tr"`
+		Terrain          world.TerrainType `json:"terrain"`
+		OwnerID          string            `json:"owner_id"`
+		Neighbors        []world.RegionID  `json:"neighbors"`
+		WorldX           int               `json:"world_x"`
+		WorldY           int               `json:"world_y"`
+		ShapeID          string            `json:"shape_id,omitempty"`
+		IsSea            bool              `json:"is_sea"`
+		IsLocked         bool              `json:"is_locked"`
+		UnlockTurn       int               `json:"unlock_turn"`
+		BaseGoldIncome   int               `json:"base_gold_income"`
+		BaseGrainOutput  int               `json:"base_grain_output"`
+		BaseIronOutput   int               `json:"base_iron_output"`
+		BaseTimberOutput int               `json:"base_timber_output"`
+		BaseSpiceOutput  int               `json:"base_spice_output"`
+		BaseClothOutput  int               `json:"base_cloth_output"`
+		TradeCapacity    int               `json:"trade_capacity"`
+		Satisfaction     int               `json:"satisfaction"`
+		TaxRate          int               `json:"tax_rate"`
+		Population       int               `json:"population"`
+		Religion         string            `json:"religion"`
+		ConversionTurns  int               `json:"conversion_turns,omitempty"`
+		ActiveEventID    string            `json:"active_event_id"`
+		Buildings        []string          `json:"buildings"`
+	}
+	cloneRegion := func(region *world.Region) *regionExport {
+		if region == nil {
+			return nil
+		}
+		out := &regionExport{
+			ID:               region.ID,
+			Name:             region.Name,
+			NameTR:           region.NameTR,
+			Terrain:          region.Terrain,
+			OwnerID:          region.OwnerID,
+			Neighbors:        append([]world.RegionID(nil), region.Neighbors...),
+			WorldX:           region.WorldX,
+			WorldY:           region.WorldY,
+			ShapeID:          region.ShapeID,
+			IsSea:            region.IsSea,
+			IsLocked:         region.IsLocked,
+			UnlockTurn:       region.UnlockTurn,
+			BaseGoldIncome:   region.BaseGoldIncome,
+			BaseGrainOutput:  region.BaseGrainOutput,
+			BaseIronOutput:   region.BaseIronOutput,
+			BaseTimberOutput: region.BaseTimberOutput,
+			BaseSpiceOutput:  region.BaseSpiceOutput,
+			BaseClothOutput:  region.BaseClothOutput,
+			TradeCapacity:    region.TradeCapacity,
+			Satisfaction:     region.Satisfaction,
+			TaxRate:          region.TaxRate,
+			Population:       region.Population,
+			Religion:         region.Religion,
+			ConversionTurns:  region.ConversionTurns,
+			ActiveEventID:    region.ActiveEventID,
+			Buildings:        append([]string(nil), region.Buildings...),
+		}
+		return out
+	}
+
+	regions := make([]*regionExport, 0, len(gs.Regions))
 	if len(gs.RegionOrder) > 0 {
 		seen := make(map[world.RegionID]bool, len(gs.RegionOrder))
 		for _, rid := range gs.RegionOrder {
 			if region, ok := gs.Regions[rid]; ok {
-				regions = append(regions, region)
+				regions = append(regions, cloneRegion(region))
 				seen[rid] = true
 			}
 		}
 		for rid, region := range gs.Regions {
 			if !seen[rid] {
-				regions = append(regions, region)
+				regions = append(regions, cloneRegion(region))
 			}
 		}
 	} else {
 		for _, region := range gs.Regions {
-			regions = append(regions, region)
+			regions = append(regions, cloneRegion(region))
 		}
 	}
 
 	data, err := json.MarshalIndent(regions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioSettlements(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "settlements.json")
+	entries := make([]world.SettlementListEntry, 0, len(gs.Regions))
+	appendEntry := func(rid world.RegionID, region *world.Region) {
+		if region == nil {
+			return
+		}
+		entry := world.SettlementListEntry{
+			RegionID:    rid,
+			Settlements: append([]world.Settlement(nil), region.Settlements...),
+		}
+		entries = append(entries, entry)
+	}
+	if len(gs.RegionOrder) > 0 {
+		seen := make(map[world.RegionID]bool, len(gs.RegionOrder))
+		for _, rid := range gs.RegionOrder {
+			if region, ok := gs.Regions[rid]; ok {
+				appendEntry(rid, region)
+				seen[rid] = true
+			}
+		}
+		for rid, region := range gs.Regions {
+			if !seen[rid] {
+				appendEntry(rid, region)
+			}
+		}
+	} else {
+		for rid, region := range gs.Regions {
+			appendEntry(rid, region)
+		}
+	}
+	data, err := json.MarshalIndent(entries, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -978,6 +1083,9 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	if err != nil {
 		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
 	}
+	if err := world.LoadRegionSettlements(dp("settlements.json"), regions); err != nil {
+		return nil, nil, fmt.Errorf("yerleşimler yüklenemedi: %w", err)
+	}
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), regions)
 	if err != nil {
 		log.Printf("Ülke sınırları yüklenemedi: %v", err)
@@ -1196,24 +1304,24 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			g.renderer.ShowCombatResult("Filo dolu veya üretim kuyruğuyla dolacak! (max 20 birim)")
 			return
 		}
-			seaFree := army.MaxArmySize - queued
-			if quantity > seaFree {
-				quantity = seaFree
-			}
-			pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
-			if pendingInRegion >= 20 {
-				g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
-				return
-			}
-			queueFree := 20 - pendingInRegion
-			if quantity > queueFree {
-				quantity = queueFree
-			}
-			maxByGold := f.Gold / utype.GoldCost
-			if maxByGold <= 0 || quantity <= 0 {
-				g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
-				return
-			}
+		seaFree := army.MaxArmySize - queued
+		if quantity > seaFree {
+			quantity = seaFree
+		}
+		pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
+		if pendingInRegion >= 20 {
+			g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+			return
+		}
+		queueFree := 20 - pendingInRegion
+		if quantity > queueFree {
+			quantity = queueFree
+		}
+		maxByGold := f.Gold / utype.GoldCost
+		if maxByGold <= 0 || quantity <= 0 {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+			return
+		}
 		if quantity > maxByGold {
 			quantity = maxByGold
 		}
@@ -1250,26 +1358,26 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
 			return
 		}
-		} else {
-			if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
-				g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
-				return
-			}
-		}
-		pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
-		if pendingInRegion >= 20 {
-			g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+	} else {
+		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
 			return
 		}
-		queueFree := 20 - pendingInRegion
-		if quantity > queueFree {
-			quantity = queueFree
-		}
-		maxByGold := f.Gold / utype.GoldCost
-		if maxByGold <= 0 || quantity <= 0 {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
-			return
-		}
+	}
+	pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
+	if pendingInRegion >= 20 {
+		g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+		return
+	}
+	queueFree := 20 - pendingInRegion
+	if quantity > queueFree {
+		quantity = queueFree
+	}
+	maxByGold := f.Gold / utype.GoldCost
+	if maxByGold <= 0 || quantity <= 0 {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+		return
+	}
 	if quantity > maxByGold {
 		quantity = maxByGold
 	}

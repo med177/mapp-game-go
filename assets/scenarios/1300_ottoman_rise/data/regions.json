@@ -26,16 +26,6 @@
     "population": 400,
     "religion": "catholic",
     "satisfaction": 75,
-    "settlements": [
-      {
-        "id": "london_main",
-        "is_capital": true,
-        "name_tr": "Londra",
-        "type": "city",
-        "x": 490,
-        "y": 260
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 45,
     "terrain": "plain",
@@ -68,16 +58,6 @@
     "population": 250,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "wessex_main",
-        "is_capital": true,
-        "name_tr": "Wessex",
-        "type": "city",
-        "x": 440,
-        "y": 264
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 35,
     "terrain": "plain",
@@ -109,16 +89,6 @@
     "population": 280,
     "religion": "catholic",
     "satisfaction": 72,
-    "settlements": [
-      {
-        "id": "east_anglia_main",
-        "is_capital": true,
-        "name_tr": "Doğu Anglia",
-        "type": "city",
-        "x": 504,
-        "y": 236
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 35,
     "terrain": "plain",
@@ -155,16 +125,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "mercia_main",
-        "is_capital": true,
-        "name_tr": "Mercia",
-        "type": "city",
-        "x": 470,
-        "y": 240
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 38,
     "terrain": "forest",
@@ -197,16 +157,6 @@
     "population": 320,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "yorkshire_main",
-        "is_capital": true,
-        "name_tr": "Yorkshire",
-        "type": "city",
-        "x": 470,
-        "y": 209
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 35,
     "terrain": "plain",
@@ -241,16 +191,6 @@
     "population": 220,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "lancashire_main",
-        "is_capital": true,
-        "name_tr": "Lancashire",
-        "type": "city",
-        "x": 445,
-        "y": 197
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 32,
     "terrain": "mountain",
@@ -283,16 +223,6 @@
     "population": 400,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "scotland_main",
-        "is_capital": true,
-        "name_tr": "İskoçya",
-        "type": "city",
-        "x": 399,
-        "y": 172
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -326,16 +256,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "wales_main",
-        "is_capital": true,
-        "name_tr": "Galler",
-        "type": "city",
-        "x": 422,
-        "y": 239
-      }
-    ],
     "shape_id": "GBR",
     "tax_rate": 35,
     "terrain": "mountain",
@@ -399,16 +319,6 @@
     "population": 420,
     "religion": "catholic",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "dublin_pale",
-        "is_capital": true,
-        "name_tr": "Dublin (The Pale)",
-        "type": "town",
-        "x": 322,
-        "y": 212
-      }
-    ],
     "shape_id": "IRL",
     "tax_rate": 25,
     "terrain": "plain",
@@ -448,16 +358,6 @@
     "population": 500,
     "religion": "catholic",
     "satisfaction": 75,
-    "settlements": [
-      {
-        "id": "paris_main",
-        "is_capital": true,
-        "name_tr": "Paris",
-        "type": "city",
-        "x": 520,
-        "y": 313
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 45,
     "terrain": "plain",
@@ -492,16 +392,6 @@
     "population": 350,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "normandy_main",
-        "is_capital": true,
-        "name_tr": "Normandiya",
-        "type": "city",
-        "x": 480,
-        "y": 295
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 38,
     "terrain": "coast",
@@ -534,16 +424,6 @@
     "population": 280,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "brittany_main",
-        "is_capital": true,
-        "name_tr": "Bretonya",
-        "type": "city",
-        "x": 448,
-        "y": 313
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 35,
     "terrain": "coast",
@@ -577,16 +457,6 @@
     "population": 320,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "anjou_main",
-        "is_capital": true,
-        "name_tr": "Anjou",
-        "type": "city",
-        "x": 485,
-        "y": 340
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 36,
     "terrain": "plain",
@@ -619,16 +489,6 @@
     "population": 380,
     "religion": "catholic",
     "satisfaction": 72,
-    "settlements": [
-      {
-        "id": "champagne_main",
-        "is_capital": true,
-        "name_tr": "Şampanya",
-        "type": "city",
-        "x": 564,
-        "y": 298
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 40,
     "terrain": "plain",
@@ -664,16 +524,6 @@
     "population": 420,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "burgundy_main",
-        "is_capital": true,
-        "name_tr": "Burgonya",
-        "type": "city",
-        "x": 595,
-        "y": 330
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 42,
     "terrain": "plain",
@@ -707,16 +557,6 @@
     "population": 360,
     "religion": "catholic",
     "satisfaction": 72,
-    "settlements": [
-      {
-        "id": "provence_main",
-        "is_capital": true,
-        "name_tr": "Provence",
-        "type": "city",
-        "x": 604,
-        "y": 408
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 38,
     "terrain": "coast",
@@ -751,16 +591,6 @@
     "population": 340,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "languedoc_main",
-        "is_capital": true,
-        "name_tr": "Languedoc",
-        "type": "city",
-        "x": 555,
-        "y": 410
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 36,
     "terrain": "plain",
@@ -795,16 +625,6 @@
     "population": 450,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "brandenburg_main",
-        "is_capital": true,
-        "name_tr": "Brandenburg",
-        "type": "city",
-        "x": 754,
-        "y": 249
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 35,
     "terrain": "plain",
@@ -838,16 +658,6 @@
     "population": 550,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "saxony_main",
-        "is_capital": true,
-        "name_tr": "Saksonya",
-        "type": "city",
-        "x": 684,
-        "y": 234
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 35,
     "terrain": "plain",
@@ -885,16 +695,6 @@
     "population": 600,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "bavaria_main",
-        "is_capital": true,
-        "name_tr": "Bavyera",
-        "type": "city",
-        "x": 721,
-        "y": 315
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 38,
     "terrain": "forest",
@@ -931,16 +731,6 @@
     "population": 480,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "westphalia_main",
-        "is_capital": true,
-        "name_tr": "Vestfalya",
-        "type": "city",
-        "x": 663,
-        "y": 222
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 32,
     "terrain": "forest",
@@ -976,16 +766,6 @@
     "population": 380,
     "religion": "catholic",
     "satisfaction": 66,
-    "settlements": [
-      {
-        "id": "thuringia_main",
-        "is_capital": true,
-        "name_tr": "Turingiya",
-        "type": "city",
-        "x": 670,
-        "y": 280
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 33,
     "terrain": "forest",
@@ -1022,16 +802,6 @@
     "population": 420,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "palatinate_main",
-        "is_capital": true,
-        "name_tr": "Palatinate",
-        "type": "city",
-        "x": 619,
-        "y": 272
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 35,
     "terrain": "plain",
@@ -1062,16 +832,6 @@
     "population": 600,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "denmark_main",
-        "is_capital": true,
-        "name_tr": "Danimarka",
-        "type": "city",
-        "x": 713,
-        "y": 180
-      }
-    ],
     "shape_id": "DNK",
     "tax_rate": 38,
     "terrain": "coast",
@@ -1109,16 +869,6 @@
     "population": 400,
     "religion": "catholic",
     "satisfaction": 75,
-    "settlements": [
-      {
-        "id": "switzerland_main",
-        "is_capital": true,
-        "name_tr": "İsviçre",
-        "type": "city",
-        "x": 639,
-        "y": 346
-      }
-    ],
     "shape_id": "CHE",
     "tax_rate": 45,
     "terrain": "mountain",
@@ -1152,16 +902,6 @@
     "population": 350,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "savoy_main",
-        "is_capital": true,
-        "name_tr": "Savoy",
-        "type": "city",
-        "x": 495,
-        "y": 391
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 35,
     "terrain": "mountain",
@@ -1198,16 +938,6 @@
     "population": 900,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "portugal_main",
-        "is_capital": true,
-        "name_tr": "Portekiz",
-        "type": "city",
-        "x": 312,
-        "y": 459
-      }
-    ],
     "shape_id": "PRT",
     "tax_rate": 40,
     "terrain": "coast",
@@ -1246,16 +976,6 @@
     "population": 1200,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "castile_main",
-        "is_capital": true,
-        "name_tr": "Kastilya",
-        "type": "city",
-        "x": 343,
-        "y": 423
-      }
-    ],
     "shape_id": "ESP",
     "tax_rate": 38,
     "terrain": "plain",
@@ -1290,16 +1010,6 @@
     "population": 1100,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "aragon_main",
-        "is_capital": true,
-        "name_tr": "Aragon",
-        "type": "city",
-        "x": 412,
-        "y": 461
-      }
-    ],
     "shape_id": "ESP",
     "tax_rate": 40,
     "terrain": "plain",
@@ -1336,30 +1046,6 @@
     "population": 800,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "venice",
-        "is_capital": true,
-        "name_tr": "Venedik",
-        "type": "city",
-        "x": 731,
-        "y": 368
-      },
-      {
-        "id": "padua",
-        "name_tr": "Padova",
-        "type": "town",
-        "x": 720,
-        "y": 368
-      },
-      {
-        "id": "treviso",
-        "name_tr": "Treviso",
-        "type": "town",
-        "x": 742,
-        "y": 360
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 40,
     "terrain": "coast",
@@ -1393,30 +1079,6 @@
     "population": 700,
     "religion": "catholic",
     "satisfaction": 78,
-    "settlements": [
-      {
-        "id": "rome",
-        "is_capital": true,
-        "name_tr": "Roma",
-        "type": "city",
-        "x": 739,
-        "y": 448
-      },
-      {
-        "id": "perugia",
-        "name_tr": "Perugia",
-        "type": "town",
-        "x": 746,
-        "y": 424
-      },
-      {
-        "id": "ancona",
-        "name_tr": "Ancona",
-        "type": "port",
-        "x": 773,
-        "y": 437
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 20,
     "terrain": "plain",
@@ -1451,16 +1113,6 @@
     "population": 600,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "naples_main",
-        "is_capital": true,
-        "name_tr": "Napoli Krallığı",
-        "type": "city",
-        "x": 792,
-        "y": 471
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 35,
     "terrain": "coast",
@@ -1496,16 +1148,6 @@
     "population": 800,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "austria_main",
-        "is_capital": true,
-        "name_tr": "Avusturya",
-        "type": "city",
-        "x": 805,
-        "y": 323
-      }
-    ],
     "shape_id": "AUT",
     "tax_rate": 38,
     "terrain": "mountain",
@@ -1539,16 +1181,6 @@
     "population": 700,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "bohemia_main",
-        "is_capital": true,
-        "name_tr": "Bohemya",
-        "type": "city",
-        "x": 775,
-        "y": 280
-      }
-    ],
     "shape_id": "CZE",
     "tax_rate": 30,
     "terrain": "forest",
@@ -1586,16 +1218,6 @@
     "population": 1500,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "poland_main",
-        "is_capital": true,
-        "name_tr": "Polonya",
-        "type": "city",
-        "x": 865,
-        "y": 228
-      }
-    ],
     "shape_id": "POL",
     "tax_rate": 35,
     "terrain": "plain",
@@ -1629,16 +1251,6 @@
     "population": 1200,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "lithuania_main",
-        "is_capital": true,
-        "name_tr": "Litvanya",
-        "type": "city",
-        "x": 953,
-        "y": 184
-      }
-    ],
     "shape_id": "LTU",
     "tax_rate": 30,
     "terrain": "forest",
@@ -1678,16 +1290,6 @@
     "population": 1100,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "hungary_main",
-        "is_capital": true,
-        "name_tr": "Macaristan",
-        "type": "city",
-        "x": 874,
-        "y": 348
-      }
-    ],
     "shape_id": "HUN",
     "tax_rate": 30,
     "terrain": "plain",
@@ -1725,16 +1327,6 @@
     "population": 600,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "skopje",
-        "is_capital": true,
-        "name_tr": "Üsküp",
-        "type": "city",
-        "x": 888,
-        "y": 371
-      }
-    ],
     "shape_id": "SRB",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -1771,16 +1363,6 @@
     "population": 520,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "nis",
-        "is_capital": true,
-        "name_tr": "Niş",
-        "type": "town",
-        "x": 897,
-        "y": 391
-      }
-    ],
     "shape_id": "SRB",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -1818,16 +1400,6 @@
     "population": 500,
     "religion": "orthodox",
     "satisfaction": 50,
-    "settlements": [
-      {
-        "id": "wallachia_main",
-        "is_capital": true,
-        "name_tr": "Eflak",
-        "type": "city",
-        "x": 996,
-        "y": 388
-      }
-    ],
     "shape_id": "ROU",
     "tax_rate": 25,
     "terrain": "plain",
@@ -1861,16 +1433,6 @@
     "population": 460,
     "religion": "orthodox",
     "satisfaction": 50,
-    "settlements": [
-      {
-        "id": "craiova",
-        "is_capital": true,
-        "name_tr": "Krayova",
-        "type": "town",
-        "x": 975,
-        "y": 393
-      }
-    ],
     "shape_id": "ROU",
     "tax_rate": 25,
     "terrain": "plain",
@@ -1903,16 +1465,6 @@
     "population": 460,
     "religion": "orthodox",
     "satisfaction": 50,
-    "settlements": [
-      {
-        "id": "cetatea_alba",
-        "is_capital": true,
-        "name_tr": "Akkerman",
-        "type": "town",
-        "x": 1018,
-        "y": 339
-      }
-    ],
     "shape_id": "ROU",
     "tax_rate": 25,
     "terrain": "plain",
@@ -1949,30 +1501,6 @@
     "population": 700,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "tarnovo",
-        "is_capital": true,
-        "name_tr": "Tırnova",
-        "type": "city",
-        "x": 1015,
-        "y": 415
-      },
-      {
-        "id": "sofia",
-        "name_tr": "Sofya",
-        "type": "town",
-        "x": 995,
-        "y": 417
-      },
-      {
-        "id": "varna",
-        "name_tr": "Varna",
-        "type": "port",
-        "x": 1030,
-        "y": 413
-      }
-    ],
     "shape_id": "BGR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -2004,16 +1532,6 @@
     "population": 700,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "morocco_main",
-        "is_capital": true,
-        "name_tr": "Fas",
-        "type": "city",
-        "x": 353,
-        "y": 576
-      }
-    ],
     "shape_id": "MAR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -2053,16 +1571,6 @@
     "population": 400,
     "religion": "sunni",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "algiers_main",
-        "is_capital": true,
-        "name_tr": "Cezayir",
-        "type": "city",
-        "x": 592,
-        "y": 542
-      }
-    ],
     "shape_id": "DZA",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2100,16 +1608,6 @@
     "population": 500,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "tunis_main",
-        "is_capital": true,
-        "name_tr": "Tunus",
-        "type": "city",
-        "x": 671,
-        "y": 531
-      }
-    ],
     "shape_id": "TUN",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2149,16 +1647,6 @@
     "population": 300,
     "religion": "sunni",
     "satisfaction": 50,
-    "settlements": [
-      {
-        "id": "tripolitania_main",
-        "is_capital": true,
-        "name_tr": "Trablusgarp",
-        "type": "city",
-        "x": 856,
-        "y": 665
-      }
-    ],
     "shape_id": "LBY",
     "tax_rate": 25,
     "terrain": "plain",
@@ -2192,30 +1680,6 @@
     "population": 600,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "athens",
-        "is_capital": true,
-        "name_tr": "Atina",
-        "type": "city",
-        "x": 956,
-        "y": 515
-      },
-      {
-        "id": "thebes",
-        "name_tr": "Teb",
-        "type": "town",
-        "x": 952,
-        "y": 492
-      },
-      {
-        "id": "chalkis",
-        "name_tr": "Halkis",
-        "type": "port",
-        "x": 956,
-        "y": 508
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2249,30 +1713,6 @@
     "population": 1000,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "constantinople_settlement_3",
-        "is_capital": true,
-        "name_tr": "Bursa",
-        "type": "city",
-        "x": 1047,
-        "y": 470
-      },
-      {
-        "id": "yenisehir",
-        "name_tr": "Yenişehir",
-        "type": "town",
-        "x": 1059,
-        "y": 473
-      },
-      {
-        "id": "nicaea",
-        "name_tr": "İznik",
-        "type": "town",
-        "x": 1058,
-        "y": 464
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2341,30 +1781,6 @@
     "population": 400,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "solkhat",
-        "is_capital": true,
-        "name_tr": "Solhat",
-        "type": "city",
-        "x": 1160,
-        "y": 364
-      },
-      {
-        "id": "kaffa",
-        "name_tr": "Kefe",
-        "type": "port",
-        "x": 1151,
-        "y": 389
-      },
-      {
-        "id": "cherson",
-        "name_tr": "Hersones",
-        "type": "port",
-        "x": 1196,
-        "y": 376
-      }
-    ],
     "shape_id": "CRM",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2398,16 +1814,6 @@
     "population": 1000,
     "religion": "orthodox",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "moscow_main",
-        "is_capital": true,
-        "name_tr": "Moskova",
-        "type": "city",
-        "x": 1251,
-        "y": 201
-      }
-    ],
     "shape_id": "RUS",
     "tax_rate": 40,
     "terrain": "forest",
@@ -2442,30 +1848,6 @@
     "population": 300,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "trebizond",
-        "is_capital": true,
-        "name_tr": "Trabzon",
-        "type": "city",
-        "x": 1298,
-        "y": 454
-      },
-      {
-        "id": "rize",
-        "name_tr": "Rize",
-        "type": "port",
-        "x": 1306,
-        "y": 451
-      },
-      {
-        "id": "giresun",
-        "name_tr": "Giresun",
-        "type": "port",
-        "x": 1290,
-        "y": 457
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -2500,16 +1882,6 @@
     "population": 380,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "erzurum",
-        "is_capital": true,
-        "name_tr": "Erzurum",
-        "type": "town",
-        "x": 1300,
-        "y": 480
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -2545,16 +1917,6 @@
     "population": 300,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "georgia_main",
-        "is_capital": true,
-        "name_tr": "Gürcistan",
-        "type": "city",
-        "x": 1318,
-        "y": 431
-      }
-    ],
     "shape_id": "GEO",
     "tax_rate": 20,
     "terrain": "mountain",
@@ -2594,30 +1956,6 @@
     "population": 1800,
     "religion": "sunni",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "cairo",
-        "is_capital": true,
-        "name_tr": "Kahire",
-        "type": "city",
-        "x": 1096,
-        "y": 652
-      },
-      {
-        "id": "alexandria",
-        "name_tr": "İskenderiye",
-        "type": "port",
-        "x": 1088,
-        "y": 637
-      },
-      {
-        "id": "damietta",
-        "name_tr": "Dimyat",
-        "type": "port",
-        "x": 1110,
-        "y": 651
-      }
-    ],
     "shape_id": "EGY",
     "tax_rate": 40,
     "terrain": "plain",
@@ -2648,23 +1986,6 @@
     "population": 500,
     "religion": "sunni",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "acre",
-        "is_capital": true,
-        "name_tr": "Akka",
-        "type": "port",
-        "x": 1181,
-        "y": 616
-      },
-      {
-        "id": "jerusalem",
-        "name_tr": "Kudüs",
-        "type": "city",
-        "x": 1181,
-        "y": 631
-      }
-    ],
     "shape_id": "PSE",
     "tax_rate": 35,
     "terrain": "plain",
@@ -2700,16 +2021,6 @@
     "population": 900,
     "religion": "sunni",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "damascus",
-        "is_capital": true,
-        "name_tr": "Şam",
-        "type": "city",
-        "x": 1202,
-        "y": 604
-      }
-    ],
     "shape_id": "SYR",
     "tax_rate": 40,
     "terrain": "plain",
@@ -2742,30 +2053,6 @@
     "population": 800,
     "religion": "shia",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "baghdad",
-        "is_capital": true,
-        "name_tr": "Bağdat",
-        "type": "city",
-        "x": 1360,
-        "y": 592
-      },
-      {
-        "id": "kufa",
-        "name_tr": "Kufe",
-        "type": "town",
-        "x": 1383,
-        "y": 570
-      },
-      {
-        "id": "wasit",
-        "name_tr": "Wasit",
-        "type": "town",
-        "x": 1381,
-        "y": 595
-      }
-    ],
     "shape_id": "IRQ",
     "tax_rate": 30,
     "terrain": "plain",
@@ -2801,16 +2088,6 @@
     "population": 600,
     "religion": "shia",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "persia_north_main",
-        "is_capital": true,
-        "name_tr": "Meşhed",
-        "type": "city",
-        "x": 1633,
-        "y": 583
-      }
-    ],
     "shape_id": "IRN",
     "tax_rate": 35,
     "terrain": "mountain",
@@ -2849,16 +2126,6 @@
     "population": 700,
     "religion": "shia",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "persia_west_main",
-        "is_capital": true,
-        "name_tr": "Tebriz",
-        "type": "city",
-        "x": 1396,
-        "y": 531
-      }
-    ],
     "shape_id": "IRN",
     "tax_rate": 40,
     "terrain": "plain",
@@ -2896,16 +2163,6 @@
     "population": 900,
     "religion": "shia",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "persia_south_main",
-        "is_capital": true,
-        "name_tr": "Hürremşehr",
-        "type": "city",
-        "x": 1614,
-        "y": 714
-      }
-    ],
     "shape_id": "IRN",
     "tax_rate": 40,
     "terrain": "plain",
@@ -2945,16 +2202,6 @@
     "population": 400,
     "religion": "sunni",
     "satisfaction": 80,
-    "settlements": [
-      {
-        "id": "hejaz_main",
-        "is_capital": true,
-        "name_tr": "Hicaz",
-        "type": "city",
-        "x": 1366,
-        "y": 776
-      }
-    ],
     "shape_id": "SAU",
     "tax_rate": 20,
     "terrain": "plain",
@@ -2989,16 +2236,6 @@
     "population": 450,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "slovenia_main",
-        "is_capital": true,
-        "name_tr": "Slovenya",
-        "type": "city",
-        "x": 772,
-        "y": 359
-      }
-    ],
     "shape_id": "SVN",
     "tax_rate": 30,
     "terrain": "forest",
@@ -3032,16 +2269,6 @@
     "population": 650,
     "religion": "catholic",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "croatia_main",
-        "is_capital": true,
-        "name_tr": "Hırvatistan Krallığı",
-        "type": "city",
-        "x": 820,
-        "y": 366
-      }
-    ],
     "shape_id": "HRV",
     "tax_rate": 30,
     "terrain": "coast",
@@ -3075,16 +2302,6 @@
     "population": 550,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "bosnia_main",
-        "is_capital": true,
-        "name_tr": "Bosna Banlığı",
-        "type": "city",
-        "x": 823,
-        "y": 399
-      }
-    ],
     "shape_id": "BIH",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -3119,16 +2336,6 @@
     "population": 250,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "montenegro_main",
-        "is_capital": true,
-        "name_tr": "Karadağ",
-        "type": "city",
-        "x": 856,
-        "y": 423
-      }
-    ],
     "shape_id": "MNE",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -3162,16 +2369,6 @@
     "population": 250,
     "religion": "orthodox",
     "satisfaction": 52,
-    "settlements": [
-      {
-        "id": "kosovo_main",
-        "is_capital": true,
-        "name_tr": "Kosova",
-        "type": "city",
-        "x": 891,
-        "y": 429
-      }
-    ],
     "shape_id": "KOS",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -3206,16 +2403,6 @@
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "albania_main",
-        "is_capital": true,
-        "name_tr": "Arnavutluk",
-        "type": "city",
-        "x": 871,
-        "y": 448
-      }
-    ],
     "shape_id": "ALB",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -3236,7 +2423,7 @@
     "id": "north_macedonia",
     "is_locked": false,
     "is_sea": false,
-    "name": "North Macedonia",
+    "name": "Macedonia",
     "name_tr": "Makedonya",
     "neighbors": [
       "mediterranean_open_6",
@@ -3251,16 +2438,6 @@
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "macedonia_main",
-        "is_capital": true,
-        "name_tr": "Makedonya",
-        "type": "city",
-        "x": 906,
-        "y": 452
-      }
-    ],
     "shape_id": "MKD",
     "tax_rate": 25,
     "terrain": "plain",
@@ -3295,16 +2472,6 @@
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "moldova_main",
-        "is_capital": true,
-        "name_tr": "Moldova",
-        "type": "city",
-        "x": 1051,
-        "y": 344
-      }
-    ],
     "shape_id": "MDA",
     "tax_rate": 25,
     "terrain": "plain",
@@ -3907,16 +3074,6 @@
     "population": 500,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "slovakia_main",
-        "is_capital": true,
-        "name_tr": "Slovakya",
-        "type": "city",
-        "x": 835,
-        "y": 318
-      }
-    ],
     "shape_id": "SVK",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -3948,16 +3105,6 @@
     "population": 200,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "estonia_main",
-        "is_capital": true,
-        "name_tr": "Estonya",
-        "type": "city",
-        "x": 976,
-        "y": 124
-      }
-    ],
     "shape_id": "EST",
     "tax_rate": 25,
     "terrain": "plain",
@@ -3992,16 +3139,6 @@
     "population": 250,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "latvia_main",
-        "is_capital": true,
-        "name_tr": "Letonya",
-        "type": "city",
-        "x": 970,
-        "y": 143
-      }
-    ],
     "shape_id": "LVA",
     "tax_rate": 25,
     "terrain": "plain",
@@ -4036,16 +3173,6 @@
     "population": 600,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "belarus_main",
-        "is_capital": true,
-        "name_tr": "Beyaz Rusya",
-        "type": "city",
-        "x": 1005,
-        "y": 224
-      }
-    ],
     "shape_id": "BLR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4077,16 +3204,6 @@
     "population": 350,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "norway_main",
-        "is_capital": true,
-        "name_tr": "Norveç",
-        "type": "city",
-        "x": 676,
-        "y": 107
-      }
-    ],
     "shape_id": "NOR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -4119,16 +3236,6 @@
     "population": 700,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "sweden_main",
-        "is_capital": true,
-        "name_tr": "İsveç",
-        "type": "city",
-        "x": 829,
-        "y": 107
-      }
-    ],
     "shape_id": "SWE",
     "tax_rate": 30,
     "terrain": "forest",
@@ -4164,51 +3271,6 @@
     "population": 400,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "edirne",
-        "name_tr": "Edirne",
-        "type": "city",
-        "x": 1033,
-        "y": 450
-      },
-      {
-        "id": "gelibolu",
-        "name_tr": "Gelibolu",
-        "type": "port",
-        "x": 1010,
-        "y": 465
-      },
-      {
-        "id": "tekirdag",
-        "name_tr": "Tekfurdağı",
-        "type": "port",
-        "x": 1021,
-        "y": 447
-      },
-      {
-        "id": "galata",
-        "name_tr": "Galata",
-        "type": "port",
-        "x": 1051,
-        "y": 452
-      },
-      {
-        "id": "selymbria",
-        "name_tr": "Silivri",
-        "type": "town",
-        "x": 1042,
-        "y": 448
-      },
-      {
-        "id": "bursa",
-        "is_capital": true,
-        "name_tr": "Konstantiniyye",
-        "type": "city",
-        "x": 1054,
-        "y": 454
-      }
-    ],
     "shape_id": "TRA",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4243,16 +3305,6 @@
     "population": 320,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "gallipoli",
-        "is_capital": true,
-        "name_tr": "Gelibolu",
-        "type": "town",
-        "x": 1019,
-        "y": 456
-      }
-    ],
     "shape_id": "TRA",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4306,8 +3358,8 @@
     "id": "jordan",
     "is_locked": false,
     "is_sea": false,
-    "name": "Jordan",
-    "name_tr": "Ürdün",
+    "name": "Transjordan",
+    "name_tr": "Şeria Ötesi",
     "neighbors": [
       "red_open_2",
       "hejaz",
@@ -4320,16 +3372,6 @@
     "population": 250,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "jordan_main",
-        "is_capital": true,
-        "name_tr": "Ürdün",
-        "type": "city",
-        "x": 1192,
-        "y": 629
-      }
-    ],
     "shape_id": "JOR",
     "tax_rate": 30,
     "terrain": "desert",
@@ -4366,16 +3408,6 @@
     "population": 450,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "azerbaijan_main",
-        "is_capital": true,
-        "name_tr": "Azerbaycan",
-        "type": "city",
-        "x": 1466,
-        "y": 467
-      }
-    ],
     "shape_id": "AZE",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4409,16 +3441,6 @@
     "population": 300,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "armenia_main",
-        "is_capital": true,
-        "name_tr": "Ermenistan",
-        "type": "city",
-        "x": 1361,
-        "y": 462
-      }
-    ],
     "shape_id": "ARM",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -4439,8 +3461,8 @@
     "id": "lebanon",
     "is_locked": false,
     "is_sea": false,
-    "name": "Lebanon",
-    "name_tr": "Lübnan",
+    "name": "Mount Lebanon",
+    "name_tr": "Cebel-i Lübnan",
     "neighbors": [
       "east_mediterranean",
       "aleppo",
@@ -4451,16 +3473,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "lebanon_main",
-        "is_capital": true,
-        "name_tr": "Lübnan",
-        "type": "city",
-        "x": 1191,
-        "y": 587
-      }
-    ],
     "shape_id": "LBN",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -4493,16 +3505,6 @@
     "population": 200,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "kuwait_main",
-        "is_capital": true,
-        "name_tr": "Kuveyt",
-        "type": "city",
-        "x": 1425,
-        "y": 675
-      }
-    ],
     "shape_id": "KWT",
     "tax_rate": 30,
     "terrain": "desert",
@@ -4535,16 +3537,6 @@
     "population": 350,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "cyprus_main",
-        "is_capital": true,
-        "name_tr": "Kıbrıs",
-        "type": "city",
-        "x": 1135,
-        "y": 572
-      }
-    ],
     "shape_id": "CYP",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4581,16 +3573,6 @@
     "population": 700,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "flanders_main",
-        "is_capital": true,
-        "name_tr": "Flandre",
-        "type": "city",
-        "x": 589,
-        "y": 275
-      }
-    ],
     "shape_id": "BEL",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4625,16 +3607,6 @@
     "population": 600,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "holland_main",
-        "is_capital": true,
-        "name_tr": "Hollanda",
-        "type": "city",
-        "x": 570,
-        "y": 241
-      }
-    ],
     "shape_id": "NLD",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4666,16 +3638,6 @@
     "population": 200,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "luxembourg_main",
-        "is_capital": true,
-        "name_tr": "Lüksemburg",
-        "type": "city",
-        "x": 597,
-        "y": 290
-      }
-    ],
     "shape_id": "LUX",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4714,16 +3676,6 @@
     "population": 600,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "ukraine_main",
-        "is_capital": true,
-        "name_tr": "Ukrayna Bozkırı",
-        "type": "city",
-        "x": 1160,
-        "y": 305
-      }
-    ],
     "shape_id": "UKR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4759,16 +3711,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "konigsberg_main",
-        "is_capital": true,
-        "name_tr": "Königsberg",
-        "type": "city",
-        "x": 893,
-        "y": 194
-      }
-    ],
     "shape_id": "KON",
     "tax_rate": 30,
     "terrain": "plain",
@@ -4799,16 +3741,6 @@
     "population": 450,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "sicily_main",
-        "is_capital": true,
-        "name_tr": "Sicilya",
-        "type": "city",
-        "x": 776,
-        "y": 533
-      }
-    ],
     "shape_id": "SCL",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4841,16 +3773,6 @@
     "population": 250,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "sardinia_main",
-        "is_capital": true,
-        "name_tr": "Sardinya",
-        "type": "city",
-        "x": 657,
-        "y": 486
-      }
-    ],
     "shape_id": "SAR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -4883,16 +3805,6 @@
     "population": 200,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "corsica_main",
-        "is_capital": true,
-        "name_tr": "Korsika",
-        "type": "city",
-        "x": 662,
-        "y": 434
-      }
-    ],
     "shape_id": "COR",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -4924,16 +3836,6 @@
     "population": 350,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "crete_main",
-        "is_capital": true,
-        "name_tr": "Girit",
-        "type": "city",
-        "x": 987,
-        "y": 566
-      }
-    ],
     "shape_id": "CRT",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4964,16 +3866,6 @@
     "population": 150,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "malta_main",
-        "is_capital": true,
-        "name_tr": "Malta",
-        "type": "city",
-        "x": 764,
-        "y": 553
-      }
-    ],
     "shape_id": "MLT",
     "tax_rate": 30,
     "terrain": "coast",
@@ -4994,8 +3886,8 @@
     "id": "israel",
     "is_locked": false,
     "is_sea": false,
-    "name": "Israel",
-    "name_tr": "İsrail",
+    "name": "Gaza",
+    "name_tr": "Gazze",
     "neighbors": [
       "east_mediterranean",
       "red_open_2",
@@ -5009,23 +3901,6 @@
     "population": 300,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "israel_main",
-        "is_capital": true,
-        "name_tr": "Han Yunus",
-        "type": "city",
-        "x": 1181,
-        "y": 611
-      },
-      {
-        "id": "gaza",
-        "name_tr": "Gazze",
-        "type": "town",
-        "x": 1165,
-        "y": 639
-      }
-    ],
     "shape_id": "ISR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -5058,16 +3933,6 @@
     "population": 200,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "uae_main",
-        "is_capital": true,
-        "name_tr": "BAE",
-        "type": "city",
-        "x": 1572,
-        "y": 772
-      }
-    ],
     "shape_id": "ARE",
     "tax_rate": 30,
     "terrain": "desert",
@@ -5099,16 +3964,6 @@
     "population": 120,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "qatar_main",
-        "is_capital": true,
-        "name_tr": "Katar",
-        "type": "city",
-        "x": 1500,
-        "y": 746
-      }
-    ],
     "shape_id": "QAT",
     "tax_rate": 30,
     "terrain": "desert",
@@ -5140,16 +3995,6 @@
     "population": 100,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "bahrain_main",
-        "is_capital": true,
-        "name_tr": "Bahreyn",
-        "type": "city",
-        "x": 1487,
-        "y": 740
-      }
-    ],
     "shape_id": "BHR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5180,23 +4025,6 @@
     "population": 200,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "north_cyprus_main",
-        "is_capital": true,
-        "name_tr": "Kuzey Kıbrıs",
-        "type": "city",
-        "x": 1146,
-        "y": 565
-      },
-      {
-        "id": "north_cyprus_settlement_2",
-        "name_tr": "Girne",
-        "type": "port",
-        "x": 1161,
-        "y": 553
-      }
-    ],
     "shape_id": "CYN",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5227,16 +4055,6 @@
     "population": 250,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "rhodes_main",
-        "is_capital": true,
-        "name_tr": "Rodos",
-        "type": "city",
-        "x": 1041,
-        "y": 547
-      }
-    ],
     "shape_id": "RHO",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5267,16 +4085,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "mallorca_main",
-        "is_capital": true,
-        "name_tr": "Mallorca",
-        "type": "city",
-        "x": 537,
-        "y": 485
-      }
-    ],
     "shape_id": "MAL",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5312,30 +4120,6 @@
     "population": 380,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "kutahya",
-        "is_capital": true,
-        "name_tr": "Kütahya",
-        "type": "city",
-        "x": 1075,
-        "y": 489
-      },
-      {
-        "id": "usak",
-        "name_tr": "Uşak",
-        "type": "town",
-        "x": 1072,
-        "y": 501
-      },
-      {
-        "id": "karahisar",
-        "name_tr": "Karahisar",
-        "type": "fortress",
-        "x": 1070,
-        "y": 509
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -5371,16 +4155,6 @@
     "population": 320,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "aydin",
-        "is_capital": true,
-        "name_tr": "Aydın / Tralles",
-        "type": "city",
-        "x": 1013,
-        "y": 474
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5413,16 +4187,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "manisa",
-        "is_capital": true,
-        "name_tr": "Manisa",
-        "type": "town",
-        "x": 1020,
-        "y": 494
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5455,16 +4219,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "izmir",
-        "is_capital": true,
-        "name_tr": "İzmir",
-        "type": "town",
-        "x": 1023,
-        "y": 507
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5498,16 +4252,6 @@
     "population": 340,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "milas",
-        "is_capital": true,
-        "name_tr": "Milas",
-        "type": "town",
-        "x": 1033,
-        "y": 523
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5541,23 +4285,6 @@
     "population": 280,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "cankiri",
-        "is_capital": true,
-        "name_tr": "Çankırı",
-        "type": "town",
-        "x": 1197,
-        "y": 462
-      },
-      {
-        "id": "aksaray",
-        "name_tr": "Aksaray",
-        "type": "town",
-        "x": 1222,
-        "y": 475
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -5591,16 +4318,6 @@
     "population": 420,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "sivas",
-        "is_capital": true,
-        "name_tr": "Sivas",
-        "type": "town",
-        "x": 1212,
-        "y": 486
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -5636,30 +4353,6 @@
     "population": 420,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "tarsus",
-        "is_capital": true,
-        "name_tr": "Tarsus",
-        "type": "town",
-        "x": 1197,
-        "y": 528
-      },
-      {
-        "id": "antioch",
-        "name_tr": "Antakya",
-        "type": "town",
-        "x": 1198,
-        "y": 546
-      },
-      {
-        "id": "sis",
-        "name_tr": "Sis",
-        "type": "city",
-        "x": 1210,
-        "y": 524
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -5696,16 +4389,6 @@
     "population": 420,
     "religion": "sunni",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "akkoyunlu_main",
-        "is_capital": true,
-        "name_tr": "Akkoyunlu",
-        "type": "city",
-        "x": 1347,
-        "y": 500
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -5739,16 +4422,6 @@
     "population": 750,
     "religion": "catholic",
     "satisfaction": 68,
-    "settlements": [
-      {
-        "id": "florence_main",
-        "is_capital": true,
-        "name_tr": "Floransa Cumhuriyeti",
-        "type": "city",
-        "x": 697,
-        "y": 410
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 35,
     "terrain": "plain",
@@ -5784,16 +4457,6 @@
     "population": 600,
     "religion": "catholic",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "genoa_main",
-        "is_capital": true,
-        "name_tr": "Ceneviz Cumhuriyeti",
-        "type": "city",
-        "x": 650,
-        "y": 389
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 35,
     "terrain": "coast",
@@ -5827,16 +4490,6 @@
     "population": 850,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "milan_main",
-        "is_capital": true,
-        "name_tr": "Milano",
-        "type": "city",
-        "x": 667,
-        "y": 372
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 35,
     "terrain": "plain",
@@ -5870,16 +4523,6 @@
     "population": 700,
     "religion": "sunni",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "granada_main",
-        "is_capital": true,
-        "name_tr": "Gırnata Emirliği",
-        "type": "city",
-        "x": 396,
-        "y": 524
-      }
-    ],
     "shape_id": "ESP",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -5915,16 +4558,6 @@
     "population": 280,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "navarre_main",
-        "is_capital": true,
-        "name_tr": "Navarra Krallığı",
-        "type": "city",
-        "x": 488,
-        "y": 429
-      }
-    ],
     "shape_id": "ESP",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -5959,16 +4592,6 @@
     "population": 700,
     "religion": "catholic",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "pomerania_main",
-        "is_capital": true,
-        "name_tr": "Pomeranya",
-        "type": "city",
-        "x": 738,
-        "y": 212
-      }
-    ],
     "shape_id": "DEU",
     "tax_rate": 30,
     "terrain": "plain",
@@ -6007,16 +4630,6 @@
     "population": 650,
     "religion": "orthodox",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "transylvania_main",
-        "is_capital": true,
-        "name_tr": "Erdel / Transilvanya",
-        "type": "city",
-        "x": 952,
-        "y": 360
-      }
-    ],
     "shape_id": "ROU",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -6052,23 +4665,6 @@
     "population": 300,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "milas",
-        "is_capital": true,
-        "name_tr": "Milas",
-        "type": "city",
-        "x": 1062,
-        "y": 520
-      },
-      {
-        "id": "mentese_settlement_2",
-        "name_tr": "Marmaris",
-        "type": "port",
-        "x": 1083,
-        "y": 544
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
@@ -6103,23 +4699,6 @@
     "population": 260,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "antalya",
-        "is_capital": true,
-        "name_tr": "Antalya / Attaleia",
-        "type": "city",
-        "x": 1110,
-        "y": 517
-      },
-      {
-        "id": "elmali",
-        "name_tr": "Elmalı",
-        "type": "port",
-        "x": 1111,
-        "y": 537
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
@@ -6152,16 +4731,6 @@
     "population": 320,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "isparta",
-        "is_capital": true,
-        "name_tr": "Isparta",
-        "type": "town",
-        "x": 1089,
-        "y": 502
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -6195,16 +4764,6 @@
     "population": 300,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "beysehir",
-        "is_capital": true,
-        "name_tr": "Beyşehir",
-        "type": "town",
-        "x": 1097,
-        "y": 491
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6239,16 +4798,6 @@
     "population": 340,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "aksaray",
-        "is_capital": true,
-        "name_tr": "Aksaray",
-        "type": "town",
-        "x": 1120,
-        "y": 490
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6283,16 +4832,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "ankara",
-        "is_capital": true,
-        "name_tr": "Ankara",
-        "type": "town",
-        "x": 1096,
-        "y": 479
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6328,16 +4867,6 @@
     "population": 320,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "cankiri",
-        "is_capital": true,
-        "name_tr": "Çankırı",
-        "type": "town",
-        "x": 1132,
-        "y": 474
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "forest",
@@ -6370,16 +4899,6 @@
     "population": 380,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "larende",
-        "is_capital": true,
-        "name_tr": "Larende",
-        "type": "town",
-        "x": 1138,
-        "y": 525
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6413,16 +4932,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "kayseri",
-        "is_capital": true,
-        "name_tr": "Kayseri",
-        "type": "town",
-        "x": 1146,
-        "y": 508
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6457,23 +4966,6 @@
     "population": 800,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "sivas",
-        "is_capital": true,
-        "name_tr": "Sivas",
-        "type": "city",
-        "x": 1241,
-        "y": 462
-      },
-      {
-        "id": "kayseri",
-        "name_tr": "Kayseri",
-        "type": "town",
-        "x": 1235,
-        "y": 492
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -6510,16 +5002,6 @@
     "population": 620,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "malatya",
-        "is_capital": true,
-        "name_tr": "Malatya",
-        "type": "town",
-        "x": 1247,
-        "y": 496
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "plain",
@@ -6553,37 +5035,6 @@
     "population": 380,
     "religion": "sunni",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "maras",
-        "is_capital": true,
-        "name_tr": "Maraş",
-        "type": "city",
-        "x": 1276,
-        "y": 514
-      },
-      {
-        "id": "elbistan",
-        "name_tr": "Elbistan",
-        "type": "town",
-        "x": 1270,
-        "y": 500
-      },
-      {
-        "id": "malatya",
-        "name_tr": "Malatya",
-        "type": "town",
-        "x": 1300,
-        "y": 505
-      },
-      {
-        "id": "nisibis",
-        "name_tr": "Nusaybin",
-        "type": "town",
-        "x": 1296,
-        "y": 523
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -6615,16 +5066,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "erzincan",
-        "is_capital": true,
-        "name_tr": "Erzincan",
-        "type": "town",
-        "x": 1275,
-        "y": 489
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -6662,16 +5103,6 @@
     "population": 420,
     "religion": "orthodox",
     "satisfaction": 55,
-    "settlements": [
-      {
-        "id": "vidin_main",
-        "is_capital": true,
-        "name_tr": "Vidin",
-        "type": "city",
-        "x": 940,
-        "y": 410
-      }
-    ],
     "shape_id": "BGR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -6705,16 +5136,6 @@
     "population": 320,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "styria_main",
-        "is_capital": true,
-        "name_tr": "Steiermark",
-        "type": "city",
-        "x": 775,
-        "y": 352
-      }
-    ],
     "shape_id": "AUT",
     "tax_rate": 30,
     "terrain": "mountain",
@@ -6750,16 +5171,6 @@
     "population": 280,
     "religion": "catholic",
     "satisfaction": 66,
-    "settlements": [
-      {
-        "id": "tyrol_main",
-        "is_capital": true,
-        "name_tr": "Tirol",
-        "type": "city",
-        "x": 709,
-        "y": 336
-      }
-    ],
     "shape_id": "AUT",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -6793,16 +5204,6 @@
     "population": 420,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "moravia_main",
-        "is_capital": true,
-        "name_tr": "Moravya",
-        "type": "city",
-        "x": 821,
-        "y": 297
-      }
-    ],
     "shape_id": "CZE",
     "tax_rate": 32,
     "terrain": "plain",
@@ -6837,16 +5238,6 @@
     "population": 450,
     "religion": "catholic",
     "satisfaction": 64,
-    "settlements": [
-      {
-        "id": "silesia_main",
-        "is_capital": true,
-        "name_tr": "Silezya",
-        "type": "city",
-        "x": 804,
-        "y": 263
-      }
-    ],
     "shape_id": "POL",
     "tax_rate": 33,
     "terrain": "plain",
@@ -6881,16 +5272,6 @@
     "population": 380,
     "religion": "catholic",
     "satisfaction": 63,
-    "settlements": [
-      {
-        "id": "mazovia_main",
-        "is_capital": true,
-        "name_tr": "Mazovya",
-        "type": "city",
-        "x": 923,
-        "y": 242
-      }
-    ],
     "shape_id": "POL",
     "tax_rate": 30,
     "terrain": "plain",
@@ -6923,16 +5304,6 @@
     "population": 300,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "friesland_main",
-        "is_capital": true,
-        "name_tr": "Frizelya",
-        "type": "city",
-        "x": 609,
-        "y": 209
-      }
-    ],
     "shape_id": "NLD",
     "tax_rate": 30,
     "terrain": "plain",
@@ -6968,16 +5339,6 @@
     "population": 360,
     "religion": "catholic",
     "satisfaction": 64,
-    "settlements": [
-      {
-        "id": "lorraine_main",
-        "is_capital": true,
-        "name_tr": "Lorraine",
-        "type": "city",
-        "x": 615,
-        "y": 275
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 32,
     "terrain": "plain",
@@ -7010,16 +5371,6 @@
     "population": 340,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "alsace_main",
-        "is_capital": true,
-        "name_tr": "Alsas",
-        "type": "city",
-        "x": 627,
-        "y": 312
-      }
-    ],
     "shape_id": "FRA",
     "tax_rate": 33,
     "terrain": "plain",
@@ -7052,16 +5403,6 @@
     "population": 400,
     "religion": "catholic",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "alfold_main",
-        "is_capital": true,
-        "name_tr": "Macar Ovası",
-        "type": "city",
-        "x": 904,
-        "y": 340
-      }
-    ],
     "shape_id": "HUN",
     "tax_rate": 28,
     "terrain": "plain",
@@ -7096,16 +5437,6 @@
     "population": 550,
     "religion": "catholic",
     "satisfaction": 66,
-    "settlements": [
-      {
-        "id": "verona_main",
-        "is_capital": true,
-        "name_tr": "Verona",
-        "type": "city",
-        "x": 706,
-        "y": 383
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 35,
     "terrain": "plain",
@@ -7140,16 +5471,6 @@
     "population": 420,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "ferrara_main",
-        "is_capital": true,
-        "name_tr": "Ferrara",
-        "type": "city",
-        "x": 735,
-        "y": 395
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 32,
     "terrain": "plain",
@@ -7182,16 +5503,6 @@
     "population": 480,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "siena_main",
-        "is_capital": true,
-        "name_tr": "Siena Cumhuriyeti",
-        "type": "city",
-        "x": 703,
-        "y": 427
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 33,
     "terrain": "plain",
@@ -7223,16 +5534,6 @@
     "population": 450,
     "religion": "catholic",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "puglia_main",
-        "is_capital": true,
-        "name_tr": "Apulia",
-        "type": "city",
-        "x": 832,
-        "y": 465
-      }
-    ],
     "shape_id": "ITA",
     "tax_rate": 28,
     "terrain": "plain",
@@ -7267,30 +5568,6 @@
     "population": 480,
     "religion": "orthodox",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "rascia_main",
-        "is_capital": true,
-        "name_tr": "Raska",
-        "type": "city",
-        "x": 865,
-        "y": 409
-      },
-      {
-        "id": "prizren",
-        "name_tr": "Prizren",
-        "type": "town",
-        "x": 879,
-        "y": 398
-      },
-      {
-        "id": "nis",
-        "name_tr": "Niş",
-        "type": "fortress",
-        "x": 885,
-        "y": 409
-      }
-    ],
     "shape_id": "SRB",
     "tax_rate": 28,
     "terrain": "mountain",
@@ -7324,16 +5601,6 @@
     "population": 380,
     "religion": "catholic",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "dalmatia_main",
-        "is_capital": true,
-        "name_tr": "Dalmasya",
-        "type": "city",
-        "x": 792,
-        "y": 396
-      }
-    ],
     "shape_id": "HRV",
     "tax_rate": 32,
     "terrain": "coast",
@@ -7367,16 +5634,6 @@
     "population": 320,
     "religion": "catholic",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "hum_main",
-        "is_capital": true,
-        "name_tr": "Hum",
-        "type": "city",
-        "x": 842,
-        "y": 422
-      }
-    ],
     "shape_id": "BIH",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -7411,16 +5668,6 @@
     "population": 300,
     "religion": "orthodox",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "epirus_main",
-        "is_capital": true,
-        "name_tr": "Epir Despotluğu",
-        "type": "city",
-        "x": 879,
-        "y": 477
-      }
-    ],
     "shape_id": "ALB",
     "tax_rate": 25,
     "terrain": "mountain",
@@ -7456,16 +5703,6 @@
     "population": 340,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "thessaly_main",
-        "is_capital": true,
-        "name_tr": "Tesalya",
-        "type": "city",
-        "x": 934,
-        "y": 462
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 25,
     "terrain": "plain",
@@ -7500,16 +5737,6 @@
     "population": 420,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "langadas",
-        "is_capital": true,
-        "name_tr": "Langaza",
-        "type": "town",
-        "x": 913,
-        "y": 460
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 25,
     "terrain": "coast",
@@ -7544,16 +5771,6 @@
     "population": 350,
     "religion": "catholic",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "morea_main",
-        "is_capital": true,
-        "name_tr": "Mora Prensliği",
-        "type": "city",
-        "x": 919,
-        "y": 521
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 25,
     "terrain": "coast",
@@ -7589,16 +5806,6 @@
     "population": 280,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "dobruja_main",
-        "is_capital": true,
-        "name_tr": "Dobrica",
-        "type": "city",
-        "x": 1052,
-        "y": 383
-      }
-    ],
     "shape_id": "ROU",
     "tax_rate": 25,
     "terrain": "plain",
@@ -7635,16 +5842,6 @@
     "population": 380,
     "religion": "sunni",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "sogut",
-        "is_capital": true,
-        "name_tr": "Söğüt",
-        "type": "town",
-        "x": 1063,
-        "y": 480
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "forest",
@@ -7680,16 +5877,6 @@
     "population": 420,
     "religion": "sunni",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "kutahya",
-        "is_capital": true,
-        "name_tr": "Kütahya",
-        "type": "town",
-        "x": 1051,
-        "y": 494
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -7726,16 +5913,6 @@
     "population": 420,
     "religion": "orthodox",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "galicia_main",
-        "is_capital": true,
-        "name_tr": "Galicya-Volhiyn Prensliği",
-        "type": "city",
-        "x": 981,
-        "y": 276
-      }
-    ],
     "shape_id": "UKR",
     "tax_rate": 28,
     "terrain": "plain",
@@ -7771,16 +5948,6 @@
     "population": 380,
     "religion": "orthodox",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "kiev_main",
-        "is_capital": true,
-        "name_tr": "Kiev Prensliği",
-        "type": "city",
-        "x": 1092,
-        "y": 262
-      }
-    ],
     "shape_id": "UKR",
     "tax_rate": 25,
     "terrain": "plain",
@@ -7817,37 +5984,6 @@
     "population": 480,
     "religion": "sunni",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "aleppo",
-        "is_capital": true,
-        "name_tr": "Halep",
-        "type": "city",
-        "x": 1215,
-        "y": 544
-      },
-      {
-        "id": "birecik",
-        "name_tr": "Birecik",
-        "type": "fortress",
-        "x": 1243,
-        "y": 538
-      },
-      {
-        "id": "hama",
-        "name_tr": "Hama",
-        "type": "town",
-        "x": 1208,
-        "y": 555
-      },
-      {
-        "id": "homs",
-        "name_tr": "Humus",
-        "type": "town",
-        "x": 1208,
-        "y": 569
-      }
-    ],
     "shape_id": "SYR",
     "tax_rate": 35,
     "terrain": "plain",
@@ -7883,23 +6019,6 @@
     "population": 360,
     "religion": "sunni",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "mosul",
-        "is_capital": true,
-        "name_tr": "Musul",
-        "type": "city",
-        "x": 1338,
-        "y": 531
-      },
-      {
-        "id": "arbela",
-        "name_tr": "Erbil",
-        "type": "town",
-        "x": 1344,
-        "y": 548
-      }
-    ],
     "shape_id": "IRQ",
     "tax_rate": 28,
     "terrain": "plain",
@@ -7933,30 +6052,6 @@
     "population": 320,
     "religion": "sunni",
     "satisfaction": 58,
-    "settlements": [
-      {
-        "id": "basra",
-        "is_capital": true,
-        "name_tr": "Basra",
-        "type": "city",
-        "x": 1435,
-        "y": 662
-      },
-      {
-        "id": "ubulla",
-        "name_tr": "Ubulla",
-        "type": "port",
-        "x": 1415,
-        "y": 636
-      },
-      {
-        "id": "qurna",
-        "name_tr": "Kurna",
-        "type": "town",
-        "x": 1391,
-        "y": 628
-      }
-    ],
     "shape_id": "IRQ",
     "tax_rate": 28,
     "terrain": "coast",
@@ -7978,7 +6073,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Nicomedia",
-    "name_tr": "Nikomedia (Bizans Sınır Kenti)",
+    "name_tr": "Nikomedia (Doğu Roma Sınır Kenti)",
     "neighbors": [
       "black_open_3",
       "sea_of_marmara",
@@ -7990,23 +6085,6 @@
     "population": 280,
     "religion": "orthodox",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "nicomedia",
-        "is_capital": true,
-        "name_tr": "Nikomedia",
-        "type": "city",
-        "x": 1074,
-        "y": 460
-      },
-      {
-        "id": "scutari",
-        "name_tr": "Üsküdar",
-        "type": "town",
-        "x": 1061,
-        "y": 456
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "coast",
@@ -8044,16 +6122,6 @@
     "population": 330,
     "religion": "orthodox",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "bilecik",
-        "is_capital": true,
-        "name_tr": "Bilecik",
-        "type": "town",
-        "x": 1084,
-        "y": 469
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 30,
     "terrain": "forest",
@@ -8086,30 +6154,6 @@
     "population": 220,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "kastamonu",
-        "is_capital": true,
-        "name_tr": "Kastamonu",
-        "type": "city",
-        "x": 1137,
-        "y": 445
-      },
-      {
-        "id": "sinop",
-        "name_tr": "Sinop",
-        "type": "port",
-        "x": 1173,
-        "y": 436
-      },
-      {
-        "id": "safranbolu",
-        "name_tr": "Safranbolu",
-        "type": "town",
-        "x": 1154,
-        "y": 440
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
@@ -8144,16 +6188,6 @@
     "population": 280,
     "religion": "sunni",
     "satisfaction": 60,
-    "settlements": [
-      {
-        "id": "sinop",
-        "is_capital": true,
-        "name_tr": "Sinop",
-        "type": "town",
-        "x": 1171,
-        "y": 441
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
@@ -8175,7 +6209,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Chrysopolis",
-    "name_tr": "Hrisopolis (Bizans Asya Yakası)",
+    "name_tr": "Hrisopolis (Doğu Roma Asya Yakası)",
     "neighbors": [
       "black_sea",
       "black_open_3",
@@ -8189,23 +6223,6 @@
     "population": 180,
     "religion": "orthodox",
     "satisfaction": 65,
-    "settlements": [
-      {
-        "id": "chrysopolis",
-        "is_capital": true,
-        "name_tr": "Hrisopolis",
-        "type": "city",
-        "x": 1099,
-        "y": 452
-      },
-      {
-        "id": "chalcedon",
-        "name_tr": "Kadıköy / Khalkedon",
-        "type": "port",
-        "x": 1109,
-        "y": 451
-      }
-    ],
     "shape_id": "TUR",
     "tax_rate": 28,
     "terrain": "coast",
@@ -8241,16 +6258,6 @@
     "population": 800,
     "religion": "orthodox",
     "satisfaction": 70,
-    "settlements": [
-      {
-        "id": "novgorod_main",
-        "is_capital": true,
-        "name_tr": "Novgorod Cumhuriyeti",
-        "type": "city",
-        "x": 1089,
-        "y": 99
-      }
-    ],
     "shape_id": "RUS",
     "tax_rate": 30,
     "terrain": "forest",
@@ -8287,16 +6294,6 @@
     "population": 320,
     "religion": "orthodox",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "nizhny_novgorod_main",
-        "is_capital": true,
-        "name_tr": "Nizhny Novgorod",
-        "type": "city",
-        "x": 1394,
-        "y": 294
-      }
-    ],
     "shape_id": "RUS",
     "tax_rate": 25,
     "terrain": "forest",
@@ -8329,16 +6326,6 @@
     "population": 360,
     "religion": "orthodox",
     "satisfaction": 62,
-    "settlements": [
-      {
-        "id": "derbent",
-        "is_capital": true,
-        "name_tr": "Derbent",
-        "type": "town",
-        "x": 1616,
-        "y": 343
-      }
-    ],
     "shape_id": "RUS",
     "tax_rate": 25,
     "terrain": "coast",
@@ -8360,7 +6347,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Chalcidice",
-    "name_tr": "Halkidiki (Kutsal Dağ / Bizans)",
+    "name_tr": "Halkidiki (Kutsal Dağ / Doğu Roma)",
     "neighbors": [
       "aegean_sea",
       "mediterranean_open_6",
@@ -8372,16 +6359,6 @@
     "population": 180,
     "religion": "orthodox",
     "satisfaction": 72,
-    "settlements": [
-      {
-        "id": "chalcidice_main",
-        "is_capital": true,
-        "name_tr": "Halkidiki",
-        "type": "city",
-        "x": 949,
-        "y": 467
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 20,
     "terrain": "coast",
@@ -8415,16 +6392,6 @@
     "population": 280,
     "religion": "orthodox",
     "satisfaction": 72,
-    "settlements": [
-      {
-        "id": "serres",
-        "is_capital": true,
-        "name_tr": "Serez",
-        "type": "town",
-        "x": 988,
-        "y": 455
-      }
-    ],
     "shape_id": "GRC",
     "tax_rate": 20,
     "terrain": "coast",
