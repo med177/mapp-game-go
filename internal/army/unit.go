@@ -31,6 +31,10 @@ type UnitType struct {
 
 	// Maliyet
 	GoldCost      int `json:"gold_cost"`
+	GrainCost     int `json:"grain_cost"`
+	IronCost      int `json:"iron_cost"`
+	TimberCost    int `json:"timber_cost"`
+	StoneCost     int `json:"stone_cost"`
 	GrainUpkeep   int `json:"grain_upkeep"` // tur başına bakım
 	TurnsRequired int `json:"turns_required"`
 

@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -131,11 +132,17 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 	// Manpower dar ve altın yeterliyse kışla inşa et
 	cap := gs.ManpowerCap(fid)
 	deployed := gs.DeployedLandUnits(fid)
-	barracksCost := 150
+	barracksCost := economy.ResourceCost{Gold: 150}
 	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
-		barracksCost = b.GoldCost
+		barracksCost = economy.ResourceCost{
+			Gold:   b.GoldCost,
+			Grain:  b.GrainCost,
+			Iron:   b.IronCost,
+			Timber: b.TimberCost,
+			Stone:  b.StoneCost,
+		}
 	}
-	if cap-deployed <= state.ManpowerPerRegion && f.Gold >= barracksCost+aiMinGoldReserve {
+	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordWithReserve(f, barracksCost) {
 		aiBuildBarracks(gs, fid, barracksCost)
 	}
 
@@ -154,7 +161,7 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 }
 
 // aiBuildBarracks kışlası olmayan ilk uygun bölgeye kışla inşa eder.
-func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost int) {
+func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost) {
 	f := gs.Factions[fid]
 	for _, r := range gs.Regions {
 		if r.OwnerID != string(fid) || r.IsSea {
@@ -171,7 +178,7 @@ func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost int) {
 			continue
 		}
 		r.Buildings = append(r.Buildings, "barracks")
-		f.Gold -= cost
+		cost.Apply(f)
 		return
 	}
 }
@@ -245,8 +252,18 @@ func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 		return false
 	}
 
+	unitCost := economy.ResourceCost{
+		Gold:   utype.GoldCost,
+		Grain:  utype.GrainCost,
+		Iron:   utype.IronCost,
+		Timber: utype.TimberCost,
+		Stone:  utype.StoneCost,
+	}
+	if !aiCanAffordWithReserve(f, unitCost) {
+		return false
+	}
 	targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
-	f.Gold -= utype.GoldCost
+	unitCost.Apply(f)
 	return true
 }
 
@@ -934,7 +951,14 @@ func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 		if !ok {
 			continue
 		}
-		if f.Gold < btype.GoldCost+aiMinGoldReserve {
+		buildCost := economy.ResourceCost{
+			Gold:   btype.GoldCost,
+			Grain:  btype.GrainCost,
+			Iron:   btype.IronCost,
+			Timber: btype.TimberCost,
+			Stone:  btype.StoneCost,
+		}
+		if !aiCanAffordWithReserve(f, buildCost) {
 			continue
 		}
 
@@ -967,7 +991,7 @@ func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 			// İhtiyaç var mı?
 			if plan.needFn(r) {
 				r.Buildings = append(r.Buildings, plan.id)
-				f.Gold -= btype.GoldCost
+				buildCost.Apply(f)
 				return // Bir bina inşa ettik, turu bitir
 			}
 		}
@@ -1011,9 +1035,16 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 				break
 			}
 		}
-		if !hasPortBldg && f.Gold >= portType.GoldCost+aiMinGoldReserve {
+		portCost := economy.ResourceCost{
+			Gold:   portType.GoldCost,
+			Grain:  portType.GrainCost,
+			Iron:   portType.IronCost,
+			Timber: portType.TimberCost,
+			Stone:  portType.StoneCost,
+		}
+		if !hasPortBldg && aiCanAffordWithReserve(f, portCost) {
 			r.Buildings = append(r.Buildings, "port")
-			f.Gold -= portType.GoldCost
+			portCost.Apply(f)
 			break // Bir liman yeter bu tur
 		}
 	}
@@ -1056,7 +1087,14 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 		}
 
 		// Altın kontrolü
-		if f.Gold < transportType.GoldCost+aiMinGoldReserve {
+		shipCost := economy.ResourceCost{
+			Gold:   transportType.GoldCost,
+			Grain:  transportType.GrainCost,
+			Iron:   transportType.IronCost,
+			Timber: transportType.TimberCost,
+			Stone:  transportType.StoneCost,
+		}
+		if !aiCanAffordWithReserve(f, shipCost) {
 			return
 		}
 
@@ -1074,9 +1112,22 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 			MaxMovePoints:      3,
 			IsNaval:            true,
 		}
-		f.Gold -= transportType.GoldCost
+		shipCost.Apply(f)
 		return // Bir gemi aldık, turu bitir
 	}
+}
+
+func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool {
+	if f == nil {
+		return false
+	}
+	if f.Gold-cost.Gold < aiMinGoldReserve {
+		return false
+	}
+	if f.Grain < cost.Grain || f.Iron < cost.Iron || f.Timber < cost.Timber || f.Stone < cost.Stone {
+		return false
+	}
+	return true
 }
 
 // aiConsolidateArmies aynı bölgedeki aynı tipteki (kara/deniz) kendi ordularını birleştirir.

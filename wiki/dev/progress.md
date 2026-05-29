@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-05-27
+last_updated: 2026-05-29
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -46,14 +46,15 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Rakip ordu istihbaratı | ✅ | Menzildeki rakip orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
 | Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |
 | Askeri kapasite | ✅ | Kara bölgesi başı 5 + kışla başı 5; ordu sayısı `ceil(kara_bölge/2)` |
-| Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/altın/manpower kontrolü; JSON `turns_required` ile üretim kuyruğunda tamamlanır, tekrar tıklanınca iptal edilip altın iade edilir |
+| Asker alma | ✅ | Milis hızlı alım + belirli birim alımı; bina/teknoloji/çoklu kaynak/manpower kontrolü; JSON `turns_required` ile üretim kuyruğunda tamamlanır, tekrar tıklanınca iptal edilip kaynaklar iade edilir |
 | Çoklu eğitim kuyruğu (Total War benzeri) | ✅ | Recruit panelinde birim bazında `- xN +` seçimi, kuyrukta aynı birim için ilk tamamlanma turu görünürlüğü ve tek tıkta çoklu (`xN`) üretim emri; bölgesel kapasite `max(1,population/100)+kışla` kuralıyla sınırlandırılır |
 | Bina/birim hover bilgisi | ✅ | Kart tooltipleri maliyet, gereksinim, etki/istatistik ve görsel gösterir |
 | Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi üretimini kuyruğa alma; tekrar tıklanınca iptal/iade |
 | Limandan denize çıkış (undock) | ✅ | Limana bağlı donanma aynı deniz bölgesine hareket emri aldığında liman bağını bırakıp deniz merkezine çıkar; hareket puanı tüketir |
-| Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, tahıl bakım gideri |
+| Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, taş üretimi, tahıl bakım gideri ve tahıl açığında lojistik HP cezası |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
 | Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu; kuyruktaki bina tekrar tıklanınca iptal/iade |
+| Kaynak reçete sistemi | ✅ | Birim ve bina üretiminde `grain/iron/timber/stone` tüketimi; UI maliyet satırı ve AI kararları bu modele bağlı |
 | Bina seviye sistemi | ✅ | Binalar `max_per_region` kadar seviye alır (Lv1..LvN); panelde `Lv` ve kuyruk adedi görünür, inşa mesajları seviye geçişini (`LvX→LvY`) gösterir; kurulu bina kartları da tıklanabildiği için yükseltme/iptal akışı doğrudan kart üzerinden çalışır; manpower ve üretim kapasitesi kışla seviyesiyle artar |
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |

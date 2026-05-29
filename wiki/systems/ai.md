@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-05-15
+last_updated: 2026-05-29
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -131,6 +131,8 @@ Her tur en fazla bir bina inşa eder. Öncelik:
 2. **Çiftlik** (prio 60) — `BaseGrainOutput < 20` bölgelere
 3. **Sur** (prio 50) — sınır bölgelerine (komşuda farklı fraksiyon varsa)
 
+AI bina inşasında yalnız altını değil, bina reçetesindeki `grain/iron/timber/stone` maliyetlerini de kontrol eder.
+
 ---
 
 ## Deniz Stratejisi (`aiNavalStrategy`)
@@ -167,6 +169,8 @@ Testler:
 ---
 
 ## Birim Alımı (`aiRecruitAndBuild`)
+
+AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da tüketir; `aiMinGoldReserve` korunurken diğer kaynaklar yetersizse alım yapılmaz.
 
 Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile birim seçer:
 

@@ -11,7 +11,11 @@
     "def_bonus": 0,
     "max_per_region": 3,
     "required_terrain": "",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 10,
+    "iron_cost": 12,
+    "timber_cost": 28,
+    "stone_cost": 20
   },
   {
     "id": "farm",
@@ -24,7 +28,11 @@
     "def_bonus": 0,
     "max_per_region": 3,
     "required_terrain": "",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 25,
+    "iron_cost": 6,
+    "timber_cost": 20,
+    "stone_cost": 12
   },
   {
     "id": "barracks",
@@ -37,7 +45,11 @@
     "def_bonus": 5,
     "max_per_region": 3,
     "required_terrain": "",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 18,
+    "iron_cost": 20,
+    "timber_cost": 22,
+    "stone_cost": 26
   },
   {
     "id": "port",
@@ -51,7 +63,11 @@
     "def_bonus": 0,
     "max_per_region": 3,
     "required_terrain": "coast",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 12,
+    "iron_cost": 18,
+    "timber_cost": 36,
+    "stone_cost": 30
   },
   {
     "id": "walls",
@@ -64,7 +80,11 @@
     "def_bonus": 15,
     "max_per_region": 3,
     "required_terrain": "",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 8,
+    "iron_cost": 16,
+    "timber_cost": 8,
+    "stone_cost": 46
   },
   {
     "id": "temple",
@@ -77,6 +97,10 @@
     "def_bonus": 0,
     "max_per_region": 3,
     "required_terrain": "",
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 14,
+    "iron_cost": 8,
+    "timber_cost": 18,
+    "stone_cost": 22
   }
 ]

@@ -9,6 +9,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/victory"
@@ -24,7 +25,7 @@ import (
 const (
 	bottomBarH   = float32(80)
 	topStatusW   = float32(1000)
-	topStatusH   = float32(80)
+	topStatusH   = float32(82)
 	topDateHudW  = float32(255)
 	topDateHudH  = float32(80)
 	actionHudPad = float32(8)
@@ -269,6 +270,15 @@ func musicHudHit(fx, fy float64) bool {
 	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
 }
 
+func turnTechHudRect() (x, y, w, h float32) {
+	mx, my, mw, mh := musicHudRect()
+	x = mx
+	y = my + mh
+	w = mw
+	h = 46
+	return x, y, w, h
+}
+
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
@@ -299,21 +309,27 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		DrawText(screen, f.NameTR, 64, float64(by)+25, FaceLarge, fc)
 	}
 
-	// Kaynaklar: 3 sütun — sol kenarı sol bloktan yeterince uzakta
+	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
 	if hasPlayer {
-		// Sütun 1: Altın / Tahıl
-		rx1 := float64(310)
-		// Sütun 2: Demir / Kereste
-		rx2 := float64(450)
-		// Sütun 3: Gelir / Faz
-		rx3 := float64(590)
+		const victoryCardX = 718.0
+		resStartX := float64(300)
+		resEndX := victoryCardX - 12
+		colGap := 12.0
+		colW := (resEndX - resStartX - colGap*2) / 3
+		if colW < 88 {
+			colW = 88
+		}
+		leftCol1 := resStartX
+		leftCol2 := leftCol1 + colW + colGap
+		rightCol := leftCol2 + colW + colGap
 		ry := float64(by) + 12
+		rowGap := 22.0
 
-		drawResRow(screen, rx1, ry, "Altin", itoa(f.Gold), ColorGold)
-		drawResRow(screen, rx1, ry+26, "Tahil", itoa(f.Grain), ColorWhite)
-
-		drawResRow(screen, rx2, ry, "Demir", itoa(f.Iron), color.RGBA{180, 180, 220, 255})
-		drawResRow(screen, rx2, ry+26, "Kereste", itoa(f.Timber), color.RGBA{180, 140, 80, 255})
+		// 2x2 mallar
+		drawResRow(screen, leftCol1, ry, colW, "Tahil", itoa(f.Grain), ColorWhite)
+		drawResRow(screen, leftCol2, ry, colW, "Kereste", itoa(f.Timber), color.RGBA{180, 140, 80, 255})
+		drawResRow(screen, leftCol1, ry+rowGap, colW, "Demir", itoa(f.Iron), color.RGBA{180, 180, 220, 255})
+		drawResRow(screen, leftCol2, ry+rowGap, colW, "Taş", itoa(f.Stone), color.RGBA{170, 170, 170, 255})
 
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
@@ -324,24 +340,8 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if income < 0 {
 			sign = ""
 		}
-		drawResRow(screen, rx3, ry, "Gelir", sign+itoa(income)+"/tur", incCol)
-		DrawText(screen, phaseLabel(gs.Phase), rx3, ry+26, FaceSmall, ColorGray)
-
-		// Teknoloji bilgisi
-		if f.Research.ActiveID != "" {
-			if tech, ok := gs.TechTypes[f.Research.ActiveID]; ok {
-				techStr := tech.NameTR + " (" + itoa(f.Research.TurnsLeft) + " tur)"
-				const victoryCardX = 718.0
-				maxTechW := victoryCardX - rx3 - 12
-				if maxTechW < 40 {
-					maxTechW = 40
-				}
-				techStr = trimTextToWidth(techStr, FaceSmall, maxTechW)
-				DrawText(screen, techStr, rx3, ry+40, FaceSmall, color.RGBA{100, 220, 100, 255})
-			}
-		} else {
-			DrawText(screen, "Teknoloji yok", rx3, ry+40, FaceSmall, ColorGray)
-		}
+		drawResRow(screen, rightCol, ry, colW, "Gelir", sign+itoa(income)+"/tur", incCol)
+		drawResRow(screen, rightCol, ry+rowGap, colW, "Altin", itoa(f.Gold), ColorGold)
 	}
 
 	// Askeri kapasite göstergesi
@@ -396,6 +396,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 	drawDateMenuHud(screen, gs, mapMode)
 	drawMusicHud(screen)
+	drawTurnTechHud(screen, gs)
 }
 
 func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
@@ -446,6 +447,34 @@ func drawMusicHud(screen *ebiten.Image) {
 	nr := musicHudNextRect()
 	drawTinyPanelButton(screen, tr[0], tr[1], tr[2], tr[3], toggle, true)
 	drawTinyPanelButton(screen, nr[0], nr[1], nr[2], nr[3], "Sonr", true)
+}
+
+func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	f, ok := gs.Factions[gs.PlayerFactionID]
+	if !ok || f == nil {
+		return
+	}
+
+	x, y, w, h := turnTechHudRect()
+	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 12, 9, 220}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+
+	phaseStr := trimTextToWidth(phaseLabel(gs.Phase), FaceSmall, float64(w)-20)
+	DrawText(screen, phaseStr, float64(x)+10, float64(y)+8, FaceSmall, ColorGray)
+
+	techStr := "Teknoloji yok"
+	techCol := ColorGray
+	if f.Research.ActiveID != "" {
+		if tech, ok := gs.TechTypes[f.Research.ActiveID]; ok {
+			techStr = tech.NameTR + " (" + itoa(f.Research.TurnsLeft) + " tur)"
+			techCol = color.RGBA{100, 220, 100, 255}
+		}
+	}
+	techStr = trimTextToWidth(techStr, FaceSmall, float64(w)-20)
+	DrawText(screen, techStr, float64(x)+10, float64(y)+26, FaceSmall, techCol)
 }
 
 func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode) {
@@ -1630,10 +1659,17 @@ func clampF(v float64) float64 {
 	return v
 }
 
-func drawResRow(screen *ebiten.Image, x, y float64, label, value string, col color.RGBA) {
+func drawResRow(screen *ebiten.Image, x, y, w float64, label, value string, col color.RGBA) {
 	DrawText(screen, label, x, y, FaceSmall, ColorGray)
+	value = trimTextToWidth(value, FaceMed, w)
 	tw := MeasureText(value, FaceMed)
-	DrawText(screen, value, x+90-tw, y, FaceMed, col)
+	gap := 26.0
+	valueX := x + w - tw
+	minValueX := x + MeasureText(label, FaceSmall) + gap
+	if valueX < minValueX {
+		valueX = minValueX
+	}
+	DrawText(screen, value, valueX, y, FaceMed, col)
 }
 
 func calcPlayerIncome(gs *state.GameState) int {
@@ -1690,7 +1726,14 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 		isQueued := queuedCount > 0
 		canAfford := false
 		if f := gs.Factions[gs.PlayerFactionID]; f != nil && hasDef {
-			canAfford = f.Gold >= b.GoldCost
+			cost := economy.ResourceCost{
+				Gold:   b.GoldCost,
+				Grain:  b.GrainCost,
+				Iron:   b.IronCost,
+				Timber: b.TimberCost,
+				Stone:  b.StoneCost,
+			}
+			canAfford = cost.CanAfford(f)
 		}
 		isBuilt := level > 0
 		maxLevel := 1
@@ -1779,10 +1822,44 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			nameCol = color.RGBA{170, 145, 85, 220}
 		}
 		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
+		if hasDef {
+			cost := shortBuildingCostTR(b)
+			costCol := color.RGBA{105, 96, 82, 210}
+			if !canAfford && !isBuilt {
+				costCol = color.RGBA{170, 90, 90, 220}
+			}
+			DrawTextCentered(screen, trimTextToWidth(cost, FaceSmall, float64(innerW)-6), float64(sx)+float64(innerW)/2, float64(sy+spriteH)+14, FaceSmall, costCol)
+		}
 		if isMaxLevel {
-			DrawTextCentered(screen, "Maks", float64(sx)+float64(innerW)/2, float64(sy+spriteH)+16, FaceSmall, color.RGBA{170, 155, 95, 210})
+			DrawTextCentered(screen, "Maks", float64(sx)+float64(innerW)/2, float64(sy+spriteH)+24, FaceSmall, color.RGBA{170, 155, 95, 210})
 		}
 	}
+}
+
+func shortBuildingCostTR(b *city.Building) string {
+	if b == nil {
+		return ""
+	}
+	parts := make([]string, 0, 5)
+	if b.GoldCost > 0 {
+		parts = append(parts, itoa(b.GoldCost)+"G")
+	}
+	if b.GrainCost > 0 {
+		parts = append(parts, itoa(b.GrainCost)+"T")
+	}
+	if b.IronCost > 0 {
+		parts = append(parts, itoa(b.IronCost)+"D")
+	}
+	if b.TimberCost > 0 {
+		parts = append(parts, itoa(b.TimberCost)+"K")
+	}
+	if b.StoneCost > 0 {
+		parts = append(parts, itoa(b.StoneCost)+"TS")
+	}
+	if len(parts) == 0 {
+		return "Bedava"
+	}
+	return strings.Join(parts, " ")
 }
 
 func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {

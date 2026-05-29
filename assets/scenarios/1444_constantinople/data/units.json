@@ -14,7 +14,11 @@
     "required_tech": "",
     "required_bldg": "barracks",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 12,
+    "iron_cost": 0,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "infantry",
@@ -31,7 +35,11 @@
     "required_tech": "iron_weapons",
     "required_bldg": "barracks",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 18,
+    "iron_cost": 8,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "elite_infantry",
@@ -48,7 +56,11 @@
     "required_tech": "steel_blades",
     "required_bldg": "barracks",
     "embarkable": true,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 24,
+    "iron_cost": 12,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "light_cavalry",
@@ -65,7 +77,11 @@
     "required_tech": "",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 20,
+    "iron_cost": 4,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "cavalry",
@@ -82,7 +98,11 @@
     "required_tech": "cavalry_tactics",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 26,
+    "iron_cost": 8,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "heavy_cavalry",
@@ -99,7 +119,11 @@
     "required_tech": "heavy_armor",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 34,
+    "iron_cost": 14,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "id": "catapult",
@@ -116,7 +140,11 @@
     "required_tech": "",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 10,
+    "iron_cost": 12,
+    "timber_cost": 8,
+    "stone_cost": 16
   },
   {
     "id": "bombard",
@@ -133,7 +161,11 @@
     "required_tech": "siege_engines",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 14,
+    "iron_cost": 18,
+    "timber_cost": 10,
+    "stone_cost": 24
   },
   {
     "id": "cannon",
@@ -150,7 +182,11 @@
     "required_tech": "siege_engines",
     "required_bldg": "barracks",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 18,
+    "iron_cost": 24,
+    "timber_cost": 12,
+    "stone_cost": 34
   },
   {
     "id": "warship",
@@ -167,7 +203,11 @@
     "required_tech": "navigation",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 8,
+    "iron_cost": 12,
+    "timber_cost": 34,
+    "stone_cost": 0
   },
   {
     "id": "transport",
@@ -184,7 +224,11 @@
     "required_tech": "",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 8,
+    "iron_cost": 6,
+    "timber_cost": 20,
+    "stone_cost": 0
   },
   {
     "id": "merchant_ship",
@@ -201,6 +245,10 @@
     "required_tech": "",
     "required_bldg": "port",
     "embarkable": false,
-    "turns_required": 1
+    "turns_required": 1,
+    "grain_cost": 8,
+    "iron_cost": 8,
+    "timber_cost": 26,
+    "stone_cost": 0
   }
 ]

@@ -27,6 +27,7 @@ type Faction struct {
 	Grain  int `json:"grain"`
 	Iron   int `json:"iron"`
 	Timber int `json:"timber"`
+	Stone  int `json:"stone"`
 	Spice  int `json:"spice"`
 	Cloth  int `json:"cloth"`
 

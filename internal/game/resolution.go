@@ -120,6 +120,7 @@ func applyEconomyTick(gs *state.GameState) {
 	grainByFaction := make(map[string]int)
 	ironByFaction := make(map[string]int)
 	timberByFaction := make(map[string]int)
+	stoneByFaction := make(map[string]int)
 	spiceByFaction := make(map[string]int)
 	clothByFaction := make(map[string]int)
 
@@ -144,6 +145,12 @@ func applyEconomyTick(gs *state.GameState) {
 
 		income := int(float64(r.GoldIncome()) * goldMod * float64(harvestMod) / 100)
 		grain := int(float64(r.BaseGrainOutput) * grainMod)
+		iron := r.BaseIronOutput
+		timber := r.BaseTimberOutput
+		stone := r.BaseStoneOutput
+		spice := r.BaseSpiceOutput
+		cloth := r.BaseClothOutput
+		grain, iron, timber, stone, spice, cloth = applyTerrainSpecialization(r.Terrain, grain, iron, timber, stone, spice, cloth)
 
 		// Pasif ticaret geliri (TradeCapacity bazlı)
 		// TradeCapacityMod: pazar ve liman gibi binalar ticaret kapasitesini artırır
@@ -153,10 +160,11 @@ func applyEconomyTick(gs *state.GameState) {
 
 		incomeByFaction[r.OwnerID] += income + tradeIncome
 		grainByFaction[r.OwnerID] += grain
-		ironByFaction[r.OwnerID] += r.BaseIronOutput
-		timberByFaction[r.OwnerID] += r.BaseTimberOutput
-		spiceByFaction[r.OwnerID] += r.BaseSpiceOutput
-		clothByFaction[r.OwnerID] += r.BaseClothOutput
+		ironByFaction[r.OwnerID] += iron
+		timberByFaction[r.OwnerID] += timber
+		stoneByFaction[r.OwnerID] += stone
+		spiceByFaction[r.OwnerID] += spice
+		clothByFaction[r.OwnerID] += cloth
 
 		// Vergi memnuniyet etkisi + bina bonusu
 		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
@@ -198,8 +206,9 @@ func applyEconomyTick(gs *state.GameState) {
 		f.Gold += incomeByFaction[fidStr] + techGold
 		netGrain := int(float64(grainByFaction[fidStr]) * (1.0 + fx.GrainMod))
 		f.Grain += netGrain - upkeepByFaction[fidStr]
-		f.Iron += ironByFaction[fidStr]
-		f.Timber += timberByFaction[fidStr]
+		f.Iron += int(float64(ironByFaction[fidStr]) * (1.0 + fx.IronMod))
+		f.Timber += int(float64(timberByFaction[fidStr]) * (1.0 + fx.TimberMod))
+		f.Stone += int(float64(stoneByFaction[fidStr]) * (1.0 + fx.StoneMod))
 		f.Spice += spiceByFaction[fidStr]
 		f.Cloth += clothByFaction[fidStr]
 
@@ -216,12 +225,64 @@ func applyEconomyTick(gs *state.GameState) {
 			f.Gold = 0
 		}
 		if f.Grain < 0 {
+			applyGrainShortagePenalty(gs, fidStr, -f.Grain)
 			f.Grain = 0
 		}
 	}
 
 	// --- Dinamik piyasa fiyatlarını güncelle ---
 	gs.MarketPrices = economy.ComputeMarketPrices(gs.Factions)
+}
+
+func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int) {
+	if shortage <= 0 {
+		return
+	}
+	remaining := shortage
+	for _, a := range gs.Armies {
+		if a.OwnerID != ownerID || len(a.Units) == 0 {
+			continue
+		}
+		for i := range a.Units {
+			if remaining <= 0 {
+				return
+			}
+			// Tahıl açığında önce HP erir; lojistik krizi hissedilir.
+			damage := 10
+			if remaining > 6 {
+				damage = 15
+			}
+			a.Units[i].CurrentHP -= damage
+			if a.Units[i].CurrentHP < 1 {
+				a.Units[i].CurrentHP = 1
+			}
+			remaining--
+		}
+	}
+}
+
+func applyTerrainSpecialization(
+	terrain world.TerrainType,
+	grain, iron, timber, stone, spice, cloth int,
+) (int, int, int, int, int, int) {
+	switch terrain {
+	case world.TerrainPlain:
+		grain = grain * 120 / 100
+	case world.TerrainForest:
+		timber = timber * 130 / 100
+	case world.TerrainMountain:
+		iron = iron * 125 / 100
+		if stone <= 0 {
+			stone = 1 + iron/3
+		}
+		stone = stone * 140 / 100
+	case world.TerrainPass:
+		if stone <= 0 {
+			stone = 1
+		}
+		stone = stone * 120 / 100
+	}
+	return grain, iron, timber, stone, spice, cloth
 }
 
 // checkRebellions isyan riski olan bölgeleri kontrol eder.

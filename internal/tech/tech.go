@@ -28,6 +28,9 @@ type Effects struct {
 	LandDefenseMod      float64 `json:"land_defense_mod"`
 	GoldPerRegion       int     `json:"gold_per_region"`
 	GrainMod            float64 `json:"grain_mod"`
+	IronMod             float64 `json:"iron_mod"`
+	TimberMod           float64 `json:"timber_mod"`
+	StoneMod            float64 `json:"stone_mod"`
 	MarketGoldMod       float64 `json:"market_gold_mod"`
 	PeaceRelationBonus  int     `json:"peace_relation_bonus"`
 	RevealEnemyStrength bool    `json:"reveal_enemy_strength"`
@@ -115,6 +118,9 @@ func ComputeEffects(completed map[string]bool, allTechs map[string]*Technology) 
 		total.LandDefenseMod += e.LandDefenseMod
 		total.GoldPerRegion += e.GoldPerRegion
 		total.GrainMod += e.GrainMod
+		total.IronMod += e.IronMod
+		total.TimberMod += e.TimberMod
+		total.StoneMod += e.StoneMod
 		total.MarketGoldMod += e.MarketGoldMod
 		total.PeaceRelationBonus += e.PeaceRelationBonus
 		if e.RevealEnemyStrength {

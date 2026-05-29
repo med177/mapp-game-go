@@ -15,6 +15,7 @@ import (
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/events"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/save"
@@ -235,6 +236,8 @@ func (g *Game) Update() error {
 			g.proposeTrade(action.TargetFaction)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
+		case render.ActionOneTimeTrade:
+			g.oneTimeTrade(action.TargetFaction, action.BuildingID, action.Delta)
 		case render.ActionSave:
 			g.saveToSlot("quicksave", true, "Hızlı kayıt alındı.")
 		case render.ActionLoad:
@@ -572,12 +575,26 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
 	if g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID) {
-		f.Gold += b.GoldCost
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. %d altın iade edildi.", b.NameTR, b.GoldCost))
+		cost := economy.ResourceCost{
+			Gold:   b.GoldCost,
+			Grain:  b.GrainCost,
+			Iron:   b.IronCost,
+			Timber: b.TimberCost,
+			Stone:  b.StoneCost,
+		}
+		cost.Refund(f)
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. İade: %s", b.NameTR, cost.ShortTR()))
 		return
 	}
-	if f.Gold < b.GoldCost {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Yeterli altın yok! Gerekli: %d", b.GoldCost))
+	cost := economy.ResourceCost{
+		Gold:   b.GoldCost,
+		Grain:  b.GrainCost,
+		Iron:   b.IronCost,
+		Timber: b.TimberCost,
+		Stone:  b.StoneCost,
+	}
+	if !cost.CanAfford(f) {
+		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
 		return
 	}
 	queuedLevels := g.queuedBuildingCount(rid, buildingID)
@@ -594,7 +611,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		turnsRequired = 1
 	}
 
-	f.Gold -= b.GoldCost
+	cost.Apply(f)
 	g.enqueueProduction(productionKindBuilding, rid, buildingID, turnsRequired)
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s seviye inşaatı başladı! Lv%d→Lv%d (%d tur)", b.NameTR, count+1, count+2, turnsRequired))
 }
@@ -615,6 +632,67 @@ func (g *Game) proposeAlliance(targetID faction.FactionID) {
 func (g *Game) proposeTrade(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposeTrade)
 	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int) {
+	if delta == 0 || targetID == "" {
+		return
+	}
+	if _, ok := g.gs.Factions[targetID]; !ok {
+		g.renderer.ShowCombatResult("Hedef fraksiyon bulunamadı.")
+		return
+	}
+	if rel := diplomacy.Relation(g.gs, g.gs.PlayerFactionID, targetID); rel != nil && rel.Stance == faction.StanceWar {
+		g.renderer.ShowCombatResult("Savaşta olduğun fraksiyonla pazar işlemi yapamazsın.")
+		return
+	}
+	good := economy.GoodType(goodID)
+	amount := delta
+	if amount < 0 {
+		amount = -amount
+	}
+	if amount <= 0 {
+		return
+	}
+	if g.gs.MarketPrices == nil {
+		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
+	}
+	ok := false
+	if delta > 0 {
+		// Oyuncu alır: hedef satar.
+		ok = economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, amount, g.gs.MarketPrices)
+		if ok {
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı.", targetID, amount, tradeGoodLabelTR(good)))
+		}
+	} else {
+		// Oyuncu satar: hedef alır.
+		ok = economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, amount, g.gs.MarketPrices)
+		if ok {
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı.", targetID, amount, tradeGoodLabelTR(good)))
+		}
+	}
+	if !ok {
+		g.renderer.ShowCombatResult("Pazar işlemi başarısız: stok veya altın yetersiz.")
+	}
+}
+
+func tradeGoodLabelTR(good economy.GoodType) string {
+	switch good {
+	case economy.GoodGrain:
+		return "tahıl"
+	case economy.GoodIron:
+		return "demir"
+	case economy.GoodTimber:
+		return "kereste"
+	case economy.GoodStone:
+		return "taş"
+	case economy.GoodSpice:
+		return "baharat"
+	case economy.GoodCloth:
+		return "kumaş"
+	default:
+		return string(good)
+	}
 }
 
 // proposePeace hedefe barış teklif eder (her zaman kabul edilir — basit versiyon).
@@ -717,6 +795,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		BaseGrainOutput  int               `json:"base_grain_output"`
 		BaseIronOutput   int               `json:"base_iron_output"`
 		BaseTimberOutput int               `json:"base_timber_output"`
+		BaseStoneOutput  int               `json:"base_stone_output"`
 		BaseSpiceOutput  int               `json:"base_spice_output"`
 		BaseClothOutput  int               `json:"base_cloth_output"`
 		TradeCapacity    int               `json:"trade_capacity"`
@@ -749,6 +828,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 			BaseGrainOutput:  region.BaseGrainOutput,
 			BaseIronOutput:   region.BaseIronOutput,
 			BaseTimberOutput: region.BaseTimberOutput,
+			BaseStoneOutput:  region.BaseStoneOutput,
 			BaseSpiceOutput:  region.BaseSpiceOutput,
 			BaseClothOutput:  region.BaseClothOutput,
 			TradeCapacity:    region.TradeCapacity,
@@ -1269,9 +1349,15 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		return
 	}
 
-	// Altın kontrolü
-	if f.Gold < utype.GoldCost {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+	cost := economy.ResourceCost{
+		Gold:   utype.GoldCost,
+		Grain:  utype.GrainCost,
+		Iron:   utype.IronCost,
+		Timber: utype.TimberCost,
+		Stone:  utype.StoneCost,
+	}
+	if !cost.CanAfford(f) {
+		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
 		return
 	}
 
@@ -1317,19 +1403,19 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		if quantity > queueFree {
 			quantity = queueFree
 		}
-		maxByGold := f.Gold / utype.GoldCost
-		if maxByGold <= 0 || quantity <= 0 {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+		maxByCost := maxAffordableByCost(f, cost)
+		if maxByCost <= 0 || quantity <= 0 {
+			g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
 			return
 		}
-		if quantity > maxByGold {
-			quantity = maxByGold
+		if quantity > maxByCost {
+			quantity = maxByCost
 		}
 		for i := 0; i < quantity; i++ {
-			f.Gold -= utype.GoldCost
+			cost.Apply(f)
 			g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
 		}
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! x%d (%d tur)", utype.NameTR, quantity, utype.TurnsRequired))
 		return
 	}
 
@@ -1373,19 +1459,55 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	if quantity > queueFree {
 		quantity = queueFree
 	}
-	maxByGold := f.Gold / utype.GoldCost
-	if maxByGold <= 0 || quantity <= 0 {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Yetersiz altın! Gerekli: %d, Mevcut: %d", utype.GoldCost, f.Gold))
+	maxByCost := maxAffordableByCost(f, cost)
+	if maxByCost <= 0 || quantity <= 0 {
+		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
 		return
 	}
-	if quantity > maxByGold {
-		quantity = maxByGold
+	if quantity > maxByCost {
+		quantity = maxByCost
 	}
 	for i := 0; i < quantity; i++ {
-		f.Gold -= utype.GoldCost
+		cost.Apply(f)
 		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
 	}
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur) Kalan altın: %d", utype.NameTR, quantity, utype.TurnsRequired, f.Gold))
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur)", utype.NameTR, quantity, utype.TurnsRequired))
+}
+
+func maxAffordableByCost(f *faction.Faction, cost economy.ResourceCost) int {
+	if f == nil {
+		return 0
+	}
+	maxVal := 1 << 30
+	if cost.Gold > 0 {
+		maxVal = minInt(maxVal, f.Gold/cost.Gold)
+	}
+	if cost.Grain > 0 {
+		maxVal = minInt(maxVal, f.Grain/cost.Grain)
+	}
+	if cost.Iron > 0 {
+		maxVal = minInt(maxVal, f.Iron/cost.Iron)
+	}
+	if cost.Timber > 0 {
+		maxVal = minInt(maxVal, f.Timber/cost.Timber)
+	}
+	if cost.Stone > 0 {
+		maxVal = minInt(maxVal, f.Stone/cost.Stone)
+	}
+	if maxVal == 1<<30 {
+		return 9999
+	}
+	if maxVal < 0 {
+		return 0
+	}
+	return maxVal
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {
@@ -1406,9 +1528,15 @@ func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {
 	if !ok {
 		return
 	}
-	refund := utype.GoldCost
-	f.Gold += refund
-	g.renderer.ShowCombatResult(fmt.Sprintf("%s emri iptal edildi. %d altin iade.", utype.NameTR, refund))
+	refund := economy.ResourceCost{
+		Gold:   utype.GoldCost,
+		Grain:  utype.GrainCost,
+		Iron:   utype.IronCost,
+		Timber: utype.TimberCost,
+		Stone:  utype.StoneCost,
+	}
+	refund.Refund(f)
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s emri iptal edildi. İade: %s", utype.NameTR, refund.ShortTR()))
 }
 
 func (g *Game) regionUnitProductionCapacity(region *world.Region) int {

@@ -5,8 +5,8 @@
     "region_id": "morea",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -16,16 +16,16 @@
     "region_id": "aragon",
     "units": [
       {
-        "count": 1,
-        "type_id": "militia"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },
@@ -35,8 +35,8 @@
     "region_id": "aydinoglu",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -46,8 +46,8 @@
     "region_id": "bulgaria",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -57,16 +57,16 @@
     "region_id": "constantinople",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -76,12 +76,12 @@
     "region_id": "thrace",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "infantry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "infantry"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -91,8 +91,8 @@
     "region_id": "paphlagonia",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -102,20 +102,20 @@
     "region_id": "castile",
     "units": [
       {
-        "count": 1,
-        "type_id": "militia"
+        "type_id": "cavalry",
+        "count": 1
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "cavalry"
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },
@@ -125,8 +125,8 @@
     "region_id": "denmark",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -136,8 +136,8 @@
     "region_id": "dulkadir",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -147,20 +147,20 @@
     "region_id": "bilecik_frontier",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "cavalry",
+        "count": 1
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "cavalry"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -170,8 +170,8 @@
     "region_id": "venice",
     "units": [
       {
-        "count": 1,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },
@@ -181,16 +181,16 @@
     "region_id": "cyprus",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -200,16 +200,16 @@
     "region_id": "london",
     "units": [
       {
-        "count": 1,
-        "type_id": "militia"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },
@@ -219,8 +219,8 @@
     "region_id": "eretna",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -230,8 +230,8 @@
     "region_id": "florence",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -241,532 +241,20 @@
     "region_id": "paris",
     "units": [
       {
-        "count": 1,
-        "type_id": "militia"
+        "type_id": "cavalry",
+        "count": 1
       },
       {
-        "count": 2,
-        "type_id": "infantry"
+        "type_id": "infantry",
+        "count": 2
       },
       {
-        "count": 1,
-        "type_id": "light_cavalry"
+        "type_id": "light_cavalry",
+        "count": 1
       },
       {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_genoa_1",
-    "owner_id": "genoa",
-    "region_id": "genoa",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 1,
-        "type_id": "infantry"
-      }
-    ]
-  },
-  {
-    "id": "army_georgia_1",
-    "owner_id": "georgia_kingdom",
-    "region_id": "georgia",
-    "units": [
-      {
-        "count": 4,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_germiyan_1",
-    "owner_id": "germiyan_bey",
-    "region_id": "germiyan",
-    "units": [
-      {
-        "count": 3,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_golden_horde_1",
-    "owner_id": "golden_horde",
-    "region_id": "ukrainian_steppe",
-    "units": [
-      {
-        "count": 5,
-        "type_id": "militia"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_granada_1",
-    "owner_id": "granada_emirate",
-    "region_id": "granada",
-    "units": [
-      {
-        "count": 4,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_hre_1",
-    "owner_id": "hre",
-    "region_id": "bavaria",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_hungarian_kingdom_1",
-    "owner_id": "hungarian_kingdom",
-    "region_id": "hungary",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_ilkhanate_1",
-    "owner_id": "ilkhanate",
-    "region_id": "northern_persia",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_ilkhanate_2",
-    "owner_id": "ilkhanate",
-    "region_id": "azerbaijan",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 1,
-        "type_id": "infantry"
-      }
-    ]
-  },
-  {
-    "id": "army_karaman_1",
-    "owner_id": "ilkhanate",
-    "region_id": "konya",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_lithuania_1",
-    "owner_id": "lithuanian_gd",
-    "region_id": "lithuania",
-    "units": [
-      {
-        "count": 5,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_mamluk_1",
-    "owner_id": "mamluk",
-    "region_id": "egypt",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_mamluk_2",
-    "owner_id": "mamluk",
-    "region_id": "damascus",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_mentese_1",
-    "owner_id": "mentese_bey",
-    "region_id": "mentese",
-    "units": [
-      {
-        "count": 8,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_milan_1",
-    "owner_id": "milan_duchy",
-    "region_id": "milan",
-    "units": [
-      {
-        "count": 3,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_naples_1",
-    "owner_id": "naples_kingdom",
-    "region_id": "naples",
-    "units": [
-      {
-        "count": 3,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_novgorod_1",
-    "owner_id": "novgorod_rep",
-    "region_id": "novgorod",
-    "units": [
-      {
-        "count": 3,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_ottoman_1",
-    "owner_id": "ottoman",
-    "region_id": "bithynia",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 4,
-        "type_id": "infantry"
-      },
-      {
-        "count": 2,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "catapult"
-      }
-    ]
-  },
-  {
-    "id": "army_papal_states_1",
-    "owner_id": "papal_states_f",
-    "region_id": "papal_states",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_polish_kingdom_1",
-    "owner_id": "polish_kingdom",
-    "region_id": "poland",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_portugal_1",
-    "owner_id": "portugal",
-    "region_id": "portugal",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 1,
-        "type_id": "infantry"
-      }
-    ]
-  },
-  {
-    "id": "army_ramazan_1",
-    "owner_id": "ramazan_bey",
-    "region_id": "cilicia",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_russia_1",
-    "owner_id": "russia",
-    "region_id": "moscow",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_safavid_1",
-    "owner_id": "safavid",
-    "region_id": "southern_persia",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_savoy_1",
-    "owner_id": "savoy_county",
-    "region_id": "savoy",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_scotland_1",
-    "owner_id": "scotland_kingdom",
-    "region_id": "scotland",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_serbian_empire_1",
-    "owner_id": "hungarian_kingdom",
-    "region_id": "serbia",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      },
-      {
-        "count": 1,
-        "type_id": "cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_teke_1",
-    "owner_id": "hamid_bey",
-    "region_id": "teke",
-    "units": [
-      {
-        "count": 4,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_teutonic_1",
-    "owner_id": "teutonic_order",
-    "region_id": "konigsberg",
-    "units": [
-      {
-        "count": 1,
-        "type_id": "militia"
-      },
-      {
-        "count": 2,
-        "type_id": "infantry"
-      },
-      {
-        "count": 1,
-        "type_id": "light_cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_trebizond_1",
-    "owner_id": "trebizond_emp",
-    "region_id": "trebizond",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_venice_1",
-    "owner_id": "venice",
-    "region_id": "venice",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
-      },
-      {
-        "count": 5,
-        "type_id": "infantry"
-      },
-      {
-        "count": 3,
-        "type_id": "light_cavalry"
-      }
-    ]
-  },
-  {
-    "id": "army_wallachia_1",
-    "owner_id": "wallachia_prince",
-    "region_id": "wallachia",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },
@@ -776,8 +264,8 @@
     "region_id": "saruhan",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -787,8 +275,8 @@
     "region_id": "beysehir",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -798,8 +286,8 @@
     "region_id": "izmir",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -809,8 +297,8 @@
     "region_id": "sivas",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -820,8 +308,8 @@
     "region_id": "karaman",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -831,8 +319,8 @@
     "region_id": "malatya",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -842,8 +330,8 @@
     "region_id": "sinop",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -853,8 +341,8 @@
     "region_id": "ankara",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -864,8 +352,8 @@
     "region_id": "kayseri",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -875,8 +363,8 @@
     "region_id": "mentese_hinterland",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -886,19 +374,8 @@
     "region_id": "kutahya",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
-      }
-    ]
-  },
-  {
-    "id": "army_garrison_214",
-    "owner_id": "ilkhanate",
-    "region_id": "aksaray",
-    "units": [
-      {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -908,8 +385,8 @@
     "region_id": "cankiri",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -919,8 +396,8 @@
     "region_id": "erzincan",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -930,8 +407,8 @@
     "region_id": "hamideli",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -941,8 +418,8 @@
     "region_id": "erzurum",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -952,8 +429,8 @@
     "region_id": "serres",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -963,8 +440,8 @@
     "region_id": "gallipoli",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -974,8 +451,8 @@
     "region_id": "nis",
     "units": [
       {
-        "count": 3,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -985,8 +462,8 @@
     "region_id": "thessaloniki_hinterland",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -996,8 +473,8 @@
     "region_id": "the_pale",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -1007,8 +484,8 @@
     "region_id": "dagestan",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -1018,8 +495,8 @@
     "region_id": "bessarabia",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -1029,8 +506,509 @@
     "region_id": "oltenia",
     "units": [
       {
-        "count": 2,
-        "type_id": "militia"
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_genoa_1",
+    "owner_id": "genoa",
+    "region_id": "genoa",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_georgia_1",
+    "owner_id": "georgia_kingdom",
+    "region_id": "georgia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_golden_horde_1",
+    "owner_id": "golden_horde",
+    "region_id": "ukrainian_steppe",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_granada_1",
+    "owner_id": "granada_emirate",
+    "region_id": "granada",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_hre_1",
+    "owner_id": "hre",
+    "region_id": "bavaria",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hungarian_kingdom_1",
+    "owner_id": "hungarian_kingdom",
+    "region_id": "hungary",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_ilkhanate_1",
+    "owner_id": "ilkhanate",
+    "region_id": "northern_persia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ilkhanate_2",
+    "owner_id": "ilkhanate",
+    "region_id": "azerbaijan",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_karaman_1",
+    "owner_id": "ilkhanate",
+    "region_id": "konya",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_lithuania_1",
+    "owner_id": "lithuanian_gd",
+    "region_id": "lithuania",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_mamluk_1",
+    "owner_id": "mamluk",
+    "region_id": "egypt",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_mamluk_2",
+    "owner_id": "mamluk",
+    "region_id": "damascus",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_mentese_1",
+    "owner_id": "mentese_bey",
+    "region_id": "mentese",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_milan_1",
+    "owner_id": "milan_duchy",
+    "region_id": "milan",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_naples_1",
+    "owner_id": "naples_kingdom",
+    "region_id": "naples",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_novgorod_1",
+    "owner_id": "novgorod_rep",
+    "region_id": "novgorod",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_1",
+    "owner_id": "ottoman",
+    "region_id": "bithynia",
+    "units": [
+      {
+        "type_id": "catapult",
+        "count": 1
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_papal_states_1",
+    "owner_id": "papal_states_f",
+    "region_id": "papal_states",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_polish_kingdom_1",
+    "owner_id": "polish_kingdom",
+    "region_id": "poland",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_portugal_1",
+    "owner_id": "portugal",
+    "region_id": "portugal",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ramazan_1",
+    "owner_id": "ramazan_bey",
+    "region_id": "cilicia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_russia_1",
+    "owner_id": "russia",
+    "region_id": "moscow",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_safavid_1",
+    "owner_id": "safavid",
+    "region_id": "southern_persia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_savoy_1",
+    "owner_id": "savoy_county",
+    "region_id": "savoy",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_scotland_1",
+    "owner_id": "scotland_kingdom",
+    "region_id": "scotland",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_serbian_empire_1",
+    "owner_id": "hungarian_kingdom",
+    "region_id": "serbia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_teke_1",
+    "owner_id": "hamid_bey",
+    "region_id": "teke",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_teutonic_1",
+    "owner_id": "teutonic_order",
+    "region_id": "konigsberg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_trebizond_1",
+    "owner_id": "trebizond_emp",
+    "region_id": "trebizond",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_venice_1",
+    "owner_id": "venice",
+    "region_id": "venice",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_wallachia_1",
+    "owner_id": "wallachia_prince",
+    "region_id": "wallachia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   }

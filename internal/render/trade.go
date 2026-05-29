@@ -29,6 +29,8 @@ const (
 	tradeRowH     = float32(40)
 	tradeGoodBtnW = float32(80)
 	tradeGoodBtnH = float32(28)
+	tradeActBtnW  = float32(76)
+	tradeActBtnH  = float32(24)
 )
 
 // tradePanelRect ticaret panelinin ortalanmış dikdörtgenini döner.
@@ -215,6 +217,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		economy.GoodGrain,
 		economy.GoodIron,
 		economy.GoodTimber,
+		economy.GoodStone,
 		economy.GoodSpice,
 		economy.GoodCloth,
 	}
@@ -257,6 +260,25 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		info := "Fraksiyonlar: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
 		DrawText(screen, info, float64(px)+10, float64(y+h-16), FaceSmall, ColorGray)
 	}
+
+	// Manuel al/sat butonları (tek seferlik pazar işlemi)
+	if focusFaction >= 0 && focusFaction < len(factions) && focusGood >= 0 && focusGood < len(goods) {
+		btnY := y + h - tradeActBtnH - 12
+		buyX := rightX
+		sellX := rightX + tradeActBtnW + 8
+
+		vector.FillRect(screen, buyX, btnY, tradeActBtnW, tradeActBtnH, color.RGBA{62, 112, 62, 230}, false)
+		vector.StrokeRect(screen, buyX, btnY, tradeActBtnW, tradeActBtnH, 1, color.RGBA{150, 200, 150, 230}, false)
+		DrawTextCentered(screen, "AL +5", float64(buyX)+float64(tradeActBtnW)/2, float64(btnY)+6, FaceSmall, ColorWhite)
+
+		vector.FillRect(screen, sellX, btnY, tradeActBtnW, tradeActBtnH, color.RGBA{112, 76, 52, 230}, false)
+		vector.StrokeRect(screen, sellX, btnY, tradeActBtnW, tradeActBtnH, 1, color.RGBA{210, 170, 130, 230}, false)
+		DrawTextCentered(screen, "SAT +5", float64(sellX)+float64(tradeActBtnW)/2, float64(btnY)+6, FaceSmall, ColorWhite)
+
+		target := gs.Factions[factions[focusFaction]]
+		line := "Seçili: " + goodDisplayName(goods[focusGood]) + " | Hedef: " + target.NameTR
+		DrawText(screen, line, float64(rightX), float64(btnY)-16, FaceSmall, color.RGBA{200, 190, 170, 220})
+	}
 }
 
 // drawTradePricesTab piyasa fiyatlarını gösterir.
@@ -270,6 +292,7 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 		economy.GoodGrain,
 		economy.GoodIron,
 		economy.GoodTimber,
+		economy.GoodStone,
 		economy.GoodSpice,
 		economy.GoodCloth,
 	}
@@ -329,6 +352,8 @@ func goodDisplayName(good economy.GoodType) string {
 		return "Demir"
 	case economy.GoodTimber:
 		return "Kereste"
+	case economy.GoodStone:
+		return "Taş"
 	case economy.GoodSpice:
 		return "Baharat"
 	case economy.GoodCloth:
@@ -387,6 +412,8 @@ func getFactionGoodAmount(f *faction.Faction, good economy.GoodType) int {
 		return f.Iron
 	case economy.GoodTimber:
 		return f.Timber
+	case economy.GoodStone:
+		return f.Stone
 	case economy.GoodSpice:
 		return f.Spice
 	case economy.GoodCloth:
@@ -406,4 +433,74 @@ func totalGoodSupply(gs *state.GameState, good economy.GoodType) int {
 		total += getFactionGoodAmount(f, good)
 	}
 	return total
+}
+
+func tradeNewTabFactionIndexAt(mx, my float64, gs *state.GameState, px, y, w, h float32, scroll int) int {
+	leftW := w * 0.40
+	factions := sortedFactionsForTrade(gs)
+	if len(factions) == 0 {
+		return -1
+	}
+	rowY := y + 20
+	visibleRows := int((h - 30) / 28)
+	if visibleRows < 1 {
+		visibleRows = 1
+	}
+	start := scroll
+	end := start + visibleRows
+	if end > len(factions) {
+		end = len(factions)
+	}
+	for i := start; i < end; i++ {
+		ry := rowY + float32(i-start)*28
+		if mx >= float64(px+8) && mx <= float64(px+8+leftW-12) &&
+			my >= float64(ry) && my <= float64(ry+24) {
+			return i
+		}
+	}
+	return -1
+}
+
+func tradeNewTabGoodIndexAt(mx, my float64, gs *state.GameState, px, y, w, h float32, focusFaction int) int {
+	factions := sortedFactionsForTrade(gs)
+	if focusFaction < 0 || focusFaction >= len(factions) {
+		return -1
+	}
+	leftW := w * 0.40
+	rightX := px + leftW + 8
+	rightW := w - leftW - 16
+	goods := []economy.GoodType{
+		economy.GoodGrain,
+		economy.GoodIron,
+		economy.GoodTimber,
+		economy.GoodStone,
+		economy.GoodSpice,
+		economy.GoodCloth,
+	}
+	gy := y + 20
+	for gi := range goods {
+		if mx >= float64(rightX) && mx <= float64(rightX+rightW) &&
+			my >= float64(gy) && my <= float64(gy+24) {
+			return gi
+		}
+		gy += 28
+	}
+	return -1
+}
+
+func tradeNewTabActionAt(mx, my float64, px, y, w, h float32) string {
+	leftW := w * 0.40
+	rightX := px + leftW + 8
+	btnY := y + h - tradeActBtnH - 12
+	buyX := rightX
+	sellX := rightX + tradeActBtnW + 8
+	if mx >= float64(buyX) && mx <= float64(buyX+tradeActBtnW) &&
+		my >= float64(btnY) && my <= float64(btnY+tradeActBtnH) {
+		return "buy"
+	}
+	if mx >= float64(sellX) && mx <= float64(sellX+tradeActBtnW) &&
+		my >= float64(btnY) && my <= float64(btnY+tradeActBtnH) {
+		return "sell"
+	}
+	return ""
 }

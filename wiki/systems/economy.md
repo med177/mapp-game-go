@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-05-06
+last_updated: 2026-05-29
 related: [systems/seasons, world/regions, architecture/game-loop]
 ---
 
@@ -17,10 +17,11 @@ related: [systems/seasons, world/regions, architecture/game-loop]
 | Tahıl | İkincil | Ordu besleme, kıtlık riski |
 | Demir | İkincil | Ordu kalitesi |
 | Kereste | İkincil | Bina inşa |
+| Taş | İkincil | Kuşatma/bina reçeteleri |
 | Baharat | İkincil | Ticaret geliri |
 | Kumaş | İkincil | Ticaret geliri |
 
-Şu an altın mekanik olarak aktif; ikincil mallar veri modelinde var ama gelir hesabına tam entegre edilmemiştir.
+Altın ve ikincil kaynaklar birlikte kullanılır; birim/bina üretiminde çoklu kaynak reçetesi zorunludur.
 
 ---
 
@@ -53,7 +54,7 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 | Surlar (`walls`) | 5 | +savunma bonusu |
 | Tapınak/Kilise/Cami (`temple`) | 6 | +din etkisi, +memnuniyet |
 
-Bina inşası `city.LoadBuildings()` ile yüklenen `Building.GoldCost` kadar altın ister.
+Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone_cost`).
 Bina `MaxPerRegion` ile sınırlıdır.
 Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
 
@@ -102,6 +103,19 @@ tradeIncome = TradeCapacity × 2 × goldMod
 
 Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artırır.
 
+## Üretim Reçeteleri ve Lojistik
+
+- Birim üretimi `gold_cost` yanında `grain_cost`, `iron_cost`, `timber_cost`, `stone_cost` tüketir.
+- Ordu bakımında `grain_upkeep` düşülür; tahıl negatife düştüğünde birlik HP cezası uygulanır.
+- Üretim emri iptalinde altınla birlikte diğer kaynaklar da iade edilir.
+
+## Bölge Uzmanlaşması
+
+- Ova: tahıl üretimi artar.
+- Orman: kereste üretimi artar.
+- Dağ/geçit: demir ve taş üretimi artar.
+- `base_stone_output` olmayan senaryolarda dağ/geçit bölgeleri fallback taş üretimi sağlar.
+
 ## Tek Seferlik Mal Transferi
 
 `TransferGoods()` dinamik piyasa fiyatını kullanarak iki fraksiyon arasında anlık takas yapar.
@@ -119,7 +133,7 @@ Sonbahar aylarında (9, 10, 11) `applyEconomyTick()` gelir çarpanı uygular.
 
 ## Eksik / Planlanan
 
-- [ ] İkincil mal üretim/tüketim döngüsü
-- [ ] Piyasa fiyatı dalgalanması
-- [ ] Kıtlık mekaniği (tahıl sıfırlandığında)
+- [x] İkincil mal üretim/tüketim döngüsü
+- [x] Piyasa fiyatı dalgalanması
+- [x] Kıtlık mekaniği (tahıl sıfırlandığında lojistik ceza)
 - [ ] Ekonomik zafer sayacı (500 altın/tur × 5 tur) tam bağlantısı

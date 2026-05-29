@@ -37,6 +37,7 @@ type Region struct {
 	BaseGrainOutput  int `json:"base_grain_output"`
 	BaseIronOutput   int `json:"base_iron_output"`
 	BaseTimberOutput int `json:"base_timber_output"`
+	BaseStoneOutput  int `json:"base_stone_output"`
 	BaseSpiceOutput  int `json:"base_spice_output"`
 	BaseClothOutput  int `json:"base_cloth_output"`
 	TradeCapacity    int `json:"trade_capacity"`

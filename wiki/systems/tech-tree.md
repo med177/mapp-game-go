@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-05-09
+last_updated: 2026-05-29
 related: [systems/combat, systems/economy, architecture/state-management]
 ---
 
@@ -77,6 +77,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 | `LandDefenseMod` | Çarpışma hesabı |
 | `GoldIncomeMod` | Ekonomi tick |
 | `PopGrowthMod` | Bölge gelişimi |
+| `GrainMod`, `IronMod`, `TimberMod`, `StoneMod` | Kaynak üretim çarpanları |
 
 → Çarpışmaya etkisi: [[systems/combat]]
 

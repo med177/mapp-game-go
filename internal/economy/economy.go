@@ -11,6 +11,7 @@ const (
 	GoodGrain  GoodType = "grain"
 	GoodIron   GoodType = "iron"
 	GoodTimber GoodType = "timber"
+	GoodStone  GoodType = "stone"
 	GoodSpice  GoodType = "spice"
 	GoodCloth  GoodType = "cloth"
 )
@@ -20,6 +21,7 @@ var BaseGoldValue = map[GoodType]int{
 	GoodGrain:  2,
 	GoodIron:   5,
 	GoodTimber: 3,
+	GoodStone:  4,
 	GoodSpice:  12,
 	GoodCloth:  8,
 }
@@ -44,6 +46,7 @@ func ComputeMarketPrices(factions map[faction.FactionID]*faction.Faction) Curren
 		totalSupply[GoodGrain] += f.Grain
 		totalSupply[GoodIron] += f.Iron
 		totalSupply[GoodTimber] += f.Timber
+		totalSupply[GoodStone] += f.Stone
 		totalSupply[GoodSpice] += f.Spice
 		totalSupply[GoodCloth] += f.Cloth
 	}
@@ -161,6 +164,8 @@ func getGoodAmount(f *faction.Faction, good GoodType) int {
 		return f.Iron
 	case GoodTimber:
 		return f.Timber
+	case GoodStone:
+		return f.Stone
 	case GoodSpice:
 		return f.Spice
 	case GoodCloth:
@@ -179,6 +184,8 @@ func addGoodAmount(f *faction.Faction, good GoodType, amount int) {
 		f.Iron += amount
 	case GoodTimber:
 		f.Timber += amount
+	case GoodStone:
+		f.Stone += amount
 	case GoodSpice:
 		f.Spice += amount
 	case GoodCloth:

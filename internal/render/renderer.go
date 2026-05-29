@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -5923,6 +5924,42 @@ func (r *Renderer) HandleInput() InputAction {
 					r.tradeTab = TradeTab(i)
 					r.tradeScroll = 0
 					return InputAction{}
+				}
+			}
+		}
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) && r.tradeTab == TradeTabNew {
+			px, py, pw, ph := tradePanelRect()
+			if idx := tradeNewTabFactionIndexAt(fx, fy, r.gs, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeScroll); idx >= 0 {
+				r.tradeFactionFocus = idx
+				return InputAction{}
+			}
+			if idx := tradeNewTabGoodIndexAt(fx, fy, r.gs, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeFactionFocus); idx >= 0 {
+				r.tradeGoodFocus = idx
+				return InputAction{}
+			}
+			act := tradeNewTabActionAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58))
+			if act != "" {
+				factions := sortedFactionsForTrade(r.gs)
+				goods := []economy.GoodType{
+					economy.GoodGrain,
+					economy.GoodIron,
+					economy.GoodTimber,
+					economy.GoodStone,
+					economy.GoodSpice,
+					economy.GoodCloth,
+				}
+				if r.tradeFactionFocus >= 0 && r.tradeFactionFocus < len(factions) &&
+					r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) {
+					delta := 5
+					if act == "sell" {
+						delta = -5
+					}
+					return InputAction{
+						Kind:          ActionOneTimeTrade,
+						TargetFaction: factions[r.tradeFactionFocus],
+						BuildingID:    string(goods[r.tradeGoodFocus]),
+						Delta:         delta,
+					}
 				}
 			}
 		}

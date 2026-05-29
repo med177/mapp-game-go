@@ -15,7 +15,11 @@
     "required_bldg_level": 0,
     "required_tech": "",
     "tier": 1,
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 12,
+    "iron_cost": 0,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 14,
@@ -33,7 +37,11 @@
     "required_bldg_level": 1,
     "required_tech": "iron_weapons",
     "tier": 2,
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 18,
+    "iron_cost": 8,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 22,
@@ -51,7 +59,11 @@
     "required_bldg_level": 2,
     "required_tech": "steel_blades",
     "tier": 3,
-    "turns_required": 3
+    "turns_required": 3,
+    "grain_cost": 24,
+    "iron_cost": 12,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 16,
@@ -69,7 +81,11 @@
     "required_bldg_level": 1,
     "required_tech": "horse_breeding",
     "tier": 1,
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 20,
+    "iron_cost": 4,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 24,
@@ -87,7 +103,11 @@
     "required_bldg_level": 2,
     "required_tech": "cavalry_tactics",
     "tier": 2,
-    "turns_required": 3
+    "turns_required": 3,
+    "grain_cost": 26,
+    "iron_cost": 8,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 35,
@@ -105,7 +125,11 @@
     "required_bldg_level": 3,
     "required_tech": "plate_armor",
     "tier": 3,
-    "turns_required": 4
+    "turns_required": 4,
+    "grain_cost": 34,
+    "iron_cost": 14,
+    "timber_cost": 0,
+    "stone_cost": 0
   },
   {
     "attack": 30,
@@ -123,7 +147,11 @@
     "required_bldg_level": 2,
     "required_tech": "engineering_corps",
     "tier": 1,
-    "turns_required": 3
+    "turns_required": 3,
+    "grain_cost": 10,
+    "iron_cost": 12,
+    "timber_cost": 8,
+    "stone_cost": 16
   },
   {
     "attack": 45,
@@ -141,7 +169,11 @@
     "required_bldg_level": 3,
     "required_tech": "gunpowder",
     "tier": 2,
-    "turns_required": 4
+    "turns_required": 4,
+    "grain_cost": 14,
+    "iron_cost": 18,
+    "timber_cost": 10,
+    "stone_cost": 24
   },
   {
     "attack": 65,
@@ -159,7 +191,11 @@
     "required_bldg_level": 3,
     "required_tech": "cast_bronze_cannon",
     "tier": 3,
-    "turns_required": 5
+    "turns_required": 5,
+    "grain_cost": 18,
+    "iron_cost": 24,
+    "timber_cost": 12,
+    "stone_cost": 34
   },
   {
     "attack": 28,
@@ -177,7 +213,11 @@
     "required_bldg_level": 3,
     "required_tech": "naval_doctrine",
     "tier": 2,
-    "turns_required": 4
+    "turns_required": 4,
+    "grain_cost": 8,
+    "iron_cost": 12,
+    "timber_cost": 34,
+    "stone_cost": 0
   },
   {
     "attack": 4,
@@ -195,7 +235,11 @@
     "required_bldg_level": 1,
     "required_tech": "navigation",
     "tier": 1,
-    "turns_required": 2
+    "turns_required": 2,
+    "grain_cost": 8,
+    "iron_cost": 6,
+    "timber_cost": 20,
+    "stone_cost": 0
   },
   {
     "attack": 2,
@@ -213,6 +257,10 @@
     "required_bldg_level": 2,
     "required_tech": "harbor_administration",
     "tier": 1,
-    "turns_required": 3
+    "turns_required": 3,
+    "grain_cost": 8,
+    "iron_cost": 8,
+    "timber_cost": 26,
+    "stone_cost": 0
   }
 ]
