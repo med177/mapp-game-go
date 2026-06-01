@@ -5,13 +5,20 @@ import (
 	"image"
 	"image/color"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+type tooltipLine struct {
+	text string
+	col  color.RGBA
+}
 
 func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, recruitPanelOpen bool) {
 	mx, my := ebiten.CursorPosition()
@@ -33,7 +40,7 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	}
 	if recruitPanelOpen {
 		if uid := RecruitPanelHitTest(fx, fy, gs, rid); uid != "" {
-		drawUnitTooltip(screen, gs, uid, fx, fy)
+			drawUnitTooltip(screen, gs, rid, uid, fx, fy)
 		}
 	}
 }
@@ -79,18 +86,61 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	if b == nil || region == nil {
 		return
 	}
+
 	ensureBuildingSheet()
-	x, y, w, h := tooltipRect(mx, my, 300, 154)
+	costLines := buildingCostRequirementLines(gs, b)
+	reqLines, reqMissing := buildingRequirementLines(region, b)
+	effectLines := buildingEffectLines(b)
+	status, statusCol := buildingAvailabilityStatus(gs, region, b, reqMissing)
+	tooltipH := 146.0 + float64(len(costLines))*14 + float64(len(reqLines))*14 + float64(len(effectLines))*16
+	x, y, w, h := tooltipRect(mx, my, 308, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 
-	DrawText(screen, b.NameTR, x+84, y+12, FaceMed, ColorGold)
-	DrawText(screen, fmt.Sprintf("Maliyet: %d altın", b.GoldCost), x+84, y+34, FaceSmall, ColorWhite)
+	iconX, iconY := x+10.0, y+14.0
+	iconW, iconH := 70.0, 58.0
+	textX := iconX + iconW + 12.0
 
-	status := "İnşa edilebilir"
-	statusCol := color.RGBA{120, 210, 120, 230}
+	DrawText(screen, b.NameTR, textX, y+12, FaceMed, ColorGold)
+	DrawText(screen, "Durum:", textX, y+34, FaceSmall, ColorGray)
+	DrawText(screen, status, textX+46, y+34, FaceSmall, statusCol)
+
+	DrawText(screen, "Maliyet:", textX, y+50, FaceSmall, ColorGray)
+	for i, line := range costLines {
+		DrawText(screen, line.text, textX, y+64+float64(i)*14, FaceSmall, line.col)
+	}
+
+	reqY := y + 64 + float64(len(costLines))*14 + 2
+	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
+	for i, line := range reqLines {
+		DrawText(screen, line.text, textX, reqY+14+float64(i)*14, FaceSmall, line.col)
+	}
+
+	if buildingSheet != nil {
+		vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
+		vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
+		r := buildingSpriteRect(bid, buildingSheet)
+		sub := buildingSheet.SubImage(r).(*ebiten.Image)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(iconW/float64(r.Dx()), iconH/float64(r.Dy()))
+		op.GeoM.Translate(iconX, iconY)
+		screen.DrawImage(sub, op)
+	}
+
+	effectY := reqY + 14 + float64(len(reqLines))*14 + 8
+	DrawText(screen, "Etkiler:", textX, effectY, FaceSmall, ColorGray)
+	effectY += 14
+	for i, line := range effectLines {
+		DrawText(screen, line, textX, effectY+float64(i)*16, FaceSmall, ColorGray)
+	}
+}
+
+func buildingAvailabilityStatus(gs *state.GameState, region *world.Region, b *city.Building, reqMissing bool) (string, color.RGBA) {
+	if b == nil || region == nil {
+		return "Bilinmiyor", ColorGray
+	}
 	level := 0
 	for _, builtID := range region.Buildings {
-		if builtID == bid {
+		if builtID == b.ID {
 			level++
 		}
 	}
@@ -98,31 +148,57 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	if b.MaxPerRegion > 0 {
 		maxLevel = b.MaxPerRegion
 	}
-	if level > 0 {
-		status = fmt.Sprintf("Seviye: Lv%d/%d", level, maxLevel)
-		statusCol = ColorGold
-	}
 	if level >= maxLevel {
-		status = fmt.Sprintf("Maksimum seviye (Lv%d)", level)
-		statusCol = color.RGBA{190, 170, 110, 230}
+		return fmt.Sprintf("Maksimum seviye (Lv%d)", level), color.RGBA{190, 170, 110, 230}
 	}
-	DrawText(screen, status, x+84, y+52, FaceSmall, statusCol)
+	if level > 0 {
+		return fmt.Sprintf("Seviye: Lv%d/%d", level, maxLevel), ColorGold
+	}
+	if reqMissing {
+		return "Gereksinim eksik", ColorRed
+	}
+	if !buildingCost(gs, b).CanAfford(gs.Factions[gs.PlayerFactionID]) {
+		return "Kaynak yetersiz", ColorRed
+	}
+	return "İnşa edilebilir", color.RGBA{120, 210, 120, 230}
+}
 
-	if buildingSheet != nil {
-		vector.FillRect(screen, float32(x+10), float32(y+14), 70, 58, color.RGBA{252, 252, 252, 242}, false)
-		vector.StrokeRect(screen, float32(x+10), float32(y+14), 70, 58, 1, color.RGBA{160, 160, 160, 225}, false)
-		r := buildingSpriteRect(bid, buildingSheet)
-		sub := buildingSheet.SubImage(r).(*ebiten.Image)
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(70/float64(r.Dx()), 58/float64(r.Dy()))
-		op.GeoM.Translate(x+10, y+14)
-		screen.DrawImage(sub, op)
+func buildingCost(gs *state.GameState, b *city.Building) economy.ResourceCost {
+	_ = gs
+	if b == nil {
+		return economy.ResourceCost{}
 	}
+	return economy.ResourceCost{
+		Gold:   b.GoldCost,
+		Grain:  b.GrainCost,
+		Iron:   b.IronCost,
+		Timber: b.TimberCost,
+		Stone:  b.StoneCost,
+	}
+}
 
-	lines := buildingEffectLines(b)
-	for i, line := range lines {
-		DrawText(screen, line, x+12, y+82+float64(i)*16, FaceSmall, ColorGray)
+func buildingCostRequirementLines(gs *state.GameState, b *city.Building) []tooltipLine {
+	return resourceTooltipLines(gs, buildingCost(gs, b))
+}
+
+func buildingRequirementLines(region *world.Region, b *city.Building) ([]tooltipLine, bool) {
+	if b == nil || region == nil {
+		return []tooltipLine{{text: "Gereksinim bilgisi yok", col: ColorGray}}, false
 	}
+	if b.RequiredTerrain == "" {
+		return []tooltipLine{{text: "Ek koşul yok", col: color.RGBA{170, 145, 90, 230}}}, false
+	}
+	want := terrainLabel(world.TerrainType(b.RequiredTerrain))
+	have := terrainLabel(region.Terrain)
+	missing := string(region.Terrain) != b.RequiredTerrain
+	col := color.RGBA{170, 145, 90, 230}
+	if missing {
+		col = ColorRed
+	}
+	return []tooltipLine{{
+		text: fmt.Sprintf("Arazi: %s (mevcut: %s)", want, have),
+		col:  col,
+	}}, missing
 }
 
 func buildingEffectLines(b *city.Building) []string {
@@ -139,41 +215,56 @@ func buildingEffectLines(b *city.Building) []string {
 	if b.DefBonus != 0 {
 		lines = append(lines, fmt.Sprintf("Savunma: %+d", b.DefBonus))
 	}
-	if b.RequiredTerrain != "" {
-		lines = append(lines, "Arazi: "+b.RequiredTerrain)
-	}
 	if len(lines) == 0 {
 		lines = append(lines, "Yerel gelişim binası")
 	}
 	return lines
 }
 
-func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, my float64) {
+func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, mx, my float64) {
 	utype := gs.UnitTypes[uid]
 	if utype == nil {
 		return
 	}
+
 	ensureArmySheet()
-	x, y, w, h := tooltipRect(mx, my, 320, 188)
+	costLines := unitCostRequirementLines(gs, utype)
+	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
+	status, statusCol := unitAvailabilityStatus(gs, rid, utype, reqMissing)
+	tooltipH := 190.0 + float64(len(costLines))*14 + float64(len(reqLines))*14
+	x, y, w, h := tooltipRect(mx, my, 328, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
+
 	iconX, iconY := x+10.0, y+14.0
 	iconW, iconH := float64(recruitCardW), 76.0
 	textX := iconX + iconW + 12
 
-	// Yetiştirme panelindeki kartla aynı beyaz kutu stili.
 	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
 	vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
 
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
-	DrawText(screen, fmt.Sprintf("Maliyet: %d altın", utype.GoldCost), textX, y+34, FaceSmall, ColorWhite)
-	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, y+52, FaceSmall, ColorGray)
+	DrawText(screen, "Durum:", textX, y+34, FaceSmall, ColorGray)
+	DrawText(screen, status, textX+46, y+34, FaceSmall, statusCol)
+
+	DrawText(screen, "Maliyet:", textX, y+50, FaceSmall, ColorGray)
+	for i, line := range costLines {
+		DrawText(screen, line.text, textX, y+64+float64(i)*14, FaceSmall, line.col)
+	}
+
+	reqY := y + 64 + float64(len(costLines))*14 + 2
+	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
+	for i, line := range reqLines {
+		DrawText(screen, line.text, textX, reqY+14+float64(i)*14, FaceSmall, line.col)
+	}
+
+	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, upkeepY, FaceSmall, ColorGray)
 
 	if armySheet != nil {
 		r := unitSpriteRect(uid, armySheet)
 		if !r.Empty() {
 			sub := armySheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
-			// Yetiştirme kartındaki gibi daha iri sprite fit + kırpma.
 			fitW := iconW + 50
 			fitH := iconH + 40
 			scale := fitW / float64(r.Dx())
@@ -199,7 +290,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 		}
 	}
 
-	statY := y + 70
+	statY := upkeepY + 18
 	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)
@@ -207,7 +298,128 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, uid string, mx, 
 	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
-	DrawText(screen, unitRequirementText(gs, utype.RequiredBldg, utype.RequiredBldgLevel, utype.RequiredTech), x+12, y+160, FaceSmall, color.RGBA{170, 145, 90, 230})
+}
+
+func unitAvailabilityStatus(gs *state.GameState, rid world.RegionID, utype *army.UnitType, reqMissing bool) (string, color.RGBA) {
+	if utype == nil {
+		return "Bilinmiyor", ColorGray
+	}
+	ff := gs.Factions[gs.PlayerFactionID]
+	if reqMissing {
+		return "Gereksinim eksik", ColorRed
+	}
+	if !unitCost(utype).CanAfford(ff) {
+		return "Kaynak yetersiz", ColorRed
+	}
+	return "Yetiştirilebilir", color.RGBA{120, 210, 120, 230}
+}
+
+func unitRequirementLines(gs *state.GameState, rid world.RegionID, utype *army.UnitType) ([]tooltipLine, bool) {
+	if utype == nil {
+		return []tooltipLine{{text: "Gereksinim bilgisi yok", col: ColorGray}}, false
+	}
+	region := gs.Regions[rid]
+	ff := gs.Factions[gs.PlayerFactionID]
+	lines := make([]tooltipLine, 0, 2)
+	missing := false
+
+	if utype.RequiredBldg != "" {
+		requiredLevel := utype.RequiredBldgLevel
+		if requiredLevel <= 0 {
+			requiredLevel = 1
+		}
+		currentLevel := 0
+		name := utype.RequiredBldg
+		if b := gs.BuildingTypes[utype.RequiredBldg]; b != nil {
+			name = b.NameTR
+		}
+		if region != nil {
+			for _, bid := range region.Buildings {
+				if bid == utype.RequiredBldg {
+					currentLevel++
+				}
+			}
+		}
+		col := color.RGBA{170, 145, 90, 230}
+		if currentLevel < requiredLevel {
+			col = ColorRed
+			missing = true
+		}
+		lines = append(lines, tooltipLine{
+			text: fmt.Sprintf("%s Lv%d gerekli (mevcut: Lv%d)", name, requiredLevel, currentLevel),
+			col:  col,
+		})
+	}
+
+	if utype.RequiredTech != "" {
+		name := utype.RequiredTech
+		if t := gs.TechTypes[utype.RequiredTech]; t != nil {
+			name = t.NameTR
+		}
+		done := ff != nil && ff.Research.Completed[utype.RequiredTech]
+		col := color.RGBA{170, 145, 90, 230}
+		if !done {
+			col = ColorRed
+			missing = true
+		}
+		stateText := "hazır"
+		if !done {
+			stateText = "eksik"
+		}
+		lines = append(lines, tooltipLine{
+			text: fmt.Sprintf("Teknoloji: %s (%s)", name, stateText),
+			col:  col,
+		})
+	}
+
+	if len(lines) == 0 {
+		return []tooltipLine{{text: "Ek koşul yok", col: color.RGBA{170, 145, 90, 230}}}, false
+	}
+	return lines, missing
+}
+
+func unitCostRequirementLines(gs *state.GameState, utype *army.UnitType) []tooltipLine {
+	if utype == nil {
+		return []tooltipLine{{text: "-", col: ColorGray}}
+	}
+	return resourceTooltipLines(gs, unitCost(utype))
+}
+
+func resourceTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tooltipLine {
+	f := gs.Factions[gs.PlayerFactionID]
+	lines := make([]tooltipLine, 0, 5)
+
+	appendLine := func(name string, need int, have int) {
+		if need <= 0 {
+			return
+		}
+		col := ColorWhite
+		text := fmt.Sprintf("%s: %d/%d", name, have, need)
+		if have < need {
+			col = ColorRed
+			text += " eksik"
+		}
+		lines = append(lines, tooltipLine{text: text, col: col})
+	}
+
+	if f == nil {
+		appendLine("Altın", cost.Gold, 0)
+		appendLine("Tahıl", cost.Grain, 0)
+		appendLine("Demir", cost.Iron, 0)
+		appendLine("Kereste", cost.Timber, 0)
+		appendLine("Taş", cost.Stone, 0)
+	} else {
+		appendLine("Altın", cost.Gold, f.Gold)
+		appendLine("Tahıl", cost.Grain, f.Grain)
+		appendLine("Demir", cost.Iron, f.Iron)
+		appendLine("Kereste", cost.Timber, f.Timber)
+		appendLine("Taş", cost.Stone, f.Stone)
+	}
+
+	if len(lines) == 0 {
+		return []tooltipLine{{text: "Bedava", col: ColorWhite}}
+	}
+	return lines
 }
 
 func tooltipRect(mx, my float64, w, h float64) (float64, float64, float64, float64) {
@@ -232,37 +444,6 @@ func drawTooltipBox(screen *ebiten.Image, x, y, w, h float64) {
 	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), color.RGBA{10, 8, 6, 245}, false)
 	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1.5, panelBorder, false)
 	vector.FillRect(screen, float32(x), float32(y), float32(w), 3, panelBorder, false)
-}
-
-func unitRequirementText(gs *state.GameState, buildingID string, buildingLevel int, techID string) string {
-	req := "Gereksinim: "
-	if buildingID == "" && techID == "" {
-		return req + "Yok"
-	}
-	first := true
-	if buildingID != "" {
-		name := buildingID
-		if b := gs.BuildingTypes[buildingID]; b != nil {
-			name = b.NameTR
-		}
-		if buildingLevel <= 0 {
-			buildingLevel = 1
-		}
-		name += " Lv" + itoa(buildingLevel)
-		req += name
-		first = false
-	}
-	if techID != "" {
-		if !first {
-			req += ", "
-		}
-		if t := gs.TechTypes[techID]; t != nil {
-			req += t.NameTR
-		} else {
-			req += techID
-		}
-	}
-	return req
 }
 
 func drawSmallHoverHint(screen *ebiten.Image, message string, mx, my float64) {

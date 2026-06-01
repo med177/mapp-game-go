@@ -345,7 +345,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ff := gs.Factions[gs.PlayerFactionID]
 	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
 	canAfford := ff != nil && unitCost(utype).CanAfford(ff)
-	fullyAvail := !needsBuilding && !needsTech
+	fullyAvail := !needsBuilding && !needsTech && canAfford
 	slotBg := color.RGBA{250, 250, 250, 240}
 	borderCol := color.RGBA{160, 160, 160, 220}
 	if fullyAvail {
@@ -401,15 +401,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		nameCol = color.RGBA{110, 105, 95, 210}
 	}
 	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+80, FaceSmall, nameCol)
-	cost := trimTextToWidth(unitCost(utype).ShortTR(), FaceSmall, float64(cardW)-8)
-	costCol := color.RGBA{95, 82, 46, 235}
-	if !fullyAvail {
-		costCol = color.RGBA{118, 110, 96, 205}
-	} else if !canAfford {
-		costCol = ColorRed
-	}
-	DrawTextCentered(screen, cost, float64(sx)+float64(cardW)/2, float64(sy)+92, FaceSmall, costCol)
-	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+102, FaceSmall, color.RGBA{110, 100, 86, 220})
+	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+94, FaceSmall, color.RGBA{110, 100, 86, 220})
 }
 
 func unitCost(utype *army.UnitType) economy.ResourceCost {
@@ -424,6 +416,7 @@ func unitCost(utype *army.UnitType) economy.ResourceCost {
 		Stone:  utype.StoneCost,
 	}
 }
+
 
 func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
 	showNaval := region != nil && region.IsCoastal(gs.Regions)

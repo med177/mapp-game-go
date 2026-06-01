@@ -59,6 +59,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.showTrade {
+		if tradePanelPointerHit(fx, fy, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeListFilter, r.tradeListSort) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 
 	switch r.gs.Phase {
 	case state.PhaseMainMenu:
@@ -340,15 +348,15 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll) {
 		return true
 	}
-		if r.SelectedRegion != "" {
-			if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
-				settlementPanelHit(fx, fy) || settlementPanelCloseHit(fx, fy) ||
-				RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
-				recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
-				recruitPanelCloseHitTest(fx, fy, r.gs, r.SelectedRegion) {
-				return true
-			}
+	if r.SelectedRegion != "" {
+		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
+			settlementPanelHit(fx, fy) || settlementPanelCloseHit(fx, fy) ||
+			RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
+			recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
+			recruitPanelCloseHitTest(fx, fy, r.gs, r.SelectedRegion) {
+			return true
 		}
+	}
 	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		return true
 	}

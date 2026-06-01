@@ -81,6 +81,8 @@ type Renderer struct {
 	tradeFactionFocus int
 	tradeGoodFocus    int
 	tradeAmount       int
+	tradeListFilter   TradeListFilter
+	tradeListSort     TradeListSort
 	mapMode           MapMode
 	animationTick     int
 
@@ -771,7 +773,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
-		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount)
+		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
 	}
 }
 
@@ -1061,6 +1063,9 @@ func (r *Renderer) tradeCenterAt(fx, fy float64) int {
 func (r *Renderer) updateTradeHover() {
 	r.tradeHoverIdx = -1
 	r.tradeCenterIdx = -1
+	if r.showTrade {
+		return
+	}
 	if r.mapMode != MapModeTrade || (len(r.tradeCorridors) == 0 && len(r.tradeCenters) == 0) {
 		return
 	}
@@ -5887,13 +5892,14 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Ticaret paneli açıkken: ESC veya tıklama kapatır
 	if r.showTrade {
+		leftClick := r.mouseJustPressed(ebiten.MouseButtonLeft)
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyC) {
 			r.showTrade = false
 			return InputAction{}
 		}
 		mx, my := ebiten.CursorPosition()
 		fx, fy := float64(mx), float64(my)
-		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if leftClick {
 			if tradeCloseHit(fx, fy) {
 				r.showTrade = false
 				return InputAction{}
@@ -5914,7 +5920,7 @@ func (r *Renderer) HandleInput() InputAction {
 			}
 		}
 		// Sekme tıklaması
-		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if leftClick {
 			px, py, pw, _ := tradePanelRect()
 			tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
 			tabW := (pw - 16) / float32(len(tabLabels))
@@ -5924,18 +5930,33 @@ func (r *Renderer) HandleInput() InputAction {
 				if fx >= float64(tx) && fx <= float64(tx+tabW-4) && fy >= float64(tabY) && fy <= float64(tabY+tradeTabH) {
 					r.tradeTab = TradeTab(i)
 					r.tradeScroll = 0
+					r.tradeFactionFocus = 0
 					return InputAction{}
 				}
 			}
 		}
-		if r.mouseJustPressed(ebiten.MouseButtonLeft) && r.tradeTab == TradeTabNew {
+		if leftClick && r.tradeTab == TradeTabNew {
 			px, py, pw, ph := tradePanelRect()
-			if idx := tradeNewTabFactionIndexAt(fx, fy, r.gs, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeScroll); idx >= 0 {
+			if nf := tradeNewTabFilterAt(fx, fy, px, py+tradeTabH+48, pw); nf >= 0 {
+				r.tradeListFilter = TradeListFilter(nf)
+				r.tradeFactionFocus = 0
+				r.tradeScroll = 0
+				return InputAction{}
+			}
+			if ns := tradeNewTabSortAt(fx, fy, px, py+tradeTabH+48, pw); ns >= 0 {
+				r.tradeListSort = TradeListSort(ns)
+				r.tradeFactionFocus = 0
+				return InputAction{}
+			}
+			factions := sortedFactionsForTrade(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
+			if idx := tradeNewTabFactionIndexAt(fx, fy, factions, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeScroll); idx >= 0 {
 				r.tradeFactionFocus = idx
 				return InputAction{}
 			}
-			if idx := tradeNewTabGoodIndexAt(fx, fy, r.gs, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeFactionFocus); idx >= 0 {
+			if idx := tradeNewTabGoodIndexAt(fx, fy, factions, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeFactionFocus); idx >= 0 {
 				r.tradeGoodFocus = idx
+				r.tradeFactionFocus = 0
+				r.tradeScroll = 0
 				return InputAction{}
 			}
 			if delta := tradeNewTabQtyDeltaAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58)); delta != 0 {
@@ -5950,7 +5971,6 @@ func (r *Renderer) HandleInput() InputAction {
 			}
 			act := tradeNewTabActionAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58))
 			if act != "" {
-				factions := sortedFactionsForTrade(r.gs)
 				goods := tradeSelectableGoods()
 				if r.tradeFactionFocus >= 0 && r.tradeFactionFocus < len(factions) &&
 					r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) {
@@ -6026,6 +6046,8 @@ func (r *Renderer) HandleInput() InputAction {
 		r.tradeFactionFocus = 0
 		r.tradeGoodFocus = 0
 		r.tradeAmount = 5
+		r.tradeListFilter = TradeListAll
+		r.tradeListSort = TradeSortDistance
 		return InputAction{}
 	}
 	// Tech panel aktifken girişi yönlendir
@@ -6168,6 +6190,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if rectF32Hit(fx, fy, modeRects[1]) {
 		r.mapMode = MapModeTrade
+		return InputAction{}
+	}
+	if r.mapMode == MapModeTrade && tradeToggleButtonHit(fx, fy) {
+		r.showTech = false
+		r.showTrade = !r.showTrade
+		r.tradeTab = TradeTabNew
+		r.tradeScroll = 0
+		r.tradeFactionFocus = 0
+		r.tradeGoodFocus = 0
+		r.tradeAmount = 5
+		r.tradeListFilter = TradeListAll
+		r.tradeListSort = TradeSortDistance
 		return InputAction{}
 	}
 	if r.mapMode == MapModeTrade {

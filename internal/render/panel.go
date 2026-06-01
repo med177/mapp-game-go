@@ -50,13 +50,13 @@ const (
 	panelPad = float64(12)
 )
 
-func bottomBarTop() float32 { return float32(ScreenHeight) - bottomBarH }
-func minimapX() float32     { return float32(ScreenWidth) - minimapW - 5 }
-func minimapY() float32     { return float32(ScreenHeight) - minimapH }
-func evLogX() float32       { return float32(ScreenWidth) - evLogW }
-func evLogY() float32       { return topDateHudH + 8 }
-func infoPanelX() float32   { return 0 }
-func infoPanelY() float32   { return float32(ScreenHeight) - infoPanelH }
+func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
+func minimapX() float32         { return float32(ScreenWidth) - minimapW - 5 }
+func minimapY() float32         { return float32(ScreenHeight) - minimapH }
+func evLogX() float32           { return float32(ScreenWidth) - evLogW }
+func evLogY() float32           { return topDateHudH + 8 }
+func infoPanelX() float32       { return 0 }
+func infoPanelY() float32       { return float32(ScreenHeight) - infoPanelH }
 func settlementPanelX() float32 { return infoPanelX() + infoPanelW + 8 }
 func settlementPanelY() float32 { return infoPanelY() }
 
@@ -150,6 +150,17 @@ func mapModeButtonRects() [2][4]float32 {
 		{x + 2, y + 2, half, h - 4},
 		{x + 4 + half, y + 2, half, h - 4},
 	}
+}
+
+// tradeToggleButtonRect ticaret haritasındayken pazar panelini aç/kapat butonu.
+func tradeToggleButtonRect() [4]float32 {
+	x, y, _, h := mapModeHudRect()
+	w := float32(86)
+	return [4]float32{x + 72, y - h - 6, w, h}
+}
+
+func tradeToggleButtonHit(fx, fy float64) bool {
+	return rectF32Hit(fx, fy, tradeToggleButtonRect())
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
@@ -417,6 +428,14 @@ func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 		vector.StrokeRect(screen, b[0], b[1], b[2], b[3], 1, color.RGBA{120, 96, 54, 210}, false)
 		tw := MeasureText(labels[i], FaceSmall)
 		DrawText(screen, labels[i], float64(b[0])+float64(b[2])/2-tw/2, float64(b[1])+6, FaceSmall, txt)
+	}
+	if mapMode == MapModeTrade {
+		b := tradeToggleButtonRect()
+		fill := color.RGBA{64, 82, 46, 235}
+		vector.FillRect(screen, b[0], b[1], b[2], b[3], fill, false)
+		vector.StrokeRect(screen, b[0], b[1], b[2], b[3], 1, color.RGBA{150, 180, 120, 220}, false)
+		tw := MeasureText("Pazar", FaceSmall)
+		DrawText(screen, "Pazar", float64(b[0])+float64(b[2])/2-tw/2, float64(b[1])+6, FaceSmall, ColorWhite)
 	}
 }
 
@@ -1822,44 +1841,10 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			nameCol = color.RGBA{170, 145, 85, 220}
 		}
 		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
-		if hasDef {
-			cost := shortBuildingCostTR(b)
-			costCol := color.RGBA{105, 96, 82, 210}
-			if !canAfford && !isBuilt {
-				costCol = color.RGBA{170, 90, 90, 220}
-			}
-			DrawTextCentered(screen, trimTextToWidth(cost, FaceSmall, float64(innerW)-6), float64(sx)+float64(innerW)/2, float64(sy+spriteH)+14, FaceSmall, costCol)
-		}
 		if isMaxLevel {
 			DrawTextCentered(screen, "Maks", float64(sx)+float64(innerW)/2, float64(sy+spriteH)+24, FaceSmall, color.RGBA{170, 155, 95, 210})
 		}
 	}
-}
-
-func shortBuildingCostTR(b *city.Building) string {
-	if b == nil {
-		return ""
-	}
-	parts := make([]string, 0, 5)
-	if b.GoldCost > 0 {
-		parts = append(parts, itoa(b.GoldCost)+"G")
-	}
-	if b.GrainCost > 0 {
-		parts = append(parts, itoa(b.GrainCost)+"T")
-	}
-	if b.IronCost > 0 {
-		parts = append(parts, itoa(b.IronCost)+"D")
-	}
-	if b.TimberCost > 0 {
-		parts = append(parts, itoa(b.TimberCost)+"K")
-	}
-	if b.StoneCost > 0 {
-		parts = append(parts, itoa(b.StoneCost)+"TS")
-	}
-	if len(parts) == 0 {
-		return "Bedava"
-	}
-	return strings.Join(parts, " ")
 }
 
 func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {

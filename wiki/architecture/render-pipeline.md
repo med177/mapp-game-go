@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-05-29
+last_updated: 2026-06-01
 related: [game-loop, state-management, shape-editor, systems/combat]
 ---
 
@@ -56,7 +56,7 @@ type Renderer struct {
 | 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür; ikon üstü sayı metni fraksiyon rengine göre kontrast uyarlamalıdır | `renderer.go` |
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
-| 6 | Bölge üretim UI — bina kartlarında seviye (`Lv`) + kuyruk adet/ilk tamamlanma turu etiketi ve tekrar tıklayınca iptal; kıyısı olmayan kara bölgelerinde `port` kartı gizlenir; birim kartlarında çoklu kaynak maliyeti, üretim turu + kuyrukta ilk tamamlanma turu ve `- xN +` çoklu eğitim kontrolü | `panel.go`, `recruit_panel.go` |
+| 6 | Bölge üretim UI — bina kartlarında seviye (`Lv`) + kuyruk adet/ilk tamamlanma turu etiketi ve tekrar tıklayınca iptal; bina gereksinim satırı kart üstünde çizilmez, hover hint içinde gösterilir; kıyısı olmayan kara bölgelerinde `port` kartı gizlenir; bina ve birim kartlarının uygunluk/soluk görünümü altınla sınırlı değil, `ResourceCost.CanAfford` üzerinden tüm mallara göre hesaplanır; birim kartları sadece isim + tur süresi gösterir; hover tooltip’ler durum/maliyet/gereksinim bölümlerine ayrılır, eksik kaynak satırları ve karşılanmayan gereksinimler kırmızı vurgulanır, maliyet satırları oyuncunun mevcut miktarını `mevcut/ihtiyaç` formatında gösterir; `- xN +` çoklu eğitim kontrolü korunur | `panel.go`, `recruit_panel.go`, `hover_tooltip.go` |
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup | `panel.go`, `renderer.go` |
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
