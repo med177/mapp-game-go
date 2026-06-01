@@ -810,6 +810,32 @@
     "ai_aggressiveness": 50
   },
   {
+    "id": "leon_kingdom",
+    "name": "Leon Kingdom",
+    "name_tr": "Leon Krallığı",
+    "religion": "catholic",
+    "color": [
+      83,
+      147,
+      255
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
     "id": "lithuanian_gd",
     "name": "Grand Duchy of Lithuania",
     "name_tr": "Litvanya Büyük Prensliği",

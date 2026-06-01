@@ -11,25 +11,6 @@
     ]
   },
   {
-    "id": "army_aragon_1",
-    "owner_id": "aragon",
-    "region_id": "aragon",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 1
-      }
-    ]
-  },
-  {
     "id": "army_aydin_1",
     "owner_id": "aydin_bey",
     "region_id": "aydinoglu",
@@ -93,29 +74,6 @@
       {
         "type_id": "militia",
         "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_castile_1",
-    "owner_id": "castile_kingdom",
-    "region_id": "castile",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 1
       }
     ]
   },
@@ -191,6 +149,66 @@
       {
         "type_id": "militia",
         "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_edit_71",
+    "owner_id": "aragon",
+    "region_id": "navarre",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_72",
+    "owner_id": "granada_emirate",
+    "region_id": "aragon",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_edit_73",
+    "owner_id": "castile_kingdom",
+    "region_id": "new_region_234",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_edit_74",
+    "owner_id": "leon_kingdom",
+    "region_id": "castile",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "militia",
+        "count": 1
       }
     ]
   },

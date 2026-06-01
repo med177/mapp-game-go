@@ -9,7 +9,6 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
-	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -81,6 +80,7 @@ type Renderer struct {
 	tradeScroll       int
 	tradeFactionFocus int
 	tradeGoodFocus    int
+	tradeAmount       int
 	mapMode           MapMode
 	animationTick     int
 
@@ -446,6 +446,7 @@ func New(gs *state.GameState) *Renderer {
 		tradeHoverIdx:              -1,
 		tradeCenters:               make([]tradeCenterVisual, 0, 12),
 		tradeCenterIdx:             -1,
+		tradeAmount:                5,
 		selectedSettlementIndex:    -1,
 	}
 	r.resetCamera()
@@ -770,7 +771,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
-		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll)
+		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount)
 	}
 }
 
@@ -5937,22 +5938,25 @@ func (r *Renderer) HandleInput() InputAction {
 				r.tradeGoodFocus = idx
 				return InputAction{}
 			}
+			if delta := tradeNewTabQtyDeltaAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58)); delta != 0 {
+				r.tradeAmount += delta
+				if r.tradeAmount < 1 {
+					r.tradeAmount = 1
+				}
+				if r.tradeAmount > 999 {
+					r.tradeAmount = 999
+				}
+				return InputAction{}
+			}
 			act := tradeNewTabActionAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58))
 			if act != "" {
 				factions := sortedFactionsForTrade(r.gs)
-				goods := []economy.GoodType{
-					economy.GoodGrain,
-					economy.GoodIron,
-					economy.GoodTimber,
-					economy.GoodStone,
-					economy.GoodSpice,
-					economy.GoodCloth,
-				}
+				goods := tradeSelectableGoods()
 				if r.tradeFactionFocus >= 0 && r.tradeFactionFocus < len(factions) &&
 					r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) {
-					delta := 5
+					delta := r.tradeAmount
 					if act == "sell" {
-						delta = -5
+						delta = -r.tradeAmount
 					}
 					return InputAction{
 						Kind:          ActionOneTimeTrade,
@@ -6021,6 +6025,7 @@ func (r *Renderer) HandleInput() InputAction {
 		r.tradeScroll = 0
 		r.tradeFactionFocus = 0
 		r.tradeGoodFocus = 0
+		r.tradeAmount = 5
 		return InputAction{}
 	}
 	// Tech panel aktifken girişi yönlendir

@@ -657,23 +657,42 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 	if g.gs.MarketPrices == nil {
 		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
 	}
-	ok := false
+	price := g.gs.MarketPrices[good]
+	if price <= 0 {
+		g.renderer.ShowCombatResult("Geçerli piyasa fiyatı yok.")
+		return
+	}
+	actualAmount := amount
 	if delta > 0 {
-		// Oyuncu alır: hedef satar.
-		ok = economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, amount, g.gs.MarketPrices)
-		if ok {
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı.", targetID, amount, tradeGoodLabelTR(good)))
+		target := g.gs.Factions[targetID]
+		player := g.gs.Factions[g.gs.PlayerFactionID]
+		maxByGold := player.Gold / price
+		maxByStock := tradeGoodAmount(target, good)
+		actualAmount = minTradeInt(amount, minTradeInt(maxByGold, maxByStock))
+		if actualAmount <= 0 {
+			g.renderer.ShowCombatResult("Satın alma başarısız: altın yetersiz veya satıcıda stok yok.")
+			return
+		}
+		if economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, actualAmount, g.gs.MarketPrices) {
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı. (%d altın)", targetID, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			return
 		}
 	} else {
-		// Oyuncu satar: hedef alır.
-		ok = economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, amount, g.gs.MarketPrices)
-		if ok {
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı.", targetID, amount, tradeGoodLabelTR(good)))
+		target := g.gs.Factions[targetID]
+		player := g.gs.Factions[g.gs.PlayerFactionID]
+		maxByBuyerGold := target.Gold / price
+		maxByStock := tradeGoodAmount(player, good)
+		actualAmount = minTradeInt(amount, minTradeInt(maxByBuyerGold, maxByStock))
+		if actualAmount <= 0 {
+			g.renderer.ShowCombatResult("Satış başarısız: sende stok yok veya alıcıda altın yok.")
+			return
+		}
+		if economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, actualAmount, g.gs.MarketPrices) {
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı. (%d altın)", targetID, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			return
 		}
 	}
-	if !ok {
-		g.renderer.ShowCombatResult("Pazar işlemi başarısız: stok veya altın yetersiz.")
-	}
+	g.renderer.ShowCombatResult("Pazar işlemi başarısız.")
 }
 
 func tradeGoodLabelTR(good economy.GoodType) string {
@@ -693,6 +712,35 @@ func tradeGoodLabelTR(good economy.GoodType) string {
 	default:
 		return string(good)
 	}
+}
+
+func tradeGoodAmount(f *faction.Faction, good economy.GoodType) int {
+	if f == nil {
+		return 0
+	}
+	switch good {
+	case economy.GoodGrain:
+		return f.Grain
+	case economy.GoodIron:
+		return f.Iron
+	case economy.GoodTimber:
+		return f.Timber
+	case economy.GoodStone:
+		return f.Stone
+	case economy.GoodSpice:
+		return f.Spice
+	case economy.GoodCloth:
+		return f.Cloth
+	default:
+		return 0
+	}
+}
+
+func minTradeInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // proposePeace hedefe barış teklif eder (her zaman kabul edilir — basit versiyon).

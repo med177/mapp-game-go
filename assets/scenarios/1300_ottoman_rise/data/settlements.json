@@ -5,30 +5,23 @@
       {
         "id": "london_greenwich",
         "name_tr": "Greenwich",
-        "x": 494,
+        "x": 490,
         "y": 259,
         "type": "port"
       },
       {
         "id": "london_main",
         "name_tr": "Londra",
-        "x": 490,
-        "y": 260,
+        "x": 482,
+        "y": 257,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "london_tower",
-        "name_tr": "Londra Kulesi",
-        "x": 489,
-        "y": 255,
-        "type": "fortress"
-      },
-      {
         "id": "london_westminster",
         "name_tr": "Westminster",
-        "x": 486,
-        "y": 257,
+        "x": 480,
+        "y": 262,
         "type": "city"
       }
     ]
@@ -39,30 +32,30 @@
       {
         "id": "wessex_main",
         "name_tr": "Wessex",
-        "x": 440,
-        "y": 264,
+        "x": 436,
+        "y": 273,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "wessex_salisbury",
         "name_tr": "Salisbury",
-        "x": 434,
-        "y": 276,
+        "x": 438,
+        "y": 266,
         "type": "town"
       },
       {
         "id": "wessex_southampton",
         "name_tr": "Southampton",
-        "x": 430,
-        "y": 282,
+        "x": 446,
+        "y": 268,
         "type": "port"
       },
       {
         "id": "wessex_winchester",
         "name_tr": "Winchester",
-        "x": 438,
-        "y": 273,
+        "x": 447,
+        "y": 261,
         "type": "city"
       }
     ]
@@ -73,30 +66,23 @@
       {
         "id": "east_anglia_cambridge",
         "name_tr": "Cambridge",
-        "x": 495,
-        "y": 243,
-        "type": "town"
+        "x": 492,
+        "y": 241,
+        "type": "town",
+        "is_capital": true
       },
       {
         "id": "east_anglia_ipswich",
         "name_tr": "Ipswich",
-        "x": 503,
+        "x": 506,
         "y": 244,
         "type": "port"
       },
       {
-        "id": "east_anglia_main",
-        "name_tr": "Doğu Anglia",
-        "x": 504,
-        "y": 236,
-        "type": "city",
-        "is_capital": true
-      },
-      {
         "id": "east_anglia_norwich",
         "name_tr": "Norwich",
-        "x": 507,
-        "y": 228,
+        "x": 504,
+        "y": 234,
         "type": "city"
       }
     ]
@@ -105,33 +91,19 @@
     "region_id": "mercia",
     "settlements": [
       {
-        "id": "mercia_birmingham",
-        "name_tr": "Birmingham",
-        "x": 463,
-        "y": 246,
-        "type": "town"
-      },
-      {
-        "id": "mercia_coventry",
-        "name_tr": "Coventry",
-        "x": 461,
-        "y": 241,
-        "type": "fortress"
-      },
-      {
-        "id": "mercia_main",
-        "name_tr": "Mercia",
-        "x": 470,
-        "y": 240,
-        "type": "city",
+        "id": "mercia_nottingham",
+        "name_tr": "Nottingham",
+        "x": 467,
+        "y": 231,
+        "type": "town",
         "is_capital": true
       },
       {
-        "id": "mercia_nottingham",
-        "name_tr": "Nottingham",
-        "x": 473,
-        "y": 234,
-        "type": "town"
+        "id": "mercia_settlement_2",
+        "name_tr": "Northampton",
+        "x": 476,
+        "y": 242,
+        "type": "city"
       }
     ]
   },
@@ -141,29 +113,15 @@
       {
         "id": "yorkshire_hull",
         "name_tr": "Hull",
-        "x": 478,
-        "y": 218,
-        "type": "port"
-      },
-      {
-        "id": "yorkshire_leeds",
-        "name_tr": "Leeds",
-        "x": 465,
-        "y": 220,
-        "type": "town"
-      },
-      {
-        "id": "yorkshire_main",
-        "name_tr": "Yorkshire",
-        "x": 470,
-        "y": 209,
-        "type": "city",
+        "x": 474,
+        "y": 216,
+        "type": "port",
         "is_capital": true
       },
       {
         "id": "yorkshire_york",
         "name_tr": "York",
-        "x": 469,
+        "x": 457,
         "y": 212,
         "type": "city"
       }
@@ -173,32 +131,73 @@
     "region_id": "lancashire",
     "settlements": [
       {
-        "id": "lancashire_liverpool",
-        "name_tr": "Liverpool",
-        "x": 439,
-        "y": 216,
-        "type": "port"
-      },
-      {
         "id": "lancashire_main",
         "name_tr": "Lancashire",
-        "x": 445,
-        "y": 197,
+        "x": 415,
+        "y": 213,
         "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "lancashire_preston",
+        "name_tr": "Preston",
+        "x": 422,
+        "y": 208,
+        "type": "town"
+      },
+      {
+        "id": "yorkshire_main",
+        "name_tr": "Newcastle",
+        "x": 442,
+        "y": 188,
+        "type": "city"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_251",
+    "settlements": [
+      {
+        "id": "lancashire_liverpool",
+        "name_tr": "Liverpool",
+        "x": 417,
+        "y": 221,
+        "type": "port",
         "is_capital": true
       },
       {
         "id": "lancashire_manchester",
         "name_tr": "Manchester",
-        "x": 447,
-        "y": 211,
+        "x": 429,
+        "y": 220,
         "type": "town"
       },
       {
-        "id": "lancashire_preston",
-        "name_tr": "Preston",
-        "x": 444,
-        "y": 205,
+        "id": "mercia_birmingham",
+        "name_tr": "Birmingham",
+        "x": 435,
+        "y": 236,
+        "type": "town"
+      },
+      {
+        "id": "mercia_coventry",
+        "name_tr": "Coventry",
+        "x": 439,
+        "y": 237,
+        "type": "fortress"
+      },
+      {
+        "id": "mercia_main",
+        "name_tr": "Mercia",
+        "x": 425,
+        "y": 232,
+        "type": "city"
+      },
+      {
+        "id": "yorkshire_leeds",
+        "name_tr": "Leeds",
+        "x": 443,
+        "y": 218,
         "type": "town"
       }
     ]
@@ -209,38 +208,37 @@
       {
         "id": "scotland_aberdeen",
         "name_tr": "Aberdeen",
-        "x": 417,
-        "y": 160,
+        "x": 432,
+        "y": 148,
         "type": "port"
       },
       {
         "id": "scotland_edinburgh",
         "name_tr": "Edinburgh",
-        "x": 409,
-        "y": 176,
+        "x": 418,
+        "y": 171,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "scotland_glasgow",
         "name_tr": "Glasgow",
-        "x": 393,
-        "y": 183,
+        "x": 386,
+        "y": 174,
         "type": "city"
       },
       {
         "id": "scotland_main",
-        "name_tr": "İskoçya",
-        "x": 399,
-        "y": 172,
-        "type": "city",
-        "is_capital": true
+        "name_tr": "Dundee",
+        "x": 419,
+        "y": 160,
+        "type": "city"
       },
       {
         "id": "scotland_stirling",
         "name_tr": "Stirling",
-        "x": 402,
-        "y": 174,
+        "x": 409,
+        "y": 170,
         "type": "fortress"
       }
     ]
@@ -251,29 +249,29 @@
       {
         "id": "wales_abergavenny",
         "name_tr": "Abergavenny",
-        "x": 414,
-        "y": 247,
+        "x": 416,
+        "y": 249,
         "type": "town"
       },
       {
         "id": "wales_caernarfon",
         "name_tr": "Caernarfon",
-        "x": 403,
-        "y": 236,
+        "x": 391,
+        "y": 226,
         "type": "fortress"
       },
       {
         "id": "wales_cardiff",
         "name_tr": "Cardiff",
-        "x": 411,
-        "y": 257,
+        "x": 413,
+        "y": 256,
         "type": "port",
         "is_capital": true
       },
       {
         "id": "wales_main",
         "name_tr": "Galler",
-        "x": 422,
+        "x": 399,
         "y": 239,
         "type": "city",
         "is_capital": true
@@ -281,8 +279,8 @@
       {
         "id": "wales_swansea",
         "name_tr": "Swansea",
-        "x": 406,
-        "y": 260,
+        "x": 398,
+        "y": 254,
         "type": "port"
       }
     ]
@@ -293,23 +291,23 @@
       {
         "id": "carrickfergus",
         "name_tr": "Carrickfergus",
-        "x": 353,
-        "y": 185,
+        "x": 359,
+        "y": 195,
         "type": "town",
         "is_capital": true
       },
       {
-        "id": "derry_ulster",
-        "name_tr": "Derry",
-        "x": 343,
-        "y": 176,
+        "id": "downpatrick_ulster",
+        "name_tr": "Downpatrick",
+        "x": 358,
+        "y": 201,
         "type": "town"
       },
       {
-        "id": "downpatrick_ulster",
-        "name_tr": "Downpatrick",
-        "x": 360,
-        "y": 191,
+        "id": "derry_ulster",
+        "name_tr": "Derry",
+        "x": 337,
+        "y": 187,
         "type": "town"
       }
     ]
@@ -320,10 +318,31 @@
       {
         "id": "dublin_pale",
         "name_tr": "Dublin (The Pale)",
-        "x": 322,
-        "y": 212,
+        "x": 351,
+        "y": 221,
         "type": "town",
         "is_capital": true
+      },
+      {
+        "id": "the_pale_settlement_2",
+        "name_tr": "Galway",
+        "x": 295,
+        "y": 223,
+        "type": "city"
+      },
+      {
+        "id": "the_pale_settlement_3",
+        "name_tr": "Cork",
+        "x": 307,
+        "y": 251,
+        "type": "city"
+      },
+      {
+        "id": "the_pale_settlement_4",
+        "name_tr": "Limerick",
+        "x": 298,
+        "y": 235,
+        "type": "city"
       }
     ]
   },
@@ -333,10 +352,24 @@
       {
         "id": "paris_main",
         "name_tr": "Paris",
-        "x": 520,
-        "y": 313,
+        "x": 523,
+        "y": 310,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "champagne_troyes",
+        "name_tr": "Troyes",
+        "x": 550,
+        "y": 327,
+        "type": "town"
+      },
+      {
+        "id": "burgundy_auxerre",
+        "name_tr": "Auxerre",
+        "x": 549,
+        "y": 342,
+        "type": "town"
       }
     ]
   },
@@ -346,37 +379,30 @@
       {
         "id": "normandy_caen",
         "name_tr": "Caen",
-        "x": 474,
-        "y": 301,
+        "x": 472,
+        "y": 303,
         "type": "town"
-      },
-      {
-        "id": "normandy_cherbourg",
-        "name_tr": "Cherbourg",
-        "x": 465,
-        "y": 291,
-        "type": "port"
       },
       {
         "id": "normandy_le_havre",
         "name_tr": "Le Havre",
-        "x": 479,
-        "y": 292,
+        "x": 482,
+        "y": 294,
         "type": "port"
       },
       {
         "id": "normandy_main",
         "name_tr": "Normandiya",
-        "x": 480,
-        "y": 295,
+        "x": 493,
+        "y": 290,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "normandy_rouen",
         "name_tr": "Rouen",
-        "x": 485,
-        "y": 300,
+        "x": 488,
+        "y": 299,
         "type": "city",
         "is_capital": true
       }
@@ -388,39 +414,46 @@
       {
         "id": "brittany_brest",
         "name_tr": "Brest",
-        "x": 430,
-        "y": 317,
+        "x": 389,
+        "y": 318,
         "type": "port"
       },
       {
         "id": "brittany_main",
         "name_tr": "Bretonya",
-        "x": 448,
-        "y": 313,
+        "x": 422,
+        "y": 319,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "brittany_nantes",
         "name_tr": "Nantes",
-        "x": 455,
-        "y": 333,
+        "x": 446,
+        "y": 335,
         "type": "port"
       },
       {
         "id": "brittany_rennes",
         "name_tr": "Rennes",
-        "x": 447,
-        "y": 321,
+        "x": 437,
+        "y": 322,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "brittany_vannes",
         "name_tr": "Vannes",
-        "x": 441,
-        "y": 329,
+        "x": 423,
+        "y": 331,
         "type": "town"
+      },
+      {
+        "id": "normandy_cherbourg",
+        "name_tr": "Cherbourg",
+        "x": 445,
+        "y": 291,
+        "type": "port"
       }
     ]
   },
@@ -443,39 +476,39 @@
       {
         "id": "champagne_chalons",
         "name_tr": "Chalons",
-        "x": 570,
-        "y": 291,
+        "x": 556,
+        "y": 309,
         "type": "town"
       },
       {
         "id": "champagne_main",
         "name_tr": "Şampanya",
-        "x": 564,
-        "y": 298,
+        "x": 557,
+        "y": 318,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "champagne_reims",
         "name_tr": "Reims",
-        "x": 560,
-        "y": 289,
+        "x": 551,
+        "y": 302,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "champagne_sedan",
         "name_tr": "Sedan",
-        "x": 579,
-        "y": 279,
+        "x": 570,
+        "y": 292,
         "type": "fortress"
       },
       {
-        "id": "champagne_troyes",
-        "name_tr": "Troyes",
-        "x": 573,
-        "y": 301,
-        "type": "town"
+        "id": "flanders_lille",
+        "name_tr": "Lille",
+        "x": 554,
+        "y": 281,
+        "type": "fortress"
       }
     ]
   },
@@ -483,24 +516,17 @@
     "region_id": "burgundy",
     "settlements": [
       {
-        "id": "burgundy_auxerre",
-        "name_tr": "Auxerre",
-        "x": 587,
-        "y": 322,
-        "type": "town"
-      },
-      {
         "id": "burgundy_beaune",
         "name_tr": "Beaune",
-        "x": 596,
-        "y": 340,
+        "x": 580,
+        "y": 345,
         "type": "town"
       },
       {
         "id": "burgundy_dijon",
         "name_tr": "Dijon",
-        "x": 599,
-        "y": 331,
+        "x": 585,
+        "y": 340,
         "type": "city",
         "is_capital": true
       },
@@ -508,15 +534,15 @@
         "id": "burgundy_main",
         "name_tr": "Burgonya",
         "x": 595,
-        "y": 330,
+        "y": 329,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "burgundy_nevers",
         "name_tr": "Nevers",
-        "x": 586,
-        "y": 343,
+        "x": 555,
+        "y": 347,
         "type": "fortress"
       }
     ]
@@ -525,41 +551,19 @@
     "region_id": "provence",
     "settlements": [
       {
-        "id": "provence_arles",
-        "name_tr": "Arles",
-        "x": 614,
-        "y": 389,
-        "type": "town"
-      },
-      {
-        "id": "provence_avignon",
-        "name_tr": "Avignon",
-        "x": 613,
-        "y": 380,
-        "type": "city"
-      },
-      {
-        "id": "provence_main",
-        "name_tr": "Provence",
-        "x": 604,
-        "y": 408,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "provence_marseille",
-        "name_tr": "Marsilya",
-        "x": 622,
-        "y": 392,
+        "id": "provence_nice",
+        "name_tr": "Nice",
+        "x": 624,
+        "y": 403,
         "type": "port",
         "is_capital": true
       },
       {
-        "id": "provence_nice",
-        "name_tr": "Nice",
-        "x": 635,
-        "y": 389,
-        "type": "port"
+        "id": "savoy_main",
+        "name_tr": "Savoy",
+        "x": 604,
+        "y": 370,
+        "type": "city"
       }
     ]
   },
@@ -573,6 +577,34 @@
         "y": 410,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "provence_marseille",
+        "name_tr": "Marsilya",
+        "x": 582,
+        "y": 411,
+        "type": "port"
+      },
+      {
+        "id": "provence_main",
+        "name_tr": "Provence",
+        "x": 583,
+        "y": 404,
+        "type": "city"
+      },
+      {
+        "id": "provence_avignon",
+        "name_tr": "Avignon",
+        "x": 572,
+        "y": 398,
+        "type": "city"
+      },
+      {
+        "id": "provence_arles",
+        "name_tr": "Arles",
+        "x": 568,
+        "y": 408,
+        "type": "town"
       }
     ]
   },
@@ -582,10 +614,38 @@
       {
         "id": "brandenburg_main",
         "name_tr": "Brandenburg",
-        "x": 754,
-        "y": 249,
+        "x": 749,
+        "y": 244,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "pomerania_kolberg",
+        "name_tr": "Kolberg",
+        "x": 756,
+        "y": 251,
+        "type": "town"
+      },
+      {
+        "id": "saxony_dresden",
+        "name_tr": "Dresden",
+        "x": 754,
+        "y": 266,
+        "type": "town"
+      },
+      {
+        "id": "saxony_leipzig",
+        "name_tr": "Leipzig",
+        "x": 737,
+        "y": 257,
+        "type": "city"
+      },
+      {
+        "id": "saxony_halle",
+        "name_tr": "Halle",
+        "x": 729,
+        "y": 253,
+        "type": "town"
       }
     ]
   },
@@ -593,41 +653,33 @@
     "region_id": "saxony",
     "settlements": [
       {
-        "id": "saxony_dresden",
-        "name_tr": "Dresden",
-        "x": 707,
-        "y": 250,
-        "type": "town"
-      },
-      {
-        "id": "saxony_halle",
-        "name_tr": "Halle",
-        "x": 693,
-        "y": 240,
-        "type": "town"
-      },
-      {
-        "id": "saxony_leipzig",
-        "name_tr": "Leipzig",
-        "x": 696,
-        "y": 247,
-        "type": "city"
-      },
-      {
         "id": "saxony_magdeburg",
         "name_tr": "Magdeburg",
-        "x": 688,
-        "y": 233,
-        "type": "city",
-        "is_capital": true
+        "x": 691,
+        "y": 246,
+        "type": "city"
       },
       {
         "id": "saxony_main",
         "name_tr": "Saksonya",
-        "x": 684,
-        "y": 234,
+        "x": 685,
+        "y": 227,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "saxony_settlement_3",
+        "name_tr": "Hamburg",
+        "x": 674,
+        "y": 216,
+        "type": "city"
+      },
+      {
+        "id": "saxony_settlement_4",
+        "name_tr": "Lübeck",
+        "x": 690,
+        "y": 209,
+        "type": "city"
       }
     ]
   },
@@ -637,38 +689,30 @@
       {
         "id": "bavaria_augsburg",
         "name_tr": "Augsburg",
-        "x": 718,
-        "y": 319,
+        "x": 713,
+        "y": 316,
         "type": "town"
-      },
-      {
-        "id": "bavaria_main",
-        "name_tr": "Bavyera",
-        "x": 721,
-        "y": 315,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "bavaria_munich",
         "name_tr": "Münih",
-        "x": 731,
-        "y": 320,
+        "x": 722,
+        "y": 322,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "bavaria_nuremberg",
         "name_tr": "Nürnberg",
-        "x": 724,
-        "y": 302,
+        "x": 712,
+        "y": 292,
         "type": "city"
       },
       {
         "id": "bavaria_regensburg",
         "name_tr": "Regensburg",
-        "x": 738,
-        "y": 303,
+        "x": 730,
+        "y": 308,
         "type": "town"
       }
     ]
@@ -679,10 +723,17 @@
       {
         "id": "westphalia_main",
         "name_tr": "Vestfalya",
-        "x": 663,
-        "y": 222,
+        "x": 645,
+        "y": 233,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "westphalia_settlement_2",
+        "name_tr": "Hannover",
+        "x": 648,
+        "y": 247,
+        "type": "city"
       }
     ]
   },
@@ -690,12 +741,26 @@
     "region_id": "thuringia",
     "settlements": [
       {
-        "id": "thuringia_main",
-        "name_tr": "Turingiya",
-        "x": 670,
-        "y": 280,
+        "id": "thuringia_settlement_2",
+        "name_tr": "Stutgart",
+        "x": 657,
+        "y": 311,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "thuringia_settlement_3",
+        "name_tr": "Frankfurt",
+        "x": 652,
+        "y": 291,
+        "type": "city"
+      },
+      {
+        "id": "thuringia_settlement_4",
+        "name_tr": "Würzburg",
+        "x": 675,
+        "y": 285,
+        "type": "city"
       }
     ]
   },
@@ -704,11 +769,25 @@
     "settlements": [
       {
         "id": "palatinate_main",
-        "name_tr": "Palatinate",
-        "x": 619,
-        "y": 272,
+        "name_tr": "Dortmund",
+        "x": 624,
+        "y": 259,
+        "type": "city"
+      },
+      {
+        "id": "palatinate_settlement_2",
+        "name_tr": "Köln",
+        "x": 618,
+        "y": 269,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "palatinate_settlement_3",
+        "name_tr": "Koblenz",
+        "x": 624,
+        "y": 288,
+        "type": "city"
       }
     ]
   },
@@ -717,11 +796,18 @@
     "settlements": [
       {
         "id": "denmark_main",
-        "name_tr": "Danimarka",
-        "x": 713,
-        "y": 180,
+        "name_tr": "Kopenhag",
+        "x": 720,
+        "y": 182,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "denmark_settlement_2",
+        "name_tr": "Randers",
+        "x": 677,
+        "y": 164,
+        "type": "city"
       }
     ]
   },
@@ -729,12 +815,19 @@
     "region_id": "switzerland",
     "settlements": [
       {
-        "id": "switzerland_main",
-        "name_tr": "İsviçre",
-        "x": 639,
-        "y": 346,
+        "id": "switzerland_settlement_2",
+        "name_tr": "Bern",
+        "x": 622,
+        "y": 345,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "switzerland_settlement_3",
+        "name_tr": "Zurich",
+        "x": 653,
+        "y": 334,
+        "type": "city"
       }
     ]
   },
@@ -742,10 +835,10 @@
     "region_id": "savoy",
     "settlements": [
       {
-        "id": "savoy_main",
-        "name_tr": "Savoy",
-        "x": 495,
-        "y": 391,
+        "id": "savoy_settlement_2",
+        "name_tr": "Bordoks",
+        "x": 464,
+        "y": 384,
         "type": "city",
         "is_capital": true
       }
@@ -757,38 +850,37 @@
       {
         "id": "portugal_coimbra",
         "name_tr": "Coimbra",
-        "x": 322,
-        "y": 483,
+        "x": 307,
+        "y": 476,
         "type": "town"
       },
       {
         "id": "portugal_evora",
         "name_tr": "Evora",
-        "x": 328,
-        "y": 506,
+        "x": 316,
+        "y": 503,
         "type": "town"
       },
       {
         "id": "portugal_lisboa",
         "name_tr": "Lizbon",
-        "x": 305,
-        "y": 495,
+        "x": 292,
+        "y": 497,
         "type": "port",
         "is_capital": true
       },
       {
         "id": "portugal_main",
-        "name_tr": "Portekiz",
-        "x": 312,
-        "y": 459,
-        "type": "city",
-        "is_capital": true
+        "name_tr": "Lagos",
+        "x": 302,
+        "y": 528,
+        "type": "city"
       },
       {
         "id": "portugal_porto",
         "name_tr": "Porto",
-        "x": 317,
-        "y": 468,
+        "x": 305,
+        "y": 460,
         "type": "port"
       }
     ]
@@ -797,41 +889,46 @@
     "region_id": "castile",
     "settlements": [
       {
-        "id": "castile_burgos",
-        "name_tr": "Burgos",
-        "x": 362,
-        "y": 413,
-        "type": "city"
-      },
-      {
-        "id": "castile_main",
-        "name_tr": "Kastilya",
-        "x": 343,
-        "y": 423,
-        "type": "city",
-        "is_capital": true
-      },
-      {
         "id": "castile_salamanca",
         "name_tr": "Salamanca",
-        "x": 336,
-        "y": 438,
+        "x": 354,
+        "y": 458,
         "type": "town"
       },
       {
-        "id": "castile_toledo",
-        "name_tr": "Toledo",
-        "x": 367,
-        "y": 446,
+        "id": "castile_settlement_2",
+        "name_tr": "Leon",
+        "x": 364,
+        "y": 429,
+        "type": "city",
+        "is_capital": true
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_234",
+    "settlements": [
+      {
+        "id": "castile_burgos",
+        "name_tr": "Burgos",
+        "x": 393,
+        "y": 427,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "castile_valladolid",
         "name_tr": "Valladolid",
-        "x": 350,
-        "y": 423,
+        "x": 379,
+        "y": 442,
         "type": "town"
+      },
+      {
+        "id": "new_region_234_settlement_4",
+        "name_tr": "Bilbao",
+        "x": 415,
+        "y": 414,
+        "type": "city"
       }
     ]
   },
@@ -839,40 +936,25 @@
     "region_id": "aragon",
     "settlements": [
       {
-        "id": "aragon_barcelona",
-        "name_tr": "Barselona",
-        "x": 442,
+        "id": "aragon_valencia",
+        "name_tr": "Valensiya",
+        "x": 469,
         "y": 486,
         "type": "port",
         "is_capital": true
       },
       {
-        "id": "aragon_main",
-        "name_tr": "Aragon",
-        "x": 412,
-        "y": 461,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "aragon_tarragona",
-        "name_tr": "Tarragona",
-        "x": 433,
-        "y": 480,
+        "id": "granada_almeria",
+        "name_tr": "Almeria",
+        "x": 426,
+        "y": 534,
         "type": "port"
       },
       {
-        "id": "aragon_valencia",
-        "name_tr": "Valensiya",
-        "x": 439,
-        "y": 507,
-        "type": "port"
-      },
-      {
-        "id": "aragon_zaragoza",
-        "name_tr": "Saragossa",
-        "x": 420,
-        "y": 462,
+        "id": "aragon_settlement_4",
+        "name_tr": "Madrid",
+        "x": 405,
+        "y": 479,
         "type": "city"
       }
     ]
@@ -883,44 +965,37 @@
       {
         "id": "padua",
         "name_tr": "Padova",
-        "x": 720,
+        "x": 717,
         "y": 368,
         "type": "town"
       },
       {
         "id": "treviso",
         "name_tr": "Treviso",
-        "x": 742,
-        "y": 360,
+        "x": 728,
+        "y": 365,
         "type": "town"
       },
       {
         "id": "venice",
         "name_tr": "Venedik",
-        "x": 731,
-        "y": 368,
+        "x": 722,
+        "y": 371,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "venice_chioggia",
         "name_tr": "Chioggia",
-        "x": 733,
-        "y": 372,
-        "type": "port"
-      },
-      {
-        "id": "venice_ravenna",
-        "name_tr": "Ravenna",
-        "x": 743,
-        "y": 388,
+        "x": 722,
+        "y": 374,
         "type": "port"
       },
       {
         "id": "venice_udine",
         "name_tr": "Udine",
-        "x": 735,
-        "y": 345,
+        "x": 741,
+        "y": 359,
         "type": "town"
       }
     ]
@@ -929,47 +1004,33 @@
     "region_id": "papal_states",
     "settlements": [
       {
-        "id": "ancona",
-        "name_tr": "Ancona",
-        "x": 773,
-        "y": 437,
-        "type": "port"
-      },
-      {
         "id": "papal_states_ostia",
         "name_tr": "Ostia",
-        "x": 748,
-        "y": 448,
+        "x": 737,
+        "y": 451,
         "type": "port"
-      },
-      {
-        "id": "papal_states_rimini",
-        "name_tr": "Rimini",
-        "x": 760,
-        "y": 421,
-        "type": "port"
-      },
-      {
-        "id": "papal_states_viterbo",
-        "name_tr": "Viterbo",
-        "x": 743,
-        "y": 430,
-        "type": "town"
-      },
-      {
-        "id": "perugia",
-        "name_tr": "Perugia",
-        "x": 746,
-        "y": 424,
-        "type": "town"
       },
       {
         "id": "rome",
         "name_tr": "Roma",
-        "x": 739,
-        "y": 448,
+        "x": 733,
+        "y": 446,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "naples_capua",
+        "name_tr": "Capua",
+        "x": 756,
+        "y": 452,
+        "type": "fortress"
+      },
+      {
+        "id": "perugia",
+        "name_tr": "Perugia",
+        "x": 736,
+        "y": 422,
+        "type": "town"
       }
     ]
   },
@@ -977,40 +1038,19 @@
     "region_id": "naples",
     "settlements": [
       {
-        "id": "naples_bari",
-        "name_tr": "Bari",
-        "x": 824,
-        "y": 450,
-        "type": "port"
-      },
-      {
-        "id": "naples_capua",
-        "name_tr": "Capua",
-        "x": 779,
-        "y": 452,
-        "type": "fortress"
-      },
-      {
         "id": "naples_main",
         "name_tr": "Napoli Krallığı",
-        "x": 792,
-        "y": 471,
+        "x": 763,
+        "y": 457,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "naples_salerno",
         "name_tr": "Salerno",
-        "x": 785,
-        "y": 468,
+        "x": 773,
+        "y": 463,
         "type": "town"
-      },
-      {
-        "id": "naples_taranto",
-        "name_tr": "Taranto",
-        "x": 816,
-        "y": 474,
-        "type": "port"
       }
     ]
   },
@@ -1018,41 +1058,33 @@
     "region_id": "austria",
     "settlements": [
       {
-        "id": "austria_graz",
-        "name_tr": "Graz",
-        "x": 796,
-        "y": 340,
-        "type": "town"
-      },
-      {
         "id": "austria_linz",
         "name_tr": "Linz",
-        "x": 783,
-        "y": 313,
+        "x": 764,
+        "y": 319,
         "type": "town"
-      },
-      {
-        "id": "austria_main",
-        "name_tr": "Avusturya",
-        "x": 805,
-        "y": 323,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "austria_salzburg",
-        "name_tr": "Salzburg",
-        "x": 772,
-        "y": 323,
-        "type": "fortress"
       },
       {
         "id": "austria_vienna",
         "name_tr": "Viyana",
-        "x": 791,
-        "y": 323,
+        "x": 798,
+        "y": 319,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "styria_main",
+        "name_tr": "Steiermark",
+        "x": 782,
+        "y": 339,
+        "type": "city"
+      },
+      {
+        "id": "austria_graz",
+        "name_tr": "Graz",
+        "x": 792,
+        "y": 345,
+        "type": "town"
       }
     ]
   },
@@ -1060,41 +1092,41 @@
     "region_id": "bohemia",
     "settlements": [
       {
-        "id": "bohemia_brno",
-        "name_tr": "Brno",
-        "x": 794,
-        "y": 298,
-        "type": "city"
-      },
-      {
         "id": "bohemia_main",
         "name_tr": "Bohemya",
-        "x": 775,
-        "y": 280,
+        "x": 784,
+        "y": 278,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "bohemia_olomouc",
-        "name_tr": "Olomouc",
-        "x": 802,
-        "y": 291,
-        "type": "fortress"
-      },
-      {
         "id": "bohemia_plzen",
         "name_tr": "Plzen",
-        "x": 768,
-        "y": 292,
+        "x": 741,
+        "y": 293,
         "type": "town"
       },
       {
         "id": "bohemia_prague",
         "name_tr": "Prag",
-        "x": 779,
-        "y": 286,
+        "x": 757,
+        "y": 283,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "moravia_znojmo",
+        "name_tr": "Znojmo",
+        "x": 791,
+        "y": 304,
+        "type": "town"
+      },
+      {
+        "id": "moravia_jihlava",
+        "name_tr": "Jihlava",
+        "x": 781,
+        "y": 293,
+        "type": "fortress"
       }
     ]
   },
@@ -1104,39 +1136,24 @@
       {
         "id": "poland_gdansk",
         "name_tr": "Gdansk",
-        "x": 858,
-        "y": 220,
+        "x": 849,
+        "y": 204,
         "type": "port"
       },
       {
         "id": "poland_krakow",
         "name_tr": "Krakow",
-        "x": 870,
-        "y": 253,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "poland_lublin",
-        "name_tr": "Lublin",
-        "x": 894,
-        "y": 249,
-        "type": "town"
-      },
-      {
-        "id": "poland_main",
-        "name_tr": "Polonya",
-        "x": 865,
-        "y": 228,
-        "type": "city",
-        "is_capital": true
+        "x": 871,
+        "y": 278,
+        "type": "city"
       },
       {
         "id": "poland_warsaw",
         "name_tr": "Varşova",
-        "x": 879,
+        "x": 886,
         "y": 238,
-        "type": "city"
+        "type": "city",
+        "is_capital": true
       }
     ]
   },
@@ -1146,37 +1163,29 @@
       {
         "id": "lithuania_kaunas",
         "name_tr": "Kaunas",
-        "x": 944,
-        "y": 187,
+        "x": 957,
+        "y": 191,
         "type": "town"
       },
       {
         "id": "lithuania_klaipeda",
         "name_tr": "Klaipeda",
-        "x": 928,
-        "y": 173,
+        "x": 900,
+        "y": 177,
         "type": "port"
-      },
-      {
-        "id": "lithuania_main",
-        "name_tr": "Litvanya",
-        "x": 953,
-        "y": 184,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "lithuania_trakai",
         "name_tr": "Trakai",
-        "x": 951,
-        "y": 195,
+        "x": 924,
+        "y": 184,
         "type": "fortress"
       },
       {
         "id": "lithuania_vilnius",
         "name_tr": "Vilnius",
-        "x": 960,
-        "y": 191,
+        "x": 981,
+        "y": 193,
         "type": "city",
         "is_capital": true
       }
@@ -1450,52 +1459,52 @@
       {
         "id": "morocco_agadir",
         "name_tr": "Agadir",
-        "x": 333,
-        "y": 614,
+        "x": 284,
+        "y": 656,
         "type": "port"
       },
       {
         "id": "morocco_casablanca",
         "name_tr": "Kazablanka",
-        "x": 344,
-        "y": 572,
+        "x": 327,
+        "y": 595,
         "type": "port"
       },
       {
         "id": "morocco_main",
         "name_tr": "Fas",
-        "x": 353,
-        "y": 576,
+        "x": 373,
+        "y": 585,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "morocco_marrakesh",
         "name_tr": "Marakeş",
-        "x": 336,
-        "y": 596,
+        "x": 326,
+        "y": 627,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "morocco_meknes",
         "name_tr": "Meknes",
-        "x": 350,
-        "y": 575,
+        "x": 358,
+        "y": 588,
         "type": "town"
       },
       {
         "id": "morocco_rabat",
         "name_tr": "Rabat",
-        "x": 340,
-        "y": 565,
+        "x": 341,
+        "y": 587,
         "type": "port"
       },
       {
         "id": "morocco_sale",
         "name_tr": "Sale",
-        "x": 338,
-        "y": 560,
+        "x": 343,
+        "y": 582,
         "type": "port"
       },
       {
@@ -1511,12 +1520,46 @@
     "region_id": "algiers",
     "settlements": [
       {
-        "id": "algiers_main",
-        "name_tr": "Cezayir",
-        "x": 592,
-        "y": 542,
+        "id": "algiers_settlement_1",
+        "name_tr": "Vahran",
+        "x": 460,
+        "y": 557,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "algiers_settlement_2",
+        "name_tr": "Lagvat",
+        "x": 526,
+        "y": 593,
+        "type": "city"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_229",
+    "settlements": [
+      {
+        "id": "algiers_main",
+        "name_tr": "Cezayir",
+        "x": 535,
+        "y": 538,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "new_region_229_settlement_2",
+        "name_tr": "Annaba",
+        "x": 620,
+        "y": 535,
+        "type": "city"
+      },
+      {
+        "id": "new_region_229_settlement_3",
+        "name_tr": "Biskra",
+        "x": 592,
+        "y": 571,
+        "type": "city"
       }
     ]
   },
@@ -1526,57 +1569,57 @@
       {
         "id": "tunis_beja",
         "name_tr": "Beja",
-        "x": 669,
-        "y": 541,
+        "x": 661,
+        "y": 542,
         "type": "town"
       },
       {
         "id": "tunis_bizerte",
         "name_tr": "Bizerte",
-        "x": 676,
-        "y": 531,
+        "x": 671,
+        "y": 527,
         "type": "port"
       },
       {
         "id": "tunis_gabes",
         "name_tr": "Gabes",
-        "x": 704,
-        "y": 571,
+        "x": 677,
+        "y": 591,
         "type": "port"
       },
       {
         "id": "tunis_kairouan",
         "name_tr": "Kayrevan",
-        "x": 680,
-        "y": 549,
+        "x": 681,
+        "y": 557,
         "type": "city"
       },
       {
         "id": "tunis_kef",
         "name_tr": "El Kef",
-        "x": 666,
+        "x": 653,
         "y": 548,
         "type": "fortress"
       },
       {
         "id": "tunis_main",
         "name_tr": "Tunus",
-        "x": 671,
-        "y": 531,
+        "x": 680,
+        "y": 537,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "tunis_sfax",
         "name_tr": "Sefakes",
-        "x": 693,
-        "y": 561,
+        "x": 692,
+        "y": 572,
         "type": "port"
       },
       {
         "id": "tunis_sousse",
         "name_tr": "Susa",
-        "x": 686,
+        "x": 687,
         "y": 552,
         "type": "port"
       }
@@ -1588,59 +1631,79 @@
       {
         "id": "tripolitania_gharyan",
         "name_tr": "Garyan",
-        "x": 838,
-        "y": 744,
+        "x": 737,
+        "y": 634,
         "type": "fortress"
       },
       {
         "id": "tripolitania_main",
         "name_tr": "Trablusgarp",
-        "x": 856,
-        "y": 665,
+        "x": 741,
+        "y": 611,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "tripolitania_misrata",
         "name_tr": "Misrata",
-        "x": 861,
-        "y": 714,
-        "type": "port"
-      },
-      {
-        "id": "tripolitania_sabratha",
-        "name_tr": "Sabratha",
-        "x": 842,
-        "y": 713,
+        "x": 781,
+        "y": 625,
         "type": "port"
       },
       {
         "id": "tripolitania_sirte",
         "name_tr": "Sirte",
-        "x": 896,
-        "y": 717,
+        "x": 800,
+        "y": 642,
         "type": "port"
       },
       {
         "id": "tripolitania_tajura",
         "name_tr": "Tacura",
-        "x": 846,
-        "y": 719,
+        "x": 754,
+        "y": 621,
         "type": "port"
       },
       {
         "id": "tripolitania_zawiya",
         "name_tr": "Zaviye",
-        "x": 847,
-        "y": 726,
+        "x": 723,
+        "y": 613,
         "type": "town"
       },
       {
         "id": "tripolitania_zliten",
         "name_tr": "Zliten",
-        "x": 869,
-        "y": 719,
+        "x": 770,
+        "y": 621,
         "type": "town"
+      },
+      {
+        "id": "tripolitania_sabratha",
+        "name_tr": "Sabratha",
+        "x": 713,
+        "y": 609,
+        "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_228",
+    "settlements": [
+      {
+        "id": "tripolitania_settlement_10",
+        "name_tr": "Bingazi",
+        "x": 880,
+        "y": 632,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "tripolitania_settlement_9",
+        "name_tr": "Tobruk",
+        "x": 954,
+        "y": 626,
+        "type": "city"
       }
     ]
   },
@@ -1787,43 +1850,43 @@
       {
         "id": "cherson",
         "name_tr": "Hersones",
-        "x": 1196,
-        "y": 376,
+        "x": 1154,
+        "y": 391,
         "type": "port"
       },
       {
         "id": "crimea_bakhchisarai",
         "name_tr": "Bahçesaray",
-        "x": 1170,
-        "y": 366,
+        "x": 1158,
+        "y": 381,
         "type": "fortress"
       },
       {
         "id": "crimea_kerch",
         "name_tr": "Kerç",
-        "x": 1194,
-        "y": 386,
+        "x": 1204,
+        "y": 374,
         "type": "port"
       },
       {
         "id": "crimea_sudak",
         "name_tr": "Sudak",
-        "x": 1186,
-        "y": 370,
+        "x": 1173,
+        "y": 382,
         "type": "port"
       },
       {
         "id": "kaffa",
         "name_tr": "Kefe",
-        "x": 1151,
-        "y": 389,
+        "x": 1182,
+        "y": 379,
         "type": "port"
       },
       {
         "id": "solkhat",
-        "name_tr": "Solhat",
-        "x": 1160,
-        "y": 364,
+        "name_tr": "Sivastopol",
+        "x": 1150,
+        "y": 386,
         "type": "city",
         "is_capital": true
       }
@@ -1835,44 +1898,51 @@
       {
         "id": "moscow_kolomna",
         "name_tr": "Kolomna",
-        "x": 1286,
-        "y": 176,
+        "x": 1237,
+        "y": 212,
         "type": "fortress"
       },
       {
         "id": "moscow_kremlin",
-        "name_tr": "Moskova Kremlin",
-        "x": 1268,
-        "y": 160,
+        "name_tr": "Yaroslavl",
+        "x": 1267,
+        "y": 143,
         "type": "fortress"
       },
       {
         "id": "moscow_main",
         "name_tr": "Moskova",
-        "x": 1251,
-        "y": 201,
+        "x": 1222,
+        "y": 197,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "moscow_mozhaisk",
         "name_tr": "Mojaysk",
-        "x": 1248,
-        "y": 162,
+        "x": 1210,
+        "y": 205,
         "type": "fortress"
       },
       {
         "id": "moscow_serpukhov",
         "name_tr": "Serpuhov",
-        "x": 1260,
-        "y": 176,
+        "x": 1217,
+        "y": 220,
         "type": "town"
       },
       {
         "id": "moscow_zvenigorod",
         "name_tr": "Zvenigorod",
-        "x": 1258,
-        "y": 164,
+        "x": 1206,
+        "y": 202,
+        "type": "town"
+      },
+      {
+        "id": "nizhny_novgorod_balakhna",
+        "name_tr": "Balakhna",
+        "x": 1367,
+        "y": 171,
         "type": "town"
       }
     ]
@@ -2007,73 +2077,79 @@
       {
         "id": "alexandria",
         "name_tr": "İskenderiye",
-        "x": 1088,
-        "y": 637,
+        "x": 1076,
+        "y": 642,
         "type": "port"
       },
       {
         "id": "cairo",
         "name_tr": "Kahire",
-        "x": 1096,
-        "y": 652,
+        "x": 1099,
+        "y": 663,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "damietta",
         "name_tr": "Dimyat",
-        "x": 1110,
-        "y": 651,
+        "x": 1101,
+        "y": 636,
         "type": "port"
-      },
-      {
-        "id": "egypt_aswan",
-        "name_tr": "Asvan",
-        "x": 1097,
-        "y": 820,
-        "type": "fortress"
       },
       {
         "id": "egypt_faiyum",
         "name_tr": "Fayyum",
-        "x": 1066,
-        "y": 750,
+        "x": 1095,
+        "y": 685,
         "type": "town"
-      },
-      {
-        "id": "egypt_fustat",
-        "name_tr": "Fustat",
-        "x": 1085,
-        "y": 734,
-        "type": "city"
       },
       {
         "id": "egypt_giza",
         "name_tr": "Gize",
-        "x": 1071,
-        "y": 736,
-        "type": "town"
-      },
-      {
-        "id": "egypt_qena",
-        "name_tr": "Kına",
-        "x": 1093,
-        "y": 785,
+        "x": 1100,
+        "y": 673,
         "type": "town"
       },
       {
         "id": "egypt_rosetta",
         "name_tr": "Reşid",
-        "x": 1063,
-        "y": 704,
+        "x": 1086,
+        "y": 637,
         "type": "port"
       },
       {
         "id": "egypt_suez",
         "name_tr": "Süveyş",
-        "x": 1110,
-        "y": 741,
+        "x": 1127,
+        "y": 664,
         "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_226",
+    "settlements": [
+      {
+        "id": "egypt_qena",
+        "name_tr": "Kına",
+        "x": 1132,
+        "y": 739,
+        "type": "town",
+        "is_capital": true
+      },
+      {
+        "id": "egypt_aswan",
+        "name_tr": "Asvan",
+        "x": 1136,
+        "y": 771,
+        "type": "fortress"
+      },
+      {
+        "id": "egypt_fustat",
+        "name_tr": "Luksor",
+        "x": 1129,
+        "y": 751,
+        "type": "city"
       }
     ]
   },
@@ -2081,39 +2157,25 @@
     "region_id": "palestine",
     "settlements": [
       {
-        "id": "acre",
-        "name_tr": "Akka",
-        "x": 1178,
-        "y": 612,
-        "type": "port",
-        "is_capital": true
-      },
-      {
         "id": "jerusalem",
         "name_tr": "Kudüs",
         "x": 1181,
-        "y": 631,
-        "type": "city"
-      },
-      {
-        "id": "palestine_hebron",
-        "name_tr": "El-Halil",
-        "x": 1177,
-        "y": 646,
-        "type": "town"
-      },
-      {
-        "id": "palestine_jaffa",
-        "name_tr": "Yafa",
-        "x": 1161,
-        "y": 620,
-        "type": "port"
+        "y": 630,
+        "type": "city",
+        "is_capital": true
       },
       {
         "id": "palestine_nablus",
         "name_tr": "Nablus",
         "x": 1186,
         "y": 617,
+        "type": "town"
+      },
+      {
+        "id": "palestine_hebron",
+        "name_tr": "El-Halil",
+        "x": 1179,
+        "y": 636,
         "type": "town"
       }
     ]
@@ -2124,45 +2186,24 @@
       {
         "id": "damascus",
         "name_tr": "Şam",
-        "x": 1202,
-        "y": 604,
+        "x": 1201,
+        "y": 601,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "damascus_baalbek",
-        "name_tr": "Baalbek",
-        "x": 1194,
-        "y": 588,
-        "type": "fortress"
-      },
-      {
         "id": "damascus_daraa",
         "name_tr": "Dera",
-        "x": 1219,
-        "y": 623,
+        "x": 1216,
+        "y": 616,
         "type": "town"
       },
       {
         "id": "damascus_safad",
         "name_tr": "Safed",
-        "x": 1188,
-        "y": 614,
+        "x": 1201,
+        "y": 613,
         "type": "fortress"
-      },
-      {
-        "id": "hama_damascus",
-        "name_tr": "Hama",
-        "x": 1190,
-        "y": 592,
-        "type": "town"
-      },
-      {
-        "id": "homs_damascus",
-        "name_tr": "Humus",
-        "x": 1193,
-        "y": 600,
-        "type": "town"
       }
     ]
   },
@@ -2187,36 +2228,43 @@
       {
         "id": "baghdad_diyala",
         "name_tr": "Diyala",
-        "x": 1399,
-        "y": 603,
+        "x": 1382,
+        "y": 576,
         "type": "town"
       },
       {
         "id": "baghdad_hilla",
         "name_tr": "Hille",
-        "x": 1376,
-        "y": 632,
+        "x": 1373,
+        "y": 611,
         "type": "town"
       },
       {
         "id": "baghdad_samarra",
         "name_tr": "Samarra",
-        "x": 1368,
-        "y": 592,
+        "x": 1357,
+        "y": 586,
         "type": "city"
       },
       {
         "id": "kufa",
         "name_tr": "Kufe",
-        "x": 1383,
-        "y": 570,
+        "x": 1360,
+        "y": 620,
         "type": "town"
       },
       {
         "id": "wasit",
         "name_tr": "Wasit",
+        "x": 1390,
+        "y": 612,
+        "type": "town"
+      },
+      {
+        "id": "basra_nasiriyah",
+        "name_tr": "Nasıriye",
         "x": 1381,
-        "y": 595,
+        "y": 639,
         "type": "town"
       }
     ]
@@ -2275,15 +2323,15 @@
       {
         "id": "persia_west_hamadan",
         "name_tr": "Hemedan",
-        "x": 1441,
-        "y": 571,
+        "x": 1439,
+        "y": 570,
         "type": "town"
       },
       {
         "id": "persia_west_kermanshah",
         "name_tr": "Kirmanşah",
-        "x": 1417,
-        "y": 629,
+        "x": 1413,
+        "y": 579,
         "type": "town"
       },
       {
@@ -2318,8 +2366,8 @@
       {
         "id": "persia_west_urmia",
         "name_tr": "Urmiye",
-        "x": 1372,
-        "y": 548,
+        "x": 1375,
+        "y": 523,
         "type": "town"
       },
       {
@@ -2404,63 +2452,39 @@
     "region_id": "hejaz",
     "settlements": [
       {
-        "id": "hejaz_jeddah",
-        "name_tr": "Cidde",
-        "x": 1346,
-        "y": 800,
-        "type": "port"
-      },
-      {
         "id": "hejaz_khaybar",
         "name_tr": "Hayber",
-        "x": 1337,
-        "y": 735,
-        "type": "fortress"
-      },
-      {
-        "id": "hejaz_main",
-        "name_tr": "Hicaz",
-        "x": 1366,
-        "y": 776,
-        "type": "city"
-      },
-      {
-        "id": "hejaz_mecca",
-        "name_tr": "Mekke",
-        "x": 1358,
-        "y": 788,
-        "type": "city",
+        "x": 1276,
+        "y": 766,
+        "type": "fortress",
         "is_capital": true
       },
       {
         "id": "hejaz_medina",
         "name_tr": "Medine",
-        "x": 1328,
-        "y": 750,
+        "x": 1281,
+        "y": 795,
         "type": "city"
       },
       {
         "id": "hejaz_tabuk",
         "name_tr": "Tebük",
-        "x": 1301,
-        "y": 704,
+        "x": 1232,
+        "y": 692,
         "type": "fortress"
-      },
-      {
-        "id": "hejaz_taif",
-        "name_tr": "Taif",
-        "x": 1367,
-        "y": 803,
-        "type": "town"
       },
       {
         "id": "hejaz_yanbu",
         "name_tr": "Yenbu",
-        "x": 1315,
-        "y": 768,
+        "x": 1257,
+        "y": 796,
         "type": "port"
       }
     ]
+  },
+  {
+    "region_id": "new_region_227",
+    "settlements": null
   },
   {
     "region_id": "slovenia",
@@ -2730,6 +2754,18 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_248",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_233",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_249",
+    "settlements": null
+  },
+  {
     "region_id": "irish_sea",
     "settlements": null
   },
@@ -2739,6 +2775,10 @@
   },
   {
     "region_id": "kattegat",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_235",
     "settlements": null
   },
   {
@@ -2755,6 +2795,10 @@
   },
   {
     "region_id": "adriatic_sea",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_245",
     "settlements": null
   },
   {
@@ -2778,6 +2822,10 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_238",
+    "settlements": null
+  },
+  {
     "region_id": "red_sea",
     "settlements": null
   },
@@ -2793,12 +2841,19 @@
     "region_id": "slovakia",
     "settlements": [
       {
-        "id": "slovakia_main",
-        "name_tr": "Slovakya",
-        "x": 835,
-        "y": 318,
+        "id": "slovakia_settlement_2",
+        "name_tr": "Tırnava",
+        "x": 831,
+        "y": 314,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "slovakia_settlement_3",
+        "name_tr": "Kösice",
+        "x": 908,
+        "y": 310,
+        "type": "city"
       }
     ]
   },
@@ -2807,9 +2862,9 @@
     "settlements": [
       {
         "id": "estonia_main",
-        "name_tr": "Estonya",
-        "x": 976,
-        "y": 124,
+        "name_tr": "Tallin",
+        "x": 972,
+        "y": 106,
         "type": "city",
         "is_capital": true
       }
@@ -2820,9 +2875,9 @@
     "settlements": [
       {
         "id": "latvia_main",
-        "name_tr": "Letonya",
-        "x": 970,
-        "y": 143,
+        "name_tr": "Riga",
+        "x": 957,
+        "y": 152,
         "type": "city",
         "is_capital": true
       }
@@ -2834,44 +2889,44 @@
       {
         "id": "belarus_grodno",
         "name_tr": "Grodno",
-        "x": 1017,
-        "y": 228,
+        "x": 962,
+        "y": 216,
         "type": "fortress"
       },
       {
         "id": "belarus_main",
-        "name_tr": "Beyaz Rusya",
-        "x": 1005,
-        "y": 224,
+        "name_tr": "Mogilyov",
+        "x": 1084,
+        "y": 212,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "belarus_minsk",
         "name_tr": "Minsk",
-        "x": 1034,
-        "y": 220,
+        "x": 1019,
+        "y": 212,
         "type": "city"
       },
       {
         "id": "belarus_pinsk",
         "name_tr": "Pinsk",
-        "x": 1028,
-        "y": 236,
+        "x": 1002,
+        "y": 243,
         "type": "town"
       },
       {
         "id": "belarus_polotsk",
         "name_tr": "Polotsk",
-        "x": 1025,
-        "y": 204,
+        "x": 1035,
+        "y": 184,
         "type": "city"
       },
       {
         "id": "belarus_vitebsk",
         "name_tr": "Vitebsk",
-        "x": 1040,
-        "y": 204,
+        "x": 1081,
+        "y": 188,
         "type": "town"
       }
     ]
@@ -2881,9 +2936,9 @@
     "settlements": [
       {
         "id": "norway_main",
-        "name_tr": "Norveç",
-        "x": 676,
-        "y": 107,
+        "name_tr": "Oslo",
+        "x": 691,
+        "y": 95,
         "type": "city",
         "is_capital": true
       }
@@ -2894,9 +2949,9 @@
     "settlements": [
       {
         "id": "sweden_main",
-        "name_tr": "İsveç",
-        "x": 829,
-        "y": 107,
+        "name_tr": "Stokholm",
+        "x": 835,
+        "y": 106,
         "type": "city",
         "is_capital": true
       }
@@ -3017,44 +3072,37 @@
       {
         "id": "amman_jordan",
         "name_tr": "Amman",
-        "x": 1206,
-        "y": 634,
-        "type": "town"
+        "x": 1195,
+        "y": 632,
+        "type": "town",
+        "is_capital": true
       },
       {
         "id": "jordan_ajloun",
         "name_tr": "Aclun",
-        "x": 1207,
-        "y": 625,
+        "x": 1194,
+        "y": 622,
         "type": "fortress"
-      },
-      {
-        "id": "jordan_main",
-        "name_tr": "Ürdün",
-        "x": 1192,
-        "y": 629,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "jordan_salt",
         "name_tr": "Es-Salt",
-        "x": 1201,
-        "y": 635,
+        "x": 1191,
+        "y": 630,
         "type": "town"
       },
       {
         "id": "jordan_tafila",
         "name_tr": "Tafile",
-        "x": 1217,
-        "y": 659,
+        "x": 1190,
+        "y": 655,
         "type": "town"
       },
       {
         "id": "karak_jordan",
         "name_tr": "Kerek",
-        "x": 1218,
-        "y": 652,
+        "x": 1190,
+        "y": 643,
         "type": "fort"
       }
     ]
@@ -3119,24 +3167,10 @@
       {
         "id": "lebanon_beirut",
         "name_tr": "Beyrut",
-        "x": 1184,
-        "y": 596,
-        "type": "port"
-      },
-      {
-        "id": "lebanon_main",
-        "name_tr": "Lübnan",
-        "x": 1192,
-        "y": 591,
-        "type": "city",
+        "x": 1186,
+        "y": 592,
+        "type": "port",
         "is_capital": true
-      },
-      {
-        "id": "lebanon_sidon_castle",
-        "name_tr": "Sayda Kalesi",
-        "x": 1192,
-        "y": 607,
-        "type": "fortress"
       },
       {
         "id": "lebanon_tyre",
@@ -3146,18 +3180,25 @@
         "type": "port"
       },
       {
-        "id": "sidon_lebanon",
-        "name_tr": "Sayda",
-        "x": 1187,
-        "y": 603,
+        "id": "tripoli_lebanon",
+        "name_tr": "Trablusşam",
+        "x": 1190,
+        "y": 583,
         "type": "port"
       },
       {
-        "id": "tripoli_lebanon",
-        "name_tr": "Trablusşam",
-        "x": 1186,
-        "y": 581,
+        "id": "sidon_lebanon",
+        "name_tr": "Sayda",
+        "x": 1181,
+        "y": 599,
         "type": "port"
+      },
+      {
+        "id": "damascus_baalbek",
+        "name_tr": "Baalbek",
+        "x": 1199,
+        "y": 589,
+        "type": "fortress"
       }
     ]
   },
@@ -3167,8 +3208,8 @@
       {
         "id": "kuwait_main",
         "name_tr": "Kuveyt",
-        "x": 1425,
-        "y": 675,
+        "x": 1436,
+        "y": 680,
         "type": "city",
         "is_capital": true
       }
@@ -3193,38 +3234,23 @@
       {
         "id": "flanders_brugge",
         "name_tr": "Brugge",
-        "x": 585,
-        "y": 272,
+        "x": 542,
+        "y": 265,
         "type": "port",
         "is_capital": true
       },
       {
         "id": "flanders_ghent",
         "name_tr": "Gent",
-        "x": 590,
-        "y": 277,
+        "x": 556,
+        "y": 267,
         "type": "city"
-      },
-      {
-        "id": "flanders_lille",
-        "name_tr": "Lille",
-        "x": 596,
-        "y": 282,
-        "type": "fortress"
-      },
-      {
-        "id": "flanders_main",
-        "name_tr": "Flandre",
-        "x": 589,
-        "y": 276,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "flanders_ypres",
         "name_tr": "Ypres",
-        "x": 581,
-        "y": 277,
+        "x": 551,
+        "y": 275,
         "type": "town"
       }
     ]
@@ -3233,12 +3259,19 @@
     "region_id": "holland",
     "settlements": [
       {
-        "id": "holland_main",
-        "name_tr": "Hollanda",
-        "x": 570,
-        "y": 241,
+        "id": "holland_settlement_2",
+        "name_tr": "Amsterdam",
+        "x": 575,
+        "y": 240,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "holland_settlement_3",
+        "name_tr": "Rotterdam",
+        "x": 566,
+        "y": 248,
+        "type": "city"
       }
     ]
   },
@@ -3248,8 +3281,8 @@
       {
         "id": "luxembourg_main",
         "name_tr": "Lüksemburg",
-        "x": 597,
-        "y": 290,
+        "x": 598,
+        "y": 292,
         "type": "city",
         "is_capital": true
       }
@@ -3261,44 +3294,23 @@
       {
         "id": "ukraine_main",
         "name_tr": "Ukrayna Bozkırı",
-        "x": 1160,
-        "y": 305,
+        "x": 1202,
+        "y": 325,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "ukrainian_steppe_azov",
-        "name_tr": "Azak",
-        "x": 1206,
-        "y": 300,
-        "type": "port"
-      },
-      {
         "id": "ukrainian_steppe_bakhmut",
         "name_tr": "Bahmut",
-        "x": 1222,
-        "y": 284,
+        "x": 1244,
+        "y": 307,
         "type": "fortress"
-      },
-      {
-        "id": "ukrainian_steppe_kherson",
-        "name_tr": "Herson",
-        "x": 1160,
-        "y": 286,
-        "type": "town"
-      },
-      {
-        "id": "ukrainian_steppe_ochakiv",
-        "name_tr": "Özi",
-        "x": 1146,
-        "y": 282,
-        "type": "port"
       },
       {
         "id": "ukrainian_steppe_poltava",
         "name_tr": "Poltava",
-        "x": 1168,
-        "y": 266,
+        "x": 1164,
+        "y": 294,
         "type": "town"
       }
     ]
@@ -3309,8 +3321,8 @@
       {
         "id": "konigsberg_main",
         "name_tr": "Königsberg",
-        "x": 893,
-        "y": 194,
+        "x": 884,
+        "y": 196,
         "type": "city",
         "is_capital": true
       }
@@ -3322,39 +3334,31 @@
       {
         "id": "sicily_catania",
         "name_tr": "Katanya",
-        "x": 775,
-        "y": 519,
+        "x": 778,
+        "y": 523,
         "type": "port"
-      },
-      {
-        "id": "sicily_main",
-        "name_tr": "Sicilya",
-        "x": 776,
-        "y": 533,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "sicily_messina",
         "name_tr": "Messina",
-        "x": 776,
-        "y": 506,
+        "x": 784,
+        "y": 510,
         "type": "port"
       },
       {
         "id": "sicily_palermo",
         "name_tr": "Palermo",
-        "x": 739,
-        "y": 516,
-        "type": "port",
-        "is_capital": true
+        "x": 742,
+        "y": 510,
+        "type": "port"
       },
       {
         "id": "sicily_syracuse",
         "name_tr": "Siraküza",
-        "x": 772,
-        "y": 529,
-        "type": "port"
+        "x": 781,
+        "y": 531,
+        "type": "port",
+        "is_capital": true
       }
     ]
   },
@@ -3364,38 +3368,30 @@
       {
         "id": "sardinia_alghero",
         "name_tr": "Alghero",
-        "x": 644,
+        "x": 645,
         "y": 467,
         "type": "port"
       },
       {
         "id": "sardinia_cagliari",
         "name_tr": "Cagliari",
-        "x": 660,
-        "y": 491,
+        "x": 658,
+        "y": 490,
         "type": "port",
-        "is_capital": true
-      },
-      {
-        "id": "sardinia_main",
-        "name_tr": "Sardinya",
-        "x": 657,
-        "y": 486,
-        "type": "city",
         "is_capital": true
       },
       {
         "id": "sardinia_oristano",
         "name_tr": "Oristano",
-        "x": 648,
-        "y": 478,
+        "x": 647,
+        "y": 477,
         "type": "town"
       },
       {
         "id": "sardinia_sassari",
         "name_tr": "Sassari",
-        "x": 649,
-        "y": 456,
+        "x": 647,
+        "y": 462,
         "type": "town"
       }
     ]
@@ -3406,37 +3402,37 @@
       {
         "id": "corsica_ajaccio",
         "name_tr": "Ajaccio",
-        "x": 654,
-        "y": 445,
+        "x": 652,
+        "y": 441,
         "type": "port"
       },
       {
         "id": "corsica_bastia",
         "name_tr": "Bastia",
-        "x": 662,
-        "y": 427,
+        "x": 665,
+        "y": 425,
         "type": "port",
         "is_capital": true
       },
       {
         "id": "corsica_bonifacio",
         "name_tr": "Bonifacio",
-        "x": 660,
+        "x": 658,
         "y": 448,
         "type": "fortress"
       },
       {
         "id": "corsica_calvi",
         "name_tr": "Calvi",
-        "x": 655,
-        "y": 433,
+        "x": 650,
+        "y": 429,
         "type": "fortress"
       },
       {
         "id": "corsica_main",
         "name_tr": "Korsika",
-        "x": 662,
-        "y": 434,
+        "x": 663,
+        "y": 437,
         "type": "city",
         "is_capital": true
       }
@@ -3474,31 +3470,45 @@
       {
         "id": "gaza",
         "name_tr": "Gazze",
-        "x": 1165,
-        "y": 639,
-        "type": "town"
-      },
-      {
-        "id": "israel_ashkelon",
-        "name_tr": "Aşkelon",
-        "x": 1161,
-        "y": 639,
-        "type": "port"
-      },
-      {
-        "id": "israel_beersheba",
-        "name_tr": "Birüssebi",
-        "x": 1162,
-        "y": 660,
+        "x": 1163,
+        "y": 640,
         "type": "town"
       },
       {
         "id": "israel_main",
         "name_tr": "Han Yunus",
-        "x": 1181,
-        "y": 611,
+        "x": 1165,
+        "y": 638,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "acre",
+        "name_tr": "Akka",
+        "x": 1178,
+        "y": 610,
+        "type": "port"
+      },
+      {
+        "id": "israel_beersheba",
+        "name_tr": "Birüssebi",
+        "x": 1175,
+        "y": 645,
+        "type": "town"
+      },
+      {
+        "id": "israel_ashkelon",
+        "name_tr": "Aşkelon",
+        "x": 1170,
+        "y": 630,
+        "type": "port"
+      },
+      {
+        "id": "palestine_jaffa",
+        "name_tr": "Yafa",
+        "x": 1173,
+        "y": 622,
+        "type": "port"
       }
     ]
   },
@@ -3580,8 +3590,8 @@
       {
         "id": "mallorca_main",
         "name_tr": "Mallorca",
-        "x": 537,
-        "y": 485,
+        "x": 531,
+        "y": 483,
         "type": "city",
         "is_capital": true
       }
@@ -3855,39 +3865,32 @@
     "region_id": "florence",
     "settlements": [
       {
-        "id": "florence_arezzo",
-        "name_tr": "Arezzo",
-        "x": 706,
-        "y": 421,
-        "type": "town"
-      },
-      {
         "id": "florence_lucca",
         "name_tr": "Lucca",
-        "x": 689,
-        "y": 416,
+        "x": 688,
+        "y": 403,
         "type": "town"
       },
       {
         "id": "florence_main",
         "name_tr": "Floransa Cumhuriyeti",
-        "x": 697,
-        "y": 410,
+        "x": 700,
+        "y": 404,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "florence_pisa",
         "name_tr": "Pisa",
-        "x": 687,
-        "y": 422,
+        "x": 684,
+        "y": 407,
         "type": "port"
       },
       {
         "id": "florence_prato",
         "name_tr": "Prato",
-        "x": 699,
-        "y": 406,
+        "x": 696,
+        "y": 401,
         "type": "fortress"
       }
     ]
@@ -3903,16 +3906,16 @@
         "type": "fortress"
       },
       {
-        "id": "genoa_la_spezia",
-        "name_tr": "La Spezia",
+        "id": "genoa_savona",
+        "name_tr": "Savona",
         "x": 642,
-        "y": 397,
+        "y": 394,
         "type": "port"
       },
       {
         "id": "genoa_main",
         "name_tr": "Ceneviz Cumhuriyeti",
-        "x": 650,
+        "x": 653,
         "y": 389,
         "type": "city",
         "is_capital": true
@@ -3920,16 +3923,9 @@
       {
         "id": "genoa_sanremo",
         "name_tr": "Sanremo",
-        "x": 617,
-        "y": 383,
+        "x": 633,
+        "y": 400,
         "type": "town"
-      },
-      {
-        "id": "genoa_savona",
-        "name_tr": "Savona",
-        "x": 627,
-        "y": 389,
-        "type": "port"
       }
     ]
   },
@@ -3939,29 +3935,22 @@
       {
         "id": "milan_bergamo",
         "name_tr": "Bergamo",
-        "x": 677,
+        "x": 669,
         "y": 364,
         "type": "town"
       },
       {
-        "id": "milan_cremona",
-        "name_tr": "Cremona",
-        "x": 680,
-        "y": 378,
-        "type": "city"
-      },
-      {
         "id": "milan_lodi",
         "name_tr": "Lodi",
-        "x": 671,
-        "y": 373,
+        "x": 670,
+        "y": 375,
         "type": "fortress"
       },
       {
         "id": "milan_main",
         "name_tr": "Milano",
-        "x": 667,
-        "y": 372,
+        "x": 665,
+        "y": 369,
         "type": "city",
         "is_capital": true
       },
@@ -3971,6 +3960,13 @@
         "x": 667,
         "y": 381,
         "type": "town"
+      },
+      {
+        "id": "genoa_la_spezia",
+        "name_tr": "La Spezia",
+        "x": 664,
+        "y": 393,
+        "type": "port"
       }
     ]
   },
@@ -3978,40 +3974,47 @@
     "region_id": "granada",
     "settlements": [
       {
-        "id": "granada_almeria",
-        "name_tr": "Almeria",
-        "x": 382,
-        "y": 522,
-        "type": "port"
-      },
-      {
         "id": "granada_guadix",
         "name_tr": "Guadix",
-        "x": 372,
-        "y": 511,
+        "x": 399,
+        "y": 517,
         "type": "fortress"
       },
       {
         "id": "granada_main",
         "name_tr": "Gırnata Emirliği",
         "x": 396,
-        "y": 524,
-        "type": "city",
-        "is_capital": true
+        "y": 525,
+        "type": "city"
       },
       {
         "id": "granada_malaga",
         "name_tr": "Malaga",
-        "x": 354,
-        "y": 520,
+        "x": 386,
+        "y": 537,
         "type": "port"
       },
       {
         "id": "granada_ronda",
         "name_tr": "Ronda",
-        "x": 345,
-        "y": 512,
+        "x": 374,
+        "y": 536,
         "type": "town"
+      },
+      {
+        "id": "granada_settlement_5",
+        "name_tr": "Kurtuba",
+        "x": 376,
+        "y": 516,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "castile_toledo",
+        "name_tr": "Toledo",
+        "x": 399,
+        "y": 485,
+        "type": "city"
       }
     ]
   },
@@ -4021,52 +4024,65 @@
       {
         "id": "navarre_estella",
         "name_tr": "Estella",
-        "x": 457,
-        "y": 444,
+        "x": 436,
+        "y": 427,
         "type": "town"
-      },
-      {
-        "id": "navarre_main",
-        "name_tr": "Navarra Krallığı",
-        "x": 488,
-        "y": 429,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "navarre_olite",
         "name_tr": "Olite",
-        "x": 469,
-        "y": 446,
+        "x": 443,
+        "y": 428,
         "type": "fortress"
       },
       {
         "id": "navarre_pamplona",
         "name_tr": "Pamplona",
-        "x": 466,
-        "y": 438,
-        "type": "city",
-        "is_capital": true
+        "x": 443,
+        "y": 422,
+        "type": "city"
       },
       {
         "id": "navarre_tudela",
         "name_tr": "Tudela",
-        "x": 462,
-        "y": 451,
+        "x": 447,
+        "y": 437,
         "type": "town"
+      },
+      {
+        "id": "aragon_barcelona",
+        "name_tr": "Barselona",
+        "x": 510,
+        "y": 450,
+        "type": "port"
+      },
+      {
+        "id": "aragon_tarragona",
+        "name_tr": "Tarragona",
+        "x": 497,
+        "y": 454,
+        "type": "port"
+      },
+      {
+        "id": "aragon_zaragoza",
+        "name_tr": "Saragossa",
+        "x": 459,
+        "y": 441,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "aragon_main",
+        "name_tr": "Aragon",
+        "x": 450,
+        "y": 459,
+        "type": "city"
       }
     ]
   },
   {
     "region_id": "pomerania",
     "settlements": [
-      {
-        "id": "pomerania_kolberg",
-        "name_tr": "Kolberg",
-        "x": 729,
-        "y": 212,
-        "type": "town"
-      },
       {
         "id": "pomerania_main",
         "name_tr": "Pomeranya",
@@ -4078,22 +4094,22 @@
       {
         "id": "pomerania_stettin",
         "name_tr": "Stettin",
-        "x": 739,
-        "y": 216,
+        "x": 748,
+        "y": 222,
         "type": "port",
         "is_capital": true
       },
       {
         "id": "pomerania_stralsund",
         "name_tr": "Stralsund",
-        "x": 744,
-        "y": 208,
+        "x": 741,
+        "y": 207,
         "type": "port"
       },
       {
         "id": "pomerania_wolgast",
         "name_tr": "Wolgast",
-        "x": 747,
+        "x": 748,
         "y": 210,
         "type": "fortress"
       }
@@ -4463,6 +4479,13 @@
         "x": 1224,
         "y": 516,
         "type": "town"
+      },
+      {
+        "id": "birecik",
+        "name_tr": "Birecik",
+        "x": 1235,
+        "y": 527,
+        "type": "fortress"
       }
     ]
   },
@@ -4482,6 +4505,13 @@
         "name_tr": "Kemaliye",
         "x": 1263,
         "y": 501,
+        "type": "fortress"
+      },
+      {
+        "id": "mosul_nisibis",
+        "name_tr": "Nusaybin",
+        "x": 1288,
+        "y": 529,
         "type": "fortress"
       }
     ]
@@ -4565,12 +4595,19 @@
     "region_id": "styria",
     "settlements": [
       {
-        "id": "styria_main",
-        "name_tr": "Steiermark",
-        "x": 775,
-        "y": 352,
-        "type": "city",
+        "id": "austria_salzburg",
+        "name_tr": "Salzburg",
+        "x": 738,
+        "y": 327,
+        "type": "fortress",
         "is_capital": true
+      },
+      {
+        "id": "styria_settlement_2",
+        "name_tr": "Klagenfurt",
+        "x": 762,
+        "y": 348,
+        "type": "city"
       }
     ]
   },
@@ -4580,8 +4617,8 @@
       {
         "id": "tyrol_main",
         "name_tr": "Tirol",
-        "x": 709,
-        "y": 336,
+        "x": 690,
+        "y": 342,
         "type": "city",
         "is_capital": true
       }
@@ -4591,41 +4628,40 @@
     "region_id": "moravia",
     "settlements": [
       {
-        "id": "moravia_jihlava",
-        "name_tr": "Jihlava",
-        "x": 816,
+        "id": "moravia_kromeriz",
+        "name_tr": "Kromeriz",
+        "x": 813,
         "y": 296,
+        "type": "town",
+        "is_capital": true
+      },
+      {
+        "id": "bohemia_olomouc",
+        "name_tr": "Olomouc",
+        "x": 830,
+        "y": 292,
         "type": "fortress"
       },
       {
-        "id": "moravia_kromeriz",
-        "name_tr": "Kromeriz",
-        "x": 832,
+        "id": "bohemia_brno",
+        "name_tr": "Brno",
+        "x": 803,
         "y": 299,
-        "type": "town"
+        "type": "city"
       },
       {
         "id": "moravia_main",
         "name_tr": "Moravya",
-        "x": 821,
-        "y": 297,
-        "type": "city",
-        "is_capital": true
+        "x": 837,
+        "y": 288,
+        "type": "city"
       },
       {
         "id": "moravia_uherske",
         "name_tr": "Uherske Hradiste",
-        "x": 835,
-        "y": 306,
+        "x": 830,
+        "y": 301,
         "type": "town"
-      },
-      {
-        "id": "moravia_znojmo",
-        "name_tr": "Znojmo",
-        "x": 819,
-        "y": 307,
-        "type": "town",
-        "is_capital": true
       }
     ]
   },
@@ -4635,10 +4671,17 @@
       {
         "id": "silesia_main",
         "name_tr": "Silezya",
-        "x": 804,
-        "y": 263,
+        "x": 828,
+        "y": 274,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "poland_main",
+        "name_tr": "Poznan",
+        "x": 825,
+        "y": 242,
+        "type": "city"
       }
     ]
   },
@@ -4648,10 +4691,24 @@
       {
         "id": "mazovia_main",
         "name_tr": "Mazovya",
-        "x": 923,
-        "y": 242,
+        "x": 903,
+        "y": 226,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "poland_lublin",
+        "name_tr": "Lublin",
+        "x": 930,
+        "y": 257,
+        "type": "town"
+      },
+      {
+        "id": "galicia_volhynia_peremyshl",
+        "name_tr": "Premişl",
+        "x": 931,
+        "y": 288,
+        "type": "fortress"
       }
     ]
   },
@@ -4659,10 +4716,10 @@
     "region_id": "friesland",
     "settlements": [
       {
-        "id": "friesland_main",
+        "id": "friesland_settlement_1",
         "name_tr": "Frizelya",
-        "x": 609,
-        "y": 209,
+        "x": 592,
+        "y": 224,
         "type": "city",
         "is_capital": true
       }
@@ -4674,8 +4731,8 @@
       {
         "id": "lorraine_main",
         "name_tr": "Lorraine",
-        "x": 615,
-        "y": 275,
+        "x": 601,
+        "y": 301,
         "type": "city",
         "is_capital": true
       }
@@ -4687,8 +4744,8 @@
       {
         "id": "alsace_main",
         "name_tr": "Alsas",
-        "x": 627,
-        "y": 312,
+        "x": 628,
+        "y": 316,
         "type": "city",
         "is_capital": true
       }
@@ -4749,10 +4806,17 @@
       {
         "id": "verona_main",
         "name_tr": "Verona",
-        "x": 706,
-        "y": 383,
+        "x": 702,
+        "y": 372,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "milan_cremona",
+        "name_tr": "Cremona",
+        "x": 684,
+        "y": 377,
+        "type": "city"
       }
     ]
   },
@@ -4762,10 +4826,31 @@
       {
         "id": "ferrara_main",
         "name_tr": "Ferrara",
-        "x": 735,
-        "y": 395,
+        "x": 717,
+        "y": 387,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "venice_ravenna",
+        "name_tr": "Ravenna",
+        "x": 722,
+        "y": 394,
+        "type": "port"
+      },
+      {
+        "id": "ancona",
+        "name_tr": "Ancona",
+        "x": 747,
+        "y": 408,
+        "type": "port"
+      },
+      {
+        "id": "papal_states_rimini",
+        "name_tr": "Rimini",
+        "x": 727,
+        "y": 401,
+        "type": "port"
       }
     ]
   },
@@ -4775,10 +4860,24 @@
       {
         "id": "siena_main",
         "name_tr": "Siena Cumhuriyeti",
-        "x": 703,
-        "y": 427,
+        "x": 710,
+        "y": 425,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "florence_arezzo",
+        "name_tr": "Arezzo",
+        "x": 715,
+        "y": 417,
+        "type": "town"
+      },
+      {
+        "id": "papal_states_viterbo",
+        "name_tr": "Viterbo",
+        "x": 729,
+        "y": 438,
+        "type": "town"
       }
     ]
   },
@@ -4787,11 +4886,25 @@
     "settlements": [
       {
         "id": "puglia_main",
-        "name_tr": "Apulia",
-        "x": 832,
-        "y": 465,
+        "name_tr": "Birindisi",
+        "x": 835,
+        "y": 463,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "naples_bari",
+        "name_tr": "Bari",
+        "x": 814,
+        "y": 455,
+        "type": "port"
+      },
+      {
+        "id": "naples_taranto",
+        "name_tr": "Taranto",
+        "x": 822,
+        "y": 467,
+        "type": "port"
       }
     ]
   },
@@ -5161,45 +5274,38 @@
       {
         "id": "galicia_main",
         "name_tr": "Galicya-Volhiyn Prensliği",
-        "x": 981,
-        "y": 276,
+        "x": 968,
+        "y": 260,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "galicia_volhynia_halych",
         "name_tr": "Haliç",
-        "x": 980,
-        "y": 271,
+        "x": 967,
+        "y": 301,
         "type": "town"
       },
       {
         "id": "galicia_volhynia_lutsk",
         "name_tr": "Lutsk",
-        "x": 995,
-        "y": 249,
+        "x": 971,
+        "y": 274,
         "type": "town"
       },
       {
         "id": "galicia_volhynia_lviv",
         "name_tr": "Lviv",
-        "x": 976,
-        "y": 262,
+        "x": 955,
+        "y": 288,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "galicia_volhynia_peremyshl",
-        "name_tr": "Premişl",
-        "x": 968,
-        "y": 272,
-        "type": "fortress"
-      },
-      {
         "id": "galicia_volhynia_vladimir",
         "name_tr": "Vladimir-Volınski",
-        "x": 990,
-        "y": 255,
+        "x": 961,
+        "y": 269,
         "type": "fortress"
       }
     ]
@@ -5210,45 +5316,65 @@
       {
         "id": "kiev_bila_tserkva",
         "name_tr": "Bila Tserkva",
-        "x": 1085,
-        "y": 280,
-        "type": "town"
+        "x": 1084,
+        "y": 291,
+        "type": "town",
+        "is_capital": true
       },
       {
         "id": "kiev_chernihiv",
         "name_tr": "Çernihiv",
-        "x": 1105,
-        "y": 255,
+        "x": 1104,
+        "y": 257,
         "type": "city"
-      },
-      {
-        "id": "kiev_main",
-        "name_tr": "Kiev Prensliği",
-        "x": 1092,
-        "y": 262,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "kiev_pereyaslav",
         "name_tr": "Pereyaslav",
         "x": 1110,
-        "y": 276,
+        "y": 285,
         "type": "fortress"
       },
       {
         "id": "kiev_podil",
         "name_tr": "Podil",
-        "x": 1088,
-        "y": 268,
+        "x": 1091,
+        "y": 281,
         "type": "town"
       },
       {
         "id": "kiev_vyshhorod",
         "name_tr": "Vyshhorod",
-        "x": 1096,
-        "y": 258,
+        "x": 1086,
+        "y": 275,
         "type": "fortress"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_239",
+    "settlements": [
+      {
+        "id": "ukrainian_steppe_ochakiv",
+        "name_tr": "Özi",
+        "x": 1109,
+        "y": 347,
+        "type": "port",
+        "is_capital": true
+      },
+      {
+        "id": "kiev_main",
+        "name_tr": "Odessa",
+        "x": 1089,
+        "y": 353,
+        "type": "city"
+      },
+      {
+        "id": "ukrainian_steppe_kherson",
+        "name_tr": "Herson",
+        "x": 1132,
+        "y": 345,
+        "type": "town"
       }
     ]
   },
@@ -5258,44 +5384,64 @@
       {
         "id": "aleppo",
         "name_tr": "Halep",
-        "x": 1215,
-        "y": 544,
+        "x": 1219,
+        "y": 546,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "aleppo_azaz",
         "name_tr": "Azez",
-        "x": 1226,
-        "y": 531,
+        "x": 1227,
+        "y": 539,
         "type": "fortress"
       },
       {
         "id": "aleppo_maarrat",
         "name_tr": "Maarretünnu'man",
-        "x": 1204,
-        "y": 565,
+        "x": 1209,
+        "y": 560,
         "type": "town"
-      },
-      {
-        "id": "birecik",
-        "name_tr": "Birecik",
-        "x": 1243,
-        "y": 538,
-        "type": "fortress"
       },
       {
         "id": "hama",
         "name_tr": "İdlib",
-        "x": 1202,
-        "y": 553,
+        "x": 1206,
+        "y": 552,
         "type": "town"
+      },
+      {
+        "id": "hama_damascus",
+        "name_tr": "Hama",
+        "x": 1210,
+        "y": 569,
+        "type": "town"
+      },
+      {
+        "id": "homs_damascus",
+        "name_tr": "Humus",
+        "x": 1211,
+        "y": 579,
+        "type": "town"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_225",
+    "settlements": [
+      {
+        "id": "new_region_225_settlement_1",
+        "name_tr": "Rakka",
+        "x": 1257,
+        "y": 552,
+        "type": "city",
+        "is_capital": true
       },
       {
         "id": "homs",
         "name_tr": "Menbiç",
-        "x": 1230,
-        "y": 552,
+        "x": 1236,
+        "y": 542,
         "type": "town"
       }
     ]
@@ -5306,44 +5452,37 @@
       {
         "id": "arbela",
         "name_tr": "Erbil",
-        "x": 1344,
-        "y": 548,
+        "x": 1354,
+        "y": 550,
         "type": "town"
       },
       {
         "id": "mosul",
         "name_tr": "Musul",
         "x": 1338,
-        "y": 531,
+        "y": 542,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "mosul_kirkuk",
         "name_tr": "Kerkük",
-        "x": 1366,
+        "x": 1362,
         "y": 569,
         "type": "city"
       },
       {
-        "id": "mosul_nisibis",
-        "name_tr": "Nusaybin",
-        "x": 1301,
-        "y": 543,
-        "type": "fortress"
-      },
-      {
         "id": "mosul_sinjar",
         "name_tr": "Sincar",
-        "x": 1321,
-        "y": 536,
+        "x": 1317,
+        "y": 546,
         "type": "town"
       },
       {
         "id": "mosul_tikrit",
         "name_tr": "Tikrit",
-        "x": 1348,
-        "y": 588,
+        "x": 1349,
+        "y": 578,
         "type": "fortress"
       }
     ]
@@ -5354,45 +5493,31 @@
       {
         "id": "basra",
         "name_tr": "Basra",
-        "x": 1435,
-        "y": 662,
+        "x": 1433,
+        "y": 656,
         "type": "city",
         "is_capital": true
       },
       {
-        "id": "basra_amara",
-        "name_tr": "Amara",
-        "x": 1449,
-        "y": 644,
-        "type": "town"
-      },
-      {
-        "id": "basra_faw",
-        "name_tr": "Fav",
-        "x": 1452,
-        "y": 708,
+        "id": "ubulla",
+        "name_tr": "Ubulla",
+        "x": 1433,
+        "y": 650,
         "type": "port"
       },
       {
-        "id": "basra_nasiriyah",
-        "name_tr": "Nasıriye",
-        "x": 1412,
-        "y": 680,
+        "id": "basra_amara",
+        "name_tr": "Amara",
+        "x": 1419,
+        "y": 632,
         "type": "town"
       },
       {
         "id": "qurna",
         "name_tr": "Kurna",
-        "x": 1391,
-        "y": 628,
+        "x": 1426,
+        "y": 645,
         "type": "town"
-      },
-      {
-        "id": "ubulla",
-        "name_tr": "Ubulla",
-        "x": 1415,
-        "y": 636,
-        "type": "port"
       }
     ]
   },
@@ -5563,47 +5688,47 @@
     "region_id": "novgorod",
     "settlements": [
       {
-        "id": "novgorod_izborsk",
-        "name_tr": "İzborsk",
-        "x": 1057,
-        "y": 127,
-        "type": "fortress"
-      },
-      {
         "id": "novgorod_ladoga",
         "name_tr": "Ladoga",
-        "x": 1108,
-        "y": 106,
+        "x": 1080,
+        "y": 101,
         "type": "fortress"
       },
       {
         "id": "novgorod_main",
         "name_tr": "Novgorod Cumhuriyeti",
-        "x": 1089,
-        "y": 99,
+        "x": 1106,
+        "y": 120,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "novgorod_pskov",
         "name_tr": "Pskov",
-        "x": 1063,
-        "y": 122,
+        "x": 1042,
+        "y": 140,
         "type": "city"
       },
       {
         "id": "novgorod_staraya_russa",
         "name_tr": "Staraya Russa",
-        "x": 1094,
-        "y": 126,
+        "x": 1109,
+        "y": 135,
         "type": "town"
       },
       {
         "id": "novgorod_tikhvin",
         "name_tr": "Tihvin",
-        "x": 1119,
-        "y": 120,
+        "x": 1142,
+        "y": 98,
         "type": "town"
+      },
+      {
+        "id": "novgorod_izborsk",
+        "name_tr": "İzborsk",
+        "x": 1036,
+        "y": 148,
+        "type": "fortress"
       }
     ]
   },
@@ -5613,45 +5738,86 @@
       {
         "id": "nizhny_novgorod_arzamas",
         "name_tr": "Arzamas",
-        "x": 1396,
-        "y": 301,
-        "type": "town"
-      },
-      {
-        "id": "nizhny_novgorod_balakhna",
-        "name_tr": "Balakhna",
-        "x": 1395,
-        "y": 286,
+        "x": 1408,
+        "y": 195,
         "type": "town"
       },
       {
         "id": "nizhny_novgorod_gorodets",
         "name_tr": "Gorodets",
-        "x": 1392,
-        "y": 281,
+        "x": 1407,
+        "y": 159,
         "type": "town"
       },
       {
         "id": "nizhny_novgorod_kazan_gate",
         "name_tr": "Kazan Kapısı",
-        "x": 1418,
-        "y": 292,
+        "x": 1472,
+        "y": 178,
         "type": "fortress"
       },
       {
         "id": "nizhny_novgorod_main",
         "name_tr": "Nizhny Novgorod",
-        "x": 1394,
-        "y": 294,
+        "x": 1419,
+        "y": 172,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "nizhny_novgorod_murom",
         "name_tr": "Murom",
-        "x": 1377,
-        "y": 274,
+        "x": 1376,
+        "y": 202,
         "type": "fortress"
+      },
+      {
+        "id": "nizhny_novgorod_settlement_6",
+        "name_tr": "Samara",
+        "x": 1500,
+        "y": 221,
+        "type": "city"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_236",
+    "settlements": [
+      {
+        "id": "new_region_236_settlement_1",
+        "name_tr": "Temrük",
+        "x": 1233,
+        "y": 377,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "new_region_236_settlement_2",
+        "name_tr": "Mahaçkale",
+        "x": 1423,
+        "y": 418,
+        "type": "city"
+      },
+      {
+        "id": "derbent",
+        "name_tr": "Derbent",
+        "x": 1435,
+        "y": 432,
+        "type": "town"
+      },
+      {
+        "id": "ukrainian_steppe_azov",
+        "name_tr": "Azak",
+        "x": 1266,
+        "y": 339,
+        "type": "port"
+      },
+      {
+        "id": "new_region_236_settlement_5",
+        "name_tr": "Volgodonsk",
+        "x": 1321,
+        "y": 333,
+        "type": "city"
       }
     ]
   },
@@ -5659,12 +5825,26 @@
     "region_id": "dagestan",
     "settlements": [
       {
-        "id": "derbent",
-        "name_tr": "Derbent",
-        "x": 1616,
-        "y": 343,
-        "type": "town",
+        "id": "dagestan_settlement_1",
+        "name_tr": "Aktav",
+        "x": 1535,
+        "y": 468,
+        "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "dagestan_settlement_2",
+        "name_tr": "Nukus",
+        "x": 1674,
+        "y": 428,
+        "type": "city"
+      },
+      {
+        "id": "dagestan_settlement_3",
+        "name_tr": "Urgenç",
+        "x": 1683,
+        "y": 437,
+        "type": "city"
       }
     ]
   },
@@ -5717,7 +5897,23 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_231",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_232",
+    "settlements": null
+  },
+  {
     "region_id": "gulf_of_lion",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_247",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_230",
     "settlements": null
   },
   {
@@ -5745,11 +5941,19 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_250",
+    "settlements": null
+  },
+  {
     "region_id": "north_sea_shore",
     "settlements": null
   },
   {
     "region_id": "mediterranean_open_1",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_242",
     "settlements": null
   },
   {
@@ -5769,6 +5973,10 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_246",
+    "settlements": null
+  },
+  {
     "region_id": "mediterranean_open_6",
     "settlements": null
   },
@@ -5781,7 +5989,15 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_244",
+    "settlements": null
+  },
+  {
     "region_id": "aegean_sea_shore",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_243",
     "settlements": null
   },
   {
@@ -5794,6 +6010,14 @@
   },
   {
     "region_id": "east_mediterranean",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_241",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_240",
     "settlements": null
   },
   {
@@ -5842,6 +6066,10 @@
   },
   {
     "region_id": "sea_of_azov",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_237",
     "settlements": null
   },
   {

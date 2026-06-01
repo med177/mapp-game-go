@@ -168,6 +168,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "achaea_principality",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "achaea_principality",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -456,6 +462,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "ahiler",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "ahiler",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -735,6 +747,12 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "aragon",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "aragon",
+    "score": 25,
     "stance": "peace"
   },
   {
@@ -1014,6 +1032,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "arnavut_des",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "arnavut_des",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -1284,6 +1308,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "athena_duk",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "athena_duk",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -1548,6 +1578,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "aydin_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "aydin_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -1806,6 +1842,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "bulgarian_empire",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bulgarian_empire",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -2058,6 +2100,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "byzantine",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "byzantine",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -2304,6 +2352,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "candar_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "candar_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -2541,6 +2595,12 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "canik_bey",
     "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "canik_bey",
+    "score": -30,
     "stance": "peace"
   },
   {
@@ -2778,6 +2838,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "castile_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "castile_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -3006,6 +3072,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "denmark_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "denmark_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -3225,6 +3297,12 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "dulkadir_bey",
     "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "dulkadir_bey",
+    "score": -30,
     "stance": "peace"
   },
   {
@@ -3441,6 +3519,12 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "england",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "england",
+    "score": 25,
     "stance": "peace"
   },
   {
@@ -3654,6 +3738,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "epir",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "epir",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -3855,6 +3945,12 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "esrefoglu_bey",
     "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "esrefoglu_bey",
+    "score": -30,
     "stance": "peace"
   },
   {
@@ -4056,6 +4152,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "florence_rep",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "florence_rep",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -4248,6 +4350,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "france",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "france",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -4434,6 +4542,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "genoa",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "genoa",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -4614,6 +4728,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "georgia_kingdom",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "georgia_kingdom",
     "faction_b": "lithuanian_gd",
     "score": -20,
@@ -4788,6 +4908,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "germiyan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "germiyan_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -4956,6 +5082,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "golden_horde",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "golden_horde",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -5118,6 +5250,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "granada_emirate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "granada_emirate",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -5274,6 +5412,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "hamid_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hamid_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -5424,6 +5568,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "hre",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hre",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -5568,6 +5718,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "hungarian_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hungarian_kingdom",
     "faction_b": "lithuanian_gd",
     "score": 25,
@@ -5706,6 +5862,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "ilkhanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "ilkhanate",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -5838,6 +6000,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "karaman_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "karaman_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -5964,6 +6132,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "leon_kingdom",
+    "faction_b": "karesioglu_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "karesioglu_bey",
     "faction_b": "lithuanian_gd",
     "score": -30,
@@ -6087,6 +6261,132 @@
     "faction_a": "karesioglu_bey",
     "faction_b": "wallachia_prince",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "lithuanian_gd",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "mamluk",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "mentese_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "milan_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "naples_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "novgorod_rep",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "ottoman",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "papal_states_f",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "polish_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "portugal",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "ramazan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "russia",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "safavid",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "saruhan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "savoy_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "scotland_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "serbian_empire",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "teutonic_order",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "trebizond_emp",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "venice",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "leon_kingdom",
+    "faction_b": "wallachia_prince",
+    "score": -20,
     "stance": "peace"
   },
   {
