@@ -855,13 +855,6 @@
         "type": "town"
       },
       {
-        "id": "portugal_evora",
-        "name_tr": "Evora",
-        "x": 316,
-        "y": 503,
-        "type": "town"
-      },
-      {
         "id": "portugal_lisboa",
         "name_tr": "Lizbon",
         "x": 292,
@@ -870,18 +863,31 @@
         "is_capital": true
       },
       {
-        "id": "portugal_main",
-        "name_tr": "Lagos",
-        "x": 302,
-        "y": 528,
-        "type": "city"
-      },
-      {
         "id": "portugal_porto",
         "name_tr": "Porto",
         "x": 305,
         "y": 460,
         "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_252",
+    "settlements": [
+      {
+        "id": "portugal_main",
+        "name_tr": "Lagos",
+        "x": 301,
+        "y": 528,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "portugal_evora",
+        "name_tr": "Evora",
+        "x": 317,
+        "y": 502,
+        "type": "town"
       }
     ]
   },
@@ -952,9 +958,16 @@
       },
       {
         "id": "aragon_settlement_4",
-        "name_tr": "Madrid",
-        "x": 405,
-        "y": 479,
+        "name_tr": "Guadalajara",
+        "x": 418,
+        "y": 472,
+        "type": "city"
+      },
+      {
+        "id": "aragon_settlement_5",
+        "name_tr": "Cartegena",
+        "x": 457,
+        "y": 519,
         "type": "city"
       }
     ]
@@ -1197,60 +1210,66 @@
       {
         "id": "hungary_buda",
         "name_tr": "Buda",
-        "x": 870,
-        "y": 350,
+        "x": 855,
+        "y": 336,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "hungary_esztergom",
         "name_tr": "Estergon",
-        "x": 861,
-        "y": 341,
+        "x": 850,
+        "y": 328,
         "type": "fortress"
       },
       {
         "id": "hungary_gyor",
         "name_tr": "Gyor",
-        "x": 843,
-        "y": 334,
+        "x": 830,
+        "y": 329,
         "type": "town"
       },
       {
         "id": "hungary_main",
         "name_tr": "Macaristan",
-        "x": 874,
-        "y": 348,
-        "type": "city",
-        "is_capital": true
+        "x": 856,
+        "y": 353,
+        "type": "city"
       },
       {
         "id": "hungary_pecs",
         "name_tr": "Pecs",
-        "x": 854,
-        "y": 366,
+        "x": 846,
+        "y": 360,
         "type": "city"
       },
       {
         "id": "hungary_pest",
         "name_tr": "Peşte",
-        "x": 881,
-        "y": 350,
+        "x": 858,
+        "y": 338,
         "type": "city"
-      },
-      {
-        "id": "hungary_szeged",
-        "name_tr": "Szeged",
-        "x": 885,
-        "y": 369,
-        "type": "town"
       },
       {
         "id": "hungary_szekesfehervar",
         "name_tr": "Szekesfehervar",
-        "x": 858,
-        "y": 344,
+        "x": 842,
+        "y": 341,
         "type": "fortress"
+      },
+      {
+        "id": "alfold_kecskemet",
+        "name_tr": "Kecskemet",
+        "x": 871,
+        "y": 347,
+        "type": "town"
+      },
+      {
+        "id": "alfold_szekes",
+        "name_tr": "Cegled",
+        "x": 871,
+        "y": 338,
+        "type": "city"
       }
     ]
   },
@@ -1258,39 +1277,17 @@
     "region_id": "serbia",
     "settlements": [
       {
-        "id": "serbia_belgrade",
-        "name_tr": "Belgrad",
-        "x": 903,
-        "y": 369,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "serbia_kragujevac",
-        "name_tr": "Kragujevac",
-        "x": 897,
-        "y": 392,
-        "type": "town"
-      },
-      {
-        "id": "serbia_smederevo",
-        "name_tr": "Semendire",
-        "x": 915,
-        "y": 377,
-        "type": "fortress"
-      },
-      {
-        "id": "serbia_uzice",
-        "name_tr": "Ujitse",
-        "x": 875,
-        "y": 389,
-        "type": "town"
-      },
-      {
         "id": "skopje",
         "name_tr": "Kruševac",
-        "x": 884,
-        "y": 380,
+        "x": 873,
+        "y": 370,
+        "type": "city"
+      },
+      {
+        "id": "serbia_belgrade",
+        "name_tr": "Belgrad",
+        "x": 886,
+        "y": 384,
         "type": "city",
         "is_capital": true
       }
@@ -1302,10 +1299,38 @@
       {
         "id": "nis",
         "name_tr": "Niş",
-        "x": 897,
-        "y": 391,
+        "x": 912,
+        "y": 409,
         "type": "town",
         "is_capital": true
+      },
+      {
+        "id": "serbia_smederevo",
+        "name_tr": "Semendire",
+        "x": 895,
+        "y": 388,
+        "type": "fortress"
+      },
+      {
+        "id": "vidin_negotin",
+        "name_tr": "Negotin",
+        "x": 926,
+        "y": 395,
+        "type": "town"
+      },
+      {
+        "id": "nis",
+        "name_tr": "Pirot",
+        "x": 928,
+        "y": 418,
+        "type": "fortress"
+      },
+      {
+        "id": "serbia_kragujevac",
+        "name_tr": "Kragujevac",
+        "x": 891,
+        "y": 396,
+        "type": "town"
       }
     ]
   },
@@ -1313,41 +1338,26 @@
     "region_id": "wallachia",
     "settlements": [
       {
-        "id": "wallachia_braila",
-        "name_tr": "Braila",
-        "x": 1038,
-        "y": 379,
-        "type": "port"
+        "id": "wallachia_targoviste",
+        "name_tr": "Targovişte",
+        "x": 996,
+        "y": 380,
+        "type": "city",
+        "is_capital": true
       },
       {
         "id": "wallachia_bucharest",
         "name_tr": "Bükreş",
-        "x": 1018,
-        "y": 399,
+        "x": 1002,
+        "y": 392,
         "type": "town"
       },
       {
-        "id": "wallachia_giurgiu",
-        "name_tr": "Giurgiu",
-        "x": 1005,
-        "y": 403,
-        "type": "fortress"
-      },
-      {
-        "id": "wallachia_main",
-        "name_tr": "Eflak",
-        "x": 996,
-        "y": 388,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "wallachia_targoviste",
-        "name_tr": "Targovişte",
-        "x": 1002,
-        "y": 390,
-        "type": "city",
-        "is_capital": true
+        "id": "wallachia_braila",
+        "name_tr": "Braila",
+        "x": 1033,
+        "y": 377,
+        "type": "port"
       }
     ]
   },
@@ -1357,10 +1367,24 @@
       {
         "id": "craiova",
         "name_tr": "Krayova",
-        "x": 975,
-        "y": 393,
+        "x": 954,
+        "y": 392,
         "type": "town",
         "is_capital": true
+      },
+      {
+        "id": "wallachia_main",
+        "name_tr": "Piteşti",
+        "x": 973,
+        "y": 382,
+        "type": "city"
+      },
+      {
+        "id": "wallachia_giurgiu",
+        "name_tr": "Giurgiu",
+        "x": 994,
+        "y": 399,
+        "type": "fortress"
       }
     ]
   },
@@ -1368,39 +1392,11 @@
     "region_id": "bessarabia",
     "settlements": [
       {
-        "id": "bessarabia_bender",
-        "name_tr": "Bender",
-        "x": 1028,
-        "y": 335,
-        "type": "fortress"
-      },
-      {
-        "id": "bessarabia_chilia",
-        "name_tr": "Kili",
-        "x": 1029,
-        "y": 348,
-        "type": "port"
-      },
-      {
-        "id": "bessarabia_ismail",
-        "name_tr": "İsmail",
-        "x": 1036,
-        "y": 344,
-        "type": "port"
-      },
-      {
-        "id": "bessarabia_orhei",
-        "name_tr": "Orhei",
-        "x": 1018,
-        "y": 327,
-        "type": "town"
-      },
-      {
-        "id": "cetatea_alba",
-        "name_tr": "Akkerman",
-        "x": 1018,
-        "y": 339,
-        "type": "town",
+        "id": "bessarabia_settlement_2",
+        "name_tr": "Bacau",
+        "x": 1012,
+        "y": 343,
+        "type": "city",
         "is_capital": true
       }
     ]
@@ -1409,47 +1405,47 @@
     "region_id": "bulgaria",
     "settlements": [
       {
-        "id": "bulgaria_plovdiv",
-        "name_tr": "Filibe",
-        "x": 1003,
-        "y": 429,
-        "type": "city"
-      },
-      {
         "id": "bulgaria_ruse",
         "name_tr": "Rusçuk",
-        "x": 1009,
-        "y": 400,
+        "x": 999,
+        "y": 401,
         "type": "port"
       },
       {
         "id": "bulgaria_shumen",
         "name_tr": "Şumnu",
-        "x": 1028,
-        "y": 405,
+        "x": 1024,
+        "y": 413,
         "type": "fortress"
-      },
-      {
-        "id": "sofia",
-        "name_tr": "Sofya",
-        "x": 995,
-        "y": 417,
-        "type": "town"
-      },
-      {
-        "id": "tarnovo",
-        "name_tr": "Tırnova",
-        "x": 1015,
-        "y": 415,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "varna",
         "name_tr": "Varna",
-        "x": 1030,
-        "y": 413,
+        "x": 1035,
+        "y": 412,
         "type": "port"
+      },
+      {
+        "id": "tarnovo",
+        "name_tr": "Tırnova",
+        "x": 986,
+        "y": 414,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "dobruja_silistra",
+        "name_tr": "Silistre",
+        "x": 1017,
+        "y": 397,
+        "type": "fortress"
+      },
+      {
+        "id": "dobruja_main",
+        "name_tr": "Dobrica",
+        "x": 1035,
+        "y": 403,
+        "type": "city"
       }
     ]
   },
@@ -1713,44 +1709,37 @@
       {
         "id": "athens",
         "name_tr": "Atina",
-        "x": 956,
-        "y": 515,
+        "x": 953,
+        "y": 514,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "chalkis",
         "name_tr": "Halkis",
-        "x": 956,
-        "y": 508,
+        "x": 951,
+        "y": 504,
         "type": "port"
-      },
-      {
-        "id": "greece_livadia",
-        "name_tr": "Livadya",
-        "x": 958,
-        "y": 503,
-        "type": "fortress"
       },
       {
         "id": "greece_megara",
         "name_tr": "Megara",
-        "x": 952,
-        "y": 513,
+        "x": 945,
+        "y": 511,
         "type": "town"
       },
       {
         "id": "greece_piraeus",
         "name_tr": "Pire",
-        "x": 965,
-        "y": 520,
+        "x": 953,
+        "y": 517,
         "type": "port"
       },
       {
         "id": "thebes",
-        "name_tr": "Teb",
-        "x": 952,
-        "y": 492,
+        "name_tr": "Naksos",
+        "x": 975,
+        "y": 517,
         "type": "town"
       }
     ]
@@ -2492,46 +2481,46 @@
       {
         "id": "slovenia_celje",
         "name_tr": "Celje",
-        "x": 777,
-        "y": 357,
+        "x": 779,
+        "y": 356,
         "type": "town"
-      },
-      {
-        "id": "slovenia_koper",
-        "name_tr": "Koper",
-        "x": 764,
-        "y": 371,
-        "type": "port"
       },
       {
         "id": "slovenia_ljubljana",
         "name_tr": "Ljubljana",
-        "x": 770,
-        "y": 360,
+        "x": 767,
+        "y": 361,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "slovenia_main",
-        "name_tr": "Slovenya",
-        "x": 775,
-        "y": 362,
+        "name_tr": "Bled",
+        "x": 759,
+        "y": 355,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "slovenia_maribor",
         "name_tr": "Maribor",
-        "x": 780,
-        "y": 351,
+        "x": 789,
+        "y": 353,
         "type": "town"
       },
       {
         "id": "slovenia_ptuj",
         "name_tr": "Ptuj",
-        "x": 784,
-        "y": 355,
+        "x": 795,
+        "y": 354,
         "type": "fortress"
+      },
+      {
+        "id": "slovenia_koper",
+        "name_tr": "Koper",
+        "x": 750,
+        "y": 369,
+        "type": "port"
       }
     ]
   },
@@ -2539,46 +2528,39 @@
     "region_id": "croatia",
     "settlements": [
       {
-        "id": "croatia_karlovac",
-        "name_tr": "Karlovac",
-        "x": 816,
-        "y": 374,
-        "type": "fortress"
-      },
-      {
         "id": "croatia_krizevci",
         "name_tr": "Krizevci",
-        "x": 824,
-        "y": 357,
+        "x": 809,
+        "y": 360,
         "type": "town"
       },
       {
         "id": "croatia_main",
-        "name_tr": "Hırvatistan Krallığı",
-        "x": 820,
-        "y": 366,
+        "name_tr": "Osijek",
+        "x": 850,
+        "y": 368,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "croatia_sisak",
         "name_tr": "Sisak",
-        "x": 826,
-        "y": 370,
+        "x": 807,
+        "y": 372,
         "type": "fortress"
       },
       {
         "id": "croatia_varazdin",
         "name_tr": "Varazdin",
-        "x": 810,
-        "y": 353,
+        "x": 803,
+        "y": 354,
         "type": "town"
       },
       {
         "id": "croatia_zagreb",
         "name_tr": "Zagreb",
-        "x": 817,
-        "y": 360,
+        "x": 799,
+        "y": 364,
         "type": "city",
         "is_capital": true
       }
@@ -2590,38 +2572,23 @@
       {
         "id": "bosnia_jajce",
         "name_tr": "Yayçe",
-        "x": 829,
-        "y": 390,
+        "x": 819,
+        "y": 394,
         "type": "fortress"
       },
       {
         "id": "bosnia_main",
         "name_tr": "Bosna Banlığı",
-        "x": 823,
-        "y": 399,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "bosnia_mostar",
-        "name_tr": "Mostar",
-        "x": 837,
-        "y": 420,
-        "type": "town"
-      },
-      {
-        "id": "bosnia_sarajevo",
-        "name_tr": "Saraybosna",
-        "x": 844,
-        "y": 399,
+        "x": 820,
+        "y": 386,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "bosnia_srebrenik",
         "name_tr": "Srebrenik",
-        "x": 853,
-        "y": 384,
+        "x": 848,
+        "y": 383,
         "type": "fortress"
       }
     ]
@@ -2632,8 +2599,8 @@
       {
         "id": "montenegro_main",
         "name_tr": "Karadağ",
-        "x": 856,
-        "y": 423,
+        "x": 858,
+        "y": 431,
         "type": "city",
         "is_capital": true
       }
@@ -2645,10 +2612,17 @@
       {
         "id": "kosovo_main",
         "name_tr": "Kosova",
-        "x": 891,
-        "y": 429,
+        "x": 897,
+        "y": 422,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "prizren",
+        "name_tr": "Prizren",
+        "x": 891,
+        "y": 432,
+        "type": "town"
       }
     ]
   },
@@ -2659,59 +2633,29 @@
         "id": "albania_durres",
         "name_tr": "Draç",
         "x": 866,
-        "y": 452,
+        "y": 451,
         "type": "port"
       },
       {
         "id": "albania_kruje",
         "name_tr": "Kruya",
-        "x": 869,
-        "y": 445,
+        "x": 870,
+        "y": 446,
         "type": "fortress"
-      },
-      {
-        "id": "albania_main",
-        "name_tr": "Arnavutluk",
-        "x": 871,
-        "y": 448,
-        "type": "city",
-        "is_capital": true
       },
       {
         "id": "albania_shkoder",
         "name_tr": "İşkodra",
-        "x": 859,
-        "y": 438,
+        "x": 866,
+        "y": 436,
         "type": "city",
         "is_capital": true
-      },
-      {
-        "id": "albania_vlore",
-        "name_tr": "Avlonya",
-        "x": 861,
-        "y": 468,
-        "type": "port"
       }
     ]
   },
   {
     "region_id": "north_macedonia",
     "settlements": [
-      {
-        "id": "macedonia_bitola",
-        "name_tr": "Manastır",
-        "x": 897,
-        "y": 468,
-        "type": "town"
-      },
-      {
-        "id": "macedonia_main",
-        "name_tr": "Makedonya",
-        "x": 906,
-        "y": 452,
-        "type": "city",
-        "is_capital": true
-      },
       {
         "id": "macedonia_ohrid",
         "name_tr": "Ohri",
@@ -2722,17 +2666,31 @@
       {
         "id": "macedonia_skopje",
         "name_tr": "Üsküp",
-        "x": 902,
-        "y": 436,
+        "x": 903,
+        "y": 438,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "macedonia_strumica",
         "name_tr": "Ustrumca",
-        "x": 920,
+        "x": 925,
         "y": 450,
         "type": "fortress"
+      },
+      {
+        "id": "thessaloniki_serres",
+        "name_tr": "Yenice-i Vardar",
+        "x": 916,
+        "y": 445,
+        "type": "town"
+      },
+      {
+        "id": "macedonia_bitola",
+        "name_tr": "Manastır",
+        "x": 901,
+        "y": 455,
+        "type": "town"
       }
     ]
   },
@@ -2742,10 +2700,24 @@
       {
         "id": "moldova_main",
         "name_tr": "Moldova",
-        "x": 1051,
-        "y": 344,
+        "x": 1037,
+        "y": 327,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "bessarabia_bender",
+        "name_tr": "Bender",
+        "x": 1063,
+        "y": 346,
+        "type": "fortress"
+      },
+      {
+        "id": "bessarabia_orhei",
+        "name_tr": "Orhei",
+        "x": 1051,
+        "y": 333,
+        "type": "town"
       }
     ]
   },
@@ -2815,6 +2787,10 @@
   },
   {
     "region_id": "aegean_sea",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_253",
     "settlements": null
   },
   {
@@ -4015,6 +3991,13 @@
         "x": 399,
         "y": 485,
         "type": "city"
+      },
+      {
+        "id": "granada_settlement_7",
+        "name_tr": "Sevilla",
+        "x": 356,
+        "y": 522,
+        "type": "city"
       }
     ]
   },
@@ -4120,11 +4103,18 @@
     "settlements": [
       {
         "id": "transylvania_main",
-        "name_tr": "Erdel / Transilvanya",
-        "x": 952,
-        "y": 360,
+        "name_tr": "Tamışvar",
+        "x": 899,
+        "y": 364,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "alfold_main",
+        "name_tr": "Kaloşvar",
+        "x": 952,
+        "y": 344,
+        "type": "city"
       }
     ]
   },
@@ -4556,38 +4546,52 @@
       {
         "id": "vidin_belogradchik",
         "name_tr": "Belogradçik",
-        "x": 937,
-        "y": 405,
+        "x": 935,
+        "y": 412,
         "type": "fortress"
       },
       {
         "id": "vidin_kula",
         "name_tr": "Kula",
-        "x": 944,
-        "y": 411,
+        "x": 926,
+        "y": 407,
         "type": "town"
       },
       {
         "id": "vidin_lom",
         "name_tr": "Lom",
-        "x": 951,
-        "y": 403,
+        "x": 943,
+        "y": 402,
         "type": "port"
       },
       {
         "id": "vidin_main",
         "name_tr": "Vidin",
-        "x": 940,
-        "y": 410,
-        "type": "city",
-        "is_capital": true
+        "x": 932,
+        "y": 401,
+        "type": "city"
       },
       {
-        "id": "vidin_negotin",
-        "name_tr": "Negotin",
-        "x": 936,
-        "y": 395,
+        "id": "drama_serres",
+        "name_tr": "Nevrekop",
+        "x": 954,
+        "y": 442,
         "type": "town"
+      },
+      {
+        "id": "bulgaria_plovdiv",
+        "name_tr": "Filibe",
+        "x": 972,
+        "y": 430,
+        "type": "city"
+      },
+      {
+        "id": "sofia",
+        "name_tr": "Sofya",
+        "x": 946,
+        "y": 424,
+        "type": "town",
+        "is_capital": true
       }
     ]
   },
@@ -4757,45 +4761,30 @@
       {
         "id": "alfold_debrecen",
         "name_tr": "Debrecen",
-        "x": 912,
-        "y": 334,
+        "x": 910,
+        "y": 333,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "alfold_gyula",
         "name_tr": "Gyula",
-        "x": 920,
-        "y": 343,
+        "x": 900,
+        "y": 350,
         "type": "fortress"
-      },
-      {
-        "id": "alfold_kecskemet",
-        "name_tr": "Kecskemet",
-        "x": 895,
-        "y": 344,
-        "type": "town"
-      },
-      {
-        "id": "alfold_main",
-        "name_tr": "Macar Ovası",
-        "x": 904,
-        "y": 340,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "alfold_szekes",
-        "name_tr": "Cegled",
-        "x": 892,
-        "y": 341,
-        "type": "city"
       },
       {
         "id": "alfold_szolnok",
         "name_tr": "Szolnok",
-        "x": 908,
-        "y": 346,
+        "x": 886,
+        "y": 340,
+        "type": "town"
+      },
+      {
+        "id": "hungary_szeged",
+        "name_tr": "Szeged",
+        "x": 880,
+        "y": 357,
         "type": "town"
       }
     ]
@@ -4912,40 +4901,33 @@
     "region_id": "rascia",
     "settlements": [
       {
-        "id": "nis",
-        "name_tr": "Pirot",
-        "x": 890,
-        "y": 401,
-        "type": "fortress"
-      },
-      {
-        "id": "prizren",
-        "name_tr": "Prizren",
-        "x": 879,
-        "y": 398,
-        "type": "town"
-      },
-      {
         "id": "rascia_kraljevo",
         "name_tr": "Kraljevo",
         "x": 881,
-        "y": 410,
+        "y": 404,
         "type": "town"
       },
       {
         "id": "rascia_main",
         "name_tr": "Raska",
-        "x": 865,
-        "y": 409,
+        "x": 887,
+        "y": 411,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "rascia_novi_pazar",
         "name_tr": "Novi Pazar",
-        "x": 872,
-        "y": 406,
+        "x": 880,
+        "y": 416,
         "type": "fortress"
+      },
+      {
+        "id": "serbia_uzice",
+        "name_tr": "Ujitse",
+        "x": 868,
+        "y": 401,
+        "type": "town"
       }
     ]
   },
@@ -4955,46 +4937,53 @@
       {
         "id": "dalmatia_knin",
         "name_tr": "Knin",
-        "x": 787,
-        "y": 399,
+        "x": 801,
+        "y": 401,
         "type": "fortress"
       },
       {
         "id": "dalmatia_main",
         "name_tr": "Dalmasya",
-        "x": 792,
-        "y": 396,
+        "x": 819,
+        "y": 414,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "dalmatia_sibenik",
         "name_tr": "Şibenik",
-        "x": 788,
-        "y": 392,
+        "x": 789,
+        "y": 371,
         "type": "port"
       },
       {
         "id": "dalmatia_split",
         "name_tr": "Split",
-        "x": 795,
-        "y": 402,
+        "x": 804,
+        "y": 407,
         "type": "port"
       },
       {
         "id": "dalmatia_trogir",
         "name_tr": "Trogir",
         "x": 797,
-        "y": 399,
+        "y": 397,
         "type": "town"
       },
       {
         "id": "dalmatia_zadar",
         "name_tr": "Zadar",
-        "x": 786,
-        "y": 389,
+        "x": 782,
+        "y": 398,
         "type": "port",
         "is_capital": true
+      },
+      {
+        "id": "croatia_karlovac",
+        "name_tr": "Karlovac",
+        "x": 788,
+        "y": 380,
+        "type": "fortress"
       }
     ]
   },
@@ -5004,10 +4993,24 @@
       {
         "id": "hum_main",
         "name_tr": "Hum",
-        "x": 842,
-        "y": 422,
+        "x": 838,
+        "y": 423,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "bosnia_sarajevo",
+        "name_tr": "Saraybosna",
+        "x": 843,
+        "y": 402,
+        "type": "city"
+      },
+      {
+        "id": "bosnia_mostar",
+        "name_tr": "Mostar",
+        "x": 832,
+        "y": 412,
+        "type": "town"
       }
     ]
   },
@@ -5015,41 +5018,26 @@
     "region_id": "epirus",
     "settlements": [
       {
-        "id": "epirus_arta",
-        "name_tr": "Arta",
-        "x": 884,
-        "y": 486,
-        "type": "town"
-      },
-      {
         "id": "epirus_gjirokaster",
         "name_tr": "Argirokastra",
         "x": 875,
-        "y": 462,
-        "type": "fortress"
+        "y": 472,
+        "type": "fortress",
+        "is_capital": true
       },
       {
-        "id": "epirus_ioannina",
-        "name_tr": "Yanya",
-        "x": 878,
-        "y": 474,
-        "type": "city",
-        "is_capital": true
+        "id": "albania_vlore",
+        "name_tr": "Avlonya",
+        "x": 865,
+        "y": 469,
+        "type": "port"
       },
       {
         "id": "epirus_main",
         "name_tr": "Epir Despotluğu",
-        "x": 879,
-        "y": 477,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "epirus_parga",
-        "name_tr": "Parga",
-        "x": 872,
-        "y": 482,
-        "type": "port"
+        "x": 877,
+        "y": 458,
+        "type": "city"
       }
     ]
   },
@@ -5059,39 +5047,66 @@
       {
         "id": "thessaly_demetrias",
         "name_tr": "Demetrias",
-        "x": 922,
+        "x": 935,
         "y": 486,
         "type": "fortress"
       },
       {
         "id": "thessaly_larisa",
         "name_tr": "Larisa",
-        "x": 914,
-        "y": 490,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "thessaly_main",
-        "name_tr": "Tesalya",
-        "x": 934,
-        "y": 462,
+        "x": 927,
+        "y": 482,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "thessaly_trikala",
         "name_tr": "Tırhala",
-        "x": 904,
-        "y": 492,
+        "x": 911,
+        "y": 484,
         "type": "town"
       },
       {
         "id": "thessaly_volos",
         "name_tr": "Volos",
-        "x": 926,
-        "y": 492,
+        "x": 930,
+        "y": 490,
         "type": "port"
+      },
+      {
+        "id": "epirus_arta",
+        "name_tr": "Arta",
+        "x": 893,
+        "y": 493,
+        "type": "town"
+      },
+      {
+        "id": "epirus_parga",
+        "name_tr": "Parga",
+        "x": 886,
+        "y": 490,
+        "type": "port"
+      },
+      {
+        "id": "thessaly_settlement_8",
+        "name_tr": "Tesalya 8",
+        "x": 917,
+        "y": 498,
+        "type": "city"
+      },
+      {
+        "id": "epirus_ioannina",
+        "name_tr": "Yanya",
+        "x": 889,
+        "y": 480,
+        "type": "city"
+      },
+      {
+        "id": "greece_livadia",
+        "name_tr": "Livadya",
+        "x": 933,
+        "y": 505,
+        "type": "fortress"
       }
     ]
   },
@@ -5105,35 +5120,6 @@
         "y": 460,
         "type": "town",
         "is_capital": true
-      },
-      {
-        "id": "thessaloniki_city",
-        "name_tr": "Selanik",
-        "x": 923,
-        "y": 456,
-        "type": "city",
-        "is_capital": true
-      },
-      {
-        "id": "thessaloniki_drama",
-        "name_tr": "Drama",
-        "x": 940,
-        "y": 440,
-        "type": "town"
-      },
-      {
-        "id": "thessaloniki_kavala",
-        "name_tr": "Kavala",
-        "x": 947,
-        "y": 447,
-        "type": "port"
-      },
-      {
-        "id": "thessaloniki_serres",
-        "name_tr": "Yenice-i Vardar",
-        "x": 929,
-        "y": 452,
-        "type": "town"
       }
     ]
   },
@@ -5141,25 +5127,18 @@
     "region_id": "morea",
     "settlements": [
       {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 913,
-        "y": 517,
-        "type": "fortress"
-      },
-      {
         "id": "morea_main",
         "name_tr": "Mora Prensliği",
-        "x": 919,
-        "y": 521,
+        "x": 921,
+        "y": 518,
         "type": "city",
         "is_capital": true
       },
       {
         "id": "morea_mistra",
         "name_tr": "Mistra",
-        "x": 896,
-        "y": 528,
+        "x": 920,
+        "y": 531,
         "type": "city",
         "is_capital": true
       },
@@ -5173,9 +5152,16 @@
       {
         "id": "morea_patras",
         "name_tr": "Patras",
-        "x": 890,
-        "y": 511,
+        "x": 909,
+        "y": 510,
         "type": "port"
+      },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 935,
+        "y": 513,
+        "type": "fortress"
       }
     ]
   },
@@ -5185,38 +5171,23 @@
       {
         "id": "dobruja_constanta",
         "name_tr": "Köstence",
-        "x": 1044,
-        "y": 385,
+        "x": 1048,
+        "y": 395,
         "type": "port",
-        "is_capital": true
-      },
-      {
-        "id": "dobruja_main",
-        "name_tr": "Dobrica",
-        "x": 1052,
-        "y": 383,
-        "type": "city",
         "is_capital": true
       },
       {
         "id": "dobruja_mangalia",
         "name_tr": "Mangalia",
-        "x": 1046,
-        "y": 394,
+        "x": 1047,
+        "y": 402,
         "type": "port"
-      },
-      {
-        "id": "dobruja_silistra",
-        "name_tr": "Silistre",
-        "x": 1024,
-        "y": 396,
-        "type": "fortress"
       },
       {
         "id": "dobruja_tulcea",
         "name_tr": "Tulça",
-        "x": 1040,
-        "y": 373,
+        "x": 1046,
+        "y": 377,
         "type": "town"
       }
     ]
@@ -5375,6 +5346,27 @@
         "x": 1132,
         "y": 345,
         "type": "town"
+      },
+      {
+        "id": "bessarabia_ismail",
+        "name_tr": "İsmail",
+        "x": 1050,
+        "y": 371,
+        "type": "port"
+      },
+      {
+        "id": "cetatea_alba",
+        "name_tr": "Akkerman",
+        "x": 1080,
+        "y": 358,
+        "type": "town"
+      },
+      {
+        "id": "bessarabia_chilia",
+        "name_tr": "Kili",
+        "x": 1059,
+        "y": 371,
+        "type": "port"
       }
     ]
   },
@@ -5858,6 +5850,41 @@
         "y": 467,
         "type": "city",
         "is_capital": true
+      },
+      {
+        "id": "thessaloniki_city",
+        "name_tr": "Selanik",
+        "x": 937,
+        "y": 468,
+        "type": "city"
+      },
+      {
+        "id": "thessaloniki_kavala",
+        "name_tr": "Kavala",
+        "x": 961,
+        "y": 463,
+        "type": "port"
+      },
+      {
+        "id": "thessaloniki_drama",
+        "name_tr": "Drama",
+        "x": 943,
+        "y": 452,
+        "type": "town"
+      },
+      {
+        "id": "serres",
+        "name_tr": "Serez",
+        "x": 956,
+        "y": 453,
+        "type": "town"
+      },
+      {
+        "id": "zichna_serres",
+        "name_tr": "Zihne",
+        "x": 960,
+        "y": 454,
+        "type": "town"
       }
     ]
   },
@@ -5865,26 +5892,12 @@
     "region_id": "serres",
     "settlements": [
       {
-        "id": "drama_serres",
-        "name_tr": "Nevrekop",
-        "x": 972,
-        "y": 438,
-        "type": "town"
-      },
-      {
-        "id": "serres",
-        "name_tr": "Serez",
-        "x": 988,
-        "y": 455,
-        "type": "town",
+        "id": "serres_settlement_1",
+        "name_tr": "Gümülcine",
+        "x": 991,
+        "y": 456,
+        "type": "city",
         "is_capital": true
-      },
-      {
-        "id": "zichna_serres",
-        "name_tr": "Zihne",
-        "x": 978,
-        "y": 447,
-        "type": "town"
       }
     ]
   },
