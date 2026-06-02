@@ -5,10 +5,28 @@ import (
 
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+func buildVictoryCardButtons(gs *state.GameState) []gameui.Button {
+	opts := gs.AvailableVictories
+	cardW, cardH := 520.0, 100.0
+	gap := 12.0
+	n := float64(len(opts))
+	totalH := n*cardH + (n-1)*gap
+	headerH := 80.0
+	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
+	cx := ScreenWidth/2 - cardW/2
+	buttons := make([]gameui.Button, 0, len(opts))
+	for i, opt := range opts {
+		y := startY + float64(i)*(cardH+gap)
+		buttons = append(buttons, gameui.NewButton(cx, y, cardW, cardH, opt.Title))
+	}
+	return buttons
+}
 
 // DrawVictorySelect zafer koşulu seçim ekranını çizer.
 // Seçenekler gs.AvailableVictories'ten okunur — hardcode değil.
@@ -64,7 +82,7 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.
-func (r *Renderer) handleVictorySelectInput() InputAction {
+func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction {
 	opts := r.gs.AvailableVictories
 	n := len(opts)
 	if n == 0 {
@@ -73,10 +91,13 @@ func (r *Renderer) handleVictorySelectInput() InputAction {
 		}
 		return InputAction{}
 	}
+	buttons := buildVictoryCardButtons(r.gs)
 
-	mx, my := ebiten.CursorPosition()
-	if i := r.victoryCardHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.factionCursor = i
+	for i, btn := range buttons {
+		if btn.HitTest(input.MouseX, input.MouseY) {
+			r.factionCursor = i
+			break
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
@@ -88,13 +109,15 @@ func (r *Renderer) handleVictorySelectInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEnter) {
 		return InputAction{Kind: ActionSelectVictory, BuildingID: opts[r.factionCursor].ID}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+	if input.LeftJustPressed {
+		if buildBackButton().HandleInput(input) {
 			r.factionCursor = 0
 			return InputAction{Kind: ActionBack}
 		}
-		if i := r.victoryCardHoverIndex(float64(mx), float64(my)); i >= 0 {
-			return InputAction{Kind: ActionSelectVictory, BuildingID: opts[i].ID}
+		for i, btn := range buttons {
+			if btn.HandleInput(input) {
+				return InputAction{Kind: ActionSelectVictory, BuildingID: opts[i].ID}
+			}
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {

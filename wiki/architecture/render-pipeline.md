@@ -1,8 +1,8 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-06-01
-related: [game-loop, state-management, shape-editor, systems/combat]
+last_updated: 2026-06-03
+related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
@@ -62,11 +62,11 @@ type Renderer struct {
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
-| 10 | Savaş ilan ve genel onay diyalogları; genel onay mesajı açılışta satırlara bölünür, buton hitbox'ları aynı sabitlerden hesaplanır | `renderer.go`, `cursor.go` |
-| 11 | Tarihsel olay popup | `renderer.go` |
+| 10 | Savaş ilan, genel onay ve event detail diyalogları; ortak modal/panel/button geometrisi kullanırlar | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
+| 11 | Tarihsel olay popup; ortak modal panel yüzeyi üstüne dramatik katman çizer | `panel.go`, `ui_modals.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
-Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) harita üstünde modal anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
+Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir.
 
@@ -74,9 +74,39 @@ Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine
 
 ## UI Components
 
+### Shared UI Layer
+
+**Kaynak:** `internal/ui/*.go`, `internal/render/ui_buttons.go`, `internal/render/ui_bridge.go`, `internal/render/ui_modals.go`
+
+Tam widget ağacı henüz tüm render katmanına uygulanmış değil; ancak ana ekranlar ve yüksek riskli etkileşim yüzeyleri artık ortak UI geometrisi üstünden çalışır. Pratikte bu şu anlama gelir:
+
+- input frame başına bir kez `gameui.InputState` olarak toplanır,
+- tıklanabilir yüzeyler `gameui.Button` ve `gameui.Rect` builder'larıyla tek yerde tanımlanır,
+- draw, cursor ve click hit-test aynı yüzeyi paylaşır,
+- panel açıkken arka harita etkileşimi ilgili overlay hit-test'i ile tüketilir.
+- ortak button/dropdown/modal/shape yardım paneli stilleri `internal/render/ui_theme.go` altında tutulur.
+- `internal/ui.Manager`, focus edilebilir widget'lar için ileri/geri tab-order davranışını test edilebilir şekilde merkezileştirir.
+
+Bu hat şu ekranlarda aktif kullanımdadır:
+
+- trade
+- diplomasi
+- teknoloji
+- pause ve save/load
+- ana menü, senaryo, fraksiyon ve zafer seçim ekranları
+- HUD üzerindeki küçük aksiyon düğmeleri
+- recruit panel close / kart / kuyruk iptal yüzeyleri
+- ordu split/merge overlay yüzeyleri
+- edit mode inspector/form tab ve aksiyon yüzeyleri
+- confirm / war confirm / event detail / historical event modal yüzeyleri
+- oyuncuya gelen diplomasi teklif modal yüzeyi
+- edit mode shape yardım paneli ve stroke preview overlay primitive'i
+
+Ortak modal builder'ları sıcak çizim hattında gereksiz `Children` slice allocation'ı yapmaz; çocuk widget gerekiyorsa modal örneğine açıkça eklenir.
+
 ### Dropdown Component
 
-**Kaynak:** `internal/render/renderer.go:Dropdown`
+**Kaynak:** `internal/ui/dropdown.go`
 
 Edit mode'da kullanılan yeniden kullanılabilir dropdown component. Sahip, arazi, yerleşim tipi ve veri editöründeki birim tipi seçimlerinde kullanılır.
 
@@ -156,7 +186,7 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve d
 9. Ordu ikonuna tıklama — `armyIconPositions()` üzerinden offset'li 14px yarıçap
 10. Bölge seçimi (WorldMap pixel lookup)
 
-Edit mode'da oyun HUD/panelleri çizilmez; harita, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; Ctrl + Alt + sol tık tıklanan bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme seçili bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. `+10/-10 Tur`, `unlock_turn` alanını değiştirir; `is_locked=true` ve `unlock_turn>0` ise bölge aktif tur o değere ulaştığında otomatik açılır. Deniz region'larında settlement işlemleri kapalı kalır ama bölge odaklı seçim, merkez taşıma, komşu sync, ekleme/silme ve owner/terrain düzenleme aynıdır; inspector bu seçimlerde açıkça `Deniz Bolgesi`, `Deniz bolgesinde yerlesim yok.` ve pasif `Denizde Yok` etiketi gösterir. Settlement odaklı pasif butonlar da bağlama göre `Tip Yok`, `Isim Yok`, `Silinmez` ya da settlement seçimi bekleniyorsa `Tip Sec`, `Isim Sec`, `Sil Sec` etiketine döner. `Shape` sekmesi seçili kara region'ın `shape_id` kaydını düzenler; sağ mouse drag ile paint/erase brush mask'e uygulanır, stroke sırasında ekleme/silme pikselleri canlı preview overlay ile gösterilir, mouse bırakılınca contour ring'leri yeniden üretilir, `GameState.ShapeData` ve ilgili `Region.Shape` alanları güncellenir, ardından harita cache'i yeniden kurulur. Sağ üst yardım paneli aktif `shape_id`, brush boyutu ve kontrol özetini gösterir. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim tip-sayılarını düzenler. Donanma ekleme liman tipli yerleşimin kara region'ından komşu deniz region'ına `is_naval: true` ordu yerleştirir. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. `Kaydet` / `Ctrl+S` artık `regions.json`, `country_shapes.json`, `factions.json`, `relations.json` ve `armies.json` dosyalarını birlikte yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+Edit mode'da oyun HUD/panelleri çizilmez; harita, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; Ctrl + Alt + sol tık tıklanan bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme seçili bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. `+10/-10 Tur`, `unlock_turn` alanını değiştirir; `is_locked=true` ve `unlock_turn>0` ise bölge aktif tur o değere ulaştığında otomatik açılır. Deniz region'larında settlement işlemleri kapalı kalır ama bölge odaklı seçim, merkez taşıma, komşu sync, ekleme/silme ve owner/terrain düzenleme aynıdır; inspector bu seçimlerde açıkça `Deniz Bolgesi`, `Deniz bolgesinde yerlesim yok.` ve pasif `Denizde Yok` etiketi gösterir. Settlement odaklı pasif butonlar da bağlama göre `Tip Yok`, `Isim Yok`, `Silinmez` ya da settlement seçimi bekleniyorsa `Tip Sec`, `Isim Sec`, `Sil Sec` etiketine döner. `Shape` sekmesi seçili kara region'ın `shape_id` kaydını düzenler; sağ mouse drag ile paint/erase brush mask'e uygulanır, stroke sırasında ekleme/silme pikselleri canlı preview overlay ile gösterilir, mouse bırakılınca contour ring'leri yeniden üretilir, `GameState.ShapeData` ve ilgili `Region.Shape` alanları güncellenir, ardından harita cache'i yeniden kurulur. Sağ üst yardım paneli ortak `Panel + Label` primitive'leriyle çizilir; canlı brush preview katmanı ise halen render-spesifik overlay olarak kalır. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim tip-sayılarını düzenler. Donanma ekleme liman tipli yerleşimin kara region'ından komşu deniz region'ına `is_naval: true` ordu yerleştirir. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. `Kaydet` / `Ctrl+S` artık `regions.json`, `country_shapes.json`, `factions.json`, `relations.json` ve `armies.json` dosyalarını birlikte yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
 
 Voronoi debug overlay `V` ile açılıp kapanır. Overlay `WorldMap.BoundaryPixels` ile seçili veya hover bölgenin gerçek raster sınırını camgöbeği piksellerle çizer. `WorldMap.VisualNeighbors` üzerinden raster sınır komşularını çıkarır ve JSON `neighbors` listesiyle karşılaştırır: yeşil çizgi görsel+JSON komşu, kırmızı çizgi sadece görsel komşu, gri çizgi sadece JSON komşudur. Sağ üst panel hover pixel'in `RegionAt` sonucunu, senaryo koordinatını ve seçili bölgenin visual/json komşu sayısını gösterir. `Komsu Sync`, seçili region'ın görsel komşularını JSON `neighbors` listesine yazar; eklenen/çıkarılan her komşuda karşı region listesi de iki yönlü güncellenir.
 

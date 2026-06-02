@@ -1,7 +1,7 @@
 ---
 type: index
 tags: [home, navigation]
-last_updated: 2026-06-02
+last_updated: 2026-06-03
 ---
 
 # Mapp Game Go — Wiki
@@ -21,6 +21,7 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 | [[architecture/render-pipeline]] | Render katmanları, kamera sistemi, input yönetimi |
 | [[architecture/shape-editor]] | Edit mode shape paint akışı, `country_shapes.json` düzenleme |
 | [[architecture/ui-framework]] | Ortak UI component mimarisi ve tüm ekran migrasyon planı |
+| [[architecture/ui-screen-guide]] | Yeni ekran/panel geliştirirken ortak UI hattını kullanma rehberi |
 
 ## Oyun Sistemleri
 

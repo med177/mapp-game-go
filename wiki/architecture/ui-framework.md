@@ -1,8 +1,8 @@
 ---
 type: architecture
 tags: [ui, render, input, widgets]
-last_updated: 2026-06-02
-related: [architecture/render-pipeline, architecture/game-loop, architecture/state-management, dev/progress]
+last_updated: 2026-06-03
+related: [architecture/render-pipeline, architecture/game-loop, architecture/state-management, architecture/ui-screen-guide, dev/progress]
 ---
 
 # UI Framework Migration Plan
@@ -13,6 +13,13 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 - kod tekrarını düşürmek,
 - yeni ekran geliştirme hızını artırmak,
 - bakım maliyetini düşürmek.
+
+## Mevcut Durum
+1. `internal/ui` içinde çekirdek sözleşmeler (`Widget`, `InputState`, `Manager`) ve test edilebilir focus sırası eklendi.
+2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`) oluşturuldu.
+3. `render` katmanında back/menu/mini/tiny buton çizimleri, edit mode dropdown'ları, trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları ortak bileşen yüzeylerine bağlandı.
+4. HUD, recruit paneli, ordu split/merge overlay'i, edit mode inspector/form etkileşim yüzeyleri ve modal aileleri ortak button/panel/overlay geometry builder'larına taşındı.
+5. Ortak button, dropdown, modal ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
 
 ## Hedef Mimari
 1. `internal/ui` altında ortak UI framework
@@ -101,6 +108,7 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - `Anchor`
 6. Tema:
    - font/renk/spacing tokenları tek noktada
+   - render tarafındaki ortak stiller `internal/render/ui_theme.go` içinde tutulur
 
 ## Aşama 3: Pilot Migrasyon (Trade) (2-3 gün)
 1. Trade panelini tamamen yeni UI katmanına taşı
@@ -141,6 +149,7 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - 1920x1080
 3. Performans kontrolü:
    - Draw/Update içinde gereksiz allocation yok
+   - ortak modal builder'ları sıcak path'te children slice ayırmaz
 4. CI kalite kapısı:
    - `go test ./...`
    - UI paket testleri
@@ -182,3 +191,33 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 - Manuel dağınık hit-test kodu minimuma indirilmiş
 - Kritik ekranlarda overlap/click-through bugları kapanmış
 - CI testleri ve görsel smoke kontrolleri geçiyor
+
+## Güncel Durum
+1. Planın ekran migrasyonu kısmı tamamlandı:
+   - Trade
+   - Diplomasi
+   - Teknoloji
+   - Pause
+   - Save/Load
+   - MainMenu
+   - ScenarioSelect
+   - FactionSelect
+   - VictorySelect
+2. HUD içindeki küçük interaktif yüzeyler ortak builder'lara taşındı:
+   - alt aksiyon HUD
+   - harita modu düğmeleri
+   - pazar toggle
+   - tarih HUD menü düğmesi
+   - müzik kontrol düğmeleri
+   - event log toggle/kapatma
+   - bölge paneli close/tax/hızlı diplomasi mini butonları
+3. Genişletilmiş migrasyonla ortak geometri kullanan ek alanlar:
+   - recruit panel close / kart / kuyruk iptal hit-test ailesi
+   - ordu split/merge overlay aksiyonları
+   - edit mode inspector/form tab, aksiyon ve form hit-test ailesi
+   - genel onay, savaş ilan onayı, event detail ve historical event modal yüzeyleri
+   - oyuncuya gelen diplomasi teklif diyaloğu
+   - edit mode shape yardım overlay paneli
+   - shape paint stroke preview overlay primitive'i
+4. Halen tam widget ağacına taşınmamış ama ortak geometriyle çalışan alanlar:
+   - shape paint canlı preview ve brush overlay katmanı

@@ -12,6 +12,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -147,10 +148,10 @@ type Renderer struct {
 	editInspectorTab           editInspectorTab
 	editDirty                  bool
 	editVoronoiDebug           bool
-	editOwnerDropdown          *Dropdown
-	editTerrainDropdown        *Dropdown
-	editSettlementTypeDropdown *Dropdown
-	editUnitTypeDropdown       *Dropdown
+	editOwnerDropdown          *gameui.Dropdown
+	editTerrainDropdown        *gameui.Dropdown
+	editSettlementTypeDropdown *gameui.Dropdown
+	editUnitTypeDropdown       *gameui.Dropdown
 	editSelectedUnitType       string
 	armyNeighborBuf            []world.RegionID
 	editVisualNeighborBuf      []world.RegionID
@@ -290,134 +291,6 @@ type warConfirmState struct {
 	pendingDest world.RegionID
 }
 
-// Dropdown component for reusable dropdown UI
-type Dropdown struct {
-	open       bool
-	scroll     int
-	options    []string
-	selected   string
-	x, y, w, h float32
-	title      string
-}
-
-// NewDropdown creates a new dropdown with given position and size
-func NewDropdown(x, y, w, h float32, title string) *Dropdown {
-	return &Dropdown{
-		x: x, y: y, w: w, h: h,
-		title: title,
-	}
-}
-
-// SetPosition sets the dropdown position
-func (d *Dropdown) SetPosition(x, y float32) {
-	d.x, d.y = x, y
-}
-
-// SetOptions sets the dropdown options and resets selection
-func (d *Dropdown) SetOptions(options []string, selected string) {
-	d.options = make([]string, len(options))
-	copy(d.options, options)
-	d.selected = selected
-	d.scroll = 0
-}
-
-// Toggle opens/closes the dropdown
-func (d *Dropdown) Toggle() {
-	d.open = !d.open
-	if d.open {
-		d.scroll = 0
-	}
-}
-
-// Close closes the dropdown
-func (d *Dropdown) Close() {
-	d.open = false
-	d.scroll = 0
-}
-
-// IsOpen returns whether dropdown is open
-func (d *Dropdown) IsOpen() bool {
-	return d.open
-}
-
-// HitTest checks if point is inside dropdown
-func (d *Dropdown) HitTest(mx, my float64) bool {
-	return mx >= float64(d.x) && mx <= float64(d.x+d.w) && my >= float64(d.y) && my <= float64(d.y+d.h)
-}
-
-// Scroll adjusts scroll position
-func (d *Dropdown) Scroll(dy float64) {
-	if dy > 0 {
-		d.scroll--
-	} else if dy < 0 {
-		d.scroll++
-	}
-	maxScroll := len(d.options) - editOwnerDropdownVisibleRows
-	if maxScroll < 0 {
-		maxScroll = 0
-	}
-	if d.scroll < 0 {
-		d.scroll = 0
-	}
-	if d.scroll > maxScroll {
-		d.scroll = maxScroll
-	}
-}
-
-// GetSelectedOption returns the selected option index and whether valid
-func (d *Dropdown) GetSelectedOption(mx, my float64) (int, bool) {
-	if mx < float64(d.x+8) || mx > float64(d.x+d.w-8) {
-		return 0, false
-	}
-	startY := float64(d.y + editOwnerDropdownHeaderH)
-	if my < startY {
-		return 0, false
-	}
-	row := int((my - startY) / float64(editOwnerDropdownRowH))
-	if row < 0 || row >= editOwnerDropdownVisibleRows {
-		return 0, false
-	}
-	idx := d.scroll + row
-	if idx < 0 || idx >= len(d.options) {
-		return 0, false
-	}
-	return idx, true
-}
-
-// Draw renders the dropdown
-func (d *Dropdown) Draw(screen *ebiten.Image) {
-	if !d.open {
-		return
-	}
-	drawRoundedRect(screen, d.x, d.y, d.w, d.h, 6, color.RGBA{16, 20, 24, 242})
-	drawPanelBorder(screen, d.x, d.y, d.w, d.h)
-	DrawText(screen, d.title, float64(d.x)+10, float64(d.y)+8, FaceSmall, ColorGold)
-
-	rowX := float64(d.x) + 8
-	rowY := float64(d.y) + float64(editOwnerDropdownHeaderH)
-	rowW := float64(d.w) - 16
-	for i := 0; i < editOwnerDropdownVisibleRows; i++ {
-		optionIndex := d.scroll + i
-		if optionIndex >= len(d.options) {
-			break
-		}
-		option := d.options[optionIndex]
-		oy := rowY + float64(i)*float64(editOwnerDropdownRowH)
-		bg := color.RGBA{28, 24, 18, 220}
-		txt := ColorWhite
-		if option == d.selected {
-			bg = color.RGBA{86, 64, 24, 238}
-			txt = ColorGold
-		}
-		vector.FillRect(screen, float32(rowX), float32(oy), float32(rowW), editOwnerDropdownRowH-2, bg, false)
-		DrawText(screen, option, rowX+8, oy+5, FaceSmall, txt)
-	}
-	if len(d.options) > editOwnerDropdownVisibleRows {
-		DrawText(screen, itoa(d.scroll+1)+"-"+itoa(editMinInt(d.scroll+editOwnerDropdownVisibleRows, len(d.options)))+"/"+itoa(len(d.options)),
-			float64(d.x)+float64(d.w)-68, float64(d.y)+8, FaceSmall, ColorGray)
-	}
-}
-
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
 func New(gs *state.GameState) *Renderer {
 	x, y, w, _ := editInspectorRect()
@@ -440,10 +313,10 @@ func New(gs *state.GameState) *Renderer {
 		editUndoStack:              make([]editCommand, 0, 64),
 		editRedoStack:              make([]editCommand, 0, 64),
 		editRegionPaintOverrides:   make(map[int]world.RegionID),
-		editOwnerDropdown:          NewDropdown(dropX, dropY, dropW, dropH, "Sahip Sec"),
-		editTerrainDropdown:        NewDropdown(dropX, dropY, dropW, dropH, "Arazi Tipi"),
-		editSettlementTypeDropdown: NewDropdown(dropX, dropY, dropW, dropH, "Yerlesim Tipi"),
-		editUnitTypeDropdown:       NewDropdown(dropX, dropY, dropW, dropH, "Birim Tipi"),
+		editOwnerDropdown:          gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editTerrainDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editSettlementTypeDropdown: gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editUnitTypeDropdown:       gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		tradeCorridors:             make([]tradeCorridorInfo, 0, 96),
 		tradeHoverIdx:              -1,
 		tradeCenters:               make([]tradeCenterVisual, 0, 12),
@@ -2317,10 +2190,10 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	}
 
 	r.drawEditInspectorButtons(screen, region)
-	r.editOwnerDropdown.Draw(screen)
-	r.editTerrainDropdown.Draw(screen)
-	r.editSettlementTypeDropdown.Draw(screen)
-	r.editUnitTypeDropdown.Draw(screen)
+	drawUIDropdown(screen, r.editOwnerDropdown)
+	drawUIDropdown(screen, r.editTerrainDropdown)
+	drawUIDropdown(screen, r.editSettlementTypeDropdown)
+	drawUIDropdown(screen, r.editUnitTypeDropdown)
 }
 
 func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
@@ -2423,7 +2296,7 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 	drawEditInspectorButton(screen, editButtonArmyUnitPlus, "Birim +", r.canAddSelectedArmyUnit())
 	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
-	r.editUnitTypeDropdown.Draw(screen)
+	drawUIDropdown(screen, r.editUnitTypeDropdown)
 }
 
 func (r *Renderer) drawEditArmyUnitCounts(screen *ebiten.Image, a *army.Army, x, y float64) {
@@ -2533,6 +2406,10 @@ func drawEditFactionFormButton(screen *ebiten.Image, kind editFactionFormButton,
 	drawTinyPanelButton(screen, x, y, w, h, label, true)
 }
 
+func editRectButton(r uiRect, label string) gameui.Button {
+	return gameui.NewButton(r[0], r[1], r[2], r[3], label)
+}
+
 func (r *Renderer) drawFactionFormField(screen *ebiten.Image, field editFactionFormField, label, value string) {
 	rect := editFactionFieldRect(field)
 	col := color.RGBA{28, 32, 38, 235}
@@ -2556,7 +2433,7 @@ func editFactionFormRect() (float32, float32, float32, float32) {
 
 func editFactionFormHit(mx, my float64) bool {
 	x, y, w, h := editFactionFormRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return (gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}).Hit(mx, my)
 }
 
 func editFactionFieldRect(field editFactionFormField) uiRect {
@@ -2590,6 +2467,10 @@ func editFactionFieldRect(field editFactionFormField) uiRect {
 	default:
 		return uiRect{}
 	}
+}
+
+func buildEditFactionFieldButton(field editFactionFormField, label string) gameui.Button {
+	return editRectButton(editFactionFieldRect(field), label)
 }
 
 type editFactionFormButton int
@@ -2648,6 +2529,10 @@ func editFactionFormButtonRect(kind editFactionFormButton) uiRect {
 	}
 }
 
+func buildEditFactionFormButton(kind editFactionFormButton, label string) gameui.Button {
+	return editRectButton(editFactionFormButtonRect(kind), label)
+}
+
 func editFactionFormColorPreviewRect() uiRect {
 	x, y, _, _ := editFactionFormRect()
 	return uiRect{float64(x) + 338, float64(y) + 352, 284, 22}
@@ -2703,7 +2588,7 @@ func editInspectorRect() (float32, float32, float32, float32) {
 
 func editInspectorHit(mx, my float64) bool {
 	x, y, w, h := editInspectorRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return (gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}).Hit(mx, my)
 }
 
 func editInspectorButtonRect(kind editInspectorButton) uiRect {
@@ -2796,6 +2681,14 @@ func editInspectorTabRect(tab editInspectorTab) uiRect {
 	return uiRect{left, float64(y) + 9, tw, th}
 }
 
+func buildEditInspectorTabButton(tab editInspectorTab, label string) gameui.Button {
+	return editRectButton(editInspectorTabRect(tab), label)
+}
+
+func buildEditInspectorActionButton(kind editInspectorButton, label string) gameui.Button {
+	return editRectButton(editInspectorButtonRect(kind), label)
+}
+
 func editInspectorButtonAt(mx, my float64) editInspectorButton {
 	if kind := editMapInspectorButtonAt(mx, my); kind != editButtonNone {
 		return kind
@@ -2805,7 +2698,7 @@ func editInspectorButtonAt(mx, my float64) editInspectorButton {
 
 func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 	for kind := editButtonAddSettlement; kind <= editButtonSaveScenario; kind++ {
-		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
 	}
@@ -2814,11 +2707,11 @@ func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 
 func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
 	for kind := editButtonShapePaint; kind <= editButtonShapeBrushPlus; kind++ {
-		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
 	}
-	if uiRectHit(mx, my, editInspectorButtonRect(editButtonSaveScenario)) {
+	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
 	return editButtonNone
@@ -2826,20 +2719,20 @@ func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
 
 func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
 	for kind := editButtonAddFaction; kind <= editButtonArmyOwnerFromRegion; kind++ {
-		if uiRectHit(mx, my, editInspectorButtonRect(kind)) {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
 	}
-	if uiRectHit(mx, my, editInspectorButtonRect(editButtonSaveScenario)) {
+	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
 	return editButtonNone
 }
 
 func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButton {
-	if uiRectHit(mx, my, editInspectorTabRect(editInspectorMap)) ||
-		uiRectHit(mx, my, editInspectorTabRect(editInspectorShape)) ||
-		uiRectHit(mx, my, editInspectorTabRect(editInspectorData)) {
+	if buildEditInspectorTabButton(editInspectorMap, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorShape, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorData, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
 	if r.editInspectorTab == editInspectorShape {
@@ -2880,10 +2773,10 @@ func editSettlementTypeDropdownRect() (float32, float32, float32, float32) {
 
 func (r *Renderer) updateEditDropdownPositions() {
 	dx, dy, _, _ := editOwnerDropdownRect()
-	r.editOwnerDropdown.SetPosition(dx, dy)
-	r.editTerrainDropdown.SetPosition(dx, dy)
-	r.editSettlementTypeDropdown.SetPosition(dx, dy)
-	r.editUnitTypeDropdown.SetPosition(dx, dy)
+	r.editOwnerDropdown.SetPosition(float64(dx), float64(dy))
+	r.editTerrainDropdown.SetPosition(float64(dx), float64(dy))
+	r.editSettlementTypeDropdown.SetPosition(float64(dx), float64(dy))
+	r.editUnitTypeDropdown.SetPosition(float64(dx), float64(dy))
 }
 
 func editMinInt(a, b int) int {
@@ -3309,6 +3202,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
+	if r.editInspectorTab == editInspectorShape && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
+		return InputAction{}
+	}
+
 	if r.editInspectorTab == editInspectorShape {
 		if rightJustPressed && r.beginShapePaintStroke(fx, fy) {
 			return InputAction{}
@@ -3438,7 +3335,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) {
 	if r.editOwnerDropdown.IsOpen() {
 		if idx, ok := r.editOwnerDropdown.GetSelectedOption(fx, fy); ok {
-			r.setSelectedRegionOwner(r.editOwnerDropdown.options[idx])
+			r.setSelectedRegionOwner(r.editOwnerDropdown.OptionAt(idx))
 			r.editOwnerDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3452,7 +3349,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if r.editTerrainDropdown.IsOpen() {
 		if idx, ok := r.editTerrainDropdown.GetSelectedOption(fx, fy); ok {
-			r.setSelectedRegionTerrain(world.TerrainType(r.editTerrainDropdown.options[idx]))
+			r.setSelectedRegionTerrain(world.TerrainType(r.editTerrainDropdown.OptionAt(idx)))
 			r.editTerrainDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3466,7 +3363,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if r.editSettlementTypeDropdown.IsOpen() {
 		if idx, ok := r.editSettlementTypeDropdown.GetSelectedOption(fx, fy); ok {
-			r.setSelectedSettlementType(r.editSettlementTypeDropdown.options[idx])
+			r.setSelectedSettlementType(r.editSettlementTypeDropdown.OptionAt(idx))
 			r.editSettlementTypeDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3480,7 +3377,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if r.editUnitTypeDropdown.IsOpen() {
 		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
-			r.editSelectedUnitType = r.editUnitTypeDropdown.options[idx]
+			r.editSelectedUnitType = r.editUnitTypeDropdown.OptionAt(idx)
 			r.editUnitTypeDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3495,15 +3392,15 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
-	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorMap)) {
+	if buildEditInspectorTabButton(editInspectorMap, "Harita").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorMap
 		return InputAction{}, true
 	}
-	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorShape)) {
+	if buildEditInspectorTabButton(editInspectorShape, "Shape").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorShape
 		return InputAction{}, true
 	}
-	if uiRectHit(fx, fy, editInspectorTabRect(editInspectorData)) {
+	if buildEditInspectorTabButton(editInspectorData, "Veri").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorData
 		return InputAction{}, true
 	}
@@ -3561,7 +3458,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bool) {
 	if r.editUnitTypeDropdown.IsOpen() {
 		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
-			r.editSelectedUnitType = r.editUnitTypeDropdown.options[idx]
+			r.editSelectedUnitType = r.editUnitTypeDropdown.OptionAt(idx)
 			r.editUnitTypeDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3608,7 +3505,7 @@ func (r *Renderer) toggleEditOwnerDropdown() {
 	}
 
 	dx, dy, _, _ := editOwnerDropdownRect()
-	r.editOwnerDropdown.SetPosition(dx, dy)
+	r.editOwnerDropdown.SetPosition(float64(dx), float64(dy))
 	r.editOwnerDropdown.SetOptions(editOwnerOptions(r.gs.Factions), region.OwnerID)
 	r.editOwnerDropdown.Toggle()
 }
@@ -3621,7 +3518,7 @@ func (r *Renderer) toggleEditTerrainDropdown() {
 	}
 
 	dx, dy, _, _ := editTerrainDropdownRect()
-	r.editTerrainDropdown.SetPosition(dx, dy)
+	r.editTerrainDropdown.SetPosition(float64(dx), float64(dy))
 	terrainOptions := editTerrainOptions()
 	stringOptions := make([]string, len(terrainOptions))
 	for i, t := range terrainOptions {
@@ -3638,7 +3535,7 @@ func (r *Renderer) toggleEditSettlementTypeDropdown() {
 	}
 
 	dx, dy, _, _ := editSettlementTypeDropdownRect()
-	r.editSettlementTypeDropdown.SetPosition(dx, dy)
+	r.editSettlementTypeDropdown.SetPosition(float64(dx), float64(dy))
 	region := r.gs.Regions[r.editSelectedRegion]
 	settlement := region.Settlements[r.editSelectedSettlement]
 	r.editSettlementTypeDropdown.SetOptions(world.AllSettlementTypes(), string(settlement.Type))
@@ -4918,40 +4815,40 @@ func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
 		return false
 	}
 	for field := editFactionFieldID; field <= editFactionFieldAI; field++ {
-		if uiRectHit(fx, fy, editFactionFieldRect(field)) {
+		if buildEditFactionFieldButton(field, "").HitTest(fx, fy) {
 			r.editFactionForm.active = field
 			r.editFactionForm.errorText = ""
 			return false
 		}
 	}
 	switch {
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormSave)):
+	case buildEditFactionFormButton(editFactionFormSave, "Kaydet").HitTest(fx, fy):
 		return r.saveFactionForm()
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormCancel)):
+	case buildEditFactionFormButton(editFactionFormCancel, "Iptal").HitTest(fx, fy):
 		r.editFactionForm = editFactionFormState{}
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormReligion)):
+	case buildEditFactionFormButton(editFactionFormReligion, "").HitTest(fx, fy):
 		r.editFactionForm.religion = nextEditReligion(r.editFactionForm.religion)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormPlayable)):
+	case buildEditFactionFormButton(editFactionFormPlayable, "").HitTest(fx, fy):
 		r.editFactionForm.playable = !r.editFactionForm.playable
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationTarget)):
+	case buildEditFactionFormButton(editFactionFormRelationTarget, "").HitTest(fx, fy):
 		r.cycleFactionFormRelationTarget()
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationStance)):
+	case buildEditFactionFormButton(editFactionFormRelationStance, "").HitTest(fx, fy):
 		r.editFactionForm.relationStance = nextEditStance(r.editFactionForm.relationStance)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationScoreMinus)):
+	case buildEditFactionFormButton(editFactionFormRelationScoreMinus, "").HitTest(fx, fy):
 		r.adjustFactionFormRelationScore(-10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRelationScorePlus)):
+	case buildEditFactionFormButton(editFactionFormRelationScorePlus, "").HitTest(fx, fy):
 		r.adjustFactionFormRelationScore(10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRedMinus)):
+	case buildEditFactionFormButton(editFactionFormRedMinus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(0, -10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormRedPlus)):
+	case buildEditFactionFormButton(editFactionFormRedPlus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(0, 10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormGreenMinus)):
+	case buildEditFactionFormButton(editFactionFormGreenMinus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(1, -10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormGreenPlus)):
+	case buildEditFactionFormButton(editFactionFormGreenPlus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(1, 10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormBlueMinus)):
+	case buildEditFactionFormButton(editFactionFormBlueMinus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(2, -10)
-	case uiRectHit(fx, fy, editFactionFormButtonRect(editFactionFormBluePlus)):
+	case buildEditFactionFormButton(editFactionFormBluePlus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(2, 10)
 	}
 	return false
@@ -5374,7 +5271,7 @@ func (r *Renderer) toggleEditUnitTypeDropdown() {
 	}
 	r.ensureEditSelectedUnitType(a)
 	dx, dy, _, _ := editOwnerDropdownRect()
-	r.editUnitTypeDropdown.SetPosition(dx, dy)
+	r.editUnitTypeDropdown.SetPosition(float64(dx), float64(dy))
 	r.editUnitTypeDropdown.SetOptions(r.editUnitTypeOptions(a.IsNaval), r.editSelectedUnitType)
 	r.editUnitTypeDropdown.Toggle()
 }
@@ -5846,7 +5743,13 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Ana menü inputu
 	if r.gs.Phase == state.PhaseMainMenu {
-		return r.handleMainMenuInput(r.HasSave, r.HasAutoSave)
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleMainMenuInput(r.HasSave, r.HasAutoSave, input)
 	}
 
 	// Ayarlar ekranı inputu
@@ -5856,30 +5759,66 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Senaryo seçim ekranı inputu
 	if r.gs.Phase == state.PhaseScenarioSelect {
-		return r.handleScenarioSelectInput()
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleScenarioSelectInput(input)
 	}
 
 	// Fraksiyon seçim ekranı inputu
 	if r.gs.Phase == "faction_select" {
-		return r.handleFactionSelectInput()
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleFactionSelectInput(input)
 	}
 
 	// Zafer koşulu seçim ekranı inputu
 	if r.gs.Phase == "victory_select" {
-		return r.handleVictorySelectInput()
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleVictorySelectInput(input)
 	}
 
 	// Duraklama menüsü inputu
 	if r.gs.Phase == state.PhasePauseMenu {
-		return r.handlePauseMenuInput()
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handlePauseMenuInput(input)
 	}
 
 	// Kayıt seçim ekranları inputu
 	if r.gs.Phase == state.PhaseLoadSelect {
-		return r.handleSlotSelectInput(false)
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleSlotSelectInput(false, input)
 	}
 	if r.gs.Phase == state.PhaseSaveSelect {
-		return r.handleSlotSelectInput(true)
+		mx, my := ebiten.CursorPosition()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+		}
+		return r.handleSlotSelectInput(true, input)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		return r.handleEditModeInput()
@@ -5887,107 +5826,40 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Diplomasi paneli açıkken ayrı input
 	if r.showDiplomacy {
-		return r.handleDiplomacyInput()
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyTab) {
+			if r.diplomacyTargetFaction != "" {
+				r.diplomacyTargetFaction = ""
+			} else {
+				r.showDiplomacy = false
+			}
+			return InputAction{}
+		}
+		mx, my := ebiten.CursorPosition()
+		_, wheelY := ebiten.Wheel()
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+			WheelY:          wheelY,
+		}
+		return r.handleDiplomacyInput(input)
 	}
 
 	// Ticaret paneli açıkken: ESC veya tıklama kapatır
 	if r.showTrade {
-		leftClick := r.mouseJustPressed(ebiten.MouseButtonLeft)
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyC) {
 			r.showTrade = false
 			return InputAction{}
 		}
 		mx, my := ebiten.CursorPosition()
-		fx, fy := float64(mx), float64(my)
-		if leftClick {
-			if tradeCloseHit(fx, fy) {
-				r.showTrade = false
-				return InputAction{}
-			}
-			// Panel dışına tıklama da kapatır
-			px, py, pw, ph := tradePanelRect()
-			if !(fx >= float64(px) && fx <= float64(px+pw) && fy >= float64(py) && fy <= float64(py+ph)) {
-				r.showTrade = false
-				return InputAction{}
-			}
-		}
-		// Sekme değiştirme
 		_, wheelY := ebiten.Wheel()
-		if wheelY != 0 {
-			r.tradeScroll += int(-wheelY)
-			if r.tradeScroll < 0 {
-				r.tradeScroll = 0
-			}
+		input := gameui.InputState{
+			MouseX:          float64(mx),
+			MouseY:          float64(my),
+			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+			WheelY:          wheelY,
 		}
-		// Sekme tıklaması
-		if leftClick {
-			px, py, pw, _ := tradePanelRect()
-			tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
-			tabW := (pw - 16) / float32(len(tabLabels))
-			tabY := py + 40
-			for i := 0; i < len(tabLabels); i++ {
-				tx := px + 8 + float32(i)*tabW
-				if fx >= float64(tx) && fx <= float64(tx+tabW-4) && fy >= float64(tabY) && fy <= float64(tabY+tradeTabH) {
-					r.tradeTab = TradeTab(i)
-					r.tradeScroll = 0
-					r.tradeFactionFocus = 0
-					return InputAction{}
-				}
-			}
-		}
-		if leftClick && r.tradeTab == TradeTabNew {
-			px, py, pw, ph := tradePanelRect()
-			if nf := tradeNewTabFilterAt(fx, fy, px, py+tradeTabH+48, pw); nf >= 0 {
-				r.tradeListFilter = TradeListFilter(nf)
-				r.tradeFactionFocus = 0
-				r.tradeScroll = 0
-				return InputAction{}
-			}
-			if ns := tradeNewTabSortAt(fx, fy, px, py+tradeTabH+48, pw); ns >= 0 {
-				r.tradeListSort = TradeListSort(ns)
-				r.tradeFactionFocus = 0
-				return InputAction{}
-			}
-			factions := sortedFactionsForTrade(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
-			if idx := tradeNewTabFactionIndexAt(fx, fy, factions, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeScroll); idx >= 0 {
-				r.tradeFactionFocus = idx
-				return InputAction{}
-			}
-			if idx := tradeNewTabGoodIndexAt(fx, fy, factions, px, py+tradeTabH+48, pw, ph-(tradeTabH+58), r.tradeFactionFocus); idx >= 0 {
-				r.tradeGoodFocus = idx
-				r.tradeFactionFocus = 0
-				r.tradeScroll = 0
-				return InputAction{}
-			}
-			if delta := tradeNewTabQtyDeltaAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58)); delta != 0 {
-				r.tradeAmount += delta
-				if r.tradeAmount < 1 {
-					r.tradeAmount = 1
-				}
-				if r.tradeAmount > 999 {
-					r.tradeAmount = 999
-				}
-				return InputAction{}
-			}
-			act := tradeNewTabActionAt(fx, fy, px, py+tradeTabH+48, pw, ph-(tradeTabH+58))
-			if act != "" {
-				goods := tradeSelectableGoods()
-				if r.tradeFactionFocus >= 0 && r.tradeFactionFocus < len(factions) &&
-					r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) {
-					delta := r.tradeAmount
-					if act == "sell" {
-						delta = -r.tradeAmount
-					}
-					return InputAction{
-						Kind:          ActionOneTimeTrade,
-						TargetFaction: factions[r.tradeFactionFocus],
-						BuildingID:    string(goods[r.tradeGoodFocus]),
-						Delta:         delta,
-					}
-				}
-			}
-		}
-		return InputAction{}
+		return handleTradePanelInput(r, input)
 	}
 
 	r.handleCamera()
@@ -6053,7 +5925,17 @@ func (r *Renderer) HandleInput() InputAction {
 	// Tech panel aktifken girişi yönlendir
 	if r.showTech {
 		if f := r.gs.Factions[r.gs.PlayerFactionID]; f != nil {
-			return r.handleTechInput(f)
+			if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyT) {
+				r.showTech = false
+				return InputAction{}
+			}
+			mx, my := ebiten.CursorPosition()
+			input := gameui.InputState{
+				MouseX:          float64(mx),
+				MouseY:          float64(my),
+				LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+			}
+			return r.handleTechInput(f, input)
 		}
 		return InputAction{}
 	}
@@ -6109,14 +5991,17 @@ func (r *Renderer) handleBuildKey() InputAction {
 }
 
 // handleFactionSelectInput fraksiyon seçim ekranındaki tuş ve fare girişlerini işler.
-func (r *Renderer) handleFactionSelectInput() InputAction {
+func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction {
 	factions := selectableFactions(r.gs)
 	n := len(factions)
+	buttons := buildFactionCardButtons(r.gs)
 
 	// Hover ile kart vurgusunu güncelle
-	mx, my := ebiten.CursorPosition()
-	if i := r.factionCardHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.factionCursor = i
+	for i, btn := range buttons {
+		if btn.HitTest(input.MouseX, input.MouseY) {
+			r.factionCursor = i
+			break
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) || r.keyJustPressed(ebiten.KeyArrowRight) {
@@ -6128,13 +6013,15 @@ func (r *Renderer) handleFactionSelectInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEnter) && r.factionCursor < len(factions) {
 		return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[r.factionCursor]}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+	if input.LeftJustPressed {
+		if buildBackButton().HandleInput(input) {
 			r.factionCursor = 0
 			return InputAction{Kind: ActionBack}
 		}
-		if i := r.factionCardHoverIndex(float64(mx), float64(my)); i >= 0 {
-			return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[i]}
+		for i, btn := range buttons {
+			if btn.HandleInput(input) {
+				return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[i]}
+			}
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
@@ -6183,12 +6070,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
 	}
-	modeRects := mapModeButtonRects()
-	if rectF32Hit(fx, fy, modeRects[0]) {
+	modeButtons := buildMapModeButtons()
+	if modeButtons[0].HitTest(fx, fy) {
 		r.mapMode = MapModeNormal
 		return InputAction{}
 	}
-	if rectF32Hit(fx, fy, modeRects[1]) {
+	if modeButtons[1].HitTest(fx, fy) {
 		r.mapMode = MapModeTrade
 		return InputAction{}
 	}
@@ -6225,18 +6112,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 	if musicHudInteractiveHit(fx, fy) {
-		if rectF32Hit(fx, fy, musicHudToggleRect()) {
+		toggleBtn, nextBtn := buildMusicHudButtons(audio.MusicStatusNow().Playing)
+		if toggleBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionToggleMusic}
 		}
-		if rectF32Hit(fx, fy, musicHudNextRect()) {
+		if nextBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionNextMusic}
 		}
 	}
 
 	// --- Alt panel butonları ---
-	rects := BottomButtonRects()
-	if fx >= float64(rects[0][0]) && fx <= float64(rects[0][0]+rects[0][2]) &&
-		fy >= float64(rects[0][1]) && fy <= float64(rects[0][1]+rects[0][3]) {
+	bottomButtons := buildBottomActionButtons(RecruitPanelButtonEnabled(r.gs, r.SelectedRegion))
+	if bottomButtons[0].HitTest(fx, fy) {
 		if RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen() {
 			r.showRecruitPanel = !r.showRecruitPanel
 			if r.showRecruitPanel {
@@ -6247,8 +6134,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
-	if fx >= float64(rects[1][0]) && fx <= float64(rects[1][0]+rects[1][2]) &&
-		fy >= float64(rects[1][1]) && fy <= float64(rects[1][1]+rects[1][3]) {
+	if bottomButtons[1].HitTest(fx, fy) {
 		r.showDiplomacy = !r.showDiplomacy
 		r.showRecruitPanel = false
 		r.showTech = false
@@ -6258,16 +6144,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyTargetFaction = ""
 		return InputAction{}
 	}
-	if fx >= float64(rects[2][0]) && fx <= float64(rects[2][0]+rects[2][2]) &&
-		fy >= float64(rects[2][1]) && fy <= float64(rects[2][1]+rects[2][3]) {
+	if bottomButtons[2].HitTest(fx, fy) {
 		r.showTech = !r.showTech
 		r.showRecruitPanel = false
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
 	}
-	if fx >= float64(rects[3][0]) && fx <= float64(rects[3][0]+rects[3][2]) &&
-		fy >= float64(rects[3][1]) && fy <= float64(rects[3][1]+rects[3][3]) {
+	if bottomButtons[3].HitTest(fx, fy) {
 		return InputAction{Kind: ActionEndTurn}
 	}
 
@@ -6660,56 +6544,28 @@ func (r *Renderer) mouseJustPressed(btn ebiten.MouseButton) bool {
 // --- Savaş ilan onay diyalogu ---
 
 func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
-	const (
-		dlgW  = float32(380)
-		dlgH  = float32(130)
-		btnDW = float32(110)
-		btnDH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-
-	// Arka plan
-	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
-	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+	modal := buildWarConfirmModal()
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
 	// Mesaj
 	msg := r.warConfirm.factionName + " ile savaş ilan edilsin mi?"
 	tw := MeasureText(msg, FaceMed)
-	DrawText(screen, msg, float64(cx)+(float64(dlgW)-tw)/2, float64(cy)+18, FaceMed, color.RGBA{255, 220, 100, 255})
+	DrawText(screen, msg, modal.Panel.Rect.X+(modal.Panel.Rect.W-tw)/2, modal.Panel.Rect.Y+18, FaceMed, color.RGBA{255, 220, 100, 255})
 
-	// Evet butonu
-	yesX := cx + dlgW/2 - btnDW - 10
-	btnY := cy + dlgH - btnDH - 16
-	vector.FillRect(screen, yesX, btnY, btnDW, btnDH, color.RGBA{160, 40, 40, 230}, false)
-	tw2 := MeasureText("Savaş İlan Et", FaceSmall)
-	DrawText(screen, "Savaş İlan Et", float64(yesX)+(float64(btnDW)-tw2)/2, float64(btnY)+10, FaceSmall, color.RGBA{255, 220, 220, 255})
-
-	// Hayır butonu
-	noX := cx + dlgW/2 + 10
-	vector.FillRect(screen, noX, btnY, btnDW, btnDH, color.RGBA{50, 50, 50, 230}, false)
-	tw3 := MeasureText("Hayır", FaceSmall)
-	DrawText(screen, "Hayır", float64(noX)+(float64(btnDW)-tw3)/2, float64(btnY)+10, FaceSmall, color.RGBA{200, 200, 200, 255})
+	acceptBtn, declineBtn := buildWarConfirmButtons()
+	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, "Savaş İlan Et", true,
+		solidButtonStyle(color.RGBA{160, 40, 40, 230}, color.RGBA{205, 90, 90, 255}, color.RGBA{255, 220, 220, 255}, 10))
+	drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, "Hayır", true,
+		solidButtonStyle(color.RGBA{50, 50, 50, 230}, color.RGBA{120, 120, 120, 255}, color.RGBA{200, 200, 200, 255}, 10))
 }
 
 func (r *Renderer) handleWarConfirmInput() InputAction {
-	const (
-		dlgW  = float32(380)
-		dlgH  = float32(130)
-		btnDW = float32(110)
-		btnDH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnDH - 16
-	yesX := cx + dlgW/2 - btnDW - 10
-	noX := cx + dlgW/2 + 10
-
 	mxi, myi := ebiten.CursorPosition()
-	mx, my := float32(mxi), float32(myi)
+	mx, my := float64(mxi), float64(myi)
+	acceptBtn, declineBtn := buildWarConfirmButtons()
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if mx >= yesX && mx <= yesX+btnDW && my >= btnY && my <= btnY+btnDH {
+		if acceptBtn.HitTest(mx, my) {
 			// Evet: savaş ilan et ve orduyu taşı
 			wc := r.warConfirm
 			r.warConfirm = warConfirmState{}
@@ -6721,7 +6577,7 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 				TargetFaction: faction.FactionID(wc.factionID),
 			}
 		}
-		if mx >= noX && mx <= noX+btnDW && my >= btnY && my <= btnY+btnDH {
+		if declineBtn.HitTest(mx, my) {
 			r.warConfirm = warConfirmState{}
 			return InputAction{}
 		}
@@ -6756,12 +6612,6 @@ func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
 }
 
 func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) {
-	const (
-		dlgW = float32(520)
-		dlgH = float32(190)
-		btnW = float32(120)
-		btnH = float32(36)
-	)
 	offer := r.gs.DiplomaticOffers[offerIdx]
 	fromName := string(offer.FromFactionID)
 	if f := r.gs.Factions[offer.FromFactionID]; f != nil && f.NameTR != "" {
@@ -6777,55 +6627,38 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 		actionLabel = "ticaret"
 	}
 
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-	vector.FillRect(screen, cx-2, cy-2, dlgW+4, dlgH+4, color.RGBA{110, 90, 50, 255}, false)
-	vector.FillRect(screen, cx, cy, dlgW, dlgH, color.RGBA{12, 10, 8, 245}, false)
+	modal := buildDiplomacyOfferModal()
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
 	title := "Anlaşma Teklifi"
-	DrawText(screen, title, float64(cx)+20, float64(cy)+30, FaceLarge, color.RGBA{255, 220, 100, 255})
+	DrawText(screen, title, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+30, FaceLarge, color.RGBA{255, 220, 100, 255})
 	message := fromName + " devleti size " + actionLabel + " teklif etti."
-	lines := wrapTextLines(message, FaceMed, float64(dlgW)-40)
+	lines := wrapTextLines(message, FaceMed, modal.Panel.Rect.W-40)
 	for i, line := range lines {
 		if i >= 3 {
 			break
 		}
-		DrawText(screen, line, float64(cx)+20, float64(cy)+64+float64(i)*20, FaceMed, color.RGBA{220, 220, 220, 255})
+		DrawText(screen, line, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+64+float64(i)*20, FaceMed, color.RGBA{220, 220, 220, 255})
 	}
 	DrawText(screen, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.",
-		float64(cx)+20, float64(cy)+124, FaceSmall, ColorGray)
+		modal.Panel.Rect.X+20, modal.Panel.Rect.Y+124, FaceSmall, ColorGray)
 
-	btnY := cy + dlgH - btnH - 16
-	acceptX := cx + dlgW/2 - btnW - 12
-	rejectX := cx + dlgW/2 + 12
-	vector.FillRect(screen, acceptX, btnY, btnW, btnH, color.RGBA{70, 140, 70, 240}, false)
-	vector.FillRect(screen, rejectX, btnY, btnW, btnH, color.RGBA{140, 70, 70, 240}, false)
-	aw := MeasureText("Kabul Et", FaceSmall)
-	rw := MeasureText("Reddet", FaceSmall)
-	DrawText(screen, "Kabul Et", float64(acceptX)+(float64(btnW)-aw)/2, float64(btnY)+10, FaceSmall, ColorWhite)
-	DrawText(screen, "Reddet", float64(rejectX)+(float64(btnW)-rw)/2, float64(btnY)+10, FaceSmall, ColorWhite)
+	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, acceptBtn.Label, true,
+		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	drawUIButton(screen, rejectBtn.X, rejectBtn.Y, rejectBtn.W, rejectBtn.H, rejectBtn.Label, true,
+		solidButtonStyle(color.RGBA{140, 70, 70, 240}, color.RGBA{190, 110, 110, 255}, ColorWhite, 10))
 }
 
 func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
-	const (
-		dlgW = float32(520)
-		dlgH = float32(190)
-		btnW = float32(120)
-		btnH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnH - 16
-	acceptX := cx + dlgW/2 - btnW - 12
-	rejectX := cx + dlgW/2 + 12
-
 	mxi, myi := ebiten.CursorPosition()
-	mx, my := float32(mxi), float32(myi)
+	mx, my := float64(mxi), float64(myi)
+	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if mx >= acceptX && mx <= acceptX+btnW && my >= btnY && my <= btnY+btnH {
+		if acceptBtn.HitTest(mx, my) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
-		if mx >= rejectX && mx <= rejectX+btnW && my >= btnY && my <= btnY+btnH {
+		if rejectBtn.HitTest(mx, my) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: false}
 		}
 	}
@@ -6866,43 +6699,34 @@ func (r *Renderer) showEditExitConfirm() {
 }
 
 func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
-	cx := float32(ScreenWidth)/2 - confirmDialogW/2
-	cy := float32(ScreenHeight)/2 - confirmDialogH/2
+	modal := buildConfirmDialogModal()
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
-	vector.FillRect(screen, cx-2, cy-2, confirmDialogW+4, confirmDialogH+4, color.RGBA{110, 90, 50, 255}, false)
-	vector.FillRect(screen, cx, cy, confirmDialogW, confirmDialogH, color.RGBA{12, 10, 8, 245}, false)
-
-	DrawText(screen, r.confirmDialog.title, float64(cx)+20, float64(cy)+28, FaceLarge, color.RGBA{255, 220, 100, 255})
+	DrawText(screen, r.confirmDialog.title, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+28, FaceLarge, color.RGBA{255, 220, 100, 255})
 	lines := r.confirmDialog.messageLines
 	for i, line := range lines {
 		if i >= 3 {
 			break
 		}
-		DrawText(screen, line, float64(cx)+20, float64(cy)+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
+		DrawText(screen, line, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
 
 	}
-	r.drawConfirmDialogButtons(screen, cx, cy)
+	r.drawConfirmDialogButtons(screen)
 }
 
-func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image, cx, cy float32) {
-	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
-	if r.confirmDialog.thirdLabel != "" {
-		saveX, discardX, cancelX := confirmDialogThreeButtonXs(cx)
-		drawConfirmDialogButton(screen, saveX, btnY, r.confirmDialog.acceptLabel, color.RGBA{70, 140, 70, 240})
-		drawConfirmDialogButton(screen, discardX, btnY, r.confirmDialog.thirdLabel, color.RGBA{145, 95, 45, 235})
-		drawConfirmDialogButton(screen, cancelX, btnY, r.confirmDialog.declineLabel, color.RGBA{70, 70, 70, 220})
+func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
+	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
+	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, acceptBtn.Label, true,
+		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	if hasThird {
+		drawUIButton(screen, thirdBtn.X, thirdBtn.Y, thirdBtn.W, thirdBtn.H, thirdBtn.Label, true,
+			solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+		drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, declineBtn.Label, true,
+			solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
 		return
 	}
-	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
-	noX := cx + confirmDialogW/2 + 10
-	drawConfirmDialogButton(screen, yesX, btnY, r.confirmDialog.acceptLabel, color.RGBA{70, 140, 70, 240})
-	drawConfirmDialogButton(screen, noX, btnY, r.confirmDialog.declineLabel, color.RGBA{70, 70, 70, 220})
-}
-
-func drawConfirmDialogButton(screen *ebiten.Image, x, y float32, label string, bg color.RGBA) {
-	vector.FillRect(screen, x, y, confirmDialogBtnW, confirmDialogBtnH, bg, false)
-	w := MeasureText(label, FaceSmall)
-	DrawText(screen, label, float64(x)+(float64(confirmDialogBtnW)-w)/2, float64(y)+10, FaceSmall, ColorWhite)
+	drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, declineBtn.Label, true,
+		solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
 }
 
 func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {
@@ -6915,32 +6739,22 @@ func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {
 }
 
 func (r *Renderer) handleConfirmDialogInput() InputAction {
-	cx := float32(ScreenWidth)/2 - confirmDialogW/2
-	cy := float32(ScreenHeight)/2 - confirmDialogH/2
-	btnY := cy + confirmDialogH - confirmDialogBtnH - 16
-	yesX := cx + confirmDialogW/2 - confirmDialogBtnW - 10
-	noX := cx + confirmDialogW/2 + 10
-	var thirdX float32
-	if r.confirmDialog.thirdLabel != "" {
-		yesX, thirdX, noX = confirmDialogThreeButtonXs(cx)
-	}
-
 	mxi, myi := ebiten.CursorPosition()
-	mx, my := float32(mxi), float32(myi)
+	mx, my := float64(mxi), float64(myi)
+	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if mx >= yesX && mx <= yesX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
+		if acceptBtn.HitTest(mx, my) {
 			action := r.confirmDialog.pendingAction
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
-		if r.confirmDialog.thirdLabel != "" &&
-			mx >= thirdX && mx <= thirdX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
+		if hasThird && thirdBtn.HitTest(mx, my) {
 			action := r.confirmDialog.thirdAction
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
-		if mx >= noX && mx <= noX+confirmDialogBtnW && my >= btnY && my <= btnY+confirmDialogBtnH {
+		if declineBtn.HitTest(mx, my) {
 			if r.confirmDialog.declineHook != nil {
 				r.confirmDialog.declineHook()
 			}

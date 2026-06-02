@@ -7,6 +7,7 @@ import (
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -42,6 +43,38 @@ type techNode struct {
 	done     bool
 	level    int
 	x, y     float64 // Ağaç pozisyonu
+}
+
+const (
+	techLevelHeight = 120.0
+	techNodeWidth   = 180.0
+	techNodeHeight  = 60.0
+)
+
+func buildTechCloseButton() gameui.Button {
+	x, y, w, h := techCloseRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+}
+
+func techNodeRect(node techNode) gameui.Rect {
+	return gameui.Rect{
+		X: node.x - techNodeWidth/2,
+		Y: node.y - techNodeHeight/2,
+		W: techNodeWidth - 4,
+		H: techNodeHeight - 4,
+	}
+}
+
+func techNodeButton(node techNode) gameui.Button {
+	rect := techNodeRect(node)
+	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, node.t.NameTR)
+}
+
+func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) [][]techNode {
+	levels := r.buildTechTree(f)
+	treeStartY := techTreeStartY(float64(len(levels)), techLevelHeight)
+	layoutTechTree(levels, float64(ScreenWidth), techNodeWidth, techNodeHeight, treeStartY, techLevelHeight)
+	return levels
 }
 
 func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
@@ -152,15 +185,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		DrawText(screen, "Aktif araştırma yok", float64(px)+20, activeY, FaceSmall, ColorGray)
 	}
 
-	levels := r.buildTechTree(f)
-
-	// Ağaç çizimi için koordinatlar
-	levelHeight := 120.0
-	nodeWidth := 180.0
-	nodeHeight := 60.0
-	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
-
-	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
+	levels := r.buildLaidOutTechTree(f)
 
 	// Her seviye için düğümleri çiz
 	for _, levelNodes := range levels {
@@ -178,16 +203,18 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				nodeColor = baseCategoryColor // Kategori rengi
 			}
 
+			nodeRect := techNodeRect(node)
+
 			// Düğüm arka planı
-			vector.FillRect(screen, float32(node.x-nodeWidth/2), float32(node.y-nodeHeight/2),
-				float32(nodeWidth-4), float32(nodeHeight-4), nodeColor, false)
+			vector.FillRect(screen, float32(nodeRect.X), float32(nodeRect.Y),
+				float32(nodeRect.W), float32(nodeRect.H), nodeColor, false)
 
 			// Düğüm çerçevesi
-			vector.StrokeRect(screen, float32(node.x-nodeWidth/2), float32(node.y-nodeHeight/2),
-				float32(nodeWidth-4), float32(nodeHeight-4), 2, color.RGBA{255, 255, 255, 255}, false)
+			vector.StrokeRect(screen, float32(nodeRect.X), float32(nodeRect.Y),
+				float32(nodeRect.W), float32(nodeRect.H), 2, color.RGBA{255, 255, 255, 255}, false)
 
 			// Teknoloji adı
-			nameY := node.y - nodeHeight/2 + 8
+			nameY := nodeRect.Y + 8
 			textColor := ColorWhite
 			if node.unlocked && !node.done {
 				textColor = color.RGBA{uint8(nodeColor.R / 3), uint8(nodeColor.G / 3), uint8(nodeColor.B / 3), 255}
@@ -203,7 +230,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 
 			// Maliyet bilgisi (kilitli değilse)
 			if node.unlocked && !node.done {
-				costY := node.y + nodeHeight/2 - 20
+				costY := nodeRect.Y + nodeRect.H - 20
 				costStr := fmt.Sprintf("%dg/%dt", node.t.GoldCost, node.t.TurnsRequired)
 				DrawTextCentered(screen, costStr, node.x, costY, FaceSmall, ColorGold)
 			}
@@ -212,8 +239,8 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			if node.done {
 				badgeW := 24.0
 				badgeH := 18.0
-				badgeX := node.x + nodeWidth/2 - badgeW - 8
-				badgeY := node.y - nodeHeight/2 + 8
+				badgeX := nodeRect.X + nodeRect.W - badgeW - 8
+				badgeY := nodeRect.Y + 8
 				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{35, 35, 35, 220}, false)
 				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{220, 220, 220, 255}, false)
 				tw := MeasureText("✓", FaceSmall)
@@ -231,8 +258,8 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 								if reqNode.t.ID == reqID {
 									// Çizgi çiz
 									vector.StrokeLine(screen,
-										float32(reqNode.x), float32(reqNode.y+nodeHeight/2),
-										float32(node.x), float32(node.y-nodeHeight/2),
+										float32(reqNode.x), float32(reqNode.y+techNodeHeight/2),
+										float32(node.x), float32(node.y-techNodeHeight/2),
 										2, color.RGBA{150, 150, 150, 255}, false)
 									break
 								}
@@ -254,38 +281,25 @@ func techCloseRect() (x, y, w, h float32) {
 }
 
 func drawTechCloseButton(screen *ebiten.Image) {
-	x, y, w, h := techCloseRect()
-	vector.FillRect(screen, x, y, w, h, color.RGBA{45, 34, 25, 230}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
-	tw := MeasureText("X", FaceSmall)
-	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+6, FaceSmall, ColorGold)
+	drawTechButton(screen, buildTechCloseButton(), color.RGBA{45, 34, 25, 230}, ColorGold, 6)
 }
 
-func techCloseHit(mx, my float64) bool {
-	x, y, w, h := techCloseRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+func drawTechButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, textColor color.Color, textOffsetY float64) {
+	vector.FillRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), bg, false)
+	vector.StrokeRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), 1, panelBorder, false)
+	tw := MeasureText(btn.Label, FaceSmall)
+	DrawText(screen, btn.Label, btn.X+btn.W/2-tw/2, btn.Y+textOffsetY, FaceSmall, textColor)
 }
 
 // handleTechInput teknoloji paneli klavye ve fare girişlerini işler.
-func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
+func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) InputAction {
 	if r.gs.TechTypes == nil {
 		return InputAction{}
 	}
 
-	levels := r.buildTechTree(f)
+	levels := r.buildLaidOutTechTree(f)
 
-	// Ağaç pozisyonlarını yeniden hesapla, böylece tıklama doğru çalışır
-	levelHeight := 120.0
-	nodeWidth := 180.0
-	nodeHeight := 60.0
-	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
-	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
-
-	mx, my := ebiten.CursorPosition()
-	fx, fy := float64(mx), float64(my)
-
-	// Close button kontrolü
-	if techCloseHit(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if buildTechCloseButton().HandleInput(input) {
 		r.showTech = false
 		return InputAction{}
 	}
@@ -293,25 +307,43 @@ func (r *Renderer) handleTechInput(f *faction.Faction) InputAction {
 	// Ağaç düğümlerine tıklama
 	for _, levelNodes := range levels {
 		for _, node := range levelNodes {
-			nodeLeft := node.x - nodeWidth/2
-			nodeRight := node.x + nodeWidth/2
-			nodeTop := node.y - nodeHeight/2
-			nodeBottom := node.y + nodeHeight/2
-
-			if fx >= nodeLeft && fx <= nodeRight && fy >= nodeTop && fy <= nodeBottom {
-				if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-					if node.unlocked && !node.done {
-						if f.Research.ActiveID == node.t.ID {
-							return InputAction{Kind: ActionCancelResearch}
-						} else {
-							return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
-						}
+			if techNodeButton(node).HandleInput(input) {
+				if node.unlocked && !node.done {
+					if f.Research.ActiveID == node.t.ID {
+						return InputAction{Kind: ActionCancelResearch}
+					} else {
+						return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
 					}
 				}
-				break
+				return InputAction{}
 			}
 		}
 	}
 
 	return InputAction{}
+}
+
+func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
+	if r.gs.TechTypes == nil {
+		return false
+	}
+	f := r.gs.Factions[r.gs.PlayerFactionID]
+	if f == nil {
+		return false
+	}
+	if buildTechCloseButton().HitTest(fx, fy) {
+		return true
+	}
+	levels := r.buildLaidOutTechTree(f)
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			if !node.unlocked || node.done {
+				continue
+			}
+			if techNodeButton(node).HitTest(fx, fy) {
+				return true
+			}
+		}
+	}
+	return false
 }

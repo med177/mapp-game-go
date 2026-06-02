@@ -35,6 +35,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if _, ok := r.playerDiplomacyOfferIndex(); ok {
+		if r.diplomacyOfferHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.eventDetail != "" {
 		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -44,7 +52,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showDiplomacy {
-		if r.diplomaPanelHovering(fx, fy) {
+		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -52,7 +60,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showTech {
-		if r.techPanelHovering(fx, fy) {
+		if r.techPanelPointerHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -75,17 +83,17 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseScenarioSelect:
-		if uiRectHit(fx, fy, backButtonRect()) || r.scenarioHoverIndex(fx, fy) >= 0 {
+		if buildBackButton().HitTest(fx, fy) || r.scenarioHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 	case state.PhaseFactionSelect:
-		if uiRectHit(fx, fy, backButtonRect()) || r.factionCardHoverIndex(fx, fy) >= 0 {
+		if buildBackButton().HitTest(fx, fy) || r.factionCardHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 	case state.PhaseVictorySelect:
-		if uiRectHit(fx, fy, backButtonRect()) || r.victoryCardHoverIndex(fx, fy) >= 0 {
+		if buildBackButton().HitTest(fx, fy) || r.victoryCardHoverIndex(fx, fy) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -117,6 +125,10 @@ func (r *Renderer) updateCursorShape() {
 		}
 		if r.editInspectorActiveButtonAt(fx, fy) != editButtonNone {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if r.editShapeHelpPanelHit(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 			return
 		}
 		if editModifierPressed() && r.editRegionAt(fx, fy) != "" {
@@ -164,16 +176,11 @@ func (r *Renderer) updateCursorShape() {
 
 func (r *Renderer) mainMenuHoverIndex(fx, fy float64) int {
 	items := buildMenuItems(r.HasSave, r.HasAutoSave)
-	itemH := 52.0
-	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
-	barW := 280.0
-	barX := ScreenWidth/2 - barW/2
-	for i, item := range items {
-		if item.disabled {
+	for i, btn := range buildMainMenuButtons(r.HasSave, r.HasAutoSave) {
+		if items[i].disabled {
 			continue
 		}
-		y := startY + float64(i)*itemH
-		if fx >= barX && fx <= barX+barW && fy >= y-6 && fy <= y+itemH-8 {
+		if btn.HitTest(fx, fy) {
 			return i
 		}
 	}
@@ -181,23 +188,8 @@ func (r *Renderer) mainMenuHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) factionCardHoverIndex(fx, fy float64) int {
-	factions := selectableFactions(r.gs)
-	cols := 3
-	rows := (len(factions) + cols - 1) / cols
-	cardW, cardH := 350.0, 110.0
-	padX, padY := 30.0, 12.0
-	gridW := cardW*float64(cols) + padX*float64(cols-1)
-	gridH := cardH*float64(rows) + padY*float64(rows-1)
-	headerH := 70.0
-	startX := ScreenWidth/2 - gridW/2
-	startY := ScreenHeight/2 - (gridH+headerH)/2 + headerH
-
-	for i := range factions {
-		col := i % cols
-		row := i / cols
-		x := startX + float64(col)*(cardW+padX)
-		y := startY + float64(row)*(cardH+padY)
-		if fx >= x && fx <= x+cardW && fy >= y && fy <= y+cardH {
+	for i, btn := range buildFactionCardButtons(r.gs) {
+		if btn.HitTest(fx, fy) {
 			return i
 		}
 	}
@@ -205,140 +197,33 @@ func (r *Renderer) factionCardHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) victoryCardHoverIndex(fx, fy float64) int {
-	opts := r.gs.AvailableVictories
-	cardW, cardH := 520.0, 100.0
-	gap := 12.0
-	n := float64(len(opts))
-	totalH := n*cardH + (n-1)*gap
-	headerH := 80.0
-	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
-	cx := ScreenWidth/2 - cardW/2
-	for i := range opts {
-		y := startY + float64(i)*(cardH+gap)
-		if fx >= cx && fx <= cx+cardW && fy >= y && fy <= y+cardH {
+	for i, btn := range buildVictoryCardButtons(r.gs) {
+		if btn.HitTest(fx, fy) {
 			return i
 		}
 	}
 	return -1
 }
 
-func (r *Renderer) diplomaPanelHovering(fx, fy float64) bool {
-	if diplomacyCloseHit(fx, fy) {
-		return true
-	}
-	if r.diplomacyTargetFaction != "" {
-		bx, by, bw, bh := diplomBackRect()
-		if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
-			return true
-		}
-		for j := range diplomActions {
-			ax, ay, aw, ah := diplomActionRect(j)
-			if fx >= float64(ax) && fx <= float64(ax+aw) && fy >= float64(ay) && fy <= float64(ay+ah) {
-				return true
-			}
-		}
-		sx, sy, sw, sh := diplomSendRect()
-		return fx >= float64(sx) && fx <= float64(sx+sw) && fy >= float64(sy) && fy <= float64(sy+sh)
-	}
-	factions := sortedFactions(r.gs)
-	start := clampDiplomScroll(len(factions), r.diplomacyScroll)
-	end := start + diplomVisibleRows()
-	if end > len(factions) {
-		end = len(factions)
-	}
-	for row, i := 0, start; i < end; i, row = i+1, row+1 {
-		y := listRowStartY() + float64(row)*diplomRowH
-		lr := listPageRect()
-		if fy >= y && fy <= y+diplomRowH-4 && fx >= lr.x+8 && fx <= lr.x+lr.w-8 {
-			return true
-		}
-	}
-	return false
-}
-
-func (r *Renderer) techPanelHovering(fx, fy float64) bool {
-	if r.gs.TechTypes == nil {
-		return false
-	}
-	f := r.gs.Factions[r.gs.PlayerFactionID]
-	if f == nil {
-		return false
-	}
-
-	// Close button her zaman tıklanabilir
-	if techCloseHit(fx, fy) {
-		return true
-	}
-
-	levels := r.buildTechTree(f)
-	levelHeight := 120.0
-	nodeWidth := 180.0
-	nodeHeight := 60.0
-	treeStartY := techTreeStartY(float64(len(levels)), levelHeight)
-	layoutTechTree(levels, float64(ScreenWidth), nodeWidth, nodeHeight, treeStartY, levelHeight)
-
-	for _, levelNodes := range levels {
-		for _, node := range levelNodes {
-			if !node.unlocked || node.done {
-				continue
-			}
-			nodeLeft := node.x - nodeWidth/2
-			nodeRight := node.x + nodeWidth/2
-			nodeTop := node.y - nodeHeight/2
-			nodeBottom := node.y + nodeHeight/2
-			if fx >= nodeLeft && fx <= nodeRight && fy >= nodeTop && fy <= nodeBottom {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
-	dlgW := float64(confirmDialogW)
-	dlgH := float64(confirmDialogH)
-	btnW := float64(confirmDialogBtnW)
-	btnH := float64(confirmDialogBtnH)
-	cx := float64(ScreenWidth)/2 - dlgW/2
-	cy := float64(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnH - 16
-	yesX := cx + dlgW/2 - btnW - 10
-	noX := cx + dlgW/2 + 10
-	var thirdX float64
-	if r.confirmDialog.thirdLabel != "" {
-		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(cx))
-		yesX = float64(saveX)
-		thirdX = float64(discardX)
-		noX = float64(cancelX)
-	}
-
-	if fx >= yesX && fx <= yesX+btnW && fy >= btnY && fy <= btnY+btnH {
+	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
+	if acceptBtn.HitTest(fx, fy) {
 		return true
 	}
-	if r.confirmDialog.thirdLabel != "" && fx >= thirdX && fx <= thirdX+btnW && fy >= btnY && fy <= btnY+btnH {
+	if hasThird && thirdBtn.HitTest(fx, fy) {
 		return true
 	}
-	if fx >= noX && fx <= noX+btnW && fy >= btnY && fy <= btnY+btnH {
-		return true
-	}
-	return false
+	return declineBtn.HitTest(fx, fy)
 }
 
 func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
-	const (
-		dlgW  = float32(380)
-		dlgH  = float32(130)
-		btnDW = float32(110)
-		btnDH = float32(36)
-	)
-	cx := float32(ScreenWidth)/2 - dlgW/2
-	cy := float32(ScreenHeight)/2 - dlgH/2
-	btnY := cy + dlgH - btnDH - 16
-	yesX := cx + dlgW/2 - btnDW - 10
-	noX := cx + dlgW/2 + 10
-	yes := [4]float32{yesX, btnY, btnDW, btnDH}
-	no := [4]float32{noX, btnY, btnDW, btnDH}
-	return rectF32Hit(fx, fy, yes) || rectF32Hit(fx, fy, no)
+	acceptBtn, declineBtn := buildWarConfirmButtons()
+	return acceptBtn.HitTest(fx, fy) || declineBtn.HitTest(fx, fy)
+}
+
+func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
+	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+	return acceptBtn.HitTest(fx, fy) || rejectBtn.HitTest(fx, fy)
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
@@ -351,13 +236,11 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if r.SelectedRegion != "" {
 		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
 			settlementPanelHit(fx, fy) || settlementPanelCloseHit(fx, fy) ||
-			RecruitPanelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
-			recruitQueueCancelHitTest(fx, fy, r.gs, r.SelectedRegion) != "" ||
-			recruitPanelCloseHitTest(fx, fy, r.gs, r.SelectedRegion) {
+			RecruitPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) {
 			return true
 		}
 	}
-	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
+	if r.SelectedArmy != "" && ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy) {
 		return true
 	}
 	if r.mapMode == MapModeTrade && (r.tradeCorridorAt(fx, fy) >= 0 || r.tradeCenterAt(fx, fy) >= 0) {
@@ -373,13 +256,6 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	// Yerleşim noktası üzerinde mi?
 	if _, _, ok := r.settlementHitAt(fx, fy); ok {
-		return true
-	}
-	// BÖL / BİRLEŞTİR butonları
-	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-		return true
-	}
-	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return true
 	}
 	return false

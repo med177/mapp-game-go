@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -121,6 +122,80 @@ type RecruitPanelAction struct {
 	OrderID string
 }
 
+func buildRecruitPanelCloseButton(gs *state.GameState, rid world.RegionID) (gameui.Button, bool) {
+	if !RecruitPanelVisible(gs, rid) {
+		return gameui.Button{}, false
+	}
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	py := recruitPanelY()
+	pw := recruitPanelW(slots)
+	x, y, w, h := recruitPanelCloseRect(px, py, pw)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X"), true
+}
+
+func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []gameui.Button {
+	if !RecruitPanelVisible(gs, rid) {
+		return nil
+	}
+	region := gs.Regions[rid]
+	display := visibleUnitIDs(gs, region)
+	if len(display) == 0 {
+		return nil
+	}
+	py := recruitPanelY()
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	topY := py + recruitHeaderH + 4
+	pw := recruitPanelW(slots)
+	cardW, cardH, gap := recruitCardMetrics(slots, pw)
+	maxTop := len(display)
+	if maxTop > recruitMaxCards {
+		maxTop = recruitMaxCards
+	}
+	buttons := make([]gameui.Button, 0, maxTop)
+	for i := 0; i < maxTop; i++ {
+		uid := display[i]
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		x := px + recruitPanelPad + float32(col)*(cardW+gap)
+		y := topY + float32(row)*(cardH+gap)
+		buttons = append(buttons, gameui.NewButton(float64(x), float64(y), float64(cardW), float64(cardH), uid))
+	}
+	return buttons
+}
+
+func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map[string]gameui.Button {
+	if !RecruitPanelVisible(gs, rid) {
+		return nil
+	}
+	py := recruitPanelY()
+	slots := recruitPanelSlots(gs, rid)
+	px := recruitPanelX(slots)
+	pw := recruitPanelW(slots)
+	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
+	items := recruitQueueItems(gs, rid)
+	cardW, _, gap := recruitCardMetrics(slots, pw)
+	maxItems := len(items)
+	if maxItems > recruitQueueMaxOrders {
+		maxItems = recruitQueueMaxOrders
+	}
+	buttons := make(map[string]gameui.Button, maxItems)
+	for i := 0; i < maxItems; i++ {
+		it := items[i]
+		if !it.queued || it.orderID == "" {
+			continue
+		}
+		row := i / recruitCardsPerRow
+		col := i % recruitCardsPerRow
+		x := px + recruitPanelPad + float32(col)*(cardW+gap)
+		y := queueY + 26 + float32(row)*(recruitCardH+gap)
+		bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
+		buttons[it.orderID] = gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "X")
+	}
+	return buttons
+}
+
 func recruitQueueIsFull(gs *state.GameState, rid world.RegionID) bool {
 	return len(recruitQueueItems(gs, rid)) >= recruitQueueMaxOrders
 }
@@ -182,9 +257,6 @@ func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {
 }
 
 func RecruitPanelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
-	if !RecruitPanelVisible(gs, rid) {
-		return ""
-	}
 	return recruitUnitCardHitTest(mx, my, gs, rid)
 }
 
@@ -300,15 +372,8 @@ func drawRecruitPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
 }
 
 func recruitPanelCloseHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
-	if !RecruitPanelVisible(gs, rid) {
-		return false
-	}
-	slots := recruitPanelSlots(gs, rid)
-	px := recruitPanelX(slots)
-	py := recruitPanelY()
-	pw := recruitPanelW(slots)
-	x, y, w, h := recruitPanelCloseRect(px, py, pw)
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	btn, ok := buildRecruitPanelCloseButton(gs, rid)
+	return ok && btn.HitTest(mx, my)
 }
 
 func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
@@ -417,7 +482,6 @@ func unitCost(utype *army.UnitType) economy.ResourceCost {
 	}
 }
 
-
 func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
 	showNaval := region != nil && region.IsCoastal(gs.Regions)
 	ids := make([]string, 0, len(unitDisplayOrder))
@@ -475,32 +539,9 @@ func recruitRegionProductionLimit(region *world.Region) int {
 }
 
 func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
-	if !RecruitPanelVisible(gs, rid) {
-		return ""
-	}
-	region := gs.Regions[rid]
-	display := visibleUnitIDs(gs, region)
-	if len(display) == 0 {
-		return ""
-	}
-	py := recruitPanelY()
-	slots := recruitPanelSlots(gs, rid)
-	px := recruitPanelX(slots)
-	topY := py + recruitHeaderH + 4
-	pw := recruitPanelW(slots)
-	cardW, cardH, gap := recruitCardMetrics(slots, pw)
-	maxTop := len(display)
-	if maxTop > recruitMaxCards {
-		maxTop = recruitMaxCards
-	}
-	for i := 0; i < maxTop; i++ {
-		uid := display[i]
-		row := i / recruitCardsPerRow
-		col := i % recruitCardsPerRow
-		x := px + recruitPanelPad + float32(col)*(cardW+gap)
-		y := topY + float32(row)*(cardH+gap)
-		if mx >= float64(x) && mx <= float64(x+cardW) && my >= float64(y) && my <= float64(y+cardH) {
-			return uid
+	for _, btn := range buildRecruitUnitCardButtons(gs, rid) {
+		if btn.HitTest(mx, my) {
+			return btn.Label
 		}
 	}
 	return ""
@@ -608,34 +649,22 @@ func drawQueueCancelButton(screen *ebiten.Image, x, y, w, h float32, hovered boo
 }
 
 func recruitQueueCancelHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
-	if !RecruitPanelVisible(gs, rid) {
-		return ""
-	}
-	py := recruitPanelY()
-	slots := recruitPanelSlots(gs, rid)
-	px := recruitPanelX(slots)
-	pw := recruitPanelW(slots)
-	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
-	items := recruitQueueItems(gs, rid)
-	cardW, _, gap := recruitCardMetrics(slots, pw)
-	maxItems := len(items)
-	if maxItems > recruitQueueMaxOrders {
-		maxItems = recruitQueueMaxOrders
-	}
-	for i := 0; i < maxItems; i++ {
-		it := items[i]
-		row := i / recruitCardsPerRow
-		col := i % recruitCardsPerRow
-		x := px + recruitPanelPad + float32(col)*(cardW+gap)
-		y := queueY + 26 + float32(row)*(recruitCardH+gap)
-		if it.queued && it.orderID != "" {
-			bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
-			if mx >= float64(bx) && mx <= float64(bx+bw) && my >= float64(by) && my <= float64(by+bh) {
-				return it.orderID
-			}
+	for orderID, btn := range buildRecruitQueueCancelButtons(gs, rid) {
+		if btn.HitTest(mx, my) {
+			return orderID
 		}
 	}
 	return ""
+}
+
+func RecruitPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if recruitPanelCloseHitTest(mx, my, gs, rid) {
+		return true
+	}
+	if recruitQueueCancelHitTest(mx, my, gs, rid) != "" {
+		return true
+	}
+	return RecruitPanelHitTest(mx, my, gs, rid) != ""
 }
 
 func recruitPanelSlots(gs *state.GameState, rid world.RegionID) int {

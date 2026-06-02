@@ -175,3 +175,40 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 - Manuel dağınık hit-test kodu minimuma indirilmiş
 - Kritik ekranlarda overlap/click-through bugları kapanmış
 - CI testleri ve görsel smoke kontrolleri geçiyor
+
+## Güncel Durum
+1. Plan kapsamındaki ana ekran migrasyonu tamamlandı:
+   - Trade
+   - Diplomasi
+   - Teknoloji
+   - Pause
+   - Save/Load
+   - MainMenu
+   - ScenarioSelect
+   - FactionSelect
+   - VictorySelect
+2. Ortak `internal/ui` primitive seti genişletildi:
+   - `Panel`
+   - `Label`
+   - `Button`
+   - `Dropdown`
+   - `ListView`
+   - `Checkbox`
+   - `RadioGroup`
+   - `Modal`
+   - `Overlay`
+3. HUD ve özel overlay yüzeyleri ortak builder/widget hattına alındı:
+   - alt aksiyon HUD
+   - harita modu düğmeleri
+   - recruit panel hit-test ailesi
+   - ordu split/merge overlay'i
+   - edit mode inspector/form yüzeyleri
+   - confirm / war confirm / event detail / historical event modal aileleri
+   - oyuncuya gelen diplomasi teklif diyaloğu
+   - shape yardım overlay paneli
+4. Kalite sonrası ek durum:
+   - ortak button/dropdown/modal/shape yardım stilleri `internal/render/ui_theme.go` altında merkezileştirilmeye başladı
+   - `internal/ui.Manager` için focus sırası testleri eklendi
+   - modal builder sıcak path'inde gereksiz children slice allocation'ı kaldırıldı
+5. Kalan dar alan:
+   - shape paint canlı preview çizimi ortak `Overlay` primitive'i içinde çalışıyor, ancak piksel seviyeli brush çizimi doğası gereği render-spesifik kalıyor

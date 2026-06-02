@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"math"
 
+	gameui "mapp-game-go/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -12,6 +14,22 @@ type menuItem struct {
 	label    string
 	action   ActionKind
 	disabled bool
+}
+
+func buildMainMenuButtons(hasSave bool, hasAutoSave bool) []gameui.Button {
+	items := buildMenuItems(hasSave, hasAutoSave)
+	itemH := 52.0
+	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
+	barW := 280.0
+	barX := ScreenWidth/2 - barW/2
+	buttons := make([]gameui.Button, 0, len(items))
+	for i, item := range items {
+		y := startY + float64(i)*itemH
+		btn := gameui.NewButton(barX, y-6, barW, itemH-8, item.label)
+		btn.Enabled = !item.disabled
+		buttons = append(buttons, btn)
+	}
+	return buttons
 }
 
 // DrawMainMenu ana menü ekranını çizer.
@@ -90,14 +108,17 @@ func menuItemColor(selected, disabled bool) color.RGBA {
 }
 
 // handleMainMenuInput ana menü klavye ve fare girişini işler.
-func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool) InputAction {
+func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool, input gameui.InputState) InputAction {
 	items := buildMenuItems(hasSave, hasAutoSave)
 	n := len(items)
+	buttons := buildMainMenuButtons(hasSave, hasAutoSave)
 
 	// Hover ile satır vurgusunu güncelle
-	mx, my := ebiten.CursorPosition()
-	if i := r.mainMenuHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.factionCursor = i
+	for i, btn := range buttons {
+		if btn.HitTest(input.MouseX, input.MouseY) {
+			r.factionCursor = i
+			break
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
@@ -118,9 +139,11 @@ func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool) InputActi
 			return InputAction{Kind: item.action}
 		}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if i := r.mainMenuHoverIndex(float64(mx), float64(my)); i >= 0 && !items[i].disabled {
-			return InputAction{Kind: items[i].action}
+	if input.LeftJustPressed {
+		for i, btn := range buttons {
+			if btn.HandleInput(input) && !items[i].disabled {
+				return InputAction{Kind: items[i].action}
+			}
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyF11) {

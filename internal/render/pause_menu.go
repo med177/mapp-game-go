@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"math"
 
+	gameui "mapp-game-go/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -13,6 +15,36 @@ type pauseMenuItem struct {
 	action   ActionKind
 	disabled bool
 	delta    int
+}
+
+func pauseMenuPanelRect(itemCount int) (bx, by, bw, bh float64) {
+	bw = 390
+	bh = float64(itemCount)*64 + 110
+	bx = ScreenWidth/2 - bw/2
+	by = ScreenHeight/2 - bh/2
+	return bx, by, bw, bh
+}
+
+func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
+	items := buildPauseItems(hasSave)
+	bx, by, bw, _ := pauseMenuPanelRect(len(items))
+	startY := by + 68
+	itemH := 64.0
+	buttons := make([]gameui.Button, 0, len(items))
+	for i, item := range items {
+		y := startY + float64(i)*itemH
+		label := item.label
+		switch item.action {
+		case ActionToggleMusic:
+			label = "Müzik: " + boolLabel(settings.MusicOn)
+		case ActionAdjustMusic:
+			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
+		}
+		btn := gameui.NewButton(bx+16, y-6, bw-32, itemH-12, label)
+		btn.Enabled = !item.disabled
+		buttons = append(buttons, btn)
+	}
+	return buttons
 }
 
 func buildPauseItems(hasSave bool) []pauseMenuItem {
@@ -36,43 +68,42 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 
 	items := buildPauseItems(hasSave)
 
-	bw := float32(390)
-	bh := float32(float64(len(items))*64 + 110)
-	bx := float32(ScreenWidth/2) - bw/2
-	by := float32(ScreenHeight/2) - bh/2
+	bx, by, bw, bh := pauseMenuPanelRect(len(items))
+	fbx, fby, fbw, fbh := float32(bx), float32(by), float32(bw), float32(bh)
 
 	// Panel arka planı — animasyonlu hafif titreşen kenarlık
-	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{10, 8, 5, 240}, false)
+	vector.FillRect(screen, fbx, fby, fbw, fbh, color.RGBA{10, 8, 5, 240}, false)
 	phase := float64(tick) / 90.0
 	glow := uint8(140 + uint8(20*math.Abs(math.Sin(phase))))
-	vector.StrokeRect(screen, bx, by, bw, bh, 2, color.RGBA{glow, glow - 30, 30, 255}, false)
-	vector.StrokeRect(screen, bx+4, by+4, bw-8, bh-8, 1, color.RGBA{80, 65, 30, 180}, false)
+	vector.StrokeRect(screen, fbx, fby, fbw, fbh, 2, color.RGBA{glow, glow - 30, 30, 255}, false)
+	vector.StrokeRect(screen, fbx+4, fby+4, fbw-8, fbh-8, 1, color.RGBA{80, 65, 30, 180}, false)
 
 	// Üst şerit
-	vector.FillRect(screen, bx, by, bw, 4, color.RGBA{200, 160, 50, 255}, false)
+	vector.FillRect(screen, fbx, fby, fbw, 4, color.RGBA{200, 160, 50, 255}, false)
 
 	// Başlık
 	titleW := MeasureText("DURAKLANDI", FaceLarge)
 	DrawText(screen, "DURAKLANDI",
-		float64(bx)+float64(bw)/2-titleW/2,
-		float64(by)+18,
+		bx+bw/2-titleW/2,
+		by+18,
 		FaceLarge, color.RGBA{220, 190, 80, 255})
 
-	sepY := by + 52
-	vector.StrokeLine(screen, bx+20, sepY, bx+bw-20, sepY, 1, color.RGBA{100, 80, 35, 180}, false)
+	sepY := fby + 52
+	vector.StrokeLine(screen, fbx+20, sepY, fbx+fbw-20, sepY, 1, color.RGBA{100, 80, 35, 180}, false)
 
 	// Menü maddeleri
-	startY := float64(by) + 68
+	startY := by + 68
 	itemH := 64.0
+	buttons := buildPauseMenuButtons(hasSave, settings)
 
 	for i, item := range items {
 		y := startY + float64(i)*itemH
 		isSelected := i == cursor
 
 		if isSelected && !item.disabled {
-			vector.FillRect(screen, bx+16, float32(y)-6, bw-32, float32(itemH)-12,
+			vector.FillRect(screen, fbx+16, float32(y)-6, fbw-32, float32(itemH)-12,
 				color.RGBA{45, 35, 12, 200}, false)
-			vector.StrokeRect(screen, bx+16, float32(y)-6, bw-32, float32(itemH)-12,
+			vector.StrokeRect(screen, fbx+16, float32(y)-6, fbw-32, float32(itemH)-12,
 				1, color.RGBA{180, 145, 50, 200}, false)
 		}
 
@@ -81,31 +112,27 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 		if isSelected && !item.disabled {
 			prefix = "► "
 		}
-		label := item.label
-		switch item.action {
-		case ActionToggleMusic:
-			label = "Müzik: " + boolLabel(settings.MusicOn)
-		case ActionAdjustMusic:
-			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
-		}
+		label := buttons[i].Label
 		tw := MeasureText(prefix+label, FaceLarge)
 		DrawText(screen, prefix+label,
-			float64(bx)+float64(bw)/2-tw/2,
+			bx+bw/2-tw/2,
 			y+8, FaceLarge, col)
 	}
 
 	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et",
-		ScreenWidth/2, float64(by)+float64(bh)-22, FaceSmall, color.RGBA{80, 80, 80, 200})
+		ScreenWidth/2, by+bh-22, FaceSmall, color.RGBA{80, 80, 80, 200})
 }
 
 // handlePauseMenuInput duraklama menüsü girişini işler.
-func (r *Renderer) handlePauseMenuInput() InputAction {
+func (r *Renderer) handlePauseMenuInput(input gameui.InputState) InputAction {
 	items := buildPauseItems(r.HasSave)
 	n := len(items)
-
-	mx, my := ebiten.CursorPosition()
-	if i := r.pauseMenuHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.pauseCursor = i
+	buttons := buildPauseMenuButtons(r.HasSave, r.CurrentSettings)
+	for i, btn := range buttons {
+		if btn.HitTest(input.MouseX, input.MouseY) {
+			r.pauseCursor = i
+			break
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
@@ -137,9 +164,11 @@ func (r *Renderer) handlePauseMenuInput() InputAction {
 			return InputAction{Kind: item.action, Delta: item.delta}
 		}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if i := r.pauseMenuHoverIndex(float64(mx), float64(my)); i >= 0 && !items[i].disabled {
-			return InputAction{Kind: items[i].action, Delta: items[i].delta}
+	if input.LeftJustPressed {
+		for i, btn := range buttons {
+			if btn.HandleInput(input) && !items[i].disabled {
+				return InputAction{Kind: items[i].action, Delta: items[i].delta}
+			}
 		}
 	}
 	return InputAction{}
@@ -147,17 +176,8 @@ func (r *Renderer) handlePauseMenuInput() InputAction {
 
 // pauseMenuHoverIndex fareye göre hangi menü maddesinin üzerinde olduğunu döner.
 func (r *Renderer) pauseMenuHoverIndex(mx, my float64) int {
-	items := buildPauseItems(r.HasSave)
-	bw := float64(390)
-	bh := float64(len(items))*64 + 110
-	bx := ScreenWidth/2 - bw/2
-	by := ScreenHeight/2 - bh/2
-	startY := by + 68
-	itemH := 64.0
-
-	for i := range items {
-		y := startY + float64(i)*itemH
-		if mx >= bx+16 && mx <= bx+bw-16 && my >= y-6 && my <= y+itemH-18 {
+	for i, btn := range buildPauseMenuButtons(r.HasSave, r.CurrentSettings) {
+		if btn.HitTest(mx, my) {
 			return i
 		}
 	}

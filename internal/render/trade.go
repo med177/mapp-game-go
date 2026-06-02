@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -95,27 +96,15 @@ func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, foc
 	DrawTextCentered(screen, "── Ticaret ──", float64(px)+float64(pw)/2, float64(py)+16, FaceLarge, ColorYellow)
 
 	// Kapatma butonu
-	cx, cy, cw, ch := tradeCloseRect()
-	vector.FillRect(screen, cx, cy, cw, ch, color.RGBA{45, 34, 25, 230}, false)
-	vector.StrokeRect(screen, cx, cy, cw, ch, 1, panelBorder, false)
-	DrawTextCentered(screen, "X", float64(cx)+float64(cw)/2, float64(cy)+5, FaceSmall, ColorGold)
+	closeBtn := buildTradeCloseButton()
+	drawTradeButton(screen, closeBtn, false)
 
 	// Sekmeler
-	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
-	tabW := (pw - 16) / float32(len(tabLabels))
-	tabY := py + 40
-	for i, label := range tabLabels {
-		tx := px + 8 + float32(i)*tabW
-		bg := color.RGBA{25, 20, 14, 200}
-		if i == int(tab) {
-			bg = color.RGBA{55, 45, 25, 230}
-		}
-		vector.FillRect(screen, tx, tabY, tabW-4, tradeTabH, bg, false)
-		tw := MeasureText(label, FaceSmall)
-		DrawText(screen, label, float64(tx)+float64(tabW-4)/2-float64(tw)/2, float64(tabY)+8, FaceSmall, ColorWhite)
+	for _, btn := range buildTradeTabButtons() {
+		drawTradeButton(screen, btn.Button, btn.Tab != tab)
 	}
 
-	contentY := tabY + tradeTabH + 8
+	contentY := py + 40 + tradeTabH + 8
 	contentH := ph - (contentY - py) - 10
 
 	switch tab {
@@ -209,7 +198,6 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 	// Fraksiyon/mal başlıkları kontrol satırının altına alınır.
 	DrawText(screen, "Hedef Fraksiyon:", float64(px)+8, float64(y)+42, FaceSmall, ColorGold)
 
-	rowY := y + 62
 	visibleRows := int((h - tradeBottomReserved - 62) / 28)
 	if visibleRows < 1 {
 		visibleRows = 1
@@ -219,20 +207,14 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 	if end > len(factions) {
 		end = len(factions)
 	}
-	for i := start; i < end; i++ {
-		fid := factions[i]
-		f := gs.Factions[fid]
-		if f == nil {
-			continue
+	factionItems := make([]string, 0, len(factions))
+	for _, fid := range factions {
+		if f := gs.Factions[fid]; f != nil {
+			factionItems = append(factionItems, f.NameTR)
 		}
-		ry := rowY + float32(i-start)*28
-		bg := color.RGBA{20, 18, 12, 200}
-		if i == focusFaction {
-			bg = color.RGBA{55, 45, 25, 230}
-		}
-		vector.FillRect(screen, px+8, ry, leftW-12, 24, bg, false)
-		DrawText(screen, f.NameTR, float64(px)+14, float64(ry)+4, FaceSmall, ColorWhite)
 	}
+	factionList := buildTradeFactionList(px, y, leftW, visibleRows, factionItems, scroll, focusFaction)
+	gameui.DrawListView(screen, factionList, tradeListViewStyle(), renderSmallText)
 
 	// Sağ sütun: mal seçimi
 	rightX := px + leftW + 8
@@ -246,19 +228,11 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		targetFid := factions[focusFaction]
 		targetF := gs.Factions[targetFid]
 		if targetF != nil {
-			gy := y + 62
+			goodItems := make([]string, 0, len(goods))
 			for gi, good := range goods {
 				goodName := goodDisplayName(good)
 				srcAmount := getFactionGoodAmount(playerF, good)
 				dstAmount := getFactionGoodAmount(targetF, good)
-
-				bg := color.RGBA{20, 18, 12, 200}
-				if gi == focusGood {
-					bg = color.RGBA{55, 45, 25, 230}
-				}
-				vector.FillRect(screen, rightX, gy, rightW, 24, bg, false)
-
-				// Fiyat bilgisi
 				price := "?"
 				if gs.MarketPrices != nil {
 					if p, ok := gs.MarketPrices[good]; ok {
@@ -266,10 +240,13 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 					}
 				}
 				line := goodName + " | Sende: " + itoa(srcAmount) + " | " + targetF.NameTR + ": " + itoa(dstAmount) + " | Fiyat: " + price
-				line = trimTextToWidth(line, FaceSmall, float64(rightW)-12)
-				DrawText(screen, line, float64(rightX)+6, float64(gy)+4, FaceSmall, color.RGBA{220, 210, 185, 240})
-				gy += 28
+				if gi == focusGood {
+					_ = gi
+				}
+				goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 			}
+			goodsList := buildTradeGoodsList(px, y, leftW, rightW, visibleRows, goodItems, focusGood)
+			gameui.DrawListView(screen, goodsList, tradeListViewStyle(), renderSmallText)
 		}
 	} else {
 		DrawText(screen, "Önce sol listeden bir hedef fraksiyon seçin.", float64(rightX)+6, float64(y)+72, FaceSmall, ColorGray)
@@ -284,17 +261,12 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 	// Manuel al/sat butonları (tek seferlik pazar işlemi)
 	if focusFaction >= 0 && focusFaction < len(factions) && focusGood >= 0 && focusGood < len(goods) {
 		btnY := y + h - tradeActBtnH - 12
-		buyX := rightX + 170
-		sellX := rightX + tradeActBtnW + 8
-		sellX = buyX + tradeActBtnW + 8
-
-		vector.FillRect(screen, buyX, btnY, tradeActBtnW, tradeActBtnH, color.RGBA{62, 112, 62, 230}, false)
-		vector.StrokeRect(screen, buyX, btnY, tradeActBtnW, tradeActBtnH, 1, color.RGBA{150, 200, 150, 230}, false)
-		DrawTextCentered(screen, "AL", float64(buyX)+float64(tradeActBtnW)/2, float64(btnY)+6, FaceSmall, ColorWhite)
-
-		vector.FillRect(screen, sellX, btnY, tradeActBtnW, tradeActBtnH, color.RGBA{112, 76, 52, 230}, false)
-		vector.StrokeRect(screen, sellX, btnY, tradeActBtnW, tradeActBtnH, 1, color.RGBA{210, 170, 130, 230}, false)
-		DrawTextCentered(screen, "SAT", float64(sellX)+float64(tradeActBtnW)/2, float64(btnY)+6, FaceSmall, ColorWhite)
+		qtyButtons, buyBtn, sellBtn := buildTradeActionButtons(px, y, w, h)
+		for _, btn := range qtyButtons {
+			drawTradeButton(screen, btn, false)
+		}
+		drawTradeActionButton(screen, buyBtn, color.RGBA{62, 112, 62, 230}, color.RGBA{150, 200, 150, 230})
+		drawTradeActionButton(screen, sellBtn, color.RGBA{112, 76, 52, 230}, color.RGBA{210, 170, 130, 230})
 
 		target := gs.Factions[factions[focusFaction]]
 		good := goods[focusGood]
@@ -309,8 +281,141 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		DrawText(screen, line2, float64(rightX), float64(btnY)-18, FaceSmall, color.RGBA{230, 210, 155, 230})
 		line3 := "Al max: " + itoa(maxBuy) + " | Sat max: " + itoa(maxSell)
 		DrawText(screen, line3, float64(rightX), float64(btnY)-2, FaceSmall, color.RGBA{160, 190, 210, 220})
-		drawTradeQtyButtons(screen, rightX, btnY)
 	}
+}
+
+type tradeTabButton struct {
+	Tab    TradeTab
+	Button gameui.Button
+}
+
+type tradeChoiceButton struct {
+	Value  int
+	Button gameui.Button
+}
+
+func buildTradeCloseButton() gameui.Button {
+	x, y, w, h := tradeCloseRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+}
+
+func buildTradeTabButtons() []tradeTabButton {
+	px, py, pw, _ := tradePanelRect()
+	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
+	tabW := (pw - 16) / float32(len(tabLabels))
+	tabY := py + 40
+	out := make([]tradeTabButton, 0, len(tabLabels))
+	for i, label := range tabLabels {
+		tx := px + 8 + float32(i)*tabW
+		out = append(out, tradeTabButton{
+			Tab:    TradeTab(i),
+			Button: gameui.NewButton(float64(tx), float64(tabY), float64(tabW-4), float64(tradeTabH), label),
+		})
+	}
+	return out
+}
+
+func buildTradeFilterButtons(px, y float32) []tradeChoiceButton {
+	labels := []string{"Hepsi", "Satanlar", "Alanlar"}
+	out := make([]tradeChoiceButton, 0, len(labels))
+	for i, label := range labels {
+		bx := px + 56 + float32(i)*72
+		out = append(out, tradeChoiceButton{
+			Value:  i,
+			Button: gameui.NewButton(float64(bx), float64(y+2), 66, 22, label),
+		})
+	}
+	return out
+}
+
+func buildTradeSortButtons(px, y float32) []tradeChoiceButton {
+	labels := []string{"Yakın", "Fiyat", "Stok"}
+	out := make([]tradeChoiceButton, 0, len(labels))
+	for i, label := range labels {
+		bx := px + 325 + float32(i)*62
+		out = append(out, tradeChoiceButton{
+			Value:  i,
+			Button: gameui.NewButton(float64(bx), float64(y+2), 56, 22, label),
+		})
+	}
+	return out
+}
+
+func buildTradeFactionList(px, y, leftW float32, visibleRows int, items []string, scroll int, selected int) gameui.ListView {
+	h := float64(visibleRows) * 28
+	list := gameui.NewListView(float64(px+8), float64(y+62), float64(leftW-12), h, 28, visibleRows, items)
+	list.Scroll = scroll
+	list.Selected = selected
+	return list
+}
+
+func buildTradeGoodsList(px, y, leftW, rightW float32, visibleRows int, items []string, selected int) gameui.ListView {
+	h := float64(minTradeInt(visibleRows, len(items))) * 28
+	list := gameui.NewListView(float64(px+leftW+8), float64(y+62), float64(rightW), h, 28, len(items), items)
+	list.Selected = selected
+	return list
+}
+
+func buildTradeActionButtons(px, y, w, h float32) ([]gameui.Button, gameui.Button, gameui.Button) {
+	leftW := w * 0.40
+	rightX := px + leftW + 8
+	btnY := y + h - tradeActBtnH - 12
+	qty := []gameui.Button{
+		gameui.NewButton(float64(rightX), float64(btnY), 36, float64(tradeActBtnH), "-10"),
+		gameui.NewButton(float64(rightX+44), float64(btnY), 36, float64(tradeActBtnH), "-1"),
+		gameui.NewButton(float64(rightX+88), float64(btnY), 36, float64(tradeActBtnH), "+1"),
+		gameui.NewButton(float64(rightX+132), float64(btnY), 36, float64(tradeActBtnH), "+10"),
+	}
+	buyX := rightX + 170
+	buyBtn := gameui.NewButton(float64(buyX), float64(btnY), float64(tradeActBtnW), float64(tradeActBtnH), "AL")
+	sellBtn := gameui.NewButton(float64(buyX+tradeActBtnW+8), float64(btnY), float64(tradeActBtnW), float64(tradeActBtnH), "SAT")
+	return qty, buyBtn, sellBtn
+}
+
+func tradeButtonStyle(active bool) gameui.ButtonStyle {
+	style := menuButtonStyle
+	style.Text = ColorWhite
+	style.TextOffsetY = 7
+	if active {
+		style.BG = color.RGBA{55, 45, 25, 230}
+	} else {
+		style.BG = color.RGBA{25, 20, 14, 200}
+	}
+	return style
+}
+
+func tradeListViewStyle() gameui.ListViewStyle {
+	return gameui.ListViewStyle{
+		RowBG:          color.RGBA{20, 18, 12, 200},
+		SelectedRowBG:  color.RGBA{55, 45, 25, 230},
+		TextColor:      ColorWhite,
+		SelectedText:   ColorWhite,
+		MutedText:      ColorGray,
+		RowTextOffsetY: 4,
+	}
+}
+
+func drawTradeButton(screen *ebiten.Image, btn gameui.Button, inactive bool) {
+	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, tradeButtonStyle(!inactive))
+}
+
+func drawTradeActionButton(screen *ebiten.Image, btn gameui.Button, bg, border color.RGBA) {
+	style := menuButtonStyle
+	style.BG = bg
+	style.Border = border
+	style.Text = ColorWhite
+	style.TextOffsetY = 6
+	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, style)
+}
+
+func drawTradeChoiceButton(screen *ebiten.Image, btn gameui.Button, active bool, activeBG color.RGBA) {
+	style := tradeButtonStyle(true)
+	style.TextOffsetY = 4
+	style.BG = color.RGBA{26, 24, 21, 220}
+	if active {
+		style.BG = activeBG
+	}
+	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, style)
 }
 
 // drawTradePricesTab piyasa fiyatlarını gösterir.
@@ -529,28 +634,12 @@ func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[facti
 
 func drawTradeListControls(screen *ebiten.Image, px, y float32, listFilter TradeListFilter, listSort TradeListSort) {
 	DrawText(screen, "Filtre:", float64(px)+8, float64(y)+14, FaceSmall, ColorGold)
-	filterLabels := []string{"Hepsi", "Satanlar", "Alanlar"}
-	for i, label := range filterLabels {
-		bx := px + 56 + float32(i)*72
-		bg := color.RGBA{32, 28, 22, 220}
-		if int(listFilter) == i {
-			bg = color.RGBA{70, 62, 36, 235}
-		}
-		vector.FillRect(screen, bx, y+2, 66, 22, bg, false)
-		vector.StrokeRect(screen, bx, y+2, 66, 22, 1, panelBorder, false)
-		DrawTextCentered(screen, label, float64(bx)+33, float64(y)+7, FaceSmall, ColorWhite)
+	for _, btn := range buildTradeFilterButtons(px, y) {
+		drawTradeChoiceButton(screen, btn.Button, int(listFilter) == btn.Value, color.RGBA{70, 62, 36, 235})
 	}
 	DrawText(screen, "Sıra:", float64(px)+286, float64(y)+14, FaceSmall, ColorGold)
-	sortLabels := []string{"Yakın", "Fiyat", "Stok"}
-	for i, label := range sortLabels {
-		bx := px + 325 + float32(i)*62
-		bg := color.RGBA{26, 24, 21, 220}
-		if int(listSort) == i {
-			bg = color.RGBA{52, 70, 82, 235}
-		}
-		vector.FillRect(screen, bx, y+2, 56, 22, bg, false)
-		vector.StrokeRect(screen, bx, y+2, 56, 22, 1, panelBorder, false)
-		DrawTextCentered(screen, label, float64(bx)+28, float64(y)+7, FaceSmall, ColorWhite)
+	for _, btn := range buildTradeSortButtons(px, y) {
+		drawTradeChoiceButton(screen, btn.Button, int(listSort) == btn.Value, color.RGBA{52, 70, 82, 235})
 	}
 }
 
@@ -623,143 +712,215 @@ func tradeMaxSellAmount(player, target *faction.Faction, good economy.GoodType, 
 	return playerStock
 }
 
-func tradeNewTabFactionIndexAt(mx, my float64, factions []faction.FactionID, px, y, w, h float32, scroll int) int {
-	leftW := w * 0.40
-	if len(factions) == 0 {
-		return -1
+func minTradeInt(a, b int) int {
+	if a < b {
+		return a
 	}
-	rowY := y + 62
-	visibleRows := int((h - tradeBottomReserved - 62) / 28)
-	if visibleRows < 1 {
-		visibleRows = 1
-	}
-	start := scroll
-	end := start + visibleRows
-	if end > len(factions) {
-		end = len(factions)
-	}
-	for i := start; i < end; i++ {
-		ry := rowY + float32(i-start)*28
-		if mx >= float64(px+8) && mx <= float64(px+8+leftW-12) &&
-			my >= float64(ry) && my <= float64(ry+24) {
-			return i
-		}
-	}
-	return -1
-}
-
-func tradeNewTabGoodIndexAt(mx, my float64, factions []faction.FactionID, px, y, w, h float32, focusFaction int) int {
-	if focusFaction < 0 || focusFaction >= len(factions) {
-		return -1
-	}
-	leftW := w * 0.40
-	rightX := px + leftW + 8
-	rightW := w - leftW - 16
-	goods := tradeSelectableGoods()
-	gy := y + 62
-	for gi := range goods {
-		if mx >= float64(rightX) && mx <= float64(rightX+rightW) &&
-			my >= float64(gy) && my <= float64(gy+24) {
-			return gi
-		}
-		gy += 28
-	}
-	return -1
-}
-
-func tradeNewTabFilterAt(mx, my float64, px, y, w float32) int {
-	_ = w
-	for i := 0; i < 3; i++ {
-		bx := px + 56 + float32(i)*72
-		if mx >= float64(bx) && mx <= float64(bx+66) &&
-			my >= float64(y+2) && my <= float64(y+24) {
-			return i
-		}
-	}
-	return -1
-}
-
-func tradeNewTabSortAt(mx, my float64, px, y, w float32) int {
-	_ = w
-	for i := 0; i < 3; i++ {
-		bx := px + 325 + float32(i)*62
-		if mx >= float64(bx) && mx <= float64(bx+56) &&
-			my >= float64(y+2) && my <= float64(y+24) {
-			return i
-		}
-	}
-	return -1
-}
-
-func tradeNewTabActionAt(mx, my float64, px, y, w, h float32) string {
-	leftW := w * 0.40
-	rightX := px + leftW + 8
-	btnY := y + h - tradeActBtnH - 12
-	buyX := rightX + 170
-	sellX := buyX + tradeActBtnW + 8
-	if mx >= float64(buyX) && mx <= float64(buyX+tradeActBtnW) &&
-		my >= float64(btnY) && my <= float64(btnY+tradeActBtnH) {
-		return "buy"
-	}
-	if mx >= float64(sellX) && mx <= float64(sellX+tradeActBtnW) &&
-		my >= float64(btnY) && my <= float64(btnY+tradeActBtnH) {
-		return "sell"
-	}
-	return ""
-}
-
-func tradeNewTabQtyDeltaAt(mx, my float64, px, y, w, h float32) int {
-	leftW := w * 0.40
-	rightX := px + leftW + 8
-	btnY := y + h - tradeActBtnH - 12
-	deltas := []int{-10, -1, 1, 10}
-	for i, delta := range deltas {
-		bx := rightX + float32(i)*44
-		if mx >= float64(bx) && mx <= float64(bx+36) &&
-			my >= float64(btnY) && my <= float64(btnY+tradeActBtnH) {
-			return delta
-		}
-	}
-	return 0
+	return b
 }
 
 // tradePanelPointerHit panel açıkken hangi bölgelerde pointer imleci gösterileceğini belirler.
 func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, focusFaction int, focusGood int, scroll int, listFilter TradeListFilter, listSort TradeListSort) bool {
-	if tradeCloseHit(mx, my) {
+	if buildTradeCloseButton().HitTest(mx, my) {
 		return true
 	}
 	px, py, pw, ph := tradePanelRect()
 	if mx < float64(px) || mx > float64(px+pw) || my < float64(py) || my > float64(py+ph) {
-		return true // panel dışı tıklama paneli kapattığı için pointer göster.
+		return false
 	}
-
-	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
-	tabW := (pw - 16) / float32(len(tabLabels))
-	tabY := py + 40
-	for i := 0; i < len(tabLabels); i++ {
-		tx := px + 8 + float32(i)*tabW
-		if mx >= float64(tx) && mx <= float64(tx+tabW-4) && my >= float64(tabY) && my <= float64(tabY+tradeTabH) {
+	for _, btn := range buildTradeTabButtons() {
+		if btn.Button.HitTest(mx, my) {
 			return true
 		}
 	}
-
 	if tab != TradeTabNew {
 		return false
 	}
-	contentY := py + tradeTabH + 48
-	contentH := ph - (tradeTabH + 58)
-	if tradeNewTabFilterAt(mx, my, px, contentY, pw) >= 0 || tradeNewTabSortAt(mx, my, px, contentY, pw) >= 0 {
-		return true
+	for _, btn := range buildTradeFilterButtons(px, py+tradeTabH+48) {
+		if btn.Button.HitTest(mx, my) {
+			return true
+		}
+	}
+	for _, btn := range buildTradeSortButtons(px, py+tradeTabH+48) {
+		if btn.Button.HitTest(mx, my) {
+			return true
+		}
 	}
 	factions := sortedFactionsForTrade(gs, focusGood, listFilter, listSort)
-	if tradeNewTabFactionIndexAt(mx, my, factions, px, contentY, pw, contentH, scroll) >= 0 {
+	visibleRows := int((ph - (py + tradeTabH + 48 - py) - tradeBottomReserved - 62) / 28)
+	if visibleRows < 1 {
+		visibleRows = 1
+	}
+	factionItems := make([]string, 0, len(factions))
+	for _, fid := range factions {
+		if f := gs.Factions[fid]; f != nil {
+			factionItems = append(factionItems, f.NameTR)
+		}
+	}
+	if buildTradeFactionList(px, py+tradeTabH+48, pw*0.40, visibleRows, factionItems, scroll, focusFaction).HitTest(mx, my) {
 		return true
 	}
-	if tradeNewTabGoodIndexAt(mx, my, factions, px, contentY, pw, contentH, focusFaction) >= 0 {
-		return true
+	if focusFaction >= 0 && focusFaction < len(factions) {
+		target := gs.Factions[factions[focusFaction]]
+		if target != nil {
+			goods := tradeSelectableGoods()
+			items := make([]string, 0, len(goods))
+			rightW := pw - pw*0.40 - 16
+			for _, good := range goods {
+				price := "?"
+				if gs.MarketPrices != nil {
+					if p, ok := gs.MarketPrices[good]; ok {
+						price = itoa(p) + " altın"
+					}
+				}
+				line := goodDisplayName(good) + " | Sende: " + itoa(getFactionGoodAmount(gs.Factions[gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
+				items = append(items, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
+			}
+			if buildTradeGoodsList(px, py+tradeTabH+48, pw*0.40, rightW, visibleRows, items, focusGood).HitTest(mx, my) {
+				return true
+			}
+		}
 	}
-	if tradeNewTabQtyDeltaAt(mx, my, px, contentY, pw, contentH) != 0 {
-		return true
+	qtyButtons, buyBtn, sellBtn := buildTradeActionButtons(px, py+tradeTabH+48, pw, ph-(tradeTabH+58))
+	for _, btn := range qtyButtons {
+		if btn.HitTest(mx, my) {
+			return true
+		}
 	}
-	return tradeNewTabActionAt(mx, my, px, contentY, pw, contentH) != ""
+	return buyBtn.HitTest(mx, my) || sellBtn.HitTest(mx, my)
+}
+
+func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
+	if input.LeftJustPressed {
+		px, py, pw, ph := tradePanelRect()
+		if !(gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}).Hit(input.MouseX, input.MouseY) {
+			r.showTrade = false
+			return InputAction{}
+		}
+	}
+	if buildTradeCloseButton().HandleInput(input) {
+		r.showTrade = false
+		return InputAction{}
+	}
+	for _, btn := range buildTradeTabButtons() {
+		if btn.Button.HandleInput(input) {
+			r.tradeTab = btn.Tab
+			r.tradeScroll = 0
+			r.tradeFactionFocus = 0
+			return InputAction{}
+		}
+	}
+	if r.tradeTab == TradeTabRoutes {
+		if input.WheelY != 0 {
+			if input.WheelY > 0 {
+				r.tradeScroll--
+			} else {
+				r.tradeScroll++
+			}
+			if r.tradeScroll < 0 {
+				r.tradeScroll = 0
+			}
+		}
+		return InputAction{}
+	}
+	if r.tradeTab != TradeTabNew {
+		return InputAction{}
+	}
+	px, py, pw, ph := tradePanelRect()
+	contentY := py + tradeTabH + 48
+	visibleRows := int((ph - (contentY - py) - tradeBottomReserved - 62) / 28)
+	if visibleRows < 1 {
+		visibleRows = 1
+	}
+	for _, btn := range buildTradeFilterButtons(px, contentY) {
+		if btn.Button.HandleInput(input) {
+			r.tradeListFilter = TradeListFilter(btn.Value)
+			r.tradeFactionFocus = 0
+			r.tradeScroll = 0
+			return InputAction{}
+		}
+	}
+	for _, btn := range buildTradeSortButtons(px, contentY) {
+		if btn.Button.HandleInput(input) {
+			r.tradeListSort = TradeListSort(btn.Value)
+			r.tradeFactionFocus = 0
+			return InputAction{}
+		}
+	}
+	factions := sortedFactionsForTrade(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
+	factionItems := make([]string, 0, len(factions))
+	for _, fid := range factions {
+		if f := r.gs.Factions[fid]; f != nil {
+			factionItems = append(factionItems, f.NameTR)
+		}
+	}
+	factionList := buildTradeFactionList(px, contentY, pw*0.40, visibleRows, factionItems, r.tradeScroll, r.tradeFactionFocus)
+	if factionList.HandleInput(input) {
+		r.tradeScroll = factionList.Scroll
+		if factionList.Selected != r.tradeFactionFocus && factionList.Selected >= 0 {
+			r.tradeFactionFocus = factionList.Selected
+		}
+		return InputAction{}
+	}
+	if len(factions) == 0 {
+		return InputAction{}
+	}
+	if r.tradeFactionFocus < 0 {
+		r.tradeFactionFocus = 0
+	}
+	if r.tradeFactionFocus >= len(factions) {
+		r.tradeFactionFocus = len(factions) - 1
+	}
+	target := r.gs.Factions[factions[r.tradeFactionFocus]]
+	goods := tradeSelectableGoods()
+	goodItems := make([]string, 0, len(goods))
+	rightW := pw - pw*0.40 - 16
+	for _, good := range goods {
+		price := "?"
+		if r.gs.MarketPrices != nil {
+			if p, ok := r.gs.MarketPrices[good]; ok {
+				price = itoa(p) + " altın"
+			}
+		}
+		line := goodDisplayName(good) + " | Sende: " + itoa(getFactionGoodAmount(r.gs.Factions[r.gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
+		goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
+	}
+	goodsList := buildTradeGoodsList(px, contentY, pw*0.40, rightW, visibleRows, goodItems, r.tradeGoodFocus)
+	if goodsList.HandleInput(input) {
+		if goodsList.Selected >= 0 {
+			r.tradeGoodFocus = goodsList.Selected
+		}
+		return InputAction{}
+	}
+	qtyButtons, buyBtn, sellBtn := buildTradeActionButtons(px, contentY, pw, ph-(tradeTabH+58))
+	deltas := []int{-10, -1, 1, 10}
+	for i, btn := range qtyButtons {
+		if btn.HandleInput(input) {
+			r.tradeAmount += deltas[i]
+			if r.tradeAmount < 1 {
+				r.tradeAmount = 1
+			}
+			if r.tradeAmount > 999 {
+				r.tradeAmount = 999
+			}
+			return InputAction{}
+		}
+	}
+	buyClicked := buyBtn.HandleInput(input)
+	sellClicked := sellBtn.HandleInput(input)
+	if buyClicked || sellClicked {
+		delta := r.tradeAmount
+		if sellClicked {
+			delta = -delta
+		}
+		if r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) {
+			return InputAction{
+				Kind:          ActionOneTimeTrade,
+				TargetFaction: factions[r.tradeFactionFocus],
+				BuildingID:    string(goods[r.tradeGoodFocus]),
+				Delta:         delta,
+			}
+		}
+	}
+	return InputAction{}
 }

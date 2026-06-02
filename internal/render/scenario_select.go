@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"mapp-game-go/internal/scenario"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -13,6 +14,21 @@ import (
 // ScenarioList senaryo seçim ekranında gösterilecek senaryolar.
 // game.go tarafından doldurulur, render paketince okunur.
 var ScenarioList []*scenario.Scenario
+
+func buildScenarioCardButtons(scenarios []*scenario.Scenario) []gameui.Button {
+	cardW := 560.0
+	cardH := 130.0
+	padY := 16.0
+	totalH := float64(len(scenarios))*(cardH+padY) - padY
+	startY := ScreenHeight/2 - totalH/2 + 10
+	startX := ScreenWidth/2 - cardW/2
+	buttons := make([]gameui.Button, 0, len(scenarios))
+	for i, sc := range scenarios {
+		y := startY + float64(i)*(cardH+padY)
+		buttons = append(buttons, gameui.NewButton(startX, y, cardW, cardH, sc.Name))
+	}
+	return buttons
+}
 
 // DrawScenarioSelect senaryo seçim ekranını çizer.
 func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cursor int) {
@@ -118,16 +134,19 @@ func splitLines(text string, maxChars int) []string {
 }
 
 // handleScenarioSelectInput senaryo seçim ekranı klavye ve fare girişini işler.
-func (r *Renderer) handleScenarioSelectInput() InputAction {
+func (r *Renderer) handleScenarioSelectInput(input gameui.InputState) InputAction {
 	scenarios := ScenarioList
 	if len(scenarios) == 0 {
 		return InputAction{}
 	}
 	n := len(scenarios)
+	buttons := buildScenarioCardButtons(scenarios)
 
-	mx, my := ebiten.CursorPosition()
-	if i := r.scenarioHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.scenarioCursor = i
+	for i, btn := range buttons {
+		if btn.HitTest(input.MouseX, input.MouseY) {
+			r.scenarioCursor = i
+			break
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
@@ -145,14 +164,16 @@ func (r *Renderer) handleScenarioSelectInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		return InputAction{Kind: ActionBack}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+	if input.LeftJustPressed {
+		if buildBackButton().HandleInput(input) {
 			return InputAction{Kind: ActionBack}
 		}
-		if i := r.scenarioHoverIndex(float64(mx), float64(my)); i >= 0 {
-			return InputAction{
-				Kind:       ActionSelectScenario,
-				BuildingID: scenarios[i].Path,
+		for i, btn := range buttons {
+			if btn.HandleInput(input) {
+				return InputAction{
+					Kind:       ActionSelectScenario,
+					BuildingID: scenarios[i].Path,
+				}
 			}
 		}
 	}
@@ -160,21 +181,8 @@ func (r *Renderer) handleScenarioSelectInput() InputAction {
 }
 
 func (r *Renderer) scenarioHoverIndex(mx, my float64) int {
-	scenarios := ScenarioList
-	if len(scenarios) == 0 {
-		return -1
-	}
-	cardW := float64(560)
-	cardH := float64(130)
-	padY := float64(16)
-	totalH := float64(len(scenarios))*(cardH+padY) - padY
-	startY := ScreenHeight/2 - totalH/2 + 10
-	startX := ScreenWidth/2 - cardW/2
-
-	for i := range scenarios {
-		x := startX
-		y := startY + float64(i)*(cardH+padY)
-		if mx >= x && mx <= x+cardW && my >= y && my <= y+cardH {
+	for i, btn := range buildScenarioCardButtons(ScenarioList) {
+		if btn.HitTest(mx, my) {
 			return i
 		}
 	}

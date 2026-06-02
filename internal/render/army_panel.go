@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -379,6 +380,12 @@ func armyPanelGeometry() (px, py, panelW float32) {
 	return
 }
 
+func buildArmyPanelCloseButton() gameui.Button {
+	px, py, panelW := armyPanelGeometry()
+	x, y, w, h := panelCloseRect(px, py, panelW)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+}
+
 // splitButtonRect BÖL butonunun piksel dikdörtgenini döner.
 // hasMerge true ise iki buton yan yana olacak şekilde sola kayar.
 func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
@@ -398,6 +405,29 @@ func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
 	by = py + 4
 	bx = px + panelW/2 + actionBtnGap/2
 	return
+}
+
+func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+	if aid == "" {
+		return gameui.Button{}, false
+	}
+	a, ok := gs.Armies[aid]
+	if !ok || len(a.Units) < 2 {
+		return gameui.Button{}, false
+	}
+	px, py, panelW := armyPanelGeometry()
+	hasMerge := FindMergeTarget(gs, aid) != ""
+	bx, by, bw, bh := splitButtonRect(px, py, panelW, hasMerge)
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "✂ BÖL"), true
+}
+
+func buildMergeArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+	if FindMergeTarget(gs, aid) == "" {
+		return gameui.Button{}, false
+	}
+	px, py, panelW := armyPanelGeometry()
+	bx, by, bw, bh := mergeButtonRect(px, py, panelW)
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "⊕ BİRLEŞTİR"), true
 }
 
 // drawArmyActionButton tek bir aksiyon butonunu çizer.
@@ -441,25 +471,22 @@ func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
 
 // SplitButtonHitTest fare BÖL butonuna denk geliyorsa true döner.
 func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
-	if aid == "" {
-		return false
-	}
-	a, ok := gs.Armies[aid]
-	if !ok || len(a.Units) < 2 {
-		return false
-	}
-	px, py, panelW := armyPanelGeometry()
-	hasMerge := FindMergeTarget(gs, aid) != ""
-	bx, by, bw, bh := splitButtonRect(px, py, panelW, hasMerge)
-	return fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh)
+	btn, ok := buildSplitArmyButton(gs, aid)
+	return ok && btn.HitTest(fx, fy)
 }
 
 // MergeButtonHitTest fare BİRLEŞTİR butonuna denk geliyorsa true döner.
 func MergeButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
-	if FindMergeTarget(gs, aid) == "" {
-		return false
+	btn, ok := buildMergeArmyButton(gs, aid)
+	return ok && btn.HitTest(fx, fy)
+}
+
+func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	if buildArmyPanelCloseButton().HitTest(fx, fy) {
+		return true
 	}
-	px, py, panelW := armyPanelGeometry()
-	bx, by, bw, bh := mergeButtonRect(px, py, panelW)
-	return fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh)
+	if SplitButtonHitTest(fx, fy, gs, aid) || MergeButtonHitTest(fx, fy, gs, aid) {
+		return true
+	}
+	return false
 }

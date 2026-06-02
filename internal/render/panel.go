@@ -12,6 +12,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
 
@@ -160,7 +161,37 @@ func tradeToggleButtonRect() [4]float32 {
 }
 
 func tradeToggleButtonHit(fx, fy float64) bool {
-	return rectF32Hit(fx, fy, tradeToggleButtonRect())
+	return buildTradeToggleButton().HitTest(fx, fy)
+}
+
+func buttonFromRectF32(r [4]float32, label string) gameui.Button {
+	return gameui.NewButton(float64(r[0]), float64(r[1]), float64(r[2]), float64(r[3]), label)
+}
+
+func buildBottomActionButtons(recruitEnabled bool) [4]gameui.Button {
+	rects := BottomButtonRects()
+	labels := [4]string{"Ordu", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
+	var buttons [4]gameui.Button
+	for i, rect := range rects {
+		btn := buttonFromRectF32(rect, labels[i])
+		if i == 0 {
+			btn.Enabled = recruitEnabled
+		}
+		buttons[i] = btn
+	}
+	return buttons
+}
+
+func buildMapModeButtons() [2]gameui.Button {
+	rects := mapModeButtonRects()
+	return [2]gameui.Button{
+		buttonFromRectF32(rects[0], "Normal"),
+		buttonFromRectF32(rects[1], "Ticaret"),
+	}
+}
+
+func buildTradeToggleButton() gameui.Button {
+	return buttonFromRectF32(tradeToggleButtonRect(), "Pazar")
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
@@ -190,15 +221,18 @@ func bottomActionHudHit(fx, fy float64) bool {
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
-	for _, r := range BottomButtonRects() {
-		if rectF32Hit(fx, fy, r) {
+	for _, btn := range buildBottomActionButtons(true) {
+		if btn.HitTest(fx, fy) {
 			return true
 		}
 	}
-	for _, r := range mapModeButtonRects() {
-		if rectF32Hit(fx, fy, r) {
+	for _, btn := range buildMapModeButtons() {
+		if btn.HitTest(fx, fy) {
 			return true
 		}
+	}
+	if buildTradeToggleButton().HitTest(fx, fy) {
+		return true
 	}
 	return false
 }
@@ -236,8 +270,12 @@ func topDateHudMenuButtonRect() (x, y, w, h float32) {
 }
 
 func topDateHudMenuButtonHit(fx, fy float64) bool {
+	return buildTopDateHudMenuButton().HitTest(fx, fy)
+}
+
+func buildTopDateHudMenuButton() gameui.Button {
 	x, y, w, h := topDateHudMenuButtonRect()
-	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Menü")
 }
 
 func musicHudRect() (x, y, w, h float32) {
@@ -269,7 +307,16 @@ func musicHudInteractiveHit(fx, fy float64) bool {
 	if !status.HasPlaylist {
 		return false
 	}
-	return rectF32Hit(fx, fy, musicHudToggleRect()) || rectF32Hit(fx, fy, musicHudNextRect())
+	toggle, next := buildMusicHudButtons(status.Playing)
+	return toggle.HitTest(fx, fy) || next.HitTest(fx, fy)
+}
+
+func buildMusicHudButtons(playing bool) (gameui.Button, gameui.Button) {
+	toggle := "Dur"
+	if !playing {
+		toggle = "Cal"
+	}
+	return buttonFromRectF32(musicHudToggleRect(), toggle), buttonFromRectF32(musicHudNextRect(), "Sonr")
 }
 
 func musicHudHit(fx, fy float64) bool {
@@ -373,9 +420,9 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	vector.FillRect(screen, hudX, hudY, hudW, 3, panelBorder, false)
 
 	rects := BottomButtonRects()
-	labels := [4]string{"Ordu", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
 	active := [4]bool{showRecruit, showDiplomacy, showTech, false}
 	enabled := [4]bool{recruitEnabled, true, true, true}
+	buttons := buildBottomActionButtons(recruitEnabled)
 	bgNorm := [4]color.RGBA{
 		{88, 62, 30, 220},
 		{40, 65, 110, 215},
@@ -400,8 +447,8 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		}
 		vector.FillRect(screen, r[0], r[1], r[2], r[3], bg, false)
 		vector.StrokeRect(screen, r[0], r[1], r[2], r[3], 1.5, panelBorder, false)
-		tw := MeasureText(labels[i], FaceMed)
-		DrawText(screen, labels[i], float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, txtCol)
+		tw := MeasureText(buttons[i].Label, FaceMed)
+		DrawText(screen, buttons[i].Label, float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, txtCol)
 	}
 	drawMapModeHud(screen, mapMode)
 
@@ -414,9 +461,8 @@ func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 	x, y, w, h := mapModeHudRect()
 	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 14, 18, 220}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1.2, panelBorder, false)
-	buttons := mapModeButtonRects()
-	labels := [2]string{"Normal", "Ticaret"}
-	for i, b := range buttons {
+	buttons := buildMapModeButtons()
+	for i, btn := range buttons {
 		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
 		fill := color.RGBA{44, 48, 56, 220}
 		txt := color.RGBA{184, 194, 204, 220}
@@ -424,18 +470,29 @@ func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 			fill = color.RGBA{66, 90, 122, 240}
 			txt = color.RGBA{235, 245, 255, 240}
 		}
-		vector.FillRect(screen, b[0], b[1], b[2], b[3], fill, false)
-		vector.StrokeRect(screen, b[0], b[1], b[2], b[3], 1, color.RGBA{120, 96, 54, 210}, false)
-		tw := MeasureText(labels[i], FaceSmall)
-		DrawText(screen, labels[i], float64(b[0])+float64(b[2])/2-tw/2, float64(b[1])+6, FaceSmall, txt)
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
+			BG:             fill,
+			Border:         color.RGBA{120, 96, 54, 210},
+			Text:           txt,
+			DisabledBG:     fill,
+			DisabledBorder: color.RGBA{120, 96, 54, 210},
+			DisabledText:   txt,
+			TextOffsetY:    6,
+			BorderWidth:    1,
+		})
 	}
 	if mapMode == MapModeTrade {
-		b := tradeToggleButtonRect()
-		fill := color.RGBA{64, 82, 46, 235}
-		vector.FillRect(screen, b[0], b[1], b[2], b[3], fill, false)
-		vector.StrokeRect(screen, b[0], b[1], b[2], b[3], 1, color.RGBA{150, 180, 120, 220}, false)
-		tw := MeasureText("Pazar", FaceSmall)
-		DrawText(screen, "Pazar", float64(b[0])+float64(b[2])/2-tw/2, float64(b[1])+6, FaceSmall, ColorWhite)
+		btn := buildTradeToggleButton()
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
+			BG:             color.RGBA{64, 82, 46, 235},
+			Border:         color.RGBA{150, 180, 120, 220},
+			Text:           ColorWhite,
+			DisabledBG:     color.RGBA{64, 82, 46, 235},
+			DisabledBorder: color.RGBA{150, 180, 120, 220},
+			DisabledText:   ColorWhite,
+			TextOffsetY:    6,
+			BorderWidth:    1,
+		})
 	}
 }
 
@@ -458,14 +515,9 @@ func drawMusicHud(screen *ebiten.Image) {
 	label := trimTextToWidth("Muzik: "+track, FaceSmall, 292)
 	DrawText(screen, label, float64(x)+10, float64(y)+11, FaceSmall, ColorGray)
 
-	toggle := "Dur"
-	if !status.Playing {
-		toggle = "Cal"
-	}
-	tr := musicHudToggleRect()
-	nr := musicHudNextRect()
-	drawTinyPanelButton(screen, tr[0], tr[1], tr[2], tr[3], toggle, true)
-	drawTinyPanelButton(screen, nr[0], nr[1], nr[2], nr[3], "Sonr", true)
+	toggleBtn, nextBtn := buildMusicHudButtons(status.Playing)
+	drawTinyPanelButton(screen, float32(toggleBtn.X), float32(toggleBtn.Y), float32(toggleBtn.W), float32(toggleBtn.H), toggleBtn.Label, true)
+	drawTinyPanelButton(screen, float32(nextBtn.X), float32(nextBtn.Y), float32(nextBtn.W), float32(nextBtn.H), nextBtn.Label, true)
 }
 
 func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
@@ -515,12 +567,17 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 
 	_ = mapMode
 
-	bx, by, bw, bh := topDateHudMenuButtonRect()
-	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{45, 38, 28, 230}, false)
-	vector.StrokeRect(screen, bx, by, bw, bh, 1.5, panelBorder, false)
-	label := "Menü"
-	tw := MeasureText(label, FaceMed)
-	DrawText(screen, label, float64(bx)+float64(bw)/2-tw/2, float64(by)+8, FaceMed, ColorWhite)
+	btn := buildTopDateHudMenuButton()
+	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
+		BG:             color.RGBA{45, 38, 28, 230},
+		Border:         panelBorder,
+		Text:           ColorWhite,
+		DisabledBG:     color.RGBA{45, 38, 28, 230},
+		DisabledBorder: panelBorder,
+		DisabledText:   ColorWhite,
+		TextOffsetY:    8,
+		BorderWidth:    1.5,
+	})
 }
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
@@ -543,14 +600,22 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		DrawText(screen, count, float64(ex)+18+titleW, float64(ey)+9, FaceSmall, ColorGray)
 	}
 
-	tx, ty, tw, th := eventLogToggleRect()
-	vector.FillRect(screen, tx, ty, tw, th, color.RGBA{42, 34, 24, 220}, false)
-	vector.StrokeRect(screen, tx, ty, tw, th, 1, panelBorder, false)
 	toggleLabel := "−"
 	if collapsed {
 		toggleLabel = "+"
 	}
-	DrawTextCentered(screen, toggleLabel, float64(tx)+float64(tw)/2, float64(ty)+2, FaceMed, ColorGold)
+	toggleBtn := buildEventLogToggleButton(collapsed)
+	toggleBtn.Label = toggleLabel
+	drawUIButton(screen, toggleBtn.X, toggleBtn.Y, toggleBtn.W, toggleBtn.H, toggleBtn.Label, true, gameui.ButtonStyle{
+		BG:             color.RGBA{42, 34, 24, 220},
+		Border:         panelBorder,
+		Text:           ColorGold,
+		DisabledBG:     color.RGBA{42, 34, 24, 220},
+		DisabledBorder: panelBorder,
+		DisabledText:   ColorGold,
+		TextOffsetY:    2,
+		BorderWidth:    1,
+	})
 
 	if collapsed {
 		return
@@ -582,8 +647,17 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, color.RGBA{24, 20, 14, 225})
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
 
-		x, y, w, _ := eventLogCloseRect(visibleIndex)
-		DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, ColorGray)
+		closeBtn := buildEventLogCloseButton(visibleIndex)
+		drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, "X", true, gameui.ButtonStyle{
+			BG:             color.RGBA{42, 34, 24, 220},
+			Border:         panelBorder,
+			Text:           ColorGray,
+			DisabledBG:     color.RGBA{42, 34, 24, 220},
+			DisabledBorder: panelBorder,
+			DisabledText:   ColorGray,
+			TextOffsetY:    2,
+			BorderWidth:    1,
+		})
 
 		lines := wrapTextLines(ev, FaceSmall, float64(cardW-34))
 		if len(lines) > 2 {
@@ -626,11 +700,12 @@ func eventLogToggleRect() (x, y, w, h float32) {
 }
 
 func eventLogToggleHit(mx, my float64, collapsed bool) bool {
-	if collapsed {
+	return buildEventLogToggleButton(collapsed).HitTest(mx, my)
+}
 
-	}
+func buildEventLogToggleButton(_ bool) gameui.Button {
 	x, y, w, h := eventLogToggleRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "−")
 }
 
 func eventLogCardRect(index int) (x, y, w, h float32) {
@@ -677,12 +752,16 @@ func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool, scroll int
 		if eventIndex >= eventCount {
 			break
 		}
-		x, y, w, h := eventLogCloseRect(i)
-		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+		if buildEventLogCloseButton(i).HitTest(mx, my) {
 			return eventIndex
 		}
 	}
 	return -1
+}
+
+func buildEventLogCloseButton(index int) gameui.Button {
+	x, y, w, h := eventLogCloseRect(index)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
 }
 
 func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int) bool {
@@ -737,29 +816,21 @@ func drawEventLogScrollbar(screen *ebiten.Image, eventCount int, scroll int) {
 }
 
 func eventDetailPopupRect() (x, y, w, h float32) {
-	w = 620
-	h = 300
-	x = float32(ScreenWidth)/2 - w/2
-	y = float32(ScreenHeight)/2 - h/2
-	return x, y, w, h
+	modal := buildEventDetailModal()
+	return float32(modal.Panel.Rect.X), float32(modal.Panel.Rect.Y), float32(modal.Panel.Rect.W), float32(modal.Panel.Rect.H)
 }
 
 func eventDetailPopupHit(mx, my float64) bool {
-	x, y, w, h := eventDetailPopupRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return buildEventDetailModal().Panel.HitTest(mx, my)
 }
 
 func eventDetailCloseRect() (x, y, w, h float32) {
-	px, py, pw, _ := eventDetailPopupRect()
-	w, h = 30, 26
-	x = px + pw - w - 12
-	y = py + 10
-	return x, y, w, h
+	btn := buildEventDetailCloseButton()
+	return float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H)
 }
 
 func eventDetailCloseHit(mx, my float64) bool {
-	x, y, w, h := eventDetailCloseRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return buildEventDetailCloseButton().HitTest(mx, my)
 }
 
 func minimapHit(mx, my float64) bool {
@@ -768,21 +839,16 @@ func minimapHit(mx, my float64) bool {
 }
 
 func drawEventDetailPopup(screen *ebiten.Image, message string) {
-	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
-	overlay.Fill(color.RGBA{0, 0, 0, 120})
-	screen.DrawImage(overlay, nil)
+	modal := buildEventDetailModal()
+	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
 	px, py, pw, ph := eventDetailPopupRect()
-	drawRoundedRect(screen, px, py, pw, ph, 8, panelBg)
-	drawPanelBorder(screen, px, py, pw, ph)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
 
 	DrawText(screen, "Olay Detayı", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
 
-	cx, cy, cw, ch := eventDetailCloseRect()
-	vector.FillRect(screen, cx, cy, cw, ch, color.RGBA{44, 34, 24, 230}, false)
-	vector.StrokeRect(screen, cx, cy, cw, ch, 1, panelBorder, false)
-	DrawTextCentered(screen, "X", float64(cx)+float64(cw)/2, float64(cy)+5, FaceMed, ColorGray)
+	closeBtn := buildEventDetailCloseButton()
+	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
 
 	lines := wrapTextLines(message, FaceMed, float64(pw-40))
 	maxLines := int((ph - 78) / 19)
@@ -1398,15 +1464,10 @@ func drawGameOver(screen *ebiten.Image, gs *state.GameState) {
 
 // drawHistoricalEventPopup büyük tarihsel olayları dramatik bir tam ekran katmanıyla gösterir.
 func drawHistoricalEventPopup(screen *ebiten.Image, title, desc string) {
-	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
-	overlay.Fill(color.RGBA{2, 1, 5, 210})
-	screen.DrawImage(overlay, nil)
+	modal := buildHistoricalEventModal()
+	gameui.DrawModal(screen, modal, historicalEventModalStyle, nil, nil)
 
-	// Dekoratif çerçeve
-	bx, by := float32(ScreenWidth/2-340), float32(ScreenHeight/2-120)
-	bw, bh := float32(680), float32(240)
-	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{15, 10, 25, 245}, false)
-	vector.StrokeRect(screen, bx, by, bw, bh, 2.5, color.RGBA{180, 140, 50, 255}, false)
+	bx, by, bw, bh := float32(modal.Panel.Rect.X), float32(modal.Panel.Rect.Y), float32(modal.Panel.Rect.W), float32(modal.Panel.Rect.H)
 	vector.StrokeRect(screen, bx+4, by+4, bw-8, bh-8, 1, color.RGBA{120, 90, 30, 200}, false)
 
 	// Üst şerit
@@ -1866,8 +1927,8 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 }
 
 func drawPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
-	x, y, w, h := panelCloseRect(px, py, pw)
-	drawTinyPanelButton(screen, x, y, w, h, "X", true)
+	btn := buildPanelCloseButton(px, py, pw)
+	drawTinyPanelButton(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), btn.Label, true)
 }
 
 func panelCloseRect(px, py, pw float32) (x, y, w, h float32) {
@@ -1875,23 +1936,16 @@ func panelCloseRect(px, py, pw float32) (x, y, w, h float32) {
 }
 
 func drawTinyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
-	bg := color.RGBA{34, 26, 15, 230}
-	border := panelBorder
-	txt := ColorGold
-	if !active {
-		bg = color.RGBA{18, 16, 12, 180}
-		border = color.RGBA{45, 38, 25, 160}
-		txt = color.RGBA{85, 78, 62, 190}
-	}
-	vector.FillRect(screen, x, y, w, h, bg, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
-	tw := MeasureText(label, FaceSmall)
-	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+2, FaceSmall, txt)
+	drawUIButton(screen, float64(x), float64(y), float64(w), float64(h), label, active, tinyButtonStyle)
 }
 
 func panelCloseHit(mx, my float64, px, py, pw float32) bool {
+	return buildPanelCloseButton(px, py, pw).HitTest(mx, my)
+}
+
+func buildPanelCloseButton(px, py, pw float32) gameui.Button {
 	x, y, w, h := panelCloseRect(px, py, pw)
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
 }
 
 func regionPanelHit(mx, my float64) bool {
@@ -2063,9 +2117,8 @@ func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.Reg
 		return -1
 	}
 	px, py, pw, ph := infoPanelX(), infoPanelY(), infoPanelW, infoPanelH
-	for i := 0; i < 4; i++ {
-		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
-		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+	for i, btn := range buildRegionDiplomacyButtons(gs, region.OwnerID, px, py, pw, ph) {
+		if btn.HitTest(mx, my) {
 			return i
 		}
 	}
@@ -2073,9 +2126,7 @@ func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.Reg
 }
 
 func armyPanelCloseHit(mx, my float64) bool {
-	px := infoPanelX()
-	py := infoPanelY() + infoPanelH - 130
-	return panelCloseHit(mx, my, px, py, infoPanelW)
+	return buildArmyPanelCloseButton().HitTest(mx, my)
 }
 
 func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
@@ -2083,14 +2134,31 @@ func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID)
 	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
 		return 0
 	}
-	dec, inc := regionTaxButtonRects(gs)
-	if rectF32Hit(mx, my, dec) {
+	dec, inc := buildRegionTaxButtons(gs)
+	if dec.HitTest(mx, my) {
 		return -5
 	}
-	if rectF32Hit(mx, my, inc) {
+	if inc.HitTest(mx, my) {
 		return 5
 	}
 	return 0
+}
+
+func buildRegionTaxButtons(gs *state.GameState) (gameui.Button, gameui.Button) {
+	dec, inc := regionTaxButtonRects(gs)
+	return buttonFromRectF32(dec, "-"), buttonFromRectF32(inc, "+")
+}
+
+func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) []gameui.Button {
+	labels := []string{"Savaş", "Barış", "İttifak", "Ticaret"}
+	out := make([]gameui.Button, 0, len(labels))
+	for i, label := range labels {
+		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
+		btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label)
+		btn.Enabled = regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
+		out = append(out, btn)
+	}
+	return out
 }
 
 func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {

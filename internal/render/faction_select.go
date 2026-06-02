@@ -7,10 +7,39 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
+	factions := selectableFactions(gs)
+	cols := 3
+	rows := (len(factions) + cols - 1) / cols
+	cardW := 350.0
+	cardH := 110.0
+	padX := 30.0
+	padY := 12.0
+	gridW := cardW*float64(cols) + padX*float64(cols-1)
+	gridH := cardH*float64(rows) + padY*float64(rows-1)
+	headerH := 70.0
+	startX := ScreenWidth/2 - gridW/2
+	startY := ScreenHeight/2 - (gridH+headerH)/2 + headerH
+	buttons := make([]gameui.Button, 0, len(factions))
+	for i, fid := range factions {
+		col := i % cols
+		row := i / cols
+		x := startX + float64(col)*(cardW+padX)
+		y := startY + float64(row)*(cardH+padY)
+		label := ""
+		if f := gs.Factions[fid]; f != nil {
+			label = f.NameTR
+		}
+		buttons = append(buttons, gameui.NewButton(x, y, cardW, cardH, label))
+	}
+	return buttons
+}
 
 // DrawFactionSelect fraksiyon seçim ekranını çizer.
 func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {

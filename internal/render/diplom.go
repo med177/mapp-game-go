@@ -6,8 +6,10 @@ import (
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -147,6 +149,53 @@ func diplomBackRect() (x, y, w, h float32) {
 	return x, y, w, h
 }
 
+type diplomacyActionButton struct {
+	Index  int
+	Button gameui.Button
+}
+
+func buildDiplomacyCloseButton() gameui.Button {
+	x, y, w, h := diplomacyCloseRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+}
+
+func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.ListView {
+	factions := sortedFactions(gs)
+	items := make([]string, 0, len(factions))
+	for _, fid := range factions {
+		if f := gs.Factions[fid]; f != nil {
+			items = append(items, f.NameTR)
+		}
+	}
+	r := listPageRect()
+	list := gameui.NewListView(r.x+8, listRowStartY(), r.w-16, float64(diplomVisibleRows())*diplomRowH, diplomRowH, diplomVisibleRows(), items)
+	list.Scroll = clampDiplomScroll(len(items), scroll)
+	list.Selected = clampDiplomFocus(focusIdx, 0, len(items)-1)
+	return list
+}
+
+func buildDiplomacyBackButton() gameui.Button {
+	x, y, w, h := diplomBackRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "← Geri")
+}
+
+func buildDiplomacySendButton() gameui.Button {
+	x, y, w, h := diplomSendRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Teklif Gönder")
+}
+
+func buildDiplomacyActionButtons() []diplomacyActionButton {
+	out := make([]diplomacyActionButton, 0, len(diplomActions))
+	for i, da := range diplomActions {
+		x, y, w, h := diplomActionRect(i)
+		out = append(out, diplomacyActionButton{
+			Index:  i,
+			Button: gameui.NewButton(float64(x), float64(y), float64(w), float64(h), da.label),
+		})
+	}
+	return out
+}
+
 // DrawDiplomacyPanel diplomasi panelini çizer.
 func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) {
 	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
@@ -183,20 +232,21 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 	vector.StrokeRect(screen, float32(r.x), float32(r.y), float32(r.w), float32(r.h), 1, panelBorder, false)
 	DrawText(screen, "Devlet seçin", r.x+14, r.y+14, FaceSmall, ColorGray)
 
-	for row, i := 0, start; i < end; i, row = i+1, row+1 {
+	list := buildDiplomacyListView(gs, focusIdx, start)
+	for row, i := 0, list.Scroll; i < end; i, row = i+1, row+1 {
 		fid := factions[i]
 		f := gs.Factions[fid]
 		rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
 
-		y := listRowStartY() + float64(row)*diplomRowH
+		y := list.Rect.Y + float64(row)*diplomRowH
 		rowCol := color.RGBA{25, 20, 14, 200}
 		if i == focusIdx {
 			rowCol = color.RGBA{70, 58, 30, 235}
 		}
-		vector.FillRect(screen, float32(r.x+8), float32(y), float32(r.w-16), float32(diplomRowH-4), rowCol, false)
+		vector.FillRect(screen, float32(list.Rect.X), float32(y), float32(list.Rect.W), float32(diplomRowH-4), rowCol, false)
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-		vector.FillRect(screen, float32(r.x+8), float32(y), 6, float32(diplomRowH-4), fc, false)
+		vector.FillRect(screen, float32(list.Rect.X), float32(y), 6, float32(diplomRowH-4), fc, false)
 
 		DrawText(screen, f.NameTR, r.x+16, y+7, FaceMed, ColorWhite)
 		regionCount := len(gs.RegionsOwnedBy(fid))
@@ -224,12 +274,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	vector.StrokeRect(screen, float32(p.x), float32(p.y), float32(p.w), float32(p.h), 1, panelBorder, false)
 
 	DrawText(screen, "Teklif Paneli", p.x+20, p.y+20, FaceLarge, ColorGold)
-	bx, by, bw, bh := diplomBackRect()
-	vector.FillRect(screen, bx, by, bw, bh, color.RGBA{70, 70, 70, 230}, false)
-	vector.StrokeRect(screen, bx, by, bw, bh, 1, panelBorder, false)
-	backLabel := "← Geri"
-	blw := MeasureText(backLabel, FaceMed)
-	DrawText(screen, backLabel, float64(bx)+float64(bw)/2-blw/2, float64(by)+10, FaceMed, ColorWhite)
+	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
 	DrawText(screen, "Hedef: "+f.NameTR, p.x+20, p.y+52, FaceMed, ColorWhite)
 
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
@@ -243,16 +288,16 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	DrawText(screen, "İlişki Skoru: "+itoa(relScore), p.x+20, p.y+96, FaceSmall, scoreColor(relScore))
 
 	DrawText(screen, "Teklif Türü", p.x+20, p.y+126, FaceMed, ColorGray)
-	for i, da := range diplomActions {
+	for _, btn := range buildDiplomacyActionButtons() {
+		i := btn.Index
+		da := diplomActions[i]
 		chance, status := estimateDiplomacyChance(gs, target, da.action)
-		bx, by, bw, bh := diplomActionRect(i)
 		bg := da.color
 		if i != actionFocus {
 			bg.A = 170
 		}
-		vector.FillRect(screen, bx, by, bw, bh, bg, false)
-		vector.StrokeRect(screen, bx, by, bw, bh, 1, panelBorder, false)
-		DrawText(screen, da.label, float64(bx)+14, float64(by)+7, FaceMed, ColorWhite)
+		drawDiplomacyButton(screen, btn.Button, bg, panelBorder, FaceMed, 7)
+		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
 		cw := MeasureText(chanceText, FaceMed)
 		DrawText(screen, chanceText, float64(bx)+float64(bw)-cw-14, float64(by)+7, FaceMed, ColorWhite)
@@ -265,12 +310,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	selectedY := float64(lastBY + lastBH + 24)
 	DrawText(screen, selected, p.x+p.w/2-slw/2, selectedY, FaceSmall, ColorGray)
 
-	sx, sy, sw, sh := diplomSendRect()
-	vector.FillRect(screen, sx, sy, sw, sh, color.RGBA{48, 130, 72, 235}, false)
-	vector.StrokeRect(screen, sx, sy, sw, sh, 1, panelBorder, false)
-	sendLabel := "Teklif Gönder"
-	lw := MeasureText(sendLabel, FaceMed)
-	DrawText(screen, sendLabel, float64(sx)+float64(sw)/2-lw/2, float64(sy)+10, FaceMed, ColorWhite)
+	drawDiplomacyButton(screen, buildDiplomacySendButton(), color.RGBA{48, 130, 72, 235}, panelBorder, FaceMed, 10)
 }
 
 func diplomacyCloseRect() (x, y, w, h float32) {
@@ -278,37 +318,18 @@ func diplomacyCloseRect() (x, y, w, h float32) {
 }
 
 func drawDiplomacyCloseButton(screen *ebiten.Image) {
-	x, y, w, h := diplomacyCloseRect()
-	vector.FillRect(screen, x, y, w, h, color.RGBA{45, 34, 25, 230}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
-	tw := MeasureText("X", FaceSmall)
-	DrawText(screen, "X", float64(x)+float64(w)/2-tw/2, float64(y)+6, FaceSmall, ColorGold)
+	drawDiplomacyButton(screen, buildDiplomacyCloseButton(), color.RGBA{45, 34, 25, 230}, panelBorder, FaceSmall, 6)
 }
 
-func diplomacyCloseHit(mx, my float64) bool {
-	x, y, w, h := diplomacyCloseRect()
-	return mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h)
-}
-
-func diplomacyListRowAt(gs *state.GameState, scroll int, fx, fy float64) int {
-	factions := sortedFactions(gs)
-	start := clampDiplomScroll(len(factions), scroll)
-	end := start + diplomVisibleRows()
-	if end > len(factions) {
-		end = len(factions)
-	}
-	lr := listPageRect()
-	for row, i := 0, start; i < end; i, row = i+1, row+1 {
-		y := listRowStartY() + float64(row)*diplomRowH
-		if fy >= y && fy <= y+diplomRowH-4 && fx >= lr.x+8 && fx <= lr.x+lr.w-8 {
-			return i
-		}
-	}
-	return -1
+func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, border color.Color, face *text.GoTextFace, textOffsetY float64) {
+	vector.FillRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), bg, false)
+	vector.StrokeRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), 1, border, false)
+	tw := MeasureText(btn.Label, face)
+	DrawText(screen, btn.Label, btn.X+btn.W/2-tw/2, btn.Y+textOffsetY, face, ColorWhite)
 }
 
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
-func (r *Renderer) handleDiplomacyInput() InputAction {
+func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	factions := sortedFactions(r.gs)
 	n := len(factions)
 	if n == 0 {
@@ -318,55 +339,45 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 	r.diplomacyFocus = clampDiplomFocus(r.diplomacyFocus, 0, n-1)
 	r.diplomacyActionFocus = clampDiplomFocus(r.diplomacyActionFocus, 0, len(diplomActions)-1)
 	r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
-
-	mx, my := ebiten.CursorPosition()
-	fx, fy := float64(mx), float64(my)
-	_, wheelY := ebiten.Wheel()
-	if wheelY > 0 {
-		r.diplomacyScroll--
+	if input.LeftJustPressed && !diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction) {
+		r.showDiplomacy = false
+		r.diplomacyTargetFaction = ""
+		return InputAction{}
 	}
-	if wheelY < 0 {
-		r.diplomacyScroll++
+	if buildDiplomacyCloseButton().HandleInput(input) {
+		r.showDiplomacy = false
+		r.diplomacyTargetFaction = ""
+		return InputAction{}
 	}
-	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
-
-	hoverIdx := diplomacyListRowAt(r.gs, r.diplomacyScroll, fx, fy)
-	if hoverIdx >= 0 {
-		r.diplomacyFocus = hoverIdx
-	}
-
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if diplomacyCloseHit(fx, fy) {
-			r.showDiplomacy = false
+	if r.diplomacyTargetFaction == "" {
+		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
+		if list.HandleInput(input) {
+			r.diplomacyScroll = list.Scroll
+			if list.Selected >= 0 {
+				r.diplomacyFocus = list.Selected
+				if input.LeftJustPressed && r.diplomacyFocus < len(factions) {
+					r.diplomacyTargetFaction = factions[r.diplomacyFocus]
+					r.diplomacyActionFocus = 0
+				}
+			}
+			return InputAction{}
+		}
+	} else {
+		if buildDiplomacyBackButton().HandleInput(input) {
 			r.diplomacyTargetFaction = ""
 			return InputAction{}
 		}
-		if r.diplomacyTargetFaction == "" {
-			if hoverIdx >= 0 && r.diplomacyFocus < len(factions) {
-				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
-				r.diplomacyActionFocus = 0
+		for _, btn := range buildDiplomacyActionButtons() {
+			if btn.Button.HandleInput(input) {
+				r.diplomacyActionFocus = btn.Index
 				return InputAction{}
 			}
-		} else {
-			bx, by, bw, bh := diplomBackRect()
-			if fx >= float64(bx) && fx <= float64(bx+bw) && fy >= float64(by) && fy <= float64(by+bh) {
-				r.diplomacyTargetFaction = ""
-				return InputAction{}
-			}
-			for j := range diplomActions {
-				ax, ay, aw, ah := diplomActionRect(j)
-				if fx >= float64(ax) && fx <= float64(ax+aw) && fy >= float64(ay) && fy <= float64(ay+ah) {
-					r.diplomacyActionFocus = j
-					return InputAction{}
-				}
-			}
-			sx, sy, sw, sh := diplomSendRect()
-			if fx >= float64(sx) && fx <= float64(sx+sw) && fy >= float64(sy) && fy <= float64(sy+sh) {
-				target := r.diplomacyTargetFaction
-				r.showDiplomacy = false
-				r.diplomacyTargetFaction = ""
-				return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
-			}
+		}
+		if buildDiplomacySendButton().HandleInput(input) {
+			target := r.diplomacyTargetFaction
+			r.showDiplomacy = false
+			r.diplomacyTargetFaction = ""
+			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
 		}
 	}
 
@@ -409,6 +420,30 @@ func (r *Renderer) handleDiplomacyInput() InputAction {
 		}
 	}
 	return InputAction{}
+}
+
+func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) bool {
+	if buildDiplomacyCloseButton().HitTest(mx, my) {
+		return true
+	}
+	if target != "" {
+		if buildDiplomacyBackButton().HitTest(mx, my) || buildDiplomacySendButton().HitTest(mx, my) {
+			return true
+		}
+		for _, btn := range buildDiplomacyActionButtons() {
+			if btn.Button.HitTest(mx, my) {
+				return true
+			}
+		}
+		p := offerPageRect()
+		return gameui.Rect{X: p.x, Y: p.y, W: p.w, H: p.h}.Hit(mx, my)
+	}
+	list := buildDiplomacyListView(gs, focusIdx, scroll)
+	if list.HitTest(mx, my) {
+		return true
+	}
+	p := listPageRect()
+	return gameui.Rect{X: p.x, Y: p.y, W: p.w, H: p.h}.Hit(mx, my)
 }
 
 func sortedFactions(gs *state.GameState) []faction.FactionID {

@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"mapp-game-go/internal/save"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -12,6 +13,51 @@ import (
 // SaveSlots kayıt seçim ekranında gösterilecek slot listesidir.
 // game.go tarafından ekrana girilirken doldurulur.
 var SaveSlots []save.SaveSlot
+
+type slotCardLayout struct {
+	X float64
+	Y float64
+	W float64
+	H float64
+}
+
+func slotCardLayoutAt(i int) slotCardLayout {
+	cardW := 480.0
+	cardH := 88.0
+	gap := 14.0
+	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
+	startY := ScreenHeight/2 - totalH/2
+	return slotCardLayout{
+		X: ScreenWidth/2 - cardW/2,
+		Y: startY + float64(i)*(cardH+gap),
+		W: cardW,
+		H: cardH,
+	}
+}
+
+func buildSlotBackButton() gameui.Button {
+	r := backButtonRect()
+	return gameui.NewButton(r[0], r[1], r[2], r[3], "Geri")
+}
+
+func buildSlotCardButton(i int) gameui.Button {
+	card := slotCardLayoutAt(i)
+	return gameui.NewButton(card.X, card.Y, card.W, card.H, SaveSlots[i].DisplayName)
+}
+
+func buildSlotDeleteButton(i int) gameui.Button {
+	rect := deleteButtonRectForSlot(i)
+	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "Sil")
+}
+
+func buildSlotConfirmButtons(pendingSlot string) (gameui.Button, gameui.Button, bool) {
+	yes, no := pendingDeleteConfirmRects(pendingSlot)
+	if yes == (slotRect{}) || no == (slotRect{}) {
+		return gameui.Button{}, gameui.Button{}, false
+	}
+	return gameui.NewButton(yes[0], yes[1], yes[2], yes[3], "Sil"),
+		gameui.NewButton(no[0], no[1], no[2], no[3], "İptal"), true
+}
 
 // DrawSlotSelectScreen yükleme veya kaydetme için slot seçim ekranını çizer.
 // saveMode=true ise kaydetme, false ise yükleme ekranı başlığı gösterilir.
@@ -39,13 +85,11 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 
 	cardW := float64(480)
 	cardH := float64(88)
-	gap := float64(14)
-	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
-	startY := ScreenHeight/2 - totalH/2
 
 	for i, slot := range SaveSlots {
-		cx := ScreenWidth/2 - cardW/2
-		cy := startY + float64(i)*(cardH+gap)
+		card := slotCardLayoutAt(i)
+		cx := card.X
+		cy := card.Y
 
 		isSelected := i == cursor
 		disabled := !saveMode && !slot.Exists
@@ -131,11 +175,10 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 }
 
 // handleSlotSelectInput slot seçim ekranının girişini işler.
-func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
+func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState) InputAction {
 	n := len(SaveSlots)
 	if n == 0 {
-		mx, my := ebiten.CursorPosition()
-		if r.mouseJustPressed(ebiten.MouseButtonLeft) && uiRectHit(float64(mx), float64(my), backButtonRect()) {
+		if buildSlotBackButton().HandleInput(input) {
 			return InputAction{Kind: ActionBack}
 		}
 		if r.keyJustPressed(ebiten.KeyEscape) {
@@ -146,18 +189,16 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 
 	// Onay bekleniyor: sadece Enter (onayla) ve Esc (iptal) çalışır
 	if r.pendingDeleteSlot != "" {
-		mx, my := ebiten.CursorPosition()
-		if i := r.slotHoverIndex(float64(mx), float64(my)); i >= 0 {
+		if i := r.slotHoverIndex(input.MouseX, input.MouseY); i >= 0 {
 			r.slotCursor = i
 		}
-		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-			yes, no := pendingDeleteConfirmRects(r.pendingDeleteSlot)
-			if rectHit(float64(mx), float64(my), yes) {
+		if yesBtn, noBtn, ok := buildSlotConfirmButtons(r.pendingDeleteSlot); ok {
+			if yesBtn.HandleInput(input) {
 				slot := r.pendingDeleteSlot
 				r.pendingDeleteSlot = ""
 				return InputAction{Kind: ActionDeleteSave, BuildingID: slot}
 			}
-			if rectHit(float64(mx), float64(my), no) {
+			if noBtn.HandleInput(input) {
 				r.pendingDeleteSlot = ""
 				return InputAction{}
 			}
@@ -173,8 +214,7 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 		return InputAction{}
 	}
 
-	mx, my := ebiten.CursorPosition()
-	if i := r.slotHoverIndex(float64(mx), float64(my)); i >= 0 {
+	if i := r.slotHoverIndex(input.MouseX, input.MouseY); i >= 0 {
 		r.slotCursor = i
 	}
 
@@ -212,17 +252,18 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 			return InputAction{Kind: ActionSelectSave, BuildingID: slot.Name}
 		}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if uiRectHit(float64(mx), float64(my), backButtonRect()) {
+	if input.LeftJustPressed {
+		if buildSlotBackButton().HandleInput(input) {
 			return InputAction{Kind: ActionBack}
 		}
-		if i := r.slotHoverIndex(float64(mx), float64(my)); i >= 0 {
+		for i := range SaveSlots {
+			cardBtn := buildSlotCardButton(i)
 			slot := SaveSlots[i]
-			if slot.Exists && rectHit(float64(mx), float64(my), deleteButtonRectForSlot(i)) {
+			if slot.Exists && buildSlotDeleteButton(i).HandleInput(input) {
 				r.pendingDeleteSlot = slot.Name
 				return InputAction{}
 			}
-			if saveMode || slot.Exists {
+			if cardBtn.HandleInput(input) && (saveMode || slot.Exists) {
 				return InputAction{Kind: ActionSelectSave, BuildingID: slot.Name}
 			}
 		}
@@ -233,10 +274,9 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool) InputAction {
 type slotRect [4]float64
 
 func drawSlotMiniButton(screen *ebiten.Image, r slotRect, label string, bg color.RGBA) {
-	vector.FillRect(screen, float32(r[0]), float32(r[1]), float32(r[2]), float32(r[3]), bg, false)
-	vector.StrokeRect(screen, float32(r[0]), float32(r[1]), float32(r[2]), float32(r[3]), 1, panelBorder, false)
-	tw := MeasureText(label, FaceSmall)
-	DrawText(screen, label, r[0]+r[2]/2-tw/2, r[1]+5, FaceSmall, ColorWhite)
+	style := slotMiniButtonStyle
+	style.BG = bg
+	drawUIButton(screen, r[0], r[1], r[2], r[3], label, true, style)
 }
 
 func slotDeleteButtonRect(cx, cy float64) slotRect {
@@ -248,28 +288,20 @@ func slotDeleteConfirmRects(cx, cy float64) (slotRect, slotRect) {
 }
 
 func deleteButtonRectForSlot(i int) slotRect {
-	cardW := 480.0
-	cardH := 88.0
-	gap := 14.0
-	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
-	startY := ScreenHeight/2 - totalH/2
-	cx := ScreenWidth/2 - cardW/2
-	cy := startY + float64(i)*(cardH+gap)
+	card := slotCardLayoutAt(i)
+	cx := card.X
+	cy := card.Y
 	return slotDeleteButtonRect(cx, cy)
 }
 
 func pendingDeleteConfirmRects(pendingSlot string) (slotRect, slotRect) {
-	cardW := 480.0
-	cardH := 88.0
-	gap := 14.0
-	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
-	startY := ScreenHeight/2 - totalH/2
-	cx := ScreenWidth/2 - cardW/2
 	for i, slot := range SaveSlots {
 		if slot.Name != pendingSlot {
 			continue
 		}
-		cy := startY + float64(i)*(cardH+gap)
+		card := slotCardLayoutAt(i)
+		cx := card.X
+		cy := card.Y
 		return slotDeleteConfirmRects(cx, cy)
 	}
 	return slotRect{}, slotRect{}
@@ -281,10 +313,10 @@ func rectHit(mx, my float64, r slotRect) bool {
 
 func (r *Renderer) slotSelectHovering(mx, my float64, saveMode bool) bool {
 	if r.pendingDeleteSlot != "" {
-		yes, no := pendingDeleteConfirmRects(r.pendingDeleteSlot)
-		return rectHit(mx, my, yes) || rectHit(mx, my, no)
+		yesBtn, noBtn, ok := buildSlotConfirmButtons(r.pendingDeleteSlot)
+		return ok && (yesBtn.HitTest(mx, my) || noBtn.HitTest(mx, my))
 	}
-	if uiRectHit(mx, my, backButtonRect()) {
+	if buildSlotBackButton().HitTest(mx, my) {
 		return true
 	}
 	i := r.slotHoverIndex(mx, my)
@@ -292,24 +324,16 @@ func (r *Renderer) slotSelectHovering(mx, my float64, saveMode bool) bool {
 		return false
 	}
 	slot := SaveSlots[i]
-	if slot.Exists && rectHit(mx, my, deleteButtonRectForSlot(i)) {
+	if slot.Exists && buildSlotDeleteButton(i).HitTest(mx, my) {
 		return true
 	}
-	return saveMode || slot.Exists
+	return buildSlotCardButton(i).HitTest(mx, my) && (saveMode || slot.Exists)
 }
 
 // slotHoverIndex fareye göre hangi slot kartının üzerinde olduğunu döner.
 func (r *Renderer) slotHoverIndex(mx, my float64) int {
-	cardW := 480.0
-	cardH := 88.0
-	gap := 14.0
-	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
-	startY := ScreenHeight/2 - totalH/2
-	cx := ScreenWidth/2 - cardW/2
-
 	for i := range SaveSlots {
-		cy := startY + float64(i)*(cardH+gap)
-		if mx >= cx && mx <= cx+cardW && my >= cy && my <= cy+cardH {
+		if buildSlotCardButton(i).HitTest(mx, my) {
 			return i
 		}
 	}

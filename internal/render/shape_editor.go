@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -336,7 +337,7 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 		return
 	}
 	mx, my := ebiten.CursorPosition()
-	if editInspectorHit(float64(mx), float64(my)) {
+	if editInspectorHit(float64(mx), float64(my)) || r.editShapeHelpPanelHit(float64(mx), float64(my)) {
 		return
 	}
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
@@ -349,50 +350,76 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	vector.StrokeCircle(screen, float32(sx), float32(sy), radius, 2, brushCol, true)
 }
 
+func buildEditShapeHelpPanel() gameui.Panel {
+	const panelW, panelH = float64(290), float64(92)
+	return gameui.NewPanel(float64(ScreenWidth)-panelW-18, 140, panelW, panelH)
+}
+
+func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {
+	if r.gs.Phase != state.PhaseEditMode || r.editInspectorTab != editInspectorShape {
+		return false
+	}
+	if r.ensureShapeEditSession() == nil {
+		return false
+	}
+	return buildEditShapeHelpPanel().HitTest(mx, my)
+}
+
 func (r *Renderer) drawEditShapeStrokePreview(screen *ebiten.Image, session *shapeEditSession) {
 	if session == nil || len(session.DiffList) == 0 {
 		return
 	}
-	size := float32(maxF(2, maxF(shapeScaleX, shapeScaleY)*r.camScale))
-	for _, idx := range session.DiffList {
-		if idx < 0 || idx >= len(session.DiffMask) || session.DiffMask[idx] == 0 {
-			continue
+	buildEditShapeStrokeOverlay(r, session).Draw(screen, renderSmallText)
+}
+
+func buildEditShapeStrokeOverlay(r *Renderer, session *shapeEditSession) gameui.Overlay {
+	overlay := gameui.NewOverlay(0, 0, ScreenWidth, ScreenHeight)
+	overlay.DrawFunc = func(screen *ebiten.Image) {
+		size := float32(maxF(2, maxF(shapeScaleX, shapeScaleY)*r.camScale))
+		for _, idx := range session.DiffList {
+			if idx < 0 || idx >= len(session.DiffMask) || session.DiffMask[idx] == 0 {
+				continue
+			}
+			x := idx%session.Width + session.MinX
+			y := idx/session.Width + session.MinY
+			sx, sy := r.worldToScreen(wcX(x), wcY(y))
+			if sx < -8 || sx > ScreenWidth+8 || sy < -8 || sy > ScreenHeight+8 {
+				continue
+			}
+			col := color.RGBA{80, 235, 120, 165}
+			if session.Mask[idx] == 0 {
+				col = color.RGBA{255, 90, 90, 170}
+			}
+			drawPixelRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, col)
 		}
-		x := idx%session.Width + session.MinX
-		y := idx/session.Width + session.MinY
-		sx, sy := r.worldToScreen(wcX(x), wcY(y))
-		if sx < -8 || sx > ScreenWidth+8 || sy < -8 || sy > ScreenHeight+8 {
-			continue
-		}
-		col := color.RGBA{80, 235, 120, 165}
-		if session.Mask[idx] == 0 {
-			col = color.RGBA{255, 90, 90, 170}
-		}
-		drawPixelRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, col)
 	}
+	return overlay
 }
 
 func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSession) {
 	if session == nil {
 		return
 	}
-	const panelW, panelH = float32(290), float32(92)
-	x := float32(ScreenWidth) - panelW - 18
-	y := float32(140) // Aşağı alındı, diğer panellerle çakışmayı önlemek için
-	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 20, 24, 218})
-	drawPanelBorder(screen, x, y, panelW, panelH)
-	DrawText(screen, "SHAPE YARDIM", float64(x)+12, float64(y)+10, FaceSmall, ColorGold)
-	DrawText(screen, "Secili: "+session.ShapeID+"  Firca: "+itoa(r.editShapeBrushRadius), float64(x)+12, float64(y)+30, FaceSmall, ColorWhite)
+	panel := buildEditShapeHelpPanel()
+	gameui.DrawPanel(screen, panel, shapeHelpPanelStyle)
+	x, y := float32(panel.Rect.X), float32(panel.Rect.Y)
 	mode := "Boya"
 	if r.editShapeBrushMode == editShapeBrushErase {
 		mode = "Sil"
 	}
-	DrawText(screen, "Mod: "+mode+"  Sag mouse drag  Birakinca uygula", float64(x)+12, float64(y)+48, FaceSmall, ColorGray)
-	DrawText(screen, "Yesil=ekle  Kirmizi=sil  Sol tik=secim", float64(x)+12, float64(y)+66, FaceSmall, ColorGray)
+	labels := [...]gameui.Label{
+		gameui.NewLabel(float64(x)+12, float64(y)+10, "SHAPE YARDIM", ColorGold),
+		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+session.ShapeID+"  Firca: "+itoa(r.editShapeBrushRadius), ColorWhite),
+		gameui.NewLabel(float64(x)+12, float64(y)+48, "Mod: "+mode+"  Sag mouse drag  Birakinca uygula", ColorGray),
+		gameui.NewLabel(float64(x)+12, float64(y)+66, "Yesil=ekle  Kirmizi=sil  Sol tik=secim", ColorGray),
+	}
+	for _, label := range labels {
+		label.Draw(screen, renderSmallText)
+	}
 }
 
 func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
-	if editInspectorHit(fx, fy) {
+	if editInspectorHit(fx, fy) || r.editShapeHelpPanelHit(fx, fy) {
 		return false
 	}
 	switch r.editShapeTool {
