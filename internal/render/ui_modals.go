@@ -55,9 +55,30 @@ func buildEventDetailCloseButton() gameui.Button {
 }
 
 func buildHistoricalEventModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 680, 240, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 720, 320, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+}
+
+func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
+	if count <= 0 {
+		return nil
+	}
+	modal := buildHistoricalEventModal()
+	const (
+		btnW = 260.0
+		btnH = 36.0
+		gap  = 16.0
+	)
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 20
+	totalW := float64(count)*btnW + float64(max(0, count-1))*gap
+	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-totalW)/2
+	buttons := make([]gameui.Button, 0, count)
+	for i := 0; i < count; i++ {
+		x := startX + float64(i)*(btnW+gap)
+		buttons = append(buttons, gameui.NewButton(x, btnY, btnW, btnH, ""))
+	}
+	return buttons
 }
 
 func buildDiplomacyOfferModal() gameui.Modal {

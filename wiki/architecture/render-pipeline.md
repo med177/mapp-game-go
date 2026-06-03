@@ -63,7 +63,7 @@ type Renderer struct {
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan, genel onay ve event detail diyalogları; ortak modal/panel/button geometrisi kullanırlar | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
-| 11 | Tarihsel olay popup; ortak modal panel yüzeyi üstüne dramatik katman çizer | `panel.go`, `ui_modals.go` |
+| 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları ve effect özeti çizer | `panel.go`, `ui_modals.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
@@ -101,6 +101,7 @@ Bu hat şu ekranlarda aktif kullanımdadır:
 - ordu split/merge overlay yüzeyleri
 - edit mode inspector/form tab ve aksiyon yüzeyleri
 - confirm / war confirm / event detail / historical event modal yüzeyleri
+- historical modal açıkken arka oyun inputu tamamen bloke edilir; choice varsa `1/2`, `Enter`, ok tuşları veya mouse ile seçim yapılır
 - oyuncuya gelen diplomasi teklif modal yüzeyi
 - edit mode shape yardım paneli ve stroke preview overlay primitive'i
 
@@ -226,7 +227,7 @@ Bina kartı görselleri slot içine daha sıkı fit edilir (`innerW-2`, `spriteH
 
 ```
 ShowCombatResult(msg)          → combatLogTimer = 180 frame (~3 sn), ayrı info popup; eventLog'a eklemez
-ShowHistoricalEvent(title,desc) → tam ekran popup, herhangi tuş/tık ile kapatılır
+ShowHistoricalEvent(title,desc,prompt,choices) → tam ekran popup; `choices` boşsa bilgi modalı, doluysa karar modalı
 AddEvent(msg)                  → sağ olay logundaki kalıcı kart listesine ekler
 ```
 

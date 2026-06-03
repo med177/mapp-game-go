@@ -49,6 +49,7 @@ Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampan
 |---|---|
 | [[dev/progress]] | Tamamlanan/eksik sistemler, bilinen sorunlar |
 | [[dev/data-format]] | JSON veri şemaları, assets/data/ yapısı |
+| [[dev/build-setup]] | WSL bağımlılıkları, Windows build ve `bin/game.exe` akışı |
 
 ---
 

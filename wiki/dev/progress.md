@@ -65,9 +65,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Oyuncuya gelen diplomasi teklif paneli | ✅ | AI barış teklifleri `diplomatic_offers` kuyruğuna düşer; oyuncu modal anlaşma panelinden kabul/red verir, kabulde standart diplomasi motoru uygulanır |
 | Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
 | Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
-| Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme |
+| Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme; tarihsel modal içinde A/B kararları, choice prompt, ekonomi/diplomasi/ordu etkisi ve ayrı karar log kaydı |
 | Zafer koşulları | ✅ | `domination`, `economic`, `military`, `religious`, `conquer_city` kontrol ediliyor |
-| AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon, diplomasi taraması ve hedefe hareket |
+| AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon, diplomasi taraması ve hedefe hareket; deniz hedefleri `aiSeaPressure()` ile savaş baskısına göre seçilir, filo limiti kıyı/savaş durumuna göre 1-3 arası dinamikleşir |
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + QuickSave + slot1-3, metadata önizleme, silme; tur bitirde autosave, oyun içi kaydetmede quicksave |
@@ -105,18 +105,19 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Harita modu (Normal/Ticaret) | ✅ | EU4 benzeri harita modu anahtarı eklendi; ticaret koridorları yalnızca `Ticaret` modunda çiziliyor, normal haritada çizgi karmaşası yok |
 | Senaryo bazlı tarihsel ticaret merkezleri | ✅ | Trade map merkezleri senaryo `data/trade_centers.json` içindeki `tier` + `links` graph yapısından okunuyor; koridor akışı merkezler arasında doğrudan değil, link graph kısa yolu üzerinden dağıtılıyor |
 
+| WSL / Windows build hattı | ✅ | `wiki/dev/build-setup.md` içinde Ebitengine için Ubuntu paketleri, `go test ./...` doğrulaması ve `GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game` akışı belgelendi |
+
 ## Bilinen Sorunlar
 
 | Öncelik | Sorun | Dosya | Etki |
 |---|---|---|---|
-| 🟡 Orta | Olaylar oyuncu seçimi sunmuyor | `internal/events/events.go` | Olay sistemi tek yönlü etki uyguluyor, A/B kararları yok |
 | 🟢 Düşük | Kök dizinde geçici `game.exe` olabilir | `game.exe` | Kalıcı çıktı `bin/game.exe` olmalı |
 
 ## Sonraki Adım Planı
 
-1. **Olay seçenekleri:** Tarihsel olay popup'larına A/B seçenekleri ve farklı etkiler ekle.
-2. **WSL build notu:** Ebitengine için X11 ve ALSA paketlerini geliştirici dokümantasyonuna ekle; Windows build komutunu ayrıca doğrula.
-3. **AI strateji derinliği:** Uzun menzilli amfibi hedefleme ve çoklu filo koordinasyonunu geliştir.
+1. **Event görünürlüğü:** Choice sonuçlarını bölge bazlı ikon veya kısa süreli status etkisiyle daha görünür yap.
+2. **AI eskort mantığı:** Transport filolarına savaş gemisi eşlik ettir.
+3. **Event zincirleri:** Tarihsel kararların sonraki event havuzunu etkilediği follow-up trigger sistemi ekle.
 
 ## Yakın Sprint Önerisi
 
@@ -124,9 +125,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Sıra | İş | Kabul Kriteri |
 |---|---|---|
-| 1 | Olay seçenekleri | Tarihsel olaylarda A/B kararları ve farklı sonuçlar var |
-| 2 | WSL bağımlılık notu | `go test ./...` için eksik native paketler wiki/README'de listelenmiş |
-| 3 | AI amfibi derinlik | AI zayıf çıkarma denemelerini azaltıp hedef seçimini daha tutarlı yapıyor |
+| 1 | Event görünürlüğü | Karar sonrası statü ikonları veya bölge marker'ları var |
+| 2 | Naval escort | AI transport yanında escort gemisi de üretiyor |
+| 3 | Event zinciri | Karar A/B farklı follow-up event setleri açıyor |
 
 ## Araçlar
 

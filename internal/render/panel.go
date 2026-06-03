@@ -1412,7 +1412,7 @@ func drawGameOver(screen *ebiten.Image, gs *state.GameState) {
 }
 
 // drawHistoricalEventPopup büyük tarihsel olayları dramatik bir tam ekran katmanıyla gösterir.
-func drawHistoricalEventPopup(screen *ebiten.Image, title, desc string) {
+func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, choices []HistoricalEventChoice, focus int) {
 	modal := buildHistoricalEventModal()
 	gameui.DrawModal(screen, modal, historicalEventModalStyle, nil, nil)
 
@@ -1431,8 +1431,40 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc string) {
 	// Açıklama — uzun metni satırlara böl
 	wrapText(screen, desc, float64(bx)+30, cy, float64(bw-60), FaceMed, color.RGBA{210, 200, 180, 230})
 
-	cy = float64(by) + float64(bh) - 28
-	DrawTextCentered(screen, "[Enter / Boşluk / Tıkla] Devam Et", ScreenWidth/2, cy, FaceSmall, color.RGBA{140, 130, 100, 200})
+	if len(choices) == 0 {
+		cy = float64(by) + float64(bh) - 28
+		DrawTextCentered(screen, "[Enter / Boşluk / Tıkla] Devam Et", ScreenWidth/2, cy, FaceSmall, color.RGBA{140, 130, 100, 200})
+		return
+	}
+
+	promptY := float64(by) + 185
+	if prompt != "" {
+		DrawTextCentered(screen, prompt, ScreenWidth/2, promptY, FaceMed, color.RGBA{230, 214, 175, 240})
+	}
+
+	buttons := buildHistoricalEventChoiceButtons(len(choices))
+	for i, choice := range choices {
+		if i >= len(buttons) {
+			break
+		}
+		btn := buttons[i]
+		active := i == focus
+		bg := color.RGBA{78, 62, 36, 235}
+		border := color.RGBA{150, 120, 68, 255}
+		textCol := color.RGBA{245, 236, 214, 255}
+		if active {
+			bg = color.RGBA{118, 84, 40, 245}
+			border = color.RGBA{226, 182, 92, 255}
+		}
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, choice.Label, true, solidButtonStyle(bg, border, textCol, 10))
+		infoY := btn.Y - 32
+		if choice.Effect != "" {
+			DrawTextCentered(screen, choice.Effect, btn.X+btn.W/2, infoY, FaceSmall, color.RGBA{190, 176, 142, 220})
+		}
+		if choice.Desc != "" {
+			DrawTextCentered(screen, choice.Desc, btn.X+btn.W/2, infoY-18, FaceSmall, color.RGBA{162, 150, 120, 210})
+		}
+	}
 }
 
 // wrapText metni belirtilen genişlikte kelime bazlı satırlara bölerek çizer.

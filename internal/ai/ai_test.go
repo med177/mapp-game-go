@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -267,6 +268,100 @@ func TestAIMoveArmyDoesNotDisembarkToEnemyCoastAtPeace(t *testing.T) {
 	}
 	if len(gs.Armies["ai_fleet"].EmbarkedUnits) != 1 {
 		t.Fatalf("barışta çıkarma olmamalı, cargo korunmalı")
+	}
+}
+
+func TestChooseBestMovePrefersSeaWithHigherHostilePressure(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"sea_home":   {ID: "sea_home", IsSea: true, Neighbors: []world.RegionID{"sea_hot", "sea_cold"}},
+			"sea_hot":    {ID: "sea_hot", IsSea: true, Neighbors: []world.RegionID{"sea_home", "enemy_land"}},
+			"sea_cold":   {ID: "sea_cold", IsSea: true, Neighbors: []world.RegionID{"sea_home", "ally_land"}},
+			"enemy_land": {ID: "enemy_land", OwnerID: "player", Neighbors: []world.RegionID{"sea_hot"}},
+			"ally_land":  {ID: "ally_land", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_cold"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -80, Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:            "fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_home",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				IsNaval:       true,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+	}
+
+	target := chooseBestMove(gs, gs.Armies["fleet"])
+	if target != "sea_hot" {
+		t.Fatalf("yüksek baskılı deniz hedefi sea_hot olmalıydı, got=%s", target)
+	}
+}
+
+func TestAINavalStrategyAllowsThirdFleetDuringWarPressure(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     20,
+		Regions: map[world.RegionID]*world.Region{
+			"coast_a":     {ID: "coast_a", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_a"}, Buildings: []string{"port"}},
+			"coast_b":     {ID: "coast_b", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_b"}, Buildings: []string{"port"}},
+			"coast_c":     {ID: "coast_c", OwnerID: "ai_1", Neighbors: []world.RegionID{"sea_c"}, Buildings: []string{"port"}},
+			"enemy_coast": {ID: "enemy_coast", OwnerID: "player", Neighbors: []world.RegionID{"sea_c"}},
+			"sea_a":       {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"coast_a"}},
+			"sea_b":       {ID: "sea_b", IsSea: true, Neighbors: []world.RegionID{"coast_b"}},
+			"sea_c":       {ID: "sea_c", IsSea: true, Neighbors: []world.RegionID{"coast_c", "enemy_coast"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni, Gold: 500, Grain: 200, Timber: 200, Iron: 50, Stone: 50},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -80, Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_1": {ID: "fleet_1", OwnerID: "ai_1", RegionID: "sea_a", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 100}}},
+			"fleet_2": {ID: "fleet_2", OwnerID: "ai_1", RegionID: "sea_b", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 100}}},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, GoldCost: 120, TimberCost: 20},
+		},
+	}
+
+	aiNavalStrategy(gs, "ai_1")
+
+	navalCount := 0
+	foundSeaC := false
+	for _, a := range gs.Armies {
+		if a.OwnerID != "ai_1" || !a.IsNaval {
+			continue
+		}
+		navalCount++
+		if a.RegionID == "sea_c" {
+			foundSeaC = true
+		}
+	}
+	if navalCount != 3 {
+		t.Fatalf("savaş baskısında 3 filo bekleniyordu, got=%d", navalCount)
+	}
+	if !foundSeaC {
+		t.Fatalf("yeni filo baskısı yüksek sea_c bölgesine kurulmalıydı")
 	}
 }
 

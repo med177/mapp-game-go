@@ -14,7 +14,7 @@ Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita st
 - **Din & Diplomasi Sistemi** — Mezhep farklılıkları ilişkileri etkiler; ittifak, ticaret, savaş ilanı
 - **Ekonomi & Şehir Geliştirme** — Vergi oranı, bina üretimi, ticaret malları, isyan mekaniği
 - **Teknoloji Ağacı** — Askeri, ekonomi, denizcilik, din kategorileri; bina ve bölge bağımlılıkları
-- **Tarihsel Olaylar** — Veba, kıtlık, taht krizleri, Reformasyon; gerçek tarihe yakın tetikleme
+- **Tarihsel Olaylar** — Veba, kıtlık, taht krizleri, Reformasyon; gerçek tarihe yakın tetikleme ve A/B karar popup'ları
 - **Yapay Zeka** — 3 zorluk seviyesi, fırsatçı/ekonomik/diplomatik strateji
 - **Senaryo Sistemi** — Farklı başlangıç koşulları ve zafer hedefleriyle birden fazla senaryo
 - **Kayıt/Yükleme** — JSON tabanlı, insan okunabilir kayıt dosyaları
@@ -65,10 +65,31 @@ go mod download
 # Derle ve çalıştır
 go run ./cmd/game
 
-# Ya da derleyip bin/ altına yaz
-go build -o bin/game.exe ./cmd/game
-./bin/game.exe
+# Windows binary üret
+mkdir -p bin
+GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
 ```
+
+### WSL / Ubuntu native paketleri
+
+Ebitengine için WSL içinde şu paketler yüklü olmalı:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential pkg-config libasound2-dev \
+  libx11-dev libxrandr-dev libxcursor-dev libxinerama-dev \
+  libxi-dev libxxf86vm-dev libgl1-mesa-dev
+```
+
+### Doğrulama
+
+```bash
+go test ./...
+GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
+```
+
+Kalıcı çıktı yolu `bin/game.exe`'dir. Kök dizindeki `game.exe` varsa geçici build artığı olarak değerlendirilmelidir.
 
 ---
 

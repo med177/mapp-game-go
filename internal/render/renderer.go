@@ -113,9 +113,12 @@ type Renderer struct {
 	combatLogTimer int
 
 	// Tarihsel olay tam ekran bildirimi
-	historicalEventTitle string
-	historicalEventDesc  string
-	showHistoricalEvent  bool
+	historicalEventTitle   string
+	historicalEventDesc    string
+	historicalEventPrompt  string
+	historicalEventChoices []HistoricalEventChoice
+	historicalEventFocus   int
+	showHistoricalEvent    bool
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -251,6 +254,12 @@ type editFactionFormState struct {
 }
 
 type editFactionFormField int
+
+type HistoricalEventChoice struct {
+	Label  string
+	Desc   string
+	Effect string
+}
 
 const (
 	editFactionFieldNone editFactionFormField = iota
@@ -409,11 +418,22 @@ func (r *Renderer) ShowCombatResult(msg string) {
 }
 
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.
-func (r *Renderer) ShowHistoricalEvent(title, desc string) {
+func (r *Renderer) ShowHistoricalEvent(title, desc, prompt string, choices []HistoricalEventChoice) {
 	r.historicalEventTitle = title
 	r.historicalEventDesc = desc
+	r.historicalEventPrompt = prompt
+	r.historicalEventChoices = append(r.historicalEventChoices[:0], choices...)
+	r.historicalEventFocus = 0
 	r.showHistoricalEvent = true
-	r.AddEvent(title)
+}
+
+func (r *Renderer) HideHistoricalEvent() {
+	r.showHistoricalEvent = false
+	r.historicalEventTitle = ""
+	r.historicalEventDesc = ""
+	r.historicalEventPrompt = ""
+	r.historicalEventChoices = r.historicalEventChoices[:0]
+	r.historicalEventFocus = 0
 }
 
 // ShowTechPanel teknoloji panelini açar.
@@ -632,7 +652,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 11. Tarihsel olay tam ekran popup
 	if r.showHistoricalEvent {
-		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc)
+		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
 	}
 
 	if r.eventDetail != "" {
@@ -5722,13 +5742,8 @@ func (r *Renderer) HandleInput() InputAction {
 		return InputAction{}
 	}
 
-	// Tarihsel olay popup açıkken her tuş/tık kapatır
 	if r.showHistoricalEvent {
-		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
-			r.keyJustPressed(ebiten.KeySpace) || r.mouseJustPressed(ebiten.MouseButtonLeft) {
-			r.showHistoricalEvent = false
-		}
-		return InputAction{}
+		return r.handleHistoricalEventInput()
 	}
 
 	if r.eventDetail != "" {
@@ -6680,6 +6695,47 @@ func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 	}
 	if r.keyJustPressed(ebiten.KeyN) || r.keyJustPressed(ebiten.KeyEscape) {
 		return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: false}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) handleHistoricalEventInput() InputAction {
+	if len(r.historicalEventChoices) == 0 {
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
+			r.keyJustPressed(ebiten.KeySpace) || r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			r.showHistoricalEvent = false
+			r.historicalEventPrompt = ""
+			r.historicalEventChoices = r.historicalEventChoices[:0]
+		}
+		return InputAction{}
+	}
+
+	buttons := buildHistoricalEventChoiceButtons(len(r.historicalEventChoices))
+	if r.keyJustPressed(ebiten.KeyLeft) || r.keyJustPressed(ebiten.KeyUp) {
+		r.historicalEventFocus = (r.historicalEventFocus + len(r.historicalEventChoices) - 1) % len(r.historicalEventChoices)
+	}
+	if r.keyJustPressed(ebiten.KeyRight) || r.keyJustPressed(ebiten.KeyDown) || r.keyJustPressed(ebiten.KeyTab) {
+		r.historicalEventFocus = (r.historicalEventFocus + 1) % len(r.historicalEventChoices)
+	}
+	if r.keyJustPressed(ebiten.Key1) {
+		return InputAction{Kind: ActionChooseHistoricalEvent, ChoiceIndex: 0}
+	}
+	if len(r.historicalEventChoices) > 1 && r.keyJustPressed(ebiten.Key2) {
+		return InputAction{Kind: ActionChooseHistoricalEvent, ChoiceIndex: 1}
+	}
+	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+		return InputAction{Kind: ActionChooseHistoricalEvent, ChoiceIndex: r.historicalEventFocus}
+	}
+
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		mxi, myi := ebiten.CursorPosition()
+		mx, my := float64(mxi), float64(myi)
+		for i, btn := range buttons {
+			if btn.HitTest(mx, my) {
+				r.historicalEventFocus = i
+				return InputAction{Kind: ActionChooseHistoricalEvent, ChoiceIndex: i}
+			}
+		}
 	}
 	return InputAction{}
 }

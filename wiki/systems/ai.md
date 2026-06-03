@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-05-29
+last_updated: 2026-06-03
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -139,8 +139,10 @@ AI bina inşasında yalnız altını değil, bina reçetesindeki `grain/iron/tim
 
 Kıyı bölgesi varsa:
 1. Limansız kıyı bölgesine liman inşa et
-2. `fleetLimit = 2` — en fazla 2 adet deniz filosu oluştur
-3. Filo oluşturulurken nakliye gemisi (`transport`) konur
+2. Filo limiti artık dinamiktir:
+   `1` temel + `1` ek kıyı baskısı (3+ kıyı bölgesi) + savaşta `1` ek filo, üst sınır `3`
+3. Yeni filo, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına kurulur
+4. Filo oluşturulurken nakliye gemisi (`transport`) konur
 
 ---
 
@@ -148,12 +150,13 @@ Kıyı bölgesi varsa:
 
 AI artık kara ordularını nakliye filosuna bindirip indirebilir:
 
-- Kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o denizde uygun `transport` filosu varsa ve karşı kıyıda pozitif hedef skoru varsa seçer.
+- Kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o denizde uygun `transport` filosu varsa ve `aiEmbarkScore()` pozitifse seçer.
 - `executeMove()` kara → deniz geçişinde birimleri filonun `EmbarkedUnits` alanına taşır ve kara ordusunu haritadan kaldırır.
 - Donanma `EmbarkedUnits` taşıyorsa komşu kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir.
 - Düşman kıyıya çıkarma yalnızca savaş halindeyken yapılır; barışta AI çıkarma denemez.
 - Düşman kıyıda ordu varsa AI çıkarma hedeflemesinde güç kıyası yapar; zayıfsa çıkarma girişimini atlar.
 - Çıkarma savaşı yine `combat.ResolveBattleWithMods()` ile çözülür; kazanırsa çıkarma ordusu karaya iner ve bölge el değiştirir.
+- Boş deniz hareketi kör yapılmaz; `aiSeaPressure()` düşman kıyı yoğunluğu, boş/sahipsiz kıyı fırsatı, mevcut dost filo yoğunluğu ve taşıma yükünü birlikte skorlar.
 
 Kaynak kod:
 - `internal/ai/ai.go:377`
@@ -189,5 +192,5 @@ Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile 
 ## Eksik / Planlanan
 
 - [ ] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın)
-- [ ] AI uzun menzilli planlama (sadece komşu değil, stratejik hedef)
 - [ ] Diplomasi teklif önceliklerini tehdit seviyesi ve teknoloji farkıyla daha da zenginleştir
+- [ ] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat

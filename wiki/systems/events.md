@@ -1,19 +1,19 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-05-06
-related: [world/regions, architecture/game-loop]
+last_updated: 2026-06-03
+related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 ---
 
 # Tarihsel Olaylar Sistemi
 
-**Kaynak:** `internal/events/events.go`, `assets/data/events.json`
+**Kaynak:** `internal/events/events.go`, `assets/scenarios/*/data/events.json`
 
 ## Olay Yapısı
 
 Olaylar JSON'dan yüklenir ve `events.LoadEvents()` ile `[]*Event` listesine dönüştürülür.
 
-Her olay bir kez tetiklenir: `gs.FiredEventIDs` map'i ile takip edilir.
+Her olay `events.Tick()` içinde yalnızca **tespit edilir**; uygulama sonrasında `events.Apply()` / `events.ApplyChoice()` ile yapılır. Tek seferlik event'ler `gs.FiredEventIDs` içinde takip edilir.
 
 ---
 
@@ -22,11 +22,39 @@ Her olay bir kez tetiklenir: `gs.FiredEventIDs` map'i ile takip edilir.
 `events.Tick(gs, evts)` — tur çözümleme sırasında çağrılır.
 
 Tetikleme kriterleri:
-- **Yıl/ay:** Gerçek tarihe yakın dönem (`Year >= X`)
-- **Bölge sahipliği:** Belirli bölgeler belirli fraksiyona ait olmalı
-- **Fraksiyon durumu:** Güç, altın, bölge sayısı eşikleri
+- **Yıl/ay:** `historical_year` + opsiyonel `historical_month`
+- **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
+- **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 
 ---
+
+## Etki Modeli
+
+Base event etkisi eski alanlarla (`target`, `sat_delta`, `gold_delta`, `grain_delta`, `army_hp_mod`, `affected_faction`) tutulur.
+
+Yeni choice katmanı:
+
+```json
+{
+  "choice_prompt_tr": "Devlet nasıl yanıt verecek?",
+  "choices": [
+    {
+      "label_tr": "Karantina Uygula",
+      "desc_tr": "Ticaret daralır ama kayıplar sınırlanır.",
+      "ai_weight": 8,
+      "effect": {
+        "target": "player_faction",
+        "gold_delta": -180,
+        "sat_delta": 8,
+        "army_hp_mod": 0.92,
+        "relation_delta_all": -5
+      }
+    }
+  ]
+}
+```
+
+`relation_delta_all`, etkilenen fraksiyonun tüm aktif ilişkilerine doğrudan score delta uygular; bu olay seçimlerinin diplomasi etkisini taşır.
 
 ## Olay Tipleri
 
@@ -44,13 +72,20 @@ Tetikleme kriterleri:
 ## Bildirim
 
 Olay tetiklendiğinde:
-- `renderer.ShowCombatResult("📜 " + olay.Adı + ": " + açıklama)` → kısa bildirim
-- Büyük olaylar için `ShowHistoricalEvent(başlık, açıklama)` → tam ekran popup
+- `renderer.ShowCombatResult("OLAY: ...")` → kısa bildirim
+- Tarihsel event varsa `ShowHistoricalEvent(...)` → tam ekran popup
+- Choice varsa historical modal içinde A/B butonları açılır ve sonuç ayrı `KARAR` event log kaydı üretir
 
 ---
+
+## Mevcut Choice Örnekleri
+
+- `black_death_1347` → `Karantina Uygula` / `Limanları Açık Tut`
+- `printing_press_1455` → `Matbaayı Destekle` / `Sansür Uygula`
+- `reformation_1517` → `Tolerans Politikası` / `Baskı Uygula`
 
 ## Eklenecek / Planlanmış
 
 - [ ] Olayların zincirleme tetiklenmesi (veba → kıtlık)
 - [ ] Bölge ikonu gösterimi (harita üzerinde ❗ ikon)
-- [ ] Oyuncu tepki seçenekleri (A / B karar pop-up)
+- [ ] Choice sonuçlarını minimap/bölge ikonlarıyla görünür kıl

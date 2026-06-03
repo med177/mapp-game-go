@@ -65,6 +65,7 @@ const (
 	ActionTradeScroll           ActionKind = "trade_scroll"       // Delta: +1/-1
 	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"   // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
+	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.
@@ -81,4 +82,5 @@ type InputAction struct {
 	Delta         int // AdjustTax için: +5 veya -5
 	OfferIndex    int
 	OfferAccepted bool
+	ChoiceIndex   int
 }

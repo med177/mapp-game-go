@@ -73,6 +73,36 @@
   },
   {
     "army_hp_mod": 0.7,
+    "choice_prompt_tr": "Devlet salgına nasıl yanıt verecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Ticaret daralır ama kayıplar sınırlanır.",
+        "effect": {
+          "army_hp_mod": 0.92,
+          "gold_delta": -180,
+          "grain_delta": -20,
+          "relation_delta_all": -5,
+          "sat_delta": 8,
+          "target": "player_faction"
+        },
+        "id": "quarantine",
+        "label_tr": "Karantina Uygula"
+      },
+      {
+        "ai_weight": 4,
+        "desc_tr": "Pazarlar açık kalır ama salgın orduyu ve halkı daha sert vurur.",
+        "effect": {
+          "army_hp_mod": 0.85,
+          "gold_delta": 80,
+          "relation_delta_all": 4,
+          "sat_delta": -12,
+          "target": "player_faction"
+        },
+        "id": "open_ports",
+        "label_tr": "Limanları Açık Tut"
+      }
+    ],
     "desc_tr": "Orta Doğu'dan gelen korkunç salgın Avrupa'yı kasıp kavuruyor. Tüm fraksiyonlar ağır kayıplar veriyor.",
     "gold_delta": -150,
     "grain_delta": -80,
@@ -88,6 +118,36 @@
   },
   {
     "army_hp_mod": 0.8,
+    "choice_prompt_tr": "Yayılan vebaya karşı ikinci dalga tedbiri ne olacak?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Sert karantina yeni kaybı azaltır ama ticaret daha da yavaşlar.",
+        "effect": {
+          "army_hp_mod": 0.94,
+          "gold_delta": -120,
+          "grain_delta": -10,
+          "relation_delta_all": -4,
+          "sat_delta": 6,
+          "target": "player_faction"
+        },
+        "id": "second_lockdown",
+        "label_tr": "Tedbirleri Sertleştir"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Pazarları açmak ekonomiyi korur ama iç düzen bozulur.",
+        "effect": {
+          "gold_delta": 70,
+          "grain_delta": 10,
+          "relation_delta_all": 3,
+          "sat_delta": -10,
+          "target": "player_faction"
+        },
+        "id": "reopen_markets",
+        "label_tr": "Pazarları Aç"
+      }
+    ],
     "desc_tr": "Kara Ölüm Avrupa genelinde ölümlere yol açmaya devam ediyor. Ticaret yolları kesiliyor.",
     "gold_delta": -100,
     "grain_delta": -60,
@@ -104,6 +164,35 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Zafer sonrası Balkan düzeni nasıl kurulacak?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Uç beyleri ve yerel elitlerle uzlaşı, Balkanlarda yumuşak bir yerleşme düzeni kurar.",
+        "effect": {
+          "gold_delta": -40,
+          "grain_delta": 20,
+          "relation_delta_all": 6,
+          "sat_delta": 12,
+          "target": "player_faction"
+        },
+        "id": "local_settlement",
+        "label_tr": "Yerel Uzlaşı"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Akıncı ve garnizon ağıyla sert askeri kontrol kurarsın; gelir artar ama gerilim de yükselir.",
+        "effect": {
+          "army_hp_mod": 1.06,
+          "gold_delta": 120,
+          "relation_delta_all": -6,
+          "sat_delta": -10,
+          "target": "player_faction"
+        },
+        "id": "military_rule",
+        "label_tr": "Askeri İdare"
+      }
+    ],
     "desc_tr": "Osmanlı kuvvetleri Kosova Ovası'nda Sırp koalisyonunu yendi. Balkanlardaki Osmanlı hakimiyeti pekişti.",
     "gold_delta": 200,
     "grain_delta": 0,
@@ -120,6 +209,34 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Niğbolu zaferinin ardından kaynaklar nereye yönlendirilecek?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Tuna hattını kaleler, timarlı sipahiler ve garnizonlarla kilitlersin.",
+        "effect": {
+          "gold_delta": -80,
+          "grain_delta": 10,
+          "relation_delta_all": 4,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "fortify_balkans",
+        "label_tr": "Balkanları Tahkim Et"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Kapıkulu ve sefer lojistiğine yüklenirsin; fetih temposu artar ama hazine zorlanır.",
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": -140,
+          "sat_delta": -4,
+          "target": "player_faction"
+        },
+        "id": "prepare_campaign",
+        "label_tr": "Yeni Sefer Hazırla"
+      }
+    ],
     "desc_tr": "Osmanlı sultanı Yıldırım Bayezid, Haçlı ordusunu ağır bir yenilgiye uğrattı. Batı'nın Osmanlı'ya karşı büyük seferi sona erdi.",
     "gold_delta": 350,
     "grain_delta": 0,
@@ -136,6 +253,35 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 0.55,
+    "choice_prompt_tr": "Felaket sonrası devleti nasıl toparlayacaksın?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Anadolu beylerini ve eyalet seçkinlerini tavizle yanında tutarsın; toparlanma daha sakin olur.",
+        "effect": {
+          "gold_delta": -120,
+          "grain_delta": 20,
+          "relation_delta_all": 8,
+          "sat_delta": 16,
+          "target": "player_faction"
+        },
+        "id": "appease_beys",
+        "label_tr": "Beyleri Yatıştır"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Merkezi otoriteyi zorla kurar, askeri çekirdeği sert biçimde yeniden toplarsın.",
+        "effect": {
+          "army_hp_mod": 0.92,
+          "gold_delta": 70,
+          "relation_delta_all": -8,
+          "sat_delta": -14,
+          "target": "player_faction"
+        },
+        "id": "centralize_force",
+        "label_tr": "Merkezi Gücü Topla"
+      }
+    ],
     "desc_tr": "Demir Timur'un orduları Ankara yakınlarında Osmanlı kuvvetlerini bozguna uğrattı. Osmanlı Devleti derin bir bunalıma girdi.",
     "gold_delta": -400,
     "grain_delta": -100,
@@ -152,6 +298,35 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Fetihten sonra öncelik ne olacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Başkent imarı, iaşe ağları ve liman düzeniyle Konstantiniyye'yi gerçek bir payitahta çevirirsin.",
+        "effect": {
+          "gold_delta": -180,
+          "grain_delta": 35,
+          "relation_delta_all": 8,
+          "sat_delta": 14,
+          "target": "player_faction"
+        },
+        "id": "rebuild_city",
+        "label_tr": "Şehri İmar Et"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Tersane, topçu ve sefer hazırlığına yüklenirsin; ordu ivme kazanır ama şehir toparlanması gecikir.",
+        "effect": {
+          "army_hp_mod": 1.14,
+          "gold_delta": -110,
+          "relation_delta_all": -4,
+          "sat_delta": -6,
+          "target": "player_faction"
+        },
+        "id": "fund_campaigns",
+        "label_tr": "Seferleri Finanse Et"
+      }
+    ],
     "desc_tr": "Sultan II. Mehmed'in topları surları yıktı. Bin yıllık Bizans İmparatorluğu tarihe karıştı. Osmanlı artık iki kıtanın hakimi.",
     "gold_delta": 600,
     "grain_delta": 50,
@@ -167,6 +342,33 @@
   },
   {
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Yeni bilgi akışına saray nasıl yaklaşacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Bilgiyi desteklersin; maliyeti olur ama halk ve diplomasi toparlanır.",
+        "effect": {
+          "gold_delta": -120,
+          "relation_delta_all": 6,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "sponsor_press",
+        "label_tr": "Matbaayı Destekle"
+      },
+      {
+        "ai_weight": 3,
+        "desc_tr": "Kontrol sende kalır; kısa vadede kasa rahatlar ama tepki büyür.",
+        "effect": {
+          "gold_delta": 40,
+          "relation_delta_all": -8,
+          "sat_delta": -12,
+          "target": "player_faction"
+        },
+        "id": "censor_press",
+        "label_tr": "Sansür Uygula"
+      }
+    ],
     "desc_tr": "Gutenberg'in matbaası bilginin yayılmasını hızlandırdı. Avrupa'da reform rüzgarları esmeye başlıyor.",
     "gold_delta": 80,
     "grain_delta": 0,
@@ -183,6 +385,34 @@
   {
     "affected_faction": "aragon",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Granada sonrası İber düzeni nasıl şekillenecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Yeni toprakları Katolik taç yapısına kademeli entegre eder, soyluları ve şehirleri zamana yayarsın.",
+        "effect": {
+          "gold_delta": -80,
+          "grain_delta": 15,
+          "relation_delta_all": 8,
+          "sat_delta": 12,
+          "target": "player_faction"
+        },
+        "id": "integration",
+        "label_tr": "Kademeli Entegrasyon"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Sert dini ve idari tasfiye kısa vadeli ganimet getirir ama Avrupa ve Akdeniz'de baskı yaratır.",
+        "effect": {
+          "gold_delta": 140,
+          "relation_delta_all": -10,
+          "sat_delta": -12,
+          "target": "player_faction"
+        },
+        "id": "purge",
+        "label_tr": "Sert Tasfiye"
+      }
+    ],
     "desc_tr": "İspanya'nın son Müslüman kalesi Granada düştü. Aragon ve Kastilya birleşik güçleri İber Yarımadası'nın tamamını ele geçirdi.",
     "gold_delta": 500,
     "grain_delta": 0,
@@ -199,6 +429,34 @@
   {
     "affected_faction": "aragon",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Yeni Dünya haberine saray nasıl tepki verecek?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Atlantik keşif filosunu ve taç destekli deniz girişimini büyütürsün; prestij toplarsın.",
+        "effect": {
+          "gold_delta": -100,
+          "relation_delta_all": 9,
+          "sat_delta": 6,
+          "target": "player_faction"
+        },
+        "id": "fund_expeditions",
+        "label_tr": "Seferleri Büyüt"
+      },
+      {
+        "ai_weight": 4,
+        "desc_tr": "Yeni serveti Kastilya-Aragon iç ticaretine ve hazineye akıtırsın; daha temkinli ama kârlı bir rota izlersin.",
+        "effect": {
+          "gold_delta": 180,
+          "grain_delta": 20,
+          "relation_delta_all": -2,
+          "sat_delta": 4,
+          "target": "player_faction"
+        },
+        "id": "domestic_profit",
+        "label_tr": "İç Pazarı Besle"
+      }
+    ],
     "desc_tr": "Kristof Kolomb Atlantik'i geçerek bilinmeyen topraklara ulaştı. Portekiz ve Aragon için yeni ticaret kapıları aralandı.",
     "gold_delta": 400,
     "grain_delta": 0,
@@ -215,6 +473,35 @@
   {
     "affected_faction": "portugal",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Hindistan yolunun açılmasıyla strateji ne olacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Hint Okyanusu tekelini feitoria, konvoy ve donanma baskısıyla korursun.",
+        "effect": {
+          "gold_delta": -120,
+          "grain_delta": 10,
+          "relation_delta_all": -6,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "naval_monopoly",
+        "label_tr": "Tekeli Donanmayla Koru"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Liman ağını ve ticaret üslerini genişleterek daha kurumsal bir deniz imparatorluğu kurarsın.",
+        "effect": {
+          "gold_delta": -60,
+          "grain_delta": 30,
+          "relation_delta_all": 7,
+          "sat_delta": 4,
+          "target": "player_faction"
+        },
+        "id": "port_network",
+        "label_tr": "Liman Ağını Genişlet"
+      }
+    ],
     "desc_tr": "Vasco da Gama Ümit Burnu'nu dönerek Hindistan'a ulaştı. Portekiz'in baharat ticaretindeki tekeli başlıyor.",
     "gold_delta": 700,
     "grain_delta": 0,
@@ -230,6 +517,34 @@
   },
   {
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Artan mezhep gerilimine karşı hangi yol izlenecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Yumuşama politikası pahalıdır ama iç düzeni ve dış ilişkileri sakinleştirir.",
+        "effect": {
+          "gold_delta": -60,
+          "relation_delta_all": 10,
+          "sat_delta": 8,
+          "target": "player_faction"
+        },
+        "id": "tolerate",
+        "label_tr": "Tolerans Politikası"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Sert baskı kısa vadede otorite sağlar ama isyan ve diplomatik baskıyı büyütür.",
+        "effect": {
+          "army_hp_mod": 0.9,
+          "gold_delta": 60,
+          "relation_delta_all": -12,
+          "sat_delta": -18,
+          "target": "player_faction"
+        },
+        "id": "crackdown",
+        "label_tr": "Baskı Uygula"
+      }
+    ],
     "desc_tr": "Martin Luther'in 95 tezi Hristiyanlık dünyasını sarstı. Avrupa'da Katolik kilisesinin otoritesi sorgulanıyor; mezhep çatışmaları derinleşiyor.",
     "gold_delta": 0,
     "grain_delta": 0,
@@ -246,6 +561,33 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Yeni padişah ilk yıllarda hangi hatta yüklenmeli?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Defter, iaşe ve maliye düzenini sıkılaştırır; uzun seferler için sağlam bir merkez kurarsın.",
+        "effect": {
+          "gold_delta": 120,
+          "grain_delta": 50,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "reform_treasury",
+        "label_tr": "Hazineyi Toparla"
+      },
+      {
+        "ai_weight": 7,
+        "desc_tr": "Kapıkulu ve sınır ordularını büyütür, hükümdarlığı doğrudan fetih temposu üzerinden açarsın.",
+        "effect": {
+          "army_hp_mod": 1.14,
+          "gold_delta": -120,
+          "sat_delta": -4,
+          "target": "player_faction"
+        },
+        "id": "prepare_armies",
+        "label_tr": "Orduları Güçlendir"
+      }
+    ],
     "desc_tr": "I. Süleyman Osmanlı tahtına geçti. Avrupa'nın en büyük ordusu ve en zengin hazinesiyle yeni bir fetih dönemi başlıyor.",
     "gold_delta": 800,
     "grain_delta": 100,
@@ -262,6 +604,35 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1,
+    "choice_prompt_tr": "Mohaç zaferi sonrası merkez nereye odaklanacak?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Tımarlı düzen ve kalelerle Macar sahasını kalıcı bir eyalet kuşağına çevirmeye çalışırsın.",
+        "effect": {
+          "gold_delta": -100,
+          "grain_delta": 15,
+          "relation_delta_all": 6,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "secure_hungary",
+        "label_tr": "Macaristan'ı Düzenle"
+      },
+      {
+        "ai_weight": 7,
+        "desc_tr": "Zaferi Avrupa içlerine taşır, sefer ruhunu diri tutarsın; yönetim ve diplomasi maliyeti yükselir.",
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": -140,
+          "relation_delta_all": -8,
+          "sat_delta": -6,
+          "target": "player_faction"
+        },
+        "id": "push_west",
+        "label_tr": "Batıya Yüklen"
+      }
+    ],
     "desc_tr": "Osmanlı ordusu Macar kuvvetlerini iki saat içinde imha etti. Macaristan Krallığı çöktü, Orta Avrupa Osmanlı'ya açıldı.",
     "gold_delta": 500,
     "grain_delta": 50,

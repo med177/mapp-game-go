@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
@@ -30,10 +31,11 @@ import (
 
 // Game Ebitengine'in Game interface'ini uygular.
 type Game struct {
-	gs       *state.GameState
-	renderer *render.Renderer
-	evts     []*events.Event
-	loading  *loadingJob
+	gs                   *state.GameState
+	renderer             *render.Renderer
+	evts                 []*events.Event
+	pendingHistoricalEvt *events.Event
+	loading              *loadingJob
 }
 
 const scenarioBaseDir = "assets/scenarios"
@@ -176,6 +178,8 @@ func (g *Game) Update() error {
 
 	case state.PhasePlayerTurn:
 		switch action.Kind {
+		case render.ActionChooseHistoricalEvent:
+			g.resolveHistoricalChoice(action.ChoiceIndex)
 		case render.ActionEndTurn:
 			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok &&
 				f.Research.ActiveID == "" &&
@@ -448,8 +452,9 @@ func (g *Game) resolveTurn() {
 	}
 
 	// Olaylar
-	if name, desc := events.Tick(g.gs, g.evts); name != "" {
-		g.renderer.ShowCombatResult("OLAY: " + name + ": " + desc)
+	if evt := events.Tick(g.gs, g.evts); evt != nil {
+		events.Apply(g.gs, evt)
+		g.handleTriggeredEvent(evt)
 	}
 
 	g.gs.AdvanceTurn()
@@ -459,6 +464,81 @@ func (g *Game) resolveTurn() {
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.MarkMapDirty()
 	}
+}
+
+func (g *Game) handleTriggeredEvent(evt *events.Event) {
+	if evt == nil {
+		return
+	}
+	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
+	g.renderer.ShowCombatResult(baseMsg)
+	g.renderer.AddEvent("[OLAY] " + evt.NameTR)
+	if !events.RequiresPlayerChoice(g.gs, evt) {
+		if idx := events.AutoChoose(evt); idx >= 0 {
+			g.applyHistoricalChoice(evt, idx)
+		}
+		if evt.HistoricalYear != 0 {
+			g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, "", nil)
+		}
+		return
+	}
+	g.pendingHistoricalEvt = evt
+	g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, evt.ChoicePromptTR, g.historicalChoiceViews(evt))
+}
+
+func (g *Game) resolveHistoricalChoice(idx int) {
+	if g.pendingHistoricalEvt == nil {
+		g.renderer.HideHistoricalEvent()
+		return
+	}
+	g.applyHistoricalChoice(g.pendingHistoricalEvt, idx)
+	g.pendingHistoricalEvt = nil
+	g.renderer.HideHistoricalEvent()
+}
+
+func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
+	choice, ok := events.ApplyChoice(g.gs, evt, idx)
+	if !ok {
+		return
+	}
+	msg := fmt.Sprintf("Karar: %s -> %s", evt.NameTR, choice.LabelTR)
+	g.renderer.ShowCombatResult(msg)
+	g.renderer.AddEvent("[KARAR] " + evt.NameTR + ": " + choice.LabelTR)
+}
+
+func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEventChoice {
+	if evt == nil || len(evt.Choices) == 0 {
+		return nil
+	}
+	views := make([]render.HistoricalEventChoice, 0, len(evt.Choices))
+	for _, choice := range evt.Choices {
+		views = append(views, render.HistoricalEventChoice{
+			Label:  choice.LabelTR,
+			Desc:   choice.DescTR,
+			Effect: historicalChoiceEffectSummary(choice.Effect),
+		})
+	}
+	return views
+}
+
+func historicalChoiceEffectSummary(eff events.Effect) string {
+	parts := make([]string, 0, 5)
+	if eff.GoldDelta != 0 {
+		parts = append(parts, fmt.Sprintf("Altın %+d", eff.GoldDelta))
+	}
+	if eff.GrainDelta != 0 {
+		parts = append(parts, fmt.Sprintf("Tahıl %+d", eff.GrainDelta))
+	}
+	if eff.SatDelta != 0 {
+		parts = append(parts, fmt.Sprintf("Memnuniyet %+d", eff.SatDelta))
+	}
+	if eff.RelationDeltaAll != 0 {
+		parts = append(parts, fmt.Sprintf("Diplomasi %+d", eff.RelationDeltaAll))
+	}
+	if eff.ArmyHPMod > 0 && eff.ArmyHPMod != 1 {
+		parts = append(parts, fmt.Sprintf("Ordu HP x%.2f", eff.ArmyHPMod))
+	}
+	return strings.Join(parts, "  |  ")
 }
 
 func victoryLabel(vtype state.VictoryType) string {

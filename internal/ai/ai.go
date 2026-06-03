@@ -442,7 +442,7 @@ func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) i
 	if !aiCanEmbarkArmy(gs, a) || aiFindEmbarkFleet(gs, a.OwnerID, seaRegion.ID) == nil {
 		return 0
 	}
-	best := 10
+	best := 10 + aiSeaPressure(gs, a.OwnerID, seaRegion.ID)/2
 	for _, nid := range seaRegion.Neighbors {
 		land, ok := gs.Regions[nid]
 		if !ok || land.IsSea {
@@ -454,6 +454,74 @@ func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) i
 		}
 	}
 	return best
+}
+
+func aiFactionAtWar(gs *state.GameState, ownerID string) bool {
+	if gs == nil {
+		return false
+	}
+	for _, rel := range gs.Relations {
+		if rel == nil || rel.Stance != faction.StanceWar {
+			continue
+		}
+		if string(rel.FactionA) == ownerID || string(rel.FactionB) == ownerID {
+			return true
+		}
+	}
+	return false
+}
+
+func aiSeaPressure(gs *state.GameState, ownerID string, seaRegionID world.RegionID) int {
+	if gs == nil {
+		return 0
+	}
+	sea, ok := gs.Regions[seaRegionID]
+	if !ok || sea == nil || !sea.IsSea {
+		return 0
+	}
+	score := 0
+	hostileCoasts := 0
+	for _, nid := range sea.Neighbors {
+		land, ok := gs.Regions[nid]
+		if !ok || land.IsSea {
+			continue
+		}
+		switch {
+		case land.OwnerID == "":
+			score += 8
+		case land.OwnerID == ownerID:
+			score += 2
+		default:
+			_, stance := relationScore(gs, ownerID, land.OwnerID)
+			if stance == faction.StanceWar {
+				score += 28
+				hostileCoasts++
+				if enemyArmy := aiEnemyArmyInRegion(gs, ownerID, land.ID); enemyArmy == nil {
+					score += 8
+				}
+			} else {
+				score -= 2
+			}
+		}
+	}
+
+	friendlyFleets := 0
+	for _, a := range gs.Armies {
+		if a == nil || a.OwnerID != ownerID || !a.IsNaval || a.RegionID != seaRegionID {
+			continue
+		}
+		friendlyFleets++
+		if len(a.EmbarkedUnits) > 0 {
+			score += 6
+		}
+	}
+	if hostileCoasts > 0 && friendlyFleets == 0 {
+		score += 12
+	}
+	if friendlyFleets > 1 {
+		score -= (friendlyFleets - 1) * 10
+	}
+	return score
 }
 
 func aiCanDisembarkToLand(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
@@ -530,7 +598,7 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 				continue
 			}
 			if n.IsSea {
-				score := 15
+				score := 15 + aiSeaPressure(gs, a.OwnerID, n.ID)
 				if len(a.EmbarkedUnits) > 0 {
 					for _, landID := range n.Neighbors {
 						land, ok := gs.Regions[landID]
@@ -1050,7 +1118,16 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 	}
 
 	// Gemi alımı (liman olan bölgelerden)
-	const fleetLimit = 2 // AI en fazla 2 filo
+	fleetLimit := 1
+	if len(coastalRegions) >= 3 {
+		fleetLimit++
+	}
+	if aiFactionAtWar(gs, string(fid)) {
+		fleetLimit++
+	}
+	if fleetLimit > 3 {
+		fleetLimit = 3
+	}
 	fleetCount := 0
 	for _, a := range gs.Armies {
 		if a.OwnerID == string(fid) && a.IsNaval {
@@ -1061,6 +1138,9 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 		return
 	}
 
+	bestScore := -1
+	var bestRegion *world.Region
+	var bestSeaRegion world.RegionID
 	for _, r := range coastalRegions {
 		// Liman var mı?
 		hasPortBldg := false
@@ -1085,36 +1165,44 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 		if seaRegion == "" {
 			continue
 		}
-
-		// Altın kontrolü
-		shipCost := economy.ResourceCost{
-			Gold:   transportType.GoldCost,
-			Grain:  transportType.GrainCost,
-			Iron:   transportType.IronCost,
-			Timber: transportType.TimberCost,
-			Stone:  transportType.StoneCost,
+		score := aiSeaPressure(gs, string(fid), seaRegion)
+		if score > bestScore {
+			bestScore = score
+			bestRegion = r
+			bestSeaRegion = seaRegion
 		}
-		if !aiCanAffordWithReserve(f, shipCost) {
-			return
-		}
-
-		// Yeni filo oluştur
-		gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(fid), gs.NextArmySeq))
-		gs.Armies[newID] = &army.Army{
-			ID:                 newID,
-			OwnerID:            string(fid),
-			RegionID:           seaRegion,
-			DockedRegionID:     r.ID,
-			DockedSettlementID: aiPreferredDockSettlementID(r),
-			Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
-			MovePoints:         3,
-			MaxMovePoints:      3,
-			IsNaval:            true,
-		}
-		shipCost.Apply(f)
-		return // Bir gemi aldık, turu bitir
 	}
+	if bestRegion == nil || bestSeaRegion == "" {
+		return
+	}
+
+	// Altın kontrolü
+	shipCost := economy.ResourceCost{
+		Gold:   transportType.GoldCost,
+		Grain:  transportType.GrainCost,
+		Iron:   transportType.IronCost,
+		Timber: transportType.TimberCost,
+		Stone:  transportType.StoneCost,
+	}
+	if !aiCanAffordWithReserve(f, shipCost) {
+		return
+	}
+
+	// Yeni filo oluştur
+	gs.NextArmySeq++
+	newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(fid), gs.NextArmySeq))
+	gs.Armies[newID] = &army.Army{
+		ID:                 newID,
+		OwnerID:            string(fid),
+		RegionID:           bestSeaRegion,
+		DockedRegionID:     bestRegion.ID,
+		DockedSettlementID: aiPreferredDockSettlementID(bestRegion),
+		Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+		MovePoints:         3,
+		MaxMovePoints:      3,
+		IsNaval:            true,
+	}
+	shipCost.Apply(f)
 }
 
 func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool {
