@@ -50,6 +50,16 @@ func buildSlotDeleteButton(i int) gameui.Button {
 	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "Sil")
 }
 
+func buildSlotFocusButtons(saveMode bool) []gameui.Button {
+	buttons := make([]gameui.Button, 0, len(SaveSlots))
+	for i, slot := range SaveSlots {
+		btn := buildSlotCardButton(i)
+		btn.Enabled = saveMode || slot.Exists
+		buttons = append(buttons, btn)
+	}
+	return buttons
+}
+
 func buildSlotConfirmButtons(pendingSlot string) (gameui.Button, gameui.Button, bool) {
 	yes, no := pendingDeleteConfirmRects(pendingSlot)
 	if yes == (slotRect{}) || no == (slotRect{}) {
@@ -234,6 +244,12 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState)
 			}
 		}
 	}
+	if r.keyJustPressed(ebiten.KeyTab) {
+		next := focusButtonIndex(buildSlotFocusButtons(saveMode), r.slotCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
+		if next >= 0 && next < n {
+			r.slotCursor = next
+		}
+	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		return InputAction{Kind: ActionBack}
 	}
@@ -305,10 +321,6 @@ func pendingDeleteConfirmRects(pendingSlot string) (slotRect, slotRect) {
 		return slotDeleteConfirmRects(cx, cy)
 	}
 	return slotRect{}, slotRect{}
-}
-
-func rectHit(mx, my float64, r slotRect) bool {
-	return mx >= r[0] && mx <= r[0]+r[2] && my >= r[1] && my <= r[1]+r[3]
 }
 
 func (r *Renderer) slotSelectHovering(mx, my float64, saveMode bool) bool {

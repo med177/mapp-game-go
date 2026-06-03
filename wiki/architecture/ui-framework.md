@@ -16,10 +16,11 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 
 ## Mevcut Durum
 1. `internal/ui` içinde çekirdek sözleşmeler (`Widget`, `InputState`, `Manager`) ve test edilebilir focus sırası eklendi.
-2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`) oluşturuldu.
+2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`, `AnchorRect`) oluşturuldu.
 3. `render` katmanında back/menu/mini/tiny buton çizimleri, edit mode dropdown'ları, trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları ortak bileşen yüzeylerine bağlandı.
 4. HUD, recruit paneli, ordu split/merge overlay'i, edit mode inspector/form etkileşim yüzeyleri ve modal aileleri ortak button/panel/overlay geometry builder'larına taşındı.
-5. Ortak button, dropdown, modal ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
+5. Ortak button, dropdown, modal, HUD ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
+6. Ana menü ve kayıt/yükleme slot ekranlarında `Tab` focus geçişi `internal/ui.Manager` üzerinden çalışır.
 
 ## Hedef Mimari
 1. `internal/ui` altında ortak UI framework
@@ -143,13 +144,16 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - scroll
    - focus
    - modal consume
-2. Görsel regresyon screenshot testleri:
+2. Görsel regresyon smoke testleri:
    - 1280x720
    - 1600x900
    - 1920x1080
+   - headless ortamda temel UI yüzeyleri için geometri smoke testi
+   - ana menü için headless draw-call smoke testi
 3. Performans kontrolü:
    - Draw/Update içinde gereksiz allocation yok
    - ortak modal builder'ları sıcak path'te children slice ayırmaz
+   - çekirdek modal/button builder'ları heap allocation üretmez
 4. CI kalite kapısı:
    - `go test ./...`
    - UI paket testleri

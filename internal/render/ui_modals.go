@@ -3,7 +3,8 @@ package render
 import gameui "mapp-game-go/internal/ui"
 
 func buildConfirmDialogModal() gameui.Modal {
-	panel := gameui.NewPanel(float64(ScreenWidth)/2-float64(confirmDialogW)/2, float64(ScreenHeight)/2-float64(confirmDialogH)/2, float64(confirmDialogW), float64(confirmDialogH))
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, float64(confirmDialogW), float64(confirmDialogH), gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
@@ -27,7 +28,8 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 
 func buildWarConfirmModal() gameui.Modal {
 	const dlgW, dlgH = 380.0, 130.0
-	panel := gameui.NewPanel(float64(ScreenWidth)/2-dlgW/2, float64(ScreenHeight)/2-dlgH/2, dlgW, dlgH)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
@@ -42,7 +44,8 @@ func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
 }
 
 func buildEventDetailModal() gameui.Modal {
-	panel := gameui.NewPanel(float64(ScreenWidth)/2-620.0/2, float64(ScreenHeight)/2-300.0/2, 620, 300)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 620, 300, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
@@ -52,13 +55,15 @@ func buildEventDetailCloseButton() gameui.Button {
 }
 
 func buildHistoricalEventModal() gameui.Modal {
-	panel := gameui.NewPanel(float64(ScreenWidth)/2-680.0/2, float64(ScreenHeight)/2-240.0/2, 680, 240)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 680, 240, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
 func buildDiplomacyOfferModal() gameui.Modal {
 	const dlgW, dlgH = 520.0, 190.0
-	panel := gameui.NewPanel(float64(ScreenWidth)/2-dlgW/2, float64(ScreenHeight)/2-dlgH/2, dlgW, dlgH)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 

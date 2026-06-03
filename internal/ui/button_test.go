@@ -26,3 +26,18 @@ func TestButtonHandleInputIgnoresDisabledButton(t *testing.T) {
 		t.Fatalf("disabled button should not consume click")
 	}
 }
+
+func TestButtonFocusableReflectsEnabledState(t *testing.T) {
+	btn := NewButton(0, 0, 10, 10, "Test")
+	if !btn.IsFocusable() {
+		t.Fatalf("enabled button should be focusable")
+	}
+	btn.SetFocused(true)
+	if !btn.Focused {
+		t.Fatalf("button focus flag should be set")
+	}
+	btn.Enabled = false
+	if btn.IsFocusable() {
+		t.Fatalf("disabled button should not be focusable")
+	}
+}

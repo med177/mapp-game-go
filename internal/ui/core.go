@@ -8,10 +8,15 @@ import (
 
 // InputState frame başına tek kez toplanan UI girdisini taşır.
 type InputState struct {
-	MouseX          float64
-	MouseY          float64
-	LeftJustPressed bool
-	WheelY          float64
+	MouseX               float64
+	MouseY               float64
+	LeftJustPressed      bool
+	WheelY               float64
+	TextInput            string
+	BackspaceJustPressed bool
+	EnterJustPressed     bool
+	TabJustPressed       bool
+	ShiftPressed         bool
 }
 
 // Widget ortak UI sözleşmesinin çekirdek yüzeyidir.

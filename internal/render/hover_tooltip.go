@@ -9,6 +9,7 @@ import (
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -441,8 +442,11 @@ func tooltipRect(mx, my float64, w, h float64) (float64, float64, float64, float
 }
 
 func drawTooltipBox(screen *ebiten.Image, x, y, w, h float64) {
-	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), color.RGBA{10, 8, 6, 245}, false)
-	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1.5, panelBorder, false)
+	tooltip := gameui.Tooltip{
+		Rect:    gameui.Rect{X: x, Y: y, W: w, H: h},
+		Visible: true,
+	}
+	gameui.DrawTooltip(screen, tooltip, hoverTooltipStyle, renderSmallText)
 	vector.FillRect(screen, float32(x), float32(y), float32(w), 3, panelBorder, false)
 }
 

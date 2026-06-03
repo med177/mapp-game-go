@@ -464,35 +464,11 @@ func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 	buttons := buildMapModeButtons()
 	for i, btn := range buttons {
 		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
-		fill := color.RGBA{44, 48, 56, 220}
-		txt := color.RGBA{184, 194, 204, 220}
-		if active {
-			fill = color.RGBA{66, 90, 122, 240}
-			txt = color.RGBA{235, 245, 255, 240}
-		}
-		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
-			BG:             fill,
-			Border:         color.RGBA{120, 96, 54, 210},
-			Text:           txt,
-			DisabledBG:     fill,
-			DisabledBorder: color.RGBA{120, 96, 54, 210},
-			DisabledText:   txt,
-			TextOffsetY:    6,
-			BorderWidth:    1,
-		})
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, mapModeButtonStyle(active))
 	}
 	if mapMode == MapModeTrade {
 		btn := buildTradeToggleButton()
-		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
-			BG:             color.RGBA{64, 82, 46, 235},
-			Border:         color.RGBA{150, 180, 120, 220},
-			Text:           ColorWhite,
-			DisabledBG:     color.RGBA{64, 82, 46, 235},
-			DisabledBorder: color.RGBA{150, 180, 120, 220},
-			DisabledText:   ColorWhite,
-			TextOffsetY:    6,
-			BorderWidth:    1,
-		})
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, tradeToggleButtonStyle)
 	}
 }
 
@@ -568,16 +544,7 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 	_ = mapMode
 
 	btn := buildTopDateHudMenuButton()
-	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, gameui.ButtonStyle{
-		BG:             color.RGBA{45, 38, 28, 230},
-		Border:         panelBorder,
-		Text:           ColorWhite,
-		DisabledBG:     color.RGBA{45, 38, 28, 230},
-		DisabledBorder: panelBorder,
-		DisabledText:   ColorWhite,
-		TextOffsetY:    8,
-		BorderWidth:    1.5,
-	})
+	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, dateMenuButtonStyle)
 }
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
@@ -606,16 +573,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 	}
 	toggleBtn := buildEventLogToggleButton(collapsed)
 	toggleBtn.Label = toggleLabel
-	drawUIButton(screen, toggleBtn.X, toggleBtn.Y, toggleBtn.W, toggleBtn.H, toggleBtn.Label, true, gameui.ButtonStyle{
-		BG:             color.RGBA{42, 34, 24, 220},
-		Border:         panelBorder,
-		Text:           ColorGold,
-		DisabledBG:     color.RGBA{42, 34, 24, 220},
-		DisabledBorder: panelBorder,
-		DisabledText:   ColorGold,
-		TextOffsetY:    2,
-		BorderWidth:    1,
-	})
+	drawUIButton(screen, toggleBtn.X, toggleBtn.Y, toggleBtn.W, toggleBtn.H, toggleBtn.Label, true, eventLogButtonStyle(ColorGold))
 
 	if collapsed {
 		return
@@ -648,16 +606,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
 
 		closeBtn := buildEventLogCloseButton(visibleIndex)
-		drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, "X", true, gameui.ButtonStyle{
-			BG:             color.RGBA{42, 34, 24, 220},
-			Border:         panelBorder,
-			Text:           ColorGray,
-			DisabledBG:     color.RGBA{42, 34, 24, 220},
-			DisabledBorder: panelBorder,
-			DisabledText:   ColorGray,
-			TextOffsetY:    2,
-			BorderWidth:    1,
-		})
+		drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, "X", true, eventLogButtonStyle(ColorGray))
 
 		lines := wrapTextLines(ev, FaceSmall, float64(cardW-34))
 		if len(lines) > 2 {
@@ -2173,10 +2122,6 @@ func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 	ly += 18 + 16 + 8 + 18 + 18
 	y := float32(ly - 17)
 	return [4]float32{px + pw - 70, y, 26, 18}, [4]float32{px + pw - 38, y, 26, 18}
-}
-
-func rectF32Hit(mx, my float64, r [4]float32) bool {
-	return mx >= float64(r[0]) && mx <= float64(r[0]+r[2]) && my >= float64(r[1]) && my <= float64(r[1]+r[3])
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {

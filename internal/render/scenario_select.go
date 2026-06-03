@@ -155,6 +155,12 @@ func (r *Renderer) handleScenarioSelectInput(input gameui.InputState) InputActio
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
 		r.scenarioCursor = (r.scenarioCursor - 1 + n) % n
 	}
+	if r.keyJustPressed(ebiten.KeyTab) {
+		next := focusButtonIndex(buttons, r.scenarioCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
+		if next >= 0 && next < n {
+			r.scenarioCursor = next
+		}
+	}
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
 		return InputAction{
 			Kind:       ActionSelectScenario,

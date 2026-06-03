@@ -86,6 +86,71 @@ var shapeHelpPanelStyle = gameui.PanelStyle{
 	BorderWidth: 1,
 }
 
+var hoverTooltipStyle = gameui.TooltipStyle{
+	Panel: gameui.PanelStyle{
+		BG:          color.RGBA{10, 8, 6, 245},
+		Border:      panelBorder,
+		BorderWidth: 1.5,
+	},
+	Text:    ColorGray,
+	Padding: 10,
+	LineH:   16,
+}
+
+func mapModeButtonStyle(active bool) gameui.ButtonStyle {
+	fill := color.RGBA{44, 48, 56, 220}
+	txt := color.RGBA{184, 194, 204, 220}
+	if active {
+		fill = color.RGBA{66, 90, 122, 240}
+		txt = color.RGBA{235, 245, 255, 240}
+	}
+	return gameui.ButtonStyle{
+		BG:             fill,
+		Border:         color.RGBA{120, 96, 54, 210},
+		Text:           txt,
+		DisabledBG:     fill,
+		DisabledBorder: color.RGBA{120, 96, 54, 210},
+		DisabledText:   txt,
+		TextOffsetY:    6,
+		BorderWidth:    1,
+	}
+}
+
+var tradeToggleButtonStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{64, 82, 46, 235},
+	Border:         color.RGBA{150, 180, 120, 220},
+	Text:           ColorWhite,
+	DisabledBG:     color.RGBA{64, 82, 46, 235},
+	DisabledBorder: color.RGBA{150, 180, 120, 220},
+	DisabledText:   ColorWhite,
+	TextOffsetY:    6,
+	BorderWidth:    1,
+}
+
+var dateMenuButtonStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{45, 38, 28, 230},
+	Border:         panelBorder,
+	Text:           ColorWhite,
+	DisabledBG:     color.RGBA{45, 38, 28, 230},
+	DisabledBorder: panelBorder,
+	DisabledText:   ColorWhite,
+	TextOffsetY:    8,
+	BorderWidth:    1.5,
+}
+
+func eventLogButtonStyle(text color.RGBA) gameui.ButtonStyle {
+	return gameui.ButtonStyle{
+		BG:             color.RGBA{42, 34, 24, 220},
+		Border:         panelBorder,
+		Text:           text,
+		DisabledBG:     color.RGBA{42, 34, 24, 220},
+		DisabledBorder: panelBorder,
+		DisabledText:   text,
+		TextOffsetY:    2,
+		BorderWidth:    1,
+	}
+}
+
 func solidButtonStyle(bg, border, text color.RGBA, textOffsetY float64) gameui.ButtonStyle {
 	style := menuButtonStyle
 	style.BG = bg

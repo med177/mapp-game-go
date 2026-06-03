@@ -29,6 +29,14 @@ func drawMenuButton(screen *ebiten.Image, r uiRect, label string, bg color.RGBA)
 	drawUIButton(screen, r[0], r[1], r[2], r[3], label, true, style)
 }
 
-func uiRectHit(mx, my float64, r uiRect) bool {
-	return mx >= r[0] && mx <= r[0]+r[2] && my >= r[1] && my <= r[1]+r[3]
+func focusButtonIndex(buttons []gameui.Button, current int, backward bool) int {
+	mgr := gameui.NewManager()
+	for i := range buttons {
+		mgr.Add(&buttons[i])
+	}
+	mgr.SetFocusIndex(current)
+	if backward {
+		return mgr.FocusPrevious()
+	}
+	return mgr.FocusNext()
 }

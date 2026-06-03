@@ -5994,6 +5994,13 @@ func (r *Renderer) handleBuildKey() InputAction {
 func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction {
 	factions := selectableFactions(r.gs)
 	n := len(factions)
+	if n == 0 {
+		if r.keyJustPressed(ebiten.KeyEscape) {
+			r.factionCursor = 0
+			return InputAction{Kind: ActionBack}
+		}
+		return InputAction{}
+	}
 	buttons := buildFactionCardButtons(r.gs)
 
 	// Hover ile kart vurgusunu güncelle
@@ -6009,6 +6016,12 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) || r.keyJustPressed(ebiten.KeyArrowLeft) {
 		r.factionCursor = (r.factionCursor - 1 + n) % n
+	}
+	if r.keyJustPressed(ebiten.KeyTab) {
+		next := focusButtonIndex(buttons, r.factionCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
+		if next >= 0 && next < n {
+			r.factionCursor = next
+		}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) && r.factionCursor < len(factions) {
 		return InputAction{Kind: ActionSelectFaction, TargetFaction: factions[r.factionCursor]}

@@ -147,6 +147,12 @@ func (r *Renderer) handlePauseMenuInput(input gameui.InputState) InputAction {
 			r.pauseCursor = (r.pauseCursor - 1 + n) % n
 		}
 	}
+	if r.keyJustPressed(ebiten.KeyTab) {
+		next := focusButtonIndex(buttons, r.pauseCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
+		if next >= 0 && next < n {
+			r.pauseCursor = next
+		}
+	}
 	if items[r.pauseCursor].action == ActionAdjustMusic {
 		if r.keyJustPressed(ebiten.KeyArrowLeft) {
 			return InputAction{Kind: ActionAdjustMusic, Delta: -5}

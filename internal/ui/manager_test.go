@@ -81,3 +81,21 @@ func TestManagerResetClearsFocus(t *testing.T) {
 		t.Fatalf("expected reset to clear focused widget")
 	}
 }
+
+func TestManagerSetFocusIndex(t *testing.T) {
+	m := NewManager()
+	a := newFocusProbe("a", true)
+	b := newFocusProbe("b", true)
+	m.Add(a)
+	m.Add(b)
+
+	if !m.SetFocusIndex(1) {
+		t.Fatalf("expected focus assignment to succeed")
+	}
+	if got := m.FocusIndex(); got != 1 {
+		t.Fatalf("expected focus index 1, got %d", got)
+	}
+	if a.focused || !b.focused {
+		t.Fatalf("expected only second widget focused")
+	}
+}

@@ -27,6 +27,10 @@ Yeni ekran veya panel eklerken manuel hitbox, ayrı cursor hesabı ve kopya geom
 7. `RadioGroup`
 8. `Modal`
 9. `Overlay`
+10. `TextBox`
+11. `Tooltip`
+12. `Image` / `Icon`
+13. `AnchorRect`
 
 ## Uygulama Akışı
 1. Geometri builder yaz:
@@ -35,6 +39,7 @@ Yeni ekran veya panel eklerken manuel hitbox, ayrı cursor hesabı ve kopya geom
 3. Cursor hover kararını aynı builder `.HitTest()` ile ver.
 4. Click/input akışını aynı builder `.HitTest()` ile çöz.
 5. Arka plan etkileşimi kapanması gerekiyorsa `Panel` veya `Modal` hit-test’ini erken tüket.
+6. Klavye focus gerekiyorsa `internal/ui.Manager` ve `Focusable` sırasını kullan.
 
 ## Örnek Desen
 ```go
@@ -56,6 +61,9 @@ func buildExampleButtons() (gameui.Button, gameui.Button) {
    - `go test ./internal/ui ./internal/render ./internal/game`
 3. Ekran ailesi geniş etkiliyse:
    - `go test ./...`
+4. Çözünürlük riski varsa headless geometri smoke testi ekle.
+5. Ana ekran çizimi değiştiyse headless draw-call smoke testi ekle; piksel okuma Ebitengine'de oyun başlamadan çalışmaz.
+6. Sıcak UI builder değiştiyse `testing.AllocsPerRun` ile allocation eşiği koy.
 
 ## Ne Zaman Yeni Primitive Eklenmeli
 1. Aynı çizim/hit-test deseni en az iki yerde tekrar ediyorsa

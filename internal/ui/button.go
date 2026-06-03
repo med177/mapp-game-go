@@ -25,6 +25,7 @@ type Button struct {
 	H       float64
 	Label   string
 	Enabled bool
+	Focused bool
 }
 
 func NewButton(x, y, w, h float64, label string) Button {
@@ -39,6 +40,19 @@ func (b Button) HandleInput(input InputState) bool {
 	return b.Enabled && input.LeftJustPressed && b.HitTest(input.MouseX, input.MouseY)
 }
 
+func (b Button) Draw(_ *ebiten.Image, _ TextRenderer) {}
+
+func (b *Button) IsFocusable() bool {
+	return b != nil && b.Enabled
+}
+
+func (b *Button) SetFocused(v bool) {
+	if b == nil {
+		return
+	}
+	b.Focused = v
+}
+
 func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRenderer) {
 	bg := style.BG
 	border := style.Border
@@ -50,6 +64,9 @@ func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRend
 	}
 	vector.FillRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), bg, false)
 	vector.StrokeRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), style.BorderWidth, border, false)
+	if b.Focused && b.Enabled {
+		vector.StrokeRect(screen, float32(b.X+2), float32(b.Y+2), float32(b.W-4), float32(b.H-4), 1, txt, false)
+	}
 	tw := text.Measure(b.Label)
 	text.Draw(screen, b.Label, b.X+b.W/2-tw/2, b.Y+style.TextOffsetY, txt)
 }

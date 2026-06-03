@@ -86,6 +86,8 @@ Tam widget ağacı henüz tüm render katmanına uygulanmış değil; ancak ana 
 - panel açıkken arka harita etkileşimi ilgili overlay hit-test'i ile tüketilir.
 - ortak button/dropdown/modal/shape yardım paneli stilleri `internal/render/ui_theme.go` altında tutulur.
 - `internal/ui.Manager`, focus edilebilir widget'lar için ileri/geri tab-order davranışını test edilebilir şekilde merkezileştirir.
+- ana menü, senaryo, fraksiyon, zafer, pause ve kayıt/yükleme slot ekranları `Tab` focus geçişini `internal/ui.Manager` üzerinden kullanır.
+- temel HUD/modal geometri yüzeyleri 1280x720, 1600x900 ve 1920x1080 headless smoke testinden geçer; ana menü aynı çözünürlüklerde headless draw-call smoke testinden de geçer.
 
 Bu hat şu ekranlarda aktif kullanımdadır:
 
@@ -102,7 +104,7 @@ Bu hat şu ekranlarda aktif kullanımdadır:
 - oyuncuya gelen diplomasi teklif modal yüzeyi
 - edit mode shape yardım paneli ve stroke preview overlay primitive'i
 
-Ortak modal builder'ları sıcak çizim hattında gereksiz `Children` slice allocation'ı yapmaz; çocuk widget gerekiyorsa modal örneğine açıkça eklenir.
+Ortak modal builder'ları sıcak çizim hattında gereksiz `Children` slice allocation'ı yapmaz; çocuk widget gerekiyorsa modal örneğine açıkça eklenir. Çekirdek modal/button builder'ları allocation testleriyle korunur.
 
 ### Dropdown Component
 

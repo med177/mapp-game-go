@@ -106,6 +106,12 @@ func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
 		r.factionCursor = (r.factionCursor - 1 + n) % n
 	}
+	if r.keyJustPressed(ebiten.KeyTab) {
+		next := focusButtonIndex(buttons, r.factionCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
+		if next >= 0 && next < n {
+			r.factionCursor = next
+		}
+	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
 		return InputAction{Kind: ActionSelectVictory, BuildingID: opts[r.factionCursor].ID}
 	}

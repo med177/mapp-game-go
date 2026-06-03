@@ -192,11 +192,15 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - `Label`
    - `Button`
    - `Dropdown`
+   - `TextBox`
+   - `Image/Icon`
+   - `Tooltip`
    - `ListView`
    - `Checkbox`
    - `RadioGroup`
    - `Modal`
    - `Overlay`
+   - `AnchorRect`
 3. HUD ve özel overlay yüzeyleri ortak builder/widget hattına alındı:
    - alt aksiyon HUD
    - harita modu düğmeleri
@@ -207,8 +211,10 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - oyuncuya gelen diplomasi teklif diyaloğu
    - shape yardım overlay paneli
 4. Kalite sonrası ek durum:
-   - ortak button/dropdown/modal/shape yardım stilleri `internal/render/ui_theme.go` altında merkezileştirilmeye başladı
-   - `internal/ui.Manager` için focus sırası testleri eklendi
+   - ortak button/dropdown/modal/HUD/shape yardım stilleri `internal/render/ui_theme.go` altında merkezileştirildi
+   - `internal/ui.Manager` için focus sırası testleri eklendi ve ana menü/senaryo/fraksiyon/zafer/pause/kayıt slot ekranlarında `Tab` geçişi buna bağlandı
    - modal builder sıcak path'inde gereksiz children slice allocation'ı kaldırıldı
+   - 1280x720, 1600x900 ve 1920x1080 için headless UI geometri smoke testi ve ana menü draw-call smoke testi eklendi
+   - çekirdek UI builder'lar için allocation testleri eklendi
 5. Kalan dar alan:
    - shape paint canlı preview çizimi ortak `Overlay` primitive'i içinde çalışıyor, ancak piksel seviyeli brush çizimi doğası gereği render-spesifik kalıyor

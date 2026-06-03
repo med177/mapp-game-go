@@ -34,6 +34,18 @@ func (m *Manager) FocusIndex() int {
 	return m.focus
 }
 
+func (m *Manager) SetFocusIndex(idx int) bool {
+	if idx < 0 || idx >= len(m.widgets) {
+		m.clearFocus()
+		return false
+	}
+	if w, ok := m.widgets[idx].(Focusable); ok && w.IsFocusable() {
+		m.setFocus(idx)
+		return true
+	}
+	return false
+}
+
 func (m *Manager) FocusNext() int {
 	return m.moveFocus(1)
 }
