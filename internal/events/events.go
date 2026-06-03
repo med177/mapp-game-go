@@ -9,17 +9,29 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
 )
 
+type RelationEffect struct {
+	FactionID  string `json:"faction_id"`
+	Stance     string `json:"stance,omitempty"`
+	ScoreDelta int    `json:"score_delta,omitempty"`
+}
+
 type Effect struct {
-	Target           string  `json:"target,omitempty"` // boşsa event target'ı kullanılır
-	SatDelta         int     `json:"sat_delta,omitempty"`
-	GoldDelta        int     `json:"gold_delta,omitempty"`
-	GrainDelta       int     `json:"grain_delta,omitempty"`
-	ArmyHPMod        float64 `json:"army_hp_mod,omitempty"`        // 1.0 = değişmez
-	AffectedFaction  string  `json:"affected_faction,omitempty"`   // specific_faction için
-	RelationDeltaAll int     `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	Target            string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
+	SatDelta          int              `json:"sat_delta,omitempty"`
+	GoldDelta         int              `json:"gold_delta,omitempty"`
+	GrainDelta        int              `json:"grain_delta,omitempty"`
+	ArmyHPMod         float64          `json:"army_hp_mod,omitempty"`        // 1.0 = değişmez
+	AffectedFaction   string           `json:"affected_faction,omitempty"`   // specific_faction için
+	RelationDeltaAll  int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	CompleteTechs     []string         `json:"complete_techs,omitempty"`
+	StartResearchTech string           `json:"start_research_tech,omitempty"`
+	Relations         []RelationEffect `json:"relations,omitempty"`
+	SetFlags          []string         `json:"set_flags,omitempty"`
+	ClearFlags        []string         `json:"clear_flags,omitempty"`
 }
 
 type Choice struct {
@@ -51,6 +63,8 @@ type Event struct {
 
 	ChoicePromptTR string   `json:"choice_prompt_tr,omitempty"`
 	Choices        []Choice `json:"choices,omitempty"`
+	RequiresFlags  []string `json:"requires_flags,omitempty"`
+	BlocksFlags    []string `json:"blocks_flags,omitempty"`
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -80,6 +94,9 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if gs.FiredEventIDs[e.ID] {
 			continue
 		}
+		if !eventFlagsSatisfied(gs, e) {
+			continue
+		}
 		if gs.Year != e.HistoricalYear {
 			continue
 		}
@@ -100,6 +117,9 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if e.OneShot && gs.FiredEventIDs[e.ID] {
 			continue
 		}
+		if !eventFlagsSatisfied(gs, e) {
+			continue
+		}
 		if gs.Turn < e.MinTurn {
 			continue
 		}
@@ -116,13 +136,16 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 
 func (e *Event) BaseEffect() Effect {
 	return Effect{
-		Target:           e.Target,
-		SatDelta:         e.SatDelta,
-		GoldDelta:        e.GoldDelta,
-		GrainDelta:       e.GrainDelta,
-		ArmyHPMod:        e.ArmyHPMod,
-		AffectedFaction:  e.AffectedFaction,
-		RelationDeltaAll: 0,
+		Target:            e.Target,
+		SatDelta:          e.SatDelta,
+		GoldDelta:         e.GoldDelta,
+		GrainDelta:        e.GrainDelta,
+		ArmyHPMod:         e.ArmyHPMod,
+		AffectedFaction:   e.AffectedFaction,
+		RelationDeltaAll:  0,
+		CompleteTechs:     nil,
+		StartResearchTech: "",
+		Relations:         nil,
 	}
 }
 
@@ -156,6 +179,23 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	return choice, true
 }
 
+func eventFlagsSatisfied(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil {
+		return false
+	}
+	for _, flag := range e.RequiresFlags {
+		if flag == "" || !gs.FiredEventIDs[eventFlagKey(flag)] {
+			return false
+		}
+	}
+	for _, flag := range e.BlocksFlags {
+		if flag != "" && gs.FiredEventIDs[eventFlagKey(flag)] {
+			return false
+		}
+	}
+	return true
+}
+
 func AutoChoose(e *Event) int {
 	if e == nil || len(e.Choices) == 0 {
 		return -1
@@ -180,6 +220,10 @@ func choiceEffect(e *Event, c Choice) Effect {
 		eff.AffectedFaction = e.AffectedFaction
 	}
 	return eff
+}
+
+func eventFlagKey(flag string) string {
+	return "flag:" + flag
 }
 
 func applyEffect(gs *state.GameState, eff Effect) {
@@ -230,6 +274,7 @@ func applyEffect(gs *state.GameState, eff Effect) {
 			applyToFaction(gs, eff.AffectedFaction, eff)
 		}
 	}
+	applyFlags(gs, eff)
 }
 
 // applyToFaction bir fraksiyonun tüm bölgelerine ve hazinesine olay etkilerini uygular.
@@ -257,6 +302,9 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 	if eff.RelationDeltaAll != 0 {
 		applyRelationDeltaAll(gs, faction.FactionID(fid), eff.RelationDeltaAll)
 	}
+	applyCompletedTechs(gs, faction.FactionID(fid), eff.CompleteTechs)
+	applyStartedResearch(gs, faction.FactionID(fid), eff.StartResearchTech)
+	applyRelationEffects(gs, faction.FactionID(fid), eff.Relations)
 }
 
 func applyRelationDeltaAll(gs *state.GameState, fid faction.FactionID, delta int) {
@@ -269,6 +317,106 @@ func applyRelationDeltaAll(gs *state.GameState, fid faction.FactionID, delta int
 		}
 		rel := diplomacy.EnsureRelation(gs, fid, otherID)
 		rel.Score = clamp(rel.Score+delta, -100, 100)
+	}
+}
+
+func applyFlags(gs *state.GameState, eff Effect) {
+	if gs == nil {
+		return
+	}
+	if gs.FiredEventIDs == nil {
+		gs.FiredEventIDs = make(map[string]bool)
+	}
+	for _, flag := range eff.SetFlags {
+		if flag == "" {
+			continue
+		}
+		gs.FiredEventIDs[eventFlagKey(flag)] = true
+	}
+	for _, flag := range eff.ClearFlags {
+		if flag == "" {
+			continue
+		}
+		delete(gs.FiredEventIDs, eventFlagKey(flag))
+	}
+}
+
+func applyCompletedTechs(gs *state.GameState, fid faction.FactionID, techIDs []string) {
+	if gs == nil || fid == "" || len(techIDs) == 0 {
+		return
+	}
+	f := gs.Factions[fid]
+	if f == nil {
+		return
+	}
+	if f.Research.Completed == nil {
+		f.Research.Completed = make(map[string]bool)
+	}
+	for _, techID := range techIDs {
+		if techID == "" {
+			continue
+		}
+		if gs.TechTypes != nil {
+			if _, ok := gs.TechTypes[techID]; !ok {
+				continue
+			}
+		}
+		f.Research.Completed[techID] = true
+		if f.Research.ActiveID == techID {
+			f.Research.ActiveID = ""
+			f.Research.TurnsLeft = 0
+		}
+	}
+}
+
+func applyStartedResearch(gs *state.GameState, fid faction.FactionID, techID string) {
+	if gs == nil || fid == "" || techID == "" || gs.TechTypes == nil {
+		return
+	}
+	f := gs.Factions[fid]
+	if f == nil {
+		return
+	}
+	if f.Research.Completed != nil && f.Research.Completed[techID] {
+		return
+	}
+	if f.Research.ActiveID != "" {
+		return
+	}
+	t, ok := gs.TechTypes[techID]
+	if !ok || t == nil {
+		return
+	}
+	if !tech.IsUnlocked(&f.Research, t) {
+		return
+	}
+	if f.Research.Completed == nil {
+		f.Research.Completed = make(map[string]bool)
+	}
+	f.Research.ActiveID = techID
+	f.Research.TurnsLeft = t.TurnsRequired
+}
+
+func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []RelationEffect) {
+	if gs == nil || fid == "" || len(rels) == 0 {
+		return
+	}
+	for _, rel := range rels {
+		if rel.FactionID == "" {
+			continue
+		}
+		var stance faction.DiplomaticStance
+		switch rel.Stance {
+		case string(faction.StanceWar):
+			stance = faction.StanceWar
+		case string(faction.StancePeace):
+			stance = faction.StancePeace
+		case string(faction.StanceAllied):
+			stance = faction.StanceAllied
+		case string(faction.StanceTrade):
+			stance = faction.StanceTrade
+		}
+		diplomacy.ForceRelation(gs, fid, faction.FactionID(rel.FactionID), stance, rel.ScoreDelta)
 	}
 }
 

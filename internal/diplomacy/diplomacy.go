@@ -126,6 +126,27 @@ func IsWar(gs *state.GameState, a, b faction.FactionID) bool {
 	return rel != nil && rel.Stance == faction.StanceWar
 }
 
+func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.DiplomaticStance, scoreDelta int) {
+	if gs == nil || a == "" || b == "" || a == b {
+		return
+	}
+	rel := EnsureRelation(gs, a, b)
+	prevStance := rel.Stance
+	rel.Score = clamp(rel.Score+scoreDelta, -100, 100)
+	if stance != "" {
+		rel.Stance = stance
+	}
+	switch rel.Stance {
+	case faction.StanceWar, faction.StancePeace:
+		removeTradeRoutesBetween(gs, a, b)
+	case faction.StanceTrade:
+		ensureTradeRoutesBetween(gs, a, b)
+	}
+	if prevStance == faction.StanceTrade && rel.Stance != faction.StanceTrade {
+		removeTradeRoutesBetween(gs, a, b)
+	}
+}
+
 func ApplyRelationDecay(gs *state.GameState) {
 	for _, rel := range gs.Relations {
 		if rel == nil {

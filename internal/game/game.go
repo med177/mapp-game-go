@@ -515,13 +515,13 @@ func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEvent
 		views = append(views, render.HistoricalEventChoice{
 			Label:  choice.LabelTR,
 			Desc:   choice.DescTR,
-			Effect: historicalChoiceEffectSummary(choice.Effect),
+			Effect: historicalChoiceEffectSummary(g.gs, choice.Effect),
 		})
 	}
 	return views
 }
 
-func historicalChoiceEffectSummary(eff events.Effect) string {
+func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) string {
 	parts := make([]string, 0, 5)
 	if eff.GoldDelta != 0 {
 		parts = append(parts, fmt.Sprintf("Altın %+d", eff.GoldDelta))
@@ -537,6 +537,19 @@ func historicalChoiceEffectSummary(eff events.Effect) string {
 	}
 	if eff.ArmyHPMod > 0 && eff.ArmyHPMod != 1 {
 		parts = append(parts, fmt.Sprintf("Ordu HP x%.2f", eff.ArmyHPMod))
+	}
+	if len(eff.CompleteTechs) > 0 {
+		techNames := make([]string, 0, len(eff.CompleteTechs))
+		for _, techID := range eff.CompleteTechs {
+			if gs != nil && gs.TechTypes != nil {
+				if t, ok := gs.TechTypes[techID]; ok && t != nil && t.NameTR != "" {
+					techNames = append(techNames, t.NameTR)
+					continue
+				}
+			}
+			techNames = append(techNames, techID)
+		}
+		parts = append(parts, "Teknoloji: "+strings.Join(techNames, ", "))
 	}
 	return strings.Join(parts, "  |  ")
 }

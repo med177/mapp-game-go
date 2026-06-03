@@ -310,7 +310,8 @@
           "sat_delta": 14,
           "gold_delta": -180,
           "grain_delta": 35,
-          "relation_delta_all": 8
+          "relation_delta_all": 8,
+          "set_flags": ["capital_rebuild"]
         }
       },
       {
@@ -323,7 +324,9 @@
           "sat_delta": -6,
           "gold_delta": -110,
           "army_hp_mod": 1.14,
-          "relation_delta_all": -4
+          "relation_delta_all": -4,
+          "clear_flags": ["capital_rebuild"],
+          "set_flags": ["arsenal_push"]
         }
       }
     ],
@@ -339,6 +342,48 @@
     "historical_month": 5,
     "one_shot": true,
     "affected_faction": "ottoman"
+  },
+  {
+    "id": "capital_rebuild_program_1454",
+    "name_tr": "Payitaht İmar Programı",
+    "desc_tr": "Fetih sonrası imar hamlesi meyve verdi. Başkentte iaşe, liman ve çarşı düzeni toparlandıkça devletin merkezi daha istikrarlı hale geldi.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 12,
+    "gold_delta": 220,
+    "grain_delta": 40,
+    "complete_techs": ["banking"],
+    "start_research_tech": "guilds",
+    "relations": [{"faction_id": "genoa", "score_delta": 18, "stance": "trade"}],
+    "army_hp_mod": 1.0,
+    "historical_year": 1454,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "requires_flags": ["capital_rebuild"],
+    "blocks_flags": ["arsenal_push"]
+  },
+  {
+    "id": "arsenal_push_1454",
+    "name_tr": "Tersane ve Tophane Hamlesi",
+    "desc_tr": "Tophane, tersane ve sefer hazırlıkları hızlandırıldı. Başkent henüz toparlanmasa da savaş makinesi daha sert çalışıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": -4,
+    "gold_delta": -80,
+    "grain_delta": 10,
+    "complete_techs": ["siege_engines"],
+    "start_research_tech": "steel_blades",
+    "relations": [{"faction_id": "venice", "score_delta": -18}],
+    "army_hp_mod": 1.08,
+    "historical_year": 1454,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "requires_flags": ["arsenal_push"],
+    "blocks_flags": ["capital_rebuild"]
   },
   {
     "id": "printing_press_1455",
@@ -440,7 +485,8 @@
           "target": "player_faction",
           "sat_delta": 6,
           "gold_delta": -100,
-          "relation_delta_all": 9
+          "relation_delta_all": 9,
+          "set_flags": ["atlantic_expedition"]
         }
       },
       {
@@ -453,7 +499,9 @@
           "sat_delta": 4,
           "gold_delta": 180,
           "grain_delta": 20,
-          "relation_delta_all": -2
+          "relation_delta_all": -2,
+          "clear_flags": ["atlantic_expedition"],
+          "set_flags": ["iberian_market"]
         }
       }
     ],
@@ -471,6 +519,48 @@
     "affected_faction": "aragon"
   },
   {
+    "id": "atlantic_casa_program_1494",
+    "name_tr": "Atlantik Casa Programı",
+    "desc_tr": "Taç, Atlantik girişimlerini daha da büyüttü. Yeni tersaneler ve keşif hazırlıkları Akdeniz ufkunu Atlantik'e taşıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 8,
+    "gold_delta": -60,
+    "grain_delta": 20,
+    "complete_techs": ["navigation"],
+    "start_research_tech": "cartography",
+    "relations": [{"faction_id": "castile_kingdom", "score_delta": 15, "stance": "allied"}],
+    "army_hp_mod": 1.0,
+    "historical_year": 1494,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "aragon",
+    "requires_flags": ["atlantic_expedition"],
+    "blocks_flags": ["iberian_market"]
+  },
+  {
+    "id": "iberian_market_reform_1494",
+    "name_tr": "İber Pazar Reformu",
+    "desc_tr": "Yeni Dünya'dan gelen servet, İber iç pazarı ve kraliyet hazinesine aktı. Deniz atılımı yavaş kalsa da mali denge güçlendi.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 6,
+    "gold_delta": 240,
+    "grain_delta": 10,
+    "complete_techs": ["trade_routes"],
+    "start_research_tech": "banking",
+    "relations": [{"faction_id": "portugal", "score_delta": 12, "stance": "trade"}],
+    "army_hp_mod": 1.0,
+    "historical_year": 1494,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "aragon",
+    "requires_flags": ["iberian_market"],
+    "blocks_flags": ["atlantic_expedition"]
+  },
+  {
     "id": "vasco_da_gama_1498",
     "name_tr": "Hindistan Deniz Yolu",
     "choice_prompt_tr": "Hindistan yolunun açılmasıyla strateji ne olacak?",
@@ -485,7 +575,8 @@
           "sat_delta": 10,
           "gold_delta": -120,
           "grain_delta": 10,
-          "relation_delta_all": -6
+          "relation_delta_all": -6,
+          "set_flags": ["estado_da_india"]
         }
       },
       {
@@ -498,7 +589,9 @@
           "sat_delta": 4,
           "gold_delta": -60,
           "grain_delta": 30,
-          "relation_delta_all": 7
+          "relation_delta_all": 7,
+          "clear_flags": ["estado_da_india"],
+          "set_flags": ["port_chain"]
         }
       }
     ],
@@ -514,6 +607,48 @@
     "historical_month": 5,
     "one_shot": true,
     "affected_faction": "portugal"
+  },
+  {
+    "id": "estado_da_india_1499",
+    "name_tr": "Estado da India",
+    "desc_tr": "Hint Okyanusu'nda zorlayıcı bir deniz düzeni kuruldu. Konvoylar korunuyor, rakip tüccarlar geri itiliyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 6,
+    "gold_delta": 180,
+    "grain_delta": 10,
+    "complete_techs": ["navigation"],
+    "start_research_tech": "cartography",
+    "relations": [{"faction_id": "mamluk", "score_delta": -16}],
+    "army_hp_mod": 1.05,
+    "historical_year": 1499,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "portugal",
+    "requires_flags": ["estado_da_india"],
+    "blocks_flags": ["port_chain"]
+  },
+  {
+    "id": "feitoria_network_1499",
+    "name_tr": "Feitoria Ağı",
+    "desc_tr": "Afrika ve Hint liman zinciri derinleşti. Ticaret üsleri daha kurumsal ve kalıcı bir ağ oluşturmaya başladı.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 8,
+    "gold_delta": 140,
+    "grain_delta": 30,
+    "complete_techs": ["trade_routes"],
+    "start_research_tech": "banking",
+    "relations": [{"faction_id": "aragon", "score_delta": 10, "stance": "trade"}],
+    "army_hp_mod": 1.0,
+    "historical_year": 1499,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "portugal",
+    "requires_flags": ["port_chain"],
+    "blocks_flags": ["estado_da_india"]
   },
   {
     "id": "reformation_1517",
@@ -572,7 +707,8 @@
           "target": "player_faction",
           "sat_delta": 10,
           "gold_delta": 120,
-          "grain_delta": 50
+          "grain_delta": 50,
+          "set_flags": ["treasury_reform"]
         }
       },
       {
@@ -584,7 +720,9 @@
           "target": "player_faction",
           "sat_delta": -4,
           "gold_delta": -120,
-          "army_hp_mod": 1.14
+          "army_hp_mod": 1.14,
+          "clear_flags": ["treasury_reform"],
+          "set_flags": ["frontier_muster"]
         }
       }
     ],
@@ -600,6 +738,48 @@
     "historical_month": 9,
     "one_shot": true,
     "affected_faction": "ottoman"
+  },
+  {
+    "id": "imperial_defter_reform_1521",
+    "name_tr": "İmparatorluk Defter Reformu",
+    "desc_tr": "Merkezi defter ve iaşe düzeni kısa sürede sonuç verdi. Sefer hazırlıkları artık daha disiplinli ve sürdürülebilir ilerliyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 8,
+    "gold_delta": 180,
+    "grain_delta": 35,
+    "complete_techs": ["banking"],
+    "start_research_tech": "diplomacy",
+    "relations": [{"faction_id": "venice", "score_delta": 12, "stance": "trade"}],
+    "army_hp_mod": 1.0,
+    "historical_year": 1521,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "requires_flags": ["treasury_reform"],
+    "blocks_flags": ["frontier_muster"]
+  },
+  {
+    "id": "frontier_host_1521",
+    "name_tr": "Sınır Orduları Yoklaması",
+    "desc_tr": "Sınır orduları ve kapıkulu takviyesi hızlandı. Devlet daha saldırgan bir sefer ritmine girdi.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": -2,
+    "gold_delta": -60,
+    "grain_delta": 15,
+    "complete_techs": ["cavalry_tactics"],
+    "start_research_tech": "steel_blades",
+    "relations": [{"faction_id": "hungarian_kingdom", "score_delta": -20}],
+    "army_hp_mod": 1.08,
+    "historical_year": 1521,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "requires_flags": ["frontier_muster"],
+    "blocks_flags": ["treasury_reform"]
   },
   {
     "id": "battle_of_mohacs_1526",

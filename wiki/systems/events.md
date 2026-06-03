@@ -56,6 +56,23 @@ Yeni choice katmanı:
 
 `relation_delta_all`, etkilenen fraksiyonun tüm aktif ilişkilerine doğrudan score delta uygular; bu olay seçimlerinin diplomasi etkisini taşır.
 
+## Zincir Tetikleme
+
+Choice sonuçları artık doğrudan follow-up event açabilir.
+
+- `Effect.set_flags[]` seçilen kararın state flag'ini yazar
+- `Effect.clear_flags[]` eski veya rakip branch flag'ini temizler
+- `Effect.complete_techs[]` ilgili fraksiyon için teknoloji tamamlar
+- `Effect.start_research_tech` aktif araştırma boşsa ücretsiz yönlendirilmiş araştırma başlatır
+- `Effect.relations[]` belirli fraksiyonlarla doğrudan `score_delta` ve opsiyonel `stance` uygular
+- `Event.requires_flags[]` olmadan event tetiklenmez
+- `Event.blocks_flags[]` varsa ilgili flag set iken event bastırılır
+
+Uygulama notu:
+- Ayrı bir save yapısı eklenmedi
+- flag'ler `gs.FiredEventIDs` içinde `flag:<id>` anahtarıyla tutulur
+- bu yüzden zincir state'i save/load ile doğal olarak korunur
+
 ## Olay Tipleri
 
 | Tip | Efekt |
@@ -83,6 +100,35 @@ Olay tetiklendiğinde:
 - `black_death_1347` → `Karantina Uygula` / `Limanları Açık Tut`
 - `printing_press_1455` → `Matbaayı Destekle` / `Sansür Uygula`
 - `reformation_1517` → `Tolerans Politikası` / `Baskı Uygula`
+
+## Mevcut Zincir Örnekleri
+
+- `fall_of_constantinople_1453`
+  - `Şehri İmar Et` → `capital_rebuild_program_1454`
+  - `Seferleri Finanse Et` → `arsenal_push_1454`
+- `columbus_1492`
+  - `Seferleri Büyüt` → `atlantic_casa_program_1494`
+  - `İç Pazarı Besle` → `iberian_market_reform_1494`
+- `vasco_da_gama_1498`
+  - `Tekeli Donanmayla Koru` → `estado_da_india_1499`
+  - `Liman Ağını Genişlet` → `feitoria_network_1499`
+- `suleiman_rise_1520`
+  - `Hazineyi Toparla` → `imperial_defter_reform_1521`
+  - `Orduları Güçlendir` → `frontier_host_1521`
+
+Bazı follow-up event'ler yalnız kaynak değil teknoloji de verir:
+
+- `capital_rebuild_program_1454` → ekonomi/idarî teknoloji hattı
+- `arsenal_push_1454` → kuşatma/mühendislik hattı
+- `atlantic_casa_program_1494` / `estado_da_india_1499` → denizcilik hattı
+- `iberian_market_reform_1494` / `feitoria_network_1499` → ticaret hattı
+
+Bazı zincirler artık diplomasi ve araştırma yönü de kurar:
+
+- `capital_rebuild_program_1454` → Ceneviz ile ticaret yakınlaşması + sonraki idarî araştırma
+- `atlantic_casa_program_1494` → Kastilya ile ittifak yakınlaşması + kartografi hattı
+- `iberian_market_reform_1494` → Portekiz ile ticaret yakınlaşması + mali araştırma
+- `imperial_defter_reform_1521` → Venedik ile ticaret yakınlaşması + diplomasi/iaşe hattı
 
 ## Eklenecek / Planlanmış
 
