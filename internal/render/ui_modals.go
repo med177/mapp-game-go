@@ -55,7 +55,7 @@ func buildEventDetailCloseButton() gameui.Button {
 }
 
 func buildHistoricalEventModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 720, 320, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 760, 420, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
@@ -70,7 +70,7 @@ func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
 		btnH = 36.0
 		gap  = 16.0
 	)
-	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 20
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 24
 	totalW := float64(count)*btnW + float64(max(0, count-1))*gap
 	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-totalW)/2
 	buttons := make([]gameui.Button, 0, count)

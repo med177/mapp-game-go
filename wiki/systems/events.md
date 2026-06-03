@@ -96,6 +96,10 @@ Olay tetiklendiğinde:
 - `renderer.ShowCombatResult("OLAY: ...")` → kısa bildirim
 - Tarihsel event varsa `ShowHistoricalEvent(...)` → tam ekran popup
 - Choice varsa historical modal içinde A/B butonları açılır ve sonuç ayrı `KARAR` event log kaydı üretir
+- Historical modal artık choice etkisi yanında:
+  - açılacak follow-up event adını / tarihini
+  - ilgili follow-up için bölge, teknoloji ve diplomasi koşullarını
+  aynı ekranda önizleme olarak gösterir
 
 ---
 

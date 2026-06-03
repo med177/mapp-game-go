@@ -258,9 +258,11 @@ type editFactionFormState struct {
 type editFactionFormField int
 
 type HistoricalEventChoice struct {
-	Label  string
-	Desc   string
-	Effect string
+	Label      string
+	Desc       string
+	Effect     string
+	FollowUp   string
+	Conditions string
 }
 
 const (

@@ -1458,7 +1458,7 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 		return
 	}
 
-	promptY := float64(by) + 185
+	promptY := float64(by) + 210
 	if prompt != "" {
 		DrawTextCentered(screen, prompt, ScreenWidth/2, promptY, FaceMed, color.RGBA{230, 214, 175, 240})
 	}
@@ -1478,14 +1478,51 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 			border = color.RGBA{226, 182, 92, 255}
 		}
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, choice.Label, true, solidButtonStyle(bg, border, textCol, 10))
-		infoY := btn.Y - 32
-		if choice.Effect != "" {
-			DrawTextCentered(screen, choice.Effect, btn.X+btn.W/2, infoY, FaceSmall, color.RGBA{190, 176, 142, 220})
-		}
-		if choice.Desc != "" {
-			DrawTextCentered(screen, choice.Desc, btn.X+btn.W/2, infoY-18, FaceSmall, color.RGBA{162, 150, 120, 210})
+		drawHistoricalChoiceInfo(screen, btn, choice)
+	}
+}
+
+func drawHistoricalChoiceInfo(screen *ebiten.Image, btn gameui.Button, choice HistoricalEventChoice) {
+	infoX := btn.X - 6
+	infoW := btn.W + 12
+	startY := btn.Y - 122
+	if choice.Desc != "" {
+		lines := wrapTextLines(choice.Desc, FaceSmall, infoW)
+		for i, line := range lines {
+			if i >= 2 {
+				break
+			}
+			DrawTextCentered(screen, line, btn.X+btn.W/2, startY+float64(i)*16, FaceSmall, color.RGBA{162, 150, 120, 210})
 		}
 	}
+	if choice.Effect != "" {
+		lines := wrapTextLines(choice.Effect, FaceSmall, infoW)
+		for i, line := range lines {
+			if i >= 2 {
+				break
+			}
+			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-74+float64(i)*16, FaceSmall, color.RGBA{190, 176, 142, 220})
+		}
+	}
+	if choice.FollowUp != "" {
+		lines := wrapTextLines(choice.FollowUp, FaceSmall, infoW)
+		for i, line := range lines {
+			if i >= 2 {
+				break
+			}
+			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-42+float64(i)*16, FaceSmall, color.RGBA{232, 196, 112, 230})
+		}
+	}
+	if choice.Conditions != "" {
+		lines := wrapTextLines(choice.Conditions, FaceSmall, infoW)
+		for i, line := range lines {
+			if i >= 2 {
+				break
+			}
+			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-10+float64(i)*16, FaceSmall, color.RGBA{144, 138, 126, 220})
+		}
+	}
+	_ = infoX
 }
 
 // wrapText metni belirtilen genişlikte kelime bazlı satırlara bölerek çizer.

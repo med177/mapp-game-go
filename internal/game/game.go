@@ -512,17 +512,201 @@ func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEvent
 	}
 	views := make([]render.HistoricalEventChoice, 0, len(evt.Choices))
 	for _, choice := range evt.Choices {
+		followUp, conditions := g.historicalChoiceFollowUpSummary(evt, choice)
 		views = append(views, render.HistoricalEventChoice{
-			Label:  choice.LabelTR,
-			Desc:   choice.DescTR,
-			Effect: historicalChoiceEffectSummary(g.gs, choice.Effect),
+			Label:      choice.LabelTR,
+			Desc:       choice.DescTR,
+			Effect:     historicalChoiceEffectSummary(g.gs, choice.Effect),
+			FollowUp:   followUp,
+			Conditions: conditions,
 		})
 	}
 	return views
 }
 
+func (g *Game) historicalChoiceFollowUpSummary(evt *events.Event, choice events.Choice) (string, string) {
+	if g == nil || evt == nil {
+		return "", ""
+	}
+	eff := choice.Effect
+	if eff.Target == "" {
+		eff.Target = evt.Target
+	}
+	if eff.AffectedFaction == "" {
+		eff.AffectedFaction = evt.AffectedFaction
+	}
+	flagSet := make(map[string]bool, len(eff.SetFlags))
+	for _, flag := range eff.SetFlags {
+		if flag != "" {
+			flagSet[flag] = true
+		}
+	}
+	if len(flagSet) == 0 {
+		return "", ""
+	}
+	candidates := make([]*events.Event, 0, 2)
+	for _, candidate := range g.evts {
+		if candidate == nil || candidate.ID == evt.ID || len(candidate.RequiresFlags) == 0 {
+			continue
+		}
+		if !sameEventBranch(evt, candidate) {
+			continue
+		}
+		for _, req := range candidate.RequiresFlags {
+			if flagSet[req] {
+				candidates = append(candidates, candidate)
+				break
+			}
+		}
+	}
+	if len(candidates) == 0 {
+		return "", ""
+	}
+	labels := make([]string, 0, len(candidates))
+	conds := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		labels = append(labels, historicalFollowUpLabel(candidate))
+		if cond := historicalFollowUpConditions(g.gs, candidate); cond != "" {
+			conds = append(conds, cond)
+		}
+	}
+	return "Zincir: " + strings.Join(labels, " | "), strings.Join(conds, " | ")
+}
+
+func sameEventBranch(source, candidate *events.Event) bool {
+	if source == nil || candidate == nil {
+		return false
+	}
+	if source.Target != candidate.Target {
+		return false
+	}
+	switch source.Target {
+	case "specific_faction":
+		return source.AffectedFaction == candidate.AffectedFaction
+	default:
+		return true
+	}
+}
+
+func historicalFollowUpLabel(evt *events.Event) string {
+	if evt == nil {
+		return ""
+	}
+	if evt.HistoricalMonth > 0 {
+		return fmt.Sprintf("%s (%d/%02d)", evt.NameTR, evt.HistoricalYear, evt.HistoricalMonth)
+	}
+	if evt.HistoricalYear > 0 {
+		return fmt.Sprintf("%s (%d)", evt.NameTR, evt.HistoricalYear)
+	}
+	return evt.NameTR
+}
+
+func historicalFollowUpConditions(gs *state.GameState, evt *events.Event) string {
+	if evt == nil {
+		return ""
+	}
+	parts := make([]string, 0, 4)
+	if len(evt.RequiresOwnedRegions) > 0 {
+		parts = append(parts, "Bolge: "+strings.Join(regionLabels(gs, evt.RequiresOwnedRegions), ", "))
+	}
+	if len(evt.RequiresTechs) > 0 {
+		parts = append(parts, "Gerekli tech: "+strings.Join(techLabels(gs, evt.RequiresTechs), ", "))
+	}
+	if len(evt.BlocksTechs) > 0 {
+		parts = append(parts, "Kapali tech: "+strings.Join(techLabels(gs, evt.BlocksTechs), ", "))
+	}
+	if len(evt.RelationRequirements) > 0 {
+		parts = append(parts, "Diplomasi: "+strings.Join(relationRequirementLabels(gs, evt.RelationRequirements), "; "))
+	}
+	return strings.Join(parts, "  ")
+}
+
+func regionLabels(gs *state.GameState, ids []world.RegionID) []string {
+	labels := make([]string, 0, len(ids))
+	for _, rid := range ids {
+		label := string(rid)
+		if gs != nil && gs.Regions != nil {
+			if r := gs.Regions[rid]; r != nil && r.NameTR != "" {
+				label = r.NameTR
+			}
+		}
+		labels = append(labels, label)
+	}
+	return labels
+}
+
+func techLabels(gs *state.GameState, ids []string) []string {
+	labels := make([]string, 0, len(ids))
+	for _, id := range ids {
+		label := id
+		if gs != nil && gs.TechTypes != nil {
+			if t := gs.TechTypes[id]; t != nil && t.NameTR != "" {
+				label = t.NameTR
+			}
+		}
+		labels = append(labels, label)
+	}
+	return labels
+}
+
+func relationRequirementLabels(gs *state.GameState, reqs []events.RelationRequirement) []string {
+	labels := make([]string, 0, len(reqs))
+	for _, req := range reqs {
+		name := req.FactionID
+		if gs != nil && gs.Factions != nil {
+			if f := gs.Factions[faction.FactionID(req.FactionID)]; f != nil && f.NameTR != "" {
+				name = f.NameTR
+			}
+		}
+		parts := make([]string, 0, 4)
+		if req.Stance != "" {
+			parts = append(parts, "durus="+stanceLabel(faction.DiplomaticStance(req.Stance)))
+		}
+		if len(req.AnyOfStances) > 0 {
+			stanceNames := make([]string, 0, len(req.AnyOfStances))
+			for _, stance := range req.AnyOfStances {
+				stanceNames = append(stanceNames, stanceLabel(faction.DiplomaticStance(stance)))
+			}
+			parts = append(parts, "durus "+strings.Join(stanceNames, "/"))
+		}
+		if len(req.BlocksStances) > 0 {
+			stanceNames := make([]string, 0, len(req.BlocksStances))
+			for _, stance := range req.BlocksStances {
+				stanceNames = append(stanceNames, stanceLabel(faction.DiplomaticStance(stance)))
+			}
+			parts = append(parts, "savasma: "+strings.Join(stanceNames, "/"))
+		}
+		if req.MinScore != 0 {
+			parts = append(parts, fmt.Sprintf("skor>=%d", req.MinScore))
+		}
+		if req.MaxScore != 0 {
+			parts = append(parts, fmt.Sprintf("skor<=%d", req.MaxScore))
+		}
+		if len(parts) == 0 {
+			continue
+		}
+		labels = append(labels, name+" "+strings.Join(parts, ", "))
+	}
+	return labels
+}
+
+func stanceLabel(stance faction.DiplomaticStance) string {
+	switch stance {
+	case faction.StanceWar:
+		return "savas"
+	case faction.StanceTrade:
+		return "ticaret"
+	case faction.StanceAllied:
+		return "ittifak"
+	case faction.StancePeace:
+		return "baris"
+	default:
+		return string(stance)
+	}
+}
+
 func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) string {
-	parts := make([]string, 0, 5)
+	parts := make([]string, 0, 8)
 	if eff.GoldDelta != 0 {
 		parts = append(parts, fmt.Sprintf("Altın %+d", eff.GoldDelta))
 	}
@@ -538,18 +722,35 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 	if eff.ArmyHPMod > 0 && eff.ArmyHPMod != 1 {
 		parts = append(parts, fmt.Sprintf("Ordu HP x%.2f", eff.ArmyHPMod))
 	}
+	if eff.StartResearchTech != "" {
+		parts = append(parts, "Arastirma: "+strings.Join(techLabels(gs, []string{eff.StartResearchTech}), ", "))
+	}
 	if len(eff.CompleteTechs) > 0 {
-		techNames := make([]string, 0, len(eff.CompleteTechs))
-		for _, techID := range eff.CompleteTechs {
-			if gs != nil && gs.TechTypes != nil {
-				if t, ok := gs.TechTypes[techID]; ok && t != nil && t.NameTR != "" {
-					techNames = append(techNames, t.NameTR)
-					continue
+		parts = append(parts, "Teknoloji: "+strings.Join(techLabels(gs, eff.CompleteTechs), ", "))
+	}
+	if len(eff.Relations) > 0 {
+		relParts := make([]string, 0, len(eff.Relations))
+		for _, rel := range eff.Relations {
+			name := rel.FactionID
+			if gs != nil && gs.Factions != nil {
+				if f := gs.Factions[faction.FactionID(rel.FactionID)]; f != nil && f.NameTR != "" {
+					name = f.NameTR
 				}
 			}
-			techNames = append(techNames, techID)
+			chunks := make([]string, 0, 2)
+			if rel.ScoreDelta != 0 {
+				chunks = append(chunks, fmt.Sprintf("%+d", rel.ScoreDelta))
+			}
+			if rel.Stance != "" {
+				chunks = append(chunks, stanceLabel(faction.DiplomaticStance(rel.Stance)))
+			}
+			if len(chunks) > 0 {
+				relParts = append(relParts, name+" "+strings.Join(chunks, " "))
+			}
 		}
-		parts = append(parts, "Teknoloji: "+strings.Join(techNames, ", "))
+		if len(relParts) > 0 {
+			parts = append(parts, "Iliski: "+strings.Join(relParts, ", "))
+		}
 	}
 	return strings.Join(parts, "  |  ")
 }

@@ -63,7 +63,7 @@ type Renderer struct {
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan, genel onay ve event detail diyalogları; ortak modal/panel/button geometrisi kullanırlar | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
-| 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları ve effect özeti çizer | `panel.go`, `ui_modals.go` |
+| 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer | `panel.go`, `ui_modals.go`, `game.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
