@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"path/filepath"
@@ -552,7 +553,7 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
 
 // DrawEventLog sağ üst köşede son olayları kartlar halinde listeler.
-func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll int) {
+func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll int, hasCodex bool) {
 	ex := evLogX()
 	ey := evLogY()
 	eh := eventLogPanelH(collapsed)
@@ -576,6 +577,10 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 	toggleBtn := buildEventLogToggleButton(collapsed)
 	toggleBtn.Label = toggleLabel
 	drawUIButton(screen, toggleBtn.X, toggleBtn.Y, toggleBtn.W, toggleBtn.H, toggleBtn.Label, true, eventLogButtonStyle(ColorGold))
+	if hasCodex {
+		codexBtn := buildEventLogCodexButton()
+		drawUIButton(screen, codexBtn.X, codexBtn.Y, codexBtn.W, codexBtn.H, codexBtn.Label, true, eventLogButtonStyle(ColorGold))
+	}
 
 	if collapsed {
 		return
@@ -650,6 +655,16 @@ func eventLogToggleRect() (x, y, w, h float32) {
 	return x, y, w, h
 }
 
+func eventLogCodexRect() (x, y, w, h float32) {
+	w, h = 54, 22
+	tx, y, tw, _ := eventLogToggleRect()
+	x = tx - w - 6
+	if tw == 0 {
+		x = evLogX() + evLogW - w - 38
+	}
+	return x, y, w, h
+}
+
 func eventLogToggleHit(mx, my float64, collapsed bool) bool {
 	return buildEventLogToggleButton(collapsed).HitTest(mx, my)
 }
@@ -657,6 +672,15 @@ func eventLogToggleHit(mx, my float64, collapsed bool) bool {
 func buildEventLogToggleButton(_ bool) gameui.Button {
 	x, y, w, h := eventLogToggleRect()
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "−")
+}
+
+func eventLogCodexHit(mx, my float64) bool {
+	return buildEventLogCodexButton().HitTest(mx, my)
+}
+
+func buildEventLogCodexButton() gameui.Button {
+	x, y, w, h := eventLogCodexRect()
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Kodex")
 }
 
 func eventLogCardRect(index int) (x, y, w, h float32) {
@@ -715,8 +739,11 @@ func buildEventLogCloseButton(index int) gameui.Button {
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
 }
 
-func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int) bool {
+func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int, hasCodex bool) bool {
 	if eventLogToggleHit(mx, my, collapsed) {
+		return true
+	}
+	if hasCodex && eventLogCodexHit(mx, my) {
 		return true
 	}
 	if eventLogCloseHit(mx, my, eventCount, collapsed, scroll) >= 0 {
@@ -801,16 +828,175 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
 
-	lines := wrapTextLines(message, FaceMed, float64(pw-40))
+	lines := eventDetailLines(message, float64(pw-40))
 	maxLines := int((ph - 78) / 19)
 	if len(lines) > maxLines {
 		lines = lines[:maxLines]
-		lines[len(lines)-1] = trimTextToWidth(lines[len(lines)-1]+"...", FaceMed, float64(pw-40))
+		last := len(lines) - 1
+		if lines[last] != "" {
+			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, float64(pw-40))
+		}
 	}
 	for i, line := range lines {
+		if line == "" {
+			continue
+		}
 		DrawText(screen, line, float64(px)+20, float64(py)+60+float64(i)*19, FaceMed,
 			color.RGBA{230, 224, 205, 240})
 	}
+}
+
+func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int) {
+	modal := buildEventDetailModal()
+	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
+
+	px, py, pw, ph := eventDetailPopupRect()
+	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+
+	DrawText(screen, "Event Kodex", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
+
+	closeBtn := buildEventDetailCloseButton()
+	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
+
+	filterButtons := buildEventCodexFilterButtons()
+	for i, btn := range filterButtons {
+		active := int(filter) == i
+		style := tinyButtonStyle
+		if active {
+			style = solidButtonStyle(color.RGBA{118, 84, 40, 245}, color.RGBA{226, 182, 92, 255}, ColorWhite, 8)
+		}
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, style)
+	}
+
+	listX := float64(px) + 20
+	listY := float64(py) + 94
+	listW := float64(pw)*0.36 - 26
+	listH := float64(ph) - 118
+	detailX := listX + listW + 18
+	detailW := float64(pw) - (detailX - float64(px)) - 20
+
+	drawRoundedRect(screen, float32(listX), float32(listY), float32(listW), float32(listH), 8, color.RGBA{20, 16, 12, 220})
+	vector.StrokeRect(screen, float32(listX), float32(listY), float32(listW), float32(listH), 1, color.RGBA{90, 72, 38, 210}, false)
+	drawRoundedRect(screen, float32(detailX), float32(listY), float32(detailW), float32(listH), 8, color.RGBA{20, 16, 12, 220})
+	vector.StrokeRect(screen, float32(detailX), float32(listY), float32(detailW), float32(listH), 1, color.RGBA{90, 72, 38, 210}, false)
+
+	if len(entries) == 0 {
+		DrawText(screen, "Bu filtre için event yok.", detailX+18, listY+18, FaceMed, ColorGray)
+		return
+	}
+	if focus < 0 {
+		focus = 0
+	}
+	if focus >= len(entries) {
+		focus = len(entries) - 1
+	}
+	for i, entry := range entries {
+		cardX, cardY, cardW, cardH := eventCodexEntryRect(i)
+		bg := color.RGBA{28, 22, 16, 225}
+		border := color.RGBA{90, 72, 38, 210}
+		if i == focus {
+			bg = color.RGBA{70, 52, 28, 240}
+			border = color.RGBA{226, 182, 92, 255}
+		}
+		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, bg)
+		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, border, false)
+		title := trimTextToWidth(codexStatusIcon(entry.Status)+" "+entry.Title, FaceSmall, float64(cardW)-16)
+		DrawText(screen, title, float64(cardX)+8, float64(cardY)+8, FaceSmall, eventCodexLineColor(codexStatusIcon(entry.Status)))
+		meta := trimTextToWidth(entry.DateLabel+" • "+entry.Status, FaceSmall, float64(cardW)-16)
+		DrawText(screen, meta, float64(cardX)+8, float64(cardY)+24, FaceSmall, ColorGray)
+	}
+
+	selected := entries[focus]
+	DrawText(screen, selected.Title, detailX+16, listY+16, FaceMed, eventCodexLineColor(codexStatusIcon(selected.Status)))
+	meta := selected.DateLabel + " • " + selected.Status
+	if selected.MonthsUntil > 0 {
+		meta += fmt.Sprintf(" • %d ay", selected.MonthsUntil)
+	}
+	DrawText(screen, meta, detailX+16, listY+40, FaceSmall, ColorGray)
+
+	lines := eventDetailLines(selected.Detail, detailW-32)
+	maxLines := int((listH - 76) / 19)
+	if len(lines) > maxLines {
+		lines = lines[:maxLines]
+		last := len(lines) - 1
+		if lines[last] != "" {
+			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, detailW-32)
+		}
+	}
+	for i, line := range lines {
+		if line == "" {
+			continue
+		}
+		DrawText(screen, line, detailX+16, listY+68+float64(i)*19, FaceMed, eventCodexLineColor(line))
+	}
+}
+
+func eventCodexEntryRect(index int) (x, y, w, h float32) {
+	modal := buildEventDetailModal()
+	x = float32(modal.Panel.Rect.X + 20)
+	y = float32(modal.Panel.Rect.Y + 94 + float64(index)*52)
+	w = float32(modal.Panel.Rect.W*0.36 - 26)
+	h = 44
+	return x, y, w, h
+}
+
+func eventCodexEntryHit(mx, my float64, count int) int {
+	for i := 0; i < count; i++ {
+		x, y, w, h := eventCodexEntryRect(i)
+		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
+			return i
+		}
+	}
+	return -1
+}
+
+func eventCodexLineColor(line string) color.RGBA {
+	switch {
+	case strings.HasPrefix(line, "[+]"):
+		return color.RGBA{132, 214, 132, 240}
+	case strings.HasPrefix(line, "[~]"):
+		return color.RGBA{226, 196, 104, 240}
+	case strings.HasPrefix(line, "[!]"):
+		return color.RGBA{218, 120, 120, 240}
+	case strings.HasPrefix(line, "Kritik eksik:") || strings.HasPrefix(line, "Neden:") || strings.HasPrefix(line, "Kritik eksik"):
+		return color.RGBA{212, 154, 154, 235}
+	case strings.HasPrefix(line, "Kalan sure:"):
+		return color.RGBA{214, 190, 120, 235}
+	case strings.HasPrefix(line, "Kosullar saglaniyor."):
+		return color.RGBA{150, 208, 150, 235}
+	case strings.HasPrefix(line, "Bekleyen tarihsel zincirler"):
+		return color.RGBA{200, 184, 142, 235}
+	default:
+		return color.RGBA{230, 224, 205, 240}
+	}
+}
+
+func codexStatusIcon(status string) string {
+	switch status {
+	case "Hazir":
+		return "[+]"
+	case "Takvim":
+		return "[~]"
+	case "Kilitli":
+		return "[!]"
+	default:
+		return "[-]"
+	}
+}
+
+func eventDetailLines(message string, maxWidth float64) []string {
+	parts := strings.Split(message, "\n")
+	lines := make([]string, 0, len(parts)+4)
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			lines = append(lines, "")
+			continue
+		}
+		wrapped := wrapTextLines(part, FaceMed, maxWidth)
+		lines = append(lines, wrapped...)
+	}
+	return lines
 }
 
 func drawInfoPopup(screen *ebiten.Image, message string, alpha uint8) {

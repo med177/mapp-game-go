@@ -106,7 +106,12 @@ type Renderer struct {
 
 	// Olay logu (sağ üst panel)
 	eventLog          []string
+	eventLogDetails   []string
 	eventLogCollapsed bool
+	eventCodexEntries [4][]EventCodexEntry
+	showEventCodex    bool
+	eventCodexFilter  EventCodexFilter
+	eventCodexFocus   int
 	eventDetail       string
 	eventLogScroll    int
 
@@ -265,6 +270,24 @@ type HistoricalEventChoice struct {
 	Conditions string
 }
 
+type EventCodexFilter int
+
+const (
+	EventCodexAll EventCodexFilter = iota
+	EventCodexReady
+	EventCodexCalendar
+	EventCodexLocked
+)
+
+type EventCodexEntry struct {
+	Title       string
+	Status      string
+	DateLabel   string
+	Summary     string
+	Detail      string
+	MonthsUntil int
+}
+
 const (
 	editFactionFieldNone editFactionFormField = iota
 	editFactionFieldID
@@ -407,11 +430,109 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 
 // AddEvent olay loguna yeni bir giriş ekler.
 func (r *Renderer) AddEvent(msg string) {
+	r.AddEventDetail(msg, msg)
+}
+
+// AddEventDetail olay loguna başlık ve detay metniyle yeni bir giriş ekler.
+func (r *Renderer) AddEventDetail(msg, detail string) {
 	r.eventLog = append([]string{msg}, r.eventLog...)
+	r.eventLogDetails = append([]string{detail}, r.eventLogDetails...)
 	if len(r.eventLog) > maxEventLogEntries {
 		r.eventLog = r.eventLog[:maxEventLogEntries]
 	}
+	if len(r.eventLogDetails) > maxEventLogEntries {
+		r.eventLogDetails = r.eventLogDetails[:maxEventLogEntries]
+	}
 	r.eventLogScroll = 0
+}
+
+func (r *Renderer) RemoveEventAt(idx int) {
+	if idx < 0 || idx >= len(r.eventLog) {
+		return
+	}
+	r.eventLog = append(r.eventLog[:idx], r.eventLog[idx+1:]...)
+	if idx < len(r.eventLogDetails) {
+		r.eventLogDetails = append(r.eventLogDetails[:idx], r.eventLogDetails[idx+1:]...)
+	}
+	r.clampEventLogScroll()
+}
+
+func (r *Renderer) EventDetailAt(idx int) string {
+	if idx >= 0 && idx < len(r.eventLogDetails) && r.eventLogDetails[idx] != "" {
+		return r.eventLogDetails[idx]
+	}
+	if idx >= 0 && idx < len(r.eventLog) {
+		return r.eventLog[idx]
+	}
+	return ""
+}
+
+func (r *Renderer) SetEventCodexEntries(entries [4][]EventCodexEntry) {
+	r.eventCodexEntries = entries
+	if !r.HasEventCodex() {
+		r.showEventCodex = false
+		r.eventCodexFilter = EventCodexAll
+		r.eventCodexFocus = 0
+	}
+}
+
+func (r *Renderer) HasEventCodex() bool {
+	for _, page := range r.eventCodexEntries {
+		if len(page) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) OpenEventCodex() {
+	if !r.HasEventCodex() {
+		return
+	}
+	r.showEventCodex = true
+	r.eventCodexFilter = EventCodexAll
+	r.eventCodexFocus = 0
+}
+
+func (r *Renderer) CloseEventCodex() {
+	r.showEventCodex = false
+}
+
+func (r *Renderer) currentEventCodexEntries() []EventCodexEntry {
+	return r.eventCodexEntries[int(r.eventCodexFilter)]
+}
+
+func (r *Renderer) currentEventCodexEntry() *EventCodexEntry {
+	entries := r.currentEventCodexEntries()
+	if len(entries) == 0 {
+		return nil
+	}
+	if r.eventCodexFocus < 0 {
+		r.eventCodexFocus = 0
+	}
+	if r.eventCodexFocus >= len(entries) {
+		r.eventCodexFocus = len(entries) - 1
+	}
+	return &entries[r.eventCodexFocus]
+}
+
+func (r *Renderer) cycleEventCodexFilter(delta int) {
+	if !r.HasEventCodex() {
+		return
+	}
+	count := len(r.eventCodexEntries)
+	next := (int(r.eventCodexFilter) + delta + count) % count
+	r.eventCodexFilter = EventCodexFilter(next)
+	r.eventCodexFocus = 0
+}
+
+func (r *Renderer) cycleEventCodexFocus(delta int) {
+	entries := r.currentEventCodexEntries()
+	if len(entries) == 0 {
+		r.eventCodexFocus = 0
+		return
+	}
+	r.eventCodexFocus = (r.eventCodexFocus + delta + len(entries)) % len(entries)
 }
 
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
@@ -617,7 +738,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 	}
 	if r.gs.Phase != state.PhaseEditMode {
-		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll)
+		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
 		DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.showRecruitPanel)
 	} else {
 		r.drawEditModeHud(screen)
@@ -657,6 +778,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 11. Tarihsel olay tam ekran popup
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
+	}
+
+	if r.showEventCodex {
+		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus)
 	}
 
 	if r.eventDetail != "" {
@@ -5733,6 +5858,10 @@ func (r *Renderer) HandleInput() InputAction {
 		return r.handleHistoricalEventInput()
 	}
 
+	if r.showEventCodex {
+		return r.handleEventCodexInput()
+	}
+
 	if r.eventDetail != "" {
 		mx, my := ebiten.CursorPosition()
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
@@ -6071,13 +6200,16 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.eventLogCollapsed = !r.eventLogCollapsed
 		return InputAction{}
 	}
+	if r.HasEventCodex() && eventLogCodexHit(fx, fy) {
+		r.OpenEventCodex()
+		return InputAction{Kind: ActionOpenEventCodex}
+	}
 	if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
-		r.eventLog = append(r.eventLog[:idx], r.eventLog[idx+1:]...)
-		r.clampEventLogScroll()
+		r.RemoveEventAt(idx)
 		return InputAction{}
 	}
 	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
-		r.eventDetail = r.eventLog[idx]
+		r.eventDetail = r.EventDetailAt(idx)
 		return InputAction{}
 	}
 
@@ -6726,6 +6858,50 @@ func (r *Renderer) handleHistoricalEventInput() InputAction {
 				r.historicalEventFocus = i
 				return InputAction{Kind: ActionChooseHistoricalEvent, ChoiceIndex: i}
 			}
+		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) handleEventCodexInput() InputAction {
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.CloseEventCodex()
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyLeft) {
+		r.cycleEventCodexFilter(-1)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyRight) || r.keyJustPressed(ebiten.KeyTab) {
+		r.cycleEventCodexFilter(1)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyUp) {
+		r.cycleEventCodexFocus(-1)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyDown) {
+		r.cycleEventCodexFocus(1)
+		return InputAction{}
+	}
+	mxi, myi := ebiten.CursorPosition()
+	mx, my := float64(mxi), float64(myi)
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if eventDetailCloseHit(mx, my) || !eventDetailPopupHit(mx, my) {
+			r.CloseEventCodex()
+			return InputAction{}
+		}
+		buttons := buildEventCodexFilterButtons()
+		for i, btn := range buttons {
+			if btn.HitTest(mx, my) {
+				r.eventCodexFilter = EventCodexFilter(i)
+				r.eventCodexFocus = 0
+				return InputAction{}
+			}
+		}
+		if idx := eventCodexEntryHit(mx, my, len(r.currentEventCodexEntries())); idx >= 0 {
+			r.eventCodexFocus = idx
+			return InputAction{}
 		}
 	}
 	return InputAction{}

@@ -66,6 +66,7 @@ const (
 	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"   // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
+	ActionOpenEventCodex        ActionKind = "open_event_codex"
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

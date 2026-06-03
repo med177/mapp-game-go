@@ -43,6 +43,24 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.showEventCodex {
+		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		for _, btn := range buildEventCodexFilterButtons() {
+			if btn.HitTest(fx, fy) {
+				ebiten.SetCursorShape(ebiten.CursorShapePointer)
+				return
+			}
+		}
+		if eventCodexEntryHit(fx, fy, len(r.currentEventCodexEntries())) >= 0 {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.eventDetail != "" {
 		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -230,7 +248,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) {
 		return true
 	}
-	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll) {
+	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex()) {
 		return true
 	}
 	if r.SelectedRegion != "" {

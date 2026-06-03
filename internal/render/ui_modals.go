@@ -44,7 +44,7 @@ func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
 }
 
 func buildEventDetailModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 620, 300, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 700, 420, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
@@ -52,6 +52,24 @@ func buildEventDetailModal() gameui.Modal {
 func buildEventDetailCloseButton() gameui.Button {
 	modal := buildEventDetailModal()
 	return gameui.NewButton(modal.Panel.Rect.X+modal.Panel.Rect.W-30-12, modal.Panel.Rect.Y+10, 30, 26, "X")
+}
+
+func buildEventCodexFilterButtons() []gameui.Button {
+	modal := buildEventDetailModal()
+	const (
+		btnW = 92.0
+		btnH = 28.0
+		gap  = 10.0
+	)
+	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli"}
+	buttons := make([]gameui.Button, 0, len(labels))
+	startX := modal.Panel.Rect.X + 18
+	y := modal.Panel.Rect.Y + 44
+	for i, label := range labels {
+		x := startX + float64(i)*(btnW+gap)
+		buttons = append(buttons, gameui.NewButton(x, y, btnW, btnH, label))
+	}
+	return buttons
 }
 
 func buildHistoricalEventModal() gameui.Modal {

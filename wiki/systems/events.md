@@ -100,6 +100,27 @@ Olay tetiklendiğinde:
   - açılacak follow-up event adını / tarihini
   - ilgili follow-up için bölge, teknoloji ve diplomasi koşullarını
   aynı ekranda önizleme olarak gösterir
+- Event log'da historical event veya karar satırına tıklanınca detay popup içinde aynı zincir özeti sonradan tekrar okunabilir
+- Event log panelindeki `Kodex` düğmesi, oyuncu fraksiyonu için bekleyen tarihsel event havuzunu açar:
+  - `Hazir`: tarih ve koşullar uygun
+  - `Takvim`: koşullar uygun ama event tarihi henüz gelmedi
+  - `Kilitli`: flag, bölge, tech veya diplomasi koşulu eksik
+- Kodex popup'ında `Tümü / Hazır / Takvim / Kilitli` filtre sekmeleri bulunur; ok tuşları veya mouse ile değiştirilebilir
+- Kodex listesi artık event başına:
+  - takvime kalan ay sayısını
+  - kilitliyse ilk ve en kritik eksik koşulu
+  gösterir
+- Kodex sıralaması önceliklidir:
+  - önce `Hazır`
+  - sonra tarihe en yakın zincir
+  - sonra daha az eksikle açılacak zincir
+- Kodex satırları görsel olarak ayrışır:
+  - `[+]` ve yeşil ton = `Hazır`
+  - `[~]` ve altın ton = `Takvim`
+  - `[!]` ve kırmızı ton = `Kilitli`
+- Kodex artık iki kolonlu çalışır:
+  - solda seçilebilir zincir listesi
+  - sağda seçilen zincirin tam açıklaması, kalan süre ve eksik koşul dökümü
 
 ---
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
@@ -192,6 +193,75 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	return choice, true
 }
 
+func ConditionsMet(gs *state.GameState, e *Event) bool {
+	return eventConditionsSatisfied(gs, e)
+}
+
+func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
+	if gs == nil || e == nil {
+		return []string{"gecersiz event"}
+	}
+	reasons := make([]string, 0, 6)
+	for _, flag := range e.RequiresFlags {
+		if flag == "" || gs.FiredEventIDs[eventFlagKey(flag)] {
+			continue
+		}
+		reasons = append(reasons, "flag bekleniyor: "+flag)
+	}
+	for _, flag := range e.BlocksFlags {
+		if flag != "" && gs.FiredEventIDs[eventFlagKey(flag)] {
+			reasons = append(reasons, "bloklayan flag: "+flag)
+		}
+	}
+	f := eventConditionFaction(gs, e)
+	if len(e.RequiresTechs) > 0 {
+		if f == nil {
+			reasons = append(reasons, "faction tech durumu okunamadi")
+		} else {
+			for _, techID := range e.RequiresTechs {
+				if techID == "" || f.Research.Completed[techID] {
+					continue
+				}
+				reasons = append(reasons, "gerekli tech: "+techID)
+			}
+		}
+	}
+	if len(e.BlocksTechs) > 0 && f != nil {
+		for _, techID := range e.BlocksTechs {
+			if techID != "" && f.Research.Completed[techID] {
+				reasons = append(reasons, "zaten acik tech: "+techID)
+			}
+		}
+	}
+	if len(e.RequiresOwnedRegions) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			reasons = append(reasons, "kosul fraksiyonu yok")
+		} else {
+			for _, rid := range e.RequiresOwnedRegions {
+				r := gs.Regions[rid]
+				if r == nil || r.OwnerID != string(fid) {
+					reasons = append(reasons, "bolge gerekli: "+string(rid))
+				}
+			}
+		}
+	}
+	if len(e.RelationRequirements) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			reasons = append(reasons, "diplomasi kosulu icin fraksiyon yok")
+		} else {
+			for _, req := range e.RelationRequirements {
+				if relationRequirementSatisfied(gs, fid, req) {
+					continue
+				}
+				reasons = append(reasons, relationRequirementReason(gs, fid, req))
+			}
+		}
+	}
+	return reasons
+}
+
 func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
@@ -291,6 +361,45 @@ func relationRequirementSatisfied(gs *state.GameState, source faction.FactionID,
 		return false
 	}
 	return true
+}
+
+func relationRequirementReason(gs *state.GameState, source faction.FactionID, req RelationRequirement) string {
+	targetName := req.FactionID
+	if gs != nil && gs.Factions != nil {
+		if f := gs.Factions[faction.FactionID(req.FactionID)]; f != nil && f.NameTR != "" {
+			targetName = f.NameTR
+		}
+	}
+	target := faction.FactionID(req.FactionID)
+	rel := diplomacy.Relation(gs, source, target)
+	score := 0
+	stance := faction.StancePeace
+	if rel != nil {
+		score = rel.Score
+		if rel.Stance != "" {
+			stance = rel.Stance
+		}
+	}
+	parts := make([]string, 0, 4)
+	if req.Stance != "" && stance != faction.DiplomaticStance(req.Stance) {
+		parts = append(parts, "durus="+req.Stance)
+	}
+	if len(req.AnyOfStances) > 0 && !stanceInList(stance, req.AnyOfStances) {
+		parts = append(parts, "durus="+strings.Join(req.AnyOfStances, "/"))
+	}
+	if len(req.BlocksStances) > 0 && stanceInList(stance, req.BlocksStances) {
+		parts = append(parts, "yasak durus="+string(stance))
+	}
+	if req.MinScore != 0 && score < req.MinScore {
+		parts = append(parts, fmt.Sprintf("skor>=%d", req.MinScore))
+	}
+	if req.MaxScore != 0 && score > req.MaxScore {
+		parts = append(parts, fmt.Sprintf("skor<=%d", req.MaxScore))
+	}
+	if len(parts) == 0 {
+		return "diplomasi kosulu: " + targetName
+	}
+	return "diplomasi kosulu (" + targetName + "): " + strings.Join(parts, ", ")
 }
 
 func stanceInList(stance faction.DiplomaticStance, list []string) bool {

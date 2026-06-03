@@ -38,6 +38,14 @@ type Game struct {
 	loading              *loadingJob
 }
 
+type eventCodexEntry struct {
+	evt          *events.Event
+	status       string
+	timingReason string
+	reasons      []string
+	monthsUntil  int
+}
+
 const scenarioBaseDir = "assets/scenarios"
 
 type loadingKind int
@@ -178,6 +186,8 @@ func (g *Game) Update() error {
 
 	case state.PhasePlayerTurn:
 		switch action.Kind {
+		case render.ActionOpenEventCodex:
+			// renderer event detail popup'ını kendi açıyor; burada state değişikliği gerekmiyor.
 		case render.ActionChooseHistoricalEvent:
 			g.resolveHistoricalChoice(action.ChoiceIndex)
 		case render.ActionEndTurn:
@@ -332,6 +342,10 @@ func (g *Game) Update() error {
 		}
 	}
 
+	if action.Kind != render.ActionNone {
+		g.refreshEventCodex()
+	}
+
 	return nil
 }
 
@@ -372,6 +386,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.ReloadGameState(res.gs)
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.SetCursor(0)
+		g.refreshEventCodex()
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
@@ -382,6 +397,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.HasSave = save.AnySlotExists()
 		g.renderer.HasAutoSave = save.SaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
+		g.refreshEventCodex()
 	}
 }
 
@@ -464,6 +480,7 @@ func (g *Game) resolveTurn() {
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.MarkMapDirty()
 	}
+	g.refreshEventCodex()
 }
 
 func (g *Game) handleTriggeredEvent(evt *events.Event) {
@@ -472,7 +489,7 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	}
 	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
 	g.renderer.ShowCombatResult(baseMsg)
-	g.renderer.AddEvent("[OLAY] " + evt.NameTR)
+	g.renderer.AddEventDetail("[OLAY] "+evt.NameTR, g.historicalEventDetail(evt))
 	if !events.RequiresPlayerChoice(g.gs, evt) {
 		if idx := events.AutoChoose(evt); idx >= 0 {
 			g.applyHistoricalChoice(evt, idx)
@@ -503,7 +520,7 @@ func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
 	}
 	msg := fmt.Sprintf("Karar: %s -> %s", evt.NameTR, choice.LabelTR)
 	g.renderer.ShowCombatResult(msg)
-	g.renderer.AddEvent("[KARAR] " + evt.NameTR + ": " + choice.LabelTR)
+	g.renderer.AddEventDetail("[KARAR] "+evt.NameTR+": "+choice.LabelTR, g.historicalChoiceDetail(evt, choice))
 }
 
 func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEventChoice {
@@ -522,6 +539,240 @@ func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEvent
 		})
 	}
 	return views
+}
+
+func (g *Game) refreshEventCodex() {
+	if g == nil || g.renderer == nil {
+		return
+	}
+	g.renderer.SetEventCodexEntries(g.buildEventCodexPages())
+}
+
+func (g *Game) buildEventCodexPages() [4][]render.EventCodexEntry {
+	return [4][]render.EventCodexEntry{
+		g.buildEventCodexFor("all"),
+		g.buildEventCodexFor("ready"),
+		g.buildEventCodexFor("calendar"),
+		g.buildEventCodexFor("locked"),
+	}
+}
+
+func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
+	if g == nil || g.gs == nil || len(g.evts) == 0 {
+		return nil
+	}
+	entries := g.collectEventCodexEntries(filter)
+	views := make([]render.EventCodexEntry, 0, len(entries))
+	for _, entry := range entries {
+		evt := entry.evt
+		dateLabel := fmt.Sprintf("%d", evt.HistoricalYear)
+		if evt.HistoricalMonth > 0 {
+			dateLabel = fmt.Sprintf("%d/%02d", evt.HistoricalYear, evt.HistoricalMonth)
+		}
+		detail := make([]string, 0, 8)
+		if evt.DescTR != "" {
+			detail = append(detail, evt.DescTR)
+		}
+		if entry.monthsUntil > 0 {
+			detail = append(detail, fmt.Sprintf("Kalan sure: %d ay", entry.monthsUntil))
+		}
+		if len(entry.reasons) > 0 {
+			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0]))
+			for _, reason := range entry.reasons {
+				detail = append(detail, "Neden: "+g.codexReasonLabel(reason))
+			}
+		} else if entry.timingReason != "" {
+			detail = append(detail, "Neden: "+entry.timingReason)
+		} else {
+			detail = append(detail, "Kosullar saglaniyor.")
+		}
+		views = append(views, render.EventCodexEntry{
+			Title:       evt.NameTR,
+			Status:      entry.status,
+			DateLabel:   dateLabel,
+			Summary:     evt.DescTR,
+			Detail:      strings.Join(detail, "\n"),
+			MonthsUntil: entry.monthsUntil,
+		})
+		if len(views) >= 12 {
+			break
+		}
+	}
+	return views
+}
+
+func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
+	entries := make([]eventCodexEntry, 0, len(g.evts))
+	for _, evt := range g.evts {
+		if evt == nil || evt.HistoricalYear == 0 || g.gs.FiredEventIDs[evt.ID] {
+			continue
+		}
+		if !g.eventRelevantToPlayer(evt) {
+			continue
+		}
+		if evt.HistoricalYear < g.gs.Year || (evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month) {
+			continue
+		}
+		entry := eventCodexEntry{
+			evt:         evt,
+			status:      "Hazir",
+			monthsUntil: monthsUntilHistoricalEvent(g.gs, evt),
+			reasons:     events.ConditionFailureReasons(g.gs, evt),
+		}
+		if entry.monthsUntil > 0 {
+			entry.status = "Takvim"
+			entry.timingReason = "takvim bekleniyor"
+		}
+		if len(entry.reasons) > 0 {
+			entry.status = "Kilitli"
+		}
+		if filter == "ready" && entry.status != "Hazir" {
+			continue
+		}
+		if filter == "calendar" && entry.status != "Takvim" {
+			continue
+		}
+		if filter == "locked" && entry.status != "Kilitli" {
+			continue
+		}
+		entries = append(entries, entry)
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		a, b := entries[i], entries[j]
+		if ar, br := eventCodexStatusRank(a.status), eventCodexStatusRank(b.status); ar != br {
+			return ar < br
+		}
+		if a.monthsUntil != b.monthsUntil {
+			return a.monthsUntil < b.monthsUntil
+		}
+		if len(a.reasons) != len(b.reasons) {
+			return len(a.reasons) < len(b.reasons)
+		}
+		if a.evt.HistoricalYear != b.evt.HistoricalYear {
+			return a.evt.HistoricalYear < b.evt.HistoricalYear
+		}
+		if a.evt.HistoricalMonth != b.evt.HistoricalMonth {
+			return a.evt.HistoricalMonth < b.evt.HistoricalMonth
+		}
+		return a.evt.NameTR < b.evt.NameTR
+	})
+	return entries
+}
+
+func eventCodexStatusRank(status string) int {
+	switch status {
+	case "Hazir":
+		return 0
+	case "Takvim":
+		return 1
+	case "Kilitli":
+		return 2
+	default:
+		return 3
+	}
+}
+
+func monthsUntilHistoricalEvent(gs *state.GameState, evt *events.Event) int {
+	if gs == nil || evt == nil || evt.HistoricalYear == 0 {
+		return 0
+	}
+	targetMonth := evt.HistoricalMonth
+	if targetMonth <= 0 {
+		targetMonth = 1
+	}
+	currentMonth := gs.Month
+	if currentMonth <= 0 {
+		currentMonth = 1
+	}
+	currentAbs := gs.Year*12 + (currentMonth - 1)
+	targetAbs := evt.HistoricalYear*12 + (targetMonth - 1)
+	if targetAbs <= currentAbs {
+		return 0
+	}
+	return targetAbs - currentAbs
+}
+
+func (g *Game) eventRelevantToPlayer(evt *events.Event) bool {
+	if g == nil || g.gs == nil || evt == nil {
+		return false
+	}
+	switch evt.Target {
+	case "player_faction", "all_factions", "all_armies":
+		return true
+	case "specific_faction":
+		return evt.AffectedFaction == string(g.gs.PlayerFactionID)
+	default:
+		return false
+	}
+}
+
+func (g *Game) codexReasonLabel(reason string) string {
+	if reason == "" {
+		return ""
+	}
+	parts := strings.SplitN(reason, ": ", 2)
+	if len(parts) != 2 {
+		return reason
+	}
+	key, value := parts[0], parts[1]
+	switch key {
+	case "gerekli tech", "zaten acik tech":
+		value = strings.Join(techLabels(g.gs, []string{value}), ", ")
+	case "bolge gerekli":
+		value = strings.Join(regionLabels(g.gs, []world.RegionID{world.RegionID(value)}), ", ")
+	}
+	return key + ": " + value
+}
+
+func (g *Game) historicalEventDetail(evt *events.Event) string {
+	if evt == nil {
+		return ""
+	}
+	lines := []string{evt.NameTR, "", evt.DescTR}
+	if evt.ChoicePromptTR != "" {
+		lines = append(lines, "", "Secim:", evt.ChoicePromptTR)
+	}
+	if len(evt.Choices) > 0 {
+		for _, choice := range evt.Choices {
+			followUp, conditions := g.historicalChoiceFollowUpSummary(evt, choice)
+			lines = append(lines, "", "- "+choice.LabelTR)
+			if choice.DescTR != "" {
+				lines = append(lines, "  "+choice.DescTR)
+			}
+			if eff := historicalChoiceEffectSummary(g.gs, choice.Effect); eff != "" {
+				lines = append(lines, "  Etki: "+eff)
+			}
+			if followUp != "" {
+				lines = append(lines, "  "+followUp)
+			}
+			if conditions != "" {
+				lines = append(lines, "  Kosul: "+conditions)
+			}
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func (g *Game) historicalChoiceDetail(evt *events.Event, choice events.Choice) string {
+	if evt == nil {
+		return ""
+	}
+	followUp, conditions := g.historicalChoiceFollowUpSummary(evt, choice)
+	lines := []string{
+		evt.NameTR + " -> " + choice.LabelTR,
+		"",
+		choice.DescTR,
+	}
+	if eff := historicalChoiceEffectSummary(g.gs, choice.Effect); eff != "" {
+		lines = append(lines, "", "Etki:", eff)
+	}
+	if followUp != "" {
+		lines = append(lines, "", followUp)
+	}
+	if conditions != "" {
+		lines = append(lines, "Kosul: "+conditions)
+	}
+	return strings.Join(lines, "\n")
 }
 
 func (g *Game) historicalChoiceFollowUpSummary(evt *events.Event, choice events.Choice) (string, string) {
@@ -1468,6 +1719,7 @@ func (g *Game) resetToNewGame() {
 	}
 	g.gs = gs
 	g.renderer.ReloadGameState(gs)
+	g.renderer.SetEventCodexEntries([4][]render.EventCodexEntry{})
 	g.renderer.SetCursor(0)
 }
 
