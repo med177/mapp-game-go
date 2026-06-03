@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"sort"
 
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
@@ -13,28 +14,12 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-var techCategoryLabels = map[tech.Category]string{
-	tech.CategoryMilitary:  "Askeri",
-	tech.CategoryEconomy:   "Ekonomi",
-	tech.CategoryDiplomacy: "Diplomasi",
-	tech.CategoryNaval:     "Denizcilik",
-	tech.CategoryReligion:  "Din",
-}
-
 var techCategoryColors = map[tech.Category]color.RGBA{
 	tech.CategoryMilitary:  {200, 100, 100, 255}, // Kırmızımsı
 	tech.CategoryEconomy:   {100, 200, 100, 255}, // Yeşil
 	tech.CategoryDiplomacy: {100, 100, 200, 255}, // Mavi
 	tech.CategoryNaval:     {200, 200, 100, 255}, // Sarı
 	tech.CategoryReligion:  {200, 100, 200, 255}, // Magenta
-}
-
-var techCategoryOrder = []tech.Category{
-	tech.CategoryMilitary,
-	tech.CategoryEconomy,
-	tech.CategoryDiplomacy,
-	tech.CategoryNaval,
-	tech.CategoryReligion,
 }
 
 type techNode struct {
@@ -104,7 +89,7 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 			// Her seviyedeki teknolojileri kategoriye göre sırala
 			sort.Slice(nodes, func(a, b int) bool {
 				if nodes[a].t.Category != nodes[b].t.Category {
-					return nodes[a].t.Category < nodes[b].t.Category
+					return tech.CategoryOrder(nodes[a].t.Category) < tech.CategoryOrder(nodes[b].t.Category)
 				}
 				return nodes[a].t.ID < nodes[b].t.ID
 			})
@@ -222,7 +207,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			DrawTextCentered(screen, node.t.NameTR, node.x, nameY, FaceMed, textColor)
 
 			// Kategori etiketi
-			catLabel := techCategoryLabels[node.t.Category]
+			catLabel := tech.CategoryLabelTR(node.t.Category)
 			catY := node.y - 8
 			catColor := techCategoryColors[node.t.Category]
 			catColor.A = 200
@@ -272,7 +257,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	}
 
 	hintY := float64(ph) - 18
-	DrawText(screen, "Teknoloji düğümlerine tıklayarak araştır   Altin: "+fmt.Sprintf("%d", f.Gold),
+	DrawText(screen, "Teknoloji düğümlerine tıklayarak araştır   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold),
 		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
 }
 

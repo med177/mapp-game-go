@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-05-08
+last_updated: 2026-06-03
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -62,6 +62,8 @@ type Faction struct {
 | Diğer farklı din | -30 |
 
 Bu puan `BuildInitialRelations()` sırasında ilişki skorlarına eklenir.
+
+Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık `internal/religion/religion.go` içindeki metadata üzerinden (`DisplayNameTR`, `All`, `Next`) merkezi olarak yönetilir; render katmanı aynı mapping'i tekrar etmez.
 
 **Mezhep değişimi:** Ele geçirilen bölge `ConversionTurns` sayacıyla 24 turda yeni sahip dinine geçer, memnuniyet -20 uygular. → [[world/regions]]
 

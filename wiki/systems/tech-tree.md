@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-05-29
+last_updated: 2026-06-03
 related: [systems/combat, systems/economy, architecture/state-management]
 ---
 
 # Teknoloji Ağacı
 
-**Kaynak:** `internal/tech/tech.go`, `assets/data/technologies.json`
+**Kaynak:** `internal/tech/tech.go`, `internal/tech/category_metadata.go`, `assets/data/technologies.json`
 
 ## Araştırma Yapısı
 
@@ -92,6 +92,8 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 | `diplomacy` | İlişki bonusları, müzakere kolaylığı |
 | `naval` | Deniz hareketi, gemi kapasitesi |
 | `culture` | Din etkisi, memnuniyet, özel bölge bonusları |
+
+Kategori görünen adları ve panel sırası `internal/tech/category_metadata.go` içinde merkezileştirilmiştir (`CategoryLabelTR`, `AllCategories`, `CategoryOrder`). Teknoloji paneli kategori başlığını ve düğüm sıralamasını bu ortak metadata'dan alır.
 
 ---
 

@@ -62,12 +62,7 @@ func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Re
 }
 
 func normalizeStance(stance DiplomaticStance) DiplomaticStance {
-	switch stance {
-	case StanceWar, StancePeace, StanceAllied, StanceTrade:
-		return stance
-	default:
-		return StancePeace
-	}
+	return NormalizeStance(stance)
 }
 
 // BuildInitialRelations fraksiyonlar arasındaki başlangıç diplomatik ilişkilerini oluşturur.

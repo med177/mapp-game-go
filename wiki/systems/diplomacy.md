@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-05-25
+last_updated: 2026-06-03
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -31,6 +31,8 @@ type Relation struct {
 | `StanceWar` | Savaş ilan edildiğinde | Score = -80 |
 | `StanceTrade` | Ticaret anlaşması | Score +15 |
 | `StanceAllied` | İttifak | Score +20 |
+
+Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşım sırası `internal/faction/stance_metadata.go` içinde merkezileştirilmiştir (`DiplomaticStanceLabelTR`, `DiplomaticStanceBadgeTR`, `AllDiplomaticStances`, `NextDiplomaticStance`).
 
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz

@@ -9,8 +9,10 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/victory"
@@ -1135,10 +1137,10 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 				break
 			}
 		}
-		stypeStr = "  |  " + settlementTypeLabel(capital.Type)
+		stypeStr = "  |  " + capital.Type.LabelTR()
 	}
 
-	DrawText(screen, terrainLabel(region.Terrain)+"  |  "+religionLabel(string(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
+	DrawText(screen, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
 	ly += 16
 
 	sepW := pw - float32(panelPad*2)
@@ -1146,8 +1148,8 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 8
 
 	// Kaynaklar — iki sütun
-	DrawText(screen, "G "+itoa(region.GoldIncome())+" Altin", lx, ly, FaceSmall, ColorGold)
-	DrawText(screen, "T "+itoa(region.BaseGrainOutput)+" Tahil", lx+120, ly, FaceSmall, ColorWhite)
+	DrawText(screen, economy.ResourceNameTR(economy.ResourceGold)+" "+itoa(region.GoldIncome()), lx, ly, FaceSmall, ColorGold)
+	DrawText(screen, economy.ResourceNameTR(economy.ResourceGrain)+" "+itoa(region.BaseGrainOutput), lx+120, ly, FaceSmall, ColorWhite)
 	ly += 18
 
 	statBarX := float32(lx) + 122
@@ -1186,7 +1188,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		}
 		if ownerRel != "" && ownerRel != region.Religion {
 			convPct := float64(region.ConversionTurns) / 24.0
-			DrawText(screen, "☩ Dönüşüm: "+religionLabel(ownerRel), lx, ly, FaceSmall, color.RGBA{180, 140, 240, 200})
+			DrawText(screen, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), lx, ly, FaceSmall, color.RGBA{180, 140, 240, 200})
 			ly += 14
 			drawBar(screen, float32(lx), float32(ly), sepW, 7, convPct, color.RGBA{150, 100, 220, 220})
 			ly += 12
@@ -1257,17 +1259,11 @@ func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float3
 }
 
 func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, ownerID string, px, py, pw, ph float32) {
-	labels := []string{"Savaş", "Barış", "İttifak", "Ticaret"}
-	colors := []color.RGBA{
-		{180, 50, 50, 220},
-		{50, 120, 180, 220},
-		{50, 160, 80, 220},
-		{160, 130, 50, 220},
-	}
-	for i := 0; i < 4; i++ {
+	actions := diplomacy.VisibleActions()
+	for i, action := range actions {
 		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
 		active := regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
-		btnCol := colors[i]
+		btnCol := regionDiplomacyActionColor(action)
 		txtCol := ColorWhite
 		if !active {
 			btnCol.A = 110
@@ -1275,36 +1271,61 @@ func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, owner
 		}
 		vector.FillRect(screen, x, y, w, h, btnCol, false)
 		vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
-		tw := MeasureText(labels[i], FaceSmall)
-		DrawText(screen, labels[i], float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
+		label := diplomacy.ActionLabelTR(action)
+		tw := MeasureText(label, FaceSmall)
+		DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
 	}
 }
 
+func regionDiplomacyActionColor(action diplomacy.Action) color.RGBA {
+	switch action {
+	case diplomacy.ActionDeclareWar:
+		return color.RGBA{180, 50, 50, 220}
+	case diplomacy.ActionProposePeace:
+		return color.RGBA{50, 120, 180, 220}
+	case diplomacy.ActionProposeAlliance:
+		return color.RGBA{50, 160, 80, 220}
+	case diplomacy.ActionProposeTrade:
+		return color.RGBA{160, 130, 50, 220}
+	default:
+		return color.RGBA{90, 90, 90, 220}
+	}
+}
+
+func regionDiplomacyActionAt(idx int) (diplomacy.Action, bool) {
+	actions := diplomacy.VisibleActions()
+	if idx < 0 || idx >= len(actions) {
+		return "", false
+	}
+	return actions[idx], true
+}
+
 func regionDiplomacyButtonDisabledReason(gs *state.GameState, ownerID string, idx int) string {
-	if gs == nil || ownerID == "" || idx < 0 || idx > 3 {
+	action, ok := regionDiplomacyActionAt(idx)
+	if gs == nil || ownerID == "" || !ok {
 		return ""
 	}
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, faction.FactionID(ownerID))]
 	if rel == nil {
 		return ""
 	}
-	switch idx {
-	case 0:
+	switch action {
+	case diplomacy.ActionDeclareWar:
 		if rel.Stance == faction.StanceWar {
 			return "Zaten savaş halindesin."
 		}
-	case 1:
+	case diplomacy.ActionProposePeace:
 		if rel.Stance != faction.StanceWar {
 			return "Barış teklifi sadece savaşta yapılır."
 		}
-	case 2:
+	case diplomacy.ActionProposeAlliance:
 		if rel.Stance == faction.StanceWar {
 			return "Savaş halindeyken ittifak teklif edilemez."
 		}
 		if rel.Stance == faction.StanceAllied {
 			return "Zaten müttefiksin."
 		}
-	case 3:
+	case diplomacy.ActionProposeTrade:
 		if rel.Stance == faction.StanceWar {
 			return "Savaş halindeyken ticaret teklif edilemez."
 		}
@@ -1996,7 +2017,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 
 	DrawText(screen, "Bölge: "+region.NameTR, lx, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Tip: "+settlementTypeLabel(settlement.Type), lx, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Tip: "+settlement.Type.LabelTR(), lx, ly, FaceSmall, ColorGray)
 	ly += 18
 	DrawText(screen, "Koordinat: "+itoa(settlement.X)+","+itoa(settlement.Y), lx, ly, FaceSmall, ColorGray)
 	ly += 20
@@ -2131,11 +2152,11 @@ func buildRegionTaxButtons(gs *state.GameState) (gameui.Button, gameui.Button) {
 }
 
 func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) []gameui.Button {
-	labels := []string{"Savaş", "Barış", "İttifak", "Ticaret"}
-	out := make([]gameui.Button, 0, len(labels))
-	for i, label := range labels {
+	actions := diplomacy.VisibleActions()
+	out := make([]gameui.Button, 0, len(actions))
+	for i, action := range actions {
 		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
-		btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label)
+		btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), diplomacy.ActionLabelTR(action))
 		btn.Enabled = regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
 		out = append(out, btn)
 	}
@@ -2377,53 +2398,6 @@ func ownerDisplay(gs *state.GameState, ownerID string) (string, color.Color) {
 		}
 	}
 	return ownerID, ColorGray
-}
-
-func terrainLabel(t world.TerrainType) string {
-	switch t {
-	case world.TerrainPlain:
-		return "Ova"
-	case world.TerrainForest:
-		return "Orman"
-	case world.TerrainMountain:
-		return "Dağ"
-	case world.TerrainPass:
-		return "Geçit"
-	case world.TerrainCoast:
-		return "Kıyı"
-	case world.TerrainSea:
-		return "Deniz"
-	}
-	return string(t)
-}
-
-func religionLabel(r string) string {
-	switch r {
-	case "catholic":
-		return "Katolik"
-	case "orthodox":
-		return "Ortodoks"
-	case "sunni":
-		return "Sünni İslam"
-	case "shia":
-		return "Şii İslam"
-	}
-	return r
-}
-
-func settlementTypeLabel(t world.SettlementType) string {
-	switch t {
-	case world.SettlementCity:
-		return "Şehir"
-	case world.SettlementTown:
-		return "Kasaba"
-	case world.SettlementFortress:
-		return "Kale"
-	case world.SettlementPort:
-		return "Liman"
-	default:
-		return string(t)
-	}
 }
 
 func phaseLabel(p state.Phase) string {

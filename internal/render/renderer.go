@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -2275,9 +2276,9 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 		}
 		DrawText(screen, "Fraksiyon: "+name+" ["+string(f.ID)+"]", float64(x)+14, ly, FaceSmall, ColorWhite)
 		ly += 18
-		DrawText(screen, "Altin "+itoa(f.Gold)+"  Tahil "+itoa(f.Grain)+"  Demir "+itoa(f.Iron), float64(x)+14, ly, FaceSmall, ColorGray)
+		DrawText(screen, economy.FormatResourceAmountTR(economy.ResourceGold, f.Gold)+"  "+economy.FormatResourceAmountTR(economy.ResourceGrain, f.Grain)+"  "+economy.FormatResourceAmountTR(economy.ResourceIron, f.Iron), float64(x)+14, ly, FaceSmall, ColorGray)
 		ly += 18
-		DrawText(screen, "Kereste "+itoa(f.Timber)+"  Baharat "+itoa(f.Spice)+"  Kumas "+itoa(f.Cloth), float64(x)+14, ly, FaceSmall, ColorGray)
+		DrawText(screen, economy.FormatResourceAmountTR(economy.ResourceTimber, f.Timber)+"  "+economy.FormatResourceAmountTR(economy.ResourceSpice, f.Spice)+"  "+economy.FormatResourceAmountTR(economy.ResourceCloth, f.Cloth), float64(x)+14, ly, FaceSmall, ColorGray)
 		ly += 18
 		DrawText(screen, "Playable: "+editBoolLabel(f.IsPlayable)+"  AI: "+itoa(f.AIAggressiveness), float64(x)+14, ly, FaceSmall, ColorGray)
 	}
@@ -2383,22 +2384,22 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	r.drawFactionFormField(screen, editFactionFieldID, "ID", r.editFactionForm.id)
 	r.drawFactionFormField(screen, editFactionFieldNameTR, "Ad TR", r.editFactionForm.nameTR)
 	r.drawFactionFormField(screen, editFactionFieldName, "Ad EN", r.editFactionForm.name)
-	r.drawFactionFormField(screen, editFactionFieldGold, "Altin", r.editFactionForm.gold)
-	r.drawFactionFormField(screen, editFactionFieldGrain, "Tahil", r.editFactionForm.grain)
-	r.drawFactionFormField(screen, editFactionFieldIron, "Demir", r.editFactionForm.iron)
-	r.drawFactionFormField(screen, editFactionFieldTimber, "Kereste", r.editFactionForm.timber)
-	r.drawFactionFormField(screen, editFactionFieldSpice, "Baharat", r.editFactionForm.spice)
-	r.drawFactionFormField(screen, editFactionFieldCloth, "Kumas", r.editFactionForm.cloth)
+	r.drawFactionFormField(screen, editFactionFieldGold, economy.ResourceNameTR(economy.ResourceGold), r.editFactionForm.gold)
+	r.drawFactionFormField(screen, editFactionFieldGrain, economy.ResourceNameTR(economy.ResourceGrain), r.editFactionForm.grain)
+	r.drawFactionFormField(screen, editFactionFieldIron, economy.ResourceNameTR(economy.ResourceIron), r.editFactionForm.iron)
+	r.drawFactionFormField(screen, editFactionFieldTimber, economy.ResourceNameTR(economy.ResourceTimber), r.editFactionForm.timber)
+	r.drawFactionFormField(screen, editFactionFieldSpice, economy.ResourceNameTR(economy.ResourceSpice), r.editFactionForm.spice)
+	r.drawFactionFormField(screen, editFactionFieldCloth, economy.ResourceNameTR(economy.ResourceCloth), r.editFactionForm.cloth)
 	r.drawFactionFormField(screen, editFactionFieldAI, "AI", r.editFactionForm.ai)
 
-	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+string(r.editFactionForm.religion))
+	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+religion.DisplayNameTR(r.editFactionForm.religion))
 	drawEditFactionFormButton(screen, editFactionFormPlayable, "Playable: "+editBoolLabel(r.editFactionForm.playable))
 	relationTitle := "Iliski: yok"
 	if r.editFactionForm.relationTarget != "" {
 		relationTitle = "Iliski: " + string(r.editFactionForm.relationTarget)
 	}
 	drawEditFactionFormButton(screen, editFactionFormRelationTarget, relationTitle)
-	drawEditFactionFormButton(screen, editFactionFormRelationStance, "Durum: "+string(r.editFactionForm.relationStance))
+	drawEditFactionFormButton(screen, editFactionFormRelationStance, "Durum: "+faction.DiplomaticStanceLabelTR(r.editFactionForm.relationStance))
 	drawEditFactionFormButton(screen, editFactionFormRelationScoreMinus, "Skor -10")
 	drawEditFactionFormButton(screen, editFactionFormRelationScorePlus, "Skor +10")
 	DrawText(screen, "Skor: "+r.editFactionForm.relationScore, float64(x)+18, float64(y)+304, FaceSmall, ColorGray)
@@ -4708,32 +4709,32 @@ func (r *Renderer) saveFactionForm() bool {
 	}
 	gold, ok := parseEditInt(form.gold, 0, 999999)
 	if !ok {
-		form.errorText = "Altin sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceGold)
 		return false
 	}
 	grain, ok := parseEditInt(form.grain, 0, 999999)
 	if !ok {
-		form.errorText = "Tahil sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceGrain)
 		return false
 	}
 	iron, ok := parseEditInt(form.iron, 0, 999999)
 	if !ok {
-		form.errorText = "Demir sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceIron)
 		return false
 	}
 	timber, ok := parseEditInt(form.timber, 0, 999999)
 	if !ok {
-		form.errorText = "Kereste sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceTimber)
 		return false
 	}
 	spice, ok := parseEditInt(form.spice, 0, 999999)
 	if !ok {
-		form.errorText = "Baharat sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceSpice)
 		return false
 	}
 	cloth, ok := parseEditInt(form.cloth, 0, 999999)
 	if !ok {
-		form.errorText = "Kumas sayisi gecersiz."
+		form.errorText = economy.ResourceInvalidCountMessageTR(economy.ResourceCloth)
 		return false
 	}
 	aiValue, ok := parseEditInt(form.ai, 0, 100)
@@ -4960,28 +4961,11 @@ func (r *Renderer) adjustFactionFormColor(index int, delta int) {
 }
 
 func nextEditReligion(current religion.Type) religion.Type {
-	options := []religion.Type{religion.Catholic, religion.Orthodox, religion.Sunni, religion.Shia}
-	for i, option := range options {
-		if option == current {
-			return options[(i+1)%len(options)]
-		}
-	}
-	return religion.Catholic
+	return religion.Next(current)
 }
 
 func nextEditStance(current faction.DiplomaticStance) faction.DiplomaticStance {
-	options := []faction.DiplomaticStance{
-		faction.StancePeace,
-		faction.StanceWar,
-		faction.StanceAllied,
-		faction.StanceTrade,
-	}
-	for i, option := range options {
-		if option == current {
-			return options[(i+1)%len(options)]
-		}
-	}
-	return faction.StancePeace
+	return faction.NextDiplomaticStance(current)
 }
 
 func nextFactionID(gs *state.GameState) faction.FactionID {
@@ -6202,17 +6186,21 @@ func (r *Renderer) handleLeftClick() InputAction {
 					return InputAction{}
 				}
 				target := faction.FactionID(region.OwnerID)
-				switch idx {
-				case 0:
+				action, ok := regionDiplomacyActionAt(idx)
+				if !ok {
+					return InputAction{}
+				}
+				switch action {
+				case diplomacy.ActionDeclareWar:
 					r.showDiplomacy = false
 					return InputAction{Kind: ActionDeclareWar, TargetFaction: target}
-				case 1:
+				case diplomacy.ActionProposePeace:
 					r.showDiplomacy = false
 					return InputAction{Kind: ActionProposePeace, TargetFaction: target}
-				case 2:
+				case diplomacy.ActionProposeAlliance:
 					r.showDiplomacy = false
 					return InputAction{Kind: ActionProposeAlliance, TargetFaction: target}
-				case 3:
+				case diplomacy.ActionProposeTrade:
 					r.showDiplomacy = false
 					return InputAction{Kind: ActionProposeTrade, TargetFaction: target}
 				}

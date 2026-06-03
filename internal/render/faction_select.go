@@ -98,7 +98,7 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		DrawText(screen, f.NameTR, float64(x+16), float64(y+12), FaceLarge, nameCol)
 
 		// Din
-		DrawText(screen, religionTR(f.Religion), float64(x+16), float64(y+36), FaceSmall, ColorGray)
+		DrawText(screen, religion.DisplayNameTR(f.Religion), float64(x+16), float64(y+36), FaceSmall, ColorGray)
 
 		// Bölge sayısı ve başlangıç altını
 		regionCount := len(gs.RegionsOwnedBy(fid))
@@ -119,18 +119,4 @@ func selectableFactions(gs *state.GameState) []faction.FactionID {
 	}
 	sort.Slice(fids, func(i, j int) bool { return fids[i] < fids[j] })
 	return fids
-}
-
-func religionTR(r religion.Type) string {
-	switch r {
-	case religion.Catholic:
-		return "Katolik"
-	case religion.Orthodox:
-		return "Ortodoks"
-	case religion.Sunni:
-		return "Sünni İslam"
-	case religion.Shia:
-		return "Şii İslam"
-	}
-	return string(r)
 }

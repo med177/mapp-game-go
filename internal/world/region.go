@@ -66,13 +66,47 @@ const (
 	SettlementPort     SettlementType = "port"
 )
 
-func AllSettlementTypes() []string {
-	return []string{
-		string(SettlementCity),
-		string(SettlementTown),
-		string(SettlementFortress),
-		string(SettlementPort),
+type SettlementTypeDef struct {
+	Type   SettlementType
+	NameTR string
+}
+
+var settlementTypeDefs = []SettlementTypeDef{
+	{Type: SettlementCity, NameTR: "Şehir"},
+	{Type: SettlementTown, NameTR: "Kasaba"},
+	{Type: SettlementFortress, NameTR: "Kale"},
+	{Type: SettlementPort, NameTR: "Liman"},
+}
+
+var settlementTypeDefsByValue = func() map[SettlementType]SettlementTypeDef {
+	out := make(map[SettlementType]SettlementTypeDef, len(settlementTypeDefs))
+	for _, def := range settlementTypeDefs {
+		out[def.Type] = def
 	}
+	return out
+}()
+
+func AllSettlementTypes() []string {
+	out := make([]string, 0, len(settlementTypeDefs))
+	for _, def := range settlementTypeDefs {
+		out = append(out, string(def.Type))
+	}
+	return out
+}
+
+func AllSettlementTypeValues() []SettlementType {
+	out := make([]SettlementType, 0, len(settlementTypeDefs))
+	for _, def := range settlementTypeDefs {
+		out = append(out, def.Type)
+	}
+	return out
+}
+
+func (t SettlementType) LabelTR() string {
+	if def, ok := settlementTypeDefsByValue[t]; ok {
+		return def.NameTR
+	}
+	return string(t)
 }
 
 type Settlement struct {

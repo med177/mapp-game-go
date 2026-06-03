@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"sort"
 
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -24,10 +25,10 @@ type diplomAction struct {
 }
 
 var diplomActions = []diplomAction{
-	{"Savaş", color.RGBA{180, 50, 50, 220}, ActionDeclareWar},
-	{"Barış", color.RGBA{50, 120, 180, 220}, ActionProposePeace},
-	{"İttifak", color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
-	{"Ticaret", color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
+	{diplomacy.ActionLabelTR(diplomacy.ActionDeclareWar), color.RGBA{180, 50, 50, 220}, ActionDeclareWar},
+	{diplomacy.ActionLabelTR(diplomacy.ActionProposePeace), color.RGBA{50, 120, 180, 220}, ActionProposePeace},
+	{diplomacy.ActionLabelTR(diplomacy.ActionProposeAlliance), color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
+	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTrade), color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
 }
 
 func minF(a, b float64) float64 {
@@ -464,13 +465,13 @@ func sortedFactions(gs *state.GameState) []faction.FactionID {
 func stanceDisplay(s faction.DiplomaticStance) (color.Color, string) {
 	switch s {
 	case faction.StanceWar:
-		return ColorRed, "WAR Savas"
+		return ColorRed, faction.DiplomaticStanceBadgeTR(s)
 	case faction.StanceAllied:
-		return color.RGBA{60, 220, 60, 255}, "ALLY Muttefik"
+		return color.RGBA{60, 220, 60, 255}, faction.DiplomaticStanceBadgeTR(s)
 	case faction.StanceTrade:
-		return ColorGold, "TRADE Ticaret"
+		return ColorGold, faction.DiplomaticStanceBadgeTR(s)
 	default:
-		return ColorGray, "Baris"
+		return ColorGray, faction.DiplomaticStanceLabelTR(faction.NormalizeStance(s))
 	}
 }
 

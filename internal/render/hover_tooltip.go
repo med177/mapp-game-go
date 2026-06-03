@@ -189,8 +189,8 @@ func buildingRequirementLines(region *world.Region, b *city.Building) ([]tooltip
 	if b.RequiredTerrain == "" {
 		return []tooltipLine{{text: "Ek koşul yok", col: color.RGBA{170, 145, 90, 230}}}, false
 	}
-	want := terrainLabel(world.TerrainType(b.RequiredTerrain))
-	have := terrainLabel(region.Terrain)
+	want := world.TerrainType(b.RequiredTerrain).LabelTR()
+	have := region.Terrain.LabelTR()
 	missing := string(region.Terrain) != b.RequiredTerrain
 	col := color.RGBA{170, 145, 90, 230}
 	if missing {

@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-05-09
+last_updated: 2026-06-03
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -64,6 +64,8 @@ Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşers
 | `TerrainPass` (Geçit) | Tek yol | ×1.5 | Kısıtlı |
 | `TerrainCoast` (Kıyı) | Normal | ×1.1 | Normal |
 | `TerrainSea` (Deniz) | Sadece deniz ordusu | — | — |
+
+Arazi ve yerleşim tiplerinin Türkçe görünen etiketleri artık paket içinde tutulur: `TerrainType.LabelTR()` ve `SettlementType.LabelTR()`. UI panelleri bu değerleri doğrudan `internal/world` metadata'sından alır.
 
 → Savunma bonusu çarpışmaya etkisi: [[systems/combat]]
 
