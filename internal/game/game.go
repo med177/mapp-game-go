@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
+	"sync/atomic"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
@@ -53,11 +55,15 @@ type loadingKind int
 const (
 	loadingScenario loadingKind = iota + 1
 	loadingSave
+	loadingWorldMap
 )
 
 type loadingJob struct {
-	kind loadingKind
-	done chan loadingResult
+	kind     loadingKind
+	done     chan loadingResult
+	run      func() loadingResult
+	started  bool
+	progress atomic.Int32
 }
 
 type loadingResult struct {
@@ -66,6 +72,7 @@ type loadingResult struct {
 	scenarioPath string
 	successMsg   string
 	fallback     state.Phase
+	worldMap     *render.WorldMap
 	err          error
 }
 
@@ -178,7 +185,7 @@ func (g *Game) Update() error {
 		case render.ActionSelectVictory:
 			g.applyVictoryChoice(action.BuildingID)
 			g.applyAIDifficultyStartBonus()
-			g.gs.Phase = state.PhasePlayerTurn
+			g.startPreparePlayerTurn()
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseFactionSelect
 			g.renderer.SetCursor(0)
@@ -349,20 +356,42 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func (g *Game) startLoading(kind loadingKind, message string, fn func() loadingResult) {
+func (g *Game) startLoading(kind loadingKind, message string, fn func(func(int)) loadingResult) {
 	g.gs.Phase = state.PhaseLoading
 	g.renderer.SetLoadingMessage(message)
+	g.renderer.SetLoadingProgress(0)
 	done := make(chan loadingResult, 1)
-	g.loading = &loadingJob{kind: kind, done: done}
-	go func() {
-		done <- fn()
-	}()
+	g.loading = &loadingJob{
+		kind: kind,
+		done: done,
+		run: func() loadingResult {
+			return fn(func(progress int) {
+				if progress < 0 {
+					progress = 0
+				}
+				if progress > 100 {
+					progress = 100
+				}
+				g.loading.progress.Store(int32(progress))
+			})
+		},
+	}
 }
 
 func (g *Game) pollLoading() {
+	if g.loading != nil && !g.loading.started {
+		job := g.loading
+		job.started = true
+		go func() {
+			job.done <- job.run()
+		}()
+		return
+	}
+	g.renderer.SetLoadingProgress(int(g.loading.progress.Load()))
 	select {
 	case res := <-g.loading.done:
 		kind := g.loading.kind
+		g.renderer.SetLoadingProgress(100)
 		g.loading = nil
 		g.finishLoading(kind, res)
 	default:
@@ -392,11 +421,15 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs = res.gs
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
-		g.renderer.ReloadGameState(res.gs)
+		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
 		g.renderer.HasAutoSave = save.SaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
+		g.refreshEventCodex()
+	case loadingWorldMap:
+		g.gs.Phase = state.PhasePlayerTurn
+		g.renderer.ReloadGameStateWithPreparedMap(g.gs, res.worldMap)
 		g.refreshEventCodex()
 	}
 }
@@ -1692,20 +1725,33 @@ func (g *Game) loadSlot(slotName string) {
 }
 
 func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
-	g.startLoading(loadingSave, "Kayıt yükleniyor...", func() loadingResult {
+	g.startLoading(loadingSave, "Kayıt yükleniyor...", func(setProgress func(int)) loadingResult {
+		setProgress(10)
 		gs, err := save.LoadSlot(slotName)
 		if err != nil {
 			return loadingResult{err: err, fallback: fallback}
 		}
+		setProgress(65)
 		evts, err := loadScenarioEvents(gs.ScenarioPath)
 		if err != nil {
 			return loadingResult{err: err, fallback: fallback}
 		}
+		worldMap := render.PrepareWorldMap(gs, "", render.MapModeNormal, func(progress int) {
+			setProgress(65 + progress*35/100)
+		})
 		return loadingResult{
 			gs:         gs,
 			evts:       evts,
 			successMsg: "Oyun yüklendi!",
+			worldMap:   worldMap,
 		}
+	})
+}
+
+func (g *Game) startPreparePlayerTurn() {
+	g.startLoading(loadingWorldMap, "Harita hazırlanıyor...", func(setProgress func(int)) loadingResult {
+		worldMap := render.PrepareWorldMap(g.gs, "", render.MapModeNormal, setProgress)
+		return loadingResult{worldMap: worldMap}
 	})
 }
 
@@ -1758,8 +1804,8 @@ func (g *Game) loadScenario(scenarioPath string) {
 
 func (g *Game) startLoadScenario(scenarioPath string) {
 	difficulty := g.gs.Difficulty
-	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func() loadingResult {
-		gs, evts, err := loadScenarioData(scenarioPath, difficulty)
+	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func(setProgress func(int)) loadingResult {
+		gs, evts, err := loadScenarioData(scenarioPath, difficulty, setProgress)
 		if err != nil {
 			return loadingResult{err: err, fallback: state.PhaseScenarioSelect}
 		}
@@ -1771,8 +1817,20 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 	})
 }
 
-func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []*events.Event, error) {
+func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)) (*state.GameState, []*events.Event, error) {
 	sc := scenarioByPath(scenarioPath)
+	yield := func() { runtime.Gosched() }
+	progressTotal := 12
+	progressStep := 0
+	advance := func() {
+		progressStep++
+		if setProgress != nil {
+			setProgress(progressStep * 100 / progressTotal)
+		}
+	}
+	if setProgress != nil {
+		setProgress(0)
+	}
 
 	dp := func(f string) string { return scenarioPath + "/data/" + f }
 
@@ -1780,46 +1838,68 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	if err != nil {
 		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
 	}
+	advance()
+	yield()
 	if err := world.LoadRegionSettlements(dp("settlements.json"), regions); err != nil {
 		return nil, nil, fmt.Errorf("yerleşimler yüklenemedi: %w", err)
 	}
+	advance()
+	yield()
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), regions)
 	if err != nil {
 		log.Printf("Ülke sınırları yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 	factions, err := faction.LoadFactions(dp("factions.json"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
+	advance()
+	yield()
 	relations, err := faction.LoadRelations(dp("relations.json"), factions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ilişkiler yüklenemedi: %w", err)
 	}
+	advance()
+	yield()
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
 	if err != nil {
 		log.Printf("Binalar yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 	techTypes, err := tech.LoadTechnologies(dp("technologies.json"))
 	if err != nil {
 		log.Printf("Teknolojiler yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 	evts, err := events.LoadEvents(dp("events.json"))
 	if err != nil {
 		log.Printf("Olaylar yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 	armies, err := army.LoadArmies(dp("armies.json"))
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
 	}
+	advance()
+	yield()
 	tradeCenters, err := world.LoadTradeCenters(dp("trade_centers.json"), regions)
 	if err != nil {
 		log.Printf("Ticaret merkezleri yüklenemedi: %v", err)
 	}
+	advance()
+	yield()
 
 	devMode := os.Getenv("DEV_MODE") == "true"
 	editMode := os.Getenv("EDIT_MODE") == "true"
@@ -1866,6 +1946,8 @@ func loadScenarioData(scenarioPath string, difficulty int) (*state.GameState, []
 	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
+	advance()
+	yield()
 
 	return gs, evts, nil
 }

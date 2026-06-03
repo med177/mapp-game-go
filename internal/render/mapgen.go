@@ -80,10 +80,14 @@ type settlementAnchorKey struct {
 	Index  int
 }
 
-func NewWorldMap(gs *state.GameState) *WorldMap {
+func newWorldMapBase(gs *state.GameState, withImage bool) *WorldMap {
 	applyMapConfig(gs)
-	wm := &WorldMap{
-		img:               ebiten.NewImage(WorldW, WorldH),
+	var img *ebiten.Image
+	if withImage {
+		img = ebiten.NewImage(WorldW, WorldH)
+	}
+	return &WorldMap{
+		img:               img,
 		basePixels:        make([]byte, WorldW*WorldH*4),
 		dispPixels:        make([]byte, WorldW*WorldH*4),
 		regionAt:          make([]uint16, WorldW*WorldH),
@@ -96,7 +100,13 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		seaIdx:            make(map[uint16]bool),
 		currentMode:       MapModeNormal,
 	}
+}
 
+func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapMode, setProgress func(int), withImage bool) *WorldMap {
+	wm := newWorldMapBase(gs, withImage)
+	if setProgress != nil {
+		setProgress(5)
+	}
 	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
 	const oR, oG, oB byte = 28, 88, 168
 	for i := 0; i < WorldW*WorldH; i++ {
@@ -110,6 +120,9 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 		wm.hasBgImage = true
 		// log.Println("Arka plan harita resmi yüklendi")
 	}
+	if setProgress != nil {
+		setProgress(18)
+	}
 
 	shapes := countryShapeMapFromState(gs.ShapeData)
 	if len(shapes) == 0 {
@@ -118,6 +131,9 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 			shapesPath = gs.ScenarioPath + "/data/country_shapes.json"
 		}
 		shapes = loadCountryShapes(shapesPath)
+	}
+	if setProgress != nil {
+		setProgress(28)
 	}
 
 	// region_shapes.json (paint overrides) yükle ve uygula
@@ -130,14 +146,51 @@ func NewWorldMap(gs *state.GameState) *WorldMap {
 	}
 
 	wm.buildCountryShapes(gs, shapes)
+	if setProgress != nil {
+		setProgress(55)
+	}
 	wm.buildSeaRegions(gs)
+	if setProgress != nil {
+		setProgress(72)
+	}
 	// region_shapes.json paint overrides'larını kalıcı olarak uygula
 	if len(gs.RegionPaintOverrides) > 0 {
 		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 	}
 	wm.computeRegionAnchors()
+	if setProgress != nil {
+		setProgress(84)
+	}
 	wm.computeSettlementAnchors(gs)
-	wm.applyOwnership(gs, "", MapModeNormal)
+	if setProgress != nil {
+		setProgress(92)
+	}
+	wm.applyOwnership(gs, selected, mode)
+	if setProgress != nil {
+		setProgress(100)
+	}
+	return wm
+}
+
+func NewWorldMap(gs *state.GameState) *WorldMap {
+	return prepareWorldMapData(gs, "", MapModeNormal, nil, true)
+}
+
+// PrepareWorldMap agir dunya haritasi verisini arka planda hazirlar.
+// Donen WorldMap'in img alani nil olabilir; ana thread'de FinalizePreparedWorldMap ile tamamlanir.
+func PrepareWorldMap(gs *state.GameState, selected world.RegionID, mode MapMode, setProgress func(int)) *WorldMap {
+	return prepareWorldMapData(gs, selected, mode, setProgress, false)
+}
+
+// FinalizePreparedWorldMap GPU image olusturup hazir piksel tamponunu upload eder.
+func FinalizePreparedWorldMap(wm *WorldMap) *WorldMap {
+	if wm == nil {
+		return nil
+	}
+	if wm.img == nil {
+		wm.img = ebiten.NewImage(WorldW, WorldH)
+	}
+	wm.img.WritePixels(wm.dispPixels)
 	return wm
 }
 
@@ -901,7 +954,9 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 	}
 
 	wm.drawRegionBorders(gs, selected, mode)
-	wm.img.WritePixels(wm.dispPixels)
+	if wm.img != nil {
+		wm.img.WritePixels(wm.dispPixels)
+	}
 }
 
 func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID, mode MapMode) {

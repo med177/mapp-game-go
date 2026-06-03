@@ -71,7 +71,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
 | AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
 | Kayıt/yükleme | ✅ | Autosave + QuickSave + slot1-3, metadata önizleme, silme; tur bitirde autosave, oyun içi kaydetmede quicksave |
-| Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında gerçek zaman tabanlı hareketli spinner gösteriliyor |
+| Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında gerçek zaman tabanlı hareketli spinner gösteriliyor; iş yükü ilk loading frame çizildikten sonra başlatıldığı ve yükleme adımları scheduler'a yield verdiği için loader animasyonu senaryo okunurken donmuyor; yükleme ekranı artık step-bazlı yüzde ve progress bar da gösteriyor; senaryo yüklemesi `faction_select`/`victory_select`e gidiyorsa ağır `WorldMap` cache'i loader bitiminde değil, harita ilk gerçekten gerektiğinde kuruluyor; zafer koşulu sonrası oyuncu turuna geçerken ve save load akışında `WorldMap` hazırlığı arka planda yapılıp loading ekranı altında tamamlanıyor |
 | Ana menü / ayarlar | ✅ | Yeni oyun, autosave varsa devam et, kayıt yükleme, ayarlar, çıkış |
 | Pause menüsü | ✅ | ESC ile açılır; devam, kaydet, yükle, ana menü, çıkış |
 | Fare odaklı UI akışı | ✅ | Menü geri düğmeleri, teknoloji/diplomasi X kapatma, bölge/ordu panel kapatma, vergi/bina/asker aksiyonları fareyle yapılabilir |

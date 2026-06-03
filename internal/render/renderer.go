@@ -95,6 +95,7 @@ type Renderer struct {
 	HasAutoSave     bool
 	CurrentSettings Settings
 	LoadingMessage  string
+	LoadingProgress int
 
 	// Duraklama menüsü
 	pauseCursor int
@@ -364,6 +365,23 @@ func New(gs *state.GameState) *Renderer {
 	return r
 }
 
+func phaseNeedsWorldMap(phase state.Phase) bool {
+	switch phase {
+	case state.PhasePlayerTurn, state.PhaseAITurn, state.PhaseTurnResolution, state.PhasePauseMenu, state.PhaseEditMode:
+		return true
+	default:
+		return false
+	}
+}
+
+func (r *Renderer) ensureWorldMap() {
+	if r == nil || r.worldMap != nil || !phaseNeedsWorldMap(r.gs.Phase) {
+		return
+	}
+	r.worldMap = NewWorldMap(r.gs)
+	r.resetCamera()
+}
+
 // resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
 func (r *Renderer) resetCamera() {
 	r.camScale = minCameraScale()
@@ -395,11 +413,25 @@ func (r *Renderer) SetLoadingMessage(message string) {
 	r.LoadingMessage = message
 }
 
+func (r *Renderer) SetLoadingProgress(progress int) {
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 100 {
+		progress = 100
+	}
+	r.LoadingProgress = progress
+}
+
 // ReloadGameState yükleme sonrası yeni state ve yeni worldmap ile günceller.
 // ActiveScenarioPath aktif senaryonun klasör yolu; asset yükleyiciler buradan türetir.
 var ActiveScenarioPath string
 
 func (r *Renderer) ReloadGameState(gs *state.GameState) {
+	r.ReloadGameStateWithPreparedMap(gs, nil)
+}
+
+func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.gs = gs
 	if gs.ScenarioPath != "" {
 		ActiveScenarioPath = gs.ScenarioPath
@@ -410,7 +442,13 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
 	}
-	r.worldMap = NewWorldMap(gs)
+	if prepared != nil {
+		r.worldMap = FinalizePreparedWorldMap(prepared)
+	} else if phaseNeedsWorldMap(gs.Phase) {
+		r.worldMap = NewWorldMap(gs)
+	} else {
+		r.worldMap = nil
+	}
 	r.invalidateShapeEditSession()
 	r.resetCamera()
 	r.SelectedRegion = ""
@@ -617,7 +655,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.gs.Phase == state.PhaseLoading {
 		r.menuTick++
-		DrawLoadingScreen(screen, r.LoadingMessage, r.menuTick)
+		DrawLoadingScreen(screen, r.LoadingMessage, r.LoadingProgress, r.menuTick)
 		return
 	}
 
@@ -663,6 +701,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// Duraklama menüsü — haritayı altta çiz, üstüne overlay
 	if r.gs.Phase == state.PhasePauseMenu {
+		r.ensureWorldMap()
 		r.worldMap.Refresh(r.gs, r.SelectedRegion, r.mapMode)
 		mapOp := &ebiten.DrawImageOptions{}
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
@@ -671,6 +710,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick, r.CurrentSettings)
 		return
 	}
+
+	r.ensureWorldMap()
 
 	// Seçili bölge veya donanmanın deniz bölgesini vurgula
 	highlightRegion := world.RegionID(r.SelectedRegion)
@@ -5952,8 +5993,11 @@ func (r *Renderer) HandleInput() InputAction {
 		return r.handleSlotSelectInput(true, input)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
+		r.ensureWorldMap()
 		return r.handleEditModeInput()
 	}
+
+	r.ensureWorldMap()
 
 	// Diplomasi paneli açıkken ayrı input
 	if r.showDiplomacy {

@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-func DrawLoadingScreen(screen *ebiten.Image, message string, tick int) {
+func DrawLoadingScreen(screen *ebiten.Image, message string, progress int, tick int) {
 	if message == "" {
 		message = "Yükleniyor..."
 	}
@@ -30,5 +30,24 @@ func DrawLoadingScreen(screen *ebiten.Image, message string, tick int) {
 	}
 
 	DrawTextCentered(screen, message, ScreenWidth/2, float64(cy)+46, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Lütfen bekleyin", ScreenWidth/2, float64(cy)+76, FaceSmall, color.RGBA{150, 140, 110, 190})
+	barW := float32(280)
+	barH := float32(12)
+	barX := cx - barW/2
+	barY := cy + 68
+	vector.FillRect(screen, barX, barY, barW, barH, color.RGBA{28, 24, 18, 220}, false)
+	vector.StrokeRect(screen, barX, barY, barW, barH, 1, color.RGBA{130, 110, 60, 220}, false)
+	fillW := barW * float32(progress) / 100
+	if fillW > 0 {
+		vector.FillRect(screen, barX+1, barY+1, maxFloat32(fillW-2, 0), barH-2, color.RGBA{214, 176, 68, 235}, false)
+	}
+
+	DrawTextCentered(screen, itoa(progress)+"%", ScreenWidth/2, float64(cy)+86, FaceLarge, color.RGBA{232, 210, 132, 255})
+	DrawTextCentered(screen, "Lütfen bekleyin", ScreenWidth/2, float64(cy)+114, FaceSmall, color.RGBA{150, 140, 110, 190})
+}
+
+func maxFloat32(a, b float32) float32 {
+	if a > b {
+		return a
+	}
+	return b
 }
