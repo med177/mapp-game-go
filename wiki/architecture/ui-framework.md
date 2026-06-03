@@ -16,7 +16,7 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 
 ## Mevcut Durum
 1. `internal/ui` içinde çekirdek sözleşmeler (`Widget`, `InputState`, `Manager`) ve test edilebilir focus sırası eklendi.
-2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`, `AnchorRect`) oluşturuldu.
+2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`, `AnchorRect`, `Box`) oluşturuldu.
 3. `render` katmanında back/menu/mini/tiny buton çizimleri, edit mode dropdown'ları, trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları ortak bileşen yüzeylerine bağlandı.
 4. HUD, recruit paneli, ordu split/merge overlay'i, edit mode inspector/form etkileşim yüzeyleri ve modal aileleri ortak button/panel/overlay geometry builder'larına taşındı.
 5. Ortak button, dropdown, modal, HUD ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
@@ -119,6 +119,9 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - hover cursor doğru
    - panel açıkken arka harita etkileşimi yok
    - farklı çözünürlükte overlap yok
+4. Ekran kompozisyonu primitive seviyesinde değil container/layout seviyesinde de ortak olmalı:
+   - panel içi başlık/sekme/kolon/aksiyon kartı alanları `Box` cut/split akışıyla kurulmalı
+   - sabit `x/y` zinciri yerine slot tabanlı rect türetimi kullanılmalı
 
 ## Aşama 4: Kademeli Ekran Geçişi (2-3 hafta)
 1. Öncelik 1 (yüksek bug riski):
@@ -218,6 +221,9 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 3. Genişletilmiş migrasyonla ortak geometri kullanan ek alanlar:
    - recruit panel close / kart / kuyruk iptal hit-test ailesi
    - ordu split/merge overlay aksiyonları
+4. Trade ekranı artık yalnız ortak widget primitive'lerini değil, ortak kutu layout helper'larını da kullanır:
+   - header, close button, tab strip, kontrol satırı, iki kolon ve action card `internal/ui/box.go` üstünden slotlara bölünür
+   - overlap ve spacing regresyonları için `internal/render/ui_geometry_test.go` geometri smoke testleri çalışır
    - edit mode inspector/form tab, aksiyon ve form hit-test ailesi
    - genel onay, savaş ilan onayı, event detail ve historical event modal yüzeyleri
    - oyuncuya gelen diplomasi teklif diyaloğu

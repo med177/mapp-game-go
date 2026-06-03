@@ -50,6 +50,28 @@ func TestVBoxLayout(t *testing.T) {
 	}
 }
 
+func TestBoxCutsAndSplits(t *testing.T) {
+	root := BoxFromRect(Rect{X: 10, Y: 20, W: 300, H: 200}).Inset(10)
+	top, rest := root.CutTop(40, 8)
+	if top.X != 20 || top.Y != 30 || top.W != 280 || top.H != 40 {
+		t.Fatalf("unexpected top rect: %+v", top)
+	}
+	if rest.Rect.Y != 78 || rest.Rect.H != 132 {
+		t.Fatalf("unexpected rest box: %+v", rest.Rect)
+	}
+
+	cols := rest.SplitColumns(12, 2, 3)
+	if len(cols) != 2 {
+		t.Fatalf("expected 2 columns, got %d", len(cols))
+	}
+	if cols[0].X != 20 || cols[1].X <= cols[0].X+cols[0].W {
+		t.Fatalf("expected gapped columns, got %+v", cols)
+	}
+	if cols[0].H != rest.Rect.H || cols[1].H != rest.Rect.H {
+		t.Fatalf("expected full-height columns, got %+v", cols)
+	}
+}
+
 func TestModalDismissOnOutsideTap(t *testing.T) {
 	m := NewModal(1280, 720, NewPanel(100, 100, 200, 120))
 	m.DismissOnOutsideTap = true

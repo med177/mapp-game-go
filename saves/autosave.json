@@ -18,15 +18,10 @@
   "development_mode": true,
   "edit_mode": false,
   "victory": {
-    "type": "domination",
-    "target_region_count": 30,
+    "type": "conquer_city",
+    "target_region_count": 0,
     "required_regions": [
-      "constantinople",
-      "papal_states",
-      "egypt",
-      "paris",
-      "palestine",
-      "venice"
+      "constantinople"
     ],
     "target_gold_income": 0,
     "gold_hold_turns": 0,
