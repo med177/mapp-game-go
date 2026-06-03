@@ -15,59 +15,62 @@ type ResourceCost struct {
 	Stone  int
 }
 
+func (c ResourceCost) Amount(kind ResourceKind) int {
+	switch kind {
+	case ResourceGold:
+		return c.Gold
+	case ResourceGrain:
+		return c.Grain
+	case ResourceIron:
+		return c.Iron
+	case ResourceTimber:
+		return c.Timber
+	case ResourceStone:
+		return c.Stone
+	default:
+		return 0
+	}
+}
+
 func (c ResourceCost) CanAfford(f *faction.Faction) bool {
 	if f == nil {
 		return false
 	}
-	return f.Gold >= c.Gold &&
-		f.Grain >= c.Grain &&
-		f.Iron >= c.Iron &&
-		f.Timber >= c.Timber &&
-		f.Stone >= c.Stone
+	for _, kind := range CostResourceKinds() {
+		if FactionResourceAmount(f, kind) < c.Amount(kind) {
+			return false
+		}
+	}
+	return true
 }
 
 func (c ResourceCost) Apply(f *faction.Faction) {
 	if f == nil {
 		return
 	}
-	f.Gold -= c.Gold
-	f.Grain -= c.Grain
-	f.Iron -= c.Iron
-	f.Timber -= c.Timber
-	f.Stone -= c.Stone
+	for _, kind := range CostResourceKinds() {
+		AddFactionResource(f, kind, -c.Amount(kind))
+	}
 }
 
 func (c ResourceCost) Refund(f *faction.Faction) {
 	if f == nil {
 		return
 	}
-	f.Gold += c.Gold
-	f.Grain += c.Grain
-	f.Iron += c.Iron
-	f.Timber += c.Timber
-	f.Stone += c.Stone
+	for _, kind := range CostResourceKinds() {
+		AddFactionResource(f, kind, c.Amount(kind))
+	}
 }
 
 func (c ResourceCost) ShortTR() string {
 	parts := make([]string, 0, 5)
-	if c.Gold > 0 {
-		parts = append(parts, fmt.Sprintf("%d Altın", c.Gold))
-	}
-	if c.Grain > 0 {
-		parts = append(parts, fmt.Sprintf("%d Tahıl", c.Grain))
-	}
-	if c.Iron > 0 {
-		parts = append(parts, fmt.Sprintf("%d Demir", c.Iron))
-	}
-	if c.Timber > 0 {
-		parts = append(parts, fmt.Sprintf("%d Kereste", c.Timber))
-	}
-	if c.Stone > 0 {
-		parts = append(parts, fmt.Sprintf("%d Taş", c.Stone))
+	for _, kind := range CostResourceKinds() {
+		if amount := c.Amount(kind); amount > 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", amount, ResourceNameTR(kind)))
+		}
 	}
 	if len(parts) == 0 {
 		return "Bedava"
 	}
 	return strings.Join(parts, ", ")
 }
-

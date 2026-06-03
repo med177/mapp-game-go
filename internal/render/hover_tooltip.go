@@ -390,12 +390,12 @@ func resourceTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tool
 	f := gs.Factions[gs.PlayerFactionID]
 	lines := make([]tooltipLine, 0, 5)
 
-	appendLine := func(name string, need int, have int) {
+	appendLine := func(kind economy.ResourceKind, need int, have int) {
 		if need <= 0 {
 			return
 		}
 		col := ColorWhite
-		text := fmt.Sprintf("%s: %d/%d", name, have, need)
+		text := fmt.Sprintf("%s: %d/%d", economy.ResourceNameTR(kind), have, need)
 		if have < need {
 			col = ColorRed
 			text += " eksik"
@@ -403,18 +403,12 @@ func resourceTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tool
 		lines = append(lines, tooltipLine{text: text, col: col})
 	}
 
-	if f == nil {
-		appendLine("Altın", cost.Gold, 0)
-		appendLine("Tahıl", cost.Grain, 0)
-		appendLine("Demir", cost.Iron, 0)
-		appendLine("Kereste", cost.Timber, 0)
-		appendLine("Taş", cost.Stone, 0)
-	} else {
-		appendLine("Altın", cost.Gold, f.Gold)
-		appendLine("Tahıl", cost.Grain, f.Grain)
-		appendLine("Demir", cost.Iron, f.Iron)
-		appendLine("Kereste", cost.Timber, f.Timber)
-		appendLine("Taş", cost.Stone, f.Stone)
+	for _, kind := range economy.CostResourceKinds() {
+		have := 0
+		if f != nil {
+			have = economy.FactionResourceAmount(f, kind)
+		}
+		appendLine(kind, cost.Amount(kind), have)
 	}
 
 	if len(lines) == 0 {

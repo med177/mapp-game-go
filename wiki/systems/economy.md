@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-05-29
+last_updated: 2026-06-03
 related: [systems/seasons, world/regions, architecture/game-loop]
 ---
 
 # Ekonomi Sistemi
 
-**Kaynak:** `internal/economy/economy.go`, `internal/city/building.go`
+**Kaynak:** `internal/economy/economy.go`, `internal/economy/resources.go`, `internal/city/building.go`
 
 ## Kaynaklar
 
@@ -22,6 +22,8 @@ related: [systems/seasons, world/regions, architecture/game-loop]
 | Kumaş | İkincil | Ticaret geliri |
 
 Altın ve ikincil kaynaklar birlikte kullanılır; birim/bina üretiminde çoklu kaynak reçetesi zorunludur.
+
+Kaynak adları ve fraksiyon alan eşlemeleri `internal/economy/resources.go` içinde `ResourceKind`/`ResourceDef` modeliyle merkezileştirilmiştir. UI metinleri, ticaret malları listesi ve `ResourceCost` formatlaması bu ortak tanımları kullanır; böylece `Altın/Tahıl/Demir/...` stringleri farklı paketlerde ayrı ayrı hardcode edilmez.
 
 ---
 

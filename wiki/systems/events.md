@@ -65,6 +65,10 @@ Choice sonuçları artık doğrudan follow-up event açabilir.
 - `Effect.complete_techs[]` ilgili fraksiyon için teknoloji tamamlar
 - `Effect.start_research_tech` aktif araştırma boşsa ücretsiz yönlendirilmiş araştırma başlatır
 - `Effect.relations[]` belirli fraksiyonlarla doğrudan `score_delta` ve opsiyonel `stance` uygular
+- `Event.requires_owned_regions[]` follow-up event gelmeden önce ilgili fraksiyonun belirli bölgeleri hâlâ elinde tuttuğunu doğrular
+- `Event.requires_techs[]` ilgili fraksiyonun belirli teknolojileri zaten tamamlamış olmasını ister
+- `Event.blocks_techs[]` ilgili teknoloji zaten açıksa follow-up event'i bastırır
+- `Event.relation_requirements[]` belirli fraksiyonla stance ve score koşulu ister; `any_of_stances`, `blocks_stances`, `min_score`, `max_score` desteklenir
 - `Event.requires_flags[]` olmadan event tetiklenmez
 - `Event.blocks_flags[]` varsa ilgili flag set iken event bastırılır
 
@@ -129,6 +133,19 @@ Bazı zincirler artık diplomasi ve araştırma yönü de kurar:
 - `atlantic_casa_program_1494` → Kastilya ile ittifak yakınlaşması + kartografi hattı
 - `iberian_market_reform_1494` → Portekiz ile ticaret yakınlaşması + mali araştırma
 - `imperial_defter_reform_1521` → Venedik ile ticaret yakınlaşması + diplomasi/iaşe hattı
+
+Bazı zincirler artık gerçek harita durumuna da bağlıdır:
+
+- `capital_rebuild_program_1454` / `arsenal_push_1454` için `constantinople` hâlâ ilgili fraksiyonda olmalı
+- `atlantic_casa_program_1494` / `iberian_market_reform_1494` için `granada` tutulmalı
+- `estado_da_india_1499` / `feitoria_network_1499` için `portugal` ana bölgesi tutulmalı
+- `imperial_defter_reform_1521` / `frontier_host_1521` için `constantinople` ve `bithynia` birlikte elde kalmalı
+
+Bazı zincirler artık araştırma ve dış ilişki durumu ile de filtrelenir:
+
+- follow-up ödül tech'i zaten tamamlandıysa event tekrar düşmez
+- ticaret/imar zincirleri ilgili partnerle aktif savaş varsa gelmez
+- saldırgan sınır zincirleri ise hedef komşuyla `trade` veya `allied` durumunda bastırılabilir
 
 ## Eklenecek / Planlanmış
 

@@ -65,7 +65,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Oyuncuya gelen diplomasi teklif paneli | ✅ | AI barış teklifleri `diplomatic_offers` kuyruğuna düşer; oyuncu modal anlaşma panelinden kabul/red verir, kabulde standart diplomasi motoru uygulanır |
 | Din diplomasisi | ✅ | Başlangıç ilişkileri din puanıyla kuruluyor; Sünni-Şii savaş başlıyor |
 | Din dönüşümü | ✅ | Ele geçirilen bölgede 24 tur sonra yeni sahip dinine dönüşüm, memnuniyet -20 |
-| Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme; tarihsel modal içinde A/B kararları, choice prompt, ekonomi/diplomasi/ordu etkisi ve ayrı karar log kaydı |
+| Tarihsel olaylar | ✅ | JSON tetikleyici, tek seferlik olay işleme; tarihsel modal içinde A/B kararları, choice prompt, ekonomi/diplomasi/ordu etkisi ve ayrı karar log kaydı; follow-up zincirler flag, bölge sahipliği, teknoloji ve diplomasi stance/score koşullarına bağlanabiliyor |
 | Zafer koşulları | ✅ | `domination`, `economic`, `military`, `religious`, `conquer_city` kontrol ediliyor |
 | AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon, diplomasi taraması ve hedefe hareket; deniz hedefleri `aiSeaPressure()` ile savaş baskısına göre seçilir, filo limiti kıyı/savaş durumuna göre 1-3 arası dinamikleşir |
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
@@ -117,7 +117,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 1. **Event görünürlüğü:** Choice sonuçlarını bölge bazlı ikon veya kısa süreli status etkisiyle daha görünür yap.
 2. **AI eskort mantığı:** Transport filolarına savaş gemisi eşlik ettir.
-3. **Event zincirleri:** Tarihsel kararların sonraki event havuzunu etkilediği follow-up trigger sistemi ekle.
+3. **Event görünürlük/state izi:** Follow-up event koşullarını oyuncuya UI üzerinde önceden okunur hale getir.
 
 ## Yakın Sprint Önerisi
 

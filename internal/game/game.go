@@ -842,44 +842,14 @@ func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) 
 }
 
 func tradeGoodLabelTR(good economy.GoodType) string {
-	switch good {
-	case economy.GoodGrain:
-		return "tahıl"
-	case economy.GoodIron:
-		return "demir"
-	case economy.GoodTimber:
-		return "kereste"
-	case economy.GoodStone:
-		return "taş"
-	case economy.GoodSpice:
-		return "baharat"
-	case economy.GoodCloth:
-		return "kumaş"
-	default:
-		return string(good)
-	}
+	return economy.GoodLowerNameTR(good)
 }
 
 func tradeGoodAmount(f *faction.Faction, good economy.GoodType) int {
-	if f == nil {
-		return 0
+	if kind, ok := economy.GoodToResourceKind(good); ok {
+		return economy.FactionResourceAmount(f, kind)
 	}
-	switch good {
-	case economy.GoodGrain:
-		return f.Grain
-	case economy.GoodIron:
-		return f.Iron
-	case economy.GoodTimber:
-		return f.Timber
-	case economy.GoodStone:
-		return f.Stone
-	case economy.GoodSpice:
-		return f.Spice
-	case economy.GoodCloth:
-		return f.Cloth
-	default:
-		return 0
-	}
+	return 0
 }
 
 func minTradeInt(a, b int) int {
@@ -1673,20 +1643,12 @@ func maxAffordableByCost(f *faction.Faction, cost economy.ResourceCost) int {
 		return 0
 	}
 	maxVal := 1 << 30
-	if cost.Gold > 0 {
-		maxVal = minInt(maxVal, f.Gold/cost.Gold)
-	}
-	if cost.Grain > 0 {
-		maxVal = minInt(maxVal, f.Grain/cost.Grain)
-	}
-	if cost.Iron > 0 {
-		maxVal = minInt(maxVal, f.Iron/cost.Iron)
-	}
-	if cost.Timber > 0 {
-		maxVal = minInt(maxVal, f.Timber/cost.Timber)
-	}
-	if cost.Stone > 0 {
-		maxVal = minInt(maxVal, f.Stone/cost.Stone)
+	for _, kind := range economy.CostResourceKinds() {
+		amount := cost.Amount(kind)
+		if amount <= 0 {
+			continue
+		}
+		maxVal = minInt(maxVal, economy.FactionResourceAmount(f, kind)/amount)
 	}
 	if maxVal == 1<<30 {
 		return 9999

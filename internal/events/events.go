@@ -19,6 +19,15 @@ type RelationEffect struct {
 	ScoreDelta int    `json:"score_delta,omitempty"`
 }
 
+type RelationRequirement struct {
+	FactionID     string   `json:"faction_id"`
+	Stance        string   `json:"stance,omitempty"`
+	AnyOfStances  []string `json:"any_of_stances,omitempty"`
+	BlocksStances []string `json:"blocks_stances,omitempty"`
+	MinScore      int      `json:"min_score,omitempty"`
+	MaxScore      int      `json:"max_score,omitempty"`
+}
+
 type Effect struct {
 	Target            string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
 	SatDelta          int              `json:"sat_delta,omitempty"`
@@ -61,10 +70,14 @@ type Event struct {
 	OneShot         bool   `json:"one_shot,omitempty"`         // true = yalnızca bir kez tetiklenir
 	AffectedFaction string `json:"affected_faction,omitempty"` // belirli fraksiyonu hedefle
 
-	ChoicePromptTR string   `json:"choice_prompt_tr,omitempty"`
-	Choices        []Choice `json:"choices,omitempty"`
-	RequiresFlags  []string `json:"requires_flags,omitempty"`
-	BlocksFlags    []string `json:"blocks_flags,omitempty"`
+	ChoicePromptTR       string                `json:"choice_prompt_tr,omitempty"`
+	Choices              []Choice              `json:"choices,omitempty"`
+	RequiresFlags        []string              `json:"requires_flags,omitempty"`
+	BlocksFlags          []string              `json:"blocks_flags,omitempty"`
+	RequiresTechs        []string              `json:"requires_techs,omitempty"`
+	BlocksTechs          []string              `json:"blocks_techs,omitempty"`
+	RequiresOwnedRegions []world.RegionID      `json:"requires_owned_regions,omitempty"`
+	RelationRequirements []RelationRequirement `json:"relation_requirements,omitempty"`
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -94,7 +107,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if gs.FiredEventIDs[e.ID] {
 			continue
 		}
-		if !eventFlagsSatisfied(gs, e) {
+		if !eventConditionsSatisfied(gs, e) {
 			continue
 		}
 		if gs.Year != e.HistoricalYear {
@@ -117,7 +130,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if e.OneShot && gs.FiredEventIDs[e.ID] {
 			continue
 		}
-		if !eventFlagsSatisfied(gs, e) {
+		if !eventConditionsSatisfied(gs, e) {
 			continue
 		}
 		if gs.Turn < e.MinTurn {
@@ -179,7 +192,7 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	return choice, true
 }
 
-func eventFlagsSatisfied(gs *state.GameState, e *Event) bool {
+func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
 	}
@@ -193,7 +206,122 @@ func eventFlagsSatisfied(gs *state.GameState, e *Event) bool {
 			return false
 		}
 	}
+	if !eventTechsSatisfied(gs, e) {
+		return false
+	}
+	if len(e.RequiresOwnedRegions) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			return false
+		}
+		for _, rid := range e.RequiresOwnedRegions {
+			r := gs.Regions[rid]
+			if r == nil || r.OwnerID != string(fid) {
+				return false
+			}
+		}
+	}
+	if !eventRelationsSatisfied(gs, e) {
+		return false
+	}
 	return true
+}
+
+func eventTechsSatisfied(gs *state.GameState, e *Event) bool {
+	f := eventConditionFaction(gs, e)
+	if f == nil {
+		return len(e.RequiresTechs) == 0 && len(e.BlocksTechs) == 0
+	}
+	for _, techID := range e.RequiresTechs {
+		if techID == "" || !f.Research.Completed[techID] {
+			return false
+		}
+	}
+	for _, techID := range e.BlocksTechs {
+		if techID != "" && f.Research.Completed[techID] {
+			return false
+		}
+	}
+	return true
+}
+
+func eventRelationsSatisfied(gs *state.GameState, e *Event) bool {
+	if len(e.RelationRequirements) == 0 {
+		return true
+	}
+	fid := eventConditionFactionID(gs, e)
+	if fid == "" {
+		return false
+	}
+	for _, req := range e.RelationRequirements {
+		if !relationRequirementSatisfied(gs, fid, req) {
+			return false
+		}
+	}
+	return true
+}
+
+func relationRequirementSatisfied(gs *state.GameState, source faction.FactionID, req RelationRequirement) bool {
+	if gs == nil || source == "" || req.FactionID == "" {
+		return false
+	}
+	target := faction.FactionID(req.FactionID)
+	rel := diplomacy.Relation(gs, source, target)
+	score := 0
+	stance := faction.StancePeace
+	if rel != nil {
+		score = rel.Score
+		if rel.Stance != "" {
+			stance = rel.Stance
+		}
+	}
+	if req.MinScore != 0 && score < req.MinScore {
+		return false
+	}
+	if req.MaxScore != 0 && score > req.MaxScore {
+		return false
+	}
+	if req.Stance != "" && stance != faction.DiplomaticStance(req.Stance) {
+		return false
+	}
+	if len(req.AnyOfStances) > 0 && !stanceInList(stance, req.AnyOfStances) {
+		return false
+	}
+	if len(req.BlocksStances) > 0 && stanceInList(stance, req.BlocksStances) {
+		return false
+	}
+	return true
+}
+
+func stanceInList(stance faction.DiplomaticStance, list []string) bool {
+	for _, candidate := range list {
+		if candidate != "" && stance == faction.DiplomaticStance(candidate) {
+			return true
+		}
+	}
+	return false
+}
+
+func eventConditionFactionID(gs *state.GameState, e *Event) faction.FactionID {
+	if gs == nil || e == nil {
+		return ""
+	}
+	switch e.Target {
+	case "player_faction":
+		return gs.PlayerFactionID
+	case "specific_faction":
+		return faction.FactionID(e.AffectedFaction)
+	default:
+		return ""
+	}
+}
+
+func eventConditionFaction(gs *state.GameState, e *Event) *faction.Faction {
+	fid := eventConditionFactionID(gs, e)
+	if fid == "" {
+		return nil
+	}
+	return gs.Factions[fid]
 }
 
 func AutoChoose(e *Event) int {

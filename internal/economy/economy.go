@@ -43,12 +43,9 @@ func ComputeMarketPrices(factions map[faction.FactionID]*faction.Faction) Curren
 		if f == nil || f.IsEliminated {
 			continue
 		}
-		totalSupply[GoodGrain] += f.Grain
-		totalSupply[GoodIron] += f.Iron
-		totalSupply[GoodTimber] += f.Timber
-		totalSupply[GoodStone] += f.Stone
-		totalSupply[GoodSpice] += f.Spice
-		totalSupply[GoodCloth] += f.Cloth
+		for _, good := range TradeGoods() {
+			totalSupply[good] += getGoodAmount(f, good)
+		}
 	}
 
 	// Aktif fraksiyon sayısı (talep göstergesi)
@@ -157,39 +154,16 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 
 // getGoodAmount fraksiyonun belirli bir maldan kaç birime sahip olduğunu döner.
 func getGoodAmount(f *faction.Faction, good GoodType) int {
-	switch good {
-	case GoodGrain:
-		return f.Grain
-	case GoodIron:
-		return f.Iron
-	case GoodTimber:
-		return f.Timber
-	case GoodStone:
-		return f.Stone
-	case GoodSpice:
-		return f.Spice
-	case GoodCloth:
-		return f.Cloth
-	default:
-		return 0
+	if kind, ok := GoodToResourceKind(good); ok {
+		return FactionResourceAmount(f, kind)
 	}
+	return 0
 }
 
 // addGoodAmount fraksiyonun belirli bir malını amount kadar artırır/azaltır.
 func addGoodAmount(f *faction.Faction, good GoodType, amount int) {
-	switch good {
-	case GoodGrain:
-		f.Grain += amount
-	case GoodIron:
-		f.Iron += amount
-	case GoodTimber:
-		f.Timber += amount
-	case GoodStone:
-		f.Stone += amount
-	case GoodSpice:
-		f.Spice += amount
-	case GoodCloth:
-		f.Cloth += amount
+	if kind, ok := GoodToResourceKind(good); ok {
+		AddFactionResource(f, kind, amount)
 	}
 }
 

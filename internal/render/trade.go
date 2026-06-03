@@ -158,7 +158,7 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 		}
 		vector.FillRect(screen, px+4, ry, w-8, tradeRowH-4, bg, false)
 
-		goodName := goodDisplayName(tr.Good)
+		goodName := economy.GoodNameTR(tr.Good)
 		DrawText(screen, goodName, float64(colX[0]), float64(ry)+10, FaceSmall, ColorWhite)
 		DrawText(screen, factionDisplayName(gs, tr.FromFactionID), float64(colX[1]), float64(ry)+10, FaceSmall, ColorGray)
 		DrawText(screen, factionDisplayName(gs, tr.ToFactionID), float64(colX[2]), float64(ry)+10, FaceSmall, ColorGray)
@@ -230,7 +230,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		if targetF != nil {
 			goodItems := make([]string, 0, len(goods))
 			for gi, good := range goods {
-				goodName := goodDisplayName(good)
+				goodName := economy.GoodNameTR(good)
 				srcAmount := getFactionGoodAmount(playerF, good)
 				dstAmount := getFactionGoodAmount(targetF, good)
 				price := "?"
@@ -275,7 +275,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, px float32, y fl
 		maxSell := tradeMaxSellAmount(playerF, target, good, price)
 		totalGold := amount * price
 
-		line := "Seçili: " + goodDisplayName(good) + " | Hedef: " + target.NameTR
+		line := "Seçili: " + economy.GoodNameTR(good) + " | Hedef: " + target.NameTR
 		DrawText(screen, line, float64(rightX), float64(btnY)-34, FaceSmall, color.RGBA{200, 190, 170, 220})
 		line2 := "Miktar: " + itoa(amount) + " | Tutar: " + itoa(totalGold) + " altın"
 		DrawText(screen, line2, float64(rightX), float64(btnY)-18, FaceSmall, color.RGBA{230, 210, 155, 230})
@@ -425,14 +425,7 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 		return
 	}
 
-	goods := []economy.GoodType{
-		economy.GoodGrain,
-		economy.GoodIron,
-		economy.GoodTimber,
-		economy.GoodStone,
-		economy.GoodSpice,
-		economy.GoodCloth,
-	}
+	goods := economy.TradeGoods()
 
 	// Başlıklar
 	colX := []float32{px + 10, px + w*0.30, px + w*0.55, px + w*0.75, px + w*0.90}
@@ -446,7 +439,7 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 	for _, good := range goods {
 		basePrice := economy.BaseGoldValue[good]
 		currentPrice := gs.MarketPrices[good]
-		goodName := goodDisplayName(good)
+		goodName := economy.GoodNameTR(good)
 
 		// Değişim yüzdesi
 		changePct := ((currentPrice - basePrice) * 100) / basePrice
@@ -480,35 +473,8 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 	DrawText(screen, "Not: Fiyatlar her tur sonu güncellenir.", float64(px)+10, float64(ry)+10, FaceSmall, ColorGray)
 }
 
-// goodDisplayName mal adını Türkçe döner.
-func goodDisplayName(good economy.GoodType) string {
-	switch good {
-	case economy.GoodGrain:
-		return "Tahıl"
-	case economy.GoodIron:
-		return "Demir"
-	case economy.GoodTimber:
-		return "Kereste"
-	case economy.GoodStone:
-		return "Taş"
-	case economy.GoodSpice:
-		return "Baharat"
-	case economy.GoodCloth:
-		return "Kumaş"
-	default:
-		return string(good)
-	}
-}
-
 func tradeSelectableGoods() []economy.GoodType {
-	return []economy.GoodType{
-		economy.GoodGrain,
-		economy.GoodIron,
-		economy.GoodTimber,
-		economy.GoodStone,
-		economy.GoodSpice,
-		economy.GoodCloth,
-	}
+	return economy.TradeGoods()
 }
 
 // factionDisplayName bir fraksiyon ID'sinin görünen adını döner.
@@ -645,25 +611,10 @@ func drawTradeListControls(screen *ebiten.Image, px, y float32, listFilter Trade
 
 // getFactionGoodAmount bir fraksiyonun belirli bir maldan kaç adet olduğunu döner.
 func getFactionGoodAmount(f *faction.Faction, good economy.GoodType) int {
-	if f == nil {
-		return 0
+	if kind, ok := economy.GoodToResourceKind(good); ok {
+		return economy.FactionResourceAmount(f, kind)
 	}
-	switch good {
-	case economy.GoodGrain:
-		return f.Grain
-	case economy.GoodIron:
-		return f.Iron
-	case economy.GoodTimber:
-		return f.Timber
-	case economy.GoodStone:
-		return f.Stone
-	case economy.GoodSpice:
-		return f.Spice
-	case economy.GoodCloth:
-		return f.Cloth
-	default:
-		return 0
-	}
+	return 0
 }
 
 // totalGoodSupply tüm aktif fraksiyonların belirli bir maldan toplam stokunu döner.
@@ -773,7 +724,7 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 						price = itoa(p) + " altın"
 					}
 				}
-				line := goodDisplayName(good) + " | Sende: " + itoa(getFactionGoodAmount(gs.Factions[gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
+				line := economy.GoodNameTR(good) + " | Sende: " + itoa(getFactionGoodAmount(gs.Factions[gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
 				items = append(items, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 			}
 			if buildTradeGoodsList(px, py+tradeTabH+48, pw*0.40, rightW, visibleRows, items, focusGood).HitTest(mx, my) {
@@ -882,7 +833,7 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 				price = itoa(p) + " altın"
 			}
 		}
-		line := goodDisplayName(good) + " | Sende: " + itoa(getFactionGoodAmount(r.gs.Factions[r.gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
+		line := economy.GoodNameTR(good) + " | Sende: " + itoa(getFactionGoodAmount(r.gs.Factions[r.gs.PlayerFactionID], good)) + " | " + target.NameTR + ": " + itoa(getFactionGoodAmount(target, good)) + " | Fiyat: " + price
 		goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 	}
 	goodsList := buildTradeGoodsList(px, contentY, pw*0.40, rightW, visibleRows, goodItems, r.tradeGoodFocus)

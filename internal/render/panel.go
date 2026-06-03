@@ -384,10 +384,10 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		rowGap := 22.0
 
 		// 2x2 mallar
-		drawResRow(screen, leftCol1, ry, colW, "Tahil", itoa(f.Grain), ColorWhite)
-		drawResRow(screen, leftCol2, ry, colW, "Kereste", itoa(f.Timber), color.RGBA{180, 140, 80, 255})
-		drawResRow(screen, leftCol1, ry+rowGap, colW, "Demir", itoa(f.Iron), color.RGBA{180, 180, 220, 255})
-		drawResRow(screen, leftCol2, ry+rowGap, colW, "Taş", itoa(f.Stone), color.RGBA{170, 170, 170, 255})
+		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), itoa(f.Grain), ColorWhite)
+		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), itoa(f.Timber), color.RGBA{180, 140, 80, 255})
+		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), itoa(f.Iron), color.RGBA{180, 180, 220, 255})
+		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), itoa(f.Stone), color.RGBA{170, 170, 170, 255})
 
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
@@ -399,7 +399,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 			sign = ""
 		}
 		drawResRow(screen, rightCol, ry, colW, "Gelir", sign+itoa(income)+"/tur", incCol)
-		drawResRow(screen, rightCol, ry+rowGap, colW, "Altin", itoa(f.Gold), ColorGold)
+		drawResRow(screen, rightCol, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceGold), itoa(f.Gold), ColorGold)
 	}
 
 	// Askeri kapasite göstergesi

@@ -126,10 +126,14 @@ func TestApplyChoiceUpdatesFactionArmyAndRelations(t *testing.T) {
 
 func TestTickRequiresAndBlocksFlags(t *testing.T) {
 	gs := &state.GameState{
-		Year:     1454,
-		Month:    1,
-		Factions: map[faction.FactionID]*faction.Faction{},
-		Regions:  map[world.RegionID]*world.Region{},
+		Year:  1454,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman", Research: faction.ResearchState{Completed: map[string]bool{}}},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", OwnerID: "ottoman"},
+		},
 		FiredEventIDs: map[string]bool{
 			"flag:capital_rebuild": true,
 		},
@@ -143,17 +147,101 @@ func TestTickRequiresAndBlocksFlags(t *testing.T) {
 			RequiresFlags:   []string{"arsenal_push"},
 		},
 		{
-			ID:              "allowed_event",
-			NameTR:          "Allowed",
-			HistoricalYear:  1454,
-			HistoricalMonth: 1,
-			RequiresFlags:   []string{"capital_rebuild"},
-			BlocksFlags:     []string{"arsenal_push"},
+			ID:                   "allowed_event",
+			NameTR:               "Allowed",
+			HistoricalYear:       1454,
+			HistoricalMonth:      1,
+			RequiresFlags:        []string{"capital_rebuild"},
+			BlocksFlags:          []string{"arsenal_push"},
+			Target:               "specific_faction",
+			AffectedFaction:      "ottoman",
+			RequiresOwnedRegions: []world.RegionID{"constantinople"},
 		},
 	}
 
 	evt := Tick(gs, evts)
 	if evt == nil || evt.ID != "allowed_event" {
 		t.Fatalf("flag koşullarına göre allowed_event bekleniyordu, got=%v", evt)
+	}
+}
+
+func TestTickRequiresTechAndRelationConditions(t *testing.T) {
+	gs := &state.GameState{
+		Year:  1494,
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"aragon":          {ID: "aragon", Research: faction.ResearchState{Completed: map[string]bool{"navigation": true}}},
+			"castile_kingdom": {ID: "castile_kingdom"},
+			"portugal":        {ID: "portugal"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"granada": {ID: "granada", OwnerID: "aragon"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("aragon", "castile_kingdom"): {
+				FactionA: "aragon",
+				FactionB: "castile_kingdom",
+				Score:    22,
+				Stance:   faction.StanceAllied,
+			},
+			faction.RelationKey("aragon", "portugal"): {
+				FactionA: "aragon",
+				FactionB: "portugal",
+				Score:    -60,
+				Stance:   faction.StanceWar,
+			},
+		},
+		FiredEventIDs: map[string]bool{
+			"flag:atlantic_expedition": true,
+			"flag:iberian_market":      true,
+		},
+	}
+	evts := []*Event{
+		{
+			ID:                   "blocked_by_tech",
+			NameTR:               "BlockedByTech",
+			HistoricalYear:       1494,
+			HistoricalMonth:      4,
+			Target:               "specific_faction",
+			AffectedFaction:      "aragon",
+			RequiresFlags:        []string{"atlantic_expedition"},
+			RequiresOwnedRegions: []world.RegionID{"granada"},
+			BlocksTechs:          []string{"navigation"},
+		},
+		{
+			ID:                   "blocked_by_relation",
+			NameTR:               "BlockedByRelation",
+			HistoricalYear:       1494,
+			HistoricalMonth:      4,
+			Target:               "specific_faction",
+			AffectedFaction:      "aragon",
+			RequiresFlags:        []string{"iberian_market"},
+			RequiresOwnedRegions: []world.RegionID{"granada"},
+			RelationRequirements: []RelationRequirement{{
+				FactionID:     "portugal",
+				BlocksStances: []string{string(faction.StanceWar)},
+			}},
+		},
+		{
+			ID:                   "allowed_with_relation_and_tech",
+			NameTR:               "Allowed",
+			HistoricalYear:       1494,
+			HistoricalMonth:      4,
+			Target:               "specific_faction",
+			AffectedFaction:      "aragon",
+			RequiresFlags:        []string{"atlantic_expedition"},
+			RequiresOwnedRegions: []world.RegionID{"granada"},
+			RequiresTechs:        []string{"navigation"},
+			RelationRequirements: []RelationRequirement{{
+				FactionID:    "castile_kingdom",
+				AnyOfStances: []string{string(faction.StancePeace), string(faction.StanceTrade), string(faction.StanceAllied)},
+				MinScore:     10,
+			}},
+		},
+	}
+
+	evt := Tick(gs, evts)
+	if evt == nil || evt.ID != "allowed_with_relation_and_tech" {
+		t.Fatalf("tech ve relation koşullarına göre allowed event bekleniyordu, got=%v", evt)
 	}
 }

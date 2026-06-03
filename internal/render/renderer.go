@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -1138,7 +1139,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 		route.amount += tr.AmountPerTurn
-		candidateGood := goodDisplayName(tr.Good)
+		candidateGood := economy.GoodNameTR(tr.Good)
 		if route.goodName == "" || tr.AmountPerTurn > route.bestFlow {
 			route.goodName = candidateGood
 			route.bestFlow = tr.AmountPerTurn
