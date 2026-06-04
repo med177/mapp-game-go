@@ -7,7 +7,6 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // SaveSlots kayıt seçim ekranında gösterilecek slot listesidir.
@@ -21,17 +20,18 @@ type slotCardLayout struct {
 	H float64
 }
 
+func slotCardsStackRect() gameui.Rect {
+	return centeredStackRect(len(SaveSlots), 480, 88, 14, 0)
+}
+
 func slotCardLayoutAt(i int) slotCardLayout {
-	cardW := 480.0
-	cardH := 88.0
-	gap := 14.0
-	totalH := float64(len(SaveSlots))*cardH + float64(len(SaveSlots)-1)*gap
-	startY := ScreenHeight/2 - totalH/2
+	stack := slotCardsStackRect()
+	rect := stackItemRect(stack, 88, 14, i)
 	return slotCardLayout{
-		X: ScreenWidth/2 - cardW/2,
-		Y: startY + float64(i)*(cardH+gap),
-		W: cardW,
-		H: cardH,
+		X: rect.X,
+		Y: rect.Y,
+		W: rect.W,
+		H: rect.H,
 	}
 }
 
@@ -73,18 +73,11 @@ func buildSlotConfirmButtons(pendingSlot string) (gameui.Button, gameui.Button, 
 // saveMode=true ise kaydetme, false ise yükleme ekranı başlığı gösterilir.
 // pendingDelete dolu ise o slot için onay diyalogu gösterilir.
 func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendingDelete string) {
-	screen.Fill(color.RGBA{6, 8, 14, 255})
-
-	// Üst/alt dekoratif çizgi
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
-	vector.FillRect(screen, 0, float32(ScreenHeight)-3, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
-
 	title := "KAYIT YÜKLE"
 	if saveMode {
-		title = "KAYIT YER"
+		title = "KAYIT ET"
 	}
-	DrawTextCentered(screen, title, ScreenWidth/2, 50, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Bir slot seçin", ScreenWidth/2, 84, FaceSmall, color.RGBA{160, 140, 90, 200})
+	drawUIScreenChrome(screen, color.RGBA{6, 8, 14, 255}, title, "Bir slot seçin")
 	drawBackButton(screen)
 
 	if len(SaveSlots) == 0 {
@@ -118,8 +111,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			bg = color.RGBA{10, 10, 10, 160}
 			borderCol = color.RGBA{35, 30, 20, 150}
 		}
-		vector.FillRect(screen, float32(cx), float32(cy), float32(cardW), float32(cardH), bg, false)
-		vector.StrokeRect(screen, float32(cx), float32(cy), float32(cardW), float32(cardH), 1.5, borderCol, false)
+		drawUICardRect(screen, gameui.Rect{X: cx, Y: cy, W: cardW, H: cardH}, bg, borderCol, 1.5)
 
 		// Sol: slot adı
 		nameCol := ColorGold

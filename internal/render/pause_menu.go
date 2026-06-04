@@ -17,22 +17,43 @@ type pauseMenuItem struct {
 	delta    int
 }
 
+type pauseMenuLayout struct {
+	panelRect  gameui.Rect
+	titleRect  gameui.Rect
+	itemsRect  gameui.Rect
+	footerRect gameui.Rect
+}
+
 func pauseMenuPanelRect(itemCount int) (bx, by, bw, bh float64) {
-	bw = 390
-	bh = float64(itemCount)*64 + 110
-	bx = ScreenWidth/2 - bw/2
-	by = ScreenHeight/2 - bh/2
-	return bx, by, bw, bh
+	r := pauseMenuLayoutForScreen(itemCount).panelRect
+	return r.X, r.Y, r.W, r.H
+}
+
+func pauseMenuLayoutForScreen(itemCount int) pauseMenuLayout {
+	panel := gameui.Rect{
+		X: ScreenWidth/2 - 390/2,
+		Y: ScreenHeight/2 - (float64(itemCount)*64+110)/2,
+		W: 390,
+		H: float64(itemCount)*64 + 110,
+	}
+	box := gameui.BoxFromRect(panel).InsetXY(16, 14)
+	titleRect, box := box.CutTop(38, 16)
+	footerRect, itemsBox := box.CutBottom(18, 0)
+	return pauseMenuLayout{
+		panelRect:  panel,
+		titleRect:  titleRect,
+		itemsRect:  itemsBox.Rect,
+		footerRect: footerRect,
+	}
 }
 
 func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 	items := buildPauseItems(hasSave)
-	bx, by, bw, _ := pauseMenuPanelRect(len(items))
-	startY := by + 68
-	itemH := 64.0
+	layout := pauseMenuLayoutForScreen(len(items))
+	itemH := layout.itemsRect.H / float64(len(items))
 	buttons := make([]gameui.Button, 0, len(items))
 	for i, item := range items {
-		y := startY + float64(i)*itemH
+		y := layout.itemsRect.Y + float64(i)*itemH
 		label := item.label
 		switch item.action {
 		case ActionToggleMusic:
@@ -40,7 +61,7 @@ func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 		case ActionAdjustMusic:
 			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
 		}
-		btn := gameui.NewButton(bx+16, y-6, bw-32, itemH-12, label)
+		btn := gameui.NewButton(layout.itemsRect.X, y, layout.itemsRect.W, itemH-10, label)
 		btn.Enabled = !item.disabled
 		buttons = append(buttons, btn)
 	}
@@ -62,17 +83,16 @@ func buildPauseItems(hasSave bool) []pauseMenuItem {
 // DrawPauseMenu oyun içi duraklama menüsünü yarı saydam overlay üzerine çizer.
 func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, settings Settings) {
 	// Karartma katmanı
-	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
-	overlay.Fill(color.RGBA{0, 0, 0, 170})
-	screen.DrawImage(overlay, nil)
+	drawUIOverlay(screen, color.RGBA{0, 0, 0, 170})
 
 	items := buildPauseItems(hasSave)
+	layout := pauseMenuLayoutForScreen(len(items))
 
-	bx, by, bw, bh := pauseMenuPanelRect(len(items))
+	bx, by, bw, bh := layout.panelRect.X, layout.panelRect.Y, layout.panelRect.W, layout.panelRect.H
 	fbx, fby, fbw, fbh := float32(bx), float32(by), float32(bw), float32(bh)
 
 	// Panel arka planı — animasyonlu hafif titreşen kenarlık
-	vector.FillRect(screen, fbx, fby, fbw, fbh, color.RGBA{10, 8, 5, 240}, false)
+	drawUIPanelRect(screen, layout.panelRect, color.RGBA{10, 8, 5, 240}, color.RGBA{10, 8, 5, 240}, 0)
 	phase := float64(tick) / 90.0
 	glow := uint8(140 + uint8(20*math.Abs(math.Sin(phase))))
 	vector.StrokeRect(screen, fbx, fby, fbw, fbh, 2, color.RGBA{glow, glow - 30, 30, 255}, false)
@@ -84,26 +104,25 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 	// Başlık
 	titleW := MeasureText("DURAKLANDI", FaceLarge)
 	DrawText(screen, "DURAKLANDI",
-		bx+bw/2-titleW/2,
-		by+18,
+		layout.titleRect.X+layout.titleRect.W/2-titleW/2,
+		layout.titleRect.Y,
 		FaceLarge, color.RGBA{220, 190, 80, 255})
 
 	sepY := fby + 52
 	vector.StrokeLine(screen, fbx+20, sepY, fbx+fbw-20, sepY, 1, color.RGBA{100, 80, 35, 180}, false)
 
 	// Menü maddeleri
-	startY := by + 68
-	itemH := 64.0
+	itemH := layout.itemsRect.H / float64(len(items))
 	buttons := buildPauseMenuButtons(hasSave, settings)
 
 	for i, item := range items {
-		y := startY + float64(i)*itemH
+		y := layout.itemsRect.Y + float64(i)*itemH
 		isSelected := i == cursor
 
 		if isSelected && !item.disabled {
-			vector.FillRect(screen, fbx+16, float32(y)-6, fbw-32, float32(itemH)-12,
+			vector.FillRect(screen, float32(layout.itemsRect.X), float32(y), float32(layout.itemsRect.W), float32(itemH)-10,
 				color.RGBA{45, 35, 12, 200}, false)
-			vector.StrokeRect(screen, fbx+16, float32(y)-6, fbw-32, float32(itemH)-12,
+			vector.StrokeRect(screen, float32(layout.itemsRect.X), float32(y), float32(layout.itemsRect.W), float32(itemH)-10,
 				1, color.RGBA{180, 145, 50, 200}, false)
 		}
 
@@ -115,12 +134,11 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 		label := buttons[i].Label
 		tw := MeasureText(prefix+label, FaceLarge)
 		DrawText(screen, prefix+label,
-			bx+bw/2-tw/2,
+			layout.itemsRect.X+layout.itemsRect.W/2-tw/2,
 			y+8, FaceLarge, col)
 	}
 
-	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et",
-		ScreenWidth/2, by+bh-22, FaceSmall, color.RGBA{80, 80, 80, 200})
+	drawUIMutedText(screen, layout.footerRect.X+layout.footerRect.W/2-MeasureText("Menü seçeneğini tıklayarak devam et", FaceSmall)/2, layout.footerRect.Y, "Menü seçeneğini tıklayarak devam et")
 }
 
 // handlePauseMenuInput duraklama menüsü girişini işler.

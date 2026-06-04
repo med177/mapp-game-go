@@ -36,6 +36,32 @@ const (
 	techNodeHeight  = 60.0
 )
 
+type techPanelLayout struct {
+	panelRect  gameui.Rect
+	titleRect  gameui.Rect
+	statusRect gameui.Rect
+	hintRect   gameui.Rect
+	closeRect  gameui.Rect
+	treeRect   gameui.Rect
+}
+
+func techPanelLayoutForScreen() techPanelLayout {
+	panel := gameui.Rect{X: 0, Y: 0, W: ScreenWidth, H: ScreenHeight}
+	box := gameui.BoxFromRect(panel).InsetXY(20, 20)
+	headerRect, box := box.CutTop(28, 12)
+	statusRect, box := box.CutTop(24, 12)
+	hintRect, treeBox := box.CutBottom(20, 0)
+	closeRect, titleRect := gameui.BoxFromRect(headerRect).CutRight(30, 12)
+	return techPanelLayout{
+		panelRect:  panel,
+		titleRect:  titleRect.Rect,
+		statusRect: statusRect,
+		hintRect:   hintRect,
+		closeRect:  closeRect,
+		treeRect:   treeBox.Rect,
+	}
+}
+
 func buildTechCloseButton() gameui.Button {
 	x, y, w, h := techCloseRect()
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
@@ -57,8 +83,9 @@ func techNodeButton(node techNode) gameui.Button {
 
 func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) [][]techNode {
 	levels := r.buildTechTree(f)
-	treeStartY := techTreeStartY(float64(len(levels)), techLevelHeight)
-	layoutTechTree(levels, float64(ScreenWidth), techNodeWidth, techNodeHeight, treeStartY, techLevelHeight)
+	layout := techPanelLayoutForScreen()
+	treeStartY := techTreeStartY(layout.treeRect, float64(len(levels)), techLevelHeight)
+	layoutTechTree(levels, layout.treeRect, techNodeWidth, techNodeHeight, treeStartY, techLevelHeight)
 	return levels
 }
 
@@ -116,11 +143,11 @@ func (r *Renderer) getTechLevel(t *tech.Technology, allTechs map[string]*tech.Te
 	return maxReqLevel + 1
 }
 
-func layoutTechTree(levels [][]techNode, screenWidth, nodeWidth, nodeHeight, treeStartY, levelHeight float64) {
+func layoutTechTree(levels [][]techNode, bounds gameui.Rect, nodeWidth, nodeHeight, treeStartY, levelHeight float64) {
 	for levelIdx, levelNodes := range levels {
 		levelY := treeStartY + float64(levelIdx)*levelHeight
 		levelWidth := float64(len(levelNodes)) * nodeWidth
-		startX := (screenWidth - levelWidth) / 2
+		startX := bounds.X + (bounds.W-levelWidth)/2
 		for nodeIdx := range levelNodes {
 			levels[levelIdx][nodeIdx].x = startX + float64(nodeIdx)*nodeWidth + nodeWidth/2
 			levels[levelIdx][nodeIdx].y = levelY + nodeHeight/2
@@ -128,11 +155,11 @@ func layoutTechTree(levels [][]techNode, screenWidth, nodeWidth, nodeHeight, tre
 	}
 }
 
-func techTreeStartY(levelCount, levelHeight float64) float64 {
+func techTreeStartY(bounds gameui.Rect, levelCount, levelHeight float64) float64 {
 	totalHeight := levelCount * levelHeight
-	centeredY := (float64(ScreenHeight) - totalHeight) / 2
-	if centeredY < 80.0 {
-		return 80.0
+	centeredY := bounds.Y + (bounds.H-totalHeight)/2
+	if centeredY < bounds.Y {
+		return bounds.Y
 	}
 	return centeredY
 }
@@ -147,27 +174,24 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		return
 	}
 
-	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
-	overlay.Fill(color.RGBA{8, 6, 4, 220})
-	screen.DrawImage(overlay, nil)
+	layout := techPanelLayoutForScreen()
 
-	px, py := float32(0), float32(0)
-	pw, ph := float32(ScreenWidth), float32(ScreenHeight)
+	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
-	vector.FillRect(screen, px, py, pw, ph, color.RGBA{20, 20, 40, 230}, false)
-	vector.FillRect(screen, px, py, pw, 2, color.RGBA{180, 150, 60, 255}, false)
+	drawUIPanelRect(screen, layout.panelRect, color.RGBA{20, 20, 40, 230}, color.RGBA{20, 20, 40, 230}, 0)
+	drawUIPanelTopBar(screen, layout.panelRect, 2, color.RGBA{180, 150, 60, 255})
 	drawTechCloseButton(screen)
 
-	DrawTextCentered(screen, "── Teknoloji Ağacı ──", ScreenWidth/2, 24, FaceLarge, ColorYellow)
+	drawUIPanelTitle(screen, layout.titleRect, "── Teknoloji Ağacı ──")
 
-	activeY := float64(py) + 50
+	activeY := layout.statusRect.Y
 	if f.Research.ActiveID != "" {
 		if t, ok := r.gs.TechTypes[f.Research.ActiveID]; ok {
 			msg := fmt.Sprintf("Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
-			DrawText(screen, msg, float64(px)+20, activeY, FaceMed, color.RGBA{100, 220, 100, 255})
+			DrawText(screen, msg, layout.statusRect.X, activeY, FaceMed, color.RGBA{100, 220, 100, 255})
 		}
 	} else {
-		DrawText(screen, "Aktif araştırma yok", float64(px)+20, activeY, FaceSmall, ColorGray)
+		drawUIMutedText(screen, layout.statusRect.X, activeY, "Aktif araştırma yok")
 	}
 
 	levels := r.buildLaidOutTechTree(f)
@@ -256,13 +280,13 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		}
 	}
 
-	hintY := float64(ph) - 18
-	DrawText(screen, "Teknoloji düğümlerine tıklayarak araştır   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold),
-		float64(px)+20, hintY, FaceSmall, color.RGBA{160, 160, 100, 255})
+	hintY := layout.hintRect.Y
+	drawUIMutedText(screen, layout.hintRect.X, hintY, "Teknoloji düğümlerine tıklayarak araştır   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold))
 }
 
 func techCloseRect() (x, y, w, h float32) {
-	return float32(ScreenWidth) - 58, 20, 30, 26
+	r := techPanelLayoutForScreen().closeRect
+	return float32(r.X), float32(r.Y), float32(r.W), float32(r.H)
 }
 
 func drawTechCloseButton(screen *ebiten.Image) {

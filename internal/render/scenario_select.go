@@ -8,7 +8,6 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // ScenarioList senaryo seçim ekranında gösterilecek senaryolar.
@@ -19,44 +18,34 @@ func buildScenarioCardButtons(scenarios []*scenario.Scenario) []gameui.Button {
 	cardW := 560.0
 	cardH := 130.0
 	padY := 16.0
-	totalH := float64(len(scenarios))*(cardH+padY) - padY
-	startY := ScreenHeight/2 - totalH/2 + 10
-	startX := ScreenWidth/2 - cardW/2
+	stack := centeredStackRect(len(scenarios), cardW, cardH, padY, 20)
 	buttons := make([]gameui.Button, 0, len(scenarios))
 	for i, sc := range scenarios {
-		y := startY + float64(i)*(cardH+padY)
-		buttons = append(buttons, gameui.NewButton(startX, y, cardW, cardH, sc.Name))
+		r := stackItemRect(stack, cardH, padY, i)
+		buttons = append(buttons, gameui.NewButton(r.X, r.Y, r.W, r.H, sc.Name))
 	}
 	return buttons
 }
 
 // DrawScenarioSelect senaryo seçim ekranını çizer.
 func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cursor int) {
-	screen.Fill(color.RGBA{6, 8, 14, 255})
-
-	// Üst dekoratif çizgi
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
-
-	titleY := 40.0
+	drawUIScreenChrome(screen, color.RGBA{6, 8, 14, 255}, "MAPP — Senaryo Seç", "Senaryo kartını seçmek için tıkla")
 	drawBackButton(screen)
-	DrawTextCentered(screen, "MAPP — Senaryo Seç", ScreenWidth/2, titleY, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Senaryo kartını seçmek için tıkla", ScreenWidth/2, titleY+30, FaceSmall, ColorGray)
 
 	if len(scenarios) == 0 {
 		DrawTextCentered(screen, "Senaryo bulunamadı!", ScreenWidth/2, ScreenHeight/2, FaceLarge, ColorRed)
 		return
 	}
 
-	cardW := float32(560)
-	cardH := float32(130)
-	padY := float32(16)
-	totalH := float32(len(scenarios))*(cardH+padY) - padY
-	startY := float32(ScreenHeight)/2 - totalH/2 + 10
-	startX := float32(ScreenWidth)/2 - cardW/2
+	cardW := 560.0
+	cardH := 130.0
+	padY := 16.0
+	stack := centeredStackRect(len(scenarios), cardW, cardH, padY, 20)
 
 	for i, sc := range scenarios {
-		x := startX
-		y := startY + float32(i)*(cardH+padY)
+		rect := stackItemRect(stack, cardH, padY, i)
+		x := float32(rect.X)
+		y := float32(rect.Y)
 		isSelected := i == cursor
 
 		bgCol := color.RGBA{22, 18, 12, 220}
@@ -66,8 +55,7 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 			borderCol = color.RGBA{220, 180, 60, 255}
 		}
 
-		vector.FillRect(screen, x, y, cardW, cardH, bgCol, false)
-		vector.StrokeRect(screen, x, y, cardW, cardH, 1.5, borderCol, false)
+		drawUICardRect(screen, rect, bgCol, borderCol, 1.5)
 
 		// Seçim oku
 		prefix := "  "
@@ -95,8 +83,6 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 			DrawText(screen, line, float64(x)+18, float64(y)+68+float64(j)*18, FaceSmall, color.RGBA{140, 125, 90, 180})
 		}
 	}
-
-	vector.FillRect(screen, 0, float32(ScreenHeight)-3, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
 }
 
 func monthName(m int) string {

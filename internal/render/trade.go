@@ -170,15 +170,14 @@ func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, foc
 	px, py, pw, ph := float32(layout.panelRect.X), float32(layout.panelRect.Y), float32(layout.panelRect.W), float32(layout.panelRect.H)
 
 	// Arka plan overlay
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{8, 6, 4, 200}, false)
+	drawUIOverlay(screen, color.RGBA{8, 6, 4, 200})
 
 	// Panel çerçevesi
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
+	drawUIPanelRect(screen, layout.panelRect, panelBg, panelBorder, 1)
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
 
 	// Başlık
-	DrawTextCentered(screen, "── Ticaret ──", layout.titleRect.X+layout.titleRect.W/2, layout.titleRect.Y+2, FaceLarge, ColorYellow)
+	drawUIPanelTitle(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y + 2, W: layout.titleRect.W, H: layout.titleRect.H}, "── Ticaret ──")
 
 	// Kapatma butonu
 	closeBtn := buildTradeCloseButton()
@@ -279,7 +278,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 	}
 	drawTradeListControls(screen, layout, listFilter, listSort)
 
-	DrawText(screen, "Hedef Fraksiyon:", layout.leftTitleRect.X, layout.leftTitleRect.Y+2, FaceSmall, ColorGold)
+	drawUISectionLabel(screen, layout.leftTitleRect.X, layout.leftTitleRect.Y+2, "Hedef Fraksiyon:")
 
 	visibleRows := int(layout.listH / 28)
 	if visibleRows < 1 {
@@ -302,7 +301,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 	// Sağ sütun: mal seçimi
 	rightX := float32(layout.rightTitleRect.X)
 	rightW := float32(layout.rightListRect.W)
-	DrawText(screen, "Mal Seçimi:", layout.rightTitleRect.X, layout.rightTitleRect.Y+2, FaceSmall, ColorGold)
+	drawUISectionLabel(screen, layout.rightTitleRect.X, layout.rightTitleRect.Y+2, "Mal Seçimi:")
 
 	goods := tradeSelectableGoods()
 
@@ -332,12 +331,12 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 			gameui.DrawListView(screen, goodsList, tradeListViewStyle(), renderSmallText)
 		}
 	} else {
-		DrawText(screen, "Önce sol listeden bir hedef fraksiyon seçin.", float64(rightX)+6, layout.rightListRect.Y+10, FaceSmall, ColorGray)
+		drawUIMutedText(screen, float64(rightX)+6, layout.rightListRect.Y+10, "Önce sol listeden bir hedef fraksiyon seçin.")
 	}
 
 	if len(factions) > visibleRows {
 		info := "Partnerler: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
-		DrawText(screen, info, layout.leftListRect.X, layout.leftListRect.Y+layout.leftListRect.H+10, FaceSmall, ColorGray)
+		drawUIMutedText(screen, layout.leftListRect.X, layout.leftListRect.Y+layout.leftListRect.H+10, info)
 	}
 
 	// Manuel al/sat butonları (tek seferlik pazar işlemi)
@@ -360,12 +359,15 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 		maxSell := tradeMaxSellAmount(playerF, target, good, price)
 		totalGold := amount * price
 
-		line := "Seçili: " + economy.GoodNameTR(good) + " | Hedef: " + target.NameTR
-		DrawText(screen, line, float64(cardX)+12, float64(cardY)+16, FaceSmall, color.RGBA{200, 190, 170, 220})
-		line2 := "Miktar: " + itoa(amount) + " | Tutar: " + itoa(totalGold) + " altın"
-		DrawText(screen, line2, float64(cardX)+12, float64(cardY)+40, FaceSmall, color.RGBA{230, 210, 155, 230})
-		line3 := "Al max: " + itoa(maxBuy) + " | Sat max: " + itoa(maxSell)
-		DrawText(screen, line3, float64(cardX)+12, float64(cardY)+64, FaceSmall, color.RGBA{160, 190, 210, 220})
+		drawUIInfoBlock(screen, float64(cardX)+12, float64(cardY)+16, []string{
+			"Seçili: " + economy.GoodNameTR(good) + " | Hedef: " + target.NameTR,
+			"Miktar: " + itoa(amount) + " | Tutar: " + itoa(totalGold) + " altın",
+			"Al max: " + itoa(maxBuy) + " | Sat max: " + itoa(maxSell),
+		}, []color.Color{
+			color.RGBA{200, 190, 170, 220},
+			color.RGBA{230, 210, 155, 230},
+			color.RGBA{160, 190, 210, 220},
+		})
 	}
 }
 
@@ -694,11 +696,11 @@ func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[facti
 }
 
 func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, listFilter TradeListFilter, listSort TradeListSort) {
-	DrawText(screen, "Filtre:", layout.filterLabelRect.X, layout.filterLabelRect.Y+12, FaceSmall, ColorGold)
+	drawUISectionLabel(screen, layout.filterLabelRect.X, layout.filterLabelRect.Y+12, "Filtre:")
 	for _, btn := range buildTradeFilterButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listFilter) == btn.Value, color.RGBA{70, 62, 36, 235})
 	}
-	DrawText(screen, "Sıra:", layout.sortLabelRect.X, layout.sortLabelRect.Y+12, FaceSmall, ColorGold)
+	drawUISectionLabel(screen, layout.sortLabelRect.X, layout.sortLabelRect.Y+12, "Sıra:")
 	for _, btn := range buildTradeSortButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listSort) == btn.Value, color.RGBA{52, 70, 82, 235})
 	}

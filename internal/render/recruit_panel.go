@@ -300,21 +300,19 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	py := recruitPanelY()
 	pw := recruitPanelW(slots)
 	ph := float32(recruitPanelH)
+	panelRect := gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}
 
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelFrame(screen, panelRect, panelBg, panelBorder, 1.5, 3)
 	drawRecruitPanelCloseButton(screen, px, py, pw)
 
-	titleW := MeasureText("BIRIM OLUSTUR", FaceSmall)
-	DrawText(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2-titleW/2, float64(py)+8, FaceSmall, color.RGBA{200, 170, 90, 220})
+	DrawTextCentered(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2, float64(py)+8, FaceSmall, ColorGold)
 	limit := recruitRegionProductionLimit(region)
 	queuedTotal := queuedUnitTotal(gs, rid)
 	infoStr := fmt.Sprintf("Tur limiti: %d  |  Sirada: %d", limit, queuedTotal)
 	infoW := MeasureText(infoStr, FaceSmall)
-	DrawText(screen, infoStr, float64(px)+float64(pw)/2-infoW/2, float64(py)+24, FaceSmall, color.RGBA{145, 132, 98, 220})
+	drawUIMutedText(screen, float64(px)+float64(pw)/2-infoW/2, float64(py)+24, infoStr)
 	sepY := py + recruitHeaderH - 2
-	vector.StrokeLine(screen, px+12, sepY, px+pw-12, sepY, 1, panelBorder, false)
+	drawUISeparator(screen, px+12, sepY, px+pw-12, 1, panelBorder)
 
 	barracksLevel, portLevel := 0, 0
 	for _, bid := range region.Buildings {
@@ -417,8 +415,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		slotBg = color.RGBA{255, 255, 255, 245}
 		borderCol = color.RGBA{145, 145, 145, 225}
 	}
-	vector.FillRect(screen, sx, sy, cardW, cardH, slotBg, false)
-	vector.StrokeRect(screen, sx, sy, cardW, cardH, 1, borderCol, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(sx), Y: float64(sy), W: float64(cardW), H: float64(cardH)}, slotBg, borderCol, 1)
 
 	spriteH := float32(76)
 	if armySheet != nil {
@@ -572,9 +569,9 @@ func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueIt
 func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, slots int, x, y, w, h float32) {
 	mx, my := ebiten.CursorPosition()
 	fmx, fmy := float64(mx), float64(my)
-	vector.FillRect(screen, x+8, y, w-16, h, color.RGBA{14, 12, 10, 220}, false)
-	vector.StrokeRect(screen, x+8, y, w-16, h, 1, color.RGBA{88, 72, 44, 220}, false)
-	DrawText(screen, "EGITIM SIRASI", float64(x)+16, float64(y)+6, FaceSmall, color.RGBA{190, 165, 100, 230})
+	queueRect := gameui.Rect{X: float64(x + 8), Y: float64(y), W: float64(w - 16), H: float64(h)}
+	drawUICardRect(screen, queueRect, color.RGBA{14, 12, 10, 220}, color.RGBA{88, 72, 44, 220}, 1)
+	drawUISectionLabel(screen, float64(x)+16, float64(y)+6, "EGITIM SIRASI")
 	items := recruitQueueItems(gs, rid)
 	cardW, cardH, gap := recruitCardMetrics(slots, w)
 	cy := y + 26
@@ -588,8 +585,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 		col := i % recruitCardsPerRow
 		startX := x + recruitPanelPad + float32(col)*(cardW+gap)
 		cardY := cy + float32(row)*(cardH+gap)
-		vector.FillRect(screen, startX, cardY, cardW, cardH, color.RGBA{252, 252, 252, 242}, false)
-		vector.StrokeRect(screen, startX, cardY, cardW, cardH, 1, color.RGBA{160, 160, 160, 225}, false)
+		drawUICardRect(screen, gameui.Rect{X: float64(startX), Y: float64(cardY), W: float64(cardW), H: float64(cardH)}, color.RGBA{252, 252, 252, 242}, color.RGBA{160, 160, 160, 225}, 1)
 		if armySheet != nil {
 			r := unitSpriteRect(it.uid, armySheet)
 			if !r.Empty() {

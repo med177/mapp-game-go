@@ -349,10 +349,10 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	if bw > float32(ScreenWidth) {
 		bw = float32(ScreenWidth)
 	}
+	statusRect := gameui.Rect{X: 0, Y: float64(by), W: float64(bw), H: float64(topStatusH)}
 
-	vector.FillRect(screen, 0, by, bw, topStatusH, panelBg, false)
-	vector.FillRect(screen, 0, by, bw, 3, panelBorder, false)
-	vector.StrokeLine(screen, 0, by+topStatusH, bw, by+topStatusH, 1.5, panelBorder, false)
+	drawUIPanelFrame(screen, statusRect, panelBg, panelBorder, 1.5, 3)
+	drawUISeparator(screen, 0, by+topStatusH, bw, 1.5, panelBorder)
 	vector.StrokeLine(screen, bw, by+4, bw, by+topStatusH, 1, color.RGBA{80, 65, 35, 120}, false)
 
 	f, hasPlayer := gs.Factions[gs.PlayerFactionID]
@@ -418,9 +418,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 	// Alt-orta: aksiyon HUD'u
 	hudX, hudY, hudW, hudH := bottomActionHudRect()
-	vector.FillRect(screen, hudX, hudY, hudW, hudH, panelBg, false)
-	drawPanelBorder(screen, hudX, hudY, hudW, hudH)
-	vector.FillRect(screen, hudX, hudY, hudW, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(hudX), Y: float64(hudY), W: float64(hudW), H: float64(hudH)}, panelBg, panelBorder, 1.5, 3)
 
 	rects := BottomButtonRects()
 	active := [4]bool{showRecruit, showDiplomacy, showTech, false}
@@ -462,8 +460,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 	x, y, w, h := mapModeHudRect()
-	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 14, 18, 220}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1.2, panelBorder, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{14, 14, 18, 220}, panelBorder, 1.2)
 	buttons := buildMapModeButtons()
 	for i, btn := range buttons {
 		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
@@ -481,8 +478,7 @@ func drawMusicHud(screen *ebiten.Image) {
 		return
 	}
 	x, y, w, h := musicHudRect()
-	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 12, 9, 220}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{14, 12, 9, 220}, panelBorder, 1)
 
 	track := status.Track
 	if track == "" {
@@ -509,8 +505,7 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 	}
 
 	x, y, w, h := turnTechHudRect()
-	vector.FillRect(screen, x, y, w, h, color.RGBA{14, 12, 9, 220}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{14, 12, 9, 220}, panelBorder, 1)
 
 	phaseStr := trimTextToWidth(phaseLabel(gs.Phase), FaceSmall, float64(w)-20)
 	DrawText(screen, phaseStr, float64(x)+10, float64(y)+8, FaceSmall, ColorGray)
@@ -529,9 +524,7 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 
 func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode) {
 	x, y, w, h := topDateHudRect()
-	vector.FillRect(screen, x, y, w, h, panelBg, false)
-	drawPanelBorder(screen, x, y, w, h)
-	vector.FillRect(screen, x, y, w, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, panelBg, panelBorder, 1.5, 3)
 
 	months := [...]string{"", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
 		"Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"}
@@ -558,9 +551,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 	ey := evLogY()
 	eh := eventLogPanelH(collapsed)
 
-	vector.FillRect(screen, ex, ey, evLogW, eh, panelBg, false)
-	drawPanelBorder(screen, ex, ey, evLogW, eh)
-	vector.FillRect(screen, ex, ey, evLogW, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(ex), Y: float64(ey), W: float64(evLogW), H: float64(eh)}, panelBg, panelBorder, 1.5, 3)
 
 	titleW := MeasureText("Olay Mesajları", FaceMed)
 	DrawText(screen, "Olay Mesajları", float64(ex)+12, float64(ey)+8, FaceMed,
@@ -821,7 +812,7 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
 	px, py, pw, ph := eventDetailPopupRect()
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelTopBar(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, 3, panelBorder)
 
 	DrawText(screen, "Olay Detayı", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
 
@@ -851,7 +842,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
 	px, py, pw, ph := eventDetailPopupRect()
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelTopBar(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, 3, panelBorder)
 
 	DrawText(screen, "Event Kodex", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
 
@@ -1281,9 +1272,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	pw := infoPanelW
 	ph := infoPanelH
 
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
 	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
@@ -1330,7 +1319,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += 16
 
 	sepW := pw - float32(panelPad*2)
-	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
 	// Kaynaklar — iki sütun
@@ -1420,7 +1409,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	// ── Binalar bölümü ────────────────────────────────────────────────
 	ly += 4
-	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 6
 
 	bldTitleW := MeasureText("BİNALAR", FaceSmall)
@@ -1455,8 +1444,7 @@ func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, owner
 			btnCol.A = 110
 			txtCol = ColorGray
 		}
-		vector.FillRect(screen, x, y, w, h, btnCol, false)
-		vector.StrokeRect(screen, x, y, w, h, 1, panelBorder, false)
+		drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, btnCol, panelBorder, 1)
 		label := diplomacy.ActionLabelTR(action)
 		tw := MeasureText(label, FaceSmall)
 		DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
@@ -1537,9 +1525,7 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	pw := infoPanelW
 	ph := float32(130)
 
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
 	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
@@ -1917,18 +1903,11 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 }
 
 func drawTopStatusCard(screen *ebiten.Image, x, y, w, h float32) {
-	vector.FillRect(screen, x, y, w, h, color.RGBA{18, 16, 12, 150}, false)
-	vector.FillRect(screen, x, y, w, 1, color.RGBA{170, 135, 60, 80}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{95, 78, 42, 115}, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{18, 16, 12, 150}, color.RGBA{95, 78, 42, 115}, 1, 1)
 }
 
 func drawTopProgressBar(screen *ebiten.Image, x, y, w, h float32, fill float64, col color.Color) {
-	fill = clampF(fill)
-	vector.FillRect(screen, x, y, w, h, color.RGBA{42, 42, 40, 210}, false)
-	if fill > 0 {
-		vector.FillRect(screen, x, y, float32(float64(w)*fill), h, col, false)
-	}
-	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{120, 100, 55, 150}, false)
+	drawUIProgressBar(screen, x, y, w, h, fill, color.RGBA{42, 42, 40, 210}, color.RGBA{120, 100, 55, 150}, col, 1)
 }
 
 func drawVictoryAchievedBanner(screen *ebiten.Image, gs *state.GameState) {
@@ -1948,8 +1927,7 @@ func drawVictoryAchievedBanner(screen *ebiten.Image, gs *state.GameState) {
 	h := float32(24)
 	x := float32(ScreenWidth)/2 - w/2
 	y := topStatusH + 6
-	vector.FillRect(screen, x, y, w, h, color.RGBA{42, 34, 16, 220}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{190, 150, 70, 230}, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{42, 34, 16, 220}, color.RGBA{190, 150, 70, 230}, 1)
 	DrawText(screen, msg, float64(x)+12, float64(y)+6, FaceSmall, color.RGBA{245, 215, 140, 255})
 }
 
@@ -2061,8 +2039,7 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			slotBg = color.RGBA{252, 252, 252, 242}
 			borderCol = color.RGBA{165, 165, 165, 220}
 		}
-		vector.FillRect(screen, sx, sy, innerW, spriteH, slotBg, false)
-		vector.StrokeRect(screen, sx, sy, innerW, spriteH, 1, borderCol, false)
+		drawUICardRect(screen, gameui.Rect{X: float64(sx), Y: float64(sy), W: float64(innerW), H: float64(spriteH)}, slotBg, borderCol, 1)
 
 		if buildingSheet != nil {
 			r := buildingSpriteRect(bid, buildingSheet)
@@ -2097,8 +2074,7 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 				lvY := float64(sy) + 4
 				lvW := float32(MeasureText(lvText, FaceSmall) + 8)
 				lvH := float32(14)
-				vector.FillRect(screen, float32(lvX)-3, float32(lvY)-2, lvW, lvH, color.RGBA{18, 14, 8, 225}, false)
-				vector.StrokeRect(screen, float32(lvX)-3, float32(lvY)-2, lvW, lvH, 1, color.RGBA{170, 140, 75, 220}, false)
+				drawUICardRect(screen, gameui.Rect{X: lvX - 3, Y: lvY - 2, W: float64(lvW), H: float64(lvH)}, color.RGBA{18, 14, 8, 225}, color.RGBA{170, 140, 75, 220}, 1)
 				DrawText(screen, lvText, lvX, lvY, FaceSmall, color.RGBA{255, 245, 220, 250})
 			}
 			if isQueued {
@@ -2220,9 +2196,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	pw := infoPanelW
 	ph := infoPanelH
 
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
 	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
@@ -2250,8 +2224,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	imgY := float32(ly)
 	imgW := pw - float32(panelPad*2)
 	imgH := float32(170)
-	vector.FillRect(screen, imgX, imgY, imgW, imgH, panelBg2, false)
-	vector.StrokeRect(screen, imgX, imgY, imgW, imgH, 1, panelBorder, false)
+	drawUICardRect(screen, gameui.Rect{X: float64(imgX), Y: float64(imgY), W: float64(imgW), H: float64(imgH)}, panelBg2, panelBorder, 1)
 	if sImg := loadSettlementImage(region, settlement); sImg != nil {
 		b := sImg.Bounds()
 		sw := float64(b.Dx())
@@ -2272,7 +2245,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	}
 
 	ly += float64(imgH) + 16
-	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+imgW, float32(ly), 1, panelBorder, false)
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
 	ly += 10
 	DrawText(screen, "Tarihçe", lx, ly, FaceMed, ColorYellow)
 	ly += 18
@@ -2592,10 +2565,7 @@ func trimTextToWidth(s string, face *text.GoTextFace, maxWidth float64) string {
 }
 
 func drawBar(screen *ebiten.Image, x, y, w, h float32, fill float64, col color.Color) {
-	vector.FillRect(screen, x, y, w, h, color.RGBA{40, 40, 40, 180}, false)
-	if fill > 0 {
-		vector.FillRect(screen, x, y, float32(float64(w)*fill), h, col, false)
-	}
+	drawUIProgressBar(screen, x, y, w, h, fill, color.RGBA{40, 40, 40, 180}, color.RGBA{}, col, 0)
 }
 
 func satisfactionColor(v int) color.Color {
@@ -2666,9 +2636,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	ph := infoPanelH
 
 	// Panel arka plan
-	vector.FillRect(screen, px, py, pw, ph, panelBg, false)
-	drawPanelBorder(screen, px, py, pw, ph)
-	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
 	drawPanelCloseButton(screen, px, py, pw)
 
 	lx := float64(px) + panelPad
@@ -2699,7 +2667,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	}
 
 	sepW := pw - float32(panelPad*2)
-	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
 	// Komşu bölgeler
@@ -2733,7 +2701,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	}
 
 	ly += 10
-	vector.StrokeLine(screen, float32(lx), float32(ly), float32(lx)+sepW, float32(ly), 1, panelBorder, false)
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
 	// Bilgi

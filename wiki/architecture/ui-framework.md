@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [ui, render, input, widgets]
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 related: [architecture/render-pipeline, architecture/game-loop, architecture/state-management, architecture/ui-screen-guide, dev/progress]
 ---
 
@@ -20,7 +20,8 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 3. `render` katmanında back/menu/mini/tiny buton çizimleri, edit mode dropdown'ları, trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları ortak bileşen yüzeylerine bağlandı.
 4. HUD, recruit paneli, ordu split/merge overlay'i, edit mode inspector/form etkileşim yüzeyleri ve modal aileleri ortak button/panel/overlay geometry builder'larına taşındı.
 5. Ortak button, dropdown, modal, HUD ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
-6. Ana menü ve kayıt/yükleme slot ekranlarında `Tab` focus geçişi `internal/ui.Manager` üzerinden çalışır.
+6. Tam ekran menü/seçim aileleri için ortak screen chrome ve kart compose helper'ları (`internal/render/ui_compose.go`) kullanılmaya başlandı.
+7. Ana menü ve kayıt/yükleme slot ekranlarında `Tab` focus geçişi `internal/ui.Manager` üzerinden çalışır.
 
 ## Hedef Mimari
 1. `internal/ui` altında ortak UI framework
@@ -122,6 +123,9 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 4. Ekran kompozisyonu primitive seviyesinde değil container/layout seviyesinde de ortak olmalı:
    - panel içi başlık/sekme/kolon/aksiyon kartı alanları `Box` cut/split akışıyla kurulmalı
    - sabit `x/y` zinciri yerine slot tabanlı rect türetimi kullanılmalı
+5. Tam ekran seçim ekranlarında da aynı yaklaşım uygulanmalı:
+   - üst/alt chrome bantları, başlık ve alt bilgi satırı ortak helper ile çizilmeli
+   - seçim kartları ortak card rect helper'larıyla çizilmeli
 
 ## Aşama 4: Kademeli Ekran Geçişi (2-3 hafta)
 1. Öncelik 1 (yüksek bug riski):
@@ -210,6 +214,7 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - ScenarioSelect
    - FactionSelect
    - VictorySelect
+   - Settings
 2. HUD içindeki küçük interaktif yüzeyler ortak builder'lara taşındı:
    - alt aksiyon HUD
    - harita modu düğmeleri
@@ -218,12 +223,42 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
    - müzik kontrol düğmeleri
    - event log toggle/kapatma
    - bölge paneli close/tax/hızlı diplomasi mini butonları
+3. Layout'tan sonra screen compose da ortaklaştı:
+   - `drawUIOverlay`
+   - `drawUIPanelRect`
+   - `drawUIPanelTopBar`
+   - `drawUIPanelTitle`
+   - `drawUISectionLabel`
+   - `drawUIMutedText`
+   - `drawUIInfoBlock`
+   - `drawUIScreenChrome`
+   - `drawUICardRect`
+   - `drawUICardAccent`
+4. Aynı compose helper'ları artık HUD/panel ailesine de uygulanıyor:
+   - top status HUD
+   - bottom action HUD
+   - map mode / music / turn-tech mini kartları
+   - event log paneli
+   - region / army / sea / settlement bilgi panelleri
+   - recruit panel ana çerçevesi ve queue bölümü
 3. Genişletilmiş migrasyonla ortak geometri kullanan ek alanlar:
    - recruit panel close / kart / kuyruk iptal hit-test ailesi
    - ordu split/merge overlay aksiyonları
 4. Trade ekranı artık yalnız ortak widget primitive'lerini değil, ortak kutu layout helper'larını da kullanır:
    - header, close button, tab strip, kontrol satırı, iki kolon ve action card `internal/ui/box.go` üstünden slotlara bölünür
    - overlap ve spacing regresyonları için `internal/render/ui_geometry_test.go` geometri smoke testleri çalışır
+5. Diplomasi ve teknoloji ekranları da ortak kutu layout helper'larına taşındı:
+   - diplomasi list/offer panellerinde title, list, action button ve footer alanları `Box` cut/split ile türetilir
+   - teknoloji panelinde header, aktif araştırma satırı, tree body, hint ve close slotları aynı ortak layout akışını kullanır
+6. Pause, save/load, settings ve seçim ekranları da ortak ekran layout helper'larına taşındı:
+   - `internal/render/screen_layouts.go` içindeki centered stack/grid helper'ları senaryo, fraksiyon, zafer, kayıt slotu ve ayar satırı yerleşimlerini tek merkezleme kuralına bağlar
+   - pause menüsü de panel/title/items/footer slotlarına ayrılır; manuel merkezleme formülleri ekran dosyalarından kademeli olarak çıkarılır
+7. Render kompozisyonu da kademeli olarak tekilleştiriliyor:
+   - `internal/render/ui_compose.go` ortak overlay, panel ve üst şerit çizim helper'larını içerir
+   - trade, diplomasi, teknoloji ve pause ekranları artık aynı overlay/panel çizim helper'larını paylaşır; primitive ortaklığına ek olarak ekran chrome'u da ortaklaşır
+8. Metin kompozisyonu da ortak helper'lara taşınmaya başladı:
+   - panel başlığı, section label, muted hint ve kısa bilgi blokları `internal/render/ui_compose.go` içindeki text helper'larıyla çizilir
+   - trade/diplomasi/teknoloji/pause ekranlarında serbest `DrawText` çağrıları kademeli azaltılır; ekran bazlı typography drift riski düşer
    - edit mode inspector/form tab, aksiyon ve form hit-test ailesi
    - genel onay, savaş ilan onayı, event detail ve historical event modal yüzeyleri
    - oyuncuya gelen diplomasi teklif diyaloğu

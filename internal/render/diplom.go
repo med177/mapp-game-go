@@ -45,6 +45,24 @@ type rectF struct {
 	h float64
 }
 
+type diplomacyListLayout struct {
+	panelRect  gameui.Rect
+	titleRect  gameui.Rect
+	listRect   gameui.Rect
+	footerRect gameui.Rect
+}
+
+type diplomacyOfferLayout struct {
+	panelRect    gameui.Rect
+	titleRect    gameui.Rect
+	targetRect   gameui.Rect
+	statusRect   gameui.Rect
+	actionsRect  gameui.Rect
+	selectedRect gameui.Rect
+	backRect     gameui.Rect
+	sendRect     gameui.Rect
+}
+
 func listPageRect() rectF {
 	w := minF(ScreenWidth-80, 1100)
 	h := ScreenHeight - 190
@@ -54,6 +72,42 @@ func listPageRect() rectF {
 	x := (ScreenWidth - w) / 2
 	y := (ScreenHeight - h) / 2
 	return rectF{x: x, y: y, w: w, h: h}
+}
+
+func diplomacyListLayoutForScreen() diplomacyListLayout {
+	r := listPageRect()
+	panel := gameui.Rect{X: r.x, Y: r.y, W: r.w, H: r.h}
+	box := gameui.BoxFromRect(panel).InsetXY(14, 14)
+	titleRect, box := box.CutTop(24, 14)
+	footerRect, box := box.CutBottom(20, 0)
+	return diplomacyListLayout{
+		panelRect:  panel,
+		titleRect:  titleRect,
+		listRect:   box.Rect,
+		footerRect: footerRect,
+	}
+}
+
+func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
+	r := offerPageRect()
+	panel := gameui.Rect{X: r.x, Y: r.y, W: r.w, H: r.h}
+	box := gameui.BoxFromRect(panel).InsetXY(20, 18)
+	headerRect, box := box.CutTop(28, 10)
+	statusRect, box := box.CutTop(66, 18)
+	actionsRect, box := box.CutTop(float64(len(diplomActions))*42+float64(len(diplomActions)-1)*12, 18)
+	selectedRect, box := box.CutTop(20, 18)
+	footerRect, _ := box.CutBottom(40, 0)
+	footerCols := gameui.BoxFromRect(footerRect).SplitColumns(12, 1, 1)
+	return diplomacyOfferLayout{
+		panelRect:    panel,
+		titleRect:    headerRect,
+		targetRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y, W: statusRect.W, H: 24},
+		statusRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y + 24, W: statusRect.W, H: statusRect.H - 24},
+		actionsRect:  actionsRect,
+		selectedRect: selectedRect,
+		backRect:     footerCols[0],
+		sendRect:     footerCols[1],
+	}
 }
 
 func offerPageRect() rectF {
@@ -68,12 +122,12 @@ func offerPageRect() rectF {
 }
 
 func listRowStartY() float64 {
-	return listPageRect().y + 52
+	return diplomacyListLayoutForScreen().listRect.Y
 }
 
 func diplomVisibleRows() int {
-	r := listPageRect()
-	usable := r.h - 70
+	layout := diplomacyListLayoutForScreen()
+	usable := layout.listRect.H
 	rows := int(usable / diplomRowH)
 	if rows < 1 {
 		return 1
@@ -123,31 +177,23 @@ func ensureDiplomFocusVisible(total, focus, scroll int) int {
 }
 
 func diplomActionRect(i int) (x, y, w, h float32) {
-	p := offerPageRect()
-	btnW := float32(p.w - 40)
+	layout := diplomacyOfferLayoutForScreen()
+	btnW := float32(layout.actionsRect.W)
 	btnH := float32(42)
 	gap := float32(12)
-	x = float32(p.x + 20)
-	y = float32(p.y + 190 + float64(i)*(float64(btnH)+float64(gap)))
+	x = float32(layout.actionsRect.X)
+	y = float32(layout.actionsRect.Y + float64(i)*(float64(btnH)+float64(gap)))
 	return x, y, btnW, btnH
 }
 
 func diplomSendRect() (x, y, w, h float32) {
-	p := offerPageRect()
-	w = float32((p.w - 52) / 2)
-	h = 40
-	x = float32(p.x + p.w - 20 - float64(w))
-	y = float32(p.y + p.h - 64)
-	return x, y, w, h
+	r := diplomacyOfferLayoutForScreen().sendRect
+	return float32(r.X), float32(r.Y), float32(r.W), float32(r.H)
 }
 
 func diplomBackRect() (x, y, w, h float32) {
-	p := offerPageRect()
-	w = float32((p.w - 52) / 2)
-	h = 40
-	x = float32(p.x + 20)
-	y = float32(p.y + p.h - 64)
-	return x, y, w, h
+	r := diplomacyOfferLayoutForScreen().backRect
+	return float32(r.X), float32(r.Y), float32(r.W), float32(r.H)
 }
 
 type diplomacyActionButton struct {
@@ -168,8 +214,8 @@ func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.Li
 			items = append(items, f.NameTR)
 		}
 	}
-	r := listPageRect()
-	list := gameui.NewListView(r.x+8, listRowStartY(), r.w-16, float64(diplomVisibleRows())*diplomRowH, diplomRowH, diplomVisibleRows(), items)
+	layout := diplomacyListLayoutForScreen()
+	list := gameui.NewListView(layout.listRect.X, layout.listRect.Y, layout.listRect.W, layout.listRect.H, diplomRowH, diplomVisibleRows(), items)
 	list.Scroll = clampDiplomScroll(len(items), scroll)
 	list.Selected = clampDiplomFocus(focusIdx, 0, len(items)-1)
 	return list
@@ -199,11 +245,9 @@ func buildDiplomacyActionButtons() []diplomacyActionButton {
 
 // DrawDiplomacyPanel diplomasi panelini çizer.
 func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) {
-	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
-	overlay.Fill(color.RGBA{8, 6, 4, 220})
-	screen.DrawImage(overlay, nil)
+	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
-	DrawTextCentered(screen, "── Diplomasi ──", ScreenWidth/2, 24, FaceLarge, ColorYellow)
+	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
 	drawDiplomacyCloseButton(screen)
 
 	factions := sortedFactions(gs)
@@ -223,15 +267,16 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 
 	if target == "" && len(factions) > end-start {
 		info := "Liste: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(factions))
-		DrawText(screen, info, listPageRect().x+8, listPageRect().y+listPageRect().h-18, FaceSmall, ColorGray)
+		layout := diplomacyListLayoutForScreen()
+		drawUIMutedText(screen, layout.footerRect.X, layout.footerRect.Y, info)
 	}
 }
 
 func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int) {
-	r := listPageRect()
-	vector.FillRect(screen, float32(r.x), float32(r.y), float32(r.w), float32(r.h), color.RGBA{18, 16, 12, 210}, false)
-	vector.StrokeRect(screen, float32(r.x), float32(r.y), float32(r.w), float32(r.h), 1, panelBorder, false)
-	DrawText(screen, "Devlet seçin", r.x+14, r.y+14, FaceSmall, ColorGray)
+	layout := diplomacyListLayoutForScreen()
+	r := rectF{x: layout.panelRect.X, y: layout.panelRect.Y, w: layout.panelRect.W, h: layout.panelRect.H}
+	drawUIPanelRect(screen, layout.panelRect, color.RGBA{18, 16, 12, 210}, panelBorder, 1)
+	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+2, "Devlet seçin")
 
 	list := buildDiplomacyListView(gs, focusIdx, start)
 	for row, i := 0, list.Scroll; i < end; i, row = i+1, row+1 {
@@ -270,13 +315,12 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	if f == nil {
 		return
 	}
-	p := offerPageRect()
-	vector.FillRect(screen, float32(p.x), float32(p.y), float32(p.w), float32(p.h), color.RGBA{16, 14, 10, 220}, false)
-	vector.StrokeRect(screen, float32(p.x), float32(p.y), float32(p.w), float32(p.h), 1, panelBorder, false)
+	layout := diplomacyOfferLayoutForScreen()
+	drawUIPanelRect(screen, layout.panelRect, color.RGBA{16, 14, 10, 220}, panelBorder, 1)
 
-	DrawText(screen, "Teklif Paneli", p.x+20, p.y+20, FaceLarge, ColorGold)
+	DrawText(screen, "Teklif Paneli", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
 	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
-	DrawText(screen, "Hedef: "+f.NameTR, p.x+20, p.y+52, FaceMed, ColorWhite)
+	DrawText(screen, "Hedef: "+f.NameTR, layout.targetRect.X, layout.targetRect.Y, FaceMed, ColorWhite)
 
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	relScore := 0
@@ -285,10 +329,15 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		relScore = rel.Score
 		relStance = rel.Stance
 	}
-	DrawText(screen, "Durum: "+stanceDisplayText(relStance), p.x+20, p.y+76, FaceSmall, ColorGray)
-	DrawText(screen, "İlişki Skoru: "+itoa(relScore), p.x+20, p.y+96, FaceSmall, scoreColor(relScore))
+	drawUIInfoBlock(screen, layout.statusRect.X, layout.statusRect.Y, []string{
+		"Durum: " + stanceDisplayText(relStance),
+		"İlişki Skoru: " + itoa(relScore),
+	}, []color.Color{
+		ColorGray,
+		scoreColor(relScore),
+	})
 
-	DrawText(screen, "Teklif Türü", p.x+20, p.y+126, FaceMed, ColorGray)
+	drawUIMutedText(screen, layout.actionsRect.X, layout.actionsRect.Y-24, "Teklif Türü")
 	for _, btn := range buildDiplomacyActionButtons() {
 		i := btn.Index
 		da := diplomActions[i]
@@ -305,11 +354,10 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		DrawText(screen, status, float64(bx)+14, float64(by)+25, FaceSmall, color.RGBA{235, 230, 210, 230})
 	}
 
-	_, lastBY, _, lastBH := diplomActionRect(len(diplomActions) - 1)
 	selected := "Seçili teklif: " + diplomActions[actionFocus].label
 	slw := MeasureText(selected, FaceSmall)
-	selectedY := float64(lastBY + lastBH + 24)
-	DrawText(screen, selected, p.x+p.w/2-slw/2, selectedY, FaceSmall, ColorGray)
+	selectedY := layout.selectedRect.Y
+	drawUIMutedText(screen, layout.selectedRect.X+layout.selectedRect.W/2-slw/2, selectedY, selected)
 
 	drawDiplomacyButton(screen, buildDiplomacySendButton(), color.RGBA{48, 130, 72, 235}, panelBorder, FaceMed, 10)
 }
@@ -436,15 +484,14 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 				return true
 			}
 		}
-		p := offerPageRect()
-		return gameui.Rect{X: p.x, Y: p.y, W: p.w, H: p.h}.Hit(mx, my)
+		p := diplomacyOfferLayoutForScreen().panelRect
+		return p.Hit(mx, my)
 	}
 	list := buildDiplomacyListView(gs, focusIdx, scroll)
 	if list.HitTest(mx, my) {
 		return true
 	}
-	p := listPageRect()
-	return gameui.Rect{X: p.x, Y: p.y, W: p.w, H: p.h}.Hit(mx, my)
+	return diplomacyListLayoutForScreen().panelRect.Hit(mx, my)
 }
 
 func sortedFactions(gs *state.GameState) []faction.FactionID {

@@ -8,22 +8,18 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 func buildVictoryCardButtons(gs *state.GameState) []gameui.Button {
 	opts := gs.AvailableVictories
 	cardW, cardH := 520.0, 100.0
 	gap := 12.0
-	n := float64(len(opts))
-	totalH := n*cardH + (n-1)*gap
 	headerH := 80.0
-	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
-	cx := ScreenWidth/2 - cardW/2
+	stack := centeredStackRect(len(opts), cardW, cardH, gap, headerH)
 	buttons := make([]gameui.Button, 0, len(opts))
 	for i, opt := range opts {
-		y := startY + float64(i)*(cardH+gap)
-		buttons = append(buttons, gameui.NewButton(cx, y, cardW, cardH, opt.Title))
+		r := stackItemRect(stack, cardH, gap, i)
+		buttons = append(buttons, gameui.NewButton(r.X, r.Y, r.W, r.H, opt.Title))
 	}
 	return buttons
 }
@@ -32,20 +28,14 @@ func buildVictoryCardButtons(gs *state.GameState) []gameui.Button {
 // Seçenekler gs.AvailableVictories'ten okunur — hardcode değil.
 func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	opts := gs.AvailableVictories
-	screen.Fill(color.RGBA{10, 10, 20, 255})
+	drawUIScreenChrome(screen, color.RGBA{10, 10, 20, 255}, "ZAFER KOŞULUNU SEÇ", "Nasıl kazanmak istiyorsun?")
 
 	cardW, cardH := 520.0, 100.0
 	gap := 12.0
-	n := float64(len(opts))
-	totalH := n*cardH + (n-1)*gap
 	headerH := 80.0
-
-	startY := (ScreenHeight-(totalH+headerH))/2 + headerH
-	cx := ScreenWidth/2 - cardW/2
+	stack := centeredStackRect(len(opts), cardW, cardH, gap, headerH)
 
 	drawBackButton(screen)
-	DrawTextCentered(screen, "ZAFER KOŞULUNU SEÇ", ScreenWidth/2, startY-headerH+10, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Nasıl kazanmak istiyorsun?", ScreenWidth/2, startY-headerH+38, FaceSmall, ColorGray)
 
 	if len(opts) == 0 {
 		DrawTextCentered(screen, "Bu senaryo için zafer koşulu tanımlanmamış.", ScreenWidth/2, ScreenHeight/2, FaceMed, ColorGray)
@@ -53,7 +43,8 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	}
 
 	for i, opt := range opts {
-		y := startY + float64(i)*(cardH+gap)
+		rect := stackItemRect(stack, cardH, gap, i)
+		y := rect.Y
 
 		bg := color.RGBA{25, 25, 45, 220}
 		border := color.RGBA{80, 80, 120, 200}
@@ -62,23 +53,22 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 			border = color.RGBA{200, 160, 60, 255}
 		}
 
-		vector.FillRect(screen, float32(cx), float32(y), float32(cardW), float32(cardH), bg, false)
-		vector.StrokeRect(screen, float32(cx), float32(y), float32(cardW), float32(cardH), 2, border, false)
+		drawUICardRect(screen, rect, bg, border, 2)
 
 		titleCol := ColorWhite
 		if i == cursor {
 			titleCol = ColorYellow
 		}
-		DrawText(screen, opt.Title, cx+18, y+14, FaceLarge, titleCol)
-		DrawText(screen, opt.Description, cx+18, y+38, FaceMed, ColorGray)
-		DrawText(screen, opt.Detail, cx+18, y+60, FaceSmall, color.RGBA{140, 120, 80, 220})
+		DrawText(screen, opt.Title, rect.X+18, y+14, FaceLarge, titleCol)
+		DrawText(screen, opt.Description, rect.X+18, y+38, FaceMed, ColorGray)
+		DrawText(screen, opt.Detail, rect.X+18, y+60, FaceSmall, color.RGBA{140, 120, 80, 220})
 
 		if i == cursor {
-			DrawText(screen, "← SEÇİLİ", cx+cardW-110, y+14, FaceSmall, ColorGold)
+			DrawText(screen, "← SEÇİLİ", rect.X+rect.W-110, y+14, FaceSmall, ColorGold)
 		}
 	}
 
-	DrawTextCentered(screen, "Zafer koşulunu seçmek için tıkla", ScreenWidth/2, startY+totalH+20, FaceSmall, ColorGray)
+	DrawTextCentered(screen, "Zafer koşulunu seçmek için tıkla", ScreenWidth/2, stack.Y+stack.H+20, FaceSmall, ColorGray)
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.

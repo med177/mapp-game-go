@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"mapp-game-go/internal/audio"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // Settings oyun ayarlarını tutar — renderer aracılığıyla game'e iletilir.
@@ -27,6 +27,14 @@ func DefaultSettings() Settings {
 var difficultyLabels = []string{"", "Kolay", "Normal", "Zor"}
 
 const settingsPath = "saves/settings.json"
+
+func settingsRowsRect(rowCount int) gameui.Rect {
+	return centeredStackRect(rowCount, 500, 56, 4, 40)
+}
+
+func settingsRowRect(i int) gameui.Rect {
+	return stackItemRect(settingsRowsRect(6), 56, 4, i)
+}
 
 // LoadSettings ayarları dosyadan yükler, yoksa varsayılanı döner.
 func LoadSettings() Settings {
@@ -47,10 +55,7 @@ func SaveSettingsToFile(s Settings) {
 
 // DrawSettingsScreen ayarlar ekranını çizer.
 func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
-	screen.Fill(color.RGBA{8, 10, 18, 255})
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
-
-	DrawTextCentered(screen, "[ AYARLAR ]", ScreenWidth/2, 60, FaceLarge, ColorYellow)
+	drawUIScreenChrome(screen, color.RGBA{8, 10, 18, 255}, "[ AYARLAR ]", "Fareyle seç / değiştir")
 
 	type row struct {
 		label string
@@ -65,31 +70,26 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		{"← Geri Dön", ""},
 	}
 
-	rowH := 60.0
-	startY := ScreenHeight/2 - float64(len(rows))*rowH/2
-
 	for i, r := range rows {
-		y := startY + float64(i)*rowH
+		rect := settingsRowRect(i)
+		y := rect.Y
 		isSelected := i == cursor
 
 		if isSelected {
-			bw := float32(500)
-			bx := float32(ScreenWidth/2) - bw/2
-			vector.FillRect(screen, bx, float32(y)-8, bw, float32(rowH)-4, color.RGBA{50, 40, 15, 200}, false)
-			vector.StrokeRect(screen, bx, float32(y)-8, bw, float32(rowH)-4, 1, color.RGBA{200, 160, 60, 200}, false)
+			highlightRect := gameui.Rect{X: rect.X, Y: y - 8, W: rect.W, H: 56}
+			drawUICardRect(screen, highlightRect, color.RGBA{50, 40, 15, 200}, color.RGBA{200, 160, 60, 200}, 1)
 		}
 
 		col := ColorGray
 		if isSelected {
 			col = ColorYellow
 		}
-		DrawText(screen, r.label, ScreenWidth/2-220, y+6, FaceLarge, col)
+		DrawText(screen, r.label, rect.X+30, y+6, FaceLarge, col)
 		if r.value != "" {
-			DrawText(screen, "◄  "+r.value+"  ►", ScreenWidth/2+60, y+6, FaceLarge, ColorGold)
+			DrawText(screen, "◄  "+r.value+"  ►", rect.X+310, y+6, FaceLarge, ColorGold)
 		}
 	}
-
-	DrawTextCentered(screen, "Fareyle seç / değiştir", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
+	drawUIMutedText(screen, ScreenWidth/2-78, ScreenHeight-30, "Sol tık: değiştir  •  ESC: kaydet ve çık")
 }
 
 func boolLabel(b bool) string {
@@ -200,14 +200,11 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 }
 
 func (r *Renderer) settingsHoverIndex(fx, fy float64) int {
-	rowH := 60.0
 	rowCount := 6
-	startY := ScreenHeight/2 - float64(rowCount)*rowH/2
-	bw := 500.0
-	bx := ScreenWidth/2 - bw/2
 	for i := 0; i < rowCount; i++ {
-		y := startY + float64(i)*rowH
-		if fx >= bx && fx <= bx+bw && fy >= y-8 && fy <= y+rowH-4 {
+		rect := settingsRowRect(i)
+		y := rect.Y
+		if fx >= rect.X && fx <= rect.X+rect.W && fy >= y-8 && fy <= y+56 {
 			return i
 		}
 	}

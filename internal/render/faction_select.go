@@ -10,7 +10,6 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
@@ -21,29 +20,25 @@ func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
 	cardH := 110.0
 	padX := 30.0
 	padY := 12.0
-	gridW := cardW*float64(cols) + padX*float64(cols-1)
-	gridH := cardH*float64(rows) + padY*float64(rows-1)
 	headerH := 70.0
-	startX := ScreenWidth/2 - gridW/2
-	startY := ScreenHeight/2 - (gridH+headerH)/2 + headerH
+	grid := centeredGridRect(cols, rows, cardW, cardH, padX, padY, headerH)
 	buttons := make([]gameui.Button, 0, len(factions))
 	for i, fid := range factions {
 		col := i % cols
 		row := i / cols
-		x := startX + float64(col)*(cardW+padX)
-		y := startY + float64(row)*(cardH+padY)
+		r := gridCellRect(grid, cardW, cardH, padX, padY, col, row)
 		label := ""
 		if f := gs.Factions[fid]; f != nil {
 			label = f.NameTR
 		}
-		buttons = append(buttons, gameui.NewButton(x, y, cardW, cardH, label))
+		buttons = append(buttons, gameui.NewButton(r.X, r.Y, r.W, r.H, label))
 	}
 	return buttons
 }
 
 // DrawFactionSelect fraksiyon seçim ekranını çizer.
 func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
-	screen.Fill(color.RGBA{10, 8, 5, 255})
+	drawUIScreenChrome(screen, color.RGBA{10, 8, 5, 255}, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
 
 	factions := selectableFactions(gs)
 	cols := 3
@@ -53,25 +48,18 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	padX := float32(30)
 	padY := float32(12)
 
-	gridW := cardW*float32(cols) + padX*float32(cols-1)
-	gridH := cardH*float32(rows) + padY*float32(rows-1)
-	headerH := float32(70) // başlık + ipucu için alan
-
-	startX := float32(ScreenWidth)/2 - gridW/2
-	startY := float32(ScreenHeight)/2 - (gridH+headerH)/2
+	headerH := 70.0
+	grid := centeredGridRect(cols, rows, float64(cardW), float64(cardH), float64(padX), float64(padY), headerH)
 
 	drawBackButton(screen)
-	DrawTextCentered(screen, "MAPP — Fraksiyon Seç", ScreenWidth/2, float64(startY)+4, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Fraksiyon kartını seçmek için tıkla", ScreenWidth/2, float64(startY)+30, FaceSmall, ColorGray)
-
-	startY += headerH
 
 	for i, fid := range factions {
 		f := gs.Factions[fid]
 		col := i % cols
 		row := i / cols
-		x := startX + float32(col)*(cardW+padX)
-		y := startY + float32(row)*(cardH+padY)
+		cell := gridCellRect(grid, float64(cardW), float64(cardH), float64(padX), float64(padY), col, row)
+		x := float32(cell.X)
+		y := float32(cell.Y)
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		bgCol := color.RGBA{22, 18, 12, 220}
@@ -81,14 +69,10 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 			borderCol = fc
 		}
 
-		vector.FillRect(screen, x, y, cardW, cardH, bgCol, false)
-		vector.StrokeLine(screen, x, y, x+cardW, y, 2, borderCol, false)
-		vector.StrokeLine(screen, x, y+cardH, x+cardW, y+cardH, 2, borderCol, false)
-		vector.StrokeLine(screen, x, y, x, y+cardH, 2, borderCol, false)
-		vector.StrokeLine(screen, x+cardW, y, x+cardW, y+cardH, 2, borderCol, false)
+		drawUICardRect(screen, cell, bgCol, borderCol, 2)
 
 		// Renk şeridi
-		vector.FillRect(screen, x, y, 8, cardH, fc, false)
+		drawUICardAccent(screen, cell, 8, fc)
 
 		// İsim
 		nameCol := ColorWhite
