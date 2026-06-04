@@ -802,6 +802,24 @@ func eventDetailCloseHit(mx, my float64) bool {
 	return buildEventDetailCloseButton().HitTest(mx, my)
 }
 
+func eventCodexPopupRect() (x, y, w, h float32) {
+	layout := buildEventCodexLayout()
+	return float32(layout.panelRect.X), float32(layout.panelRect.Y), float32(layout.panelRect.W), float32(layout.panelRect.H)
+}
+
+func eventCodexPopupHit(mx, my float64) bool {
+	return buildEventCodexModal().Panel.HitTest(mx, my)
+}
+
+func eventCodexCloseRect() (x, y, w, h float32) {
+	btn := buildEventCodexCloseButton()
+	return float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H)
+}
+
+func eventCodexCloseHit(mx, my float64) bool {
+	return buildEventCodexCloseButton().HitTest(mx, my)
+}
+
 func minimapHit(mx, my float64) bool {
 	x, y := minimapX(), minimapY()
 	return mx >= float64(x) && mx <= float64(x+minimapW) && my >= float64(y) && my <= float64(y+minimapH)
@@ -837,16 +855,16 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	}
 }
 
-func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int) {
-	modal := buildEventDetailModal()
+func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int, scroll int) {
+	modal := buildEventCodexModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
-	layout := buildEventDetailLayout()
+	layout := buildEventCodexLayout()
 	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
 
 	DrawText(screen, "Event Kodex", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
-	closeBtn := buildEventDetailCloseButton()
+	closeBtn := buildEventCodexCloseButton()
 	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
 
 	filterButtons := buildEventCodexFilterButtons()
@@ -871,21 +889,40 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	if focus >= len(entries) {
 		focus = len(entries) - 1
 	}
-	for i, entry := range entries {
-		cardX, cardY, cardW, cardH := eventCodexEntryRect(i)
+	if scroll < 0 {
+		scroll = 0
+	}
+	if maxScroll := eventCodexMaxScroll(len(entries)); scroll > maxScroll {
+		scroll = maxScroll
+	}
+	visibleCount := eventCodexVisibleCount()
+	start := scroll
+	end := min(len(entries), start+visibleCount)
+	for i := start; i < end; i++ {
+		entry := entries[i]
+		cardX, cardY, cardW, cardH := eventCodexEntryRect(i - start)
 		bg := color.RGBA{28, 22, 16, 225}
 		border := color.RGBA{90, 72, 38, 210}
+		accent := color.RGBA{140, 120, 72, 220}
 		if i == focus {
-			bg = color.RGBA{70, 52, 28, 240}
+			bg = color.RGBA{74, 55, 28, 240}
 			border = color.RGBA{226, 182, 92, 255}
+			accent = border
 		}
 		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, bg)
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, border, false)
-		title := trimTextToWidth(codexStatusIcon(entry.Status)+" "+entry.Title, FaceSmall, float64(cardW)-16)
-		DrawText(screen, title, float64(cardX)+8, float64(cardY)+8, FaceSmall, eventCodexLineColor(codexStatusIcon(entry.Status)))
-		meta := trimTextToWidth(entry.DateLabel+" • "+entry.Status, FaceSmall, float64(cardW)-16)
-		DrawText(screen, meta, float64(cardX)+8, float64(cardY)+24, FaceSmall, ColorGray)
+		vector.FillRect(screen, cardX, cardY, 4, cardH, accent, false)
+		title := trimTextToWidth(codexStatusIcon(entry.Status)+" "+entry.Title, FaceSmall, float64(cardW)-24)
+		DrawText(screen, title, float64(cardX)+12, float64(cardY)+8, FaceSmall, eventCodexLineColor(codexStatusIcon(entry.Status)))
+		meta := entry.DateLabel + " • " + entry.Status
+		if entry.MonthsUntil > 0 {
+			meta += fmt.Sprintf(" • %d ay", entry.MonthsUntil)
+		}
+		DrawText(screen, trimTextToWidth(meta, FaceSmall, float64(cardW)-24), float64(cardX)+12, float64(cardY)+24, FaceSmall, ColorGray)
+		summary := trimTextToWidth(entry.Summary, FaceSmall, float64(cardW)-24)
+		DrawText(screen, summary, float64(cardX)+12, float64(cardY)+42, FaceSmall, color.RGBA{196, 184, 160, 230})
 	}
+	drawEventCodexScrollbar(screen, len(entries), visibleCount, scroll)
 
 	selected := entries[focus]
 	DrawText(screen, selected.Title, layout.detailRect.X+16, layout.detailRect.Y+16, FaceMed, eventCodexLineColor(codexStatusIcon(selected.Status)))
@@ -913,22 +950,86 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 }
 
 func eventCodexEntryRect(index int) (x, y, w, h float32) {
-	layout := buildEventDetailLayout()
-	x = float32(layout.listRect.X)
-	y = float32(layout.listRect.Y + float64(index)*52)
-	w = float32(layout.listRect.W)
-	h = 44
+	layout := buildEventCodexLayout()
+	const (
+		cardH = 60.0
+		gap   = 8.0
+		pad   = 10.0
+	)
+	x = float32(layout.listRect.X + pad)
+	y = float32(layout.listRect.Y + pad + float64(index)*(cardH+gap))
+	w = float32(layout.listRect.W - pad*2)
+	h = float32(cardH)
 	return x, y, w, h
 }
 
-func eventCodexEntryHit(mx, my float64, count int) int {
-	for i := 0; i < count; i++ {
+func eventCodexEntryHit(mx, my float64, count int, scroll int) int {
+	visibleCount := eventCodexVisibleCount()
+	for i := 0; i < visibleCount; i++ {
+		entryIndex := scroll + i
+		if entryIndex >= count {
+			break
+		}
 		x, y, w, h := eventCodexEntryRect(i)
 		if mx >= float64(x) && mx <= float64(x+w) && my >= float64(y) && my <= float64(y+h) {
-			return i
+			return entryIndex
 		}
 	}
 	return -1
+}
+
+func eventCodexVisibleCount() int {
+	layout := buildEventCodexLayout()
+	const (
+		cardH = 60.0
+		gap   = 8.0
+		pad   = 10.0
+	)
+	usable := layout.listRect.H - pad*2
+	if usable < cardH {
+		return 1
+	}
+	count := int((usable + gap) / (cardH + gap))
+	if count < 1 {
+		return 1
+	}
+	return count
+}
+
+func eventCodexMaxScroll(count int) int {
+	maxScroll := count - eventCodexVisibleCount()
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func eventCodexListHit(mx, my float64) bool {
+	layout := buildEventCodexLayout()
+	return mx >= layout.listRect.X && mx <= layout.listRect.X+layout.listRect.W &&
+		my >= layout.listRect.Y && my <= layout.listRect.Y+layout.listRect.H
+}
+
+func drawEventCodexScrollbar(screen *ebiten.Image, count int, visibleCount int, scroll int) {
+	if count <= visibleCount || visibleCount <= 0 {
+		return
+	}
+	layout := buildEventCodexLayout()
+	const pad = 10.0
+	trackX := float32(layout.listRect.X + layout.listRect.W - pad - 3)
+	trackY := float32(layout.listRect.Y + pad)
+	trackH := float32(layout.listRect.H - pad*2)
+	vector.FillRect(screen, trackX, trackY, 3, trackH, color.RGBA{56, 46, 28, 210}, false)
+	thumbH := trackH * float32(visibleCount) / float32(count)
+	if thumbH < 28 {
+		thumbH = 28
+	}
+	maxScroll := eventCodexMaxScroll(count)
+	thumbY := trackY
+	if maxScroll > 0 {
+		thumbY += (trackH - thumbH) * float32(scroll) / float32(maxScroll)
+	}
+	vector.FillRect(screen, trackX-1, thumbY, 5, thumbH, color.RGBA{180, 145, 70, 220}, false)
 }
 
 func eventCodexLineColor(line string) color.RGBA {
@@ -941,9 +1042,9 @@ func eventCodexLineColor(line string) color.RGBA {
 		return color.RGBA{218, 120, 120, 240}
 	case strings.HasPrefix(line, "Kritik eksik:") || strings.HasPrefix(line, "Neden:") || strings.HasPrefix(line, "Kritik eksik"):
 		return color.RGBA{212, 154, 154, 235}
-	case strings.HasPrefix(line, "Kalan sure:"):
+	case strings.HasPrefix(line, "Kalan süre:"):
 		return color.RGBA{214, 190, 120, 235}
-	case strings.HasPrefix(line, "Kosullar saglaniyor."):
+	case strings.HasPrefix(line, "Koşullar sağlanıyor."):
 		return color.RGBA{150, 208, 150, 235}
 	case strings.HasPrefix(line, "Bekleyen tarihsel zincirler"):
 		return color.RGBA{200, 184, 142, 235}

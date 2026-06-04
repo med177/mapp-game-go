@@ -44,7 +44,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showEventCodex {
-		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
+		if eventCodexCloseHit(fx, fy) || !eventCodexPopupHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -54,7 +54,7 @@ func (r *Renderer) updateCursorShape() {
 				return
 			}
 		}
-		if eventCodexEntryHit(fx, fy, len(r.currentEventCodexEntries())) >= 0 {
+		if eventCodexEntryHit(fx, fy, len(r.currentEventCodexEntries()), r.eventCodexScroll) >= 0 {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}

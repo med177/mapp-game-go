@@ -13,6 +13,16 @@ type eventDetailLayout struct {
 	detailRect  gameui.Rect
 }
 
+type eventCodexLayout struct {
+	panelRect   gameui.Rect
+	headerRect  gameui.Rect
+	titleRect   gameui.Rect
+	closeRect   gameui.Rect
+	filtersRect gameui.Rect
+	listRect    gameui.Rect
+	detailRect  gameui.Rect
+}
+
 func eventDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
 	modal := buildEventDetailModal()
 	panelRect := modal.Panel.Rect
@@ -69,6 +79,15 @@ func buildEventDetailModal() gameui.Modal {
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
+func eventCodexHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
+	modal := buildEventCodexModal()
+	panelRect := modal.Panel.Rect
+	box := gameui.BoxFromRect(panelRect).Inset(20)
+	headerRect, rest := box.CutTop(30, 14)
+	closeRect, titleBox := gameui.BoxFromRect(headerRect).CutRight(30, 14)
+	return panelRect, titleBox.Rect, closeRect, rest
+}
+
 func buildEventDetailLayout() eventDetailLayout {
 	panelRect, titleRect, closeRect, rest := eventDetailHeaderRects()
 	filtersRect, bodyBox := rest.CutTop(28, 22)
@@ -88,17 +107,46 @@ func buildEventDetailLayout() eventDetailLayout {
 	return layout
 }
 
+func buildEventCodexModal() gameui.Modal {
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 980, 620, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
+	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+}
+
+func buildEventCodexLayout() eventCodexLayout {
+	panelRect, titleRect, closeRect, rest := eventCodexHeaderRects()
+	filtersRect, bodyBox := rest.CutTop(30, 20)
+	cols := bodyBox.SplitColumns(22, 0.38, 0.62)
+	layout := eventCodexLayout{
+		panelRect:   panelRect,
+		headerRect:  gameui.Rect{X: titleRect.X, Y: titleRect.Y, W: titleRect.W + 14 + closeRect.W, H: titleRect.H},
+		titleRect:   titleRect,
+		closeRect:   closeRect,
+		filtersRect: filtersRect,
+	}
+	if len(cols) == 2 {
+		layout.listRect = cols[0]
+		layout.detailRect = cols[1]
+	}
+	return layout
+}
+
 func buildEventDetailCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventDetailHeaderRects()
 	return gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "X")
 }
 
+func buildEventCodexCloseButton() gameui.Button {
+	_, _, closeRect, _ := eventCodexHeaderRects()
+	return gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "X")
+}
+
 func buildEventCodexFilterButtons() []gameui.Button {
-	layout := buildEventDetailLayout()
+	layout := buildEventCodexLayout()
 	const (
-		btnW = 92.0
-		btnH = 28.0
-		gap  = 10.0
+		btnW = 132.0
+		btnH = 30.0
+		gap  = 12.0
 	)
 	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli"}
 	buttons := make([]gameui.Button, 0, len(labels))

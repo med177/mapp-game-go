@@ -607,7 +607,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			detail = append(detail, evt.DescTR)
 		}
 		if entry.monthsUntil > 0 {
-			detail = append(detail, fmt.Sprintf("Kalan sure: %d ay", entry.monthsUntil))
+			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay", entry.monthsUntil))
 		}
 		if len(entry.reasons) > 0 {
 			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0]))
@@ -617,7 +617,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 		} else if entry.timingReason != "" {
 			detail = append(detail, "Neden: "+entry.timingReason)
 		} else {
-			detail = append(detail, "Kosullar saglaniyor.")
+			detail = append(detail, "Koşullar sağlanıyor.")
 		}
 		views = append(views, render.EventCodexEntry{
 			Title:       evt.NameTR,
@@ -763,7 +763,7 @@ func (g *Game) historicalEventDetail(evt *events.Event) string {
 	}
 	lines := []string{evt.NameTR, "", evt.DescTR}
 	if evt.ChoicePromptTR != "" {
-		lines = append(lines, "", "Secim:", evt.ChoicePromptTR)
+		lines = append(lines, "", "Seçim:", evt.ChoicePromptTR)
 	}
 	if len(evt.Choices) > 0 {
 		for _, choice := range evt.Choices {

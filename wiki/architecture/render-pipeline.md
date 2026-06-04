@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -57,7 +57,7 @@ type Renderer struct {
 | 6 | UI panelleri (üst-sol durum paneli, sağ-üst tarih/menü HUD, alt-orta aksiyon HUD, bölge/ordu/minimap/event log) | `panel.go` |
 | 6 | Ordu detay paneli — 20 slot ızgarası, boş slotlar silik | `army_panel.go` |
 | 6 | Bölge üretim UI — bina kartlarında seviye (`Lv`) + kuyruk adet/ilk tamamlanma turu etiketi ve tekrar tıklayınca iptal; bina gereksinim satırı kart üstünde çizilmez, hover hint içinde gösterilir; kıyısı olmayan kara bölgelerinde `port` kartı gizlenir; bina ve birim kartlarının uygunluk/soluk görünümü altınla sınırlı değil, `ResourceCost.CanAfford` üzerinden tüm mallara göre hesaplanır; birim kartları sadece isim + tur süresi gösterir; hover tooltip’ler durum/maliyet/gereksinim bölümlerine ayrılır, eksik kaynak satırları ve karşılanmayan gereksinimler kırmızı vurgulanır, maliyet satırları oyuncunun mevcut miktarını `mevcut/ihtiyaç` formatında gösterir; kaynak etiketleri `economy.ResourceKind`, din adları `religion.DisplayNameTR`, diplomasi durumları `faction` stance metadata'sı ve arazi/yerleşim etiketleri `world` metadata'sı üzerinden beslendiği için tooltip/HUD/panel metinleri tek modelden gelir; `- xN +` çoklu eğitim kontrolü korunur | `panel.go`, `recruit_panel.go`, `hover_tooltip.go` |
-| 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup; üstteki `Kodex` düğmesi `Tümü/Hazır/Takvim/Kilitli` filtreli, solda liste sağda detay gösteren pending historical chain popup'ını açar | `panel.go`, `renderer.go`, `game.go` |
+| 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup; üstteki `Kodex` düğmesi `Tümü/Hazır/Takvim/Kilitli` filtreli, solda kısa özetli liste sağda detay gösteren daha geniş historical chain popup'ını açar; Kodex listesi focus-scroll ve mouse wheel ile görünür pencere içinde kalır | `panel.go`, `renderer.go`, `game.go`, `ui_modals.go` |
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |

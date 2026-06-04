@@ -113,6 +113,7 @@ type Renderer struct {
 	showEventCodex    bool
 	eventCodexFilter  EventCodexFilter
 	eventCodexFocus   int
+	eventCodexScroll  int
 	eventDetail       string
 	eventLogScroll    int
 
@@ -511,6 +512,7 @@ func (r *Renderer) SetEventCodexEntries(entries [4][]EventCodexEntry) {
 		r.showEventCodex = false
 		r.eventCodexFilter = EventCodexAll
 		r.eventCodexFocus = 0
+		r.eventCodexScroll = 0
 	}
 }
 
@@ -530,6 +532,7 @@ func (r *Renderer) OpenEventCodex() {
 	r.showEventCodex = true
 	r.eventCodexFilter = EventCodexAll
 	r.eventCodexFocus = 0
+	r.eventCodexScroll = 0
 }
 
 func (r *Renderer) CloseEventCodex() {
@@ -562,15 +565,50 @@ func (r *Renderer) cycleEventCodexFilter(delta int) {
 	next := (int(r.eventCodexFilter) + delta + count) % count
 	r.eventCodexFilter = EventCodexFilter(next)
 	r.eventCodexFocus = 0
+	r.eventCodexScroll = 0
 }
 
 func (r *Renderer) cycleEventCodexFocus(delta int) {
 	entries := r.currentEventCodexEntries()
 	if len(entries) == 0 {
 		r.eventCodexFocus = 0
+		r.eventCodexScroll = 0
 		return
 	}
 	r.eventCodexFocus = (r.eventCodexFocus + delta + len(entries)) % len(entries)
+	r.ensureEventCodexFocusVisible()
+}
+
+func (r *Renderer) clampEventCodexScroll() {
+	maxScroll := eventCodexMaxScroll(len(r.currentEventCodexEntries()))
+	if r.eventCodexScroll < 0 {
+		r.eventCodexScroll = 0
+	}
+	if r.eventCodexScroll > maxScroll {
+		r.eventCodexScroll = maxScroll
+	}
+}
+
+func (r *Renderer) ensureEventCodexFocusVisible() {
+	visibleCount := eventCodexVisibleCount()
+	if visibleCount <= 0 {
+		r.eventCodexScroll = 0
+		return
+	}
+	r.clampEventCodexScroll()
+	if r.eventCodexFocus < r.eventCodexScroll {
+		r.eventCodexScroll = r.eventCodexFocus
+	}
+	bottom := r.eventCodexScroll + visibleCount - 1
+	if r.eventCodexFocus > bottom {
+		r.eventCodexScroll = r.eventCodexFocus - visibleCount + 1
+	}
+	r.clampEventCodexScroll()
+}
+
+func (r *Renderer) scrollEventCodex(delta int) {
+	r.eventCodexScroll += delta
+	r.clampEventCodexScroll()
 }
 
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
@@ -822,7 +860,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	if r.showEventCodex {
-		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus)
+		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus, r.eventCodexScroll)
 	}
 
 	if r.eventDetail != "" {
@@ -6930,8 +6968,17 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 	}
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
+	_, wheelY := ebiten.Wheel()
+	if wheelY != 0 && eventCodexListHit(mx, my) {
+		if wheelY > 0 {
+			r.scrollEventCodex(-1)
+		} else if wheelY < 0 {
+			r.scrollEventCodex(1)
+		}
+		return InputAction{}
+	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if eventDetailCloseHit(mx, my) || !eventDetailPopupHit(mx, my) {
+		if eventCodexCloseHit(mx, my) || !eventCodexPopupHit(mx, my) {
 			r.CloseEventCodex()
 			return InputAction{}
 		}
@@ -6940,11 +6987,13 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 			if btn.HitTest(mx, my) {
 				r.eventCodexFilter = EventCodexFilter(i)
 				r.eventCodexFocus = 0
+				r.eventCodexScroll = 0
 				return InputAction{}
 			}
 		}
-		if idx := eventCodexEntryHit(mx, my, len(r.currentEventCodexEntries())); idx >= 0 {
+		if idx := eventCodexEntryHit(mx, my, len(r.currentEventCodexEntries()), r.eventCodexScroll); idx >= 0 {
 			r.eventCodexFocus = idx
+			r.ensureEventCodexFocusVisible()
 			return InputAction{}
 		}
 	}
