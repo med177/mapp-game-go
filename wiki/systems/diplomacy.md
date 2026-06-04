@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -134,6 +134,14 @@ AI artık oyuncuya doğrudan barış sonucu dayatmaz. Savaş baskısı şartı o
 - UI paneli: `internal/render/renderer.go` (`drawDiplomacyOfferDialog`, `handleDiplomacyOfferInput`)
 
 Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde standart diplomasi motoru (`Execute`) çalışır, redde ise teklif kuyruktan düşer ve savaş sürer.
+
+## Diplomasi Paneli
+
+`internal/render/diplom.go`
+
+- Panel iki adımdır: önce hedef devlet listesi, sonra teklif sayfası açılır.
+- Hedef listesi artık panel gövdesi üzerinde mouse wheel ile kaydırılır; scroll sadece dar satır alanına değil panel bağlamına da bağlıdır.
+- Liste kartları fraksiyon rengi accent şeridi, ilişki/duruş özeti ve görünür scrollbar ile çizilir; teklif sayfası aynı UI compose ailesindeki kart/panel çerçevesini kullanır.
 
 ---
 

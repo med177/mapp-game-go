@@ -274,9 +274,10 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 
 func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int) {
 	layout := diplomacyListLayoutForScreen()
-	r := rectF{x: layout.panelRect.X, y: layout.panelRect.Y, w: layout.panelRect.W, h: layout.panelRect.H}
-	drawUIPanelRect(screen, layout.panelRect, color.RGBA{18, 16, 12, 210}, panelBorder, 1)
-	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+2, "Devlet seçin")
+	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{15, 12, 9, 235}, panelBorder, 1.2, 3)
+	DrawText(screen, "Diplomatik Hedef", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
+	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, "Fare tekeri veya ok tuşları ile listeyi kaydırın")
+	drawUICardRect(screen, layout.listRect, color.RGBA{11, 9, 7, 225}, color.RGBA{92, 74, 38, 190}, 1)
 
 	list := buildDiplomacyListView(gs, focusIdx, start)
 	for row, i := 0, list.Scroll; i < end; i, row = i+1, row+1 {
@@ -284,30 +285,39 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		f := gs.Factions[fid]
 		rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
 
-		y := list.Rect.Y + float64(row)*diplomRowH
-		rowCol := color.RGBA{25, 20, 14, 200}
-		if i == focusIdx {
-			rowCol = color.RGBA{70, 58, 30, 235}
+		rowRect := gameui.Rect{
+			X: list.Rect.X + 10,
+			Y: list.Rect.Y + 8 + float64(row)*diplomRowH,
+			W: list.Rect.W - 32,
+			H: diplomRowH - 10,
 		}
-		vector.FillRect(screen, float32(list.Rect.X), float32(y), float32(list.Rect.W), float32(diplomRowH-4), rowCol, false)
+		rowCol := color.RGBA{24, 18, 12, 210}
+		borderCol := color.RGBA{78, 62, 34, 150}
+		if i == focusIdx {
+			rowCol = color.RGBA{64, 50, 22, 235}
+			borderCol = color.RGBA{186, 148, 74, 230}
+		}
+		drawUICardRect(screen, rowRect, rowCol, borderCol, 1)
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-		vector.FillRect(screen, float32(list.Rect.X), float32(y), 6, float32(diplomRowH-4), fc, false)
+		drawUICardAccent(screen, rowRect, 6, fc)
 
-		DrawText(screen, f.NameTR, r.x+16, y+7, FaceMed, ColorWhite)
+		name := trimTextToWidth(f.NameTR, FaceMed, rowRect.W-248)
+		DrawText(screen, name, rowRect.X+18, rowRect.Y+7, FaceMed, ColorWhite)
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		DrawText(screen, itoa(regionCount)+" bölge", r.x+16, y+29, FaceSmall, ColorGray)
+		DrawText(screen, itoa(regionCount)+" bölge", rowRect.X+18, rowRect.Y+29, FaceSmall, ColorGray)
 
-		statusX := r.x + r.w - 240
+		statusX := rowRect.X + rowRect.W - 220
 		if rel != nil {
 			stanceCol, stanceTR := stanceDisplay(rel.Stance)
-			DrawText(screen, stanceTR, statusX, y+7, FaceMed, stanceCol)
+			DrawText(screen, stanceTR, statusX, rowRect.Y+7, FaceMed, stanceCol)
 			scoreCol := scoreColor(rel.Score)
-			DrawText(screen, "İlişki: "+itoa(rel.Score), statusX, y+29, FaceSmall, scoreCol)
+			DrawText(screen, "İlişki: "+itoa(rel.Score), statusX, rowRect.Y+29, FaceSmall, scoreCol)
 		} else {
-			DrawText(screen, "Tarafsız", statusX, y+7, FaceMed, ColorGray)
+			DrawText(screen, "Tarafsız", statusX, rowRect.Y+7, FaceMed, ColorGray)
 		}
 	}
+	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
 }
 
 func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID, actionFocus int) {
@@ -316,11 +326,12 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		return
 	}
 	layout := diplomacyOfferLayoutForScreen()
-	drawUIPanelRect(screen, layout.panelRect, color.RGBA{16, 14, 10, 220}, panelBorder, 1)
+	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{14, 11, 8, 235}, panelBorder, 1.2, 3)
 
 	DrawText(screen, "Teklif Paneli", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
 	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
-	DrawText(screen, "Hedef: "+f.NameTR, layout.targetRect.X, layout.targetRect.Y, FaceMed, ColorWhite)
+	drawUICardRect(screen, gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 8}, color.RGBA{22, 18, 12, 220}, color.RGBA{90, 72, 40, 170}, 1)
+	DrawText(screen, "Hedef: "+trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88), layout.targetRect.X+12, layout.targetRect.Y+2, FaceMed, ColorWhite)
 
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	relScore := 0
@@ -329,6 +340,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		relScore = rel.Score
 		relStance = rel.Stance
 	}
+	drawUICardRect(screen, layout.statusRect, color.RGBA{19, 16, 12, 220}, color.RGBA{92, 74, 38, 170}, 1)
 	drawUIInfoBlock(screen, layout.statusRect.X, layout.statusRect.Y, []string{
 		"Durum: " + stanceDisplayText(relStance),
 		"İlişki Skoru: " + itoa(relScore),
@@ -355,8 +367,9 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	}
 
 	selected := "Seçili teklif: " + diplomActions[actionFocus].label
+	drawUICardRect(screen, layout.selectedRect, color.RGBA{18, 14, 10, 215}, color.RGBA{78, 62, 34, 150}, 1)
 	slw := MeasureText(selected, FaceSmall)
-	selectedY := layout.selectedRect.Y
+	selectedY := layout.selectedRect.Y + 2
 	drawUIMutedText(screen, layout.selectedRect.X+layout.selectedRect.W/2-slw/2, selectedY, selected)
 
 	drawDiplomacyButton(screen, buildDiplomacySendButton(), color.RGBA{48, 130, 72, 235}, panelBorder, FaceMed, 10)
@@ -387,7 +400,6 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 	r.diplomacyFocus = clampDiplomFocus(r.diplomacyFocus, 0, n-1)
 	r.diplomacyActionFocus = clampDiplomFocus(r.diplomacyActionFocus, 0, len(diplomActions)-1)
-	r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	if input.LeftJustPressed && !diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
@@ -399,11 +411,16 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		return InputAction{}
 	}
 	if r.diplomacyTargetFaction == "" {
+		if input.WheelY != 0 && diplomacyListLayoutForScreen().panelRect.Hit(input.MouseX, input.MouseY) {
+			r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll-wheelToDiplomStep(input.WheelY))
+			return InputAction{}
+		}
 		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
 		if list.HandleInput(input) {
 			r.diplomacyScroll = list.Scroll
 			if list.Selected >= 0 {
 				r.diplomacyFocus = list.Selected
+				r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 				if input.LeftJustPressed && r.diplomacyFocus < len(factions) {
 					r.diplomacyTargetFaction = factions[r.diplomacyFocus]
 					r.diplomacyActionFocus = 0
@@ -469,6 +486,41 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		}
 	}
 	return InputAction{}
+}
+
+func wheelToDiplomStep(wheelY float64) int {
+	if wheelY > 0 {
+		return 1
+	}
+	if wheelY < 0 {
+		return -1
+	}
+	return 0
+}
+
+func drawDiplomacyListScrollbar(screen *ebiten.Image, total, scroll int) {
+	visible := diplomVisibleRows()
+	if total <= visible {
+		return
+	}
+	layout := diplomacyListLayoutForScreen()
+	trackRect := gameui.Rect{
+		X: layout.listRect.X + layout.listRect.W - 14,
+		Y: layout.listRect.Y + 10,
+		W: 6,
+		H: layout.listRect.H - 20,
+	}
+	drawUICardRect(screen, trackRect, color.RGBA{24, 20, 15, 220}, color.RGBA{64, 50, 28, 120}, 1)
+	maxScroll := diplomMaxScroll(total)
+	thumbH := trackRect.H * float64(visible) / float64(total)
+	if thumbH < 28 {
+		thumbH = 28
+	}
+	thumbY := trackRect.Y
+	if maxScroll > 0 {
+		thumbY += (trackRect.H - thumbH) * float64(scroll) / float64(maxScroll)
+	}
+	drawUICardRect(screen, gameui.Rect{X: trackRect.X, Y: thumbY, W: trackRect.W, H: thumbH}, color.RGBA{176, 144, 78, 230}, color.RGBA{214, 190, 120, 210}, 1)
 }
 
 func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) bool {
