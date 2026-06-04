@@ -2,6 +2,26 @@ package render
 
 import gameui "mapp-game-go/internal/ui"
 
+type eventDetailLayout struct {
+	panelRect   gameui.Rect
+	headerRect  gameui.Rect
+	titleRect   gameui.Rect
+	closeRect   gameui.Rect
+	filtersRect gameui.Rect
+	bodyRect    gameui.Rect
+	listRect    gameui.Rect
+	detailRect  gameui.Rect
+}
+
+func eventDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
+	modal := buildEventDetailModal()
+	panelRect := modal.Panel.Rect
+	box := gameui.BoxFromRect(panelRect).Inset(18)
+	headerRect, rest := box.CutTop(28, 12)
+	closeRect, titleBox := gameui.BoxFromRect(headerRect).CutRight(30, 12)
+	return panelRect, titleBox.Rect, closeRect, rest
+}
+
 func buildConfirmDialogModal() gameui.Modal {
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, float64(confirmDialogW), float64(confirmDialogH), gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
@@ -49,13 +69,32 @@ func buildEventDetailModal() gameui.Modal {
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
+func buildEventDetailLayout() eventDetailLayout {
+	panelRect, titleRect, closeRect, rest := eventDetailHeaderRects()
+	filtersRect, bodyBox := rest.CutTop(28, 22)
+	cols := bodyBox.SplitColumns(18, 0.36, 0.64)
+	layout := eventDetailLayout{
+		panelRect:   panelRect,
+		headerRect:  gameui.Rect{X: titleRect.X, Y: titleRect.Y, W: titleRect.W + 12 + closeRect.W, H: titleRect.H},
+		titleRect:   titleRect,
+		closeRect:   closeRect,
+		filtersRect: filtersRect,
+		bodyRect:    bodyBox.Rect,
+	}
+	if len(cols) == 2 {
+		layout.listRect = cols[0]
+		layout.detailRect = cols[1]
+	}
+	return layout
+}
+
 func buildEventDetailCloseButton() gameui.Button {
-	modal := buildEventDetailModal()
-	return gameui.NewButton(modal.Panel.Rect.X+modal.Panel.Rect.W-30-12, modal.Panel.Rect.Y+10, 30, 26, "X")
+	_, _, closeRect, _ := eventDetailHeaderRects()
+	return gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "X")
 }
 
 func buildEventCodexFilterButtons() []gameui.Button {
-	modal := buildEventDetailModal()
+	layout := buildEventDetailLayout()
 	const (
 		btnW = 92.0
 		btnH = 28.0
@@ -63,8 +102,8 @@ func buildEventCodexFilterButtons() []gameui.Button {
 	)
 	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli"}
 	buttons := make([]gameui.Button, 0, len(labels))
-	startX := modal.Panel.Rect.X + 18
-	y := modal.Panel.Rect.Y + 44
+	startX := layout.filtersRect.X
+	y := layout.filtersRect.Y
 	for i, label := range labels {
 		x := startX + float64(i)*(btnW+gap)
 		buttons = append(buttons, gameui.NewButton(x, y, btnW, btnH, label))

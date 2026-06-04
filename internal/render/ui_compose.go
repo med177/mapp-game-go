@@ -40,8 +40,32 @@ func drawUISectionLabel(screen *ebiten.Image, x, y float64, label string) {
 	DrawText(screen, label, x, y, FaceSmall, ColorGold)
 }
 
+func drawUICenteredSectionLabel(screen *ebiten.Image, centerX, y float64, label string) {
+	w := MeasureText(label, FaceSmall)
+	drawUISectionLabel(screen, centerX-w/2, y, label)
+}
+
 func drawUIMutedText(screen *ebiten.Image, x, y float64, label string) {
 	DrawText(screen, label, x, y, FaceSmall, ColorGray)
+}
+
+func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color) {
+	if labelColor == nil {
+		labelColor = ColorGray
+	}
+	if valueColor == nil {
+		valueColor = ColorWhite
+	}
+	DrawText(screen, label, x, y, FaceSmall, labelColor)
+	value = trimTextToWidth(value, FaceMed, w)
+	tw := MeasureText(value, FaceMed)
+	gap := 26.0
+	valueX := x + w - tw
+	minValueX := x + MeasureText(label, FaceSmall) + gap
+	if valueX < minValueX {
+		valueX = minValueX
+	}
+	DrawText(screen, value, valueX, y, FaceMed, valueColor)
 }
 
 func drawUIInfoBlock(screen *ebiten.Image, x, y float64, lines []string, colors []color.Color) {

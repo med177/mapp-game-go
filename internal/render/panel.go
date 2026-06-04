@@ -785,8 +785,8 @@ func drawEventLogScrollbar(screen *ebiten.Image, eventCount int, scroll int) {
 }
 
 func eventDetailPopupRect() (x, y, w, h float32) {
-	modal := buildEventDetailModal()
-	return float32(modal.Panel.Rect.X), float32(modal.Panel.Rect.Y), float32(modal.Panel.Rect.W), float32(modal.Panel.Rect.H)
+	layout := buildEventDetailLayout()
+	return float32(layout.panelRect.X), float32(layout.panelRect.Y), float32(layout.panelRect.W), float32(layout.panelRect.H)
 }
 
 func eventDetailPopupHit(mx, my float64) bool {
@@ -811,28 +811,28 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	modal := buildEventDetailModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
-	px, py, pw, ph := eventDetailPopupRect()
-	drawUIPanelTopBar(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, 3, panelBorder)
+	layout := buildEventDetailLayout()
+	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
 
-	DrawText(screen, "Olay Detayı", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
+	DrawText(screen, "Olay Detayı", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
 
-	lines := eventDetailLines(message, float64(pw-40))
-	maxLines := int((ph - 78) / 19)
+	lines := eventDetailLines(message, layout.bodyRect.W)
+	maxLines := int(layout.bodyRect.H / 19)
 	if len(lines) > maxLines {
 		lines = lines[:maxLines]
 		last := len(lines) - 1
 		if lines[last] != "" {
-			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, float64(pw-40))
+			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, layout.bodyRect.W)
 		}
 	}
 	for i, line := range lines {
 		if line == "" {
 			continue
 		}
-		DrawText(screen, line, float64(px)+20, float64(py)+60+float64(i)*19, FaceMed,
+		DrawText(screen, line, layout.bodyRect.X, layout.bodyRect.Y+float64(i)*19, FaceMed,
 			color.RGBA{230, 224, 205, 240})
 	}
 }
@@ -841,10 +841,10 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	modal := buildEventDetailModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
-	px, py, pw, ph := eventDetailPopupRect()
-	drawUIPanelTopBar(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, 3, panelBorder)
+	layout := buildEventDetailLayout()
+	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
 
-	DrawText(screen, "Event Kodex", float64(px)+18, float64(py)+16, FaceLarge, ColorGold)
+	DrawText(screen, "Event Kodex", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
@@ -858,21 +858,11 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 		}
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, style)
 	}
-
-	listX := float64(px) + 20
-	listY := float64(py) + 94
-	listW := float64(pw)*0.36 - 26
-	listH := float64(ph) - 118
-	detailX := listX + listW + 18
-	detailW := float64(pw) - (detailX - float64(px)) - 20
-
-	drawRoundedRect(screen, float32(listX), float32(listY), float32(listW), float32(listH), 8, color.RGBA{20, 16, 12, 220})
-	vector.StrokeRect(screen, float32(listX), float32(listY), float32(listW), float32(listH), 1, color.RGBA{90, 72, 38, 210}, false)
-	drawRoundedRect(screen, float32(detailX), float32(listY), float32(detailW), float32(listH), 8, color.RGBA{20, 16, 12, 220})
-	vector.StrokeRect(screen, float32(detailX), float32(listY), float32(detailW), float32(listH), 1, color.RGBA{90, 72, 38, 210}, false)
+	drawUICardRect(screen, layout.listRect, color.RGBA{20, 16, 12, 220}, color.RGBA{90, 72, 38, 210}, 1)
+	drawUICardRect(screen, layout.detailRect, color.RGBA{20, 16, 12, 220}, color.RGBA{90, 72, 38, 210}, 1)
 
 	if len(entries) == 0 {
-		DrawText(screen, "Bu filtre için event yok.", detailX+18, listY+18, FaceMed, ColorGray)
+		DrawText(screen, "Bu filtre için event yok.", layout.detailRect.X+18, layout.detailRect.Y+18, FaceMed, ColorGray)
 		return
 	}
 	if focus < 0 {
@@ -898,35 +888,35 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	}
 
 	selected := entries[focus]
-	DrawText(screen, selected.Title, detailX+16, listY+16, FaceMed, eventCodexLineColor(codexStatusIcon(selected.Status)))
+	DrawText(screen, selected.Title, layout.detailRect.X+16, layout.detailRect.Y+16, FaceMed, eventCodexLineColor(codexStatusIcon(selected.Status)))
 	meta := selected.DateLabel + " • " + selected.Status
 	if selected.MonthsUntil > 0 {
 		meta += fmt.Sprintf(" • %d ay", selected.MonthsUntil)
 	}
-	DrawText(screen, meta, detailX+16, listY+40, FaceSmall, ColorGray)
+	DrawText(screen, meta, layout.detailRect.X+16, layout.detailRect.Y+40, FaceSmall, ColorGray)
 
-	lines := eventDetailLines(selected.Detail, detailW-32)
-	maxLines := int((listH - 76) / 19)
+	lines := eventDetailLines(selected.Detail, layout.detailRect.W-32)
+	maxLines := int((layout.detailRect.H - 76) / 19)
 	if len(lines) > maxLines {
 		lines = lines[:maxLines]
 		last := len(lines) - 1
 		if lines[last] != "" {
-			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, detailW-32)
+			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, layout.detailRect.W-32)
 		}
 	}
 	for i, line := range lines {
 		if line == "" {
 			continue
 		}
-		DrawText(screen, line, detailX+16, listY+68+float64(i)*19, FaceMed, eventCodexLineColor(line))
+		DrawText(screen, line, layout.detailRect.X+16, layout.detailRect.Y+68+float64(i)*19, FaceMed, eventCodexLineColor(line))
 	}
 }
 
 func eventCodexEntryRect(index int) (x, y, w, h float32) {
-	modal := buildEventDetailModal()
-	x = float32(modal.Panel.Rect.X + 20)
-	y = float32(modal.Panel.Rect.Y + 94 + float64(index)*52)
-	w = float32(modal.Panel.Rect.W*0.36 - 26)
+	layout := buildEventDetailLayout()
+	x = float32(layout.listRect.X)
+	y = float32(layout.listRect.Y + float64(index)*52)
+	w = float32(layout.listRect.W)
 	h = 44
 	return x, y, w, h
 }
@@ -1277,6 +1267,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10
+	sepW := pw - float32(panelPad*2)
 
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
@@ -1290,17 +1281,17 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	}
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
-	ownerLine := "Sahip: " + ownerName
+	ownerValue := ownerName
 	if region.IsLocked {
 		if region.UnlockTurn > 0 {
-			ownerLine += "  LOCK Tur " + itoa(region.UnlockTurn)
+			ownerValue += "  LOCK Tur " + itoa(region.UnlockTurn)
 		} else {
-			ownerLine += "  LOCK Kilitli"
+			ownerValue += "  LOCK Kilitli"
 		}
 	} else if region.UnlockTurn > 0 {
-		ownerLine += "  ACIK"
+		ownerValue += "  ACIK"
 	}
-	DrawText(screen, ownerLine, lx, ly, FaceSmall, ownerCol)
+	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Sahip", ownerValue, ColorGray, ownerCol)
 	ly += 18
 
 	var stypeStr string
@@ -1318,22 +1309,21 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
 	ly += 16
 
-	sepW := pw - float32(panelPad*2)
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
 	// Kaynaklar — iki sütun
-	DrawText(screen, economy.ResourceNameTR(economy.ResourceGold)+" "+itoa(region.GoldIncome()), lx, ly, FaceSmall, ColorGold)
-	DrawText(screen, economy.ResourceNameTR(economy.ResourceGrain)+" "+itoa(region.BaseGrainOutput), lx+120, ly, FaceSmall, ColorWhite)
+	drawUIKeyValueRow(screen, lx, ly, 100, economy.ResourceNameTR(economy.ResourceGold), itoa(region.GoldIncome()), ColorGray, ColorGold)
+	drawUIKeyValueRow(screen, lx+120, ly, 100, economy.ResourceNameTR(economy.ResourceGrain), itoa(region.BaseGrainOutput), ColorGray, ColorWhite)
 	ly += 18
 
 	statBarX := float32(lx) + 122
-	DrawText(screen, "Memnuniyet: "+itoa(region.Satisfaction)+"%", lx, ly, FaceSmall, ColorGray)
+	drawUIKeyValueRow(screen, lx, ly, 112, "Memnuniyet", itoa(region.Satisfaction)+"%", ColorGray, ColorWhite)
 	drawBar(screen, statBarX, float32(ly)+1, sepW-(statBarX-float32(lx)), 9, float64(region.Satisfaction)/100,
 		satisfactionColor(region.Satisfaction))
 	ly += 18
 
-	DrawText(screen, "Vergi: %"+itoa(region.TaxRate), lx, ly, FaceSmall, ColorGray)
+	drawUIKeyValueRow(screen, lx, ly, 112, "Vergi", "%"+itoa(region.TaxRate), ColorGray, ColorWhite)
 	taxBarW := sepW - (statBarX - float32(lx))
 	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
 		dec, inc := regionTaxButtonRects(gs)
@@ -1412,8 +1402,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 6
 
-	bldTitleW := MeasureText("BİNALAR", FaceSmall)
-	DrawText(screen, "BİNALAR", float64(px)+float64(pw)/2-bldTitleW/2, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+	drawUICenteredSectionLabel(screen, float64(px)+float64(pw)/2, ly, "BİNALAR")
 	ly += 17
 
 	drawBuildingGrid(screen, gs, region, px, float32(ly), pw)
@@ -1535,18 +1524,18 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	ly += 22
 
 	if region, ok2 := gs.Regions[a.RegionID]; ok2 {
-		DrawText(screen, "Konum: "+region.NameTR, lx, ly, FaceSmall, ColorGray)
+		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Konum", region.NameTR, ColorGray, ColorWhite)
 	}
 	ly += 18
 
-	DrawText(screen, "Birim: "+itoa(len(a.Units))+"/"+itoa(army.MaxArmySize), lx, ly, FaceSmall, ColorWhite)
+	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Birim", itoa(len(a.Units))+"/"+itoa(army.MaxArmySize), ColorGray, ColorWhite)
 	ly += 18
 
 	mpCol := ColorGold
 	if a.MovePoints == 0 {
 		mpCol = ColorRed
 	}
-	DrawText(screen, "Hareket: "+itoa(a.MovePoints)+"/"+itoa(a.MaxMovePoints), lx, ly, FaceSmall, mpCol)
+	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Hareket", itoa(a.MovePoints)+"/"+itoa(a.MaxMovePoints), ColorGray, mpCol)
 	ly += 18
 
 	hint := "Sağ tık → hareket / saldırı"
@@ -1776,23 +1765,19 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	mx := float64(cardX) + 12
 	my := panelY + 16
 
-	DrawText(screen, "Savaşçı", mx, my, FaceSmall, ColorGray)
 	unitStr := itoa(deployed) + "/" + itoa(cap)
 	unitCol := ColorGold
 	if cap > 0 && deployed >= cap {
 		unitCol = ColorRed
 	}
-	unitW := MeasureText(unitStr, FaceMed)
-	DrawText(screen, unitStr, float64(cardX+cardW)-12-unitW, my, FaceMed, unitCol)
+	drawUIKeyValueRow(screen, mx, my, float64(cardW)-24, "Savaşçı", unitStr, ColorGray, unitCol)
 
-	DrawText(screen, "Ordu", mx, my+28, FaceSmall, ColorGray)
 	armyStr := itoa(armies) + "/" + itoa(maxArmies)
 	armyCol := ColorGold
 	if armies >= maxArmies {
 		armyCol = ColorRed
 	}
-	armyW := MeasureText(armyStr, FaceMed)
-	DrawText(screen, armyStr, float64(cardX+cardW)-12-armyW, my+28, FaceMed, armyCol)
+	drawUIKeyValueRow(screen, mx, my+28, float64(cardW)-24, "Ordu", armyStr, ColorGray, armyCol)
 }
 
 // drawVictoryProgress seçilen zafer tipine göre ilerlemeyi gösterir.
@@ -1813,7 +1798,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 	barX := cardX + 12
 
 	titleCol := color.RGBA{220, 190, 100, 220}
-	DrawText(screen, "Zafer Hedefi", vx, vy, FaceSmall, titleCol)
+	drawUISectionLabel(screen, vx, vy, "Zafer Hedefi")
 	vy += 17
 
 	switch gs.Victory.Type {
@@ -1823,7 +1808,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 			target = 20
 		}
 		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
-		DrawText(screen, "Hedef: "+itoa(current)+"/"+itoa(target), vx, vy, FaceMed, ColorWhite)
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Hedef", itoa(current)+"/"+itoa(target), titleCol, ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(current)/float64(target)), ColorGold)
 
@@ -1837,7 +1822,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 			holdTurns = 5
 		}
 		goldIncome := victory.CurrentGoldIncome(gs)
-		DrawText(screen, "Gelir: "+itoa(goldIncome)+"/"+itoa(threshold), vx, vy, FaceMed, ColorGold)
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Gelir", itoa(goldIncome)+"/"+itoa(threshold), titleCol, ColorGold)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(goldIncome)/float64(threshold)), ColorGold)
 		vy += 12
@@ -1865,7 +1850,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				eliminated++
 			}
 		}
-		DrawText(screen, "Güç: "+itoa(totalStr)+"/"+itoa(targetStr), vx, vy, FaceMed, ColorWhite)
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Güç", itoa(totalStr)+"/"+itoa(targetStr), titleCol, ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
 		vy += 12
@@ -1879,7 +1864,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				held++
 			}
 		}
-		DrawText(screen, "Kutsal: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, color.RGBA{200, 160, 255, 255})
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Kutsal", itoa(held)+"/"+itoa(total), titleCol, color.RGBA{200, 160, 255, 255})
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
 		vy += 12
@@ -1896,7 +1881,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				held++
 			}
 		}
-		DrawText(screen, "Hedef: "+itoa(held)+"/"+itoa(total), vx, vy, FaceMed, ColorWhite)
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Hedef", itoa(held)+"/"+itoa(total), titleCol, ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total)), ColorGold)
 	}
@@ -1943,16 +1928,7 @@ func clampF(v float64) float64 {
 }
 
 func drawResRow(screen *ebiten.Image, x, y, w float64, label, value string, col color.RGBA) {
-	DrawText(screen, label, x, y, FaceSmall, ColorGray)
-	value = trimTextToWidth(value, FaceMed, w)
-	tw := MeasureText(value, FaceMed)
-	gap := 26.0
-	valueX := x + w - tw
-	minValueX := x + MeasureText(label, FaceSmall) + gap
-	if valueX < minValueX {
-		valueX = minValueX
-	}
-	DrawText(screen, value, valueX, y, FaceMed, col)
+	drawUIKeyValueRow(screen, x, y, w, label, value, ColorGray, col)
 }
 
 func calcPlayerIncome(gs *state.GameState) int {
@@ -2212,11 +2188,11 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	DrawText(screen, name, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
 
-	DrawText(screen, "Bölge: "+region.NameTR, lx, ly, FaceSmall, ColorGray)
+	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Bölge", region.NameTR, ColorGray, ColorWhite)
 	ly += 18
-	DrawText(screen, "Tip: "+settlement.Type.LabelTR(), lx, ly, FaceSmall, ColorGray)
+	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Tip", settlement.Type.LabelTR(), ColorGray, ColorWhite)
 	ly += 18
-	DrawText(screen, "Koordinat: "+itoa(settlement.X)+","+itoa(settlement.Y), lx, ly, FaceSmall, ColorGray)
+	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Koordinat", itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, ColorWhite)
 	ly += 20
 
 	// Üst görsel alanı (asset varsa göster, yoksa placeholder).
@@ -2247,7 +2223,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	ly += float64(imgH) + 16
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
 	ly += 10
-	DrawText(screen, "Tarihçe", lx, ly, FaceMed, ColorYellow)
+	drawUISectionLabel(screen, lx, ly, "Tarihçe")
 	ly += 18
 	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
 }
@@ -2641,6 +2617,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10
+	sepW := pw - float32(panelPad*2)
 
 	// Başlık
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, color.RGBA{100, 180, 255, 255})
@@ -2655,18 +2632,17 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	}
 
 	// Deniz bölgesi (italik vurgu)
-	DrawText(screen, "Deniz Bölgesi", lx, ly, FaceSmall, color.RGBA{120, 160, 200, 200})
+	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Tip", "Deniz Bölgesi", ColorGray, color.RGBA{120, 160, 200, 200})
 	ly += 18
 	if region.IsLocked {
-		lockLine := "Durum: Kilitli"
+		lockValue := "Kilitli"
 		if region.UnlockTurn > 0 {
-			lockLine += "  |  Acilis Turu: " + itoa(region.UnlockTurn)
+			lockValue += "  |  Açılış Turu: " + itoa(region.UnlockTurn)
 		}
-		DrawText(screen, lockLine, lx, ly, FaceSmall, color.RGBA{220, 150, 90, 220})
+		drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Durum", lockValue, ColorGray, color.RGBA{220, 150, 90, 220})
 		ly += 18
 	}
 
-	sepW := pw - float32(panelPad*2)
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
@@ -2679,7 +2655,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	} else {
 		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
 	}
-	DrawText(screen, neighborTitle, lx, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+	drawUISectionLabel(screen, lx, ly, neighborTitle)
 	ly += 18
 
 	// İlk 4 komşuyu listele
