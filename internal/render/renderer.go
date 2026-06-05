@@ -854,11 +854,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawDiplomacyOfferDialog(screen, offerIdx)
 	}
 
-	// 11. Tarihsel olay tam ekran popup
-	if r.showHistoricalEvent {
-		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
-	}
-
 	if r.showEventCodex {
 		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus, r.eventCodexScroll)
 	}
@@ -875,6 +870,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
 		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
+	}
+
+	// 14. Tarihsel olay popup'ı gerçek üst modal olmalı.
+	if r.showHistoricalEvent {
+		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
 	}
 }
 
@@ -5910,6 +5910,11 @@ func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
 
+	// Tarihsel olay popup'ı çizimde en üstte olduğundan inputta da ilk öncelik olmalı.
+	if r.showHistoricalEvent {
+		return r.handleHistoricalEventInput()
+	}
+
 	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
 		return r.handleConfirmDialogInput()
@@ -5928,10 +5933,6 @@ func (r *Renderer) HandleInput() InputAction {
 			return InputAction{Kind: ActionBack}
 		}
 		return InputAction{}
-	}
-
-	if r.showHistoricalEvent {
-		return r.handleHistoricalEventInput()
 	}
 
 	if r.showEventCodex {

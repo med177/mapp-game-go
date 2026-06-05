@@ -51,6 +51,10 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertModalInside(t, tc.w, tc.h, buildConfirmDialogModal())
 		assertModalInside(t, tc.w, tc.h, buildWarConfirmModal())
 		assertModalInside(t, tc.w, tc.h, buildDiplomacyOfferModal())
+		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
+		for _, btn := range buildHistoricalEventChoiceButtons(2) {
+			assertButtonInside(t, tc.w, tc.h, btn)
+		}
 	}
 }
 

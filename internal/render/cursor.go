@@ -19,6 +19,14 @@ func (r *Renderer) updateCursorShape() {
 	}
 
 	// Açık paneller öncelikli kontrol
+	if r.showHistoricalEvent {
+		if r.historicalEventHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.confirmDialog.show {
 		if r.confirmDialogHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -188,6 +196,26 @@ func (r *Renderer) updateCursorShape() {
 	}
 
 	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+}
+
+func (r *Renderer) historicalEventHovering(fx, fy float64) bool {
+	if !r.showHistoricalEvent {
+		return false
+	}
+	if len(r.historicalEventChoices) == 0 {
+		return historicalEventPopupHit(fx, fy)
+	}
+	for _, btn := range buildHistoricalEventChoiceButtons(len(r.historicalEventChoices)) {
+		if btn.HitTest(fx, fy) {
+			return true
+		}
+	}
+	return false
+}
+
+func historicalEventPopupHit(fx, fy float64) bool {
+	modal := buildHistoricalEventModal()
+	return modal.Panel.Rect.Hit(fx, fy)
 }
 
 // --- Hit-test yardımcıları ---

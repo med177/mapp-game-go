@@ -63,7 +63,7 @@ type Renderer struct {
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü | `tech_panel.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan, genel onay ve event detail diyalogları; event detail popup artık structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
-| 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer | `panel.go`, `ui_modals.go`, `game.go` |
+| 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
@@ -102,7 +102,7 @@ Bu hat şu ekranlarda aktif kullanımdadır:
 - ordu split/merge overlay yüzeyleri
 - edit mode inspector/form tab ve aksiyon yüzeyleri
 - confirm / war confirm / event detail / historical event modal yüzeyleri
-- historical modal açıkken arka oyun inputu tamamen bloke edilir; choice varsa `1/2`, `Enter`, ok tuşları veya mouse ile seçim yapılır
+- historical modal açıkken arka oyun inputu tamamen bloke edilir; choice varsa `1/2`, `Enter`, ok tuşları veya mouse ile seçim yapılır ve imleç önceliği bu modalın butonlarına verilir
 - oyuncuya gelen diplomasi teklif modal yüzeyi
 - edit mode shape yardım paneli ve stroke preview overlay primitive'i
 
@@ -218,7 +218,7 @@ Rakip orduları seçilebilir ama emir verilemez. Renderer rakip ordusu için har
 
 Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez.
 
-Bölge bilgi panelinde parmak imleci panelin tamamında değil, yalnızca kapatma düğmesi, vergi `-/+` düğmeleri ve inşa edilebilir bina kartları üzerinde gösterilir. Oyun içi HUD/panel cursor davranışı gerçek etkileşim alanlarına bağlıdır: sağ üstte yalnızca `Menü`, alt HUD'da yalnızca üç aksiyon butonu, olay logunda toggle/kart/X, birim panelinde yalnızca birim kartları pointer üretir. Boş panel alanları tıklamayı tüketmeye devam eder ama clickable cursor üretmez.
+Bölge bilgi panelinde parmak imleci panelin tamamında değil, yalnızca kapatma düğmesi, vergi `-/+` düğmeleri ve inşa edilebilir bina kartları üzerinde gösterilir. Oyun içi HUD/panel cursor davranışı gerçek etkileşim alanlarına bağlıdır: sağ üstte yalnızca `Menü`, alt HUD'da yalnızca üç aksiyon butonu, olay logunda toggle/kart/X, birim panelinde yalnızca birim kartları pointer üretir. Boş panel alanları tıklamayı tüketmeye devam eder ama clickable cursor üretmez. Aynı panelde kaynak satırı ile memnuniyet/vergi çubukları artık ortak `regionPanelStatRowGap` ve `regionPanelBarYOffset` sabitleriyle yerleşir; böylece `Tahıl` satırı ile memnuniyet göstergesi üst üste binmez ve vergi düğmeleri de aynı geometriye bağlı kalır.
 
 Kara bölge paneli de deniz paneliyle aynı komşu başlığını (`Komşu Bölgeler`) içerir; toplam komşu sayısını yazar ve ilk 4 komşuyu listeler, deniz komşuları mavi tonla ayrıştırılır (`internal/render/panel.go:1154` civarı).
 

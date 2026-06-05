@@ -52,6 +52,12 @@ const (
 	btnH = float32(52)
 
 	panelPad = float64(12)
+
+	regionPanelStatRowGap   = 22.0
+	regionPanelBarYOffset   = 4.0
+	regionPanelBarH         = float32(8)
+	regionPanelTaxButtonH   = float32(18)
+	regionPanelTaxButtonPad = float32(8)
 )
 
 func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
@@ -1375,28 +1381,28 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	// Kaynaklar — iki sütun
 	drawUIKeyValueRow(screen, lx, ly, 100, economy.ResourceNameTR(economy.ResourceGold), itoa(region.GoldIncome()), ColorGray, ColorGold)
 	drawUIKeyValueRow(screen, lx+120, ly, 100, economy.ResourceNameTR(economy.ResourceGrain), itoa(region.BaseGrainOutput), ColorGray, ColorWhite)
-	ly += 18
+	ly += regionPanelStatRowGap
 
 	statBarX := float32(lx) + 122
 	drawUIKeyValueRow(screen, lx, ly, 112, "Memnuniyet", itoa(region.Satisfaction)+"%", ColorGray, ColorWhite)
-	drawBar(screen, statBarX, float32(ly)+1, sepW-(statBarX-float32(lx)), 9, float64(region.Satisfaction)/100,
+	drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, sepW-(statBarX-float32(lx)), regionPanelBarH, float64(region.Satisfaction)/100,
 		satisfactionColor(region.Satisfaction))
-	ly += 18
+	ly += regionPanelStatRowGap
 
 	drawUIKeyValueRow(screen, lx, ly, 112, "Vergi", "%"+itoa(region.TaxRate), ColorGray, ColorWhite)
 	taxBarW := sepW - (statBarX - float32(lx))
 	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
 		dec, inc := regionTaxButtonRects(gs)
-		taxBarW = dec[0] - statBarX - 8
-		drawBar(screen, statBarX, float32(ly)+1, taxBarW, 9, float64(region.TaxRate)/100,
+		taxBarW = dec[0] - statBarX - regionPanelTaxButtonPad
+		drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100,
 			color.RGBA{200, 140, 40, 255})
 		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
 		drawTinyPanelButton(screen, inc[0], inc[1], inc[2], inc[3], "+", true)
 	} else {
-		drawBar(screen, statBarX, float32(ly)+1, taxBarW, 9, float64(region.TaxRate)/100,
+		drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100,
 			color.RGBA{200, 140, 40, 255})
 	}
-	ly += 18
+	ly += regionPanelStatRowGap
 
 	// Din dönüşüm ilerlemesi
 	if region.ConversionTurns > 0 {
@@ -2336,9 +2342,9 @@ func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 	if gs.DevelopmentMode {
 		ly += 16 + 16 + 18
 	}
-	ly += 18 + 16 + 8 + 18 + 18
-	y := float32(ly - 17)
-	return [4]float32{px + pw - 70, y, 26, 18}, [4]float32{px + pw - 38, y, 26, 18}
+	ly += 18 + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap
+	y := float32(ly) + regionPanelBarYOffset - 5
+	return [4]float32{px + pw - 70, y, 26, regionPanelTaxButtonH}, [4]float32{px + pw - 38, y, 26, regionPanelTaxButtonH}
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
@@ -2414,7 +2420,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
 	if gs.DevelopmentMode {
 		ly += 16 + 16 + 18
 	}
-	ly += 18 + 16 + 8 + 18 + 18 + 18
+	ly += 18 + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
 	if region.ConversionTurns > 0 {
 		ownerRel := ""
 		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
