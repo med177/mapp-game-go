@@ -67,9 +67,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Her bölgeden altın geliri +5",
+    "description_tr": "Her bölgeden altın geliri +2",
     "effects": {
-      "gold_per_region": 5
+      "gold_per_region": 2
     },
     "gold_cost": 12,
     "id": "trade_routes",
@@ -79,9 +79,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Her bölgeden altın geliri +10",
+    "description_tr": "Her bölgeden altın geliri +4",
     "effects": {
-      "gold_per_region": 10
+      "gold_per_region": 4
     },
     "gold_cost": 28,
     "id": "banking",

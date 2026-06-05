@@ -542,8 +542,8 @@
   {
     "faction_a": "ahiler",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "ahiler",
@@ -1658,8 +1658,8 @@
   {
     "faction_a": "aydin_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "aydin_bey",
@@ -2036,8 +2036,8 @@
   {
     "faction_a": "east_rome",
     "faction_b": "genoa",
-    "score": 18,
-    "stance": "trade"
+    "score": 8,
+    "stance": "peace"
   },
   {
     "faction_a": "east_rome",
@@ -2144,7 +2144,7 @@
   {
     "faction_a": "east_rome",
     "faction_b": "ottoman",
-    "score": -40,
+    "score": -25,
     "stance": "peace"
   },
   {
@@ -2432,8 +2432,8 @@
   {
     "faction_a": "candar_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "candar_bey",
@@ -2678,8 +2678,8 @@
   {
     "faction_a": "canik_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "canik_bey",
@@ -3380,8 +3380,8 @@
   {
     "faction_a": "dulkadir_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "dulkadir_bey",
@@ -4028,8 +4028,8 @@
   {
     "faction_a": "safavid",
     "faction_b": "esrefoglu_bey",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "saruhan_bey",
@@ -4988,8 +4988,8 @@
   {
     "faction_a": "germiyan_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "germiyan_bey",
@@ -5162,8 +5162,8 @@
   {
     "faction_a": "golden_horde",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "golden_horde",
@@ -5330,8 +5330,8 @@
   {
     "faction_a": "granada_emirate",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "granada_emirate",
@@ -5492,8 +5492,8 @@
   {
     "faction_a": "hamid_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "hamid_bey",
@@ -6080,8 +6080,8 @@
   {
     "faction_a": "karaman_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "karaman_bey",
@@ -6212,8 +6212,8 @@
   {
     "faction_a": "karesioglu_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "karesioglu_bey",
@@ -6572,8 +6572,8 @@
   {
     "faction_a": "mamluk",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "mamluk",
@@ -6680,8 +6680,8 @@
   {
     "faction_a": "mentese_bey",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "mentese_bey",
@@ -7052,8 +7052,8 @@
   {
     "faction_a": "ottoman",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "ottoman",
@@ -7436,8 +7436,8 @@
   {
     "faction_a": "safavid",
     "faction_b": "saruhan_bey",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "safavid",

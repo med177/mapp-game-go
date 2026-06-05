@@ -199,7 +199,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "gold": 520,
+    "gold": 420,
     "grain": 170,
     "iron": 65,
     "timber": 60,
@@ -208,15 +208,12 @@
     "cloth": 95,
     "research": {
       "completed": {
-        "harbor_administration": true,
-        "iron_weapons": true,
-        "navigation": true,
-        "trade_routes": true
+        "harbor_administration": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 34
+    "ai_aggressiveness": 28
   },
   {
     "id": "candar_bey",
@@ -875,15 +872,12 @@
     "cloth": 95,
     "research": {
       "completed": {
-        "cavalry_tactics": true,
-        "horse_breeding": true,
-        "iron_weapons": true,
-        "trade_routes": true
+        "horse_breeding": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30
+    "ai_aggressiveness": 20
   },
   {
     "id": "mentese_bey",
@@ -1001,8 +995,8 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 360,
-    "grain": 170,
+    "gold": 480,
+    "grain": 200,
     "iron": 55,
     "timber": 60,
     "stone": 1000,
@@ -1010,13 +1004,14 @@
     "cloth": 20,
     "research": {
       "completed": {
+        "cavalry_tactics": true,
         "horse_breeding": true,
         "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 58
+    "ai_aggressiveness": 62
   },
   {
     "id": "papal_states_f",

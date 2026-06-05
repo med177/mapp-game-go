@@ -49,7 +49,7 @@
   },
   {
     "affected_faction": "ottoman",
-    "army_hp_mod": 1.04,
+    "army_hp_mod": 1.08,
     "choice_prompt_tr": "Uç beylerinin başarısı nasıl değerlendirilsin?",
     "choices": [
       {
@@ -80,8 +80,8 @@
       }
     ],
     "desc_tr": "Koyunhisar civarındaki baskınlar Osmanlı uç beylerine moral kazandırdı. Doğu Roma sınırındaki akınlar yoğunlaşıyor.",
-    "gold_delta": 70,
-    "grain_delta": 15,
+    "gold_delta": 100,
+    "grain_delta": 20,
     "historical_month": 7,
     "historical_year": 1302,
     "id": "battle_of_bapheus_1302",
@@ -93,7 +93,7 @@
       "bithynia",
       "bilecik_frontier"
     ],
-    "sat_delta": 8,
+    "sat_delta": 10,
     "target": "specific_faction"
   },
   {
@@ -132,8 +132,8 @@
     "affected_faction": "mamluk",
     "army_hp_mod": 1,
     "desc_tr": "İskenderiye ve Suriye hattında kervanlar ile Venedikli tüccarlar yeniden güvenli akış buldu. Baharat ticareti canlanıyor.",
-    "gold_delta": 80,
-    "grain_delta": 5,
+    "gold_delta": 40,
+    "grain_delta": 0,
     "historical_month": 9,
     "historical_year": 1304,
     "id": "alexandria_convoys_1304",
@@ -141,7 +141,7 @@
     "name_tr": "İskenderiye Konvoyları",
     "one_shot": true,
     "probability": 0,
-    "sat_delta": 4,
+    "sat_delta": 2,
     "target": "specific_faction"
   },
   {
