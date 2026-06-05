@@ -15,6 +15,8 @@ const (
 // UnitTier birimin seviyesi (1=temel, 2=orta, 3=elit).
 type UnitTier int
 
+const MaxUnitHP = 100
+
 // UnitType bir birim türünü tanımlar (JSON'dan yüklenir).
 type UnitType struct {
 	ID       string       `json:"id"`
@@ -52,6 +54,27 @@ type Unit struct {
 	TypeID     string `json:"type_id"`
 	CurrentHP  int    `json:"current_hp"`
 	Experience int    `json:"experience"` // 0-100, savaşlarla artar
+}
+
+func (u *Unit) HPPercent() float64 {
+	hp := u.CurrentHP
+	if hp < 0 {
+		hp = 0
+	}
+	if hp > MaxUnitHP {
+		hp = MaxUnitHP
+	}
+	return float64(hp) / float64(MaxUnitHP)
+}
+
+func (u *Unit) MissingHP() int {
+	if u.CurrentHP >= MaxUnitHP {
+		return 0
+	}
+	if u.CurrentHP < 0 {
+		return MaxUnitHP
+	}
+	return MaxUnitHP - u.CurrentHP
 }
 
 // EffectiveAttack deneyim bonusunu dahil eder.

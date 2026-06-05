@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-05-26
+last_updated: 2026-06-05
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -24,7 +24,7 @@ savunucuGücü = ordu.TotalStrength(types) × terrainBonus × (1 + defMods.Defen
 calculateOutcome(saldıranGücü, savunucuGücü)
     → (kazandıMı bool, saldıranKayıpOranı float64, savunucuKayıpOranı float64)
 
-applyCasualties(ordu, kayıpOranı) → gerçek birim kayıpları
+applyCasualties(ordu, kayıpOranı) → HP hasarı + gerekirse gerçek birim kaybı
 ```
 
 ---
@@ -79,6 +79,21 @@ ratio := (atkStr / (defStr + 1)) * (1 + dice)
 
 ---
 
+## Hasar ve Toparlanma
+
+Çarpışma sonucu artık ilk etapta tüm kaybı doğrudan birim silerek çözmez. `applyCasualties()` toplam HP havuzu üstünden hasarı dağıtır:
+
+- orta kayıplarda birimler hayatta kalır ama hasarlı çıkar,
+- ağır kayıplarda bazı birimler tamamen düşer,
+- yaşayan birimlerin savaş katkısı `army.TotalStrength()` ve `TotalDefense()` içinde mevcut HP oranıyla ölçeklenir.
+
+`internal/game/resolution.go`
+
+- kara orduları sahip oldukları kara bölgede tur başına `+10 HP` toparlanır,
+- toparlanma `CurrentHP < 100` olan birimlerde çalışır ve `%100`e kadar sürer,
+- kış turunda önce attrition uygulanır, aynı sweep içinde ek ücretsiz toparlanma verilmez,
+- donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz.
+
 ## Savaş Sonrası Uygulama
 
 `internal/game/game.go:515`
@@ -104,6 +119,6 @@ Denizde çatışma yalnızca iki fraksiyon arasında `StanceWar` varsa tetikleni
 
 ## Birim Gücü
 
-`army.TotalStrength(types)` — her birimin `types[unit.TypeID].Attack` değerlerinin toplamı ve mevcut HP oranıyla ağırlıklandırılır.
+`army.TotalStrength(types)` — her birimin `Attack + Morale/10` değeri mevcut HP oranıyla ağırlıklandırılır.
 
 → Birim tipleri: `assets/data/units.json`

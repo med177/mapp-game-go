@@ -40,7 +40,8 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi |
-| Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları |
+| Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi kara toprağında tur başına `+10 HP` ile %100'e kadar toparlanır |
+| Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
 | Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
 | Rakip ordu istihbaratı | ✅ | Menzildeki rakip orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |

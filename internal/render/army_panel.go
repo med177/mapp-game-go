@@ -94,6 +94,13 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	DrawText(screen, mpStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+6, FaceSmall, mpCol)
+	if a.CanReplenishIn(gs.Regions) && a.HasDamagedUnits() {
+		healStr := "Takviye aktif"
+		healW := MeasureText(healStr, FaceSmall)
+		DrawText(screen, healStr,
+			float64(px)+float64(panelW)-float64(armyPanelPadX)-healW,
+			float64(py)+20, FaceSmall, color.RGBA{110, 190, 120, 220})
+	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
 	mergeTarget := FindMergeTarget(gs, aid)
@@ -132,13 +139,22 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 
 		u := a.Units[i]
 		utype := gs.UnitTypes[u.TypeID]
-		hpPct := float64(u.CurrentHP) / 100.0
+		hpPct := u.HPPercent()
+		isReplenishing := a.CanReplenishIn(gs.Regions) && u.CurrentHP < army.MaxUnitHP
 
 		// Kart arka planı sabit beyaz.
 		cardBg := color.RGBA{255, 255, 255, 245}
 		cardBorderCol := color.RGBA{160, 160, 160, 225}
 		vector.FillRect(screen, cx, cy, cardW, cardH, cardBg, false)
 		vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, cardBorderCol, false)
+		if isReplenishing {
+			badgeW := float32(18)
+			badgeH := float32(12)
+			badgeX := cx + cardW - badgeW - 3
+			badgeY := cy + 3
+			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
+			DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
+		}
 
 		// Sprite: en-boy oranını koruyarak karta ortala (distorsiyon yok).
 		if armySheet != nil && utype != nil {

@@ -200,3 +200,35 @@ func TestCheckEliminationsRemovesSeaOnlyFactionWithFleets(t *testing.T) {
 		t.Fatal("elenen fraksiyonun diplomasi ilişkileri temizlenmeliydi")
 	}
 }
+
+func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home":  {ID: "home", OwnerID: "player"},
+			"enemy": {ID: "enemy", OwnerID: "enemy"},
+			"sea":   {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"home_army":  {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"enemy_army": {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"fleet":      {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+		},
+	}
+
+	applySeasonEffects(gs)
+
+	if got := gs.Armies["home_army"].Units[0].CurrentHP; got != 75 {
+		t.Fatalf("dost topraktaki ordu iyilesmeli, got=%d", got)
+	}
+	if got := gs.Armies["enemy_army"].Units[0].CurrentHP; got != 65 {
+		t.Fatalf("dost olmayan toprakta iyilesme olmamali, got=%d", got)
+	}
+	if got := gs.Armies["fleet"].Units[0].CurrentHP; got != 65 {
+		t.Fatalf("donanma kara takviyesi almamali, got=%d", got)
+	}
+}

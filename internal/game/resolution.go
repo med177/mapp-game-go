@@ -11,6 +11,8 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+const friendlyReplenishHP = 10
+
 type eliminationResult struct {
 	FactionID         faction.FactionID
 	SuccessorID       faction.FactionID
@@ -160,6 +162,9 @@ func applySeasonEffects(gs *state.GameState) {
 
 	movMod := s.MovementMod()
 	for _, a := range gs.Armies {
+		if !s.IsWinter() {
+			a.ReplenishInFriendlyTerritory(gs.Regions, friendlyReplenishHP)
+		}
 		mp := 2 * movMod / 100
 		if mp < 1 {
 			mp = 1
@@ -321,8 +326,8 @@ func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int
 				damage = 15
 			}
 			a.Units[i].CurrentHP -= damage
-			if a.Units[i].CurrentHP < 1 {
-				a.Units[i].CurrentHP = 1
+			if a.Units[i].CurrentHP < 0 {
+				a.Units[i].CurrentHP = 0
 			}
 			remaining--
 		}

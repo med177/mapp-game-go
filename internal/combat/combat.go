@@ -43,6 +43,10 @@ func ResolveBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types
 
 	atkDead := applyCasualties(atk, atkLoss)
 	defDead := applyCasualties(def, defLoss)
+	if attackerWins && len(def.Units) > 0 {
+		defDead += len(def.Units)
+		def.Units = def.Units[:0]
+	}
 
 	return Result{
 		AttackerWins: attackerWins,
@@ -109,12 +113,83 @@ func calculateOutcome(atkStr, defStr float64) (attackerWins bool, atkCasualtyRat
 // Ratio doğrudan "ölen birim oranı" olarak yorumlanır (HP fraksiyonu değil).
 func applyCasualties(a *army.Army, ratio float64) (lost int) {
 	n := len(a.Units)
-	toKill := int(float64(n)*ratio + 0.5) // yuvarla
-	if toKill > n {
-		toKill = n
+	if n == 0 || ratio <= 0 {
+		return 0
 	}
-	a.Units = a.Units[:n-toKill]
-	return toKill
+	totalHP := 0
+	for i := range a.Units {
+		hp := a.Units[i].CurrentHP
+		if hp < 1 {
+			continue
+		}
+		if hp > army.MaxUnitHP {
+			hp = army.MaxUnitHP
+		}
+		totalHP += hp
+	}
+	if totalHP == 0 {
+		a.Units = a.Units[:0]
+		return n
+	}
+
+	damageBudget := int(float64(totalHP)*ratio + 0.5)
+	if damageBudget <= 0 {
+		return 0
+	}
+	if damageBudget > totalHP {
+		damageBudget = totalHP
+	}
+
+	spreadDamage := damageBudget / n
+	if spreadDamage > 60 {
+		spreadDamage = 60
+	}
+	if spreadDamage > 0 {
+		for i := range a.Units {
+			a.Units[i].CurrentHP -= spreadDamage
+		}
+		damageBudget -= spreadDamage * n
+	}
+
+	start := 0
+	if n > 1 {
+		start = rand.Intn(n)
+	}
+	for damageBudget > 0 {
+		target := -1
+		targetHP := 0
+		for step := 0; step < n; step++ {
+			idx := (start + step) % n
+			hp := a.Units[idx].CurrentHP
+			if hp <= 0 {
+				continue
+			}
+			if target == -1 || hp < targetHP {
+				target = idx
+				targetHP = hp
+			}
+		}
+		if target == -1 {
+			break
+		}
+		chunk := targetHP
+		if damageBudget < chunk {
+			chunk = damageBudget
+		}
+		a.Units[target].CurrentHP -= chunk
+		damageBudget -= chunk
+	}
+
+	surviving := a.Units[:0]
+	for _, u := range a.Units {
+		if u.CurrentHP <= 0 {
+			lost++
+			continue
+		}
+		surviving = append(surviving, u)
+	}
+	a.Units = surviving
+	return lost
 }
 
 func outcomeDescription(wins bool, atkLoss, defLoss float64) string {

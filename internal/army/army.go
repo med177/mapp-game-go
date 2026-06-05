@@ -42,7 +42,12 @@ func (a *Army) TotalStrength(types map[string]*UnitType) int {
 		if !ok {
 			continue
 		}
-		total += u.EffectiveAttack(types) + t.Morale/10
+		power := u.EffectiveAttack(types) + t.Morale/10
+		scaled := int(float64(power) * u.HPPercent())
+		if scaled < 1 {
+			scaled = 1
+		}
+		total += scaled
 	}
 	return total
 }
@@ -51,7 +56,11 @@ func (a *Army) TotalStrength(types map[string]*UnitType) int {
 func (a *Army) TotalDefense(types map[string]*UnitType) int {
 	total := 0
 	for _, u := range a.Units {
-		total += u.EffectiveDefense(types)
+		power := int(float64(u.EffectiveDefense(types)) * u.HPPercent())
+		if power < 1 {
+			power = 1
+		}
+		total += power
 	}
 	return total
 }
@@ -69,6 +78,40 @@ func (a *Army) ApplyWinterAttrition() (lost int) {
 	}
 	a.Units = surviving
 	return lost
+}
+
+func (a *Army) HasDamagedUnits() bool {
+	for _, u := range a.Units {
+		if u.CurrentHP < MaxUnitHP {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *Army) CanReplenishIn(regions map[world.RegionID]*world.Region) bool {
+	if a == nil || a.IsNaval {
+		return false
+	}
+	region := regions[a.RegionID]
+	return region != nil && !region.IsSea && region.OwnerID == a.OwnerID
+}
+
+func (a *Army) ReplenishInFriendlyTerritory(regions map[world.RegionID]*world.Region, amount int) (healedUnits int) {
+	if !a.CanReplenishIn(regions) || amount <= 0 {
+		return 0
+	}
+	for i := range a.Units {
+		if a.Units[i].CurrentHP >= MaxUnitHP {
+			continue
+		}
+		a.Units[i].CurrentHP += amount
+		if a.Units[i].CurrentHP > MaxUnitHP {
+			a.Units[i].CurrentHP = MaxUnitHP
+		}
+		healedUnits++
+	}
+	return healedUnits
 }
 
 // ResetMovePoints tur başında hareket puanlarını sıfırlar.
