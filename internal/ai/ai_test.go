@@ -54,7 +54,7 @@ func TestAIStartsTradeOnHealthyPeace(t *testing.T) {
 	gs := aiTestState()
 	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
 	rel.Stance = faction.StancePeace
-	rel.Score = 5
+	rel.Score = 20
 
 	aiHandleDiplomacy(gs, "ai_1")
 
@@ -374,9 +374,9 @@ func aiTestState() *state.GameState {
 		},
 		PlayerFactionID: "player",
 		Regions: map[world.RegionID]*world.Region{
-			"p1": {ID: "p1", OwnerID: "player", TradeCapacity: 3},
-			"a1": {ID: "a1", OwnerID: "ai_1", TradeCapacity: 3},
-			"b1": {ID: "b1", OwnerID: "ai_2", TradeCapacity: 3},
+			"p1": {ID: "p1", OwnerID: "player", TradeCapacity: 4},
+			"a1": {ID: "a1", OwnerID: "ai_1", TradeCapacity: 4},
+			"b1": {ID: "b1", OwnerID: "ai_2", TradeCapacity: 4},
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("ai_1", "ai_2"):   {FactionA: "ai_1", FactionB: "ai_2", Score: 25, Stance: faction.StancePeace},

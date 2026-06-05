@@ -138,7 +138,7 @@ Tek oyunculu, karşısında stratejik yapay zeka var.
 ## Teknoloji Ağacı
 - Araştırmalar tur harcamasıyla ilerler (altın veya üretim puanı).
 - **Bina bağımlılığı:** Bazı teknolojiler belirli binaların varlığını gerektirir.
-- **Bölge bağımlılığı:** Belirli şehirler/bölgeler ele geçirilince yeni teknoloji dalları açılır (örn: Konstantinopolis → Bizans mühendisliği).
+- **Bölge bağımlılığı:** Belirli şehirler/bölgeler ele geçirilince yeni teknoloji dalları açılır (örn: Konstantinopolis → Doğu Roma mühendisliği).
 - Kategoriler: Askeri, Ekonomi, Diplomasi, Denizcilik, Din/Kültür.
 
 ---
@@ -341,7 +341,7 @@ A, B'den **daha küçük wy** değerine sahipse (daha kuzeyde), A'nın Voronoi h
 ```
 Bithynia    (wx=1090, wy=468) → Karadeniz'e ulaşıyordu
 Chrysopolis (wx=1090, wy=445) eklendi → geçiş: wy=456.5
-=> wy<456: Chrysopolis (Bizans), wy>456: Bithynia (Osmanlı) ✓
+=> wy<456: Chrysopolis (Doğu Roma), wy>456: Bithynia (Osmanlı) ✓
 
 Germiyan    (wx=1084, wy=498) → Akdeniz'e ulaşıyordu
 Lycia       (wx=1082, wy=516) eklendi → geçiş: wy=507

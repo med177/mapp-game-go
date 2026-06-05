@@ -52,7 +52,7 @@ func TestProposeTradeRejectedDuringWar(t *testing.T) {
 func TestTradeCreatesUniqueRoutesAndWarRemovesThem(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
-	rel.Score = 5
+	rel.Score = 15
 
 	result := Execute(gs, "a", "b", ActionProposeTrade)
 	if !result.Accepted || !result.Applied {
@@ -157,7 +157,7 @@ func testGameState() *state.GameState {
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"a_cap": {ID: "a_cap", OwnerID: "a", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4},
-			"b_cap": {ID: "b_cap", OwnerID: "b", TaxRate: 50, Satisfaction: 50, TradeCapacity: 3},
+			"b_cap": {ID: "b_cap", OwnerID: "b", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4},
 		},
 		Relations:   map[string]*faction.Relation{},
 		TradeRoutes: []*economy.TradeRoute{},

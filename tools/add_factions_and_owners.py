@@ -18,7 +18,7 @@ new_factions = [
     {
         "id": "byzantine",
         "name": "Byzantine Empire",
-        "name_tr": "Bizans İmparatorluğu",
+        "name_tr": "Doğu Roma İmparatorluğu",
         "religion": "orthodox",
         "color": [150, 40, 180],
         "is_playable": True,
@@ -445,7 +445,7 @@ print(f"Eklenen fraksiyon: {added}, toplam: {len(factions)}")
 # ── Bölge sahipligi atamalari (1300 donemi) ──────────────────────────
 # {bolge_id: faction_id}
 ownership = {
-    # Bizans
+    # Doğu Roma
     "constantinople":   "byzantine",
     "greece":           "byzantine",
     "thessaly":         "byzantine",

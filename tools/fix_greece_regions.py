@@ -8,7 +8,7 @@ Sorun:
 Cozum:
   1. thessaly: (928,470) -> (920,462)  [daha kuzey = Selanik/Larissa]
   2. greece:   (948,492) -> (962,503)  [daha dogu+guney = Attika/Atina]
-  3. Yeni: chalcidice (968,460) Bizans  [kuzeyden 'greece' yi keser]
+  3. Yeni: chalcidice (968,460) Doğu Roma  [kuzeyden 'greece' yi keser]
 
 Voronoi kontrol:
   chalcidice(968,460) - greece(962,503) midpoint (965,481.5):
@@ -59,7 +59,7 @@ if g:
 # ════════════════════════════════════════════════════════════════
 # 2. CHALCIDICE: YENI BOLGE
 # ════════════════════════════════════════════════════════════════
-# Chalcidice (Halkidiki) yarimadasi: Bizans monastic cumhuriyeti (Mount Athos).
+# Chalcidice (Halkidiki) yarimadasi: Doğu Roma monastic cumhuriyeti (Mount Athos).
 # (968,460) konumu:
 #   - thessaly(920,462) kuzeyindeki dogu uzantisini alir
 #   - greece(962,503) ile araya girerek dar banti keser
@@ -74,7 +74,7 @@ if 'chalcidice' not in existing_ids:
         "is_locked": False,
         "is_sea": False,
         "name": "Chalcidice",
-        "name_tr": "Halkidiki (Kutsal Dag / Bizans)",
+        "name_tr": "Halkidiki (Kutsal Dag / Doğu Roma)",
         "neighbors": ["thessaly", "greece", "thrace", "macedonia", "_sea_aegean"],
         "owner_id": "byzantine",
         "population": 180,

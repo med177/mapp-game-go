@@ -8,9 +8,9 @@ Sorun:
 Cozum:
   Chrysopolis (1090, 445): Bithynia'nin tam kuzeyinde.
   Gecis wy = (445+468)/2 = 456.5
-  => Kiyinin (wy~445-455) hepsi Chrysopolis (Bizans) rengiyle gosterilir.
+  => Kiyinin (wy~445-455) hepsi Chrysopolis (Doğu Roma) rengiyle gosterilir.
 
-Tarihsel: Hrisopolis (modern Uskudar/Kadikoy Asian yakasi) 1326'ya dek Bizans.
+Tarihsel: Hrisopolis (modern Uskudar/Kadikoy Asian yakasi) 1326'ya dek Doğu Roma.
 """
 import json
 
@@ -40,7 +40,7 @@ chrysopolis = {
     "is_locked": False,
     "is_sea": False,
     "name": "Chrysopolis",
-    "name_tr": "Hrisopolis (Bizans Asya Yakasi)",
+    "name_tr": "Hrisopolis (Doğu Roma Asya Yakasi)",
     # Nicomedia (1078,450) ile Paphlagonia (1142,452) arasinda,
     # Bithynia (1090,468) nin tam kuzeyinde.
     "world_x": 1090,

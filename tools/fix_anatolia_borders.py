@@ -2,7 +2,7 @@
 Anadolu sinirlarini tarihi hatlara yakinlastir.
 
 Eklenen bolgeler:
-1. nicomedia  (wx=1078, wy=450) - Bizans, Bithynia kuzeyini keser -> Karadeniz erisimi kesilir
+1. nicomedia  (wx=1078, wy=450) - Doğu Roma, Bithynia kuzeyini keser -> Karadeniz erisimi kesilir
 2. paphlagonia(wx=1142, wy=452) - Candaroglu, Karadeniz kiyisi ortasi
 3. lycia      (wx=1082, wy=516) - Teke, Germiyan gueney tampon -> Akdeniz erisimi kesilir
 4. saruhan    (wx=1057, wy=480) - Saruhanogullari, Aydinoglu-Germiyan arasi (eksik beylik)
@@ -56,9 +56,9 @@ else:
 # 2. YENI BOLGELER
 # ════════════════════════════════════════════════════════════════
 new_regions = [
-    # ── Nicomedia: Bizans'in Anadolu kuzey kiyisi (Izmit/Kocaeli) ────────
+    # ── Nicomedia: Doğu Roma'in Anadolu kuzey kiyisi (Izmit/Kocaeli) ────────
     # Bithynia'nin (1090,468) kuzeyine oturarak Karadeniz erisimini keser.
-    # Tarihsel: Nikomedia 1337'ye kadar Bizans elinde kaldi.
+    # Tarihsel: Nikomedia 1337'ye kadar Doğu Roma elinde kaldi.
     {
         "active_event_id": "",
         "base_gold_income": 42,
@@ -67,7 +67,7 @@ new_regions = [
         "is_locked": False,
         "is_sea": False,
         "name": "Nicomedia",
-        "name_tr": "Nikomedia (Bizans Sinir Kenti)",
+        "name_tr": "Nikomedia (Doğu Roma Sinir Kenti)",
         "neighbors": ["bithynia", "paphlagonia", "candaroglu", "constantinople",
                       "_sea_black", "_sea_aegean"],
         "owner_id": "byzantine",

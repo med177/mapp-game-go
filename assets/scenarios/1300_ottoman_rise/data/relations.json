@@ -710,8 +710,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "granada_emirate",
-    "score": -30,
-    "stance": "peace"
+    "score": -45,
+    "stance": "war"
   },
   {
     "faction_a": "aragon",
@@ -1712,7 +1712,7 @@
   {
     "faction_a": "bulgarian_empire",
     "faction_b": "byzantine",
-    "score": 25,
+    "score": 10,
     "stance": "peace"
   },
   {
@@ -2036,8 +2036,8 @@
   {
     "faction_a": "byzantine",
     "faction_b": "genoa",
-    "score": -20,
-    "stance": "peace"
+    "score": 18,
+    "stance": "trade"
   },
   {
     "faction_a": "byzantine",
@@ -2144,7 +2144,7 @@
   {
     "faction_a": "byzantine",
     "faction_b": "ottoman",
-    "score": -30,
+    "score": -40,
     "stance": "peace"
   },
   {
@@ -2222,7 +2222,7 @@
   {
     "faction_a": "byzantine",
     "faction_b": "venice",
-    "score": -20,
+    "score": 5,
     "stance": "peace"
   },
   {
@@ -3452,7 +3452,7 @@
   {
     "faction_a": "england",
     "faction_b": "france",
-    "score": 25,
+    "score": -25,
     "stance": "peace"
   },
   {
@@ -4664,7 +4664,7 @@
   {
     "faction_a": "genoa",
     "faction_b": "venice",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -5066,7 +5066,7 @@
   {
     "faction_a": "golden_horde",
     "faction_b": "ilkhanate",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -5822,7 +5822,7 @@
   {
     "faction_a": "hungarian_kingdom",
     "faction_b": "serbian_empire",
-    "score": -20,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -5876,7 +5876,7 @@
   {
     "faction_a": "ilkhanate",
     "faction_b": "mamluk",
-    "score": 25,
+    "score": -25,
     "stance": "peace"
   },
   {
@@ -5906,7 +5906,7 @@
   {
     "faction_a": "ilkhanate",
     "faction_b": "ottoman",
-    "score": 25,
+    "score": -5,
     "stance": "peace"
   },
   {
@@ -5942,8 +5942,8 @@
   {
     "faction_a": "ilkhanate",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -15,
+    "stance": "peace"
   },
   {
     "faction_a": "ilkhanate",
@@ -6536,7 +6536,7 @@
   {
     "faction_a": "mamluk",
     "faction_b": "ottoman",
-    "score": 25,
+    "score": 10,
     "stance": "peace"
   },
   {

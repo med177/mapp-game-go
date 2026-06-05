@@ -182,7 +182,7 @@ func TestMainMenuRenderSmokeCommonViewports(t *testing.T) {
 
 func TestSelectionScreensRenderSmokeCommonViewports(t *testing.T) {
 	scenarios := []*scenario.Scenario{
-		{Name: "1300 Anadolu", Description: "Anadolu beylikleri, Bizans kalıntıları ve yükselen Osmanlı arasında geçen yoğun başlangıç.", Year: 1300, Month: 3},
+		{Name: "1300 Anadolu", Description: "Anadolu beylikleri, Doğu Roma kalıntıları ve yükselen Osmanlı arasında geçen yoğun başlangıç.", Year: 1300, Month: 3},
 		{Name: "Doğu Akdeniz", Description: "Levant, Mısır ve deniz ticaret merkezleri etrafında şekillenen ekonomik mücadele.", Year: 1350, Month: 9},
 	}
 	gs := &state.GameState{

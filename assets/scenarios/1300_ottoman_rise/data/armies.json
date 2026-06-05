@@ -39,7 +39,7 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 1
       },
       {
         "type_id": "light_cavalry",
@@ -105,12 +105,8 @@
     "region_id": "bilecik_frontier",
     "units": [
       {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
         "type_id": "infantry",
-        "count": 2
+        "count": 1
       },
       {
         "type_id": "light_cavalry",
@@ -127,6 +123,10 @@
     "owner_id": "venice",
     "region_id": "venice",
     "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
       {
         "type_id": "militia",
         "count": 1
@@ -148,7 +148,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 1
       }
     ]
   },
@@ -178,7 +178,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 2
       }
     ]
   },
@@ -193,7 +193,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 2
       }
     ]
   },
@@ -294,7 +294,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 2
+        "count": 1
       }
     ]
   },
@@ -369,6 +369,10 @@
     "owner_id": "ilkhanate",
     "region_id": "kayseri",
     "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
       {
         "type_id": "militia",
         "count": 2
@@ -562,15 +566,15 @@
     "units": [
       {
         "type_id": "cavalry",
-        "count": 1
+        "count": 2
       },
       {
         "type_id": "light_cavalry",
-        "count": 1
+        "count": 2
       },
       {
         "type_id": "militia",
-        "count": 5
+        "count": 2
       }
     ]
   },
@@ -642,10 +646,6 @@
       },
       {
         "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
         "count": 1
       },
       {
@@ -676,7 +676,7 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 1
       },
       {
         "type_id": "light_cavalry",
@@ -710,7 +710,7 @@
       },
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 1
       },
       {
         "type_id": "light_cavalry",
@@ -718,7 +718,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 1
       }
     ]
   },
@@ -730,10 +730,6 @@
       {
         "type_id": "infantry",
         "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
       },
       {
         "type_id": "militia",

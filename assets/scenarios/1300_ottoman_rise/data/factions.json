@@ -199,17 +199,16 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "gold": 620,
-    "grain": 190,
-    "iron": 85,
-    "timber": 70,
+    "gold": 520,
+    "grain": 170,
+    "iron": 65,
+    "timber": 60,
     "stone": 0,
-    "spice": 60,
-    "cloth": 85,
+    "spice": 75,
+    "cloth": 95,
     "research": {
       "completed": {
         "harbor_administration": true,
-        "horse_breeding": true,
         "iron_weapons": true,
         "navigation": true,
         "trade_routes": true
@@ -217,7 +216,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 42
+    "ai_aggressiveness": 34
   },
   {
     "id": "candar_bey",
@@ -367,10 +366,10 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 780,
-    "grain": 250,
-    "iron": 110,
-    "timber": 220,
+    "gold": 680,
+    "grain": 230,
+    "iron": 95,
+    "timber": 190,
     "stone": 0,
     "spice": 15,
     "cloth": 130,
@@ -385,7 +384,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 58
+    "ai_aggressiveness": 62
   },
   {
     "id": "epir",
@@ -477,10 +476,10 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 820,
-    "grain": 300,
-    "iron": 140,
-    "timber": 180,
+    "gold": 760,
+    "grain": 280,
+    "iron": 125,
+    "timber": 165,
     "stone": 0,
     "spice": 25,
     "cloth": 95,
@@ -494,7 +493,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 59
   },
   {
     "id": "genoa",
@@ -508,28 +507,24 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "gold": 900,
-    "grain": 80,
-    "iron": 90,
-    "timber": 100,
+    "gold": 620,
+    "grain": 75,
+    "iron": 55,
+    "timber": 90,
     "stone": 0,
-    "spice": 120,
-    "cloth": 140,
+    "spice": 110,
+    "cloth": 125,
     "research": {
       "completed": {
         "banking": true,
         "harbor_administration": true,
-        "horse_breeding": true,
-        "iron_weapons": true,
-        "latin_naval_architecture": true,
-        "naval_doctrine": true,
         "navigation": true,
         "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 34
   },
   {
     "id": "georgia_kingdom",
@@ -610,7 +605,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 72
+    "ai_aggressiveness": 66
   },
   {
     "id": "granada_emirate",
@@ -737,25 +732,23 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "gold": 700,
-    "grain": 300,
-    "iron": 140,
-    "timber": 80,
+    "gold": 620,
+    "grain": 260,
+    "iron": 110,
+    "timber": 70,
     "stone": 0,
-    "spice": 110,
-    "cloth": 95,
+    "spice": 95,
+    "cloth": 70,
     "research": {
       "completed": {
         "cavalry_tactics": true,
-        "engineering_corps": true,
         "horse_breeding": true,
-        "iron_weapons": true,
-        "trade_routes": true
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 54
   },
   {
     "id": "karaman_bey",
@@ -873,26 +866,24 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 800,
-    "grain": 400,
-    "iron": 80,
-    "timber": 50,
+    "gold": 560,
+    "grain": 360,
+    "iron": 70,
+    "timber": 60,
     "stone": 0,
-    "spice": 130,
-    "cloth": 85,
+    "spice": 145,
+    "cloth": 95,
     "research": {
       "completed": {
         "cavalry_tactics": true,
-        "engineering_corps": true,
         "horse_breeding": true,
         "iron_weapons": true,
-        "navigation": true,
         "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 30
   },
   {
     "id": "mentese_bey",
@@ -1010,25 +1001,22 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 520,
-    "grain": 220,
-    "iron": 90,
-    "timber": 80,
+    "gold": 360,
+    "grain": 170,
+    "iron": 55,
+    "timber": 60,
     "stone": 0,
-    "spice": 35,
-    "cloth": 50,
+    "spice": 10,
+    "cloth": 20,
     "research": {
       "completed": {
-        "cavalry_tactics": true,
-        "engineering_corps": true,
         "horse_breeding": true,
-        "iron_weapons": true,
-        "trade_routes": true
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 68
+    "ai_aggressiveness": 58
   },
   {
     "id": "papal_states_f",
@@ -1186,23 +1174,21 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 360,
-    "grain": 170,
-    "iron": 120,
-    "timber": 55,
+    "gold": 220,
+    "grain": 120,
+    "iron": 70,
+    "timber": 45,
     "stone": 0,
-    "spice": 80,
-    "cloth": 95,
+    "spice": 45,
+    "cloth": 55,
     "research": {
       "completed": {
-        "cavalry_tactics": true,
-        "horse_breeding": true,
-        "iron_weapons": true
+        "horse_breeding": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 58
+    "ai_aggressiveness": 35
   },
   {
     "id": "saruhan_bey",
@@ -1376,29 +1362,24 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 950,
-    "grain": 90,
-    "iron": 60,
-    "timber": 110,
+    "gold": 680,
+    "grain": 85,
+    "iron": 50,
+    "timber": 95,
     "stone": 0,
-    "spice": 140,
-    "cloth": 130,
+    "spice": 120,
+    "cloth": 120,
     "research": {
       "completed": {
         "banking": true,
-        "cartography": true,
         "harbor_administration": true,
-        "horse_breeding": true,
-        "iron_weapons": true,
-        "latin_naval_architecture": true,
-        "naval_doctrine": true,
         "navigation": true,
         "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 32
   },
   {
     "id": "wallachia_prince",

@@ -239,10 +239,22 @@ func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target facti
 }
 
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
-	if rel.Score < -35 {
+	if rel.Score < 10 {
 		return false
 	}
-	return landRegionCount(gs, actor) > 0 && landRegionCount(gs, target) > 0
+	if landRegionCount(gs, actor) == 0 || landRegionCount(gs, target) == 0 {
+		return false
+	}
+	if totalTradeCapacity(gs, actor) < 4 || totalTradeCapacity(gs, target) < 4 {
+		return false
+	}
+	if HasDirectThreat(gs, actor, target) {
+		return false
+	}
+	if activeTradePartners(gs, actor) >= 4 || activeTradePartners(gs, target) >= 4 {
+		return false
+	}
+	return true
 }
 
 func acceptAlliance(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
@@ -348,6 +360,26 @@ func totalTradeCapacity(gs *state.GameState, fid faction.FactionID) int {
 		total += region.TradeCapacity
 	}
 	return total
+}
+
+func activeTradePartners(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || len(gs.TradeRoutes) == 0 || fid == "" {
+		return 0
+	}
+	partners := make(map[string]struct{})
+	self := string(fid)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 {
+			continue
+		}
+		switch {
+		case route.FromFactionID == self && route.ToFactionID != "":
+			partners[route.ToFactionID] = struct{}{}
+		case route.ToFactionID == self && route.FromFactionID != "":
+			partners[route.FromFactionID] = struct{}{}
+		}
+	}
+	return len(partners)
 }
 
 func landRegionCount(gs *state.GameState, fid faction.FactionID) int {

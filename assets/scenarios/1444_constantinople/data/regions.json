@@ -6614,7 +6614,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Nicomedia",
-    "name_tr": "Nikomedia (Bizans Sinir Kenti)",
+    "name_tr": "Nikomedia (Doğu Roma Sinir Kenti)",
     "neighbors": [
       "bithynia",
       "candaroglu",
@@ -6821,7 +6821,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Chrysopolis",
-    "name_tr": "Hrisopolis (Bizans Asya Yakasi)",
+    "name_tr": "Hrisopolis (Doğu Roma Asya Yakasi)",
     "world_x": 1090,
     "world_y": 445,
     "shape_id": "TUR",
@@ -6947,7 +6947,7 @@
     "is_locked": false,
     "is_sea": false,
     "name": "Chalcidice",
-    "name_tr": "Halkidiki (Kutsal Dag / Bizans)",
+    "name_tr": "Halkidiki (Kutsal Dag / Doğu Roma)",
     "neighbors": [
       "thessaly",
       "greece",

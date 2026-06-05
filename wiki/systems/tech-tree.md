@@ -100,7 +100,7 @@ Kategori görünen adları ve panel sırası `internal/tech/category_metadata.go
 ## Bölge Bağımlılığı
 
 Bazı teknolojiler belirli şehirlerin ele geçirilmesini gerektirir:
-- Konstantinopolis → Bizans mühendisliği dalı
+- Konstantinopolis → Doğu Roma mühendisliği dalı
 - Kudüs → Haçlı/Cihad teknolojileri (planlanmış)
 
 ---

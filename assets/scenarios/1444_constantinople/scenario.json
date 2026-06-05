@@ -1,7 +1,7 @@
 {
   "id": "1444_constantinople",
   "name": "1444: Konstantinopolis",
-  "description": "1444 yılı. Osmanlı İmparatorluğu, Balkanlar'da hızla genişliyor. Bizans İmparatorluğu'nun başkenti Konstantinopolis, Osmanlı'nın hedefinde. Avrupa'nın büyük güçleri, Osmanlı'nın ilerleyişini durdurmak için birleşiyor. Tarih yazılacak, ya da yeniden yazılacak.",
+  "description": "1444 yılı. Osmanlı İmparatorluğu, Balkanlar'da hızla genişliyor. Doğu Roma İmparatorluğu'nun başkenti Konstantinopolis, Osmanlı'nın hedefinde. Avrupa'nın büyük güçleri, Osmanlı'nın ilerleyişini durdurmak için birleşiyor. Tarih yazılacak, ya da yeniden yazılacak.",
   "year": 1444,
   "month": 6,
   "version": 1.0,
@@ -17,7 +17,7 @@
   "music": {
     "default_playlist": "campaign",
     "playlists": {
-      "campaign": []
+      "campaign": [ ]
     }
   },
   "victory_conditions": [

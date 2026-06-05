@@ -110,7 +110,7 @@ Zafer koşulları ve olaylar için referans alınan bölgeler:
 
 | Bölge ID | Önem |
 |---|---|
-| `constantinople` | Domination + Bizans teknoloji dalı |
+| `constantinople` | Domination + Doğu Roma teknoloji dalı |
 | `papal_states` | Domination + Dini zafer (Roma bölgesi temsili) |
 | `palestine` | Domination + Dini zafer (Kudüs bölgesi temsili) |
 | `egypt` | Domination (Kahire/Mısır bölgesi temsili) |

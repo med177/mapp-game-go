@@ -115,11 +115,35 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
 				continue
 			}
-			if rel.Score >= 0 {
+			if rel.Score >= 15 &&
+				diplomacy.Relation(gs, fid, otherID).Stance == faction.StancePeace &&
+				aiTradePartnerCount(gs, fid) < 3 &&
+				aiTradePartnerCount(gs, otherID) < 3 &&
+				!diplomacy.HasDirectThreat(gs, fid, otherID) {
 				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
 			}
 		}
 	}
+}
+
+func aiTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	partners := make(map[string]struct{})
+	self := string(fid)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 {
+			continue
+		}
+		switch {
+		case route.FromFactionID == self && route.ToFactionID != "":
+			partners[route.ToFactionID] = struct{}{}
+		case route.ToFactionID == self && route.FromFactionID != "":
+			partners[route.FromFactionID] = struct{}{}
+		}
+	}
+	return len(partners)
 }
 
 // aiRecruitAndBuild AI fraksiyonu için kışla inşa eder ve manpower sınırına kadar birim alır.

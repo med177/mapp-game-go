@@ -1184,21 +1184,22 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 130,
-    "base_grain_output": 20,
+    "base_gold_income": 78,
+    "base_grain_output": 18,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 8,
+    "trade_capacity": 9,
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 800,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "market",
+      "port"
     ]
   },
   {
@@ -1472,8 +1473,8 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 25,
+    "base_gold_income": 34,
+    "base_grain_output": 28,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -1657,7 +1658,7 @@
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 700,
@@ -1726,7 +1727,7 @@
     "trade_capacity": 3,
     "satisfaction": 55,
     "tax_rate": 30,
-    "population": 400,
+    "population": 430,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
@@ -1934,14 +1935,14 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 120,
+    "base_gold_income": 68,
     "base_grain_output": 30,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 7,
+    "trade_capacity": 4,
     "satisfaction": 55,
     "tax_rate": 30,
     "population": 1000,
@@ -1983,7 +1984,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "farm"
     ]
   },
   {
@@ -2184,21 +2186,20 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 100,
-    "base_grain_output": 90,
+    "base_gold_income": 60,
+    "base_grain_output": 60,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 5,
+    "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1800,
+    "population": 1400,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks",
       "barracks"
     ]
   },
@@ -2220,21 +2221,20 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 100,
-    "base_grain_output": 90,
+    "base_gold_income": 60,
+    "base_grain_output": 60,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 5,
+    "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1800,
+    "population": 1400,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks",
       "barracks"
     ]
   },
@@ -2289,22 +2289,20 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 80,
+    "base_gold_income": 46,
     "base_grain_output": 40,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 5,
+    "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": [
-      "barracks"
-    ]
+    "buildings": null
   },
   {
     "id": "baghdad",
@@ -2470,7 +2468,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
+    "base_gold_income": 34,
     "base_grain_output": 10,
     "base_iron_output": 0,
     "base_timber_output": 0,
@@ -3860,7 +3858,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 36,
+    "base_gold_income": 40,
     "base_grain_output": 26,
     "base_iron_output": 0,
     "base_timber_output": 0,
@@ -3870,10 +3868,12 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 320,
+    "population": 350,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "constantinople",
@@ -3893,21 +3893,23 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 25,
+    "base_gold_income": 34,
+    "base_grain_output": 28,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 4,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 400,
+    "population": 520,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "market",
+      "port"
     ]
   },
   {
@@ -5058,21 +5060,22 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 110,
-    "base_grain_output": 15,
+    "base_gold_income": 100,
+    "base_grain_output": 14,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 7,
+    "trade_capacity": 8,
     "satisfaction": 70,
     "tax_rate": 35,
     "population": 600,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "market",
+      "port"
     ]
   },
   {
@@ -6481,21 +6484,20 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
-    "base_grain_output": 42,
+    "base_gold_income": 32,
+    "base_grain_output": 38,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 380,
+    "population": 340,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks",
       "barracks"
     ]
   },
@@ -6662,7 +6664,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 55,
+    "base_gold_income": 42,
     "base_grain_output": 40,
     "base_iron_output": 0,
     "base_timber_output": 0,
@@ -6675,7 +6677,9 @@
     "population": 480,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "market"
+    ]
   },
   {
     "id": "new_region_225",
@@ -6697,7 +6701,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 55,
+    "base_gold_income": 38,
     "base_grain_output": 40,
     "base_iron_output": 0,
     "base_timber_output": 0,
@@ -6710,7 +6714,9 @@
     "population": 480,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "market"
+    ]
   },
   {
     "id": "mosul",
@@ -6733,20 +6739,22 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 40,
+    "base_gold_income": 46,
     "base_grain_output": 35,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "trade_capacity": 4,
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 360,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "market"
+    ]
   },
   {
     "id": "basra",
@@ -6767,20 +6775,23 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 45,
+    "base_gold_income": 52,
     "base_grain_output": 38,
     "base_iron_output": 0,
     "base_timber_output": 0,
     "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 4,
+    "trade_capacity": 5,
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 320,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "market",
+      "port"
+    ]
   },
   {
     "id": "nicomedia",
@@ -6838,8 +6849,8 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 36,
-    "base_grain_output": 34,
+    "base_gold_income": 30,
+    "base_grain_output": 32,
     "base_iron_output": 0,
     "base_timber_output": 10,
     "base_stone_output": 0,
@@ -6848,11 +6859,10 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 30,
-    "population": 330,
-    "religion": "orthodox",
+    "population": 300,
+    "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks",
       "barracks"
     ]
   },
