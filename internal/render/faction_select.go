@@ -87,10 +87,6 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		// Bölge sayısı ve başlangıç altını
 		regionCount := len(gs.RegionsOwnedBy(fid))
 		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 54)}, itoa(regionCount)+" bölge", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
-
-		if i == cursor {
-			drawUILabel(screen, gameui.Rect{X: float64(x + cardW - 90), Y: float64(y + 12)}, "← SEÇİLİ", fc, gameui.TextSmall, gameui.TextAlignStart)
-		}
 	}
 }
 

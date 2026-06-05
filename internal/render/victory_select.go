@@ -62,10 +62,6 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 14}, opt.Title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 38}, opt.Description, ColorGray, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 60}, opt.Detail, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, gameui.TextAlignStart)
-
-		if i == cursor {
-			drawUILabel(screen, gameui.Rect{X: rect.X + rect.W - 110, Y: y + 14}, "← SEÇİLİ", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
-		}
 	}
 
 	drawUILabel(screen, gameui.Rect{X: 0, Y: stack.Y + stack.H + 20, W: ScreenWidth}, "Zafer koşulunu seçmek için tıkla", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
