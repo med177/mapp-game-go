@@ -15,7 +15,7 @@
     "grain": 180,
     "iron": 50,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 60,
     "research": {
@@ -41,7 +41,7 @@
     "grain": 120,
     "iron": 45,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 0,
     "cloth": 25,
     "research": {
@@ -67,7 +67,7 @@
     "grain": 200,
     "iron": 90,
     "timber": 100,
-    "stone": 0,
+    "stone": 1000,
     "spice": 55,
     "cloth": 120,
     "research": {
@@ -99,7 +99,7 @@
     "grain": 120,
     "iron": 40,
     "timber": 35,
-    "stone": 0,
+    "stone": 1000,
     "spice": 0,
     "cloth": 20,
     "research": {
@@ -125,7 +125,7 @@
     "grain": 120,
     "iron": 45,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 0,
     "cloth": 25,
     "research": {
@@ -151,7 +151,7 @@
     "grain": 100,
     "iron": 40,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 35,
     "cloth": 50,
     "research": {
@@ -177,7 +177,7 @@
     "grain": 250,
     "iron": 100,
     "timber": 90,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 50,
     "research": {
@@ -203,7 +203,7 @@
     "grain": 170,
     "iron": 65,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 75,
     "cloth": 95,
     "research": {
@@ -234,7 +234,7 @@
     "grain": 130,
     "iron": 55,
     "timber": 70,
-    "stone": 0,
+    "stone": 1000,
     "spice": 25,
     "cloth": 40,
     "research": {
@@ -260,7 +260,7 @@
     "grain": 140,
     "iron": 65,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 45,
     "research": {
@@ -286,7 +286,7 @@
     "grain": 200,
     "iron": 100,
     "timber": 70,
-    "stone": 0,
+    "stone": 1000,
     "spice": 40,
     "cloth": 80,
     "research": {
@@ -318,7 +318,7 @@
     "grain": 200,
     "iron": 80,
     "timber": 120,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 60,
     "research": {
@@ -344,7 +344,7 @@
     "grain": 120,
     "iron": 55,
     "timber": 45,
-    "stone": 0,
+    "stone": 1000,
     "spice": 35,
     "cloth": 40,
     "research": {
@@ -370,7 +370,7 @@
     "grain": 230,
     "iron": 95,
     "timber": 190,
-    "stone": 0,
+    "stone": 1000,
     "spice": 15,
     "cloth": 130,
     "research": {
@@ -402,7 +402,7 @@
     "grain": 130,
     "iron": 45,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 0,
     "cloth": 25,
     "research": {
@@ -428,7 +428,7 @@
     "grain": 100,
     "iron": 40,
     "timber": 45,
-    "stone": 0,
+    "stone": 1000,
     "spice": 25,
     "cloth": 35,
     "research": {
@@ -454,7 +454,7 @@
     "grain": 100,
     "iron": 70,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 90,
     "cloth": 160,
     "research": {
@@ -480,7 +480,7 @@
     "grain": 280,
     "iron": 125,
     "timber": 165,
-    "stone": 0,
+    "stone": 1000,
     "spice": 25,
     "cloth": 95,
     "research": {
@@ -511,7 +511,7 @@
     "grain": 75,
     "iron": 55,
     "timber": 90,
-    "stone": 0,
+    "stone": 1000,
     "spice": 110,
     "cloth": 125,
     "research": {
@@ -542,7 +542,7 @@
     "grain": 200,
     "iron": 70,
     "timber": 90,
-    "stone": 0,
+    "stone": 1000,
     "spice": 40,
     "cloth": 50,
     "research": {
@@ -568,7 +568,7 @@
     "grain": 120,
     "iron": 50,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 35,
     "research": {
@@ -594,7 +594,7 @@
     "grain": 200,
     "iron": 80,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 60,
     "cloth": 70,
     "research": {
@@ -623,7 +623,7 @@
     "grain": 130,
     "iron": 70,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 60,
     "cloth": 80,
     "research": {
@@ -649,7 +649,7 @@
     "grain": 110,
     "iron": 45,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 25,
     "cloth": 35,
     "research": {
@@ -675,7 +675,7 @@
     "grain": 300,
     "iron": 200,
     "timber": 180,
-    "stone": 0,
+    "stone": 1000,
     "spice": 40,
     "cloth": 120,
     "research": {
@@ -706,7 +706,7 @@
     "grain": 350,
     "iron": 150,
     "timber": 130,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 80,
     "research": {
@@ -736,7 +736,7 @@
     "grain": 260,
     "iron": 110,
     "timber": 70,
-    "stone": 0,
+    "stone": 1000,
     "spice": 95,
     "cloth": 70,
     "research": {
@@ -766,7 +766,7 @@
     "grain": 150,
     "iron": 60,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 40,
     "research": {
@@ -792,7 +792,7 @@
     "grain": 110,
     "iron": 45,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 15,
     "cloth": 30,
     "research": {
@@ -818,7 +818,7 @@
     "grain": 100,
     "iron": 50,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 0,
     "cloth": 0,
     "research": {
@@ -844,7 +844,7 @@
     "grain": 250,
     "iron": 100,
     "timber": 160,
-    "stone": 0,
+    "stone": 1000,
     "spice": 15,
     "cloth": 55,
     "research": {
@@ -870,7 +870,7 @@
     "grain": 360,
     "iron": 70,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 145,
     "cloth": 95,
     "research": {
@@ -901,7 +901,7 @@
     "grain": 90,
     "iron": 35,
     "timber": 45,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 40,
     "research": {
@@ -927,7 +927,7 @@
     "grain": 160,
     "iron": 120,
     "timber": 80,
-    "stone": 0,
+    "stone": 1000,
     "spice": 50,
     "cloth": 100,
     "research": {
@@ -953,7 +953,7 @@
     "grain": 200,
     "iron": 80,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 50,
     "cloth": 70,
     "research": {
@@ -979,7 +979,7 @@
     "grain": 300,
     "iron": 80,
     "timber": 200,
-    "stone": 0,
+    "stone": 1000,
     "spice": 30,
     "cloth": 90,
     "research": {
@@ -1005,7 +1005,7 @@
     "grain": 170,
     "iron": 55,
     "timber": 60,
-    "stone": 0,
+    "stone": 1000,
     "spice": 10,
     "cloth": 20,
     "research": {
@@ -1034,7 +1034,7 @@
     "grain": 150,
     "iron": 60,
     "timber": 50,
-    "stone": 0,
+    "stone": 1000,
     "spice": 40,
     "cloth": 80,
     "research": {
@@ -1060,7 +1060,7 @@
     "grain": 300,
     "iron": 120,
     "timber": 150,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 70,
     "research": {
@@ -1090,7 +1090,7 @@
     "grain": 170,
     "iron": 70,
     "timber": 150,
-    "stone": 0,
+    "stone": 1000,
     "spice": 70,
     "cloth": 80,
     "research": {
@@ -1122,7 +1122,7 @@
     "grain": 130,
     "iron": 50,
     "timber": 45,
-    "stone": 0,
+    "stone": 1000,
     "spice": 40,
     "cloth": 50,
     "research": {
@@ -1148,7 +1148,7 @@
     "grain": 340,
     "iron": 100,
     "timber": 220,
-    "stone": 0,
+    "stone": 1000,
     "spice": 10,
     "cloth": 65,
     "research": {
@@ -1178,7 +1178,7 @@
     "grain": 120,
     "iron": 70,
     "timber": 45,
-    "stone": 0,
+    "stone": 1000,
     "spice": 45,
     "cloth": 55,
     "research": {
@@ -1206,7 +1206,7 @@
     "grain": 120,
     "iron": 50,
     "timber": 40,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 45,
     "research": {
@@ -1232,7 +1232,7 @@
     "grain": 150,
     "iron": 60,
     "timber": 80,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 50,
     "research": {
@@ -1258,7 +1258,7 @@
     "grain": 150,
     "iron": 70,
     "timber": 100,
-    "stone": 0,
+    "stone": 1000,
     "spice": 10,
     "cloth": 40,
     "research": {
@@ -1284,7 +1284,7 @@
     "grain": 220,
     "iron": 120,
     "timber": 100,
-    "stone": 0,
+    "stone": 1000,
     "spice": 20,
     "cloth": 60,
     "research": {
@@ -1310,7 +1310,7 @@
     "grain": 220,
     "iron": 120,
     "timber": 160,
-    "stone": 0,
+    "stone": 1000,
     "spice": 10,
     "cloth": 50,
     "research": {
@@ -1340,7 +1340,7 @@
     "grain": 120,
     "iron": 70,
     "timber": 90,
-    "stone": 0,
+    "stone": 1000,
     "spice": 80,
     "cloth": 70,
     "research": {
@@ -1366,7 +1366,7 @@
     "grain": 85,
     "iron": 50,
     "timber": 95,
-    "stone": 0,
+    "stone": 1000,
     "spice": 120,
     "cloth": 120,
     "research": {
@@ -1397,7 +1397,7 @@
     "grain": 180,
     "iron": 60,
     "timber": 80,
-    "stone": 0,
+    "stone": 1000,
     "spice": 10,
     "cloth": 30,
     "research": {

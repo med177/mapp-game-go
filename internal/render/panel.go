@@ -28,7 +28,7 @@ import (
 
 const (
 	bottomBarH   = float32(80)
-	topStatusW   = float32(1000)
+	topStatusW   = float32(1050)
 	topStatusH   = float32(82)
 	topDateHudW  = float32(255)
 	topDateHudH  = float32(80)
@@ -317,9 +317,9 @@ func musicHudInteractiveHit(fx, fy float64) bool {
 func buildMusicHudButtons(playing bool) (gameui.Button, gameui.Button) {
 	toggle := "Dur"
 	if !playing {
-		toggle = "Cal"
+		toggle = "Çal"
 	}
-	return buttonFromRectF32(musicHudToggleRect(), toggle), buttonFromRectF32(musicHudNextRect(), "Sonr")
+	return buttonFromRectF32(musicHudToggleRect(), toggle), buttonFromRectF32(musicHudNextRect(), "Sonraki")
 }
 
 func musicHudHit(fx, fy float64) bool {
@@ -482,12 +482,12 @@ func drawMusicHud(screen *ebiten.Image) {
 
 	track := status.Track
 	if track == "" {
-		track = "Playlist hazir"
+		track = "Çalma Listesi Hazır"
 	}
 	track = strings.TrimSuffix(track, ".ogg")
 	track = strings.TrimSuffix(track, ".mp3")
 	track = strings.TrimSuffix(track, ".wav")
-	label := trimTextToWidth("Muzik: "+track, FaceSmall, 292)
+	label := trimTextToWidth("Müzik: "+track, FaceSmall, 292)
 	DrawText(screen, label, float64(x)+10, float64(y)+11, FaceSmall, ColorGray)
 
 	toggleBtn, nextBtn := buildMusicHudButtons(status.Playing)
@@ -1748,9 +1748,9 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	armies := gs.CurrentLandArmies(pid)
 	maxArmies := gs.MaxLandArmies(pid)
 
-	cardX := float32(878)
+	cardX := float32(908)
 	cardY := float32(panelY) + 7
-	cardW := float32(112)
+	cardW := float32(130)
 	cardH := topStatusH - 14
 	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
 
@@ -1780,7 +1780,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 
 	cardX := float32(718)
 	cardY := float32(panelY) + 7
-	cardW := float32(150)
+	cardW := float32(180)
 	cardH := topStatusH - 14
 	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
 
