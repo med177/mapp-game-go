@@ -1614,11 +1614,15 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				goodsSummary += ", " + goodsList[1].name
 			}
 		}
+		factionCount := 0
+		if agg != nil {
+			factionCount = len(agg.factions)
+		}
 		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
 			fromName: centers[i].nameTR,
 			toName:   centers[j].nameTR,
 			amount:   amount,
-			factions: len(agg.factions),
+			factions: factionCount,
 			goods:    goodsSummary,
 			sx:       sx,
 			sy:       sy,
