@@ -104,6 +104,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Ticaret yolu görsel sadeleştirme | ✅ | Harita üstü ticaret çizimi `A->B` ve `B->A` rotalarını tek koridorda birleştirir; `camScale < 0.85` iken yalnızca oyuncuya bağlı hatlar çizilir, etiketler yalnızca yakın zoom'da görünür |
 | Harita modu (Normal/Ticaret) | ✅ | EU4 benzeri harita modu anahtarı eklendi; ticaret koridorları yalnızca `Ticaret` modunda çiziliyor, normal haritada çizgi karmaşası yok |
 | Senaryo bazlı tarihsel ticaret merkezleri | ✅ | Trade map merkezleri senaryo `data/trade_centers.json` içindeki `tier` + `links` graph yapısından okunuyor; koridor akışı merkezler arasında doğrudan değil, link graph kısa yolu üzerinden dağıtılıyor |
+| Ticaret paneli ayrıştırması | ✅ | `Yeni Rota` sekmesi artık gerçek ticaret anlaşması adaylarını ve engel nedenlerini gösterir; manuel al/sat akışı ayrı `Pazar` sekmesine taşındı, müttefik devletlerle ticaret rota bazında bağımsız açılabiliyor |
 
 | WSL / Windows build hattı | ✅ | `wiki/dev/build-setup.md` içinde Ebitengine için Ubuntu paketleri, `go test ./...` doğrulaması ve `GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game` akışı belgelendi |
 

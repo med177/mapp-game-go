@@ -257,6 +257,8 @@ func (g *Game) Update() error {
 			g.proposeTrade(action.TargetFaction)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
+		case render.ActionCreateTradeRoute:
+			g.proposeTrade(action.TargetFaction)
 		case render.ActionOneTimeTrade:
 			g.oneTimeTrade(action.TargetFaction, action.BuildingID, action.Delta)
 		case render.ActionSave:

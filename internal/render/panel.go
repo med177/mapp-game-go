@@ -1560,8 +1560,11 @@ func regionDiplomacyButtonDisabledReason(gs *state.GameState, ownerID string, id
 		if rel.Stance == faction.StanceWar {
 			return "Savaş halindeyken ticaret teklif edilemez."
 		}
-		if rel.Stance == faction.StanceTrade {
+		if rel.Stance == faction.StanceTrade && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, faction.FactionID(ownerID)) {
 			return "Zaten ticaret anlaşması aktif."
+		}
+		if rel.Stance == faction.StanceAllied && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, faction.FactionID(ownerID)) {
+			return "Bu müttefik ile ticaret zaten aktif."
 		}
 	}
 	return ""

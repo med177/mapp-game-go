@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -37,8 +37,10 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz
 - İttifak için `Score >= 20` gerekir
-- Ticaret için `Score >= -35` gerekir ve iki tarafın da kara bölgesi olmalıdır
-- Zaten aynı duruştaysa tekrar kurulamaz
+- Ticaret için `Score >= 10`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
+- Ticaret için doğrudan sınır tehdidi olmamalı ve iki tarafın aktif partner limiti (`4`) dolu olmamalıdır
+- `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
+- Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
 
 ---
 
@@ -51,7 +53,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20` + doğrudan sınır tehdidi olmamalı |
-| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= -35` + iki tarafın da kara bölgesi var |
+| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
 
@@ -79,6 +81,7 @@ Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motor
 
 - Ticaret anlaşması kabul edilince iki yönlü rota oluşturulur
 - Aynı iki fraksiyon için rota çoğaltılmaz; mevcut çift önce temizlenir
+- İttifak duruşu ticaretten bağımsızdır; müttefik iki devlet arasında rota varsa `StanceAllied` korunur
 - Savaş ilanı veya barış kabulü iki taraf arasındaki aktif rotaları kapatır
 - Rotalar soyut anlaşma modelidir; harita üstü pathfinding ile üretilmez
 

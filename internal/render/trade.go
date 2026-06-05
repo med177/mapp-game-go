@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"sort"
 
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -18,7 +19,8 @@ type TradeTab int
 
 const (
 	TradeTabRoutes TradeTab = iota // mevcut rotalar
-	TradeTabNew                    // yeni rota oluştur
+	TradeTabNew                    // yeni ticaret anlaşması oluştur
+	TradeTabMarket                 // aktif ağ içinde manuel pazar işlemi
 	TradeTabPrices                 // piyasa fiyatları
 )
 
@@ -119,7 +121,7 @@ func tradePanelLayout() tradeLayout {
 		panelRect:       panelRect,
 		titleRect:       titleBox.Rect,
 		closeRect:       closeRect,
-		tabRects:        gameui.BoxFromRect(tabsRow).SplitColumns(12, 1, 1, 1),
+		tabRects:        gameui.BoxFromRect(tabsRow).SplitColumns(12, 1, 1, 1, 1),
 		filterLabelRect: filterLabelRect,
 		filterBtnRects:  filterBtnBox.SplitColumns(12, 1, 1, 1),
 		sortLabelRect:   sortLabelRect,
@@ -164,7 +166,7 @@ func tradeCloseHit(mx, my float64) bool {
 }
 
 // DrawTradePanel ticaret panelini çizer.
-// Tab 0: mevcut rotalar, Tab 1: yeni rota oluştur, Tab 2: piyasa fiyatları
+// Tab 0: mevcut rotalar, Tab 1: yeni rota, Tab 2: pazar, Tab 3: piyasa fiyatları
 func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, focusFaction int, focusGood int, scroll int, amount int, listFilter TradeListFilter, listSort TradeListSort) {
 	layout := tradePanelLayout()
 	px, py, pw, ph := float32(layout.panelRect.X), float32(layout.panelRect.Y), float32(layout.panelRect.W), float32(layout.panelRect.H)
@@ -195,7 +197,9 @@ func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, foc
 	case TradeTabRoutes:
 		drawTradeRoutesTab(screen, gs, px, contentY, pw, contentH, scroll)
 	case TradeTabNew:
-		drawTradeNewTab(screen, gs, layout, focusFaction, focusGood, scroll, amount, listFilter, listSort)
+		drawTradeNewTab(screen, gs, layout, focusFaction, scroll)
+	case TradeTabMarket:
+		drawTradeMarketTab(screen, gs, layout, focusFaction, focusGood, scroll, amount, listFilter, listSort)
 	case TradeTabPrices:
 		drawTradePricesTab(screen, gs, px, contentY, pw, contentH)
 	}
@@ -258,8 +262,93 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 	}
 }
 
-// drawTradeNewTab yeni ticaret rotası oluşturma arayüzü.
-func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayout, focusFaction int, focusGood int, scroll int, amount int, listFilter TradeListFilter, listSort TradeListSort) {
+// drawTradeNewTab yeni ticaret anlaşması arayüzü.
+func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayout, focusFaction int, scroll int) {
+	px, y, w := float32(layout.panelRect.X), float32(layout.leftTitleRect.Y), float32(layout.panelRect.W)
+	candidates := sortedFactionsForTradeAgreements(gs)
+	if len(candidates) == 0 {
+		DrawTextCentered(screen, "Şu anda yeni ticaret anlaşması açılabilir hedef yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
+		DrawTextCentered(screen, "Savaşta olmayan, kapasitesi yeterli ve rota sınırına takılmayan devletler burada görünür.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
+		return
+	}
+
+	drawUISectionLabel(screen, layout.leftTitleRect.X, layout.leftTitleRect.Y+2, "Anlaşma Adayları:")
+	visibleRows := int(layout.listH / 28)
+	if visibleRows < 1 {
+		visibleRows = 1
+	}
+	start := scroll
+	end := start + visibleRows
+	if end > len(candidates) {
+		end = len(candidates)
+	}
+	factionItems := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		f := gs.Factions[candidate.ID]
+		name := string(candidate.ID)
+		if f != nil && f.NameTR != "" {
+			name = f.NameTR
+		}
+		label := name + " | " + faction.DiplomaticStanceLabelTR(candidate.Stance) + " | Skor: " + itoa(candidate.Score)
+		if !candidate.Eligible && candidate.BlockReason != "" {
+			label += " | " + candidate.BlockReason
+		}
+		factionItems = append(factionItems, trimTextToWidth(label, FaceSmall, layout.leftListRect.W-12))
+	}
+	factionList := buildTradeFactionList(layout, visibleRows, factionItems, scroll, focusFaction)
+	gameui.DrawListView(screen, factionList, tradeListViewStyle(), renderText)
+	if len(candidates) > visibleRows {
+		info := "Adaylar: " + itoa(start+1) + "-" + itoa(end) + "/" + itoa(len(candidates))
+		drawUIMutedText(screen, layout.leftListRect.X, layout.leftListRect.Y+layout.leftListRect.H+10, info)
+	}
+
+	drawUISectionLabel(screen, layout.rightTitleRect.X, layout.rightTitleRect.Y+2, "Anlaşma Özeti:")
+	if focusFaction < 0 || focusFaction >= len(candidates) {
+		drawUIMutedText(screen, layout.rightListRect.X+6, layout.rightListRect.Y+10, "Önce sol listeden bir hedef fraksiyon seçin.")
+		return
+	}
+	selected := candidates[focusFaction]
+	target := gs.Factions[selected.ID]
+	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, visibleRows)
+	vector.FillRect(screen, cardX, cardY, cardW, cardH, color.RGBA{16, 14, 10, 220}, false)
+	vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, panelBorder, false)
+
+	name := string(selected.ID)
+	if target != nil && target.NameTR != "" {
+		name = target.NameTR
+	}
+	detailLines := []string{
+		"Hedef: " + name,
+		"Duruş: " + faction.DiplomaticStanceLabelTR(selected.Stance) + " | İlişki: " + itoa(selected.Score),
+		"Ticaret kapasitesi: Sen " + itoa(selected.PlayerTradeCap) + " / Onlar " + itoa(selected.TargetTradeCap),
+		"Aktif partner: Sen " + itoa(selected.PlayerPartners) + "/4 | Onlar " + itoa(selected.TargetPartners) + "/4",
+	}
+	detailColors := []color.Color{
+		color.RGBA{220, 205, 170, 230},
+		color.RGBA{190, 190, 215, 230},
+		color.RGBA{170, 205, 175, 230},
+		color.RGBA{170, 190, 210, 230},
+	}
+	if selected.BlockReason == "" {
+		detailLines = append(detailLines, "Durum: Anlaşma açılabilir")
+		detailColors = append(detailColors, color.RGBA{150, 220, 150, 230})
+	} else {
+		detailLines = append(detailLines, "Engel: "+selected.BlockReason)
+		detailColors = append(detailColors, color.RGBA{230, 170, 120, 230})
+	}
+	drawUIInfoBlock(screen, float64(layout.rightListRect.X)+6, layout.rightListRect.Y+10, detailLines, detailColors)
+
+	actionBtn := buildTradeAgreementButton(layout, selected.Eligible)
+	styleBG := color.RGBA{72, 104, 54, 230}
+	styleBorder := color.RGBA{160, 205, 140, 230}
+	if !selected.Eligible {
+		styleBG = color.RGBA{52, 52, 52, 210}
+		styleBorder = color.RGBA{110, 110, 110, 210}
+	}
+	drawTradeActionButton(screen, actionBtn, styleBG, styleBorder)
+}
+
+func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayout, focusFaction int, focusGood int, scroll int, amount int, listFilter TradeListFilter, listSort TradeListSort) {
 	playerF := gs.Factions[gs.PlayerFactionID]
 	if playerF == nil {
 		return
@@ -272,13 +361,13 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 	}
 
 	px, y, w := float32(layout.panelRect.X), float32(layout.leftTitleRect.Y), float32(layout.panelRect.W)
-	factions := sortedFactionsForTrade(gs, focusGood, listFilter, listSort)
+	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
+	drawTradeListControls(screen, layout, listFilter, listSort)
 	if len(factions) == 0 {
-		DrawTextCentered(screen, "Uygun ticaret partneri yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
-		DrawTextCentered(screen, "Barış/ticaret anlaşması ve ticaret ağı bağlantısı gerekir.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
+		DrawTextCentered(screen, "Aktif ticaret ağına bağlı pazar partneri yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
+		DrawTextCentered(screen, "Filtreyi değiştirin ya da Yeni Rota sekmesinden ticaret anlaşması açın.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
 		return
 	}
-	drawTradeListControls(screen, layout, listFilter, listSort)
 
 	drawUISectionLabel(screen, layout.leftTitleRect.X, layout.leftTitleRect.Y+2, "Hedef Fraksiyon:")
 
@@ -300,20 +389,17 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 	factionList := buildTradeFactionList(layout, visibleRows, factionItems, scroll, focusFaction)
 	gameui.DrawListView(screen, factionList, tradeListViewStyle(), renderText)
 
-	// Sağ sütun: mal seçimi
 	rightX := float32(layout.rightTitleRect.X)
 	rightW := float32(layout.rightListRect.W)
 	drawUISectionLabel(screen, layout.rightTitleRect.X, layout.rightTitleRect.Y+2, "Mal Seçimi:")
 
 	goods := tradeSelectableGoods()
-
-	// Hedef fraksiyon seçiliyse mal listesini göster
 	if focusFaction >= 0 && focusFaction < len(factions) {
 		targetFid := factions[focusFaction]
 		targetF := gs.Factions[targetFid]
 		if targetF != nil {
 			goodItems := make([]string, 0, len(goods))
-			for gi, good := range goods {
+			for _, good := range goods {
 				goodName := economy.GoodNameTR(good)
 				srcAmount := getFactionGoodAmount(playerF, good)
 				dstAmount := getFactionGoodAmount(targetF, good)
@@ -324,9 +410,6 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 					}
 				}
 				line := goodName + " | Sende: " + itoa(srcAmount) + " | " + targetF.NameTR + ": " + itoa(dstAmount) + " | Fiyat: " + price
-				if gi == focusGood {
-					_ = gi
-				}
 				goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 			}
 			goodsList := buildTradeGoodsList(layout, visibleRows, goodItems, focusGood)
@@ -341,7 +424,6 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 		drawUIMutedText(screen, layout.leftListRect.X, layout.leftListRect.Y+layout.leftListRect.H+10, info)
 	}
 
-	// Manuel al/sat butonları (tek seferlik pazar işlemi)
 	if focusFaction >= 0 && focusFaction < len(factions) && focusGood >= 0 && focusGood < len(goods) {
 		goodsRows := minTradeInt(visibleRows, len(goods))
 		cardX, cardY, cardW, cardH := tradeActionCardRect(layout, goodsRows)
@@ -390,7 +472,7 @@ func buildTradeCloseButton() gameui.Button {
 
 func buildTradeTabButtons() []tradeTabButton {
 	layout := tradePanelLayout()
-	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Piyasa Fiyatları"}
+	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Pazar", "Piyasa Fiyatları"}
 	out := make([]tradeTabButton, 0, len(tabLabels))
 	for i, label := range tabLabels {
 		r := layout.tabRects[i]
@@ -458,6 +540,13 @@ func buildTradeActionButtons(layout tradeLayout, goodsRows int) ([]gameui.Button
 	buyBtn := gameui.NewButton(float64(buyX), float64(btnY), 110, float64(tradeActBtnH), "AL")
 	sellBtn := gameui.NewButton(float64(buyX+124), float64(btnY), 110, float64(tradeActBtnH), "SAT")
 	return qty, buyBtn, sellBtn
+}
+
+func buildTradeAgreementButton(layout tradeLayout, enabled bool) gameui.Button {
+	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, 1)
+	btn := gameui.NewButton(float64(cardX+cardW-250), float64(cardY+cardH-tradeActBtnH-18), 220, float64(tradeActBtnH), "Ticaret Anlaşması Aç")
+	btn.Enabled = enabled
+	return btn
 }
 
 func tradeButtonStyle(active bool) gameui.ButtonStyle {
@@ -589,8 +678,65 @@ func factionDisplayName(gs *state.GameState, fid string) string {
 	return f.Name
 }
 
-// sortedFactionsForTrade ticaret yapılabilecek partnerleri filtreler/sıralar.
-func sortedFactionsForTrade(gs *state.GameState, focusGood int, listFilter TradeListFilter, listSort TradeListSort) []faction.FactionID {
+type tradeAgreementCandidate struct {
+	ID             faction.FactionID
+	Stance         faction.DiplomaticStance
+	Score          int
+	PlayerTradeCap int
+	TargetTradeCap int
+	PlayerPartners int
+	TargetPartners int
+	Eligible       bool
+	BlockReason    string
+}
+
+func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandidate {
+	if gs == nil {
+		return nil
+	}
+	playerCap := tradeCapacityForFaction(gs, gs.PlayerFactionID)
+	playerPartners := activeTradePartnerCount(gs, gs.PlayerFactionID)
+	list := make([]tradeAgreementCandidate, 0, len(gs.Factions))
+	for fid, f := range gs.Factions {
+		if fid == gs.PlayerFactionID || f == nil || f.IsEliminated {
+			continue
+		}
+		rel := relationForTrade(gs, gs.PlayerFactionID, fid)
+		if rel == nil || rel.Stance == faction.StanceWar {
+			continue
+		}
+		if diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, fid) {
+			continue
+		}
+		targetCap := tradeCapacityForFaction(gs, fid)
+		targetPartners := activeTradePartnerCount(gs, fid)
+		reason := tradeAgreementBlockReason(gs, rel, gs.PlayerFactionID, fid, playerCap, targetCap, playerPartners, targetPartners)
+		list = append(list, tradeAgreementCandidate{
+			ID:             fid,
+			Stance:         rel.Stance,
+			Score:          rel.Score,
+			PlayerTradeCap: playerCap,
+			TargetTradeCap: targetCap,
+			PlayerPartners: playerPartners,
+			TargetPartners: targetPartners,
+			Eligible:       reason == "",
+			BlockReason:    reason,
+		})
+	}
+	sort.Slice(list, func(i, j int) bool {
+		if list[i].Eligible != list[j].Eligible {
+			return list[i].Eligible
+		}
+		if list[i].Score != list[j].Score {
+			return list[i].Score > list[j].Score
+		}
+		return list[i].ID < list[j].ID
+	})
+	return list
+}
+
+// sortedFactionsForMarket aktif ticaret ağı üzerinden pazar yapılabilecek partnerleri filtreler/sıralar.
+func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter TradeListFilter, listSort TradeListSort) []faction.FactionID {
 	goods := tradeSelectableGoods()
 	if focusGood < 0 || focusGood >= len(goods) {
 		focusGood = 0
@@ -666,6 +812,85 @@ func relationForTrade(gs *state.GameState, a, b faction.FactionID) *faction.Rela
 		return rel
 	}
 	return nil
+}
+
+func tradeAgreementBlockReason(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID, actorCap, targetCap, actorPartners, targetPartners int) string {
+	if rel == nil {
+		return "İlişki verisi yok"
+	}
+	if rel.Score < 10 {
+		return "İlişki puanı 10 altı"
+	}
+	if landRegionCountForFaction(gs, actor) == 0 {
+		return "Sende kara bölgesi yok"
+	}
+	if landRegionCountForFaction(gs, target) == 0 {
+		return "Hedefin kara bölgesi yok"
+	}
+	if actorCap < 4 {
+		return "Senin ticaret kapasiten 4 altı"
+	}
+	if targetCap < 4 {
+		return "Hedefin ticaret kapasitesi 4 altı"
+	}
+	if diplomacy.HasDirectThreat(gs, actor, target) {
+		return "Doğrudan sınır tehdidi var"
+	}
+	if actorPartners >= 4 {
+		return "Senin aktif partner sınırın dolu"
+	}
+	if targetPartners >= 4 {
+		return "Hedefin aktif partner sınırı dolu"
+	}
+	return ""
+}
+
+func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
+	total := 0
+	if gs == nil {
+		return total
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		total += region.TradeCapacity
+	}
+	return total
+}
+
+func landRegionCountForFaction(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	if gs == nil {
+		return count
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		count++
+	}
+	return count
+}
+
+func activeTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || len(gs.TradeRoutes) == 0 || fid == "" {
+		return 0
+	}
+	partners := make(map[string]struct{})
+	self := string(fid)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 {
+			continue
+		}
+		switch {
+		case route.FromFactionID == self && route.ToFactionID != "":
+			partners[route.ToFactionID] = struct{}{}
+		case route.ToFactionID == self && route.FromFactionID != "":
+			partners[route.FromFactionID] = struct{}{}
+		}
+	}
+	return len(partners)
 }
 
 func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[faction.FactionID]int {
@@ -785,7 +1010,29 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 			return true
 		}
 	}
-	if tab != TradeTabNew {
+	if tab == TradeTabNew {
+		candidates := sortedFactionsForTradeAgreements(gs)
+		visibleRows := int(layout.listH / 28)
+		if visibleRows < 1 {
+			visibleRows = 1
+		}
+		items := make([]string, 0, len(candidates))
+		for _, candidate := range candidates {
+			label := string(candidate.ID)
+			if f := gs.Factions[candidate.ID]; f != nil && f.NameTR != "" {
+				label = f.NameTR
+			}
+			items = append(items, label)
+		}
+		if buildTradeFactionList(layout, visibleRows, items, scroll, focusFaction).HitTest(mx, my) {
+			return true
+		}
+		if focusFaction >= 0 && focusFaction < len(candidates) && buildTradeAgreementButton(layout, candidates[focusFaction].Eligible).HitTest(mx, my) {
+			return true
+		}
+		return false
+	}
+	if tab != TradeTabMarket {
 		return false
 	}
 	for _, btn := range buildTradeFilterButtons(layout) {
@@ -798,7 +1045,7 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 			return true
 		}
 	}
-	factions := sortedFactionsForTrade(gs, focusGood, listFilter, listSort)
+	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
 	visibleRows := int(layout.listH / 28)
 	if visibleRows < 1 {
 		visibleRows = 1
@@ -874,7 +1121,40 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 		}
 		return InputAction{}
 	}
-	if r.tradeTab != TradeTabNew {
+	if r.tradeTab == TradeTabNew {
+		layout := tradePanelLayout()
+		visibleRows := int(layout.listH / 28)
+		if visibleRows < 1 {
+			visibleRows = 1
+		}
+		candidates := sortedFactionsForTradeAgreements(r.gs)
+		items := make([]string, 0, len(candidates))
+		for _, candidate := range candidates {
+			if f := r.gs.Factions[candidate.ID]; f != nil {
+				items = append(items, f.NameTR)
+			}
+		}
+		factionList := buildTradeFactionList(layout, visibleRows, items, r.tradeScroll, r.tradeFactionFocus)
+		if factionList.HandleInput(input) {
+			r.tradeScroll = factionList.Scroll
+			if factionList.Selected >= 0 {
+				r.tradeFactionFocus = factionList.Selected
+			}
+			return InputAction{}
+		}
+		if r.tradeFactionFocus < 0 {
+			r.tradeFactionFocus = 0
+		}
+		if len(candidates) == 0 || r.tradeFactionFocus >= len(candidates) {
+			return InputAction{}
+		}
+		selected := candidates[r.tradeFactionFocus]
+		if buildTradeAgreementButton(layout, selected.Eligible).HandleInput(input) && selected.Eligible {
+			return InputAction{Kind: ActionCreateTradeRoute, TargetFaction: selected.ID}
+		}
+		return InputAction{}
+	}
+	if r.tradeTab != TradeTabMarket {
 		return InputAction{}
 	}
 	layout := tradePanelLayout()
@@ -897,7 +1177,7 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 	}
-	factions := sortedFactionsForTrade(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
+	factions := sortedFactionsForMarket(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
 	factionItems := make([]string, 0, len(factions))
 	for _, fid := range factions {
 		if f := r.gs.Factions[fid]; f != nil {

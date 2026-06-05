@@ -65,17 +65,27 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 			return Result{Message: "Savaş halindeyken ticaret yapılamaz."}
 		}
 		if rel.Stance == faction.StanceTrade {
-			return Result{Message: "Zaten aktif bir ticaret anlaşması var."}
+			if HasTradeRouteBetween(gs, actor, target) {
+				return Result{Message: "Zaten aktif bir ticaret anlaşması var."}
+			}
+			ensureTradeRoutesBetween(gs, actor, target)
+			return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile eksik ticaret rotaları yeniden kuruldu."}
 		}
-		if rel.Stance == faction.StanceAllied {
-			return Result{Message: "Bu fraksiyon zaten müttefik statüsünde."}
+		if rel.Stance == faction.StanceAllied && HasTradeRouteBetween(gs, actor, target) {
+			return Result{Message: "Bu müttefik ile ticaret zaten aktif."}
 		}
 		if !acceptTrade(gs, rel, actor, target) {
 			return Result{Message: factionLabel(gs, target) + " ticaret teklifini reddetti."}
 		}
-		rel.Stance = faction.StanceTrade
+		prevStance := rel.Stance
+		if prevStance != faction.StanceAllied {
+			rel.Stance = faction.StanceTrade
+		}
 		rel.Score = clamp(rel.Score+15, -100, 100)
 		ensureTradeRoutesBetween(gs, actor, target)
+		if prevStance == faction.StanceAllied {
+			return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile müttefiklik korunarak ticaret anlaşması açıldı."}
+		}
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması imzalandı."}
 
 	case ActionProposeAlliance:
@@ -142,7 +152,7 @@ func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 	case faction.StanceTrade:
 		ensureTradeRoutesBetween(gs, a, b)
 	}
-	if prevStance == faction.StanceTrade && rel.Stance != faction.StanceTrade {
+	if prevStance == faction.StanceTrade && (rel.Stance == faction.StanceWar || rel.Stance == faction.StancePeace) {
 		removeTradeRoutesBetween(gs, a, b)
 	}
 }
@@ -292,6 +302,24 @@ func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 		filtered = append(filtered, route)
 	}
 	gs.TradeRoutes = filtered
+}
+
+func HasTradeRouteBetween(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || len(gs.TradeRoutes) == 0 || a == "" || b == "" || a == b {
+		return false
+	}
+	aStr := string(a)
+	bStr := string(b)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 {
+			continue
+		}
+		if (route.FromFactionID == aStr && route.ToFactionID == bStr) ||
+			(route.FromFactionID == bStr && route.ToFactionID == aStr) {
+			return true
+		}
+	}
+	return false
 }
 
 func buildTradeRoute(gs *state.GameState, from, to faction.FactionID) *economy.TradeRoute {

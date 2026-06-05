@@ -82,6 +82,42 @@ func TestTradeCreatesUniqueRoutesAndWarRemovesThem(t *testing.T) {
 	}
 }
 
+func TestProposeTradeWhileAlliedKeepsAllianceAndAddsRoutes(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceAllied
+	rel.Score = 30
+
+	result := Execute(gs, "a", "b", ActionProposeTrade)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("müttefikle ticaret kabul edilmeliydi: %+v", result)
+	}
+	if rel.Stance != faction.StanceAllied {
+		t.Fatalf("müttefiklik korunmalıydı, got=%s", rel.Stance)
+	}
+	if len(gs.TradeRoutes) != 2 {
+		t.Fatalf("iki yönlü 2 rota bekleniyordu, got=%d", len(gs.TradeRoutes))
+	}
+}
+
+func TestForceRelationToAlliancePreservesExistingTradeRoutes(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 15
+	if result := Execute(gs, "a", "b", ActionProposeTrade); !result.Accepted || !result.Applied {
+		t.Fatalf("önce ticaret açılmalıydı: %+v", result)
+	}
+
+	ForceRelation(gs, "a", "b", faction.StanceAllied, 5)
+
+	if rel.Stance != faction.StanceAllied {
+		t.Fatalf("stance allied olmalıydı, got=%s", rel.Stance)
+	}
+	if len(gs.TradeRoutes) != 2 {
+		t.Fatalf("ittifakta mevcut rotalar korunmalıydı, got=%d", len(gs.TradeRoutes))
+	}
+}
+
 func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
