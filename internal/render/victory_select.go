@@ -38,7 +38,7 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	drawBackButton(screen)
 
 	if len(opts) == 0 {
-		DrawTextCentered(screen, "Bu senaryo için zafer koşulu tanımlanmamış.", ScreenWidth/2, ScreenHeight/2, FaceMed, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight / 2, W: ScreenWidth}, "Bu senaryo için zafer koşulu tanımlanmamış.", ColorGray, gameui.TextMedium, gameui.TextAlignCenter)
 		return
 	}
 
@@ -59,16 +59,16 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		if i == cursor {
 			titleCol = ColorYellow
 		}
-		DrawText(screen, opt.Title, rect.X+18, y+14, FaceLarge, titleCol)
-		DrawText(screen, opt.Description, rect.X+18, y+38, FaceMed, ColorGray)
-		DrawText(screen, opt.Detail, rect.X+18, y+60, FaceSmall, color.RGBA{140, 120, 80, 220})
+		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 14}, opt.Title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 38}, opt.Description, ColorGray, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 60}, opt.Detail, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, gameui.TextAlignStart)
 
 		if i == cursor {
-			DrawText(screen, "← SEÇİLİ", rect.X+rect.W-110, y+14, FaceSmall, ColorGold)
+			drawUILabel(screen, gameui.Rect{X: rect.X + rect.W - 110, Y: y + 14}, "← SEÇİLİ", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 
-	DrawTextCentered(screen, "Zafer koşulunu seçmek için tıkla", ScreenWidth/2, stack.Y+stack.H+20, FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: stack.Y + stack.H + 20, W: ScreenWidth}, "Zafer koşulunu seçmek için tıkla", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.

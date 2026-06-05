@@ -15,6 +15,7 @@ type CheckboxStyle struct {
 	DisabledText color.RGBA
 	BoxSize      float64
 	TextOffsetY  float64
+	TextVariant  TextVariant
 	BorderWidth  float32
 }
 
@@ -58,5 +59,5 @@ func DrawCheckbox(screen *ebiten.Image, c Checkbox, style CheckboxStyle, text Te
 	if !c.Enabled {
 		col = style.DisabledText
 	}
-	text.Draw(screen, c.Label, c.Rect.X+style.BoxSize+8, c.Rect.Y+style.TextOffsetY, col)
+	text.Draw(screen, c.Label, c.Rect.X+style.BoxSize+8, c.Rect.Y+style.TextOffsetY, col, style.TextVariant)
 }

@@ -9,6 +9,41 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
+func drawUILabel(screen *ebiten.Image, rect gameui.Rect, text string, col color.Color, variant gameui.TextVariant, align gameui.TextAlign) {
+	gameui.NewTextLabel(rect, text, col, variant, align).Draw(screen, renderText)
+}
+
+func drawUIWrappedLabel(screen *ebiten.Image, rect gameui.Rect, text string, col color.Color, variant gameui.TextVariant, lineStep float64, maxLines int) {
+	label := gameui.NewWrappedLabel(rect, text, col, variant, lineStep)
+	label.MaxLines = maxLines
+	label.Ellipsis = maxLines > 0
+	label.Draw(screen, renderText)
+}
+
+func drawUIWrappedLabelAligned(screen *ebiten.Image, rect gameui.Rect, text string, col color.Color, variant gameui.TextVariant, lineStep float64, maxLines int, align gameui.TextAlign) {
+	label := gameui.NewWrappedLabel(rect, text, col, variant, lineStep)
+	label.MaxLines = maxLines
+	label.Ellipsis = maxLines > 0
+	label.Align = align
+	label.Draw(screen, renderText)
+}
+
+func drawUIOutlinedLabel(screen *ebiten.Image, rect gameui.Rect, text string, fill color.Color, outline color.Color, variant gameui.TextVariant, align gameui.TextAlign) {
+	gameui.NewOutlinedLabel(rect, text, fill, outline, variant, align).Draw(screen, renderText)
+}
+
+func drawUIRichTextBlock(screen *ebiten.Image, rect gameui.Rect, lines []gameui.RichTextLine, lineStep float64) {
+	gameui.NewRichTextBlock(rect, lines, lineStep).Draw(screen, renderText)
+}
+
+func drawUIKeyValueWidget(screen *ebiten.Image, row gameui.KeyValueRow) {
+	row.Draw(screen, renderText)
+}
+
+func drawUITableRow(screen *ebiten.Image, row gameui.TableRow) {
+	row.Draw(screen, renderText)
+}
+
 func drawUIOverlay(screen *ebiten.Image, c color.RGBA) {
 	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), c, false)
 }
@@ -33,20 +68,19 @@ func drawUIPanelFrame(screen *ebiten.Image, rect gameui.Rect, fill color.RGBA, b
 }
 
 func drawUIPanelTitle(screen *ebiten.Image, rect gameui.Rect, title string) {
-	DrawTextCentered(screen, title, rect.X+rect.W/2, rect.Y, FaceLarge, ColorYellow)
+	drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y, W: rect.W}, title, ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
 }
 
 func drawUISectionLabel(screen *ebiten.Image, x, y float64, label string) {
-	DrawText(screen, label, x, y, FaceSmall, ColorGold)
+	drawUILabel(screen, gameui.Rect{X: x, Y: y}, label, ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 func drawUICenteredSectionLabel(screen *ebiten.Image, centerX, y float64, label string) {
-	w := MeasureText(label, FaceSmall)
-	drawUISectionLabel(screen, centerX-w/2, y, label)
+	drawUILabel(screen, gameui.Rect{X: centerX, Y: y}, label, ColorGold, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func drawUIMutedText(screen *ebiten.Image, x, y float64, label string) {
-	DrawText(screen, label, x, y, FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: x, Y: y}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color) {
@@ -56,16 +90,13 @@ func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value strin
 	if valueColor == nil {
 		valueColor = ColorWhite
 	}
-	DrawText(screen, label, x, y, FaceSmall, labelColor)
 	value = trimTextToWidth(value, FaceMed, w)
-	tw := MeasureText(value, FaceMed)
-	gap := 26.0
-	valueX := x + w - tw
-	minValueX := x + MeasureText(label, FaceSmall) + gap
-	if valueX < minValueX {
-		valueX = minValueX
-	}
-	DrawText(screen, value, valueX, y, FaceMed, valueColor)
+	row := gameui.NewKeyValueRow(gameui.Rect{X: x, Y: y, W: w}, label, value)
+	row.LabelColor = labelColor
+	row.ValueColor = valueColor
+	row.LabelVariant = gameui.TextSmall
+	row.ValueVariant = gameui.TextMedium
+	drawUIKeyValueWidget(screen, row)
 }
 
 func drawUIInfoBlock(screen *ebiten.Image, x, y float64, lines []string, colors []color.Color) {
@@ -74,7 +105,7 @@ func drawUIInfoBlock(screen *ebiten.Image, x, y float64, lines []string, colors 
 		if i < len(colors) && colors[i] != nil {
 			col = colors[i]
 		}
-		DrawText(screen, line, x, y+float64(i*24), FaceSmall, col)
+		drawUILabel(screen, gameui.Rect{X: x, Y: y + float64(i*24)}, line, col, gameui.TextSmall, gameui.TextAlignStart)
 	}
 }
 
@@ -82,9 +113,9 @@ func drawUIScreenChrome(screen *ebiten.Image, bg color.RGBA, title string, subti
 	screen.Fill(bg)
 	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
 	vector.FillRect(screen, 0, float32(ScreenHeight)-3, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
-	DrawTextCentered(screen, title, ScreenWidth/2, 40, FaceLarge, ColorYellow)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: 40, W: ScreenWidth}, title, ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
 	if subtitle != "" {
-		DrawTextCentered(screen, subtitle, ScreenWidth/2, 70, FaceSmall, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: 70, W: ScreenWidth}, subtitle, ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 	}
 }
 

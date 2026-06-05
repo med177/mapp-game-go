@@ -50,9 +50,9 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 
 	// Başlık
 	titleY := ScreenHeight/2 - 200
-	DrawTextCentered(screen, "MAPP", ScreenWidth/2, titleY, FaceLarge, ColorYellow)
-	DrawTextCentered(screen, "Orta Çağ Strateji", ScreenWidth/2, titleY+34, FaceSmall, color.RGBA{180, 160, 100, 200})
-	DrawTextCentered(screen, "1300 – 1600", ScreenWidth/2, titleY+52, FaceSmall, color.RGBA{140, 120, 80, 180})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY, W: ScreenWidth}, "MAPP", ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 34, W: ScreenWidth}, "Orta Çağ Strateji", color.RGBA{180, 160, 100, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 52, W: ScreenWidth}, "1300 – 1600", color.RGBA{140, 120, 80, 180}, gameui.TextSmall, gameui.TextAlignCenter)
 
 	// Ayraç
 	sepY := float32(titleY + 80)
@@ -80,11 +80,11 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 		if isSelected && !item.disabled {
 			prefix = "► "
 		}
-		DrawTextCentered(screen, prefix+item.label, ScreenWidth/2, y+8, FaceLarge, col)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: y + 8, W: ScreenWidth}, prefix+item.label, col, gameui.TextLarge, gameui.TextAlignCenter)
 	}
 
 	// Alt bilgi
-	DrawTextCentered(screen, "Menü seçeneğini tıklayarak devam et", ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Menü seçeneğini tıklayarak devam et", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func buildMenuItems(hasSave bool, hasAutoSave bool) []menuItem {

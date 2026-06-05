@@ -15,6 +15,7 @@ type ButtonStyle struct {
 	DisabledBorder color.RGBA
 	DisabledText   color.RGBA
 	TextOffsetY    float64
+	TextVariant    TextVariant
 	BorderWidth    float32
 }
 
@@ -67,6 +68,6 @@ func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRend
 	if b.Focused && b.Enabled {
 		vector.StrokeRect(screen, float32(b.X+2), float32(b.Y+2), float32(b.W-4), float32(b.H-4), 1, txt, false)
 	}
-	tw := text.Measure(b.Label)
-	text.Draw(screen, b.Label, b.X+b.W/2-tw/2, b.Y+style.TextOffsetY, txt)
+	tw := text.Measure(b.Label, style.TextVariant)
+	text.Draw(screen, b.Label, b.X+b.W/2-tw/2, b.Y+style.TextOffsetY, txt, style.TextVariant)
 }

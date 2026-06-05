@@ -102,11 +102,7 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 	vector.FillRect(screen, fbx, fby, fbw, 4, color.RGBA{200, 160, 50, 255}, false)
 
 	// Başlık
-	titleW := MeasureText("DURAKLANDI", FaceLarge)
-	DrawText(screen, "DURAKLANDI",
-		layout.titleRect.X+layout.titleRect.W/2-titleW/2,
-		layout.titleRect.Y,
-		FaceLarge, color.RGBA{220, 190, 80, 255})
+	drawUILabel(screen, layout.titleRect, "DURAKLANDI", color.RGBA{220, 190, 80, 255}, gameui.TextLarge, gameui.TextAlignCenter)
 
 	sepY := fby + 52
 	vector.StrokeLine(screen, fbx+20, sepY, fbx+fbw-20, sepY, 1, color.RGBA{100, 80, 35, 180}, false)
@@ -132,13 +128,10 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 			prefix = "► "
 		}
 		label := buttons[i].Label
-		tw := MeasureText(prefix+label, FaceLarge)
-		DrawText(screen, prefix+label,
-			layout.itemsRect.X+layout.itemsRect.W/2-tw/2,
-			y+8, FaceLarge, col)
+		drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)
 	}
 
-	drawUIMutedText(screen, layout.footerRect.X+layout.footerRect.W/2-MeasureText("Menü seçeneğini tıklayarak devam et", FaceSmall)/2, layout.footerRect.Y, "Menü seçeneğini tıklayarak devam et")
+	drawUILabel(screen, layout.footerRect, "Menü seçeneğini tıklayarak devam et", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 // handlePauseMenuInput duraklama menüsü girişini işler.

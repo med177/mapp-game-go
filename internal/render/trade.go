@@ -211,13 +211,13 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 	}
 
 	// Başlıklar
-	colX := []float32{px + 10, px + w*0.35, px + w*0.55, px + w*0.75}
-	headers := []string{"Mal", "Gönderen", "Alan", "Miktar/Tur"}
-	colW := []float32{w * 0.25, w * 0.20, w * 0.20, w * 0.15}
-	for i, hdr := range headers {
-		DrawText(screen, hdr, float64(colX[i]), float64(y)+4, FaceSmall, ColorGold)
-		_ = colW[i]
-	}
+	headerRow := gameui.NewTableRow(gameui.Rect{X: float64(px) + 10, Y: float64(y) + 4, W: float64(w) - 70}, []gameui.TableCell{
+		{Text: "Mal", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.35},
+		{Text: "Gönderen", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
+		{Text: "Alan", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
+		{Text: "Miktar/Tur", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.25},
+	}, 0)
+	drawUITableRow(screen, headerRow)
 
 	// Sil butonu başlığı
 	DrawText(screen, "İptal", float64(px+w-50), float64(y)+4, FaceSmall, ColorRed)
@@ -242,11 +242,13 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 		}
 		vector.FillRect(screen, px+4, ry, w-8, tradeRowH-4, bg, false)
 
-		goodName := economy.GoodNameTR(tr.Good)
-		DrawText(screen, goodName, float64(colX[0]), float64(ry)+10, FaceSmall, ColorWhite)
-		DrawText(screen, factionDisplayName(gs, tr.FromFactionID), float64(colX[1]), float64(ry)+10, FaceSmall, ColorGray)
-		DrawText(screen, factionDisplayName(gs, tr.ToFactionID), float64(colX[2]), float64(ry)+10, FaceSmall, ColorGray)
-		DrawText(screen, itoa(tr.AmountPerTurn)+" @"+itoa(tr.GoldPerUnit)+" altın", float64(colX[3]), float64(ry)+10, FaceSmall, ColorGold)
+		row := gameui.NewTableRow(gameui.Rect{X: float64(px) + 10, Y: float64(ry) + 10, W: float64(w) - 70}, []gameui.TableCell{
+			{Text: economy.GoodNameTR(tr.Good), Color: ColorWhite, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.35},
+			{Text: factionDisplayName(gs, tr.FromFactionID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
+			{Text: factionDisplayName(gs, tr.ToFactionID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
+			{Text: itoa(tr.AmountPerTurn) + " @" + itoa(tr.GoldPerUnit) + " altın", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.25},
+		}, 0)
+		drawUITableRow(screen, row)
 	}
 
 	// Scroll bilgisi
@@ -296,7 +298,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 		}
 	}
 	factionList := buildTradeFactionList(layout, visibleRows, factionItems, scroll, focusFaction)
-	gameui.DrawListView(screen, factionList, tradeListViewStyle(), renderSmallText)
+	gameui.DrawListView(screen, factionList, tradeListViewStyle(), renderText)
 
 	// Sağ sütun: mal seçimi
 	rightX := float32(layout.rightTitleRect.X)
@@ -328,7 +330,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 				goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 			}
 			goodsList := buildTradeGoodsList(layout, visibleRows, goodItems, focusGood)
-			gameui.DrawListView(screen, goodsList, tradeListViewStyle(), renderSmallText)
+			gameui.DrawListView(screen, goodsList, tradeListViewStyle(), renderText)
 		}
 	} else {
 		drawUIMutedText(screen, float64(rightX)+6, layout.rightListRect.Y+10, "Önce sol listeden bir hedef fraksiyon seçin.")
@@ -478,6 +480,7 @@ func tradeListViewStyle() gameui.ListViewStyle {
 		SelectedText:   ColorWhite,
 		MutedText:      ColorGray,
 		RowTextOffsetY: 4,
+		TextVariant:    gameui.TextSmall,
 	}
 }
 

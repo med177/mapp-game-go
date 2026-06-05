@@ -302,19 +302,33 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		drawUICardAccent(screen, rowRect, 6, fc)
 
-		name := trimTextToWidth(f.NameTR, FaceMed, rowRect.W-248)
-		DrawText(screen, name, rowRect.X+18, rowRect.Y+7, FaceMed, ColorWhite)
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		DrawText(screen, itoa(regionCount)+" bölge", rowRect.X+18, rowRect.Y+29, FaceSmall, ColorGray)
+		leftRow := gameui.NewTableRow(gameui.Rect{X: rowRect.X + 18, Y: rowRect.Y + 7, W: rowRect.W - 248}, []gameui.TableCell{
+			{Text: trimTextToWidth(f.NameTR, FaceMed, rowRect.W-248), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+		}, 0)
+		drawUITableRow(screen, leftRow)
+		subRow := gameui.NewTableRow(gameui.Rect{X: rowRect.X + 18, Y: rowRect.Y + 29, W: rowRect.W - 248}, []gameui.TableCell{
+			{Text: itoa(regionCount) + " bölge", Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
+		}, 0)
+		drawUITableRow(screen, subRow)
 
 		statusX := rowRect.X + rowRect.W - 220
 		if rel != nil {
 			stanceCol, stanceTR := stanceDisplay(rel.Stance)
-			DrawText(screen, stanceTR, statusX, rowRect.Y+7, FaceMed, stanceCol)
 			scoreCol := scoreColor(rel.Score)
-			DrawText(screen, "İlişki: "+itoa(rel.Score), statusX, rowRect.Y+29, FaceSmall, scoreCol)
+			rightRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 7, W: 206}, []gameui.TableCell{
+				{Text: stanceTR, Color: stanceCol, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+			}, 0)
+			drawUITableRow(screen, rightRow)
+			scoreRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 29, W: 206}, []gameui.TableCell{
+				{Text: "İlişki: " + itoa(rel.Score), Color: scoreCol, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
+			}, 0)
+			drawUITableRow(screen, scoreRow)
 		} else {
-			DrawText(screen, "Tarafsız", statusX, rowRect.Y+7, FaceMed, ColorGray)
+			neutralRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 7, W: 206}, []gameui.TableCell{
+				{Text: "Tarafsız", Color: ColorGray, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+			}, 0)
+			drawUITableRow(screen, neutralRow)
 		}
 	}
 	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
@@ -328,10 +342,17 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	layout := diplomacyOfferLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{14, 11, 8, 235}, panelBorder, 1.2, 3)
 
-	DrawText(screen, "Teklif Paneli", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
+	drawUILabel(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y}, "Teklif Paneli", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
 	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
 	drawUICardRect(screen, gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 8}, color.RGBA{22, 18, 12, 220}, color.RGBA{90, 72, 40, 170}, 1)
-	DrawText(screen, "Hedef: "+trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88), layout.targetRect.X+12, layout.targetRect.Y+2, FaceMed, ColorWhite)
+	targetRow := gameui.NewKeyValueRow(gameui.Rect{X: layout.targetRect.X + 12, Y: layout.targetRect.Y + 2, W: layout.targetRect.W - 24}, "Hedef:", trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88))
+	targetRow.LabelColor = ColorGray
+	targetRow.ValueColor = ColorWhite
+	targetRow.LabelVariant = gameui.TextMedium
+	targetRow.ValueVariant = gameui.TextMedium
+	targetRow.Gap = 12
+	targetRow.ValueAlign = gameui.TextAlignStart
+	drawUIKeyValueWidget(screen, targetRow)
 
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	relScore := 0
@@ -361,9 +382,8 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		drawDiplomacyButton(screen, btn.Button, bg, panelBorder, FaceMed, 7)
 		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
-		cw := MeasureText(chanceText, FaceMed)
-		DrawText(screen, chanceText, float64(bx)+float64(bw)-cw-14, float64(by)+7, FaceMed, ColorWhite)
-		DrawText(screen, status, float64(bx)+14, float64(by)+25, FaceSmall, color.RGBA{235, 230, 210, 230})
+		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, ColorWhite, gameui.TextMedium, gameui.TextAlignEnd)
+		drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 25, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 	}
 
 	selected := "Seçili teklif: " + diplomActions[actionFocus].label

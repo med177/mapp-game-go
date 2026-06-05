@@ -5,6 +5,8 @@ import (
 	"math"
 	"time"
 
+	gameui "mapp-game-go/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -29,7 +31,7 @@ func DrawLoadingScreen(screen *ebiten.Image, message string, progress int, tick 
 		vector.FillCircle(screen, x, y, 3.6, color.RGBA{220, 180, 70, alpha}, true)
 	}
 
-	DrawTextCentered(screen, message, ScreenWidth/2, float64(cy)+46, FaceLarge, ColorYellow)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(cy) + 46, W: ScreenWidth}, message, ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
 	barW := float32(280)
 	barH := float32(12)
 	barX := cx - barW/2
@@ -41,8 +43,8 @@ func DrawLoadingScreen(screen *ebiten.Image, message string, progress int, tick 
 		vector.FillRect(screen, barX+1, barY+1, maxFloat32(fillW-2, 0), barH-2, color.RGBA{214, 176, 68, 235}, false)
 	}
 
-	DrawTextCentered(screen, itoa(progress)+"%", ScreenWidth/2, float64(cy)+86, FaceLarge, color.RGBA{232, 210, 132, 255})
-	DrawTextCentered(screen, "Lütfen bekleyin", ScreenWidth/2, float64(cy)+114, FaceSmall, color.RGBA{150, 140, 110, 190})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(cy) + 86, W: ScreenWidth}, itoa(progress)+"%", color.RGBA{232, 210, 132, 255}, gameui.TextLarge, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(cy) + 114, W: ScreenWidth}, "Lütfen bekleyin", color.RGBA{150, 140, 110, 190}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func maxFloat32(a, b float32) float32 {

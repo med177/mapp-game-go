@@ -11,6 +11,7 @@ type TooltipStyle struct {
 	Text    color.RGBA
 	Padding float64
 	LineH   float64
+	Variant TextVariant
 }
 
 type Tooltip struct {
@@ -44,6 +45,6 @@ func DrawTooltip(screen *ebiten.Image, t Tooltip, style TooltipStyle, text TextR
 	}
 	DrawPanel(screen, NewPanel(t.Rect.X, t.Rect.Y, t.Rect.W, t.Rect.H), style.Panel)
 	for i, line := range t.Lines {
-		text.Draw(screen, line, t.Rect.X+style.Padding, t.Rect.Y+style.Padding+float64(i)*style.LineH, style.Text)
+		text.Draw(screen, line, t.Rect.X+style.Padding, t.Rect.Y+style.Padding+float64(i)*style.LineH, style.Text, style.Variant)
 	}
 }

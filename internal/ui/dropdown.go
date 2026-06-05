@@ -18,6 +18,7 @@ type DropdownStyle struct {
 	MutedText     color.RGBA
 	TitleOffsetY  float64
 	RowOffsetY    float64
+	TextVariant   TextVariant
 	BorderWidth   float32
 }
 
@@ -125,7 +126,7 @@ func DrawDropdown(screen *ebiten.Image, d *Dropdown, style DropdownStyle, text T
 	}
 	vector.FillRect(screen, float32(d.x), float32(d.y), float32(d.w), float32(d.h), style.PanelBG, false)
 	vector.StrokeRect(screen, float32(d.x), float32(d.y), float32(d.w), float32(d.h), style.BorderWidth, style.Border, false)
-	text.Draw(screen, d.title, d.x+10, d.y+style.TitleOffsetY, style.TitleColor)
+	text.Draw(screen, d.title, d.x+10, d.y+style.TitleOffsetY, style.TitleColor, style.TextVariant)
 
 	rowX := d.x + 8
 	rowY := d.y + d.headerH
@@ -144,11 +145,11 @@ func DrawDropdown(screen *ebiten.Image, d *Dropdown, style DropdownStyle, text T
 			txt = style.SelectedText
 		}
 		vector.FillRect(screen, float32(rowX), float32(oy), float32(rowW), float32(d.rowH-2), bg, false)
-		text.Draw(screen, option, rowX+8, oy+style.RowOffsetY, txt)
+		text.Draw(screen, option, rowX+8, oy+style.RowOffsetY, txt, style.TextVariant)
 	}
 	if len(d.options) > d.visibleRows {
 		info := itoa(d.scroll+1) + "-" + itoa(minInt(d.scroll+d.visibleRows, len(d.options))) + "/" + itoa(len(d.options))
-		text.Draw(screen, info, d.x+d.w-68, d.y+style.TitleOffsetY, style.MutedText)
+		text.Draw(screen, info, d.x+d.w-68, d.y+style.TitleOffsetY, style.MutedText, style.TextVariant)
 	}
 }
 

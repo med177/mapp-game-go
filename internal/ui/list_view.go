@@ -14,6 +14,7 @@ type ListViewStyle struct {
 	SelectedText   color.RGBA
 	MutedText      color.RGBA
 	RowTextOffsetY float64
+	TextVariant    TextVariant
 }
 
 type ListView struct {
@@ -106,10 +107,10 @@ func DrawListView(screen *ebiten.Image, l ListView, style ListViewStyle, text Te
 			txt = style.SelectedText
 		}
 		vector.FillRect(screen, float32(l.Rect.X), float32(ry), float32(l.Rect.W), float32(l.RowHeight-2), bg, false)
-		text.Draw(screen, l.Items[i], l.Rect.X+8, ry+style.RowTextOffsetY, txt)
+		text.Draw(screen, l.Items[i], l.Rect.X+8, ry+style.RowTextOffsetY, txt, style.TextVariant)
 	}
 	if len(l.Items) > l.VisibleRows {
 		info := itoa(l.Scroll+1) + "-" + itoa(end) + "/" + itoa(len(l.Items))
-		text.Draw(screen, info, l.Rect.X+8, l.Rect.Y+l.Rect.H+4, style.MutedText)
+		text.Draw(screen, info, l.Rect.X+8, l.Rect.Y+l.Rect.H+4, style.MutedText, style.TextVariant)
 	}
 }

@@ -17,6 +17,7 @@ type TextBoxStyle struct {
 	BorderWidth float32
 	TextOffsetX float64
 	TextOffsetY float64
+	TextVariant TextVariant
 }
 
 type TextBox struct {
@@ -90,7 +91,7 @@ func DrawTextBox(screen *ebiten.Image, t TextBox, style TextBoxStyle, text TextR
 		label = t.Placeholder
 		col = style.Placeholder
 	}
-	text.Draw(screen, label, t.Rect.X+style.TextOffsetX, t.Rect.Y+style.TextOffsetY, col)
+	text.Draw(screen, label, t.Rect.X+style.TextOffsetX, t.Rect.Y+style.TextOffsetY, col, style.TextVariant)
 }
 
 func dropLastRune(s string) string {

@@ -15,6 +15,7 @@ type RadioGroupStyle struct {
 	CircleSize   float64
 	RowHeight    float64
 	TextOffsetY  float64
+	TextVariant  TextVariant
 	BorderWidth  float32
 }
 
@@ -71,6 +72,6 @@ func DrawRadioGroup(screen *ebiten.Image, r RadioGroup, style RadioGroupStyle, t
 		if !r.Enabled {
 			col = style.DisabledText
 		}
-		text.Draw(screen, option, r.Rect.X+style.CircleSize+8, r.Rect.Y+float64(i)*rowH+style.TextOffsetY, col)
+		text.Draw(screen, option, r.Rect.X+style.CircleSize+8, r.Rect.Y+float64(i)*rowH+style.TextOffsetY, col, style.TextVariant)
 	}
 }

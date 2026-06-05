@@ -84,12 +84,12 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		if isSelected {
 			col = ColorYellow
 		}
-		DrawText(screen, r.label, rect.X+30, y+6, FaceLarge, col)
+		drawUILabel(screen, gameui.Rect{X: rect.X + 30, Y: y + 6}, r.label, col, gameui.TextLarge, gameui.TextAlignStart)
 		if r.value != "" {
-			DrawText(screen, "◄  "+r.value+"  ►", rect.X+310, y+6, FaceLarge, ColorGold)
+			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "◄  "+r.value+"  ►", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
 		}
 	}
-	drawUIMutedText(screen, ScreenWidth/2-78, ScreenHeight-30, "Sol tık: değiştir  •  ESC: kaydet ve çık")
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Sol tık: değiştir  •  ESC: kaydet ve çık", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func boolLabel(b bool) string {

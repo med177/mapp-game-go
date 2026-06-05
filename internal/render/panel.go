@@ -578,10 +578,8 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 	}
 
 	if len(events) == 0 {
-		DrawTextCentered(screen, "Henüz olay yok", float64(ex)+float64(evLogW)/2, float64(ey)+58, FaceSmall,
-			color.RGBA{150, 140, 120, 190})
-		DrawTextCentered(screen, "Oyun olayları burada listelenir", float64(ex)+float64(evLogW)/2, float64(ey)+76, FaceSmall,
-			color.RGBA{110, 105, 95, 170})
+		drawUILabel(screen, gameui.Rect{X: float64(ex), Y: float64(ey) + 58, W: float64(evLogW)}, "Henüz olay yok", color.RGBA{150, 140, 120, 190}, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: float64(ex), Y: float64(ey) + 76, W: float64(evLogW)}, "Oyun olayları burada listelenir", color.RGBA{110, 105, 95, 170}, gameui.TextSmall, gameui.TextAlignCenter)
 		return
 	}
 
@@ -606,15 +604,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		closeBtn := buildEventLogCloseButton(visibleIndex)
 		drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, "X", true, eventLogButtonStyle(ColorGray))
 
-		lines := wrapTextLines(ev, FaceSmall, float64(cardW-34))
-		if len(lines) > 2 {
-			lines = lines[:2]
-			lines[1] = trimTextToWidth(lines[1]+"...", FaceSmall, float64(cardW-34))
-		}
-		for li, line := range lines {
-			DrawText(screen, line, float64(cardX)+10, float64(cardY)+8+float64(li)*15, FaceSmall,
-				color.RGBA{220, 210, 185, 235})
-		}
+		drawUIWrappedLabel(screen, gameui.Rect{X: float64(cardX) + 10, Y: float64(cardY) + 8, W: float64(cardW - 34)}, ev, color.RGBA{220, 210, 185, 235}, gameui.TextSmall, 15, 2)
 	}
 	drawEventLogScrollbar(screen, len(events), scroll)
 }
@@ -837,22 +827,7 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
 
-	lines := eventDetailLines(message, layout.bodyRect.W)
-	maxLines := int(layout.bodyRect.H / 19)
-	if len(lines) > maxLines {
-		lines = lines[:maxLines]
-		last := len(lines) - 1
-		if lines[last] != "" {
-			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, layout.bodyRect.W)
-		}
-	}
-	for i, line := range lines {
-		if line == "" {
-			continue
-		}
-		DrawText(screen, line, layout.bodyRect.X, layout.bodyRect.Y+float64(i)*19, FaceMed,
-			color.RGBA{230, 224, 205, 240})
-	}
+	drawUIWrappedLabel(screen, gameui.Rect{X: layout.bodyRect.X, Y: layout.bodyRect.Y, W: layout.bodyRect.W}, message, color.RGBA{230, 224, 205, 240}, gameui.TextMedium, 19, int(layout.bodyRect.H/19))
 }
 
 func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int, scroll int) {
@@ -880,7 +855,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	drawUICardRect(screen, layout.detailRect, color.RGBA{20, 16, 12, 220}, color.RGBA{90, 72, 38, 210}, 1)
 
 	if len(entries) == 0 {
-		DrawText(screen, "Bu filtre için event yok.", layout.detailRect.X+18, layout.detailRect.Y+18, FaceMed, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: layout.detailRect.X + 18, Y: layout.detailRect.Y + 18}, "Bu filtre için event yok.", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
 		return
 	}
 	if focus < 0 {
@@ -932,21 +907,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	}
 	DrawText(screen, meta, layout.detailRect.X+16, layout.detailRect.Y+40, FaceSmall, ColorGray)
 
-	lines := eventDetailLines(selected.Detail, layout.detailRect.W-32)
-	maxLines := int((layout.detailRect.H - 76) / 19)
-	if len(lines) > maxLines {
-		lines = lines[:maxLines]
-		last := len(lines) - 1
-		if lines[last] != "" {
-			lines[last] = trimTextToWidth(lines[last]+"...", FaceMed, layout.detailRect.W-32)
-		}
-	}
-	for i, line := range lines {
-		if line == "" {
-			continue
-		}
-		DrawText(screen, line, layout.detailRect.X+16, layout.detailRect.Y+68+float64(i)*19, FaceMed, eventCodexLineColor(line))
-	}
+	drawUIWrappedLabel(screen, gameui.Rect{X: layout.detailRect.X + 16, Y: layout.detailRect.Y + 68, W: layout.detailRect.W - 32}, selected.Detail, eventCodexLineColor(selected.Detail), gameui.TextMedium, 19, int((layout.detailRect.H-76)/19))
 }
 
 func eventCodexEntryRect(index int) (x, y, w, h float32) {
@@ -1085,11 +1046,11 @@ func drawInfoPopup(screen *ebiten.Image, message string, alpha uint8) {
 	pw := float32(430)
 	px := float32(ScreenWidth)/2 - pw/2
 	lines := wrapTextLines(message, FaceMed, float64(pw-40))
-	if len(lines) > 3 {
-		lines = lines[:3]
-		lines[len(lines)-1] = trimTextToWidth(lines[len(lines)-1]+"...", FaceMed, float64(pw-40))
+	lineCount := len(lines)
+	if lineCount > 3 {
+		lineCount = 3
 	}
-	ph := float32(48 + len(lines)*20)
+	ph := float32(48 + lineCount*20)
 	py := float32(ScreenHeight)*0.22 - ph/2
 
 	bgAlpha := alpha
@@ -1100,11 +1061,8 @@ func drawInfoPopup(screen *ebiten.Image, message string, alpha uint8) {
 	vector.StrokeRect(screen, px, py, pw, ph, 1.5, color.RGBA{130, 105, 55, alpha}, false)
 	vector.FillRect(screen, px, py, pw, 3, color.RGBA{210, 170, 65, alpha}, false)
 
-	DrawText(screen, "Bilgi", float64(px)+16, float64(py)+12, FaceSmall, color.RGBA{220, 190, 100, alpha})
-	for i, line := range lines {
-		DrawText(screen, line, float64(px)+20, float64(py)+34+float64(i)*20, FaceMed,
-			color.RGBA{240, 230, 205, alpha})
-	}
+	drawUILabel(screen, gameui.Rect{X: float64(px) + 16, Y: float64(py) + 12}, "Bilgi", color.RGBA{220, 190, 100, alpha}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: float64(px) + 20, Y: float64(py) + 34, W: float64(pw - 40)}, message, color.RGBA{240, 230, 205, alpha}, gameui.TextMedium, 20, 3)
 }
 
 // ── Minimap (sağ alt, alt kenara yapışık) ────────────────────────────
@@ -1375,10 +1333,11 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	// Development mode bilgileri
 	if gs.DevelopmentMode {
-		DrawText(screen, "ID: "+string(region.ID), lx, ly, FaceSmall, ColorGray)
-		ly += 16
-		DrawText(screen, "Koordinat: "+itoa(region.WorldX)+","+itoa(region.WorldY), lx, ly, FaceSmall, ColorGray)
-		ly += 18
+		drawUIRichTextBlock(screen, gameui.Rect{X: lx, Y: ly}, []gameui.RichTextLine{
+			{Text: "ID: " + string(region.ID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart},
+			{Text: "Koordinat: " + itoa(region.WorldX) + "," + itoa(region.WorldY), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart},
+		}, 16)
+		ly += 34
 	}
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
@@ -1407,7 +1366,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		stypeStr = "  |  " + capital.Type.LabelTR()
 	}
 
-	DrawText(screen, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, lx, ly, FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	ly += 16
 
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
@@ -1454,7 +1413,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		}
 		if ownerRel != "" && ownerRel != region.Religion {
 			convPct := float64(region.ConversionTurns) / 24.0
-			DrawText(screen, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), lx, ly, FaceSmall, color.RGBA{180, 140, 240, 200})
+			drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), color.RGBA{180, 140, 240, 200}, gameui.TextSmall, gameui.TextAlignStart)
 			ly += 14
 			drawBar(screen, float32(lx), float32(ly), sepW, 7, convPct, color.RGBA{150, 100, 220, 220})
 			ly += 12
@@ -1476,13 +1435,14 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		} else {
 			neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
 		}
-		DrawText(screen, neighborTitle, lx, ly, FaceSmall, color.RGBA{200, 170, 90, 220})
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, neighborTitle, color.RGBA{200, 170, 90, 220}, gameui.TextSmall, gameui.TextAlignStart)
 		ly += 18
 
 		displayCount := len(region.Neighbors)
 		if displayCount > 4 {
 			displayCount = 4
 		}
+		neighborLines := make([]gameui.RichTextLine, 0, displayCount)
 		for i := 0; i < displayCount; i++ {
 			neighborID := region.Neighbors[i]
 			neighborRegion, ok := gs.Regions[neighborID]
@@ -1493,9 +1453,10 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 			if neighborRegion.IsSea {
 				col = color.RGBA{100, 160, 220, 200}
 			}
-			DrawText(screen, "• "+neighborRegion.NameTR, lx+15, ly, FaceSmall, col)
-			ly += 16
+			neighborLines = append(neighborLines, gameui.RichTextLine{Text: "• " + neighborRegion.NameTR, Color: col, Variant: gameui.TextSmall, Align: gameui.TextAlignStart})
 		}
+		drawUIRichTextBlock(screen, gameui.Rect{X: lx + 15, Y: ly}, neighborLines, 16)
+		ly += float64(len(neighborLines)) * 16
 	}
 
 	// ── Binalar bölümü ────────────────────────────────────────────────
@@ -1706,23 +1667,22 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 	vector.FillRect(screen, bx, by, bw, 4, color.RGBA{220, 170, 50, 255}, false)
 
 	cy := float64(by) + 28
-	DrawTextCentered(screen, "- TARIHSEL OLAY -", ScreenWidth/2, cy, FaceSmall, color.RGBA{180, 140, 50, 200})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: cy, W: ScreenWidth}, "- TARIHSEL OLAY -", color.RGBA{180, 140, 50, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 	cy += 26
-	DrawTextCentered(screen, title, ScreenWidth/2, cy, FaceLarge, color.RGBA{255, 220, 80, 255})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: cy, W: ScreenWidth}, title, color.RGBA{255, 220, 80, 255}, gameui.TextLarge, gameui.TextAlignCenter)
 	cy += 30
 
-	// Açıklama — uzun metni satırlara böl
-	wrapText(screen, desc, float64(bx)+30, cy, float64(bw-60), FaceMed, color.RGBA{210, 200, 180, 230})
+	drawUIWrappedLabel(screen, gameui.Rect{X: float64(bx) + 30, Y: cy, W: float64(bw - 60)}, desc, color.RGBA{210, 200, 180, 230}, gameui.TextMedium, 22, 0)
 
 	if len(choices) == 0 {
 		cy = float64(by) + float64(bh) - 28
-		DrawTextCentered(screen, "[Enter / Boşluk / Tıkla] Devam Et", ScreenWidth/2, cy, FaceSmall, color.RGBA{140, 130, 100, 200})
+		drawUILabel(screen, gameui.Rect{X: 0, Y: cy, W: ScreenWidth}, "[Enter / Boşluk / Tıkla] Devam Et", color.RGBA{140, 130, 100, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 		return
 	}
 
 	promptY := float64(by) + 210
 	if prompt != "" {
-		DrawTextCentered(screen, prompt, ScreenWidth/2, promptY, FaceMed, color.RGBA{230, 214, 175, 240})
+		drawUILabel(screen, gameui.Rect{X: 0, Y: promptY, W: ScreenWidth}, prompt, color.RGBA{230, 214, 175, 240}, gameui.TextMedium, gameui.TextAlignCenter)
 	}
 
 	buttons := buildHistoricalEventChoiceButtons(len(choices))
@@ -1749,86 +1709,17 @@ func drawHistoricalChoiceInfo(screen *ebiten.Image, btn gameui.Button, choice Hi
 	infoW := btn.W + 12
 	startY := btn.Y - 122
 	if choice.Desc != "" {
-		lines := wrapTextLines(choice.Desc, FaceSmall, infoW)
-		for i, line := range lines {
-			if i >= 2 {
-				break
-			}
-			DrawTextCentered(screen, line, btn.X+btn.W/2, startY+float64(i)*16, FaceSmall, color.RGBA{162, 150, 120, 210})
-		}
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: startY, W: infoW}, choice.Desc, color.RGBA{162, 150, 120, 210}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.Effect != "" {
-		lines := wrapTextLines(choice.Effect, FaceSmall, infoW)
-		for i, line := range lines {
-			if i >= 2 {
-				break
-			}
-			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-74+float64(i)*16, FaceSmall, color.RGBA{190, 176, 142, 220})
-		}
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 74, W: infoW}, choice.Effect, color.RGBA{190, 176, 142, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.FollowUp != "" {
-		lines := wrapTextLines(choice.FollowUp, FaceSmall, infoW)
-		for i, line := range lines {
-			if i >= 2 {
-				break
-			}
-			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-42+float64(i)*16, FaceSmall, color.RGBA{232, 196, 112, 230})
-		}
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 42, W: infoW}, choice.FollowUp, color.RGBA{232, 196, 112, 230}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.Conditions != "" {
-		lines := wrapTextLines(choice.Conditions, FaceSmall, infoW)
-		for i, line := range lines {
-			if i >= 2 {
-				break
-			}
-			DrawTextCentered(screen, line, btn.X+btn.W/2, btn.Y-10+float64(i)*16, FaceSmall, color.RGBA{144, 138, 126, 220})
-		}
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 10, W: infoW}, choice.Conditions, color.RGBA{144, 138, 126, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
-	_ = infoX
-}
-
-// wrapText metni belirtilen genişlikte kelime bazlı satırlara bölerek çizer.
-func wrapText(screen *ebiten.Image, text string, x, y, maxW float64, face *text.GoTextFace, col color.Color) {
-	words := splitWords(text)
-	line := ""
-	ly := y
-	for _, w := range words {
-		test := line
-		if test != "" {
-			test += " "
-		}
-		test += w
-		if MeasureText(test, face) > maxW && line != "" {
-			DrawText(screen, line, x, ly, face, col)
-			ly += 22
-			line = w
-		} else {
-			line = test
-		}
-	}
-	if line != "" {
-		DrawText(screen, line, x, ly, face, col)
-	}
-}
-
-// splitWords metni boşluklara göre böler.
-func splitWords(s string) []string {
-	var words []string
-	cur := ""
-	for _, r := range s {
-		if r == ' ' {
-			if cur != "" {
-				words = append(words, cur)
-				cur = ""
-			}
-		} else {
-			cur += string(r)
-		}
-	}
-	if cur != "" {
-		words = append(words, cur)
-	}
-	return words
 }
 
 func victoryTypeLabel(vtype state.VictoryType) string {
@@ -2726,10 +2617,11 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 
 	// Development mode bilgileri
 	if gs.DevelopmentMode {
-		DrawText(screen, "ID: "+string(region.ID), lx, ly, FaceSmall, ColorGray)
-		ly += 16
-		DrawText(screen, "Koordinat: "+itoa(region.WorldX)+","+itoa(region.WorldY), lx, ly, FaceSmall, ColorGray)
-		ly += 18
+		drawUIRichTextBlock(screen, gameui.Rect{X: lx, Y: ly}, []gameui.RichTextLine{
+			{Text: "ID: " + string(region.ID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart},
+			{Text: "Koordinat: " + itoa(region.WorldX) + "," + itoa(region.WorldY), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart},
+		}, 16)
+		ly += 34
 	}
 
 	// Deniz bölgesi (italik vurgu)
@@ -2756,7 +2648,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	} else {
 		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
 	}
-	drawUISectionLabel(screen, lx, ly, neighborTitle)
+	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, neighborTitle, ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	ly += 18
 
 	// İlk 4 komşuyu listele
@@ -2764,6 +2656,7 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	if displayCount > 4 {
 		displayCount = 4
 	}
+	neighborLines := make([]gameui.RichTextLine, 0, displayCount)
 	for i := 0; i < displayCount; i++ {
 		neighborID := region.Neighbors[i]
 		neighborRegion, ok := gs.Regions[neighborID]
@@ -2772,15 +2665,16 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 			if neighborRegion.IsSea {
 				col = color.RGBA{100, 160, 220, 200}
 			}
-			DrawText(screen, "• "+neighborRegion.NameTR, lx+15, ly, FaceSmall, col)
-			ly += 16
+			neighborLines = append(neighborLines, gameui.RichTextLine{Text: "• " + neighborRegion.NameTR, Color: col, Variant: gameui.TextSmall, Align: gameui.TextAlignStart})
 		}
 	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: lx + 15, Y: ly}, neighborLines, 16)
+	ly += float64(len(neighborLines)) * 16
 
 	ly += 10
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
 	// Bilgi
-	DrawText(screen, "Tıkla: Özel fırsat yok", lx, ly, FaceSmall, color.RGBA{100, 200, 100, 150})
+	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Tıkla: Özel fırsat yok", color.RGBA{100, 200, 100, 150}, gameui.TextSmall, gameui.TextAlignStart)
 }

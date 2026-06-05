@@ -26,8 +26,16 @@ type Widget interface {
 	Draw(screen *ebiten.Image, text TextRenderer)
 }
 
+type TextVariant uint8
+
+const (
+	TextSmall TextVariant = iota
+	TextMedium
+	TextLarge
+)
+
 // TextRenderer UI paketinin render katmanından font bağımsız kalmasını sağlar.
 type TextRenderer interface {
-	Measure(text string) float64
-	Draw(screen *ebiten.Image, text string, x, y float64, col color.Color)
+	Measure(text string, variant TextVariant) float64
+	Draw(screen *ebiten.Image, text string, x, y float64, col color.Color, variant TextVariant)
 }

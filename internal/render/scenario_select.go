@@ -33,7 +33,7 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 	drawBackButton(screen)
 
 	if len(scenarios) == 0 {
-		DrawTextCentered(screen, "Senaryo bulunamadı!", ScreenWidth/2, ScreenHeight/2, FaceLarge, ColorRed)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight / 2, W: ScreenWidth}, "Senaryo bulunamadı!", ColorRed, gameui.TextLarge, gameui.TextAlignCenter)
 		return
 	}
 
@@ -66,11 +66,11 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		if isSelected {
 			nameCol = ColorYellow
 		}
-		DrawText(screen, prefix+sc.Name, float64(x)+18, float64(y)+18, FaceLarge, nameCol)
+		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 18}, prefix+sc.Name, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 
 		// Yıl etiketi
 		yearStr := itoa(sc.Year) + " — " + monthName(sc.Month)
-		DrawText(screen, yearStr, float64(x)+18, float64(y)+46, FaceSmall, color.RGBA{160, 140, 90, 200})
+		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 46}, yearStr, color.RGBA{160, 140, 90, 200}, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Açıklama (uzunsa kes)
 		desc := sc.Description
@@ -80,7 +80,7 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		// Açıklamayı satırlara sar
 		lines := splitLines(desc, 72)
 		for j, line := range lines {
-			DrawText(screen, line, float64(x)+18, float64(y)+68+float64(j)*18, FaceSmall, color.RGBA{140, 125, 90, 180})
+			drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 68 + float64(j)*18}, line, color.RGBA{140, 125, 90, 180}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 }

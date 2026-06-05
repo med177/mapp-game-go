@@ -369,7 +369,7 @@ func (r *Renderer) drawEditShapeStrokePreview(screen *ebiten.Image, session *sha
 	if session == nil || len(session.DiffList) == 0 {
 		return
 	}
-	buildEditShapeStrokeOverlay(r, session).Draw(screen, renderSmallText)
+	buildEditShapeStrokeOverlay(r, session).Draw(screen, renderText)
 }
 
 func buildEditShapeStrokeOverlay(r *Renderer, session *shapeEditSession) gameui.Overlay {
@@ -414,7 +414,7 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 		gameui.NewLabel(float64(x)+12, float64(y)+66, "Yesil=ekle  Kirmizi=sil  Sol tik=secim", ColorGray),
 	}
 	for _, label := range labels {
-		label.Draw(screen, renderSmallText)
+		label.Draw(screen, renderText)
 	}
 }
 

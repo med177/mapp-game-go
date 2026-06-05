@@ -21,6 +21,43 @@ type tooltipLine struct {
 	col  color.RGBA
 }
 
+func tooltipRichLines(lines []tooltipLine) []gameui.RichTextLine {
+	out := make([]gameui.RichTextLine, 0, len(lines))
+	for _, line := range lines {
+		out = append(out, gameui.RichTextLine{
+			Text:    line.text,
+			Color:   line.col,
+			Variant: gameui.TextSmall,
+			Align:   gameui.TextAlignStart,
+		})
+	}
+	return out
+}
+
+func plainRichLines(lines []string, col color.RGBA) []gameui.RichTextLine {
+	out := make([]gameui.RichTextLine, 0, len(lines))
+	for _, line := range lines {
+		out = append(out, gameui.RichTextLine{
+			Text:    line,
+			Color:   col,
+			Variant: gameui.TextSmall,
+			Align:   gameui.TextAlignStart,
+		})
+	}
+	return out
+}
+
+func drawTooltipStatusRow(screen *ebiten.Image, x, y float64, value string, valueCol color.Color) {
+	row := gameui.NewKeyValueRow(gameui.Rect{X: x, Y: y, W: 220}, "Durum:", value)
+	row.LabelColor = ColorGray
+	row.ValueColor = valueCol
+	row.LabelVariant = gameui.TextSmall
+	row.ValueVariant = gameui.TextSmall
+	row.Gap = 14
+	row.ValueAlign = gameui.TextAlignStart
+	drawUIKeyValueWidget(screen, row)
+}
+
 func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, recruitPanelOpen bool) {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
@@ -102,19 +139,14 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	textX := iconX + iconW + 12.0
 
 	DrawText(screen, b.NameTR, textX, y+12, FaceMed, ColorGold)
-	DrawText(screen, "Durum:", textX, y+34, FaceSmall, ColorGray)
-	DrawText(screen, status, textX+46, y+34, FaceSmall, statusCol)
+	drawTooltipStatusRow(screen, textX, y+34, status, statusCol)
 
 	DrawText(screen, "Maliyet:", textX, y+50, FaceSmall, ColorGray)
-	for i, line := range costLines {
-		DrawText(screen, line.text, textX, y+64+float64(i)*14, FaceSmall, line.col)
-	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: y + 64}, tooltipRichLines(costLines), 14)
 
 	reqY := y + 64 + float64(len(costLines))*14 + 2
 	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
-	for i, line := range reqLines {
-		DrawText(screen, line.text, textX, reqY+14+float64(i)*14, FaceSmall, line.col)
-	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: reqY + 14}, tooltipRichLines(reqLines), 14)
 
 	if buildingSheet != nil {
 		vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
@@ -129,10 +161,7 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 
 	effectY := reqY + 14 + float64(len(reqLines))*14 + 8
 	DrawText(screen, "Etkiler:", textX, effectY, FaceSmall, ColorGray)
-	effectY += 14
-	for i, line := range effectLines {
-		DrawText(screen, line, textX, effectY+float64(i)*16, FaceSmall, ColorGray)
-	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: effectY + 14}, plainRichLines(effectLines, ColorGray), 16)
 }
 
 func buildingAvailabilityStatus(gs *state.GameState, region *world.Region, b *city.Building, reqMissing bool) (string, color.RGBA) {
@@ -244,19 +273,14 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
 
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
-	DrawText(screen, "Durum:", textX, y+34, FaceSmall, ColorGray)
-	DrawText(screen, status, textX+46, y+34, FaceSmall, statusCol)
+	drawTooltipStatusRow(screen, textX, y+34, status, statusCol)
 
 	DrawText(screen, "Maliyet:", textX, y+50, FaceSmall, ColorGray)
-	for i, line := range costLines {
-		DrawText(screen, line.text, textX, y+64+float64(i)*14, FaceSmall, line.col)
-	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: y + 64}, tooltipRichLines(costLines), 14)
 
 	reqY := y + 64 + float64(len(costLines))*14 + 2
 	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
-	for i, line := range reqLines {
-		DrawText(screen, line.text, textX, reqY+14+float64(i)*14, FaceSmall, line.col)
-	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: reqY + 14}, tooltipRichLines(reqLines), 14)
 
 	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
 	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, upkeepY, FaceSmall, ColorGray)
@@ -440,7 +464,7 @@ func drawTooltipBox(screen *ebiten.Image, x, y, w, h float64) {
 		Rect:    gameui.Rect{X: x, Y: y, W: w, H: h},
 		Visible: true,
 	}
-	gameui.DrawTooltip(screen, tooltip, hoverTooltipStyle, renderSmallText)
+	gameui.DrawTooltip(screen, tooltip, hoverTooltipStyle, renderText)
 	vector.FillRect(screen, float32(x), float32(y), float32(w), 3, panelBorder, false)
 }
 

@@ -95,6 +95,7 @@ var hoverTooltipStyle = gameui.TooltipStyle{
 	Text:    ColorGray,
 	Padding: 10,
 	LineH:   16,
+	Variant: gameui.TextSmall,
 }
 
 func mapModeButtonStyle(active bool) gameui.ButtonStyle {

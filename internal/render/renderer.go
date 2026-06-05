@@ -2050,11 +2050,7 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.
 	tx := float64(cx) - tw/2
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
-	DrawText(screen, countStr, tx-1, ty, FaceSmall, shadowCol)
-	DrawText(screen, countStr, tx+1, ty, FaceSmall, shadowCol)
-	DrawText(screen, countStr, tx, ty-1, FaceSmall, shadowCol)
-	DrawText(screen, countStr, tx, ty+1, FaceSmall, shadowCol)
-	DrawText(screen, countStr, tx, ty, FaceSmall, textCol)
+	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {
@@ -2143,12 +2139,13 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		}
 
 		if drawText {
-			face := FaceSmall
+			variant := gameui.TextSmall
 			if r.camScale >= 1.0 {
-				face = FaceMed
+				variant = gameui.TextMedium
 			}
-			DrawText(screen, item.Text, item.X+1, item.Y+1, face, shadowCol)
-			DrawText(screen, item.Text, item.X, item.Y, face, labelCol)
+			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.X, Y: item.Y}, item.Text, labelCol, shadowCol, variant, gameui.TextAlignStart)
+			outlined.Offsets = [][2]float64{{1, 1}}
+			outlined.Draw(screen, renderText)
 			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
@@ -6864,17 +6861,10 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
 	title := "Anlaşma Teklifi"
-	DrawText(screen, title, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+30, FaceLarge, color.RGBA{255, 220, 100, 255})
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 30}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	message := fromName + " devleti size " + actionLabel + " teklif etti."
-	lines := wrapTextLines(message, FaceMed, modal.Panel.Rect.W-40)
-	for i, line := range lines {
-		if i >= 3 {
-			break
-		}
-		DrawText(screen, line, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+64+float64(i)*20, FaceMed, color.RGBA{220, 220, 220, 255})
-	}
-	DrawText(screen, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.",
-		modal.Panel.Rect.X+20, modal.Panel.Rect.Y+124, FaceSmall, ColorGray)
+	drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 64, W: modal.Panel.Rect.W - 40}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 3)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 124}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, acceptBtn.Label, true,
@@ -7031,15 +7021,8 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 	modal := buildConfirmDialogModal()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
-	DrawText(screen, r.confirmDialog.title, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+28, FaceLarge, color.RGBA{255, 220, 100, 255})
-	lines := r.confirmDialog.messageLines
-	for i, line := range lines {
-		if i >= 3 {
-			break
-		}
-		DrawText(screen, line, modal.Panel.Rect.X+20, modal.Panel.Rect.Y+58+float64(i)*17, FaceSmall, color.RGBA{220, 220, 220, 255})
-
-	}
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 28}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
 	r.drawConfirmDialogButtons(screen)
 }
 

@@ -20,8 +20,16 @@ type slotCardLayout struct {
 	H float64
 }
 
+const (
+	slotCardW                  = 480.0
+	slotCardH                  = 88.0
+	slotPendingDeleteNameInset = 18.0
+	slotPendingDeleteNameY     = 12.0
+	slotPendingDeletePromptY   = 36.0
+)
+
 func slotCardsStackRect() gameui.Rect {
-	return centeredStackRect(len(SaveSlots), 480, 88, 14, 0)
+	return centeredStackRect(len(SaveSlots), slotCardW, slotCardH, 14, 0)
 }
 
 func slotCardLayoutAt(i int) slotCardLayout {
@@ -81,13 +89,10 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 	drawBackButton(screen)
 
 	if len(SaveSlots) == 0 {
-		DrawTextCentered(screen, "Kayıt bulunamadı.", ScreenWidth/2, ScreenHeight/2, FaceMed, ColorGray)
-		DrawTextCentered(screen, "Geri düğmesiyle ana menüye dön", ScreenWidth/2, ScreenHeight-40, FaceSmall, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight / 2, W: ScreenWidth}, "Kayıt bulunamadı.", ColorGray, gameui.TextMedium, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 40, W: ScreenWidth}, "Geri düğmesiyle ana menüye dön", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 		return
 	}
-
-	cardW := float64(480)
-	cardH := float64(88)
 
 	for i, slot := range SaveSlots {
 		card := slotCardLayoutAt(i)
@@ -111,7 +116,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			bg = color.RGBA{10, 10, 10, 160}
 			borderCol = color.RGBA{35, 30, 20, 150}
 		}
-		drawUICardRect(screen, gameui.Rect{X: cx, Y: cy, W: cardW, H: cardH}, bg, borderCol, 1.5)
+		drawUICardRect(screen, gameui.Rect{X: cx, Y: cy, W: slotCardW, H: slotCardH}, bg, borderCol, 1.5)
 
 		// Sol: slot adı
 		nameCol := ColorGold
@@ -126,7 +131,6 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 		if isSelected && !disabled && !isPendingDelete {
 			prefix = "► "
 		}
-		DrawText(screen, prefix+slot.DisplayName, cx+18, cy+14, FaceLarge, nameCol)
 
 		if slot.Exists {
 			detailCol := color.RGBA{180, 165, 120, 200}
@@ -134,25 +138,23 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				detailCol = color.RGBA{50, 50, 50, 160}
 			}
 			if isPendingDelete {
-				// Onay sorusu kartın içine yerleşir
-				DrawTextCentered(screen, "Silinecek! Emin misiniz?", cx+cardW/2, cy+40,
-					FaceMed, color.RGBA{255, 100, 100, 255})
+				// Silme onayında başlık ve soru ayrı bantlarda tutulur ki üst üste binmesin.
+				drawUILabel(screen, gameui.Rect{X: cx + slotPendingDeleteNameInset, Y: cy + slotPendingDeleteNameY}, slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: cx, Y: cy + slotPendingDeletePromptY, W: slotCardW}, "Silinecek! Emin misiniz?", color.RGBA{255, 100, 100, 255}, gameui.TextMedium, gameui.TextAlignCenter)
 				yes, no := slotDeleteConfirmRects(cx, cy)
 				drawSlotMiniButton(screen, yes, "Sil", color.RGBA{130, 35, 35, 230})
 				drawSlotMiniButton(screen, no, "İptal", color.RGBA{45, 45, 45, 230})
 			} else {
+				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 				faction := slot.FactionName
 				if faction == "" {
 					faction = "Bilinmiyor"
 				}
-				DrawText(screen, "Fraksiyon: "+faction, cx+18, cy+44, FaceSmall, detailCol)
-				DrawText(screen, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year),
-					cx+cardW/2, cy+44, FaceSmall, detailCol)
+				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 44}, "Fraksiyon: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: cx + slotCardW/2, Y: cy + 44}, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignCenter)
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")
-				tw := MeasureText(modStr, FaceSmall)
-				DrawText(screen, modStr, cx+cardW-tw-18, cy+14, FaceSmall,
-					color.RGBA{110, 100, 70, 200})
+				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14, W: slotCardW - 36}, modStr, color.RGBA{110, 100, 70, 200}, gameui.TextSmall, gameui.TextAlignEnd)
 
 				// Sil butonu göstergesi (sadece dolu ve seçili slotta)
 				if isSelected {
@@ -165,7 +167,8 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			if saveMode && isSelected {
 				emptyCol = color.RGBA{140, 160, 80, 220}
 			}
-			DrawTextCentered(screen, "- Bos Slot -", cx+cardW/2, cy+cardH/2-8, FaceMed, emptyCol)
+			drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: cx, Y: cy + slotCardH/2 - 8, W: slotCardW}, "- Bos Slot -", emptyCol, gameui.TextMedium, gameui.TextAlignCenter)
 		}
 	}
 
@@ -173,7 +176,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 	if pendingDelete != "" {
 		hint = "Sil veya İptal düğmesine tıkla"
 	}
-	DrawTextCentered(screen, hint, ScreenWidth/2, ScreenHeight-30, FaceSmall, color.RGBA{80, 80, 80, 200})
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, hint, color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 // handleSlotSelectInput slot seçim ekranının girişini işler.
@@ -293,6 +296,14 @@ func slotDeleteButtonRect(cx, cy float64) slotRect {
 
 func slotDeleteConfirmRects(cx, cy float64) (slotRect, slotRect) {
 	return slotRect{cx + 166, cy + 54, 70, 24}, slotRect{cx + 244, cy + 54, 70, 24}
+}
+
+func slotPendingDeleteTextBounds(cy float64) (nameTop, nameBottom, promptTop, promptBottom float64) {
+	nameTop = cy + slotPendingDeleteNameY
+	nameBottom = nameTop + FaceMed.Size
+	promptTop = cy + slotPendingDeletePromptY
+	promptBottom = promptTop + FaceMed.Size
+	return nameTop, nameBottom, promptTop, promptBottom
 }
 
 func deleteButtonRectForSlot(i int) slotRect {

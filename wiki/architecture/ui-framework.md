@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [ui, render, input, widgets]
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 related: [architecture/render-pipeline, architecture/game-loop, architecture/state-management, architecture/ui-screen-guide, dev/progress]
 ---
 
@@ -16,12 +16,13 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 
 ## Mevcut Durum
 1. `internal/ui` içinde çekirdek sözleşmeler (`Widget`, `InputState`, `Manager`) ve test edilebilir focus sırası eklendi.
-2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`, `AnchorRect`, `Box`) oluşturuldu.
+2. Ortak `Button`, `Dropdown`, `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve temel layout yardımcıları (`VBox`, `HBox`, `Grid`, `AnchorRect`, `Box`) oluşturuldu. `Label` artık sadece small text saran ince wrapper değil; `TextVariant` (small/medium/large) ve `TextAlign` (start/center/end) taşıyan ortak text primitive'i olarak menü/seçim ekranlarındaki manuel başlık/açıklama/hint çizimlerini de besliyor. Aynı katmanda `WrappedLabel` (satır saran metin bloğu) ve `OutlinedLabel` (gölgeli/outlined kısa etiket) primitive'leri de eklendi; modal açıklamaları ve ikon üstü sayaçlar bu yoldan çiziliyor.
 3. `render` katmanında back/menu/mini/tiny buton çizimleri, edit mode dropdown'ları, trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları ortak bileşen yüzeylerine bağlandı.
 4. HUD, recruit paneli, ordu split/merge overlay'i, edit mode inspector/form etkileşim yüzeyleri ve modal aileleri ortak button/panel/overlay geometry builder'larına taşındı.
 5. Ortak button, dropdown, modal, HUD ve shape yardım paneli stilleri `internal/render/ui_theme.go` altında toplanmaya başladı.
 6. Tam ekran menü/seçim aileleri için ortak screen chrome ve kart compose helper'ları (`internal/render/ui_compose.go`) kullanılmaya başlandı.
 7. Ana menü ve kayıt/yükleme slot ekranlarında `Tab` focus geçişi `internal/ui.Manager` üzerinden çalışır.
+8. `internal/render/ui_bridge.go` artık tek bir ortak `TextRenderer` sağlar; widget ailesi font varyantını UI katmanından ister, render katmanı yalnız face eşlemesini yapar.
 
 ## Hedef Mimari
 1. `internal/ui` altında ortak UI framework

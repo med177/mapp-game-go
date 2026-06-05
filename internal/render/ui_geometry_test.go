@@ -225,7 +225,18 @@ func TestSelectionScreensRenderSmokeCommonViewports(t *testing.T) {
 		DrawFactionSelect(screen, gs, 0)
 		DrawVictorySelect(screen, gs, 0)
 		DrawSlotSelectScreen(screen, 0, false, "")
+		DrawSlotSelectScreen(screen, 0, false, "autosave")
 		DrawSettingsScreen(screen, DefaultSettings(), 0)
+	}
+}
+
+func TestSlotPendingDeleteLayoutDoesNotOverlap(t *testing.T) {
+	_, nameBottom, promptTop, promptBottom := slotPendingDeleteTextBounds(100)
+	if nameBottom > promptTop {
+		t.Fatalf("pending delete metinleri üst üste biniyor: nameBottom=%.1f promptTop=%.1f", nameBottom, promptTop)
+	}
+	if promptBottom > 100+slotCardH {
+		t.Fatalf("pending delete sorusu kart dışına taşıyor: promptBottom=%.1f cardBottom=%.1f", promptBottom, 100+slotCardH)
 	}
 }
 

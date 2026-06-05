@@ -79,17 +79,17 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		if i == cursor {
 			nameCol = ColorYellow
 		}
-		DrawText(screen, f.NameTR, float64(x+16), float64(y+12), FaceLarge, nameCol)
+		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 
 		// Din
-		DrawText(screen, religion.DisplayNameTR(f.Religion), float64(x+16), float64(y+36), FaceSmall, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Bölge sayısı ve başlangıç altını
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		DrawText(screen, itoa(regionCount)+" bölge", float64(x+16), float64(y+54), FaceSmall, ColorGold)
+		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 54)}, itoa(regionCount)+" bölge", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 
 		if i == cursor {
-			DrawText(screen, "← SEÇİLİ", float64(x+cardW-90), float64(y+12), FaceSmall, fc)
+			drawUILabel(screen, gameui.Rect{X: float64(x + cardW - 90), Y: float64(y + 12)}, "← SEÇİLİ", fc, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 }
