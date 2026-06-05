@@ -233,21 +233,12 @@ func preferredDockSettlementID(region *world.Region) string {
 }
 
 func (g *Game) completeLandUnit(region *world.Region, ownerID faction.FactionID, unitTypeID string) string {
-	var targetArmy *army.Army
-	for _, a := range g.gs.Armies {
-		if a.RegionID == region.ID && a.OwnerID == string(ownerID) && !a.IsNaval {
-			targetArmy = a
-			break
-		}
-	}
+	targetArmy, canCreateNew := g.findRecruitableLandArmy(region.ID, ownerID)
 	if targetArmy != nil {
-		if len(targetArmy.Units) >= army.MaxArmySize {
-			return "ordu dolu"
-		}
 		targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
 		return ""
 	}
-	if g.gs.CurrentLandArmies(ownerID) >= g.gs.MaxLandArmies(ownerID) {
+	if !canCreateNew {
 		return "maksimum ordu sayısına ulaşıldı"
 	}
 	g.gs.NextArmySeq++
@@ -261,6 +252,18 @@ func (g *Game) completeLandUnit(region *world.Region, ownerID faction.FactionID,
 		MaxMovePoints: 2,
 	}
 	return ""
+}
+
+func (g *Game) findRecruitableLandArmy(regionID world.RegionID, ownerID faction.FactionID) (*army.Army, bool) {
+	for _, a := range g.gs.Armies {
+		if a.RegionID != regionID || a.OwnerID != string(ownerID) || a.IsNaval {
+			continue
+		}
+		if len(a.Units) < army.MaxArmySize {
+			return a, true
+		}
+	}
+	return nil, g.gs.CurrentLandArmies(ownerID) < g.gs.MaxLandArmies(ownerID)
 }
 
 func (g *Game) queuedBuildingCount(rid world.RegionID, buildingID string) int {

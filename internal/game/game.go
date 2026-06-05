@@ -2134,23 +2134,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		quantity = availableManpower
 	}
 
-	var targetArmy *army.Army
-	for _, a := range g.gs.Armies {
-		if a.RegionID == rid && a.OwnerID == string(pid) && !a.IsNaval {
-			targetArmy = a
-			break
-		}
-	}
-	if targetArmy != nil {
-		if len(targetArmy.Units) >= army.MaxArmySize {
-			g.renderer.ShowCombatResult("Ordu dolu! (max 20 birim)")
-			return
-		}
-	} else {
-		if g.gs.CurrentLandArmies(pid) >= g.gs.MaxLandArmies(pid) {
-			g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
-			return
-		}
+	targetArmy, canCreateNew := g.findRecruitableLandArmy(rid, pid)
+	if targetArmy == nil && !canCreateNew {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Maksimum ordu sayısına ulaşıldı! (%d/%d)", g.gs.CurrentLandArmies(pid), g.gs.MaxLandArmies(pid)))
+		return
 	}
 	pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
 	if pendingInRegion >= 20 {

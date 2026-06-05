@@ -1384,7 +1384,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ly += regionPanelStatRowGap
 
 	statBarX := float32(lx) + 122
-	drawUIKeyValueRow(screen, lx, ly, 112, "Memnuniyet", itoa(region.Satisfaction)+"%", ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, lx, ly, 106, "Memnuniyet", "%"+itoa(region.Satisfaction), ColorGray, ColorWhite)
 	drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, sepW-(statBarX-float32(lx)), regionPanelBarH, float64(region.Satisfaction)/100,
 		satisfactionColor(region.Satisfaction))
 	ly += regionPanelStatRowGap
