@@ -150,7 +150,7 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 
 `mapPitchY = 1.0`, `mapShearX = 0.0` → şu an düz 2D (izometrik bükme kapalı)
 
-**Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. Yakınlaşma üst sınırı `3.0`.
+**Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. `resetCamera()` ise ilk açılışta ve kamera resetlerinde bu minimumun `1.12x` üstünden başlar; böylece açılış karesinde altta boş siyah şerit kalmaz. Yakınlaşma üst sınırı `3.0`.
 
 **Sürükleme:** Orta fare tuşu basılıyken dünya uzayı delta hesaplanır.
 

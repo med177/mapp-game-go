@@ -34,6 +34,7 @@ const (
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
 	regionDoubleClickFrames = 18
+	initialCameraZoomFactor = 1.12
 )
 
 // Renderer kamerayı ve dünya haritasını yönetir.
@@ -385,7 +386,7 @@ func (r *Renderer) ensureWorldMap() {
 
 // resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
 func (r *Renderer) resetCamera() {
-	r.camScale = minCameraScale()
+	r.camScale = initialCameraScale()
 	r.camX = float64(WorldW) / 2
 	// Haritanın üst kenarını ekranın üstüne hizala
 	r.camY = ScreenHeight / (2 * r.camScale)
@@ -395,6 +396,14 @@ func minCameraScale() float64 {
 	scaleX := ScreenWidth / float64(WorldW)
 	scaleY := ScreenHeight / float64(WorldH)
 	return math.Min(scaleX, scaleY)
+}
+
+func initialCameraScale() float64 {
+	scale := minCameraScale() * initialCameraZoomFactor
+	if scale > 3.0 {
+		return 3.0
+	}
+	return scale
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
