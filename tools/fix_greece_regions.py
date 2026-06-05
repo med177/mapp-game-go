@@ -76,7 +76,7 @@ if 'chalcidice' not in existing_ids:
         "name": "Chalcidice",
         "name_tr": "Halkidiki (Kutsal Dag / Doğu Roma)",
         "neighbors": ["thessaly", "greece", "thrace", "macedonia", "_sea_aegean"],
-        "owner_id": "byzantine",
+        "owner_id": "east_rome",
         "population": 180,
         "religion": "orthodox",
         "satisfaction": 72,

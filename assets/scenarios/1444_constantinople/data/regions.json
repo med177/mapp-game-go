@@ -1791,7 +1791,7 @@
       "_sea_adriatic",
       "chalcidice"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 600,
     "religion": "orthodox",
     "satisfaction": 60,
@@ -1846,7 +1846,7 @@
       "nicomedia",
       "chrysopolis"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 1000,
     "religion": "orthodox",
     "satisfaction": 55,
@@ -3627,7 +3627,7 @@
       "_sea_black",
       "chalcidice"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 400,
     "religion": "orthodox",
     "satisfaction": 60,
@@ -6215,7 +6215,7 @@
       "_sea_aegean",
       "chalcidice"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 340,
     "religion": "orthodox",
     "satisfaction": 60,
@@ -6623,7 +6623,7 @@
       "_sea_aegean",
       "chrysopolis"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 280,
     "religion": "orthodox",
     "satisfaction": 62,
@@ -6825,7 +6825,7 @@
     "world_x": 1090,
     "world_y": 445,
     "shape_id": "TUR",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "nicomedia",
       "paphlagonia",
@@ -6955,7 +6955,7 @@
       "macedonia",
       "_sea_aegean"
     ],
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "population": 180,
     "religion": "orthodox",
     "satisfaction": 72,

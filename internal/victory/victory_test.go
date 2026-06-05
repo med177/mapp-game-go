@@ -64,7 +64,7 @@ func TestConquerCityVictoryWaitsForTargetOwnership(t *testing.T) {
 			},
 			"constantinople": {
 				ID:      "constantinople",
-				OwnerID: "byzantine",
+				OwnerID: "east_rome",
 			},
 		},
 		Factions: map[faction.FactionID]*faction.Faction{

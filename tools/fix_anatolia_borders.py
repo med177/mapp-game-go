@@ -70,7 +70,7 @@ new_regions = [
         "name_tr": "Nikomedia (Doğu Roma Sinir Kenti)",
         "neighbors": ["bithynia", "paphlagonia", "candaroglu", "constantinople",
                       "_sea_black", "_sea_aegean"],
-        "owner_id": "byzantine",
+        "owner_id": "east_rome",
         "population": 280,
         "religion": "orthodox",
         "satisfaction": 62,

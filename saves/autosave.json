@@ -2520,7 +2520,7 @@
       "name": "Bursa",
       "name_tr": "Bursa",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "sea_of_marmara",
         "aydinoglu",
@@ -2867,7 +2867,7 @@
       "name": "Chalcidice",
       "name_tr": "Halkidiki (Kutsal Dağ / Doğu Roma)",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "aegean_sea",
         "mediterranean_open_6",
@@ -3018,7 +3018,7 @@
       "name": "Chrysopolis",
       "name_tr": "Hrisopolis (Doğu Roma Asya Yakası)",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "ankara",
         "bilecik_frontier",
@@ -3174,7 +3174,7 @@
       "name": "Constantinople",
       "name_tr": "Konstantiniyye",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "black_open_3",
         "nicomedia",
@@ -4811,7 +4811,7 @@
       "name": "Gallipoli",
       "name_tr": "Gelibolu",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "aegean_sea",
         "aydinoglu",
@@ -9630,7 +9630,7 @@
       "name": "Nicomedia",
       "name_tr": "Nikomedia (Doğu Roma Sınır Kenti)",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "bilecik_frontier",
         "black_open_3",
@@ -9972,7 +9972,7 @@
       "name": "Macedonia",
       "name_tr": "Makedonya",
       "terrain": "plain",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "albania",
         "epirus",
@@ -11747,7 +11747,7 @@
       "name": "Serres",
       "name_tr": "Serez",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "aegean_sea",
         "bulgaria",
@@ -12617,7 +12617,7 @@
       "name": "Thessaloniki Hinterland",
       "name_tr": "Selanik Hinterlandı",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "aegean_sea",
         "chalcidice",
@@ -12763,7 +12763,7 @@
       "name": "Thrace",
       "name_tr": "Trakya",
       "terrain": "coast",
-      "owner_id": "byzantine",
+      "owner_id": "east_rome",
       "neighbors": [
         "black_open_3",
         "sea_of_marmara",
@@ -14341,8 +14341,8 @@
       },
       "ai_aggressiveness": 55
     },
-    "byzantine": {
-      "id": "byzantine",
+    "east_rome": {
+      "id": "east_rome",
       "name": "Eastern Roman Empire",
       "name_tr": "Doğu Roma İmparatorluğu",
       "religion": "orthodox",
@@ -15710,9 +15710,9 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_byzantine_80": {
-      "id": "army_byzantine_80",
-      "owner_id": "byzantine",
+    "army_east_rome_80": {
+      "id": "army_east_rome_80",
+      "owner_id": "east_rome",
       "region_id": "nicomedia",
       "units": [
         {
@@ -15746,9 +15746,9 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_byzantine_85": {
-      "id": "army_byzantine_85",
-      "owner_id": "byzantine",
+    "army_east_rome_85": {
+      "id": "army_east_rome_85",
+      "owner_id": "east_rome",
       "region_id": "bursa",
       "units": [
         {
@@ -18050,7 +18050,7 @@
   "religious_victory_turns": 0,
   "victory_achieved": false,
   "victory_achieved_turn": 0,
-  "fired_event_ids": {},
+  "fired_event_ids": { },
   "relations": {
     "achaea_principality|ahiler": {
       "faction_a": "ahiler",
@@ -18088,9 +18088,9 @@
       "score": -17,
       "stance": "peace"
     },
-    "achaea_principality|byzantine": {
+    "achaea_principality|east_rome": {
       "faction_a": "achaea_principality",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
@@ -18376,9 +18376,9 @@
       "score": -27,
       "stance": "peace"
     },
-    "ahiler|byzantine": {
+    "ahiler|east_rome": {
       "faction_a": "ahiler",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -27,
       "stance": "peace"
     },
@@ -18658,9 +18658,9 @@
       "score": -17,
       "stance": "peace"
     },
-    "aragon|byzantine": {
+    "aragon|east_rome": {
       "faction_a": "aragon",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
@@ -18934,9 +18934,9 @@
       "score": -17,
       "stance": "peace"
     },
-    "arnavut_des|byzantine": {
+    "arnavut_des|east_rome": {
       "faction_a": "arnavut_des",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
@@ -19204,9 +19204,9 @@
       "score": -17,
       "stance": "peace"
     },
-    "athena_duk|byzantine": {
+    "athena_duk|east_rome": {
       "faction_a": "athena_duk",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
@@ -19468,9 +19468,9 @@
       "score": -27,
       "stance": "peace"
     },
-    "aydin_bey|byzantine": {
+    "aydin_bey|east_rome": {
       "faction_a": "aydin_bey",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -27,
       "stance": "peace"
     },
@@ -19726,9 +19726,9 @@
       "score": -27,
       "stance": "peace"
     },
-    "bulgarian_empire|byzantine": {
+    "bulgarian_empire|east_rome": {
       "faction_a": "bulgarian_empire",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": 40,
       "stance": "trade"
     },
@@ -19984,254 +19984,254 @@
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|candar_bey": {
-      "faction_a": "byzantine",
+    "east_rome|candar_bey": {
+      "faction_a": "east_rome",
       "faction_b": "candar_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|canik_bey": {
-      "faction_a": "byzantine",
+    "east_rome|canik_bey": {
+      "faction_a": "east_rome",
       "faction_b": "canik_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|castile_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|castile_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "castile_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|denmark_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|denmark_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "denmark_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|dulkadir_bey": {
-      "faction_a": "byzantine",
+    "east_rome|dulkadir_bey": {
+      "faction_a": "east_rome",
       "faction_b": "dulkadir_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|england": {
-      "faction_a": "byzantine",
+    "east_rome|england": {
+      "faction_a": "east_rome",
       "faction_b": "england",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|epir": {
+    "east_rome|epir": {
       "faction_a": "epir",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|esrefoglu_bey": {
-      "faction_a": "byzantine",
+    "east_rome|esrefoglu_bey": {
+      "faction_a": "east_rome",
       "faction_b": "esrefoglu_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|florence_rep": {
-      "faction_a": "byzantine",
+    "east_rome|florence_rep": {
+      "faction_a": "east_rome",
       "faction_b": "florence_rep",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|france": {
-      "faction_a": "byzantine",
+    "east_rome|france": {
+      "faction_a": "east_rome",
       "faction_b": "france",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|genoa": {
-      "faction_a": "byzantine",
+    "east_rome|genoa": {
+      "faction_a": "east_rome",
       "faction_b": "genoa",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|georgia_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|georgia_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "georgia_kingdom",
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|germiyan_bey": {
-      "faction_a": "byzantine",
+    "east_rome|germiyan_bey": {
+      "faction_a": "east_rome",
       "faction_b": "germiyan_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|golden_horde": {
-      "faction_a": "byzantine",
+    "east_rome|golden_horde": {
+      "faction_a": "east_rome",
       "faction_b": "golden_horde",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|granada_emirate": {
-      "faction_a": "byzantine",
+    "east_rome|granada_emirate": {
+      "faction_a": "east_rome",
       "faction_b": "granada_emirate",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|hamid_bey": {
-      "faction_a": "byzantine",
+    "east_rome|hamid_bey": {
+      "faction_a": "east_rome",
       "faction_b": "hamid_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|hre": {
-      "faction_a": "byzantine",
+    "east_rome|hre": {
+      "faction_a": "east_rome",
       "faction_b": "hre",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|hungarian_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|hungarian_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "hungarian_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|ilkhanate": {
-      "faction_a": "byzantine",
+    "east_rome|ilkhanate": {
+      "faction_a": "east_rome",
       "faction_b": "ilkhanate",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|karaman_bey": {
-      "faction_a": "byzantine",
+    "east_rome|karaman_bey": {
+      "faction_a": "east_rome",
       "faction_b": "karaman_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|karesioglu_bey": {
+    "east_rome|karesioglu_bey": {
       "faction_a": "karesioglu_bey",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|leon_kingdom": {
+    "east_rome|leon_kingdom": {
       "faction_a": "leon_kingdom",
-      "faction_b": "byzantine",
+      "faction_b": "east_rome",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|lithuanian_gd": {
-      "faction_a": "byzantine",
+    "east_rome|lithuanian_gd": {
+      "faction_a": "east_rome",
       "faction_b": "lithuanian_gd",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|mamluk": {
-      "faction_a": "byzantine",
+    "east_rome|mamluk": {
+      "faction_a": "east_rome",
       "faction_b": "mamluk",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|mentese_bey": {
-      "faction_a": "byzantine",
+    "east_rome|mentese_bey": {
+      "faction_a": "east_rome",
       "faction_b": "mentese_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|milan_duchy": {
-      "faction_a": "byzantine",
+    "east_rome|milan_duchy": {
+      "faction_a": "east_rome",
       "faction_b": "milan_duchy",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|naples_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|naples_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "naples_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|novgorod_rep": {
-      "faction_a": "byzantine",
+    "east_rome|novgorod_rep": {
+      "faction_a": "east_rome",
       "faction_b": "novgorod_rep",
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|ottoman": {
-      "faction_a": "byzantine",
+    "east_rome|ottoman": {
+      "faction_a": "east_rome",
       "faction_b": "ottoman",
       "score": -82,
       "stance": "war"
     },
-    "byzantine|papal_states_f": {
-      "faction_a": "byzantine",
+    "east_rome|papal_states_f": {
+      "faction_a": "east_rome",
       "faction_b": "papal_states_f",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|polish_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|polish_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "polish_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|portugal": {
-      "faction_a": "byzantine",
+    "east_rome|portugal": {
+      "faction_a": "east_rome",
       "faction_b": "portugal",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|ramazan_bey": {
-      "faction_a": "byzantine",
+    "east_rome|ramazan_bey": {
+      "faction_a": "east_rome",
       "faction_b": "ramazan_bey",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|russia": {
-      "faction_a": "byzantine",
+    "east_rome|russia": {
+      "faction_a": "east_rome",
       "faction_b": "russia",
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|saruhan_bey": {
-      "faction_a": "byzantine",
+    "east_rome|saruhan_bey": {
+      "faction_a": "east_rome",
       "faction_b": "saruhan_bey",
       "score": -27,
       "stance": "peace"
     },
-    "byzantine|savoy_county": {
-      "faction_a": "byzantine",
+    "east_rome|savoy_county": {
+      "faction_a": "east_rome",
       "faction_b": "savoy_county",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|scotland_kingdom": {
-      "faction_a": "byzantine",
+    "east_rome|scotland_kingdom": {
+      "faction_a": "east_rome",
       "faction_b": "scotland_kingdom",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|serbian_empire": {
-      "faction_a": "byzantine",
+    "east_rome|serbian_empire": {
+      "faction_a": "east_rome",
       "faction_b": "serbian_empire",
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|teutonic_order": {
-      "faction_a": "byzantine",
+    "east_rome|teutonic_order": {
+      "faction_a": "east_rome",
       "faction_b": "teutonic_order",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|trebizond_emp": {
-      "faction_a": "byzantine",
+    "east_rome|trebizond_emp": {
+      "faction_a": "east_rome",
       "faction_b": "trebizond_emp",
       "score": 40,
       "stance": "trade"
     },
-    "byzantine|venice": {
-      "faction_a": "byzantine",
+    "east_rome|venice": {
+      "faction_a": "east_rome",
       "faction_b": "venice",
       "score": -17,
       "stance": "peace"
     },
-    "byzantine|wallachia_prince": {
-      "faction_a": "byzantine",
+    "east_rome|wallachia_prince": {
+      "faction_a": "east_rome",
       "faction_b": "wallachia_prince",
       "score": 40,
       "stance": "trade"
@@ -25422,14 +25422,14 @@
     },
     {
       "from_faction_id": "serbian_empire",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "iron",
       "amount_per_turn": 2,
       "gold_per_unit": 5,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "serbian_empire",
       "good": "spice",
       "amount_per_turn": 2,
@@ -25517,7 +25517,7 @@
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "trebizond_emp",
       "good": "spice",
       "amount_per_turn": 2,
@@ -25526,14 +25526,14 @@
     },
     {
       "from_faction_id": "trebizond_emp",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "spice",
       "amount_per_turn": 2,
       "gold_per_unit": 12,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "novgorod_rep",
       "good": "spice",
       "amount_per_turn": 3,
@@ -25542,14 +25542,14 @@
     },
     {
       "from_faction_id": "novgorod_rep",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "cloth",
       "amount_per_turn": 3,
       "gold_per_unit": 8,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "wallachia_prince",
       "good": "spice",
       "amount_per_turn": 2,
@@ -25558,14 +25558,14 @@
     },
     {
       "from_faction_id": "wallachia_prince",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "grain",
       "amount_per_turn": 2,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "bulgarian_empire",
       "good": "spice",
       "amount_per_turn": 3,
@@ -25574,14 +25574,14 @@
     },
     {
       "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "iron",
       "amount_per_turn": 3,
       "gold_per_unit": 5,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "georgia_kingdom",
       "good": "spice",
       "amount_per_turn": 1,
@@ -25590,14 +25590,14 @@
     },
     {
       "from_faction_id": "georgia_kingdom",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "spice",
       "amount_per_turn": 1,
       "gold_per_unit": 12,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "byzantine",
+      "from_faction_id": "east_rome",
       "to_faction_id": "russia",
       "good": "spice",
       "amount_per_turn": 4,
@@ -25606,7 +25606,7 @@
     },
     {
       "from_faction_id": "russia",
-      "to_faction_id": "byzantine",
+      "to_faction_id": "east_rome",
       "good": "grain",
       "amount_per_turn": 4,
       "gold_per_unit": 2,

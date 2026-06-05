@@ -16,8 +16,8 @@ existing_ids = {f['id'] for f in factions}
 new_factions = [
     # ── Büyük İmparatorluklar / Krallıklar (oynanabilir) ────────────
     {
-        "id": "byzantine",
-        "name": "Byzantine Empire",
+        "id": "east_rome",
+        "name": "east_rome Empire",
         "name_tr": "Doğu Roma İmparatorluğu",
         "religion": "orthodox",
         "color": [150, 40, 180],
@@ -446,10 +446,10 @@ print(f"Eklenen fraksiyon: {added}, toplam: {len(factions)}")
 # {bolge_id: faction_id}
 ownership = {
     # Doğu Roma
-    "constantinople":   "byzantine",
-    "greece":           "byzantine",
-    "thessaly":         "byzantine",
-    # Mora Prensliği Latin, ama Byzantine'a yakın - bırakalım neutral
+    "constantinople":   "east_rome",
+    "greece":           "east_rome",
+    "thessaly":         "east_rome",
+    # Mora Prensliği Latin, ama east_rome'a yakın - bırakalım neutral
     # "morea": "",
 
     # Kutsal Roma İmparatorluğu

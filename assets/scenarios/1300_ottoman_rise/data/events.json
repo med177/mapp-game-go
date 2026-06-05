@@ -58,7 +58,7 @@
         "effect": {
           "relations": [
             {
-              "faction_id": "byzantine",
+              "faction_id": "east_rome",
               "score_delta": -18,
               "stance": "war"
             }
@@ -97,14 +97,14 @@
     "target": "specific_faction"
   },
   {
-    "affected_faction": "byzantine",
+    "affected_faction": "east_rome",
     "army_hp_mod": 1,
     "desc_tr": "İmparatorluk hazinesi paralı asker ödemeleri ve saray entrikaları yüzünden dar boğaza girdi. Sınır garnizonları zayıflıyor.",
     "gold_delta": -110,
     "grain_delta": -15,
     "historical_month": 5,
     "historical_year": 1303,
-    "id": "byzantine_treasury_crisis_1303",
+    "id": "east_rome_treasury_crisis_1303",
     "min_turn": 0,
     "name_tr": "Doğu Roma Hazine Krizi",
     "one_shot": true,

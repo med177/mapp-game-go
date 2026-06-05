@@ -33,8 +33,8 @@
     ]
   },
   {
-    "id": "army_byzantine_1",
-    "owner_id": "byzantine",
+    "id": "army_east_rome_1",
+    "owner_id": "east_rome",
     "region_id": "constantinople",
     "units": [
       {
@@ -52,8 +52,8 @@
     ]
   },
   {
-    "id": "army_byzantine_2",
-    "owner_id": "byzantine",
+    "id": "army_east_rome_2",
+    "owner_id": "east_rome",
     "region_id": "thrace",
     "units": [
       {
@@ -447,7 +447,7 @@
   },
   {
     "id": "army_garrison_220",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "region_id": "serres",
     "units": [
       {
@@ -458,7 +458,7 @@
   },
   {
     "id": "army_garrison_221",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "region_id": "gallipoli",
     "units": [
       {
@@ -480,7 +480,7 @@
   },
   {
     "id": "army_garrison_223",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "region_id": "thessaloniki_hinterland",
     "units": [
       {

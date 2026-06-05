@@ -46,7 +46,7 @@ chrysopolis = {
     "world_x": 1090,
     "world_y": 445,
     "shape_id": "TUR",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": ["nicomedia", "paphlagonia", "bithynia", "constantinople",
                   "_sea_black"],
     "population": 180,

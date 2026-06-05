@@ -16,7 +16,7 @@ Tarih: 2026-05-27
 | 3 | mamluk | true | 981.5 |
 | 4 | france | true | 912.5 |
 | 5 | hungarian_kingdom | false | 903.9 |
-| 6 | byzantine | false | 860.3 |
+| 6 | east_rome | false | 860.3 |
 | 7 | england | true | 845.8 |
 | 8 | venice | true | 722.6 |
 | 9 | polish_kingdom | false | 591.8 |

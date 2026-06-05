@@ -198,8 +198,8 @@
     "ai_aggressiveness": 45
   },
   {
-    "id": "byzantine",
-    "name": "Byzantine Empire",
+    "id": "east_rome",
+    "name": "east_rome Empire",
     "name_tr": "Doğu Roma İmparatorluğu",
     "religion": "orthodox",
     "color": [

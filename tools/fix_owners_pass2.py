@@ -99,7 +99,7 @@ extra_owners = {
     "belarus":          "lithuanian_gd",  # Beyaz Rusya Litvanya etkisinde
 
     # Trakya / çekişmeli
-    "thrace":           "byzantine",      # 1300'de Doğu Roma elinde
+    "thrace":           "east_rome",      # 1300'de Doğu Roma elinde
 
     # Boşna
     "bosnia":           "",               # Bağımsız Ban - neutral

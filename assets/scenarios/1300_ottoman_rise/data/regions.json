@@ -1921,7 +1921,7 @@
     "name": "Bursa",
     "name_tr": "Bursa",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "sea_of_marmara",
       "aydinoglu",
@@ -2734,7 +2734,7 @@
     "name": "Macedonia",
     "name_tr": "Makedonya",
     "terrain": "plain",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "albania",
       "epirus",
@@ -3807,7 +3807,7 @@
     "name": "Thrace",
     "name_tr": "Trakya",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "black_open_3",
       "sea_of_marmara",
@@ -3843,7 +3843,7 @@
     "name": "Gallipoli",
     "name_tr": "Gelibolu",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "aegean_sea",
       "aydinoglu",
@@ -3880,7 +3880,7 @@
     "name": "Constantinople",
     "name_tr": "Konstantiniyye",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "black_open_3",
       "nicomedia",
@@ -6366,7 +6366,7 @@
     "name": "Thessaloniki Hinterland",
     "name_tr": "Selanik Hinterlandı",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "aegean_sea",
       "chalcidice",
@@ -6798,7 +6798,7 @@
     "name": "Nicomedia",
     "name_tr": "Nikomedia (Doğu Roma Sınır Kenti)",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "bilecik_frontier",
       "black_open_3",
@@ -6939,7 +6939,7 @@
     "name": "Chrysopolis",
     "name_tr": "Hrisopolis (Doğu Roma Asya Yakası)",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "ankara",
       "bilecik_frontier",
@@ -7117,7 +7117,7 @@
     "name": "Chalcidice",
     "name_tr": "Halkidiki (Kutsal Dağ / Doğu Roma)",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "aegean_sea",
       "mediterranean_open_6",
@@ -7151,7 +7151,7 @@
     "name": "Serres",
     "name_tr": "Serez",
     "terrain": "coast",
-    "owner_id": "byzantine",
+    "owner_id": "east_rome",
     "neighbors": [
       "aegean_sea",
       "bulgaria",

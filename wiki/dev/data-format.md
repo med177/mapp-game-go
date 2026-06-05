@@ -171,7 +171,7 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
   },
   {
     "faction_a": "venice",
-    "faction_b": "byzantine",
+    "faction_b": "east_rome",
     "score": 35,
     "stance": "trade"
   }

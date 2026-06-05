@@ -15,8 +15,8 @@
     ]
   },
   {
-    "id": "army_byzantine_1",
-    "owner_id": "byzantine",
+    "id": "army_east_rome_1",
+    "owner_id": "east_rome",
     "region_id": "constantinople",
     "units": [
       {
@@ -30,8 +30,8 @@
     ]
   },
   {
-    "id": "army_byzantine_2",
-    "owner_id": "byzantine",
+    "id": "army_east_rome_2",
+    "owner_id": "east_rome",
     "region_id": "thrace",
     "units": [
       {
