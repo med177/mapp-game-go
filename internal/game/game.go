@@ -1944,6 +1944,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		FiredEventIDs:      map[string]bool{},
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.SyncTimedRegionUnlocks()
 	if editMode {
 		gs.Phase = state.PhaseEditMode

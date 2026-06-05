@@ -181,6 +181,21 @@ func ApplyRelationDecay(gs *state.GameState) {
 	}
 }
 
+func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
+	if gs == nil || len(gs.Relations) == 0 {
+		return
+	}
+	for _, rel := range gs.Relations {
+		if rel == nil {
+			continue
+		}
+		if rel.Stance != faction.StanceTrade {
+			continue
+		}
+		ensureTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
+	}
+}
+
 func MilitaryPower(gs *state.GameState, fid faction.FactionID) int {
 	total := 0
 	for _, a := range gs.Armies {

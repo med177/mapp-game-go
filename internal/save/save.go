@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -201,6 +202,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 		return nil, err
 	}
 	gs.TradeCenters = tradeCenters
+	diplomacy.EnsureTradeRoutesForActiveRelations(&gs)
 
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), gs.Regions)
 	if err != nil {

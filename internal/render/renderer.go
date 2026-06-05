@@ -1328,7 +1328,7 @@ func shortestCenterPath(adj map[int][]int, from, to int) []int {
 // Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
 func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	r.animationTick += 12
-	if r.camScale < 0.6 || len(r.gs.TradeRoutes) == 0 {
+	if r.camScale < 0.6 {
 		return
 	}
 	playerID := string(r.gs.PlayerFactionID)
@@ -1362,12 +1362,6 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		merged[key] = route
 	}
-	if len(merged) == 0 {
-		r.tradeCorridors = r.tradeCorridors[:0]
-		r.tradeHoverIdx = -1
-		return
-	}
-
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
 	if len(centers) == 0 {
 		r.tradeCorridors = r.tradeCorridors[:0]
@@ -1492,17 +1486,26 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	}
 
 	// Trade center <-> trade center corridors (ana ağ)
-	linkKeys := make([]string, 0, len(centerLinkFlow))
+	linkKeySet := make(map[string]struct{}, len(centerLinkFlow))
 	for key := range centerLinkFlow {
+		linkKeySet[key] = struct{}{}
+	}
+	for fromIdx, list := range adj {
+		for _, toIdx := range list {
+			a, b := fromIdx, toIdx
+			if a > b {
+				a, b = b, a
+			}
+			linkKeySet[itoa(a)+"|"+itoa(b)] = struct{}{}
+		}
+	}
+	linkKeys := make([]string, 0, len(linkKeySet))
+	for key := range linkKeySet {
 		linkKeys = append(linkKeys, key)
 	}
 	sort.Strings(linkKeys)
 	for _, key := range linkKeys {
 		agg := centerLinkFlow[key]
-		if agg == nil || agg.flow <= 0 {
-			continue
-		}
-		amount := agg.flow
 		parts := strings.Split(key, "|")
 		if len(parts) != 2 {
 			continue
@@ -1514,6 +1517,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		if i < 0 || j < 0 || i >= len(centers) || j >= len(centers) || i == j {
 			continue
+		}
+		amount := 0
+		if agg != nil {
+			amount = agg.flow
 		}
 		sx, sy := centers[i].x, centers[i].y
 		dx, dy := centers[j].x, centers[j].y
@@ -1533,24 +1540,35 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 
 		baseGlow := color.RGBA{255, 224, 138, 255}
 		baseCore := color.RGBA{247, 232, 176, 255}
-		alphaScale := min(uint8(80+(amount*12)), 255)
-		glow := color.RGBA{baseGlow.R, baseGlow.G, baseGlow.B, alphaScale}
-		core := color.RGBA{baseCore.R, baseCore.G, baseCore.B, alphaScale}
-		coreW := float32(1.5)
-		glowW := float32(5.0)
-		if amount >= 14 {
-			coreW = 2.1
-			glowW = 7.0
-		} else if amount >= 8 {
-			coreW = 1.8
-			glowW = 6.0
+		glow := color.RGBA{120, 108, 86, 18}
+		core := color.RGBA{165, 150, 118, 42}
+		coreW := float32(1.0)
+		glowW := float32(2.8)
+		if amount > 0 {
+			alphaScale := min(uint8(80+(amount*12)), 255)
+			glow = color.RGBA{baseGlow.R, baseGlow.G, baseGlow.B, alphaScale}
+			core = color.RGBA{baseCore.R, baseCore.G, baseCore.B, alphaScale}
+			coreW = 1.5
+			glowW = 5.0
+			if amount >= 14 {
+				coreW = 2.1
+				glowW = 7.0
+			} else if amount >= 8 {
+				coreW = 1.8
+				glowW = 6.0
+			}
 		}
 
 		if preFocusCenter >= 0 && i != preFocusCenter && j != preFocusCenter {
-			glow = color.RGBA{180, 170, 130, 10}
-			core = color.RGBA{170, 165, 140, 34}
-			coreW = 1.1
-			glowW = 3.4
+			if amount > 0 {
+				glow = color.RGBA{180, 170, 130, 10}
+				core = color.RGBA{170, 165, 140, 34}
+				coreW = 1.1
+				glowW = 3.4
+			} else {
+				glow = color.RGBA{100, 94, 82, 8}
+				core = color.RGBA{120, 116, 104, 22}
+			}
 		}
 		segments := 22
 		for i := 0; i < segments; i++ {
@@ -1561,7 +1579,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
 			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 		}
-		if showLabels {
+		if amount > 0 && showLabels {
 			lx, ly := quadBezierPoint(sx, sy, cx, cy, dx, dy, 0.5)
 			qtyStr := itoa(amount) + "/tur"
 			tw2 := MeasureText(qtyStr, FaceSmall)
@@ -1570,12 +1588,18 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		goodsList := make([]struct {
 			name string
 			flow int
-		}, 0, len(agg.goods))
-		for name, flow := range agg.goods {
-			goodsList = append(goodsList, struct {
+		}, 0)
+		if agg != nil {
+			goodsList = make([]struct {
 				name string
 				flow int
-			}{name: name, flow: flow})
+			}, 0, len(agg.goods))
+			for name, flow := range agg.goods {
+				goodsList = append(goodsList, struct {
+					name string
+					flow int
+				}{name: name, flow: flow})
+			}
 		}
 		sort.Slice(goodsList, func(a, b int) bool {
 			if goodsList[a].flow != goodsList[b].flow {

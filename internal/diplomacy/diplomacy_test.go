@@ -118,6 +118,20 @@ func TestForceRelationToAlliancePreservesExistingTradeRoutes(t *testing.T) {
 	}
 }
 
+func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceTrade
+	rel.Score = 25
+	gs.TradeRoutes = nil
+
+	EnsureTradeRoutesForActiveRelations(gs)
+
+	if len(gs.TradeRoutes) != 2 {
+		t.Fatalf("trade stance için iki yönlü 2 rota kurulmalıydı, got=%d", len(gs.TradeRoutes))
+	}
+}
+
 func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
