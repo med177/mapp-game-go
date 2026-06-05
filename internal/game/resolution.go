@@ -11,6 +11,74 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+type eliminationResult struct {
+	FactionID         faction.FactionID
+	SuccessorID       faction.FactionID
+	TransferredArmies int
+	TransferredFleets int
+}
+
+func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eliminationResult {
+	if gs == nil || fid == "" {
+		return eliminationResult{}
+	}
+	f := gs.Factions[fid]
+	if f == nil || f.IsEliminated {
+		return eliminationResult{}
+	}
+
+	result := eliminationResult{FactionID: fid, SuccessorID: successor}
+	f.IsEliminated = true
+
+	transferOwnership := successor != "" && successor != fid && gs.Factions[successor] != nil
+	for aid, a := range gs.Armies {
+		if a == nil || a.OwnerID != string(fid) {
+			continue
+		}
+		if transferOwnership {
+			a.OwnerID = string(successor)
+			if a.IsNaval {
+				result.TransferredFleets++
+			} else {
+				result.TransferredArmies++
+			}
+			continue
+		}
+		delete(gs.Armies, aid)
+	}
+
+	for key, rel := range gs.Relations {
+		if rel == nil || rel.FactionA == fid || rel.FactionB == fid {
+			delete(gs.Relations, key)
+		}
+	}
+
+	if len(gs.DiplomaticOffers) > 0 {
+		offers := gs.DiplomaticOffers[:0]
+		for _, offer := range gs.DiplomaticOffers {
+			if offer.FromFactionID == fid || offer.ToFactionID == fid {
+				continue
+			}
+			offers = append(offers, offer)
+		}
+		gs.DiplomaticOffers = offers
+	}
+
+	if len(gs.TradeRoutes) > 0 {
+		routes := gs.TradeRoutes[:0]
+		fidStr := string(fid)
+		for _, route := range gs.TradeRoutes {
+			if route == nil || route.FromFactionID == fidStr || route.ToFactionID == fidStr {
+				continue
+			}
+			routes = append(routes, route)
+		}
+		gs.TradeRoutes = routes
+	}
+
+	return result
+}
+
 // techModsFor bir fraksiyonun araştırdığı teknolojilerden savaş modlarını hesaplar.
 func techModsFor(gs *state.GameState, ownerID string) combat.TechMods {
 	f, ok := gs.Factions[faction.FactionID(ownerID)]
@@ -312,26 +380,14 @@ func checkRebellions(gs *state.GameState) {
 	}
 }
 
-// checkEliminations kara toprağı kalmayan fraksiyonları elendi olarak işaretler ve ordularını kaldırır.
+// checkEliminations kara toprağı kalmayan fraksiyonları elendi olarak işaretler ve ordularını temizler.
 func checkEliminations(gs *state.GameState) {
 	for fid, f := range gs.Factions {
 		if f.IsEliminated {
 			continue
 		}
 		if len(gs.LandRegionsOwnedBy(fid)) == 0 {
-			f.IsEliminated = true
-			// Tüm ordularını haritadan kaldır
-			for aid, a := range gs.Armies {
-				if a.OwnerID == string(fid) {
-					delete(gs.Armies, aid)
-				}
-			}
-			// Elenen fraksiyonun tüm diplomasi kayıtlarını kaldır.
-			for key, rel := range gs.Relations {
-				if rel == nil || rel.FactionA == fid || rel.FactionB == fid {
-					delete(gs.Relations, key)
-				}
-			}
+			eliminateFaction(gs, fid, "")
 		}
 	}
 }

@@ -2326,18 +2326,50 @@ func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) 
 }
 
 // applyConquestWithNavalEviction bölge sahipliği değiştiğinde limanda bekleyen
-// eski sahip filolarını en yakın deniz bölgesine çıkarır.
-func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwnerID string) {
+// eski sahip filolarını en yakın deniz bölgesine çıkarır. Eğer bu fetih eski
+// sahibi tamamen yıkarsa kalan ordular galibe devrolur.
+func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwnerID string) eliminationResult {
 	if targetRegion == nil {
-		return
+		return eliminationResult{}
 	}
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
 	if prevOwnerID == "" || prevOwnerID == newOwnerID {
-		return
+		return eliminationResult{}
+	}
+	prevFactionID := faction.FactionID(prevOwnerID)
+	if len(g.gs.LandRegionsOwnedBy(prevFactionID)) == 0 {
+		result := eliminateFaction(g.gs, prevFactionID, faction.FactionID(newOwnerID))
+		g.sanitizeDockedFleets()
+		return result
 	}
 	g.evictDockedFleetsFromCapturedPort(targetRegion.ID, prevOwnerID)
+	return eliminationResult{}
+}
+
+func (g *Game) announceElimination(result eliminationResult) {
+	if g == nil || g.renderer == nil || result.FactionID == "" {
+		return
+	}
+	defeatedName := string(result.FactionID)
+	if f := g.gs.Factions[result.FactionID]; f != nil && f.NameTR != "" {
+		defeatedName = f.NameTR
+	}
+	msg := defeatedName + " devleti yıkıldı."
+	if result.SuccessorID != "" {
+		successorName := string(result.SuccessorID)
+		if f := g.gs.Factions[result.SuccessorID]; f != nil && f.NameTR != "" {
+			successorName = f.NameTR
+		}
+		msg = fmt.Sprintf("%s devleti yıkıldı. %s kalan kuvvetleri devraldı.", defeatedName, successorName)
+	}
+	g.renderer.ShowCombatResult(msg)
+	detail := msg
+	if result.TransferredArmies > 0 || result.TransferredFleets > 0 {
+		detail = fmt.Sprintf("%s Devralınan kuvvetler: %d kara ordusu, %d donanma.", msg, result.TransferredArmies, result.TransferredFleets)
+	}
+	g.renderer.AddEventDetail("[YIKILIS] "+msg, detail)
 }
 
 func (g *Game) evictDockedFleetsFromCapturedPort(capturedRegionID world.RegionID, prevOwnerID string) {
@@ -2471,10 +2503,11 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 						delete(g.gs.Armies, enemyArmy.ID)
 					}
 					g.spawnDisembarkedArmy(a.OwnerID, target, landing.Units)
-					g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+					collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 					g.renderer.MarkMapDirty()
 					g.renderer.ShowCombatResult(fmt.Sprintf("Çıkarma savaşı kazanıldı (%s): düşman kaybı %d, çıkarma kaybı %d.", result.Description, result.DefenderLost, result.AttackerLost))
 					g.renderer.AddEvent(fmt.Sprintf("Amfibi zafer: %s (%d/%d kayıp)", targetRegion.NameTR, result.AttackerLost, result.DefenderLost))
+					g.announceElimination(collapse)
 					return
 				}
 
@@ -2485,10 +2518,11 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 			g.disembarkFleet(a, target)
 			a.MovePoints--
 			if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-				g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+				collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 				g.renderer.MarkMapDirty()
 				g.renderer.ShowCombatResult("Çıkarma tamamlandı: kıyı bölgesi savaşsız ele geçirildi.")
 				g.renderer.AddEvent(fmt.Sprintf("Amfibi fetih: %s", targetRegion.NameTR))
+				g.announceElimination(collapse)
 				return
 			}
 			g.renderer.ShowCombatResult("Çıkarma tamamlandı: birlikler karaya indi.")
@@ -2555,6 +2589,7 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 		atkMods := techModsFor(g.gs, a.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		result := combat.ResolveBattleWithMods(a, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods)
+		var collapse eliminationResult
 
 		if result.AttackerWins {
 			if len(enemyArmy.Units) == 0 {
@@ -2564,7 +2599,7 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
-				g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+				collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 				a.MovePoints--
 				g.renderer.MarkMapDirty()
 			} else {
@@ -2579,6 +2614,7 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 
 		msg := fmt.Sprintf("%s: +%d / -%d birim", result.Description, result.DefenderLost, result.AttackerLost)
 		g.renderer.ShowCombatResult(msg)
+		g.announceElimination(collapse)
 
 	} else {
 		// --- Savaşsız hareket ve bölge ele geçirme ---
@@ -2586,9 +2622,10 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""
 		a.MovePoints--
-		if targetRegion.OwnerID != a.OwnerID {
-			g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID {
+			collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 			g.renderer.MarkMapDirty()
+			g.announceElimination(collapse)
 		}
 		// Dost bölgede başka ordu varsa birleştir
 		if merged := g.tryMergeArmies(aid, target); merged != "" {

@@ -6924,6 +6924,11 @@ func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
 		return 0, false
 	}
 	for i, offer := range r.gs.DiplomaticOffers {
+		from := r.gs.Factions[offer.FromFactionID]
+		to := r.gs.Factions[offer.ToFactionID]
+		if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
+			continue
+		}
 		if offer.ToFactionID == r.gs.PlayerFactionID {
 			return i, true
 		}

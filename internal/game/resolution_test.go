@@ -130,6 +130,14 @@ func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
 			faction.RelationKey("a", "c"): {FactionA: "a", FactionB: "c", Stance: faction.StancePeace},
 			faction.RelationKey("b", "c"): {FactionA: "b", FactionB: "c", Stance: faction.StanceAllied},
 		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "a", ToFactionID: "b", Action: "propose_peace"},
+			{FromFactionID: "b", ToFactionID: "c", Action: "propose_trade"},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "a", ToFactionID: "b"},
+			{FromFactionID: "b", ToFactionID: "c"},
+		},
 	}
 
 	checkEliminations(gs)
@@ -148,6 +156,12 @@ func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
 	}
 	if _, ok := gs.Relations[faction.RelationKey("b", "c")]; !ok {
 		t.Fatal("elenmeyen fraksiyonlar arası ilişki korunmalı")
+	}
+	if len(gs.DiplomaticOffers) != 1 || gs.DiplomaticOffers[0].FromFactionID != "b" {
+		t.Fatalf("elenen fraksiyonun teklifleri temizlenmeliydi, got=%+v", gs.DiplomaticOffers)
+	}
+	if len(gs.TradeRoutes) != 1 || gs.TradeRoutes[0].FromFactionID != "b" || gs.TradeRoutes[0].ToFactionID != "c" {
+		t.Fatalf("elenen fraksiyonun ticaret rotalari temizlenmeliydi, got=%+v", gs.TradeRoutes)
 	}
 }
 
