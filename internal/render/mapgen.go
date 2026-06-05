@@ -841,7 +841,7 @@ var tradeNodeColors = [][3]byte{
 	{100, 100, 255}, // Novgorod (Deep Blue)
 }
 
-func nearestTradeCenterIndex(region *world.Region, centers []world.TradeCenterDef, regions map[world.RegionID]*world.Region) int {
+func nearestTradeCenterIndex(region *world.Region, centers []world.TradeCenterDef, regions map[world.RegionID]*world.Region, year int) int {
 	if region == nil || len(centers) == 0 {
 		return -1
 	}
@@ -850,6 +850,9 @@ func nearestTradeCenterIndex(region *world.Region, centers []world.TradeCenterDe
 	bestIdx := -1
 	bestDist := 1e30
 	for i, c := range centers {
+		if c.OffMap || !c.ActiveInYear(year) {
+			continue
+		}
 		targetReg, ok := regions[c.ID]
 		if !ok {
 			continue
@@ -879,7 +882,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
 	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
 		for rid, r := range gs.Regions {
-			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions)
+			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions, gs.Year)
 		}
 	}
 
@@ -976,7 +979,7 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
 	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
 		for rid, r := range gs.Regions {
-			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions)
+			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions, gs.Year)
 		}
 	}
 

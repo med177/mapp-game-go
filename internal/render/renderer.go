@@ -1004,6 +1004,7 @@ type tradeRouteVisual struct {
 }
 
 type tradeCenterVisual struct {
+	id       world.RegionID
 	regionID world.RegionID
 	nameTR   string
 	tier     world.TradeCenterTier
@@ -1011,6 +1012,7 @@ type tradeCenterVisual struct {
 	worldY   float64
 	x        float64
 	y        float64
+	offMap   bool
 }
 
 type tradeCorridorInfo struct {
@@ -1081,12 +1083,30 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 		if len(centers) >= maxCenters {
 			break
 		}
+		if !def.ActiveInYear(r.gs.Year) {
+			continue
+		}
+		if def.OffMap {
+			sx, sy := r.worldToScreen(float64(def.WorldX), float64(def.WorldY))
+			centers = append(centers, tradeCenterVisual{
+				id:     def.ID,
+				nameTR: def.NameTR,
+				tier:   def.Tier,
+				worldX: float64(def.WorldX),
+				worldY: float64(def.WorldY),
+				x:      sx,
+				y:      sy,
+				offMap: true,
+			})
+			continue
+		}
 		reg := r.gs.Regions[def.ID]
 		if reg == nil || reg.IsSea || reg.TradeCapacity <= 0 {
 			continue
 		}
 		sx, sy := r.regionScreenPos(reg)
 		centers = append(centers, tradeCenterVisual{
+			id:       reg.ID,
 			regionID: reg.ID,
 			nameTR:   chooseRegionLabel(reg),
 			tier:     def.Tier,
@@ -1233,6 +1253,9 @@ func (r *Renderer) nearestTradeCenterIndex(region *world.Region, centers []trade
 	bestIdx := -1
 	bestDist := math.MaxFloat64
 	for i, c := range centers {
+		if c.offMap {
+			continue
+		}
 		d := math.Hypot(rx-c.worldX, ry-c.worldY)
 		if d < bestDist {
 			bestDist = d
@@ -1249,7 +1272,7 @@ func (r *Renderer) buildTradeCenterAdjacency(centers []tradeCenterVisual) map[in
 	}
 	indexByID := make(map[world.RegionID]int, len(centers))
 	for i := range centers {
-		indexByID[centers[i].regionID] = i
+		indexByID[centers[i].id] = i
 	}
 
 	// explicit links from scenario data
@@ -1651,7 +1674,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	for idx, c := range centers {
 		vol := 0
 		reg := r.gs.Regions[c.regionID]
-		if reg != nil {
+		if reg != nil && !c.offMap {
 			vol += reg.TradeCapacity
 		}
 		for _, tr := range r.gs.TradeRoutes {
@@ -1695,23 +1718,33 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 
-		volStr := "Hacim: " + itoa(centerVolume[i])
 		nameW := float32(MeasureText(centers[i].nameTR, FaceSmall))
-		volW := float32(MeasureText(volStr, FaceSmall))
 		contentW := nameW
-		if volW > contentW {
-			contentW = volW
+		volStr := ""
+		if !centers[i].offMap {
+			volStr = "Hacim: " + itoa(centerVolume[i])
+			volW := float32(MeasureText(volStr, FaceSmall))
+			if volW > contentW {
+				contentW = volW
+			}
 		}
 		w := contentW + 40 // yatay padding + ikon/kenar payı
 		if w < 116 {
 			w = 116
 		}
 		h := float32(38)
+		if centers[i].offMap {
+			h = 22
+		}
 		x := float32(centers[i].x) - w/2
 		y := float32(centers[i].y) - h/2
 
 		// semi-transparent dark wood background
-		vector.FillRect(screen, x, y, w, h, color.RGBA{18, 14, 10, alphaBg}, false)
+		bgColor := color.RGBA{18, 14, 10, alphaBg}
+		if centers[i].offMap {
+			bgColor = color.RGBA{14, 18, 22, alphaBg}
+		}
+		vector.FillRect(screen, x, y, w, h, bgColor, false)
 
 		// Border: gold for primary, bronze for secondary
 		borderColor := color.RGBA{197, 160, 89, alphaBorder}
@@ -1720,6 +1753,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			vector.StrokeRect(screen, x+1, y+1, w-2, h-2, 0.8, color.RGBA{150, 110, 50, alphaBorder}, false)
 		} else {
 			borderColor = color.RGBA{160, 130, 90, alphaBorder}
+			if centers[i].offMap {
+				borderColor = color.RGBA{118, 156, 188, alphaBorder}
+			}
 		}
 		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
 
@@ -1728,10 +1764,15 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if centers[i].tier == world.TradeCenterPrimary {
 			nameCol = color.RGBA{255, 235, 170, alphaText}
 		}
+		if centers[i].offMap {
+			nameCol = color.RGBA{210, 228, 245, alphaText}
+		}
 		DrawText(screen, centers[i].nameTR, float64(x)+20, float64(y)+4, FaceSmall, nameCol)
 
 		// Volume indicator
-		DrawText(screen, volStr, float64(x)+20, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, alphaText})
+		if !centers[i].offMap {
+			DrawText(screen, volStr, float64(x)+20, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, alphaText})
+		}
 	}
 }
 
@@ -2111,6 +2152,9 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 	tradeCenterRegion := map[world.RegionID]struct{}{}
 	if r.mapMode == MapModeTrade {
 		for _, def := range r.gs.TradeCenters.Centers {
+			if !def.ActiveInYear(r.gs.Year) || def.OffMap {
+				continue
+			}
 			tradeCenterRegion[def.ID] = struct{}{}
 		}
 	}
@@ -6301,7 +6345,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedArmy = ""
 		return InputAction{}
 	}
-	if settlementPanelCloseHit(fx, fy) {
+	if r.settlementPanelCloseHit(fx, fy) {
 		r.clearSelectedSettlement()
 		return InputAction{}
 	}
@@ -6502,7 +6546,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.resetRecruitSelection()
 		return InputAction{}
 	}
-	if settlementPanelHit(fx, fy) {
+	if r.settlementPanelHit(fx, fy) {
 		return InputAction{}
 	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
@@ -6613,6 +6657,14 @@ func (r *Renderer) selectedSettlement() (*world.Region, *world.Settlement, bool)
 func (r *Renderer) isSettlementPanelOpen() bool {
 	region, _, ok := r.selectedSettlement()
 	return ok && region != nil && region.ID == r.SelectedRegion
+}
+
+func (r *Renderer) settlementPanelHit(mx, my float64) bool {
+	return r.isSettlementPanelOpen() && settlementPanelHit(mx, my)
+}
+
+func (r *Renderer) settlementPanelCloseHit(mx, my float64) bool {
+	return r.isSettlementPanelOpen() && settlementPanelCloseHit(mx, my)
 }
 
 func (r *Renderer) settlementHitAt(mx, my float64) (world.RegionID, int, bool) {

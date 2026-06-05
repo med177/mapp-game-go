@@ -15,13 +15,22 @@ const (
 )
 
 type TradeCenterDef struct {
-	ID    RegionID         `json:"id"`
-	Tier  TradeCenterTier  `json:"tier,omitempty"`
-	Links []RegionID       `json:"links,omitempty"`
+	ID         RegionID        `json:"id"`
+	NameTR     string          `json:"name_tr,omitempty"`
+	Tier       TradeCenterTier `json:"tier,omitempty"`
+	Links      []RegionID      `json:"links,omitempty"`
+	WorldX     int             `json:"world_x,omitempty"`
+	WorldY     int             `json:"world_y,omitempty"`
+	OffMap     bool            `json:"off_map,omitempty"`
+	UnlockYear int             `json:"unlock_year,omitempty"`
 }
 
 type TradeCenterConfig struct {
 	Centers []TradeCenterDef `json:"centers"`
+}
+
+func (c TradeCenterDef) ActiveInYear(year int) bool {
+	return c.UnlockYear <= 0 || year >= c.UnlockYear
 }
 
 // LoadTradeCenters tarihsel ticaret merkezlerini scenario data dosyasından okur.
@@ -51,8 +60,14 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 			continue
 		}
 		region, ok := regions[c.ID]
-		if !ok || region.IsSea || region.TradeCapacity <= 0 {
-			continue
+		if ok {
+			if region.IsSea || region.TradeCapacity <= 0 {
+				continue
+			}
+		} else {
+			if !c.OffMap || c.NameTR == "" {
+				continue
+			}
 		}
 		if c.Tier != TradeCenterPrimary && c.Tier != TradeCenterSecondary {
 			c.Tier = TradeCenterSecondary

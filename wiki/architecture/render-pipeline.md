@@ -50,7 +50,7 @@ type Renderer struct {
 | 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
-| 3 | Ticaret koridorları (çift yön rotalar tek hatta birleştirilir; uzak zoom'da yalnızca oyuncuya bağlı koridorlar çizilir) | `renderer.go` |
+| 3 | Ticaret koridorları (çift yön rotalar tek hatta birleştirilir; uzak zoom'da yalnızca oyuncuya bağlı koridorlar çizilir; `trade_centers.json` içindeki `off_map` düğümler sadece etiket + bağlantı olarak çizilip bölge boyamasına katılmaz) | `renderer.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
 | 4 | Bölge etiketleri + şehir noktası; edit mode'da bölge merkezi işaretleri, Voronoi debug overlay ve `Shape` sekmesi aktifken country shape outline/brush overlay'i; etiketler stabil sıralanır ve çakışan metinler atlanır | `renderer.go` |
 | 5 | Ordu ikonları; çizim sırası ekran konumu + ID ile deterministiktir; edit mode'da tüm ordu/donanma birim sayıları görünür; ikon üstü sayı metni fraksiyon rengine göre kontrast uyarlamalıdır | `renderer.go` |
@@ -66,6 +66,7 @@ type Renderer struct {
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
+Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_centers.json` içindeki `off_map=true` dış hat düğümlerini destekler; bu düğümler `name_tr`, `world_x`, `world_y` ve `links` ile tanımlanır, yalnız render etiketinde görünür ve nearest-center / trade-map tint hesabında dışarıda bırakılır. `unlock_year` verildiğinde düğüm ve ona bağlı koridorlar belirtilen yıl gelene kadar tamamen pasif kalır.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir.

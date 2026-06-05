@@ -3,9 +3,9 @@
     {
       "id": "venice",
       "links": [
+        "dalmatia",
         "egypt",
         "genoa",
-        "constantinople",
         "flanders"
       ],
       "tier": "primary"
@@ -14,20 +14,21 @@
       "id": "constantinople",
       "links": [
         "aleppo",
+        "crimea",
+        "dalmatia",
         "egypt",
-        "genoa",
-        "novgorod",
-        "trebizond",
-        "venice"
+        "trebizond"
       ],
       "tier": "primary"
     },
     {
       "id": "flanders",
       "links": [
+        "denmark",
         "london",
         "paris",
         "genoa",
+        "portugal",
         "venice"
       ],
       "tier": "primary"
@@ -35,9 +36,9 @@
     {
       "id": "genoa",
       "links": [
-        "constantinople",
+        "crimea",
         "flanders",
-        "trebizond",
+        "tunis",
         "venice"
       ],
       "tier": "primary"
@@ -59,11 +60,10 @@
     {
       "id": "aleppo",
       "links": [
-        "basra",
-        "trebizond",
+        "baghdad",
         "constantinople",
         "egypt",
-        "baghdad"
+        "trebizond"
       ],
       "tier": "secondary"
     },
@@ -71,8 +71,9 @@
       "id": "egypt",
       "links": [
         "aleppo",
-        "basra",
         "constantinople",
+        "spice_route",
+        "tunis",
         "venice"
       ],
       "tier": "secondary"
@@ -80,9 +81,8 @@
     {
       "id": "basra",
       "links": [
-        "aleppo",
         "baghdad",
-        "kuwait",
+        "spice_route",
         "southern_persia"
       ],
       "tier": "secondary"
@@ -90,16 +90,75 @@
     {
       "id": "novgorod",
       "links": [
+        "crimea",
+        "denmark",
+        "silesia"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "denmark",
+      "links": [
+        "flanders",
+        "london",
+        "novgorod"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "portugal",
+      "links": [
+        "atlantic_route",
+        "london"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "algiers",
+      "links": [
+        "tunis"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "tunis",
+      "links": [
+        "algiers",
+        "genoa",
+        "egypt",
+        "trans_saharan_route"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "crimea",
+      "links": [
         "constantinople",
-        "flanders"
+        "novgorod",
+        "trebizond"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "silesia",
+      "links": [
+        "flanders",
+        "novgorod"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "dalmatia",
+      "links": [
+        "constantinople",
+        "venice"
       ],
       "tier": "secondary"
     },
     {
       "id": "azerbaijan",
       "links": [
-        "baghdad",
-        "northern_persia",
+        "silk_road",
         "western_persia",
         "trebizond"
       ],
@@ -117,9 +176,8 @@
     {
       "id": "southern_persia",
       "links": [
-        "kuwait",
-        "western_persia",
-        "uae"
+        "basra",
+        "western_persia"
       ],
       "tier": "secondary"
     },
@@ -138,44 +196,79 @@
         "azerbaijan",
         "aleppo",
         "constantinople",
-        "genoa"
+        "crimea"
       ],
       "tier": "secondary"
     },
     {
-      "id": "kuwait",
+      "id": "silk_road",
+      "name_tr": "İpek Yolu",
+      "links": [
+        "azerbaijan"
+      ],
+      "tier": "secondary",
+      "world_x": 3000,
+      "world_y": 515,
+      "off_map": true
+    },
+    {
+      "id": "spice_route",
+      "name_tr": "Baharat Yolu",
       "links": [
         "basra",
-        "southern_persia",
-        "uae"
+        "egypt"
       ],
-      "tier": "secondary"
+      "tier": "secondary",
+      "world_x": 2880,
+      "world_y": 1260,
+      "off_map": true
     },
     {
-      "id": "uae",
+      "id": "atlantic_route",
+      "name_tr": "Atlantik Yolu",
       "links": [
-        "bahrain",
-        "kuwait",
-        "southern_persia",
-        "qatar"
+        "london",
+        "portugal"
       ],
-      "tier": "secondary"
+      "tier": "secondary",
+      "world_x": -120,
+      "world_y": 220,
+      "off_map": true
     },
     {
-      "id": "qatar",
+      "id": "north_america_route",
+      "name_tr": "Kuzey Amerika Yolu",
       "links": [
-        "bahrain",
-        "uae"
+        "atlantic_route"
       ],
-      "tier": "secondary"
+      "tier": "secondary",
+      "world_x": -340,
+      "world_y": 120,
+      "off_map": true,
+      "unlock_year": 1500
     },
     {
-      "id": "bahrain",
+      "id": "south_america_route",
+      "name_tr": "Güney Amerika Yolu",
       "links": [
-        "qatar",
-        "uae"
+        "atlantic_route"
       ],
-      "tier": "secondary"
+      "tier": "secondary",
+      "world_x": -280,
+      "world_y": 520,
+      "off_map": true,
+      "unlock_year": 1500
+    },
+    {
+      "id": "trans_saharan_route",
+      "name_tr": "Sahra Altı Altın Yolu",
+      "links": [
+        "tunis"
+      ],
+      "tier": "secondary",
+      "world_x": 560,
+      "world_y": 1410,
+      "off_map": true
     }
   ]
 }

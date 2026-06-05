@@ -281,7 +281,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	if r.SelectedRegion != "" {
 		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
-			settlementPanelHit(fx, fy) || settlementPanelCloseHit(fx, fy) ||
+			r.settlementPanelHit(fx, fy) || r.settlementPanelCloseHit(fx, fy) ||
 			RecruitPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) {
 			return true
 		}
