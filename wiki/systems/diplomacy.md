@@ -146,6 +146,15 @@ Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde stand
 - Hedef listesi artık panel gövdesi üzerinde mouse wheel ile kaydırılır; scroll sadece dar satır alanına değil panel bağlamına da bağlıdır.
 - Liste kartları fraksiyon rengi accent şeridi, ilişki/duruş özeti ve görünür scrollbar ile çizilir; teklif sayfası aynı UI compose ailesindeki kart/panel çerçevesini kullanır.
 
+## Müttefik Liman Kullanımı
+
+`internal/game/game.go`, `internal/render/renderer.go`
+
+- Donanmalar komşu deniz bölgelerine ek olarak, `SettlementPort` içeren komşu kara bölgesine docking emri alabilir
+- Docking yalnız iki durumda geçerlidir: bölge oyuncunun/devletin kendi toprağıysa veya iki fraksiyon arasında `StanceAllied` varsa
+- Dock edilmiş filo deniz `RegionID` değerini korur, ama `DockedRegionID` ve `DockedSettlementID` üzerinden liman anchor'ında çizilir
+- İttifak biter ya da liman el değiştirirse `sanitizeDockedFleets()` bu bağı düşürür ve filoyu en yakın deniz bölgesine çıkarır
+
 ---
 
 ## Eksik / Planlanan

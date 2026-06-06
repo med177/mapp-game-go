@@ -132,6 +132,24 @@ func (r *Region) IsCoastal(allRegions map[RegionID]*Region) bool {
 	return false
 }
 
+// HasPort yerleşim tipi veya inşa edilmiş bina üzerinden bölgenin liman erişimi olup olmadığını döner.
+func (r *Region) HasPort() bool {
+	if r == nil || r.IsSea {
+		return false
+	}
+	for _, settlement := range r.Settlements {
+		if settlement.Type == SettlementPort {
+			return true
+		}
+	}
+	for _, buildingID := range r.Buildings {
+		if buildingID == "port" {
+			return true
+		}
+	}
+	return false
+}
+
 // CanNavalEnter bir naval ordunun bu bölgeye girebilip giremeyeceğini döner.
 // Naval ordular sadece deniz bölgelerine girer.
 func (r *Region) CanNavalEnter() bool {

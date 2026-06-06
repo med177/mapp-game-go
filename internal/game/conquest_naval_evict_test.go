@@ -93,6 +93,41 @@ func TestSanitizeDockedFleetsUndocksForeignFleetFromOwnedPort(t *testing.T) {
 	}
 }
 
+func TestSanitizeDockedFleetsKeepsAlliedPortDocking(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"ally_land": {
+				ID:          "ally_land",
+				OwnerID:     "ally",
+				Neighbors:   []world.RegionID{"sea_near"},
+				Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
+			},
+			"sea_near": {ID: "sea_near", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_player": {
+				ID:                 "fleet_player",
+				OwnerID:            "player",
+				RegionID:           "sea_near",
+				DockedRegionID:     "ally_land",
+				DockedSettlementID: "ally_port",
+				IsNaval:            true,
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ally", "player"): {FactionA: "ally", FactionB: "player", Stance: faction.StanceAllied},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.sanitizeDockedFleets()
+
+	fleet := gs.Armies["fleet_player"]
+	if fleet.DockedRegionID != "ally_land" || fleet.DockedSettlementID != "ally_port" {
+		t.Fatalf("müttefik liman bağı korunmalıydı, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+}
+
 func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -100,7 +135,12 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 			"new_owner": {ID: "new_owner", NameTR: "Yeni Sahip"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"land_a":   {ID: "land_a", OwnerID: "old_owner", Neighbors: []world.RegionID{"sea_near"}},
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "old_owner",
+				Neighbors:   []world.RegionID{"sea_near"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
 			"sea_near": {ID: "sea_near", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{

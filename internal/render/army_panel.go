@@ -101,6 +101,10 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			float64(px)+float64(panelW)-float64(armyPanelPadX)-healW,
 			float64(py)+20, FaceSmall, color.RGBA{110, 190, 120, 220})
 	}
+	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
+		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
+			float64(px)+float64(armyPanelPadX), float64(py)+20, FaceSmall, color.RGBA{210, 96, 82, 235})
+	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
 	mergeTarget := FindMergeTarget(gs, aid)

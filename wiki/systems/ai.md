@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-06-03
+last_updated: 2026-06-06
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -27,7 +27,8 @@ for fid := range gs.Factions {
 4. Ekonomik bina inşası → `aiEconomyBuild()`
 5. Deniz stratejisi → `aiNavalStrategy()`
 6. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
-7. Ordu hareketi → `moveArmy()` (her ordu için)
+7. Ordu konsolidasyonu → `aiConsolidateArmies()`
+8. Ordu hareketi → `moveArmy()` (her ordu için)
 
 ---
 
@@ -49,6 +50,15 @@ for fid := range gs.Factions {
 | Düşman bölgesi, savaş | 90 |
 
 `atCapacity` — `DeployedLandUnits >= ManpowerCap` ise fetih yaparak kapasite genişletme önceliklenir.
+
+### Lojistik Farkındalığı
+
+AI artık dost kara bölgelerini sadece diplomasi/savaş açısından değil, ikmal baskısı açısından da puanlar.
+
+- Kaynak bölge aşırı doluysa (`grain_upkeep` toplamı bölgenin efektif tahıl + yerleşim tamponu + sınırlı stok desteğini aşıyorsa) `scoreMove()` dost komşular arasında baskıyı azaltan bölgeye pozitif puan verir.
+- Komşu dost bölgeye geçiş sonrası aşım sıfırlanıyorsa ek bonus verilir; baskıyı daha kötü yapacak dost hedefler cezalandırılır.
+- Böylece AI küçük ve tahılı zayıf bölgede yığılmış orduları savaş yokken bile daha rahat komşu bölgelere dağıtabilir.
+- Aynı lojistik hesabı `aiConsolidateArmies()` ve hareket sonrası `tryMergeAIArmies()` için de kullanılır; aşırı dolu kara bölgede AI artık körlemesine ordu birleştirme yapmaz.
 
 AI de oyuncu ile aynı `combat.ResolveBattleWithMods()` kullanır.
 
@@ -191,6 +201,6 @@ Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile 
 
 ## Eksik / Planlanan
 
-- [ ] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın)
+- [x] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın; ancak lojistik baskı altındaki kara bölgede konsolidasyon durur)
 - [ ] Diplomasi teklif önceliklerini tehdit seviyesi ve teknoloji farkıyla daha da zenginleştir
 - [ ] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat

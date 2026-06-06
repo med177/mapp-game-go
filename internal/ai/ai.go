@@ -18,6 +18,7 @@ const (
 	aiMilitiaCost    = 60  // units.json'daki milis maliyeti
 	aiMinGoldReserve = 80  // AI bu miktarın altına düşmemeli
 	aiTechReserve    = 100 // Teknoloji için ayırılacak minimum altın
+	aiReliefMoveBase = 35
 )
 
 // coalitionThreshold oyuncunun bu kadar bölgeyi geçmesi koalisyon tetikler.
@@ -749,16 +750,45 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 // scoreMove bir hedefe yapılacak hareketin değerini puanlar.
 func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 	fid := faction.FactionID(a.OwnerID)
+	source := gs.Regions[a.RegionID]
+	armyDemand := a.TotalGrainUpkeep(gs.UnitTypes)
 	if target.OwnerID == a.OwnerID {
+		score := 0
+		srcDemand, srcCap, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+		tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+		srcAfter := maxInt(0, srcDemand-armyDemand-srcCap)
+		tgtAfter := maxInt(0, tgtDemand+armyDemand-tgtCap)
+
+		if srcOverload > 0 || a.OverCapacityTurns > 0 {
+			relief := srcOverload - srcAfter
+			if relief > 0 {
+				score += aiReliefMoveBase + relief*2
+			}
+			if tgtAfter == 0 {
+				score += 18
+			}
+			if tgtOverload == 0 {
+				spare := tgtCap - tgtDemand
+				if spare > 0 {
+					score += minInt(18, spare)
+				}
+			}
+			if tgtAfter > srcAfter {
+				score -= 45
+			}
+		}
+
 		// Dost bölgede birleşebileceğimiz ordu var mı? (Konsolidasyon)
 		for _, ea := range gs.Armies {
 			if ea.RegionID == target.ID && ea.OwnerID == a.OwnerID && ea.ID != a.ID && ea.IsNaval == a.IsNaval {
-				if len(a.Units)+len(ea.Units) <= army.MaxArmySize {
-					return 60 // Birleşmek için iyi bir hedef
+				if len(a.Units)+len(ea.Units) <= army.MaxArmySize && aiShouldConsolidateInRegion(gs, target, a.OwnerID, a.IsNaval) {
+					if score < 60 {
+						score = 60
+					}
 				}
 			}
 		}
-		return 0
+		return score
 	}
 
 	// Yalnızca savaş halindeki fraksiyona saldır.
@@ -1262,6 +1292,10 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 				continue
 			}
 			if a1.RegionID == a2.RegionID && a1.IsNaval == a2.IsNaval {
+				region := gs.Regions[a1.RegionID]
+				if !aiShouldConsolidateInRegion(gs, region, a1.OwnerID, a1.IsNaval) {
+					continue
+				}
 				if len(a1.Units)+len(a2.Units) <= army.MaxArmySize {
 					a1.Units = append(a1.Units, a2.Units...)
 					delete(gs.Armies, a2.ID)
@@ -1280,6 +1314,10 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 // tryMergeAIArmies hareket sonrası dost bölgede başka dost ordu varsa kapasite dahilinde birleşir.
 // Birleşme sonucu ordu tamamen silinirse true döner.
 func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
+	region := gs.Regions[a.RegionID]
+	if !aiShouldConsolidateInRegion(gs, region, a.OwnerID, a.IsNaval) {
+		return false
+	}
 	for otherID, other := range gs.Armies {
 		if otherID == a.ID || other.RegionID != a.RegionID || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
@@ -1298,6 +1336,101 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 		}
 	}
 	return false
+}
+
+func aiShouldConsolidateInRegion(gs *state.GameState, region *world.Region, ownerID string, isNaval bool) bool {
+	if isNaval || region == nil {
+		return true
+	}
+	_, _, overload := aiRegionLogistics(gs, region, ownerID)
+	return overload <= 0
+}
+
+func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string) (demand, capacity, overload int) {
+	if gs == nil || region == nil || region.IsSea || ownerID == "" {
+		return 0, 0, 0
+	}
+
+	production := gs.RegionProductionSummary(region).Grain
+	settlementBuffer := aiRegionSettlementBuffer(region)
+	reserveSupport := aiRegionReserveSupport(gs, ownerID, production, settlementBuffer)
+	capacity = production + settlementBuffer + reserveSupport
+	if capacity < 4 {
+		capacity = 4
+	}
+
+	for _, candidate := range gs.Armies {
+		if candidate == nil || candidate.IsNaval || candidate.OwnerID != ownerID || candidate.RegionID != region.ID {
+			continue
+		}
+		demand += candidate.TotalGrainUpkeep(gs.UnitTypes)
+	}
+	overload = maxInt(0, demand-capacity)
+	return demand, capacity, overload
+}
+
+func aiRegionSettlementBuffer(region *world.Region) int {
+	if region == nil {
+		return 0
+	}
+	buffer := 0
+	for _, settlement := range region.Settlements {
+		switch settlement.Type {
+		case world.SettlementCity:
+			buffer += 8
+		case world.SettlementTown:
+			buffer += 5
+		case world.SettlementFortress:
+			buffer += 6
+		case world.SettlementPort:
+			buffer += 6
+		default:
+			buffer += 4
+		}
+		if settlement.IsCapital {
+			buffer += 4
+		}
+	}
+	if tc := region.TradeCapacity / 2; tc > 0 {
+		if tc > 6 {
+			tc = 6
+		}
+		buffer += tc
+	}
+	return buffer
+}
+
+func aiRegionReserveSupport(gs *state.GameState, ownerID string, production, settlementBuffer int) int {
+	if gs == nil || ownerID == "" {
+		return 0
+	}
+	f := gs.Factions[faction.FactionID(ownerID)]
+	if f == nil || f.Grain <= 0 {
+		return 0
+	}
+	cap := production/2 + settlementBuffer/2 + 4
+	if cap < 4 {
+		cap = 4
+	}
+	reserve := f.Grain / 10
+	if reserve > cap {
+		reserve = cap
+	}
+	return reserve
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func aiPreferredDockSettlementID(region *world.Region) string {

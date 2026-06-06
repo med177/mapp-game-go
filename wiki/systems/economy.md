@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-06-03
+last_updated: 2026-06-06
 related: [systems/seasons, world/regions, architecture/game-loop]
 ---
 
@@ -109,6 +109,7 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 
 - Birim üretimi `gold_cost` yanında `grain_cost`, `iron_cost`, `timber_cost`, `stone_cost` tüketir.
 - Ordu bakımında `grain_upkeep` düşülür; tahıl negatife düştüğünde birlik HP cezası uygulanır.
+- Kara orduları ayrıca bölge bazlı ikmal kapasitesine tabidir. Efektif bölge tahılı, yerleşim/ticaret tamponu ve fraksiyon stokundan sınırlı yerel destek toplam yükü karşılamazsa aynı bölgede bekleyen ordular turdan tura artan HP zayiatı alır.
 - Üretim emri iptalinde altınla birlikte diğer kaynaklar da iade edilir.
 
 ## Bölge Uzmanlaşması
@@ -117,6 +118,15 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 - Orman: kereste üretimi artar.
 - Dağ/geçit: demir ve taş üretimi artar.
 - `base_stone_output` olmayan senaryolarda dağ/geçit bölgeleri fallback taş üretimi sağlar.
+
+## UI Üretim Önizlemesi
+
+`GameState.RegionProductionSummary()` seçili bir bölgenin efektif altın ve mal katkısını UI için hesaplar.
+
+- Vergi + memnuniyet bazlı altın geliri, bina çarpanları ve mevsimsel hasat/ticaret modları uygulanır.
+- Tahıl/demir/kereste/taş/baharat/kumaş üretimi arazi uzmanlaşması sonrası gösterilir.
+- Sahip fraksiyonun ekonomi teknolojileri varsa aynı önizlemeye dahil edilir.
+- Bölge bilgi paneli bu helper ile beslendiği için görünen üretim satırları ekonomi çözüm mantığıyla daha yakındır.
 
 ## Tek Seferlik Mal Transferi
 

@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-05-06
-related: [architecture/game-loop, systems/economy]
+last_updated: 2026-06-06
+related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
 # Mevsim Sistemi
@@ -39,6 +39,7 @@ related: [architecture/game-loop, systems/economy]
 - Kış: Her ordu için birim hasar kontrolü
 - İlkbahar: `MovePoints` bonusu (şu an taslak — detay `season.go`'da)
 - Sonbahar: Gelir çarpanı
+- Kış dışı turlar: Kara orduları kendi kara toprağında toparlanır; donanmalar ise kendi veya müttefik limanına bağlı (`DockedRegionID`) durumdaysa aynı `+10 HP` toparlanmayı alır
 
 → Çözümleme sırası için [[architecture/game-loop]]
 

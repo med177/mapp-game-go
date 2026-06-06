@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-06-03
+last_updated: 2026-06-06
 related: [systems/combat, systems/economy, architecture/state-management]
 ---
 
@@ -51,7 +51,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 - **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
 - **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
 - **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün
-- **Tur Bitir Uyarısı:** Aktif araştırma yoksa panel açılır ve uyarı verilir
+- **Tur Bitir Uyarısı:** Aktif araştırma yoksa ve en az bir araştırılabilir teknoloji kaldıysa panel açılır ve uyarı verilir; tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa uyarı gösterilmez
   - Din: Magenta (200,100,200)
 - **Durum Göstergeleri:**
   - Tamamlandı: Yeşil

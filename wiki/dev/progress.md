@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-06-05
+last_updated: 2026-06-06
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -35,12 +35,12 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
 | Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
 | Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
-| Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü; donanmalar deniz bölgeleri arasında savaş ilanı olmadan dolaşır, deniz çatışması sadece `StanceWar` durumunda tetiklenir |
+| Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü; donanmalar deniz bölgeleri arasında savaş ilanı olmadan dolaşır, deniz çatışması sadece `StanceWar` durumunda tetiklenir; AI dost bölgelerde bölgesel ikmal baskısını okuyup aşırı dolu kara bölgelerden daha rahat komşu bölgelere dağılabilir |
 | Deniz taşıma akışı | ✅ | Kara ordusu uygun `transport` filosuna binebilir, filo `EmbarkedUnits` ile taşır, komşu dost/boş karaya çıkarma yapılır; oyuncu ve AI aynı kural setini kullanır |
 | Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi |
-| Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi kara toprağında tur başına `+10 HP` ile %100'e kadar toparlanır |
+| Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi kara toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi veya müttefik limanında aynı hızla onarım alır |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
 | Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
@@ -51,14 +51,14 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Çoklu eğitim kuyruğu (Total War benzeri) | ✅ | Recruit panelinde birim bazında `- xN +` seçimi, kuyrukta aynı birim için ilk tamamlanma turu görünürlüğü ve tek tıkta çoklu (`xN`) üretim emri; bölgesel kapasite `max(1,population/100)+kışla` kuralıyla sınırlandırılır |
 | Bina/birim hover bilgisi | ✅ | Kart tooltipleri maliyet, gereksinim, etki/istatistik ve görsel gösterir |
 | Deniz birimi | ✅ | Liman ve kıyı koşuluyla filo/deniz birimi üretimini kuyruğa alma; tekrar tıklanınca iptal/iade |
-| Limandan denize çıkış (undock) | ✅ | Limana bağlı donanma aynı deniz bölgesine hareket emri aldığında liman bağını bırakıp deniz merkezine çıkar; hareket puanı tüketir |
-| Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, taş üretimi, tahıl bakım gideri ve tahıl açığında lojistik HP cezası |
+| Liman docking akışı | ✅ | Limana bağlı donanma aynı deniz bölgesine hareket emri aldığında liman bağını bırakıp deniz merkezine çıkar; ayrıca komşu denizden sahibi olunan veya müttefik olunan port settlement içeren kara bölgesine dock olabilir, deniz `RegionID` korunur ve hareket puanı tüketir |
+| Ekonomi tick | ✅ | Vergi geliri, hasat modu, bina modları, ikincil mallar, taş üretimi, tahıl bakım gideri ve tahıl açığında lojistik HP cezası; ayrıca bölge bazlı ikmal kapasitesi (efektif tahıl + yerleşim tamponu + sınırlı stok desteği) aşılınca aynı bölgede uzun süre yığılan kara orduları kademeli zayiat alır |
 | Vergi ayarlama | ✅ | Oyuncu bölgelerinde `.` / `,` ile ±5 |
 | Bina inşası | ✅ | JSON bina tipleri, maliyet, arazi ve adet kısıtları; varsayılan 2 turluk üretim kuyruğu; kuyruktaki bina tekrar tıklanınca iptal/iade |
 | Kaynak reçete sistemi | ✅ | Birim ve bina üretiminde `grain/iron/timber/stone` tüketimi; UI maliyet satırı ve AI kararları bu modele bağlı |
 | Bina seviye sistemi | ✅ | Binalar `max_per_region` kadar seviye alır (Lv1..LvN); panelde `Lv` ve kuyruk adedi görünür, inşa mesajları seviye geçişini (`LvX→LvY`) gösterir; kurulu bina kartları da tıklanabildiği için yükseltme/iptal akışı doğrudan kart üzerinden çalışır; manpower ve üretim kapasitesi kışla seviyesiyle artar |
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
-| Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı, tamamlanma mesajları event loguna ekleniyor |
+| Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı ve tamamlanma mesajları event loguna ekleniyor; tur bitir araştırma uyarısı artık yalnız gerçekten araştırılabilir teknoloji kaldığında gösteriliyor |
 | Diplomasi | ✅ | `internal/diplomacy` ortak motoru ile savaş/barış/ittifak/ticaret; deterministik kabul-red, ilişki decay'i ve ticaret rotası senkronu |
 | Diplomasi paneli modern akış | ✅ | Solda devlet seçimi + sağda teklif paneli; savaş/barış/ittifak/ticaret için muallak kabul olasılığı (%) ve durum göstergesi bulunur |
 | Elenen fraksiyon diplomasi temizliği | ✅ | Kara toprağı biten fraksiyonlar (sadece deniz bölgesi kalsa bile) elendiğinde tüm diplomasi ilişkileri, bekleyen `diplomatic_offers` kayıtları ve ticaret rotaları temizlenir; diplomasi panelinde artık listelenmez |
@@ -83,8 +83,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Alt-orta aksiyon HUD | ✅ | Diplomasi, Teknoloji ve Tur Bitir butonları ayrı HUD içinde alt-ortada |
 | Olay logu akordiyonu | ✅ | Panel daraltılıp genişletilir; uzun metinler wrap edilir; kartlar X ile kapanır, tıklanınca detay popup açılır |
 | Info popup bildirimi | ✅ | Altın yetersiz gibi oyun içi uyarılar olay loguna yazılmaz, ayrı geçici popup olarak görünür |
-| Kompakt UI taşma düzeltmeleri | ✅ | Genel onay modalı mesaj wrap eder; bölge panelinde Tahıl satırı ile memnuniyet/vergi göstergeleri ayrık satır aralığı ve bar ofsetiyle çizilir, metin, buton ve alt çizgiyle çakışmaz |
+| Kompakt UI taşma düzeltmeleri | ✅ | Genel onay modalı mesaj wrap eder; bölge panelinde üretim alanı artık yalnız Tahıl ile sınırlı değildir, efektif `Altın/Tahıl/Demir/Kereste/Taş/Baharat/Kumaş` satırları iki kolon grid halinde çizilir; sahip bilgisi başlığın hemen altında etiketsiz görünür; memnuniyet/vergi satırlarında yüzde metni, progress bar ve vergi `-/+` düğmeleri artık birbirine taşmaz; maksimum seviyedeki bina kartlarında alt satırdaki `Maks` yazısı kaldırılır ve uyarı durumu sol üst `Lv` rozetinin kırmızı arka planıyla verilir |
 | Panel cursor hit-test düzeltmesi | ✅ | Sol alt bölge paneli, olay logu, alt HUD, kayıt slotları ve onay panellerinde parmak imleci sadece gerçek tıklanabilir alanlarda gösterilir |
+| Ordu/yerleşim tıklama önceliği | ✅ | Aynı pikselde çakışan inputta seçim sırası artık `ordu/donanma etiketi > yerleşim > bölge`; hover hit-test de aynı helper ile eşlendi |
 | UI framework migrasyonu (çekirdek + ekranlar) | ✅ | `internal/ui` altında `Widget`, `InputState`, `Manager`, ortak `Panel`, `Label`, `TextBox`, `Image/Icon`, `Tooltip`, `Button`, `Dropdown`, `ListView`, `Checkbox`, `RadioGroup`, `Modal`, `Overlay` ve layout yardımcıları eklendi; trade, diplomasi, teknoloji, pause/save-load, ana menü ve seçim ekranları, HUD küçük etkileşim yüzeyleri, recruit panel hit-test ailesi, ordu split/merge overlay'i, edit mode inspector/form yüzeyleri, shape yardım/pixel preview overlay'leri, diplomasi teklif diyaloğu ve confirm/war/event detail/historical modal aileleri ortak UI builder akışına taşındı; tema tokenları `internal/render/ui_theme.go` altında merkezileştirildi, ana menü/senaryo/fraksiyon/zafer/pause/kayıt slotlarında `Manager` tab focus kullanılmaya başlandı, seçim ekranı metinleri ortak `Label + TextRenderer` primitive'ine bağlandı, headless geometri + draw-call smoke ve allocation testleri eklendi |
 | Ses ve müzik | ✅ | `assets/sounds` global efektleri; senaryo `musics/` playlistleri `scenario.json` `music` alanından; ayarlarda ayrı müzik/ses seviyeleri; oyun içi müzik HUD'u ve ESC menüsü müzik kontrolleri |
 | Development mode | ✅ | `DEV_MODE=true` ile `GameState.DevelopmentMode` |

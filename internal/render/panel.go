@@ -46,7 +46,7 @@ const (
 	maxEventLogEntries = 16
 
 	infoPanelW = float32(305)
-	infoPanelH = float32(600)
+	infoPanelH = float32(680)
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -58,6 +58,8 @@ const (
 	regionPanelBarH         = float32(8)
 	regionPanelTaxButtonH   = float32(18)
 	regionPanelTaxButtonPad = float32(8)
+	regionPanelMeterValueW  = float32(54)
+	regionPanelMeterGap     = float32(10)
 )
 
 func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
@@ -1333,9 +1335,14 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	lx := float64(px) + panelPad
 	ly := float64(py) + 10
 	sepW := pw - float32(panelPad*2)
+	production := gs.RegionProductionSummary(region)
 
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
+
+	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
+	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, gameui.TextMedium, gameui.TextAlignStart)
+	ly += 18
 
 	// Development mode bilgileri
 	if gs.DevelopmentMode {
@@ -1345,20 +1352,6 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		}, 16)
 		ly += 34
 	}
-
-	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
-	ownerValue := ownerName
-	if region.IsLocked {
-		if region.UnlockTurn > 0 {
-			ownerValue += "  LOCK Tur " + itoa(region.UnlockTurn)
-		} else {
-			ownerValue += "  LOCK Kilitli"
-		}
-	} else if region.UnlockTurn > 0 {
-		ownerValue += "  ACIK"
-	}
-	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Sahip", ownerValue, ColorGray, ownerCol)
-	ly += 18
 
 	var stypeStr string
 	if len(region.Settlements) > 0 {
@@ -1378,31 +1371,45 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
-	// Kaynaklar — iki sütun
-	drawUIKeyValueRow(screen, lx, ly, 100, economy.ResourceNameTR(economy.ResourceGold), itoa(region.GoldIncome()), ColorGray, ColorGold)
-	drawUIKeyValueRow(screen, lx+120, ly, 100, economy.ResourceNameTR(economy.ResourceGrain), itoa(region.BaseGrainOutput), ColorGray, ColorWhite)
+	// Üretim — iki sütun
+	drawRegionProductionGrid(screen, lx, ly, sepW, production)
+	ly += regionPanelStatRowGap * 4
+
+	drawRegionMeterRow(screen, lx, ly, sepW, "Memnuniyet", "%"+itoa(region.Satisfaction), float64(region.Satisfaction)/100, satisfactionColor(region.Satisfaction))
 	ly += regionPanelStatRowGap
 
-	statBarX := float32(lx) + 122
-	drawUIKeyValueRow(screen, lx, ly, 106, "Memnuniyet", "%"+itoa(region.Satisfaction), ColorGray, ColorWhite)
-	drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, sepW-(statBarX-float32(lx)), regionPanelBarH, float64(region.Satisfaction)/100,
-		satisfactionColor(region.Satisfaction))
-	ly += regionPanelStatRowGap
-
-	drawUIKeyValueRow(screen, lx, ly, 112, "Vergi", "%"+itoa(region.TaxRate), ColorGray, ColorWhite)
-	taxBarW := sepW - (statBarX - float32(lx))
+	taxBarX, taxBarW := regionPanelTaxBarLayout(float32(lx), sepW)
+	drawRegionMeterRow(screen, lx, ly, sepW, "Vergi", "%"+itoa(region.TaxRate), float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
 		dec, inc := regionTaxButtonRects(gs)
-		taxBarW = dec[0] - statBarX - regionPanelTaxButtonPad
-		drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100,
-			color.RGBA{200, 140, 40, 255})
+		taxBarW = dec[0] - taxBarX - regionPanelTaxButtonPad
+		drawBar(screen, taxBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
 		drawTinyPanelButton(screen, inc[0], inc[1], inc[2], inc[3], "+", true)
 	} else {
-		drawBar(screen, statBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100,
-			color.RGBA{200, 140, 40, 255})
+		drawBar(screen, taxBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 	}
 	ly += regionPanelStatRowGap
+
+	if logistics, ok := gs.RegionLogistics[rid]; ok && logistics.Demand > 0 {
+		meter := float64(logistics.Demand) / float64(maxInt(1, logistics.Capacity))
+		if meter > 1 {
+			meter = 1
+		}
+		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d / %d", logistics.Capacity, logistics.Demand), meter, logisticsPressureColor(logistics))
+		ly += regionPanelStatRowGap
+		if logistics.Overload > 0 {
+			drawUILabel(
+				screen,
+				gameui.Rect{X: lx, Y: ly, W: float64(sepW)},
+				fmt.Sprintf("Aşım %d  •  zayiat %d HP", logistics.Overload, logistics.TotalHPDamage),
+				ColorRed,
+				gameui.TextSmall,
+				gameui.TextAlignStart,
+			)
+			ly += 14
+		}
+	}
 
 	// Din dönüşüm ilerlemesi
 	if region.ConversionTurns > 0 {
@@ -1523,6 +1530,17 @@ func regionDiplomacyActionColor(action diplomacy.Action) color.RGBA {
 	}
 }
 
+func logisticsPressureColor(status state.RegionLogisticsStatus) color.RGBA {
+	switch {
+	case status.Overload <= 0:
+		return color.RGBA{90, 170, 95, 255}
+	case status.Overload*100 <= maxInt(1, status.Capacity)*25:
+		return color.RGBA{210, 165, 50, 255}
+	default:
+		return color.RGBA{190, 70, 60, 255}
+	}
+}
+
 func regionDiplomacyActionAt(idx int) (diplomacy.Action, bool) {
 	actions := diplomacy.VisibleActions()
 	if idx < 0 || idx >= len(actions) {
@@ -1581,9 +1599,9 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	}
 
 	px := infoPanelX()
-	py := infoPanelY() + infoPanelH - 130
+	py := infoPanelY() + infoPanelH - 148
 	pw := infoPanelW
-	ph := float32(130)
+	ph := float32(148)
 
 	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
 	drawPanelCloseButton(screen, px, py, pw)
@@ -1608,6 +1626,10 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	}
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Hareket", itoa(a.MovePoints)+"/"+itoa(a.MaxMovePoints), ColorGray, mpCol)
 	ly += 18
+	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
+		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Lojistik", "-"+itoa(logistics.DamagePerUnit)+" HP / birim", ColorGray, ColorRed)
+		ly += 18
+	}
 
 	hint := "Sağ tık → hareket / saldırı"
 	hintCol := color.RGBA{120, 200, 120, 200}
@@ -2051,7 +2073,13 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 				lvY := float64(sy) + 4
 				lvW := float32(MeasureText(lvText, FaceSmall) + 8)
 				lvH := float32(14)
-				drawUICardRect(screen, gameui.Rect{X: lvX - 3, Y: lvY - 2, W: float64(lvW), H: float64(lvH)}, color.RGBA{18, 14, 8, 225}, color.RGBA{170, 140, 75, 220}, 1)
+				lvBg := color.RGBA{18, 14, 8, 225}
+				lvBorder := color.RGBA{170, 140, 75, 220}
+				if isMaxLevel {
+					lvBg = color.RGBA{150, 34, 34, 235}
+					lvBorder = color.RGBA{225, 120, 120, 235}
+				}
+				drawUICardRect(screen, gameui.Rect{X: lvX - 3, Y: lvY - 2, W: float64(lvW), H: float64(lvH)}, lvBg, lvBorder, 1)
 				DrawText(screen, lvText, lvX, lvY, FaceSmall, color.RGBA{255, 245, 220, 250})
 			}
 			if isQueued {
@@ -2080,9 +2108,6 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 			nameCol = color.RGBA{170, 145, 85, 220}
 		}
 		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
-		if isMaxLevel {
-			DrawTextCentered(screen, "Maks", float64(sx)+float64(innerW)/2, float64(sy+spriteH)+24, FaceSmall, color.RGBA{170, 155, 95, 210})
-		}
 	}
 }
 
@@ -2338,16 +2363,76 @@ func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw
 
 func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
 	px := infoPanelX()
-	py := infoPanelY()
 	pw := infoPanelW
-	ly := float64(py) + 10
-	ly += 24
-	if gs.DevelopmentMode {
-		ly += 16 + 16 + 18
-	}
-	ly += 18 + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap
-	y := float32(ly) + regionPanelBarYOffset - 5
+	ly := regionPanelStatRowsStartY(gs)
+	y := float32(ly + regionPanelStatRowGap + (regionPanelStatRowGap-float64(regionPanelTaxButtonH))/2 - 1)
 	return [4]float32{px + pw - 70, y, 26, regionPanelTaxButtonH}, [4]float32{px + pw - 38, y, 26, regionPanelTaxButtonH}
+}
+
+func regionPanelStatRowsStartY(gs *state.GameState) float64 {
+	ly := float64(infoPanelY()) + 10
+	ly += 24
+	ly += 18
+	if gs.DevelopmentMode {
+		ly += 34
+	}
+	ly += 16
+	ly += 8
+	ly += regionPanelStatRowGap * 4
+	return ly
+}
+
+func regionPanelTaxBarLayout(x float32, width float32) (float32, float32) {
+	barX := x + 96 + regionPanelMeterValueW + regionPanelMeterGap
+	barW := width - (barX - x)
+	if barW < 0 {
+		barW = 0
+	}
+	return barX, barW
+}
+
+func drawRegionMeterRow(screen *ebiten.Image, x, y float64, width float32, label, value string, fill float64, barColor color.Color) {
+	labelW := 96.0
+	valueX := x + labelW
+	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: labelW}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: valueX, Y: y, W: float64(regionPanelMeterValueW)}, value, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+	barX, barW := regionPanelTaxBarLayout(float32(x), width)
+	drawBar(screen, barX, float32(y)+regionPanelBarYOffset, barW, regionPanelBarH, fill, barColor)
+}
+
+func drawRegionProductionGrid(screen *ebiten.Image, x, y float64, width float32, production state.RegionProductionSummary) {
+	type productionItem struct {
+		kind  economy.ResourceKind
+		value int
+		col   color.Color
+	}
+
+	items := [...]productionItem{
+		{kind: economy.ResourceGold, value: production.Gold, col: ColorGold},
+		{kind: economy.ResourceGrain, value: production.Grain, col: ColorWhite},
+		{kind: economy.ResourceIron, value: production.Iron, col: color.RGBA{200, 205, 215, 255}},
+		{kind: economy.ResourceTimber, value: production.Timber, col: color.RGBA{145, 205, 145, 255}},
+		{kind: economy.ResourceStone, value: production.Stone, col: color.RGBA{185, 185, 185, 255}},
+		{kind: economy.ResourceSpice, value: production.Spice, col: color.RGBA{230, 165, 90, 255}},
+		{kind: economy.ResourceCloth, value: production.Cloth, col: color.RGBA{175, 150, 220, 255}},
+	}
+
+	colGap := 14.0
+	colW := (float64(width) - colGap) / 2
+	for i, item := range items {
+		col := float64(i % 2)
+		row := float64(i / 2)
+		drawUIKeyValueRow(
+			screen,
+			x+col*(colW+colGap),
+			y+row*regionPanelStatRowGap,
+			colW,
+			economy.ResourceNameTR(item.kind),
+			itoa(item.value),
+			ColorGray,
+			item.col,
+		)
+	}
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {

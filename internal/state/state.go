@@ -74,10 +74,12 @@ type GameState struct {
 	ShapeData   world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
-	UnitTypes          map[string]*army.UnitType   `json:"-"`
-	BuildingTypes      map[string]*city.Building   `json:"-"`
-	TechTypes          map[string]*tech.Technology `json:"-"`
-	AvailableVictories []scenario.VictoryOptionDef `json:"-"`
+	UnitTypes          map[string]*army.UnitType                `json:"-"`
+	BuildingTypes      map[string]*city.Building                `json:"-"`
+	TechTypes          map[string]*tech.Technology              `json:"-"`
+	AvailableVictories []scenario.VictoryOptionDef              `json:"-"`
+	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
+	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int  `json:"economic_victory_turns"`
@@ -116,6 +118,49 @@ type GameState struct {
 
 	// Region paint overrides - edit modunda bölge boyama değişiklikleri (piksel indeksi -> bölge ID)
 	RegionPaintOverrides map[int]world.RegionID `json:"region_paint_overrides,omitempty"`
+}
+
+// RegionProductionSummary bir bölgenin tur başı efektif ekonomik katkısını özetler.
+// Bu hesap UI önizlemeleri için ekonomi çözümlemesindeki bina, arazi, mevsim ve
+// sahip fraksiyon teknoloji çarpanlarını aynı sırayla uygular.
+type RegionProductionSummary struct {
+	Gold   int
+	Grain  int
+	Iron   int
+	Timber int
+	Stone  int
+	Spice  int
+	Cloth  int
+}
+
+type RegionLogisticsStatus struct {
+	RegionID          world.RegionID
+	OwnerID           string
+	LocalProduction   int
+	SettlementBuffer  int
+	ReserveSupport    int
+	Demand            int
+	Capacity          int
+	Overload          int
+	ArmyCount         int
+	UnitsAffected     int
+	UnitsLost         int
+	TotalHPDamage     int
+	PeakOverloadTurns int
+}
+
+type ArmyLogisticsStatus struct {
+	ArmyID            army.ArmyID
+	RegionID          world.RegionID
+	OwnerID           string
+	Demand            int
+	Capacity          int
+	Overload          int
+	OverCapacityTurns int
+	DamagePerUnit     int
+	UnitsAffected     int
+	UnitsLost         int
+	TotalHPDamage     int
 }
 
 // ProductionOrder bina ve birim üretimlerinin tur bazlı kuyruğunu tutar.
@@ -199,6 +244,74 @@ func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 		}
 	}
 	return result
+}
+
+// RegionProductionSummary hesaplanan efektif bölge üretimini döner.
+func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
+	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {
+		return RegionProductionSummary{}
+	}
+
+	goldMod := 1.0
+	grainMod := 1.0
+	tradeCapMod := 1.0
+	for _, bid := range region.Buildings {
+		if b, ok := s.BuildingTypes[bid]; ok && b != nil {
+			goldMod *= b.GoldMod
+			grainMod *= b.GrainMod
+			tradeCapMod *= b.TradeCapacityMod
+		}
+	}
+
+	out := RegionProductionSummary{
+		Gold:   int(float64(region.GoldIncome()) * goldMod * float64(s.CurrentSeason().HarvestMod()) / 100),
+		Grain:  int(float64(region.BaseGrainOutput) * grainMod),
+		Iron:   region.BaseIronOutput,
+		Timber: region.BaseTimberOutput,
+		Stone:  region.BaseStoneOutput,
+		Spice:  region.BaseSpiceOutput,
+		Cloth:  region.BaseClothOutput,
+	}
+	out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth = applyRegionTerrainSpecialization(
+		region.Terrain, out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth,
+	)
+
+	out.Gold += economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod) * s.CurrentSeason().TradeMod() / 100
+
+	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
+		effects := tech.ComputeEffects(fx.Research.Completed, s.TechTypes)
+		out.Gold += effects.GoldPerRegion
+		out.Grain = int(float64(out.Grain) * (1.0 + effects.GrainMod))
+		out.Iron = int(float64(out.Iron) * (1.0 + effects.IronMod))
+		out.Timber = int(float64(out.Timber) * (1.0 + effects.TimberMod))
+		out.Stone = int(float64(out.Stone) * (1.0 + effects.StoneMod))
+	}
+
+	return out
+}
+
+func applyRegionTerrainSpecialization(
+	terrain world.TerrainType,
+	grain, iron, timber, stone, spice, cloth int,
+) (int, int, int, int, int, int) {
+	switch terrain {
+	case world.TerrainPlain:
+		grain = grain * 120 / 100
+	case world.TerrainForest:
+		timber = timber * 130 / 100
+	case world.TerrainMountain:
+		iron = iron * 125 / 100
+		if stone <= 0 {
+			stone = 1 + iron/3
+		}
+		stone = stone * 140 / 100
+	case world.TerrainPass:
+		if stone <= 0 {
+			stone = 1
+		}
+		stone = stone * 120 / 100
+	}
+	return grain, iron, timber, stone, spice, cloth
 }
 
 // IsEliminated bir fraksiyon elenmiş mi kontrol eder.

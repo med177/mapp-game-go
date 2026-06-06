@@ -951,6 +951,9 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 		return false
 	}
 	if a.IsNaval {
+		if navalCanDockAtRegion(gs, a, target) {
+			return true
+		}
 		if target.CanLandEnter() {
 			if len(a.EmbarkedUnits) == 0 {
 				return false
@@ -968,6 +971,20 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 		return armyCanEmbark(gs, a) && hasFriendlyEmbarkFleet(gs, a.OwnerID, target.ID)
 	}
 	return target.CanLandEnter()
+}
+
+func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
+	if gs == nil || fleet == nil || target == nil || !fleet.IsNaval || target.IsSea || target.OwnerID == "" {
+		return false
+	}
+	if fleet.OwnerID != target.OwnerID {
+		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
+		rel, ok := gs.Relations[key]
+		if !ok || rel.Stance != faction.StanceAllied {
+			return false
+		}
+	}
+	return target.HasPort()
 }
 
 func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool {
@@ -2096,13 +2113,13 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if r.gs.Phase != state.PhaseEditMode && a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
 			unitCount = -1
 		}
-		r.drawArmyIcon(screen, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
+		r.drawArmyIcon(screen, a.ID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
 	}
 }
 
 // drawArmyIcon tek bir ordu ikonunu çizer.
 // Kara ordusu → kare, deniz donanması → daire.
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
 	borderCol := color.RGBA{200, 200, 200, 220}
 	if selected {
 		borderCol = color.RGBA{255, 215, 0, 255}
@@ -2129,6 +2146,12 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, cx, cy float32, col color.
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
+	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
+		badgeX := cx + 8
+		badgeY := cy - 12
+		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
+		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
+	}
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {
@@ -6536,6 +6559,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
+	if aid, ok := r.armyHitAt(fx, fy); ok {
+		if r.SelectedArmy == aid {
+			r.SelectedArmy = ""
+			return InputAction{}
+		}
+		r.SelectedArmy = aid
+		r.SelectedRegion = ""
+		r.clearSelectedSettlement()
+		r.showRecruitPanel = false
+		r.resetRecruitSelection()
+		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		r.SelectedArmy = ""
 		r.SelectedRegion = rid
@@ -6560,26 +6595,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// BİRLEŞTİR butonu tıklaması
 	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
-	}
-
-	// Ordu ikonu tıklaması → seç / seçimi kaldır
-	armyPositions := r.armyIconPositions()
-	for i := len(armyPositions) - 1; i >= 0; i-- {
-		pos := armyPositions[i]
-		dx := fx - float64(pos.X)
-		dy := fy - float64(pos.Y)
-		if math.Sqrt(dx*dx+dy*dy) < 14 {
-			if r.SelectedArmy == pos.ArmyID {
-				r.SelectedArmy = ""
-				return InputAction{}
-			}
-			r.SelectedArmy = pos.ArmyID
-			r.SelectedRegion = ""
-			r.clearSelectedSettlement()
-			r.showRecruitPanel = false
-			r.resetRecruitSelection()
-			return InputAction{Kind: ActionSelectArmy, ArmyID: pos.ArmyID}
-		}
 	}
 
 	// Bölge / deniz bölgesi seçimi
@@ -6667,6 +6682,19 @@ func (r *Renderer) settlementPanelCloseHit(mx, my float64) bool {
 	return r.isSettlementPanelOpen() && settlementPanelCloseHit(mx, my)
 }
 
+func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
+	armyPositions := r.armyIconPositions()
+	for i := len(armyPositions) - 1; i >= 0; i-- {
+		pos := armyPositions[i]
+		dx := mx - float64(pos.X)
+		dy := my - float64(pos.Y)
+		if math.Sqrt(dx*dx+dy*dy) < 14 {
+			return pos.ArmyID, true
+		}
+	}
+	return "", false
+}
+
 func (r *Renderer) settlementHitAt(mx, my float64) (world.RegionID, int, bool) {
 	bestRID := world.RegionID("")
 	bestIdx := -1
@@ -6746,7 +6774,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
-		if !(a.IsNaval && target.CanNavalEnter()) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
+		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 			rel, exists := r.gs.Relations[key]
 			if !exists || rel.Stance != faction.StanceWar {

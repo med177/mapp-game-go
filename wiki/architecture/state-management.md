@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-05-26
+last_updated: 2026-06-06
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -41,6 +41,8 @@ type GameState struct {
     BuildingTypes      map[string]*Building
     TechTypes          map[string]*Technology
     AvailableVictories []VictoryOptionDef  // scenario.json'dan
+    RegionLogistics    map[RegionID]RegionLogisticsStatus
+    ArmyLogistics      map[ArmyID]ArmyLogisticsStatus
 
     // Zafer takibi
     EconomicVictoryTurns  int
@@ -76,6 +78,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 | `TechTypes` | `assets/scenarios/<id>/data/technologies.json` |
 | `ShapeData` | `assets/scenarios/<id>/data/country_shapes.json` |
 | `AvailableVictories` | `assets/scenarios/<id>/scenario.json` |
+| `RegionLogistics`, `ArmyLogistics` | tur çözümlemesinde üretilen geçici ikmal baskısı UI özeti |
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
 
@@ -94,6 +97,10 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 `RegionsOwnedBy(fid) []*Region` — fraksiyon bölge listesi
 
 `LandRegionsOwnedBy(fid) []*Region` — fraksiyonun yalnızca kara bölgeleri
+
+`RegionProductionSummary(region) RegionProductionSummary` — seçili bölgenin efektif altın/mal üretimini hesaplar; bina çarpanları, arazi uzmanlaşması, mevsim ticaret/hasat etkileri ve sahip fraksiyonun ekonomi teknolojilerini UI önizlemesiyle paylaşır
+
+`RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 

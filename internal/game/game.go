@@ -200,7 +200,7 @@ func (g *Game) Update() error {
 		case render.ActionEndTurn:
 			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok &&
 				f.Research.ActiveID == "" &&
-				g.playerHasRemainingTechs() {
+				g.playerHasResearchableTechs() {
 				g.renderer.ShowConfirmDialog(
 					"Araştırma Yok",
 					"Teknoloji araştırması seçilmedi. Turu yine de bitirmek istiyor musunuz?",
@@ -451,7 +451,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func (g *Game) resolveTurn() {
 	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
-	applyEconomyTick(g.gs)
+	economyReport := applyEconomyTick(g.gs)
 	completedTechs := applyTechTicks(g.gs)
 	productionResults := g.applyProductionTicks()
 	applyReligionConversion(g.gs)
@@ -502,6 +502,8 @@ func (g *Game) resolveTurn() {
 		}
 	}
 
+	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
+
 	// Olaylar
 	if evt := events.Tick(g.gs, g.evts); evt != nil {
 		events.Apply(g.gs, evt)
@@ -516,6 +518,34 @@ func (g *Game) resolveTurn() {
 		g.renderer.MarkMapDirty()
 	}
 	g.refreshEventCodex()
+}
+
+func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus) {
+	for _, alert := range alerts {
+		regionName := string(alert.RegionID)
+		if region, ok := g.gs.Regions[alert.RegionID]; ok && region != nil {
+			regionName = region.NameTR
+		}
+		msg := fmt.Sprintf(
+			"%s: ikmal kapasitesi %d/%d, %d ordu zayiat verdi",
+			regionName, alert.Capacity, alert.Demand, alert.ArmyCount,
+		)
+		detail := fmt.Sprintf(
+			"%s bölgesinde yerel tahıl %d, depo/yerleşim tamponu %d, stok desteği %d kaldı. Aşım: %d. Etkilenen birlik: %d, kayıp birlik: %d, toplam HP kaybı: %d.",
+			regionName,
+			alert.LocalProduction,
+			alert.SettlementBuffer,
+			alert.ReserveSupport,
+			alert.Overload,
+			alert.UnitsAffected,
+			alert.UnitsLost,
+			alert.TotalHPDamage,
+		)
+		g.renderer.AddEventDetail("[LOJISTIK] "+msg, detail)
+		if alert.PeakOverloadTurns >= 2 {
+			g.renderer.ShowCombatResult(regionName + ": ordular ikmal baskısı altında zayiat veriyor")
+		}
+	}
 }
 
 func (g *Game) handleTriggeredEvent(evt *events.Event) {
@@ -1058,17 +1088,23 @@ func victoryLabel(vtype state.VictoryType) string {
 	}
 }
 
-func (g *Game) playerHasRemainingTechs() bool {
+func (g *Game) playerHasResearchableTechs() bool {
 	if g == nil || g.gs == nil {
 		return false
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	if f == nil {
+	if f == nil || g.gs.TechTypes == nil {
 		return false
 	}
 	completed := f.Research.Completed
-	for techID := range g.gs.TechTypes {
-		if completed == nil || !completed[techID] {
+	for techID, t := range g.gs.TechTypes {
+		if t == nil {
+			continue
+		}
+		if completed != nil && completed[techID] {
+			continue
+		}
+		if tech.IsUnlocked(&f.Research, t) {
 			return true
 		}
 	}
@@ -2312,6 +2348,43 @@ func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) 
 	return ok && rel.Stance == faction.StanceWar
 }
 
+func (g *Game) fleetsCanSharePort(fleetOwnerID, regionOwnerID string) bool {
+	if fleetOwnerID == "" || regionOwnerID == "" {
+		return false
+	}
+	if fleetOwnerID == regionOwnerID {
+		return true
+	}
+	key := faction.RelationKey(faction.FactionID(fleetOwnerID), faction.FactionID(regionOwnerID))
+	rel, ok := g.gs.Relations[key]
+	return ok && rel.Stance == faction.StanceAllied
+}
+
+func (g *Game) dockSettlementIDForRegion(region *world.Region) string {
+	if region == nil {
+		return ""
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return settlement.ID
+		}
+	}
+	if len(region.Settlements) > 0 {
+		return region.Settlements[0].ID
+	}
+	return ""
+}
+
+func (g *Game) canDockFleetAtRegion(fleet *army.Army, targetRegion *world.Region) bool {
+	if fleet == nil || targetRegion == nil || !fleet.IsNaval || targetRegion.IsSea {
+		return false
+	}
+	if !g.fleetsCanSharePort(fleet.OwnerID, targetRegion.OwnerID) {
+		return false
+	}
+	return targetRegion.HasPort()
+}
+
 // applyConquestWithNavalEviction bölge sahipliği değiştiğinde limanda bekleyen
 // eski sahip filolarını en yakın deniz bölgesine çıkarır. Eğer bu fetih eski
 // sahibi tamamen yıkarsa kalan ordular galibe devrolur.
@@ -2400,7 +2473,7 @@ func (g *Game) sanitizeDockedFleets() {
 			continue
 		}
 		dockedRegion := g.gs.Regions[fleet.DockedRegionID]
-		invalidDock := dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID != fleet.OwnerID
+		invalidDock := dockedRegion == nil || dockedRegion.IsSea || !g.canDockFleetAtRegion(fleet, dockedRegion)
 		if !invalidDock {
 			continue
 		}
@@ -2458,6 +2531,14 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 
 	// Naval/kara uyumluluk kontrolü
 	if a.IsNaval {
+		if g.canDockFleetAtRegion(a, targetRegion) {
+			a.DockedRegionID = targetRegion.ID
+			a.DockedSettlementID = g.dockSettlementIDForRegion(targetRegion)
+			a.MovePoints--
+			g.renderer.MarkMapDirty()
+			g.renderer.ShowCombatResult("Donanma limana konuşlandı.")
+			return
+		}
 		if targetRegion.CanLandEnter() {
 			if !g.canDisembarkToLand(a, targetRegion) {
 				if len(a.EmbarkedUnits) == 0 {

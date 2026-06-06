@@ -22,6 +22,9 @@ type Army struct {
 
 	// Pusu durumu: geçit bölgesinde bekliyorsa true
 	InAmbush bool `json:"in_ambush"`
+
+	// Bölgesel ikmal kapasitesi aşımı üst üste kaç tur sürdü.
+	OverCapacityTurns int `json:"over_capacity_turns,omitempty"`
 }
 
 // Size ordu boyutunu döner.
@@ -61,6 +64,17 @@ func (a *Army) TotalDefense(types map[string]*UnitType) int {
 			power = 1
 		}
 		total += power
+	}
+	return total
+}
+
+// TotalGrainUpkeep ordudaki tüm birimlerin tur başı tahıl bakım yükünü döner.
+func (a *Army) TotalGrainUpkeep(types map[string]*UnitType) int {
+	total := 0
+	for _, u := range a.Units {
+		if t, ok := types[u.TypeID]; ok && t != nil {
+			total += t.GrainUpkeep
+		}
 	}
 	return total
 }

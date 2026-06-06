@@ -11,6 +11,14 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func repeatedUnits(typeID string, count int, hp int) []army.Unit {
+	out := make([]army.Unit, 0, count)
+	for i := 0; i < count; i++ {
+		out = append(out, army.Unit{TypeID: typeID, CurrentHP: hp})
+	}
+	return out
+}
+
 func TestCheckRegionUnlocksUnlocksTimedRegionAtTurn(t *testing.T) {
 	gs := &state.GameState{
 		Turn: 5,
@@ -107,6 +115,86 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	}
 	if gs.Factions["b"].Spice != 2 {
 		t.Fatalf("ticaret rotası malı hedefe eklemeliydi, got=%d", gs.Factions["b"].Spice)
+	}
+}
+
+func TestApplyEconomyTickRegionalLogisticsAttritionEscalates(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 40},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"gelibolu": {ID: "gelibolu", OwnerID: "player", TaxRate: 50, Satisfaction: 50, BaseGrainOutput: 4},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "player", RegionID: "gelibolu", Units: repeatedUnits("inf", 5, 100)},
+			"a2": {ID: "a2", OwnerID: "player", RegionID: "gelibolu", Units: repeatedUnits("inf", 5, 100)},
+			"a3": {ID: "a3", OwnerID: "player", RegionID: "gelibolu", Units: repeatedUnits("inf", 5, 100)},
+			"a4": {ID: "a4", OwnerID: "player", RegionID: "gelibolu", Units: repeatedUnits("inf", 5, 100)},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 2},
+		},
+	}
+
+	report1 := applyEconomyTick(gs)
+	firstStatus := gs.ArmyLogistics["a1"]
+	if firstStatus.TotalHPDamage == 0 || firstStatus.DamagePerUnit == 0 {
+		t.Fatal("ilk tur bölgesel ikmal zayiatı bekleniyordu")
+	}
+	if gs.Armies["a1"].OverCapacityTurns != 1 {
+		t.Fatalf("ilk tur over-capacity sayacı 1 olmalı, got=%d", gs.Armies["a1"].OverCapacityTurns)
+	}
+	if len(report1.PlayerLogisticsAlerts) != 1 {
+		t.Fatalf("oyuncu için tek lojistik uyarısı bekleniyordu, got=%d", len(report1.PlayerLogisticsAlerts))
+	}
+
+	report2 := applyEconomyTick(gs)
+	secondStatus := gs.ArmyLogistics["a1"]
+	if secondStatus.DamagePerUnit <= firstStatus.DamagePerUnit {
+		t.Fatalf("uzun süreli yığılmada zayiat artmalı, first=%d second=%d", firstStatus.DamagePerUnit, secondStatus.DamagePerUnit)
+	}
+	if gs.Armies["a1"].OverCapacityTurns != 2 {
+		t.Fatalf("ikinci tur over-capacity sayacı 2 olmalı, got=%d", gs.Armies["a1"].OverCapacityTurns)
+	}
+	if len(report2.PlayerLogisticsAlerts) != 1 || report2.PlayerLogisticsAlerts[0].Overload <= 0 {
+		t.Fatalf("ikinci tur da oyuncu lojistik uyarısı sürmeliydi, got=%+v", report2.PlayerLogisticsAlerts)
+	}
+}
+
+func TestApplyEconomyTickRegionalLogisticsResetsWhenCapacityRecovers(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 20},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"safe": {ID: "safe", OwnerID: "player", TaxRate: 50, Satisfaction: 50, BaseGrainOutput: 12},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "player", RegionID: "safe", Units: repeatedUnits("inf", 1, 100), OverCapacityTurns: 3},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 2},
+		},
+	}
+
+	report := applyEconomyTick(gs)
+
+	if gs.Armies["a1"].OverCapacityTurns != 0 {
+		t.Fatalf("kapasite yeterliyken sayaç sıfırlanmalı, got=%d", gs.Armies["a1"].OverCapacityTurns)
+	}
+	if status := gs.RegionLogistics["safe"]; status.Overload > 0 {
+		t.Fatalf("güvenli bölgede overload olmamalı, got=%+v", status)
+	}
+	if _, ok := gs.ArmyLogistics["a1"]; ok {
+		t.Fatal("kapasite yeterliyken orduya zayiat kaydı yazılmamalı")
+	}
+	if len(report.PlayerLogisticsAlerts) != 0 {
+		t.Fatalf("kapasite yeterliyken oyuncu uyarısı olmamalı, got=%+v", report.PlayerLogisticsAlerts)
 	}
 }
 
@@ -207,16 +295,23 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 		PlayerFactionID: "player",
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player"},
+			"ally":   {ID: "ally"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home":  {ID: "home", OwnerID: "player"},
-			"enemy": {ID: "enemy", OwnerID: "enemy"},
-			"sea":   {ID: "sea", IsSea: true},
+			"home":      {ID: "home", OwnerID: "player"},
+			"enemy":     {ID: "enemy", OwnerID: "enemy"},
+			"ally_port": {ID: "ally_port", OwnerID: "ally"},
+			"sea":       {ID: "sea", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"home_army":  {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"enemy_army": {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"fleet":      {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"home_army":   {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"enemy_army":  {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"fleet":       {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"docked_self": {ID: "docked_self", OwnerID: "player", RegionID: "sea", DockedRegionID: "home", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"docked_ally": {ID: "docked_ally", OwnerID: "player", RegionID: "sea", DockedRegionID: "ally_port", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ally", "player"): {FactionA: "ally", FactionB: "player", Stance: faction.StanceAllied},
 		},
 	}
 
@@ -230,5 +325,11 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 	}
 	if got := gs.Armies["fleet"].Units[0].CurrentHP; got != 65 {
 		t.Fatalf("donanma kara takviyesi almamali, got=%d", got)
+	}
+	if got := gs.Armies["docked_self"].Units[0].CurrentHP; got != 75 {
+		t.Fatalf("kendi limanındaki donanma iyilesmeli, got=%d", got)
+	}
+	if got := gs.Armies["docked_ally"].Units[0].CurrentHP; got != 70 {
+		t.Fatalf("müttefik limanındaki donanma yari hizda iyilesmeli, got=%d", got)
 	}
 }

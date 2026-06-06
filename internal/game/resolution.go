@@ -1,6 +1,7 @@
 package game
 
 import (
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
@@ -12,6 +13,10 @@ import (
 )
 
 const friendlyReplenishHP = 10
+
+type economyTickReport struct {
+	PlayerLogisticsAlerts []state.RegionLogisticsStatus
+}
 
 type eliminationResult struct {
 	FactionID         faction.FactionID
@@ -163,7 +168,11 @@ func applySeasonEffects(gs *state.GameState) {
 	movMod := s.MovementMod()
 	for _, a := range gs.Armies {
 		if !s.IsWinter() {
-			a.ReplenishInFriendlyTerritory(gs.Regions, friendlyReplenishHP)
+			if a.IsNaval {
+				replenishDockedFleet(gs, a, friendlyReplenishHP)
+			} else {
+				a.ReplenishInFriendlyTerritory(gs.Regions, friendlyReplenishHP)
+			}
 		}
 		mp := 2 * movMod / 100
 		if mp < 1 {
@@ -183,9 +192,44 @@ func applySeasonEffects(gs *state.GameState) {
 	}
 }
 
+func replenishDockedFleet(gs *state.GameState, fleet *army.Army, amount int) int {
+	if gs == nil || fleet == nil || !fleet.IsNaval || amount <= 0 || fleet.DockedRegionID == "" {
+		return 0
+	}
+	dockedRegion := gs.Regions[fleet.DockedRegionID]
+	if dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID == "" {
+		return 0
+	}
+	healAmount := amount
+	if dockedRegion.OwnerID != fleet.OwnerID {
+		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(dockedRegion.OwnerID))
+		rel, ok := gs.Relations[key]
+		if !ok || rel.Stance != faction.StanceAllied {
+			return 0
+		}
+		healAmount = amount / 2
+		if healAmount < 1 {
+			healAmount = 1
+		}
+	}
+	healedUnits := 0
+	for i := range fleet.Units {
+		if fleet.Units[i].CurrentHP >= army.MaxUnitHP {
+			continue
+		}
+		fleet.Units[i].CurrentHP += healAmount
+		if fleet.Units[i].CurrentHP > army.MaxUnitHP {
+			fleet.Units[i].CurrentHP = army.MaxUnitHP
+		}
+		healedUnits++
+	}
+	return healedUnits
+}
+
 // applyEconomyTick tur başında her fraksiyonun ekonomisini günceller.
 // Artık ticaret rotalarını işletir, mal transferi yapar ve piyasa fiyatlarını günceller.
-func applyEconomyTick(gs *state.GameState) {
+func applyEconomyTick(gs *state.GameState) economyTickReport {
+	report := economyTickReport{}
 	s := gs.CurrentSeason()
 	harvestMod := s.HarvestMod()
 
@@ -256,11 +300,7 @@ func applyEconomyTick(gs *state.GameState) {
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep)
 	upkeepByFaction := make(map[string]int)
 	for _, a := range gs.Armies {
-		for _, u := range a.Units {
-			if t, ok := gs.UnitTypes[u.TypeID]; ok {
-				upkeepByFaction[a.OwnerID] += t.GrainUpkeep
-			}
-		}
+		upkeepByFaction[a.OwnerID] += a.TotalGrainUpkeep(gs.UnitTypes)
 	}
 
 	for fid, f := range gs.Factions {
@@ -303,8 +343,11 @@ func applyEconomyTick(gs *state.GameState) {
 		}
 	}
 
+	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
+
 	// --- Dinamik piyasa fiyatlarını güncelle ---
 	gs.MarketPrices = economy.ComputeMarketPrices(gs.Factions)
+	return report
 }
 
 func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int) {
@@ -332,6 +375,203 @@ func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int
 			remaining--
 		}
 	}
+}
+
+func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogisticsStatus {
+	gs.RegionLogistics = make(map[world.RegionID]state.RegionLogisticsStatus)
+	gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
+	if gs == nil {
+		return nil
+	}
+
+	armiesByRegion := make(map[world.RegionID][]*army.Army)
+	for _, a := range gs.Armies {
+		if a == nil || a.IsNaval || len(a.Units) == 0 {
+			continue
+		}
+		region := gs.Regions[a.RegionID]
+		if region == nil || region.IsSea {
+			continue
+		}
+		armiesByRegion[a.RegionID] = append(armiesByRegion[a.RegionID], a)
+	}
+
+	alerts := make([]state.RegionLogisticsStatus, 0)
+	for rid, armiesInRegion := range armiesByRegion {
+		region := gs.Regions[rid]
+		if region == nil {
+			continue
+		}
+
+		ownerID := armiesInRegion[0].OwnerID
+		totalDemand := 0
+		totalUnits := 0
+		peakTurns := 0
+		for _, a := range armiesInRegion {
+			totalDemand += a.TotalGrainUpkeep(gs.UnitTypes)
+			totalUnits += len(a.Units)
+			if a.OverCapacityTurns > peakTurns {
+				peakTurns = a.OverCapacityTurns
+			}
+		}
+		if totalDemand <= 0 || totalUnits <= 0 {
+			for _, a := range armiesInRegion {
+				a.OverCapacityTurns = 0
+			}
+			continue
+		}
+
+		production := gs.RegionProductionSummary(region).Grain
+		settlementBuffer := regionSettlementLogisticsBuffer(region)
+		reserveSupport := regionReserveSupport(gs, ownerID, production, settlementBuffer)
+		capacity := production + settlementBuffer + reserveSupport
+		if capacity < 4 {
+			capacity = 4
+		}
+		overload := totalDemand - capacity
+
+		regionStatus := state.RegionLogisticsStatus{
+			RegionID:         rid,
+			OwnerID:          ownerID,
+			LocalProduction:  production,
+			SettlementBuffer: settlementBuffer,
+			ReserveSupport:   reserveSupport,
+			Demand:           totalDemand,
+			Capacity:         capacity,
+			Overload:         overload,
+			ArmyCount:        len(armiesInRegion),
+		}
+
+		if overload <= 0 {
+			for _, a := range armiesInRegion {
+				a.OverCapacityTurns = 0
+			}
+			gs.RegionLogistics[rid] = regionStatus
+			continue
+		}
+
+		damagePerUnit := logisticsDamagePerUnit(totalDemand, capacity, overload, peakTurns+1)
+		for _, a := range armiesInRegion {
+			a.OverCapacityTurns++
+			armyStatus := state.ArmyLogisticsStatus{
+				ArmyID:            a.ID,
+				RegionID:          rid,
+				OwnerID:           a.OwnerID,
+				Demand:            totalDemand,
+				Capacity:          capacity,
+				Overload:          overload,
+				OverCapacityTurns: a.OverCapacityTurns,
+				DamagePerUnit:     damagePerUnit,
+			}
+			unitsBefore := len(a.Units)
+			totalDamage := 0
+			survivors := a.Units[:0]
+			for _, u := range a.Units {
+				u.CurrentHP -= damagePerUnit
+				totalDamage += damagePerUnit
+				if u.CurrentHP <= 0 {
+					armyStatus.UnitsLost++
+					continue
+				}
+				survivors = append(survivors, u)
+			}
+			a.Units = survivors
+			armyStatus.UnitsAffected = unitsBefore
+			armyStatus.TotalHPDamage = totalDamage
+			gs.ArmyLogistics[a.ID] = armyStatus
+			if len(a.Units) == 0 {
+				delete(gs.Armies, a.ID)
+			}
+
+			regionStatus.UnitsAffected += armyStatus.UnitsAffected
+			regionStatus.UnitsLost += armyStatus.UnitsLost
+			regionStatus.TotalHPDamage += armyStatus.TotalHPDamage
+			if armyStatus.OverCapacityTurns > regionStatus.PeakOverloadTurns {
+				regionStatus.PeakOverloadTurns = armyStatus.OverCapacityTurns
+			}
+		}
+		gs.RegionLogistics[rid] = regionStatus
+		if ownerID == string(gs.PlayerFactionID) {
+			alerts = append(alerts, regionStatus)
+		}
+	}
+
+	return alerts
+}
+
+func regionSettlementLogisticsBuffer(region *world.Region) int {
+	buffer := 0
+	for _, settlement := range region.Settlements {
+		switch settlement.Type {
+		case world.SettlementCity:
+			buffer += 8
+		case world.SettlementTown:
+			buffer += 5
+		case world.SettlementFortress:
+			buffer += 6
+		case world.SettlementPort:
+			buffer += 6
+		default:
+			buffer += 4
+		}
+		if settlement.IsCapital {
+			buffer += 4
+		}
+	}
+	if tc := region.TradeCapacity / 2; tc > 0 {
+		if tc > 6 {
+			tc = 6
+		}
+		buffer += tc
+	}
+	return buffer
+}
+
+func regionReserveSupport(gs *state.GameState, ownerID string, production, settlementBuffer int) int {
+	if gs == nil || ownerID == "" {
+		return 0
+	}
+	f := gs.Factions[faction.FactionID(ownerID)]
+	if f == nil || f.Grain <= 0 {
+		return 0
+	}
+	cap := production/2 + settlementBuffer/2 + 4
+	if cap < 4 {
+		cap = 4
+	}
+	reserve := f.Grain / 10
+	if reserve > cap {
+		reserve = cap
+	}
+	return reserve
+}
+
+func logisticsDamagePerUnit(totalDemand, capacity, overload, nextTurn int) int {
+	if totalDemand <= 0 || overload <= 0 {
+		return 0
+	}
+	ratio := overload * 100 / max(1, totalDemand)
+	damage := 2 + ratio/12
+	if capacity <= 0 {
+		damage += 3
+	}
+	if nextTurn > 1 {
+		damage += (nextTurn - 1) * 3
+	}
+	if damage < 3 {
+		damage = 3
+	}
+	if damage > 18 {
+		damage = 18
+	}
+	return damage
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func applyTerrainSpecialization(

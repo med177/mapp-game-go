@@ -1,8 +1,6 @@
 package render
 
 import (
-	"math"
-
 	"mapp-game-go/internal/state"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -292,13 +290,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if r.mapMode == MapModeTrade && (r.tradeCorridorAt(fx, fy) >= 0 || r.tradeCenterAt(fx, fy) >= 0) {
 		return true
 	}
-	// Ordu ikonu üzerinde mi?
-	for _, pos := range r.armyIconPositions() {
-		dx := fx - float64(pos.X)
-		dy := fy - float64(pos.Y)
-		if math.Sqrt(dx*dx+dy*dy) < 14 {
-			return true
-		}
+	// Ordu/donanma etiketi üzerinde mi?
+	if _, ok := r.armyHitAt(fx, fy); ok {
+		return true
 	}
 	// Yerleşim noktası üzerinde mi?
 	if _, _, ok := r.settlementHitAt(fx, fy); ok {

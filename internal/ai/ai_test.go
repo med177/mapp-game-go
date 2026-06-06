@@ -312,6 +312,60 @@ func TestChooseBestMovePrefersSeaWithHigherHostilePressure(t *testing.T) {
 	}
 }
 
+func TestChooseBestMoveRelievesOverloadedFriendlyRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"crowded":  {ID: "crowded", OwnerID: "ai_1", BaseGrainOutput: 2, Neighbors: []world.RegionID{"relief", "frontier"}},
+			"relief":   {ID: "relief", OwnerID: "ai_1", BaseGrainOutput: 12, Neighbors: []world.RegionID{"crowded"}},
+			"frontier": {ID: "frontier", OwnerID: "player", BaseGrainOutput: 4, Neighbors: []world.RegionID{"crowded"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic, Grain: 0},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni, Grain: 10},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -20, Stance: faction.StancePeace},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"stack_1": {ID: "stack_1", OwnerID: "ai_1", RegionID: "crowded", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}, OverCapacityTurns: 2},
+			"stack_2": {ID: "stack_2", OwnerID: "ai_1", RegionID: "crowded", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 2, Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	target := chooseBestMove(gs, gs.Armies["stack_1"])
+	if target != "relief" {
+		t.Fatalf("AI overloaded dost bölgeden relief'e dağılmalıydı, got=%s", target)
+	}
+}
+
+func TestAIConsolidateArmiesSkipsOverloadedLandRegion(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"crowded": {ID: "crowded", OwnerID: "ai_1", BaseGrainOutput: 1},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai_1": {ID: "ai_1", Grain: 0},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "ai_1", RegionID: "crowded", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+			"a2": {ID: "a2", OwnerID: "ai_1", RegionID: "crowded", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 3},
+		},
+	}
+
+	aiConsolidateArmies(gs, "ai_1")
+
+	if len(gs.Armies) != 2 {
+		t.Fatalf("overloaded kara bölgede AI orduları birleştirmemeli, got=%d", len(gs.Armies))
+	}
+}
+
 func TestAINavalStrategyAllowsThirdFleetDuringWarPressure(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
