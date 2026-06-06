@@ -2854,10 +2854,28 @@ func (g *Game) startResearch(techID string) {
 	if !ok {
 		return
 	}
+	if f.Research.ActiveID == techID {
+		g.renderer.ShowCombatResult(t.NameTR + " zaten araştırılıyor.")
+		return
+	}
+	canResume := f.Research.PausedTurns != nil && f.Research.PausedTurns[techID] > 0
+	if !tech.IsUnlocked(&f.Research, t) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
+		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
+		return
+	}
+	if !canResume && f.Gold < t.GoldCost {
+		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
+		return
+	}
+	if f.Research.ActiveID != "" {
+		tech.PauseResearch(&f.Research)
+	}
 	if tech.StartResearch(&f.Research, t, &f.Gold) {
-		g.renderer.ShowCombatResult(t.NameTR + " araştırması başladı! (" + fmt.Sprintf("%d tur", t.TurnsRequired) + ")")
-	} else if f.Research.ActiveID != "" {
-		g.renderer.ShowCombatResult("Zaten bir araştırma sürüyor!")
+		if canResume {
+			g.renderer.ShowCombatResult(t.NameTR + " araştırması kaldığı yerden devam ediyor! (" + fmt.Sprintf("%d tur kaldı", f.Research.TurnsLeft) + ")")
+		} else {
+			g.renderer.ShowCombatResult(t.NameTR + " araştırması başladı! (" + fmt.Sprintf("%d tur", t.TurnsRequired) + ")")
+		}
 	} else {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
 	}
@@ -2880,16 +2898,13 @@ func (g *Game) cancelResearch() {
 		g.renderer.ShowCombatResult("Aktif araştırma yok!")
 		return
 	}
-	refundedGold := 0
-	if tech, ok := g.gs.TechTypes[f.Research.ActiveID]; ok {
-		refundedGold = tech.GoldCost
+	activeID := f.Research.ActiveID
+	tech.PauseResearch(&f.Research)
+	if t, ok := g.gs.TechTypes[activeID]; ok {
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s araştırması duraklatıldı. Kaldığı yerden devam edebilirsin.", t.NameTR))
+		return
 	}
-	f.Gold += refundedGold
 	f.Research.ActiveID = ""
 	f.Research.TurnsLeft = 0
-	if refundedGold > 0 {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Araştırma iptal edildi! %d altın iade edildi.", refundedGold))
-	} else {
-		g.renderer.ShowCombatResult("Araştırma iptal edildi!")
-	}
+	g.renderer.ShowCombatResult("Araştırma duraklatıldı.")
 }

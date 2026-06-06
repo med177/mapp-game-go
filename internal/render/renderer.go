@@ -53,6 +53,7 @@ type Renderer struct {
 	// Seçim
 	SelectedRegion           world.RegionID
 	SelectedArmy             army.ArmyID
+	selectedFactionPanel     faction.FactionID
 	selectedSettlementRegion world.RegionID
 	selectedSettlementIndex  int
 	devNeighborListExpanded  bool
@@ -76,8 +77,13 @@ type Renderer struct {
 	diplomacyTargetFaction faction.FactionID
 
 	// Teknoloji paneli
-	showTech   bool
-	techCursor int
+	showTech       bool
+	techCursor     int
+	techPanX       float64
+	techPanY       float64
+	techDragging   bool
+	techDragLastMX float64
+	techDragLastMY float64
 
 	// Ticaret paneli
 	showTrade         bool
@@ -464,6 +470,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
+	r.selectedFactionPanel = ""
 	r.clearSelectedSettlement()
 	r.eventLogScroll = 0
 	// Oyun durumundan region paint overrides'ı geri yükle
@@ -820,6 +827,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
 		}
+		DrawFactionDetailPanel(screen, r.gs, r.selectedFactionPanel)
 		if r.mapMode != MapModeTrade && r.showRecruitPanel {
 			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		}
@@ -6226,6 +6234,11 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 		r.showTech = !r.showTech
 		r.techCursor = 0
+		r.techDragging = false
+		if r.showTech {
+			r.techPanX = 0
+			r.techPanY = 0
+		}
 		return InputAction{}
 	}
 	// C: ticaret paneli (tech paneli açıkken ticareti açar)
@@ -6248,13 +6261,21 @@ func (r *Renderer) HandleInput() InputAction {
 		if f := r.gs.Factions[r.gs.PlayerFactionID]; f != nil {
 			if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyT) {
 				r.showTech = false
+				r.techDragging = false
 				return InputAction{}
 			}
 			mx, my := ebiten.CursorPosition()
+			_, wheelY := ebiten.Wheel()
+			leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+			leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
+			r.prevMouse[ebiten.MouseButtonLeft] = leftPressed
 			input := gameui.InputState{
-				MouseX:          float64(mx),
-				MouseY:          float64(my),
-				LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
+				MouseX:           float64(mx),
+				MouseY:           float64(my),
+				LeftPressed:      leftPressed,
+				LeftJustPressed:  leftPressed && !leftWasPressed,
+				LeftJustReleased: !leftPressed && leftWasPressed,
+				WheelY:           wheelY,
 			}
 			return r.handleTechInput(f, input)
 		}
@@ -6374,12 +6395,17 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedArmy = ""
 		return InputAction{}
 	}
+	if r.selectedFactionPanel != "" && factionPanelCloseHit(fx, fy) {
+		r.selectedFactionPanel = ""
+		return InputAction{}
+	}
 	if r.settlementPanelCloseHit(fx, fy) {
 		r.clearSelectedSettlement()
 		return InputAction{}
 	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
+		r.selectedFactionPanel = ""
 		r.devNeighborListExpanded = false
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
@@ -6500,6 +6526,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	if r.SelectedRegion != "" {
+		if fid, ok := regionOwnerNameHit(fx, fy, r.gs, r.SelectedRegion); ok {
+			r.selectedFactionPanel = fid
+			r.clearSelectedSettlement()
+			r.showRecruitPanel = false
+			r.resetRecruitSelection()
+			return InputAction{}
+		}
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
@@ -6577,6 +6610,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.SelectedArmy = aid
 		r.SelectedRegion = ""
+		r.selectedFactionPanel = ""
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
@@ -6588,6 +6622,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.devNeighborListExpanded = false
 		}
 		r.SelectedRegion = rid
+		r.selectedFactionPanel = ""
 		r.selectSettlement(rid, idx)
 		if !RecruitPanelVisible(r.gs, rid) {
 			r.showRecruitPanel = false
@@ -6596,6 +6631,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if r.settlementPanelHit(fx, fy) {
+		return InputAction{}
+	}
+	if r.selectedFactionPanel != "" && factionPanelHit(fx, fy) {
 		return InputAction{}
 	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
@@ -6622,6 +6660,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 				r.devNeighborListExpanded = false
 			}
 			r.SelectedRegion = rid
+			r.selectedFactionPanel = ""
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
 			r.resetRecruitSelection()
@@ -6633,6 +6672,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.devNeighborListExpanded = false
 	}
 	r.SelectedRegion = rid
+	r.selectedFactionPanel = ""
 	r.clearSelectedSettlement()
 	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.
 	r.showRecruitPanel = false

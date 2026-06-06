@@ -65,16 +65,52 @@ func IsUnlocked(rs *faction.ResearchState, t *Technology) bool {
 	return true
 }
 
+func CanStartResearch(rs *faction.ResearchState, t *Technology, gold int) bool {
+	if !IsUnlocked(rs, t) || (rs.Completed != nil && rs.Completed[t.ID]) {
+		return false
+	}
+	if rs.ActiveID != "" && rs.ActiveID != t.ID {
+		return false
+	}
+	if rs.PausedTurns != nil && rs.PausedTurns[t.ID] > 0 {
+		return true
+	}
+	return gold >= t.GoldCost
+}
+
+func PauseResearch(rs *faction.ResearchState) {
+	if rs == nil || rs.ActiveID == "" || rs.TurnsLeft <= 0 {
+		return
+	}
+	if rs.PausedTurns == nil {
+		rs.PausedTurns = make(map[string]int)
+	}
+	rs.PausedTurns[rs.ActiveID] = rs.TurnsLeft
+	rs.ActiveID = ""
+	rs.TurnsLeft = 0
+}
+
 // StartResearch araştırmayı başlatır; başarısızsa false döner.
 func StartResearch(rs *faction.ResearchState, t *Technology, gold *int) bool {
 	if !IsUnlocked(rs, t) || (rs.Completed != nil && rs.Completed[t.ID]) {
 		return false
 	}
-	if rs.ActiveID != "" || *gold < t.GoldCost {
+	if rs.ActiveID != "" && rs.ActiveID != t.ID {
 		return false
 	}
 	if rs.Completed == nil {
 		rs.Completed = make(map[string]bool)
+	}
+	if rs.PausedTurns != nil {
+		if pausedTurns, ok := rs.PausedTurns[t.ID]; ok && pausedTurns > 0 {
+			rs.ActiveID = t.ID
+			rs.TurnsLeft = pausedTurns
+			delete(rs.PausedTurns, t.ID)
+			return true
+		}
+	}
+	if *gold < t.GoldCost {
+		return false
 	}
 	*gold -= t.GoldCost
 	rs.ActiveID = t.ID

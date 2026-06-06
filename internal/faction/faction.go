@@ -8,20 +8,21 @@ type FactionID string
 // ResearchState bir fraksiyonun teknoloji araştırma durumu.
 // tech paketi bu struct üzerinde çalışan yardımcı fonksiyonlar sağlar.
 type ResearchState struct {
-	Completed map[string]bool `json:"completed"`
-	ActiveID  string          `json:"active_id"`
-	TurnsLeft int             `json:"turns_left"`
+	Completed   map[string]bool `json:"completed"`
+	PausedTurns map[string]int  `json:"paused_turns,omitempty"`
+	ActiveID    string          `json:"active_id"`
+	TurnsLeft   int             `json:"turns_left"`
 }
 
 // Faction oyundaki bir fraksiyonu temsil eder.
 type Faction struct {
-	ID           FactionID `json:"id"`
-	Name         string    `json:"name"`
-	NameTR       string    `json:"name_tr"`
+	ID           FactionID     `json:"id"`
+	Name         string        `json:"name"`
+	NameTR       string        `json:"name_tr"`
 	Religion     religion.Type `json:"religion"`
-	Color        [3]uint8  `json:"color"`
-	IsPlayable   bool      `json:"is_playable"`
-	IsEliminated bool      `json:"is_eliminated"`
+	Color        [3]uint8      `json:"color"`
+	IsPlayable   bool          `json:"is_playable"`
+	IsEliminated bool          `json:"is_eliminated"`
 
 	Gold   int `json:"gold"`
 	Grain  int `json:"grain"`

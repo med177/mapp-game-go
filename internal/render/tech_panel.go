@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"sort"
 
@@ -33,7 +34,15 @@ type techNode struct {
 const (
 	techLevelHeight = 120.0
 	techNodeWidth   = 180.0
-	techNodeHeight  = 60.0
+	techNodeHeight  = 84.0
+
+	techTreeMaxCols   = 4
+	techNodeStepX     = 190.0
+	techNodeStepY     = 106.0
+	techLevelGap      = 52.0
+	techTreePadding   = 24.0
+	techPanWheelStep  = 54.0
+	techPanDragThresh = 4.0
 
 	techConnectorStem     = 12.0
 	techConnectorLaneStep = 8.0
@@ -54,12 +63,18 @@ type techPanelLayout struct {
 	treeRect   gameui.Rect
 }
 
+type techTreeLayoutData struct {
+	levels   [][]techNode
+	contentW float64
+	contentH float64
+}
+
 func techPanelLayoutForScreen() techPanelLayout {
 	panel := gameui.Rect{X: 0, Y: 0, W: ScreenWidth, H: ScreenHeight}
 	box := gameui.BoxFromRect(panel).InsetXY(20, 20)
 	headerRect, box := box.CutTop(28, 12)
 	statusRect, box := box.CutTop(24, 12)
-	hintRect, treeBox := box.CutBottom(20, 0)
+	hintRect, treeBox := box.CutBottom(42, 0)
 	closeRect, titleRect := gameui.BoxFromRect(headerRect).CutRight(30, 12)
 	return techPanelLayout{
 		panelRect:  panel,
@@ -92,12 +107,10 @@ func techNodeButton(node techNode) gameui.Button {
 	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, node.t.NameTR)
 }
 
-func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) [][]techNode {
+func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) techTreeLayoutData {
 	levels := r.buildTechTree(f)
-	layout := techPanelLayoutForScreen()
-	treeStartY := techTreeStartY(layout.treeRect, float64(len(levels)), techLevelHeight)
-	layoutTechTree(levels, layout.treeRect, techNodeWidth, techNodeHeight, treeStartY, techLevelHeight)
-	return levels
+	contentW, contentH := layoutTechTree(levels, techTreeMaxCols)
+	return techTreeLayoutData{levels: levels, contentW: contentW, contentH: contentH}
 }
 
 func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
@@ -124,7 +137,6 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 	var result [][]techNode
 	for i := 0; i <= maxLevel; i++ {
 		if nodes, ok := levels[i]; ok {
-			// Her seviyedeki teknolojileri kategoriye göre sırala
 			sort.Slice(nodes, func(a, b int) bool {
 				if nodes[a].t.Category != nodes[b].t.Category {
 					return tech.CategoryOrder(nodes[a].t.Category) < tech.CategoryOrder(nodes[b].t.Category)
@@ -134,6 +146,7 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 			result = append(result, nodes)
 		}
 	}
+	orderTechTreeLevels(result)
 
 	return result
 }
@@ -154,25 +167,40 @@ func (r *Renderer) getTechLevel(t *tech.Technology, allTechs map[string]*tech.Te
 	return maxReqLevel + 1
 }
 
-func layoutTechTree(levels [][]techNode, bounds gameui.Rect, nodeWidth, nodeHeight, treeStartY, levelHeight float64) {
-	for levelIdx, levelNodes := range levels {
-		levelY := treeStartY + float64(levelIdx)*levelHeight
-		levelWidth := float64(len(levelNodes)) * nodeWidth
-		startX := bounds.X + (bounds.W-levelWidth)/2
-		for nodeIdx := range levelNodes {
-			levels[levelIdx][nodeIdx].x = startX + float64(nodeIdx)*nodeWidth + nodeWidth/2
-			levels[levelIdx][nodeIdx].y = levelY + nodeHeight/2
+func layoutTechTree(levels [][]techNode, maxCols int) (contentW float64, contentH float64) {
+	maxColsUsed := 1
+	for _, levelNodes := range levels {
+		if cols := techMinInt(len(levelNodes), maxCols); cols > maxColsUsed {
+			maxColsUsed = cols
 		}
 	}
-}
-
-func techTreeStartY(bounds gameui.Rect, levelCount, levelHeight float64) float64 {
-	totalHeight := levelCount * levelHeight
-	centeredY := bounds.Y + (bounds.H-totalHeight)/2
-	if centeredY < bounds.Y {
-		return bounds.Y
+	contentW = techTreePadding*2 + techNodeWidth + float64(maxColsUsed-1)*techNodeStepX
+	currentY := techTreePadding
+	for levelIdx, levelNodes := range levels {
+		if len(levelNodes) == 0 {
+			continue
+		}
+		rows := (len(levelNodes) + maxCols - 1) / maxCols
+		for row := 0; row < rows; row++ {
+			rowStart := row * maxCols
+			rowEnd := techMinInt(rowStart+maxCols, len(levelNodes))
+			rowCount := rowEnd - rowStart
+			rowWidth := techNodeWidth + float64(rowCount-1)*techNodeStepX
+			startX := techTreePadding + (contentW-techTreePadding*2-rowWidth)/2 + techNodeWidth/2
+			y := currentY + float64(row)*techNodeStepY + techNodeHeight/2
+			for col := 0; col < rowCount; col++ {
+				nodeIdx := rowStart + col
+				levels[levelIdx][nodeIdx].x = startX + float64(col)*techNodeStepX
+				levels[levelIdx][nodeIdx].y = y
+			}
+		}
+		currentY += techNodeHeight + float64(rows-1)*techNodeStepY
+		if levelIdx < len(levels)-1 {
+			currentY += techLevelGap
+		}
 	}
-	return centeredY
+	contentH = currentY + techTreePadding
+	return contentW, contentH
 }
 
 func indexTechNodes(levels [][]techNode) map[string]techNode {
@@ -271,6 +299,47 @@ func drawTechConnector(screen *ebiten.Image, parent, child techNode, reqIdx, req
 	drawTechLine(screen, child.x, midY, child.x, endY, style)
 }
 
+func orderTechTreeLevels(levels [][]techNode) {
+	if len(levels) < 2 {
+		return
+	}
+	for levelIdx := 1; levelIdx < len(levels); levelIdx++ {
+		prevIndex := make(map[string]int, len(levels[levelIdx-1]))
+		for idx, node := range levels[levelIdx-1] {
+			prevIndex[node.t.ID] = idx
+		}
+		sort.SliceStable(levels[levelIdx], func(a, b int) bool {
+			scoreA := techNodeDependencyOrder(levels[levelIdx][a], prevIndex)
+			scoreB := techNodeDependencyOrder(levels[levelIdx][b], prevIndex)
+			if scoreA != scoreB {
+				return scoreA < scoreB
+			}
+			if levels[levelIdx][a].t.Category != levels[levelIdx][b].t.Category {
+				return tech.CategoryOrder(levels[levelIdx][a].t.Category) < tech.CategoryOrder(levels[levelIdx][b].t.Category)
+			}
+			return levels[levelIdx][a].t.ID < levels[levelIdx][b].t.ID
+		})
+	}
+}
+
+func techNodeDependencyOrder(node techNode, prevIndex map[string]int) float64 {
+	if len(node.t.Requires) == 0 {
+		return 0
+	}
+	total := 0.0
+	count := 0.0
+	for _, reqID := range node.t.Requires {
+		if idx, ok := prevIndex[reqID]; ok {
+			total += float64(idx)
+			count++
+		}
+	}
+	if count == 0 {
+		return float64(len(prevIndex) + tech.CategoryOrder(node.t.Category))
+	}
+	return total / count
+}
+
 func techNodeNameColor(node techNode) color.Color {
 	if node.unlocked || node.done {
 		return ColorWhite
@@ -279,24 +348,64 @@ func techNodeNameColor(node techNode) color.Color {
 }
 
 func drawTechNodeText(screen *ebiten.Image, node techNode, nodeRect gameui.Rect) {
-	titleStrip := gameui.Rect{X: nodeRect.X + 6, Y: nodeRect.Y + 6, W: nodeRect.W - 12, H: 18}
-	footerStrip := gameui.Rect{X: nodeRect.X + 8, Y: nodeRect.Y + nodeRect.H - 20, W: nodeRect.W - 16, H: 14}
-	vector.FillRect(screen, float32(titleStrip.X), float32(titleStrip.Y), float32(titleStrip.W), float32(titleStrip.H), color.RGBA{10, 12, 18, 150}, false)
-	vector.FillRect(screen, float32(footerStrip.X), float32(footerStrip.Y), float32(footerStrip.W), float32(footerStrip.H), color.RGBA{8, 10, 16, 135}, false)
-
 	nameRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + 8, W: nodeRect.W - 20}
 	drawUIOutlinedLabel(screen, nameRect, node.t.NameTR, techNodeNameColor(node), color.RGBA{8, 8, 12, 255}, gameui.TextMedium, gameui.TextAlignCenter)
 
-	catLabel := fmt.Sprintf("[%s]", tech.CategoryLabelTR(node.t.Category))
-	catRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + 29, W: nodeRect.W - 20}
-	catColor := techCategoryColors[node.t.Category]
-	catColor.A = 248
-	drawUIOutlinedLabel(screen, catRect, catLabel, catColor, color.RGBA{10, 10, 14, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	buffRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + 31, W: nodeRect.W - 20}
+	drawUIWrappedLabelAligned(screen, buffRect, techEffectSummary(node.t), color.RGBA{245, 245, 245, 245}, gameui.TextSmall, 14, 2, gameui.TextAlignCenter)
 
-	if node.unlocked && !node.done {
-		costStr := fmt.Sprintf("%dg/%dt", node.t.GoldCost, node.t.TurnsRequired)
-		costRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + nodeRect.H - 19, W: nodeRect.W - 20}
-		drawUIOutlinedLabel(screen, costRect, costStr, color.RGBA{255, 228, 138, 255}, color.RGBA{16, 12, 8, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	costStr := fmt.Sprintf("%d altın  •  %d tur", node.t.GoldCost, node.t.TurnsRequired)
+	costColor := color.RGBA{255, 228, 138, 255}
+	if !node.unlocked && !node.done {
+		costColor = color.RGBA{210, 210, 210, 240}
+	}
+	costRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + nodeRect.H - 18, W: nodeRect.W - 20}
+	drawUIOutlinedLabel(screen, costRect, costStr, costColor, color.RGBA{16, 12, 8, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+}
+
+func drawTechCategoryLegend(screen *ebiten.Image, rect gameui.Rect) {
+	categories := tech.AllCategories()
+	const perRow = 3
+	const rowGap = 18.0
+	const itemGap = 18.0
+	colWidths := make([]float64, perRow)
+	for idx, category := range categories {
+		col := idx % perRow
+		itemW := 16.0 + MeasureText(tech.CategoryLabelTR(category), FaceSmall)
+		if itemW > colWidths[col] {
+			colWidths[col] = itemW
+		}
+	}
+
+	totalWidth := 0.0
+	activeCols := techMinInt(perRow, len(categories))
+	for i := 0; i < activeCols; i++ {
+		totalWidth += colWidths[i]
+		if i > 0 {
+			totalWidth += itemGap
+		}
+	}
+	startX := rect.X + rect.W - totalWidth
+	startY := rect.Y + 1
+
+	bgRect := gameui.Rect{X: startX - 12, Y: rect.Y - 1, W: totalWidth + 18, H: 36}
+	vector.FillRect(screen, float32(bgRect.X), float32(bgRect.Y), float32(bgRect.W), float32(bgRect.H), color.RGBA{10, 12, 18, 145}, false)
+	vector.StrokeRect(screen, float32(bgRect.X), float32(bgRect.Y), float32(bgRect.W), float32(bgRect.H), 1, color.RGBA{75, 80, 98, 160}, false)
+
+	for idx, category := range categories {
+		row := idx / perRow
+		col := idx % perRow
+		x := startX
+		for i := 0; i < col; i++ {
+			x += colWidths[i] + itemGap
+		}
+		y := startY + float64(row)*rowGap
+		label := tech.CategoryLabelTR(category)
+		swatch := gameui.Rect{X: x, Y: y + 4, W: 10, H: 10}
+		fill := techCategoryColors[category]
+		vector.FillRect(screen, float32(swatch.X), float32(swatch.Y), float32(swatch.W), float32(swatch.H), fill, false)
+		vector.StrokeRect(screen, float32(swatch.X), float32(swatch.Y), float32(swatch.W), float32(swatch.H), 1, color.RGBA{240, 240, 240, 220}, false)
+		drawUIOutlinedLabel(screen, gameui.Rect{X: x + 16, Y: y}, label, ColorWhite, color.RGBA{8, 8, 12, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	}
 }
 
@@ -317,6 +426,66 @@ func drawTechConnectors(screen *ebiten.Image, levels [][]techNode, allTechs map[
 			}
 		}
 	}
+}
+
+func techMinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func techMaxFloat(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func techClampFloat(v, minV, maxV float64) float64 {
+	if v < minV {
+		return minV
+	}
+	if v > maxV {
+		return maxV
+	}
+	return v
+}
+
+func techTreeViewOrigin(treeRect gameui.Rect, contentW float64) (x, y float64) {
+	x = 0.0
+	if contentW < treeRect.W {
+		x = (treeRect.W - contentW) / 2
+	}
+	return x, 0
+}
+
+func projectTechTree(levels [][]techNode, offsetX, offsetY float64) [][]techNode {
+	projected := make([][]techNode, len(levels))
+	for levelIdx, levelNodes := range levels {
+		projected[levelIdx] = make([]techNode, len(levelNodes))
+		for nodeIdx, node := range levelNodes {
+			node.x += offsetX
+			node.y += offsetY
+			projected[levelIdx][nodeIdx] = node
+		}
+	}
+	return projected
+}
+
+func (r *Renderer) clampTechPan(treeRect gameui.Rect, contentW, contentH float64) {
+	r.techPanX = techClampFloat(r.techPanX, 0, techMaxFloat(0, contentW-treeRect.W))
+	r.techPanY = techClampFloat(r.techPanY, 0, techMaxFloat(0, contentH-treeRect.H))
+}
+
+func techTreeViewport(screen *ebiten.Image, treeRect gameui.Rect) *ebiten.Image {
+	rect := image.Rect(
+		int(treeRect.X),
+		int(treeRect.Y),
+		int(treeRect.X+treeRect.W),
+		int(treeRect.Y+treeRect.H),
+	)
+	return screen.SubImage(rect).(*ebiten.Image)
 }
 
 // DrawTechPanel teknoloji araştırma panelini çizer. Alt bardaki Teknoloji tuşu veya [T] ile açılır.
@@ -349,11 +518,15 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 		drawUIMutedText(screen, layout.statusRect.X, activeY, "Aktif araştırma yok")
 	}
 
-	levels := r.buildLaidOutTechTree(f)
-	drawTechConnectors(screen, levels, r.gs.TechTypes)
+	treeData := r.buildLaidOutTechTree(f)
+	r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
+	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
+	projectedLevels := projectTechTree(treeData.levels, viewOriginX-r.techPanX, viewOriginY-r.techPanY)
+	treeScreen := techTreeViewport(screen, layout.treeRect)
+	drawTechConnectors(treeScreen, projectedLevels, r.gs.TechTypes)
 
 	// Her seviye için düğümleri çiz
-	for _, levelNodes := range levels {
+	for _, levelNodes := range projectedLevels {
 		for _, node := range levelNodes {
 			// Düğüm rengi
 			var nodeColor color.RGBA
@@ -371,13 +544,13 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			nodeRect := techNodeRect(node)
 
 			// Düğüm arka planı
-			vector.FillRect(screen, float32(nodeRect.X), float32(nodeRect.Y),
+			vector.FillRect(treeScreen, float32(nodeRect.X), float32(nodeRect.Y),
 				float32(nodeRect.W), float32(nodeRect.H), nodeColor, false)
 
 			// Düğüm çerçevesi
-			vector.StrokeRect(screen, float32(nodeRect.X), float32(nodeRect.Y),
+			vector.StrokeRect(treeScreen, float32(nodeRect.X), float32(nodeRect.Y),
 				float32(nodeRect.W), float32(nodeRect.H), 2, color.RGBA{255, 255, 255, 255}, false)
-			drawTechNodeText(screen, node, nodeRect)
+			drawTechNodeText(treeScreen, node, nodeRect)
 
 			// Tamamlandı tik rozeti
 			if node.done {
@@ -385,9 +558,9 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				badgeH := 18.0
 				badgeX := nodeRect.X + nodeRect.W - badgeW - 8
 				badgeY := nodeRect.Y + 8
-				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{28, 56, 34, 232}, false)
-				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{170, 225, 170, 255}, false)
-				gameui.DrawIcon(screen, gameui.IconCheck, badgeX+4, badgeY+1, 14, color.RGBA{245, 255, 245, 255})
+				vector.FillRect(treeScreen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{28, 56, 34, 232}, false)
+				vector.StrokeRect(treeScreen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{170, 225, 170, 255}, false)
+				gameui.DrawIcon(treeScreen, gameui.IconCheck, badgeX+4, badgeY+1, 14, color.RGBA{245, 255, 245, 255})
 			}
 
 			// Araştırılıyor rozeti
@@ -396,16 +569,17 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				badgeH := 18.0
 				badgeX := nodeRect.X + 8
 				badgeY := nodeRect.Y + 8
-				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{86, 60, 18, 236}, false)
-				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{245, 210, 110, 255}, false)
-				gameui.DrawIcon(screen, gameui.IconPlay, badgeX+5, badgeY+1, 14, color.RGBA{255, 244, 210, 255})
+				vector.FillRect(treeScreen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{86, 60, 18, 236}, false)
+				vector.StrokeRect(treeScreen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{245, 210, 110, 255}, false)
+				gameui.DrawIcon(treeScreen, gameui.IconPlay, badgeX+5, badgeY+1, 14, color.RGBA{255, 244, 210, 255})
 			}
 
 		}
 	}
 
-	hintY := layout.hintRect.Y
-	drawUIMutedText(screen, layout.hintRect.X, hintY, "Teknoloji düğümlerine tıklayarak araştır   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold))
+	drawTechCategoryLegend(screen, gameui.Rect{X: layout.hintRect.X, Y: layout.hintRect.Y, W: layout.hintRect.W})
+	hintY := layout.hintRect.Y + 20
+	drawUIMutedText(screen, layout.hintRect.X, hintY, "Tıkla: araştır   Sürükle/tekerlek: gez   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold))
 }
 
 func techCloseRect() (x, y, w, h float32) {
@@ -432,27 +606,57 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 	if r.gs.TechTypes == nil {
 		return InputAction{}
 	}
-
-	levels := r.buildLaidOutTechTree(f)
+	layout := techPanelLayoutForScreen()
+	treeData := r.buildLaidOutTechTree(f)
+	r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
+	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
+	contentMouseX := input.MouseX - layout.treeRect.X - viewOriginX + r.techPanX
+	contentMouseY := input.MouseY - layout.treeRect.Y - viewOriginY + r.techPanY
+	contentInput := input
+	contentInput.MouseX = contentMouseX
+	contentInput.MouseY = contentMouseY
 
 	if buildTechCloseButton().HandleInput(input) {
 		r.showTech = false
+		r.techDragging = false
 		return InputAction{}
 	}
+	if input.LeftJustReleased {
+		r.techDragging = false
+	}
+	if layout.treeRect.Hit(input.MouseX, input.MouseY) && input.WheelY != 0 {
+		r.techPanY -= input.WheelY * techPanWheelStep
+		r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
+	}
+
+	projectedLevels := treeData.levels
 
 	// Ağaç düğümlerine tıklama
-	for _, levelNodes := range levels {
+	for _, levelNodes := range projectedLevels {
 		for _, node := range levelNodes {
-			if techNodeButton(node).HandleInput(input) {
+			if contentInput.LeftJustPressed && techNodeRect(node).Hit(contentInput.MouseX, contentInput.MouseY) {
 				if node.unlocked && !node.done {
-					if f.Research.ActiveID == node.t.ID {
-						return InputAction{Kind: ActionCancelResearch}
-					} else {
-						return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
-					}
+					return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
 				}
 				return InputAction{}
 			}
+		}
+	}
+	if layout.treeRect.Hit(input.MouseX, input.MouseY) && input.LeftJustPressed {
+		r.techDragging = true
+		r.techDragLastMX = input.MouseX
+		r.techDragLastMY = input.MouseY
+		return InputAction{}
+	}
+	if r.techDragging && input.LeftPressed {
+		dx := input.MouseX - r.techDragLastMX
+		dy := input.MouseY - r.techDragLastMY
+		if dx >= techPanDragThresh || dx <= -techPanDragThresh || dy >= techPanDragThresh || dy <= -techPanDragThresh {
+			r.techPanX -= dx
+			r.techPanY -= dy
+			r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
+			r.techDragLastMX = input.MouseX
+			r.techDragLastMY = input.MouseY
 		}
 	}
 
@@ -470,13 +674,20 @@ func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
 	if buildTechCloseButton().HitTest(fx, fy) {
 		return true
 	}
-	levels := r.buildLaidOutTechTree(f)
-	for _, levelNodes := range levels {
+	layout := techPanelLayoutForScreen()
+	if layout.treeRect.Hit(fx, fy) {
+		return true
+	}
+	treeData := r.buildLaidOutTechTree(f)
+	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
+	contentFX := fx - layout.treeRect.X - viewOriginX + r.techPanX
+	contentFY := fy - layout.treeRect.Y - viewOriginY + r.techPanY
+	for _, levelNodes := range treeData.levels {
 		for _, node := range levelNodes {
 			if !node.unlocked || node.done {
 				continue
 			}
-			if techNodeButton(node).HitTest(fx, fy) {
+			if techNodeButton(node).HitTest(contentFX, contentFY) {
 				return true
 			}
 		}

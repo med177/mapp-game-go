@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -203,6 +204,77 @@ func TestApplyReligionConversionUsesTechSpeedBonus(t *testing.T) {
 
 	if gs.Regions["r1"].ConversionTurns != 2 {
 		t.Fatalf("conversion speed bonus bir turda +2 ilerletmeliydi, got=%d", gs.Regions["r1"].ConversionTurns)
+	}
+}
+
+func TestStartResearchSwitchesActiveResearch(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {
+				ID:   "player",
+				Gold: 100,
+				Research: faction.ResearchState{
+					ActiveID:  "old",
+					TurnsLeft: 3,
+					Completed: map[string]bool{},
+				},
+			},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"old": {ID: "old", NameTR: "Eski", GoldCost: 20, TurnsRequired: 4},
+			"new": {ID: "new", NameTR: "Yeni", GoldCost: 30, TurnsRequired: 5},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.startResearch("new")
+
+	player := gs.Factions["player"]
+	if player.Research.ActiveID != "new" {
+		t.Fatalf("active research yeni tech'e gecmeliydi, got=%q", player.Research.ActiveID)
+	}
+	if player.Research.TurnsLeft != 5 {
+		t.Fatalf("yeni turns left ayarlanmadi, got=%d", player.Research.TurnsLeft)
+	}
+	if player.Research.PausedTurns["old"] != 3 {
+		t.Fatalf("eski research kalan turuyla pause'a alinmaliydi, got=%d", player.Research.PausedTurns["old"])
+	}
+	if player.Gold != 70 {
+		t.Fatalf("switch sadece yeni research maliyetini dusmeli, got=%d", player.Gold)
+	}
+}
+
+func TestStartResearchResumesPausedResearchWithoutChargingAgain(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {
+				ID:   "player",
+				Gold: 70,
+				Research: faction.ResearchState{
+					Completed:   map[string]bool{},
+					PausedTurns: map[string]int{"old": 3},
+				},
+			},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"old": {ID: "old", NameTR: "Eski", GoldCost: 20, TurnsRequired: 4},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.startResearch("old")
+
+	player := gs.Factions["player"]
+	if player.Research.ActiveID != "old" || player.Research.TurnsLeft != 3 {
+		t.Fatalf("paused research kaldigi yerden devam etmeli, got=%s/%d", player.Research.ActiveID, player.Research.TurnsLeft)
+	}
+	if player.Gold != 70 {
+		t.Fatalf("resume tekrar altin dusmemeli, got=%d", player.Gold)
+	}
+	if _, ok := player.Research.PausedTurns["old"]; ok {
+		t.Fatal("resume edilen paused kayit silinmeliydi")
 	}
 }
 

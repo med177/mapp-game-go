@@ -1,0 +1,79 @@
+package render
+
+import (
+	"strings"
+
+	"mapp-game-go/internal/tech"
+)
+
+func techEffectSummary(t *tech.Technology) string {
+	if t == nil {
+		return ""
+	}
+	return techEffectsSummary(t.Effects, t.DescriptionTR)
+}
+
+func techEffectsSummary(e tech.Effects, fallback string) string {
+	parts := make([]string, 0, 3)
+	if e.InfantryAttackMod > 0 {
+		parts = append(parts, "Piyade +%"+itoa(int(e.InfantryAttackMod*100)))
+	}
+	if e.CavalryAttackMod > 0 {
+		parts = append(parts, "Süvari +%"+itoa(int(e.CavalryAttackMod*100)))
+	}
+	if e.SiegeAttackMod > 0 {
+		parts = append(parts, "Kuşatma +%"+itoa(int(e.SiegeAttackMod*100)))
+	}
+	if e.NavalAttackMod > 0 {
+		parts = append(parts, "Deniz atk +%"+itoa(int(e.NavalAttackMod*100)))
+	}
+	if e.NavalDefenseMod > 0 {
+		parts = append(parts, "Deniz sav +%"+itoa(int(e.NavalDefenseMod*100)))
+	}
+	if e.LandDefenseMod > 0 {
+		parts = append(parts, "Kara sav +%"+itoa(int(e.LandDefenseMod*100)))
+	}
+	if e.GoldPerRegion > 0 {
+		parts = append(parts, "Bölge altını +"+itoa(e.GoldPerRegion))
+	}
+	if e.GrainMod > 0 {
+		parts = append(parts, "Tahıl +%"+itoa(int(e.GrainMod*100)))
+	}
+	if e.IronMod > 0 {
+		parts = append(parts, "Demir +%"+itoa(int(e.IronMod*100)))
+	}
+	if e.TimberMod > 0 {
+		parts = append(parts, "Kereste +%"+itoa(int(e.TimberMod*100)))
+	}
+	if e.StoneMod > 0 {
+		parts = append(parts, "Taş +%"+itoa(int(e.StoneMod*100)))
+	}
+	if e.MarketGoldMod > 0 {
+		parts = append(parts, "Ticaret +%"+itoa(int(e.MarketGoldMod*100)))
+	}
+	if e.PeaceRelationBonus > 0 {
+		parts = append(parts, "Barış +"+itoa(e.PeaceRelationBonus))
+	}
+	if e.NavalMoveBonus > 0 {
+		parts = append(parts, "Deniz hareket +"+itoa(e.NavalMoveBonus))
+	}
+	if e.MoveBonus > 0 {
+		parts = append(parts, "Hareket +"+itoa(e.MoveBonus))
+	}
+	if e.SatisfactionBonus > 0 {
+		parts = append(parts, "Memnuniyet +"+itoa(e.SatisfactionBonus))
+	}
+	if e.ConversionSpeedMod > 0 {
+		parts = append(parts, "Dönüşüm +"+itoa(int(e.ConversionSpeedMod)))
+	}
+	if e.RevealEnemyStrength {
+		parts = append(parts, "Tam istihbarat")
+	}
+	if len(parts) == 0 {
+		return strings.TrimSpace(fallback)
+	}
+	if len(parts) > 3 {
+		parts = parts[:3]
+	}
+	return strings.Join(parts, "  •  ")
+}

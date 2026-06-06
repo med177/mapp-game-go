@@ -30,9 +30,10 @@ type Technology struct {
 
 ```go
 type ResearchState struct {
-    ActiveID   string           // şu an araştırılan teknoloji
-    Progress   int              // geçen tur sayısı
-    Completed  map[string]bool  // tamamlanan teknoloji ID'leri
+    Completed   map[string]bool  // tamamlanan teknoloji ID'leri
+    PausedTurns map[string]int   // yarım bırakılan araştırmaların kalan turu
+    ActiveID    string           // şu an araştırılan teknoloji
+    TurnsLeft   int              // aktif araştırmada kalan tur
 }
 ```
 
@@ -50,7 +51,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Denizcilik: Sarı (200,200,100)
 - **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
 - **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
-- **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün
+- **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün; yarım kalan araştırma pause olur ve sonra altın tekrar düşmeden kaldığı yerden devam eder
 - **Tur Bitir Uyarısı:** Aktif araştırma yoksa ve en az bir araştırılabilir teknoloji kaldıysa panel açılır ve uyarı verilir; tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa uyarı gösterilmez
   - Din: Magenta (200,100,200)
 - **Durum Göstergeleri:**
@@ -59,12 +60,15 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Kilitli: Gri
   - Kullanılabilir: Kategori rengi
 - **Bağlantılar:** Gereksinim teknolojileri diyagonal değil, ortogonal akış-şeması çizgileriyle gösterilir; mevcut veri modelindeki `Requires[]` bağımlılıkları zorunlu olduğu için çizgiler solid görünür
-- **Okunabilirlik:** Düğüm adı, kategori ve maliyet metni koyu iç bant + outline ile çizilir; açık kategori renklerinde yazı kontrastı bu katmanla korunur
+- **Okunabilirlik:** Düğüm içinde yalnız teknoloji adı ve açık maliyet/tur satırı gösterilir; kategori adı kutu içinde tekrar etmez, panel altındaki renk legend'inde gösterilir
 - **Etkileşim:** Düğüm tıklayarak araştırma başlatma
+- **AI Görünürlüğü:** Bölge panelindeki sahip devlet adına tıklanınca açılan devlet paneli, rakip devletin aktif araştırmasını, tamamlanan teknoloji listesini ve kümülatif buff özetini gösterir
 
 1300 senaryosu artık başlangıç 26 düğümle sınırlı değildir; orta ve ileri dönem için yeni askeri, ekonomik, diplomatik, denizcilik ve dinî alt dallar eklendi. Özellikle `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength` ve `conversion_speed_mod` effect alanları artık sadece veri içinde tanımlı kalmaz, runtime'da karşılık bulur.
 
-`applyTechTicks(gs)` — her tur `Progress++`, `TurnsRequired`'e ulaşınca tamamlanır.
+AI zaten aynı `ResearchState` ve `tech.StartResearch / tech.Tick / tech.PauseResearch` akışını kullanır; oyuncu ve AI için teknoloji ilerleme mantığı ayrışmaz.
+
+`applyTechTicks(gs)` — her tur `TurnsLeft--`, `0` olunca teknoloji tamamlanır.
 
 ---
 

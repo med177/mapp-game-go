@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"mapp-game-go/internal/army"
@@ -15,6 +16,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
@@ -71,6 +73,8 @@ func infoPanelX() float32       { return 0 }
 func infoPanelY() float32       { return float32(ScreenHeight) - infoPanelH }
 func settlementPanelX() float32 { return infoPanelX() + infoPanelW + 8 }
 func settlementPanelY() float32 { return infoPanelY() }
+func factionPanelX() float32    { return settlementPanelX() }
+func factionPanelY() float32    { return settlementPanelY() }
 
 var (
 	panelBg     = color.RGBA{12, 10, 8, 230}
@@ -1357,6 +1361,10 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
 	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, gameui.TextMedium, gameui.TextAlignStart)
+	if ownerRect, _, ok := regionOwnerNameRect(gs, rid); ok {
+		underlineY := ownerRect.Y + ownerRect.H - 1
+		vector.StrokeLine(screen, float32(ownerRect.X), float32(underlineY), float32(ownerRect.X+ownerRect.W), float32(underlineY), 1, color.RGBA{215, 215, 215, 120}, false)
+	}
 	ly += 18
 
 	// Development mode bilgileri
@@ -2184,11 +2192,54 @@ func settlementPanelCloseHit(mx, my float64) bool {
 	return panelCloseHit(mx, my, settlementPanelX(), settlementPanelY(), infoPanelW)
 }
 
+func factionPanelHit(mx, my float64) bool {
+	px := factionPanelX()
+	py := factionPanelY()
+	return mx >= float64(px) && mx <= float64(px+infoPanelW) && my >= float64(py) && my <= float64(py+infoPanelH)
+}
+
+func factionPanelCloseHit(mx, my float64) bool {
+	return panelCloseHit(mx, my, factionPanelX(), factionPanelY(), infoPanelW)
+}
+
+func regionOwnerNameHit(mx, my float64, gs *state.GameState, rid world.RegionID) (faction.FactionID, bool) {
+	rect, fid, ok := regionOwnerNameRect(gs, rid)
+	if !ok {
+		return "", false
+	}
+	return fid, mx >= rect.X && mx <= rect.X+rect.W && my >= rect.Y && my <= rect.Y+rect.H
+}
+
+func regionOwnerNameRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, faction.FactionID, bool) {
+	if gs == nil || rid == "" {
+		return gameui.Rect{}, "", false
+	}
+	region, ok := gs.Regions[rid]
+	if !ok || region == nil || region.IsSea || region.OwnerID == "" {
+		return gameui.Rect{}, "", false
+	}
+	ownerName, _ := ownerDisplay(gs, region.OwnerID)
+	width := MeasureText(ownerName, FaceMed)
+	maxWidth := float64(infoPanelW - float32(panelPad*2))
+	if width > maxWidth {
+		width = maxWidth
+	}
+	return gameui.Rect{
+		X: float64(infoPanelX()) + panelPad,
+		Y: float64(infoPanelY()) + 34,
+		W: width,
+		H: 18,
+	}, faction.FactionID(region.OwnerID), true
+}
+
 func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
 	if rid == "" {
 		return false
 	}
 	if regionPanelCloseHit(mx, my) {
+		return true
+	}
+	if _, ok := regionOwnerNameHit(mx, my, gs, rid); ok {
 		return true
 	}
 	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
@@ -2267,6 +2318,272 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	drawUISectionLabel(screen, lx, ly, "Tarihçe")
 	ly += 18
 	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
+}
+
+type factionTradeOverview struct {
+	RouteCount     int
+	SuspendedCount int
+	PartnerCount   int
+	ExportGold     int
+}
+
+func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID) {
+	if gs == nil || fid == "" {
+		return
+	}
+	f := gs.Factions[fid]
+	if f == nil {
+		return
+	}
+
+	px := factionPanelX()
+	py := factionPanelY()
+	pw := infoPanelW
+	ph := infoPanelH
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
+	drawPanelCloseButton(screen, px, py, pw)
+
+	lx := float64(px) + panelPad
+	ly := float64(py) + 10
+	sepW := float64(pw - float32(panelPad*2))
+
+	name := f.NameTR
+	if strings.TrimSpace(name) == "" {
+		name = f.Name
+	}
+	if strings.TrimSpace(name) == "" {
+		name = string(fid)
+	}
+	nameCol := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+	DrawText(screen, name, lx, ly, FaceLarge, nameCol)
+	ly += 24
+
+	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: sepW}, factionPanelSubtitle(gs, fid, f), ColorGray, gameui.TextSmall, 16, 2)
+	ly += 28
+
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+float32(sepW), 1, panelBorder)
+	ly += 8
+
+	drawUISectionLabel(screen, lx, ly, "Durum")
+	ly += 16
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
+	ly += 18
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Kara Ordusu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
+	ly += 18
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" ordu", ColorGray, ColorWhite)
+	ly += 22
+
+	drawUISectionLabel(screen, lx, ly, "Araştırma")
+	ly += 16
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Aktif", factionActiveResearchLabel(gs, f), ColorGray, ColorWhite)
+	ly += 18
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Tamamlanan", itoa(len(f.Research.Completed))+" teknoloji", ColorGray, ColorWhite)
+	ly += 18
+	if paused := len(f.Research.PausedTurns); paused > 0 {
+		drawUIKeyValueRow(screen, lx, ly, sepW, "Beklemede", itoa(paused)+" araştırma", ColorGray, ColorWhite)
+		ly += 18
+	}
+	buffSummary := techEffectsSummary(tech.ComputeEffects(f.Research.Completed, gs.TechTypes), "Belirgin bonus yok")
+	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: sepW}, buffSummary, color.RGBA{225, 220, 204, 235}, gameui.TextSmall, 15, 3)
+	ly += 48
+
+	drawUISectionLabel(screen, lx, ly, "Kaynaklar")
+	ly += 16
+	drawFactionResourceGrid(screen, f, lx, ly, float32(sepW))
+	ly += regionPanelStatRowGap * 4
+
+	drawUISectionLabel(screen, lx, ly, "Ticaret")
+	ly += 16
+	trade := factionTradeStats(gs, fid)
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Ortak", itoa(trade.PartnerCount)+" devlet", ColorGray, ColorWhite)
+	ly += 18
+	drawUIKeyValueRow(screen, lx, ly, sepW, "Hat", itoa(trade.RouteCount)+" aktif", ColorGray, ColorWhite)
+	ly += 18
+	drawUIKeyValueRow(screen, lx, ly, sepW, "İhracat", itoa(trade.ExportGold)+" altın / tur", ColorGray, ColorGold)
+	ly += 18
+	if trade.SuspendedCount > 0 {
+		drawUIKeyValueRow(screen, lx, ly, sepW, "Askıda", itoa(trade.SuspendedCount)+" rota", ColorGray, color.RGBA{210, 160, 90, 255})
+		ly += 18
+	}
+
+	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
+		drawUIKeyValueRow(screen, lx, ly, sepW, "Oyuncuya Durum", faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")", ColorGray, ColorWhite)
+		ly += 22
+	} else {
+		ly += 4
+	}
+
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+float32(sepW), 1, panelBorder)
+	ly += 8
+	drawUISectionLabel(screen, lx, ly, "Tamamlanan Teknolojiler")
+	ly += 16
+	drawFactionCompletedTechList(screen, gs, f, lx, ly, sepW)
+}
+
+func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction.Faction) string {
+	parts := []string{religion.DisplayNameTR(f.Religion)}
+	if fid == gs.PlayerFactionID {
+		parts = append(parts, "Oyuncu devleti")
+	} else if f.IsEliminated {
+		parts = append(parts, "Yıkıldı")
+	} else {
+		parts = append(parts, "AI devleti")
+	}
+	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
+		parts = append(parts, "İlişki: "+faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")")
+	}
+	return strings.Join(parts, "  •  ")
+}
+
+func factionRelationToPlayer(gs *state.GameState, fid faction.FactionID) *faction.Relation {
+	if gs == nil || fid == "" || gs.PlayerFactionID == "" || fid == gs.PlayerFactionID {
+		return nil
+	}
+	return gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
+}
+
+func factionNavalArmyCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, a := range gs.Armies {
+		if a != nil && a.OwnerID == string(fid) && a.IsNaval {
+			count++
+		}
+	}
+	return count
+}
+
+func factionActiveResearchLabel(gs *state.GameState, f *faction.Faction) string {
+	if f == nil || f.Research.ActiveID == "" {
+		return "Aktif araştırma yok"
+	}
+	if gs != nil && gs.TechTypes != nil {
+		if t := gs.TechTypes[f.Research.ActiveID]; t != nil {
+			return t.NameTR + " • " + itoa(f.Research.TurnsLeft) + " tur"
+		}
+	}
+	return f.Research.ActiveID + " • " + itoa(f.Research.TurnsLeft) + " tur"
+}
+
+func drawFactionResourceGrid(screen *ebiten.Image, f *faction.Faction, x, y float64, width float32) {
+	type resourceItem struct {
+		label string
+		value string
+		col   color.Color
+	}
+
+	items := [...]resourceItem{
+		{label: "Altın", value: itoa(f.Gold), col: ColorGold},
+		{label: "Tahıl", value: itoa(f.Grain), col: ColorWhite},
+		{label: "Demir", value: itoa(f.Iron), col: color.RGBA{200, 205, 215, 255}},
+		{label: "Kereste", value: itoa(f.Timber), col: color.RGBA{145, 205, 145, 255}},
+		{label: "Taş", value: itoa(f.Stone), col: color.RGBA{185, 185, 185, 255}},
+		{label: "Baharat", value: itoa(f.Spice), col: color.RGBA{230, 165, 90, 255}},
+		{label: "Kumaş", value: itoa(f.Cloth), col: color.RGBA{175, 150, 220, 255}},
+	}
+
+	colGap := 14.0
+	colW := (float64(width) - colGap) / 2
+	for i, item := range items {
+		col := float64(i % 2)
+		row := float64(i / 2)
+		drawUIKeyValueRow(screen, x+col*(colW+colGap), y+row*regionPanelStatRowGap, colW, item.label, item.value, ColorGray, item.col)
+	}
+}
+
+func factionTradeStats(gs *state.GameState, fid faction.FactionID) factionTradeOverview {
+	if gs == nil || fid == "" {
+		return factionTradeOverview{}
+	}
+	self := string(fid)
+	stats := factionTradeOverview{}
+	partners := make(map[string]struct{})
+	for _, route := range gs.TradeRoutes {
+		if route == nil {
+			continue
+		}
+		if route.FromFactionID != self && route.ToFactionID != self {
+			continue
+		}
+		if route.SuspendedTurns > 0 {
+			stats.SuspendedCount++
+			continue
+		}
+		stats.RouteCount++
+		if route.FromFactionID == self {
+			stats.ExportGold += route.GoldEarned()
+			if route.ToFactionID != "" {
+				partners[route.ToFactionID] = struct{}{}
+			}
+		}
+		if route.ToFactionID == self && route.FromFactionID != "" {
+			partners[route.FromFactionID] = struct{}{}
+		}
+	}
+	stats.PartnerCount = len(partners)
+	return stats
+}
+
+func drawFactionCompletedTechList(screen *ebiten.Image, gs *state.GameState, f *faction.Faction, x, y, width float64) {
+	names, hidden := factionCompletedTechPreview(gs, f, 12)
+	if len(names) == 0 {
+		drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, "Henüz tamamlanmış teknoloji yok", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		return
+	}
+
+	colGap := 12.0
+	colW := (width - colGap) / 2
+	for i, name := range names {
+		col := float64(i % 2)
+		row := float64(i / 2)
+		drawUILabel(screen, gameui.Rect{X: x + col*(colW+colGap), Y: y + row*16, W: colW}, "• "+name, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	}
+	if hidden > 0 {
+		rows := (len(names) + 1) / 2
+		drawUILabel(screen, gameui.Rect{X: x, Y: y + float64(rows)*16 + 4, W: width}, "+"+itoa(hidden)+" teknoloji daha", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
+}
+
+func factionCompletedTechPreview(gs *state.GameState, f *faction.Faction, maxItems int) ([]string, int) {
+	if f == nil || len(f.Research.Completed) == 0 || maxItems <= 0 {
+		return nil, 0
+	}
+	type techLabel struct {
+		name string
+		cat  int
+	}
+	items := make([]techLabel, 0, len(f.Research.Completed))
+	for id := range f.Research.Completed {
+		name := id
+		cat := 99
+		if gs != nil && gs.TechTypes != nil {
+			if t := gs.TechTypes[id]; t != nil {
+				name = t.NameTR
+				cat = tech.CategoryOrder(t.Category)
+			}
+		}
+		items = append(items, techLabel{name: name, cat: cat})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].cat != items[j].cat {
+			return items[i].cat < items[j].cat
+		}
+		return items[i].name < items[j].name
+	})
+	names := make([]string, 0, minFactionInt(maxItems, len(items)))
+	for idx, item := range items {
+		if idx >= maxItems {
+			break
+		}
+		names = append(names, item.name)
+	}
+	return names, len(items) - len(names)
+}
+
+func minFactionInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func loadSettlementImage(region *world.Region, settlement *world.Settlement) *ebiten.Image {
