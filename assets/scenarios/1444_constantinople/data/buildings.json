@@ -62,7 +62,7 @@
     "sat_bonus": 1,
     "def_bonus": 0,
     "max_per_region": 3,
-    "required_terrain": "coast",
+    "required_terrain": "",
     "turns_required": 2,
     "grain_cost": 12,
     "iron_cost": 18,

@@ -1322,6 +1322,10 @@ func drawMinimapOwnershipOverlay(screen *ebiten.Image, gs *state.GameState, scal
 
 // DrawRegionPanel seçili bölge bilgisini sol altta gösterir.
 func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.RegionID) {
+	DrawRegionPanelExpanded(screen, gs, rid, false)
+}
+
+func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool) {
 	if rid == "" {
 		return
 	}
@@ -1331,7 +1335,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	}
 
 	if region.IsSea {
-		DrawSeaRegionPanel(screen, gs, region)
+		DrawSeaRegionPanel(screen, gs, region, neighborExpanded)
 		return
 	}
 
@@ -1450,37 +1454,7 @@ func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	}
 
 	if gs.DevelopmentMode {
-		// Komşu bölgeler (deniz paneliyle aynı görünüm)
-		neighborTitle := "Komşu Bölgeler:"
-		if len(region.Neighbors) == 0 {
-			neighborTitle = "Komşu: Yok"
-		} else if len(region.Neighbors) <= 5 {
-			neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + "):"
-		} else {
-			neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
-		}
-		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, neighborTitle, color.RGBA{200, 170, 90, 220}, gameui.TextSmall, gameui.TextAlignStart)
-		ly += 18
-
-		displayCount := len(region.Neighbors)
-		if displayCount > 4 {
-			displayCount = 4
-		}
-		neighborLines := make([]gameui.RichTextLine, 0, displayCount)
-		for i := 0; i < displayCount; i++ {
-			neighborID := region.Neighbors[i]
-			neighborRegion, ok := gs.Regions[neighborID]
-			if !ok {
-				continue
-			}
-			col := color.RGBA{180, 180, 180, 200}
-			if neighborRegion.IsSea {
-				col = color.RGBA{100, 160, 220, 200}
-			}
-			neighborLines = append(neighborLines, gameui.RichTextLine{Text: "• " + neighborRegion.NameTR, Color: col, Variant: gameui.TextSmall, Align: gameui.TextAlignStart})
-		}
-		drawUIRichTextBlock(screen, gameui.Rect{X: lx + 15, Y: ly}, neighborLines, 16)
-		ly += float64(len(neighborLines)) * 16
+		ly += drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, color.RGBA{200, 170, 90, 220})
 	}
 
 	// ── Binalar bölümü ────────────────────────────────────────────────
@@ -2203,7 +2177,10 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 	if idx := regionDiplomacyButtonHit(mx, my, gs, rid); idx >= 0 {
 		return true
 	}
-	return buildingGridHitTest(mx, my, gs, rid) != ""
+	if regionNeighborToggleHit(mx, my, gs, rid, false) {
+		return true
+	}
+	return buildingGridHitTest(mx, my, gs, rid, false) != ""
 }
 
 func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region, settlement *world.Settlement) {
@@ -2453,11 +2430,11 @@ func drawRegionProductionGrid(screen *ebiten.Image, x, y float64, width float32,
 	}
 }
 
-func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
-	return buildingGridHitTest(mx, my, gs, rid)
+func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {
+	return buildingGridHitTest(mx, my, gs, rid, neighborExpanded)
 }
 
-func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
+func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {
 	if rid == "" {
 		return ""
 	}
@@ -2467,7 +2444,7 @@ func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	}
 	px := infoPanelX()
 	pw := infoPanelW
-	startY := buildingGridStartY(gs, region)
+	startY := buildingGridStartY(gs, region, neighborExpanded)
 
 	const cols = 3
 	pad := float32(panelPad)
@@ -2516,10 +2493,13 @@ func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid
 	if bid == "port" && !region.IsCoastal(gs.Regions) {
 		return false
 	}
+	if bid == "port" {
+		return true
+	}
 	return b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain
 }
 
-func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
+func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpanded bool) float32 {
 	py := infoPanelY()
 	ly := float64(py) + 10
 	ly += 24
@@ -2547,12 +2527,9 @@ func buildingGridStartY(gs *state.GameState, region *world.Region) float32 {
 		ly += 18
 	}
 	if gs.DevelopmentMode {
-		ly += 18 // Komşu başlığı
-		displayCount := len(region.Neighbors)
-		if displayCount > 4 {
-			displayCount = 4
-		}
-		ly += float64(displayCount) * 16
+		_, _, _, rows := neighborBlockLayout(gs, region, neighborExpanded)
+		ly += devNeighborTitleHeight
+		ly += float64(rows) * devNeighborLineHeight
 	}
 	ly += 4 + 6 + 17
 	return float32(ly)
@@ -2709,7 +2686,7 @@ func itoa(n int) string {
 }
 
 // DrawSeaRegionPanel deniz bölgesi bilgisini sol altta gösterir.
-func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region) {
+func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region, neighborExpanded bool) {
 	px := infoPanelX()
 	py := infoPanelY()
 	pw := infoPanelW
@@ -2751,42 +2728,156 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
-	// Komşu bölgeler
-	neighborTitle := "Komşu Bölgeler:"
-	if len(region.Neighbors) == 0 {
-		neighborTitle = "Komşu: Yok"
-	} else if len(region.Neighbors) <= 5 {
-		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + "):"
-	} else {
-		neighborTitle = "Komşu (" + itoa(len(region.Neighbors)) + ") [gösterilen: 4]"
-	}
-	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, neighborTitle, ColorGold, gameui.TextSmall, gameui.TextAlignStart)
-	ly += 18
+	drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, ColorGold)
+}
 
-	// İlk 4 komşuyu listele
-	displayCount := len(region.Neighbors)
-	if displayCount > 4 {
-		displayCount = 4
+const (
+	devNeighborCollapsedCount = 4
+	devNeighborLineHeight     = 16.0
+	devNeighborTitleHeight    = 18.0
+	devNeighborColumnGap      = 12.0
+)
+
+func drawNeighborBlock(screen *ebiten.Image, gs *state.GameState, region *world.Region, x, y float64, width float32, expanded bool, titleColor color.Color) float64 {
+	title, items, cols, rows := neighborBlockLayout(gs, region, expanded)
+	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: float64(width)}, title, titleColor, gameui.TextSmall, gameui.TextAlignStart)
+	y += devNeighborTitleHeight
+	if len(items) == 0 {
+		return devNeighborTitleHeight
 	}
-	neighborLines := make([]gameui.RichTextLine, 0, displayCount)
+
+	colW := (float64(width) - 15 - devNeighborColumnGap*float64(cols-1)) / float64(cols)
+	for idx, item := range items {
+		col := idx / rows
+		row := idx % rows
+		lineX := x + 15 + float64(col)*(colW+devNeighborColumnGap)
+		lineY := y + float64(row)*devNeighborLineHeight
+		drawUILabel(screen, gameui.Rect{X: lineX, Y: lineY, W: colW}, item.Text, item.Color, item.Variant, gameui.TextAlignStart)
+	}
+	return devNeighborTitleHeight + float64(rows)*devNeighborLineHeight
+}
+
+func neighborBlockLayout(gs *state.GameState, region *world.Region, expanded bool) (string, []gameui.RichTextLine, int, int) {
+	total := len(region.Neighbors)
+	title := "Komşu Bölgeler:"
+	if total == 0 {
+		title = "Komşu: Yok"
+	} else {
+		title = "Komşu (" + itoa(total) + ")"
+		if total > devNeighborCollapsedCount {
+			if expanded {
+				title += "  [Daralt]"
+			} else {
+				title += "  [Tümünü Göster]"
+			}
+		} else {
+			title += ":"
+		}
+	}
+
+	displayCount := total
+	if !expanded && displayCount > devNeighborCollapsedCount {
+		displayCount = devNeighborCollapsedCount
+	}
+
+	items := make([]gameui.RichTextLine, 0, displayCount)
 	for i := 0; i < displayCount; i++ {
 		neighborID := region.Neighbors[i]
 		neighborRegion, ok := gs.Regions[neighborID]
-		if ok {
-			col := color.RGBA{180, 180, 180, 200}
-			if neighborRegion.IsSea {
-				col = color.RGBA{100, 160, 220, 200}
-			}
-			neighborLines = append(neighborLines, gameui.RichTextLine{Text: "• " + neighborRegion.NameTR, Color: col, Variant: gameui.TextSmall, Align: gameui.TextAlignStart})
+		if !ok || neighborRegion == nil {
+			continue
+		}
+		col := color.RGBA{180, 180, 180, 200}
+		if neighborRegion.IsSea {
+			col = color.RGBA{100, 160, 220, 200}
+		}
+		items = append(items, gameui.RichTextLine{
+			Text:    "• " + neighborRegion.NameTR,
+			Color:   col,
+			Variant: gameui.TextSmall,
+			Align:   gameui.TextAlignStart,
+		})
+	}
+
+	cols := 1
+	if expanded && len(items) > 8 {
+		cols = 2
+	}
+	rows := 0
+	if len(items) > 0 {
+		rows = (len(items) + cols - 1) / cols
+	}
+	return title, items, cols, rows
+}
+
+func regionNeighborToggleHit(mx, my float64, gs *state.GameState, rid world.RegionID, expanded bool) bool {
+	if rid == "" || gs == nil {
+		return false
+	}
+	region, ok := gs.Regions[rid]
+	if !ok || region == nil || len(region.Neighbors) <= devNeighborCollapsedCount {
+		return false
+	}
+	if !region.IsSea && !gs.DevelopmentMode {
+		return false
+	}
+	x, y, w := neighborToggleRect(gs, region)
+	return mx >= x && mx <= x+w && my >= y && my <= y+devNeighborTitleHeight
+}
+
+func neighborToggleRect(gs *state.GameState, region *world.Region) (float64, float64, float64) {
+	x := float64(infoPanelX()) + panelPad
+	y := neighborBlockStartY(gs, region)
+	w := float64(infoPanelW - float32(panelPad*2))
+	return x, y, w
+}
+
+func neighborBlockStartY(gs *state.GameState, region *world.Region) float64 {
+	ly := float64(infoPanelY()) + 10
+	ly += 24
+	if !region.IsSea {
+		ly += 18
+	}
+	if gs.DevelopmentMode {
+		ly += 34
+	}
+	if region.IsSea {
+		ly += 18
+		if region.IsLocked {
+			ly += 18
+		}
+		ly += 8
+		return ly
+	}
+
+	ly += 16
+	ly += 8
+	ly += regionPanelStatRowGap * 4
+	ly += regionPanelStatRowGap * 2
+	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
+		ly += regionPanelStatRowGap
+		if logistics.Overload > 0 {
+			ly += 14
 		}
 	}
-	drawUIRichTextBlock(screen, gameui.Rect{X: lx + 15, Y: ly}, neighborLines, 16)
-	ly += float64(len(neighborLines)) * 16
-
-	ly += 10
-	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
-	ly += 8
-
-	// Bilgi
-	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Tıkla: Özel fırsat yok", color.RGBA{100, 200, 100, 150}, gameui.TextSmall, gameui.TextAlignStart)
+	if region.ConversionTurns > 0 {
+		ownerRel := ""
+		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
+			ownerRel = string(f.Religion)
+		} else {
+			for fid, f := range gs.Factions {
+				if string(fid) == region.OwnerID {
+					ownerRel = string(f.Religion)
+					break
+				}
+			}
+		}
+		if ownerRel != "" && ownerRel != region.Religion {
+			ly += 14 + 12
+		}
+	}
+	if region.IsRebellionRisk() {
+		ly += 18
+	}
+	return ly
 }

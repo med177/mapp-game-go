@@ -221,6 +221,7 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
 ```
 
 `turns_required` bina inşaatının kaç tur süreceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `2` kabul eder.
+`required_terrain` genel binalar için literal arazi filtresidir; ancak `port` için kanonik kural `internal/world/region.go:122` içindeki `Region.IsCoastal`, yani denize komşu kara bölgesi olmaktır.
 
 ---
 

@@ -60,7 +60,7 @@
     "max_per_region": 3,
     "name": "Port",
     "name_tr": "Liman",
-    "required_terrain": "coast",
+    "required_terrain": "",
     "sat_bonus": 1,
     "trade_capacity_mod": 1.5,
     "turns_required": 2,

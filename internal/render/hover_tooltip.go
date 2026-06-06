@@ -94,7 +94,7 @@ func BuildingGridHoverID(mx, my float64, gs *state.GameState, rid world.RegionID
 
 	px := infoPanelX()
 	pw := infoPanelW
-	startY := buildingGridStartY(gs, region)
+	startY := buildingGridStartY(gs, region, false)
 
 	const cols = 3
 	pad := float32(panelPad)

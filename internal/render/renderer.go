@@ -55,6 +55,7 @@ type Renderer struct {
 	SelectedArmy             army.ArmyID
 	selectedSettlementRegion world.RegionID
 	selectedSettlementIndex  int
+	devNeighborListExpanded  bool
 	showRecruitPanel         bool
 	recruitUnitID            string
 	recruitQty               int
@@ -815,7 +816,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode {
 		recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen()
 		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, r.showDiplomacy, r.showTech, r.mapMode)
-		DrawRegionPanel(screen, r.gs, r.SelectedRegion)
+		DrawRegionPanelExpanded(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
 		}
@@ -6379,6 +6380,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
+		r.devNeighborListExpanded = false
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
@@ -6529,7 +6531,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 				}
 			}
 		}
-		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion); bid != "" {
+		if regionNeighborToggleHit(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded) {
+			r.devNeighborListExpanded = !r.devNeighborListExpanded
+			return InputAction{}
+		}
+		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded); bid != "" {
 			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
 		}
 	}
@@ -6578,6 +6584,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		r.SelectedArmy = ""
+		if r.SelectedRegion != rid {
+			r.devNeighborListExpanded = false
+		}
 		r.SelectedRegion = rid
 		r.selectSettlement(rid, idx)
 		if !RecruitPanelVisible(r.gs, rid) {
@@ -6609,6 +6618,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
 			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
 			r.SelectedArmy = ""
+			if r.SelectedRegion != rid {
+				r.devNeighborListExpanded = false
+			}
 			r.SelectedRegion = rid
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
@@ -6617,6 +6629,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 	r.SelectedArmy = ""
+	if r.SelectedRegion != rid {
+		r.devNeighborListExpanded = false
+	}
 	r.SelectedRegion = rid
 	r.clearSelectedSettlement()
 	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.

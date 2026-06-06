@@ -342,7 +342,7 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 		DrawRegionPanel(screen, gs, regionID)
 		DrawArmyPanel(screen, gs, "a1")
 		DrawSettlementPanel(screen, gs, gs.Regions[regionID], &gs.Regions[regionID].Settlements[0])
-		DrawSeaRegionPanel(screen, gs, gs.Regions[seaID])
+		DrawSeaRegionPanel(screen, gs, gs.Regions[seaID], false)
 		DrawRecruitPanel(screen, gs, regionID, "", 0)
 	}
 }

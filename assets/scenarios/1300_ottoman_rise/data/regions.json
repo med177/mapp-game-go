@@ -3362,6 +3362,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "sea_of_marmara",
       "aydinoglu",
       "chalcidice",
       "gallipoli",
@@ -3437,6 +3438,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "sea_of_marmara",
       "black_open_1",
       "black_open_3",
       "black_open_4",
@@ -8660,6 +8662,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "aegean_sea",
+      "black_sea",
       "aydinoglu",
       "bursa",
       "constantinople",

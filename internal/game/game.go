@@ -1174,7 +1174,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		return
 	}
 	// Gerekli arazi kontrolü
-	if b.RequiredTerrain != "" && string(region.Terrain) != b.RequiredTerrain {
+	if buildingID != "port" && b.RequiredTerrain != "" && string(region.Terrain) != b.RequiredTerrain {
 		g.renderer.ShowCombatResult(b.NameTR + " sadece " + b.RequiredTerrain + " arazisine yapılır!")
 		return
 	}
