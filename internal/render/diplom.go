@@ -91,17 +91,17 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 	r := offerPageRect()
 	panel := gameui.Rect{X: r.x, Y: r.y, W: r.w, H: r.h}
 	box := gameui.BoxFromRect(panel).InsetXY(20, 18)
-	headerRect, box := box.CutTop(28, 10)
-	statusRect, box := box.CutTop(66, 18)
-	actionsRect, box := box.CutTop(float64(len(diplomActions))*42+float64(len(diplomActions)-1)*12, 18)
-	selectedRect, box := box.CutTop(20, 18)
+	headerRect, box := box.CutTop(28, 14)
+	statusRect, box := box.CutTop(78, 22)
+	actionsRect, box := box.CutTop(float64(len(diplomActions))*42+float64(len(diplomActions)-1)*12, 22)
+	selectedRect, box := box.CutTop(28, 18)
 	footerRect, _ := box.CutBottom(40, 0)
 	footerCols := gameui.BoxFromRect(footerRect).SplitColumns(12, 1, 1)
 	return diplomacyOfferLayout{
 		panelRect:    panel,
 		titleRect:    headerRect,
-		targetRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y, W: statusRect.W, H: 24},
-		statusRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y + 24, W: statusRect.W, H: statusRect.H - 24},
+		targetRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y, W: statusRect.W, H: 28},
+		statusRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y + 38, W: statusRect.W, H: statusRect.H - 38},
 		actionsRect:  actionsRect,
 		selectedRect: selectedRect,
 		backRect:     footerCols[0],
@@ -344,9 +344,8 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{14, 11, 8, 235}, panelBorder, 1.2, 3)
 
 	drawUILabel(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y}, "Teklif Paneli", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
-	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
-	drawUICardRect(screen, gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 8}, color.RGBA{22, 18, 12, 220}, color.RGBA{90, 72, 40, 170}, 1)
-	targetRow := gameui.NewKeyValueRow(gameui.Rect{X: layout.targetRect.X + 12, Y: layout.targetRect.Y + 2, W: layout.targetRect.W - 24}, "Hedef:", trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88))
+	drawUICardRect(screen, gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 6}, color.RGBA{22, 18, 12, 220}, color.RGBA{90, 72, 40, 170}, 1)
+	targetRow := gameui.NewKeyValueRow(gameui.Rect{X: layout.targetRect.X + 12, Y: layout.targetRect.Y + 5, W: layout.targetRect.W - 24}, "Hedef:", trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88))
 	targetRow.LabelColor = ColorGray
 	targetRow.ValueColor = ColorWhite
 	targetRow.LabelVariant = gameui.TextMedium
@@ -363,7 +362,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		relStance = rel.Stance
 	}
 	drawUICardRect(screen, layout.statusRect, color.RGBA{19, 16, 12, 220}, color.RGBA{92, 74, 38, 170}, 1)
-	drawUIInfoBlock(screen, layout.statusRect.X, layout.statusRect.Y, []string{
+	drawUIInfoBlock(screen, layout.statusRect.X+12, layout.statusRect.Y+8, []string{
 		"Durum: " + stanceDisplayText(relStance),
 		"İlişki Skoru: " + itoa(relScore),
 	}, []color.Color{
@@ -371,7 +370,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		scoreColor(relScore),
 	})
 
-	drawUIMutedText(screen, layout.actionsRect.X, layout.actionsRect.Y-24, "Teklif Türü")
+	drawUIMutedText(screen, layout.actionsRect.X, layout.actionsRect.Y-18, "Teklif Türü")
 	for _, btn := range buildDiplomacyActionButtons() {
 		i := btn.Index
 		da := diplomActions[i]
@@ -390,9 +389,10 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	selected := "Seçili teklif: " + diplomActions[actionFocus].label
 	drawUICardRect(screen, layout.selectedRect, color.RGBA{18, 14, 10, 215}, color.RGBA{78, 62, 34, 150}, 1)
 	slw := MeasureText(selected, FaceSmall)
-	selectedY := layout.selectedRect.Y + 2
+	selectedY := layout.selectedRect.Y + 6
 	drawUIMutedText(screen, layout.selectedRect.X+layout.selectedRect.W/2-slw/2, selectedY, selected)
 
+	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
 	drawDiplomacyButton(screen, buildDiplomacySendButton(), color.RGBA{48, 130, 72, 235}, panelBorder, FaceMed, 10)
 }
 

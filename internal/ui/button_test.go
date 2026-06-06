@@ -75,3 +75,11 @@ func TestButtonIconSizeUsesDifferentScalesByHeight(t *testing.T) {
 		t.Fatalf("unexpected large icon size: got %v want 27.2", large)
 	}
 }
+
+func TestButtonTextYUsesExplicitOffsetWhenProvided(t *testing.T) {
+	btn := NewButton(20, 40, 120, 36, "Gönder")
+	y := buttonTextY(btn, ButtonStyle{TextVariant: TextMedium, TextOffsetY: 9})
+	if y != 49 {
+		t.Fatalf("expected explicit text offset to be used, got %v want 49", y)
+	}
+}

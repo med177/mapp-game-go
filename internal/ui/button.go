@@ -127,6 +127,9 @@ func buttonIconSize(b Button) float64 {
 }
 
 func buttonTextY(b Button, style ButtonStyle) float64 {
+	if style.TextOffsetY > 0 {
+		return b.Y + style.TextOffsetY
+	}
 	textH := buttonTextHeight(style.TextVariant)
 	return b.Y + (b.H-textH)/2
 }
