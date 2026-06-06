@@ -25,7 +25,15 @@ type ListView struct {
 	RowHeight   float64
 	VisibleRows int
 	Enabled     bool
+	pressX      float64
+	pressY      float64
+	pressScroll int
+	pressIndex  int
+	dragging    bool
+	pressed     bool
 }
+
+const listViewDragThreshold = 8.0
 
 func NewListView(x, y, w, h, rowHeight float64, visibleRows int, items []string) ListView {
 	return ListView{
@@ -43,22 +51,58 @@ func (l ListView) HitTest(mx, my float64) bool {
 }
 
 func (l *ListView) HandleInput(input InputState) bool {
-	if l == nil || !l.HitTest(input.MouseX, input.MouseY) {
+	if l == nil || !l.Enabled {
 		return false
 	}
-	if input.WheelY != 0 {
+	if input.WheelY != 0 && l.HitTest(input.MouseX, input.MouseY) {
 		l.scroll(input.WheelY)
 		return true
 	}
-	if !input.LeftJustPressed {
-		return false
+
+	if input.LeftJustPressed {
+		if !l.HitTest(input.MouseX, input.MouseY) {
+			return false
+		}
+		l.pressed = true
+		l.dragging = false
+		l.pressX = input.MouseX
+		l.pressY = input.MouseY
+		l.pressScroll = l.Scroll
+		l.pressIndex = l.itemIndexAt(input.MouseX, input.MouseY)
+		return true
 	}
-	idx := l.itemIndexAt(input.MouseX, input.MouseY)
-	if idx < 0 {
-		return false
+
+	if l.pressed {
+		if input.LeftPressed {
+			dx := absF(input.MouseX - l.pressX)
+			dy := absF(input.MouseY - l.pressY)
+			if dx >= listViewDragThreshold || dy >= listViewDragThreshold {
+				l.dragging = true
+			}
+			if l.dragging && l.RowHeight > 0 {
+				rowDelta := int((l.pressY - input.MouseY) / l.RowHeight)
+				l.Scroll = l.pressScroll + rowDelta
+				l.clampScroll()
+			}
+			return true
+		}
+		if input.LeftJustReleased {
+			pressedIndex := l.pressIndex
+			dragging := l.dragging
+			l.pressed = false
+			l.dragging = false
+			l.pressIndex = -1
+			if dragging {
+				return true
+			}
+			idx := l.itemIndexAt(input.MouseX, input.MouseY)
+			if idx >= 0 && idx == pressedIndex {
+				l.Selected = idx
+				return true
+			}
+		}
 	}
-	l.Selected = idx
-	return true
+	return false
 }
 
 func (l ListView) Draw(_ *ebiten.Image, _ TextRenderer) {}
@@ -69,16 +113,7 @@ func (l *ListView) scroll(dy float64) {
 	} else if dy < 0 {
 		l.Scroll++
 	}
-	maxScroll := len(l.Items) - l.VisibleRows
-	if maxScroll < 0 {
-		maxScroll = 0
-	}
-	if l.Scroll < 0 {
-		l.Scroll = 0
-	}
-	if l.Scroll > maxScroll {
-		l.Scroll = maxScroll
-	}
+	l.clampScroll()
 }
 
 func (l ListView) itemIndexAt(mx, my float64) int {
@@ -91,6 +126,26 @@ func (l ListView) itemIndexAt(mx, my float64) int {
 		return -1
 	}
 	return idx
+}
+
+func (l *ListView) clampScroll() {
+	maxScroll := len(l.Items) - l.VisibleRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if l.Scroll < 0 {
+		l.Scroll = 0
+	}
+	if l.Scroll > maxScroll {
+		l.Scroll = maxScroll
+	}
+}
+
+func absF(v float64) float64 {
+	if v < 0 {
+		return -v
+	}
+	return v
 }
 
 func DrawListView(screen *ebiten.Image, l ListView, style ListViewStyle, text TextRenderer) {

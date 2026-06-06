@@ -6151,11 +6151,16 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 		mx, my := ebiten.CursorPosition()
 		_, wheelY := ebiten.Wheel()
+		leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+		leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
+		r.prevMouse[ebiten.MouseButtonLeft] = leftPressed
 		input := gameui.InputState{
-			MouseX:          float64(mx),
-			MouseY:          float64(my),
-			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
-			WheelY:          wheelY,
+			MouseX:           float64(mx),
+			MouseY:           float64(my),
+			LeftPressed:      leftPressed,
+			LeftJustPressed:  leftPressed && !leftWasPressed,
+			LeftJustReleased: !leftPressed && leftWasPressed,
+			WheelY:           wheelY,
 		}
 		return r.handleDiplomacyInput(input)
 	}

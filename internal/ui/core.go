@@ -10,7 +10,9 @@ import (
 type InputState struct {
 	MouseX               float64
 	MouseY               float64
+	LeftPressed          bool
 	LeftJustPressed      bool
+	LeftJustReleased     bool
 	WheelY               float64
 	TextInput            string
 	BackspaceJustPressed bool

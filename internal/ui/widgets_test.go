@@ -26,8 +26,14 @@ func TestRadioGroupSelect(t *testing.T) {
 
 func TestListViewSelectionAndScroll(t *testing.T) {
 	l := NewListView(0, 0, 200, 100, 20, 4, []string{"a", "b", "c", "d", "e", "f"})
-	if !l.HandleInput(InputState{MouseX: 10, MouseY: 10, LeftJustPressed: true}) {
+	if !l.HandleInput(InputState{MouseX: 10, MouseY: 10, LeftJustPressed: true, LeftPressed: true}) {
 		t.Fatalf("list click should be consumed")
+	}
+	if l.Selected != -1 {
+		t.Fatalf("selection should wait for release, got %d", l.Selected)
+	}
+	if !l.HandleInput(InputState{MouseX: 10, MouseY: 10, LeftJustReleased: true}) {
+		t.Fatalf("list release should be consumed")
 	}
 	if l.Selected != 0 {
 		t.Fatalf("expected first row selected, got %d", l.Selected)
@@ -37,6 +43,25 @@ func TestListViewSelectionAndScroll(t *testing.T) {
 	}
 	if l.Scroll != 1 {
 		t.Fatalf("expected scroll 1, got %d", l.Scroll)
+	}
+}
+
+func TestListViewDragScrollDoesNotSelectItem(t *testing.T) {
+	l := NewListView(0, 0, 200, 80, 20, 4, []string{"a", "b", "c", "d", "e", "f", "g"})
+	if !l.HandleInput(InputState{MouseX: 20, MouseY: 30, LeftJustPressed: true, LeftPressed: true}) {
+		t.Fatalf("drag start should be consumed")
+	}
+	if !l.HandleInput(InputState{MouseX: 20, MouseY: 5, LeftPressed: true}) {
+		t.Fatalf("drag move should be consumed")
+	}
+	if l.Scroll != 1 {
+		t.Fatalf("expected drag to scroll list by one row, got %d", l.Scroll)
+	}
+	if !l.HandleInput(InputState{MouseX: 20, MouseY: 5, LeftJustReleased: true}) {
+		t.Fatalf("drag release should be consumed")
+	}
+	if l.Selected != -1 {
+		t.Fatalf("dragging should not select an item, got %d", l.Selected)
 	}
 }
 
