@@ -178,10 +178,13 @@ func applySeasonEffects(gs *state.GameState) {
 		if mp < 1 {
 			mp = 1
 		}
-		// Kartografya tech harekete +1 ekler
+		// Kara ve deniz tech bonusları hareket havuzuna eklenir.
 		if f, ok := gs.Factions[faction.FactionID(a.OwnerID)]; ok && gs.TechTypes != nil {
 			fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
 			mp += fx.MoveBonus
+			if a.IsNaval {
+				mp += fx.NavalMoveBonus
+			}
 		}
 		// Difficulty 3: AI fraksiyonlar +1 hareket puanı bonusu alır
 		if gs.Difficulty >= 3 && a.OwnerID != string(gs.PlayerFactionID) {
@@ -232,6 +235,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	report := economyTickReport{}
 	s := gs.CurrentSeason()
 	harvestMod := s.HarvestMod()
+	effectsByFaction := make(map[string]tech.Effects, len(gs.Factions))
+	if gs.TechTypes != nil {
+		for fid, f := range gs.Factions {
+			effectsByFaction[string(fid)] = tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+		}
+	}
 
 	incomeByFaction := make(map[string]int)
 	grainByFaction := make(map[string]int)
@@ -274,6 +283,9 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		tradeIncome := economy.RegionTradeIncome(r.TradeCapacity, tradeCapMod)
 		// Mevsimsel ticaret modu uygula
 		tradeIncome = tradeIncome * s.TradeMod() / 100
+		if fx, ok := effectsByFaction[r.OwnerID]; ok && fx.MarketGoldMod != 0 {
+			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
+		}
 
 		incomeByFaction[r.OwnerID] += income + tradeIncome
 		grainByFaction[r.OwnerID] += grain
@@ -307,10 +319,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		fidStr := string(fid)
 
 		// Teknoloji bonusları
-		var fx tech.Effects
-		if gs.TechTypes != nil {
-			fx = tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
-		}
+		fx := effectsByFaction[fidStr]
 
 		// GoldPerRegion tech bonusu
 		ownedCount := len(gs.RegionsOwnedBy(fid))
@@ -669,7 +678,15 @@ func applyReligionConversion(gs *state.GameState) {
 			continue
 		}
 
-		r.ConversionTurns++
+		step := 1
+		if ownerFaction := gs.Factions[faction.FactionID(r.OwnerID)]; ownerFaction != nil && gs.TechTypes != nil {
+			fx := tech.ComputeEffects(ownerFaction.Research.Completed, gs.TechTypes)
+			step += int(fx.ConversionSpeedMod)
+		}
+		if step < 1 {
+			step = 1
+		}
+		r.ConversionTurns += step
 		if r.ConversionTurns >= conversionThreshold {
 			r.Religion = ownerRel
 			r.ConversionTurns = 0

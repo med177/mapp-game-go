@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-06-06
+last_updated: 2026-06-07
 related: [systems/combat, systems/economy, architecture/state-management]
 ---
 
@@ -58,8 +58,11 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Araştırılıyor: Sarı
   - Kilitli: Gri
   - Kullanılabilir: Kategori rengi
-- **Bağlantılar:** Gereksinim teknolojileri arasındaki çizgiler
+- **Bağlantılar:** Gereksinim teknolojileri diyagonal değil, ortogonal akış-şeması çizgileriyle gösterilir; mevcut veri modelindeki `Requires[]` bağımlılıkları zorunlu olduğu için çizgiler solid görünür
+- **Okunabilirlik:** Düğüm adı, kategori ve maliyet metni koyu iç bant + outline ile çizilir; açık kategori renklerinde yazı kontrastı bu katmanla korunur
 - **Etkileşim:** Düğüm tıklayarak araştırma başlatma
+
+1300 senaryosu artık başlangıç 26 düğümle sınırlı değildir; orta ve ileri dönem için yeni askeri, ekonomik, diplomatik, denizcilik ve dinî alt dallar eklendi. Özellikle `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength` ve `conversion_speed_mod` effect alanları artık sadece veri içinde tanımlı kalmaz, runtime'da karşılık bulur.
 
 `applyTechTicks(gs)` — her tur `Progress++`, `TurnsRequired`'e ulaşınca tamamlanır.
 

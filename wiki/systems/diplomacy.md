@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-06-06
+last_updated: 2026-06-07
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -51,7 +51,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Aksiyon | Fonksiyon | Koşul |
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse |
-| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir |
+| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir, teklif sahibi `peace_relation_bonus` tech etkisi bu eşiği destekler |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20` + doğrudan sınır tehdidi olmamalı |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var |
 
@@ -83,6 +83,7 @@ Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motor
 - Aynı iki fraksiyon için rota çoğaltılmaz; mevcut çift önce temizlenir
 - İttifak duruşu ticaretten bağımsızdır; müttefik iki devlet arasında rota varsa `StanceAllied` korunur
 - Savaş ilanı veya barış kabulü iki taraf arasındaki aktif rotaları kapatır
+- Save/load veya eski kayıt migrasyonu sırasında elenmiş fraksiyon, geçersiz relation veya duplicate rota kalmışsa `SanitizeTradeRoutes()` bunları temizler; böylece yıkılmış devlet adları trade listesine geri sızmaz
 - Rotalar soyut anlaşma modelidir; harita üstü pathfinding ile üretilmez
 
 Rota detayları:
@@ -123,6 +124,7 @@ AI:
 - `IsEliminated=true` işaretler
 - o fraksiyona ait tüm orduları kaldırır
 - `GameState.Relations` içindeki o fraksiyonu içeren tüm diplomasi kayıtlarını siler
+- o fraksiyona ait `TradeRoutes` ve `DiplomaticOffers` kayıtlarını da siler
 
 Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam etmez.
 

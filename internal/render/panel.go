@@ -2072,9 +2072,29 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 				if queuedCount > 1 {
 					qLabel = "x" + itoa(queuedCount) + " " + qLabel
 				}
+				qTextW := MeasureText(qLabel, FaceSmall)
+				qPadX := float32(8)
+				qBadgeH := float32(18)
+				qBadgeW := float32(qTextW) + qPadX*2
+				maxBadgeW := innerW - 10
+				if qBadgeW > maxBadgeW {
+					qBadgeW = maxBadgeW
+				}
+				qx := float64(sx) + float64(innerW-qBadgeW)/2
+				qy := float64(sy) + float64(spriteH) - float64(qBadgeH) - 8
+				drawUICardRect(screen,
+					gameui.Rect{X: qx, Y: qy, W: float64(qBadgeW), H: float64(qBadgeH)},
+					color.RGBA{28, 20, 10, 232},
+					color.RGBA{214, 176, 92, 235},
+					1,
+				)
+				vector.StrokeRect(screen,
+					float32(qx)+1, float32(qy)+1, qBadgeW-2, qBadgeH-2, 1,
+					color.RGBA{255, 232, 170, 72}, false,
+				)
 				DrawTextCentered(screen, qLabel,
-					float64(sx)+float64(innerW)/2, float64(sy)+float64(spriteH)/2-7,
-					FaceSmall, color.RGBA{235, 210, 125, 235})
+					qx+float64(qBadgeW)/2, qy+2,
+					FaceSmall, color.RGBA{255, 238, 188, 250})
 			}
 		}
 

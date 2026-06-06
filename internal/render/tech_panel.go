@@ -34,7 +34,16 @@ const (
 	techLevelHeight = 120.0
 	techNodeWidth   = 180.0
 	techNodeHeight  = 60.0
+
+	techConnectorStem     = 12.0
+	techConnectorLaneStep = 8.0
 )
+
+type techConnectorStyle struct {
+	col    color.RGBA
+	width  float32
+	dashed bool
+}
 
 type techPanelLayout struct {
 	panelRect  gameui.Rect
@@ -166,6 +175,150 @@ func techTreeStartY(bounds gameui.Rect, levelCount, levelHeight float64) float64
 	return centeredY
 }
 
+func indexTechNodes(levels [][]techNode) map[string]techNode {
+	index := make(map[string]techNode, len(levels)*4)
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			index[node.t.ID] = node
+		}
+	}
+	return index
+}
+
+func techConnectorStyleFor(parent, child techNode) techConnectorStyle {
+	col := color.RGBA{132, 132, 140, 210}
+	if child.unlocked {
+		col = color.RGBA{188, 188, 196, 232}
+	}
+	if child.done && parent.done {
+		col = color.RGBA{208, 220, 208, 236}
+	}
+	return techConnectorStyle{col: col, width: 2}
+}
+
+func techConnectorMidY(parent, child techNode, reqIdx, reqCount int) float64 {
+	startY := parent.y + techNodeHeight/2
+	endY := child.y - techNodeHeight/2
+	minY := startY + techConnectorStem
+	maxY := endY - techConnectorStem
+	if maxY <= minY {
+		return (startY + endY) / 2
+	}
+
+	baseY := minY + (maxY-minY)*0.45
+	if reqCount <= 1 {
+		return baseY
+	}
+
+	spread := float64(reqCount-1) * techConnectorLaneStep
+	offset := float64(reqIdx)*techConnectorLaneStep - spread/2
+	midY := baseY + offset
+	if midY < minY {
+		return minY
+	}
+	if midY > maxY {
+		return maxY
+	}
+	return midY
+}
+
+func drawTechLine(screen *ebiten.Image, x1, y1, x2, y2 float64, style techConnectorStyle) {
+	if style.dashed {
+		drawDashedTechLine(screen, x1, y1, x2, y2, style)
+		return
+	}
+	vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), style.width, style.col, false)
+}
+
+func drawDashedTechLine(screen *ebiten.Image, x1, y1, x2, y2 float64, style techConnectorStyle) {
+	const dashLen = 8.0
+	const gapLen = 5.0
+	if x1 == x2 {
+		if y2 < y1 {
+			y1, y2 = y2, y1
+		}
+		for segStart := y1; segStart < y2; segStart += dashLen + gapLen {
+			segEnd := segStart + dashLen
+			if segEnd > y2 {
+				segEnd = y2
+			}
+			vector.StrokeLine(screen, float32(x1), float32(segStart), float32(x2), float32(segEnd), style.width, style.col, false)
+		}
+		return
+	}
+	if y1 == y2 {
+		if x2 < x1 {
+			x1, x2 = x2, x1
+		}
+		for segStart := x1; segStart < x2; segStart += dashLen + gapLen {
+			segEnd := segStart + dashLen
+			if segEnd > x2 {
+				segEnd = x2
+			}
+			vector.StrokeLine(screen, float32(segStart), float32(y1), float32(segEnd), float32(y2), style.width, style.col, false)
+		}
+	}
+}
+
+func drawTechConnector(screen *ebiten.Image, parent, child techNode, reqIdx, reqCount int) {
+	style := techConnectorStyleFor(parent, child)
+	startY := parent.y + techNodeHeight/2
+	endY := child.y - techNodeHeight/2
+	midY := techConnectorMidY(parent, child, reqIdx, reqCount)
+
+	drawTechLine(screen, parent.x, startY, parent.x, midY, style)
+	drawTechLine(screen, parent.x, midY, child.x, midY, style)
+	drawTechLine(screen, child.x, midY, child.x, endY, style)
+}
+
+func techNodeNameColor(node techNode) color.Color {
+	if node.unlocked || node.done {
+		return ColorWhite
+	}
+	return color.RGBA{214, 214, 214, 255}
+}
+
+func drawTechNodeText(screen *ebiten.Image, node techNode, nodeRect gameui.Rect) {
+	titleStrip := gameui.Rect{X: nodeRect.X + 6, Y: nodeRect.Y + 6, W: nodeRect.W - 12, H: 18}
+	footerStrip := gameui.Rect{X: nodeRect.X + 8, Y: nodeRect.Y + nodeRect.H - 20, W: nodeRect.W - 16, H: 14}
+	vector.FillRect(screen, float32(titleStrip.X), float32(titleStrip.Y), float32(titleStrip.W), float32(titleStrip.H), color.RGBA{10, 12, 18, 150}, false)
+	vector.FillRect(screen, float32(footerStrip.X), float32(footerStrip.Y), float32(footerStrip.W), float32(footerStrip.H), color.RGBA{8, 10, 16, 135}, false)
+
+	nameRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + 8, W: nodeRect.W - 20}
+	drawUIOutlinedLabel(screen, nameRect, node.t.NameTR, techNodeNameColor(node), color.RGBA{8, 8, 12, 255}, gameui.TextMedium, gameui.TextAlignCenter)
+
+	catLabel := fmt.Sprintf("[%s]", tech.CategoryLabelTR(node.t.Category))
+	catRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + 29, W: nodeRect.W - 20}
+	catColor := techCategoryColors[node.t.Category]
+	catColor.A = 248
+	drawUIOutlinedLabel(screen, catRect, catLabel, catColor, color.RGBA{10, 10, 14, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+
+	if node.unlocked && !node.done {
+		costStr := fmt.Sprintf("%dg/%dt", node.t.GoldCost, node.t.TurnsRequired)
+		costRect := gameui.Rect{X: nodeRect.X + 10, Y: nodeRect.Y + nodeRect.H - 19, W: nodeRect.W - 20}
+		drawUIOutlinedLabel(screen, costRect, costStr, color.RGBA{255, 228, 138, 255}, color.RGBA{16, 12, 8, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	}
+}
+
+func drawTechConnectors(screen *ebiten.Image, levels [][]techNode, allTechs map[string]*tech.Technology) {
+	nodeIndex := indexTechNodes(levels)
+	for _, levelNodes := range levels {
+		for _, child := range levelNodes {
+			reqCount := len(child.t.Requires)
+			for reqIdx, reqID := range child.t.Requires {
+				if _, ok := allTechs[reqID]; !ok {
+					continue
+				}
+				parent, ok := nodeIndex[reqID]
+				if !ok {
+					continue
+				}
+				drawTechConnector(screen, parent, child, reqIdx, reqCount)
+			}
+		}
+	}
+}
+
 // DrawTechPanel teknoloji araştırma panelini çizer. Alt bardaki Teknoloji tuşu veya [T] ile açılır.
 func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	if r.gs.TechTypes == nil {
@@ -197,6 +350,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	}
 
 	levels := r.buildLaidOutTechTree(f)
+	drawTechConnectors(screen, levels, r.gs.TechTypes)
 
 	// Her seviye için düğümleri çiz
 	for _, levelNodes := range levels {
@@ -223,28 +377,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			// Düğüm çerçevesi
 			vector.StrokeRect(screen, float32(nodeRect.X), float32(nodeRect.Y),
 				float32(nodeRect.W), float32(nodeRect.H), 2, color.RGBA{255, 255, 255, 255}, false)
-
-			// Teknoloji adı
-			nameY := nodeRect.Y + 8
-			textColor := ColorWhite
-			if node.unlocked && !node.done {
-				textColor = color.RGBA{uint8(nodeColor.R / 3), uint8(nodeColor.G / 3), uint8(nodeColor.B / 3), 255}
-			}
-			DrawTextCentered(screen, node.t.NameTR, node.x, nameY, FaceMed, textColor)
-
-			// Kategori etiketi
-			catLabel := tech.CategoryLabelTR(node.t.Category)
-			catY := node.y - 8
-			catColor := techCategoryColors[node.t.Category]
-			catColor.A = 200
-			DrawTextCentered(screen, fmt.Sprintf("[%s]", catLabel), node.x, catY, FaceSmall, catColor)
-
-			// Maliyet bilgisi (kilitli değilse)
-			if node.unlocked && !node.done {
-				costY := nodeRect.Y + nodeRect.H - 20
-				costStr := fmt.Sprintf("%dg/%dt", node.t.GoldCost, node.t.TurnsRequired)
-				DrawTextCentered(screen, costStr, node.x, costY, FaceSmall, ColorGold)
-			}
+			drawTechNodeText(screen, node, nodeRect)
 
 			// Tamamlandı tik rozeti
 			if node.done {
@@ -268,27 +401,6 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				gameui.DrawIcon(screen, gameui.IconPlay, badgeX+5, badgeY+1, 14, color.RGBA{255, 244, 210, 255})
 			}
 
-			// Bağlantı çizgileri (gereksinimlere)
-			if len(node.t.Requires) > 0 {
-				for _, reqID := range node.t.Requires {
-					if reqTech, ok := r.gs.TechTypes[reqID]; ok {
-						// Gereksinim teknolojisinin pozisyonunu bul
-						reqLevel := r.getTechLevel(reqTech, r.gs.TechTypes)
-						if reqLevel < len(levels) {
-							for _, reqNode := range levels[reqLevel] {
-								if reqNode.t.ID == reqID {
-									// Çizgi çiz
-									vector.StrokeLine(screen,
-										float32(reqNode.x), float32(reqNode.y+techNodeHeight/2),
-										float32(node.x), float32(node.y-techNodeHeight/2),
-										2, color.RGBA{150, 150, 150, 255}, false)
-									break
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 

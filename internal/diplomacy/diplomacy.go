@@ -4,6 +4,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 )
 
 type Action string
@@ -185,6 +186,7 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 	if gs == nil || len(gs.Relations) == 0 {
 		return
 	}
+	SanitizeTradeRoutes(gs)
 	for _, rel := range gs.Relations {
 		if rel == nil {
 			continue
@@ -194,6 +196,36 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 		}
 		ensureTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
 	}
+}
+
+func SanitizeTradeRoutes(gs *state.GameState) {
+	if gs == nil || len(gs.TradeRoutes) == 0 {
+		return
+	}
+	filtered := gs.TradeRoutes[:0]
+	seen := make(map[string]struct{}, len(gs.TradeRoutes))
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.FromFactionID == "" || route.ToFactionID == "" || route.FromFactionID == route.ToFactionID {
+			continue
+		}
+		fromID := faction.FactionID(route.FromFactionID)
+		toID := faction.FactionID(route.ToFactionID)
+		fromFaction := gs.Factions[fromID]
+		toFaction := gs.Factions[toID]
+		if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
+			continue
+		}
+		if !relationAllowsTrade(Relation(gs, fromID, toID)) {
+			continue
+		}
+		key := route.FromFactionID + "->" + route.ToFactionID
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		filtered = append(filtered, route)
+	}
+	gs.TradeRoutes = filtered
 }
 
 func MilitaryPower(gs *state.GameState, fid faction.FactionID) int {
@@ -260,7 +292,7 @@ func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target facti
 		strengthPressure += min(20, (actorRegions-targetRegions)*4)
 	}
 
-	return warPressure+strengthPressure+economicStress(gs, target) >= 18
+	return warPressure+strengthPressure+economicStress(gs, target)+peaceTechBonus(gs, actor) >= 18
 }
 
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
@@ -290,6 +322,17 @@ func acceptAlliance(gs *state.GameState, rel *faction.Relation, actor, target fa
 		return false
 	}
 	return true
+}
+
+func peaceTechBonus(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || gs.TechTypes == nil || fid == "" {
+		return 0
+	}
+	f := gs.Factions[fid]
+	if f == nil {
+		return 0
+	}
+	return tech.ComputeEffects(f.Research.Completed, gs.TechTypes).PeaceRelationBonus
 }
 
 func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
@@ -335,6 +378,10 @@ func HasTradeRouteBetween(gs *state.GameState, a, b faction.FactionID) bool {
 		}
 	}
 	return false
+}
+
+func relationAllowsTrade(rel *faction.Relation) bool {
+	return rel != nil && (rel.Stance == faction.StanceTrade || rel.Stance == faction.StanceAllied)
 }
 
 func buildTradeRoute(gs *state.GameState, from, to faction.FactionID) *economy.TradeRoute {

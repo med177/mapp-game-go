@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
 )
 
@@ -132,6 +133,30 @@ func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
 	}
 }
 
+func TestEnsureTradeRoutesForActiveRelationsRemovesStaleEliminatedRoutes(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic, IsEliminated: true}
+	gs.TradeRoutes = []*economy.TradeRoute{
+		{FromFactionID: "a", ToFactionID: "c", Good: economy.GoodCloth, AmountPerTurn: 2, GoldPerUnit: 8},
+		{FromFactionID: "c", ToFactionID: "a", Good: economy.GoodSpice, AmountPerTurn: 2, GoldPerUnit: 12},
+	}
+
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceTrade
+	rel.Score = 25
+
+	EnsureTradeRoutesForActiveRelations(gs)
+
+	if len(gs.TradeRoutes) != 2 {
+		t.Fatalf("stale rota temizlenip a-b için iki yönlü rota kurulmalıydı, got=%d", len(gs.TradeRoutes))
+	}
+	for _, route := range gs.TradeRoutes {
+		if route.FromFactionID == "c" || route.ToFactionID == "c" {
+			t.Fatalf("elenmiş fraksiyon rotası kalmamalıydı, got=%+v", route)
+		}
+	}
+}
+
 func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
@@ -146,6 +171,23 @@ func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	}
 	if rel.Stance != faction.StancePeace || rel.Score != -20 {
 		t.Fatalf("barış sonrası ilişki güncellenmedi: %+v", rel)
+	}
+}
+
+func TestProposePeaceAcceptedWithPeaceTechBonus(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -88
+	gs.Factions["a"].Research.Completed = map[string]bool{"diplomacy": true}
+	gs.TechTypes = map[string]*tech.Technology{
+		"diplomacy": {ID: "diplomacy", Effects: tech.Effects{PeaceRelationBonus: 10}},
+	}
+
+	result := Execute(gs, "a", "b", ActionProposePeace)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("barış tech bonusu kabul eşiğini geçirmeliydi: %+v", result)
 	}
 }
 

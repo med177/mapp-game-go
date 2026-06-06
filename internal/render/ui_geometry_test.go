@@ -317,6 +317,9 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 			"militia":  {ID: "militia", NameTR: "Milis", TurnsRequired: 1},
 			"infantry": {ID: "infantry", NameTR: "Piyade", TurnsRequired: 2},
 		},
+		ProductionQueue: []state.ProductionOrder{
+			{Kind: "building", RegionID: regionID, TypeID: "farm", TurnsLeft: 3},
+		},
 		Relations: map[string]*faction.Relation{},
 	}
 

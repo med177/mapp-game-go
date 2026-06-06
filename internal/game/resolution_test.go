@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
 )
 
@@ -115,6 +116,93 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	}
 	if gs.Factions["b"].Spice != 2 {
 		t.Fatalf("ticaret rotası malı hedefe eklemeliydi, got=%d", gs.Factions["b"].Spice)
+	}
+}
+
+func TestApplyEconomyTickAppliesMarketGoldBonusToPassiveTrade(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {
+				ID: "a",
+				Research: faction.ResearchState{
+					Completed: map[string]bool{"guilds": true},
+				},
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"a1": {ID: "a1", OwnerID: "a", TaxRate: 50, Satisfaction: 50, TradeCapacity: 5},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+		TechTypes: map[string]*tech.Technology{
+			"guilds": {ID: "guilds", Effects: tech.Effects{MarketGoldMod: 1}},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	if gs.Factions["a"].Gold != 22 {
+		t.Fatalf("market bonus pasif ticaret gelirini ikiye katlamalıydı, got=%d", gs.Factions["a"].Gold)
+	}
+}
+
+func TestApplySeasonEffectsAddsNavalMoveBonus(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {
+				ID: "player",
+				Research: faction.ResearchState{
+					Completed: map[string]bool{"navigation": true},
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", OwnerID: "player", RegionID: "sea_1", IsNaval: true},
+			"land":  {ID: "land", OwnerID: "player", RegionID: "land_1"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":  {ID: "sea_1", IsSea: true},
+			"land_1": {ID: "land_1", OwnerID: "player"},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"navigation": {ID: "navigation", Effects: tech.Effects{NavalMoveBonus: 1}},
+		},
+	}
+
+	applySeasonEffects(gs)
+
+	if gs.Armies["fleet"].MaxMovePoints != 3 {
+		t.Fatalf("naval move bonus filoya +1 hareket vermeliydi, got=%d", gs.Armies["fleet"].MaxMovePoints)
+	}
+	if gs.Armies["land"].MaxMovePoints != 2 {
+		t.Fatalf("naval move bonus kara ordusunu etkilememeliydi, got=%d", gs.Armies["land"].MaxMovePoints)
+	}
+}
+
+func TestApplyReligionConversionUsesTechSpeedBonus(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"owner": {
+				ID:       "owner",
+				Religion: religion.Catholic,
+				Research: faction.ResearchState{
+					Completed: map[string]bool{"proselytism": true},
+				},
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"r1": {ID: "r1", OwnerID: "owner", Religion: string(religion.Sunni), Satisfaction: 60},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"proselytism": {ID: "proselytism", Effects: tech.Effects{ConversionSpeedMod: 1}},
+		},
+	}
+
+	applyReligionConversion(gs)
+
+	if gs.Regions["r1"].ConversionTurns != 2 {
+		t.Fatalf("conversion speed bonus bir turda +2 ilerletmeliydi, got=%d", gs.Regions["r1"].ConversionTurns)
 	}
 }
 

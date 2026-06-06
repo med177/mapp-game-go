@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -39,8 +40,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		return
 	}
 	if a.OwnerID != string(gs.PlayerFactionID) {
-		if enemyArmyInPlayerMoveRange(gs, a) {
-			drawScoutedEnemyArmyDetailPanel(screen, gs, a)
+		fullIntel := playerHasRevealEnemyStrength(gs)
+		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) {
+			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel)
 		} else {
 			drawEnemyArmyDetailPanel(screen, gs, a)
 		}
@@ -260,7 +262,18 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	DrawText(screen, "Bu orduya hareket emri verilemez", float64(px)+14, float64(py)+74, FaceSmall, color.RGBA{180, 100, 90, 210})
 }
 
-func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army) {
+func playerHasRevealEnemyStrength(gs *state.GameState) bool {
+	if gs == nil || gs.TechTypes == nil || gs.PlayerFactionID == "" {
+		return false
+	}
+	f := gs.Factions[gs.PlayerFactionID]
+	if f == nil {
+		return false
+	}
+	return tech.ComputeEffects(f.Research.Completed, gs.TechTypes).RevealEnemyStrength
+}
+
+func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool) {
 	ensureArmySheet()
 
 	const totalSlots = army.MaxArmySize
@@ -296,6 +309,9 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	DrawText(screen, headerLeft, float64(px)+float64(armyPanelPadX), float64(py)+6, FaceSmall, factionCol)
 
 	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat"
+	if fullIntel {
+		countStr = "Birim: " + itoa(len(a.Units)) + "  |  Tam istihbarat"
+	}
 	countW := MeasureText(countStr, FaceSmall)
 	DrawText(screen, countStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
@@ -304,9 +320,12 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	sepY := py + armyPanelHdrH
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 
-	revealed := (len(a.Units) + 1) / 2
-	if revealed < 1 && len(a.Units) > 0 {
-		revealed = 1
+	revealed := len(a.Units)
+	if !fullIntel {
+		revealed = (len(a.Units) + 1) / 2
+		if revealed < 1 && len(a.Units) > 0 {
+			revealed = 1
+		}
 	}
 	for i := 0; i < totalSlots; i++ {
 		col := i % maxCols
