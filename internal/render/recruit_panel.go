@@ -131,7 +131,9 @@ func buildRecruitPanelCloseButton(gs *state.GameState, rid world.RegionID) (game
 	py := recruitPanelY()
 	pw := recruitPanelW(slots)
 	x, y, w, h := recruitPanelCloseRect(px, py, pw)
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X"), true
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 12
+	return btn, true
 }
 
 func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []gameui.Button {
@@ -191,7 +193,9 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 		x := px + recruitPanelPad + float32(col)*(cardW+gap)
 		y := queueY + 26 + float32(row)*(recruitCardH+gap)
 		bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
-		buttons[it.orderID] = gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "X")
+		btn := gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "").WithIcon(gameui.IconClose)
+		btn.IconSize = 11
+		buttons[it.orderID] = btn
 	}
 	return buttons
 }

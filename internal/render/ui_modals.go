@@ -69,8 +69,8 @@ func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 16
 	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 10
 	noX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 10
-	return gameui.NewButton(yesX, btnY, btnW, btnH, "Savas Ilan Et"),
-		gameui.NewButton(noX, btnY, btnW, btnH, "Hayir")
+	return gameui.NewButton(yesX, btnY, btnW, btnH, "Savas Ilan Et").WithIcon(gameui.IconSword),
+		gameui.NewButton(noX, btnY, btnW, btnH, "Hayir").WithIcon(gameui.IconClose)
 }
 
 func buildEventDetailModal() gameui.Modal {
@@ -133,12 +133,16 @@ func buildEventCodexLayout() eventCodexLayout {
 
 func buildEventDetailCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventDetailHeaderRects()
-	return gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "X")
+	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
 }
 
 func buildEventCodexCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventCodexHeaderRects()
-	return gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "X")
+	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
 }
 
 func buildEventCodexFilterButtons() []gameui.Button {
@@ -199,6 +203,6 @@ func buildDiplomacyOfferButtons() (gameui.Button, gameui.Button) {
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 16
 	acceptX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 12
 	rejectX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 12
-	return gameui.NewButton(acceptX, btnY, btnW, btnH, "Kabul Et"),
-		gameui.NewButton(rejectX, btnY, btnW, btnH, "Reddet")
+	return gameui.NewButton(acceptX, btnY, btnW, btnH, "Kabul Et").WithIcon(gameui.IconCheck),
+		gameui.NewButton(rejectX, btnY, btnW, btnH, "Reddet").WithIcon(gameui.IconClose)
 }

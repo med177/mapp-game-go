@@ -45,7 +45,7 @@ func slotCardLayoutAt(i int) slotCardLayout {
 
 func buildSlotBackButton() gameui.Button {
 	r := backButtonRect()
-	return gameui.NewButton(r[0], r[1], r[2], r[3], "Geri")
+	return gameui.NewButton(r[0], r[1], r[2], r[3], "Geri").WithIcon(gameui.IconBack)
 }
 
 func buildSlotCardButton(i int) gameui.Button {
@@ -55,7 +55,7 @@ func buildSlotCardButton(i int) gameui.Button {
 
 func buildSlotDeleteButton(i int) gameui.Button {
 	rect := deleteButtonRectForSlot(i)
-	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "Sil")
+	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "Sil").WithIcon(gameui.IconTrash)
 }
 
 func buildSlotFocusButtons(saveMode bool) []gameui.Button {
@@ -73,8 +73,8 @@ func buildSlotConfirmButtons(pendingSlot string) (gameui.Button, gameui.Button, 
 	if yes == (slotRect{}) || no == (slotRect{}) {
 		return gameui.Button{}, gameui.Button{}, false
 	}
-	return gameui.NewButton(yes[0], yes[1], yes[2], yes[3], "Sil"),
-		gameui.NewButton(no[0], no[1], no[2], no[3], "İptal"), true
+	return gameui.NewButton(yes[0], yes[1], yes[2], yes[3], "Sil").WithIcon(gameui.IconTrash),
+		gameui.NewButton(no[0], no[1], no[2], no[3], "İptal").WithIcon(gameui.IconClose), true
 }
 
 // DrawSlotSelectScreen yükleme veya kaydetme için slot seçim ekranını çizer.
@@ -141,9 +141,9 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				// Silme onayında başlık ve soru ayrı bantlarda tutulur ki üst üste binmesin.
 				drawUILabel(screen, gameui.Rect{X: cx + slotPendingDeleteNameInset, Y: cy + slotPendingDeleteNameY}, slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
 				drawUILabel(screen, gameui.Rect{X: cx, Y: cy + slotPendingDeletePromptY, W: slotCardW}, "Silinecek! Emin misiniz?", color.RGBA{255, 100, 100, 255}, gameui.TextMedium, gameui.TextAlignCenter)
-				yes, no := slotDeleteConfirmRects(cx, cy)
-				drawSlotMiniButton(screen, yes, "Sil", color.RGBA{130, 35, 35, 230})
-				drawSlotMiniButton(screen, no, "İptal", color.RGBA{45, 45, 45, 230})
+				yesBtn, noBtn, _ := buildSlotConfirmButtons(slot.Name)
+				drawSlotMiniButtonWidget(screen, yesBtn, color.RGBA{130, 35, 35, 230})
+				drawSlotMiniButtonWidget(screen, noBtn, color.RGBA{45, 45, 45, 230})
 			} else {
 				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 				faction := slot.FactionName
@@ -158,8 +158,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 
 				// Sil butonu göstergesi (sadece dolu ve seçili slotta)
 				if isSelected {
-					del := slotDeleteButtonRect(cx, cy)
-					drawSlotMiniButton(screen, del, "Sil", color.RGBA{95, 35, 35, 220})
+					drawSlotMiniButtonWidget(screen, buildSlotDeleteButton(i), color.RGBA{95, 35, 35, 220})
 				}
 			}
 		} else {
@@ -288,6 +287,12 @@ func drawSlotMiniButton(screen *ebiten.Image, r slotRect, label string, bg color
 	style := slotMiniButtonStyle
 	style.BG = bg
 	drawUIButton(screen, r[0], r[1], r[2], r[3], label, true, style)
+}
+
+func drawSlotMiniButtonWidget(screen *ebiten.Image, btn gameui.Button, bg color.RGBA) {
+	style := slotMiniButtonStyle
+	style.BG = bg
+	drawUIButtonWidget(screen, btn, style)
 }
 
 func slotDeleteButtonRect(cx, cy float64) slotRect {

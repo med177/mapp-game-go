@@ -39,3 +39,5 @@ build/
 
 # Exlude dirs and files
 _REFERENCE/
+tmp/
+logs/

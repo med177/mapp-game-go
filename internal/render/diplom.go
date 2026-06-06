@@ -11,7 +11,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
@@ -203,7 +202,9 @@ type diplomacyActionButton struct {
 
 func buildDiplomacyCloseButton() gameui.Button {
 	x, y, w, h := diplomacyCloseRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
 }
 
 func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.ListView {
@@ -223,12 +224,12 @@ func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.Li
 
 func buildDiplomacyBackButton() gameui.Button {
 	x, y, w, h := diplomBackRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "← Geri")
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Geri").WithIcon(gameui.IconBack)
 }
 
 func buildDiplomacySendButton() gameui.Button {
 	x, y, w, h := diplomSendRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Teklif Gönder")
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Teklif Gönder").WithIcon(gameui.IconSend)
 }
 
 func buildDiplomacyActionButtons() []diplomacyActionButton {
@@ -404,10 +405,17 @@ func drawDiplomacyCloseButton(screen *ebiten.Image) {
 }
 
 func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, border color.Color, face *text.GoTextFace, textOffsetY float64) {
-	vector.FillRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), bg, false)
-	vector.StrokeRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), 1, border, false)
-	tw := MeasureText(btn.Label, face)
-	DrawText(screen, btn.Label, btn.X+btn.W/2-tw/2, btn.Y+textOffsetY, face, ColorWhite)
+	style := menuButtonStyle
+	style.BG = bg
+	style.Border = color.RGBAModel.Convert(border).(color.RGBA)
+	style.Text = ColorWhite
+	style.TextOffsetY = textOffsetY
+	if face == FaceMed {
+		style.TextVariant = gameui.TextMedium
+	} else {
+		style.TextVariant = gameui.TextSmall
+	}
+	drawUIButtonWidget(screen, btn, style)
 }
 
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.

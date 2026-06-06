@@ -6901,9 +6901,11 @@ func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
 	DrawText(screen, msg, modal.Panel.Rect.X+(modal.Panel.Rect.W-tw)/2, modal.Panel.Rect.Y+18, FaceMed, color.RGBA{255, 220, 100, 255})
 
 	acceptBtn, declineBtn := buildWarConfirmButtons()
-	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, "Savaş İlan Et", true,
+	acceptBtn.Label = "Savaş İlan Et"
+	declineBtn.Label = "Hayır"
+	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{160, 40, 40, 230}, color.RGBA{205, 90, 90, 255}, color.RGBA{255, 220, 220, 255}, 10))
-	drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, "Hayır", true,
+	drawUIButtonWidget(screen, declineBtn,
 		solidButtonStyle(color.RGBA{50, 50, 50, 230}, color.RGBA{120, 120, 120, 255}, color.RGBA{200, 200, 200, 255}, 10))
 }
 
@@ -6990,9 +6992,9 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 124}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
-	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, acceptBtn.Label, true,
+	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
-	drawUIButton(screen, rejectBtn.X, rejectBtn.Y, rejectBtn.W, rejectBtn.H, rejectBtn.Label, true,
+	drawUIButtonWidget(screen, rejectBtn,
 		solidButtonStyle(color.RGBA{140, 70, 70, 240}, color.RGBA{190, 110, 110, 255}, ColorWhite, 10))
 }
 
@@ -7151,17 +7153,39 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 
 func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
-	drawUIButton(screen, acceptBtn.X, acceptBtn.Y, acceptBtn.W, acceptBtn.H, acceptBtn.Label, true,
+	acceptBtn = decorateConfirmDialogButton(acceptBtn, r.confirmDialog.acceptLabel, "accept")
+	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
 	if hasThird {
-		drawUIButton(screen, thirdBtn.X, thirdBtn.Y, thirdBtn.W, thirdBtn.H, thirdBtn.Label, true,
+		thirdBtn = decorateConfirmDialogButton(thirdBtn, r.confirmDialog.thirdLabel, "third")
+		declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
+		drawUIButtonWidget(screen, thirdBtn,
 			solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
-		drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, declineBtn.Label, true,
+		drawUIButtonWidget(screen, declineBtn,
 			solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
 		return
 	}
-	drawUIButton(screen, declineBtn.X, declineBtn.Y, declineBtn.W, declineBtn.H, declineBtn.Label, true,
+	declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
+	drawUIButtonWidget(screen, declineBtn,
 		solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
+}
+
+func decorateConfirmDialogButton(btn gameui.Button, label string, role string) gameui.Button {
+	btn.Label = label
+	switch role {
+	case "accept":
+		if label == "Kaydet" {
+			return btn.WithIcon(gameui.IconSave)
+		}
+		return btn.WithIcon(gameui.IconCheck)
+	case "third":
+		if label == "Kaydetmeden Cik" {
+			return btn.WithIcon(gameui.IconExit)
+		}
+		return btn.WithIcon(gameui.IconSave)
+	default:
+		return btn.WithIcon(gameui.IconClose)
+	}
 }
 
 func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {

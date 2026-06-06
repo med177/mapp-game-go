@@ -38,6 +38,10 @@ func drawUIButton(screen *ebiten.Image, x, y, w, h float64, label string, enable
 	gameui.DrawButton(screen, btn, style, renderText)
 }
 
+func drawUIButtonWidget(screen *ebiten.Image, btn gameui.Button, style gameui.ButtonStyle) {
+	gameui.DrawButton(screen, btn, style, renderText)
+}
+
 func drawUIDropdown(screen *ebiten.Image, d *gameui.Dropdown) {
 	gameui.DrawDropdown(screen, d, dropdownStyle, renderText)
 }

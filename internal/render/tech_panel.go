@@ -64,7 +64,9 @@ func techPanelLayoutForScreen() techPanelLayout {
 
 func buildTechCloseButton() gameui.Button {
 	x, y, w, h := techCloseRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
 }
 
 func techNodeRect(node techNode) gameui.Rect {
@@ -250,10 +252,20 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				badgeH := 18.0
 				badgeX := nodeRect.X + nodeRect.W - badgeW - 8
 				badgeY := nodeRect.Y + 8
-				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{35, 35, 35, 220}, false)
-				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{220, 220, 220, 255}, false)
-				tw := MeasureText("✓", FaceSmall)
-				DrawText(screen, "✓", badgeX+badgeW/2-tw/2, badgeY+2, FaceSmall, ColorWhite)
+				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{28, 56, 34, 232}, false)
+				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{170, 225, 170, 255}, false)
+				gameui.DrawIcon(screen, gameui.IconCheck, badgeX+4, badgeY+1, 14, color.RGBA{245, 255, 245, 255})
+			}
+
+			// Araştırılıyor rozeti
+			if f.Research.ActiveID == node.t.ID {
+				badgeW := 24.0
+				badgeH := 18.0
+				badgeX := nodeRect.X + 8
+				badgeY := nodeRect.Y + 8
+				vector.FillRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), color.RGBA{86, 60, 18, 236}, false)
+				vector.StrokeRect(screen, float32(badgeX), float32(badgeY), float32(badgeW), float32(badgeH), 1, color.RGBA{245, 210, 110, 255}, false)
+				gameui.DrawIcon(screen, gameui.IconPlay, badgeX+5, badgeY+1, 14, color.RGBA{255, 244, 210, 255})
 			}
 
 			// Bağlantı çizgileri (gereksinimlere)
@@ -294,10 +306,13 @@ func drawTechCloseButton(screen *ebiten.Image) {
 }
 
 func drawTechButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, textColor color.Color, textOffsetY float64) {
-	vector.FillRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), bg, false)
-	vector.StrokeRect(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), 1, panelBorder, false)
-	tw := MeasureText(btn.Label, FaceSmall)
-	DrawText(screen, btn.Label, btn.X+btn.W/2-tw/2, btn.Y+textOffsetY, FaceSmall, textColor)
+	style := menuButtonStyle
+	style.BG = bg
+	style.Border = panelBorder
+	style.Text = color.RGBAModel.Convert(textColor).(color.RGBA)
+	style.TextOffsetY = textOffsetY
+	style.TextVariant = gameui.TextSmall
+	drawUIButtonWidget(screen, btn, style)
 }
 
 // handleTechInput teknoloji paneli klavye ve fare girişlerini işler.

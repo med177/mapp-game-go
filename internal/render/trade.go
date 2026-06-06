@@ -467,7 +467,9 @@ type tradeChoiceButton struct {
 
 func buildTradeCloseButton() gameui.Button {
 	x, y, w, h := tradeCloseRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
 }
 
 func buildTradeTabButtons() []tradeTabButton {
@@ -536,15 +538,19 @@ func buildTradeActionButtons(layout tradeLayout, goodsRows int) ([]gameui.Button
 		gameui.NewButton(float64(rightX+128), float64(btnY), 54, float64(tradeActBtnH), "+1"),
 		gameui.NewButton(float64(rightX+192), float64(btnY), 54, float64(tradeActBtnH), "+10"),
 	}
+	qty[0] = qty[0].WithIcon(gameui.IconMinus)
+	qty[1] = qty[1].WithIcon(gameui.IconMinus)
+	qty[2] = qty[2].WithIcon(gameui.IconPlus)
+	qty[3] = qty[3].WithIcon(gameui.IconPlus)
 	buyX := cardX + cardW - 244
-	buyBtn := gameui.NewButton(float64(buyX), float64(btnY), 110, float64(tradeActBtnH), "AL")
-	sellBtn := gameui.NewButton(float64(buyX+124), float64(btnY), 110, float64(tradeActBtnH), "SAT")
+	buyBtn := gameui.NewButton(float64(buyX), float64(btnY), 110, float64(tradeActBtnH), "AL").WithIcon(gameui.IconBuy)
+	sellBtn := gameui.NewButton(float64(buyX+124), float64(btnY), 110, float64(tradeActBtnH), "SAT").WithIcon(gameui.IconSell)
 	return qty, buyBtn, sellBtn
 }
 
 func buildTradeAgreementButton(layout tradeLayout, enabled bool) gameui.Button {
 	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, 1)
-	btn := gameui.NewButton(float64(cardX+cardW-250), float64(cardY+cardH-tradeActBtnH-18), 220, float64(tradeActBtnH), "Ticaret Anlaşması Aç")
+	btn := gameui.NewButton(float64(cardX+cardW-250), float64(cardY+cardH-tradeActBtnH-18), 220, float64(tradeActBtnH), "Ticaret Anlaşması Aç").WithIcon(gameui.IconSend)
 	btn.Enabled = enabled
 	return btn
 }
@@ -574,7 +580,7 @@ func tradeListViewStyle() gameui.ListViewStyle {
 }
 
 func drawTradeButton(screen *ebiten.Image, btn gameui.Button, inactive bool) {
-	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, tradeButtonStyle(!inactive))
+	drawUIButtonWidget(screen, btn, tradeButtonStyle(!inactive))
 }
 
 func drawTradeActionButton(screen *ebiten.Image, btn gameui.Button, bg, border color.RGBA) {
@@ -583,7 +589,7 @@ func drawTradeActionButton(screen *ebiten.Image, btn gameui.Button, bg, border c
 	style.Border = border
 	style.Text = ColorWhite
 	style.TextOffsetY = 10
-	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, style)
+	drawUIButtonWidget(screen, btn, style)
 }
 
 func drawTradeChoiceButton(screen *ebiten.Image, btn gameui.Button, active bool, activeBG color.RGBA) {
@@ -593,7 +599,7 @@ func drawTradeChoiceButton(screen *ebiten.Image, btn gameui.Button, active bool,
 	if active {
 		style.BG = activeBG
 	}
-	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, btn.Enabled, style)
+	drawUIButtonWidget(screen, btn, style)
 }
 
 // drawTradePricesTab piyasa fiyatlarını gösterir.

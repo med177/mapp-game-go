@@ -286,11 +286,11 @@ func topDateHudMenuButtonHit(fx, fy float64) bool {
 
 func buildTopDateHudMenuButton() gameui.Button {
 	x, y, w, h := topDateHudMenuButtonRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Menü")
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Menü").WithIcon(gameui.IconMenu)
 }
 
 func musicHudRect() (x, y, w, h float32) {
-	w = 430
+	w = 470
 	h = 36
 	x = topStatusW
 	y = 0
@@ -305,12 +305,12 @@ func musicHudRect() (x, y, w, h float32) {
 
 func musicHudToggleRect() [4]float32 {
 	x, y, _, _ := musicHudRect()
-	return [4]float32{x + 310, y + 7, 46, 22}
+	return [4]float32{x + 310, y + 7, 58, 22}
 }
 
 func musicHudNextRect() [4]float32 {
 	x, y, _, _ := musicHudRect()
-	return [4]float32{x + 362, y + 7, 54, 22}
+	return [4]float32{x + 374, y + 7, 84, 22}
 }
 
 func musicHudInteractiveHit(fx, fy float64) bool {
@@ -324,10 +324,13 @@ func musicHudInteractiveHit(fx, fy float64) bool {
 
 func buildMusicHudButtons(playing bool) (gameui.Button, gameui.Button) {
 	toggle := "Dur"
+	toggleIcon := gameui.IconPause
 	if !playing {
 		toggle = "Çal"
+		toggleIcon = gameui.IconPlay
 	}
-	return buttonFromRectF32(musicHudToggleRect(), toggle), buttonFromRectF32(musicHudNextRect(), "Sonraki")
+	return buttonFromRectF32(musicHudToggleRect(), toggle).WithIcon(toggleIcon),
+		buttonFromRectF32(musicHudNextRect(), "Sonraki").WithIcon(gameui.IconNext)
 }
 
 func musicHudHit(fx, fy float64) bool {
@@ -499,8 +502,8 @@ func drawMusicHud(screen *ebiten.Image) {
 	DrawText(screen, label, float64(x)+10, float64(y)+11, FaceSmall, ColorGray)
 
 	toggleBtn, nextBtn := buildMusicHudButtons(status.Playing)
-	drawTinyPanelButton(screen, float32(toggleBtn.X), float32(toggleBtn.Y), float32(toggleBtn.W), float32(toggleBtn.H), toggleBtn.Label, true)
-	drawTinyPanelButton(screen, float32(nextBtn.X), float32(nextBtn.Y), float32(nextBtn.W), float32(nextBtn.H), nextBtn.Label, true)
+	drawTinyPanelButtonWidget(screen, toggleBtn, true)
+	drawTinyPanelButtonWidget(screen, nextBtn, true)
 }
 
 func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
@@ -548,7 +551,7 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 	_ = mapMode
 
 	btn := buildTopDateHudMenuButton()
-	drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, dateMenuButtonStyle)
+	drawUIButtonWidget(screen, btn, dateMenuButtonStyle)
 }
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
@@ -569,16 +572,18 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		DrawText(screen, count, float64(ex)+18+titleW, float64(ey)+9, FaceSmall, ColorGray)
 	}
 
-	toggleLabel := "−"
-	if collapsed {
-		toggleLabel = "+"
-	}
 	toggleBtn := buildEventLogToggleButton(collapsed)
-	toggleBtn.Label = toggleLabel
-	drawUIButton(screen, toggleBtn.X, toggleBtn.Y, toggleBtn.W, toggleBtn.H, toggleBtn.Label, true, eventLogButtonStyle(ColorGold))
+	toggleBtn.Label = ""
+	if collapsed {
+		toggleBtn.Icon = gameui.IconPlus
+	} else {
+		toggleBtn.Icon = gameui.IconMinus
+	}
+	toggleBtn.IconSize = 14
+	drawUIButtonWidget(screen, toggleBtn, eventLogButtonStyle(ColorGold))
 	if hasCodex {
 		codexBtn := buildEventLogCodexButton()
-		drawUIButton(screen, codexBtn.X, codexBtn.Y, codexBtn.W, codexBtn.H, codexBtn.Label, true, eventLogButtonStyle(ColorGold))
+		drawUIButtonWidget(screen, codexBtn, eventLogButtonStyle(ColorGold))
 	}
 
 	if collapsed {
@@ -610,7 +615,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
 
 		closeBtn := buildEventLogCloseButton(visibleIndex)
-		drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, "X", true, eventLogButtonStyle(ColorGray))
+		drawUIButtonWidget(screen, closeBtn, eventLogButtonStyle(ColorGray))
 
 		drawUIWrappedLabel(screen, gameui.Rect{X: float64(cardX) + 10, Y: float64(cardY) + 8, W: float64(cardW - 34)}, ev, color.RGBA{220, 210, 185, 235}, gameui.TextSmall, 15, 2)
 	}
@@ -660,7 +665,9 @@ func eventLogToggleHit(mx, my float64, collapsed bool) bool {
 
 func buildEventLogToggleButton(_ bool) gameui.Button {
 	x, y, w, h := eventLogToggleRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "−")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "")
+	btn.IconSize = 14
+	return btn
 }
 
 func eventLogCodexHit(mx, my float64) bool {
@@ -669,7 +676,9 @@ func eventLogCodexHit(mx, my float64) bool {
 
 func buildEventLogCodexButton() gameui.Button {
 	x, y, w, h := eventLogCodexRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Kodex")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Kodex").WithIcon(gameui.IconBook)
+	btn.IconSize = 13
+	return btn
 }
 
 func eventLogCardRect(index int) (x, y, w, h float32) {
@@ -725,7 +734,9 @@ func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool, scroll int
 
 func buildEventLogCloseButton(index int) gameui.Button {
 	x, y, w, h := eventLogCloseRect(index)
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 12
+	return btn
 }
 
 func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int, hasCodex bool) bool {
@@ -833,7 +844,7 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	DrawText(screen, "Olay Detayı", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildEventDetailCloseButton()
-	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
+	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
 
 	drawUIWrappedLabel(screen, gameui.Rect{X: layout.bodyRect.X, Y: layout.bodyRect.Y, W: layout.bodyRect.W}, message, color.RGBA{230, 224, 205, 240}, gameui.TextMedium, 19, int(layout.bodyRect.H/19))
 }
@@ -848,7 +859,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	DrawText(screen, "Event Kodex", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildEventCodexCloseButton()
-	drawUIButton(screen, closeBtn.X, closeBtn.Y, closeBtn.W, closeBtn.H, closeBtn.Label, true, tinyButtonStyle)
+	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
 
 	filterButtons := buildEventCodexFilterButtons()
 	for i, btn := range filterButtons {
@@ -2131,7 +2142,7 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 
 func drawPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
 	btn := buildPanelCloseButton(px, py, pw)
-	drawTinyPanelButton(screen, float32(btn.X), float32(btn.Y), float32(btn.W), float32(btn.H), btn.Label, true)
+	drawTinyPanelButtonWidget(screen, btn, true)
 }
 
 func panelCloseRect(px, py, pw float32) (x, y, w, h float32) {
@@ -2142,13 +2153,20 @@ func drawTinyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string,
 	drawUIButton(screen, float64(x), float64(y), float64(w), float64(h), label, active, tinyButtonStyle)
 }
 
+func drawTinyPanelButtonWidget(screen *ebiten.Image, btn gameui.Button, active bool) {
+	btn.Enabled = active
+	drawUIButtonWidget(screen, btn, tinyButtonStyle)
+}
+
 func panelCloseHit(mx, my float64, px, py, pw float32) bool {
 	return buildPanelCloseButton(px, py, pw).HitTest(mx, my)
 }
 
 func buildPanelCloseButton(px, py, pw float32) gameui.Button {
 	x, y, w, h := panelCloseRect(px, py, pw)
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 12
+	return btn
 }
 
 func regionPanelHit(mx, my float64) bool {

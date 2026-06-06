@@ -403,7 +403,9 @@ func armyPanelGeometry() (px, py, panelW float32) {
 func buildArmyPanelCloseButton() gameui.Button {
 	px, py, panelW := armyPanelGeometry()
 	x, y, w, h := panelCloseRect(px, py, panelW)
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "X")
+	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
+	btn.IconSize = 12
+	return btn
 }
 
 // splitButtonRect BÖL butonunun piksel dikdörtgenini döner.
