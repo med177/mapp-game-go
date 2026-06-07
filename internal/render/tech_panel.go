@@ -43,9 +43,6 @@ const (
 	techTreePadding   = 24.0
 	techPanWheelStep  = 54.0
 	techPanDragThresh = 4.0
-
-	techConnectorStem     = 12.0
-	techConnectorLaneStep = 8.0
 )
 
 type techConnectorStyle struct {
@@ -74,7 +71,9 @@ func techPanelLayoutForScreen() techPanelLayout {
 	box := gameui.BoxFromRect(panel).InsetXY(20, 20)
 	headerRect, box := box.CutTop(28, 12)
 	statusRect, box := box.CutTop(24, 12)
-	hintRect, treeBox := box.CutBottom(42, 0)
+	// Teknoloji ağacını aşağıya çekmek için ekstra boşluk
+	box.Rect.Y += 30
+	hintRect, treeBox := box.CutBottom(42, 12)
 	closeRect, titleRect := gameui.BoxFromRect(headerRect).CutRight(30, 12)
 	return techPanelLayout{
 		panelRect:  panel,
@@ -224,32 +223,6 @@ func techConnectorStyleFor(parent, child techNode) techConnectorStyle {
 	return techConnectorStyle{col: col, width: 2}
 }
 
-func techConnectorMidY(parent, child techNode, reqIdx, reqCount int) float64 {
-	startY := parent.y + techNodeHeight/2
-	endY := child.y - techNodeHeight/2
-	minY := startY + techConnectorStem
-	maxY := endY - techConnectorStem
-	if maxY <= minY {
-		return (startY + endY) / 2
-	}
-
-	baseY := minY + (maxY-minY)*0.45
-	if reqCount <= 1 {
-		return baseY
-	}
-
-	spread := float64(reqCount-1) * techConnectorLaneStep
-	offset := float64(reqIdx)*techConnectorLaneStep - spread/2
-	midY := baseY + offset
-	if midY < minY {
-		return minY
-	}
-	if midY > maxY {
-		return maxY
-	}
-	return midY
-}
-
 func drawTechLine(screen *ebiten.Image, x1, y1, x2, y2 float64, style techConnectorStyle) {
 	if style.dashed {
 		drawDashedTechLine(screen, x1, y1, x2, y2, style)
@@ -290,13 +263,13 @@ func drawDashedTechLine(screen *ebiten.Image, x1, y1, x2, y2 float64, style tech
 
 func drawTechConnector(screen *ebiten.Image, parent, child techNode, reqIdx, reqCount int) {
 	style := techConnectorStyleFor(parent, child)
+	startX := parent.x
 	startY := parent.y + techNodeHeight/2
+	endX := child.x
 	endY := child.y - techNodeHeight/2
-	midY := techConnectorMidY(parent, child, reqIdx, reqCount)
 
-	drawTechLine(screen, parent.x, startY, parent.x, midY, style)
-	drawTechLine(screen, parent.x, midY, child.x, midY, style)
-	drawTechLine(screen, child.x, midY, child.x, endY, style)
+	// Dümdüz çizgi - bağımlılıklar net ve anlaşılır görünür
+	drawTechLine(screen, startX, startY, endX, endY, style)
 }
 
 func orderTechTreeLevels(levels [][]techNode) {

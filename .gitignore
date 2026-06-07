@@ -41,3 +41,14 @@ build/
 _REFERENCE/
 tmp/
 logs/
+_BUG/
+_PLANS/
+
+# AI Rules
+.claude/
+.codex/
+.github/
+.blackboxrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
