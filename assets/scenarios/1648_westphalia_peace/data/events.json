@@ -1,0 +1,448 @@
+[
+  {
+    "id": "war_exhaustion",
+    "name_tr": "Savaş Yorgunluğu",
+    "desc_tr": "Otuz Yıl Savaşı’nın yıkımı halkın sabrını tüketti. Vergi toplamak zorlaşıyor, memnuniyet düşüyor.",
+    "target": "random_region",
+    "min_turn": 2,
+    "probability": 0.05,
+    "gold_delta": -40,
+    "grain_delta": -25,
+    "sat_delta": -15,
+    "army_hp_mod": 0.95
+  },
+  {
+    "id": "plague_afterwar",
+    "name_tr": "Salgın ve Göç",
+    "desc_tr": "Savaşın ardından salgın ve göç hareketleri üretimi aksatıyor.",
+    "target": "random_region",
+    "min_turn": 5,
+    "probability": 0.035,
+    "gold_delta": 0,
+    "grain_delta": -35,
+    "sat_delta": -18,
+    "army_hp_mod": 0.88
+  },
+  {
+    "id": "trade_recovery",
+    "name_tr": "Ticaretin Dönüşü",
+    "desc_tr": "Nehir yolları ve panayırlar yeniden açıldı; şehirler gelir elde etmeye başlıyor.",
+    "target": "player_faction",
+    "min_turn": 6,
+    "probability": 0.04,
+    "gold_delta": 140,
+    "grain_delta": 10,
+    "sat_delta": 6,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "mercenary_arrears",
+    "name_tr": "Paralı Asker Alacakları",
+    "desc_tr": "Terhis edilmeyen paralı askerler hazine üzerinde baskı kuruyor.",
+    "target": "player_faction",
+    "min_turn": 4,
+    "probability": 0.035,
+    "gold_delta": -90,
+    "grain_delta": 0,
+    "sat_delta": -8,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "treaty_munster_1648",
+    "name_tr": "Münster Antlaşması",
+    "desc_tr": "İspanya, Birleşik Eyaletler’in bağımsızlığını tanır. Hollanda ticareti güven kazanırken İspanyol Flandrası kırılgan kalır.",
+    "target": "player_faction",
+    "affected_faction": "genoa",
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 10,
+    "gold_delta": 180,
+    "grain_delta": 20,
+    "sat_delta": 12,
+    "army_hp_mod": 1.02,
+    "choice_prompt_tr": "Hollanda bağımsızlığı nasıl kullanılmalı?",
+    "choices": [
+      {
+        "id": "maritime_focus",
+        "label_tr": "Deniz ticaretini büyüt",
+        "desc_tr": "Konvoylar ve liman gelirleri artar.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": 120,
+          "relations": [
+            {
+              "faction_id": "england",
+              "score_delta": 10,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "fortify_lowlands",
+        "label_tr": "Flanders sınırını tahkim et",
+        "desc_tr": "İspanya’ya karşı savunma hazırlığı yapılır.",
+        "ai_weight": 5,
+        "effect": {
+          "sat_delta": 6,
+          "relations": [
+            {
+              "faction_id": "castile_kingdom",
+              "score_delta": -20,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "osnabruck_settlement_1648",
+    "name_tr": "Osnabrück Düzeni",
+    "desc_tr": "İmparatorluk içindeki prensliklerin hakları genişler. Kutsal Roma düzeni merkezi imparatorluktan ziyade dengeli prenslikler ağına dönüşür.",
+    "target": "player_faction",
+    "affected_faction": "hre",
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 10,
+    "gold_delta": -40,
+    "grain_delta": 20,
+    "sat_delta": 5,
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "İmparatorluk düzeni nasıl yorumlansın?",
+    "choices": [
+      {
+        "id": "accept_estates",
+        "label_tr": "Prenslik özerkliğini tanı",
+        "desc_tr": "İç isyan azalır, ancak merkezi otorite zayıflar.",
+        "ai_weight": 7,
+        "effect": {
+          "sat_delta": 12,
+          "relations": [
+            {
+              "faction_id": "teutonic_order",
+              "score_delta": 18,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "lithuanian_gd",
+              "score_delta": 18,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "restore_imperial_authority",
+        "label_tr": "İmparatorluk otoritesini savun",
+        "desc_tr": "Habsburg prestiji yükselir ama Alman prenslikleri huzursuzlanır.",
+        "ai_weight": 4,
+        "effect": {
+          "gold_delta": 80,
+          "relations": [
+            {
+              "faction_id": "teutonic_order",
+              "score_delta": -20,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": -12,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "french_alsace_claims_1648",
+    "name_tr": "Fransa’nın Alsas Hakları",
+    "desc_tr": "Vestfalya ile Fransa Alsas üzerinde karmaşık ama stratejik haklar elde eder. Ren hattı artık Bourbon-Habsburg rekabetinin ana sahnesidir.",
+    "target": "player_faction",
+    "affected_faction": "france",
+    "min_turn": 1,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 11,
+    "gold_delta": 100,
+    "grain_delta": 0,
+    "sat_delta": 5,
+    "army_hp_mod": 1.03,
+    "requires_owned_regions": [
+      "alsace"
+    ],
+    "choice_prompt_tr": "Ren hattında ne yapılmalı?",
+    "choices": [
+      {
+        "id": "rhine_fortresses",
+        "label_tr": "Ren kalelerini güçlendir",
+        "desc_tr": "Savunma ve prestij artar.",
+        "ai_weight": 7,
+        "effect": {
+          "sat_delta": 8,
+          "gold_delta": -40
+        }
+      },
+      {
+        "id": "pressure_flanders",
+        "label_tr": "İspanyol Flandrası’na baskı kur",
+        "desc_tr": "Fransa-İspanya savaşı sertleşir.",
+        "ai_weight": 5,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "castile_kingdom",
+              "score_delta": -25,
+              "stance": "war"
+            }
+          ],
+          "gold_delta": 60
+        }
+      }
+    ]
+  },
+  {
+    "id": "swedish_pomerania_1648",
+    "name_tr": "İsveç Pomeranyası",
+    "desc_tr": "İsveç, Pomeranya ve Baltık ağzında kalıcı imtiyazlar kazanır. Kuzey Almanya artık İsveç nüfuzunu hesaba katmak zorunda.",
+    "target": "player_faction",
+    "affected_faction": "scotland_kingdom",
+    "min_turn": 1,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 11,
+    "gold_delta": 80,
+    "grain_delta": 10,
+    "sat_delta": 7,
+    "army_hp_mod": 1.04,
+    "requires_owned_regions": [
+      "pomerania"
+    ],
+    "choice_prompt_tr": "Baltık kazanımları nasıl kullanılmalı?",
+    "choices": [
+      {
+        "id": "baltic_tolls",
+        "label_tr": "Baltık gümrüklerini artır",
+        "desc_tr": "Gelir artar, Danimarka rahatsız olur.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": 140,
+          "relations": [
+            {
+              "faction_id": "denmark_kingdom",
+              "score_delta": -20,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "german_guarantee",
+        "label_tr": "Alman prensliklerini garanti et",
+        "desc_tr": "Prensliklerle ilişkiler güçlenir.",
+        "ai_weight": 5,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "teutonic_order",
+              "score_delta": 15,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "lithuanian_gd",
+              "score_delta": 15,
+              "stance": "peace"
+            }
+          ],
+          "sat_delta": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "fronde_1648",
+    "name_tr": "Fronde Başlangıcı",
+    "desc_tr": "Paris’te parlementolar ve soylular merkezi vergilere karşı huzursuzlanıyor. Fransa dış zaferine rağmen içeride kırılgan.",
+    "target": "player_faction",
+    "affected_faction": "france",
+    "min_turn": 2,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 12,
+    "gold_delta": -120,
+    "grain_delta": -10,
+    "sat_delta": -18,
+    "army_hp_mod": 0.96,
+    "choice_prompt_tr": "Fronde nasıl bastırılmalı?",
+    "choices": [
+      {
+        "id": "negotiate_fronde",
+        "label_tr": "Müzakere et",
+        "desc_tr": "Huzursuzluk azalır fakat hazine taviz verir.",
+        "ai_weight": 6,
+        "effect": {
+          "sat_delta": 14,
+          "gold_delta": -80
+        }
+      },
+      {
+        "id": "royal_force",
+        "label_tr": "Kraliyet otoritesini göster",
+        "desc_tr": "Merkezî otorite korunur; kısa vadede memnuniyet düşer.",
+        "ai_weight": 4,
+        "effect": {
+          "sat_delta": -8,
+          "army_hp_mod": 1.06,
+          "gold_delta": 40
+        }
+      }
+    ]
+  },
+  {
+    "id": "cossack_uprising_1648",
+    "name_tr": "Hmelnytsky Ayaklanması",
+    "desc_tr": "Ukrayna steplerinde Kazak ayaklanması Lehistan-Litvanya sınırını sarsıyor. Doğu Avrupa dengesi değişebilir.",
+    "target": "player_faction",
+    "affected_faction": "polish_kingdom",
+    "min_turn": 2,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1648,
+    "historical_month": 12,
+    "gold_delta": -80,
+    "grain_delta": -30,
+    "sat_delta": -12,
+    "army_hp_mod": 0.92,
+    "requires_owned_regions": [
+      "ukrainian_steppe"
+    ],
+    "choice_prompt_tr": "Kazak isyanına cevap ne olsun?",
+    "choices": [
+      {
+        "id": "negotiate_cossacks",
+        "label_tr": "Kayıtlı Kazakları tanı",
+        "desc_tr": "Sınır sakinleşir, soylular rahatsız olur.",
+        "ai_weight": 5,
+        "effect": {
+          "sat_delta": 8,
+          "relations": [
+            {
+              "faction_id": "russia",
+              "score_delta": -5,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "crush_uprising",
+        "label_tr": "İsyanı bastır",
+        "desc_tr": "Savaş maliyeti artar; Rusya fırsat kollayabilir.",
+        "ai_weight": 5,
+        "effect": {
+          "gold_delta": -70,
+          "army_hp_mod": 1.05,
+          "relations": [
+            {
+              "faction_id": "russia",
+              "score_delta": -18,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "crete_war_1648",
+    "name_tr": "Girit Savaşı",
+    "desc_tr": "Osmanlı ile Venedik arasında Girit için uzun bir savaş başlar. Akdeniz dengesi yeniden ısınıyor.",
+    "target": "player_faction",
+    "affected_faction": "ottoman",
+    "min_turn": 3,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1649,
+    "historical_month": 3,
+    "gold_delta": -60,
+    "grain_delta": -10,
+    "sat_delta": 0,
+    "army_hp_mod": 1.02,
+    "choice_prompt_tr": "Girit seferi nasıl yürütülsün?",
+    "choices": [
+      {
+        "id": "siege_candia",
+        "label_tr": "Kandiye kuşatmasını sıkılaştır",
+        "desc_tr": "Venedik ile savaş şiddetlenir.",
+        "ai_weight": 7,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "venice",
+              "score_delta": -30,
+              "stance": "war"
+            }
+          ],
+          "gold_delta": -60
+        }
+      },
+      {
+        "id": "secure_aegean",
+        "label_tr": "Ege ikmalini güvene al",
+        "desc_tr": "Daha yavaş ama istikrarlı bir sefer yürütülür.",
+        "ai_weight": 5,
+        "effect": {
+          "grain_delta": 20,
+          "sat_delta": 4
+        }
+      }
+    ]
+  },
+  {
+    "id": "peace_demobilization_1649",
+    "name_tr": "Terhis ve Yeniden İnşa",
+    "desc_tr": "Savaş bitmiş olsa da on binlerce asker, borç ve harap şehir kaldı. Barışın kazanımı ancak yeniden inşa ile korunabilir.",
+    "target": "player_faction",
+    "min_turn": 4,
+    "probability": 0,
+    "one_shot": true,
+    "historical_year": 1649,
+    "historical_month": 6,
+    "gold_delta": -80,
+    "grain_delta": 30,
+    "sat_delta": 10,
+    "army_hp_mod": 0.98,
+    "choice_prompt_tr": "Terhis nasıl yürütülsün?",
+    "choices": [
+      {
+        "id": "slow_demobilization",
+        "label_tr": "Aşamalı terhis",
+        "desc_tr": "Ordu hazır kalır, maliyet sürer.",
+        "ai_weight": 5,
+        "effect": {
+          "gold_delta": -60,
+          "army_hp_mod": 1.03
+        }
+      },
+      {
+        "id": "fund_reconstruction",
+        "label_tr": "Şehirleri onar",
+        "desc_tr": "Memnuniyet ve ekonomi toparlanır.",
+        "ai_weight": 7,
+        "effect": {
+          "sat_delta": 12,
+          "grain_delta": 30,
+          "gold_delta": -100
+        }
+      }
+    ]
+  }
+]

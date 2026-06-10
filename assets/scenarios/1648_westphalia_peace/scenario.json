@@ -1,0 +1,129 @@
+{
+  "id": "1648_peace_of_westphalia",
+  "name": "Vestfalya Barışı",
+  "description": "1648 yılı. Otuz Yıl Savaşı Avrupa’yı yıpratmış, Münster ve Osnabrück görüşmeleri yeni düzeni kurmuştur. Kutsal Roma İmparatorluğu parçalı egemenliklere ayrılırken Fransa Ren hattında, İsveç Baltık’ta, Hollanda bağımsızlığında, Habsburglar ise hanedan itibarında denge arıyor. Barışı koru, savaşın mirasını yönet ve Avrupa güç dengesinde üstünlük kur.",
+  "version": 1.0,
+  "author": "Mapp Team / ChatGPT senaryo dönüşümü",
+  "year": 1648,
+  "month": 10,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "03 It Will Never be the Same.mp3",
+          "weight": 1
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "westphalian_order",
+      "title": "Vestfalya Düzeni",
+      "description": "Alman prensliklerinin özerkliğini tanıyarak Avrupa güç dengesini kur",
+      "detail": "Hedef: Westphalia, Saxony, Bavaria, Brandenburg ve Palatinate hattında barış düzeni",
+      "type": "domination",
+      "target_region_count": 26,
+      "required_regions": [
+        "westphalia",
+        "saxony",
+        "bavaria",
+        "brandenburg",
+        "palatinate"
+      ]
+    },
+    {
+      "id": "bourbon_ascendancy",
+      "title": "Bourbon Yükselişi",
+      "description": "Fransa olarak Alsace-Lorraine ve Flanders hattına nüfuz ederek Habsburg çemberini kır",
+      "detail": "Paris’i tut; Alsace, Lorraine ve Flanders hattında üstünlük kur",
+      "type": "domination",
+      "target_region_count": 30,
+      "required_regions": [
+        "paris",
+        "alsace",
+        "lorraine",
+        "flanders"
+      ]
+    },
+    {
+      "id": "habsburg_recovery",
+      "title": "Habsburg Restorasyonu",
+      "description": "Avusturya olarak Viyana, Bohemya ve Macaristan’ı güvenceye al; imparatorluk otoritesini koru",
+      "detail": "Viyana, Bohemya, Hungary ve Moravia bölgelerini elde tut",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "austria",
+        "bohemia",
+        "hungary",
+        "moravia"
+      ]
+    },
+    {
+      "id": "dutch_independence",
+      "title": "Birleşik Eyaletler",
+      "description": "Hollanda olarak bağımsızlığını koru, Kuzey Denizi ve Flanders ticaretinde üstünlük sağla",
+      "detail": "Holland, Flanders, North Sea Shore ve London ticaret bağlantıları",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "holland",
+        "flanders",
+        "north_sea_shore",
+        "london"
+      ]
+    },
+    {
+      "id": "swedish_baltic",
+      "title": "Baltık Hakimiyeti",
+      "description": "İsveç olarak Pomerania, Baltic Sea ve Kuzey Alman kıyılarında nüfuz kur",
+      "detail": "Sweden, Pomerania, Baltic Sea ve Denmark hattı",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "sweden",
+        "pomerania",
+        "baltic_sea",
+        "denmark"
+      ]
+    },
+    {
+      "id": "peace_survives",
+      "title": "Barışı Yaşat",
+      "description": "1648 sonrası 80 tur boyunca büyük savaşlara teslim olmadan düzeni sürdür",
+      "detail": "Yıkımdan çıkan Avrupa’da istikrar ve ekonomi inşa et",
+      "type": "survive_turns",
+      "turns": 80
+    }
+  ]
+}
