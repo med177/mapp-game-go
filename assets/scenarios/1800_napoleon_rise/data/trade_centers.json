@@ -1,0 +1,125 @@
+{
+  "centers": [
+    {
+      "id": "london",
+      "tier": "primary",
+      "links": [
+        "flanders",
+        "portugal",
+        "malta",
+        "atlantic_ocean_shore",
+        "north_sea_shore"
+      ]
+    },
+    {
+      "id": "paris",
+      "tier": "primary",
+      "links": [
+        "flanders",
+        "milan",
+        "switzerland",
+        "bavaria",
+        "languedoc"
+      ]
+    },
+    {
+      "id": "flanders",
+      "tier": "primary",
+      "links": [
+        "london",
+        "paris",
+        "holland",
+        "brandenburg",
+        "north_sea_shore"
+      ]
+    },
+    {
+      "id": "venice",
+      "tier": "primary",
+      "links": [
+        "milan",
+        "dalmatia",
+        "austria",
+        "adriatic_sea_shore"
+      ]
+    },
+    {
+      "id": "constantinople",
+      "tier": "primary",
+      "links": [
+        "black_sea_shore",
+        "aegean_sea_shore",
+        "bursa",
+        "damascus",
+        "egypt"
+      ]
+    },
+    {
+      "id": "milan",
+      "tier": "secondary",
+      "links": [
+        "paris",
+        "venice",
+        "genoa",
+        "savoy"
+      ]
+    },
+    {
+      "id": "austria",
+      "tier": "secondary",
+      "links": [
+        "bohemia",
+        "hungary",
+        "bavaria",
+        "venice"
+      ]
+    },
+    {
+      "id": "brandenburg",
+      "tier": "secondary",
+      "links": [
+        "saxony",
+        "konigsberg",
+        "flanders",
+        "poland"
+      ]
+    },
+    {
+      "id": "moscow",
+      "tier": "secondary",
+      "links": [
+        "novgorod",
+        "kiev",
+        "nizhny_novgorod"
+      ]
+    },
+    {
+      "id": "portugal",
+      "tier": "secondary",
+      "links": [
+        "london",
+        "atlantic_ocean_shore",
+        "castile"
+      ]
+    },
+    {
+      "id": "egypt",
+      "tier": "secondary",
+      "links": [
+        "constantinople",
+        "eastern_mediterranean_shore",
+        "red_sea",
+        "hejaz"
+      ]
+    },
+    {
+      "id": "malta",
+      "tier": "secondary",
+      "links": [
+        "sicily",
+        "london",
+        "western_mediterranean_shore"
+      ]
+    }
+  ]
+}

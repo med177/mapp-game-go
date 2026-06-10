@@ -1,0 +1,580 @@
+[
+  {
+    "id": "bad_harvest",
+    "name_tr": "Kötü Hasat",
+    "desc_tr": "Savaş ekonomisi ve kötü hava hasadı vurdu; tahıl depoları azalıyor.",
+    "target": "player_faction",
+    "min_turn": 3,
+    "probability": 0.035,
+    "gold_delta": -45,
+    "grain_delta": -55,
+    "sat_delta": -10,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "war_bonds",
+    "name_tr": "Savaş Tahvilleri",
+    "desc_tr": "Bankerler ve tedarikçiler sefer bütçesine kredi açtı.",
+    "target": "player_faction",
+    "min_turn": 6,
+    "probability": 0.025,
+    "gold_delta": 180,
+    "grain_delta": 0,
+    "sat_delta": -3,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "partisan_unrest",
+    "name_tr": "Partizan Direnişi",
+    "desc_tr": "İşgal altındaki bölgelerde direniş ağları ikmal hatlarını vuruyor.",
+    "target": "random_region",
+    "min_turn": 10,
+    "probability": 0.03,
+    "gold_delta": -30,
+    "grain_delta": -20,
+    "sat_delta": -20,
+    "army_hp_mod": 0.92
+  },
+  {
+    "id": "ulm_campaign_1805",
+    "name_tr": "Ulm Manevrası",
+    "desc_tr": "Napolyon’un kolordu sistemi Avusturya ordusunu Tuna hattında kuşatma fırsatı yakaladı.",
+    "historical_year": 1805,
+    "historical_month": 10,
+    "min_turn": 1,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "france",
+    "requires_owned_regions": [
+      "paris",
+      "alsace"
+    ],
+    "gold_delta": 90,
+    "grain_delta": 10,
+    "sat_delta": 8,
+    "army_hp_mod": 1.06,
+    "choice_prompt_tr": "Fransız ordusu Tuna hattında nasıl ilerlesin?",
+    "choices": [
+      {
+        "id": "rapid_march",
+        "label_tr": "Hızlı yürüyüşle kuşat",
+        "desc_tr": "Avusturya ile savaş keskinleşir; ordu morali yükselir.",
+        "ai_weight": 8,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "hre",
+              "score_delta": -20,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 6
+        }
+      },
+      {
+        "id": "secure_depots",
+        "label_tr": "Depoları güvenceye al",
+        "desc_tr": "İkmal güçlenir ama fırsat kısmen kaçar.",
+        "ai_weight": 3,
+        "effect": {
+          "grain_delta": 35,
+          "gold_delta": 40
+        }
+      }
+    ]
+  },
+  {
+    "id": "trafalgar_1805",
+    "name_tr": "Trafalgar Muharebesi",
+    "desc_tr": "Britanya donanması Manş ve Atlantik’te Fransız-İspanyol filosunu durdurmaya hazırlanıyor.",
+    "historical_year": 1805,
+    "historical_month": 10,
+    "min_turn": 2,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "england",
+    "gold_delta": 80,
+    "grain_delta": 0,
+    "sat_delta": 10,
+    "army_hp_mod": 1.05,
+    "choice_prompt_tr": "Donanma stratejisi ne olsun?",
+    "choices": [
+      {
+        "id": "nelson_attack",
+        "label_tr": "Nelson tarzı hat yarma",
+        "desc_tr": "Britanya-Fransa savaşı derinleşir; deniz üstünlüğü artar.",
+        "ai_weight": 9,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": -30,
+              "stance": "war"
+            }
+          ],
+          "gold_delta": 60,
+          "sat_delta": 8
+        }
+      },
+      {
+        "id": "blockade_careful",
+        "label_tr": "Temkinli abluka",
+        "desc_tr": "Risk azalır; uzun vadeli ticaret geliri korunur.",
+        "ai_weight": 4,
+        "effect": {
+          "gold_delta": 120,
+          "sat_delta": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "austerlitz_1805",
+    "name_tr": "Austerlitz Güneşi",
+    "desc_tr": "Fransız ordusu Avusturya ve Rusya’yı Moravya’da belirleyici bir meydan savaşına çekebilir.",
+    "historical_year": 1805,
+    "historical_month": 12,
+    "min_turn": 4,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "france",
+    "requires_owned_regions": [
+      "paris"
+    ],
+    "gold_delta": 160,
+    "grain_delta": 20,
+    "sat_delta": 12,
+    "army_hp_mod": 1.08,
+    "choice_prompt_tr": "Pratzen Tepeleri’nde plan ne olsun?",
+    "choices": [
+      {
+        "id": "feigned_weakness",
+        "label_tr": "Merkezi zayıf göster",
+        "desc_tr": "Koalisyonla savaş sertleşir; Fransız prestiji artar.",
+        "ai_weight": 9,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "hre",
+              "score_delta": -25,
+              "stance": "war"
+            },
+            {
+              "faction_id": "russia",
+              "score_delta": -20,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 10
+        }
+      },
+      {
+        "id": "limited_victory",
+        "label_tr": "Sınırlı zaferle barış ara",
+        "desc_tr": "Avusturya ile ateşkes ihtimali yükselir, gelir artar.",
+        "ai_weight": 3,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "hre",
+              "score_delta": 10,
+              "stance": "peace"
+            }
+          ],
+          "gold_delta": 120
+        }
+      }
+    ]
+  },
+  {
+    "id": "jena_auerstedt_1806",
+    "name_tr": "Jena-Auerstedt",
+    "desc_tr": "Prusya ordusu eski düzenin disipliniyle güçlüdür; fakat Fransız kolordu sistemi onu sınayacak.",
+    "historical_year": 1806,
+    "historical_month": 10,
+    "min_turn": 14,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "teutonic_order",
+    "gold_delta": 40,
+    "grain_delta": 0,
+    "sat_delta": -5,
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Prusya ne yapmalı?",
+    "choices": [
+      {
+        "id": "mobilize_prussia",
+        "label_tr": "Tam seferberlik",
+        "desc_tr": "Fransa ile savaş başlar; ordu morali artar ama ekonomi zorlanır.",
+        "ai_weight": 7,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": -45,
+              "stance": "war"
+            }
+          ],
+          "gold_delta": -100,
+          "sat_delta": 5
+        }
+      },
+      {
+        "id": "delay_entry",
+        "label_tr": "Tarafsızlığı uzat",
+        "desc_tr": "Kısa vadeli güvenlik sağlanır, koalisyon güveni azalır.",
+        "ai_weight": 4,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "england",
+              "score_delta": -10
+            },
+            {
+              "faction_id": "russia",
+              "score_delta": -10
+            }
+          ],
+          "gold_delta": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "treaty_tilsit_1807",
+    "name_tr": "Tilsit Antlaşması",
+    "desc_tr": "Fransa ile Rusya arasında geçici uzlaşma, Avrupa diplomasisini yeniden kurabilir.",
+    "historical_year": 1807,
+    "historical_month": 7,
+    "min_turn": 22,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "russia",
+    "gold_delta": 70,
+    "grain_delta": 20,
+    "sat_delta": 4,
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Rusya diplomasisi nasıl ilerlesin?",
+    "choices": [
+      {
+        "id": "tilsit_accord",
+        "label_tr": "Fransa ile uzlaş",
+        "desc_tr": "Fransa ile barış; Britanya ile ilişkiler gerilir.",
+        "ai_weight": 5,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": 45,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "england",
+              "score_delta": -20
+            }
+          ],
+          "gold_delta": 60
+        }
+      },
+      {
+        "id": "continue_coalition",
+        "label_tr": "Koalisyonda kal",
+        "desc_tr": "Britanya desteği sürer; Fransa ile savaş devam eder.",
+        "ai_weight": 5,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "england",
+              "score_delta": 25
+            },
+            {
+              "faction_id": "france",
+              "score_delta": -30,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "peninsular_war_1808",
+    "name_tr": "İspanya Ayaklanması",
+    "desc_tr": "Madrid üzerindeki Fransız baskısı yerel direnişi ve gerilla savaşını tetikliyor.",
+    "historical_year": 1808,
+    "historical_month": 5,
+    "min_turn": 30,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "castile_kingdom",
+    "gold_delta": -80,
+    "grain_delta": -20,
+    "sat_delta": -15,
+    "army_hp_mod": 0.95,
+    "choice_prompt_tr": "İspanya nasıl karşılık versin?",
+    "choices": [
+      {
+        "id": "popular_junta",
+        "label_tr": "Cuntaları ve gerillayı destekle",
+        "desc_tr": "Fransa ile savaş; halk direnişi güçlenir.",
+        "ai_weight": 8,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": -60,
+              "stance": "war"
+            },
+            {
+              "faction_id": "england",
+              "score_delta": 35
+            }
+          ],
+          "sat_delta": 15
+        }
+      },
+      {
+        "id": "accept_bayonet",
+        "label_tr": "Fransız baskısını kabullen",
+        "desc_tr": "Kısa süreli düzen sağlanır; meşruiyet düşer.",
+        "ai_weight": 2,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": 35,
+              "stance": "peace"
+            }
+          ],
+          "gold_delta": 120,
+          "sat_delta": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "wagram_1809",
+    "name_tr": "Wagram Seferi",
+    "desc_tr": "Avusturya bir kez daha Fransız hegemonyasına meydan okumaya hazırlanıyor.",
+    "historical_year": 1809,
+    "historical_month": 7,
+    "min_turn": 42,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "hre",
+    "gold_delta": -50,
+    "grain_delta": -10,
+    "sat_delta": 3,
+    "army_hp_mod": 1.02,
+    "choice_prompt_tr": "Avusturya’nın stratejisi?",
+    "choices": [
+      {
+        "id": "fifth_coalition",
+        "label_tr": "Beşinci Koalisyon’a katıl",
+        "desc_tr": "Fransa ile savaş başlar; ulusal moral artar.",
+        "ai_weight": 7,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": -45,
+              "stance": "war"
+            },
+            {
+              "faction_id": "england",
+              "score_delta": 20
+            }
+          ],
+          "sat_delta": 8
+        }
+      },
+      {
+        "id": "dynastic_compromise",
+        "label_tr": "Hanedan uzlaşması ara",
+        "desc_tr": "Barış ihtimali artar, fakat prestij kaybı yaşanır.",
+        "ai_weight": 3,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": 25,
+              "stance": "peace"
+            }
+          ],
+          "sat_delta": -8,
+          "gold_delta": 70
+        }
+      }
+    ]
+  },
+  {
+    "id": "russian_campaign_1812",
+    "name_tr": "Rusya Seferi",
+    "desc_tr": "Kıta Sistemi gerilimi tırmandı; Fransa dev bir orduyla Moskova yoluna çıkabilir.",
+    "historical_year": 1812,
+    "historical_month": 6,
+    "min_turn": 82,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "france",
+    "gold_delta": -180,
+    "grain_delta": -120,
+    "sat_delta": -8,
+    "army_hp_mod": 0.82,
+    "choice_prompt_tr": "Büyük Ordu ne yapmalı?",
+    "choices": [
+      {
+        "id": "march_moscow",
+        "label_tr": "Moskova’ya yürü",
+        "desc_tr": "Rusya ile topyekûn savaş; kazanılırsa büyük prestij, kaybedilirse yıkıcı ikmal krizi.",
+        "ai_weight": 6,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "russia",
+              "score_delta": -70,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 6
+        }
+      },
+      {
+        "id": "limited_poland",
+        "label_tr": "Polonya hattında sınırlı kal",
+        "desc_tr": "Risk azalır; Polonya desteği artar.",
+        "ai_weight": 4,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "polish_kingdom",
+              "score_delta": 30
+            }
+          ],
+          "grain_delta": 60,
+          "army_hp_mod": 1.04
+        }
+      }
+    ]
+  },
+  {
+    "id": "leipzig_1813",
+    "name_tr": "Milletler Muharebesi",
+    "desc_tr": "Fransız üstünlüğüne karşı geniş koalisyon Leipzig çevresinde birleşiyor.",
+    "historical_year": 1813,
+    "historical_month": 10,
+    "min_turn": 98,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "france",
+    "gold_delta": -120,
+    "grain_delta": -50,
+    "sat_delta": -10,
+    "army_hp_mod": 0.9,
+    "choice_prompt_tr": "Fransa kuşatmayı nasıl karşılasın?",
+    "choices": [
+      {
+        "id": "hold_saxony",
+        "label_tr": "Saksonya’da diren",
+        "desc_tr": "Büyük meydan savaşı; tüm koalisyonla savaş kesinleşir.",
+        "ai_weight": 5,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "england",
+              "score_delta": -20,
+              "stance": "war"
+            },
+            {
+              "faction_id": "russia",
+              "score_delta": -30,
+              "stance": "war"
+            },
+            {
+              "faction_id": "hre",
+              "score_delta": -30,
+              "stance": "war"
+            },
+            {
+              "faction_id": "teutonic_order",
+              "score_delta": -30,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 4
+        }
+      },
+      {
+        "id": "retreat_rhine",
+        "label_tr": "Ren’e çekil",
+        "desc_tr": "Ordu korunur ama prestij düşer.",
+        "ai_weight": 5,
+        "effect": {
+          "gold_delta": -60,
+          "army_hp_mod": 1.08,
+          "sat_delta": -12
+        }
+      }
+    ]
+  },
+  {
+    "id": "hundred_days_1815",
+    "name_tr": "Yüz Gün",
+    "desc_tr": "Napolyon’un geri dönüşü Avrupa’yı son kez seferber ediyor.",
+    "historical_year": 1815,
+    "historical_month": 3,
+    "min_turn": 116,
+    "probability": 0,
+    "one_shot": true,
+    "target": "player_faction",
+    "affected_faction": "france",
+    "gold_delta": 100,
+    "grain_delta": 40,
+    "sat_delta": 12,
+    "army_hp_mod": 1.08,
+    "choice_prompt_tr": "Paris nasıl hareket etmeli?",
+    "choices": [
+      {
+        "id": "waterloo_push",
+        "label_tr": "Belçika’ya saldır",
+        "desc_tr": "Britanya ve Prusya ile kesin savaş.",
+        "ai_weight": 7,
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "england",
+              "score_delta": -60,
+              "stance": "war"
+            },
+            {
+              "faction_id": "teutonic_order",
+              "score_delta": -50,
+              "stance": "war"
+            }
+          ],
+          "sat_delta": 8
+        }
+      },
+      {
+        "id": "defend_france",
+        "label_tr": "Fransa’da savunma kur",
+        "desc_tr": "Tahkimat ve iç düzen güçlenir.",
+        "ai_weight": 3,
+        "effect": {
+          "grain_delta": 80,
+          "sat_delta": 4
+        }
+      }
+    ]
+  }
+]

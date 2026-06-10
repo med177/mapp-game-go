@@ -1,0 +1,97 @@
+{
+  "id": "1805_napoleonic_coalition_wars",
+  "name": "Napolyon ve Koalisyon Savaşları",
+  "description": "1805 yılı. Fransız İmparatorluğu kıta Avrupası’nı yeniden şekillendirirken Britanya denizlerde üstün, Avusturya ve Rusya Üçüncü Koalisyon’u topluyor, Prusya ise tereddütlü bekliyor. Napolyon olarak kıtayı zorla hizaya getir; ya da koalisyonlardan biriyle Fransız yayılmasını durdur.",
+  "version": 1.0,
+  "author": "Mapp Team / ChatGPT senaryo dönüşümü",
+  "year": 1805,
+  "month": 8,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "03 It Will Never be the Same.mp3",
+          "weight": 1
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "french_hegemony",
+      "title": "Kıta Sistemi",
+      "description": "Paris, Viyana, Berlin ve Moskova hattında Fransız hegemonyası kur",
+      "detail": "Hedef: Paris’i tut, Viyana ve Berlin’i al; Rusya’yı Tilsit benzeri barışa zorla",
+      "type": "domination",
+      "target_region_count": 36,
+      "required_regions": [
+        "paris",
+        "austria",
+        "brandenburg",
+        "moscow"
+      ]
+    },
+    {
+      "id": "coalition_triumph",
+      "title": "Koalisyon Zaferi",
+      "description": "Paris’i ele geçirerek Fransız İmparatorluğu’nu yık",
+      "detail": "Hedef: Paris ve Hollanda/Belçika hattı",
+      "type": "conquer_city",
+      "target": "paris",
+      "additional_target": "flanders"
+    },
+    {
+      "id": "british_blockade",
+      "title": "Denizlerin Hakimi",
+      "description": "Britanya olarak Manş, Atlantik ve Akdeniz ticaret merkezlerinde üstünlük kur",
+      "detail": "Londra, Flanders, Portugal, Malta, Sicily ve Egypt ticaret hattını denetle",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "london",
+        "flanders",
+        "portugal",
+        "malta",
+        "sicily",
+        "egypt"
+      ]
+    },
+    {
+      "id": "continental_balance",
+      "title": "Güç Dengesi",
+      "description": "Hiçbir tarafın tek başına kıtaya hâkim olmasını engelle; 1815’e kadar ayakta kal",
+      "detail": "Avusturya/Rusya/Prusya/İngiltere’den biriyle Paris veya Viyana’yı koru",
+      "type": "survive_turns",
+      "turns": 120
+    }
+  ]
+}

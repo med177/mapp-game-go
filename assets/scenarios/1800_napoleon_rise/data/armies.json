@@ -1,0 +1,366 @@
+[
+  {
+    "id": "army_france_grande_armee",
+    "owner_id": "france",
+    "region_id": "paris",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "catapult",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_france_rhine",
+    "owner_id": "france",
+    "region_id": "alsace",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "catapult",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_france_italy",
+    "owner_id": "venice",
+    "region_id": "milan",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "catapult",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_britain_home",
+    "owner_id": "england",
+    "region_id": "london",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_britain_mediterranean",
+    "owner_id": "england",
+    "region_id": "malta",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      },
+      {
+        "type_id": "transport",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_austria_vienna",
+    "owner_id": "hre",
+    "region_id": "austria",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "catapult",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_austria_bohemia",
+    "owner_id": "hre",
+    "region_id": "bohemia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "catapult",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_russia_west",
+    "owner_id": "russia",
+    "region_id": "kiev",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "catapult",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_russia_moscow",
+    "owner_id": "russia",
+    "region_id": "moscow",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      },
+      {
+        "type_id": "heavy_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_prussia_berlin",
+    "owner_id": "teutonic_order",
+    "region_id": "brandenburg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "catapult",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_prussia_east",
+    "owner_id": "teutonic_order",
+    "region_id": "konigsberg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_spain_madrid",
+    "owner_id": "castile_kingdom",
+    "region_id": "castile",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_portugal_lisbon",
+    "owner_id": "portugal",
+    "region_id": "portugal",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_istanbul",
+    "owner_id": "ottoman",
+    "region_id": "constantinople",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "catapult",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_balkans",
+    "owner_id": "ottoman",
+    "region_id": "serbia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_stockholm",
+    "owner_id": "scotland_kingdom",
+    "region_id": "sweden",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_naples",
+    "owner_id": "milan_duchy",
+    "region_id": "naples",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_sicily",
+    "owner_id": "naples_kingdom",
+    "region_id": "sicily",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_denmark",
+    "owner_id": "denmark_kingdom",
+    "region_id": "denmark",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_egypt",
+    "owner_id": "mamluk",
+    "region_id": "egypt",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  }
+]
