@@ -14,6 +14,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
@@ -77,13 +78,14 @@ type Renderer struct {
 	diplomacyTargetFaction faction.FactionID
 
 	// Teknoloji paneli
-	showTech       bool
-	techCursor     int
-	techPanX       float64
-	techPanY       float64
-	techDragging   bool
-	techDragLastMX float64
-	techDragLastMY float64
+	showTech           bool
+	techCursor         int
+	techPanX           float64
+	techPanY           float64
+	techDragging       bool
+	techDragLastMX     float64
+	techDragLastMY     float64
+	techFilterCategory tech.Category
 
 	// Ticaret paneli
 	showTrade         bool
