@@ -8,23 +8,34 @@ import (
 	"mapp-game-go/internal/religion"
 )
 
-// LoadFactions assets/data/factions.json dosyasını okur ve map döner.
-func LoadFactions(path string) (map[FactionID]*Faction, error) {
+// LoadFactionsWithOrder assets/data/factions.json dosyasını okur, map ve dosya sırasını döner.
+func LoadFactionsWithOrder(path string) (map[FactionID]*Faction, []FactionID, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("factions dosyası okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("factions dosyası okunamadı: %w", err)
 	}
 
 	var list []*Faction
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("factions JSON parse hatası: %w", err)
+		return nil, nil, fmt.Errorf("factions JSON parse hatası: %w", err)
 	}
 
 	result := make(map[FactionID]*Faction, len(list))
+	order := make([]FactionID, 0, len(list))
 	for _, f := range list {
+		if f == nil {
+			continue
+		}
 		result[f.ID] = f
+		order = append(order, f.ID)
 	}
-	return result, nil
+	return result, order, nil
+}
+
+// LoadFactions assets/data/factions.json dosyasını okur ve map döner.
+func LoadFactions(path string) (map[FactionID]*Faction, error) {
+	result, _, err := LoadFactionsWithOrder(path)
+	return result, err
 }
 
 // LoadRelations başlangıç diplomasi ilişkilerini JSON'dan okur.

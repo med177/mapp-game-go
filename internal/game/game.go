@@ -174,6 +174,7 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionSelectFaction:
 			g.gs.PlayerFactionID = action.TargetFaction
+			g.gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(g.gs.ScenarioVictories, string(action.TargetFaction))
 			g.gs.Phase = state.PhaseVictorySelect
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseScenarioSelect
@@ -1083,6 +1084,8 @@ func victoryLabel(vtype state.VictoryType) string {
 		return "Dinî Zafer"
 	case state.VictoryConquerCity:
 		return "Fetih"
+	case state.VictorySurviveTurns:
+		return "Hayatta Kalma"
 	default:
 		return "Zafer"
 	}
@@ -1600,10 +1603,26 @@ func writeScenarioSettlements(gs *state.GameState) error {
 func writeScenarioFactions(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "factions.json")
 	ids := make([]faction.FactionID, 0, len(gs.Factions))
+	seen := make(map[faction.FactionID]struct{}, len(gs.Factions))
+	for _, fid := range gs.FactionOrder {
+		if gs.Factions[fid] == nil {
+			continue
+		}
+		ids = append(ids, fid)
+		seen[fid] = struct{}{}
+	}
+	orderedCount := len(ids)
 	for fid := range gs.Factions {
+		if _, ok := seen[fid]; ok {
+			continue
+		}
 		ids = append(ids, fid)
 	}
-	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	if len(ids) > orderedCount {
+		sort.Slice(ids[orderedCount:], func(i, j int) bool {
+			return ids[orderedCount+i] < ids[orderedCount+j]
+		})
+	}
 
 	factions := make([]*faction.Faction, 0, len(ids))
 	for _, fid := range ids {
@@ -1889,7 +1908,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	}
 	advance()
 	yield()
-	factions, err := faction.LoadFactions(dp("factions.json"))
+	factions, factionOrder, err := faction.LoadFactionsWithOrder(dp("factions.json"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
@@ -1968,12 +1987,14 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		Regions:            regions,
 		RegionOrder:        regionOrder,
 		Factions:           factions,
+		FactionOrder:       factionOrder,
 		Armies:             armies,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
 		BuildingTypes:      buildingTypes,
 		TechTypes:          techTypes,
-		AvailableVictories: victoryOpts,
+		ScenarioVictories:  victoryOpts,
+		AvailableVictories: scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
 		Relations:          relations,
 		TradeCenters:       tradeCenters,
 		NextArmySeq:        len(armies),
@@ -2810,13 +2831,10 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		return
 	}
 
-	requiredRegions := make([]world.RegionID, len(opt.RequiredRegions))
-	for i, r := range opt.RequiredRegions {
+	regionTargets := opt.RegionTargets()
+	requiredRegions := make([]world.RegionID, len(regionTargets))
+	for i, r := range regionTargets {
 		requiredRegions[i] = world.RegionID(r)
-	}
-	// conquer_city: tek hedef bölgeyi required listesine çevir
-	if opt.Type == "conquer_city" && opt.Target != "" {
-		requiredRegions = []world.RegionID{world.RegionID(opt.Target)}
 	}
 
 	g.gs.Victory = state.VictoryCondition{
@@ -2827,8 +2845,11 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		GoldHoldTurns:      opt.GoldHoldTurns,
 		TargetArmyStrength: opt.TargetArmyStrength,
 		TargetDefeated:     opt.TargetDefeated,
-		DeadlineTurn:       opt.DeadlineTurn,
+		TargetTurns:        opt.Turns,
+		DeadlineYear:       opt.DeadlineYear,
+		DeadlineMonth:      opt.DeadlineMonth,
 	}
+	g.gs.SelectedVictoryOptionID = opt.ID
 }
 
 func (g *Game) applyAIDifficultyStartBonus() {

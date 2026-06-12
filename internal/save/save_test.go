@@ -33,11 +33,16 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 			WorldWidth: intPtr(64),
 		},
 		VictoryConditions: []scenario.VictoryOptionDef{
-			{ID: "economic", Type: "economic", TargetGoldIncome: 500, GoldHoldTurns: 5},
+			{ID: "economic", Type: "economic", TargetGoldIncome: 500, GoldHoldTurns: 5, DeadlineYear: 1500, DeadlineMonth: 6},
+			{ID: "other_only", Type: "conquer_city", RequiredRegions: []string{"r1"}, AllowedFactions: []string{"other"}},
 		},
 	})
 	writeJSONFile(t, filepath.Join(scenarioPath, "data", "regions.json"), []*world.Region{
 		{ID: "r1", NameTR: "R1", OwnerID: "player", ShapeID: "AAA", TaxRate: 50, Satisfaction: 50},
+	})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "factions.json"), []*faction.Faction{
+		{ID: "player", NameTR: "Oyuncu", IsPlayable: true},
+		{ID: "other", NameTR: "Diger", IsPlayable: true},
 	})
 	writeJSONFile(t, filepath.Join(scenarioPath, "data", "units.json"), []map[string]any{
 		{"id": "militia", "name": "Militia", "name_tr": "Milis", "category": "infantry", "attack": 5, "defense": 4, "morale": 10, "hp": 100, "gold_cost": 10, "grain_upkeep": 1, "turns_required": 1},
@@ -76,6 +81,9 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	if gs.ScenarioPath != scenarioPath {
 		t.Fatalf("scenario path resolve olmadi: got=%q want=%q", gs.ScenarioPath, scenarioPath)
 	}
+	if len(gs.ScenarioVictories) != 2 {
+		t.Fatalf("senaryo victory metadata geri yuklenmedi: %+v", gs.ScenarioVictories)
+	}
 	if len(gs.AvailableVictories) != 1 || gs.AvailableVictories[0].ID != "economic" {
 		t.Fatalf("victory metadata geri yuklenmedi: %+v", gs.AvailableVictories)
 	}
@@ -84,6 +92,9 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	}
 	if len(gs.RegionOrder) != 1 || gs.RegionOrder[0] != "r1" {
 		t.Fatalf("region order geri yuklenmedi: %+v", gs.RegionOrder)
+	}
+	if len(gs.FactionOrder) != 2 || gs.FactionOrder[0] != "player" || gs.FactionOrder[1] != "other" {
+		t.Fatalf("faction order geri yuklenmedi: %+v", gs.FactionOrder)
 	}
 	if gs.UnitTypes["militia"] == nil || gs.BuildingTypes["market"] == nil || gs.TechTypes["tax"] == nil {
 		t.Fatal("runtime tipleri geri yuklenmedi")

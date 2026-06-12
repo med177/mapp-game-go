@@ -51,6 +51,7 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertModalInside(t, tc.w, tc.h, buildConfirmDialogModal())
 		assertModalInside(t, tc.w, tc.h, buildWarConfirmModal())
 		assertModalInside(t, tc.w, tc.h, buildDiplomacyOfferModal())
+		assertModalInside(t, tc.w, tc.h, buildVictoryDetailModal())
 		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
 		for _, btn := range buildHistoricalEventChoiceButtons(2) {
 			assertButtonInside(t, tc.w, tc.h, btn)
@@ -347,6 +348,35 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 		DrawSettlementPanel(screen, gs, gs.Regions[regionID], &gs.Regions[regionID].Settlements[0])
 		DrawSeaRegionPanel(screen, gs, gs.Regions[seaID], false)
 		DrawRecruitPanel(screen, gs, regionID, "", 0)
+	}
+}
+
+func TestVictoryChecklistEntriesReflectOwnership(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Victory: state.VictoryCondition{
+			Type:            state.VictoryConquerCity,
+			RequiredRegions: []world.RegionID{"constantinople", "ankara"},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"osm":     {ID: "osm", NameTR: "Osmanlı"},
+			"karaman": {ID: "karaman", NameTR: "Karamanoğulları"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", NameTR: "Konstantinopolis", OwnerID: "osm"},
+			"ankara":         {ID: "ankara", NameTR: "Ankara", OwnerID: "karaman"},
+		},
+	}
+
+	lines, _ := victoryChecklistEntries(gs)
+	if len(lines) != 2 {
+		t.Fatalf("2 checklist satiri bekleniyordu, got=%d", len(lines))
+	}
+	if lines[0] != "✓ Konstantinopolis" {
+		t.Fatalf("ilk satir beklenmedik: %q", lines[0])
+	}
+	if lines[1] != "✗ Ankara (Karamanoğulları)" {
+		t.Fatalf("ikinci satir beklenmedik: %q", lines[1])
 	}
 }
 

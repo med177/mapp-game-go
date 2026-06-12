@@ -59,7 +59,9 @@
         "bavaria",
         "brandenburg",
         "palatinate"
-      ]
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12
     },
     {
       "id": "bourbon_ascendancy",
@@ -73,6 +75,11 @@
         "alsace",
         "lorraine",
         "flanders"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "france"
       ]
     },
     {
@@ -87,6 +94,30 @@
         "bohemia",
         "hungary",
         "moravia"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "hre"
+      ]
+    },
+    {
+      "id": "commonwealth_of_the_seas",
+      "title": "Denizler Üzerinde Commonwealth",
+      "description": "İngiltere olarak Kuzey Denizi ve Atlas bağlantılarını denetleyip Fransız kıtasal yükselişini sınırlı tut.",
+      "detail": "Hedef: London, Holland, Flanders ve Portugal",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "london",
+        "holland",
+        "flanders",
+        "portugal"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england"
       ]
     },
     {
@@ -101,6 +132,11 @@
         "flanders",
         "north_sea_shore",
         "london"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "genoa"
       ]
     },
     {
@@ -115,6 +151,49 @@
         "pomerania",
         "baltic_sea",
         "denmark"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "scotland_kingdom"
+      ]
+    },
+    {
+      "id": "ottoman_mediterranean_settlement",
+      "title": "Akdeniz'de Osmanlı Dengesi",
+      "description": "Osmanlı olarak İstanbul'dan Kıbrıs ve Girit'e uzanan deniz düzenini kur, Mısır kapısını açık tut.",
+      "detail": "Hedef: Konstantinopolis, Bursa, Cyprus, Crete ve Egypt",
+      "type": "domination",
+      "target_region_count": 23,
+      "required_regions": [
+        "constantinople",
+        "bursa",
+        "cyprus",
+        "crete",
+        "egypt"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "tsardom_westward",
+      "title": "Çarlığın Batı Yürüyüşü",
+      "description": "Rus Çarlığı olarak Moskova çekirdeğini koruyup Kiev ve Novgorod hattı üzerinden Avrupa dengesine gir.",
+      "detail": "Hedef: Moscow, Novgorod ve Kiev",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "moscow",
+        "novgorod",
+        "kiev"
+      ],
+      "deadline_year": 1715,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "russia"
       ]
     },
     {
@@ -123,7 +202,9 @@
       "description": "1648 sonrası 80 tur boyunca büyük savaşlara teslim olmadan düzeni sürdür",
       "detail": "Yıkımdan çıkan Avrupa’da istikrar ve ekonomi inşa et",
       "type": "survive_turns",
-      "turns": 80
+      "turns": 80,
+      "deadline_year": 1715,
+      "deadline_month": 12
     }
   ]
 }

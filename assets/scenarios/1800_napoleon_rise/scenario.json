@@ -58,6 +58,11 @@
         "austria",
         "brandenburg",
         "moscow"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "france"
       ]
     },
     {
@@ -66,8 +71,22 @@
       "description": "Paris’i ele geçirerek Fransız İmparatorluğu’nu yık",
       "detail": "Hedef: Paris ve Hollanda/Belçika hattı",
       "type": "conquer_city",
-      "target": "paris",
-      "additional_target": "flanders"
+      "required_regions": [
+        "paris",
+        "flanders"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england",
+        "hre",
+        "russia",
+        "teutonic_order",
+        "castile_kingdom",
+        "portugal",
+        "savoy_county",
+        "scotland_kingdom"
+      ]
     },
     {
       "id": "british_blockade",
@@ -83,6 +102,67 @@
         "malta",
         "sicily",
         "egypt"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
+      "id": "danubian_bulwark",
+      "title": "Tuna Seddî",
+      "description": "Avusturya olarak Orta Avrupa çekirdeğini tut ve Fransız ilerleyişini Tuna hattında durdur.",
+      "detail": "Hedef: Austria, Bohemia, Hungary ve Moravia",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "austria",
+        "bohemia",
+        "hungary",
+        "moravia"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "hre"
+      ]
+    },
+    {
+      "id": "eastern_question",
+      "title": "Şark Meselesini Yönet",
+      "description": "Osmanlı olarak Balkan-Ege-Mısır üçgenini kaybetmeden ayakta kal ve Doğu Akdeniz'i kontrol et.",
+      "detail": "Hedef: Konstantinopolis, Bursa, Greece ve Egypt",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "constantinople",
+        "bursa",
+        "greece",
+        "egypt"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "holy_russia",
+      "title": "Kutsal Rusya'nın Direnişi",
+      "description": "Rusya olarak Moskova'yı koru, Kiev-Novgorod çekirdeğini elde tut ve Fransız ilerleyişini doğuda kır.",
+      "detail": "Hedef: Moscow, Kiev ve Novgorod",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "moscow",
+        "kiev",
+        "novgorod"
+      ],
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "russia"
       ]
     },
     {
@@ -91,7 +171,20 @@
       "description": "Hiçbir tarafın tek başına kıtaya hâkim olmasını engelle; 1815’e kadar ayakta kal",
       "detail": "Avusturya/Rusya/Prusya/İngiltere’den biriyle Paris veya Viyana’yı koru",
       "type": "survive_turns",
-      "turns": 120
+      "turns": 120,
+      "deadline_year": 1815,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england",
+        "hre",
+        "russia",
+        "teutonic_order",
+        "castile_kingdom",
+        "portugal",
+        "savoy_county",
+        "scotland_kingdom",
+        "ottoman"
+      ]
     }
   ]
 }

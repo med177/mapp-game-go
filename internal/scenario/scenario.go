@@ -15,6 +15,8 @@ type VictoryOptionDef struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Detail      string `json:"detail"`
+	// Boşsa tüm oynanabilir fraksiyonlar için görünür.
+	AllowedFactions []string `json:"allowed_factions,omitempty"`
 
 	// Kazanma türü: domination | economic | military | religious | conquer_city
 	Type string `json:"type"`
@@ -31,11 +33,49 @@ type VictoryOptionDef struct {
 	TargetArmyStrength int `json:"target_army_strength"`
 	TargetDefeated     int `json:"target_defeated"`
 
-	// Conquer_city — tek hedef bölge
-	Target string `json:"target"`
+	// Survive_turns
+	Turns int `json:"turns"`
 
 	// Ortak
-	DeadlineTurn int `json:"deadline_turn"`
+	DeadlineYear  int `json:"deadline_year"`
+	DeadlineMonth int `json:"deadline_month"`
+}
+
+// VisibleForFaction zafer koşulunun belirtilen fraksiyona gösterilip gösterilmeyeceğini döner.
+// allowed_factions boşsa seçenek tüm fraksiyonlar için görünür kabul edilir.
+func (v VictoryOptionDef) VisibleForFaction(factionID string) bool {
+	if len(v.AllowedFactions) == 0 || factionID == "" {
+		return true
+	}
+	for _, allowed := range v.AllowedFactions {
+		if allowed == factionID {
+			return true
+		}
+	}
+	return false
+}
+
+// RegionTargets zafer koşulunun bölge hedeflerini normalize eder.
+func (v VictoryOptionDef) RegionTargets() []string {
+	out := make([]string, 0, len(v.RequiredRegions))
+	for _, regionID := range v.RequiredRegions {
+		if regionID == "" {
+			continue
+		}
+		out = append(out, regionID)
+	}
+	return out
+}
+
+// FilterVictoryOptionsForFaction fraksiyona görünür zafer koşullarını döner.
+func FilterVictoryOptionsForFaction(options []VictoryOptionDef, factionID string) []VictoryOptionDef {
+	filtered := make([]VictoryOptionDef, 0, len(options))
+	for _, opt := range options {
+		if opt.VisibleForFaction(factionID) {
+			filtered = append(filtered, opt)
+		}
+	}
+	return filtered
 }
 
 // MapConfig senaryonun arka plan ve shape hizalama ayarlarını tanımlar.

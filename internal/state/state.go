@@ -15,11 +15,12 @@ import (
 type VictoryType string
 
 const (
-	VictoryDomination  VictoryType = "domination"   // bölge sayısı + kritik şehirler
-	VictoryEconomic    VictoryType = "economic"     // altın gelir hedefi
-	VictoryMilitary    VictoryType = "military"     // ordu gücü + yenilgiler
-	VictoryReligious   VictoryType = "religious"    // kutsal şehirleri tut
-	VictoryConquerCity VictoryType = "conquer_city" // tek hedef bölgeyi ele geçir
+	VictoryDomination   VictoryType = "domination"    // bölge sayısı + kritik şehirler
+	VictoryEconomic     VictoryType = "economic"      // altın gelir hedefi
+	VictoryMilitary     VictoryType = "military"      // ordu gücü + yenilgiler
+	VictoryReligious    VictoryType = "religious"     // kutsal şehirleri tut
+	VictoryConquerCity  VictoryType = "conquer_city"  // tek hedef bölgeyi ele geçir
+	VictorySurviveTurns VictoryType = "survive_turns" // belirli tur sayısı boyunca ayakta kal
 )
 
 // VictoryCondition seçilen zafer koşulunu tutar.
@@ -31,7 +32,9 @@ type VictoryCondition struct {
 	GoldHoldTurns      int              `json:"gold_hold_turns"`      // economic — kaç tur sürdürülmeli
 	TargetArmyStrength int              `json:"target_army_strength"` // military
 	TargetDefeated     int              `json:"target_defeated"`      // military — kaç fraksiyon yenilgisi
-	DeadlineTurn       int              `json:"deadline_turn"`        // 0 = süresiz
+	TargetTurns        int              `json:"turns"`                // survive_turns
+	DeadlineYear       int              `json:"deadline_year"`        // 0 = süresiz
+	DeadlineMonth      int              `json:"deadline_month"`       // 1-12, 0 = yıl sonu
 }
 
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
@@ -64,19 +67,22 @@ type GameState struct {
 	EditMode        bool `json:"edit_mode"`
 
 	// Zafer koşulu
-	Victory VictoryCondition `json:"victory"`
+	Victory                 VictoryCondition `json:"victory"`
+	SelectedVictoryOptionID string           `json:"selected_victory_option_id"`
 
 	// Dünya verisi
-	Regions     map[world.RegionID]*world.Region       `json:"regions"`
-	RegionOrder []world.RegionID                       `json:"-"`
-	Factions    map[faction.FactionID]*faction.Faction `json:"factions"`
-	Armies      map[army.ArmyID]*army.Army             `json:"armies"`
-	ShapeData   world.CountryShapeJSON                 `json:"-"`
+	Regions      map[world.RegionID]*world.Region       `json:"regions"`
+	RegionOrder  []world.RegionID                       `json:"-"`
+	Factions     map[faction.FactionID]*faction.Faction `json:"factions"`
+	FactionOrder []faction.FactionID                    `json:"-"`
+	Armies       map[army.ArmyID]*army.Army             `json:"armies"`
+	ShapeData    world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
 	BuildingTypes      map[string]*city.Building                `json:"-"`
 	TechTypes          map[string]*tech.Technology              `json:"-"`
+	ScenarioVictories  []scenario.VictoryOptionDef              `json:"-"`
 	AvailableVictories []scenario.VictoryOptionDef              `json:"-"`
 	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
 	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`

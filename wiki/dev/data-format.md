@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-05-20
+last_updated: 2026-06-13
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -46,7 +46,9 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
       "id": "ottoman_rise",
       "title": "Osmanlı'nın Yükselişi",
       "type": "conquer_city",
-      "target": "constantinople"
+      "required_regions": ["constantinople"],
+      "deadline_year": 1561,
+      "deadline_month": 1
     }
   ]
 }

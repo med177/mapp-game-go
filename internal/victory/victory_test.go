@@ -1,6 +1,7 @@
 package victory
 
 import (
+	"strconv"
 	"testing"
 
 	"mapp-game-go/internal/city"
@@ -45,6 +46,37 @@ func TestConquerCityVictoryTriggersWhenTargetOwned(t *testing.T) {
 	}
 	if !gs.VictoryAchieved {
 		t.Fatal("expected victory achieved flag")
+	}
+}
+
+func TestConquerCityVictoryRequiresAllTargets(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            1,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: faction.FactionID("ottoman"),
+		Victory: state.VictoryCondition{
+			Type:            state.VictoryConquerCity,
+			RequiredRegions: []world.RegionID{"constantinople", "ankara"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {
+				ID:      "constantinople",
+				OwnerID: "ottoman",
+			},
+			"ankara": {
+				ID:      "ankara",
+				OwnerID: "karaman",
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman"},
+		},
+	}
+
+	Check(gs)
+
+	if gs.VictoryAchieved {
+		t.Fatal("tum hedefler alinmadan conquer_city zaferi olmamali")
 	}
 }
 
@@ -147,5 +179,162 @@ func TestEconomicVictoryUsesIncomeThreshold(t *testing.T) {
 	}
 	if !gs.VictoryAchieved {
 		t.Fatal("victory achieved bekleniyordu")
+	}
+}
+
+func TestSurviveTurnsVictoryTriggersAtTargetTurn(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            80,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "genoa",
+		Victory: state.VictoryCondition{
+			Type:        state.VictorySurviveTurns,
+			TargetTurns: 80,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa": {ID: "genoa"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"holland": {ID: "holland", OwnerID: "genoa"},
+		},
+	}
+
+	Check(gs)
+
+	if !gs.VictoryAchieved {
+		t.Fatal("survive_turns zaferi bekleniyordu")
+	}
+	if gs.WinnerID != "genoa" {
+		t.Fatalf("kazanan genoa olmali, got=%s", gs.WinnerID)
+	}
+}
+
+func TestSurviveTurnsVictoryWaitsBeforeTargetTurn(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            79,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "genoa",
+		Victory: state.VictoryCondition{
+			Type:        state.VictorySurviveTurns,
+			TargetTurns: 80,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa": {ID: "genoa"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"holland": {ID: "holland", OwnerID: "genoa"},
+		},
+	}
+
+	Check(gs)
+
+	if gs.VictoryAchieved {
+		t.Fatal("hedef turdan once survive_turns zaferi olmamali")
+	}
+}
+
+func TestDeadlineMonthIsInclusive(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            10,
+		Year:            1561,
+		Month:           1,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "ottoman",
+		Victory: state.VictoryCondition{
+			Type:            state.VictoryConquerCity,
+			RequiredRegions: []world.RegionID{"constantinople"},
+			DeadlineYear:    1561,
+			DeadlineMonth:   1,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", OwnerID: "east_rome"},
+			"bithynia":       {ID: "bithynia", OwnerID: "ottoman"},
+		},
+	}
+
+	Check(gs)
+
+	if gs.Phase == state.PhaseGameOver {
+		t.Fatal("deadline ayi icinde oyun bitmemeli")
+	}
+	if gs.VictoryAchieved {
+		t.Fatal("hedef saglanmadan zafer olmamali")
+	}
+}
+
+func TestDeadlineFailureTriggersAfterDeadlineMonth(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            11,
+		Year:            1561,
+		Month:           2,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "ottoman",
+		Victory: state.VictoryCondition{
+			Type:            state.VictoryConquerCity,
+			RequiredRegions: []world.RegionID{"constantinople"},
+			DeadlineYear:    1561,
+			DeadlineMonth:   1,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", OwnerID: "east_rome"},
+			"bithynia":       {ID: "bithynia", OwnerID: "ottoman"},
+		},
+	}
+
+	Check(gs)
+
+	if gs.Phase != state.PhaseGameOver {
+		t.Fatal("deadline gecince oyun bitmeli")
+	}
+	if gs.WinnerID != "" {
+		t.Fatalf("deadline kaybinda AI kazanan olmamali, got=%s", gs.WinnerID)
+	}
+	if gs.VictoryAchieved {
+		t.Fatal("deadline kaybi zafer olarak isaretlenmemeli")
+	}
+}
+
+func TestAIGrowthDoesNotAutoWinBeforePlayerDeadline(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            20,
+		Year:            1500,
+		Month:           6,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "ottoman",
+		Victory: state.VictoryCondition{
+			Type:            state.VictoryConquerCity,
+			RequiredRegions: []world.RegionID{"constantinople"},
+			DeadlineYear:    1561,
+			DeadlineMonth:   1,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman":   {ID: "ottoman"},
+			"east_rome": {ID: "east_rome"},
+			"france":    {ID: "france"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", OwnerID: "east_rome"},
+			"bithynia":       {ID: "bithynia", OwnerID: "ottoman"},
+		},
+	}
+
+	for i := 0; i < 35; i++ {
+		id := world.RegionID("ai_region_" + strconv.Itoa(i))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "france"}
+	}
+
+	Check(gs)
+
+	if gs.Phase == state.PhaseGameOver {
+		t.Fatal("AI buyudugu icin otomatik kazanmamali")
+	}
+	if gs.WinnerID != "" {
+		t.Fatalf("AI auto-win olmamali, got=%s", gs.WinnerID)
 	}
 }

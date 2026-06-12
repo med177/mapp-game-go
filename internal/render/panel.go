@@ -833,6 +833,22 @@ func eventCodexCloseHit(mx, my float64) bool {
 	return buildEventCodexCloseButton().HitTest(mx, my)
 }
 
+func victoryDetailPopupHit(mx, my float64) bool {
+	return buildVictoryDetailModal().Panel.HitTest(mx, my)
+}
+
+func victoryDetailCloseHit(mx, my float64) bool {
+	return buildVictoryDetailCloseButton().HitTest(mx, my)
+}
+
+func victoryProgressPanelRect() gameui.Rect {
+	return gameui.Rect{X: 718, Y: 7, W: 180, H: float64(topStatusH - 14)}
+}
+
+func victoryProgressHit(mx, my float64) bool {
+	return victoryProgressPanelRect().Hit(mx, my)
+}
+
 func minimapHit(mx, my float64) bool {
 	x, y := minimapX(), minimapY()
 	return mx >= float64(x) && mx <= float64(x+minimapW) && my >= float64(y) && my <= float64(y+minimapH)
@@ -931,6 +947,80 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	DrawText(screen, meta, layout.detailRect.X+16, layout.detailRect.Y+40, FaceSmall, ColorGray)
 
 	drawUIWrappedLabel(screen, gameui.Rect{X: layout.detailRect.X + 16, Y: layout.detailRect.Y + 68, W: layout.detailRect.W - 32}, selected.Detail, eventCodexLineColor(selected.Detail), gameui.TextMedium, 19, int((layout.detailRect.H-76)/19))
+}
+
+func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState) {
+	modal := buildVictoryDetailModal()
+	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
+
+	layout := buildVictoryDetailLayout()
+	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
+
+	opt, hasOpt := currentVictoryOption(gs)
+	title := victoryTypeLabel(gs.Victory.Type)
+	desc := ""
+	targetSummary := activeVictoryTargetSummary(gs)
+	longSummary := targetSummary
+	if hasOpt {
+		if opt.Title != "" {
+			title = opt.Title
+		}
+		desc = opt.Description
+		if sum := victoryTargetSummary(gs, opt); sum != "" {
+			longSummary = sum
+		}
+	}
+
+	DrawText(screen, title, layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
+
+	closeBtn := buildVictoryDetailCloseButton()
+	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
+
+	bodyX := layout.bodyRect.X
+	bodyY := layout.bodyRect.Y
+	bodyW := layout.bodyRect.W
+	drawUISectionLabel(screen, bodyX, bodyY, "Zafer Detayı")
+	bodyY += 18
+	if desc != "" {
+		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, desc, color.RGBA{226, 220, 204, 240}, gameui.TextMedium, 20, 3)
+		bodyY += 66
+	}
+
+	if targetSummary != "" {
+		drawUISectionLabel(screen, bodyX, bodyY, "Aktif Hedef")
+		bodyY += 18
+		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, targetSummary, color.RGBA{210, 200, 176, 235}, gameui.TextSmall, 17, 3)
+		bodyY += 54
+	}
+
+	if longSummary != "" && longSummary != targetSummary {
+		drawUISectionLabel(screen, bodyX, bodyY, "Kapsam")
+		bodyY += 18
+		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, longSummary, color.RGBA{180, 170, 146, 230}, gameui.TextSmall, 17, 3)
+		bodyY += 54
+	}
+
+	drawUISectionLabel(screen, bodyX, bodyY, "İlerleme")
+	bodyY += 18
+	lines := victoryDetailProgressLines(gs)
+	drawUIInfoBlock(screen, bodyX, bodyY, lines, nil)
+	bodyY += float64(len(lines) * 24)
+
+	checkLines, checkColors := victoryChecklistEntries(gs)
+	if len(checkLines) > 0 {
+		bodyY += 8
+		drawUISectionLabel(screen, bodyX, bodyY, "Kontrol Listesi")
+		bodyY += 18
+		drawUIInfoBlock(screen, bodyX, bodyY, checkLines, checkColors)
+		bodyY += float64(len(checkLines) * 24)
+	}
+
+	if hasOpt && opt.Detail != "" {
+		bodyY += 6
+		drawUISectionLabel(screen, bodyX, bodyY, "Not")
+		bodyY += 18
+		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, opt.Detail, color.RGBA{168, 154, 126, 220}, gameui.TextSmall, 17, 3)
+	}
 }
 
 func eventCodexEntryRect(index int) (x, y, w, h float32) {
@@ -1758,6 +1848,8 @@ func victoryTypeLabel(vtype state.VictoryType) string {
 		return "Dinî Zafer"
 	case state.VictoryConquerCity:
 		return "Fetih Zaferi"
+	case state.VictorySurviveTurns:
+		return "Hayatta Kalma Zaferi"
 	}
 	return "Zafer"
 }
@@ -1816,6 +1908,10 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 	titleCol := color.RGBA{220, 190, 100, 220}
 	drawUISectionLabel(screen, vx, vy, "Zafer Hedefi")
 	vy += 17
+	if deadline := trimTextToWidth(formatVictoryDeadline(gs.Victory.DeadlineYear, gs.Victory.DeadlineMonth), FaceSmall, float64(barW)); deadline != "" {
+		DrawText(screen, deadline, vx, vy, FaceSmall, color.RGBA{205, 176, 108, 220})
+		vy += 14
+	}
 
 	switch gs.Victory.Type {
 	case state.VictoryDomination, "":
@@ -1900,7 +1996,225 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Hedef", itoa(held)+"/"+itoa(total), titleCol, ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total)), ColorGold)
+
+	case state.VictorySurviveTurns:
+		target := gs.Victory.TargetTurns
+		if target == 0 {
+			target = 60
+		}
+		current := gs.Turn
+		if current > target {
+			current = target
+		}
+		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Tur", itoa(current)+"/"+itoa(target), titleCol, ColorWhite)
+		vy += 18
+		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(current)/float64(target)), color.RGBA{120, 180, 255, 255})
 	}
+}
+
+func victoryDetailProgressLines(gs *state.GameState) []string {
+	if gs == nil {
+		return nil
+	}
+	lines := make([]string, 0, 3)
+	if deadline := formatVictoryDeadline(gs.Victory.DeadlineYear, gs.Victory.DeadlineMonth); deadline != "" {
+		lines = append(lines, deadline)
+	}
+	switch gs.Victory.Type {
+	case state.VictoryDomination, "":
+		target := gs.Victory.TargetRegionCount
+		if target == 0 {
+			target = 20
+		}
+		return append(lines,
+			"Kontrol edilen bölge: "+itoa(len(gs.RegionsOwnedBy(gs.PlayerFactionID)))+" / "+itoa(target),
+		)
+	case state.VictoryEconomic:
+		threshold := gs.Victory.TargetGoldIncome
+		if threshold == 0 {
+			threshold = 500
+		}
+		holdTurns := gs.Victory.GoldHoldTurns
+		if holdTurns == 0 {
+			holdTurns = 5
+		}
+		return append(lines,
+			"Mevcut gelir: "+itoa(victory.CurrentGoldIncome(gs))+" / "+itoa(threshold)+" altın",
+			"Korunan süre: "+itoa(gs.EconomicVictoryTurns)+" / "+itoa(holdTurns)+" tur",
+		)
+	case state.VictoryMilitary:
+		targetStr := gs.Victory.TargetArmyStrength
+		if targetStr == 0 {
+			targetStr = 200
+		}
+		targetDef := gs.Victory.TargetDefeated
+		if targetDef == 0 {
+			targetDef = 3
+		}
+		totalStr := 0
+		eliminated := 0
+		for _, a := range gs.Armies {
+			if a.OwnerID == string(gs.PlayerFactionID) {
+				totalStr += a.TotalStrength(gs.UnitTypes)
+			}
+		}
+		for fid, f := range gs.Factions {
+			if fid != gs.PlayerFactionID && f.IsEliminated {
+				eliminated++
+			}
+		}
+		return append(lines,
+			"Toplam ordu gücü: "+itoa(totalStr)+" / "+itoa(targetStr),
+			"Elenen rakip: "+itoa(eliminated)+" / "+itoa(targetDef),
+		)
+	case state.VictoryReligious:
+		held := 0
+		for _, rid := range gs.Victory.RequiredRegions {
+			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+				held++
+			}
+		}
+		return append(lines,
+			"Tutulan kutsal bölge: "+itoa(held)+" / "+itoa(len(gs.Victory.RequiredRegions)),
+			"Koruma süresi: "+itoa(gs.ReligiousVictoryTurns)+" / 12 tur",
+		)
+	case state.VictoryConquerCity:
+		held := 0
+		for _, rid := range gs.Victory.RequiredRegions {
+			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+				held++
+			}
+		}
+		return append(lines,
+			"Ele geçirilen hedef: "+itoa(held)+" / "+itoa(len(gs.Victory.RequiredRegions)),
+		)
+	case state.VictorySurviveTurns:
+		target := gs.Victory.TargetTurns
+		if target == 0 {
+			target = 60
+		}
+		current := gs.Turn
+		if current > target {
+			current = target
+		}
+		return append(lines,
+			"Dayanılan süre: "+itoa(current)+" / "+itoa(target)+" tur",
+		)
+	}
+	return lines
+}
+
+func victoryChecklistEntries(gs *state.GameState) ([]string, []color.Color) {
+	if gs == nil {
+		return nil, nil
+	}
+
+	lines := make([]string, 0, 8)
+	colors := make([]color.Color, 0, 8)
+	ownerSuffix := func(rid world.RegionID) string {
+		if gs == nil {
+			return ""
+		}
+		region, ok := gs.Regions[rid]
+		if !ok || region == nil || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
+			return ""
+		}
+		if f := gs.Factions[faction.FactionID(region.OwnerID)]; f != nil {
+			if f.NameTR != "" {
+				return " (" + f.NameTR + ")"
+			}
+			if f.Name != "" {
+				return " (" + f.Name + ")"
+			}
+		}
+		return " (" + region.OwnerID + ")"
+	}
+	addItem := func(ok bool, text string) {
+		prefix := "✗ "
+		col := color.Color(color.RGBA{214, 112, 92, 235})
+		if ok {
+			prefix = "✓ "
+			col = color.RGBA{132, 198, 124, 235}
+		}
+		lines = append(lines, prefix+text)
+		colors = append(colors, col)
+	}
+
+	switch gs.Victory.Type {
+	case state.VictoryConquerCity, state.VictoryReligious:
+		for _, rid := range gs.Victory.RequiredRegions {
+			name := regionDisplayName(gs, string(rid))
+			owned := false
+			if region, ok := gs.Regions[rid]; ok && region.OwnerID == string(gs.PlayerFactionID) {
+				owned = true
+			}
+			if !owned {
+				name += ownerSuffix(rid)
+			}
+			addItem(owned, name)
+		}
+	case state.VictoryDomination:
+		target := gs.Victory.TargetRegionCount
+		if target == 0 {
+			target = 20
+		}
+		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
+		addItem(current >= target, "Bölge sayısı: "+itoa(current)+"/"+itoa(target))
+		for _, rid := range gs.Victory.RequiredRegions {
+			name := regionDisplayName(gs, string(rid))
+			owned := false
+			if region, ok := gs.Regions[rid]; ok && region.OwnerID == string(gs.PlayerFactionID) {
+				owned = true
+			}
+			if !owned {
+				name += ownerSuffix(rid)
+			}
+			addItem(owned, name)
+		}
+	case state.VictoryEconomic:
+		threshold := gs.Victory.TargetGoldIncome
+		if threshold == 0 {
+			threshold = 500
+		}
+		holdTurns := gs.Victory.GoldHoldTurns
+		if holdTurns == 0 {
+			holdTurns = 5
+		}
+		currentIncome := victory.CurrentGoldIncome(gs)
+		addItem(currentIncome >= threshold, "Gelir eşiği: "+itoa(currentIncome)+"/"+itoa(threshold)+" altın")
+		addItem(gs.EconomicVictoryTurns >= holdTurns, "Koruma süresi: "+itoa(gs.EconomicVictoryTurns)+"/"+itoa(holdTurns)+" tur")
+	case state.VictoryMilitary:
+		targetStr := gs.Victory.TargetArmyStrength
+		if targetStr == 0 {
+			targetStr = 200
+		}
+		targetDef := gs.Victory.TargetDefeated
+		if targetDef == 0 {
+			targetDef = 3
+		}
+		totalStr := 0
+		eliminated := 0
+		for _, a := range gs.Armies {
+			if a.OwnerID == string(gs.PlayerFactionID) {
+				totalStr += a.TotalStrength(gs.UnitTypes)
+			}
+		}
+		for fid, f := range gs.Factions {
+			if fid != gs.PlayerFactionID && f.IsEliminated {
+				eliminated++
+			}
+		}
+		addItem(totalStr >= targetStr, "Ordu gücü: "+itoa(totalStr)+"/"+itoa(targetStr))
+		addItem(eliminated >= targetDef, "Elenen rakip: "+itoa(eliminated)+"/"+itoa(targetDef))
+	case state.VictorySurviveTurns:
+		target := gs.Victory.TargetTurns
+		if target == 0 {
+			target = 60
+		}
+		addItem(gs.Turn >= target, "Hayatta kalma süresi: "+itoa(min(gs.Turn, target))+"/"+itoa(target)+" tur")
+	}
+
+	return lines, colors
 }
 
 func drawTopStatusCard(screen *ebiten.Image, x, y, w, h float32) {

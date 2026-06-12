@@ -2,7 +2,6 @@ package render
 
 import (
 	"fmt"
-	"image"
 	"image/color"
 	"sort"
 
@@ -175,6 +174,10 @@ func techNodeRect(node techNode) gameui.Rect {
 func techNodeButton(node techNode) gameui.Button {
 	rect := techNodeRect(node)
 	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, node.t.NameTR)
+}
+
+func buildTechCardComponent(node techNode, activeResearchID string, research faction.ResearchState) techCardComponent {
+	return newTechCardComponent(node, techNodeRect(node), activeResearchID, research)
 }
 
 func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) techTreeLayoutData {
@@ -406,166 +409,6 @@ func techNodeDependencyOrder(node techNode, prevIndex map[string]int) float64 {
 		return float64(len(prevIndex) + tech.CategoryOrder(node.t.Category))
 	}
 	return total / count
-}
-
-func techNodeNameColor(node techNode) color.Color {
-	if node.unlocked || node.done {
-		return techTextUnlocked
-	}
-	return techTextLocked
-}
-
-// ── Modern kart render ──────────────────────────────────────────────
-
-// drawTechCard modern, yuvarlatılmış köşeli bir teknoloji kartı çizer.
-func drawTechCard(screen *ebiten.Image, nodeRect gameui.Rect, categoryColor color.RGBA, isActive, isDone, isUnlocked bool) {
-	// Kart gölgesi (hafif offset ile)
-	shadowRect := gameui.Rect{
-		X: nodeRect.X + 3,
-		Y: nodeRect.Y + 3,
-		W: nodeRect.W,
-		H: nodeRect.H,
-	}
-	drawRoundedRectF64(screen, shadowRect.X, shadowRect.Y, shadowRect.W, shadowRect.H, float64(techCardRadius), color.RGBA{0, 0, 0, 120})
-
-	// Kart arka planı
-	cardBg := techCardBgBase
-	if isActive {
-		cardBg = techCardBgActive
-	} else if !isUnlocked {
-		cardBg = techCardBgLocked
-	}
-	drawRoundedRectF64(screen, nodeRect.X, nodeRect.Y, nodeRect.W, nodeRect.H, float64(techCardRadius), cardBg)
-
-	// Kategori renk şeridi (sol kenar)
-	accentW := 5.0
-	catCol := categoryColor
-	if !isUnlocked {
-		catCol = color.RGBA{80, 80, 90, 200}
-	}
-	// Sol kenar accent barı — yuvarlatılmış kartın içinde kalması için
-	vector.FillRect(screen, float32(nodeRect.X+3), float32(nodeRect.Y+6), float32(accentW), float32(nodeRect.H-12), catCol, false)
-
-	// Kart çerçevesi
-	borderCol := techCardBorderGlow
-	borderW := float32(1.2)
-	if isActive {
-		borderCol = techCardBorderActive
-		borderW = 2.5
-	} else if isDone {
-		borderCol = color.RGBA{140, 200, 140, 200}
-		borderW = 2.0
-	} else if isUnlocked {
-		borderCol = color.RGBA{catCol.R, catCol.G, catCol.B, 180}
-		borderW = 1.8
-	}
-	drawRoundedRectStrokeF64(screen, nodeRect.X, nodeRect.Y, nodeRect.W, nodeRect.H, float64(techCardRadius), float64(borderW), borderCol, cardBg)
-}
-
-// drawTechCardGlow kartın etrafına soft glow efekti çizer (aktif araştırma için).
-func drawTechCardGlow(screen *ebiten.Image, nodeRect gameui.Rect, glowColor color.RGBA) {
-	for i := 0; i < 3; i++ {
-		alpha := uint8(50 - i*15)
-		c := color.RGBA{glowColor.R, glowColor.G, glowColor.B, alpha}
-		offset := float32(i + 1)
-		drawRoundedRectStrokeF64(screen,
-			nodeRect.X-float64(offset), nodeRect.Y-float64(offset),
-			nodeRect.W+float64(offset*2), nodeRect.H+float64(offset*2),
-			float64(techCardRadius+float32(i)), 1.5, c, techCardBgActive)
-	}
-}
-
-func drawTechNodeText(screen *ebiten.Image, node techNode, nodeRect gameui.Rect, isActive bool, f *faction.Faction) {
-	// Kategori ikonu (sol üst köşe)
-	iconID := techCategoryIcon(node.t.Category)
-	if iconID != gameui.IconNone {
-		iconCol := techCategoryIconColors[node.t.Category]
-		if !node.unlocked && !node.done {
-			iconCol = color.RGBA{90, 90, 100, 180}
-		}
-		gameui.DrawIcon(screen, iconID, nodeRect.X+10, nodeRect.Y+8, 13, iconCol)
-	}
-
-	// Teknoloji adı
-	nameOffsetX := 0.0
-	if techCategoryIcon(node.t.Category) != gameui.IconNone {
-		nameOffsetX = 12.0
-	}
-	nameRect := gameui.Rect{X: nodeRect.X + 12 + nameOffsetX, Y: nodeRect.Y + 10, W: nodeRect.W - 24 - nameOffsetX}
-	drawUILabel(screen, nameRect, node.t.NameTR, techNodeNameColor(node), gameui.TextMedium, gameui.TextAlignCenter)
-
-	// Etki özeti
-	buffRect := gameui.Rect{X: nodeRect.X + 14, Y: nodeRect.Y + 34, W: nodeRect.W - 28}
-	effectText := techEffectSummary(node.t)
-	if node.done {
-		effectText = "✓ Tamamlandı"
-	}
-	drawUIWrappedLabelAligned(screen, buffRect, effectText, color.RGBA{210, 210, 225, 230}, gameui.TextSmall, 14, 2, gameui.TextAlignCenter)
-
-	// Aktif araştırma ilerleme çubuğu
-	if isActive && f != nil && f.Research.TurnsLeft > 0 {
-		progressBarY := nodeRect.Y + nodeRect.H - 22
-		progressBarH := 6.0
-		totalTurns := float64(node.t.TurnsRequired)
-		if totalTurns <= 0 {
-			totalTurns = float64(f.Research.TurnsLeft) + float64(f.Research.TurnsLeft) // fallback: assume half done
-		}
-		progress := 1.0 - float64(f.Research.TurnsLeft)/totalTurns
-		if progress < 0 {
-			progress = 0
-		}
-		if progress > 1 {
-			progress = 1
-		}
-
-		// Progress bar arka plan
-		barX := nodeRect.X + 12
-		barW := nodeRect.W - 24
-		vector.FillRect(screen, float32(barX), float32(progressBarY), float32(barW), float32(progressBarH), techProgressBarBG, false)
-		// Progress bar dolgu
-		if progress > 0 {
-			fillW := float32(barW) * float32(progress)
-			vector.FillRect(screen, float32(barX), float32(progressBarY), fillW, float32(progressBarH), techProgressBarFill, false)
-		}
-		// Progress bar border
-		vector.StrokeRect(screen, float32(barX), float32(progressBarY), float32(barW), float32(progressBarH), 1, color.RGBA{130, 110, 50, 180}, false)
-
-		// Tur bilgisi metni
-		turnsText := fmt.Sprintf("%d tur kaldı", f.Research.TurnsLeft)
-		drawUILabel(screen, gameui.Rect{X: barX, Y: progressBarY - 15, W: barW}, turnsText,
-			color.RGBA{255, 210, 60, 240}, gameui.TextSmall, gameui.TextAlignCenter)
-	} else if !isActive {
-		// Normal maliyet gösterimi
-		costStr := fmt.Sprintf("%d altın  •  %d tur", node.t.GoldCost, node.t.TurnsRequired)
-		costColor := techTextCost
-		if !node.unlocked && !node.done {
-			costColor = techTextCostLocked
-		}
-		costRect := gameui.Rect{X: nodeRect.X + 12, Y: nodeRect.Y + nodeRect.H - 19, W: nodeRect.W - 24}
-		drawUILabel(screen, costRect, costStr, costColor, gameui.TextSmall, gameui.TextAlignCenter)
-	}
-
-	// Tamamlandı rozeti
-	if node.done {
-		badgeW := 28.0
-		badgeH := 20.0
-		badgeX := nodeRect.X + nodeRect.W - badgeW - 6
-		badgeY := nodeRect.Y + 6
-		drawRoundedRectF64(screen, badgeX, badgeY, badgeW, badgeH, 4, techBadgeDoneBG)
-		drawRoundedRectStrokeF64(screen, badgeX, badgeY, badgeW, badgeH, 4, 1, techBadgeDoneBorder, techBadgeDoneBG)
-		gameui.DrawIcon(screen, gameui.IconCheck, badgeX+6, badgeY+2, 14, color.RGBA{200, 245, 200, 255})
-	}
-
-	// Araştırılıyor rozeti (sol üst, ikonun altında)
-	if isActive {
-		badgeW := 30.0
-		badgeH := 20.0
-		badgeX := nodeRect.X + 6
-		badgeY := nodeRect.Y + nodeRect.H - badgeH - 6
-		drawRoundedRectF64(screen, badgeX, badgeY, badgeW, badgeH, 4, techBadgeActiveBG)
-		drawRoundedRectStrokeF64(screen, badgeX, badgeY, badgeW, badgeH, 4, 1, techBadgeActiveBorder, techBadgeActiveBG)
-		gameui.DrawIcon(screen, gameui.IconPlay, badgeX+7, badgeY+2, 14, color.RGBA{255, 235, 180, 255})
-	}
 }
 
 // ── Kategori filtre sekmeleri ────────────────────────────────────────
@@ -815,19 +658,16 @@ func projectTechTree(levels [][]techNode, offsetX, offsetY float64) [][]techNode
 	return projected
 }
 
+func projectTechTreeForLayout(layout techPanelLayout, treeData techTreeLayoutData, panX, panY float64) (local [][]techNode, screen [][]techNode) {
+	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
+	local = projectTechTree(treeData.levels, viewOriginX-panX, viewOriginY-panY)
+	screen = projectTechTree(treeData.levels, layout.treeRect.X+viewOriginX-panX, layout.treeRect.Y+viewOriginY-panY)
+	return local, screen
+}
+
 func (r *Renderer) clampTechPan(treeRect gameui.Rect, contentW, contentH float64) {
 	r.techPanX = techClampFloat(r.techPanX, 0, techMaxFloat(0, contentW-treeRect.W))
 	r.techPanY = techClampFloat(r.techPanY, 0, techMaxFloat(0, contentH-treeRect.H))
-}
-
-func techTreeViewport(screen *ebiten.Image, treeRect gameui.Rect) *ebiten.Image {
-	rect := image.Rect(
-		int(treeRect.X),
-		int(treeRect.Y),
-		int(treeRect.X+treeRect.W),
-		int(treeRect.Y+treeRect.H),
-	)
-	return screen.SubImage(rect).(*ebiten.Image)
 }
 
 // ── Ana Draw fonksiyonu ─────────────────────────────────────────────
@@ -875,53 +715,34 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	// Ağaç verisini hazırla
 	treeData := r.buildLaidOutTechTree(f)
 	r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
-	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
-	projectedLevels := projectTechTree(treeData.levels, viewOriginX-r.techPanX, viewOriginY-r.techPanY)
-	treeScreen := techTreeViewport(screen, layout.treeRect)
+	localProjectedLevels, screenProjectedLevels := projectTechTreeForLayout(layout, treeData, r.techPanX, r.techPanY)
 
 	// Tree viewport arka plan (hafif grid efekti için)
-	drawRoundedRectF64(treeScreen, 0, 0, layout.treeRect.W, layout.treeRect.H, 6, color.RGBA{8, 10, 22, 200})
+	drawRoundedRectF64(screen, layout.treeRect.X, layout.treeRect.Y, layout.treeRect.W, layout.treeRect.H, 6, color.RGBA{8, 10, 22, 200})
 
 	// Bağlantı çizgileri
-	drawTechConnectors(treeScreen, projectedLevels, r.gs.TechTypes)
+	drawTechConnectors(screen, screenProjectedLevels, r.gs.TechTypes)
 
 	// Seviye etiketleri ve düğümler
-	for levelIdx, levelNodes := range projectedLevels {
+	for levelIdx, levelNodes := range localProjectedLevels {
 		// Seviye etiketi (ilk düğümün soluna)
 		if len(levelNodes) > 0 && levelIdx > 0 {
-			labelX := levelNodes[0].x - techNodeWidth/2 - 50
-			labelY := levelNodes[0].y - 6
-			if labelX < 4 {
-				labelX = 4
+			labelX := layout.treeRect.X + levelNodes[0].x - techNodeWidth/2 - 50
+			labelY := layout.treeRect.Y + levelNodes[0].y - 6
+			if labelX < layout.treeRect.X+4 {
+				labelX = layout.treeRect.X + 4
 			}
 			levelLabel := fmt.Sprintf("Sev. %d", levelIdx)
-			drawUIOutlinedLabel(treeScreen, gameui.Rect{X: labelX, Y: labelY, W: 46}, levelLabel,
+			drawUIOutlinedLabel(screen, gameui.Rect{X: labelX, Y: labelY, W: 46}, levelLabel,
 				techLevelLabelColor, color.RGBA{4, 6, 16, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 		}
 
-		for _, node := range levelNodes {
+		for nodeIdx, node := range levelNodes {
 			// Filtre kontrolü
 			if r.techFilterCategory != "" && node.t.Category != r.techFilterCategory {
 				continue
 			}
-
-			baseCategoryColor := techCategoryColors[node.t.Category]
-			isActive := f.Research.ActiveID == node.t.ID
-			isDone := node.done
-			isUnlocked := node.unlocked
-
-			nodeRect := techNodeRect(node)
-
-			// Modern kart çizimi
-			drawTechCard(treeScreen, nodeRect, baseCategoryColor, isActive, isDone, isUnlocked)
-
-			// Aktif araştırma glow efekti
-			if isActive {
-				drawTechCardGlow(treeScreen, nodeRect, techCardBorderActive)
-			}
-
-			// Kart içeriği (metin, ikon, rozet)
-			drawTechNodeText(treeScreen, node, nodeRect, isActive, f)
+			buildTechCardComponent(screenProjectedLevels[levelIdx][nodeIdx], f.Research.ActiveID, f.Research).Draw(screen)
 		}
 	}
 
@@ -982,12 +803,7 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 
 	treeData := r.buildLaidOutTechTree(f)
 	r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
-	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
-	contentMouseX := input.MouseX - layout.treeRect.X - viewOriginX + r.techPanX
-	contentMouseY := input.MouseY - layout.treeRect.Y - viewOriginY + r.techPanY
-	contentInput := input
-	contentInput.MouseX = contentMouseX
-	contentInput.MouseY = contentMouseY
+	_, screenProjectedLevels := projectTechTreeForLayout(layout, treeData, r.techPanX, r.techPanY)
 
 	if buildTechCloseButton().HandleInput(input) {
 		r.showTech = false
@@ -1003,16 +819,15 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 		r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
 	}
 
-	projectedLevels := treeData.levels
-
 	// Ağaç düğümlerine tıklama
-	for _, levelNodes := range projectedLevels {
+	for _, levelNodes := range screenProjectedLevels {
 		for _, node := range levelNodes {
 			// Filtreyi uygula
 			if r.techFilterCategory != "" && node.t.Category != r.techFilterCategory {
 				continue
 			}
-			if contentInput.LeftJustPressed && techNodeRect(node).Hit(contentInput.MouseX, contentInput.MouseY) {
+			card := buildTechCardComponent(node, f.Research.ActiveID, f.Research)
+			if input.LeftJustPressed && card.HitTest(input.MouseX, input.MouseY) {
 				if node.unlocked && !node.done {
 					return InputAction{Kind: ActionResearch, BuildingID: node.t.ID}
 				}
@@ -1061,10 +876,8 @@ func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
 		return true
 	}
 	treeData := r.buildLaidOutTechTree(f)
-	viewOriginX, viewOriginY := techTreeViewOrigin(layout.treeRect, treeData.contentW)
-	contentFX := fx - layout.treeRect.X - viewOriginX + r.techPanX
-	contentFY := fy - layout.treeRect.Y - viewOriginY + r.techPanY
-	for _, levelNodes := range treeData.levels {
+	_, screenProjectedLevels := projectTechTreeForLayout(layout, treeData, r.techPanX, r.techPanY)
+	for _, levelNodes := range screenProjectedLevels {
 		for _, node := range levelNodes {
 			if !node.unlocked || node.done {
 				continue
@@ -1072,7 +885,7 @@ func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
 			if r.techFilterCategory != "" && node.t.Category != r.techFilterCategory {
 				continue
 			}
-			if techNodeButton(node).HitTest(contentFX, contentFY) {
+			if buildTechCardComponent(node, f.Research.ActiveID, f.Research).HitTest(fx, fy) {
 				return true
 			}
 		}

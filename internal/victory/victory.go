@@ -12,7 +12,6 @@ const (
 	defaultGoldHoldTurns    = 5
 	defaultArmyStrength     = 200
 	defaultDefeated         = 3
-	aiDominationLimit       = 30
 )
 
 // Check her tur sonunda zafer/mağlubiyet koşullarını kontrol eder.
@@ -42,34 +41,49 @@ func Check(gs *state.GameState) {
 		checkReligious(gs, playerRegions)
 	case state.VictoryConquerCity:
 		checkConquerCity(gs)
+	case state.VictorySurviveTurns:
+		checkSurviveTurns(gs)
 	}
 
 	if gs.Phase == state.PhaseGameOver || gs.VictoryAchieved {
 		return
 	}
 
-	// Herhangi bir AI fraksiyonu çok büyürse oyuncu kaybeder
-	for fid := range gs.Factions {
-		if fid == gs.PlayerFactionID {
-			continue
-		}
-		if len(gs.RegionsOwnedBy(fid)) >= aiDominationLimit {
-			gs.Phase = state.PhaseGameOver
-			gs.WinnerID = fid
-			return
-		}
+	if deadlineExpired(gs) {
+		gs.Phase = state.PhaseGameOver
+		gs.WinnerID = ""
 	}
 }
 
-// checkConquerCity tek hedef bölge oyuncuya geçtiğinde zafer verir.
+func deadlineExpired(gs *state.GameState) bool {
+	if gs == nil || gs.Victory.DeadlineYear <= 0 {
+		return false
+	}
+
+	deadlineMonth := gs.Victory.DeadlineMonth
+	if deadlineMonth <= 0 || deadlineMonth > 12 {
+		deadlineMonth = 12
+	}
+
+	if gs.Year > gs.Victory.DeadlineYear {
+		return true
+	}
+	if gs.Year < gs.Victory.DeadlineYear {
+		return false
+	}
+	return gs.Month > deadlineMonth
+}
+
+// checkConquerCity gerekli tüm hedef bölgeler oyuncuya geçtiğinde zafer verir.
 func checkConquerCity(gs *state.GameState) {
 	if len(gs.Victory.RequiredRegions) == 0 {
 		return
 	}
-	targetID := gs.Victory.RequiredRegions[0]
-	region, ok := gs.Regions[targetID]
-	if !ok || region.OwnerID != string(gs.PlayerFactionID) {
-		return
+	for _, targetID := range gs.Victory.RequiredRegions {
+		region, ok := gs.Regions[targetID]
+		if !ok || region.OwnerID != string(gs.PlayerFactionID) {
+			return
+		}
 	}
 	markPlayerVictory(gs)
 }
@@ -218,6 +232,16 @@ func checkReligious(gs *state.GameState, _ []*world.Region) {
 		}
 	} else {
 		gs.ReligiousVictoryTurns = 0
+	}
+}
+
+func checkSurviveTurns(gs *state.GameState) {
+	target := gs.Victory.TargetTurns
+	if target == 0 {
+		target = 60
+	}
+	if gs.Turn >= target {
+		markPlayerVictory(gs)
 	}
 }
 

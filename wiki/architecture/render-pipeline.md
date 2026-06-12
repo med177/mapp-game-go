@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-06-07
+last_updated: 2026-06-12
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -60,9 +60,9 @@ type Renderer struct {
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup; üstteki `Kodex` düğmesi `Tümü/Hazır/Takvim/Kilitli` filtreli, solda kısa özetli liste sağda detay gösteren daha geniş historical chain popup'ını açar; Kodex listesi focus-scroll ve mouse wheel ile görünür pencere içinde kalır | `panel.go`, `renderer.go`, `game.go`, `ui_modals.go` |
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
-| 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; node adı/kategori/maliyet yazıları koyu strip + outlined label ile kontrastlı tutulur | `tech_panel.go` |
+| 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; teknoloji kartının görünüm ve hit-test seam'i ortak `techCardComponent` üstünden yürütülür, böylece çizilen rect ile tıklama rect'i aynı projection çıktısını paylaşır | `tech_panel.go`, `tech_card_component.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
-| 10 | Savaş ilan, genel onay ve event detail diyalogları; event detail popup artık structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
+| 10 | Savaş ilan, genel onay, zafer detay ve event detail diyalogları; zafer HUD kartına tıklanınca açılan modal aktif hedefin başlık, açıklama ve ilerleme özetini gösterir; event detail popup structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.

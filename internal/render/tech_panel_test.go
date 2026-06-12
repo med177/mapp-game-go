@@ -38,6 +38,52 @@ func TestTechTreeViewOriginCentersNarrowContent(t *testing.T) {
 	}
 }
 
+func TestProjectTechTreeForLayoutBuildsScreenAlignedCardHitboxes(t *testing.T) {
+	layout := techPanelLayout{treeRect: gameui.Rect{X: 120, Y: 80, W: 900, H: 500}}
+	treeData := techTreeLayoutData{
+		levels: [][]techNode{{
+			{
+				t:        &tech.Technology{ID: "militia", NameTR: "Milis"},
+				unlocked: true,
+				x:        240,
+				y:        160,
+			},
+		}},
+		contentW: 900,
+		contentH: 500,
+	}
+
+	_, screenLevels := projectTechTreeForLayout(layout, treeData, 20, 10)
+	card := buildTechCardComponent(screenLevels[0][0], "", faction.ResearchState{})
+	centerX := card.Rect.X + card.Rect.W/2
+	centerY := card.Rect.Y + card.Rect.H/2
+
+	if !card.HitTest(centerX, centerY) {
+		t.Fatalf("kart merkez noktasi screen projection ile hit vermeli, rect=%+v center=(%.1f, %.1f)", card.Rect, centerX, centerY)
+	}
+	if card.HitTest(centerX, centerY+techNodeHeight) {
+		t.Fatalf("kart altinda eski kayik offset benzeri nokta hit vermemeli, rect=%+v", card.Rect)
+	}
+}
+
+func TestTechCardComponentDerivesProgressAndAvailabilityFromNodeState(t *testing.T) {
+	node := techNode{
+		t:        &tech.Technology{ID: "smithing", NameTR: "Demircilik", GoldCost: 120, TurnsRequired: 6, Category: tech.CategoryEconomy},
+		unlocked: true,
+	}
+	card := buildTechCardComponent(node, "smithing", faction.ResearchState{ActiveID: "smithing", TurnsLeft: 2})
+
+	if !card.Model.IsActive || !card.Model.CanResearch {
+		t.Fatalf("aktif ve arastirilabilir kart modeli bekleniyordu, model=%+v", card.Model)
+	}
+	if card.Model.Progress <= 0 || card.Model.Progress >= 1 {
+		t.Fatalf("progress 0 ile 1 arasinda olmali, got=%.2f", card.Model.Progress)
+	}
+	if card.Model.ProgressText != "2 tur kaldı" {
+		t.Fatalf("unexpected progress label: %q", card.Model.ProgressText)
+	}
+}
+
 func TestOrderTechTreeLevelsPrefersParentNeighborhood(t *testing.T) {
 	levels := [][]techNode{
 		{

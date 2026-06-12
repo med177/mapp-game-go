@@ -23,6 +23,14 @@ type eventCodexLayout struct {
 	detailRect  gameui.Rect
 }
 
+type victoryDetailLayout struct {
+	panelRect  gameui.Rect
+	headerRect gameui.Rect
+	titleRect  gameui.Rect
+	closeRect  gameui.Rect
+	bodyRect   gameui.Rect
+}
+
 func eventDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
 	modal := buildEventDetailModal()
 	panelRect := modal.Panel.Rect
@@ -113,6 +121,32 @@ func buildEventCodexModal() gameui.Modal {
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
+func victoryDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
+	modal := buildVictoryDetailModal()
+	panelRect := modal.Panel.Rect
+	box := gameui.BoxFromRect(panelRect).Inset(20)
+	headerRect, rest := box.CutTop(30, 16)
+	closeRect, titleBox := gameui.BoxFromRect(headerRect).CutRight(30, 12)
+	return panelRect, titleBox.Rect, closeRect, rest
+}
+
+func buildVictoryDetailModal() gameui.Modal {
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 760, 460, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
+	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+}
+
+func buildVictoryDetailLayout() victoryDetailLayout {
+	panelRect, titleRect, closeRect, rest := victoryDetailHeaderRects()
+	return victoryDetailLayout{
+		panelRect:  panelRect,
+		headerRect: gameui.Rect{X: titleRect.X, Y: titleRect.Y, W: titleRect.W + 12 + closeRect.W, H: titleRect.H},
+		titleRect:  titleRect,
+		closeRect:  closeRect,
+		bodyRect:   rest.Rect,
+	}
+}
+
 func buildEventCodexLayout() eventCodexLayout {
 	panelRect, titleRect, closeRect, rest := eventCodexHeaderRects()
 	filtersRect, bodyBox := rest.CutTop(30, 20)
@@ -140,6 +174,13 @@ func buildEventDetailCloseButton() gameui.Button {
 
 func buildEventCodexCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventCodexHeaderRects()
+	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
+	btn.IconSize = 13
+	return btn
+}
+
+func buildVictoryDetailCloseButton() gameui.Button {
+	_, _, closeRect, _ := victoryDetailHeaderRects()
 	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
 	btn.IconSize = 13
 	return btn

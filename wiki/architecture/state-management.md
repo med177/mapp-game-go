@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-06-06
+last_updated: 2026-06-12
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -40,7 +40,8 @@ type GameState struct {
     UnitTypes          map[string]*UnitType
     BuildingTypes      map[string]*Building
     TechTypes          map[string]*Technology
-    AvailableVictories []VictoryOptionDef  // scenario.json'dan
+    ScenarioVictories  []VictoryOptionDef  // scenario.json'daki tam zafer listesi
+    AvailableVictories []VictoryOptionDef  // oyuncu fraksiyonuna filtrelenmiş görünür liste
     RegionLogistics    map[RegionID]RegionLogisticsStatus
     ArmyLogistics      map[ArmyID]ArmyLogisticsStatus
 
@@ -77,7 +78,8 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 | `BuildingTypes` | `assets/scenarios/<id>/data/buildings.json` |
 | `TechTypes` | `assets/scenarios/<id>/data/technologies.json` |
 | `ShapeData` | `assets/scenarios/<id>/data/country_shapes.json` |
-| `AvailableVictories` | `assets/scenarios/<id>/scenario.json` |
+| `ScenarioVictories` | `assets/scenarios/<id>/scenario.json` içindeki tam zafer listesi |
+| `AvailableVictories` | `ScenarioVictories` listesinin oyuncu fraksiyonuna göre filtrelenmiş kopyası |
 | `RegionLogistics`, `ArmyLogistics` | tur çözümlemesinde üretilen geçici ikmal baskısı UI özeti |
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
@@ -133,7 +135,7 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData` ve `RegionOrder` alanlarını yeniden doldurur. `ScenarioPath` eksik ama `ScenarioID` varsa senaryo klasörü yeniden çözülür; ardından `scenario.json` tekrar okunur, `MapConfig` fallback uygulanır ve `AvailableVictories` güncellenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData` ve `RegionOrder` alanlarını yeniden doldurur. `ScenarioPath` eksik ama `ScenarioID` varsa senaryo klasörü yeniden çözülür; ardından `scenario.json` tekrar okunur, `MapConfig` fallback uygulanır, `ScenarioVictories` tam liste olarak geri yüklenir ve `AvailableVictories` aktif `PlayerFactionID` ile tekrar filtrelenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
 
 Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar.
 
@@ -143,14 +145,16 @@ Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun için
 
 ```go
 type VictoryCondition struct {
-    Type               VictoryType      // domination | economic | military | religious
+    Type               VictoryType      // domination | economic | military | religious | conquer_city | survive_turns
     TargetRegionCount  int              // domination: 20+ bölge
     RequiredRegions    []RegionID       // domination: constantinople, rome, paris, cairo, jerusalem
     TargetGoldIncome   int              // economic: tur başı gelir eşiği
     GoldHoldTurns      int              // economic: kaç tur koru
     TargetArmyStrength int             // military: 200 güç puanı
     TargetDefeated     int             // military: 3 fraksiyon yenilgisi
-    DeadlineTurn       int             // 0 = süresiz
+    TargetTurns        int             // survive_turns: toplam tur eşiği
+    DeadlineYear       int             // 0 = süresiz
+    DeadlineMonth      int             // 1-12, 0 = yıl sonu
 }
 ```
 

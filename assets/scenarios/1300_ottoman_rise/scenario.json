@@ -52,8 +52,71 @@
       "description": "Konstantinopolis'i ve Ankara'yı fethederek imparatorluk kur",
       "detail": "Hedef: Konstantinopolis ve Ankara",
       "type": "conquer_city",
-      "target": "constantinople",
-      "additional_target": "ankara"
+      "required_regions": [
+        "constantinople",
+        "ankara"
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "mamluk_levant_guard",
+      "title": "Levant'ın Muhafızları",
+      "description": "Memlük olarak Mısır ve Şam hattını tutup Doğu Akdeniz ticaretini güvenceye al.",
+      "detail": "Hedef: Egypt, Palestine, Damascus ve Aleppo",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "egypt",
+        "palestine",
+        "damascus",
+        "aleppo"
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1,
+      "allowed_factions": [
+        "mamluk"
+      ]
+    },
+    {
+      "id": "venetian_thalassocracy",
+      "title": "Venedik Talassokrasisi",
+      "description": "Venedik olarak Ege ve Doğu Akdeniz adalarını denetleyip ticaret kolonilerini koru.",
+      "detail": "Hedef: Venice, Crete, Cyprus ve Konstantinopolis hattı",
+      "type": "domination",
+      "target_region_count": 16,
+      "required_regions": [
+        "venice",
+        "crete",
+        "cyprus",
+        "constantinople"
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1,
+      "allowed_factions": [
+        "venice"
+      ]
+    },
+    {
+      "id": "gather_the_rus",
+      "title": "Rus Topraklarını Topla",
+      "description": "Moskova olarak kuzeydoğu Slav çekirdeğini birleştir ve Karadeniz kapısına yaklaş.",
+      "detail": "Hedef: Moscow, Novgorod ve Crimea",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "moscow",
+        "novgorod",
+        "crimea"
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1,
+      "allowed_factions": [
+        "russia"
+      ]
     },
     {
       "id": "domination",
@@ -69,7 +132,9 @@
         "paris",
         "palestine",
         "venice"
-      ]
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1
     },
     {
       "id": "economic",
@@ -78,7 +143,9 @@
       "detail": "Ticaret yollarını kontrol et, limanları geliştir",
       "type": "economic",
       "target_gold_income": 700,
-      "gold_hold_turns": 6
+      "gold_hold_turns": 6,
+      "deadline_year": 1561,
+      "deadline_month": 1
     },
     {
       "id": "religious",
@@ -91,6 +158,12 @@
         "papal_states",
         "constantinople",
         "mecca"
+      ],
+      "deadline_year": 1561,
+      "deadline_month": 1,
+      "allowed_factions": [
+        "ottoman",
+        "mamluk"
       ]
     }
   ]

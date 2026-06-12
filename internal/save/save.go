@@ -10,6 +10,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -179,6 +180,10 @@ func loadFromPath(path string) (*state.GameState, error) {
 		gs.RegionOrder = order
 	}
 
+	if _, order, err := faction.LoadFactionsWithOrder(dp("factions.json")); err == nil {
+		gs.FactionOrder = order
+	}
+
 	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
 	if err != nil {
 		return nil, err
@@ -242,7 +247,8 @@ func applyScenarioMetadata(gs *state.GameState) {
 	if mapConfigEmpty(gs.MapConfig) {
 		gs.MapConfig = sc.MapConfig
 	}
-	gs.AvailableVictories = sc.VictoryConditions
+	gs.ScenarioVictories = sc.VictoryConditions
+	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, string(gs.PlayerFactionID))
 }
 
 func mapConfigEmpty(cfg scenario.MapConfig) bool {

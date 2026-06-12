@@ -125,6 +125,7 @@ type Renderer struct {
 	eventCodexFocus   int
 	eventCodexScroll  int
 	eventDetail       string
+	showVictoryDetail bool
 	eventLogScroll    int
 
 	// Savaş / bildirim mesajı (kısa süreli)
@@ -880,6 +881,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.eventDetail != "" {
 		drawEventDetailPopup(screen, r.eventDetail)
+	}
+
+	if r.showVictoryDetail {
+		drawVictoryDetailPopup(screen, r.gs)
 	}
 
 	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
@@ -6064,6 +6069,16 @@ func (r *Renderer) HandleInput() InputAction {
 		return InputAction{}
 	}
 
+	if r.showVictoryDetail {
+		mx, my := ebiten.CursorPosition()
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
+			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
+			(victoryDetailCloseHit(float64(mx), float64(my)) || !victoryDetailPopupHit(float64(mx), float64(my)))) {
+			r.showVictoryDetail = false
+		}
+		return InputAction{}
+	}
+
 	// Ana menü inputu
 	if r.gs.Phase == state.PhaseMainMenu {
 		mx, my := ebiten.CursorPosition()
@@ -6336,7 +6351,7 @@ func (r *Renderer) handleBuildKey() InputAction {
 
 // handleFactionSelectInput fraksiyon seçim ekranındaki tuş ve fare girişlerini işler.
 func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction {
-	factions := selectableFactions(r.gs)
+	factions, _ := selectableFactions(r.gs)
 	n := len(factions)
 	if n == 0 {
 		if r.keyJustPressed(ebiten.KeyEscape) {
@@ -6435,6 +6450,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if topDateHudMenuButtonHit(fx, fy) {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
+	}
+	if victoryProgressHit(fx, fy) {
+		r.showVictoryDetail = true
+		return InputAction{}
 	}
 	modeButtons := buildMapModeButtons()
 	if modeButtons[0].HitTest(fx, fy) {

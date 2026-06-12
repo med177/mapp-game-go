@@ -25,6 +25,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.showVictoryDetail {
+		if victoryDetailCloseHit(fx, fy) || !victoryDetailPopupHit(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.confirmDialog.show {
 		if r.confirmDialogHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -272,6 +280,9 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) {
+		return true
+	}
+	if victoryProgressHit(fx, fy) {
 		return true
 	}
 	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex()) {

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-05-15
+last_updated: 2026-06-13
 related: [architecture/state-management, architecture/game-loop]
 ---
 
@@ -50,6 +50,14 @@ RequiredRegions = [palestine, papal_states, yemen]
 
 `ReligiousVictoryTurns` sayacı `GameState`'te tutulur.
 
+### 5. Hayatta Kalma (`survive_turns`)
+
+````
+Turns = 80
+````
+
+Oyuncu belirlenen toplam tur sayısına kadar elenmeden ayakta kalırsa zafer kazanır. İlerleme doğrudan `GameState.Turn` üzerinden izlenir.
+
 ---
 
 ## Kontrol Akışı
@@ -65,9 +73,28 @@ RequiredRegions = [palestine, papal_states, yemen]
 
 ### Senaryo Özel Hedef (`conquer_city`)
 
-Senaryo JSON'larında `conquer_city` tipi var ve `applyVictoryChoice()` bunu tek hedef bölgeyi `RequiredRegions` listesine çevirerek state'e yazar. `internal/victory/victory.go` bu tipte ilk hedef bölge oyuncuya geçtiğinde oyunu oyuncu zaferiyle bitirir.
+Senaryo JSON'larında `conquer_city` tipi `required_regions` listesini kullanır.
+
+`applyVictoryChoice()` hedef bölge listesini `VictoryCondition.RequiredRegions` içine yazar. `internal/victory/victory.go` bu tipte listedeki tüm hedef bölgeler oyuncuya geçtiğinde zafer verir.
 
 Senaryo hedefleri gerçek `regions.json` ID'leriyle eşleşmelidir; kısa kodlar (`CON`, `ROM`, vb.) kullanılmaz.
+
+### Fraksiyon Bazlı Görünürlük
+
+Senaryo `victory_conditions` kayıtları opsiyonel `allowed_factions` alanı taşıyabilir.
+
+- Alan boşsa: hedef tüm oynanabilir fraksiyonlara gösterilir.
+- Alan doluysa: yalnız listelenen fraksiyonlar `PhaseVictorySelect` ekranında bu kartı görür.
+
+Tam senaryo listesi `GameState.ScenarioVictories` içinde saklanır; seçim ekranına gösterilen filtrelenmiş kopya `GameState.AvailableVictories` alanına yazılır. Save/load sırasında `scenario.json` tekrar okunup filtre yeniden uygulanır.
+
+## Zafer Popup
+
+Oyun içi üst-sol zafer HUD kartına tıklanınca merkezde ayrı bir modal açılır.
+
+- Başlık ve açıklama seçilen zafer kartının metadata'sından gelir (`SelectedVictoryOptionID`).
+- Bölge tabanlı zaferlerde popup içinde yeşil `✓` / kırmızı `✗` checklist görünür.
+- Ekonomik, askerî ve `survive_turns` hedeflerinde checklist durum satırları eşiklere göre güncellenir.
 
 ---
 
@@ -81,4 +108,9 @@ Seçilen tipe göre `VictoryCondition` struct'ı doldurulur ve `gs.Victory`'ye y
 
 ## Deadline
 
-`VictoryCondition.DeadlineTurn = 0` → süresiz. İleride belirli yıla kadar koşul opsiyonu eklenebilir (örn. 1500 yılına kadar domination).
+Her zafer kartı opsiyonel olarak `deadline_year` + `deadline_month` taşır.
+
+- Deadline tanımlıysa hedef yalnız oyuncu için geçerlidir.
+- Oyuncu hedefi son ay bitmeden tamamlarsa `VictoryAchieved` set edilir ve oyun devam eder.
+- Oyuncu deadline ayını da geçirirse oyun kaybedilir.
+- AI tarafı zafer kartı seçmez ve hedef tamamladığı için otomatik kazanmaz.
