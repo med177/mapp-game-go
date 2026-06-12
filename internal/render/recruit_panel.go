@@ -126,7 +126,7 @@ func buildRecruitPanelCloseButton(gs *state.GameState, rid world.RegionID) (game
 	if !RecruitPanelVisible(gs, rid) {
 		return gameui.Button{}, false
 	}
-	slots := recruitPanelSlots(gs, rid)
+	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	py := recruitPanelY()
 	pw := recruitPanelW(slots)
@@ -146,11 +146,11 @@ func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []game
 		return nil
 	}
 	py := recruitPanelY()
-	slots := recruitPanelSlots(gs, rid)
+	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	topY := py + recruitHeaderH + 4
 	pw := recruitPanelW(slots)
-	cardW, cardH, gap := recruitCardMetrics(slots, pw)
+	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxTop := len(display)
 	if maxTop > recruitMaxCards {
 		maxTop = recruitMaxCards
@@ -172,12 +172,12 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 		return nil
 	}
 	py := recruitPanelY()
-	slots := recruitPanelSlots(gs, rid)
+	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	pw := recruitPanelW(slots)
 	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
 	items := recruitQueueItems(gs, rid)
-	cardW, _, gap := recruitCardMetrics(slots, pw)
+	cardW, _, gap := recruitCardMetrics(pw)
 	maxItems := len(items)
 	if maxItems > recruitQueueMaxOrders {
 		maxItems = recruitQueueMaxOrders
@@ -284,7 +284,7 @@ func RecruitPanelBoundsHit(mx, my float64, gs *state.GameState, rid world.Region
 	if !RecruitPanelVisible(gs, rid) {
 		return false
 	}
-	slots := recruitPanelSlots(gs, rid)
+	slots := recruitPanelSlots()
 	px := float64(recruitPanelX(slots))
 	py := float64(recruitPanelY())
 	pw := float64(recruitPanelW(slots))
@@ -298,7 +298,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	}
 	region := gs.Regions[rid]
 	ensureArmySheet()
-	slots := recruitPanelSlots(gs, rid)
+	slots := recruitPanelSlots()
 
 	px := recruitPanelX(slots)
 	py := recruitPanelY()
@@ -330,7 +330,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 
 	display := visibleUnitIDs(gs, region)
 	topY := py + recruitHeaderH + 4
-	cardW, cardH, gap := recruitCardMetrics(slots, pw)
+	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxTop := len(display)
 	if maxTop > recruitMaxCards {
 		maxTop = recruitMaxCards
@@ -341,11 +341,11 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		col := i % recruitCardsPerRow
 		x := px + recruitPanelPad + float32(col)*(cardW+gap)
 		y := topY + float32(row)*(cardH+gap)
-		drawRecruitCard(screen, gs, rid, uid, barracksLevel, portLevel, x, y, cardW, cardH)
+		drawRecruitCard(screen, gs, uid, barracksLevel, portLevel, x, y, cardW, cardH)
 	}
 
 	queueY := topY + recruitSectionH + recruitSectionGap
-	drawRecruitQueueSection(screen, gs, rid, slots, px, queueY, pw, recruitSectionH)
+	drawRecruitQueueSection(screen, gs, rid, px, queueY, pw, recruitSectionH)
 }
 
 func recruitPanelCloseRect(px, py, pw float32) (x, y, w, h float32) {
@@ -378,8 +378,8 @@ func recruitPanelCloseHitTest(mx, my float64, gs *state.GameState, rid world.Reg
 	return ok && btn.HitTest(mx, my)
 }
 
-func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
-	slots = recruitCardsPerRow
+func recruitCardMetrics(panelW float32) (cardW, cardH, gap float32) {
+	slots := recruitCardsPerRow
 	gap = recruitCardGap
 	avail := panelW - recruitPanelPad*2 - gap*float32(slots-1)
 	cardW = avail / float32(slots)
@@ -393,7 +393,7 @@ func recruitCardMetrics(slots int, panelW float32) (cardW, cardH, gap float32) {
 	return cardW, cardH, gap
 }
 
-func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, barracksLevel, portLevel int, sx, sy, cardW, cardH float32) {
+func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barracksLevel, portLevel int, sx, sy, cardW, cardH float32) {
 	utype := gs.UnitTypes[uid]
 	if utype == nil {
 		return
@@ -570,14 +570,14 @@ func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueIt
 	return items
 }
 
-func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, slots int, x, y, w, h float32) {
+func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, x, y, w, h float32) {
 	mx, my := ebiten.CursorPosition()
 	fmx, fmy := float64(mx), float64(my)
 	queueRect := gameui.Rect{X: float64(x + 8), Y: float64(y), W: float64(w - 16), H: float64(h)}
 	drawUICardRect(screen, queueRect, color.RGBA{14, 12, 10, 220}, color.RGBA{88, 72, 44, 220}, 1)
 	drawUISectionLabel(screen, float64(x)+16, float64(y)+6, "EGITIM SIRASI")
 	items := recruitQueueItems(gs, rid)
-	cardW, cardH, gap := recruitCardMetrics(slots, w)
+	cardW, cardH, gap := recruitCardMetrics(w)
 	cy := y + 26
 	maxItems := len(items)
 	if maxItems > recruitQueueMaxOrders {
@@ -667,7 +667,7 @@ func RecruitPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.R
 	return RecruitPanelHitTest(mx, my, gs, rid) != ""
 }
 
-func recruitPanelSlots(gs *state.GameState, rid world.RegionID) int {
+func recruitPanelSlots() int {
 	return recruitCardsPerRow
 }
 

@@ -205,19 +205,16 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 		blockH += cardH*float64(generalRows) + padY*float64(maxScreenInt(generalRows-1, 0))
 	}
 
-	base := gameui.Rect{
-		X: ScreenWidth/2 - gridW/2,
-		Y: ScreenHeight/2 - (blockH+headerH)/2 + headerH,
-		W: gridW,
-	}
+	baseX := ScreenWidth/2 - gridW/2
+	baseY := ScreenHeight/2 - (blockH+headerH)/2 + headerH
 	layout := factionSelectLayout{}
-	currentY := base.Y
+	currentY := baseY
 
 	if historicalRows > 0 {
-		layout.historicalLabel = gameui.Rect{X: base.X, Y: currentY, W: 320, H: factionGroupLabelH}
+		layout.historicalLabel = gameui.Rect{X: baseX, Y: currentY, W: 320, H: factionGroupLabelH}
 		currentY += factionGroupLabelH + 6
 		layout.historicalGrid = gameui.Rect{
-			X: base.X,
+			X: baseX,
 			Y: currentY,
 			W: gridW,
 			H: cardH*float64(historicalRows) + padY*float64(maxScreenInt(historicalRows-1, 0)),
@@ -229,10 +226,10 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 		if historicalRows > 0 {
 			currentY += factionGroupGap
 		}
-		layout.generalLabel = gameui.Rect{X: base.X, Y: currentY, W: 320, H: factionGroupLabelH}
+		layout.generalLabel = gameui.Rect{X: baseX, Y: currentY, W: 320, H: factionGroupLabelH}
 		currentY += factionGroupLabelH + 6
 		layout.generalGrid = gameui.Rect{
-			X: base.X,
+			X: baseX,
 			Y: currentY,
 			W: gridW,
 			H: cardH*float64(generalRows) + padY*float64(maxScreenInt(generalRows-1, 0)),

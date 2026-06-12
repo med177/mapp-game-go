@@ -416,7 +416,7 @@ func techNodeDependencyOrder(node techNode, prevIndex map[string]int) float64 {
 // ── Kategori filtre sekmeleri ────────────────────────────────────────
 
 // drawTechFilterTabs kategori filtre sekmelerini çizer.
-func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tech.Category, f *faction.Faction) {
+func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tech.Category, f *faction.Faction, allTechs map[string]*tech.Technology) {
 	categories := tech.AllCategories()
 	// Her sekmenin genişliğini hesapla
 	tabCount := len(categories)
@@ -470,7 +470,7 @@ func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tec
 
 		// Tamamlanan / toplam sayı
 		if f != nil {
-			completed, total := countTechByCategory(f, cat, nil)
+			completed, total := countTechByCategory(f, cat, allTechs)
 			label = fmt.Sprintf("%s (%d/%d)", label, completed, total)
 		}
 
@@ -481,14 +481,19 @@ func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tec
 
 // countTechByCategory belirli bir kategorideki tamamlanmış ve toplam teknoloji sayısını döner.
 func countTechByCategory(f *faction.Faction, cat tech.Category, allTechs map[string]*tech.Technology) (completed, total int) {
-	if f == nil {
+	if f == nil || allTechs == nil {
 		return 0, 0
 	}
-	// Eğer allTechs nil ise, completed map'inden sayamayız tam olarak
-	// Bu fonksiyon şu an sadece render için kullanılıyor, gs.TechTypes'e erişim yok.
-	// Bu yüzden basit bir tahmin/placeholder döneceğiz.
-	// NOT: Daha sonra gs referansı eklenerek tam implementasyon yapılabilir.
-	return 0, 0
+	for _, t := range allTechs {
+		if t == nil || t.Category != cat {
+			continue
+		}
+		total++
+		if f.Research.Completed[t.ID] {
+			completed++
+		}
+	}
+	return completed, total
 }
 
 // techFilterTabHit hangi sekmenin tıklandığını döner.
@@ -722,7 +727,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	}
 
 	// Kategori filtre sekmeleri
-	drawTechFilterTabs(screen, layout.filterRect, r.techFilterCategory, f)
+	drawTechFilterTabs(screen, layout.filterRect, r.techFilterCategory, f, r.gs.TechTypes)
 
 	// Ağaç verisini hazırla
 	treeData := r.buildLaidOutTechTree(f)

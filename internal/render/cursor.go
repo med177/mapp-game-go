@@ -84,7 +84,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showDiplomacy {
-		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction) {
+		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}

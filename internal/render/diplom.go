@@ -428,7 +428,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll)
 	r.diplomacyFocus = clampDiplomFocus(r.diplomacyFocus, 0, n-1)
 	r.diplomacyActionFocus = clampDiplomFocus(r.diplomacyActionFocus, 0, len(diplomActions)-1)
-	if input.LeftJustPressed && !diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction) {
+	if input.LeftJustPressed && !diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
 		return InputAction{}
@@ -551,7 +551,7 @@ func drawDiplomacyListScrollbar(screen *ebiten.Image, total, scroll int) {
 	drawUICardRect(screen, gameui.Rect{X: trackRect.X, Y: thumbY, W: trackRect.W, H: thumbH}, color.RGBA{176, 144, 78, 230}, color.RGBA{214, 190, 120, 210}, 1)
 }
 
-func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID) bool {
+func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scroll int, target faction.FactionID) bool {
 	if buildDiplomacyCloseButton().HitTest(mx, my) {
 		return true
 	}

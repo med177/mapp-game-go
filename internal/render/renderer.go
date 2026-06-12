@@ -1703,16 +1703,14 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		cx := mx + px*curve
 		cy := my + py*curve
 
-		baseGlow := color.RGBA{255, 224, 138, 255}
-		baseCore := color.RGBA{247, 232, 176, 255}
 		glow := color.RGBA{120, 108, 86, 18}
 		core := color.RGBA{165, 150, 118, 42}
 		coreW := float32(1.0)
 		glowW := float32(2.8)
 		if amount > 0 {
 			alphaScale := min(uint8(80+(amount*12)), 255)
-			glow = color.RGBA{baseGlow.R, baseGlow.G, baseGlow.B, alphaScale}
-			core = color.RGBA{baseCore.R, baseCore.G, baseCore.B, alphaScale}
+			glow = color.RGBA{255, 224, 138, alphaScale}
+			core = color.RGBA{247, 232, 176, alphaScale}
 			coreW = 1.5
 			glowW = 5.0
 			if amount >= 14 {
@@ -6721,7 +6719,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 				}
 			}
 		}
-		if regionNeighborToggleHit(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded) {
+		if regionNeighborToggleHit(fx, fy, r.gs, r.SelectedRegion) {
 			r.devNeighborListExpanded = !r.devNeighborListExpanded
 			return InputAction{}
 		}

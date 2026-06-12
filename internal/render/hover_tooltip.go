@@ -260,7 +260,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	ensureArmySheet()
 	costLines := unitCostRequirementLines(gs, utype)
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
-	status, statusCol := unitAvailabilityStatus(gs, rid, utype, reqMissing)
+	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
 	tooltipH := 190.0 + float64(len(costLines))*14 + float64(len(reqLines))*14
 	x, y, w, h := tooltipRect(mx, my, 328, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
@@ -325,7 +325,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
 }
 
-func unitAvailabilityStatus(gs *state.GameState, rid world.RegionID, utype *army.UnitType, reqMissing bool) (string, color.RGBA) {
+func unitAvailabilityStatus(gs *state.GameState, utype *army.UnitType, reqMissing bool) (string, color.RGBA) {
 	if utype == nil {
 		return "Bilinmiyor", ColorGray
 	}

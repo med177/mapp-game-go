@@ -2562,7 +2562,7 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 	if idx := regionDiplomacyButtonHit(mx, my, gs, rid); idx >= 0 {
 		return true
 	}
-	if regionNeighborToggleHit(mx, my, gs, rid, false) {
+	if regionNeighborToggleHit(mx, my, gs, rid) {
 		return true
 	}
 	return buildingGridHitTest(mx, my, gs, rid, false) != ""
@@ -3461,7 +3461,7 @@ func neighborBlockLayout(gs *state.GameState, region *world.Region, expanded boo
 	return title, items, cols, rows
 }
 
-func regionNeighborToggleHit(mx, my float64, gs *state.GameState, rid world.RegionID, expanded bool) bool {
+func regionNeighborToggleHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
 	if rid == "" || gs == nil {
 		return false
 	}
