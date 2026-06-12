@@ -528,6 +528,18 @@ func buildTradeGoodsList(layout tradeLayout, visibleRows int, items []string, se
 	return list
 }
 
+func tradeListClickedIndex(list gameui.ListView, input gameui.InputState) (int, bool) {
+	if !input.LeftJustPressed || !list.HitTest(input.MouseX, input.MouseY) || list.RowHeight <= 0 {
+		return -1, false
+	}
+	row := int((input.MouseY - list.Rect.Y) / list.RowHeight)
+	idx := list.Scroll + row
+	if row < 0 || row >= list.VisibleRows || idx < 0 || idx >= len(list.Items) {
+		return -1, false
+	}
+	return idx, true
+}
+
 func buildTradeActionButtons(layout tradeLayout, goodsRows int) ([]gameui.Button, gameui.Button, gameui.Button) {
 	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, goodsRows)
 	rightX := cardX + 12
@@ -1141,6 +1153,10 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 			}
 		}
 		factionList := buildTradeFactionList(layout, visibleRows, items, r.tradeScroll, r.tradeFactionFocus)
+		if idx, ok := tradeListClickedIndex(factionList, input); ok {
+			r.tradeFactionFocus = idx
+			return InputAction{}
+		}
 		if factionList.HandleInput(input) {
 			r.tradeScroll = factionList.Scroll
 			if factionList.Selected >= 0 {
@@ -1191,6 +1207,10 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 		}
 	}
 	factionList := buildTradeFactionList(layout, visibleRows, factionItems, r.tradeScroll, r.tradeFactionFocus)
+	if idx, ok := tradeListClickedIndex(factionList, input); ok {
+		r.tradeFactionFocus = idx
+		return InputAction{}
+	}
 	if factionList.HandleInput(input) {
 		r.tradeScroll = factionList.Scroll
 		if factionList.Selected != r.tradeFactionFocus && factionList.Selected >= 0 {
@@ -1221,6 +1241,10 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 		goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, layout.rightListRect.W-12))
 	}
 	goodsList := buildTradeGoodsList(layout, visibleRows, goodItems, r.tradeGoodFocus)
+	if idx, ok := tradeListClickedIndex(goodsList, input); ok {
+		r.tradeGoodFocus = idx
+		return InputAction{}
+	}
 	if goodsList.HandleInput(input) {
 		if goodsList.Selected >= 0 {
 			r.tradeGoodFocus = goodsList.Selected

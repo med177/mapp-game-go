@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"sort"
 
@@ -100,6 +101,7 @@ const (
 	techNodeStepY     = 132.0
 	techLevelGap      = 96.0
 	techTreePadding   = 28.0
+	techTreeTopInset  = 28.0
 	techPanWheelStep  = 56.0
 	techPanDragThresh = 4.0
 
@@ -642,7 +644,7 @@ func techTreeViewOrigin(treeRect gameui.Rect, contentW float64) (x, y float64) {
 	if contentW < treeRect.W {
 		x = (treeRect.W - contentW) / 2
 	}
-	return x, 0
+	return x, techTreeTopInset
 }
 
 func projectTechTree(levels [][]techNode, offsetX, offsetY float64) [][]techNode {
@@ -667,7 +669,17 @@ func projectTechTreeForLayout(layout techPanelLayout, treeData techTreeLayoutDat
 
 func (r *Renderer) clampTechPan(treeRect gameui.Rect, contentW, contentH float64) {
 	r.techPanX = techClampFloat(r.techPanX, 0, techMaxFloat(0, contentW-treeRect.W))
-	r.techPanY = techClampFloat(r.techPanY, 0, techMaxFloat(0, contentH-treeRect.H))
+	r.techPanY = techClampFloat(r.techPanY, 0, techMaxFloat(0, contentH+techTreeTopInset-treeRect.H))
+}
+
+func techTreeViewport(screen *ebiten.Image, treeRect gameui.Rect) *ebiten.Image {
+	rect := image.Rect(
+		int(treeRect.X),
+		int(treeRect.Y),
+		int(treeRect.X+treeRect.W),
+		int(treeRect.Y+treeRect.H),
+	)
+	return screen.SubImage(rect).(*ebiten.Image)
 }
 
 // ── Ana Draw fonksiyonu ─────────────────────────────────────────────
@@ -716,12 +728,13 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	treeData := r.buildLaidOutTechTree(f)
 	r.clampTechPan(layout.treeRect, treeData.contentW, treeData.contentH)
 	localProjectedLevels, screenProjectedLevels := projectTechTreeForLayout(layout, treeData, r.techPanX, r.techPanY)
+	treeScreen := techTreeViewport(screen, layout.treeRect)
 
 	// Tree viewport arka plan (hafif grid efekti için)
-	drawRoundedRectF64(screen, layout.treeRect.X, layout.treeRect.Y, layout.treeRect.W, layout.treeRect.H, 6, color.RGBA{8, 10, 22, 200})
+	drawRoundedRectF64(treeScreen, layout.treeRect.X, layout.treeRect.Y, layout.treeRect.W, layout.treeRect.H, 6, color.RGBA{8, 10, 22, 200})
 
 	// Bağlantı çizgileri
-	drawTechConnectors(screen, screenProjectedLevels, r.gs.TechTypes)
+	drawTechConnectors(treeScreen, screenProjectedLevels, r.gs.TechTypes)
 
 	// Seviye etiketleri ve düğümler
 	for levelIdx, levelNodes := range localProjectedLevels {
@@ -733,7 +746,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 				labelX = layout.treeRect.X + 4
 			}
 			levelLabel := fmt.Sprintf("Sev. %d", levelIdx)
-			drawUIOutlinedLabel(screen, gameui.Rect{X: labelX, Y: labelY, W: 46}, levelLabel,
+			drawUIOutlinedLabel(treeScreen, gameui.Rect{X: labelX, Y: labelY, W: 46}, levelLabel,
 				techLevelLabelColor, color.RGBA{4, 6, 16, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 		}
 
@@ -742,7 +755,7 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			if r.techFilterCategory != "" && node.t.Category != r.techFilterCategory {
 				continue
 			}
-			buildTechCardComponent(screenProjectedLevels[levelIdx][nodeIdx], f.Research.ActiveID, f.Research).Draw(screen)
+			buildTechCardComponent(screenProjectedLevels[levelIdx][nodeIdx], f.Research.ActiveID, f.Research).Draw(treeScreen)
 		}
 	}
 

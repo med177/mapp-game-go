@@ -33,8 +33,8 @@ func TestTechTreeViewOriginCentersNarrowContent(t *testing.T) {
 	if x <= 0 {
 		t.Fatalf("dar icerik yatay merkezlenmeliydi, got x=%.1f", x)
 	}
-	if y != 0 {
-		t.Fatalf("dikey origin sabit kalmali, got y=%.1f", y)
+	if y != techTreeTopInset {
+		t.Fatalf("dikey origin ust inset kadar asagida baslamali, got y=%.1f", y)
 	}
 }
 

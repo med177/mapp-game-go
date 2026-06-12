@@ -232,6 +232,38 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 }
 
+func armyDetailPanelRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Rect{}, false
+	}
+	a, ok := gs.Armies[aid]
+	if !ok || a == nil {
+		return gameui.Rect{}, false
+	}
+	if a.OwnerID != string(gs.PlayerFactionID) {
+		panelW := float32(380)
+		panelH := float32(96)
+		return gameui.Rect{
+			X: ScreenWidth/2 - float64(panelW)/2,
+			Y: float64(bottomBarTop() - panelH - 5),
+			W: float64(panelW),
+			H: float64(panelH),
+		}, true
+	}
+
+	const totalSlots = army.MaxArmySize
+	cols := maxCols
+	rows := (totalSlots + maxCols - 1) / maxCols
+	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	return gameui.Rect{
+		X: ScreenWidth/2 - float64(panelW)/2,
+		Y: float64(bottomBarTop() - panelH - 5),
+		W: float64(panelW),
+		H: float64(panelH),
+	}, true
+}
+
 func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army) {
 	panelW := float32(380)
 	panelH := float32(96)

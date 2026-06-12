@@ -789,8 +789,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
+	tradeOverlayVisible := r.tradeOverlayVisible()
+
 	// 3. Ticaret mod backdrop (rotalar/tabelalar daha sonra en üste çizilecek)
-	if r.mapMode == MapModeTrade {
+	if tradeOverlayVisible {
 		r.drawTradeModeBackdrop(screen)
 	}
 
@@ -818,8 +820,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 7. Ticaret rotaları + ticaret merkezi tabelaları (en üst harita katmanı)
-	if r.mapMode == MapModeTrade {
+	if tradeOverlayVisible {
 		r.drawTradeRoutes(screen)
+	} else {
+		r.clearTradeOverlayHover()
 	}
 
 	// 8. UI panelleri
@@ -888,7 +892,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
-	if r.mapMode == MapModeTrade && !r.showTrade {
+	if tradeOverlayVisible && !r.showTrade {
 		r.drawTradeHoverTooltip(screen)
 	}
 
@@ -926,6 +930,96 @@ func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 func (r *Renderer) selectedArmyIsPlayerOwned() bool {
 	a, ok := r.gs.Armies[r.SelectedArmy]
 	return ok && a.OwnerID == string(r.gs.PlayerFactionID)
+}
+
+func (r *Renderer) tradeOverlayVisible() bool {
+	if r.mapMode != MapModeTrade {
+		return false
+	}
+	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
+		return false
+	}
+	if r.confirmDialog.show || r.warConfirm.show || r.eventDetail != "" {
+		return false
+	}
+	if _, ok := r.playerDiplomacyOfferIndex(); ok {
+		return false
+	}
+	return true
+}
+
+func (r *Renderer) clearTradeOverlayHover() {
+	r.tradeCorridors = r.tradeCorridors[:0]
+	r.tradeHoverIdx = -1
+	r.tradeCenters = r.tradeCenters[:0]
+	r.tradeCenterIdx = -1
+}
+
+func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
+	if topStatusPanelHit(x, y) || topDateHudHit(x, y) || musicHudHit(x, y) || bottomActionHudHit(x, y) {
+		return true
+	}
+	tx, ty, tw, th := turnTechHudRect()
+	if x >= float64(tx) && x <= float64(tx+tw) && y >= float64(ty) && y <= float64(ty+th) {
+		return true
+	}
+	if eventLogPanelHit(x, y, r.eventLogCollapsed) || minimapHit(x, y) {
+		return true
+	}
+	if r.SelectedRegion != "" && regionPanelHit(x, y) {
+		return true
+	}
+	if r.isSettlementPanelOpen() && settlementPanelHit(x, y) {
+		return true
+	}
+	if r.selectedFactionPanel != "" && factionPanelHit(x, y) {
+		return true
+	}
+	if rect, ok := armyDetailPanelRect(r.gs, r.SelectedArmy); ok && rect.Hit(x, y) {
+		return true
+	}
+	for i := range r.tradeCenters {
+		c := r.tradeCenters[i]
+		if c.labelW <= 0 || c.labelH <= 0 {
+			continue
+		}
+		if x >= c.labelX && x <= c.labelX+c.labelW && y >= c.labelY && y <= c.labelY+c.labelH {
+			return true
+		}
+	}
+	if rect, ok := r.tradeHoverTooltipRect(); ok && rect.Hit(x, y) {
+		return true
+	}
+	return false
+}
+
+func (r *Renderer) tradeOverlayOccludesSegment(x1, y1, x2, y2 float64) bool {
+	for _, t := range [...]float64{0, 0.25, 0.5, 0.75, 1} {
+		x := x1 + (x2-x1)*t
+		y := y1 + (y2-y1)*t
+		if r.tradeOverlayOccludesPoint(x, y) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) tradeHoverTooltipRect() (gameui.Rect, bool) {
+	if r.tradeHoverIdx < 0 || r.tradeHoverIdx >= len(r.tradeCorridors) {
+		return gameui.Rect{}, false
+	}
+	mx, my := ebiten.CursorPosition()
+	x := float64(mx + 14)
+	y := float64(my + 16)
+	w := 292.0
+	h := 90.0
+	if x+w > ScreenWidth-6 {
+		x = float64(mx) - w - 14
+	}
+	if y+h > ScreenHeight-6 {
+		y = float64(my) - h - 12
+	}
+	return gameui.Rect{X: x, Y: y, W: w, H: h}, true
 }
 
 func armyCanEmbark(gs *state.GameState, a *army.Army) bool {
@@ -1045,6 +1139,10 @@ type tradeCenterVisual struct {
 	worldY   float64
 	x        float64
 	y        float64
+	labelX   float64
+	labelY   float64
+	labelW   float64
+	labelH   float64
 	offMap   bool
 }
 
@@ -1188,6 +1286,9 @@ func sqDistPointSegment(px, py, ax, ay, bx, by float64) float64 {
 }
 
 func (r *Renderer) tradeCorridorAt(fx, fy float64) int {
+	if r.tradeOverlayOccludesPoint(fx, fy) {
+		return -1
+	}
 	bestIdx := -1
 	bestD2 := math.MaxFloat64
 	for i := range r.tradeCorridors {
@@ -1210,6 +1311,9 @@ func (r *Renderer) tradeCorridorAt(fx, fy float64) int {
 }
 
 func (r *Renderer) tradeCenterAt(fx, fy float64) int {
+	if r.tradeOverlayOccludesPoint(fx, fy) {
+		return -1
+	}
 	bestIdx := -1
 	best := math.MaxFloat64
 	for i := range r.tradeCenters {
@@ -1245,30 +1349,33 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	c := r.tradeCorridors[r.tradeHoverIdx]
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{6, 10, 14, 54}, false)
 	segments := 28
 	for i := 0; i < segments; i++ {
 		t1 := float64(i) / float64(segments)
 		t2 := float64(i+1) / float64(segments)
 		x1, y1 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t1)
 		x2, y2 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t2)
+		if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+			continue
+		}
 		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, color.RGBA{255, 228, 144, 56}, false)
 		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, color.RGBA{255, 241, 192, 230}, false)
 	}
-	vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, color.RGBA{255, 236, 180, 230}, true)
-	vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, color.RGBA{255, 236, 180, 230}, true)
+	if !r.tradeOverlayOccludesPoint(c.sx, c.sy) {
+		vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, color.RGBA{255, 236, 180, 230}, true)
+	}
+	if !r.tradeOverlayOccludesPoint(c.dx, c.dy) {
+		vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, color.RGBA{255, 236, 180, 230}, true)
+	}
 
-	mx, my := ebiten.CursorPosition()
-	x := float32(mx + 14)
-	y := float32(my + 16)
-	w := float32(292)
-	h := float32(90)
-	if x+w > float32(ScreenWidth)-6 {
-		x = float32(mx) - w - 14
+	rect, ok := r.tradeHoverTooltipRect()
+	if !ok {
+		return
 	}
-	if y+h > float32(ScreenHeight)-6 {
-		y = float32(my) - h - 12
-	}
+	x := float32(rect.X)
+	y := float32(rect.Y)
+	w := float32(rect.W)
+	h := float32(rect.H)
 	vector.FillRect(screen, x, y, w, h, color.RGBA{10, 14, 20, 230}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
 	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
@@ -1537,7 +1644,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			if preFocusCenter >= 0 && centerIdx != preFocusCenter {
 				col = color.RGBA{120, 135, 160, 18}
 			}
-			vector.StrokeLine(screen, float32(hx), float32(hy), float32(c.x), float32(c.y), w, col, false)
+			if !r.tradeOverlayOccludesSegment(hx, hy, c.x, c.y) {
+				vector.StrokeLine(screen, float32(hx), float32(hy), float32(c.x), float32(c.y), w, col, false)
+			}
 		}
 	}
 
@@ -1632,14 +1741,19 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			t2 := float64(i+1) / float64(segments)
 			x1, y1 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t1)
 			x2, y2 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t2)
+			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+				continue
+			}
 			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
 			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 		}
 		if amount > 0 && showLabels {
 			lx, ly := quadBezierPoint(sx, sy, cx, cy, dx, dy, 0.5)
-			qtyStr := itoa(amount) + "/tur"
-			tw2 := MeasureText(qtyStr, FaceSmall)
-			DrawText(screen, qtyStr, lx-tw2/2, ly-8, FaceSmall, color.RGBA{225, 204, 144, 230})
+			if !r.tradeOverlayOccludesPoint(lx, ly) {
+				qtyStr := itoa(amount) + "/tur"
+				tw2 := MeasureText(qtyStr, FaceSmall)
+				DrawText(screen, qtyStr, lx-tw2/2, ly-8, FaceSmall, color.RGBA{225, 204, 144, 230})
+			}
 		}
 		goodsList := make([]struct {
 			name string
@@ -1771,6 +1885,23 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		x := float32(centers[i].x) - w/2
 		y := float32(centers[i].y) - h/2
+		labelRect := gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}
+		centers[i].labelX = labelRect.X
+		centers[i].labelY = labelRect.Y
+		centers[i].labelW = labelRect.W
+		centers[i].labelH = labelRect.H
+		r.tradeCenters[i].labelX = labelRect.X
+		r.tradeCenters[i].labelY = labelRect.Y
+		r.tradeCenters[i].labelW = labelRect.W
+		r.tradeCenters[i].labelH = labelRect.H
+		if topStatusPanelHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2) ||
+			topDateHudHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2) ||
+			musicHudHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2) ||
+			bottomActionHudHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2) ||
+			eventLogPanelHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2, r.eventLogCollapsed) ||
+			minimapHit(labelRect.X+labelRect.W/2, labelRect.Y+labelRect.H/2) {
+			continue
+		}
 
 		// semi-transparent dark wood background
 		bgColor := color.RGBA{18, 14, 10, alphaBg}
@@ -6199,11 +6330,16 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 		mx, my := ebiten.CursorPosition()
 		_, wheelY := ebiten.Wheel()
+		leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+		leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
+		r.prevMouse[ebiten.MouseButtonLeft] = leftPressed
 		input := gameui.InputState{
-			MouseX:          float64(mx),
-			MouseY:          float64(my),
-			LeftJustPressed: r.mouseJustPressed(ebiten.MouseButtonLeft),
-			WheelY:          wheelY,
+			MouseX:           float64(mx),
+			MouseY:           float64(my),
+			LeftPressed:      leftPressed,
+			LeftJustPressed:  leftPressed && !leftWasPressed,
+			LeftJustReleased: !leftPressed && leftWasPressed,
+			WheelY:           wheelY,
 		}
 		return handleTradePanelInput(r, input)
 	}

@@ -642,7 +642,7 @@
       "name": "Ankara",
       "name_tr": "Ankara (Ahiler)",
       "terrain": "plain",
-      "owner_id": "ottoman",
+      "owner_id": "ahiler",
       "neighbors": [
         "chrysopolis",
         "germiyan",
@@ -665,7 +665,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 50,
+      "satisfaction": 60,
       "tax_rate": 28,
       "population": 360,
       "religion": "sunni",
@@ -5032,7 +5032,7 @@
       "name": "Germiyan",
       "name_tr": "Germiyan Beyliği",
       "terrain": "plain",
-      "owner_id": "ottoman",
+      "owner_id": "germiyan_bey",
       "neighbors": [
         "ankara",
         "beysehir",
@@ -5066,7 +5066,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 50,
+      "satisfaction": 60,
       "tax_rate": 30,
       "population": 380,
       "religion": "sunni",
@@ -6363,7 +6363,7 @@
       "name": "Kutahya",
       "name_tr": "Kütahya (Germiyan)",
       "terrain": "plain",
-      "owner_id": "ottoman",
+      "owner_id": "germiyan_bey",
       "neighbors": [
         "aydinoglu",
         "bithynia",
@@ -6404,7 +6404,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 52,
+      "satisfaction": 62,
       "tax_rate": 28,
       "population": 420,
       "religion": "sunni",
@@ -14160,7 +14160,7 @@
         255
       ],
       "is_playable": false,
-      "is_eliminated": true,
+      "is_eliminated": false,
       "gold": 260,
       "grain": 120,
       "iron": 45,
@@ -14684,7 +14684,7 @@
         65
       ],
       "is_playable": false,
-      "is_eliminated": true,
+      "is_eliminated": false,
       "gold": 200,
       "grain": 120,
       "iron": 50,
@@ -15119,7 +15119,7 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 468,
+      "gold": 470,
       "grain": 200,
       "iron": 55,
       "timber": 60,
@@ -15132,8 +15132,8 @@
           "horse_breeding": true,
           "iron_weapons": true
         },
-        "active_id": "trade_routes",
-        "turns_left": 3
+        "active_id": "diplomacy",
+        "turns_left": 2
       },
       "ai_aggressiveness": 62
     },
@@ -15729,40 +15729,40 @@
     "army_edit_47": {
       "id": "army_edit_47",
       "owner_id": "ottoman",
-      "region_id": "ankara",
+      "region_id": "bilecik_frontier",
       "units": [
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "light_cavalry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         }
       ],
-      "move_points": 1,
+      "move_points": 2,
       "max_move_points": 2,
       "is_naval": false,
       "in_ambush": false
@@ -16264,6 +16264,27 @@
       "is_naval": false,
       "in_ambush": false
     },
+    "army_garrison_209": {
+      "id": "army_garrison_209",
+      "owner_id": "ahiler",
+      "region_id": "ankara",
+      "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 2,
+      "max_move_points": 2,
+      "is_naval": false,
+      "in_ambush": false
+    },
     "army_garrison_210": {
       "id": "army_garrison_210",
       "owner_id": "ilkhanate",
@@ -16295,6 +16316,32 @@
       "owner_id": "mentese_bey",
       "region_id": "mentese_hinterland",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        }
+      ],
+      "move_points": 2,
+      "max_move_points": 2,
+      "is_naval": false,
+      "in_ambush": false
+    },
+    "army_garrison_212": {
+      "id": "army_garrison_212",
+      "owner_id": "germiyan_bey",
+      "region_id": "kutahya",
+      "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -17077,60 +17124,60 @@
     "army_ottoman_1": {
       "id": "army_ottoman_1",
       "owner_id": "ottoman",
-      "region_id": "kutahya",
+      "region_id": "bithynia",
       "units": [
         {
           "type_id": "catapult",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "cavalry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "infantry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "light_cavalry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "light_cavalry",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 90,
+          "current_hp": 100,
           "experience": 0
         }
       ],
-      "move_points": 0,
+      "move_points": 2,
       "max_move_points": 2,
       "is_naval": false,
       "in_ambush": false
@@ -17557,6 +17604,12 @@
   "victory_achieved_turn": 0,
   "fired_event_ids": {},
   "relations": {
+    "achaea_principality|ahiler": {
+      "faction_a": "ahiler",
+      "faction_b": "achaea_principality",
+      "score": -30,
+      "stance": "peace"
+    },
     "achaea_principality|aragon": {
       "faction_a": "achaea_principality",
       "faction_b": "aragon",
@@ -17663,6 +17716,12 @@
       "faction_a": "achaea_principality",
       "faction_b": "georgia_kingdom",
       "score": -20,
+      "stance": "peace"
+    },
+    "achaea_principality|germiyan_bey": {
+      "faction_a": "achaea_principality",
+      "faction_b": "germiyan_bey",
+      "score": -30,
       "stance": "peace"
     },
     "achaea_principality|golden_horde": {
@@ -17845,6 +17904,300 @@
       "score": -20,
       "stance": "peace"
     },
+    "ahiler|aragon": {
+      "faction_a": "ahiler",
+      "faction_b": "aragon",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|arnavut_des": {
+      "faction_a": "arnavut_des",
+      "faction_b": "ahiler",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|athena_duk": {
+      "faction_a": "athena_duk",
+      "faction_b": "ahiler",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|aydin_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "aydin_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|bulgarian_empire": {
+      "faction_a": "ahiler",
+      "faction_b": "bulgarian_empire",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|candar_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "candar_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|canik_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "canik_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|castile_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "castile_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|denmark_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "denmark_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|dulkadir_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "dulkadir_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|east_rome": {
+      "faction_a": "ahiler",
+      "faction_b": "east_rome",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|england": {
+      "faction_a": "ahiler",
+      "faction_b": "england",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|epir": {
+      "faction_a": "epir",
+      "faction_b": "ahiler",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|esrefoglu_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "esrefoglu_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|florence_rep": {
+      "faction_a": "ahiler",
+      "faction_b": "florence_rep",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|france": {
+      "faction_a": "ahiler",
+      "faction_b": "france",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|genoa": {
+      "faction_a": "ahiler",
+      "faction_b": "genoa",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|georgia_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "georgia_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|germiyan_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|golden_horde": {
+      "faction_a": "ahiler",
+      "faction_b": "golden_horde",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|granada_emirate": {
+      "faction_a": "ahiler",
+      "faction_b": "granada_emirate",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|hamid_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "hamid_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|hre": {
+      "faction_a": "ahiler",
+      "faction_b": "hre",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|hungarian_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "hungarian_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|ilkhanate": {
+      "faction_a": "ahiler",
+      "faction_b": "ilkhanate",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|karaman_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "karaman_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|karesioglu_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "karesioglu_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|leon_kingdom": {
+      "faction_a": "leon_kingdom",
+      "faction_b": "ahiler",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|lithuanian_gd": {
+      "faction_a": "ahiler",
+      "faction_b": "lithuanian_gd",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|mamluk": {
+      "faction_a": "ahiler",
+      "faction_b": "mamluk",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|mentese_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "mentese_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|milan_duchy": {
+      "faction_a": "ahiler",
+      "faction_b": "milan_duchy",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|naples_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "naples_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|novgorod_rep": {
+      "faction_a": "ahiler",
+      "faction_b": "novgorod_rep",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|ottoman": {
+      "faction_a": "ahiler",
+      "faction_b": "ottoman",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|papal_states_f": {
+      "faction_a": "ahiler",
+      "faction_b": "papal_states_f",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|polish_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "polish_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|portugal": {
+      "faction_a": "ahiler",
+      "faction_b": "portugal",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|ramazan_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "ramazan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|russia": {
+      "faction_a": "ahiler",
+      "faction_b": "russia",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|safavid": {
+      "faction_a": "ahiler",
+      "faction_b": "safavid",
+      "score": -15,
+      "stance": "peace"
+    },
+    "ahiler|saruhan_bey": {
+      "faction_a": "ahiler",
+      "faction_b": "saruhan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "ahiler|savoy_county": {
+      "faction_a": "ahiler",
+      "faction_b": "savoy_county",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|scotland_kingdom": {
+      "faction_a": "ahiler",
+      "faction_b": "scotland_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|serbian_empire": {
+      "faction_a": "ahiler",
+      "faction_b": "serbian_empire",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|teutonic_order": {
+      "faction_a": "ahiler",
+      "faction_b": "teutonic_order",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|trebizond_emp": {
+      "faction_a": "ahiler",
+      "faction_b": "trebizond_emp",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|venice": {
+      "faction_a": "ahiler",
+      "faction_b": "venice",
+      "score": -30,
+      "stance": "peace"
+    },
+    "ahiler|wallachia_prince": {
+      "faction_a": "ahiler",
+      "faction_b": "wallachia_prince",
+      "score": -30,
+      "stance": "peace"
+    },
     "aragon|arnavut_des": {
       "faction_a": "arnavut_des",
       "faction_b": "aragon",
@@ -17945,6 +18298,12 @@
       "faction_a": "aragon",
       "faction_b": "georgia_kingdom",
       "score": -20,
+      "stance": "peace"
+    },
+    "aragon|germiyan_bey": {
+      "faction_a": "aragon",
+      "faction_b": "germiyan_bey",
+      "score": -30,
       "stance": "peace"
     },
     "aragon|golden_horde": {
@@ -18223,6 +18582,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "arnavut_des|germiyan_bey": {
+      "faction_a": "arnavut_des",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "arnavut_des|golden_horde": {
       "faction_a": "arnavut_des",
       "faction_b": "golden_horde",
@@ -18493,6 +18858,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "athena_duk|germiyan_bey": {
+      "faction_a": "athena_duk",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "athena_duk|golden_horde": {
       "faction_a": "athena_duk",
       "faction_b": "golden_horde",
@@ -18757,6 +19128,12 @@
       "score": -30,
       "stance": "peace"
     },
+    "aydin_bey|germiyan_bey": {
+      "faction_a": "aydin_bey",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
     "aydin_bey|golden_horde": {
       "faction_a": "aydin_bey",
       "faction_b": "golden_horde",
@@ -19015,6 +19392,12 @@
       "score": 25,
       "stance": "peace"
     },
+    "bulgarian_empire|germiyan_bey": {
+      "faction_a": "bulgarian_empire",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "bulgarian_empire|golden_horde": {
       "faction_a": "bulgarian_empire",
       "faction_b": "golden_horde",
@@ -19267,6 +19650,12 @@
       "score": -30,
       "stance": "peace"
     },
+    "candar_bey|germiyan_bey": {
+      "faction_a": "candar_bey",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
     "candar_bey|golden_horde": {
       "faction_a": "candar_bey",
       "faction_b": "golden_horde",
@@ -19513,6 +19902,12 @@
       "score": -30,
       "stance": "peace"
     },
+    "canik_bey|germiyan_bey": {
+      "faction_a": "canik_bey",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
     "canik_bey|golden_horde": {
       "faction_a": "canik_bey",
       "faction_b": "golden_horde",
@@ -19753,6 +20148,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "castile_kingdom|germiyan_bey": {
+      "faction_a": "castile_kingdom",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "castile_kingdom|golden_horde": {
       "faction_a": "castile_kingdom",
       "faction_b": "golden_horde",
@@ -19987,6 +20388,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "denmark_kingdom|germiyan_bey": {
+      "faction_a": "denmark_kingdom",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "denmark_kingdom|golden_horde": {
       "faction_a": "denmark_kingdom",
       "faction_b": "golden_horde",
@@ -20215,6 +20622,12 @@
       "score": -30,
       "stance": "peace"
     },
+    "dulkadir_bey|germiyan_bey": {
+      "faction_a": "dulkadir_bey",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
     "dulkadir_bey|golden_horde": {
       "faction_a": "dulkadir_bey",
       "faction_b": "golden_horde",
@@ -20437,6 +20850,12 @@
       "score": 25,
       "stance": "peace"
     },
+    "east_rome|germiyan_bey": {
+      "faction_a": "east_rome",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "east_rome|golden_horde": {
       "faction_a": "east_rome",
       "faction_b": "golden_horde",
@@ -20653,6 +21072,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "england|germiyan_bey": {
+      "faction_a": "england",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "england|golden_horde": {
       "faction_a": "england",
       "faction_b": "golden_horde",
@@ -20863,6 +21288,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "epir|germiyan_bey": {
+      "faction_a": "epir",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "epir|golden_horde": {
       "faction_a": "epir",
       "faction_b": "golden_horde",
@@ -21067,6 +21498,12 @@
       "score": -30,
       "stance": "peace"
     },
+    "esrefoglu_bey|germiyan_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "esrefoglu_bey",
+      "score": 25,
+      "stance": "peace"
+    },
     "esrefoglu_bey|golden_horde": {
       "faction_a": "golden_horde",
       "faction_b": "esrefoglu_bey",
@@ -21265,6 +21702,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "florence_rep|germiyan_bey": {
+      "faction_a": "florence_rep",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "florence_rep|golden_horde": {
       "faction_a": "florence_rep",
       "faction_b": "golden_horde",
@@ -21457,6 +21900,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "france|germiyan_bey": {
+      "faction_a": "france",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "france|golden_horde": {
       "faction_a": "france",
       "faction_b": "golden_horde",
@@ -21643,6 +22092,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "genoa|germiyan_bey": {
+      "faction_a": "genoa",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "genoa|golden_horde": {
       "faction_a": "genoa",
       "faction_b": "golden_horde",
@@ -21823,6 +22278,12 @@
       "score": -20,
       "stance": "peace"
     },
+    "georgia_kingdom|germiyan_bey": {
+      "faction_a": "georgia_kingdom",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
     "georgia_kingdom|golden_horde": {
       "faction_a": "georgia_kingdom",
       "faction_b": "golden_horde",
@@ -22001,6 +22462,186 @@
       "faction_a": "georgia_kingdom",
       "faction_b": "wallachia_prince",
       "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|golden_horde": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "golden_horde",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|granada_emirate": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "granada_emirate",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|hamid_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "hamid_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|hre": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "hre",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|hungarian_kingdom": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "hungarian_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|ilkhanate": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "ilkhanate",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|karaman_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "karaman_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|karesioglu_bey": {
+      "faction_a": "karesioglu_bey",
+      "faction_b": "germiyan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|leon_kingdom": {
+      "faction_a": "leon_kingdom",
+      "faction_b": "germiyan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|lithuanian_gd": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "lithuanian_gd",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|mamluk": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "mamluk",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|mentese_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "mentese_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|milan_duchy": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "milan_duchy",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|naples_kingdom": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "naples_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|novgorod_rep": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "novgorod_rep",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|ottoman": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "ottoman",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|papal_states_f": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "papal_states_f",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|polish_kingdom": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "polish_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|portugal": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "portugal",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|ramazan_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "ramazan_bey",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|russia": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "russia",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|safavid": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "safavid",
+      "score": -15,
+      "stance": "peace"
+    },
+    "germiyan_bey|saruhan_bey": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "saruhan_bey",
+      "score": 25,
+      "stance": "peace"
+    },
+    "germiyan_bey|savoy_county": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "savoy_county",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|scotland_kingdom": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "scotland_kingdom",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|serbian_empire": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "serbian_empire",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|teutonic_order": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "teutonic_order",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|trebizond_emp": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "trebizond_emp",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|venice": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "venice",
+      "score": -30,
+      "stance": "peace"
+    },
+    "germiyan_bey|wallachia_prince": {
+      "faction_a": "germiyan_bey",
+      "faction_b": "wallachia_prince",
+      "score": -30,
       "stance": "peace"
     },
     "golden_horde|granada_emirate": {
