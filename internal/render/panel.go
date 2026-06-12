@@ -1450,7 +1450,7 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 	ly += 24
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
-	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIOutlinedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, ownerLabelOutlineColor(ownerCol), gameui.TextMedium, gameui.TextAlignStart)
 	if ownerRect, _, ok := regionOwnerNameRect(gs, rid); ok {
 		underlineY := ownerRect.Y + ownerRect.H - 1
 		vector.StrokeLine(screen, float32(ownerRect.X), float32(underlineY), float32(ownerRect.X+ownerRect.W), float32(underlineY), 1, color.RGBA{215, 215, 215, 120}, false)
@@ -3299,6 +3299,15 @@ func ownerDisplay(gs *state.GameState, ownerID string) (string, color.Color) {
 		}
 	}
 	return ownerID, ColorGray
+}
+
+func ownerLabelOutlineColor(fill color.Color) color.RGBA {
+	r, g, b, _ := fill.RGBA()
+	luminance := 0.299*float64(r>>8) + 0.587*float64(g>>8) + 0.114*float64(b>>8)
+	if luminance >= 160 {
+		return color.RGBA{18, 16, 12, 220}
+	}
+	return color.RGBA{245, 240, 230, 210}
 }
 
 func phaseLabel(p state.Phase) string {
