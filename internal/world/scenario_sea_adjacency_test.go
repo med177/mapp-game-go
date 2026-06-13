@@ -25,9 +25,9 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 		{
 			name:       "1444 constantinople",
 			regionPath: filepath.Join("..", "..", "assets", "scenarios", "1444_constantinople", "data", "regions.json"),
-			marmaraID:  "_sea_marmara",
-			aegeanID:   "_sea_aegean",
-			blackSeaID: "_sea_black",
+			marmaraID:  "sea_of_marmara",
+			aegeanID:   "aegean_sea",
+			blackSeaID: "black_sea",
 		},
 	}
 

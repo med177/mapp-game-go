@@ -1,6 +1,15 @@
 package scenario
 
-import "testing"
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"testing"
+
+	"mapp-game-go/internal/faction"
+)
 
 func TestVictoryOptionRegionTargetsPrefersRequiredRegions(t *testing.T) {
 	opt := VictoryOptionDef{
@@ -37,5 +46,65 @@ func TestFilterVictoryOptionsForFaction(t *testing.T) {
 	}
 	if got[0].ID != "shared" || got[1].ID != "ottoman_only" {
 		t.Fatalf("beklenmeyen filtre sonucu: %+v", got)
+	}
+}
+
+func Test1444HistoricalVictoryFactionsAreOnlyPlayableFactions(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	scenarioPath := filepath.Join(root, "assets", "scenarios", "1444_constantinople")
+
+	var sc Scenario
+	scenarioData, err := os.ReadFile(filepath.Join(scenarioPath, "scenario.json"))
+	if err != nil {
+		t.Fatalf("scenario.json okunamadi: %v", err)
+	}
+	if err := json.Unmarshal(scenarioData, &sc); err != nil {
+		t.Fatalf("scenario.json parse edilemedi: %v", err)
+	}
+
+	var factions []faction.Faction
+	factionsData, err := os.ReadFile(filepath.Join(scenarioPath, "data", "factions.json"))
+	if err != nil {
+		t.Fatalf("factions.json okunamadi: %v", err)
+	}
+	if err := json.Unmarshal(factionsData, &factions); err != nil {
+		t.Fatalf("factions.json parse edilemedi: %v", err)
+	}
+
+	expected := make(map[string]struct{})
+	for _, opt := range sc.VictoryConditions {
+		for _, fid := range opt.AllowedFactions {
+			if fid == "" {
+				continue
+			}
+			expected[fid] = struct{}{}
+		}
+	}
+
+	var got []string
+	for _, f := range factions {
+		if f.IsPlayable {
+			got = append(got, string(f.ID))
+		}
+	}
+	sort.Strings(got)
+
+	want := make([]string, 0, len(expected))
+	for fid := range expected {
+		want = append(want, fid)
+	}
+	sort.Strings(want)
+
+	if len(got) != len(want) {
+		t.Fatalf("playable faction sayisi uyusmuyor: got=%v want=%v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("playable faction listesi uyusmuyor: got=%v want=%v", got, want)
+		}
 	}
 }

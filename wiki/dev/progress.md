@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -16,7 +16,7 @@ Mevcut veri seti iki senaryoda da aynı genişlikte:
 | Senaryo | Bölge | Deniz | Fraksiyon | Oynanabilir | Başlangıç ordusu |
 |---|---:|---:|---:|---:|---:|
 | `1300_ottoman_rise` | 210 | 52 | 45 | 30 | 49 |
-| `1444_constantinople` | 210 | 52 | 45 | 30 | 49 |
+| `1444_constantinople` | 210 | 52 | 45 | 5 | 49 |
 
 Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çalıştı.
 
@@ -33,7 +33,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Senaryo bazlı harita hizalama | ✅ | `scenario.json` içindeki `map` alanı `WorldW/WorldH` ve shape offset/scale değerlerini belirler |
 | Görsel mevsim değişimi | ✅ | `internal/render/mapgen.go:applyOwnership`; kış/ilkbahar/sonbahar tint |
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
-| Fraksiyon sistemi | ✅ | 45 fraksiyon, 30 oynanabilir, renk/din/kaynaklar |
+| Fraksiyon sistemi | ✅ | 45 fraksiyon, senaryo bazlı oynanabilir roster; 1444 senaryosunda yalnız tarihsel hedefi olan 5 fraksiyon açılıyor |
 | Din paketi | ✅ | `internal/religion`; `catholic`, `orthodox`, `sunni`, `shia` ilişki puanları |
 | Ordu hareketi | ✅ | Komşuluk kısıtı, kara/deniz giriş kontrolü, savaş öncesi diplomasi kontrolü; donanmalar deniz bölgeleri arasında savaş ilanı olmadan dolaşır, deniz çatışması sadece `StanceWar` durumunda tetiklenir; AI dost bölgelerde bölgesel ikmal baskısını okuyup aşırı dolu kara bölgelerden daha rahat komşu bölgelere dağılabilir |
 | Deniz taşıma akışı | ✅ | Kara ordusu uygun `transport` filosuna binebilir, filo `EmbarkedUnits` ile taşır, komşu dost/boş karaya çıkarma yapılır; oyuncu ve AI aynı kural setini kullanır |
