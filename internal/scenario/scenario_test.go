@@ -49,13 +49,15 @@ func TestFilterVictoryOptionsForFaction(t *testing.T) {
 	}
 }
 
-func Test1444HistoricalVictoryFactionsAreOnlyPlayableFactions(t *testing.T) {
+func assertHistoricalVictoryFactionsMatchPlayableRoster(t *testing.T, scenarioID string) {
+	t.Helper()
+
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime caller unavailable")
 	}
 	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
-	scenarioPath := filepath.Join(root, "assets", "scenarios", "1444_constantinople")
+	scenarioPath := filepath.Join(root, "assets", "scenarios", scenarioID)
 
 	var sc Scenario
 	scenarioData, err := os.ReadFile(filepath.Join(scenarioPath, "scenario.json"))
@@ -107,4 +109,12 @@ func Test1444HistoricalVictoryFactionsAreOnlyPlayableFactions(t *testing.T) {
 			t.Fatalf("playable faction listesi uyusmuyor: got=%v want=%v", got, want)
 		}
 	}
+}
+
+func Test1444HistoricalVictoryFactionsAreOnlyPlayableFactions(t *testing.T) {
+	assertHistoricalVictoryFactionsMatchPlayableRoster(t, "1444_ottoman_empire")
+}
+
+func Test1512HistoricalVictoryFactionsAreOnlyPlayableFactions(t *testing.T) {
+	assertHistoricalVictoryFactionsMatchPlayableRoster(t, "1512_yavuz_selim")
 }

@@ -15,9 +15,13 @@ import (
 const victoryGroupGap = 26.0
 const victoryGroupLabelH = 20.0
 
+func victoryCardDimensions() (float64, float64) {
+	return 780.0, 126.0
+}
+
 func buildVictoryCardButtons(gs *state.GameState) []gameui.Button {
 	opts, historicalCount := orderedVictoryOptions(gs)
-	cardW, cardH := 520.0, 100.0
+	cardW, cardH := victoryCardDimensions()
 	gap := 12.0
 	headerH := 80.0
 	buttons := make([]gameui.Button, 0, len(opts))
@@ -283,7 +287,7 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 	opts, historicalCount := orderedVictoryOptions(gs)
 	drawUIScreenChrome(screen, color.RGBA{10, 10, 20, 255}, "ZAFER KOŞULUNU SEÇ", victorySelectSubtitle(gs))
 
-	cardW, cardH := 520.0, 100.0
+	cardW, cardH := victoryCardDimensions()
 	gap := 12.0
 	headerH := 80.0
 	layout := victoryLayout(len(opts), historicalCount, cardW, cardH, gap, headerH)
@@ -328,9 +332,9 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		titleMaxW := badgeRect.X - rect.X - 34
 		title := trimTextToWidth(opt.Title, FaceMed, titleMaxW)
 		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 14, W: titleMaxW}, title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 38}, opt.Description, ColorGray, gameui.TextMedium, gameui.TextAlignStart)
-		targetSummary := trimTextToWidth(victoryTargetSummary(gs, opt), FaceSmall, rect.W-36)
-		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 60, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUIWrappedLabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 42, W: rect.W - 36}, opt.Description, ColorGray, gameui.TextMedium, 19, 2)
+		targetSummary := victoryTargetSummary(gs, opt)
+		drawUIWrappedLabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 84, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, 16, 2)
 	}
 
 	footerY := layout.generalStack.Y + layout.generalStack.H

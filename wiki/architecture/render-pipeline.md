@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -60,9 +60,9 @@ type Renderer struct {
 | 6 | Olay logu akordiyonu — daralt/genişlet, wrap edilmiş kartlar, X ile kapatma, tıklayınca detay popup; üstteki `Kodex` düğmesi `Tümü/Hazır/Takvim/Kilitli` filtreli, solda kısa özetli liste sağda detay gösteren daha geniş historical chain popup'ını açar; Kodex listesi focus-scroll ve mouse wheel ile görünür pencere içinde kalır | `panel.go`, `renderer.go`, `game.go`, `ui_modals.go` |
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
-| 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; teknoloji kartının görünüm ve hit-test seam'i ortak `techCardComponent` üstünden yürütülür, böylece çizilen rect ile tıklama rect'i aynı projection çıktısını paylaşır | `tech_panel.go`, `tech_card_component.go` |
+| 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; teknoloji kartının görünüm ve hit-test seam'i ortak `techCardComponent` üstünden yürütülür, böylece çizilen rect ile tıklama rect'i aynı projection çıktısını paylaşır. Kart başlığı badge alanını hesaba katar, gerekirse iki satıra wrap olur; effect özeti de kontrollü çok satır kullanır, bu yüzden uzun Osmanlı/Türkçe teknoloji adları kart dışına taşmaz | `tech_panel.go`, `tech_card_component.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
-| 10 | Savaş ilan, genel onay, zafer detay ve event detail diyalogları; zafer HUD kartına tıklanınca açılan modal aktif hedefin başlık, açıklama ve ilerleme özetini gösterir; event detail popup structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
+| 10 | Savaş ilan, genel onay, zafer detay ve event detail diyalogları; zafer HUD kartına tıklanınca açılan modal aktif hedefin başlık, açıklama ve ilerleme özetini gösterir; victory detail modal içeriği sabit yükseklikte değil, viewport + wheel scroll + scrollbar ile aşağı akar; event detail popup structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
@@ -70,7 +70,7 @@ Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_c
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir. Liste seçimi press yerine release ile tamamlanır; drag eşiği aşılırsa satır seçimi iptal edilip liste row-height bazlı sürükleme scroll'una geçer.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir. Donanma ayrıca sahibi olunan veya müttefik olunan, port settlement içeren komşu kara bölgesine docking emri de alabilir; bu durumda savaş onayı açılmaz ve filo deniz bölgesi konumunu koruyup liman anchor'ına bağlanır.
-Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır.
+Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır. Zafer seçim ekranındaki kartlar da aynı wrap primitive'lerini kullanır; açıklama ve hedef özeti badge alanına çarpmadan iki satıra akabilir ve uzun senaryo hedeflerinde kart yüksekliği buna göre artırılmıştır.
 
 ---
 

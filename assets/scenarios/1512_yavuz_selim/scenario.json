@@ -1,0 +1,177 @@
+{
+  "id": "1512_yavuz_selim",
+  "name": "Yavuz Sultan Selim: Doğu Seferleri ve Hilafet Yolu",
+  "description": "1512 yılı baharı. II. Bayezid devri kapanmış, Şehzade Selim tahta çıkarak Osmanlı devletini doğudaki Safevî tehdidi ve güneydeki Memlük rekabetiyle yüz yüze bırakmıştır. Anadolu’da Kızılbaş nüfuzu, Dulkadir ve Ramazan beylikleri üzerindeki çekişme, Halep-Şam-Kahire ticaret hattı ve Akdeniz’de Rodos/Venedik gerilimi imparatorluğun geleceğini belirleyecektir. Yavuz’un kısa fakat sarsıcı saltanatını yönet; Çaldıran’dan Mercidabık ve Ridaniye’ye uzanan tarihî kırılmayı kur.",
+  "version": 1.0,
+  "author": "Mapp Team / ChatGPT scenario conversion",
+  "year": 1512,
+  "month": 4,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "03 It Will Never be the Same.mp3",
+          "weight": 1
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "selim_eastern_campaigns",
+      "title": "Yavuz’un Doğu Seferleri",
+      "description": "Osmanlı olarak Safevî nüfuzunu kır, Doğu Anadolu kapılarını emniyete al ve Memlüklerle hesaplaşmaya hazırlan.",
+      "detail": "Hedef: Sivas, Erzurum, Erzincan, Diyarbekir/Akkoyunlu ve Dulkadir hattı.",
+      "type": "domination",
+      "target_region_count": 38,
+      "required_regions": [
+        "sivas",
+        "erzurum",
+        "erzincan",
+        "akkoyunlu",
+        "dulkadir"
+      ],
+      "deadline_year": 1517,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "caliphate_road",
+      "title": "Hilafet Yolu",
+      "description": "Mercidabık ve Ridaniye çizgisinde Memlük merkezlerini ele geçirerek Şam, Kudüs, Kahire ve Hicaz üzerinde hâkimiyet kur.",
+      "detail": "Hedef: Halep, Şam, Filistin, Mısır ve Hicaz.",
+      "type": "domination",
+      "target_region_count": 45,
+      "required_regions": [
+        "aleppo",
+        "damascus",
+        "palestine",
+        "egypt",
+        "hejaz"
+      ],
+      "deadline_year": 1518,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "safavid_red_banner",
+      "title": "Kızıl Taçların Yükselişi",
+      "description": "Safevî olarak Azerbaycan ve İran çekirdeğini koru, Anadolu’da nüfuz kur ve Osmanlı ilerleyişini durdur.",
+      "detail": "Hedef: Azerbaycan, Ermenistan, Kuzey İran, Erzurum ve Sivas hattı.",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "azerbaijan",
+        "armenia",
+        "northern_persia",
+        "erzurum",
+        "sivas"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 9,
+      "allowed_factions": [
+        "safavid"
+      ]
+    },
+    {
+      "id": "mamluk_levant_shield",
+      "title": "Levant’ın Kalkanı",
+      "description": "Memlük Sultanlığı olarak Suriye-Mısır-Hicaz hattını koru ve Osmanlı’nın güneye inmesini engelle.",
+      "detail": "Hedef: Halep, Şam, Filistin, Mısır ve Hicaz elde tutulmalı.",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "aleppo",
+        "damascus",
+        "palestine",
+        "egypt",
+        "hejaz"
+      ],
+      "deadline_year": 1518,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "mamluk"
+      ]
+    },
+    {
+      "id": "mediterranean_balance_1512",
+      "title": "Akdeniz Dengesi",
+      "description": "Venedik veya Rodos Şövalyeleri olarak Osmanlı’nın Ege ve Doğu Akdeniz baskısını dengele.",
+      "detail": "Hedef: Rodos, Kıbrıs, Girit, Venedik ve Dalmaçya hattı.",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "rhodes",
+        "cyprus",
+        "crete",
+        "venice",
+        "dalmatia"
+      ],
+      "deadline_year": 1522,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "venice",
+        "hamid_bey"
+      ]
+    },
+    {
+      "id": "economic_silk_road_1512",
+      "title": "İpek ve Baharat Yolları",
+      "description": "Doğu Akdeniz, İran ve Kızıldeniz ticaret düğümlerini kontrol ederek büyük bir ticari üstünlük kur.",
+      "detail": "Konstantiniyye, Bursa, Halep, Şam, Kahire, Tebriz/Azerbaycan ve Bağdat güzergâhı.",
+      "type": "economic",
+      "target_income": 950,
+      "hold_turns": 6,
+      "required_regions": [
+        "constantinople",
+        "bursa",
+        "aleppo",
+        "damascus",
+        "egypt",
+        "azerbaijan",
+        "baghdad"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 9,
+      "allowed_factions": [
+        "ottoman",
+        "mamluk",
+        "safavid",
+        "venice"
+      ]
+    }
+  ]
+}

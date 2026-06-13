@@ -94,11 +94,11 @@ type techNode struct {
 
 const (
 	techLevelHeight   = 140.0
-	techNodeWidth     = 188.0
-	techNodeHeight    = 96.0
+	techNodeWidth     = 210.0
+	techNodeHeight    = 116.0
 	techTreeMaxCols   = 4
-	techNodeStepX     = 228.0
-	techNodeStepY     = 132.0
+	techNodeStepX     = 248.0
+	techNodeStepY     = 146.0
 	techLevelGap      = 96.0
 	techTreePadding   = 28.0
 	techTreeTopInset  = 28.0

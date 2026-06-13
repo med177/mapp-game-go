@@ -1,0 +1,1562 @@
+[
+  {
+    "id": "achaea_principality",
+    "name": "Despotate of the Morea",
+    "name_tr": "Mora Despotluğu",
+    "religion": "orthodox",
+    "color": [
+      145,
+      90,
+      170
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 330,
+    "grain": 210,
+    "iron": 45,
+    "timber": 65,
+    "stone": 800,
+    "spice": 35,
+    "cloth": 65,
+    "research": {
+      "completed": {
+        "theology": true,
+        "diplomacy": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 28
+  },
+  {
+    "id": "ahiler",
+    "name": "Anatolian Ahis",
+    "name_tr": "Anadolu Ahileri",
+    "religion": "sunni",
+    "color": [
+      54,
+      0,
+      255
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 0
+  },
+  {
+    "id": "aragon",
+    "name": "Crown of Aragon",
+    "name_tr": "Aragon Tacı",
+    "religion": "catholic",
+    "color": [
+      220,
+      120,
+      30
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 760,
+    "grain": 430,
+    "iron": 130,
+    "timber": 170,
+    "stone": 900,
+    "spice": 120,
+    "cloth": 150,
+    "research": {
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true,
+        "navigation": true,
+        "trade_routes": true,
+        "harbor_administration": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 45
+  },
+  {
+    "id": "arnavut_des",
+    "name": "League of Lezhë",
+    "name_tr": "Leş Birliği / Arnavut Direnişi",
+    "religion": "catholic",
+    "color": [
+      160,
+      20,
+      20
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 300,
+    "grain": 180,
+    "iron": 70,
+    "timber": 80,
+    "stone": 650,
+    "spice": 5,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "field_fortifications": true,
+        "cavalry_tactics": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 70
+  },
+  {
+    "id": "athena_duk",
+    "name": "Duchy of Athens",
+    "name_tr": "Atina Dükalığı",
+    "religion": "catholic",
+    "color": [
+      24,
+      166,
+      142
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 210,
+    "grain": 120,
+    "iron": 35,
+    "timber": 45,
+    "stone": 650,
+    "spice": 25,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "diplomacy": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 25
+  },
+  {
+    "id": "aydin_bey",
+    "name": "Hafsid Sultanate",
+    "name_tr": "Hafsî Sultanlığı",
+    "religion": "sunni",
+    "color": [
+      60,
+      125,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 430,
+    "grain": 300,
+    "iron": 80,
+    "timber": 70,
+    "stone": 700,
+    "spice": 120,
+    "cloth": 80,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "navigation": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35
+  },
+  {
+    "id": "bulgarian_empire",
+    "name": "Bulgarian Nobility",
+    "name_tr": "Bulgar Soyluları",
+    "religion": "orthodox",
+    "color": [
+      100,
+      130,
+      50
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 0
+  },
+  {
+    "id": "east_rome",
+    "name": "Byzantine Empire",
+    "name_tr": "Doğu Roma İmparatorluğu",
+    "religion": "orthodox",
+    "color": [
+      125,
+      70,
+      170
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 260,
+    "grain": 110,
+    "iron": 35,
+    "timber": 45,
+    "stone": 1000,
+    "spice": 35,
+    "cloth": 80,
+    "research": {
+      "completed": {
+        "diplomacy": true,
+        "theology": true,
+        "navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 18
+  },
+  {
+    "id": "candar_bey",
+    "name": "Candarid Beylik",
+    "name_tr": "Candaroğulları Beyliği",
+    "religion": "sunni",
+    "color": [
+      115,
+      80,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 360,
+    "grain": 230,
+    "iron": 85,
+    "timber": 120,
+    "stone": 850,
+    "spice": 15,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 42
+  },
+  {
+    "id": "canik_bey",
+    "name": "Principality of Moldavia",
+    "name_tr": "Boğdan Prensliği",
+    "religion": "orthodox",
+    "color": [
+      150,
+      100,
+      65
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 320,
+    "grain": 310,
+    "iron": 70,
+    "timber": 130,
+    "stone": 620,
+    "spice": 10,
+    "cloth": 40,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 42
+  },
+  {
+    "id": "castile_kingdom",
+    "name": "Crown of Castile",
+    "name_tr": "Kastilya Tacı",
+    "religion": "catholic",
+    "color": [
+      160,
+      45,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 720,
+    "grain": 520,
+    "iron": 150,
+    "timber": 130,
+    "stone": 900,
+    "spice": 60,
+    "cloth": 100,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 48
+  },
+  {
+    "id": "denmark_kingdom",
+    "name": "Kalmar Union",
+    "name_tr": "Kalmar Birliği",
+    "religion": "catholic",
+    "color": [
+      180,
+      50,
+      40
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 660,
+    "grain": 480,
+    "iron": 150,
+    "timber": 260,
+    "stone": 900,
+    "spice": 25,
+    "cloth": 90,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "trade_routes": true,
+        "iron_weapons": true,
+        "naval_doctrine": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 37
+  },
+  {
+    "id": "dulkadir_bey",
+    "name": "Dulkadirid Beylik",
+    "name_tr": "Dulkadiroğulları Beyliği",
+    "religion": "sunni",
+    "color": [
+      170,
+      98,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 340,
+    "grain": 240,
+    "iron": 75,
+    "timber": 85,
+    "stone": 750,
+    "spice": 10,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 48
+  },
+  {
+    "id": "england",
+    "name": "Kingdom of England",
+    "name_tr": "İngiltere Krallığı",
+    "religion": "catholic",
+    "color": [
+      190,
+      30,
+      40
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 790,
+    "grain": 520,
+    "iron": 160,
+    "timber": 220,
+    "stone": 950,
+    "spice": 40,
+    "cloth": 170,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 40
+  },
+  {
+    "id": "epir",
+    "name": "Kingdom of Bosnia",
+    "name_tr": "Bosna Krallığı",
+    "religion": "catholic",
+    "color": [
+      40,
+      90,
+      150
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 360,
+    "grain": 250,
+    "iron": 120,
+    "timber": 130,
+    "stone": 750,
+    "spice": 8,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38
+  },
+  {
+    "id": "esrefoglu_bey",
+    "name": "Duchy of Brittany",
+    "name_tr": "Bretonya Dükalığı",
+    "religion": "catholic",
+    "color": [
+      10,
+      10,
+      10
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 360,
+    "grain": 230,
+    "iron": 80,
+    "timber": 120,
+    "stone": 700,
+    "spice": 15,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "trade_routes": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 32
+  },
+  {
+    "id": "florence_rep",
+    "name": "Republic of Florence",
+    "name_tr": "Floransa Cumhuriyeti",
+    "religion": "catholic",
+    "color": [
+      160,
+      50,
+      160
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 620,
+    "grain": 290,
+    "iron": 80,
+    "timber": 80,
+    "stone": 850,
+    "spice": 80,
+    "cloth": 230,
+    "research": {
+      "completed": {
+        "banking": true,
+        "guilds": true,
+        "trade_routes": true,
+        "diplomacy": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 27
+  },
+  {
+    "id": "france",
+    "name": "Kingdom of France",
+    "name_tr": "Fransa Krallığı",
+    "religion": "catholic",
+    "color": [
+      40,
+      75,
+      205
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 1100,
+    "grain": 760,
+    "iron": 220,
+    "timber": 230,
+    "stone": 1200,
+    "spice": 60,
+    "cloth": 210,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "trade_routes": true,
+        "tax_registers": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 52
+  },
+  {
+    "id": "genoa",
+    "name": "Republic of Genoa",
+    "name_tr": "Ceneviz Cumhuriyeti",
+    "religion": "catholic",
+    "color": [
+      210,
+      210,
+      210
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 740,
+    "grain": 290,
+    "iron": 95,
+    "timber": 180,
+    "stone": 900,
+    "spice": 150,
+    "cloth": 170,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "banking": true,
+        "navigation": true,
+        "harbor_administration": true,
+        "cartography": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 43
+  },
+  {
+    "id": "georgia_kingdom",
+    "name": "Kingdom of Georgia",
+    "name_tr": "Gürcistan Krallığı",
+    "religion": "orthodox",
+    "color": [
+      180,
+      65,
+      65
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 280,
+    "grain": 210,
+    "iron": 85,
+    "timber": 120,
+    "stone": 650,
+    "spice": 20,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "field_fortifications": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35
+  },
+  {
+    "id": "germiyan_bey",
+    "name": "Germiyanid Remnants",
+    "name_tr": "Germiyan Kalıntıları",
+    "religion": "sunni",
+    "color": [
+      180,
+      120,
+      60
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 0
+  },
+  {
+    "id": "golden_horde",
+    "name": "Crimean Khanate",
+    "name_tr": "Kırım Hanlığı",
+    "religion": "sunni",
+    "color": [
+      70,
+      70,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 420,
+    "grain": 330,
+    "iron": 90,
+    "timber": 80,
+    "stone": 650,
+    "spice": 45,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "composite_bow_drills": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 58
+  },
+  {
+    "id": "granada_emirate",
+    "name": "Emirate of Granada",
+    "name_tr": "Gırnata Emirliği",
+    "religion": "sunni",
+    "color": [
+      80,
+      150,
+      90
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 280,
+    "grain": 170,
+    "iron": 60,
+    "timber": 50,
+    "stone": 650,
+    "spice": 80,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "banking": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 32
+  },
+  {
+    "id": "hamid_bey",
+    "name": "Knights Hospitaller",
+    "name_tr": "Rodos Şövalyeleri",
+    "religion": "catholic",
+    "color": [
+      190,
+      190,
+      190
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 240,
+    "grain": 110,
+    "iron": 45,
+    "timber": 90,
+    "stone": 650,
+    "spice": 45,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "naval_doctrine": true,
+        "iron_weapons": true,
+        "heavy_armor": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 55
+  },
+  {
+    "id": "hre",
+    "name": "Holy Roman Empire",
+    "name_tr": "Kutsal Roma İmparatorluğu",
+    "religion": "catholic",
+    "color": [
+      80,
+      80,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 950,
+    "grain": 650,
+    "iron": 240,
+    "timber": 230,
+    "stone": 1300,
+    "spice": 40,
+    "cloth": 220,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "trade_routes": true,
+        "banking": true,
+        "guilds": true,
+        "diplomacy": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35
+  },
+  {
+    "id": "hungarian_kingdom",
+    "name": "Kingdom of Hungary",
+    "name_tr": "Macaristan Krallığı",
+    "religion": "catholic",
+    "color": [
+      190,
+      40,
+      50
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 800,
+    "grain": 550,
+    "iron": 180,
+    "timber": 190,
+    "stone": 1000,
+    "spice": 25,
+    "cloth": 120,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "diplomacy": true
+      },
+      "active_id": "field_fortifications",
+      "turns_left": 3
+    },
+    "ai_aggressiveness": 66
+  },
+  {
+    "id": "ilkhanate",
+    "name": "Qara Qoyunlu Confederation",
+    "name_tr": "Karakoyunlu Konfederasyonu",
+    "religion": "shia",
+    "color": [
+      45,
+      45,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 620,
+    "grain": 480,
+    "iron": 170,
+    "timber": 110,
+    "stone": 900,
+    "spice": 120,
+    "cloth": 120,
+    "research": {
+      "completed": {
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "composite_bow_drills": true,
+        "trade_routes": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 61
+  },
+  {
+    "id": "karaman_bey",
+    "name": "Karamanid Beylik",
+    "name_tr": "Karamanoğulları Beyliği",
+    "religion": "sunni",
+    "color": [
+      78,
+      160,
+      72
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 520,
+    "grain": 330,
+    "iron": 90,
+    "timber": 85,
+    "stone": 900,
+    "spice": 20,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 63
+  },
+  {
+    "id": "karesioglu_bey",
+    "name": "Duchy of Burgundy",
+    "name_tr": "Burgonya Dükalığı",
+    "religion": "catholic",
+    "color": [
+      125,
+      0,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 850,
+    "grain": 500,
+    "iron": 160,
+    "timber": 150,
+    "stone": 900,
+    "spice": 45,
+    "cloth": 260,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "banking": true,
+        "guilds": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 45
+  },
+  {
+    "id": "leon_kingdom",
+    "name": "Leonese Estates",
+    "name_tr": "León Eyaletleri",
+    "religion": "catholic",
+    "color": [
+      150,
+      70,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 0
+  },
+  {
+    "id": "lithuanian_gd",
+    "name": "Grand Duchy of Lithuania",
+    "name_tr": "Litvanya Büyük Dükalığı",
+    "religion": "orthodox",
+    "color": [
+      85,
+      125,
+      75
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 620,
+    "grain": 560,
+    "iron": 130,
+    "timber": 260,
+    "stone": 850,
+    "spice": 10,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 47
+  },
+  {
+    "id": "mamluk",
+    "name": "Mamluk Sultanate",
+    "name_tr": "Memlük Sultanlığı",
+    "religion": "sunni",
+    "color": [
+      225,
+      198,
+      82
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 1050,
+    "grain": 760,
+    "iron": 170,
+    "timber": 120,
+    "stone": 1200,
+    "spice": 260,
+    "cloth": 180,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "banking": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true,
+        "navigation": true,
+        "harbor_administration": true,
+        "pilgrimage_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 54
+  },
+  {
+    "id": "mentese_bey",
+    "name": "Zayyanid Kingdom of Tlemcen",
+    "name_tr": "Zeyyânî Tilimsan Krallığı",
+    "religion": "sunni",
+    "color": [
+      90,
+      145,
+      100
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 320,
+    "grain": 230,
+    "iron": 70,
+    "timber": 60,
+    "stone": 650,
+    "spice": 75,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 33
+  },
+  {
+    "id": "milan_duchy",
+    "name": "Duchy of Milan",
+    "name_tr": "Milano Dükalığı",
+    "religion": "catholic",
+    "color": [
+      90,
+      130,
+      170
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 620,
+    "grain": 380,
+    "iron": 120,
+    "timber": 90,
+    "stone": 900,
+    "spice": 40,
+    "cloth": 170,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "heavy_armor": true,
+        "banking": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 42
+  },
+  {
+    "id": "naples_kingdom",
+    "name": "Kingdom of Naples",
+    "name_tr": "Napoli Krallığı",
+    "religion": "catholic",
+    "color": [
+      190,
+      150,
+      60
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 470,
+    "grain": 330,
+    "iron": 80,
+    "timber": 90,
+    "stone": 800,
+    "spice": 60,
+    "cloth": 85,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "iron_weapons": true,
+        "navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38
+  },
+  {
+    "id": "novgorod_rep",
+    "name": "Republic of Novgorod",
+    "name_tr": "Novgorod Cumhuriyeti",
+    "religion": "orthodox",
+    "color": [
+      80,
+      160,
+      180
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 480,
+    "grain": 330,
+    "iron": 90,
+    "timber": 260,
+    "stone": 700,
+    "spice": 40,
+    "cloth": 100,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "navigation": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 30
+  },
+  {
+    "id": "ottoman",
+    "name": "Ottoman Empire",
+    "name_tr": "Osmanlı İmparatorluğu",
+    "religion": "sunni",
+    "color": [
+      28,
+      130,
+      68
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 1250,
+    "grain": 900,
+    "iron": 230,
+    "timber": 260,
+    "stone": 1200,
+    "spice": 80,
+    "cloth": 180,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "trade_routes": true,
+        "tax_registers": true,
+        "engineering_corps": true,
+        "gunpowder": true,
+        "navigation": true
+      },
+      "active_id": "cast_bronze_cannon",
+      "turns_left": 4
+    },
+    "ai_aggressiveness": 72
+  },
+  {
+    "id": "papal_states_f",
+    "name": "Papal States",
+    "name_tr": "Papalık Devletleri",
+    "religion": "catholic",
+    "color": [
+      240,
+      220,
+      140
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 600,
+    "grain": 330,
+    "iron": 80,
+    "timber": 70,
+    "stone": 1000,
+    "spice": 70,
+    "cloth": 120,
+    "research": {
+      "completed": {
+        "theology": true,
+        "diplomacy": true,
+        "banking": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 30
+  },
+  {
+    "id": "polish_kingdom",
+    "name": "Kingdom of Poland",
+    "name_tr": "Polonya Krallığı",
+    "religion": "catholic",
+    "color": [
+      220,
+      55,
+      75
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 660,
+    "grain": 520,
+    "iron": 150,
+    "timber": 180,
+    "stone": 950,
+    "spice": 20,
+    "cloth": 90,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
+    "id": "portugal",
+    "name": "Kingdom of Portugal",
+    "name_tr": "Portekiz Krallığı",
+    "religion": "catholic",
+    "color": [
+      30,
+      120,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 560,
+    "grain": 330,
+    "iron": 90,
+    "timber": 150,
+    "stone": 800,
+    "spice": 90,
+    "cloth": 75,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "cartography": true,
+        "trade_routes": true,
+        "harbor_administration": true
+      },
+      "active_id": "open_sea_convoys",
+      "turns_left": 4
+    },
+    "ai_aggressiveness": 36
+  },
+  {
+    "id": "ramazan_bey",
+    "name": "Ramazanid Beylik",
+    "name_tr": "Ramazanoğulları Beyliği",
+    "religion": "sunni",
+    "color": [
+      210,
+      155,
+      50
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 260,
+    "grain": 170,
+    "iron": 50,
+    "timber": 45,
+    "stone": 650,
+    "spice": 35,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 36
+  },
+  {
+    "id": "russia",
+    "name": "Grand Principality of Moscow",
+    "name_tr": "Moskova Büyük Knezliği",
+    "religion": "orthodox",
+    "color": [
+      120,
+      170,
+      120
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 430,
+    "iron": 120,
+    "timber": 240,
+    "stone": 750,
+    "spice": 15,
+    "cloth": 65,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 52
+  },
+  {
+    "id": "safavid",
+    "name": "Aq Qoyunlu Confederation",
+    "name_tr": "Akkoyunlu Konfederasyonu",
+    "religion": "sunni",
+    "color": [
+      240,
+      240,
+      240
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 430,
+    "grain": 290,
+    "iron": 120,
+    "timber": 80,
+    "stone": 650,
+    "spice": 45,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "composite_bow_drills": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 58
+  },
+  {
+    "id": "saruhan_bey",
+    "name": "Wattasid Morocco",
+    "name_tr": "Vattâsî Fas",
+    "religion": "sunni",
+    "color": [
+      140,
+      40,
+      40
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 380,
+    "grain": 270,
+    "iron": 90,
+    "timber": 85,
+    "stone": 700,
+    "spice": 65,
+    "cloth": 65,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "cavalry_tactics": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 36
+  },
+  {
+    "id": "savoy_county",
+    "name": "Duchy of Savoy",
+    "name_tr": "Savoy Dükalığı",
+    "religion": "catholic",
+    "color": [
+      190,
+      90,
+      110
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 360,
+    "grain": 230,
+    "iron": 100,
+    "timber": 110,
+    "stone": 700,
+    "spice": 20,
+    "cloth": 65,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "trade_routes": true,
+        "field_fortifications": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 34
+  },
+  {
+    "id": "scotland_kingdom",
+    "name": "Kingdom of Scotland",
+    "name_tr": "İskoçya Krallığı",
+    "religion": "catholic",
+    "color": [
+      60,
+      70,
+      155
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 330,
+    "grain": 230,
+    "iron": 90,
+    "timber": 120,
+    "stone": 700,
+    "spice": 10,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "cavalry_tactics": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 36
+  },
+  {
+    "id": "serbian_empire",
+    "name": "Serbian Despotate",
+    "name_tr": "Sırp Despotluğu",
+    "religion": "orthodox",
+    "color": [
+      120,
+      65,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 420,
+    "grain": 330,
+    "iron": 130,
+    "timber": 95,
+    "stone": 850,
+    "spice": 10,
+    "cloth": 60,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "heavy_armor": true,
+        "cavalry_tactics": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38
+  },
+  {
+    "id": "teutonic_order",
+    "name": "Teutonic Order",
+    "name_tr": "Töton Şövalyeleri",
+    "religion": "catholic",
+    "color": [
+      220,
+      220,
+      220
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 420,
+    "grain": 320,
+    "iron": 120,
+    "timber": 150,
+    "stone": 850,
+    "spice": 15,
+    "cloth": 60,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "cavalry_tactics": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 44
+  },
+  {
+    "id": "trebizond_emp",
+    "name": "Empire of Trebizond",
+    "name_tr": "Trabzon Rum İmparatorluğu",
+    "religion": "orthodox",
+    "color": [
+      130,
+      85,
+      170
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 300,
+    "grain": 160,
+    "iron": 55,
+    "timber": 90,
+    "stone": 700,
+    "spice": 70,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "navigation": true,
+        "diplomacy": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 25
+  },
+  {
+    "id": "venice",
+    "name": "Republic of Venice",
+    "name_tr": "Venedik Cumhuriyeti",
+    "religion": "catholic",
+    "color": [
+      35,
+      145,
+      190
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 980,
+    "grain": 420,
+    "iron": 130,
+    "timber": 280,
+    "stone": 1100,
+    "spice": 220,
+    "cloth": 220,
+    "research": {
+      "completed": {
+        "trade_routes": true,
+        "banking": true,
+        "guilds": true,
+        "navigation": true,
+        "harbor_administration": true,
+        "naval_doctrine": true,
+        "latin_naval_architecture": true,
+        "cartography": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 44
+  },
+  {
+    "id": "wallachia_prince",
+    "name": "Principality of Wallachia",
+    "name_tr": "Eflak Prensliği",
+    "religion": "orthodox",
+    "color": [
+      225,
+      180,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 360,
+    "grain": 300,
+    "iron": 75,
+    "timber": 120,
+    "stone": 650,
+    "spice": 10,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  }
+]

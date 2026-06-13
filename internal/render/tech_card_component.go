@@ -132,16 +132,20 @@ func (c techCardComponent) drawContent(screen *ebiten.Image) {
 	if c.Model.IconID != gameui.IconNone {
 		nameOffsetX = 12
 	}
-	nameRect := gameui.Rect{X: c.Rect.X + 12 + nameOffsetX, Y: c.Rect.Y + 10, W: c.Rect.W - 24 - nameOffsetX}
-	drawUILabel(screen, nameRect, c.Model.Title, c.Model.NameColor, gameui.TextMedium, gameui.TextAlignCenter)
+	nameRightInset := 12.0
+	if c.Model.IsDone {
+		nameRightInset = 44
+	}
+	nameRect := gameui.Rect{X: c.Rect.X + 12 + nameOffsetX, Y: c.Rect.Y + 10, W: c.Rect.W - 24 - nameOffsetX - nameRightInset}
+	drawUIWrappedLabelAligned(screen, nameRect, c.Model.Title, c.Model.NameColor, gameui.TextMedium, 17, 2, gameui.TextAlignCenter)
 
-	buffRect := gameui.Rect{X: c.Rect.X + 14, Y: c.Rect.Y + 34, W: c.Rect.W - 28}
-	drawUIWrappedLabelAligned(screen, buffRect, c.Model.Summary, color.RGBA{210, 210, 225, 230}, gameui.TextSmall, 14, 2, gameui.TextAlignCenter)
+	buffRect := gameui.Rect{X: c.Rect.X + 14, Y: c.Rect.Y + 48, W: c.Rect.W - 28}
+	drawUIWrappedLabelAligned(screen, buffRect, c.Model.Summary, color.RGBA{210, 210, 225, 230}, gameui.TextSmall, 14, 3, gameui.TextAlignCenter)
 
 	if c.Model.IsActive {
 		c.drawProgress(screen)
 	} else {
-		costRect := gameui.Rect{X: c.Rect.X + 12, Y: c.Rect.Y + c.Rect.H - 19, W: c.Rect.W - 24}
+		costRect := gameui.Rect{X: c.Rect.X + 12, Y: c.Rect.Y + c.Rect.H - 20, W: c.Rect.W - 24}
 		drawUILabel(screen, costRect, c.Model.CostText, c.Model.CostColor, gameui.TextSmall, gameui.TextAlignCenter)
 	}
 

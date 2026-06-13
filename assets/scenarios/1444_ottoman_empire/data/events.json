@@ -1,0 +1,822 @@
+[
+  {
+    "id": "plague",
+    "name_tr": "Yerel Salgın",
+    "desc_tr": "Salgın hastalık bölgeye yayıldı. Halk memnuniyeti düşüyor, tahıl üretimi azalıyor.",
+    "min_turn": 8,
+    "probability": 0.022,
+    "target": "random_region",
+    "gold_delta": 0,
+    "grain_delta": -30,
+    "sat_delta": -22,
+    "army_hp_mod": 0.86
+  },
+  {
+    "id": "famine",
+    "name_tr": "Kıtlık",
+    "desc_tr": "Hasatlar yetmedi; ambarlar boşalıyor, pazar fiyatları yükseliyor.",
+    "min_turn": 3,
+    "probability": 0.035,
+    "target": "player_faction",
+    "gold_delta": -65,
+    "grain_delta": -45,
+    "sat_delta": -12,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "trade_boom",
+    "name_tr": "Ticaret Canlanması",
+    "desc_tr": "Kervan ve liman yolları güvenli; bedestenlerde para akışı hızlandı.",
+    "min_turn": 5,
+    "probability": 0.028,
+    "target": "player_faction",
+    "gold_delta": 170,
+    "grain_delta": 10,
+    "sat_delta": 4,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "janissary_discipline",
+    "name_tr": "Ocak Disiplini",
+    "desc_tr": "Merkezî ocakların talimi ve maaş düzeni orduyu toparladı.",
+    "min_turn": 6,
+    "probability": 0.018,
+    "target": "player_faction",
+    "gold_delta": -40,
+    "grain_delta": 0,
+    "sat_delta": 3,
+    "army_hp_mod": 1.06
+  },
+  {
+    "id": "bandit_raids",
+    "name_tr": "Eşkıya ve Hudut Akınları",
+    "desc_tr": "Sınır boylarında akıncılar ve eşkıya ticaret yollarını hırpalıyor.",
+    "min_turn": 4,
+    "probability": 0.032,
+    "target": "random_region",
+    "gold_delta": -55,
+    "grain_delta": -15,
+    "sat_delta": -8,
+    "army_hp_mod": 0.98
+  },
+  {
+    "id": "murad_return_varna_1444",
+    "name_tr": "II. Murad'ın Dönüşü",
+    "desc_tr": "Haçlı ordusu Tuna'dan ilerlerken II. Mehmed'in ilk saltanatı sarsıldı; devlet erkânı II. Murad'ı ordunun başına çağırdı.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": -80,
+    "grain_delta": -20,
+    "sat_delta": 4,
+    "army_hp_mod": 1.08,
+    "affected_faction": "ottoman",
+    "historical_year": 1444,
+    "historical_month": 10,
+    "one_shot": true,
+    "choices": [
+      {
+        "id": "call_murad",
+        "label_tr": "Murad'ı ordunun başına çağır",
+        "ai_weight": 9,
+        "desc_tr": "Ordu morali yükselir, fakat merkezde genç sultanın otoritesi zedelenir.",
+        "effect": {
+          "army_hp_mod": 1.08,
+          "sat_delta": 4,
+          "relations": [
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": -25,
+              "stance": "war"
+            },
+            {
+              "faction_id": "polish_kingdom",
+              "score_delta": -20,
+              "stance": "war"
+            }
+          ]
+        }
+      },
+      {
+        "id": "trust_mehmed",
+        "label_tr": "Genç Mehmed'e güven",
+        "ai_weight": 2,
+        "desc_tr": "Saray otoritesi korunur ancak Varna cephesinde risk büyür.",
+        "effect": {
+          "gold_delta": 60,
+          "sat_delta": -5,
+          "army_hp_mod": 0.94
+        }
+      }
+    ],
+    "choice_prompt_tr": "Haçlı tehdidine karşı saltanat nasıl yönetilsin?"
+  },
+  {
+    "id": "battle_of_varna_1444",
+    "name_tr": "Varna Meydan Muharebesi",
+    "desc_tr": "10 Kasım 1444'te Varna civarında Osmanlı ordusu Macar-Polonya ve Eflak kuvvetleriyle karşı karşıya geldi.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 120,
+    "grain_delta": 20,
+    "sat_delta": 12,
+    "army_hp_mod": 1.12,
+    "affected_faction": "ottoman",
+    "historical_year": 1444,
+    "historical_month": 11,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "thrace",
+      "bulgaria"
+    ],
+    "relations": [
+      {
+        "faction_id": "hungarian_kingdom",
+        "score_delta": -30,
+        "stance": "war"
+      },
+      {
+        "faction_id": "polish_kingdom",
+        "score_delta": -20,
+        "stance": "war"
+      },
+      {
+        "faction_id": "wallachia_prince",
+        "score_delta": -18,
+        "stance": "war"
+      }
+    ],
+    "choices": [
+      {
+        "id": "crush_crusade",
+        "label_tr": "Haçlı ordusunu ez",
+        "ai_weight": 8,
+        "desc_tr": "Balkanlarda Osmanlı prestiji artar; Macar cephesindeki direnç geçici olarak kırılır.",
+        "effect": {
+          "gold_delta": 160,
+          "sat_delta": 10,
+          "army_hp_mod": 1.12,
+          "relations": [
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": -35,
+              "stance": "war"
+            }
+          ]
+        }
+      },
+      {
+        "id": "negotiate_truce",
+        "label_tr": "Zafer sonrası ateşkes ara",
+        "ai_weight": 3,
+        "desc_tr": "Savaş yorgunluğu azalır, ancak Balkan ilerleyişi yavaşlar.",
+        "effect": {
+          "gold_delta": 80,
+          "grain_delta": 30,
+          "sat_delta": 6,
+          "relations": [
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": 20,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ],
+    "choice_prompt_tr": "Varna zaferi nasıl kullanılacak?"
+  },
+  {
+    "id": "albanian_resistance_1444",
+    "name_tr": "Leş Birliği'nin Direnişi",
+    "desc_tr": "Skanderbeg çevresinde toplanan Arnavut beyleri dağlık kalelerde Osmanlı baskısına direniyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 60,
+    "grain_delta": 10,
+    "sat_delta": 8,
+    "army_hp_mod": 1.08,
+    "affected_faction": "arnavut_des",
+    "historical_year": 1444,
+    "historical_month": 12,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": -25,
+        "stance": "war"
+      },
+      {
+        "faction_id": "venice",
+        "score_delta": 15,
+        "stance": "alliance"
+      }
+    ]
+  },
+  {
+    "id": "serbian_buffer_1445",
+    "name_tr": "Sırp Tamponu",
+    "desc_tr": "Semendire çevresindeki Sırp Despotluğu, Macaristan ile Osmanlı arasında hassas bir denge kurmaya çalışıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 40,
+    "grain_delta": 10,
+    "sat_delta": 4,
+    "army_hp_mod": 1,
+    "affected_faction": "serbian_empire",
+    "historical_year": 1445,
+    "historical_month": 3,
+    "one_shot": true,
+    "choices": [
+      {
+        "id": "lean_hungary",
+        "label_tr": "Macar himayesine yaklaş",
+        "ai_weight": 5,
+        "desc_tr": "Kuzeyden destek alınır, Osmanlı ilişkileri kötüleşir.",
+        "effect": {
+          "relations": [
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": 25,
+              "stance": "alliance"
+            },
+            {
+              "faction_id": "ottoman",
+              "score_delta": -20,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pay_tribute",
+        "label_tr": "Osmanlı'ya haraç öde",
+        "ai_weight": 5,
+        "desc_tr": "Güney sınırı yatışır fakat soylular huzursuz olur.",
+        "effect": {
+          "gold_delta": -60,
+          "sat_delta": -4,
+          "relations": [
+            {
+              "faction_id": "ottoman",
+              "score_delta": 20,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "hungarian_kingdom",
+              "score_delta": -10,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ],
+    "choice_prompt_tr": "Sırp Despotluğu hangi dengeye yaslanacak?"
+  },
+  {
+    "id": "karaman_pressure_1446",
+    "name_tr": "Karaman Baskısı",
+    "desc_tr": "Karamanoğulları, Osmanlı'nın Balkan cephesine yoğunlaşmasını fırsat bilerek İç Anadolu'da nüfuz arıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 80,
+    "grain_delta": 30,
+    "sat_delta": 5,
+    "army_hp_mod": 1.05,
+    "affected_faction": "karaman_bey",
+    "historical_year": 1446,
+    "historical_month": 5,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": -25,
+        "stance": "peace"
+      }
+    ],
+    "choices": [
+      {
+        "id": "raid_ankara",
+        "label_tr": "Ankara hattını yokla",
+        "ai_weight": 6,
+        "desc_tr": "Osmanlı ilişkileri bozulur, fakat savaş ganimeti artar.",
+        "effect": {
+          "gold_delta": 100,
+          "relations": [
+            {
+              "faction_id": "ottoman",
+              "score_delta": -25,
+              "stance": "war"
+            }
+          ]
+        }
+      },
+      {
+        "id": "secure_konya",
+        "label_tr": "Konya'yı tahkim et",
+        "ai_weight": 4,
+        "desc_tr": "Savunma ve tahıl düzeni güçlenir.",
+        "effect": {
+          "grain_delta": 40,
+          "sat_delta": 4
+        }
+      }
+    ],
+    "choice_prompt_tr": "Karaman beyliği nasıl hareket edecek?"
+  },
+  {
+    "id": "second_kosovo_1448",
+    "name_tr": "İkinci Kosova Muharebesi",
+    "desc_tr": "John Hunyadi yeni bir seferle Balkanlara indi; Kosova ovasında Osmanlı kuvvetleriyle çarpışma kaçınılmaz.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 120,
+    "grain_delta": -10,
+    "sat_delta": 8,
+    "army_hp_mod": 1.08,
+    "affected_faction": "ottoman",
+    "historical_year": 1448,
+    "historical_month": 10,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "north_macedonia"
+    ],
+    "relations": [
+      {
+        "faction_id": "hungarian_kingdom",
+        "score_delta": -25,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "mehmed_second_accession_1451",
+    "name_tr": "II. Mehmed'in İkinci Cülusu",
+    "desc_tr": "II. Murad'ın ölümüyle Mehmed yeniden tahta çıktı; genç sultan gözünü Boğazlar ve Konstantiniyye'ye çevirdi.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 60,
+    "grain_delta": 0,
+    "sat_delta": 6,
+    "army_hp_mod": 1.03,
+    "affected_faction": "ottoman",
+    "historical_year": 1451,
+    "historical_month": 2,
+    "one_shot": true,
+    "start_research_tech": "cast_bronze_cannon",
+    "complete_techs": [
+      "standing_infantry"
+    ],
+    "blocks_techs": [],
+    "requires_flags": [],
+    "blocks_flags": [],
+    "choices": [
+      {
+        "id": "centralize_palace",
+        "label_tr": "Merkezî otoriteyi sıkılaştır",
+        "ai_weight": 8,
+        "desc_tr": "Yeni seferler için hazine ve ocaklar hazırlanır.",
+        "effect": {
+          "gold_delta": 100,
+          "sat_delta": 3,
+          "start_research_tech": "cast_bronze_cannon"
+        }
+      },
+      {
+        "id": "appease_notables",
+        "label_tr": "Beyleri yatıştır",
+        "ai_weight": 3,
+        "desc_tr": "İç huzur artar fakat büyük sefer hazırlığı yavaşlar.",
+        "effect": {
+          "sat_delta": 8,
+          "gold_delta": -50
+        }
+      }
+    ],
+    "choice_prompt_tr": "Yeni saltanatın ilk adımı ne olsun?"
+  },
+  {
+    "id": "rumeli_hisari_1452",
+    "name_tr": "Rumeli Hisarı",
+    "desc_tr": "Boğaz trafiğini denetlemek için Rumeli Hisarı inşa edildi; Konstantiniyye üzerindeki baskı açıkça arttı.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": -160,
+    "grain_delta": -30,
+    "sat_delta": 3,
+    "army_hp_mod": 1,
+    "affected_faction": "ottoman",
+    "historical_year": 1452,
+    "historical_month": 8,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "thrace"
+    ],
+    "relations": [
+      {
+        "faction_id": "east_rome",
+        "score_delta": -45,
+        "stance": "war"
+      },
+      {
+        "faction_id": "genoa",
+        "score_delta": -10,
+        "stance": "peace"
+      }
+    ],
+    "complete_techs": [
+      "field_fortifications"
+    ],
+    "start_research_tech": "siege_logistics",
+    "blocks_techs": [],
+    "requires_flags": [],
+    "blocks_flags": []
+  },
+  {
+    "id": "fall_of_constantinople_1453",
+    "name_tr": "Konstantiniyye'nin Fethi",
+    "desc_tr": "Büyük toplar, donanma baskısı ve kara surlarına yapılan yoğun hücumlar şehrin kaderini belirledi.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 260,
+    "grain_delta": 40,
+    "sat_delta": 18,
+    "army_hp_mod": 1.12,
+    "affected_faction": "ottoman",
+    "historical_year": 1453,
+    "historical_month": 5,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "thrace",
+      "bursa"
+    ],
+    "relations": [
+      {
+        "faction_id": "east_rome",
+        "score_delta": -60,
+        "stance": "war"
+      },
+      {
+        "faction_id": "venice",
+        "score_delta": -18,
+        "stance": "peace"
+      },
+      {
+        "faction_id": "genoa",
+        "score_delta": -18,
+        "stance": "peace"
+      }
+    ],
+    "complete_techs": [
+      "cast_bronze_cannon"
+    ],
+    "start_research_tech": "artillery_foundries",
+    "blocks_techs": [],
+    "requires_flags": [],
+    "blocks_flags": [],
+    "choices": [
+      {
+        "id": "make_capital",
+        "label_tr": "Şehri payitaht yap",
+        "ai_weight": 9,
+        "desc_tr": "Boğaz ticareti ve imparatorluk prestiji artar.",
+        "effect": {
+          "gold_delta": 260,
+          "sat_delta": 12,
+          "relations": [
+            {
+              "faction_id": "mamluk",
+              "score_delta": -10,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "secure_frontiers",
+        "label_tr": "Önce sınırları yatıştır",
+        "ai_weight": 2,
+        "desc_tr": "Ganimet sınırlı kalır, fakat komşularla kriz azaltılır.",
+        "effect": {
+          "gold_delta": 120,
+          "sat_delta": 8,
+          "relations": [
+            {
+              "faction_id": "venice",
+              "score_delta": 10,
+              "stance": "peace"
+            },
+            {
+              "faction_id": "genoa",
+              "score_delta": 10,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ],
+    "choice_prompt_tr": "Fetihten sonra şehir nasıl düzenlenecek?"
+  },
+  {
+    "id": "belgrade_siege_1456",
+    "name_tr": "Belgrad Kuşatması",
+    "desc_tr": "Tuna kapısı Belgrad, Macar savunmasının kilidi olarak Osmanlı ilerleyişini durdurmaya çalışıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": -120,
+    "grain_delta": -35,
+    "sat_delta": -4,
+    "army_hp_mod": 0.95,
+    "affected_faction": "ottoman",
+    "historical_year": 1456,
+    "historical_month": 7,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "serbia"
+    ],
+    "relations": [
+      {
+        "faction_id": "hungarian_kingdom",
+        "score_delta": -30,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "morea_campaign_1460",
+    "name_tr": "Mora Seferi",
+    "desc_tr": "Mora despotları arasındaki çekişme Osmanlı müdahalesine kapı açtı.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 120,
+    "grain_delta": 30,
+    "sat_delta": 7,
+    "army_hp_mod": 1.04,
+    "affected_faction": "ottoman",
+    "historical_year": 1460,
+    "historical_month": 5,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "constantinople"
+    ],
+    "relations": [
+      {
+        "faction_id": "achaea_principality",
+        "score_delta": -40,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "trebizond_campaign_1461",
+    "name_tr": "Trabzon Seferi",
+    "desc_tr": "Karadeniz'in doğusundaki son Rum devleti Osmanlı ve Türkmen güç dengesi arasında sıkıştı.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 100,
+    "grain_delta": 20,
+    "sat_delta": 5,
+    "army_hp_mod": 1.03,
+    "affected_faction": "ottoman",
+    "historical_year": 1461,
+    "historical_month": 8,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "constantinople"
+    ],
+    "relations": [
+      {
+        "faction_id": "trebizond_emp",
+        "score_delta": -45,
+        "stance": "war"
+      },
+      {
+        "faction_id": "safavid",
+        "score_delta": -10,
+        "stance": "peace"
+      }
+    ]
+  },
+  {
+    "id": "venetian_aegean_tensions_1463",
+    "name_tr": "Venedik ile Ege Gerilimi",
+    "desc_tr": "Mora ve Ege limanları üzerindeki çekişme Venedik-Osmanlı savaşını tetikleyebilir.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 80,
+    "grain_delta": -10,
+    "sat_delta": 3,
+    "army_hp_mod": 1.02,
+    "affected_faction": "venice",
+    "historical_year": 1463,
+    "historical_month": 7,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": -45,
+        "stance": "war"
+      }
+    ],
+    "choices": [
+      {
+        "id": "defend_colonies",
+        "label_tr": "Kolonileri savun",
+        "ai_weight": 7,
+        "desc_tr": "Girit, Dalmaçya ve Ege hattına kaynak aktarılır.",
+        "effect": {
+          "gold_delta": -80,
+          "sat_delta": 5,
+          "army_hp_mod": 1.08,
+          "relations": [
+            {
+              "faction_id": "ottoman",
+              "score_delta": -40,
+              "stance": "war"
+            }
+          ]
+        }
+      },
+      {
+        "id": "trade_compromise",
+        "label_tr": "Ticari uzlaşı ara",
+        "ai_weight": 3,
+        "desc_tr": "Ticaret korunur, fakat prestij zedelenir.",
+        "effect": {
+          "gold_delta": 120,
+          "sat_delta": -3,
+          "relations": [
+            {
+              "faction_id": "ottoman",
+              "score_delta": 20,
+              "stance": "peace"
+            }
+          ]
+        }
+      }
+    ],
+    "choice_prompt_tr": "Venedik Ege krizine nasıl yanıt verecek?"
+  },
+  {
+    "id": "crimean_vassalage_1475",
+    "name_tr": "Kırım ve Karadeniz Kapısı",
+    "desc_tr": "Kefe ve Karadeniz kolonileri üzerindeki baskı Kırım Hanlığı ile Osmanlı arasındaki bağı güçlendirdi.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 120,
+    "grain_delta": 20,
+    "sat_delta": 5,
+    "army_hp_mod": 1.05,
+    "affected_faction": "golden_horde",
+    "historical_year": 1475,
+    "historical_month": 6,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": 35,
+        "stance": "alliance"
+      },
+      {
+        "faction_id": "genoa",
+        "score_delta": -40,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "otlukkeli_1473",
+    "name_tr": "Otlukbeli Gerilimi",
+    "desc_tr": "Akkoyunlu hükümdarı Uzun Hasan ile Osmanlılar arasında Anadolu üstünlüğü için büyük hesaplaşma yaklaşıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 80,
+    "grain_delta": 10,
+    "sat_delta": 5,
+    "army_hp_mod": 1.05,
+    "affected_faction": "safavid",
+    "historical_year": 1473,
+    "historical_month": 8,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": -50,
+        "stance": "war"
+      },
+      {
+        "faction_id": "venice",
+        "score_delta": 20,
+        "stance": "peace"
+      }
+    ]
+  },
+  {
+    "id": "mamluk_ottoman_frontier_1470",
+    "name_tr": "Çukurova Sınır Meselesi",
+    "desc_tr": "Dulkadir ve Ramazan beyleri, Osmanlı ile Memlükler arasında nüfuz mücadelesinin merkezinde kalıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 60,
+    "grain_delta": 10,
+    "sat_delta": 4,
+    "army_hp_mod": 1.02,
+    "affected_faction": "mamluk",
+    "historical_year": 1470,
+    "historical_month": 4,
+    "one_shot": true,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "score_delta": -25,
+        "stance": "peace"
+      },
+      {
+        "faction_id": "dulkadir_bey",
+        "score_delta": 10,
+        "stance": "alliance"
+      },
+      {
+        "faction_id": "ramazan_bey",
+        "score_delta": 10,
+        "stance": "alliance"
+      }
+    ],
+    "choices": [
+      {
+        "id": "support_dulkadir",
+        "label_tr": "Dulkadir'i destekle",
+        "ai_weight": 5,
+        "desc_tr": "Toros sınırında nüfuz artar, Osmanlı rahatsız olur.",
+        "effect": {
+          "gold_delta": -70,
+          "relations": [
+            {
+              "faction_id": "dulkadir_bey",
+              "score_delta": 25,
+              "stance": "alliance"
+            },
+            {
+              "faction_id": "ottoman",
+              "score_delta": -20,
+              "stance": "peace"
+            }
+          ]
+        }
+      },
+      {
+        "id": "secure_syria",
+        "label_tr": "Şam-Halep hattını koru",
+        "ai_weight": 5,
+        "desc_tr": "Levant ticareti ve ikmal düzeni güçlenir.",
+        "effect": {
+          "gold_delta": 100,
+          "grain_delta": 25,
+          "sat_delta": 4
+        }
+      }
+    ],
+    "choice_prompt_tr": "Memlükler kuzey sınırını nasıl yönetecek?"
+  },
+  {
+    "id": "ottoman_population_resettlement",
+    "name_tr": "Sürgün ve İskân Politikası",
+    "desc_tr": "Fethedilen şehirlerde zanaatkâr, tüccar ve ailelerin iskânı ticari hayatı canlandırıyor.",
+    "min_turn": 0,
+    "probability": 0,
+    "target": "specific_faction",
+    "gold_delta": 120,
+    "grain_delta": -20,
+    "sat_delta": 4,
+    "army_hp_mod": 1,
+    "affected_faction": "ottoman",
+    "historical_year": 1454,
+    "historical_month": 1,
+    "one_shot": true,
+    "requires_owned_regions": [
+      "constantinople"
+    ],
+    "complete_techs": [
+      "tax_registers"
+    ],
+    "start_research_tech": "caravanserai_network",
+    "blocks_techs": [],
+    "requires_flags": [],
+    "blocks_flags": []
+  }
+]

@@ -61,7 +61,7 @@ Her senaryo: `scenario.json` (meta + zafer koşulları + müzik playlistleri) + 
 
 Paylaşılan oyun içi efektler senaryodan bağımsızdır ve `assets/sounds/` altından yüklenir.
 
-Mevcut senaryolar: `1300_ottoman_rise` · `1444_constantinople`
+Mevcut senaryolar: `1300_ottoman_rise` · `1444_ottoman_empire` · `1648_westphalia_peace` · `1800_napoleon_rise`
 
 ---
 

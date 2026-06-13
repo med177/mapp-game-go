@@ -841,6 +841,171 @@ func victoryDetailCloseHit(mx, my float64) bool {
 	return buildVictoryDetailCloseButton().HitTest(mx, my)
 }
 
+type victoryDetailContentLine struct {
+	text     string
+	color    color.Color
+	variant  gameui.TextVariant
+	lineStep float64
+}
+
+func victoryDetailScrollHit(mx, my float64) bool {
+	return buildVictoryDetailLayout().scrollRect.Hit(mx, my)
+}
+
+func victoryDetailContentHeight(gs *state.GameState) float64 {
+	return buildVictoryDetailContentLines(gs).contentHeight
+}
+
+func clampVictoryDetailScroll(gs *state.GameState, scroll float64) float64 {
+	max := victoryDetailMaxScroll(gs)
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > max {
+		return max
+	}
+	return scroll
+}
+
+func victoryDetailMaxScroll(gs *state.GameState) float64 {
+	layout := buildVictoryDetailLayout()
+	max := victoryDetailContentHeight(gs) - layout.scrollRect.H
+	if max < 0 {
+		return 0
+	}
+	return max
+}
+
+type victoryDetailContent struct {
+	lines         []victoryDetailContentLine
+	contentHeight float64
+}
+
+func buildVictoryDetailContentLines(gs *state.GameState) victoryDetailContent {
+	bodyWidth := buildVictoryDetailLayout().bodyRect.W
+	opt, hasOpt := currentVictoryOption(gs)
+	desc := ""
+	targetSummary := activeVictoryTargetSummary(gs)
+	longSummary := targetSummary
+	if hasOpt {
+		desc = opt.Description
+		if sum := victoryTargetSummary(gs, opt); sum != "" {
+			longSummary = sum
+		}
+	}
+
+	lines := make([]victoryDetailContentLine, 0, 48)
+	contentH := 0.0
+	appendSectionLabel := func(label string) {
+		lines = append(lines, victoryDetailContentLine{
+			text:     label,
+			color:    ColorGold,
+			variant:  gameui.TextSmall,
+			lineStep: 18,
+		})
+		contentH += 18
+	}
+	appendWrapped := func(text string, face *text.GoTextFace, col color.Color, variant gameui.TextVariant, lineStep float64) {
+		if text == "" {
+			return
+		}
+		for _, line := range wrapTextLines(text, face, bodyWidth) {
+			lines = append(lines, victoryDetailContentLine{
+				text:     line,
+				color:    col,
+				variant:  variant,
+				lineStep: lineStep,
+			})
+			contentH += lineStep
+		}
+	}
+	appendInfoLines := func(items []string, colors []color.Color) {
+		for i, line := range items {
+			col := color.Color(ColorGray)
+			if i < len(colors) && colors[i] != nil {
+				col = colors[i]
+			}
+			lines = append(lines, victoryDetailContentLine{
+				text:     line,
+				color:    col,
+				variant:  gameui.TextSmall,
+				lineStep: 24,
+			})
+			contentH += 24
+		}
+	}
+	addGap := func(h float64) {
+		contentH += h
+	}
+
+	appendSectionLabel("Zafer Detayı")
+	addGap(18)
+	appendWrapped(desc, FaceMed, color.RGBA{226, 220, 204, 240}, gameui.TextMedium, 20)
+
+	if targetSummary != "" {
+		if desc != "" {
+			addGap(14)
+		}
+		appendSectionLabel("Aktif Hedef")
+		addGap(18)
+		appendWrapped(targetSummary, FaceSmall, color.RGBA{210, 200, 176, 235}, gameui.TextSmall, 17)
+	}
+
+	if longSummary != "" && longSummary != targetSummary {
+		addGap(14)
+		appendSectionLabel("Kapsam")
+		addGap(18)
+		appendWrapped(longSummary, FaceSmall, color.RGBA{180, 170, 146, 230}, gameui.TextSmall, 17)
+	}
+
+	addGap(14)
+	appendSectionLabel("İlerleme")
+	addGap(18)
+	appendInfoLines(victoryDetailProgressLines(gs), nil)
+
+	checkLines, checkColors := victoryChecklistEntries(gs)
+	if len(checkLines) > 0 {
+		addGap(14)
+		appendSectionLabel("Kontrol Listesi")
+		addGap(18)
+		appendInfoLines(checkLines, checkColors)
+	}
+
+	if hasOpt && opt.Detail != "" {
+		addGap(14)
+		appendSectionLabel("Not")
+		addGap(18)
+		appendWrapped(opt.Detail, FaceSmall, color.RGBA{168, 154, 126, 220}, gameui.TextSmall, 17)
+	}
+
+	return victoryDetailContent{
+		lines:         lines,
+		contentHeight: contentH,
+	}
+}
+
+func drawVictoryDetailScrollbar(screen *ebiten.Image, gs *state.GameState, scroll float64) {
+	layout := buildVictoryDetailLayout()
+	maxScroll := victoryDetailMaxScroll(gs)
+	if maxScroll <= 0 {
+		return
+	}
+	track := layout.scrollbar
+	vector.FillRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), color.RGBA{34, 28, 20, 210}, false)
+	thumbH := track.H * (layout.scrollRect.H / victoryDetailContentHeight(gs))
+	if thumbH < 44 {
+		thumbH = 44
+	}
+	if thumbH > track.H {
+		thumbH = track.H
+	}
+	thumbY := track.Y
+	if maxScroll > 0 && track.H > thumbH {
+		thumbY += (track.H - thumbH) * (scroll / maxScroll)
+	}
+	vector.FillRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), color.RGBA{176, 138, 62, 220}, false)
+}
+
 func victoryProgressPanelRect() gameui.Rect {
 	return gameui.Rect{X: 718, Y: 7, W: 180, H: float64(topStatusH - 14)}
 }
@@ -949,7 +1114,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	drawUIWrappedLabel(screen, gameui.Rect{X: layout.detailRect.X + 16, Y: layout.detailRect.Y + 68, W: layout.detailRect.W - 32}, selected.Detail, eventCodexLineColor(selected.Detail), gameui.TextMedium, 19, int((layout.detailRect.H-76)/19))
 }
 
-func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState) {
+func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState, scroll float64) {
 	modal := buildVictoryDetailModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
@@ -958,16 +1123,9 @@ func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState) {
 
 	opt, hasOpt := currentVictoryOption(gs)
 	title := victoryTypeLabel(gs.Victory.Type)
-	desc := ""
-	targetSummary := activeVictoryTargetSummary(gs)
-	longSummary := targetSummary
 	if hasOpt {
 		if opt.Title != "" {
 			title = opt.Title
-		}
-		desc = opt.Description
-		if sum := victoryTargetSummary(gs, opt); sum != "" {
-			longSummary = sum
 		}
 	}
 
@@ -976,51 +1134,21 @@ func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState) {
 	closeBtn := buildVictoryDetailCloseButton()
 	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
 
+	content := buildVictoryDetailContentLines(gs)
+	scroll = clampVictoryDetailScroll(gs, scroll)
 	bodyX := layout.bodyRect.X
 	bodyY := layout.bodyRect.Y
-	bodyW := layout.bodyRect.W
-	drawUISectionLabel(screen, bodyX, bodyY, "Zafer Detayı")
-	bodyY += 18
-	if desc != "" {
-		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, desc, color.RGBA{226, 220, 204, 240}, gameui.TextMedium, 20, 3)
-		bodyY += 66
+	viewTop := layout.scrollRect.Y
+	viewBottom := layout.scrollRect.Y + layout.scrollRect.H
+	contentY := bodyY - scroll
+	for _, line := range content.lines {
+		lineBottom := contentY + line.lineStep
+		if lineBottom > viewTop && contentY < viewBottom {
+			drawUILabel(screen, gameui.Rect{X: bodyX, Y: contentY, W: layout.bodyRect.W}, line.text, line.color, line.variant, gameui.TextAlignStart)
+		}
+		contentY += line.lineStep
 	}
-
-	if targetSummary != "" {
-		drawUISectionLabel(screen, bodyX, bodyY, "Aktif Hedef")
-		bodyY += 18
-		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, targetSummary, color.RGBA{210, 200, 176, 235}, gameui.TextSmall, 17, 3)
-		bodyY += 54
-	}
-
-	if longSummary != "" && longSummary != targetSummary {
-		drawUISectionLabel(screen, bodyX, bodyY, "Kapsam")
-		bodyY += 18
-		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, longSummary, color.RGBA{180, 170, 146, 230}, gameui.TextSmall, 17, 3)
-		bodyY += 54
-	}
-
-	drawUISectionLabel(screen, bodyX, bodyY, "İlerleme")
-	bodyY += 18
-	lines := victoryDetailProgressLines(gs)
-	drawUIInfoBlock(screen, bodyX, bodyY, lines, nil)
-	bodyY += float64(len(lines) * 24)
-
-	checkLines, checkColors := victoryChecklistEntries(gs)
-	if len(checkLines) > 0 {
-		bodyY += 8
-		drawUISectionLabel(screen, bodyX, bodyY, "Kontrol Listesi")
-		bodyY += 18
-		drawUIInfoBlock(screen, bodyX, bodyY, checkLines, checkColors)
-		bodyY += float64(len(checkLines) * 24)
-	}
-
-	if hasOpt && opt.Detail != "" {
-		bodyY += 6
-		drawUISectionLabel(screen, bodyX, bodyY, "Not")
-		bodyY += 18
-		drawUIWrappedLabel(screen, gameui.Rect{X: bodyX, Y: bodyY, W: bodyW}, opt.Detail, color.RGBA{168, 154, 126, 220}, gameui.TextSmall, 17, 3)
-	}
+	drawVictoryDetailScrollbar(screen, gs, scroll)
 }
 
 func eventCodexEntryRect(index int) (x, y, w, h float32) {

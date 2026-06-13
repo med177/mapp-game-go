@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-06-03
+last_updated: 2026-06-13
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -11,7 +11,7 @@ related: [systems/diplomacy, world/regions, architecture/state-management]
 
 ## Fraksiyon Verisi
 
-Her aktif senaryo 45 fraksiyon içeriyor; 30 tanesi oynanabilir (`is_playable=true`). Başlangıç orduları fraksiyon dosyasında değil, aynı senaryonun `data/armies.json` dosyasında tutulur.
+Her aktif senaryo 45 fraksiyon içerir; oynanabilir roster senaryoya göre değişir (`is_playable=true`). Örneğin `1300_ottoman_rise` 30 oynanabilir fraksiyon açarken `1444_ottoman_empire` tarihsel hedefi olan 6 devleti, `1512_yavuz_selim` ise tarihsel hedefi olan 5 devleti açık bırakır. Başlangıç orduları fraksiyon dosyasında değil, aynı senaryonun `data/armies.json` dosyasında tutulur.
 
 ---
 

@@ -1,0 +1,369 @@
+[
+  {
+    "id": "army_lancaster_london",
+    "owner_id": "house_lancaster",
+    "region_id": "london",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 2
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_lancaster_midlands",
+    "owner_id": "house_lancaster",
+    "region_id": "mercia",
+    "units": [
+      {
+        "type_id": "billmen",
+        "count": 2
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 1
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_lancaster_north",
+    "owner_id": "house_lancaster",
+    "region_id": "lancashire",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 1
+      },
+      {
+        "type_id": "billmen",
+        "count": 2
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_york_yorkshire",
+    "owner_id": "house_york",
+    "region_id": "yorkshire",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 2
+      },
+      {
+        "type_id": "billmen",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_york_east_anglia",
+    "owner_id": "house_york",
+    "region_id": "east_anglia",
+    "units": [
+      {
+        "type_id": "longbowmen",
+        "count": 2
+      },
+      {
+        "type_id": "billmen",
+        "count": 1
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_york_ireland",
+    "owner_id": "house_york",
+    "region_id": "the_pale",
+    "units": [
+      {
+        "type_id": "gallowglass",
+        "count": 1
+      },
+      {
+        "type_id": "billmen",
+        "count": 1
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_neville_warwick",
+    "owner_id": "neville_affinity",
+    "region_id": "new_region_251",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 1
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 2
+      },
+      {
+        "type_id": "mounted_men_at_arms",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_tudor_wales",
+    "owner_id": "tudor_claimants",
+    "region_id": "wales",
+    "units": [
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 1
+      },
+      {
+        "type_id": "gallowglass",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_scotland_borders",
+    "owner_id": "scotland_kingdom",
+    "region_id": "scotland",
+    "units": [
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      },
+      {
+        "type_id": "gallowglass",
+        "count": 2
+      },
+      {
+        "type_id": "mounted_men_at_arms",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_irish_ulster",
+    "owner_id": "irish_lords",
+    "region_id": "ulster",
+    "units": [
+      {
+        "type_id": "gallowglass",
+        "count": 2
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_france_normandy",
+    "owner_id": "france",
+    "region_id": "normandy",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "mercenary_company",
+        "count": 2
+      },
+      {
+        "type_id": "bombard",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_france_paris",
+    "owner_id": "france",
+    "region_id": "paris",
+    "units": [
+      {
+        "type_id": "household_knights",
+        "count": 1
+      },
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "bombard",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_burgundy_flanders",
+    "owner_id": "burgundy_state",
+    "region_id": "flanders",
+    "units": [
+      {
+        "type_id": "mercenary_company",
+        "count": 2
+      },
+      {
+        "type_id": "men_at_arms",
+        "count": 1
+      },
+      {
+        "type_id": "handgunners",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_burgundy_burgundy",
+    "owner_id": "burgundy_state",
+    "region_id": "burgundy",
+    "units": [
+      {
+        "type_id": "household_knights",
+        "count": 1
+      },
+      {
+        "type_id": "mercenary_company",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_brittany_nantes",
+    "owner_id": "brittany_duchy",
+    "region_id": "brittany",
+    "units": [
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      },
+      {
+        "type_id": "men_at_arms",
+        "count": 1
+      },
+      {
+        "type_id": "carrack",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_lancaster_channel",
+    "owner_id": "house_lancaster",
+    "region_id": "new_region_250",
+    "units": [
+      {
+        "type_id": "carrack",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_burgundy_channel",
+    "owner_id": "burgundy_state",
+    "region_id": "north_sea_shore",
+    "units": [
+      {
+        "type_id": "carrack",
+        "count": 1
+      },
+      {
+        "type_id": "war_galley",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_rumelia",
+    "owner_id": "ottoman",
+    "region_id": "constantinople",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "bombard",
+        "count": 1
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_venice",
+    "owner_id": "venice",
+    "region_id": "venice",
+    "units": [
+      {
+        "type_id": "war_galley",
+        "count": 2
+      },
+      {
+        "type_id": "mercenary_company",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hre_rhine",
+    "owner_id": "hre",
+    "region_id": "westphalia",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "levy_militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_castile",
+    "owner_id": "castile_kingdom",
+    "region_id": "castile",
+    "units": [
+      {
+        "type_id": "men_at_arms",
+        "count": 2
+      },
+      {
+        "type_id": "longbowmen",
+        "count": 1
+      }
+    ]
+  }
+]

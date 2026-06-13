@@ -116,17 +116,18 @@ type Renderer struct {
 	pendingDeleteSlot string // onay bekleyen slot adı ("" = onay yok)
 
 	// Olay logu (sağ üst panel)
-	eventLog          []string
-	eventLogDetails   []string
-	eventLogCollapsed bool
-	eventCodexEntries [4][]EventCodexEntry
-	showEventCodex    bool
-	eventCodexFilter  EventCodexFilter
-	eventCodexFocus   int
-	eventCodexScroll  int
-	eventDetail       string
-	showVictoryDetail bool
-	eventLogScroll    int
+	eventLog            []string
+	eventLogDetails     []string
+	eventLogCollapsed   bool
+	eventCodexEntries   [4][]EventCodexEntry
+	showEventCodex      bool
+	eventCodexFilter    EventCodexFilter
+	eventCodexFocus     int
+	eventCodexScroll    int
+	eventDetail         string
+	showVictoryDetail   bool
+	victoryDetailScroll float64
+	eventLogScroll      int
 
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog      string
@@ -888,7 +889,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	if r.showVictoryDetail {
-		drawVictoryDetailPopup(screen, r.gs)
+		drawVictoryDetailPopup(screen, r.gs, r.victoryDetailScroll)
 	}
 
 	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
@@ -6200,10 +6201,15 @@ func (r *Renderer) HandleInput() InputAction {
 
 	if r.showVictoryDetail {
 		mx, my := ebiten.CursorPosition()
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && victoryDetailScrollHit(float64(mx), float64(my)) {
+			r.victoryDetailScroll = clampVictoryDetailScroll(r.gs, r.victoryDetailScroll-wheelY*28)
+		}
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
 			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
 			(victoryDetailCloseHit(float64(mx), float64(my)) || !victoryDetailPopupHit(float64(mx), float64(my)))) {
 			r.showVictoryDetail = false
+			r.victoryDetailScroll = 0
 		}
 		return InputAction{}
 	}
@@ -6587,6 +6593,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if victoryProgressHit(fx, fy) {
 		r.showVictoryDetail = true
+		r.victoryDetailScroll = 0
 		return InputAction{}
 	}
 	modeButtons := buildMapModeButtons()

@@ -29,6 +29,8 @@ type victoryDetailLayout struct {
 	titleRect  gameui.Rect
 	closeRect  gameui.Rect
 	bodyRect   gameui.Rect
+	scrollRect gameui.Rect
+	scrollbar  gameui.Rect
 }
 
 func eventDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box) {
@@ -138,12 +140,26 @@ func buildVictoryDetailModal() gameui.Modal {
 
 func buildVictoryDetailLayout() victoryDetailLayout {
 	panelRect, titleRect, closeRect, rest := victoryDetailHeaderRects()
+	scrollRect := rest.Rect
+	scrollbar := gameui.Rect{
+		X: scrollRect.X + scrollRect.W - 10,
+		Y: scrollRect.Y,
+		W: 6,
+		H: scrollRect.H,
+	}
 	return victoryDetailLayout{
 		panelRect:  panelRect,
 		headerRect: gameui.Rect{X: titleRect.X, Y: titleRect.Y, W: titleRect.W + 12 + closeRect.W, H: titleRect.H},
 		titleRect:  titleRect,
 		closeRect:  closeRect,
-		bodyRect:   rest.Rect,
+		bodyRect: gameui.Rect{
+			X: scrollRect.X,
+			Y: scrollRect.Y,
+			W: scrollRect.W - 18,
+			H: scrollRect.H,
+		},
+		scrollRect: scrollRect,
+		scrollbar:  scrollbar,
 	}
 }
 
