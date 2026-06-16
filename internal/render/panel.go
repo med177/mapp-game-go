@@ -62,6 +62,10 @@ const (
 	regionPanelTaxButtonPad = float32(8)
 	regionPanelMeterValueW  = float32(54)
 	regionPanelMeterGap     = float32(10)
+	regionOwnerNameH        = float32(20)
+	buildingGridSpriteH     = float32(76)
+	buildingGridNameH       = float32(18)
+	buildingGridRowGap      = float32(7)
 )
 
 func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
@@ -1578,12 +1582,12 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 	ly += 24
 
 	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
-	drawUIOutlinedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, ownerLabelOutlineColor(ownerCol), gameui.TextMedium, gameui.TextAlignStart)
+	drawUIOutlinedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, ownerLabelOutlineColor(ownerCol), gameui.TextLarge, gameui.TextAlignStart)
 	if ownerRect, _, ok := regionOwnerNameRect(gs, rid); ok {
 		underlineY := ownerRect.Y + ownerRect.H - 1
 		vector.StrokeLine(screen, float32(ownerRect.X), float32(underlineY), float32(ownerRect.X+ownerRect.W), float32(underlineY), 1, color.RGBA{215, 215, 215, 120}, false)
 	}
-	ly += 18
+	ly += float64(regionOwnerNameH)
 
 	// Development mode bilgileri
 	if gs.DevelopmentMode {
@@ -2404,165 +2408,10 @@ func calcPlayerIncome(gs *state.GameState) int {
 func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.Region, panelX, startY, panelW float32) {
 	ensureBuildingSheet()
 
-	builtCount := make(map[string]int, len(region.Buildings))
-	for _, bid := range region.Buildings {
-		builtCount[bid]++
-	}
-	queuedSet := make(map[string]int)
-	queuedTurnsMin := make(map[string]int)
-	for _, order := range gs.ProductionQueue {
-		if order.Kind == "building" && order.RegionID == region.ID {
-			queuedSet[order.TypeID]++
-			if queuedTurnsMin[order.TypeID] == 0 || order.TurnsLeft < queuedTurnsMin[order.TypeID] {
-				queuedTurnsMin[order.TypeID] = order.TurnsLeft
-			}
-		}
-	}
-
-	const cols = 3
-	pad := float32(panelPad)
-	availW := panelW - pad*2
-	slotW := availW / float32(cols)
-	spriteH := float32(76)
-	nameH := float32(18)
-	rowH := spriteH + nameH + 7
-
-	display := visibleBuildingIDs(gs, region)
-	for i, bid := range display {
-		col := i % cols
-		row := i / cols
-
-		sx := panelX + pad + float32(col)*slotW
-		sy := startY + float32(row)*rowH
-		innerW := slotW - 3
-
-		b, hasDef := gs.BuildingTypes[bid]
-		level := builtCount[bid]
-		queuedCount := queuedSet[bid]
-		turnsLeft := queuedTurnsMin[bid]
-		isQueued := queuedCount > 0
-		canAfford := false
-		if f := gs.Factions[gs.PlayerFactionID]; f != nil && hasDef {
-			cost := economy.ResourceCost{
-				Gold:   b.GoldCost,
-				Grain:  b.GrainCost,
-				Iron:   b.IronCost,
-				Timber: b.TimberCost,
-				Stone:  b.StoneCost,
-			}
-			canAfford = cost.CanAfford(f)
-		}
-		isBuilt := level > 0
-		maxLevel := 1
-		if hasDef && b.MaxPerRegion > 0 {
-			maxLevel = b.MaxPerRegion
-		}
-		isMaxLevel := level >= maxLevel
-
-		// Arka plan ve çerçeve
-		slotBg := color.RGBA{250, 250, 250, 240}
-		borderCol := color.RGBA{160, 160, 160, 220}
-		switch {
-		case isBuilt:
-			slotBg = color.RGBA{255, 255, 255, 245}
-			borderCol = color.RGBA{150, 130, 85, 230}
-		case isQueued:
-			slotBg = color.RGBA{248, 248, 248, 240}
-			borderCol = color.RGBA{145, 145, 145, 220}
-		case canAfford:
-			slotBg = color.RGBA{252, 252, 252, 242}
-			borderCol = color.RGBA{165, 165, 165, 220}
-		}
-		drawUICardRect(screen, gameui.Rect{X: float64(sx), Y: float64(sy), W: float64(innerW), H: float64(spriteH)}, slotBg, borderCol, 1)
-
-		if buildingSheet != nil {
-			r := buildingSpriteRect(bid, buildingSheet)
-			sub := buildingSheet.SubImage(r).(*ebiten.Image)
-			op := &ebiten.DrawImageOptions{}
-			fitW := float64(innerW - 2)
-			fitH := float64(spriteH - 2)
-			scale := fitW / float64(r.Dx())
-			if hScale := fitH / float64(r.Dy()); hScale < scale {
-				scale = hScale
-			}
-			drawW := float64(r.Dx()) * scale
-			drawH := float64(r.Dy()) * scale
-			op.GeoM.Scale(scale, scale)
-			op.GeoM.Translate(
-				float64(sx)+float64(innerW)/2-drawW/2,
-				float64(sy)+float64(spriteH)/2-drawH/2,
-			)
-			if !isBuilt {
-				if canAfford {
-					op.ColorScale.Scale(0.65, 0.65, 0.65, 0.9)
-				} else {
-					op.ColorScale.Scale(0.35, 0.35, 0.35, 0.85)
-				}
-			}
-			screen.DrawImage(sub, op)
-
-			if isBuilt {
-				vector.StrokeRect(screen, sx+1, sy+1, innerW-2, spriteH-2, 1, color.RGBA{160, 130, 50, 120}, false)
-				lvText := "Lv" + itoa(level)
-				lvX := float64(sx) + 6
-				lvY := float64(sy) + 4
-				lvW := float32(MeasureText(lvText, FaceSmall) + 8)
-				lvH := float32(14)
-				lvBg := color.RGBA{18, 14, 8, 225}
-				lvBorder := color.RGBA{170, 140, 75, 220}
-				if isMaxLevel {
-					lvBg = color.RGBA{150, 34, 34, 235}
-					lvBorder = color.RGBA{225, 120, 120, 235}
-				}
-				drawUICardRect(screen, gameui.Rect{X: lvX - 3, Y: lvY - 2, W: float64(lvW), H: float64(lvH)}, lvBg, lvBorder, 1)
-				DrawText(screen, lvText, lvX, lvY, FaceSmall, color.RGBA{255, 245, 220, 250})
-			}
-			if isQueued {
-				qLabel := itoa(turnsLeft) + " Tur"
-				if queuedCount > 1 {
-					qLabel = "x" + itoa(queuedCount) + " " + qLabel
-				}
-				qTextW := MeasureText(qLabel, FaceSmall)
-				qPadX := float32(8)
-				qBadgeH := float32(18)
-				qBadgeW := float32(qTextW) + qPadX*2
-				maxBadgeW := innerW - 10
-				if qBadgeW > maxBadgeW {
-					qBadgeW = maxBadgeW
-				}
-				qx := float64(sx) + float64(innerW-qBadgeW)/2
-				qy := float64(sy) + float64(spriteH) - float64(qBadgeH) - 8
-				drawUICardRect(screen,
-					gameui.Rect{X: qx, Y: qy, W: float64(qBadgeW), H: float64(qBadgeH)},
-					color.RGBA{28, 20, 10, 232},
-					color.RGBA{214, 176, 92, 235},
-					1,
-				)
-				vector.StrokeRect(screen,
-					float32(qx)+1, float32(qy)+1, qBadgeW-2, qBadgeH-2, 1,
-					color.RGBA{255, 232, 170, 72}, false,
-				)
-				DrawTextCentered(screen, qLabel,
-					qx+float64(qBadgeW)/2, qy+2,
-					FaceSmall, color.RGBA{255, 238, 188, 250})
-			}
-		}
-
-		// Bina adı
-		bname := bid
-		if b, ok := gs.BuildingTypes[bid]; ok {
-			bname = b.NameTR
-		}
-		nameCol := color.RGBA{75, 65, 50, 200}
-		switch {
-		case isBuilt:
-			nameCol = ColorGold
-		case isQueued:
-			nameCol = color.RGBA{210, 190, 120, 230}
-		case canAfford:
-			nameCol = color.RGBA{170, 145, 85, 220}
-		}
-		DrawTextCentered(screen, bname, float64(sx)+float64(innerW)/2, float64(sy+spriteH)+3, FaceSmall, nameCol)
+	cards := buildBuildingCardComponents(gs, region, panelX, startY, panelW)
+	cacheBuildingGridComponents(region.ID, cards)
+	for _, card := range cards {
+		card.Draw(screen)
 	}
 }
 
@@ -2661,7 +2510,7 @@ func regionOwnerNameRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, 
 		return gameui.Rect{}, "", false
 	}
 	ownerName, _ := ownerDisplay(gs, region.OwnerID)
-	width := MeasureText(ownerName, FaceMed)
+	width := MeasureText(ownerName, FaceLarge)
 	maxWidth := float64(infoPanelW - float32(panelPad*2))
 	if width > maxWidth {
 		width = maxWidth
@@ -2670,7 +2519,7 @@ func regionOwnerNameRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, 
 		X: float64(infoPanelX()) + panelPad,
 		Y: float64(infoPanelY()) + 34,
 		W: width,
-		H: 18,
+		H: float64(regionOwnerNameH),
 	}, faction.FactionID(region.OwnerID), true
 }
 
@@ -3221,32 +3070,17 @@ func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
 		return ""
 	}
+	if bid, ok := lastDrawnBuildingGridHit(mx, my, rid); ok {
+		return bid
+	}
 	px := infoPanelX()
 	pw := infoPanelW
 	startY := buildingGridStartY(gs, region, neighborExpanded)
 
-	const cols = 3
-	pad := float32(panelPad)
-	availW := pw - pad*2
-	slotW := availW / float32(cols)
-	spriteH := float32(76)
-	nameH := float32(18)
-	rowH := spriteH + nameH + 7
-
-	displayIdx := 0
-	for _, bid := range buildingDisplayOrder {
-		if !buildingVisibleInRegion(gs, region, bid) {
-			continue
+	for _, card := range buildBuildingCardComponents(gs, region, px, startY, pw) {
+		if card.HitTest(mx, my) {
+			return card.ID
 		}
-		col := displayIdx % cols
-		row := displayIdx / cols
-		sx := px + pad + float32(col)*slotW
-		sy := startY + float32(row)*rowH
-		innerW := slotW - 3
-		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
-			return bid
-		}
-		displayIdx++
 	}
 	return ""
 }
@@ -3285,7 +3119,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpan
 	if gs.DevelopmentMode {
 		ly += 16 + 16 + 18
 	}
-	ly += 18 + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
+	ly += float64(regionOwnerNameH) + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
 	if region.ConversionTurns > 0 {
 		ownerRel := ""
 		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
@@ -3419,11 +3253,10 @@ func ownerDisplay(gs *state.GameState, ownerID string) (string, color.Color) {
 	}
 	for fid, f := range gs.Factions {
 		if string(fid) == ownerID {
-			col := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 			if string(fid) == string(gs.PlayerFactionID) {
-				return f.NameTR + " (Siz)", col
+				return f.NameTR + " (Siz)", ColorWhite
 			}
-			return f.NameTR, col
+			return f.NameTR, ColorWhite
 		}
 	}
 	return ownerID, ColorGray

@@ -91,28 +91,17 @@ func BuildingGridHoverID(mx, my float64, gs *state.GameState, rid world.RegionID
 	if !ok || region.IsSea {
 		return ""
 	}
+	if bid, ok := lastDrawnBuildingGridHit(mx, my, rid); ok {
+		return bid
+	}
 
 	px := infoPanelX()
 	pw := infoPanelW
 	startY := buildingGridStartY(gs, region, false)
 
-	const cols = 3
-	pad := float32(panelPad)
-	availW := pw - pad*2
-	slotW := availW / float32(cols)
-	spriteH := float32(76)
-	nameH := float32(18)
-	rowH := spriteH + nameH + 7
-
-	display := visibleBuildingIDs(gs, region)
-	for i, bid := range display {
-		col := i % cols
-		row := i / cols
-		sx := px + pad + float32(col)*slotW
-		sy := startY + float32(row)*rowH
-		innerW := slotW - 3
-		if mx >= float64(sx) && mx <= float64(sx+innerW) && my >= float64(sy) && my <= float64(sy+spriteH+nameH) {
-			return bid
+	for _, card := range buildBuildingCardComponents(gs, region, px, startY, pw) {
+		if card.HitTest(mx, my) {
+			return card.ID
 		}
 	}
 	return ""
