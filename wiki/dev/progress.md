@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-06-13
+last_updated: 2026-06-16
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -61,7 +61,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Ticaret güzergahları | ✅ | `TradeRoutes` pasif gelir modeli var |
 | Teknoloji ağacı | ✅ | Araştırma başlatma, tur sayacı, tamamlanan teknoloji efektleri, ağaç görünümü, seviye bazlı düzen, kategori renkleri, tamamlanmış teknoloji tick badge'leri, araştırma seçimi/değiştirme/vazgeçme, HUD'da aktif araştırma gösterimi, tur bitir uyarısı ve tamamlanma mesajları event loguna ekleniyor; tur bitir araştırma uyarısı artık yalnız gerçekten araştırılabilir teknoloji kaldığında gösteriliyor; yarım bırakılan araştırmalar pause/resume ile kaldığı yerden sürüyor; 1300 senaryosunun research ağı yeni orta/ileri düğümlerle genişletildi ve daha önce boştaki `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength`, `conversion_speed_mod` alanları runtime'a bağlandı; bölge panelindeki sahip devlet adına tıklanınca rakip devletin aktif araştırması, tamamlanan teknolojileri, malları ve ticaret özeti ayrı panelde görülebiliyor |
 | Diplomasi | ✅ | `internal/diplomacy` ortak motoru ile savaş/barış/ittifak/ticaret; deterministik kabul-red, ilişki decay'i ve ticaret rotası senkronu |
-| Diplomasi paneli modern akış | ✅ | Solda devlet seçimi + sağda teklif paneli; savaş/barış/ittifak/ticaret için muallak kabul olasılığı (%) ve durum göstergesi bulunur; teklif sayfasında üst bilgi blokları padding'li, footer icon+metin hizası ortak button primitive'iyle tutarlı çizilir |
+| Diplomasi paneli modern akış | ✅ | Solda devlet seçimi + sağda teklif paneli; savaş/barış/ittifak/ticaret için muallak kabul olasılığı (%) ve durum göstergesi bulunur; teklif sayfasında üst bilgi blokları padding'li, footer icon+metin hizası ortak button primitive'iyle tutarlı çizilir. Bölge panelindeki hızlı diplomasi ve tam teklif paneli aynı validasyon helper'ını kullandığı için barış/savaş önkoşulu tek yerden hesaplanır ve geçersiz teklif gönderimi UI seviyesinde bloklanır |
 | Elenen fraksiyon diplomasi temizliği | ✅ | Kara toprağı biten fraksiyonlar (sadece deniz bölgesi kalsa bile) elendiğinde tüm diplomasi ilişkileri, bekleyen `diplomatic_offers` kayıtları ve ticaret rotaları temizlenir; ayrıca save/load sonrası relation dışı veya elenmiş fraksiyona bağlı stale trade rotaları sanitize edilerek trade paneline geri sızmaları engellenir |
 | Liman işgalinde donanma tahliyesi | ✅ | Bölge el değiştirince, ele geçirilen limana bağlı eski sahip filoları otomatik limandan çıkarılır ve en yakın deniz bölgesine bırakılır; ancak fetih bir fraksiyonun son kara toprağını da düşürürse kalan kara orduları ve donanmaları galip devlete devrolur ve yıkılış mesajı event log'a yazılır |
 | Oyuncuya gelen diplomasi teklif paneli | ✅ | AI barış teklifleri `diplomatic_offers` kuyruğuna düşer; oyuncu modal anlaşma panelinden kabul/red verir, kabulde standart diplomasi motoru uygulanır |

@@ -23,6 +23,9 @@ var (
 	soundCache   map[string][]byte
 	soundEnabled = true
 	soundVolume  = 0.35
+	soundGains   = map[string]float64{
+		"combat": 0.1,
+	}
 
 	musicEnabled      = true
 	musicVolume       = 0.45
@@ -112,8 +115,15 @@ func PlaySound(name string) {
 	}
 
 	player := audioContext.NewPlayerFromBytes(pcmData)
-	player.SetVolume(soundVolume)
+	player.SetVolume(soundVolume * soundGain(name))
 	player.Play()
+}
+
+func soundGain(name string) float64 {
+	if gain, ok := soundGains[name]; ok && gain >= 0 {
+		return gain
+	}
+	return 1
 }
 
 // StartMusicPlaylist starts the given scenario playlist. Missing or empty playlists are silent.

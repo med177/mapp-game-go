@@ -30,6 +30,60 @@ var diplomActions = []diplomAction{
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTrade), color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
 }
 
+func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
+	switch action {
+	case diplomacy.ActionDeclareWar:
+		return ActionDeclareWar
+	case diplomacy.ActionProposePeace:
+		return ActionProposePeace
+	case diplomacy.ActionProposeAlliance:
+		return ActionProposeAlliance
+	case diplomacy.ActionProposeTrade:
+		return ActionProposeTrade
+	default:
+		return ActionNone
+	}
+}
+
+func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID, action ActionKind) string {
+	if gs == nil || target == "" {
+		return ""
+	}
+	rel := diplomacy.Relation(gs, gs.PlayerFactionID, target)
+	stance := faction.StancePeace
+	if rel != nil {
+		stance = rel.Stance
+	}
+	switch action {
+	case ActionDeclareWar:
+		if stance == faction.StanceWar {
+			return "Zaten savaş halindesin."
+		}
+	case ActionProposePeace:
+		if stance != faction.StanceWar {
+			return "Barış teklifi sadece savaşta yapılır."
+		}
+	case ActionProposeAlliance:
+		if stance == faction.StanceWar {
+			return "Savaş halindeyken ittifak teklif edilemez."
+		}
+		if stance == faction.StanceAllied {
+			return "Zaten müttefiksin."
+		}
+	case ActionProposeTrade:
+		if stance == faction.StanceWar {
+			return "Savaş halindeyken ticaret teklif edilemez."
+		}
+		if stance == faction.StanceTrade && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
+			return "Zaten ticaret anlaşması aktif."
+		}
+		if stance == faction.StanceAllied && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
+			return "Bu müttefik ile ticaret zaten aktif."
+		}
+	}
+	return ""
+}
+
 func minF(a, b float64) float64 {
 	if a < b {
 		return a
@@ -375,14 +429,21 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 		i := btn.Index
 		da := diplomActions[i]
 		chance, status := estimateDiplomacyChance(gs, target, da.action)
+		disabledReason := diplomacyActionDisabledReason(gs, target, da.action)
 		bg := da.color
+		textCol := ColorWhite
 		if i != actionFocus {
 			bg.A = 170
+		}
+		if disabledReason != "" {
+			bg.A = 110
+			textCol = ColorGray
+			status = disabledReason
 		}
 		drawDiplomacyButton(screen, btn.Button, bg, panelBorder, FaceMed, 7)
 		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
-		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, ColorWhite, gameui.TextMedium, gameui.TextAlignEnd)
+		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
 		drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 25, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 	}
 
@@ -469,6 +530,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		}
 		if buildDiplomacySendButton().HandleInput(input) {
 			target := r.diplomacyTargetFaction
+			if reason := diplomacyActionDisabledReason(r.gs, target, diplomActions[r.diplomacyActionFocus].action); reason != "" {
+				r.ShowCombatResult(reason)
+				return InputAction{}
+			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
 			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
@@ -508,6 +573,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			}
 		} else {
 			target := r.diplomacyTargetFaction
+			if reason := diplomacyActionDisabledReason(r.gs, target, diplomActions[r.diplomacyActionFocus].action); reason != "" {
+				r.ShowCombatResult(reason)
+				return InputAction{}
+			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
 			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}

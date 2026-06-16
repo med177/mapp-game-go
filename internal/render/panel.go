@@ -1769,38 +1769,7 @@ func regionDiplomacyButtonDisabledReason(gs *state.GameState, ownerID string, id
 	if gs == nil || ownerID == "" || !ok {
 		return ""
 	}
-	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, faction.FactionID(ownerID))]
-	if rel == nil {
-		return ""
-	}
-	switch action {
-	case diplomacy.ActionDeclareWar:
-		if rel.Stance == faction.StanceWar {
-			return "Zaten savaş halindesin."
-		}
-	case diplomacy.ActionProposePeace:
-		if rel.Stance != faction.StanceWar {
-			return "Barış teklifi sadece savaşta yapılır."
-		}
-	case diplomacy.ActionProposeAlliance:
-		if rel.Stance == faction.StanceWar {
-			return "Savaş halindeyken ittifak teklif edilemez."
-		}
-		if rel.Stance == faction.StanceAllied {
-			return "Zaten müttefiksin."
-		}
-	case diplomacy.ActionProposeTrade:
-		if rel.Stance == faction.StanceWar {
-			return "Savaş halindeyken ticaret teklif edilemez."
-		}
-		if rel.Stance == faction.StanceTrade && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, faction.FactionID(ownerID)) {
-			return "Zaten ticaret anlaşması aktif."
-		}
-		if rel.Stance == faction.StanceAllied && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, faction.FactionID(ownerID)) {
-			return "Bu müttefik ile ticaret zaten aktif."
-		}
-	}
-	return ""
+	return diplomacyActionDisabledReason(gs, faction.FactionID(ownerID), actionKindForDiplomacyAction(action))
 }
 
 // DrawArmyPanel seçili ordu bilgisini sol altta gösterir.

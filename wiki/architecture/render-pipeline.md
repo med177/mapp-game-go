@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-06-13
+last_updated: 2026-06-16
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -68,7 +68,7 @@ type Renderer struct {
 Not: Diplomasi panelindeki liste üretimi `sortedFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez.
 Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_centers.json` içindeki `off_map=true` dış hat düğümlerini destekler; bu düğümler `name_tr`, `world_x`, `world_y` ve `links` ile tanımlanır, yalnız render etiketinde görünür ve nearest-center / trade-map tint hesabında dışarıda bırakılır. `unlock_year` verildiğinde düğüm ve ona bağlı koridorlar belirtilen yıl gelene kadar tamamen pasif kalır.
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
-Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir. Liste seçimi press yerine release ile tamamlanır; drag eşiği aşılırsa satır seçimi iptal edilip liste row-height bazlı sürükleme scroll'una geçer.
+Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir. Liste seçimi press yerine release ile tamamlanır; drag eşiği aşılırsa satır seçimi iptal edilip liste row-height bazlı sürükleme scroll'una geçer. Tam teklif paneli ile bölge panelindeki hızlı diplomasi butonları artık aynı validasyon helper'ını kullanır; geçersiz aksiyonlar aynı uyarı metniyle dim görünür ve `Teklif Gönder` backend çağrısından önce bloklanır.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir. Donanma ayrıca sahibi olunan veya müttefik olunan, port settlement içeren komşu kara bölgesine docking emri de alabilir; bu durumda savaş onayı açılmaz ve filo deniz bölgesi konumunu koruyup liman anchor'ına bağlanır.
 Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır. Zafer seçim ekranındaki kartlar da aynı wrap primitive'lerini kullanır; açıklama ve hedef özeti badge alanına çarpmadan iki satıra akabilir ve uzun senaryo hedeflerinde kart yüksekliği buna göre artırılmıştır.
 
