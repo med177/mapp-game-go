@@ -35,7 +35,8 @@ type Faction struct {
 	// Teknoloji araştırma durumu
 	Research ResearchState `json:"research"`
 
-	AIAggressiveness int `json:"ai_aggressiveness"`
+	AIAggressiveness   int         `json:"ai_aggressiveness"`
+	AIExpansionTargets []FactionID `json:"ai_expansion_targets,omitempty"`
 }
 
 // DiplomaticStance iki fraksiyon arasındaki ilişki durumu.

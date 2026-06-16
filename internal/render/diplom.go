@@ -80,6 +80,9 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 		if stance == faction.StanceAllied && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
 			return "Bu müttefik ile ticaret zaten aktif."
 		}
+		if assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target); assessment.BlockReason != "" {
+			return assessment.BlockReason
+		}
 	}
 	return ""
 }
@@ -279,6 +282,18 @@ func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.Li
 func buildDiplomacyBackButton() gameui.Button {
 	x, y, w, h := diplomBackRect()
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Geri").WithIcon(gameui.IconBack)
+}
+
+func diplomacyListClickedIndex(list gameui.ListView, input gameui.InputState) (int, bool) {
+	if !input.LeftJustPressed || !list.HitTest(input.MouseX, input.MouseY) || list.RowHeight <= 0 {
+		return -1, false
+	}
+	row := int((input.MouseY - list.Rect.Y) / list.RowHeight)
+	idx := list.Scroll + row
+	if row < 0 || row >= list.VisibleRows || idx < 0 || idx >= len(list.Items) {
+		return -1, false
+	}
+	return idx, true
 }
 
 func buildDiplomacySendButton() gameui.Button {
@@ -505,15 +520,21 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
+		if idx, ok := diplomacyListClickedIndex(list, input); ok {
+			if idx == r.diplomacyFocus && idx < len(factions) {
+				r.diplomacyTargetFaction = factions[idx]
+				r.diplomacyActionFocus = 0
+				return InputAction{}
+			}
+			r.diplomacyFocus = idx
+			r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
+			return InputAction{}
+		}
 		if list.HandleInput(input) {
 			r.diplomacyScroll = list.Scroll
 			if list.Selected >= 0 {
 				r.diplomacyFocus = list.Selected
 				r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
-				if input.LeftJustPressed && r.diplomacyFocus < len(factions) {
-					r.diplomacyTargetFaction = factions[r.diplomacyFocus]
-					r.diplomacyActionFocus = 0
-				}
 			}
 			return InputAction{}
 		}
@@ -725,7 +746,11 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		if stance == faction.StanceWar {
 			chance = 0
 		} else {
-			chance = 40 + score + regionDelta
+			assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
+			if assessment.BlockReason != "" {
+				return 0, assessment.BlockReason
+			}
+			chance = assessment.Chance
 		}
 	}
 	if chance < 0 {

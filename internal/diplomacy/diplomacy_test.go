@@ -101,6 +101,31 @@ func TestProposeTradeWhileAlliedKeepsAllianceAndAddsRoutes(t *testing.T) {
 	}
 }
 
+func TestProposeTradeAcceptedDespiteDirectThreatWhenOverallChanceHigh(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 30
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
+
+	if !HasDirectThreat(gs, "a", "b") {
+		t.Fatal("test kurulumu doğrudan tehdit üretmeliydi")
+	}
+	assessment := AssessTradeProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "" {
+		t.Fatalf("doğrudan tehdit artık sert engel olmamalıydı: %+v", assessment)
+	}
+	if !assessment.Accepted() {
+		t.Fatalf("yüksek toplam puanda ticaret kabul edilebilir olmalıydı: %+v", assessment)
+	}
+
+	result := Execute(gs, "a", "b", ActionProposeTrade)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("ticaret kabul edilmeliydi: %+v", result)
+	}
+}
+
 func TestForceRelationToAlliancePreservesExistingTradeRoutes(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
@@ -238,6 +263,20 @@ func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
 	}
 	if rel.Stance != faction.StancePeace || rel.Score != -20 {
 		t.Fatalf("barış kabulünde relation peace/-20 olmalıydı: %+v", rel)
+	}
+}
+
+func TestAssessTradeProposalBlocksLowScore(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 5
+
+	assessment := AssessTradeProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "İlişki puanı 10 altı" {
+		t.Fatalf("beklenen düşük skor engeli, got=%+v", assessment)
+	}
+	if assessment.Accepted() {
+		t.Fatalf("düşük skor kabul edilmemeli: %+v", assessment)
 	}
 }
 

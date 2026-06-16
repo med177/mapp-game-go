@@ -401,21 +401,229 @@ func TestAINavalStrategyAllowsThirdFleetDuringWarPressure(t *testing.T) {
 	aiNavalStrategy(gs, "ai_1")
 
 	navalCount := 0
-	foundSeaC := false
 	for _, a := range gs.Armies {
 		if a.OwnerID != "ai_1" || !a.IsNaval {
 			continue
 		}
 		navalCount++
-		if a.RegionID == "sea_c" {
-			foundSeaC = true
+	}
+	if navalCount != 2 {
+		t.Fatalf("transport artık anında filo spawn etmemeli, got=%d", navalCount)
+	}
+	if len(gs.ProductionQueue) != 1 {
+		t.Fatalf("savaş baskısında transport üretim emri bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	order := gs.ProductionQueue[0]
+	if order.Kind != aiProductionKindUnit || order.FactionID != "ai_1" || order.RegionID != "coast_c" || order.TypeID != "transport" {
+		t.Fatalf("transport baskısı yüksek coast_c limanında kuyruğa girmeli, got=%+v", order)
+	}
+}
+
+func TestAIBuildsBarracksThroughProductionQueue(t *testing.T) {
+	gs := aiTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"barracks": {ID: "barracks", GoldCost: 150, MaxPerRegion: 1, TurnsRequired: 2},
+	}
+	gs.Factions["ai_1"].Gold = 150
+
+	aiBuildBarracks(gs, "ai_1", economy.ResourceCost{Gold: 150})
+
+	if len(gs.ProductionQueue) != 1 {
+		t.Fatalf("kışla anında eklenmek yerine kuyruğa girmeli, got=%d", len(gs.ProductionQueue))
+	}
+	if got := aiBuildingLevel(gs.Regions["a1"], "barracks"); got != 0 {
+		t.Fatalf("kışla tamamlanmadan region.Buildings'e eklenmemeli, got=%d", got)
+	}
+	order := gs.ProductionQueue[0]
+	if order.Kind != aiProductionKindBuilding || order.FactionID != "ai_1" || order.RegionID != "a1" || order.TypeID != "barracks" || order.TurnsLeft != 2 {
+		t.Fatalf("beklenmeyen kışla üretim emri: %+v", order)
+	}
+}
+
+func TestAIRecruitQueuesUnitInsteadOfAddingImmediately(t *testing.T) {
+	gs := aiTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"barracks": {ID: "barracks", GoldCost: 150, MaxPerRegion: 1, TurnsRequired: 2},
+	}
+	gs.Regions["a1"].Buildings = []string{"barracks"}
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].Grain = 500
+	gs.UnitTypes["militia"] = &army.UnitType{ID: "militia", GoldCost: 60, TurnsRequired: 1, RequiredBldg: "barracks", Attack: 6, Defense: 5, Morale: 30}
+	beforeUnits := len(gs.Armies["ai1_army"].Units)
+
+	if !aiRecruitOne(gs, "ai_1") {
+		t.Fatalf("AI uygun bölgede birim üretim emri açabilmeli")
+	}
+
+	if len(gs.Armies["ai1_army"].Units) != beforeUnits {
+		t.Fatalf("birim tamamlanmadan orduya anında eklenmemeli")
+	}
+	if len(gs.ProductionQueue) != 1 {
+		t.Fatalf("birim üretim emri bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	order := gs.ProductionQueue[0]
+	if order.Kind != aiProductionKindUnit || order.FactionID != "ai_1" || order.RegionID != "a1" || order.TypeID != "militia" {
+		t.Fatalf("beklenmeyen birim üretim emri: %+v", order)
+	}
+}
+
+func TestAIDeclaresWarOnWeakBorderTarget(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 60
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -35
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Stance != faction.StanceWar {
+		t.Fatalf("AI zayıf sınır hedefe savaş açmalıydı, got=%s score=%d", rel.Stance, rel.Score)
+	}
+}
+
+func TestAIDeclaresWarOnExpansionTargetWithMildHostility(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 60
+	gs.Factions["ai_1"].AIExpansionTargets = []faction.FactionID{"ai_2"}
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -5
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Stance != faction.StanceWar {
+		t.Fatalf("AI genişleme hedefindeki sınır komşusuna savaş açmalıydı, got=%s score=%d", rel.Stance, rel.Score)
+	}
+}
+
+func TestAIDoesNotDeclareWarOnWarmPeaceWithoutExpansionTarget(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 3
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 75
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 10
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Stance == faction.StanceWar {
+		t.Fatalf("AI hedef listesinde olmayan sıcak barışı savaş için bozmamalıydı")
+	}
+}
+
+func TestAIDoesNotDeclareWarWhenOutmatched(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 70
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -60
+	gs.Armies["ai1_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+	gs.Armies["ai2_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Stance == faction.StanceWar {
+		t.Fatalf("güçsüz AI üstün hedefe savaş açmamalıydı")
+	}
+}
+
+func TestAIDoesNotBreakTradeForWar(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 3
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 70
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	rel.Stance = faction.StanceTrade
+	rel.Score = 40
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if rel.Stance != faction.StanceTrade {
+		t.Fatalf("AI aktif ticaret ilişkisini savaş için bozmamalıydı, got=%s", rel.Stance)
+	}
+}
+
+func TestAIDeclaresOnlyOneOpportunityWarPerTurn(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 3
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 70
+	gs.Factions["ai_3"] = &faction.Faction{ID: "ai_3", NameTR: "AI 3", Religion: religion.Catholic, Grain: 100, Gold: 100}
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1", "c1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Regions["c1"] = &world.Region{ID: "c1", OwnerID: "ai_3", Neighbors: []world.RegionID{"a1"}, TradeCapacity: 4}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -35
+	gs.Relations[faction.RelationKey("ai_1", "ai_3")] = &faction.Relation{
+		FactionA: "ai_1",
+		FactionB: "ai_3",
+		Score:    -35,
+		Stance:   faction.StancePeace,
+	}
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+	gs.Armies["ai3_army"] = &army.Army{ID: "ai3_army", OwnerID: "ai_3", RegionID: "c1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+
+	aiEvaluateWarOpportunities(gs, "ai_1")
+
+	wars := 0
+	for _, rel := range gs.Relations {
+		if rel != nil && rel.Stance == faction.StanceWar && (rel.FactionA == "ai_1" || rel.FactionB == "ai_1") {
+			wars++
 		}
 	}
-	if navalCount != 3 {
-		t.Fatalf("savaş baskısında 3 filo bekleniyordu, got=%d", navalCount)
-	}
-	if !foundSeaC {
-		t.Fatalf("yeni filo baskısı yüksek sea_c bölgesine kurulmalıydı")
+	if wars != 1 {
+		t.Fatalf("AI bir turda tek fırsat savaşı açmalıydı, got=%d", wars)
 	}
 }
 

@@ -81,7 +81,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 52,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ]
   },
   {
     "id": "arnavut_des",
@@ -297,7 +300,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ]
   },
   {
     "id": "denmark_kingdom",
@@ -381,7 +387,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62
+    "ai_aggressiveness": 62,
+    "ai_expansion_targets": [
+      "france"
+    ]
   },
   {
     "id": "epir",
@@ -490,7 +499,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 59
+    "ai_aggressiveness": 59,
+    "ai_expansion_targets": [
+      "england"
+    ]
   },
   {
     "id": "genoa",
@@ -602,7 +614,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 66
+    "ai_aggressiveness": 66,
+    "ai_expansion_targets": [
+      "russia",
+      "polish_kingdom",
+      "lithuanian_gd",
+      "novgorod_rep",
+      "bulgarian_empire"
+    ]
   },
   {
     "id": "granada_emirate",
@@ -745,7 +764,12 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 54
+    "ai_aggressiveness": 54,
+    "ai_expansion_targets": [
+      "mamluk",
+      "georgia_kingdom",
+      "ramazan_bey"
+    ]
   },
   {
     "id": "karaman_bey",
@@ -823,7 +847,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ]
   },
   {
     "id": "lithuanian_gd",
@@ -849,7 +876,11 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "ai_expansion_targets": [
+      "golden_horde",
+      "novgorod_rep"
+    ]
   },
   {
     "id": "mamluk",
@@ -877,7 +908,11 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20
+    "ai_aggressiveness": 20,
+    "ai_expansion_targets": [
+      "ilkhanate",
+      "ramazan_bey"
+    ]
   },
   {
     "id": "mentese_bey",
@@ -1011,7 +1046,13 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62
+    "ai_aggressiveness": 62,
+    "ai_expansion_targets": [
+      "east_rome",
+      "germiyan_bey",
+      "karesioglu_bey",
+      "ahiler"
+    ]
   },
   {
     "id": "papal_states_f",
@@ -1099,7 +1140,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ]
   },
   {
     "id": "ramazan_bey",
@@ -1155,7 +1199,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "golden_horde"
+    ]
   },
   {
     "id": "safavid",
@@ -1287,7 +1334,11 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "ai_expansion_targets": [
+      "arnavut_des",
+      "east_rome"
+    ]
   },
   {
     "id": "teutonic_order",
@@ -1317,7 +1368,11 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 70
+    "ai_aggressiveness": 70,
+    "ai_expansion_targets": [
+      "novgorod_rep",
+      "lithuanian_gd"
+    ]
   },
   {
     "id": "trebizond_emp",

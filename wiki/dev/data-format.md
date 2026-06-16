@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-06-13
+last_updated: 2026-06-16
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -151,11 +151,15 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
   "iron": 100,
   "timber": 80,
   "spice": 50,
-  "cloth": 60
+  "cloth": 60,
+  "ai_aggressiveness": 62,
+  "ai_expansion_targets": ["east_rome", "germiyan_bey"]
 }
 ```
 
 Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
+
+`ai_expansion_targets` opsiyoneldir ve fraksiyon ID listesi taşır. Normal/zor zorlukta AI bu hedefleri fırsatçı savaş değerlendirmesinde önceliklendirir; hedefin yine kara sınırı paylaşması, ilişkinin `peace` olması ve güç kıyasından geçmesi gerekir.
 
 ---
 

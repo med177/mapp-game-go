@@ -506,7 +506,7 @@
   {
     "faction_a": "ahiler",
     "faction_b": "ottoman",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -4952,7 +4952,7 @@
   {
     "faction_a": "germiyan_bey",
     "faction_b": "ottoman",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -6176,7 +6176,7 @@
   {
     "faction_a": "karesioglu_bey",
     "faction_b": "ottoman",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {

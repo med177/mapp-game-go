@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-06-13
+last_updated: 2026-06-16
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -36,8 +36,11 @@ type Faction struct {
 
     Research         ResearchState
     AIAggressiveness int           // AI saldırganlık düzeyi
+    AIExpansionTargets []FactionID  // AI tarihsel genişleme hedefleri
 }
 ```
+
+`ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
 
 ---
 
@@ -69,11 +72,11 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 
 ---
 
-## Başlangıç İlişkileri
+## Başlangıç İlişkileri ve Hedefler
 
 `faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
 
-Tarihsel düşmanlıklar (Osmanlı–Safevi, İngiltere–Fransa vb.) şu an `factions.json`'a hardcode edilmemiş; `initial_relations` alanı eklenebilir.
+Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif savaş hedefleri ise fraksiyon kaydındaki `ai_expansion_targets` alanında tutulur; örneğin 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler hedeflenir.
 
 → İlişki sistemi: [[systems/diplomacy]]
 

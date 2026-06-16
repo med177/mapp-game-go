@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-06-06
+last_updated: 2026-06-16
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -22,7 +22,7 @@ for fid := range gs.Factions {
 
 `TakeTurn` sırasıyla şu adımları yapar:
 1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`
-2. Diplomasi taraması → `aiHandleDiplomacy()`
+2. Diplomasi taraması ve fırsatçı savaş değerlendirmesi → `aiHandleDiplomacy()`
 3. Teknoloji araştırma → `aiResearch()`
 4. Ekonomik bina inşası → `aiEconomyBuild()`
 5. Deniz stratejisi → `aiNavalStrategy()`
@@ -83,12 +83,26 @@ AI de oyuncu ile aynı `combat.ResolveBattleWithMods()` kullanır.
 - `war` ilişkisinde skor çok düşmüşse veya AI askeri/bölgesel olarak gerideyse barış teklif eder
 - `peace` ilişkisinde ortak düşman ve yeterli skor varsa ittifak dener
 - `peace` ilişkisinde skor nötr veya pozitifse ticaret dener
+- normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
+
+Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
+
+- Kolay zorlukta çalışmaz.
+- AI mevcut savaş limitini doldurduysa yeni savaş açmaz.
+- Yalnız kara sınırı paylaştığı ve `peace` durumundaki hedefleri değerlendirir.
+- Aktif `trade` veya `allied` ilişkiyi savaş için bozmaz.
+- `factions.json` içindeki `ai_expansion_targets` listesinde bulunan tarihsel hedefler daha geniş ilişki eşiğiyle aday olur ve skor bonusu alır.
+- Hedef listesi olan AI fraksiyonları ilk turlarda savaş cadence beklemez; sonraki turlarda da cadence aralığı daha kısadır.
+- Askeri güç, cephe gücü, ilişki skoru, hedef bölge değeri, bölge sayısı, din farkı, AI agresifliği ve oyuncu hedef cezası birlikte puanlanır.
+- En iyi hedef eşik üstündeyse standart `diplomacy.Execute(..., ActionDeclareWar)` yolu kullanılır; hareket/fetih yine `scoreMove()` ve `executeMove()` zincirinden geçer.
+
+`ai_expansion_targets` rastgele saldırganlık değildir: hedef olmayan fraksiyonlarda eski negatif ilişki kapısı korunur, ticaret/ittifak ilişkileri bozulmaz ve güçsüz AI daha güçlü hedefe savaş açmaz. 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler; Reconquista, Yüz Yıl Savaşları ve doğu bozkır cepheleri için ilgili tarihsel hedefler bu listeyle tanımlıdır.
 
 AI ve oyuncu aynı `internal/diplomacy` motorunu kullandığı için:
 
 - kabul/red kuralları tutarlıdır
 - ticaret rotaları aynı şekilde açılıp kapanır
-- AI barışta olan veya ticaret yaptığı hedefe saldırmaz
+- AI ticaret yaptığı veya müttefik olduğu hedefe saldırmaz
 
 ---
 
@@ -136,23 +150,23 @@ Kısa süreli teknolojilere `TurnsRequired / 2` azaltma uygulanır.
 
 ## Ekonomik Bina (`aiEconomyBuild`)
 
-Her tur en fazla bir bina inşa eder. Öncelik:
+Her tur en fazla bir bina üretim emri açar. Bina anında `Region.Buildings` listesine eklenmez; AI de `GameState.ProductionQueue` içine `kind=building` emri yazar ve tamamlanma `applyProductionTicks()` sırasında olur. Öncelik:
 1. **Pazar** (prio 80) — her zaman uygun
 2. **Çiftlik** (prio 60) — `BaseGrainOutput < 20` bölgelere
 3. **Sur** (prio 50) — sınır bölgelerine (komşuda farklı fraksiyon varsa)
 
-AI bina inşasında yalnız altını değil, bina reçetesindeki `grain/iron/timber/stone` maliyetlerini de kontrol eder.
+AI bina inşasında yalnız altını değil, bina reçetesindeki `grain/iron/timber/stone` maliyetlerini de kontrol eder. Kurulu seviye + pending seviye `max_per_region` sınırını aşamaz; inşa süresi oyuncu tarafındaki seviye modeliyle uyumlu şekilde mevcut seviye ve queued seviye arttıkça uzar.
 
 ---
 
 ## Deniz Stratejisi (`aiNavalStrategy`)
 
 Kıyı bölgesi varsa:
-1. Limansız kıyı bölgesine liman inşa et
+1. Limansız kıyı bölgesine liman üretim emri aç
 2. Filo limiti artık dinamiktir:
    `1` temel + `1` ek kıyı baskısı (3+ kıyı bölgesi) + savaşta `1` ek filo, üst sınır `3`
-3. Yeni filo, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına kurulur
-4. Filo oluşturulurken nakliye gemisi (`transport`) konur
+3. Yeni `transport` emri, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına bağlı limanda kuyruğa girer
+4. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı komşu denizde filo oluşturur veya mevcut filoya birim ekler
 
 ---
 
@@ -183,7 +197,7 @@ Testler:
 
 ## Birim Alımı (`aiRecruitAndBuild`)
 
-AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da tüketir; `aiMinGoldReserve` korunurken diğer kaynaklar yetersizse alım yapılmaz.
+AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da tüketir; `aiMinGoldReserve` korunurken diğer kaynaklar yetersizse alım yapılmaz. Birimler artık anında orduya eklenmez; `GameState.ProductionQueue` içine `kind=unit` emri yazılır ve çözümleme fazında tamamlanır.
 
 Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile birim seçer:
 
@@ -197,10 +211,18 @@ Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile 
 | 6 | `cannon/bombard` | Altın ≥ 650 + rezerv, savaş halinde |
 | 7 | `militia` | Varsayılan |
 
+Queue davranışı:
+
+- Pending kara birimleri manpower hesabına dahil edilir.
+- AI gerekli teknoloji, bina ve bina seviyesi olmayan birimi seçmez.
+- Bölge başına pending üretim emri `20` ile sınırlıdır.
+- Mevcut ordu doluysa üretim tamamlandığında oyuncu ile aynı `completeLandUnit()` yolu yeni ordu oluşturabilir.
+
 ---
 
 ## Eksik / Planlanan
 
 - [x] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın; ancak lojistik baskı altındaki kara bölgede konsolidasyon durur)
-- [ ] Diplomasi teklif önceliklerini tehdit seviyesi ve teknoloji farkıyla daha da zenginleştir
+- [x] AI fırsatçı savaş ilanı (sınır, güç dengesi ve ilişki skoruna göre sınırlı proaktif savaş)
+- [ ] Diplomasi teklif önceliklerini teknoloji farkı ve uzun vadeli tehdit seviyesiyle daha da zenginleştir
 - [ ] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat

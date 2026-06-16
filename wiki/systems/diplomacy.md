@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-06-07
+last_updated: 2026-06-16
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -38,7 +38,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 - Savaştayken ittifak veya ticaret kurulamaz
 - İttifak için `Score >= 20` gerekir
 - Ticaret için `Score >= 10`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
-- Ticaret için doğrudan sınır tehdidi olmamalı ve iki tarafın aktif partner limiti (`4`) dolu olmamalıdır
+- Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
 - `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
 
@@ -53,7 +53,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir, teklif sahibi `peace_relation_bonus` tech etkisi bu eşiği destekler |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20` + doğrudan sınır tehdidi olmamalı |
-| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var |
+| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
 

@@ -728,7 +728,7 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 		}
 		targetCap := tradeCapacityForFaction(gs, fid)
 		targetPartners := activeTradePartnerCount(gs, fid)
-		reason := tradeAgreementBlockReason(gs, rel, gs.PlayerFactionID, fid, playerCap, targetCap, playerPartners, targetPartners)
+		reason := tradeAgreementBlockReason(gs, rel, gs.PlayerFactionID, fid)
 		list = append(list, tradeAgreementCandidate{
 			ID:             fid,
 			Stance:         rel.Stance,
@@ -832,35 +832,8 @@ func relationForTrade(gs *state.GameState, a, b faction.FactionID) *faction.Rela
 	return nil
 }
 
-func tradeAgreementBlockReason(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID, actorCap, targetCap, actorPartners, targetPartners int) string {
-	if rel == nil {
-		return "İlişki verisi yok"
-	}
-	if rel.Score < 10 {
-		return "İlişki puanı 10 altı"
-	}
-	if landRegionCountForFaction(gs, actor) == 0 {
-		return "Sende kara bölgesi yok"
-	}
-	if landRegionCountForFaction(gs, target) == 0 {
-		return "Hedefin kara bölgesi yok"
-	}
-	if actorCap < 4 {
-		return "Senin ticaret kapasiten 4 altı"
-	}
-	if targetCap < 4 {
-		return "Hedefin ticaret kapasitesi 4 altı"
-	}
-	if diplomacy.HasDirectThreat(gs, actor, target) {
-		return "Doğrudan sınır tehdidi var"
-	}
-	if actorPartners >= 4 {
-		return "Senin aktif partner sınırın dolu"
-	}
-	if targetPartners >= 4 {
-		return "Hedefin aktif partner sınırı dolu"
-	}
-	return ""
+func tradeAgreementBlockReason(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) string {
+	return diplomacy.AssessTradeProposal(gs, rel, actor, target).BlockReason
 }
 
 func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
@@ -875,20 +848,6 @@ func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
 		total += region.TradeCapacity
 	}
 	return total
-}
-
-func landRegionCountForFaction(gs *state.GameState, fid faction.FactionID) int {
-	count := 0
-	if gs == nil {
-		return count
-	}
-	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) {
-			continue
-		}
-		count++
-	}
-	return count
 }
 
 func activeTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {

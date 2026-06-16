@@ -22,6 +22,17 @@ type Result struct {
 	Message  string
 }
 
+const tradeAcceptanceThreshold = 45
+
+type TradeProposalAssessment struct {
+	Chance      int
+	BlockReason string
+}
+
+func (a TradeProposalAssessment) Accepted() bool {
+	return a.BlockReason == "" && a.Chance >= tradeAcceptanceThreshold
+}
+
 func Execute(gs *state.GameState, actor, target faction.FactionID, action Action) Result {
 	if gs == nil {
 		return Result{Message: "Diplomasi durumu yok."}
@@ -296,22 +307,70 @@ func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target facti
 }
 
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
+	assessment := AssessTradeProposal(gs, rel, actor, target)
+	return assessment.Accepted()
+}
+
+func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) TradeProposalAssessment {
+	assessment := TradeProposalAssessment{}
+	if gs == nil || rel == nil || actor == "" || target == "" || actor == target {
+		assessment.BlockReason = "Geçersiz diplomasi hedefi"
+		return assessment
+	}
 	if rel.Score < 10 {
-		return false
+		assessment.BlockReason = "İlişki puanı 10 altı"
+		return assessment
 	}
-	if landRegionCount(gs, actor) == 0 || landRegionCount(gs, target) == 0 {
-		return false
+	actorLand := landRegionCount(gs, actor)
+	if actorLand == 0 {
+		assessment.BlockReason = "Sende kara bölgesi yok"
+		return assessment
 	}
-	if totalTradeCapacity(gs, actor) < 4 || totalTradeCapacity(gs, target) < 4 {
-		return false
+	targetLand := landRegionCount(gs, target)
+	if targetLand == 0 {
+		assessment.BlockReason = "Hedefin kara bölgesi yok"
+		return assessment
+	}
+	actorCap := totalTradeCapacity(gs, actor)
+	if actorCap < 4 {
+		assessment.BlockReason = "Senin ticaret kapasiten 4 altı"
+		return assessment
+	}
+	targetCap := totalTradeCapacity(gs, target)
+	if targetCap < 4 {
+		assessment.BlockReason = "Hedefin ticaret kapasitesi 4 altı"
+		return assessment
+	}
+	actorPartners := activeTradePartners(gs, actor)
+	if actorPartners >= 4 {
+		assessment.BlockReason = "Senin aktif partner sınırın dolu"
+		return assessment
+	}
+	targetPartners := activeTradePartners(gs, target)
+	if targetPartners >= 4 {
+		assessment.BlockReason = "Hedefin aktif partner sınırı dolu"
+		return assessment
+	}
+
+	regionDelta := actorLand - targetLand
+	chance := 40 + rel.Score + clamp(regionDelta, -10, 20)
+	if rel.Stance == faction.StanceAllied {
+		chance += 8
+	}
+	if HasCommonEnemy(gs, actor, target) {
+		chance += 6
 	}
 	if HasDirectThreat(gs, actor, target) {
-		return false
+		chance -= 25
 	}
-	if activeTradePartners(gs, actor) >= 4 || activeTradePartners(gs, target) >= 4 {
-		return false
+	if actorPartners == 3 {
+		chance -= 6
 	}
-	return true
+	if targetPartners == 3 {
+		chance -= 6
+	}
+	assessment.Chance = clamp(chance, 0, 100)
+	return assessment
 }
 
 func acceptAlliance(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {

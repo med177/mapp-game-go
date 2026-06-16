@@ -19,6 +19,13 @@ const (
 	aiMinGoldReserve = 80  // AI bu miktarın altına düşmemeli
 	aiTechReserve    = 100 // Teknoloji için ayırılacak minimum altın
 	aiReliefMoveBase = 35
+	aiWarThreshold   = 70
+)
+
+const (
+	aiProductionKindBuilding = "building"
+	aiProductionKindUnit     = "unit"
+	aiMaxRegionQueue         = 20
 )
 
 // coalitionThreshold oyuncunun bu kadar bölgeyi geçmesi koalisyon tetikler.
@@ -125,6 +132,387 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 			}
 		}
 	}
+
+	aiEvaluateWarOpportunities(gs, fid)
+}
+
+func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
+	if gs == nil || gs.Difficulty <= 1 {
+		return
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return
+	}
+	if aiActiveWarCount(gs, fid) >= aiMaxConcurrentWars(gs, fid) {
+		return
+	}
+	if !aiWarCadenceAllows(gs, fid) {
+		return
+	}
+
+	bestScore := aiWarThreshold
+	bestTarget := faction.FactionID("")
+	if gs.Difficulty >= 3 {
+		bestScore -= 10
+	}
+
+	for otherID, other := range gs.Factions {
+		if otherID == fid || other == nil || other.IsEliminated {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, otherID)
+		if rel == nil || rel.Stance != faction.StancePeace {
+			continue
+		}
+		score := aiWarOpportunityScore(gs, fid, otherID, rel)
+		if score > bestScore {
+			bestScore = score
+			bestTarget = otherID
+		}
+	}
+
+	if bestTarget != "" {
+		diplomacy.Execute(gs, fid, bestTarget, diplomacy.ActionDeclareWar)
+	}
+}
+
+func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation) int {
+	self := gs.Factions[actor]
+	other := gs.Factions[target]
+	if self == nil || other == nil || rel == nil {
+		return -1
+	}
+	isExpansionTarget := aiHasExpansionTarget(self, target)
+	maxPeaceScore := -20
+	if isExpansionTarget {
+		maxPeaceScore = 10
+	} else if self.AIAggressiveness >= 70 {
+		maxPeaceScore = -10
+	}
+	if rel.Score > maxPeaceScore || !aiSharesLandBorder(gs, actor, target) {
+		return -1
+	}
+
+	selfPower := diplomacy.MilitaryPower(gs, actor)
+	targetPower := diplomacy.MilitaryPower(gs, target)
+	if selfPower <= 0 {
+		return -1
+	}
+	if targetPower > 0 && selfPower*100 < targetPower*115 {
+		return -1
+	}
+
+	frontierPower := aiFrontierPower(gs, actor, target)
+	if frontierPower <= 0 {
+		return -1
+	}
+	targetFrontierPower := aiFrontierPower(gs, target, actor)
+
+	score := 20
+	if targetPower == 0 {
+		score += 30
+	} else {
+		powerEdge := (selfPower - targetPower) / 12
+		score += minInt(30, maxInt(0, powerEdge))
+	}
+
+	if targetFrontierPower == 0 {
+		score += 16
+	} else if frontierPower > targetFrontierPower {
+		score += minInt(22, (frontierPower-targetFrontierPower)/10+8)
+	} else {
+		score -= 18
+	}
+
+	score += minInt(18, maxInt(0, -rel.Score/2))
+	if rel.Score > 0 {
+		score -= rel.Score
+	}
+
+	selfRegions := len(gs.LandRegionsOwnedBy(actor))
+	targetRegions := len(gs.LandRegionsOwnedBy(target))
+	if targetRegions <= 2 {
+		score += 12
+	}
+	if selfRegions >= targetRegions {
+		score += 8
+	}
+	if gs.DeployedLandUnits(actor) >= gs.ManpowerCap(actor) {
+		score += 8
+	}
+
+	score += minInt(15, aiBestBorderTargetValue(gs, actor, target)/15)
+	if self.Religion != other.Religion {
+		score += 6
+	} else {
+		score -= 6
+	}
+	score += (self.AIAggressiveness - 45) / 2
+	if isExpansionTarget {
+		score += 18
+		if rel.Score <= 0 {
+			score += 6
+		}
+		if self.AIAggressiveness >= 60 {
+			score += 4
+		}
+	}
+
+	if target == gs.PlayerFactionID {
+		score -= 18
+		if gs.Difficulty >= 3 {
+			score += 8
+		}
+	}
+	return score
+}
+
+func aiWarCadenceAllows(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || gs.Turn == 0 {
+		return true
+	}
+	interval := 10
+	if gs.Difficulty >= 3 {
+		interval = 7
+	}
+	if f := gs.Factions[fid]; f != nil {
+		if len(f.AIExpansionTargets) > 0 {
+			interval -= 2
+		}
+		if f.AIAggressiveness >= 65 {
+			interval -= 2
+		}
+	}
+	if interval < 4 {
+		interval = 4
+	}
+	offset := 0
+	for _, ch := range string(fid) {
+		offset += int(ch)
+	}
+	return (gs.Turn+offset)%interval == 0
+}
+
+func aiHasExpansionTarget(self *faction.Faction, target faction.FactionID) bool {
+	if self == nil {
+		return false
+	}
+	for _, targetID := range self.AIExpansionTargets {
+		if targetID == target {
+			return true
+		}
+	}
+	return false
+}
+
+func aiMaxConcurrentWars(gs *state.GameState, fid faction.FactionID) int {
+	limit := 1
+	if gs != nil && gs.Difficulty >= 3 {
+		limit = 2
+	}
+	if gs != nil {
+		if f := gs.Factions[fid]; f != nil && f.AIAggressiveness >= 65 {
+			limit++
+		}
+	}
+	return limit
+}
+
+func aiActiveWarCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, rel := range gs.Relations {
+		if rel == nil || rel.Stance != faction.StanceWar {
+			continue
+		}
+		if rel.FactionA == fid || rel.FactionB == fid {
+			count++
+		}
+	}
+	return count
+}
+
+func aiSharesLandBorder(gs *state.GameState, a, b faction.FactionID) bool {
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(a) {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == string(b) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func aiFrontierPower(gs *state.GameState, owner, against faction.FactionID) int {
+	total := 0
+	for _, armyRef := range gs.Armies {
+		if armyRef == nil || armyRef.IsNaval || armyRef.OwnerID != string(owner) {
+			continue
+		}
+		region := gs.Regions[armyRef.RegionID]
+		if region == nil || region.IsSea {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == string(against) {
+				total += armyRef.TotalStrength(gs.UnitTypes)
+				break
+			}
+		}
+	}
+	return total
+}
+
+func aiBestBorderTargetValue(gs *state.GameState, actor, target faction.FactionID) int {
+	best := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(actor) {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea || neighbor.OwnerID != string(target) {
+				continue
+			}
+			value := aiRegionStrategicValue(gs, neighbor)
+			if value > best {
+				best = value
+			}
+		}
+	}
+	return best
+}
+
+func aiRegionStrategicValue(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil {
+		return 0
+	}
+	prod := gs.RegionProductionSummary(region)
+	return prod.Gold + prod.Grain + prod.Iron + prod.Timber + prod.Stone + prod.Spice*2 + prod.Cloth*2
+}
+
+func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string, rid world.RegionID, typeID string, turns int) state.ProductionOrder {
+	if turns < 1 {
+		turns = 1
+	}
+	gs.NextProductionSeq++
+	order := state.ProductionOrder{
+		ID:        fmt.Sprintf("prod_%d", gs.NextProductionSeq),
+		Kind:      kind,
+		FactionID: string(fid),
+		RegionID:  rid,
+		TypeID:    typeID,
+		TurnsLeft: turns,
+	}
+	gs.ProductionQueue = append(gs.ProductionQueue, order)
+	return order
+}
+
+func aiQueuedBuildingCount(gs *state.GameState, rid world.RegionID, buildingID string, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == aiProductionKindBuilding && order.RegionID == rid && order.TypeID == buildingID && order.FactionID == string(fid) {
+			count++
+		}
+	}
+	return count
+}
+
+func aiPendingLandUnitCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
+			continue
+		}
+		if utype, ok := gs.UnitTypes[order.TypeID]; ok && utype.RequiredBldg != "port" {
+			count++
+		}
+	}
+	return count
+}
+
+func aiPendingUnitCountByRegion(gs *state.GameState, rid world.RegionID, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == aiProductionKindUnit && order.RegionID == rid && order.FactionID == string(fid) {
+			count++
+		}
+	}
+	return count
+}
+
+func aiPendingNavalUnitCount(gs *state.GameState, seaRegion world.RegionID, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
+			continue
+		}
+		utype, ok := gs.UnitTypes[order.TypeID]
+		if !ok || utype.RequiredBldg != "port" {
+			continue
+		}
+		region := gs.Regions[order.RegionID]
+		if region == nil {
+			continue
+		}
+		for _, nid := range region.Neighbors {
+			if nid == seaRegion {
+				count++
+				break
+			}
+		}
+	}
+	return count
+}
+
+func aiPendingNavalOrderCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
+			continue
+		}
+		utype, ok := gs.UnitTypes[order.TypeID]
+		if ok && utype.RequiredBldg == "port" {
+			count++
+		}
+	}
+	return count
+}
+
+func aiBuildingLevel(region *world.Region, buildingID string) int {
+	if region == nil || buildingID == "" {
+		return 0
+	}
+	level := 0
+	for _, bid := range region.Buildings {
+		if bid == buildingID {
+			level++
+		}
+	}
+	return level
+}
+
+func aiBuildingTurnsRequired(region *world.Region, buildingID string, baseTurns, queued int) int {
+	turns := baseTurns + aiBuildingLevel(region, buildingID) + queued
+	if turns < 1 {
+		return 1
+	}
+	return turns
+}
+
+func aiBuildingAllowed(gs *state.GameState, region *world.Region, buildingID, requiredTerrain string) bool {
+	if gs == nil || region == nil || region.IsSea || region.IsLocked {
+		return false
+	}
+	if buildingID == "port" {
+		return region.IsCoastal(gs.Regions)
+	}
+	return requiredTerrain == "" || string(region.Terrain) == requiredTerrain
 }
 
 func aiTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
@@ -156,7 +544,7 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 
 	// Manpower dar ve altın yeterliyse kışla inşa et
 	cap := gs.ManpowerCap(fid)
-	deployed := gs.DeployedLandUnits(fid)
+	deployed := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid)
 	barracksCost := economy.ResourceCost{Gold: 150}
 	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
 		barracksCost = economy.ResourceCost{
@@ -173,7 +561,7 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 
 	// Kapasite dolana veya altın bitene kadar birim al
 	for {
-		if gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid) {
+		if gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
 			break
 		}
 		if f.Gold < aiMilitiaCost+aiMinGoldReserve {
@@ -188,22 +576,24 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 // aiBuildBarracks kışlası olmayan ilk uygun bölgeye kışla inşa eder.
 func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost) {
 	f := gs.Factions[fid]
+	btype := gs.BuildingTypes["barracks"]
+	if btype == nil {
+		return
+	}
 	for _, r := range gs.Regions {
 		if r.OwnerID != string(fid) || r.IsSea {
 			continue
 		}
-		hasBarracks := false
-		for _, bid := range r.Buildings {
-			if bid == "barracks" {
-				hasBarracks = true
-				break
-			}
-		}
-		if hasBarracks {
+		queued := aiQueuedBuildingCount(gs, r.ID, "barracks", fid)
+		if aiBuildingLevel(r, "barracks")+queued >= btype.MaxPerRegion {
 			continue
 		}
-		r.Buildings = append(r.Buildings, "barracks")
+		if !aiBuildingAllowed(gs, r, "barracks", btype.RequiredTerrain) {
+			continue
+		}
 		cost.Apply(f)
+		turns := aiBuildingTurnsRequired(r, "barracks", btype.TurnsRequired, queued)
+		aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "barracks", turns)
 		return
 	}
 }
@@ -215,55 +605,6 @@ func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 	f := gs.Factions[fid]
 	if gs.UnitTypes == nil {
 		return false
-	}
-
-	// Kışlası olan bir bölge bul
-	var recruitRegion world.RegionID
-	for _, r := range gs.Regions {
-		if r.OwnerID != string(fid) || r.IsSea {
-			continue
-		}
-		for _, bid := range r.Buildings {
-			if bid == "barracks" {
-				recruitRegion = r.ID
-				break
-			}
-		}
-		if recruitRegion != "" {
-			break
-		}
-	}
-	if recruitRegion == "" {
-		return false
-	}
-
-	// Bölgedeki mevcut kara ordusu
-	var targetArmy *army.Army
-	for _, a := range gs.Armies {
-		if a.RegionID == recruitRegion && a.OwnerID == string(fid) && !a.IsNaval {
-			targetArmy = a
-			break
-		}
-	}
-
-	if targetArmy != nil {
-		if len(targetArmy.Units) >= army.MaxArmySize {
-			return false
-		}
-	} else {
-		// Yeni ordu limiti kontrolü
-		if gs.CurrentLandArmies(fid) >= gs.MaxLandArmies(fid) {
-			return false
-		}
-		gs.NextArmySeq++
-		newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(fid), gs.NextArmySeq))
-		targetArmy = &army.Army{
-			ID: newID, OwnerID: string(fid),
-			RegionID:      recruitRegion,
-			MovePoints:    2,
-			MaxMovePoints: 2,
-		}
-		gs.Armies[newID] = targetArmy
 	}
 
 	// En iyi birimi seç (stratejik karar)
@@ -287,9 +628,56 @@ func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 	if !aiCanAffordWithReserve(f, unitCost) {
 		return false
 	}
-	targetArmy.Units = append(targetArmy.Units, army.Unit{TypeID: unitTypeID, CurrentHP: 100})
+
+	recruitRegion := aiFindRecruitRegion(gs, fid, utype)
+	if recruitRegion == "" {
+		return false
+	}
+	if aiPendingUnitCountByRegion(gs, recruitRegion, fid) >= aiMaxRegionQueue {
+		return false
+	}
+	if !aiCanQueueLandUnit(gs, fid, recruitRegion) {
+		return false
+	}
+
 	unitCost.Apply(f)
+	aiEnqueueProduction(gs, fid, aiProductionKindUnit, recruitRegion, unitTypeID, utype.TurnsRequired)
 	return true
+}
+
+func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army.UnitType) world.RegionID {
+	if gs == nil || utype == nil {
+		return ""
+	}
+	requiredBuilding := utype.RequiredBldg
+	if requiredBuilding == "" {
+		requiredBuilding = "barracks"
+	}
+	requiredLevel := utype.RequiredBldgLevel
+	if requiredLevel <= 0 {
+		requiredLevel = 1
+	}
+	for _, r := range gs.Regions {
+		if r == nil || r.OwnerID != string(fid) || r.IsSea || r.IsLocked {
+			continue
+		}
+		if aiBuildingLevel(r, requiredBuilding) < requiredLevel {
+			continue
+		}
+		return r.ID
+	}
+	return ""
+}
+
+func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID) bool {
+	pendingInRegion := aiPendingUnitCountByRegion(gs, rid, fid)
+	for _, a := range gs.Armies {
+		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval {
+			continue
+		}
+		return len(a.Units)+pendingInRegion < army.MaxArmySize
+	}
+	return gs.CurrentLandArmies(fid) < gs.MaxLandArmies(fid)
 }
 
 // aiSelectBestUnit altın ve teknoloji durumuna göre en uygun birim tipini seçer.
@@ -312,7 +700,7 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	// Tier 3 elite piyade (seçkin piyade) - çok zenginse ve teknolojisi varsa
 	if f.Gold >= 350+aiMinGoldReserve {
 		if ut, ok := gs.UnitTypes["elite_infantry"]; ok {
-			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+			if aiUnitAvailableForRecruitment(gs, f, ut) {
 				return "elite_infantry"
 			}
 		}
@@ -321,7 +709,7 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	// Ağır süvari - zengin ve teknolojisi varsa
 	if f.Gold >= 450+aiMinGoldReserve && cavalryCount < armyCount*2 {
 		if ut, ok := gs.UnitTypes["heavy_cavalry"]; ok {
-			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+			if aiUnitAvailableForRecruitment(gs, f, ut) {
 				return "heavy_cavalry"
 			}
 		}
@@ -330,7 +718,7 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	// Tier 2 piyade (normal piyade) - orta düzey altın ve teknoloji
 	if f.Gold >= 180+aiMinGoldReserve {
 		if ut, ok := gs.UnitTypes["infantry"]; ok {
-			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+			if aiUnitAvailableForRecruitment(gs, f, ut) {
 				return "infantry"
 			}
 		}
@@ -339,7 +727,7 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	// Süvari - teknolojisi varsa ve altın yeterliyse
 	if f.Gold >= 300+aiMinGoldReserve && cavalryCount < armyCount*3 {
 		if ut, ok := gs.UnitTypes["cavalry"]; ok {
-			if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+			if aiUnitAvailableForRecruitment(gs, f, ut) {
 				return "cavalry"
 			}
 		}
@@ -347,7 +735,7 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 
 	// Hafif süvari - her zaman uygun
 	if f.Gold >= 200+aiMinGoldReserve && cavalryCount < armyCount*4 {
-		if _, ok := gs.UnitTypes["light_cavalry"]; ok {
+		if ut, ok := gs.UnitTypes["light_cavalry"]; ok && aiUnitAvailableForRecruitment(gs, f, ut) {
 			return "light_cavalry"
 		}
 	}
@@ -364,12 +752,12 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 		}
 		if atWar {
 			if ut, ok := gs.UnitTypes["cannon"]; ok {
-				if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				if aiUnitAvailableForRecruitment(gs, f, ut) {
 					return "cannon"
 				}
 			}
 			if ut, ok := gs.UnitTypes["bombard"]; ok {
-				if ut.RequiredTech == "" || f.Research.Completed[ut.RequiredTech] {
+				if aiUnitAvailableForRecruitment(gs, f, ut) {
 					return "bombard"
 				}
 			}
@@ -377,7 +765,30 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	}
 
 	// Varsayılan: milis
-	return "militia"
+	if ut, ok := gs.UnitTypes["militia"]; ok && aiUnitAvailableForRecruitment(gs, f, ut) {
+		return "militia"
+	}
+	return ""
+}
+
+func aiUnitAvailableForRecruitment(gs *state.GameState, f *faction.Faction, utype *army.UnitType) bool {
+	if gs == nil || f == nil || utype == nil {
+		return false
+	}
+	if utype.RequiredTech != "" && !f.Research.Completed[utype.RequiredTech] {
+		return false
+	}
+	cost := economy.ResourceCost{
+		Gold:   utype.GoldCost,
+		Grain:  utype.GrainCost,
+		Iron:   utype.IronCost,
+		Timber: utype.TimberCost,
+		Stone:  utype.StoneCost,
+	}
+	if !aiCanAffordWithReserve(f, cost) {
+		return false
+	}
+	return aiFindRecruitRegion(gs, f.ID, utype) != ""
 }
 
 // FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
@@ -1089,31 +1500,18 @@ func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 			if r.OwnerID != string(fid) || r.IsSea {
 				continue
 			}
-			// Zaten var mı?
-			hasIt := false
-			for _, bid := range r.Buildings {
-				if bid == plan.id {
-					hasIt = true
-					break
-				}
-			}
-			if hasIt {
+			if !aiBuildingAllowed(gs, r, plan.id, btype.RequiredTerrain) {
 				continue
 			}
-			// Max per region kontrolü
-			count := 0
-			for _, bid := range r.Buildings {
-				if bid == plan.id {
-					count++
-				}
-			}
-			if count >= btype.MaxPerRegion {
+			queued := aiQueuedBuildingCount(gs, r.ID, plan.id, fid)
+			if aiBuildingLevel(r, plan.id)+queued >= btype.MaxPerRegion {
 				continue
 			}
 			// İhtiyaç var mı?
 			if plan.needFn(r) {
-				r.Buildings = append(r.Buildings, plan.id)
 				buildCost.Apply(f)
+				turns := aiBuildingTurnsRequired(r, plan.id, btype.TurnsRequired, queued)
+				aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, plan.id, turns)
 				return // Bir bina inşa ettik, turu bitir
 			}
 		}
@@ -1150,13 +1548,7 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 
 	// Liman inşası (en az bir liman olsun)
 	for _, r := range coastalRegions {
-		hasPortBldg := false
-		for _, bid := range r.Buildings {
-			if bid == "port" {
-				hasPortBldg = true
-				break
-			}
-		}
+		queued := aiQueuedBuildingCount(gs, r.ID, "port", fid)
 		portCost := economy.ResourceCost{
 			Gold:   portType.GoldCost,
 			Grain:  portType.GrainCost,
@@ -1164,9 +1556,12 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 			Timber: portType.TimberCost,
 			Stone:  portType.StoneCost,
 		}
-		if !hasPortBldg && aiCanAffordWithReserve(f, portCost) {
-			r.Buildings = append(r.Buildings, "port")
+		if aiBuildingLevel(r, "port")+queued < portType.MaxPerRegion &&
+			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
+			aiCanAffordWithReserve(f, portCost) {
 			portCost.Apply(f)
+			turns := aiBuildingTurnsRequired(r, "port", portType.TurnsRequired, queued)
+			aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "port", turns)
 			break // Bir liman yeter bu tur
 		}
 	}
@@ -1188,6 +1583,7 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 			fleetCount++
 		}
 	}
+	fleetCount += aiPendingNavalOrderCount(gs, fid)
 	if fleetCount >= fleetLimit {
 		return
 	}
@@ -1241,22 +1637,22 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 	if !aiCanAffordWithReserve(f, shipCost) {
 		return
 	}
-
-	// Yeni filo oluştur
-	gs.NextArmySeq++
-	newID := army.ArmyID(fmt.Sprintf("fleet_%s_%d", string(fid), gs.NextArmySeq))
-	gs.Armies[newID] = &army.Army{
-		ID:                 newID,
-		OwnerID:            string(fid),
-		RegionID:           bestSeaRegion,
-		DockedRegionID:     bestRegion.ID,
-		DockedSettlementID: aiPreferredDockSettlementID(bestRegion),
-		Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
-		MovePoints:         3,
-		MaxMovePoints:      3,
-		IsNaval:            true,
+	currentUnits := 0
+	for _, a := range gs.Armies {
+		if a.RegionID == bestSeaRegion && a.OwnerID == string(fid) && a.IsNaval {
+			currentUnits = len(a.Units)
+			break
+		}
 	}
+	if currentUnits+aiPendingNavalUnitCount(gs, bestSeaRegion, fid) >= army.MaxArmySize {
+		return
+	}
+	if aiPendingUnitCountByRegion(gs, bestRegion.ID, fid) >= aiMaxRegionQueue {
+		return
+	}
+
 	shipCost.Apply(f)
+	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
 }
 
 func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool {
