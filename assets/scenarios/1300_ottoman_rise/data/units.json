@@ -54,7 +54,7 @@
     "id": "elite_infantry",
     "morale": 85,
     "name": "Elite Infantry",
-    "name_tr": "Seçkin Piyade",
+    "name_tr": "Ağır Piyade",
     "required_bldg": "barracks",
     "required_bldg_level": 2,
     "required_tech": "steel_blades",

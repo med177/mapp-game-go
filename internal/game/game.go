@@ -199,21 +199,7 @@ func (g *Game) Update() error {
 		case render.ActionChooseHistoricalEvent:
 			g.resolveHistoricalChoice(action.ChoiceIndex)
 		case render.ActionEndTurn:
-			if f, ok := g.gs.Factions[g.gs.PlayerFactionID]; ok &&
-				f.Research.ActiveID == "" &&
-				g.playerHasResearchableTechs() {
-				g.renderer.ShowConfirmDialog(
-					"Araştırma Yok",
-					"Teknoloji araştırması seçilmedi. Turu yine de bitirmek istiyor musunuz?",
-					"Evet",
-					"Hayır",
-					render.InputAction{Kind: render.ActionConfirmEndTurn},
-					func() {
-						g.renderer.ShowTechPanel()
-					},
-				)
-				break
-			}
+			// Araştırma seçimi artık turn resolution içinde otomatik tamamlanıyor.
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
@@ -515,10 +501,28 @@ func (g *Game) resolveTurn() {
 	unlocked := checkRegionUnlocks(g.gs)
 	g.showRegionUnlockNotifications(unlocked)
 	if g.gs.Phase != state.PhaseGameOver {
+		// Aktif araştırma yoksa oyuncu için uygun sonraki teknoloji otomatik başlatılır.
+		g.autoStartResearchIfIdle()
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.MarkMapDirty()
 	}
 	g.refreshEventCodex()
+}
+
+func (g *Game) autoStartResearchIfIdle() bool {
+	if g == nil || g.gs == nil || g.gs.TechTypes == nil {
+		return false
+	}
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	if f == nil || f.Research.ActiveID != "" || len(f.Research.PausedTurns) > 0 {
+		return false
+	}
+	techID, ok := tech.NextResearchableTechID(&f.Research, g.gs.TechTypes, f.Gold)
+	if !ok {
+		return false
+	}
+	g.startResearch(techID)
+	return true
 }
 
 func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus) {

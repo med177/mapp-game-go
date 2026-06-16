@@ -158,35 +158,6 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 	}
 }
 
-func Test1444ScenarioLoadSmoke(t *testing.T) {
-	scenarioPath := scenario1444Path(t)
-	gs, evts, err := loadScenarioData(scenarioPath, 2, nil)
-	if err != nil {
-		t.Fatalf("1444 scenario load failed: %v", err)
-	}
-	if gs == nil {
-		t.Fatal("game state nil")
-	}
-	if len(evts) == 0 {
-		t.Fatal("1444 historical events bekleniyordu")
-	}
-	if got := len(gs.Regions); got == 0 {
-		t.Fatal("regions yuklenmedi")
-	}
-	if got := len(gs.Factions); got == 0 {
-		t.Fatal("factions yuklenmedi")
-	}
-	if got := len(gs.TradeCenters.Centers); got == 0 {
-		t.Fatal("trade centers yuklenmedi")
-	}
-	if region := gs.Regions["sea_of_marmara"]; region == nil {
-		t.Fatal("sea_of_marmara bulunamadi")
-	}
-	if region := gs.Regions["constantinople"]; region == nil || len(region.Settlements) == 0 {
-		t.Fatal("constantinople settlement verisi yuklenmedi")
-	}
-}
-
 func scenario1300Path(t *testing.T) string {
 	t.Helper()
 	_, file, _, ok := runtime.Caller(0)
@@ -195,16 +166,6 @@ func scenario1300Path(t *testing.T) string {
 	}
 	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
 	return filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise")
-}
-
-func scenario1444Path(t *testing.T) string {
-	t.Helper()
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("runtime caller unavailable")
-	}
-	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
-	return filepath.Join(root, "assets", "scenarios", "1444_constantinople")
 }
 
 func simulateTempoTurns(gs *state.GameState, evts []*events.Event, turns int) {

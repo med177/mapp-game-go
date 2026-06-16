@@ -3,6 +3,7 @@ package tech
 import (
 	"encoding/json"
 	"os"
+	"sort"
 
 	"mapp-game-go/internal/faction"
 )
@@ -135,6 +136,85 @@ func Tick(rs *faction.ResearchState) string {
 		return id
 	}
 	return ""
+}
+
+// NextResearchableTechID araştırılabilir ve ödenebilir teknolojiler arasından
+// ağaç sırasına göre ilk uygun tech ID'sini döner.
+func NextResearchableTechID(rs *faction.ResearchState, allTechs map[string]*Technology, gold int) (string, bool) {
+	if rs == nil || allTechs == nil || len(rs.PausedTurns) > 0 {
+		return "", false
+	}
+
+	candidates := make([]string, 0, len(allTechs))
+	for id, t := range allTechs {
+		if t == nil {
+			continue
+		}
+		if rs.Completed != nil && rs.Completed[id] {
+			continue
+		}
+		if !IsUnlocked(rs, t) {
+			continue
+		}
+		if gold < t.GoldCost {
+			continue
+		}
+		candidates = append(candidates, id)
+	}
+	if len(candidates) == 0 {
+		return "", false
+	}
+
+	levels := make(map[string]int, len(candidates))
+	visiting := make(map[string]bool, len(candidates))
+	sort.Slice(candidates, func(i, j int) bool {
+		left := allTechs[candidates[i]]
+		right := allTechs[candidates[j]]
+		leftLevel := techLevel(left, allTechs, levels, visiting)
+		rightLevel := techLevel(right, allTechs, levels, visiting)
+		if leftLevel != rightLevel {
+			return leftLevel < rightLevel
+		}
+		if left.Category != right.Category {
+			return CategoryOrder(left.Category) < CategoryOrder(right.Category)
+		}
+		return left.ID < right.ID
+	})
+	return candidates[0], true
+}
+
+func techLevel(t *Technology, allTechs map[string]*Technology, memo map[string]int, visiting map[string]bool) int {
+	if t == nil {
+		return 0
+	}
+	if level, ok := memo[t.ID]; ok {
+		return level
+	}
+	if visiting[t.ID] {
+		return 0
+	}
+	visiting[t.ID] = true
+	defer delete(visiting, t.ID)
+
+	if len(t.Requires) == 0 {
+		memo[t.ID] = 0
+		return 0
+	}
+
+	maxReqLevel := 0
+	for _, reqID := range t.Requires {
+		req, ok := allTechs[reqID]
+		if !ok || req == nil {
+			continue
+		}
+		reqLevel := techLevel(req, allTechs, memo, visiting)
+		if reqLevel > maxReqLevel {
+			maxReqLevel = reqLevel
+		}
+	}
+	level := maxReqLevel + 1
+	memo[t.ID] = level
+	return level
 }
 
 // ComputeEffects tamamlanmış teknolojilerin kümülatif etkilerini hesaplar.

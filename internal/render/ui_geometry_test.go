@@ -56,6 +56,78 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		for _, btn := range buildHistoricalEventChoiceButtons(2) {
 			assertButtonInside(t, tc.w, tc.h, btn)
 		}
+		assertArmyPanelGeometry(t, tc.w, tc.h)
+	}
+}
+
+func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
+	t.Helper()
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth = screenW
+	ScreenHeight = screenH
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"osm": {ID: "osm", NameTR: "Osmanlı"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"ankara": {ID: "ankara", NameTR: "Ankara", OwnerID: "osm"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {
+				ID:       "a1",
+				OwnerID:  "osm",
+				RegionID: "ankara",
+				Units: []army.Unit{
+					{TypeID: "infantry", CurrentHP: 100},
+					{TypeID: "infantry", CurrentHP: 100},
+				},
+			},
+			"a2": {
+				ID:       "a2",
+				OwnerID:  "osm",
+				RegionID: "ankara",
+				Units: []army.Unit{
+					{TypeID: "infantry", CurrentHP: 100},
+				},
+			},
+		},
+	}
+
+	px, py, panelW := armyPanelGeometry()
+	if px < 0 || py < 0 || px+panelW > float32(screenW) {
+		t.Fatalf("army panel outside %.0fx%.0f viewport: px=%.1f py=%.1f w=%.1f", screenW, screenH, px, py, panelW)
+	}
+
+	splitBtn, ok := buildSplitArmyButton(gs, "a1")
+	if !ok {
+		t.Fatalf("split button bekleniyordu")
+	}
+	mergeBtn, ok := buildMergeArmyButton(gs, "a1")
+	if !ok {
+		t.Fatalf("merge button bekleniyordu")
+	}
+	assertButtonInside(t, screenW, screenH, splitBtn)
+	assertButtonInside(t, screenW, screenH, mergeBtn)
+	if splitBtn.Y < float64(py)+float64(armyPanelBtnY)-0.5 {
+		t.Fatalf("split button header satirina cok yakin: panelY=%.1f btnY=%.1f", py, splitBtn.Y)
+	}
+	if mergeBtn.Y < float64(py)+float64(armyPanelBtnY)-0.5 {
+		t.Fatalf("merge button header satirina cok yakin: panelY=%.1f btnY=%.1f", py, mergeBtn.Y)
+	}
+	if splitBtn.Y+splitBtn.H > float64(py)+float64(armyPanelHdrH)+0.5 {
+		t.Fatalf("split button header alanini tasiyor: panelY=%.1f btn=%+v", py, splitBtn)
+	}
+	if mergeBtn.Y+mergeBtn.H > float64(py)+float64(armyPanelHdrH)+0.5 {
+		t.Fatalf("merge button header alanini tasiyor: panelY=%.1f btn=%+v", py, mergeBtn)
+	}
+	if splitBtn.X+splitBtn.W >= mergeBtn.X {
+		t.Fatalf("split/merge butonlari birbirine giriyor: split=%+v merge=%+v", splitBtn, mergeBtn)
 	}
 }
 

@@ -1,6 +1,7 @@
 package victory
 
 import (
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -142,17 +143,32 @@ func CurrentGoldIncome(gs *state.GameState) int {
 	}
 
 	income := 0
+	season := gs.CurrentSeason()
+	seasonMod := season.TradeMod()
+	harvestMod := season.HarvestMod()
+	var fx tech.Effects
+	if gs.TechTypes != nil {
+		fx = tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
+	}
 	for _, region := range gs.Regions {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) {
 			continue
 		}
 		goldMod := 1.0
+		tradeCapMod := 1.0
 		for _, bid := range region.Buildings {
 			if building, ok := gs.BuildingTypes[bid]; ok {
 				goldMod *= building.GoldMod
+				tradeCapMod *= building.TradeCapacityMod
 			}
 		}
-		income += int(float64(region.GoldIncome()) * goldMod)
+		income += int(float64(region.GoldIncome()) * goldMod * float64(harvestMod) / 100)
+		tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod)
+		tradeIncome = tradeIncome * seasonMod / 100
+		if fx.MarketGoldMod != 0 {
+			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
+		}
+		income += tradeIncome
 	}
 
 	for _, route := range gs.TradeRoutes {
@@ -162,7 +178,6 @@ func CurrentGoldIncome(gs *state.GameState) int {
 	}
 
 	if gs.TechTypes != nil {
-		fx := tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
 		income += fx.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	}
 

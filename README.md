@@ -119,7 +119,7 @@ mapp-game-go/
 │       │   ├── data/         # regions, factions, armies, events …
 │       │   ├── maps/         # Harita PNG dosyaları
 │       │   └── musics/       # scenario.json playlist müzikleri
-│       └── 1444_constantinople/
+│       └── 1444_ottoman_empire/
 └── internal/
     ├── game/                 # Oyun döngüsü, tur yönetimi
     ├── state/                # Merkezi oyun durumu (GameState)

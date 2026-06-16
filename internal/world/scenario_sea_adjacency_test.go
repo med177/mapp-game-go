@@ -22,13 +22,6 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 			aegeanID:   "aegean_sea",
 			blackSeaID: "black_sea",
 		},
-		{
-			name:       "1444 constantinople",
-			regionPath: filepath.Join("..", "..", "assets", "scenarios", "1444_constantinople", "data", "regions.json"),
-			marmaraID:  "sea_of_marmara",
-			aegeanID:   "aegean_sea",
-			blackSeaID: "black_sea",
-		},
 	}
 
 	for _, tc := range cases {

@@ -23,9 +23,12 @@ const (
 	cardGap  = float32(4)
 	maxCols  = 10
 
-	armyPanelPadX = float32(12)
-	armyPanelPadY = float32(8)
-	armyPanelHdrH = float32(26)
+	armyPanelPadX  = float32(12)
+	armyPanelPadY  = float32(8)
+	armyPanelHdrH  = float32(46)
+	armyPanelTopY  = float32(6)
+	armyPanelInfoY = float32(20)
+	armyPanelBtnY  = float32(24)
 )
 
 // DrawArmyDetailPanel seçili ordunun birimlerini Total War stilinde ekranın alt
@@ -84,28 +87,32 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	if location != "" {
 		headerLeft += "  —  " + location
 	}
-	DrawText(screen, headerLeft, float64(px)+float64(armyPanelPadX), float64(py)+6, FaceSmall, factionCol)
+	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
+	mpW := MeasureText(mpStr, FaceSmall)
+	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12
+	if headerMaxW < 0 {
+		headerMaxW = 0
+	}
+	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
 
 	// Hareket puanı — sağ üst
-	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
 	mpCol := ColorGold
 	if a.MovePoints == 0 {
 		mpCol = ColorRed
 	}
-	mpW := MeasureText(mpStr, FaceSmall)
 	DrawText(screen, mpStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
-		float64(py)+6, FaceSmall, mpCol)
+		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
 	if a.CanReplenishIn(gs.Regions) && a.HasDamagedUnits() {
 		healStr := "Takviye aktif"
 		healW := MeasureText(healStr, FaceSmall)
 		DrawText(screen, healStr,
 			float64(px)+float64(panelW)-float64(armyPanelPadX)-healW,
-			float64(py)+20, FaceSmall, color.RGBA{110, 190, 120, 220})
+			float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{110, 190, 120, 220})
 	}
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
 		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
-			float64(px)+float64(armyPanelPadX), float64(py)+20, FaceSmall, color.RGBA{210, 96, 82, 235})
+			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{210, 96, 82, 235})
 	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
@@ -338,16 +345,19 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	if location != "" {
 		headerLeft += "  —  " + location
 	}
-	DrawText(screen, headerLeft, float64(px)+float64(armyPanelPadX), float64(py)+6, FaceSmall, factionCol)
-
 	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat"
 	if fullIntel {
 		countStr = "Birim: " + itoa(len(a.Units)) + "  |  Tam istihbarat"
 	}
 	countW := MeasureText(countStr, FaceSmall)
+	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - countW - 12
+	if headerMaxW < 0 {
+		headerMaxW = 0
+	}
+	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
 	DrawText(screen, countStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
-		float64(py)+6, FaceSmall, color.RGBA{190, 160, 90, 230})
+		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
 
 	sepY := py + armyPanelHdrH
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
@@ -463,7 +473,7 @@ func buildArmyPanelCloseButton() gameui.Button {
 // hasMerge true ise iki buton yan yana olacak şekilde sola kayar.
 func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
-	by = py + 4
+	by = py + armyPanelBtnY
 	if hasMerge {
 		bx = px + panelW/2 - actionBtnGap/2 - bw
 	} else {
@@ -475,7 +485,7 @@ func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh floa
 // mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
 func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
-	by = py + 4
+	by = py + armyPanelBtnY
 	bx = px + panelW/2 + actionBtnGap/2
 	return
 }

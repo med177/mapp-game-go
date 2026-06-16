@@ -52,7 +52,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 - **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
 - **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
 - **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün; yarım kalan araştırma pause olur ve sonra altın tekrar düşmeden kaldığı yerden devam eder
-- **Tur Bitir Uyarısı:** Aktif araştırma yoksa ve en az bir araştırılabilir teknoloji kaldıysa panel açılır ve uyarı verilir; tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa uyarı gösterilmez
+- **Tur Bitir Davranışı:** Aktif araştırma yoksa ve uygun bir teknoloji varsa turn resolution sırasında ağaç sırasına göre sonraki bağlı teknoloji otomatik başlatılır; böylece her tur panel açıp kart seçme zorunluluğu kalkar. Tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa otomatik başlangıç olmaz
   - Din: Magenta (200,100,200)
 - **Durum Göstergeleri:**
   - Tamamlandı: Yeşil
@@ -116,4 +116,4 @@ Bazı teknolojiler belirli şehirlerin ele geçirilmesini gerektirir:
 
 `T` tuşu → teknoloji paneli aç/kapat (`internal/render/tech_panel.go`)
 
-Panel: araştırılabilir teknolojileri listeler, cursor ile seçim, Enter ile araştırma başlatır.
+Panel: araştırılabilir teknolojileri listeler, cursor ile seçim, Enter ile araştırma başlatır. Tur sonunda aktif araştırma boşsa uygun sonraki bağlı teknoloji otomatik seçilip başlatılır.

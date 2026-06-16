@@ -113,6 +113,7 @@ func TestConquerCityVictoryWaitsForTargetOwnership(t *testing.T) {
 
 func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 	gs := &state.GameState{
+		Month:           7,
 		PlayerFactionID: "ottoman",
 		Factions: map[faction.FactionID]*faction.Faction{
 			"ottoman": {
@@ -123,11 +124,11 @@ func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 			},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"a": {ID: "a", OwnerID: "ottoman", BaseGoldIncome: 100, TaxRate: 50, Satisfaction: 50, Buildings: []string{"market"}},
+			"a": {ID: "a", OwnerID: "ottoman", BaseGoldIncome: 100, TaxRate: 50, Satisfaction: 50, TradeCapacity: 10, Buildings: []string{"market"}},
 			"b": {ID: "b", OwnerID: "ottoman", BaseGoldIncome: 80, TaxRate: 50, Satisfaction: 50},
 		},
 		BuildingTypes: map[string]*city.Building{
-			"market": {ID: "market", GoldMod: 2},
+			"market": {ID: "market", GoldMod: 2, TradeCapacityMod: 1.5},
 		},
 		TradeRoutes: []*economy.TradeRoute{
 			{FromFactionID: "ottoman", ToFactionID: "venice", Good: economy.GoodSpice, AmountPerTurn: 10, GoldPerUnit: 10},
@@ -139,8 +140,8 @@ func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 
 	got := CurrentGoldIncome(gs)
 
-	if got != 250 {
-		t.Fatalf("beklenen gelir 250, got=%d", got)
+	if got != 280 {
+		t.Fatalf("beklenen gelir 280, got=%d", got)
 	}
 }
 
