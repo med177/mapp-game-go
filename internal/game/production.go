@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
@@ -10,8 +11,9 @@ import (
 )
 
 const (
-	productionKindBuilding = "building"
-	productionKindUnit     = "unit"
+	productionKindBuilding  = "building"
+	productionKindUnit      = "unit"
+	autoPortSettlementInset = 2.0
 )
 
 type productionResult struct {
@@ -179,14 +181,18 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 		}
 	}
 	x, y := region.WorldX, region.WorldY
-	for _, nid := range region.Neighbors {
-		sea := g.gs.Regions[nid]
-		if sea == nil || !sea.IsSea {
-			continue
+	if px, py, ok := autoPortSettlementPoint(region, g.gs.Regions); ok {
+		x, y = px, py
+	} else {
+		for _, nid := range region.Neighbors {
+			sea := g.gs.Regions[nid]
+			if sea == nil || !sea.IsSea {
+				continue
+			}
+			x = (region.WorldX*2 + sea.WorldX) / 3
+			y = (region.WorldY*2 + sea.WorldY) / 3
+			break
 		}
-		x = (region.WorldX*2 + sea.WorldX) / 3
-		y = (region.WorldY*2 + sea.WorldY) / 3
-		break
 	}
 	region.Settlements = append(region.Settlements, world.Settlement{
 		ID:     nextPortSettlementID(region),
@@ -197,6 +203,109 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 		Type:   world.SettlementPort,
 	})
 	return true
+}
+
+func autoPortSettlementPoint(region *world.Region, regions map[world.RegionID]*world.Region) (int, int, bool) {
+	if region == nil || len(region.Shape) == 0 {
+		return 0, 0, false
+	}
+	centerX := float64(region.WorldX)
+	centerY := float64(region.WorldY)
+	seaX, seaY, ok := nearestSeaNeighborCenter(region, regions)
+	if !ok {
+		return 0, 0, false
+	}
+	coastX, coastY, ok := firstCoastIntersection(region.Shape, centerX, centerY, seaX, seaY)
+	if !ok {
+		return 0, 0, false
+	}
+	dx := centerX - coastX
+	dy := centerY - coastY
+	dist := math.Hypot(dx, dy)
+	if dist > 0 {
+		inset := autoPortSettlementInset
+		if inset > dist {
+			inset = dist / 2
+		}
+		coastX += dx / dist * inset
+		coastY += dy / dist * inset
+	}
+	return int(math.Round(coastX)), int(math.Round(coastY)), true
+}
+
+func nearestSeaNeighborCenter(region *world.Region, regions map[world.RegionID]*world.Region) (float64, float64, bool) {
+	if region == nil {
+		return 0, 0, false
+	}
+	centerX := float64(region.WorldX)
+	centerY := float64(region.WorldY)
+	bestDist := math.MaxFloat64
+	bestX := 0.0
+	bestY := 0.0
+	found := false
+	for _, nid := range region.Neighbors {
+		sea := regions[nid]
+		if sea == nil || !sea.IsSea {
+			continue
+		}
+		dx := float64(sea.WorldX) - centerX
+		dy := float64(sea.WorldY) - centerY
+		dist := dx*dx + dy*dy
+		if dist >= bestDist {
+			continue
+		}
+		bestDist = dist
+		bestX = float64(sea.WorldX)
+		bestY = float64(sea.WorldY)
+		found = true
+	}
+	return bestX, bestY, found
+}
+
+func firstCoastIntersection(shape [][][2]float32, centerX, centerY, seaX, seaY float64) (float64, float64, bool) {
+	bestT := math.MaxFloat64
+	bestX := 0.0
+	bestY := 0.0
+	found := false
+	for _, ring := range shape {
+		if len(ring) < 2 {
+			continue
+		}
+		for i := 0; i < len(ring); i++ {
+			a := ring[i]
+			b := ring[(i+1)%len(ring)]
+			ix, iy, t, ok := raySegmentIntersection(
+				centerX, centerY,
+				seaX-centerX, seaY-centerY,
+				float64(a[0]), float64(a[1]),
+				float64(b[0])-float64(a[0]), float64(b[1])-float64(a[1]),
+			)
+			if !ok || t < 0 || t > 1 || t >= bestT {
+				continue
+			}
+			bestT = t
+			bestX = ix
+			bestY = iy
+			found = true
+		}
+	}
+	return bestX, bestY, found
+}
+
+func raySegmentIntersection(px, py, rx, ry, qx, qy, sx, sy float64) (float64, float64, float64, bool) {
+	const eps = 1e-6
+	denom := rx*sy - ry*sx
+	if math.Abs(denom) < eps {
+		return 0, 0, 0, false
+	}
+	qpx := qx - px
+	qpy := qy - py
+	t := (qpx*sy - qpy*sx) / denom
+	u := (qpx*ry - qpy*rx) / denom
+	if t < -eps || t > 1+eps || u < -eps || u > 1+eps {
+		return 0, 0, 0, false
+	}
+	return px + t*rx, py + t*ry, t, true
 }
 
 func nextPortSettlementID(region *world.Region) string {

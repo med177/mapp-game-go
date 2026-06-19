@@ -1,7 +1,7 @@
 {
-  "turn": 42,
+  "turn": 43,
   "year": 1303,
-  "month": 8,
+  "month": 9,
   "start_year": 1300,
   "scenario_id": "1300_ottoman_rise",
   "scenario_path": "assets\\scenarios\\1300_ottoman_rise",
@@ -5002,7 +5002,7 @@
       "tax_rate": 30,
       "population": 350,
       "religion": "orthodox",
-      "conversion_turns": 7,
+      "conversion_turns": 8,
       "active_event_id": "",
       "buildings": [
         "port",
@@ -7255,7 +7255,8 @@
         "market",
         "walls",
         "walls",
-        "walls"
+        "walls",
+        "market"
       ]
     },
     "mallorca": {
@@ -10355,7 +10356,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 1,
-      "satisfaction": 98,
+      "satisfaction": 100,
       "tax_rate": 25,
       "population": 350,
       "religion": "orthodox",
@@ -11641,7 +11642,7 @@
       "name": "Rhodes",
       "name_tr": "Rodos",
       "terrain": "coast",
-      "owner_id": "",
+      "owner_id": "ottoman",
       "neighbors": [
         "mediterranean_open_1",
         "new_region_253"
@@ -11670,10 +11671,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 4,
-      "satisfaction": 65,
+      "satisfaction": 42,
       "tax_rate": 30,
       "population": 250,
       "religion": "catholic",
+      "conversion_turns": 1,
       "active_event_id": "",
       "buildings": null
     },
@@ -12999,7 +13001,7 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 3,
-      "satisfaction": 94,
+      "satisfaction": 96,
       "tax_rate": 25,
       "population": 420,
       "religion": "orthodox",
@@ -13153,11 +13155,11 @@
       "base_spice_output": 0,
       "base_cloth_output": 0,
       "trade_capacity": 2,
-      "satisfaction": 68,
+      "satisfaction": 71,
       "tax_rate": 30,
       "population": 400,
       "religion": "orthodox",
-      "conversion_turns": 4,
+      "conversion_turns": 5,
       "active_event_id": "",
       "buildings": [
         "barracks"
@@ -14520,8 +14522,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 114,
-      "grain": 1362,
+      "gold": 131,
+      "grain": 1386,
       "iron": 30,
       "timber": 38,
       "stone": 974,
@@ -14541,7 +14543,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 45
     },
@@ -14557,9 +14559,9 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 148,
-      "grain": 1239,
-      "iron": 271,
+      "gold": 103,
+      "grain": 1252,
+      "iron": 277,
       "timber": 18,
       "stone": 974,
       "spice": 0,
@@ -14578,7 +14580,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 50
     },
@@ -14594,13 +14596,13 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 7505,
-      "grain": 6552,
+      "gold": 7675,
+      "grain": 6685,
       "iron": 0,
       "timber": 0,
-      "stone": 1006,
+      "stone": 1009,
       "spice": 112,
-      "cloth": 2,
+      "cloth": 5,
       "research": {
         "completed": {
           "cavalry_tactics": true,
@@ -14619,7 +14621,7 @@
           "trade_routes": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 52,
       "ai_expansion_targets": [
@@ -14638,11 +14640,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 143,
-      "grain": 840,
+      "gold": 97,
+      "grain": 845,
       "iron": 20,
       "timber": 13,
-      "stone": 1015,
+      "stone": 1016,
       "spice": 0,
       "cloth": 20,
       "research": {
@@ -14654,12 +14656,13 @@
           "heavy_armor": true,
           "horse_breeding": true,
           "iron_weapons": true,
+          "plate_armor": true,
           "standing_infantry": true,
           "steel_blades": true,
           "trade_routes": true
         },
-        "active_id": "plate_armor",
-        "turns_left": 1
+        "active_id": "",
+        "turns_left": 0
       },
       "ai_aggressiveness": 50
     },
@@ -14675,8 +14678,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 161,
-      "grain": 642,
+      "gold": 184,
+      "grain": 648,
       "iron": 25,
       "timber": 18,
       "stone": 974,
@@ -14696,7 +14699,7 @@
           "steel_blades": true
         },
         "active_id": "siege_engines",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 50
     },
@@ -14712,13 +14715,13 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 438,
-      "grain": 143,
+      "gold": 452,
+      "grain": 137,
       "iron": 0,
       "timber": 6,
       "stone": 948,
       "spice": 1,
-      "cloth": 0,
+      "cloth": 2,
       "research": {
         "completed": {
           "cavalry_tactics": true,
@@ -14733,7 +14736,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 60
     },
@@ -14749,11 +14752,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2788,
-      "grain": 5551,
+      "gold": 2875,
+      "grain": 5679,
       "iron": 2,
       "timber": 6,
-      "stone": 981,
+      "stone": 982,
       "spice": 20,
       "cloth": 83,
       "research": {
@@ -14770,7 +14773,7 @@
           "steel_blades": true
         },
         "active_id": "engineering_corps",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 55
     },
@@ -14786,10 +14789,10 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 278,
-      "grain": 3165,
+      "gold": 294,
+      "grain": 3240,
       "iron": 55,
-      "timber": 480,
+      "timber": 490,
       "stone": 1000,
       "spice": 181,
       "cloth": 1,
@@ -14804,8 +14807,8 @@
           "standing_infantry": true,
           "steel_blades": true
         },
-        "active_id": "",
-        "turns_left": 0
+        "active_id": "siege_logistics",
+        "turns_left": 4
       },
       "ai_aggressiveness": 50
     },
@@ -14821,8 +14824,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 139,
-      "grain": 2485,
+      "gold": 167,
+      "grain": 2540,
       "iron": 25,
       "timber": 6,
       "stone": 948,
@@ -14842,7 +14845,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 60
     },
@@ -14858,8 +14861,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 3113,
-      "grain": 1942,
+      "gold": 3203,
+      "grain": 1986,
       "iron": 70,
       "timber": 6,
       "stone": 950,
@@ -14883,7 +14886,7 @@
           "trade_routes": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 60,
       "ai_expansion_targets": [
@@ -14902,11 +14905,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2381,
-      "grain": 4523,
+      "gold": 2465,
+      "grain": 4639,
       "iron": 38,
       "timber": 4,
-      "stone": 965,
+      "stone": 966,
       "spice": 96,
       "cloth": 0,
       "research": {
@@ -14923,7 +14926,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 50
     },
@@ -14939,11 +14942,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 117,
-      "grain": 1179,
+      "gold": 133,
+      "grain": 1201,
       "iron": 35,
       "timber": 23,
-      "stone": 1015,
+      "stone": 1016,
       "spice": 35,
       "cloth": 40,
       "research": {
@@ -14960,7 +14963,7 @@
           "steel_blades": true
         },
         "active_id": "engineering_corps",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 60
     },
@@ -14976,8 +14979,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 3418,
-      "grain": 5551,
+      "gold": 3542,
+      "grain": 5677,
       "iron": 3,
       "timber": 4,
       "stone": 934,
@@ -14998,7 +15001,7 @@
           "steel_blades": true
         },
         "active_id": "engineering_corps",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 28
     },
@@ -15014,11 +15017,11 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 10186,
-      "grain": 14242,
+      "gold": 10461,
+      "grain": 14591,
       "iron": 1,
       "timber": 2,
-      "stone": 987,
+      "stone": 990,
       "spice": 15,
       "cloth": 7,
       "research": {
@@ -15039,7 +15042,7 @@
           "trade_routes": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 62,
       "ai_expansion_targets": [
@@ -15058,23 +15061,24 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 277,
-      "grain": 3196,
+      "gold": 294,
+      "grain": 3278,
       "iron": 33,
       "timber": 12,
-      "stone": 1021,
+      "stone": 1022,
       "spice": 48,
-      "cloth": 148,
+      "cloth": 151,
       "research": {
         "completed": {
           "cavalry_tactics": true,
           "composite_bow_drills": true,
           "horse_breeding": true,
           "iron_weapons": true,
+          "siege_engines": true,
           "steel_blades": true
         },
-        "active_id": "siege_engines",
-        "turns_left": 1
+        "active_id": "",
+        "turns_left": 0
       },
       "ai_aggressiveness": 50
     },
@@ -15090,10 +15094,10 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 108,
-      "grain": 1397,
+      "gold": 120,
+      "grain": 1428,
       "iron": 20,
-      "timber": 351,
+      "timber": 359,
       "stone": 974,
       "spice": 25,
       "cloth": 35,
@@ -15111,7 +15115,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 55
     },
@@ -15127,8 +15131,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 6314,
-      "grain": 3443,
+      "gold": 6436,
+      "grain": 3526,
       "iron": 146,
       "timber": 4,
       "stone": 960,
@@ -15148,7 +15152,7 @@
           "steel_blades": true
         },
         "active_id": "field_fortifications",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 30
     },
@@ -15164,8 +15168,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 14911,
-      "grain": 14719,
+      "gold": 15338,
+      "grain": 15075,
       "iron": 79,
       "timber": 1,
       "stone": 798,
@@ -15188,7 +15192,7 @@
           "trade_routes": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 59,
       "ai_expansion_targets": [
@@ -15207,13 +15211,13 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 8592,
-      "grain": 3426,
+      "gold": 8779,
+      "grain": 3510,
       "iron": 9,
       "timber": 6,
-      "stone": 941,
+      "stone": 942,
       "spice": 1,
-      "cloth": 245,
+      "cloth": 248,
       "research": {
         "completed": {
           "banking": true,
@@ -15232,7 +15236,7 @@
           "trade_routes": true
         },
         "active_id": "field_fortifications",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 34
     },
@@ -15248,11 +15252,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 137,
-      "grain": 579,
+      "gold": 151,
+      "grain": 588,
       "iron": 38,
       "timber": 40,
-      "stone": 995,
+      "stone": 996,
       "spice": 40,
       "cloth": 50,
       "research": {
@@ -15269,7 +15273,7 @@
           "trade_routes": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 55
     },
@@ -15285,9 +15289,9 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 235,
-      "grain": 3196,
-      "iron": 296,
+      "gold": 269,
+      "grain": 3272,
+      "iron": 302,
       "timber": 40,
       "stone": 1000,
       "spice": 143,
@@ -15300,7 +15304,7 @@
           "iron_weapons": true
         },
         "active_id": "steel_blades",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 55
     },
@@ -15316,8 +15320,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1623,
-      "grain": 6049,
+      "gold": 1676,
+      "grain": 6195,
       "iron": 36,
       "timber": 6,
       "stone": 888,
@@ -15332,13 +15336,14 @@
           "heavy_armor": true,
           "horse_breeding": true,
           "iron_weapons": true,
+          "plate_armor": true,
           "siege_engines": true,
           "siege_logistics": true,
           "standing_infantry": true,
           "steel_blades": true
         },
-        "active_id": "plate_armor",
-        "turns_left": 1
+        "active_id": "",
+        "turns_left": 0
       },
       "ai_aggressiveness": 66,
       "ai_expansion_targets": [
@@ -15389,11 +15394,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 845,
-      "grain": 1625,
+      "gold": 883,
+      "grain": 1664,
       "iron": 1,
-      "timber": 290,
-      "stone": 975,
+      "timber": 298,
+      "stone": 976,
       "spice": 23,
       "cloth": 35,
       "research": {
@@ -15410,7 +15415,7 @@
           "steel_blades": true
         },
         "active_id": "field_fortifications",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 55
     },
@@ -15426,11 +15431,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 17170,
-      "grain": 28047,
+      "gold": 17652,
+      "grain": 28732,
       "iron": 0,
       "timber": 4,
-      "stone": 992,
+      "stone": 996,
       "spice": 40,
       "cloth": 226,
       "research": {
@@ -15450,7 +15455,7 @@
           "trade_routes": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 50
     },
@@ -15466,11 +15471,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 3898,
-      "grain": 14474,
+      "gold": 4091,
+      "grain": 14806,
       "iron": 0,
       "timber": 6,
-      "stone": 1160,
+      "stone": 1166,
       "spice": 30,
       "cloth": 183,
       "research": {
@@ -15489,7 +15494,7 @@
           "steel_blades": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 60
     },
@@ -15505,11 +15510,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 7350,
-      "grain": 22048,
-      "iron": 1524,
-      "timber": 24,
-      "stone": 43,
+      "gold": 7826,
+      "grain": 22615,
+      "iron": 1578,
+      "timber": 34,
+      "stone": 58,
       "spice": 2,
       "cloth": 141,
       "research": {
@@ -15528,7 +15533,7 @@
           "steel_blades": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 54,
       "ai_expansion_targets": [
@@ -15549,10 +15554,10 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 127,
-      "grain": 1316,
-      "iron": 286,
-      "timber": 182,
+      "gold": 115,
+      "grain": 1340,
+      "iron": 292,
+      "timber": 186,
       "stone": 974,
       "spice": 30,
       "cloth": 40,
@@ -15570,8 +15575,8 @@
           "steel_blades": true,
           "trade_routes": true
         },
-        "active_id": "",
-        "turns_left": 0
+        "active_id": "siege_logistics",
+        "turns_left": 4
       },
       "ai_aggressiveness": 65
     },
@@ -15618,8 +15623,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1741,
-      "grain": 1536,
+      "gold": 1807,
+      "grain": 1572,
       "iron": 10,
       "timber": 0,
       "stone": 954,
@@ -15639,7 +15644,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 50,
       "ai_expansion_targets": [
@@ -15658,8 +15663,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1390,
-      "grain": 4391,
+      "gold": 1444,
+      "grain": 4494,
       "iron": 0,
       "timber": 82,
       "stone": 934,
@@ -15679,7 +15684,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 65,
       "ai_expansion_targets": [
@@ -15699,11 +15704,11 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 16629,
-      "grain": 19018,
+      "gold": 17047,
+      "grain": 19479,
       "iron": 2,
       "timber": 4,
-      "stone": 1081,
+      "stone": 1084,
       "spice": 1,
       "cloth": 119,
       "research": {
@@ -15720,8 +15725,8 @@
           "standing_infantry": true,
           "steel_blades": true
         },
-        "active_id": "",
-        "turns_left": 0
+        "active_id": "field_fortifications",
+        "turns_left": 3
       },
       "ai_aggressiveness": 20,
       "ai_expansion_targets": [
@@ -15741,13 +15746,13 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1069,
-      "grain": 1100,
+      "gold": 1094,
+      "grain": 1120,
       "iron": 3,
-      "timber": 323,
+      "timber": 331,
       "stone": 954,
       "spice": 0,
-      "cloth": 40,
+      "cloth": 43,
       "research": {
         "completed": {
           "cavalry_tactics": true,
@@ -15762,7 +15767,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 55
     },
@@ -15778,8 +15783,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 5807,
-      "grain": 4618,
+      "gold": 5953,
+      "grain": 4729,
       "iron": 58,
       "timber": 0,
       "stone": 858,
@@ -15799,7 +15804,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 55
     },
@@ -15815,8 +15820,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2086,
-      "grain": 5224,
+      "gold": 2145,
+      "grain": 5345,
       "iron": 56,
       "timber": 4,
       "stone": 960,
@@ -15836,7 +15841,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 55
     },
@@ -15852,8 +15857,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 8606,
-      "grain": 1376,
+      "gold": 8925,
+      "grain": 1403,
       "iron": 42,
       "timber": 6,
       "stone": 786,
@@ -15873,7 +15878,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 45
     },
@@ -15889,13 +15894,13 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 5868,
-      "grain": 11906,
-      "iron": 985,
-      "timber": 1093,
-      "stone": 636,
+      "gold": 6808,
+      "grain": 12541,
+      "iron": 1017,
+      "timber": 1120,
+      "stone": 626,
       "spice": 104,
-      "cloth": 6170,
+      "cloth": 6315,
       "research": {
         "completed": {
           "cavalry_tactics": true,
@@ -15932,8 +15937,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 2851,
-      "grain": 4458,
+      "gold": 2916,
+      "grain": 4565,
       "iron": 70,
       "timber": 6,
       "stone": 888,
@@ -15953,7 +15958,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 20
     },
@@ -15969,8 +15974,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 3394,
-      "grain": 9825,
+      "gold": 3521,
+      "grain": 10056,
       "iron": 2,
       "timber": 58,
       "stone": 930,
@@ -15992,7 +15997,7 @@
           "steel_blades": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 55
     },
@@ -16008,13 +16013,13 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 3277,
-      "grain": 0,
+      "gold": 3450,
+      "grain": 2,
       "iron": 0,
       "timber": 42,
       "stone": 898,
       "spice": 1,
-      "cloth": 170,
+      "cloth": 161,
       "research": {
         "completed": {
           "cavalry_tactics": true,
@@ -16028,12 +16033,13 @@
           "navigation": true,
           "plate_armor": true,
           "siege_engines": true,
+          "siege_logistics": true,
           "standing_infantry": true,
           "steel_blades": true,
           "trade_routes": true
         },
-        "active_id": "siege_logistics",
-        "turns_left": 1
+        "active_id": "",
+        "turns_left": 0
       },
       "ai_aggressiveness": 45,
       "ai_expansion_targets": [
@@ -16052,8 +16058,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 147,
-      "grain": 1422,
+      "gold": 133,
+      "grain": 1449,
       "iron": 30,
       "timber": 23,
       "stone": 974,
@@ -16073,8 +16079,8 @@
           "steel_blades": true,
           "trade_routes": true
         },
-        "active_id": "",
-        "turns_left": 0
+        "active_id": "plate_armor",
+        "turns_left": 4
       },
       "ai_aggressiveness": 50
     },
@@ -16090,10 +16096,10 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 3836,
-      "grain": 8069,
-      "iron": 6,
-      "timber": 66,
+      "gold": 4005,
+      "grain": 8239,
+      "iron": 0,
+      "timber": 54,
       "stone": 704,
       "spice": 54,
       "cloth": 65,
@@ -16102,6 +16108,7 @@
           "cavalry_tactics": true,
           "composite_bow_drills": true,
           "engineering_corps": true,
+          "field_fortifications": true,
           "heavy_armor": true,
           "horse_breeding": true,
           "iron_weapons": true,
@@ -16112,8 +16119,8 @@
           "steel_blades": true,
           "trade_routes": true
         },
-        "active_id": "field_fortifications",
-        "turns_left": 1
+        "active_id": "",
+        "turns_left": 0
       },
       "ai_aggressiveness": 50,
       "ai_expansion_targets": [
@@ -16132,8 +16139,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 775,
-      "grain": 1392,
+      "gold": 835,
+      "grain": 1424,
       "iron": 18,
       "timber": 7,
       "stone": 882,
@@ -16154,7 +16161,7 @@
           "steel_blades": true
         },
         "active_id": "siege_engines",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 35
     },
@@ -16170,10 +16177,10 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 224,
-      "grain": 649,
+      "gold": 246,
+      "grain": 658,
       "iron": 30,
-      "timber": 264,
+      "timber": 270,
       "stone": 974,
       "spice": 20,
       "cloth": 45,
@@ -16191,7 +16198,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 55
     },
@@ -16207,11 +16214,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 242,
-      "grain": 109,
-      "iron": 40,
-      "timber": 58,
-      "stone": 1015,
+      "gold": 114,
+      "grain": 86,
+      "iron": 20,
+      "timber": 36,
+      "stone": 990,
       "spice": 20,
       "cloth": 50,
       "research": {
@@ -16228,7 +16235,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 40
     },
@@ -16244,11 +16251,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 129,
-      "grain": 577,
+      "gold": 122,
+      "grain": 584,
       "iron": 50,
       "timber": 78,
-      "stone": 1015,
+      "stone": 1016,
       "spice": 10,
       "cloth": 40,
       "research": {
@@ -16264,8 +16271,8 @@
           "standing_infantry": true,
           "steel_blades": true
         },
-        "active_id": "",
-        "turns_left": 0
+        "active_id": "engineering_corps",
+        "turns_left": 3
       },
       "ai_aggressiveness": 55
     },
@@ -16281,11 +16288,11 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1543,
-      "grain": 5352,
-      "iron": 193,
+      "gold": 1581,
+      "grain": 5485,
+      "iron": 200,
       "timber": 4,
-      "stone": 1144,
+      "stone": 1150,
       "spice": 20,
       "cloth": 84,
       "research": {
@@ -16302,7 +16309,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 65,
       "ai_expansion_targets": [
@@ -16322,8 +16329,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 497,
-      "grain": 2296,
+      "gold": 539,
+      "grain": 2340,
       "iron": 0,
       "timber": 104,
       "stone": 960,
@@ -16345,7 +16352,7 @@
           "steel_blades": true
         },
         "active_id": "gunpowder",
-        "turns_left": 4
+        "turns_left": 3
       },
       "ai_aggressiveness": 70,
       "ai_expansion_targets": [
@@ -16365,8 +16372,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 169,
-      "grain": 328,
+      "gold": 202,
+      "grain": 325,
       "iron": 18,
       "timber": 18,
       "stone": 928,
@@ -16386,7 +16393,7 @@
           "steel_blades": true
         },
         "active_id": "siege_logistics",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 35
     },
@@ -16402,8 +16409,8 @@
       ],
       "is_playable": true,
       "is_eliminated": false,
-      "gold": 12531,
-      "grain": 1664,
+      "gold": 12852,
+      "grain": 1709,
       "iron": 92,
       "timber": 3,
       "stone": 854,
@@ -16427,7 +16434,7 @@
           "trade_routes": true
         },
         "active_id": "field_fortifications",
-        "turns_left": 2
+        "turns_left": 1
       },
       "ai_aggressiveness": 32
     },
@@ -16443,8 +16450,8 @@
       ],
       "is_playable": false,
       "is_eliminated": false,
-      "gold": 1099,
-      "grain": 5644,
+      "gold": 1147,
+      "grain": 5780,
       "iron": 4,
       "timber": 8,
       "stone": 868,
@@ -16464,7 +16471,7 @@
           "steel_blades": true
         },
         "active_id": "plate_armor",
-        "turns_left": 3
+        "turns_left": 2
       },
       "ai_aggressiveness": 45
     }
@@ -16879,6 +16886,16 @@
       "owner_id": "east_rome",
       "region_id": "constantinople",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -18657,6 +18674,11 @@
           "type_id": "militia",
           "current_hp": 100,
           "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
         }
       ],
       "move_points": 2,
@@ -19552,7 +19574,7 @@
       "units": [
         {
           "type_id": "light_cavalry",
-          "current_hp": 99,
+          "current_hp": 100,
           "experience": 0
         },
         {
@@ -19710,74 +19732,75 @@
       "units": [
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         },
         {
           "type_id": "elite_infantry",
-          "current_hp": 100,
+          "current_hp": 97,
           "experience": 0
         }
       ],
-      "move_points": 0,
+      "move_points": 2,
       "max_move_points": 2,
       "is_naval": false,
-      "in_ambush": false
+      "in_ambush": false,
+      "over_capacity_turns": 1
     },
     "army_papal_states_1": {
       "id": "army_papal_states_1",
@@ -19918,22 +19941,22 @@
       "units": [
         {
           "type_id": "infantry",
-          "current_hp": 37,
+          "current_hp": 47,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 37,
+          "current_hp": 47,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 37,
+          "current_hp": 47,
           "experience": 0
         },
         {
           "type_id": "militia",
-          "current_hp": 37,
+          "current_hp": 47,
           "experience": 0
         },
         {
@@ -20073,11 +20096,66 @@
       "is_naval": false,
       "in_ambush": false
     },
-    "army_russia_151": {
-      "id": "army_russia_151",
+    "army_russia_153": {
+      "id": "army_russia_153",
       "owner_id": "russia",
       "region_id": "dagestan",
       "units": [
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
+        {
+          "type_id": "militia",
+          "current_hp": 100,
+          "experience": 0
+        },
         {
           "type_id": "militia",
           "current_hp": 100,
@@ -20788,16 +20866,15 @@
           "experience": 0
         }
       ],
-      "move_points": 2,
+      "move_points": 4,
       "max_move_points": 4,
       "is_naval": true,
-      "in_ambush": false,
-      "turns_without_port": 1
+      "in_ambush": false
     },
     "fleet_russia_140": {
       "id": "fleet_russia_140",
       "owner_id": "russia",
-      "region_id": "caspian_open_2",
+      "region_id": "caspian_sea",
       "units": [
         {
           "type_id": "transport",
@@ -20845,48 +20922,13 @@
           "type_id": "militia",
           "current_hp": 100,
           "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
-        },
-        {
-          "type_id": "militia",
-          "current_hp": 100,
-          "experience": 0
         }
       ],
       "move_points": 2,
       "max_move_points": 2,
       "is_naval": true,
       "in_ambush": false,
-      "turns_without_port": 1
+      "turns_without_port": 2
     }
   },
   "economic_victory_turns": 0,
@@ -24088,7 +24130,7 @@
     "east_rome|ottoman": {
       "faction_a": "east_rome",
       "faction_b": "ottoman",
-      "score": -16,
+      "score": -15,
       "stance": "peace"
     },
     "east_rome|papal_states_f": {
@@ -27958,243 +28000,163 @@
   },
   "trade_routes": [
     {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "milan_duchy",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "milan_duchy",
-      "to_faction_id": "denmark_kingdom",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "aragon",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aragon",
-      "to_faction_id": "denmark_kingdom",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "genoa",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "genoa",
-      "to_faction_id": "denmark_kingdom",
-      "good": "spice",
-      "amount_per_turn": 4,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "england",
-      "to_faction_id": "epir",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "england",
+      "from_faction_id": "france",
+      "to_faction_id": "teutonic_order",
       "good": "grain",
       "amount_per_turn": 3,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "england",
-      "to_faction_id": "milan_duchy",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "milan_duchy",
-      "to_faction_id": "england",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "england",
-      "to_faction_id": "aragon",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aragon",
-      "to_faction_id": "england",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "epir",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "naples_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "milan_duchy",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "milan_duchy",
-      "to_faction_id": "naples_kingdom",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "genoa",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "genoa",
-      "to_faction_id": "naples_kingdom",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "papal_states_f",
+      "from_faction_id": "teutonic_order",
       "to_faction_id": "france",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "france",
-      "to_faction_id": "papal_states_f",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
+      "to_faction_id": "venice",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "papal_states_f",
-      "to_faction_id": "hre",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
+      "from_faction_id": "venice",
+      "to_faction_id": "france",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "bulgarian_empire",
+      "to_faction_id": "serbian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "serbian_empire",
+      "to_faction_id": "bulgarian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "east_rome",
+      "to_faction_id": "russia",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "russia",
+      "to_faction_id": "east_rome",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "hre",
       "to_faction_id": "papal_states_f",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "papal_states_f",
-      "to_faction_id": "hungarian_kingdom",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hungarian_kingdom",
-      "to_faction_id": "papal_states_f",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "portugal",
-      "to_faction_id": "epir",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "portugal",
       "good": "grain",
       "amount_per_turn": 3,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "portugal",
-      "to_faction_id": "aragon",
-      "good": "spice",
+      "from_faction_id": "papal_states_f",
+      "to_faction_id": "hre",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "aragon",
-      "to_faction_id": "portugal",
-      "good": "cloth",
+      "from_faction_id": "france",
+      "to_faction_id": "papal_states_f",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "portugal",
-      "to_faction_id": "genoa",
-      "good": "spice",
+      "from_faction_id": "papal_states_f",
+      "to_faction_id": "france",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "germiyan_bey",
+      "to_faction_id": "golden_horde",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "germiyan_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "genoa",
-      "to_faction_id": "portugal",
-      "good": "spice",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "genoa",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aydin_bey",
+      "to_faction_id": "hamid_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hamid_bey",
+      "to_faction_id": "aydin_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hungarian_kingdom",
+      "to_faction_id": "teutonic_order",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "teutonic_order",
+      "to_faction_id": "hungarian_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
@@ -28208,389 +28170,381 @@
     {
       "from_faction_id": "serbian_empire",
       "to_faction_id": "russia",
-      "good": "iron",
-      "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "russia",
-      "to_faction_id": "east_rome",
       "good": "grain",
-      "amount_per_turn": 4,
+      "amount_per_turn": 2,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "east_rome",
-      "to_faction_id": "russia",
-      "good": "spice",
-      "amount_per_turn": 4,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "russia",
-      "to_faction_id": "bulgarian_empire",
+      "to_faction_id": "novgorod_rep",
       "good": "grain",
       "amount_per_turn": 3,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "russia",
-      "good": "iron",
+      "from_faction_id": "novgorod_rep",
+      "to_faction_id": "east_rome",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 5,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "france",
-      "good": "iron",
+      "from_faction_id": "milan_duchy",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 5,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "france",
-      "to_faction_id": "teutonic_order",
-      "good": "cloth",
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "milan_duchy",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "hre",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hre",
-      "to_faction_id": "teutonic_order",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "hungarian_kingdom",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hungarian_kingdom",
-      "to_faction_id": "teutonic_order",
-      "good": "iron",
-      "amount_per_turn": 3,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "venice",
-      "to_faction_id": "france",
-      "good": "spice",
-      "amount_per_turn": 4,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "france",
-      "to_faction_id": "venice",
-      "good": "cloth",
-      "amount_per_turn": 4,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "venice",
-      "to_faction_id": "lithuanian_gd",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "lithuanian_gd",
-      "to_faction_id": "venice",
-      "good": "iron",
-      "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "venice",
-      "to_faction_id": "polish_kingdom",
-      "good": "spice",
-      "amount_per_turn": 4,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "polish_kingdom",
       "to_faction_id": "venice",
-      "good": "iron",
+      "good": "grain",
       "amount_per_turn": 4,
-      "gold_per_unit": 5,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "florence_rep",
-      "to_faction_id": "hre",
-      "good": "cloth",
+      "from_faction_id": "venice",
+      "to_faction_id": "polish_kingdom",
+      "good": "grain",
       "amount_per_turn": 4,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "hre",
-      "to_faction_id": "florence_rep",
-      "good": "iron",
-      "amount_per_turn": 4,
-      "gold_per_unit": 5,
+      "from_faction_id": "bulgarian_empire",
+      "to_faction_id": "novgorod_rep",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "novgorod_rep",
+      "to_faction_id": "bulgarian_empire",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "florence_rep",
       "to_faction_id": "hungarian_kingdom",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 4,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "hungarian_kingdom",
       "to_faction_id": "florence_rep",
-      "good": "iron",
+      "good": "grain",
       "amount_per_turn": 4,
-      "gold_per_unit": 5,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "genoa",
+      "to_faction_id": "portugal",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "portugal",
+      "to_faction_id": "genoa",
+      "good": "cloth",
+      "amount_per_turn": 3,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ilkhanate",
+      "to_faction_id": "mentese_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mentese_bey",
+      "to_faction_id": "ilkhanate",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "genoa",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "genoa",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "epir",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mentese_bey",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "mentese_bey",
+      "good": "cloth",
+      "amount_per_turn": 3,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aragon",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "aragon",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "florence_rep",
       "to_faction_id": "lithuanian_gd",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 2,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "lithuanian_gd",
       "to_faction_id": "florence_rep",
-      "good": "iron",
+      "good": "grain",
       "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "germiyan_bey",
-      "to_faction_id": "candar_bey",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "candar_bey",
-      "to_faction_id": "germiyan_bey",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "germiyan_bey",
-      "to_faction_id": "ilkhanate",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ilkhanate",
-      "to_faction_id": "germiyan_bey",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "germiyan_bey",
-      "to_faction_id": "golden_horde",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "germiyan_bey",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "novgorod_rep",
-      "good": "iron",
+      "to_faction_id": "russia",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 5,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "novgorod_rep",
+      "from_faction_id": "russia",
       "to_faction_id": "bulgarian_empire",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "serbian_empire",
-      "good": "iron",
-      "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "serbian_empire",
-      "to_faction_id": "bulgarian_empire",
-      "good": "iron",
-      "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "hamid_bey",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hamid_bey",
-      "to_faction_id": "golden_horde",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "novgorod_rep",
-      "to_faction_id": "serbian_empire",
-      "good": "cloth",
-      "amount_per_turn": 2,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "serbian_empire",
-      "to_faction_id": "novgorod_rep",
-      "good": "iron",
-      "amount_per_turn": 2,
-      "gold_per_unit": 5,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "novgorod_rep",
-      "to_faction_id": "east_rome",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "east_rome",
-      "to_faction_id": "novgorod_rep",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hamid_bey",
-      "to_faction_id": "aydin_bey",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aydin_bey",
-      "to_faction_id": "hamid_bey",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hamid_bey",
-      "to_faction_id": "mamluk",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mamluk",
-      "to_faction_id": "hamid_bey",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mamluk",
-      "to_faction_id": "mentese_bey",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mentese_bey",
-      "to_faction_id": "mamluk",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mamluk",
-      "to_faction_id": "candar_bey",
-      "good": "spice",
-      "amount_per_turn": 4,
-      "gold_per_unit": 12,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "candar_bey",
       "to_faction_id": "mamluk",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mamluk",
+      "to_faction_id": "candar_bey",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hre",
+      "to_faction_id": "teutonic_order",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "teutonic_order",
+      "to_faction_id": "hre",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hamid_bey",
+      "to_faction_id": "mamluk",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mamluk",
+      "to_faction_id": "hamid_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "candar_bey",
+      "to_faction_id": "germiyan_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "germiyan_bey",
+      "to_faction_id": "candar_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aragon",
+      "to_faction_id": "england",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "england",
+      "to_faction_id": "aragon",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "england",
+      "to_faction_id": "milan_duchy",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "milan_duchy",
+      "to_faction_id": "england",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "portugal",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "portugal",
+      "to_faction_id": "epir",
+      "good": "cloth",
+      "amount_per_turn": 3,
       "gold_per_unit": 8,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "mentese_bey",
-      "to_faction_id": "ottoman",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
+      "from_faction_id": "florence_rep",
+      "to_faction_id": "hre",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "ottoman",
+      "from_faction_id": "hre",
+      "to_faction_id": "florence_rep",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aragon",
+      "to_faction_id": "portugal",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "portugal",
+      "to_faction_id": "aragon",
+      "good": "cloth",
+      "amount_per_turn": 3,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "milan_duchy",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "milan_duchy",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mamluk",
       "to_faction_id": "mentese_bey",
       "good": "grain",
       "amount_per_turn": 3,
@@ -28599,39 +28553,7 @@
     },
     {
       "from_faction_id": "mentese_bey",
-      "to_faction_id": "ilkhanate",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ilkhanate",
-      "to_faction_id": "mentese_bey",
-      "good": "spice",
-      "amount_per_turn": 3,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aydin_bey",
-      "to_faction_id": "ottoman",
-      "good": "spice",
-      "amount_per_turn": 2,
-      "gold_per_unit": 12,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ottoman",
-      "to_faction_id": "aydin_bey",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "candar_bey",
+      "to_faction_id": "mamluk",
       "good": "grain",
       "amount_per_turn": 3,
       "gold_per_unit": 2,
@@ -28646,6 +28568,22 @@
       "suspended_turns": 0
     },
     {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "candar_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aydin_bey",
+      "to_faction_id": "ilkhanate",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
       "from_faction_id": "ilkhanate",
       "to_faction_id": "aydin_bey",
       "good": "grain",
@@ -28654,11 +28592,115 @@
       "suspended_turns": 0
     },
     {
+      "from_faction_id": "lithuanian_gd",
+      "to_faction_id": "venice",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "venice",
+      "to_faction_id": "lithuanian_gd",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "england",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "england",
+      "to_faction_id": "epir",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "hamid_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hamid_bey",
+      "to_faction_id": "golden_horde",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
       "from_faction_id": "aydin_bey",
-      "to_faction_id": "ilkhanate",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "aydin_bey",
       "good": "cloth",
       "amount_per_turn": 2,
       "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "germiyan_bey",
+      "to_faction_id": "ilkhanate",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ilkhanate",
+      "to_faction_id": "germiyan_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hungarian_kingdom",
+      "to_faction_id": "papal_states_f",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "papal_states_f",
+      "to_faction_id": "hungarian_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "novgorod_rep",
+      "to_faction_id": "serbian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "serbian_empire",
+      "to_faction_id": "novgorod_rep",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     }
   ],
@@ -28994,62 +29036,6 @@
       "turns_left": 1
     },
     {
-      "id": "prod_781",
-      "kind": "unit",
-      "faction_id": "east_rome",
-      "region_id": "constantinople",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_782",
-      "kind": "unit",
-      "faction_id": "east_rome",
-      "region_id": "constantinople",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_791",
-      "kind": "building",
-      "faction_id": "ilkhanate",
-      "region_id": "malatya",
-      "type_id": "market",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_796",
-      "kind": "unit",
-      "faction_id": "russia",
-      "region_id": "dagestan",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_797",
-      "kind": "unit",
-      "faction_id": "russia",
-      "region_id": "dagestan",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_798",
-      "kind": "unit",
-      "faction_id": "russia",
-      "region_id": "dagestan",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
-      "id": "prod_799",
-      "kind": "unit",
-      "faction_id": "russia",
-      "region_id": "dagestan",
-      "type_id": "militia",
-      "turns_left": 1
-    },
-    {
       "id": "prod_800",
       "kind": "unit",
       "faction_id": "russia",
@@ -29058,16 +29044,56 @@
       "turns_left": 1
     },
     {
-      "id": "prod_804",
+      "id": "prod_805",
+      "kind": "building",
+      "faction_id": "ottoman",
+      "region_id": "rhodes",
+      "type_id": "port",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_806",
       "kind": "unit",
-      "faction_id": "hungarian_kingdom",
-      "region_id": "serbia",
+      "faction_id": "russia",
+      "region_id": "dagestan",
+      "type_id": "transport",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_807",
+      "kind": "building",
+      "faction_id": "savoy_county",
+      "region_id": "savoy",
+      "type_id": "barracks",
+      "turns_left": 2
+    },
+    {
+      "id": "prod_808",
+      "kind": "unit",
+      "faction_id": "arnavut_des",
+      "region_id": "albania",
+      "type_id": "militia",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_809",
+      "kind": "unit",
+      "faction_id": "ahiler",
+      "region_id": "ankara",
+      "type_id": "militia",
+      "turns_left": 1
+    },
+    {
+      "id": "prod_810",
+      "kind": "unit",
+      "faction_id": "aragon",
+      "region_id": "aragon",
       "type_id": "militia",
       "turns_left": 1
     }
   ],
-  "next_production_seq": 804,
-  "next_army_seq": 152,
+  "next_production_seq": 810,
+  "next_army_seq": 153,
   "phase": "player_turn",
   "winner_id": "",
   "region_paint_overrides": {

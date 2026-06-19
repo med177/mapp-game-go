@@ -943,14 +943,22 @@ func TestCompleteBuildingPortCreatesPortSettlement(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
 			"land_a": {
-				ID:          "land_a",
-				OwnerID:     "p1",
-				WorldX:      90,
-				WorldY:      120,
+				ID:      "land_a",
+				OwnerID: "p1",
+				WorldX:  90,
+				WorldY:  120,
+				Shape: [][][2]float32{
+					{
+						{70, 100},
+						{100, 100},
+						{100, 140},
+						{70, 140},
+					},
+				},
 				Neighbors:   []world.RegionID{"sea_1"},
 				Settlements: []world.Settlement{{ID: "town_a", NameTR: "Kasaba", X: 92, Y: 118, Type: world.SettlementTown, IsCapital: true}},
 			},
-			"sea_1": {ID: "sea_1", IsSea: true, WorldX: 120, WorldY: 110},
+			"sea_1": {ID: "sea_1", IsSea: true, WorldX: 120, WorldY: 120},
 		},
 		BuildingTypes: map[string]*city.Building{
 			"port": {ID: "port", MaxPerRegion: 1},
@@ -974,5 +982,8 @@ func TestCompleteBuildingPortCreatesPortSettlement(t *testing.T) {
 	}
 	if portSettlement.ID != "land_a_port" {
 		t.Fatalf("yeni port settlement id beklenmiyordu, got=%s", portSettlement.ID)
+	}
+	if portSettlement.X != 98 || portSettlement.Y != 120 {
+		t.Fatalf("port settlement deniz sinirina yakin olmalıydı, got=(%d,%d)", portSettlement.X, portSettlement.Y)
 	}
 }
