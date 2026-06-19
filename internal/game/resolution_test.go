@@ -464,11 +464,27 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 			"sea":       {ID: "sea", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"home_army":   {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"enemy_army":  {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"fleet":       {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
-			"docked_self": {ID: "docked_self", OwnerID: "player", RegionID: "sea", DockedRegionID: "home", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
-			"docked_ally": {ID: "docked_ally", OwnerID: "player", RegionID: "sea", DockedRegionID: "ally_port", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"home_army":  {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"enemy_army": {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"fleet":      {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"docked_self": {
+				ID:             "docked_self",
+				OwnerID:        "player",
+				RegionID:       "sea",
+				DockedRegionID: "home",
+				IsNaval:        true,
+				Units:          []army.Unit{{TypeID: "transport", CurrentHP: 65}},
+				EmbarkedUnits:  []army.Unit{{TypeID: "inf", CurrentHP: 72}},
+			},
+			"docked_ally": {
+				ID:             "docked_ally",
+				OwnerID:        "player",
+				RegionID:       "sea",
+				DockedRegionID: "ally_port",
+				IsNaval:        true,
+				Units:          []army.Unit{{TypeID: "transport", CurrentHP: 65}},
+				EmbarkedUnits:  []army.Unit{{TypeID: "inf", CurrentHP: 72}},
+			},
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("ally", "player"): {FactionA: "ally", FactionB: "player", Stance: faction.StanceAllied},
@@ -489,7 +505,86 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 	if got := gs.Armies["docked_self"].Units[0].CurrentHP; got != 75 {
 		t.Fatalf("kendi limanındaki donanma iyilesmeli, got=%d", got)
 	}
+	if got := gs.Armies["docked_self"].EmbarkedUnits[0].CurrentHP; got != 82 {
+		t.Fatalf("kendi limanındaki taşınan birlik de iyilesmeli, got=%d", got)
+	}
 	if got := gs.Armies["docked_ally"].Units[0].CurrentHP; got != 70 {
 		t.Fatalf("müttefik limanındaki donanma yari hizda iyilesmeli, got=%d", got)
+	}
+	if got := gs.Armies["docked_ally"].EmbarkedUnits[0].CurrentHP; got != 77 {
+		t.Fatalf("müttefik limanındaki taşınan birlik yari hizda iyilesmeli, got=%d", got)
+	}
+}
+
+func TestApplyEmbarkedVoyageAttritionStartsAfterGraceTurns(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:               "fleet",
+				OwnerID:          "player",
+				RegionID:         "sea",
+				IsNaval:          true,
+				EmbarkedUnits:    repeatedUnits("inf", 2, 100),
+				TurnsWithoutPort: 3,
+			},
+		},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{},
+	}
+
+	alerts := applyEmbarkedVoyageAttrition(gs)
+
+	if len(alerts) != 1 {
+		t.Fatalf("grace sonrasi tek deniz attrition uyarisi bekleniyordu, got=%d", len(alerts))
+	}
+	if got := gs.Armies["fleet"].TurnsWithoutPort; got != 4 {
+		t.Fatalf("limansiz tur sayaci 4 olmali, got=%d", got)
+	}
+	for i, u := range gs.Armies["fleet"].EmbarkedUnits {
+		if u.CurrentHP != 96 {
+			t.Fatalf("embarked birim %d 4 HP kaybetmeliydi, got=%d", i, u.CurrentHP)
+		}
+	}
+	if status := gs.ArmyLogistics["fleet"]; status.DamagePerUnit != 4 || status.TotalHPDamage != 8 {
+		t.Fatalf("army logistics deniz attrition bilgisini tasimaliydi, got=%+v", status)
+	}
+}
+
+func TestApplyEmbarkedVoyageAttritionResetsAtPort(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sea":  {ID: "sea", IsSea: true},
+			"home": {ID: "home", OwnerID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:               "fleet",
+				OwnerID:          "player",
+				RegionID:         "sea",
+				DockedRegionID:   "home",
+				IsNaval:          true,
+				EmbarkedUnits:    repeatedUnits("inf", 1, 92),
+				TurnsWithoutPort: 5,
+			},
+		},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{},
+	}
+
+	alerts := applyEmbarkedVoyageAttrition(gs)
+
+	if len(alerts) != 0 {
+		t.Fatalf("limandaki filo attrition almamaliydi, got=%d", len(alerts))
+	}
+	if got := gs.Armies["fleet"].TurnsWithoutPort; got != 0 {
+		t.Fatalf("limana baglaninca limansiz tur sayaci sifirlanmali, got=%d", got)
+	}
+	if got := gs.Armies["fleet"].EmbarkedUnits[0].CurrentHP; got != 92 {
+		t.Fatalf("limandaki embarked birlik hasar almamaliydi, got=%d", got)
+	}
+	if _, ok := gs.ArmyLogistics["fleet"]; ok {
+		t.Fatalf("limandaki filo icin deniz attrition kaydi yazilmamali")
 	}
 }

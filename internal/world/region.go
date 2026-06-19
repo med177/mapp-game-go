@@ -150,6 +150,22 @@ func (r *Region) HasPort() bool {
 	return false
 }
 
+func (r *Region) HasBuilding(buildingID string) bool {
+	if r == nil || r.IsSea || buildingID == "" {
+		return false
+	}
+	for _, id := range r.Buildings {
+		if id == buildingID {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Region) HasPortBuilding() bool {
+	return r.HasBuilding("port")
+}
+
 // CanNavalEnter bir naval ordunun bu bölgeye girebilip giremeyeceğini döner.
 // Naval ordular sadece deniz bölgelerine girer.
 func (r *Region) CanNavalEnter() bool {

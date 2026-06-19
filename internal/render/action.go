@@ -15,6 +15,7 @@ const (
 	ActionConfirmEndTurn     ActionKind = "confirm_end_turn"
 	ActionSelectArmy         ActionKind = "select_army"
 	ActionMoveArmy           ActionKind = "move_army"
+	ActionEmbarkArmy         ActionKind = "embark_army"
 	ActionRecruitUnit        ActionKind = "recruit_unit"
 	ActionBuild              ActionKind = "build"
 	ActionDeclareWar         ActionKind = "declare_war"
@@ -76,6 +77,7 @@ const (
 type InputAction struct {
 	Kind          ActionKind
 	ArmyID        army.ArmyID
+	TargetArmyID  army.ArmyID
 	TargetRegion  world.RegionID
 	BuildingID    string
 	Quantity      int

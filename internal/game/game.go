@@ -211,6 +211,8 @@ func (g *Game) Update() error {
 			g.gs.Phase = state.PhaseAITurn
 		case render.ActionMoveArmy:
 			g.moveArmy(action.ArmyID, action.TargetRegion)
+		case render.ActionEmbarkArmy:
+			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionSplitArmy:
 			g.splitArmy(action.ArmyID)
 		case render.ActionMergeArmies:
@@ -439,6 +441,7 @@ func (g *Game) resolveTurn() {
 	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
 	economyReport := applyEconomyTick(g.gs)
+	navalVoyageAlerts := applyEmbarkedVoyageAttrition(g.gs)
 	completedTechs := applyTechTicks(g.gs)
 	productionResults := g.applyProductionTicks()
 	applyReligionConversion(g.gs)
@@ -490,6 +493,7 @@ func (g *Game) resolveTurn() {
 	}
 
 	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
+	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
 
 	// Olaylar
 	if evt := events.Tick(g.gs, g.evts); evt != nil {
@@ -550,6 +554,32 @@ func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus)
 		if alert.PeakOverloadTurns >= 2 {
 			g.renderer.ShowCombatResult(regionName + ": ordular ikmal baskısı altında zayiat veriyor")
 		}
+	}
+}
+
+func (g *Game) showEmbarkedVoyageAlerts(alerts []navalVoyageAlert) {
+	for _, alert := range alerts {
+		fleet := g.gs.Armies[alert.FleetID]
+		if fleet == nil || fleet.OwnerID != string(g.gs.PlayerFactionID) {
+			continue
+		}
+		regionName := string(alert.RegionID)
+		if region, ok := g.gs.Regions[alert.RegionID]; ok && region != nil {
+			regionName = region.NameTR
+		}
+		msg := fmt.Sprintf("%s: limansız uzun sefer gemideki birlikleri yıpratıyor", regionName)
+		detail := fmt.Sprintf(
+			"%s bölgesindeki %s filosu %d turdur limana uğramadı. Gemideki birlikler birim başına %d HP kaybetti. Etkilenen birlik: %d, kayıp birlik: %d, toplam HP kaybı: %d.",
+			regionName,
+			string(alert.FleetID),
+			alert.TurnsWithoutPort,
+			alert.DamagePerUnit,
+			alert.UnitsAffected,
+			alert.UnitsLost,
+			alert.TotalHPDamage,
+		)
+		g.renderer.AddEventDetail("[DENIZ LOJISTIK] "+msg, detail)
+		g.renderer.ShowCombatResult(msg)
 	}
 }
 
@@ -2298,41 +2328,108 @@ func (g *Game) regionUnitProductionCapacity(region *world.Region) int {
 	return capacity
 }
 
-func (g *Game) fleetHasTransportCapacity(fleet *army.Army) bool {
-	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) > 0 {
+func (g *Game) fleetHasTransportCapacity(fleet *army.Army, unitCount int) bool {
+	if g == nil || g.gs == nil || fleet == nil || !fleet.IsNaval {
 		return false
 	}
-	for _, u := range fleet.Units {
-		if ut, ok := g.gs.UnitTypes[u.TypeID]; ok && ut.Category == army.CategoryNavalTrans {
+	return fleet.CanEmbarkUnits(g.gs.UnitTypes, unitCount)
+}
+
+func (g *Game) findFriendlyTransportFleet(ownerID string, seaRegionID world.RegionID) *army.Army {
+	for _, candidate := range g.gs.Armies {
+		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
+			continue
+		}
+		if candidate.TransportCapacity(g.gs.UnitTypes) > 0 {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func (g *Game) canEmbarkLandArmy(a *army.Army) bool {
+	return a.CanEmbark(g.gs.UnitTypes)
+}
+
+func (g *Game) embarkBlockedMessage(a *army.Army) string {
+	if g == nil || g.gs == nil || a == nil {
+		return "Bu ordudaki bazı birimler denizden taşınamaz."
+	}
+	blockers := a.EmbarkBlockerNames(g.gs.UnitTypes)
+	if len(blockers) == 0 {
+		return "Bu ordudaki bazı birimler denizden taşınamaz."
+	}
+	return fmt.Sprintf("Bu ordu denizden taşınamaz. Uygun olmayan birlikler: %s.", strings.Join(blockers, ", "))
+}
+
+func (g *Game) fleetCanEmbarkFromRegion(fleet *army.Army, sourceRegionID world.RegionID) bool {
+	if g == nil || g.gs == nil || fleet == nil || !fleet.IsNaval || sourceRegionID == "" {
+		return false
+	}
+	if fleet.DockedRegionID == sourceRegionID {
+		return true
+	}
+	src := g.gs.Regions[sourceRegionID]
+	if src == nil {
+		return false
+	}
+	for _, nid := range src.Neighbors {
+		if nid == fleet.RegionID {
 			return true
 		}
 	}
 	return false
 }
 
-func (g *Game) canEmbarkLandArmy(a *army.Army) bool {
-	if a == nil || a.IsNaval || len(a.Units) == 0 {
-		return false
-	}
-	for _, u := range a.Units {
-		ut, ok := g.gs.UnitTypes[u.TypeID]
-		if !ok || !ut.Embarkable {
-			return false
-		}
-	}
-	return true
+func (g *Game) findFriendlyEmbarkFleet(ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
+	return g.findFriendlyEmbarkFleetFromRegion(ownerID, "", seaRegionID, unitCount)
 }
 
-func (g *Game) findFriendlyEmbarkFleet(ownerID string, seaRegionID world.RegionID) *army.Army {
+func (g *Game) findFriendlyEmbarkFleetFromRegion(ownerID string, sourceRegionID, seaRegionID world.RegionID, unitCount int) *army.Army {
+	var fallback *army.Army
 	for _, candidate := range g.gs.Armies {
 		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
 			continue
 		}
-		if g.fleetHasTransportCapacity(candidate) {
+		if !g.fleetHasTransportCapacity(candidate, unitCount) {
+			continue
+		}
+		if sourceRegionID != "" && candidate.DockedRegionID == sourceRegionID {
 			return candidate
 		}
+		if fallback == nil {
+			fallback = candidate
+		}
 	}
-	return nil
+	return fallback
+}
+
+func (g *Game) embarkArmyOntoFleet(armyID, fleetID army.ArmyID) {
+	a, ok := g.gs.Armies[armyID]
+	if !ok || a.OwnerID != string(g.gs.PlayerFactionID) || a.IsNaval || a.MovePoints <= 0 {
+		return
+	}
+	fleet := g.gs.Armies[fleetID]
+	if fleet == nil || !fleet.IsNaval || fleet.OwnerID != a.OwnerID {
+		return
+	}
+	if !g.canEmbarkLandArmy(a) {
+		g.renderer.ShowCombatResult(g.embarkBlockedMessage(a))
+		return
+	}
+	if !g.fleetCanEmbarkFromRegion(fleet, a.RegionID) {
+		g.renderer.ShowCombatResult("Bu filo bu bölgeden yükleme menzilinde değil.")
+		return
+	}
+	if !g.fleetHasTransportCapacity(fleet, len(a.Units)) {
+		g.renderer.ShowCombatResult("Seçilen filoda yeterli nakliye kapasitesi yok.")
+		return
+	}
+	fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
+	fleet.MovePoints = max(0, fleet.MovePoints-1)
+	delete(g.gs.Armies, armyID)
+	g.renderer.SelectedArmy = fleet.ID
+	g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
 }
 
 func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
@@ -2408,7 +2505,7 @@ func (g *Game) canDockFleetAtRegion(fleet *army.Army, targetRegion *world.Region
 	if !g.fleetsCanSharePort(fleet.OwnerID, targetRegion.OwnerID) {
 		return false
 	}
-	return targetRegion.HasPort()
+	return targetRegion.HasPortBuilding()
 }
 
 // applyConquestWithNavalEviction bölge sahipliği değiştiğinde limanda bekleyen
@@ -2630,19 +2727,23 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	} else {
 		if targetRegion.CanNavalEnter() {
 			if !g.canEmbarkLandArmy(a) {
-				g.renderer.ShowCombatResult("Bu ordudaki bazı birimler denizden taşınamaz.")
+				g.renderer.ShowCombatResult(g.embarkBlockedMessage(a))
 				return
 			}
-			fleet := g.findFriendlyEmbarkFleet(a.OwnerID, target)
+			fleet := g.findFriendlyEmbarkFleetFromRegion(a.OwnerID, a.RegionID, target, len(a.Units))
 			if fleet == nil {
-				g.renderer.ShowCombatResult("Embark için komşu denizde uygun nakliye filosu yok!")
+				if transportFleet := g.findFriendlyTransportFleet(a.OwnerID, target); transportFleet != nil {
+					g.renderer.ShowCombatResult(fmt.Sprintf("Nakliye kapasitesi yetersiz: %d/%d boş slot.", transportFleet.AvailableTransportCapacity(g.gs.UnitTypes), len(a.Units)))
+				} else {
+					g.renderer.ShowCombatResult("Embark için komşu denizde uygun nakliye filosu yok!")
+				}
 				return
 			}
-			fleet.EmbarkedUnits = append(fleet.EmbarkedUnits[:0], a.Units...)
+			fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 			fleet.MovePoints = max(0, fleet.MovePoints-1)
 			delete(g.gs.Armies, aid)
 			g.renderer.SelectedArmy = fleet.ID
-			g.renderer.ShowCombatResult("Ordu nakliye filosuna bindi.")
+			g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
 			return
 		}
 		if !targetRegion.CanLandEnter() {
@@ -2776,6 +2877,7 @@ func (g *Game) splitArmy(aid army.ArmyID) {
 		MovePoints:         a.MovePoints,
 		MaxMovePoints:      a.MaxMovePoints,
 		IsNaval:            a.IsNaval,
+		TurnsWithoutPort:   a.TurnsWithoutPort,
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
 }

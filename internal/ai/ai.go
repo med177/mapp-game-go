@@ -834,37 +834,18 @@ func moveArmy(gs *state.GameState, a *army.Army) {
 }
 
 func aiCanEmbarkArmy(gs *state.GameState, a *army.Army) bool {
-	if gs == nil || a == nil || a.IsNaval || len(a.Units) == 0 {
+	if gs == nil || a == nil {
 		return false
 	}
-	for _, u := range a.Units {
-		ut, ok := gs.UnitTypes[u.TypeID]
-		if !ok || !ut.Embarkable {
-			return false
-		}
-	}
-	return true
+	return a.CanEmbark(gs.UnitTypes)
 }
 
-func aiFleetHasTransportCapacity(gs *state.GameState, fleet *army.Army) bool {
-	if gs == nil || fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) > 0 {
-		return false
-	}
-	for _, u := range fleet.Units {
-		ut, ok := gs.UnitTypes[u.TypeID]
-		if ok && ut.Category == army.CategoryNavalTrans {
-			return true
-		}
-	}
-	return false
-}
-
-func aiFindEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID) *army.Army {
+func aiFindEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
 	for _, candidate := range gs.Armies {
 		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
 			continue
 		}
-		if aiFleetHasTransportCapacity(gs, candidate) {
+		if candidate.CanEmbarkUnits(gs.UnitTypes, unitCount) {
 			return candidate
 		}
 	}
@@ -875,7 +856,7 @@ func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) i
 	if gs == nil || a == nil || seaRegion == nil || !seaRegion.IsSea {
 		return 0
 	}
-	if !aiCanEmbarkArmy(gs, a) || aiFindEmbarkFleet(gs, a.OwnerID, seaRegion.ID) == nil {
+	if !aiCanEmbarkArmy(gs, a) || aiFindEmbarkFleet(gs, a.OwnerID, seaRegion.ID, len(a.Units)) == nil {
 		return 0
 	}
 	best := 10 + aiSeaPressure(gs, a.OwnerID, seaRegion.ID)/2
@@ -1295,11 +1276,11 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 		if !aiCanEmbarkArmy(gs, a) {
 			return true
 		}
-		fleet := aiFindEmbarkFleet(gs, a.OwnerID, target)
+		fleet := aiFindEmbarkFleet(gs, a.OwnerID, target, len(a.Units))
 		if fleet == nil {
 			return true
 		}
-		fleet.EmbarkedUnits = append(fleet.EmbarkedUnits[:0], a.Units...)
+		fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 		if fleet.MovePoints > 0 {
 			fleet.MovePoints--
 		}

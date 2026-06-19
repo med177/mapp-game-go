@@ -5,11 +5,16 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func testTransportType() *army.UnitType {
+	return &army.UnitType{ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10}
+}
 
 func TestMoveArmyEmbarkSuccess(t *testing.T) {
 	gs := &state.GameState{
@@ -43,7 +48,7 @@ func TestMoveArmyEmbarkSuccess(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"infantry":  {ID: "infantry", Embarkable: true},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -59,6 +64,235 @@ func TestMoveArmyEmbarkSuccess(t *testing.T) {
 	}
 	if fleet.MovePoints != 2 {
 		t.Fatalf("filo hareket puanı 1 düşmeliydi, got=%d", fleet.MovePoints)
+	}
+}
+
+func TestMoveArmyEmbarkRejectsInsufficientTransportCapacity(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_p1_1": {
+				ID:            "army_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "land_a",
+				Units:         []army.Unit{{TypeID: "infantry", CurrentHP: 100}, {TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("army_p1_1", "sea_1")
+
+	if _, exists := gs.Armies["army_p1_1"]; !exists {
+		t.Fatalf("kapasite yetmiyorsa kara ordusu silinmemeliydi")
+	}
+	if got := len(gs.Armies["fleet_p1_1"].EmbarkedUnits); got != 0 {
+		t.Fatalf("kapasite yetmiyorsa filoya yük alınmamalı, got=%d", got)
+	}
+}
+
+func TestMoveArmyEmbarkAppendsIntoExistingFleetCargo(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"land_b": {ID: "land_b", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a", "land_b"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_p1_1": {
+				ID:            "army_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "land_a",
+				Units:         []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"army_p1_2": {
+				ID:            "army_p1_2",
+				OwnerID:       "p1",
+				RegionID:      "land_b",
+				Units:         []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 2},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("army_p1_1", "sea_1")
+	g.moveArmy("army_p1_2", "sea_1")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if got := len(fleet.EmbarkedUnits); got != 2 {
+		t.Fatalf("iki embark sonrası filoda iki kara birimi beklenirdi, got=%d", got)
+	}
+	if _, exists := gs.Armies["army_p1_1"]; exists {
+		t.Fatalf("ilk embark eden ordu silinmeliydi")
+	}
+	if _, exists := gs.Armies["army_p1_2"]; exists {
+		t.Fatalf("ikinci embark eden ordu silinmeliydi")
+	}
+}
+
+func TestEmbarkArmyOntoSpecificDockedFleet(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"land_b": {ID: "land_b", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a", "land_b"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_p1_1": {
+				ID:            "army_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "land_a",
+				Units:         []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"fleet_here": {
+				ID:                 "fleet_here",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+			"fleet_elsewhere": {
+				ID:                 "fleet_elsewhere",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_b",
+				DockedSettlementID: "port_b",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.embarkArmyOntoFleet("army_p1_1", "fleet_here")
+
+	if _, exists := gs.Armies["army_p1_1"]; exists {
+		t.Fatalf("kara ordusu belirli filoya bindikten sonra silinmeliydi")
+	}
+	if got := len(gs.Armies["fleet_here"].EmbarkedUnits); got != 1 {
+		t.Fatalf("secilen filoda bir cargo birimi beklenirdi, got=%d", got)
+	}
+	if got := len(gs.Armies["fleet_elsewhere"].EmbarkedUnits); got != 0 {
+		t.Fatalf("diger filo etkilenmemeliydi, got=%d", got)
+	}
+}
+
+func TestMoveArmyEmbarkPrefersFleetDockedAtSourceRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"land_b": {ID: "land_b", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a", "land_b"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_p1_1": {
+				ID:            "army_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "land_a",
+				Units:         []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+			"fleet_here": {
+				ID:                 "fleet_here",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+			"fleet_elsewhere": {
+				ID:                 "fleet_elsewhere",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_b",
+				DockedSettlementID: "port_b",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("army_p1_1", "sea_1")
+
+	if got := len(gs.Armies["fleet_here"].EmbarkedUnits); got != 1 {
+		t.Fatalf("aynı limandaki filo tercih edilmeliydi, got=%d", got)
+	}
+	if got := len(gs.Armies["fleet_elsewhere"].EmbarkedUnits); got != 0 {
+		t.Fatalf("uzaktaki docked filo cargo almamaliydi, got=%d", got)
 	}
 }
 
@@ -93,7 +327,7 @@ func TestMoveArmyEmbarkRejectsNonEmbarkableUnits(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"cavalry":   {ID: "cavalry", Embarkable: false},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -133,7 +367,7 @@ func TestMoveArmyDisembarkSuccess(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"infantry":  {ID: "infantry", Embarkable: true},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -185,7 +419,7 @@ func TestMoveArmyDisembarkEnemyCoastRequiresWar(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"infantry":  {ID: "infantry", Embarkable: true},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -241,7 +475,7 @@ func TestMoveArmyDisembarkEnemyArmyBattleWin(t *testing.T) {
 			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: -90, Stance: faction.StanceWar},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 			"elite":     {ID: "elite", Embarkable: true, Attack: 100, Defense: 100, Morale: 100},
 			"weak":      {ID: "weak", Attack: 1, Defense: 1, Morale: 1},
 		},
@@ -301,7 +535,7 @@ func TestMoveArmyDisembarkEnemyArmyBattleLose(t *testing.T) {
 			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: -90, Stance: faction.StanceWar},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 			"elite":     {ID: "elite", Attack: 100, Defense: 100, Morale: 100},
 			"weak":      {ID: "weak", Embarkable: true, Attack: 1, Defense: 1, Morale: 1},
 		},
@@ -350,7 +584,7 @@ func TestMoveArmyDisembarkEnemyCoastNoArmyConquersOnWar(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"infantry":  {ID: "infantry", Embarkable: true},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -403,7 +637,7 @@ func TestMoveNavalIntoEnemySeaAtPeaceNoWarDeclarationNoBattle(t *testing.T) {
 			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Score: 10, Stance: faction.StancePeace},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans, Attack: 10, Defense: 10, Morale: 50},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, Attack: 10, Defense: 10, Morale: 50},
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -445,7 +679,7 @@ func TestMoveArmyUndockFleetToSeaCenterOnSameRegion(t *testing.T) {
 			"p1": {ID: "p1"},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -477,6 +711,7 @@ func TestMoveArmyDockFleetAtOwnedPort(t *testing.T) {
 				ID:          "land_a",
 				OwnerID:     "p1",
 				Neighbors:   []world.RegionID{"sea_1"},
+				Buildings:   []string{"port"},
 				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
 			},
 		},
@@ -495,7 +730,7 @@ func TestMoveArmyDockFleetAtOwnedPort(t *testing.T) {
 			"p1": {ID: "p1"},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -527,6 +762,7 @@ func TestMoveArmyDockFleetAtAlliedPort(t *testing.T) {
 				ID:          "ally_land",
 				OwnerID:     "ally",
 				Neighbors:   []world.RegionID{"sea_1"},
+				Buildings:   []string{"port"},
 				Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
 			},
 		},
@@ -549,7 +785,7 @@ func TestMoveArmyDockFleetAtAlliedPort(t *testing.T) {
 			faction.RelationKey("ally", "p1"): {FactionA: "ally", FactionB: "p1", Stance: faction.StanceAllied},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -562,6 +798,56 @@ func TestMoveArmyDockFleetAtAlliedPort(t *testing.T) {
 	}
 	if fleet.MovePoints != 2 {
 		t.Fatalf("dock hareketi 1 puan tüketmeli, got=%d", fleet.MovePoints)
+	}
+}
+
+func TestMoveArmyDoesNotDockFleetAtPortSettlementWithoutPortBuilding(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"land_a"},
+			},
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "p1",
+				Neighbors:   []world.RegionID{"sea_1"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "land_a")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if fleet.DockedRegionID != "" || fleet.DockedSettlementID != "" {
+		t.Fatalf("port binasi yoksa filo dock olmamaliydi, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+	if fleet.RegionID != "sea_1" {
+		t.Fatalf("port binasi yoksa filo denizde kalmaliydi, got=%s", fleet.RegionID)
+	}
+	if fleet.MovePoints != 3 {
+		t.Fatalf("gecersiz dock denemesinde hareket puani dusmemeli, got=%d", fleet.MovePoints)
 	}
 }
 
@@ -597,7 +883,7 @@ func TestMoveArmyDockFleetAtOwnedPortBuildingWithoutPortSettlement(t *testing.T)
 			"p1": {ID: "p1"},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": testTransportType(),
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -607,5 +893,43 @@ func TestMoveArmyDockFleetAtOwnedPortBuildingWithoutPortSettlement(t *testing.T)
 	fleet := gs.Armies["fleet_p1_1"]
 	if fleet.DockedRegionID != "land_a" || fleet.DockedSettlementID != "izmir" {
 		t.Fatalf("port binasi olan bolgeye dock olmali, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+}
+
+func TestCompleteBuildingPortCreatesPortSettlement(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "p1",
+				WorldX:      90,
+				WorldY:      120,
+				Neighbors:   []world.RegionID{"sea_1"},
+				Settlements: []world.Settlement{{ID: "town_a", NameTR: "Kasaba", X: 92, Y: 118, Type: world.SettlementTown, IsCapital: true}},
+			},
+			"sea_1": {ID: "sea_1", IsSea: true, WorldX: 120, WorldY: 110},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port", MaxPerRegion: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !g.completeBuilding(gs.Regions["land_a"], "port") {
+		t.Fatalf("port binasi tamamlanmaliydi")
+	}
+	region := gs.Regions["land_a"]
+	if got := len(region.Buildings); got != 1 {
+		t.Fatalf("port binasi kayda gecmeliydi, got=%d", got)
+	}
+	if got := len(region.Settlements); got != 2 {
+		t.Fatalf("port binasi port settlement olusturmaliydi, got=%d", got)
+	}
+	portSettlement := region.Settlements[1]
+	if portSettlement.Type != world.SettlementPort || portSettlement.NameTR != "Liman" {
+		t.Fatalf("olusan settlement liman olmaliydi, got=%+v", portSettlement)
+	}
+	if portSettlement.ID != "land_a_port" {
+		t.Fatalf("yeni port settlement id beklenmiyordu, got=%s", portSettlement.ID)
 	}
 }

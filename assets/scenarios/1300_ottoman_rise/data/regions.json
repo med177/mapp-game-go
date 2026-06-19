@@ -770,7 +770,6 @@
       "denmark",
       "friesland",
       "holland",
-      "kattegat",
       "north_sea",
       "palatinate",
       "saxony",
@@ -879,7 +878,6 @@
     "neighbors": [
       "kattegat",
       "new_region_235",
-      "north_sea",
       "saxony",
       "westphalia"
     ],
@@ -983,12 +981,9 @@
     "terrain": "coast",
     "owner_id": "portugal",
     "neighbors": [
-      "atlantic_ocean_shore",
       "atlantic_open_3",
       "castile",
       "granada",
-      "new_region_233",
-      "new_region_248",
       "new_region_249",
       "new_region_252"
     ],
@@ -1022,7 +1017,6 @@
     "terrain": "coast",
     "owner_id": "granada_emirate",
     "neighbors": [
-      "castile",
       "granada",
       "new_region_248",
       "new_region_249",
@@ -1059,11 +1053,11 @@
     "owner_id": "leon_kingdom",
     "neighbors": [
       "atlantic_ocean_shore",
+      "atlantic_open_3",
       "bay_of_biscay",
       "granada",
       "new_region_233",
       "new_region_234",
-      "new_region_252",
       "portugal"
     ],
     "world_x": 357,
@@ -1249,7 +1243,8 @@
       "apulia",
       "mediterranean_open_5",
       "new_region_245",
-      "papal_states"
+      "papal_states",
+      "sicily"
     ],
     "world_x": 774,
     "world_y": 464,
@@ -1853,11 +1848,9 @@
     "terrain": "pass",
     "owner_id": "",
     "neighbors": [
-      "eastern_mediterranean",
       "eastern_mediterranean_shore",
       "egypt",
       "new_region_226",
-      "new_region_242",
       "new_region_243",
       "new_region_244",
       "tripolitania"
@@ -2175,7 +2168,6 @@
       "new_region_226",
       "new_region_228",
       "new_region_240",
-      "new_region_242",
       "red_open_2"
     ],
     "world_x": 1104,
@@ -2841,8 +2833,7 @@
       "morocco",
       "new_region_231",
       "new_region_249",
-      "new_region_252",
-      "portugal"
+      "new_region_252"
     ],
     "world_x": 334,
     "world_y": 556,
@@ -2871,12 +2862,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "atlantic_ocean_shore",
+      "atlantic_open_3",
       "atlantic_open_4",
-      "bay_of_biscay",
-      "castile",
-      "irish_sea_shore",
-      "new_region_249",
-      "portugal"
+      "castile"
     ],
     "world_x": 277,
     "world_y": 432,
@@ -2906,7 +2895,7 @@
     "owner_id": "",
     "neighbors": [
       "atlantic_ocean",
-      "new_region_233",
+      "atlantic_open_3",
       "new_region_248",
       "new_region_252",
       "portugal"
@@ -2975,12 +2964,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "denmark",
       "friesland",
+      "holland",
+      "kattegat",
+      "north_sea_shore",
       "westphalia"
     ],
-    "world_x": 615,
-    "world_y": 224,
+    "world_x": 613,
+    "world_y": 205,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3007,12 +2998,11 @@
     "owner_id": "",
     "neighbors": [
       "denmark",
-      "friesland",
       "new_region_235",
+      "north_sea",
       "north_sea_shore",
       "norway",
-      "norwegian_sea",
-      "westphalia"
+      "norwegian_sea"
     ],
     "world_x": 604,
     "world_y": 189,
@@ -3147,7 +3137,6 @@
     "owner_id": "",
     "neighbors": [
       "corsica",
-      "eastern_mediterranean",
       "ligurian_sea",
       "malta",
       "mediterranean_open_4",
@@ -3329,9 +3318,9 @@
     "neighbors": [
       "eastern_mediterranean_shore",
       "egypt",
-      "new_region_228",
-      "rhodes",
-      "western_mediterranean"
+      "mediterranean_open_1",
+      "new_region_240",
+      "new_region_242"
     ],
     "world_x": 1010,
     "world_y": 700,
@@ -3407,6 +3396,7 @@
       "mediterranean_open_1",
       "mentese_hinterland",
       "morea",
+      "new_region_242",
       "rhodes"
     ],
     "world_x": 977,
@@ -4167,6 +4157,7 @@
     "neighbors": [
       "flanders",
       "friesland",
+      "north_sea",
       "north_sea_shore",
       "palatinate",
       "westphalia"
@@ -4309,7 +4300,8 @@
       "adriatic_sea_shore",
       "ionian_sea",
       "mediterranean_open_2",
-      "mediterranean_open_5"
+      "mediterranean_open_5",
+      "naples"
     ],
     "world_x": 759,
     "world_y": 521,
@@ -4408,6 +4400,8 @@
     "owner_id": "venice",
     "neighbors": [
       "aegean_sea_shore",
+      "eastern_mediterranean_shore",
+      "new_region_242",
       "new_region_253"
     ],
     "world_x": 973,
@@ -4635,7 +4629,6 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "eastern_mediterranean",
       "mediterranean_open_1",
       "new_region_253"
     ],
@@ -5922,9 +5915,7 @@
     "owner_id": "hre",
     "neighbors": [
       "holland",
-      "kattegat",
       "north_sea",
-      "north_sea_shore",
       "westphalia"
     ],
     "world_x": 599,
@@ -7426,7 +7417,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "atlantic_ocean_shore",
+      "castile",
+      "new_region_233",
+      "new_region_249",
       "portugal"
     ],
     "world_x": 321,
@@ -7456,6 +7449,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "atlantic_ocean_shore",
       "atlantic_open_5",
       "irish_sea_shore",
       "new_region_233",
@@ -7557,12 +7551,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "atlantic_open_3",
+      "atlantic_open_4",
+      "bay_of_biscay",
       "castile",
-      "portugal"
+      "irish_sea_shore",
+      "new_region_233"
     ],
-    "world_x": 326,
-    "world_y": 425,
+    "world_x": 323,
+    "world_y": 392,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -7588,11 +7584,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "atlantic_ocean_shore",
       "atlantic_open_4",
       "bay_of_biscay",
       "brittany",
       "irish_sea",
-      "new_region_233",
       "new_region_250",
       "the_pale",
       "wessex"
@@ -7664,11 +7660,11 @@
       "atlantic_open_6",
       "east_anglia",
       "flanders",
-      "friesland",
       "holland",
       "kattegat",
       "mercia",
       "new_region_250",
+      "north_sea",
       "norwegian_sea",
       "yorkshire"
     ],
@@ -7700,11 +7696,11 @@
     "owner_id": "",
     "neighbors": [
       "east_mediterranean",
+      "eastern_mediterranean",
       "mentese",
       "mentese_hinterland",
       "new_region_240",
       "new_region_242",
-      "new_region_243",
       "new_region_253",
       "rhodes"
     ],
@@ -7735,14 +7731,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "egypt",
+      "crete",
+      "eastern_mediterranean",
+      "eastern_mediterranean_shore",
       "mediterranean_open_1",
-      "new_region_228",
-      "new_region_240",
-      "new_region_243"
+      "new_region_253"
     ],
-    "world_x": 1022,
-    "world_y": 627,
+    "world_x": 1012,
+    "world_y": 604,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8084,6 +8080,7 @@
     "neighbors": [
       "adriatic_sea_shore",
       "crete",
+      "eastern_mediterranean_shore",
       "morea",
       "new_region_243",
       "new_region_244",
@@ -8118,9 +8115,8 @@
     "owner_id": "",
     "neighbors": [
       "aegean_sea_shore",
-      "mediterranean_open_1",
+      "eastern_mediterranean_shore",
       "new_region_228",
-      "new_region_242",
       "new_region_244"
     ],
     "world_x": 932,
@@ -8150,12 +8146,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "aegean_sea_shore",
+      "crete",
       "eastern_mediterranean",
       "egypt",
-      "new_region_228"
+      "new_region_228",
+      "new_region_242",
+      "new_region_243"
     ],
-    "world_x": 936,
-    "world_y": 668,
+    "world_x": 969,
+    "world_y": 614,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8291,11 +8291,11 @@
     "neighbors": [
       "cyprus",
       "east_mediterranean",
+      "eastern_mediterranean",
       "egypt",
       "israel",
       "mediterranean_open_1",
-      "new_region_241",
-      "new_region_242"
+      "new_region_241"
     ],
     "world_x": 1137,
     "world_y": 605,
@@ -8763,11 +8763,11 @@
     "owner_id": "",
     "neighbors": [
       "anjou",
+      "atlantic_ocean_shore",
       "brittany",
       "castile",
       "irish_sea_shore",
       "navarre",
-      "new_region_233",
       "new_region_234",
       "savoy"
     ],

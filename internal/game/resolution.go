@@ -13,9 +13,25 @@ import (
 )
 
 const friendlyReplenishHP = 10
+const (
+	embarkedVoyageGraceTurns = 3
+	embarkedVoyageBaseDamage = 4
+	embarkedVoyageStepDamage = 2
+	embarkedVoyageMaxDamage  = 12
+)
 
 type economyTickReport struct {
 	PlayerLogisticsAlerts []state.RegionLogisticsStatus
+}
+
+type navalVoyageAlert struct {
+	FleetID          army.ArmyID
+	RegionID         world.RegionID
+	TurnsWithoutPort int
+	DamagePerUnit    int
+	UnitsAffected    int
+	UnitsLost        int
+	TotalHPDamage    int
 }
 
 type eliminationResult struct {
@@ -226,6 +242,16 @@ func replenishDockedFleet(gs *state.GameState, fleet *army.Army, amount int) int
 		}
 		healedUnits++
 	}
+	for i := range fleet.EmbarkedUnits {
+		if fleet.EmbarkedUnits[i].CurrentHP >= army.MaxUnitHP {
+			continue
+		}
+		fleet.EmbarkedUnits[i].CurrentHP += healAmount
+		if fleet.EmbarkedUnits[i].CurrentHP > army.MaxUnitHP {
+			fleet.EmbarkedUnits[i].CurrentHP = army.MaxUnitHP
+		}
+		healedUnits++
+	}
 	return healedUnits
 }
 
@@ -357,6 +383,68 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	// --- Dinamik piyasa fiyatlarını güncelle ---
 	gs.MarketPrices = economy.ComputeMarketPrices(gs.Factions)
 	return report
+}
+
+func applyEmbarkedVoyageAttrition(gs *state.GameState) []navalVoyageAlert {
+	if gs == nil {
+		return nil
+	}
+	if gs.ArmyLogistics == nil {
+		gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
+	}
+	alerts := make([]navalVoyageAlert, 0)
+	for aid, a := range gs.Armies {
+		if a == nil || !a.IsNaval {
+			continue
+		}
+		if a.DockedRegionID != "" || len(a.EmbarkedUnits) == 0 {
+			a.TurnsWithoutPort = 0
+			continue
+		}
+		a.TurnsWithoutPort++
+		if a.TurnsWithoutPort <= embarkedVoyageGraceTurns {
+			continue
+		}
+
+		damagePerUnit := embarkedVoyageBaseDamage + (a.TurnsWithoutPort-embarkedVoyageGraceTurns-1)*embarkedVoyageStepDamage
+		if damagePerUnit > embarkedVoyageMaxDamage {
+			damagePerUnit = embarkedVoyageMaxDamage
+		}
+		unitsBefore := len(a.EmbarkedUnits)
+		unitsLost := 0
+		totalDamage := 0
+		survivors := a.EmbarkedUnits[:0]
+		for _, u := range a.EmbarkedUnits {
+			u.CurrentHP -= damagePerUnit
+			totalDamage += damagePerUnit
+			if u.CurrentHP <= 0 {
+				unitsLost++
+				continue
+			}
+			survivors = append(survivors, u)
+		}
+		a.EmbarkedUnits = survivors
+		gs.ArmyLogistics[aid] = state.ArmyLogisticsStatus{
+			ArmyID:            aid,
+			RegionID:          a.RegionID,
+			OwnerID:           a.OwnerID,
+			OverCapacityTurns: a.TurnsWithoutPort,
+			DamagePerUnit:     damagePerUnit,
+			UnitsAffected:     unitsBefore,
+			UnitsLost:         unitsLost,
+			TotalHPDamage:     totalDamage,
+		}
+		alerts = append(alerts, navalVoyageAlert{
+			FleetID:          aid,
+			RegionID:         a.RegionID,
+			TurnsWithoutPort: a.TurnsWithoutPort,
+			DamagePerUnit:    damagePerUnit,
+			UnitsAffected:    unitsBefore,
+			UnitsLost:        unitsLost,
+			TotalHPDamage:    totalDamage,
+		})
+	}
+	return alerts
 }
 
 func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int) {

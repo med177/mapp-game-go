@@ -14,6 +14,10 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func aiTestTransportType() *army.UnitType {
+	return &army.UnitType{ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10}
+}
+
 func TestAIHandlesPeaceWhenWarPressureIsHigh(t *testing.T) {
 	gs := aiTestState()
 	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
@@ -126,7 +130,7 @@ func TestAIMoveArmyEmbarksIntoFriendlyTransportFleet(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": aiTestTransportType(),
 		},
 	}
 
@@ -167,7 +171,7 @@ func TestAIMoveArmyDisembarksFromFleet(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": aiTestTransportType(),
 		},
 	}
 
@@ -211,7 +215,7 @@ func TestAIMoveArmyDisembarksToEnemyCoastWhenAtWar(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"elite":     {ID: "elite", Embarkable: true, Attack: 120, Defense: 90, Morale: 90},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": aiTestTransportType(),
 		},
 	}
 
@@ -254,7 +258,7 @@ func TestAIMoveArmyDoesNotDisembarkToEnemyCoastAtPeace(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": aiTestTransportType(),
 		},
 	}
 
@@ -302,7 +306,7 @@ func TestChooseBestMovePrefersSeaWithHigherHostilePressure(t *testing.T) {
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+			"transport": aiTestTransportType(),
 		},
 	}
 
@@ -394,7 +398,7 @@ func TestAINavalStrategyAllowsThirdFleetDuringWarPressure(t *testing.T) {
 			"port": {ID: "port"},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans, GoldCost: 120, TimberCost: 20},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 120, TimberCost: 20},
 		},
 	}
 

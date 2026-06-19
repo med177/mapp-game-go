@@ -46,7 +46,8 @@ type UnitType struct {
 	RequiredBldgLevel int    `json:"required_bldg_level"` // 0/1 = Lv1, 2 = Lv2 ...
 
 	// Denizde taşınabilir mi?
-	Embarkable bool `json:"embarkable"`
+	Embarkable    bool `json:"embarkable"`
+	CarryCapacity int  `json:"carry_capacity,omitempty"`
 }
 
 // Unit ordu içindeki tek bir birim örneğini temsil eder.

@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-06-03
+last_updated: 2026-06-19
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -50,6 +50,8 @@ type Settlement struct {
 
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
 
+Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
+
 ---
 
 ## Arazi Tipleri
@@ -76,6 +78,7 @@ Arazi ve yerleşim tiplerinin Türkçe görünen etiketleri artık paket içinde
 `CanLandEnter()` — kara orduları deniz bölgesine giremez
 `CanNavalEnter()` — deniz orduları sadece deniz bölgelerine girer
 `IsCoastal()` — komşu bölgeler arasında deniz varsa `true` → gemi inşa koşulu
+`HasPortBuilding()` — docking için gerekli operasyonel liman binası
 
 ---
 

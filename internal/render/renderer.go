@@ -430,6 +430,13 @@ func (r *Renderer) MarkMapDirty() {
 	r.worldMap.MarkDirty()
 }
 
+func (r *Renderer) RebuildSettlementAnchors() {
+	if r == nil || r.worldMap == nil || r.gs == nil {
+		return
+	}
+	r.worldMap.RebuildSettlementAnchors(r.gs)
+}
+
 func (r *Renderer) MarkEditSaved() { r.editDirty = false }
 
 func (r *Renderer) SetLoadingMessage(message string) {
@@ -1026,37 +1033,75 @@ func (r *Renderer) tradeHoverTooltipRect() (gameui.Rect, bool) {
 }
 
 func armyCanEmbark(gs *state.GameState, a *army.Army) bool {
-	if gs == nil || a == nil || a.IsNaval || len(a.Units) == 0 {
+	if gs == nil || a == nil {
 		return false
 	}
-	for _, u := range a.Units {
-		ut, ok := gs.UnitTypes[u.TypeID]
-		if !ok || !ut.Embarkable {
-			return false
-		}
-	}
-	return true
+	return a.CanEmbark(gs.UnitTypes)
 }
 
-func hasFriendlyEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID) bool {
-	if gs == nil {
+func findFriendlyEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
+	return findFriendlyEmbarkFleetFromRegion(gs, ownerID, "", seaRegionID, unitCount)
+}
+
+func fleetCanEmbarkFromRegion(gs *state.GameState, fleet *army.Army, sourceRegionID world.RegionID) bool {
+	if gs == nil || fleet == nil || !fleet.IsNaval || sourceRegionID == "" {
 		return false
 	}
+	if fleet.DockedRegionID == sourceRegionID {
+		return true
+	}
+	src := gs.Regions[sourceRegionID]
+	if src == nil {
+		return false
+	}
+	for _, nid := range src.Neighbors {
+		if nid == fleet.RegionID {
+			return true
+		}
+	}
+	return false
+}
+
+func findFriendlyEmbarkFleetFromRegion(gs *state.GameState, ownerID string, sourceRegionID, seaRegionID world.RegionID, unitCount int) *army.Army {
+	if gs == nil {
+		return nil
+	}
+	var fallback *army.Army
 	for _, candidate := range gs.Armies {
 		if candidate == nil || candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
 			continue
 		}
-		if len(candidate.EmbarkedUnits) > 0 {
+		if !candidate.CanEmbarkUnits(gs.UnitTypes, unitCount) {
 			continue
 		}
-		for _, u := range candidate.Units {
-			ut, ok := gs.UnitTypes[u.TypeID]
-			if ok && ut.Category == army.CategoryNavalTrans {
-				return true
-			}
+		if sourceRegionID != "" && candidate.DockedRegionID == sourceRegionID {
+			return candidate
+		}
+		if fallback == nil {
+			fallback = candidate
 		}
 	}
-	return false
+	return fallback
+}
+
+func embarkableFleetForSelectedArmy(gs *state.GameState, selected *army.Army, fleet *army.Army) bool {
+	if gs == nil || selected == nil || fleet == nil || selected.IsNaval || fleet.OwnerID != selected.OwnerID || !fleet.IsNaval {
+		return false
+	}
+	return fleetCanEmbarkFromRegion(gs, fleet, selected.RegionID) &&
+		selected.CanEmbark(gs.UnitTypes) &&
+		fleet.CanEmbarkUnits(gs.UnitTypes, len(selected.Units))
+}
+
+func embarkBlockedMessage(gs *state.GameState, a *army.Army) string {
+	if gs == nil || a == nil {
+		return "Bu ordudaki bazı birimler denizden taşınamaz."
+	}
+	blockers := a.EmbarkBlockerNames(gs.UnitTypes)
+	if len(blockers) == 0 {
+		return "Bu ordudaki bazı birimler denizden taşınamaz."
+	}
+	return "Bu ordu denizden taşınamaz. Uygun olmayan birlikler: " + strings.Join(blockers, ", ") + "."
 }
 
 func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region) bool {
@@ -1081,7 +1126,7 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 		return target.CanNavalEnter()
 	}
 	if target.CanNavalEnter() {
-		return armyCanEmbark(gs, a) && hasFriendlyEmbarkFleet(gs, a.OwnerID, target.ID)
+		return armyCanEmbark(gs, a) && findFriendlyEmbarkFleetFromRegion(gs, a.OwnerID, a.RegionID, target.ID, len(a.Units)) != nil
 	}
 	return target.CanLandEnter()
 }
@@ -1097,7 +1142,7 @@ func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.R
 			return false
 		}
 	}
-	return target.HasPort()
+	return target.HasPortBuilding()
 }
 
 func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool {
@@ -2011,7 +2056,12 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		if !ok || nRegion.IsLocked {
 			continue
 		}
-		if !armyCanEnterRegion(r.gs, a, nRegion) {
+		canPreviewWarLanding := a.IsNaval &&
+			len(a.EmbarkedUnits) > 0 &&
+			nRegion.CanLandEnter() &&
+			nRegion.OwnerID != "" &&
+			nRegion.OwnerID != a.OwnerID
+		if !armyCanEnterRegion(r.gs, a, nRegion) && !canPreviewWarLanding {
 			continue
 		}
 
@@ -2020,7 +2070,21 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		var col color.RGBA
 		if a.IsNaval {
 			if nRegion.CanLandEnter() {
-				col = color.RGBA{255, 215, 110, 220}
+				switch {
+				case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
+					key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
+					rel, exists := r.gs.Relations[key]
+					if exists && rel.Stance == faction.StanceWar {
+						col = color.RGBA{220, 60, 60, 200}
+					} else {
+						col = color.RGBA{220, 140, 30, 210}
+					}
+					DrawTextCentered(screen, "WAR", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
+				case nRegion.OwnerID == "":
+					col = color.RGBA{60, 220, 60, 200}
+				default:
+					col = color.RGBA{80, 160, 255, 160}
+				}
 			} else {
 				// Deniz bölgeleri için sabit açık mavi — tarafsız su
 				col = color.RGBA{100, 200, 255, 220}
@@ -2198,6 +2262,12 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 	if region == nil {
 		return armyDisplayGroupKey{}, 0, 0, false
 	}
+	if !a.IsNaval && !region.IsSea {
+		if ax, ay, ok := r.landArmyAnchor(region); ok {
+			sx, sy := r.worldToScreen(float64(ax), float64(ay))
+			return armyDisplayGroupKey{AnchorX: ax, AnchorY: ay, Anchored: true}, float32(sx), float32(sy), true
+		}
+	}
 	if a.IsNaval && region.IsSea {
 		if ax, ay, ok := r.dockedFleetAnchor(a, region); ok {
 			sx, sy := r.worldToScreen(float64(ax), float64(ay))
@@ -2206,6 +2276,38 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 	}
 	sx, sy := r.regionScreenPos(region)
 	return armyDisplayGroupKey{RegionID: region.ID}, float32(sx), float32(sy), true
+}
+
+func (r *Renderer) landArmyAnchor(region *world.Region) (int, int, bool) {
+	if region == nil || region.IsSea {
+		return 0, 0, false
+	}
+	preferredIdx := -1
+	fallbackIdx := -1
+	for i, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			continue
+		}
+		if fallbackIdx < 0 {
+			fallbackIdx = i
+		}
+		if settlement.IsCapital {
+			preferredIdx = i
+			break
+		}
+	}
+	if preferredIdx < 0 {
+		preferredIdx = fallbackIdx
+	}
+	if preferredIdx >= 0 {
+		if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, preferredIdx); ok {
+			return ax, ay, true
+		}
+	}
+	if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(region.ID); ok {
+		return ax, ay, true
+	}
+	return 0, 0, false
 }
 
 func (r *Renderer) dockedFleetAnchor(a *army.Army, seaRegion *world.Region) (int, int, bool) {
@@ -2250,6 +2352,7 @@ func (r *Renderer) dockedSettlementAnchor(region *world.Region, settlementID str
 
 // drawArmies tüm orduları harita üzerinde çizer.
 func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
+	selectedArmy := r.gs.Armies[r.SelectedArmy]
 	for _, pos := range positions {
 		a, ok := r.gs.Armies[pos.ArmyID]
 		if !ok {
@@ -2262,6 +2365,10 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			unitCount = -1
 		}
 		r.drawArmyIcon(screen, a.ID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
+		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
+			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
+			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
+		}
 	}
 }
 
@@ -2294,6 +2401,20 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, cx, cy fl
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
+	if isNaval {
+		if a := r.gs.Armies[aid]; a != nil && len(a.EmbarkedUnits) > 0 {
+			badgeW := float32(14)
+			badgeX := cx - badgeW/2
+			badgeY := cy - 28
+			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{24, 34, 48, 240}, false)
+			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1.5, color.RGBA{214, 226, 242, 230}, false)
+			embarkedStr := itoa(len(a.EmbarkedUnits))
+			if len(a.EmbarkedUnits) > 99 {
+				embarkedStr = "99"
+			}
+			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{245, 248, 252, 255})
+		}
+	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
 		badgeX := cx + 8
 		badgeY := cy - 12
@@ -5742,7 +5863,8 @@ func (r *Renderer) canAddEditLandArmy(region *world.Region) bool {
 
 func (r *Renderer) canAddEditFleet(region *world.Region) bool {
 	return region != nil && !region.IsSea && r.editOwnerForRegion(region) != "" &&
-		r.selectedRegionHasPortSettlement(region) && r.editFleetSeaRegion(region) != "" && r.defaultEditUnitType(true) != ""
+		region.HasPortBuilding() && r.selectedRegionHasPortSettlement(region) &&
+		r.editFleetSeaRegion(region) != "" && r.defaultEditUnitType(true) != ""
 }
 
 func (r *Renderer) canAddSelectedArmyUnit() bool {
@@ -6984,14 +7106,36 @@ func (r *Renderer) handleRightClick() InputAction {
 		return InputAction{}
 	}
 
-	wx, wy := r.screenToWorld(float64(mx), float64(my))
-	rid := r.worldMap.RegionAt(int(wx), int(wy))
-	if rid == "" {
-		return InputAction{}
-	}
-
 	src, srcOK := r.gs.Regions[a.RegionID]
 	if !srcOK {
+		return InputAction{}
+	}
+	wx, wy := r.screenToWorld(float64(mx), float64(my))
+	rid := r.worldMap.RegionAt(int(wx), int(wy))
+	if clickedID, hit := r.armyHitAt(fx, fy); hit {
+		if fleet := r.gs.Armies[clickedID]; fleet != nil && !a.IsNaval && fleet.OwnerID == a.OwnerID && fleet.IsNaval {
+			if fleetCanEmbarkFromRegion(r.gs, fleet, a.RegionID) {
+				if !armyCanEmbark(r.gs, a) {
+					r.ShowCombatResult(embarkBlockedMessage(r.gs, a))
+					return InputAction{}
+				}
+				if !fleet.CanEmbarkUnits(r.gs.UnitTypes, len(a.Units)) {
+					r.ShowCombatResult("Seçilen filoda yeterli nakliye kapasitesi yok.")
+					return InputAction{}
+				}
+				r.ShowConfirmDialog(
+					"Gemiye Bin",
+					"Seçili ordu bu nakliye filosuna binsin mi?",
+					"Gemiye Bin",
+					"Iptal",
+					InputAction{Kind: ActionEmbarkArmy, ArmyID: r.SelectedArmy, TargetArmyID: fleet.ID},
+					nil,
+				)
+				return InputAction{}
+			}
+		}
+	}
+	if rid == "" {
 		return InputAction{}
 	}
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp

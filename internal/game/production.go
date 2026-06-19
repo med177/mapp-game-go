@@ -162,7 +162,64 @@ func (g *Game) completeBuilding(region *world.Region, buildingID string) bool {
 		return false
 	}
 	region.Buildings = append(region.Buildings, buildingID)
+	if buildingID == "port" && g.ensurePortSettlement(region) && g.renderer != nil {
+		g.renderer.RebuildSettlementAnchors()
+		g.renderer.MarkMapDirty()
+	}
 	return true
+}
+
+func (g *Game) ensurePortSettlement(region *world.Region) bool {
+	if region == nil || region.IsSea {
+		return false
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementPort {
+			return false
+		}
+	}
+	x, y := region.WorldX, region.WorldY
+	for _, nid := range region.Neighbors {
+		sea := g.gs.Regions[nid]
+		if sea == nil || !sea.IsSea {
+			continue
+		}
+		x = (region.WorldX*2 + sea.WorldX) / 3
+		y = (region.WorldY*2 + sea.WorldY) / 3
+		break
+	}
+	region.Settlements = append(region.Settlements, world.Settlement{
+		ID:     nextPortSettlementID(region),
+		Name:   "Port",
+		NameTR: "Liman",
+		X:      x,
+		Y:      y,
+		Type:   world.SettlementPort,
+	})
+	return true
+}
+
+func nextPortSettlementID(region *world.Region) string {
+	if region == nil {
+		return "port"
+	}
+	base := string(region.ID) + "_port"
+	for n := 1; ; n++ {
+		candidate := base
+		if n > 1 {
+			candidate = fmt.Sprintf("%s_%d", base, n)
+		}
+		exists := false
+		for _, settlement := range region.Settlements {
+			if settlement.ID == candidate {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			return candidate
+		}
+	}
 }
 
 func (g *Game) completeUnit(region *world.Region, ownerID faction.FactionID, unitTypeID string) string {

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-06-16
+last_updated: 2026-06-19
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -209,6 +209,8 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
 ```
 
 `turns_required` üretim kuyruğunda kaç tur sonra birimin ordu/filoya ekleneceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `1` kabul eder.
+
+`carry_capacity` sadece `category = "naval_trans"` birimlerinde kullanılır. Her nakliye gemisinin aynı anda taşıyabildiği kara birimi slot sayısını belirtir. Filo toplam kapasitesi, filodaki tüm nakliye gemilerinin `carry_capacity` toplamıdır; ancak mevcut oyun kuralı gereği toplam taşınan kara birimi sayısı yine `MaxArmySize` sınırını aşmaz.
 
 ---
 

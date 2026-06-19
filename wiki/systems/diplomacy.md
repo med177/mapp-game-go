@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-06-16
+last_updated: 2026-06-19
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -154,8 +154,9 @@ Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde stand
 
 `internal/game/game.go`, `internal/render/renderer.go`
 
-- Donanmalar komşu deniz bölgelerine ek olarak, `SettlementPort` içeren komşu kara bölgesine docking emri alabilir
+- Donanmalar komşu deniz bölgelerine ek olarak, yalnız `port` binası tamamlanmış komşu kara bölgesine docking emri alabilir
 - Docking yalnız iki durumda geçerlidir: bölge oyuncunun/devletin kendi toprağıysa veya iki fraksiyon arasında `StanceAllied` varsa
+- Hedef kara bölgesinde `port` settlement olsa bile bina yoksa filo oraya taşınamaz; ancak cargo taşıyorsa kıyıya saldırı veya çıkarma yine yapılabilir
 - Dock edilmiş filo deniz `RegionID` değerini korur, ama `DockedRegionID` ve `DockedSettlementID` üzerinden liman anchor'ında çizilir
 - İttifak biter ya da liman el değiştirirse `sanitizeDockedFleets()` bu bağı düşürür ve filoyu en yakın deniz bölgesine çıkarır
 

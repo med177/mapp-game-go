@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-06-06
+last_updated: 2026-06-19
 related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
@@ -39,7 +39,8 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 - Kış: Her ordu için birim hasar kontrolü
 - İlkbahar: `MovePoints` bonusu (şu an taslak — detay `season.go`'da)
 - Sonbahar: Gelir çarpanı
-- Kış dışı turlar: Kara orduları kendi kara toprağında toparlanır; donanmalar ise kendi veya müttefik limanına bağlı (`DockedRegionID`) durumdaysa aynı `+10 HP` toparlanmayı alır
+- Kış dışı turlar: Kara orduları kendi kara toprağında toparlanır; donanmalar ise kendi veya müttefik limanına bağlı (`DockedRegionID`) durumdaysa toparlanır. Kendi limanında gemiler ve taşınan kara birlikleri `+10 HP`, müttefik limanında ise `+5 HP` alır
+- Gemide kara birimi taşıyan filolar limana uğramadan uzun süre açık denizde kalırsa `turns_without_port` sayacı işler; 3 turluk emniyet penceresinden sonra taşınan birlikler her tur artan HP zayiatı alır ve limana bağlanınca sayaç sıfırlanır
 
 → Çözümleme sırası için [[architecture/game-loop]]
 
