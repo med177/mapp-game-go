@@ -1128,11 +1128,132 @@ func aiOwnerReligion(gs *state.GameState, ownerID string) string {
 	return string(f.Religion)
 }
 
+func aiEnsureSiegeMap(gs *state.GameState) {
+	if gs != nil && gs.Sieges == nil {
+		gs.Sieges = make(map[world.RegionID]*state.SiegeState)
+	}
+}
+
+func aiClearSiege(gs *state.GameState, regionID world.RegionID) {
+	if gs == nil || gs.Sieges == nil || regionID == "" {
+		return
+	}
+	delete(gs.Sieges, regionID)
+}
+
+func aiClearSiegesByArmy(gs *state.GameState, armyID army.ArmyID) {
+	if gs == nil || gs.Sieges == nil || armyID == "" {
+		return
+	}
+	for rid, siege := range gs.Sieges {
+		if siege != nil && siege.AttackerArmyID == armyID {
+			delete(gs.Sieges, rid)
+		}
+	}
+}
+
+func aiSiegeDefenseBonus(fortLevel, breachLevel int) float64 {
+	if fortLevel <= 0 {
+		return 0
+	}
+	base := float64(fortLevel) * 0.14
+	switch breachLevel {
+	case 2:
+		return base * 0.25
+	case 1:
+		return base * 0.55
+	default:
+		return base + 0.18
+	}
+}
+
+func aiVirtualSiegeGarrison(gs *state.GameState, target *world.Region) *army.Army {
+	if gs == nil || target == nil {
+		return nil
+	}
+	unitTypeID := aiMilitiaID
+	if _, ok := gs.UnitTypes[unitTypeID]; !ok {
+		for id, ut := range gs.UnitTypes {
+			if ut != nil && ut.Category == army.CategoryInfantry {
+				unitTypeID = id
+				break
+			}
+		}
+	}
+	fortLevel := target.FortificationLevel()
+	unitCount := 1 + fortLevel
+	if unitCount > 6 {
+		unitCount = 6
+	}
+	units := make([]army.Unit, 0, unitCount)
+	for i := 0; i < unitCount; i++ {
+		units = append(units, army.Unit{TypeID: unitTypeID, CurrentHP: army.MaxUnitHP})
+	}
+	return &army.Army{
+		OwnerID:    target.OwnerID,
+		RegionID:   target.ID,
+		Units:      units,
+		MovePoints: 0,
+	}
+}
+
+func aiCanStartSiege(gs *state.GameState, a *army.Army, target *world.Region) bool {
+	if gs == nil || a == nil || target == nil || a.IsNaval || !target.CanLandEnter() {
+		return false
+	}
+	if target.OwnerID == "" || target.OwnerID == a.OwnerID || !target.IsFortified() {
+		return false
+	}
+	if !a.HasSiegeUnits(gs.UnitTypes) {
+		return false
+	}
+	_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+	if stance != faction.StanceWar {
+		return false
+	}
+	if active := gs.SiegeByArmy(a.ID); active != nil && active.RegionID != target.ID {
+		return false
+	}
+	if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
+		return false
+	}
+	return true
+}
+
+func aiStartSiege(gs *state.GameState, a *army.Army, target *world.Region, defender *army.Army) {
+	if gs == nil || a == nil || target == nil {
+		return
+	}
+	aiEnsureSiegeMap(gs)
+	siege := &state.SiegeState{
+		RegionID:          target.ID,
+		AttackerArmyID:    a.ID,
+		AttackerFactionID: a.OwnerID,
+		StartedTurn:       gs.Turn,
+		FortLevel:         target.FortificationLevel(),
+	}
+	if defender != nil {
+		siege.DefenderArmyID = defender.ID
+	}
+	gs.Sieges[target.ID] = siege
+	a.MovePoints = 0
+}
+
 // chooseBestMove ordunun komşuları arasında en iyi hedefi seçer.
 // Negatif skor dönen hedefler atlanır; hiç geçerli hedef yoksa "" döner.
 func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 	src, ok := gs.Regions[a.RegionID]
 	if !ok {
+		return ""
+	}
+	if activeSiege := gs.SiegeByArmy(a.ID); activeSiege != nil {
+		target := gs.Regions[activeSiege.RegionID]
+		if !aiCanStartSiege(gs, a, target) {
+			return ""
+		}
+		if activeSiege.BreachLevel >= 2 {
+			return activeSiege.RegionID
+		}
 		return ""
 	}
 
@@ -1321,6 +1442,18 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 			return -1
 		}
 	}
+	if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
+		if !a.HasSiegeUnits(gs.UnitTypes) {
+			return -1
+		}
+		if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
+			return -1
+		}
+		if atCapacity := gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid); atCapacity {
+			return 100
+		}
+		return 92
+	}
 
 	// Kapasite doluysa fetih yaparak manpower artırmak öncelikli
 	atCapacity := gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid)
@@ -1469,6 +1602,93 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				FocusRegion:  fromRegion,
 				Message:      actorName + " " + sourceName + " bölgesinden filoya bindi.",
 			},
+		}
+	}
+
+	if aiCanStartSiege(gs, a, targetRegion) {
+		activeSiege := gs.SiegeAt(target)
+		if activeSiege == nil {
+			defender := aiEnemyArmyInRegion(gs, a.OwnerID, target)
+			aiStartSiege(gs, a, targetRegion, defender)
+			return moveOutcome{
+				survived: true,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " tahkimatını kuşatmaya aldı.",
+				},
+			}
+		}
+		if activeSiege.AttackerArmyID == a.ID {
+			defender := aiEnemyArmyInRegion(gs, a.OwnerID, target)
+			virtualDefense := false
+			if defender == nil {
+				defender = aiVirtualSiegeGarrison(gs, targetRegion)
+				virtualDefense = true
+			}
+			atkMods := aiTechMods(gs, a.OwnerID)
+			defMods := aiTechMods(gs, targetRegion.OwnerID)
+			defMods.DefenseMod += aiSiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel)
+			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
+			if result.AttackerWins {
+				if !virtualDefense && len(defender.Units) == 0 {
+					delete(gs.Armies, defender.ID)
+				}
+				if len(a.Units) > 0 {
+					a.RegionID = target
+					a.DockedRegionID = ""
+					a.DockedSettlementID = ""
+					a.MovePoints--
+					targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+					aiClearSiege(gs, target)
+					return moveOutcome{
+						survived: true,
+						step: TurnStep{
+							FactionID:    fid,
+							Kind:         TurnStepBattle,
+							ArmyID:       a.ID,
+							FromRegion:   fromRegion,
+							TargetRegion: target,
+							FocusRegion:  target,
+							Message:      actorName + " " + targetName + " tahkimatına genel hücumla girdi ve kazandı.",
+						},
+					}
+				}
+				delete(gs.Armies, a.ID)
+				aiClearSiegesByArmy(gs, a.ID)
+				return moveOutcome{
+					survived: false,
+					step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepBattle,
+						ArmyID:       a.ID,
+						FromRegion:   fromRegion,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      actorName + " " + targetName + " kuşatmasını kazansa da ordusu dağıldı.",
+					},
+				}
+			}
+			if len(a.Units) == 0 {
+				delete(gs.Armies, a.ID)
+				aiClearSiegesByArmy(gs, a.ID)
+			}
+			return moveOutcome{
+				survived: len(a.Units) > 0,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " tahkimatına yaptığı genel hücumda geri püskürtüldü.",
+				},
+			}
 		}
 	}
 

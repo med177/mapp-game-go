@@ -95,13 +95,14 @@ Kamera kontrolleri normal harita ile aynıdır.
 3. `applyTechTicks(gs)` — aktif araştırma ilerleme sayacı → [[systems/tech-tree]]
 4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
 5. `applyReligionConversion(gs)` — ele geçirilmiş bölgelerde yavaş din dönüşümü
-6. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları
-7. `checkRebellions(gs)` — düşük memnuniyet → isyan kontrolü
-8. `checkEliminations(gs)` — bölgesi kalmayan fraksiyon elenir
-9. `applyRelationDecay(gs)` — ilişki puanlarını sıfıra doğru çekme
-10. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
-11. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]
-12. `gs.AdvanceTurn()` — ay/yıl ilerlet
+6. `resolveSieges()` — aktif kuşatmalarda gedik ilerlemesi, savunucu yıpranması ve teslimiyet/hücum sonucu
+7. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları
+8. `checkRebellions(gs)` — düşük memnuniyet → isyan kontrolü
+9. `checkEliminations(gs)` — bölgesi kalmayan fraksiyon elenir
+10. `applyRelationDecay(gs)` — ilişki puanlarını sıfıra doğru çekme
+11. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
+12. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]
+13. `gs.AdvanceTurn()` — ay/yıl ilerlet
 
 ## AI Tur Akışı
 
@@ -127,6 +128,9 @@ Kamera kontrolleri normal harita ile aynıdır.
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
 | `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır |
 | `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
+| `ActionStartSiege` | Kuşatma modalı | Orduda kuşatma birimi varsa tahkimli düşman kara bölgesinde aktif kuşatma başlatır; ordu hedefe girmez, hareketi biter |
+| `ActionAssaultSiege` | Kuşatma modalı | Aktif kuşatma üstünden tahkimata genel hücum yapar; gedik ve sur bonusu combat çözümüne katılır |
+| `ActionLiftSiege` | Kuşatma modalı | Seçili ordunun yürüttüğü kuşatmayı kaldırır |
 | `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al; kuyruktaki binaya tekrar basılırsa iptal edip altını iade eder |

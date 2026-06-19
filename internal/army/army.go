@@ -165,6 +165,49 @@ func (a *Army) TotalGrainUpkeep(types map[string]*UnitType) int {
 	return total
 }
 
+func (a *Army) SiegeUnitScore(types map[string]*UnitType) int {
+	if a == nil {
+		return 0
+	}
+	score := 0
+	for _, u := range a.Units {
+		t, ok := types[u.TypeID]
+		if !ok || t == nil || t.Category != CategorySiege {
+			continue
+		}
+		score += 2 + int(t.Tier)
+	}
+	return score
+}
+
+func (a *Army) HighestSiegeTier(types map[string]*UnitType) int {
+	if a == nil {
+		return 0
+	}
+	best := 0
+	for _, u := range a.Units {
+		t, ok := types[u.TypeID]
+		if !ok || t == nil || t.Category != CategorySiege {
+			continue
+		}
+		if tier := int(t.Tier); tier > best {
+			best = tier
+		}
+	}
+	return best
+}
+
+func (a *Army) CanBreachFortification(types map[string]*UnitType, fortLevel int) bool {
+	if fortLevel <= 0 {
+		return true
+	}
+	return a.HighestSiegeTier(types) >= fortLevel
+}
+
+func (a *Army) HasSiegeUnits(types map[string]*UnitType) bool {
+	return a.SiegeUnitScore(types) > 0
+}
+
 // ApplyWinterAttrition kış erozyonu — her birim %10 HP kaybeder.
 func (a *Army) ApplyWinterAttrition() (lost int) {
 	surviving := a.Units[:0]

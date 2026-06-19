@@ -45,6 +45,18 @@ type DiplomaticOffer struct {
 	CreatedTurn   int               `json:"created_turn"`
 }
 
+type SiegeState struct {
+	RegionID          world.RegionID `json:"region_id"`
+	AttackerArmyID    army.ArmyID    `json:"attacker_army_id"`
+	DefenderArmyID    army.ArmyID    `json:"defender_army_id,omitempty"`
+	AttackerFactionID string         `json:"attacker_faction_id"`
+	StartedTurn       int            `json:"started_turn"`
+	TurnsElapsed      int            `json:"turns_elapsed"`
+	FortLevel         int            `json:"fort_level"`
+	BreachProgress    int            `json:"breach_progress"`
+	BreachLevel       int            `json:"breach_level"`
+}
+
 // GameState oyunun tüm anlık durumunu tutar. Save/load bu struct'ı serialize eder.
 type GameState struct {
 	// Zaman
@@ -103,8 +115,9 @@ type GameState struct {
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 
 	// Ticaret güzergahları
-	TradeRoutes  []*economy.TradeRoute   `json:"trade_routes"`
-	TradeCenters world.TradeCenterConfig `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
+	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`
+	TradeCenters world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
+	Sieges       map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
 	MarketPrices economy.CurrentMarketPrice `json:"-"`
@@ -280,6 +293,25 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 		}
 	}
 	return best
+}
+
+func (s *GameState) SiegeAt(regionID world.RegionID) *SiegeState {
+	if s == nil || s.Sieges == nil || regionID == "" {
+		return nil
+	}
+	return s.Sieges[regionID]
+}
+
+func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
+	if s == nil || s.Sieges == nil || armyID == "" {
+		return nil
+	}
+	for _, siege := range s.Sieges {
+		if siege != nil && siege.AttackerArmyID == armyID {
+			return siege
+		}
+	}
+	return nil
 }
 
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.

@@ -162,6 +162,46 @@ func (r *Region) HasBuilding(buildingID string) bool {
 	return false
 }
 
+func (r *Region) BuildingLevel(buildingID string) int {
+	if r == nil || r.IsSea || buildingID == "" {
+		return 0
+	}
+	level := 0
+	for _, id := range r.Buildings {
+		if id == buildingID {
+			level++
+		}
+	}
+	return level
+}
+
+func (r *Region) HasFortressSettlement() bool {
+	if r == nil || r.IsSea {
+		return false
+	}
+	for _, settlement := range r.Settlements {
+		if settlement.Type == SettlementFortress {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Region) FortificationLevel() int {
+	if r == nil || r.IsSea {
+		return 0
+	}
+	level := r.BuildingLevel("walls")
+	if r.HasFortressSettlement() {
+		level++
+	}
+	return level
+}
+
+func (r *Region) IsFortified() bool {
+	return r.FortificationLevel() > 0
+}
+
 func (r *Region) HasPortBuilding() bool {
 	return r.HasBuilding("port")
 }

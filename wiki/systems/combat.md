@@ -11,7 +11,7 @@ related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipe
 
 ## Genel Bakış
 
-Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer.
+Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir.
 
 ---
 
@@ -111,6 +111,21 @@ Preview tarafındaki kayıp özeti artık iki katmanlıdır:
 - `Birim` kaybı: gerçekten düşmesi beklenen birlik sayısını verir
 
 Preview, gerçek savaştakiyle aynı arazi/teknoloji/duruş/savaş tipi matematiğini kullanır; yani panelde görülen güç ve gerçek resolve birbirinden kopmaz.
+
+## Kuşatma Akışı
+
+`internal/game/siege.go`
+
+Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayrı bir ara katman üretir:
+
+1. Saldıran kara ordusunda en az bir `siege` kategorili birlik olmalı.
+2. Oyuncu sağ tık sonrası `Kuşatma Kararı` modalında `Kuşatma Başlat` veya `Genel Hücum` seçer.
+3. `Kuşatma Başlat` anında ordu hedefe girmez; `GameState.Sieges` içine kayıt yazılır ve ordu hareketi biter.
+4. Gedik ilerlemesi artık kuşatma ekipmanı tier'i ile sınırlıdır: `fortLevel = 3` ise yalnız `Tier 3` kuşatma birimi yeni gedik ilerlemesi üretebilir. Daha düşük tier araçlar kuşatmayı sürdürür, savunucuyu yıpratır ama yeni gedik açamaz.
+5. Her tur çözümlemesinde kuşatma baskısı savunucu orduya attrition uygular; gedik kapasitesi yetiyorsa ayrıca `BreachProgress` artar ve gedik seviyesi (`yok / küçük / büyük`) güncellenir.
+6. Savunucu ordu çözülüp büyük gedik açılırsa tahkimat teslim olabilir; gedik açılamasa bile uzun aç bırakma kuşatması sonunda teslimiyet mümkün kalır. Oyuncu veya AI isterse kuşatma üstünden genel hücum da deneyebilir.
+
+Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır.
 
 ---
 

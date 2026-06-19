@@ -1,5 +1,7 @@
 # Mapp — Orta Çağ Strateji Oyunu
 
+![Mapp Game Screenshot](Mapp_Game_Screenshot.png)
+
 > Akdeniz'in hâkimi sen olacaksın.
 
 Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita strateji oyunudur. Total War serisinin kampanya haritasından ilham alarak geliştirilmiştir — taktik savaş sahnesi yoktur; tüm çarpışmalar harita üzerinde otomatik hesaplanır.

@@ -979,6 +979,33 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 		}
 	}
 
+	for regionID, siege := range gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		region := gs.Regions[regionID]
+		if region == nil || region.IsSea {
+			continue
+		}
+		fc, ok := factionColors[siege.AttackerFactionID]
+		if !ok {
+			continue
+		}
+		for _, pIdx := range wm.regionPx[regionID] {
+			px := pIdx % WorldW
+			py := pIdx / WorldW
+			wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], fc[0], 26)
+			wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], fc[1], 26)
+			wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], fc[2], 26)
+			if (px+py)%12 < 3 || (px-py+WorldW*4)%17 < 2 {
+				wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], fc[0], 168)
+				wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], fc[1], 168)
+				wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], fc[2], 168)
+			}
+			wm.dispPixels[pIdx*4+3] = 255
+		}
+	}
+
 	wm.drawRegionBorders(gs, selected, mode)
 	if wm.img != nil {
 		wm.img.WritePixels(wm.dispPixels)

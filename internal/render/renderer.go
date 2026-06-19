@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 	"sort"
@@ -357,6 +358,17 @@ type warConfirmState struct {
 	opensBattlePlan bool
 	battleAction    ActionKind
 	battleContext   combat.BattleContext
+}
+
+func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	return gs != nil &&
+		attacker != nil &&
+		target != nil &&
+		!attacker.IsNaval &&
+		target.CanLandEnter() &&
+		target.OwnerID != "" &&
+		target.OwnerID != attacker.OwnerID &&
+		target.IsFortified()
 }
 
 type battlePlanState struct {
@@ -1050,7 +1062,8 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	}
 	const panelW, panelH = float32(430), float32(84)
 	x := float32(ScreenWidth)/2 - panelW/2
-	y := float32(58)
+	_, turnHudY, _, turnHudH := turnTechHudRect()
+	y := turnHudY + turnHudH + 12
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 14, 10, 228})
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)
@@ -2373,6 +2386,18 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32, float32, bool) {
 	if a == nil {
 		return armyDisplayGroupKey{}, 0, 0, false
+	}
+	if !a.IsNaval {
+		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+			if region := r.gs.Regions[siege.RegionID]; region != nil {
+				if ax, ay, ok := r.landArmyAnchor(region); ok {
+					sx, sy := r.worldToScreen(float64(ax), float64(ay))
+					return armyDisplayGroupKey{AnchorX: ax, AnchorY: ay, Anchored: true}, float32(sx), float32(sy), true
+				}
+				sx, sy := r.regionScreenPos(region)
+				return armyDisplayGroupKey{RegionID: region.ID}, float32(sx), float32(sy), true
+			}
+		}
 	}
 	region := r.gs.Regions[a.RegionID]
 	if region == nil {
@@ -7283,6 +7308,20 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !ok {
 			break
 		}
+		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
+			if activeSiege := r.gs.SiegeByArmy(a.ID); activeSiege != nil && activeSiege.RegionID != rid {
+				r.ShowCombatResult("Bu ordu başka bir kuşatma yürütüyor. Önce onu kaldır.")
+				return InputAction{}
+			}
+			if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
+				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
+				return InputAction{}
+			}
+			if !a.HasSiegeUnits(r.gs.UnitTypes) {
+				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
+				return InputAction{}
+			}
+		}
 		enemyArmy := r.gs.SelectBattleDefender(a, rid, a.IsNaval && target.CanNavalEnter())
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
@@ -7320,6 +7359,10 @@ func (r *Renderer) handleRightClick() InputAction {
 				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
 				nil,
 			)
+			return InputAction{}
+		}
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) {
+			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
 		if opensBattlePlan {
@@ -7448,6 +7491,52 @@ func (r *Renderer) battlePlanIntent(attacker *army.Army, target *world.Region, d
 	return ActionNone, combat.BattleContextLand, false
 }
 
+func siegeBreachLabelTR(level int) string {
+	switch level {
+	case 2:
+		return "Büyük gedik"
+	case 1:
+		return "Küçük gedik"
+	default:
+		return "Gedik yok"
+	}
+}
+
+func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) {
+	if r == nil || r.gs == nil || attacker == nil || target == nil {
+		return
+	}
+	fortLevel := target.FortificationLevel()
+	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
+	if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
+		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d.", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel)
+		r.confirmDialog = confirmDialogState{
+			show:          true,
+			title:         "Kuşatma Kararı",
+			message:       msg,
+			messageLines:  wrapTextLines(msg, FaceSmall, float64(confirmDialogW)-40),
+			acceptLabel:   "Genel Hücum",
+			thirdLabel:    "Kuşatmayı Kaldır",
+			declineLabel:  "İptal",
+			pendingAction: InputAction{Kind: ActionAssaultSiege, ArmyID: attacker.ID, TargetRegion: target.ID, BattleStance: combat.BattleStanceBalanced},
+			thirdAction:   InputAction{Kind: ActionLiftSiege, ArmyID: attacker.ID, TargetRegion: target.ID},
+		}
+		return
+	}
+	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. İstersen kuşatma kur, istersen doğrudan genel hücum dene.", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel)
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         "Kuşatma Kararı",
+		message:       msg,
+		messageLines:  wrapTextLines(msg, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   "Kuşatma Başlat",
+		thirdLabel:    "Genel Hücum",
+		declineLabel:  "İptal",
+		pendingAction: InputAction{Kind: ActionStartSiege, ArmyID: attacker.ID, TargetRegion: target.ID},
+		thirdAction:   InputAction{Kind: ActionAssaultSiege, ArmyID: attacker.ID, TargetRegion: target.ID, BattleStance: combat.BattleStanceBalanced},
+	}
+}
+
 func battlePlanInstructionTR(context combat.BattleContext) string {
 	switch combat.NormalizeBattleContext(context) {
 	case combat.BattleContextNaval:
@@ -7540,9 +7629,22 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 		if acceptBtn.HitTest(mx, my) {
 			wc := r.warConfirm
 			r.warConfirm = warConfirmState{}
+			attacker := r.gs.Armies[wc.pendingArmy]
+			target := r.gs.Regions[wc.pendingDest]
+			if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
+				if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
+					r.openSiegeDecision(attacker, target)
+				} else {
+					r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
+				}
+				return InputAction{
+					Kind:          ActionDeclareWar,
+					TargetFaction: faction.FactionID(wc.factionID),
+				}
+			}
 			if wc.opensBattlePlan {
-				if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
-					if target := r.gs.Regions[wc.pendingDest]; target != nil {
+				if attacker != nil {
+					if target != nil {
 						if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
 							r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
 						}
@@ -7572,9 +7674,22 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
 		wc := r.warConfirm
 		r.warConfirm = warConfirmState{}
+		attacker := r.gs.Armies[wc.pendingArmy]
+		target := r.gs.Regions[wc.pendingDest]
+		if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
+			if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
+				r.openSiegeDecision(attacker, target)
+			} else {
+				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
+			}
+			return InputAction{
+				Kind:          ActionDeclareWar,
+				TargetFaction: faction.FactionID(wc.factionID),
+			}
+		}
 		if wc.opensBattlePlan {
-			if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
-				if target := r.gs.Regions[wc.pendingDest]; target != nil {
+			if attacker != nil {
+				if target != nil {
 					if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
 						r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
 					}

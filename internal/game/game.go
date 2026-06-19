@@ -231,6 +231,12 @@ func (g *Game) Update() error {
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
 			g.forceDisembarkFleetWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
+		case render.ActionStartSiege:
+			g.startSiege(action.ArmyID, action.TargetRegion)
+		case render.ActionAssaultSiege:
+			g.assaultSiegeWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
+		case render.ActionLiftSiege:
+			g.liftSiege(action.ArmyID, action.TargetRegion)
 		case render.ActionSplitArmy:
 			g.splitArmy(action.ArmyID)
 		case render.ActionMergeArmies:
@@ -718,6 +724,7 @@ func (g *Game) resolveTurn() {
 	completedTechs := applyTechTicks(g.gs)
 	productionResults := g.applyProductionTicks()
 	applyReligionConversion(g.gs)
+	siegeUpdates := g.resolveSieges()
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
 	applyRelationDecay(g.gs)
@@ -762,6 +769,20 @@ func (g *Game) resolveTurn() {
 			msg := fmt.Sprintf("%s bölgesinde %s hazır!", regionName, name)
 			g.renderer.ShowCombatResult(msg)
 			g.renderer.AddEvent("[BIRIM] " + msg)
+		}
+	}
+
+	for _, su := range siegeUpdates {
+		if su.Message == "" {
+			continue
+		}
+		if su.Popup {
+			g.renderer.ShowCombatResult(su.Message)
+		}
+		if su.Detail != "" {
+			g.renderer.AddEventDetail("[KUSATMA] "+su.Message, su.Detail)
+		} else {
+			g.renderer.AddEvent("[KUSATMA] " + su.Message)
 		}
 	}
 
@@ -2910,6 +2931,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	if targetRegion == nil {
 		return eliminationResult{}
 	}
+	g.clearSiege(targetRegion.ID)
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
@@ -3054,6 +3076,10 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
 	}
+	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
+		g.renderer.ShowCombatResult("Bu ordu kuşatma yürütüyor. Önce kuşatmayı kaldır veya hücum et.")
+		return
+	}
 
 	// Komşu mu kontrol et
 	src, ok := g.gs.Regions[a.RegionID]
@@ -3154,6 +3180,20 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			g.renderer.ShowCombatResult("Savaş ilan edilmeden düşman topraklarına girilemez!")
 			return
 		}
+	}
+	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil && activeSiege.AttackerArmyID == aid {
+			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
+			return
+		}
+		if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
+			if reason != "" {
+				g.renderer.ShowCombatResult(reason)
+			}
+			return
+		}
+		g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")
+		return
 	}
 
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
