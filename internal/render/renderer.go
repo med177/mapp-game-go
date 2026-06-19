@@ -37,7 +37,7 @@ const (
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
 	selectedSiegePanelW     = 420.0
-	selectedSiegePanelH     = 128.0
+	selectedSiegePanelH     = 146.0
 	selectedSiegeButtonW    = 170.0
 	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
@@ -1068,7 +1068,7 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	const panelW, panelH = float32(430), float32(84)
 	x := float32(ScreenWidth)/2 - panelW/2
 	_, turnHudY, _, turnHudH := turnTechHudRect()
-	y := turnHudY + turnHudH + 30
+	y := turnHudY + turnHudH + 40
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 14, 10, 228})
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)
@@ -7584,7 +7584,7 @@ func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *wo
 
 func buildSelectedSiegePanel() gameui.Panel {
 	x := (ScreenWidth - selectedSiegePanelW) / 2
-	y := ScreenHeight - selectedSiegePanelH - 152
+	y := (ScreenHeight - selectedSiegePanelH) / 2
 	return gameui.NewPanel(x, y, selectedSiegePanelW, selectedSiegePanelH)
 }
 
