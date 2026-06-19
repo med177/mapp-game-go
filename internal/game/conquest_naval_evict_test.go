@@ -96,12 +96,13 @@ func TestSanitizeDockedFleetsUndocksForeignFleetFromOwnedPort(t *testing.T) {
 func TestSanitizeDockedFleetsKeepsAlliedPortDocking(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
-			"ally_land": {
-				ID:          "ally_land",
-				OwnerID:     "ally",
-				Neighbors:   []world.RegionID{"sea_near"},
-				Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
-			},
+				"ally_land": {
+					ID:          "ally_land",
+					OwnerID:     "ally",
+					Neighbors:   []world.RegionID{"sea_near"},
+					Buildings:   []string{"port"},
+					Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
+				},
 			"sea_near": {ID: "sea_near", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
@@ -135,12 +136,13 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 			"new_owner": {ID: "new_owner", NameTR: "Yeni Sahip"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"land_a": {
-				ID:          "land_a",
-				OwnerID:     "old_owner",
-				Neighbors:   []world.RegionID{"sea_near"},
-				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
-			},
+				"land_a": {
+					ID:          "land_a",
+					OwnerID:     "old_owner",
+					Neighbors:   []world.RegionID{"sea_near"},
+					Buildings:   []string{"port"},
+					Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+				},
 			"sea_near": {ID: "sea_near", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
@@ -159,7 +161,7 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 			},
 		},
 	}
-	g := &Game{gs: gs, renderer: render.New(gs)}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
 
 	result := g.applyConquestWithNavalEviction(gs.Regions["land_a"], "new_owner")
 
