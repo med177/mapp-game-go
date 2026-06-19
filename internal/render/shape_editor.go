@@ -59,6 +59,7 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editShapeSession = nil
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
+	r.resetRegionPaintStrokePreview()
 }
 
 func (r *Renderer) selectedShapeRegion() *world.Region {
@@ -232,7 +233,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 		return
 	}
-	session := r.ensureShapeEditSession()
+	session := r.editShapeSession
 	shapeID := selectedRegion.ShapeID
 	if shapeID == "" {
 		shapeID = "-"
@@ -246,6 +247,10 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	}
 	if session != nil && session.Name != "" {
 		name = session.Name
+	} else if shapeID != "-" {
+		if shapeName := r.gs.ShapeData.Names[shapeID]; shapeName != "" {
+			name = shapeName
+		}
 	}
 	DrawText(screen, "Bolge: "+string(selectedRegion.ID), float64(x)+14, ly, FaceSmall, ColorWhite)
 	ly += 18
@@ -358,9 +363,12 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 			}
 		}
 	}
-	session := r.ensureShapeEditSession()
+	session := r.editShapeSession
 	if session != nil {
 		r.drawEditShapeStrokePreview(screen, session)
+	}
+	if r.editShapeTool == editShapeToolRegion {
+		r.drawEditRegionPaintStrokePreview(screen)
 	}
 	r.drawEditShapeHelp(screen, session)
 	switch r.editShapeTool {
@@ -480,7 +488,11 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 			return false
 		}
 	}
-	session := r.ensureShapeEditSession()
+	r.resetRegionPaintStrokePreview()
+	session := r.editShapeSession
+	if r.editShapeTool == editShapeToolShape {
+		session = r.ensureShapeEditSession()
+	}
 	if session == nil && r.editShapeTool == editShapeToolShape {
 		return false
 	}
@@ -538,6 +550,7 @@ func (r *Renderer) finishShapePaintStroke() {
 	session := r.editShapeSession
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
+	defer r.resetRegionPaintStrokePreview()
 	if before == nil {
 		return
 	}
@@ -560,19 +573,12 @@ func (r *Renderer) finishShapePaintStroke() {
 		if !r.editShapeStrokeDirty {
 			return
 		}
-		// Region paint overrides'ı oyun durumuna kaydet
-		if len(r.editRegionPaintOverrides) > 0 {
-			if r.gs.RegionPaintOverrides == nil {
-				r.gs.RegionPaintOverrides = make(map[int]world.RegionID)
-			}
-			for pIdx, rid := range r.editRegionPaintOverrides {
-				r.gs.RegionPaintOverrides[pIdx] = rid
-			}
-		}
-		r.rebuildEditWorldMap()
+		r.syncRegionPaintOverridesToGameState()
 		if r.editShapeStrokeAffectsLandShapes {
 			syncLandShapesFromWorldMap(r.gs, r.worldMap)
 			r.rebuildEditWorldMap()
+		} else if r.worldMap != nil {
+			r.worldMap.RefreshAfterRegionAssignments(r.gs, r.SelectedRegion, r.mapMode)
 		}
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
@@ -688,6 +694,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 	}
 	regionID := r.editSelectedRegion
 	targetRegion := r.selectedRegionForShapeTools()
+	targetIdx := r.worldMap.ensureRegionIndex(regionID)
 	changed := false
 	r2 := radius * radius
 	for y := cy - radius; y <= cy+radius; y++ {
@@ -708,38 +715,115 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 				baselineIdx = r.editRegionPaintBaseline[pIdx]
 			}
 			oldIdx := r.worldMap.regionAt[pIdx]
+			r.trackRegionPaintStrokeStart(pIdx, oldIdx)
 			if regionPaintTouchesLandShape(r.gs, targetRegion, baselineIdx, oldIdx, r.worldMap.regionIDs) {
 				r.editShapeStrokeAffectsLandShapes = true
 			}
 			if fill {
-				if baselineIdx == r.worldMap.regionIdx[regionID] {
+				if baselineIdx == targetIdx {
 					delete(r.editRegionPaintOverrides, pIdx)
+					if oldIdx != baselineIdx {
+						r.worldMap.regionAt[pIdx] = baselineIdx
+						changed = true
+					}
 					continue
 				}
 				r.editRegionPaintOverrides[pIdx] = regionID
-				r.applyRegionOverride(pIdx, regionID)
-				changed = true
+				if oldIdx != targetIdx {
+					r.worldMap.regionAt[pIdx] = targetIdx
+					changed = true
+				}
 				continue
 			}
 			if _, ok := r.editRegionPaintOverrides[pIdx]; !ok {
 				continue
 			}
 			delete(r.editRegionPaintOverrides, pIdx)
-			if baselineIdx != 0 {
-				oldID := r.worldMap.regionIDs[r.worldMap.regionAt[pIdx]]
-				r.worldMap.regionPx[oldID] = removePixelIndex(r.worldMap.regionPx[oldID], pIdx)
+			if oldIdx != baselineIdx {
 				r.worldMap.regionAt[pIdx] = baselineIdx
-				baselineID := r.worldMap.regionIDs[baselineIdx]
-				r.worldMap.regionPx[baselineID] = append(r.worldMap.regionPx[baselineID], pIdx)
-			} else {
-				oldID := r.worldMap.regionIDs[r.worldMap.regionAt[pIdx]]
-				r.worldMap.regionPx[oldID] = removePixelIndex(r.worldMap.regionPx[oldID], pIdx)
-				r.worldMap.regionAt[pIdx] = 0
+				changed = true
 			}
-			changed = true
 		}
 	}
 	return changed
+}
+
+func (r *Renderer) resetRegionPaintStrokePreview() {
+	if r == nil || len(r.editRegionPaintStrokeStart) == 0 {
+		r.editRegionPaintStrokeList = r.editRegionPaintStrokeList[:0]
+		return
+	}
+	for _, pIdx := range r.editRegionPaintStrokeList {
+		delete(r.editRegionPaintStrokeStart, pIdx)
+	}
+	r.editRegionPaintStrokeList = r.editRegionPaintStrokeList[:0]
+}
+
+func (r *Renderer) trackRegionPaintStrokeStart(pIdx int, startIdx uint16) {
+	if r == nil {
+		return
+	}
+	if _, ok := r.editRegionPaintStrokeStart[pIdx]; ok {
+		return
+	}
+	r.editRegionPaintStrokeStart[pIdx] = startIdx
+	r.editRegionPaintStrokeList = append(r.editRegionPaintStrokeList, pIdx)
+}
+
+func (r *Renderer) regionPaintPreviewStateAt(pIdx int) byte {
+	if r == nil || r.worldMap == nil {
+		return 0
+	}
+	startIdx, ok := r.editRegionPaintStrokeStart[pIdx]
+	if !ok || pIdx < 0 || pIdx >= len(r.worldMap.regionAt) {
+		return 0
+	}
+	currentIdx := r.worldMap.regionAt[pIdx]
+	if currentIdx == startIdx {
+		return 0
+	}
+	if currentIdx == r.worldMap.regionIdx[r.editSelectedRegion] {
+		return 1
+	}
+	return 2
+}
+
+func (r *Renderer) drawEditRegionPaintStrokePreview(screen *ebiten.Image) {
+	if r.worldMap == nil || len(r.editRegionPaintStrokeList) == 0 {
+		return
+	}
+	overlay := gameui.NewOverlay(0, 0, ScreenWidth, ScreenHeight)
+	overlay.DrawFunc = func(screen *ebiten.Image) {
+		size := float32(maxF(2, maxF(shapeScaleX, shapeScaleY)*r.camScale))
+		for _, pIdx := range r.editRegionPaintStrokeList {
+			state := r.regionPaintPreviewStateAt(pIdx)
+			if state == 0 {
+				continue
+			}
+			px, py := pIdx%WorldW, pIdx/WorldW
+			sx, sy := r.worldToScreen(float64(px), float64(py))
+			if sx < -8 || sx > ScreenWidth+8 || sy < -8 || sy > ScreenHeight+8 {
+				continue
+			}
+			col := color.RGBA{80, 235, 120, 165}
+			if state == 2 {
+				col = color.RGBA{255, 90, 90, 170}
+			}
+			drawPixelRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, col)
+		}
+	}
+	overlay.Draw(screen, renderText)
+}
+
+func (r *Renderer) syncRegionPaintOverridesToGameState() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	if len(r.editRegionPaintOverrides) == 0 {
+		r.gs.RegionPaintOverrides = nil
+		return
+	}
+	r.gs.RegionPaintOverrides = cloneRegionPaintOverrides(r.editRegionPaintOverrides)
 }
 
 func SyncLandShapesFromRegionPaint(gs *state.GameState) bool {

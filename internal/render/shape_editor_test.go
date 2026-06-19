@@ -77,6 +77,12 @@ func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
 	if !r.beginShapePaintStroke(sx, sy) {
 		t.Fatal("region paint stroke baslatilamadi")
 	}
+	if r.editShapeSession != nil {
+		t.Fatal("region paint stroke shape session olusturmamali")
+	}
+	if state := r.regionPaintPreviewStateAt(10*WorldW + 14); state != 1 {
+		t.Fatalf("region paint canli preview yesil olmali, got=%d", state)
+	}
 	r.finishShapePaintStroke()
 
 	if got := r.worldMap.RegionAt(14, 10); got != "land_test" {
@@ -84,6 +90,9 @@ func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
 	}
 	if len(r.editRegionPaintOverrides) == 0 {
 		t.Fatal("region paint overrides kayit edilmedi")
+	}
+	if len(r.editRegionPaintStrokeList) != 0 {
+		t.Fatal("stroke bitince region paint preview temizlenmeli")
 	}
 }
 
@@ -102,6 +111,7 @@ func TestRegionPaintStrokeAllowsSeaRegions(t *testing.T) {
 	if !r.beginShapePaintStroke(sx, sy) {
 		t.Fatal("sea region paint stroke baslatilamadi")
 	}
+	beforeWM := r.worldMap
 	r.finishShapePaintStroke()
 
 	if got := r.worldMap.RegionAt(40, 20); got != "sea_left" {
@@ -109,6 +119,9 @@ func TestRegionPaintStrokeAllowsSeaRegions(t *testing.T) {
 	}
 	if len(r.editRegionPaintOverrides) == 0 {
 		t.Fatal("sea region paint overrides kayit edilmedi")
+	}
+	if r.worldMap != beforeWM {
+		t.Fatal("sea region paint full world map rebuild yapmamali")
 	}
 }
 
@@ -145,6 +158,31 @@ func TestRegionPaintStrokeKeepsExistingExternalOverridesAcrossMultipleStrokes(t 
 	}
 	if got := r.worldMap.RegionAt(secondX, firstY); got != "land_test" {
 		t.Fatalf("ikinci stroke sonrasi yeni piksel secili region'a baglanmali, got=%q", got)
+	}
+}
+
+func TestRegionPaintStrokeEraseClearsGameStateOverrides(t *testing.T) {
+	r := newLandShapeEditRenderer()
+	r.editInspectorTab = editInspectorShape
+	r.editSelectedRegion = "land_test"
+	r.editShapeTool = editShapeToolRegion
+	r.editShapeBrushMode = editShapeBrushPaint
+	r.editShapeBrushRadius = 1
+
+	sx, sy := r.worldToScreen(wcX(14), wcY(10))
+	if !r.beginShapePaintStroke(sx, sy) {
+		t.Fatal("ilk region paint stroke baslatilamadi")
+	}
+	r.finishShapePaintStroke()
+
+	r.editShapeBrushMode = editShapeBrushErase
+	if !r.beginShapePaintStroke(sx, sy) {
+		t.Fatal("erase stroke baslatilamadi")
+	}
+	r.finishShapePaintStroke()
+
+	if len(r.gs.RegionPaintOverrides) != 0 {
+		t.Fatalf("erase sonrasi game state overrides temizlenmeli, got=%d", len(r.gs.RegionPaintOverrides))
 	}
 }
 

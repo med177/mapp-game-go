@@ -194,6 +194,8 @@ type Renderer struct {
 	editShapeStrokeAffectsLandShapes bool
 	editRegionPaintOverrides         map[int]world.RegionID
 	editRegionPaintBaseline          []uint16
+	editRegionPaintStrokeStart       map[int]uint16
+	editRegionPaintStrokeList        []int
 	editUndoStack                    []editCommand
 	editRedoStack                    []editCommand
 	editRegionDragStart              *editRegionCenterSnapshot
@@ -365,6 +367,8 @@ func New(gs *state.GameState) *Renderer {
 		editUndoStack:              make([]editCommand, 0, 64),
 		editRedoStack:              make([]editCommand, 0, 64),
 		editRegionPaintOverrides:   make(map[int]world.RegionID),
+		editRegionPaintStrokeStart: make(map[int]uint16),
+		editRegionPaintStrokeList:  make([]int, 0, 2048),
 		editOwnerDropdown:          gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editTerrainDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editSettlementTypeDropdown: gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
@@ -6063,7 +6067,9 @@ func (r *Renderer) rebuildEditWorldMap() {
 	r.invalidateShapeEditSession()
 	r.worldMap = NewWorldMap(r.gs)
 	r.buildRegionPaintBaseline()
-	r.applyRegionPaintOverrides()
+	if !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides) {
+		r.applyRegionPaintOverrides()
+	}
 }
 
 func (r *Renderer) buildRegionPaintBaseline() {
@@ -6071,20 +6077,18 @@ func (r *Renderer) buildRegionPaintBaseline() {
 		r.editRegionPaintBaseline = nil
 		return
 	}
+	if len(r.worldMap.baseRegionAt) == len(r.worldMap.regionAt) {
+		r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.baseRegionAt))
+		copy(r.editRegionPaintBaseline, r.worldMap.baseRegionAt)
+		return
+	}
 	if len(r.editRegionPaintOverrides) == 0 && len(r.gs.RegionPaintOverrides) == 0 {
 		r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
 		copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
 		return
 	}
-
-	baseWorldMap := newWorldMapWithoutRegionPaintOverrides(r.gs)
-	if baseWorldMap == nil || len(baseWorldMap.regionAt) != len(r.worldMap.regionAt) {
-		r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
-		copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
-		return
-	}
-	r.editRegionPaintBaseline = make([]uint16, len(baseWorldMap.regionAt))
-	copy(r.editRegionPaintBaseline, baseWorldMap.regionAt)
+	r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
+	copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
 }
 
 func (r *Renderer) applyRegionPaintOverrides() {
@@ -6105,6 +6109,18 @@ func cloneRegionPaintOverrides(src map[int]world.RegionID) map[int]world.RegionI
 		dst[k] = v
 	}
 	return dst
+}
+
+func regionPaintOverridesEqual(a, b map[int]world.RegionID) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for pIdx, rid := range a {
+		if b[pIdx] != rid {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *Renderer) applyRegionOverride(pIdx int, rid world.RegionID) {

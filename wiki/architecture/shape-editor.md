@@ -34,6 +34,11 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 6. `rebuildEditWorldMap()` ile harita cache'i yeniden üretilir.
 7. Senaryo kaydında `writeScenarioShapes()` ile `data/country_shapes.json` güncellenir.
 
+`Bolge Boya/Sil` performans notu:
+- Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
+- `region_shapes.json` override'ları yüklendiğinde world map override öncesi `baseRegionAt` snapshot'ı alınır; edit mode erase baseline'ı ikinci bir tam world map kurmadan bundan okunur.
+- `Bolge Boya/Sil` canlı preview'i stroke başlangıcındaki piksel sahipliğine göre yeşil/kırmızı overlay çizer; bu akış `shapeEditSession` kurmadan çalışır, yani region tool aktifken büyük country mask'i lazy kalır.
+
 ## UX kuralları
 
 - Sol tık seçim davranışını korur.

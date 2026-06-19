@@ -2802,6 +2802,14 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_255",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_254",
+    "settlements": null
+  },
+  {
     "region_id": "red_sea",
     "settlements": null
   },
@@ -5520,7 +5528,7 @@
         "id": "nicomedia",
         "name_tr": "Nikomedia",
         "x": 1072,
-        "y": 461,
+        "y": 460,
         "type": "city",
         "is_capital": true
       },
@@ -6034,10 +6042,6 @@
     "settlements": null
   },
   {
-    "region_id": "black_open_3",
-    "settlements": null
-  },
-  {
     "region_id": "black_open_4",
     "settlements": null
   },
@@ -6071,10 +6075,6 @@
   },
   {
     "region_id": "ligurian_sea",
-    "settlements": null
-  },
-  {
-    "region_id": "sea_of_marmara",
     "settlements": null
   },
   {

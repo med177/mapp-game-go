@@ -51,6 +51,7 @@ type WorldMap struct {
 	img               *ebiten.Image
 	basePixels        []byte
 	dispPixels        []byte
+	baseRegionAt      []uint16         // region paint baseline'i: override oncesi atama
 	regionAt          []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
 	regionIDs         []world.RegionID // regionIDs[0] = "" (boş)
 	regionIdx         map[world.RegionID]uint16
@@ -157,6 +158,8 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 	}
 	// region_shapes.json paint overrides'larını kalıcı olarak uygula
 	if includeRegionPaintOverrides && len(gs.RegionPaintOverrides) > 0 {
+		wm.baseRegionAt = make([]uint16, len(wm.regionAt))
+		copy(wm.baseRegionAt, wm.regionAt)
 		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 	}
 	wm.computeRegionAnchors()
@@ -374,6 +377,20 @@ func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode M
 	wm.ownerDirty = false
 	wm.selected = selected
 	wm.currentMode = mode
+}
+
+func (wm *WorldMap) RefreshAfterRegionAssignments(gs *state.GameState, selected world.RegionID, mode MapMode) {
+	if wm == nil {
+		return
+	}
+	wm.rebuildRegionPixelsFromAssignments()
+	clear(wm.regionAnchor)
+	wm.computeRegionAnchors()
+	clear(wm.settlementAnchor)
+	clear(wm.primarySettlement)
+	wm.computeSettlementAnchors(gs)
+	wm.MarkDirty()
+	wm.Refresh(gs, selected, mode)
 }
 
 func (wm *WorldMap) RegionAt(wx, wy int) world.RegionID {
@@ -1284,6 +1301,10 @@ func SaveRegionPaintOverrides(path string, paintOverrides map[int]world.RegionID
 // doğrudan WorldMap'in regionAt dizisine kalıcı olarak uygular.
 // Bu sayede normal oyunda da paint edilmiş sınırlar kalıcı olarak görünür.
 func (wm *WorldMap) applyRegionPaintOverridesToWorldMap(overrides map[int]world.RegionID) {
+	if len(overrides) == 0 {
+		return
+	}
+	changed := false
 	for pIdx, rid := range overrides {
 		if rid == "" {
 			continue
@@ -1291,28 +1312,42 @@ func (wm *WorldMap) applyRegionPaintOverridesToWorldMap(overrides map[int]world.
 		if pIdx < 0 || pIdx >= len(wm.regionAt) {
 			continue
 		}
-		newIdx, ok := wm.regionIdx[rid]
-		if !ok {
-			newIdx = uint16(len(wm.regionIDs))
-			wm.regionIDs = append(wm.regionIDs, rid)
-			wm.regionIdx[rid] = newIdx
-		}
-		oldIdx := wm.regionAt[pIdx]
-		if oldIdx == newIdx {
+		newIdx := wm.ensureRegionIndex(rid)
+		if wm.regionAt[pIdx] == newIdx {
 			continue
 		}
-		if oldIdx != 0 {
-			oldID := wm.regionIDs[oldIdx]
-			// removePixelIndex inline: dilimden belirli bir değeri kaldır
-			oldPx := wm.regionPx[oldID]
-			for i, v := range oldPx {
-				if v == pIdx {
-					wm.regionPx[oldID] = append(oldPx[:i], oldPx[i+1:]...)
-					break
-				}
-			}
-		}
 		wm.regionAt[pIdx] = newIdx
-		wm.regionPx[rid] = append(wm.regionPx[rid], pIdx)
+		changed = true
 	}
+	if changed {
+		wm.rebuildRegionPixelsFromAssignments()
+	}
+}
+
+func (wm *WorldMap) ensureRegionIndex(rid world.RegionID) uint16 {
+	if rid == "" {
+		return 0
+	}
+	if idx, ok := wm.regionIdx[rid]; ok {
+		return idx
+	}
+	idx := uint16(len(wm.regionIDs))
+	wm.regionIDs = append(wm.regionIDs, rid)
+	wm.regionIdx[rid] = idx
+	return idx
+}
+
+func (wm *WorldMap) rebuildRegionPixelsFromAssignments() {
+	if wm == nil {
+		return
+	}
+	regionPx := make(map[world.RegionID][]int, len(wm.regionIdx))
+	for pIdx, ridx := range wm.regionAt {
+		if ridx == 0 || int(ridx) >= len(wm.regionIDs) {
+			continue
+		}
+		rid := wm.regionIDs[ridx]
+		regionPx[rid] = append(regionPx[rid], pIdx)
+	}
+	wm.regionPx = regionPx
 }
