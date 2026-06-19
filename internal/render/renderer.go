@@ -1068,7 +1068,7 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	const panelW, panelH = float32(430), float32(84)
 	x := float32(ScreenWidth)/2 - panelW/2
 	_, turnHudY, _, turnHudH := turnTechHudRect()
-	y := turnHudY + turnHudH + 12
+	y := turnHudY + turnHudH + 30
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 14, 10, 228})
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)

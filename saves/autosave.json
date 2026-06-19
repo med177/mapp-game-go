@@ -27552,326 +27552,6 @@
   },
   "trade_routes": [
     {
-      "from_faction_id": "lithuanian_gd",
-      "to_faction_id": "venice",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "venice",
-      "to_faction_id": "lithuanian_gd",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "east_rome",
-      "to_faction_id": "russia",
-      "good": "grain",
-      "amount_per_turn": 1,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "russia",
-      "to_faction_id": "east_rome",
-      "good": "grain",
-      "amount_per_turn": 1,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ilkhanate",
-      "to_faction_id": "mentese_bey",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mentese_bey",
-      "to_faction_id": "ilkhanate",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aragon",
-      "to_faction_id": "portugal",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "portugal",
-      "to_faction_id": "aragon",
-      "good": "timber",
-      "amount_per_turn": 3,
-      "gold_per_unit": 3,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hungarian_kingdom",
-      "to_faction_id": "teutonic_order",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "hungarian_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "novgorod_rep",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "novgorod_rep",
-      "to_faction_id": "bulgarian_empire",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "bulgarian_empire",
-      "to_faction_id": "serbian_empire",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "serbian_empire",
-      "to_faction_id": "bulgarian_empire",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hre",
-      "to_faction_id": "papal_states_f",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "papal_states_f",
-      "to_faction_id": "hre",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "candar_bey",
-      "to_faction_id": "mamluk",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mamluk",
-      "to_faction_id": "candar_bey",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hamid_bey",
-      "to_faction_id": "mamluk",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mamluk",
-      "to_faction_id": "hamid_bey",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "candar_bey",
-      "to_faction_id": "golden_horde",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "candar_bey",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "milan_duchy",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "milan_duchy",
-      "to_faction_id": "denmark_kingdom",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "hamid_bey",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hamid_bey",
-      "to_faction_id": "golden_horde",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "genoa",
-      "to_faction_id": "naples_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "genoa",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "portugal",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "portugal",
-      "to_faction_id": "epir",
-      "good": "timber",
-      "amount_per_turn": 3,
-      "gold_per_unit": 3,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "florence_rep",
-      "to_faction_id": "lithuanian_gd",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "lithuanian_gd",
-      "to_faction_id": "florence_rep",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "russia",
-      "to_faction_id": "serbian_empire",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "serbian_empire",
-      "to_faction_id": "russia",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "florence_rep",
-      "to_faction_id": "hungarian_kingdom",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hungarian_kingdom",
-      "to_faction_id": "florence_rep",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "france",
-      "to_faction_id": "venice",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "venice",
-      "to_faction_id": "france",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "genoa",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "genoa",
-      "to_faction_id": "denmark_kingdom",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
       "from_faction_id": "bulgarian_empire",
       "to_faction_id": "russia",
       "good": "grain",
@@ -27884,230 +27564,6 @@
       "to_faction_id": "bulgarian_empire",
       "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "england",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "england",
-      "to_faction_id": "epir",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "epir",
-      "to_faction_id": "naples_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "epir",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "golden_horde",
-      "to_faction_id": "ottoman",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ottoman",
-      "to_faction_id": "golden_horde",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hre",
-      "to_faction_id": "teutonic_order",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "hre",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "france",
-      "to_faction_id": "teutonic_order",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "teutonic_order",
-      "to_faction_id": "france",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "mentese_bey",
-      "to_faction_id": "ottoman",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ottoman",
-      "to_faction_id": "mentese_bey",
-      "good": "cloth",
-      "amount_per_turn": 3,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aydin_bey",
-      "to_faction_id": "ilkhanate",
-      "good": "cloth",
-      "amount_per_turn": 2,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ilkhanate",
-      "to_faction_id": "aydin_bey",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aragon",
-      "to_faction_id": "denmark_kingdom",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "denmark_kingdom",
-      "to_faction_id": "aragon",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "milan_duchy",
-      "to_faction_id": "naples_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "naples_kingdom",
-      "to_faction_id": "milan_duchy",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "novgorod_rep",
-      "to_faction_id": "serbian_empire",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "serbian_empire",
-      "to_faction_id": "novgorod_rep",
-      "good": "grain",
-      "amount_per_turn": 2,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "florence_rep",
-      "to_faction_id": "hre",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hre",
-      "to_faction_id": "florence_rep",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aydin_bey",
-      "to_faction_id": "ottoman",
-      "good": "cloth",
-      "amount_per_turn": 2,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "ottoman",
-      "to_faction_id": "aydin_bey",
-      "good": "cloth",
-      "amount_per_turn": 2,
-      "gold_per_unit": 8,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "hungarian_kingdom",
-      "to_faction_id": "papal_states_f",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "papal_states_f",
-      "to_faction_id": "hungarian_kingdom",
-      "good": "grain",
-      "amount_per_turn": 3,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "aragon",
-      "to_faction_id": "england",
-      "good": "grain",
-      "amount_per_turn": 4,
-      "gold_per_unit": 2,
-      "suspended_turns": 0
-    },
-    {
-      "from_faction_id": "england",
-      "to_faction_id": "aragon",
-      "good": "grain",
-      "amount_per_turn": 4,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
@@ -28128,7 +27584,199 @@
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "france",
+      "from_faction_id": "aragon",
+      "to_faction_id": "england",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "england",
+      "to_faction_id": "aragon",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "milan_duchy",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "milan_duchy",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "novgorod_rep",
+      "to_faction_id": "serbian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "serbian_empire",
+      "to_faction_id": "novgorod_rep",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "genoa",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "genoa",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hungarian_kingdom",
+      "to_faction_id": "teutonic_order",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "teutonic_order",
+      "to_faction_id": "hungarian_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "golden_horde",
+      "good": "cloth",
+      "amount_per_turn": 3,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "epir",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "genoa",
+      "to_faction_id": "naples_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "naples_kingdom",
+      "to_faction_id": "genoa",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "florence_rep",
+      "to_faction_id": "hre",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hre",
+      "to_faction_id": "florence_rep",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "england",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "england",
+      "to_faction_id": "epir",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "milan_duchy",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "milan_duchy",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "east_rome",
+      "to_faction_id": "novgorod_rep",
+      "good": "grain",
+      "amount_per_turn": 1,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "novgorod_rep",
+      "to_faction_id": "east_rome",
+      "good": "grain",
+      "amount_per_turn": 1,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hre",
       "to_faction_id": "papal_states_f",
       "good": "grain",
       "amount_per_turn": 3,
@@ -28137,9 +27785,57 @@
     },
     {
       "from_faction_id": "papal_states_f",
-      "to_faction_id": "france",
+      "to_faction_id": "hre",
       "good": "grain",
       "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aydin_bey",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "aydin_bey",
+      "good": "cloth",
+      "amount_per_turn": 2,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "france",
+      "to_faction_id": "venice",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "venice",
+      "to_faction_id": "france",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "candar_bey",
+      "to_faction_id": "mamluk",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mamluk",
+      "to_faction_id": "candar_bey",
+      "good": "grain",
+      "amount_per_turn": 4,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
@@ -28160,6 +27856,70 @@
       "suspended_turns": 0
     },
     {
+      "from_faction_id": "hungarian_kingdom",
+      "to_faction_id": "papal_states_f",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "papal_states_f",
+      "to_faction_id": "hungarian_kingdom",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "hamid_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hamid_bey",
+      "to_faction_id": "golden_horde",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "bulgarian_empire",
+      "to_faction_id": "serbian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "serbian_empire",
+      "to_faction_id": "bulgarian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aragon",
+      "to_faction_id": "denmark_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "denmark_kingdom",
+      "to_faction_id": "aragon",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
       "from_faction_id": "genoa",
       "to_faction_id": "portugal",
       "good": "grain",
@@ -28170,17 +27930,177 @@
     {
       "from_faction_id": "portugal",
       "to_faction_id": "genoa",
-      "good": "timber",
+      "good": "grain",
       "amount_per_turn": 3,
-      "gold_per_unit": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "epir",
+      "to_faction_id": "portugal",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "portugal",
+      "to_faction_id": "epir",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "east_rome",
+      "to_faction_id": "russia",
+      "good": "grain",
+      "amount_per_turn": 1,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "russia",
+      "to_faction_id": "east_rome",
+      "good": "grain",
+      "amount_per_turn": 1,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hamid_bey",
+      "to_faction_id": "mamluk",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mamluk",
+      "to_faction_id": "hamid_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aydin_bey",
+      "to_faction_id": "ilkhanate",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ilkhanate",
+      "to_faction_id": "aydin_bey",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "russia",
+      "to_faction_id": "serbian_empire",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "serbian_empire",
+      "to_faction_id": "russia",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "aragon",
+      "to_faction_id": "portugal",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "portugal",
+      "to_faction_id": "aragon",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "florence_rep",
+      "to_faction_id": "lithuanian_gd",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "lithuanian_gd",
+      "to_faction_id": "florence_rep",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ilkhanate",
+      "to_faction_id": "mentese_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mentese_bey",
+      "to_faction_id": "ilkhanate",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "florence_rep",
+      "to_faction_id": "hungarian_kingdom",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hungarian_kingdom",
+      "to_faction_id": "florence_rep",
+      "good": "grain",
+      "amount_per_turn": 4,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "lithuanian_gd",
+      "to_faction_id": "venice",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "venice",
+      "to_faction_id": "lithuanian_gd",
+      "good": "grain",
+      "amount_per_turn": 2,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "aydin_bey",
       "to_faction_id": "hamid_bey",
-      "good": "cloth",
+      "good": "grain",
       "amount_per_turn": 2,
-      "gold_per_unit": 8,
+      "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
@@ -28192,18 +28112,98 @@
       "suspended_turns": 0
     },
     {
-      "from_faction_id": "east_rome",
+      "from_faction_id": "france",
+      "to_faction_id": "teutonic_order",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "teutonic_order",
+      "to_faction_id": "france",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "mentese_bey",
+      "to_faction_id": "ottoman",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "ottoman",
+      "to_faction_id": "mentese_bey",
+      "good": "cloth",
+      "amount_per_turn": 3,
+      "gold_per_unit": 8,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "hre",
+      "to_faction_id": "teutonic_order",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "teutonic_order",
+      "to_faction_id": "hre",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "candar_bey",
+      "to_faction_id": "golden_horde",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "golden_horde",
+      "to_faction_id": "candar_bey",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "bulgarian_empire",
       "to_faction_id": "novgorod_rep",
       "good": "grain",
-      "amount_per_turn": 1,
+      "amount_per_turn": 3,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
     {
       "from_faction_id": "novgorod_rep",
-      "to_faction_id": "east_rome",
+      "to_faction_id": "bulgarian_empire",
       "good": "grain",
-      "amount_per_turn": 1,
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "france",
+      "to_faction_id": "papal_states_f",
+      "good": "grain",
+      "amount_per_turn": 3,
+      "gold_per_unit": 2,
+      "suspended_turns": 0
+    },
+    {
+      "from_faction_id": "papal_states_f",
+      "to_faction_id": "france",
+      "good": "grain",
+      "amount_per_turn": 3,
       "gold_per_unit": 2,
       "suspended_turns": 0
     },
