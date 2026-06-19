@@ -102,6 +102,44 @@ func TestStartSiegeCreatesStateAndConsumesMove(t *testing.T) {
 	}
 }
 
+func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
+	gs := siegeTestState()
+	gs.Regions["src"].Neighbors = []world.RegionID{"dst", "ally"}
+	gs.Regions["ally"] = &world.Region{
+		ID:        "ally",
+		OwnerID:   "p1",
+		Neighbors: []world.RegionID{"src"},
+	}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			FortLevel:         2,
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("atk", "ally", "")
+
+	if gs.Armies["atk"].RegionID != "ally" {
+		t.Fatalf("kuşatmayı kaldırıp komşu dost bölgeye yürümeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.SiegeAt("dst") != nil {
+		t.Fatal("ordu başka bölgeye yürüyünce eski kuşatma temizlenmeliydi")
+	}
+}
+
 func TestResolveSiegesCapturesBreachedFortifiedRegion(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{

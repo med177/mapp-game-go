@@ -3076,10 +3076,6 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
 	}
-	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
-		g.renderer.ShowCombatResult("Bu ordu kuşatma yürütüyor. Önce kuşatmayı kaldır veya hücum et.")
-		return
-	}
 
 	// Komşu mu kontrol et
 	src, ok := g.gs.Regions[a.RegionID]
@@ -3181,6 +3177,10 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			return
 		}
 	}
+	liftedSiegeRegion := world.RegionID("")
+	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
+		liftedSiegeRegion = activeSiege.RegionID
+	}
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil && activeSiege.AttackerArmyID == aid {
 			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
@@ -3200,6 +3200,9 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 
 	if enemyArmy != nil {
 		// --- Savaş ---
+		if liftedSiegeRegion != "" {
+			g.clearSiege(liftedSiegeRegion)
+		}
 		atkMods := techModsFor(g.gs, a.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		battleContext := combat.BattleContextLand
@@ -3236,6 +3239,9 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 
 	} else {
 		// --- Savaşsız hareket ve bölge ele geçirme ---
+		if liftedSiegeRegion != "" {
+			g.clearSiege(liftedSiegeRegion)
+		}
 		a.RegionID = target
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""

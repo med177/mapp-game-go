@@ -36,6 +36,10 @@ const (
 	confirmDialogH          = float32(166)
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
+	selectedSiegePanelW     = 420.0
+	selectedSiegePanelH     = 128.0
+	selectedSiegeButtonW    = 170.0
+	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
 	initialCameraZoomFactor = 1.40
 	maxCameraZoomScale      = 4.5
@@ -942,6 +946,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		}
 		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
+		r.drawSelectedSiegePanel(screen)
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
@@ -2555,6 +2560,14 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, cx, cy fl
 			}
 			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{245, 248, 252, 255})
 		}
+	}
+	if siege := r.gs.SiegeByArmy(aid); siege != nil {
+		badgeSize := float32(15)
+		badgeX := cx + 8
+		badgeY := cy - 27
+		vector.FillRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, color.RGBA{58, 26, 22, 240}, false)
+		vector.StrokeRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, 1.5, color.RGBA{224, 182, 96, 245}, false)
+		gameui.DrawIcon(screen, gameui.IconSword, float64(badgeX-badgeSize/2+1), float64(badgeY-badgeSize/2+1), float64(badgeSize-2), color.RGBA{255, 229, 176, 255})
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
 		badgeX := cx + 8
@@ -7057,6 +7070,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
+	if _, siege, _, ok := r.selectedSiegePanelState(); ok {
+		assaultBtn, liftBtn := buildSelectedSiegeButtons()
+		if assaultBtn.HitTest(fx, fy) {
+			return InputAction{Kind: ActionAssaultSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
+		}
+		if liftBtn.HitTest(fx, fy) {
+			return InputAction{Kind: ActionLiftSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+		}
+		if r.selectedSiegePanelHit(fx, fy) {
+			return InputAction{}
+		}
+	}
 	if aid, ok := r.armyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			r.SelectedArmy = ""
@@ -7309,10 +7334,6 @@ func (r *Renderer) handleRightClick() InputAction {
 			break
 		}
 		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
-			if activeSiege := r.gs.SiegeByArmy(a.ID); activeSiege != nil && activeSiege.RegionID != rid {
-				r.ShowCombatResult("Bu ordu başka bir kuşatma yürütüyor. Önce onu kaldır.")
-				return InputAction{}
-			}
 			if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
 				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return InputAction{}
@@ -7535,6 +7556,88 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		pendingAction: InputAction{Kind: ActionStartSiege, ArmyID: attacker.ID, TargetRegion: target.ID},
 		thirdAction:   InputAction{Kind: ActionAssaultSiege, ArmyID: attacker.ID, TargetRegion: target.ID, BattleStance: combat.BattleStanceBalanced},
 	}
+}
+
+func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *world.Region, bool) {
+	if r == nil || r.gs == nil || r.gs.Phase != state.PhasePlayerTurn || r.SelectedArmy == "" {
+		return nil, nil, nil, false
+	}
+	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.showHistoricalEvent ||
+		r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
+		r.showTech || r.showTrade {
+		return nil, nil, nil, false
+	}
+	attacker := r.gs.Armies[r.SelectedArmy]
+	if attacker == nil || attacker.OwnerID != string(r.gs.PlayerFactionID) {
+		return nil, nil, nil, false
+	}
+	siege := r.gs.SiegeByArmy(attacker.ID)
+	if siege == nil {
+		return nil, nil, nil, false
+	}
+	target := r.gs.Regions[siege.RegionID]
+	if target == nil {
+		return nil, nil, nil, false
+	}
+	return attacker, siege, target, true
+}
+
+func buildSelectedSiegePanel() gameui.Panel {
+	x := (ScreenWidth - selectedSiegePanelW) / 2
+	y := ScreenHeight - selectedSiegePanelH - 152
+	return gameui.NewPanel(x, y, selectedSiegePanelW, selectedSiegePanelH)
+}
+
+func buildSelectedSiegeButtons() (gameui.Button, gameui.Button) {
+	panel := buildSelectedSiegePanel()
+	btnY := panel.Rect.Y + panel.Rect.H - selectedSiegeButtonH - 14
+	gap := 16.0
+	totalW := selectedSiegeButtonW*2 + gap
+	startX := panel.Rect.X + (panel.Rect.W-totalW)/2
+	assaultBtn := gameui.NewButton(startX, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
+	liftBtn := gameui.NewButton(startX+selectedSiegeButtonW+gap, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Kuşatmayı Kaldır").WithIcon(gameui.IconExit)
+	return assaultBtn, liftBtn
+}
+
+func (r *Renderer) selectedSiegePanelHit(fx, fy float64) bool {
+	if _, _, _, ok := r.selectedSiegePanelState(); !ok {
+		return false
+	}
+	return buildSelectedSiegePanel().HitTest(fx, fy)
+}
+
+func (r *Renderer) selectedSiegePanelHovering(fx, fy float64) bool {
+	if _, _, _, ok := r.selectedSiegePanelState(); !ok {
+		return false
+	}
+	assaultBtn, liftBtn := buildSelectedSiegeButtons()
+	return assaultBtn.HitTest(fx, fy) || liftBtn.HitTest(fx, fy)
+}
+
+func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
+	attacker, siege, target, ok := r.selectedSiegePanelState()
+	if !ok {
+		return
+	}
+	panel := buildSelectedSiegePanel()
+	gameui.DrawPanel(screen, panel, gameui.PanelStyle{
+		BG:          color.RGBA{18, 12, 8, 234},
+		Border:      color.RGBA{154, 112, 48, 255},
+		BorderWidth: 2,
+	})
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 12}, "Kuşatma Emri", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
+	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
+	status := "Gedik yok"
+	if level := siegeBreachLabelTR(siege.BreachLevel); level != "" {
+		status = level
+	}
+	info := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik: T%d/T%d", target.NameTR, siege.FortLevel, siege.BreachProgress, status, bestTier, siege.FortLevel)
+	hint := "Başka komşu bölgeye hareket emri verirsen kuşatma otomatik kaldırılır."
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42, W: panel.Rect.W - 36}, info, color.RGBA{228, 224, 214, 255}, gameui.TextSmall, 17, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 76, W: panel.Rect.W - 36}, hint, color.RGBA{170, 196, 152, 255}, gameui.TextSmall, 17, 2)
+	assaultBtn, liftBtn := buildSelectedSiegeButtons()
+	drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	drawUIButtonWidget(screen, liftBtn, solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
 }
 
 func battlePlanInstructionTR(context combat.BattleContext) string {

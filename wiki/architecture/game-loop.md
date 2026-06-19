@@ -126,11 +126,11 @@ Kamera kontrolleri normal harita ile aynıdır.
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
-| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır |
+| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır |
 | `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
 | `ActionStartSiege` | Kuşatma modalı | Orduda kuşatma birimi varsa tahkimli düşman kara bölgesinde aktif kuşatma başlatır; ordu hedefe girmez, hareketi biter |
-| `ActionAssaultSiege` | Kuşatma modalı | Aktif kuşatma üstünden tahkimata genel hücum yapar; gedik ve sur bonusu combat çözümüne katılır |
-| `ActionLiftSiege` | Kuşatma modalı | Seçili ordunun yürüttüğü kuşatmayı kaldırır |
+| `ActionAssaultSiege` | Kuşatma modalı / seçili kuşatma paneli | Aktif kuşatma üstünden tahkimata genel hücum yapar; gedik ve sur bonusu combat çözümüne katılır |
+| `ActionLiftSiege` | Kuşatma modalı / seçili kuşatma paneli | Seçili ordunun yürüttüğü kuşatmayı kaldırır |
 | `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al; kuyruktaki binaya tekrar basılırsa iptal edip altını iade eder |

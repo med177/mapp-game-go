@@ -115,6 +115,10 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.selectedSiegePanelHovering(fx, fy) {
+		ebiten.SetCursorShape(ebiten.CursorShapePointer)
+		return
+	}
 
 	switch r.gs.Phase {
 	case state.PhaseMainMenu:
@@ -317,6 +321,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 	}
 	if r.SelectedArmy != "" && ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy) {
+		return true
+	}
+	if r.selectedSiegePanelHit(fx, fy) {
 		return true
 	}
 	if r.mapMode == MapModeTrade && (r.tradeCorridorAt(fx, fy) >= 0 || r.tradeCenterAt(fx, fy) >= 0) {
