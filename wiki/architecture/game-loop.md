@@ -42,7 +42,7 @@ PhaseVictorySelect
 PhasePlayerTurn ←──────────────────────┐
     ↓ TurSonu                          │
 PhaseAITurn                            │
-    ↓ (tüm AI fraksiyonlar işlendi)    │
+    ↓ (AI fraksiyonları `FactionOrder` sırasıyla, adım adım çözülür) │
 PhaseTurnResolution                    │
     ↓ (çözüm tamamlandı)               │
     ├─ oyun devam → PhasePlayerTurn ───┘
@@ -102,6 +102,19 @@ Kamera kontrolleri normal harita ile aynıdır.
 10. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
 11. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]
 12. `gs.AdvanceTurn()` — ay/yıl ilerlet
+
+## AI Tur Akışı
+
+`PhaseAITurn` artık tek frame'de tüm AI'yi bitirmez. `internal/game/game.go` içindeki AI sıra denetleyicisi:
+
+1. Oyuncu kameranın anlık konumunu saklar.
+2. AI fraksiyonlarını `FactionOrder` tabanlı deterministik sıraya dizer.
+3. Her fraksiyon için `ai.TurnStepper` oluşturur.
+4. Prelude safhasında diplomasi, araştırma, inşa ve deniz hazırlıkları uygulanır.
+5. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
+6. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
+7. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
+8. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
 
 ---
 

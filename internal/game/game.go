@@ -38,6 +38,16 @@ type Game struct {
 	evts                 []*events.Event
 	pendingHistoricalEvt *events.Event
 	loading              *loadingJob
+	aiTurn               *aiTurnState
+}
+
+type aiTurnState struct {
+	order        []faction.FactionID
+	index        int
+	stepper      *ai.TurnStepper
+	waitFrames   int
+	camera       render.CameraState
+	cameraLocked bool
 }
 
 type eventCodexEntry struct {
@@ -49,6 +59,12 @@ type eventCodexEntry struct {
 }
 
 const scenarioBaseDir = "assets/scenarios"
+
+const (
+	aiTurnVisibleStepFrames  = 34
+	aiTurnHiddenStepFrames   = 12
+	aiTurnFactionIntroFrames = 10
+)
 
 type loadingKind int
 
@@ -203,12 +219,12 @@ func (g *Game) Update() error {
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
-			g.gs.Phase = state.PhaseAITurn
+			g.startAITurnSequence()
 		case render.ActionConfirmEndTurn:
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
-			g.gs.Phase = state.PhaseAITurn
+			g.startAITurnSequence()
 		case render.ActionMoveArmy:
 			g.moveArmyWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
 		case render.ActionEmbarkArmy:
@@ -268,14 +284,7 @@ func (g *Game) Update() error {
 		}
 
 	case state.PhaseAITurn:
-		for fid := range g.gs.Factions {
-			if fid == g.gs.PlayerFactionID {
-				continue
-			}
-			ai.TakeTurn(g.gs, fid)
-		}
-		g.renderer.MarkMapDirty()
-		g.gs.Phase = state.PhaseTurnResolution
+		g.updateAITurnSequence()
 
 	case state.PhaseTurnResolution:
 		g.resolveTurn()
@@ -439,6 +448,228 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	render.ScreenWidth = float64(outsideWidth)
 	render.ScreenHeight = float64(outsideHeight)
 	return outsideWidth, outsideHeight
+}
+
+func (g *Game) startAITurnSequence() {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	g.aiTurn = &aiTurnState{
+		order:        g.orderedAIFactions(),
+		camera:       g.renderer.CameraSnapshot(),
+		cameraLocked: true,
+	}
+	g.gs.Phase = state.PhaseAITurn
+	g.renderer.ClearAITurnStatus()
+}
+
+func (g *Game) orderedAIFactions() []faction.FactionID {
+	if g == nil || g.gs == nil {
+		return nil
+	}
+	order := make([]faction.FactionID, 0, len(g.gs.Factions))
+	seen := make(map[faction.FactionID]struct{}, len(g.gs.Factions))
+	for _, fid := range g.gs.FactionOrder {
+		if fid == g.gs.PlayerFactionID || g.gs.Factions[fid] == nil {
+			continue
+		}
+		order = append(order, fid)
+		seen[fid] = struct{}{}
+	}
+	extra := make([]faction.FactionID, 0, len(g.gs.Factions))
+	for fid := range g.gs.Factions {
+		if fid == g.gs.PlayerFactionID {
+			continue
+		}
+		if _, ok := seen[fid]; ok {
+			continue
+		}
+		extra = append(extra, fid)
+	}
+	sort.Slice(extra, func(i, j int) bool { return extra[i] < extra[j] })
+	return append(order, extra...)
+}
+
+func (g *Game) updateAITurnSequence() {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	if g.aiTurn == nil {
+		g.startAITurnSequence()
+	}
+	if g.aiTurn == nil {
+		return
+	}
+	if g.aiTurn.waitFrames > 0 {
+		g.aiTurn.waitFrames--
+		return
+	}
+
+	for {
+		if g.aiTurn.index >= len(g.aiTurn.order) {
+			g.finishAITurnSequence()
+			g.renderer.MarkMapDirty()
+			g.gs.Phase = state.PhaseTurnResolution
+			return
+		}
+
+		if g.aiTurn.stepper == nil {
+			fid := g.aiTurn.order[g.aiTurn.index]
+			f := g.gs.Factions[fid]
+			if f == nil || f.IsEliminated {
+				g.aiTurn.index++
+				continue
+			}
+			g.aiTurn.stepper = ai.NewTurnStepper(g.gs, fid)
+			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
+			g.aiTurn.waitFrames = aiTurnFactionIntroFrames
+			return
+		}
+
+		step, done := g.aiTurn.stepper.Step()
+		if done {
+			g.aiTurn.index++
+			g.aiTurn.stepper = nil
+			continue
+		}
+		g.handleAITurnStep(step)
+		return
+	}
+}
+
+func (g *Game) handleAITurnStep(step ai.TurnStep) {
+	if g == nil || g.aiTurn == nil {
+		return
+	}
+	actor := turnActorName(g.gs, step.FactionID)
+	detail := step.Message
+	if detail == "" {
+		detail = "Hamle işleniyor."
+	}
+	nearPlayer := g.aiStepVisible(step)
+	if nearPlayer && step.FocusRegion != "" {
+		g.renderer.CenterCameraOnRegion(step.FocusRegion)
+	}
+	g.renderer.SetAITurnStatus(actor, aiTurnOverlayDetail(step, nearPlayer))
+	if shouldLogAITurnStep(step) {
+		g.renderer.AddEvent("[AI] " + detail)
+	}
+	if nearPlayer || step.Kind == ai.TurnStepDiplomacy {
+		g.renderer.ShowCombatResult(detail)
+		g.aiTurn.waitFrames = aiTurnVisibleStepFrames
+		return
+	}
+	g.aiTurn.waitFrames = aiTurnHiddenStepFrames
+}
+
+func (g *Game) finishAITurnSequence() {
+	if g == nil || g.renderer == nil {
+		return
+	}
+	if g.aiTurn != nil && g.aiTurn.cameraLocked {
+		g.renderer.RestoreCamera(g.aiTurn.camera)
+	}
+	g.renderer.ClearAITurnStatus()
+	g.aiTurn = nil
+}
+
+func (g *Game) aiStepVisible(step ai.TurnStep) bool {
+	if g == nil || g.gs == nil {
+		return false
+	}
+	if step.Kind == ai.TurnStepDiplomacy {
+		return step.TargetFaction == g.gs.PlayerFactionID
+	}
+	if step.FocusRegion == "" {
+		return false
+	}
+	return g.regionNearPlayer(step.FocusRegion, 3)
+}
+
+func (g *Game) regionNearPlayer(target world.RegionID, maxDepth int) bool {
+	if g == nil || g.gs == nil || target == "" || maxDepth < 0 {
+		return false
+	}
+	type queueItem struct {
+		id    world.RegionID
+		depth int
+	}
+	seen := make(map[world.RegionID]struct{}, len(g.gs.Regions))
+	queue := make([]queueItem, 0, len(g.gs.Regions))
+	for _, region := range g.gs.Regions {
+		if region == nil || region.OwnerID != string(g.gs.PlayerFactionID) {
+			continue
+		}
+		seen[region.ID] = struct{}{}
+		queue = append(queue, queueItem{id: region.ID, depth: 0})
+	}
+	for _, playerArmy := range g.gs.Armies {
+		if playerArmy == nil || playerArmy.OwnerID != string(g.gs.PlayerFactionID) {
+			continue
+		}
+		if _, ok := seen[playerArmy.RegionID]; ok {
+			continue
+		}
+		seen[playerArmy.RegionID] = struct{}{}
+		queue = append(queue, queueItem{id: playerArmy.RegionID, depth: 0})
+	}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		if cur.id == target {
+			return true
+		}
+		if cur.depth >= maxDepth {
+			continue
+		}
+		region := g.gs.Regions[cur.id]
+		if region == nil {
+			continue
+		}
+		for _, nxt := range region.Neighbors {
+			if _, ok := seen[nxt]; ok || g.gs.Regions[nxt] == nil {
+				continue
+			}
+			seen[nxt] = struct{}{}
+			queue = append(queue, queueItem{id: nxt, depth: cur.depth + 1})
+		}
+	}
+	return false
+}
+
+func turnActorName(gs *state.GameState, fid faction.FactionID) string {
+	if gs == nil {
+		return string(fid)
+	}
+	if f := gs.Factions[fid]; f != nil && f.NameTR != "" {
+		return f.NameTR
+	}
+	return string(fid)
+}
+
+func aiTurnOverlayDetail(step ai.TurnStep, nearPlayer bool) string {
+	if nearPlayer {
+		return step.Message
+	}
+	switch step.Kind {
+	case ai.TurnStepMove, ai.TurnStepBattle, ai.TurnStepEmbark, ai.TurnStepDisembark, ai.TurnStepConquest:
+		return "Uzak cephede hamleler çözülüyor."
+	case ai.TurnStepRecruit, ai.TurnStepBuild, ai.TurnStepResearch:
+		return "Arka plan üretim ve hazırlıkları tamamlanıyor."
+	case ai.TurnStepDiplomacy:
+		return step.Message
+	default:
+		return "Hamle işleniyor."
+	}
+}
+
+func shouldLogAITurnStep(step ai.TurnStep) bool {
+	switch step.Kind {
+	case ai.TurnStepDiplomacy, ai.TurnStepBattle, ai.TurnStepConquest, ai.TurnStepBuild, ai.TurnStepResearch:
+		return true
+	default:
+		return false
+	}
 }
 
 func (g *Game) resolveTurn() {
@@ -1846,6 +2077,7 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 }
 
 func (g *Game) startPreparePlayerTurn() {
+	g.finishAITurnSequence()
 	g.startLoading(loadingWorldMap, "Harita hazırlanıyor...", func(setProgress func(int)) loadingResult {
 		worldMap := render.PrepareWorldMap(g.gs, "", render.MapModeNormal, setProgress)
 		return loadingResult{worldMap: worldMap}
@@ -1856,6 +2088,7 @@ func (g *Game) startPreparePlayerTurn() {
 func (g *Game) resetToNewGame() {
 	difficulty := g.gs.Difficulty
 	audio.StopMusic()
+	g.finishAITurnSequence()
 	gs := &state.GameState{
 		Phase:      state.PhaseScenarioSelect,
 		Difficulty: difficulty,

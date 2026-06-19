@@ -61,6 +61,7 @@ type Renderer struct {
 | 6 | Edit mode alt-sol bilgi HUD'u — seçili bölge/settlement/ordu özeti ve edit butonları | `renderer.go` |
 | 7 | Diplomasi paneli (Tab) — tam ekran overlay | `diplom.go` |
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; teknoloji kartının görünüm ve hit-test seam'i ortak `techCardComponent` üstünden yürütülür, böylece çizilen rect ile tıklama rect'i aynı projection çıktısını paylaşır. Kart başlığı badge alanını hesaba katar, gerekirse iki satıra wrap olur; effect özeti de kontrollü çok satır kullanır, bu yüzden uzun Osmanlı/Türkçe teknoloji adları kart dışına taşmaz | `tech_panel.go`, `tech_card_component.go` |
+| 8 | AI tur overlay'i — aktif AI devletinin adı ve yakın/uzak hamle durumu üst-orta bantta gösterilir | `renderer.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz) | `renderer.go`, `panel.go` |
 | 10 | Savaş ilan, savaş planı, genel onay, zafer detay ve event detail diyalogları; savaş planı modalı üç duruş kartı (`Agresif/Dengeli/Savunmacı`) ve her kartın altında aynı combat matematiğinden türetilmiş zafer şansı + tahmini kayıp özetini gösterir. Kayıp satırları artık `HP` ve `Birim` olarak ayrılır; böylece henüz ölü üretmeyen ama ciddi hasar alan senaryolar da görünür olur. Zafer HUD kartına tıklanınca açılan modal aktif hedefin başlık, açıklama ve ilerleme özetini gösterir; victory detail modal içeriği sabit yükseklikte değil, viewport + wheel scroll + scrollbar ile aşağı akar; event detail popup structured historical log detayını da çok satırlı gösterir | `renderer.go`, `panel.go`, `cursor.go`, `ui_modals.go` |
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
@@ -157,6 +158,14 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 **Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. `resetCamera()` ise ilk açılışta ve kamera resetlerinde bu minimumun `1.40x` üstünden başlar; böylece kampanya daha yakın açılır ve sıkışık settlement kümeleri daha erken ayrışır. Yakınlaşma üst sınırı `4.5`.
 
 **Sürükleme:** Orta fare tuşu basılıyken dünya uzayı delta hesaplanır.
+
+`Renderer` artık AI tur sinematiği için üç ek seam taşır:
+
+- `CameraSnapshot()` mevcut `camX/camY/camScale` değerlerini saklar
+- `CenterCameraOnRegion(rid)` kamerayı ilgili bölge merkezine taşır
+- `RestoreCamera(state)` AI turu bitince oyuncunun eski bakışını geri yükler
+
+Bu seam, `internal/game/game.go` içindeki AI stepper akışının yalnız yakın hamlelerde kamerayı oynatmasını sağlar; uzak hamlelerde overlay güncellenir ama kamera zıplamaz.
 
 ---
 

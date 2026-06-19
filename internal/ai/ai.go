@@ -56,27 +56,7 @@ func relationScore(gs *state.GameState, a, b string) (int, faction.DiplomaticSta
 
 // TakeTurn belirtilen fraksiyon için tüm AI kararlarını verir ve uygular.
 func TakeTurn(gs *state.GameState, fid faction.FactionID) {
-	// Difficulty 3: koalisyon mantığını çalıştır
-	if gs.Difficulty >= 3 {
-		FormCoalitionAgainstPlayer(gs, fid)
-	}
-
-	aiHandleDiplomacy(gs, fid)
-
-	// Teknoloji araştırma (önce yap, altın biterse diğerlerini etkilemesin)
-	aiResearch(gs, fid)
-
-	// Ekonomi optimizasyonu (pazar, çiftlik)
-	aiEconomyBuild(gs, fid)
-
-	// Deniz stratejisi (liman + gemi)
-	aiNavalStrategy(gs, fid)
-
-	// Birim alımı ve kışla inşası (elite birimler dahil)
-	aiRecruitAndBuild(gs, fid)
-
-	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
-	aiConsolidateArmies(gs, fid)
+	runTurnPrelude(gs, fid, nil)
 
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
@@ -91,11 +71,69 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 		if _, alive := gs.Armies[a.ID]; !alive {
 			continue
 		}
-		moveArmy(gs, a)
+		moveArmyWithSteps(gs, a, fid, nil)
 	}
 }
 
+func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	if gs == nil {
+		return
+	}
+	// Difficulty 3: koalisyon mantığını çalıştır
+	if gs.Difficulty >= 3 {
+		formCoalitionAgainstPlayer(gs, fid, steps)
+	}
+
+	aiHandleDiplomacyWithSteps(gs, fid, steps)
+
+	// Teknoloji araştırma (önce yap, altın biterse diğerlerini etkilemesin)
+	aiResearchWithSteps(gs, fid, steps)
+
+	// Ekonomi optimizasyonu (pazar, çiftlik)
+	aiEconomyBuildWithSteps(gs, fid, steps)
+
+	// Deniz stratejisi (liman + gemi)
+	aiNavalStrategyWithSteps(gs, fid, steps)
+
+	// Birim alımı ve kışla inşası (elite birimler dahil)
+	aiRecruitAndBuildWithSteps(gs, fid, steps)
+
+	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
+	aiConsolidateArmies(gs, fid)
+}
+
+func addTurnStep(steps *[]TurnStep, step TurnStep) {
+	if steps == nil || step.Message == "" {
+		return
+	}
+	*steps = append(*steps, step)
+}
+
+func turnFactionName(gs *state.GameState, fid faction.FactionID) string {
+	if gs == nil {
+		return string(fid)
+	}
+	if f := gs.Factions[fid]; f != nil && f.NameTR != "" {
+		return f.NameTR
+	}
+	return string(fid)
+}
+
+func turnRegionName(gs *state.GameState, rid world.RegionID) string {
+	if gs == nil {
+		return string(rid)
+	}
+	if region := gs.Regions[rid]; region != nil && region.NameTR != "" {
+		return region.NameTR
+	}
+	return string(rid)
+}
+
 func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
+	aiHandleDiplomacyWithSteps(gs, fid, nil)
+}
+
+func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	self := gs.Factions[fid]
 	if self == nil || self.IsEliminated {
 		return
@@ -114,13 +152,35 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
 				if otherID == gs.PlayerFactionID {
 					diplomacy.QueueOffer(gs, fid, otherID, diplomacy.ActionProposePeace)
+					addTurnStep(steps, TurnStep{
+						FactionID:     fid,
+						Kind:          TurnStepDiplomacy,
+						TargetFaction: otherID,
+						Message:       turnFactionName(gs, fid) + " sana barış teklif ediyor.",
+					})
 				} else {
-					diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+					if result.Applied || result.Accepted {
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + ": " + result.Message,
+						})
+					}
 				}
 			}
 		case faction.StancePeace:
 			if rel.Score >= 20 && diplomacy.HasCommonEnemy(gs, fid, otherID) && !diplomacy.HasDirectThreat(gs, fid, otherID) {
-				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
+				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
+				if result.Applied || result.Accepted {
+					addTurnStep(steps, TurnStep{
+						FactionID:     fid,
+						Kind:          TurnStepDiplomacy,
+						TargetFaction: otherID,
+						Message:       turnFactionName(gs, fid) + ": " + result.Message,
+					})
+				}
 				continue
 			}
 			if rel.Score >= 15 &&
@@ -128,15 +188,27 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 				aiTradePartnerCount(gs, fid) < 3 &&
 				aiTradePartnerCount(gs, otherID) < 3 &&
 				!diplomacy.HasDirectThreat(gs, fid, otherID) {
-				diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
+				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
+				if result.Applied || result.Accepted {
+					addTurnStep(steps, TurnStep{
+						FactionID:     fid,
+						Kind:          TurnStepDiplomacy,
+						TargetFaction: otherID,
+						Message:       turnFactionName(gs, fid) + ": " + result.Message,
+					})
+				}
 			}
 		}
 	}
 
-	aiEvaluateWarOpportunities(gs, fid)
+	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
 }
 
 func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
+	aiEvaluateWarOpportunitiesWithSteps(gs, fid, nil)
+}
+
+func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	if gs == nil || gs.Difficulty <= 1 {
 		return
 	}
@@ -173,7 +245,15 @@ func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
 	}
 
 	if bestTarget != "" {
-		diplomacy.Execute(gs, fid, bestTarget, diplomacy.ActionDeclareWar)
+		result := diplomacy.Execute(gs, fid, bestTarget, diplomacy.ActionDeclareWar)
+		if result.Applied || result.Accepted {
+			addTurnStep(steps, TurnStep{
+				FactionID:     fid,
+				Kind:          TurnStepDiplomacy,
+				TargetFaction: bestTarget,
+				Message:       turnFactionName(gs, fid) + ": " + result.Message,
+			})
+		}
 	}
 }
 
@@ -537,6 +617,10 @@ func aiTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
 
 // aiRecruitAndBuild AI fraksiyonu için kışla inşa eder ve manpower sınırına kadar birim alır.
 func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
+	aiRecruitAndBuildWithSteps(gs, fid, nil)
+}
+
+func aiRecruitAndBuildWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	f, ok := gs.Factions[fid]
 	if !ok || f.IsEliminated {
 		return
@@ -556,7 +640,7 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 		}
 	}
 	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordWithReserve(f, barracksCost) {
-		aiBuildBarracks(gs, fid, barracksCost)
+		aiBuildBarracksWithSteps(gs, fid, barracksCost, steps)
 	}
 
 	// Kapasite dolana veya altın bitene kadar birim al
@@ -567,7 +651,7 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 		if f.Gold < aiMilitiaCost+aiMinGoldReserve {
 			break
 		}
-		if !aiRecruitOne(gs, fid) {
+		if !aiRecruitOneWithSteps(gs, fid, steps) {
 			break
 		}
 	}
@@ -575,6 +659,10 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 
 // aiBuildBarracks kışlası olmayan ilk uygun bölgeye kışla inşa eder.
 func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost) {
+	aiBuildBarracksWithSteps(gs, fid, cost, nil)
+}
+
+func aiBuildBarracksWithSteps(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	btype := gs.BuildingTypes["barracks"]
 	if btype == nil {
@@ -594,6 +682,13 @@ func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.Re
 		cost.Apply(f)
 		turns := aiBuildingTurnsRequired(r, "barracks", btype.TurnsRequired, queued)
 		aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "barracks", turns)
+		addTurnStep(steps, TurnStep{
+			FactionID:    fid,
+			Kind:         TurnStepBuild,
+			TargetRegion: r.ID,
+			FocusRegion:  r.ID,
+			Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, r.ID) + " bölgesinde kışla kuruyor.",
+		})
 		return
 	}
 }
@@ -602,6 +697,10 @@ func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.Re
 // Askeri teknoloji ve altın durumuna göre milis, piyade, süvari veya topçu seçer.
 // Başarılıysa true, koşul sağlanamadıysa false döner.
 func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
+	return aiRecruitOneWithSteps(gs, fid, nil)
+}
+
+func aiRecruitOneWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) bool {
 	f := gs.Factions[fid]
 	if gs.UnitTypes == nil {
 		return false
@@ -793,12 +892,24 @@ func aiUnitAvailableForRecruitment(gs *state.GameState, f *faction.Faction, utyp
 
 // FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
 func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
+	formCoalitionAgainstPlayer(gs, fid, nil)
+}
+
+func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	playerRegions := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
 	if playerRegions < coalitionThreshold {
 		return
 	}
 
-	diplomacy.Execute(gs, fid, gs.PlayerFactionID, diplomacy.ActionDeclareWar)
+	result := diplomacy.Execute(gs, fid, gs.PlayerFactionID, diplomacy.ActionDeclareWar)
+	if result.Applied || result.Accepted {
+		addTurnStep(steps, TurnStep{
+			FactionID:     fid,
+			Kind:          TurnStepDiplomacy,
+			TargetFaction: gs.PlayerFactionID,
+			Message:       turnFactionName(gs, fid) + ": " + result.Message,
+		})
+	}
 
 	// Diğer AI fraksiyonlarla ittifak kur (düşman değillerse)
 	for otherFID := range gs.Factions {
@@ -815,22 +926,42 @@ func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
 		if rel.Score < 20 {
 			rel.Score = 20
 		}
-		diplomacy.Execute(gs, fid, otherFID, diplomacy.ActionProposeAlliance)
+		result := diplomacy.Execute(gs, fid, otherFID, diplomacy.ActionProposeAlliance)
+		if result.Applied || result.Accepted {
+			addTurnStep(steps, TurnStep{
+				FactionID:     fid,
+				Kind:          TurnStepDiplomacy,
+				TargetFaction: otherFID,
+				Message:       turnFactionName(gs, fid) + ": " + result.Message,
+			})
+		}
 	}
 }
 
 // moveArmy tek bir orduyu hareket puanı tükenene kadar hareket ettirir.
 func moveArmy(gs *state.GameState, a *army.Army) {
+	moveArmyWithSteps(gs, a, faction.FactionID(a.OwnerID), nil)
+}
+
+func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep) {
 	for a.MovePoints > 0 {
 		target := chooseBestMove(gs, a)
 		if target == "" {
 			break
 		}
-		survived := executeMove(gs, a, target)
-		if !survived {
+		outcome := executeMove(gs, a, target, fid)
+		if outcome.step.Message != "" {
+			addTurnStep(steps, outcome.step)
+		}
+		if !outcome.survived {
 			break
 		}
 	}
+}
+
+type moveOutcome struct {
+	survived bool
+	step     TurnStep
 }
 
 func aiCanEmbarkArmy(gs *state.GameState, a *army.Army) bool {
@@ -1232,15 +1363,19 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 
 // executeMove hareketi ve varsa savaşı uygular.
 // Ordu hayatta kaldıysa true, yok edildiyse false döner.
-func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (survived bool) {
+func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID) moveOutcome {
 	targetRegion, ok := gs.Regions[target]
 	if !ok {
-		return true
+		return moveOutcome{survived: true}
 	}
+	fromRegion := a.RegionID
+	actorName := turnFactionName(gs, fid)
+	targetName := turnRegionName(gs, target)
+	sourceName := turnRegionName(gs, fromRegion)
 
 	if a.IsNaval && targetRegion.CanLandEnter() {
 		if !aiCanDisembarkToLand(gs, a, targetRegion) {
-			return true
+			return moveOutcome{survived: true}
 		}
 		enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target)
 		if enemyArmy != nil {
@@ -1259,33 +1394,82 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 				}
 				aiSpawnDisembarkedArmy(gs, a.OwnerID, target, landing.Units)
 				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+				return moveOutcome{
+					survived: true,
+					step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepBattle,
+						ArmyID:       a.ID,
+						FromRegion:   fromRegion,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      actorName + " " + targetName + " kıyısına çıkarma yapıp bölgeyi aldı.",
+					},
+				}
 			}
-			return true
+			return moveOutcome{
+				survived: true,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " kıyısındaki çıkarmada geri püskürtüldü.",
+				},
+			}
 		}
 		units := make([]army.Unit, len(a.EmbarkedUnits))
 		copy(units, a.EmbarkedUnits)
 		a.EmbarkedUnits = a.EmbarkedUnits[:0]
 		aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
+		stepKind := TurnStepDisembark
+		msg := actorName + " " + targetName + " kıyısına çıkarma yaptı."
 		if targetRegion.OwnerID != a.OwnerID {
 			targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+			stepKind = TurnStepConquest
+			msg = actorName + " " + targetName + " kıyısına çıktı ve bölgeyi ele geçirdi."
 		}
 		a.MovePoints--
-		return true
+		return moveOutcome{
+			survived: true,
+			step: TurnStep{
+				FactionID:    fid,
+				Kind:         stepKind,
+				ArmyID:       a.ID,
+				FromRegion:   fromRegion,
+				TargetRegion: target,
+				FocusRegion:  target,
+				Message:      msg,
+			},
+		}
 	}
 	if !a.IsNaval && targetRegion.IsSea {
 		if !aiCanEmbarkArmy(gs, a) {
-			return true
+			return moveOutcome{survived: true}
 		}
 		fleet := aiFindEmbarkFleet(gs, a.OwnerID, target, len(a.Units))
 		if fleet == nil {
-			return true
+			return moveOutcome{survived: true}
 		}
 		fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 		if fleet.MovePoints > 0 {
 			fleet.MovePoints--
 		}
 		delete(gs.Armies, a.ID)
-		return false
+		return moveOutcome{
+			survived: false,
+			step: TurnStep{
+				FactionID:    fid,
+				Kind:         TurnStepEmbark,
+				ArmyID:       a.ID,
+				FromRegion:   fromRegion,
+				TargetRegion: target,
+				FocusRegion:  fromRegion,
+				Message:      actorName + " " + sourceName + " bölgesinden filoya bindi.",
+			},
+		}
 	}
 
 	// Hedefte düşman ordusu var mı?
@@ -1311,16 +1495,49 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 				a.DockedSettlementID = ""
 				targetRegion.OwnerID = a.OwnerID
 				a.MovePoints--
-				return true
+				return moveOutcome{
+					survived: true,
+					step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepBattle,
+						ArmyID:       a.ID,
+						FromRegion:   fromRegion,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      actorName + " " + targetName + " bölgesindeki savaşı kazandı.",
+					},
+				}
 			}
 			delete(gs.Armies, a.ID)
-			return false
+			return moveOutcome{
+				survived: false,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " savaşını kazansa da ordusu dağıldı.",
+				},
+			}
 		}
 		// Saldıran yenildi
 		if len(a.Units) == 0 {
 			delete(gs.Armies, a.ID)
 		}
-		return false
+		return moveOutcome{
+			survived: false,
+			step: TurnStep{
+				FactionID:    fid,
+				Kind:         TurnStepBattle,
+				ArmyID:       a.ID,
+				FromRegion:   fromRegion,
+				TargetRegion: target,
+				FocusRegion:  target,
+				Message:      actorName + " " + targetName + " saldırısında yenildi.",
+			},
+		}
 	}
 
 	// Savaşsız hareket
@@ -1328,19 +1545,51 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 	a.DockedRegionID = ""
 	a.DockedSettlementID = ""
 	a.MovePoints--
-	targetRegion.OwnerID = a.OwnerID
+	stepKind := TurnStepMove
+	msg := actorName + " " + sourceName + " bölgesinden " + targetName + " bölgesine ilerledi."
+	if targetRegion.OwnerID != a.OwnerID {
+		targetRegion.OwnerID = a.OwnerID
+		stepKind = TurnStepConquest
+		msg = actorName + " " + targetName + " bölgesini savaşsız ele geçirdi."
+	}
 
 	// Konsolidasyon (Dost orduyla birleşme)
 	if tryMergeAIArmies(gs, a) {
-		return false // Ordu başka bir orduya katıldı ve silindi
+		return moveOutcome{
+			survived: false,
+			step: TurnStep{
+				FactionID:    fid,
+				Kind:         stepKind,
+				ArmyID:       a.ID,
+				FromRegion:   fromRegion,
+				TargetRegion: target,
+				FocusRegion:  target,
+				Message:      msg,
+			},
+		}
 	}
 
-	return true
+	return moveOutcome{
+		survived: true,
+		step: TurnStep{
+			FactionID:    fid,
+			Kind:         stepKind,
+			ArmyID:       a.ID,
+			FromRegion:   fromRegion,
+			TargetRegion: target,
+			FocusRegion:  target,
+			Message:      msg,
+		},
+	}
 }
 
 // aiResearch aktif araştırma yoksa stratejik teknoloji seçer ve başlatır.
 // Öncelik: askeri > ekonomi > diplomasi > diğer
 func aiResearch(gs *state.GameState, fid faction.FactionID) {
+	aiResearchWithSteps(gs, fid, nil)
+}
+
+func aiResearchWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.TechTypes == nil {
 		return
@@ -1417,7 +1666,11 @@ func aiResearch(gs *state.GameState, fid faction.FactionID) {
 
 	if best != nil {
 		if tech.StartResearch(&f.Research, best, &f.Gold) {
-			// Araştırma başladı
+			addTurnStep(steps, TurnStep{
+				FactionID: fid,
+				Kind:      TurnStepResearch,
+				Message:   turnFactionName(gs, fid) + " " + best.NameTR + " araştırmasını başlattı.",
+			})
 		}
 	}
 }
@@ -1425,6 +1678,10 @@ func aiResearch(gs *state.GameState, fid faction.FactionID) {
 // aiEconomyBuild ekonomik binalar inşa eder (pazar, çiftlik).
 // Her tur sadece bir bina inşa eder (limitli).
 func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
+	aiEconomyBuildWithSteps(gs, fid, nil)
+}
+
+func aiEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.BuildingTypes == nil {
 		return
@@ -1493,6 +1750,13 @@ func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 				buildCost.Apply(f)
 				turns := aiBuildingTurnsRequired(r, plan.id, btype.TurnsRequired, queued)
 				aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, plan.id, turns)
+				addTurnStep(steps, TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBuild,
+					TargetRegion: r.ID,
+					FocusRegion:  r.ID,
+					Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, r.ID) + " bölgesinde " + btype.NameTR + " inşasını başlattı.",
+				})
 				return // Bir bina inşa ettik, turu bitir
 			}
 		}
@@ -1501,6 +1765,10 @@ func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 
 // aiNavalStrategy kıyı fraksiyonları için liman ve gemi inşası yapar.
 func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
+	aiNavalStrategyWithSteps(gs, fid, nil)
+}
+
+func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.BuildingTypes == nil || gs.UnitTypes == nil {
 		return
@@ -1543,6 +1811,13 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 			portCost.Apply(f)
 			turns := aiBuildingTurnsRequired(r, "port", portType.TurnsRequired, queued)
 			aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "port", turns)
+			addTurnStep(steps, TurnStep{
+				FactionID:    fid,
+				Kind:         TurnStepBuild,
+				TargetRegion: r.ID,
+				FocusRegion:  r.ID,
+				Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, r.ID) + " kıyısında liman kuruyor.",
+			})
 			break // Bir liman yeter bu tur
 		}
 	}
@@ -1634,6 +1909,13 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 
 	shipCost.Apply(f)
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
+	addTurnStep(steps, TurnStep{
+		FactionID:    fid,
+		Kind:         TurnStepRecruit,
+		TargetRegion: bestRegion.ID,
+		FocusRegion:  bestSeaRegion,
+		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, bestRegion.ID) + " limanında nakliye gemisi hazırlıyor.",
+	})
 }
 
 func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool {

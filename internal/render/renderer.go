@@ -134,6 +134,8 @@ type Renderer struct {
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog      string
 	combatLogTimer int
+	aiTurnActor    string
+	aiTurnDetail   string
 
 	// Tarihsel olay tam ekran bildirimi
 	historicalEventTitle   string
@@ -216,6 +218,12 @@ type confirmDialogState struct {
 	pendingAction InputAction
 	thirdAction   InputAction
 	declineHook   func()
+}
+
+type CameraState struct {
+	X     float64
+	Y     float64
+	Scale float64
 }
 
 type editCommand struct {
@@ -459,6 +467,53 @@ func (r *Renderer) RebuildSettlementAnchors() {
 
 func (r *Renderer) MarkEditSaved() { r.editDirty = false }
 
+func (r *Renderer) CameraSnapshot() CameraState {
+	if r == nil {
+		return CameraState{}
+	}
+	return CameraState{X: r.camX, Y: r.camY, Scale: r.camScale}
+}
+
+func (r *Renderer) RestoreCamera(state CameraState) {
+	if r == nil {
+		return
+	}
+	minScale := minCameraScale()
+	scale := state.Scale
+	if scale < minScale {
+		scale = minScale
+	}
+	if scale > maxCameraZoomScale {
+		scale = maxCameraZoomScale
+	}
+	r.camX = state.X
+	r.camY = state.Y
+	r.camScale = scale
+}
+
+func (r *Renderer) CenterCameraOnRegion(rid world.RegionID) bool {
+	if r == nil || r.gs == nil || rid == "" {
+		return false
+	}
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return false
+	}
+	r.camX = wcX(region.WorldX)
+	r.camY = wcY(region.WorldY)
+	return true
+}
+
+func (r *Renderer) SetAITurnStatus(actor, detail string) {
+	r.aiTurnActor = actor
+	r.aiTurnDetail = detail
+}
+
+func (r *Renderer) ClearAITurnStatus() {
+	r.aiTurnActor = ""
+	r.aiTurnDetail = ""
+}
+
 func (r *Renderer) SetLoadingMessage(message string) {
 	r.LoadingMessage = message
 }
@@ -505,6 +560,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.SelectedArmy = ""
 	r.selectedFactionPanel = ""
 	r.clearSelectedSettlement()
+	r.ClearAITurnStatus()
 	r.eventLogScroll = 0
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
@@ -890,6 +946,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.DrawTechPanel(screen)
 	}
 
+	if r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
+		r.drawAITurnOverlay(screen)
+	}
+
 	// 9. Bildirim mesajı
 	if r.combatLogTimer > 0 {
 		alpha := uint8(255)
@@ -978,6 +1038,23 @@ func (r *Renderer) tradeOverlayVisible() bool {
 		return false
 	}
 	return true
+}
+
+func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
+	if r.aiTurnActor == "" {
+		return
+	}
+	const panelW, panelH = float32(430), float32(84)
+	x := float32(ScreenWidth)/2 - panelW/2
+	y := float32(58)
+	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 14, 10, 228})
+	drawPanelBorder(screen, x, y, panelW, panelH)
+	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)
+	DrawText(screen, "AI HAMLESİ", float64(x)+16, float64(y)+10, FaceSmall, ColorGray)
+	DrawText(screen, r.aiTurnActor, float64(x)+16, float64(y)+30, FaceMed, ColorGold)
+	if r.aiTurnDetail != "" {
+		drawUIWrappedLabel(screen, gameui.Rect{X: float64(x) + 16, Y: float64(y) + 48, W: float64(panelW - 32)}, r.aiTurnDetail, color.RGBA{230, 222, 204, 255}, gameui.TextSmall, 16, 2)
+	}
 }
 
 func (r *Renderer) clearTradeOverlayHover() {

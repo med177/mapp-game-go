@@ -7,18 +7,16 @@ related: [systems/combat, systems/diplomacy, architecture/game-loop]
 
 # Yapay Zeka Sistemi
 
-**Kaynak:** `internal/ai/ai.go`
+**Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`
 
 ## Genel Yapı
 
-Her `PhaseAITurn`'de tüm AI fraksiyonları sırayla işlenir:
+Her `PhaseAITurn` artık iki katmandan oluşur:
 
-```go
-for fid := range gs.Factions {
-    if fid == gs.PlayerFactionID { continue }
-    ai.TakeTurn(gs, fid)
-}
-```
+- `ai.TakeTurn()` hâlâ tam turu tek çağrıda çözebilen saf AI entrypoint'idir.
+- `ai.TurnStepper` ise aynı mantığı adım adım açar; oyun döngüsü bunu kullanarak her AI devletini sırayla görünür işler.
+
+Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fraksiyon için `TurnStepper.Step()` çağırır ve her step arasında kısa bekleme ekler. Böylece harita bir anda "snap" olmaz; yakın cephedeki hareketler tek tek görünür.
 
 `TakeTurn` sırasıyla şu adımları yapar:
 1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`
@@ -30,11 +28,22 @@ for fid := range gs.Factions {
 7. Ordu konsolidasyonu → `aiConsolidateArmies()`
 8. Ordu hareketi → `moveArmy()` (her ordu için)
 
+`TurnStepper` aynı zinciri iki faza ayırır:
+
+1. `runTurnPrelude()` — diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon
+2. Hareket fazı — her `Step()` çağrısı tek bir `executeMove()` sonucu döndürür
+
+Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katmanı:
+
+- oyuncuya yakın (`<= 3` komşuluk derinliği) aksiyonlarda kamerayı `FocusRegion` üzerine taşır,
+- uzak aksiyonlarda yalnız AI overlay'i günceller,
+- diplomasi/savaş/fetih gibi önemli adımları event log'a da yazar.
+
 ---
 
 ## Ordu Hareketi Mantığı
 
-`moveArmy()` → `chooseBestMove()` → `scoreMove()` → `executeMove()`
+`moveArmy()` / `TurnStepper.Step()` → `chooseBestMove()` → `scoreMove()` → `executeMove()`
 
 `scoreMove()` hedef bölge için puan hesaplar:
 
@@ -61,6 +70,16 @@ AI artık dost kara bölgelerini sadece diplomasi/savaş açısından değil, ik
 - Aynı lojistik hesabı `aiConsolidateArmies()` ve hareket sonrası `tryMergeAIArmies()` için de kullanılır; aşırı dolu kara bölgede AI artık körlemesine ordu birleştirme yapmaz.
 
 AI de oyuncu ile aynı `combat.ResolveBattleWithMods()` kullanır.
+
+`executeMove()` artık stepper için açıklamalı sonuç döndürür:
+
+- `TurnStepMove`
+- `TurnStepBattle`
+- `TurnStepEmbark`
+- `TurnStepDisembark`
+- `TurnStepConquest`
+
+Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakınlık filtresi üretilebilir.
 
 ---
 
