@@ -69,13 +69,16 @@ func (r *Renderer) selectedShapeRegion() *world.Region {
 	return region
 }
 
+func (r *Renderer) selectedRegionForShapeTools() *world.Region {
+	return r.gs.Regions[r.editSelectedRegion]
+}
+
 func (r *Renderer) canEditSelectedShape() bool {
 	return r.selectedShapeRegion() != nil
 }
 
 func (r *Renderer) canRegionPaintSelected() bool {
-	region := r.gs.Regions[r.editSelectedRegion]
-	return region != nil && !region.IsSea
+	return r.selectedRegionForShapeTools() != nil
 }
 
 func (r *Renderer) ensureShapeEditSession() *shapeEditSession {
@@ -216,9 +219,10 @@ func pointInFloatPolygon(x, y float64, poly [][2]float32) bool {
 
 func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	x, _, _, _ := editInspectorRect()
-	region := r.selectedShapeRegion()
-	if region == nil {
-		DrawText(screen, "Shape editor icin kara bolgesi sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+	selectedRegion := r.selectedRegionForShapeTools()
+	shapeRegion := r.selectedShapeRegion()
+	if selectedRegion == nil {
+		DrawText(screen, "Shape editor icin bolge sec.", float64(x)+14, ly, FaceSmall, ColorGray)
 		drawEditInspectorButton(screen, editButtonShapePaint, "Boya", false)
 		drawEditInspectorButton(screen, editButtonShapeErase, "Sil", false)
 		drawEditInspectorButton(screen, editButtonShapeRegionPaint, "Bolge Boya", false)
@@ -229,16 +233,31 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		return
 	}
 	session := r.ensureShapeEditSession()
-	shapeID := region.ShapeID
-	name := shapeID
+	shapeID := selectedRegion.ShapeID
+	if shapeID == "" {
+		shapeID = "-"
+	}
+	name := selectedRegion.NameTR
+	if name == "" {
+		name = selectedRegion.Name
+	}
+	if name == "" {
+		name = string(selectedRegion.ID)
+	}
 	if session != nil && session.Name != "" {
 		name = session.Name
 	}
-	DrawText(screen, "Shape ID: "+shapeID, float64(x)+14, ly, FaceSmall, ColorWhite)
+	DrawText(screen, "Bolge: "+string(selectedRegion.ID), float64(x)+14, ly, FaceSmall, ColorWhite)
 	ly += 18
 	DrawText(screen, "Ad: "+name, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Ring: "+itoa(len(r.gs.ShapeData.Shapes[shapeID]))+"   Firca: "+itoa(r.editShapeBrushRadius), float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Shape ID: "+shapeID+"   Firca: "+itoa(r.editShapeBrushRadius), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 18
+	ringCount := 0
+	if shapeRegion != nil {
+		ringCount = len(r.gs.ShapeData.Shapes[shapeRegion.ShapeID])
+	}
+	DrawText(screen, "Ring: "+itoa(ringCount), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	toolLabel := "Shape"
 	if r.editShapeTool == editShapeToolRegion {
@@ -250,7 +269,13 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	}
 	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sag mouse drag", float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Canli preview acik. Yesil ekler, kirmizi siler.", float64(x)+14, ly, FaceSmall, ColorGray)
+	info := "Canli preview acik. Yesil ekler, kirmizi siler."
+	if selectedRegion.IsSea {
+		info = "Deniz bolgesinde Bolge Boya/Sil ile alan dagitimi yap."
+	} else if !r.canEditSelectedShape() {
+		info = "Shape ID yoksa yalniz Bolge Boya/Sil kullanilabilir."
+	}
+	DrawText(screen, info, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	strokeLabel := "Bekliyor"
 	if r.editShapePainting {
@@ -272,12 +297,13 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	} else if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushErase {
 		regionEraseLabel = "> Bolge Sil"
 	}
-	drawEditInspectorButton(screen, editButtonShapePaint, shapePaintLabel, true)
-	drawEditInspectorButton(screen, editButtonShapeErase, shapeEraseLabel, true)
-	drawEditInspectorButton(screen, editButtonShapeRegionPaint, regionPaintLabel, true)
-	drawEditInspectorButton(screen, editButtonShapeRegionErase, regionEraseLabel, true)
-	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", r.editShapeBrushRadius > 1)
-	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", r.editShapeBrushRadius < 64)
+	drawEditInspectorButton(screen, editButtonShapePaint, shapePaintLabel, r.canEditSelectedShape())
+	drawEditInspectorButton(screen, editButtonShapeErase, shapeEraseLabel, r.canEditSelectedShape())
+	drawEditInspectorButton(screen, editButtonShapeRegionPaint, regionPaintLabel, r.canRegionPaintSelected())
+	drawEditInspectorButton(screen, editButtonShapeRegionErase, regionEraseLabel, r.canRegionPaintSelected())
+	canAdjustBrush := r.canEditSelectedShape() || r.canRegionPaintSelected()
+	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > 1)
+	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < 64)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
 
@@ -313,27 +339,40 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode || r.editInspectorTab != editInspectorShape {
 		return
 	}
-	region := r.selectedShapeRegion()
-	if region == nil {
+	selectedRegion := r.selectedRegionForShapeTools()
+	shapeRegion := r.selectedShapeRegion()
+	if selectedRegion == nil {
 		return
 	}
-	for _, ring := range r.gs.ShapeData.Shapes[region.ShapeID] {
-		if len(ring) < 2 {
-			continue
-		}
-		for i := range ring {
-			a := ring[i]
-			b := ring[(i+1)%len(ring)]
-			ax, ay := r.worldToScreen(wcX(int(a[0]+0.5)), wcY(int(a[1]+0.5)))
-			bx, by := r.worldToScreen(wcX(int(b[0]+0.5)), wcY(int(b[1]+0.5)))
-			vector.StrokeLine(screen, float32(ax), float32(ay), float32(bx), float32(by), 2, color.RGBA{60, 235, 255, 215}, true)
+	if shapeRegion != nil {
+		for _, ring := range r.gs.ShapeData.Shapes[shapeRegion.ShapeID] {
+			if len(ring) < 2 {
+				continue
+			}
+			for i := range ring {
+				a := ring[i]
+				b := ring[(i+1)%len(ring)]
+				ax, ay := r.worldToScreen(wcX(int(a[0]+0.5)), wcY(int(a[1]+0.5)))
+				bx, by := r.worldToScreen(wcX(int(b[0]+0.5)), wcY(int(b[1]+0.5)))
+				vector.StrokeLine(screen, float32(ax), float32(ay), float32(bx), float32(by), 2, color.RGBA{60, 235, 255, 215}, true)
+			}
 		}
 	}
-	if session := r.ensureShapeEditSession(); session != nil {
+	session := r.ensureShapeEditSession()
+	if session != nil {
 		r.drawEditShapeStrokePreview(screen, session)
-		r.drawEditShapeHelp(screen, session)
 	}
-	if !r.canEditSelectedShape() {
+	r.drawEditShapeHelp(screen, session)
+	switch r.editShapeTool {
+	case editShapeToolShape:
+		if !r.canEditSelectedShape() {
+			return
+		}
+	case editShapeToolRegion:
+		if !r.canRegionPaintSelected() {
+			return
+		}
+	default:
 		return
 	}
 	mx, my := ebiten.CursorPosition()
@@ -359,7 +398,7 @@ func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {
 	if r.gs.Phase != state.PhaseEditMode || r.editInspectorTab != editInspectorShape {
 		return false
 	}
-	if r.ensureShapeEditSession() == nil {
+	if !r.canEditSelectedShape() && !r.canRegionPaintSelected() {
 		return false
 	}
 	return buildEditShapeHelpPanel().HitTest(mx, my)
@@ -397,7 +436,8 @@ func buildEditShapeStrokeOverlay(r *Renderer, session *shapeEditSession) gameui.
 }
 
 func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSession) {
-	if session == nil {
+	region := r.selectedRegionForShapeTools()
+	if region == nil {
 		return
 	}
 	panel := buildEditShapeHelpPanel()
@@ -407,11 +447,19 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	if r.editShapeBrushMode == editShapeBrushErase {
 		mode = "Sil"
 	}
+	selectedLabel := string(region.ID)
+	if session != nil {
+		selectedLabel = session.ShapeID
+	}
+	actionLabel := "Yesil=ekle  Kirmizi=sil  Sol tik=secim"
+	if region.IsSea {
+		actionLabel = "Deniz icin Bolge Boya/Sil kullan  Sol tik=secim"
+	}
 	labels := [...]gameui.Label{
 		gameui.NewLabel(float64(x)+12, float64(y)+10, "SHAPE YARDIM", ColorGold),
-		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+session.ShapeID+"  Firca: "+itoa(r.editShapeBrushRadius), ColorWhite),
+		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+selectedLabel+"  Firca: "+itoa(r.editShapeBrushRadius), ColorWhite),
 		gameui.NewLabel(float64(x)+12, float64(y)+48, "Mod: "+mode+"  Sag mouse drag  Birakinca uygula", ColorGray),
-		gameui.NewLabel(float64(x)+12, float64(y)+66, "Yesil=ekle  Kirmizi=sil  Sol tik=secim", ColorGray),
+		gameui.NewLabel(float64(x)+12, float64(y)+66, actionLabel, ColorGray),
 	}
 	for _, label := range labels {
 		label.Draw(screen, renderText)
@@ -451,6 +499,7 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	r.editShapePainting = true
 	r.editShapeStrokeHasLast = false
 	r.editShapeStrokeDirty = false
+	r.editShapeStrokeAffectsLandShapes = false
 	if session != nil {
 		session.Dirty = false
 		session.HasLast = false
@@ -521,6 +570,10 @@ func (r *Renderer) finishShapePaintStroke() {
 			}
 		}
 		r.rebuildEditWorldMap()
+		if r.editShapeStrokeAffectsLandShapes {
+			syncLandShapesFromWorldMap(r.gs, r.worldMap)
+			r.rebuildEditWorldMap()
+		}
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
@@ -634,6 +687,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 		return false
 	}
 	regionID := r.editSelectedRegion
+	targetRegion := r.selectedRegionForShapeTools()
 	changed := false
 	r2 := radius * radius
 	for y := cy - radius; y <= cy+radius; y++ {
@@ -652,6 +706,10 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 			baselineIdx := uint16(0)
 			if len(r.editRegionPaintBaseline) == len(r.worldMap.regionAt) {
 				baselineIdx = r.editRegionPaintBaseline[pIdx]
+			}
+			oldIdx := r.worldMap.regionAt[pIdx]
+			if regionPaintTouchesLandShape(r.gs, targetRegion, baselineIdx, oldIdx, r.worldMap.regionIDs) {
+				r.editShapeStrokeAffectsLandShapes = true
 			}
 			if fill {
 				if baselineIdx == r.worldMap.regionIdx[regionID] {
@@ -682,6 +740,110 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 		}
 	}
 	return changed
+}
+
+func SyncLandShapesFromRegionPaint(gs *state.GameState) bool {
+	if gs == nil || len(gs.RegionPaintOverrides) == 0 || !hasLandRegionPaintOverrides(gs) {
+		return false
+	}
+	wm := prepareWorldMapData(gs, "", MapModeNormal, nil, false, true)
+	if wm == nil {
+		return false
+	}
+	syncLandShapesFromWorldMap(gs, wm)
+	return true
+}
+
+func hasLandRegionPaintOverrides(gs *state.GameState) bool {
+	if gs == nil {
+		return false
+	}
+	for _, rid := range gs.RegionPaintOverrides {
+		region := gs.Regions[rid]
+		if region != nil && !region.IsSea && region.ShapeID != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func regionPaintTouchesLandShape(gs *state.GameState, target *world.Region, baselineIdx, currentIdx uint16, regionIDs []world.RegionID) bool {
+	if target != nil && !target.IsSea && target.ShapeID != "" {
+		return true
+	}
+	if regionShapeTouchIsLand(gs, baselineIdx, regionIDs) {
+		return true
+	}
+	if regionShapeTouchIsLand(gs, currentIdx, regionIDs) {
+		return true
+	}
+	return false
+}
+
+func regionShapeTouchIsLand(gs *state.GameState, idx uint16, regionIDs []world.RegionID) bool {
+	if gs == nil || idx == 0 || int(idx) >= len(regionIDs) {
+		return false
+	}
+	region := gs.Regions[regionIDs[idx]]
+	return region != nil && !region.IsSea && region.ShapeID != ""
+}
+
+func syncLandShapesFromWorldMap(gs *state.GameState, wm *WorldMap) {
+	if gs == nil || wm == nil {
+		return
+	}
+	shapeRegions := make(map[string][]world.RegionID)
+	for rid, region := range gs.Regions {
+		if region == nil || region.IsSea || region.ShapeID == "" {
+			continue
+		}
+		shapeRegions[region.ShapeID] = append(shapeRegions[region.ShapeID], rid)
+	}
+	if len(shapeRegions) == 0 {
+		return
+	}
+
+	shapeIDs := make([]string, 0, len(shapeRegions))
+	for shapeID := range shapeRegions {
+		shapeIDs = append(shapeIDs, shapeID)
+	}
+	sort.Strings(shapeIDs)
+
+	for _, shapeID := range shapeIDs {
+		session := newBlankShapeEditSession(gs, shapeID)
+		if session == nil {
+			continue
+		}
+		for _, rid := range shapeRegions[shapeID] {
+			for _, pIdx := range wm.regionPx[rid] {
+				px := pIdx % WorldW
+				py := pIdx / WorldW
+				sx, sy := scenarioCoordsFromWorld(float64(px), float64(py))
+				if !session.inBounds(sx, sy) {
+					continue
+				}
+				session.Mask[session.index(sx, sy)] = 1
+			}
+		}
+		applyShapeRingsToState(gs, shapeID, shapeMaskToFloatRings(session))
+	}
+}
+
+func newBlankShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession {
+	session := newShapeEditSession(gs, shapeID)
+	if session == nil {
+		return nil
+	}
+	for i := range session.Mask {
+		session.Mask[i] = 0
+	}
+	for i := range session.BaseMask {
+		session.BaseMask[i] = 0
+	}
+	session.resetStrokeDiff()
+	session.Dirty = false
+	session.HasLast = false
+	return session
 }
 
 func applyShapeRingsToState(gs *state.GameState, shapeID string, rings [][][2]float32) {

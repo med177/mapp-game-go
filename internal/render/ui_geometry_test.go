@@ -1,6 +1,7 @@
 package render
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -16,6 +17,35 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+func TestInitialCameraScaleStartsCloserAndClampsToMax(t *testing.T) {
+	oldScreenW, oldScreenH := ScreenWidth, ScreenHeight
+	oldWorldW, oldWorldH := WorldW, WorldH
+	defer func() {
+		ScreenWidth = oldScreenW
+		ScreenHeight = oldScreenH
+		WorldW = oldWorldW
+		WorldH = oldWorldH
+	}()
+
+	ScreenWidth, ScreenHeight = 1280, 720
+	WorldW, WorldH = 2892, 1440
+
+	minScale := minCameraScale()
+	got := initialCameraScale()
+	want := minScale * initialCameraZoomFactor
+	if math.Abs(got-want) > 1e-9 {
+		t.Fatalf("initialCameraScale fit ustune %.2fx yaklasmali: got=%.6f want=%.6f", initialCameraZoomFactor, got, want)
+	}
+	if got <= minScale {
+		t.Fatalf("initialCameraScale fit scale'dan buyuk olmali: got=%.6f min=%.6f", got, minScale)
+	}
+
+	WorldW, WorldH = 120, 60
+	if got := initialCameraScale(); math.Abs(got-maxCameraZoomScale) > 1e-9 {
+		t.Fatalf("initialCameraScale max zoom'a clamp olmali: got=%.6f want=%.6f", got, maxCameraZoomScale)
+	}
+}
 
 func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	cases := []struct {

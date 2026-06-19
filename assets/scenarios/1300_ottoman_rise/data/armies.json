@@ -33,6 +33,39 @@
     ]
   },
   {
+    "id": "army_candar_1",
+    "owner_id": "candar_bey",
+    "region_id": "paphlagonia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_denmark_1",
+    "owner_id": "denmark_kingdom",
+    "region_id": "denmark",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_dulkadir_1",
+    "owner_id": "dulkadir_bey",
+    "region_id": "dulkadir",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_east_rome_1",
     "owner_id": "east_rome",
     "region_id": "constantinople",
@@ -60,39 +93,6 @@
         "type_id": "infantry",
         "count": 1
       },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_candar_1",
-    "owner_id": "candar_bey",
-    "region_id": "paphlagonia",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_denmark_1",
-    "owner_id": "denmark_kingdom",
-    "region_id": "denmark",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_dulkadir_1",
-    "owner_id": "dulkadir_bey",
-    "region_id": "dulkadir",
-    "units": [
       {
         "type_id": "militia",
         "count": 2

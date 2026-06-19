@@ -102,7 +102,7 @@ func newWorldMapBase(gs *state.GameState, withImage bool) *WorldMap {
 	}
 }
 
-func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapMode, setProgress func(int), withImage bool) *WorldMap {
+func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapMode, setProgress func(int), withImage bool, includeRegionPaintOverrides bool) *WorldMap {
 	wm := newWorldMapBase(gs, withImage)
 	if setProgress != nil {
 		setProgress(5)
@@ -137,12 +137,14 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 	}
 
 	// region_shapes.json (paint overrides) yükle ve uygula
-	var regionPaintOverrides map[int]world.RegionID
-	if gs.ScenarioPath != "" {
-		regionPaintOverrides = loadRegionPaintOverrides(gs.ScenarioPath + "/data/region_shapes.json")
-	}
-	if len(regionPaintOverrides) > 0 {
-		gs.RegionPaintOverrides = regionPaintOverrides
+	if includeRegionPaintOverrides {
+		var regionPaintOverrides map[int]world.RegionID
+		if gs.ScenarioPath != "" {
+			regionPaintOverrides = loadRegionPaintOverrides(gs.ScenarioPath + "/data/region_shapes.json")
+		}
+		if len(regionPaintOverrides) > 0 {
+			gs.RegionPaintOverrides = regionPaintOverrides
+		}
 	}
 
 	wm.buildCountryShapes(gs, shapes)
@@ -154,7 +156,7 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		setProgress(72)
 	}
 	// region_shapes.json paint overrides'larını kalıcı olarak uygula
-	if len(gs.RegionPaintOverrides) > 0 {
+	if includeRegionPaintOverrides && len(gs.RegionPaintOverrides) > 0 {
 		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 	}
 	wm.computeRegionAnchors()
@@ -173,13 +175,17 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 }
 
 func NewWorldMap(gs *state.GameState) *WorldMap {
-	return prepareWorldMapData(gs, "", MapModeNormal, nil, true)
+	return prepareWorldMapData(gs, "", MapModeNormal, nil, true, true)
 }
 
 // PrepareWorldMap agir dunya haritasi verisini arka planda hazirlar.
 // Donen WorldMap'in img alani nil olabilir; ana thread'de FinalizePreparedWorldMap ile tamamlanir.
 func PrepareWorldMap(gs *state.GameState, selected world.RegionID, mode MapMode, setProgress func(int)) *WorldMap {
-	return prepareWorldMapData(gs, selected, mode, setProgress, false)
+	return prepareWorldMapData(gs, selected, mode, setProgress, false, true)
+}
+
+func newWorldMapWithoutRegionPaintOverrides(gs *state.GameState) *WorldMap {
+	return prepareWorldMapData(gs, "", MapModeNormal, nil, false, false)
 }
 
 // FinalizePreparedWorldMap GPU image olusturup hazir piksel tamponunu upload eder.

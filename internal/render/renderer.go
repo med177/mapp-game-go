@@ -35,7 +35,8 @@ const (
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
 	regionDoubleClickFrames = 18
-	initialCameraZoomFactor = 1.12
+	initialCameraZoomFactor = 1.40
+	maxCameraZoomScale      = 4.5
 )
 
 // Renderer kamerayı ve dünya haritasını yönetir.
@@ -161,42 +162,43 @@ type Renderer struct {
 	tradeCenters   []tradeCenterVisual
 	tradeCenterIdx int
 
-	editSelectedRegion         world.RegionID
-	editSelectedSettlement     int
-	editSelectedFaction        faction.FactionID
-	editDraggingSettlement     bool
-	editDraggingRegion         bool
-	editRenaming               bool
-	editTextTarget             editTextTarget
-	editTextRunes              []rune
-	editInspectorTab           editInspectorTab
-	editDirty                  bool
-	editVoronoiDebug           bool
-	editOwnerDropdown          *gameui.Dropdown
-	editTerrainDropdown        *gameui.Dropdown
-	editSettlementTypeDropdown *gameui.Dropdown
-	editUnitTypeDropdown       *gameui.Dropdown
-	editSelectedUnitType       string
-	armyNeighborBuf            []world.RegionID
-	editVisualNeighborBuf      []world.RegionID
-	editBoundaryPixelBuf       []int
-	editShapeSession           *shapeEditSession
-	editShapePainting          bool
-	editShapeTool              editShapeTool
-	editShapeBrushMode         editShapeBrushMode
-	editShapeBrushRadius       int
-	editShapeStrokeBefore      *editWorldSnapshot
-	editShapeStrokeLastX       int
-	editShapeStrokeLastY       int
-	editShapeStrokeHasLast     bool
-	editShapeStrokeDirty       bool
-	editRegionPaintOverrides   map[int]world.RegionID
-	editRegionPaintBaseline    []uint16
-	editUndoStack              []editCommand
-	editRedoStack              []editCommand
-	editRegionDragStart        *editRegionCenterSnapshot
-	editSettlementDragStart    []editRegionSettlementsSnapshot
-	editFactionForm            editFactionFormState
+	editSelectedRegion               world.RegionID
+	editSelectedSettlement           int
+	editSelectedFaction              faction.FactionID
+	editDraggingSettlement           bool
+	editDraggingRegion               bool
+	editRenaming                     bool
+	editTextTarget                   editTextTarget
+	editTextRunes                    []rune
+	editInspectorTab                 editInspectorTab
+	editDirty                        bool
+	editVoronoiDebug                 bool
+	editOwnerDropdown                *gameui.Dropdown
+	editTerrainDropdown              *gameui.Dropdown
+	editSettlementTypeDropdown       *gameui.Dropdown
+	editUnitTypeDropdown             *gameui.Dropdown
+	editSelectedUnitType             string
+	armyNeighborBuf                  []world.RegionID
+	editVisualNeighborBuf            []world.RegionID
+	editBoundaryPixelBuf             []int
+	editShapeSession                 *shapeEditSession
+	editShapePainting                bool
+	editShapeTool                    editShapeTool
+	editShapeBrushMode               editShapeBrushMode
+	editShapeBrushRadius             int
+	editShapeStrokeBefore            *editWorldSnapshot
+	editShapeStrokeLastX             int
+	editShapeStrokeLastY             int
+	editShapeStrokeHasLast           bool
+	editShapeStrokeDirty             bool
+	editShapeStrokeAffectsLandShapes bool
+	editRegionPaintOverrides         map[int]world.RegionID
+	editRegionPaintBaseline          []uint16
+	editUndoStack                    []editCommand
+	editRedoStack                    []editCommand
+	editRegionDragStart              *editRegionCenterSnapshot
+	editSettlementDragStart          []editRegionSettlementsSnapshot
+	editFactionForm                  editFactionFormState
 }
 
 type confirmDialogState struct {
@@ -411,8 +413,8 @@ func minCameraScale() float64 {
 
 func initialCameraScale() float64 {
 	scale := minCameraScale() * initialCameraZoomFactor
-	if scale > 3.0 {
-		return 3.0
+	if scale > maxCameraZoomScale {
+		return maxCameraZoomScale
 	}
 	return scale
 }
@@ -5947,8 +5949,20 @@ func (r *Renderer) buildRegionPaintBaseline() {
 		r.editRegionPaintBaseline = nil
 		return
 	}
-	r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
-	copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
+	if len(r.editRegionPaintOverrides) == 0 && len(r.gs.RegionPaintOverrides) == 0 {
+		r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
+		copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
+		return
+	}
+
+	baseWorldMap := newWorldMapWithoutRegionPaintOverrides(r.gs)
+	if baseWorldMap == nil || len(baseWorldMap.regionAt) != len(r.worldMap.regionAt) {
+		r.editRegionPaintBaseline = make([]uint16, len(r.worldMap.regionAt))
+		copy(r.editRegionPaintBaseline, r.worldMap.regionAt)
+		return
+	}
+	r.editRegionPaintBaseline = make([]uint16, len(baseWorldMap.regionAt))
+	copy(r.editRegionPaintBaseline, baseWorldMap.regionAt)
 }
 
 func (r *Renderer) applyRegionPaintOverrides() {
@@ -7059,10 +7073,10 @@ func (r *Renderer) handleCamera() {
 		}
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
 		minScale := minCameraScale()
-		if dy > 0 && r.camScale < 3.0 {
+		if dy > 0 && r.camScale < maxCameraZoomScale {
 			r.camScale *= 1.12
-			if r.camScale > 3.0 {
-				r.camScale = 3.0
+			if r.camScale > maxCameraZoomScale {
+				r.camScale = maxCameraZoomScale
 			}
 		} else if dy < 0 && r.camScale > minScale {
 			r.camScale /= 1.12

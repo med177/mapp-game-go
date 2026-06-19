@@ -1644,6 +1644,7 @@ func writeScenarioFactions(gs *state.GameState) error {
 
 func writeScenarioShapes(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "country_shapes.json")
+	render.SyncLandShapesFromRegionPaint(gs)
 	type shapeEntryJSON struct {
 		ID    string     `json:"id"`
 		Name  string     `json:"name,omitempty"`

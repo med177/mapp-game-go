@@ -1958,11 +1958,11 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "candaroglu",
-      "sivas",
-      "sinop",
-      "kayseri",
       "cankiri",
-      "cilicia"
+      "cilicia",
+      "kayseri",
+      "sinop",
+      "sivas"
     ],
     "world_x": 1177,
     "world_y": 487,
@@ -2066,11 +2066,10 @@
     "owner_id": "trebizond_emp",
     "neighbors": [
       "black_sea_shore",
-      "akkoyunlu",
       "eretna",
-      "georgia",
-      "malatya",
-      "erzurum"
+      "erzincan",
+      "erzurum",
+      "georgia"
     ],
     "world_x": 1282,
     "world_y": 463,
@@ -2103,7 +2102,6 @@
       "akkoyunlu",
       "dulkadir",
       "georgia",
-      "malatya",
       "erzincan",
       "trebizond"
     ],
@@ -3362,7 +3360,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "sea_of_marmara",
       "aydinoglu",
       "chalcidice",
       "gallipoli",
@@ -3370,6 +3367,7 @@
       "izmir",
       "new_region_253",
       "saruhan",
+      "sea_of_marmara",
       "serres",
       "thessaloniki_hinterland",
       "thessaly"
@@ -3438,7 +3436,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "sea_of_marmara",
       "black_open_1",
       "black_open_3",
       "black_open_4",
@@ -4746,7 +4743,7 @@
       "sea_of_marmara"
     ],
     "world_x": 1018,
-    "world_y": 483,
+    "world_y": 478,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -4812,8 +4809,8 @@
       "new_region_253",
       "saruhan"
     ],
-    "world_x": 1023,
-    "world_y": 507,
+    "world_x": 1020,
+    "world_y": 503,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -4877,8 +4874,8 @@
       "black_open_1",
       "eretna",
       "konya",
-      "sivas",
-      "sinop"
+      "sinop",
+      "sivas"
     ],
     "world_x": 1212,
     "world_y": 458,
@@ -4909,10 +4906,10 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "candaroglu",
+      "cilicia",
       "eretna",
       "konya",
-      "malatya",
-      "cilicia"
+      "malatya"
     ],
     "world_x": 1212,
     "world_y": 486,
@@ -4985,7 +4982,6 @@
       "georgia",
       "mosul",
       "new_region_225",
-      "trebizond",
       "western_persia"
     ],
     "world_x": 1330,
@@ -5471,13 +5467,13 @@
     "terrain": "forest",
     "owner_id": "ilkhanate",
     "neighbors": [
-      "chrysopolis",
-      "konya",
-      "sinop",
-      "ankara",
-      "kayseri",
       "aksaray",
-      "paphlagonia"
+      "ankara",
+      "chrysopolis",
+      "kayseri",
+      "konya",
+      "paphlagonia",
+      "sinop"
     ],
     "world_x": 1132,
     "world_y": 474,
@@ -5578,8 +5574,9 @@
       "black_open_1",
       "black_sea_shore",
       "candaroglu",
-      "sivas",
+      "erzincan",
       "malatya",
+      "sivas",
       "trebizond"
     ],
     "world_x": 1251,
@@ -5615,10 +5612,8 @@
       "dulkadir",
       "eretna",
       "erzincan",
-      "erzurum",
       "new_region_225",
-      "sivas",
-      "trebizond"
+      "sivas"
     ],
     "world_x": 1247,
     "world_y": 496,
@@ -5683,8 +5678,10 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "dulkadir",
+      "eretna",
+      "erzurum",
       "malatya",
-      "erzurum"
+      "trebizond"
     ],
     "world_x": 1275,
     "world_y": 489,
@@ -6475,10 +6472,10 @@
     "owner_id": "ottoman",
     "neighbors": [
       "aydinoglu",
+      "bilecik_frontier",
       "bursa",
       "germiyan",
-      "kutahya",
-      "bilecik_frontier"
+      "kutahya"
     ],
     "world_x": 1054,
     "world_y": 476,
@@ -8334,6 +8331,7 @@
       "dobruja",
       "new_region_238",
       "nicomedia",
+      "sea_of_marmara",
       "thrace"
     ],
     "world_x": 1042,
@@ -8663,8 +8661,8 @@
     "owner_id": "",
     "neighbors": [
       "aegean_sea",
-      "black_sea",
       "aydinoglu",
+      "black_open_3",
       "bursa",
       "constantinople",
       "gallipoli",
