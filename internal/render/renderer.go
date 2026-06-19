@@ -355,10 +355,14 @@ type warConfirmState struct {
 	pendingDest     world.RegionID
 	pendingEnemy    army.ArmyID
 	opensBattlePlan bool
+	battleAction    ActionKind
+	battleContext   combat.BattleContext
 }
 
 type battlePlanState struct {
 	show            bool
+	actionKind      ActionKind
+	battleContext   combat.BattleContext
 	pendingArmy     army.ArmyID
 	pendingEnemy    army.ArmyID
 	pendingDest     world.RegionID
@@ -7280,7 +7284,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			break
 		}
 		enemyArmy := r.gs.SelectBattleDefender(a, rid, a.IsNaval && target.CanNavalEnter())
-		opensBattlePlan := !a.IsNaval && target.CanLandEnter() && enemyArmy != nil
+		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
@@ -7298,6 +7302,8 @@ func (r *Renderer) handleRightClick() InputAction {
 					pendingArmy:     r.SelectedArmy,
 					pendingDest:     rid,
 					opensBattlePlan: opensBattlePlan,
+					battleAction:    battleAction,
+					battleContext:   battleContext,
 				}
 				if enemyArmy != nil {
 					r.warConfirm.pendingEnemy = enemyArmy.ID
@@ -7317,7 +7323,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			return InputAction{}
 		}
 		if opensBattlePlan {
-			r.openBattlePlan(a, target, enemyArmy)
+			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}
 		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
@@ -7423,22 +7429,61 @@ var battlePlanStances = [3]combat.BattleStance{
 	combat.BattleStanceDefensive,
 }
 
-func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, defender *army.Army) {
+func (r *Renderer) battlePlanIntent(attacker *army.Army, target *world.Region, defender *army.Army) (ActionKind, combat.BattleContext, bool) {
+	if attacker == nil || target == nil || defender == nil {
+		return ActionNone, combat.BattleContextLand, false
+	}
+	if attacker.IsNaval {
+		if target.CanNavalEnter() {
+			return ActionMoveArmy, combat.BattleContextNaval, true
+		}
+		if target.CanLandEnter() && len(attacker.EmbarkedUnits) > 0 {
+			return ActionDisembarkArmy, combat.BattleContextAmphibious, true
+		}
+		return ActionNone, combat.BattleContextLand, false
+	}
+	if target.CanLandEnter() {
+		return ActionMoveArmy, combat.BattleContextLand, true
+	}
+	return ActionNone, combat.BattleContextLand, false
+}
+
+func battlePlanInstructionTR(context combat.BattleContext) string {
+	switch combat.NormalizeBattleContext(context) {
+	case combat.BattleContextNaval:
+		return "Bir duruş seçin. Alt satırdaki tahminler mevcut filo gücü, modlar ve zar aralığına göre hesaplanır."
+	case combat.BattleContextAmphibious:
+		return "Bir duruş seçin. Alt satırdaki tahminler çıkarma gücü, kıyı savunması ve zar aralığına göre hesaplanır."
+	default:
+		return "Bir duruş seçin. Alt satırdaki tahminler mevcut güç, arazi ve zar aralığına göre hesaplanır."
+	}
+}
+
+func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext) {
 	if r == nil || attacker == nil || target == nil || defender == nil {
 		return
+	}
+	previewAttacker := attacker
+	if combat.NormalizeBattleContext(battleContext) == combat.BattleContextAmphibious {
+		previewAttacker = &army.Army{
+			OwnerID: attacker.OwnerID,
+			Units:   attacker.EmbarkedUnits,
+		}
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
 	state := battlePlanState{
-		show:         true,
-		pendingArmy:  attacker.ID,
-		pendingEnemy: defender.ID,
-		pendingDest:  target.ID,
-		regionName:   target.NameTR,
-		focus:        1,
+		show:          true,
+		actionKind:    actionKind,
+		battleContext: combat.NormalizeBattleContext(battleContext),
+		pendingArmy:   attacker.ID,
+		pendingEnemy:  defender.ID,
+		pendingDest:   target.ID,
+		regionName:    target.NameTR,
+		focus:         1,
 	}
 	for i, stance := range battlePlanStances {
-		state.previews[i] = combat.PreviewBattleWithMods(attacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, stance)
+		state.previews[i] = combat.PreviewBattleWithContextMods(previewAttacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, state.battleContext, stance)
 	}
 	if factionInfo := r.gs.Factions[faction.FactionID(defender.OwnerID)]; factionInfo != nil {
 		state.defenderFaction = factionInfo.NameTR
@@ -7499,7 +7544,7 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 				if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
 					if target := r.gs.Regions[wc.pendingDest]; target != nil {
 						if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
-							r.openBattlePlan(attacker, target, defender)
+							r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
 						}
 					}
 				}
@@ -7531,7 +7576,7 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
 				if target := r.gs.Regions[wc.pendingDest]; target != nil {
 					if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
-						r.openBattlePlan(attacker, target, defender)
+						r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
 					}
 				}
 			}
@@ -7555,7 +7600,8 @@ func (r *Renderer) drawBattlePlanDialog(screen *ebiten.Image) {
 	modal := buildBattlePlanModal()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
-	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 24}, "Savaş Planı", color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	title := combat.BattleContextLabelTR(r.battlePlan.battleContext) + " Planı"
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 24}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	subtitle := r.battlePlan.regionName
 	if subtitle == "" {
 		subtitle = string(r.battlePlan.pendingDest)
@@ -7564,7 +7610,7 @@ func (r *Renderer) drawBattlePlanDialog(screen *ebiten.Image) {
 		subtitle += " | " + r.battlePlan.defenderFaction
 	}
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 52, W: modal.Panel.Rect.W - 48}, subtitle, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, "Bir duruş seçin. Alt satırdaki tahminler mevcut güç ve zar aralığına göre hesaplanır.", color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, battlePlanInstructionTR(r.battlePlan.battleContext), color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
 
 	cardRects := battlePlanCardRects()
 	buttons, cancelBtn := buildBattlePlanButtons()
@@ -7633,7 +7679,7 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 		r.battlePlan = battlePlanState{}
 		r.SelectedArmy = ""
 		return InputAction{
-			Kind:         ActionMoveArmy,
+			Kind:         bp.actionKind,
 			ArmyID:       bp.pendingArmy,
 			TargetRegion: bp.pendingDest,
 			BattleStance: battlePlanStances[bp.focus],
@@ -7656,7 +7702,7 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 			r.battlePlan = battlePlanState{}
 			r.SelectedArmy = ""
 			return InputAction{
-				Kind:         ActionMoveArmy,
+				Kind:         bp.actionKind,
 				ArmyID:       bp.pendingArmy,
 				TargetRegion: bp.pendingDest,
 				BattleStance: battlePlanStances[i],

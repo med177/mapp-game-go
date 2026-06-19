@@ -230,7 +230,7 @@ func (g *Game) Update() error {
 		case render.ActionEmbarkArmy:
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
-			g.forceDisembarkFleet(action.ArmyID, action.TargetRegion)
+			g.forceDisembarkFleetWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
 		case render.ActionSplitArmy:
 			g.splitArmy(action.ArmyID)
 		case render.ActionMergeArmies:
@@ -284,6 +284,9 @@ func (g *Game) Update() error {
 		}
 
 	case state.PhaseAITurn:
+		if action.Kind == render.ActionRespondDiplomacyOffer {
+			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
+		}
 		g.updateAITurnSequence()
 
 	case state.PhaseTurnResolution:
@@ -500,6 +503,10 @@ func (g *Game) updateAITurnSequence() {
 	if g.aiTurn == nil {
 		return
 	}
+	if offer, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
+		g.renderer.SetAITurnStatus(turnActorName(g.gs, offer.FromFactionID), "Diplomasi cevabınız bekleniyor.")
+		return
+	}
 	if g.aiTurn.waitFrames > 0 {
 		g.aiTurn.waitFrames--
 		return
@@ -670,6 +677,36 @@ func shouldLogAITurnStep(step ai.TurnStep) bool {
 	default:
 		return false
 	}
+}
+
+func (g *Game) currentAITurnFactionID() (faction.FactionID, bool) {
+	if g == nil || g.aiTurn == nil {
+		return "", false
+	}
+	if g.aiTurn.stepper != nil {
+		return g.aiTurn.stepper.FactionID(), true
+	}
+	if g.aiTurn.index >= 0 && g.aiTurn.index < len(g.aiTurn.order) {
+		return g.aiTurn.order[g.aiTurn.index], true
+	}
+	return "", false
+}
+
+func (g *Game) pendingPlayerDiplomacyOffer() (state.DiplomaticOffer, bool) {
+	if g == nil || g.gs == nil || len(g.gs.DiplomaticOffers) == 0 {
+		return state.DiplomaticOffer{}, false
+	}
+	for _, offer := range g.gs.DiplomaticOffers {
+		from := g.gs.Factions[offer.FromFactionID]
+		to := g.gs.Factions[offer.ToFactionID]
+		if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
+			continue
+		}
+		if offer.ToFactionID == g.gs.PlayerFactionID {
+			return offer, true
+		}
+	}
+	return state.DiplomaticOffer{}, false
 }
 
 func (g *Game) resolveTurn() {
@@ -1662,11 +1699,33 @@ func (g *Game) proposePeace(targetID faction.FactionID) {
 }
 
 func (g *Game) respondDiplomacyOffer(index int, accepted bool) {
-	result := diplomacy.ResolveOffer(g.gs, index, accepted)
+	_, result, _ := g.resolveDiplomacyOffer(index, accepted)
 	g.renderer.ShowCombatResult(result.Message)
 	if accepted && result.Applied {
 		g.renderer.AddEvent("[DIPLOMASI] " + result.Message)
 	}
+}
+
+func (g *Game) handleAITurnOfferResponse(index int, accepted bool) {
+	offer, result, _ := g.resolveDiplomacyOffer(index, accepted)
+	g.renderer.ShowCombatResult(result.Message)
+	if accepted && result.Applied {
+		g.renderer.AddEvent("[DIPLOMASI] " + result.Message)
+		if currentFID, ok := g.currentAITurnFactionID(); ok && offer.FromFactionID == currentFID {
+			g.aiTurn.index++
+			g.aiTurn.stepper = nil
+			g.aiTurn.waitFrames = 0
+		}
+	}
+}
+
+func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.DiplomaticOffer, diplomacy.Result, bool) {
+	if g == nil || g.gs == nil || index < 0 || index >= len(g.gs.DiplomaticOffers) {
+		return state.DiplomaticOffer{}, diplomacy.Result{Message: "Geçersiz diplomasi teklifi."}, false
+	}
+	offer := g.gs.DiplomaticOffers[index]
+	result := diplomacy.ResolveOffer(g.gs, index, accepted)
+	return offer, result, true
 }
 
 func (g *Game) saveToSlot(slotName string, showSuccess bool, successMsg string) bool {
@@ -2710,9 +2769,14 @@ func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) 
 }
 
 func (g *Game) resolveFleetDisembark(fleet *army.Army, target world.RegionID, targetRegion *world.Region) bool {
+	return g.resolveFleetDisembarkWithStance(fleet, target, targetRegion, combat.BattleStanceBalanced)
+}
+
+func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.RegionID, targetRegion *world.Region, battleStance combat.BattleStance) bool {
 	if fleet == nil || targetRegion == nil || !fleet.IsNaval {
 		return false
 	}
+	battleStance = combat.NormalizeBattleStance(battleStance)
 	if !g.canDisembarkToLand(fleet, targetRegion) {
 		if len(fleet.EmbarkedUnits) == 0 {
 			g.renderer.ShowCombatResult("Çıkarma emri reddedildi: filoda taşınan kara birimi yok.")
@@ -2735,7 +2799,7 @@ func (g *Game) resolveFleetDisembark(fleet *army.Army, target world.RegionID, ta
 		}
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
-		result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods)
+		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
 		fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
 		fleet.MovePoints--
 
@@ -2773,6 +2837,10 @@ func (g *Game) resolveFleetDisembark(fleet *army.Army, target world.RegionID, ta
 }
 
 func (g *Game) forceDisembarkFleet(aid army.ArmyID, target world.RegionID) {
+	g.forceDisembarkFleetWithStance(aid, target, combat.BattleStanceBalanced)
+}
+
+func (g *Game) forceDisembarkFleetWithStance(aid army.ArmyID, target world.RegionID, battleStance combat.BattleStance) {
 	fleet, ok := g.gs.Armies[aid]
 	if !ok || fleet.OwnerID != string(g.gs.PlayerFactionID) || fleet.MovePoints <= 0 {
 		return
@@ -2795,7 +2863,7 @@ func (g *Game) forceDisembarkFleet(aid army.ArmyID, target world.RegionID) {
 	if !isNeighbor || !targetRegion.CanLandEnter() {
 		return
 	}
-	g.resolveFleetDisembark(fleet, target, targetRegion)
+	g.resolveFleetDisembarkWithStance(fleet, target, targetRegion, battleStance)
 }
 
 func (g *Game) fleetsCanSharePort(fleetOwnerID, regionOwnerID string) bool {
@@ -3026,7 +3094,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			shouldDisembark := len(a.EmbarkedUnits) > 0 &&
 				(a.DockedRegionID == targetRegion.ID || !g.canDockFleetAtRegion(a, targetRegion))
 			if shouldDisembark {
-				g.resolveFleetDisembark(a, target, targetRegion)
+				g.resolveFleetDisembarkWithStance(a, target, targetRegion, battleStance)
 				return
 			}
 		}
@@ -3094,7 +3162,11 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		// --- Savaş ---
 		atkMods := techModsFor(g.gs, a.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
-		result := combat.ResolveBattleWithPlan(a, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleStance)
+		battleContext := combat.BattleContextLand
+		if navalSeaMove {
+			battleContext = combat.BattleContextNaval
+		}
+		result := combat.ResolveBattleWithContextPlan(a, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
 		var collapse eliminationResult
 
 		if result.AttackerWins {

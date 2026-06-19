@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-06-19
+last_updated: 2026-06-20
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -11,7 +11,7 @@ related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipe
 
 ## Genel Bakış
 
-Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` tetiklenir; oyuncu kara saldırılarında önce duruş seçer.
+Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer.
 
 ---
 
@@ -77,7 +77,7 @@ ratio := (atkStr / (defStr + 1)) * (1 + dice)
 
 → Teknoloji efektleri: [[systems/tech-tree]]
 
-## Savaş Duruşları
+## Savaş Duruşları ve Bağlamı
 
 `BattleStance` — `internal/combat/combat.go`
 
@@ -89,18 +89,28 @@ Oyuncu saldırı başlatırken üç duruştan birini seçer:
 | `Dengeli` | mevcut modelin nötr hali |
 | `Savunmacı` | efektif saldırı gücünü düşürür; kayıp oranlarını azaltır |
 
+Sistem artık üç ayrı savaş bağlamı tanır:
+
+| Bağlam | Açıklama |
+|---|---|
+| `land` | klasik kara ordusu saldırısı |
+| `naval` | iki donanmanın deniz bölgesindeki çatışması |
+| `amphibious` | nakliye filosunun düşman kıyıya asker çıkartırken girdiği savaş |
+
+Her bağlam kendi duruş çarpanını ve Türkçe özetini kullanır. Yani `Agresif` kara, deniz ve çıkarma savaşlarında aynı isimle görünse de etkisi birebir kopya değildir.
+
 Bu seçim hem gerçek resolve hattında hem de saldırı öncesi preview panelinde aynı helper'larla hesaplanır:
 
 - `battleStrengths()` efektif güçleri çıkarır
 - `resolveOutcome()` gerçek zar sonucunu duruş çarpanlarıyla birleştirir
-- `PreviewBattleWithMods()` zar aralığını tarayıp muhtemel sonuç, zafer şansı ve tahmini kayıp penceresi üretir
+- `PreviewBattleWithContextMods()` zar aralığını tarayıp muhtemel sonuç, zafer şansı ve tahmini kayıp penceresi üretir
 
 Preview tarafındaki kayıp özeti artık iki katmanlıdır:
 
 - `HP` kaybı: orta ölçekli çatışmalarda birim ölmese bile hasarın görünmesini sağlar
 - `Birim` kaybı: gerçekten düşmesi beklenen birlik sayısını verir
 
-Preview, gerçek savaştakiyle aynı arazi/teknoloji/duruş matematiğini kullanır; yani panelde görülen güç ve gerçek resolve birbirinden kopmaz.
+Preview, gerçek savaştakiyle aynı arazi/teknoloji/duruş/savaş tipi matematiğini kullanır; yani panelde görülen güç ve gerçek resolve birbirinden kopmaz.
 
 ---
 
@@ -139,6 +149,7 @@ else:
 
 Donanmalar deniz bölgeleri arasında savaş ilanı olmadan serbest hareket eder.
 Denizde çatışma yalnızca iki fraksiyon arasında `StanceWar` varsa tetiklenir; barış/ittifak/trade durumunda aynı deniz bölgesine girildiğinde savaş açılmaz.
+Savaş varsa oyuncu gemi-gemi çatışmasında da önce duruş seçer. Düşman kıyıya çıkarma sırasında savunan ordu varsa aynı modal `Çıkarma Muharebesi` başlığıyla açılır ve seçilen duruş `ActionDisembarkArmy` üzerinden oyun katmanına taşınır.
 
 ---
 

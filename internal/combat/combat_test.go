@@ -94,3 +94,54 @@ func TestPreviewBattleWithModsReflectsStanceTradeoff(t *testing.T) {
 		t.Fatalf("zafer senaryosunda savunucu tam silinebilmeliydi, got=%d want=%d", aggressive.DefenderLossMax, len(def.Units))
 	}
 }
+
+func TestPreviewBattleWithContextModsUsesContextSpecificModifiers(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf":  {ID: "inf", NameTR: "Piyade", Attack: 12, Defense: 10, Morale: 50},
+		"ship": {ID: "ship", NameTR: "Kadırga", Attack: 18, Defense: 14, Morale: 40},
+	}
+
+	landing := &army.Army{
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+	coastDefender := &army.Army{
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+	fleet := &army.Army{
+		IsNaval: true,
+		Units: []army.Unit{
+			{TypeID: "ship", CurrentHP: 100},
+			{TypeID: "ship", CurrentHP: 100},
+			{TypeID: "ship", CurrentHP: 100},
+		},
+	}
+	enemyFleet := &army.Army{
+		IsNaval: true,
+		Units: []army.Unit{
+			{TypeID: "ship", CurrentHP: 100},
+			{TypeID: "ship", CurrentHP: 100},
+			{TypeID: "ship", CurrentHP: 100},
+		},
+	}
+
+	amphibious := PreviewBattleWithContextMods(landing, coastDefender, world.TerrainCoast, types, TechMods{}, TechMods{}, BattleContextAmphibious, BattleStanceAggressive)
+	naval := PreviewBattleWithContextMods(fleet, enemyFleet, world.TerrainSea, types, TechMods{}, TechMods{}, BattleContextNaval, BattleStanceAggressive)
+
+	if amphibious.StanceSummaryTR == naval.StanceSummaryTR {
+		t.Fatalf("savaş tipine göre stance açıklaması değişmeliydi, got=%q", amphibious.StanceSummaryTR)
+	}
+	if amphibious.AttackStrength == naval.AttackStrength {
+		t.Fatalf("bağlam bazlı saldırı çarpanları farklı sonuç vermeliydi, amphibious=%d naval=%d", amphibious.AttackStrength, naval.AttackStrength)
+	}
+	if BattleContextLabelTR(BattleContextNaval) != "Deniz Muharebesi" {
+		t.Fatalf("beklenmeyen deniz savaş etiketi: %q", BattleContextLabelTR(BattleContextNaval))
+	}
+}

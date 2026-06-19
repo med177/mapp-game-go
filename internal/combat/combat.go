@@ -15,6 +15,14 @@ const (
 	BattleStanceDefensive  BattleStance = "defensive"
 )
 
+type BattleContext string
+
+const (
+	BattleContextLand       BattleContext = "land"
+	BattleContextNaval      BattleContext = "naval"
+	BattleContextAmphibious BattleContext = "amphibious"
+)
+
 type battleStanceConfig struct {
 	LabelTR         string
 	SummaryTR       string
@@ -73,8 +81,13 @@ func ResolveBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types
 
 // ResolveBattleWithPlan teknoloji ve saldırı duruşu modlarını dahil ederek savaşı hesaplar.
 func ResolveBattleWithPlan(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) Result {
-	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, stance)
-	outcome := resolveOutcome(atkStr, defStr, stance)
+	return ResolveBattleWithContextPlan(atk, def, terrain, types, atkMods, defMods, inferBattleContext(atk), stance)
+}
+
+// ResolveBattleWithContextPlan teknoloji, savaş tipi ve saldırı duruşu modlarını dahil ederek savaşı hesaplar.
+func ResolveBattleWithContextPlan(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) Result {
+	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, context, stance)
+	outcome := resolveOutcome(atkStr, defStr, context, stance)
 
 	atkDead := applyCasualties(atk, outcome.AttackerLossRatio)
 	defDead := applyCasualties(def, outcome.DefenderLossRatio)
@@ -93,10 +106,16 @@ func ResolveBattleWithPlan(atk, def *army.Army, terrain world.TerrainType, types
 
 // PreviewBattleWithMods saldırı başlamadan önce aynı matematikle muhtemel sonucu özetler.
 func PreviewBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) Preview {
+	return PreviewBattleWithContextMods(atk, def, terrain, types, atkMods, defMods, inferBattleContext(atk), stance)
+}
+
+// PreviewBattleWithContextMods saldırı başlamadan önce aynı matematikle muhtemel sonucu özetler.
+func PreviewBattleWithContextMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) Preview {
 	stance = NormalizeBattleStance(stance)
-	cfg := battleStanceSpec(stance)
-	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, stance)
-	buckets := previewOutcomeBuckets(atkStr, defStr, stance)
+	context = NormalizeBattleContext(context)
+	cfg := battleStanceSpec(context, stance)
+	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, context, stance)
+	buckets := previewOutcomeBuckets(atkStr, defStr, context, stance)
 
 	preview := Preview{
 		Stance:          stance,
@@ -187,39 +206,117 @@ func NormalizeBattleStance(stance BattleStance) BattleStance {
 	}
 }
 
+func NormalizeBattleContext(context BattleContext) BattleContext {
+	switch context {
+	case BattleContextLand, BattleContextNaval, BattleContextAmphibious:
+		return context
+	default:
+		return BattleContextLand
+	}
+}
+
 func BattleStanceLabelTR(stance BattleStance) string {
-	return battleStanceSpec(stance).LabelTR
+	return battleStanceSpec(BattleContextLand, stance).LabelTR
 }
 
 func BattleStanceSummaryTR(stance BattleStance) string {
-	return battleStanceSpec(stance).SummaryTR
+	return battleStanceSpec(BattleContextLand, stance).SummaryTR
 }
 
-func battleStanceSpec(stance BattleStance) battleStanceConfig {
+func BattleContextLabelTR(context BattleContext) string {
+	switch NormalizeBattleContext(context) {
+	case BattleContextNaval:
+		return "Deniz Muharebesi"
+	case BattleContextAmphibious:
+		return "Çıkarma Muharebesi"
+	default:
+		return "Kara Muharebesi"
+	}
+}
+
+func battleStanceSpec(context BattleContext, stance BattleStance) battleStanceConfig {
+	context = NormalizeBattleContext(context)
 	switch NormalizeBattleStance(stance) {
 	case BattleStanceAggressive:
-		return battleStanceConfig{
-			LabelTR:         "Agresif",
-			SummaryTR:       "Zafer baskısını artırır, karşı darbeyi ağırlaştırır.",
-			AttackMod:       0.18,
-			AttackerLossMod: 1.20,
-			DefenderLossMod: 1.10,
+		switch context {
+		case BattleContextNaval:
+			return battleStanceConfig{
+				LabelTR:         "Agresif",
+				SummaryTR:       "Yakın borda baskısını artırır, filoyu daha fazla yıpratır.",
+				AttackMod:       0.14,
+				AttackerLossMod: 1.18,
+				DefenderLossMod: 1.14,
+			}
+		case BattleContextAmphibious:
+			return battleStanceConfig{
+				LabelTR:         "Agresif",
+				SummaryTR:       "Sahil başını zorlar, çıkarma kaybını da yükseltir.",
+				AttackMod:       0.12,
+				AttackerLossMod: 1.24,
+				DefenderLossMod: 1.12,
+			}
+		default:
+			return battleStanceConfig{
+				LabelTR:         "Agresif",
+				SummaryTR:       "Zafer baskısını artırır, karşı darbeyi ağırlaştırır.",
+				AttackMod:       0.18,
+				AttackerLossMod: 1.20,
+				DefenderLossMod: 1.10,
+			}
 		}
 	case BattleStanceDefensive:
-		return battleStanceConfig{
-			LabelTR:         "Savunmacı",
-			SummaryTR:       "Daha temkinli ilerler, kaybı düşürür ama baskıyı azaltır.",
-			AttackMod:       -0.10,
-			AttackerLossMod: 0.78,
-			DefenderLossMod: 0.88,
+		switch context {
+		case BattleContextNaval:
+			return battleStanceConfig{
+				LabelTR:         "Savunmacı",
+				SummaryTR:       "Hat düzenini korur, filo kaybını azaltır ama baskıyı düşürür.",
+				AttackMod:       -0.08,
+				AttackerLossMod: 0.82,
+				DefenderLossMod: 0.92,
+			}
+		case BattleContextAmphibious:
+			return battleStanceConfig{
+				LabelTR:         "Savunmacı",
+				SummaryTR:       "Daha düzenli iner, kaybı azaltır ama kıyı baskısını düşürür.",
+				AttackMod:       -0.12,
+				AttackerLossMod: 0.80,
+				DefenderLossMod: 0.86,
+			}
+		default:
+			return battleStanceConfig{
+				LabelTR:         "Savunmacı",
+				SummaryTR:       "Daha temkinli ilerler, kaybı düşürür ama baskıyı azaltır.",
+				AttackMod:       -0.10,
+				AttackerLossMod: 0.78,
+				DefenderLossMod: 0.88,
+			}
 		}
 	default:
-		return battleStanceConfig{
-			LabelTR:         "Dengeli",
-			SummaryTR:       "Standart düzen; risk ve baskı dengede tutulur.",
-			AttackMod:       0,
-			AttackerLossMod: 1,
-			DefenderLossMod: 1,
+		switch context {
+		case BattleContextNaval:
+			return battleStanceConfig{
+				LabelTR:         "Dengeli",
+				SummaryTR:       "Top ve manevra arasında dengeli hat tutar.",
+				AttackMod:       0,
+				AttackerLossMod: 1,
+				DefenderLossMod: 1,
+			}
+		case BattleContextAmphibious:
+			return battleStanceConfig{
+				LabelTR:         "Dengeli",
+				SummaryTR:       "İniş temposu ile güvenliği dengede tutar.",
+				AttackMod:       0,
+				AttackerLossMod: 1,
+				DefenderLossMod: 1,
+			}
+		default:
+			return battleStanceConfig{
+				LabelTR:         "Dengeli",
+				SummaryTR:       "Standart düzen; risk ve baskı dengede tutulur.",
+				AttackMod:       0,
+				AttackerLossMod: 1,
+				DefenderLossMod: 1,
+			}
 		}
 	}
 }
@@ -236,14 +333,14 @@ type outcomeBucket struct {
 	outcomeSpec
 }
 
-func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) (float64, float64) {
+func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) (float64, float64) {
 	atkAttackMod := atkMods.AttackMod
 	defDefenseMod := defMods.DefenseMod
 	if atk.IsNaval {
 		atkAttackMod = atkMods.NavalAttackMod
 		defDefenseMod = defMods.NavalDefenseMod
 	}
-	cfg := battleStanceSpec(stance)
+	cfg := battleStanceSpec(context, stance)
 	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod)
 	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod)
 	if atkStr < 1 {
@@ -301,9 +398,9 @@ func calculateOutcome(atkStr, defStr float64) (attackerWins bool, atkCasualtyRat
 	return spec.AttackerWins, spec.AttackerLossRatio, spec.DefenderLossRatio
 }
 
-func resolveOutcome(atkStr, defStr float64, stance BattleStance) outcomeSpec {
+func resolveOutcome(atkStr, defStr float64, context BattleContext, stance BattleStance) outcomeSpec {
 	attackerWins, atkLoss, defLoss := calculateOutcome(atkStr, defStr)
-	return applyBattleStance(baseOutcomeSpec(attackerWins, atkLoss, defLoss), stance)
+	return applyBattleStance(baseOutcomeSpec(attackerWins, atkLoss, defLoss), context, stance)
 }
 
 func baseOutcomeForRatio(ratio float64) outcomeSpec {
@@ -326,17 +423,17 @@ func baseOutcomeSpec(wins bool, atkLoss, defLoss float64) outcomeSpec {
 	}
 }
 
-func applyBattleStance(spec outcomeSpec, stance BattleStance) outcomeSpec {
-	cfg := battleStanceSpec(stance)
+func applyBattleStance(spec outcomeSpec, context BattleContext, stance BattleStance) outcomeSpec {
+	cfg := battleStanceSpec(context, stance)
 	spec.AttackerLossRatio = clamp01(spec.AttackerLossRatio * cfg.AttackerLossMod)
 	spec.DefenderLossRatio = clamp01(spec.DefenderLossRatio * cfg.DefenderLossMod)
 	return spec
 }
 
-func previewOutcomeBuckets(atkStr, defStr float64, stance BattleStance) []outcomeBucket {
+func previewOutcomeBuckets(atkStr, defStr float64, context BattleContext, stance BattleStance) []outcomeBucket {
 	baseRatio := atkStr / (defStr + 1)
 	if baseRatio <= 0 {
-		return []outcomeBucket{{Probability: 1, outcomeSpec: applyBattleStance(baseOutcomeForRatio(0), stance)}}
+		return []outcomeBucket{{Probability: 1, outcomeSpec: applyBattleStance(baseOutcomeForRatio(0), context, stance)}}
 	}
 	buckets := []struct {
 		min  float64
@@ -357,10 +454,17 @@ func previewOutcomeBuckets(atkStr, defStr float64, stance BattleStance) []outcom
 		}
 		result = append(result, outcomeBucket{
 			Probability: prob,
-			outcomeSpec: applyBattleStance(bucket.spec, stance),
+			outcomeSpec: applyBattleStance(bucket.spec, context, stance),
 		})
 	}
 	return result
+}
+
+func inferBattleContext(atk *army.Army) BattleContext {
+	if atk != nil && atk.IsNaval {
+		return BattleContextNaval
+	}
+	return BattleContextLand
 }
 
 func probabilityForRatioRange(baseRatio, minRatio, maxRatio float64, maxInfinite bool) float64 {

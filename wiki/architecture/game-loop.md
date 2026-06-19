@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-06-19
+last_updated: 2026-06-20
 related: [state-management, render-pipeline]
 ---
 
@@ -112,9 +112,11 @@ Kamera kontrolleri normal harita ile aynıdır.
 3. Her fraksiyon için `ai.TurnStepper` oluşturur.
 4. Prelude safhasında diplomasi, araştırma, inşa ve deniz hazırlıkları uygulanır.
 5. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
-6. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
-7. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
-8. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
+6. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez.
+7. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
+8. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
+9. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.
+10. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
 
 ---
 
@@ -123,8 +125,8 @@ Kamera kontrolleri normal harita ile aynıdır.
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
-| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir |
-| Donanma kıyı indirmesi | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikleri karaya indirir |
+| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır |
+| `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
 | `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al; kuyruktaki binaya tekrar basılırsa iptal edip altını iade eder |

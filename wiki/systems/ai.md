@@ -37,7 +37,9 @@ Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katman
 
 - oyuncuya yakın (`<= 3` komşuluk derinliği) aksiyonlarda kamerayı `FocusRegion` üzerine taşır,
 - uzak aksiyonlarda yalnız AI overlay'i günceller,
-- diplomasi/savaş/fetih gibi önemli adımları event log'a da yazar.
+- diplomasi/savaş/fetih gibi önemli adımları event log'a da yazar,
+- oyuncuya bekleyen diplomasi teklifi varsa step çözmeyi tamamen durdurur,
+- teklif kabul edilirse aktif AI fraksiyonunun kalan turunu kapatır; böylece aynı AI o tur içinde barıştan sonra yeni saldırı veya ileri savaş hamlesi üretmez.
 
 ---
 

@@ -3,8 +3,10 @@ package game
 import (
 	"testing"
 
+	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -60,5 +62,73 @@ func TestRegionNearPlayerUsesOwnedRegionsAndArmies(t *testing.T) {
 	}
 	if g.regionNearPlayer("deep", 0) {
 		t.Fatal("sıfır derinlikte yalnız başlangıç bölgeleri görünür olmalı")
+	}
+}
+
+func TestAITurnSequenceWaitsWhilePlayerOfferPending(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		FactionOrder:    []faction.FactionID{"ai_1", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_peace"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+	g.startAITurnSequence()
+	g.updateAITurnSequence()
+
+	if g.aiTurn == nil {
+		t.Fatal("AI sıra durumu korunmalıydı")
+	}
+	if g.aiTurn.stepper != nil {
+		t.Fatal("oyuncu cevabı beklenirken AI stepper ilerlememeli")
+	}
+	if g.aiTurn.index != 0 {
+		t.Fatalf("aktif AI index ilerlememeliydi, got=%d", g.aiTurn.index)
+	}
+}
+
+func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		FactionOrder:    []faction.FactionID{"ai_1", "ai_2", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Stance: faction.StanceWar, Score: -80},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_peace"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+	g.startAITurnSequence()
+	g.aiTurn.stepper = nil
+	g.aiTurn.index = 0
+	g.aiTurn.stepper = ai.NewTurnStepper(gs, "ai_1")
+
+	g.handleAITurnOfferResponse(0, true)
+
+	if len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("kabul sonrası teklif kuyruktan düşmeliydi, got=%d", len(gs.DiplomaticOffers))
+	}
+	rel := gs.Relations[faction.RelationKey("ai_1", "player")]
+	if rel == nil || rel.Stance != faction.StancePeace {
+		t.Fatalf("barış uygulanmalıydı, got=%+v", rel)
+	}
+	if g.aiTurn.index != 1 {
+		t.Fatalf("kabul sonrası aktif AI turu kapanmalıydı, got index=%d", g.aiTurn.index)
+	}
+	if g.aiTurn.stepper != nil {
+		t.Fatal("aktif AI stepper'ı temizlenmeliydi")
 	}
 }
