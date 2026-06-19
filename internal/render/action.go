@@ -2,6 +2,7 @@ package render
 
 import (
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
@@ -16,6 +17,7 @@ const (
 	ActionSelectArmy         ActionKind = "select_army"
 	ActionMoveArmy           ActionKind = "move_army"
 	ActionEmbarkArmy         ActionKind = "embark_army"
+	ActionDisembarkArmy      ActionKind = "disembark_army"
 	ActionRecruitUnit        ActionKind = "recruit_unit"
 	ActionBuild              ActionKind = "build"
 	ActionDeclareWar         ActionKind = "declare_war"
@@ -86,4 +88,5 @@ type InputAction struct {
 	OfferIndex    int
 	OfferAccepted bool
 	ChoiceIndex   int
+	BattleStance  combat.BattleStance
 }

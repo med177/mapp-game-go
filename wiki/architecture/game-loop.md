@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-05-26
+last_updated: 2026-06-19
 related: [state-management, render-pipeline]
 ---
 
@@ -110,7 +110,8 @@ Kamera kontrolleri normal harita ile aynıdır.
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
-| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı / savaş |
+| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir |
+| Donanma kıyı indirmesi | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikleri karaya indirir |
 | `ActionRecruitUnit` | R | Seçili bölgede milis eğitimini üretim kuyruğuna al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionRecruitNaval` | N | Kıyı bölgede nakliye gemisi üretimini kuyruğa al; aynı üretime tekrar basılırsa iptal edip altını iade eder |
 | `ActionBuild` | 1-6 | market/farm/barracks/port/walls/temple inşaatını kuyruğa al; kuyruktaki binaya tekrar basılırsa iptal edip altını iade eder |

@@ -49,6 +49,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.battlePlan.show {
+		if r.battlePlanHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
 		if r.diplomacyOfferHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -271,6 +279,19 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
 	acceptBtn, declineBtn := buildWarConfirmButtons()
 	return acceptBtn.HitTest(fx, fy) || declineBtn.HitTest(fx, fy)
+}
+
+func (r *Renderer) battlePlanHovering(fx, fy float64) bool {
+	buttons, cancelBtn := buildBattlePlanButtons()
+	if cancelBtn.HitTest(fx, fy) {
+		return true
+	}
+	for _, btn := range buttons {
+		if btn.HitTest(fx, fy) {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {

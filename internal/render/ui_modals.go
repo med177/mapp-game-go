@@ -83,6 +83,48 @@ func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
 		gameui.NewButton(noX, btnY, btnW, btnH, "Hayir").WithIcon(gameui.IconClose)
 }
 
+func buildBattlePlanModal() gameui.Modal {
+	const dlgW, dlgH = 860.0, 468.0
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
+	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+}
+
+func battlePlanCardRects() [3]gameui.Rect {
+	modal := buildBattlePlanModal()
+	const (
+		cardW = 252.0
+		cardH = 286.0
+		gap   = 18.0
+		topY  = 114.0
+	)
+	totalW := cardW*3 + gap*2
+	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-totalW)/2
+	y := modal.Panel.Rect.Y + topY
+	return [3]gameui.Rect{
+		{X: startX, Y: y, W: cardW, H: cardH},
+		{X: startX + cardW + gap, Y: y, W: cardW, H: cardH},
+		{X: startX + (cardW+gap)*2, Y: y, W: cardW, H: cardH},
+	}
+}
+
+func buildBattlePlanButtons() ([3]gameui.Button, gameui.Button) {
+	const (
+		btnW = 164.0
+		btnH = 32.0
+	)
+	rects := battlePlanCardRects()
+	var buttons [3]gameui.Button
+	for i, rect := range rects {
+		x := rect.X + (rect.W-btnW)/2
+		y := rect.Y + rect.H - btnH - 10
+		buttons[i] = gameui.NewButton(x, y, btnW, btnH, "")
+	}
+	modal := buildBattlePlanModal()
+	cancelBtn := gameui.NewButton(modal.Panel.Rect.X+modal.Panel.Rect.W/2-70, modal.Panel.Rect.Y+modal.Panel.Rect.H-48, 140, 32, "İptal")
+	return buttons, cancelBtn
+}
+
 func buildEventDetailModal() gameui.Modal {
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 700, 420, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)

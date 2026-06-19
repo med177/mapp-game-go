@@ -7,6 +7,44 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+type BattleStance string
+
+const (
+	BattleStanceAggressive BattleStance = "aggressive"
+	BattleStanceBalanced   BattleStance = "balanced"
+	BattleStanceDefensive  BattleStance = "defensive"
+)
+
+type battleStanceConfig struct {
+	LabelTR         string
+	SummaryTR       string
+	AttackMod       float64
+	AttackerLossMod float64
+	DefenderLossMod float64
+}
+
+type Preview struct {
+	Stance               BattleStance
+	StanceLabelTR        string
+	StanceSummaryTR      string
+	AttackStrength       int
+	DefenseStrength      int
+	WinChance            int
+	LikelyOutcome        string
+	AttackerHPDamageMin  int
+	AttackerHPDamageMax  int
+	AttackerHPExpected   int
+	AttackerLossMin      int
+	AttackerLossMax      int
+	AttackerLossExpected int
+	DefenderHPDamageMin  int
+	DefenderHPDamageMax  int
+	DefenderHPExpected   int
+	DefenderLossMin      int
+	DefenderLossMax      int
+	DefenderLossExpected int
+}
+
 // TechMods savaşa etki eden teknoloji çarpanları.
 type TechMods struct {
 	AttackMod       float64 // kara saldırı çarpanı (ör. 0.10 = +10%)
@@ -25,35 +63,196 @@ type Result struct {
 
 // ResolveBattle iki ordu arasındaki çarpışmayı hesaplar.
 func ResolveBattle(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType) Result {
-	return ResolveBattleWithMods(atk, def, terrain, types, TechMods{}, TechMods{})
+	return ResolveBattleWithPlan(atk, def, terrain, types, TechMods{}, TechMods{}, BattleStanceBalanced)
 }
 
 // ResolveBattleWithMods teknoloji modlarını dahil ederek savaşı hesaplar.
 func ResolveBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods) Result {
+	return ResolveBattleWithPlan(atk, def, terrain, types, atkMods, defMods, BattleStanceBalanced)
+}
+
+// ResolveBattleWithPlan teknoloji ve saldırı duruşu modlarını dahil ederek savaşı hesaplar.
+func ResolveBattleWithPlan(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) Result {
+	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, stance)
+	outcome := resolveOutcome(atkStr, defStr, stance)
+
+	atkDead := applyCasualties(atk, outcome.AttackerLossRatio)
+	defDead := applyCasualties(def, outcome.DefenderLossRatio)
+	if outcome.AttackerWins && len(def.Units) > 0 {
+		defDead += len(def.Units)
+		def.Units = def.Units[:0]
+	}
+
+	return Result{
+		AttackerWins: outcome.AttackerWins,
+		AttackerLost: atkDead,
+		DefenderLost: defDead,
+		Description:  outcome.Description,
+	}
+}
+
+// PreviewBattleWithMods saldırı başlamadan önce aynı matematikle muhtemel sonucu özetler.
+func PreviewBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) Preview {
+	stance = NormalizeBattleStance(stance)
+	cfg := battleStanceSpec(stance)
+	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, stance)
+	buckets := previewOutcomeBuckets(atkStr, defStr, stance)
+
+	preview := Preview{
+		Stance:          stance,
+		StanceLabelTR:   cfg.LabelTR,
+		StanceSummaryTR: cfg.SummaryTR,
+		AttackStrength:  int(atkStr + 0.5),
+		DefenseStrength: int(defStr + 0.5),
+		LikelyOutcome:   "Belirsiz",
+	}
+	var attackerLossExpected float64
+	var defenderLossExpected float64
+	var attackerHPExpected float64
+	var defenderHPExpected float64
+
+	if len(buckets) == 0 {
+		return preview
+	}
+
+	maxProb := -1.0
+	hasLossWindow := false
+	for _, bucket := range buckets {
+		if bucket.Probability <= 0 {
+			continue
+		}
+		if bucket.AttackerWins {
+			preview.WinChance += int(bucket.Probability*100 + 0.5)
+		}
+		if bucket.Probability > maxProb {
+			maxProb = bucket.Probability
+			preview.LikelyOutcome = bucket.Description
+		}
+
+		atkSummary := estimateLossSummary(atk, bucket.AttackerLossRatio, false)
+		defSummary := estimateLossSummary(def, bucket.DefenderLossRatio, bucket.AttackerWins)
+		atkLoss := atkSummary.LostUnits
+		defLoss := defSummary.LostUnits
+		attackerLossExpected += float64(atkLoss) * bucket.Probability
+		defenderLossExpected += float64(defLoss) * bucket.Probability
+		attackerHPExpected += float64(atkSummary.HPDamage) * bucket.Probability
+		defenderHPExpected += float64(defSummary.HPDamage) * bucket.Probability
+
+		if !hasLossWindow {
+			preview.AttackerLossMin, preview.AttackerLossMax = atkLoss, atkLoss
+			preview.DefenderLossMin, preview.DefenderLossMax = defLoss, defLoss
+			preview.AttackerHPDamageMin, preview.AttackerHPDamageMax = atkSummary.HPDamage, atkSummary.HPDamage
+			preview.DefenderHPDamageMin, preview.DefenderHPDamageMax = defSummary.HPDamage, defSummary.HPDamage
+			hasLossWindow = true
+			continue
+		}
+		if atkLoss < preview.AttackerLossMin {
+			preview.AttackerLossMin = atkLoss
+		}
+		if atkLoss > preview.AttackerLossMax {
+			preview.AttackerLossMax = atkLoss
+		}
+		if defLoss < preview.DefenderLossMin {
+			preview.DefenderLossMin = defLoss
+		}
+		if defLoss > preview.DefenderLossMax {
+			preview.DefenderLossMax = defLoss
+		}
+		if atkSummary.HPDamage < preview.AttackerHPDamageMin {
+			preview.AttackerHPDamageMin = atkSummary.HPDamage
+		}
+		if atkSummary.HPDamage > preview.AttackerHPDamageMax {
+			preview.AttackerHPDamageMax = atkSummary.HPDamage
+		}
+		if defSummary.HPDamage < preview.DefenderHPDamageMin {
+			preview.DefenderHPDamageMin = defSummary.HPDamage
+		}
+		if defSummary.HPDamage > preview.DefenderHPDamageMax {
+			preview.DefenderHPDamageMax = defSummary.HPDamage
+		}
+	}
+	preview.AttackerHPExpected = int(attackerHPExpected + 0.5)
+	preview.DefenderHPExpected = int(defenderHPExpected + 0.5)
+	preview.AttackerLossExpected = int(attackerLossExpected + 0.5)
+	preview.DefenderLossExpected = int(defenderLossExpected + 0.5)
+	return preview
+}
+
+func NormalizeBattleStance(stance BattleStance) BattleStance {
+	switch stance {
+	case BattleStanceAggressive, BattleStanceBalanced, BattleStanceDefensive:
+		return stance
+	default:
+		return BattleStanceBalanced
+	}
+}
+
+func BattleStanceLabelTR(stance BattleStance) string {
+	return battleStanceSpec(stance).LabelTR
+}
+
+func BattleStanceSummaryTR(stance BattleStance) string {
+	return battleStanceSpec(stance).SummaryTR
+}
+
+func battleStanceSpec(stance BattleStance) battleStanceConfig {
+	switch NormalizeBattleStance(stance) {
+	case BattleStanceAggressive:
+		return battleStanceConfig{
+			LabelTR:         "Agresif",
+			SummaryTR:       "Zafer baskısını artırır, karşı darbeyi ağırlaştırır.",
+			AttackMod:       0.18,
+			AttackerLossMod: 1.20,
+			DefenderLossMod: 1.10,
+		}
+	case BattleStanceDefensive:
+		return battleStanceConfig{
+			LabelTR:         "Savunmacı",
+			SummaryTR:       "Daha temkinli ilerler, kaybı düşürür ama baskıyı azaltır.",
+			AttackMod:       -0.10,
+			AttackerLossMod: 0.78,
+			DefenderLossMod: 0.88,
+		}
+	default:
+		return battleStanceConfig{
+			LabelTR:         "Dengeli",
+			SummaryTR:       "Standart düzen; risk ve baskı dengede tutulur.",
+			AttackMod:       0,
+			AttackerLossMod: 1,
+			DefenderLossMod: 1,
+		}
+	}
+}
+
+type outcomeSpec struct {
+	AttackerWins      bool
+	AttackerLossRatio float64
+	DefenderLossRatio float64
+	Description       string
+}
+
+type outcomeBucket struct {
+	Probability float64
+	outcomeSpec
+}
+
+func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, stance BattleStance) (float64, float64) {
 	atkAttackMod := atkMods.AttackMod
 	defDefenseMod := defMods.DefenseMod
 	if atk.IsNaval {
 		atkAttackMod = atkMods.NavalAttackMod
 		defDefenseMod = defMods.NavalDefenseMod
 	}
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod)
+	cfg := battleStanceSpec(stance)
+	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod)
 	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod)
-
-	attackerWins, atkLoss, defLoss := calculateOutcome(atkStr, defStr)
-
-	atkDead := applyCasualties(atk, atkLoss)
-	defDead := applyCasualties(def, defLoss)
-	if attackerWins && len(def.Units) > 0 {
-		defDead += len(def.Units)
-		def.Units = def.Units[:0]
+	if atkStr < 1 {
+		atkStr = 1
 	}
-
-	return Result{
-		AttackerWins: attackerWins,
-		AttackerLost: atkDead,
-		DefenderLost: defDead,
-		Description:  outcomeDescription(attackerWins, atkLoss, defLoss),
+	if defStr < 1 {
+		defStr = 1
 	}
+	return atkStr, defStr
 }
 
 // terrainBonus savunucuya araziye göre güç çarpanı uygular.
@@ -98,15 +297,112 @@ func calculateOutcome(atkStr, defStr float64) (attackerWins bool, atkCasualtyRat
 	// ±%15 aralığında rastgele güç dalgalanması — zayıf ordu nadiren kazanabilir
 	dice := (rand.Float64()*2 - 1) * 0.15 // [-0.15, +0.15]
 	ratio := (atkStr / (defStr + 1)) * (1 + dice)
+	spec := baseOutcomeForRatio(ratio)
+	return spec.AttackerWins, spec.AttackerLossRatio, spec.DefenderLossRatio
+}
 
+func resolveOutcome(atkStr, defStr float64, stance BattleStance) outcomeSpec {
+	attackerWins, atkLoss, defLoss := calculateOutcome(atkStr, defStr)
+	return applyBattleStance(baseOutcomeSpec(attackerWins, atkLoss, defLoss), stance)
+}
+
+func baseOutcomeForRatio(ratio float64) outcomeSpec {
 	if ratio > 1.5 {
-		return true, 0.10, 0.80
+		return outcomeSpec{AttackerWins: true, AttackerLossRatio: 0.10, DefenderLossRatio: 0.80, Description: "Ezici Zafer"}
 	} else if ratio >= 1.0 {
-		return true, 0.35, 0.50
+		return outcomeSpec{AttackerWins: true, AttackerLossRatio: 0.35, DefenderLossRatio: 0.50, Description: "Dar Zafer"}
 	} else if ratio >= 0.7 {
-		return false, 0.50, 0.30
+		return outcomeSpec{AttackerWins: false, AttackerLossRatio: 0.50, DefenderLossRatio: 0.30, Description: "Geri Çekilme"}
 	}
-	return false, 0.80, 0.10
+	return outcomeSpec{AttackerWins: false, AttackerLossRatio: 0.80, DefenderLossRatio: 0.10, Description: "Ağır Yenilgi"}
+}
+
+func baseOutcomeSpec(wins bool, atkLoss, defLoss float64) outcomeSpec {
+	return outcomeSpec{
+		AttackerWins:      wins,
+		AttackerLossRatio: atkLoss,
+		DefenderLossRatio: defLoss,
+		Description:       outcomeDescription(wins, atkLoss, defLoss),
+	}
+}
+
+func applyBattleStance(spec outcomeSpec, stance BattleStance) outcomeSpec {
+	cfg := battleStanceSpec(stance)
+	spec.AttackerLossRatio = clamp01(spec.AttackerLossRatio * cfg.AttackerLossMod)
+	spec.DefenderLossRatio = clamp01(spec.DefenderLossRatio * cfg.DefenderLossMod)
+	return spec
+}
+
+func previewOutcomeBuckets(atkStr, defStr float64, stance BattleStance) []outcomeBucket {
+	baseRatio := atkStr / (defStr + 1)
+	if baseRatio <= 0 {
+		return []outcomeBucket{{Probability: 1, outcomeSpec: applyBattleStance(baseOutcomeForRatio(0), stance)}}
+	}
+	buckets := []struct {
+		min  float64
+		max  float64
+		inf  bool
+		spec outcomeSpec
+	}{
+		{min: 1.5, inf: true, spec: baseOutcomeForRatio(1.6)},
+		{min: 1.0, max: 1.5, spec: baseOutcomeForRatio(1.2)},
+		{min: 0.7, max: 1.0, spec: baseOutcomeForRatio(0.8)},
+		{max: 0.7, spec: baseOutcomeForRatio(0.6)},
+	}
+	result := make([]outcomeBucket, 0, len(buckets))
+	for _, bucket := range buckets {
+		prob := probabilityForRatioRange(baseRatio, bucket.min, bucket.max, bucket.inf)
+		if prob <= 0 {
+			continue
+		}
+		result = append(result, outcomeBucket{
+			Probability: prob,
+			outcomeSpec: applyBattleStance(bucket.spec, stance),
+		})
+	}
+	return result
+}
+
+func probabilityForRatioRange(baseRatio, minRatio, maxRatio float64, maxInfinite bool) float64 {
+	const diceMin = -0.15
+	const diceMax = 0.15
+	const diceSpan = diceMax - diceMin
+
+	lower := diceMin
+	if minRatio > 0 {
+		bound := minRatio/baseRatio - 1
+		if bound > lower {
+			lower = bound
+		}
+	}
+	upper := diceMax
+	if !maxInfinite && maxRatio > 0 {
+		bound := maxRatio/baseRatio - 1
+		if bound < upper {
+			upper = bound
+		}
+	}
+	if upper <= lower {
+		return 0
+	}
+	prob := (upper - lower) / diceSpan
+	if prob < 0 {
+		return 0
+	}
+	if prob > 1 {
+		return 1
+	}
+	return prob
+}
+
+func clamp01(v float64) float64 {
+	if v < 0 {
+		return 0
+	}
+	if v > 1 {
+		return 1
+	}
+	return v
 }
 
 // applyCasualties ordudaki birim sayısını ratio kadar azaltır.
@@ -203,4 +499,105 @@ func outcomeDescription(wins bool, atkLoss, defLoss float64) string {
 		return "Ağır Yenilgi"
 	}
 	return "Geri Çekilme"
+}
+
+type lossSummary struct {
+	LostUnits int
+	HPDamage  int
+}
+
+func estimateLossSummary(a *army.Army, ratio float64, clearSurvivors bool) lossSummary {
+	if a == nil {
+		return lossSummary{}
+	}
+	units := make([]army.Unit, len(a.Units))
+	copy(units, a.Units)
+	totalHP := totalUnitsHP(units)
+	lost := estimateCasualties(units, ratio)
+	remainingHP := totalUnitsHP(units)
+	if clearSurvivors && len(units)-lost > 0 {
+		lost = len(units)
+		remainingHP = 0
+	}
+	return lossSummary{
+		LostUnits: lost,
+		HPDamage:  totalHP - remainingHP,
+	}
+}
+
+func totalUnitsHP(units []army.Unit) int {
+	totalHP := 0
+	for i := range units {
+		hp := units[i].CurrentHP
+		if hp < 1 {
+			continue
+		}
+		if hp > army.MaxUnitHP {
+			hp = army.MaxUnitHP
+		}
+		totalHP += hp
+	}
+	return totalHP
+}
+
+func estimateCasualties(units []army.Unit, ratio float64) int {
+	n := len(units)
+	if n == 0 || ratio <= 0 {
+		return 0
+	}
+	totalHP := totalUnitsHP(units)
+	if totalHP == 0 {
+		return n
+	}
+
+	damageBudget := int(float64(totalHP)*ratio + 0.5)
+	if damageBudget <= 0 {
+		return 0
+	}
+	if damageBudget > totalHP {
+		damageBudget = totalHP
+	}
+
+	spreadDamage := damageBudget / n
+	if spreadDamage > 60 {
+		spreadDamage = 60
+	}
+	if spreadDamage > 0 {
+		for i := range units {
+			units[i].CurrentHP -= spreadDamage
+		}
+		damageBudget -= spreadDamage * n
+	}
+
+	for damageBudget > 0 {
+		target := -1
+		targetHP := 0
+		for i := range units {
+			hp := units[i].CurrentHP
+			if hp <= 0 {
+				continue
+			}
+			if target == -1 || hp < targetHP {
+				target = i
+				targetHP = hp
+			}
+		}
+		if target == -1 {
+			break
+		}
+		chunk := targetHP
+		if damageBudget < chunk {
+			chunk = damageBudget
+		}
+		units[target].CurrentHP -= chunk
+		damageBudget -= chunk
+	}
+
+	lost := 0
+	for i := range units {
+		if units[i].CurrentHP <= 0 {
+			lost++
+		}
+	}
+	return lost
 }

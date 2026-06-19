@@ -9,6 +9,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -151,6 +152,7 @@ type Renderer struct {
 
 	// Genel onay diyaloğu
 	warConfirm    warConfirmState
+	battlePlan    battlePlanState
 	confirmDialog confirmDialogState
 	offerCursor   int
 
@@ -338,11 +340,25 @@ const (
 )
 
 type warConfirmState struct {
-	show        bool
-	factionName string
-	factionID   string
-	pendingArmy army.ArmyID
-	pendingDest world.RegionID
+	show            bool
+	factionName     string
+	factionID       string
+	pendingArmy     army.ArmyID
+	pendingDest     world.RegionID
+	pendingEnemy    army.ArmyID
+	opensBattlePlan bool
+}
+
+type battlePlanState struct {
+	show            bool
+	pendingArmy     army.ArmyID
+	pendingEnemy    army.ArmyID
+	pendingDest     world.RegionID
+	regionName      string
+	defenderName    string
+	defenderFaction string
+	focus           int
+	previews        [3]combat.Preview
 }
 
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
@@ -889,6 +905,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
+	} else if r.battlePlan.show {
+		r.drawBattlePlanDialog(screen)
 	} else if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
 		r.drawDiplomacyOfferDialog(screen, offerIdx)
 	}
@@ -953,7 +971,7 @@ func (r *Renderer) tradeOverlayVisible() bool {
 	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
 		return false
 	}
-	if r.confirmDialog.show || r.warConfirm.show || r.eventDetail != "" {
+	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.eventDetail != "" {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -1133,6 +1151,16 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 		return armyCanEmbark(gs, a) && findFriendlyEmbarkFleetFromRegion(gs, a.OwnerID, a.RegionID, target.ID, len(a.Units)) != nil
 	}
 	return target.CanLandEnter()
+}
+
+func navalShowsFriendlyDisembark(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
+	if gs == nil || fleet == nil || target == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || !target.CanLandEnter() {
+		return false
+	}
+	if target.OwnerID == "" || target.OwnerID == fleet.OwnerID {
+		return true
+	}
+	return false
 }
 
 func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
@@ -2088,6 +2116,9 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 					col = color.RGBA{60, 220, 60, 200}
 				default:
 					col = color.RGBA{80, 160, 255, 160}
+				}
+				if navalShowsFriendlyDisembark(r.gs, a, nRegion) {
+					DrawTextCentered(screen, "IN", sx, sy-8, FaceSmall, color.RGBA{210, 248, 255, 230})
 				}
 			} else {
 				// Deniz bölgeleri için sabit açık mavi — tarafsız su
@@ -6324,6 +6355,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.warConfirm.show {
 		return r.handleWarConfirmInput()
 	}
+	if r.battlePlan.show {
+		return r.handleBattlePlanInput()
+	}
 	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
 		return r.handleDiplomacyOfferInput(offerIdx)
 	}
@@ -7168,6 +7202,8 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !ok {
 			break
 		}
+		enemyArmy := r.gs.SelectBattleDefender(a, rid, a.IsNaval && target.CanNavalEnter())
+		opensBattlePlan := !a.IsNaval && target.CanLandEnter() && enemyArmy != nil
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
@@ -7179,14 +7215,33 @@ func (r *Renderer) handleRightClick() InputAction {
 					name = f.NameTR
 				}
 				r.warConfirm = warConfirmState{
-					show:        true,
-					factionName: name,
-					factionID:   target.OwnerID,
-					pendingArmy: r.SelectedArmy,
-					pendingDest: rid,
+					show:            true,
+					factionName:     name,
+					factionID:       target.OwnerID,
+					pendingArmy:     r.SelectedArmy,
+					pendingDest:     rid,
+					opensBattlePlan: opensBattlePlan,
+				}
+				if enemyArmy != nil {
+					r.warConfirm.pendingEnemy = enemyArmy.ID
 				}
 				return InputAction{}
 			}
+		}
+		if a.IsNaval && navalShowsFriendlyDisembark(r.gs, a, target) {
+			r.ShowConfirmDialog(
+				"Karaya In",
+				"Gemideki birlikler bu bölgeye insin mi?",
+				"Karaya In",
+				"Iptal",
+				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
+				nil,
+			)
+			return InputAction{}
+		}
+		if opensBattlePlan {
+			r.openBattlePlan(a, target, enemyArmy)
+			return InputAction{}
 		}
 		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
 		r.SelectedArmy = ""
@@ -7285,6 +7340,55 @@ func (r *Renderer) mouseJustPressed(btn ebiten.MouseButton) bool {
 	return pressed && !was
 }
 
+var battlePlanStances = [3]combat.BattleStance{
+	combat.BattleStanceAggressive,
+	combat.BattleStanceBalanced,
+	combat.BattleStanceDefensive,
+}
+
+func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, defender *army.Army) {
+	if r == nil || attacker == nil || target == nil || defender == nil {
+		return
+	}
+	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
+	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
+	state := battlePlanState{
+		show:         true,
+		pendingArmy:  attacker.ID,
+		pendingEnemy: defender.ID,
+		pendingDest:  target.ID,
+		regionName:   target.NameTR,
+		focus:        1,
+	}
+	for i, stance := range battlePlanStances {
+		state.previews[i] = combat.PreviewBattleWithMods(attacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, stance)
+	}
+	if factionInfo := r.gs.Factions[faction.FactionID(defender.OwnerID)]; factionInfo != nil {
+		state.defenderFaction = factionInfo.NameTR
+	} else {
+		state.defenderFaction = defender.OwnerID
+	}
+	state.defenderName = "Savunan: " + state.defenderFaction
+	if target.NameTR != "" {
+		state.regionName = target.NameTR
+	}
+	r.battlePlan = state
+}
+
+func battlePlanLossText(expected, minLoss, maxLoss int) string {
+	if minLoss == maxLoss {
+		return itoa(expected)
+	}
+	return itoa(expected) + " (" + itoa(minLoss) + "-" + itoa(maxLoss) + ")"
+}
+
+func battlePlanHPText(expected, minLoss, maxLoss int) string {
+	if minLoss == maxLoss {
+		return "~" + itoa(expected) + " HP"
+	}
+	return "~" + itoa(expected) + " HP (" + itoa(minLoss) + "-" + itoa(maxLoss) + ")"
+}
+
 // --- Savaş ilan onay diyalogu ---
 
 func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
@@ -7312,9 +7416,21 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if acceptBtn.HitTest(mx, my) {
-			// Evet: savaş ilan et ve orduyu taşı
 			wc := r.warConfirm
 			r.warConfirm = warConfirmState{}
+			if wc.opensBattlePlan {
+				if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
+					if target := r.gs.Regions[wc.pendingDest]; target != nil {
+						if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
+							r.openBattlePlan(attacker, target, defender)
+						}
+					}
+				}
+				return InputAction{
+					Kind:          ActionDeclareWar,
+					TargetFaction: faction.FactionID(wc.factionID),
+				}
+			}
 			r.SelectedArmy = ""
 			return InputAction{
 				Kind:          ActionDeclareWarAndMove,
@@ -7334,12 +7450,140 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
 		wc := r.warConfirm
 		r.warConfirm = warConfirmState{}
+		if wc.opensBattlePlan {
+			if attacker := r.gs.Armies[wc.pendingArmy]; attacker != nil {
+				if target := r.gs.Regions[wc.pendingDest]; target != nil {
+					if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
+						r.openBattlePlan(attacker, target, defender)
+					}
+				}
+			}
+			return InputAction{
+				Kind:          ActionDeclareWar,
+				TargetFaction: faction.FactionID(wc.factionID),
+			}
+		}
 		r.SelectedArmy = ""
 		return InputAction{
 			Kind:          ActionDeclareWarAndMove,
 			ArmyID:        wc.pendingArmy,
 			TargetRegion:  wc.pendingDest,
 			TargetFaction: faction.FactionID(wc.factionID),
+		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) drawBattlePlanDialog(screen *ebiten.Image) {
+	modal := buildBattlePlanModal()
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
+
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 24}, "Savaş Planı", color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	subtitle := r.battlePlan.regionName
+	if subtitle == "" {
+		subtitle = string(r.battlePlan.pendingDest)
+	}
+	if r.battlePlan.defenderFaction != "" {
+		subtitle += " | " + r.battlePlan.defenderFaction
+	}
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 52, W: modal.Panel.Rect.W - 48}, subtitle, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, "Bir duruş seçin. Alt satırdaki tahminler mevcut güç ve zar aralığına göre hesaplanır.", color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+
+	cardRects := battlePlanCardRects()
+	buttons, cancelBtn := buildBattlePlanButtons()
+	for i := range r.battlePlan.previews {
+		preview := r.battlePlan.previews[i]
+		card := cardRects[i]
+		fill := color.RGBA{34, 28, 20, 236}
+		border := color.RGBA{108, 86, 54, 255}
+		if i == r.battlePlan.focus {
+			fill = color.RGBA{54, 40, 24, 244}
+			border = color.RGBA{220, 170, 82, 255}
+		}
+		vector.FillRect(screen, float32(card.X), float32(card.Y), float32(card.W), float32(card.H), fill, false)
+		vector.StrokeRect(screen, float32(card.X), float32(card.Y), float32(card.W), float32(card.H), 1.5, border, false)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 14, W: card.W - 28}, preview.StanceLabelTR, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+		drawUIWrappedLabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 42, W: card.W - 28}, preview.StanceSummaryTR, color.RGBA{212, 212, 212, 255}, gameui.TextSmall, 17, 2)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 88, W: card.W - 28}, "Zafer Şansı: %"+itoa(preview.WinChance), color.RGBA{178, 228, 150, 255}, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 114, W: card.W - 28}, "Muhtemel Sonuç: "+preview.LikelyOutcome, color.RGBA{226, 226, 226, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 138, W: card.W - 28}, "Güç: "+itoa(preview.AttackStrength)+" / "+itoa(preview.DefenseStrength), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 162, W: card.W - 28}, "Sizin HP: "+battlePlanHPText(preview.AttackerHPExpected, preview.AttackerHPDamageMin, preview.AttackerHPDamageMax), color.RGBA{255, 198, 148, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 184, W: card.W - 28}, "Sizin Birim: "+battlePlanLossText(preview.AttackerLossExpected, preview.AttackerLossMin, preview.AttackerLossMax), color.RGBA{232, 182, 132, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 208, W: card.W - 28}, "Düşman HP: "+battlePlanHPText(preview.DefenderHPExpected, preview.DefenderHPDamageMin, preview.DefenderHPDamageMax), color.RGBA{168, 220, 168, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: card.X + 14, Y: card.Y + 230, W: card.W - 28}, "Düşman Birim: "+battlePlanLossText(preview.DefenderLossExpected, preview.DefenderLossMin, preview.DefenderLossMax), color.RGBA{140, 206, 140, 255}, gameui.TextSmall, gameui.TextAlignStart)
+
+		btn := buttons[i]
+		btn.Label = preview.StanceLabelTR
+		btnStyle := solidButtonStyle(color.RGBA{84, 68, 44, 240}, color.RGBA{146, 112, 62, 255}, ColorWhite, 10)
+		if i == r.battlePlan.focus {
+			btnStyle = solidButtonStyle(color.RGBA{140, 94, 38, 245}, color.RGBA{206, 150, 70, 255}, ColorWhite, 10)
+		}
+		drawUIButtonWidget(screen, btn, btnStyle)
+	}
+
+	cancelBtn.Label = "İptal"
+	drawUIButtonWidget(screen, cancelBtn,
+		solidButtonStyle(color.RGBA{72, 72, 72, 220}, color.RGBA{118, 118, 118, 255}, ColorWhite, 10))
+}
+
+func (r *Renderer) handleBattlePlanInput() InputAction {
+	if !r.battlePlan.show {
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyLeft) || r.keyJustPressed(ebiten.KeyUp) {
+		r.battlePlan.focus = (r.battlePlan.focus + len(battlePlanStances) - 1) % len(battlePlanStances)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyRight) || r.keyJustPressed(ebiten.KeyDown) || r.keyJustPressed(ebiten.KeyTab) {
+		r.battlePlan.focus = (r.battlePlan.focus + 1) % len(battlePlanStances)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.Key1) {
+		r.battlePlan.focus = 0
+	}
+	if r.keyJustPressed(ebiten.Key2) {
+		r.battlePlan.focus = 1
+	}
+	if r.keyJustPressed(ebiten.Key3) {
+		r.battlePlan.focus = 2
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.battlePlan = battlePlanState{}
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+		bp := r.battlePlan
+		r.battlePlan = battlePlanState{}
+		r.SelectedArmy = ""
+		return InputAction{
+			Kind:         ActionMoveArmy,
+			ArmyID:       bp.pendingArmy,
+			TargetRegion: bp.pendingDest,
+			BattleStance: battlePlanStances[bp.focus],
+		}
+	}
+
+	mxi, myi := ebiten.CursorPosition()
+	mx, my := float64(mxi), float64(myi)
+	buttons, cancelBtn := buildBattlePlanButtons()
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if cancelBtn.HitTest(mx, my) {
+			r.battlePlan = battlePlanState{}
+			return InputAction{}
+		}
+		for i, btn := range buttons {
+			if !btn.HitTest(mx, my) {
+				continue
+			}
+			bp := r.battlePlan
+			r.battlePlan = battlePlanState{}
+			r.SelectedArmy = ""
+			return InputAction{
+				Kind:         ActionMoveArmy,
+				ArmyID:       bp.pendingArmy,
+				TargetRegion: bp.pendingDest,
+				BattleStance: battlePlanStances[i],
+			}
 		}
 	}
 	return InputAction{}

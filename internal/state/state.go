@@ -252,6 +252,36 @@ func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	return result
 }
 
+// SelectBattleDefender hedef bölgede saldıranı karşılayacak düşman orduyu deterministik seçer.
+func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.RegionID, navalSeaMove bool) *army.Army {
+	if s == nil || attacker == nil {
+		return nil
+	}
+	var best *army.Army
+	bestPower := -1
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
+			continue
+		}
+		if navalSeaMove {
+			key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+			rel, exists := s.Relations[key]
+			if !exists || rel == nil || rel.Stance != faction.StanceWar {
+				continue
+			}
+		}
+		power := 0
+		if s.UnitTypes != nil {
+			power = candidate.TotalStrength(s.UnitTypes)
+		}
+		if best == nil || power > bestPower || (power == bestPower && string(candidate.ID) < string(best.ID)) {
+			best = candidate
+			bestPower = power
+		}
+	}
+	return best
+}
+
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.
 func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
 	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {

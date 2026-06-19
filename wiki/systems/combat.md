@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-06-05
+last_updated: 2026-06-19
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -11,7 +11,7 @@ related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipe
 
 ## Genel Bakış
 
-Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithMods()` tetiklenir.
+Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` tetiklenir; oyuncu kara saldırılarında önce duruş seçer.
 
 ---
 
@@ -47,7 +47,7 @@ applyCasualties(ordu, kayıpOranı) → HP hasarı + gerekirse gerçek birim kay
 
 ## calculateOutcome — Uygulama
 
-`calculateOutcome()` — `internal/combat/combat.go:85`
+`calculateOutcome()` — `internal/combat/combat.go`
 
 ±%15 rastgele zar dalgalanması içerir; zayıf ordu nadir de olsa kazanabilir.
 
@@ -77,6 +77,31 @@ ratio := (atkStr / (defStr + 1)) * (1 + dice)
 
 → Teknoloji efektleri: [[systems/tech-tree]]
 
+## Savaş Duruşları
+
+`BattleStance` — `internal/combat/combat.go`
+
+Oyuncu saldırı başlatırken üç duruştan birini seçer:
+
+| Duruş | Etki |
+|---|---|
+| `Agresif` | efektif saldırı gücünü artırır; saldıran ve savunan kayıp oranlarını yukarı çeker |
+| `Dengeli` | mevcut modelin nötr hali |
+| `Savunmacı` | efektif saldırı gücünü düşürür; kayıp oranlarını azaltır |
+
+Bu seçim hem gerçek resolve hattında hem de saldırı öncesi preview panelinde aynı helper'larla hesaplanır:
+
+- `battleStrengths()` efektif güçleri çıkarır
+- `resolveOutcome()` gerçek zar sonucunu duruş çarpanlarıyla birleştirir
+- `PreviewBattleWithMods()` zar aralığını tarayıp muhtemel sonuç, zafer şansı ve tahmini kayıp penceresi üretir
+
+Preview tarafındaki kayıp özeti artık iki katmanlıdır:
+
+- `HP` kaybı: orta ölçekli çatışmalarda birim ölmese bile hasarın görünmesini sağlar
+- `Birim` kaybı: gerçekten düşmesi beklenen birlik sayısını verir
+
+Preview, gerçek savaştakiyle aynı arazi/teknoloji/duruş matematiğini kullanır; yani panelde görülen güç ve gerçek resolve birbirinden kopmaz.
+
 ---
 
 ## Hasar ve Toparlanma
@@ -96,7 +121,7 @@ ratio := (atkStr / (defStr + 1)) * (1 + dice)
 
 ## Savaş Sonrası Uygulama
 
-`internal/game/game.go:515`
+`internal/game/game.go`
 
 ```
 if saldıranKazandı:

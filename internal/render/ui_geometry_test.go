@@ -80,9 +80,18 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertButtonInside(t, tc.w, tc.h, buildEventDetailCloseButton())
 		assertModalInside(t, tc.w, tc.h, buildConfirmDialogModal())
 		assertModalInside(t, tc.w, tc.h, buildWarConfirmModal())
+		assertModalInside(t, tc.w, tc.h, buildBattlePlanModal())
 		assertModalInside(t, tc.w, tc.h, buildDiplomacyOfferModal())
 		assertModalInside(t, tc.w, tc.h, buildVictoryDetailModal())
 		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
+		for _, btn := range battlePlanCardRects() {
+			assertRectInside(t, tc.w, tc.h, btn)
+		}
+		battleButtons, cancelBtn := buildBattlePlanButtons()
+		for _, btn := range battleButtons {
+			assertButtonInside(t, tc.w, tc.h, btn)
+		}
+		assertButtonInside(t, tc.w, tc.h, cancelBtn)
 		for _, btn := range buildHistoricalEventChoiceButtons(2) {
 			assertButtonInside(t, tc.w, tc.h, btn)
 		}
@@ -491,6 +500,13 @@ func assertButtonInside(t *testing.T, screenW, screenH float64, btn gameui.Butto
 	t.Helper()
 	if btn.X < 0 || btn.Y < 0 || btn.X+btn.W > screenW || btn.Y+btn.H > screenH {
 		t.Fatalf("button %q outside %.0fx%.0f viewport: %+v", btn.Label, screenW, screenH, btn)
+	}
+}
+
+func assertRectInside(t *testing.T, screenW, screenH float64, rect gameui.Rect) {
+	t.Helper()
+	if rect.X < 0 || rect.Y < 0 || rect.X+rect.W > screenW || rect.Y+rect.H > screenH {
+		t.Fatalf("rect outside %.0fx%.0f viewport: %+v", screenW, screenH, rect)
 	}
 }
 

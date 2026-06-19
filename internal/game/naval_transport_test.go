@@ -792,6 +792,133 @@ func TestMoveArmyDockFleetAtOwnedPort(t *testing.T) {
 	}
 }
 
+func TestForceDisembarkFleetSkipsDockAndLandsArmy(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     30,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"land_a"},
+			},
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "p1",
+				Neighbors:   []world.RegionID{"sea_1"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.forceDisembarkFleet("fleet_p1_1", "land_a")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if len(fleet.EmbarkedUnits) != 0 {
+		t.Fatalf("zorunlu indirme sonrası cargo boş olmalı")
+	}
+	if fleet.DockedRegionID != "" || fleet.DockedSettlementID != "" {
+		t.Fatalf("zorunlu indirme sonrası filo otomatik dock olmamalı, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+	if fleet.RegionID != "sea_1" {
+		t.Fatalf("zorunlu indirme sonrası filo denizde kalmalı, got=%s", fleet.RegionID)
+	}
+	if fleet.MovePoints != 2 {
+		t.Fatalf("zorunlu indirme 1 hareket puanı tüketmeli, got=%d", fleet.MovePoints)
+	}
+	newArmy, ok := gs.Armies["army_p1_31"]
+	if !ok {
+		t.Fatalf("zorunlu indirme sonrası yeni kara ordusu beklenirdi")
+	}
+	if newArmy.RegionID != "land_a" || newArmy.IsNaval || len(newArmy.Units) != 1 {
+		t.Fatalf("zorunlu indirme sonucu ordu hatalı: %+v", newArmy)
+	}
+}
+
+func TestMoveArmyDisembarkFromDockedOwnedPort(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     20,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"land_a"},
+			},
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "p1",
+				Neighbors:   []world.RegionID{"sea_1"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:                 "fleet_p1_1",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits:      []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "land_a")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if len(fleet.EmbarkedUnits) != 0 {
+		t.Fatalf("dock edilmiş limandan indirme sonrası cargo boş olmalı")
+	}
+	if fleet.DockedRegionID != "land_a" || fleet.DockedSettlementID != "port_a" {
+		t.Fatalf("indirme sonrası filo limana bağlı kalmalı, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+	if fleet.MovePoints != 2 {
+		t.Fatalf("indirme hareketi 1 puan tüketmeli, got=%d", fleet.MovePoints)
+	}
+	newArmy, ok := gs.Armies["army_p1_21"]
+	if !ok {
+		t.Fatalf("limandan indirme sonrası yeni kara ordusu beklenirdi")
+	}
+	if newArmy.RegionID != "land_a" || newArmy.IsNaval || len(newArmy.Units) != 1 {
+		t.Fatalf("indirme sonucu ordu hatalı: %+v", newArmy)
+	}
+}
+
 func TestMoveArmyDockFleetAtAlliedPort(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

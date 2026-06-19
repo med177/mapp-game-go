@@ -104,17 +104,7 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 
 // techModsFor bir fraksiyonun araştırdığı teknolojilerden savaş modlarını hesaplar.
 func techModsFor(gs *state.GameState, ownerID string) combat.TechMods {
-	f, ok := gs.Factions[faction.FactionID(ownerID)]
-	if !ok || gs.TechTypes == nil {
-		return combat.TechMods{}
-	}
-	fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
-	return combat.TechMods{
-		AttackMod:       fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod,
-		DefenseMod:      fx.LandDefenseMod,
-		NavalAttackMod:  fx.NavalAttackMod,
-		NavalDefenseMod: fx.NavalDefenseMod,
-	}
+	return combat.TechModsFor(gs, ownerID)
 }
 
 // checkRegionUnlocks kilidi kalkan bölgeleri açar.

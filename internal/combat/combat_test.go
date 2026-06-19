@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/world"
 )
 
 func TestApplyCasualtiesLeavesRecoverableDamage(t *testing.T) {
@@ -53,5 +54,43 @@ func TestApplyCasualtiesCanKillUnitsOnHeavyLoss(t *testing.T) {
 		if u.CurrentHP <= 0 || u.CurrentHP >= army.MaxUnitHP {
 			t.Fatalf("hayatta kalan birim beklenen aralikta degil, hp=%d", u.CurrentHP)
 		}
+	}
+}
+
+func TestPreviewBattleWithModsReflectsStanceTradeoff(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf": {ID: "inf", NameTR: "Piyade", Attack: 12, Defense: 10, Morale: 50},
+	}
+	atk := &army.Army{
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+	def := &army.Army{
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+
+	aggressive := PreviewBattleWithMods(atk, def, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleStanceAggressive)
+	defensive := PreviewBattleWithMods(atk, def, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleStanceDefensive)
+
+	if aggressive.WinChance <= defensive.WinChance {
+		t.Fatalf("agresif duruş daha yüksek zafer şansı vermeli, aggressive=%d defensive=%d", aggressive.WinChance, defensive.WinChance)
+	}
+	if aggressive.AttackStrength <= defensive.AttackStrength {
+		t.Fatalf("agresif duruş efektif saldırı gücünü artırmalı, aggressive=%d defensive=%d", aggressive.AttackStrength, defensive.AttackStrength)
+	}
+	if aggressive.AttackerHPExpected == 0 || aggressive.DefenderHPExpected == 0 {
+		t.Fatalf("preview HP kaybı üretmeliydi, attacker=%d defender=%d", aggressive.AttackerHPExpected, aggressive.DefenderHPExpected)
+	}
+	if aggressive.DefenderLossMax != len(def.Units) {
+		t.Fatalf("zafer senaryosunda savunucu tam silinebilmeliydi, got=%d want=%d", aggressive.DefenderLossMax, len(def.Units))
 	}
 }
