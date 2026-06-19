@@ -602,6 +602,49 @@ func TestMoveArmyDisembarkEnemyCoastNoArmyConquersOnWar(t *testing.T) {
 	}
 }
 
+func TestMoveArmyDisembarkNeutralCoastClaimsRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     30,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_n"}},
+			"land_n": {ID: "land_n", Religion: "catholic", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:            "fleet_p1_1",
+				OwnerID:       "p1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", Religion: "sunni"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "land_n")
+
+	if gs.Regions["land_n"].OwnerID != "p1" {
+		t.Fatalf("sahipsiz kıyı çıkarmasında sahiplik değişmeliydi, got=%s", gs.Regions["land_n"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_p1_31"]; !ok {
+		t.Fatalf("çıkarma sonrası kara ordusu oluşmalıydı")
+	}
+	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 {
+		t.Fatalf("çıkarma sonrası filo cargo'su boş olmalı")
+	}
+}
+
 func TestMoveNavalIntoEnemySeaAtPeaceNoWarDeclarationNoBattle(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

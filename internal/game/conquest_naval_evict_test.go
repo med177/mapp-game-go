@@ -182,3 +182,24 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 		t.Fatalf("devralinan filo gecerli liman bagini korumaliydi, got=%s", gs.Armies["fleet_old"].DockedRegionID)
 	}
 }
+
+func TestSanitizeOccupiedNeutralRegionsClaimsSingleOccupier(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman", Religion: "sunni"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"rhodes": {ID: "rhodes", Religion: "catholic"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_1": {ID: "army_1", OwnerID: "ottoman", RegionID: "rhodes"},
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.sanitizeOccupiedNeutralRegions()
+
+	if gs.Regions["rhodes"].OwnerID != "ottoman" {
+		t.Fatalf("tek işgalci olan sahipsiz bölge sahiplenilmeliydi, got=%s", gs.Regions["rhodes"].OwnerID)
+	}
+}

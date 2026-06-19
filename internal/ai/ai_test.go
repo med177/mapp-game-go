@@ -275,6 +275,46 @@ func TestAIMoveArmyDoesNotDisembarkToEnemyCoastAtPeace(t *testing.T) {
 	}
 }
 
+func TestAIMoveArmyDisembarksToNeutralCoastAndClaimsRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     60,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1":        {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"neutral_land"}},
+			"neutral_land": {ID: "neutral_land", Religion: "catholic", Neighbors: []world.RegionID{"sea_1"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_fleet": {
+				ID:            "ai_fleet",
+				OwnerID:       "ai_1",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": aiTestTransportType(),
+		},
+	}
+
+	moveArmy(gs, gs.Armies["ai_fleet"])
+
+	if gs.Regions["neutral_land"].OwnerID != "ai_1" {
+		t.Fatalf("AI sahipsiz kıyıyı sahiplenmeliydi, got=%s", gs.Regions["neutral_land"].OwnerID)
+	}
+	if _, ok := gs.Armies["army_ai_1_61"]; !ok {
+		t.Fatalf("AI çıkarma sonrası kara ordusu oluşmalı")
+	}
+}
+
 func TestChooseBestMovePrefersSeaWithHigherHostilePressure(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

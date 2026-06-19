@@ -401,6 +401,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.ReloadGameState(res.gs)
@@ -410,6 +411,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
+		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
@@ -438,6 +440,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) resolveTurn() {
+	g.sanitizeOccupiedNeutralRegions()
 	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
 	economyReport := applyEconomyTick(g.gs)
@@ -2608,6 +2611,41 @@ func (g *Game) sanitizeDockedFleets() {
 	}
 }
 
+// sanitizeOccupiedNeutralRegions eski bug'lı save'lerde veya edge-case akışlarda
+// sahipsiz kalmış ama tek taraflı kara ordusunca tutulduğu açık olan kara
+// bölgelerini fiilen işgal eden fraksiyona yazar.
+func (g *Game) sanitizeOccupiedNeutralRegions() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	claimants := make(map[world.RegionID]string)
+	contested := make(map[world.RegionID]bool)
+	for _, landArmy := range g.gs.Armies {
+		if landArmy == nil || landArmy.IsNaval || landArmy.RegionID == "" {
+			continue
+		}
+		region := g.gs.Regions[landArmy.RegionID]
+		if region == nil || region.IsSea || region.OwnerID != "" {
+			continue
+		}
+		if ownerID, ok := claimants[landArmy.RegionID]; ok && ownerID != landArmy.OwnerID {
+			contested[landArmy.RegionID] = true
+			continue
+		}
+		claimants[landArmy.RegionID] = landArmy.OwnerID
+	}
+	for regionID, ownerID := range claimants {
+		if ownerID == "" || contested[regionID] {
+			continue
+		}
+		region := g.gs.Regions[regionID]
+		if region == nil || region.OwnerID != "" || region.IsSea {
+			continue
+		}
+		region.ApplyConquest(ownerID, ownerReligion(g.gs, ownerID))
+	}
+}
+
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.
 func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	a, ok := g.gs.Armies[aid]
@@ -2708,7 +2746,7 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 			}
 			g.disembarkFleet(a, target)
 			a.MovePoints--
-			if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+			if targetRegion.OwnerID != a.OwnerID {
 				collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 				g.renderer.MarkMapDirty()
 				g.renderer.ShowCombatResult("Çıkarma tamamlandı: kıyı bölgesi savaşsız ele geçirildi.")

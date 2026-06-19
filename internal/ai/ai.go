@@ -1266,7 +1266,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID) (surv
 		copy(units, a.EmbarkedUnits)
 		a.EmbarkedUnits = a.EmbarkedUnits[:0]
 		aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
-		if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+		if targetRegion.OwnerID != a.OwnerID {
 			targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
 		}
 		a.MovePoints--
