@@ -2697,8 +2697,6 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 
 func (r *Renderer) appendSettlementDraws(region *world.Region) {
 	if len(region.Settlements) == 0 {
-		sx, sy := r.regionScreenPos(region)
-		r.appendSettlementDraw(region, -1, region.NameTR, sx, sy, true, 10, false)
 		return
 	}
 

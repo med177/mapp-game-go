@@ -343,7 +343,7 @@
   {
     "id": "the_pale",
     "name": "The Pale",
-    "name_tr": "The Pale (İrlanda İngiliz Bölgesi)",
+    "name_tr": "The Pale",
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
@@ -1238,7 +1238,7 @@
   {
     "id": "naples",
     "name": "Naples",
-    "name_tr": "Napoli Krallığı (Anjou)",
+    "name_tr": "Napoli Krallığı",
     "terrain": "coast",
     "owner_id": "naples_kingdom",
     "neighbors": [
@@ -1454,7 +1454,7 @@
   {
     "id": "serbia",
     "name": "Serbia",
-    "name_tr": "Sırbistan (Nemanjić)",
+    "name_tr": "Sırbistan",
     "terrain": "mountain",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
@@ -1633,7 +1633,7 @@
   {
     "id": "bulgaria",
     "name": "Bulgaria",
-    "name_tr": "Bulgar Krallığı (Shishman)",
+    "name_tr": "Bulgar Krallığı",
     "terrain": "mountain",
     "owner_id": "bulgarian_empire",
     "neighbors": [
@@ -1885,7 +1885,7 @@
   {
     "id": "greece",
     "name": "Greece",
-    "name_tr": "Atina Dükalığı (Latin)",
+    "name_tr": "Atina Dükalığı",
     "terrain": "coast",
     "owner_id": "athena_duk",
     "neighbors": [
@@ -1953,7 +1953,7 @@
   {
     "id": "konya",
     "name": "Konya",
-    "name_tr": "Konya (Karamanoğulları)",
+    "name_tr": "Konya",
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -2269,7 +2269,7 @@
   {
     "id": "damascus",
     "name": "Damascus",
-    "name_tr": "Şam (Memlûk)",
+    "name_tr": "Şam",
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
@@ -2304,7 +2304,7 @@
   {
     "id": "baghdad",
     "name": "Baghdad",
-    "name_tr": "Bağdat (İlhanlı)",
+    "name_tr": "Bağdat",
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -2695,7 +2695,7 @@
   {
     "id": "albania",
     "name": "Albania",
-    "name_tr": "Arnavutluk (Kuzey)",
+    "name_tr": "Arnavutluk",
     "terrain": "mountain",
     "owner_id": "arnavut_des",
     "neighbors": [
@@ -3249,7 +3249,7 @@
   {
     "id": "adriatic_sea_dalmatia",
     "name": "Adriatic Sea (Dalmatia)",
-    "name_tr": "Adriyatik Denizi (Dalmaçya)",
+    "name_tr": "Adriyatik Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -4303,7 +4303,7 @@
   {
     "id": "ukrainian_steppe",
     "name": "Ukrainian Steppe",
-    "name_tr": "Ukrayna Bozkırı (Altın Orda)",
+    "name_tr": "Ukrayna Bozkırı",
     "terrain": "plain",
     "owner_id": "golden_horde",
     "neighbors": [
@@ -4846,7 +4846,7 @@
   {
     "id": "saruhan",
     "name": "Saruhan",
-    "name_tr": "Saruhan (Manisa)",
+    "name_tr": "Saruhan",
     "terrain": "coast",
     "owner_id": "saruhan_bey",
     "neighbors": [
@@ -4879,7 +4879,7 @@
   {
     "id": "izmir",
     "name": "Izmir",
-    "name_tr": "İzmir (Aydınoğulları)",
+    "name_tr": "İzmir",
     "terrain": "coast",
     "owner_id": "aydin_bey",
     "neighbors": [
@@ -5052,7 +5052,7 @@
   {
     "id": "akkoyunlu",
     "name": "Akkoyunlu",
-    "name_tr": "Akkoyunlu (İlhanlı Toprakları)",
+    "name_tr": "Akkoyunlu",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -5159,7 +5159,7 @@
   {
     "id": "milan",
     "name": "Milan",
-    "name_tr": "Milano (Visconti)",
+    "name_tr": "Milano",
     "terrain": "plain",
     "owner_id": "milan_duchy",
     "neighbors": [
@@ -5406,7 +5406,7 @@
   {
     "id": "hamideli",
     "name": "Hamideli",
-    "name_tr": "Hamideli (Isparta)",
+    "name_tr": "Hamideli",
     "terrain": "mountain",
     "owner_id": "hamid_bey",
     "neighbors": [
@@ -5439,7 +5439,7 @@
   {
     "id": "beysehir",
     "name": "Beysehir",
-    "name_tr": "Beyşehir (Eşrefoğulları)",
+    "name_tr": "Beyşehir",
     "terrain": "plain",
     "owner_id": "esrefoglu_bey",
     "neighbors": [
@@ -5579,7 +5579,7 @@
   {
     "id": "karaman",
     "name": "Karaman",
-    "name_tr": "Karaman (Larende)",
+    "name_tr": "Karaman",
     "terrain": "plain",
     "owner_id": "karaman_bey",
     "neighbors": [
@@ -5787,7 +5787,7 @@
   {
     "id": "vidin",
     "name": "Vidin",
-    "name_tr": "Vidin (Bulgar Kalesi)",
+    "name_tr": "Vidin",
     "terrain": "plain",
     "owner_id": "bulgarian_empire",
     "neighbors": [
@@ -6131,7 +6131,7 @@
   {
     "id": "verona",
     "name": "Verona",
-    "name_tr": "Verona (Scaligeri)",
+    "name_tr": "Verona",
     "terrain": "plain",
     "owner_id": "milan_duchy",
     "neighbors": [
@@ -6166,7 +6166,7 @@
   {
     "id": "ferrara",
     "name": "Ferrara",
-    "name_tr": "Ferrara (Este)",
+    "name_tr": "Ferrara",
     "terrain": "plain",
     "owner_id": "papal_states_f",
     "neighbors": [
@@ -6235,7 +6235,7 @@
   {
     "id": "apulia",
     "name": "Apulia",
-    "name_tr": "Apulia (Puglia)",
+    "name_tr": "Apulia",
     "terrain": "plain",
     "owner_id": "naples_kingdom",
     "neighbors": [
@@ -6267,7 +6267,7 @@
   {
     "id": "rascia",
     "name": "Rascia",
-    "name_tr": "Raška (Sırp Kalbi)",
+    "name_tr": "Raška",
     "terrain": "mountain",
     "owner_id": "serbian_empire",
     "neighbors": [
@@ -6337,7 +6337,7 @@
   {
     "id": "hum",
     "name": "Hum",
-    "name_tr": "Hum (Hersek)",
+    "name_tr": "Hum",
     "terrain": "mountain",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
@@ -6474,7 +6474,7 @@
   {
     "id": "morea",
     "name": "Morea",
-    "name_tr": "Mora Prensliği (Latin)",
+    "name_tr": "Mora Prensliği",
     "terrain": "coast",
     "owner_id": "achaea_principality",
     "neighbors": [
@@ -6508,7 +6508,7 @@
   {
     "id": "dobruja",
     "name": "Dobruja",
-    "name_tr": "Dobrica (Karadeniz Kıyısı)",
+    "name_tr": "Dobrica",
     "terrain": "plain",
     "owner_id": "bulgarian_empire",
     "neighbors": [
@@ -6579,7 +6579,7 @@
   {
     "id": "kutahya",
     "name": "Kutahya",
-    "name_tr": "Kütahya (Germiyan)",
+    "name_tr": "Kütahya",
     "terrain": "plain",
     "owner_id": "germiyan_bey",
     "neighbors": [
@@ -6652,7 +6652,7 @@
   {
     "id": "kiev",
     "name": "Kiev",
-    "name_tr": "Kiev Prensliği (Altın Orda)",
+    "name_tr": "Kiev Prensliği",
     "terrain": "plain",
     "owner_id": "golden_horde",
     "neighbors": [
@@ -6722,7 +6722,7 @@
   {
     "id": "aleppo",
     "name": "Aleppo",
-    "name_tr": "Halep (Memlûk)",
+    "name_tr": "Halep",
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
@@ -6797,7 +6797,7 @@
   {
     "id": "mosul",
     "name": "Mosul",
-    "name_tr": "Musul (İlhanlı)",
+    "name_tr": "Musul",
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -6835,7 +6835,7 @@
   {
     "id": "basra",
     "name": "Basra",
-    "name_tr": "Basra (İlhanlı)",
+    "name_tr": "Basra",
     "terrain": "coast",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -6872,7 +6872,7 @@
   {
     "id": "nicomedia",
     "name": "Nicomedia",
-    "name_tr": "Nikomedia (Doğu Roma Sınır Kenti)",
+    "name_tr": "Nikomedia",
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
@@ -6943,7 +6943,7 @@
   {
     "id": "paphlagonia",
     "name": "Paphlagonia",
-    "name_tr": "Paflagonya (Candaroğulları Batı Kıyısı)",
+    "name_tr": "Paflagonya",
     "terrain": "coast",
     "owner_id": "candar_bey",
     "neighbors": [
@@ -6976,7 +6976,7 @@
   {
     "id": "sinop",
     "name": "Sinop",
-    "name_tr": "Sinop (Canik)",
+    "name_tr": "Sinop",
     "terrain": "coast",
     "owner_id": "candar_bey",
     "neighbors": [
@@ -7011,7 +7011,7 @@
   {
     "id": "chrysopolis",
     "name": "Chrysopolis",
-    "name_tr": "Hrisopolis (Doğu Roma Asya Yakası)",
+    "name_tr": "Hrisopolis",
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
@@ -7083,7 +7083,7 @@
   {
     "id": "nizhny_novgorod",
     "name": "Nizhny Novgorod",
-    "name_tr": "Nizhny Novgorod (Volga-Oka Kavşağı)",
+    "name_tr": "Nizhny Novgorod",
     "terrain": "forest",
     "owner_id": "russia",
     "neighbors": [
@@ -7190,7 +7190,7 @@
   {
     "id": "chalcidice",
     "name": "Chalcidice",
-    "name_tr": "Halkidiki (Kutsal Dağ / Doğu Roma)",
+    "name_tr": "Halkidiki",
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [

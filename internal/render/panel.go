@@ -2540,6 +2540,11 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	DrawText(screen, name, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
 
+	if gs.DevelopmentMode {
+		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "ID", string(settlement.ID), ColorGray, ColorWhite)
+		ly += 18
+	}
+
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Bölge", region.NameTR, ColorGray, ColorWhite)
 	ly += 18
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Tip", settlement.Type.LabelTR(), ColorGray, ColorWhite)

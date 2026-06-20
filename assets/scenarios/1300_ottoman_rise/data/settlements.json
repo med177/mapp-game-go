@@ -317,7 +317,7 @@
     "settlements": [
       {
         "id": "dublin_pale",
-        "name_tr": "Dublin (The Pale)",
+        "name_tr": "Dublin",
         "x": 351,
         "y": 221,
         "type": "town",
@@ -4329,7 +4329,7 @@
       },
       {
         "id": "karaman_konya",
-        "name_tr": "Karaman (Larende)",
+        "name_tr": "Karaman",
         "x": 1138,
         "y": 524,
         "type": "town"

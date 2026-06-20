@@ -99,6 +99,24 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	}
 }
 
+func TestEmptyRegionDoesNotCreateSettlementLabel(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"ankara": {
+					ID:     "ankara",
+					NameTR: "Ankara",
+				},
+			},
+		},
+	}
+
+	r.appendSettlementDraws(r.gs.Regions["ankara"])
+	if got := len(r.regionLabelBuf); got != 0 {
+		t.Fatalf("bos bolge icin yerlesim etiketi uretilmemeliydi, got=%d", got)
+	}
+}
+
 func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	t.Helper()
 	oldW, oldH := ScreenWidth, ScreenHeight
