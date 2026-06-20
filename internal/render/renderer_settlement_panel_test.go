@@ -1,6 +1,7 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/city"
@@ -46,6 +47,64 @@ func TestSettlementPanelHitRequiresVisiblePanel(t *testing.T) {
 
 	if !r.settlementPanelHit(mx, my) {
 		t.Fatal("yerlesim paneli acikken hit-test aktif olmali")
+	}
+}
+
+func TestSettlementCapitalActionButtonVisibility(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:      "home",
+				OwnerID: "player",
+				Settlements: []world.Settlement{
+					{ID: "capital_city", NameTR: "Başkent"},
+					{ID: "other_city", NameTR: "Bursa"},
+				},
+			},
+		},
+	}
+
+	if _, ok := settlementCapitalActionButton(gs, gs.Regions["home"], &gs.Regions["home"].Settlements[0]); ok {
+		t.Fatal("mevcut başkent için taşıma butonu görünmemeli")
+	}
+	if _, ok := settlementCapitalActionButton(gs, gs.Regions["home"], &gs.Regions["home"].Settlements[1]); !ok {
+		t.Fatal("oyuncunun diğer settlement'ı için taşıma butonu görünmeli")
+	}
+}
+
+func TestSettlementCapitalStatusTextIncludesCapitalBonuses(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:      "home",
+				OwnerID: "player",
+				Settlements: []world.Settlement{
+					{ID: "capital_city", NameTR: "Başkent"},
+					{ID: "other_city", NameTR: "Bursa"},
+				},
+			},
+		},
+	}
+
+	current := settlementCapitalStatusText(gs, gs.Regions["home"], &gs.Regions["home"].Settlements[0])
+	if !strings.Contains(current, "+35 altın") || !strings.Contains(current, "+6 lojistik") {
+		t.Fatalf("başkent statüsünde bonus özeti görünmeli: %q", current)
+	}
+	if !strings.Contains(current, "depoların yarısı") {
+		t.Fatalf("başkent düşüş riski görünmeli: %q", current)
+	}
+
+	other := settlementCapitalStatusText(gs, gs.Regions["home"], &gs.Regions["home"].Settlements[1])
+	if !strings.Contains(other, "5 tur") || !strings.Contains(other, "+35 altın") {
+		t.Fatalf("taşıma öncesi başkent özeti görünmeli: %q", other)
 	}
 }
 

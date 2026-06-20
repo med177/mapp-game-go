@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-06-03
+last_updated: 2026-06-20
 related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -65,6 +65,7 @@ Choice sonuçları artık doğrudan follow-up event açabilir.
 - `Effect.complete_techs[]` ilgili fraksiyon için teknoloji tamamlar
 - `Effect.start_research_tech` aktif araştırma boşsa ücretsiz yönlendirilmiş araştırma başlatır
 - `Effect.relations[]` belirli fraksiyonlarla doğrudan `score_delta` ve opsiyonel `stance` uygular
+- `Effect.capital_settlement_id` + opsiyonel `capital_move_turns`, ilgili fraksiyon için doğrudan anlık taşımak yerine başkent taşıma kuyruğu başlatır
 - `Event.requires_owned_regions[]` follow-up event gelmeden önce ilgili fraksiyonun belirli bölgeleri hâlâ elinde tuttuğunu doğrular
 - `Event.requires_techs[]` ilgili fraksiyonun belirli teknolojileri zaten tamamlamış olmasını ister
 - `Event.blocks_techs[]` ilgili teknoloji zaten açıksa follow-up event'i bastırır
@@ -76,6 +77,7 @@ Uygulama notu:
 - Ayrı bir save yapısı eklenmedi
 - flag'ler `gs.FiredEventIDs` içinde `flag:<id>` anahtarıyla tutulur
 - bu yüzden zincir state'i save/load ile doğal olarak korunur
+- başkent taşıma kuyruğu fraksiyon state'inde saklandığı için event kaynaklı başkent değişimleri de save/load ile doğal olarak korunur
 
 ## Olay Tipleri
 

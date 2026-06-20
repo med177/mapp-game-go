@@ -208,6 +208,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	gs.TradeCenters = tradeCenters
 	diplomacy.EnsureTradeRoutesForActiveRelations(&gs)
+	gs.NormalizeFactionCapitals()
 
 	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), gs.Regions)
 	if err != nil {

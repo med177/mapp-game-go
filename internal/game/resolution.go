@@ -52,6 +52,9 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 
 	result := eliminationResult{FactionID: fid, SuccessorID: successor}
 	f.IsEliminated = true
+	f.CapitalSettlementID = ""
+	f.PendingCapitalSettlementID = ""
+	f.PendingCapitalTurns = 0
 
 	transferOwnership := successor != "" && successor != fid && gs.Factions[successor] != nil
 	for aid, a := range gs.Armies {
@@ -310,6 +313,15 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		stoneByFaction[r.OwnerID] += stone
 		spiceByFaction[r.OwnerID] += spice
 		clothByFaction[r.OwnerID] += cloth
+		if bonus := gs.CapitalRegionBonus(r); bonus != (state.RegionProductionSummary{}) {
+			incomeByFaction[r.OwnerID] += bonus.Gold
+			grainByFaction[r.OwnerID] += bonus.Grain
+			ironByFaction[r.OwnerID] += bonus.Iron
+			timberByFaction[r.OwnerID] += bonus.Timber
+			stoneByFaction[r.OwnerID] += bonus.Stone
+			spiceByFaction[r.OwnerID] += bonus.Spice
+			clothByFaction[r.OwnerID] += bonus.Cloth
+		}
 
 		// Vergi memnuniyet etkisi + bina bonusu
 		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
@@ -509,7 +521,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		}
 
 		production := gs.RegionProductionSummary(region).Grain
-		settlementBuffer := regionSettlementLogisticsBuffer(region)
+		settlementBuffer := regionSettlementLogisticsBuffer(gs, region)
 		reserveSupport := regionReserveSupport(gs, ownerID, production, settlementBuffer)
 		capacity := production + settlementBuffer + reserveSupport
 		if capacity < 4 {
@@ -586,7 +598,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 	return alerts
 }
 
-func regionSettlementLogisticsBuffer(region *world.Region) int {
+func regionSettlementLogisticsBuffer(gs *state.GameState, region *world.Region) int {
 	buffer := 0
 	for _, settlement := range region.Settlements {
 		switch settlement.Type {
@@ -604,6 +616,9 @@ func regionSettlementLogisticsBuffer(region *world.Region) int {
 		if settlement.IsCapital {
 			buffer += 4
 		}
+	}
+	if gs != nil && gs.IsCapitalRegion(region) {
+		buffer += state.CapitalRegionLogisticsBonus
 	}
 	if tc := region.TradeCapacity / 2; tc > 0 {
 		if tc > 6 {

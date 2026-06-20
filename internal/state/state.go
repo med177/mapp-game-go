@@ -355,6 +355,16 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 		out.Stone = int(float64(out.Stone) * (1.0 + effects.StoneMod))
 	}
 
+	if bonus := s.CapitalRegionBonus(region); bonus != (RegionProductionSummary{}) {
+		out.Gold += bonus.Gold
+		out.Grain += bonus.Grain
+		out.Iron += bonus.Iron
+		out.Timber += bonus.Timber
+		out.Stone += bonus.Stone
+		out.Spice += bonus.Spice
+		out.Cloth += bonus.Cloth
+	}
+
 	return out
 }
 

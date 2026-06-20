@@ -23,6 +23,12 @@ type Faction struct {
 	Color        [3]uint8      `json:"color"`
 	IsPlayable   bool          `json:"is_playable"`
 	IsEliminated bool          `json:"is_eliminated"`
+	// CapitalSettlementID fraksiyonun aktif başkent settlement'ını tutar.
+	CapitalSettlementID string `json:"capital_settlement_id,omitempty"`
+	// PendingCapitalSettlementID başkent taşıma kuyruğundaki hedef settlement'tır.
+	PendingCapitalSettlementID string `json:"pending_capital_settlement_id,omitempty"`
+	// PendingCapitalTurns kalan başkent taşıma turudur.
+	PendingCapitalTurns int `json:"pending_capital_turns,omitempty"`
 
 	Gold   int `json:"gold"`
 	Grain  int `json:"grain"`

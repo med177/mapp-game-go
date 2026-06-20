@@ -2231,7 +2231,7 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 	}
 
 	production := gs.RegionProductionSummary(region).Grain
-	settlementBuffer := aiRegionSettlementBuffer(region)
+	settlementBuffer := aiRegionSettlementBuffer(gs, region)
 	reserveSupport := aiRegionReserveSupport(gs, ownerID, production, settlementBuffer)
 	capacity = production + settlementBuffer + reserveSupport
 	if capacity < 4 {
@@ -2248,7 +2248,7 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 	return demand, capacity, overload
 }
 
-func aiRegionSettlementBuffer(region *world.Region) int {
+func aiRegionSettlementBuffer(gs *state.GameState, region *world.Region) int {
 	if region == nil {
 		return 0
 	}
@@ -2269,6 +2269,9 @@ func aiRegionSettlementBuffer(region *world.Region) int {
 		if settlement.IsCapital {
 			buffer += 4
 		}
+	}
+	if gs != nil && gs.IsCapitalRegion(region) {
+		buffer += state.CapitalRegionLogisticsBonus
 	}
 	if tc := region.TradeCapacity / 2; tc > 0 {
 		if tc > 6 {

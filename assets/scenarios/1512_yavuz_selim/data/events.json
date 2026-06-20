@@ -331,11 +331,13 @@
         "id": "withdraw_and_regroup",
         "label_tr": "İç bölgelere çekilip toparlan",
         "ai_weight": 7,
-        "desc_tr": "Ordu korunur, ancak Tebriz ticareti zarar görür.",
+        "desc_tr": "Ordu korunur, ancak Tebriz ticareti zarar görür; saray merkezi 5 turda iç bölgelere taşınır.",
         "effect": {
           "gold_delta": -80,
           "army_hp_mod": 1.04,
-          "sat_delta": -4
+          "sat_delta": -4,
+          "capital_settlement_id": "persia_south_bam",
+          "capital_move_turns": 5
         }
       },
       {

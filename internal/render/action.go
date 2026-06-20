@@ -73,6 +73,7 @@ const (
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"
+	ActionScheduleCapitalMove   ActionKind = "schedule_capital_move"
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

@@ -214,6 +214,8 @@ func (g *Game) Update() error {
 			// renderer event detail popup'ını kendi açıyor; burada state değişikliği gerekmiyor.
 		case render.ActionChooseHistoricalEvent:
 			g.resolveHistoricalChoice(action.ChoiceIndex)
+		case render.ActionScheduleCapitalMove:
+			g.queueCapitalMove(g.gs.PlayerFactionID, action.BuildingID, state.DefaultCapitalMoveTurns, "yerel karar")
 		case render.ActionEndTurn:
 			// Araştırma seçimi artık turn resolution içinde otomatik tamamlanıyor.
 			if !g.saveToSlot("autosave", false, "") {
@@ -727,6 +729,7 @@ func (g *Game) resolveTurn() {
 	siegeUpdates := g.resolveSieges()
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
+	capitalMoveUpdates := g.gs.AdvanceCapitalMoves()
 	applyRelationDecay(g.gs)
 	prevVictoryAchieved := g.gs.VictoryAchieved
 	victory.Check(g.gs)
@@ -788,6 +791,7 @@ func (g *Game) resolveTurn() {
 
 	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
 	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
+	g.handleCapitalMoveProgress(capitalMoveUpdates)
 
 	// Olaylar
 	if evt := events.Tick(g.gs, g.evts); evt != nil {
@@ -1372,6 +1376,19 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 	}
 	if len(eff.CompleteTechs) > 0 {
 		parts = append(parts, "Teknoloji: "+strings.Join(techLabels(gs, eff.CompleteTechs), ", "))
+	}
+	if eff.CapitalSettlementID != "" {
+		turns := eff.CapitalMoveTurns
+		if turns <= 0 {
+			turns = state.DefaultCapitalMoveTurns
+		}
+		name := eff.CapitalSettlementID
+		if gs != nil {
+			if region, settlement, _, ok := gs.FindSettlementByID(eff.CapitalSettlementID); ok {
+				name = capitalSettlementName(region, settlement, eff.CapitalSettlementID)
+			}
+		}
+		parts = append(parts, fmt.Sprintf("Başkent taşıma: %s (%d tur)", name, turns))
 	}
 	if len(eff.Relations) > 0 {
 		relParts := make([]string, 0, len(eff.Relations))
@@ -2356,6 +2373,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.SyncTimedRegionUnlocks()
+	gs.NormalizeFactionCapitals()
 	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
@@ -2939,6 +2957,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 		return eliminationResult{}
 	}
 	prevFactionID := faction.FactionID(prevOwnerID)
+	g.handleCapitalCapture(prevFactionID, newOwnerID, targetRegion)
 	if len(g.gs.LandRegionsOwnedBy(prevFactionID)) == 0 {
 		result := eliminateFaction(g.gs, prevFactionID, faction.FactionID(newOwnerID))
 		g.sanitizeDockedFleets()

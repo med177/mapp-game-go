@@ -245,3 +245,42 @@ func TestTickRequiresTechAndRelationConditions(t *testing.T) {
 		t.Fatalf("tech ve relation koşullarına göre allowed event bekleniyordu, got=%v", evt)
 	}
 }
+
+func TestApplyChoiceStartsCapitalMove(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "old_cap"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:      "home",
+				OwnerID: "player",
+				Settlements: []world.Settlement{
+					{ID: "old_cap", NameTR: "Eski Başkent", IsCapital: true},
+					{ID: "new_cap", NameTR: "Yeni Başkent"},
+				},
+			},
+		},
+	}
+	evt := &Event{
+		ID:     "move_capital",
+		Target: "player_faction",
+		Choices: []Choice{{
+			LabelTR: "Taşı",
+			Effect: Effect{
+				Target:              "player_faction",
+				CapitalSettlementID: "new_cap",
+				CapitalMoveTurns:    3,
+			},
+		}},
+	}
+
+	if _, ok := ApplyChoice(gs, evt, 0); !ok {
+		t.Fatal("choice uygulanmalıydı")
+	}
+	f := gs.Factions["player"]
+	if f.PendingCapitalSettlementID != "new_cap" || f.PendingCapitalTurns != 3 {
+		t.Fatalf("pending başkent taşıma başlamalıydı, got=%+v", f)
+	}
+}

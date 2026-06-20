@@ -86,7 +86,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "capital_settlement_id": "aragon_valencia"
   },
   {
     "id": "arnavut_des",
@@ -231,7 +232,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 18
+    "ai_aggressiveness": 18,
+    "capital_settlement_id": "constantinople_main"
   },
   {
     "id": "candar_bey",
@@ -413,7 +415,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 40
+    "ai_aggressiveness": 40,
+    "capital_settlement_id": "london_main"
   },
   {
     "id": "epir",
@@ -538,7 +541,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 52,
+    "capital_settlement_id": "paris_main"
   },
   {
     "id": "genoa",
@@ -972,7 +976,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 54
+    "ai_aggressiveness": 54,
+    "capital_settlement_id": "cairo"
   },
   {
     "id": "mentese_bey",
@@ -1128,7 +1133,8 @@
       "active_id": "cast_bronze_cannon",
       "turns_left": 4
     },
-    "ai_aggressiveness": 72
+    "ai_aggressiveness": 72,
+    "capital_settlement_id": "edirne"
   },
   {
     "id": "papal_states_f",
@@ -1221,7 +1227,8 @@
       "active_id": "open_sea_convoys",
       "turns_left": 4
     },
-    "ai_aggressiveness": 36
+    "ai_aggressiveness": 36,
+    "capital_settlement_id": "portugal_lisboa"
   },
   {
     "id": "ramazan_bey",
@@ -1280,7 +1287,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 52,
+    "capital_settlement_id": "moscow_main"
   },
   {
     "id": "safavid",
@@ -1311,7 +1319,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 58
+    "ai_aggressiveness": 58,
+    "capital_settlement_id": "akkoyunlu_main"
   },
   {
     "id": "saruhan_bey",
@@ -1527,7 +1536,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 44
+    "ai_aggressiveness": 44,
+    "capital_settlement_id": "venice"
   },
   {
     "id": "wallachia_prince",

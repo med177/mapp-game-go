@@ -2578,6 +2578,86 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	drawUISectionLabel(screen, lx, ly, "Tarihçe")
 	ly += 18
 	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
+	ly += 32
+
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
+	ly += 10
+	drawUISectionLabel(screen, lx, ly, "Başkent")
+	ly += 18
+	status := settlementCapitalStatusText(gs, region, settlement)
+	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, status, ColorGray, gameui.TextSmall, 16, 3)
+	ly += 52
+	if btn, ok := settlementCapitalActionButton(gs, region, settlement); ok {
+		drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{126, 94, 28, 235}, color.RGBA{214, 176, 82, 255}, ColorWhite, 10))
+	}
+}
+
+func settlementCapitalActionButton(gs *state.GameState, region *world.Region, settlement *world.Settlement) (gameui.Button, bool) {
+	if gs == nil || region == nil || settlement == nil || region.OwnerID != string(gs.PlayerFactionID) {
+		return gameui.Button{}, false
+	}
+	player := gs.Factions[gs.PlayerFactionID]
+	if player == nil {
+		return gameui.Button{}, false
+	}
+	if gs.IsFactionCapitalSettlement(gs.PlayerFactionID, settlement.ID) {
+		return gameui.Button{}, false
+	}
+	if player.PendingCapitalSettlementID == settlement.ID && player.PendingCapitalTurns > 0 {
+		return gameui.Button{}, false
+	}
+	label := "Başkent Yap"
+	if player.PendingCapitalSettlementID != "" && player.PendingCapitalTurns > 0 {
+		label = "Taşımayı Buraya Çevir"
+	}
+	return gameui.NewButton(
+		float64(settlementPanelX())+panelPad,
+		float64(settlementPanelY()+infoPanelH)-56,
+		float64(infoPanelW)-panelPad*2,
+		36,
+		label,
+	).WithIcon(gameui.IconCheck), true
+}
+
+func settlementCapitalStatusText(gs *state.GameState, region *world.Region, settlement *world.Settlement) string {
+	if gs == nil || region == nil || settlement == nil || region.OwnerID == "" {
+		return "Sahipsiz yerleşimlerde başkent statüsü yok."
+	}
+	fid := faction.FactionID(region.OwnerID)
+	f := gs.Factions[fid]
+	if f == nil {
+		return "Başkent bilgisi okunamadı."
+	}
+	bonusSummary := fmt.Sprintf(
+		"Bölge bonusu: +%d altın, +%d tahıl, +%d demir, +%d kereste, +%d taş, +%d baharat, +%d kumaş, +%d lojistik.",
+		state.CapitalRegionGoldBonus,
+		state.CapitalRegionGrainBonus,
+		state.CapitalRegionIronBonus,
+		state.CapitalRegionTimberBonus,
+		state.CapitalRegionStoneBonus,
+		state.CapitalRegionSpiceBonus,
+		state.CapitalRegionClothBonus,
+		state.CapitalRegionLogisticsBonus,
+	)
+	captureRisk := " Başkent düşerse depoların yarısı ve savunanın bilmediğin teknolojilerinin yaklaşık yarısı fetheden devlete geçer."
+	if gs.IsFactionCapitalSettlement(fid, settlement.ID) {
+		return "Bu yerleşim devletin mevcut başkentidir. " + bonusSummary + captureRisk
+	}
+	if f.PendingCapitalSettlementID == settlement.ID && f.PendingCapitalTurns > 0 {
+		return "Bu yerleşim başkent taşımasının aktif hedefidir. Kalan süre: " + itoa(f.PendingCapitalTurns) + " tur. " + bonusSummary
+	}
+	if f.PendingCapitalSettlementID != "" && f.PendingCapitalTurns > 0 {
+		targetName := f.PendingCapitalSettlementID
+		if targetRegion, targetSettlement, _, ok := gs.FindSettlementByID(f.PendingCapitalSettlementID); ok {
+			if targetSettlement.NameTR != "" {
+				targetName = targetSettlement.NameTR
+			} else if targetRegion != nil && targetRegion.NameTR != "" {
+				targetName = targetRegion.NameTR
+			}
+		}
+		return "Aktif başkent taşıması sürüyor: " + targetName + " (" + itoa(f.PendingCapitalTurns) + " tur). " + bonusSummary
+	}
+	return "Bu yerleşim başkent değil. İstersen 5 tur süren bir taşıma süreci başlatabilirsin. " + bonusSummary
 }
 
 type factionTradeOverview struct {

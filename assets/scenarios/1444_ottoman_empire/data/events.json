@@ -487,10 +487,12 @@
         "id": "make_capital",
         "label_tr": "Şehri payitaht yap",
         "ai_weight": 9,
-        "desc_tr": "Boğaz ticareti ve imparatorluk prestiji artar.",
+        "desc_tr": "Boğaz ticareti ve imparatorluk prestiji artar; payitaht taşıması 5 turda tamamlanır.",
         "effect": {
           "gold_delta": 260,
           "sat_delta": 12,
+          "capital_settlement_id": "constantinople_main",
+          "capital_move_turns": 5,
           "relations": [
             {
               "faction_id": "mamluk",

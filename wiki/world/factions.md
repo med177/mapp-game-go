@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-06-16
+last_updated: 2026-06-20
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -26,6 +26,9 @@ type Faction struct {
     Color        [3]uint8      // harita rengi (RGB)
     IsPlayable   bool
     IsEliminated bool
+    CapitalSettlementID        string
+    PendingCapitalSettlementID string
+    PendingCapitalTurns        int
 
     Gold   int
     Grain  int
@@ -39,6 +42,10 @@ type Faction struct {
     AIExpansionTargets []FactionID  // AI tarihsel genişleme hedefleri
 }
 ```
+
+`capital_settlement_id`, fraksiyonun ulusal başkent settlement'ını tutar. Bu alan artık bölgesel `settlement.is_capital` işaretinden ayrıdır: `is_capital` bir bölgenin ana yerleşimini/anchor noktasını belirlemeye devam ederken, ulusal başkent tekil olarak fraksiyon üstünde tutulur.
+
+`pending_capital_settlement_id` ve `pending_capital_turns`, oyuncunun veya bir event'in başlattığı başkent taşıma kuyruğunu saklar. Sayaç sıfırlandığında yeni settlement resmen başkent olur.
 
 `ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
 
@@ -87,3 +94,12 @@ Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skor
 `gs.IsEliminated(fid)` → `len(RegionsOwnedBy(fid)) == 0`
 
 Bir fraksiyon tüm bölgelerini kaybedince `checkEliminations()` tarafından tespit edilir ve `FactionsEliminated` sayacı artar.
+
+## Başkent Davranışı
+
+- Her fraksiyonun aynı anda tek aktif başkenti vardır.
+- Senaryo verisinde `capital_settlement_id` yoksa runtime yükleme akışı fraksiyonun en yüksek getirili kara bölgesindeki ana settlement'ı başkent olarak seçer.
+- Başkent bölgesi ek gelir, stok ve lojistik avantajı alır.
+- Başkent fethedilirse savunan fraksiyonun hazine/hammadde stoklarının bir bölümü fethedene geçer.
+- Başkent fetheden taraf, savunanın sahip olduğu ama kendisinde olmayan tamamlanmış teknolojilerin yaklaşık yarısını anında açar.
+- Başkent kaybeden ama hayatta kalan devletin yeni başkenti otomatik olarak en yüksek getirili bölgesinin merkez settlement'ına atanır.

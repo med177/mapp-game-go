@@ -6462,15 +6462,48 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 	if region == nil {
 		return
 	}
-	if settlement.Type == world.SettlementFortress {
+	switch settlement.Type {
+	case world.SettlementFortress:
 		r.drawFortressMarker(screen, region, sx, sy)
-		return
-	}
-	if settlement.Type == world.SettlementPort {
+	case world.SettlementPort:
 		r.drawPortMarker(screen, region, sx, sy)
-		return
+	default:
+		r.drawCityDot(screen, region, sx, sy)
 	}
-	r.drawCityDot(screen, region, sx, sy)
+	if r.isCapitalSettlement(region, settlement) {
+		r.drawCapitalStar(screen, sx, sy)
+	}
+}
+
+func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Settlement) bool {
+	if r == nil || r.gs == nil || region == nil || region.OwnerID == "" || settlement.ID == "" {
+		return false
+	}
+	return r.gs.IsFactionCapitalSettlement(faction.FactionID(region.OwnerID), settlement.ID)
+}
+
+func (r *Renderer) drawCapitalStar(screen *ebiten.Image, sx, sy float32) {
+	cx := sx + 9
+	cy := sy - 7
+	radius := float32(4.5)
+	inner := float32(2.2)
+	col := color.RGBA{255, 220, 110, 245}
+	outline := color.RGBA{66, 44, 12, 245}
+	for i := 0; i < 4; i++ {
+		angle := float64(i) * math.Pi / 2
+		dx := float32(math.Cos(angle)) * radius
+		dy := float32(math.Sin(angle)) * radius
+		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 2, outline, false)
+		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 1, col, false)
+	}
+	for i := 0; i < 4; i++ {
+		angle := float64(i)*math.Pi/2 + math.Pi/4
+		dx := float32(math.Cos(angle)) * inner
+		dy := float32(math.Sin(angle)) * inner
+		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 2, outline, false)
+		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 1, col, false)
+	}
+	vector.FillCircle(screen, cx, cy, 1.6, col, true)
 }
 
 func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
@@ -7183,6 +7216,24 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.resetRecruitSelection()
 		return InputAction{}
+	}
+	if region, settlement, ok := r.selectedSettlement(); ok && region != nil && region.ID == r.SelectedRegion {
+		if btn, active := settlementCapitalActionButton(r.gs, region, settlement); active && btn.HitTest(fx, fy) {
+			name := settlement.NameTR
+			if name == "" {
+				name = settlement.Name
+			}
+			if name == "" {
+				name = region.NameTR
+			}
+			msg := fmt.Sprintf("%s yerleşimini başkent yapma süreci başlasın mı? Taşıma %d tur sürer.", name, state.DefaultCapitalMoveTurns)
+			r.ShowConfirmDialog("Başkent Taşı", msg, "Başlat", "İptal", InputAction{
+				Kind:         ActionScheduleCapitalMove,
+				TargetRegion: region.ID,
+				BuildingID:   settlement.ID,
+			}, nil)
+			return InputAction{}
+		}
 	}
 	if r.settlementPanelHit(fx, fy) {
 		return InputAction{}

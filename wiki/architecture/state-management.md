@@ -69,6 +69,12 @@ type GameState struct {
 
 `SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
 
+Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuyruğunu da serialize eder:
+
+- `CapitalSettlementID`
+- `PendingCapitalSettlementID`
+- `PendingCapitalTurns`
+
 ---
 
 ## Runtime-Only Alanlar (`json:"-"`)
@@ -108,6 +114,16 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 `SiegeAt(regionID)` / `SiegeByArmy(armyID)` — aktif kuşatma kaydını bölge veya saldıran ordu üstünden döner; renderer, AI ve oyun mantığı aynı save verisini bu helper'larla okur.
 
 `RegionProductionSummary(region) RegionProductionSummary` — seçili bölgenin efektif altın/mal üretimini hesaplar; bina çarpanları, arazi uzmanlaşması, mevsim ticaret/hasat etkileri ve sahip fraksiyonun ekonomi teknolojilerini UI önizlemesiyle paylaşır
+
+`FindSettlementByID(settlementID)` — settlement ID'den region + settlement çözümlemesi yapar
+
+`FactionCapital(fid)` — fraksiyonun geçerli başkent settlement ve bölgesini döner
+
+`SetFactionCapital(fid, settlementID)` — başkenti anında değiştirir ve pending kuyruğu temizler
+
+`StartCapitalMove(fid, settlementID, turns)` / `AdvanceCapitalMoves()` — 5 tur gibi gecikmeli başkent taşıma akışını yürütür
+
+`NormalizeFactionCapitals()` — yükleme sonrası eksik/geçersiz başkentleri en yüksek getirili owned settlement'a normalize eder
 
 `RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
 

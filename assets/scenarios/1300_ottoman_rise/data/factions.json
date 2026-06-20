@@ -84,7 +84,8 @@
     "ai_aggressiveness": 52,
     "ai_expansion_targets": [
       "granada_emirate"
-    ]
+    ],
+    "capital_settlement_id": "aragon_zaragoza"
   },
   {
     "id": "arnavut_des",
@@ -216,7 +217,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28
+    "ai_aggressiveness": 28,
+    "capital_settlement_id": "constantinople_main"
   },
   {
     "id": "candar_bey",
@@ -390,7 +392,8 @@
     "ai_aggressiveness": 62,
     "ai_expansion_targets": [
       "france"
-    ]
+    ],
+    "capital_settlement_id": "london_main"
   },
   {
     "id": "epir",
@@ -502,7 +505,8 @@
     "ai_aggressiveness": 59,
     "ai_expansion_targets": [
       "england"
-    ]
+    ],
+    "capital_settlement_id": "paris_main"
   },
   {
     "id": "genoa",
@@ -912,7 +916,8 @@
     "ai_expansion_targets": [
       "ilkhanate",
       "ramazan_bey"
-    ]
+    ],
+    "capital_settlement_id": "cairo"
   },
   {
     "id": "mentese_bey",
@@ -1052,7 +1057,8 @@
       "germiyan_bey",
       "karesioglu_bey",
       "ahiler"
-    ]
+    ],
+    "capital_settlement_id": "sogut"
   },
   {
     "id": "papal_states_f",
@@ -1143,7 +1149,8 @@
     "ai_aggressiveness": 45,
     "ai_expansion_targets": [
       "granada_emirate"
-    ]
+    ],
+    "capital_settlement_id": "portugal_lisboa"
   },
   {
     "id": "ramazan_bey",
@@ -1202,7 +1209,8 @@
     "ai_aggressiveness": 50,
     "ai_expansion_targets": [
       "golden_horde"
-    ]
+    ],
+    "capital_settlement_id": "moscow_main"
   },
   {
     "id": "safavid",
@@ -1230,7 +1238,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35
+    "ai_aggressiveness": 35,
+    "capital_settlement_id": "persia_south_bam"
   },
   {
     "id": "saruhan_bey",
@@ -1429,7 +1438,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 32
+    "ai_aggressiveness": 32,
+    "capital_settlement_id": "venice"
   },
   {
     "id": "wallachia_prince",

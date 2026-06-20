@@ -11,16 +11,17 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 	cases := []struct {
 		name       string
 		regionPath string
-		marmaraID  RegionID
-		aegeanID   RegionID
-		blackSeaID RegionID
+		bridgePath []RegionID
 	}{
 		{
 			name:       "1300 ottoman rise",
 			regionPath: filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data", "regions.json"),
-			marmaraID:  "sea_of_marmara",
-			aegeanID:   "aegean_sea",
-			blackSeaID: "black_sea",
+			bridgePath: []RegionID{"aegean_sea", "new_region_238", "new_region_255", "black_sea"},
+		},
+		{
+			name:       "1444 ottoman empire",
+			regionPath: filepath.Join("..", "..", "assets", "scenarios", "1444_ottoman_empire", "data", "regions.json"),
+			bridgePath: []RegionID{"aegean_sea", "sea_of_marmara", "black_sea"},
 		},
 	}
 
@@ -34,8 +35,9 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 				t.Fatalf("regions yuklenemedi: %v", err)
 			}
 
-			assertNeighborBothWays(t, regions, tc.marmaraID, tc.aegeanID)
-			assertNeighborBothWays(t, regions, tc.marmaraID, tc.blackSeaID)
+			for i := 0; i < len(tc.bridgePath)-1; i++ {
+				assertNeighborBothWays(t, regions, tc.bridgePath[i], tc.bridgePath[i+1])
+			}
 		})
 	}
 }

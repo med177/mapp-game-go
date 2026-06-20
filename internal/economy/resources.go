@@ -51,6 +51,18 @@ var resourceKindByGood = func() map[GoodType]ResourceKind {
 	return m
 }()
 
+func AllResourceKinds() []ResourceKind {
+	return []ResourceKind{
+		ResourceGold,
+		ResourceGrain,
+		ResourceIron,
+		ResourceTimber,
+		ResourceStone,
+		ResourceSpice,
+		ResourceCloth,
+	}
+}
+
 // CostResourceKinds inşa/üretim maliyetlerinde kullanılan kaynak sırasını döner.
 func CostResourceKinds() []ResourceKind {
 	return []ResourceKind{

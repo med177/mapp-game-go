@@ -30,18 +30,20 @@ type RelationRequirement struct {
 }
 
 type Effect struct {
-	Target            string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
-	SatDelta          int              `json:"sat_delta,omitempty"`
-	GoldDelta         int              `json:"gold_delta,omitempty"`
-	GrainDelta        int              `json:"grain_delta,omitempty"`
-	ArmyHPMod         float64          `json:"army_hp_mod,omitempty"`        // 1.0 = değişmez
-	AffectedFaction   string           `json:"affected_faction,omitempty"`   // specific_faction için
-	RelationDeltaAll  int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
-	CompleteTechs     []string         `json:"complete_techs,omitempty"`
-	StartResearchTech string           `json:"start_research_tech,omitempty"`
-	Relations         []RelationEffect `json:"relations,omitempty"`
-	SetFlags          []string         `json:"set_flags,omitempty"`
-	ClearFlags        []string         `json:"clear_flags,omitempty"`
+	Target              string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
+	SatDelta            int              `json:"sat_delta,omitempty"`
+	GoldDelta           int              `json:"gold_delta,omitempty"`
+	GrainDelta          int              `json:"grain_delta,omitempty"`
+	ArmyHPMod           float64          `json:"army_hp_mod,omitempty"`        // 1.0 = değişmez
+	AffectedFaction     string           `json:"affected_faction,omitempty"`   // specific_faction için
+	RelationDeltaAll    int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	CompleteTechs       []string         `json:"complete_techs,omitempty"`
+	StartResearchTech   string           `json:"start_research_tech,omitempty"`
+	Relations           []RelationEffect `json:"relations,omitempty"`
+	SetFlags            []string         `json:"set_flags,omitempty"`
+	ClearFlags          []string         `json:"clear_flags,omitempty"`
+	CapitalSettlementID string           `json:"capital_settlement_id,omitempty"`
+	CapitalMoveTurns    int              `json:"capital_move_turns,omitempty"`
 }
 
 type Choice struct {
@@ -150,16 +152,18 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 
 func (e *Event) BaseEffect() Effect {
 	return Effect{
-		Target:            e.Target,
-		SatDelta:          e.SatDelta,
-		GoldDelta:         e.GoldDelta,
-		GrainDelta:        e.GrainDelta,
-		ArmyHPMod:         e.ArmyHPMod,
-		AffectedFaction:   e.AffectedFaction,
-		RelationDeltaAll:  0,
-		CompleteTechs:     nil,
-		StartResearchTech: "",
-		Relations:         nil,
+		Target:              e.Target,
+		SatDelta:            e.SatDelta,
+		GoldDelta:           e.GoldDelta,
+		GrainDelta:          e.GrainDelta,
+		ArmyHPMod:           e.ArmyHPMod,
+		AffectedFaction:     e.AffectedFaction,
+		RelationDeltaAll:    0,
+		CompleteTechs:       nil,
+		StartResearchTech:   "",
+		Relations:           nil,
+		CapitalSettlementID: "",
+		CapitalMoveTurns:    0,
 	}
 }
 
@@ -542,6 +546,7 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 	applyCompletedTechs(gs, faction.FactionID(fid), eff.CompleteTechs)
 	applyStartedResearch(gs, faction.FactionID(fid), eff.StartResearchTech)
 	applyRelationEffects(gs, faction.FactionID(fid), eff.Relations)
+	applyCapitalMove(gs, faction.FactionID(fid), eff.CapitalSettlementID, eff.CapitalMoveTurns)
 }
 
 func applyRelationDeltaAll(gs *state.GameState, fid faction.FactionID, delta int) {
@@ -655,6 +660,13 @@ func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []Rel
 		}
 		diplomacy.ForceRelation(gs, fid, faction.FactionID(rel.FactionID), stance, rel.ScoreDelta)
 	}
+}
+
+func applyCapitalMove(gs *state.GameState, fid faction.FactionID, settlementID string, turns int) {
+	if gs == nil || fid == "" || settlementID == "" {
+		return
+	}
+	gs.StartCapitalMove(fid, settlementID, turns)
 }
 
 func clamp(v, lo, hi int) int {

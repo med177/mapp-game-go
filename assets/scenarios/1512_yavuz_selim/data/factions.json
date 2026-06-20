@@ -82,7 +82,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "capital_settlement_id": "aragon_valencia"
   },
   {
     "id": "arnavut_des",
@@ -397,7 +398,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 52,
+    "capital_settlement_id": "london_main"
   },
   {
     "id": "epir",
@@ -517,7 +519,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "capital_settlement_id": "paris_main"
   },
   {
     "id": "genoa",
@@ -938,7 +941,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62
+    "ai_aggressiveness": 62,
+    "capital_settlement_id": "cairo"
   },
   {
     "id": "mentese_bey",
@@ -1092,7 +1096,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 78
+    "ai_aggressiveness": 78,
+    "capital_settlement_id": "constantinople_main"
   },
   {
     "id": "papal_states_f",
@@ -1185,7 +1190,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "capital_settlement_id": "portugal_lisboa"
   },
   {
     "id": "ramazan_bey",
@@ -1245,7 +1251,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 70
+    "ai_aggressiveness": 70,
+    "capital_settlement_id": "moscow_main"
   },
   {
     "id": "safavid",
@@ -1280,7 +1287,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 82
+    "ai_aggressiveness": 82,
+    "capital_settlement_id": "azerbaijan_main"
   },
   {
     "id": "saruhan_bey",
@@ -1488,7 +1496,8 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "capital_settlement_id": "venice"
   },
   {
     "id": "wallachia_prince",
