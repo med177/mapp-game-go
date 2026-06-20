@@ -34,7 +34,9 @@
     "buildings": [
       "market",
       "port",
-      "barracks"
+      "barracks",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -1493,6 +1495,7 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
+      "walls",
       "walls"
     ]
   },
@@ -3959,6 +3962,7 @@
       "market",
       "port",
       "walls",
+      "walls",
       "barracks",
       "temple"
     ]
@@ -4725,6 +4729,7 @@
     "active_event_id": "",
     "buildings": [
       "port",
+      "walls",
       "walls",
       "barracks"
     ]

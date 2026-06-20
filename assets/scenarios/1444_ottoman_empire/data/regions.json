@@ -34,7 +34,9 @@
     "buildings": [
       "market",
       "port",
-      "barracks"
+      "barracks",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -3948,6 +3950,7 @@
     "active_event_id": "",
     "buildings": [
       "walls",
+      "walls",
       "market",
       "port",
       "temple"
@@ -3987,7 +3990,10 @@
     "population": 250,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "azerbaijan",
@@ -4711,7 +4717,10 @@
     "population": 250,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "mallorca",

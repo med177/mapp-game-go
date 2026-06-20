@@ -32,7 +32,9 @@
     "religion": "protestant",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -1315,7 +1317,10 @@
     "population": 760,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "bohemia",
@@ -1500,7 +1505,9 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -3923,7 +3930,10 @@
     "buildings": [
       "barracks",
       "market",
-      "port"
+      "port",
+      "walls",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -4673,7 +4683,11 @@
     "population": 300,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "mallorca",
@@ -6694,7 +6708,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "market"
+      "market",
+      "walls"
     ]
   },
   {
