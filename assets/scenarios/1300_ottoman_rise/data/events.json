@@ -48,6 +48,124 @@
     "target": "player_faction"
   },
   {
+    "id": "ottoman_bursa_payitaht",
+    "name_tr": "Bursa Yeni Merkez Olsun mu?",
+    "desc_tr": "Bursa'nın alınmasıyla uç beyliğinin merkezi artık daha zengin ve korunaklı bir şehir etrafında toplanabilir.",
+    "min_turn": 0,
+    "probability": 1,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "one_shot": true,
+    "requires_owned_regions": [
+      "bursa"
+    ],
+    "blocks_capital_settlement_id": "constantinople_settlement_3",
+    "choices": [
+      {
+        "id": "move_to_bursa",
+        "label_tr": "Sarayı Bursa'ya taşı",
+        "ai_weight": 9,
+        "desc_tr": "Beylik idaresi daha güvenli bir merkezden yürür; taşıma 5 tur sürer.",
+        "effect": {
+          "gold_delta": -40,
+          "sat_delta": 6,
+          "capital_settlement_id": "constantinople_settlement_3",
+          "capital_move_turns": 5
+        }
+      },
+      {
+        "id": "stay_in_sogut",
+        "label_tr": "Şimdilik Söğüt'te kal",
+        "ai_weight": 3,
+        "desc_tr": "Uç hattı esnek kalır, fakat yeni merkezin getirileri ertelenir.",
+        "effect": {
+          "grain_delta": 10,
+          "sat_delta": 2
+        }
+      }
+    ],
+    "choice_prompt_tr": "Bursa fethedildi. Hanedanın merkezi yeni şehre taşınsın mı?"
+  },
+  {
+    "id": "ottoman_edirne_payitaht",
+    "name_tr": "Edirne'yi Payitaht Yap",
+    "desc_tr": "Trakya'nın kapısı açıldı. Edirne, Balkan seferlerini yönetecek yeni bir merkez olabilir.",
+    "min_turn": 0,
+    "probability": 1,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "one_shot": true,
+    "requires_owned_regions": [
+      "thrace"
+    ],
+    "blocks_capital_settlement_id": "edirne",
+    "choices": [
+      {
+        "id": "move_to_edirne",
+        "label_tr": "Payitahtı Edirne'ye taşı",
+        "ai_weight": 9,
+        "desc_tr": "Rumeli seferleri hız kazanır; taşıma 5 tur sürer.",
+        "effect": {
+          "gold_delta": -60,
+          "sat_delta": 8,
+          "capital_settlement_id": "edirne",
+          "capital_move_turns": 5
+        }
+      },
+      {
+        "id": "keep_anatolian_center",
+        "label_tr": "Anadolu merkezini koru",
+        "ai_weight": 4,
+        "desc_tr": "İki kıta arasında denge korunur, taşıma maliyeti ertelenir.",
+        "effect": {
+          "grain_delta": 12,
+          "sat_delta": 2
+        }
+      }
+    ],
+    "choice_prompt_tr": "Edirne fethedildi. Devletin ağırlığı Rumeli'ye kaydırılsın mı?"
+  },
+  {
+    "id": "ottoman_constantinople_payitaht",
+    "name_tr": "Konstantiniyye'de Payitaht Kararı",
+    "desc_tr": "Şehir alındı. Boğaz ticareti, surlar ve imparatorluk prestiji başkentin artık burada kurulmasını cazip kılıyor.",
+    "min_turn": 0,
+    "probability": 1,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "one_shot": true,
+    "requires_owned_regions": [
+      "constantinople"
+    ],
+    "blocks_capital_settlement_id": "constantinople_main",
+    "choices": [
+      {
+        "id": "move_to_constantinople",
+        "label_tr": "Payitahtı Konstantiniyye'ye taşı",
+        "ai_weight": 10,
+        "desc_tr": "İmparatorluk merkezi Boğaz'a yerleşir; taşıma 5 tur sürer.",
+        "effect": {
+          "gold_delta": -120,
+          "sat_delta": 12,
+          "capital_settlement_id": "constantinople_main",
+          "capital_move_turns": 5
+        }
+      },
+      {
+        "id": "delay_constantinople_move",
+        "label_tr": "Önce düzeni sağlamlaştır",
+        "ai_weight": 4,
+        "desc_tr": "Şehir toparlanır ama başkent avantajı gecikir.",
+        "effect": {
+          "gold_delta": 40,
+          "grain_delta": 15,
+          "sat_delta": 3
+        }
+      }
+    ],
+    "choice_prompt_tr": "Konstantiniyye fethedildi. Başkent hemen şehre taşınsın mı?"
+  },
+  {
     "affected_faction": "ottoman",
     "army_hp_mod": 1.08,
     "choice_prompt_tr": "Uç beylerinin başarısı nasıl değerlendirilsin?",

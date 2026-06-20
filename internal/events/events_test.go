@@ -246,6 +246,62 @@ func TestTickRequiresTechAndRelationConditions(t *testing.T) {
 	}
 }
 
+func TestTickBlocksCapitalSettlementWhenAlreadyCurrentOrPending(t *testing.T) {
+	gs := &state.GameState{
+		Year:  1453,
+		Month: 5,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {
+				ID:                         "ottoman",
+				CapitalSettlementID:        "edirne",
+				PendingCapitalSettlementID: "ghost",
+				PendingCapitalTurns:        2,
+				Research:                   faction.ResearchState{Completed: map[string]bool{}},
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"constantinople": {ID: "constantinople", OwnerID: "ottoman"},
+		},
+	}
+	evts := []*Event{
+		{
+			ID:                        "blocked_current",
+			NameTR:                    "BlockedCurrent",
+			HistoricalYear:            1453,
+			HistoricalMonth:           5,
+			Target:                    "specific_faction",
+			AffectedFaction:           "ottoman",
+			RequiresOwnedRegions:      []world.RegionID{"constantinople"},
+			BlocksCapitalSettlementID: "edirne",
+		},
+		{
+			ID:                        "blocked_pending",
+			NameTR:                    "BlockedPending",
+			HistoricalYear:            1453,
+			HistoricalMonth:           5,
+			Target:                    "specific_faction",
+			AffectedFaction:           "ottoman",
+			RequiresOwnedRegions:      []world.RegionID{"constantinople"},
+			BlocksCapitalSettlementID: "ghost",
+		},
+		{
+			ID:                        "allowed",
+			NameTR:                    "Allowed",
+			HistoricalYear:            1453,
+			HistoricalMonth:           5,
+			Target:                    "specific_faction",
+			AffectedFaction:           "ottoman",
+			RequiresOwnedRegions:      []world.RegionID{"constantinople"},
+			BlocksCapitalSettlementID: "constantinople_main",
+		},
+	}
+
+	evt := Tick(gs, evts)
+	if evt == nil || evt.ID != "allowed" {
+		t.Fatalf("capital block koşullarına göre allowed event bekleniyordu, got=%v", evt)
+	}
+}
+
 func TestApplyChoiceStartsCapitalMove(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

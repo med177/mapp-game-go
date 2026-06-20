@@ -73,14 +73,15 @@ type Event struct {
 	OneShot         bool   `json:"one_shot,omitempty"`         // true = yalnızca bir kez tetiklenir
 	AffectedFaction string `json:"affected_faction,omitempty"` // belirli fraksiyonu hedefle
 
-	ChoicePromptTR       string                `json:"choice_prompt_tr,omitempty"`
-	Choices              []Choice              `json:"choices,omitempty"`
-	RequiresFlags        []string              `json:"requires_flags,omitempty"`
-	BlocksFlags          []string              `json:"blocks_flags,omitempty"`
-	RequiresTechs        []string              `json:"requires_techs,omitempty"`
-	BlocksTechs          []string              `json:"blocks_techs,omitempty"`
-	RequiresOwnedRegions []world.RegionID      `json:"requires_owned_regions,omitempty"`
-	RelationRequirements []RelationRequirement `json:"relation_requirements,omitempty"`
+	ChoicePromptTR            string                `json:"choice_prompt_tr,omitempty"`
+	Choices                   []Choice              `json:"choices,omitempty"`
+	RequiresFlags             []string              `json:"requires_flags,omitempty"`
+	BlocksFlags               []string              `json:"blocks_flags,omitempty"`
+	BlocksCapitalSettlementID string                `json:"blocks_capital_settlement_id,omitempty"`
+	RequiresTechs             []string              `json:"requires_techs,omitempty"`
+	BlocksTechs               []string              `json:"blocks_techs,omitempty"`
+	RequiresOwnedRegions      []world.RegionID      `json:"requires_owned_regions,omitempty"`
+	RelationRequirements      []RelationRequirement `json:"relation_requirements,omitempty"`
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -250,6 +251,9 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 			}
 		}
 	}
+	if blockedSettlement := blockedCapitalSettlementID(gs, e); blockedSettlement != "" {
+		reasons = append(reasons, "zaten hedef başkent: "+blockedSettlement)
+	}
 	if len(e.RelationRequirements) > 0 {
 		fid := eventConditionFactionID(gs, e)
 		if fid == "" {
@@ -295,10 +299,30 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 			}
 		}
 	}
+	if blockedCapitalSettlementID(gs, e) != "" {
+		return false
+	}
 	if !eventRelationsSatisfied(gs, e) {
 		return false
 	}
 	return true
+}
+
+func blockedCapitalSettlementID(gs *state.GameState, e *Event) string {
+	if gs == nil || e == nil || e.BlocksCapitalSettlementID == "" {
+		return ""
+	}
+	f := eventConditionFaction(gs, e)
+	if f == nil {
+		return e.BlocksCapitalSettlementID
+	}
+	if f.CapitalSettlementID == e.BlocksCapitalSettlementID {
+		return e.BlocksCapitalSettlementID
+	}
+	if f.PendingCapitalSettlementID == e.BlocksCapitalSettlementID && f.PendingCapitalTurns > 0 {
+		return e.BlocksCapitalSettlementID
+	}
+	return ""
 }
 
 func eventTechsSatisfied(gs *state.GameState, e *Event) bool {

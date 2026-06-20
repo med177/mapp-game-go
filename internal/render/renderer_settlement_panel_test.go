@@ -108,6 +108,83 @@ func TestSettlementCapitalStatusTextIncludesCapitalBonuses(t *testing.T) {
 	}
 }
 
+func TestAppendSettlementDrawsKeepsFactionCapitalLabelVisible(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+
+	region := &world.Region{
+		ID:      "home",
+		OwnerID: "player",
+		Settlements: []world.Settlement{
+			{ID: "capital_city", NameTR: "Yeni Başkent", Type: world.SettlementTown},
+		},
+	}
+	r := &Renderer{
+		camScale: 0.7,
+		gs: &state.GameState{
+			PlayerFactionID: "player",
+			Factions: map[faction.FactionID]*faction.Faction{
+				"player": {ID: "player", CapitalSettlementID: "capital_city"},
+			},
+			Regions: map[world.RegionID]*world.Region{
+				"home": region,
+			},
+		},
+		worldMap: &WorldMap{
+			settlementAnchor: map[settlementAnchorKey][2]int{
+				{Region: "home", Index: 0}: {120, 120},
+			},
+		},
+	}
+
+	r.appendSettlementDraws(region)
+	if len(r.regionLabelBuf) != 1 {
+		t.Fatalf("1 settlement draw bekleniyordu, got=%d", len(r.regionLabelBuf))
+	}
+	item := r.regionLabelBuf[0]
+	if !item.DrawLabel {
+		t.Fatalf("faction capital düşük zoomda da label çizdirmeli: %+v", item)
+	}
+	if !item.CapitalIcon {
+		t.Fatalf("faction capital label başında star ikonu taşımalı: %+v", item)
+	}
+	if item.TextX <= item.X {
+		t.Fatalf("capital icon için text başlangıcı kaydırılmalı: %+v", item)
+	}
+}
+
+func TestSettlementMarkerSpriteSwitchesToSiegeAssetForPrimarySiegedSettlement(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"home": {ID: "home", OwnerID: "player"},
+			},
+			Sieges: map[world.RegionID]*state.SiegeState{
+				"home": {RegionID: "home", AttackerArmyID: "atk"},
+			},
+		},
+	}
+	region := r.gs.Regions["home"]
+	settlement := world.Settlement{ID: "capital_city", Type: world.SettlementCity}
+	if img := r.settlementMarkerSprite(region, settlement, true); img == nil {
+		t.Fatal("kuşatma altındaki ana yerleşim için siege sprite seçilmeli")
+	}
+	if img := r.settlementMarkerSprite(region, settlement, true); img != settlementMarkerSiegeImage() {
+		t.Fatal("kuşatma altındaki ana yerleşim siege.png ile çizilmeli")
+	}
+}
+
+func TestArmySiegeBadgeUsesSwordAsset(t *testing.T) {
+	if armySiegeBadgeImage() != settlementMarkerSwordImage() {
+		t.Fatal("kuşatan ordu badge'i sword.png sprite'ını kullanmalı")
+	}
+}
+
 func TestBuildingGridHitTestUsesDrawnSpriteBoundsOnly(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth = 1280

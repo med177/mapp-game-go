@@ -42,8 +42,8 @@ func TestInitialCameraScaleStartsCloserAndClampsToMax(t *testing.T) {
 	}
 
 	WorldW, WorldH = 120, 60
-	if got := initialCameraScale(); math.Abs(got-maxCameraZoomScale) > 1e-9 {
-		t.Fatalf("initialCameraScale max zoom'a clamp olmali: got=%.6f want=%.6f", got, maxCameraZoomScale)
+	if got := initialCameraScale(); math.Abs(got-float64(maxCameraZoomScale)) > 1e-9 {
+		t.Fatalf("initialCameraScale max zoom'a clamp olmali: got=%.6f want=%.6f", got, float64(maxCameraZoomScale))
 	}
 }
 

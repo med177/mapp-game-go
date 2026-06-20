@@ -17,7 +17,7 @@ type Renderer struct {
     worldMap *WorldMap          // üretilmiş harita görüntüsü
 
     camX, camY float64          // dünya uzayında kamera merkezi
-    camScale   float64          // zoom (min fit – 4.5)
+    camScale   float64          // zoom (min fit – 5.5)
 
     SelectedRegion world.RegionID
     SelectedArmy   army.ArmyID
@@ -155,7 +155,7 @@ screenY = (worldY - camY) * camScale * mapPitchY + ScreenHeight/2
 
 `mapPitchY = 1.0`, `mapShearX = 0.0` → şu an düz 2D (izometrik bükme kapalı)
 
-**Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. `resetCamera()` ise ilk açılışta ve kamera resetlerinde bu minimumun `1.40x` üstünden başlar; böylece kampanya daha yakın açılır ve sıkışık settlement kümeleri daha erken ayrışır. Yakınlaşma üst sınırı `4.5`.
+**Zoom:** Fare tekerleği ile fare pozisyonuna odaklanarak büyütür. Uzaklaşma limiti `internal/render/renderer.go:minCameraScale` üzerinden aktif senaryonun `world_width` / `world_height` değerlerinden gelen `WorldW` / `WorldH` boyutuna göre hesaplanır; oyuncu haritayı ekrana tamamen sığdıran ölçeğin altına inemez. `resetCamera()` ise ilk açılışta ve kamera resetlerinde bu minimumun `1.40x` üstünden başlar; böylece kampanya daha yakın açılır ve sıkışık settlement kümeleri daha erken ayrışır. Yakınlaşma üst sınırı `5.5`.
 
 **Sürükleme:** Orta fare tuşu basılıyken dünya uzayı delta hesaplanır.
 

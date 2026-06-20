@@ -60,6 +60,49 @@
     "army_hp_mod": 0.98
   },
   {
+    "id": "ottoman_constantinople_payitaht",
+    "name_tr": "Konstantiniyye Payitaht Olsun mu?",
+    "desc_tr": "Şehir Osmanlı idaresine geçti. Boğazı tutan bu merkez, Edirne'nin yerine gerçek imparatorluk payitahtı olabilir.",
+    "min_turn": 0,
+    "probability": 1,
+    "target": "specific_faction",
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "sat_delta": 0,
+    "army_hp_mod": 1,
+    "affected_faction": "ottoman",
+    "one_shot": true,
+    "requires_owned_regions": [
+      "constantinople"
+    ],
+    "blocks_capital_settlement_id": "constantinople_main",
+    "choices": [
+      {
+        "id": "move_to_constantinople",
+        "label_tr": "Payitahtı Konstantiniyye'ye taşı",
+        "ai_weight": 10,
+        "desc_tr": "Saray ve divan 5 tur içinde şehre taşınır; prestij ve ticaret merkezi güçlenir.",
+        "effect": {
+          "gold_delta": -120,
+          "sat_delta": 12,
+          "capital_settlement_id": "constantinople_main",
+          "capital_move_turns": 5
+        }
+      },
+      {
+        "id": "remain_in_edirne",
+        "label_tr": "Şimdilik Edirne'de kal",
+        "ai_weight": 4,
+        "desc_tr": "Rumeli seferleri kesintisiz sürer, fakat Boğaz merkezinin bonusları gecikir.",
+        "effect": {
+          "grain_delta": 15,
+          "sat_delta": 2
+        }
+      }
+    ],
+    "choice_prompt_tr": "Konstantiniyye fethedildi. Devlet merkezi derhal buraya taşınsın mı?"
+  },
+  {
     "id": "murad_return_varna_1444",
     "name_tr": "II. Murad'ın Dönüşü",
     "desc_tr": "Haçlı ordusu Tuna'dan ilerlerken II. Mehmed'in ilk saltanatı sarsıldı; devlet erkânı II. Murad'ı ordunun başına çağırdı.",
@@ -454,6 +497,7 @@
     "historical_year": 1453,
     "historical_month": 5,
     "one_shot": true,
+    "blocks_capital_settlement_id": "constantinople_main",
     "requires_owned_regions": [
       "thrace",
       "bursa"

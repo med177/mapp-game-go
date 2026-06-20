@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -42,7 +44,11 @@ const (
 	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
 	initialCameraZoomFactor = 1.40
-	maxCameraZoomScale      = 4.5
+	maxCameraZoomScale      = 10
+
+	settlementMarkerSpriteSize = float32(26)
+	capitalLabelIconSmallSize  = float32(18)
+	capitalLabelIconMediumSize = float32(20)
 )
 
 // Renderer kamerayı ve dünya haritasını yönetir.
@@ -2277,14 +2283,16 @@ type armyDisplayGroupKey struct {
 }
 
 type settlementDraw struct {
-	Region    *world.Region
-	Index     int
-	Text      string
-	X, Y      float64
-	W, H      float64
-	SX, SY    float64
-	DrawLabel bool
-	Priority  int
+	Region      *world.Region
+	Index       int
+	Text        string
+	TextX       float64
+	X, Y        float64
+	W, H        float64
+	SX, SY      float64
+	DrawLabel   bool
+	CapitalIcon bool
+	Priority    int
 }
 
 type screenRect struct {
@@ -2567,7 +2575,7 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, cx, cy fl
 		badgeY := cy - 27
 		vector.FillRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, color.RGBA{58, 26, 22, 240}, false)
 		vector.StrokeRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, 1.5, color.RGBA{224, 182, 96, 245}, false)
-		gameui.DrawIcon(screen, gameui.IconSword, float64(badgeX-badgeSize/2+1), float64(badgeY-badgeSize/2+1), float64(badgeSize-2), color.RGBA{255, 229, 176, 255})
+		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
 		badgeX := cx + 8
@@ -2641,7 +2649,8 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		forceLabel := item.Region != nil && ((selectedOK && item.Region.ID == selectedRID && item.Index == selectedIdx) ||
 			(item.Region.ID == hoverRID && item.Index == hoverIdx))
 		if !item.DrawLabel && !forceLabel {
-			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY))
+			isPrimary := settlement.IsCapital || item.Index == 0
+			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 			continue
 		}
@@ -2671,13 +2680,17 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			if r.camScale >= 1.0 {
 				variant = gameui.TextMedium
 			}
-			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.X, Y: item.Y}, item.Text, labelCol, shadowCol, variant, gameui.TextAlignStart)
+			if item.CapitalIcon {
+				r.drawCapitalLabelIcon(screen, float32(item.X), float32(item.Y), variant)
+			}
+			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.TextX, Y: item.Y}, item.Text, labelCol, shadowCol, variant, gameui.TextAlignStart)
 			outlined.Offsets = [][2]float64{{1, 1}}
 			outlined.Draw(screen, renderText)
 			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
-		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY))
+		isPrimary := settlement.IsCapital || item.Index == 0
+		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 	}
 }
@@ -2685,12 +2698,13 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 func (r *Renderer) appendSettlementDraws(region *world.Region) {
 	if len(region.Settlements) == 0 {
 		sx, sy := r.regionScreenPos(region)
-		r.appendSettlementDraw(region, -1, region.NameTR, sx, sy, true, 10)
+		r.appendSettlementDraw(region, -1, region.NameTR, sx, sy, true, 10, false)
 		return
 	}
 
 	for i, settlement := range region.Settlements {
 		isPrimary := settlement.IsCapital || i == 0
+		isFactionCapital := r.isCapitalSettlement(region, settlement)
 
 		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
 		if !ok {
@@ -2704,12 +2718,12 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 		if name == "" {
 			name = region.NameTR
 		}
-		drawLabel := r.shouldDrawSettlementLabel(settlement, isPrimary)
-		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel, settlementLabelPriority(settlement, isPrimary))
+		drawLabel := r.shouldDrawSettlementLabel(settlement, isPrimary, isFactionCapital)
+		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel, settlementLabelPriority(settlement, isPrimary, isFactionCapital), isFactionCapital)
 	}
 }
 
-func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool, priority int) {
+func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool, priority int, capitalIcon bool) {
 	if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
 		return
 	}
@@ -2719,8 +2733,14 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 		face = FaceMed
 	}
 
-	w := MeasureText(text, face)
-	lx := sx - w/2
+	isMediumFace := face == FaceMed
+	iconAdvance := 0.0
+	if capitalIcon {
+		iconAdvance = capitalLabelIconAdvance(isMediumFace)
+	}
+	textW := MeasureText(text, face)
+	totalW := textW + iconAdvance
+	lx := sx - totalW/2
 	h := float64(16)
 	if face == FaceMed {
 		h = 20
@@ -2729,19 +2749,24 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 		Region: region,
 		Index:  index,
 		Text:   text,
+		TextX:  lx + iconAdvance,
 		X:      lx,
 		// Etiket noktaların altına çizilir; okunabilirlik artar.
-		Y:         sy + 16,
-		W:         w,
-		H:         h,
-		SX:        sx,
-		SY:        sy,
-		DrawLabel: drawLabel,
-		Priority:  priority,
+		Y:           sy + 16,
+		W:           totalW,
+		H:           h,
+		SX:          sx,
+		SY:          sy,
+		DrawLabel:   drawLabel,
+		CapitalIcon: capitalIcon,
+		Priority:    priority,
 	})
 }
 
-func settlementLabelPriority(settlement world.Settlement, isPrimary bool) int {
+func settlementLabelPriority(settlement world.Settlement, isPrimary bool, isFactionCapital bool) int {
+	if isFactionCapital {
+		return 110
+	}
 	if settlement.IsCapital {
 		return 100
 	}
@@ -2762,14 +2787,14 @@ func settlementLabelPriority(settlement world.Settlement, isPrimary bool) int {
 	}
 }
 
-func (r *Renderer) shouldDrawSettlementLabel(settlement world.Settlement, isPrimary bool) bool {
+func (r *Renderer) shouldDrawSettlementLabel(settlement world.Settlement, isPrimary bool, isFactionCapital bool) bool {
 	// Zoom düşükken sadece başkent/şehir etiketleri.
 	if r.camScale < 0.8 {
-		return settlement.IsCapital || settlement.Type == world.SettlementCity
+		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementCity
 	}
 	// Orta zoomda liman ve kaleler de açılır.
 	if r.camScale < 1.05 {
-		return settlement.IsCapital || settlement.Type == world.SettlementCity ||
+		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementCity ||
 			settlement.Type == world.SettlementPort || settlement.Type == world.SettlementFortress
 	}
 	// Yüksek zoomda tüm yerleşim etiketleri açılır.
@@ -6458,21 +6483,64 @@ func (r *Renderer) settlementOwnerColor(region *world.Region) color.RGBA {
 	return outerCol
 }
 
-func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Region, settlement world.Settlement, sx, sy float32) {
+func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Region, settlement world.Settlement, sx, sy float32, isPrimary bool) {
 	if region == nil {
 		return
 	}
+	if img := r.settlementMarkerSprite(region, settlement, isPrimary); img != nil {
+		if r.drawSettlementMarkerSprite(screen, img, sx, sy, settlementMarkerSpriteSize) {
+			return
+		}
+	}
 	switch settlement.Type {
 	case world.SettlementFortress:
-		r.drawFortressMarker(screen, region, sx, sy)
+		if !r.drawFortressMarkerSprite(screen, sx, sy) {
+			r.drawFortressMarker(screen, region, sx, sy)
+		}
 	case world.SettlementPort:
-		r.drawPortMarker(screen, region, sx, sy)
+		if !r.drawPortMarkerSprite(screen, sx, sy) {
+			r.drawPortMarker(screen, region, sx, sy)
+		}
 	default:
 		r.drawCityDot(screen, region, sx, sy)
 	}
-	if r.isCapitalSettlement(region, settlement) {
-		r.drawCapitalStar(screen, sx, sy)
+}
+
+func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world.Settlement, isPrimary bool) *ebiten.Image {
+	if r == nil || region == nil {
+		return nil
 	}
+	if isPrimary && r.isSettlementUnderSiege(region) {
+		return settlementMarkerSiegeImage()
+	}
+	switch settlement.Type {
+	case world.SettlementFortress:
+		return settlementMarkerCastleImage()
+	case world.SettlementPort:
+		return settlementMarkerHarbourImage()
+	default:
+		return nil
+	}
+}
+
+func armySiegeBadgeImage() *ebiten.Image {
+	return settlementMarkerSwordImage()
+}
+
+func (r *Renderer) isSettlementUnderSiege(region *world.Region) bool {
+	if r == nil || r.gs == nil || region == nil {
+		return false
+	}
+	siege := r.gs.SiegeAt(region.ID)
+	return siege != nil
+}
+
+func (r *Renderer) drawFortressMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
+	return r.drawSettlementMarkerSprite(screen, settlementMarkerCastleImage(), sx, sy, settlementMarkerSpriteSize)
+}
+
+func (r *Renderer) drawPortMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
+	return r.drawSettlementMarkerSprite(screen, settlementMarkerHarbourImage(), sx, sy, settlementMarkerSpriteSize)
 }
 
 func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Settlement) bool {
@@ -6482,28 +6550,124 @@ func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Se
 	return r.gs.IsFactionCapitalSettlement(faction.FactionID(region.OwnerID), settlement.ID)
 }
 
-func (r *Renderer) drawCapitalStar(screen *ebiten.Image, sx, sy float32) {
-	cx := sx + 9
-	cy := sy - 7
-	radius := float32(4.5)
-	inner := float32(2.2)
-	col := color.RGBA{255, 220, 110, 245}
-	outline := color.RGBA{66, 44, 12, 245}
-	for i := 0; i < 4; i++ {
-		angle := float64(i) * math.Pi / 2
-		dx := float32(math.Cos(angle)) * radius
-		dy := float32(math.Sin(angle)) * radius
-		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 2, outline, false)
-		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 1, col, false)
+func (r *Renderer) drawCapitalLabelIcon(screen *ebiten.Image, x, y float32, variant gameui.TextVariant) {
+	size := capitalLabelIconSmallSize
+	if variant == gameui.TextMedium {
+		size = capitalLabelIconMediumSize
 	}
-	for i := 0; i < 4; i++ {
-		angle := float64(i)*math.Pi/2 + math.Pi/4
-		dx := float32(math.Cos(angle)) * inner
-		dy := float32(math.Sin(angle)) * inner
-		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 2, outline, false)
-		vector.StrokeLine(screen, cx-dx, cy-dy, cx+dx, cy+dy, 1, col, false)
+	img := settlementMarkerStarImage()
+	if img != nil {
+		r.drawSettlementLabelSprite(screen, img, x, y-2, size)
+		return
 	}
-	vector.FillCircle(screen, cx, cy, 1.6, col, true)
+	vector.FillCircle(screen, x+size/2, y+size/2+2, size/2-1, color.RGBA{255, 220, 110, 245}, true)
+}
+
+func (r *Renderer) drawSettlementMarkerSprite(screen *ebiten.Image, img *ebiten.Image, sx, sy, size float32) bool {
+	if screen == nil || img == nil || size <= 0 {
+		return false
+	}
+	bounds := img.Bounds()
+	if bounds.Dx() == 0 || bounds.Dy() == 0 {
+		return false
+	}
+	op := &ebiten.DrawImageOptions{}
+	scaleX := float64(size) / float64(bounds.Dx())
+	scaleY := float64(size) / float64(bounds.Dy())
+	op.GeoM.Scale(scaleX, scaleY)
+	op.GeoM.Translate(float64(sx-size/2), float64(sy-size/2+2))
+	screen.DrawImage(img, op)
+	return true
+}
+
+func (r *Renderer) drawSettlementLabelSprite(screen *ebiten.Image, img *ebiten.Image, x, y, size float32) bool {
+	if screen == nil || img == nil || size <= 0 {
+		return false
+	}
+	bounds := img.Bounds()
+	if bounds.Dx() == 0 || bounds.Dy() == 0 {
+		return false
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(float64(size)/float64(bounds.Dx()), float64(size)/float64(bounds.Dy()))
+	op.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(img, op)
+	return true
+}
+
+var (
+	settlementMarkerCastleSprite  *ebiten.Image
+	settlementMarkerHarbourSprite *ebiten.Image
+	settlementMarkerSiegeSprite   *ebiten.Image
+	settlementMarkerSwordSprite   *ebiten.Image
+	settlementMarkerStarSprite    *ebiten.Image
+	settlementMarkerSpritesLoaded bool
+)
+
+func ensureSettlementMarkerSprites() {
+	if settlementMarkerSpritesLoaded {
+		return
+	}
+	settlementMarkerSpritesLoaded = true
+	base := resolveMarkerAssetDir()
+	if base == "" {
+		return
+	}
+	settlementMarkerCastleSprite = tryLoadImage(filepath.Join(base, "castle.png"))
+	settlementMarkerHarbourSprite = tryLoadImage(filepath.Join(base, "harbour.png"))
+	settlementMarkerSiegeSprite = tryLoadImage(filepath.Join(base, "siege.png"))
+	settlementMarkerSwordSprite = tryLoadImage(filepath.Join(base, "sword.png"))
+	settlementMarkerStarSprite = tryLoadImage(filepath.Join(base, "star.png"))
+}
+
+func settlementMarkerCastleImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerCastleSprite
+}
+
+func settlementMarkerHarbourImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerHarbourSprite
+}
+
+func settlementMarkerSiegeImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerSiegeSprite
+}
+
+func settlementMarkerSwordImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerSwordSprite
+}
+
+func settlementMarkerStarImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerStarSprite
+}
+
+func resolveMarkerAssetDir() string {
+	candidates := []string{filepath.Join("assets", "ui", "markers")}
+	prefix := ""
+	for i := 0; i < 5; i++ {
+		prefix = filepath.Join(prefix, "..")
+		candidates = append(candidates, filepath.Join(prefix, "assets", "ui", "markers"))
+	}
+	for _, candidate := range candidates {
+		if candidate == "" {
+			continue
+		}
+		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func capitalLabelIconAdvance(isMediumFace bool) float64 {
+	if isMediumFace {
+		return 24
+	}
+	return 22
 }
 
 func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {

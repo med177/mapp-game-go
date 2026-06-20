@@ -4779,7 +4779,7 @@
     "terrain": "plain",
     "owner_id": "germiyan_bey",
     "neighbors": [
-      "ankara",
+      "sivrihisar",
       "beysehir",
       "bilecik_frontier",
       "bithynia",
@@ -5444,7 +5444,7 @@
     "owner_id": "esrefoglu_bey",
     "neighbors": [
       "aksaray",
-      "ankara",
+      "sivrihisar",
       "germiyan",
       "hamideli",
       "teke"
@@ -5477,7 +5477,7 @@
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
-      "ankara",
+      "sivrihisar",
       "beysehir",
       "cankiri",
       "karaman",
@@ -5506,9 +5506,9 @@
     "buildings": null
   },
   {
-    "id": "ankara",
-    "name": "Ankara",
-    "name_tr": "Ankara (Ahiler)",
+    "id": "sivrihisar",
+    "name": "Sivrihisar",
+    "name_tr": "Sivrihisar",
     "terrain": "plain",
     "owner_id": "ahiler",
     "neighbors": [
@@ -5548,7 +5548,7 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "aksaray",
-      "ankara",
+      "sivrihisar",
       "chrysopolis",
       "kayseri",
       "konya",
@@ -6914,7 +6914,7 @@
       "chrysopolis",
       "bursa",
       "germiyan",
-      "ankara",
+      "sivrihisar",
       "nicomedia"
     ],
     "world_x": 1084,
@@ -7015,7 +7015,7 @@
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
-      "ankara",
+      "sivrihisar",
       "bilecik_frontier",
       "cankiri",
       "new_region_254",
