@@ -11,11 +11,6 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-const (
-	siegeMinorBreachThreshold = 8
-	siegeMajorBreachThreshold = 16
-)
-
 type siegeTurnUpdate struct {
 	Message string
 	Detail  string
@@ -114,11 +109,21 @@ func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion 
 	}
 }
 
-func siegeBreachLevel(progress int) int {
+func siegeBreachThresholds(fortLevel int) (int, int) {
+	if fortLevel < 1 {
+		fortLevel = 1
+	}
+	minor := 8 + fortLevel*2
+	major := minor * 2
+	return minor, major
+}
+
+func siegeBreachLevel(progress, fortLevel int) int {
+	minorThreshold, majorThreshold := siegeBreachThresholds(fortLevel)
 	switch {
-	case progress >= siegeMajorBreachThreshold:
+	case progress >= majorThreshold:
 		return 2
-	case progress >= siegeMinorBreachThreshold:
+	case progress >= minorThreshold:
 		return 1
 	default:
 		return 0
@@ -140,6 +145,32 @@ func siegeDefenseBonus(fortLevel, breachLevel int) float64 {
 	}
 }
 
+func siegeAssaultCanCapture(breachLevel int) bool {
+	return breachLevel > 0
+}
+
+func siegeAssaultAttackerDamage(fortLevel, breachLevel int) int {
+	if fortLevel < 1 {
+		fortLevel = 1
+	}
+	damage := fortLevel
+	switch breachLevel {
+	case 2:
+		damage = fortLevel
+	case 1:
+		damage = fortLevel*2 + 1
+	default:
+		damage = fortLevel*2 + 6
+	}
+	if damage < 1 {
+		damage = 1
+	}
+	if damage > 14 {
+		damage = 14
+	}
+	return damage
+}
+
 func siegeProgressGain(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army) int {
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return 0
@@ -159,10 +190,14 @@ func siegeBreachGain(gs *state.GameState, attacker *army.Army, targetRegion *wor
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return 0
 	}
-	if !attacker.CanBreachFortification(gs.UnitTypes, targetRegion.FortificationLevel()) {
+	if !attacker.HasSiegeUnits(gs.UnitTypes) {
 		return 0
 	}
-	gain := attacker.HighestSiegeTier(gs.UnitTypes) + int(siegeTechMod(gs, attacker.OwnerID)*8+0.5)
+	fortLevel := targetRegion.FortificationLevel()
+	if fortLevel < 1 {
+		fortLevel = 1
+	}
+	gain := attacker.HighestSiegeTier(gs.UnitTypes) + 1 + int(siegeTechMod(gs, attacker.OwnerID)*8+0.5) - fortLevel/2
 	if defender != nil {
 		gain -= defender.TotalDefense(gs.UnitTypes) / 120
 	}
@@ -381,10 +416,27 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	defMods.DefenseMod += siegeDefenseBonus(fortLevel, breachLevel)
 	result := combat.ResolveBattleWithContextPlan(attacker, defender, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
 	var collapse eliminationResult
+	extraDamage := siegeAssaultAttackerDamage(fortLevel, breachLevel)
+	if extraDamage > 0 {
+		extraLost, _ := applyArmyFlatDamage(attacker, extraDamage)
+		result.AttackerLost += extraLost
+	}
 
 	if result.AttackerWins {
 		if !virtualDefense && len(defender.Units) == 0 {
 			delete(g.gs.Armies, defender.ID)
+		}
+		if !siegeAssaultCanCapture(breachLevel) {
+			if len(attacker.Units) == 0 {
+				delete(g.gs.Armies, aid)
+				g.clearSiegesByArmy(aid)
+			}
+			msg := fmt.Sprintf("Genel hücum surları zorladı ama gedik olmadan %s alınamadı (%s).", targetRegion.NameTR, result.Description)
+			if g.renderer != nil {
+				g.renderer.ShowCombatResult(msg)
+				g.renderer.AddEvent(fmt.Sprintf("[KUSATMA] %s Düşman kaybı %d, saldıran kaybı %d.", msg, result.DefenderLost, result.AttackerLost))
+			}
+			return false
 		}
 		if len(attacker.Units) > 0 {
 			collapse = g.captureBesiegedRegion(attacker, targetRegion)
@@ -440,7 +492,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		breachGain := siegeBreachGain(g.gs, attacker, targetRegion, defender)
 		oldBreach := siege.BreachLevel
 		siege.BreachProgress += breachGain
-		siege.BreachLevel = siegeBreachLevel(siege.BreachProgress)
+		siege.BreachLevel = siegeBreachLevel(siege.BreachProgress, siege.FortLevel)
 
 		if defender != nil {
 			damage := siegeAttritionDamage(progressGain, siege.BreachLevel, siege.FortLevel)

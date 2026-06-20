@@ -121,13 +121,15 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 1. Saldıran kara ordusunda en az bir `siege` kategorili birlik olmalı.
 2. İlk temas anında oyuncu sağ tık sonrası `Kuşatma Kararı` modalında `Kuşatma Başlat` veya `Genel Hücum` seçer.
 3. `Kuşatma Başlat` anında ordu hedefe girmez; `GameState.Sieges` içine kayıt yazılır ve ordu hareketi biter.
-4. Gedik ilerlemesi artık kuşatma ekipmanı tier'i ile sınırlıdır: `fortLevel = 3` ise yalnız `Tier 3` kuşatma birimi yeni gedik ilerlemesi üretebilir. Daha düşük tier araçlar kuşatmayı sürdürür, savunucuyu yıpratır ama yeni gedik açamaz.
+4. Gedik ilerlemesi artık kuşatma ekipmanı tier'i ile kale seviyesi birlikte dikkate alınarak hesaplanır: yüksek tahkimatlar düşük tier araçlarla da zorlanabilir, ama ilerleme çok daha yavaş olur. Daha düşük tier araçlar kuşatmayı sürdürür, savunucuyu yıpratır ve ancak uzun sürede gedik üretir.
 5. Her tur çözümlemesinde kuşatma baskısı savunucu orduya attrition uygular; gedik kapasitesi yetiyorsa ayrıca `BreachProgress` artar ve gedik seviyesi (`yok / küçük / büyük`) güncellenir.
 6. Aktif kuşatma seçildiğinde renderer alt-ortada modal-dışı `Kuşatma Emri` paneli gösterir; oyuncu buradan `Genel Hücum` veya `Kuşatmayı Kaldır` seçebilir.
 7. Kuşatmayı yapan ordu başka komşu bölgeye normal hareket emri alırsa bu hareket, eski kuşatmayı otomatik kaldırır; ayrı ikinci onay gerekmez.
-8. Savunucu ordu çözülüp büyük gedik açılırsa tahkimat teslim olabilir; gedik açılamasa bile uzun aç bırakma kuşatması sonunda teslimiyet mümkün kalır. Oyuncu veya AI isterse kuşatma üstünden genel hücum da deneyebilir.
+8. Savunucu ordu çözülüp büyük gedik açılırsa tahkimat teslim olabilir; gedik açılamasa bile uzun aç bırakma kuşatması sonunda teslimiyet mümkün kalır.
+9. `Genel Hücum`, gedik yokken tahkimatı doğrudan düşüremez; saldırı savunucuyu yıpratsa bile kale elde tutulur. En az küçük gedik açıldıysa hücum fetih üretebilir.
+10. Genel hücumda saldıran taraf ayrıca sur tırmanışı ve dar giriş baskısı kaynaklı ek zayiat alır; bu bedel gedik yokken en ağır, küçük gedikte daha düşük, büyük gedikte en düşüktür.
 
-Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır.
+Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 
 ---
 

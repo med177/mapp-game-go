@@ -2634,14 +2634,15 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 
 	r.labelRectBuf = r.labelRectBuf[:0]
 	for _, item := range r.regionLabelBuf {
+		settlement := world.Settlement{}
+		if item.Region != nil && item.Index >= 0 && item.Index < len(item.Region.Settlements) {
+			settlement = item.Region.Settlements[item.Index]
+		}
 		forceLabel := item.Region != nil && ((selectedOK && item.Region.ID == selectedRID && item.Index == selectedIdx) ||
 			(item.Region.ID == hoverRID && item.Index == hoverIdx))
 		if !item.DrawLabel && !forceLabel {
-			r.drawCityDot(screen, item.Region, float32(item.SX), float32(item.SY))
-			if r.gs.Phase == state.PhaseEditMode && item.Region != nil &&
-				item.Region.ID == r.editSelectedRegion && item.Index == r.editSelectedSettlement {
-				vector.StrokeCircle(screen, float32(item.SX), float32(item.SY)+4, 10, 2, color.RGBA{255, 190, 45, 230}, true)
-			}
+			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY))
+			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 			continue
 		}
 
@@ -2676,11 +2677,8 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
-		r.drawCityDot(screen, item.Region, float32(item.SX), float32(item.SY))
-		if r.gs.Phase == state.PhaseEditMode && item.Region != nil &&
-			item.Region.ID == r.editSelectedRegion && item.Index == r.editSelectedSettlement {
-			vector.StrokeCircle(screen, float32(item.SX), float32(item.SY)+4, 10, 2, color.RGBA{255, 190, 45, 230}, true)
-		}
+		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY))
+		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 	}
 }
 
@@ -6441,18 +6439,95 @@ func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, s
 	outerR := float32(5.5)
 	innerR := float32(3.5)
 
-	outerCol := color.RGBA{220, 220, 220, 200}
-	if region.OwnerID != "" {
-		for fid, f := range r.gs.Factions {
-			if string(fid) == region.OwnerID {
-				outerCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 230}
-				break
-			}
-		}
-	}
+	outerCol := r.settlementOwnerColor(region)
 
 	vector.FillCircle(screen, sx, sy+4, outerR, outerCol, true)
 	vector.FillCircle(screen, sx, sy+4, innerR, color.RGBA{240, 230, 200, 255}, true)
+}
+
+func (r *Renderer) settlementOwnerColor(region *world.Region) color.RGBA {
+	outerCol := color.RGBA{220, 220, 220, 200}
+	if r.gs == nil || region == nil || region.OwnerID == "" {
+		return outerCol
+	}
+	for fid, f := range r.gs.Factions {
+		if string(fid) == region.OwnerID {
+			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], 230}
+		}
+	}
+	return outerCol
+}
+
+func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Region, settlement world.Settlement, sx, sy float32) {
+	if region == nil {
+		return
+	}
+	if settlement.Type == world.SettlementFortress {
+		r.drawFortressMarker(screen, region, sx, sy)
+		return
+	}
+	if settlement.Type == world.SettlementPort {
+		r.drawPortMarker(screen, region, sx, sy)
+		return
+	}
+	r.drawCityDot(screen, region, sx, sy)
+}
+
+func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
+	outerCol := r.settlementOwnerColor(region)
+	borderCol := color.RGBA{28, 22, 16, 235}
+	stoneCol := color.RGBA{240, 230, 200, 255}
+	topY := sy - 4
+	baseY := sy + 1
+	vector.FillRect(screen, sx-7, baseY-1, 14, 8, borderCol, true)
+	vector.FillRect(screen, sx-6, baseY, 12, 6, outerCol, true)
+	vector.FillRect(screen, sx-5, baseY+1, 10, 4, stoneCol, true)
+	vector.FillRect(screen, sx-6, topY, 3, 4, borderCol, true)
+	vector.FillRect(screen, sx-2, topY-1, 4, 5, borderCol, true)
+	vector.FillRect(screen, sx+3, topY, 3, 4, borderCol, true)
+	vector.FillRect(screen, sx-1, baseY+2, 2, 4, borderCol, true)
+	vector.FillRect(screen, sx-3, baseY+3, 6, 1, stoneCol, true)
+}
+
+func (r *Renderer) drawPortMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
+	outerCol := r.settlementOwnerColor(region)
+	borderCol := color.RGBA{28, 22, 16, 235}
+	stoneCol := color.RGBA{240, 230, 200, 255}
+	waterCol := color.RGBA{80, 120, 165, 230}
+	topY := sy - 5
+	baseY := sy + 1
+	waterY := sy + 6
+
+	vector.FillRect(screen, sx-8, baseY+2, 16, 2, borderCol, true)
+	vector.FillRect(screen, sx-7, baseY+1, 14, 2, outerCol, true)
+	vector.FillRect(screen, sx-6, baseY+2, 12, 1, stoneCol, true)
+
+	vector.FillRect(screen, sx-2, topY, 4, 1, borderCol, true)
+	vector.FillRect(screen, sx-1, topY-3, 2, 4, borderCol, true)
+	vector.FillRect(screen, sx, topY-2, 1, 2, stoneCol, true)
+	vector.FillRect(screen, sx+1, topY-2, 3, 2, outerCol, true)
+
+	vector.FillRect(screen, sx-8, baseY+3, 4, 1, borderCol, true)
+	vector.FillRect(screen, sx+4, baseY+3, 4, 1, borderCol, true)
+
+	vector.StrokeLine(screen, sx-7, waterY, sx-3, waterY, 1.2, waterCol, true)
+	vector.StrokeLine(screen, sx+1, waterY, sx+5, waterY, 1.2, waterCol, true)
+	vector.StrokeLine(screen, sx-5, waterY+2, sx-1, waterY+2, 1.2, waterCol, true)
+	vector.StrokeLine(screen, sx+2, waterY+2, sx+6, waterY+2, 1.2, waterCol, true)
+}
+
+func (r *Renderer) drawSettlementSelectionOverlay(screen *ebiten.Image, settlement world.Settlement, region *world.Region, sx, sy float32) {
+	if r.gs == nil || r.gs.Phase != state.PhaseEditMode || region == nil {
+		return
+	}
+	if region.ID != r.editSelectedRegion || r.editSelectedSettlement < 0 || r.editSelectedSettlement >= len(region.Settlements) {
+		return
+	}
+	if settlement.Type == world.SettlementFortress || settlement.Type == world.SettlementPort {
+		vector.StrokeRect(screen, sx-9, sy-8, 18, 16, 2, color.RGBA{255, 190, 45, 230}, true)
+		return
+	}
+	vector.StrokeCircle(screen, sx, sy+4, 10, 2, color.RGBA{255, 190, 45, 230}, true)
 }
 
 // --- Input ---

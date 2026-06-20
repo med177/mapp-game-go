@@ -142,6 +142,7 @@ func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
 
 func TestResolveSiegesCapturesBreachedFortifiedRegion(t *testing.T) {
 	gs := siegeTestState()
+	_, majorThreshold := siegeBreachThresholds(2)
 	gs.Armies = map[army.ArmyID]*army.Army{
 		"atk": {
 			ID:            "atk",
@@ -160,7 +161,7 @@ func TestResolveSiegesCapturesBreachedFortifiedRegion(t *testing.T) {
 			StartedTurn:       4,
 			TurnsElapsed:      2,
 			FortLevel:         2,
-			BreachProgress:    16,
+			BreachProgress:    majorThreshold,
 			BreachLevel:       2,
 		},
 	}
@@ -182,7 +183,7 @@ func TestResolveSiegesCapturesBreachedFortifiedRegion(t *testing.T) {
 	}
 }
 
-func TestResolveSiegesDoesNotOpenBreachWithInsufficientSiegeTier(t *testing.T) {
+func TestResolveSiegesOpensBreachVerySlowlyWithInsufficientSiegeTier(t *testing.T) {
 	gs := siegeTestState()
 	gs.Regions["dst"].Buildings = []string{"walls", "walls"}
 	gs.Armies = map[army.ArmyID]*army.Army{
@@ -195,6 +196,7 @@ func TestResolveSiegesDoesNotOpenBreachWithInsufficientSiegeTier(t *testing.T) {
 			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
 		},
 	}
+	minorThreshold, _ := siegeBreachThresholds(3)
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
 		"dst": {
 			RegionID:          "dst",
@@ -206,14 +208,26 @@ func TestResolveSiegesDoesNotOpenBreachWithInsufficientSiegeTier(t *testing.T) {
 	}
 	g := &Game{gs: gs}
 
-	g.resolveSieges()
+	for i := 0; i < minorThreshold-1; i++ {
+		g.resolveSieges()
+	}
 
 	siege := gs.SiegeAt("dst")
 	if siege == nil {
 		t.Fatal("kuşatma kaydı korunmalıydı")
 	}
-	if siege.BreachProgress != 0 || siege.BreachLevel != 0 {
-		t.Fatalf("yetersiz siege tier ile 3. seviye tahkimatta gedik açılmamalıydı, got progress=%d level=%d", siege.BreachProgress, siege.BreachLevel)
+	if siege.BreachProgress >= minorThreshold {
+		t.Fatalf("gedik eşiği dolmadan breach açılmamalıydı, got progress=%d threshold=%d", siege.BreachProgress, minorThreshold)
+	}
+
+	g.resolveSieges()
+
+	siege = gs.SiegeAt("dst")
+	if siege == nil {
+		t.Fatal("kuşatma kaydı korunmalıydı")
+	}
+	if siege.BreachLevel < 1 {
+		t.Fatalf("yetersiz siege tier ile gedik çok yavaş da olsa açılmalıydı, got progress=%d level=%d", siege.BreachProgress, siege.BreachLevel)
 	}
 }
 
@@ -246,5 +260,66 @@ func TestResolveSiegesCanStarveFortWithoutBreach(t *testing.T) {
 
 	if gs.Regions["dst"].OwnerID != "p1" {
 		t.Fatalf("uzun kuşatma açlık teslimiyeti getirmeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+}
+
+func TestAssaultSiegeWithoutBreachCannotCaptureFortifiedRegion(t *testing.T) {
+	gs := siegeTestState()
+	gs.UnitTypes["elite"] = &army.UnitType{ID: "elite", Category: army.CategoryInfantry, Attack: 90, Defense: 90, Morale: 100}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units: []army.Unit{
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "elite", CurrentHP: 100},
+				{TypeID: "siege", CurrentHP: 100},
+			},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			StartedTurn:       4,
+			TurnsElapsed:      1,
+			FortLevel:         2,
+			BreachProgress:    0,
+			BreachLevel:       0,
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.assaultSiegeWithStance("atk", "dst", "")
+
+	if gs.Regions["dst"].OwnerID != "p2" {
+		t.Fatalf("gedik yokken genel hücum kale fethi vermemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+	if gs.Armies["atk"].RegionID != "src" {
+		t.Fatalf("başarısız gediksiz hücum sonrası ordu hedefe girmemeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.SiegeAt("dst") == nil {
+		t.Fatal("aktif kuşatma gediksiz hücumdan sonra sürmeliydi")
+	}
+}
+
+func TestSiegeAssaultAttackerDamageDropsAsBreachGrows(t *testing.T) {
+	noBreach := siegeAssaultAttackerDamage(3, 0)
+	minorBreach := siegeAssaultAttackerDamage(3, 1)
+	majorBreach := siegeAssaultAttackerDamage(3, 2)
+
+	if noBreach <= minorBreach {
+		t.Fatalf("gedik yokken hücum kaybı küçük gedikten yüksek olmalıydı, got no_breach=%d minor=%d", noBreach, minorBreach)
+	}
+	if minorBreach <= majorBreach {
+		t.Fatalf("küçük gedik hücum kaybı büyük gedikten yüksek olmalıydı, got minor=%d major=%d", minorBreach, majorBreach)
 	}
 }

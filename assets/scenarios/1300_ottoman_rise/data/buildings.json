@@ -71,7 +71,7 @@
   },
   {
     "def_bonus": 15,
-    "gold_cost": 180,
+    "gold_cost": 280,
     "gold_mod": 1.08,
     "grain_mod": 1.03,
     "id": "walls",
@@ -80,11 +80,11 @@
     "name_tr": "Surlar",
     "required_terrain": "",
     "sat_bonus": 6,
-    "turns_required": 2,
-    "grain_cost": 8,
-    "iron_cost": 16,
-    "timber_cost": 8,
-    "stone_cost": 46
+    "turns_required": 4,
+    "grain_cost": 14,
+    "iron_cost": 28,
+    "timber_cost": 32,
+    "stone_cost": 72
   },
   {
     "def_bonus": 0,
