@@ -949,6 +949,12 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 		if target == "" {
 			break
 		}
+
+		// Escort mantığı: transport filosu hareket edecekse, önce aynı bölgedeki escort savaş gemisi gitsin
+		if a.IsNaval && a.TransportCapacity(gs.UnitTypes) > 0 {
+			aiEscortMoveFirst(gs, a, target, fid, steps)
+		}
+
 		outcome := executeMove(gs, a, target, fid)
 		if outcome.step.Message != "" {
 			addTurnStep(steps, outcome.step)
@@ -957,6 +963,130 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 			break
 		}
 	}
+}
+
+// aiEscortMoveFirst transport filosu hareket etmeden önce aynı bölgedeki
+// escort savaş gemisini hedef deniz bölgesine gönderir.
+func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.RegionID, fid faction.FactionID, steps *[]TurnStep) {
+	if gs == nil || transport == nil || target == "" {
+		return
+	}
+
+	// Sadece denizden denize hareketlerde escort mantığı çalışır
+	targetRegion := gs.Regions[target]
+	if targetRegion == nil || !targetRegion.IsSea {
+		return
+	}
+
+	// Aynı bölgede escort savaş gemisi bul
+	var escort *army.Army
+	for _, a := range gs.Armies {
+		if a.ID == transport.ID || !a.IsNaval || a.OwnerID != transport.OwnerID || a.RegionID != transport.RegionID {
+			continue
+		}
+		if isWarshipFleet(a, gs.UnitTypes) && a.MovePoints > 0 {
+			escort = a
+			break
+		}
+	}
+	if escort == nil {
+		return
+	}
+
+	// Hedef deniz bölgesinde düşman filosu var mı?
+	hasEnemy := false
+	for _, ea := range gs.Armies {
+		if ea.RegionID == target && ea.OwnerID != transport.OwnerID && ea.IsNaval {
+			_, stance := relationScore(gs, transport.OwnerID, ea.OwnerID)
+			if stance == faction.StanceWar {
+				hasEnemy = true
+				break
+			}
+		}
+	}
+
+	// Hedef deniz bölgesi savaş baskısı altındaysa escort'u gönder
+	if !hasEnemy {
+		pressure := aiSeaPressure(gs, string(fid), target)
+		if pressure < 25 {
+			return
+		}
+	}
+
+	// Escort'u önden gönder
+	actorName := turnFactionName(gs, fid)
+	sourceName := turnRegionName(gs, escort.RegionID)
+	targetName := turnRegionName(gs, target)
+
+	escort.RegionID = target
+	escort.DockedRegionID = ""
+	escort.DockedSettlementID = ""
+	escort.MovePoints--
+
+	// Hedefte düşman filosu varsa çatış
+	enemyInTarget := aiEnemyNavalInRegion(gs, transport.OwnerID, target)
+	if enemyInTarget != nil {
+		_, stance := relationScore(gs, transport.OwnerID, enemyInTarget.OwnerID)
+		if stance == faction.StanceWar {
+			atkMods := aiTechMods(gs, escort.OwnerID)
+			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
+			seaTerrain := string(world.TerrainSea)
+			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
+
+			if result.AttackerWins {
+				if len(enemyInTarget.Units) == 0 {
+					delete(gs.Armies, enemyInTarget.ID)
+					addTurnStep(steps, TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepBattle,
+						ArmyID:       escort.ID,
+						FromRegion:   escort.RegionID,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      actorName + " escort savaş gemisi " + targetName + " bölgesindeki düşman filosunu yok etti.",
+					})
+				}
+			} else {
+				if len(escort.Units) == 0 {
+					delete(gs.Armies, escort.ID)
+				}
+				addTurnStep(steps, TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       escort.ID,
+					FromRegion:   escort.RegionID,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " escort savaş gemisi " + targetName + " bölgesinde geri püskürtüldü.",
+				})
+			}
+			return
+		}
+	}
+
+	addTurnStep(steps, TurnStep{
+		FactionID:    fid,
+		Kind:         TurnStepMove,
+		ArmyID:       escort.ID,
+		FromRegion:   escort.RegionID,
+		TargetRegion: target,
+		FocusRegion:  target,
+		Message:      actorName + " escort savaş gemisi " + sourceName + " bölgesinden " + targetName + " bölgesine keşfe çıktı.",
+	})
+}
+
+// aiEnemyNavalInRegion hedef deniz bölgesindeki düşman donanmasını bulur.
+func aiEnemyNavalInRegion(gs *state.GameState, ownerID string, seaRegionID world.RegionID) *army.Army {
+	if gs == nil {
+		return nil
+	}
+	for _, a := range gs.Armies {
+		if a == nil || !a.IsNaval || a.OwnerID == ownerID || a.RegionID != seaRegionID {
+			continue
+		}
+		return a
+	}
+	return nil
 }
 
 type moveOutcome struct {
@@ -2136,6 +2266,199 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 		FocusRegion:  bestSeaRegion,
 		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, bestRegion.ID) + " limanında nakliye gemisi hazırlıyor.",
 	})
+
+	// Escort savaş gemisi üretimi — transport varsa ve savaş halinde veya deniz baskısı yüksekse
+	aiProduceEscortIfNeeded(gs, fid, coastalRegions, steps)
+}
+
+// aiProduceEscortIfNeeded transport filosu olan AI için escort savaş gemisi üretir.
+func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastalRegions []*world.Region, steps *[]TurnStep) {
+	f := gs.Factions[fid]
+	if f == nil || f.IsEliminated || gs.UnitTypes == nil {
+		return
+	}
+
+	// warship birimi var mı?
+	warshipType, hasWarship := gs.UnitTypes["warship"]
+	if !hasWarship {
+		return
+	}
+
+	// AI'ın transport filosu var mı?
+	hasTransport := false
+	atWar := aiFactionAtWar(gs, string(fid))
+	highSeaPressure := false
+	for _, a := range gs.Armies {
+		if a.OwnerID == string(fid) && a.IsNaval && a.TransportCapacity(gs.UnitTypes) > 0 {
+			hasTransport = true
+			seaRegion := gs.Regions[a.RegionID]
+			if seaRegion != nil && seaRegion.IsSea && aiSeaPressure(gs, string(fid), a.RegionID) >= 30 {
+				highSeaPressure = true
+			}
+		}
+	}
+	if !hasTransport {
+		return
+	}
+
+	// Escort gerekiyor mu?
+	needEscort := atWar || highSeaPressure
+	if !needEscort {
+		return
+	}
+
+	// Escort filosu sayısı kontrolü
+	escortLimit := 1
+	if atWar {
+		escortLimit = 2
+	}
+	escortFleetCount := 0
+	for _, a := range gs.Armies {
+		if a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
+			escortFleetCount++
+		}
+	}
+	escortFleetCount += aiPendingWarshipOrderCount(gs, fid)
+	if escortFleetCount >= escortLimit {
+		return
+	}
+
+	// Altın ve kaynak kontrolü
+	warshipCost := economy.ResourceCost{
+		Gold:   warshipType.GoldCost,
+		Grain:  warshipType.GrainCost,
+		Iron:   warshipType.IronCost,
+		Timber: warshipType.TimberCost,
+		Stone:  warshipType.StoneCost,
+	}
+	if !aiCanAffordWithReserve(f, warshipCost) {
+		return
+	}
+
+	// Teknoloji kontrolü
+	if warshipType.RequiredTech != "" && !f.Research.Completed[warshipType.RequiredTech] {
+		return
+	}
+
+	// En uygun liman bölgesini bul (transport filosuna yakın)
+	bestScore := -1
+	var bestRegion *world.Region
+	for _, r := range coastalRegions {
+		if !aiRegionHasPortBuilding(r) {
+			continue
+		}
+		// Liman seviyesi 3 kontrolü (warship için required_bldg_level)
+		portLevel := aiBuildingLevel(r, "port")
+		if portLevel < warshipType.RequiredBldgLevel {
+			continue
+		}
+		// Kuyruk kapasitesi kontrolü
+		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
+			continue
+		}
+		seaID := aiSeaNeighbor(gs, r)
+		if seaID == "" {
+			continue
+		}
+		// Transport filosuna yakınlık skoru
+		score := 0
+		for _, a := range gs.Armies {
+			if a.OwnerID == string(fid) && a.IsNaval && a.TransportCapacity(gs.UnitTypes) > 0 {
+				if a.RegionID == seaID {
+					score += 50
+				}
+				for _, nid := range r.Neighbors {
+					if nid == a.RegionID {
+						score += 30
+					}
+				}
+			}
+		}
+		score += aiSeaPressure(gs, string(fid), seaID)
+		if score > bestScore {
+			bestScore = score
+			bestRegion = r
+		}
+	}
+	if bestRegion == nil {
+		return
+	}
+
+	seaID := aiSeaNeighbor(gs, bestRegion)
+	currentWarshipUnits := 0
+	for _, a := range gs.Armies {
+		if a.RegionID == seaID && a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
+			currentWarshipUnits = len(a.Units)
+			break
+		}
+	}
+	if currentWarshipUnits+aiPendingNavalUnitCount(gs, seaID, fid) >= army.MaxArmySize {
+		return
+	}
+
+	warshipCost.Apply(f)
+	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "warship", warshipType.TurnsRequired)
+	addTurnStep(steps, TurnStep{
+		FactionID:    fid,
+		Kind:         TurnStepRecruit,
+		TargetRegion: bestRegion.ID,
+		FocusRegion:  seaID,
+		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, bestRegion.ID) + " limanında savaş gemisi inşa ediyor.",
+	})
+}
+
+// isWarshipFleet bir filonun savaş gemisi filosu olup olmadığını kontrol eder.
+func isWarshipFleet(a *army.Army, unitTypes map[string]*army.UnitType) bool {
+	if a == nil || !a.IsNaval || len(a.Units) == 0 {
+		return false
+	}
+	for _, u := range a.Units {
+		ut, ok := unitTypes[u.TypeID]
+		if !ok {
+			continue
+		}
+		if ut.Category == army.CategoryNavalWar {
+			return true
+		}
+	}
+	return false
+}
+
+// aiPendingWarshipOrderCount kuyruktaki savaş gemisi siparişlerini sayar.
+func aiPendingWarshipOrderCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, o := range gs.ProductionQueue {
+		if o.Kind == aiProductionKindUnit && o.FactionID == string(fid) && o.TypeID == "warship" {
+			count++
+		}
+	}
+	return count
+}
+
+// aiRegionHasPortBuilding bir bölgede liman binası olup olmadığını kontrol eder.
+func aiRegionHasPortBuilding(r *world.Region) bool {
+	if r == nil {
+		return false
+	}
+	for _, bid := range r.Buildings {
+		if bid == "port" {
+			return true
+		}
+	}
+	return false
+}
+
+// aiSeaNeighbor bir kara bölgesinin komşu deniz bölgesini döner.
+func aiSeaNeighbor(gs *state.GameState, r *world.Region) world.RegionID {
+	if r == nil {
+		return ""
+	}
+	for _, nid := range r.Neighbors {
+		if n, ok := gs.Regions[nid]; ok && n.IsSea {
+			return nid
+		}
+	}
+	return ""
 }
 
 func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool {

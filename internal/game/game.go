@@ -799,6 +799,9 @@ func (g *Game) resolveTurn() {
 		g.handleTriggeredEvent(evt)
 	}
 
+	// Bölge event ikon sürelerini güncelle
+	events.TickActiveRegionEvents(g.gs)
+
 	g.gs.AdvanceTurn()
 	unlocked := checkRegionUnlocks(g.gs)
 	g.showRegionUnlockNotifications(unlocked)

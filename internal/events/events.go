@@ -187,6 +187,7 @@ func Apply(gs *state.GameState, e *Event) {
 		return
 	}
 	applyEffect(gs, e.BaseEffect())
+	addRegionEventStatus(gs, e, nil)
 }
 
 func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
@@ -194,7 +195,9 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 		return Choice{}, false
 	}
 	choice := e.Choices[idx]
-	applyEffect(gs, choiceEffect(e, choice))
+	eff := choiceEffect(e, choice)
+	applyEffect(gs, eff)
+	addRegionEventStatus(gs, e, &choice)
 	return choice, true
 }
 
@@ -708,4 +711,143 @@ func max0(v int) int {
 		return 0
 	}
 	return v
+}
+
+// addRegionEventStatus event uygulandıktan sonra etkilenen bölgelere
+// harita üzerinde ikon gösterimi için RegionEventStatus kaydı ekler.
+func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice) {
+	if gs == nil || e == nil {
+		return
+	}
+
+	eventType := eventIconType(e)
+	labelTR := e.NameTR
+	if choice != nil {
+		labelTR = e.NameTR + " — " + choice.LabelTR
+	}
+
+	// Hangi bölgelerin etkilendiğini belirle
+	affectedRegions := affectedRegionIDs(gs, e, choice)
+
+	// Her etkilenen bölge için status kaydı ekle (3-6 tur görünür)
+	turnsVisible := 4
+	if eventType == "blessing" {
+		turnsVisible = 3 // pozitif olaylar daha kısa görünür
+	} else if eventType == "plague" || eventType == "revolt" {
+		turnsVisible = 6 // negatif olaylar daha uzun görünür
+	}
+
+	for _, rid := range affectedRegions {
+		// Aynı bölgede aynı event zaten varsa atla
+		exists := false
+		for _, existing := range gs.ActiveRegionEvents {
+			if existing.RegionID == rid && existing.EventID == e.ID {
+				exists = true
+				break
+			}
+		}
+		if exists {
+			continue
+		}
+
+		gs.ActiveRegionEvents = append(gs.ActiveRegionEvents, state.RegionEventStatus{
+			EventID:   e.ID,
+			RegionID:  rid,
+			TurnsLeft: turnsVisible,
+			Type:      eventType,
+			LabelTR:   labelTR,
+		})
+	}
+}
+
+// eventIconType bir event'in haritada hangi ikon tipiyle gösterileceğini belirler.
+func eventIconType(e *Event) string {
+	id := strings.ToLower(e.ID)
+	name := strings.ToLower(e.NameTR)
+	desc := strings.ToLower(e.DescTR)
+
+	if strings.Contains(id, "plague") || strings.Contains(name, "veba") || strings.Contains(name, "salgın") || strings.Contains(desc, "veba") || strings.Contains(desc, "salgın") {
+		return "plague"
+	}
+	if strings.Contains(id, "famine") || strings.Contains(name, "kıtlık") || strings.Contains(desc, "kıtlık") {
+		return "famine"
+	}
+	if strings.Contains(id, "revolt") || strings.Contains(name, "isyan") || strings.Contains(desc, "isyan") || strings.Contains(name, "taht") || strings.Contains(name, "krizi") {
+		return "revolt"
+	}
+	if strings.Contains(id, "golden") || strings.Contains(id, "trade_boom") || strings.Contains(name, "altın") || strings.Contains(name, "ticaret") || strings.Contains(name, "patlama") {
+		return "blessing"
+	}
+	return "notification"
+}
+
+// affectedRegionIDs event ve choice'tan etkilenen bölge ID'lerini döner.
+func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.RegionID {
+	if gs == nil || e == nil {
+		return nil
+	}
+
+	target := e.Target
+	affectedFaction := e.AffectedFaction
+	if choice != nil {
+		if choice.Effect.Target != "" {
+			target = choice.Effect.Target
+		}
+		if choice.Effect.AffectedFaction != "" {
+			affectedFaction = choice.Effect.AffectedFaction
+		}
+	}
+
+	switch target {
+	case "player_faction":
+		return factionOwnerRegions(gs, string(gs.PlayerFactionID))
+	case "specific_faction":
+		if affectedFaction != "" {
+			return factionOwnerRegions(gs, affectedFaction)
+		}
+	case "all_factions":
+		var all []world.RegionID
+		for _, r := range gs.Regions {
+			if !r.IsSea && r.OwnerID != "" {
+				all = append(all, r.ID)
+			}
+		}
+		return all
+	case "all_armies":
+		var all []world.RegionID
+		for _, a := range gs.Armies {
+			all = append(all, a.RegionID)
+		}
+		return all
+	}
+	return nil
+}
+
+// factionOwnerRegions bir fraksiyonun sahip olduğu kara bölgelerini döner.
+func factionOwnerRegions(gs *state.GameState, fid string) []world.RegionID {
+	var regions []world.RegionID
+	for _, r := range gs.Regions {
+		if !r.IsSea && r.OwnerID == fid {
+			regions = append(regions, r.ID)
+		}
+	}
+	return regions
+}
+
+// TickActiveRegionEvents her tur çözümlemesinde çağrılır.
+// ActiveRegionEvents listesindeki TurnsLeft değerlerini azaltır,
+// süresi dolanları temizler.
+func TickActiveRegionEvents(gs *state.GameState) {
+	if gs == nil || len(gs.ActiveRegionEvents) == 0 {
+		return
+	}
+
+	kept := gs.ActiveRegionEvents[:0]
+	for i := range gs.ActiveRegionEvents {
+		gs.ActiveRegionEvents[i].TurnsLeft--
+		if gs.ActiveRegionEvents[i].TurnsLeft > 0 {
+			kept = append(kept, gs.ActiveRegionEvents[i])
+		}
+	}
+	gs.ActiveRegionEvents = kept
 }

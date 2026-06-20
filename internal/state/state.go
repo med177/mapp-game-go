@@ -57,6 +57,17 @@ type SiegeState struct {
 	BreachLevel       int            `json:"breach_level"`
 }
 
+// RegionEventStatus bir bölgede aktif olan event görünürlük kaydını tutar.
+// Event choice sonrası veya otomatik çözümlenen event'ler sonrası haritada
+// birkaç tur boyunca ikon gösterimi için kullanılır.
+type RegionEventStatus struct {
+	EventID   string         `json:"event_id"`
+	RegionID  world.RegionID `json:"region_id"`
+	TurnsLeft int            `json:"turns_left"` // kaç tur daha görünür kalacak
+	Type      string         `json:"type"`       // plague, famine, blessing, revolt, notification
+	LabelTR   string         `json:"label_tr"`   // kısa açıklama (tooltip için)
+}
+
 // GameState oyunun tüm anlık durumunu tutar. Save/load bu struct'ı serialize eder.
 type GameState struct {
 	// Zaman
@@ -137,6 +148,9 @@ type GameState struct {
 
 	// Region paint overrides - edit modunda bölge boyama değişiklikleri (piksel indeksi -> bölge ID)
 	RegionPaintOverrides map[int]world.RegionID `json:"region_paint_overrides,omitempty"`
+
+	// Aktif bölge event ikonları (haritada birkaç tur görünür kalır)
+	ActiveRegionEvents []RegionEventStatus `json:"active_region_events,omitempty"`
 }
 
 // RegionProductionSummary bir bölgenin tur başı efektif ekonomik katkısını özetler.

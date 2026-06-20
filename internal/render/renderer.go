@@ -920,6 +920,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 5. Bölge etiketleri
 	r.drawRegionLabels(screen, armyPositions)
+	// 5.5. Aktif event ikonları (harita üzerinde)
+	if r.mapMode != MapModeTrade {
+		r.drawActiveEventIcons(screen)
+	}
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
 		r.drawEditVoronoiDebug(screen)
@@ -6600,6 +6604,13 @@ var (
 	settlementMarkerSwordSprite   *ebiten.Image
 	settlementMarkerStarSprite    *ebiten.Image
 	settlementMarkerSpritesLoaded bool
+
+	eventIconPlague   *ebiten.Image
+	eventIconFamine   *ebiten.Image
+	eventIconRevolt   *ebiten.Image
+	eventIconBlessing *ebiten.Image
+	eventIconNotify   *ebiten.Image
+	eventIconsReady   bool
 )
 
 func ensureSettlementMarkerSprites() {
@@ -6666,6 +6677,118 @@ func capitalLabelIconAdvance(isMediumFace bool) float64 {
 		return 24
 	}
 	return 22
+}
+
+// ensureEventIcons event ikon sprite'larını yükler.
+func ensureEventIcons() {
+	if eventIconsReady {
+		return
+	}
+	eventIconsReady = true
+	// Runtime'da renkli daire ikonlar oluştur
+	eventIconPlague = createEventIconSprite(color.RGBA{180, 60, 60, 255}, color.RGBA{80, 10, 10, 255})
+	eventIconFamine = createEventIconSprite(color.RGBA{200, 140, 40, 255}, color.RGBA{80, 50, 10, 255})
+	eventIconRevolt = createEventIconSprite(color.RGBA{210, 50, 50, 255}, color.RGBA{60, 5, 5, 255})
+	eventIconBlessing = createEventIconSprite(color.RGBA{60, 180, 60, 255}, color.RGBA{10, 80, 10, 255})
+	eventIconNotify = createEventIconSprite(color.RGBA{180, 180, 60, 255}, color.RGBA{80, 80, 10, 255})
+}
+
+// createEventIconSprite belirtilen renklerle küçük bir daire ikon oluşturur.
+func createEventIconSprite(fill, border color.RGBA) *ebiten.Image {
+	size := 20
+	img := ebiten.NewImage(size, size)
+	// Dış halka (border)
+	vector.FillCircle(img, float32(size/2), float32(size/2), float32(size/2), border, true)
+	// İç daire (fill)
+	vector.FillCircle(img, float32(size/2), float32(size/2), float32(size/2)-2, fill, true)
+	return img
+}
+
+// eventIconImage tip adına göre uygun event ikonunu döner.
+func eventIconImage(eventType string) *ebiten.Image {
+	ensureEventIcons()
+	switch eventType {
+	case "plague":
+		return eventIconPlague
+	case "famine":
+		return eventIconFamine
+	case "revolt":
+		return eventIconRevolt
+	case "blessing":
+		return eventIconBlessing
+	default:
+		return eventIconNotify
+	}
+}
+
+// drawActiveEventIcons haritada aktif bölge event ikonlarını çizer.
+func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
+	if r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 {
+		return
+	}
+	if r.camScale < 0.6 {
+		return
+	}
+
+	const iconSize = float32(22)
+	const iconOffsetY = float32(-18) // yerleşim noktasının üstünde
+
+	for _, evt := range r.gs.ActiveRegionEvents {
+		region := r.gs.Regions[evt.RegionID]
+		if region == nil || region.IsSea {
+			continue
+		}
+
+		// Bölgenin birincil settlement anchor'ını bul
+		ax, ay, ok := r.worldMap.PrimarySettlementAnchor(evt.RegionID)
+		if !ok {
+			// Fallback: bölge merkezi
+			ax = region.WorldX
+			ay = region.WorldY
+		}
+		sx, sy := r.worldToScreen(wcX(ax), wcY(ay))
+
+		// Ekran dışı kontrolü
+		if sx < -30 || sx > ScreenWidth+30 || sy < -30 || sy > ScreenHeight+30 {
+			continue
+		}
+
+		img := eventIconImage(evt.Type)
+		if img == nil {
+			continue
+		}
+
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(float64(iconSize)/float64(img.Bounds().Dx()), float64(iconSize)/float64(img.Bounds().Dy()))
+		op.GeoM.Translate(sx-float64(iconSize)/2, sy+float64(iconOffsetY)-float64(iconSize)/2)
+
+		// Süre azaldıkça alpha azalt
+		alpha := 1.0
+		if evt.TurnsLeft <= 2 {
+			alpha = 0.5 + float64(evt.TurnsLeft)*0.25
+		}
+		op.ColorScale.SetA(float32(alpha))
+		screen.DrawImage(img, op)
+
+		// Yüksek zoomda kısa etiket
+		if r.camScale >= 1.05 && evt.LabelTR != "" {
+			labelText := evt.LabelTR
+			if len(labelText) > 18 {
+				labelText = labelText[:18] + "..."
+			}
+			tw := MeasureText(labelText, FaceSmall)
+			labelCol := color.RGBA{255, 255, 255, uint8(220 * alpha)}
+			shadowCol := color.RGBA{0, 0, 0, uint8(140 * alpha)}
+			outlined := gameui.NewOutlinedLabel(gameui.Rect{
+				X: sx - tw/2,
+				Y: sy + float64(iconOffsetY) - float64(iconSize)/2 - 14,
+			}, labelText, labelCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
+			outlined.Offsets = [][2]float64{{1, 1}}
+			outlined.Draw(screen, renderText)
+		}
+
+		// Eğer seçili bölge ise ve düşük zoomdaysa, sadece ikon + tooltip alanı
+	}
 }
 
 func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
@@ -7621,12 +7744,17 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !ok {
 			break
 		}
+		allySieging := false
 		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
 			if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
-				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
-				return InputAction{}
+				siegeArmy := r.gs.Armies[siege.AttackerArmyID]
+				if siegeArmy == nil || siegeArmy.OwnerID != a.OwnerID {
+					r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
+					return InputAction{}
+				}
+				allySieging = true
 			}
-			if !a.HasSiegeUnits(r.gs.UnitTypes) {
+			if !allySieging && !a.HasSiegeUnits(r.gs.UnitTypes) {
 				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
 				return InputAction{}
 			}
@@ -7670,7 +7798,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			)
 			return InputAction{}
 		}
-		if renderTargetRequiresSiegeDecision(r.gs, a, target) {
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
@@ -8023,7 +8151,15 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			attacker := r.gs.Armies[wc.pendingArmy]
 			target := r.gs.Regions[wc.pendingDest]
 			if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
-				if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
+				allySieging := false
+				if attacker != nil && target != nil {
+					if siege := r.gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != attacker.ID {
+						if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil && siegeArmy.OwnerID == attacker.OwnerID {
+							allySieging = true
+						}
+					}
+				}
+				if allySieging || (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes)) {
 					r.openSiegeDecision(attacker, target)
 				} else {
 					r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
@@ -8068,7 +8204,15 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 		attacker := r.gs.Armies[wc.pendingArmy]
 		target := r.gs.Regions[wc.pendingDest]
 		if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
-			if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
+			allySieging := false
+			if attacker != nil && target != nil {
+				if siege := r.gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != attacker.ID {
+					if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil && siegeArmy.OwnerID == attacker.OwnerID {
+						allySieging = true
+					}
+				}
+			}
+			if allySieging || (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes)) {
 				r.openSiegeDecision(attacker, target)
 			} else {
 				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")

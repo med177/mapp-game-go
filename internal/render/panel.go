@@ -2585,15 +2585,17 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
 	ly += 32
 
-	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
-	ly += 10
-	drawUISectionLabel(screen, lx, ly, "Başkent")
-	ly += 18
-	status := settlementCapitalStatusText(gs, region, settlement)
-	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, status, ColorGray, gameui.TextSmall, 16, 3)
-	ly += 52
-	if btn, ok := settlementCapitalActionButton(gs, region, settlement); ok {
-		drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{126, 94, 28, 235}, color.RGBA{214, 176, 82, 255}, ColorWhite, 10))
+	if region.OwnerID == string(gs.PlayerFactionID) {
+		drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
+		ly += 10
+		drawUISectionLabel(screen, lx, ly, "Başkent")
+		ly += 18
+		status := settlementCapitalStatusText(gs, region, settlement)
+		drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, status, ColorGray, gameui.TextSmall, 16, 3)
+		ly += 52
+		if btn, ok := settlementCapitalActionButton(gs, region, settlement); ok {
+			drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{126, 94, 28, 235}, color.RGBA{214, 176, 82, 255}, ColorWhite, 10))
+		}
 	}
 }
 
