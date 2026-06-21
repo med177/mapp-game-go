@@ -2854,7 +2854,7 @@ func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) 
 	}
 	key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
 	rel, ok := g.gs.Relations[key]
-	return ok && rel.Stance == faction.StanceWar
+	return ok && (rel.Stance == faction.StanceWar || rel.Stance == faction.StanceAllied)
 }
 
 func (g *Game) resolveFleetDisembark(fleet *army.Army, target world.RegionID, targetRegion *world.Region) bool {
@@ -3236,14 +3236,18 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			return
 		}
 	}
-	// Sahipli düşman kara bölgesine girmek için savaş hali zorunlu.
+	// Sahipli düşman kara bölgesine girmek için savaş ya da ittifak hali zorunlu.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
+	isAlliedRegion := false
 	if !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
 		rel, exists := g.gs.Relations[key]
-		if !exists || rel.Stance != faction.StanceWar {
-			g.renderer.ShowCombatResult("Savaş ilan edilmeden düşman topraklarına girilemez!")
+		if !exists || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied) {
+			g.renderer.ShowCombatResult("Savaş ilan edilmeden veya ittifak olmadan yabancı topraklara girilemez!")
 			return
+		}
+		if rel.Stance == faction.StanceAllied {
+			isAlliedRegion = true
 		}
 	}
 	liftedSiegeRegion := world.RegionID("")
@@ -3283,20 +3287,29 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 
 	if enemyArmy != nil && !allyJoiningSiege {
 		// --- Savaş ---
+		// Bölgedeki TÜM düşman orduları (müttefikler dahil) birleşik savunur
+		combinedDef, defSourceIDs := g.gs.CollectDefenders(a, target, navalSeaMove)
+		if combinedDef == nil {
+			combinedDef = enemyArmy
+		}
 		if liftedSiegeRegion != "" {
 			g.clearSiege(liftedSiegeRegion)
 		}
 		atkMods := techModsFor(g.gs, a.OwnerID)
-		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
+		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
+		defOwnerID := enemyArmy.OwnerID
+		defMods := techModsFor(g.gs, defOwnerID)
 		battleContext := combat.BattleContextLand
 		if navalSeaMove {
 			battleContext = combat.BattleContextNaval
 		}
-		result := combat.ResolveBattleWithContextPlan(a, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
+		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
 		var collapse eliminationResult
 
 		if result.AttackerWins {
-			if len(enemyArmy.Units) == 0 {
+			if len(defSourceIDs) > 0 {
+				g.gs.DistributeDefenderLosses(defSourceIDs, result.DefenderLost)
+			} else if len(enemyArmy.Units) == 0 {
 				delete(g.gs.Armies, enemyArmy.ID)
 			}
 			if len(a.Units) > 0 {
@@ -3337,7 +3350,8 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			g.renderer.ShowCombatResult("Ordu kuşatmaya katıldı.")
 			return
 		}
-		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID {
+		// Müttefik bölgesi fethedilemez, sadece içinden geçilir.
+		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID && !isAlliedRegion {
 			collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 			g.renderer.MarkMapDirty()
 			g.announceElimination(collapse)

@@ -1210,7 +1210,7 @@ func aiCanDisembarkToLand(gs *state.GameState, fleet *army.Army, target *world.R
 		return true
 	}
 	_, stance := relationScore(gs, fleet.OwnerID, target.OwnerID)
-	return stance == faction.StanceWar
+	return stance == faction.StanceWar || stance == faction.StanceAllied
 }
 
 func aiLandingStrength(gs *state.GameState, fleet *army.Army) int {
@@ -1565,9 +1565,21 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		return score
 	}
 
-	// Yalnızca savaş halindeki fraksiyona saldır.
+	// Müttefik veya savaş halindeki fraksiyona göre hareket et.
 	if target.OwnerID != "" {
 		_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+		if stance == faction.StanceAllied {
+			// Müttefik bölgesine savaşsız geçiş: lojistik rahatlatma veya yol amaçlı
+			_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+			if srcOverload > 0 || a.OverCapacityTurns > 0 {
+				tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+				if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
+					return aiReliefMoveBase
+				}
+			}
+			// Uzun menzilli hareket için müttefik topraklarından geçişe düşük skor
+			return 5
+		}
 		if stance != faction.StanceWar {
 			return -1
 		}
@@ -1620,6 +1632,10 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 			return 100
 		}
 		return 90
+	}
+	// Müttefik bölgesine savaşsız geçiş (düşük öncelik)
+	if stance == faction.StanceAllied {
+		return 10
 	}
 	return -1
 }
@@ -1858,21 +1874,44 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 	}
 
-	// Hedefte düşman ordusu var mı?
+	// Hedefte düşman ordusu var mı? (müttefikler dahil birleşik savunma)
+	combinedDef, defSourceIDs := gs.CollectDefenders(a, target, false)
 	var enemyArmy *army.Army
-	for _, ea := range gs.Armies {
-		if ea.RegionID == target && ea.OwnerID != a.OwnerID {
-			enemyArmy = ea
-			break
+	if combinedDef == nil {
+		for _, ea := range gs.Armies {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
+				enemyArmy = ea
+				break
+			}
+		}
+	} else {
+		// Birleşik ordudan refakat için ilk orduyu bul
+		for _, ea := range gs.Armies {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
+				enemyArmy = ea
+				break
+			}
 		}
 	}
 
-	if enemyArmy != nil {
+	if combinedDef != nil || enemyArmy != nil {
+		var defForBattle *army.Army
+		if combinedDef != nil {
+			defForBattle = combinedDef
+		} else {
+			defForBattle = enemyArmy
+		}
 		atkMods := aiTechMods(gs, a.OwnerID)
-		defMods := aiTechMods(gs, enemyArmy.OwnerID)
-		result := combat.ResolveBattleWithMods(a, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+		defOwnerID := a.OwnerID
+		if enemyArmy != nil {
+			defOwnerID = enemyArmy.OwnerID
+		}
+		defMods := aiTechMods(gs, defOwnerID)
+		result := combat.ResolveBattleWithMods(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
 		if result.AttackerWins {
-			if len(enemyArmy.Units) == 0 {
+			if len(defSourceIDs) > 0 {
+				gs.DistributeDefenderLosses(defSourceIDs, result.DefenderLost)
+			} else if enemyArmy != nil && len(enemyArmy.Units) == 0 {
 				delete(gs.Armies, enemyArmy.ID)
 			}
 			if len(a.Units) > 0 {
@@ -1933,7 +1972,14 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	a.MovePoints--
 	stepKind := TurnStepMove
 	msg := actorName + " " + sourceName + " bölgesinden " + targetName + " bölgesine ilerledi."
+	isAlliedTarget := false
 	if targetRegion.OwnerID != a.OwnerID {
+		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+		if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+			isAlliedTarget = true
+		}
+	}
+	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget {
 		targetRegion.OwnerID = a.OwnerID
 		stepKind = TurnStepConquest
 		msg = actorName + " " + targetName + " bölgesini savaşsız ele geçirdi."

@@ -332,6 +332,89 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 	return best
 }
 
+// CollectDefenders hedef bölgede saldırana karşı savaşacak TÜM düşman ordularını
+// (düşmanın müttefikleri dahil) tek bir birleşik orduda toplar.
+// Dönen ordu sanaldır — gerçek Army map'ine eklenmez, sadece savaş simülasyonu içindir.
+// Ayrıca birleştirilen gerçek ordu ID'lerinin listesini döner ki kayıplar dağıtılabilsin.
+func (s *GameState) CollectDefenders(attacker *army.Army, target world.RegionID, navalSeaMove bool) (combined *army.Army, sourceIDs []army.ArmyID) {
+	if s == nil || attacker == nil {
+		return nil, nil
+	}
+	var units []army.Unit
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
+			continue
+		}
+		// Deniz savaşında sadece savaş halindekiler; kara savaşında savaş halindeki herkes
+		if navalSeaMove {
+			key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+			rel, exists := s.Relations[key]
+			if !exists || rel == nil || rel.Stance != faction.StanceWar {
+				continue
+			}
+		} else {
+			// Kara hedefinde: hedef bölge sahibiyle savaş halindeysek,
+			// bölgedeki saldırana savaş açmış TÜM ordular savunmaya katılır
+			if candidate.OwnerID == "" {
+				continue
+			}
+			key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+			rel, exists := s.Relations[key]
+			if !exists || rel == nil || rel.Stance != faction.StanceWar {
+				continue
+			}
+		}
+		units = append(units, candidate.Units...)
+		sourceIDs = append(sourceIDs, candidate.ID)
+	}
+	if len(units) == 0 {
+		return nil, nil
+	}
+	// 20 birim sınırına uygula
+	if len(units) > 20 {
+		units = units[:20]
+	}
+	combined = &army.Army{
+		OwnerID: attacker.OwnerID, // geçici, sadece simülasyon için
+		Units:   units,
+	}
+	return combined, sourceIDs
+}
+
+// DistributeDefenderLosses birleşik savunma ordusuna verilen kayıpları
+// kaynak ordulara orantılı olarak dağıtır.
+func (s *GameState) DistributeDefenderLosses(sourceIDs []army.ArmyID, totalLost int) {
+	if s == nil || len(sourceIDs) == 0 || totalLost <= 0 {
+		return
+	}
+	remaining := totalLost
+	for _, id := range sourceIDs {
+		a := s.Armies[id]
+		if a == nil || len(a.Units) == 0 {
+			continue
+		}
+		canLose := len(a.Units)
+		lose := (totalLost * canLose) / (totalLost + canLose) // basit orantı
+		if lose > canLose {
+			lose = canLose
+		}
+		if lose > remaining {
+			lose = remaining
+		}
+		if lose <= 0 {
+			continue
+		}
+		a.Units = a.Units[:len(a.Units)-lose]
+		remaining -= lose
+		if len(a.Units) == 0 {
+			delete(s.Armies, id)
+		}
+		if remaining <= 0 {
+			break
+		}
+	}
+}
+
 func (s *GameState) SiegeAt(regionID world.RegionID) *SiegeState {
 	if s == nil || s.Sieges == nil || regionID == "" {
 		return nil

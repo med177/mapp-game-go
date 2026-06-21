@@ -39,7 +39,7 @@ const (
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
 	selectedSiegePanelW     = 420.0
-	selectedSiegePanelH     = 146.0
+	selectedSiegePanelH     = 160.0
 	selectedSiegeButtonW    = 170.0
 	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
@@ -981,17 +981,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawAITurnOverlay(screen)
 	}
 
-	// 9. Bildirim mesajı
-	if r.combatLogTimer > 0 {
-		alpha := uint8(255)
-		if r.combatLogTimer < 60 {
-			alpha = uint8(r.combatLogTimer * 255 / 60)
-		}
-		drawInfoPopup(screen, r.combatLog, alpha)
-		r.combatLogTimer--
-	}
-
-	// 10. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
+	// 9. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
 	if r.confirmDialog.show {
 		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
@@ -1024,7 +1014,17 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
 	}
 
-	// 14. Tarihsel olay popup'ı gerçek üst modal olmalı.
+	// 14. Bildirim mesajı (panellerin üstünde görünmeli)
+	if r.combatLogTimer > 0 {
+		alpha := uint8(255)
+		if r.combatLogTimer < 60 {
+			alpha = uint8(r.combatLogTimer * 255 / 60)
+		}
+		drawInfoPopup(screen, r.combatLog, alpha)
+		r.combatLogTimer--
+	}
+
+	// 15. Tarihsel olay popup'ı gerçek üst modal olmalı.
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
 	}
@@ -6623,14 +6623,14 @@ func (r *Renderer) drawSettlementLabelSprite(screen *ebiten.Image, img *ebiten.I
 }
 
 var (
-	settlementMarkerCastleSprite    *ebiten.Image
-	settlementMarkerHarbourSprite   *ebiten.Image
-	settlementMarkerSiegeSprite     *ebiten.Image
-	settlementMarkerSwordSprite     *ebiten.Image
-	settlementMarkerStarSprite      *ebiten.Image
-	settlementMarkerCitySprite      *ebiten.Image
-	settlementMarkerDistrictSprite  *ebiten.Image
-	settlementMarkerSpritesLoaded   bool
+	settlementMarkerCastleSprite   *ebiten.Image
+	settlementMarkerHarbourSprite  *ebiten.Image
+	settlementMarkerSiegeSprite    *ebiten.Image
+	settlementMarkerSwordSprite    *ebiten.Image
+	settlementMarkerStarSprite     *ebiten.Image
+	settlementMarkerCitySprite     *ebiten.Image
+	settlementMarkerDistrictSprite *ebiten.Image
+	settlementMarkerSpritesLoaded  bool
 
 	eventIconPlague   *ebiten.Image
 	eventIconFamine   *ebiten.Image
@@ -6761,6 +6761,7 @@ func eventIconImage(eventType string) *ebiten.Image {
 }
 
 // drawActiveEventIcons haritada aktif bölge event ikonlarını çizer.
+// Aynı bölgede birden fazla event varsa alt alta listelenir.
 func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 	if r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 {
 		return
@@ -6770,63 +6771,101 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 	}
 
 	const iconSize = float32(22)
-	const iconOffsetY = float32(-18) // yerleşim noktasının üstünde
+	const iconSpacingY = float32(24) // aynı bölgede alt alta ikonlar arası boşluk
 
-	for _, evt := range r.gs.ActiveRegionEvents {
-		region := r.gs.Regions[evt.RegionID]
+	// Aynı bölgedeki event'leri grupla ve sırala
+	type regionGroup struct {
+		regionID world.RegionID
+		events   []state.RegionEventStatus
+	}
+	groupMap := make(map[world.RegionID]*regionGroup, len(r.gs.ActiveRegionEvents))
+	groupOrder := make([]*regionGroup, 0, len(r.gs.ActiveRegionEvents))
+	for i := range r.gs.ActiveRegionEvents {
+		evt := &r.gs.ActiveRegionEvents[i]
+		g, exists := groupMap[evt.RegionID]
+		if !exists {
+			g = &regionGroup{regionID: evt.RegionID}
+			groupMap[evt.RegionID] = g
+			groupOrder = append(groupOrder, g)
+		}
+		g.events = append(g.events, *evt)
+	}
+
+	for _, g := range groupOrder {
+		region := r.gs.Regions[g.regionID]
 		if region == nil || region.IsSea {
 			continue
 		}
 
 		// Bölgenin birincil settlement anchor'ını bul
-		ax, ay, ok := r.worldMap.PrimarySettlementAnchor(evt.RegionID)
+		ax, ay, ok := r.worldMap.PrimarySettlementAnchor(g.regionID)
 		if !ok {
 			// Fallback: bölge merkezi
 			ax = region.WorldX
 			ay = region.WorldY
 		}
-		sx, sy := r.worldToScreen(wcX(ax), wcY(ay))
+		baseSX, baseSY := r.worldToScreen(wcX(ax), wcY(ay))
 
-		// Ekran dışı kontrolü
-		if sx < -30 || sx > ScreenWidth+30 || sy < -30 || sy > ScreenHeight+30 {
+		// Ekran dışı kontrolü (base noktasına göre)
+		if baseSX < -50 || baseSX > ScreenWidth+50 || baseSY < -50 || baseSY > ScreenHeight+50 {
 			continue
 		}
 
-		img := eventIconImage(evt.Type)
-		if img == nil {
-			continue
-		}
+		// Sadece tek event varsa eski davranış (ortalanmış), çoklu varsa alt alta
+		eventCount := len(g.events)
+		for idx, evt := range g.events {
+			sx := baseSX
+			sy := baseSY
 
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(float64(iconSize)/float64(img.Bounds().Dx()), float64(iconSize)/float64(img.Bounds().Dy()))
-		op.GeoM.Translate(sx-float64(iconSize)/2, sy+float64(iconOffsetY)-float64(iconSize)/2)
-
-		// Süre azaldıkça alpha azalt
-		alpha := 1.0
-		if evt.TurnsLeft <= 2 {
-			alpha = 0.5 + float64(evt.TurnsLeft)*0.25
-		}
-		op.ColorScale.SetA(float32(alpha))
-		screen.DrawImage(img, op)
-
-		// Yüksek zoomda kısa etiket
-		if r.camScale >= 1.05 && evt.LabelTR != "" {
-			labelText := evt.LabelTR
-			if len(labelText) > 18 {
-				labelText = labelText[:18] + "..."
+			if eventCount > 1 {
+				// Çoklu event: alt alta sırala, en üstteki event en yukarıda
+				totalHeight := float64(iconSpacingY) * float64(eventCount-1)
+				startY := sy - totalHeight/2
+				sy = startY + float64(iconSpacingY)*float64(idx)
+			} else {
+				// Tek event: yerleşim noktasının üstünde (eski davranış)
+				sy = sy - 18
 			}
-			tw := MeasureText(labelText, FaceSmall)
-			labelCol := color.RGBA{255, 255, 255, uint8(220 * alpha)}
-			shadowCol := color.RGBA{0, 0, 0, uint8(140 * alpha)}
-			outlined := gameui.NewOutlinedLabel(gameui.Rect{
-				X: sx - tw/2,
-				Y: sy + float64(iconOffsetY) - float64(iconSize)/2 - 14,
-			}, labelText, labelCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-			outlined.Offsets = [][2]float64{{1, 1}}
-			outlined.Draw(screen, renderText)
-		}
 
-		// Eğer seçili bölge ise ve düşük zoomdaysa, sadece ikon + tooltip alanı
+			// Ekran dışı kontrolü
+			if sx < -30 || sx > ScreenWidth+30 || sy < -50 || sy > ScreenHeight+50 {
+				continue
+			}
+
+			img := eventIconImage(evt.Type)
+			if img == nil {
+				continue
+			}
+
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(float64(iconSize)/float64(img.Bounds().Dx()), float64(iconSize)/float64(img.Bounds().Dy()))
+			op.GeoM.Translate(sx-float64(iconSize)/2, sy-float64(iconSize)/2)
+
+			// Süre azaldıkça alpha azalt
+			alpha := 1.0
+			if evt.TurnsLeft <= 2 {
+				alpha = 0.5 + float64(evt.TurnsLeft)*0.25
+			}
+			op.ColorScale.SetA(float32(alpha))
+			screen.DrawImage(img, op)
+
+			// Yüksek zoomda kısa etiket
+			if r.camScale >= 1.05 && evt.LabelTR != "" {
+				labelText := evt.LabelTR
+				if len(labelText) > 18 {
+					labelText = labelText[:18] + "..."
+				}
+				tw := MeasureText(labelText, FaceSmall)
+				labelCol := color.RGBA{255, 255, 255, uint8(220 * alpha)}
+				shadowCol := color.RGBA{0, 0, 0, uint8(140 * alpha)}
+				outlined := gameui.NewOutlinedLabel(gameui.Rect{
+					X: sx - tw/2,
+					Y: sy - float64(iconSize)/2 - 14,
+				}, labelText, labelCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
+				outlined.Offsets = [][2]float64{{1, 1}}
+				outlined.Draw(screen, renderText)
+			}
+		}
 	}
 }
 
@@ -7802,9 +7841,22 @@ func (r *Renderer) handleRightClick() InputAction {
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
+		// Müttefik bölgesine çıkarma için "Karaya In" göster.
 		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 			rel, exists := r.gs.Relations[key]
+			if exists && rel.Stance == faction.StanceAllied && len(a.EmbarkedUnits) > 0 {
+				// Müttefik kıyısına çıkarma — savaş popup'ı değil, karaya inme onayı
+				r.ShowConfirmDialog(
+					"Karaya In",
+					"Gemideki birlikler müttefik bölgesine insin mi?",
+					"Karaya In",
+					"İptal",
+					InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
+					nil,
+				)
+				return InputAction{}
+			}
 			if !exists || rel.Stance != faction.StanceWar {
 				name := target.OwnerID
 				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
