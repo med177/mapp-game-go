@@ -84,7 +84,7 @@ func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
 }
 
 func buildBattlePlanModal() gameui.Modal {
-	const dlgW, dlgH = 860.0, 468.0
+	const dlgW, dlgH = 860.0, 483.0
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
@@ -94,7 +94,7 @@ func battlePlanCardRects() [3]gameui.Rect {
 	modal := buildBattlePlanModal()
 	const (
 		cardW = 252.0
-		cardH = 286.0
+		cardH = 301.0
 		gap   = 18.0
 		topY  = 114.0
 	)

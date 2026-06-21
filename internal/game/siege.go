@@ -100,7 +100,7 @@ func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion 
 	if ok, reason := canArmyStartSiege(gs, attacker, targetRegion); ok {
 		return gs.SiegeAt(targetRegion.ID), true, ""
 	} else if siege := gs.SiegeAt(targetRegion.ID); siege != nil && siege.AttackerArmyID == attacker.ID {
-		if !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
+		if attacker.RegionID != targetRegion.ID && !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
 			return nil, false, "Genel hücum için kuşatma hattında kalmalısın."
 		}
 		if !gameFactionsAtWar(gs, attacker.OwnerID, targetRegion.OwnerID) {
@@ -297,6 +297,10 @@ func (g *Game) clearSiegesByArmy(armyID army.ArmyID) {
 			if g.renderer != nil {
 				g.renderer.MarkMapDirty()
 			}
+			// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı
+			if a := g.gs.Armies[armyID]; a != nil && siege.AttackerHomeRegionID != "" {
+				a.RegionID = siege.AttackerHomeRegionID
+			}
 			delete(g.gs.Sieges, rid)
 		}
 	}
@@ -322,16 +326,19 @@ func (g *Game) startSiegeForArmy(aid army.ArmyID, target world.RegionID, notify 
 	ensureSiegeMap(g.gs)
 	defender := g.gs.SelectBattleDefender(attacker, target, false)
 	fortLevel := targetRegion.FortificationLevel()
+	homeRegion := attacker.RegionID
 	g.gs.Sieges[target] = &state.SiegeState{
-		RegionID:          target,
-		AttackerArmyID:    aid,
-		AttackerFactionID: attacker.OwnerID,
-		StartedTurn:       g.gs.Turn,
-		FortLevel:         fortLevel,
+		RegionID:             target,
+		AttackerArmyID:       aid,
+		AttackerHomeRegionID: homeRegion,
+		AttackerFactionID:    attacker.OwnerID,
+		StartedTurn:          g.gs.Turn,
+		FortLevel:            fortLevel,
 	}
 	if defender != nil {
 		g.gs.Sieges[target].DefenderArmyID = defender.ID
 	}
+	attacker.RegionID = target
 	attacker.MovePoints = 0
 	if notify && g.renderer != nil {
 		msg := fmt.Sprintf("%s kuşatıldı. Tahkimat seviyesi: %d.", targetRegion.NameTR, fortLevel)
@@ -352,6 +359,10 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 			g.renderer.ShowCombatResult("Bu ordu aktif bir kuşatma yürütmüyor.")
 		}
 		return
+	}
+	// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı
+	if a := g.gs.Armies[aid]; a != nil && siege.AttackerHomeRegionID != "" {
+		a.RegionID = siege.AttackerHomeRegionID
 	}
 	g.clearSiege(target)
 	if region := g.gs.Regions[target]; region != nil && g.renderer != nil {
@@ -483,7 +494,11 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		}
 		targetRegion := g.gs.Regions[regionID]
 		attacker := g.gs.Armies[siege.AttackerArmyID]
-		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || !regionsAdjacent(g.gs, attacker.RegionID, regionID) || !attacker.HasSiegeUnits(g.gs.UnitTypes) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
+		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !attacker.HasSiegeUnits(g.gs.UnitTypes) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
+			// Kuşatma geçersiz → orduyu homeRegion'a geri taşı
+			if attacker != nil && siege.AttackerHomeRegionID != "" {
+				attacker.RegionID = siege.AttackerHomeRegionID
+			}
 			delete(g.gs.Sieges, regionID)
 			continue
 		}

@@ -3203,19 +3203,33 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
 		liftedSiegeRegion = activeSiege.RegionID
 	}
+	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil && activeSiege.AttackerArmyID == aid {
 			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
 			return
 		}
-		if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
-			if reason != "" {
-				g.renderer.ShowCombatResult(reason)
+		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil {
+			siegeArmy := g.gs.Armies[activeSiege.AttackerArmyID]
+			if siegeArmy != nil && siegeArmy.OwnerID == a.OwnerID {
+				// Aynı fraksiyondan kuşatma var → birleşerek katıl
+				allyJoiningSiege = true
+			} else if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
+				if reason != "" {
+					g.renderer.ShowCombatResult(reason)
+				}
+				return
 			}
+		} else {
+			if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
+				if reason != "" {
+					g.renderer.ShowCombatResult(reason)
+				}
+				return
+			}
+			g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")
 			return
 		}
-		g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")
-		return
 	}
 
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
@@ -3268,6 +3282,15 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""
 		a.MovePoints--
+		if allyJoiningSiege {
+			// Kuşatmaya katılım: bölge fethedilmez, sadece birleşme yapılır.
+			a.RegionID = target
+			if merged := g.tryMergeArmies(aid, target); merged != "" {
+				g.renderer.SelectedArmy = merged
+			}
+			g.renderer.ShowCombatResult("Ordu kuşatmaya katıldı.")
+			return
+		}
 		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID {
 			collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 			g.renderer.MarkMapDirty()

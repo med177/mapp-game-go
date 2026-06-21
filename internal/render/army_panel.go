@@ -80,8 +80,15 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		}
 	}
 	location := ""
-	if r, ok2 := gs.Regions[a.RegionID]; ok2 {
-		location = r.NameTR
+	if siege := gs.SiegeByArmy(aid); siege != nil {
+		if r, ok2 := gs.Regions[siege.RegionID]; ok2 {
+			location = r.NameTR
+		}
+	}
+	if location == "" {
+		if r, ok2 := gs.Regions[a.RegionID]; ok2 {
+			location = r.NameTR
+		}
 	}
 	headerLeft := factionName
 	if location != "" {

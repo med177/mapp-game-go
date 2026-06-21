@@ -46,15 +46,16 @@ type DiplomaticOffer struct {
 }
 
 type SiegeState struct {
-	RegionID          world.RegionID `json:"region_id"`
-	AttackerArmyID    army.ArmyID    `json:"attacker_army_id"`
-	DefenderArmyID    army.ArmyID    `json:"defender_army_id,omitempty"`
-	AttackerFactionID string         `json:"attacker_faction_id"`
-	StartedTurn       int            `json:"started_turn"`
-	TurnsElapsed      int            `json:"turns_elapsed"`
-	FortLevel         int            `json:"fort_level"`
-	BreachProgress    int            `json:"breach_progress"`
-	BreachLevel       int            `json:"breach_level"`
+	RegionID             world.RegionID `json:"region_id"`
+	AttackerArmyID       army.ArmyID    `json:"attacker_army_id"`
+	AttackerHomeRegionID world.RegionID `json:"attacker_home_region_id,omitempty"`
+	DefenderArmyID       army.ArmyID    `json:"defender_army_id,omitempty"`
+	AttackerFactionID    string         `json:"attacker_faction_id"`
+	StartedTurn          int            `json:"started_turn"`
+	TurnsElapsed         int            `json:"turns_elapsed"`
+	FortLevel            int            `json:"fort_level"`
+	BreachProgress       int            `json:"breach_progress"`
+	BreachLevel          int            `json:"breach_level"`
 }
 
 // RegionEventStatus bir bölgede aktif olan event görünürlük kaydını tutar.
