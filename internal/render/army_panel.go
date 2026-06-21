@@ -48,7 +48,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		fullIntel := playerHasRevealEnemyStrength(gs)
 		siegeIntel := enemyUnderPlayerSiege(gs, a)
 		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) || siegeIntel {
-			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel, siegeIntel)
+			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel)
 		} else {
 			drawEnemyArmyDetailPanel(screen, gs, a)
 		}
@@ -355,7 +355,7 @@ func enemyUnderPlayerSiege(gs *state.GameState, a *army.Army) bool {
 	return false
 }
 
-func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel, siegeIntel bool) {
+func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool) {
 	ensureArmySheet()
 
 	const totalSlots = army.MaxArmySize

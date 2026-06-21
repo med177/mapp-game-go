@@ -2875,10 +2875,19 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		return true
 	}
 	var enemyArmy *army.Army
-	for _, ea := range g.gs.Armies {
-		if ea.RegionID == target && ea.OwnerID != fleet.OwnerID {
-			enemyArmy = ea
-			break
+	isAlliedDisembark := false
+	if targetRegion.OwnerID != fleet.OwnerID && targetRegion.OwnerID != "" {
+		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
+		if rel, exists := g.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+			isAlliedDisembark = true
+		}
+	}
+	if !isAlliedDisembark {
+		for _, ea := range g.gs.Armies {
+			if ea.RegionID == target && ea.OwnerID != fleet.OwnerID {
+				enemyArmy = ea
+				break
+			}
 		}
 	}
 	if enemyArmy != nil {
@@ -2912,7 +2921,14 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 
 	g.disembarkFleet(fleet, target)
 	fleet.MovePoints--
-	if targetRegion.OwnerID != fleet.OwnerID {
+	isAlliedDisembark = false
+	if targetRegion.OwnerID != fleet.OwnerID && targetRegion.OwnerID != "" {
+		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
+		if rel, exists := g.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+			isAlliedDisembark = true
+		}
+	}
+	if targetRegion.OwnerID != fleet.OwnerID && !isAlliedDisembark {
 		collapse := g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
 		g.renderer.MarkMapDirty()
 		g.renderer.ShowCombatResult("Çıkarma tamamlandı: kıyı bölgesi savaşsız ele geçirildi.")
@@ -2920,8 +2936,13 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		g.announceElimination(collapse)
 		return true
 	}
-	g.renderer.ShowCombatResult("Çıkarma tamamlandı: birlikler karaya indi.")
-	g.renderer.AddEvent(fmt.Sprintf("Birlikler karaya çıktı: %s", targetRegion.NameTR))
+	if isAlliedDisembark {
+		g.renderer.ShowCombatResult("Çıkarma tamamlandı: birlikler müttefik toprağına indi.")
+		g.renderer.AddEvent(fmt.Sprintf("Birlikler müttefik kıyısına çıktı: %s", targetRegion.NameTR))
+	} else {
+		g.renderer.ShowCombatResult("Çıkarma tamamlandı: birlikler karaya indi.")
+		g.renderer.AddEvent(fmt.Sprintf("Birlikler karaya çıktı: %s", targetRegion.NameTR))
+	}
 	return true
 }
 

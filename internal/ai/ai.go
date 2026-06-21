@@ -1741,7 +1741,14 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
 		stepKind := TurnStepDisembark
 		msg := actorName + " " + targetName + " kıyısına çıkarma yaptı."
-		if targetRegion.OwnerID != a.OwnerID {
+		isAlliedDisembark := false
+		if targetRegion.OwnerID != a.OwnerID && targetRegion.OwnerID != "" {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+			if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+				isAlliedDisembark = true
+			}
+		}
+		if targetRegion.OwnerID != a.OwnerID && !isAlliedDisembark {
 			targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
 			stepKind = TurnStepConquest
 			msg = actorName + " " + targetName + " kıyısına çıktı ve bölgeyi ele geçirdi."

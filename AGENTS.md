@@ -5,7 +5,7 @@ Identify your environment before taking any action. Read the section below that 
 
 ---
 
-## 1. Rules for Claude, Copilot, and Windows-based Agents
+## 1. Rules for Cline, Claude, Copilot, and Windows-based Agents
 If you are operating directly on the **Windows host OS** (via VS Code, Cursor, Windsurf, or Visual Studio):
 * **Environment:** You are in a Windows environment (PowerShell / CMD).
 * **Paths:** Use standard Windows file paths (e.g., `C:\...`).
