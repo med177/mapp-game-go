@@ -22,6 +22,7 @@ const (
 	TurnStepEmbark    TurnStepKind = "embark"
 	TurnStepDisembark TurnStepKind = "disembark"
 	TurnStepConquest  TurnStepKind = "conquest"
+	TurnStepSortie    TurnStepKind = "sortie"
 	TurnStepComplete  TurnStepKind = "complete"
 )
 

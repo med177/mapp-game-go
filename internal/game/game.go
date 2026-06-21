@@ -37,8 +37,20 @@ type Game struct {
 	renderer             *render.Renderer
 	evts                 []*events.Event
 	pendingHistoricalEvt *events.Event
+	pendingSortie        *pendingSortieState
 	loading              *loadingJob
 	aiTurn               *aiTurnState
+}
+
+type pendingSortieState struct {
+	step        ai.TurnStep
+	aiArmy      *army.Army
+	siegeArmy   *army.Army
+	target      *world.Region
+	homeRegion  world.RegionID
+	waitFrames  int
+	showBattlePlan bool
+	focus       int
 }
 
 type aiTurnState struct {
@@ -3234,7 +3246,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
 
-	if enemyArmy != nil {
+	if enemyArmy != nil && !allyJoiningSiege {
 		// --- Savaş ---
 		if liftedSiegeRegion != "" {
 			g.clearSiege(liftedSiegeRegion)
@@ -3284,7 +3296,6 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		a.MovePoints--
 		if allyJoiningSiege {
 			// Kuşatmaya katılım: bölge fethedilmez, sadece birleşme yapılır.
-			a.RegionID = target
 			if merged := g.tryMergeArmies(aid, target); merged != "" {
 				g.renderer.SelectedArmy = merged
 			}

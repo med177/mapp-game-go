@@ -44,8 +44,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	if a.OwnerID != string(gs.PlayerFactionID) {
 		fullIntel := playerHasRevealEnemyStrength(gs)
-		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) {
-			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel)
+		siegeIntel := enemyUnderPlayerSiege(gs, a)
+		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) || siegeIntel {
+			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel, siegeIntel)
 		} else {
 			drawEnemyArmyDetailPanel(screen, gs, a)
 		}
@@ -319,7 +320,19 @@ func playerHasRevealEnemyStrength(gs *state.GameState) bool {
 	return tech.ComputeEffects(f.Research.Completed, gs.TechTypes).RevealEnemyStrength
 }
 
-func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool) {
+func enemyUnderPlayerSiege(gs *state.GameState, a *army.Army) bool {
+	if gs == nil || a == nil || a.IsNaval {
+		return false
+	}
+	if siege := gs.SiegeAt(a.RegionID); siege != nil {
+		if siegeArmy := gs.Armies[siege.AttackerArmyID]; siegeArmy != nil && siegeArmy.OwnerID == string(gs.PlayerFactionID) {
+			return true
+		}
+	}
+	return false
+}
+
+func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel, siegeIntel bool) {
 	ensureArmySheet()
 
 	const totalSlots = army.MaxArmySize

@@ -1636,6 +1636,42 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	targetName := turnRegionName(gs, target)
 	sourceName := turnRegionName(gs, fromRegion)
 
+	// Kuşatma altındaki ordu hareket edemez; önce huruç savaşı yapmalı.
+	// Eğer kuşatan oyuncu ise sortie step'i döner (battle plan UI için).
+	if !a.IsNaval {
+		if siege := gs.SiegeAt(fromRegion); siege != nil && siege.AttackerArmyID != a.ID {
+			siegeArmy := gs.Armies[siege.AttackerArmyID]
+			if siegeArmy != nil && siegeArmy.OwnerID != a.OwnerID {
+				// AI vs AI sortie (veya oyuncu kuşatıyorsa): hemen çöz
+				atkMods := aiTechMods(gs, a.OwnerID)
+				defMods := aiTechMods(gs, siegeArmy.OwnerID)
+				defMods.DefenseMod += 0.10
+				result := combat.ResolveBattleWithMods(a, siegeArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+				if result.AttackerWins {
+					if len(siegeArmy.Units) == 0 {
+						delete(gs.Armies, siegeArmy.ID)
+					}
+					if siege.AttackerHomeRegionID != "" {
+						siegeArmy.RegionID = siege.AttackerHomeRegionID
+					}
+					delete(gs.Sieges, fromRegion)
+					msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
+					return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
+				}
+				a.MovePoints = 0
+				if len(a.Units) == 0 {
+					delete(gs.Armies, a.ID)
+				}
+				if len(siegeArmy.Units) == 0 {
+					delete(gs.Armies, siegeArmy.ID)
+					delete(gs.Sieges, fromRegion)
+				}
+				msg := actorName + " " + sourceName + " kuşatmasını yaramadı."
+				return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
+			}
+		}
+	}
+
 	if a.IsNaval && targetRegion.CanLandEnter() {
 		if !aiCanDisembarkToLand(gs, a, targetRegion) {
 			return moveOutcome{survived: true}

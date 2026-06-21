@@ -7802,7 +7802,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
-		if opensBattlePlan {
+		if opensBattlePlan && !allySieging {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}
