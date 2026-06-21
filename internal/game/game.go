@@ -43,14 +43,14 @@ type Game struct {
 }
 
 type pendingSortieState struct {
-	step        ai.TurnStep
-	aiArmy      *army.Army
-	siegeArmy   *army.Army
-	target      *world.Region
-	homeRegion  world.RegionID
-	waitFrames  int
+	step           ai.TurnStep
+	aiArmy         *army.Army
+	siegeArmy      *army.Army
+	target         *world.Region
+	homeRegion     world.RegionID
+	waitFrames     int
 	showBattlePlan bool
-	focus       int
+	focus          int
 }
 
 type aiTurnState struct {
@@ -1528,6 +1528,10 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult("Bu bölge kilitli; inşa açılamaz.")
 		return
 	}
+	if g.gs.SiegeAt(rid) != nil {
+		g.renderer.ShowCombatResult("Kuşatma altındaki bölgede inşa yapılamaz!")
+		return
+	}
 	b, ok := g.gs.BuildingTypes[buildingID]
 	if !ok {
 		return
@@ -2457,6 +2461,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	}
 	if region.IsLocked {
 		g.renderer.ShowCombatResult("Bu bölge kilitli; asker alımı yapılamaz.")
+		return
+	}
+	if g.gs.SiegeAt(rid) != nil {
+		g.renderer.ShowCombatResult("Kuşatma altındaki bölgede asker alımı yapılamaz!")
 		return
 	}
 	utype, ok := g.gs.UnitTypes[unitTypeID]

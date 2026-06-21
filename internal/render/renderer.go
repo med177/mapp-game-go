@@ -2407,7 +2407,7 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 	if !a.IsNaval {
 		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
 			if region := r.gs.Regions[siege.RegionID]; region != nil {
-				if ax, ay, ok := r.landArmyAnchor(region); ok {
+				if ax, ay, ok := r.siegeLandArmyAnchor(region); ok {
 					sx, sy := r.worldToScreen(float64(ax), float64(ay))
 					return armyDisplayGroupKey{AnchorX: ax, AnchorY: ay, Anchored: true}, float32(sx), float32(sy), true
 				}
@@ -2466,6 +2466,22 @@ func (r *Renderer) landArmyAnchor(region *world.Region) (int, int, bool) {
 		return ax, ay, true
 	}
 	return 0, 0, false
+}
+
+func (r *Renderer) siegeLandArmyAnchor(region *world.Region) (int, int, bool) {
+	if region == nil || region.IsSea {
+		return 0, 0, false
+	}
+	// Kuşatma orduları için kale (fortress) tipi yerleşimi öncele
+	for i, settlement := range region.Settlements {
+		if settlement.Type == world.SettlementFortress {
+			if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i); ok {
+				return ax, ay, true
+			}
+		}
+	}
+	// Kale bulunamazsa standart kara ordusu konumlandırmasına dön
+	return r.landArmyAnchor(region)
 }
 
 func (r *Renderer) dockedFleetAnchor(a *army.Army, seaRegion *world.Region) (int, int, bool) {
@@ -6573,6 +6589,11 @@ func (r *Renderer) drawSettlementMarkerSprite(screen *ebiten.Image, img *ebiten.
 	if bounds.Dx() == 0 || bounds.Dy() == 0 {
 		return false
 	}
+
+	// Koyu renk simgelerin harita üzerinde belirgin olması için beyaz daire arka plan
+	circleRadius := float32(size/2) + 1
+	vector.DrawFilledCircle(screen, sx, sy, circleRadius, color.RGBA{255, 255, 255, 255}, true)
+
 	op := &ebiten.DrawImageOptions{}
 	scaleX := float64(size) / float64(bounds.Dx())
 	scaleY := float64(size) / float64(bounds.Dy())

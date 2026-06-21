@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 
@@ -29,6 +30,7 @@ const (
 	armyPanelTopY  = float32(6)
 	armyPanelInfoY = float32(20)
 	armyPanelBtnY  = float32(24)
+	siegeFooterH   = float32(30)
 )
 
 // DrawArmyDetailPanel seçili ordunun birimlerini Total War stilinde ekranın alt
@@ -60,10 +62,10 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	rows := (totalSlots + maxCols - 1) / maxCols
 
 	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
 
 	px := float32(ScreenWidth)/2 - panelW/2
-	py := bottomBarTop() - panelH - 5
+	py := bottomBarTop() - panelH - 55
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
@@ -245,6 +247,27 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.FillRect(screen, cx+1, hpY+hpBarH, xpW, 2, color.RGBA{80, 160, 255, 180}, false)
 		}
 	}
+
+	// ── Kuşatma bilgisi (birim kartlarının altında) ──────────────────
+	if siege := gs.SiegeByArmy(aid); siege != nil {
+		siegeRegionName := ""
+		if r, ok2 := gs.Regions[siege.RegionID]; ok2 {
+			siegeRegionName = r.NameTR
+		}
+		turnsLeft := siege.TurnsUntilSurrender()
+		footerY := py + panelH - siegeFooterH + float32(2)
+		siegeLine := fmt.Sprintf("⚔ Kuşatma: %s — Tahkimat: T%d | Gedik: %s | Teslime kalan: ~%d tur",
+			siegeRegionName, siege.FortLevel, siegeBreachLabelTR(siege.BreachLevel), turnsLeft)
+		if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
+			siegeLine = fmt.Sprintf("⚔ Kuşatma: %s — Tahkimat: T%d | Büyük gedik açıldı | Teslim olabilir",
+				siegeRegionName, siege.FortLevel)
+		}
+		// Footer arka planı
+		vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
+		vector.StrokeLine(screen, px, py+panelH-siegeFooterH, px+panelW, py+panelH-siegeFooterH, 1, panelBorder, false)
+		DrawText(screen, siegeLine,
+			float64(px)+float64(armyPanelPadX), float64(footerY), FaceSmall, color.RGBA{230, 140, 50, 240})
+	}
 }
 
 func armyDetailPanelRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
@@ -270,10 +293,10 @@ func armyDetailPanelRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, boo
 	cols := maxCols
 	rows := (totalSlots + maxCols - 1) / maxCols
 	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
 	return gameui.Rect{
 		X: ScreenWidth/2 - float64(panelW)/2,
-		Y: float64(bottomBarTop() - panelH - 5),
+		Y: float64(bottomBarTop() - panelH - 55),
 		W: float64(panelW),
 		H: float64(panelH),
 	}, true
@@ -475,9 +498,9 @@ func armyPanelGeometry() (px, py, panelW float32) {
 	cols := maxCols
 	rows := (totalSlots + maxCols - 1) / maxCols
 	panelW = float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
 	px = float32(ScreenWidth)/2 - panelW/2
-	py = bottomBarTop() - panelH - 5
+	py = bottomBarTop() - panelH - 55
 	return
 }
 

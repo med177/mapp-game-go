@@ -58,6 +58,28 @@ type SiegeState struct {
 	BreachLevel          int            `json:"breach_level"`
 }
 
+// SiegeSurrenderTurns tahkimat seviyesine göre kuşatmanın kaç turda teslim olacağını döner.
+func SiegeSurrenderTurns(fortLevel int) int {
+	if fortLevel < 1 {
+		fortLevel = 1
+	}
+	return 6 + fortLevel*4
+}
+
+// TurnsUntilSurrender kuşatmanın teslim olmasına kaç tur kaldığını döner.
+// Negatif değerler 0 olarak döner.
+func (s *SiegeState) TurnsUntilSurrender() int {
+	if s == nil {
+		return 0
+	}
+	total := SiegeSurrenderTurns(s.FortLevel)
+	remaining := total - s.TurnsElapsed
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
 // RegionEventStatus bir bölgede aktif olan event görünürlük kaydını tutar.
 // Event choice sonrası veya otomatik çözümlenen event'ler sonrası haritada
 // birkaç tur boyunca ikon gösterimi için kullanılır.

@@ -273,6 +273,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		if r.IsSea || r.OwnerID == "" {
 			continue
 		}
+		if gs.SiegeAt(r.ID) != nil {
+			// Kuşatma altındaki bölge devlete gelir/hammadde sağlamaz
+			// ve halkın memnuniyeti kuşatma stresinden her tur azalır
+			r.Satisfaction = clamp(r.Satisfaction-5, 0, 100)
+			continue
+		}
 
 		// Bina çarpanları
 		goldMod := 1.0
