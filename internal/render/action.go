@@ -30,8 +30,9 @@ const (
 	ActionSelectFaction      ActionKind = "select_faction"
 	ActionAdjustTax          ActionKind = "adjust_tax"      // Delta: +5 veya -5
 	ActionResearch           ActionKind = "research"        // BuildingID = tech ID
-	ActionCancelResearch     ActionKind = "cancel_research" // teknoloji araştırmasını iptal et
-	ActionSelectVictory      ActionKind = "select_victory"  // BuildingID = VictoryType
+	ActionCancelResearch     ActionKind = "cancel_research"      // teknoloji araştırmasını iptal et
+	ActionCancelBuilding     ActionKind = "cancel_building"      // bina inşaatını onaylı iptal
+	ActionSelectVictory      ActionKind = "select_victory"       // BuildingID = VictoryType
 	ActionProposeAlliance    ActionKind = "propose_alliance"
 	ActionProposeTrade       ActionKind = "propose_trade"
 	ActionRecruitNaval       ActionKind = "recruit_naval"

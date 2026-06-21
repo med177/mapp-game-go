@@ -265,6 +265,8 @@ func (g *Game) Update() error {
 			g.cancelRecruitOrder(action.TargetRegion, action.BuildingID)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
+		case render.ActionCancelBuilding:
+			g.cancelBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
 			g.startResearch(action.BuildingID) // BuildingID alanını tech ID için yeniden kullanıyoruz
 		case render.ActionCancelResearch:
@@ -568,6 +570,11 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 	if g == nil || g.aiTurn == nil {
 		return
 	}
+	// Araştırma ve bina inşaatı adımlarını göstermeden, beklemeden geç.
+	if step.Kind == ai.TurnStepResearch || step.Kind == ai.TurnStepBuild {
+		g.aiTurn.waitFrames = 0
+		return
+	}
 	actor := turnActorName(g.gs, step.FactionID)
 	detail := step.Message
 	if detail == "" {
@@ -692,7 +699,7 @@ func aiTurnOverlayDetail(step ai.TurnStep, nearPlayer bool) string {
 
 func shouldLogAITurnStep(step ai.TurnStep) bool {
 	switch step.Kind {
-	case ai.TurnStepDiplomacy, ai.TurnStepBattle, ai.TurnStepConquest, ai.TurnStepBuild, ai.TurnStepResearch:
+	case ai.TurnStepDiplomacy, ai.TurnStepBattle, ai.TurnStepConquest:
 		return true
 	default:
 		return false
@@ -1557,16 +1564,14 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		return
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	if g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID) {
-		cost := economy.ResourceCost{
-			Gold:   b.GoldCost,
-			Grain:  b.GrainCost,
-			Iron:   b.IronCost,
-			Timber: b.TimberCost,
-			Stone:  b.StoneCost,
-		}
-		cost.Refund(f)
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. İade: %s", b.NameTR, cost.ShortTR()))
+	if order, exists := g.hasProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID); exists {
+		msg := fmt.Sprintf("%s inşaatı devam ediyor (%d tur kaldı). İptal etmek istediğinize emin misiniz?", b.NameTR, order.TurnsLeft)
+		g.renderer.ShowConfirmDialog("İnşaatı İptal Et", msg, "İptal Et", "Vazgeç",
+			render.InputAction{
+				Kind:       render.ActionCancelBuilding,
+				TargetRegion: rid,
+				BuildingID: buildingID,
+			}, nil)
 		return
 	}
 	cost := economy.ResourceCost{
@@ -2640,6 +2645,28 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// cancelBuilding onay diyaloğundan sonra bina inşaatını iptal eder.
+func (g *Game) cancelBuilding(rid world.RegionID, buildingID string) {
+	b, ok := g.gs.BuildingTypes[buildingID]
+	if !ok {
+		return
+	}
+	if !g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID) {
+		g.renderer.ShowCombatResult("İptal edilecek inşaat bulunamadı.")
+		return
+	}
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	cost := economy.ResourceCost{
+		Gold:   b.GoldCost,
+		Grain:  b.GrainCost,
+		Iron:   b.IronCost,
+		Timber: b.TimberCost,
+		Stone:  b.StoneCost,
+	}
+	cost.Refund(f)
+	g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. İade: %s", b.NameTR, cost.ShortTR()))
 }
 
 func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {

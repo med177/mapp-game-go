@@ -6536,6 +6536,10 @@ func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world
 		return settlementMarkerCastleImage()
 	case world.SettlementPort:
 		return settlementMarkerHarbourImage()
+	case world.SettlementCity:
+		return settlementMarkerCityImage()
+	case world.SettlementTown:
+		return settlementMarkerDistrictImage()
 	default:
 		return nil
 	}
@@ -6619,12 +6623,14 @@ func (r *Renderer) drawSettlementLabelSprite(screen *ebiten.Image, img *ebiten.I
 }
 
 var (
-	settlementMarkerCastleSprite  *ebiten.Image
-	settlementMarkerHarbourSprite *ebiten.Image
-	settlementMarkerSiegeSprite   *ebiten.Image
-	settlementMarkerSwordSprite   *ebiten.Image
-	settlementMarkerStarSprite    *ebiten.Image
-	settlementMarkerSpritesLoaded bool
+	settlementMarkerCastleSprite    *ebiten.Image
+	settlementMarkerHarbourSprite   *ebiten.Image
+	settlementMarkerSiegeSprite     *ebiten.Image
+	settlementMarkerSwordSprite     *ebiten.Image
+	settlementMarkerStarSprite      *ebiten.Image
+	settlementMarkerCitySprite      *ebiten.Image
+	settlementMarkerDistrictSprite  *ebiten.Image
+	settlementMarkerSpritesLoaded   bool
 
 	eventIconPlague   *ebiten.Image
 	eventIconFamine   *ebiten.Image
@@ -6648,6 +6654,8 @@ func ensureSettlementMarkerSprites() {
 	settlementMarkerSiegeSprite = tryLoadImage(filepath.Join(base, "siege.png"))
 	settlementMarkerSwordSprite = tryLoadImage(filepath.Join(base, "sword.png"))
 	settlementMarkerStarSprite = tryLoadImage(filepath.Join(base, "star.png"))
+	settlementMarkerCitySprite = tryLoadImage(filepath.Join(base, "city.png"))
+	settlementMarkerDistrictSprite = tryLoadImage(filepath.Join(base, "district.png"))
 }
 
 func settlementMarkerCastleImage() *ebiten.Image {
@@ -6673,6 +6681,16 @@ func settlementMarkerSwordImage() *ebiten.Image {
 func settlementMarkerStarImage() *ebiten.Image {
 	ensureSettlementMarkerSprites()
 	return settlementMarkerStarSprite
+}
+
+func settlementMarkerCityImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerCitySprite
+}
+
+func settlementMarkerDistrictImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerDistrictSprite
 }
 
 func resolveMarkerAssetDir() string {

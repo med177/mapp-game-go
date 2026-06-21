@@ -58,6 +58,17 @@ func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, 
 	return false
 }
 
+// hasProduction iptal etmeden, kuyrukta eşleşen üretim emri olup olmadığını döndürür.
+func (g *Game) hasProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) (state.ProductionOrder, bool) {
+	for i := len(g.gs.ProductionQueue) - 1; i >= 0; i-- {
+		order := g.gs.ProductionQueue[i]
+		if order.Kind == kind && order.RegionID == rid && order.TypeID == typeID && order.FactionID == string(ownerID) {
+			return order, true
+		}
+	}
+	return state.ProductionOrder{}, false
+}
+
 func (g *Game) cancelProductionByID(orderID, kind string, rid world.RegionID, ownerID faction.FactionID) (state.ProductionOrder, bool) {
 	for i := len(g.gs.ProductionQueue) - 1; i >= 0; i-- {
 		order := g.gs.ProductionQueue[i]
