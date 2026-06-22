@@ -2473,7 +2473,7 @@
   },
   {
     "region_id": "new_region_227",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "slovenia",
@@ -2723,103 +2723,103 @@
   },
   {
     "region_id": "atlantic_ocean",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_248",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_233",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_249",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "irish_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "north_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "kattegat",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_235",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "baltic_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "gulf_of_finland",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "western_mediterranean",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "adriatic_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_245",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "adriatic_sea_dalmatia",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "ionian_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "eastern_mediterranean",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "aegean_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_253",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "black_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_238",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_255",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_254",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "red_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "caspian_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "persian_gulf",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "slovakia",
@@ -4256,11 +4256,11 @@
   },
   {
     "region_id": "aksaray",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "ankara",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "cankiri",
@@ -5933,186 +5933,186 @@
   },
   {
     "region_id": "atlantic_open_1",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_open_2",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_231",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_232",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "gulf_of_lion",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_247",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_230",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_open_3",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_open_4",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_open_5",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_open_6",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "atlantic_ocean_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "irish_sea_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_250",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "north_sea_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_1",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_242",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_2",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_3",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_4",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_5",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_246",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "mediterranean_open_6",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "western_mediterranean_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "adriatic_sea_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_244",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "aegean_sea_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_243",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "eastern_mediterranean_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "black_open_1",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "east_mediterranean",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_241",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_240",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "black_open_4",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "black_sea_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "red_open_2",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "persian_open_1",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "persian_open_2",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "persian_gulf_shore",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "caspian_open_2",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "tyrrhenian_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "ligurian_sea",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "sea_of_azov",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "new_region_237",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "bay_of_biscay",
-    "settlements": null
+    "settlements": [ ]
   },
   {
     "region_id": "norwegian_sea",
-    "settlements": null
+    "settlements": [ ]
   }
 ]

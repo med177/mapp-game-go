@@ -381,6 +381,10 @@ func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army,
 		target.IsFortified()
 }
 
+func (r *Renderer) canJoinActiveSiege(attacker *army.Army, regionID world.RegionID) bool {
+	return r != nil && r.gs != nil && r.gs.CanJoinActiveSiege(attacker, regionID)
+}
+
 type battlePlanState struct {
 	show            bool
 	actionKind      ActionKind
@@ -7824,13 +7828,11 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		allySieging := false
 		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
-			if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
-				siegeArmy := r.gs.Armies[siege.AttackerArmyID]
-				if siegeArmy == nil || siegeArmy.OwnerID != a.OwnerID {
-					r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
-					return InputAction{}
-				}
+			if r.canJoinActiveSiege(a, rid) {
 				allySieging = true
+			} else if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
+				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
+				return InputAction{}
 			}
 			if !allySieging && !a.HasSiegeUnits(r.gs.UnitTypes) {
 				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
@@ -8241,22 +8243,24 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			r.warConfirm = warConfirmState{}
 			attacker := r.gs.Armies[wc.pendingArmy]
 			target := r.gs.Regions[wc.pendingDest]
-			if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
-				allySieging := false
-				if attacker != nil && target != nil {
-					if siege := r.gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != attacker.ID {
-						if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil && siegeArmy.OwnerID == attacker.OwnerID {
-							allySieging = true
-						}
-					}
-				}
-				if allySieging || (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes)) {
+			supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
+			if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
+				if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
 					r.openSiegeDecision(attacker, target)
 				} else {
 					r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
 				}
 				return InputAction{
 					Kind:          ActionDeclareWar,
+					TargetFaction: faction.FactionID(wc.factionID),
+				}
+			}
+			if supportingSiege {
+				r.SelectedArmy = ""
+				return InputAction{
+					Kind:          ActionDeclareWarAndMove,
+					ArmyID:        wc.pendingArmy,
+					TargetRegion:  wc.pendingDest,
 					TargetFaction: faction.FactionID(wc.factionID),
 				}
 			}
@@ -8294,22 +8298,24 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 		r.warConfirm = warConfirmState{}
 		attacker := r.gs.Armies[wc.pendingArmy]
 		target := r.gs.Regions[wc.pendingDest]
-		if renderTargetRequiresSiegeDecision(r.gs, attacker, target) {
-			allySieging := false
-			if attacker != nil && target != nil {
-				if siege := r.gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != attacker.ID {
-					if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil && siegeArmy.OwnerID == attacker.OwnerID {
-						allySieging = true
-					}
-				}
-			}
-			if allySieging || (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes)) {
+		supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
+		if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
+			if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
 				r.openSiegeDecision(attacker, target)
 			} else {
 				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
 			}
 			return InputAction{
 				Kind:          ActionDeclareWar,
+				TargetFaction: faction.FactionID(wc.factionID),
+			}
+		}
+		if supportingSiege {
+			r.SelectedArmy = ""
+			return InputAction{
+				Kind:          ActionDeclareWarAndMove,
+				ArmyID:        wc.pendingArmy,
+				TargetRegion:  wc.pendingDest,
 				TargetFaction: faction.FactionID(wc.factionID),
 			}
 		}

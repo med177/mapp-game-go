@@ -88,6 +88,9 @@ func canArmyStartSiege(gs *state.GameState, attacker *army.Army, targetRegion *w
 		return false, "Bu ordu başka bir kuşatma yürütüyor. Önce onu kaldır."
 	}
 	if siege := gs.SiegeAt(targetRegion.ID); siege != nil && siege.AttackerArmyID != attacker.ID {
+		if gs.CanJoinActiveSiege(attacker, targetRegion.ID) {
+			return false, "Bu kuşatmaya destek için normal hareket kullan."
+		}
 		siegeArmy := gs.Armies[siege.AttackerArmyID]
 		if siegeArmy == nil || siegeArmy.OwnerID != attacker.OwnerID {
 			return false, "Bu bölge zaten başka bir ordu tarafından kuşatılıyor."

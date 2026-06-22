@@ -38,6 +38,46 @@ func siegeTestState() *state.GameState {
 	}
 }
 
+func siegeSupportTestState() *state.GameState {
+	return &state.GameState{
+		Turn:            5,
+		PlayerFactionID: "p1",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1":   {ID: "p1", Religion: "sunni"},
+			"ally": {ID: "ally", Religion: "sunni"},
+			"p3":   {ID: "p3", Religion: "catholic"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "p1",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"ally_src": {
+				ID:        "ally_src",
+				OwnerID:   "ally",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "p3",
+				Neighbors:   []world.RegionID{"src", "ally_src"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p3"):   {FactionA: "p1", FactionB: "p3", Stance: faction.StanceWar},
+			faction.RelationKey("ally", "p3"): {FactionA: "ally", FactionB: "p3", Stance: faction.StanceWar},
+			faction.RelationKey("p1", "ally"): {FactionA: "p1", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":   {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+			"siege": {ID: "siege", Category: army.CategorySiege, Tier: 1, Attack: 8, Defense: 4, Morale: 30},
+		},
+	}
+}
+
 func TestMoveArmyWithStanceBlocksFortifiedRegionWithoutSiegeUnit(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{
@@ -137,6 +177,117 @@ func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
 	}
 	if gs.SiegeAt("dst") != nil {
 		t.Fatal("ordu başka bölgeye yürüyünce eski kuşatma temizlenmeliydi")
+	}
+}
+
+func TestMoveArmyWithStanceAllowsAlliedSiegeSupport(t *testing.T) {
+	gs := siegeSupportTestState()
+	gs.PlayerFactionID = "ally"
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "siege", CurrentHP: 100}},
+		},
+		"support": {
+			ID:            "support",
+			OwnerID:       "ally",
+			RegionID:      "ally_src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"def": {
+			ID:            "def",
+			OwnerID:       "p3",
+			RegionID:      "dst",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			StartedTurn:       5,
+			FortLevel:         2,
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("support", "dst", "")
+
+	if gs.Armies["support"].RegionID != "dst" {
+		t.Fatalf("müttefik destek ordusu kuşatmaya katılabilmeliydi, got=%s", gs.Armies["support"].RegionID)
+	}
+	if gs.Armies["support"].MovePoints != 1 {
+		t.Fatalf("müttefik destek ordusu bir hareket puanı harcamalıydı, got=%d", gs.Armies["support"].MovePoints)
+	}
+	if gs.Sieges["dst"] == nil || gs.Sieges["dst"].AttackerArmyID != "atk" {
+		t.Fatalf("mevcut kuşatma korunmalıydı, got=%+v", gs.Sieges["dst"])
+	}
+	if gs.Regions["dst"].OwnerID != "p3" {
+		t.Fatalf("kuşatma desteği bölgeyi fethetmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+	if gs.Armies["def"] == nil || gs.Armies["def"].RegionID != "dst" {
+		t.Fatalf("savunan ordu yerinde kalmalıydı, got=%+v", gs.Armies["def"])
+	}
+}
+
+func TestMoveArmyWithStanceBlocksNonAlliedSiegeSupport(t *testing.T) {
+	gs := siegeSupportTestState()
+	gs.PlayerFactionID = "p4"
+	gs.Factions["p4"] = &faction.Faction{ID: "p4", Religion: "orthodox"}
+	gs.Regions["third_src"] = &world.Region{
+		ID:        "third_src",
+		OwnerID:   "p4",
+		Neighbors: []world.RegionID{"dst"},
+	}
+	gs.Relations[faction.RelationKey("p4", "p3")] = &faction.Relation{FactionA: "p4", FactionB: "p3", Stance: faction.StanceWar}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "siege", CurrentHP: 100}},
+		},
+		"third": {
+			ID:            "third",
+			OwnerID:       "p4",
+			RegionID:      "third_src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			StartedTurn:       5,
+			FortLevel:         2,
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("third", "dst", "")
+
+	if gs.Armies["third"].RegionID != "third_src" {
+		t.Fatalf("müttefik olmayan üçüncü devlet kuşatmaya girememeliydi, got=%s", gs.Armies["third"].RegionID)
+	}
+	if gs.Armies["third"].MovePoints != 2 {
+		t.Fatalf("başarısız girişte hareket puanı harcanmamalıydı, got=%d", gs.Armies["third"].MovePoints)
+	}
+	if gs.Sieges["dst"] == nil || gs.Sieges["dst"].AttackerArmyID != "atk" {
+		t.Fatalf("mevcut kuşatma korunmalıydı, got=%+v", gs.Sieges["dst"])
 	}
 }
 

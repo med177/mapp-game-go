@@ -434,6 +434,28 @@ func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
 	return nil
 }
 
+// CanJoinActiveSiege aktif bir kuşatmaya mevcut ordunun destek için katılıp katılamayacağını döner.
+// Aynı fraksiyon ya da müttefik fraksiyonlar destek verebilir; kuşatmayı başlatan ordu hariç tutulur.
+func (s *GameState) CanJoinActiveSiege(attacker *army.Army, regionID world.RegionID) bool {
+	if s == nil || attacker == nil || s.Sieges == nil || regionID == "" || attacker.OwnerID == "" {
+		return false
+	}
+	siege := s.Sieges[regionID]
+	if siege == nil || siege.AttackerArmyID == "" || siege.AttackerArmyID == attacker.ID {
+		return false
+	}
+	siegeArmy := s.Armies[siege.AttackerArmyID]
+	if siegeArmy == nil || siegeArmy.OwnerID == "" {
+		return false
+	}
+	if siegeArmy.OwnerID == attacker.OwnerID {
+		return true
+	}
+	key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(siegeArmy.OwnerID))
+	rel := s.Relations[key]
+	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.
 func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
 	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {

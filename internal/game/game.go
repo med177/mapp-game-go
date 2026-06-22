@@ -1568,9 +1568,9 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		msg := fmt.Sprintf("%s inşaatı devam ediyor (%d tur kaldı). İptal etmek istediğinize emin misiniz?", b.NameTR, order.TurnsLeft)
 		g.renderer.ShowConfirmDialog("İnşaatı İptal Et", msg, "İptal Et", "Vazgeç",
 			render.InputAction{
-				Kind:       render.ActionCancelBuilding,
+				Kind:         render.ActionCancelBuilding,
 				TargetRegion: rid,
-				BuildingID: buildingID,
+				BuildingID:   buildingID,
 			}, nil)
 		return
 	}
@@ -3031,10 +3031,13 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.handleCapitalCapture(prevFactionID, newOwnerID, targetRegion)
 	if len(g.gs.LandRegionsOwnedBy(prevFactionID)) == 0 {
 		result := eliminateFaction(g.gs, prevFactionID, faction.FactionID(newOwnerID))
+		g.retreatArmiesFromCapturedRegion(targetRegion.ID, newOwnerID)
+		g.evictDockedFleetsFromCapturedPort(targetRegion.ID, newOwnerID)
 		g.sanitizeDockedFleets()
 		return result
 	}
-	g.evictDockedFleetsFromCapturedPort(targetRegion.ID, prevOwnerID)
+	g.retreatArmiesFromCapturedRegion(targetRegion.ID, newOwnerID)
+	g.evictDockedFleetsFromCapturedPort(targetRegion.ID, newOwnerID)
 	return eliminationResult{}
 }
 
@@ -3062,9 +3065,58 @@ func (g *Game) announceElimination(result eliminationResult) {
 	g.renderer.AddEventDetail("[YIKILIS] "+msg, detail)
 }
 
-func (g *Game) evictDockedFleetsFromCapturedPort(capturedRegionID world.RegionID, prevOwnerID string) {
+func (g *Game) retreatArmiesFromCapturedRegion(capturedRegionID world.RegionID, protectedOwnerID string) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	capturedRegion := g.gs.Regions[capturedRegionID]
+	if capturedRegion == nil {
+		return
+	}
+	for _, a := range g.gs.Armies {
+		if a == nil || a.RegionID != capturedRegionID || a.OwnerID == "" || a.OwnerID == protectedOwnerID || a.IsNaval {
+			continue
+		}
+		if retreatRegion := g.nearestOwnedRegionForArmy(a, capturedRegion); retreatRegion != "" {
+			a.RegionID = retreatRegion
+			a.DockedRegionID = ""
+			a.DockedSettlementID = ""
+		}
+	}
+}
+
+func (g *Game) nearestOwnedRegionForArmy(a *army.Army, reference *world.Region) world.RegionID {
+	if g == nil || g.gs == nil || a == nil || reference == nil || a.OwnerID == "" {
+		return ""
+	}
+	bestRegion := world.RegionID("")
+	bestDist := 0.0
+	found := false
+	for _, region := range g.gs.Regions {
+		if region == nil || region.OwnerID != a.OwnerID {
+			continue
+		}
+		if a.IsNaval != region.IsSea {
+			continue
+		}
+		if region.ID == reference.ID {
+			continue
+		}
+		dx := float64(region.WorldX - reference.WorldX)
+		dy := float64(region.WorldY - reference.WorldY)
+		dist := dx*dx + dy*dy
+		if !found || dist < bestDist || (dist == bestDist && region.ID < bestRegion) {
+			bestRegion = region.ID
+			bestDist = dist
+			found = true
+		}
+	}
+	return bestRegion
+}
+
+func (g *Game) evictDockedFleetsFromCapturedPort(capturedRegionID world.RegionID, protectedOwnerID string) {
 	for _, fleet := range g.gs.Armies {
-		if fleet == nil || !fleet.IsNaval || fleet.OwnerID != prevOwnerID || fleet.DockedRegionID != capturedRegionID {
+		if fleet == nil || !fleet.IsNaval || fleet.OwnerID == "" || fleet.OwnerID == protectedOwnerID || fleet.DockedRegionID != capturedRegionID {
 			continue
 		}
 		if nearestSea := g.nearestSeaRegionForFleet(fleet, capturedRegionID); nearestSea != "" {
@@ -3277,19 +3329,16 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 	}
 	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil && activeSiege.AttackerArmyID == aid {
+		activeSiege := g.gs.SiegeAt(target)
+		if activeSiege != nil && activeSiege.AttackerArmyID == aid {
 			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
 			return
 		}
-		if activeSiege := g.gs.SiegeAt(target); activeSiege != nil {
-			siegeArmy := g.gs.Armies[activeSiege.AttackerArmyID]
-			if siegeArmy != nil && siegeArmy.OwnerID == a.OwnerID {
-				// Aynı fraksiyondan kuşatma var → birleşerek katıl
+		if activeSiege != nil {
+			if g.gs.CanJoinActiveSiege(a, target) {
 				allyJoiningSiege = true
-			} else if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
-				if reason != "" {
-					g.renderer.ShowCombatResult(reason)
-				}
+			} else {
+				g.renderer.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return
 			}
 		} else {

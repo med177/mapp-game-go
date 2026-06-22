@@ -57,6 +57,89 @@ func TestApplyConquestWithNavalEvictionUndocksPreviousOwnerFleet(t *testing.T) {
 	}
 }
 
+func TestApplyConquestWithNavalEvictionRetreatsForeignArmiesToNearestOwnedRegion(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"old_owner":  {ID: "old_owner"},
+			"ally_owner": {ID: "ally_owner"},
+			"new_owner":  {ID: "new_owner"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "old_owner",
+				WorldX:      100,
+				WorldY:      100,
+				Neighbors:   []world.RegionID{"sea_near"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
+			"land_b": {
+				ID:      "land_b",
+				OwnerID: "old_owner",
+				WorldX:  40,
+				WorldY:  40,
+			},
+			"ally_land": {
+				ID:      "ally_land",
+				OwnerID: "ally_owner",
+				WorldX:  300,
+				WorldY:  300,
+			},
+			"sea_near": {
+				ID:     "sea_near",
+				IsSea:  true,
+				WorldX: 110,
+				WorldY: 100,
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_old": {
+				ID:       "army_old",
+				OwnerID:  "old_owner",
+				RegionID: "land_a",
+				Units:    []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+			"army_ally": {
+				ID:       "army_ally",
+				OwnerID:  "ally_owner",
+				RegionID: "land_a",
+				Units:    []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+			"fleet_old": {
+				ID:                 "fleet_old",
+				OwnerID:            "old_owner",
+				IsNaval:            true,
+				RegionID:           "sea_near",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+			},
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.applyConquestWithNavalEviction(gs.Regions["land_a"], "new_owner")
+
+	if gs.Regions["land_a"].OwnerID != "new_owner" {
+		t.Fatalf("bolge sahipligi degismeliydi, got=%s", gs.Regions["land_a"].OwnerID)
+	}
+	if gs.Armies["army_old"] == nil || gs.Armies["army_old"].RegionID != "land_b" {
+		t.Fatalf("eski sahibin ordusu en yakin kendi bolgesine donmeliydi, got=%+v", gs.Armies["army_old"])
+	}
+	if gs.Armies["army_old"].DockedRegionID != "" || gs.Armies["army_old"].DockedSettlementID != "" {
+		t.Fatalf("kara ordusunun dock bilgisi temiz kalmaliydi, got=%q/%q", gs.Armies["army_old"].DockedRegionID, gs.Armies["army_old"].DockedSettlementID)
+	}
+	if gs.Armies["army_ally"] == nil || gs.Armies["army_ally"].RegionID != "ally_land" {
+		t.Fatalf("müttefik ordusu kendi bolgesine donmeliydi, got=%+v", gs.Armies["army_ally"])
+	}
+	if gs.Armies["fleet_old"] == nil || gs.Armies["fleet_old"].RegionID != "sea_near" {
+		t.Fatalf("limandaki filo denize cikmaliydi, got=%+v", gs.Armies["fleet_old"])
+	}
+	if gs.Armies["fleet_old"].DockedRegionID != "" || gs.Armies["fleet_old"].DockedSettlementID != "" {
+		t.Fatalf("filo liman bagini kaybetmeliydi, got=%q/%q", gs.Armies["fleet_old"].DockedRegionID, gs.Armies["fleet_old"].DockedSettlementID)
+	}
+}
+
 func TestSanitizeDockedFleetsUndocksForeignFleetFromOwnedPort(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
@@ -96,13 +179,13 @@ func TestSanitizeDockedFleetsUndocksForeignFleetFromOwnedPort(t *testing.T) {
 func TestSanitizeDockedFleetsKeepsAlliedPortDocking(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
-				"ally_land": {
-					ID:          "ally_land",
-					OwnerID:     "ally",
-					Neighbors:   []world.RegionID{"sea_near"},
-					Buildings:   []string{"port"},
-					Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
-				},
+			"ally_land": {
+				ID:          "ally_land",
+				OwnerID:     "ally",
+				Neighbors:   []world.RegionID{"sea_near"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "ally_port", Type: world.SettlementPort, NameTR: "Müttefik Limanı"}},
+			},
 			"sea_near": {ID: "sea_near", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
@@ -136,13 +219,13 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 			"new_owner": {ID: "new_owner", NameTR: "Yeni Sahip"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-				"land_a": {
-					ID:          "land_a",
-					OwnerID:     "old_owner",
-					Neighbors:   []world.RegionID{"sea_near"},
-					Buildings:   []string{"port"},
-					Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
-				},
+			"land_a": {
+				ID:          "land_a",
+				OwnerID:     "old_owner",
+				Neighbors:   []world.RegionID{"sea_near"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"}},
+			},
 			"sea_near": {ID: "sea_near", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
