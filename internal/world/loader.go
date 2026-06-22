@@ -53,15 +53,20 @@ func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
 		return fmt.Errorf("settlements JSON parse hatası: %w", err)
 	}
 
+	// Tüm bölgeleri boş settlement array'i ile başlat (nil değil)
 	for _, region := range regions {
-		region.Settlements = nil
+		region.Settlements = []Settlement{}
 	}
+	// JSON'dan gelen settlements'ları uygulamalı
 	for _, entry := range entries {
 		region, ok := regions[entry.RegionID]
 		if !ok || region == nil {
 			continue
 		}
-		region.Settlements = append(region.Settlements[:0], entry.Settlements...)
+		// Eğer entry'de settlement varsa (null değilse) ayarla
+		if entry.Settlements != nil {
+			region.Settlements = append(region.Settlements[:0], entry.Settlements...)
+		}
 	}
 	return nil
 }
