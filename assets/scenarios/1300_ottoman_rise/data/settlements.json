@@ -3595,6 +3595,19 @@
     ]
   },
   {
+    "region_id": "sivrihisar",
+    "settlements": [
+      {
+        "id": "sivrihisar",
+        "name_tr": "Sivrihisar",
+        "x": 1096,
+        "y": 479,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
+  },
+  {
     "region_id": "aydinoglu",
     "settlements": [
       {
@@ -4230,7 +4243,16 @@
   },
   {
     "region_id": "beysehir",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "beysehir",
+        "name_tr": "Beyşehir",
+        "x": 1097,
+        "y": 491,
+        "type": "town",
+        "is_capital": true
+      }
+    ]
   },
   {
     "region_id": "aksaray",

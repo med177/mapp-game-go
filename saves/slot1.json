@@ -1782,7 +1782,17 @@
       "population": 300,
       "religion": "sunni",
       "active_event_id": "",
-      "buildings": null
+      "buildings": null,
+      "settlements": [
+        {
+          "id": "beysehir",
+          "name_tr": "Beyşehir",
+          "x": 1097,
+          "y": 491,
+          "type": "town",
+          "is_capital": true
+        }
+      ]
     },
     "bilecik_frontier": {
       "id": "bilecik_frontier",
@@ -12317,7 +12327,17 @@
       "population": 360,
       "religion": "sunni",
       "active_event_id": "",
-      "buildings": null
+      "buildings": null,
+      "settlements": [
+        {
+          "id": "sivrihisar",
+          "name_tr": "Sivrihisar",
+          "x": 1096,
+          "y": 479,
+          "type": "town",
+          "is_capital": true
+        }
+      ]
     },
     "slovakia": {
       "id": "slovakia",
@@ -14543,7 +14563,7 @@
       "spice": 17,
       "cloth": 28,
       "research": {
-        "completed": {},
+        "completed": { },
         "active_id": "horse_breeding",
         "turns_left": 1
       },
@@ -15253,7 +15273,7 @@
       "spice": 8,
       "cloth": 16,
       "research": {
-        "completed": {},
+        "completed": { },
         "active_id": "horse_breeding",
         "turns_left": 2
       },
@@ -15728,7 +15748,7 @@
       "spice": 11,
       "cloth": 23,
       "research": {
-        "completed": {},
+        "completed": { },
         "active_id": "cavalry_tactics",
         "turns_left": 2
       },
