@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-06-19
+last_updated: 2026-07-02
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -105,6 +105,7 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 - `peace` ilişkisinde ortak düşman ve yeterli skor varsa ittifak dener
 - `peace` ilişkisinde skor nötr veya pozitifse ticaret dener
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
+- bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 
@@ -187,7 +188,8 @@ Kıyı bölgesi varsa:
 2. Filo limiti artık dinamiktir:
    `1` temel + `1` ek kıyı baskısı (3+ kıyı bölgesi) + savaşta `1` ek filo, üst sınır `3`
 3. Yeni `transport` emri, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına bağlı limanda kuyruğa girer
-4. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı komşu denizde filo oluşturur veya mevcut filoya birim ekler
+4. Aynı turda transport hattı ya da mevcut transport filosu olan savaşçı AI, deniz baskısı ve birden fazla cephe tespit ederse uygun limit dahilinde birden çok eskort `warship` emri de kuyruklar
+5. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı komşu denizde filo oluşturur veya mevcut filoya birim ekler
 
 ---
 
@@ -246,5 +248,6 @@ Queue davranışı:
 
 - [x] AI çoklu ordu konsolidasyonu (dağınık ordular ana orduya katılsın; ancak lojistik baskı altındaki kara bölgede konsolidasyon durur)
 - [x] AI fırsatçı savaş ilanı (sınır, güç dengesi ve ilişki skoruna göre sınırlı proaktif savaş)
-- [ ] Diplomasi teklif önceliklerini teknoloji farkı ve uzun vadeli tehdit seviyesiyle daha da zenginleştir
-- [ ] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat
+- [x] Diplomasi teklif önceliklerini teknoloji farkı ve uzun vadeli tehdit seviyesiyle zenginleştir
+- [x] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat
+- [x] Escort üretimini çoklu deniz baskısı ve birden fazla cepheye göre ölçekle

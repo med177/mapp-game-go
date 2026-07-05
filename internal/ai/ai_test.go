@@ -2,6 +2,7 @@ package ai
 
 import (
 	"math/rand"
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -49,8 +50,144 @@ func TestAIQueuesPeaceOfferToPlayer(t *testing.T) {
 	if offer.FromFactionID != "ai_1" || offer.ToFactionID != "player" || offer.Action != string(diplomacy.ActionProposePeace) {
 		t.Fatalf("beklenmeyen teklif kaydı: %+v", offer)
 	}
+	if offer.PriorityReason == "" {
+		t.Fatal("barış teklifinde öncelik sebebi kaydı bekleniyordu")
+	}
 	if rel.Stance != faction.StanceWar {
 		t.Fatalf("oyuncu yanıtlayana kadar savaş stance'i korunmalı, got=%s", rel.Stance)
+	}
+}
+
+func TestAIPrioritizesPeaceOffersByThreatAndTechGap(t *testing.T) {
+	gs := aiTestState()
+	gs.Relations[faction.RelationKey("ai_1", "player")].Stance = faction.StanceWar
+	gs.Relations[faction.RelationKey("ai_1", "player")].Score = -100
+	gs.Relations[faction.RelationKey("ai_2", "player")].Stance = faction.StanceWar
+	gs.Relations[faction.RelationKey("ai_2", "player")].Score = -100
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Stance = faction.StancePeace
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+	gs.Armies["player_army"] = &army.Army{
+		ID:       "player_army",
+		OwnerID:  "player",
+		RegionID: "p1",
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+	gs.Armies["ai1_army"].Units = []army.Unit{{TypeID: "inf", CurrentHP: 100}}
+	gs.Armies["ai2_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Factions["ai_1"].Research.Completed = map[string]bool{}
+	gs.Factions["ai_2"].Research.Completed = map[string]bool{"tech_a": true, "tech_b": true}
+	gs.Factions["player"].Research.Completed = map[string]bool{"tech_a": true, "tech_b": true, "tech_c": true, "tech_d": true}
+
+	aiHandleDiplomacy(gs, "ai_1")
+	aiHandleDiplomacy(gs, "ai_2")
+
+	if len(gs.DiplomaticOffers) != 2 {
+		t.Fatalf("iki barış teklifi bekleniyordu, got=%d", len(gs.DiplomaticOffers))
+	}
+	bestIdx, ok := diplomacy.BestOfferIndex(gs, "player")
+	if !ok {
+		t.Fatal("öncelikli teklif bulunamadı")
+	}
+	best := gs.DiplomaticOffers[bestIdx]
+	if best.FromFactionID != "ai_1" {
+		t.Fatalf("daha baskı altındaki teklif önce gelmeliydi, got=%+v", best)
+	}
+	if best.Priority <= gs.DiplomaticOffers[1-bestIdx].Priority {
+		t.Fatalf("öncelik puanı daha yüksek olmalıydı, got=%+v", gs.DiplomaticOffers)
+	}
+	if !strings.Contains(best.PriorityReason, "tehdit") && !strings.Contains(best.PriorityReason, "teknoloji") {
+		t.Fatalf("barış teklif sebebi anlamlı olmalıydı, got=%q", best.PriorityReason)
+	}
+}
+
+func TestAIQueuesAllianceAndTradeOffersWithPriority(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":    {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic, Gold: 600, Grain: 400},
+			"ai_allied": {ID: "ai_allied", NameTR: "AI Allied", Religion: religion.Catholic, Gold: 450, Grain: 200, Research: faction.ResearchState{Completed: map[string]bool{}}, AIAggressiveness: 50},
+			"ai_trader": {ID: "ai_trader", NameTR: "AI Trader", Religion: religion.Catholic, Gold: 450, Grain: 200, Research: faction.ResearchState{Completed: map[string]bool{"tech_a": true, "tech_b": true, "tech_c": true, "tech_d": true, "tech_e": true, "tech_f": true, "tech_g": true, "tech_h": true, "tech_i": true, "tech_j": true}}, AIAggressiveness: 45},
+			"common_en": {ID: "common_en", NameTR: "Enemy", Religion: religion.Catholic},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_land":    {ID: "player_land", OwnerID: "player", TradeCapacity: 8},
+			"ai_allied_land": {ID: "ai_allied_land", OwnerID: "ai_allied", TradeCapacity: 4},
+			"ai_trader_land": {ID: "ai_trader_land", OwnerID: "ai_trader", TradeCapacity: 4},
+			"enemy_land":     {ID: "enemy_land", OwnerID: "common_en", TradeCapacity: 4},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_allied", "player"):    {FactionA: "ai_allied", FactionB: "player", Score: 20, Stance: faction.StancePeace},
+			faction.RelationKey("ai_trader", "player"):    {FactionA: "ai_trader", FactionB: "player", Score: 15, Stance: faction.StancePeace},
+			faction.RelationKey("ai_allied", "common_en"): {FactionA: "ai_allied", FactionB: "common_en", Score: -80, Stance: faction.StanceWar},
+			faction.RelationKey("player", "common_en"):    {FactionA: "player", FactionB: "common_en", Score: -80, Stance: faction.StanceWar},
+			faction.RelationKey("ai_trader", "common_en"): {FactionA: "ai_trader", FactionB: "common_en", Score: 0, Stance: faction.StancePeace},
+			faction.RelationKey("ai_allied", "ai_trader"): {FactionA: "ai_allied", FactionB: "ai_trader", Score: 0, Stance: faction.StancePeace},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player_army": {ID: "player_army", OwnerID: "player", RegionID: "player_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+			"ally_army":   {ID: "ally_army", OwnerID: "ai_allied", RegionID: "ai_allied_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"trader_army": {ID: "trader_army", OwnerID: "ai_trader", RegionID: "ai_trader_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+			"enemy_army":  {ID: "enemy_army", OwnerID: "common_en", RegionID: "enemy_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+	gs.Factions["player"].Research.Completed = map[string]bool{
+		"tech_a": true,
+		"tech_b": true,
+		"tech_c": true,
+		"tech_d": true,
+		"tech_e": true,
+		"tech_f": true,
+		"tech_g": true,
+		"tech_h": true,
+		"tech_i": true,
+		"tech_j": true,
+	}
+
+	aiHandleDiplomacy(gs, "ai_allied")
+	aiHandleDiplomacy(gs, "ai_trader")
+
+	if len(gs.DiplomaticOffers) != 2 {
+		t.Fatalf("ittifak+ticaret teklifi bekleniyordu, got=%d", len(gs.DiplomaticOffers))
+	}
+	bestIdx, ok := diplomacy.BestOfferIndex(gs, "player")
+	if !ok {
+		t.Fatal("öncelikli teklif bulunamadı")
+	}
+	best := gs.DiplomaticOffers[bestIdx]
+	other := gs.DiplomaticOffers[1-bestIdx]
+	if best.Action != string(diplomacy.ActionProposeAlliance) && best.Action != string(diplomacy.ActionProposeTrade) {
+		t.Fatalf("beklenmeyen teklif tipi öncelikli seçildi, got=%+v", best)
+	}
+	if (best.Action == string(diplomacy.ActionProposeAlliance) && other.Action != string(diplomacy.ActionProposeTrade)) ||
+		(best.Action == string(diplomacy.ActionProposeTrade) && other.Action != string(diplomacy.ActionProposeAlliance)) {
+		t.Fatalf("ittifak ve ticaret teklifleri birlikte bekleniyordu, got=%+v", gs.DiplomaticOffers)
+	}
+	if best.PriorityReason == "" || other.PriorityReason == "" {
+		t.Fatalf("öncelik sebebi boş olmamalıydı, got=%+v", gs.DiplomaticOffers)
+	}
+	if best.Action == string(diplomacy.ActionProposeTrade) && !strings.Contains(best.PriorityReason, "ticaret") {
+		t.Fatalf("ticaret sebebi görünür olmalıydı, got=%q", best.PriorityReason)
+	}
+	if best.Action == string(diplomacy.ActionProposeAlliance) && !strings.Contains(best.PriorityReason, "ortak") {
+		t.Fatalf("ittifak sebebi görünür olmalıydı, got=%q", best.PriorityReason)
+	}
+	if other.Action == string(diplomacy.ActionProposeTrade) && !strings.Contains(other.PriorityReason, "ticaret") {
+		t.Fatalf("ticaret sebebi görünür olmalıydı, got=%q", other.PriorityReason)
+	}
+	if other.Action == string(diplomacy.ActionProposeAlliance) && !strings.Contains(other.PriorityReason, "ortak") {
+		t.Fatalf("ittifak sebebi görünür olmalıydı, got=%q", other.PriorityReason)
 	}
 }
 
@@ -460,6 +597,94 @@ func TestAINavalStrategyAllowsThirdFleetDuringWarPressure(t *testing.T) {
 	order := gs.ProductionQueue[0]
 	if order.Kind != aiProductionKindUnit || order.FactionID != "ai_1" || order.RegionID != "coast_c" || order.TypeID != "transport" {
 		t.Fatalf("transport baskısı yüksek coast_c limanında kuyruğa girmeli, got=%+v", order)
+	}
+}
+
+func TestAINavalStrategyQueuesEscortForPendingTransport(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"coast_a": {ID: "coast_a", OwnerID: "ai_1", Buildings: []string{"port", "port", "port"}, Neighbors: []world.RegionID{"sea_a"}},
+			"sea_a":   {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"coast_a", "enemy_coast"}},
+			"enemy_coast": {
+				ID:        "enemy_coast",
+				OwnerID:   "player",
+				Neighbors: []world.RegionID{"sea_a"},
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni, Gold: 1000, Grain: 200, Timber: 200, Iron: 80, Stone: 80, Research: faction.ResearchState{Completed: map[string]bool{"navigation": true, "naval_doctrine": true}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -80, Stance: faction.StanceWar},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port", MaxPerRegion: 3},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: "navigation", TurnsRequired: 2},
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: "naval_doctrine", RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
+		},
+	}
+
+	aiNavalStrategy(gs, "ai_1")
+
+	if len(gs.ProductionQueue) != 2 {
+		t.Fatalf("pending transport için escort da bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	if gs.ProductionQueue[0].TypeID != "transport" || gs.ProductionQueue[1].TypeID != "warship" {
+		t.Fatalf("transport+escort sırası bekleniyordu, got=%+v", gs.ProductionQueue)
+	}
+}
+
+func TestAINavalStrategyQueuesMultipleEscortsForMultipleFronts(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"coast_a": {ID: "coast_a", OwnerID: "ai_1", Buildings: []string{"port", "port", "port"}, Neighbors: []world.RegionID{"sea_a"}},
+			"coast_b": {ID: "coast_b", OwnerID: "ai_1", Buildings: []string{"port", "port", "port"}, Neighbors: []world.RegionID{"sea_b"}},
+			"sea_a":   {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"coast_a", "enemy_a"}},
+			"sea_b":   {ID: "sea_b", IsSea: true, Neighbors: []world.RegionID{"coast_b", "enemy_b"}},
+			"enemy_a": {ID: "enemy_a", OwnerID: "player", Neighbors: []world.RegionID{"sea_a"}},
+			"enemy_b": {ID: "enemy_b", OwnerID: "player", Neighbors: []world.RegionID{"sea_b"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni, Gold: 2500, Grain: 400, Timber: 400, Iron: 150, Stone: 150, Research: faction.ResearchState{Completed: map[string]bool{"navigation": true, "naval_doctrine": true}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -80, Stance: faction.StanceWar},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port", MaxPerRegion: 3},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "player", RegionID: "sea_a", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: "navigation", TurnsRequired: 2},
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: "naval_doctrine", RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
+		},
+	}
+
+	aiNavalStrategy(gs, "ai_1")
+
+	if len(gs.ProductionQueue) != 3 {
+		t.Fatalf("iki cephede bir transport ve iki escort bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	if gs.ProductionQueue[0].TypeID != "transport" {
+		t.Fatalf("ilk emir transport olmalıydı, got=%+v", gs.ProductionQueue[0])
+	}
+	if gs.ProductionQueue[1].TypeID != "warship" || gs.ProductionQueue[2].TypeID != "warship" {
+		t.Fatalf("escort emirleri warship olmalıydı, got=%+v", gs.ProductionQueue)
+	}
+	regionCounts := map[world.RegionID]int{}
+	for _, order := range gs.ProductionQueue[1:] {
+		regionCounts[order.RegionID]++
+	}
+	if regionCounts["coast_a"] != 1 || regionCounts["coast_b"] != 1 {
+		t.Fatalf("escortlar iki farklı cepheye yayılmalıydı, got=%+v", regionCounts)
 	}
 }
 

@@ -39,10 +39,26 @@ type VictoryCondition struct {
 
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
 type DiplomaticOffer struct {
-	FromFactionID faction.FactionID `json:"from_faction_id"`
-	ToFactionID   faction.FactionID `json:"to_faction_id"`
-	Action        string            `json:"action"`
-	CreatedTurn   int               `json:"created_turn"`
+	FromFactionID  faction.FactionID `json:"from_faction_id"`
+	ToFactionID    faction.FactionID `json:"to_faction_id"`
+	Action         string            `json:"action"`
+	CreatedTurn    int               `json:"created_turn"`
+	Priority       int               `json:"priority,omitempty"`
+	PriorityReason string            `json:"priority_reason,omitempty"`
+}
+
+// DiplomaticOfferHistoryEntry çözümlenmiş diplomatik tekliflerin kısa geçmiş kaydıdır.
+type DiplomaticOfferHistoryEntry struct {
+	FromFactionID  faction.FactionID `json:"from_faction_id"`
+	ToFactionID    faction.FactionID `json:"to_faction_id"`
+	Action         string            `json:"action"`
+	CreatedTurn    int               `json:"created_turn"`
+	ResolvedTurn   int               `json:"resolved_turn"`
+	Accepted       bool              `json:"accepted"`
+	Applied        bool              `json:"applied"`
+	Priority       int               `json:"priority,omitempty"`
+	PriorityReason string            `json:"priority_reason,omitempty"`
+	ResultMessage  string            `json:"result_message,omitempty"`
 }
 
 type SiegeState struct {
@@ -147,6 +163,8 @@ type GameState struct {
 	Relations map[string]*faction.Relation `json:"relations"`
 	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
+	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.
+	DiplomaticOfferHistory []DiplomaticOfferHistoryEntry `json:"diplomatic_offer_history,omitempty"`
 
 	// Ticaret güzergahları
 	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`

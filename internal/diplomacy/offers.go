@@ -7,6 +7,16 @@ import (
 
 // QueueOffer geçerli ve tekrar etmeyen diplomatik teklifi kuyruğa ekler.
 func QueueOffer(gs *state.GameState, from, to faction.FactionID, action Action) bool {
+	return QueueOfferWithPriority(gs, from, to, action, 0)
+}
+
+// QueueOfferWithPriority geçerli ve tekrar etmeyen diplomatik teklifi önceliğiyle kuyruğa ekler.
+func QueueOfferWithPriority(gs *state.GameState, from, to faction.FactionID, action Action, priority int) bool {
+	return QueueOfferWithMeta(gs, from, to, action, priority, "")
+}
+
+// QueueOfferWithMeta geçerli ve tekrar etmeyen diplomatik teklifi öncelik ve sebep bilgisiyle kuyruğa ekler.
+func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action Action, priority int, reason string) bool {
 	if gs == nil || from == "" || to == "" || from == to {
 		return false
 	}
@@ -24,12 +34,43 @@ func QueueOffer(gs *state.GameState, from, to faction.FactionID, action Action) 
 		}
 	}
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
-		FromFactionID: from,
-		ToFactionID:   to,
-		Action:        string(action),
-		CreatedTurn:   gs.Turn,
+		FromFactionID:  from,
+		ToFactionID:    to,
+		Action:         string(action),
+		CreatedTurn:    gs.Turn,
+		Priority:       priority,
+		PriorityReason: reason,
 	})
 	return true
+}
+
+// BestOfferIndex belirtilen hedef için en yüksek öncelikli diplomatik teklifin indeksini döner.
+func BestOfferIndex(gs *state.GameState, target faction.FactionID) (int, bool) {
+	if gs == nil || target == "" || len(gs.DiplomaticOffers) == 0 {
+		return 0, false
+	}
+
+	bestIdx := -1
+	bestPriority := 0
+	bestTurn := 0
+	found := false
+	for i, offer := range gs.DiplomaticOffers {
+		if offer.ToFactionID != target {
+			continue
+		}
+		fromFaction := gs.Factions[offer.FromFactionID]
+		toFaction := gs.Factions[offer.ToFactionID]
+		if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
+			continue
+		}
+		if !found || offer.Priority > bestPriority || (offer.Priority == bestPriority && (offer.CreatedTurn < bestTurn || (offer.CreatedTurn == bestTurn && i < bestIdx))) {
+			bestIdx = i
+			bestPriority = offer.Priority
+			bestTurn = offer.CreatedTurn
+			found = true
+		}
+	}
+	return bestIdx, found
 }
 
 // ResolveOffer teklifi kabul/red ile sonuçlandırır ve kuyruktan düşürür.

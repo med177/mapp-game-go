@@ -241,3 +241,218 @@ func TestHandleDiplomacyInputSelectsOnFirstClickAndOpensOnSecond(t *testing.T) {
 		t.Fatalf("aynı satıra ikinci tık teklif panelini açmalı, got=%q", r.diplomacyTargetFaction)
 	}
 }
+
+func TestHandleDiplomacyInputHistoryClickOpensRelevantFaction(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
+		},
+		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
+			{FromFactionID: "ai_2", ToFactionID: "ai_1", Action: "propose_alliance", CreatedTurn: 1, ResolvedTurn: 2, Accepted: true, Applied: true},
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade", CreatedTurn: 3, ResolvedTurn: 4, Accepted: true, Applied: true},
+		},
+	}
+	r := &Renderer{
+		gs:            gs,
+		showDiplomacy: true,
+		prevKeys:      make(map[ebiten.Key]bool),
+		prevMouse:     make(map[ebiten.MouseButton]bool),
+	}
+
+	layout := diplomacyListLayoutForScreen()
+	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
+	input := gameui.InputState{
+		MouseX:          cardRect.X + 6,
+		MouseY:          cardRect.Y + 6,
+		LeftJustPressed: true,
+	}
+
+	act := r.handleDiplomacyInput(input)
+	if act.Kind != ActionNone {
+		t.Fatalf("history tıklamasında doğrudan oyun aksiyonu üretilmemeli, got=%s", act.Kind)
+	}
+	if r.diplomacyTargetFaction != "ai_1" {
+		t.Fatalf("history tıklaması ilgili karşı fraksiyonu açmalıydı, got=%q", r.diplomacyTargetFaction)
+	}
+	if r.diplomacyActionFocus != 3 {
+		t.Fatalf("trade history teklifinde action focus trade olmalıydı, got=%d", r.diplomacyActionFocus)
+	}
+}
+
+func TestHandleDiplomacyInputHistoryFiltersUpdateState(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+	}
+	r := &Renderer{
+		gs:            gs,
+		showDiplomacy: true,
+		prevKeys:      make(map[ebiten.Key]bool),
+		prevMouse:     make(map[ebiten.MouseButton]bool),
+	}
+
+	layout := diplomacyListLayoutForScreen()
+	buttons := buildDiplomacyHistoryFilterButtons(layout.historyRect, diplomacyHistoryDirectionAll, ActionNone)
+
+	click := gameui.InputState{
+		MouseX:          buttons[1].Button.X + 1,
+		MouseY:          buttons[1].Button.Y + 1,
+		LeftJustPressed: true,
+	}
+	r.handleDiplomacyInput(click)
+	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionIncoming {
+		t.Fatalf("gelen filtresi seçilemedi, got=%v", r.diplomacyHistoryDirectionFilter)
+	}
+	if r.diplomacyHistoryActionFilter != ActionNone {
+		t.Fatalf("direction filtresi action filtresini değiştirmemeli, got=%s", r.diplomacyHistoryActionFilter)
+	}
+
+	click.MouseX = buttons[4].Button.X + 1
+	click.MouseY = buttons[4].Button.Y + 1
+	r.handleDiplomacyInput(click)
+	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionIncoming {
+		t.Fatalf("action filtresi direction filtresini korumalı, got=%v", r.diplomacyHistoryDirectionFilter)
+	}
+	if r.diplomacyHistoryActionFilter != ActionProposeTrade {
+		t.Fatalf("ticaret filtresi seçilemedi, got=%s", r.diplomacyHistoryActionFilter)
+	}
+}
+
+func TestHandleDiplomacyOfferInputHistoryFiltersUpdateState(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade"},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+	}
+
+	layout := diplomacyOfferLayoutForScreen()
+	buttons := buildDiplomacyHistoryFilterButtons(layout.historyRect, diplomacyHistoryDirectionAll, ActionNone)
+
+	if !r.applyDiplomacyHistoryFilterHit(layout.historyRect, buttons[2].Button.X+1, buttons[2].Button.Y+1) {
+		t.Fatal("offer modal history direction filtresi tıklaması consumed edilmedi")
+	}
+	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionOutgoing {
+		t.Fatalf("offer modal history direction filtresi seçilemedi, got=%v", r.diplomacyHistoryDirectionFilter)
+	}
+	if r.diplomacyHistoryActionFilter != ActionNone {
+		t.Fatalf("direction filtresi action filtresini değiştirmemeli, got=%s", r.diplomacyHistoryActionFilter)
+	}
+
+	if !r.applyDiplomacyHistoryFilterHit(layout.historyRect, buttons[4].Button.X+1, buttons[4].Button.Y+1) {
+		t.Fatal("offer modal action filtresi tıklaması consumed edilmedi")
+	}
+	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionOutgoing {
+		t.Fatalf("action filtresi direction filtresini korumalı, got=%v", r.diplomacyHistoryDirectionFilter)
+	}
+	if r.diplomacyHistoryActionFilter != ActionProposeTrade {
+		t.Fatalf("offer modal ticaret filtresi seçilemedi, got=%s", r.diplomacyHistoryActionFilter)
+	}
+}
+
+func TestDiplomacyOfferHistorySummaryCountsRelevantEntries(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
+			{FromFactionID: "player", ToFactionID: "ai_1", Action: "propose_peace", Accepted: true, Applied: true},
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade", Accepted: false, Applied: false},
+			{FromFactionID: "ai_2", ToFactionID: "ai_1", Action: "propose_alliance", Accepted: true, Applied: true},
+		},
+	}
+
+	total, accepted, rejected, applied := diplomacyOfferHistorySummary(gs, diplomacyHistoryDirectionAll, ActionNone)
+	if total != 2 || accepted != 1 || rejected != 1 || applied != 1 {
+		t.Fatalf("beklenmeyen history özeti: total=%d accepted=%d rejected=%d applied=%d", total, accepted, rejected, applied)
+	}
+	if got := diplomacyOfferHistoryDirectionTR(gs.DiplomaticOfferHistory[0], gs.PlayerFactionID); got != "Giden" {
+		t.Fatalf("giden kayıt için yön etiketi beklenmedik: %q", got)
+	}
+	if got := diplomacyOfferHistoryDirectionTR(gs.DiplomaticOfferHistory[1], gs.PlayerFactionID); got != "Gelen" {
+		t.Fatalf("gelen kayıt için yön etiketi beklenmedik: %q", got)
+	}
+
+	filteredTotal, filteredAccepted, filteredRejected, filteredApplied := diplomacyOfferHistorySummary(gs, diplomacyHistoryDirectionIncoming, ActionProposeTrade)
+	if filteredTotal != 1 || filteredAccepted != 0 || filteredRejected != 1 || filteredApplied != 0 {
+		t.Fatalf("filtreli history özeti beklenmedik: total=%d accepted=%d rejected=%d applied=%d", filteredTotal, filteredAccepted, filteredRejected, filteredApplied)
+	}
+}
+
+func TestHandleDiplomacyInputHistorySelectionRespectsFilters(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
+		},
+		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
+			{FromFactionID: "player", ToFactionID: "ai_2", Action: "propose_trade", CreatedTurn: 1, ResolvedTurn: 2, Accepted: true, Applied: true},
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 3, ResolvedTurn: 4, Accepted: true, Applied: true},
+			{FromFactionID: "ai_2", ToFactionID: "player", Action: "propose_trade", CreatedTurn: 5, ResolvedTurn: 6, Accepted: true, Applied: true},
+		},
+	}
+	r := &Renderer{
+		gs:                              gs,
+		showDiplomacy:                   true,
+		diplomacyHistoryDirectionFilter: diplomacyHistoryDirectionIncoming,
+		diplomacyHistoryActionFilter:    ActionProposeTrade,
+		prevKeys:                        make(map[ebiten.Key]bool),
+		prevMouse:                       make(map[ebiten.MouseButton]bool),
+	}
+
+	layout := diplomacyListLayoutForScreen()
+	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
+	input := gameui.InputState{
+		MouseX:          cardRect.X + 6,
+		MouseY:          cardRect.Y + 6,
+		LeftJustPressed: true,
+	}
+
+	act := r.handleDiplomacyInput(input)
+	if act.Kind != ActionNone {
+		t.Fatalf("filtreli history tıklamasında doğrudan oyun aksiyonu üretilmemeli, got=%s", act.Kind)
+	}
+	if r.diplomacyTargetFaction != "ai_2" {
+		t.Fatalf("filtre yalnız incoming+trade kaydı açmalı, got=%q", r.diplomacyTargetFaction)
+	}
+	if r.diplomacyActionFocus != 3 {
+		t.Fatalf("trade history kayıt action focus trade olmalı, got=%d", r.diplomacyActionFocus)
+	}
+}

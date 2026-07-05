@@ -97,6 +97,7 @@ func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		Phase:           state.PhaseAITurn,
+		Turn:            23,
 		FactionOrder:    []faction.FactionID{"ai_1", "ai_2", "player"},
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player", NameTR: "Oyuncu"},
@@ -107,7 +108,7 @@ func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Stance: faction.StanceWar, Score: -80},
 		},
 		DiplomaticOffers: []state.DiplomaticOffer{
-			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_peace"},
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 22},
 		},
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -130,5 +131,75 @@ func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 	}
 	if g.aiTurn.stepper != nil {
 		t.Fatal("aktif AI stepper'ı temizlenmeliydi")
+	}
+	if len(gs.DiplomaticOfferHistory) != 1 {
+		t.Fatalf("kabul edilen teklif geçmişe eklenmeliydi, got=%d", len(gs.DiplomaticOfferHistory))
+	}
+	entry := gs.DiplomaticOfferHistory[0]
+	if entry.FromFactionID != "ai_1" || entry.ToFactionID != "player" || entry.Action != "propose_peace" {
+		t.Fatalf("geçmiş kaydı beklenmedik: %+v", entry)
+	}
+	if !entry.Accepted || !entry.Applied {
+		t.Fatalf("kabul edilen teklif history'de accepted/applied olarak işaretlenmeliydi: %+v", entry)
+	}
+	if entry.CreatedTurn != 22 || entry.ResolvedTurn != 23 {
+		t.Fatalf("tur bilgisi korunmalıydı, got=%+v", entry)
+	}
+}
+
+func TestRejectedOfferAppendsDiplomacyHistory(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Turn:            41,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade", CreatedTurn: 39},
+		},
+	}
+	g := &Game{gs: gs}
+
+	offer, result, ok := g.resolveDiplomacyOffer(0, false)
+	if !ok {
+		t.Fatal("geçerli teklif çözümlenmeliydi")
+	}
+	if offer.FromFactionID != "ai_1" || result.Accepted || result.Applied {
+		t.Fatalf("ret sonucu beklenmedik: offer=%+v result=%+v", offer, result)
+	}
+	if len(gs.DiplomaticOfferHistory) != 1 {
+		t.Fatalf("reddedilen teklif geçmişe eklenmeliydi, got=%d", len(gs.DiplomaticOfferHistory))
+	}
+	entry := gs.DiplomaticOfferHistory[0]
+	if entry.Accepted || entry.Applied {
+		t.Fatalf("reddedilen teklif accepted/applied olmamalıydı: %+v", entry)
+	}
+	if entry.ResultMessage == "" || entry.CreatedTurn != 39 || entry.ResolvedTurn != 41 {
+		t.Fatalf("history alanları eksik: %+v", entry)
+	}
+}
+
+func TestPendingPlayerDiplomacyOfferUsesPriority(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":  {ID: "player", NameTR: "Oyuncu"},
+			"ai_low":  {ID: "ai_low", NameTR: "AI Low"},
+			"ai_high": {ID: "ai_high", NameTR: "AI High"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_low", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 6, Priority: 12},
+			{FromFactionID: "ai_high", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 4, Priority: 20},
+		},
+	}
+	g := &Game{gs: gs}
+
+	offer, ok := g.pendingPlayerDiplomacyOffer()
+	if !ok {
+		t.Fatal("öncelikli teklif bulunmalıydı")
+	}
+	if offer.FromFactionID != "ai_high" {
+		t.Fatalf("yüksek öncelikli teklif seçilmeliydi, got=%+v", offer)
 	}
 }

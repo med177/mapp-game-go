@@ -92,7 +92,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showDiplomacy {
-		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction) {
+		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -311,6 +311,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		return true
 	}
 	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex()) {
+		return true
+	}
+	if r.activeRegionEventHovering(fx, fy) {
 		return true
 	}
 	if r.SelectedRegion != "" {

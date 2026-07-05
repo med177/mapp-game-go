@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
@@ -151,7 +152,8 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			otherPower := diplomacy.MilitaryPower(gs, otherID)
 			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
 				if otherID == gs.PlayerFactionID {
-					diplomacy.QueueOffer(gs, fid, otherID, diplomacy.ActionProposePeace)
+					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposePeace)
+					diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposePeace, priority, reason)
 					addTurnStep(steps, TurnStep{
 						FactionID:     fid,
 						Kind:          TurnStepDiplomacy,
@@ -172,14 +174,25 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			}
 		case faction.StancePeace:
 			if rel.Score >= 20 && diplomacy.HasCommonEnemy(gs, fid, otherID) && !diplomacy.HasDirectThreat(gs, fid, otherID) {
-				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
-				if result.Applied || result.Accepted {
+				if otherID == gs.PlayerFactionID {
+					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeAlliance)
+					diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeAlliance, priority, reason)
 					addTurnStep(steps, TurnStep{
 						FactionID:     fid,
 						Kind:          TurnStepDiplomacy,
 						TargetFaction: otherID,
-						Message:       turnFactionName(gs, fid) + ": " + result.Message,
+						Message:       turnFactionName(gs, fid) + " sana ittifak teklif ediyor.",
 					})
+				} else {
+					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
+					if result.Applied || result.Accepted {
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + ": " + result.Message,
+						})
+					}
 				}
 				continue
 			}
@@ -188,20 +201,133 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				aiTradePartnerCount(gs, fid) < 3 &&
 				aiTradePartnerCount(gs, otherID) < 3 &&
 				!diplomacy.HasDirectThreat(gs, fid, otherID) {
-				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
-				if result.Applied || result.Accepted {
-					addTurnStep(steps, TurnStep{
-						FactionID:     fid,
-						Kind:          TurnStepDiplomacy,
-						TargetFaction: otherID,
-						Message:       turnFactionName(gs, fid) + ": " + result.Message,
-					})
+				if otherID == gs.PlayerFactionID {
+					assessment := diplomacy.AssessTradeProposal(gs, diplomacy.Relation(gs, fid, otherID), fid, otherID)
+					if assessment.BlockReason == "" {
+						priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeTrade)
+						diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeTrade, priority, reason)
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + " sana ticaret teklif ediyor.",
+						})
+					}
+				} else {
+					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)
+					if result.Applied || result.Accepted {
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + ": " + result.Message,
+						})
+					}
 				}
 			}
 		}
 	}
 
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
+}
+
+func aiPeaceOfferPriority(gs *state.GameState, from, to faction.FactionID) int {
+	priority, _ := aiDiplomacyOfferPriorityDetails(gs, from, to, diplomacy.ActionProposePeace)
+	return priority
+}
+
+func aiDiplomacyOfferPriority(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) int {
+	priority, _ := aiDiplomacyOfferPriorityDetails(gs, from, to, action)
+	return priority
+}
+
+func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) (int, string) {
+	if gs == nil || from == "" || to == "" {
+		return 0, ""
+	}
+	fromFaction := gs.Factions[from]
+	toFaction := gs.Factions[to]
+	if fromFaction == nil || toFaction == nil {
+		return 0, ""
+	}
+
+	score := 0
+	reasons := make([]string, 0, 5)
+	if rel := diplomacy.Relation(gs, from, to); rel != nil {
+		relScore := minInt(20, maxInt(0, -rel.Score/4))
+		score += relScore
+		if relScore > 0 {
+			reasons = append(reasons, "ilişki baskısı")
+		}
+	}
+
+	fromTech := len(fromFaction.Research.Completed)
+	toTech := len(toFaction.Research.Completed)
+	if toTech > fromTech {
+		techScore := minInt(20, (toTech-fromTech)*3)
+		score += techScore
+		if techScore > 0 {
+			reasons = append(reasons, "teknoloji farkı")
+		}
+	} else {
+		score += minInt(6, (fromTech-toTech)*2)
+	}
+
+	fromPower := diplomacy.MilitaryPower(gs, from)
+	toPower := diplomacy.MilitaryPower(gs, to)
+	if toPower > fromPower {
+		powerScore := minInt(24, (toPower-fromPower)/10)
+		score += powerScore
+		if powerScore > 0 {
+			reasons = append(reasons, "askeri baskı")
+		}
+	} else {
+		score += minInt(8, (fromPower-toPower)/20)
+	}
+
+	if len(gs.LandRegionsOwnedBy(to)) > len(gs.LandRegionsOwnedBy(from)) {
+		score += minInt(10, (len(gs.LandRegionsOwnedBy(to))-len(gs.LandRegionsOwnedBy(from)))*2)
+	}
+
+	switch action {
+	case diplomacy.ActionProposePeace:
+		if diplomacy.HasDirectThreat(gs, from, to) {
+			score += 12
+			reasons = append(reasons, "doğrudan tehdit")
+		}
+		score += minInt(8, len(gs.RegionsOwnedBy(from))/8)
+	case diplomacy.ActionProposeAlliance:
+		if diplomacy.HasCommonEnemy(gs, from, to) {
+			score += 16
+			reasons = append(reasons, "ortak düşman")
+		}
+		if !diplomacy.HasDirectThreat(gs, from, to) {
+			score += 8
+			reasons = append(reasons, "güvenli diplomasi")
+		}
+		score += minInt(10, len(gs.RegionsOwnedBy(from))/10)
+	case diplomacy.ActionProposeTrade:
+		if assessment := diplomacy.AssessTradeProposal(gs, diplomacy.Relation(gs, from, to), from, to); assessment.BlockReason == "" {
+			score += assessment.Chance
+			reasons = append(reasons, "ticaret fırsatı")
+		} else {
+			score += 8
+		}
+		if diplomacy.HasCommonEnemy(gs, from, to) {
+			score += 4
+		}
+		if diplomacy.HasDirectThreat(gs, from, to) {
+			score -= 10
+		}
+		score += minInt(8, aiTradePartnerCount(gs, from)*2)
+	}
+	if len(reasons) == 0 {
+		reasons = append(reasons, "genel öncelik")
+	}
+	if len(reasons) > 3 {
+		reasons = reasons[:3]
+	}
+	return score, strings.Join(reasons, ", ")
 }
 
 func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
@@ -562,6 +688,113 @@ func aiPendingNavalOrderCount(gs *state.GameState, fid faction.FactionID) int {
 		}
 	}
 	return count
+}
+
+func aiPendingTransportOrderCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
+			continue
+		}
+		utype, ok := gs.UnitTypes[order.TypeID]
+		if !ok || utype.Category != army.CategoryNavalTrans {
+			continue
+		}
+		count++
+	}
+	return count
+}
+
+type aiEscortFrontCandidate struct {
+	region        *world.Region
+	seaID         world.RegionID
+	pressure      int
+	score         int
+	hasEnemyFleet bool
+}
+
+func aiEscortFrontCandidates(gs *state.GameState, fid faction.FactionID, coastalRegions []*world.Region, warshipType *army.UnitType) []aiEscortFrontCandidate {
+	if gs == nil || warshipType == nil {
+		return nil
+	}
+	candidates := make(map[world.RegionID]aiEscortFrontCandidate, len(coastalRegions))
+	for _, r := range coastalRegions {
+		if r == nil || !aiRegionHasPortBuilding(r) {
+			continue
+		}
+		if aiBuildingLevel(r, "port") < warshipType.RequiredBldgLevel {
+			continue
+		}
+		seaID := aiSeaNeighbor(gs, r)
+		if seaID == "" {
+			continue
+		}
+		pressure := aiSeaPressure(gs, string(fid), seaID)
+		enemyFleet := aiEnemyNavalInRegion(gs, string(fid), seaID) != nil
+		score := pressure
+		if enemyFleet {
+			score += 20
+		}
+		if pending := aiPendingNavalUnitCount(gs, seaID, fid); pending > 0 {
+			score += pending * 2
+		}
+		current, exists := candidates[seaID]
+		if exists {
+			if current.score > score {
+				continue
+			}
+			if current.score == score {
+				if current.pressure > pressure || (current.pressure == pressure && current.region != nil && string(current.region.ID) <= string(r.ID)) {
+					continue
+				}
+			}
+		}
+		candidates[seaID] = aiEscortFrontCandidate{
+			region:        r,
+			seaID:         seaID,
+			pressure:      pressure,
+			score:         score,
+			hasEnemyFleet: enemyFleet,
+		}
+	}
+	out := make([]aiEscortFrontCandidate, 0, len(candidates))
+	for _, candidate := range candidates {
+		out = append(out, candidate)
+	}
+	return out
+}
+
+func aiEscortThreatFrontCount(candidates []aiEscortFrontCandidate) int {
+	count := 0
+	for _, candidate := range candidates {
+		if candidate.pressure >= 25 || candidate.hasEnemyFleet {
+			count++
+		}
+	}
+	return count
+}
+
+func aiEscortLimit(atWar bool, candidates []aiEscortFrontCandidate) int {
+	limit := 1
+	if atWar {
+		limit++
+	}
+	if aiEscortThreatFrontCount(candidates) >= 2 {
+		limit++
+	}
+	maxPressure := 0
+	for _, candidate := range candidates {
+		if candidate.pressure > maxPressure {
+			maxPressure = candidate.pressure
+		}
+	}
+	if maxPressure >= 60 {
+		limit++
+	}
+	if limit > 3 {
+		limit = 3
+	}
+	return limit
 }
 
 func aiBuildingLevel(region *world.Region, buildingID string) int {
@@ -2360,7 +2593,7 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 	aiProduceEscortIfNeeded(gs, fid, coastalRegions, steps)
 }
 
-// aiProduceEscortIfNeeded transport filosu olan AI için escort savaş gemisi üretir.
+// aiProduceEscortIfNeeded transport hattı olan AI için escort savaş gemisi üretir.
 func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastalRegions []*world.Region, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f == nil || f.IsEliminated || gs.UnitTypes == nil {
@@ -2386,21 +2619,26 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 			}
 		}
 	}
+	if !hasTransport && aiPendingTransportOrderCount(gs, fid) > 0 {
+		hasTransport = true
+	}
 	if !hasTransport {
 		return
 	}
 
+	candidates := aiEscortFrontCandidates(gs, fid, coastalRegions, warshipType)
+	if len(candidates) == 0 {
+		return
+	}
+
 	// Escort gerekiyor mu?
-	needEscort := atWar || highSeaPressure
+	needEscort := atWar || highSeaPressure || aiEscortThreatFrontCount(candidates) >= 2
 	if !needEscort {
 		return
 	}
 
 	// Escort filosu sayısı kontrolü
-	escortLimit := 1
-	if atWar {
-		escortLimit = 2
-	}
+	escortLimit := aiEscortLimit(atWar, candidates)
 	escortFleetCount := 0
 	for _, a := range gs.Armies {
 		if a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
@@ -2429,71 +2667,62 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		return
 	}
 
-	// En uygun liman bölgesini bul (transport filosuna yakın)
-	bestScore := -1
-	var bestRegion *world.Region
-	for _, r := range coastalRegions {
-		if !aiRegionHasPortBuilding(r) {
-			continue
-		}
-		// Liman seviyesi 3 kontrolü (warship için required_bldg_level)
-		portLevel := aiBuildingLevel(r, "port")
-		if portLevel < warshipType.RequiredBldgLevel {
-			continue
-		}
-		// Kuyruk kapasitesi kontrolü
-		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
-			continue
-		}
-		seaID := aiSeaNeighbor(gs, r)
-		if seaID == "" {
-			continue
-		}
-		// Transport filosuna yakınlık skoru
-		score := 0
-		for _, a := range gs.Armies {
-			if a.OwnerID == string(fid) && a.IsNaval && a.TransportCapacity(gs.UnitTypes) > 0 {
-				if a.RegionID == seaID {
-					score += 50
-				}
-				for _, nid := range r.Neighbors {
-					if nid == a.RegionID {
-						score += 30
-					}
-				}
-			}
-		}
-		score += aiSeaPressure(gs, string(fid), seaID)
-		if score > bestScore {
-			bestScore = score
-			bestRegion = r
-		}
-	}
-	if bestRegion == nil {
-		return
-	}
-
-	seaID := aiSeaNeighbor(gs, bestRegion)
-	currentWarshipUnits := 0
-	for _, a := range gs.Armies {
-		if a.RegionID == seaID && a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
-			currentWarshipUnits = len(a.Units)
+	usedSeas := make(map[world.RegionID]bool, len(candidates))
+	for escortFleetCount < escortLimit {
+		candidate, ok := aiBestEscortFrontCandidate(candidates, usedSeas)
+		if !ok {
 			break
 		}
+		usedSeas[candidate.seaID] = true
+		if candidate.region == nil {
+			continue
+		}
+		if aiPendingUnitCountByRegion(gs, candidate.region.ID, fid) >= aiMaxRegionQueue {
+			continue
+		}
+		currentWarshipUnits := 0
+		for _, a := range gs.Armies {
+			if a.RegionID == candidate.seaID && a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
+				currentWarshipUnits = len(a.Units)
+				break
+			}
+		}
+		if currentWarshipUnits+aiPendingNavalUnitCount(gs, candidate.seaID, fid) >= army.MaxArmySize {
+			continue
+		}
+		if !aiCanAffordWithReserve(f, warshipCost) {
+			break
+		}
+		warshipCost.Apply(f)
+		aiEnqueueProduction(gs, fid, aiProductionKindUnit, candidate.region.ID, "warship", warshipType.TurnsRequired)
+		addTurnStep(steps, TurnStep{
+			FactionID:    fid,
+			Kind:         TurnStepRecruit,
+			TargetRegion: candidate.region.ID,
+			FocusRegion:  candidate.seaID,
+			Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, candidate.region.ID) + " limanında savaş gemisi inşa ediyor.",
+		})
+		escortFleetCount++
 	}
-	if currentWarshipUnits+aiPendingNavalUnitCount(gs, seaID, fid) >= army.MaxArmySize {
-		return
-	}
+}
 
-	warshipCost.Apply(f)
-	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "warship", warshipType.TurnsRequired)
-	addTurnStep(steps, TurnStep{
-		FactionID:    fid,
-		Kind:         TurnStepRecruit,
-		TargetRegion: bestRegion.ID,
-		FocusRegion:  seaID,
-		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, bestRegion.ID) + " limanında savaş gemisi inşa ediyor.",
-	})
+func aiBestEscortFrontCandidate(candidates []aiEscortFrontCandidate, used map[world.RegionID]bool) (aiEscortFrontCandidate, bool) {
+	var (
+		best   aiEscortFrontCandidate
+		found  bool
+		bestID world.RegionID
+	)
+	for _, candidate := range candidates {
+		if used != nil && used[candidate.seaID] {
+			continue
+		}
+		if !found || candidate.score > best.score || (candidate.score == best.score && (candidate.pressure > best.pressure || (candidate.pressure == best.pressure && string(candidate.seaID) < string(bestID)))) {
+			best = candidate
+			bestID = candidate.seaID
+			found = true
+		}
+	}
+	return best, found
 }
 
 // isWarshipFleet bir filonun savaş gemisi filosu olup olmadığını kontrol eder.

@@ -82,6 +82,9 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertModalInside(t, tc.w, tc.h, buildWarConfirmModal())
 		assertModalInside(t, tc.w, tc.h, buildBattlePlanModal())
 		assertModalInside(t, tc.w, tc.h, buildDiplomacyOfferModal())
+		acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+		assertButtonInside(t, tc.w, tc.h, acceptBtn)
+		assertButtonInside(t, tc.w, tc.h, rejectBtn)
 		assertModalInside(t, tc.w, tc.h, buildVictoryDetailModal())
 		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
 		for _, btn := range battlePlanCardRects() {
@@ -223,9 +226,15 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	if list.panelRect.X < 0 || list.panelRect.Y < 0 || list.panelRect.X+list.panelRect.W > screenW || list.panelRect.Y+list.panelRect.H > screenH {
 		t.Fatalf("diplomacy list panel outside %.0fx%.0f viewport: %+v", screenW, screenH, list)
 	}
+	if list.historyRect.W > 0 {
+		assertRectInside(t, screenW, screenH, list.historyRect)
+	}
 	offer := diplomacyOfferLayoutForScreen()
 	if offer.panelRect.X < 0 || offer.panelRect.Y < 0 || offer.panelRect.X+offer.panelRect.W > screenW || offer.panelRect.Y+offer.panelRect.H > screenH {
 		t.Fatalf("diplomacy offer panel outside %.0fx%.0f viewport: %+v", screenW, screenH, offer)
+	}
+	if offer.historyRect.W > 0 {
+		assertRectInside(t, screenW, screenH, offer.historyRect)
 	}
 	assertButtonInside(t, screenW, screenH, buildDiplomacyCloseButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacyBackButton())

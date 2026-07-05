@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-06-20
+last_updated: 2026-07-02
 related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -103,6 +103,8 @@ Olay tetiklendiğinde:
   - ilgili follow-up için bölge, teknoloji ve diplomasi koşullarını
   aynı ekranda önizleme olarak gösterir
 - Event log'da historical event veya karar satırına tıklanınca detay popup içinde aynı zincir özeti sonradan tekrar okunabilir
+- Haritadaki aktif bölge event ikonları tıklanınca detay popup açılır; popup bölge, tip, kalan tur ve event ID özetini gösterir
+- Detay popup artık başlık, kaynak etiketi ve satır bazlı iz bloğunu ayrı gösterir; `[OLAY]`, `[KARAR]` ve harita izi birbirine karışmaz
 - Event log panelindeki `Kodex` düğmesi, oyuncu fraksiyonu için bekleyen tarihsel event havuzunu açar:
   - `Hazir`: tarih ve koşullar uygun
   - `Takvim`: koşullar uygun ama event tarihi henüz gelmedi
@@ -177,5 +179,7 @@ Bazı zincirler artık araştırma ve dış ilişki durumu ile de filtrelenir:
 ## Eklenecek / Planlanmış
 
 - [ ] Olayların zincirleme tetiklenmesi (veba → kıtlık)
-- [ ] Bölge ikonu gösterimi (harita üzerinde ❗ ikon)
-- [ ] Choice sonuçlarını minimap/bölge ikonlarıyla görünür kıl
+- [x] Bölge ikonu gösterimi (harita üzerinde ❗ ikon)
+- [x] Aktif bölge event ikonları tıklanınca detay popup gösterimi
+- [x] Event detay popup başlık/kaynak/gövde ayrımı
+- [x] Choice sonuçlarını minimap/bölge ikonlarıyla görünür kıl

@@ -1030,12 +1030,94 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 	layout := buildEventDetailLayout()
 	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
 
-	DrawText(screen, "Olay Detayı", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
+	lines := eventDetailLines(message, layout.bodyRect.W)
+	title := "Olay Detayı"
+	bodyLines := lines
+	if len(lines) > 0 {
+		if trimmed := strings.TrimSpace(lines[0]); trimmed != "" {
+			title = trimmed
+		}
+		if len(lines) > 1 {
+			bodyStart := 1
+			for bodyStart < len(lines) && strings.TrimSpace(lines[bodyStart]) == "" {
+				bodyStart++
+			}
+			if bodyStart < len(lines) && strings.HasPrefix(strings.TrimSpace(lines[bodyStart]), "Kaynak:") {
+				bodyStart++
+			}
+			for bodyStart < len(lines) && strings.TrimSpace(lines[bodyStart]) == "" {
+				bodyStart++
+			}
+			if bodyStart < len(lines) {
+				bodyLines = lines[bodyStart:]
+			} else {
+				bodyLines = nil
+			}
+		} else {
+			bodyLines = nil
+		}
+	}
+
+	DrawText(screen, title, layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
+	if source := eventDetailSourceLabel(title, bodyLines); source != "" {
+		drawUILabel(screen, layout.filtersRect, source, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
 
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
 
-	drawUIWrappedLabel(screen, gameui.Rect{X: layout.bodyRect.X, Y: layout.bodyRect.Y, W: layout.bodyRect.W}, message, color.RGBA{230, 224, 205, 240}, gameui.TextMedium, 19, int(layout.bodyRect.H/19))
+	if len(bodyLines) == 0 {
+		return
+	}
+	linesForDraw := make([]gameui.RichTextLine, 0, len(bodyLines))
+	for _, line := range bodyLines {
+		col := color.RGBA{230, 224, 205, 240}
+		variant := gameui.TextMedium
+		switch {
+		case line == "":
+			col = color.RGBA{230, 224, 205, 0}
+		case strings.HasPrefix(line, "Kaynak:"):
+			col = color.RGBA{200, 184, 142, 240}
+		case strings.HasPrefix(line, "Seçim:") || strings.HasPrefix(line, "Etki:") || strings.HasPrefix(line, "Zincir:") || strings.HasPrefix(line, "Kosul:") ||
+			strings.HasPrefix(line, "Bölge:") || strings.HasPrefix(line, "Tip:") || strings.HasPrefix(line, "Kalan tur:") || strings.HasPrefix(line, "Event ID:"):
+			col = color.RGBA{226, 182, 92, 240}
+		case strings.HasPrefix(line, "- "):
+			col = color.RGBA{240, 236, 224, 240}
+		case strings.HasPrefix(line, "  "):
+			col = color.RGBA{208, 200, 182, 240}
+		}
+		linesForDraw = append(linesForDraw, gameui.RichTextLine{
+			Text:    line,
+			Color:   col,
+			Variant: variant,
+			Align:   gameui.TextAlignStart,
+		})
+	}
+	drawUIRichTextBlock(screen, gameui.Rect{X: layout.bodyRect.X, Y: layout.bodyRect.Y, W: layout.bodyRect.W}, linesForDraw, 19)
+}
+
+func eventDetailSourceLabel(title string, bodyLines []string) string {
+	switch {
+	case strings.HasPrefix(title, "[KARAR] "):
+		return "Kaynak: Karar kaydı"
+	case strings.HasPrefix(title, "[OLAY] "):
+		return "Kaynak: Olay kaydı"
+	case strings.HasPrefix(title, "Karar:"):
+		return "Kaynak: Karar izi"
+	case strings.HasPrefix(title, "Olay:"):
+		return "Kaynak: Olay izi"
+	}
+	for _, line := range bodyLines {
+		switch {
+		case strings.HasPrefix(line, "Kaynak: Harita izi"):
+			return "Kaynak: Harita izi"
+		case strings.HasPrefix(line, "Kaynak: Olay kaydı"):
+			return "Kaynak: Olay kaydı"
+		case strings.HasPrefix(line, "Kaynak: Karar kaydı"):
+			return "Kaynak: Karar kaydı"
+		}
+	}
+	return ""
 }
 
 func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int, scroll int) {
@@ -1344,9 +1426,14 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 		drawMinimapPolygons(screen, gs, mx, my)
 	}
 
-	// Ordu konumları katmanı
+	// Ordu ve event konumları için dünya->minimap ölçeği.
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
+
+	// Bölge event'leri: minimap'te kısa ömürlü görünürlük izi.
+	drawMinimapEventMarkers(screen, gs, float32(scaleX), float32(scaleY), mx, my)
+
+	// Ordu konumları katmanı
 	drawMinimapArmies(screen, gs, float32(scaleX), float32(scaleY), mx, my)
 
 	// İç kenara ince koyu çizgi
@@ -1441,6 +1528,67 @@ func drawMinimapPolygons(screen *ebiten.Image, gs *state.GameState, offsetX, off
 				vector.StrokeLine(screen, x1, y1, x2, y2, 1, borderCol, true)
 			}
 		}
+	}
+}
+
+func drawMinimapEventMarkers(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
+	if gs == nil || len(gs.ActiveRegionEvents) == 0 {
+		return
+	}
+
+	const markerRadius = float32(3.25)
+	const markerStackGap = float32(5.5)
+
+	for i := range gs.ActiveRegionEvents {
+		evt := gs.ActiveRegionEvents[i]
+		region, ok := gs.Regions[evt.RegionID]
+		if !ok || region == nil {
+			continue
+		}
+
+		px, py := minimapEventMarkerPosition(region, scaleX, scaleY, offsetX, offsetY)
+
+		stack := minimapEventMarkerStackOffset(gs.ActiveRegionEvents, i, evt.RegionID)
+		if stack > 0 {
+			py -= markerStackGap * float32(stack)
+		}
+
+		fill, border := minimapEventMarkerPalette(evt.Type)
+		vector.FillCircle(screen, px+1, py+1, markerRadius+1, color.RGBA{0, 0, 0, 90}, true)
+		vector.FillCircle(screen, px, py, markerRadius, fill, true)
+		vector.StrokeCircle(screen, px, py, markerRadius, 1.1, border, true)
+	}
+}
+
+func minimapEventMarkerPosition(region *world.Region, scaleX, scaleY, offsetX, offsetY float32) (float32, float32) {
+	if region == nil {
+		return offsetX, offsetY
+	}
+	return offsetX + float32(wcX(region.WorldX))*scaleX, offsetY + float32(wcY(region.WorldY))*scaleY
+}
+
+func minimapEventMarkerStackOffset(events []state.RegionEventStatus, idx int, rid world.RegionID) int {
+	stack := 0
+	for j := 0; j < idx; j++ {
+		if events[j].RegionID == rid {
+			stack++
+		}
+	}
+	return stack
+}
+
+func minimapEventMarkerPalette(eventType string) (color.RGBA, color.RGBA) {
+	switch eventType {
+	case "plague":
+		return color.RGBA{180, 58, 58, 235}, color.RGBA{72, 14, 14, 235}
+	case "famine":
+		return color.RGBA{204, 152, 54, 235}, color.RGBA{82, 54, 12, 235}
+	case "revolt":
+		return color.RGBA{206, 58, 74, 235}, color.RGBA{70, 8, 18, 235}
+	case "blessing":
+		return color.RGBA{84, 184, 84, 235}, color.RGBA{18, 72, 18, 235}
+	default:
+		return color.RGBA{198, 174, 82, 235}, color.RGBA{78, 56, 12, 235}
 	}
 }
 

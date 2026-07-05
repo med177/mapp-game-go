@@ -45,6 +45,8 @@ const (
 	regionDoubleClickFrames = 18
 	initialCameraZoomFactor = 1.40
 	maxCameraZoomScale      = 10
+	activeEventIconSize     = float32(22)
+	activeEventIconSpacingY = float32(24)
 
 	settlementMarkerSpriteSize = float32(26)
 	capitalLabelIconSmallSize  = float32(18)
@@ -84,11 +86,13 @@ type Renderer struct {
 	factionCursor int
 
 	// Diplomasi paneli
-	showDiplomacy          bool
-	diplomacyFocus         int
-	diplomacyScroll        int
-	diplomacyActionFocus   int
-	diplomacyTargetFaction faction.FactionID
+	showDiplomacy                   bool
+	diplomacyFocus                  int
+	diplomacyScroll                 int
+	diplomacyActionFocus            int
+	diplomacyTargetFaction          faction.FactionID
+	diplomacyHistoryDirectionFilter diplomacyHistoryDirectionFilter
+	diplomacyHistoryActionFilter    ActionKind
 
 	// Teknoloji paneli
 	showTech           bool
@@ -973,7 +977,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction)
+		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
 	}
 
 	// 8. Teknoloji paneli (üst katman)
@@ -6774,9 +6778,6 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 		return
 	}
 
-	const iconSize = float32(22)
-	const iconSpacingY = float32(24) // aynı bölgede alt alta ikonlar arası boşluk
-
 	// Aynı bölgedeki event'leri grupla ve sırala
 	type regionGroup struct {
 		regionID world.RegionID
@@ -6797,12 +6798,12 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 
 	for _, g := range groupOrder {
 		region := r.gs.Regions[g.regionID]
-		if region == nil || region.IsSea {
+		if region == nil {
 			continue
 		}
 
-		// Bölgenin birincil settlement anchor'ını bul
-		ax, ay, ok := r.worldMap.PrimarySettlementAnchor(g.regionID)
+		// Deniz bölgeleri de görünür olsun diye önce settlement, sonra bölge anchor'u kullan.
+		ax, ay, ok := r.eventIconAnchor(g.regionID)
 		if !ok {
 			// Fallback: bölge merkezi
 			ax = region.WorldX
@@ -6823,9 +6824,9 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 
 			if eventCount > 1 {
 				// Çoklu event: alt alta sırala, en üstteki event en yukarıda
-				totalHeight := float64(iconSpacingY) * float64(eventCount-1)
+				totalHeight := float64(activeEventIconSpacingY) * float64(eventCount-1)
 				startY := sy - totalHeight/2
-				sy = startY + float64(iconSpacingY)*float64(idx)
+				sy = startY + float64(activeEventIconSpacingY)*float64(idx)
 			} else {
 				// Tek event: yerleşim noktasının üstünde (eski davranış)
 				sy = sy - 18
@@ -6842,8 +6843,8 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 			}
 
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Scale(float64(iconSize)/float64(img.Bounds().Dx()), float64(iconSize)/float64(img.Bounds().Dy()))
-			op.GeoM.Translate(sx-float64(iconSize)/2, sy-float64(iconSize)/2)
+			op.GeoM.Scale(float64(activeEventIconSize)/float64(img.Bounds().Dx()), float64(activeEventIconSize)/float64(img.Bounds().Dy()))
+			op.GeoM.Translate(sx-float64(activeEventIconSize)/2, sy-float64(activeEventIconSize)/2)
 
 			// Süre azaldıkça alpha azalt
 			alpha := 1.0
@@ -6864,13 +6865,145 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 				shadowCol := color.RGBA{0, 0, 0, uint8(140 * alpha)}
 				outlined := gameui.NewOutlinedLabel(gameui.Rect{
 					X: sx - tw/2,
-					Y: sy - float64(iconSize)/2 - 14,
+					Y: sy - float64(activeEventIconSize)/2 - 14,
 				}, labelText, labelCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
 				outlined.Offsets = [][2]float64{{1, 1}}
 				outlined.Draw(screen, renderText)
 			}
 		}
 	}
+}
+
+func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
+	if r == nil || r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 || r.camScale < 0.6 {
+		return -1, false
+	}
+
+	type eventView struct {
+		idx int
+		evt state.RegionEventStatus
+	}
+	type regionGroup struct {
+		regionID world.RegionID
+		events   []eventView
+	}
+
+	groupMap := make(map[world.RegionID]*regionGroup, len(r.gs.ActiveRegionEvents))
+	groupOrder := make([]*regionGroup, 0, len(r.gs.ActiveRegionEvents))
+	for i := range r.gs.ActiveRegionEvents {
+		evt := r.gs.ActiveRegionEvents[i]
+		g, exists := groupMap[evt.RegionID]
+		if !exists {
+			g = &regionGroup{regionID: evt.RegionID}
+			groupMap[evt.RegionID] = g
+			groupOrder = append(groupOrder, g)
+		}
+		g.events = append(g.events, eventView{idx: i, evt: evt})
+	}
+
+	for _, g := range groupOrder {
+		region := r.gs.Regions[g.regionID]
+		if region == nil {
+			continue
+		}
+
+		ax, ay, ok := r.eventIconAnchor(g.regionID)
+		if !ok {
+			ax = region.WorldX
+			ay = region.WorldY
+		}
+		baseSX, baseSY := r.worldToScreen(wcX(ax), wcY(ay))
+		if baseSX < -50 || baseSX > ScreenWidth+50 || baseSY < -50 || baseSY > ScreenHeight+50 {
+			continue
+		}
+
+		eventCount := len(g.events)
+		for idx, entry := range g.events {
+			sx := baseSX
+			sy := baseSY
+			if eventCount > 1 {
+				totalHeight := float64(activeEventIconSpacingY) * float64(eventCount-1)
+				startY := sy - totalHeight/2
+				sy = startY + float64(activeEventIconSpacingY)*float64(idx)
+			} else {
+				sy = sy - 18
+			}
+			if sx < -30 || sx > ScreenWidth+30 || sy < -30 || sy > ScreenHeight+30 {
+				continue
+			}
+			if math.Abs(mx-sx) <= float64(activeEventIconSize)/2 && math.Abs(my-sy) <= float64(activeEventIconSize)/2 {
+				return entry.idx, true
+			}
+		}
+	}
+
+	return -1, false
+}
+
+func (r *Renderer) activeRegionEventHovering(fx, fy float64) bool {
+	_, ok := r.activeRegionEventHitAt(fx, fy)
+	return ok
+}
+
+func (r *Renderer) activeRegionEventDetailAt(idx int) string {
+	if r == nil || r.gs == nil || idx < 0 || idx >= len(r.gs.ActiveRegionEvents) {
+		return ""
+	}
+	evt := r.gs.ActiveRegionEvents[idx]
+	title := evt.LabelTR
+	if title == "" {
+		title = evt.EventID
+	}
+	regionName := string(evt.RegionID)
+	if region := r.gs.Regions[evt.RegionID]; region != nil && region.NameTR != "" {
+		regionName = region.NameTR
+	}
+	lines := []string{
+		title,
+		"",
+		"Kaynak: Harita izi",
+		"",
+		"Bölge: " + regionName,
+		"Tip: " + activeRegionEventTypeLabel(evt.Type),
+		"Kalan tur: " + strconv.Itoa(evt.TurnsLeft),
+	}
+	if evt.EventID != "" {
+		lines = append(lines, "Event ID: "+evt.EventID)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func activeRegionEventTypeLabel(eventType string) string {
+	switch eventType {
+	case "plague":
+		return "Veba"
+	case "famine":
+		return "Kıtlık"
+	case "revolt":
+		return "İsyan"
+	case "blessing":
+		return "Bereket"
+	default:
+		return "Bildirim"
+	}
+}
+
+func (r *Renderer) eventIconAnchor(rid world.RegionID) (int, int, bool) {
+	if r == nil || r.worldMap == nil {
+		return 0, 0, false
+	}
+	if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(rid); ok {
+		return ax, ay, true
+	}
+	if ax, ay, ok := r.worldMap.RegionAnchor(rid); ok {
+		return ax, ay, true
+	}
+	if r.gs != nil {
+		if region := r.gs.Regions[rid]; region != nil {
+			return region.WorldX, region.WorldY, true
+		}
+	}
+	return 0, 0, false
 }
 
 func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
@@ -7364,6 +7497,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
 		r.eventDetail = r.EventDetailAt(idx)
+		return InputAction{}
+	}
+	if idx, ok := r.activeRegionEventHitAt(fx, fy); ok {
+		r.eventDetail = r.activeRegionEventDetailAt(idx)
 		return InputAction{}
 	}
 
@@ -8463,17 +8600,169 @@ func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
 	if r.gs == nil || len(r.gs.DiplomaticOffers) == 0 {
 		return 0, false
 	}
-	for i, offer := range r.gs.DiplomaticOffers {
-		from := r.gs.Factions[offer.FromFactionID]
-		to := r.gs.Factions[offer.ToFactionID]
-		if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
-			continue
-		}
-		if offer.ToFactionID == r.gs.PlayerFactionID {
-			return i, true
-		}
+	if offerIdx, ok := diplomacy.BestOfferIndex(r.gs, r.gs.PlayerFactionID); ok {
+		return offerIdx, true
 	}
 	return 0, false
+}
+
+func diplomacyOfferActionLabelTR(action string) string {
+	switch action {
+	case "propose_peace":
+		return "barış"
+	case "propose_alliance":
+		return "ittifak"
+	case "propose_trade":
+		return "ticaret"
+	default:
+		return "teklif"
+	}
+}
+
+func diplomacyOfferOutcomeLabelTR(entry state.DiplomaticOfferHistoryEntry) string {
+	if !entry.Accepted {
+		return "Reddedildi"
+	}
+	if entry.Applied {
+		return "Kabul edildi"
+	}
+	return "Kabul edildi ama uygulanamadı"
+}
+
+func diplomacyOfferTurnLabelTR(entry state.DiplomaticOfferHistoryEntry) string {
+	if entry.CreatedTurn > 0 && entry.ResolvedTurn > 0 && entry.CreatedTurn != entry.ResolvedTurn {
+		return fmt.Sprintf("Tur %d->%d", entry.CreatedTurn, entry.ResolvedTurn)
+	}
+	if entry.ResolvedTurn > 0 {
+		return fmt.Sprintf("Tur %d", entry.ResolvedTurn)
+	}
+	if entry.CreatedTurn > 0 {
+		return fmt.Sprintf("Tur %d", entry.CreatedTurn)
+	}
+	return "Tur ?"
+}
+
+func drawDiplomacyOfferHistoryPanelRect(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, maxEntries int, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind) {
+	if gs == nil || panelRect.W <= 0 || panelRect.H <= 0 {
+		return
+	}
+	if maxEntries <= 0 {
+		maxEntries = 3
+	}
+	drawUIPanelFrame(screen, panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
+
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 10, W: panelRect.W - 28}, "Geçmiş", color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+30, "Sana ilgili son çözümler")
+	total, accepted, rejected, applied := diplomacyOfferHistorySummary(gs, dirFilter, actionFilter)
+	summaryLine := fmt.Sprintf("Toplam %d | Kabul %d | Ret %d | Uygulanan %d", total, accepted, rejected, applied)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 42, W: panelRect.W - 28}, summaryLine, color.RGBA{210, 198, 172, 235}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+58, diplomacyOfferHistoryFilterLabelTR(dirFilter, actionFilter))
+
+	buttons := buildDiplomacyHistoryFilterButtons(panelRect, dirFilter, actionFilter)
+	for i := range buttons {
+		btn := buttons[i]
+		if btn.IsAction {
+			style := diplomacyHistoryFilterButtonStyle(btn.Action == actionFilter, diplomacyHistoryActionColor(btn.Action))
+			drawUIButtonWidget(screen, btn.Button, style)
+			continue
+		}
+		style := diplomacyHistoryFilterButtonStyle(btn.Direction == dirFilter, color.RGBA{104, 82, 42, 228})
+		drawUIButtonWidget(screen, btn.Button, style)
+	}
+
+	drawn := 0
+	for i := len(gs.DiplomaticOfferHistory) - 1; i >= 0 && drawn < maxEntries; i-- {
+		entry := gs.DiplomaticOfferHistory[i]
+		if !diplomacyOfferHistoryMatches(entry, gs.PlayerFactionID, dirFilter, actionFilter) {
+			continue
+		}
+		fromName := factionDisplayName(gs, string(entry.FromFactionID))
+		if fromName == "" {
+			fromName = string(entry.FromFactionID)
+		}
+		toName := factionDisplayName(gs, string(entry.ToFactionID))
+		if toName == "" {
+			toName = string(entry.ToFactionID)
+		}
+
+		itemRect := diplomacyOfferHistoryCardRect(panelRect, drawn)
+		bg := color.RGBA{26, 20, 14, 220}
+		border := color.RGBA{82, 66, 36, 150}
+		textCol := color.RGBA{235, 228, 214, 255}
+		switch {
+		case entry.Accepted && entry.Applied:
+			bg = color.RGBA{22, 44, 24, 225}
+			border = color.RGBA{92, 148, 92, 210}
+			textCol = color.RGBA{224, 245, 224, 255}
+		case entry.Accepted && !entry.Applied:
+			bg = color.RGBA{54, 42, 18, 225}
+			border = color.RGBA{178, 136, 58, 210}
+			textCol = color.RGBA{248, 234, 198, 255}
+		case !entry.Accepted:
+			bg = color.RGBA{52, 20, 20, 225}
+			border = color.RGBA{168, 78, 78, 210}
+			textCol = color.RGBA{246, 214, 214, 255}
+		}
+		drawUICardRect(screen, itemRect, bg, border, 1)
+		actionKind := diplomacyHistoryActionForEntry(entry)
+		iconRect := gameui.Rect{X: itemRect.X + 9, Y: itemRect.Y + 10, W: 18, H: 18}
+		drawUICardRect(screen, iconRect, diplomacyHistoryActionColor(actionKind), color.RGBA{20, 16, 12, 160}, 1)
+		if icon := diplomacyHistoryActionIcon(actionKind); icon != gameui.IconNone {
+			gameui.DrawIcon(screen, icon, iconRect.X+3, iconRect.Y+3, 12, ColorWhite)
+		}
+
+		actionLabel := diplomacyHistoryActionLabelTR(actionKind)
+		if actionKind == ActionNone {
+			actionLabel = diplomacyOfferActionLabelTR(entry.Action)
+		}
+		line1 := diplomacyOfferHistoryDirectionTR(entry, gs.PlayerFactionID) + " | " + fromName + " -> " + toName + " | " + actionLabel + " | " + diplomacyOfferOutcomeLabelTR(entry)
+		contentW := itemRect.W - 116
+		drawUILabel(screen, gameui.Rect{X: itemRect.X + 34, Y: itemRect.Y + 4, W: contentW}, trimTextToWidth(line1, FaceSmall, contentW), textCol, gameui.TextSmall, gameui.TextAlignStart)
+
+		line2 := diplomacyOfferTurnLabelTR(entry)
+		if entry.Priority != 0 {
+			line2 += " | Öncelik " + itoa(entry.Priority)
+		}
+		if entry.ResultMessage != "" {
+			line2 += " | " + entry.ResultMessage
+		}
+		drawUILabel(screen, gameui.Rect{X: itemRect.X + 34, Y: itemRect.Y + 20, W: contentW}, trimTextToWidth(line2, FaceSmall, contentW), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		statusText := diplomacyHistoryOutcomeBadgeTR(entry)
+		statusRect := gameui.Rect{X: itemRect.X + itemRect.W - 70, Y: itemRect.Y + 4, W: 60, H: 16}
+		statusBg := color.RGBA{74, 64, 44, 220}
+		statusBorder := color.RGBA{112, 96, 64, 220}
+		switch statusText {
+		case "UYG":
+			statusBg = color.RGBA{34, 88, 42, 220}
+			statusBorder = color.RGBA{84, 150, 88, 220}
+		case "KAB":
+			statusBg = color.RGBA{120, 92, 34, 220}
+			statusBorder = color.RGBA{182, 140, 60, 220}
+		case "RET":
+			statusBg = color.RGBA{112, 42, 42, 220}
+			statusBorder = color.RGBA{182, 86, 86, 220}
+		}
+		drawUICardRect(screen, statusRect, statusBg, statusBorder, 1)
+		drawUILabel(screen, statusRect, statusText, ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
+		drawn++
+	}
+
+	if drawn == 0 {
+		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 126, W: panelRect.W - 28}, "Bu filtreyle eşleşen çözüm yok.", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
+	}
+}
+
+func (r *Renderer) drawDiplomacyOfferHistoryPanel(screen *ebiten.Image, modal gameui.Modal) {
+	if r.gs == nil {
+		return
+	}
+	panelRect := gameui.Rect{
+		X: modal.Panel.Rect.X + 458,
+		Y: modal.Panel.Rect.Y + 16,
+		W: 286,
+		H: 304,
+	}
+	drawDiplomacyOfferHistoryPanelRect(screen, r.gs, panelRect, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
 }
 
 func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) {
@@ -8482,24 +8771,30 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	if f := r.gs.Factions[offer.FromFactionID]; f != nil && f.NameTR != "" {
 		fromName = f.NameTR
 	}
-	actionLabel := "teklif"
-	switch offer.Action {
-	case "propose_peace":
-		actionLabel = "barış"
-	case "propose_alliance":
-		actionLabel = "ittifak"
-	case "propose_trade":
-		actionLabel = "ticaret"
-	}
+	actionLabel := diplomacyOfferActionLabelTR(offer.Action)
 
 	modal := buildDiplomacyOfferModal()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
+	leftRect := gameui.Rect{X: modal.Panel.Rect.X + 16, Y: modal.Panel.Rect.Y + 16, W: 430, H: 188}
+	drawUIPanelFrame(screen, leftRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
+
 	title := "Anlaşma Teklifi"
-	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 30}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 10, W: leftRect.W - 28}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	message := fromName + " devleti size " + actionLabel + " teklif etti."
-	drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 64, W: modal.Panel.Rect.W - 40}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 3)
-	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 124}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 38, W: leftRect.W - 28}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 2)
+	priorityLine := fmt.Sprintf("Tür: %s | Öncelik: %d", actionLabel, offer.Priority)
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 82, W: leftRect.W - 28}, priorityLine, color.RGBA{255, 205, 120, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	reasonText := offer.PriorityReason
+	if reasonText == "" {
+		reasonText = "Sebep: standart diplomasi akışı"
+	} else {
+		reasonText = "Sebep: " + reasonText
+	}
+	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 104, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 2)
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 158, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+
+	r.drawDiplomacyOfferHistoryPanel(screen, modal)
 
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	drawUIButtonWidget(screen, acceptBtn,
@@ -8511,8 +8806,12 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
+	historyLayout := diplomacyOfferLayoutForScreen()
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if r.applyDiplomacyHistoryFilterHit(historyLayout.historyRect, mx, my) {
+			return InputAction{}
+		}
 		if acceptBtn.HitTest(mx, my) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}

@@ -78,6 +78,8 @@ const (
 	aiTurnFactionIntroFrames = 10
 )
 
+const maxDiplomaticOfferHistoryEntries = 10
+
 type loadingKind int
 
 const (
@@ -723,15 +725,8 @@ func (g *Game) pendingPlayerDiplomacyOffer() (state.DiplomaticOffer, bool) {
 	if g == nil || g.gs == nil || len(g.gs.DiplomaticOffers) == 0 {
 		return state.DiplomaticOffer{}, false
 	}
-	for _, offer := range g.gs.DiplomaticOffers {
-		from := g.gs.Factions[offer.FromFactionID]
-		to := g.gs.Factions[offer.ToFactionID]
-		if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
-			continue
-		}
-		if offer.ToFactionID == g.gs.PlayerFactionID {
-			return offer, true
-		}
+	if offerIdx, ok := diplomacy.BestOfferIndex(g.gs, g.gs.PlayerFactionID); ok {
+		return g.gs.DiplomaticOffers[offerIdx], true
 	}
 	return state.DiplomaticOffer{}, false
 }
@@ -1148,7 +1143,7 @@ func (g *Game) historicalEventDetail(evt *events.Event) string {
 	if evt == nil {
 		return ""
 	}
-	lines := []string{evt.NameTR, "", evt.DescTR}
+	lines := []string{evt.NameTR, "", "Kaynak: Olay kaydı", "", evt.DescTR}
 	if evt.ChoicePromptTR != "" {
 		lines = append(lines, "", "Seçim:", evt.ChoicePromptTR)
 	}
@@ -1180,6 +1175,8 @@ func (g *Game) historicalChoiceDetail(evt *events.Event, choice events.Choice) s
 	followUp, conditions := g.historicalChoiceFollowUpSummary(evt, choice)
 	lines := []string{
 		evt.NameTR + " -> " + choice.LabelTR,
+		"",
+		"Kaynak: Karar kaydı",
 		"",
 		choice.DescTR,
 	}
@@ -1787,7 +1784,31 @@ func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.Diplomatic
 	}
 	offer := g.gs.DiplomaticOffers[index]
 	result := diplomacy.ResolveOffer(g.gs, index, accepted)
+	g.appendDiplomacyOfferHistory(offer, accepted, result)
 	return offer, result, true
+}
+
+func (g *Game) appendDiplomacyOfferHistory(offer state.DiplomaticOffer, accepted bool, result diplomacy.Result) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	history := state.DiplomaticOfferHistoryEntry{
+		FromFactionID:  offer.FromFactionID,
+		ToFactionID:    offer.ToFactionID,
+		Action:         offer.Action,
+		CreatedTurn:    offer.CreatedTurn,
+		ResolvedTurn:   g.gs.Turn,
+		Accepted:       accepted,
+		Applied:        result.Applied,
+		Priority:       offer.Priority,
+		PriorityReason: offer.PriorityReason,
+		ResultMessage:  result.Message,
+	}
+	g.gs.DiplomaticOfferHistory = append(g.gs.DiplomaticOfferHistory, history)
+	if overflow := len(g.gs.DiplomaticOfferHistory) - maxDiplomaticOfferHistoryEntries; overflow > 0 {
+		copy(g.gs.DiplomaticOfferHistory, g.gs.DiplomaticOfferHistory[overflow:])
+		g.gs.DiplomaticOfferHistory = g.gs.DiplomaticOfferHistory[:maxDiplomaticOfferHistoryEntries]
+	}
 }
 
 func (g *Game) saveToSlot(slotName string, showSuccess bool, successMsg string) bool {
