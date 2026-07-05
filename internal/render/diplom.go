@@ -261,6 +261,10 @@ func diplomacyHistoryActionLabelTR(action ActionKind) string {
 	}
 }
 
+func diplomacyHistoryBrowseLabelTR() string {
+	return "Geçmişten seçildi"
+}
+
 func diplomacyHistoryActionIcon(action ActionKind) gameui.IconID {
 	switch action {
 	case ActionProposePeace:
@@ -658,7 +662,7 @@ func buildDiplomacyActionButtons() []diplomacyActionButton {
 }
 
 // DrawDiplomacyPanel diplomasi panelini çizer.
-func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
 	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
@@ -674,9 +678,9 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 
 	if target == "" {
-		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end, historyDirFilter, historyActionFilter)
+		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end, browseTarget, historyDirFilter, historyActionFilter)
 	} else {
-		drawDiplomacyOfferPanel(screen, gs, target, actionFocus, historyDirFilter, historyActionFilter)
+		drawDiplomacyOfferPanel(screen, gs, target, actionFocus, browseTarget, historyDirFilter, historyActionFilter)
 	}
 
 	if target == "" && len(factions) > end-start {
@@ -686,11 +690,15 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 }
 
-func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	layout := diplomacyListLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{15, 12, 9, 235}, panelBorder, 1.2, 3)
 	DrawText(screen, "Diplomatik Hedef", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
-	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, "Fare tekeri veya ok tuşları ile listeyi kaydırın")
+	hintText := "Fare tekeri veya ok tuşları ile listeyi kaydırın"
+	if browseTarget != "" {
+		hintText += " | " + diplomacyHistoryBrowseLabelTR()
+	}
+	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, hintText)
 	drawUICardRect(screen, layout.listRect, color.RGBA{11, 9, 7, 225}, color.RGBA{92, 74, 38, 190}, 1)
 
 	list := buildDiplomacyListView(gs, focusIdx, start)
@@ -707,11 +715,25 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		}
 		rowCol := color.RGBA{24, 18, 12, 210}
 		borderCol := color.RGBA{78, 62, 34, 150}
-		if i == focusIdx {
+		browseActive := browseTarget != "" && fid == browseTarget
+		switch {
+		case i == focusIdx && browseActive:
+			rowCol = color.RGBA{70, 56, 18, 238}
+			borderCol = color.RGBA{224, 188, 92, 235}
+		case browseActive:
+			rowCol = color.RGBA{54, 44, 14, 232}
+			borderCol = color.RGBA{210, 172, 72, 228}
+		case i == focusIdx:
 			rowCol = color.RGBA{64, 50, 22, 235}
 			borderCol = color.RGBA{186, 148, 74, 230}
 		}
 		drawUICardRect(screen, rowRect, rowCol, borderCol, 1)
+		if browseActive {
+			drawUICardAccent(screen, rowRect, 7, color.RGBA{218, 176, 78, 235})
+			badgeRect := gameui.Rect{X: rowRect.X + rowRect.W - 74, Y: rowRect.Y + 6, W: 62, H: 18}
+			drawUICardRect(screen, badgeRect, color.RGBA{84, 64, 22, 235}, color.RGBA{236, 206, 120, 235}, 1)
+			drawUILabel(screen, badgeRect, "GEÇMİŞ", color.RGBA{255, 238, 194, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+		}
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		drawUICardAccent(screen, rowRect, 6, fc)
@@ -751,7 +773,7 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 	}
 }
 
-func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID, actionFocus int, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID, actionFocus int, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	f := gs.Factions[target]
 	if f == nil {
 		return
@@ -759,8 +781,25 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	layout := diplomacyOfferLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{14, 11, 8, 235}, panelBorder, 1.2, 3)
 
+	browseActive := browseTarget != "" && browseTarget == target
 	drawUILabel(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y}, "Teklif Paneli", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
-	drawUICardRect(screen, gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 6}, color.RGBA{22, 18, 12, 220}, color.RGBA{90, 72, 40, 170}, 1)
+	if browseActive {
+		drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, diplomacyHistoryBrowseLabelTR())
+	}
+	targetCardRect := gameui.Rect{X: layout.targetRect.X, Y: layout.targetRect.Y - 2, W: layout.targetRect.W, H: layout.targetRect.H + 6}
+	targetFill := color.RGBA{22, 18, 12, 220}
+	targetBorder := color.RGBA{90, 72, 40, 170}
+	if browseActive {
+		targetFill = color.RGBA{36, 28, 12, 232}
+		targetBorder = color.RGBA{214, 178, 82, 240}
+	}
+	drawUICardRect(screen, targetCardRect, targetFill, targetBorder, 1)
+	if browseActive {
+		drawUICardAccent(screen, targetCardRect, 7, color.RGBA{218, 176, 78, 235})
+		badgeRect := gameui.Rect{X: targetCardRect.X + targetCardRect.W - 74, Y: targetCardRect.Y + 6, W: 62, H: 18}
+		drawUICardRect(screen, badgeRect, color.RGBA{84, 64, 22, 235}, color.RGBA{236, 206, 120, 235}, 1)
+		drawUILabel(screen, badgeRect, "GEÇMİŞ", color.RGBA{255, 238, 194, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	}
 	targetRow := gameui.NewKeyValueRow(gameui.Rect{X: layout.targetRect.X + 12, Y: layout.targetRect.Y + 5, W: layout.targetRect.W - 24}, "Hedef:", trimTextToWidth(f.NameTR, FaceMed, layout.targetRect.W-88))
 	targetRow.LabelColor = ColorGray
 	targetRow.ValueColor = ColorWhite
@@ -856,11 +895,13 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	if input.LeftJustPressed && !diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
+		r.diplomacyOfferHistoryBrowse = ""
 		return InputAction{}
 	}
 	if buildDiplomacyCloseButton().HandleInput(input) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
+		r.diplomacyOfferHistoryBrowse = ""
 		return InputAction{}
 	}
 	if r.diplomacyTargetFaction == "" {

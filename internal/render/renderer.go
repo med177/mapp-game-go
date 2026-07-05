@@ -91,6 +91,7 @@ type Renderer struct {
 	diplomacyScroll                 int
 	diplomacyActionFocus            int
 	diplomacyTargetFaction          faction.FactionID
+	diplomacyOfferHistoryBrowse     faction.FactionID
 	diplomacyHistoryDirectionFilter diplomacyHistoryDirectionFilter
 	diplomacyHistoryActionFilter    ActionKind
 
@@ -977,7 +978,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
+		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
 	}
 
 	// 8. Teknoloji paneli (üst katman)
@@ -8597,7 +8598,7 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 }
 
 func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
-	if r.gs == nil || len(r.gs.DiplomaticOffers) == 0 {
+	if r.gs == nil || len(r.gs.DiplomaticOffers) == 0 || r.diplomacyOfferHistoryBrowse != "" {
 		return 0, false
 	}
 	if offerIdx, ok := diplomacy.BestOfferIndex(r.gs, r.gs.PlayerFactionID); ok {
@@ -8806,16 +8807,41 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
+	input := gameui.InputState{
+		MouseX:           mx,
+		MouseY:           my,
+		LeftJustPressed:  r.mouseJustPressed(ebiten.MouseButtonLeft),
+		LeftJustReleased: false,
+	}
+	return r.handleDiplomacyOfferInputState(offerIdx, input)
+}
+
+func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.InputState) InputAction {
+	factions := sortedFactions(r.gs)
 	historyLayout := diplomacyOfferLayoutForScreen()
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if r.applyDiplomacyHistoryFilterHit(historyLayout.historyRect, mx, my) {
+	if input.LeftJustPressed {
+		if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, historyLayout.historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+			r.diplomacyOfferHistoryBrowse = target
+			r.showDiplomacy = true
+			r.diplomacyTargetFaction = target
+			r.diplomacyActionFocus = actionFocus
+			for i, fid := range factions {
+				if fid == target {
+					r.diplomacyFocus = i
+					r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
+					break
+				}
+			}
 			return InputAction{}
 		}
-		if acceptBtn.HitTest(mx, my) {
+		if r.applyDiplomacyHistoryFilterHit(historyLayout.historyRect, input.MouseX, input.MouseY) {
+			return InputAction{}
+		}
+		if acceptBtn.HitTest(input.MouseX, input.MouseY) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
-		if rejectBtn.HitTest(mx, my) {
+		if rejectBtn.HitTest(input.MouseX, input.MouseY) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: false}
 		}
 	}
