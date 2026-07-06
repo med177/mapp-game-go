@@ -104,6 +104,72 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	}
 }
 
+func TestLoadFromPathNormalizesLegacyGarrisonArmy(t *testing.T) {
+	tmp := t.TempDir()
+	oldBaseDir := scenarioBaseDir
+	scenarioBaseDir = filepath.Join(tmp, "scenarios")
+	defer func() { scenarioBaseDir = oldBaseDir }()
+
+	scenarioID := "test_scenario"
+	scenarioPath := filepath.Join(scenarioBaseDir, scenarioID)
+	if err := os.MkdirAll(filepath.Join(scenarioPath, "data"), 0755); err != nil {
+		t.Fatalf("scenario data dir olusmadi: %v", err)
+	}
+
+	writeJSONFile(t, filepath.Join(scenarioPath, "scenario.json"), scenario.Scenario{ID: scenarioID, Year: 1453, Month: 4})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "regions.json"), []*world.Region{
+		{ID: "r1", NameTR: "R1", OwnerID: "player", ShapeID: "AAA", TaxRate: 50, Satisfaction: 50},
+	})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "factions.json"), []*faction.Faction{
+		{ID: "player", NameTR: "Oyuncu", IsPlayable: true},
+	})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "units.json"), []map[string]any{
+		{"id": "militia", "name": "Militia", "name_tr": "Milis", "category": "infantry", "attack": 5, "defense": 4, "morale": 10, "hp": 100, "gold_cost": 10, "grain_upkeep": 1, "turns_required": 1},
+	})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "buildings.json"), []map[string]any{})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "technologies.json"), []map[string]any{})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "country_shapes.json"), map[string]any{
+		"shapes": []map[string]any{
+			{"id": "AAA", "name": "AAA", "rings": [][][]int{{{1, 1}, {4, 1}, {4, 4}, {1, 4}}}},
+		},
+	})
+
+	savePath := filepath.Join(tmp, "legacy-slot.json")
+	raw := `{
+  "scenario_id": "test_scenario",
+  "player_faction_id": "player",
+  "regions": {
+    "r1": {"id": "r1", "name_tr": "R1", "owner_id": "player", "shape_id": "AAA", "tax_rate": 50, "satisfaction": 50}
+  },
+  "factions": {
+    "player": {"id": "player", "name_tr": "Oyuncu"}
+  },
+  "armies": {
+    "army_garrison_209": {
+      "id": "army_garrison_209",
+      "owner_id": "player",
+      "region_id": "r1",
+      "units": [{"type_id": "militia", "current_hp": 100}],
+      "move_points": 2,
+      "max_move_points": 2
+    }
+  }
+}`
+	if err := os.WriteFile(savePath, []byte(raw), 0644); err != nil {
+		t.Fatalf("legacy save yazilamadi: %v", err)
+	}
+
+	gs, err := loadFromPath(savePath)
+	if err != nil {
+		t.Fatalf("legacy save yuklenemedi: %v", err)
+	}
+
+	garrison := gs.Armies["army_garrison_209"]
+	if garrison == nil || !garrison.IsGarrison {
+		t.Fatalf("legacy garnizon normalize olmadi: %+v", garrison)
+	}
+}
+
 func writeJSONFile(t *testing.T, path string, payload any) {
 	t.Helper()
 	data, err := json.Marshal(payload)

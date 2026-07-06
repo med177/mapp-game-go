@@ -11,6 +11,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "munster_main",
     "gold": 260,
     "grain": 150,
     "iron": 50,
@@ -63,6 +64,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "mallorca_main",
     "gold": 280,
     "grain": 160,
     "iron": 50,
@@ -167,6 +169,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sofia",
     "gold": 220,
     "grain": 140,
     "iron": 40,
@@ -193,6 +196,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "switzerland_settlement_2",
     "gold": 340,
     "grain": 180,
     "iron": 60,
@@ -245,6 +249,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sivas",
     "gold": 220,
     "grain": 140,
     "iron": 45,
@@ -271,6 +276,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "castile_burgos",
     "gold": 880,
     "grain": 360,
     "iron": 170,
@@ -280,11 +286,11 @@
     "cloth": 180,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "heavy_armor": true,
         "gunpowder": true,
-        "navigation": true,
         "harbor_administration": true,
+        "heavy_armor": true,
+        "iron_weapons": true,
+        "navigation": true,
         "tax_registers": true
       },
       "active_id": "",
@@ -304,6 +310,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "denmark_main",
     "gold": 540,
     "grain": 300,
     "iron": 90,
@@ -356,6 +363,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "london_main",
     "gold": 760,
     "grain": 320,
     "iron": 120,
@@ -365,11 +373,11 @@
     "cloth": 220,
     "research": {
       "completed": {
-        "navigation": true,
         "naval_doctrine": true,
+        "navigation": true,
         "open_sea_convoys": true,
-        "trade_routes": true,
-        "tax_registers": true
+        "tax_registers": true,
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -440,6 +448,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "florence_main",
     "gold": 360,
     "grain": 190,
     "iron": 60,
@@ -462,7 +471,7 @@
     "color": [
       35,
       80,
-      210
+      100
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -470,18 +479,18 @@
     "grain": 420,
     "iron": 160,
     "timber": 180,
-    "stone": 1000,
+    "stone": 0,
     "spice": 40,
     "cloth": 230,
     "research": {
       "completed": {
+        "cast_bronze_cannon": true,
+        "cavalry_tactics": true,
+        "diplomacy": true,
+        "engineering_corps": true,
+        "gunpowder": true,
         "iron_weapons": true,
         "steel_blades": true,
-        "cavalry_tactics": true,
-        "gunpowder": true,
-        "cast_bronze_cannon": true,
-        "engineering_corps": true,
-        "diplomacy": true,
         "tax_registers": true
       },
       "active_id": "",
@@ -501,6 +510,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "genoa_main",
     "gold": 850,
     "grain": 260,
     "iron": 90,
@@ -510,13 +520,13 @@
     "cloth": 300,
     "research": {
       "completed": {
-        "trade_routes": true,
         "banking": true,
-        "navigation": true,
         "cartography": true,
         "harbor_administration": true,
+        "merchant_embassies": true,
+        "navigation": true,
         "open_sea_convoys": true,
-        "merchant_embassies": true
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -535,6 +545,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "akkoyunlu_main",
     "gold": 260,
     "grain": 160,
     "iron": 60,
@@ -613,6 +624,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "morocco_main",
     "gold": 330,
     "grain": 190,
     "iron": 50,
@@ -665,6 +677,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "hungary_buda",
     "gold": 900,
     "grain": 420,
     "iron": 190,
@@ -674,12 +687,12 @@
     "cloth": 160,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "heavy_armor": true,
-        "field_fortifications": true,
-        "gunpowder": true,
         "cast_bronze_cannon": true,
         "dynastic_marriages": true,
+        "field_fortifications": true,
+        "gunpowder": true,
+        "heavy_armor": true,
+        "iron_weapons": true,
         "tax_registers": true
       },
       "active_id": "",
@@ -699,6 +712,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "munich_main",
     "gold": 520,
     "grain": 260,
     "iron": 100,
@@ -708,10 +722,10 @@
     "cloth": 90,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "heavy_armor": true,
         "field_fortifications": true,
-        "gunpowder": true
+        "gunpowder": true,
+        "heavy_armor": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
@@ -834,6 +848,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "dresden_main",
     "gold": 500,
     "grain": 260,
     "iron": 100,
@@ -860,6 +875,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "cairo",
     "gold": 420,
     "grain": 320,
     "iron": 70,
@@ -938,6 +954,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "puglia_main",
     "gold": 430,
     "grain": 230,
     "iron": 70,
@@ -990,6 +1007,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "gemlik_bursa",
     "gold": 920,
     "grain": 560,
     "iron": 180,
@@ -999,11 +1017,11 @@
     "cloth": 130,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "gunpowder": true,
+        "caravanserai_network": true,
         "cast_bronze_cannon": true,
-        "state_granaries": true,
-        "caravanserai_network": true
+        "gunpowder": true,
+        "iron_weapons": true,
+        "state_granaries": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1022,6 +1040,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "rome",
     "gold": 420,
     "grain": 200,
     "iron": 50,
@@ -1048,6 +1067,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "poland_warsaw",
     "gold": 760,
     "grain": 560,
     "iron": 160,
@@ -1058,9 +1078,9 @@
     "research": {
       "completed": {
         "cavalry_tactics": true,
+        "dynastic_marriages": true,
         "horse_breeding": true,
-        "iron_weapons": true,
-        "dynastic_marriages": true
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1079,6 +1099,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "portugal_lisboa",
     "gold": 520,
     "grain": 240,
     "iron": 70,
@@ -1131,6 +1152,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "moscow_main",
     "gold": 760,
     "grain": 620,
     "iron": 190,
@@ -1157,6 +1179,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "persia_south_bam",
     "gold": 620,
     "grain": 340,
     "iron": 150,
@@ -1166,10 +1189,10 @@
     "cloth": 90,
     "research": {
       "completed": {
-        "cavalry_tactics": true,
-        "horse_breeding": true,
         "caravanserai_network": true,
-        "gunpowder": true
+        "cavalry_tactics": true,
+        "gunpowder": true,
+        "horse_breeding": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1214,6 +1237,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "savoy_settlement_2",
     "gold": 460,
     "grain": 220,
     "iron": 80,
@@ -1240,6 +1264,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "stettin_main",
     "gold": 820,
     "grain": 340,
     "iron": 170,
@@ -1249,10 +1274,10 @@
     "cloth": 120,
     "research": {
       "completed": {
-        "iron_weapons": true,
         "cavalry_tactics": true,
-        "gunpowder": true,
         "field_fortifications": true,
+        "gunpowder": true,
+        "iron_weapons": true,
         "navigation": true,
         "shipyard_organization": true
       },
@@ -1273,6 +1298,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "rascia_main",
     "gold": 260,
     "grain": 150,
     "iron": 50,
@@ -1299,6 +1325,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "berlin_main",
     "gold": 520,
     "grain": 260,
     "iron": 120,
@@ -1308,10 +1335,10 @@
     "cloth": 90,
     "research": {
       "completed": {
-        "iron_weapons": true,
         "field_fortifications": true,
-        "tax_registers": true,
-        "standing_infantry": true
+        "iron_weapons": true,
+        "standing_infantry": true,
+        "tax_registers": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1356,6 +1383,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "venice",
     "gold": 620,
     "grain": 260,
     "iron": 90,
@@ -1365,11 +1393,11 @@
     "cloth": 200,
     "research": {
       "completed": {
-        "navigation": true,
-        "harbor_administration": true,
+        "banking": true,
         "galley_artillery": true,
-        "trade_routes": true,
-        "banking": true
+        "harbor_administration": true,
+        "navigation": true,
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1388,6 +1416,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "new_region_236_settlement_1",
     "gold": 320,
     "grain": 250,
     "iron": 70,

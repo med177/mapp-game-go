@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-06-20
+last_updated: 2026-07-07
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -70,6 +70,8 @@ type GameState struct {
 `SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
 `CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon ya da müttefik bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation verisinden okunur.
 
+`Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
+
 Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuyruğunu da serialize eder:
 
 - `CapitalSettlementID`
@@ -136,7 +138,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `MaxLandArmies(fid) int` — `ceil(kara_bölge_sayısı / 2)` (minimum 1)
 
-`CurrentLandArmies(fid) int` — fraksiyonun aktif kara ordu sayısı
+`CurrentLandArmies(fid) int` — fraksiyonun aktif saha ordusu sayısı; `IsGarrison=true` kara orduları bu limite dahil edilmez
 
 ---
 

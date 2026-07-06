@@ -433,7 +433,7 @@ func (g *Game) completeLandUnit(region *world.Region, ownerID faction.FactionID,
 
 func (g *Game) findRecruitableLandArmy(regionID world.RegionID, ownerID faction.FactionID) (*army.Army, bool) {
 	for _, a := range g.gs.Armies {
-		if a.RegionID != regionID || a.OwnerID != string(ownerID) || a.IsNaval {
+		if a.RegionID != regionID || a.OwnerID != string(ownerID) || a.IsNaval || a.IsGarrison {
 			continue
 		}
 		if len(a.Units) < army.MaxArmySize {

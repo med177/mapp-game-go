@@ -1004,7 +1004,7 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID) bool {
 	pendingInRegion := aiPendingUnitCountByRegion(gs, rid, fid)
 	for _, a := range gs.Armies {
-		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval {
+		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval || a.IsGarrison {
 			continue
 		}
 		return len(a.Units)+pendingInRegion < army.MaxArmySize

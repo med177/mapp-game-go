@@ -36,6 +36,7 @@ type armySpecJSON struct {
 	DockedRegion       world.RegionID  `json:"docked_region_id,omitempty"`
 	DockedSettlementID string          `json:"docked_settlement_id,omitempty"`
 	IsNaval            bool            `json:"is_naval,omitempty"`
+	IsGarrison         *bool           `json:"is_garrison,omitempty"`
 	Units              []unitCountJSON `json:"units"`
 }
 
@@ -61,6 +62,12 @@ func LoadArmies(path string) (map[ArmyID]*Army, error) {
 			units = append(units, MakeUnits(uc.TypeID, uc.Count)...)
 		}
 		id := ArmyID(s.ID)
+		isGarrison := false
+		if s.IsGarrison != nil {
+			isGarrison = *s.IsGarrison
+		} else if !s.IsNaval && LooksLikeGarrisonID(id) {
+			isGarrison = true
+		}
 		armies[id] = &Army{
 			ID:                 id,
 			OwnerID:            s.OwnerID,
@@ -71,6 +78,7 @@ func LoadArmies(path string) (map[ArmyID]*Army, error) {
 			MovePoints:         2,
 			MaxMovePoints:      2,
 			IsNaval:            s.IsNaval,
+			IsGarrison:         isGarrison,
 		}
 	}
 	return armies, nil

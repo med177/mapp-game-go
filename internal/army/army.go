@@ -1,6 +1,10 @@
 package army
 
-import "mapp-game-go/internal/world"
+import (
+	"strings"
+
+	"mapp-game-go/internal/world"
+)
 
 const MaxArmySize = 20
 
@@ -19,6 +23,7 @@ type Army struct {
 	MovePoints         int            `json:"move_points"`              // bu turda kalan hareket puanı
 	MaxMovePoints      int            `json:"max_move_points"`
 	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
+	IsGarrison         bool           `json:"is_garrison,omitempty"`
 
 	// Pusu durumu: geçit bölgesinde bekliyorsa true
 	InAmbush bool `json:"in_ambush"`
@@ -33,6 +38,11 @@ type Army struct {
 // Size ordu boyutunu döner.
 func (a *Army) Size() int {
 	return len(a.Units)
+}
+
+// CountsTowardArmyLimit ordu kara saha ordusu limitine dahil mi?
+func (a *Army) CountsTowardArmyLimit() bool {
+	return a != nil && !a.IsNaval && !a.IsGarrison && len(a.Units) > 0
 }
 
 // CanAddUnit yeni birim eklenebilir mi?
@@ -261,6 +271,27 @@ func (a *Army) ReplenishInFriendlyTerritory(regions map[world.RegionID]*world.Re
 func (a *Army) ResetMovePoints() {
 	a.MovePoints = a.MaxMovePoints
 	a.InAmbush = false
+}
+
+// LooksLikeGarrisonID legacy scenario/save verilerindeki garnizon ID desenlerini tanır.
+func LooksLikeGarrisonID(id ArmyID) bool {
+	name := strings.ToLower(string(id))
+	return strings.HasPrefix(name, "army_garrison_") ||
+		strings.HasSuffix(name, "_garrison") ||
+		strings.Contains(name, "_garrison_")
+}
+
+// NormalizeLegacyGarrisons explicit state'i olmayan eski garnizon ordularını
+// yeni `IsGarrison` alanına taşır.
+func NormalizeLegacyGarrisons(armies map[ArmyID]*Army) {
+	for id, a := range armies {
+		if a == nil || a.IsNaval || a.IsGarrison {
+			continue
+		}
+		if LooksLikeGarrisonID(id) {
+			a.IsGarrison = true
+		}
+	}
 }
 
 // InitializeLegacyFleetDocking eski veri dosyalarında dock bilgisi olmayan

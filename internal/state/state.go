@@ -612,7 +612,7 @@ func (s *GameState) MaxLandArmies(fid faction.FactionID) int {
 func (s *GameState) CurrentLandArmies(fid faction.FactionID) int {
 	count := 0
 	for _, a := range s.Armies {
-		if a.OwnerID == string(fid) && !a.IsNaval {
+		if a != nil && a.OwnerID == string(fid) && a.CountsTowardArmyLimit() {
 			count++
 		}
 	}

@@ -2145,6 +2145,7 @@ func writeScenarioArmies(gs *state.GameState) error {
 		DockedRegion       world.RegionID  `json:"docked_region_id,omitempty"`
 		DockedSettlementID string          `json:"docked_settlement_id,omitempty"`
 		IsNaval            bool            `json:"is_naval,omitempty"`
+		IsGarrison         bool            `json:"is_garrison,omitempty"`
 		Units              []unitCountJSON `json:"units"`
 	}
 	specs := make([]armySpecJSON, 0, len(ids))
@@ -2173,6 +2174,7 @@ func writeScenarioArmies(gs *state.GameState) error {
 			DockedRegion:       a.DockedRegionID,
 			DockedSettlementID: a.DockedSettlementID,
 			IsNaval:            a.IsNaval,
+			IsGarrison:         a.IsGarrison,
 			Units:              units,
 		})
 	}
@@ -2364,6 +2366,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
 	}
+	army.NormalizeLegacyGarrisons(armies)
 	advance()
 	yield()
 	tradeCenters, err := world.LoadTradeCenters(dp("trade_centers.json"), regions)
@@ -3235,6 +3238,8 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 	if !ok || a.OwnerID != string(g.gs.PlayerFactionID) {
 		return
 	}
+	aid = g.deployGarrisonArmy(aid)
+	a = g.gs.Armies[aid]
 	if a.MovePoints <= 0 {
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
@@ -3457,30 +3462,37 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 // tryMergeArmies taşınan orduyu hedefteki dost orduyla birleştirir.
 // Birleşme olursa hayatta kalan ordu ID'sini döner; yoksa "".
 func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) army.ArmyID {
+	movingID = g.deployGarrisonArmy(movingID)
 	moving, ok := g.gs.Armies[movingID]
 	if !ok {
 		return ""
 	}
+	var targetID army.ArmyID
 	for otherID, other := range g.gs.Armies {
 		if otherID == movingID || other.RegionID != regionID ||
 			other.OwnerID != moving.OwnerID || other.IsNaval != moving.IsNaval {
 			continue
 		}
-		if len(moving.Units)+len(other.Units) <= army.MaxArmySize {
-			// Taşınanı hedefe ekle, taşınanı sil
-			other.Units = append(other.Units, moving.Units...)
-			delete(g.gs.Armies, movingID)
-			g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(other.Units)) + " birim")
-			return otherID
-		}
-		// 20'yi aşıyor — iki ayrı ordu olarak bırak
+		targetID = otherID
+		break
+	}
+	if targetID == "" {
 		return ""
 	}
-	return ""
+	targetID = g.deployGarrisonArmy(targetID)
+	target := g.gs.Armies[targetID]
+	if target == nil || len(moving.Units)+len(target.Units) > army.MaxArmySize {
+		return ""
+	}
+	target.Units = append(target.Units, moving.Units...)
+	delete(g.gs.Armies, movingID)
+	g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(target.Units)) + " birim")
+	return targetID
 }
 
 // splitArmy seçili orduyu birim sayısına göre ikiye böler.
 func (g *Game) splitArmy(aid army.ArmyID) {
+	aid = g.deployGarrisonArmy(aid)
 	a, ok := g.gs.Armies[aid]
 	if !ok || len(a.Units) < 2 {
 		return
@@ -3509,22 +3521,26 @@ func (g *Game) splitArmy(aid army.ArmyID) {
 
 // mergeArmiesManual seçili orduyu aynı bölgedeki dost orduya elle birleştirir (20 kapasitesine kadar).
 func (g *Game) mergeArmiesManual(aid army.ArmyID) {
+	aid = g.deployGarrisonArmy(aid)
 	a, ok := g.gs.Armies[aid]
 	if !ok {
 		return
 	}
 	// Aynı bölgede dost ordu bul
-	var target *army.Army
 	var targetID army.ArmyID
 	for oid, other := range g.gs.Armies {
 		if oid == aid || other.RegionID != a.RegionID ||
 			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}
-		target = other
 		targetID = oid
 		break
 	}
+	if targetID == "" {
+		return
+	}
+	targetID = g.deployGarrisonArmy(targetID)
+	target := g.gs.Armies[targetID]
 	if target == nil {
 		return
 	}
@@ -3545,6 +3561,47 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 		g.renderer.SelectedArmy = targetID
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordular birleşti: %d birim", len(target.Units)))
+}
+
+func (g *Game) deployGarrisonArmy(aid army.ArmyID) army.ArmyID {
+	if g == nil || g.gs == nil {
+		return aid
+	}
+	a := g.gs.Armies[aid]
+	if a == nil || a.IsNaval || !a.IsGarrison {
+		return aid
+	}
+	a.IsGarrison = false
+	if !army.LooksLikeGarrisonID(aid) {
+		return aid
+	}
+	g.gs.NextArmySeq++
+	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", a.OwnerID, g.gs.NextArmySeq))
+	delete(g.gs.Armies, aid)
+	a.ID = newID
+	g.gs.Armies[newID] = a
+	if g.gs.ArmyLogistics != nil {
+		if status, ok := g.gs.ArmyLogistics[aid]; ok {
+			delete(g.gs.ArmyLogistics, aid)
+			status.ArmyID = newID
+			g.gs.ArmyLogistics[newID] = status
+		}
+	}
+	for _, siege := range g.gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		if siege.AttackerArmyID == aid {
+			siege.AttackerArmyID = newID
+		}
+		if siege.DefenderArmyID == aid {
+			siege.DefenderArmyID = newID
+		}
+	}
+	if g.renderer != nil && g.renderer.SelectedArmy == aid {
+		g.renderer.SelectedArmy = newID
+	}
+	return newID
 }
 
 // adjustTax oyuncunun bölgesinde vergi oranını ayarlar.
