@@ -487,14 +487,21 @@ func TestMoveArmyDisembarkEnemyArmyBattleWin(t *testing.T) {
 	if _, ok := gs.Armies["enemy_army"]; ok {
 		t.Fatalf("kazanılan çıkarma savaşında düşman ordusu silinmeliydi")
 	}
-	if gs.Regions["land_e"].OwnerID != "p1" {
-		t.Fatalf("başarılı çıkarma sonrası bölge ele geçirilmeli, got=%s", gs.Regions["land_e"].OwnerID)
+	if gs.Regions["land_e"].OwnerID != "p2" {
+		t.Fatalf("son bölgede karar öncesi sahiplik korunmalıydı, got=%s", gs.Regions["land_e"].OwnerID)
 	}
 	if _, ok := gs.Armies["army_p1_12"]; !ok {
 		t.Fatalf("başarılı çıkarma sonrası yeni kara ordusu bekleniyordu")
 	}
 	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 {
 		t.Fatalf("savaş sonrası filo cargo'su boş olmalı")
+	}
+	if len(g.pendingConquestDecisions) != 1 {
+		t.Fatalf("son bölgede savaş sonrası karar beklenmeliydi, got=%d", len(g.pendingConquestDecisions))
+	}
+	g.resolvePendingConquestDecision(false)
+	if gs.Regions["land_e"].OwnerID != "p1" {
+		t.Fatalf("ilhak kararı sonrası bölge ele geçirilmeli, got=%s", gs.Regions["land_e"].OwnerID)
 	}
 }
 
@@ -591,14 +598,21 @@ func TestMoveArmyDisembarkEnemyCoastNoArmyConquersOnWar(t *testing.T) {
 
 	g.moveArmy("fleet_p1_1", "land_e")
 
-	if gs.Regions["land_e"].OwnerID != "p1" {
-		t.Fatalf("savaşta ordusuz düşman kıyı çıkarmasında sahiplik değişmeliydi, got=%s", gs.Regions["land_e"].OwnerID)
+	if gs.Regions["land_e"].OwnerID != "p2" {
+		t.Fatalf("son bölgede karar öncesi sahiplik korunmalıydı, got=%s", gs.Regions["land_e"].OwnerID)
 	}
 	if _, ok := gs.Armies["army_p1_31"]; !ok {
 		t.Fatalf("çıkarma sonrası kara ordusu oluşmalıydı")
 	}
 	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 {
 		t.Fatalf("çıkarma sonrası filo cargo'su boş olmalı")
+	}
+	if len(g.pendingConquestDecisions) != 1 {
+		t.Fatalf("son bölgede savaş sonrası karar beklenmeliydi, got=%d", len(g.pendingConquestDecisions))
+	}
+	g.resolvePendingConquestDecision(false)
+	if gs.Regions["land_e"].OwnerID != "p1" {
+		t.Fatalf("ilhak kararı sonrası sahiplik değişmeliydi, got=%s", gs.Regions["land_e"].OwnerID)
 	}
 }
 
@@ -968,6 +982,104 @@ func TestMoveArmyDockFleetAtAlliedPort(t *testing.T) {
 	}
 	if fleet.MovePoints != 2 {
 		t.Fatalf("dock hareketi 1 puan tüketmeli, got=%d", fleet.MovePoints)
+	}
+}
+
+func TestMoveArmyDockFleetAtVassalPort(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "lord",
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"vassal_land"},
+			},
+			"vassal_land": {
+				ID:          "vassal_land",
+				OwnerID:     "vassal",
+				Neighbors:   []world.RegionID{"sea_1"},
+				Buildings:   []string{"port"},
+				Settlements: []world.Settlement{{ID: "vassal_port", Type: world.SettlementPort, NameTR: "Vassal Limanı"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_lord_1": {
+				ID:            "fleet_lord_1",
+				OwnerID:       "lord",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord"},
+			"vassal": {ID: "vassal", OverlordID: "lord"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_lord_1", "vassal_land")
+
+	fleet := gs.Armies["fleet_lord_1"]
+	if fleet.DockedRegionID != "vassal_land" || fleet.DockedSettlementID != "vassal_port" {
+		t.Fatalf("vassal limanına dock olmalı, got docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+}
+
+func TestMoveArmyDisembarkToVassalCoastWithoutWar(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "lord",
+		NextArmySeq:     30,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"vassal_land"},
+			},
+			"vassal_land": {
+				ID:        "vassal_land",
+				OwnerID:   "vassal",
+				Neighbors: []world.RegionID{"sea_1"},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_lord_1": {
+				ID:            "fleet_lord_1",
+				OwnerID:       "lord",
+				RegionID:      "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				IsNaval:       true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord", Religion: "sunni"},
+			"vassal": {ID: "vassal", Religion: "sunni", OverlordID: "lord"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_lord_1", "vassal_land")
+
+	if _, ok := gs.Armies["army_lord_31"]; !ok {
+		t.Fatalf("vassal kıyısına çıkarma sonrası kara ordusu oluşmalıydı")
+	}
+	if gs.Regions["vassal_land"].OwnerID != "vassal" {
+		t.Fatalf("askeri geçişte vassal kıyısının sahibi değişmemeliydi, got=%s", gs.Regions["vassal_land"].OwnerID)
+	}
+	if len(gs.Armies["fleet_lord_1"].EmbarkedUnits) != 0 {
+		t.Fatalf("çıkarma sonrası filo cargo'su boş olmalı")
 	}
 }
 

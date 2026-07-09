@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-07
+last_updated: 2026-07-09
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -68,7 +68,7 @@ type GameState struct {
 `ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; sıfırlandığında üretim uygulanır.
 
 `SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
-`CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon ya da müttefik bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation verisinden okunur.
+`CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon, müttefik veya aynı vassal zincirindeki bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation/hiyerarşi verisinden okunur.
 
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
 
@@ -77,6 +77,12 @@ Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuy
 - `CapitalSettlementID`
 - `PendingCapitalSettlementID`
 - `PendingCapitalTurns`
+
+Fraksiyon state'i ayrıca vassallık zincirini de serialize eder:
+
+- `OverlordID`
+
+Bu alan `Relation.Stance` içine gömülmez; çünkü bir devlet aynı anda yalnız bir overlord'a bağlı olabilir ama diğer relation kayıtları ayrı kalır.
 
 ---
 
@@ -164,6 +170,10 @@ army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
 Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData` ve `RegionOrder` alanlarını yeniden doldurur. `ScenarioPath` eksik ama `ScenarioID` varsa senaryo klasörü yeniden çözülür; ardından `scenario.json` tekrar okunur, `MapConfig` fallback uygulanır, `ScenarioVictories` tam liste olarak geri yüklenir ve `AvailableVictories` aktif `PlayerFactionID` ile tekrar filtrelenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
+
+Load/startup sonunda `diplomacy.NormalizeVassalage()` çalışır. Böylece geçersiz `OverlordID` referansları temizlenir, realm içi relation kayıtları dost çizgiye çekilir ve vassalın üçüncü taraf trade/offer sızıntıları kapanır.
+
+`Game` katmanında ayrıca serialize edilmeyen bir `pendingConquestDecisions` kuyruğu vardır. Bu runtime kuyruk, oyuncu savaşta bir devletin son kara toprağını düşürdüğünde battle report ile nihai ilhak/vassallık kararını birbirinden ayırmak için kullanılır; save/load veya yeni oyun başlangıcında temizlenir.
 
 Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar.
 

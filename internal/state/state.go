@@ -469,9 +469,50 @@ func (s *GameState) CanJoinActiveSiege(attacker *army.Army, regionID world.Regio
 	if siegeArmy.OwnerID == attacker.OwnerID {
 		return true
 	}
+	if stateSameRealm(s, faction.FactionID(attacker.OwnerID), faction.FactionID(siegeArmy.OwnerID)) {
+		return true
+	}
 	key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(siegeArmy.OwnerID))
 	rel := s.Relations[key]
 	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
+func stateDirectOverlord(s *GameState, fid faction.FactionID) faction.FactionID {
+	if s == nil || fid == "" {
+		return ""
+	}
+	f := s.Factions[fid]
+	if f == nil || f.IsEliminated || f.OverlordID == "" || f.OverlordID == fid {
+		return ""
+	}
+	overlord := s.Factions[f.OverlordID]
+	if overlord == nil || overlord.IsEliminated {
+		return ""
+	}
+	return f.OverlordID
+}
+
+func stateRealmRoot(s *GameState, fid faction.FactionID) faction.FactionID {
+	if fid == "" {
+		return ""
+	}
+	current := fid
+	seen := map[faction.FactionID]struct{}{}
+	for {
+		overlord := stateDirectOverlord(s, current)
+		if overlord == "" {
+			return current
+		}
+		if _, exists := seen[overlord]; exists {
+			return current
+		}
+		seen[overlord] = struct{}{}
+		current = overlord
+	}
+}
+
+func stateSameRealm(s *GameState, a, b faction.FactionID) bool {
+	return a != "" && b != "" && stateRealmRoot(s, a) == stateRealmRoot(s, b)
 }
 
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.

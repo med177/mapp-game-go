@@ -10,10 +10,13 @@ import (
 type Action string
 
 const (
-	ActionDeclareWar      Action = "declare_war"
-	ActionProposePeace    Action = "propose_peace"
-	ActionProposeAlliance Action = "propose_alliance"
-	ActionProposeTrade    Action = "propose_trade"
+	ActionDeclareWar         Action = "declare_war"
+	ActionProposePeace       Action = "propose_peace"
+	ActionProposeAlliance    Action = "propose_alliance"
+	ActionProposeTrade       Action = "propose_trade"
+	ActionImproveRelations   Action = "improve_relations"
+	ActionSendGift           Action = "send_gift"
+	ActionOfferVassalization Action = "offer_vassalization"
 )
 
 type Result struct {
@@ -34,48 +37,24 @@ func (a TradeProposalAssessment) Accepted() bool {
 }
 
 func Execute(gs *state.GameState, actor, target faction.FactionID, action Action) Result {
-	if gs == nil {
-		return Result{Message: "Diplomasi durumu yok."}
-	}
-	if actor == "" || target == "" || actor == target {
-		return Result{Message: "Geçersiz diplomasi hedefi."}
-	}
-	actorFaction := gs.Factions[actor]
-	targetFaction := gs.Factions[target]
-	if actorFaction == nil || targetFaction == nil {
-		return Result{Message: "Fraksiyon bulunamadı."}
-	}
-	if actorFaction.IsEliminated || targetFaction.IsEliminated {
-		return Result{Message: "Elenmiş fraksiyonlarla diplomasi kurulamaz."}
+	if reason := ActionBlockReason(gs, actor, target, action); reason != "" {
+		return Result{Message: reason}
 	}
 
 	rel := EnsureRelation(gs, actor, target)
 	switch action {
 	case ActionDeclareWar:
-		if rel.Stance == faction.StanceWar {
-			return Result{Message: factionLabel(gs, target) + " ile zaten savaş halindesiniz."}
-		}
-		rel.Stance = faction.StanceWar
-		rel.Score = -80
-		removeTradeRoutesBetween(gs, actor, target)
+		setWarBetweenCoalitions(gs, actor, target)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile savaş başladı."}
 
 	case ActionProposePeace:
-		if rel.Stance != faction.StanceWar {
-			return Result{Message: "Barış teklifi yalnızca savaş halindeyken yapılabilir."}
-		}
 		if !acceptPeace(gs, rel, actor, target) {
 			return Result{Message: factionLabel(gs, target) + " barışı reddetti."}
 		}
-		rel.Stance = faction.StancePeace
-		rel.Score = -20
-		removeTradeRoutesBetween(gs, actor, target)
+		setPeaceBetweenCoalitions(gs, actor, target)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " barışı kabul etti."}
 
 	case ActionProposeTrade:
-		if rel.Stance == faction.StanceWar {
-			return Result{Message: "Savaş halindeyken ticaret yapılamaz."}
-		}
 		if rel.Stance == faction.StanceTrade {
 			if HasTradeRouteBetween(gs, actor, target) {
 				return Result{Message: "Zaten aktif bir ticaret anlaşması var."}
@@ -101,18 +80,24 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması imzalandı."}
 
 	case ActionProposeAlliance:
-		if rel.Stance == faction.StanceWar {
-			return Result{Message: "Savaş halindeyken ittifak kurulamaz."}
-		}
-		if rel.Stance == faction.StanceAllied {
-			return Result{Message: "Zaten müttefiksiniz."}
-		}
 		if !acceptAlliance(gs, rel, actor, target) {
 			return Result{Message: factionLabel(gs, target) + " ittifak teklifini reddetti."}
 		}
 		rel.Stance = faction.StanceAllied
 		rel.Score = clamp(rel.Score+20, -100, 100)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ittifak kuruldu."}
+
+	case ActionImproveRelations:
+		return applyRelationImprovement(gs, actor, target, relationImprovementCost, relationImprovementBonus, 0, "diplomatik heyet")
+
+	case ActionSendGift:
+		return applyRelationImprovement(gs, actor, target, giftCost, giftRelationBonus, giftReceiverGold, "hediye")
+
+	case ActionOfferVassalization:
+		if !AssessVassalizationProposal(gs, rel, actor, target).Accepted() {
+			return Result{Message: factionLabel(gs, target) + " vassallık teklifini reddetti."}
+		}
+		return applyVassalization(gs, actor, target)
 	}
 
 	return Result{Message: "Bilinmeyen diplomasi aksiyonu."}

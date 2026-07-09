@@ -239,6 +239,118 @@ func TestMoveArmyWithStanceAllowsAlliedSiegeSupport(t *testing.T) {
 	}
 }
 
+func TestMoveArmyWithStanceAllowsOverlordTransitToVassalRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "lord",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord", Religion: "sunni"},
+			"vassal": {ID: "vassal", Religion: "sunni", OverlordID: "lord"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {ID: "src", OwnerID: "lord", Neighbors: []world.RegionID{"dst"}},
+			"dst": {ID: "dst", OwnerID: "vassal", Neighbors: []world.RegionID{"src"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "lord",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("atk", "dst", "")
+
+	if gs.Armies["atk"].RegionID != "dst" {
+		t.Fatalf("overlord ordusu vassal toprağına savaşsız girebilmeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.Regions["dst"].OwnerID != "vassal" {
+		t.Fatalf("askeri geçişte bölge sahibi değişmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+}
+
+func TestMoveArmyWithStanceAllowsSameRealmSiegeSupport(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "vassal",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord", Religion: "sunni"},
+			"vassal": {ID: "vassal", Religion: "sunni", OverlordID: "lord"},
+			"enemy":  {ID: "enemy", Religion: "catholic"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"lord_src":   {ID: "lord_src", OwnerID: "lord", Neighbors: []world.RegionID{"enemy_dst"}},
+			"vassal_src": {ID: "vassal_src", OwnerID: "vassal", Neighbors: []world.RegionID{"enemy_dst"}},
+			"enemy_dst": {
+				ID:          "enemy_dst",
+				OwnerID:     "enemy",
+				Neighbors:   []world.RegionID{"lord_src", "vassal_src"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("lord", "enemy"):   {FactionA: "lord", FactionB: "enemy", Stance: faction.StanceWar},
+			faction.RelationKey("vassal", "enemy"): {FactionA: "vassal", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "lord",
+				RegionID:      "lord_src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "siege", CurrentHP: 100}},
+			},
+			"support": {
+				ID:            "support",
+				OwnerID:       "vassal",
+				RegionID:      "vassal_src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+			"def": {
+				ID:            "def",
+				OwnerID:       "enemy",
+				RegionID:      "enemy_dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"enemy_dst": {
+				RegionID:          "enemy_dst",
+				AttackerArmyID:    "atk",
+				AttackerFactionID: "lord",
+				StartedTurn:       5,
+				FortLevel:         2,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":   {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+			"siege": {ID: "siege", Category: army.CategorySiege, Tier: 1, Attack: 8, Defense: 4, Morale: 30},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("support", "enemy_dst", "")
+
+	if gs.Armies["support"].RegionID != "enemy_dst" {
+		t.Fatalf("aynı vassal zincirindeki destek ordusu kuşatmaya katılabilmeliydi, got=%s", gs.Armies["support"].RegionID)
+	}
+	if gs.Regions["enemy_dst"].OwnerID != "enemy" {
+		t.Fatalf("kuşatma desteği sahipliği değiştirmemeliydi, got=%s", gs.Regions["enemy_dst"].OwnerID)
+	}
+}
+
 func TestMoveArmyWithStanceBlocksNonAlliedSiegeSupport(t *testing.T) {
 	gs := siegeSupportTestState()
 	gs.PlayerFactionID = "p4"

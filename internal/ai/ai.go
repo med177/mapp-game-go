@@ -139,9 +139,15 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 	if self == nil || self.IsEliminated {
 		return
 	}
+	if diplomacy.DirectOverlord(gs, fid) != "" {
+		return
+	}
 
 	for otherID, other := range gs.Factions {
 		if otherID == fid || other == nil || other.IsEliminated {
+			continue
+		}
+		if overlord := diplomacy.DirectOverlord(gs, otherID); overlord != "" && overlord != fid {
 			continue
 		}
 
@@ -342,6 +348,9 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 	if self == nil || self.IsEliminated {
 		return
 	}
+	if diplomacy.DirectOverlord(gs, fid) != "" {
+		return
+	}
 	if aiActiveWarCount(gs, fid) >= aiMaxConcurrentWars(gs, fid) {
 		return
 	}
@@ -357,6 +366,9 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 
 	for otherID, other := range gs.Factions {
 		if otherID == fid || other == nil || other.IsEliminated {
+			continue
+		}
+		if overlord := diplomacy.DirectOverlord(gs, otherID); overlord != "" && overlord != fid {
 			continue
 		}
 		rel := diplomacy.Relation(gs, fid, otherID)
@@ -526,16 +538,32 @@ func aiMaxConcurrentWars(gs *state.GameState, fid faction.FactionID) int {
 }
 
 func aiActiveWarCount(gs *state.GameState, fid faction.FactionID) int {
-	count := 0
+	if gs == nil {
+		return 0
+	}
+	seen := make(map[faction.FactionID]struct{})
+	root := fid
+	if realmRoot := diplomacy.RealmRoot(gs, fid); realmRoot != "" {
+		root = realmRoot
+	}
 	for _, rel := range gs.Relations {
 		if rel == nil || rel.Stance != faction.StanceWar {
 			continue
 		}
-		if rel.FactionA == fid || rel.FactionB == fid {
-			count++
+		if !diplomacy.SameRealm(gs, root, rel.FactionA) && !diplomacy.SameRealm(gs, root, rel.FactionB) {
+			continue
 		}
+		other := rel.FactionB
+		if diplomacy.SameRealm(gs, root, rel.FactionB) {
+			other = rel.FactionA
+		}
+		otherRoot := diplomacy.RealmRoot(gs, other)
+		if otherRoot == "" {
+			otherRoot = other
+		}
+		seen[otherRoot] = struct{}{}
 	}
-	return count
+	return len(seen)
 }
 
 func aiSharesLandBorder(gs *state.GameState, a, b faction.FactionID) bool {

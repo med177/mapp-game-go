@@ -208,6 +208,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 		return nil, err
 	}
 	gs.TradeCenters = tradeCenters
+	diplomacy.NormalizeVassalage(&gs)
 	diplomacy.EnsureTradeRoutesForActiveRelations(&gs)
 	gs.NormalizeFactionCapitals()
 

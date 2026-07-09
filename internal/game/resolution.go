@@ -52,6 +52,26 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 
 	result := eliminationResult{FactionID: fid, SuccessorID: successor}
 	f.IsEliminated = true
+	if successor != "" && successor != fid {
+		for otherID, other := range gs.Factions {
+			if other == nil || otherID == fid {
+				continue
+			}
+			if other.OverlordID == fid {
+				other.OverlordID = successor
+			}
+		}
+	} else {
+		for otherID, other := range gs.Factions {
+			if other == nil || otherID == fid {
+				continue
+			}
+			if other.OverlordID == fid {
+				other.OverlordID = ""
+			}
+		}
+	}
+	f.OverlordID = ""
 	f.CapitalSettlementID = ""
 	f.PendingCapitalSettlementID = ""
 	f.PendingCapitalTurns = 0
@@ -384,6 +404,30 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			applyGrainShortagePenalty(gs, fidStr, -f.Grain)
 			f.Grain = 0
 		}
+	}
+
+	for fid, f := range gs.Factions {
+		if f == nil || f.IsEliminated || f.OverlordID == "" {
+			continue
+		}
+		overlord := gs.Factions[f.OverlordID]
+		if overlord == nil || overlord.IsEliminated {
+			f.OverlordID = ""
+			continue
+		}
+		income := incomeByFaction[string(fid)] + effectsByFaction[string(fid)].GoldPerRegion*len(gs.RegionsOwnedBy(fid))
+		if income <= 0 {
+			continue
+		}
+		tribute := income * diplomacy.VassalTributeRatePercent() / 100
+		if tribute <= 0 {
+			continue
+		}
+		if tribute > f.Gold {
+			tribute = f.Gold
+		}
+		f.Gold -= tribute
+		overlord.Gold += tribute
 	}
 
 	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)

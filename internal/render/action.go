@@ -11,34 +11,39 @@ import (
 type ActionKind string
 
 const (
-	ActionNone               ActionKind = ""
-	ActionEndTurn            ActionKind = "end_turn"
-	ActionConfirmEndTurn     ActionKind = "confirm_end_turn"
-	ActionSelectArmy         ActionKind = "select_army"
-	ActionMoveArmy           ActionKind = "move_army"
-	ActionEmbarkArmy         ActionKind = "embark_army"
-	ActionDisembarkArmy      ActionKind = "disembark_army"
-	ActionStartSiege         ActionKind = "start_siege"
-	ActionAssaultSiege       ActionKind = "assault_siege"
-	ActionLiftSiege          ActionKind = "lift_siege"
-	ActionRecruitUnit        ActionKind = "recruit_unit"
-	ActionBuild              ActionKind = "build"
-	ActionDeclareWar         ActionKind = "declare_war"
-	ActionProposePeace       ActionKind = "propose_peace"
-	ActionSave               ActionKind = "save"
-	ActionLoad               ActionKind = "load"
-	ActionSelectFaction      ActionKind = "select_faction"
-	ActionAdjustTax          ActionKind = "adjust_tax"      // Delta: +5 veya -5
-	ActionResearch           ActionKind = "research"        // BuildingID = tech ID
-	ActionCancelResearch     ActionKind = "cancel_research"      // teknoloji araştırmasını iptal et
-	ActionCancelBuilding     ActionKind = "cancel_building"      // bina inşaatını onaylı iptal
-	ActionSelectVictory      ActionKind = "select_victory"       // BuildingID = VictoryType
-	ActionProposeAlliance    ActionKind = "propose_alliance"
-	ActionProposeTrade       ActionKind = "propose_trade"
-	ActionRecruitNaval       ActionKind = "recruit_naval"
-	ActionRecruitSpecific    ActionKind = "recruit_specific"     // BuildingID = unit type ID
-	ActionCancelRecruitOrder ActionKind = "cancel_recruit_order" // BuildingID = production order ID (tek emir iptal)
-	ActionDeclareWarAndMove  ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
+	ActionNone                     ActionKind = ""
+	ActionEndTurn                  ActionKind = "end_turn"
+	ActionConfirmEndTurn           ActionKind = "confirm_end_turn"
+	ActionSelectArmy               ActionKind = "select_army"
+	ActionMoveArmy                 ActionKind = "move_army"
+	ActionEmbarkArmy               ActionKind = "embark_army"
+	ActionDisembarkArmy            ActionKind = "disembark_army"
+	ActionStartSiege               ActionKind = "start_siege"
+	ActionAssaultSiege             ActionKind = "assault_siege"
+	ActionLiftSiege                ActionKind = "lift_siege"
+	ActionRecruitUnit              ActionKind = "recruit_unit"
+	ActionBuild                    ActionKind = "build"
+	ActionDeclareWar               ActionKind = "declare_war"
+	ActionProposePeace             ActionKind = "propose_peace"
+	ActionImproveRelations         ActionKind = "improve_relations"
+	ActionSendGift                 ActionKind = "send_gift"
+	ActionOfferVassalization       ActionKind = "offer_vassalization"
+	ActionSave                     ActionKind = "save"
+	ActionLoad                     ActionKind = "load"
+	ActionSelectFaction            ActionKind = "select_faction"
+	ActionAdjustTax                ActionKind = "adjust_tax"      // Delta: +5 veya -5
+	ActionResearch                 ActionKind = "research"        // BuildingID = tech ID
+	ActionCancelResearch           ActionKind = "cancel_research" // teknoloji araştırmasını iptal et
+	ActionCancelBuilding           ActionKind = "cancel_building" // bina inşaatını onaylı iptal
+	ActionSelectVictory            ActionKind = "select_victory"  // BuildingID = VictoryType
+	ActionProposeAlliance          ActionKind = "propose_alliance"
+	ActionProposeTrade             ActionKind = "propose_trade"
+	ActionRecruitNaval             ActionKind = "recruit_naval"
+	ActionRecruitSpecific          ActionKind = "recruit_specific"     // BuildingID = unit type ID
+	ActionCancelRecruitOrder       ActionKind = "cancel_recruit_order" // BuildingID = production order ID (tek emir iptal)
+	ActionDeclareWarAndMove        ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
+	ActionAnnexDefeatedFaction     ActionKind = "annex_defeated_faction"
+	ActionVassalizeDefeatedFaction ActionKind = "vassalize_defeated_faction"
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"
 	ActionContinue                  ActionKind = "continue"

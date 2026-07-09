@@ -170,6 +170,10 @@ func (r *Renderer) HideBattleReport() {
 		return
 	}
 	r.battleReport = battleReportState{}
+	if r.queuedConfirmDialog.show {
+		r.confirmDialog = r.queuedConfirmDialog
+		r.queuedConfirmDialog = confirmDialogState{}
+	}
 }
 
 func buildBattleReportModal() gameui.Modal {

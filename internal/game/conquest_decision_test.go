@@ -1,0 +1,110 @@
+package game
+
+import (
+	"testing"
+
+	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
+	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
+)
+
+func conquestDecisionTestGame() *Game {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: "sunni"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman", Religion: "catholic"},
+			"third":  {ID: "third", NameTR: "Üçüncü", Religion: "orthodox"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"enemy_cap":  {ID: "enemy_cap", OwnerID: "enemy", NameTR: "Düşman Başkenti"},
+			"player_cap": {ID: "player_cap", OwnerID: "player", NameTR: "Oyuncu Başkenti"},
+			"third_cap":  {ID: "third_cap", OwnerID: "third", NameTR: "Üçüncü Başkent"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
+			faction.RelationKey("player", "third"): {FactionA: "player", FactionB: "third", Stance: faction.StanceWar, Score: -80},
+			faction.RelationKey("enemy", "third"):  {FactionA: "enemy", FactionB: "third", Stance: faction.StanceTrade, Score: 25},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {ID: "atk", OwnerID: "player", RegionID: "player_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"def": {ID: "def", OwnerID: "enemy", RegionID: "enemy_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+	}
+	return &Game{gs: gs, renderer: &render.Renderer{}}
+}
+
+func TestQueueConquestDecisionForPlayersLastEnemyRegion(t *testing.T) {
+	g := conquestDecisionTestGame()
+
+	if ok := g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false); !ok {
+		t.Fatal("son bölge için savaş sonrası karar kuyruğa alınmalıydı")
+	}
+	if len(g.pendingConquestDecisions) != 1 {
+		t.Fatalf("tek karar bekleniyordu, got=%d", len(g.pendingConquestDecisions))
+	}
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "enemy" {
+		t.Fatalf("karar verilmeden bölge sahibi değişmemeliydi, got=%s", got)
+	}
+}
+
+func TestResolvePendingConquestDecisionAnnexesDefender(t *testing.T) {
+	g := conquestDecisionTestGame()
+	if ok := g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false); !ok {
+		t.Fatal("karar kuyruğa alınamadı")
+	}
+
+	g.resolvePendingConquestDecision(false)
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "player" {
+		t.Fatalf("annex seçiminde bölge oyuncuya geçmeliydi, got=%s", got)
+	}
+	if !g.gs.Factions["enemy"].IsEliminated {
+		t.Fatal("son bölge ilhak edilince düşman elenmeliydi")
+	}
+	if len(g.pendingConquestDecisions) != 0 {
+		t.Fatalf("karar kuyruğu boşalmalıydı, got=%d", len(g.pendingConquestDecisions))
+	}
+}
+
+func TestResolvePendingConquestDecisionVassalizesDefender(t *testing.T) {
+	g := conquestDecisionTestGame()
+	if ok := g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false); !ok {
+		t.Fatal("karar kuyruğa alınamadı")
+	}
+
+	g.resolvePendingConquestDecision(true)
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "enemy" {
+		t.Fatalf("vassal seçiminde bölge yerel devlette kalmalıydı, got=%s", got)
+	}
+	if got := g.gs.Factions["enemy"].OverlordID; got != "player" {
+		t.Fatalf("düşman oyuncuya bağlanmalıydı, got=%s", got)
+	}
+	if rel := g.gs.Relations[faction.RelationKey("player", "enemy")]; rel == nil || rel.Stance != faction.StanceAllied {
+		t.Fatalf("overlord-vassal ilişkisi allied olmalıydı, got=%+v", rel)
+	}
+}
+
+func TestCaptureBesiegedRegionQueuesDecisionOnFinalProvince(t *testing.T) {
+	g := conquestDecisionTestGame()
+	attacker := g.gs.Armies["atk"]
+	target := g.gs.Regions["enemy_cap"]
+
+	collapse, prompted := g.captureBesiegedRegion(attacker, target, true)
+
+	if !prompted {
+		t.Fatal("kuşatma fethi son bölgede savaş sonrası karar üretmeliydi")
+	}
+	if collapse.FactionID != "" {
+		t.Fatalf("karar öncesi ilhak uygulanmamalıydı, got=%+v", collapse)
+	}
+	if got := target.OwnerID; got != "enemy" {
+		t.Fatalf("karar öncesi bölge sahibi değişmemeliydi, got=%s", got)
+	}
+	if len(g.pendingConquestDecisions) != 1 {
+		t.Fatalf("tek karar bekleniyordu, got=%d", len(g.pendingConquestDecisions))
+	}
+}

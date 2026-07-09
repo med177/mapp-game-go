@@ -147,6 +147,30 @@ func TestApplyEconomyTickAppliesMarketGoldBonusToPassiveTrade(t *testing.T) {
 	}
 }
 
+func TestApplyEconomyTickTransfersVassalTributeToOverlord(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord", Gold: 50},
+			"vassal": {ID: "vassal", Gold: 0, OverlordID: "lord"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"v1": {ID: "v1", OwnerID: "vassal", TaxRate: 50, Satisfaction: 50, BaseGoldIncome: 20},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Factions["vassal"].Gold; got != 8 {
+		t.Fatalf("vassal gelirinin %%20 haraç sonrası 8 kalmalıydı, got=%d", got)
+	}
+	if got := gs.Factions["lord"].Gold; got != 52 {
+		t.Fatalf("overlord haracı almalıydı, got=%d", got)
+	}
+}
+
 func TestApplySeasonEffectsAddsNavalMoveBonus(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,

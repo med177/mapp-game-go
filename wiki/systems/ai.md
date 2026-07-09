@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-02
+last_updated: 2026-07-09
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -104,6 +104,7 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 - `war` ilişkisinde skor çok düşmüşse veya AI askeri/bölgesel olarak gerideyse barış teklif eder
 - `peace` ilişkisinde ortak düşman ve yeterli skor varsa ittifak dener
 - `peace` ilişkisinde skor nötr veya pozitifse ticaret dener
+- vassal durumundaki AI bağımsız diplomasi açmaz; overlord'u olmayan devletler ise başka bir overlord'a bağlı hedeflerle doğrudan müzakere başlatmaz
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
 - bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür
 
@@ -112,6 +113,7 @@ Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 - Kolay zorlukta çalışmaz.
 - AI mevcut savaş limitini doldurduysa yeni savaş açmaz.
 - Yalnız kara sınırı paylaştığı ve `peace` durumundaki hedefleri değerlendirir.
+- Başka bir overlord'a bağlı hedefleri doğrudan savaş adayı yapmaz; aktif savaş sayısı da artık realm root bazında tutulur, böylece bir overlord'un vassal savaş kayıtları aynı savaşı yapay olarak çoğaltmaz.
 - Aktif `trade` veya `allied` ilişkiyi savaş için bozmaz.
 - `factions.json` içindeki `ai_expansion_targets` listesinde bulunan tarihsel hedefler daha geniş ilişki eşiğiyle aday olur ve skor bonusu alır.
 - Hedef listesi olan AI fraksiyonları ilk turlarda savaş cadence beklemez; sonraki turlarda da cadence aralığı daha kısadır.

@@ -54,6 +54,9 @@ var diplomActions = []diplomAction{
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposePeace), color.RGBA{50, 120, 180, 220}, ActionProposePeace},
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeAlliance), color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTrade), color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
+	{diplomacy.ActionLabelTR(diplomacy.ActionImproveRelations), color.RGBA{72, 124, 174, 220}, ActionImproveRelations},
+	{diplomacy.ActionLabelTR(diplomacy.ActionSendGift), color.RGBA{182, 120, 58, 220}, ActionSendGift},
+	{diplomacy.ActionLabelTR(diplomacy.ActionOfferVassalization), color.RGBA{86, 132, 68, 220}, ActionOfferVassalization},
 }
 
 var diplomacyHistoryActions = [4]diplomacyHistoryActionMeta{
@@ -73,6 +76,12 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 		return ActionProposeAlliance
 	case diplomacy.ActionProposeTrade:
 		return ActionProposeTrade
+	case diplomacy.ActionImproveRelations:
+		return ActionImproveRelations
+	case diplomacy.ActionSendGift:
+		return ActionSendGift
+	case diplomacy.ActionOfferVassalization:
+		return ActionOfferVassalization
 	default:
 		return ActionNone
 	}
@@ -82,42 +91,26 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 	if gs == nil || target == "" {
 		return ""
 	}
-	rel := diplomacy.Relation(gs, gs.PlayerFactionID, target)
-	stance := faction.StancePeace
-	if rel != nil {
-		stance = rel.Stance
-	}
+	var actionValue diplomacy.Action
 	switch action {
 	case ActionDeclareWar:
-		if stance == faction.StanceWar {
-			return "Zaten savaş halindesin."
-		}
+		actionValue = diplomacy.ActionDeclareWar
 	case ActionProposePeace:
-		if stance != faction.StanceWar {
-			return "Barış teklifi sadece savaşta yapılır."
-		}
+		actionValue = diplomacy.ActionProposePeace
 	case ActionProposeAlliance:
-		if stance == faction.StanceWar {
-			return "Savaş halindeyken ittifak teklif edilemez."
-		}
-		if stance == faction.StanceAllied {
-			return "Zaten müttefiksin."
-		}
+		actionValue = diplomacy.ActionProposeAlliance
 	case ActionProposeTrade:
-		if stance == faction.StanceWar {
-			return "Savaş halindeyken ticaret teklif edilemez."
-		}
-		if stance == faction.StanceTrade && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
-			return "Zaten ticaret anlaşması aktif."
-		}
-		if stance == faction.StanceAllied && diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
-			return "Bu müttefik ile ticaret zaten aktif."
-		}
-		if assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target); assessment.BlockReason != "" {
-			return assessment.BlockReason
-		}
+		actionValue = diplomacy.ActionProposeTrade
+	case ActionImproveRelations:
+		actionValue = diplomacy.ActionImproveRelations
+	case ActionSendGift:
+		actionValue = diplomacy.ActionSendGift
+	case ActionOfferVassalization:
+		actionValue = diplomacy.ActionOfferVassalization
+	default:
+		return ""
 	}
-	return ""
+	return diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, actionValue)
 }
 
 func minF(a, b float64) float64 {
@@ -516,9 +509,9 @@ func diplomacyOfferHistorySummary(gs *state.GameState, dirFilter diplomacyHistor
 
 func offerPageRect() rectF {
 	w := minF(ScreenWidth-120, 760)
-	h := minF(ScreenHeight-180, 600)
-	if h < 360 {
-		h = 360
+	h := minF(ScreenHeight-80, 680)
+	if h < 420 {
+		h = 420
 	}
 	x := (ScreenWidth - w) / 2
 	y := (ScreenHeight - h) / 2
@@ -749,15 +742,19 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		drawUITableRow(screen, subRow)
 
 		statusX := rowRect.X + rowRect.W - 220
-		if rel != nil {
-			stanceCol, stanceTR := stanceDisplay(rel.Stance)
-			scoreCol := scoreColor(rel.Score)
+		if rel != nil || diplomacy.DirectOverlord(gs, fid) != "" || diplomacy.DirectOverlord(gs, gs.PlayerFactionID) == fid {
+			stanceCol, stanceTR := diplomacyStatusDisplay(gs, gs.PlayerFactionID, fid, rel)
+			scoreValue := 0
+			if rel != nil {
+				scoreValue = rel.Score
+			}
+			scoreCol := scoreColor(scoreValue)
 			rightRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 7, W: 206}, []gameui.TableCell{
 				{Text: stanceTR, Color: stanceCol, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 			}, 0)
 			drawUITableRow(screen, rightRow)
 			scoreRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 29, W: 206}, []gameui.TableCell{
-				{Text: "İlişki: " + itoa(rel.Score), Color: scoreCol, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
+				{Text: "İlişki: " + itoa(scoreValue), Color: scoreCol, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
 			}, 0)
 			drawUITableRow(screen, scoreRow)
 		} else {
@@ -811,17 +808,16 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	relScore := 0
-	relStance := faction.StancePeace
 	if rel != nil {
 		relScore = rel.Score
-		relStance = rel.Stance
 	}
+	statusColor, statusLabel := diplomacyStatusDisplay(gs, gs.PlayerFactionID, target, rel)
 	drawUICardRect(screen, layout.statusRect, color.RGBA{19, 16, 12, 220}, color.RGBA{92, 74, 38, 170}, 1)
 	drawUIInfoBlock(screen, layout.statusRect.X+12, layout.statusRect.Y+8, []string{
-		"Durum: " + stanceDisplayText(relStance),
+		"Durum: " + statusLabel,
 		"İlişki Skoru: " + itoa(relScore),
 	}, []color.Color{
-		ColorGray,
+		statusColor,
 		scoreColor(relScore),
 	})
 
@@ -1127,6 +1123,29 @@ func stanceDisplayText(s faction.DiplomaticStance) string {
 	return label
 }
 
+func diplomacyStatusDisplay(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation) (color.Color, string) {
+	if gs != nil {
+		if diplomacy.DirectOverlord(gs, actor) == target {
+			return color.RGBA{210, 188, 92, 255}, "LORD Bağlı Olduğun Devlet"
+		}
+		if diplomacy.DirectOverlord(gs, target) == actor {
+			return color.RGBA{86, 188, 94, 255}, "VASSAL Bağlı Devlet"
+		}
+		if overlord := diplomacy.DirectOverlord(gs, target); overlord != "" {
+			name := string(overlord)
+			if f := gs.Factions[overlord]; f != nil && f.NameTR != "" {
+				name = f.NameTR
+			}
+			return color.RGBA{168, 154, 104, 255}, "VASSAL " + trimTextToWidth(name, FaceSmall, 160) + "'a Bağlı"
+		}
+	}
+	stance := faction.StancePeace
+	if rel != nil {
+		stance = rel.Stance
+	}
+	return stanceDisplay(stance)
+}
+
 func scoreColor(score int) color.Color {
 	if score >= 50 {
 		return color.RGBA{60, 220, 60, 255}
@@ -1141,6 +1160,26 @@ func scoreColor(score int) color.Color {
 }
 
 func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, action ActionKind) (int, string) {
+	var actionValue diplomacy.Action
+	switch action {
+	case ActionDeclareWar:
+		actionValue = diplomacy.ActionDeclareWar
+	case ActionProposePeace:
+		actionValue = diplomacy.ActionProposePeace
+	case ActionProposeAlliance:
+		actionValue = diplomacy.ActionProposeAlliance
+	case ActionProposeTrade:
+		actionValue = diplomacy.ActionProposeTrade
+	case ActionImproveRelations:
+		actionValue = diplomacy.ActionImproveRelations
+	case ActionSendGift:
+		actionValue = diplomacy.ActionSendGift
+	case ActionOfferVassalization:
+		actionValue = diplomacy.ActionOfferVassalization
+	}
+	if reason := diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, actionValue); reason != "" {
+		return 0, reason
+	}
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	score := 0
 	stance := faction.StancePeace
@@ -1173,15 +1212,14 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 			chance = 15 + score + regionDelta*2
 		}
 	case ActionProposeTrade:
-		if stance == faction.StanceWar {
-			chance = 0
-		} else {
-			assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
-			if assessment.BlockReason != "" {
-				return 0, assessment.BlockReason
-			}
-			chance = assessment.Chance
-		}
+		assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
+		chance = assessment.Chance
+	case ActionImproveRelations:
+		return 100, "İlişki +8 / 40 altın"
+	case ActionSendGift:
+		return 100, "İlişki +15 / 120 altın"
+	case ActionOfferVassalization:
+		chance = diplomacy.AssessVassalizationProposal(gs, rel, gs.PlayerFactionID, target).Chance
 	}
 	if chance < 0 {
 		chance = 0

@@ -377,20 +377,24 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 	}
 }
 
-func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Region) eliminationResult {
+func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Region, showAfterBattleReport bool) (eliminationResult, bool) {
 	if g == nil || attacker == nil || targetRegion == nil {
-		return eliminationResult{}
+		return eliminationResult{}, false
 	}
 	attacker.RegionID = targetRegion.ID
 	attacker.DockedRegionID = ""
 	attacker.DockedSettlementID = ""
 	attacker.MovePoints = 0
 	g.clearSiege(targetRegion.ID)
-	collapse := g.applyConquestWithNavalEviction(targetRegion, attacker.OwnerID)
+	prompted := g.queueConquestDecision(faction.FactionID(attacker.OwnerID), targetRegion, showAfterBattleReport)
+	collapse := eliminationResult{}
+	if !prompted {
+		collapse = g.applyConquestWithNavalEviction(targetRegion, attacker.OwnerID)
+	}
 	if merged := g.tryMergeArmies(attacker.ID, targetRegion.ID); merged != "" && g.renderer != nil {
 		g.renderer.SelectedArmy = merged
 	}
-	return collapse
+	return collapse, prompted
 }
 
 func (g *Game) assaultSiege(aid army.ArmyID, target world.RegionID) {
@@ -447,6 +451,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	}
 
 	if result.AttackerWins {
+		prompted := false
 		if !virtualDefense && len(defender.Units) == 0 {
 			delete(g.gs.Armies, defender.ID)
 		}
@@ -473,15 +478,20 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 			return false
 		}
 		if len(attacker.Units) > 0 {
-			collapse = g.captureBesiegedRegion(attacker, targetRegion)
+			collapse, prompted = g.captureBesiegedRegion(attacker, targetRegion, true)
 			if g.renderer != nil {
-				g.renderer.MarkMapDirty()
+				if !prompted {
+					g.renderer.MarkMapDirty()
+				}
 			}
 		} else {
 			delete(g.gs.Armies, aid)
 			g.clearSiege(target)
 		}
 		outcomeDetail := "Tahkimat düştü ve bölge ele geçirildi."
+		if prompted {
+			outcomeDetail = "Tahkimat düştü; ilhak ya da vassallık için savaş sonrası karar bekleniyor."
+		}
 		if len(attacker.Units) == 0 {
 			outcomeDetail = "Tahkimat yarıldı fakat hücum gücü tükendi; bölge alınamadı."
 		}
@@ -586,9 +596,11 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		}
 
 		if defender == nil && (siege.BreachLevel >= 2 || siege.TurnsElapsed >= siegeSurrenderTurns(siege.FortLevel)) {
-			collapse := g.captureBesiegedRegion(attacker, targetRegion)
+			collapse, prompted := g.captureBesiegedRegion(attacker, targetRegion, false)
 			if g.renderer != nil {
-				g.renderer.MarkMapDirty()
+				if !prompted {
+					g.renderer.MarkMapDirty()
+				}
 			}
 			delete(g.gs.Sieges, regionID)
 			msg := fmt.Sprintf("%s kuşatma sonrası teslim oldu.", targetRegion.NameTR)
@@ -598,6 +610,9 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			detail := fmt.Sprintf("%s kuşatması %d tur sonunda teslimiyetle sonuçlandı.", targetRegion.NameTR, siege.TurnsElapsed)
 			if siege.BreachLevel < 2 {
 				detail = fmt.Sprintf("%s kuşatması %d tur sürdü; surlarda gedik açılamasa da açlık teslimiyet getirdi.", targetRegion.NameTR, siege.TurnsElapsed)
+			}
+			if prompted {
+				detail += " Nihai düzen için ilhak veya vassallık kararı bekleniyor."
 			}
 			updates = append(updates, siegeTurnUpdate{
 				Message: msg,

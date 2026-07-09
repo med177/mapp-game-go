@@ -280,6 +280,118 @@ func TestAssessTradeProposalBlocksLowScore(t *testing.T) {
 	}
 }
 
+func TestImproveRelationsConsumesGoldAndRaisesScore(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 12
+	gs.Factions["a"].Gold = 100
+
+	result := Execute(gs, "a", "b", ActionImproveRelations)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("heyet gönderimi uygulanmalıydı: %+v", result)
+	}
+	if got := gs.Factions["a"].Gold; got != 60 {
+		t.Fatalf("heyet maliyeti altından düşmeliydi, got=%d", got)
+	}
+	if got := rel.Score; got != 20 {
+		t.Fatalf("ilişki +8 artmalıydı, got=%d", got)
+	}
+}
+
+func TestOfferVassalizationMakesTargetVassalAndBlocksThirdParties(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic, Gold: 90, Grain: 60}
+	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Relations[faction.RelationKey("a", "b")] = &faction.Relation{FactionA: "a", FactionB: "b", Stance: faction.StancePeace, Score: 70}
+	gs.Relations[faction.RelationKey("b", "c")] = &faction.Relation{FactionA: "b", FactionB: "c", Stance: faction.StanceTrade, Score: 35}
+	gs.TradeRoutes = []*economy.TradeRoute{
+		{FromFactionID: "b", ToFactionID: "c", Good: economy.GoodCloth, AmountPerTurn: 2, GoldPerUnit: 8},
+		{FromFactionID: "c", ToFactionID: "b", Good: economy.GoodGrain, AmountPerTurn: 2, GoldPerUnit: 5},
+	}
+	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units,
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+	)
+
+	result := Execute(gs, "a", "b", ActionOfferVassalization)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("vassallık kabul edilmeliydi: %+v", result)
+	}
+	if got := gs.Factions["b"].OverlordID; got != "a" {
+		t.Fatalf("hedef a'ya bağlanmalıydı, got=%q", got)
+	}
+	if rel := Relation(gs, "a", "b"); rel == nil || rel.Stance != faction.StanceAllied {
+		t.Fatalf("overlord-vassal ilişkisi allied olmalıydı, got=%+v", rel)
+	}
+	if len(gs.TradeRoutes) != 0 {
+		t.Fatalf("vassalın üçüncü taraf trade rotaları kapanmalıydı, got=%+v", gs.TradeRoutes)
+	}
+	if reason := ActionBlockReason(gs, "c", "b", ActionProposeAlliance); reason == "" {
+		t.Fatal("üçüncü tarafın vassalla doğrudan diplomasi kurması engellenmeliydi")
+	}
+	if reason := ActionBlockReason(gs, "b", "c", ActionProposeTrade); reason == "" {
+		t.Fatal("vassalın üçüncü tarafla diplomasi kurması engellenmeliydi")
+	}
+}
+
+func TestForceVassalizeAfterWarEndsWarAndPropagatesOverlordWars(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic, Gold: 90, Grain: 60}
+	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Relations[faction.RelationKey("a", "b")] = &faction.Relation{FactionA: "a", FactionB: "b", Stance: faction.StanceWar, Score: -80}
+	gs.Relations[faction.RelationKey("a", "c")] = &faction.Relation{FactionA: "a", FactionB: "c", Stance: faction.StanceWar, Score: -80}
+	gs.Relations[faction.RelationKey("b", "c")] = &faction.Relation{FactionA: "b", FactionB: "c", Stance: faction.StanceTrade, Score: 25}
+	gs.TradeRoutes = []*economy.TradeRoute{
+		{FromFactionID: "b", ToFactionID: "c", Good: economy.GoodCloth, AmountPerTurn: 2, GoldPerUnit: 8},
+	}
+
+	result := ForceVassalizeAfterWar(gs, "a", "b")
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("savaş sonrası vassallık uygulanmalıydı: %+v", result)
+	}
+	if got := gs.Factions["b"].OverlordID; got != "a" {
+		t.Fatalf("hedef a'ya bağlanmalıydı, got=%q", got)
+	}
+	if rel := Relation(gs, "a", "b"); rel == nil || rel.Stance != faction.StanceAllied {
+		t.Fatalf("savaş sonrası ilişki allied olmalıydı, got=%+v", rel)
+	}
+	if rel := Relation(gs, "b", "c"); rel == nil || rel.Stance != faction.StanceWar {
+		t.Fatalf("vassal overlord'un savaşına girmeliydi, got=%+v", rel)
+	}
+	if len(gs.TradeRoutes) != 0 {
+		t.Fatalf("vassalın dış ticaret rotaları kapanmalıydı, got=%+v", gs.TradeRoutes)
+	}
+}
+
+func TestDeclareWarPropagatesToVassalCoalitions(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["a_v"] = &faction.Faction{ID: "a_v", NameTR: "A Vassal", Religion: religion.Catholic, OverlordID: "a"}
+	gs.Factions["b_v"] = &faction.Faction{ID: "b_v", NameTR: "B Vassal", Religion: religion.Catholic, OverlordID: "b"}
+	gs.Regions["a_v_cap"] = &world.Region{ID: "a_v_cap", OwnerID: "a_v", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["b_v_cap"] = &world.Region{ID: "b_v_cap", OwnerID: "b_v", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	NormalizeVassalage(gs)
+
+	result := Execute(gs, "a", "b", ActionDeclareWar)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	for _, pair := range [][2]faction.FactionID{
+		{"a", "b"},
+		{"a_v", "b"},
+		{"a", "b_v"},
+		{"a_v", "b_v"},
+	} {
+		if rel := Relation(gs, pair[0], pair[1]); rel == nil || rel.Stance != faction.StanceWar {
+			t.Fatalf("war coalition bekleniyordu for %s-%s, got=%+v", pair[0], pair[1], rel)
+		}
+	}
+}
+
 func testGameState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

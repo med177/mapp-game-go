@@ -63,6 +63,7 @@ const (
 	regionPanelMeterValueW  = float32(54)
 	regionPanelMeterGap     = float32(10)
 	regionOwnerNameH        = float32(20)
+	regionVassalInfoH       = 14.0
 	buildingGridSpriteH     = float32(76)
 	buildingGridNameH       = float32(18)
 	buildingGridRowGap      = float32(7)
@@ -1736,6 +1737,14 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 		vector.StrokeLine(screen, float32(ownerRect.X), float32(underlineY), float32(ownerRect.X+ownerRect.W), float32(underlineY), 1, color.RGBA{215, 215, 215, 120}, false)
 	}
 	ly += float64(regionOwnerNameH)
+	if overlordLabel, overlordCol, ok := vassalOverlordDisplay(gs, region.OwnerID); ok {
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Bağlı: "+overlordLabel, overlordCol, gameui.TextSmall, gameui.TextAlignStart)
+		ly += regionVassalInfoH
+	}
+	if tributeLabel, tributeCol, ok := vassalTributeDisplay(gs, region.OwnerID); ok {
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, tributeLabel, tributeCol, gameui.TextSmall, gameui.TextAlignStart)
+		ly += regionVassalInfoH
+	}
 
 	// Development mode bilgileri
 	if gs.DevelopmentMode {
@@ -1774,7 +1783,7 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 	taxBarX, taxBarW := regionPanelTaxBarLayout(float32(lx), sepW)
 	drawRegionMeterRow(screen, lx, ly, sepW, "Vergi", "%"+itoa(region.TaxRate), float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
-		dec, inc := regionTaxButtonRects(gs)
+		dec, inc := regionTaxButtonRects(gs, rid)
 		taxBarW = dec[0] - taxBarX - regionPanelTaxButtonPad
 		drawBar(screen, taxBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
@@ -1854,14 +1863,18 @@ func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float3
 	btnW := float32(70)
 	btnH := float32(20)
 	gap := float32(6)
-	totalW := btnW*4 + gap*3
+	count := len(diplomacy.QuickActions())
+	if count < 1 {
+		count = 1
+	}
+	totalW := btnW*float32(count) + gap*float32(count-1)
 	x = px + pw - totalW - 5 + float32(i)*(btnW+gap)
 	y = py + ph - btnH - 8
 	return x, y, btnW, btnH
 }
 
 func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, ownerID string, px, py, pw, ph float32) {
-	actions := diplomacy.VisibleActions()
+	actions := diplomacy.QuickActions()
 	for i, action := range actions {
 		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
 		active := regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
@@ -1905,7 +1918,7 @@ func logisticsPressureColor(status state.RegionLogisticsStatus) color.RGBA {
 }
 
 func regionDiplomacyActionAt(idx int) (diplomacy.Action, bool) {
-	actions := diplomacy.VisibleActions()
+	actions := diplomacy.QuickActions()
 	if idx < 0 || idx >= len(actions) {
 		return "", false
 	}
@@ -3134,7 +3147,7 @@ func minFloat64(a, b float64) float64 {
 }
 
 // regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki hızlı diplomasi butonunu döner.
-// 0=Savaş, 1=Barış, 2=İttifak, 3=Ticaret, -1=hiçbiri.
+// Sıra `diplomacy.QuickActions()` ile aynıdır; -1=hiçbiri.
 func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
 	if rid == "" || gs == nil {
 		return -1
@@ -3161,7 +3174,7 @@ func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID)
 	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
 		return 0
 	}
-	dec, inc := buildRegionTaxButtons(gs)
+	dec, inc := buildRegionTaxButtons(gs, rid)
 	if dec.HitTest(mx, my) {
 		return -5
 	}
@@ -3171,13 +3184,13 @@ func regionTaxButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID)
 	return 0
 }
 
-func buildRegionTaxButtons(gs *state.GameState) (gameui.Button, gameui.Button) {
-	dec, inc := regionTaxButtonRects(gs)
+func buildRegionTaxButtons(gs *state.GameState, rid world.RegionID) (gameui.Button, gameui.Button) {
+	dec, inc := regionTaxButtonRects(gs, rid)
 	return buttonFromRectF32(dec, "-"), buttonFromRectF32(inc, "+")
 }
 
 func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) []gameui.Button {
-	actions := diplomacy.VisibleActions()
+	actions := diplomacy.QuickActions()
 	out := make([]gameui.Button, 0, len(actions))
 	for i, action := range actions {
 		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
@@ -3188,18 +3201,24 @@ func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw
 	return out
 }
 
-func regionTaxButtonRects(gs *state.GameState) ([4]float32, [4]float32) {
+func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, [4]float32) {
 	px := infoPanelX()
 	pw := infoPanelW
-	ly := regionPanelStatRowsStartY(gs)
+	ownerID := ""
+	if gs != nil && rid != "" {
+		if region := gs.Regions[rid]; region != nil {
+			ownerID = region.OwnerID
+		}
+	}
+	ly := regionPanelStatRowsStartY(gs, ownerID)
 	y := float32(ly + regionPanelStatRowGap + (regionPanelStatRowGap-float64(regionPanelTaxButtonH))/2 - 1)
 	return [4]float32{px + pw - 70, y, 26, regionPanelTaxButtonH}, [4]float32{px + pw - 38, y, 26, regionPanelTaxButtonH}
 }
 
-func regionPanelStatRowsStartY(gs *state.GameState) float64 {
+func regionPanelStatRowsStartY(gs *state.GameState, ownerID string) float64 {
 	ly := float64(infoPanelY()) + 10
 	ly += 24
-	ly += 18
+	ly += regionOwnerBlockHeight(gs, ownerID)
 	if gs.DevelopmentMode {
 		ly += 34
 	}
@@ -3323,7 +3342,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpan
 	if gs.DevelopmentMode {
 		ly += 16 + 16 + 18
 	}
-	ly += float64(regionOwnerNameH) + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
+	ly += regionOwnerBlockHeight(gs, region.OwnerID) + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
 	if region.ConversionTurns > 0 {
 		ownerRel := ""
 		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
@@ -3464,6 +3483,110 @@ func ownerDisplay(gs *state.GameState, ownerID string) (string, color.Color) {
 		}
 	}
 	return ownerID, ColorGray
+}
+
+func vassalOverlordDisplay(gs *state.GameState, ownerID string) (string, color.Color, bool) {
+	if gs == nil || ownerID == "" {
+		return "", nil, false
+	}
+	overlord := diplomacy.DirectOverlord(gs, faction.FactionID(ownerID))
+	if overlord == "" {
+		return "", nil, false
+	}
+	name, _ := ownerDisplay(gs, string(overlord))
+	if f := gs.Factions[overlord]; f != nil {
+		return name, color.RGBA{f.Color[0], f.Color[1], f.Color[2], 235}, true
+	}
+	return name, ColorGold, true
+}
+
+func vassalTributeDisplay(gs *state.GameState, ownerID string) (string, color.Color, bool) {
+	if gs == nil || ownerID == "" || gs.PlayerFactionID == "" {
+		return "", nil, false
+	}
+	f := gs.Factions[faction.FactionID(ownerID)]
+	if f == nil || f.IsEliminated || f.OverlordID != gs.PlayerFactionID {
+		return "", nil, false
+	}
+	tribute := projectedFactionTributeToOverlord(gs, faction.FactionID(ownerID))
+	return "Haraç: +" + itoa(tribute) + " altın/tur", ColorGold, true
+}
+
+func projectedFactionTributeToOverlord(gs *state.GameState, fid faction.FactionID) int {
+	income := projectedFactionTributeIncome(gs, fid)
+	if income <= 0 {
+		return 0
+	}
+	return income * diplomacy.VassalTributeRatePercent() / 100
+}
+
+func projectedFactionTributeIncome(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	f := gs.Factions[fid]
+	if f == nil || f.IsEliminated {
+		return 0
+	}
+
+	season := gs.CurrentSeason()
+	harvestMod := season.HarvestMod()
+	tradeMod := season.TradeMod()
+
+	var fx tech.Effects
+	if gs.TechTypes != nil {
+		fx = tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+	}
+
+	income := 0
+	ownedCount := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.OwnerID != string(fid) {
+			continue
+		}
+		ownedCount++
+		if region.IsSea || gs.SiegeAt(region.ID) != nil {
+			continue
+		}
+
+		goldMod := 1.0
+		tradeCapMod := 1.0
+		for _, bid := range region.Buildings {
+			if building, ok := gs.BuildingTypes[bid]; ok && building != nil {
+				goldMod *= building.GoldMod
+				tradeCapMod *= building.TradeCapacityMod
+			}
+		}
+
+		regionIncome := int(float64(region.GoldIncome()) * goldMod * float64(harvestMod) / 100)
+		tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod)
+		tradeIncome = tradeIncome * tradeMod / 100
+		if fx.MarketGoldMod != 0 {
+			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
+		}
+
+		income += regionIncome + tradeIncome
+		if bonus := gs.CapitalRegionBonus(region); bonus != (state.RegionProductionSummary{}) {
+			income += bonus.Gold
+		}
+	}
+
+	income += fx.GoldPerRegion * ownedCount
+	if income < 0 {
+		return 0
+	}
+	return income
+}
+
+func regionOwnerBlockHeight(gs *state.GameState, ownerID string) float64 {
+	height := float64(regionOwnerNameH)
+	if _, _, ok := vassalOverlordDisplay(gs, ownerID); ok {
+		height += regionVassalInfoH
+	}
+	if _, _, ok := vassalTributeDisplay(gs, ownerID); ok {
+		height += regionVassalInfoH
+	}
+	return height
 }
 
 func ownerLabelOutlineColor(fill color.Color) color.RGBA {

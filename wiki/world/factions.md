@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-06-20
+last_updated: 2026-07-09
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -26,6 +26,7 @@ type Faction struct {
     Color        [3]uint8      // harita rengi (RGB)
     IsPlayable   bool
     IsEliminated bool
+    OverlordID   FactionID
     CapitalSettlementID        string
     PendingCapitalSettlementID string
     PendingCapitalTurns        int
@@ -46,6 +47,12 @@ type Faction struct {
 `capital_settlement_id`, fraksiyonun ulusal başkent settlement'ını tutar. Bu alan artık bölgesel `settlement.is_capital` işaretinden ayrıdır: `is_capital` bir bölgenin ana yerleşimini/anchor noktasını belirlemeye devam ederken, ulusal başkent tekil olarak fraksiyon üstünde tutulur.
 
 `pending_capital_settlement_id` ve `pending_capital_turns`, oyuncunun veya bir event'in başlattığı başkent taşıma kuyruğunu saklar. Sayaç sıfırlandığında yeni settlement resmen başkent olur.
+
+`overlord_id`, fraksiyon başka bir devlete bağlıysa o overlord'u gösterir. Bu alan:
+
+- vassallık zincirini save/load içinde taşır
+- diplomasi UI'sında hiyerarşik durum etiketini besler
+- ekonomi tick'indeki altın haracı ve savaş coalition yayılımı için kullanılır
 
 `ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
 
@@ -84,6 +91,8 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 `faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
 
 Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif savaş hedefleri ise fraksiyon kaydındaki `ai_expansion_targets` alanında tutulur; örneğin 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler hedeflenir.
+
+Runtime'da vassallık kabul edilirse hedef fraksiyonun `overlord_id` alanı doldurulur; üçüncü taraf diplomasi kapatılır ve realm içindeki fraksiyonlar dost çizgiye normalize edilir.
 
 → İlişki sistemi: [[systems/diplomacy]]
 

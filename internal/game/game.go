@@ -33,13 +33,14 @@ import (
 
 // Game Ebitengine'in Game interface'ini uygular.
 type Game struct {
-	gs                   *state.GameState
-	renderer             *render.Renderer
-	evts                 []*events.Event
-	pendingHistoricalEvt *events.Event
-	pendingSortie        *pendingSortieState
-	loading              *loadingJob
-	aiTurn               *aiTurnState
+	gs                       *state.GameState
+	renderer                 *render.Renderer
+	evts                     []*events.Event
+	pendingHistoricalEvt     *events.Event
+	pendingSortie            *pendingSortieState
+	pendingConquestDecisions []pendingConquestDecision
+	loading                  *loadingJob
+	aiTurn                   *aiTurnState
 }
 
 type pendingSortieState struct {
@@ -282,10 +283,20 @@ func (g *Game) Update() error {
 			g.moveArmyWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
 		case render.ActionProposePeace:
 			g.proposePeace(action.TargetFaction)
+		case render.ActionImproveRelations:
+			g.improveRelations(action.TargetFaction)
+		case render.ActionSendGift:
+			g.sendGift(action.TargetFaction)
 		case render.ActionProposeAlliance:
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
 			g.proposeTrade(action.TargetFaction)
+		case render.ActionOfferVassalization:
+			g.offerVassalization(action.TargetFaction)
+		case render.ActionAnnexDefeatedFaction:
+			g.resolvePendingConquestDecision(false)
+		case render.ActionVassalizeDefeatedFaction:
+			g.resolvePendingConquestDecision(true)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
 		case render.ActionCreateTradeRoute:
@@ -439,6 +450,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		g.pendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
@@ -449,6 +461,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
 		g.gs = res.gs
+		g.pendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
@@ -1621,6 +1634,21 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) improveRelations(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionImproveRelations)
+	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) sendGift(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionSendGift)
+	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) offerVassalization(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionOfferVassalization)
+	g.renderer.ShowCombatResult(result.Message)
+}
+
 func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int) {
 	if delta == 0 || targetID == "" {
 		return
@@ -2240,6 +2268,7 @@ func (g *Game) resetToNewGame() {
 		Difficulty: difficulty,
 	}
 	g.gs = gs
+	g.pendingConquestDecisions = nil
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetEventCodexEntries([4][]render.EventCodexEntry{})
 	g.renderer.SetCursor(0)
@@ -2421,6 +2450,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		FiredEventIDs:      map[string]bool{},
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+	diplomacy.NormalizeVassalage(gs)
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
@@ -2885,6 +2915,9 @@ func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) 
 	if targetRegion.OwnerID == "" || targetRegion.OwnerID == fleet.OwnerID {
 		return true
 	}
+	if diplomacy.SameRealm(g.gs, faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+		return true
+	}
 	key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
 	rel, ok := g.gs.Relations[key]
 	return ok && (rel.Stance == faction.StanceWar || rel.Stance == faction.StanceAllied)
@@ -2910,6 +2943,9 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 	var enemyArmy *army.Army
 	isAlliedDisembark := false
 	if targetRegion.OwnerID != fleet.OwnerID && targetRegion.OwnerID != "" {
+		if diplomacy.SameRealm(g.gs, faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+			isAlliedDisembark = true
+		}
 		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
 		if rel, exists := g.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
 			isAlliedDisembark = true
@@ -2941,14 +2977,21 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 				delete(g.gs.Armies, enemyArmy.ID)
 			}
 			g.spawnDisembarkedArmy(fleet.OwnerID, target, landing.Units)
-			collapse := g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
-			g.renderer.MarkMapDirty()
+			prompted := g.queueConquestDecision(faction.FactionID(fleet.OwnerID), targetRegion, true)
+			collapse := eliminationResult{}
+			outcomeDetail := "Kıyı başı kuruldu, savunma kırıldı ve bölge ele geçirildi."
+			if !prompted {
+				collapse = g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
+				g.renderer.MarkMapDirty()
+			} else {
+				outcomeDetail = "Kıyı başı kuruldu; ilhak ya da vassallık için savaş sonrası karar bekleniyor."
+			}
 			g.presentBattleReport(g.makeBattleReport(
 				render.BattleSceneAmphibious,
 				targetRegion.NameTR,
 				battleStance,
 				result.Description,
-				"Kıyı başı kuruldu, savunma kırıldı ve bölge ele geçirildi.",
+				outcomeDetail,
 				"Çıkarma Gücü",
 				"Kıyı Savunması",
 				g.factionNameTR(fleet.OwnerID),
@@ -2988,6 +3031,9 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 	fleet.MovePoints--
 	isAlliedDisembark = false
 	if targetRegion.OwnerID != fleet.OwnerID && targetRegion.OwnerID != "" {
+		if diplomacy.SameRealm(g.gs, faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+			isAlliedDisembark = true
+		}
 		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(targetRegion.OwnerID))
 		if rel, exists := g.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
 			isAlliedDisembark = true
@@ -2995,14 +3041,21 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 	}
 	if targetRegion.OwnerID != fleet.OwnerID && !isAlliedDisembark {
 		defenderFaction := g.factionNameTR(targetRegion.OwnerID)
-		collapse := g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
-		g.renderer.MarkMapDirty()
+		prompted := g.queueConquestDecision(faction.FactionID(fleet.OwnerID), targetRegion, true)
+		collapse := eliminationResult{}
+		detail := "Kıyıda savunan ordu yoktu; çıkarma savaşsız tamamlandı ve bölge ele geçirildi."
+		if !prompted {
+			collapse = g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
+			g.renderer.MarkMapDirty()
+		} else {
+			detail = "Kıyıda savunan ordu yoktu; devletin geleceği için ilhak veya vassallık kararı bekleniyor."
+		}
 		g.presentBattleReport(g.makeBattleReportFromSnapshots(
 			render.BattleSceneAmphibious,
 			targetRegion.NameTR,
 			"",
 			"Direniş Görülmedi",
-			"Kıyıda savunan ordu yoktu; çıkarma savaşsız tamamlandı ve bölge ele geçirildi.",
+			detail,
 			"Çıkarma Gücü",
 			"Direniş Yok",
 			g.factionNameTR(fleet.OwnerID),
@@ -3060,6 +3113,9 @@ func (g *Game) fleetsCanSharePort(fleetOwnerID, regionOwnerID string) bool {
 		return false
 	}
 	if fleetOwnerID == regionOwnerID {
+		return true
+	}
+	if diplomacy.SameRealm(g.gs, faction.FactionID(fleetOwnerID), faction.FactionID(regionOwnerID)) {
 		return true
 	}
 	key := faction.RelationKey(faction.FactionID(fleetOwnerID), faction.FactionID(regionOwnerID))
@@ -3390,17 +3446,21 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			return
 		}
 	}
-	// Sahipli düşman kara bölgesine girmek için savaş ya da ittifak hali zorunlu.
+	// Sahipli yabancı kara bölgesine girmek için savaş, ittifak veya aynı vassal
+	// zincirinde askeri geçiş hakkı gerekir.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
 	isAlliedRegion := false
 	if !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+			isAlliedRegion = true
+		}
 		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
 		rel, exists := g.gs.Relations[key]
-		if !exists || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied) {
-			g.renderer.ShowCombatResult("Savaş ilan edilmeden veya ittifak olmadan yabancı topraklara girilemez!")
+		if !isAlliedRegion && (!exists || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied)) {
+			g.renderer.ShowCombatResult("Savaş ilanı, ittifak veya bağlı devlet askeri geçişi olmadan yabancı toprağa girilemez!")
 			return
 		}
-		if rel.Stance == faction.StanceAllied {
+		if exists && rel.Stance == faction.StanceAllied {
 			isAlliedRegion = true
 		}
 	}
@@ -3482,13 +3542,24 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
-				collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 				a.MovePoints--
-				g.renderer.MarkMapDirty()
+				prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
+				if !prompted {
+					collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+					g.renderer.MarkMapDirty()
+				}
 				if navalSeaMove {
-					outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+					if prompted {
+						outcomeDetail = "Düşman filo dağıtıldı; teslim şartları için savaş sonrası karar bekleniyor."
+					} else {
+						outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+					}
 				} else {
-					outcomeDetail = "Savunma yarıldı, bölge ele geçirildi."
+					if prompted {
+						outcomeDetail = "Savunma yarıldı; ilhak ya da vassallık için savaş sonrası karar bekleniyor."
+					} else {
+						outcomeDetail = "Savunma yarıldı, bölge ele geçirildi."
+					}
 				}
 			} else {
 				delete(g.gs.Armies, aid)
@@ -3546,14 +3617,21 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		// Müttefik bölgesi fethedilemez, sadece içinden geçilir.
 		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID && !isAlliedRegion {
 			defenderFaction := g.factionNameTR(targetRegion.OwnerID)
-			collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
-			g.renderer.MarkMapDirty()
+			prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
+			collapse := eliminationResult{}
+			detail := "Bölgede savunan ordu yoktu; ilerleme savaşsız şekilde tamamlandı ve bölge ele geçirildi."
+			if !prompted {
+				collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+				g.renderer.MarkMapDirty()
+			} else {
+				detail = "Bölgede savunan ordu yoktu; devletin geleceği için ilhak veya vassallık kararı bekleniyor."
+			}
 			g.presentBattleReport(g.makeBattleReportFromSnapshots(
 				render.BattleSceneLand,
 				targetRegion.NameTR,
 				"",
 				"Direniş Görülmedi",
-				"Bölgede savunan ordu yoktu; ilerleme savaşsız şekilde tamamlandı ve bölge ele geçirildi.",
+				detail,
 				"İlerleyen Ordu",
 				"Direniş Yok",
 				g.factionNameTR(a.OwnerID),

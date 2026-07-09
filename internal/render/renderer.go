@@ -170,10 +170,11 @@ type Renderer struct {
 	prevMouse map[ebiten.MouseButton]bool
 
 	// Genel onay diyaloğu
-	warConfirm    warConfirmState
-	battlePlan    battlePlanState
-	confirmDialog confirmDialogState
-	offerCursor   int
+	warConfirm          warConfirmState
+	battlePlan          battlePlanState
+	confirmDialog       confirmDialogState
+	queuedConfirmDialog confirmDialogState
+	offerCursor         int
 
 	armyIconBuf    []armyIconPos
 	regionLabelBuf []settlementDraw
@@ -233,6 +234,8 @@ type confirmDialogState struct {
 	declineLabel  string
 	thirdLabel    string
 	pendingAction InputAction
+	declineAction InputAction
+	declineActs   bool
 	thirdAction   InputAction
 	declineHook   func()
 }
@@ -637,6 +640,9 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.selectedFactionPanel = ""
 	r.clearSelectedSettlement()
 	r.ClearAITurnStatus()
+	r.confirmDialog = confirmDialogState{}
+	r.queuedConfirmDialog = confirmDialogState{}
+	r.battleReport = battleReportState{}
 	r.eventLogScroll = 0
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
@@ -1346,9 +1352,12 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 			if target.OwnerID == "" || target.OwnerID == a.OwnerID {
 				return true
 			}
+			if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) {
+				return true
+			}
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 			rel, ok := gs.Relations[key]
-			return ok && rel.Stance == faction.StanceWar
+			return ok && (rel.Stance == faction.StanceWar || rel.Stance == faction.StanceAllied)
 		}
 		return target.CanNavalEnter()
 	}
@@ -1365,7 +1374,7 @@ func navalShowsFriendlyDisembark(gs *state.GameState, fleet *army.Army, target *
 	if target.OwnerID == "" || target.OwnerID == fleet.OwnerID {
 		return true
 	}
-	return false
+	return diplomacy.SameRealm(gs, faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
 }
 
 func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.Region) bool {
@@ -1373,6 +1382,9 @@ func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.R
 		return false
 	}
 	if fleet.OwnerID != target.OwnerID {
+		if diplomacy.SameRealm(gs, faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID)) {
+			return target.HasPortBuilding()
+		}
 		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
 		rel, ok := gs.Relations[key]
 		if !ok || rel.Stance != faction.StanceAllied {
@@ -6601,22 +6613,28 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 	if region == nil {
 		return
 	}
+	drawn := false
 	if img := r.settlementMarkerSprite(region, settlement, isPrimary); img != nil {
 		if r.drawSettlementMarkerSprite(screen, img, sx, sy, settlementMarkerSpriteSize) {
-			return
+			drawn = true
 		}
 	}
-	switch settlement.Type {
-	case world.SettlementFortress:
-		if !r.drawFortressMarkerSprite(screen, sx, sy) {
-			r.drawFortressMarker(screen, region, sx, sy)
+	if !drawn {
+		switch settlement.Type {
+		case world.SettlementFortress:
+			if !r.drawFortressMarkerSprite(screen, sx, sy) {
+				r.drawFortressMarker(screen, region, sx, sy)
+			}
+		case world.SettlementPort:
+			if !r.drawPortMarkerSprite(screen, sx, sy) {
+				r.drawPortMarker(screen, region, sx, sy)
+			}
+		default:
+			r.drawCityDot(screen, region, sx, sy)
 		}
-	case world.SettlementPort:
-		if !r.drawPortMarkerSprite(screen, sx, sy) {
-			r.drawPortMarker(screen, region, sx, sy)
-		}
-	default:
-		r.drawCityDot(screen, region, sx, sy)
+	}
+	if isPrimary {
+		r.drawVassalSettlementBadge(screen, region, sx, sy)
 	}
 }
 
@@ -6679,6 +6697,36 @@ func (r *Renderer) drawCapitalLabelIcon(screen *ebiten.Image, x, y float32, vari
 		return
 	}
 	vector.FillCircle(screen, x+size/2, y+size/2+2, size/2-1, color.RGBA{255, 220, 110, 245}, true)
+}
+
+func (r *Renderer) drawVassalSettlementBadge(screen *ebiten.Image, region *world.Region, sx, sy float32) {
+	if screen == nil || !r.isVassalRegion(region) {
+		return
+	}
+	col := r.vassalOverlordColor(region)
+	cx := sx + 7
+	cy := sy - 6
+	vector.FillCircle(screen, cx, cy, 4.1, color.RGBA{214, 185, 88, 240}, true)
+	vector.FillCircle(screen, cx, cy, 2.5, col, true)
+	vector.StrokeCircle(screen, cx, cy, 4.1, 1.1, color.RGBA{38, 28, 14, 225}, true)
+}
+
+func (r *Renderer) isVassalRegion(region *world.Region) bool {
+	if r == nil || r.gs == nil || region == nil || region.OwnerID == "" {
+		return false
+	}
+	return diplomacy.DirectOverlord(r.gs, faction.FactionID(region.OwnerID)) != ""
+}
+
+func (r *Renderer) vassalOverlordColor(region *world.Region) color.RGBA {
+	if r == nil || r.gs == nil || region == nil || region.OwnerID == "" {
+		return color.RGBA{130, 130, 130, 235}
+	}
+	overlord := diplomacy.DirectOverlord(r.gs, faction.FactionID(region.OwnerID))
+	if overlord == "" {
+		return color.RGBA{130, 130, 130, 235}
+	}
+	return factionColor(r.gs, string(overlord))
 }
 
 func (r *Renderer) drawSettlementMarkerSprite(screen *ebiten.Image, img *ebiten.Image, sx, sy, size float32) bool {
@@ -8088,11 +8136,12 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 			rel, exists := r.gs.Relations[key]
-			if exists && rel.Stance == faction.StanceAllied && len(a.EmbarkedUnits) > 0 {
+			if (diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) ||
+				(exists && rel.Stance == faction.StanceAllied)) && len(a.EmbarkedUnits) > 0 {
 				// Müttefik kıyısına çıkarma — savaş popup'ı değil, karaya inme onayı
 				r.ShowConfirmDialog(
 					"Karaya In",
-					"Gemideki birlikler müttefik bölgesine insin mi?",
+					"Gemideki birlikler dost bölgeye insin mi?",
 					"Karaya In",
 					"İptal",
 					InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
@@ -8100,7 +8149,8 @@ func (r *Renderer) handleRightClick() InputAction {
 				)
 				return InputAction{}
 			}
-			if !exists || rel.Stance != faction.StanceWar {
+			if !diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) &&
+				(!exists || rel.Stance != faction.StanceWar) {
 				name := target.OwnerID
 				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
 					name = f.NameTR
@@ -9068,6 +9118,34 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 	}
 }
 
+func (r *Renderer) ShowChoiceDialog(title, message, acceptLabel, declineLabel string, acceptAction, declineAction InputAction) {
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         title,
+		message:       message,
+		messageLines:  wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   acceptLabel,
+		declineLabel:  declineLabel,
+		pendingAction: acceptAction,
+		declineAction: declineAction,
+		declineActs:   true,
+	}
+}
+
+func (r *Renderer) QueueChoiceDialogAfterBattleReport(title, message, acceptLabel, declineLabel string, acceptAction, declineAction InputAction) {
+	r.queuedConfirmDialog = confirmDialogState{
+		show:          true,
+		title:         title,
+		message:       message,
+		messageLines:  wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   acceptLabel,
+		declineLabel:  declineLabel,
+		pendingAction: acceptAction,
+		declineAction: declineAction,
+		declineActs:   true,
+	}
+}
+
 func (r *Renderer) showEditExitConfirm() {
 	r.confirmDialog = confirmDialogState{
 		show:          true,
@@ -9106,6 +9184,11 @@ func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 		return
 	}
 	declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
+	if r.confirmDialog.declineActs {
+		drawUIButtonWidget(screen, declineBtn,
+			solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+		return
+	}
 	drawUIButtonWidget(screen, declineBtn,
 		solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
 }
@@ -9114,6 +9197,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 	btn.Label = label
 	switch role {
 	case "accept":
+		if strings.Contains(label, "İlhak") {
+			return btn.WithIcon(gameui.IconSword)
+		}
 		if label == "Kaydet" {
 			return btn.WithIcon(gameui.IconSave)
 		}
@@ -9124,6 +9210,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		}
 		return btn.WithIcon(gameui.IconSave)
 	default:
+		if label == "Vassal Yap" {
+			return btn.WithIcon(gameui.IconCheck)
+		}
 		return btn.WithIcon(gameui.IconClose)
 	}
 }
@@ -9154,6 +9243,11 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 			return action
 		}
 		if declineBtn.HitTest(mx, my) {
+			if r.confirmDialog.declineActs {
+				action := r.confirmDialog.declineAction
+				r.confirmDialog = confirmDialogState{}
+				return action
+			}
 			if r.confirmDialog.declineHook != nil {
 				r.confirmDialog.declineHook()
 			}
@@ -9162,6 +9256,9 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyN) {
+		if r.confirmDialog.declineActs {
+			return InputAction{}
+		}
 		if r.confirmDialog.declineHook != nil {
 			r.confirmDialog.declineHook()
 		}
