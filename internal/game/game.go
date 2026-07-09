@@ -1622,7 +1622,7 @@ func (g *Game) declareWar(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
-// proposeAlliance hedefe ittifak teklif eder (savaş halinde değilse kabul edilir).
+// proposeAlliance hedefe ittifak teklif eder; kabul aynı diplomacy assessment helper'ı ile belirlenir.
 func (g *Game) proposeAlliance(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposeAlliance)
 	g.renderer.ShowCombatResult(result.Message)

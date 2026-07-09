@@ -191,6 +191,58 @@ func TestAIQueuesAllianceAndTradeOffersWithPriority(t *testing.T) {
 	}
 }
 
+func TestAIQueuesAllianceOfferAgainstSharedMajorThreat(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            3,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic, Gold: 600, Grain: 300},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Catholic, Gold: 420, Grain: 220, AIAggressiveness: 55},
+			"threat": {ID: "threat", NameTR: "Threat", Religion: religion.Catholic, Gold: 900, Grain: 500},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_land": {ID: "player_land", OwnerID: "player", TradeCapacity: 6, Neighbors: []world.RegionID{"threat_east"}},
+			"ai_land":     {ID: "ai_land", OwnerID: "ai_1", TradeCapacity: 4, Neighbors: []world.RegionID{"threat_west"}},
+			"threat_west": {ID: "threat_west", OwnerID: "threat", TradeCapacity: 4, Neighbors: []world.RegionID{"ai_land"}},
+			"threat_east": {ID: "threat_east", OwnerID: "threat", TradeCapacity: 4, Neighbors: []world.RegionID{"player_land"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: 28, Stance: faction.StancePeace},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player_army": {ID: "player_army", OwnerID: "player", RegionID: "player_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"ai_army":     {ID: "ai_army", OwnerID: "ai_1", RegionID: "ai_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"threat_army": {
+				ID:       "threat_army",
+				OwnerID:  "threat",
+				RegionID: "threat_west",
+				Units: []army.Unit{
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+				},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("ortak büyük tehditte tek ittifak teklifi bekleniyordu, got=%d (%+v)", len(gs.DiplomaticOffers), gs.DiplomaticOffers)
+	}
+	offer := gs.DiplomaticOffers[0]
+	if offer.Action != string(diplomacy.ActionProposeAlliance) {
+		t.Fatalf("beklenen ittifak teklifi, got=%+v", offer)
+	}
+	if !strings.Contains(offer.PriorityReason, "büyük") {
+		t.Fatalf("öncelik sebebi ortak büyük tehdidi görünür kılmalıydı, got=%q", offer.PriorityReason)
+	}
+}
+
 func TestAIStartsTradeOnHealthyPeace(t *testing.T) {
 	gs := aiTestState()
 	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]

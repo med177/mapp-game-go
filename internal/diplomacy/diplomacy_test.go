@@ -37,6 +37,84 @@ func TestProposeAllianceRejectedOnLowScore(t *testing.T) {
 	}
 }
 
+func TestProposeAllianceAcceptedDespiteDirectThreatWithCommonEnemy(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Relations[faction.RelationKey("a", "c")] = &faction.Relation{FactionA: "a", FactionB: "c", Stance: faction.StanceWar, Score: -80}
+	gs.Relations[faction.RelationKey("b", "c")] = &faction.Relation{FactionA: "b", FactionB: "c", Stance: faction.StanceWar, Score: -80}
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
+
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 20
+
+	if !HasDirectThreat(gs, "a", "b") {
+		t.Fatal("test kurulumu doğrudan tehdit üretmeliydi")
+	}
+	assessment := AssessAllianceProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "" {
+		t.Fatalf("ortak düşman varken ittifak block olmamalıydı: %+v", assessment)
+	}
+	if !assessment.Accepted() {
+		t.Fatalf("ortak düşman doğrudan tehdidi telafi etmeliydi: %+v", assessment)
+	}
+
+	result := Execute(gs, "a", "b", ActionProposeAlliance)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("ittifak kabul edilmeliydi: %+v", result)
+	}
+}
+
+func TestProposeAllianceAcceptedWithSharedMajorThreat(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Regions["c_west"] = &world.Region{ID: "c_west", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4, Neighbors: []world.RegionID{"a_cap"}}
+	gs.Regions["c_east"] = &world.Region{ID: "c_east", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4, Neighbors: []world.RegionID{"b_cap"}}
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap", "c_west"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap", "c_east"}
+	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
+	gs.Armies["c1"] = &army.Army{
+		ID:       "c1",
+		OwnerID:  "c",
+		RegionID: "c_west",
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100},
+		},
+	}
+
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 20
+
+	if !HasSharedMajorThreat(gs, "a", "b") {
+		t.Fatal("test kurulumu ortak büyük tehdit üretmeliydi")
+	}
+	assessment := AssessAllianceProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "" {
+		t.Fatalf("ortak büyük tehdit varken ittifak block olmamalıydı: %+v", assessment)
+	}
+	if !assessment.Accepted() {
+		t.Fatalf("ortak büyük tehdit doğrudan tehdidi telafi etmeliydi: %+v", assessment)
+	}
+}
+
+func TestAllianceReligionAffinityBonusPrefersSameFaith(t *testing.T) {
+	sameFaith := allianceReligionAffinityBonus(religion.Catholic, religion.Catholic)
+	crossFaith := allianceReligionAffinityBonus(religion.Catholic, religion.Sunni)
+	hostileFaith := allianceReligionAffinityBonus(religion.Sunni, religion.Shia)
+
+	if sameFaith <= crossFaith {
+		t.Fatalf("aynı din bonusu farklı dinden yüksek olmalıydı, same=%d cross=%d", sameFaith, crossFaith)
+	}
+	if hostileFaith >= crossFaith {
+		t.Fatalf("sert mezhep ayrımı en düşük affinity olmalıydı, hostile=%d cross=%d", hostileFaith, crossFaith)
+	}
+}
+
 func TestProposeTradeRejectedDuringWar(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")

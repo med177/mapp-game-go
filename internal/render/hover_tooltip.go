@@ -62,14 +62,9 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
-	if idx := regionDiplomacyButtonHit(fx, fy, gs, rid); idx >= 0 {
-		region := gs.Regions[rid]
-		if region != nil {
-			if reason := regionDiplomacyButtonDisabledReason(gs, region.OwnerID, idx); reason != "" {
-				drawSmallHoverHint(screen, reason, fx, fy)
-				return
-			}
-		}
+	if regionDiplomacyButtonHit(fx, fy, gs, rid) {
+		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
+		return
 	}
 
 	if bid := BuildingGridHoverID(fx, fy, gs, rid); bid != "" {

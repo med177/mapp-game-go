@@ -1105,6 +1105,24 @@ func sortedFactions(gs *state.GameState) []faction.FactionID {
 	return fids
 }
 
+func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int) {
+	if r == nil || r.gs == nil || target == "" {
+		return
+	}
+	r.showDiplomacy = true
+	r.diplomacyTargetFaction = target
+	r.diplomacyActionFocus = actionFocus
+	factions := sortedFactions(r.gs)
+	for i, fid := range factions {
+		if fid != target {
+			continue
+		}
+		r.diplomacyFocus = i
+		r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
+		return
+	}
+}
+
 func stanceDisplay(s faction.DiplomaticStance) (color.Color, string) {
 	switch s {
 	case faction.StanceWar:
@@ -1206,11 +1224,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 			chance = 35 + (-score / 2) + regionDelta*4
 		}
 	case ActionProposeAlliance:
-		if stance == faction.StanceWar {
-			chance = 0
-		} else {
-			chance = 15 + score + regionDelta*2
-		}
+		assessment := diplomacy.AssessAllianceProposal(gs, rel, gs.PlayerFactionID, target)
+		chance = assessment.Chance
 	case ActionProposeTrade:
 		assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
 		chance = assessment.Chance

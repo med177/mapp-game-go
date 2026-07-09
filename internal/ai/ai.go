@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+	"hash/fnv"
 	"strings"
 
 	"mapp-game-go/internal/army"
@@ -179,7 +180,8 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				}
 			}
 		case faction.StancePeace:
-			if rel.Score >= 20 && diplomacy.HasCommonEnemy(gs, fid, otherID) && !diplomacy.HasDirectThreat(gs, fid, otherID) {
+			allianceAssessment := diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
+			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) {
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeAlliance)
 					diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeAlliance, priority, reason)
@@ -303,12 +305,17 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 		}
 		score += minInt(8, len(gs.RegionsOwnedBy(from))/8)
 	case diplomacy.ActionProposeAlliance:
+		assessment := diplomacy.AssessAllianceProposal(gs, diplomacy.EnsureRelation(gs, from, to), from, to)
+		score += assessment.Chance
 		if diplomacy.HasCommonEnemy(gs, from, to) {
-			score += 16
 			reasons = append(reasons, "ortak düşman")
 		}
-		if !diplomacy.HasDirectThreat(gs, from, to) {
-			score += 8
+		if diplomacy.HasSharedMajorThreat(gs, from, to) {
+			reasons = append(reasons, "ortak büyük tehdit")
+		}
+		if diplomacy.HasDirectThreat(gs, from, to) {
+			reasons = append(reasons, "sınır gerilimi")
+		} else {
 			reasons = append(reasons, "güvenli diplomasi")
 		}
 		score += minInt(10, len(gs.RegionsOwnedBy(from))/10)
@@ -338,6 +345,45 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 
 func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, nil)
+}
+
+func aiShouldAttemptAllianceOffer(gs *state.GameState, from, to faction.FactionID, assessment diplomacy.AllianceProposalAssessment) bool {
+	if gs == nil || assessment.BlockReason != "" {
+		return false
+	}
+	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
+	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
+	if assessment.Chance >= 72 {
+		return true
+	}
+	if assessment.Chance >= 60 && (commonEnemy || sharedThreat) {
+		return true
+	}
+	if !commonEnemy && !sharedThreat && assessment.Chance < 78 {
+		return false
+	}
+
+	threshold := assessment.Chance
+	if f := gs.Factions[from]; f != nil {
+		threshold += (f.AIAggressiveness - 45) / 3
+	}
+	if to == gs.PlayerFactionID {
+		threshold += 8
+	}
+	if commonEnemy {
+		threshold += 6
+	}
+	if sharedThreat {
+		threshold += 8
+	}
+	threshold = maxInt(22, minInt(92, threshold))
+	return aiDiplomacyOfferRoll(gs, from, to, diplomacy.ActionProposeAlliance) < threshold
+}
+
+func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) int {
+	hasher := fnv.New32a()
+	_, _ = fmt.Fprintf(hasher, "%d|%s|%s|%s", gs.Turn, from, to, action)
+	return int(hasher.Sum32() % 100)
 }
 
 func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {

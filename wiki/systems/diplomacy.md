@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-09
+last_updated: 2026-07-10
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -42,7 +42,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz
-- İttifak için `Score >= 20` gerekir
+- İttifak için `Score >= 20` gerekir; doğrudan sınır tehdidi artık mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
 - Ticaret için `Score >= 10`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
 - Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
 - `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
@@ -61,7 +61,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir, teklif sahibi `peace_relation_bonus` tech etkisi bu eşiği destekler |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
-| İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20` + doğrudan sınır tehdidi olmamalı |
+| İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20`; kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + belirgin askeri/bölgesel üstünlük varsa |
 
@@ -122,7 +122,7 @@ Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla ba�
 AI:
 
 - uzun savaşta ve zayıf kaldığında barış dener
-- ortak düşman + yeterli skor varsa ittifak dener
+- ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - barışta ve skor uygunsa ticaret açar
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
 - koalisyon anında oyuncuya savaş açıp diğer AI'larla ittifak kurmaya çalışır

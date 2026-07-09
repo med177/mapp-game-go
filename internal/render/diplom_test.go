@@ -3,6 +3,7 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -195,6 +196,39 @@ func TestDiplomacyTradeChanceUsesRealAcceptanceRules(t *testing.T) {
 	}
 }
 
+func TestAllianceChanceAllowsDirectThreatWhenCommonEnemyExists(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"p1": {ID: "p1", OwnerID: "player", Neighbors: []world.RegionID{"a1"}},
+			"a1": {ID: "a1", OwnerID: "ally", Neighbors: []world.RegionID{"p1"}},
+			"e1": {ID: "e1", OwnerID: "enemy"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StancePeace, Score: 20},
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
+			faction.RelationKey("ally", "enemy"):   {FactionA: "ally", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"p_army": {ID: "p_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
+			"a_army": {ID: "a_army", OwnerID: "ally", RegionID: "a1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+	}
+
+	if reason := diplomacyActionDisabledReason(gs, "ally", ActionProposeAlliance); reason != "" {
+		t.Fatalf("ortak düşman doğrudan tehdidi block reason'a dönüştürmemeli, got=%q", reason)
+	}
+	chance, status := estimateDiplomacyChance(gs, "ally", ActionProposeAlliance)
+	if chance <= 0 {
+		t.Fatalf("ittifak şansı sıfır olmamalıydı, got=%d status=%q", chance, status)
+	}
+}
+
 func TestHandleDiplomacyInputSelectsOnFirstClickAndOpensOnSecond(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
@@ -285,6 +319,33 @@ func TestHandleDiplomacyInputHistoryClickOpensRelevantFaction(t *testing.T) {
 	}
 	if r.diplomacyActionFocus != 3 {
 		t.Fatalf("trade history teklifinde action focus trade olmalıydı, got=%d", r.diplomacyActionFocus)
+	}
+}
+
+func TestOpenDiplomacyTargetSelectsOfferPage(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"a":      {ID: "a", NameTR: "A Devleti"},
+			"b":      {ID: "b", NameTR: "B Devleti"},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	r.openDiplomacyTarget("b", 0)
+
+	if !r.showDiplomacy {
+		t.Fatal("diplomasi paneli açılmalıydı")
+	}
+	if r.diplomacyTargetFaction != "b" {
+		t.Fatalf("hedef fraksiyon teklif sayfasında seçili olmalıydı, got=%q", r.diplomacyTargetFaction)
+	}
+	if r.diplomacyFocus != 1 {
+		t.Fatalf("liste odağı hedef fraksiyona taşınmalıydı, got=%d", r.diplomacyFocus)
+	}
+	if r.diplomacyActionFocus != 0 {
+		t.Fatalf("varsayılan aksiyon odağı ilk satıra dönmeli, got=%d", r.diplomacyActionFocus)
 	}
 }
 

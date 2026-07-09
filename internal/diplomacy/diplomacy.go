@@ -3,6 +3,7 @@ package diplomacy
 import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 )
@@ -34,6 +35,17 @@ type TradeProposalAssessment struct {
 
 func (a TradeProposalAssessment) Accepted() bool {
 	return a.BlockReason == "" && a.Chance >= tradeAcceptanceThreshold
+}
+
+const allianceAcceptanceThreshold = 45
+
+type AllianceProposalAssessment struct {
+	Chance      int
+	BlockReason string
+}
+
+func (a AllianceProposalAssessment) Accepted() bool {
+	return a.BlockReason == "" && a.Chance >= allianceAcceptanceThreshold
 }
 
 func Execute(gs *state.GameState, actor, target faction.FactionID, action Action) Result {
@@ -251,6 +263,18 @@ func HasCommonEnemy(gs *state.GameState, a, b faction.FactionID) bool {
 	return false
 }
 
+func HasSharedMajorThreat(gs *state.GameState, a, b faction.FactionID) bool {
+	for otherID, other := range gs.Factions {
+		if otherID == a || otherID == b || other == nil || other.IsEliminated {
+			continue
+		}
+		if isMajorThreatTo(gs, otherID, a) && isMajorThreatTo(gs, otherID, b) {
+			return true
+		}
+	}
+	return false
+}
+
 func HasDirectThreat(gs *state.GameState, a, b faction.FactionID) bool {
 	if !sharesBorder(gs, a, b) {
 		return false
@@ -294,6 +318,67 @@ func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target facti
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
 	assessment := AssessTradeProposal(gs, rel, actor, target)
 	return assessment.Accepted()
+}
+
+func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) AllianceProposalAssessment {
+	assessment := AllianceProposalAssessment{}
+	if gs == nil || rel == nil || actor == "" || target == "" || actor == target {
+		assessment.BlockReason = "Geçersiz diplomasi hedefi"
+		return assessment
+	}
+	if rel.Score < 20 {
+		assessment.BlockReason = "İttifak için ilişki puanı 20 altı"
+		return assessment
+	}
+	actorFaction := gs.Factions[actor]
+	targetFaction := gs.Factions[target]
+	if actorFaction == nil || targetFaction == nil {
+		assessment.BlockReason = "Fraksiyon bulunamadı"
+		return assessment
+	}
+
+	actorPower := MilitaryPower(gs, actor)
+	targetPower := MilitaryPower(gs, target)
+	actorRegions := landRegionCount(gs, actor)
+	targetRegions := landRegionCount(gs, target)
+
+	chance := 30 + rel.Score
+	if rel.Stance == faction.StanceTrade {
+		chance += 8
+	}
+	chance += allianceReligionAffinityBonus(actorFaction.Religion, targetFaction.Religion)
+	if HasCommonEnemy(gs, actor, target) {
+		chance += 12
+	}
+	if HasSharedMajorThreat(gs, actor, target) {
+		chance += 15
+	}
+	if HasDirectThreat(gs, actor, target) {
+		chance -= 15
+	}
+	if actorPower > targetPower {
+		chance += min(10, (actorPower-targetPower)/15)
+	}
+	chance += clamp((actorRegions-targetRegions)*2, -6, 10)
+
+	assessment.Chance = clamp(chance, 0, 100)
+	return assessment
+}
+
+func allianceReligionAffinityBonus(a, b religion.Type) int {
+	if a == "" || b == "" {
+		return 0
+	}
+	switch {
+	case a == b:
+		return 8
+	case (a == religion.Catholic && b == religion.Orthodox) || (a == religion.Orthodox && b == religion.Catholic):
+		return 2
+	case (a == religion.Sunni && b == religion.Shia) || (a == religion.Shia && b == religion.Sunni):
+		return -8
+	default:
+		return -4
+	}
 }
 
 func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) TradeProposalAssessment {
@@ -359,13 +444,8 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 }
 
 func acceptAlliance(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
-	if rel.Score < 20 {
-		return false
-	}
-	if HasDirectThreat(gs, actor, target) {
-		return false
-	}
-	return true
+	assessment := AssessAllianceProposal(gs, rel, actor, target)
+	return assessment.Accepted()
 }
 
 func peaceTechBonus(gs *state.GameState, fid faction.FactionID) int {
@@ -561,6 +641,35 @@ func frontierArmyCount(gs *state.GameState, owner, against faction.FactionID) in
 		}
 	}
 	return count
+}
+
+func isMajorThreatTo(gs *state.GameState, threat, target faction.FactionID) bool {
+	if gs == nil || threat == "" || target == "" || threat == target {
+		return false
+	}
+	threatFaction := gs.Factions[threat]
+	targetFaction := gs.Factions[target]
+	if threatFaction == nil || targetFaction == nil || threatFaction.IsEliminated || targetFaction.IsEliminated {
+		return false
+	}
+	if !sharesBorder(gs, threat, target) && !IsWar(gs, threat, target) {
+		return false
+	}
+
+	threatPower := MilitaryPower(gs, threat)
+	targetPower := MilitaryPower(gs, target)
+	threatRegions := landRegionCount(gs, threat)
+	targetRegions := landRegionCount(gs, target)
+
+	powerThreat := false
+	switch {
+	case threatPower > 0 && targetPower == 0:
+		powerThreat = true
+	case targetPower > 0 && threatPower > max(targetPower*13/10, targetPower+15):
+		powerThreat = true
+	}
+	landThreat := threatRegions > targetRegions+2
+	return powerThreat || landThreat
 }
 
 func economicStress(gs *state.GameState, fid faction.FactionID) int {

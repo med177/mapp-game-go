@@ -7767,32 +7767,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
-		if idx := regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion); idx >= 0 {
+		if regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion) {
 			region := r.gs.Regions[r.SelectedRegion]
 			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {
-				if reason := regionDiplomacyButtonDisabledReason(r.gs, region.OwnerID, idx); reason != "" {
-					r.ShowCombatResult(reason)
-					return InputAction{}
-				}
-				target := faction.FactionID(region.OwnerID)
-				action, ok := regionDiplomacyActionAt(idx)
-				if !ok {
-					return InputAction{}
-				}
-				switch action {
-				case diplomacy.ActionDeclareWar:
-					r.showDiplomacy = false
-					return InputAction{Kind: ActionDeclareWar, TargetFaction: target}
-				case diplomacy.ActionProposePeace:
-					r.showDiplomacy = false
-					return InputAction{Kind: ActionProposePeace, TargetFaction: target}
-				case diplomacy.ActionProposeAlliance:
-					r.showDiplomacy = false
-					return InputAction{Kind: ActionProposeAlliance, TargetFaction: target}
-				case diplomacy.ActionProposeTrade:
-					r.showDiplomacy = false
-					return InputAction{Kind: ActionProposeTrade, TargetFaction: target}
-				}
+				r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
+				return InputAction{}
 			}
 		}
 		if regionNeighborToggleHit(fx, fy, r.gs, r.SelectedRegion) {

@@ -1860,50 +1860,20 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 }
 
 func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
-	btnW := float32(70)
+	btnW := float32(92)
 	btnH := float32(20)
-	gap := float32(6)
-	count := len(diplomacy.QuickActions())
-	if count < 1 {
-		count = 1
-	}
-	totalW := btnW*float32(count) + gap*float32(count-1)
-	x = px + pw - totalW - 5 + float32(i)*(btnW+gap)
+	x = px + pw - btnW - 5
 	y = py + ph - btnH - 8
 	return x, y, btnW, btnH
 }
 
 func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, ownerID string, px, py, pw, ph float32) {
-	actions := diplomacy.QuickActions()
-	for i, action := range actions {
-		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
-		active := regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
-		btnCol := regionDiplomacyActionColor(action)
-		txtCol := ColorWhite
-		if !active {
-			btnCol.A = 110
-			txtCol = ColorGray
-		}
-		drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, btnCol, panelBorder, 1)
-		label := diplomacy.ActionLabelTR(action)
-		tw := MeasureText(label, FaceSmall)
-		DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, txtCol)
-	}
-}
-
-func regionDiplomacyActionColor(action diplomacy.Action) color.RGBA {
-	switch action {
-	case diplomacy.ActionDeclareWar:
-		return color.RGBA{180, 50, 50, 220}
-	case diplomacy.ActionProposePeace:
-		return color.RGBA{50, 120, 180, 220}
-	case diplomacy.ActionProposeAlliance:
-		return color.RGBA{50, 160, 80, 220}
-	case diplomacy.ActionProposeTrade:
-		return color.RGBA{160, 130, 50, 220}
-	default:
-		return color.RGBA{90, 90, 90, 220}
-	}
+	x, y, w, h := regionDiplomacyButtonRect(0, px, py, pw, ph)
+	btnCol := color.RGBA{55, 92, 142, 225}
+	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, btnCol, panelBorder, 1)
+	label := "Diplomasi"
+	tw := MeasureText(label, FaceSmall)
+	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, ColorWhite)
 }
 
 func logisticsPressureColor(status state.RegionLogisticsStatus) color.RGBA {
@@ -1915,22 +1885,6 @@ func logisticsPressureColor(status state.RegionLogisticsStatus) color.RGBA {
 	default:
 		return color.RGBA{190, 70, 60, 255}
 	}
-}
-
-func regionDiplomacyActionAt(idx int) (diplomacy.Action, bool) {
-	actions := diplomacy.QuickActions()
-	if idx < 0 || idx >= len(actions) {
-		return "", false
-	}
-	return actions[idx], true
-}
-
-func regionDiplomacyButtonDisabledReason(gs *state.GameState, ownerID string, idx int) string {
-	action, ok := regionDiplomacyActionAt(idx)
-	if gs == nil || ownerID == "" || !ok {
-		return ""
-	}
-	return diplomacyActionDisabledReason(gs, faction.FactionID(ownerID), actionKindForDiplomacyAction(action))
 }
 
 // DrawArmyPanel seçili ordu bilgisini sol altta gösterir.
@@ -2666,7 +2620,7 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
 		return true
 	}
-	if idx := regionDiplomacyButtonHit(mx, my, gs, rid); idx >= 0 {
+	if regionDiplomacyButtonHit(mx, my, gs, rid) {
 		return true
 	}
 	if regionNeighborToggleHit(mx, my, gs, rid) {
@@ -3146,23 +3100,17 @@ func minFloat64(a, b float64) float64 {
 	return b
 }
 
-// regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki hızlı diplomasi butonunu döner.
-// Sıra `diplomacy.QuickActions()` ile aynıdır; -1=hiçbiri.
-func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) int {
+// regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki Diplomasi butonunu döner.
+func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
 	if rid == "" || gs == nil {
-		return -1
+		return false
 	}
 	region, ok := gs.Regions[rid]
 	if !ok || region.IsSea || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
-		return -1
+		return false
 	}
 	px, py, pw, ph := infoPanelX(), infoPanelY(), infoPanelW, infoPanelH
-	for i, btn := range buildRegionDiplomacyButtons(gs, region.OwnerID, px, py, pw, ph) {
-		if btn.HitTest(mx, my) {
-			return i
-		}
-	}
-	return -1
+	return buildRegionDiplomacyButtons(gs, region.OwnerID, px, py, pw, ph).HitTest(mx, my)
 }
 
 func armyPanelCloseHit(mx, my float64) bool {
@@ -3189,16 +3137,9 @@ func buildRegionTaxButtons(gs *state.GameState, rid world.RegionID) (gameui.Butt
 	return buttonFromRectF32(dec, "-"), buttonFromRectF32(inc, "+")
 }
 
-func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) []gameui.Button {
-	actions := diplomacy.QuickActions()
-	out := make([]gameui.Button, 0, len(actions))
-	for i, action := range actions {
-		x, y, w, h := regionDiplomacyButtonRect(i, px, py, pw, ph)
-		btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), diplomacy.ActionLabelTR(action))
-		btn.Enabled = regionDiplomacyButtonDisabledReason(gs, ownerID, i) == ""
-		out = append(out, btn)
-	}
-	return out
+func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) gameui.Button {
+	x, y, w, h := regionDiplomacyButtonRect(0, px, py, pw, ph)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Diplomasi")
 }
 
 func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, [4]float32) {

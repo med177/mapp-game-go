@@ -243,9 +243,6 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if score < 20 {
 			return "İttifak için ilişki puanı 20 altı."
 		}
-		if HasDirectThreat(gs, actor, target) {
-			return "Doğrudan sınır tehdidi varken ittifak kurulamaz."
-		}
 	case ActionProposeTrade:
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken ticaret yapılamaz."
