@@ -47,6 +47,102 @@ func TestInitialCameraScaleStartsCloserAndClampsToMax(t *testing.T) {
 	}
 }
 
+func TestResetCameraFocusesPlayerCapitalOnInitialOpen(t *testing.T) {
+	oldScreenW, oldScreenH := ScreenWidth, ScreenHeight
+	oldWorldW, oldWorldH := WorldW, WorldH
+	oldShapeOffX, oldShapeOffY := shapeOffX, shapeOffY
+	oldShapeScaleX, oldShapeScaleY := shapeScaleX, shapeScaleY
+	defer func() {
+		ScreenWidth = oldScreenW
+		ScreenHeight = oldScreenH
+		WorldW = oldWorldW
+		WorldH = oldWorldH
+		shapeOffX = oldShapeOffX
+		shapeOffY = oldShapeOffY
+		shapeScaleX = oldShapeScaleX
+		shapeScaleY = oldShapeScaleY
+	}()
+
+	ScreenWidth, ScreenHeight = 1280, 720
+	WorldW, WorldH = 2892, 1440
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"osm": {ID: "osm", CapitalSettlementID: "sogut"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"bithynia": {
+				ID:      "bithynia",
+				OwnerID: "osm",
+				WorldX:  1090,
+				WorldY:  468,
+				Settlements: []world.Settlement{
+					{ID: "sogut", NameTR: "Sogut", X: 1030, Y: 520, IsCapital: true},
+				},
+			},
+		},
+	}
+
+	r := &Renderer{gs: gs}
+	r.resetCamera()
+
+	wantX, wantY := clampCameraCenter(wcX(1030), wcY(520), r.camScale)
+	if math.Abs(r.camX-wantX) > 1e-9 || math.Abs(r.camY-wantY) > 1e-9 {
+		t.Fatalf("kamera oyuncu baskentine odaklanmadi: got=(%.6f, %.6f) want=(%.6f, %.6f)", r.camX, r.camY, wantX, wantY)
+	}
+}
+
+func TestResetCameraClampsInitialCapitalFocusNearMapEdge(t *testing.T) {
+	oldScreenW, oldScreenH := ScreenWidth, ScreenHeight
+	oldWorldW, oldWorldH := WorldW, WorldH
+	oldShapeOffX, oldShapeOffY := shapeOffX, shapeOffY
+	oldShapeScaleX, oldShapeScaleY := shapeScaleX, shapeScaleY
+	defer func() {
+		ScreenWidth = oldScreenW
+		ScreenHeight = oldScreenH
+		WorldW = oldWorldW
+		WorldH = oldWorldH
+		shapeOffX = oldShapeOffX
+		shapeOffY = oldShapeOffY
+		shapeScaleX = oldShapeScaleX
+		shapeScaleY = oldShapeScaleY
+	}()
+
+	ScreenWidth, ScreenHeight = 1280, 720
+	WorldW, WorldH = 2892, 1440
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	gs := &state.GameState{
+		PlayerFactionID: "ven",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ven": {ID: "ven", CapitalSettlementID: "venice"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"veneto": {
+				ID:      "veneto",
+				OwnerID: "ven",
+				WorldX:  40,
+				WorldY:  30,
+				Settlements: []world.Settlement{
+					{ID: "venice", NameTR: "Venedik", X: 24, Y: 18, IsCapital: true},
+				},
+			},
+		},
+	}
+
+	r := &Renderer{gs: gs}
+	r.resetCamera()
+
+	wantX, wantY := clampCameraCenter(wcX(24), wcY(18), r.camScale)
+	if math.Abs(r.camX-wantX) > 1e-9 || math.Abs(r.camY-wantY) > 1e-9 {
+		t.Fatalf("kenar baskent focus'u clamp olmadi: got=(%.6f, %.6f) want=(%.6f, %.6f)", r.camX, r.camY, wantX, wantY)
+	}
+}
+
 func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	cases := []struct {
 		w float64
@@ -81,10 +177,13 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertModalInside(t, tc.w, tc.h, buildConfirmDialogModal())
 		assertModalInside(t, tc.w, tc.h, buildWarConfirmModal())
 		assertModalInside(t, tc.w, tc.h, buildBattlePlanModal())
+		assertModalInside(t, tc.w, tc.h, buildBattleReportModal())
 		assertModalInside(t, tc.w, tc.h, buildDiplomacyOfferModal())
 		acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 		assertButtonInside(t, tc.w, tc.h, acceptBtn)
 		assertButtonInside(t, tc.w, tc.h, rejectBtn)
+		assertButtonInside(t, tc.w, tc.h, buildBattleReportCloseButton())
+		assertButtonInside(t, tc.w, tc.h, buildBattleReportContinueButton())
 		assertModalInside(t, tc.w, tc.h, buildVictoryDetailModal())
 		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
 		for _, btn := range battlePlanCardRects() {
@@ -235,6 +334,17 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	}
 	if offer.historyRect.W > 0 {
 		assertRectInside(t, screenW, screenH, offer.historyRect)
+		buttons := buildDiplomacyHistoryFilterButtons(offer.historyRect, diplomacyHistoryDirectionAll, ActionNone)
+		actionRowBottom := buttons[3].Button.Y + buttons[3].Button.H
+		firstCardY := diplomacyOfferHistoryCardRect(offer.historyRect, 0).Y
+		if firstCardY < actionRowBottom+4 {
+			t.Fatalf("diplomacy history cards start too close to filter buttons in %.0fx%.0f viewport: firstCardY=%.1f actionRowBottom=%.1f layout=%+v", screenW, screenH, firstCardY, actionRowBottom, offer)
+		}
+	}
+	statusSecondLineY := offer.statusRect.Y + 8 + 24
+	actionLabelY := offer.actionsRect.Y - 18
+	if statusSecondLineY+14 > actionLabelY {
+		t.Fatalf("diplomacy offer status and action label overlap in %.0fx%.0f viewport: statusSecondLineY=%.1f actionLabelY=%.1f layout=%+v", screenW, screenH, statusSecondLineY, actionLabelY, offer)
 	}
 	assertButtonInside(t, screenW, screenH, buildDiplomacyCloseButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacyBackButton())

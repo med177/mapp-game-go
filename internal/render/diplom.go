@@ -18,7 +18,7 @@ const (
 	diplomHistoryPanelW   = 286.0
 	diplomHistoryPanelGap = 12.0
 	diplomOfferMainW      = 430.0
-	diplomHistoryPanelH   = 304.0
+	diplomHistoryPanelH   = 324.0
 )
 
 type diplomacyHistoryDirectionFilter int
@@ -207,7 +207,7 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 		panelRect:    panel,
 		titleRect:    headerRect,
 		targetRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y, W: statusRect.W, H: 28},
-		statusRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y + 38, W: statusRect.W, H: statusRect.H - 38},
+		statusRect:   gameui.Rect{X: statusRect.X, Y: statusRect.Y + 32, W: statusRect.W, H: statusRect.H - 32},
 		actionsRect:  actionsRect,
 		selectedRect: selectedRect,
 		historyRect: gameui.Rect{
@@ -372,8 +372,8 @@ func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, dirFilter diploma
 		padX  = 10.0
 		gap   = 6.0
 		rowH  = 22.0
-		row1Y = 76.0
-		row2Y = 102.0
+		row1Y = 80.0
+		row2Y = 106.0
 	)
 	dirBtnW := (panelRect.W - padX*2 - gap*2) / 3
 	actionBtnW := (panelRect.W - padX*2 - gap*3) / 4
@@ -444,7 +444,7 @@ func diplomacyOfferHistoryOtherFaction(entry state.DiplomaticOfferHistoryEntry, 
 func diplomacyOfferHistoryCardRect(panelRect gameui.Rect, drawn int) gameui.Rect {
 	return gameui.Rect{
 		X: panelRect.X + 10,
-		Y: panelRect.Y + 126 + float64(drawn)*44,
+		Y: panelRect.Y + 134 + float64(drawn)*44,
 		W: panelRect.W - 20,
 		H: 38,
 	}
@@ -905,24 +905,26 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		return InputAction{}
 	}
 	if r.diplomacyTargetFaction == "" {
-		if r.applyDiplomacyHistoryFilterHit(diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
+		if input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
 		if input.WheelY != 0 && diplomacyListLayoutForScreen().panelRect.Hit(input.MouseX, input.MouseY) {
 			r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll-wheelToDiplomStep(input.WheelY))
 			return InputAction{}
 		}
-		if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY, 4, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
-			r.diplomacyTargetFaction = target
-			r.diplomacyActionFocus = actionFocus
-			for i, fid := range factions {
-				if fid == target {
-					r.diplomacyFocus = i
-					r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
-					break
+		if input.LeftJustPressed {
+			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY, 4, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+				r.diplomacyTargetFaction = target
+				r.diplomacyActionFocus = actionFocus
+				for i, fid := range factions {
+					if fid == target {
+						r.diplomacyFocus = i
+						r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
+						break
+					}
 				}
+				return InputAction{}
 			}
-			return InputAction{}
 		}
 		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
 		if idx, ok := diplomacyListClickedIndex(list, input); ok {
@@ -944,24 +946,26 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 	} else {
-		if r.applyDiplomacyHistoryFilterHit(diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
+		if input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
 		if buildDiplomacyBackButton().HandleInput(input) {
 			r.diplomacyTargetFaction = ""
 			return InputAction{}
 		}
-		if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
-			r.diplomacyTargetFaction = target
-			r.diplomacyActionFocus = actionFocus
-			for i, fid := range factions {
-				if fid == target {
-					r.diplomacyFocus = i
-					r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
-					break
+		if input.LeftJustPressed {
+			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+				r.diplomacyTargetFaction = target
+				r.diplomacyActionFocus = actionFocus
+				for i, fid := range factions {
+					if fid == target {
+						r.diplomacyFocus = i
+						r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
+						break
+					}
 				}
+				return InputAction{}
 			}
-			return InputAction{}
 		}
 		for _, btn := range buildDiplomacyActionButtons() {
 			if btn.Button.HandleInput(input) {

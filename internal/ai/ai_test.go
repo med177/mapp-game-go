@@ -736,6 +736,121 @@ func TestAIRecruitQueuesUnitInsteadOfAddingImmediately(t *testing.T) {
 	}
 }
 
+func TestAIRecruitPrefersRegionWithFreeBarracksThroughput(t *testing.T) {
+	gs := aiTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"barracks": {ID: "barracks", GoldCost: 150, MaxPerRegion: 2, TurnsRequired: 2},
+	}
+	gs.Regions["a1"].Buildings = []string{"barracks"}
+	gs.Regions["a2"] = &world.Region{ID: "a2", OwnerID: "ai_1", TradeCapacity: 4, Buildings: []string{"barracks"}}
+	gs.Armies["ai1_army_2"] = &army.Army{ID: "ai1_army_2", OwnerID: "ai_1", RegionID: "a2", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].Grain = 500
+	gs.UnitTypes["militia"] = &army.UnitType{ID: "militia", GoldCost: 60, TurnsRequired: 1, RequiredBldg: "barracks", Attack: 6, Defense: 5, Morale: 30}
+	gs.ProductionQueue = []state.ProductionOrder{
+		{ID: "prod_1", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "a1", TypeID: "militia", TurnsLeft: 1},
+	}
+
+	if !aiRecruitOne(gs, "ai_1") {
+		t.Fatalf("AI serbest throughput'u olan ikinci bölgeye emir yazabilmeliydi")
+	}
+
+	if len(gs.ProductionQueue) != 2 {
+		t.Fatalf("iki emir bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	last := gs.ProductionQueue[1]
+	if last.RegionID != "a2" || last.TypeID != "militia" {
+		t.Fatalf("AI doygun olmayan bölgeyi seçmeliydi, got=%+v", last)
+	}
+}
+
+func TestAIRecruitDoesNotQueueWhenAllBarracksThroughputIsFull(t *testing.T) {
+	gs := aiTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"barracks": {ID: "barracks", GoldCost: 150, MaxPerRegion: 1, TurnsRequired: 2},
+	}
+	gs.Regions["a1"].Buildings = []string{"barracks"}
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].Grain = 500
+	gs.UnitTypes["militia"] = &army.UnitType{ID: "militia", GoldCost: 60, TurnsRequired: 1, RequiredBldg: "barracks", Attack: 6, Defense: 5, Morale: 30}
+	gs.ProductionQueue = []state.ProductionOrder{
+		{ID: "prod_1", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "a1", TypeID: "militia", TurnsLeft: 1},
+	}
+
+	if aiRecruitOne(gs, "ai_1") {
+		t.Fatalf("AI dolu kışla throughput'una aynı tur ikinci kara emri yazmamalıydı")
+	}
+	if len(gs.ProductionQueue) != 1 {
+		t.Fatalf("ek üretim emri açılmamalıydı, got=%d", len(gs.ProductionQueue))
+	}
+}
+
+func TestAINavalStrategySkipsSaturatedPortLane(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"coast_a": {ID: "coast_a", OwnerID: "ai_1", Buildings: []string{"port", "port"}, Neighbors: []world.RegionID{"sea_a"}},
+			"coast_b": {ID: "coast_b", OwnerID: "ai_1", Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea_b"}},
+			"coast_c": {ID: "coast_c", OwnerID: "ai_1", Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea_c"}},
+			"sea_a":   {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"coast_a", "enemy_a"}},
+			"sea_b":   {ID: "sea_b", IsSea: true, Neighbors: []world.RegionID{"coast_b"}},
+			"sea_c":   {ID: "sea_c", IsSea: true, Neighbors: []world.RegionID{"coast_c"}},
+			"enemy_a": {ID: "enemy_a", OwnerID: "player", Neighbors: []world.RegionID{"sea_a"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni, Gold: 1500, Grain: 300, Timber: 300, Iron: 120, Stone: 120},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: -80, Stance: faction.StanceWar},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port", MaxPerRegion: 1},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, TurnsRequired: 2},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "coast_a", TypeID: "transport", TurnsLeft: 1},
+			{ID: "prod_2", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "coast_a", TypeID: "transport", TurnsLeft: 2},
+		},
+	}
+
+	aiNavalStrategy(gs, "ai_1")
+
+	if len(gs.ProductionQueue) != 3 {
+		t.Fatalf("bir yeni deniz emri bekleniyordu, got=%d", len(gs.ProductionQueue))
+	}
+	last := gs.ProductionQueue[2]
+	if last.RegionID != "coast_b" || last.TypeID != "transport" {
+		t.Fatalf("dolu liman hattı yerine boş liman hattı seçilmeliydi, got=%+v", last)
+	}
+}
+
+func TestAIPendingNavalFleetCountTreatsSameSeaQueueAsSingleFleet(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"coast_a": {ID: "coast_a", OwnerID: "ai_1", Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea_a"}},
+			"coast_b": {ID: "coast_b", OwnerID: "ai_1", Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea_a"}},
+			"sea_a":   {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"coast_a", "coast_b"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai_1": {ID: "ai_1", NameTR: "AI 1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "coast_a", TypeID: "transport", TurnsLeft: 1},
+			{ID: "prod_2", Kind: aiProductionKindUnit, FactionID: "ai_1", RegionID: "coast_b", TypeID: "transport", TurnsLeft: 2},
+		},
+	}
+
+	if got := aiPendingNavalFleetCount(gs, "ai_1"); got != 1 {
+		t.Fatalf("aynı denize bakan pending emirler tek filo sayılmalıydı, got=%d", got)
+	}
+}
+
 func TestAIDeclaresWarOnWeakBorderTarget(t *testing.T) {
 	gs := aiTestState()
 	gs.Difficulty = 2

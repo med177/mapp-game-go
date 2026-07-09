@@ -63,10 +63,12 @@ type TechMods struct {
 
 // Result savaşın sonucunu özetler.
 type Result struct {
-	AttackerWins bool
-	AttackerLost int
-	DefenderLost int
-	Description  string
+	AttackerWins     bool
+	AttackerLost     int
+	DefenderLost     int
+	AttackerHPDamage int
+	DefenderHPDamage int
+	Description      string
 }
 
 // ResolveBattle iki ordu arasındaki çarpışmayı hesaplar.
@@ -88,19 +90,38 @@ func ResolveBattleWithPlan(atk, def *army.Army, terrain world.TerrainType, types
 func ResolveBattleWithContextPlan(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) Result {
 	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, context, stance)
 	outcome := resolveOutcome(atkStr, defStr, context, stance)
+	atkHPBefore := 0
+	defHPBefore := 0
+	if atk != nil {
+		atkHPBefore = totalUnitsHP(atk.Units)
+	}
+	if def != nil {
+		defHPBefore = totalUnitsHP(def.Units)
+	}
 
 	atkDead := applyCasualties(atk, outcome.AttackerLossRatio)
 	defDead := applyCasualties(def, outcome.DefenderLossRatio)
+	atkHPAfter := 0
+	defHPAfter := 0
+	if atk != nil {
+		atkHPAfter = totalUnitsHP(atk.Units)
+	}
+	if def != nil {
+		defHPAfter = totalUnitsHP(def.Units)
+	}
 	if outcome.AttackerWins && len(def.Units) > 0 {
 		defDead += len(def.Units)
+		defHPAfter = 0
 		def.Units = def.Units[:0]
 	}
 
 	return Result{
-		AttackerWins: outcome.AttackerWins,
-		AttackerLost: atkDead,
-		DefenderLost: defDead,
-		Description:  outcome.Description,
+		AttackerWins:     outcome.AttackerWins,
+		AttackerLost:     atkDead,
+		DefenderLost:     defDead,
+		AttackerHPDamage: atkHPBefore - atkHPAfter,
+		DefenderHPDamage: defHPBefore - defHPAfter,
+		Description:      outcome.Description,
 	}
 }
 

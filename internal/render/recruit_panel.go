@@ -310,9 +310,12 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	drawRecruitPanelCloseButton(screen, px, py, pw)
 
 	DrawTextCentered(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2, float64(py)+8, FaceSmall, ColorGold)
-	limit := recruitRegionProductionLimit(region)
 	queuedTotal := queuedUnitTotal(gs, rid)
-	infoStr := fmt.Sprintf("Tur limiti: %d  |  Sirada: %d", limit, queuedTotal)
+	landLimit := state.LandUnitProductionLimit(region)
+	infoStr := fmt.Sprintf("Kışla limiti: %d  |  Sırada: %d", landLimit, queuedTotal)
+	if region.IsCoastal(gs.Regions) {
+		infoStr = fmt.Sprintf("Kışla: %d  |  Liman: %d  |  Sırada: %d", landLimit, state.NavalUnitProductionLimit(region), queuedTotal)
+	}
 	infoW := MeasureText(infoStr, FaceSmall)
 	drawUIMutedText(screen, float64(px)+float64(pw)/2-infoW/2, float64(py)+24, infoStr)
 	sepY := py + recruitHeaderH - 2
@@ -523,22 +526,6 @@ func queuedUnitTotal(gs *state.GameState, rid world.RegionID) int {
 	return total
 }
 
-func recruitRegionProductionLimit(region *world.Region) int {
-	if region == nil || region.IsSea {
-		return 0
-	}
-	limit := region.Population / 100
-	if limit < 1 {
-		limit = 1
-	}
-	for _, bid := range region.Buildings {
-		if bid == "barracks" {
-			limit++
-		}
-	}
-	return limit
-}
-
 func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {
 	for _, btn := range buildRecruitUnitCardButtons(gs, rid) {
 		if btn.HitTest(mx, my) {
@@ -549,15 +536,18 @@ func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.Regio
 }
 
 type recruitQueueItem struct {
-	uid     string
-	count   int
-	queued  bool
-	turns   int
-	orderID string
+	uid                string
+	count              int
+	queued             bool
+	turns              int
+	orderID            string
+	progressesThisTurn bool
 }
 
 func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueItem {
+	region := gs.Regions[rid]
 	items := make([]recruitQueueItem, 0, recruitQueueMaxOrders)
+	progressingByLane := make(map[string]int, 2)
 	for _, order := range gs.ProductionQueue {
 		if order.Kind != "unit" || order.RegionID != rid || order.FactionID != string(gs.PlayerFactionID) {
 			continue
@@ -565,9 +555,31 @@ func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueIt
 		if len(items) >= recruitQueueMaxOrders {
 			break
 		}
-		items = append(items, recruitQueueItem{uid: order.TypeID, count: 1, queued: true, turns: order.TurnsLeft, orderID: order.ID})
+		utype := gs.UnitTypes[order.TypeID]
+		lane := recruitQueueLane(utype)
+		progressesThisTurn := false
+		capacity := state.UnitProductionLimit(region, utype)
+		if progressingByLane[lane] < capacity {
+			progressesThisTurn = true
+			progressingByLane[lane]++
+		}
+		items = append(items, recruitQueueItem{
+			uid:                order.TypeID,
+			count:              1,
+			queued:             true,
+			turns:              order.TurnsLeft,
+			orderID:            order.ID,
+			progressesThisTurn: progressesThisTurn,
+		})
 	}
 	return items
+}
+
+func recruitQueueLane(utype *army.UnitType) string {
+	if utype != nil && utype.RequiredBldg == "port" {
+		return "port"
+	}
+	return "barracks"
 }
 
 func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, x, y, w, h float32) {
@@ -589,7 +601,17 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 		col := i % recruitCardsPerRow
 		startX := x + recruitPanelPad + float32(col)*(cardW+gap)
 		cardY := cy + float32(row)*(cardH+gap)
-		drawUICardRect(screen, gameui.Rect{X: float64(startX), Y: float64(cardY), W: float64(cardW), H: float64(cardH)}, color.RGBA{252, 252, 252, 242}, color.RGBA{160, 160, 160, 225}, 1)
+		cardBg := color.RGBA{244, 237, 216, 245}
+		cardBorder := color.RGBA{184, 150, 86, 232}
+		spriteTint := [3]float32{1.0, 1.0, 1.0}
+		labelColor := color.RGBA{85, 75, 50, 240}
+		if !it.progressesThisTurn {
+			cardBg = color.RGBA{202, 198, 192, 220}
+			cardBorder = color.RGBA{122, 118, 112, 210}
+			spriteTint = [3]float32{0.56, 0.56, 0.56}
+			labelColor = color.RGBA{110, 104, 96, 220}
+		}
+		drawUICardRect(screen, gameui.Rect{X: float64(startX), Y: float64(cardY), W: float64(cardW), H: float64(cardH)}, cardBg, cardBorder, 1)
 		if armySheet != nil {
 			r := unitSpriteRect(it.uid, armySheet)
 			if !r.Empty() {
@@ -611,9 +633,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 						recruitClipBuf.Clear()
 						op.GeoM.Scale(scale, scale)
 						op.GeoM.Translate(float64(clipW)/2-drawW/2, float64(clipH)/2-drawH/2)
-						if it.queued {
-							op.ColorScale.Scale(0.82, 0.82, 0.82, 1.0)
-						}
+						op.ColorScale.Scale(spriteTint[0], spriteTint[1], spriteTint[2], 1.0)
 						recruitClipBuf.DrawImage(sub, op)
 						cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
 						dst := &ebiten.DrawImageOptions{}
@@ -630,7 +650,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 			hovered := fmx >= float64(bx) && fmx <= float64(bx+bw) && fmy >= float64(by) && fmy <= float64(by+bh)
 			drawQueueCancelButton(screen, bx, by, bw, bh, hovered)
 		}
-		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+98, FaceSmall, color.RGBA{85, 75, 50, 240})
+		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+98, FaceSmall, labelColor)
 	}
 }
 

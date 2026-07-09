@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-06-20
+last_updated: 2026-07-08
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -11,7 +11,7 @@ related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipe
 
 ## Genel Bakış
 
-Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir.
+Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir. Resolve tamamlanınca oyuncu tarafında render katmanı ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim / HP` önce-sonra kırılımı gösterilir.
 
 ---
 
@@ -25,6 +25,7 @@ calculateOutcome(saldıranGücü, savunucuGücü)
     → (kazandıMı bool, saldıranKayıpOranı float64, savunucuKayıpOranı float64)
 
 applyCasualties(ordu, kayıpOranı) → HP hasarı + gerekirse gerçek birim kaybı
+Result → saldıran/savunan kayıp birimi + toplam HP hasarı
 ```
 
 ---
@@ -111,6 +112,8 @@ Preview tarafındaki kayıp özeti artık iki katmanlıdır:
 - `Birim` kaybı: gerçekten düşmesi beklenen birlik sayısını verir
 
 Preview, gerçek savaştakiyle aynı arazi/teknoloji/duruş/savaş tipi matematiğini kullanır; yani panelde görülen güç ve gerçek resolve birbirinden kopmaz.
+
+Gerçek resolve çıktısı artık sadece `AttackerLost / DefenderLost` değil, `AttackerHPDamage / DefenderHPDamage` alanlarını da taşır. Bu veri kuşatma hücumu ve çıkarma dahil tüm oyuncu savaş raporlarında kullanılır; yani sonuç ekranındaki HP düşüşü preview tahminiyle aynı kavram üstünden gelir.
 
 ## Kuşatma Akışı
 

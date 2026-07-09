@@ -437,6 +437,56 @@ func TestHandleDiplomacyOfferInputStateHistoryCardOpensBrowsePanel(t *testing.T)
 	}
 }
 
+func TestHandleDiplomacyOfferInputStateHistoryCardIgnoredDuringAITurn(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade"},
+		},
+		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
+			{FromFactionID: "ai_2", ToFactionID: "player", Action: "propose_alliance", CreatedTurn: 1, ResolvedTurn: 2, Accepted: true, Applied: true},
+		},
+	}
+	r := &Renderer{
+		gs:       gs,
+		prevKeys: make(map[ebiten.Key]bool),
+	}
+
+	layout := diplomacyOfferLayoutForScreen()
+	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
+	input := gameui.InputState{
+		MouseX:          cardRect.X + 6,
+		MouseY:          cardRect.Y + 6,
+		LeftJustPressed: true,
+	}
+
+	act := r.handleDiplomacyOfferInputState(0, input)
+	if act.Kind != ActionNone {
+		t.Fatalf("AI turunda history karti oyun aksiyonu uretmemeli, got=%s", act.Kind)
+	}
+	if r.showDiplomacy {
+		t.Fatal("AI turunda history karti genel diplomasi panelini acmamali")
+	}
+	if r.diplomacyOfferHistoryBrowse != "" || r.diplomacyTargetFaction != "" {
+		t.Fatalf("AI turunda browse state degismemeli, got browse=%q target=%q", r.diplomacyOfferHistoryBrowse, r.diplomacyTargetFaction)
+	}
+	if _, ok := r.playerDiplomacyOfferIndex(); !ok {
+		t.Fatal("offer modal AI turunda aktif kalmali")
+	}
+}
+
 func TestHandleDiplomacyInputBackKeepsBrowseHighlightOnList(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
@@ -561,5 +611,55 @@ func TestHandleDiplomacyInputHistorySelectionRespectsFilters(t *testing.T) {
 	}
 	if r.diplomacyActionFocus != 3 {
 		t.Fatalf("trade history kayıt action focus trade olmalı, got=%d", r.diplomacyActionFocus)
+	}
+}
+
+func TestHandleDiplomacyInputHistoryHoverDoesNotMutateState(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
+		},
+		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
+			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade", CreatedTurn: 3, ResolvedTurn: 4, Accepted: true, Applied: true},
+		},
+	}
+	r := &Renderer{
+		gs:            gs,
+		showDiplomacy: true,
+		prevKeys:      make(map[ebiten.Key]bool),
+		prevMouse:     make(map[ebiten.MouseButton]bool),
+	}
+
+	layout := diplomacyListLayoutForScreen()
+	buttons := buildDiplomacyHistoryFilterButtons(layout.historyRect, diplomacyHistoryDirectionAll, ActionNone)
+	filterHover := gameui.InputState{
+		MouseX: buttons[1].Button.X + 1,
+		MouseY: buttons[1].Button.Y + 1,
+	}
+	r.handleDiplomacyInput(filterHover)
+	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionAll {
+		t.Fatalf("hover filter state degistirmemeli, got=%v", r.diplomacyHistoryDirectionFilter)
+	}
+
+	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
+	cardHover := gameui.InputState{
+		MouseX: cardRect.X + 6,
+		MouseY: cardRect.Y + 6,
+	}
+	act := r.handleDiplomacyInput(cardHover)
+	if act.Kind != ActionNone {
+		t.Fatalf("hover history aksiyon uretmemeli, got=%s", act.Kind)
+	}
+	if r.diplomacyTargetFaction != "" {
+		t.Fatalf("hover history browse acmamali, got=%q", r.diplomacyTargetFaction)
 	}
 }

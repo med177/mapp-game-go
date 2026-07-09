@@ -564,6 +564,48 @@ const (
 	ManpowerBarracksAdd = 5 // kışlası olan bölgenin ekstra kapasitesi
 )
 
+func buildingLevel(region *world.Region, buildingID string) int {
+	if region == nil || buildingID == "" {
+		return 0
+	}
+	level := 0
+	for _, bid := range region.Buildings {
+		if bid == buildingID {
+			level++
+		}
+	}
+	return level
+}
+
+// LandUnitProductionLimit bir kara bölgesinin tur başına tamamlayabileceği kara birimi adedini döner.
+// Milis gibi bina gereksinimi olmayan temel birlik akışını kırmamak için taban değer 1 korunur.
+func LandUnitProductionLimit(region *world.Region) int {
+	if region == nil || region.IsSea {
+		return 0
+	}
+	limit := buildingLevel(region, "barracks")
+	if limit < 1 {
+		limit = 1
+	}
+	return limit
+}
+
+// NavalUnitProductionLimit bir kara bölgesinin tur başına tamamlayabileceği deniz birimi adedini döner.
+func NavalUnitProductionLimit(region *world.Region) int {
+	if region == nil || region.IsSea {
+		return 0
+	}
+	return buildingLevel(region, "port")
+}
+
+// UnitProductionLimit birim tipine göre ilgili kışla/liman üretim hattının tur limitini döner.
+func UnitProductionLimit(region *world.Region, unitType *army.UnitType) int {
+	if unitType != nil && unitType.RequiredBldg == "port" {
+		return NavalUnitProductionLimit(region)
+	}
+	return LandUnitProductionLimit(region)
+}
+
 // ManpowerCap bir fraksiyonun toplam kara birimi kapasitesini döner.
 func (s *GameState) ManpowerCap(fid faction.FactionID) int {
 	cap := 0

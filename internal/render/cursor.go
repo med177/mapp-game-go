@@ -25,6 +25,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.battleReport.show {
+		if r.battleReportHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.showVictoryDetail {
 		if victoryDetailCloseHit(fx, fy) || !victoryDetailPopupHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -296,6 +304,10 @@ func (r *Renderer) battlePlanHovering(fx, fy float64) bool {
 		}
 	}
 	return false
+}
+
+func (r *Renderer) battleReportHovering(fx, fy float64) bool {
+	return battleReportCloseHit(fx, fy) || battleReportContinueHit(fx, fy) || !battleReportPopupHit(fx, fy)
 }
 
 func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {

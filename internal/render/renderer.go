@@ -43,7 +43,7 @@ const (
 	selectedSiegeButtonW    = 170.0
 	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
-	initialCameraZoomFactor = 1.40
+	initialCameraZoomFactor = 2.50
 	maxCameraZoomScale      = 10
 	activeEventIconSize     = float32(22)
 	activeEventIconSpacingY = float32(24)
@@ -160,6 +160,7 @@ type Renderer struct {
 	historicalEventChoices []HistoricalEventChoice
 	historicalEventFocus   int
 	showHistoricalEvent    bool
+	battleReport           battleReportState
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -464,8 +465,13 @@ func (r *Renderer) ensureWorldMap() {
 func (r *Renderer) resetCamera() {
 	r.camScale = initialCameraScale()
 	r.camX = float64(WorldW) / 2
-	// Haritanın üst kenarını ekranın üstüne hizala
-	r.camY = ScreenHeight / (2 * r.camScale)
+	// Haritanın üst kenarını ekranın üstüne hizala.
+	r.camY = ScreenHeight / (2 * r.camScale * mapPitchY)
+	if focusX, focusY, ok := r.initialCameraFocusPoint(); ok {
+		r.camX = focusX
+		r.camY = focusY
+	}
+	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
 }
 
 func minCameraScale() float64 {
@@ -480,6 +486,41 @@ func initialCameraScale() float64 {
 		return maxCameraZoomScale
 	}
 	return scale
+}
+
+func (r *Renderer) initialCameraFocusPoint() (float64, float64, bool) {
+	if r == nil || r.gs == nil || r.gs.PlayerFactionID == "" {
+		return 0, 0, false
+	}
+	region, settlement, _, ok := r.gs.FactionCapital(r.gs.PlayerFactionID)
+	if !ok || region == nil {
+		return 0, 0, false
+	}
+	if settlement != nil {
+		return wcX(settlement.X), wcY(settlement.Y), true
+	}
+	return wcX(region.WorldX), wcY(region.WorldY), true
+}
+
+func clampCameraCenter(camX, camY, scale float64) (float64, float64) {
+	if scale <= 0 {
+		return camX, camY
+	}
+	halfW := ScreenWidth / (2 * scale)
+	halfH := ScreenHeight / (2 * scale * mapPitchY)
+	minX, maxX := halfW, float64(WorldW)-halfW
+	minY, maxY := halfH, float64(WorldH)-halfH
+	if minX > maxX {
+		camX = float64(WorldW) / 2
+	} else {
+		camX = math.Max(minX, math.Min(maxX, camX))
+	}
+	if minY > maxY {
+		camY = float64(WorldH) / 2
+	} else {
+		camY = math.Max(minY, math.Min(maxY, camY))
+	}
+	return camX, camY
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
@@ -678,6 +719,48 @@ func (r *Renderer) OpenEventCodex() {
 
 func (r *Renderer) CloseEventCodex() {
 	r.showEventCodex = false
+}
+
+// PrepareForTurnAdvance oyuncu turundan çıkarken açık panelleri kapatır
+// ve haritayı nötr görünüme döndürür.
+func (r *Renderer) PrepareForTurnAdvance() {
+	if r == nil {
+		return
+	}
+	r.SelectedRegion = ""
+	r.SelectedArmy = ""
+	r.selectedFactionPanel = ""
+	r.devNeighborListExpanded = false
+	r.clearSelectedSettlement()
+	r.showRecruitPanel = false
+	r.resetRecruitSelection()
+	r.showDiplomacy = false
+	r.diplomacyFocus = 0
+	r.diplomacyScroll = 0
+	r.diplomacyActionFocus = 0
+	r.diplomacyTargetFaction = ""
+	r.diplomacyOfferHistoryBrowse = ""
+	r.showTech = false
+	r.techCursor = 0
+	r.techDragging = false
+	r.showTrade = false
+	r.tradeScroll = 0
+	r.tradeFactionFocus = 0
+	r.tradeGoodFocus = 0
+	r.tradeHoverIdx = -1
+	r.tradeCenterIdx = -1
+	r.mapMode = MapModeNormal
+	r.CloseEventCodex()
+	r.eventDetail = ""
+	r.showVictoryDetail = false
+	r.victoryDetailScroll = 0
+}
+
+func (r *Renderer) worldInputLockedByPhase() bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	return r.gs.Phase == state.PhaseAITurn || r.gs.Phase == state.PhaseTurnResolution
 }
 
 func (r *Renderer) currentEventCodexEntries() []EventCodexEntry {
@@ -1001,6 +1084,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawDiplomacyOfferDialog(screen, offerIdx)
 	}
 
+	if r.battleReport.show {
+		drawBattleReportPopup(screen, r.battleReport.data)
+	}
+
 	if r.showEventCodex {
 		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus, r.eventCodexScroll)
 	}
@@ -1071,7 +1158,7 @@ func (r *Renderer) tradeOverlayVisible() bool {
 	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
 		return false
 	}
-	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.eventDetail != "" {
+	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -7089,6 +7176,16 @@ func (r *Renderer) HandleInput() InputAction {
 	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
 		return r.handleDiplomacyOfferInput(offerIdx)
 	}
+	if r.battleReport.show {
+		mx, my := ebiten.CursorPosition()
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
+			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
+			(battleReportCloseHit(float64(mx), float64(my)) || battleReportContinueHit(float64(mx), float64(my)) ||
+				!battleReportPopupHit(float64(mx), float64(my)))) {
+			r.HideBattleReport()
+		}
+		return InputAction{}
+	}
 
 	// Oyun sonu ekranı inputu
 	if r.gs.Phase == state.PhaseGameOver {
@@ -7210,6 +7307,12 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.gs.Phase == state.PhaseEditMode {
 		r.ensureWorldMap()
 		return r.handleEditModeInput()
+	}
+	if r.worldInputLockedByPhase() {
+		if r.keyJustPressed(ebiten.KeyF11) {
+			ebiten.SetFullscreen(!ebiten.IsFullscreen())
+		}
+		return InputAction{}
 	}
 
 	r.ensureWorldMap()
@@ -8210,7 +8313,7 @@ func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *wo
 		return nil, nil, nil, false
 	}
 	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.showHistoricalEvent ||
-		r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
+		r.battleReport.show || r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
 		r.showTech || r.showTrade {
 		return nil, nil, nil, false
 	}
@@ -8821,19 +8924,21 @@ func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.Inp
 	historyLayout := diplomacyOfferLayoutForScreen()
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if input.LeftJustPressed {
-		if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, historyLayout.historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
-			r.diplomacyOfferHistoryBrowse = target
-			r.showDiplomacy = true
-			r.diplomacyTargetFaction = target
-			r.diplomacyActionFocus = actionFocus
-			for i, fid := range factions {
-				if fid == target {
-					r.diplomacyFocus = i
-					r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
-					break
+		if !r.worldInputLockedByPhase() {
+			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, historyLayout.historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+				r.diplomacyOfferHistoryBrowse = target
+				r.showDiplomacy = true
+				r.diplomacyTargetFaction = target
+				r.diplomacyActionFocus = actionFocus
+				for i, fid := range factions {
+					if fid == target {
+						r.diplomacyFocus = i
+						r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
+						break
+					}
 				}
+				return InputAction{}
 			}
-			return InputAction{}
 		}
 		if r.applyDiplomacyHistoryFilterHit(historyLayout.historyRect, input.MouseX, input.MouseY) {
 			return InputAction{}

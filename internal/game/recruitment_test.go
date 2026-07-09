@@ -150,6 +150,140 @@ func TestApplyProductionTicksCompletesAIUnitOrder(t *testing.T) {
 	}
 }
 
+func TestApplyProductionTicksUsesBarracksLevelAsLandTurnCapacity(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     0,
+		Regions: map[world.RegionID]*world.Region{
+			"r1": {ID: "r1", OwnerID: "p1", Buildings: []string{"barracks", "barracks"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"militia": {ID: "militia", NameTR: "Milis"},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 1},
+			{ID: "prod_2", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 1},
+			{ID: "prod_3", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	results := g.applyProductionTicks()
+
+	if len(results) != 2 {
+		t.Fatalf("2 üretim sonucu bekleniyordu, got=%d", len(results))
+	}
+	if results[0].delayed || results[1].delayed {
+		t.Fatalf("ilk iki kara üretimi tamamlanmalıydı, results=%+v", results)
+	}
+	if got := len(gs.ProductionQueue); got != 1 {
+		t.Fatalf("bir emir sırada kalmalıydı, got=%d", got)
+	}
+	if gs.ProductionQueue[0].TurnsLeft != 1 {
+		t.Fatalf("bekleyen emir tur sayısını korumalıydı, got=%d", gs.ProductionQueue[0].TurnsLeft)
+	}
+	armyRef := gs.Armies["army_p1_1"]
+	if armyRef == nil || len(armyRef.Units) != 2 {
+		t.Fatalf("aynı turda 2 kara birimi tamamlanmalıydı, army=%+v", armyRef)
+	}
+}
+
+func TestApplyProductionTicksSeparatesBarracksAndPortTurnCapacity(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     0,
+		Regions: map[world.RegionID]*world.Region{
+			"r1":   {ID: "r1", OwnerID: "p1", Buildings: []string{"barracks", "port", "port"}, Neighbors: []world.RegionID{"sea1"}},
+			"sea1": {ID: "sea1", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"militia":   {ID: "militia", NameTR: "Milis"},
+			"transport": {ID: "transport", NameTR: "Nakliye Gemisi", RequiredBldg: "port"},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 1},
+			{ID: "prod_2", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "transport", TurnsLeft: 1},
+			{ID: "prod_3", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "transport", TurnsLeft: 1},
+			{ID: "prod_4", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "transport", TurnsLeft: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	results := g.applyProductionTicks()
+
+	if len(results) != 3 {
+		t.Fatalf("3 üretim sonucu bekleniyordu, got=%d", len(results))
+	}
+	if results[0].delayed || results[1].delayed || results[2].delayed {
+		t.Fatalf("kışla 1 + liman 2 kapasitesiyle ilk 3 üretim tamamlanmalıydı, results=%+v", results)
+	}
+	if got := len(gs.ProductionQueue); got != 1 {
+		t.Fatalf("bir deniz emri sırada kalmalıydı, got=%d", got)
+	}
+	if gs.ProductionQueue[0].TurnsLeft != 1 {
+		t.Fatalf("bekleyen deniz emri tur sayısını korumalıydı, got=%d", gs.ProductionQueue[0].TurnsLeft)
+	}
+	landArmy := gs.Armies["army_p1_1"]
+	if landArmy == nil || len(landArmy.Units) != 1 || landArmy.Units[0].TypeID != "militia" {
+		t.Fatalf("kara birimi tamamlanmalıydı, army=%+v", landArmy)
+	}
+	fleet := gs.Armies["fleet_p1_2"]
+	if fleet == nil || len(fleet.Units) != 2 || !fleet.IsNaval || fleet.RegionID != "sea1" {
+		t.Fatalf("aynı turda 2 deniz birimi tamamlanmalıydı, fleet=%+v", fleet)
+	}
+}
+
+func TestApplyProductionTicksOnlyActiveCapacityAdvancesTurns(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"r1": {ID: "r1", OwnerID: "p1", Buildings: []string{"barracks", "barracks", "barracks"}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", NameTR: "Piyade", TurnsRequired: 3},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+			{ID: "prod_2", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+			{ID: "prod_3", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+			{ID: "prod_4", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+			{ID: "prod_5", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+			{ID: "prod_6", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "infantry", TurnsLeft: 3},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	results := g.applyProductionTicks()
+
+	if len(results) != 0 {
+		t.Fatalf("henüz tamamlanan üretim olmamalıydı, results=%+v", results)
+	}
+	if got := len(gs.ProductionQueue); got != 6 {
+		t.Fatalf("tüm emirler kuyrukta kalmalıydı, got=%d", got)
+	}
+	for i := 0; i < 3; i++ {
+		if gs.ProductionQueue[i].TurnsLeft != 2 {
+			t.Fatalf("aktif slotlardaki ilk 3 emir ilerlemeliydi, index=%d got=%d", i, gs.ProductionQueue[i].TurnsLeft)
+		}
+	}
+	for i := 3; i < 6; i++ {
+		if gs.ProductionQueue[i].TurnsLeft != 3 {
+			t.Fatalf("bekleyen emir tur sayısını korumalıydı, index=%d got=%d", i, gs.ProductionQueue[i].TurnsLeft)
+		}
+	}
+}
+
 func TestRecruitSpecificIgnoresGarrisonArmyForLimitAndCompletion(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

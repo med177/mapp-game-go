@@ -24,7 +24,11 @@ var (
 	soundEnabled = true
 	soundVolume  = 0.35
 	soundGains   = map[string]float64{
-		"combat": 0.1,
+		"combat":            0.1,
+		"battle_land":       0.1,
+		"battle_naval":      0.1,
+		"battle_amphibious": 0.1,
+		"battle_siege":      0.1,
 	}
 
 	musicEnabled      = true
@@ -117,6 +121,11 @@ func PlaySound(name string) {
 	player := audioContext.NewPlayerFromBytes(pcmData)
 	player.SetVolume(soundVolume * soundGain(name))
 	player.Play()
+}
+
+func HasSound(name string) bool {
+	_, ok := soundCache[name]
+	return ok
 }
 
 func soundGain(name string) float64 {

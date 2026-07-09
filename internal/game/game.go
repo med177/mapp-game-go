@@ -481,9 +481,11 @@ func (g *Game) startAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	camera := g.renderer.CameraSnapshot()
+	g.renderer.PrepareForTurnAdvance()
 	g.aiTurn = &aiTurnState{
 		order:        g.orderedAIFactions(),
-		camera:       g.renderer.CameraSnapshot(),
+		camera:       camera,
 		cameraLocked: true,
 	}
 	g.gs.Phase = state.PhaseAITurn
@@ -2722,20 +2724,27 @@ func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s emri iptal edildi. İade: %s", utype.NameTR, refund.ShortTR()))
 }
 
-func (g *Game) regionUnitProductionCapacity(region *world.Region) int {
-	if region == nil || region.IsSea {
+func (g *Game) regionUnitProductionCapacity(region *world.Region, unitTypeID string) int {
+	if g == nil || g.gs == nil {
 		return 0
 	}
-	capacity := region.Population / 100
-	if capacity < 1 {
-		capacity = 1
-	}
-	for _, bid := range region.Buildings {
-		if bid == "barracks" {
-			capacity++
+	return state.UnitProductionLimit(region, g.gs.UnitTypes[unitTypeID])
+}
+
+func (g *Game) productionCapacityLane(unitTypeID string) string {
+	if g != nil && g.gs != nil {
+		if utype := g.gs.UnitTypes[unitTypeID]; utype != nil && utype.RequiredBldg == "port" {
+			return "port"
 		}
 	}
-	return capacity
+	return "barracks"
+}
+
+func (g *Game) productionCapacityReason(unitTypeID string) string {
+	if g.productionCapacityLane(unitTypeID) == "port" {
+		return "liman tur limiti"
+	}
+	return "kışla tur limiti"
 }
 
 func (g *Game) fleetHasTransportCapacity(fleet *army.Army, unitCount int) bool {
@@ -2919,6 +2928,8 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			OwnerID: fleet.OwnerID,
 			Units:   append([]army.Unit(nil), fleet.EmbarkedUnits...),
 		}
+		attackerBefore := snapshotBattleArmy(landing, g.gs.UnitTypes)
+		defenderBefore := snapshotBattleArmy(enemyArmy, g.gs.UnitTypes)
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
@@ -2932,17 +2943,47 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			g.spawnDisembarkedArmy(fleet.OwnerID, target, landing.Units)
 			collapse := g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
 			g.renderer.MarkMapDirty()
-			g.renderer.ShowCombatResult(fmt.Sprintf("Çıkarma savaşı kazanıldı (%s): düşman kaybı %d, çıkarma kaybı %d.", result.Description, result.DefenderLost, result.AttackerLost))
-			g.renderer.AddEvent(fmt.Sprintf("Amfibi zafer: %s (%d/%d kayıp)", targetRegion.NameTR, result.AttackerLost, result.DefenderLost))
+			g.presentBattleReport(g.makeBattleReport(
+				render.BattleSceneAmphibious,
+				targetRegion.NameTR,
+				battleStance,
+				result.Description,
+				"Kıyı başı kuruldu, savunma kırıldı ve bölge ele geçirildi.",
+				"Çıkarma Gücü",
+				"Kıyı Savunması",
+				g.factionNameTR(fleet.OwnerID),
+				g.factionNameTR(enemyArmy.OwnerID),
+				attackerBefore,
+				landing,
+				defenderBefore,
+				enemyArmy,
+			))
 			g.announceElimination(collapse)
 			return true
 		}
 
-		g.renderer.ShowCombatResult(fmt.Sprintf("Çıkarma savaşı kaybedildi (%s): düşman kaybı %d, çıkarma kaybı %d.", result.Description, result.DefenderLost, result.AttackerLost))
-		g.renderer.AddEvent(fmt.Sprintf("Amfibi yenilgi: %s (%d/%d kayıp)", targetRegion.NameTR, result.AttackerLost, result.DefenderLost))
+		g.presentBattleReport(g.makeBattleReport(
+			render.BattleSceneAmphibious,
+			targetRegion.NameTR,
+			battleStance,
+			result.Description,
+			"Çıkarma sahilde kırıldı; birlikler tutunamadı.",
+			"Çıkarma Gücü",
+			"Kıyı Savunması",
+			g.factionNameTR(fleet.OwnerID),
+			g.factionNameTR(enemyArmy.OwnerID),
+			attackerBefore,
+			landing,
+			defenderBefore,
+			enemyArmy,
+		))
 		return true
 	}
 
+	landingBefore := snapshotBattleArmy(&army.Army{
+		OwnerID: fleet.OwnerID,
+		Units:   append([]army.Unit(nil), fleet.EmbarkedUnits...),
+	}, g.gs.UnitTypes)
 	g.disembarkFleet(fleet, target)
 	fleet.MovePoints--
 	isAlliedDisembark = false
@@ -2953,10 +2994,24 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		}
 	}
 	if targetRegion.OwnerID != fleet.OwnerID && !isAlliedDisembark {
+		defenderFaction := g.factionNameTR(targetRegion.OwnerID)
 		collapse := g.applyConquestWithNavalEviction(targetRegion, fleet.OwnerID)
 		g.renderer.MarkMapDirty()
-		g.renderer.ShowCombatResult("Çıkarma tamamlandı: kıyı bölgesi savaşsız ele geçirildi.")
-		g.renderer.AddEvent(fmt.Sprintf("Amfibi fetih: %s", targetRegion.NameTR))
+		g.presentBattleReport(g.makeBattleReportFromSnapshots(
+			render.BattleSceneAmphibious,
+			targetRegion.NameTR,
+			"",
+			"Direniş Görülmedi",
+			"Kıyıda savunan ordu yoktu; çıkarma savaşsız tamamlandı ve bölge ele geçirildi.",
+			"Çıkarma Gücü",
+			"Direniş Yok",
+			g.factionNameTR(fleet.OwnerID),
+			defenderFaction,
+			landingBefore,
+			landingBefore,
+			battleArmySnapshot{},
+			battleArmySnapshot{},
+		))
 		g.announceElimination(collapse)
 		return true
 	}
@@ -3388,6 +3443,8 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		if combinedDef == nil {
 			combinedDef = enemyArmy
 		}
+		attackerBefore := snapshotBattleArmy(a, g.gs.UnitTypes)
+		defenderBefore := snapshotBattleArmy(combinedDef, g.gs.UnitTypes)
 		if liftedSiegeRegion != "" {
 			g.clearSiege(liftedSiegeRegion)
 		}
@@ -3401,6 +3458,19 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		}
 		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
 		var collapse eliminationResult
+		scene := render.BattleSceneLand
+		attackerLabel := "Saldıran Ordu"
+		defenderLabel := "Savunma Hattı"
+		if navalSeaMove {
+			scene = render.BattleSceneNaval
+			attackerLabel = "Taarruz Filosu"
+			defenderLabel = "Savunma Filosu"
+		}
+		defenderFaction := g.factionNameTR(enemyArmy.OwnerID)
+		if len(defSourceIDs) > 1 {
+			defenderFaction = fmt.Sprintf("Birleşik Savunma (%d ordu)", len(defSourceIDs))
+		}
+		outcomeDetail := "Saldırı püskürtüldü."
 
 		if result.AttackerWins {
 			if len(defSourceIDs) > 0 {
@@ -3415,22 +3485,49 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 				a.MovePoints--
 				g.renderer.MarkMapDirty()
+				if navalSeaMove {
+					outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+				} else {
+					outcomeDetail = "Savunma yarıldı, bölge ele geçirildi."
+				}
 			} else {
 				delete(g.gs.Armies, aid)
+				if navalSeaMove {
+					outcomeDetail = "Düşman filo dağıldı fakat taarruz filosu da dağıldı."
+				} else {
+					outcomeDetail = "Savunma çöktü fakat saldırı gücü tükendi; bölge elde tutulamadı."
+				}
 			}
 		} else {
 			// Saldıran yenildi — yerinde kalır
 			if len(a.Units) == 0 {
 				delete(g.gs.Armies, aid)
 			}
+			if navalSeaMove {
+				outcomeDetail = "Taarruz filosu geri çekildi."
+			}
 		}
 
-		msg := fmt.Sprintf("%s [%s]: +%d / -%d birim", result.Description, combat.BattleStanceLabelTR(battleStance), result.DefenderLost, result.AttackerLost)
-		g.renderer.ShowCombatResult(msg)
+		g.presentBattleReport(g.makeBattleReport(
+			scene,
+			targetRegion.NameTR,
+			battleStance,
+			result.Description,
+			outcomeDetail,
+			attackerLabel,
+			defenderLabel,
+			g.factionNameTR(a.OwnerID),
+			defenderFaction,
+			attackerBefore,
+			a,
+			defenderBefore,
+			combinedDef,
+		))
 		g.announceElimination(collapse)
 
 	} else {
 		// --- Savaşsız hareket ve bölge ele geçirme ---
+		attackerBefore := snapshotBattleArmy(a, g.gs.UnitTypes)
 		if liftedSiegeRegion != "" {
 			g.clearSiege(liftedSiegeRegion)
 		}
@@ -3448,8 +3545,24 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		}
 		// Müttefik bölgesi fethedilemez, sadece içinden geçilir.
 		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID && !isAlliedRegion {
+			defenderFaction := g.factionNameTR(targetRegion.OwnerID)
 			collapse := g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
 			g.renderer.MarkMapDirty()
+			g.presentBattleReport(g.makeBattleReportFromSnapshots(
+				render.BattleSceneLand,
+				targetRegion.NameTR,
+				"",
+				"Direniş Görülmedi",
+				"Bölgede savunan ordu yoktu; ilerleme savaşsız şekilde tamamlandı ve bölge ele geçirildi.",
+				"İlerleyen Ordu",
+				"Direniş Yok",
+				g.factionNameTR(a.OwnerID),
+				defenderFaction,
+				attackerBefore,
+				snapshotBattleArmy(a, g.gs.UnitTypes),
+				battleArmySnapshot{},
+				battleArmySnapshot{},
+			))
 			g.announceElimination(collapse)
 		}
 		// Dost bölgede başka ordu varsa birleştir

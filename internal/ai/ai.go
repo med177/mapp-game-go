@@ -652,6 +652,54 @@ func aiPendingUnitCountByRegion(gs *state.GameState, rid world.RegionID, fid fac
 	return count
 }
 
+func aiProductionLane(unitType *army.UnitType) string {
+	if unitType == nil {
+		return "barracks"
+	}
+	if unitType.RequiredBldg == "port" {
+		return "port"
+	}
+	switch unitType.Category {
+	case army.CategoryNavalWar, army.CategoryNavalTrans, army.CategoryNavalTrade:
+		return "port"
+	}
+	return "barracks"
+}
+
+func aiPendingUnitCountByRegionInLane(gs *state.GameState, rid world.RegionID, fid faction.FactionID, lane string) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.RegionID != rid || order.FactionID != string(fid) {
+			continue
+		}
+		if aiProductionLane(gs.UnitTypes[order.TypeID]) != lane {
+			continue
+		}
+		count++
+	}
+	return count
+}
+
+func aiLaneRemainingCapacity(gs *state.GameState, rid world.RegionID, fid faction.FactionID, unitType *army.UnitType) int {
+	if gs == nil {
+		return 0
+	}
+	region := gs.Regions[rid]
+	capacity := state.LandUnitProductionLimit(region)
+	if aiProductionLane(unitType) == "port" {
+		capacity = state.NavalUnitProductionLimit(region)
+	}
+	if capacity <= 0 {
+		return 0
+	}
+	pending := aiPendingUnitCountByRegionInLane(gs, rid, fid, aiProductionLane(unitType))
+	remaining := capacity - pending
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
 func aiPendingNavalUnitCount(gs *state.GameState, seaRegion world.RegionID, fid faction.FactionID) int {
 	count := 0
 	for _, order := range gs.ProductionQueue {
@@ -676,18 +724,36 @@ func aiPendingNavalUnitCount(gs *state.GameState, seaRegion world.RegionID, fid 
 	return count
 }
 
-func aiPendingNavalOrderCount(gs *state.GameState, fid faction.FactionID) int {
-	count := 0
+func aiPendingNavalFleetCount(gs *state.GameState, fid faction.FactionID) int {
+	seenSeaRegions := make(map[world.RegionID]struct{})
 	for _, order := range gs.ProductionQueue {
 		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
 			continue
 		}
 		utype, ok := gs.UnitTypes[order.TypeID]
-		if ok && utype.RequiredBldg == "port" {
-			count++
+		if ok && aiProductionLane(utype) == "port" {
+			region := gs.Regions[order.RegionID]
+			if region == nil {
+				continue
+			}
+			seaRegion := aiSeaNeighbor(gs, region)
+			if seaRegion == "" {
+				continue
+			}
+			hasExistingFleet := false
+			for _, a := range gs.Armies {
+				if a.OwnerID == string(fid) && a.IsNaval && a.RegionID == seaRegion {
+					hasExistingFleet = true
+					break
+				}
+			}
+			if hasExistingFleet {
+				continue
+			}
+			seenSeaRegions[seaRegion] = struct{}{}
 		}
 	}
-	return count
+	return len(seenSeaRegions)
 }
 
 func aiPendingTransportOrderCount(gs *state.GameState, fid faction.FactionID) int {
@@ -968,7 +1034,7 @@ func aiRecruitOneWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]
 	if aiPendingUnitCountByRegion(gs, recruitRegion, fid) >= aiMaxRegionQueue {
 		return false
 	}
-	if !aiCanQueueLandUnit(gs, fid, recruitRegion) {
+	if !aiCanQueueLandUnit(gs, fid, recruitRegion, utype) {
 		return false
 	}
 
@@ -989,6 +1055,9 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 	if requiredLevel <= 0 {
 		requiredLevel = 1
 	}
+	bestRemaining := -1
+	bestLevel := -1
+	bestRegionID := world.RegionID("")
 	for _, r := range gs.Regions {
 		if r == nil || r.OwnerID != string(fid) || r.IsSea || r.IsLocked {
 			continue
@@ -996,13 +1065,28 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 		if aiBuildingLevel(r, requiredBuilding) < requiredLevel {
 			continue
 		}
-		return r.ID
+		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
+			continue
+		}
+		if !aiCanQueueLandUnit(gs, fid, r.ID, utype) {
+			continue
+		}
+		remaining := aiLaneRemainingCapacity(gs, r.ID, fid, utype)
+		if remaining <= 0 {
+			continue
+		}
+		level := aiBuildingLevel(r, requiredBuilding)
+		if remaining > bestRemaining || (remaining == bestRemaining && (level > bestLevel || (level == bestLevel && (bestRegionID == "" || string(r.ID) < string(bestRegionID))))) {
+			bestRemaining = remaining
+			bestLevel = level
+			bestRegionID = r.ID
+		}
 	}
-	return ""
+	return bestRegionID
 }
 
-func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID) bool {
-	pendingInRegion := aiPendingUnitCountByRegion(gs, rid, fid)
+func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID, unitType *army.UnitType) bool {
+	pendingInRegion := aiPendingUnitCountByRegionInLane(gs, rid, fid, aiProductionLane(unitType))
 	for _, a := range gs.Armies {
 		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval || a.IsGarrison {
 			continue
@@ -2511,7 +2595,7 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 			fleetCount++
 		}
 	}
-	fleetCount += aiPendingNavalOrderCount(gs, fid)
+	fleetCount += aiPendingNavalFleetCount(gs, fid)
 	if fleetCount >= fleetLimit {
 		return
 	}
@@ -2543,6 +2627,22 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 		if seaRegion == "" {
 			continue
 		}
+		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
+			continue
+		}
+		if aiLaneRemainingCapacity(gs, r.ID, fid, transportType) <= 0 {
+			continue
+		}
+		currentUnits := 0
+		for _, a := range gs.Armies {
+			if a.RegionID == seaRegion && a.OwnerID == string(fid) && a.IsNaval {
+				currentUnits = len(a.Units)
+				break
+			}
+		}
+		if currentUnits+aiPendingNavalUnitCount(gs, seaRegion, fid) >= army.MaxArmySize {
+			continue
+		}
 		score := aiSeaPressure(gs, string(fid), seaRegion)
 		if score > bestScore {
 			bestScore = score
@@ -2563,19 +2663,6 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 		Stone:  transportType.StoneCost,
 	}
 	if !aiCanAffordWithReserve(f, shipCost) {
-		return
-	}
-	currentUnits := 0
-	for _, a := range gs.Armies {
-		if a.RegionID == bestSeaRegion && a.OwnerID == string(fid) && a.IsNaval {
-			currentUnits = len(a.Units)
-			break
-		}
-	}
-	if currentUnits+aiPendingNavalUnitCount(gs, bestSeaRegion, fid) >= army.MaxArmySize {
-		return
-	}
-	if aiPendingUnitCountByRegion(gs, bestRegion.ID, fid) >= aiMaxRegionQueue {
 		return
 	}
 
@@ -2678,6 +2765,9 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 			continue
 		}
 		if aiPendingUnitCountByRegion(gs, candidate.region.ID, fid) >= aiMaxRegionQueue {
+			continue
+		}
+		if aiLaneRemainingCapacity(gs, candidate.region.ID, fid, warshipType) <= 0 {
 			continue
 		}
 		currentWarshipUnits := 0

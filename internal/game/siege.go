@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -423,12 +424,18 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		defender = g.virtualSiegeGarrison(targetRegion)
 		virtualDefense = true
 	}
+	attackerBefore := snapshotBattleArmy(attacker, g.gs.UnitTypes)
+	defenderBefore := snapshotBattleArmy(defender, g.gs.UnitTypes)
 	atkMods := techModsFor(g.gs, attacker.OwnerID)
 	defMods := combat.TechMods{}
 	if virtualDefense {
 		defMods = techModsFor(g.gs, targetRegion.OwnerID)
 	} else {
 		defMods = techModsFor(g.gs, defender.OwnerID)
+	}
+	defenderLabel := "Savunma Hattı"
+	if virtualDefense {
+		defenderLabel = "Garnizon"
 	}
 	defMods.DefenseMod += siegeDefenseBonus(fortLevel, breachLevel)
 	result := combat.ResolveBattleWithContextPlan(attacker, defender, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
@@ -448,11 +455,21 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 				delete(g.gs.Armies, aid)
 				g.clearSiegesByArmy(aid)
 			}
-			msg := fmt.Sprintf("Genel hücum surları zorladı ama gedik olmadan %s alınamadı (%s).", targetRegion.NameTR, result.Description)
-			if g.renderer != nil {
-				g.renderer.ShowCombatResult(msg)
-				g.renderer.AddEvent(fmt.Sprintf("[KUSATMA] %s Düşman kaybı %d, saldıran kaybı %d.", msg, result.DefenderLost, result.AttackerLost))
-			}
+			g.presentBattleReport(g.makeBattleReport(
+				render.BattleSceneSiege,
+				targetRegion.NameTR,
+				stance,
+				result.Description,
+				"Surlar zorlandı fakat gedik olmadan içeri girilemedi.",
+				"Hücum Gücü",
+				defenderLabel,
+				g.factionNameTR(attacker.OwnerID),
+				g.factionNameTR(targetRegion.OwnerID),
+				attackerBefore,
+				attacker,
+				defenderBefore,
+				defender,
+			))
 			return false
 		}
 		if len(attacker.Units) > 0 {
@@ -464,11 +481,25 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 			delete(g.gs.Armies, aid)
 			g.clearSiege(target)
 		}
-		msg := fmt.Sprintf("Kuşatma hücumu başarılı: %s (%s).", targetRegion.NameTR, result.Description)
-		if g.renderer != nil {
-			g.renderer.ShowCombatResult(msg)
-			g.renderer.AddEvent(fmt.Sprintf("[KUSATMA] %s Düşman kaybı %d, saldıran kaybı %d.", msg, result.DefenderLost, result.AttackerLost))
+		outcomeDetail := "Tahkimat düştü ve bölge ele geçirildi."
+		if len(attacker.Units) == 0 {
+			outcomeDetail = "Tahkimat yarıldı fakat hücum gücü tükendi; bölge alınamadı."
 		}
+		g.presentBattleReport(g.makeBattleReport(
+			render.BattleSceneSiege,
+			targetRegion.NameTR,
+			stance,
+			result.Description,
+			outcomeDetail,
+			"Hücum Gücü",
+			defenderLabel,
+			g.factionNameTR(attacker.OwnerID),
+			g.factionNameTR(targetRegion.OwnerID),
+			attackerBefore,
+			attacker,
+			defenderBefore,
+			defender,
+		))
 		g.announceElimination(collapse)
 		return true
 	}
@@ -477,11 +508,21 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		delete(g.gs.Armies, aid)
 		g.clearSiegesByArmy(aid)
 	}
-	if g.renderer != nil {
-		msg := fmt.Sprintf("Kuşatma hücumu püskürtüldü: %s (%s).", targetRegion.NameTR, result.Description)
-		g.renderer.ShowCombatResult(msg)
-		g.renderer.AddEvent(fmt.Sprintf("[KUSATMA] %s Düşman kaybı %d, saldıran kaybı %d.", msg, result.DefenderLost, result.AttackerLost))
-	}
+	g.presentBattleReport(g.makeBattleReport(
+		render.BattleSceneSiege,
+		targetRegion.NameTR,
+		stance,
+		result.Description,
+		"Genel hücum püskürtüldü; tahkimat elde kaldı.",
+		"Hücum Gücü",
+		defenderLabel,
+		g.factionNameTR(attacker.OwnerID),
+		g.factionNameTR(targetRegion.OwnerID),
+		attackerBefore,
+		attacker,
+		defenderBefore,
+		defender,
+	))
 	return false
 }
 

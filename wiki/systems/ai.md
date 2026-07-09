@@ -187,9 +187,11 @@ Kıyı bölgesi varsa:
 1. Limansız kıyı bölgesine liman üretim emri aç
 2. Filo limiti artık dinamiktir:
    `1` temel + `1` ek kıyı baskısı (3+ kıyı bölgesi) + savaşta `1` ek filo, üst sınır `3`
+   Aynı denize bağlı birden fazla pending gemi emri, filo limiti hesabında tek yaklaşan filo olarak değerlendirilir.
 3. Yeni `transport` emri, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına bağlı limanda kuyruğa girer
 4. Aynı turda transport hattı ya da mevcut transport filosu olan savaşçı AI, deniz baskısı ve birden fazla cephe tespit ederse uygun limit dahilinde birden çok eskort `warship` emri de kuyruklar
 5. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı komşu denizde filo oluşturur veya mevcut filoya birim ekler
+6. AI artık liman hattı doygunsa aynı kıyıya kör yeni emir yığmaz; mümkünse başka serbest liman hattına dağılır, hepsi doluysa yeni deniz emri açmaz
 
 ---
 
@@ -240,6 +242,7 @@ Queue davranışı:
 - Pending kara birimleri manpower hesabına dahil edilir.
 - AI gerekli teknoloji, bina ve bina seviyesi olmayan birimi seçmez.
 - Bölge başına pending üretim emri `20` ile sınırlıdır.
+- AI kara recruit seçiminde yalnız ilk uygun bölgeyi almaz; kışla throughput'u dolu bölgeyi atlayıp aynı tur kapasitesi kalan başka uygun bölgeye dağılır. Tüm uygun kışla hatları doluysa yeni kara emri açmaz.
 - Mevcut ordu doluysa üretim tamamlandığında oyuncu ile aynı `completeLandUnit()` yolu yeni ordu oluşturabilir.
 
 ---

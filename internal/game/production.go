@@ -85,18 +85,17 @@ func (g *Game) cancelProductionByID(orderID, kind string, rid world.RegionID, ow
 }
 
 func (g *Game) applyProductionTicks() []productionResult {
+	type productionCapacityKey struct {
+		regionID world.RegionID
+		lane     string
+	}
+
 	queue := g.gs.ProductionQueue
 	remaining := queue[:0]
 	var results []productionResult
-	completedUnitsByRegion := make(map[world.RegionID]int)
+	progressedUnitsByLane := make(map[productionCapacityKey]int)
 
 	for _, order := range queue {
-		order.TurnsLeft--
-		if order.TurnsLeft > 0 {
-			remaining = append(remaining, order)
-			continue
-		}
-
 		result := productionResult{
 			factionID: faction.FactionID(order.FactionID),
 			regionID:  order.RegionID,
@@ -111,30 +110,47 @@ func (g *Game) applyProductionTicks() []productionResult {
 			results = append(results, result)
 			continue
 		}
-		if region.IsLocked {
-			order.TurnsLeft = 1
-			remaining = append(remaining, order)
-			result.delayed = true
-			result.reason = "bölge kilitli"
-			results = append(results, result)
-			continue
-		}
 
 		switch order.Kind {
 		case productionKindBuilding:
+			order.TurnsLeft--
+			if order.TurnsLeft > 0 {
+				remaining = append(remaining, order)
+				continue
+			}
+			if region.IsLocked {
+				order.TurnsLeft = 1
+				remaining = append(remaining, order)
+				result.delayed = true
+				result.reason = "bölge kilitli"
+				results = append(results, result)
+				continue
+			}
 			if !g.completeBuilding(region, order.TypeID) {
 				result.canceled = true
 				result.reason = "bina zaten tamamlanmış"
 			}
 			results = append(results, result)
 		case productionKindUnit:
-			capacity := g.regionUnitProductionCapacity(region)
-			if completedUnitsByRegion[region.ID] >= capacity {
-				order.TurnsLeft = 1
+			capacityKey := productionCapacityKey{regionID: region.ID, lane: g.productionCapacityLane(order.TypeID)}
+			capacity := g.regionUnitProductionCapacity(region, order.TypeID)
+			if progressedUnitsByLane[capacityKey] >= capacity {
 				remaining = append(remaining, order)
-				result.delayed = true
-				result.reason = "bolgesel uretim limiti"
-				results = append(results, result)
+				continue
+			}
+			if region.IsLocked {
+				remaining = append(remaining, order)
+				if order.TurnsLeft <= 1 {
+					result.delayed = true
+					result.reason = "bölge kilitli"
+					results = append(results, result)
+				}
+				continue
+			}
+			progressedUnitsByLane[capacityKey]++
+			order.TurnsLeft--
+			if order.TurnsLeft > 0 {
+				remaining = append(remaining, order)
 				continue
 			}
 			if reason := g.completeUnit(region, faction.FactionID(order.FactionID), order.TypeID); reason != "" {
@@ -142,8 +158,6 @@ func (g *Game) applyProductionTicks() []productionResult {
 				remaining = append(remaining, order)
 				result.delayed = true
 				result.reason = reason
-			} else {
-				completedUnitsByRegion[region.ID]++
 			}
 			results = append(results, result)
 		default:

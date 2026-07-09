@@ -140,6 +140,8 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 `CurrentLandArmies(fid) int` — fraksiyonun aktif saha ordusu sayısı; `IsGarrison=true` kara orduları bu limite dahil edilmez
 
+`LandUnitProductionLimit(region)` / `NavalUnitProductionLimit(region)` / `UnitProductionLimit(region, unitType)` — aynı tur tamamlanabilecek üretim adedinin ortak kaynak noktası; kara hattı `max(1,kışla seviyesi)`, deniz hattı `liman seviyesi`
+
 ---
 
 ## Veri Yükleme Akışı
