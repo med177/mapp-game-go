@@ -49,6 +49,7 @@ func TestPrepareForTurnAdvanceClosesPanelsAndResetsMapMode(t *testing.T) {
 		diplomacyActionFocus:        1,
 		diplomacyTargetFaction:      "ai_2",
 		diplomacyOfferHistoryBrowse: "ai_3",
+		diplomacyHistoryVisible:     true,
 		showTech:                    true,
 		techCursor:                  5,
 		techDragging:                true,
@@ -76,8 +77,8 @@ func TestPrepareForTurnAdvanceClosesPanelsAndResetsMapMode(t *testing.T) {
 	if r.showRecruitPanel || r.recruitUnitID != "" || r.recruitQty != 1 {
 		t.Fatalf("recruit state sifirlanmaliydi: show=%t unit=%q qty=%d", r.showRecruitPanel, r.recruitUnitID, r.recruitQty)
 	}
-	if r.showDiplomacy || r.diplomacyFocus != 0 || r.diplomacyScroll != 0 || r.diplomacyActionFocus != 0 || r.diplomacyTargetFaction != "" || r.diplomacyOfferHistoryBrowse != "" {
-		t.Fatalf("diplomasi state sifirlanmaliydi: show=%t focus=%d scroll=%d action=%d target=%q browse=%q", r.showDiplomacy, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse)
+	if r.showDiplomacy || r.diplomacyFocus != 0 || r.diplomacyScroll != 0 || r.diplomacyActionFocus != 0 || r.diplomacyTargetFaction != "" || r.diplomacyOfferHistoryBrowse != "" || r.diplomacyHistoryVisible {
+		t.Fatalf("diplomasi state sifirlanmaliydi: show=%t focus=%d scroll=%d action=%d target=%q browse=%q history=%t", r.showDiplomacy, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible)
 	}
 	if r.showTech || r.techCursor != 0 || r.techDragging {
 		t.Fatalf("tech state sifirlanmaliydi: show=%t cursor=%d dragging=%t", r.showTech, r.techCursor, r.techDragging)

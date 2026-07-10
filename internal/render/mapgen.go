@@ -11,6 +11,8 @@ import (
 	"os"
 	"sort"
 
+	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -22,6 +24,26 @@ const (
 	defaultWorldW = 2892
 	defaultWorldH = 1440
 )
+
+func borderAffiliationPriority(v uint8) int {
+	switch v {
+	case borderAffiliationEnemy:
+		return 3
+	case borderAffiliationPlayerRealm:
+		return 2
+	case borderAffiliationAlly:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func strongerBorderAffiliation(a, b uint8) uint8 {
+	if borderAffiliationPriority(b) > borderAffiliationPriority(a) {
+		return b
+	}
+	return a
+}
 
 const (
 	defaultShapeOffX   float64 = -530
@@ -48,22 +70,23 @@ const MapScale = 1
 
 // WorldMap ülke shape'lerinden üretilen dünya harita dokusunu yönetir.
 type WorldMap struct {
-	img               *ebiten.Image
-	basePixels        []byte
-	dispPixels        []byte
-	baseRegionAt      []uint16         // region paint baseline'i: override oncesi atama
-	regionAt          []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
-	regionIDs         []world.RegionID // regionIDs[0] = "" (boş)
-	regionIdx         map[world.RegionID]uint16
-	regionPx          map[world.RegionID][]int
-	regionAnchor      map[world.RegionID][2]int
-	settlementAnchor  map[settlementAnchorKey][2]int
-	primarySettlement map[world.RegionID][2]int
-	seaIdx            map[uint16]bool // deniz bölgesi indeksleri
-	hasBgImage        bool
-	ownerDirty        bool
-	selected          world.RegionID
-	currentMode       MapMode
+	img                *ebiten.Image
+	basePixels         []byte
+	dispPixels         []byte
+	baseRegionAt       []uint16         // region paint baseline'i: override oncesi atama
+	regionAt           []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
+	regionIDs          []world.RegionID // regionIDs[0] = "" (boş)
+	regionIdx          map[world.RegionID]uint16
+	regionPx           map[world.RegionID][]int
+	regionAnchor       map[world.RegionID][2]int
+	settlementAnchor   map[settlementAnchorKey][2]int
+	primarySettlement  map[world.RegionID][2]int
+	seaIdx             map[uint16]bool // deniz bölgesi indeksleri
+	hasBgImage         bool
+	ownerDirty         bool
+	selected           world.RegionID
+	currentMode        MapMode
+	diplomacySignature uint64
 }
 
 type countryShapeFile struct {
@@ -370,13 +393,15 @@ func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
 }
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode MapMode) {
-	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode {
+	diplomacySignature := borderDiplomacySignature(gs)
+	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode && wm.diplomacySignature == diplomacySignature {
 		return
 	}
 	wm.applyOwnership(gs, selected, mode)
 	wm.ownerDirty = false
 	wm.selected = selected
 	wm.currentMode = mode
+	wm.diplomacySignature = diplomacySignature
 }
 
 func (wm *WorldMap) RefreshAfterRegionAssignments(gs *state.GameState, selected world.RegionID, mode MapMode) {
@@ -1007,9 +1032,97 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 	}
 
 	wm.drawRegionBorders(gs, selected, mode)
+	wm.diplomacySignature = borderDiplomacySignature(gs)
 	if wm.img != nil {
 		wm.img.WritePixels(wm.dispPixels)
 	}
+}
+
+const (
+	borderAffiliationOther uint8 = iota
+	borderAffiliationAlly
+	borderAffiliationEnemy
+	borderAffiliationPlayerRealm
+)
+
+func borderHashString(s string) uint64 {
+	h := uint64(1469598103934665603)
+	for i := 0; i < len(s); i++ {
+		h ^= uint64(s[i])
+		h *= 1099511628211
+	}
+	return h
+}
+
+func borderDiplomacySignature(gs *state.GameState) uint64 {
+	if gs == nil {
+		return 0
+	}
+	signature := borderHashString(string(gs.PlayerFactionID))
+	for fid, f := range gs.Factions {
+		if f == nil {
+			continue
+		}
+		entry := borderHashString(string(fid)) ^ borderHashString(string(f.OverlordID))
+		if f.IsEliminated {
+			entry ^= 0x9e3779b97f4a7c15
+		}
+		signature ^= entry
+	}
+	for key, rel := range gs.Relations {
+		if rel == nil {
+			continue
+		}
+		signature ^= borderHashString(key) ^ borderHashString(string(rel.Stance))
+	}
+	return signature
+}
+
+func buildBorderDiplomacyContext(gs *state.GameState, regionIDs []world.RegionID) ([]faction.FactionID, []uint8) {
+	realmByRegion := make([]faction.FactionID, len(regionIDs))
+	affiliationByRegion := make([]uint8, len(regionIDs))
+	if gs == nil || gs.PlayerFactionID == "" {
+		return realmByRegion, affiliationByRegion
+	}
+
+	ownerRealms := make(map[string]faction.FactionID, len(gs.Factions))
+	for fid, f := range gs.Factions {
+		if f == nil || f.IsEliminated {
+			continue
+		}
+		root := diplomacy.RealmRoot(gs, fid)
+		if root == "" {
+			root = fid
+		}
+		ownerRealms[string(fid)] = root
+	}
+	playerRoot := ownerRealms[string(gs.PlayerFactionID)]
+	if playerRoot == "" {
+		playerRoot = gs.PlayerFactionID
+	}
+
+	for idx := 1; idx < len(regionIDs); idx++ {
+		region := gs.Regions[regionIDs[idx]]
+		if region == nil || region.IsSea || region.OwnerID == "" {
+			continue
+		}
+		root := ownerRealms[region.OwnerID]
+		if root == "" {
+			root = faction.FactionID(region.OwnerID)
+		}
+		realmByRegion[idx] = root
+		if root == playerRoot {
+			affiliationByRegion[idx] = borderAffiliationPlayerRealm
+		} else if rel := diplomacy.Relation(gs, playerRoot, root); rel != nil {
+			switch rel.Stance {
+			case faction.StanceAllied:
+				affiliationByRegion[idx] = borderAffiliationAlly
+			case faction.StanceWar:
+				affiliationByRegion[idx] = borderAffiliationEnemy
+			}
+		}
+	}
+	return realmByRegion, affiliationByRegion
 }
 
 func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID, mode MapMode) {
@@ -1023,6 +1136,16 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 		rid := wm.regionIDs[idx]
 		r := gs.Regions[rid]
 		return r == nil || r.IsSea
+	}
+	realmByRegion, affiliationByRegion := buildBorderDiplomacyContext(gs, wm.regionIDs)
+	isOutsideRealm := func(idx uint16, realm faction.FactionID) bool {
+		if isSeaOrEmpty(idx) {
+			return true
+		}
+		if int(idx) >= len(realmByRegion) {
+			return true
+		}
+		return realmByRegion[idx] != realm
 	}
 
 	// Pre-build region to trade center mapping
@@ -1059,25 +1182,15 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 				continue
 			}
 
-			// Seçili olmayan bölgeler için standart border mantığı:
-			// Komşu karalarla aramızda 1 px çizgi olması için sadece Sağ ve Alt'a border atıyoruz.
-			isBorder := rightIdx != curIdx || downIdx != curIdx
-
-			// Ancak Sol veya Üst komşumuz deniz ise, deniz bölgeleri border ÇİZMEDİĞİ için,
-			// kıyı şeridinin eksik kalmaması adına o yönlerde de border çizmeliyiz.
-			if !isBorder && leftIdx != curIdx {
-				if isSeaOrEmpty(leftIdx) {
+			if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+				isBorder := rightIdx != curIdx || downIdx != curIdx
+				if !isBorder && leftIdx != curIdx && isSeaOrEmpty(leftIdx) {
 					isBorder = true
 				}
-			}
-			if !isBorder && upIdx != curIdx {
-				if isSeaOrEmpty(upIdx) {
+				if !isBorder && upIdx != curIdx && isSeaOrEmpty(upIdx) {
 					isBorder = true
 				}
-			}
-
-			if isBorder {
-				if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
+				if isBorder {
 					curTC := regionTradeNode[cur]
 					var other world.RegionID
 					if rightIdx != curIdx && rightIdx != 0 {
@@ -1096,12 +1209,65 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 						// Aynı ticaret bölgesi içindeki idari bölge sınırı -> Çok silik ince kahverengi
 						wm.setOverlayPixel(pIdx, 35, 22, 10, 80)
 					}
-				} else {
-					wm.setOverlayPixel(pIdx, 35, 22, 10, 170)
 				}
+				continue
+			}
+
+			curRealm := realmByRegion[curIdx]
+			affiliation := affiliationByRegion[curIdx]
+			strongBoundary := false
+			if isOutsideRealm(rightIdx, curRealm) {
+				strongBoundary = true
+				if rightIdx != 0 && !isSeaOrEmpty(rightIdx) && int(rightIdx) < len(affiliationByRegion) {
+					affiliation = strongerBorderAffiliation(affiliation, affiliationByRegion[rightIdx])
+				}
+			}
+			if isOutsideRealm(downIdx, curRealm) {
+				strongBoundary = true
+				if downIdx != 0 && !isSeaOrEmpty(downIdx) && int(downIdx) < len(affiliationByRegion) {
+					affiliation = strongerBorderAffiliation(affiliation, affiliationByRegion[downIdx])
+				}
+			}
+			if isSeaOrEmpty(leftIdx) {
+				strongBoundary = true
+			}
+			if isSeaOrEmpty(upIdx) {
+				strongBoundary = true
+			}
+			if strongBoundary {
+				switch affiliation {
+				case borderAffiliationPlayerRealm:
+					wm.setDiplomaticBorderPixel(pIdx, 255, 205, 74)
+				case borderAffiliationAlly:
+					wm.setDiplomaticBorderPixel(pIdx, 82, 210, 166)
+				case borderAffiliationEnemy:
+					wm.setDiplomaticBorderPixel(pIdx, 218, 62, 54)
+				default:
+					wm.setDiplomaticBorderPixel(pIdx, 30, 18, 10)
+				}
+				continue
+			}
+
+			// Aynı devlet veya aynı vassal realm içindeki idari sınırlar geri planda kalır.
+			if rightIdx != curIdx || downIdx != curIdx {
+				wm.setSubtleBorderPixel(pIdx, 35, 22, 10, 52)
 			}
 		}
 	}
+}
+
+func (wm *WorldMap) setDiplomaticBorderPixel(pIdx int, r, g, b byte) {
+	wm.dispPixels[pIdx*4] = r
+	wm.dispPixels[pIdx*4+1] = g
+	wm.dispPixels[pIdx*4+2] = b
+	wm.dispPixels[pIdx*4+3] = 255
+}
+
+func (wm *WorldMap) setSubtleBorderPixel(pIdx int, r, g, b, alpha byte) {
+	wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], r, alpha)
+	wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], g, alpha)
+	wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], b, alpha)
+	wm.dispPixels[pIdx*4+3] = 255
 }
 
 func (wm *WorldMap) setOverlayPixel(pIdx int, r, g, b, a byte) {

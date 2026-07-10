@@ -15,9 +15,13 @@ const (
 	ActionProposePeace       Action = "propose_peace"
 	ActionProposeAlliance    Action = "propose_alliance"
 	ActionProposeTrade       Action = "propose_trade"
+	ActionCancelAlliance     Action = "cancel_alliance"
+	ActionCancelTrade        Action = "cancel_trade"
 	ActionImproveRelations   Action = "improve_relations"
 	ActionSendGift           Action = "send_gift"
 	ActionOfferVassalization Action = "offer_vassalization"
+	ActionReleaseVassal      Action = "release_vassal"
+	ActionAnnexVassal        Action = "annex_vassal"
 )
 
 type Result struct {
@@ -99,6 +103,24 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		rel.Score = clamp(rel.Score+20, -100, 100)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ittifak kuruldu."}
 
+	case ActionCancelAlliance:
+		hasTrade := HasTradeRouteBetween(gs, actor, target)
+		if hasTrade {
+			rel.Stance = faction.StanceTrade
+		} else {
+			rel.Stance = faction.StancePeace
+		}
+		rel.Score = clamp(rel.Score-15, -100, 100)
+		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ittifak sona erdirildi."}
+
+	case ActionCancelTrade:
+		removeTradeRoutesBetween(gs, actor, target)
+		if rel.Stance == faction.StanceTrade {
+			rel.Stance = faction.StancePeace
+		}
+		rel.Score = clamp(rel.Score-5, -100, 100)
+		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması sona erdirildi."}
+
 	case ActionImproveRelations:
 		return applyRelationImprovement(gs, actor, target, relationImprovementCost, relationImprovementBonus, 0, "diplomatik heyet")
 
@@ -110,6 +132,9 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 			return Result{Message: factionLabel(gs, target) + " vassallık teklifini reddetti."}
 		}
 		return applyVassalization(gs, actor, target)
+
+	case ActionReleaseVassal:
+		return releaseVassalage(gs, actor, target)
 	}
 
 	return Result{Message: "Bilinmeyen diplomasi aksiyonu."}

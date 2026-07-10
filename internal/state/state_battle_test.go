@@ -19,6 +19,11 @@ func TestSelectBattleDefenderPrefersStrongestDeterministically(t *testing.T) {
 		UnitTypes: map[string]*army.UnitType{
 			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 40},
 		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Stance: faction.StanceWar},
+			faction.RelationKey("p1", "p3"): {FactionA: "p1", FactionB: "p3", Stance: faction.StanceWar},
+			faction.RelationKey("p1", "p4"): {FactionA: "p1", FactionB: "p4", Stance: faction.StanceWar},
+		},
 	}
 
 	defender := gs.SelectBattleDefender(gs.Armies["atk"], world.RegionID("dst"), false)
@@ -46,5 +51,27 @@ func TestSelectBattleDefenderFiltersNavalTargetsByWarState(t *testing.T) {
 	defender := gs.SelectBattleDefender(gs.Armies["atk"], world.RegionID("sea_b"), true)
 	if defender == nil || defender.ID != "war" {
 		t.Fatalf("denizde sadece savaş halindeki filo hedef olmalı, got=%v", defender)
+	}
+}
+
+func TestSelectBattleDefenderIgnoresAlliedArmyOnLand(t *testing.T) {
+	gs := &GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"atk":   {ID: "atk", OwnerID: "p1", RegionID: "src"},
+			"ally":  {ID: "ally", OwnerID: "p2", RegionID: "dst", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"enemy": {ID: "enemy", OwnerID: "p3", RegionID: "dst", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 40},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Stance: faction.StanceAllied},
+			faction.RelationKey("p1", "p3"): {FactionA: "p1", FactionB: "p3", Stance: faction.StanceWar},
+		},
+	}
+
+	defender := gs.SelectBattleDefender(gs.Armies["atk"], world.RegionID("dst"), false)
+	if defender == nil || defender.ID != "enemy" {
+		t.Fatalf("karada müttefik ordu hedef olmamalı, got=%v", defender)
 	}
 }

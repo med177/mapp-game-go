@@ -29,6 +29,26 @@ const (
 	diplomacyHistoryDirectionOutgoing
 )
 
+type diplomacyRelationCategory int
+
+const (
+	diplomacyRelationWar diplomacyRelationCategory = iota
+	diplomacyRelationAlliance
+	diplomacyRelationTrade
+)
+
+type diplomacyRelationCategoryMeta struct {
+	Category diplomacyRelationCategory
+	Label    string
+	Color    color.RGBA
+}
+
+var diplomacyRelationCategories = [3]diplomacyRelationCategoryMeta{
+	{Category: diplomacyRelationWar, Label: "Savaşta", Color: color.RGBA{180, 58, 58, 235}},
+	{Category: diplomacyRelationAlliance, Label: "İttifaklar", Color: color.RGBA{58, 164, 82, 235}},
+	{Category: diplomacyRelationTrade, Label: "Ticaret Anlaşmaları", Color: color.RGBA{184, 142, 54, 235}},
+}
+
 type diplomacyHistoryFilterButton struct {
 	Button    gameui.Button
 	Direction diplomacyHistoryDirectionFilter
@@ -101,6 +121,10 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 		actionValue = diplomacy.ActionProposeAlliance
 	case ActionProposeTrade:
 		actionValue = diplomacy.ActionProposeTrade
+	case ActionCancelAlliance:
+		actionValue = diplomacy.ActionCancelAlliance
+	case ActionCancelTrade:
+		actionValue = diplomacy.ActionCancelTrade
 	case ActionImproveRelations:
 		actionValue = diplomacy.ActionImproveRelations
 	case ActionSendGift:
@@ -145,6 +169,12 @@ type diplomacyOfferLayout struct {
 	historyRect  gameui.Rect
 	backRect     gameui.Rect
 	sendRect     gameui.Rect
+}
+
+type diplomacyVassalManagementLayout struct {
+	panelRect     gameui.Rect
+	releaseButton gameui.Button
+	annexButton   gameui.Button
 }
 
 func listPageRect() rectF {
@@ -211,6 +241,16 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 		},
 		backRect: footerCols[0],
 		sendRect: footerCols[1],
+	}
+}
+
+func buildDiplomacyVassalManagementLayout() diplomacyVassalManagementLayout {
+	side := diplomacyOfferLayoutForScreen().historyRect
+	panel := gameui.Rect{X: side.X, Y: side.Y + side.H + 12, W: side.W, H: 122}
+	return diplomacyVassalManagementLayout{
+		panelRect:     panel,
+		releaseButton: gameui.NewButton(panel.X+12, panel.Y+36, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionReleaseVassal)),
+		annexButton:   gameui.NewButton(panel.X+12, panel.Y+76, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionAnnexVassal)),
 	}
 }
 
@@ -605,6 +645,19 @@ func buildDiplomacyCloseButton() gameui.Button {
 	return btn
 }
 
+func buildDiplomacySideViewButton(panelRect gameui.Rect, historyVisible bool) gameui.Button {
+	label := "Geçmiş"
+	icon := gameui.IconBook
+	if historyVisible {
+		label = "İlişkiler"
+		icon = gameui.IconBack
+	}
+	btn := gameui.NewButton(panelRect.X+panelRect.W-100, panelRect.Y+8, 90, 24, label).WithIcon(icon)
+	btn.IconSize = 11
+	btn.IconGap = 5
+	return btn
+}
+
 func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.ListView {
 	factions := sortedFactions(gs)
 	items := make([]string, 0, len(factions))
@@ -638,24 +691,93 @@ func diplomacyListClickedIndex(list gameui.ListView, input gameui.InputState) (i
 }
 
 func buildDiplomacySendButton() gameui.Button {
-	x, y, w, h := diplomSendRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Teklif Gönder").WithIcon(gameui.IconSend)
+	return buildDiplomacySendButtonForAction(ActionNone)
 }
 
-func buildDiplomacyActionButtons() []diplomacyActionButton {
+func buildDiplomacySendButtonForAction(action ActionKind) gameui.Button {
+	x, y, w, h := diplomSendRect()
+	label := "Teklif Gönder"
+	if action == ActionCancelAlliance || action == ActionCancelTrade {
+		label = "Anlaşmayı Bitir"
+	}
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label).WithIcon(gameui.IconSend)
+}
+
+func diplomacyActionForTarget(gs *state.GameState, target faction.FactionID, index int) ActionKind {
+	if index < 0 || index >= len(diplomActions) {
+		return ActionNone
+	}
+	base := diplomActions[index].action
+	if gs == nil || target == "" || diplomacy.SameRealm(gs, gs.PlayerFactionID, target) {
+		return base
+	}
+	switch base {
+	case ActionProposeAlliance:
+		if rel := diplomacy.Relation(gs, gs.PlayerFactionID, target); rel != nil && rel.Stance == faction.StanceAllied {
+			return ActionCancelAlliance
+		}
+	case ActionProposeTrade:
+		if diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
+			return ActionCancelTrade
+		}
+	}
+	return base
+}
+
+func diplomacyActionLabel(gs *state.GameState, target faction.FactionID, index int) string {
+	switch diplomacyActionForTarget(gs, target, index) {
+	case ActionCancelAlliance:
+		return diplomacy.ActionLabelTR(diplomacy.ActionCancelAlliance)
+	case ActionCancelTrade:
+		return diplomacy.ActionLabelTR(diplomacy.ActionCancelTrade)
+	default:
+		if index >= 0 && index < len(diplomActions) {
+			return diplomActions[index].label
+		}
+		return ""
+	}
+}
+
+func buildDiplomacyActionButtons(gs *state.GameState, target faction.FactionID) []diplomacyActionButton {
 	out := make([]diplomacyActionButton, 0, len(diplomActions))
-	for i, da := range diplomActions {
+	for i := range diplomActions {
 		x, y, w, h := diplomActionRect(i)
 		out = append(out, diplomacyActionButton{
 			Index:  i,
-			Button: gameui.NewButton(float64(x), float64(y), float64(w), float64(h), da.label),
+			Button: gameui.NewButton(float64(x), float64(y), float64(w), float64(h), diplomacyActionLabel(gs, target, i)),
 		})
 	}
 	return out
 }
 
+func diplomacyActionEnabled(gs *state.GameState, target faction.FactionID, index int) bool {
+	action := diplomacyActionForTarget(gs, target, index)
+	return action != ActionNone && diplomacyActionDisabledReason(gs, target, action) == ""
+}
+
+func enabledDiplomacyActionFocus(gs *state.GameState, target faction.FactionID, preferred int) int {
+	if diplomacyActionEnabled(gs, target, preferred) {
+		return preferred
+	}
+	for i := range diplomActions {
+		if diplomacyActionEnabled(gs, target, i) {
+			return i
+		}
+	}
+	return clampDiplomFocus(preferred, 0, len(diplomActions)-1)
+}
+
+func nextEnabledDiplomacyAction(gs *state.GameState, target faction.FactionID, current, direction int) int {
+	for i := current + direction; i >= 0 && i < len(diplomActions); i += direction {
+		if diplomacyActionEnabled(gs, target, i) {
+			return i
+		}
+	}
+	return current
+}
+
 // DrawDiplomacyPanel diplomasi panelini çizer.
-func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
 	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
@@ -671,9 +793,9 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 
 	if target == "" {
-		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end, browseTarget, historyDirFilter, historyActionFilter)
+		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
 	} else {
-		drawDiplomacyOfferPanel(screen, gs, target, actionFocus, browseTarget, historyDirFilter, historyActionFilter)
+		drawDiplomacyOfferPanel(screen, gs, factions, target, actionFocus, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
 	}
 
 	if target == "" && len(factions) > end-start {
@@ -683,7 +805,7 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 }
 
-func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	layout := diplomacyListLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{15, 12, 9, 235}, panelBorder, 1.2, 3)
 	DrawText(screen, "Diplomatik Hedef", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
@@ -766,11 +888,15 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 	}
 	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
 	if layout.historyRect.W > 0 {
-		drawDiplomacyOfferHistoryPanelRect(screen, gs, layout.historyRect, 4, historyDirFilter, historyActionFilter)
+		selected := faction.FactionID("")
+		if focusIdx >= 0 && focusIdx < len(factions) {
+			selected = factions[focusIdx]
+		}
+		drawDiplomacySidePanel(screen, gs, layout.historyRect, selected, factions, historyVisible, 4, historyDirFilter, historyActionFilter)
 	}
 }
 
-func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID, actionFocus int, browseTarget faction.FactionID, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, target faction.FactionID, actionFocus int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	f := gs.Factions[target]
 	if f == nil {
 		return
@@ -822,12 +948,17 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 	})
 
 	drawUIMutedText(screen, layout.actionsRect.X, layout.actionsRect.Y-18, "Teklif Türü")
-	for _, btn := range buildDiplomacyActionButtons() {
+	selectedDisabledReason := ""
+	for _, btn := range buildDiplomacyActionButtons(gs, target) {
 		i := btn.Index
 		da := diplomActions[i]
-		chance, status := estimateDiplomacyChance(gs, target, da.action)
-		disabledReason := diplomacyActionDisabledReason(gs, target, da.action)
+		action := diplomacyActionForTarget(gs, target, i)
+		chance, status := estimateDiplomacyChance(gs, target, action)
+		disabledReason := diplomacyActionDisabledReason(gs, target, action)
 		bg := da.color
+		if action == ActionCancelAlliance || action == ActionCancelTrade {
+			bg = color.RGBA{156, 72, 48, 225}
+		}
 		textCol := ColorWhite
 		if i != actionFocus {
 			bg.A = 170
@@ -836,24 +967,45 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, target f
 			bg.A = 110
 			textCol = ColorGray
 			status = disabledReason
+			if i == actionFocus {
+				selectedDisabledReason = disabledReason
+			}
 		}
-		drawDiplomacyButton(screen, btn.Button, bg, panelBorder, FaceMed, 7)
+		drawDiplomacyActionButton(screen, btn.Button, bg, disabledReason != "")
 		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
+		if action == ActionCancelAlliance || action == ActionCancelTrade {
+			chanceText = "AKTİF"
+		}
+		if disabledReason != "" {
+			chanceText = "PASİF"
+		}
 		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
 		drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 25, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 	}
 
-	selected := "Seçili teklif: " + diplomActions[actionFocus].label
+	selectedAction := diplomacyActionForTarget(gs, target, actionFocus)
+	selectedPrefix := "Seçili teklif: "
+	if selectedAction == ActionCancelAlliance || selectedAction == ActionCancelTrade {
+		selectedPrefix = "Seçili işlem: "
+	}
+	selected := selectedPrefix + diplomacyActionLabel(gs, target, actionFocus)
 	drawUICardRect(screen, layout.selectedRect, color.RGBA{18, 14, 10, 215}, color.RGBA{78, 62, 34, 150}, 1)
 	slw := MeasureText(selected, FaceSmall)
 	selectedY := layout.selectedRect.Y + 6
 	drawUIMutedText(screen, layout.selectedRect.X+layout.selectedRect.W/2-slw/2, selectedY, selected)
 
-	drawDiplomacyOfferHistoryPanelRect(screen, gs, layout.historyRect, 3, historyDirFilter, historyActionFilter)
+	drawDiplomacySidePanel(screen, gs, layout.historyRect, target, factions, historyVisible, 3, historyDirFilter, historyActionFilter)
+	if diplomacy.DirectOverlord(gs, target) == gs.PlayerFactionID {
+		drawDiplomacyVassalManagementPanel(screen)
+	}
 
 	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
-	drawDiplomacyButton(screen, buildDiplomacySendButton(), color.RGBA{48, 130, 72, 235}, panelBorder, FaceMed, 10)
+	sendColor := color.RGBA{48, 130, 72, 235}
+	if selectedDisabledReason != "" {
+		sendColor = color.RGBA{58, 58, 54, 150}
+	}
+	drawDiplomacyButton(screen, buildDiplomacySendButtonForAction(selectedAction), sendColor, panelBorder, FaceMed, 10)
 }
 
 func diplomacyCloseRect() (x, y, w, h float32) {
@@ -878,6 +1030,147 @@ func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA,
 	drawUIButtonWidget(screen, btn, style)
 }
 
+func drawDiplomacyActionButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, disabled bool) {
+	style := menuButtonStyle
+	style.BG = bg
+	style.Border = color.RGBA{108, 88, 52, 185}
+	style.Text = ColorWhite
+	style.TextOffsetY = 7
+	style.TextVariant = gameui.TextMedium
+	if disabled {
+		style.Border = color.RGBA{72, 68, 60, 145}
+		style.Text = color.RGBA{142, 138, 130, 230}
+	}
+	drawUIButtonWidget(screen, btn, style)
+}
+
+func drawDiplomacyVassalManagementPanel(screen *ebiten.Image) {
+	layout := buildDiplomacyVassalManagementLayout()
+	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{104, 82, 42, 190}, 1, 3)
+	drawUILabel(screen, gameui.Rect{X: layout.panelRect.X + 12, Y: layout.panelRect.Y + 10, W: layout.panelRect.W - 24}, "Vassal Yönetimi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawDiplomacyButton(screen, layout.releaseButton, color.RGBA{62, 104, 142, 225}, panelBorder, FaceSmall, 6)
+	drawDiplomacyButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, panelBorder, FaceSmall, 6)
+}
+
+func diplomacyRelationCategoryMatches(gs *state.GameState, subject, other faction.FactionID, category diplomacyRelationCategory) bool {
+	if gs == nil || subject == "" || other == "" || subject == other {
+		return false
+	}
+	switch category {
+	case diplomacyRelationTrade:
+		return diplomacy.HasTradeRouteBetween(gs, subject, other)
+	case diplomacyRelationWar:
+		rel := diplomacy.Relation(gs, subject, other)
+		return rel != nil && rel.Stance == faction.StanceWar
+	case diplomacyRelationAlliance:
+		if diplomacy.SameRealm(gs, subject, other) {
+			return false
+		}
+		rel := diplomacy.Relation(gs, subject, other)
+		return rel != nil && rel.Stance == faction.StanceAllied
+	default:
+		return false
+	}
+}
+
+func diplomacyRelationCategoryCount(gs *state.GameState, subject faction.FactionID, factions []faction.FactionID, category diplomacyRelationCategory) int {
+	if gs == nil {
+		return 0
+	}
+	count := 0
+	for _, other := range factions {
+		if diplomacyRelationCategoryMatches(gs, subject, other, category) {
+			count++
+		}
+	}
+	if subject != gs.PlayerFactionID && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, category) {
+		count++
+	}
+	return count
+}
+
+func drawDiplomacySidePanel(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID, historyVisible bool, maxHistoryEntries int, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind) {
+	if historyVisible {
+		drawDiplomacyOfferHistoryPanelRect(screen, gs, panelRect, maxHistoryEntries, dirFilter, actionFilter)
+	} else {
+		drawDiplomacyRelationsPanelRect(screen, gs, panelRect, subject, factions)
+	}
+	btn := buildDiplomacySideViewButton(panelRect, historyVisible)
+	drawDiplomacyButton(screen, btn, color.RGBA{74, 58, 28, 235}, color.RGBA{176, 142, 72, 220}, FaceSmall, 5)
+}
+
+func drawDiplomacyRelationsPanelRect(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID) {
+	if gs == nil || panelRect.W <= 0 || panelRect.H <= 0 {
+		return
+	}
+	drawUIPanelFrame(screen, panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 10, W: panelRect.W - 124}, "Aktif İlişkiler", color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
+	f := gs.Factions[subject]
+	if f == nil {
+		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 50, W: panelRect.W - 28}, "Bir devlet seçin.", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
+		return
+	}
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 32, W: panelRect.W - 28}, trimTextToWidth(f.NameTR, FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	hierarchy := "Bağımsız devlet"
+	if overlord := diplomacy.DirectOverlord(gs, subject); overlord != "" {
+		hierarchy = factionDisplayName(gs, string(overlord)) + " himayesinde"
+	} else if vassalCount := directVassalCount(gs, subject); vassalCount > 0 {
+		hierarchy = itoa(vassalCount) + " bağlı devlet"
+	}
+	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+48, hierarchy)
+
+	for sectionIndex, meta := range diplomacyRelationCategories {
+		count := diplomacyRelationCategoryCount(gs, subject, factions, meta.Category)
+		sectionY := panelRect.Y + 70 + float64(sectionIndex)*80
+		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: sectionY, W: panelRect.W - 28}, meta.Label+" ("+itoa(count)+")", meta.Color, gameui.TextSmall, gameui.TextAlignStart)
+		if count == 0 {
+			drawUIMutedText(screen, panelRect.X+24, sectionY+20, "Yok")
+			continue
+		}
+		drawn := 0
+		for _, other := range factions {
+			if !diplomacyRelationCategoryMatches(gs, subject, other, meta.Category) {
+				continue
+			}
+			drawDiplomacyRelationName(screen, gs, panelRect, sectionY, drawn, other, meta.Color)
+			drawn++
+			if drawn == 3 {
+				break
+			}
+		}
+		if drawn < 3 && subject != gs.PlayerFactionID && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, meta.Category) {
+			drawDiplomacyRelationName(screen, gs, panelRect, sectionY, drawn, gs.PlayerFactionID, meta.Color)
+			drawn++
+		}
+		if count > drawn {
+			drawUILabel(screen, gameui.Rect{X: panelRect.X + panelRect.W - 68, Y: sectionY, W: 54}, "+"+itoa(count-drawn), ColorGray, gameui.TextSmall, gameui.TextAlignEnd)
+		}
+	}
+}
+
+func directVassalCount(gs *state.GameState, overlord faction.FactionID) int {
+	if gs == nil || overlord == "" {
+		return 0
+	}
+	count := 0
+	for fid, f := range gs.Factions {
+		if f != nil && !f.IsEliminated && fid != overlord && f.OverlordID == overlord {
+			count++
+		}
+	}
+	return count
+}
+
+func drawDiplomacyRelationName(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, sectionY float64, row int, fid faction.FactionID, accent color.RGBA) {
+	name := factionDisplayName(gs, string(fid))
+	if name == "" {
+		name = string(fid)
+	}
+	y := sectionY + 20 + float64(row)*17
+	drawUICardRect(screen, gameui.Rect{X: panelRect.X + 18, Y: y + 4, W: 5, H: 5}, accent, accent, 1)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 30, Y: y, W: panelRect.W - 44}, trimTextToWidth(name, FaceSmall, panelRect.W-44), color.RGBA{226, 220, 208, 255}, gameui.TextSmall, gameui.TextAlignStart)
+}
+
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
 func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	factions := sortedFactions(r.gs)
@@ -892,24 +1185,31 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
 		r.diplomacyOfferHistoryBrowse = ""
+		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
 	if buildDiplomacyCloseButton().HandleInput(input) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
 		r.diplomacyOfferHistoryBrowse = ""
+		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
 	if r.diplomacyTargetFaction == "" {
-		if input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
+		sideRect := diplomacyListLayoutForScreen().historyRect
+		if sideRect.W > 0 && buildDiplomacySideViewButton(sideRect, r.diplomacyHistoryVisible).HandleInput(input) {
+			r.diplomacyHistoryVisible = !r.diplomacyHistoryVisible
+			return InputAction{}
+		}
+		if r.diplomacyHistoryVisible && input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(sideRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
 		if input.WheelY != 0 && diplomacyListLayoutForScreen().panelRect.Hit(input.MouseX, input.MouseY) {
 			r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll-wheelToDiplomStep(input.WheelY))
 			return InputAction{}
 		}
-		if input.LeftJustPressed {
-			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyListLayoutForScreen().historyRect, input.MouseX, input.MouseY, 4, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+		if r.diplomacyHistoryVisible && input.LeftJustPressed {
+			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, sideRect, input.MouseX, input.MouseY, 4, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
 				r.diplomacyTargetFaction = target
 				r.diplomacyActionFocus = actionFocus
 				for i, fid := range factions {
@@ -926,7 +1226,8 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if idx, ok := diplomacyListClickedIndex(list, input); ok {
 			if idx == r.diplomacyFocus && idx < len(factions) {
 				r.diplomacyTargetFaction = factions[idx]
-				r.diplomacyActionFocus = 0
+				r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, factions[idx], 0)
+				r.diplomacyHistoryVisible = false
 				return InputAction{}
 			}
 			r.diplomacyFocus = idx
@@ -942,15 +1243,20 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 	} else {
-		if input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY) {
+		sideRect := diplomacyOfferLayoutForScreen().historyRect
+		if sideRect.W > 0 && buildDiplomacySideViewButton(sideRect, r.diplomacyHistoryVisible).HandleInput(input) {
+			r.diplomacyHistoryVisible = !r.diplomacyHistoryVisible
+			return InputAction{}
+		}
+		if r.diplomacyHistoryVisible && input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(sideRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
 		if buildDiplomacyBackButton().HandleInput(input) {
 			r.diplomacyTargetFaction = ""
 			return InputAction{}
 		}
-		if input.LeftJustPressed {
-			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, diplomacyOfferLayoutForScreen().historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
+		if r.diplomacyHistoryVisible && input.LeftJustPressed {
+			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, sideRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
 				r.diplomacyTargetFaction = target
 				r.diplomacyActionFocus = actionFocus
 				for i, fid := range factions {
@@ -963,21 +1269,52 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				return InputAction{}
 			}
 		}
-		for _, btn := range buildDiplomacyActionButtons() {
+		if diplomacy.DirectOverlord(r.gs, r.diplomacyTargetFaction) == r.gs.PlayerFactionID {
+			management := buildDiplomacyVassalManagementLayout()
+			target := r.diplomacyTargetFaction
+			name := factionDisplayName(r.gs, string(target))
+			if management.releaseButton.HandleInput(input) {
+				r.ShowConfirmDialog(
+					"Vasallığı Bitir",
+					name+" bağımsız bir devlet olacak. Mevcut ticaret anlaşması devam edecek.",
+					"Serbest Bırak",
+					"İptal",
+					InputAction{Kind: ActionReleaseVassal, TargetFaction: target},
+					nil,
+				)
+				return InputAction{}
+			}
+			if management.annexButton.HandleInput(input) {
+				r.ShowConfirmDialog(
+					"Vassalı İlhak Et",
+					name+" devleti tamamen ilhak edilecek; bölgeleri, kuvvetleri ve kaynakları doğrudan yönetimine geçecek.",
+					"İlhak Et",
+					"İptal",
+					InputAction{Kind: ActionAnnexVassal, TargetFaction: target},
+					nil,
+				)
+				return InputAction{}
+			}
+		}
+		for _, btn := range buildDiplomacyActionButtons(r.gs, r.diplomacyTargetFaction) {
 			if btn.Button.HandleInput(input) {
+				if !diplomacyActionEnabled(r.gs, r.diplomacyTargetFaction, btn.Index) {
+					return InputAction{}
+				}
 				r.diplomacyActionFocus = btn.Index
 				return InputAction{}
 			}
 		}
 		if buildDiplomacySendButton().HandleInput(input) {
 			target := r.diplomacyTargetFaction
-			if reason := diplomacyActionDisabledReason(r.gs, target, diplomActions[r.diplomacyActionFocus].action); reason != "" {
+			action := diplomacyActionForTarget(r.gs, target, r.diplomacyActionFocus)
+			if reason := diplomacyActionDisabledReason(r.gs, target, action); reason != "" {
 				r.ShowCombatResult(reason)
 				return InputAction{}
 			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
-			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
+			return InputAction{Kind: action, TargetFaction: target}
 		}
 	}
 
@@ -990,11 +1327,11 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
 	if r.diplomacyTargetFaction != "" {
-		if r.keyJustPressed(ebiten.KeyArrowRight) && r.diplomacyActionFocus < len(diplomActions)-1 {
-			r.diplomacyActionFocus++
+		if r.keyJustPressed(ebiten.KeyArrowRight) {
+			r.diplomacyActionFocus = nextEnabledDiplomacyAction(r.gs, r.diplomacyTargetFaction, r.diplomacyActionFocus, 1)
 		}
-		if r.keyJustPressed(ebiten.KeyArrowLeft) && r.diplomacyActionFocus > 0 {
-			r.diplomacyActionFocus--
+		if r.keyJustPressed(ebiten.KeyArrowLeft) {
+			r.diplomacyActionFocus = nextEnabledDiplomacyAction(r.gs, r.diplomacyTargetFaction, r.diplomacyActionFocus, -1)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyTab) || r.keyJustPressed(ebiten.KeyEscape) {
@@ -1009,18 +1346,20 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if r.diplomacyTargetFaction == "" {
 			if r.diplomacyFocus < len(factions) {
 				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
-				r.diplomacyActionFocus = 0
+				r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, factions[r.diplomacyFocus], 0)
+				r.diplomacyHistoryVisible = false
 				return InputAction{}
 			}
 		} else {
 			target := r.diplomacyTargetFaction
-			if reason := diplomacyActionDisabledReason(r.gs, target, diplomActions[r.diplomacyActionFocus].action); reason != "" {
+			action := diplomacyActionForTarget(r.gs, target, r.diplomacyActionFocus)
+			if reason := diplomacyActionDisabledReason(r.gs, target, action); reason != "" {
 				r.ShowCombatResult(reason)
 				return InputAction{}
 			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
-			return InputAction{Kind: diplomActions[r.diplomacyActionFocus].action, TargetFaction: target}
+			return InputAction{Kind: action, TargetFaction: target}
 		}
 	}
 	return InputAction{}
@@ -1069,7 +1408,7 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 		if buildDiplomacyBackButton().HitTest(mx, my) || buildDiplomacySendButton().HitTest(mx, my) {
 			return true
 		}
-		for _, btn := range buildDiplomacyActionButtons() {
+		for _, btn := range buildDiplomacyActionButtons(gs, target) {
 			if btn.Button.HitTest(mx, my) {
 				return true
 			}
@@ -1111,7 +1450,8 @@ func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int
 	}
 	r.showDiplomacy = true
 	r.diplomacyTargetFaction = target
-	r.diplomacyActionFocus = actionFocus
+	r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, target, actionFocus)
+	r.diplomacyHistoryVisible = false
 	factions := sortedFactions(r.gs)
 	for i, fid := range factions {
 		if fid != target {
@@ -1121,6 +1461,16 @@ func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int
 		r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
 		return
 	}
+}
+
+func (r *Renderer) CloseDiplomacyPanel() {
+	if r == nil {
+		return
+	}
+	r.showDiplomacy = false
+	r.diplomacyTargetFaction = ""
+	r.diplomacyOfferHistoryBrowse = ""
+	r.diplomacyHistoryVisible = false
 }
 
 func stanceDisplay(s faction.DiplomaticStance) (color.Color, string) {
@@ -1188,6 +1538,10 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		actionValue = diplomacy.ActionProposeAlliance
 	case ActionProposeTrade:
 		actionValue = diplomacy.ActionProposeTrade
+	case ActionCancelAlliance:
+		actionValue = diplomacy.ActionCancelAlliance
+	case ActionCancelTrade:
+		actionValue = diplomacy.ActionCancelTrade
 	case ActionImproveRelations:
 		actionValue = diplomacy.ActionImproveRelations
 	case ActionSendGift:
@@ -1235,6 +1589,10 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		return 100, "İlişki +15 / 120 altın"
 	case ActionOfferVassalization:
 		chance = diplomacy.AssessVassalizationProposal(gs, rel, gs.PlayerFactionID, target).Chance
+	case ActionCancelAlliance:
+		return 100, "İttifak sona erecek / Ticaret korunur"
+	case ActionCancelTrade:
+		return 100, "Ticaret sona erecek / İttifak korunur"
 	}
 	if chance < 0 {
 		chance = 0

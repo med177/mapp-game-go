@@ -47,7 +47,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 - Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
 - `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
-- Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir
+- Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir
 
 ---
 
@@ -63,9 +63,21 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20`; kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
+| İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
+| Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + belirgin askeri/bölgesel üstünlük varsa |
+| Vasallığı bitir | `releaseVassal()` | Yalnız oyuncunun doğrudan vassalında; devlet bağımsızlaşır, overlord ile ticaret anlaşması devam eder |
+| Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
+
+Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gösterir:
+
+- `Savaşta` ve `İttifaklar` listeleri fraksiyonun tüm aktif relation kayıtlarından üretilir.
+- `Ticaret Anlaşmaları` yalnız aktif, askıya alınmamış iki taraflı `TradeRoutes` kayıtlarını gösterir; bu yüzden ittifak ile ticaret birbirine karıştırılmaz.
+- Aynı vassal realm içindeki normalizasyon kaynaklı `StanceAllied` kayıtları dış ittifak sayılmaz; overlord veya bağlı devlet sayısı üst bilgide ayrıca gösterilir.
+- Teklif geçmişi sağ kolonda sürekli yer kaplamaz; `Geçmiş` düğmesiyle açılır ve `İlişkiler` düğmesiyle güncel ağa dönülür.
+- Standart teklif düğmeleri `ActionBlockReason()` sonucuna göre aktif veya `PASİF` çizilir; pasif düğmeler fare ve klavye odağına alınmaz. Dış devletle ilişki kurulmuşsa aynı `İttifak / Ticaret` düğmeleri `İttifakı Bitir / Ticareti Bitir` işlemine dönüşür ve alt aksiyon `Anlaşmayı Bitir` olur. Savaş `Barış`, vassallık ise `Vasallığı Bitir` yoluyla sona erdirilir. Doğrudan oyuncu vassalında sağ-alt `Vassal Yönetimi` kartı ayrıca onaylı `Vasallığı Bitir / İlhak Et` eylemlerini gösterir.
 
 ---
 

@@ -28,6 +28,8 @@ const (
 	ActionImproveRelations         ActionKind = "improve_relations"
 	ActionSendGift                 ActionKind = "send_gift"
 	ActionOfferVassalization       ActionKind = "offer_vassalization"
+	ActionReleaseVassal            ActionKind = "release_vassal"
+	ActionAnnexVassal              ActionKind = "annex_vassal"
 	ActionSave                     ActionKind = "save"
 	ActionLoad                     ActionKind = "load"
 	ActionSelectFaction            ActionKind = "select_faction"
@@ -38,6 +40,8 @@ const (
 	ActionSelectVictory            ActionKind = "select_victory"  // BuildingID = VictoryType
 	ActionProposeAlliance          ActionKind = "propose_alliance"
 	ActionProposeTrade             ActionKind = "propose_trade"
+	ActionCancelAlliance           ActionKind = "cancel_alliance"
+	ActionCancelTrade              ActionKind = "cancel_trade"
 	ActionRecruitNaval             ActionKind = "recruit_naval"
 	ActionRecruitSpecific          ActionKind = "recruit_specific"     // BuildingID = unit type ID
 	ActionCancelRecruitOrder       ActionKind = "cancel_recruit_order" // BuildingID = production order ID (tek emir iptal)

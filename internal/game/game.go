@@ -291,8 +291,16 @@ func (g *Game) Update() error {
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
 			g.proposeTrade(action.TargetFaction)
+		case render.ActionCancelAlliance:
+			g.cancelAlliance(action.TargetFaction)
+		case render.ActionCancelTrade:
+			g.cancelTrade(action.TargetFaction)
 		case render.ActionOfferVassalization:
 			g.offerVassalization(action.TargetFaction)
+		case render.ActionReleaseVassal:
+			g.releaseVassal(action.TargetFaction)
+		case render.ActionAnnexVassal:
+			g.annexVassal(action.TargetFaction)
 		case render.ActionAnnexDefeatedFaction:
 			g.resolvePendingConquestDecision(false)
 		case render.ActionVassalizeDefeatedFaction:
@@ -1634,6 +1642,22 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) cancelAlliance(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionCancelAlliance)
+	g.renderer.ShowCombatResult(result.Message)
+	if result.Applied {
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, g.factionNameTR(string(targetID))+" ile kurulu askeri ittifak sona erdirildi.")
+	}
+}
+
+func (g *Game) cancelTrade(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionCancelTrade)
+	g.renderer.ShowCombatResult(result.Message)
+	if result.Applied {
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, g.factionNameTR(string(targetID))+" ile kurulu ticaret rotaları kapatıldı.")
+	}
+}
+
 func (g *Game) improveRelations(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionImproveRelations)
 	g.renderer.ShowCombatResult(result.Message)
@@ -1647,6 +1671,63 @@ func (g *Game) sendGift(targetID faction.FactionID) {
 func (g *Game) offerVassalization(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionOfferVassalization)
 	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) releaseVassal(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionReleaseVassal)
+	g.renderer.ShowCombatResult(result.Message)
+	if result.Applied {
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, g.factionNameTR(string(targetID))+" üzerindeki vassallık bağı sona erdirildi; devlet bağımsızlığını geri kazandı.")
+	}
+}
+
+func (g *Game) annexVassal(targetID faction.FactionID) {
+	playerID := g.gs.PlayerFactionID
+	if reason := diplomacy.ActionBlockReason(g.gs, playerID, targetID, diplomacy.ActionAnnexVassal); reason != "" {
+		g.renderer.ShowCombatResult(reason)
+		return
+	}
+	target := g.gs.Factions[targetID]
+	player := g.gs.Factions[playerID]
+	if target == nil || player == nil {
+		g.renderer.ShowCombatResult("Fraksiyon bulunamadı.")
+		return
+	}
+
+	annexedRegions := 0
+	for _, region := range g.gs.Regions {
+		if region == nil || region.OwnerID != string(targetID) {
+			continue
+		}
+		g.clearSiege(region.ID)
+		region.OwnerID = string(playerID)
+		annexedRegions++
+	}
+	for i := range g.gs.ProductionQueue {
+		order := &g.gs.ProductionQueue[i]
+		if order.FactionID == string(targetID) {
+			order.FactionID = string(playerID)
+		}
+	}
+	player.Gold += target.Gold
+	player.Grain += target.Grain
+	player.Iron += target.Iron
+	player.Timber += target.Timber
+	player.Stone += target.Stone
+	player.Spice += target.Spice
+	player.Cloth += target.Cloth
+	target.Gold, target.Grain, target.Iron, target.Timber = 0, 0, 0, 0
+	target.Stone, target.Spice, target.Cloth = 0, 0, 0
+
+	collapse := eliminateFaction(g.gs, targetID, playerID)
+	diplomacy.NormalizeVassalage(g.gs)
+	g.sanitizeDockedFleets()
+	g.renderer.CloseDiplomacyPanel()
+	g.renderer.MarkMapDirty()
+	name := g.factionNameTR(string(targetID))
+	message := fmt.Sprintf("%s ilhak edildi; %d bölge doğrudan yönetimine geçti.", name, annexedRegions)
+	g.renderer.ShowCombatResult(message)
+	g.renderer.AddEventDetail("[İLHAK] "+message, fmt.Sprintf("%s devletinin bölgeleri, kaynakları ve kalan kuvvetleri %s tarafından devralındı. Kara ordusu: %d, donanma: %d.", name, g.factionNameTR(string(playerID)), collapse.TransferredArmies, collapse.TransferredFleets))
 }
 
 func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int) {

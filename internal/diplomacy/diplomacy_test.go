@@ -179,6 +179,59 @@ func TestProposeTradeWhileAlliedKeepsAllianceAndAddsRoutes(t *testing.T) {
 	}
 }
 
+func TestCancelAlliancePreservesTradeAgreement(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceAllied
+	rel.Score = 60
+	ensureTradeRoutesBetween(gs, "a", "b")
+
+	result := Execute(gs, "a", "b", ActionCancelAlliance)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("ittifak iptali uygulanmalıydı: %+v", result)
+	}
+	if rel.Stance != faction.StanceTrade {
+		t.Fatalf("ticaret sürerken ilişki trade durumuna inmeli, got=%s", rel.Stance)
+	}
+	if !HasTradeRouteBetween(gs, "a", "b") || len(gs.TradeRoutes) != 2 {
+		t.Fatalf("ittifak iptali ticaret rotalarını korumalı, got=%+v", gs.TradeRoutes)
+	}
+}
+
+func TestCancelTradePreservesAlliance(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceAllied
+	rel.Score = 60
+	ensureTradeRoutesBetween(gs, "a", "b")
+
+	result := Execute(gs, "a", "b", ActionCancelTrade)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("ticaret iptali uygulanmalıydı: %+v", result)
+	}
+	if rel.Stance != faction.StanceAllied {
+		t.Fatalf("ticaret iptali ittifakı korumalı, got=%s", rel.Stance)
+	}
+	if HasTradeRouteBetween(gs, "a", "b") || len(gs.TradeRoutes) != 0 {
+		t.Fatalf("ticaret rotaları kaldırılmalı, got=%+v", gs.TradeRoutes)
+	}
+}
+
+func TestVassalInternalAgreementsCannotBeCancelledDirectly(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["b"].OverlordID = "a"
+	NormalizeVassalage(gs)
+
+	if reason := ActionBlockReason(gs, "a", "b", ActionCancelAlliance); reason == "" {
+		t.Fatal("vassal bağı ittifak iptaliyle kaldırılamamalı")
+	}
+	if reason := ActionBlockReason(gs, "a", "b", ActionCancelTrade); reason == "" {
+		t.Fatal("zorunlu vassal ticareti doğrudan iptal edilememeli")
+	}
+}
+
 func TestProposeTradeAcceptedDespiteDirectThreatWhenOverallChanceHigh(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
@@ -404,8 +457,8 @@ func TestOfferVassalizationMakesTargetVassalAndBlocksThirdParties(t *testing.T) 
 	if rel := Relation(gs, "a", "b"); rel == nil || rel.Stance != faction.StanceAllied {
 		t.Fatalf("overlord-vassal ilişkisi allied olmalıydı, got=%+v", rel)
 	}
-	if len(gs.TradeRoutes) != 0 {
-		t.Fatalf("vassalın üçüncü taraf trade rotaları kapanmalıydı, got=%+v", gs.TradeRoutes)
+	if len(gs.TradeRoutes) != 2 || !HasTradeRouteBetween(gs, "a", "b") {
+		t.Fatalf("vassalın dış rotaları kapanıp overlord ile iki yönlü ticaret açılmalıydı, got=%+v", gs.TradeRoutes)
 	}
 	if reason := ActionBlockReason(gs, "c", "b", ActionProposeAlliance); reason == "" {
 		t.Fatal("üçüncü tarafın vassalla doğrudan diplomasi kurması engellenmeliydi")
@@ -440,8 +493,42 @@ func TestForceVassalizeAfterWarEndsWarAndPropagatesOverlordWars(t *testing.T) {
 	if rel := Relation(gs, "b", "c"); rel == nil || rel.Stance != faction.StanceWar {
 		t.Fatalf("vassal overlord'un savaşına girmeliydi, got=%+v", rel)
 	}
-	if len(gs.TradeRoutes) != 0 {
-		t.Fatalf("vassalın dış ticaret rotaları kapanmalıydı, got=%+v", gs.TradeRoutes)
+	if len(gs.TradeRoutes) != 2 || !HasTradeRouteBetween(gs, "a", "b") {
+		t.Fatalf("vassalın dış rotaları kapanıp overlord ticareti açılmalıydı, got=%+v", gs.TradeRoutes)
+	}
+}
+
+func TestReleaseVassalRestoresIndependenceAndKeepsTrade(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["b"].OverlordID = "a"
+	NormalizeVassalage(gs)
+
+	result := Execute(gs, "a", "b", ActionReleaseVassal)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("vasallık sona erdirilmeliydi: %+v", result)
+	}
+	if got := gs.Factions["b"].OverlordID; got != "" {
+		t.Fatalf("hedef bağımsız olmalıydı, got overlord=%q", got)
+	}
+	if rel := Relation(gs, "a", "b"); rel == nil || rel.Stance != faction.StanceTrade {
+		t.Fatalf("bağımsızlık sonrası ticaret duruşu korunmalıydı, got=%+v", rel)
+	}
+	if !HasTradeRouteBetween(gs, "a", "b") || len(gs.TradeRoutes) != 2 {
+		t.Fatalf("iki yönlü ticaret rotası devam etmeliydi, got=%+v", gs.TradeRoutes)
+	}
+}
+
+func TestVassalManagementActionsRequireDirectOverlord(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["b"].OverlordID = "a"
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+
+	if reason := ActionBlockReason(gs, "a", "b", ActionAnnexVassal); reason != "" {
+		t.Fatalf("doğrudan overlord ilhak edebilmeli, got=%q", reason)
+	}
+	if reason := ActionBlockReason(gs, "c", "b", ActionAnnexVassal); reason == "" {
+		t.Fatal("üçüncü taraf vassalı ilhak edememeli")
 	}
 }
 

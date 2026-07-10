@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -29,6 +30,41 @@ func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
 	}
 	if got[0] != "a" || got[1] != "c" {
 		t.Fatalf("beklenen [a c], got=%v", got)
+	}
+}
+
+func TestDiplomacyRelationCategoriesUseStanceTradeRoutesAndRealm(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":  {ID: "player"},
+			"subject": {ID: "subject"},
+			"enemy":   {ID: "enemy"},
+			"ally":    {ID: "ally"},
+			"vassal":  {ID: "vassal", OverlordID: "subject"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("subject", "enemy"):  {FactionA: "subject", FactionB: "enemy", Stance: faction.StanceWar},
+			faction.RelationKey("subject", "ally"):   {FactionA: "subject", FactionB: "ally", Stance: faction.StanceAllied},
+			faction.RelationKey("subject", "vassal"): {FactionA: "subject", FactionB: "vassal", Stance: faction.StanceAllied},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "subject", ToFactionID: "ally"},
+		},
+	}
+	factions := sortedFactions(gs)
+
+	if got := diplomacyRelationCategoryCount(gs, "subject", factions, diplomacyRelationWar); got != 1 {
+		t.Fatalf("savaş listesi yanlış: got=%d want=1", got)
+	}
+	if got := diplomacyRelationCategoryCount(gs, "subject", factions, diplomacyRelationAlliance); got != 1 {
+		t.Fatalf("realm içi vassal gerçek ittifaka karışmamalı: got=%d want=1", got)
+	}
+	if got := diplomacyRelationCategoryCount(gs, "subject", factions, diplomacyRelationTrade); got != 1 {
+		t.Fatalf("ticaret listesi aktif rotadan okunmalı: got=%d want=1", got)
+	}
+	if got := directVassalCount(gs, "subject"); got != 1 {
+		t.Fatalf("bağlı devlet sayısı yanlış: got=%d want=1", got)
 	}
 }
 
@@ -166,6 +202,88 @@ func TestHandleDiplomacyInputBlocksInvalidPeaceOffer(t *testing.T) {
 	}
 }
 
+func TestHandleDiplomacyInputVassalManagementAndDisabledActions(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Gold: 100},
+			"vassal": {ID: "vassal", NameTR: "Bağlı Devlet", OverlordID: "player"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "vassal"): {FactionA: "player", FactionB: "vassal", Stance: faction.StanceAllied, Score: 40},
+		},
+	}
+	r := &Renderer{
+		gs:                     gs,
+		showDiplomacy:          true,
+		diplomacyTargetFaction: "vassal",
+		diplomacyActionFocus:   4,
+	}
+
+	warButton := buildDiplomacyActionButtons(gs, "vassal")[0].Button
+	r.handleDiplomacyInput(gameui.InputState{MouseX: warButton.X + 1, MouseY: warButton.Y + 1, LeftJustPressed: true})
+	if r.diplomacyActionFocus != 4 {
+		t.Fatalf("pasif savaş düğmesi seçimi değiştirmemeli, got=%d", r.diplomacyActionFocus)
+	}
+
+	management := buildDiplomacyVassalManagementLayout()
+	r.handleDiplomacyInput(gameui.InputState{MouseX: management.releaseButton.X + 1, MouseY: management.releaseButton.Y + 1, LeftJustPressed: true})
+	if !r.confirmDialog.show {
+		t.Fatal("vasallığı bitirme düğmesi onay penceresi açmalı")
+	}
+	if r.confirmDialog.pendingAction.Kind != ActionReleaseVassal || r.confirmDialog.pendingAction.TargetFaction != "vassal" {
+		t.Fatalf("yanlış vasallık yönetim aksiyonu: %+v", r.confirmDialog.pendingAction)
+	}
+}
+
+func TestDiplomacyEstablishedAgreementsBecomeCancellationActions(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"): {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied, Score: 60},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "player", ToFactionID: "ally"},
+			{FromFactionID: "ally", ToFactionID: "player"},
+		},
+	}
+
+	if got := diplomacyActionForTarget(gs, "ally", 2); got != ActionCancelAlliance {
+		t.Fatalf("kurulu ittifak iptal aksiyonuna dönüşmeli, got=%s", got)
+	}
+	if got := diplomacyActionForTarget(gs, "ally", 3); got != ActionCancelTrade {
+		t.Fatalf("kurulu ticaret iptal aksiyonuna dönüşmeli, got=%s", got)
+	}
+	buttons := buildDiplomacyActionButtons(gs, "ally")
+	if buttons[2].Button.Label != "İttifakı Bitir" || buttons[3].Button.Label != "Ticareti Bitir" {
+		t.Fatalf("iptal düğmesi etiketleri yanlış: alliance=%q trade=%q", buttons[2].Button.Label, buttons[3].Button.Label)
+	}
+
+	r := &Renderer{gs: gs, showDiplomacy: true, diplomacyTargetFaction: "ally"}
+	r.handleDiplomacyInput(gameui.InputState{MouseX: buttons[2].Button.X + 1, MouseY: buttons[2].Button.Y + 1, LeftJustPressed: true})
+	send := buildDiplomacySendButtonForAction(ActionCancelAlliance)
+	action := r.handleDiplomacyInput(gameui.InputState{MouseX: send.X + 1, MouseY: send.Y + 1, LeftJustPressed: true})
+	if action.Kind != ActionCancelAlliance || action.TargetFaction != "ally" {
+		t.Fatalf("ittifak iptal input aksiyonu yanlış: %+v", action)
+	}
+}
+
 func TestDiplomacyTradeChanceUsesRealAcceptanceRules(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
@@ -296,10 +414,11 @@ func TestHandleDiplomacyInputHistoryClickOpensRelevantFaction(t *testing.T) {
 		},
 	}
 	r := &Renderer{
-		gs:            gs,
-		showDiplomacy: true,
-		prevKeys:      make(map[ebiten.Key]bool),
-		prevMouse:     make(map[ebiten.MouseButton]bool),
+		gs:                      gs,
+		showDiplomacy:           true,
+		diplomacyHistoryVisible: true,
+		prevKeys:                make(map[ebiten.Key]bool),
+		prevMouse:               make(map[ebiten.MouseButton]bool),
 	}
 
 	layout := diplomacyListLayoutForScreen()
@@ -364,10 +483,11 @@ func TestHandleDiplomacyInputHistoryFiltersUpdateState(t *testing.T) {
 		},
 	}
 	r := &Renderer{
-		gs:            gs,
-		showDiplomacy: true,
-		prevKeys:      make(map[ebiten.Key]bool),
-		prevMouse:     make(map[ebiten.MouseButton]bool),
+		gs:                      gs,
+		showDiplomacy:           true,
+		diplomacyHistoryVisible: true,
+		prevKeys:                make(map[ebiten.Key]bool),
+		prevMouse:               make(map[ebiten.MouseButton]bool),
 	}
 
 	layout := diplomacyListLayoutForScreen()
@@ -394,6 +514,36 @@ func TestHandleDiplomacyInputHistoryFiltersUpdateState(t *testing.T) {
 	}
 	if r.diplomacyHistoryActionFilter != ActionProposeTrade {
 		t.Fatalf("ticaret filtresi seçilemedi, got=%s", r.diplomacyHistoryActionFilter)
+	}
+}
+
+func TestHandleDiplomacyInputTogglesRelationsAndHistory(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+	}
+	r := &Renderer{gs: gs, showDiplomacy: true}
+	btn := buildDiplomacySideViewButton(diplomacyListLayoutForScreen().historyRect, false)
+	click := gameui.InputState{MouseX: btn.X + 1, MouseY: btn.Y + 1, LeftJustPressed: true}
+
+	r.handleDiplomacyInput(click)
+	if !r.diplomacyHistoryVisible {
+		t.Fatal("Geçmiş düğmesi geçmiş görünümünü açmalı")
+	}
+	btn = buildDiplomacySideViewButton(diplomacyListLayoutForScreen().historyRect, true)
+	click.MouseX, click.MouseY = btn.X+1, btn.Y+1
+	r.handleDiplomacyInput(click)
+	if r.diplomacyHistoryVisible {
+		t.Fatal("İlişkiler düğmesi aktif ilişkiler görünümüne dönmeli")
 	}
 }
 
@@ -649,6 +799,7 @@ func TestHandleDiplomacyInputHistorySelectionRespectsFilters(t *testing.T) {
 	r := &Renderer{
 		gs:                              gs,
 		showDiplomacy:                   true,
+		diplomacyHistoryVisible:         true,
 		diplomacyHistoryDirectionFilter: diplomacyHistoryDirectionIncoming,
 		diplomacyHistoryActionFilter:    ActionProposeTrade,
 		prevKeys:                        make(map[ebiten.Key]bool),
@@ -694,10 +845,11 @@ func TestHandleDiplomacyInputHistoryHoverDoesNotMutateState(t *testing.T) {
 		},
 	}
 	r := &Renderer{
-		gs:            gs,
-		showDiplomacy: true,
-		prevKeys:      make(map[ebiten.Key]bool),
-		prevMouse:     make(map[ebiten.MouseButton]bool),
+		gs:                      gs,
+		showDiplomacy:           true,
+		diplomacyHistoryVisible: true,
+		prevKeys:                make(map[ebiten.Key]bool),
+		prevMouse:               make(map[ebiten.MouseButton]bool),
 	}
 
 	layout := diplomacyListLayoutForScreen()

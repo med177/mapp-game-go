@@ -210,6 +210,10 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	case actorOverlord == target || targetOverlord == actor:
 		switch action {
 		case ActionImproveRelations, ActionSendGift:
+		case ActionReleaseVassal, ActionAnnexVassal:
+			if targetOverlord != actor {
+				return "Yalnız doğrudan bağlı devlet yönetilebilir."
+			}
 		case ActionOfferVassalization:
 			if targetOverlord == actor {
 				return "Bu devlet zaten sana bağlı."
@@ -243,6 +247,13 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if score < 20 {
 			return "İttifak için ilişki puanı 20 altı."
 		}
+	case ActionCancelAlliance:
+		if sameRealm(gs, actor, target) {
+			return "Vassal bağı ittifak iptaliyle sona erdirilemez."
+		}
+		if stance != faction.StanceAllied {
+			return "Bu devletle aktif bir ittifak yok."
+		}
 	case ActionProposeTrade:
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken ticaret yapılamaz."
@@ -255,6 +266,13 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 		if assessment := AssessTradeProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
 			return assessment.BlockReason
+		}
+	case ActionCancelTrade:
+		if sameRealm(gs, actor, target) {
+			return "Vassal ticareti vassallık sürdüğü sürece iptal edilemez."
+		}
+		if !HasTradeRouteBetween(gs, actor, target) {
+			return "Bu devletle aktif bir ticaret anlaşması yok."
 		}
 	case ActionImproveRelations:
 		if stance == faction.StanceWar {
@@ -285,6 +303,10 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 		if assessment := AssessVassalizationProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
 			return assessment.BlockReason
+		}
+	case ActionReleaseVassal, ActionAnnexVassal:
+		if DirectOverlord(gs, target) != actor {
+			return "Hedef doğrudan sana bağlı bir devlet değil."
 		}
 	}
 	return ""
@@ -421,11 +443,33 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 	}
 	normalizeVassalRealmRelations(gs, root)
 	sanitizeVassalExternalDiplomacy(gs, target, root)
+	ensureTradeRoutesBetween(gs, actor, target)
 	synchronizeVassalWars(gs, root)
 	return Result{
 		Accepted: true,
 		Applied:  true,
 		Message:  factionLabel(gs, target) + " artık " + factionLabel(gs, actor) + " vassalı oldu.",
+	}
+}
+
+func releaseVassalage(gs *state.GameState, actor, target faction.FactionID) Result {
+	targetFaction := gs.Factions[target]
+	if targetFaction == nil {
+		return Result{Message: "Fraksiyon bulunamadı."}
+	}
+	targetFaction.OverlordID = ""
+	rel := EnsureRelation(gs, actor, target)
+	rel.Stance = faction.StanceTrade
+	if rel.Score < 25 {
+		rel.Score = 25
+	}
+	ensureTradeRoutesBetween(gs, actor, target)
+	normalizeVassalRealmRelations(gs, actor)
+	normalizeVassalRealmRelations(gs, target)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, target) + " artık bağımsız bir devlet; ticaret anlaşması devam ediyor.",
 	}
 }
 
@@ -529,6 +573,7 @@ func NormalizeVassalage(gs *state.GameState) {
 		if root := realmRoot(gs, fid); root != fid {
 			normalizeVassalRealmRelations(gs, root)
 			sanitizeVassalExternalDiplomacy(gs, fid, root)
+			ensureTradeRoutesBetween(gs, f.OverlordID, fid)
 		}
 	}
 }

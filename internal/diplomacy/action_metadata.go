@@ -1,9 +1,10 @@
 package diplomacy
 
 type ActionDef struct {
-	Action  Action
-	LabelTR string
-	Quick   bool
+	Action     Action
+	LabelTR    string
+	Quick      bool
+	Contextual bool
 }
 
 var actionDefs = []ActionDef{
@@ -11,9 +12,13 @@ var actionDefs = []ActionDef{
 	{Action: ActionProposePeace, LabelTR: "Barış", Quick: true},
 	{Action: ActionProposeAlliance, LabelTR: "İttifak", Quick: true},
 	{Action: ActionProposeTrade, LabelTR: "Ticaret", Quick: true},
+	{Action: ActionCancelAlliance, LabelTR: "İttifakı Bitir", Contextual: true},
+	{Action: ActionCancelTrade, LabelTR: "Ticareti Bitir", Contextual: true},
 	{Action: ActionImproveRelations, LabelTR: "Heyet"},
 	{Action: ActionSendGift, LabelTR: "Hediye"},
 	{Action: ActionOfferVassalization, LabelTR: "Vassallık"},
+	{Action: ActionReleaseVassal, LabelTR: "Vasallığı Bitir", Contextual: true},
+	{Action: ActionAnnexVassal, LabelTR: "İlhak Et", Contextual: true},
 }
 
 var actionDefsByValue = func() map[Action]ActionDef {
@@ -27,7 +32,20 @@ var actionDefsByValue = func() map[Action]ActionDef {
 func VisibleActions() []Action {
 	out := make([]Action, 0, len(actionDefs))
 	for _, def := range actionDefs {
+		if def.Contextual {
+			continue
+		}
 		out = append(out, def.Action)
+	}
+	return out
+}
+
+func VassalManagementActions() []Action {
+	out := make([]Action, 0, 2)
+	for _, def := range actionDefs {
+		if def.Action == ActionReleaseVassal || def.Action == ActionAnnexVassal {
+			out = append(out, def.Action)
+		}
 	}
 	return out
 }

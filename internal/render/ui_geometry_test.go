@@ -327,6 +327,7 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	}
 	if list.historyRect.W > 0 {
 		assertRectInside(t, screenW, screenH, list.historyRect)
+		assertButtonInside(t, screenW, screenH, buildDiplomacySideViewButton(list.historyRect, false))
 	}
 	offer := diplomacyOfferLayoutForScreen()
 	if offer.panelRect.X < 0 || offer.panelRect.Y < 0 || offer.panelRect.X+offer.panelRect.W > screenW || offer.panelRect.Y+offer.panelRect.H > screenH {
@@ -334,6 +335,11 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	}
 	if offer.historyRect.W > 0 {
 		assertRectInside(t, screenW, screenH, offer.historyRect)
+		assertButtonInside(t, screenW, screenH, buildDiplomacySideViewButton(offer.historyRect, true))
+		management := buildDiplomacyVassalManagementLayout()
+		assertRectInside(t, screenW, screenH, management.panelRect)
+		assertButtonInside(t, screenW, screenH, management.releaseButton)
+		assertButtonInside(t, screenW, screenH, management.annexButton)
 		buttons := buildDiplomacyHistoryFilterButtons(offer.historyRect, diplomacyHistoryDirectionAll, ActionNone)
 		actionRowBottom := buttons[3].Button.Y + buttons[3].Button.H
 		firstCardY := diplomacyOfferHistoryCardRect(offer.historyRect, 0).Y
@@ -349,7 +355,7 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	assertButtonInside(t, screenW, screenH, buildDiplomacyCloseButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacyBackButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacySendButton())
-	for _, btn := range buildDiplomacyActionButtons() {
+	for _, btn := range buildDiplomacyActionButtons(nil, "") {
 		assertButtonInside(t, screenW, screenH, btn.Button)
 	}
 }

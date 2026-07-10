@@ -88,6 +88,42 @@ func TestResolvePendingConquestDecisionVassalizesDefender(t *testing.T) {
 	}
 }
 
+func TestAnnexVassalTransfersRealmAssets(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.Factions["enemy"].OverlordID = "player"
+	g.gs.Factions["enemy"].Gold = 90
+	g.gs.Factions["enemy"].Grain = 45
+	g.gs.Regions["enemy_second"] = &world.Region{ID: "enemy_second", OwnerID: "enemy", NameTR: "İkinci Bölge"}
+	g.gs.ProductionQueue = []state.ProductionOrder{
+		{ID: "enemy_build", Kind: "building", FactionID: "enemy", RegionID: "enemy_second", TypeID: "farm", TurnsLeft: 2},
+	}
+	playerGold := g.gs.Factions["player"].Gold
+	playerGrain := g.gs.Factions["player"].Grain
+
+	g.annexVassal("enemy")
+
+	if !g.gs.Factions["enemy"].IsEliminated {
+		t.Fatal("ilhak edilen vassal elenmiş olarak işaretlenmeli")
+	}
+	for _, rid := range []world.RegionID{"enemy_cap", "enemy_second"} {
+		if got := g.gs.Regions[rid].OwnerID; got != "player" {
+			t.Fatalf("%s oyuncuya geçmeliydi, got=%s", rid, got)
+		}
+	}
+	if got := g.gs.Armies["def"].OwnerID; got != "player" {
+		t.Fatalf("vassal ordusu oyuncuya devredilmeliydi, got=%s", got)
+	}
+	if got := g.gs.Factions["player"].Gold; got != playerGold+90 {
+		t.Fatalf("vassal altını devredilmeliydi, got=%d", got)
+	}
+	if got := g.gs.Factions["player"].Grain; got != playerGrain+45 {
+		t.Fatalf("vassal tahılı devredilmeliydi, got=%d", got)
+	}
+	if got := g.gs.ProductionQueue[0].FactionID; got != "player" {
+		t.Fatalf("vassal üretim emri oyuncuya devredilmeliydi, got=%s", got)
+	}
+}
+
 func TestCaptureBesiegedRegionQueuesDecisionOnFinalProvince(t *testing.T) {
 	g := conquestDecisionTestGame()
 	attacker := g.gs.Armies["atk"]

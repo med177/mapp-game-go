@@ -331,12 +331,10 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
 			continue
 		}
-		if navalSeaMove {
-			key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
-			rel, exists := s.Relations[key]
-			if !exists || rel == nil || rel.Stance != faction.StanceWar {
-				continue
-			}
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+		rel, exists := s.Relations[key]
+		if !exists || rel == nil || rel.Stance != faction.StanceWar {
+			continue
 		}
 		power := 0
 		if s.UnitTypes != nil {

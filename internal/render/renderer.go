@@ -92,6 +92,7 @@ type Renderer struct {
 	diplomacyActionFocus            int
 	diplomacyTargetFaction          faction.FactionID
 	diplomacyOfferHistoryBrowse     faction.FactionID
+	diplomacyHistoryVisible         bool
 	diplomacyHistoryDirectionFilter diplomacyHistoryDirectionFilter
 	diplomacyHistoryActionFilter    ActionKind
 
@@ -746,6 +747,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.diplomacyActionFocus = 0
 	r.diplomacyTargetFaction = ""
 	r.diplomacyOfferHistoryBrowse = ""
+	r.diplomacyHistoryVisible = false
 	r.showTech = false
 	r.techCursor = 0
 	r.techDragging = false
@@ -1067,7 +1069,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
+		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
 	}
 
 	// 8. Teknoloji paneli (üst katman)
@@ -7442,6 +7444,7 @@ func (r *Renderer) HandleInput() InputAction {
 		r.diplomacyScroll = 0
 		r.diplomacyActionFocus = 0
 		r.diplomacyTargetFaction = ""
+		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyM) {
@@ -7737,6 +7740,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyScroll = 0
 		r.diplomacyActionFocus = 0
 		r.diplomacyTargetFaction = ""
+		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
 	if bottomButtons[2].HitTest(fx, fy) {
@@ -8959,6 +8963,7 @@ func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.Inp
 				r.showDiplomacy = true
 				r.diplomacyTargetFaction = target
 				r.diplomacyActionFocus = actionFocus
+				r.diplomacyHistoryVisible = false
 				for i, fid := range factions {
 					if fid == target {
 						r.diplomacyFocus = i

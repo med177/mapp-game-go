@@ -9,6 +9,12 @@ func TestActionLabelTR(t *testing.T) {
 	if got := ActionLabelTR(ActionOfferVassalization); got != "Vassallık" {
 		t.Fatalf("new action label mismatch: got=%q", got)
 	}
+	if got := ActionLabelTR(ActionReleaseVassal); got != "Vasallığı Bitir" {
+		t.Fatalf("release action label mismatch: got=%q", got)
+	}
+	if got := ActionLabelTR(ActionCancelAlliance); got != "İttifakı Bitir" {
+		t.Fatalf("cancel alliance label mismatch: got=%q", got)
+	}
 }
 
 func TestVisibleActionsOrder(t *testing.T) {
@@ -18,6 +24,10 @@ func TestVisibleActionsOrder(t *testing.T) {
 	}
 	if actions[0] != ActionDeclareWar || actions[3] != ActionProposeTrade || actions[6] != ActionOfferVassalization {
 		t.Fatalf("unexpected action order: got=%v", actions)
+	}
+	management := VassalManagementActions()
+	if len(management) != 2 || management[0] != ActionReleaseVassal || management[1] != ActionAnnexVassal {
+		t.Fatalf("unexpected vassal management actions: got=%v", management)
 	}
 }
 
