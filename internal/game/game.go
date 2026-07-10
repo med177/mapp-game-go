@@ -275,9 +275,9 @@ func (g *Game) Update() error {
 		case render.ActionCancelResearch:
 			g.cancelResearch()
 		case render.ActionDeclareWar:
-			g.declareWar(action.TargetFaction)
+			g.declareWar(action.TargetFaction, action.WarAllies)
 		case render.ActionDeclareWarAndMove:
-			g.declareWar(action.TargetFaction)
+			g.declareWar(action.TargetFaction, action.WarAllies)
 			// Savaş ilan edildikten sonra relation map güncelleniyor,
 			// moveArmy içinde bu güncel durum kontrol edilecek.
 			g.moveArmyWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
@@ -1625,9 +1625,14 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 }
 
 // declareWar hedef fraksiyona savaş ilan eder.
-func (g *Game) declareWar(targetID faction.FactionID) {
-	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionDeclareWar)
+func (g *Game) declareWar(targetID faction.FactionID, calledAllies []faction.FactionID) {
+	result := diplomacy.ExecuteWarDeclaration(g.gs, g.gs.PlayerFactionID, targetID, calledAllies)
 	g.renderer.ShowCombatResult(result.Message)
+	if result.Applied {
+		report := g.buildWarSummary(targetID, result)
+		g.renderer.ShowWarSummary(report)
+		g.renderer.AddEventDetail("[SAVAŞ] "+result.Message, warSummaryDetailText(report))
+	}
 }
 
 // proposeAlliance hedefe ittifak teklif eder; kabul aynı diplomacy assessment helper'ı ile belirlenir.

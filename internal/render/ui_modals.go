@@ -67,20 +67,20 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 }
 
 func buildWarConfirmModal() gameui.Modal {
-	const dlgW, dlgH = 380.0, 130.0
+	const dlgW, dlgH = 960.0, 560.0
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
 func buildWarConfirmButtons() (gameui.Button, gameui.Button) {
-	const btnW, btnH = 110.0, 36.0
+	const btnW, btnH = 176.0, 38.0
 	modal := buildWarConfirmModal()
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 16
 	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 10
 	noX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 10
-	return gameui.NewButton(yesX, btnY, btnW, btnH, "Savas Ilan Et").WithIcon(gameui.IconSword),
-		gameui.NewButton(noX, btnY, btnW, btnH, "Hayir").WithIcon(gameui.IconClose)
+	return gameui.NewButton(yesX, btnY, btnW, btnH, "Savaş İlan Et").WithIcon(gameui.IconSword),
+		gameui.NewButton(noX, btnY, btnW, btnH, "İptal").WithIcon(gameui.IconClose)
 }
 
 func buildBattlePlanModal() gameui.Modal {

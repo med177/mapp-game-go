@@ -98,6 +98,7 @@ type InputAction struct {
 	BuildingID    string
 	Quantity      int
 	TargetFaction faction.FactionID
+	WarAllies     []faction.FactionID
 	Delta         int // AdjustTax için: +5 veya -5
 	OfferIndex    int
 	OfferAccepted bool

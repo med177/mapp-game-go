@@ -57,6 +57,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.warSummary.show {
+		if r.warSummaryHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.battlePlan.show {
 		if r.battlePlanHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -290,7 +298,29 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 
 func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
 	acceptBtn, declineBtn := buildWarConfirmButtons()
-	return acceptBtn.HitTest(fx, fy) || declineBtn.HitTest(fx, fy)
+	if acceptBtn.HitTest(fx, fy) || declineBtn.HitTest(fx, fy) {
+		return true
+	}
+	leftRect, rightRect := warConfirmSideRects(buildWarConfirmModal())
+	leftViewport := warConfirmCallViewport(leftRect, len(r.warConfirm.preview.Attacker.AutoParticipants))
+	rightViewport := warConfirmCallViewport(rightRect, len(r.warConfirm.preview.Defender.AutoParticipants))
+	if leftViewport.Hit(fx, fy) || rightViewport.Hit(fx, fy) {
+		return true
+	}
+	for _, checkbox := range warConfirmCheckboxes(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, r.warConfirm.attackerScroll) {
+		if checkbox.HitTest(fx, fy) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) warSummaryHovering(fx, fy float64) bool {
+	if warSummaryCloseHit(fx, fy) {
+		return true
+	}
+	layout := buildWarSummaryLayout()
+	return layout.attackerListRect.Hit(fx, fy) || layout.defenderListRect.Hit(fx, fy)
 }
 
 func (r *Renderer) battlePlanHovering(fx, fy float64) bool {

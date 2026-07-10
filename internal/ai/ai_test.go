@@ -119,13 +119,14 @@ func TestAIQueuesAllianceAndTradeOffersWithPriority(t *testing.T) {
 			"common_en": {ID: "common_en", NameTR: "Enemy", Religion: religion.Catholic},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"player_land":    {ID: "player_land", OwnerID: "player", TradeCapacity: 8},
-			"ai_allied_land": {ID: "ai_allied_land", OwnerID: "ai_allied", TradeCapacity: 4},
-			"ai_trader_land": {ID: "ai_trader_land", OwnerID: "ai_trader", TradeCapacity: 4},
-			"enemy_land":     {ID: "enemy_land", OwnerID: "common_en", TradeCapacity: 4},
+			"player_land":    {ID: "player_land", OwnerID: "player", TradeCapacity: 8, Buildings: []string{"port"}, Neighbors: []world.RegionID{"enemy_land", "ai_allied_land", "sea_trade"}},
+			"ai_allied_land": {ID: "ai_allied_land", OwnerID: "ai_allied", TradeCapacity: 4, Neighbors: []world.RegionID{"player_land"}},
+			"ai_trader_land": {ID: "ai_trader_land", OwnerID: "ai_trader", TradeCapacity: 4, Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea_trade"}},
+			"sea_trade":      {ID: "sea_trade", IsSea: true, Neighbors: []world.RegionID{"player_land", "ai_trader_land"}},
+			"enemy_land":     {ID: "enemy_land", OwnerID: "common_en", TradeCapacity: 4, Neighbors: []world.RegionID{"player_land"}},
 		},
 		Relations: map[string]*faction.Relation{
-			faction.RelationKey("ai_allied", "player"):    {FactionA: "ai_allied", FactionB: "player", Score: 20, Stance: faction.StancePeace},
+			faction.RelationKey("ai_allied", "player"):    {FactionA: "ai_allied", FactionB: "player", Score: 30, Stance: faction.StancePeace},
 			faction.RelationKey("ai_trader", "player"):    {FactionA: "ai_trader", FactionB: "player", Score: 15, Stance: faction.StancePeace},
 			faction.RelationKey("ai_allied", "common_en"): {FactionA: "ai_allied", FactionB: "common_en", Score: -80, Stance: faction.StanceWar},
 			faction.RelationKey("player", "common_en"):    {FactionA: "player", FactionB: "common_en", Score: -80, Stance: faction.StanceWar},
@@ -243,8 +244,144 @@ func TestAIQueuesAllianceOfferAgainstSharedMajorThreat(t *testing.T) {
 	}
 }
 
+func TestAIDoesNotQueueAllianceWithoutRegionalOrStrategicBasis(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic, Gold: 600, Grain: 300},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Catholic, Gold: 420, Grain: 220, AIAggressiveness: 55},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_land": {ID: "player_land", OwnerID: "player", TradeCapacity: 6},
+			"ai_land":     {ID: "ai_land", OwnerID: "ai_1", TradeCapacity: 4},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: 40, Stance: faction.StancePeace},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player_army": {ID: "player_army", OwnerID: "player", RegionID: "player_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"ai_army":     {ID: "ai_army", OwnerID: "ai_1", RegionID: "ai_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if len(gs.DiplomaticOffers) > 0 && gs.DiplomaticOffers[0].Action == string(diplomacy.ActionProposeAlliance) {
+		t.Fatalf("uzak ve alakasiz hedefe alliance spam olmamaliydi, got=%+v", gs.DiplomaticOffers)
+	}
+}
+
+func TestAIDoesNotOfferAllianceToTinyStateWithoutMeaningfulBenefit(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Kucuk Devlet", Religion: religion.Catholic, Gold: 120, Grain: 80},
+			"ai_1":   {ID: "ai_1", NameTR: "Buyuk Guc", Religion: religion.Catholic, Gold: 900, Grain: 500, AIAggressiveness: 55},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"p1": {ID: "p1", OwnerID: "player", TradeCapacity: 4, Neighbors: []world.RegionID{"a1"}},
+			"a1": {ID: "a1", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"p1", "a2"}},
+			"a2": {ID: "a2", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"a1", "a3"}},
+			"a3": {ID: "a3", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"a2", "a4"}},
+			"a4": {ID: "a4", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"a3"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Score: 40, Stance: faction.StancePeace},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player_army": {ID: "player_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"ai_army_1": {
+				ID:       "ai_army_1",
+				OwnerID:  "ai_1",
+				RegionID: "a1",
+				Units: []army.Unit{
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+				},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if len(gs.DiplomaticOffers) > 0 && gs.DiplomaticOffers[0].Action == string(diplomacy.ActionProposeAlliance) {
+		t.Fatalf("buyuk guc kucuk devlete menfaatsiz alliance atmamalıydi, got=%+v", gs.DiplomaticOffers)
+	}
+}
+
+func TestAICancelsUnsupportedAllianceUnderExpansionPressure(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].AIExpansionTargets = []faction.FactionID{"ai_2"}
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	rel.Stance = faction.StanceAllied
+	rel.Score = 38
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if rel.Stance != faction.StancePeace {
+		t.Fatalf("genisleme baskisindaki anlamsiz alliance bozulmaliydi, got=%s", rel.Stance)
+	}
+}
+
+func TestAICancelsAllianceWithTinyStateWhenBenefitIsTooLow(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai_1":   {ID: "ai_1", NameTR: "Buyuk Guc", Religion: religion.Catholic},
+			"minor":  {ID: "minor", NameTR: "Kucuk Devlet", Religion: religion.Catholic},
+			"other1": {ID: "other1", NameTR: "Other 1", Religion: religion.Catholic},
+			"other2": {ID: "other2", NameTR: "Other 2", Religion: religion.Catholic},
+			"other3": {ID: "other3", NameTR: "Other 3", Religion: religion.Catholic},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"minor_land": {ID: "minor_land", OwnerID: "minor", TradeCapacity: 4, Neighbors: []world.RegionID{"core_1"}},
+			"core_1":     {ID: "core_1", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"minor_land", "core_2"}},
+			"core_2":     {ID: "core_2", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"core_1", "core_3"}},
+			"core_3":     {ID: "core_3", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"core_2", "core_4"}},
+			"core_4":     {ID: "core_4", OwnerID: "ai_1", TradeCapacity: 6, Neighbors: []world.RegionID{"core_3"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "minor"): {FactionA: "ai_1", FactionB: "minor", Score: 40, Stance: faction.StanceAllied},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"minor_army": {ID: "minor_army", OwnerID: "minor", RegionID: "minor_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"core_army": {
+				ID:       "core_army",
+				OwnerID:  "ai_1",
+				RegionID: "core_1",
+				Units: []army.Unit{
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+				},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if rel := gs.Relations[faction.RelationKey("ai_1", "minor")]; rel == nil || rel.Stance != faction.StancePeace {
+		t.Fatalf("menfaatsiz kucuk alliance bozulmaliydi, got=%+v", rel)
+	}
+}
+
 func TestAIStartsTradeOnHealthyPeace(t *testing.T) {
 	gs := aiTestState()
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
 	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
 	rel.Stance = faction.StancePeace
 	rel.Score = 20
@@ -269,6 +406,9 @@ func TestCoalitionUsesDiplomacyEngine(t *testing.T) {
 	gs.Regions["p6"] = &world.Region{ID: "p6", OwnerID: "player"}
 	gs.Regions["p7"] = &world.Region{ID: "p7", OwnerID: "player"}
 	gs.Regions["p8"] = &world.Region{ID: "p8", OwnerID: "player"}
+	gs.Regions["a1"].Neighbors = []world.RegionID{"p1"}
+	gs.Regions["p1"].Neighbors = []world.RegionID{"a1", "b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"p1"}
 
 	FormCoalitionAgainstPlayer(gs, "ai_1")
 

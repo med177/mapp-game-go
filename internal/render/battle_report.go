@@ -153,6 +153,13 @@ func (r *Renderer) ShowBattleReport(report BattleReport) {
 	if report.Title == "" {
 		report.Title = battleReportDefaultTitleTR(report.Scene)
 	}
+	if r.warSummary.show {
+		r.queuedBattleReport = battleReportState{
+			show: true,
+			data: report,
+		}
+		return
+	}
 	r.battleReport = battleReportState{
 		show: true,
 		data: report,

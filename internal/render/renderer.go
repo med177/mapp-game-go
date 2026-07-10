@@ -162,6 +162,8 @@ type Renderer struct {
 	historicalEventFocus   int
 	showHistoricalEvent    bool
 	battleReport           battleReportState
+	queuedBattleReport     battleReportState
+	warSummary             warSummaryState
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -378,6 +380,10 @@ type warConfirmState struct {
 	opensBattlePlan bool
 	battleAction    ActionKind
 	battleContext   combat.BattleContext
+	preview         diplomacy.WarDeclarationPreview
+	selectedAllies  map[faction.FactionID]bool
+	attackerScroll  int
+	defenderScroll  int
 }
 
 func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
@@ -407,6 +413,25 @@ type battlePlanState struct {
 	defenderFaction string
 	focus           int
 	previews        [3]combat.Preview
+}
+
+func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext) {
+	if r == nil || r.gs == nil || targetID == "" {
+		return
+	}
+	r.warConfirm = warConfirmState{
+		show:            true,
+		factionName:     targetName,
+		factionID:       string(targetID),
+		pendingArmy:     pendingArmy,
+		pendingDest:     pendingDest,
+		pendingEnemy:    pendingEnemy,
+		opensBattlePlan: opensBattlePlan,
+		battleAction:    battleAction,
+		battleContext:   battleContext,
+		preview:         diplomacy.BuildWarDeclarationPreview(r.gs, r.gs.PlayerFactionID, targetID),
+		selectedAllies:  make(map[faction.FactionID]bool),
+	}
 }
 
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
@@ -644,6 +669,8 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.confirmDialog = confirmDialogState{}
 	r.queuedConfirmDialog = confirmDialogState{}
 	r.battleReport = battleReportState{}
+	r.queuedBattleReport = battleReportState{}
+	r.warSummary = warSummaryState{}
 	r.eventLogScroll = 0
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
@@ -762,6 +789,8 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.eventDetail = ""
 	r.showVictoryDetail = false
 	r.victoryDetailScroll = 0
+	r.warSummary = warSummaryState{}
+	r.queuedBattleReport = battleReportState{}
 }
 
 func (r *Renderer) worldInputLockedByPhase() bool {
@@ -1086,6 +1115,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
+	} else if r.warSummary.show {
+		drawWarSummaryDialog(screen, r.warSummary)
 	} else if r.battlePlan.show {
 		r.drawBattlePlanDialog(screen)
 	} else if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -1166,7 +1197,7 @@ func (r *Renderer) tradeOverlayVisible() bool {
 	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
 		return false
 	}
-	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
+	if r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -7220,6 +7251,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.warConfirm.show {
 		return r.handleWarConfirmInput()
 	}
+	if r.warSummary.show {
+		return r.handleWarSummaryInput()
+	}
 	if r.battlePlan.show {
 		return r.handleBattlePlanInput()
 	}
@@ -8138,19 +8172,11 @@ func (r *Renderer) handleRightClick() InputAction {
 				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
 					name = f.NameTR
 				}
-				r.warConfirm = warConfirmState{
-					show:            true,
-					factionName:     name,
-					factionID:       target.OwnerID,
-					pendingArmy:     r.SelectedArmy,
-					pendingDest:     rid,
-					opensBattlePlan: opensBattlePlan,
-					battleAction:    battleAction,
-					battleContext:   battleContext,
-				}
+				pendingEnemy := army.ArmyID("")
 				if enemyArmy != nil {
-					r.warConfirm.pendingEnemy = enemyArmy.ID
+					pendingEnemy = enemyArmy.ID
 				}
+				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan, battleAction, battleContext)
 				return InputAction{}
 			}
 		}
@@ -8345,7 +8371,7 @@ func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *wo
 	if r == nil || r.gs == nil || r.gs.Phase != state.PhasePlayerTurn || r.SelectedArmy == "" {
 		return nil, nil, nil, false
 	}
-	if r.confirmDialog.show || r.warConfirm.show || r.battlePlan.show || r.showHistoricalEvent ||
+	if r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.showHistoricalEvent ||
 		r.battleReport.show || r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
 		r.showTech || r.showTrade {
 		return nil, nil, nil, false
@@ -8488,18 +8514,290 @@ func battlePlanHPText(expected, minLoss, maxLoss int) string {
 
 // --- Savaş ilan onay diyalogu ---
 
+func warConfirmSideRects(modal gameui.Modal) (gameui.Rect, gameui.Rect) {
+	panel := modal.Panel.Rect
+	const (
+		pad = 22.0
+		gap = 18.0
+	)
+	contentY := panel.Y + 118
+	contentH := panel.H - 188
+	sideW := (panel.W - pad*2 - gap) / 2
+	left := gameui.Rect{X: panel.X + pad, Y: contentY, W: sideW, H: contentH}
+	right := gameui.Rect{X: left.X + sideW + gap, Y: contentY, W: sideW, H: contentH}
+	return left, right
+}
+
+func warConfirmCallHeaderY(sideRect gameui.Rect, autoCount int) float64 {
+	base := sideRect.Y + 182
+	y := sideRect.Y + 90 + float64(autoCount)*60 + 10
+	if y > base {
+		return y
+	}
+	return base
+}
+
+func warConfirmCallViewport(sideRect gameui.Rect, autoCount int) gameui.Rect {
+	headerY := warConfirmCallHeaderY(sideRect, autoCount)
+	top := headerY + 26
+	bottom := sideRect.Y + sideRect.H - 10
+	if bottom < top {
+		bottom = top
+	}
+	return gameui.Rect{
+		X: sideRect.X + 10,
+		Y: top,
+		W: sideRect.W - 20,
+		H: bottom - top,
+	}
+}
+
+func warConfirmVisibleRows(viewport gameui.Rect) int {
+	rows := int(viewport.H / 52)
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func warConfirmMaxScroll(entryCount int, viewport gameui.Rect) int {
+	maxScroll := entryCount - warConfirmVisibleRows(viewport)
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func clampWarConfirmScroll(entryCount int, viewport gameui.Rect, scroll int) int {
+	if scroll < 0 {
+		return 0
+	}
+	maxScroll := warConfirmMaxScroll(entryCount, viewport)
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func warConfirmEntryRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
+	return gameui.Rect{
+		X: viewport.X,
+		Y: viewport.Y + float64(visibleIndex*52),
+		W: viewport.W,
+		H: 44,
+	}
+}
+
+func warConfirmCheckboxes(viewport gameui.Rect, entries []diplomacy.WarParticipantPreview, selected map[faction.FactionID]bool, scroll int) []gameui.Checkbox {
+	if len(entries) == 0 {
+		return nil
+	}
+	scroll = clampWarConfirmScroll(len(entries), viewport, scroll)
+	visibleRows := warConfirmVisibleRows(viewport)
+	end := scroll + visibleRows
+	if end > len(entries) {
+		end = len(entries)
+	}
+	checkboxes := make([]gameui.Checkbox, 0, end-scroll)
+	for i := scroll; i < end; i++ {
+		rowRect := warConfirmEntryRowRect(viewport, i-scroll)
+		box := gameui.NewCheckbox(rowRect.X+2, rowRect.Y, rowRect.W-4, rowRect.H, "")
+		box.Checked = selected[entries[i].FactionID]
+		checkboxes = append(checkboxes, box)
+	}
+	return checkboxes
+}
+
+func warConfirmEntryIndexAt(viewport gameui.Rect, entries []diplomacy.WarParticipantPreview, scroll int, mx, my float64) int {
+	if len(entries) == 0 || !viewport.Hit(mx, my) {
+		return -1
+	}
+	scroll = clampWarConfirmScroll(len(entries), viewport, scroll)
+	for visibleIdx, checkbox := range warConfirmCheckboxes(viewport, entries, nil, scroll) {
+		if checkbox.HitTest(mx, my) {
+			return scroll + visibleIdx
+		}
+	}
+	return -1
+}
+
+func drawWarConfirmScrollbar(screen *ebiten.Image, viewport gameui.Rect, entryCount, scroll int) {
+	maxScroll := warConfirmMaxScroll(entryCount, viewport)
+	if maxScroll <= 0 {
+		return
+	}
+	scroll = clampWarConfirmScroll(entryCount, viewport, scroll)
+	track := gameui.Rect{
+		X: viewport.X + viewport.W - 6,
+		Y: viewport.Y,
+		W: 4,
+		H: viewport.H,
+	}
+	drawUICardRect(screen, track, color.RGBA{22, 20, 16, 210}, color.RGBA{72, 62, 42, 180}, 1)
+	thumbH := track.H * float64(warConfirmVisibleRows(viewport)) / float64(entryCount)
+	if thumbH < 24 {
+		thumbH = 24
+	}
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * float64(scroll) / float64(maxScroll)
+	}
+	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{176, 144, 78, 230}, color.RGBA{214, 190, 120, 210}, 1)
+}
+
+func warConfirmStatusText(entry diplomacy.WarParticipantPreview) string {
+	if entry.AutoJoin {
+		return "Kesin"
+	}
+	if entry.JoinChance <= 0 {
+		return entry.StatusTR
+	}
+	return entry.StatusTR + " · %" + itoa(entry.JoinChance)
+}
+
+func drawWarConfirmParticipantRow(screen *ebiten.Image, rowRect gameui.Rect, entry diplomacy.WarParticipantPreview, selected bool, selectable bool) {
+	fill := color.RGBA{24, 20, 14, 228}
+	border := color.RGBA{84, 68, 42, 220}
+	if selectable && selected {
+		fill = color.RGBA{46, 54, 28, 236}
+		border = color.RGBA{156, 182, 102, 245}
+	}
+	drawUICardRect(screen, rowRect, fill, border, 1)
+
+	textX := rowRect.X + 14
+	if selectable {
+		checkbox := gameui.NewCheckbox(rowRect.X+12, rowRect.Y+10, rowRect.W-24, 24, "")
+		checkbox.Checked = selected
+		gameui.DrawCheckbox(screen, checkbox, gameui.CheckboxStyle{
+			BoxBG:        color.RGBA{12, 14, 10, 255},
+			BoxBorder:    color.RGBA{140, 152, 108, 255},
+			CheckColor:   color.RGBA{176, 212, 116, 255},
+			TextColor:    ColorWhite,
+			DisabledText: ColorGray,
+			BoxSize:      16,
+			TextOffsetY:  0,
+			TextVariant:  gameui.TextSmall,
+			BorderWidth:  1,
+		}, renderText)
+		textX += 28
+	}
+
+	drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 8, W: rowRect.W - (textX - rowRect.X) - 110}, entry.NameTR, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 108, Y: rowRect.Y + 8, W: 96}, entry.RoleTR, color.RGBA{190, 170, 108, 255}, gameui.TextSmall, gameui.TextAlignEnd)
+	drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 24, W: rowRect.W - (textX - rowRect.X) - 10}, warConfirmStatusText(entry), color.RGBA{176, 200, 164, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	if entry.NoteTR != "" {
+		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 38, W: rowRect.W - (textX - rowRect.X) - 10}, entry.NoteTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
+}
+
+func drawWarConfirmSide(screen *ebiten.Image, sideRect gameui.Rect, title, leaderName, emptyAutoText, emptyCallText string, autoEntries, callableEntries []diplomacy.WarParticipantPreview, selected map[faction.FactionID]bool, selectable bool, scroll int) {
+	drawUICardRect(screen, sideRect, color.RGBA{18, 14, 10, 232}, color.RGBA{94, 74, 42, 210}, 1)
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 12, W: sideRect.W - 28}, title, color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 34, W: sideRect.W - 28}, "Lider: "+leaderName, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 66, W: sideRect.W - 28}, "Kesin Katılanlar", color.RGBA{194, 184, 136, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	y := sideRect.Y + 90
+	if len(autoEntries) == 0 {
+		drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: y + 8, W: sideRect.W - 28}, emptyAutoText, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	} else {
+		for _, entry := range autoEntries {
+			rowRect := gameui.Rect{X: sideRect.X + 10, Y: y, W: sideRect.W - 20, H: 52}
+			drawWarConfirmParticipantRow(screen, rowRect, entry, false, false)
+			y += 60
+		}
+	}
+
+	callHeaderY := warConfirmCallHeaderY(sideRect, len(autoEntries))
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: callHeaderY, W: sideRect.W - 28}, "Çağrılabilir Müttefikler", color.RGBA{194, 184, 136, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	if selectable {
+		drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: callHeaderY + 16, W: sideRect.W - 28}, "Seçip de gelmeyen müttefik ittifakı bozar ve ilişki düşürür.", color.RGBA{174, 146, 118, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	}
+	viewport := warConfirmCallViewport(sideRect, len(autoEntries))
+	if len(callableEntries) == 0 {
+		drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: viewport.Y + 8, W: sideRect.W - 28}, emptyCallText, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		return
+	}
+	scroll = clampWarConfirmScroll(len(callableEntries), viewport, scroll)
+	visibleRows := warConfirmVisibleRows(viewport)
+	end := scroll + visibleRows
+	if end > len(callableEntries) {
+		end = len(callableEntries)
+	}
+	for i := scroll; i < end; i++ {
+		rowRect := warConfirmEntryRowRect(viewport, i-scroll)
+		drawWarConfirmParticipantRow(screen, rowRect, callableEntries[i], selected[callableEntries[i].FactionID], selectable)
+	}
+	drawWarConfirmScrollbar(screen, viewport, len(callableEntries), scroll)
+}
+
+func selectedWarAlliesFromState(wc warConfirmState) []faction.FactionID {
+	if len(wc.preview.Attacker.CallableAllies) == 0 || len(wc.selectedAllies) == 0 {
+		return nil
+	}
+	selected := make([]faction.FactionID, 0, len(wc.selectedAllies))
+	for _, entry := range wc.preview.Attacker.CallableAllies {
+		if wc.selectedAllies[entry.FactionID] {
+			selected = append(selected, entry.FactionID)
+		}
+	}
+	return selected
+}
+
+func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
+	action := InputAction{
+		Kind:          ActionDeclareWar,
+		TargetFaction: faction.FactionID(wc.factionID),
+		WarAllies:     selectedWarAlliesFromState(wc),
+	}
+	if wc.pendingArmy == "" || wc.pendingDest == "" {
+		return action
+	}
+
+	attacker := r.gs.Armies[wc.pendingArmy]
+	target := r.gs.Regions[wc.pendingDest]
+	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
+	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
+		if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
+			r.openSiegeDecision(attacker, target)
+		} else {
+			r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
+		}
+		return action
+	}
+	if supportingSiege {
+		r.SelectedArmy = ""
+		action.Kind = ActionDeclareWarAndMove
+		action.ArmyID = wc.pendingArmy
+		action.TargetRegion = wc.pendingDest
+		return action
+	}
+	if wc.opensBattlePlan {
+		if attacker != nil && target != nil {
+			if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
+				r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
+			}
+		}
+		return action
+	}
+	r.SelectedArmy = ""
+	action.Kind = ActionDeclareWarAndMove
+	action.ArmyID = wc.pendingArmy
+	action.TargetRegion = wc.pendingDest
+	return action
+}
+
 func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
 	modal := buildWarConfirmModal()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 20, W: modal.Panel.Rect.W - 48}, r.warConfirm.factionName+" devletine savaş ilanı", color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 50, W: modal.Panel.Rect.W - 48}, "Bu ilanla hangi devletlerin cepheye çekilebileceğini aşağıda görüyorsun.", color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, "Sol tarafta kendi çağıracağın müttefikleri seçebilirsin.", color.RGBA{186, 170, 132, 255}, gameui.TextSmall, gameui.TextAlignCenter)
 
-	// Mesaj
-	msg := r.warConfirm.factionName + " ile savaş ilan edilsin mi?"
-	tw := MeasureText(msg, FaceMed)
-	DrawText(screen, msg, modal.Panel.Rect.X+(modal.Panel.Rect.W-tw)/2, modal.Panel.Rect.Y+18, FaceMed, color.RGBA{255, 220, 100, 255})
+	leftRect, rightRect := warConfirmSideRects(modal)
+	drawWarConfirmSide(screen, leftRect, "Senin Cephen", r.warConfirm.preview.Attacker.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Attacker.AutoParticipants, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, true, r.warConfirm.attackerScroll)
+	drawWarConfirmSide(screen, rightRect, "Karşı Cephe", r.warConfirm.preview.Defender.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Defender.AutoParticipants, r.warConfirm.preview.Defender.CallableAllies, nil, false, r.warConfirm.defenderScroll)
 
 	acceptBtn, declineBtn := buildWarConfirmButtons()
-	acceptBtn.Label = "Savaş İlan Et"
-	declineBtn.Label = "Hayır"
 	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{160, 40, 40, 230}, color.RGBA{205, 90, 90, 255}, color.RGBA{255, 220, 220, 255}, 10))
 	drawUIButtonWidget(screen, declineBtn,
@@ -8510,54 +8808,35 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
 	acceptBtn, declineBtn := buildWarConfirmButtons()
+	leftRect, rightRect := warConfirmSideRects(buildWarConfirmModal())
+	leftViewport := warConfirmCallViewport(leftRect, len(r.warConfirm.preview.Attacker.AutoParticipants))
+	rightViewport := warConfirmCallViewport(rightRect, len(r.warConfirm.preview.Defender.AutoParticipants))
+	_, wheelY := ebiten.Wheel()
+	if wheelY != 0 {
+		step := 1
+		if wheelY > 0 {
+			step = -1
+		}
+		switch {
+		case leftViewport.Hit(mx, my):
+			r.warConfirm.attackerScroll = clampWarConfirmScroll(len(r.warConfirm.preview.Attacker.CallableAllies), leftViewport, r.warConfirm.attackerScroll+step)
+			return InputAction{}
+		case rightViewport.Hit(mx, my):
+			r.warConfirm.defenderScroll = clampWarConfirmScroll(len(r.warConfirm.preview.Defender.CallableAllies), rightViewport, r.warConfirm.defenderScroll+step)
+			return InputAction{}
+		}
+	}
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if idx := warConfirmEntryIndexAt(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.attackerScroll, mx, my); idx >= 0 {
+			entry := r.warConfirm.preview.Attacker.CallableAllies[idx]
+			r.warConfirm.selectedAllies[entry.FactionID] = !r.warConfirm.selectedAllies[entry.FactionID]
+			return InputAction{}
+		}
 		if acceptBtn.HitTest(mx, my) {
 			wc := r.warConfirm
 			r.warConfirm = warConfirmState{}
-			attacker := r.gs.Armies[wc.pendingArmy]
-			target := r.gs.Regions[wc.pendingDest]
-			supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
-			if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-				if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
-					r.openSiegeDecision(attacker, target)
-				} else {
-					r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
-				}
-				return InputAction{
-					Kind:          ActionDeclareWar,
-					TargetFaction: faction.FactionID(wc.factionID),
-				}
-			}
-			if supportingSiege {
-				r.SelectedArmy = ""
-				return InputAction{
-					Kind:          ActionDeclareWarAndMove,
-					ArmyID:        wc.pendingArmy,
-					TargetRegion:  wc.pendingDest,
-					TargetFaction: faction.FactionID(wc.factionID),
-				}
-			}
-			if wc.opensBattlePlan {
-				if attacker != nil {
-					if target != nil {
-						if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
-							r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
-						}
-					}
-				}
-				return InputAction{
-					Kind:          ActionDeclareWar,
-					TargetFaction: faction.FactionID(wc.factionID),
-				}
-			}
-			r.SelectedArmy = ""
-			return InputAction{
-				Kind:          ActionDeclareWarAndMove,
-				ArmyID:        wc.pendingArmy,
-				TargetRegion:  wc.pendingDest,
-				TargetFaction: faction.FactionID(wc.factionID),
-			}
+			return r.finalizeWarConfirm(wc)
 		}
 		if declineBtn.HitTest(mx, my) {
 			r.warConfirm = warConfirmState{}
@@ -8570,49 +8849,7 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
 		wc := r.warConfirm
 		r.warConfirm = warConfirmState{}
-		attacker := r.gs.Armies[wc.pendingArmy]
-		target := r.gs.Regions[wc.pendingDest]
-		supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
-		if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-			if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
-				r.openSiegeDecision(attacker, target)
-			} else {
-				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
-			}
-			return InputAction{
-				Kind:          ActionDeclareWar,
-				TargetFaction: faction.FactionID(wc.factionID),
-			}
-		}
-		if supportingSiege {
-			r.SelectedArmy = ""
-			return InputAction{
-				Kind:          ActionDeclareWarAndMove,
-				ArmyID:        wc.pendingArmy,
-				TargetRegion:  wc.pendingDest,
-				TargetFaction: faction.FactionID(wc.factionID),
-			}
-		}
-		if wc.opensBattlePlan {
-			if attacker != nil {
-				if target != nil {
-					if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
-						r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
-					}
-				}
-			}
-			return InputAction{
-				Kind:          ActionDeclareWar,
-				TargetFaction: faction.FactionID(wc.factionID),
-			}
-		}
-		r.SelectedArmy = ""
-		return InputAction{
-			Kind:          ActionDeclareWarAndMove,
-			ArmyID:        wc.pendingArmy,
-			TargetRegion:  wc.pendingDest,
-			TargetFaction: faction.FactionID(wc.factionID),
-		}
+		return r.finalizeWarConfirm(wc)
 	}
 	return InputAction{}
 }

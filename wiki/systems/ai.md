@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -102,11 +102,12 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 `aiHandleDiplomacy()` her AI turunda ilişkileri tarar:
 
 - `war` ilişkisinde skor çok düşmüşse veya AI askeri/bölgesel olarak gerideyse barış teklif eder
-- `peace` ilişkisinde alliance assessment helper'ı yüksek sonuç veriyorsa ittifak dener; ortak düşman ve ortak büyük tehdit bu olasılığı artırır, doğrudan sınır tehdidi ise artık mutlak blok değil ceza olarak işler
-- `peace` ilişkisinde skor nötr veya pozitifse ticaret dener
+- `peace` ilişkisinde ittifak için artık sadece skor yetmez; kara sınırı, aktif ticaret, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ aranır. AI ayrıca küçük devletlerde düşük müttefik tavanı uygular, `ai_expansion_targets` ile çakışan hedeflere ortak tehdit yoksa ittifak teklif etmez ve büyük gücün tek bölgeli/zayıf devlete attığı alliance teklifi için ayrıca gerçek askeri veya stratejik fayda arar
+- `peace` ilişkisinde skor yeterliyse ve bağlanabilir kara/deniz hattı varsa ticaret dener; salt uzak ve nötr devletlere sırf kapasite var diye trade açmaz
 - vassal durumundaki AI bağımsız diplomasi açmaz; overlord'u olmayan devletler ise başka bir overlord'a bağlı hedeflerle doğrudan müzakere başlatmaz
+- `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
-- bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür.
+- bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür. Desteksiz dış ittifakların relation skoru ise artık her tur otomatik yükselmez; destek yoksa yavaşça aşınır.
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 

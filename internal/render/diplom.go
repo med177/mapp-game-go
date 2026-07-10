@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"sort"
 
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -1314,6 +1315,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
+			if action == ActionDeclareWar {
+				r.openWarConfirm(target, factionDisplayName(r.gs, string(target)), "", "", "", false, ActionNone, combat.BattleContextLand)
+				return InputAction{}
+			}
 			return InputAction{Kind: action, TargetFaction: target}
 		}
 	}
@@ -1359,6 +1364,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			}
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
+			if action == ActionDeclareWar {
+				r.openWarConfirm(target, factionDisplayName(r.gs, string(target)), "", "", "", false, ActionNone, combat.BattleContextLand)
+				return InputAction{}
+			}
 			return InputAction{Kind: action, TargetFaction: target}
 		}
 	}

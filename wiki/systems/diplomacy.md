@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -42,9 +42,10 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz
-- İttifak için `Score >= 20` gerekir; doğrudan sınır tehdidi artık mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
-- Ticaret için `Score >= 10`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
+- İttifak için `Score >= 25` gerekir; ayrıca salt din bazlı varsayılan skor tek başına yeterli sayılmaz. İki taraf arasında önceden değişmiş gerçek ilişki puanı, kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle diplomatik temas aranır. Buna ek olarak kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ gerekir. Doğrudan sınır tehdidi mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
+- Ticaret için `Score >= 15`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
 - Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
+- Ticaret anlaşması ayrıca bağlanabilir gerçek bir hat ister: ya iki realm arasında kesintisiz kara hattı, ya da her iki tarafta liman olup komşu deniz bölgeleri üzerinden bağlanabilen bir deniz hattı bulunmalıdır
 - `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
 - Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir
@@ -57,12 +58,12 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 
 | Aksiyon | Fonksiyon | Koşul |
 |---|---|---|
-| Savaş ilan et | `declareWar()` | Zaten savaşta değilse |
+| Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir, teklif sahibi `peace_relation_bonus` tech etkisi bu eşiği destekler |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
-| İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 20`; kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
-| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 10` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
+| İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 25`; varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
+| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + belirgin askeri/bölgesel üstünlük varsa |
@@ -71,6 +72,15 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
 
+Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon akışı izler:
+
+- Hedefin mevcut vassalları savaşa kesin katılır.
+- Hem oyuncu hem AI tarafında dış müttefikler için ayrı `AssessWarCall()` değerlendirmesi yapılır.
+- Oyuncu, savaş önizleme modalında hangi müttefiklerini çağıracağını checkbox ile seçer.
+- Seçilip de çağrıya gelmeyen müttefiğin ittifakı bozulur; ilişki puanı `-10` düşer.
+- Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
+- Resolve tamamlanınca render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir.
+
 Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gösterir:
 
 - `Savaşta` ve `İttifaklar` listeleri fraksiyonun tüm aktif relation kayıtlarından üretilir.
@@ -78,6 +88,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 - Aynı vassal realm içindeki normalizasyon kaynaklı `StanceAllied` kayıtları dış ittifak sayılmaz; overlord veya bağlı devlet sayısı üst bilgide ayrıca gösterilir.
 - Teklif geçmişi sağ kolonda sürekli yer kaplamaz; `Geçmiş` düğmesiyle açılır ve `İlişkiler` düğmesiyle güncel ağa dönülür.
 - Standart teklif düğmeleri `ActionBlockReason()` sonucuna göre aktif veya `PASİF` çizilir; pasif düğmeler fare ve klavye odağına alınmaz. Dış devletle ilişki kurulmuşsa aynı `İttifak / Ticaret` düğmeleri `İttifakı Bitir / Ticareti Bitir` işlemine dönüşür ve alt aksiyon `Anlaşmayı Bitir` olur. Savaş `Barış`, vassallık ise `Vasallığı Bitir` yoluyla sona erdirilir. Doğrudan oyuncu vassalında sağ-alt `Vassal Yönetimi` kartı ayrıca onaylı `Vasallığı Bitir / İlhak Et` eylemlerini gösterir.
+- `Savaş` aksiyonu artık doğrudan submit edilmez; teklif sayfasından veya harita üstü saldırı girişiminden sonra özel savaş önizleme modalı açılır. Bu modal iki cepheyi yan yana gösterir: kesin katılacak vassallar ve zaten savaşta olan müttefikler üstte, çağrılabilir müttefikler ise olasılık etiketiyle altta listelenir.
 
 ---
 
@@ -91,7 +102,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Hediye | +15 |
 | Ticaret | +15 |
 | İttifak | +20 |
-| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret/ittifakta ilişki yumuşar |
+| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar ise aşınır |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
 | Din bonusu/cezası | `religion.Relation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
 
@@ -107,7 +118,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 - Aynı iki fraksiyon için rota çoğaltılmaz; mevcut çift önce temizlenir
 - İttifak duruşu ticaretten bağımsızdır; müttefik iki devlet arasında rota varsa `StanceAllied` korunur
 - Savaş ilanı veya barış kabulü iki taraf arasındaki aktif rotaları kapatır
-- Save/load veya eski kayıt migrasyonu sırasında elenmiş fraksiyon, geçersiz relation veya duplicate rota kalmışsa `SanitizeTradeRoutes()` bunları temizler; böylece yıkılmış devlet adları trade listesine geri sızmaz
+- Save/load veya eski kayıt migrasyonu sırasında elenmiş fraksiyon, geçersiz relation, duplicate rota veya artık bağlanamayan dış ticaret hattı kalmışsa `SanitizeTradeRoutes()` bunları temizler; böylece yıkılmış devlet adları ya da kopmuş rota kayıtları trade listesine geri sızmaz
 - Vassal olan devletin üçüncü taraf trade rotaları `NormalizeVassalage()` veya doğrudan vassallık kabul akışında kapatılır
 - Rotalar soyut anlaşma modelidir; harita üstü pathfinding ile üretilmez
 
@@ -135,8 +146,10 @@ AI:
 
 - uzun savaşta ve zayıf kaldığında barış dener
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
-- barışta ve skor uygunsa ticaret açar
+- AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
+- barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
+- dış ittifakın ortak tehdit/ticaret/sınır dayanağı kalmazsa relation skoru otomatik şişmez; AI yeterince zayıflayan veya artık anlamlı fayda üretmeyen ittifakı bozabilir
 - koalisyon anında oyuncuya savaş açıp diğer AI'larla ittifak kurmaya çalışır
 
 → Detaylar: [[systems/ai]]

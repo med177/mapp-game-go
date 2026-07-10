@@ -244,8 +244,11 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceAllied {
 			return "Zaten müttefiksiniz."
 		}
-		if score < 20 {
-			return "İttifak için ilişki puanı 20 altı."
+		if score < allianceRelationThreshold {
+			return "İttifak için ilişki puanı 25 altı."
+		}
+		if assessment := AssessAllianceProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
+			return assessment.BlockReason
 		}
 	case ActionCancelAlliance:
 		if sameRealm(gs, actor, target) {

@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
 
 type Action string
@@ -31,6 +32,7 @@ type Result struct {
 }
 
 const tradeAcceptanceThreshold = 45
+const tradeRelationThreshold = 15
 
 type TradeProposalAssessment struct {
 	Chance      int
@@ -42,6 +44,7 @@ func (a TradeProposalAssessment) Accepted() bool {
 }
 
 const allianceAcceptanceThreshold = 45
+const allianceRelationThreshold = 25
 
 type AllianceProposalAssessment struct {
 	Chance      int
@@ -60,8 +63,7 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 	rel := EnsureRelation(gs, actor, target)
 	switch action {
 	case ActionDeclareWar:
-		setWarBetweenCoalitions(gs, actor, target)
-		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile savaş başladı."}
+		return ExecuteWarDeclaration(gs, actor, target, nil).Result
 
 	case ActionProposePeace:
 		if !acceptPeace(gs, rel, actor, target) {
@@ -208,7 +210,25 @@ func ApplyRelationDecay(gs *state.GameState) {
 				rel.Score++
 			}
 		case faction.StanceAllied:
-			if rel.Score < 50 {
+			if SameRealm(gs, rel.FactionA, rel.FactionB) {
+				if rel.Score < 50 {
+					rel.Score++
+				}
+				continue
+			}
+			if HasDirectThreat(gs, rel.FactionA, rel.FactionB) && !HasCommonEnemy(gs, rel.FactionA, rel.FactionB) && !HasSharedMajorThreat(gs, rel.FactionA, rel.FactionB) {
+				rel.Score = clamp(rel.Score-2, -100, 100)
+				continue
+			}
+			if allianceHasStrategicBasis(gs, rel.FactionA, rel.FactionB) {
+				if rel.Score < 50 {
+					rel.Score++
+				}
+				continue
+			}
+			if rel.Score > 20 {
+				rel.Score--
+			} else if rel.Score < 20 {
 				rel.Score++
 			}
 		}
@@ -225,6 +245,9 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 			continue
 		}
 		if rel.Stance != faction.StanceTrade {
+			continue
+		}
+		if !SameRealm(gs, rel.FactionA, rel.FactionB) && !CanEstablishTradeRoute(gs, rel.FactionA, rel.FactionB) {
 			continue
 		}
 		ensureTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
@@ -249,6 +272,9 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 			continue
 		}
 		if !relationAllowsTrade(Relation(gs, fromID, toID)) {
+			continue
+		}
+		if !SameRealm(gs, fromID, toID) && !CanEstablishTradeRoute(gs, fromID, toID) {
 			continue
 		}
 		key := route.FromFactionID + "->" + route.ToFactionID
@@ -286,6 +312,202 @@ func HasCommonEnemy(gs *state.GameState, a, b faction.FactionID) bool {
 		}
 	}
 	return false
+}
+
+func baseRelationScore(gs *state.GameState, a, b faction.FactionID) int {
+	if gs == nil {
+		return 0
+	}
+	af := gs.Factions[a]
+	bf := gs.Factions[b]
+	if af == nil || bf == nil {
+		return 0
+	}
+	return religion.Relation(af.Religion, bf.Religion)
+}
+
+func HasDiplomaticContact(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	if rel := Relation(gs, a, b); rel != nil {
+		if rel.Stance != faction.StancePeace {
+			return true
+		}
+		if rel.Score != baseRelationScore(gs, a, b) {
+			return true
+		}
+	}
+	if sharesBorder(gs, a, b) {
+		return true
+	}
+	if HasCommonEnemy(gs, a, b) || HasSharedMajorThreat(gs, a, b) {
+		return true
+	}
+	if HasTradeRouteBetween(gs, a, b) || CanEstablishTradeRoute(gs, a, b) {
+		return true
+	}
+	return false
+}
+
+func CanEstablishTradeRoute(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	if SameRealm(gs, a, b) {
+		return true
+	}
+	return canEstablishLandTradeRoute(gs, a, b) || canEstablishSeaTradeRoute(gs, a, b)
+}
+
+func allianceHasStrategicBasis(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	if sharesBorder(gs, a, b) {
+		return true
+	}
+	if HasTradeRouteBetween(gs, a, b) || CanEstablishTradeRoute(gs, a, b) {
+		return true
+	}
+	if HasCommonEnemy(gs, a, b) {
+		return true
+	}
+	if HasSharedMajorThreat(gs, a, b) {
+		return true
+	}
+	return false
+}
+
+func canEstablishLandTradeRoute(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	targets := make(map[world.RegionID]struct{})
+	queue := make([]world.RegionID, 0, len(gs.Regions))
+	seen := make(map[world.RegionID]struct{}, len(gs.Regions))
+	for rid, region := range gs.Regions {
+		if !tradeLandRegionAnchor(region) {
+			continue
+		}
+		owner := faction.FactionID(region.OwnerID)
+		switch {
+		case SameRealm(gs, owner, a):
+			queue = append(queue, rid)
+			seen[rid] = struct{}{}
+		case SameRealm(gs, owner, b):
+			targets[rid] = struct{}{}
+		}
+	}
+	if len(queue) == 0 || len(targets) == 0 {
+		return false
+	}
+	for len(queue) > 0 {
+		currentID := queue[0]
+		queue = queue[1:]
+		if _, ok := targets[currentID]; ok {
+			return true
+		}
+		current := gs.Regions[currentID]
+		if current == nil {
+			continue
+		}
+		for _, neighborID := range current.Neighbors {
+			if _, ok := seen[neighborID]; ok {
+				continue
+			}
+			neighbor := gs.Regions[neighborID]
+			if !tradeLandRegionPassable(gs, neighbor, a, b) {
+				continue
+			}
+			seen[neighborID] = struct{}{}
+			queue = append(queue, neighborID)
+		}
+	}
+	return false
+}
+
+func tradeLandRegionAnchor(region *world.Region) bool {
+	return region != nil && !region.IsSea && !region.IsLocked && region.OwnerID != "" && region.TradeCapacity > 0
+}
+
+func tradeLandRegionPassable(gs *state.GameState, region *world.Region, a, b faction.FactionID) bool {
+	if region == nil || region.IsSea || region.IsLocked || region.OwnerID == "" {
+		return false
+	}
+	owner := faction.FactionID(region.OwnerID)
+	return SameRealm(gs, owner, a) || SameRealm(gs, owner, b)
+}
+
+func canEstablishSeaTradeRoute(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	queue := make([]world.RegionID, 0, len(gs.Regions))
+	seen := make(map[world.RegionID]struct{}, len(gs.Regions))
+	targets := make(map[world.RegionID]struct{})
+	for rid, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsLocked || !region.HasPort() {
+			continue
+		}
+		owner := faction.FactionID(region.OwnerID)
+		seaNeighbors := adjacentSeaRegions(gs, rid)
+		switch {
+		case SameRealm(gs, owner, a):
+			for _, seaID := range seaNeighbors {
+				if _, ok := seen[seaID]; ok {
+					continue
+				}
+				seen[seaID] = struct{}{}
+				queue = append(queue, seaID)
+			}
+		case SameRealm(gs, owner, b):
+			for _, seaID := range seaNeighbors {
+				targets[seaID] = struct{}{}
+			}
+		}
+	}
+	if len(queue) == 0 || len(targets) == 0 {
+		return false
+	}
+	for len(queue) > 0 {
+		currentID := queue[0]
+		queue = queue[1:]
+		if _, ok := targets[currentID]; ok {
+			return true
+		}
+		current := gs.Regions[currentID]
+		if current == nil || !current.IsSea {
+			continue
+		}
+		for _, neighborID := range current.Neighbors {
+			if _, ok := seen[neighborID]; ok {
+				continue
+			}
+			neighbor := gs.Regions[neighborID]
+			if neighbor == nil || !neighbor.IsSea || neighbor.IsLocked {
+				continue
+			}
+			seen[neighborID] = struct{}{}
+			queue = append(queue, neighborID)
+		}
+	}
+	return false
+}
+
+func adjacentSeaRegions(gs *state.GameState, regionID world.RegionID) []world.RegionID {
+	region := gs.Regions[regionID]
+	if region == nil {
+		return nil
+	}
+	out := make([]world.RegionID, 0, len(region.Neighbors))
+	for _, neighborID := range region.Neighbors {
+		neighbor := gs.Regions[neighborID]
+		if neighbor != nil && neighbor.IsSea && !neighbor.IsLocked {
+			out = append(out, neighborID)
+		}
+	}
+	return out
 }
 
 func HasSharedMajorThreat(gs *state.GameState, a, b faction.FactionID) bool {
@@ -351,8 +573,8 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
 	}
-	if rel.Score < 20 {
-		assessment.BlockReason = "İttifak için ilişki puanı 20 altı"
+	if rel.Score < allianceRelationThreshold {
+		assessment.BlockReason = "İttifak için ilişki puanı 25 altı"
 		return assessment
 	}
 	actorFaction := gs.Factions[actor]
@@ -361,22 +583,36 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		assessment.BlockReason = "Fraksiyon bulunamadı"
 		return assessment
 	}
+	if !HasDiplomaticContact(gs, actor, target) {
+		assessment.BlockReason = "Bu devletle önce ilişki kurmak gerekir"
+		return assessment
+	}
+	if !allianceHasStrategicBasis(gs, actor, target) {
+		assessment.BlockReason = "İttifak için coğrafi veya stratejik yakınlık yok"
+		return assessment
+	}
 
 	actorPower := MilitaryPower(gs, actor)
 	targetPower := MilitaryPower(gs, target)
 	actorRegions := landRegionCount(gs, actor)
 	targetRegions := landRegionCount(gs, target)
 
-	chance := 30 + rel.Score
+	chance := 20 + rel.Score
 	if rel.Stance == faction.StanceTrade {
 		chance += 8
 	}
 	chance += allianceReligionAffinityBonus(actorFaction.Religion, targetFaction.Religion)
+	if sharesBorder(gs, actor, target) {
+		chance += 6
+	}
 	if HasCommonEnemy(gs, actor, target) {
 		chance += 12
 	}
 	if HasSharedMajorThreat(gs, actor, target) {
 		chance += 15
+	}
+	if !sharesBorder(gs, actor, target) && !HasTradeRouteBetween(gs, actor, target) {
+		chance -= 10
 	}
 	if HasDirectThreat(gs, actor, target) {
 		chance -= 15
@@ -412,8 +648,8 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
 	}
-	if rel.Score < 10 {
-		assessment.BlockReason = "İlişki puanı 10 altı"
+	if rel.Score < tradeRelationThreshold {
+		assessment.BlockReason = "Ticaret için ilişki puanı 15 altı"
 		return assessment
 	}
 	actorLand := landRegionCount(gs, actor)
@@ -444,6 +680,10 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 	targetPartners := activeTradePartners(gs, target)
 	if targetPartners >= 4 {
 		assessment.BlockReason = "Hedefin aktif partner sınırı dolu"
+		return assessment
+	}
+	if !CanEstablishTradeRoute(gs, actor, target) {
+		assessment.BlockReason = "Ticaret için bağlanabilir kara veya deniz hattı yok"
 		return assessment
 	}
 

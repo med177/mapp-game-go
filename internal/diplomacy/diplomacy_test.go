@@ -48,7 +48,7 @@ func TestProposeAllianceAcceptedDespiteDirectThreatWithCommonEnemy(t *testing.T)
 	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
 
 	rel := EnsureRelation(gs, "a", "b")
-	rel.Score = 20
+	rel.Score = 25
 
 	if !HasDirectThreat(gs, "a", "b") {
 		t.Fatal("test kurulumu doğrudan tehdit üretmeliydi")
@@ -88,7 +88,7 @@ func TestProposeAllianceAcceptedWithSharedMajorThreat(t *testing.T) {
 	}
 
 	rel := EnsureRelation(gs, "a", "b")
-	rel.Score = 20
+	rel.Score = 25
 
 	if !HasSharedMajorThreat(gs, "a", "b") {
 		t.Fatal("test kurulumu ortak büyük tehdit üretmeliydi")
@@ -99,6 +99,22 @@ func TestProposeAllianceAcceptedWithSharedMajorThreat(t *testing.T) {
 	}
 	if !assessment.Accepted() {
 		t.Fatalf("ortak büyük tehdit doğrudan tehdidi telafi etmeliydi: %+v", assessment)
+	}
+}
+
+func TestProposeAllianceRejectedWithoutStrategicBasis(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 28
+
+	assessment := AssessAllianceProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "İttifak için coğrafi veya stratejik yakınlık yok" {
+		t.Fatalf("uzak ve ilgisiz devletler engellenmeliydi, got=%+v", assessment)
+	}
+
+	result := Execute(gs, "a", "b", ActionProposeAlliance)
+	if result.Accepted || result.Applied {
+		t.Fatalf("stratejik taban yokken ittifak kurulmamaliydi: %+v", result)
 	}
 }
 
@@ -130,6 +146,7 @@ func TestProposeTradeRejectedDuringWar(t *testing.T) {
 
 func TestTradeCreatesUniqueRoutesAndWarRemovesThem(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Score = 15
 
@@ -163,6 +180,7 @@ func TestTradeCreatesUniqueRoutesAndWarRemovesThem(t *testing.T) {
 
 func TestProposeTradeWhileAlliedKeepsAllianceAndAddsRoutes(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceAllied
 	rel.Score = 30
@@ -181,6 +199,7 @@ func TestProposeTradeWhileAlliedKeepsAllianceAndAddsRoutes(t *testing.T) {
 
 func TestCancelAlliancePreservesTradeAgreement(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceAllied
 	rel.Score = 60
@@ -201,6 +220,7 @@ func TestCancelAlliancePreservesTradeAgreement(t *testing.T) {
 
 func TestCancelTradePreservesAlliance(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceAllied
 	rel.Score = 60
@@ -259,6 +279,7 @@ func TestProposeTradeAcceptedDespiteDirectThreatWhenOverallChanceHigh(t *testing
 
 func TestForceRelationToAlliancePreservesExistingTradeRoutes(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Score = 15
 	if result := Execute(gs, "a", "b", ActionProposeTrade); !result.Accepted || !result.Applied {
@@ -277,6 +298,7 @@ func TestForceRelationToAlliancePreservesExistingTradeRoutes(t *testing.T) {
 
 func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceTrade
 	rel.Score = 25
@@ -291,6 +313,7 @@ func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
 
 func TestEnsureTradeRoutesForActiveRelationsRemovesStaleEliminatedRoutes(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic, IsEliminated: true}
 	gs.TradeRoutes = []*economy.TradeRoute{
 		{FromFactionID: "a", ToFactionID: "c", Good: economy.GoodCloth, AmountPerTurn: 2, GoldPerUnit: 8},
@@ -399,15 +422,27 @@ func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
 
 func TestAssessTradeProposalBlocksLowScore(t *testing.T) {
 	gs := testGameState()
+	enableABLandTrade(gs)
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Score = 5
 
 	assessment := AssessTradeProposal(gs, rel, "a", "b")
-	if assessment.BlockReason != "İlişki puanı 10 altı" {
+	if assessment.BlockReason != "Ticaret için ilişki puanı 15 altı" {
 		t.Fatalf("beklenen düşük skor engeli, got=%+v", assessment)
 	}
 	if assessment.Accepted() {
 		t.Fatalf("düşük skor kabul edilmemeli: %+v", assessment)
+	}
+}
+
+func TestAssessTradeProposalBlocksMissingRoute(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 30
+
+	assessment := AssessTradeProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "Ticaret için bağlanabilir kara veya deniz hattı yok" {
+		t.Fatalf("baglanti yoksa trade block olmaliydi, got=%+v", assessment)
 	}
 }
 
@@ -427,6 +462,19 @@ func TestImproveRelationsConsumesGoldAndRaisesScore(t *testing.T) {
 	}
 	if got := rel.Score; got != 20 {
 		t.Fatalf("ilişki +8 artmalıydı, got=%d", got)
+	}
+}
+
+func TestApplyRelationDecayErodesUnsupportedAlliance(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceAllied
+	rel.Score = 42
+
+	ApplyRelationDecay(gs)
+
+	if got := rel.Score; got != 41 {
+		t.Fatalf("desteksiz ittifak yavaşça aşınmalıydı, got=%d", got)
 	}
 }
 
@@ -557,6 +605,60 @@ func TestDeclareWarPropagatesToVassalCoalitions(t *testing.T) {
 	}
 }
 
+func TestBuildWarDeclarationPreviewIncludesVassalsAndCallableAllies(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["a_v"] = &faction.Faction{ID: "a_v", NameTR: "A Vassal", Religion: religion.Catholic, OverlordID: "a"}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Ally", Religion: religion.Catholic}
+	gs.Factions["b_v"] = &faction.Faction{ID: "b_v", NameTR: "B Vassal", Religion: religion.Catholic, OverlordID: "b"}
+	gs.Regions["a_v_cap"] = &world.Region{ID: "a_v_cap", OwnerID: "a_v", TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TradeCapacity: 4}
+	gs.Regions["b_v_cap"] = &world.Region{ID: "b_v_cap", OwnerID: "b_v", TradeCapacity: 4}
+	EnsureRelation(gs, "a", "ally").Stance = faction.StanceAllied
+	EnsureRelation(gs, "a", "ally").Score = 55
+	NormalizeVassalage(gs)
+
+	preview := BuildWarDeclarationPreview(gs, "a", "b")
+
+	if len(preview.Attacker.AutoParticipants) != 1 || preview.Attacker.AutoParticipants[0].FactionID != "a_v" {
+		t.Fatalf("saldıran vassal önizlemesi eksik: %+v", preview.Attacker.AutoParticipants)
+	}
+	if len(preview.Attacker.CallableAllies) != 1 || preview.Attacker.CallableAllies[0].FactionID != "ally" {
+		t.Fatalf("çağrılabilir müttefik önizlemesi eksik: %+v", preview.Attacker.CallableAllies)
+	}
+	if len(preview.Defender.AutoParticipants) != 1 || preview.Defender.AutoParticipants[0].FactionID != "b_v" {
+		t.Fatalf("savunan vassal önizlemesi eksik: %+v", preview.Defender.AutoParticipants)
+	}
+}
+
+func TestExecuteWarDeclarationDecliningSelectedAllyBreaksAlliance(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Ally", Religion: religion.Catholic, Gold: 120, Grain: 100}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TradeCapacity: 4}
+	rel := EnsureRelation(gs, "a", "ally")
+	rel.Stance = faction.StanceAllied
+	rel.Score = 20
+	enemyRel := EnsureRelation(gs, "ally", "b")
+	enemyRel.Stance = faction.StancePeace
+	enemyRel.Score = 30
+	ensureTradeRoutesBetween(gs, "ally", "b")
+
+	result := ExecuteWarDeclaration(gs, "a", "b", []faction.FactionID{"ally"})
+
+	if !result.Applied {
+		t.Fatalf("savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if len(result.PlayerCalls) != 1 || result.PlayerCalls[0].Joined {
+		t.Fatalf("müttefik çağrıyı reddetmeliydi: %+v", result.PlayerCalls)
+	}
+	updated := Relation(gs, "a", "ally")
+	if updated == nil || updated.Stance != faction.StancePeace {
+		t.Fatalf("ittifak bozulup barışa düşmeliydi, got=%+v", updated)
+	}
+	if updated.Score != 10 {
+		t.Fatalf("ilişki puanı 10'a düşmeliydi, got=%d", updated.Score)
+	}
+}
+
 func testGameState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -577,4 +679,9 @@ func testGameState() *state.GameState {
 			"inf": {ID: "inf", Attack: 12, Defense: 10, Morale: 60},
 		},
 	}
+}
+
+func enableABLandTrade(gs *state.GameState) {
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
 }

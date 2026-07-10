@@ -233,6 +233,18 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 					}
 				}
 			}
+		case faction.StanceAllied:
+			if aiShouldCancelAlliance(gs, fid, otherID) {
+				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionCancelAlliance)
+				if result.Applied || result.Accepted {
+					addTurnStep(steps, TurnStep{
+						FactionID:     fid,
+						Kind:          TurnStepDiplomacy,
+						TargetFaction: otherID,
+						Message:       turnFactionName(gs, fid) + ": " + result.Message,
+					})
+				}
+			}
 		}
 	}
 
@@ -353,6 +365,15 @@ func aiShouldAttemptAllianceOffer(gs *state.GameState, from, to faction.FactionI
 	}
 	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
 	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
+	if !aiAllianceHasMeaningfulBenefit(gs, from, to) {
+		return false
+	}
+	if aiAllianceSoftCap(gs, from) <= aiActiveAllianceCount(gs, from) && !commonEnemy && !sharedThreat {
+		return false
+	}
+	if aiAllianceExpansionTension(gs, from, to) && !commonEnemy && !sharedThreat {
+		return false
+	}
 	if assessment.Chance >= 72 {
 		return true
 	}
@@ -378,6 +399,113 @@ func aiShouldAttemptAllianceOffer(gs *state.GameState, from, to faction.FactionI
 	}
 	threshold = maxInt(22, minInt(92, threshold))
 	return aiDiplomacyOfferRoll(gs, from, to, diplomacy.ActionProposeAlliance) < threshold
+}
+
+func aiAllianceHasMeaningfulBenefit(gs *state.GameState, actor, target faction.FactionID) bool {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return false
+	}
+	score := aiAllianceBenefitScore(gs, actor, target)
+	targetRegions := len(gs.LandRegionsOwnedBy(target))
+	commonEnemy := diplomacy.HasCommonEnemy(gs, actor, target)
+	sharedThreat := diplomacy.HasSharedMajorThreat(gs, actor, target)
+	threshold := 12
+	if targetRegions <= 1 {
+		threshold = 18
+	}
+	if commonEnemy || sharedThreat {
+		threshold -= 10
+	}
+	if threshold < 6 {
+		threshold = 6
+	}
+	return score >= threshold
+}
+
+func aiAllianceBenefitScore(gs *state.GameState, actor, target faction.FactionID) int {
+	if gs == nil {
+		return 0
+	}
+	actorPower := diplomacy.MilitaryPower(gs, actor)
+	targetPower := diplomacy.MilitaryPower(gs, target)
+	actorRegions := len(gs.LandRegionsOwnedBy(actor))
+	targetRegions := len(gs.LandRegionsOwnedBy(target))
+	score := 0
+
+	if targetPower > 0 {
+		score += minInt(18, targetPower/8)
+	}
+	if targetRegions > 0 {
+		score += minInt(12, targetRegions*3)
+	}
+	if aiSharesLandBorder(gs, actor, target) {
+		score += 4
+		frontierSupport := aiFrontierPower(gs, target, actor)
+		if frontierSupport > 0 {
+			score += minInt(12, frontierSupport/10+4)
+		}
+	}
+	if diplomacy.CanEstablishTradeRoute(gs, actor, target) {
+		score += 4
+	}
+	if diplomacy.HasCommonEnemy(gs, actor, target) {
+		score += 10
+	}
+	if diplomacy.HasSharedMajorThreat(gs, actor, target) {
+		score += 12
+	}
+
+	if targetRegions <= 1 {
+		score -= 8
+		if actorRegions >= 4 {
+			score -= 6
+		}
+	}
+	if actorRegions > maxInt(3, targetRegions*3) {
+		score -= 6
+	}
+	if targetPower == 0 {
+		score -= 8
+	} else if actorPower > maxInt(targetPower*3, targetPower+80) {
+		score -= 10
+	}
+
+	return score
+}
+
+func aiShouldCancelAlliance(gs *state.GameState, from, to faction.FactionID) bool {
+	if gs == nil || from == "" || to == "" || diplomacy.SameRealm(gs, from, to) {
+		return false
+	}
+	rel := diplomacy.Relation(gs, from, to)
+	if rel == nil || rel.Stance != faction.StanceAllied {
+		return false
+	}
+	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
+	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
+	if commonEnemy || sharedThreat {
+		return false
+	}
+	if !aiAllianceHasMeaningfulBenefit(gs, from, to) && rel.Score <= 45 {
+		return true
+	}
+	hasTrade := diplomacy.HasTradeRouteBetween(gs, from, to)
+	hasBorder := aiSharesLandBorder(gs, from, to)
+	expansionTension := aiAllianceExpansionTension(gs, from, to)
+	directThreat := diplomacy.HasDirectThreat(gs, from, to)
+	if !hasBorder && !hasTrade && rel.Score <= 35 {
+		return true
+	}
+	if expansionTension && rel.Score <= 40 {
+		return true
+	}
+	if directThreat && rel.Score <= 45 {
+		return true
+	}
+	if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && rel.Score <= 40 {
+		return true
+	}
+	return false
 }
 
 func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) int {
@@ -570,6 +698,52 @@ func aiHasExpansionTarget(self *faction.Faction, target faction.FactionID) bool 
 	return false
 }
 
+func aiAllianceExpansionTension(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	return aiHasExpansionTarget(gs.Factions[a], b) || aiHasExpansionTarget(gs.Factions[b], a)
+}
+
+func aiAllianceSoftCap(gs *state.GameState, fid faction.FactionID) int {
+	cap := 1
+	if gs == nil {
+		return cap
+	}
+	landRegions := len(gs.LandRegionsOwnedBy(fid))
+	switch {
+	case landRegions >= 10:
+		cap = 3
+	case landRegions >= 4:
+		cap = 2
+	}
+	if f := gs.Factions[fid]; f != nil && f.AIAggressiveness >= 70 && cap < 3 {
+		cap++
+	}
+	return cap
+}
+
+func aiActiveAllianceCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	count := 0
+	for _, rel := range gs.Relations {
+		if rel == nil || rel.Stance != faction.StanceAllied {
+			continue
+		}
+		if diplomacy.SameRealm(gs, rel.FactionA, rel.FactionB) {
+			continue
+		}
+		switch fid {
+		case rel.FactionA:
+			count++
+		case rel.FactionB:
+			count++
+		}
+	}
+	return count
+}
 func aiMaxConcurrentWars(gs *state.GameState, fid faction.FactionID) int {
 	limit := 1
 	if gs != nil && gs.Difficulty >= 3 {

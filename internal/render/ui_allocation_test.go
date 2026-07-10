@@ -10,6 +10,8 @@ func TestCoreUIBuildersAvoidHeapAllocations(t *testing.T) {
 		{"back_button", func() { _ = buildBackButton() }},
 		{"war_modal", func() { _ = buildWarConfirmModal() }},
 		{"war_buttons", func() { _, _ = buildWarConfirmButtons() }},
+		{"war_summary_modal", func() { _ = buildWarSummaryModal() }},
+		{"war_summary_button", func() { _ = buildWarSummaryCloseButton() }},
 		{"battle_plan_modal", func() { _ = buildBattlePlanModal() }},
 		{"battle_plan_buttons", func() { _, _ = buildBattlePlanButtons() }},
 		{"battle_report_modal", func() { _ = buildBattleReportModal() }},
