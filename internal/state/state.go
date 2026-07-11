@@ -39,26 +39,30 @@ type VictoryCondition struct {
 
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
 type DiplomaticOffer struct {
-	FromFactionID  faction.FactionID `json:"from_faction_id"`
-	ToFactionID    faction.FactionID `json:"to_faction_id"`
-	Action         string            `json:"action"`
-	CreatedTurn    int               `json:"created_turn"`
-	Priority       int               `json:"priority,omitempty"`
-	PriorityReason string            `json:"priority_reason,omitempty"`
+	FromFactionID        faction.FactionID `json:"from_faction_id"`
+	ToFactionID          faction.FactionID `json:"to_faction_id"`
+	Action               string            `json:"action"`
+	CreatedTurn          int               `json:"created_turn"`
+	Priority             int               `json:"priority,omitempty"`
+	PriorityReason       string            `json:"priority_reason,omitempty"`
+	WarDeclarerFactionID faction.FactionID `json:"war_declarer_faction_id,omitempty"`
+	WarEnemyFactionID    faction.FactionID `json:"war_enemy_faction_id,omitempty"`
 }
 
 // DiplomaticOfferHistoryEntry çözümlenmiş diplomatik tekliflerin kısa geçmiş kaydıdır.
 type DiplomaticOfferHistoryEntry struct {
-	FromFactionID  faction.FactionID `json:"from_faction_id"`
-	ToFactionID    faction.FactionID `json:"to_faction_id"`
-	Action         string            `json:"action"`
-	CreatedTurn    int               `json:"created_turn"`
-	ResolvedTurn   int               `json:"resolved_turn"`
-	Accepted       bool              `json:"accepted"`
-	Applied        bool              `json:"applied"`
-	Priority       int               `json:"priority,omitempty"`
-	PriorityReason string            `json:"priority_reason,omitempty"`
-	ResultMessage  string            `json:"result_message,omitempty"`
+	FromFactionID        faction.FactionID `json:"from_faction_id"`
+	ToFactionID          faction.FactionID `json:"to_faction_id"`
+	Action               string            `json:"action"`
+	CreatedTurn          int               `json:"created_turn"`
+	ResolvedTurn         int               `json:"resolved_turn"`
+	Accepted             bool              `json:"accepted"`
+	Applied              bool              `json:"applied"`
+	Priority             int               `json:"priority,omitempty"`
+	PriorityReason       string            `json:"priority_reason,omitempty"`
+	ResultMessage        string            `json:"result_message,omitempty"`
+	WarDeclarerFactionID faction.FactionID `json:"war_declarer_faction_id,omitempty"`
+	WarEnemyFactionID    faction.FactionID `json:"war_enemy_faction_id,omitempty"`
 }
 
 type SiegeState struct {

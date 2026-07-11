@@ -53,6 +53,7 @@ type WarCallOutcome struct {
 	NameTR          string
 	Joined          bool
 	AutoJoin        bool
+	PendingDecision bool
 	AllianceBroken  bool
 	RelationPenalty int
 }
@@ -98,30 +99,30 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 		targetRoot = target
 	}
 
-	playerCalls := resolvePlayerWarCalls(gs, actorRoot, targetRoot, calledAllies)
-	enemyCalls := resolveEnemyWarCalls(gs, targetRoot, actorRoot)
+	attackerCalls := resolveAttackerWarCalls(gs, actorRoot, targetRoot, calledAllies)
+	defenderCalls := resolveAutoWarCalls(gs, targetRoot, actorRoot, actorRoot)
 
 	setWarBetweenCoalitions(gs, actorRoot, targetRoot)
-	for _, outcome := range playerCalls {
+	for _, outcome := range attackerCalls {
 		if outcome.Joined {
 			setWarBetweenCoalitions(gs, outcome.FactionID, targetRoot)
 		}
 	}
-	for _, outcome := range enemyCalls {
+	for _, outcome := range defenderCalls {
 		if outcome.Joined {
 			setWarBetweenCoalitions(gs, outcome.FactionID, actorRoot)
 		}
 	}
 
-	message := buildWarDeclarationMessage(gs, targetRoot, playerCalls, enemyCalls)
+	message := buildWarDeclarationMessage(gs, actorRoot, targetRoot, attackerCalls, defenderCalls)
 	return WarDeclarationResult{
 		Result: Result{
 			Accepted: true,
 			Applied:  true,
 			Message:  message,
 		},
-		PlayerCalls: playerCalls,
-		EnemyCalls:  enemyCalls,
+		PlayerCalls: attackerCalls,
+		EnemyCalls:  defenderCalls,
 	}
 }
 
@@ -337,20 +338,49 @@ func resolvePlayerWarCalls(gs *state.GameState, actorRoot, targetRoot faction.Fa
 	return out
 }
 
-func resolveEnemyWarCalls(gs *state.GameState, callerRoot, enemyRoot faction.FactionID) []WarCallOutcome {
+func resolveAttackerWarCalls(gs *state.GameState, actorRoot, targetRoot faction.FactionID, calledAllies []faction.FactionID) []WarCallOutcome {
+	if actorRoot == playerRealmRoot(gs) {
+		return resolvePlayerWarCalls(gs, actorRoot, targetRoot, calledAllies)
+	}
+	return resolveAutoWarCalls(gs, actorRoot, targetRoot, actorRoot)
+}
+
+func resolveAutoWarCalls(gs *state.GameState, callerRoot, enemyRoot, warDeclarerRoot faction.FactionID) []WarCallOutcome {
 	allies := directExternalAlliesOf(gs, callerRoot)
 	if len(allies) == 0 {
 		return nil
 	}
+	playerRoot := playerRealmRoot(gs)
 	out := make([]WarCallOutcome, 0, len(allies))
 	for _, allyID := range allies {
-		assessment := AssessWarCall(gs, callerRoot, allyID, enemyRoot)
+		allyRoot := realmRoot(gs, allyID)
+		if allyRoot == "" {
+			allyRoot = allyID
+		}
+		assessment := AssessWarCall(gs, callerRoot, allyRoot, enemyRoot)
 		if assessment.BlockReason != "" {
 			continue
 		}
-		out = append(out, resolveWarCall(gs, callerRoot, allyID, enemyRoot, false))
+		if allyRoot == playerRoot {
+			if queuePlayerWarJoinOffer(gs, callerRoot, enemyRoot, warDeclarerRoot) {
+				out = append(out, WarCallOutcome{
+					FactionID:       allyRoot,
+					NameTR:          factionLabel(gs, allyRoot),
+					PendingDecision: true,
+				})
+			}
+			continue
+		}
+		out = append(out, resolveWarCall(gs, callerRoot, allyRoot, enemyRoot, false))
 	}
 	return out
+}
+
+func queuePlayerWarJoinOffer(gs *state.GameState, callerRoot, enemyRoot, warDeclarerRoot faction.FactionID) bool {
+	if gs == nil || gs.PlayerFactionID == "" || callerRoot == "" || enemyRoot == "" || warDeclarerRoot == "" {
+		return false
+	}
+	return QueueWarJoinOffer(gs, callerRoot, gs.PlayerFactionID, warDeclarerRoot, enemyRoot, "Aktif ittifak savaş çağrısı")
 }
 
 func resolveWarCall(gs *state.GameState, callerRoot, allyRoot, enemyRoot faction.FactionID, breakOnRefusal bool) WarCallOutcome {
@@ -388,19 +418,25 @@ func breakAllianceForWarRefusal(gs *state.GameState, caller, ally faction.Factio
 	rel.Score = clamp(rel.Score-warCallRefusalScorePenalty, -100, 100)
 }
 
-func buildWarDeclarationMessage(gs *state.GameState, targetRoot faction.FactionID, playerCalls, enemyCalls []WarCallOutcome) string {
-	parts := []string{factionLabel(gs, targetRoot) + " ile savaş başladı."}
-	if joined := joinedNames(playerCalls); joined != "" {
-		parts = append(parts, "Safımıza katılanlar: "+joined+".")
+func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome) string {
+	parts := []string{factionLabel(gs, actorRoot) + " ile " + factionLabel(gs, targetRoot) + " arasında savaş başladı."}
+	if joined := joinedNames(attackerCalls); joined != "" {
+		parts = append(parts, factionLabel(gs, actorRoot)+" tarafına katılanlar: "+joined+".")
 	}
-	if refused := refusedNames(playerCalls); refused != "" {
-		parts = append(parts, "Çağrıyı reddedenler: "+refused+" (ittifak bozuldu).")
+	if pending := pendingNames(attackerCalls); pending != "" {
+		parts = append(parts, factionLabel(gs, actorRoot)+" tarafında cevap beklenenler: "+pending+".")
 	}
-	if joined := joinedNames(enemyCalls); joined != "" {
-		parts = append(parts, "Karşı cepheye katılanlar: "+joined+".")
+	if refused := refusedNames(attackerCalls); refused != "" {
+		parts = append(parts, factionLabel(gs, actorRoot)+" tarafında çağrıyı reddedenler: "+refused+" (ittifak bozuldu).")
 	}
-	if refused := refusedNames(enemyCalls); refused != "" {
-		parts = append(parts, "Karşı cephede çağrıyı reddedenler: "+refused+".")
+	if joined := joinedNames(defenderCalls); joined != "" {
+		parts = append(parts, factionLabel(gs, targetRoot)+" tarafına katılanlar: "+joined+".")
+	}
+	if pending := pendingNames(defenderCalls); pending != "" {
+		parts = append(parts, factionLabel(gs, targetRoot)+" tarafında cevap beklenenler: "+pending+".")
+	}
+	if refused := refusedNames(defenderCalls); refused != "" {
+		parts = append(parts, factionLabel(gs, targetRoot)+" tarafında çağrıyı reddedenler: "+refused+".")
 	}
 	return strings.Join(parts, " ")
 }
@@ -418,11 +454,32 @@ func joinedNames(outcomes []WarCallOutcome) string {
 func refusedNames(outcomes []WarCallOutcome) string {
 	names := make([]string, 0, len(outcomes))
 	for _, outcome := range outcomes {
-		if !outcome.Joined {
+		if !outcome.Joined && !outcome.PendingDecision {
 			names = append(names, outcome.NameTR)
 		}
 	}
 	return strings.Join(names, ", ")
+}
+
+func pendingNames(outcomes []WarCallOutcome) string {
+	names := make([]string, 0, len(outcomes))
+	for _, outcome := range outcomes {
+		if outcome.PendingDecision {
+			names = append(names, outcome.NameTR)
+		}
+	}
+	return strings.Join(names, ", ")
+}
+
+func playerRealmRoot(gs *state.GameState) faction.FactionID {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return ""
+	}
+	playerRoot := realmRoot(gs, gs.PlayerFactionID)
+	if playerRoot == "" {
+		return gs.PlayerFactionID
+	}
+	return playerRoot
 }
 
 func relationScoreAgainst(gs *state.GameState, a, b faction.FactionID) int {

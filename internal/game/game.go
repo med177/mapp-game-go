@@ -1886,12 +1886,22 @@ func (g *Game) handleAITurnOfferResponse(index int, accepted bool) {
 	g.renderer.ShowCombatResult(result.Message)
 	if accepted && result.Applied {
 		g.renderer.AddEvent("[DIPLOMASI] " + result.Message)
-		if currentFID, ok := g.currentAITurnFactionID(); ok && offer.FromFactionID == currentFID {
+		if currentFID, ok := g.currentAITurnFactionID(); ok && offerEndsCurrentAITurn(offer, currentFID) {
 			g.aiTurn.index++
 			g.aiTurn.stepper = nil
 			g.aiTurn.waitFrames = 0
 		}
 	}
+}
+
+func offerEndsCurrentAITurn(offer state.DiplomaticOffer, currentFID faction.FactionID) bool {
+	if currentFID == "" {
+		return false
+	}
+	if offer.FromFactionID == currentFID {
+		return true
+	}
+	return offer.Action == string(diplomacy.ActionJoinWarCall) && offer.WarDeclarerFactionID == currentFID
 }
 
 func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.DiplomaticOffer, diplomacy.Result, bool) {
@@ -1909,16 +1919,18 @@ func (g *Game) appendDiplomacyOfferHistory(offer state.DiplomaticOffer, accepted
 		return
 	}
 	history := state.DiplomaticOfferHistoryEntry{
-		FromFactionID:  offer.FromFactionID,
-		ToFactionID:    offer.ToFactionID,
-		Action:         offer.Action,
-		CreatedTurn:    offer.CreatedTurn,
-		ResolvedTurn:   g.gs.Turn,
-		Accepted:       accepted,
-		Applied:        result.Applied,
-		Priority:       offer.Priority,
-		PriorityReason: offer.PriorityReason,
-		ResultMessage:  result.Message,
+		FromFactionID:        offer.FromFactionID,
+		ToFactionID:          offer.ToFactionID,
+		Action:               offer.Action,
+		CreatedTurn:          offer.CreatedTurn,
+		ResolvedTurn:         g.gs.Turn,
+		Accepted:             accepted,
+		Applied:              result.Applied,
+		Priority:             offer.Priority,
+		PriorityReason:       offer.PriorityReason,
+		ResultMessage:        result.Message,
+		WarDeclarerFactionID: offer.WarDeclarerFactionID,
+		WarEnemyFactionID:    offer.WarEnemyFactionID,
 	}
 	g.gs.DiplomaticOfferHistory = append(g.gs.DiplomaticOfferHistory, history)
 	if overflow := len(g.gs.DiplomaticOfferHistory) - maxDiplomaticOfferHistoryEntries; overflow > 0 {

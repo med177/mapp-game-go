@@ -13,6 +13,7 @@ type Action string
 
 const (
 	ActionDeclareWar         Action = "declare_war"
+	ActionJoinWarCall        Action = "join_war_call"
 	ActionProposePeace       Action = "propose_peace"
 	ActionProposeAlliance    Action = "propose_alliance"
 	ActionProposeTrade       Action = "propose_trade"

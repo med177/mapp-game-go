@@ -195,6 +195,14 @@ AI artık oyuncuya doğrudan barış sonucu dayatmaz. Savaş baskısı şartı o
 
 Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde standart diplomasi motoru (`Execute`) çalışır, redde ise teklif kuyruktan düşer ve savaş sürer.
 
+AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuyruk artık `join_war_call` tipiyle kullanılır:
+
+- Müttefik AI başka bir devlete savaş ilan ettiğinde oyuncuya `Savaşa Katılım Çağrısı` gelir
+- Bir AI oyuncunun müttefikine savaş ilan ettiğinde bu kez savunan müttefik oyuncuyu kendi safına çağırır
+- Oyuncu kabul etmeden savaşa çekilmez; kabulde oyuncu realm'i ilgili düşman koalisyonuyla savaşa girer
+- Reddederse çağrıyı yapan müttefikle ittifak bozulur ve ilişki puanı `-10` düşer
+- Teklif AI turu içinde doğduysa sıra makinesi oyuncu cevabını bekler; kabul edilen çağrı aynı aktif AI deklaratörünün turunu kapatır
+
 ## Diplomasi Paneli
 
 `internal/render/diplom.go`

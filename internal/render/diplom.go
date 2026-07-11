@@ -91,6 +91,8 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 	switch action {
 	case diplomacy.ActionDeclareWar:
 		return ActionDeclareWar
+	case diplomacy.ActionJoinWarCall:
+		return ActionDeclareWar
 	case diplomacy.ActionProposePeace:
 		return ActionProposePeace
 	case diplomacy.ActionProposeAlliance:

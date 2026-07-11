@@ -659,6 +659,127 @@ func TestExecuteWarDeclarationDecliningSelectedAllyBreaksAlliance(t *testing.T) 
 	}
 }
 
+func TestExecuteWarDeclarationQueuesPlayerWhenAlliedAttackerCallsToWar(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "player"
+	gs.Factions["player"] = &faction.Faction{ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Catholic}
+	gs.Regions["player_cap"] = &world.Region{ID: "player_cap", OwnerID: "player", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	playerRel := EnsureRelation(gs, "ally", "player")
+	playerRel.Stance = faction.StanceAllied
+	playerRel.Score = 55
+
+	result := ExecuteWarDeclaration(gs, "ally", "b", nil)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("AI savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("oyuncuya savaş çağrısı kuyruğa düşmeliydi, got=%d", len(gs.DiplomaticOffers))
+	}
+	offer := gs.DiplomaticOffers[0]
+	if offer.Action != string(ActionJoinWarCall) || offer.FromFactionID != "ally" || offer.ToFactionID != "player" {
+		t.Fatalf("beklenmeyen savaş çağrısı teklifi: %+v", offer)
+	}
+	if offer.WarDeclarerFactionID != "ally" || offer.WarEnemyFactionID != "b" {
+		t.Fatalf("savaş çağrısı metadata hatalı: %+v", offer)
+	}
+	if IsWar(gs, "player", "b") {
+		t.Fatal("oyuncu kabul etmeden savaşa dahil olmamalı")
+	}
+	if len(result.PlayerCalls) != 1 || !result.PlayerCalls[0].PendingDecision {
+		t.Fatalf("saldıran taraf için bekleyen oyuncu çağrısı görünmeliydi: %+v", result.PlayerCalls)
+	}
+}
+
+func TestExecuteWarDeclarationQueuesPlayerWhenAllyIsAttacked(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "player"
+	gs.Factions["player"] = &faction.Faction{ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Catholic}
+	gs.Regions["player_cap"] = &world.Region{ID: "player_cap", OwnerID: "player", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	playerRel := EnsureRelation(gs, "ally", "player")
+	playerRel.Stance = faction.StanceAllied
+	playerRel.Score = 55
+
+	result := ExecuteWarDeclaration(gs, "b", "ally", nil)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("AI savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("savunan taraf için oyuncu çağrısı kuyruğa düşmeliydi, got=%d", len(gs.DiplomaticOffers))
+	}
+	offer := gs.DiplomaticOffers[0]
+	if offer.Action != string(ActionJoinWarCall) || offer.FromFactionID != "ally" || offer.ToFactionID != "player" {
+		t.Fatalf("beklenmeyen savunma savaş çağrısı teklifi: %+v", offer)
+	}
+	if offer.WarDeclarerFactionID != "b" || offer.WarEnemyFactionID != "b" {
+		t.Fatalf("savunma savaş çağrısı metadata hatalı: %+v", offer)
+	}
+	if IsWar(gs, "player", "b") {
+		t.Fatal("oyuncu kabul etmeden savunma savaşına dahil olmamalı")
+	}
+	if len(result.EnemyCalls) != 1 || !result.EnemyCalls[0].PendingDecision {
+		t.Fatalf("savunan taraf için bekleyen oyuncu çağrısı görünmeliydi: %+v", result.EnemyCalls)
+	}
+}
+
+func TestResolveAcceptedWarJoinOfferAddsPlayerToWar(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "player"
+	gs.Factions["player"] = &faction.Faction{ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Catholic}
+	gs.Regions["player_cap"] = &world.Region{ID: "player_cap", OwnerID: "player", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	playerRel := EnsureRelation(gs, "ally", "player")
+	playerRel.Stance = faction.StanceAllied
+	playerRel.Score = 60
+	EnsureRelation(gs, "ally", "b").Stance = faction.StanceWar
+	QueueWarJoinOffer(gs, "ally", "player", "b", "b", "")
+
+	result := ResolveOffer(gs, 0, true)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("kabul edilen savaş çağrısı uygulanmalıydı: %+v", result)
+	}
+	if !IsWar(gs, "player", "b") {
+		t.Fatal("oyuncu kabul sonrası hedefle savaşta olmalı")
+	}
+}
+
+func TestResolveRejectedWarJoinOfferBreaksAlliance(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "player"
+	gs.Factions["player"] = &faction.Faction{ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Catholic}
+	gs.Regions["player_cap"] = &world.Region{ID: "player_cap", OwnerID: "player", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	playerRel := EnsureRelation(gs, "ally", "player")
+	playerRel.Stance = faction.StanceAllied
+	playerRel.Score = 60
+	QueueWarJoinOffer(gs, "ally", "player", "b", "b", "")
+
+	result := ResolveOffer(gs, 0, false)
+
+	if result.Accepted || !result.Applied {
+		t.Fatalf("ret edilen savaş çağrısı alliance break ile uygulanmış sayılmalıydı: %+v", result)
+	}
+	updated := Relation(gs, "ally", "player")
+	if updated == nil || updated.Stance != faction.StancePeace {
+		t.Fatalf("ret sonrası ittifak bozulup barışa düşmeliydi, got=%+v", updated)
+	}
+	if updated.Score != 50 {
+		t.Fatalf("ret sonrası ilişki puanı 10 düşmeliydi, got=%d", updated.Score)
+	}
+}
+
 func testGameState() *state.GameState {
 	return &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

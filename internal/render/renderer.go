@@ -8982,6 +8982,8 @@ func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
 
 func diplomacyOfferActionLabelTR(action string) string {
 	switch action {
+	case "join_war_call":
+		return "savaşa katılım"
 	case "propose_peace":
 		return "barış"
 	case "propose_alliance":
@@ -8991,6 +8993,46 @@ func diplomacyOfferActionLabelTR(action string) string {
 	default:
 		return "teklif"
 	}
+}
+
+func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
+	if offer.Action == string(diplomacy.ActionJoinWarCall) {
+		return "Savaşa Katılım Çağrısı"
+	}
+	return "Anlaşma Teklifi"
+}
+
+func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) string {
+	fromName := factionDisplayName(gs, string(offer.FromFactionID))
+	if fromName == "" {
+		fromName = string(offer.FromFactionID)
+	}
+	if offer.Action != string(diplomacy.ActionJoinWarCall) {
+		return fromName + " devleti size " + diplomacyOfferActionLabelTR(offer.Action) + " teklif etti."
+	}
+
+	declarerName := factionDisplayName(gs, string(offer.WarDeclarerFactionID))
+	if declarerName == "" {
+		declarerName = string(offer.WarDeclarerFactionID)
+	}
+	enemyName := factionDisplayName(gs, string(offer.WarEnemyFactionID))
+	if enemyName == "" {
+		enemyName = string(offer.WarEnemyFactionID)
+	}
+	if offer.WarDeclarerFactionID == offer.FromFactionID {
+		return declarerName + " devleti " + enemyName + " devletine savaş ilan etti. Müttefikinizin tarafında yer alacak mısınız?"
+	}
+	return declarerName + " devleti " + fromName + " devletine savaş ilan etti. Müttefikiniz sizi kendi safında savaşa çağırıyor."
+}
+
+func diplomacyOfferReasonTextTR(offer state.DiplomaticOffer) string {
+	if offer.PriorityReason != "" {
+		return "Sebep: " + offer.PriorityReason
+	}
+	if offer.Action == string(diplomacy.ActionJoinWarCall) {
+		return "Sebep: aktif ittifak nedeniyle savaşa çağrıldınız"
+	}
+	return "Sebep: standart diplomasi akışı"
 }
 
 func diplomacyOfferOutcomeLabelTR(entry state.DiplomaticOfferHistoryEntry) string {
@@ -9141,10 +9183,6 @@ func (r *Renderer) drawDiplomacyOfferHistoryPanel(screen *ebiten.Image, modal ga
 
 func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) {
 	offer := r.gs.DiplomaticOffers[offerIdx]
-	fromName := string(offer.FromFactionID)
-	if f := r.gs.Factions[offer.FromFactionID]; f != nil && f.NameTR != "" {
-		fromName = f.NameTR
-	}
 	actionLabel := diplomacyOfferActionLabelTR(offer.Action)
 
 	modal := buildDiplomacyOfferModal()
@@ -9153,18 +9191,13 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	leftRect := gameui.Rect{X: modal.Panel.Rect.X + 16, Y: modal.Panel.Rect.Y + 16, W: 430, H: 188}
 	drawUIPanelFrame(screen, leftRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
 
-	title := "Anlaşma Teklifi"
+	title := diplomacyOfferTitleTR(offer)
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 10, W: leftRect.W - 28}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
-	message := fromName + " devleti size " + actionLabel + " teklif etti."
+	message := diplomacyOfferMessageTR(r.gs, offer)
 	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 38, W: leftRect.W - 28}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 2)
 	priorityLine := fmt.Sprintf("Tür: %s | Öncelik: %d", actionLabel, offer.Priority)
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 82, W: leftRect.W - 28}, priorityLine, color.RGBA{255, 205, 120, 255}, gameui.TextSmall, gameui.TextAlignStart)
-	reasonText := offer.PriorityReason
-	if reasonText == "" {
-		reasonText = "Sebep: standart diplomasi akışı"
-	} else {
-		reasonText = "Sebep: " + reasonText
-	}
+	reasonText := diplomacyOfferReasonTextTR(offer)
 	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 104, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 2)
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 158, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 

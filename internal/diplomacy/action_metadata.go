@@ -9,6 +9,7 @@ type ActionDef struct {
 
 var actionDefs = []ActionDef{
 	{Action: ActionDeclareWar, LabelTR: "Savaş", Quick: true},
+	{Action: ActionJoinWarCall, LabelTR: "Savaşa Katılım", Contextual: true},
 	{Action: ActionProposePeace, LabelTR: "Barış", Quick: true},
 	{Action: ActionProposeAlliance, LabelTR: "İttifak", Quick: true},
 	{Action: ActionProposeTrade, LabelTR: "Ticaret", Quick: true},

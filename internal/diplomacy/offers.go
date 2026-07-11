@@ -5,6 +5,8 @@ import (
 	"mapp-game-go/internal/state"
 )
 
+const warJoinOfferPriority = 100
+
 // QueueOffer geçerli ve tekrar etmeyen diplomatik teklifi kuyruğa ekler.
 func QueueOffer(gs *state.GameState, from, to faction.FactionID, action Action) bool {
 	return QueueOfferWithPriority(gs, from, to, action, 0)
@@ -40,6 +42,40 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 		CreatedTurn:    gs.Turn,
 		Priority:       priority,
 		PriorityReason: reason,
+	})
+	return true
+}
+
+func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy faction.FactionID, reason string) bool {
+	if gs == nil || caller == "" || player == "" || caller == player || declarer == "" || enemy == "" {
+		return false
+	}
+	callerFaction := gs.Factions[caller]
+	playerFaction := gs.Factions[player]
+	if callerFaction == nil || playerFaction == nil || callerFaction.IsEliminated || playerFaction.IsEliminated {
+		return false
+	}
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action != string(ActionJoinWarCall) {
+			continue
+		}
+		if offer.FromFactionID == caller && offer.ToFactionID == player &&
+			offer.WarDeclarerFactionID == declarer && offer.WarEnemyFactionID == enemy {
+			return false
+		}
+	}
+	if reason == "" {
+		reason = "Aktif ittifak nedeniyle savaş çağrısı"
+	}
+	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
+		FromFactionID:        caller,
+		ToFactionID:          player,
+		Action:               string(ActionJoinWarCall),
+		CreatedTurn:          gs.Turn,
+		Priority:             warJoinOfferPriority,
+		PriorityReason:       reason,
+		WarDeclarerFactionID: declarer,
+		WarEnemyFactionID:    enemy,
 	})
 	return true
 }
@@ -82,6 +118,12 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers[:index], gs.DiplomaticOffers[index+1:]...)
 
 	action := Action(offer.Action)
+	if action == ActionJoinWarCall {
+		if accepted {
+			return resolveAcceptedWarJoinOffer(gs, offer)
+		}
+		return resolveRejectedWarJoinOffer(gs, offer)
+	}
 	if !accepted {
 		return Result{
 			Accepted: false,
@@ -112,4 +154,57 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		}
 	}
 	return result
+}
+
+func resolveAcceptedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	callerRoot := realmRoot(gs, offer.FromFactionID)
+	if callerRoot == "" {
+		callerRoot = offer.FromFactionID
+	}
+	playerRoot := realmRoot(gs, offer.ToFactionID)
+	if playerRoot == "" {
+		playerRoot = offer.ToFactionID
+	}
+	enemyRoot := realmRoot(gs, offer.WarEnemyFactionID)
+	if enemyRoot == "" {
+		enemyRoot = offer.WarEnemyFactionID
+	}
+	if callerRoot == "" || playerRoot == "" || enemyRoot == "" {
+		return Result{Message: "Savaş çağrısı artık geçerli değil."}
+	}
+	if IsWar(gs, playerRoot, enemyRoot) {
+		return Result{
+			Accepted: true,
+			Applied:  true,
+			Message:  factionLabel(gs, enemyRoot) + " savaşına zaten dahilsiniz.",
+		}
+	}
+	if assessment := AssessWarCall(gs, callerRoot, playerRoot, enemyRoot); assessment.BlockReason != "" {
+		return Result{Message: "Savaş çağrısı artık geçerli değil."}
+	}
+	setWarBetweenCoalitions(gs, playerRoot, enemyRoot)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, callerRoot) + " tarafında " + factionLabel(gs, enemyRoot) + " savaşına katıldınız.",
+	}
+}
+
+func resolveRejectedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	callerRoot := realmRoot(gs, offer.FromFactionID)
+	if callerRoot == "" {
+		callerRoot = offer.FromFactionID
+	}
+	playerRoot := realmRoot(gs, offer.ToFactionID)
+	if playerRoot == "" {
+		playerRoot = offer.ToFactionID
+	}
+	if callerRoot != "" && playerRoot != "" {
+		breakAllianceForWarRefusal(gs, callerRoot, playerRoot)
+	}
+	return Result{
+		Accepted: false,
+		Applied:  true,
+		Message:  factionLabel(gs, callerRoot) + " tarafındaki savaş çağrısını reddettiniz. İttifak bozuldu.",
+	}
 }

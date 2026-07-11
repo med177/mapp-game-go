@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
@@ -144,6 +145,54 @@ func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 	}
 	if entry.CreatedTurn != 22 || entry.ResolvedTurn != 23 {
 		t.Fatalf("tur bilgisi korunmalıydı, got=%+v", entry)
+	}
+}
+
+func TestAcceptedWarJoinOfferEndsDeclarerAITurn(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		Turn:            23,
+		FactionOrder:    []faction.FactionID{"enemy", "ally", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_cap": {ID: "player_cap", OwnerID: "player", TradeCapacity: 4},
+			"ally_cap":   {ID: "ally_cap", OwnerID: "ally", TradeCapacity: 4},
+			"enemy_cap":  {ID: "enemy_cap", OwnerID: "enemy", TradeCapacity: 4},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ally", "player"): {FactionA: "ally", FactionB: "player", Stance: faction.StanceAllied, Score: 60},
+			faction.RelationKey("ally", "enemy"):  {FactionA: "ally", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{
+				FromFactionID:        "ally",
+				ToFactionID:          "player",
+				Action:               "join_war_call",
+				CreatedTurn:          22,
+				WarDeclarerFactionID: "enemy",
+				WarEnemyFactionID:    "enemy",
+			},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+	g.startAITurnSequence()
+	g.aiTurn.stepper = ai.NewTurnStepper(gs, "enemy")
+
+	g.handleAITurnOfferResponse(0, true)
+
+	if !diplomacy.IsWar(gs, "player", "enemy") {
+		t.Fatal("oyuncu kabul sonrası düşmanla savaşta olmalıydı")
+	}
+	if g.aiTurn.index != 1 {
+		t.Fatalf("savaş çağrısı kabulü sonrası aktif AI turu kapanmalıydı, got index=%d", g.aiTurn.index)
+	}
+	if g.aiTurn.stepper != nil {
+		t.Fatal("aktif AI stepper temizlenmeliydi")
 	}
 }
 

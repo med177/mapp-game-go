@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -695,6 +696,35 @@ func TestHandleDiplomacyOfferInputStateHistoryCardIgnoredDuringAITurn(t *testing
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); !ok {
 		t.Fatal("offer modal AI turunda aktif kalmali")
+	}
+}
+
+func TestDiplomacyOfferActionLabelTRWarJoinCall(t *testing.T) {
+	if got := diplomacyOfferActionLabelTR(string(diplomacy.ActionJoinWarCall)); got != "savaşa katılım" {
+		t.Fatalf("beklenmeyen savaş çağrısı etiketi: %q", got)
+	}
+}
+
+func TestDiplomacyOfferMessageTRWarJoinCall(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+			"player": {ID: "player", NameTR: "Oyuncu"},
+		},
+	}
+	offer := state.DiplomaticOffer{
+		FromFactionID:        "ally",
+		ToFactionID:          "player",
+		Action:               string(diplomacy.ActionJoinWarCall),
+		WarDeclarerFactionID: "enemy",
+		WarEnemyFactionID:    "enemy",
+	}
+
+	got := diplomacyOfferMessageTR(gs, offer)
+	want := "Düşman devleti Müttefik devletine savaş ilan etti. Müttefikiniz sizi kendi safında savaşa çağırıyor."
+	if got != want {
+		t.Fatalf("beklenmeyen savaş çağrısı mesajı:\nwant=%q\ngot =%q", want, got)
 	}
 }
 

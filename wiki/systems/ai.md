@@ -39,7 +39,7 @@ Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katman
 - uzak aksiyonlarda yalnız AI overlay'i günceller,
 - diplomasi/savaş/fetih gibi önemli adımları event log'a da yazar,
 - oyuncuya bekleyen diplomasi teklifi varsa step çözmeyi tamamen durdurur,
-- teklif kabul edilirse aktif AI fraksiyonunun kalan turunu kapatır; böylece aynı AI o tur içinde barıştan sonra yeni saldırı veya ileri savaş hamlesi üretmez.
+- teklif kabul edilirse aktif AI fraksiyonunun kalan turunu kapatır; böylece aynı AI o tur içinde barıştan sonra yeni saldırı veya ileri savaş hamlesi üretmez. Aynı kural, AI savaş ilanı sonrası oyuncuya düşen müttefik savaş çağrısı kabulünde de deklaratör AI için geçerlidir.
 
 ---
 
@@ -128,6 +128,7 @@ AI ve oyuncu aynı `internal/diplomacy` motorunu kullandığı için:
 - kabul/red kuralları tutarlıdır
 - ticaret rotaları aynı şekilde açılıp kapanır
 - AI ticaret yaptığı veya müttefik olduğu hedefe saldırmaz
+- AI savaş ilanında hem saldıran hem savunan taraftaki oyuncu müttefikleri otomatik çekilmez; önce oyuncuya savaş çağrısı modalı düşer
 
 ---
 
