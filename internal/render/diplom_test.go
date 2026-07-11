@@ -310,7 +310,7 @@ func TestDiplomacyTradeChanceUsesRealAcceptanceRules(t *testing.T) {
 	if chance != 0 {
 		t.Fatalf("düşük skorda ticaret şansı 0 gösterilmeli, got=%d", chance)
 	}
-	if status != "İlişki puanı 10 altı" {
+	if status != "Ticaret için ilişki puanı 15 altı" {
 		t.Fatalf("beklenen gerçek engel metni, got=%q", status)
 	}
 }
@@ -329,7 +329,7 @@ func TestAllianceChanceAllowsDirectThreatWhenCommonEnemyExists(t *testing.T) {
 			"e1": {ID: "e1", OwnerID: "enemy"},
 		},
 		Relations: map[string]*faction.Relation{
-			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StancePeace, Score: 20},
+			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StancePeace, Score: 25},
 			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
 			faction.RelationKey("ally", "enemy"):   {FactionA: "ally", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
 		},

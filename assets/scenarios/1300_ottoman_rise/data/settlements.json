@@ -2473,7 +2473,30 @@
   },
   {
     "region_id": "new_region_227",
-    "settlements": [ ]
+    "settlements": [
+      {
+        "id": "arabian_desert_hail",
+        "name_tr": "Hâil",
+        "x": 1342,
+        "y": 735,
+        "type": "town",
+        "is_capital": true
+      },
+      {
+        "id": "arabian_desert_dumat_al_jandal",
+        "name_tr": "Dûmetü'l-Cendel",
+        "x": 1325,
+        "y": 710,
+        "type": "fortress"
+      },
+      {
+        "id": "arabian_desert_hajr_al_yamama",
+        "name_tr": "Hacrülyemâme",
+        "x": 1390,
+        "y": 780,
+        "type": "town"
+      }
+    ]
   },
   {
     "region_id": "slovenia",
@@ -4256,11 +4279,23 @@
   },
   {
     "region_id": "aksaray",
-    "settlements": [ ]
-  },
-  {
-    "region_id": "ankara",
-    "settlements": [ ]
+    "settlements": [
+      {
+        "id": "aksaray_main",
+        "name_tr": "Aksaray",
+        "x": 1120,
+        "y": 491,
+        "type": "city",
+        "is_capital": true
+      },
+      {
+        "id": "aksaray_sultanhani",
+        "name_tr": "Sultanhanı",
+        "x": 1124,
+        "y": 498,
+        "type": "fortress"
+      }
+    ]
   },
   {
     "region_id": "cankiri",
