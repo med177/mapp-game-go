@@ -467,9 +467,12 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 	attacker := r.gs.Armies[wc.pendingArmy]
 	target := r.gs.Regions[wc.pendingDest]
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
+	activeSiege := r.gs.SiegeAt(wc.pendingDest)
 	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-		r.openSiegeDecision(attacker, target)
-		return action
+		if activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID || wc.pendingEnemy == "" {
+			r.openSiegeDecision(attacker, target)
+			return action
+		}
 	}
 	if supportingSiege {
 		r.SelectedArmy = ""

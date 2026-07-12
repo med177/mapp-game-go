@@ -969,7 +969,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			)
 			return InputAction{}
 		}
-		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging {
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && enemyArmy == nil {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}

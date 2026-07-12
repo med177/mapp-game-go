@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-11
+last_updated: 2026-07-13
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -61,6 +61,8 @@ Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katman
 | Düşman bölgesi, savaş | 90 |
 
 `atCapacity` — `DeployedLandUnits >= ManpowerCap` ise fetih yaparak kapasite genişletme önceliklenir.
+
+Tahkimli hedefte başka bir ordunun aktif kuşatması varsa AI yeni kuşatma açmaz; ancak bölgeye giriş hakkı olan ve bölgedeki besieger düşman ordusunu savaşta yenebilen hedefler `scoreMove()` tarafından savaş adayı olarak puanlanır. Böylece AI, oyuncuyla aynı kuşatma kuralına tabi olur: önce kuşatma, istisnai olarak da kuşatma yapan orduyu savaşla kaldırma.
 
 ### Lojistik Farkındalığı
 

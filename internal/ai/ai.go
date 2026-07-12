@@ -2142,6 +2142,40 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 	// Müttefik veya savaş halindeki fraksiyona göre hareket et.
 	if target.OwnerID != "" {
 		_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+		if !a.IsNaval && target.CanLandEnter() && target.IsFortified() {
+			if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
+				enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target.ID)
+				if enemyArmy != nil {
+					_, enemyStance := relationScore(gs, a.OwnerID, enemyArmy.OwnerID)
+					if enemyStance == faction.StanceWar {
+						atkStr := a.TotalStrength(gs.UnitTypes)
+						defStr := enemyArmy.TotalStrength(gs.UnitTypes)
+						if atkStr > defStr {
+							if stance == faction.StanceAllied {
+								return 65
+							}
+							return 95
+						}
+						return -1
+					}
+				}
+				if stance == faction.StanceAllied {
+					// Müttefik bölgede orduyu sadece transit/yardım için kullan.
+					_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+					if srcOverload > 0 || a.OverCapacityTurns > 0 {
+						tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+						if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
+							return aiReliefMoveBase
+						}
+					}
+					return 5
+				}
+				if stance != faction.StanceWar {
+					return -1
+				}
+				return -1
+			}
+		}
 		if stance == faction.StanceAllied {
 			// Müttefik bölgesine savaşsız geçiş: lojistik rahatlatma veya yol amaçlı
 			_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
@@ -2506,12 +2540,43 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			} else if enemyArmy != nil && len(enemyArmy.Units) == 0 {
 				delete(gs.Armies, enemyArmy.ID)
 			}
+			battleLiftsSiege := false
+			if targetSiege := gs.SiegeAt(target); targetSiege != nil && targetSiege.AttackerArmyID != a.ID {
+				for _, sid := range defSourceIDs {
+					if sid == targetSiege.AttackerArmyID {
+						battleLiftsSiege = true
+						break
+					}
+				}
+				if !battleLiftsSiege && enemyArmy != nil && enemyArmy.ID == targetSiege.AttackerArmyID {
+					battleLiftsSiege = true
+				}
+			}
+			isAlliedTarget := false
+			if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+				if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+					isAlliedTarget = true
+				}
+				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+				if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+					isAlliedTarget = true
+				}
+			}
+			if battleLiftsSiege {
+				aiClearSiege(gs, target)
+			}
 			if len(a.Units) > 0 {
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
-				targetRegion.OwnerID = a.OwnerID
+				if !isAlliedTarget {
+					targetRegion.OwnerID = a.OwnerID
+				}
 				a.MovePoints--
+				message := actorName + " " + targetName + " bölgesindeki savaşı kazandı."
+				if isAlliedTarget && battleLiftsSiege {
+					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve kuşatmayı kaldırdı."
+				}
 				return moveOutcome{
 					survived: true,
 					step: TurnStep{
@@ -2521,7 +2586,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 						FromRegion:   fromRegion,
 						TargetRegion: target,
 						FocusRegion:  target,
-						Message:      actorName + " " + targetName + " bölgesindeki savaşı kazandı.",
+						Message:      message,
 					},
 				}
 			}

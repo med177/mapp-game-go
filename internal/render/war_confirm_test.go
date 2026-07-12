@@ -155,6 +155,93 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 	}
 }
 
+func TestFinalizeWarConfirmRoutesBesiegingArmyFightInsteadOfSiegeDecision(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "player",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "ally",
+				Neighbors:   []world.RegionID{"src"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied},
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "player",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+			"besieger": {
+				ID:            "besieger",
+				OwnerID:       "enemy",
+				RegionID:      "dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"dst": {
+				RegionID:          "dst",
+				AttackerArmyID:    "besieger",
+				AttackerFactionID: "enemy",
+				StartedTurn:       6,
+				FortLevel:         2,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	r := &Renderer{gs: gs}
+	wc := warConfirmState{
+		factionID:       "enemy",
+		pendingArmy:     "atk",
+		pendingDest:     "dst",
+		pendingEnemy:    "besieger",
+		opensBattlePlan: true,
+		battleAction:    ActionMoveArmy,
+		battleContext:   combat.BattleContextLand,
+		preview: diplomacy.WarDeclarationPreview{
+			Attacker: diplomacy.WarSidePreview{},
+		},
+	}
+
+	act := r.finalizeWarConfirm(wc)
+
+	if act.Kind != ActionDeclareWar {
+		t.Fatalf("savaş ilanı geri dönmeliydi, got=%s", act.Kind)
+	}
+	if r.confirmDialog.show {
+		t.Fatal("kuşatma kararı açılmamalıydı")
+	}
+	if !r.battlePlan.show {
+		t.Fatal("aktif kuşatma altındaki düşman ordu için savaş planı açılmalıydı")
+	}
+	if r.battlePlan.pendingEnemy != "besieger" {
+		t.Fatalf("battle plan yanlış düşmanı hedefledi: %q", r.battlePlan.pendingEnemy)
+	}
+}
+
 func TestWarConfirmScrollHelpersClampAndHitVisibleRows(t *testing.T) {
 	viewport := gameui.Rect{X: 100, Y: 200, W: 320, H: 110}
 	entries := []diplomacy.WarParticipantPreview{

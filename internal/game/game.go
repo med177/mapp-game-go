@@ -3566,17 +3566,18 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
 		liftedSiegeRegion = activeSiege.RegionID
 	}
+	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
+	targetSiege := g.gs.SiegeAt(target)
 	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-		activeSiege := g.gs.SiegeAt(target)
-		if activeSiege != nil && activeSiege.AttackerArmyID == aid {
+		if targetSiege != nil && targetSiege.AttackerArmyID == aid {
 			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
 			return
 		}
-		if activeSiege != nil {
+		if targetSiege != nil {
 			if g.gs.CanJoinActiveSiege(a, target) {
 				allyJoiningSiege = true
-			} else {
+			} else if enemyArmy == nil {
 				g.renderer.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return
 			}
@@ -3595,8 +3596,6 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			return
 		}
 	}
-
-	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
 
 	if enemyArmy != nil && !allyJoiningSiege {
 		// --- Savaş ---
@@ -3640,27 +3639,50 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			} else if len(enemyArmy.Units) == 0 {
 				delete(g.gs.Armies, enemyArmy.ID)
 			}
+			battleLiftsSiege := false
+			if targetSiege != nil && targetSiege.AttackerArmyID != aid {
+				for _, sid := range defSourceIDs {
+					if sid == targetSiege.AttackerArmyID {
+						battleLiftsSiege = true
+						break
+					}
+				}
+				if !battleLiftsSiege && enemyArmy != nil && enemyArmy.ID == targetSiege.AttackerArmyID {
+					battleLiftsSiege = true
+				}
+			}
+			if battleLiftsSiege {
+				g.clearSiege(target)
+			}
 			if len(a.Units) > 0 {
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
 				a.MovePoints--
-				prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
-				if !prompted {
-					collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
-					g.renderer.MarkMapDirty()
-				}
-				if navalSeaMove {
-					if prompted {
-						outcomeDetail = "Düşman filo dağıtıldı; teslim şartları için savaş sonrası karar bekleniyor."
+				if isAlliedRegion {
+					if navalSeaMove {
+						outcomeDetail = "Düşman filo dağıtıldı ve kuşatma kaldırıldı."
 					} else {
-						outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+						outcomeDetail = "Savunma yarıldı; kuşatma kaldırıldı."
 					}
 				} else {
-					if prompted {
-						outcomeDetail = "Savunma yarıldı; ilhak ya da vassallık için savaş sonrası karar bekleniyor."
+					prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
+					if !prompted {
+						collapse = g.applyConquestWithNavalEviction(targetRegion, a.OwnerID)
+						g.renderer.MarkMapDirty()
+					}
+					if navalSeaMove {
+						if prompted {
+							outcomeDetail = "Düşman filo dağıtıldı; teslim şartları için savaş sonrası karar bekleniyor."
+						} else {
+							outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+						}
 					} else {
-						outcomeDetail = "Savunma yarıldı, bölge ele geçirildi."
+						if prompted {
+							outcomeDetail = "Savunma yarıldı; ilhak ya da vassallık için savaş sonrası karar bekleniyor."
+						} else {
+							outcomeDetail = "Savunma yarıldı, bölge ele geçirildi."
+						}
 					}
 				}
 			} else {

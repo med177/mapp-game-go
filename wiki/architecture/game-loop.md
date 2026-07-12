@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-06-20
+last_updated: 2026-07-13
 related: [state-management, render-pipeline]
 ---
 
@@ -126,7 +126,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
-| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır; aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için girebilir, ilgisiz üçüncü devletler yeni kuşatma hamlesi üretemez |
+| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır; aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için girebilir, ilgisiz üçüncü devletler yeni kuşatma hamlesi üretemez. Tahkimli ve zaten kuşatılmış bölgedeki besieger düşman orduya savaş açılabiliyorsa bu hareket kuşatmayı kaldırır ama yeni kuşatma açmaz |
 | `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
 | `ActionStartSiege` | Kuşatma modalı | Tahkimli düşman kara bölgesinde aktif kuşatma başlatır; kuşatma birimi varsa bu orduyla daha sonra genel hücum da seçilebilir, kuşatma birimi yoksa yalnız aç bırakma / teslim bekleme hattı açık kalır. Ordu hedefe girmez, hareketi biter. Başka bir devletin devam eden kuşatmasına destek ayrı `ActionMoveArmy` akışıyla gelir; burada yeni bir kuşatma kaydı açılmaz |
 | `ActionAssaultSiege` | Kuşatma modalı / seçili kuşatma paneli | Aktif kuşatma üstünden tahkimata genel hücum yapar; gedik ve sur bonusu combat çözümüne katılır |

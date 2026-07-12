@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-08
+last_updated: 2026-07-13
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -133,6 +133,7 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 10. Kuşatma birimi yoksa `Genel Hücum` kapalıdır; kale ancak kuşatmanın bekleme / aç bırakma süreciyle teslim olabilir.
 11. `Genel Hücum`, gedik yokken tahkimatı doğrudan düşüremez; saldırı savunucuyu yıpratsa bile kale elde tutulur. En az küçük gedik açıldıysa hücum fetih üretebilir.
 12. Genel hücumda saldıran taraf ayrıca sur tırmanışı ve dar giriş baskısı kaynaklı ek zayiat alır; bu bedel gedik yokken en ağır, küçük gedikte daha düşük, büyük gedikte en düşüktür.
+13. Zaten başka bir devlet tarafından kuşatılmış tahkimli bölgeye üçüncü devlet yeni kuşatma başlatamaz; ancak bölgeye giriş hakkı varsa kuşatma yapan düşman orduya karşı savaş açabilir ve o ordu yenilirse kuşatma kalkar. Böyle bir savaş allied / same realm geçişinde gerçekleşiyorsa sahiplik değişmez, yalnız kuşatma kaldırılır.
 
 Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 
