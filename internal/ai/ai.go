@@ -1899,9 +1899,6 @@ func aiCanStartSiege(gs *state.GameState, a *army.Army, target *world.Region) bo
 	if target.OwnerID == "" || target.OwnerID == a.OwnerID || !target.IsFortified() {
 		return false
 	}
-	if !a.HasSiegeUnits(gs.UnitTypes) {
-		return false
-	}
 	_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
 	if stance != faction.StanceWar {
 		return false
@@ -1944,6 +1941,9 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 	if activeSiege := gs.SiegeByArmy(a.ID); activeSiege != nil {
 		target := gs.Regions[activeSiege.RegionID]
 		if !aiCanStartSiege(gs, a, target) {
+			return ""
+		}
+		if !a.HasSiegeUnits(gs.UnitTypes) {
 			return ""
 		}
 		if activeSiege.BreachLevel >= 2 {
@@ -2150,9 +2150,6 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		}
 	}
 	if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
-		if !a.HasSiegeUnits(gs.UnitTypes) {
-			return -1
-		}
 		if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
 			return -1
 		}
@@ -2374,6 +2371,20 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 					TargetRegion: target,
 					FocusRegion:  target,
 					Message:      actorName + " " + targetName + " tahkimatını kuşatmaya aldı.",
+				},
+			}
+		}
+		if !a.HasSiegeUnits(gs.UnitTypes) {
+			return moveOutcome{
+				survived: true,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepBattle,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " kuşatmasını sürdürüyor ve teslimiyet bekliyor.",
 				},
 			}
 		}

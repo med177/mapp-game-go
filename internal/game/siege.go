@@ -82,9 +82,6 @@ func canArmyStartSiege(gs *state.GameState, attacker *army.Army, targetRegion *w
 	if !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
 		return false, "Kuşatma için hedef bölgeye komşu olmalısın."
 	}
-	if !attacker.HasSiegeUnits(gs.UnitTypes) {
-		return false, "Bu bölgeyi kuşatmak için orduda en az bir kuşatma birimi olmalı."
-	}
 	if active := gs.SiegeByArmy(attacker.ID); active != nil && active.RegionID != targetRegion.ID {
 		return false, "Bu ordu başka bir kuşatma yürütüyor. Önce onu kaldır."
 	}
@@ -101,6 +98,12 @@ func canArmyStartSiege(gs *state.GameState, attacker *army.Army, targetRegion *w
 }
 
 func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion *world.Region) (*state.SiegeState, bool, string) {
+	if gs == nil || attacker == nil || targetRegion == nil {
+		return nil, false, ""
+	}
+	if !attacker.HasSiegeUnits(gs.UnitTypes) {
+		return nil, false, "Genel hücum için orduda en az bir kuşatma birimi olmalı."
+	}
 	if ok, reason := canArmyStartSiege(gs, attacker, targetRegion); ok {
 		return gs.SiegeAt(targetRegion.ID), true, ""
 	} else if siege := gs.SiegeAt(targetRegion.ID); siege != nil && siege.AttackerArmyID == attacker.ID {
@@ -548,7 +551,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		}
 		targetRegion := g.gs.Regions[regionID]
 		attacker := g.gs.Armies[siege.AttackerArmyID]
-		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !attacker.HasSiegeUnits(g.gs.UnitTypes) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
+		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
 			// Kuşatma geçersiz → orduyu homeRegion'a geri taşı
 			if attacker != nil && siege.AttackerHomeRegionID != "" {
 				attacker.RegionID = siege.AttackerHomeRegionID

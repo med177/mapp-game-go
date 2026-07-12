@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -11,7 +11,7 @@ related: [game-loop, render-pipeline, shape-editor]
 
 ## GameState Yapısı
 
-`GameState` tüm oyun verisinin tek kaynağıdır. Save/load bu struct'ı JSON olarak serialize eder.
+`GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
 
 ```go
 type GameState struct {
@@ -103,7 +103,16 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
 
-`MapConfig` senaryo metadata'sından gelir ve kayıt dosyasına da yazılır. Böylece senaryo değiştiğinde aktif kaydın harita hizalama ayarı korunur.
+`MapConfig`, `TradeCenters`, bölge adları/komşulukları/shape kimlikleri, fraksiyon adları/renkleri ve `region_shapes.json` kaynaklı region paint override verisi senaryodan gelir ve kayıt dosyasına yazılmaz. Kayıt yalnız sahiplik, ekonomi, araştırma, ordular, diplomasi ve benzeri mutable campaign state'i taşır.
+
+Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
+
+- `relations`: tam snapshot yerine yalnız baz senaryodan farklı relation delta'ları yazılır
+- `regions`: yalnız değişen mutable alanlar serialize edilir; değişmeyen bölgeler tamamen atlanır
+- `settlements`: tam liste yerine add/update/remove + order patch formatı kullanılır
+- `armies.units`: aynı `type_id + hp + xp` kombinasyonları count ile stack'lenir
+- disk katmanı: payload `zstd+base64` ile `state_zstd` alanında tutulur; envelope metadata'sı düz JSON kalır
+- debug/dev katmanı: yalnız `GameState.DevelopmentMode=true` iken aynı slot için `saves/<slot>.debug.json` sidecar'ı yazılır; bu dosya sıkıştırılmamış ve açıklayıcı alan adlarıyla debug amaçlıdır, normal oyunda üretilmez
 
 ---
 
@@ -170,13 +179,13 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` kayıt JSON'unu okur ve runtime tanım verilerinden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData` ve `RegionOrder` alanlarını yeniden doldurur. `ScenarioPath` eksik ama `ScenarioID` varsa senaryo klasörü yeniden çözülür; ardından `scenario.json` tekrar okunur, `MapConfig` fallback uygulanır, `ScenarioVictories` tam liste olarak geri yüklenir ve `AvailableVictories` aktif `PlayerFactionID` ile tekrar filtrelenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` önce kayıt JSON'unu okur, gerekiyorsa `state_zstd` payload'unu açar, `ScenarioID` üzerinden senaryo klasörünü çözer ve senaryo baz state'ini tekrar kurar. Ardından kayıt içindeki campaign delta bu baz state'in üstüne overlay edilir. Bu yüzden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData`, `RegionOrder`, `FactionOrder`, `MapConfig`, `TradeCenters` ve tam `ScenarioVictories` listesi dosyadan değil yeniden senaryodan gelir. Yeni save formatı üst seviyede `kind` (`auto`, `quick`, `slot`), `game_version` ve slot kartları için düz `meta` alanı taşır; sıkıştırılmış gövde `state_zstd` içinde tutulur, eski düz `GameState` save'leri ve eski wrapper save'ler de geriye uyumlu okunur. Legacy save içinde bazı alanlar yoksa baz senaryonun varsayılanları korunur. `DevelopmentMode` açıksa save sırasında ana dosyaya ek olarak `*.debug.json` sidecar'ı da yazılır; bu yardımcı dosya yükleme için zorunlu değildir ve normal mod save alındığında aynı slotun eski debug sidecar'ı temizlenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
 
 Load/startup sonunda `diplomacy.NormalizeVassalage()` çalışır. Böylece geçersiz `OverlordID` referansları temizlenir, realm içi relation kayıtları dost çizgiye çekilir ve vassalın üçüncü taraf trade/offer sızıntıları kapanır.
 
 `Game` katmanında ayrıca serialize edilmeyen bir `pendingConquestDecisions` kuyruğu vardır. Bu runtime kuyruk, oyuncu savaşta bir devletin son kara toprağını düşürdüğünde battle report ile nihai ilhak/vassallık kararını birbirinden ayırmak için kullanılır; save/load veya yeni oyun başlangıcında temizlenir.
 
-Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar.
+Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar. Ana menüde `Devam Et`, `autosave` ile `quicksave` arasından en yeni olanı açar.
 
 ---
 

@@ -78,7 +78,7 @@ func siegeSupportTestState() *state.GameState {
 	}
 }
 
-func TestMoveArmyWithStanceBlocksFortifiedRegionWithoutSiegeUnit(t *testing.T) {
+func TestStartSiegeCreatesStateWithoutSiegeUnit(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{
 		"atk": {
@@ -92,16 +92,18 @@ func TestMoveArmyWithStanceBlocksFortifiedRegionWithoutSiegeUnit(t *testing.T) {
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
 
-	g.moveArmyWithStance("atk", "dst", "")
+	if !g.startSiegeForArmy("atk", "dst", false) {
+		t.Fatal("kuşatma başlatılamadı")
+	}
 
-	if gs.Armies["atk"].RegionID != "src" {
-		t.Fatalf("ordu tahkimata siege birimi olmadan girmemeliydi, got=%s", gs.Armies["atk"].RegionID)
+	if gs.Armies["atk"].RegionID != "dst" {
+		t.Fatalf("kuşatma başlatan ordu hedefe yerleşmeliydi, got=%s", gs.Armies["atk"].RegionID)
 	}
 	if gs.Regions["dst"].OwnerID != "p2" {
-		t.Fatalf("tahkimli bölge savaşsız el değiştirmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+		t.Fatalf("kuşatma başlatmak sahipliği değiştirmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
 	}
-	if gs.SiegeAt("dst") != nil {
-		t.Fatal("siege birimi olmayan ordu kuşatma başlatamamalıydı")
+	if gs.SiegeAt("dst") == nil {
+		t.Fatal("kuşatma kaydı oluşmalıydı")
 	}
 }
 
@@ -504,7 +506,7 @@ func TestResolveSiegesCanStarveFortWithoutBreach(t *testing.T) {
 			RegionID:      "src",
 			MovePoints:    2,
 			MaxMovePoints: 2,
-			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
 		},
 	}
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
@@ -523,6 +525,45 @@ func TestResolveSiegesCanStarveFortWithoutBreach(t *testing.T) {
 
 	if gs.Regions["dst"].OwnerID != "p1" {
 		t.Fatalf("uzun kuşatma açlık teslimiyeti getirmeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+}
+
+func TestAssaultSiegeWithoutSiegeUnitIsBlocked(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			StartedTurn:       4,
+			TurnsElapsed:      1,
+			FortLevel:         2,
+			BreachProgress:    0,
+			BreachLevel:       0,
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.assaultSiegeWithStance("atk", "dst", "")
+
+	if gs.Regions["dst"].OwnerID != "p2" {
+		t.Fatalf("kuşatma birimi olmadan genel hücum kale fethi vermemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+	if gs.Armies["atk"].RegionID != "src" {
+		t.Fatalf("kuşatma birimi olmadan genel hücumda ordu hedefe girmemeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.SiegeAt("dst") == nil {
+		t.Fatal("aktif kuşatma assault engellense de sürmeliydi")
 	}
 }
 

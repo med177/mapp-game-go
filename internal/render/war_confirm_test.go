@@ -3,11 +3,13 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -85,6 +87,71 @@ func TestFinalizeWarConfirmCarriesSelectedAllies(t *testing.T) {
 	}
 	if len(act.WarAllies) != 1 || act.WarAllies[0] != "ally_b" {
 		t.Fatalf("seçili müttefik listesi aksiyona taşınmalıydı, got=%v", act.WarAllies)
+	}
+}
+
+func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "player",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "enemy",
+				Neighbors:   []world.RegionID{"src"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "player",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	r := &Renderer{gs: gs}
+	wc := warConfirmState{
+		factionID:   "enemy",
+		pendingArmy: "atk",
+		pendingDest: "dst",
+		preview: diplomacy.WarDeclarationPreview{
+			Attacker: diplomacy.WarSidePreview{},
+		},
+		battleContext: combat.BattleContextLand,
+	}
+
+	act := r.finalizeWarConfirm(wc)
+
+	if act.Kind != ActionDeclareWar {
+		t.Fatalf("savaş ilanı geri dönmeliydi, got=%s", act.Kind)
+	}
+	if !r.confirmDialog.show {
+		t.Fatal("kuşatma kararı modalı açılmalıydı")
+	}
+	if r.confirmDialog.thirdLabel != "" {
+		t.Fatalf("kuşatma birimi yokken genel hücum düğmesi gizlenmeliydi, got=%q", r.confirmDialog.thirdLabel)
+	}
+	if r.confirmDialog.pendingAction.Kind != ActionStartSiege {
+		t.Fatalf("kuşatma kararı start siege üretmeliydi, got=%s", r.confirmDialog.pendingAction.Kind)
 	}
 }
 

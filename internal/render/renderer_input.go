@@ -634,7 +634,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if _, siege, _, ok := r.selectedSiegePanelState(); ok {
 		assaultBtn, liftBtn := buildSelectedSiegeButtons()
-		if assaultBtn.HitTest(fx, fy) {
+		attacker := r.gs.Armies[r.SelectedArmy]
+		if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) && assaultBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionAssaultSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
 		}
 		if liftBtn.HitTest(fx, fy) {
@@ -919,10 +920,6 @@ func (r *Renderer) handleRightClick() InputAction {
 				allySieging = true
 			} else if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
 				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
-				return InputAction{}
-			}
-			if !allySieging && !a.HasSiegeUnits(r.gs.UnitTypes) {
-				r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
 				return InputAction{}
 			}
 		}

@@ -111,7 +111,9 @@ type RegionEventStatus struct {
 	LabelTR   string         `json:"label_tr"`   // kısa açıklama (tooltip için)
 }
 
-// GameState oyunun tüm anlık durumunu tutar. Save/load bu struct'ı serialize eder.
+// GameState oyunun tüm anlık durumunu tutar. Save/load ham struct snapshot'ı
+// yerine bu state'in mutable campaign alanlarını serialize eder ve senaryo baz
+// state'i yükleme sırasında yeniden kurar.
 type GameState struct {
 	// Zaman
 	Turn      int `json:"turn"`  // toplam tur sayısı (1'den başlar)

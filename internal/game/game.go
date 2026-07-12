@@ -121,7 +121,7 @@ func New() *Game {
 
 	r := render.New(gs)
 	r.HasSave = save.AnySlotExists()
-	r.HasAutoSave = save.SaveExists()
+	r.HasAutoSave = save.ContinueSaveExists()
 	r.CurrentSettings = render.LoadSettings()
 	audio.SetMusicEnabled(r.CurrentSettings.MusicOn)
 	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
@@ -154,7 +154,9 @@ func (g *Game) Update() error {
 		case render.ActionNewGame:
 			g.resetToNewGame()
 		case render.ActionContinue:
-			g.startLoadSlot("autosave", state.PhaseMainMenu)
+			if slotName, ok := save.LatestContinueSlot(); ok {
+				g.startLoadSlot(slotName, state.PhaseMainMenu)
+			}
 		case render.ActionOpenLoadSelect:
 			render.SaveSlots = save.ListSlots()
 			g.gs.Phase = state.PhaseLoadSelect
@@ -175,7 +177,7 @@ func (g *Game) Update() error {
 			}
 			render.SaveSlots = save.ListSlots()
 			g.renderer.HasSave = save.AnySlotExists()
-			g.renderer.HasAutoSave = save.SaveExists()
+			g.renderer.HasAutoSave = save.ContinueSaveExists()
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseMainMenu
 		}
@@ -364,7 +366,7 @@ func (g *Game) Update() error {
 				g.renderer.ShowCombatResult("Kayıt hatası: " + err.Error())
 			} else {
 				g.renderer.HasSave = true
-				g.renderer.HasAutoSave = save.SaveExists()
+				g.renderer.HasAutoSave = save.ContinueSaveExists()
 				g.renderer.ShowCombatResult("Kaydedildi!")
 			}
 			g.gs.Phase = state.PhasePlayerTurn
@@ -374,7 +376,7 @@ func (g *Game) Update() error {
 			}
 			render.SaveSlots = save.ListSlots()
 			g.renderer.HasSave = save.AnySlotExists()
-			g.renderer.HasAutoSave = save.SaveExists()
+			g.renderer.HasAutoSave = save.ContinueSaveExists()
 		case render.ActionBack:
 			g.gs.Phase = state.PhasePauseMenu
 		}
@@ -476,7 +478,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
-		g.renderer.HasAutoSave = save.SaveExists()
+		g.renderer.HasAutoSave = save.ContinueSaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
 		g.refreshEventCodex()
 	case loadingWorldMap:
@@ -1945,9 +1947,7 @@ func (g *Game) saveToSlot(slotName string, showSuccess bool, successMsg string) 
 		return false
 	}
 	g.renderer.HasSave = true
-	if slotName == "autosave" {
-		g.renderer.HasAutoSave = true
-	}
+	g.renderer.HasAutoSave = save.ContinueSaveExists()
 	if showSuccess {
 		msg := successMsg
 		if msg == "" {
@@ -3587,7 +3587,11 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				}
 				return
 			}
-			g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")
+			if a.HasSiegeUnits(g.gs.UnitTypes) {
+				g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")
+			} else {
+				g.renderer.ShowCombatResult("Bu bölge tahkimli. Bu ordu kuşatma kurabilir; genel hücum için kuşatma birimi gerekir.")
+			}
 			return
 		}
 	}

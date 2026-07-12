@@ -19,7 +19,7 @@ Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita st
 - **Tarihsel Olaylar** — Veba, kıtlık, taht krizleri, Reformasyon; gerçek tarihe yakın tetikleme ve A/B karar popup'ları
 - **Yapay Zeka** — 3 zorluk seviyesi, fırsatçı/ekonomik/diplomatik strateji
 - **Senaryo Sistemi** — Farklı başlangıç koşulları ve zafer hedefleriyle birden fazla senaryo
-- **Kayıt/Yükleme** — JSON tabanlı, insan okunabilir kayıt dosyaları
+- **Kayıt/Yükleme** — JSON tabanlı save envelope + sıkıştırılmış state payload; debug modda ek okunabilir sidecar
 
 ---
 
@@ -64,6 +64,9 @@ cd mapp-game-go
 # Bağımlılıkları indir
 go mod download
 
+# Build metadata üret
+go generate ./internal/buildinfo
+
 # Derle ve çalıştır
 go run ./cmd/game
 
@@ -88,10 +91,22 @@ sudo apt install -y \
 
 ```bash
 go test ./...
+go generate ./internal/buildinfo
 GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
 ```
 
 Kalıcı çıktı yolu `bin/game.exe`'dir. Kök dizindeki `game.exe` varsa geçici build artığı olarak değerlendirilmelidir.
+
+### Save debug sidecar
+
+Ana save dosyaları küçük kalması için kampanya state'ini `state_zstd` alanında `zstd+base64` olarak saklar. Eğer `.env` içinde `DEV_MODE=true` ise aynı slot için ek olarak okunabilir bir debug sidecar yazılır:
+
+```text
+saves/quicksave.json
+saves/quicksave.debug.json
+```
+
+`*.debug.json` yalnız debug/dev amaçlıdır; normal oyunda yazılmaz ve yükleme için kullanılmaz.
 
 ---
 

@@ -52,18 +52,18 @@ func aiSiegeTestState(withSiegeUnit bool) *state.GameState {
 	}
 }
 
-func TestChooseBestMoveSkipsFortifiedTargetWithoutSiegeUnit(t *testing.T) {
+func TestChooseBestMoveCanSelectFortifiedTargetWithoutSiegeUnit(t *testing.T) {
 	gs := aiSiegeTestState(false)
 
 	target := chooseBestMove(gs, gs.Armies["ai_army"])
 
-	if target != "" {
-		t.Fatalf("siege birimi olmayan AI tahkimli hedefe gitmemeliydi, got=%s", target)
+	if target != "fort" {
+		t.Fatalf("siege birimi olmayan AI tahkimli hedefi kuşatma adayı olarak seçebilmeliydi, got=%s", target)
 	}
 }
 
 func TestExecuteMoveStartsSiegeOnFortifiedTarget(t *testing.T) {
-	gs := aiSiegeTestState(true)
+	gs := aiSiegeTestState(false)
 	a := gs.Armies["ai_army"]
 
 	outcome := executeMove(gs, a, "fort", "ai_1")

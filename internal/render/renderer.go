@@ -670,6 +670,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.queuedBattleReport = battleReportState{}
 	r.warSummary = warSummaryState{}
 	r.eventLogScroll = 0
+	r.editRegionPaintOverrides = make(map[int]world.RegionID)
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
 		r.editRegionPaintOverrides = make(map[int]world.RegionID, len(gs.RegionPaintOverrides))
@@ -1937,6 +1938,12 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		}
 		forceLabel := item.Region != nil && ((selectedOK && item.Region.ID == selectedRID && item.Index == selectedIdx) ||
 			(item.Region.ID == hoverRID && item.Index == hoverIdx))
+		labelColor := labelCol
+		shadowColor := shadowCol
+		if selectedOK && item.Region != nil && item.Region.ID == selectedRID && item.Index == selectedIdx {
+			labelColor = ColorGold
+			shadowColor = color.RGBA{34, 22, 8, 210}
+		}
 		if !item.DrawLabel && !forceLabel {
 			isPrimary := settlement.IsCapital || item.Index == 0
 			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
@@ -1972,7 +1979,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			if item.CapitalIcon {
 				r.drawCapitalLabelIcon(screen, float32(item.X), float32(item.Y), variant)
 			}
-			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.TextX, Y: item.Y}, item.Text, labelCol, shadowCol, variant, gameui.TextAlignStart)
+			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.TextX, Y: item.Y}, item.Text, labelColor, shadowColor, variant, gameui.TextAlignStart)
 			outlined.Offsets = [][2]float64{{1, 1}}
 			outlined.Draw(screen, renderText)
 			r.labelRectBuf = append(r.labelRectBuf, rect)

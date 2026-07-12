@@ -37,6 +37,7 @@ go run ./cmd/game
 Kalıcı binary hedefi:
 
 ```bash
+go generate ./internal/buildinfo
 mkdir -p bin
 GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
 ```
@@ -49,6 +50,7 @@ GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
 
 ```bash
 go test ./...
+go generate ./internal/buildinfo
 GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game
 ```
 
@@ -56,3 +58,4 @@ Beklenen sonuç:
 - testler temiz geçer
 - dağıtılacak binary `bin/game.exe` olur
 - kök dizindeki geçici `game.exe` zorunlu çıktı sayılmaz
+- save dosyalarındaki `game_version` alanı `go generate` ile üretilen build metadata'dan gelir

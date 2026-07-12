@@ -34,6 +34,7 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 	}
 	fortLevel := target.FortificationLevel()
 	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
+	hasSiegeUnits := attacker.HasSiegeUnits(r.gs.UnitTypes)
 	if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
 		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d.", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel)
 		r.confirmDialog = confirmDialogState{
@@ -49,14 +50,19 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		}
 		return
 	}
-	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. İstersen kuşatma kur, istersen doğrudan genel hücum dene.", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel)
+	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d.", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel)
+	thirdLabel := "Genel Hücum"
+	if !hasSiegeUnits {
+		msg += " Bu ordu kuşatma birimi taşımıyor; yalnız kuşatma kurup teslim bekleyebilirsin."
+		thirdLabel = ""
+	}
 	r.confirmDialog = confirmDialogState{
 		show:          true,
 		title:         "Kuşatma Kararı",
 		message:       msg,
 		messageLines:  wrapTextLines(msg, FaceSmall, float64(confirmDialogW)-40),
 		acceptLabel:   "Kuşatma Başlat",
-		thirdLabel:    "Genel Hücum",
+		thirdLabel:    thirdLabel,
 		declineLabel:  "İptal",
 		pendingAction: InputAction{Kind: ActionStartSiege, ArmyID: attacker.ID, TargetRegion: target.ID},
 		thirdAction:   InputAction{Kind: ActionAssaultSiege, ArmyID: attacker.ID, TargetRegion: target.ID, BattleStance: combat.BattleStanceBalanced},
@@ -116,7 +122,8 @@ func (r *Renderer) selectedSiegePanelHovering(fx, fy float64) bool {
 		return false
 	}
 	assaultBtn, liftBtn := buildSelectedSiegeButtons()
-	return assaultBtn.HitTest(fx, fy) || liftBtn.HitTest(fx, fy)
+	attacker := r.gs.Armies[r.SelectedArmy]
+	return (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) && assaultBtn.HitTest(fx, fy)) || liftBtn.HitTest(fx, fy)
 }
 
 func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
@@ -138,10 +145,18 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 	}
 	info := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik: T%d/T%d", target.NameTR, siege.FortLevel, siege.BreachProgress, status, bestTier, siege.FortLevel)
 	hint := "Başka komşu bölgeye hareket emri verirsen kuşatma otomatik kaldırılır."
+	canAssault := attacker.HasSiegeUnits(r.gs.UnitTypes)
+	if !canAssault {
+		hint = "Bu ordu kuşatma birimi taşımıyor; genel hücum kullanılamaz, sadece teslim beklenebilir."
+	}
 	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42, W: panel.Rect.W - 36}, info, color.RGBA{228, 224, 214, 255}, gameui.TextSmall, 17, 2)
 	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 76, W: panel.Rect.W - 36}, hint, color.RGBA{170, 196, 152, 255}, gameui.TextSmall, 17, 2)
 	assaultBtn, liftBtn := buildSelectedSiegeButtons()
-	drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	if canAssault {
+		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	} else {
+		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
+	}
 	drawUIButtonWidget(screen, liftBtn, solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
 }
 
@@ -453,11 +468,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 	target := r.gs.Regions[wc.pendingDest]
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
 	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-		if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) {
-			r.openSiegeDecision(attacker, target)
-		} else {
-			r.ShowCombatResult("Bu tahkimatı zorlamak için orduda en az bir kuşatma birimi olmalı.")
-		}
+		r.openSiegeDecision(attacker, target)
 		return action
 	}
 	if supportingSiege {
