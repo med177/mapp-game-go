@@ -529,6 +529,10 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 
 	phaseStr := trimTextToWidth(phaseLabel(gs.Phase), FaceSmall, float64(w)-20)
 	DrawText(screen, phaseStr, float64(x)+10, float64(y)+8, FaceSmall, ColorGray)
+	if quotaText, quotaColor := diplomacyOfferQuotaHUDText(gs); quotaText != "" {
+		quotaW := MeasureText(quotaText, FaceSmall)
+		DrawText(screen, quotaText, float64(x+w)-10-quotaW, float64(y)+8, FaceSmall, quotaColor)
+	}
 
 	techStr := "Teknoloji yok"
 	techCol := ColorGray
@@ -540,6 +544,24 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 	}
 	techStr = trimTextToWidth(techStr, FaceSmall, float64(w)-20)
 	DrawText(screen, techStr, float64(x)+10, float64(y)+26, FaceSmall, techCol)
+}
+
+func diplomacyOfferQuotaHUDText(gs *state.GameState) (string, color.RGBA) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return "", color.RGBA{}
+	}
+	remaining := gs.DiplomacyOfferQuotaRemaining(gs.PlayerFactionID)
+	label := "Elçi " + itoa(remaining) + "/" + itoa(state.MaxDiplomacyOffersPerTurn)
+	switch remaining {
+	case 3:
+		return label, color.RGBA{232, 190, 100, 255}
+	case 2:
+		return label, color.RGBA{210, 168, 70, 255}
+	case 1:
+		return label, color.RGBA{220, 130, 60, 255}
+	default:
+		return label, color.RGBA{220, 90, 90, 255}
+	}
 }
 
 func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode) {

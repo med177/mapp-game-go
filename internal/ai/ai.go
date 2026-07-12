@@ -155,18 +155,22 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 		rel := diplomacy.EnsureRelation(gs, fid, otherID)
 		switch rel.Stance {
 		case faction.StanceWar:
+			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+				break
+			}
 			selfPower := diplomacy.MilitaryPower(gs, fid)
 			otherPower := diplomacy.MilitaryPower(gs, otherID)
 			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposePeace)
-					diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposePeace, priority, reason)
-					addTurnStep(steps, TurnStep{
-						FactionID:     fid,
-						Kind:          TurnStepDiplomacy,
-						TargetFaction: otherID,
-						Message:       turnFactionName(gs, fid) + " sana barış teklif ediyor.",
-					})
+					if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposePeace, priority, reason) {
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + " sana barış teklif ediyor.",
+						})
+					}
 				} else {
 					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
 					if result.Applied || result.Accepted {
@@ -180,17 +184,21 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				}
 			}
 		case faction.StancePeace:
+			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+				break
+			}
 			allianceAssessment := diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
 			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) {
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeAlliance)
-					diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeAlliance, priority, reason)
-					addTurnStep(steps, TurnStep{
-						FactionID:     fid,
-						Kind:          TurnStepDiplomacy,
-						TargetFaction: otherID,
-						Message:       turnFactionName(gs, fid) + " sana ittifak teklif ediyor.",
-					})
+					if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeAlliance, priority, reason) {
+						addTurnStep(steps, TurnStep{
+							FactionID:     fid,
+							Kind:          TurnStepDiplomacy,
+							TargetFaction: otherID,
+							Message:       turnFactionName(gs, fid) + " sana ittifak teklif ediyor.",
+						})
+					}
 				} else {
 					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeAlliance)
 					if result.Applied || result.Accepted {
@@ -213,13 +221,14 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 					assessment := diplomacy.AssessTradeProposal(gs, diplomacy.Relation(gs, fid, otherID), fid, otherID)
 					if assessment.BlockReason == "" {
 						priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeTrade)
-						diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeTrade, priority, reason)
-						addTurnStep(steps, TurnStep{
-							FactionID:     fid,
-							Kind:          TurnStepDiplomacy,
-							TargetFaction: otherID,
-							Message:       turnFactionName(gs, fid) + " sana ticaret teklif ediyor.",
-						})
+						if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeTrade, priority, reason) {
+							addTurnStep(steps, TurnStep{
+								FactionID:     fid,
+								Kind:          TurnStepDiplomacy,
+								TargetFaction: otherID,
+								Message:       turnFactionName(gs, fid) + " sana ticaret teklif ediyor.",
+							})
+						}
 					}
 				} else {
 					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposeTrade)

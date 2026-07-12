@@ -199,6 +199,11 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	if actorFaction.IsEliminated || targetFaction.IsEliminated {
 		return "Elenmiş fraksiyonlarla diplomasi kurulamaz."
 	}
+	if actionUsesDiplomacyOfferQuota(action) {
+		if reason := diplomacyOfferQuotaBlockReason(gs, actor); reason != "" {
+			return reason
+		}
+	}
 
 	actorOverlord := DirectOverlord(gs, actor)
 	targetOverlord := DirectOverlord(gs, target)

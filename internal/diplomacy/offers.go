@@ -35,6 +35,9 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 			return false
 		}
 	}
+	if !spendDiplomacyOfferQuota(gs, from) {
+		return false
+	}
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
 		FromFactionID:  from,
 		ToFactionID:    to,
@@ -66,6 +69,9 @@ func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy fact
 	}
 	if reason == "" {
 		reason = "Aktif ittifak nedeniyle savaş çağrısı"
+	}
+	if !spendDiplomacyOfferQuota(gs, caller) {
+		return false
 	}
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
 		FromFactionID:        caller,

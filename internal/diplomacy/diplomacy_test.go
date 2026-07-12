@@ -37,6 +37,55 @@ func TestProposeAllianceRejectedOnLowScore(t *testing.T) {
 	}
 }
 
+func TestDiplomacyOfferQuotaBlocksAfterThreeDirectActions(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["a"].Gold = 200
+
+	for i := 0; i < 3; i++ {
+		result := Execute(gs, "a", "b", ActionImproveRelations)
+		if !result.Applied || !result.Accepted {
+			t.Fatalf("üç teklifin ilki uygulanmalıydı, i=%d result=%+v", i, result)
+		}
+	}
+	if got := gs.DiplomacyOfferQuotaRemaining("a"); got != 0 {
+		t.Fatalf("üç teklif sonrası kalan hak 0 olmalıydı, got=%d", got)
+	}
+
+	result := Execute(gs, "a", "b", ActionImproveRelations)
+	if result.Applied || result.Accepted {
+		t.Fatalf("dördüncü teklif reddedilmeliydi, result=%+v", result)
+	}
+	if result.Message != diplomacyOfferQuotaBlockReasonTR {
+		t.Fatalf("beklenen quota mesajı gelmeliydi, got=%q", result.Message)
+	}
+}
+
+func TestQueueOfferWithMetaRespectsTurnQuota(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Factions["d"] = &faction.Faction{ID: "d", NameTR: "D", Religion: religion.Catholic}
+	gs.Factions["e"] = &faction.Faction{ID: "e", NameTR: "E", Religion: religion.Catholic}
+
+	if !QueueOfferWithMeta(gs, "a", "b", ActionProposePeace, 10, "") {
+		t.Fatal("ilk teklif kuyruğa düşmeliydi")
+	}
+	if !QueueOfferWithMeta(gs, "a", "c", ActionProposeAlliance, 10, "") {
+		t.Fatal("ikinci teklif kuyruğa düşmeliydi")
+	}
+	if !QueueOfferWithMeta(gs, "a", "d", ActionProposeTrade, 10, "") {
+		t.Fatal("üçüncü teklif kuyruğa düşmeliydi")
+	}
+	if QueueOfferWithMeta(gs, "a", "e", ActionProposePeace, 10, "") {
+		t.Fatal("dördüncü teklif kuyruklanmamalıydı")
+	}
+	if got := gs.DiplomacyOfferQuotaUsed("a"); got != 3 {
+		t.Fatalf("kullanılan teklif hakkı 3 olmalıydı, got=%d", got)
+	}
+	if got := len(gs.DiplomaticOffers); got != 3 {
+		t.Fatalf("kuyrukta 3 teklif kalmalıydı, got=%d", got)
+	}
+}
+
 func TestProposeAllianceAcceptedDespiteDirectThreatWithCommonEnemy(t *testing.T) {
 	gs := testGameState()
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}

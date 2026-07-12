@@ -113,6 +113,7 @@ type campaignSaveState struct {
 	Relations               map[string]relationSaveState           `json:"rl,omitempty"`
 	DiplomaticOffers        []state.DiplomaticOffer                `json:"do,omitempty"`
 	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry    `json:"dh,omitempty"`
+	DiplomacyOfferCounts    map[faction.FactionID]int              `json:"dq,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                  `json:"tr,omitempty"`
 	Sieges                  map[world.RegionID]*state.SiegeState   `json:"sg,omitempty"`
 	ProductionQueue         []state.ProductionOrder                `json:"pq,omitempty"`
@@ -177,6 +178,7 @@ type legacyCampaignSaveState struct {
 	Relations               map[string]*faction.Relation                 `json:"relations"`
 	DiplomaticOffers        []state.DiplomaticOffer                      `json:"diplomatic_offers,omitempty"`
 	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry          `json:"diplomatic_offer_history,omitempty"`
+	DiplomacyOfferCounts    map[faction.FactionID]int                    `json:"diplomacy_offer_counts,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                        `json:"trade_routes"`
 	Sieges                  map[world.RegionID]*state.SiegeState         `json:"sieges,omitempty"`
 	ProductionQueue         []state.ProductionOrder                      `json:"production_queue"`
@@ -316,6 +318,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Relations:               makeLegacyRelationState(legacy.Relations),
 		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), legacy.DiplomaticOffers...),
 		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), legacy.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:    cloneFactionIntMap(legacy.DiplomacyOfferCounts),
 		TradeRoutes:             cloneTradeRoutes(legacy.TradeRoutes),
 		Sieges:                  cloneSieges(legacy.Sieges),
 		ProductionQueue:         append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
@@ -429,6 +432,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Relations:               makeRelationDelta(gs.Relations, base.Relations),
 		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
 		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
 		Sieges:                  cloneSieges(gs.Sieges),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
@@ -511,6 +515,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Relations:               cloneRelations(gs.Relations),
 		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
 		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
 		Sieges:                  cloneSieges(gs.Sieges),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
@@ -559,6 +564,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.FiredEventIDs = firedEventIDsFromSlice(saved.FiredEventIDs)
 	gs.DiplomaticOffers = append([]state.DiplomaticOffer(nil), saved.DiplomaticOffers...)
 	gs.DiplomaticOfferHistory = append([]state.DiplomaticOfferHistoryEntry(nil), saved.DiplomaticOfferHistory...)
+	gs.DiplomacyOfferCounts = cloneFactionIntMap(saved.DiplomacyOfferCounts)
 	gs.TradeRoutes = cloneTradeRoutes(saved.TradeRoutes)
 	gs.Sieges = cloneSieges(saved.Sieges)
 	gs.ProductionQueue = append([]state.ProductionOrder(nil), saved.ProductionQueue...)
@@ -1250,6 +1256,17 @@ func cloneStringIntMap(src map[string]int) map[string]int {
 		return nil
 	}
 	out := make(map[string]int, len(src))
+	for key, value := range src {
+		out[key] = value
+	}
+	return out
+}
+
+func cloneFactionIntMap(src map[faction.FactionID]int) map[faction.FactionID]int {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]int, len(src))
 	for key, value := range src {
 		out[key] = value
 	}

@@ -192,6 +192,58 @@ func TestAIQueuesAllianceAndTradeOffersWithPriority(t *testing.T) {
 	}
 }
 
+func TestAIRespectsDiplomacyOfferQuotaPerTurn(t *testing.T) {
+	gs := &state.GameState{
+		Difficulty: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", NameTR: "AI", Religion: religion.Catholic, AIAggressiveness: 20},
+			"t1": {ID: "t1", NameTR: "T1", Religion: religion.Catholic},
+			"t2": {ID: "t2", NameTR: "T2", Religion: religion.Catholic},
+			"t3": {ID: "t3", NameTR: "T3", Religion: religion.Catholic},
+			"t4": {ID: "t4", NameTR: "T4", Religion: religion.Catholic},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"ai_cap": {ID: "ai_cap", OwnerID: "ai", TradeCapacity: 4, Neighbors: []world.RegionID{"t1_cap", "t2_cap", "t3_cap", "t4_cap"}},
+			"t1_cap": {ID: "t1_cap", OwnerID: "t1", TradeCapacity: 4, Neighbors: []world.RegionID{"ai_cap"}},
+			"t2_cap": {ID: "t2_cap", OwnerID: "t2", TradeCapacity: 4, Neighbors: []world.RegionID{"ai_cap"}},
+			"t3_cap": {ID: "t3_cap", OwnerID: "t3", TradeCapacity: 4, Neighbors: []world.RegionID{"ai_cap"}},
+			"t4_cap": {ID: "t4_cap", OwnerID: "t4", TradeCapacity: 4, Neighbors: []world.RegionID{"ai_cap"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai", "t1"): {FactionA: "ai", FactionB: "t1", Score: -100, Stance: faction.StanceWar},
+			faction.RelationKey("ai", "t2"): {FactionA: "ai", FactionB: "t2", Score: -100, Stance: faction.StanceWar},
+			faction.RelationKey("ai", "t3"): {FactionA: "ai", FactionB: "t3", Score: -100, Stance: faction.StanceWar},
+			faction.RelationKey("ai", "t4"): {FactionA: "ai", FactionB: "t4", Score: -100, Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_army": {ID: "ai_army", OwnerID: "ai", RegionID: "ai_cap", Units: []army.Unit{
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+			}},
+			"t1_army": {ID: "t1_army", OwnerID: "t1", RegionID: "t1_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"t2_army": {ID: "t2_army", OwnerID: "t2", RegionID: "t2_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"t3_army": {ID: "t3_army", OwnerID: "t3", RegionID: "t3_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"t4_army": {ID: "t4_army", OwnerID: "t4", RegionID: "t4_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+		},
+	}
+
+	aiHandleDiplomacy(gs, "ai")
+
+	if got := gs.DiplomacyOfferQuotaUsed("ai"); got != 3 {
+		t.Fatalf("AI bir turda en fazla 3 diplomasi teklifi göndermeliydi, got=%d", got)
+	}
+	if got := gs.DiplomacyOfferQuotaRemaining("ai"); got != 0 {
+		t.Fatalf("AI teklif hakkı bitmiş olmalıydı, got=%d", got)
+	}
+}
+
 func TestAIQueuesAllianceOfferAgainstSharedMajorThreat(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            3,

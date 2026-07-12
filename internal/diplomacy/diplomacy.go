@@ -60,6 +60,9 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 	if reason := ActionBlockReason(gs, actor, target, action); reason != "" {
 		return Result{Message: reason}
 	}
+	if actionUsesDiplomacyOfferQuota(action) && !spendDiplomacyOfferQuota(gs, actor) {
+		return Result{Message: diplomacyOfferQuotaBlockReasonTR}
+	}
 
 	rel := EnsureRelation(gs, actor, target)
 	switch action {

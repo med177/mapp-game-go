@@ -11,6 +11,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "morea_main",
     "gold": 260,
     "grain": 180,
     "iron": 50,
@@ -37,6 +38,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sivrihisar",
     "gold": 260,
     "grain": 120,
     "iron": 45,
@@ -63,6 +65,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "aragon_zaragoza",
     "gold": 600,
     "grain": 200,
     "iron": 90,
@@ -84,8 +87,7 @@
     "ai_aggressiveness": 52,
     "ai_expansion_targets": [
       "granada_emirate"
-    ],
-    "capital_settlement_id": "aragon_zaragoza"
+    ]
   },
   {
     "id": "arnavut_des",
@@ -99,6 +101,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "albania_shkoder",
     "gold": 220,
     "grain": 120,
     "iron": 40,
@@ -125,6 +128,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "athens",
     "gold": 260,
     "grain": 120,
     "iron": 45,
@@ -151,6 +155,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "izmir",
     "gold": 220,
     "grain": 100,
     "iron": 40,
@@ -177,6 +182,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "dobruja_constanta",
     "gold": 350,
     "grain": 250,
     "iron": 100,
@@ -203,6 +209,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "constantinople_main",
     "gold": 420,
     "grain": 170,
     "iron": 65,
@@ -217,8 +224,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28,
-    "capital_settlement_id": "constantinople_main"
+    "ai_aggressiveness": 28
   },
   {
     "id": "candar_bey",
@@ -232,6 +238,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sinop",
     "gold": 200,
     "grain": 130,
     "iron": 55,
@@ -258,6 +265,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sivas",
     "gold": 220,
     "grain": 140,
     "iron": 65,
@@ -284,6 +292,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "castile_burgos",
     "gold": 500,
     "grain": 200,
     "iron": 100,
@@ -319,6 +328,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "sweden_main",
     "gold": 350,
     "grain": 200,
     "iron": 80,
@@ -345,6 +355,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "dulkadir_behisni",
     "gold": 190,
     "grain": 120,
     "iron": 55,
@@ -371,6 +382,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "london_main",
     "gold": 680,
     "grain": 230,
     "iron": 95,
@@ -392,8 +404,7 @@
     "ai_aggressiveness": 62,
     "ai_expansion_targets": [
       "france"
-    ],
-    "capital_settlement_id": "london_main"
+    ]
   },
   {
     "id": "epir",
@@ -407,6 +418,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "thessaly_larisa",
     "gold": 240,
     "grain": 130,
     "iron": 45,
@@ -433,6 +445,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "beysehir",
     "gold": 170,
     "grain": 100,
     "iron": 40,
@@ -459,6 +472,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "florence_main",
     "gold": 1100,
     "grain": 100,
     "iron": 70,
@@ -485,6 +499,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "paris_main",
     "gold": 760,
     "grain": 280,
     "iron": 125,
@@ -505,8 +520,7 @@
     "ai_aggressiveness": 59,
     "ai_expansion_targets": [
       "england"
-    ],
-    "capital_settlement_id": "paris_main"
+    ]
   },
   {
     "id": "genoa",
@@ -520,6 +534,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "genoa_main",
     "gold": 620,
     "grain": 75,
     "iron": 55,
@@ -551,6 +566,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "georgia_main",
     "gold": 320,
     "grain": 200,
     "iron": 70,
@@ -577,6 +593,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "usak",
     "gold": 200,
     "grain": 120,
     "iron": 50,
@@ -603,6 +620,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "kiev_bila_tserkva",
     "gold": 550,
     "grain": 200,
     "iron": 80,
@@ -639,6 +657,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "aragon_valencia",
     "gold": 400,
     "grain": 130,
     "iron": 70,
@@ -665,6 +684,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "karahisar",
     "gold": 190,
     "grain": 110,
     "iron": 45,
@@ -691,6 +711,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "saxony_main",
     "gold": 900,
     "grain": 300,
     "iron": 200,
@@ -722,6 +743,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "hungary_buda",
     "gold": 600,
     "grain": 350,
     "iron": 150,
@@ -752,6 +774,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "aksaray",
     "gold": 620,
     "grain": 260,
     "iron": 110,
@@ -787,6 +810,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "larende",
     "gold": 250,
     "grain": 150,
     "iron": 60,
@@ -813,6 +837,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "lapseki_gallipoli",
     "gold": 180,
     "grain": 110,
     "iron": 45,
@@ -839,6 +864,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "castile_settlement_2",
     "gold": 500,
     "grain": 100,
     "iron": 50,
@@ -868,6 +894,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "lithuania_vilnius",
     "gold": 350,
     "grain": 250,
     "iron": 100,
@@ -898,6 +925,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "cairo",
     "gold": 560,
     "grain": 360,
     "iron": 70,
@@ -916,8 +944,7 @@
     "ai_expansion_targets": [
       "ilkhanate",
       "ramazan_bey"
-    ],
-    "capital_settlement_id": "cairo"
+    ]
   },
   {
     "id": "mentese_bey",
@@ -931,6 +958,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "mentese_hinterland_dalaman",
     "gold": 180,
     "grain": 90,
     "iron": 35,
@@ -957,6 +985,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "milan_main",
     "gold": 600,
     "grain": 160,
     "iron": 120,
@@ -983,6 +1012,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "puglia_main",
     "gold": 450,
     "grain": 200,
     "iron": 80,
@@ -1009,6 +1039,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "novgorod_main",
     "gold": 500,
     "grain": 300,
     "iron": 80,
@@ -1035,6 +1066,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "sogut",
     "gold": 480,
     "grain": 200,
     "iron": 55,
@@ -1057,8 +1089,7 @@
       "germiyan_bey",
       "karesioglu_bey",
       "ahiler"
-    ],
-    "capital_settlement_id": "sogut"
+    ]
   },
   {
     "id": "papal_states_f",
@@ -1072,6 +1103,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "ferrara_main",
     "gold": 600,
     "grain": 150,
     "iron": 60,
@@ -1098,6 +1130,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "poland_warsaw",
     "gold": 450,
     "grain": 300,
     "iron": 120,
@@ -1128,6 +1161,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "portugal_lisboa",
     "gold": 520,
     "grain": 170,
     "iron": 70,
@@ -1149,8 +1183,7 @@
     "ai_aggressiveness": 45,
     "ai_expansion_targets": [
       "granada_emirate"
-    ],
-    "capital_settlement_id": "portugal_lisboa"
+    ]
   },
   {
     "id": "ramazan_bey",
@@ -1164,6 +1197,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "tarsus",
     "gold": 200,
     "grain": 130,
     "iron": 50,
@@ -1190,6 +1224,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "moscow_main",
     "gold": 520,
     "grain": 340,
     "iron": 100,
@@ -1209,8 +1244,7 @@
     "ai_aggressiveness": 50,
     "ai_expansion_targets": [
       "golden_horde"
-    ],
-    "capital_settlement_id": "moscow_main"
+    ]
   },
   {
     "id": "safavid",
@@ -1224,6 +1258,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "persia_south_bam",
     "gold": 220,
     "grain": 120,
     "iron": 70,
@@ -1238,8 +1273,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35,
-    "capital_settlement_id": "persia_south_bam"
+    "ai_aggressiveness": 35
   },
   {
     "id": "saruhan_bey",
@@ -1253,6 +1287,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "manisa",
     "gold": 200,
     "grain": 120,
     "iron": 50,
@@ -1279,6 +1314,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "savoy_settlement_2",
     "gold": 250,
     "grain": 150,
     "iron": 60,
@@ -1305,6 +1341,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "scotland_edinburgh",
     "gold": 220,
     "grain": 150,
     "iron": 70,
@@ -1331,6 +1368,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "nis",
     "gold": 400,
     "grain": 220,
     "iron": 120,
@@ -1361,6 +1399,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "konigsberg_main",
     "gold": 400,
     "grain": 220,
     "iron": 120,
@@ -1395,6 +1434,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "rize",
     "gold": 350,
     "grain": 120,
     "iron": 70,
@@ -1421,6 +1461,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "capital_settlement_id": "venice",
     "gold": 680,
     "grain": 85,
     "iron": 50,
@@ -1438,8 +1479,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 32,
-    "capital_settlement_id": "venice"
+    "ai_aggressiveness": 32
   },
   {
     "id": "wallachia_prince",
@@ -1453,6 +1493,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "bessarabia_settlement_2",
     "gold": 200,
     "grain": 180,
     "iron": 60,

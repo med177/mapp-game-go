@@ -5,6 +5,7 @@ go 1.25.3
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.9.9
 	github.com/joho/godotenv v1.5.1
+	github.com/klauspost/compress v1.17.11
 	golang.org/x/image v0.39.0
 )
 
@@ -18,7 +19,6 @@ require (
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect

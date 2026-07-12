@@ -11,6 +11,9 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+// MaxDiplomacyOffersPerTurn bir devletin bir turda gönderebileceği azami teklif sayısıdır.
+const MaxDiplomacyOffersPerTurn = 3
+
 // VictoryType zafer koşulu türü.
 type VictoryType string
 
@@ -171,6 +174,8 @@ type GameState struct {
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.
 	DiplomaticOfferHistory []DiplomaticOfferHistoryEntry `json:"diplomatic_offer_history,omitempty"`
+	// Turn içinde devlet başına gönderilen diplomasi teklif sayacı.
+	DiplomacyOfferCounts map[faction.FactionID]int `json:"diplomacy_offer_counts,omitempty"`
 
 	// Ticaret güzergahları
 	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`
@@ -286,6 +291,53 @@ func (s *GameState) AdvanceTurn() {
 		s.Month = 1
 		s.Year++
 	}
+	s.ResetDiplomacyOfferCounts()
+}
+
+// ResetDiplomacyOfferCounts mevcut tur teklif sayaçlarını sıfırlar.
+func (s *GameState) ResetDiplomacyOfferCounts() {
+	if s == nil || len(s.DiplomacyOfferCounts) == 0 {
+		s.DiplomacyOfferCounts = nil
+		return
+	}
+	s.DiplomacyOfferCounts = nil
+}
+
+// DiplomacyOfferQuotaUsed belirtilen fraksiyonun bu tur kullandığı teklif sayısını döner.
+func (s *GameState) DiplomacyOfferQuotaUsed(fid faction.FactionID) int {
+	if s == nil || fid == "" || len(s.DiplomacyOfferCounts) == 0 {
+		return 0
+	}
+	return s.DiplomacyOfferCounts[fid]
+}
+
+// DiplomacyOfferQuotaRemaining belirtilen fraksiyonun bu tur kalan teklif hakkını döner.
+func (s *GameState) DiplomacyOfferQuotaRemaining(fid faction.FactionID) int {
+	if s == nil {
+		return MaxDiplomacyOffersPerTurn
+	}
+	remaining := MaxDiplomacyOffersPerTurn - s.DiplomacyOfferQuotaUsed(fid)
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
+// CanSpendDiplomacyOfferQuota belirtilen fraksiyon için en az bir teklif hakkı olup olmadığını döner.
+func (s *GameState) CanSpendDiplomacyOfferQuota(fid faction.FactionID) bool {
+	return s != nil && fid != "" && s.DiplomacyOfferQuotaRemaining(fid) > 0
+}
+
+// SpendDiplomacyOfferQuota belirtilen fraksiyonun teklif hakkını bir artırır.
+func (s *GameState) SpendDiplomacyOfferQuota(fid faction.FactionID) bool {
+	if !s.CanSpendDiplomacyOfferQuota(fid) {
+		return false
+	}
+	if s.DiplomacyOfferCounts == nil {
+		s.DiplomacyOfferCounts = make(map[faction.FactionID]int, 4)
+	}
+	s.DiplomacyOfferCounts[fid]++
+	return true
 }
 
 // SyncTimedRegionUnlocks aktif tur UnlockTurn'a ulaşmış kilitli bölgeleri açar.

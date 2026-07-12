@@ -280,6 +280,7 @@
     "id": "army_garrison_201",
     "owner_id": "saruhan_bey",
     "region_id": "saruhan",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -291,6 +292,7 @@
     "id": "army_garrison_202",
     "owner_id": "esrefoglu_bey",
     "region_id": "beysehir",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -302,6 +304,7 @@
     "id": "army_garrison_203",
     "owner_id": "aydin_bey",
     "region_id": "izmir",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -313,6 +316,7 @@
     "id": "army_garrison_204",
     "owner_id": "ilkhanate",
     "region_id": "sivas",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -324,6 +328,7 @@
     "id": "army_garrison_206",
     "owner_id": "karaman_bey",
     "region_id": "karaman",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -335,6 +340,7 @@
     "id": "army_garrison_207",
     "owner_id": "ilkhanate",
     "region_id": "malatya",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -346,6 +352,7 @@
     "id": "army_garrison_208",
     "owner_id": "candar_bey",
     "region_id": "sinop",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -357,6 +364,7 @@
     "id": "army_garrison_209",
     "owner_id": "ahiler",
     "region_id": "ankara",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -368,6 +376,7 @@
     "id": "army_garrison_210",
     "owner_id": "ilkhanate",
     "region_id": "kayseri",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "infantry",
@@ -383,6 +392,7 @@
     "id": "army_garrison_211",
     "owner_id": "mentese_bey",
     "region_id": "mentese_hinterland",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -394,6 +404,7 @@
     "id": "army_garrison_212",
     "owner_id": "germiyan_bey",
     "region_id": "kutahya",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -405,6 +416,7 @@
     "id": "army_garrison_215",
     "owner_id": "ilkhanate",
     "region_id": "cankiri",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -416,6 +428,7 @@
     "id": "army_garrison_216",
     "owner_id": "ilkhanate",
     "region_id": "erzincan",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -427,6 +440,7 @@
     "id": "army_garrison_217",
     "owner_id": "hamid_bey",
     "region_id": "hamideli",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -438,6 +452,7 @@
     "id": "army_garrison_218",
     "owner_id": "ilkhanate",
     "region_id": "erzurum",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -449,6 +464,7 @@
     "id": "army_garrison_220",
     "owner_id": "east_rome",
     "region_id": "serres",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -460,6 +476,7 @@
     "id": "army_garrison_221",
     "owner_id": "east_rome",
     "region_id": "gallipoli",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -471,6 +488,7 @@
     "id": "army_garrison_222",
     "owner_id": "serbian_empire",
     "region_id": "nis",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -482,6 +500,7 @@
     "id": "army_garrison_223",
     "owner_id": "east_rome",
     "region_id": "thessaloniki_hinterland",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -493,6 +512,7 @@
     "id": "army_garrison_228",
     "owner_id": "england",
     "region_id": "the_pale",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -504,6 +524,7 @@
     "id": "army_garrison_229",
     "owner_id": "russia",
     "region_id": "dagestan",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -515,6 +536,7 @@
     "id": "army_garrison_231",
     "owner_id": "wallachia_prince",
     "region_id": "bessarabia",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",
@@ -526,6 +548,7 @@
     "id": "army_garrison_232",
     "owner_id": "wallachia_prince",
     "region_id": "oltenia",
+    "is_garrison": true,
     "units": [
       {
         "type_id": "militia",

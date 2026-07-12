@@ -2734,6 +2734,7 @@
     "owner_id": "east_rome",
     "neighbors": [
       "albania",
+      "chalcidice",
       "epirus",
       "kosovo",
       "nis",
@@ -2741,7 +2742,7 @@
       "vidin"
     ],
     "world_x": 909,
-    "world_y": 445,
+    "world_y": 444,
     "shape_id": "MKD",
     "is_sea": false,
     "is_locked": false,
@@ -4061,8 +4062,8 @@
   },
   {
     "id": "armenia",
-    "name": "Armenia",
-    "name_tr": "Ermenistan",
+    "name": "Erivan",
+    "name_tr": "Erivan",
     "terrain": "mountain",
     "owner_id": "",
     "neighbors": [
@@ -4810,8 +4811,8 @@
   },
   {
     "id": "aydinoglu",
-    "name": "Aydinoglu",
-    "name_tr": "Aydınoğulları",
+    "name": "Atikhisar",
+    "name_tr": "Atikhisar",
     "terrain": "coast",
     "owner_id": "karesioglu_bey",
     "neighbors": [
@@ -5051,8 +5052,8 @@
   },
   {
     "id": "akkoyunlu",
-    "name": "Akkoyunlu",
-    "name_tr": "Akkoyunlu",
+    "name": "Van",
+    "name_tr": "Van",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
     "neighbors": [
@@ -6451,7 +6452,7 @@
       "thessaly"
     ],
     "world_x": 913,
-    "world_y": 460,
+    "world_y": 459,
     "shape_id": "GRC",
     "is_sea": false,
     "is_locked": false,
@@ -7196,6 +7197,7 @@
     "neighbors": [
       "aegean_sea",
       "mediterranean_open_6",
+      "north_macedonia",
       "serres",
       "thessaloniki_hinterland",
       "vidin"
