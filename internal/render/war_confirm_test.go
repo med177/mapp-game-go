@@ -123,6 +123,14 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 				MaxMovePoints: 2,
 				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
 			},
+			"def": {
+				ID:            "def",
+				OwnerID:       "enemy",
+				RegionID:      "dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
@@ -130,9 +138,12 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 	}
 	r := &Renderer{gs: gs}
 	wc := warConfirmState{
-		factionID:   "enemy",
-		pendingArmy: "atk",
-		pendingDest: "dst",
+		factionID:       "enemy",
+		pendingArmy:     "atk",
+		pendingDest:     "dst",
+		pendingEnemy:    "def",
+		opensBattlePlan: true,
+		battleAction:    ActionMoveArmy,
 		preview: diplomacy.WarDeclarationPreview{
 			Attacker: diplomacy.WarSidePreview{},
 		},
@@ -152,6 +163,9 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 	}
 	if r.confirmDialog.pendingAction.Kind != ActionStartSiege {
 		t.Fatalf("kuşatma kararı start siege üretmeliydi, got=%s", r.confirmDialog.pendingAction.Kind)
+	}
+	if r.battlePlan.show {
+		t.Fatal("kuşatma birimi yokken battle plan açılmamalıydı")
 	}
 }
 

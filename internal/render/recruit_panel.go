@@ -7,6 +7,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -250,6 +251,86 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 		return true
 	}
 	return false
+}
+
+func recruitPanelDisabledReason(gs *state.GameState, rid world.RegionID) string {
+	if gs == nil {
+		return "Bölge Uygun Değil"
+	}
+	if rid == "" {
+		return "Bölge Seç"
+	}
+	region := gs.Regions[rid]
+	ff := gs.Factions[gs.PlayerFactionID]
+	if region == nil || ff == nil {
+		return "Bölge Uygun Değil"
+	}
+	if region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
+		return "Bölge Uygun Değil"
+	}
+	if recruitQueueIsFull(gs, rid) {
+		return "Sıra Dolu"
+	}
+
+	barracksLevel, portLevel := 0, 0
+	for _, bid := range region.Buildings {
+		switch bid {
+		case "barracks":
+			barracksLevel++
+		case "port":
+			portLevel++
+		}
+	}
+	for _, uid := range visibleUnitIDs(gs, region) {
+		utype := gs.UnitTypes[uid]
+		if utype == nil {
+			continue
+		}
+		requiredLevel := utype.RequiredBldgLevel
+		if utype.RequiredBldg != "" && requiredLevel <= 0 {
+			requiredLevel = 1
+		}
+		switch utype.RequiredBldg {
+		case "barracks":
+			if barracksLevel < requiredLevel {
+				return "Kışla Eksik"
+			}
+		case "port":
+			if portLevel < requiredLevel {
+				return "Liman Eksik"
+			}
+		}
+		if utype.RequiredTech != "" && !ff.Research.Completed[utype.RequiredTech] {
+			return "Teknoloji Eksik"
+		}
+		if shortage := unitCostShortageReason(ff, unitCost(utype)); shortage != "" {
+			return shortage
+		}
+		return ""
+	}
+	return "Uygun Birim Yok"
+}
+
+func unitCostShortageReason(ff *faction.Faction, cost economy.ResourceCost) string {
+	if ff == nil {
+		return "Bölge Uygun Değil"
+	}
+	if ff.Gold < cost.Gold {
+		return "Yetersiz Altın"
+	}
+	if ff.Grain < cost.Grain {
+		return "Yetersiz Tahıl"
+	}
+	if ff.Iron < cost.Iron {
+		return "Yetersiz Demir"
+	}
+	if ff.Timber < cost.Timber {
+		return "Yetersiz Kereste"
+	}
+	if ff.Stone < cost.Stone {
+		return "Yetersiz Taş"
+	}
+	return ""
 }
 
 func RecruitPanelVisible(gs *state.GameState, rid world.RegionID) bool {

@@ -48,7 +48,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		fullIntel := playerHasRevealEnemyStrength(gs)
 		siegeIntel := enemyUnderPlayerSiege(gs, a)
 		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) || siegeIntel {
-			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel)
+			revealRatio := 0.50
+			if siegeIntel {
+				revealRatio = 0.75
+			}
+			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel, revealRatio)
 		} else {
 			drawEnemyArmyDetailPanel(screen, gs, a)
 		}
@@ -355,7 +359,27 @@ func enemyUnderPlayerSiege(gs *state.GameState, a *army.Army) bool {
 	return false
 }
 
-func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool) {
+func scoutedEnemyRevealCount(total int, fullIntel bool, revealRatio float64) int {
+	if total <= 0 {
+		return 0
+	}
+	if fullIntel {
+		return total
+	}
+	if revealRatio <= 0 {
+		revealRatio = 0.5
+	}
+	revealed := int(float64(total)*revealRatio + 0.5)
+	if revealed < 1 {
+		revealed = 1
+	}
+	if revealed > total {
+		revealed = total
+	}
+	return revealed
+}
+
+func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool, revealRatio float64) {
 	ensureArmySheet()
 
 	const totalSlots = army.MaxArmySize
@@ -388,7 +412,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	if location != "" {
 		headerLeft += "  —  " + location
 	}
-	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat"
+	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat (%" + itoa(int(revealRatio*100+0.5)) + ")"
 	if fullIntel {
 		countStr = "Birim: " + itoa(len(a.Units)) + "  |  Tam istihbarat"
 	}
@@ -405,13 +429,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	sepY := py + armyPanelHdrH
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 
-	revealed := len(a.Units)
-	if !fullIntel {
-		revealed = (len(a.Units) + 1) / 2
-		if revealed < 1 && len(a.Units) > 0 {
-			revealed = 1
-		}
-	}
+	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for i := 0; i < totalSlots; i++ {
 		col := i % maxCols
 		row := i / maxCols

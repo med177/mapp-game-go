@@ -53,3 +53,57 @@ func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
 		t.Fatalf("gold otomatik baslatmada dusmeliydi, got=%d", player.Gold)
 	}
 }
+
+func TestAutoStartResearchIfIdleIgnoresPausedTechsWhenAnotherTechIsAvailable(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {
+				ID:   "player",
+				Gold: 25,
+				Research: faction.ResearchState{
+					Completed:   map[string]bool{"root": true},
+					PausedTurns: map[string]int{"paused": 3},
+				},
+			},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"root": {
+				ID:       "root",
+				Category: tech.CategoryMilitary,
+			},
+			"paused": {
+				ID:            "paused",
+				NameTR:        "Duraklatilmis",
+				Category:      tech.CategoryMilitary,
+				Requires:      []string{"root"},
+				GoldCost:      20,
+				TurnsRequired: 4,
+			},
+			"smithing": {
+				ID:            "smithing",
+				NameTR:        "Demircilik",
+				Category:      tech.CategoryMilitary,
+				Requires:      []string{"root"},
+				GoldCost:      20,
+				TurnsRequired: 4,
+			},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if started := g.autoStartResearchIfIdle(); !started {
+		t.Fatal("duraklatilmis tech olsa da uygun baska tech varken otomatik baslatma calismaliydi")
+	}
+
+	player := gs.Factions["player"]
+	if player.Research.ActiveID != "smithing" {
+		t.Fatalf("paused tech otomatik secimi kilitlememeliydi, got=%q", player.Research.ActiveID)
+	}
+	if player.Gold != 5 {
+		t.Fatalf("gold otomatik baslatmada dusmeliydi, got=%d", player.Gold)
+	}
+	if player.Research.PausedTurns["paused"] != 3 {
+		t.Fatalf("duraklatilmis tech kaydi korunmaliydi, got=%d", player.Research.PausedTurns["paused"])
+	}
+}

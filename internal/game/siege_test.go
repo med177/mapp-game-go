@@ -107,6 +107,42 @@ func TestStartSiegeCreatesStateWithoutSiegeUnit(t *testing.T) {
 	}
 }
 
+func TestStartSiegeCreatesStateWithoutSiegeUnitAgainstDefenderArmy(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+		},
+		"def": {
+			ID:            "def",
+			OwnerID:       "p2",
+			RegionID:      "dst",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !g.startSiegeForArmy("atk", "dst", false) {
+		t.Fatal("kuşatma savunma ordusu varken de başlatılabilmeliydi")
+	}
+	if gs.SiegeAt("dst") == nil {
+		t.Fatal("savunma ordusu varken kuşatma kaydı oluşmalıydı")
+	}
+	if gs.SiegeAt("dst").DefenderArmyID != "def" {
+		t.Fatalf("kuşatma savunma ordusunu bağlamalıydı, got=%+v", gs.SiegeAt("dst"))
+	}
+	if gs.Armies["atk"].RegionID != "dst" {
+		t.Fatalf("kuşatma başlatan ordu hedefe yerleşmeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+}
+
 func TestStartSiegeCreatesStateAndConsumesMove(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{

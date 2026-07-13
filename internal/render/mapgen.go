@@ -1022,7 +1022,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 			wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], fc[0], 26)
 			wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], fc[1], 26)
 			wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], fc[2], 26)
-			if (px+py)%12 < 3 || (px-py+WorldW*4)%17 < 2 {
+			if (px+py)%12 < 3 {
 				wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], fc[0], 168)
 				wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], fc[1], 168)
 				wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], fc[2], 168)
@@ -1043,6 +1043,12 @@ const (
 	borderAffiliationAlly
 	borderAffiliationEnemy
 	borderAffiliationPlayerRealm
+)
+
+var (
+	borderColorPlayerRealm = color.RGBA{255, 205, 74, 255}
+	borderColorAlly        = color.RGBA{82, 210, 166, 255}
+	borderColorEnemy       = color.RGBA{218, 62, 54, 255}
 )
 
 func borderHashString(s string) uint64 {
@@ -1237,11 +1243,11 @@ func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.Region
 			if strongBoundary {
 				switch affiliation {
 				case borderAffiliationPlayerRealm:
-					wm.setDiplomaticBorderPixel(pIdx, 255, 205, 74)
+					wm.setDiplomaticBorderPixel(pIdx, borderColorPlayerRealm.R, borderColorPlayerRealm.G, borderColorPlayerRealm.B)
 				case borderAffiliationAlly:
-					wm.setDiplomaticBorderPixel(pIdx, 82, 210, 166)
+					wm.setDiplomaticBorderPixel(pIdx, borderColorAlly.R, borderColorAlly.G, borderColorAlly.B)
 				case borderAffiliationEnemy:
-					wm.setDiplomaticBorderPixel(pIdx, 218, 62, 54)
+					wm.setDiplomaticBorderPixel(pIdx, borderColorEnemy.R, borderColorEnemy.G, borderColorEnemy.B)
 				default:
 					wm.setDiplomaticBorderPixel(pIdx, 30, 18, 10)
 				}

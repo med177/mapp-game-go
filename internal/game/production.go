@@ -111,6 +111,13 @@ func (g *Game) applyProductionTicks() []productionResult {
 			continue
 		}
 
+		if order.Kind == productionKindBuilding || order.Kind == productionKindUnit {
+			if g.gs.SiegeAt(region.ID) != nil {
+				remaining = append(remaining, order)
+				continue
+			}
+		}
+
 		switch order.Kind {
 		case productionKindBuilding:
 			order.TurnsLeft--

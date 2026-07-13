@@ -16,6 +16,10 @@ func TestApplyConquestWithNavalEvictionUndocksPreviousOwnerFleet(t *testing.T) {
 			"old_owner": {ID: "old_owner"},
 			"new_owner": {ID: "new_owner"},
 		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_captured", Kind: productionKindBuilding, FactionID: "old_owner", RegionID: "land_a", TypeID: "walls", TurnsLeft: 3},
+			{ID: "prod_other", Kind: productionKindUnit, FactionID: "old_owner", RegionID: "land_b", TypeID: "inf", TurnsLeft: 2},
+		},
 		Regions: map[world.RegionID]*world.Region{
 			"land_a": {ID: "land_a", OwnerID: "old_owner", Neighbors: []world.RegionID{"sea_near"}},
 			"land_b": {ID: "land_b", OwnerID: "old_owner"},
@@ -51,6 +55,12 @@ func TestApplyConquestWithNavalEvictionUndocksPreviousOwnerFleet(t *testing.T) {
 	}
 	if gs.Regions["land_a"].OwnerID != "new_owner" {
 		t.Fatalf("bolge sahipligi degismeliydi, got=%s", gs.Regions["land_a"].OwnerID)
+	}
+	if got := len(gs.ProductionQueue); got != 1 {
+		t.Fatalf("kaybedilen bolgedeki uretimler silinmeliydi, got=%d queue=%+v", got, gs.ProductionQueue)
+	}
+	if gs.ProductionQueue[0].RegionID != "land_b" || gs.ProductionQueue[0].TypeID != "inf" {
+		t.Fatalf("sadece diger bolgenin uretimi kalmaliydi, queue=%+v", gs.ProductionQueue)
 	}
 	if result.FactionID != "" {
 		t.Fatalf("fraksiyon tamamen yikilmamaliydi, got=%+v", result)

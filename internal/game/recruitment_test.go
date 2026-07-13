@@ -284,6 +284,55 @@ func TestApplyProductionTicksOnlyActiveCapacityAdvancesTurns(t *testing.T) {
 	}
 }
 
+func TestApplyProductionTicksPausesSiegedRegionProductionAndResumesAfterLift(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"r1": {ID: "r1", OwnerID: "p1"},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"militia": {ID: "militia", NameTR: "Milis"},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: productionKindBuilding, FactionID: "p1", RegionID: "r1", TypeID: "walls", TurnsLeft: 2},
+			{ID: "prod_2", Kind: productionKindUnit, FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 2},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"r1": {RegionID: "r1", AttackerArmyID: "atk", AttackerFactionID: "p2"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	results := g.applyProductionTicks()
+
+	if len(results) != 0 {
+		t.Fatalf("kuşatma altındaki üretimler ilerlememeliydi, results=%+v", results)
+	}
+	if got := len(gs.ProductionQueue); got != 2 {
+		t.Fatalf("kuşatma altındayken kuyruk korunmalıydı, got=%d", got)
+	}
+	if gs.ProductionQueue[0].TurnsLeft != 2 || gs.ProductionQueue[1].TurnsLeft != 2 {
+		t.Fatalf("kuşatma altındayken TurnsLeft sabit kalmalıydı, queue=%+v", gs.ProductionQueue)
+	}
+
+	delete(gs.Sieges, "r1")
+
+	results = g.applyProductionTicks()
+
+	if len(results) != 0 {
+		t.Fatalf("kuşatma kalkınca hemen tamamlanmamalıydı, results=%+v", results)
+	}
+	if got := len(gs.ProductionQueue); got != 2 {
+		t.Fatalf("kuşatma kalkınca kuyruk korunmalıydı, got=%d", got)
+	}
+	if gs.ProductionQueue[0].TurnsLeft != 1 || gs.ProductionQueue[1].TurnsLeft != 1 {
+		t.Fatalf("kuşatma kalkınca üretim devam etmeliydi, queue=%+v", gs.ProductionQueue)
+	}
+}
+
 func TestRecruitSpecificIgnoresGarrisonArmyForLimitAndCompletion(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

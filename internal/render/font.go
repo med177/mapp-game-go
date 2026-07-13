@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	FaceSmall  *text.GoTextFace // 12px — yardımcı metinler
-	FaceMed    *text.GoTextFace // 14px — genel UI
-	FaceLarge  *text.GoTextFace // 18px — başlıklar
+	FaceSmall *text.GoTextFace // 12px — yardımcı metinler
+	FaceTiny  *text.GoTextFace // 10px — sıkışık durum etiketleri
+	FaceMed   *text.GoTextFace // 14px — genel UI
+	FaceLarge *text.GoTextFace // 18px — başlıklar
 
 	fontSource *text.GoTextFaceSource
 )
@@ -25,7 +26,8 @@ func init() {
 		log.Fatalf("Font yüklenemedi: %v", err)
 	}
 	FaceSmall = &text.GoTextFace{Source: fontSource, Size: 12}
-	FaceMed   = &text.GoTextFace{Source: fontSource, Size: 14}
+	FaceTiny = &text.GoTextFace{Source: fontSource, Size: 10}
+	FaceMed = &text.GoTextFace{Source: fontSource, Size: 14}
 	FaceLarge = &text.GoTextFace{Source: fontSource, Size: 18}
 }
 

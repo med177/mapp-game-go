@@ -82,6 +82,37 @@ func TestExecuteMoveStartsSiegeOnFortifiedTarget(t *testing.T) {
 	}
 }
 
+func TestExecuteMoveStartsSiegeOnFortifiedTargetWithoutSiegeUnitAndWithDefender(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Armies["defender"] = &army.Army{
+		ID:            "defender",
+		OwnerID:       "player",
+		RegionID:      "fort",
+		Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		MovePoints:    2,
+		MaxMovePoints: 2,
+	}
+	a := gs.Armies["ai_army"]
+
+	outcome := executeMove(gs, a, "fort", "ai_1")
+
+	if !outcome.survived {
+		t.Fatal("kuşatma başlatan AI ordusu hayatta kalmalıydı")
+	}
+	if gs.SiegeAt("fort") == nil {
+		t.Fatal("AI savunma ordusu varken de kuşatma başlatmalıydı")
+	}
+	if gs.SiegeAt("fort").DefenderArmyID != "defender" {
+		t.Fatalf("kuşatma savunma ordusunu bağlamalıydı, got=%+v", gs.SiegeAt("fort"))
+	}
+	if a.RegionID != "src" {
+		t.Fatalf("kuşatma başlatan AI ordusu hedefe girmemeli, got=%s", a.RegionID)
+	}
+	if a.MovePoints != 0 {
+		t.Fatalf("kuşatma sonrası hareket puanı bitmeliydi, got=%d", a.MovePoints)
+	}
+}
+
 func TestChooseBestMoveAndExecuteMoveCanBreakSiegeWithoutConquestInAlliedRegion(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            3,

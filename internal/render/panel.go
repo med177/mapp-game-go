@@ -47,8 +47,16 @@ const (
 	eventCardGap       = float32(7)
 	maxEventLogEntries = 16
 
-	infoPanelW = float32(305)
-	infoPanelH = float32(680)
+	infoPanelW                = float32(305)
+	infoPanelH                = float32(680)
+	factionPanelHeaderH       = 70.0
+	factionPanelBodyPadBottom = 12.0
+	factionPanelScrollStep    = 28.0
+	factionPanelScrollBarW    = 4.0
+	factionPanelScrollBarGap  = 6.0
+	factionPanelRowH          = 18.0
+	factionPanelSectionH      = 16.0
+	factionPanelTechSummaryH  = 48.0
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -96,6 +104,11 @@ var (
 	// miniMapBg minimap arka plan görseli (assets/maps/mini-map.png)
 	miniMapBg     *ebiten.Image
 	miniMapLoaded bool
+
+	factionPanelBodyBuffer = func() *ebiten.Image {
+		w, h := factionPanelBodyCanvasSize()
+		return ebiten.NewImage(w, h)
+	}()
 
 	// buildingSheet bina sprite sheet'i (assets/sprites/buildings.png)
 	// 3×2 grid: [barracks, market, temple] / [walls, farm, port]
@@ -363,7 +376,7 @@ func turnTechHudRect() (x, y, w, h float32) {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled, showDiplomacy, showTech bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showDiplomacy, showTech bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -469,7 +482,14 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		vector.FillRect(screen, r[0], r[1], r[2], r[3], bg, false)
 		vector.StrokeRect(screen, r[0], r[1], r[2], r[3], 1.5, panelBorder, false)
 		tw := MeasureText(buttons[i].Label, FaceMed)
-		DrawText(screen, buttons[i].Label, float64(r[0])+float64(r[2])/2-tw/2, float64(r[1])+15, FaceMed, txtCol)
+		labelX := float64(r[0]) + float64(r[2])/2 - tw/2
+		labelY := float64(r[1]) + 15
+		DrawText(screen, buttons[i].Label, labelX, labelY, FaceMed, txtCol)
+		if i == 0 && !enabled[i] && recruitReason != "" {
+			reason := trimTextToWidth(recruitReason, FaceTiny, float64(r[2])-10)
+			reasonW := MeasureText(reason, FaceTiny)
+			DrawText(screen, reason, float64(r[0])+float64(r[2])/2-reasonW/2, float64(r[1])+31, FaceTiny, txtCol)
+		}
 	}
 	drawMapModeHud(screen, mapMode)
 
@@ -2811,7 +2831,7 @@ type factionTradeOverview struct {
 	ExportGold     int
 }
 
-func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID) {
+func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, scroll float64) {
 	if gs == nil || fid == "" {
 		return
 	}
@@ -2848,60 +2868,23 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+float32(sepW), 1, panelBorder)
 	ly += 8
 
-	drawUISectionLabel(screen, lx, ly, "Durum")
-	ly += 16
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
-	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Kara Ordusu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
-	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" ordu", ColorGray, ColorWhite)
-	ly += 22
-
-	drawUISectionLabel(screen, lx, ly, "Araştırma")
-	ly += 16
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Aktif", factionActiveResearchLabel(gs, f), ColorGray, ColorWhite)
-	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Tamamlanan", itoa(len(f.Research.Completed))+" teknoloji", ColorGray, ColorWhite)
-	ly += 18
-	if paused := len(f.Research.PausedTurns); paused > 0 {
-		drawUIKeyValueRow(screen, lx, ly, sepW, "Beklemede", itoa(paused)+" araştırma", ColorGray, ColorWhite)
-		ly += 18
+	summary := buildFactionDiplomacySummary(gs, fid)
+	bodyY := ly
+	bodyH := float64(ph) - (bodyY - float64(py)) - panelPad
+	if bodyH < 1 {
+		bodyH = 1
 	}
-	buffSummary := techEffectsSummary(tech.ComputeEffects(f.Research.Completed, gs.TechTypes), "Belirgin bonus yok")
-	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: sepW}, buffSummary, color.RGBA{225, 220, 204, 235}, gameui.TextSmall, 15, 3)
-	ly += 48
+	bodyCanvas := factionPanelBodyCanvas()
+	bodyW := float64(bodyCanvas.Bounds().Dx())
+	contentHeight := factionPanelContentHeight(gs, fid, f, summary, bodyW)
+	scroll = clampFactionPanelScroll(contentHeight, bodyH, scroll)
 
-	drawUISectionLabel(screen, lx, ly, "Kaynaklar")
-	ly += 16
-	drawFactionResourceGrid(screen, f, lx, ly, float32(sepW))
-	ly += regionPanelStatRowGap * 4
-
-	drawUISectionLabel(screen, lx, ly, "Ticaret")
-	ly += 16
-	trade := factionTradeStats(gs, fid)
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Ortak", itoa(trade.PartnerCount)+" devlet", ColorGray, ColorWhite)
-	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, sepW, "Hat", itoa(trade.RouteCount)+" aktif", ColorGray, ColorWhite)
-	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, sepW, "İhracat", itoa(trade.ExportGold)+" altın / tur", ColorGray, ColorGold)
-	ly += 18
-	if trade.SuspendedCount > 0 {
-		drawUIKeyValueRow(screen, lx, ly, sepW, "Askıda", itoa(trade.SuspendedCount)+" rota", ColorGray, color.RGBA{210, 160, 90, 255})
-		ly += 18
-	}
-
-	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
-		drawUIKeyValueRow(screen, lx, ly, sepW, "Oyuncuya Durum", faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")", ColorGray, ColorWhite)
-		ly += 22
-	} else {
-		ly += 4
-	}
-
-	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+float32(sepW), 1, panelBorder)
-	ly += 8
-	drawUISectionLabel(screen, lx, ly, "Tamamlanan Teknolojiler")
-	ly += 16
-	drawFactionCompletedTechList(screen, gs, f, lx, ly, sepW)
+	bodyCanvas.Fill(color.RGBA{0, 0, 0, 0})
+	drawFactionDetailBody(bodyCanvas, gs, fid, f, summary, bodyW, scroll)
+	bodyOpts := &ebiten.DrawImageOptions{}
+	bodyOpts.GeoM.Translate(lx, bodyY)
+	screen.DrawImage(bodyCanvas, bodyOpts)
+	drawFactionPanelScrollbar(screen, float64(px)+float64(pw)-8, bodyY, bodyH, contentHeight, scroll)
 }
 
 func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction.Faction) string {
@@ -3027,6 +3010,30 @@ func drawFactionCompletedTechList(screen *ebiten.Image, gs *state.GameState, f *
 	}
 }
 
+func drawFactionPanelScrollbar(screen *ebiten.Image, x, y, viewportHeight, contentHeight, scroll float64) {
+	if viewportHeight <= 0 || contentHeight <= viewportHeight {
+		return
+	}
+	maxScroll := contentHeight - viewportHeight
+	if maxScroll <= 0 {
+		return
+	}
+	track := gameui.Rect{X: x, Y: y, W: factionPanelScrollBarW, H: viewportHeight}
+	drawUICardRect(screen, track, color.RGBA{22, 20, 16, 210}, color.RGBA{72, 62, 42, 180}, 1)
+	thumbH := track.H * (viewportHeight / contentHeight)
+	if thumbH < 24 {
+		thumbH = 24
+	}
+	if thumbH > track.H {
+		thumbH = track.H
+	}
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * (scroll / maxScroll)
+	}
+	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{176, 144, 78, 230}, color.RGBA{214, 190, 120, 210}, 1)
+}
+
 func factionCompletedTechPreview(gs *state.GameState, f *faction.Faction, maxItems int) ([]string, int) {
 	if f == nil || len(f.Research.Completed) == 0 || maxItems <= 0 {
 		return nil, 0
@@ -3068,6 +3075,313 @@ func minFactionInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+type factionDiplomacyEntry struct {
+	ID    faction.FactionID
+	Name  string
+	Score int
+}
+
+type factionDiplomacySummary struct {
+	Overlord      factionDiplomacyEntry
+	HasOverlord   bool
+	Vassals       []factionDiplomacyEntry
+	Allies        []factionDiplomacyEntry
+	Trade         []factionDiplomacyEntry
+	Enemies       []factionDiplomacyEntry
+	VassalCount   int
+	AllianceCount int
+	TradeCount    int
+	EnemyCount    int
+}
+
+func factionPanelBodyCanvasSize() (int, int) {
+	w := int(float64(infoPanelW) - panelPad*2 - 12)
+	h := int(float64(infoPanelH) - factionPanelHeaderH - factionPanelBodyPadBottom)
+	if w < 1 {
+		w = 1
+	}
+	if h < 1 {
+		h = 1
+	}
+	return w, h
+}
+
+func factionPanelBodyWidth() float64 {
+	w, _ := factionPanelBodyCanvasSize()
+	return float64(w)
+}
+
+func factionPanelBodyCanvas() *ebiten.Image {
+	return factionPanelBodyBuffer
+}
+
+func factionPanelBodyHeight() float64 {
+	_, h := factionPanelBodyCanvasSize()
+	return float64(h)
+}
+
+func clampFactionPanelScroll(contentHeight, viewportHeight, scroll float64) float64 {
+	if scroll < 0 {
+		return 0
+	}
+	maxScroll := contentHeight - viewportHeight
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func factionDiplomacyEntryColor(kind faction.DiplomaticStance) color.RGBA {
+	switch kind {
+	case faction.StanceWar:
+		return color.RGBA{196, 72, 72, 255}
+	case faction.StanceAllied:
+		return color.RGBA{86, 164, 94, 255}
+	case faction.StanceTrade:
+		return color.RGBA{200, 158, 74, 255}
+	default:
+		return color.RGBA{182, 172, 154, 255}
+	}
+}
+
+func factionDiplomacyEntryLabel(entry factionDiplomacyEntry, suffix string, showScore bool) string {
+	label := entry.Name
+	if suffix != "" {
+		label += " • " + suffix
+	}
+	if showScore {
+		label += " (" + fmt.Sprintf("%+d", entry.Score) + ")"
+	}
+	return label
+}
+
+func sortFactionDiplomacyEntries(entries []factionDiplomacyEntry, descending bool) {
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].Score != entries[j].Score {
+			if descending {
+				return entries[i].Score > entries[j].Score
+			}
+			return entries[i].Score < entries[j].Score
+		}
+		return entries[i].Name < entries[j].Name
+	})
+}
+
+func buildFactionDiplomacySummary(gs *state.GameState, fid faction.FactionID) factionDiplomacySummary {
+	summary := factionDiplomacySummary{}
+	if gs == nil || fid == "" {
+		return summary
+	}
+
+	if overlordID := diplomacy.DirectOverlord(gs, fid); overlordID != "" {
+		if f := gs.Factions[overlordID]; f != nil {
+			summary.HasOverlord = true
+			summary.Overlord = factionDiplomacyEntry{
+				ID:    overlordID,
+				Name:  factionDisplayName(gs, string(overlordID)),
+				Score: 0,
+			}
+		}
+	}
+
+	for otherID, other := range gs.Factions {
+		if other == nil || other.IsEliminated || otherID == fid {
+			continue
+		}
+		if other.OverlordID == fid {
+			summary.Vassals = append(summary.Vassals, factionDiplomacyEntry{
+				ID:    otherID,
+				Name:  factionDisplayName(gs, string(otherID)),
+				Score: 0,
+			})
+			continue
+		}
+		if diplomacy.SameRealm(gs, fid, otherID) {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, otherID)
+		if rel == nil {
+			continue
+		}
+		entry := factionDiplomacyEntry{ID: otherID, Name: factionDisplayName(gs, string(otherID)), Score: rel.Score}
+		switch rel.Stance {
+		case faction.StanceWar:
+			summary.Enemies = append(summary.Enemies, entry)
+		case faction.StanceAllied:
+			summary.Allies = append(summary.Allies, entry)
+		case faction.StanceTrade:
+			summary.Trade = append(summary.Trade, entry)
+		}
+	}
+
+	sortFactionDiplomacyEntries(summary.Vassals, false)
+	sortFactionDiplomacyEntries(summary.Allies, true)
+	sortFactionDiplomacyEntries(summary.Trade, true)
+	sortFactionDiplomacyEntries(summary.Enemies, false)
+	summary.VassalCount = len(summary.Vassals)
+	summary.AllianceCount = len(summary.Allies)
+	summary.TradeCount = len(summary.Trade)
+	summary.EnemyCount = len(summary.Enemies)
+	return summary
+}
+
+func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *faction.Faction, summary factionDiplomacySummary, width float64) float64 {
+	_ = width
+	y := 0.0
+	y += factionPanelSectionH
+	y += factionPanelRowH * 3
+	y += 22
+
+	y += factionPanelSectionH
+	y += factionPanelRowH * 2
+	if paused := len(f.Research.PausedTurns); paused > 0 {
+		y += factionPanelRowH
+	}
+	y += factionPanelTechSummaryH
+
+	y += factionPanelSectionH
+	y += regionPanelStatRowGap * 4
+
+	y += factionPanelSectionH
+	y += factionPanelRowH * 3
+	if trade := factionTradeStats(gs, fid); trade.SuspendedCount > 0 {
+		y += factionPanelRowH
+	}
+	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
+		y += 22
+	} else {
+		y += 4
+	}
+
+	y += factionPanelSectionH
+	y += factionPanelRowH * 5
+
+	if summary.VassalCount > 0 {
+		y += factionPanelSectionH
+		y += float64(summary.VassalCount) * factionPanelRowH
+	}
+	if summary.AllianceCount > 0 {
+		y += factionPanelSectionH
+		y += float64(summary.AllianceCount) * factionPanelRowH
+	}
+	if summary.TradeCount > 0 {
+		y += factionPanelSectionH
+		y += float64(summary.TradeCount) * factionPanelRowH
+	}
+	if summary.EnemyCount > 0 {
+		y += factionPanelSectionH
+		y += float64(summary.EnemyCount) * factionPanelRowH
+	}
+
+	y += factionPanelSectionH
+	names, hidden := factionCompletedTechPreview(gs, f, 12)
+	if len(names) == 0 {
+		y += 18
+	} else {
+		rows := (len(names) + 1) / 2
+		y += float64(rows) * 16
+		if hidden > 0 {
+			y += 20
+		}
+	}
+	return y
+}
+
+func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, f *faction.Faction, summary factionDiplomacySummary, width float64, scroll float64) {
+	y := -scroll
+
+	drawUISectionLabel(screen, 0, y, "Durum")
+	y += factionPanelSectionH
+	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Kara Ordusu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" ordu", ColorGray, ColorWhite)
+	y += 22
+
+	drawUISectionLabel(screen, 0, y, "Araştırma")
+	y += factionPanelSectionH
+	drawUIKeyValueRow(screen, 0, y, width, "Aktif", factionActiveResearchLabel(gs, f), ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Tamamlanan", itoa(len(f.Research.Completed))+" teknoloji", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	if paused := len(f.Research.PausedTurns); paused > 0 {
+		drawUIKeyValueRow(screen, 0, y, width, "Beklemede", itoa(paused)+" araştırma", ColorGray, ColorWhite)
+		y += factionPanelRowH
+	}
+	buffSummary := techEffectsSummary(tech.ComputeEffects(f.Research.Completed, gs.TechTypes), "Belirgin bonus yok")
+	drawUIWrappedLabel(screen, gameui.Rect{X: 0, Y: y, W: width}, buffSummary, color.RGBA{225, 220, 204, 235}, gameui.TextSmall, 15, 3)
+	y += factionPanelTechSummaryH
+
+	drawUISectionLabel(screen, 0, y, "Kaynaklar")
+	y += factionPanelSectionH
+	drawFactionResourceGrid(screen, f, 0, y, float32(width))
+	y += regionPanelStatRowGap * 4
+
+	drawUISectionLabel(screen, 0, y, "Ticaret")
+	y += factionPanelSectionH
+	trade := factionTradeStats(gs, fid)
+	drawUIKeyValueRow(screen, 0, y, width, "Ortak", itoa(trade.PartnerCount)+" devlet", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Hat", itoa(trade.RouteCount)+" aktif", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "İhracat", itoa(trade.ExportGold)+" altın / tur", ColorGray, ColorGold)
+	y += factionPanelRowH
+	if trade.SuspendedCount > 0 {
+		drawUIKeyValueRow(screen, 0, y, width, "Askıda", itoa(trade.SuspendedCount)+" rota", ColorGray, color.RGBA{210, 160, 90, 255})
+		y += factionPanelRowH
+	}
+	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
+		drawUIKeyValueRow(screen, 0, y, width, "Oyuncuya Durum", faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")", ColorGray, ColorWhite)
+		y += 22
+	} else {
+		y += 4
+	}
+
+	drawUISectionLabel(screen, 0, y, "Diplomasi Özeti")
+	y += factionPanelSectionH
+	overlordValue := "Yok"
+	if summary.HasOverlord {
+		overlordValue = summary.Overlord.Name
+	}
+	drawUIKeyValueRow(screen, 0, y, width, "Üst Devlet", overlordValue, ColorGray, factionDiplomacyEntryColor(faction.StanceAllied))
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Vassal", itoa(summary.VassalCount)+" devlet", ColorGray, color.RGBA{126, 170, 220, 255})
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "İttifak", itoa(summary.AllianceCount)+" devlet", ColorGray, factionDiplomacyEntryColor(faction.StanceAllied))
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Ticaret", itoa(summary.TradeCount)+" devlet", ColorGray, factionDiplomacyEntryColor(faction.StanceTrade))
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Düşman", itoa(summary.EnemyCount)+" devlet", ColorGray, factionDiplomacyEntryColor(faction.StanceWar))
+	y += factionPanelRowH
+
+	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Vassallar", summary.Vassals, "Bağlı", false, factionDiplomacyEntryColor(faction.StanceAllied))
+	y = drawFactionDiplomacyGroup(screen, 0, y, width, "İttifaklar", summary.Allies, faction.DiplomaticStanceLabelTR(faction.StanceAllied), true, factionDiplomacyEntryColor(faction.StanceAllied))
+	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Ticaret Anlaşmaları", summary.Trade, faction.DiplomaticStanceLabelTR(faction.StanceTrade), true, factionDiplomacyEntryColor(faction.StanceTrade))
+	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Düşmanlar", summary.Enemies, faction.DiplomaticStanceLabelTR(faction.StanceWar), true, factionDiplomacyEntryColor(faction.StanceWar))
+
+	drawUISectionLabel(screen, 0, y, "Tamamlanan Teknolojiler")
+	y += factionPanelSectionH
+	drawFactionCompletedTechList(screen, gs, f, 0, y, width)
+}
+
+func drawFactionDiplomacyGroup(screen *ebiten.Image, x, y, width float64, title string, entries []factionDiplomacyEntry, suffix string, showScore bool, accent color.RGBA) float64 {
+	if len(entries) == 0 {
+		return y
+	}
+	drawUISectionLabel(screen, x, y, title)
+	y += factionPanelSectionH
+	for _, entry := range entries {
+		label := factionDiplomacyEntryLabel(entry, suffix, showScore)
+		drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, trimTextToWidth("• "+label, FaceSmall, width), accent, gameui.TextSmall, gameui.TextAlignStart)
+		y += factionPanelRowH
+	}
+	return y
 }
 
 func loadSettlementImage(region *world.Region, settlement *world.Settlement) *ebiten.Image {

@@ -68,6 +68,7 @@ type Renderer struct {
 	SelectedRegion           world.RegionID
 	SelectedArmy             army.ArmyID
 	selectedFactionPanel     faction.FactionID
+	factionPanelScroll       float64
 	selectedSettlementRegion world.RegionID
 	selectedSettlementIndex  int
 	devNeighborListExpanded  bool
@@ -665,7 +666,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
-	r.selectedFactionPanel = ""
+	r.closeFactionPanel()
 	r.clearSelectedSettlement()
 	r.ClearAITurnStatus()
 	r.confirmDialog = confirmDialogState{}
@@ -766,7 +767,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	}
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
-	r.selectedFactionPanel = ""
+	r.closeFactionPanel()
 	r.devNeighborListExpanded = false
 	r.clearSelectedSettlement()
 	r.showRecruitPanel = false
@@ -1077,12 +1078,20 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 8. UI panelleri
 	if r.gs.Phase != state.PhaseEditMode {
 		recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen()
-		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, r.showDiplomacy, r.showTech, r.mapMode)
+		recruitReason := ""
+		if !recruitEnabled {
+			if r.isSettlementPanelOpen() && RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) {
+				recruitReason = "Yerleşim Paneli Açık"
+			} else {
+				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
+			}
+		}
+		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.mapMode)
 		DrawRegionPanelExpanded(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
 		}
-		DrawFactionDetailPanel(screen, r.gs, r.selectedFactionPanel)
+		DrawFactionDetailPanel(screen, r.gs, r.selectedFactionPanel, r.factionPanelScroll)
 		if r.mapMode != MapModeTrade && r.showRecruitPanel {
 			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		}
@@ -1207,6 +1216,14 @@ func (r *Renderer) tradeOverlayVisible() bool {
 		return false
 	}
 	return true
+}
+
+func (r *Renderer) BattleReportVisible() bool {
+	return r != nil && r.battleReport.show
+}
+
+func (r *Renderer) WarSummaryVisible() bool {
+	return r != nil && r.warSummary.show
 }
 
 func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
@@ -1812,7 +1829,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if r.gs.Phase != state.PhaseEditMode && a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
 			unitCount = -1
 		}
-		r.drawArmyIcon(screen, a.ID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
+		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
@@ -1820,13 +1837,33 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	}
 }
 
+func armyIconBorderColor(gs *state.GameState, ownerID string, selected bool) color.RGBA {
+	if selected {
+		return color.RGBA{255, 215, 0, 255}
+	}
+	if gs == nil || ownerID == "" {
+		return color.RGBA{200, 200, 200, 220}
+	}
+
+	owner := faction.FactionID(ownerID)
+	if gs.PlayerFactionID != "" && diplomacy.SameRealm(gs, gs.PlayerFactionID, owner) {
+		return borderColorPlayerRealm
+	}
+	if rel := diplomacy.Relation(gs, gs.PlayerFactionID, owner); rel != nil {
+		switch rel.Stance {
+		case faction.StanceAllied:
+			return borderColorAlly
+		case faction.StanceWar:
+			return borderColorEnemy
+		}
+	}
+	return color.RGBA{200, 200, 200, 220}
+}
+
 // drawArmyIcon tek bir ordu ikonunu çizer.
 // Kara ordusu → kare, deniz donanması → daire.
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
-	borderCol := color.RGBA{200, 200, 200, 220}
-	if selected {
-		borderCol = color.RGBA{255, 215, 0, 255}
-	}
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
+	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
 
 	if isNaval {
 		// Dış daire (border) + iç daire (fraksiyon rengi)

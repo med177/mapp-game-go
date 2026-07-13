@@ -93,7 +93,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 1. `applySeasonEffects(gs)` — kış hasarı, ilkbahar bonusu → [[systems/seasons]]
 2. `applyEconomyTick(gs)` — vergi geliri, ticaret → [[systems/economy]]
 3. `applyTechTicks(gs)` — aktif araştırma ilerleme sayacı → [[systems/tech-tree]]
-4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
+4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; aktif kuşatma altındaki bölge emirleri duraklatılır, kuşatma kalkınca aynı `TurnsLeft` ile devam eder; bölge el değiştirince o bölgedeki üretim emirleri temizlenir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
 5. `applyReligionConversion(gs)` — ele geçirilmiş bölgelerde yavaş din dönüşümü
 6. `resolveSieges()` — aktif kuşatmalarda gedik ilerlemesi, savunucu yıpranması ve teslimiyet/hücum sonucu
 7. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları

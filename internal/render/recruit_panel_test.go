@@ -119,3 +119,41 @@ func TestRecruitQueueItemsMarksOnlyFirstCapacityAsProgressing(t *testing.T) {
 		}
 	}
 }
+
+func TestRecruitPanelDisabledReasonUsesResourceShortage(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {
+				ID:      "bursa",
+				OwnerID: "p1",
+				Buildings: []string{
+					"barracks",
+				},
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {
+				ID:     "p1",
+				Gold:   23,
+				Grain:  100,
+				Iron:   100,
+				Timber: 100,
+				Stone:  100,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"militia": {
+				ID:                "militia",
+				GoldCost:          60,
+				GrainCost:         12,
+				RequiredBldg:      "",
+				RequiredBldgLevel: 0,
+			},
+		},
+	}
+
+	if got := recruitPanelDisabledReason(gs, "bursa"); got != "Yetersiz Altın" {
+		t.Fatalf("beklenen yetersiz altın nedeni, got=%q", got)
+	}
+}

@@ -436,7 +436,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if r.selectedFactionPanel != "" && factionPanelCloseHit(fx, fy) {
-		r.selectedFactionPanel = ""
+		r.closeFactionPanel()
 		return InputAction{}
 	}
 	if r.settlementPanelCloseHit(fx, fy) {
@@ -445,7 +445,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
-		r.selectedFactionPanel = ""
+		r.closeFactionPanel()
 		r.devNeighborListExpanded = false
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
@@ -577,7 +577,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	if r.SelectedRegion != "" {
 		if fid, ok := regionOwnerNameHit(fx, fy, r.gs, r.SelectedRegion); ok {
-			r.selectedFactionPanel = fid
+			r.openFactionPanel(fid)
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
 			r.resetRecruitSelection()
@@ -652,7 +652,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.SelectedArmy = aid
 		r.SelectedRegion = ""
-		r.selectedFactionPanel = ""
+		r.closeFactionPanel()
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
@@ -664,7 +664,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.devNeighborListExpanded = false
 		}
 		r.SelectedRegion = rid
-		r.selectedFactionPanel = ""
+		r.closeFactionPanel()
 		r.selectSettlement(rid, idx)
 		if !RecruitPanelVisible(r.gs, rid) {
 			r.showRecruitPanel = false
@@ -720,7 +720,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 				r.devNeighborListExpanded = false
 			}
 			r.SelectedRegion = rid
-			r.selectedFactionPanel = ""
+			r.closeFactionPanel()
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
 			r.resetRecruitSelection()
@@ -732,7 +732,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.devNeighborListExpanded = false
 	}
 	r.SelectedRegion = rid
-	r.selectedFactionPanel = ""
+	r.closeFactionPanel()
 	r.clearSelectedSettlement()
 	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.
 	r.showRecruitPanel = false
@@ -768,6 +768,16 @@ func (r *Renderer) ensureRecruitSelection(unitID string) {
 func (r *Renderer) clearSelectedSettlement() {
 	r.selectedSettlementRegion = ""
 	r.selectedSettlementIndex = -1
+}
+
+func (r *Renderer) openFactionPanel(fid faction.FactionID) {
+	r.selectedFactionPanel = fid
+	r.factionPanelScroll = 0
+}
+
+func (r *Renderer) closeFactionPanel() {
+	r.selectedFactionPanel = ""
+	r.factionPanelScroll = 0
 }
 
 func (r *Renderer) selectSettlement(rid world.RegionID, idx int) {
@@ -927,12 +937,15 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
 			if r.canJoinActiveSiege(a, rid) {
 				allySieging = true
-			} else if !r.canEnterActiveSiegedRegion(a, rid) {
-				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
-				return InputAction{}
+			} else if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
+				if !r.canEnterActiveSiegedRegion(a, rid) {
+					r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
+					return InputAction{}
+				}
 			}
 		}
 		enemyArmy := r.gs.SelectBattleDefender(a, rid, a.IsNaval && target.CanNavalEnter())
+		targetSiege := r.gs.SiegeAt(rid)
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
@@ -978,7 +991,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			)
 			return InputAction{}
 		}
-		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && enemyArmy == nil && !isAlliedRegion {
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && !isAlliedRegion && (targetSiege == nil || targetSiege.AttackerArmyID == a.ID) {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
@@ -1025,6 +1038,13 @@ func (r *Renderer) handleCamera() {
 
 	_, dy := ebiten.Wheel()
 	if dy != 0 {
+		if r.selectedFactionPanel != "" && factionPanelHit(float64(mx), float64(my)) {
+			r.factionPanelScroll -= dy * factionPanelScrollStep
+			if r.factionPanelScroll < 0 {
+				r.factionPanelScroll = 0
+			}
+			return
+		}
 		if eventLogPanelHit(float64(mx), float64(my), r.eventLogCollapsed) && !r.eventLogCollapsed {
 			r.scrollEventLog(dy)
 			return

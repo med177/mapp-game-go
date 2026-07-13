@@ -84,6 +84,34 @@ func TestCheckRegionUnlocksUnlocksDiscoveryRegionByAdjacency(t *testing.T) {
 	}
 }
 
+func TestCheckRebellionsClearsProductionOrdersForLostRegion(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"rebel": {ID: "rebel", OwnerID: "p1", Satisfaction: 10},
+			"other": {ID: "other", OwnerID: "p1", Satisfaction: 60},
+		},
+		ProductionQueue: []state.ProductionOrder{
+			{ID: "prod_1", Kind: productionKindBuilding, FactionID: "p1", RegionID: "rebel", TypeID: "walls", TurnsLeft: 2},
+			{ID: "prod_2", Kind: productionKindUnit, FactionID: "p1", RegionID: "other", TypeID: "infantry", TurnsLeft: 2},
+		},
+	}
+
+	checkRebellions(gs)
+
+	if gs.Regions["rebel"].OwnerID != "" {
+		t.Fatalf("isyanda bölge sahipsiz kalmalıydı, got=%s", gs.Regions["rebel"].OwnerID)
+	}
+	if gs.Regions["rebel"].Satisfaction != 50 {
+		t.Fatalf("isyandan sonra memnuniyet resetlenmeliydi, got=%d", gs.Regions["rebel"].Satisfaction)
+	}
+	if got := len(gs.ProductionQueue); got != 1 {
+		t.Fatalf("kaybedilen bolgedeki uretimler silinmeliydi, got=%d queue=%+v", got, gs.ProductionQueue)
+	}
+	if gs.ProductionQueue[0].RegionID != "other" {
+		t.Fatalf("yalnız diğer bölgenin üretimi kalmalıydı, queue=%+v", gs.ProductionQueue)
+	}
+}
+
 func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,

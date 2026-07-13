@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-11
+last_updated: 2026-07-13
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -213,6 +213,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 - Hedef listesinde seçim `mouse down` anında değil, kısa click release anında kesinleşir; basılı tutup sürüklemek listeyi satır yüksekliği bazında kaydırır ve yanlışlıkla devlet seçmez.
 - Liste kartları fraksiyon rengi accent şeridi, ilişki/duruş özeti ve görünür scrollbar ile çizilir; teklif sayfası aynı UI compose ailesindeki kart/panel çerçevesini kullanır.
 - Teklif sayfasında `Hedef`, `Durum` ve `İlişki Skoru` blokları ayrı iç padding ile çizilir; vassal veya overlord hedeflerinde durum satırı düz stance yerine hiyerarşi etiketi gösterir. Alt footer butonları da ortak ikonlu `Button` primitive'inin `TextOffsetY` hizasına bağlandığı için `Geri` ve `Teklif Gönder` satırı artık icon/metin kaydırması üretmez.
+- Bölge bilgi panelindeki devlet adı üzerinden açılan devlet detay yüzeyi de aynı diplomasi verisini özetler; üst devlet, vassal, ittifak, ticaret ve düşman listeleri tek scroll alanında gösterilir, böylece teklif paneline girmeden ilişkiler okunabilir.
 
 ## Müttefik Liman Kullanımı
 

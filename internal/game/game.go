@@ -546,6 +546,9 @@ func (g *Game) updateAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	if g.renderer.WarSummaryVisible() || g.renderer.BattleReportVisible() {
+		return
+	}
 	if g.aiTurn == nil {
 		g.startAITurnSequence()
 	}
@@ -858,10 +861,26 @@ func (g *Game) autoStartResearchIfIdle() bool {
 		return false
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	if f == nil || f.Research.ActiveID != "" || len(f.Research.PausedTurns) > 0 {
+	if f == nil || f.Research.ActiveID != "" {
 		return false
 	}
-	techID, ok := tech.NextResearchableTechID(&f.Research, g.gs.TechTypes, f.Gold)
+	selectionState := f.Research
+	if len(selectionState.PausedTurns) > 0 {
+		// Duraklatılmış bir araştırma kaydı, turn-end otomatik seçim akışını
+		// kilitlememeli; seçim yaparken bu geçici bekleyenleri aday kümesinden dışla.
+		completed := make(map[string]bool, len(selectionState.Completed)+len(selectionState.PausedTurns))
+		for id, done := range selectionState.Completed {
+			if done {
+				completed[id] = true
+			}
+		}
+		for id := range selectionState.PausedTurns {
+			completed[id] = true
+		}
+		selectionState.Completed = completed
+		selectionState.PausedTurns = nil
+	}
+	techID, ok := tech.NextResearchableTechID(&selectionState, g.gs.TechTypes, f.Gold)
 	if !ok {
 		return false
 	}
@@ -3257,6 +3276,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
+	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
 	if prevOwnerID == "" || prevOwnerID == newOwnerID {
 		return eliminationResult{}
 	}

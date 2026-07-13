@@ -548,7 +548,7 @@ func TestHandleDiplomacyInputTogglesRelationsAndHistory(t *testing.T) {
 	}
 }
 
-func TestHandleDiplomacyOfferInputHistoryFiltersUpdateState(t *testing.T) {
+func TestHandleDiplomacyOfferInputStateIgnoresSummaryPanelClicks(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
 	defer func() {
@@ -565,137 +565,78 @@ func TestHandleDiplomacyOfferInputHistoryFiltersUpdateState(t *testing.T) {
 			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade"},
 		},
 	}
-	r := &Renderer{
-		gs: gs,
-	}
+	r := &Renderer{gs: gs, prevKeys: make(map[ebiten.Key]bool), prevMouse: make(map[ebiten.MouseButton]bool)}
 
 	layout := diplomacyOfferLayoutForScreen()
-	buttons := buildDiplomacyHistoryFilterButtons(layout.historyRect, diplomacyHistoryDirectionAll, ActionNone)
-
-	if !r.applyDiplomacyHistoryFilterHit(layout.historyRect, buttons[2].Button.X+1, buttons[2].Button.Y+1) {
-		t.Fatal("offer modal history direction filtresi tıklaması consumed edilmedi")
-	}
-	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionOutgoing {
-		t.Fatalf("offer modal history direction filtresi seçilemedi, got=%v", r.diplomacyHistoryDirectionFilter)
-	}
-	if r.diplomacyHistoryActionFilter != ActionNone {
-		t.Fatalf("direction filtresi action filtresini değiştirmemeli, got=%s", r.diplomacyHistoryActionFilter)
-	}
-
-	if !r.applyDiplomacyHistoryFilterHit(layout.historyRect, buttons[4].Button.X+1, buttons[4].Button.Y+1) {
-		t.Fatal("offer modal action filtresi tıklaması consumed edilmedi")
-	}
-	if r.diplomacyHistoryDirectionFilter != diplomacyHistoryDirectionOutgoing {
-		t.Fatalf("action filtresi direction filtresini korumalı, got=%v", r.diplomacyHistoryDirectionFilter)
-	}
-	if r.diplomacyHistoryActionFilter != ActionProposeTrade {
-		t.Fatalf("offer modal ticaret filtresi seçilemedi, got=%s", r.diplomacyHistoryActionFilter)
-	}
-}
-
-func TestHandleDiplomacyOfferInputStateHistoryCardOpensBrowsePanel(t *testing.T) {
-	oldW, oldH := ScreenWidth, ScreenHeight
-	ScreenWidth, ScreenHeight = 1280, 720
-	defer func() {
-		ScreenWidth, ScreenHeight = oldW, oldH
-	}()
-
-	gs := &state.GameState{
-		PlayerFactionID: "player",
-		Factions: map[faction.FactionID]*faction.Faction{
-			"player": {ID: "player"},
-			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
-			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
-		},
-		DiplomaticOffers: []state.DiplomaticOffer{
-			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade"},
-		},
-		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
-			{FromFactionID: "ai_2", ToFactionID: "player", Action: "propose_alliance", CreatedTurn: 1, ResolvedTurn: 2, Accepted: true, Applied: true},
-			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade", CreatedTurn: 3, ResolvedTurn: 4, Accepted: true, Applied: true},
-		},
-	}
-	r := &Renderer{
-		gs:       gs,
-		prevKeys: make(map[ebiten.Key]bool),
-	}
-
-	layout := diplomacyOfferLayoutForScreen()
-	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
 	input := gameui.InputState{
-		MouseX:          cardRect.X + 6,
-		MouseY:          cardRect.Y + 6,
+		MouseX:          layout.historyRect.X + 12,
+		MouseY:          layout.historyRect.Y + 12,
 		LeftJustPressed: true,
 	}
 
 	act := r.handleDiplomacyOfferInputState(0, input)
 	if act.Kind != ActionNone {
-		t.Fatalf("history kartı tıklaması doğrudan oyun aksiyonu üretmemeli, got=%s", act.Kind)
-	}
-	if !r.showDiplomacy {
-		t.Fatal("history kartı tıklaması genel diplomasi panelini açmalı")
-	}
-	if r.diplomacyOfferHistoryBrowse != "ai_1" {
-		t.Fatalf("browse modu ilgili fraksiyonu tutmalı, got=%q", r.diplomacyOfferHistoryBrowse)
-	}
-	if r.diplomacyTargetFaction != "ai_1" {
-		t.Fatalf("browse modu hedef fraksiyonu tutmalı, got=%q", r.diplomacyTargetFaction)
-	}
-	if r.diplomacyActionFocus != 3 {
-		t.Fatalf("history teklifinde action focus trade olmalı, got=%d", r.diplomacyActionFocus)
-	}
-	if _, ok := r.playerDiplomacyOfferIndex(); ok {
-		t.Fatal("browse modu açıkken offer modal aktif olmamalı")
-	}
-}
-
-func TestHandleDiplomacyOfferInputStateHistoryCardIgnoredDuringAITurn(t *testing.T) {
-	oldW, oldH := ScreenWidth, ScreenHeight
-	ScreenWidth, ScreenHeight = 1280, 720
-	defer func() {
-		ScreenWidth, ScreenHeight = oldW, oldH
-	}()
-
-	gs := &state.GameState{
-		PlayerFactionID: "player",
-		Phase:           state.PhaseAITurn,
-		Factions: map[faction.FactionID]*faction.Faction{
-			"player": {ID: "player"},
-			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
-			"ai_2":   {ID: "ai_2", NameTR: "AI 2"},
-		},
-		DiplomaticOffers: []state.DiplomaticOffer{
-			{FromFactionID: "ai_1", ToFactionID: "player", Action: "propose_trade"},
-		},
-		DiplomaticOfferHistory: []state.DiplomaticOfferHistoryEntry{
-			{FromFactionID: "ai_2", ToFactionID: "player", Action: "propose_alliance", CreatedTurn: 1, ResolvedTurn: 2, Accepted: true, Applied: true},
-		},
-	}
-	r := &Renderer{
-		gs:       gs,
-		prevKeys: make(map[ebiten.Key]bool),
-	}
-
-	layout := diplomacyOfferLayoutForScreen()
-	cardRect := diplomacyOfferHistoryCardRect(layout.historyRect, 0)
-	input := gameui.InputState{
-		MouseX:          cardRect.X + 6,
-		MouseY:          cardRect.Y + 6,
-		LeftJustPressed: true,
-	}
-
-	act := r.handleDiplomacyOfferInputState(0, input)
-	if act.Kind != ActionNone {
-		t.Fatalf("AI turunda history karti oyun aksiyonu uretmemeli, got=%s", act.Kind)
+		t.Fatalf("summary panel tıklaması oyun aksiyonu üretmemeliydi, got=%s", act.Kind)
 	}
 	if r.showDiplomacy {
-		t.Fatal("AI turunda history karti genel diplomasi panelini acmamali")
+		t.Fatal("summary panel tıklaması genel diplomasi panelini açmamalı")
 	}
 	if r.diplomacyOfferHistoryBrowse != "" || r.diplomacyTargetFaction != "" {
-		t.Fatalf("AI turunda browse state degismemeli, got browse=%q target=%q", r.diplomacyOfferHistoryBrowse, r.diplomacyTargetFaction)
+		t.Fatalf("summary panel tıklaması browse state üretmemeliydi, got browse=%q target=%q", r.diplomacyOfferHistoryBrowse, r.diplomacyTargetFaction)
 	}
-	if _, ok := r.playerDiplomacyOfferIndex(); !ok {
-		t.Fatal("offer modal AI turunda aktif kalmali")
+}
+
+func TestDiplomacyOfferSummaryListsReflectState(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", NameTR: "Piyade"},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+			"ally":   {ID: "ally", NameTR: "Müttefik"},
+			"trade":  {ID: "trade", NameTR: "Tüccar"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+			"lord":   {ID: "lord", NameTR: "Efendi"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"r1": {ID: "r1", OwnerID: "ai_1"},
+			"r2": {ID: "r2", OwnerID: "ai_1"},
+			"r3": {ID: "r3", OwnerID: "ai_1", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "ai_1", Units: []army.Unit{{TypeID: "inf"}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "ally"):  {FactionA: "ai_1", FactionB: "ally", Stance: faction.StanceAllied},
+			faction.RelationKey("ai_1", "trade"): {FactionA: "ai_1", FactionB: "trade", Stance: faction.StanceTrade},
+			faction.RelationKey("ai_1", "enemy"): {FactionA: "ai_1", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "ai_1", ToFactionID: "trade"},
+		},
+	}
+	if got := diplomacyOfferRelationLine(gs, "ai_1", diplomacyOfferRelationAllied); got != "Müttefik" {
+		t.Fatalf("ittifak listesi beklenmedik: %q", got)
+	}
+	if got := diplomacyOfferRelationLine(gs, "ai_1", diplomacyOfferRelationTrade); got != "Tüccar" {
+		t.Fatalf("ticaret listesi beklenmedik: %q", got)
+	}
+	if got := diplomacyOfferRelationLine(gs, "ai_1", diplomacyOfferRelationWar); got != "Düşman" {
+		t.Fatalf("savaş listesi beklenmedik: %q", got)
+	}
+	if got := diplomacyFactionLandRegionCount(gs, "ai_1"); got != 2 {
+		t.Fatalf("beklenmeyen kara bölge sayısı: got=%d", got)
+	}
+	if got := diplomacyFactionOwnedRegionCount(gs, "ai_1"); got != 3 {
+		t.Fatalf("beklenmeyen toplam bölge sayısı: got=%d", got)
 	}
 }
 

@@ -258,6 +258,31 @@ type ProductionOrder struct {
 	TurnsLeft int            `json:"turns_left"`
 }
 
+// ClearProductionOrdersForRegion belirtilen bölgedeki tüm üretim emirlerini kuyruktan siler.
+// Bölge el değiştirince mevcut yapı/inşaat ve eğitim emirleri artık devam etmez.
+func (s *GameState) ClearProductionOrdersForRegion(regionID world.RegionID) int {
+	if s == nil || regionID == "" || len(s.ProductionQueue) == 0 {
+		return 0
+	}
+	remaining := s.ProductionQueue[:0]
+	removed := 0
+	for _, order := range s.ProductionQueue {
+		if order.RegionID == regionID {
+			removed++
+			continue
+		}
+		remaining = append(remaining, order)
+	}
+	if removed == 0 {
+		return 0
+	}
+	for i := len(remaining); i < len(s.ProductionQueue); i++ {
+		s.ProductionQueue[i] = ProductionOrder{}
+	}
+	s.ProductionQueue = remaining
+	return removed
+}
+
 // Phase oyun aşaması.
 type Phase string
 

@@ -299,9 +299,10 @@ func buildDiplomacyOfferModal() gameui.Modal {
 func buildDiplomacyOfferButtons() (gameui.Button, gameui.Button) {
 	const btnW, btnH = 120.0, 36.0
 	modal := buildDiplomacyOfferModal()
+	// Offer dialog'da sağ özet panelinden uzak kalmak için butonları sol blokta tut.
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 12
-	acceptX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 12
-	rejectX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 12
+	acceptX := modal.Panel.Rect.X + 16
+	rejectX := acceptX + btnW + 12
 	return gameui.NewButton(acceptX, btnY, btnW, btnH, "Kabul Et").WithIcon(gameui.IconCheck),
 		gameui.NewButton(rejectX, btnY, btnW, btnH, "Reddet").WithIcon(gameui.IconClose)
 }

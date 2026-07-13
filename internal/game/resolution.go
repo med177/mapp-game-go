@@ -772,6 +772,7 @@ func checkRebellions(gs *state.GameState) {
 		}
 		if !hasGarrison {
 			r.OwnerID = ""
+			gs.ClearProductionOrdersForRegion(r.ID)
 			r.Satisfaction = 50
 		}
 	}

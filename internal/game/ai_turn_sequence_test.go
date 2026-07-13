@@ -94,6 +94,44 @@ func TestAITurnSequenceWaitsWhilePlayerOfferPending(t *testing.T) {
 	}
 }
 
+func TestAITurnSequenceWaitsWhileBattleReportVisible(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		FactionOrder:    []faction.FactionID{"ai_1", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1"},
+		},
+	}
+	r := &render.Renderer{}
+	r.ShowBattleReport(render.BattleReport{Scene: render.BattleSceneLand, Title: "Muharebe"})
+	g := &Game{
+		gs:       gs,
+		renderer: r,
+		aiTurn: &aiTurnState{
+			order:      []faction.FactionID{"ai_1"},
+			index:      0,
+			waitFrames: 3,
+		},
+	}
+
+	g.updateAITurnSequence()
+
+	if g.aiTurn == nil {
+		t.Fatal("AI sıra durumu korunmalıydı")
+	}
+	if g.aiTurn.waitFrames != 3 {
+		t.Fatalf("battle report görünürken AI waitFrames azalmamalıydı, got=%d", g.aiTurn.waitFrames)
+	}
+	if g.aiTurn.index != 0 {
+		t.Fatalf("battle report görünürken AI index ilerlememeliydi, got=%d", g.aiTurn.index)
+	}
+	if !g.renderer.BattleReportVisible() {
+		t.Fatal("battle report görünür kalmalıydı")
+	}
+}
+
 func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

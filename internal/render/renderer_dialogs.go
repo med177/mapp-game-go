@@ -479,7 +479,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 	canEnterSiege := r.canEnterActiveSiegedRegion(attacker, wc.pendingDest)
 	activeSiege := r.gs.SiegeAt(wc.pendingDest)
 	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-		if (activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID || wc.pendingEnemy == "") && !isAlliedRegion {
+		if (activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID) && !isAlliedRegion {
 			r.openSiegeDecision(attacker, target)
 			return action
 		}
@@ -892,8 +892,157 @@ func drawDiplomacyOfferHistoryPanelRect(screen *ebiten.Image, gs *state.GameStat
 	}
 }
 
-func (r *Renderer) drawDiplomacyOfferHistoryPanel(screen *ebiten.Image, modal gameui.Modal) {
-	if r.gs == nil {
+func diplomacyFactionOwnedRegionCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	count := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.OwnerID != string(fid) {
+			continue
+		}
+		count++
+	}
+	return count
+}
+
+func diplomacyFactionLandRegionCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	count := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		count++
+	}
+	return count
+}
+
+type diplomacyOfferRelationGroup int
+
+const (
+	diplomacyOfferRelationAllied diplomacyOfferRelationGroup = iota
+	diplomacyOfferRelationTrade
+	diplomacyOfferRelationWar
+)
+
+func diplomacyOfferRelationGroupMatches(gs *state.GameState, subject, other faction.FactionID, group diplomacyOfferRelationGroup) bool {
+	if gs == nil || subject == "" || other == "" || subject == other {
+		return false
+	}
+	switch group {
+	case diplomacyOfferRelationAllied:
+		if rel := diplomacy.Relation(gs, subject, other); rel != nil && rel.Stance == faction.StanceAllied {
+			return true
+		}
+	case diplomacyOfferRelationTrade:
+		return diplomacy.HasTradeRouteBetween(gs, subject, other)
+	case diplomacyOfferRelationWar:
+		return diplomacy.IsWar(gs, subject, other)
+	}
+	return false
+}
+
+func diplomacyOfferRelationLine(gs *state.GameState, subject faction.FactionID, group diplomacyOfferRelationGroup) string {
+	if gs == nil || subject == "" {
+		return "Yok"
+	}
+	factions := sortedFactions(gs)
+	if gs.PlayerFactionID != "" && gs.PlayerFactionID != subject {
+		factions = append(factions, gs.PlayerFactionID)
+	}
+
+	var names [3]string
+	count := 0
+	for _, otherID := range factions {
+		other := gs.Factions[otherID]
+		if other == nil || other.IsEliminated || !diplomacyOfferRelationGroupMatches(gs, subject, otherID, group) {
+			continue
+		}
+		name := factionDisplayName(gs, string(otherID))
+		if name == "" {
+			name = string(otherID)
+		}
+		if count < len(names) {
+			names[count] = name
+		}
+		count++
+		if count == len(names) {
+			break
+		}
+	}
+	if count == 0 {
+		return "Yok"
+	}
+	var b strings.Builder
+	for i := 0; i < count && i < len(names); i++ {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(names[i])
+	}
+	if count > len(names) {
+		b.WriteString(", ...")
+	}
+	return b.String()
+}
+
+func drawDiplomacyOfferSummaryPanel(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, offer state.DiplomaticOffer) {
+	if gs == nil || panelRect.W <= 0 || panelRect.H <= 0 {
+		return
+	}
+	drawUIPanelFrame(screen, panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
+
+	subject := offer.FromFactionID
+	subjectName := factionDisplayName(gs, string(subject))
+	if subjectName == "" {
+		subjectName = string(subject)
+	}
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 10, W: panelRect.W - 28}, "Teklif Eden Devlet", color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 32, W: panelRect.W - 28}, trimTextToWidth(subjectName, FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+48, "Karar vermek için anlık durum özeti")
+
+	rel := diplomacy.Relation(gs, gs.PlayerFactionID, subject)
+	relationColor, relationLabel := diplomacyStatusDisplay(gs, gs.PlayerFactionID, subject, rel)
+	y := panelRect.Y + 72
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Sizinle durum", relationLabel, ColorGray, relationColor)
+	y += 22
+
+	governanceLabel := "Bağımsız"
+	governanceColor := ColorGray
+	if overlord := diplomacy.DirectOverlord(gs, subject); overlord != "" {
+		governanceLabel = factionDisplayName(gs, string(overlord))
+		if governanceLabel == "" {
+			governanceLabel = string(overlord)
+		}
+		governanceLabel += " himayesinde"
+		governanceColor = ColorGold
+	}
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Yönetim", governanceLabel, ColorGray, governanceColor)
+	y += 22
+
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Askeri güç", itoa(diplomacy.MilitaryPower(gs, subject)), ColorGray, ColorWhite)
+	y += 22
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Kara bölge", itoa(diplomacyFactionLandRegionCount(gs, subject)), ColorGray, ColorWhite)
+	y += 22
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Toplam bölge", itoa(diplomacyFactionOwnedRegionCount(gs, subject)), ColorGray, ColorWhite)
+	y += 22
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 4, W: panelRect.W - 28}, "İttifaklar", color.RGBA{90, 190, 110, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 20, W: panelRect.W - 28}, trimTextToWidth(diplomacyOfferRelationLine(gs, subject, diplomacyOfferRelationAllied), FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	y += 42
+
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 4, W: panelRect.W - 28}, "Ticaret", color.RGBA{205, 168, 78, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 20, W: panelRect.W - 28}, trimTextToWidth(diplomacyOfferRelationLine(gs, subject, diplomacyOfferRelationTrade), FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	y += 42
+
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 4, W: panelRect.W - 28}, "Savaş", color.RGBA{214, 92, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: y + 20, W: panelRect.W - 28}, trimTextToWidth(diplomacyOfferRelationLine(gs, subject, diplomacyOfferRelationWar), FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+}
+
+func (r *Renderer) drawDiplomacyOfferSummaryPanel(screen *ebiten.Image, modal gameui.Modal, offer state.DiplomaticOffer) {
+	if r == nil || r.gs == nil {
 		return
 	}
 	panelRect := gameui.Rect{
@@ -902,7 +1051,7 @@ func (r *Renderer) drawDiplomacyOfferHistoryPanel(screen *ebiten.Image, modal ga
 		W: 286,
 		H: 304,
 	}
-	drawDiplomacyOfferHistoryPanelRect(screen, r.gs, panelRect, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
+	drawDiplomacyOfferSummaryPanel(screen, r.gs, panelRect, offer)
 }
 
 func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) {
@@ -925,7 +1074,7 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 104, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 2)
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 158, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
-	r.drawDiplomacyOfferHistoryPanel(screen, modal)
+	r.drawDiplomacyOfferSummaryPanel(screen, modal, offer)
 
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	drawUIButtonWidget(screen, acceptBtn,
@@ -947,30 +1096,8 @@ func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 }
 
 func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.InputState) InputAction {
-	factions := sortedFactions(r.gs)
-	historyLayout := diplomacyOfferLayoutForScreen()
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if input.LeftJustPressed {
-		if !r.worldInputLockedByPhase() {
-			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, historyLayout.historyRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
-				r.diplomacyOfferHistoryBrowse = target
-				r.showDiplomacy = true
-				r.diplomacyTargetFaction = target
-				r.diplomacyActionFocus = actionFocus
-				r.diplomacyHistoryVisible = false
-				for i, fid := range factions {
-					if fid == target {
-						r.diplomacyFocus = i
-						r.diplomacyScroll = ensureDiplomFocusVisible(len(factions), r.diplomacyFocus, r.diplomacyScroll)
-						break
-					}
-				}
-				return InputAction{}
-			}
-		}
-		if r.applyDiplomacyHistoryFilterHit(historyLayout.historyRect, input.MouseX, input.MouseY) {
-			return InputAction{}
-		}
 		if acceptBtn.HitTest(input.MouseX, input.MouseY) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
