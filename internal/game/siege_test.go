@@ -322,6 +322,83 @@ func TestMoveArmyWithStanceCanBreakSiegeInAlliedRegionWithoutConquest(t *testing
 	}
 }
 
+func TestMoveArmyWithStanceBlocksAlliedTransitIntoBesiegedRegionWithoutWarWithBesieger(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p4",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", Religion: "sunni"},
+			"p3": {ID: "p3", Religion: "catholic"},
+			"p4": {ID: "p4", Religion: "orthodox"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "p4",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "p3",
+				Neighbors:   []world.RegionID{"src"},
+				Terrain:     world.TerrainPlain,
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p4", "p3"): {FactionA: "p4", FactionB: "p3", Stance: faction.StanceAllied},
+			faction.RelationKey("p4", "p1"): {FactionA: "p4", FactionB: "p1", Stance: faction.StancePeace},
+			faction.RelationKey("p1", "p3"): {FactionA: "p1", FactionB: "p3", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "p4",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+			"besieger": {
+				ID:            "besieger",
+				OwnerID:       "p1",
+				RegionID:      "dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"dst": {
+				RegionID:          "dst",
+				AttackerArmyID:    "besieger",
+				AttackerFactionID: "p1",
+				StartedTurn:       5,
+				FortLevel:         2,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("atk", "dst", "")
+
+	if gs.Armies["atk"].RegionID != "src" {
+		t.Fatalf("kuşatılmış dost bölgeye savaşta olmayan müttefik girememeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.Armies["atk"].MovePoints != 2 {
+		t.Fatalf("engellenen giriş hareket puanı tüketmemeliydi, got=%d", gs.Armies["atk"].MovePoints)
+	}
+	if gs.SiegeAt("dst") == nil || gs.SiegeAt("dst").AttackerArmyID != "besieger" {
+		t.Fatalf("kuşatma korunmalıydı, got=%+v", gs.SiegeAt("dst"))
+	}
+	if gs.Regions["dst"].OwnerID != "p3" {
+		t.Fatalf("bölge sahipliği değişmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+}
+
 func TestMoveArmyWithStanceAllowsOverlordTransitToVassalRegion(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "lord",

@@ -533,6 +533,31 @@ func (s *GameState) CanJoinActiveSiege(attacker *army.Army, regionID world.Regio
 	return rel != nil && rel.Stance == faction.StanceAllied
 }
 
+// CanEnterActiveSiegedRegion aktif kuşatma altındaki bölgeye girilebileceğini döner.
+// Kuşatma destekçileri ve kuşatan tarafa karşı savaşta olan ordular girebilir.
+func (s *GameState) CanEnterActiveSiegedRegion(attacker *army.Army, regionID world.RegionID) bool {
+	if s == nil || attacker == nil || s.Sieges == nil || regionID == "" || attacker.OwnerID == "" {
+		return false
+	}
+	siege := s.Sieges[regionID]
+	if siege == nil || siege.AttackerArmyID == "" {
+		return false
+	}
+	if siege.AttackerArmyID == attacker.ID {
+		return true
+	}
+	if s.CanJoinActiveSiege(attacker, regionID) {
+		return true
+	}
+	siegeArmy := s.Armies[siege.AttackerArmyID]
+	if siegeArmy == nil || siegeArmy.OwnerID == "" {
+		return false
+	}
+	key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(siegeArmy.OwnerID))
+	rel := s.Relations[key]
+	return rel != nil && rel.Stance == faction.StanceWar
+}
+
 func stateDirectOverlord(s *GameState, fid faction.FactionID) faction.FactionID {
 	if s == nil || fid == "" {
 		return ""

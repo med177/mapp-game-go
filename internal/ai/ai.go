@@ -2144,6 +2144,20 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
 		if !a.IsNaval && target.CanLandEnter() && target.IsFortified() {
 			if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
+				if gs.CanJoinActiveSiege(a, target.ID) {
+					// Müttefik destek: sadece kuşatmaya katılım / lojistik rahatlatma.
+					_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+					if srcOverload > 0 || a.OverCapacityTurns > 0 {
+						tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+						if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
+							return aiReliefMoveBase
+						}
+					}
+					return 5
+				}
+				if !gs.CanEnterActiveSiegedRegion(a, target.ID) {
+					return -1
+				}
 				enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target.ID)
 				if enemyArmy != nil {
 					_, enemyStance := relationScore(gs, a.OwnerID, enemyArmy.OwnerID)
@@ -2156,22 +2170,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 							}
 							return 95
 						}
-						return -1
 					}
-				}
-				if stance == faction.StanceAllied {
-					// Müttefik bölgede orduyu sadece transit/yardım için kullan.
-					_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
-					if srcOverload > 0 || a.OverCapacityTurns > 0 {
-						tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
-						if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
-							return aiReliefMoveBase
-						}
-					}
-					return 5
-				}
-				if stance != faction.StanceWar {
-					return -1
 				}
 				return -1
 			}
@@ -2256,6 +2255,14 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	actorName := turnFactionName(gs, fid)
 	targetName := turnRegionName(gs, target)
 	sourceName := turnRegionName(gs, fromRegion)
+
+	if !a.IsNaval {
+		if siege := gs.SiegeAt(target); siege != nil && siege.AttackerArmyID != a.ID {
+			if !gs.CanJoinActiveSiege(a, target) && !gs.CanEnterActiveSiegedRegion(a, target) {
+				return moveOutcome{survived: true}
+			}
+		}
+	}
 
 	// Kuşatma altındaki ordu hareket edemez; önce huruç savaşı yapmalı.
 	// Eğer kuşatan oyuncu ise sortie step'i döner (battle plan UI için).

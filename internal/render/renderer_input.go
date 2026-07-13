@@ -914,11 +914,20 @@ func (r *Renderer) handleRightClick() InputAction {
 		if !ok {
 			break
 		}
+		isAlliedRegion := false
+		if target.OwnerID != "" && target.OwnerID != a.OwnerID {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
+			if diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) {
+				isAlliedRegion = true
+			} else if rel, exists := r.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+				isAlliedRegion = true
+			}
+		}
 		allySieging := false
 		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
 			if r.canJoinActiveSiege(a, rid) {
 				allySieging = true
-			} else if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
+			} else if !r.canEnterActiveSiegedRegion(a, rid) {
 				r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return InputAction{}
 			}
@@ -969,7 +978,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			)
 			return InputAction{}
 		}
-		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && enemyArmy == nil {
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && enemyArmy == nil && !isAlliedRegion {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}

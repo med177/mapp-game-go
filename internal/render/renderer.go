@@ -399,6 +399,10 @@ func (r *Renderer) canJoinActiveSiege(attacker *army.Army, regionID world.Region
 	return r != nil && r.gs != nil && r.gs.CanJoinActiveSiege(attacker, regionID)
 }
 
+func (r *Renderer) canEnterActiveSiegedRegion(attacker *army.Army, regionID world.RegionID) bool {
+	return r != nil && r.gs != nil && r.gs.CanEnterActiveSiegedRegion(attacker, regionID)
+}
+
 type battlePlanState struct {
 	show            bool
 	actionKind      ActionKind

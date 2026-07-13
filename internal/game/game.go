@@ -3577,7 +3577,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		if targetSiege != nil {
 			if g.gs.CanJoinActiveSiege(a, target) {
 				allyJoiningSiege = true
-			} else if enemyArmy == nil {
+			} else if !g.gs.CanEnterActiveSiegedRegion(a, target) {
 				g.renderer.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return
 			}

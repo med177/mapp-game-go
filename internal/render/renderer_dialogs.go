@@ -466,13 +466,27 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 
 	attacker := r.gs.Armies[wc.pendingArmy]
 	target := r.gs.Regions[wc.pendingDest]
+	isAlliedRegion := false
+	if attacker != nil && target != nil && target.OwnerID != "" && target.OwnerID != attacker.OwnerID {
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+		if diplomacy.SameRealm(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+			isAlliedRegion = true
+		} else if rel, exists := r.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+			isAlliedRegion = true
+		}
+	}
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
+	canEnterSiege := r.canEnterActiveSiegedRegion(attacker, wc.pendingDest)
 	activeSiege := r.gs.SiegeAt(wc.pendingDest)
 	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
-		if activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID || wc.pendingEnemy == "" {
+		if (activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID || wc.pendingEnemy == "") && !isAlliedRegion {
 			r.openSiegeDecision(attacker, target)
 			return action
 		}
+	}
+	if activeSiege != nil && !supportingSiege && !canEnterSiege {
+		r.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
+		return InputAction{}
 	}
 	if supportingSiege {
 		r.SelectedArmy = ""

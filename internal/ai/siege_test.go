@@ -163,3 +163,77 @@ func TestChooseBestMoveAndExecuteMoveCanBreakSiegeWithoutConquestInAlliedRegion(
 		t.Fatal("besieging army yenildiğinde kuşatma kaydı temizlenmeliydi")
 	}
 }
+
+func TestExecuteMoveBlocksAllyTransitIntoBesiegedRegionWithoutWarWithBesieger(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            3,
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "ally",
+				Neighbors: []world.RegionID{"fort"},
+			},
+			"fort": {
+				ID:          "fort",
+				OwnerID:     "p2",
+				Neighbors:   []world.RegionID{"src"},
+				Buildings:   []string{"walls"},
+				Terrain:     world.TerrainPlain,
+				Settlements: []world.Settlement{{ID: "fortress", Type: world.SettlementFortress, NameTR: "Hisar"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ally_army": {
+				ID:            "ally_army",
+				OwnerID:       "ally",
+				RegionID:      "src",
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    2,
+				MaxMovePoints: 2,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ally": {ID: "ally", NameTR: "Müttefik", Religion: religion.Sunni},
+			"p1":   {ID: "p1", NameTR: "Besieger", Religion: religion.Catholic},
+			"p2":   {ID: "p2", NameTR: "Hedef", Religion: religion.Catholic},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ally", "p2"): {FactionA: "ally", FactionB: "p2", Score: 60, Stance: faction.StanceAllied},
+			faction.RelationKey("ally", "p1"): {FactionA: "ally", FactionB: "p1", Score: 0, Stance: faction.StancePeace},
+			faction.RelationKey("p1", "p2"):   {FactionA: "p1", FactionB: "p2", Score: -70, Stance: faction.StanceWar},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {
+				RegionID:          "fort",
+				AttackerArmyID:    "besieger",
+				AttackerFactionID: "p1",
+				StartedTurn:       3,
+				FortLevel:         2,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 14, Defense: 12, Morale: 55},
+		},
+	}
+
+	target := chooseBestMove(gs, gs.Armies["ally_army"])
+	if target != "" {
+		t.Fatalf("AI kuşatan tarafla savaşta olmayan müttefik geçişi seçmemeliydi, got=%s", target)
+	}
+
+	outcome := executeMove(gs, gs.Armies["ally_army"], "fort", "ally")
+
+	if !outcome.survived {
+		t.Fatal("engellenen transit ordusu hayatta kalmalıydı")
+	}
+	if gs.Armies["ally_army"].RegionID != "src" {
+		t.Fatalf("kuşatanla savaşta olmayan müttefik kuşatılmış bölgeye girememeliydi, got=%s", gs.Armies["ally_army"].RegionID)
+	}
+	if gs.Regions["fort"].OwnerID != "p2" {
+		t.Fatalf("engellenen transit sahipliği değiştirmemeliydi, got=%s", gs.Regions["fort"].OwnerID)
+	}
+	if gs.SiegeAt("fort") == nil || gs.SiegeAt("fort").AttackerArmyID != "besieger" {
+		t.Fatalf("aktif kuşatma korunmalıydı, got=%+v", gs.SiegeAt("fort"))
+	}
+}
