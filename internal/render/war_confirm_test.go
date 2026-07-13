@@ -285,3 +285,28 @@ func TestWarConfirmScrollHelpersClampAndHitVisibleRows(t *testing.T) {
 		t.Fatalf("ilk görünür checkbox üçüncü entry'ye maplenmeliydi, got=%d", idx)
 	}
 }
+
+func TestWarConfirmSharedScrollFollowsLongestColumn(t *testing.T) {
+	leftViewport := gameui.Rect{X: 100, Y: 200, W: 320, H: 110}
+	rightViewport := gameui.Rect{X: 460, Y: 200, W: 320, H: 162}
+	leftEntries := []diplomacy.WarParticipantPreview{
+		{FactionID: "a"},
+		{FactionID: "b"},
+	}
+	rightEntries := []diplomacy.WarParticipantPreview{
+		{FactionID: "c"},
+		{FactionID: "d"},
+		{FactionID: "e"},
+		{FactionID: "f"},
+		{FactionID: "g"},
+		{FactionID: "h"},
+		{FactionID: "i"},
+	}
+
+	if got := warConfirmSharedMaxScroll(leftEntries, rightEntries, leftViewport, rightViewport); got != 4 {
+		t.Fatalf("ortak scroll uzun kolona göre belirlenmeliydi, got=%d", got)
+	}
+	if boxes := warConfirmCheckboxes(leftViewport, leftEntries, nil, 4); len(boxes) != 0 {
+		t.Fatalf("kısa kolon kendi entry sınırını aşınca checkbox üretmemeliydi, got=%d", len(boxes))
+	}
+}

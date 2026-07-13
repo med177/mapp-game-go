@@ -239,6 +239,24 @@ func warConfirmSideRects(modal gameui.Modal) (gameui.Rect, gameui.Rect) {
 	return left, right
 }
 
+func warConfirmContentRect(modal gameui.Modal) gameui.Rect {
+	panel := modal.Panel.Rect
+	return gameui.Rect{
+		X: panel.X + 22,
+		Y: panel.Y + 118,
+		W: panel.W - 44,
+		H: panel.H - 188,
+	}
+}
+
+func warConfirmScrollHit(modal gameui.Modal, mx, my float64) bool {
+	if !modal.Panel.Rect.Hit(mx, my) {
+		return false
+	}
+	acceptBtn, declineBtn := buildWarConfirmButtons()
+	return !acceptBtn.HitTest(mx, my) && !declineBtn.HitTest(mx, my)
+}
+
 func warConfirmCallHeaderY(sideRect gameui.Rect, autoCount int) float64 {
 	base := sideRect.Y + 182
 	y := sideRect.Y + 90 + float64(autoCount)*60 + 10
@@ -269,6 +287,16 @@ func warConfirmVisibleRows(viewport gameui.Rect) int {
 		return 1
 	}
 	return rows
+}
+
+func warConfirmSharedMaxScroll(attackerEntries, defenderEntries []diplomacy.WarParticipantPreview, attackerViewport, defenderViewport gameui.Rect) int {
+	attackerMax := warConfirmMaxScroll(len(attackerEntries), attackerViewport)
+	defenderMax := warConfirmMaxScroll(len(defenderEntries), defenderViewport)
+	return maxScreenInt(attackerMax, defenderMax)
+}
+
+func warConfirmSharedVisibleRows(attackerViewport, defenderViewport gameui.Rect) int {
+	return minScreenInt(warConfirmVisibleRows(attackerViewport), warConfirmVisibleRows(defenderViewport))
 }
 
 func warConfirmMaxScroll(entryCount int, viewport gameui.Rect) int {
@@ -303,7 +331,12 @@ func warConfirmCheckboxes(viewport gameui.Rect, entries []diplomacy.WarParticipa
 	if len(entries) == 0 {
 		return nil
 	}
-	scroll = clampWarConfirmScroll(len(entries), viewport, scroll)
+	if scroll < 0 {
+		scroll = 0
+	}
+	if scroll >= len(entries) {
+		return nil
+	}
 	visibleRows := warConfirmVisibleRows(viewport)
 	end := scroll + visibleRows
 	if end > len(entries) {
@@ -323,7 +356,9 @@ func warConfirmEntryIndexAt(viewport gameui.Rect, entries []diplomacy.WarPartici
 	if len(entries) == 0 || !viewport.Hit(mx, my) {
 		return -1
 	}
-	scroll = clampWarConfirmScroll(len(entries), viewport, scroll)
+	if scroll < 0 {
+		scroll = 0
+	}
 	for visibleIdx, checkbox := range warConfirmCheckboxes(viewport, entries, nil, scroll) {
 		if checkbox.HitTest(mx, my) {
 			return scroll + visibleIdx
@@ -332,20 +367,12 @@ func warConfirmEntryIndexAt(viewport gameui.Rect, entries []diplomacy.WarPartici
 	return -1
 }
 
-func drawWarConfirmScrollbar(screen *ebiten.Image, viewport gameui.Rect, entryCount, scroll int) {
-	maxScroll := warConfirmMaxScroll(entryCount, viewport)
+func drawWarConfirmScrollbar(screen *ebiten.Image, track gameui.Rect, visibleRows, maxScroll, scroll int) {
 	if maxScroll <= 0 {
 		return
 	}
-	scroll = clampWarConfirmScroll(entryCount, viewport, scroll)
-	track := gameui.Rect{
-		X: viewport.X + viewport.W - 6,
-		Y: viewport.Y,
-		W: 4,
-		H: viewport.H,
-	}
 	drawUICardRect(screen, track, color.RGBA{22, 20, 16, 210}, color.RGBA{72, 62, 42, 180}, 1)
-	thumbH := track.H * float64(warConfirmVisibleRows(viewport)) / float64(entryCount)
+	thumbH := track.H * float64(visibleRows) / float64(visibleRows+maxScroll)
 	if thumbH < 24 {
 		thumbH = 24
 	}
@@ -428,7 +455,6 @@ func drawWarConfirmSide(screen *ebiten.Image, sideRect gameui.Rect, title, leade
 		drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: viewport.Y + 8, W: sideRect.W - 28}, emptyCallText, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		return
 	}
-	scroll = clampWarConfirmScroll(len(callableEntries), viewport, scroll)
 	visibleRows := warConfirmVisibleRows(viewport)
 	end := scroll + visibleRows
 	if end > len(callableEntries) {
@@ -438,7 +464,6 @@ func drawWarConfirmSide(screen *ebiten.Image, sideRect gameui.Rect, title, leade
 		rowRect := warConfirmEntryRowRect(viewport, i-scroll)
 		drawWarConfirmParticipantRow(screen, rowRect, callableEntries[i], selected[callableEntries[i].FactionID], selectable)
 	}
-	drawWarConfirmScrollbar(screen, viewport, len(callableEntries), scroll)
 }
 
 func selectedWarAlliesFromState(wc warConfirmState) []faction.FactionID {
@@ -466,15 +491,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 
 	attacker := r.gs.Armies[wc.pendingArmy]
 	target := r.gs.Regions[wc.pendingDest]
-	isAlliedRegion := false
-	if attacker != nil && target != nil && target.OwnerID != "" && target.OwnerID != attacker.OwnerID {
-		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
-		if diplomacy.SameRealm(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
-			isAlliedRegion = true
-		} else if rel, exists := r.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
-			isAlliedRegion = true
-		}
-	}
+	isAlliedRegion := armyRegionIsFriendly(r.gs, attacker, target)
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
 	canEnterSiege := r.canEnterActiveSiegedRegion(attacker, wc.pendingDest)
 	activeSiege := r.gs.SiegeAt(wc.pendingDest)
@@ -518,8 +535,21 @@ func (r *Renderer) drawWarConfirmDialog(screen *ebiten.Image) {
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, "Sol tarafta kendi çağıracağın müttefikleri seçebilirsin.", color.RGBA{186, 170, 132, 255}, gameui.TextSmall, gameui.TextAlignCenter)
 
 	leftRect, rightRect := warConfirmSideRects(modal)
-	drawWarConfirmSide(screen, leftRect, "Senin Cephen", r.warConfirm.preview.Attacker.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Attacker.AutoParticipants, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, true, r.warConfirm.attackerScroll)
-	drawWarConfirmSide(screen, rightRect, "Karşı Cephe", r.warConfirm.preview.Defender.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Defender.AutoParticipants, r.warConfirm.preview.Defender.CallableAllies, nil, false, r.warConfirm.defenderScroll)
+	scroll := r.warConfirm.scroll
+	leftViewport := warConfirmCallViewport(leftRect, len(r.warConfirm.preview.Attacker.AutoParticipants))
+	rightViewport := warConfirmCallViewport(rightRect, len(r.warConfirm.preview.Defender.AutoParticipants))
+	maxScroll := warConfirmSharedMaxScroll(r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.preview.Defender.CallableAllies, leftViewport, rightViewport)
+	if scroll > maxScroll {
+		scroll = maxScroll
+	}
+	drawWarConfirmSide(screen, leftRect, "Senin Cephen", r.warConfirm.preview.Attacker.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Attacker.AutoParticipants, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, true, scroll)
+	drawWarConfirmSide(screen, rightRect, "Karşı Cephe", r.warConfirm.preview.Defender.PrimaryNameTR, "Ek otomatik katılım yok.", "Çağrılabilir müttefik yok.", r.warConfirm.preview.Defender.AutoParticipants, r.warConfirm.preview.Defender.CallableAllies, nil, false, scroll)
+	if maxScroll > 0 {
+		contentRect := warConfirmContentRect(modal)
+		track := gameui.Rect{X: modal.Panel.Rect.X + modal.Panel.Rect.W - 12, Y: contentRect.Y, W: 4, H: contentRect.H}
+		visibleRows := warConfirmSharedVisibleRows(leftViewport, rightViewport)
+		drawWarConfirmScrollbar(screen, track, visibleRows, maxScroll, scroll)
+	}
 
 	acceptBtn, declineBtn := buildWarConfirmButtons()
 	drawUIButtonWidget(screen, acceptBtn,
@@ -532,7 +562,8 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
 	acceptBtn, declineBtn := buildWarConfirmButtons()
-	leftRect, rightRect := warConfirmSideRects(buildWarConfirmModal())
+	modal := buildWarConfirmModal()
+	leftRect, rightRect := warConfirmSideRects(modal)
 	leftViewport := warConfirmCallViewport(leftRect, len(r.warConfirm.preview.Attacker.AutoParticipants))
 	rightViewport := warConfirmCallViewport(rightRect, len(r.warConfirm.preview.Defender.AutoParticipants))
 	_, wheelY := ebiten.Wheel()
@@ -541,18 +572,21 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 		if wheelY > 0 {
 			step = -1
 		}
-		switch {
-		case leftViewport.Hit(mx, my):
-			r.warConfirm.attackerScroll = clampWarConfirmScroll(len(r.warConfirm.preview.Attacker.CallableAllies), leftViewport, r.warConfirm.attackerScroll+step)
-			return InputAction{}
-		case rightViewport.Hit(mx, my):
-			r.warConfirm.defenderScroll = clampWarConfirmScroll(len(r.warConfirm.preview.Defender.CallableAllies), rightViewport, r.warConfirm.defenderScroll+step)
+		if warConfirmScrollHit(modal, mx, my) {
+			maxScroll := warConfirmSharedMaxScroll(r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.preview.Defender.CallableAllies, leftViewport, rightViewport)
+			r.warConfirm.scroll += step
+			if r.warConfirm.scroll < 0 {
+				r.warConfirm.scroll = 0
+			}
+			if r.warConfirm.scroll > maxScroll {
+				r.warConfirm.scroll = maxScroll
+			}
 			return InputAction{}
 		}
 	}
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		if idx := warConfirmEntryIndexAt(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.attackerScroll, mx, my); idx >= 0 {
+		if idx := warConfirmEntryIndexAt(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.scroll, mx, my); idx >= 0 {
 			entry := r.warConfirm.preview.Attacker.CallableAllies[idx]
 			r.warConfirm.selectedAllies[entry.FactionID] = !r.warConfirm.selectedAllies[entry.FactionID]
 			return InputAction{}

@@ -307,7 +307,7 @@ func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
 	if leftViewport.Hit(fx, fy) || rightViewport.Hit(fx, fy) {
 		return true
 	}
-	for _, checkbox := range warConfirmCheckboxes(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, r.warConfirm.attackerScroll) {
+	for _, checkbox := range warConfirmCheckboxes(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, r.warConfirm.scroll) {
 		if checkbox.HitTest(fx, fy) {
 			return true
 		}

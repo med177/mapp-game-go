@@ -381,8 +381,7 @@ type warConfirmState struct {
 	battleContext   combat.BattleContext
 	preview         diplomacy.WarDeclarationPreview
 	selectedAllies  map[faction.FactionID]bool
-	attackerScroll  int
-	defenderScroll  int
+	scroll          int
 }
 
 func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
@@ -1418,6 +1417,30 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 		return armyCanEmbark(gs, a) && findFriendlyEmbarkFleetFromRegion(gs, a.OwnerID, a.RegionID, target.ID, len(a.Units)) != nil
 	}
 	return target.CanLandEnter()
+}
+
+func armyRegionIsFriendly(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+		return false
+	}
+	attackerFID := faction.FactionID(attacker.OwnerID)
+	targetFID := faction.FactionID(target.OwnerID)
+	if diplomacy.SameRealm(gs, attackerFID, targetFID) {
+		return true
+	}
+	rel := diplomacy.Relation(gs, attackerFID, targetFID)
+	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
+func shouldPromptWarConfirmForMove(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+		return false
+	}
+	if armyRegionIsFriendly(gs, attacker, target) {
+		return false
+	}
+	rel := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+	return rel == nil || rel.Stance != faction.StanceWar
 }
 
 func navalShowsFriendlyDisembark(gs *state.GameState, fleet *army.Army, target *world.Region) bool {

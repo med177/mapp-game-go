@@ -951,10 +951,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		// Müttefik bölgesine çıkarma için "Karaya In" göster.
 		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
-			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
-			rel, exists := r.gs.Relations[key]
-			if (diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) ||
-				(exists && rel.Stance == faction.StanceAllied)) && len(a.EmbarkedUnits) > 0 {
+			if armyRegionIsFriendly(r.gs, a, target) && len(a.EmbarkedUnits) > 0 {
 				// Müttefik kıyısına çıkarma — savaş popup'ı değil, karaya inme onayı
 				r.ShowConfirmDialog(
 					"Karaya In",
@@ -966,8 +963,7 @@ func (r *Renderer) handleRightClick() InputAction {
 				)
 				return InputAction{}
 			}
-			if !diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) &&
-				(!exists || rel.Stance != faction.StanceWar) {
+			if shouldPromptWarConfirmForMove(r.gs, a, target) {
 				name := target.OwnerID
 				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
 					name = f.NameTR
