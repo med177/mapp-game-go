@@ -224,10 +224,12 @@ func TestActiveRegionEventHitAndDetail(t *testing.T) {
 	}
 
 	x, y := r.worldToScreen(wcX(400), wcY(100))
-	if idx, ok := r.activeRegionEventHitAt(x, y-12); !ok || idx != 0 {
+	topX, topY := activeRegionEventMarkerPoint(x, y, 2, 0)
+	bottomX, bottomY := activeRegionEventMarkerPoint(x, y, 2, 1)
+	if idx, ok := r.activeRegionEventHitAt(topX, topY); !ok || idx != 0 {
 		t.Fatalf("ilk stacked event hit edilmeliydi, got=(%d,%t)", idx, ok)
 	}
-	if idx, ok := r.activeRegionEventHitAt(x, y+12); !ok || idx != 1 {
+	if idx, ok := r.activeRegionEventHitAt(bottomX, bottomY); !ok || idx != 1 {
 		t.Fatalf("ikinci stacked event hit edilmeliydi, got=(%d,%t)", idx, ok)
 	}
 
@@ -240,5 +242,17 @@ func TestActiveRegionEventHitAndDetail(t *testing.T) {
 	}
 	if !strings.Contains(detail, "Event ID: evt_2") {
 		t.Fatalf("detay event id içermeli: %s", detail)
+	}
+}
+
+func TestActiveRegionEventMarkerStaysAboveArmyIconSpace(t *testing.T) {
+	baseSX, baseSY := 640.0, 360.0
+	eventX, eventY := activeRegionEventMarkerPoint(baseSX, baseSY, 1, 0)
+	armyCenterY := baseSY - 22
+	if eventX != baseSX {
+		t.Fatalf("event marker x sabit kalmalı: got=%.2f want=%.2f", eventX, baseSX)
+	}
+	if eventY >= armyCenterY-24 {
+		t.Fatalf("event marker ordu alanının üstünde yeterince boşluk bırakmıyor: eventY=%.2f armyCenterY=%.2f", eventY, armyCenterY)
 	}
 }

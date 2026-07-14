@@ -469,11 +469,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.eventDetail = r.EventDetailAt(idx)
 		return InputAction{}
 	}
-	if idx, ok := r.activeRegionEventHitAt(fx, fy); ok {
-		r.eventDetail = r.activeRegionEventDetailAt(idx)
-		return InputAction{}
-	}
-
 	if topDateHudMenuButtonHit(fx, fy) {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
@@ -657,6 +652,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+	}
+	if idx, ok := r.activeRegionEventHitAt(fx, fy); ok {
+		r.eventDetail = r.activeRegionEventDetailAt(idx)
+		return InputAction{}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		r.SelectedArmy = ""

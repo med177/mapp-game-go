@@ -355,9 +355,6 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if eventLogInteractiveHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex()) {
 		return true
 	}
-	if r.activeRegionEventHovering(fx, fy) {
-		return true
-	}
 	if r.SelectedRegion != "" {
 		if regionPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) ||
 			r.settlementPanelHit(fx, fy) || r.settlementPanelCloseHit(fx, fy) ||
@@ -376,6 +373,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	// Ordu/donanma etiketi üzerinde mi?
 	if _, ok := r.armyHitAt(fx, fy); ok {
+		return true
+	}
+	if r.activeRegionEventHovering(fx, fy) {
 		return true
 	}
 	// Yerleşim noktası üzerinde mi?

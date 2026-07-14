@@ -45,6 +45,7 @@ const (
 	maxCameraZoomScale      = 10
 	activeEventIconSize     = float32(22)
 	activeEventIconSpacingY = float32(24)
+	activeEventIconLiftY    = float32(48)
 
 	settlementMarkerSpriteSize = float32(26)
 	capitalLabelIconSmallSize  = float32(18)
@@ -2568,21 +2569,10 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 			continue
 		}
 
-		// Sadece tek event varsa eski davranış (ortalanmış), çoklu varsa alt alta
+		// Event marker'ları settlement anchor'ın üstüne taşır; çoklu event daha da yukarı stack edilir.
 		eventCount := len(g.events)
 		for idx, evt := range g.events {
-			sx := baseSX
-			sy := baseSY
-
-			if eventCount > 1 {
-				// Çoklu event: alt alta sırala, en üstteki event en yukarıda
-				totalHeight := float64(activeEventIconSpacingY) * float64(eventCount-1)
-				startY := sy - totalHeight/2
-				sy = startY + float64(activeEventIconSpacingY)*float64(idx)
-			} else {
-				// Tek event: yerleşim noktasının üstünde (eski davranış)
-				sy = sy - 18
-			}
+			sx, sy := activeRegionEventMarkerPoint(baseSX, baseSY, eventCount, idx)
 
 			sx, sy = r.clampActiveRegionEventScreenPoint(g.regionID, sx, sy)
 
@@ -2674,15 +2664,7 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 
 		eventCount := len(g.events)
 		for idx, entry := range g.events {
-			sx := baseSX
-			sy := baseSY
-			if eventCount > 1 {
-				totalHeight := float64(activeEventIconSpacingY) * float64(eventCount-1)
-				startY := sy - totalHeight/2
-				sy = startY + float64(activeEventIconSpacingY)*float64(idx)
-			} else {
-				sy = sy - 18
-			}
+			sx, sy := activeRegionEventMarkerPoint(baseSX, baseSY, eventCount, idx)
 
 			sx, sy = r.clampActiveRegionEventScreenPoint(g.regionID, sx, sy)
 			if sx < -30 || sx > ScreenWidth+30 || sy < -30 || sy > ScreenHeight+30 {
@@ -2695,6 +2677,19 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 	}
 
 	return -1, false
+}
+
+func activeRegionEventMarkerPoint(baseSX, baseSY float64, eventCount, idx int) (float64, float64) {
+	if eventCount <= 0 {
+		return baseSX, baseSY
+	}
+
+	sx := baseSX
+	sy := baseSY - float64(activeEventIconLiftY)
+	if eventCount > 1 {
+		sy -= float64(activeEventIconSpacingY) * float64(eventCount-1-idx)
+	}
+	return sx, sy
 }
 
 func activeRegionEventVisible(gs *state.GameState, evt state.RegionEventStatus) bool {
