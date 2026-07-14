@@ -3601,7 +3601,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				g.renderer.ShowCombatResult("Bu bölge zaten başka bir ordu tarafından kuşatılıyor.")
 				return
 			}
-		} else {
+		} else if !isAlliedRegion {
 			if ok, reason := canArmyStartSiege(g.gs, a, targetRegion); !ok {
 				if reason != "" {
 					g.renderer.ShowCombatResult(reason)

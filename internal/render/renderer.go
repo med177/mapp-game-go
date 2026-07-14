@@ -2540,6 +2540,9 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 	groupOrder := make([]*regionGroup, 0, len(r.gs.ActiveRegionEvents))
 	for i := range r.gs.ActiveRegionEvents {
 		evt := &r.gs.ActiveRegionEvents[i]
+		if !activeRegionEventVisible(r.gs, *evt) {
+			continue
+		}
 		g, exists := groupMap[evt.RegionID]
 		if !exists {
 			g = &regionGroup{regionID: evt.RegionID}
@@ -2551,11 +2554,10 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 
 	for _, g := range groupOrder {
 		region := r.gs.Regions[g.regionID]
-		if region == nil {
+		if region == nil || region.IsSea {
 			continue
 		}
 
-		// Deniz bölgeleri de görünür olsun diye önce settlement, sonra bölge anchor'u kullan.
 		ax, ay, ok := r.eventIconAnchor(g.regionID)
 		if !ok {
 			// Fallback: bölge merkezi
@@ -2645,6 +2647,9 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 	groupOrder := make([]*regionGroup, 0, len(r.gs.ActiveRegionEvents))
 	for i := range r.gs.ActiveRegionEvents {
 		evt := r.gs.ActiveRegionEvents[i]
+		if !activeRegionEventVisible(r.gs, evt) {
+			continue
+		}
 		g, exists := groupMap[evt.RegionID]
 		if !exists {
 			g = &regionGroup{regionID: evt.RegionID}
@@ -2656,7 +2661,7 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 
 	for _, g := range groupOrder {
 		region := r.gs.Regions[g.regionID]
-		if region == nil {
+		if region == nil || region.IsSea {
 			continue
 		}
 
@@ -2691,6 +2696,14 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 	}
 
 	return -1, false
+}
+
+func activeRegionEventVisible(gs *state.GameState, evt state.RegionEventStatus) bool {
+	if gs == nil || evt.RegionID == "" {
+		return false
+	}
+	region := gs.Regions[evt.RegionID]
+	return region != nil && !region.IsSea
 }
 
 func (r *Renderer) activeRegionEventHovering(fx, fy float64) bool {

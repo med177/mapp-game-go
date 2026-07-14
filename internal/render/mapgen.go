@@ -374,8 +374,11 @@ func (wm *WorldMap) UpdateSettlementAnchor(gs *state.GameState, rid world.Region
 	wx := int(shapeOffX + float64(settlement.X)*shapeScaleX)
 	wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
 	ax, ay := wx, wy
-	if wm.RegionAt(wx, wy) != rid {
-		if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
+	if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) || wm.RegionAt(wx, wy) != rid {
+		if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
+			ax = int(shapeOffX + float64(sx)*shapeScaleX)
+			ay = int(shapeOffY + float64(sy)*shapeScaleY)
+		} else if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
 			ax, ay = fx, fy
 		}
 	}
@@ -811,16 +814,21 @@ func (wm *WorldMap) computeSettlementAnchors(gs *state.GameState) {
 			wx := int(shapeOffX + float64(settlement.X)*shapeScaleX)
 			wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
 			ax, ay := wx, wy
-			if wm.RegionAt(wx, wy) != rid {
-				fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy)
-				if !ok {
-					log.Printf("yerlesim fallback bulunamadi: region=%s settlement=%s x=%d y=%d",
-						rid, settlement.ID, settlement.X, settlement.Y)
-					continue
+			if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) || wm.RegionAt(wx, wy) != rid {
+				if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
+					ax = int(shapeOffX + float64(sx)*shapeScaleX)
+					ay = int(shapeOffY + float64(sy)*shapeScaleY)
+				} else {
+					fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy)
+					if !ok {
+						log.Printf("yerlesim fallback bulunamadi: region=%s settlement=%s x=%d y=%d",
+							rid, settlement.ID, settlement.X, settlement.Y)
+						continue
+					}
+					log.Printf("yerlesim koordinati bolge disinda, fallback uygulandi: region=%s settlement=%s x=%d y=%d -> pixel=%d,%d",
+						rid, settlement.ID, settlement.X, settlement.Y, fx, fy)
+					ax, ay = fx, fy
 				}
-				log.Printf("yerlesim koordinati bolge disinda, fallback uygulandi: region=%s settlement=%s x=%d y=%d -> pixel=%d,%d",
-					rid, settlement.ID, settlement.X, settlement.Y, fx, fy)
-				ax, ay = fx, fy
 			}
 
 			wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: i}] = [2]int{ax, ay}
@@ -830,6 +838,49 @@ func (wm *WorldMap) computeSettlementAnchors(gs *state.GameState) {
 			}
 		}
 	}
+}
+
+func regionContainsPoint(region *world.Region, x, y float64) bool {
+	if region == nil || len(region.Shape) == 0 {
+		return false
+	}
+	for _, ring := range region.Shape {
+		if len(ring) < 3 {
+			continue
+		}
+		if pointInFloatPolygon(x, y, ring) {
+			return true
+		}
+	}
+	return false
+}
+
+func nearestPointInRegionShape(region *world.Region, x, y int) (int, int, bool) {
+	if region == nil || len(region.Shape) == 0 {
+		return 0, 0, false
+	}
+
+	const maxRadius = 18
+	bestX, bestY := 0, 0
+	bestDist := int(^uint(0) >> 1)
+	for dy := -maxRadius; dy <= maxRadius; dy++ {
+		for dx := -maxRadius; dx <= maxRadius; dx++ {
+			dist := dx*dx + dy*dy
+			if dist > maxRadius*maxRadius || dist >= bestDist {
+				continue
+			}
+			nx, ny := x+dx, y+dy
+			if !regionContainsPoint(region, float64(nx), float64(ny)) {
+				continue
+			}
+			bestX, bestY = nx, ny
+			bestDist = dist
+		}
+	}
+	if bestDist == int(^uint(0)>>1) {
+		return 0, 0, false
+	}
+	return bestX, bestY, true
 }
 
 func (wm *WorldMap) nearestRegionPixel(rid world.RegionID, wx, wy int) (int, int, bool) {

@@ -472,6 +472,59 @@ func TestMoveArmyWithStanceAllowsOverlordTransitToVassalRegion(t *testing.T) {
 	}
 }
 
+func TestMoveArmyWithStanceAllowsAlliedTransitIntoFortifiedRegionWithoutSiege(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1":   {ID: "p1", Religion: "sunni"},
+			"ally": {ID: "ally", Religion: "sunni"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "p1",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "ally",
+				Neighbors:   []world.RegionID{"src"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "ally"): {FactionA: "p1", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "p1",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("atk", "dst", "")
+
+	if gs.Armies["atk"].RegionID != "dst" {
+		t.Fatalf("müttefik tahkimli bölgeye normal hareket etmeliydi, got=%s", gs.Armies["atk"].RegionID)
+	}
+	if gs.Armies["atk"].MovePoints != 1 {
+		t.Fatalf("başarılı hareket bir puan harcamalıydı, got=%d", gs.Armies["atk"].MovePoints)
+	}
+	if gs.Regions["dst"].OwnerID != "ally" {
+		t.Fatalf("normal geçişte bölge sahibi değişmemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+	}
+}
+
 func TestMoveArmyWithStanceAllowsSameRealmSiegeSupport(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "vassal",

@@ -1584,8 +1584,11 @@ func drawMinimapEventMarkers(screen *ebiten.Image, gs *state.GameState, scaleX, 
 
 	for i := range gs.ActiveRegionEvents {
 		evt := gs.ActiveRegionEvents[i]
+		if !activeRegionEventVisible(gs, evt) {
+			continue
+		}
 		region, ok := gs.Regions[evt.RegionID]
-		if !ok || region == nil {
+		if !ok || region == nil || region.IsSea {
 			continue
 		}
 

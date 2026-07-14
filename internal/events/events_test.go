@@ -44,6 +44,40 @@ func TestTickReturnsEventWithoutApplyingEffects(t *testing.T) {
 	}
 }
 
+func TestAffectedRegionIDsAllArmiesSkipsSeaRegions(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a"},
+			"land_b": {ID: "land_b"},
+			"sea":    {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"land_army":      {ID: "land_army", RegionID: "land_a"},
+			"duplicate_army": {ID: "duplicate_army", RegionID: "land_a"},
+			"fleet_at_sea":   {ID: "fleet_at_sea", RegionID: "sea", IsNaval: true},
+			"docked_fleet":   {ID: "docked_fleet", RegionID: "sea", DockedRegionID: "land_b", IsNaval: true},
+			"invalid_region": {ID: "invalid_region", RegionID: "missing"},
+			"fleet_bad_dock": {ID: "fleet_bad_dock", RegionID: "sea", DockedRegionID: "sea", IsNaval: true},
+		},
+	}
+
+	got := affectedRegionIDs(gs, &Event{ID: "harsh_winter", Target: "all_armies"}, nil)
+	want := map[world.RegionID]bool{"land_a": false, "land_b": false}
+	if len(got) != len(want) {
+		t.Fatalf("beklenen kara bolgesi sayisi %d, got=%d (%v)", len(want), len(got), got)
+	}
+	for _, rid := range got {
+		seen, ok := want[rid]
+		if !ok {
+			t.Fatalf("beklenmeyen bolge: %s (%v)", rid, got)
+		}
+		if seen {
+			t.Fatalf("bolge tekrarlanmamali: %s (%v)", rid, got)
+		}
+		want[rid] = true
+	}
+}
+
 func TestApplyChoiceUpdatesFactionArmyAndRelations(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

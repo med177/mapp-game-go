@@ -815,8 +815,24 @@ func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.Re
 		return all
 	case "all_armies":
 		var all []world.RegionID
+		seen := make(map[world.RegionID]struct{}, len(gs.Armies))
 		for _, a := range gs.Armies {
-			all = append(all, a.RegionID)
+			if a == nil {
+				continue
+			}
+			rid := a.RegionID
+			if a.IsNaval && a.DockedRegionID != "" {
+				rid = a.DockedRegionID
+			}
+			region := gs.Regions[rid]
+			if region == nil || region.IsSea {
+				continue
+			}
+			if _, ok := seen[rid]; ok {
+				continue
+			}
+			seen[rid] = struct{}{}
+			all = append(all, rid)
 		}
 		return all
 	}

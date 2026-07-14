@@ -36,6 +36,25 @@ func TestEventIconAnchorUsesSeaRegionAnchor(t *testing.T) {
 	}
 }
 
+func TestActiveRegionEventVisibleSkipsSeaRegions(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"land_region": {ID: "land_region"},
+			"sea_region":  {ID: "sea_region", IsSea: true},
+		},
+	}
+
+	if !activeRegionEventVisible(gs, state.RegionEventStatus{RegionID: "land_region"}) {
+		t.Fatal("kara bolgesi event ikonu gorunur olmali")
+	}
+	if activeRegionEventVisible(gs, state.RegionEventStatus{RegionID: "sea_region"}) {
+		t.Fatal("deniz bolgesi event ikonu gorunmemeli")
+	}
+	if activeRegionEventVisible(gs, state.RegionEventStatus{RegionID: "missing"}) {
+		t.Fatal("bilinmeyen bolge event ikonu gorunmemeli")
+	}
+}
+
 func TestMinimapEventMarkerPositionAndStackOffset(t *testing.T) {
 	oldWorldW, oldWorldH := WorldW, WorldH
 	defer func() {
