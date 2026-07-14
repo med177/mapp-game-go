@@ -2558,13 +2558,10 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 			continue
 		}
 
-		ax, ay, ok := r.eventIconAnchor(g.regionID)
+		baseSX, baseSY, ok := r.eventIconScreenAnchor(g.regionID)
 		if !ok {
-			// Fallback: bölge merkezi
-			ax = region.WorldX
-			ay = region.WorldY
+			continue
 		}
-		baseSX, baseSY := r.worldToScreen(wcX(ax), wcY(ay))
 
 		// Ekran dışı kontrolü (base noktasına göre)
 		if baseSX < -50 || baseSX > ScreenWidth+50 || baseSY < -50 || baseSY > ScreenHeight+50 {
@@ -2586,6 +2583,8 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 				// Tek event: yerleşim noktasının üstünde (eski davranış)
 				sy = sy - 18
 			}
+
+			sx, sy = r.clampActiveRegionEventScreenPoint(g.regionID, sx, sy)
 
 			// Ekran dışı kontrolü
 			if sx < -30 || sx > ScreenWidth+30 || sy < -50 || sy > ScreenHeight+50 {
@@ -2665,12 +2664,10 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 			continue
 		}
 
-		ax, ay, ok := r.eventIconAnchor(g.regionID)
+		baseSX, baseSY, ok := r.eventIconScreenAnchor(g.regionID)
 		if !ok {
-			ax = region.WorldX
-			ay = region.WorldY
+			continue
 		}
-		baseSX, baseSY := r.worldToScreen(wcX(ax), wcY(ay))
 		if baseSX < -50 || baseSX > ScreenWidth+50 || baseSY < -50 || baseSY > ScreenHeight+50 {
 			continue
 		}
@@ -2686,6 +2683,8 @@ func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
 			} else {
 				sy = sy - 18
 			}
+
+			sx, sy = r.clampActiveRegionEventScreenPoint(g.regionID, sx, sy)
 			if sx < -30 || sx > ScreenWidth+30 || sy < -30 || sy > ScreenHeight+30 {
 				continue
 			}
@@ -2704,6 +2703,32 @@ func activeRegionEventVisible(gs *state.GameState, evt state.RegionEventStatus) 
 	}
 	region := gs.Regions[evt.RegionID]
 	return region != nil && !region.IsSea
+}
+
+func (r *Renderer) clampActiveRegionEventScreenPoint(rid world.RegionID, sx, sy float64) (float64, float64) {
+	if r == nil || r.gs == nil || r.worldMap == nil || rid == "" {
+		return sx, sy
+	}
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return sx, sy
+	}
+
+	wx, wy := r.screenToWorld(sx, sy)
+	pureX := int(math.Round((wx - shapeOffX) / shapeScaleX))
+	pureY := int(math.Round((wy - shapeOffY) / shapeScaleY))
+	if regionContainsPoint(region, float64(pureX), float64(pureY)) {
+		return sx, sy
+	}
+
+	if px, py, ok := nearestPointInRegionShape(region, pureX, pureY); ok {
+		return r.worldToScreen(wcX(px), wcY(py))
+	}
+	ix, iy := int(math.Round(wx)), int(math.Round(wy))
+	if px, py, ok := r.worldMap.nearestRegionPixel(rid, ix, iy); ok {
+		return r.worldToScreen(float64(px), float64(py))
+	}
+	return sx, sy
 }
 
 func (r *Renderer) activeRegionEventHovering(fx, fy float64) bool {
@@ -2755,21 +2780,32 @@ func activeRegionEventTypeLabel(eventType string) string {
 }
 
 func (r *Renderer) eventIconAnchor(rid world.RegionID) (int, int, bool) {
-	if r == nil || r.worldMap == nil {
+	if r == nil {
 		return 0, 0, false
 	}
-	if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(rid); ok {
-		return ax, ay, true
-	}
-	if ax, ay, ok := r.worldMap.RegionAnchor(rid); ok {
-		return ax, ay, true
+	if r.worldMap != nil {
+		if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(rid); ok {
+			return ax, ay, true
+		}
+		if ax, ay, ok := r.worldMap.RegionAnchor(rid); ok {
+			return ax, ay, true
+		}
 	}
 	if r.gs != nil {
 		if region := r.gs.Regions[rid]; region != nil {
-			return region.WorldX, region.WorldY, true
+			return int(math.Round(wcX(region.WorldX))), int(math.Round(wcY(region.WorldY))), true
 		}
 	}
 	return 0, 0, false
+}
+
+func (r *Renderer) eventIconScreenAnchor(rid world.RegionID) (float64, float64, bool) {
+	ax, ay, ok := r.eventIconAnchor(rid)
+	if !ok {
+		return 0, 0, false
+	}
+	sx, sy := r.worldToScreen(float64(ax), float64(ay))
+	return sx, sy, true
 }
 
 func (r *Renderer) drawFortressMarker(screen *ebiten.Image, region *world.Region, sx, sy float32) {
