@@ -102,6 +102,9 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 
 	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
 	aiConsolidateArmies(gs, fid)
+
+	// Yeni üretilen veya daha önce komutansız kalan AI ordularını kariyer havuzuna bağla.
+	gs.EnsureFactionCommanders(string(fid))
 }
 
 func addTurnStep(steps *[]TurnStep, step TurnStep) {
@@ -1606,10 +1609,11 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
 			seaTerrain := string(world.TerrainSea)
 			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
+			recordCommanderBattle(gs, escort, enemyInTarget, nil, result.AttackerWins)
 
 			if result.AttackerWins {
 				if len(enemyInTarget.Units) == 0 {
-					delete(gs.Armies, enemyInTarget.ID)
+					gs.RemoveArmy(enemyInTarget.ID)
 					addTurnStep(steps, TurnStep{
 						FactionID:    fid,
 						Kind:         TurnStepBattle,
@@ -1622,7 +1626,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 				}
 			} else {
 				if len(escort.Units) == 0 {
-					delete(gs.Armies, escort.ID)
+					gs.RemoveArmy(escort.ID)
 				}
 				addTurnStep(steps, TurnStep{
 					FactionID:    fid,
@@ -1804,13 +1808,13 @@ func aiEnemyArmyInRegion(gs *state.GameState, ownerID string, rid world.RegionID
 	return nil
 }
 
-func aiSpawnDisembarkedArmy(gs *state.GameState, ownerID string, target world.RegionID, units []army.Unit) {
+func aiSpawnDisembarkedArmy(gs *state.GameState, ownerID string, target world.RegionID, units []army.Unit) *army.Army {
 	if gs == nil || len(units) == 0 {
-		return
+		return nil
 	}
 	gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", ownerID, gs.NextArmySeq))
-	gs.Armies[newID] = &army.Army{
+	landed := &army.Army{
 		ID:            newID,
 		OwnerID:       ownerID,
 		RegionID:      target,
@@ -1819,6 +1823,8 @@ func aiSpawnDisembarkedArmy(gs *state.GameState, ownerID string, target world.Re
 		MaxMovePoints: 2,
 		IsNaval:       false,
 	}
+	gs.Armies[newID] = landed
+	return landed
 }
 
 func aiOwnerReligion(gs *state.GameState, ownerID string) string {
@@ -2275,9 +2281,10 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				defMods := aiTechMods(gs, siegeArmy.OwnerID)
 				defMods.DefenseMod += 0.10
 				result := combat.ResolveBattleWithMods(a, siegeArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+				recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
 				if result.AttackerWins {
 					if len(siegeArmy.Units) == 0 {
-						delete(gs.Armies, siegeArmy.ID)
+						gs.RemoveArmy(siegeArmy.ID)
 					}
 					if siege.AttackerHomeRegionID != "" {
 						siegeArmy.RegionID = siege.AttackerHomeRegionID
@@ -2288,10 +2295,10 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				}
 				a.MovePoints = 0
 				if len(a.Units) == 0 {
-					delete(gs.Armies, a.ID)
+					gs.RemoveArmy(a.ID)
 				}
 				if len(siegeArmy.Units) == 0 {
-					delete(gs.Armies, siegeArmy.ID)
+					gs.RemoveArmy(siegeArmy.ID)
 					delete(gs.Sieges, fromRegion)
 				}
 				msg := actorName + " " + sourceName + " kuşatmasını yaramadı."
@@ -2307,19 +2314,24 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target)
 		if enemyArmy != nil {
 			landing := &army.Army{
-				OwnerID: a.OwnerID,
-				Units:   append([]army.Unit(nil), a.EmbarkedUnits...),
+				OwnerID:   a.OwnerID,
+				Units:     append([]army.Unit(nil), a.EmbarkedUnits...),
+				Commander: gs.AmphibiousCommander(a.ID),
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, enemyArmy.OwnerID)
 			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+			recordCommanderBattle(gs, landing, enemyArmy, nil, result.AttackerWins)
 			a.EmbarkedUnits = a.EmbarkedUnits[:0]
 			a.MovePoints--
 			if result.AttackerWins {
 				if len(enemyArmy.Units) == 0 {
-					delete(gs.Armies, enemyArmy.ID)
+					gs.RemoveArmy(enemyArmy.ID)
 				}
-				aiSpawnDisembarkedArmy(gs, a.OwnerID, target, landing.Units)
+				landed := aiSpawnDisembarkedArmy(gs, a.OwnerID, target, landing.Units)
+				if landed != nil {
+					gs.MoveEmbarkedCommanderToArmy(a.ID, landed.ID)
+				}
 				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
 				return moveOutcome{
 					survived: true,
@@ -2334,6 +2346,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 					},
 				}
 			}
+			gs.ReleaseEmbarkedCommander(a.ID)
 			return moveOutcome{
 				survived: true,
 				step: TurnStep{
@@ -2350,7 +2363,10 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		units := make([]army.Unit, len(a.EmbarkedUnits))
 		copy(units, a.EmbarkedUnits)
 		a.EmbarkedUnits = a.EmbarkedUnits[:0]
-		aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
+		landed := aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
+		if landed != nil {
+			gs.MoveEmbarkedCommanderToArmy(a.ID, landed.ID)
+		}
 		stepKind := TurnStepDisembark
 		msg := actorName + " " + targetName + " kıyısına çıkarma yaptı."
 		isAlliedDisembark := false
@@ -2391,7 +2407,8 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		if fleet.MovePoints > 0 {
 			fleet.MovePoints--
 		}
-		delete(gs.Armies, a.ID)
+		gs.MoveCommanderIntoFleet(a.ID, fleet.ID)
+		gs.RemoveArmy(a.ID)
 		return moveOutcome{
 			survived: false,
 			step: TurnStep{
@@ -2449,9 +2466,10 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			defMods := aiTechMods(gs, targetRegion.OwnerID)
 			defMods.DefenseMod += aiSiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
+			recordCommanderBattle(gs, a, defender, nil, result.AttackerWins)
 			if result.AttackerWins {
 				if !virtualDefense && len(defender.Units) == 0 {
-					delete(gs.Armies, defender.ID)
+					gs.RemoveArmy(defender.ID)
 				}
 				if len(a.Units) > 0 {
 					a.RegionID = target
@@ -2473,7 +2491,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 						},
 					}
 				}
-				delete(gs.Armies, a.ID)
+				gs.RemoveArmy(a.ID)
 				aiClearSiegesByArmy(gs, a.ID)
 				return moveOutcome{
 					survived: false,
@@ -2489,7 +2507,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				}
 			}
 			if len(a.Units) == 0 {
-				delete(gs.Armies, a.ID)
+				gs.RemoveArmy(a.ID)
 				aiClearSiegesByArmy(gs, a.ID)
 			}
 			return moveOutcome{
@@ -2541,11 +2559,12 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 		defMods := aiTechMods(gs, defOwnerID)
 		result := combat.ResolveBattleWithMods(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)
 		if result.AttackerWins {
 			if len(defSourceIDs) > 0 {
 				gs.DistributeDefenderLosses(defSourceIDs, result.DefenderLost)
 			} else if enemyArmy != nil && len(enemyArmy.Units) == 0 {
-				delete(gs.Armies, enemyArmy.ID)
+				gs.RemoveArmy(enemyArmy.ID)
 			}
 			battleLiftsSiege := false
 			if targetSiege := gs.SiegeAt(target); targetSiege != nil && targetSiege.AttackerArmyID != a.ID {
@@ -2597,7 +2616,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 					},
 				}
 			}
-			delete(gs.Armies, a.ID)
+			gs.RemoveArmy(a.ID)
 			return moveOutcome{
 				survived: false,
 				step: TurnStep{
@@ -2613,7 +2632,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 		// Saldıran yenildi
 		if len(a.Units) == 0 {
-			delete(gs.Armies, a.ID)
+			gs.RemoveArmy(a.ID)
 		}
 		return moveOutcome{
 			survived: false,
@@ -3248,7 +3267,7 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 				}
 				if len(a1.Units)+len(a2.Units) <= army.MaxArmySize {
 					a1.Units = append(a1.Units, a2.Units...)
-					delete(gs.Armies, a2.ID)
+					gs.RemoveArmy(a2.ID)
 				} else {
 					transfer := army.MaxArmySize - len(a1.Units)
 					if transfer > 0 {
@@ -3274,7 +3293,7 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 		}
 		if len(a.Units)+len(other.Units) <= army.MaxArmySize {
 			other.Units = append(other.Units, a.Units...)
-			delete(gs.Armies, a.ID)
+			gs.RemoveArmy(a.ID)
 			return true
 		} else {
 			// Kapasite kadar aktar

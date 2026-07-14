@@ -82,7 +82,7 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 			continue
 		}
 		if transferOwnership {
-			a.OwnerID = string(successor)
+			gs.TransferArmyOwnership(a, string(successor))
 			if a.IsNaval {
 				result.TransferredFleets++
 			} else {
@@ -90,7 +90,7 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 			}
 			continue
 		}
-		delete(gs.Armies, aid)
+		gs.RemoveArmy(aid)
 	}
 
 	for key, rel := range gs.Relations {
@@ -629,7 +629,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			armyStatus.TotalHPDamage = totalDamage
 			gs.ArmyLogistics[a.ID] = armyStatus
 			if len(a.Units) == 0 {
-				delete(gs.Armies, a.ID)
+				gs.RemoveArmy(a.ID)
 			}
 
 			regionStatus.UnitsAffected += armyStatus.UnitsAffected

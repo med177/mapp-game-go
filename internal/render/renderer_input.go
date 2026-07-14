@@ -24,6 +24,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showHistoricalEvent {
 		return r.handleHistoricalEventInput()
 	}
+	if r.showCommanderPanel {
+		return r.handleCommanderPanelInput()
+	}
 
 	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
@@ -700,6 +703,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// BÖL butonu tıklaması
+	if r.selectedArmyIsPlayerOwned() && CommanderButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+		r.OpenCommanderPanel(r.SelectedArmy)
+		return InputAction{}
+	}
 	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 		return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
 	}

@@ -55,16 +55,19 @@ const (
 	ActionQuit                      ActionKind = "quit"
 	ActionSaveSettings              ActionKind = "save_settings"
 	ActionBack                      ActionKind = "back"
-	ActionResume                    ActionKind = "resume"                         // duraklama menüsünden devam
-	ActionGoMainMenu                ActionKind = "go_main_menu"                   // oyundan ana menüye dön
-	ActionLoadFromPause             ActionKind = "load_from_pause"                // duraklama menüsünden yükle
-	ActionOpenPauseMenu             ActionKind = "open_pause_menu"                // duraklama menüsünü aç
-	ActionOpenLoadSelect            ActionKind = "open_load_select"               // kayıt seçim ekranını aç
-	ActionOpenSaveSelect            ActionKind = "open_save_select"               // slot seçerek kaydetme ekranını aç
-	ActionSelectSave                ActionKind = "select_save"                    // belirli slotu yükle/kaydet (BuildingID = slot adı)
-	ActionDeleteSave                ActionKind = "delete_save"                    // belirli slotu sil (BuildingID = slot adı)
-	ActionSplitArmy                 ActionKind = "split_army"                     // seçili orduyu ikiye böl
-	ActionMergeArmies               ActionKind = "merge_armies"                   // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
+	ActionResume                    ActionKind = "resume"           // duraklama menüsünden devam
+	ActionGoMainMenu                ActionKind = "go_main_menu"     // oyundan ana menüye dön
+	ActionLoadFromPause             ActionKind = "load_from_pause"  // duraklama menüsünden yükle
+	ActionOpenPauseMenu             ActionKind = "open_pause_menu"  // duraklama menüsünü aç
+	ActionOpenLoadSelect            ActionKind = "open_load_select" // kayıt seçim ekranını aç
+	ActionOpenSaveSelect            ActionKind = "open_save_select" // slot seçerek kaydetme ekranını aç
+	ActionSelectSave                ActionKind = "select_save"      // belirli slotu yükle/kaydet (BuildingID = slot adı)
+	ActionDeleteSave                ActionKind = "delete_save"      // belirli slotu sil (BuildingID = slot adı)
+	ActionSplitArmy                 ActionKind = "split_army"       // seçili orduyu ikiye böl
+	ActionMergeArmies               ActionKind = "merge_armies"     // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
+	ActionAssignCommander           ActionKind = "assign_commander"
+	ActionUnassignCommander         ActionKind = "unassign_commander"
+	ActionUnassignEmbarkedCommander ActionKind = "unassign_embarked_commander"
 	ActionSelectScenario            ActionKind = "select_scenario"                // BuildingID = senaryo klasör yolu
 	ActionSaveScenario              ActionKind = "save_scenario"                  // edit mode: aktif senaryo JSON verisini kaydet
 	ActionSaveScenarioAndGoMainMenu ActionKind = "save_scenario_and_go_main_menu" // edit mode: kaydet ve ana menüye dön
@@ -94,6 +97,7 @@ type InputAction struct {
 	Kind          ActionKind
 	ArmyID        army.ArmyID
 	TargetArmyID  army.ArmyID
+	CommanderID   string
 	TargetRegion  world.RegionID
 	BuildingID    string
 	Quantity      int

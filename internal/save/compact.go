@@ -83,6 +83,8 @@ type armySaveState struct {
 	MaxMovePoints      int                    `json:"mm"`
 	IsNaval            bool                   `json:"n,omitempty"`
 	IsGarrison         bool                   `json:"g,omitempty"`
+	Commander          *army.Commander        `json:"c,omitempty"`
+	EmbarkedCommander  *army.Commander        `json:"ec,omitempty"`
 	InAmbush           bool                   `json:"a,omitempty"`
 	OverCapacityTurns  int                    `json:"oc,omitempty"`
 	TurnsWithoutPort   int                    `json:"tp,omitempty"`
@@ -104,6 +106,7 @@ type campaignSaveState struct {
 	Regions                 map[world.RegionID]regionSaveState     `json:"rg,omitempty"`
 	Factions                map[faction.FactionID]factionSaveState `json:"fx,omitempty"`
 	Armies                  map[army.ArmyID]armySaveState          `json:"ar,omitempty"`
+	Commanders              map[string]*army.Commander             `json:"cmd,omitempty"`
 	EconomicVictoryTurns    int                                    `json:"evt,omitempty"`
 	FactionsEliminated      int                                    `json:"fel,omitempty"`
 	ReligiousVictoryTurns   int                                    `json:"rvt,omitempty"`
@@ -119,6 +122,7 @@ type campaignSaveState struct {
 	ProductionQueue         []state.ProductionOrder                `json:"pq,omitempty"`
 	NextProductionSeq       int                                    `json:"np,omitempty"`
 	NextArmySeq             int                                    `json:"na,omitempty"`
+	NextCommanderSeq        int                                    `json:"nc,omitempty"`
 	Phase                   state.Phase                            `json:"ph,omitempty"`
 	WinnerID                faction.FactionID                      `json:"w,omitempty"`
 	ActiveRegionEvents      []state.RegionEventStatus              `json:"ae,omitempty"`
@@ -169,6 +173,7 @@ type legacyCampaignSaveState struct {
 	Regions                 map[world.RegionID]legacyRegionSaveState     `json:"regions"`
 	Factions                map[faction.FactionID]legacyFactionSaveState `json:"factions"`
 	Armies                  map[army.ArmyID]*army.Army                   `json:"armies"`
+	Commanders              map[string]*army.Commander                   `json:"commanders,omitempty"`
 	EconomicVictoryTurns    int                                          `json:"economic_victory_turns"`
 	FactionsEliminated      int                                          `json:"factions_eliminated"`
 	ReligiousVictoryTurns   int                                          `json:"religious_victory_turns"`
@@ -184,6 +189,7 @@ type legacyCampaignSaveState struct {
 	ProductionQueue         []state.ProductionOrder                      `json:"production_queue"`
 	NextProductionSeq       int                                          `json:"next_production_seq"`
 	NextArmySeq             int                                          `json:"next_army_seq"`
+	NextCommanderSeq        int                                          `json:"next_commander_seq,omitempty"`
 	Phase                   state.Phase                                  `json:"phase"`
 	WinnerID                faction.FactionID                            `json:"winner_id"`
 	ActiveRegionEvents      []state.RegionEventStatus                    `json:"active_region_events,omitempty"`
@@ -309,6 +315,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Regions:                 savedRegions,
 		Factions:                savedFactions,
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
+		Commanders:              cloneCommanders(legacy.Commanders),
 		EconomicVictoryTurns:    legacy.EconomicVictoryTurns,
 		FactionsEliminated:      legacy.FactionsEliminated,
 		ReligiousVictoryTurns:   legacy.ReligiousVictoryTurns,
@@ -324,6 +331,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		ProductionQueue:         append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
 		NextProductionSeq:       legacy.NextProductionSeq,
 		NextArmySeq:             legacy.NextArmySeq,
+		NextCommanderSeq:        legacy.NextCommanderSeq,
 		Phase:                   legacy.Phase,
 		WinnerID:                legacy.WinnerID,
 		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), legacy.ActiveRegionEvents...),
@@ -423,6 +431,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Regions:                 emptyMapAsNil(savedRegions),
 		Factions:                emptyMapAsNil(savedFactions),
 		Armies:                  convertArmiesToSaveState(gs.Armies),
+		Commanders:              cloneCommanders(gs.Commanders),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -438,6 +447,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:       gs.NextProductionSeq,
 		NextArmySeq:             gs.NextArmySeq,
+		NextCommanderSeq:        gs.NextCommanderSeq,
 		Phase:                   gs.Phase,
 		WinnerID:                gs.WinnerID,
 		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
@@ -506,6 +516,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Regions:                 regions,
 		Factions:                factions,
 		Armies:                  cloneArmies(gs.Armies),
+		Commanders:              cloneCommanders(gs.Commanders),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -521,6 +532,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:       gs.NextProductionSeq,
 		NextArmySeq:             gs.NextArmySeq,
+		NextCommanderSeq:        gs.NextCommanderSeq,
 		Phase:                   gs.Phase,
 		WinnerID:                gs.WinnerID,
 		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
@@ -597,6 +609,9 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	} else {
 		gs.Armies = map[army.ArmyID]*army.Army{}
 	}
+	gs.Commanders = cloneCommanders(saved.Commanders)
+	gs.NextCommanderSeq = saved.NextCommanderSeq
+	gs.SyncCommanderLinks()
 
 	applyRelationDelta(gs, saved.Relations)
 }
@@ -1032,6 +1047,8 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			Commander:          cloneCommander(current.Commander),
+			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
 			InAmbush:           current.InAmbush,
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
@@ -1058,6 +1075,8 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			Commander:          cloneCommander(current.Commander),
+			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
 			InAmbush:           current.InAmbush,
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
@@ -1300,7 +1319,32 @@ func cloneArmies(src map[army.ArmyID]*army.Army) map[army.ArmyID]*army.Army {
 		copyArmy := *current
 		copyArmy.Units = append([]army.Unit(nil), current.Units...)
 		copyArmy.EmbarkedUnits = append([]army.Unit(nil), current.EmbarkedUnits...)
+		copyArmy.Commander = cloneCommander(current.Commander)
+		copyArmy.EmbarkedCommander = cloneCommander(current.EmbarkedCommander)
 		out[id] = &copyArmy
+	}
+	return out
+}
+
+func cloneCommander(src *army.Commander) *army.Commander {
+	if src == nil {
+		return nil
+	}
+	copyCommander := *src
+	copyCommander.Traits = append([]army.CommanderTrait(nil), src.Traits...)
+	return &copyCommander
+}
+
+func cloneCommanders(src map[string]*army.Commander) map[string]*army.Commander {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[string]*army.Commander, len(src))
+	for id, commander := range src {
+		if commander == nil {
+			continue
+		}
+		out[id] = cloneCommander(commander)
 	}
 	return out
 }

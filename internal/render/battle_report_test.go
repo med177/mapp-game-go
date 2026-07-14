@@ -1,10 +1,27 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/state"
 )
+
+func TestBattleReportCommanderProgressTextIncludesPromotionAndTrait(t *testing.T) {
+	text := battleReportCommanderProgressText(BattleReportCommanderProgress{
+		SideLabel:     "Saldıran",
+		Name:          "Murat Bey",
+		XPGained:      100,
+		PreviousLevel: 1,
+		CurrentLevel:  2,
+		NewTraits:     []string{"Savaş Tecrübesi"},
+	})
+	for _, want := range []string{"Murat Bey", "Saldıran", "+100 XP", "Lv1 → Lv2", "Savaş Tecrübesi"} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("komutan ilerleme metni %q içinde %q yok", text, want)
+		}
+	}
+}
 
 func TestBattleReportSceneMappings(t *testing.T) {
 	tests := []struct {

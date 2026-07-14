@@ -140,7 +140,26 @@ func battleReportDetailText(report render.BattleReport) string {
 	}
 	appendSide(report.Attacker)
 	appendSide(report.Defender)
+	if len(report.CommanderProgress) > 0 {
+		b.WriteString("\n\nKomutan gelişimi")
+		for _, progress := range report.CommanderProgress {
+			b.WriteString("\n")
+			b.WriteString(renderBattleCommanderProgressText(progress))
+		}
+	}
 	return b.String()
+}
+
+func renderBattleCommanderProgressText(progress render.BattleReportCommanderProgress) string {
+	level := fmt.Sprintf("Lv%d", progress.CurrentLevel)
+	if progress.PreviousLevel != progress.CurrentLevel {
+		level = fmt.Sprintf("Lv%d -> Lv%d", progress.PreviousLevel, progress.CurrentLevel)
+	}
+	text := fmt.Sprintf("%s (%s): +%d XP | %s", progress.Name, progress.SideLabel, progress.XPGained, level)
+	if len(progress.NewTraits) > 0 {
+		text += " | Yeni: " + strings.Join(progress.NewTraits, ", ")
+	}
+	return text
 }
 
 func (g *Game) presentBattleReport(report render.BattleReport) {
@@ -167,7 +186,7 @@ func (g *Game) makeBattleReport(scene render.BattleScene, regionName string, sta
 }
 
 func (g *Game) makeBattleReportFromSnapshots(scene render.BattleScene, regionName, stanceLabel, outcome, detail, attackerLabel, defenderLabel, attackerFaction, defenderFaction string, attackerBefore, attackerAfter, defenderBefore, defenderAfter battleArmySnapshot) render.BattleReport {
-	return render.BattleReport{
+	report := render.BattleReport{
 		Scene:         scene,
 		RegionName:    regionName,
 		Title:         battleReportSceneTitle(scene),
@@ -177,4 +196,9 @@ func (g *Game) makeBattleReportFromSnapshots(scene render.BattleScene, regionNam
 		Attacker:      buildBattleReportSide(attackerLabel, attackerFaction, attackerBefore, attackerAfter),
 		Defender:      buildBattleReportSide(defenderLabel, defenderFaction, defenderBefore, defenderAfter),
 	}
+	if g != nil {
+		report.CommanderProgress = append([]render.BattleReportCommanderProgress(nil), g.lastCommanderProgress...)
+		g.lastCommanderProgress = nil
+	}
+	return report
 }

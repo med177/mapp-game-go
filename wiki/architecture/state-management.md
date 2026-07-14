@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-12
+last_updated: 2026-07-15
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -34,6 +34,7 @@ type GameState struct {
     Regions   map[RegionID]*Region
     Factions  map[FactionID]*Faction
     Armies    map[ArmyID]*Army
+    Commanders map[string]*Commander
     ShapeData CountryShapeJSON           // json:"-"
 
     // Runtime-only (json:"-")
@@ -59,6 +60,7 @@ type GameState struct {
     ProductionQueue []ProductionOrder // devam eden bina/birim üretimleri
     NextProductionSeq int             // üretim ID sayacı
     NextArmySeq int                   // ordu ID üretici sayaç
+    NextCommanderSeq int              // komutan ID üretici sayaç
 
     Phase    Phase
     WinnerID FactionID
@@ -72,6 +74,32 @@ type GameState struct {
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.
 
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
+
+`Army.Commander` alanı komutanın kalıcı kariyer state'ini taşır. Komutan ID'si, adı,
+seviyesi, XP'si, savaş/zafer sayıları ve trait listesi compact save içindeki `ar.*.c`
+alanına yazılır. Komutan pointer'ı kopyalanırken trait slice'ı da bağımsız kopyalandığı
+için edit-mode undo/redo ve save/load aynı komutan state'ini paylaşan yanlış referanslar
+üretmez. `GameState.Commanders` aynı komutanın iki orduya atanmasını engelleyen
+canonical havuzdur; `SyncCommanderLinks()` yükleme sonrasında ordu pointer'larını bu
+havuzdaki nesnelere bağlar. Oyuncu havuzu ve ordu panelindeki atama/ayırma modalı
+`InitializePlayerCommanders()`, `AssignCommanderToArmy()` ve
+`UnassignCommanderFromArmy()` üzerinden çalışır.
+Senaryo başlangıç şablonları `data/commanders.json` dosyasından okunur. Her kayıt
+`id`, `owner_id`, `name`, başlangıç `level`/`experience`/`traits` ve ileride portre
+yüklemek için `portrait_asset` alanlarını taşıyabilir. Şablon runtime komutanına
+clone edilir; savaşlarda değişen XP, seviye ve atamalar save state içindeki
+`GameState.Commanders` havuzunda tutulur.
+AI tarafında `EnsureFactionCommanders(ownerID)` aktif saha ordusu sayısına göre
+havuzu büyütür ve komutansız orduları deterministik ID sırasıyla doldurur; garnizonlar
+bu otomatik atamanın dışındadır.
+
+Ordu yaşam döngüsü de komutan bağlantısını state katmanında korur. `RemoveArmy()`
+silinen ordunun normal veya nakliye filosunda taşınan komutanını havuza geri bırakır;
+`TransferArmyOwnership()` fetih ya da fraksiyon eliminasyonu sonrası hem ordu hem de
+komutan `OwnerID` alanlarını birlikte günceller. Kara ordusu filoya bindiğinde komutan
+`Army.EmbarkedCommander` alanında korunur; `AmphibiousCommander()` çıkarma savaşında
+bu komutanı kullanır, başarılı karaya çıkışta yeni orduya geri bağlar ve başarısız
+çıkarma veya iptal durumunda havuza serbest bırakır.
 
 Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuyruğunu da serialize eder:
 

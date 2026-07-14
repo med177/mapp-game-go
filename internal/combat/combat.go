@@ -357,13 +357,15 @@ type outcomeBucket struct {
 func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) (float64, float64) {
 	atkAttackMod := atkMods.AttackMod
 	defDefenseMod := defMods.DefenseMod
+	commanderAttackMod, _ := atk.CommanderModifiers()
+	_, commanderDefenseMod := def.CommanderModifiers()
 	if atk.IsNaval {
 		atkAttackMod = atkMods.NavalAttackMod
 		defDefenseMod = defMods.NavalDefenseMod
 	}
 	cfg := battleStanceSpec(context, stance)
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod)
-	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod)
+	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod)
+	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod)
 	if atkStr < 1 {
 		atkStr = 1
 	}

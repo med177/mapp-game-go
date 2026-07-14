@@ -39,6 +39,7 @@ type Game struct {
 	pendingHistoricalEvt     *events.Event
 	pendingSortie            *pendingSortieState
 	pendingConquestDecisions []pendingConquestDecision
+	lastCommanderProgress    []render.BattleReportCommanderProgress
 	loading                  *loadingJob
 	aiTurn                   *aiTurnState
 }
@@ -219,6 +220,7 @@ func (g *Game) Update() error {
 		case render.ActionSelectVictory:
 			g.applyVictoryChoice(action.BuildingID)
 			g.applyAIDifficultyStartBonus()
+			g.gs.InitializePlayerCommanders()
 			g.startPreparePlayerTurn()
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseFactionSelect
@@ -260,6 +262,22 @@ func (g *Game) Update() error {
 			g.splitArmy(action.ArmyID)
 		case render.ActionMergeArmies:
 			g.mergeArmiesManual(action.ArmyID)
+		case render.ActionAssignCommander:
+			if g.gs.AssignCommanderToArmy(action.CommanderID, action.ArmyID) {
+				g.renderer.CloseCommanderPanel()
+				g.renderer.ShowCombatResult("Komutan orduya atandı.")
+			} else {
+				g.renderer.ShowCombatResult("Komutan bu orduya atanamadı.")
+			}
+		case render.ActionUnassignCommander:
+			if g.gs.UnassignCommanderFromArmy(action.ArmyID) {
+				g.renderer.CloseCommanderPanel()
+				g.renderer.ShowCombatResult("Komutan ordudan ayrıldı.")
+			}
+		case render.ActionUnassignEmbarkedCommander:
+			g.gs.ReleaseEmbarkedCommander(action.ArmyID)
+			g.renderer.CloseCommanderPanel()
+			g.renderer.ShowCombatResult("Taşınan kara komutanı filodan ayrıldı.")
 		case render.ActionRecruitUnit:
 			g.recruitUnit(action.TargetRegion)
 		case render.ActionRecruitNaval:
@@ -470,6 +488,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.refreshEventCodex()
 	case loadingSave:
 		res.gs.Phase = state.PhasePlayerTurn
+		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
 		g.pendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
@@ -2491,6 +2510,13 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	}
 	advance()
 	yield()
+	commanderTemplates, err := army.LoadCommanderTemplates(dp("commanders.json"))
+	if err != nil {
+		log.Printf("Komutan şablonları yüklenemedi: %v", err)
+		commanderTemplates = map[string][]*army.Commander{}
+	}
+	advance()
+	yield()
 	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
 	if err != nil {
 		log.Printf("Binalar yüklenemedi: %v", err)
@@ -2557,6 +2583,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		Armies:             armies,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
+		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
 		TechTypes:          techTypes,
 		ScenarioVictories:  victoryOpts,
@@ -2993,7 +3020,8 @@ func (g *Game) embarkArmyOntoFleet(armyID, fleetID army.ArmyID) {
 	}
 	fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 	fleet.MovePoints = max(0, fleet.MovePoints-1)
-	delete(g.gs.Armies, armyID)
+	g.gs.MoveCommanderIntoFleet(armyID, fleetID)
+	g.gs.RemoveArmy(armyID)
 	g.renderer.SelectedArmy = fleet.ID
 	g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
 }
@@ -3005,16 +3033,19 @@ func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
 	units := make([]army.Unit, len(fleet.EmbarkedUnits))
 	copy(units, fleet.EmbarkedUnits)
 	fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
-	g.spawnDisembarkedArmy(fleet.OwnerID, target, units)
+	landed := g.spawnDisembarkedArmy(fleet.OwnerID, target, units)
+	if landed != nil {
+		g.gs.MoveEmbarkedCommanderToArmy(fleet.ID, landed.ID)
+	}
 }
 
-func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units []army.Unit) {
+func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units []army.Unit) *army.Army {
 	if len(units) == 0 {
-		return
+		return nil
 	}
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", ownerID, g.gs.NextArmySeq))
-	g.gs.Armies[newID] = &army.Army{
+	landed := &army.Army{
 		ID:            newID,
 		OwnerID:       ownerID,
 		RegionID:      target,
@@ -3023,6 +3054,8 @@ func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units
 		MaxMovePoints: 2,
 		IsNaval:       false,
 	}
+	g.gs.Armies[newID] = landed
+	return landed
 }
 
 func (g *Game) canDisembarkToLand(fleet *army.Army, targetRegion *world.Region) bool {
@@ -3078,22 +3111,27 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 	}
 	if enemyArmy != nil {
 		landing := &army.Army{
-			OwnerID: fleet.OwnerID,
-			Units:   append([]army.Unit(nil), fleet.EmbarkedUnits...),
+			OwnerID:   fleet.OwnerID,
+			Units:     append([]army.Unit(nil), fleet.EmbarkedUnits...),
+			Commander: g.gs.AmphibiousCommander(fleet.ID),
 		}
 		attackerBefore := snapshotBattleArmy(landing, g.gs.UnitTypes)
 		defenderBefore := snapshotBattleArmy(enemyArmy, g.gs.UnitTypes)
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
+		g.recordCommanderBattle(landing, enemyArmy, nil, result.AttackerWins)
 		fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
 		fleet.MovePoints--
 
 		if result.AttackerWins {
 			if len(enemyArmy.Units) == 0 {
-				delete(g.gs.Armies, enemyArmy.ID)
+				g.gs.RemoveArmy(enemyArmy.ID)
 			}
-			g.spawnDisembarkedArmy(fleet.OwnerID, target, landing.Units)
+			landed := g.spawnDisembarkedArmy(fleet.OwnerID, target, landing.Units)
+			if landed != nil {
+				g.gs.MoveEmbarkedCommanderToArmy(fleet.ID, landed.ID)
+			}
 			prompted := g.queueConquestDecision(faction.FactionID(fleet.OwnerID), targetRegion, true)
 			collapse := eliminationResult{}
 			outcomeDetail := "Kıyı başı kuruldu, savunma kırıldı ve bölge ele geçirildi."
@@ -3122,6 +3160,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			return true
 		}
 
+		g.gs.ReleaseEmbarkedCommander(fleet.ID)
 		g.presentBattleReport(g.makeBattleReport(
 			render.BattleSceneAmphibious,
 			targetRegion.NameTR,
@@ -3554,7 +3593,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			}
 			fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 			fleet.MovePoints = max(0, fleet.MovePoints-1)
-			delete(g.gs.Armies, aid)
+			g.gs.RemoveArmy(aid)
 			g.renderer.SelectedArmy = fleet.ID
 			g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
 			return
@@ -3638,6 +3677,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			battleContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
+		g.recordCommanderBattle(a, combinedDef, defSourceIDs, result.AttackerWins)
 		var collapse eliminationResult
 		scene := render.BattleSceneLand
 		attackerLabel := "Saldıran Ordu"
@@ -3657,7 +3697,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			if len(defSourceIDs) > 0 {
 				g.gs.DistributeDefenderLosses(defSourceIDs, result.DefenderLost)
 			} else if len(enemyArmy.Units) == 0 {
-				delete(g.gs.Armies, enemyArmy.ID)
+				g.gs.RemoveArmy(enemyArmy.ID)
 			}
 			battleLiftsSiege := false
 			if targetSiege != nil && targetSiege.AttackerArmyID != aid {
@@ -3706,7 +3746,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 					}
 				}
 			} else {
-				delete(g.gs.Armies, aid)
+				g.gs.RemoveArmy(aid)
 				if navalSeaMove {
 					outcomeDetail = "Düşman filo dağıldı fakat taarruz filosu da dağıldı."
 				} else {
@@ -3716,7 +3756,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		} else {
 			// Saldıran yenildi — yerinde kalır
 			if len(a.Units) == 0 {
-				delete(g.gs.Armies, aid)
+				g.gs.RemoveArmy(aid)
 			}
 			if navalSeaMove {
 				outcomeDetail = "Taarruz filosu geri çekildi."
@@ -3820,7 +3860,13 @@ func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) arm
 		return ""
 	}
 	target.Units = append(target.Units, moving.Units...)
-	delete(g.gs.Armies, movingID)
+	if target.Commander == nil && moving.Commander != nil {
+		target.Commander = moving.Commander
+		target.Commander.AssignedArmyID = target.ID
+	} else if moving.Commander != nil {
+		moving.Commander.AssignedArmyID = ""
+	}
+	g.gs.RemoveArmy(movingID)
 	g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(target.Units)) + " birim")
 	return targetID
 }
@@ -3892,7 +3938,13 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 	a.Units = a.Units[len(transfer):]
 
 	if len(a.Units) == 0 {
-		delete(g.gs.Armies, aid)
+		if a.Commander != nil && target.Commander == nil {
+			target.Commander = a.Commander
+			target.Commander.AssignedArmyID = target.ID
+		} else if a.Commander != nil {
+			a.Commander.AssignedArmyID = ""
+		}
+		g.gs.RemoveArmy(aid)
 		g.renderer.SelectedArmy = targetID
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordular birleşti: %d birim", len(target.Units)))
@@ -3912,8 +3964,11 @@ func (g *Game) deployGarrisonArmy(aid army.ArmyID) army.ArmyID {
 	}
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", a.OwnerID, g.gs.NextArmySeq))
-	delete(g.gs.Armies, aid)
+	g.gs.RemoveArmy(aid)
 	a.ID = newID
+	if a.Commander != nil {
+		a.Commander.AssignedArmyID = newID
+	}
 	g.gs.Armies[newID] = a
 	if g.gs.ArmyLogistics != nil {
 		if status, ok := g.gs.ArmyLogistics[aid]; ok {

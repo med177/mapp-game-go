@@ -147,12 +147,14 @@ type GameState struct {
 	Factions     map[faction.FactionID]*faction.Faction `json:"factions"`
 	FactionOrder []faction.FactionID                    `json:"-"`
 	Armies       map[army.ArmyID]*army.Army             `json:"armies"`
+	Commanders   map[string]*army.Commander             `json:"commanders,omitempty"`
 	ShapeData    world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
 	BuildingTypes      map[string]*city.Building                `json:"-"`
 	TechTypes          map[string]*tech.Technology              `json:"-"`
+	CommanderTemplates map[string][]*army.Commander             `json:"-"`
 	ScenarioVictories  []scenario.VictoryOptionDef              `json:"-"`
 	AvailableVictories []scenario.VictoryOptionDef              `json:"-"`
 	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
@@ -190,7 +192,8 @@ type GameState struct {
 	NextProductionSeq int               `json:"next_production_seq"`
 
 	// Sıradaki ordu ID üretmek için sayaç
-	NextArmySeq int `json:"next_army_seq"`
+	NextArmySeq      int `json:"next_army_seq"`
+	NextCommanderSeq int `json:"next_commander_seq,omitempty"`
 
 	// Oyun aşaması
 	Phase Phase `json:"phase"`
@@ -506,7 +509,7 @@ func (s *GameState) DistributeDefenderLosses(sourceIDs []army.ArmyID, totalLost 
 		a.Units = a.Units[:len(a.Units)-lose]
 		remaining -= lose
 		if len(a.Units) == 0 {
-			delete(s.Armies, id)
+			s.RemoveArmy(id)
 		}
 		if remaining <= 0 {
 			break

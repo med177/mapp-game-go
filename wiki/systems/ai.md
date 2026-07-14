@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-13
+last_updated: 2026-07-15
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -26,11 +26,12 @@ Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fra
 5. Deniz stratejisi → `aiNavalStrategy()`
 6. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
 7. Ordu konsolidasyonu → `aiConsolidateArmies()`
-8. Ordu hareketi → `moveArmy()` (her ordu için)
+8. Komutan havuzu üretimi ve boşta kalan saha ordularına atama → `EnsureFactionCommanders()`
+9. Ordu hareketi → `moveArmy()` (her ordu için)
 
 `TurnStepper` aynı zinciri iki faza ayırır:
 
-1. `runTurnPrelude()` — diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon
+1. `runTurnPrelude()` — diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon ve komutan ataması
 2. Hareket fazı — her `Step()` çağrısı tek bir `executeMove()` sonucu döndürür
 
 Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katmanı:
@@ -74,6 +75,16 @@ AI artık dost kara bölgelerini sadece diplomasi/savaş açısından değil, ik
 - Aynı lojistik hesabı `aiConsolidateArmies()` ve hareket sonrası `tryMergeAIArmies()` için de kullanılır; aşırı dolu kara bölgede AI artık körlemesine ordu birleştirme yapmaz.
 
 AI de oyuncu ile aynı `combat.ResolveBattleWithMods()` kullanır.
+
+### AI Komutanları
+
+`GameState.EnsureFactionCommanders(ownerID)`, AI tur öncesi üretim ve konsolidasyon
+tamamlandıktan sonra çalışır. Her aktif saha ordusu için (garnizonlar hariç, deniz
+filoları dahil) havuzda bir komutan bulunmasını sağlar ve komutansız ordulara ID
+sırasına göre atama yapar. Mevcut komutan kariyerleri korunur; birleşme veya save/load
+sonrasında `SyncCommanderLinks()` aynı komutanın iki orduya bağlanmasını engeller.
+AI nakliye akışında kara komutanı filoda taşınır; çıkarma savaşında geçici kara
+ordusuna uygulanır ve başarılı karaya çıkışta yeni orduya aktarılır.
 
 `executeMove()` artık stepper için açıklamalı sonuç döndürür:
 
@@ -145,6 +156,10 @@ return TechMods{
     DefenseMod: fx.LandDefenseMod,
 }
 ```
+
+AI savaşları da oyuncu ile aynı `Army.Commander` modifiyerlerini kullanır. Savaş
+sonucunda XP ve zafer/yenilgi sayısı gerçek AI ordusunun komutanına yazılır; birleşik
+savunmada sanal savunma stack'i yerine kaynak orduların komutanları ilerletilir.
 
 ---
 

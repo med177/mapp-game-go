@@ -34,15 +34,27 @@ type BattleReportSide struct {
 	HPDamage       int
 }
 
+// BattleReportCommanderProgress savaş sonrasında bir komutanın kazandığı XP ve
+// açtığı kariyer özelliklerini rapora taşır.
+type BattleReportCommanderProgress struct {
+	SideLabel     string
+	Name          string
+	XPGained      int
+	PreviousLevel int
+	CurrentLevel  int
+	NewTraits     []string
+}
+
 type BattleReport struct {
-	Scene         BattleScene
-	RegionName    string
-	Title         string
-	Outcome       string
-	OutcomeDetail string
-	StanceLabel   string
-	Attacker      BattleReportSide
-	Defender      BattleReportSide
+	Scene             BattleScene
+	RegionName        string
+	Title             string
+	Outcome           string
+	OutcomeDetail     string
+	StanceLabel       string
+	Attacker          BattleReportSide
+	Defender          BattleReportSide
+	CommanderProgress []BattleReportCommanderProgress
 }
 
 type battleReportState struct {
@@ -278,6 +290,18 @@ func battleReportHPText(side BattleReportSide) string {
 	return fmt.Sprintf("%d -> %d  |  Hasar %d", side.HPBefore, side.HPAfter, side.HPDamage)
 }
 
+func battleReportCommanderProgressText(progress BattleReportCommanderProgress) string {
+	level := fmt.Sprintf("Lv%d", progress.CurrentLevel)
+	if progress.PreviousLevel != progress.CurrentLevel {
+		level = fmt.Sprintf("Lv%d → Lv%d", progress.PreviousLevel, progress.CurrentLevel)
+	}
+	text := fmt.Sprintf("%s (%s): +%d XP | %s", progress.Name, progress.SideLabel, progress.XPGained, level)
+	if len(progress.NewTraits) > 0 {
+		text += " | Yeni: " + strings.Join(progress.NewTraits, ", ")
+	}
+	return text
+}
+
 func drawBattleReportArt(screen *ebiten.Image, rect gameui.Rect, report BattleReport) {
 	drawRoundedRect(screen, float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H), 10, color.RGBA{24, 18, 12, 238})
 	vector.StrokeRect(screen, float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H), 1.5, color.RGBA{108, 86, 54, 255}, false)
@@ -311,6 +335,21 @@ func drawBattleReportSideCard(screen *ebiten.Image, rect gameui.Rect, accent col
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 82, W: rect.W - 36}, "Güç: "+battleReportStrengthText(side), color.RGBA{228, 224, 214, 255}, gameui.TextMedium, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 114, W: rect.W - 36}, "Birim: "+battleReportUnitsText(side), color.RGBA{228, 224, 214, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 140, W: rect.W - 36}, "HP: "+battleReportHPText(side), color.RGBA{206, 198, 180, 255}, gameui.TextSmall, gameui.TextAlignStart)
+}
+
+func drawBattleReportCommanderProgress(screen *ebiten.Image, rect gameui.Rect, progress []BattleReportCommanderProgress) {
+	if len(progress) == 0 {
+		return
+	}
+	const maxVisible = 3
+	y := rect.Y + rect.H - 78
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y, W: rect.W - 36}, "Komutan gelişimi", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+	for i := 0; i < len(progress) && i < maxVisible; i++ {
+		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 20 + float64(i)*18, W: rect.W - 36}, battleReportCommanderProgressText(progress[i]), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	}
+	if len(progress) > maxVisible {
+		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 20 + float64(maxVisible)*18, W: rect.W - 36}, fmt.Sprintf("+%d komutan daha", len(progress)-maxVisible), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
 }
 
 func drawBattleReportPopup(screen *ebiten.Image, report BattleReport) {
@@ -347,6 +386,7 @@ func drawBattleReportPopup(screen *ebiten.Image, report BattleReport) {
 	vector.StrokeRect(screen, float32(layout.summaryRect.X), float32(layout.summaryRect.Y), float32(layout.summaryRect.W), float32(layout.summaryRect.H), 1.5, color.RGBA{130, 105, 55, 255}, false)
 	drawUILabel(screen, gameui.Rect{X: layout.summaryRect.X + 18, Y: layout.summaryRect.Y + 18, W: layout.summaryRect.W - 36}, report.Outcome, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	drawUIWrappedLabel(screen, gameui.Rect{X: layout.summaryRect.X + 18, Y: layout.summaryRect.Y + 56, W: layout.summaryRect.W - 36}, report.OutcomeDetail, color.RGBA{232, 226, 214, 255}, gameui.TextMedium, 20, 4)
+	drawBattleReportCommanderProgress(screen, layout.summaryRect, report.CommanderProgress)
 
 	drawBattleReportSideCard(screen, layout.attackerRect, color.RGBA{216, 146, 82, 255}, report.Attacker)
 	drawBattleReportSideCard(screen, layout.defenderRect, color.RGBA{126, 182, 126, 255}, report.Defender)

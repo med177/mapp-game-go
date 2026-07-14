@@ -1925,7 +1925,7 @@ func (r *Renderer) deleteSelectedRegion() {
 	r.removeRegionFromOrder(rid)
 	for aid, a := range r.gs.Armies {
 		if a != nil && a.RegionID == rid {
-			delete(r.gs.Armies, aid)
+			r.gs.RemoveArmy(aid)
 		}
 	}
 	r.editSelectedRegion = ""
@@ -2266,6 +2266,18 @@ func cloneArmyMap(src map[army.ArmyID]*army.Army) map[army.ArmyID]*army.Army {
 		copyArmy := *a
 		copyArmy.Units = make([]army.Unit, len(a.Units))
 		copy(copyArmy.Units, a.Units)
+		copyArmy.EmbarkedUnits = make([]army.Unit, len(a.EmbarkedUnits))
+		copy(copyArmy.EmbarkedUnits, a.EmbarkedUnits)
+		if a.Commander != nil {
+			commander := *a.Commander
+			commander.Traits = append([]army.CommanderTrait(nil), a.Commander.Traits...)
+			copyArmy.Commander = &commander
+		}
+		if a.EmbarkedCommander != nil {
+			commander := *a.EmbarkedCommander
+			commander.Traits = append([]army.CommanderTrait(nil), a.EmbarkedCommander.Traits...)
+			copyArmy.EmbarkedCommander = &commander
+		}
 		dst[aid] = &copyArmy
 	}
 	return dst
@@ -2544,7 +2556,7 @@ func (r *Renderer) deleteSelectedFaction() {
 	}
 	for aid, a := range r.gs.Armies {
 		if a != nil && a.OwnerID == string(fid) {
-			delete(r.gs.Armies, aid)
+			r.gs.RemoveArmy(aid)
 		}
 	}
 	if r.gs.PlayerFactionID == fid {
@@ -3158,7 +3170,7 @@ func (r *Renderer) deleteSelectedArmy() {
 		return
 	}
 	before := r.worldSnapshot()
-	delete(r.gs.Armies, a.ID)
+	r.gs.RemoveArmy(a.ID)
 	r.SelectedArmy = ""
 	r.editSelectedUnitType = ""
 	after := r.worldSnapshot()

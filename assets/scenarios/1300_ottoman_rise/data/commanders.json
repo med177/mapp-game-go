@@ -1,0 +1,586 @@
+[
+  {
+    "id": "commander_achaea_isabella",
+    "owner_id": "achaea_principality",
+    "name": "Isabella de Villehardouin",
+    "portrait_asset": "achaea_isabella.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_ahiler_ahi_evren",
+    "owner_id": "ahiler",
+    "name": "Ahi Evran",
+    "portrait_asset": "ahiler_ahi_evran.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_aragon_james",
+    "owner_id": "aragon",
+    "name": "Jaume II d'Aragó",
+    "portrait_asset": "aragon_james.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_athens_guy",
+    "owner_id": "athena_duk",
+    "name": "Guy II de la Roche",
+    "portrait_asset": "athens_guy.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_aydin_aydin",
+    "owner_id": "aydin_bey",
+    "name": "Aydın Bey",
+    "portrait_asset": "aydin_aydin.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_bulgaria_theodore",
+    "owner_id": "bulgarian_empire",
+    "name": "Theodore Svetoslav",
+    "portrait_asset": "bulgaria_theodore.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_candar_yaman",
+    "owner_id": "candar_bey",
+    "name": "Şemseddin Yaman Candar",
+    "portrait_asset": "candar_yaman.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_castile_ferdinand",
+    "owner_id": "castile_kingdom",
+    "name": "Fernando IV de Castilla",
+    "portrait_asset": "castile_ferdinand.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_denmark_erik",
+    "owner_id": "denmark_kingdom",
+    "name": "Erik VI Menved",
+    "portrait_asset": "denmark_erik.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_byzantium_andronikos",
+    "owner_id": "east_rome",
+    "name": "Andronikos II Palaiologos",
+    "portrait_asset": "byzantium_andronikos.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_england_edward",
+    "owner_id": "england",
+    "name": "Edward I Longshanks",
+    "portrait_asset": "england_edward.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_epirus_thomas",
+    "owner_id": "epir",
+    "name": "Thomas I Komnenos Doukas",
+    "portrait_asset": "epirus_thomas.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_esref_suleyman",
+    "owner_id": "esrefoglu_bey",
+    "name": "Süleyman Bey",
+    "portrait_asset": "esref_suleyman.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_florence_corso",
+    "owner_id": "florence_rep",
+    "name": "Corso Donati",
+    "portrait_asset": "florence_corso.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_france_philip",
+    "owner_id": "france",
+    "name": "Philippe IV le Bel",
+    "portrait_asset": "france_philip.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_genoa_lamba",
+    "owner_id": "genoa",
+    "name": "Lamba Doria",
+    "portrait_asset": "genoa_lamba.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_georgia_david",
+    "owner_id": "georgia_kingdom",
+    "name": "David VIII Bagrationi",
+    "portrait_asset": "georgia_david.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_germiyan_yakub",
+    "owner_id": "germiyan_bey",
+    "name": "Yakub Bey I",
+    "portrait_asset": "germiyan_yakub.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_golden_horde_toqta",
+    "owner_id": "golden_horde",
+    "name": "Toqta Khan",
+    "portrait_asset": "golden_horde_toqta.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_granada_muhammad",
+    "owner_id": "granada_emirate",
+    "name": "Muhammad II al-Faqih",
+    "portrait_asset": "granada_muhammad.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_hamid_hamid",
+    "owner_id": "hamid_bey",
+    "name": "Hamid Bey",
+    "portrait_asset": "hamid_hamid.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_hre_albert",
+    "owner_id": "hre",
+    "name": "Albrecht I von Habsburg",
+    "portrait_asset": "hre_albert.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_hungary_andrew",
+    "owner_id": "hungarian_kingdom",
+    "name": "Andrew III of Hungary",
+    "portrait_asset": "hungary_andrew.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_ilkhanate_ghazan",
+    "owner_id": "ilkhanate",
+    "name": "Ghazan Khan",
+    "portrait_asset": "ilkhanate_ghazan.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_karaman_mahmud",
+    "owner_id": "karaman_bey",
+    "name": "Badr al-Din Mahmud Bey",
+    "portrait_asset": "karaman_mahmud.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_karesi_karesi",
+    "owner_id": "karesioglu_bey",
+    "name": "Karesi Bey",
+    "portrait_asset": "karesi_karesi.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_leon_ferdinand",
+    "owner_id": "leon_kingdom",
+    "name": "Fernando IV de León y Castilla",
+    "portrait_asset": "leon_ferdinand.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_lithuania_vytenis",
+    "owner_id": "lithuanian_gd",
+    "name": "Vytenis",
+    "portrait_asset": "lithuania_vytenis.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_mamluk_nasir",
+    "owner_id": "mamluk",
+    "name": "al-Nasir Muhammad ibn Qalawun",
+    "portrait_asset": "mamluk_nasir.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_mentese_mentese",
+    "owner_id": "mentese_bey",
+    "name": "Menteşe Bey",
+    "portrait_asset": "mentese_mentese.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_milan_matteo",
+    "owner_id": "milan_duchy",
+    "name": "Matteo I Visconti",
+    "portrait_asset": "milan_matteo.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_naples_charles",
+    "owner_id": "naples_kingdom",
+    "name": "Charles II of Naples",
+    "portrait_asset": "naples_charles.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_novgorod_andrey",
+    "owner_id": "novgorod_rep",
+    "name": "Andrey Alexandrovich",
+    "portrait_asset": "novgorod_andrey.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_ottoman_osman",
+    "owner_id": "ottoman",
+    "name": "Osman Gazi",
+    "portrait_asset": "ottoman_osman.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_ottoman_konur",
+    "owner_id": "ottoman",
+    "name": "Konur Alp",
+    "portrait_asset": "ottoman_konur.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_ottoman_akca",
+    "owner_id": "ottoman",
+    "name": "Akça Koca",
+    "portrait_asset": "ottoman_akca.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_ottoman_turgut",
+    "owner_id": "ottoman",
+    "name": "Turgut Alp",
+    "portrait_asset": "ottoman_turgut.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_ottoman_abdurrahman",
+    "owner_id": "ottoman",
+    "name": "Abdurrahman Gazi",
+    "portrait_asset": "ottoman_abdurrahman.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_ottoman_aykut",
+    "owner_id": "ottoman",
+    "name": "Aykut Alp",
+    "portrait_asset": "ottoman_aykut.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_ottoman_samsa",
+    "owner_id": "ottoman",
+    "name": "Samsa Çavuş",
+    "portrait_asset": "ottoman_samsa.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_ottoman_kose_mihal",
+    "owner_id": "ottoman",
+    "name": "Köse Mihal",
+    "portrait_asset": "ottoman_kose_mihal.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_papal_boniface",
+    "owner_id": "papal_states_f",
+    "name": "Bonifatius VIII",
+    "portrait_asset": "papal_boniface.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_poland_wenceslaus",
+    "owner_id": "polish_kingdom",
+    "name": "Wenceslaus II of Bohemia and Poland",
+    "portrait_asset": "poland_wenceslaus.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_portugal_dinis",
+    "owner_id": "portugal",
+    "name": "Dinis I de Portugal",
+    "portrait_asset": "portugal_dinis.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_moscow_daniel",
+    "owner_id": "russia",
+    "name": "Daniil of Moscow",
+    "portrait_asset": "moscow_daniel.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_safavid_safi",
+    "owner_id": "safavid",
+    "name": "Safi al-Din Ishaq",
+    "portrait_asset": "safavid_safi.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_saruhan_saruhan",
+    "owner_id": "saruhan_bey",
+    "name": "Saruhan Bey",
+    "portrait_asset": "saruhan_saruhan.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_savoy_amadeus",
+    "owner_id": "savoy_county",
+    "name": "Amadeus V of Savoy",
+    "portrait_asset": "savoy_amadeus.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_scotland_wallace",
+    "owner_id": "scotland_kingdom",
+    "name": "William Wallace",
+    "portrait_asset": "scotland_wallace.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_serbia_milutin",
+    "owner_id": "serbian_empire",
+    "name": "Stefan Uroš II Milutin",
+    "portrait_asset": "serbia_milutin.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_teutonic_gottfried",
+    "owner_id": "teutonic_order",
+    "name": "Gottfried von Hohenlohe",
+    "portrait_asset": "teutonic_gottfried.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_trebizond_alexios",
+    "owner_id": "trebizond_emp",
+    "name": "Alexios II Megas Komnenos",
+    "portrait_asset": "trebizond_alexios.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_venice_pietro",
+    "owner_id": "venice",
+    "name": "Pietro Gradenigo",
+    "portrait_asset": "venice_pietro.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_france_charles_valois",
+    "owner_id": "france",
+    "name": "Charles de Valois",
+    "portrait_asset": "france_charles_valois.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_france_robert_artois",
+    "owner_id": "france",
+    "name": "Robert II d'Artois",
+    "portrait_asset": "france_robert_artois.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_france_raoul_clermont",
+    "owner_id": "france",
+    "name": "Raoul II de Clermont",
+    "portrait_asset": "france_raoul_clermont.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_hre_frederick",
+    "owner_id": "hre",
+    "name": "Friedrich I von Habsburg",
+    "portrait_asset": "hre_frederick.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_hre_leopold",
+    "owner_id": "hre",
+    "name": "Leopold I von Habsburg",
+    "portrait_asset": "hre_leopold.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_hre_rudolf",
+    "owner_id": "hre",
+    "name": "Rudolf III von Habsburg",
+    "portrait_asset": "hre_rudolf.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_england_edward_carnarvon",
+    "owner_id": "england",
+    "name": "Edward of Caernarfon",
+    "portrait_asset": "england_edward_carnarvon.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_england_henry_lacy",
+    "owner_id": "england",
+    "name": "Henry de Lacy",
+    "portrait_asset": "england_henry_lacy.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_england_robert_clifford",
+    "owner_id": "england",
+    "name": "Robert Clifford",
+    "portrait_asset": "england_robert_clifford.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_england_john_segrave",
+    "owner_id": "england",
+    "name": "John de Segrave",
+    "portrait_asset": "england_john_segrave.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_venice_marco_querini",
+    "owner_id": "venice",
+    "name": "Marco Querini",
+    "portrait_asset": "venice_marco_querini.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_venice_bajamonte",
+    "owner_id": "venice",
+    "name": "Bajamonte Tiepolo",
+    "portrait_asset": "venice_bajamonte.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_venice_giovanni_soranzo",
+    "owner_id": "venice",
+    "name": "Giovanni Soranzo",
+    "portrait_asset": "venice_giovanni_soranzo.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_russia_yuri",
+    "owner_id": "russia",
+    "name": "Yuri Danilovich",
+    "portrait_asset": "russia_yuri.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_russia_ivan_kalita",
+    "owner_id": "russia",
+    "name": "Ivan I Kalita",
+    "portrait_asset": "russia_ivan_kalita.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_russia_mikhail_tver",
+    "owner_id": "russia",
+    "name": "Mikhail of Tver",
+    "portrait_asset": "russia_mikhail_tver.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_genoa_oberto",
+    "owner_id": "genoa",
+    "name": "Oberto Doria",
+    "portrait_asset": "genoa_oberto.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_genoa_corrado",
+    "owner_id": "genoa",
+    "name": "Corrado Doria",
+    "portrait_asset": "genoa_corrado.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_genoa_bernabo",
+    "owner_id": "genoa",
+    "name": "Bernabò Doria",
+    "portrait_asset": "genoa_bernabo.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_genoa_antonio",
+    "owner_id": "genoa",
+    "name": "Antonio Doria",
+    "portrait_asset": "genoa_antonio.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  }
+]

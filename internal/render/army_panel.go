@@ -101,6 +101,12 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	if location != "" {
 		headerLeft += "  —  " + location
 	}
+	if a.Commander != nil {
+		headerLeft += "  |  Komutan: " + a.Commander.Name + " Lv." + itoa(a.Commander.Level)
+	}
+	if a.EmbarkedCommander != nil {
+		headerLeft += "  |  Taşınan: " + a.EmbarkedCommander.Name + " Lv." + itoa(a.EmbarkedCommander.Level)
+	}
 	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
 	mpW := MeasureText(mpStr, FaceSmall)
 	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12
@@ -141,6 +147,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		canMerge := len(other.Units) < army.MaxArmySize
 		drawArmyActionButton(screen, px, py, panelW, "⊕ BİRLEŞTİR", canMerge, true, false)
 	}
+	drawCommanderActionButton(screen, px, py, panelW, a)
 
 	// Ayırıcı
 	sepY := py + armyPanelHdrH
@@ -530,6 +537,51 @@ func buildArmyPanelCloseButton() gameui.Button {
 	return btn
 }
 
+func commanderButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
+	bw, bh = float32(118), actionBtnH
+	bx = px + armyPanelPadX
+	by = py + armyPanelBtnY
+	return
+}
+
+func buildCommanderButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Button{}, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
+		return gameui.Button{}, false
+	}
+	px, py, panelW := armyPanelGeometry()
+	x, y, w, h := commanderButtonRect(px, py, panelW)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), commanderActionLabel(a)), true
+}
+
+func commanderActionLabel(a *army.Army) string {
+	if a == nil {
+		return "KOMUTAN ATA"
+	}
+	if a.Commander != nil && a.EmbarkedCommander != nil {
+		return "KOMUTANLAR"
+	}
+	if a.EmbarkedCommander != nil {
+		return "KARA KOMUTANI"
+	}
+	if a.Commander != nil {
+		return "KOMUTAN DEĞİŞTİR"
+	}
+	return "KOMUTAN ATA"
+}
+
+func drawCommanderActionButton(screen *ebiten.Image, px, py, panelW float32, a *army.Army) {
+	x, y, w, h := commanderButtonRect(px, py, panelW)
+	label := commanderActionLabel(a)
+	vector.FillRect(screen, x, y, w, h, color.RGBA{50, 35, 12, 220}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{160, 120, 40, 200}, false)
+	tw := float32(MeasureText(label, FaceSmall))
+	DrawText(screen, label, float64(x)+float64(w)/2-float64(tw)/2, float64(y)+3, FaceSmall, color.RGBA{220, 185, 70, 255})
+}
+
 // splitButtonRect BÖL butonunun piksel dikdörtgenini döner.
 // hasMerge true ise iki buton yan yana olacak şekilde sola kayar.
 func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
@@ -625,11 +677,19 @@ func MergeButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bo
 	return ok && btn.HitTest(fx, fy)
 }
 
+func CommanderButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	btn, ok := buildCommanderButton(gs, aid)
+	return ok && btn.HitTest(fx, fy)
+}
+
 func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
 	if buildArmyPanelCloseButton().HitTest(fx, fy) {
 		return true
 	}
 	if SplitButtonHitTest(fx, fy, gs, aid) || MergeButtonHitTest(fx, fy, gs, aid) {
+		return true
+	}
+	if CommanderButtonHitTest(fx, fy, gs, aid) {
 		return true
 	}
 	return false

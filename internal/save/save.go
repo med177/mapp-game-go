@@ -450,6 +450,11 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
 	}
+	commanderTemplates, err := army.LoadCommanderTemplates(dp("commanders.json"))
+	if err != nil {
+		log.Printf("Komutan şablonları yüklenemedi: %v", err)
+		commanderTemplates = map[string][]*army.Commander{}
+	}
 	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
 	if err != nil {
 		log.Printf("Binalar yüklenemedi: %v", err)
@@ -487,6 +492,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		Armies:             armies,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
+		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
 		TechTypes:          techTypes,
 		ScenarioVictories:  sc.VictoryConditions,

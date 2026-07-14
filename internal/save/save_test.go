@@ -108,6 +108,94 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	}
 }
 
+func TestArmyCommanderRoundTrip(t *testing.T) {
+	commander := army.NewCommander("cmd_1", "Mihri Hanım")
+	commander.Experience = army.CommanderLevel3XP
+	commander.Normalize()
+	original := map[army.ArmyID]*army.Army{
+		"army_1": {
+			ID:        "army_1",
+			OwnerID:   "player",
+			RegionID:  "r1",
+			Commander: commander,
+			Units:     []army.Unit{{TypeID: "inf", CurrentHP: 90}},
+		},
+	}
+
+	restored := restoreArmiesFromSaveState(convertArmiesToSaveState(original))
+	got := restored["army_1"]
+	if got == nil || got.Commander == nil {
+		t.Fatal("komutan save/load sonrasında kayboldu")
+	}
+	if got.Commander.Name != "Mihri Hanım" || got.Commander.Level != 3 || !got.Commander.HasTrait(army.CommanderTraitTactician) {
+		t.Fatalf("komutan state'i eksik geri yüklendi: %+v", got.Commander)
+	}
+	if got.Commander == commander || &got.Commander.Traits[0] == &commander.Traits[0] {
+		t.Fatal("komutan save/load kopyası bağımsız olmalı")
+	}
+}
+
+func TestCommanderPoolRoundTripKeepsArmyAssignmentLink(t *testing.T) {
+	commander := army.NewCommander("cmd_1", "Mihri Hanım")
+	commander.OwnerID = "player"
+	commander.AssignedArmyID = "army_1"
+	commander.Experience = army.CommanderLevel3XP
+	commander.Normalize()
+	original := map[army.ArmyID]*army.Army{
+		"army_1": {
+			ID:        "army_1",
+			OwnerID:   "player",
+			Commander: commander,
+		},
+	}
+
+	saved := campaignSaveState{
+		Armies:           convertArmiesToSaveState(original),
+		Commanders:       cloneCommanders(map[string]*army.Commander{"cmd_1": commander}),
+		NextCommanderSeq: 2,
+	}
+	restored := &state.GameState{}
+	applyCampaignSaveState(restored, saved)
+
+	pooled := restored.Commanders["cmd_1"]
+	if pooled == nil {
+		t.Fatal("komutan havuzu save/load sonrasında kayboldu")
+	}
+	if restored.Armies["army_1"].Commander != pooled {
+		t.Fatal("ordu komutanı havuzdaki canonical pointer'a bağlanmadı")
+	}
+	if pooled.AssignedArmyID != "army_1" || pooled.OwnerID != "player" {
+		t.Fatalf("komutan atama bağı korunmadı: %+v", pooled)
+	}
+	if restored.NextCommanderSeq != 2 {
+		t.Fatalf("komutan sıra sayacı korunmadı: got=%d", restored.NextCommanderSeq)
+	}
+}
+
+func TestEmbarkedCommanderRoundTrip(t *testing.T) {
+	commander := army.NewCommander("cmd_embarked", "Filo Komutanı")
+	commander.OwnerID = "player"
+	commander.AssignedArmyID = "fleet_1"
+	original := map[army.ArmyID]*army.Army{
+		"fleet_1": {
+			ID:                "fleet_1",
+			OwnerID:           "player",
+			IsNaval:           true,
+			EmbarkedUnits:     []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			EmbarkedCommander: commander,
+		},
+	}
+
+	restored := restoreArmiesFromSaveState(convertArmiesToSaveState(original))
+	got := restored["fleet_1"]
+	if got == nil || got.EmbarkedCommander == nil {
+		t.Fatal("filodaki taşınan komutan save/load sonrasında kayboldu")
+	}
+	if got.EmbarkedCommander.Name != commander.Name || got.EmbarkedCommander.AssignedArmyID != "fleet_1" {
+		t.Fatalf("taşınan komutan state'i eksik: %+v", got.EmbarkedCommander)
+	}
+}
+
 func TestLoadFromPathNormalizesLegacyGarrisonArmy(t *testing.T) {
 	tmp := t.TempDir()
 	oldBaseDir := scenarioBaseDir

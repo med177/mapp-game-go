@@ -446,6 +446,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	}
 	defMods.DefenseMod += siegeDefenseBonus(fortLevel, breachLevel)
 	result := combat.ResolveBattleWithContextPlan(attacker, defender, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
+	g.recordCommanderBattle(attacker, defender, nil, result.AttackerWins)
 	var collapse eliminationResult
 	extraDamage := siegeAssaultAttackerDamage(fortLevel, breachLevel)
 	if extraDamage > 0 {
@@ -456,11 +457,11 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	if result.AttackerWins {
 		prompted := false
 		if !virtualDefense && len(defender.Units) == 0 {
-			delete(g.gs.Armies, defender.ID)
+			g.gs.RemoveArmy(defender.ID)
 		}
 		if !siegeAssaultCanCapture(breachLevel) {
 			if len(attacker.Units) == 0 {
-				delete(g.gs.Armies, aid)
+				g.gs.RemoveArmy(aid)
 				g.clearSiegesByArmy(aid)
 			}
 			g.presentBattleReport(g.makeBattleReport(
@@ -488,7 +489,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 				}
 			}
 		} else {
-			delete(g.gs.Armies, aid)
+			g.gs.RemoveArmy(aid)
 			g.clearSiege(target)
 		}
 		outcomeDetail := "Tahkimat düştü ve bölge ele geçirildi."
@@ -518,7 +519,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	}
 
 	if len(attacker.Units) == 0 {
-		delete(g.gs.Armies, aid)
+		g.gs.RemoveArmy(aid)
 		g.clearSiegesByArmy(aid)
 	}
 	g.presentBattleReport(g.makeBattleReport(
@@ -573,7 +574,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			damage := siegeAttritionDamage(progressGain, siege.BreachLevel, siege.FortLevel)
 			lostUnits, totalHPDamage := applyArmyFlatDamage(defender, damage)
 			if len(defender.Units) == 0 {
-				delete(g.gs.Armies, defender.ID)
+				g.gs.RemoveArmy(defender.ID)
 				defender = nil
 				siege.DefenderArmyID = ""
 			}

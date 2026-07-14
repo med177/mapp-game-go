@@ -145,3 +145,30 @@ func TestPreviewBattleWithContextModsUsesContextSpecificModifiers(t *testing.T) 
 		t.Fatalf("beklenmeyen deniz savaş etiketi: %q", BattleContextLabelTR(BattleContextNaval))
 	}
 }
+
+func TestCommanderModifiersAffectBattleStrengths(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+	}
+	attacker := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	defender := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	commandedAttacker := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	commandedDefender := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	attackerCommander := army.NewCommander("atk", "Saldırı Komutanı")
+	attackerCommander.Experience = army.CommanderLevel3XP
+	attackerCommander.Normalize()
+	defenderCommander := army.NewCommander("def", "Savunma Komutanı")
+	defenderCommander.Experience = army.CommanderLevel4XP
+	defenderCommander.Normalize()
+	commandedAttacker.AssignCommander(attackerCommander)
+	commandedDefender.AssignCommander(defenderCommander)
+
+	baseAttack, baseDefense := battleStrengths(attacker, defender, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced)
+	commandedAttack, commandedDefense := battleStrengths(commandedAttacker, commandedDefender, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced)
+	if commandedAttack <= baseAttack {
+		t.Fatalf("komutan saldırı gücü artırmadı: base=%.2f commanded=%.2f", baseAttack, commandedAttack)
+	}
+	if commandedDefense <= baseDefense {
+		t.Fatalf("komutan savunma gücü artırmadı: base=%.2f commanded=%.2f", baseDefense, commandedDefense)
+	}
+}

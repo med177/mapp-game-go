@@ -24,6 +24,9 @@ type Army struct {
 	MaxMovePoints      int            `json:"max_move_points"`
 	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
 	IsGarrison         bool           `json:"is_garrison,omitempty"`
+	Commander          *Commander     `json:"commander,omitempty"`
+	// EmbarkedCommander kara birlikleri filoda taşınırken komutan bağlantısını korur.
+	EmbarkedCommander *Commander `json:"embarked_commander,omitempty"`
 
 	// Pusu durumu: geçit bölgesinde bekliyorsa true
 	InAmbush bool `json:"in_ambush"`
@@ -33,6 +36,52 @@ type Army struct {
 
 	// Limana uğramadan denizde, taşınan birliklerle geçirilen ardışık tur sayısı.
 	TurnsWithoutPort int `json:"turns_without_port,omitempty"`
+}
+
+// AssignCommander komutanı bu orduya atar.
+func (a *Army) AssignCommander(commander *Commander) bool {
+	if a == nil || commander == nil {
+		return false
+	}
+	commander.Normalize()
+	if commander.OwnerID == "" {
+		commander.OwnerID = a.OwnerID
+	}
+	if a.Commander != nil && a.Commander != commander && a.Commander.AssignedArmyID == a.ID {
+		a.Commander.AssignedArmyID = ""
+	}
+	commander.AssignedArmyID = a.ID
+	a.Commander = commander
+	return true
+}
+
+// RemoveCommander komutanı ordudan ayırır ve ayrılan komutanı döner.
+func (a *Army) RemoveCommander() *Commander {
+	if a == nil {
+		return nil
+	}
+	commander := a.Commander
+	a.Commander = nil
+	if commander != nil && commander.AssignedArmyID == a.ID {
+		commander.AssignedArmyID = ""
+	}
+	return commander
+}
+
+// CommanderModifiers ordu savaş hesabında kullanılacak komutan çarpanlarını döner.
+func (a *Army) CommanderModifiers() (attack, defense float64) {
+	if a == nil || a.Commander == nil {
+		return 0, 0
+	}
+	return a.Commander.AttackModifier(), a.Commander.DefenseModifier()
+}
+
+// RecordBattle sonucu bu ordunun komutanına aktarır.
+func (a *Army) RecordBattle(won bool) CommanderProgress {
+	if a == nil || a.Commander == nil {
+		return CommanderProgress{}
+	}
+	return a.Commander.RecordBattle(won)
 }
 
 // Size ordu boyutunu döner.

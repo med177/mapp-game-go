@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-13
+last_updated: 2026-07-15
 related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
 ---
 
@@ -18,8 +18,8 @@ Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne
 ## Hesap Akışı
 
 ```
-saldıranGücü = ordu.TotalStrength(types) × (1 + atkMods.AttackMod)
-savunucuGücü = ordu.TotalStrength(types) × terrainBonus × (1 + defMods.DefenseMod)
+saldıranGücü = ordu.TotalStrength(types) × (1 + atkMods.AttackMod + komutanSaldırıModu)
+savunucuGücü = ordu.TotalStrength(types) × terrainBonus × (1 + defMods.DefenseMod + komutanSavunmaModu)
 
 calculateOutcome(saldıranGücü, savunucuGücü)
     → (kazandıMı bool, saldıranKayıpOranı float64, savunucuKayıpOranı float64)
@@ -77,6 +77,32 @@ ratio := (atkStr / (defStr + 1)) * (1 + dice)
 - `LandDefenseMod` → `DefenseMod`
 
 → Teknoloji efektleri: [[systems/tech-tree]]
+
+## Komutan etkisi ve kariyer
+
+`internal/army/commander.go` içindeki `Commander`, doğrudan `Army.Commander` alanında
+taşınır. Komutan bir savaşa katıldığında zaferde `+100 XP`, yenilgide `+40 XP` alır;
+ilk zaferle seviye 2 ve `Savaş Tecrübesi`, 300 XP'de `Taktisyen`, 550 XP'de
+`Savunma Uzmanı`, 850 XP'de `Saldırgan` trait'i açılır. Bu eşikler komutanın yaklaşık
+9 zaferde maksimum seviyeye ulaşmasını sağlar.
+
+Trait'ler `Army.CommanderModifiers()` üzerinden aynı `battleStrengths()` hattına
+bağlanır. Böylece komutan etkisi hem gerçek resolve hem de savaş öncesi preview'da
+aynı hesapla uygulanır. Bonus tavanı maksimum seviyede saldırı için `%12`, savunma için
+`%10` olacak şekilde sınırlıdır. Birleşik savunmada XP, sanal birleşik orduya değil
+savaşa katılan gerçek savunucu orduların komutanlarına yazılır.
+
+Oyuncu fraksiyonu için başlangıçta üç kişilik komutan havuzu oluşturulur. Ordu detay
+panelindeki `KOMUTAN ATA` / `KOMUTAN DEĞİŞTİR` aksiyonu, boşta olan komutanları gösteren
+modalı açar; atama ve ayırma işlemleri `GameState.Commanders` havuzunu ve
+`Army.Commander` bağlantısını birlikte günceller. Ordu birleşmesi, garnizon dönüşümü
+ve save/load akışları da bu tekil atamayı korur. Kara ordusu nakliye filosuna bindiğinde
+komutan `EmbarkedCommander` olarak korunur; çıkarma savaşı ve başarılı karaya çıkış
+aynı kariyer bağlantısını kullanır. AI tur prelude'u ise her aktif saha
+ordusu için (garnizon hariç) deterministik bir komutan üretip atar; deniz filoları da
+naval savaşlara katıldıkları için aynı kariyer hattını kullanır. Savaş raporu ve olay
+günlüğü detayı, katılan komutanların kazandığı XP'yi, seviye artışını ve yeni trait'leri
+ayrı `Komutan gelişimi` satırlarında gösterir.
 
 ## Savaş Duruşları ve Bağlamı
 

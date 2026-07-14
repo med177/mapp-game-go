@@ -223,6 +223,13 @@ func TestSanitizeDockedFleetsKeepsAlliedPortDocking(t *testing.T) {
 }
 
 func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing.T) {
+	armyCommander := army.NewCommander("commander_army_old", "Eski Kara Komutanı")
+	armyCommander.OwnerID = "old_owner"
+	armyCommander.AssignedArmyID = "army_old"
+	fleetCommander := army.NewCommander("commander_fleet_old", "Eski Filo Komutanı")
+	fleetCommander.OwnerID = "old_owner"
+	fleetCommander.AssignedArmyID = "fleet_old"
+
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
 			"old_owner": {ID: "old_owner"},
@@ -240,9 +247,10 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"army_old": {
-				ID:       "army_old",
-				OwnerID:  "old_owner",
-				RegionID: "land_a",
+				ID:        "army_old",
+				OwnerID:   "old_owner",
+				RegionID:  "land_a",
+				Commander: armyCommander,
 			},
 			"fleet_old": {
 				ID:                 "fleet_old",
@@ -251,6 +259,7 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 				RegionID:           "sea_near",
 				DockedRegionID:     "land_a",
 				DockedSettlementID: "port_a",
+				Commander:          fleetCommander,
 			},
 		},
 	}
@@ -272,6 +281,12 @@ func TestApplyConquestWithNavalEvictionTransfersDefeatedFactionForces(t *testing
 	}
 	if gs.Armies["fleet_old"].OwnerID != "new_owner" {
 		t.Fatalf("donanma galibe gecmeliydi, got=%s", gs.Armies["fleet_old"].OwnerID)
+	}
+	if gs.Armies["army_old"].Commander.OwnerID != "new_owner" {
+		t.Fatalf("devralinan kara ordusunun komutan sahibi guncellenmeliydi, got=%s", gs.Armies["army_old"].Commander.OwnerID)
+	}
+	if gs.Armies["fleet_old"].Commander.OwnerID != "new_owner" {
+		t.Fatalf("devralinan filonun komutan sahibi guncellenmeliydi, got=%s", gs.Armies["fleet_old"].Commander.OwnerID)
 	}
 	if gs.Armies["fleet_old"].DockedRegionID != "land_a" {
 		t.Fatalf("devralinan filo gecerli liman bagini korumaliydi, got=%s", gs.Armies["fleet_old"].DockedRegionID)

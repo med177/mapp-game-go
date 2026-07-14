@@ -164,6 +164,9 @@ type Renderer struct {
 	battleReport           battleReportState
 	queuedBattleReport     battleReportState
 	warSummary             warSummaryState
+	showCommanderPanel     bool
+	commanderPanelArmy     army.ArmyID
+	commanderPanelFocus    int
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -654,6 +657,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		armySheetLoaded = false
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
+		resetCommanderPortraitCache()
 	}
 	if prepared != nil {
 		r.worldMap = FinalizePreparedWorldMap(prepared)
@@ -667,6 +671,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
 	r.closeFactionPanel()
+	r.CloseCommanderPanel()
 	r.clearSelectedSettlement()
 	r.ClearAITurnStatus()
 	r.confirmDialog = confirmDialogState{}
@@ -768,6 +773,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
 	r.closeFactionPanel()
+	r.CloseCommanderPanel()
 	r.devNeighborListExpanded = false
 	r.clearSelectedSettlement()
 	r.showRecruitPanel = false
@@ -1174,6 +1180,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 15. Tarihsel olay popup'ı gerçek üst modal olmalı.
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
+	}
+	if r.showCommanderPanel {
+		r.DrawCommanderPanel(screen)
 	}
 }
 
