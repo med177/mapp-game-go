@@ -257,7 +257,6 @@ func drawCommanderSummaryCard(screen *ebiten.Image, commander *army.Commander, x
 	titleX := x + float64(armyPanelCommanderCardPad)
 	titleY := y + float64(armyPanelCommanderSectionY)
 	headerTop, headerRight := commanderSummaryHeaderTexts(opts.Role, commander)
-	DrawText(screen, trimTextToWidth(headerTop, FaceSmall, w-float64(armyPanelCommanderCardPad*2)), titleX, titleY, FaceSmall, ColorGold)
 
 	portraitX := x + float64(armyPanelCommanderCardPad)
 	portraitY := y + 28
@@ -269,13 +268,15 @@ func drawCommanderSummaryCard(screen *ebiten.Image, commander *army.Commander, x
 		textW = 40
 	}
 	if commander == nil {
-		DrawText(screen, trimTextToWidth(headerRight, FaceMed, textW), textX, portraitY+8, FaceMed, ColorWhite)
+		DrawText(screen, trimTextToWidth(headerRight, FaceMed, w-float64(armyPanelCommanderCardPad*2)), titleX, titleY, FaceMed, ColorWhite)
+		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY+6, FaceSmall, ColorGold)
 		DrawText(screen, trimTextToWidth(opts.EmptySummary, FaceSmall, textW), textX, portraitY+34, FaceSmall, ColorGray)
 		if opts.EmptyEffectText != "" {
 			DrawText(screen, trimTextToWidth(opts.EmptyEffectText, FaceSmall, textW), textX, portraitY+54, FaceSmall, color.RGBA{145, 185, 220, 255})
 		}
 	} else {
-		DrawText(screen, trimTextToWidth(headerRight, FaceMed, textW), textX, portraitY+6, FaceMed, ColorWhite)
+		DrawText(screen, trimTextToWidth(headerRight, FaceMed, w-float64(armyPanelCommanderCardPad*2)), titleX, titleY, FaceMed, ColorWhite)
+		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY+6, FaceSmall, ColorGold)
 		DrawText(screen, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, portraitY+28, FaceSmall, ColorGray)
 		DrawText(screen, fmt.Sprintf("Savaş %d  |  Zafer %d", commander.Battles, commander.Victories), textX, portraitY+48, FaceSmall, ColorGray)
 		effectLines := commanderCardEffectLines(commander)

@@ -299,8 +299,8 @@ func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyP
 	commander, role := armyPanelDisplayedCommander(a)
 	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
 		Role:            role,
-		EmptySummary:    "Bu orduda atanmış komutan görünmüyor.",
-		EmptyEffectText: "Komutan bilgisi görünmüyor.",
+		EmptySummary:    "-",
+		EmptyEffectText: "-",
 		ShowEffectText:  false,
 		MaxTraitRows:    1,
 	})
