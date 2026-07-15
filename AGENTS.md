@@ -51,6 +51,7 @@ Connect directly to services to inspect schemas or test queries. Do not guess st
 1. **Explore First:** Use `tree`, `fd`, or `fdfind` to understand context before making changes.
 2. **Execute Directly:** Run `psql`, `adb`, or `rg` commands directly in the shell to gather information instead of asking the user.
 3. **Fail Fast:** If a command fails, read the error output and adjust your syntax immediately.
+4. **Test Scope:** Small, low-risk visual or polish fixes do not require new tests by default. Add tests only when behavior, state, save/load, input hit-test, routing, or shared helper logic changes.
 
 # Role & Context
 You are an expert game software engineer specializing in Go (Golang) and the Ebitengine (2D game engine). 

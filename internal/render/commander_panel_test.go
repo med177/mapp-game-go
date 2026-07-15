@@ -108,10 +108,10 @@ func TestCommanderSummaryDividerYMovesBelowEffectLines(t *testing.T) {
 func TestCommanderSummaryHeaderTextsSwapNameAndRole(t *testing.T) {
 	commander := army.NewCommander("cmd_1", "Amadeus V of Savoy")
 	top, right := commanderSummaryHeaderTexts("Komutan", commander)
-	if top != "Amadeus V of Savoy" {
-		t.Fatalf("ust etiket isim olmaliydi: %q", top)
+	if top != "Komutan" {
+		t.Fatalf("ust etiket rol olmaliydi: %q", top)
 	}
-	if right != "Komutan" {
-		t.Fatalf("sag baslik rol olmaliydi: %q", right)
+	if right != "Amadeus V of Savoy" {
+		t.Fatalf("sag baslik isim olmaliydi: %q", right)
 	}
 }

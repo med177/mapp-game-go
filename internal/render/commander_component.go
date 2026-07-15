@@ -63,7 +63,7 @@ func commanderSummaryHeaderTexts(role string, commander *army.Commander) (topLab
 	if role == "" {
 		role = "Komutan"
 	}
-	return name, role
+	return role, name
 }
 
 func commanderTraitsSummary(commander *army.Commander) string {
