@@ -219,6 +219,7 @@ func applySeasonEffects(gs *state.GameState) {
 		if gs.Difficulty >= 3 && a.OwnerID != string(gs.PlayerFactionID) {
 			mp++
 		}
+		mp += a.CommanderMoveBonus()
 		a.MaxMovePoints = mp
 		a.ResetMovePoints()
 	}

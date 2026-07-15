@@ -35,8 +35,9 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 	fortLevel := target.FortificationLevel()
 	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
 	hasSiegeUnits := attacker.HasSiegeUnits(r.gs.UnitTypes)
+	commanderSummary := commanderSiegeSummary(attacker.Commander)
 	if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
-		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d.", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel)
+		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel, commanderSummary)
 		r.confirmDialog = confirmDialogState{
 			show:          true,
 			title:         "Kuşatma Kararı",
@@ -50,7 +51,7 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		}
 		return
 	}
-	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d.", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel)
+	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel, commanderSummary)
 	thirdLabel := "Genel Hücum"
 	if !hasSiegeUnits {
 		msg += " Bu ordu kuşatma birimi taşımıyor; yalnız kuşatma kurup teslim bekleyebilirsin."
@@ -144,13 +145,15 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 		status = level
 	}
 	info := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik: T%d/T%d", target.NameTR, siege.FortLevel, siege.BreachProgress, status, bestTier, siege.FortLevel)
+	commanderInfo := commanderSiegeSummary(attacker.Commander)
 	hint := "Başka komşu bölgeye hareket emri verirsen kuşatma otomatik kaldırılır."
 	canAssault := attacker.HasSiegeUnits(r.gs.UnitTypes)
 	if !canAssault {
 		hint = "Bu ordu kuşatma birimi taşımıyor; genel hücum kullanılamaz, sadece teslim beklenebilir."
 	}
 	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42, W: panel.Rect.W - 36}, info, color.RGBA{228, 224, 214, 255}, gameui.TextSmall, 17, 2)
-	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 76, W: panel.Rect.W - 36}, hint, color.RGBA{170, 196, 152, 255}, gameui.TextSmall, 17, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 76, W: panel.Rect.W - 36}, commanderInfo, color.RGBA{145, 185, 220, 255}, gameui.TextSmall, 17, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 110, W: panel.Rect.W - 36}, hint, color.RGBA{170, 196, 152, 255}, gameui.TextSmall, 17, 2)
 	assaultBtn, liftBtn := buildSelectedSiegeButtons()
 	if canAssault {
 		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
@@ -172,27 +175,32 @@ func battlePlanInstructionTR(context combat.BattleContext) string {
 }
 
 func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext) {
-	if r == nil || attacker == nil || target == nil || defender == nil {
+	if r == nil || r.gs == nil || attacker == nil || target == nil || defender == nil {
 		return
 	}
 	previewAttacker := attacker
+	previewCommander := attacker.Commander
 	if combat.NormalizeBattleContext(battleContext) == combat.BattleContextAmphibious {
+		previewCommander = r.gs.AmphibiousCommander(attacker.ID)
 		previewAttacker = &army.Army{
-			OwnerID: attacker.OwnerID,
-			Units:   attacker.EmbarkedUnits,
+			OwnerID:   attacker.OwnerID,
+			Units:     attacker.EmbarkedUnits,
+			Commander: previewCommander,
 		}
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
 	state := battlePlanState{
-		show:          true,
-		actionKind:    actionKind,
-		battleContext: combat.NormalizeBattleContext(battleContext),
-		pendingArmy:   attacker.ID,
-		pendingEnemy:  defender.ID,
-		pendingDest:   target.ID,
-		regionName:    target.NameTR,
-		focus:         1,
+		show:            true,
+		actionKind:      actionKind,
+		battleContext:   combat.NormalizeBattleContext(battleContext),
+		pendingArmy:     attacker.ID,
+		pendingEnemy:    defender.ID,
+		pendingDest:     target.ID,
+		regionName:      target.NameTR,
+		attackerSummary: commanderBattlePlanSummary("Saldıran komutan", previewCommander),
+		defenderSummary: commanderBattlePlanSummary("Savunan komutan", defender.Commander),
+		focus:           1,
 	}
 	for i, stance := range battlePlanStances {
 		state.previews[i] = combat.PreviewBattleWithContextMods(previewAttacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, state.battleContext, stance)
@@ -627,6 +635,8 @@ func (r *Renderer) drawBattlePlanDialog(screen *ebiten.Image) {
 	}
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 52, W: modal.Panel.Rect.W - 48}, subtitle, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 72, W: modal.Panel.Rect.W - 48}, battlePlanInstructionTR(r.battlePlan.battleContext), color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 90, W: modal.Panel.Rect.W - 48}, trimTextToWidth(r.battlePlan.attackerSummary, FaceSmall, modal.Panel.Rect.W-48), color.RGBA{172, 224, 164, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 106, W: modal.Panel.Rect.W - 48}, trimTextToWidth(r.battlePlan.defenderSummary, FaceSmall, modal.Panel.Rect.W-48), color.RGBA{168, 196, 226, 255}, gameui.TextSmall, gameui.TextAlignStart)
 
 	cardRects := battlePlanCardRects()
 	buttons, cancelBtn := buildBattlePlanButtons()

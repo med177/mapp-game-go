@@ -1,0 +1,117 @@
+package render
+
+import (
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"mapp-game-go/internal/army"
+)
+
+func TestCommanderPortraitPathUsesCommandersDirForBasename(t *testing.T) {
+	ActiveScenarioPath = filepath.Join("assets", "scenarios", "1300_ottoman_rise")
+	t.Cleanup(func() {
+		ActiveScenarioPath = ""
+		resetCommanderPortraitCache()
+	})
+
+	got := commanderPortraitPath("ottoman_osman.png")
+	want := filepath.Join(ActiveScenarioPath, "sprites", "commanders", "ottoman_osman.png")
+	if got != want {
+		t.Fatalf("basename portrait yanlis cozuldu: got=%q want=%q", got, want)
+	}
+}
+
+func TestCommanderPortraitPathKeepsRelativeSubdir(t *testing.T) {
+	ActiveScenarioPath = filepath.Join("assets", "scenarios", "1300_ottoman_rise")
+	t.Cleanup(func() {
+		ActiveScenarioPath = ""
+		resetCommanderPortraitCache()
+	})
+
+	got := commanderPortraitPath("commanders/ottoman_osman.png")
+	want := filepath.Join(ActiveScenarioPath, "sprites", "commanders", "ottoman_osman.png")
+	if got != want {
+		t.Fatalf("relative portrait path korunmadi: got=%q want=%q", got, want)
+	}
+}
+
+func TestCommanderPortraitPathRejectsTraversal(t *testing.T) {
+	ActiveScenarioPath = filepath.Join("assets", "scenarios", "1300_ottoman_rise")
+	t.Cleanup(func() {
+		ActiveScenarioPath = ""
+		resetCommanderPortraitCache()
+	})
+
+	if got := commanderPortraitPath("../secret.png"); got != "" {
+		t.Fatalf("traversal path reddedilmeliydi: %q", got)
+	}
+}
+
+func TestCommanderTraitBadgeUsesCompactLabels(t *testing.T) {
+	tests := map[army.CommanderTrait]string{
+		army.CommanderTraitVeteran:   "Tecrübe",
+		army.CommanderTraitTactician: "Taktik",
+		army.CommanderTraitDefender:  "Savunma",
+		army.CommanderTraitAggressor: "Saldırı",
+	}
+
+	for trait, want := range tests {
+		if got := commanderTraitBadge(trait).Label; got != want {
+			t.Fatalf("trait %q için badge etiketi yanlış: got=%q want=%q", trait, got, want)
+		}
+	}
+}
+
+func TestCommanderOverflowBadgeUsesCountLabel(t *testing.T) {
+	if got := commanderOverflowBadge(3).Label; got != "+3" {
+		t.Fatalf("overflow badge etiketi yanlış: got=%q want=%q", got, "+3")
+	}
+}
+
+func TestCommanderCardEffectLinesSplitModifiersPerLine(t *testing.T) {
+	commander := &army.Commander{
+		Traits: []army.CommanderTrait{
+			army.CommanderTraitVeteran,
+			army.CommanderTraitTactician,
+			army.CommanderTraitDefender,
+			army.CommanderTraitAggressor,
+		},
+	}
+	lines := commanderCardEffectLines(commander)
+	if len(lines) != 5 {
+		t.Fatalf("beklenen 5 effect line, got=%d", len(lines))
+	}
+	for _, want := range []string{"Saldırı +", "Savunma +", "Moral +", "Hareket +1", "Kuşatma +1/+1"} {
+		found := false
+		for _, line := range lines {
+			if strings.Contains(line.Text, want) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("effect line listesinde %q yok: %+v", want, lines)
+		}
+	}
+}
+
+func TestCommanderSummaryDividerYMovesBelowEffectLines(t *testing.T) {
+	portraitY := 28.0
+	got := commanderSummaryDividerY(portraitY, 5)
+	lastEffectY := portraitY + 64 + float64(5-1)*12
+	if got <= lastEffectY {
+		t.Fatalf("divider effect line altına inmeli: got=%.1f last=%.1f", got, lastEffectY)
+	}
+}
+
+func TestCommanderSummaryHeaderTextsSwapNameAndRole(t *testing.T) {
+	commander := army.NewCommander("cmd_1", "Amadeus V of Savoy")
+	top, right := commanderSummaryHeaderTexts("Komutan", commander)
+	if top != "Amadeus V of Savoy" {
+		t.Fatalf("ust etiket isim olmaliydi: %q", top)
+	}
+	if right != "Komutan" {
+		t.Fatalf("sag baslik rol olmaliydi: %q", right)
+	}
+}

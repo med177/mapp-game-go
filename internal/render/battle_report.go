@@ -22,16 +22,20 @@ const (
 )
 
 type BattleReportSide struct {
-	Label          string
-	Faction        string
-	StrengthBefore int
-	StrengthAfter  int
-	UnitsBefore    int
-	UnitsAfter     int
-	UnitsLost      int
-	HPBefore       int
-	HPAfter        int
-	HPDamage       int
+	Label                       string
+	Faction                     string
+	CommanderName               string
+	CommanderPortraitAsset      string
+	CommanderBattleEffects      string
+	CommanderOperationalEffects string
+	StrengthBefore              int
+	StrengthAfter               int
+	UnitsBefore                 int
+	UnitsAfter                  int
+	UnitsLost                   int
+	HPBefore                    int
+	HPAfter                     int
+	HPDamage                    int
 }
 
 // BattleReportCommanderProgress savaş sonrasında bir komutanın kazandığı XP ve
@@ -196,7 +200,7 @@ func (r *Renderer) HideBattleReport() {
 }
 
 func buildBattleReportModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 980, 568, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 980, 608, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
@@ -212,9 +216,9 @@ func battleReportHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Bo
 
 func buildBattleReportLayout() battleReportLayout {
 	panelRect, titleRect, closeRect, rest := battleReportHeaderRects()
-	topRow, rest := rest.CutTop(232, 18)
+	topRow, rest := rest.CutTop(224, 18)
 	topCols := gameui.BoxFromRect(topRow).SplitColumns(20, 0.40, 0.60)
-	bottomRow, footerBox := rest.CutTop(176, 18)
+	bottomRow, footerBox := rest.CutTop(216, 18)
 	bottomCols := gameui.BoxFromRect(bottomRow).SplitColumns(18, 0.50, 0.50)
 	layout := battleReportLayout{
 		panelRect:  panelRect,
@@ -290,6 +294,27 @@ func battleReportHPText(side BattleReportSide) string {
 	return fmt.Sprintf("%d -> %d  |  Hasar %d", side.HPBefore, side.HPAfter, side.HPDamage)
 }
 
+func battleReportCommanderNameText(side BattleReportSide) string {
+	if strings.TrimSpace(side.CommanderName) == "" {
+		return "Komutan: Yok"
+	}
+	return "Komutan: " + side.CommanderName
+}
+
+func battleReportCommanderBattleText(side BattleReportSide) string {
+	if strings.TrimSpace(side.CommanderBattleEffects) == "" {
+		return "Muharebe: katkı yok."
+	}
+	return "Muharebe: " + side.CommanderBattleEffects
+}
+
+func battleReportCommanderOperationalText(side BattleReportSide) string {
+	if strings.TrimSpace(side.CommanderOperationalEffects) == "" {
+		return "Operasyon: katkı yok."
+	}
+	return "Operasyon: " + side.CommanderOperationalEffects
+}
+
 func battleReportCommanderProgressText(progress BattleReportCommanderProgress) string {
 	level := fmt.Sprintf("Lv%d", progress.CurrentLevel)
 	if progress.PreviousLevel != progress.CurrentLevel {
@@ -332,9 +357,22 @@ func drawBattleReportSideCard(screen *ebiten.Image, rect gameui.Rect, accent col
 	vector.FillRect(screen, float32(rect.X), float32(rect.Y), float32(rect.W), 4, accent, false)
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 16, W: rect.W - 36}, side.Label, accent, gameui.TextLarge, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 44, W: rect.W - 36}, side.Faction, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 82, W: rect.W - 36}, "Güç: "+battleReportStrengthText(side), color.RGBA{228, 224, 214, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 114, W: rect.W - 36}, "Birim: "+battleReportUnitsText(side), color.RGBA{228, 224, 214, 255}, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 140, W: rect.W - 36}, "HP: "+battleReportHPText(side), color.RGBA{206, 198, 180, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	boxX := rect.X + 14
+	boxY := rect.Y + 72
+	boxW := rect.W - 28
+	boxH := 62.0
+	drawCommanderCompactStrip(screen, boxX, boxY, boxW, boxH, commanderCompactStripOptions{
+		PortraitAsset:      side.CommanderPortraitAsset,
+		Name:               battleReportCommanderNameText(side),
+		EmptyName:          "Komutan: Yok",
+		BattleEffects:      battleReportCommanderBattleText(side),
+		EmptyBattleEffects: "Muharebe: katkı yok.",
+		OperationalEffects: battleReportCommanderOperationalText(side),
+		EmptyOperational:   "Operasyon: katkı yok.",
+	})
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 146, W: rect.W - 36}, "Güç: "+battleReportStrengthText(side), color.RGBA{228, 224, 214, 255}, gameui.TextMedium, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 174, W: rect.W - 36}, "Birim: "+battleReportUnitsText(side), color.RGBA{228, 224, 214, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 198, W: rect.W - 36}, "HP: "+battleReportHPText(side), color.RGBA{206, 198, 180, 255}, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 func drawBattleReportCommanderProgress(screen *ebiten.Image, rect gameui.Rect, progress []BattleReportCommanderProgress) {

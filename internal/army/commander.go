@@ -18,6 +18,7 @@ const (
 	CommanderLevel3XP      = 300
 	CommanderLevel4XP      = 550
 	CommanderLevel5XP      = 850
+	DefaultPortraitAsset   = "default.png"
 )
 
 // CommanderProgress bir savaş sonrasında komutanın kazandığı ilerlemeyi özetler.
@@ -28,6 +29,16 @@ type CommanderProgress struct {
 	PreviousLevel int
 	CurrentLevel  int
 	NewTraits     []CommanderTrait
+}
+
+// CommanderEffects komutanın orduya verdiği tüm hesap etkilerini tek yerde toplar.
+type CommanderEffects struct {
+	AttackMod          float64
+	DefenseMod         float64
+	MoraleMod          float64
+	MoveBonus          int
+	SiegeProgressBonus int
+	SiegeBreachBonus   int
 }
 
 // Commander bir orduya atanmış komutanın kalıcı kariyer state'idir.
@@ -117,38 +128,56 @@ func (c *Commander) HasTrait(trait CommanderTrait) bool {
 
 // AttackModifier komutanın ordunun saldırı gücüne eklediği çarpanı döner.
 func (c *Commander) AttackModifier() float64 {
-	if c == nil {
-		return 0
-	}
-	var modifier float64
-	if c.HasTrait(CommanderTraitVeteran) {
-		modifier += 0.02
-	}
-	if c.HasTrait(CommanderTraitTactician) {
-		modifier += 0.04
-	}
-	if c.HasTrait(CommanderTraitAggressor) {
-		modifier += 0.06
-	}
-	return modifier
+	return c.Effects().AttackMod
 }
 
 // DefenseModifier komutanın ordunun savunma gücüne eklediği çarpanı döner.
 func (c *Commander) DefenseModifier() float64 {
+	return c.Effects().DefenseMod
+}
+
+// MoraleModifier komutanın ordunun moral tabanlı savaş dayanıklılığına eklediği çarpanı döner.
+func (c *Commander) MoraleModifier() float64 {
+	return c.Effects().MoraleMod
+}
+
+// MoveBonus komutanın tur başı hareket havuzuna eklediği puanı döner.
+func (c *Commander) MoveBonus() int {
+	return c.Effects().MoveBonus
+}
+
+// SiegeBonuses komutanın kuşatma ilerleme ve gedik kazanımına verdiği bonusları döner.
+func (c *Commander) SiegeBonuses() (progress, breach int) {
+	effects := c.Effects()
+	return effects.SiegeProgressBonus, effects.SiegeBreachBonus
+}
+
+// Effects komutanın tüm savaş ve operasyon etkilerini tek yerde hesaplar.
+func (c *Commander) Effects() CommanderEffects {
 	if c == nil {
-		return 0
+		return CommanderEffects{}
 	}
-	var modifier float64
+	effects := CommanderEffects{}
 	if c.HasTrait(CommanderTraitVeteran) {
-		modifier += 0.02
+		effects.AttackMod += 0.02
+		effects.DefenseMod += 0.02
+		effects.MoraleMod += 0.08
 	}
 	if c.HasTrait(CommanderTraitTactician) {
-		modifier += 0.02
+		effects.AttackMod += 0.04
+		effects.DefenseMod += 0.02
+		effects.MoveBonus++
 	}
 	if c.HasTrait(CommanderTraitDefender) {
-		modifier += 0.06
+		effects.DefenseMod += 0.06
+		effects.MoraleMod += 0.05
 	}
-	return modifier
+	if c.HasTrait(CommanderTraitAggressor) {
+		effects.AttackMod += 0.06
+		effects.SiegeProgressBonus++
+		effects.SiegeBreachBonus++
+	}
+	return effects
 }
 
 // TraitLabelTR trait'lerin oyuncuya gösterilecek adını döner.

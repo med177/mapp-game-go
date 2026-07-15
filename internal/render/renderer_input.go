@@ -643,6 +643,19 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
+	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+		if r.selectedArmyIsPlayerOwned() && CommanderPortraitHitTest(fx, fy, r.gs, r.SelectedArmy) {
+			r.OpenCommanderPanel(r.SelectedArmy)
+			return InputAction{}
+		}
+		if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+			return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
+		}
+		if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
+			return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
+		}
+		return InputAction{}
+	}
 	if aid, ok := r.armyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			r.SelectedArmy = ""
@@ -700,19 +713,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
 		return InputAction{}
-	}
-
-	// BÖL butonu tıklaması
-	if r.selectedArmyIsPlayerOwned() && CommanderButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-		r.OpenCommanderPanel(r.SelectedArmy)
-		return InputAction{}
-	}
-	if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-		return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
-	}
-	// BİRLEŞTİR butonu tıklaması
-	if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-		return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
 	}
 
 	// Bölge / deniz bölgesi seçimi

@@ -131,6 +131,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.showCommanderPanel {
+		if r.commanderPanelHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.selectedSiegePanelHovering(fx, fy) {
 		ebiten.SetCursorShape(ebiten.CursorShapePointer)
 		return
@@ -362,8 +370,8 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 			return true
 		}
 	}
-	if r.SelectedArmy != "" && ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy) {
-		return true
+	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+		return ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy)
 	}
 	if r.selectedSiegePanelHit(fx, fy) {
 		return true

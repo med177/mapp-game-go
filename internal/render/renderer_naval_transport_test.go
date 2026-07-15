@@ -1,6 +1,7 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -126,5 +127,68 @@ func TestOpenBattlePlanUsesEmbarkedUnitsForAmphibiousPreview(t *testing.T) {
 	}
 	if expected.AttackStrength == shipBased.AttackStrength {
 		t.Fatalf("test kurulumu gemi ve çıkarma gücünü ayırt etmeliydi")
+	}
+}
+
+func TestOpenBattlePlanUsesAmphibiousCommanderForPreviewAndSummary(t *testing.T) {
+	landingCommander := &army.Commander{
+		ID:     "cmd_landing",
+		Name:   "Turgut Bey",
+		Level:  3,
+		Traits: []army.CommanderTrait{army.CommanderTraitVeteran, army.CommanderTraitAggressor},
+	}
+	defenderCommander := &army.Commander{
+		ID:     "cmd_def",
+		Name:   "Nikola",
+		Level:  2,
+		Traits: []army.CommanderTrait{army.CommanderTraitDefender},
+	}
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"inf":  {ID: "inf", Attack: 12, Defense: 10, Morale: 50},
+			"ship": {ID: "ship", Attack: 30, Defense: 20, Morale: 50},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", NameTR: "Ahiler"},
+			"p2": {ID: "p2", NameTR: "Düşman"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:                "fleet",
+				OwnerID:           "p1",
+				IsNaval:           true,
+				Units:             []army.Unit{{TypeID: "ship", CurrentHP: 100}},
+				EmbarkedUnits:     []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+				EmbarkedCommander: landingCommander,
+			},
+		},
+	}
+	r := &Renderer{gs: gs}
+	fleet := gs.Armies["fleet"]
+	defender := &army.Army{
+		ID:        "enemy",
+		OwnerID:   "p2",
+		Units:     []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+		Commander: defenderCommander,
+	}
+	target := &world.Region{ID: "land_a", NameTR: "Liman", Terrain: world.TerrainCoast}
+
+	r.openBattlePlan(fleet, target, defender, ActionDisembarkArmy, combat.BattleContextAmphibious)
+
+	landing := &army.Army{
+		OwnerID:   fleet.OwnerID,
+		Units:     fleet.EmbarkedUnits,
+		Commander: landingCommander,
+	}
+	expected := combat.PreviewBattleWithContextMods(landing, defender, target.Terrain, gs.UnitTypes, combat.TechMods{}, combat.TechMods{}, combat.BattleContextAmphibious, combat.BattleStanceBalanced)
+
+	if r.battlePlan.previews[1].AttackStrength != expected.AttackStrength {
+		t.Fatalf("çıkarma preview gücü embarked komutanıyla hesaplanmalı, got=%d want=%d", r.battlePlan.previews[1].AttackStrength, expected.AttackStrength)
+	}
+	if !strings.Contains(r.battlePlan.attackerSummary, "Turgut Bey") || !strings.Contains(r.battlePlan.attackerSummary, "Moral +8%") {
+		t.Fatalf("saldıran komutan özeti görünmeli, got=%q", r.battlePlan.attackerSummary)
+	}
+	if !strings.Contains(r.battlePlan.defenderSummary, "Nikola") || !strings.Contains(r.battlePlan.defenderSummary, "Savunma +6%") {
+		t.Fatalf("savunan komutan özeti görünmeli, got=%q", r.battlePlan.defenderSummary)
 	}
 }

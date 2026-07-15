@@ -264,7 +264,8 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 		},
 	}
 
-	px, py, panelW := armyPanelGeometry()
+	layout := armyPanelGeometry()
+	px, py, panelW := layout.panelX, layout.panelY, layout.panelW
 	if px < 0 || py < 0 || px+panelW > float32(screenW) {
 		t.Fatalf("army panel outside %.0fx%.0f viewport: px=%.1f py=%.1f w=%.1f", screenW, screenH, px, py, panelW)
 	}
@@ -277,8 +278,13 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	if !ok {
 		t.Fatalf("merge button bekleniyordu")
 	}
+	commanderPortrait, ok := commanderPortraitHitRect(gs, "a1")
+	if !ok {
+		t.Fatalf("commander portrait hit rect bekleniyordu")
+	}
 	assertButtonInside(t, screenW, screenH, splitBtn)
 	assertButtonInside(t, screenW, screenH, mergeBtn)
+	assertRectInside(t, screenW, screenH, commanderPortrait)
 	if splitBtn.Y < float64(py)+float64(armyPanelBtnY)-0.5 {
 		t.Fatalf("split button header satirina cok yakin: panelY=%.1f btnY=%.1f", py, splitBtn.Y)
 	}
@@ -293,6 +299,15 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	}
 	if splitBtn.X+splitBtn.W >= mergeBtn.X {
 		t.Fatalf("split/merge butonlari birbirine giriyor: split=%+v merge=%+v", splitBtn, mergeBtn)
+	}
+	if commanderPortrait.X < float64(layout.commanderX)-0.5 || commanderPortrait.X+commanderPortrait.W > float64(layout.commanderX+layout.commanderW)+0.5 {
+		t.Fatalf("commander portrait commander kolonundan tasiyor: rect=%+v layout=%+v", commanderPortrait, layout)
+	}
+	if commanderPortrait.Y < float64(layout.commanderY)-0.5 || commanderPortrait.Y+commanderPortrait.H > float64(layout.commanderY+layout.commanderH)+0.5 {
+		t.Fatalf("commander portrait commander kartindan tasiyor: rect=%+v layout=%+v", commanderPortrait, layout)
+	}
+	if commanderPortrait.X+commanderPortrait.W >= splitBtn.X {
+		t.Fatalf("commander portrait birim aksiyonlariyla cakisiyor: portrait=%+v split=%+v", commanderPortrait, splitBtn)
 	}
 }
 

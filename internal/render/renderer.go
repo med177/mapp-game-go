@@ -37,7 +37,7 @@ const (
 	confirmDialogBtnW       = float32(120)
 	confirmDialogBtnH       = float32(36)
 	selectedSiegePanelW     = 420.0
-	selectedSiegePanelH     = 160.0
+	selectedSiegePanelH     = 194.0
 	selectedSiegeButtonW    = 170.0
 	selectedSiegeButtonH    = 36.0
 	regionDoubleClickFrames = 18
@@ -417,6 +417,8 @@ type battlePlanState struct {
 	regionName      string
 	defenderName    string
 	defenderFaction string
+	attackerSummary string
+	defenderSummary string
 	focus           int
 	previews        [3]combat.Preview
 }

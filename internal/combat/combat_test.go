@@ -172,3 +172,29 @@ func TestCommanderModifiersAffectBattleStrengths(t *testing.T) {
 		t.Fatalf("komutan savunma gücü artırmadı: base=%.2f commanded=%.2f", baseDefense, commandedDefense)
 	}
 }
+
+func TestCommanderMoraleModifierFeedsBattleStrength(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+	}
+	attacker := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	defender := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	veteranArmy := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	veteranCommander := &army.Commander{
+		ID:     "veteran",
+		Name:   "Tecrübeli",
+		Level:  2,
+		Traits: []army.CommanderTrait{army.CommanderTraitVeteran},
+	}
+	veteranArmy.AssignCommander(veteranCommander)
+
+	baseAttack, _ := battleStrengths(attacker, defender, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced)
+	veteranAttack, _ := battleStrengths(veteranArmy, defender, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced)
+
+	if veteranAttack != 16.5 {
+		t.Fatalf("veteran komutan toplam %%10 savaş gücü vermeliydi, got=%.2f", veteranAttack)
+	}
+	if veteranAttack <= baseAttack {
+		t.Fatalf("veteran komutan savaş gücünü artırmadı: base=%.2f veteran=%.2f", baseAttack, veteranAttack)
+	}
+}

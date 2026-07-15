@@ -1,6 +1,7 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -253,6 +254,51 @@ func TestFinalizeWarConfirmRoutesBesiegingArmyFightInsteadOfSiegeDecision(t *tes
 	}
 	if r.battlePlan.pendingEnemy != "besieger" {
 		t.Fatalf("battle plan yanlış düşmanı hedefledi: %q", r.battlePlan.pendingEnemy)
+	}
+}
+
+func TestOpenSiegeDecisionIncludesCommanderOperationalSummary(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "enemy",
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":  {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+			"bomb": {ID: "bomb", Category: army.CategorySiege, Tier: 1, Attack: 8, Defense: 4, Morale: 40},
+		},
+	}
+	attacker := &army.Army{
+		ID:      "atk",
+		OwnerID: "player",
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100},
+			{TypeID: "bomb", CurrentHP: 100},
+		},
+		Commander: &army.Commander{
+			ID:     "cmd",
+			Name:   "Osman Bey",
+			Level:  4,
+			Traits: []army.CommanderTrait{army.CommanderTraitTactician, army.CommanderTraitAggressor},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	r.openSiegeDecision(attacker, gs.Regions["dst"])
+
+	if !r.confirmDialog.show {
+		t.Fatal("kuşatma kararı modalı açılmalıydı")
+	}
+	if !strings.Contains(r.confirmDialog.message, "Osman Bey") {
+		t.Fatalf("komutan adı modal mesajında görünmeli, got=%q", r.confirmDialog.message)
+	}
+	if !strings.Contains(r.confirmDialog.message, "Hareket +1") || !strings.Contains(r.confirmDialog.message, "Kuşatma +1/+1") {
+		t.Fatalf("operasyon bonusları modal mesajında görünmeli, got=%q", r.confirmDialog.message)
 	}
 }
 

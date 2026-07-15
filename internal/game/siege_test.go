@@ -180,6 +180,42 @@ func TestStartSiegeCreatesStateAndConsumesMove(t *testing.T) {
 	}
 }
 
+func TestCommanderSiegeBonusesIncreaseProgressAndBreachGain(t *testing.T) {
+	gs := siegeTestState()
+	baseAttacker := &army.Army{
+		ID:            "atk_base",
+		OwnerID:       "p1",
+		RegionID:      "src",
+		MovePoints:    2,
+		MaxMovePoints: 2,
+		Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
+	}
+	commandedAttacker := &army.Army{
+		ID:            "atk_cmd",
+		OwnerID:       "p1",
+		RegionID:      "src",
+		MovePoints:    2,
+		MaxMovePoints: 2,
+		Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
+	}
+	aggressor := army.NewCommander("cmd_aggressor", "Saldırgan")
+	aggressor.Experience = army.CommanderLevel5XP
+	aggressor.Normalize()
+	commandedAttacker.AssignCommander(aggressor)
+
+	baseProgress := siegeProgressGain(gs, baseAttacker, gs.Regions["dst"], nil)
+	baseBreach := siegeBreachGain(gs, baseAttacker, gs.Regions["dst"], nil)
+	commandedProgress := siegeProgressGain(gs, commandedAttacker, gs.Regions["dst"], nil)
+	commandedBreach := siegeBreachGain(gs, commandedAttacker, gs.Regions["dst"], nil)
+
+	if commandedProgress != baseProgress+1 {
+		t.Fatalf("saldırgan komutan kuşatma ilerlemesine +1 vermeliydi: base=%d commanded=%d", baseProgress, commandedProgress)
+	}
+	if commandedBreach != baseBreach+1 {
+		t.Fatalf("saldırgan komutan gedik kazanımına +1 vermeliydi: base=%d commanded=%d", baseBreach, commandedBreach)
+	}
+}
+
 func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
 	gs := siegeTestState()
 	gs.Regions["src"].Neighbors = []world.RegionID{"dst", "ally"}

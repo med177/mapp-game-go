@@ -27,6 +27,7 @@ func (s *GameState) SyncCommanderLinks() {
 		if commander == nil || commander.AssignedArmyID == "" {
 			continue
 		}
+		s.repairGeneratedCommanderPortrait(commander)
 		assigned := s.Armies[commander.AssignedArmyID]
 		if assigned == nil || (assigned.Commander != commander && assigned.EmbarkedCommander != commander) {
 			commander.AssignedArmyID = ""
@@ -52,6 +53,7 @@ func (s *GameState) syncCommanderPointer(currentArmy *army.Army, aid army.ArmyID
 	if commander.OwnerID == "" {
 		commander.OwnerID = currentArmy.OwnerID
 	}
+	s.repairGeneratedCommanderPortrait(commander)
 	if pooled := s.Commanders[commander.ID]; pooled != nil {
 		if pooled.AssignedArmyID != "" && pooled.AssignedArmyID != aid {
 			if embarked {
@@ -193,6 +195,7 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int) {
 	owned := 0
 	for _, commander := range s.Commanders {
 		if commander != nil && commander.OwnerID == ownerID {
+			s.repairGeneratedCommanderPortrait(commander)
 			owned++
 		}
 	}
@@ -209,7 +212,13 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int) {
 		if ownerID == string(s.PlayerFactionID) && owned < len(initialCommanderNames) {
 			name = initialCommanderNames[owned]
 		}
-		s.Commanders[id] = &army.Commander{ID: id, OwnerID: ownerID, Name: name, Level: army.CommanderStartingLevel}
+		s.Commanders[id] = &army.Commander{
+			ID:            id,
+			OwnerID:       ownerID,
+			Name:          name,
+			PortraitAsset: army.DefaultPortraitAsset,
+			Level:         army.CommanderStartingLevel,
+		}
 		owned++
 	}
 }
@@ -239,6 +248,28 @@ func cloneCommanderTemplate(source *army.Commander, ownerID string) *army.Comman
 	clone.Traits = append([]army.CommanderTrait(nil), source.Traits...)
 	clone.Normalize()
 	return &clone
+}
+
+func (s *GameState) repairGeneratedCommanderPortrait(commander *army.Commander) {
+	if s == nil || commander == nil || commander.PortraitAsset != "" {
+		return
+	}
+	if s.isTemplateCommander(commander.OwnerID, commander.ID) {
+		return
+	}
+	commander.PortraitAsset = army.DefaultPortraitAsset
+}
+
+func (s *GameState) isTemplateCommander(ownerID, commanderID string) bool {
+	if s == nil || ownerID == "" || commanderID == "" || s.CommanderTemplates == nil {
+		return false
+	}
+	for _, template := range s.CommanderTemplates[ownerID] {
+		if template != nil && template.ID == commanderID {
+			return true
+		}
+	}
+	return false
 }
 
 // EnsureFactionCommanders AI fraksiyonunun aktif ordularına deterministik şekilde

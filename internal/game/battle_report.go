@@ -11,9 +11,13 @@ import (
 )
 
 type battleArmySnapshot struct {
-	Units    int
-	HP       int
-	Strength int
+	Units                       int
+	HP                          int
+	Strength                    int
+	CommanderName               string
+	CommanderPortraitAsset      string
+	CommanderBattleEffects      string
+	CommanderOperationalEffects string
 }
 
 func snapshotBattleArmy(a *army.Army, types map[string]*army.UnitType) battleArmySnapshot {
@@ -27,7 +31,45 @@ func snapshotBattleArmy(a *army.Army, types map[string]*army.UnitType) battleArm
 	if types != nil {
 		snap.Strength = a.TotalStrength(types)
 	}
+	if a.Commander != nil {
+		snap.CommanderName = a.Commander.Name
+		snap.CommanderPortraitAsset = a.Commander.PortraitAsset
+		snap.CommanderBattleEffects = battleReportCommanderBattleEffects(a.Commander)
+		snap.CommanderOperationalEffects = battleReportCommanderOperationalEffects(a.Commander)
+	}
 	return snap
+}
+
+func battleReportCommanderBattleEffects(commander *army.Commander) string {
+	if commander == nil {
+		return ""
+	}
+	parts := make([]string, 0, 3)
+	if attack := commander.AttackModifier(); attack > 0 {
+		parts = append(parts, fmt.Sprintf("Saldırı +%.0f%%", attack*100))
+	}
+	if defense := commander.DefenseModifier(); defense > 0 {
+		parts = append(parts, fmt.Sprintf("Savunma +%.0f%%", defense*100))
+	}
+	if morale := commander.MoraleModifier(); morale > 0 {
+		parts = append(parts, fmt.Sprintf("Moral +%.0f%%", morale*100))
+	}
+	return strings.Join(parts, "  |  ")
+}
+
+func battleReportCommanderOperationalEffects(commander *army.Commander) string {
+	if commander == nil {
+		return ""
+	}
+	parts := make([]string, 0, 2)
+	if move := commander.MoveBonus(); move > 0 {
+		parts = append(parts, fmt.Sprintf("Hareket +%d", move))
+	}
+	progress, breach := commander.SiegeBonuses()
+	if progress > 0 || breach > 0 {
+		parts = append(parts, fmt.Sprintf("Kuşatma +%d/+%d", progress, breach))
+	}
+	return strings.Join(parts, "  |  ")
 }
 
 func totalBattleUnitsHP(units []army.Unit) int {
@@ -65,16 +107,20 @@ func buildBattleReportSide(label, factionName string, before, after battleArmySn
 		hpDamage = 0
 	}
 	return render.BattleReportSide{
-		Label:          label,
-		Faction:        factionName,
-		StrengthBefore: before.Strength,
-		StrengthAfter:  after.Strength,
-		UnitsBefore:    before.Units,
-		UnitsAfter:     after.Units,
-		UnitsLost:      lostUnits,
-		HPBefore:       before.HP,
-		HPAfter:        after.HP,
-		HPDamage:       hpDamage,
+		Label:                       label,
+		Faction:                     factionName,
+		CommanderName:               before.CommanderName,
+		CommanderPortraitAsset:      before.CommanderPortraitAsset,
+		CommanderBattleEffects:      before.CommanderBattleEffects,
+		CommanderOperationalEffects: before.CommanderOperationalEffects,
+		StrengthBefore:              before.Strength,
+		StrengthAfter:               after.Strength,
+		UnitsBefore:                 before.Units,
+		UnitsAfter:                  after.Units,
+		UnitsLost:                   lostUnits,
+		HPBefore:                    before.HP,
+		HPAfter:                     after.HP,
+		HPDamage:                    hpDamage,
 	}
 }
 

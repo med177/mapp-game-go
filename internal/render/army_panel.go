@@ -31,7 +31,21 @@ const (
 	armyPanelInfoY = float32(20)
 	armyPanelBtnY  = float32(24)
 	siegeFooterH   = float32(30)
+
+	armyPanelCommanderW        = float32(222)
+	armyPanelColumnGap         = float32(16)
+	armyPanelCommanderPortrait = float32(92)
+	armyPanelCommanderCardPad  = float32(10)
+	armyPanelCommanderSectionY = float32(8)
 )
+
+type armyPanelLayout struct {
+	panelX, panelY, panelW, panelH float32
+	headerY                        float32
+	gridX, gridY, gridW, gridH     float32
+	commanderX, commanderY         float32
+	commanderW, commanderH         float32
+}
 
 // DrawArmyDetailPanel seçili ordunun birimlerini Total War stilinde ekranın alt
 // orta kısmında birim kart ızgarası olarak gösterir.
@@ -61,15 +75,8 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 
 	ensureArmySheet()
 
-	const totalSlots = army.MaxArmySize
-	cols := maxCols
-	rows := (totalSlots + maxCols - 1) / maxCols
-
-	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
-
-	px := float32(ScreenWidth)/2 - panelW/2
-	py := bottomBarTop() - panelH - 55
+	layout := armyPanelGeometry()
+	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
@@ -109,7 +116,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
 	mpW := MeasureText(mpStr, FaceSmall)
-	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12
+	actionStartX := splitButtonBlockLeft(px, panelW, hasArmyMergeActions(gs, aid))
+	headerMaxW := float64(actionStartX - px - armyPanelPadX - 10)
+	if rightLimited := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12; rightLimited < headerMaxW {
+		headerMaxW = rightLimited
+	}
 	if headerMaxW < 0 {
 		headerMaxW = 0
 	}
@@ -147,19 +158,22 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		canMerge := len(other.Units) < army.MaxArmySize
 		drawArmyActionButton(screen, px, py, panelW, "⊕ BİRLEŞTİR", canMerge, true, false)
 	}
-	drawCommanderActionButton(screen, px, py, panelW, a)
 
 	// Ayırıcı
-	sepY := py + armyPanelHdrH
+	sepY := layout.headerY
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
+	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
+
+	drawArmyCommanderCard(screen, a, layout)
 
 	// ── Birim kartları — 20 slot, boş olanlar silik görünür ─────────────
+	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
 		col := i % maxCols
 		row := i / maxCols
 
-		cx := px + armyPanelPadX + float32(col)*(cardW+cardGap)
-		cy := sepY + armyPanelPadY/2 + float32(row)*(cardH+cardGap)
+		cx := layout.gridX + float32(col)*(cardW+cardGap)
+		cy := layout.gridY + float32(row)*(cardH+cardGap)
 
 		if i >= len(a.Units) {
 			// Boş slot — silik çerçeve
@@ -281,6 +295,17 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 }
 
+func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
+	commander, role := armyPanelDisplayedCommander(a)
+	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
+		Role:            role,
+		EmptySummary:    "Bu orduda atanmış komutan görünmüyor.",
+		EmptyEffectText: "Komutan bilgisi görünmüyor.",
+		ShowEffectText:  false,
+		MaxTraitRows:    1,
+	})
+}
+
 func armyDetailPanelRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
 	if gs == nil || aid == "" {
 		return gameui.Rect{}, false
@@ -289,35 +314,18 @@ func armyDetailPanelRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, boo
 	if !ok || a == nil {
 		return gameui.Rect{}, false
 	}
-	if a.OwnerID != string(gs.PlayerFactionID) {
-		panelW := float32(380)
-		panelH := float32(96)
-		return gameui.Rect{
-			X: ScreenWidth/2 - float64(panelW)/2,
-			Y: float64(bottomBarTop() - panelH - 5),
-			W: float64(panelW),
-			H: float64(panelH),
-		}, true
-	}
-
-	const totalSlots = army.MaxArmySize
-	cols := maxCols
-	rows := (totalSlots + maxCols - 1) / maxCols
-	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
+	layout := armyPanelGeometry()
 	return gameui.Rect{
-		X: ScreenWidth/2 - float64(panelW)/2,
-		Y: float64(bottomBarTop() - panelH - 55),
-		W: float64(panelW),
-		H: float64(panelH),
+		X: float64(layout.panelX),
+		Y: float64(layout.panelY),
+		W: float64(layout.panelW),
+		H: float64(layout.panelH),
 	}, true
 }
 
 func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army) {
-	panelW := float32(380)
-	panelH := float32(96)
-	px := float32(ScreenWidth)/2 - panelW/2
-	py := bottomBarTop() - panelH - 5
+	layout := armyPanelGeometry()
+	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
 
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
 	drawPanelBorder(screen, px, py, panelW, panelH)
@@ -337,10 +345,37 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 		location = r.NameTR
 	}
 
-	DrawText(screen, "Rakip Ordu", float64(px)+14, float64(py)+10, FaceMed, factionCol)
-	DrawText(screen, factionName+"  —  "+location, float64(px)+14, float64(py)+34, FaceSmall, ColorGray)
-	DrawText(screen, "Birim ve hareket detayları bilinmiyor", float64(px)+14, float64(py)+56, FaceSmall, color.RGBA{160, 140, 100, 210})
-	DrawText(screen, "Bu orduya hareket emri verilemez", float64(px)+14, float64(py)+74, FaceSmall, color.RGBA{180, 100, 90, 210})
+	headerLeft := "Rakip Ordu: " + factionName
+	if location != "" {
+		headerLeft += "  —  " + location
+	}
+	headerRight := "Birim sayısı bilinmiyor"
+	rightW := MeasureText(headerRight, FaceSmall)
+	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - rightW - 12
+	if headerMaxW < 0 {
+		headerMaxW = 0
+	}
+	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
+	DrawText(screen, headerRight, float64(px)+float64(panelW)-float64(armyPanelPadX)-rightW, float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
+
+	sepY := layout.headerY
+	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
+	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
+
+	drawEnemyArmyCommanderCard(screen, a, layout)
+
+	const totalSlots = army.MaxArmySize
+	for i := 0; i < totalSlots; i++ {
+		col := i % maxCols
+		row := i / maxCols
+		cx := layout.gridX + float32(col)*(cardW+cardGap)
+		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		drawUnknownEnemyUnitCard(screen, cx, cy)
+	}
+
+	vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
+	vector.StrokeLine(screen, px, py+panelH-siegeFooterH, px+panelW, py+panelH-siegeFooterH, 1, panelBorder, false)
+	DrawText(screen, "Bu orduya hareket emri verilemez  |  Birim detayları gizli", float64(px)+float64(armyPanelPadX), float64(py+panelH-siegeFooterH+2), FaceSmall, color.RGBA{180, 100, 90, 210})
 }
 
 func playerHasRevealEnemyStrength(gs *state.GameState) bool {
@@ -390,13 +425,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	ensureArmySheet()
 
 	const totalSlots = army.MaxArmySize
-	cols := maxCols
-	rows := (totalSlots + maxCols - 1) / maxCols
-
-	panelW := float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2
-	px := float32(ScreenWidth)/2 - panelW/2
-	py := bottomBarTop() - panelH - 5
+	layout := armyPanelGeometry()
+	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
 
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
 	drawPanelBorder(screen, px, py, panelW, panelH)
@@ -433,15 +463,18 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
 
-	sepY := py + armyPanelHdrH
+	sepY := layout.headerY
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
+	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
+
+	drawEnemyArmyCommanderCard(screen, a, layout)
 
 	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for i := 0; i < totalSlots; i++ {
 		col := i % maxCols
 		row := i / maxCols
-		cx := px + armyPanelPadX + float32(col)*(cardW+cardGap)
-		cy := sepY + armyPanelPadY/2 + float32(row)*(cardH+cardGap)
+		cx := layout.gridX + float32(col)*(cardW+cardGap)
+		cy := layout.gridY + float32(row)*(cardH+cardGap)
 
 		if i >= len(a.Units) {
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 90}, false)
@@ -454,6 +487,16 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 		}
 		drawScoutedEnemyUnitCard(screen, gs, a.Units[i], cx, cy)
 	}
+
+	vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
+	vector.StrokeLine(screen, px, py+panelH-siegeFooterH, px+panelW, py+panelH-siegeFooterH, 1, panelBorder, false)
+	footer := "Bu orduya hareket emri verilemez"
+	if fullIntel {
+		footer += "  |  Tam istihbarat"
+	} else {
+		footer += "  |  Kısmi istihbarat"
+	}
+	DrawText(screen, footer, float64(px)+float64(armyPanelPadX), float64(py+panelH-siegeFooterH+2), FaceSmall, color.RGBA{180, 100, 90, 210})
 }
 
 func drawUnknownEnemyUnitCard(screen *ebiten.Image, cx, cy float32) {
@@ -518,68 +561,58 @@ const (
 )
 
 // armyPanelGeometry panel px/py/panelW değerlerini hesaplar.
-func armyPanelGeometry() (px, py, panelW float32) {
+func armyPanelGeometry() armyPanelLayout {
 	const totalSlots = army.MaxArmySize
 	cols := maxCols
 	rows := (totalSlots + maxCols - 1) / maxCols
-	panelW = float32(cols)*(cardW+cardGap) - cardGap + armyPanelPadX*2
+	gridW := float32(cols)*(cardW+cardGap) - cardGap
+	gridH := float32(rows)*(cardH+cardGap) - cardGap
+	panelW := gridW + armyPanelCommanderW + armyPanelColumnGap + armyPanelPadX*2
 	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
-	px = float32(ScreenWidth)/2 - panelW/2
-	py = bottomBarTop() - panelH - 55
-	return
+	px := float32(ScreenWidth)/2 - panelW/2
+	py := bottomBarTop() - panelH - 55
+	headerY := py + armyPanelHdrH
+	gridY := headerY + armyPanelPadY/2
+	return armyPanelLayout{
+		panelX:     px,
+		panelY:     py,
+		panelW:     panelW,
+		panelH:     panelH,
+		headerY:    headerY,
+		gridX:      px + armyPanelPadX + armyPanelCommanderW + armyPanelColumnGap,
+		gridY:      gridY,
+		gridW:      gridW,
+		gridH:      gridH,
+		commanderX: px + armyPanelPadX,
+		commanderY: gridY,
+		commanderW: armyPanelCommanderW,
+		commanderH: panelH - armyPanelHdrH - armyPanelPadY - siegeFooterH,
+	}
 }
 
 func buildArmyPanelCloseButton() gameui.Button {
-	px, py, panelW := armyPanelGeometry()
-	x, y, w, h := panelCloseRect(px, py, panelW)
+	layout := armyPanelGeometry()
+	x, y, w, h := panelCloseRect(layout.panelX, layout.panelY, layout.panelW)
 	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
 	btn.IconSize = 12
 	return btn
 }
 
-func commanderButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
-	bw, bh = float32(118), actionBtnH
-	bx = px + armyPanelPadX
-	by = py + armyPanelBtnY
-	return
-}
-
-func buildCommanderButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+func commanderPortraitHitRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
 	if gs == nil || aid == "" {
-		return gameui.Button{}, false
+		return gameui.Rect{}, false
 	}
 	a := gs.Armies[aid]
 	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
-		return gameui.Button{}, false
+		return gameui.Rect{}, false
 	}
-	px, py, panelW := armyPanelGeometry()
-	x, y, w, h := commanderButtonRect(px, py, panelW)
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), commanderActionLabel(a)), true
-}
-
-func commanderActionLabel(a *army.Army) string {
-	if a == nil {
-		return "KOMUTAN ATA"
-	}
-	if a.Commander != nil && a.EmbarkedCommander != nil {
-		return "KOMUTANLAR"
-	}
-	if a.EmbarkedCommander != nil {
-		return "KARA KOMUTANI"
-	}
-	if a.Commander != nil {
-		return "KOMUTAN DEĞİŞTİR"
-	}
-	return "KOMUTAN ATA"
-}
-
-func drawCommanderActionButton(screen *ebiten.Image, px, py, panelW float32, a *army.Army) {
-	x, y, w, h := commanderButtonRect(px, py, panelW)
-	label := commanderActionLabel(a)
-	vector.FillRect(screen, x, y, w, h, color.RGBA{50, 35, 12, 220}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, color.RGBA{160, 120, 40, 200}, false)
-	tw := float32(MeasureText(label, FaceSmall))
-	DrawText(screen, label, float64(x)+float64(w)/2-float64(tw)/2, float64(y)+3, FaceSmall, color.RGBA{220, 185, 70, 255})
+	layout := armyPanelGeometry()
+	return gameui.Rect{
+		X: float64(layout.commanderX + armyPanelCommanderCardPad),
+		Y: float64(layout.commanderY + 28),
+		W: float64(armyPanelCommanderPortrait),
+		H: float64(armyPanelCommanderPortrait),
+	}, true
 }
 
 // splitButtonRect BÖL butonunun piksel dikdörtgenini döner.
@@ -587,19 +620,22 @@ func drawCommanderActionButton(screen *ebiten.Image, px, py, panelW float32, a *
 func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
 	by = py + armyPanelBtnY
-	if hasMerge {
-		bx = px + panelW/2 - actionBtnGap/2 - bw
-	} else {
-		bx = px + panelW/2 - bw/2
-	}
+	bx = splitButtonBlockLeft(px, panelW, hasMerge)
 	return
+}
+
+func splitButtonBlockLeft(px, panelW float32, hasMerge bool) float32 {
+	if hasMerge {
+		return px + panelW - armyPanelPadX - actionBtnW*2 - actionBtnGap - 26
+	}
+	return px + panelW - armyPanelPadX - actionBtnW - 26
 }
 
 // mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
 func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
 	by = py + armyPanelBtnY
-	bx = px + panelW/2 + actionBtnGap/2
+	bx = px + panelW - armyPanelPadX - actionBtnW - 26
 	return
 }
 
@@ -611,9 +647,9 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, 
 	if !ok || len(a.Units) < 2 {
 		return gameui.Button{}, false
 	}
-	px, py, panelW := armyPanelGeometry()
+	layout := armyPanelGeometry()
 	hasMerge := FindMergeTarget(gs, aid) != ""
-	bx, by, bw, bh := splitButtonRect(px, py, panelW, hasMerge)
+	bx, by, bw, bh := splitButtonRect(layout.panelX, layout.panelY, layout.panelW, hasMerge)
 	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "✂ BÖL"), true
 }
 
@@ -621,8 +657,8 @@ func buildMergeArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, 
 	if FindMergeTarget(gs, aid) == "" {
 		return gameui.Button{}, false
 	}
-	px, py, panelW := armyPanelGeometry()
-	bx, by, bw, bh := mergeButtonRect(px, py, panelW)
+	layout := armyPanelGeometry()
+	bx, by, bw, bh := mergeButtonRect(layout.panelX, layout.panelY, layout.panelW)
 	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "⊕ BİRLEŞTİR"), true
 }
 
@@ -635,6 +671,10 @@ func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label st
 	} else {
 		bx, by, bw, bh = mergeButtonRect(px, py, panelW)
 	}
+	drawArmyPanelButton(screen, bx, by, bw, bh, label, active)
+}
+
+func drawArmyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
 	bg := color.RGBA{50, 35, 12, 220}
 	border := color.RGBA{160, 120, 40, 200}
 	txt := color.RGBA{220, 185, 70, 255}
@@ -643,10 +683,48 @@ func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label st
 		border = color.RGBA{55, 45, 28, 120}
 		txt = color.RGBA{90, 80, 55, 160}
 	}
-	vector.FillRect(screen, bx, by, bw, bh, bg, false)
-	vector.StrokeRect(screen, bx, by, bw, bh, 1, border, false)
+	vector.FillRect(screen, x, y, w, h, bg, false)
+	vector.FillRect(screen, x, y, w, 2, color.RGBA{208, 170, 72, 230}, false)
+	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
 	tw := float32(MeasureText(label, FaceSmall))
-	DrawText(screen, label, float64(bx)+float64(bw)/2-float64(tw)/2, float64(by)+3, FaceSmall, txt)
+	DrawText(screen, label, float64(x)+float64(w)/2-float64(tw)/2, float64(y)+3, FaceSmall, txt)
+}
+
+func hasArmyMergeActions(gs *state.GameState, aid army.ArmyID) bool {
+	return FindMergeTarget(gs, aid) != ""
+}
+
+func armyPanelDisplayedCommander(a *army.Army) (*army.Commander, string) {
+	if a == nil {
+		return nil, "Komutan"
+	}
+	if a.Commander != nil {
+		if a.IsNaval {
+			return a.Commander, "Filo Komutanı"
+		}
+		return a.Commander, "Komutan"
+	}
+	if a.EmbarkedCommander != nil {
+		return a.EmbarkedCommander, "Taşınan Komutan"
+	}
+	return nil, "Komutan"
+}
+
+func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
+	commander, role := armyPanelDisplayedCommander(a)
+	extra := ""
+	if a != nil && a.Commander != nil && a.EmbarkedCommander != nil && a.Commander != a.EmbarkedCommander {
+		extra = fmt.Sprintf("Taşınan: %s Lv.%d", a.EmbarkedCommander.Name, a.EmbarkedCommander.Level)
+	}
+	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
+		Role:            role,
+		EmptySummary:    "Komutan atayarak savaş, hareket ve kuşatma bonusu kazan.",
+		EmptyEffectText: "Katkı: atanmış komutan yok.",
+		ExtraLine:       extra,
+		ShowEffectText:  false,
+		MaxTraitRows:    1,
+		BottomInset:     8,
+	})
 }
 
 // FindMergeTarget aynı bölgede aynı türde (naval/kara) başka dost ordu varsa ID'sini döner.
@@ -677,9 +755,14 @@ func MergeButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bo
 	return ok && btn.HitTest(fx, fy)
 }
 
-func CommanderButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
-	btn, ok := buildCommanderButton(gs, aid)
-	return ok && btn.HitTest(fx, fy)
+func CommanderPortraitHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	rect, ok := commanderPortraitHitRect(gs, aid)
+	return ok && rect.Hit(fx, fy)
+}
+
+func ArmyPanelBoundsHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	rect, ok := armyDetailPanelRect(gs, aid)
+	return ok && rect.Hit(fx, fy)
 }
 
 func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
@@ -689,7 +772,7 @@ func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyI
 	if SplitButtonHitTest(fx, fy, gs, aid) || MergeButtonHitTest(fx, fy, gs, aid) {
 		return true
 	}
-	if CommanderButtonHitTest(fx, fy, gs, aid) {
+	if CommanderPortraitHitTest(fx, fy, gs, aid) {
 		return true
 	}
 	return false

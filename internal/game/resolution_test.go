@@ -233,6 +233,31 @@ func TestApplySeasonEffectsAddsNavalMoveBonus(t *testing.T) {
 	}
 }
 
+func TestApplySeasonEffectsAddsCommanderMoveBonus(t *testing.T) {
+	tactician := army.NewCommander("cmd_tactician", "Taktisyen")
+	tactician.Experience = army.CommanderLevel3XP
+	tactician.Normalize()
+
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"land": {ID: "land", OwnerID: "player", RegionID: "land_1", Commander: tactician},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"land_1": {ID: "land_1", OwnerID: "player"},
+		},
+	}
+
+	applySeasonEffects(gs)
+
+	if gs.Armies["land"].MaxMovePoints != 3 {
+		t.Fatalf("taktisyen komutan kara ordusuna +1 hareket vermeliydi, got=%d", gs.Armies["land"].MaxMovePoints)
+	}
+}
+
 func TestApplyReligionConversionUsesTechSpeedBonus(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

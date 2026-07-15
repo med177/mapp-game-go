@@ -68,6 +68,16 @@ func TestCommanderBalanceMilestonesAndModifierCaps(t *testing.T) {
 	if got := c.DefenseModifier(); got != 0.10 {
 		t.Fatalf("maksimum savunma bonusu tavanı aşıyor: got=%.2f", got)
 	}
+	if got := c.MoraleModifier(); got != 0.13 {
+		t.Fatalf("maksimum moral bonusu beklenenden farklı: got=%.2f", got)
+	}
+	if got := c.MoveBonus(); got != 1 {
+		t.Fatalf("taktisyen hareket bonusu kayboldu: got=%d", got)
+	}
+	progress, breach := c.SiegeBonuses()
+	if progress != 1 || breach != 1 {
+		t.Fatalf("maksimum komutan kuşatma bonusları yanlış: progress=%d breach=%d", progress, breach)
+	}
 }
 
 func TestArmyCommanderAssignment(t *testing.T) {

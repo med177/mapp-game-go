@@ -359,13 +359,15 @@ func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[s
 	defDefenseMod := defMods.DefenseMod
 	commanderAttackMod, _ := atk.CommanderModifiers()
 	_, commanderDefenseMod := def.CommanderModifiers()
+	attackerMoraleMod := atk.CommanderMoraleModifier()
+	defenderMoraleMod := def.CommanderMoraleModifier()
 	if atk.IsNaval {
 		atkAttackMod = atkMods.NavalAttackMod
 		defDefenseMod = defMods.NavalDefenseMod
 	}
 	cfg := battleStanceSpec(context, stance)
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod)
-	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod)
+	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod)
+	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod + defenderMoraleMod)
 	if atkStr < 1 {
 		atkStr = 1
 	}

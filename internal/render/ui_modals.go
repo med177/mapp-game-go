@@ -96,7 +96,7 @@ func battlePlanCardRects() [3]gameui.Rect {
 		cardW = 252.0
 		cardH = 301.0
 		gap   = 18.0
-		topY  = 114.0
+		topY  = 126.0
 	)
 	totalW := cardW*3 + gap*2
 	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-totalW)/2

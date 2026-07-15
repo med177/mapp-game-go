@@ -185,7 +185,8 @@ func siegeProgressGain(gs *state.GameState, attacker *army.Army, targetRegion *w
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return 0
 	}
-	progress := attacker.SiegeUnitScore(gs.UnitTypes) + 1 + int(siegeTechMod(gs, attacker.OwnerID)*10+0.5)
+	progressBonus, _ := attacker.CommanderSiegeBonuses()
+	progress := attacker.SiegeUnitScore(gs.UnitTypes) + 1 + int(siegeTechMod(gs, attacker.OwnerID)*10+0.5) + progressBonus
 	progress -= targetRegion.FortificationLevel()
 	if defender != nil {
 		progress -= defender.TotalDefense(gs.UnitTypes) / 90
@@ -207,7 +208,8 @@ func siegeBreachGain(gs *state.GameState, attacker *army.Army, targetRegion *wor
 	if fortLevel < 1 {
 		fortLevel = 1
 	}
-	gain := attacker.HighestSiegeTier(gs.UnitTypes) + 1 + int(siegeTechMod(gs, attacker.OwnerID)*8+0.5) - fortLevel/2
+	_, breachBonus := attacker.CommanderSiegeBonuses()
+	gain := attacker.HighestSiegeTier(gs.UnitTypes) + 1 + int(siegeTechMod(gs, attacker.OwnerID)*8+0.5) + breachBonus - fortLevel/2
 	if defender != nil {
 		gain -= defender.TotalDefense(gs.UnitTypes) / 120
 	}

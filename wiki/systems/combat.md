@@ -86,11 +86,23 @@ ilk zaferle seviye 2 ve `Savaş Tecrübesi`, 300 XP'de `Taktisyen`, 550 XP'de
 `Savunma Uzmanı`, 850 XP'de `Saldırgan` trait'i açılır. Bu eşikler komutanın yaklaşık
 9 zaferde maksimum seviyeye ulaşmasını sağlar.
 
-Trait'ler `Army.CommanderModifiers()` üzerinden aynı `battleStrengths()` hattına
-bağlanır. Böylece komutan etkisi hem gerçek resolve hem de savaş öncesi preview'da
-aynı hesapla uygulanır. Bonus tavanı maksimum seviyede saldırı için `%12`, savunma için
-`%10` olacak şekilde sınırlıdır. Birleşik savunmada XP, sanal birleşik orduya değil
-savaşa katılan gerçek savunucu orduların komutanlarına yazılır.
+Trait'ler `Army.CommanderModifiers()` ve ek komutan helper'ları üzerinden aynı
+`battleStrengths()` hattına bağlanır. Böylece komutan etkisi hem gerçek resolve hem de
+savaş öncesi preview'da aynı hesapla uygulanır. Bonus tavanı maksimum seviyede saldırı
+için `%12`, savunma için `%10`, moral için `%13` olacak şekilde sınırlıdır. Yeni
+uzmanlıklar mevcut trait'lerden türetilir:
+
+| Trait | Etki |
+|---|---|
+| `Savaş Tecrübesi` | saldırı `%2`, savunma `%2`, moral `%8` |
+| `Taktisyen` | saldırı `%4`, savunma `%2`, hareket `+1` |
+| `Savunma Uzmanı` | savunma `%6`, moral `%5` |
+| `Saldırgan` | saldırı `%6`, kuşatma ilerleme `+1`, gedik kazanımı `+1` |
+
+Bu yüzden komutan etkisi artık sadece savaş gücüyle sınırlı değil: tur başı hareket
+havuzu, kuşatma tick'lerindeki `BreachProgress` / gedik kazanımı ve moral tabanlı savaş
+dayanıklılığı da aynı kariyer hattından beslenir. Birleşik savunmada XP, sanal birleşik
+orduya değil savaşa katılan gerçek savunucu orduların komutanlarına yazılır.
 
 Oyuncu fraksiyonu için başlangıçta üç kişilik komutan havuzu oluşturulur. Ordu detay
 panelindeki `KOMUTAN ATA` / `KOMUTAN DEĞİŞTİR` aksiyonu, boşta olan komutanları gösteren

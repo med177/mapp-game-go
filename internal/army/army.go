@@ -76,6 +76,30 @@ func (a *Army) CommanderModifiers() (attack, defense float64) {
 	return a.Commander.AttackModifier(), a.Commander.DefenseModifier()
 }
 
+// CommanderMoraleModifier ordunun moral tabanlı çarpanını döner.
+func (a *Army) CommanderMoraleModifier() float64 {
+	if a == nil || a.Commander == nil {
+		return 0
+	}
+	return a.Commander.MoraleModifier()
+}
+
+// CommanderMoveBonus ordunun komutanından gelen ekstra hareket puanını döner.
+func (a *Army) CommanderMoveBonus() int {
+	if a == nil || a.Commander == nil {
+		return 0
+	}
+	return a.Commander.MoveBonus()
+}
+
+// CommanderSiegeBonuses ordunun komutanından gelen kuşatma ilerleme bonuslarını döner.
+func (a *Army) CommanderSiegeBonuses() (progress, breach int) {
+	if a == nil || a.Commander == nil {
+		return 0, 0
+	}
+	return a.Commander.SiegeBonuses()
+}
+
 // RecordBattle sonucu bu ordunun komutanına aktarır.
 func (a *Army) RecordBattle(won bool) CommanderProgress {
 	if a == nil || a.Commander == nil {

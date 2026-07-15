@@ -23,6 +23,28 @@ func TestBattleReportCommanderProgressTextIncludesPromotionAndTrait(t *testing.T
 	}
 }
 
+func TestBattleReportCommanderEffectTextsHandlePresentAndMissingCommander(t *testing.T) {
+	side := BattleReportSide{
+		CommanderName:               "Osman Bey",
+		CommanderBattleEffects:      "Saldırı +6%  |  Moral +8%",
+		CommanderOperationalEffects: "Hareket +1  |  Kuşatma +1/+1",
+	}
+	for _, want := range []string{"Osman Bey", "Saldırı +6%", "Hareket +1"} {
+		full := battleReportCommanderNameText(side) + " " + battleReportCommanderBattleText(side) + " " + battleReportCommanderOperationalText(side)
+		if !strings.Contains(full, want) {
+			t.Fatalf("komutan blok metni %q içinde %q yok", full, want)
+		}
+	}
+
+	empty := BattleReportSide{}
+	for _, want := range []string{"Komutan: Yok", "Muharebe: katkı yok.", "Operasyon: katkı yok."} {
+		full := battleReportCommanderNameText(empty) + " " + battleReportCommanderBattleText(empty) + " " + battleReportCommanderOperationalText(empty)
+		if !strings.Contains(full, want) {
+			t.Fatalf("boş komutan blok metni %q içinde %q yok", full, want)
+		}
+	}
+}
+
 func TestBattleReportSceneMappings(t *testing.T) {
 	tests := []struct {
 		scene     BattleScene

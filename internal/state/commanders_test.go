@@ -100,6 +100,31 @@ func TestEnsureFactionCommandersAssignsAIFieldArmies(t *testing.T) {
 		if commander.OwnerID != "ai" || commander.AssignedArmyID == "" {
 			t.Fatalf("AI komutan bağlantısı eksik: %+v", commander)
 		}
+		if commander.PortraitAsset != army.DefaultPortraitAsset {
+			t.Fatalf("AI fallback komutan portresi default olmaliydi: %+v", commander)
+		}
+	}
+}
+
+func TestSyncCommanderLinksRepairsGeneratedCommanderPortraitFromSave(t *testing.T) {
+	gs := &GameState{
+		Commanders: map[string]*army.Commander{
+			"commander_ai_7": {
+				ID:             "commander_ai_7",
+				OwnerID:        "ai",
+				Name:           "Komutan 7",
+				AssignedArmyID: "a1",
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {ID: "a1", OwnerID: "ai"},
+		},
+	}
+
+	gs.SyncCommanderLinks()
+
+	if got := gs.Commanders["commander_ai_7"].PortraitAsset; got != army.DefaultPortraitAsset {
+		t.Fatalf("save'den gelen fallback komutan default portre almaliydi: got=%q", got)
 	}
 }
 

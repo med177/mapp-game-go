@@ -10641,6 +10641,20 @@
         "move_points": 2,
         "max_move_points": 2,
         "is_naval": false,
+        "commander": {
+          "id": "commander_ottoman_konur",
+          "owner_id": "ottoman",
+          "assigned_army_id": "army_ottoman_1",
+          "name": "Konur Alp",
+          "portrait_asset": "ottoman_konur.png",
+          "level": 1,
+          "experience": 0,
+          "battles": 0,
+          "victories": 0,
+          "traits": [
+            "veteran"
+          ]
+        },
         "in_ambush": false
       },
       "army_papal_states_1": {
@@ -11056,6 +11070,48 @@
         "max_move_points": 2,
         "is_naval": false,
         "in_ambush": false
+      }
+    },
+    "commanders": {
+      "commander_ottoman_akca": {
+        "id": "commander_ottoman_akca",
+        "owner_id": "ottoman",
+        "name": "Akça Koca",
+        "portrait_asset": "ottoman_akca.png",
+        "level": 1,
+        "experience": 0,
+        "battles": 0,
+        "victories": 0,
+        "traits": [
+          "defender"
+        ]
+      },
+      "commander_ottoman_konur": {
+        "id": "commander_ottoman_konur",
+        "owner_id": "ottoman",
+        "assigned_army_id": "army_ottoman_1",
+        "name": "Konur Alp",
+        "portrait_asset": "ottoman_konur.png",
+        "level": 1,
+        "experience": 0,
+        "battles": 0,
+        "victories": 0,
+        "traits": [
+          "veteran"
+        ]
+      },
+      "commander_ottoman_osman": {
+        "id": "commander_ottoman_osman",
+        "owner_id": "ottoman",
+        "name": "Osman Gazi",
+        "portrait_asset": "ottoman_osman.png",
+        "level": 1,
+        "experience": 0,
+        "battles": 0,
+        "victories": 0,
+        "traits": [
+          "aggressor"
+        ]
       }
     },
     "economic_victory_turns": 0,
