@@ -115,3 +115,29 @@ func TestCommanderSummaryHeaderTextsSwapNameAndRole(t *testing.T) {
 		t.Fatalf("sag baslik isim olmaliydi: %q", right)
 	}
 }
+
+func TestArmyPanelCommanderCardFitsProfileAndTraitOverflow(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	layout := armyPanelGeometry()
+	textW := commanderSummaryTextWidth(float64(layout.commanderW))
+	for _, line := range []string{
+		"Seviye 5  |  1500 XP",
+		"Savaş 15  |  Zafer 15",
+	} {
+		if MeasureText(line, FaceSmall) > textW {
+			t.Fatalf("komutan profil satırı karta sığmıyor: line=%q width=%.1f textW=%.1f", line, MeasureText(line, FaceSmall), textW)
+		}
+	}
+
+	dividerY := commanderSummaryDividerY(float64(layout.commanderY)+28, 5)
+	badgesBottomY := dividerY + 24 + 18 + 6 + 18
+	cardBottomY := float64(layout.commanderY + layout.commanderH)
+	if badgesBottomY > cardBottomY {
+		t.Fatalf("komutan uzmanlık rozetleri karttan taşıyor: badgesBottom=%.1f cardBottom=%.1f", badgesBottomY, cardBottomY)
+	}
+}

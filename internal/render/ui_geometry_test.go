@@ -300,6 +300,10 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	if splitBtn.X+splitBtn.W >= mergeBtn.X {
 		t.Fatalf("split/merge butonlari birbirine giriyor: split=%+v merge=%+v", splitBtn, mergeBtn)
 	}
+	statusTextLeft := float64(px+panelW-armyPanelPadX) - MeasureText("Takviye aktif", FaceSmall)
+	if mergeBtn.X+mergeBtn.W > statusTextLeft-8 {
+		t.Fatalf("merge butonu sağ durum metnine giriyor: merge=%+v statusTextLeft=%.1f", mergeBtn, statusTextLeft)
+	}
 	if commanderPortrait.X < float64(layout.commanderX)-0.5 || commanderPortrait.X+commanderPortrait.W > float64(layout.commanderX+layout.commanderW)+0.5 {
 		t.Fatalf("commander portrait commander kolonundan tasiyor: rect=%+v layout=%+v", commanderPortrait, layout)
 	}

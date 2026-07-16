@@ -19,7 +19,8 @@
     "grain_cost": 12,
     "iron_cost": 0,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 2
   },
   {
     "attack": 16,
@@ -41,7 +42,8 @@
     "grain_cost": 18,
     "iron_cost": 8,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 2
   },
   {
     "attack": 25,
@@ -63,7 +65,8 @@
     "grain_cost": 24,
     "iron_cost": 12,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 2
   },
   {
     "attack": 17,
@@ -85,7 +88,8 @@
     "grain_cost": 20,
     "iron_cost": 4,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   },
   {
     "attack": 22,
@@ -107,7 +111,8 @@
     "grain_cost": 26,
     "iron_cost": 8,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   },
   {
     "attack": 28,
@@ -129,7 +134,8 @@
     "grain_cost": 34,
     "iron_cost": 14,
     "timber_cost": 0,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   },
   {
     "attack": 20,
@@ -151,7 +157,8 @@
     "grain_cost": 10,
     "iron_cost": 12,
     "timber_cost": 8,
-    "stone_cost": 16
+    "stone_cost": 16,
+    "movement_points": 1
   },
   {
     "attack": 34,
@@ -173,7 +180,8 @@
     "grain_cost": 14,
     "iron_cost": 18,
     "timber_cost": 10,
-    "stone_cost": 24
+    "stone_cost": 24,
+    "movement_points": 1
   },
   {
     "attack": 42,
@@ -195,7 +203,8 @@
     "grain_cost": 18,
     "iron_cost": 24,
     "timber_cost": 12,
-    "stone_cost": 34
+    "stone_cost": 34,
+    "movement_points": 1
   },
   {
     "attack": 27,
@@ -217,7 +226,8 @@
     "grain_cost": 8,
     "iron_cost": 12,
     "timber_cost": 34,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   },
   {
     "attack": 5,
@@ -240,7 +250,8 @@
     "grain_cost": 8,
     "iron_cost": 6,
     "timber_cost": 20,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   },
   {
     "attack": 6,
@@ -262,6 +273,7 @@
     "grain_cost": 8,
     "iron_cost": 8,
     "timber_cost": 26,
-    "stone_cost": 0
+    "stone_cost": 0,
+    "movement_points": 3
   }
 ]

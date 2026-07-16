@@ -19,7 +19,8 @@
     "turns_required": 1,
     "required_bldg": "",
     "required_bldg_level": 0,
-    "required_tech": ""
+    "required_tech": "",
+    "movement_points": 2
   },
   {
     "id": "billmen",
@@ -41,7 +42,8 @@
     "turns_required": 2,
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "bill_and_bow"
+    "required_tech": "bill_and_bow",
+    "movement_points": 2
   },
   {
     "id": "longbowmen",
@@ -63,7 +65,8 @@
     "turns_required": 2,
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "longbow_tradition"
+    "required_tech": "longbow_tradition",
+    "movement_points": 2
   },
   {
     "id": "men_at_arms",
@@ -85,7 +88,8 @@
     "turns_required": 3,
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "retinue_contracts"
+    "required_tech": "retinue_contracts",
+    "movement_points": 2
   },
   {
     "id": "mounted_men_at_arms",
@@ -107,7 +111,8 @@
     "turns_required": 3,
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "retinue_contracts"
+    "required_tech": "retinue_contracts",
+    "movement_points": 3
   },
   {
     "id": "household_knights",
@@ -129,7 +134,8 @@
     "turns_required": 4,
     "required_bldg": "barracks",
     "required_bldg_level": 3,
-    "required_tech": "plate_harness"
+    "required_tech": "plate_harness",
+    "movement_points": 3
   },
   {
     "id": "gallowglass",
@@ -151,7 +157,8 @@
     "turns_required": 2,
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "gallowglass_contracts"
+    "required_tech": "gallowglass_contracts",
+    "movement_points": 2
   },
   {
     "id": "handgunners",
@@ -173,7 +180,8 @@
     "turns_required": 3,
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "gunpowder_handguns"
+    "required_tech": "gunpowder_handguns",
+    "movement_points": 2
   },
   {
     "id": "bombard",
@@ -195,7 +203,8 @@
     "turns_required": 4,
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "artillery_trains"
+    "required_tech": "artillery_trains",
+    "movement_points": 1
   },
   {
     "id": "carrack",
@@ -217,7 +226,8 @@
     "turns_required": 4,
     "required_bldg": "port",
     "required_bldg_level": 2,
-    "required_tech": "navigation"
+    "required_tech": "navigation",
+    "movement_points": 3
   },
   {
     "id": "war_galley",
@@ -239,7 +249,8 @@
     "turns_required": 3,
     "required_bldg": "port",
     "required_bldg_level": 1,
-    "required_tech": "navigation"
+    "required_tech": "navigation",
+    "movement_points": 3
   },
   {
     "id": "mercenary_company",
@@ -261,6 +272,7 @@
     "turns_required": 2,
     "required_bldg": "market",
     "required_bldg_level": 1,
-    "required_tech": "mercenary_contracts"
+    "required_tech": "mercenary_contracts",
+    "movement_points": 2
   }
 ]

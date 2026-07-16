@@ -256,3 +256,20 @@ func TestActiveRegionEventMarkerStaysAboveArmyIconSpace(t *testing.T) {
 		t.Fatalf("event marker ordu alanının üstünde yeterince boşluk bırakmıyor: eventY=%.2f armyCenterY=%.2f", eventY, armyCenterY)
 	}
 }
+
+func TestRegionActiveEventCountFiltersSelectedRegionAndExpiredEvents(t *testing.T) {
+	gs := &state.GameState{
+		ActiveRegionEvents: []state.RegionEventStatus{
+			{RegionID: "bursa", TurnsLeft: 3},
+			{RegionID: "bursa", TurnsLeft: 0},
+			{RegionID: "ankara", TurnsLeft: 4},
+		},
+	}
+
+	if got := regionActiveEventCount(gs, "bursa"); got != 1 {
+		t.Fatalf("seçili bölgenin yalnız aktif event'i sayılmalı: got=%d want=1", got)
+	}
+	if got := regionActiveEventCount(gs, "ankara"); got != 1 {
+		t.Fatalf("diğer bölgenin aktif event'i sayılmalı: got=%d want=1", got)
+	}
+}

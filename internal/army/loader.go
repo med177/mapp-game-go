@@ -45,8 +45,13 @@ type unitCountJSON struct {
 	Count  int    `json:"count"`
 }
 
-// LoadArmies armies.json'dan başlangıç ordularını yükler.
-func LoadArmies(path string) (map[ArmyID]*Army, error) {
+// LoadArmies armies.json'dan başlangıç ordularını yükler. unitTypes verilirse
+// başlangıç hareket havuzu ordu kompozisyonuna göre hesaplanır.
+func LoadArmies(path string, unitTypeSets ...map[string]*UnitType) (map[ArmyID]*Army, error) {
+	var unitTypes map[string]*UnitType
+	if len(unitTypeSets) > 0 {
+		unitTypes = unitTypeSets[0]
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("ordular okunamadı: %w", err)
@@ -68,18 +73,19 @@ func LoadArmies(path string) (map[ArmyID]*Army, error) {
 		} else if !s.IsNaval && LooksLikeGarrisonID(id) {
 			isGarrison = true
 		}
-		armies[id] = &Army{
+		loadedArmy := &Army{
 			ID:                 id,
 			OwnerID:            s.OwnerID,
 			RegionID:           s.Region,
 			DockedRegionID:     s.DockedRegion,
 			DockedSettlementID: s.DockedSettlementID,
 			Units:              units,
-			MovePoints:         2,
-			MaxMovePoints:      2,
 			IsNaval:            s.IsNaval,
 			IsGarrison:         isGarrison,
 		}
+		loadedArmy.MaxMovePoints = loadedArmy.BaseMovePoints(unitTypes)
+		loadedArmy.MovePoints = loadedArmy.MaxMovePoints
+		armies[id] = loadedArmy
 	}
 	return armies, nil
 }

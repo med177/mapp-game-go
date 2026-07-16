@@ -2273,23 +2273,30 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	// Kuşatma altındaki ordu hareket edemez; önce huruç savaşı yapmalı.
 	// Eğer kuşatan oyuncu ise sortie step'i döner (battle plan UI için).
 	if !a.IsNaval {
-		if siege := gs.SiegeAt(fromRegion); siege != nil && siege.AttackerArmyID != a.ID {
+		if siege := gs.SiegeAt(fromRegion); siege != nil && siege.AttackerArmyID != a.ID && gs.IsArmyDefendingSiegedRegion(a) {
 			siegeArmy := gs.Armies[siege.AttackerArmyID]
-			if siegeArmy != nil && siegeArmy.OwnerID != a.OwnerID {
+			sourceRegion := gs.Regions[fromRegion]
+			if siegeArmy != nil && sourceRegion != nil {
 				// AI vs AI sortie (veya oyuncu kuşatıyorsa): hemen çöz
 				atkMods := aiTechMods(gs, a.OwnerID)
 				defMods := aiTechMods(gs, siegeArmy.OwnerID)
 				defMods.DefenseMod += 0.10
-				result := combat.ResolveBattleWithMods(a, siegeArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+				result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
 				recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
 				if result.AttackerWins {
 					if len(siegeArmy.Units) == 0 {
 						gs.RemoveArmy(siegeArmy.ID)
 					}
-					if siege.AttackerHomeRegionID != "" {
-						siegeArmy.RegionID = siege.AttackerHomeRegionID
-					}
 					delete(gs.Sieges, fromRegion)
+					canExitToTarget := targetRegion.OwnerID == "" || targetRegion.OwnerID == a.OwnerID || diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+					if !canExitToTarget && targetRegion.OwnerID != "" {
+						_, stance := relationScore(gs, a.OwnerID, targetRegion.OwnerID)
+						canExitToTarget = stance == faction.StanceAllied
+					}
+					if canExitToTarget && len(a.Units) > 0 {
+						a.RegionID = target
+						a.MovePoints = maxInt(0, a.MovePoints-1)
+					}
 					msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
 					return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
 				}

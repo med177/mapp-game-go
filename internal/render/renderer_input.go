@@ -450,6 +450,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
 		r.devNeighborListExpanded = false
+		r.regionPanelScroll = 0
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
@@ -669,14 +670,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.resetRecruitSelection()
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
-	if idx, ok := r.activeRegionEventHitAt(fx, fy); ok {
-		r.eventDetail = r.activeRegionEventDetailAt(idx)
-		return InputAction{}
-	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		r.SelectedArmy = ""
 		if r.SelectedRegion != rid {
 			r.devNeighborListExpanded = false
+			r.regionPanelScroll = 0
 		}
 		r.SelectedRegion = rid
 		r.closeFactionPanel()
@@ -724,6 +722,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.SelectedArmy = ""
 			if r.SelectedRegion != rid {
 				r.devNeighborListExpanded = false
+				r.regionPanelScroll = 0
 			}
 			r.SelectedRegion = rid
 			r.closeFactionPanel()
@@ -736,6 +735,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	r.SelectedArmy = ""
 	if r.SelectedRegion != rid {
 		r.devNeighborListExpanded = false
+		r.regionPanelScroll = 0
 	}
 	r.SelectedRegion = rid
 	r.closeFactionPanel()
@@ -993,6 +993,20 @@ func (r *Renderer) handleRightClick() InputAction {
 			)
 			return InputAction{}
 		}
+		// Kuşatılan bölgedeki sahip veya müttefik ordu önce kuşatanla huruç
+		// savaşı yapmalıdır. Savaş kaynak bölgede, başarılı hareket ise seçilen
+		// komşu hedefte çözülür.
+		if !a.IsNaval && r.gs.IsArmyDefendingSiegedRegion(a) {
+			siege := r.gs.SiegeAt(a.RegionID)
+			var sortieDefender *army.Army
+			if siege != nil {
+				sortieDefender = r.gs.Armies[siege.AttackerArmyID]
+			}
+			if sortieDefender != nil {
+				r.openBattlePlanWithDestination(a, src, sortieDefender, ActionMoveArmy, combat.BattleContextLand, rid)
+				return InputAction{}
+			}
+		}
 		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && !isAlliedRegion && (targetSiege == nil || targetSiege.AttackerArmyID == a.ID) {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
@@ -1040,6 +1054,11 @@ func (r *Renderer) handleCamera() {
 
 	_, dy := ebiten.Wheel()
 	if dy != 0 {
+		mx, my := ebiten.CursorPosition()
+		if r.SelectedRegion != "" && regionPanelActivityHit(float64(mx), float64(my), r.gs, r.SelectedRegion) {
+			r.regionPanelScroll = clampRegionPanelScroll(r.gs, r.SelectedRegion, r.regionPanelScroll-dy*regionPanelScrollStep)
+			return
+		}
 		if r.selectedFactionPanel != "" && factionPanelHit(float64(mx), float64(my)) {
 			r.factionPanelScroll -= dy * factionPanelScrollStep
 			if r.factionPanelScroll < 0 {

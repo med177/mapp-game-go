@@ -7,10 +7,10 @@ type DiplomaticStanceDef struct {
 }
 
 var diplomaticStanceDefs = []DiplomaticStanceDef{
-	{Stance: StancePeace, NameTR: "Barış", BadgeTR: "PEACE Barış"},
-	{Stance: StanceWar, NameTR: "Savaş", BadgeTR: "WAR Savaş"},
-	{Stance: StanceAllied, NameTR: "Müttefik", BadgeTR: "ALLY Müttefik"},
-	{Stance: StanceTrade, NameTR: "Ticaret", BadgeTR: "TRADE Ticaret"},
+	{Stance: StancePeace, NameTR: "Barış", BadgeTR: "Barış"},
+	{Stance: StanceWar, NameTR: "Savaş", BadgeTR: "Savaş"},
+	{Stance: StanceAllied, NameTR: "Müttefik", BadgeTR: "Müttefik"},
+	{Stance: StanceTrade, NameTR: "Ticaret", BadgeTR: "Ticaret"},
 }
 
 var diplomaticStanceDefsByValue = func() map[DiplomaticStance]DiplomaticStanceDef {

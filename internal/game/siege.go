@@ -297,6 +297,48 @@ func (g *Game) clearSiege(regionID world.RegionID) {
 	delete(g.gs.Sieges, regionID)
 }
 
+// transferSiegeToRemainingArmy kuşatan ordu ayrılırken aynı fraksiyona ait
+// başka bir kara ordusu hedef bölgede kaldıysa kuşatma kaydını ona devreder.
+// Böylece kuşatma, kuşatan gücün son birimi bölgeden ayrılmadığı sürece
+// yalnızca eski ArmyID değişti diye düşmez.
+func (g *Game) transferSiegeToRemainingArmy(regionID world.RegionID, leavingArmyID army.ArmyID) bool {
+	if g == nil || g.gs == nil || regionID == "" || leavingArmyID == "" {
+		return false
+	}
+	siege := g.gs.SiegeAt(regionID)
+	if siege == nil || siege.AttackerArmyID != leavingArmyID {
+		return false
+	}
+	leavingArmy := g.gs.Armies[leavingArmyID]
+	attackerFactionID := siege.AttackerFactionID
+	if attackerFactionID == "" && leavingArmy != nil {
+		attackerFactionID = leavingArmy.OwnerID
+	}
+	if attackerFactionID == "" {
+		return false
+	}
+	for candidateID, candidate := range g.gs.Armies {
+		if candidateID == leavingArmyID || candidate == nil || candidate.IsNaval ||
+			candidate.OwnerID != attackerFactionID || candidate.RegionID != regionID ||
+			len(candidate.Units) == 0 {
+			continue
+		}
+		siege.AttackerArmyID = candidateID
+		return true
+	}
+	return false
+}
+
+// releaseSiegeForArmyMovement kuşatmayı terk eden ordunun yerine aynı
+// fraksiyondan kalan bir ordu varsa kaydı ona devreder; yoksa kuşatmayı
+// kaldırır. Çağıran taraf bunu yalnız hareket doğrulandıktan sonra yapmalıdır.
+func (g *Game) releaseSiegeForArmyMovement(regionID world.RegionID, leavingArmyID army.ArmyID) {
+	if g.transferSiegeToRemainingArmy(regionID, leavingArmyID) {
+		return
+	}
+	g.clearSiege(regionID)
+}
+
 func (g *Game) clearSiegesByArmy(armyID army.ArmyID) {
 	if g == nil || g.gs == nil || g.gs.Sieges == nil || armyID == "" {
 		return

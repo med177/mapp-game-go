@@ -350,6 +350,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	applyCampaignSaveState(gs, saved)
 	army.NormalizeLegacyGarrisons(gs.Armies)
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+	gs.RefreshArmyMovePoints(false)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
 	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(gs.ScenarioVictories, string(gs.PlayerFactionID))
@@ -464,7 +465,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		log.Printf("Teknolojiler yüklenemedi: %v", err)
 	}
 
-	armies, err := army.LoadArmies(dp("armies.json"))
+	armies, err := army.LoadArmies(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}

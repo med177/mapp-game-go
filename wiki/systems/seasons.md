@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-06-19
+last_updated: 2026-07-16
 related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
@@ -37,7 +37,14 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 `applySeasonEffects(gs)` — tur çözümleme sırasında **ilk** çalışır.
 
 - Kış: Her ordu için birim hasar kontrolü
-- İlkbahar: `MovePoints` bonusu (şu an taslak — detay `season.go`'da)
+- Hareket havuzu `ArmyMaxMovePoints()` ile hesaplanır: önce ordudaki en yavaş
+  birimin `UnitType.MovementPoints` değeri alınır, sonra mevsim çarpanı uygulanır;
+  komutan, teknoloji ve zorluk bonusları bu iklimlendirilmiş tabana eklenir.
+- Senaryo hareket değerleri: süvari `3`, piyade `2`, kuşatma/topçu `1`;
+  karışık kara ordusu her zaman en düşük değeri kullanır. Taşınan kara birlikleri
+  filonun hızını etkilemez.
+- İlkbahar `%110`, yaz `%100`, sonbahar `%95`, kış `%70` hareket çarpanı uygular;
+  sonuç en az `1` puandır.
 - Sonbahar: Gelir çarpanı
 - Kış dışı turlar: Kara orduları kendi kara toprağında toparlanır; donanmalar ise kendi veya müttefik limanına bağlı (`DockedRegionID`) durumdaysa toparlanır. Kendi limanında gemiler ve taşınan kara birlikleri `+10 HP`, müttefik limanında ise `+5 HP` alır
 - Gemide kara birimi taşıyan filolar limana uğramadan uzun süre açık denizde kalırsa `turns_without_port` sayacı işler; 3 turluk emniyet penceresinden sonra taşınan birlikler her tur artan HP zayiatı alır ve limana bağlanınca sayaç sıfırlanır

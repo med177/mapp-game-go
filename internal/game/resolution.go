@@ -6,7 +6,6 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
-	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -194,32 +193,17 @@ func applySeasonEffects(gs *state.GameState) {
 		}
 	}
 
-	movMod := s.MovementMod()
 	for _, a := range gs.Armies {
 		if !s.IsWinter() {
 			if a.IsNaval {
 				replenishDockedFleet(gs, a, friendlyReplenishHP)
-			} else {
+			} else if !gs.IsArmyDefendingSiegedRegion(a) {
 				a.ReplenishInFriendlyTerritory(gs.Regions, friendlyReplenishHP)
 			}
 		}
-		mp := 2 * movMod / 100
-		if mp < 1 {
-			mp = 1
-		}
-		// Kara ve deniz tech bonusları hareket havuzuna eklenir.
-		if f, ok := gs.Factions[faction.FactionID(a.OwnerID)]; ok && gs.TechTypes != nil {
-			fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
-			mp += fx.MoveBonus
-			if a.IsNaval {
-				mp += fx.NavalMoveBonus
-			}
-		}
-		// Difficulty 3: AI fraksiyonlar +1 hareket puanı bonusu alır
-		if gs.Difficulty >= 3 && a.OwnerID != string(gs.PlayerFactionID) {
-			mp++
-		}
-		mp += a.CommanderMoveBonus()
+		// Mevsim etkisi en yavaş birimin tabanına uygulanır; diğer hareket
+		// bonusları state katmanındaki ortak hesapta eklenir.
+		mp := gs.ArmyMaxMovePoints(a)
 		a.MaxMovePoints = mp
 		a.ResetMovePoints()
 	}
@@ -853,5 +837,3 @@ func ownerReligionStr(gs *state.GameState, ownerID string) string {
 	}
 	return ""
 }
-
-var _ = season.SeasonWinter

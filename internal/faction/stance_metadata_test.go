@@ -6,7 +6,7 @@ func TestDiplomaticStanceMetadata(t *testing.T) {
 	if got := DiplomaticStanceLabelTR(StanceTrade); got != "Ticaret" {
 		t.Fatalf("stance label mismatch: got=%q", got)
 	}
-	if got := DiplomaticStanceBadgeTR(StanceWar); got != "WAR Savaş" {
+	if got := DiplomaticStanceBadgeTR(StanceWar); got != "Savaş" {
 		t.Fatalf("stance badge mismatch: got=%q", got)
 	}
 }

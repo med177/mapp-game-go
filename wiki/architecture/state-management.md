@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-15
+last_updated: 2026-07-17
 related: [game-loop, render-pipeline, shape-editor]
 ---
 
@@ -71,6 +71,7 @@ type GameState struct {
 
 `SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
 `CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon, müttefik veya aynı vassal zincirindeki bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation/hiyerarşi verisinden okunur.
+`IsArmyDefendingSiegedRegion(candidate)`, aktif kuşatma altındaki bölgede bölge sahibi veya onun müttefiki olarak duran kara ordusunu ortak savunmacı state'i olarak tanımlar. Bu predicate huruç zorunluluğu ile kuşatma altı iyileşme engelinin aynı state kuralını kullanmasını sağlar.
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.
 
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
@@ -100,6 +101,15 @@ komutan `OwnerID` alanlarını birlikte günceller. Kara ordusu filoya bindiğin
 `Army.EmbarkedCommander` alanında korunur; `AmphibiousCommander()` çıkarma savaşında
 bu komutanı kullanır, başarılı karaya çıkışta yeni orduya geri bağlar ve başarısız
 çıkarma veya iptal durumunda havuza serbest bırakır.
+
+Ordu hareket havuzu da runtime state'te birim kompozisyonundan türetilir.
+`Army.BaseMovePoints(UnitTypes)` kendi `Units` listesindeki en düşük
+`UnitType.MovementPoints` değerini seçer; bu nedenle yalnız süvari `3`, yalnız
+piyade `2`, yalnız kuşatma/topçu `1`, karışık kara ordusu ise en yavaş birim kadar
+ilerler. Filo hesabında `EmbarkedUnits` dikkate alınmaz.
+`GameState.ArmyMaxMovePoints()` bu tabana mevcut mevsim çarpanını uygular ve
+ardından komutan/teknoloji/zorluk bonuslarını ekler; `RefreshArmyMovePoints()`
+ilk senaryo ve save/load senkronizasyonunda kullanılır.
 
 Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuyruğunu da serialize eder:
 

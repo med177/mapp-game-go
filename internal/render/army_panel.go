@@ -32,7 +32,8 @@ const (
 	armyPanelBtnY  = float32(24)
 	siegeFooterH   = float32(30)
 
-	armyPanelCommanderW        = float32(222)
+	armyPanelCommanderW        = float32(260)
+	armyPanelCommanderExtraH   = float32(12)
 	armyPanelColumnGap         = float32(16)
 	armyPanelCommanderPortrait = float32(92)
 	armyPanelCommanderCardPad  = float32(10)
@@ -134,7 +135,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	DrawText(screen, mpStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
-	if a.CanReplenishIn(gs.Regions) && a.HasDamagedUnits() {
+	if a.CanReplenishIn(gs.Regions) && !gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits() {
 		healStr := "Takviye aktif"
 		healW := MeasureText(healStr, FaceSmall)
 		DrawText(screen, healStr,
@@ -188,7 +189,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		u := a.Units[i]
 		utype := gs.UnitTypes[u.TypeID]
 		hpPct := u.HPPercent()
-		isReplenishing := a.CanReplenishIn(gs.Regions) && u.CurrentHP < army.MaxUnitHP
+		isReplenishing := a.CanReplenishIn(gs.Regions) && !gs.IsArmyDefendingSiegedRegion(a) && u.CurrentHP < army.MaxUnitHP
 
 		// Kart arka planı sabit beyaz.
 		cardBg := color.RGBA{255, 255, 255, 245}
@@ -273,26 +274,6 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		}
 	}
 
-	// ── Kuşatma bilgisi (birim kartlarının altında) ──────────────────
-	if siege := gs.SiegeByArmy(aid); siege != nil {
-		siegeRegionName := ""
-		if r, ok2 := gs.Regions[siege.RegionID]; ok2 {
-			siegeRegionName = r.NameTR
-		}
-		turnsLeft := siege.TurnsUntilSurrender()
-		footerY := py + panelH - siegeFooterH + float32(2)
-		siegeLine := fmt.Sprintf("⚔ Kuşatma: %s — Tahkimat: T%d | Gedik: %s | Teslime kalan: ~%d tur",
-			siegeRegionName, siege.FortLevel, siegeBreachLabelTR(siege.BreachLevel), turnsLeft)
-		if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
-			siegeLine = fmt.Sprintf("⚔ Kuşatma: %s — Tahkimat: T%d | Büyük gedik açıldı | Teslim olabilir",
-				siegeRegionName, siege.FortLevel)
-		}
-		// Footer arka planı
-		vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
-		vector.StrokeLine(screen, px, py+panelH-siegeFooterH, px+panelW, py+panelH-siegeFooterH, 1, panelBorder, false)
-		DrawText(screen, siegeLine,
-			float64(px)+float64(armyPanelPadX), float64(footerY), FaceSmall, color.RGBA{230, 140, 50, 240})
-	}
 }
 
 func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
@@ -555,9 +536,10 @@ func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, u army.
 }
 
 const (
-	actionBtnW   = float32(92)
-	actionBtnH   = float32(18)
-	actionBtnGap = float32(8)
+	actionBtnW          = float32(92)
+	actionBtnH          = float32(18)
+	actionBtnGap        = float32(8)
+	actionBtnRightInset = float32(92)
 )
 
 // armyPanelGeometry panel px/py/panelW değerlerini hesaplar.
@@ -568,7 +550,7 @@ func armyPanelGeometry() armyPanelLayout {
 	gridW := float32(cols)*(cardW+cardGap) - cardGap
 	gridH := float32(rows)*(cardH+cardGap) - cardGap
 	panelW := gridW + armyPanelCommanderW + armyPanelColumnGap + armyPanelPadX*2
-	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH
+	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH + armyPanelCommanderExtraH
 	px := float32(ScreenWidth)/2 - panelW/2
 	py := bottomBarTop() - panelH - 55
 	headerY := py + armyPanelHdrH
@@ -626,16 +608,16 @@ func splitButtonRect(px, py, panelW float32, hasMerge bool) (bx, by, bw, bh floa
 
 func splitButtonBlockLeft(px, panelW float32, hasMerge bool) float32 {
 	if hasMerge {
-		return px + panelW - armyPanelPadX - actionBtnW*2 - actionBtnGap - 26
+		return px + panelW - armyPanelPadX - actionBtnW*2 - actionBtnGap - actionBtnRightInset
 	}
-	return px + panelW - armyPanelPadX - actionBtnW - 26
+	return px + panelW - armyPanelPadX - actionBtnW - actionBtnRightInset
 }
 
 // mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
 func mergeButtonRect(px, py, panelW float32) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
 	by = py + armyPanelBtnY
-	bx = px + panelW - armyPanelPadX - actionBtnW - 26
+	bx = px + panelW - armyPanelPadX - actionBtnW - actionBtnRightInset
 	return
 }
 

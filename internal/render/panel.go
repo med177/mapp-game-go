@@ -63,18 +63,21 @@ const (
 
 	panelPad = float64(12)
 
-	regionPanelStatRowGap   = 22.0
-	regionPanelBarYOffset   = 4.0
-	regionPanelBarH         = float32(8)
-	regionPanelTaxButtonH   = float32(18)
-	regionPanelTaxButtonPad = float32(8)
-	regionPanelMeterValueW  = float32(54)
-	regionPanelMeterGap     = float32(10)
-	regionOwnerNameH        = float32(20)
-	regionVassalInfoH       = 14.0
-	buildingGridSpriteH     = float32(76)
-	buildingGridNameH       = float32(18)
-	buildingGridRowGap      = float32(7)
+	regionPanelStatRowGap      = 22.0
+	regionPanelBarYOffset      = 4.0
+	regionPanelBarH            = float32(8)
+	regionPanelTaxButtonH      = float32(18)
+	regionPanelTaxButtonPad    = float32(8)
+	regionPanelMeterValueW     = float32(54)
+	regionPanelMeterGap        = float32(10)
+	regionOwnerNameH           = float32(20)
+	regionVassalInfoH          = 14.0
+	regionPanelScrollStep      = 28.0
+	regionPanelActivityMinH    = 32.0
+	regionPanelActionBarHeight = 30.0
+	buildingGridSpriteH        = float32(76)
+	buildingGridNameH          = float32(18)
+	buildingGridRowGap         = float32(7)
 )
 
 func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
@@ -1469,12 +1472,9 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 		drawMinimapPolygons(screen, gs, mx, my)
 	}
 
-	// Ordu ve event konumları için dünya->minimap ölçeği.
+	// Ordu konumları için dünya->minimap ölçeği.
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
-
-	// Bölge event'leri: minimap'te kısa ömürlü görünürlük izi.
-	drawMinimapEventMarkers(screen, gs, float32(scaleX), float32(scaleY), mx, my)
 
 	// Ordu konumları katmanı
 	drawMinimapArmies(screen, gs, float32(scaleX), float32(scaleY), mx, my)
@@ -1742,10 +1742,14 @@ func drawMinimapOwnershipOverlay(screen *ebiten.Image, gs *state.GameState, scal
 
 // DrawRegionPanel seçili bölge bilgisini sol altta gösterir.
 func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.RegionID) {
-	DrawRegionPanelExpanded(screen, gs, rid, false)
+	DrawRegionPanelExpandedScrolled(screen, gs, rid, false, 0)
 }
 
 func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool) {
+	DrawRegionPanelExpandedScrolled(screen, gs, rid, neighborExpanded, 0)
+}
+
+func DrawRegionPanelExpandedScrolled(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool, scroll float64) {
 	if rid == "" {
 		return
 	}
@@ -1885,10 +1889,6 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 		ly += 18
 	}
 
-	if gs.DevelopmentMode {
-		ly += drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, color.RGBA{200, 170, 90, 220})
-	}
-
 	// ── Binalar bölümü ────────────────────────────────────────────────
 	ly += 4
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
@@ -1897,18 +1897,201 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 	drawUICenteredSectionLabel(screen, float64(px)+float64(pw)/2, ly, "BİNALAR")
 	ly += 17
 
-	drawBuildingGrid(screen, gs, region, px, float32(ly), pw)
+	buildingStartY := float32(ly)
+	drawBuildingGrid(screen, gs, region, px, buildingStartY, pw)
+	buildingEndY := buildingGridEndY(gs, region, buildingStartY)
 
-	if region.OwnerID != "" && region.OwnerID != string(gs.PlayerFactionID) {
-		drawRegionDiplomacyButtons(screen, gs, region.OwnerID, px, py, pw, ph)
+	// Binaların hemen altındaki aksiyon bandı; ileride başka bölge aksiyonları
+	// da aynı banda eklenebilir.
+	actionBarY := float64(buildingEndY) + 5
+	drawRegionActionBar(screen, gs, region, px, float32(actionBarY), pw)
+
+	activityTop := actionBarY + regionPanelActionBarHeight + 6
+	activityBottom := float64(py+ph) - 10
+	if regionActivityNeighborVisible(gs, region) && activityBottom > activityTop+regionPanelActivityMinH {
+		viewport := gameui.Rect{X: lx, Y: activityTop, W: float64(sepW), H: activityBottom - activityTop}
+		drawRegionActivityNeighborSection(screen, gs, region, viewport, scroll)
 	}
+}
+
+func regionActiveEventCount(gs *state.GameState, rid world.RegionID) int {
+	if gs == nil || rid == "" {
+		return 0
+	}
+	count := 0
+	for i := range gs.ActiveRegionEvents {
+		evt := gs.ActiveRegionEvents[i]
+		if evt.RegionID == rid && evt.TurnsLeft > 0 {
+			count++
+		}
+	}
+	return count
+}
+
+func regionEventStatusColor(eventType string) color.RGBA {
+	switch eventType {
+	case "plague", "revolt":
+		return color.RGBA{235, 105, 85, 255}
+	case "famine":
+		return color.RGBA{230, 180, 75, 255}
+	case "blessing":
+		return color.RGBA{105, 205, 115, 255}
+	default:
+		return ColorGold
+	}
+}
+
+func regionActivityNeighborVisible(gs *state.GameState, region *world.Region) bool {
+	return gs != nil && region != nil && (regionActiveEventCount(gs, region.ID) > 0 || gs.DevelopmentMode)
+}
+
+func buildingGridEndY(gs *state.GameState, region *world.Region, startY float32) float32 {
+	count := len(visibleBuildingIDs(gs, region))
+	if count == 0 {
+		return startY
+	}
+	rows := (count + 2) / 3
+	cardH := buildingGridSpriteH + buildingGridNameH
+	return startY + float32(rows)*cardH + float32(rows-1)*buildingGridRowGap
+}
+
+func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *world.Region, px, y, pw float32) {
+	bar := gameui.Rect{X: float64(px) + panelPad, Y: float64(y), W: float64(pw) - panelPad*2, H: regionPanelActionBarHeight}
+	drawUICardRect(screen, bar, color.RGBA{20, 19, 16, 225}, panelBorder, 1)
+	if region == nil || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
+		return
+	}
+	btn := buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+	drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{55, 92, 142, 225}, panelBorder, ColorWhite, 10))
+}
+
+func regionActivityNeighborContentHeight(gs *state.GameState, region *world.Region) float64 {
+	height := 8.0
+	if eventCount := regionActiveEventCount(gs, region.ID); eventCount > 0 {
+		height += 17 + float64(eventCount)*28 + 6
+	}
+	if gs.DevelopmentMode {
+		_, _, _, rows := neighborBlockLayout(gs, region, true)
+		height += devNeighborTitleHeight + float64(rows)*devNeighborLineHeight
+	}
+	return height
+}
+
+func clampRegionPanelValue(value, minValue, maxValue float64) float64 {
+	if value < minValue {
+		return minValue
+	}
+	if value > maxValue {
+		return maxValue
+	}
+	return value
+}
+
+func clampRegionPanelScroll(gs *state.GameState, rid world.RegionID, scroll float64) float64 {
+	if gs == nil || rid == "" {
+		return 0
+	}
+	region := gs.Regions[rid]
+	if region == nil {
+		return 0
+	}
+	viewportHeight := float64(infoPanelY()+infoPanelH) - (float64(buildingGridEndY(gs, region, buildingGridStartY(gs, region, false))) + 5 + regionPanelActionBarHeight + 6) - 10
+	if viewportHeight < regionPanelActivityMinH {
+		return 0
+	}
+	maxScroll := regionActivityNeighborContentHeight(gs, region) - viewportHeight
+	return clampRegionPanelValue(scroll, 0, maxFloat64Value(maxScroll))
+}
+
+func maxFloat64Value(value float64) float64 {
+	if value < 0 {
+		return 0
+	}
+	return value
+}
+
+func regionPanelActivityViewport(gs *state.GameState, region *world.Region) gameui.Rect {
+	if gs == nil || region == nil || !regionActivityNeighborVisible(gs, region) {
+		return gameui.Rect{}
+	}
+	start := buildingGridStartY(gs, region, false)
+	activityTop := float64(buildingGridEndY(gs, region, start)) + 5 + regionPanelActionBarHeight + 6
+	activityBottom := float64(infoPanelY()+infoPanelH) - 10
+	return gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: activityTop, W: float64(infoPanelW) - panelPad*2, H: activityBottom - activityTop}
+}
+
+func regionPanelActivityHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if gs == nil {
+		return false
+	}
+	region := gs.Regions[rid]
+	viewport := regionPanelActivityViewport(gs, region)
+	return viewport.H > regionPanelActivityMinH && viewport.Hit(mx, my)
+}
+
+func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState, region *world.Region, viewport gameui.Rect, scroll float64) {
+	contentHeight := regionActivityNeighborContentHeight(gs, region)
+	scroll = clampRegionPanelValue(scroll, 0, maxFloat64Value(contentHeight-viewport.H))
+	drawUICardRect(screen, viewport, color.RGBA{16, 15, 13, 220}, panelBorder, 1)
+
+	left := int(viewport.X)
+	top := int(viewport.Y)
+	right := int(viewport.X + viewport.W)
+	bottom := int(viewport.Y + viewport.H)
+	if right <= left || bottom <= top {
+		return
+	}
+	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+	x := panelPad
+	y := 8.0 - scroll
+	width := float32(viewport.W)
+
+	if eventCount := regionActiveEventCount(gs, region.ID); eventCount > 0 {
+		drawUICenteredSectionLabel(body, viewport.W/2, y, "AKTİF OLAYLAR")
+		y += 17
+		for i := range gs.ActiveRegionEvents {
+			evt := gs.ActiveRegionEvents[i]
+			if evt.RegionID != region.ID || evt.TurnsLeft <= 0 {
+				continue
+			}
+			label := evt.LabelTR
+			if label == "" {
+				label = evt.EventID
+			}
+			drawUILabel(body, gameui.Rect{X: x, Y: y, W: float64(width)}, "• "+label, regionEventStatusColor(evt.Type), gameui.TextSmall, gameui.TextAlignStart)
+			y += 14
+			drawUILabel(body, gameui.Rect{X: x + 12, Y: y, W: float64(width) - 12}, activeRegionEventTypeLabel(evt.Type)+"  •  Kalan tur: "+itoa(evt.TurnsLeft), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			y += 14
+		}
+		y += 6
+	}
+
+	if gs.DevelopmentMode {
+		drawNeighborBlock(body, gs, region, x, y, width, true, color.RGBA{200, 170, 90, 220})
+	}
+	drawRegionPanelScrollbar(screen, viewport, contentHeight, scroll)
+}
+
+func drawRegionPanelScrollbar(screen *ebiten.Image, viewport gameui.Rect, contentHeight, scroll float64) {
+	maxScroll := contentHeight - viewport.H
+	if maxScroll <= 0 {
+		return
+	}
+	track := gameui.Rect{X: viewport.X + viewport.W - 7, Y: viewport.Y + 4, W: 4, H: viewport.H - 8}
+	thumbH := track.H * viewport.H / contentHeight
+	if thumbH < 18 {
+		thumbH = 18
+	}
+	thumbY := track.Y + (track.H-thumbH)*(scroll/maxScroll)
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{70, 65, 55, 180})
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
 func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
 	btnW := float32(92)
-	btnH := float32(20)
+	btnH := float32(22)
 	x = px + pw - btnW - 5
-	y = py + ph - btnH - 8
+	y = py + (ph-btnH)/2
 	return x, y, btnW, btnH
 }
 
@@ -3448,8 +3631,11 @@ func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.Reg
 	if !ok || region.IsSea || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
 		return false
 	}
-	px, py, pw, ph := infoPanelX(), infoPanelY(), infoPanelW, infoPanelH
-	return buildRegionDiplomacyButtons(gs, region.OwnerID, px, py, pw, ph).HitTest(mx, my)
+	start := buildingGridStartY(gs, region, false)
+	end := buildingGridEndY(gs, region, start)
+	barY := end + 5
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func armyPanelCloseHit(mx, my float64) bool {
@@ -3641,11 +3827,6 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpan
 	}
 	if region.IsRebellionRisk() {
 		ly += 18
-	}
-	if gs.DevelopmentMode {
-		_, _, _, rows := neighborBlockLayout(gs, region, neighborExpanded)
-		ly += devNeighborTitleHeight
-		ly += float64(rows) * devNeighborLineHeight
 	}
 	ly += 4 + 6 + 17
 	return float32(ly)
@@ -4046,7 +4227,10 @@ func regionNeighborToggleHit(mx, my float64, gs *state.GameState, rid world.Regi
 	if !ok || region == nil || len(region.Neighbors) <= devNeighborCollapsedCount {
 		return false
 	}
-	if !region.IsSea && !gs.DevelopmentMode {
+	// Kara bölge komşuları artık ayrı scroll viewport'unda tam liste olarak
+	// gösteriliyor; eski genişlet/daralt hit-test'i bina/aksiyon alanına
+	// sarkmamalı. Deniz paneli mevcut toggle davranışını korur.
+	if !region.IsSea {
 		return false
 	}
 	x, y, w := neighborToggleRect(gs, region)

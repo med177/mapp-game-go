@@ -78,6 +78,45 @@ func siegeSupportTestState() *state.GameState {
 	}
 }
 
+func sortieTestState(defenderUnits, besiegerUnits int) *state.GameState {
+	gs := &state.GameState{
+		Turn:            5,
+		Month:           6,
+		PlayerFactionID: "p2",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1":   {ID: "p1", Religion: "sunni"},
+			"p2":   {ID: "p2", Religion: "catholic"},
+			"ally": {ID: "ally", Religion: "catholic"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"besieged": {ID: "besieged", OwnerID: "p2", Neighbors: []world.RegionID{"exit"}},
+			"exit":     {ID: "exit", OwnerID: "p2", Neighbors: []world.RegionID{"besieged"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"):   {FactionA: "p1", FactionB: "p2", Stance: faction.StanceWar},
+			faction.RelationKey("p1", "ally"): {FactionA: "p1", FactionB: "ally", Stance: faction.StanceWar},
+			faction.RelationKey("p2", "ally"): {FactionA: "p2", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"besieger": {
+				ID: "besieger", OwnerID: "p1", RegionID: "besieged", MovePoints: 2, MaxMovePoints: 2,
+				Units: repeatedUnits("inf", besiegerUnits, 100),
+			},
+			"defender": {
+				ID: "defender", OwnerID: "p2", RegionID: "besieged", MovePoints: 2, MaxMovePoints: 2,
+				Units: repeatedUnits("inf", defenderUnits, 100),
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"besieged": {RegionID: "besieged", AttackerArmyID: "besieger", AttackerFactionID: "p1", FortLevel: 2},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	return gs
+}
+
 func TestStartSiegeCreatesStateWithoutSiegeUnit(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{
@@ -252,6 +291,185 @@ func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
 	if gs.SiegeAt("dst") != nil {
 		t.Fatal("ordu başka bölgeye yürüyünce eski kuşatma temizlenmeliydi")
 	}
+}
+
+func TestMoveArmyFromBesiegedRegionRequiresSortieAndMovesAfterVictory(t *testing.T) {
+	gs := sortieTestState(4, 1)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("defender", "exit", "")
+
+	defender := gs.Armies["defender"]
+	if defender == nil || defender.RegionID != "exit" {
+		t.Fatalf("huruç kazanınca ordu çıkış bölgesine ilerlemeliydi, got=%+v", defender)
+	}
+	if defender.MovePoints != 1 {
+		t.Fatalf("huruç sonrası hareket puanı bir azalmalıydı, got=%d", defender.MovePoints)
+	}
+	if gs.SiegeAt("besieged") != nil {
+		t.Fatal("huruç kazanınca aktif kuşatma temizlenmeliydi")
+	}
+	if _, ok := gs.Armies["besieger"]; ok {
+		t.Fatal("yenilen kuşatan ordu haritadan kaldırılmalıydı")
+	}
+}
+
+func TestMoveArmyFromBesiegedRegionStaysWithLossesAndDoesNotReplenish(t *testing.T) {
+	gs := sortieTestState(1, 4)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("defender", "exit", "")
+
+	defender := gs.Armies["defender"]
+	if defender == nil {
+		t.Fatal("huruç yenilgisi kalan savunmacı orduyu silmemeliydi")
+	}
+	if defender.RegionID != "besieged" {
+		t.Fatalf("huruç kaybeden ordu kuşatılan bölgede kalmalıydı, got=%s", defender.RegionID)
+	}
+	if defender.MovePoints != 0 {
+		t.Fatalf("huruç yenilgisi hareket puanını bitirmeliydi, got=%d", defender.MovePoints)
+	}
+	if defender.Units[0].CurrentHP >= army.MaxUnitHP {
+		t.Fatal("huruç kaybında savunmacı HP kaybetmeliydi")
+	}
+	if gs.SiegeAt("besieged") == nil {
+		t.Fatal("huruç kaybında kuşatma devam etmeliydi")
+	}
+
+	beforeHP := defender.Units[0].CurrentHP
+	applySeasonEffects(gs)
+	if defender.Units[0].CurrentHP != beforeHP {
+		t.Fatalf("kuşatma altındaki savunmacı iyileşmemeliydi, before=%d after=%d", beforeHP, defender.Units[0].CurrentHP)
+	}
+}
+
+func TestArmyOfBesiegedRegionAllyIsAlsoSortieDefender(t *testing.T) {
+	gs := sortieTestState(4, 1)
+	gs.PlayerFactionID = "ally"
+	gs.Armies["defender"].OwnerID = "ally"
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !gs.IsArmyDefendingSiegedRegion(gs.Armies["defender"]) {
+		t.Fatal("bölge sahibinin müttefik ordusu savunmacı kabul edilmeliydi")
+	}
+	g.moveArmyWithStance("defender", "exit", "")
+	if gs.Armies["defender"] == nil || gs.Armies["defender"].RegionID != "exit" {
+		t.Fatalf("müttefik savunmacı huruç zaferi sonrası çıkabilmeliydi, got=%+v", gs.Armies["defender"])
+	}
+}
+
+func TestSplitBesiegingArmyKeepsSiegeWithRemainingUnit(t *testing.T) {
+	gs := siegeTestState()
+	gs.Regions["dst"].Neighbors = []world.RegionID{"src", "ally"}
+	gs.Regions["ally"] = &world.Region{
+		ID:        "ally",
+		OwnerID:   "p1",
+		Neighbors: []world.RegionID{"dst"},
+	}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "dst",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units: []army.Unit{
+				{TypeID: "inf", CurrentHP: 100},
+				{TypeID: "inf", CurrentHP: 100},
+			},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			FortLevel:         2,
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.splitArmy("atk")
+	newArmyID := army.ArmyID("army_p1_1")
+	if g.renderer.SelectedArmy != newArmyID {
+		t.Fatalf("split sonrası yeni parça seçili kalmalıydı, got=%s", g.renderer.SelectedArmy)
+	}
+	if len(gs.Armies["atk"].Units) != 1 || len(gs.Armies[newArmyID].Units) != 1 {
+		t.Fatalf("split iki tarafta da birer birim bırakmalıydı: eski=%d yeni=%d", len(gs.Armies["atk"].Units), len(gs.Armies[newArmyID].Units))
+	}
+
+	// Hareket emri kuşatma ID'sine gitse bile bölgede kalan tek birimlik kardeş
+	// ordu kuşatmayı sürdürmelidir.
+	g.moveArmyWithStance("atk", "ally", "")
+
+	if gs.Armies["atk"].RegionID != "ally" {
+		t.Fatalf("hareket eden parça dost bölgeye çıkmalıydı, got=%s", gs.Armies["atk"].RegionID)
+	}
+	siege := gs.SiegeAt("dst")
+	if siege == nil || siege.AttackerArmyID != newArmyID {
+		t.Fatalf("kalan birim kuşatmayı devralmalıydı, got=%+v", siege)
+	}
+}
+
+func TestMergeBesiegingArmyKeepsSiegeWithSurvivingArmy(t *testing.T) {
+	newGame := func() (*Game, army.ArmyID) {
+		gs := siegeTestState()
+		gs.Armies = map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "p1",
+				RegionID:      "dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units: []army.Unit{
+					{TypeID: "inf", CurrentHP: 100},
+					{TypeID: "inf", CurrentHP: 100},
+				},
+			},
+			"split": {
+				ID:            "split",
+				OwnerID:       "p1",
+				RegionID:      "dst",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		}
+		gs.Sieges = map[world.RegionID]*state.SiegeState{
+			"dst": {
+				RegionID:          "dst",
+				AttackerArmyID:    "atk",
+				AttackerFactionID: "p1",
+				FortLevel:         2,
+			},
+		}
+		return &Game{gs: gs, renderer: &render.Renderer{}}, "split"
+	}
+
+	t.Run("kuşatan ordu silinirse", func(t *testing.T) {
+		g, survivingID := newGame()
+		g.mergeArmiesManual("atk")
+
+		if g.gs.Armies["atk"] != nil {
+			t.Fatal("kuşatan ordu birleşme sonrası silinmeliydi")
+		}
+		if siege := g.gs.SiegeAt("dst"); siege == nil || siege.AttackerArmyID != survivingID {
+			t.Fatalf("kuşatma hayatta kalan orduya devredilmeliydi, got=%+v", g.gs.SiegeAt("dst"))
+		}
+	})
+
+	t.Run("kuşatan ordu hayatta kalırsa", func(t *testing.T) {
+		g, _ := newGame()
+		g.mergeArmiesManual("split")
+
+		if g.gs.Armies["split"] != nil {
+			t.Fatal("birleşen parça silinmeliydi")
+		}
+		if siege := g.gs.SiegeAt("dst"); siege == nil || siege.AttackerArmyID != "atk" {
+			t.Fatalf("kuşatma mevcut kuşatan orduda kalmalıydı, got=%+v", g.gs.SiegeAt("dst"))
+		}
+	})
 }
 
 func TestMoveArmyWithStanceAllowsAlliedSiegeSupport(t *testing.T) {

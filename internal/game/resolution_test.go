@@ -233,6 +233,46 @@ func TestApplySeasonEffectsAddsNavalMoveBonus(t *testing.T) {
 	}
 }
 
+func TestApplySeasonEffectsUsesSlowestUnitAndClimate(t *testing.T) {
+	gs := &state.GameState{
+		Month: 6,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"cavalry":  {ID: "cavalry", OwnerID: "player", Units: []army.Unit{{TypeID: "cav"}}},
+			"infantry": {ID: "infantry", OwnerID: "player", Units: []army.Unit{{TypeID: "inf"}}},
+			"siege":    {ID: "siege", OwnerID: "player", Units: []army.Unit{{TypeID: "siege"}}},
+			"mixed":    {ID: "mixed", OwnerID: "player", Units: []army.Unit{{TypeID: "cav"}, {TypeID: "siege"}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"cav":   {ID: "cav", Category: army.CategoryCavalry, MovementPoints: 3},
+			"inf":   {ID: "inf", Category: army.CategoryInfantry, MovementPoints: 2},
+			"siege": {ID: "siege", Category: army.CategorySiege, MovementPoints: 1},
+		},
+	}
+
+	applySeasonEffects(gs)
+	if got := gs.Armies["cavalry"].MaxMovePoints; got != 3 {
+		t.Fatalf("yazın yalnız süvari ordusu 3 ilerlemeliydi, got=%d", got)
+	}
+	if got := gs.Armies["infantry"].MaxMovePoints; got != 2 {
+		t.Fatalf("yazın yalnız piyade ordusu 2 ilerlemeliydi, got=%d", got)
+	}
+	if got := gs.Armies["siege"].MaxMovePoints; got != 1 {
+		t.Fatalf("yazın yalnız kuşatma ordusu 1 ilerlemeliydi, got=%d", got)
+	}
+	if got := gs.Armies["mixed"].MaxMovePoints; got != 1 {
+		t.Fatalf("karışık ordu en yavaş birim olan kuşatma hızını kullanmalıydı, got=%d", got)
+	}
+
+	gs.Month = 9 // sonbahar: %95 iklim çarpanı
+	applySeasonEffects(gs)
+	if got := gs.Armies["cavalry"].MaxMovePoints; got != 2 {
+		t.Fatalf("sonbaharda süvari hareketi iklimle 2 olmalıydı, got=%d", got)
+	}
+}
+
 func TestApplySeasonEffectsAddsCommanderMoveBonus(t *testing.T) {
 	tactician := army.NewCommander("cmd_tactician", "Taktisyen")
 	tactician.Experience = army.CommanderLevel3XP

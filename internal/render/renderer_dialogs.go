@@ -103,7 +103,7 @@ func buildSelectedSiegePanel() gameui.Panel {
 func buildSelectedSiegeButtons() (gameui.Button, gameui.Button) {
 	panel := buildSelectedSiegePanel()
 	btnY := panel.Rect.Y + panel.Rect.H - selectedSiegeButtonH - 14
-	gap := 16.0
+	gap := 14.0
 	totalW := selectedSiegeButtonW*2 + gap
 	startX := panel.Rect.X + (panel.Rect.W-totalW)/2
 	assaultBtn := gameui.NewButton(startX, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
@@ -134,26 +134,50 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 	}
 	panel := buildSelectedSiegePanel()
 	gameui.DrawPanel(screen, panel, gameui.PanelStyle{
-		BG:          color.RGBA{18, 12, 8, 234},
-		Border:      color.RGBA{154, 112, 48, 255},
+		BG:          color.RGBA{14, 10, 7, 246},
+		Border:      color.RGBA{184, 140, 62, 255},
 		BorderWidth: 2,
 	})
-	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 12}, "Kuşatma Emri", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
+	vector.FillRect(screen, float32(panel.Rect.X), float32(panel.Rect.Y), float32(panel.Rect.W), 4, color.RGBA{205, 160, 66, 255}, false)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 11}, "Kuşatma Emri", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 120, Y: panel.Rect.Y + 15, W: 120}, "AKTİF KUŞATMA", color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42}, "Hedef", color.RGBA{164, 132, 76, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 74, Y: panel.Rect.Y + 40, W: panel.Rect.W - 92}, trimTextToWidth(target.NameTR, FaceMed, panel.Rect.W-92), color.RGBA{244, 238, 222, 255}, gameui.TextMedium, gameui.TextAlignStart)
+
 	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
-	status := "Gedik yok"
-	if level := siegeBreachLabelTR(siege.BreachLevel); level != "" {
-		status = level
+	status := siegeBreachLabelTR(siege.BreachLevel)
+	statusColor := color.RGBA{204, 184, 126, 255}
+	if siege.BreachLevel > 0 {
+		statusColor = color.RGBA{232, 170, 76, 255}
 	}
-	info := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik: T%d/T%d", target.NameTR, siege.FortLevel, siege.BreachProgress, status, bestTier, siege.FortLevel)
-	commanderInfo := commanderSiegeSummary(attacker.Commander)
-	hint := "Başka komşu bölgeye hareket emri verirsen kuşatma otomatik kaldırılır."
 	canAssault := attacker.HasSiegeUnits(r.gs.UnitTypes)
-	if !canAssault {
-		hint = "Bu ordu kuşatma birimi taşımıyor; genel hücum kullanılamaz, sadece teslim beklenebilir."
+	statusRect := gameui.Rect{X: panel.Rect.X + 16, Y: panel.Rect.Y + 64, W: panel.Rect.W - 32, H: 36}
+	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
+	remainingText := fmt.Sprintf("Teslim için yaklaşık %d tur", siege.TurnsUntilSurrender())
+	if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
+		remainingText = "Büyük gedik: teslim olabilir"
 	}
-	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42, W: panel.Rect.W - 36}, info, color.RGBA{228, 224, 214, 255}, gameui.TextSmall, 17, 2)
-	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 76, W: panel.Rect.W - 36}, commanderInfo, color.RGBA{145, 185, 220, 255}, gameui.TextSmall, 17, 2)
-	drawUIWrappedLabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 110, W: panel.Rect.W - 36}, hint, color.RGBA{170, 196, 152, 255}, gameui.TextSmall, 17, 2)
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, remainingText, color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+
+	metricY := panel.Rect.Y + 112
+	metricW := (panel.Rect.W - 44) / 2
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 46}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 46}, "İLERLEME", itoa(siege.BreachProgress), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 54, W: metricW, H: 46}, "GEDİK", status, statusColor)
+	assaultValue := fmt.Sprintf("T%d / T%d", bestTier, siege.FortLevel)
+	assaultColor := color.RGBA{202, 222, 190, 255}
+	if !canAssault {
+		assaultValue = "KULLANILAMAZ"
+		assaultColor = color.RGBA{214, 130, 112, 255}
+	}
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY + 54, W: metricW, H: 46}, "GENEL HÜCUM", assaultValue, assaultColor)
+
+	commanderInfo := trimTextToWidth(commanderSiegeSummary(attacker.Commander), FaceSmall, panel.Rect.W-36)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 216, W: panel.Rect.W - 36}, commanderInfo, color.RGBA{154, 190, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUISeparator(screen, float32(panel.Rect.X+16), float32(panel.Rect.Y+242), float32(panel.Rect.X+panel.Rect.W-16), 1, color.RGBA{96, 72, 38, 190})
 	assaultBtn, liftBtn := buildSelectedSiegeButtons()
 	if canAssault {
 		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
@@ -161,6 +185,12 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
 	}
 	drawUIButtonWidget(screen, liftBtn, solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+}
+
+func drawSelectedSiegeMetric(screen *ebiten.Image, rect gameui.Rect, label, value string, valueColor color.RGBA) {
+	drawUICardRect(screen, rect, color.RGBA{23, 20, 15, 238}, color.RGBA{86, 70, 42, 220}, 1)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 10, Y: rect.Y + 7}, label, color.RGBA{157, 133, 86, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 10, Y: rect.Y + 23, W: rect.W - 20}, value, valueColor, gameui.TextMedium, gameui.TextAlignStart)
 }
 
 func battlePlanInstructionTR(context combat.BattleContext) string {
@@ -175,6 +205,16 @@ func battlePlanInstructionTR(context combat.BattleContext) string {
 }
 
 func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext) {
+	if target == nil {
+		return
+	}
+	r.openBattlePlanWithDestination(attacker, target, defender, actionKind, battleContext, target.ID)
+}
+
+// openBattlePlanWithDestination savaşın gerçekleştiği bölge ile zaferden
+// sonra ordunun ilerleyeceği bölge farklı olduğunda kullanılır. Huruçta savaş
+// kuşatılan bölgede gerçekleşir, ancak başarılı sonuçta seçilen hedefe çıkılır.
+func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext, destination world.RegionID) {
 	if r == nil || r.gs == nil || attacker == nil || target == nil || defender == nil {
 		return
 	}
@@ -196,7 +236,7 @@ func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, def
 		battleContext:   combat.NormalizeBattleContext(battleContext),
 		pendingArmy:     attacker.ID,
 		pendingEnemy:    defender.ID,
-		pendingDest:     target.ID,
+		pendingDest:     destination,
 		regionName:      target.NameTR,
 		attackerSummary: commanderBattlePlanSummary("Saldıran komutan", previewCommander),
 		defenderSummary: commanderBattlePlanSummary("Savunan komutan", defender.Commander),
@@ -503,6 +543,17 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
 	canEnterSiege := r.canEnterActiveSiegedRegion(attacker, wc.pendingDest)
 	activeSiege := r.gs.SiegeAt(wc.pendingDest)
+	if attacker != nil && r.gs.IsArmyDefendingSiegedRegion(attacker) {
+		if siege := r.gs.SiegeAt(attacker.RegionID); siege != nil {
+			if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil {
+				source := r.gs.Regions[attacker.RegionID]
+				if source != nil {
+					r.openBattlePlanWithDestination(attacker, source, siegeArmy, ActionMoveArmy, combat.BattleContextLand, wc.pendingDest)
+				}
+			}
+		}
+		return action
+	}
 	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
 		if (activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID) && !isAlliedRegion {
 			r.openSiegeDecision(attacker, target)

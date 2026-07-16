@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-07-14
+last_updated: 2026-07-16
 related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -103,10 +103,8 @@ Olay tetiklendiğinde:
   - ilgili follow-up için bölge, teknoloji ve diplomasi koşullarını
   aynı ekranda önizleme olarak gösterir
 - Event log'da historical event veya karar satırına tıklanınca detay popup içinde aynı zincir özeti sonradan tekrar okunabilir
-- Haritadaki aktif bölge event ikonları tıklanınca detay popup açılır; popup bölge, tip, kalan tur ve event ID özetini gösterir
-- `all_armies` hedefli event'lerde harita izi yalnız kara bölgelerinde tutulur; denizdeki filolar marker üretmez, limana bağlı filolar varsa bağlı kara liman bölgesi kullanılır
-- Aynı bölgedeki birden fazla aktif event varsa stack konumu bölge dışına taşmadan en yakın bölge pikseline geri çekilir
-- Ana harita marker anchor'ları world-pixel koordinatı taşır; shape→world dönüşümü yalnız bölge merkezi fallback'inde uygulanır
+- Aktif event'ler ana harita ve minimap üzerinde marker olarak çizilmez; event kaydı ilgili bölge seçildiğinde bölge bilgi panelindeki `AKTİF OLAYLAR` bölümünde gösterilir
+- Bölge panelindeki event satırı olay adını, tipini ve kalan tur sayısını gösterir; aynı bölgede birden fazla aktif event varsa ayrı satırlarda listelenir
 - Detay popup artık başlık, kaynak etiketi ve satır bazlı iz bloğunu ayrı gösterir; `[OLAY]`, `[KARAR]` ve harita izi birbirine karışmaz
 - Event log panelindeki `Kodex` düğmesi, oyuncu fraksiyonu için bekleyen tarihsel event havuzunu açar:
   - `Hazir`: tarih ve koşullar uygun

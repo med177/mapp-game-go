@@ -586,6 +586,37 @@ func (s *GameState) CanEnterActiveSiegedRegion(attacker *army.Army, regionID wor
 	return rel != nil && rel.Stance == faction.StanceWar
 }
 
+// IsArmyDefendingSiegedRegion aktif kuşatma altındaki bölgede savunmacı
+// tarafta duran bir kara ordusu olup olmadığını döner. Bölge sahibi orduları
+// ile bölge sahibinin aynı realm içindeki veya müttefik orduları savunmacı
+// kabul edilir; kuşatan tarafın orduları bu kapsama girmez.
+func (s *GameState) IsArmyDefendingSiegedRegion(candidate *army.Army) bool {
+	if s == nil || candidate == nil || candidate.IsNaval || candidate.OwnerID == "" || candidate.RegionID == "" {
+		return false
+	}
+	region := s.Regions[candidate.RegionID]
+	if region == nil || region.IsSea || region.OwnerID == "" {
+		return false
+	}
+	siege := s.SiegeAt(candidate.RegionID)
+	if siege == nil || siege.AttackerArmyID == "" || siege.AttackerArmyID == candidate.ID {
+		return false
+	}
+	siegeArmy := s.Armies[siege.AttackerArmyID]
+	if siegeArmy == nil || siegeArmy.OwnerID == "" || siegeArmy.OwnerID == candidate.OwnerID {
+		return false
+	}
+	if candidate.OwnerID == region.OwnerID {
+		return true
+	}
+	if stateSameRealm(s, faction.FactionID(candidate.OwnerID), faction.FactionID(region.OwnerID)) {
+		return true
+	}
+	key := faction.RelationKey(faction.FactionID(candidate.OwnerID), faction.FactionID(region.OwnerID))
+	rel := s.Relations[key]
+	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
 func stateDirectOverlord(s *GameState, fid faction.FactionID) faction.FactionID {
 	if s == nil || fid == "" {
 		return ""

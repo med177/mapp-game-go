@@ -25,6 +25,9 @@ type UnitType struct {
 	Category UnitCategory `json:"category"`
 	Tier     UnitTier     `json:"tier"`
 
+	// MovementPoints bu birim tipinin tek başına taşıyabileceği tur başı hareket puanıdır.
+	MovementPoints int `json:"movement_points"`
+
 	// Savaş değerleri
 	Attack  int `json:"attack"`
 	Defense int `json:"defense"`
@@ -48,6 +51,27 @@ type UnitType struct {
 	// Denizde taşınabilir mi?
 	Embarkable    bool `json:"embarkable"`
 	CarryCapacity int  `json:"carry_capacity,omitempty"`
+}
+
+// BaseMovementPoints veri alanı olmayan eski birim tanımlarına geriye dönük
+// güvenli varsayılan verir. Senaryo verileri bu alanı açıkça taşımalıdır.
+func (t *UnitType) BaseMovementPoints() int {
+	if t == nil {
+		return 2
+	}
+	if t.MovementPoints > 0 {
+		return t.MovementPoints
+	}
+	switch t.Category {
+	case CategoryCavalry:
+		return 3
+	case CategorySiege:
+		return 1
+	case CategoryNavalWar, CategoryNavalTrans, CategoryNavalTrade:
+		return 3
+	default:
+		return 2
+	}
 }
 
 // Unit ordu içindeki tek bir birim örneğini temsil eder.

@@ -8,6 +8,8 @@ import (
 
 const MaxArmySize = 20
 
+const DefaultArmyMovePoints = 2
+
 // ArmyID ordu benzersiz kimliği.
 type ArmyID string
 
@@ -111,6 +113,31 @@ func (a *Army) RecordBattle(won bool) CommanderProgress {
 // Size ordu boyutunu döner.
 func (a *Army) Size() int {
 	return len(a.Units)
+}
+
+// BaseMovePoints ordunun birim kompozisyonuna göre en yavaş birimin hareket
+// puanını döner. Filo hareketinde taşınan kara birlikleri bilinçli olarak
+// hesaba katılmaz; yalnız filonun kendi Units listesi kullanılır.
+func (a *Army) BaseMovePoints(types map[string]*UnitType) int {
+	if a == nil || len(a.Units) == 0 {
+		return DefaultArmyMovePoints
+	}
+
+	minPoints := 0
+	for _, unit := range a.Units {
+		unitType := types[unit.TypeID]
+		if unitType == nil {
+			continue
+		}
+		points := unitType.BaseMovementPoints()
+		if minPoints == 0 || points < minPoints {
+			minPoints = points
+		}
+	}
+	if minPoints <= 0 {
+		return DefaultArmyMovePoints
+	}
+	return minPoints
 }
 
 // CountsTowardArmyLimit ordu kara saha ordusu limitine dahil mi?

@@ -221,6 +221,7 @@ func (g *Game) Update() error {
 			g.applyVictoryChoice(action.BuildingID)
 			g.applyAIDifficultyStartBonus()
 			g.gs.InitializePlayerCommanders()
+			g.gs.RefreshArmyMovePoints(true)
 			g.startPreparePlayerTurn()
 		case render.ActionBack:
 			g.gs.Phase = state.PhaseFactionSelect
@@ -2535,7 +2536,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	}
 	advance()
 	yield()
-	armies, err := army.LoadArmies(dp("armies.json"))
+	armies, err := army.LoadArmies(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
@@ -3499,6 +3500,83 @@ func (g *Game) moveArmy(aid army.ArmyID, target world.RegionID) {
 	g.moveArmyWithStance(aid, target, combat.BattleStanceBalanced)
 }
 
+// resolveSortieMovement resolves the required breakout battle for an army
+// defending a besieged region. A defeated defender remains in the besieged
+// region with its surviving units; a victorious defender may leave to a
+// friendly or empty destination in the same movement order.
+func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance combat.BattleStance) bool {
+	if g == nil || g.gs == nil || a == nil || target == nil || !g.gs.IsArmyDefendingSiegedRegion(a) {
+		return false
+	}
+	siege := g.gs.SiegeAt(a.RegionID)
+	if siege == nil {
+		return false
+	}
+	siegeArmy := g.gs.Armies[siege.AttackerArmyID]
+	sourceRegion := g.gs.Regions[a.RegionID]
+	if siegeArmy == nil || sourceRegion == nil {
+		return false
+	}
+
+	stance = combat.NormalizeBattleStance(stance)
+	attackerBefore := snapshotBattleArmy(a, g.gs.UnitTypes)
+	defenderBefore := snapshotBattleArmy(siegeArmy, g.gs.UnitTypes)
+	atkMods := techModsFor(g.gs, a.OwnerID)
+	defMods := techModsFor(g.gs, siegeArmy.OwnerID)
+	// Kuşatan ordu açık arazide savunuyor olsa da kuşatma hattının avantajı
+	// nedeniyle huruç savaşında küçük bir savunma bonusu korur.
+	defMods.DefenseMod += 0.10
+	result := combat.ResolveBattleWithContextPlan(a, siegeArmy, sourceRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
+	g.recordCommanderBattle(a, siegeArmy, nil, result.AttackerWins)
+
+	outcomeDetail := "Huruç püskürtüldü; ordu kuşatılan bölgede kaldı."
+	if result.AttackerWins {
+		if len(siegeArmy.Units) == 0 {
+			g.gs.RemoveArmy(siegeArmy.ID)
+		}
+		g.clearSiege(sourceRegion.ID)
+
+		canExitToTarget := target.OwnerID == "" || target.OwnerID == a.OwnerID || diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
+		if !canExitToTarget && target.OwnerID != "" {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
+			rel := g.gs.Relations[key]
+			canExitToTarget = rel != nil && rel.Stance == faction.StanceAllied
+		}
+		if canExitToTarget && len(a.Units) > 0 {
+			a.RegionID = target.ID
+			a.DockedRegionID = ""
+			a.DockedSettlementID = ""
+			a.MovePoints--
+			outcomeDetail = "Huruç başarılı; kuşatma kaldırıldı ve ordu bölgeden çıktı."
+		} else {
+			a.MovePoints = 0
+			outcomeDetail = "Huruç başarılı; kuşatma kaldırıldı fakat bu hedefe aynı hamlede ilerlenemedi."
+		}
+	} else {
+		a.MovePoints = 0
+	}
+	if len(a.Units) == 0 {
+		g.gs.RemoveArmy(a.ID)
+	}
+
+	g.presentBattleReport(g.makeBattleReport(
+		render.BattleSceneLand,
+		sourceRegion.NameTR,
+		stance,
+		result.Description,
+		outcomeDetail,
+		"Huruç Ordusu",
+		"Kuşatan Ordu",
+		g.factionNameTR(a.OwnerID),
+		g.factionNameTR(siegeArmy.OwnerID),
+		attackerBefore,
+		a,
+		defenderBefore,
+		siegeArmy,
+	))
+	return true
+}
+
 // moveArmyWithStance oyuncu ordusunu hedef bölgeye taşır; savaş çıkarsa seçilen saldırı duruşunu uygular.
 func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battleStance combat.BattleStance) {
 	battleStance = combat.NormalizeBattleStance(battleStance)
@@ -3621,6 +3699,9 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			isAlliedRegion = true
 		}
 	}
+	if !a.IsNaval && g.resolveSortieMovement(a, targetRegion, battleStance) {
+		return
+	}
 	liftedSiegeRegion := world.RegionID("")
 	if activeSiege := g.gs.SiegeByArmy(aid); activeSiege != nil && activeSiege.RegionID != target {
 		liftedSiegeRegion = activeSiege.RegionID
@@ -3666,7 +3747,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		attackerBefore := snapshotBattleArmy(a, g.gs.UnitTypes)
 		defenderBefore := snapshotBattleArmy(combinedDef, g.gs.UnitTypes)
 		if liftedSiegeRegion != "" {
-			g.clearSiege(liftedSiegeRegion)
+			g.releaseSiegeForArmyMovement(liftedSiegeRegion, aid)
 		}
 		atkMods := techModsFor(g.gs, a.OwnerID)
 		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
@@ -3784,7 +3865,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		// --- Savaşsız hareket ve bölge ele geçirme ---
 		attackerBefore := snapshotBattleArmy(a, g.gs.UnitTypes)
 		if liftedSiegeRegion != "" {
-			g.clearSiege(liftedSiegeRegion)
+			g.releaseSiegeForArmyMovement(liftedSiegeRegion, aid)
 		}
 		a.RegionID = target
 		a.DockedRegionID = ""
@@ -3866,6 +3947,9 @@ func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) arm
 	} else if moving.Commander != nil {
 		moving.Commander.AssignedArmyID = ""
 	}
+	// Kuşatma ordusu birleşme nedeniyle silinecekse aktif kuşatma hayatta
+	// kalan dost orduya aktarılmalı; aksi halde kayıt eski ArmyID'de kalır.
+	g.transferSiegeToRemainingArmy(regionID, movingID)
 	g.gs.RemoveArmy(movingID)
 	g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(target.Units)) + " birim")
 	return targetID
@@ -3896,6 +3980,11 @@ func (g *Game) splitArmy(aid army.ArmyID) {
 		MaxMovePoints:      a.MaxMovePoints,
 		IsNaval:            a.IsNaval,
 		TurnsWithoutPort:   a.TurnsWithoutPort,
+	}
+	// Bölünen parçayı doğrudan seçili bırak; kuşatma ordusu bölgedeki diğer
+	// parçayı korurken oyuncu yeni parçaya hareket emri verebilsin.
+	if g.renderer != nil {
+		g.renderer.SelectedArmy = newID
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
 }
@@ -3944,6 +4033,9 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 		} else if a.Commander != nil {
 			a.Commander.AssignedArmyID = ""
 		}
+		// Seçili kuşatma ordusu birleşme sonrası siliniyorsa kuşatmayı
+		// birleşmenin hayatta kalan tarafında tut.
+		g.transferSiegeToRemainingArmy(a.RegionID, aid)
 		g.gs.RemoveArmy(aid)
 		g.renderer.SelectedArmy = targetID
 	}

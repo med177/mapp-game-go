@@ -383,9 +383,6 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	if _, ok := r.armyHitAt(fx, fy); ok {
 		return true
 	}
-	if r.activeRegionEventHovering(fx, fy) {
-		return true
-	}
 	// Yerleşim noktası üzerinde mi?
 	if _, _, ok := r.settlementHitAt(fx, fy); ok {
 		return true

@@ -268,3 +268,48 @@ func TestExecuteMoveBlocksAllyTransitIntoBesiegedRegionWithoutWarWithBesieger(t 
 		t.Fatalf("aktif kuşatma korunmalıydı, got=%+v", gs.SiegeAt("fort"))
 	}
 }
+
+func TestExecuteMoveAlliedDefenderSortiesAndLeavesBesiegedRegionAfterVictory(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"fort": {ID: "fort", OwnerID: "player", Neighbors: []world.RegionID{"exit"}},
+			"exit": {ID: "exit", OwnerID: "ally", Neighbors: []world.RegionID{"fort"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"defender": {
+				ID: "defender", OwnerID: "ally", RegionID: "fort", MovePoints: 2, MaxMovePoints: 2,
+				Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}},
+			},
+			"besieger": {
+				ID: "besieger", OwnerID: "enemy", RegionID: "fort", MovePoints: 2, MaxMovePoints: 2,
+				Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Religion: religion.Catholic},
+			"ally":   {ID: "ally", Religion: religion.Catholic},
+			"enemy":  {ID: "enemy", Religion: religion.Sunni},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ally", "player"): {FactionA: "ally", FactionB: "player", Stance: faction.StanceAllied},
+			faction.RelationKey("ally", "enemy"):  {FactionA: "ally", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {RegionID: "fort", AttackerArmyID: "besieger", AttackerFactionID: "enemy"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+
+	outcome := executeMove(gs, gs.Armies["defender"], "exit", "ally")
+	if !outcome.survived {
+		t.Fatal("müttefik savunmacı huruç zaferinde hayatta kalmalıydı")
+	}
+	if gs.Armies["defender"].RegionID != "exit" {
+		t.Fatalf("AI müttefik savunmacı huruç sonrası çıkmalıydı, got=%s", gs.Armies["defender"].RegionID)
+	}
+	if gs.SiegeAt("fort") != nil {
+		t.Fatal("huruç zaferinde aktif kuşatma temizlenmeliydi")
+	}
+}

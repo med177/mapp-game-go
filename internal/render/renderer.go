@@ -32,21 +32,20 @@ var (
 )
 
 const (
-	confirmDialogW          = float32(460)
-	confirmDialogH          = float32(166)
-	confirmDialogBtnW       = float32(120)
-	confirmDialogBtnH       = float32(36)
-	selectedSiegePanelW     = 420.0
-	selectedSiegePanelH     = 194.0
-	selectedSiegeButtonW    = 170.0
-	selectedSiegeButtonH    = 36.0
-	regionDoubleClickFrames = 18
-	initialCameraZoomFactor = 2.50
-	maxCameraZoomScale      = 10
-	activeEventIconSize     = float32(22)
-	activeEventIconSpacingY = float32(24)
-	activeEventIconLiftY    = float32(48)
-
+	confirmDialogW             = float32(460)
+	confirmDialogH             = float32(166)
+	confirmDialogBtnW          = float32(120)
+	confirmDialogBtnH          = float32(36)
+	selectedSiegePanelW        = 520.0
+	selectedSiegePanelH        = 298.0
+	selectedSiegeButtonW       = 224.0
+	selectedSiegeButtonH       = 38.0
+	regionDoubleClickFrames    = 18
+	initialCameraZoomFactor    = 2.50
+	maxCameraZoomScale         = 10
+	activeEventIconSize        = float32(22)
+	activeEventIconSpacingY    = float32(24)
+	activeEventIconLiftY       = float32(48)
 	settlementMarkerSpriteSize = float32(26)
 	capitalLabelIconSmallSize  = float32(18)
 	capitalLabelIconMediumSize = float32(20)
@@ -73,6 +72,7 @@ type Renderer struct {
 	selectedSettlementRegion world.RegionID
 	selectedSettlementIndex  int
 	devNeighborListExpanded  bool
+	regionPanelScroll        float64
 	showRecruitPanel         bool
 	recruitUnitID            string
 	recruitQty               int
@@ -1061,10 +1061,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 5. Bölge etiketleri
 	r.drawRegionLabels(screen, armyPositions)
-	// 5.5. Aktif event ikonları (harita üzerinde)
-	if r.mapMode != MapModeTrade {
-		r.drawActiveEventIcons(screen)
-	}
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
 		r.drawEditVoronoiDebug(screen)
@@ -1095,7 +1091,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.mapMode)
-		DrawRegionPanelExpanded(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded)
+		DrawRegionPanelExpandedScrolled(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
 		}
@@ -1670,7 +1666,18 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	r.armyIconBuf = r.armyIconBuf[:0]
 	for key, aids := range byGroup {
 		base := groupBase[key]
-		sort.Slice(aids, func(i, j int) bool { return aids[i] < aids[j] })
+		sort.Slice(aids, func(i, j int) bool {
+			ai := r.gs.Armies[aids[i]]
+			aj := r.gs.Armies[aids[j]]
+			aiSieging := ai != nil && r.gs.SiegeByArmy(ai.ID) != nil
+			ajSieging := aj != nil && r.gs.SiegeByArmy(aj.ID) != nil
+			// Kuşatma ordusu solda, ayrılan ve hareket edebilen parça sağda
+			// kalsın; armyHitAt sağdan taradığı için seçim deterministik olur.
+			if aiSieging != ajSieging {
+				return aiSieging
+			}
+			return aids[i] < aids[j]
+		})
 
 		n := float32(len(aids))
 		startX := base[0] - (n-1)*iconStep/2
