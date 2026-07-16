@@ -5,8 +5,38 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 )
+
+func TestArmySheetGroupFollowsFactionReligion(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"sunni":    {ID: "sunni", Religion: religion.Sunni},
+			"shia":     {ID: "shia", Religion: religion.Shia},
+			"catholic": {ID: "catholic", Religion: religion.Catholic},
+			"orthodox": {ID: "orthodox", Religion: religion.Orthodox},
+			"unknown":  {ID: "unknown"},
+		},
+	}
+
+	checks := []struct {
+		owner string
+		want  armySheetGroup
+	}{
+		{owner: "sunni", want: armySheetGroupMuslim},
+		{owner: "shia", want: armySheetGroupMuslim},
+		{owner: "catholic", want: armySheetGroupChristian},
+		{owner: "orthodox", want: armySheetGroupChristian},
+		{owner: "unknown", want: armySheetGroupLegacy},
+		{owner: "missing", want: armySheetGroupLegacy},
+	}
+	for _, check := range checks {
+		if got := armySheetGroupForFaction(gs, check.owner); got != check.want {
+			t.Fatalf("%s için army sheet grubu yanlış: got=%v want=%v", check.owner, got, check.want)
+		}
+	}
+}
 
 func TestArmyIconBorderColorUsesDiplomaticPalette(t *testing.T) {
 	gs := &state.GameState{

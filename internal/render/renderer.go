@@ -657,6 +657,9 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		buildingSheetLoaded = false
 		miniMapLoaded = false
 		armySheetLoaded = false
+		armySheet = nil
+		muslimArmySheet = nil
+		christianArmySheet = nil
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
 		resetCommanderPortraitCache()

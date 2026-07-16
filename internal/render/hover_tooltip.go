@@ -242,6 +242,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	}
 
 	ensureArmySheet()
+	sheet := armySheetForFaction(gs, string(gs.PlayerFactionID))
 	costLines := unitCostRequirementLines(gs, utype)
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
 	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
@@ -269,10 +270,10 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
 	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, upkeepY, FaceSmall, ColorGray)
 
-	if armySheet != nil {
-		r := unitSpriteRect(uid, armySheet)
+	if sheet != nil {
+		r := unitSpriteRect(uid, sheet)
 		if !r.Empty() {
-			sub := armySheet.SubImage(r).(*ebiten.Image)
+			sub := sheet.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
 			fitW := iconW + 50
 			fitH := iconH + 40
@@ -288,7 +289,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
 					recruitClipBuf.Clear()
 					op.GeoM.Scale(scale, scale)
-					op.GeoM.Translate(float64(clipW)/2-drawW/2, float64(clipH)/2-drawH/2)
+					op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
 					recruitClipBuf.DrawImage(sub, op)
 					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
 					dst := &ebiten.DrawImageOptions{}

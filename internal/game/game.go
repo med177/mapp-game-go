@@ -237,7 +237,22 @@ func (g *Game) Update() error {
 		case render.ActionScheduleCapitalMove:
 			g.queueCapitalMove(g.gs.PlayerFactionID, action.BuildingID, state.DefaultCapitalMoveTurns, "yerel karar")
 		case render.ActionEndTurn:
-			// Araştırma seçimi artık turn resolution içinde otomatik tamamlanıyor.
+			// Turn resolution'a geçmeden önce otomatik seçim bir sebeple
+			// gerçekleşmediyse son bir kez dene; yine de aktif araştırma yoksa
+			// oyuncunun araştırılabilir bir teknoloji bırakıp bırakmadığını bildir.
+			if g.endTurnResearchNeedsConfirmation() {
+				g.renderer.ShowConfirmDialog(
+					"Araştırma Yok",
+					"Teknoloji araştırması seçilmedi. Turu yine de bitirmek istiyor musunuz?",
+					"Evet",
+					"Hayır",
+					render.InputAction{Kind: render.ActionConfirmEndTurn},
+					func() {
+						g.renderer.ShowTechPanel()
+					},
+				)
+				break
+			}
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
@@ -905,7 +920,21 @@ func (g *Game) autoStartResearchIfIdle() bool {
 		return false
 	}
 	g.startResearch(techID)
-	return true
+	return f.Research.ActiveID == techID
+}
+
+func (g *Game) endTurnResearchNeedsConfirmation() bool {
+	if g == nil || g.gs == nil {
+		return false
+	}
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	if f == nil || f.Research.ActiveID != "" {
+		return false
+	}
+	if g.autoStartResearchIfIdle() {
+		return false
+	}
+	return g.playerHasResearchableTechs()
 }
 
 func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus) {

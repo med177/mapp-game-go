@@ -1942,7 +1942,7 @@ func regionEventStatusColor(eventType string) color.RGBA {
 }
 
 func regionActivityNeighborVisible(gs *state.GameState, region *world.Region) bool {
-	return gs != nil && region != nil && (regionActiveEventCount(gs, region.ID) > 0 || gs.DevelopmentMode)
+	return gs != nil && region != nil && (regionActiveEventCount(gs, region.ID) > 0 || len(region.Neighbors) > 0 || gs.DevelopmentMode)
 }
 
 func buildingGridEndY(gs *state.GameState, region *world.Region, startY float32) float32 {
@@ -1962,7 +1962,7 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 		return
 	}
 	btn := buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
-	drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{55, 92, 142, 225}, panelBorder, ColorWhite, 10))
+	drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{55, 92, 142, 225}, panelBorder, ColorWhite, 0))
 }
 
 func regionActivityNeighborContentHeight(gs *state.GameState, region *world.Region) float64 {
@@ -1970,10 +1970,8 @@ func regionActivityNeighborContentHeight(gs *state.GameState, region *world.Regi
 	if eventCount := regionActiveEventCount(gs, region.ID); eventCount > 0 {
 		height += 17 + float64(eventCount)*28 + 6
 	}
-	if gs.DevelopmentMode {
-		_, _, _, rows := neighborBlockLayout(gs, region, true)
-		height += devNeighborTitleHeight + float64(rows)*devNeighborLineHeight
-	}
+	_, _, _, rows := neighborBlockLayout(gs, region, true)
+	height += devNeighborTitleHeight + float64(rows)*devNeighborLineHeight
 	return height
 }
 
@@ -2066,9 +2064,7 @@ func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState
 		y += 6
 	}
 
-	if gs.DevelopmentMode {
-		drawNeighborBlock(body, gs, region, x, y, width, true, color.RGBA{200, 170, 90, 220})
-	}
+	drawNeighborBlock(body, gs, region, x, y, width, true, color.RGBA{200, 170, 90, 220})
 	drawRegionPanelScrollbar(screen, viewport, contentHeight, scroll)
 }
 
@@ -2089,19 +2085,16 @@ func drawRegionPanelScrollbar(screen *ebiten.Image, viewport gameui.Rect, conten
 
 func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
 	btnW := float32(92)
-	btnH := float32(22)
+	btnH := float32(24)
 	x = px + pw - btnW - 5
 	y = py + (ph-btnH)/2
 	return x, y, btnW, btnH
 }
 
 func drawRegionDiplomacyButtons(screen *ebiten.Image, gs *state.GameState, ownerID string, px, py, pw, ph float32) {
-	x, y, w, h := regionDiplomacyButtonRect(0, px, py, pw, ph)
 	btnCol := color.RGBA{55, 92, 142, 225}
-	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, btnCol, panelBorder, 1)
-	label := "Diplomasi"
-	tw := MeasureText(label, FaceSmall)
-	DrawText(screen, label, float64(x)+float64(w)/2-tw/2, float64(y)+4, FaceSmall, ColorWhite)
+	btn := buildRegionDiplomacyButtons(gs, ownerID, px, py, pw, ph)
+	drawUIButtonWidget(screen, btn, solidButtonStyle(btnCol, panelBorder, ColorWhite, 0))
 }
 
 func logisticsPressureColor(status state.RegionLogisticsStatus) color.RGBA {
@@ -3802,13 +3795,25 @@ func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid
 }
 
 func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpanded bool) float32 {
+	if gs == nil || region == nil {
+		return 0
+	}
 	py := infoPanelY()
 	ly := float64(py) + 10
 	ly += 24
+	ly += regionOwnerBlockHeight(gs, region.OwnerID)
 	if gs.DevelopmentMode {
-		ly += 16 + 16 + 18
+		ly += 34
 	}
-	ly += regionOwnerBlockHeight(gs, region.OwnerID) + 16 + 8 + regionPanelStatRowGap + regionPanelStatRowGap + regionPanelStatRowGap
+	ly += 16 + 8
+	ly += regionPanelStatRowGap * 4
+	ly += regionPanelStatRowGap * 2
+	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
+		ly += regionPanelStatRowGap
+		if logistics.Overload > 0 {
+			ly += 14
+		}
+	}
 	if region.ConversionTurns > 0 {
 		ownerRel := ""
 		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
