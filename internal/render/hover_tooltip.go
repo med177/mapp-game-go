@@ -2,7 +2,6 @@ package render
 
 import (
 	"fmt"
-	"image"
 	"image/color"
 
 	"mapp-game-go/internal/army"
@@ -241,8 +240,8 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 		return
 	}
 
-	ensureArmySheet()
-	sheet := armySheetForFaction(gs, string(gs.PlayerFactionID))
+	ensureArmySprites()
+	sprite := unitSpriteForFaction(gs, string(gs.PlayerFactionID), uid)
 	costLines := unitCostRequirementLines(gs, utype)
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
 	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
@@ -251,7 +250,8 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	drawTooltipBox(screen, x, y, w, h)
 
 	iconX, iconY := x+10.0, y+14.0
-	iconW, iconH := float64(recruitCardW), 76.0
+	iconW := float64(recruitCardW)
+	iconH := float64(unitSpriteHeight(float32(iconW)))
 	textX := iconX + iconW + 12
 
 	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
@@ -270,34 +270,8 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
 	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, upkeepY, FaceSmall, ColorGray)
 
-	if sheet != nil {
-		r := unitSpriteRect(uid, sheet)
-		if !r.Empty() {
-			sub := sheet.SubImage(r).(*ebiten.Image)
-			op := &ebiten.DrawImageOptions{}
-			fitW := iconW + 50
-			fitH := iconH + 40
-			scale := fitW / float64(r.Dx())
-			if hScale := fitH / float64(r.Dy()); hScale < scale {
-				scale = hScale
-			}
-			drawW := float64(r.Dx()) * scale
-			drawH := float64(r.Dy()) * scale
-			if recruitClipBuf != nil {
-				clipW := int(iconW - 2)
-				clipH := int(iconH - 2)
-				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
-					recruitClipBuf.Clear()
-					op.GeoM.Scale(scale, scale)
-					op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
-					recruitClipBuf.DrawImage(sub, op)
-					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
-					dst := &ebiten.DrawImageOptions{}
-					dst.GeoM.Translate(iconX+1, iconY+1)
-					screen.DrawImage(cropped, dst)
-				}
-			}
-		}
+	if sprite != nil {
+		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
 	}
 
 	statY := upkeepY + 18

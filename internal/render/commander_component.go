@@ -274,19 +274,19 @@ func drawCommanderSummaryCard(screen *ebiten.Image, commander *army.Commander, x
 	textW := commanderSummaryTextWidth(w)
 	if commander == nil {
 		DrawText(screen, trimTextToWidth(headerRight, FaceMed, w-float64(armyPanelCommanderCardPad*2)), titleX, titleY, FaceMed, ColorWhite)
-		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY+6, FaceSmall, ColorGold)
-		DrawText(screen, trimTextToWidth(opts.EmptySummary, FaceSmall, textW), textX, portraitY+34, FaceSmall, ColorGray)
+		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY, FaceSmall, ColorGold)
+		DrawText(screen, trimTextToWidth(opts.EmptySummary, FaceSmall, textW), textX, portraitY+28, FaceSmall, ColorGray)
 		if opts.EmptyEffectText != "" {
-			DrawText(screen, trimTextToWidth(opts.EmptyEffectText, FaceSmall, textW), textX, portraitY+54, FaceSmall, color.RGBA{145, 185, 220, 255})
+			DrawText(screen, trimTextToWidth(opts.EmptyEffectText, FaceSmall, textW), textX, portraitY+48, FaceSmall, color.RGBA{145, 185, 220, 255})
 		}
 	} else {
 		DrawText(screen, trimTextToWidth(headerRight, FaceMed, w-float64(armyPanelCommanderCardPad*2)), titleX, titleY, FaceMed, ColorWhite)
-		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY+6, FaceSmall, ColorGold)
-		DrawText(screen, trimTextToWidth(fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), FaceSmall, textW), textX, portraitY+28, FaceSmall, ColorGray)
-		DrawText(screen, trimTextToWidth(fmt.Sprintf("Savaş %d  |  Zafer %d", commander.Battles, commander.Victories), FaceSmall, textW), textX, portraitY+48, FaceSmall, ColorGray)
+		DrawText(screen, trimTextToWidth(headerTop, FaceSmall, textW), textX, portraitY, FaceSmall, ColorGold)
+		DrawText(screen, trimTextToWidth(fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), FaceSmall, textW), textX, portraitY+22, FaceSmall, ColorGray)
+		DrawText(screen, trimTextToWidth(fmt.Sprintf("Savaş %d  |  Zafer %d", commander.Battles, commander.Victories), FaceSmall, textW), textX, portraitY+42, FaceSmall, ColorGray)
 		effectLines := commanderCardEffectLines(commander)
 		for i, line := range effectLines {
-			DrawText(screen, trimTextToWidth(line.Text, FaceTiny, textW), textX, portraitY+64+float64(i)*12, FaceTiny, line.Color)
+			DrawText(screen, trimTextToWidth(line.Text, FaceTiny, textW), textX, portraitY+58+float64(i)*12, FaceTiny, line.Color)
 		}
 	}
 

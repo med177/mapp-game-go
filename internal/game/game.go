@@ -2784,7 +2784,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		}
 		pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
 		if pendingInRegion >= 20 {
-			g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+			g.renderer.ShowCombatResult("Eğitim sırası dolu! (max 20 emir)")
 			return
 		}
 		queueFree := 20 - pendingInRegion
@@ -2827,7 +2827,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	}
 	pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
 	if pendingInRegion >= 20 {
-		g.renderer.ShowCombatResult("Egitim sirasi dolu! (max 20 emir)")
+		g.renderer.ShowCombatResult("Eğitim sırası dolu! (max 20 emir)")
 		return
 	}
 	queueFree := 20 - pendingInRegion

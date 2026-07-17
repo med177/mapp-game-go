@@ -96,7 +96,12 @@ func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *wo
 
 func buildSelectedSiegePanel() gameui.Panel {
 	x := (ScreenWidth - selectedSiegePanelW) / 2
-	y := (ScreenHeight - selectedSiegePanelH) / 2
+	// Ordu detay paneli ekranın altına sabitlendiği için kuşatma panelini
+	// onun üstüne yerleştir; iki panel aynı dikey alanı paylaşmasın.
+	y := float64(armyPanelGeometry().panelY) - selectedSiegePanelH - 16
+	if y < 8 {
+		y = 8
+	}
 	return gameui.NewPanel(x, y, selectedSiegePanelW, selectedSiegePanelH)
 }
 

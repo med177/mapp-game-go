@@ -1,17 +1,24 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
 
+- 2026-07-18: Yerleşim marker ikonlarının beyaz daire arka planına göre dikey hizası düzeltildi; ikon ve daire artık aynı merkez koordinatını kullanıyor. Kapsam: `internal/render/renderer.go`, `wiki/architecture/render-pipeline.md`, test: `go test ./internal/render`.
+- 2026-07-18: Kuşatma emri paneli seçili ordu detay paneli görünür kalacak şekilde ordu panelinin üstündeki boş alana taşındı; buton önceliği korunurken panel dışındaki input/cursor ordu paneline geçebiliyor. Kapsam: `internal/render/{renderer_dialogs.go,renderer_input.go,cursor.go}`.
+- 2026-07-18: Eğitim kuyruğu kartlarına birim adı eklendi; tüm kart footer'ları tam genişlikte opak beyaz çizilerek kenarlardaki sprite sızıntısı kaldırıldı. Kapsam: `internal/render/recruit_panel.go`.
+- 2026-07-18: Ordu komutan kartındaki sağ bilgi bloğu portreyle üst hizaya getirildi; rol, seviye, savaş ve bonus satırları 6px yukarı alındı. Kapsam: `internal/render/commander_component.go`.
+- 2026-07-18: Askeri sprite seçimi düzeltildi; yalnızca Sünni/Şii fraksiyonlar `eastern_army`, diğer tanımlı dinler `western_army` kullanıyor. Kapsam: `internal/render/recruit_panel.go`, `renderer_army_icon_test.go`.
 - 2026-07-17: Kuşatma altındaki bölge sahibi veya müttefik ordular için huruç hareketi eklendi. Komşu dost/sahipsiz hedefe çıkmadan önce kuşatanla savaş planı açılıyor; zaferde kuşatma kalkıp ordu çıkıyor, yenilgide kalan birlikler kayıplarıyla kuşatılan bölgede kalıyor ve hareket/iyileşme duruyor. AI aynı state kuralını uyguluyor; ortak `GameState.IsArmyDefendingSiegedRegion()` predicate'i hareket, tur sonu toparlanma ve panel görünümünü hizalıyor. Kapsam: `internal/state/state.go`, `internal/game/{game.go,resolution.go,siege_test.go}`, `internal/ai/{ai.go,siege_test.go}`, `internal/render/{renderer_dialogs.go,renderer_input.go,army_panel.go}`, `wiki/{systems/combat.md,systems/ai.md,architecture/state-management.md,architecture/render-pipeline.md}`, testler: `go test ./internal/state ./internal/game ./internal/ai ./internal/render`.
 - 2026-07-17: Bölge bilgi panelinin altındaki aktif olay/komşu viewport'u artık komşuları geliştirme moduna bağlı olmadan gösteriyor; uzun içerik için yükseklik ve çizim hesabı eşitlendi. Diplomasi aksiyon düğmesinin etiketi dikey olarak ortalandı ve düğmenin çizim/hit-test geometrisi gerçek bina/stat yerleşimiyle hizalandı. Kapsam: `internal/render/panel.go`, `internal/render/region_panel_activity_test.go`, testler: `go test ./...`.
 - 2026-07-17: Birim kartı sprite'ları fraksiyon dinine göre ayrıldı; Sünni/Şii ordular `muslim_army.png`, Katolik/Ortodoks ordular `christian_army.png` kullanıyor ve eski senaryolar için `army.png` fallback'i korunuyor. Recruit/tooltip oyuncu dinini, ordu detay paneli ordu sahibinin dinini baz alıyor. Kapsam: `internal/render/{recruit_panel.go,army_panel.go,hover_tooltip.go,renderer.go}`, `internal/render/renderer_army_icon_test.go`.
 - 2026-07-17: Ordu ve recruit birim kartları yaklaşık `%20` büyütüldü; 10×2 slot düzeni korundu, sprite’lar uniform ölçeklenip kart içinde kırpılarak daha yakın gösterildi. Kapsam: `internal/render/{army_panel.go,recruit_panel.go}`, mevcut ortak viewport geometry testleri.
-- 2026-07-17: Birim sprite’larının clipping içindeki yatay hizası ortak `-10 px` offset ile sola alındı; sağ çerçeveye yapışan görseller daha dengeli ortalandı. Kapsam: `internal/render/{army_panel.go,recruit_panel.go,hover_tooltip.go}`.
+- 2026-07-17: Birim kartları 210×360 sprite oranına göre yeniden boyutlandırıldı; sprite artık üstten başlayarak tamamı çiziliyor, isim/HP/progress ve kuyruk iptal butonu görselin üzerine bindiriliyor. Kapsam: `internal/render/{army_panel.go,recruit_panel.go,hover_tooltip.go}`.
+- 2026-07-17: Birim kartlarında sprite üzerine gelen alt etiket alanı kart çerçevesi içinde opak beyaz footer olarak çiziliyor; yazı ve HP/progress okunabilirliği artırıldı. Kapsam: `internal/render/{army_panel.go,recruit_panel.go}`.
+- 2026-07-17: 1300 senaryosunda askeri birim görselleri tek sheet yerine birim türü başına ayrı asset'lere taşındı; doğu/batı sprite setleri din grubuna göre seçiliyor ve eski senaryolar için sheet fallback'i yalnızca yeni asset klasörleri yoksa yükleniyor. Kapsam: `assets/scenarios/1300_ottoman_rise/sprites/{eastern_army,western_army}`, `internal/render/{recruit_panel.go,army_panel.go,hover_tooltip.go,renderer.go}`.
 
 ## Denetim Özeti (2026-05-08)
 

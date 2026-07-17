@@ -2,7 +2,6 @@ package render
 
 import (
 	"fmt"
-	"image"
 	"image/color"
 
 	"mapp-game-go/internal/army"
@@ -17,19 +16,13 @@ import (
 // Kart boyutları
 const (
 	cardW           = float32(88)
-	unitCardSpriteH = float32(90)
+	unitCardSpriteH = cardW * unitSpriteAspectH
 	spriteHc        = unitCardSpriteH // yetiştirme kartıyla aynı sprite yüksekliği
 	nameHc          = float32(15)
 	hpBarH          = float32(8)
-	cardH           = spriteHc + nameHc + hpBarH + 8 // ≈121px
+	cardH           = spriteHc
 	cardGap         = float32(5)
 	maxCols         = 10
-
-	// Sprite sheet hücresini karta uniform ölçekle ve birimi yakından göster.
-	// Yatay/dikey ayrı ölçek uygulanmaz; taşan kısım kart clipping alanında kalır.
-	unitCardSpriteExtraW  = float32(68)
-	unitCardSpriteExtraH  = float32(44)
-	unitCardSpriteOffsetX = float32(-10)
 
 	armyPanelPadX  = float32(12)
 	armyPanelPadY  = float32(8)
@@ -81,8 +74,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		return
 	}
 
-	ensureArmySheet()
-	sheet := armySheetForFaction(gs, a.OwnerID)
+	ensureArmySprites()
 
 	layout := armyPanelGeometry()
 	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
@@ -213,39 +205,13 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
 		}
 
-		// Sprite: en-boy oranını koruyarak karta ortala (distorsiyon yok).
-		if sheet != nil && utype != nil {
-			r := unitSpriteRect(u.TypeID, sheet)
-			if !r.Empty() {
-				sub := sheet.SubImage(r).(*ebiten.Image)
-				op := &ebiten.DrawImageOptions{}
-				// Recruit panel ile aynı davranış: biraz taşır, ortalar ve karta kırpar.
-				fitW := float64(cardW + unitCardSpriteExtraW)
-				fitH := float64(spriteHc + unitCardSpriteExtraH)
-				scale := fitW / float64(r.Dx())
-				if hScale := fitH / float64(r.Dy()); hScale < scale {
-					scale = hScale
-				}
-				drawW := float64(r.Dx()) * scale
-				drawH := float64(r.Dy()) * scale
-				if recruitClipBuf != nil {
-					clipW := int(cardW - 2)
-					clipH := int(spriteHc - 2)
-					if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
-						recruitClipBuf.Clear()
-						op.GeoM.Scale(scale, scale)
-						op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
-						recruitClipBuf.DrawImage(sub, op)
-						cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
-						dst := &ebiten.DrawImageOptions{}
-						dst.GeoM.Translate(float64(cx+1), float64(cy+1))
-						screen.DrawImage(cropped, dst)
-					}
-				}
-			}
+		// Sprite 210x360 oranını korur; hedef alanın tamamını doldurur.
+		if sprite := unitSpriteForFaction(gs, a.OwnerID, u.TypeID); sprite != nil && utype != nil {
+			drawUnitSpriteCard(screen, sprite, cx, cy, cardW, [3]float32{1, 1, 1})
 		} else if utype == nil {
 			DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, ColorGray)
 		}
+		drawUnitCardFooter(screen, cx, cy, cardW, cardH, unitCardFooterH)
 
 		// Birim adı
 		unitName := u.TypeID
@@ -258,11 +224,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		}
 		DrawTextCentered(screen, shortUnitName(unitName, 14),
 			float64(cx)+float64(cardW)/2,
-			float64(cy)+float64(spriteHc)+1,
+			float64(cy)+float64(cardH)-float64(unitCardNameOffset),
 			FaceSmall, nameCol)
 
 		// HP çubuğu
-		hpY := cy + spriteHc + nameHc + 1
+		hpY := cy + cardH - hpBarH - 2
 		var hpCol color.Color
 		switch {
 		case hpPct > 0.66:
@@ -411,8 +377,7 @@ func scoutedEnemyRevealCount(total int, fullIntel bool, revealRatio float64) int
 }
 
 func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool, revealRatio float64) {
-	ensureArmySheet()
-	sheet := armySheetForFaction(gs, a.OwnerID)
+	ensureArmySprites()
 
 	const totalSlots = army.MaxArmySize
 	layout := armyPanelGeometry()
@@ -475,7 +440,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 			drawUnknownEnemyUnitCard(screen, cx, cy)
 			continue
 		}
-		drawScoutedEnemyUnitCard(screen, gs, sheet, a.Units[i], cx, cy)
+		drawScoutedEnemyUnitCard(screen, gs, a.OwnerID, a.Units[i], cx, cy)
 	}
 
 	vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
@@ -493,45 +458,19 @@ func drawUnknownEnemyUnitCard(screen *ebiten.Image, cx, cy float32) {
 	vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{24, 20, 16, 220}, false)
 	vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{95, 75, 45, 210}, false)
 	DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, color.RGBA{210, 180, 90, 230})
-	DrawTextCentered(screen, "Gizli", float64(cx)+float64(cardW)/2, float64(cy)+float64(spriteHc)+1, FaceSmall, color.RGBA{150, 130, 90, 220})
-	drawBar(screen, cx+1, cy+spriteHc+nameHc+1, cardW-2, hpBarH-1, 1, color.RGBA{80, 70, 55, 180})
+	DrawTextCentered(screen, "Gizli", float64(cx)+float64(cardW)/2, float64(cy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, color.RGBA{150, 130, 90, 220})
+	drawBar(screen, cx+1, cy+cardH-hpBarH-2, cardW-2, hpBarH-1, 1, color.RGBA{80, 70, 55, 180})
 }
 
-func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, sheet *ebiten.Image, u army.Unit, cx, cy float32) {
+func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, ownerID string, u army.Unit, cx, cy float32) {
 	utype := gs.UnitTypes[u.TypeID]
 	vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{255, 255, 255, 245}, false)
 	vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{160, 160, 160, 225}, false)
 
-	if sheet != nil && utype != nil {
-		r := unitSpriteRect(u.TypeID, sheet)
-		if !r.Empty() {
-			sub := sheet.SubImage(r).(*ebiten.Image)
-			op := &ebiten.DrawImageOptions{}
-			fitW := float64(cardW + unitCardSpriteExtraW)
-			fitH := float64(spriteHc + unitCardSpriteExtraH)
-			scale := fitW / float64(r.Dx())
-			if hScale := fitH / float64(r.Dy()); hScale < scale {
-				scale = hScale
-			}
-			drawW := float64(r.Dx()) * scale
-			drawH := float64(r.Dy()) * scale
-			if recruitClipBuf != nil {
-				clipW := int(cardW - 2)
-				clipH := int(spriteHc - 2)
-				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
-					recruitClipBuf.Clear()
-					op.GeoM.Scale(scale, scale)
-					op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
-					op.ColorScale.Scale(0.85, 0.85, 0.85, 1)
-					recruitClipBuf.DrawImage(sub, op)
-					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
-					dst := &ebiten.DrawImageOptions{}
-					dst.GeoM.Translate(float64(cx+1), float64(cy+1))
-					screen.DrawImage(cropped, dst)
-				}
-			}
-		}
+	if sprite := unitSpriteForFaction(gs, ownerID, u.TypeID); sprite != nil && utype != nil {
+		drawUnitSpriteCard(screen, sprite, cx, cy, cardW, [3]float32{0.85, 0.85, 0.85})
 	}
+	drawUnitCardFooter(screen, cx, cy, cardW, cardH, unitCardFooterH)
 
 	unitName := u.TypeID
 	if utype != nil {
@@ -539,9 +478,9 @@ func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, sheet *
 	}
 	DrawTextCentered(screen, shortUnitName(unitName, 14),
 		float64(cx)+float64(cardW)/2,
-		float64(cy)+float64(spriteHc)+1,
+		float64(cy)+float64(cardH)-float64(unitCardNameOffset),
 		FaceSmall, color.RGBA{25, 25, 25, 235})
-	drawBar(screen, cx+1, cy+spriteHc+nameHc+1, cardW-2, hpBarH-1, 1, color.RGBA{120, 110, 85, 210})
+	drawBar(screen, cx+1, cy+cardH-hpBarH-2, cardW-2, hpBarH-1, 1, color.RGBA{120, 110, 85, 210})
 }
 
 const (

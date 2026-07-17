@@ -656,10 +656,10 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		// Senaryo değişince asset cache'lerini sıfırla
 		buildingSheetLoaded = false
 		miniMapLoaded = false
-		armySheetLoaded = false
-		armySheet = nil
-		muslimArmySheet = nil
-		christianArmySheet = nil
+		armySpritesLoaded = false
+		unitSprites = nil
+		legacyUnitSprites = nil
+		legacyArmySheet = nil
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
 		resetCommanderPortraitCache()
@@ -2385,7 +2385,7 @@ func (r *Renderer) drawSettlementMarkerSprite(screen *ebiten.Image, img *ebiten.
 	scaleX := float64(size) / float64(bounds.Dx())
 	scaleY := float64(size) / float64(bounds.Dy())
 	op.GeoM.Scale(scaleX, scaleY)
-	op.GeoM.Translate(float64(sx-size/2), float64(sy-size/2+2))
+	op.GeoM.Translate(float64(sx-size/2), float64(sy-size/2))
 	screen.DrawImage(img, op)
 	return true
 }

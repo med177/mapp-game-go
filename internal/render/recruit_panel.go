@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"path/filepath"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
@@ -18,64 +19,147 @@ import (
 )
 
 var (
-	armySheet          *ebiten.Image
-	muslimArmySheet    *ebiten.Image
-	christianArmySheet *ebiten.Image
-	armySheetLoaded    bool
-	recruitClipBuf     *ebiten.Image
+	unitSprites       map[unitSpriteKey]*ebiten.Image
+	legacyUnitSprites map[string]*ebiten.Image
+	legacyArmySheet   *ebiten.Image
+	armySpritesLoaded bool
 )
 
-func ensureArmySheet() {
-	if armySheetLoaded {
-		return
-	}
-	armySheetLoaded = true
-	base := ActiveScenarioPath + "/sprites/"
-	armySheet = tryLoadImage(base + "army.png")
-	muslimArmySheet = tryLoadImage(base + "muslim_army.png")
-	christianArmySheet = tryLoadImage(base + "christian_army.png")
-	recruitClipBuf = ebiten.NewImage(160, 120)
-}
-
-type armySheetGroup uint8
+const unitSpriteAspectH = float32(360) / float32(210)
 
 const (
-	armySheetGroupLegacy armySheetGroup = iota
-	armySheetGroupMuslim
-	armySheetGroupChristian
+	unitCardFooterH           = float32(36)
+	unitCardNameOffset        = float32(29)
+	unitCardSingleLabelOffset = float32(15)
 )
 
-func armySheetGroupForFaction(gs *state.GameState, ownerID string) armySheetGroup {
+func unitSpriteHeight(width float32) float32 {
+	return width * unitSpriteAspectH
+}
+
+type armySpriteSet uint8
+
+const (
+	armySpriteSetLegacy armySpriteSet = iota
+	armySpriteSetEastern
+	armySpriteSetWestern
+)
+
+type unitSpriteKey struct {
+	set    armySpriteSet
+	unitID string
+}
+
+// Unit türü ile ayrı sprite dosyası arasındaki kanonik eşleştirme.
+var unitSpriteAssetNames = map[string]string{
+	"militia":        "infantry_light.png",
+	"infantry":       "infantry_medium.png",
+	"elite_infantry": "infantry_heavy.png",
+	"light_cavalry":  "cavalry_light.png",
+	"cavalry":        "cavalry_medium.png",
+	"heavy_cavalry":  "cavalry_heavy.png",
+	"catapult":       "siege_trebuchet.png",
+	"bombard":        "siege_mortar.png",
+	"cannon":         "siege_cannon.png",
+	"transport":      "ship_transport.png",
+	"merchant_ship":  "ship_small.png",
+	"warship":        "ship_war_galley.png",
+}
+
+func ensureArmySprites() {
+	if armySpritesLoaded {
+		return
+	}
+	armySpritesLoaded = true
+	unitSprites = make(map[unitSpriteKey]*ebiten.Image, len(unitSpriteAssetNames)*2)
+	legacyUnitSprites = make(map[string]*ebiten.Image, len(unitSpriteAssetNames))
+	base := filepath.Join(ActiveScenarioPath, "sprites")
+	for _, set := range []struct {
+		kind armySpriteSet
+		dir  string
+	}{
+		{kind: armySpriteSetEastern, dir: "eastern_army"},
+		{kind: armySpriteSetWestern, dir: "western_army"},
+	} {
+		for unitID, filename := range unitSpriteAssetNames {
+			img := tryLoadImage(filepath.Join(base, set.dir, filename))
+			if img != nil {
+				unitSprites[unitSpriteKey{set: set.kind, unitID: unitID}] = img
+			}
+		}
+	}
+
+	// Eski senaryoların tek sheet asset'leri için geriye dönük fallback.
+	// Yeni tekil sprite klasörleri bulunduğunda eski sheet hiç kullanılmaz.
+	if len(unitSprites) == 0 {
+		legacyArmySheet = tryLoadImage(filepath.Join(base, "army.png"))
+		if legacyArmySheet != nil {
+			for unitID := range unitSpriteAssetNames {
+				r := legacyUnitSpriteRect(unitID, legacyArmySheet)
+				if !r.Empty() {
+					legacyUnitSprites[unitID] = legacyArmySheet.SubImage(r).(*ebiten.Image)
+				}
+			}
+		}
+	}
+}
+
+func armySpriteSetForFaction(gs *state.GameState, ownerID string) armySpriteSet {
 	if gs == nil || ownerID == "" {
-		return armySheetGroupLegacy
+		return armySpriteSetLegacy
 	}
 	f := gs.Factions[faction.FactionID(ownerID)]
 	if f == nil {
-		return armySheetGroupLegacy
+		return armySpriteSetLegacy
 	}
 	switch f.Religion {
 	case religion.Sunni, religion.Shia:
-		return armySheetGroupMuslim
-	case religion.Catholic, religion.Orthodox:
-		return armySheetGroupChristian
+		return armySpriteSetEastern
 	default:
-		return armySheetGroupLegacy
+		return armySpriteSetWestern
 	}
 }
 
-func armySheetForFaction(gs *state.GameState, ownerID string) *ebiten.Image {
-	ensureArmySheet()
-	switch armySheetGroupForFaction(gs, ownerID) {
-	case armySheetGroupMuslim:
-		if muslimArmySheet != nil {
-			return muslimArmySheet
-		}
-	case armySheetGroupChristian:
-		if christianArmySheet != nil {
-			return christianArmySheet
-		}
+func unitSpriteForFaction(gs *state.GameState, ownerID, unitID string) *ebiten.Image {
+	ensureArmySprites()
+	set := armySpriteSetForFaction(gs, ownerID)
+	if img := unitSprites[unitSpriteKey{set: set, unitID: unitID}]; img != nil {
+		return img
 	}
-	return armySheet
+	return legacyUnitSprites[unitID]
+}
+
+// drawUnitSpriteCard birimi kart genişliğine göre tam oranında çizer.
+// Görselin tamamı korunur; üst-alt kırpılmaz. Kart üzerindeki metin ve
+// kontroller çağıran kod tarafından daha sonra çizilerek sprite'ın üzerine biner.
+func drawUnitSpriteCard(screen *ebiten.Image, sprite *ebiten.Image, x, y, width float32, tint [3]float32) bool {
+	if screen == nil || sprite == nil || width <= 0 {
+		return false
+	}
+	source := sprite.Bounds()
+	if source.Dx() <= 0 || source.Dy() <= 0 {
+		return false
+	}
+
+	scale := float64(width) / float64(source.Dx())
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate(float64(x), float64(y))
+	op.ColorScale.Scale(tint[0], tint[1], tint[2], 1.0)
+	screen.DrawImage(sprite, op)
+	return true
+}
+
+// drawUnitCardFooter sprite'ın altındaki etiket alanını opak beyazla kapatır.
+// 1px içeri alınarak kart çerçevesinin üstüne taşmaz.
+func drawUnitCardFooter(screen *ebiten.Image, x, y, width, height, footerH float32) {
+	if screen == nil || width <= 2 || height <= 0 || footerH <= 0 {
+		return
+	}
+	if footerH > height {
+		footerH = height
+	}
+	vector.FillRect(screen, x, y+height-footerH, width, footerH, color.RGBA{255, 255, 255, 255}, false)
 }
 
 var unitDisplayOrder = []string{
@@ -104,7 +188,7 @@ var unitSpriteLocs = map[string]unitSpriteLoc{
 	"warship":        {3, 2},
 }
 
-func unitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
+func legacyUnitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 	loc, ok := unitSpriteLocs[id]
 	if !ok {
 		return image.Rectangle{}
@@ -122,14 +206,15 @@ const (
 	recruitMaxRows        = 2
 	recruitQueueMaxOrders = 20
 	recruitCardW          = float32(88)
-	recruitCardH          = float32(122)
+	recruitCardH          = recruitCardW * unitSpriteAspectH
 	recruitCardGap        = float32(6)
 	recruitPanelPad       = float32(14)
 	recruitHeaderH        = float32(52)
-	recruitSectionH       = float32(280)
+	recruitSectionH       = float32(26) + recruitCardH*float32(recruitMaxRows) + recruitCardGap*float32(recruitMaxRows-1)
 	recruitSectionGap     = float32(10)
-	recruitPanelH         = int(recruitHeaderH + recruitSectionH + recruitSectionGap + recruitSectionH + 18)
-	recruitBottomGap      = float32(150)
+	// İki satırın 210x360 oranlı kartlarını ve aralıklarını kapsar; küsurat yukarı yuvarlanır.
+	recruitPanelH    = 748
+	recruitBottomGap = float32(150)
 )
 
 func recruitPanelX(slots int) float32 {
@@ -225,7 +310,7 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 	pw := recruitPanelW(slots)
 	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
 	items := recruitQueueItems(gs, rid)
-	cardW, _, gap := recruitCardMetrics(pw)
+	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxItems := len(items)
 	if maxItems > recruitQueueMaxOrders {
 		maxItems = recruitQueueMaxOrders
@@ -239,7 +324,7 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 		row := i / recruitCardsPerRow
 		col := i % recruitCardsPerRow
 		x := px + recruitPanelPad + float32(col)*(cardW+gap)
-		y := queueY + 26 + float32(row)*(recruitCardH+gap)
+		y := queueY + 26 + float32(row)*(cardH+gap)
 		bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
 		btn := gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "").WithIcon(gameui.IconClose)
 		btn.IconSize = 11
@@ -425,7 +510,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		return
 	}
 	region := gs.Regions[rid]
-	ensureArmySheet()
+	ensureArmySprites()
 	slots := recruitPanelSlots()
 
 	px := recruitPanelX(slots)
@@ -437,7 +522,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	drawUIPanelFrame(screen, panelRect, panelBg, panelBorder, 1.5, 3)
 	drawRecruitPanelCloseButton(screen, px, py, pw)
 
-	DrawTextCentered(screen, "BIRIM OLUSTUR", float64(px)+float64(pw)/2, float64(py)+8, FaceSmall, ColorGold)
+	DrawTextCentered(screen, "BİRİM OLUŞTUR", float64(px)+float64(pw)/2, float64(py)+8, FaceSmall, ColorGold)
 	queuedTotal := queuedUnitTotal(gs, rid)
 	landLimit := state.LandUnitProductionLimit(region)
 	infoStr := fmt.Sprintf("Kışla limiti: %d  |  Sırada: %d", landLimit, queuedTotal)
@@ -541,7 +626,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barr
 		needsBuilding = portLevel < requiredLevel
 	}
 	ff := gs.Factions[gs.PlayerFactionID]
-	sheet := armySheetForFaction(gs, string(gs.PlayerFactionID))
+	playerOwnerID := string(gs.PlayerFactionID)
 	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
 	canAfford := ff != nil && unitCost(utype).CanAfford(ff)
 	fullyAvail := !needsBuilding && !needsTech && canAfford
@@ -553,53 +638,26 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barr
 	}
 	drawUICardRect(screen, gameui.Rect{X: float64(sx), Y: float64(sy), W: float64(cardW), H: float64(cardH)}, slotBg, borderCol, 1)
 
-	spriteH := unitCardSpriteH
-	if sheet != nil {
-		r := unitSpriteRect(uid, sheet)
-		if !r.Empty() {
-			sub := sheet.SubImage(r).(*ebiten.Image)
-			op := &ebiten.DrawImageOptions{}
-			// Biraz daha büyük görünmesi için kart genişliğinden taşan hedef alan.
-			// Taşan kısım kart içinde gizlenmiş/kırpılmış gibi görünür.
-			fitW := float64(cardW + unitCardSpriteExtraW)
-			fitH := float64(spriteH + unitCardSpriteExtraH)
-			scale := fitW / float64(r.Dx())
-			if hScale := fitH / float64(r.Dy()); hScale < scale {
-				scale = hScale
-			}
-			drawW := float64(r.Dx()) * scale
-			drawH := float64(r.Dy()) * scale
-			if recruitClipBuf != nil {
-				clipW := int(cardW - 2)
-				clipH := int(spriteH - 2)
-				if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
-					recruitClipBuf.Clear()
-					op.GeoM.Scale(scale, scale)
-					op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
-					switch {
-					case needsBuilding:
-						op.ColorScale.Scale(0.25, 0.25, 0.25, 1.0)
-					case needsTech:
-						op.ColorScale.Scale(0.45, 0.45, 0.45, 1.0)
-					case !canAfford:
-						op.ColorScale.Scale(0.65, 0.45, 0.45, 1.0)
-					}
-					recruitClipBuf.DrawImage(sub, op)
-					cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
-					dst := &ebiten.DrawImageOptions{}
-					dst.GeoM.Translate(float64(sx)+1, float64(sy)+1)
-					screen.DrawImage(cropped, dst)
-				}
-			}
+	if sprite := unitSpriteForFaction(gs, playerOwnerID, uid); sprite != nil {
+		tint := [3]float32{1, 1, 1}
+		switch {
+		case needsBuilding:
+			tint = [3]float32{0.25, 0.25, 0.25}
+		case needsTech:
+			tint = [3]float32{0.45, 0.45, 0.45}
+		case !canAfford:
+			tint = [3]float32{0.65, 0.45, 0.45}
 		}
+		drawUnitSpriteCard(screen, sprite, sx, sy, cardW, tint)
 	}
+	drawUnitCardFooter(screen, sx, sy, cardW, cardH, unitCardFooterH)
 
 	nameCol := color.RGBA{70, 60, 42, 235}
 	if !fullyAvail {
 		nameCol = color.RGBA{110, 105, 95, 210}
 	}
-	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+94, FaceSmall, nameCol)
-	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+108, FaceSmall, color.RGBA{110, 100, 86, 220})
+	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, nameCol)
+	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardSingleLabelOffset), FaceSmall, color.RGBA{110, 100, 86, 220})
 }
 
 func unitCost(utype *army.UnitType) economy.ResourceCost {
@@ -716,9 +774,8 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 	fmx, fmy := float64(mx), float64(my)
 	queueRect := gameui.Rect{X: float64(x + 8), Y: float64(y), W: float64(w - 16), H: float64(h)}
 	drawUICardRect(screen, queueRect, color.RGBA{14, 12, 10, 220}, color.RGBA{88, 72, 44, 220}, 1)
-	drawUISectionLabel(screen, float64(x)+16, float64(y)+6, "EGITIM SIRASI")
+	drawUISectionLabel(screen, float64(x)+16, float64(y)+6, "EGİTİM SIRASI")
 	items := recruitQueueItems(gs, rid)
-	sheet := armySheetForFaction(gs, string(gs.PlayerFactionID))
 	cardW, cardH, gap := recruitCardMetrics(w)
 	cy := y + 26
 	maxItems := len(items)
@@ -742,37 +799,15 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 			labelColor = color.RGBA{110, 104, 96, 220}
 		}
 		drawUICardRect(screen, gameui.Rect{X: float64(startX), Y: float64(cardY), W: float64(cardW), H: float64(cardH)}, cardBg, cardBorder, 1)
-		if sheet != nil {
-			r := unitSpriteRect(it.uid, sheet)
-			if !r.Empty() {
-				sub := sheet.SubImage(r).(*ebiten.Image)
-				op := &ebiten.DrawImageOptions{}
-				// Kuyruk kartlarında da daha iri sprite gösterimi.
-				fitW := float64(cardW + unitCardSpriteExtraW + 10)
-				fitH := float64(150)
-				scale := fitW / float64(r.Dx())
-				if hScale := fitH / float64(r.Dy()); hScale < scale {
-					scale = hScale
-				}
-				drawW := float64(r.Dx()) * scale
-				drawH := float64(r.Dy()) * scale
-				if recruitClipBuf != nil {
-					clipW := int(cardW - 2)
-					clipH := 75
-					if clipW > 0 && clipH > 0 && clipW <= 160 && clipH <= 120 {
-						recruitClipBuf.Clear()
-						op.GeoM.Scale(scale, scale)
-						op.GeoM.Translate(float64(clipW)/2-drawW/2+float64(unitCardSpriteOffsetX), float64(clipH)/2-drawH/2)
-						op.ColorScale.Scale(spriteTint[0], spriteTint[1], spriteTint[2], 1.0)
-						recruitClipBuf.DrawImage(sub, op)
-						cropped := recruitClipBuf.SubImage(image.Rect(0, 0, clipW, clipH)).(*ebiten.Image)
-						dst := &ebiten.DrawImageOptions{}
-						dst.GeoM.Translate(float64(startX)+1, float64(cardY)+1)
-						screen.DrawImage(cropped, dst)
-					}
-				}
-			}
+		if sprite := unitSpriteForFaction(gs, string(gs.PlayerFactionID), it.uid); sprite != nil {
+			drawUnitSpriteCard(screen, sprite, startX, cardY, cardW, spriteTint)
 		}
+		drawUnitCardFooter(screen, startX, cardY, cardW, cardH, unitCardFooterH)
+		unitName := it.uid
+		if utype := gs.UnitTypes[it.uid]; utype != nil {
+			unitName = utype.NameTR
+		}
+		DrawTextCentered(screen, shortUnitName(unitName, 14), float64(startX)+float64(cardW)/2, float64(cardY)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, labelColor)
 		label := "x" + itoa(it.count)
 		if it.queued {
 			label = "+" + itoa(it.turns) + "T"
@@ -780,7 +815,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 			hovered := fmx >= float64(bx) && fmx <= float64(bx+bw) && fmy >= float64(by) && fmy <= float64(by+bh)
 			drawQueueCancelButton(screen, bx, by, bw, bh, hovered)
 		}
-		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+108, FaceSmall, labelColor)
+		DrawTextCentered(screen, label, float64(startX)+float64(cardW)/2, float64(cardY)+float64(cardH)-float64(unitCardSingleLabelOffset), FaceSmall, labelColor)
 	}
 }
 

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -11,7 +11,11 @@ Kuşatılan bölgedeki bölge sahibi veya müttefik kara ordusu komşu dost/sahi
 
 Bölgede aktif kuşatma yürüten oyuncu ordusu seçildiğinde kuşatmaya ait hedef, durum, tahkimat, ilerleme, gedik, teslim süresi ve hücum uygunluğu bilgileri yalnızca seçili `Kuşatma Emri` panelinde gösterilir. Panel, bilgileri ayrı durum ve metrik kartlarına böler; alt ordu detay paneli aynı kuşatma özetini tekrar çizmez (`internal/render/renderer_dialogs.go`, `army_panel.go`).
 
-Birim kartı sprite sheet'i fraksiyonun din grubuna göre seçilir: Sünni/Şii fraksiyonlar `sprites/muslim_army.png`, Katolik/Ortodoks fraksiyonlar `sprites/christian_army.png` kullanır. Recruit paneli ve tooltip oyuncu fraksiyonunu, ordu detay paneli ise ilgili ordunun sahibini baz alır; diğer senaryolar için `sprites/army.png` fallback'i korunur. Ordu ve recruit kartlarında 10×2 slot düzeni korunurken kartlar yaklaşık `%20` büyütülür; sprite sheet hücresi uniform ölçeklenip kart içinde kırpılır ve görsel içeriğin sağa ağır boşluğunu dengelemek için clipping alanında ortak `-10 px` yatay offset uygulanır (`internal/render/recruit_panel.go`, `army_panel.go`, `hover_tooltip.go`).
+Birim görselleri artık tek bir sheet'ten değil, birim türü başına ayrı PNG'den yüklenir. `militia`/`infantry`/`elite_infantry`, süvari, kuşatma ve gemi türleri `sprites/eastern_army/` ile `sprites/western_army/` altındaki kanonik dosya eşlemesine bağlanır. Sünni/Şii fraksiyonlar doğu setini, Katolik/Ortodoks ve diğer tanımlı dinler batı setini kullanır; recruit paneli ve tooltip oyuncu fraksiyonunu, ordu detay paneli ise ilgili ordunun sahibini baz alır. Faksiyon bulunamıyorsa eski senaryolar için `sprites/army.png` fallback'i korunur. Ordu ve recruit kartlarında 10×2 slot düzeni korunurken kart yüksekliği 210×360 görsel oranına göre hesaplanır. Sprite'ın tamamı üstten başlayarak kırpılmadan çizilir; alt etiket alanı kart içinde opak beyazla doldurulur ve isim, HP/progress etiketi ile kuyruk iptal butonu sprite'ın üzerine bindirilir (`internal/render/recruit_panel.go`, `army_panel.go`, `hover_tooltip.go`).
+
+Kuşatma emri paneli seçili ordu detay paneli görünür kalacak şekilde onun üstündeki boş alana yerleştirilir; böylece iki panelin alt-üst örtüşmesi engellenir. Kuşatma paneli butonları kendi alanında önceliklidir, panel dışındaki input ve imleç normal ordu paneline geçebilir (`internal/render/renderer_dialogs.go`, `renderer_input.go`, `cursor.go`). Recruit eğitim kuyruğu kartlarında birim adı ve üretim süresi iki satırda gösterilir; beyaz footer kartın tam genişliğini kapatır ve sprite kenarlardan görünmez (`internal/render/recruit_panel.go`).
+
+Ordu komutan kartında sağdaki rol, seviye, savaş ve bonus bilgileri portre üst hizasına göre çizilir; bilgi bloğu portreyle aynı üst çizgiden başlar (`internal/render/commander_component.go`).
 
 Aynı bölgede kuşatma ordusu bölünürse ikon yerleşiminde kuşatan parça solda, ayrılan parça sağda tutulur. Hit-test sağdan tarandığı için ayrılan parça deterministik olarak seçilebilir; bölme veya birleşme sonrası bölgede kalan aynı fraksiyon ordusuna kuşatma kaydı devredilebilir (`internal/render/renderer.go`, `internal/game/{game.go,siege.go}`).
 
@@ -196,6 +200,8 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. Deniz orduları ve deniz hareket hedefleri JSON merkez koordinatı yerine bu gerçek piksel anchor'ını kullanır; anchor, bölgenin kendi piksel alanı içinden seçildiği için kıyıda kara poligonunun kapattığı deniz bölgelerinde filo ikonları karanın üstüne düşmez.
 
 Kara bölgelerde görünen yerleşim işaretleri `regions.json` içindeki `settlements[]` alanından gelir. `WorldMap` her yerleşim için `SettlementAnchor` hesaplar; koordinat yanlışlıkla bölge dışına verilirse log uyarısı basılır ve aynı region içindeki en yakın piksele fallback yapılır. `port` settlement'lar liman simgesi, `fortress` settlement'lar kale simgesi, diğerleri nokta olarak çizilir; ulusal başkent olan settlement'lara bunların yanında ek bir yıldız rozeti çizilir. Haritada seçili settlement etiketi altın tonla vurgulanır. Kara ordu ikonları mümkünse `port` olmayan yerleşim anchor'ına kaydırılır; dock edilmiş filolar ise `DockedSettlementID` ile doğrudan liman anchor'ında görünür. Nakliye filosu cargo taşıyorsa yuvarlak filo ikonunun üstüne küçük kare bir badge ve içindeki taşınan birlik sayısı çizilir.
+
+Yerleşim marker sprite'ları beyaz daire arka planıyla aynı `(sx, sy)` merkezinde çizilir; sprite'ın dikey eksende ayrıca kaydırılması kullanılmaz. Böylece ikonun beyaz daire içinde üstte fazla, altta eksik boşluk bırakması engellenir (`internal/render/renderer.go:2371`).
 
 Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve deniz bölgesi odak noktaları farklı renktedir; deniz seçiliyken odak işareti kara seçiminden farklı mavi/camgöbeği tona döner. Shift + sol sürükleme bu koordinatları değiştirir; Voronoi sınırları `WorldMap` raster cache'ine bağlı olduğu için sürükleme sırasında sadece merkez işareti güncellenir, fare bırakıldığında cache bir kez yeniden oluşturulur.
 
