@@ -144,3 +144,36 @@ func TestCaptureBesiegedRegionQueuesDecisionOnFinalProvince(t *testing.T) {
 		t.Fatalf("tek karar bekleniyordu, got=%d", len(g.pendingConquestDecisions))
 	}
 }
+
+func TestCaptureBesiegedRegionAIAppliesHybridVassalPolicy(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.ScenarioID = "1300_ottoman_rise"
+	g.gs.Factions["ai"] = &faction.Faction{ID: "ai", NameTR: "AI", AIAggressiveness: 60}
+	g.gs.Factions["enemy"].AIAggressiveness = 50
+	g.gs.Regions["ai_cap"] = &world.Region{ID: "ai_cap", OwnerID: "ai"}
+	g.gs.Armies["atk"].OwnerID = "ai"
+	g.gs.Armies["atk"].RegionID = "ai_cap"
+	g.gs.Armies["atk"].Units = append(g.gs.Armies["atk"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
+	g.gs.UnitTypes = map[string]*army.UnitType{
+		"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
+	}
+	g.gs.Relations[faction.RelationKey("ai", "enemy")] = &faction.Relation{FactionA: "ai", FactionB: "enemy", Stance: faction.StanceWar, Score: -80}
+	g.gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai": {
+			ObjectiveID:        "unite_anatolian_beyliks",
+			Kind:               state.AIObjectiveExpand,
+			TargetFactionID:    "enemy",
+			TargetRegionIDs:    []world.RegionID{"enemy_cap"},
+			AllowVassalization: true,
+		},
+	}
+
+	collapse, prompted := g.captureBesiegedRegion(g.gs.Armies["atk"], g.gs.Regions["enemy_cap"], false)
+
+	if prompted || collapse.FactionID != "" {
+		t.Fatalf("AI vassallığında oyuncu kararı veya eliminasyon olmamalı: prompted=%v collapse=%+v", prompted, collapse)
+	}
+	if g.gs.Regions["enemy_cap"].OwnerID != "enemy" || g.gs.Factions["enemy"].OverlordID != "ai" {
+		t.Fatalf("AI hibrit vassal kararı uygulanmadı: owner=%s overlord=%s", g.gs.Regions["enemy_cap"].OwnerID, g.gs.Factions["enemy"].OverlordID)
+	}
+}

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
@@ -39,7 +39,9 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 - Kış: Her ordu için birim hasar kontrolü
 - Hareket havuzu `ArmyMaxMovePoints()` ile hesaplanır: önce ordudaki en yavaş
   birimin `UnitType.MovementPoints` değeri alınır, sonra mevsim çarpanı uygulanır;
-  komutan, teknoloji ve zorluk bonusları bu iklimlendirilmiş tabana eklenir.
+  komutan ve teknoloji bonusları bu iklimlendirilmiş tabana eklenir. 1300 senaryosunun
+  `fair_movement` politikası AI ile oyuncuya aynı hesabı uygular; config taşımayan eski
+  senaryoların Zor AI `+1` hareket davranışı geriye uyumluluk için korunur.
 - Senaryo hareket değerleri: süvari `3`, piyade `2`, kuşatma/topçu `1`;
   karışık kara ordusu her zaman en düşük değeri kullanır. Taşınan kara birlikleri
   filonun hızını etkilemez.

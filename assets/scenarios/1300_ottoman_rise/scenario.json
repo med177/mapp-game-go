@@ -54,7 +54,7 @@
       "type": "conquer_city",
       "required_regions": [
         "constantinople",
-        "ankara"
+        "cankiri"
       ],
       "deadline_year": 1561,
       "deadline_month": 1,
@@ -157,7 +157,7 @@
         "palestine",
         "papal_states",
         "constantinople",
-        "mecca"
+        "hejaz"
       ],
       "deadline_year": 1561,
       "deadline_month": 1,

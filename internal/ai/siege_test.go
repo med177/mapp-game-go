@@ -113,6 +113,54 @@ func TestExecuteMoveStartsSiegeOnFortifiedTargetWithoutSiegeUnitAndWithDefender(
 	}
 }
 
+func TestMoveArmyStopsAfterFailedGeneralAssault(t *testing.T) {
+	gs := aiSiegeTestState(true)
+	attacker := gs.Armies["ai_army"]
+	attacker.Units = attacker.Units[:0]
+	for i := 0; i < 20; i++ {
+		unitType := "inf"
+		if i == 0 {
+			unitType = "siege"
+		}
+		attacker.Units = append(attacker.Units, army.Unit{TypeID: unitType, CurrentHP: 100})
+	}
+	gs.UnitTypes["inf"].Attack = 1
+	gs.UnitTypes["siege"].Attack = 1
+	gs.UnitTypes["elite"] = &army.UnitType{ID: "elite", Category: army.CategoryInfantry, Attack: 100, Defense: 100, Morale: 100}
+	defenderUnits := make([]army.Unit, 20)
+	for i := range defenderUnits {
+		defenderUnits[i] = army.Unit{TypeID: "elite", CurrentHP: 100}
+	}
+	gs.Armies["defender"] = &army.Army{
+		ID:       "defender",
+		OwnerID:  "player",
+		RegionID: "fort",
+		Units:    defenderUnits,
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {
+			RegionID:          "fort",
+			AttackerArmyID:    attacker.ID,
+			AttackerFactionID: attacker.OwnerID,
+			DefenderArmyID:    "defender",
+			FortLevel:         1,
+			BreachLevel:       2,
+		},
+	}
+
+	moveArmyWithSteps(gs, attacker, "ai_1", nil)
+
+	if gs.Armies[attacker.ID] == nil {
+		t.Fatal("başarısız ilk genel hücumdan sonra hayatta kalan ordu aynı turda tekrar tekrar saldırmamalı")
+	}
+	if attacker.MovePoints != 0 {
+		t.Fatalf("başarısız genel hücum AI hareketini bitirmeli, got=%d", attacker.MovePoints)
+	}
+	if len(attacker.Units) == 0 {
+		t.Fatal("test ordusu ilk başarısız hücumdan sonra kısmen hayatta kalmalı")
+	}
+}
+
 func TestChooseBestMoveAndExecuteMoveCanBreakSiegeWithoutConquestInAlliedRegion(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            3,

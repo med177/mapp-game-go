@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-13
+last_updated: 2026-07-19
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -26,6 +26,12 @@ Vassallık relation duruşu olarak değil, doğrudan fraksiyon üstünde `Overlo
 - bir devlet yalnız tek bir overlord'a bağlı olur
 - realm içi dostluk `StanceAllied` ile korunurken hiyerarşi ayrı kalır
 - vassal için üçüncü taraf diplomasi yasağı relation katmanına zorla sığdırılmaz
+
+1300 senaryosunda AI savaş sonrası aynı modeli kullanır. Anadolu beylikleri objective'i
+aktifken son toprağında yenilen zayıf ve dış müttefiksiz hedef,
+`ForceVassalizeAfterWar()` üzerinden vassal bırakılabilir. Direnç eşiğini aşan veya
+objective tarafından stratejik ilhak bölgesi sayılan hedefte normal fetih sürer; AI için
+ayrı bir vassallık state'i ya da relation duruşu oluşturulmaz.
 
 ---
 

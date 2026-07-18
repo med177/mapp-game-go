@@ -2526,6 +2526,10 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
+	aiConfig, err := scenario.LoadAIConfig(dp("ai_strategies.json"))
+	if err != nil {
+		return nil, nil, err
+	}
 	advance()
 	yield()
 	relations, err := faction.LoadRelations(dp("relations.json"), factions)
@@ -2611,6 +2615,8 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
+		AIStrategies:       aiConfig.Strategies,
+		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
 		CommanderTemplates: commanderTemplates,
@@ -4156,12 +4162,18 @@ func (g *Game) applyAIDifficultyStartBonus() {
 	if g.gs == nil || g.gs.Difficulty < 3 || g.gs.PlayerFactionID == "" {
 		return
 	}
+	goldBuffer := 300
+	grainBuffer := 100
+	if level, ok := g.gs.AIDifficultyPolicy.Level(g.gs.Difficulty); ok {
+		goldBuffer = level.StartGoldBuffer
+		grainBuffer = level.StartGrainBuffer
+	}
 	for fid, f := range g.gs.Factions {
 		if fid == g.gs.PlayerFactionID || f == nil || f.IsEliminated {
 			continue
 		}
-		f.Gold += 300
-		f.Grain += 100
+		f.Gold += goldBuffer
+		f.Grain += grainBuffer
 	}
 }
 

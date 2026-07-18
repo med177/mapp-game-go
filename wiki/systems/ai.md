@@ -1,13 +1,15 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
 # Yapay Zeka Sistemi
 
-**Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`
+**Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
+`internal/ai/strategic_plan.go`, `internal/ai/conquest_policy.go`,
+`internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`
 
 ## Genel Yapı
 
@@ -17,6 +19,63 @@ Her `PhaseAITurn` artık iki katmandan oluşur:
 - `ai.TurnStepper` ise aynı mantığı adım adım açar; oyun döngüsü bunu kullanarak her AI devletini sırayla görünür işler.
 
 Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fraksiyon için `TurnStepper.Step()` çağırır ve her step arasında kısa bekleme ekler. Böylece harita bir anda "snap" olmaz; yakın cephedeki hareketler tek tek görünür.
+
+AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları ID sırasıyla değerlendirilir. Eşit puanlı seçimler Go map iterasyon sırasına bağlı değildir. `TakeTurn` ve gerçek oyun akışındaki `TurnStepper`, seçilen aksiyon hareket puanı tüketmeden geri dönerse ordunun kalan hareketini sıfırlar; engellenmiş hedef veya başarısız genel hücum aynı hedefi sonsuz kez yeniden seçemez.
+
+Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
+
+`internal/game/scenario_balance_test.go`, yalnız `1300_ottoman_rise` için deterministik tempo harness'ıdır. `RUN_SCENARIO_TEMPO_REPORT=fast|medium|calibration` sırasıyla 12x2, 42x4 ve 120x8 kapsamını çalıştırır; `SCENARIO_TEMPO_TURNS/RUNS` ile kontrollü override, `SCENARIO_TEMPO_DIFFICULTY=1|2|3` ile zorluk karşılaştırması destekler. Go 1.25'in `rand.Seed` no-op varsayılanı test kapsamında `randseednop=0` ile kapatılır ve savaş zarları tur/fraksiyon/step scope'una ayrılır. Aynı seed'in iki turluk tam state replay testi ile benchmark da bu dosyadadır.
+
+2026-07-19 objective dikey dilimi ölçümünde fast profil `9.08 sn`, medium profil
+`59.89 sn` sürdü. Medium 42x4 sonuçta Osmanlı ortalama `2.0 → 7.8` kara bölgesine
+ulaştı; bu sayı tarihsel bir sonucu zorlayan kabul şartı değil, sonraki kalibrasyonlar
+için yön/tempo referansıdır.
+
+### Kalıcı Stratejik Plan
+
+Yalnız `1300_ottoman_rise` senaryosunda her AI devletinin tur öncesinde bir `StrategicContext` üretilir. Bu runtime context manpower kapasitesi, konuşlandırılmış kara birimi, sahip olunan/sınır bölgeleri, aktif savaşlar ve ihtiyaç halinde hesaplanan devlet gücü, frontier gücü ve bölge değerini cache'ler; `GameState` veya save payload'ına yazılmaz.
+
+Kalıcı karar `GameState.AIPlans[factionID]` içindeki `AIPlanState` kaydıdır:
+
+- `kind`: `expand`, `defend` veya `consolidate`
+- hedef devlet ve zorluk politikasına göre öncelik sıralı `3/4/5` hedef bölge
+- plan başlangıcı ve zorluk politikasına göre `4/6/9` turluk yeniden değerlendirme tarihi
+- devlet agresifliğinden türeyen commitment
+- savaş sonrası vassallığa izin verilip verilmediği ve doğrudan ilhak edilecek stratejik bölgeler
+- debug/kalibrasyon için karar nedeni
+
+1300 senaryosunun statik yönleri `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`
+dosyasından yüklenir. `GameState.AIStrategies` runtime-only'dir ve save'e yazılmaz;
+aynı dosyadaki `GameState.AIDifficultyPolicy` de runtime-only tutulur. İkisi save
+yüklenirken senaryo baz state'iyle yeniden kurulur. Her objective hedef devlet/bölge,
+öncelik, commitment, readiness bölgeleri ve savaş sonrası düzen tercihini taşıyabilir.
+Tarihsel hedefler genel olarak soft yönelimdir: mevcut güç, kara sınırı, frontier gücü ve
+diplomasi güvenlik kontrollerini atlamaz. Yalnız geç veya anakronik hedefler `min_year`
+ve isteğe bağlı event flag hard gate'i arkasında tutulur.
+
+İlk dikey dilimde Osmanlı; Bitinya hattı, Anadolu beylikleri, Ankara koridoru,
+Trakya/Konstantinopolis ve 1501 sonrası Safevi rekabeti yönlerini kullanır. Doğu Roma;
+Konstantinopolis/Trakya ve Anadolu kıyı savunması ile Bitinya geri alma yönünü taşır.
+Aktif objective hedef devleti savaş ilanı puanında, öncelikli bölgeleri ise yerel ve uzun
+menzilli hareket puanında bonus alır. Hedef bölge tamamlandığında, hedef vassal realm'e
+katıldığında, devlet elendiğinde veya `reassess_turn` geldiğinde plan yenilenir.
+Profil bulunmayan 1300 devletleri `ai_expansion_targets`, aktif savaş ve konsolidasyon
+fallback'ini kullanmaya devam eder.
+
+### AI Savaş Sonrası Düzen
+
+Osmanlı'nın `unite_anatolian_beyliks` objective'i hibrit sonuç kullanır. Son kara
+toprağında yenilen hedef:
+
+- dış müttefiki yoksa,
+- saldıran belirgin askeri üstünlüğe sahipse,
+- hedef agresifliği direnç eşiğinin altındaysa,
+- hedef bölge objective'in `annex_region_ids` listesinde değilse
+
+`diplomacy.ForceVassalizeAfterWar()` ile vassal bırakılır ve yerel bölge sahipliği
+korunur. Dirençli, diplomatik destekli veya stratejik bölge sahibi hedeflerde mevcut
+doğrudan fetih/ilhak akışı sürer. Bu karar açık arazi savaşı, savaşsız işgal, çıkarma,
+genel hücum ve kuşatma teslimi çıkışlarında aynı politika helper'ından geçer.
 
 `TakeTurn` sırasıyla şu adımları yapar:
 1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`
@@ -167,13 +226,25 @@ savunmada sanal savunma stack'i yerine kaynak orduların komutanları ilerletili
 
 ## Zorluk Seviyeleri
 
-| Seviye | Fark |
-|---|---|
-| 1 (Kolay) | Pasif AI, yavaş büyüme |
-| 2 (Normal) | Dengeli strateji |
-| 3 (Zor) | +300 başlangıç altın, +100 tahıl; koalisyon mantığı aktif |
+1300 senaryosunda zorluk, `ai_strategies.json.difficulty_policy` üzerinden karar
+kalitesi ve risk iştahıyla ayrışır:
 
-Zorluk 3 başlangıç bonusu `resetToNewGame()` içinde uygulanır — `internal/game/game.go:337`
+| Seviye | Plan ufku | Hedef bölge | Yol arama | Plan hareket etkisi | Savaş politikası |
+|---|---:|---:|---:|---:|---|
+| 1 (Kolay) | 4 tur | 3 | 5 derinlik | `%70` | Proaktif savaş yok; en az `%130` güç; en fazla 1 savaş |
+| 2 (Normal) | 6 tur | 4 | 8 derinlik | `%100` | Eşik 70; en az `%115` güç; 10 tur taban kadans; en fazla 1 savaş |
+| 3 (Zor) | 9 tur | 5 | 12 derinlik | `%125` | Eşik 65; denk güç yeterli; 7 tur taban kadans; en fazla 2 savaş |
+
+Zor seviye koalisyon mantığını korur ve oyuncuya karşı hedef skoruna yalnız `+4`
+ekler. Büyük ekonomi/hareket hilesi yoktur: tüm seviyelerde AI ve oyuncu aynı hareket
+hesabını kullanır. Zor AI yalnız yeni oyun başlangıcında küçük `+80 altın/+30 tahıl`
+tamponı alır; Normal ve Kolay kaynak bonusu almaz. Bu politika yalnız 1300 senaryosuna
+aittir. `difficulty_policy` bulunmayan eski senaryoların mevcut `+1` zor AI hareketi ve
+`+300/+100` başlangıç davranışı geriye uyumluluk için korunur.
+
+Zor politika fast tempo 12x2 ölçümünde `6.84 sn` sürdü; Osmanlı her iki seed'de de
+`2 → 5` kara bölgesine ulaştı. Bu bir tarihsel sonuç şartı değil, Normal ölçümlerle
+birlikte kullanılacak risk/tempo referansıdır.
 
 ---
 

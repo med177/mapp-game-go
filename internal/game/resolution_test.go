@@ -503,6 +503,10 @@ func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
 			{FromFactionID: "a", ToFactionID: "b"},
 			{FromFactionID: "b", ToFactionID: "c"},
 		},
+		AIPlans: map[faction.FactionID]*state.AIPlanState{
+			"a": {ObjectiveID: "expand:b", Kind: state.AIObjectiveExpand, TargetFactionID: "b"},
+			"b": {ObjectiveID: "defend:c", Kind: state.AIObjectiveDefend, TargetFactionID: "c"},
+		},
 	}
 
 	checkEliminations(gs)
@@ -527,6 +531,9 @@ func TestCheckEliminationsRemovesArmiesAndRelations(t *testing.T) {
 	}
 	if len(gs.TradeRoutes) != 1 || gs.TradeRoutes[0].FromFactionID != "b" || gs.TradeRoutes[0].ToFactionID != "c" {
 		t.Fatalf("elenen fraksiyonun ticaret rotalari temizlenmeliydi, got=%+v", gs.TradeRoutes)
+	}
+	if gs.AIPlans["a"] != nil || gs.AIPlans["b"] == nil {
+		t.Fatalf("elenen fraksiyonun AI planı temizlenmeli, diğer planlar korunmalı: %+v", gs.AIPlans)
 	}
 }
 

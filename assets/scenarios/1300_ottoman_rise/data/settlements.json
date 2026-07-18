@@ -1319,7 +1319,7 @@
         "type": "town"
       },
       {
-        "id": "nis",
+        "id": "nis_pirot",
         "name_tr": "Pirot",
         "x": 928,
         "y": 418,
@@ -1796,7 +1796,7 @@
     "region_id": "konya",
     "settlements": [
       {
-        "id": "aksaray",
+        "id": "konya_ortakoy",
         "name_tr": "Ortaköy",
         "x": 1189,
         "y": 476,
@@ -1818,7 +1818,7 @@
         "type": "town"
       },
       {
-        "id": "kayseri",
+        "id": "konya_kaman",
         "name_tr": "Kaman",
         "x": 1175,
         "y": 492,
@@ -3140,7 +3140,7 @@
       },
       {
         "id": "azerbaijan_main",
-        "name_tr": "Azerbaycan",
+        "name_tr": "Tebriz",
         "x": 1466,
         "y": 467,
         "type": "city",
@@ -4189,7 +4189,7 @@
         "type": "port"
       },
       {
-        "id": "milas",
+        "id": "mentese_denizli",
         "name_tr": "Denizli",
         "x": 1058,
         "y": 516,
@@ -4230,7 +4230,7 @@
         "type": "town"
       },
       {
-        "id": "beysehir",
+        "id": "teke_beysehir",
         "name_tr": "Beyşehir",
         "x": 1111,
         "y": 519,
@@ -4433,7 +4433,7 @@
         "type": "city"
       },
       {
-        "id": "kayseri",
+        "id": "kayseri_kirsehir",
         "name_tr": "Kırşehir",
         "x": 1154,
         "y": 491,
@@ -4447,7 +4447,7 @@
         "type": "city"
       },
       {
-        "id": "aksaray",
+        "id": "kayseri_agacoren",
         "name_tr": "Ağaçören",
         "x": 1149,
         "y": 495,
@@ -4473,7 +4473,7 @@
         "type": "town"
       },
       {
-        "id": "sivas",
+        "id": "eretna_yildizeli",
         "name_tr": "Yıldızeli",
         "x": 1239,
         "y": 463,
@@ -4543,7 +4543,7 @@
         "type": "town"
       },
       {
-        "id": "malatya",
+        "id": "malatya_pazarcik",
         "name_tr": "Pazarcık",
         "x": 1224,
         "y": 516,
@@ -5310,7 +5310,7 @@
         "is_capital": true
       },
       {
-        "id": "kutahya",
+        "id": "kutahya_simav",
         "name_tr": "Simav",
         "x": 1053,
         "y": 496,
@@ -5672,7 +5672,7 @@
         "type": "port"
       },
       {
-        "id": "sinop",
+        "id": "paphlagonia_inebolu",
         "name_tr": "İnebolu",
         "x": 1139,
         "y": 438,
@@ -5686,7 +5686,7 @@
         "type": "town"
       },
       {
-        "id": "cankiri",
+        "id": "paphlagonia_arac",
         "name_tr": "Araç",
         "x": 1132,
         "y": 451,

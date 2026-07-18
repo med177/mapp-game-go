@@ -442,6 +442,10 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	aiConfig, err := scenario.LoadAIConfig(dp("ai_strategies.json"))
+	if err != nil {
+		return nil, err
+	}
 	relations, err := faction.LoadRelations(dp("relations.json"), factions)
 	if err != nil {
 		return nil, err
@@ -491,6 +495,8 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
+		AIStrategies:       aiConfig.Strategies,
+		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
 		CommanderTemplates: commanderTemplates,

@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 
+	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
@@ -436,7 +437,10 @@ func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Re
 	prompted := g.queueConquestDecision(faction.FactionID(attacker.OwnerID), targetRegion, showAfterBattleReport)
 	collapse := eliminationResult{}
 	if !prompted {
-		collapse = g.applyConquestWithNavalEviction(targetRegion, attacker.OwnerID)
+		vassalResult := ai.TryResolvePostWarVassalization(g.gs, faction.FactionID(attacker.OwnerID), targetRegion)
+		if !vassalResult.Applied {
+			collapse = g.applyConquestWithNavalEviction(targetRegion, attacker.OwnerID)
+		}
 	}
 	if merged := g.tryMergeArmies(attacker.ID, targetRegion.ID); merged != "" && g.renderer != nil {
 		g.renderer.SelectedArmy = merged

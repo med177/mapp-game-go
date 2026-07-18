@@ -99,7 +99,7 @@ Kalıcı çıktı yolu `bin/game.exe`'dir. Kök dizindeki `game.exe` varsa geçi
 
 ### Save debug sidecar
 
-Ana save dosyaları küçük kalması için kampanya state'ini `state_zstd` alanında `zstd+base64` olarak saklar. Eğer `.env` içinde `DEV_MODE=true` ise aynı slot için ek olarak okunabilir bir debug sidecar yazılır:
+Ana save dosyaları küçük kalması için kampanya state'ini `state_zstd` alanında `zstd+base64` olarak saklar. AI devletlerinin aktif objective/hedef/commitment bilgisi bu campaign state içinde korunur; türetilmiş stratejik güç, lojistik ve yol cache'leri yüklemede yeniden hesaplanır. Eğer `.env` içinde `DEV_MODE=true` ise aynı slot için ek olarak okunabilir bir debug sidecar yazılır:
 
 ```text
 saves/quicksave.json

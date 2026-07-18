@@ -1,6 +1,8 @@
 package state
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
@@ -148,9 +150,12 @@ type GameState struct {
 	FactionOrder []faction.FactionID                    `json:"-"`
 	Armies       map[army.ArmyID]*army.Army             `json:"armies"`
 	Commanders   map[string]*army.Commander             `json:"commanders,omitempty"`
+	AIPlans      map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
 	ShapeData    world.CountryShapeJSON                 `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
+	AIStrategies       map[string]scenario.AIFactionStrategy    `json:"-"`
+	AIDifficultyPolicy scenario.AIDifficultyPolicy              `json:"-"`
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
 	BuildingTypes      map[string]*city.Building                `json:"-"`
 	TechTypes          map[string]*tech.Technology              `json:"-"`
@@ -443,7 +448,14 @@ func (s *GameState) CollectDefenders(attacker *army.Army, target world.RegionID,
 		return nil, nil
 	}
 	var units []army.Unit
+	candidates := make([]*army.Army, 0, len(s.Armies))
 	for _, candidate := range s.Armies {
+		if candidate != nil {
+			candidates = append(candidates, candidate)
+		}
+	}
+	sort.Slice(candidates, func(i, j int) bool { return candidates[i].ID < candidates[j].ID })
+	for _, candidate := range candidates {
 		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
 			continue
 		}

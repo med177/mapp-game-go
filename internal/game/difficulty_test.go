@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 )
 
@@ -30,6 +31,32 @@ func TestApplyAIDifficultyStartBonusSkipsPlayerAndBuffsOnlyAI(t *testing.T) {
 	}
 	if g.gs.Factions["ai_2"].Gold != 310 || g.gs.Factions["ai_2"].Grain != 105 {
 		t.Fatalf("ai_2 bonusu hatali: %+v", g.gs.Factions["ai_2"])
+	}
+}
+
+func TestApplyAIDifficultyStartBonusUsesSmallScenarioPolicyBuffer(t *testing.T) {
+	g := &Game{
+		gs: &state.GameState{
+			ScenarioID:      "1300_ottoman_rise",
+			Difficulty:      3,
+			PlayerFactionID: "player",
+			AIDifficultyPolicy: scenario.AIDifficultyPolicy{Levels: map[string]scenario.AIDifficultyLevel{
+				"3": {StartGoldBuffer: 80, StartGrainBuffer: 30},
+			}},
+			Factions: map[faction.FactionID]*faction.Faction{
+				"player": {ID: "player", Gold: 100, Grain: 50},
+				"ai":     {ID: "ai", Gold: 40, Grain: 20},
+			},
+		},
+	}
+
+	g.applyAIDifficultyStartBonus()
+
+	if got := g.gs.Factions["ai"]; got.Gold != 120 || got.Grain != 50 {
+		t.Fatalf("1300 zor AI yalnız küçük başlangıç tamponı almalıydı: %+v", got)
+	}
+	if got := g.gs.Factions["player"]; got.Gold != 100 || got.Grain != 50 {
+		t.Fatalf("oyuncu başlangıç tamponı almamalıydı: %+v", got)
 	}
 }
 

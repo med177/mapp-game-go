@@ -51,6 +51,9 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 
 	result := eliminationResult{FactionID: fid, SuccessorID: successor}
 	f.IsEliminated = true
+	if gs.AIPlans != nil {
+		delete(gs.AIPlans, fid)
+	}
 	if successor != "" && successor != fid {
 		for otherID, other := range gs.Factions {
 			if other == nil || otherID == fid {

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-06-19
+last_updated: 2026-07-19
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -160,6 +160,112 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
 Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
 
 `ai_expansion_targets` opsiyoneldir ve fraksiyon ID listesi taşır. Normal/zor zorlukta AI bu hedefleri fırsatçı savaş değerlendirmesinde önceliklendirir; hedefin yine kara sınırı paylaşması, ilişkinin `peace` olması ve güç kıyasından geçmesi gerekir.
+
+---
+
+## ai_strategies.json
+
+Senaryoya özgü uzun vadeli AI yönlerini taşıyan opsiyonel dosyadır. Dosya yoksa
+fraksiyonlar `factions.json.ai_expansion_targets` ve genel AI fallback'ini kullanır.
+İlk kullanım yalnız `1300_ottoman_rise` senaryosundadır.
+
+```json
+{
+  "difficulty_policy": {
+    "fair_movement": true,
+    "levels": {
+      "1": {
+        "plan_horizon_turns": 4,
+        "plan_target_region_limit": 3,
+        "path_search_depth": 5,
+        "plan_move_bonus_percent": 70,
+        "war_threshold": 82,
+        "min_attack_power_percent": 130,
+        "war_cadence_turns": 12,
+        "max_concurrent_wars": 1
+      },
+      "2": {
+        "plan_horizon_turns": 6,
+        "plan_target_region_limit": 4,
+        "path_search_depth": 8,
+        "plan_move_bonus_percent": 100,
+        "proactive_war": true,
+        "war_threshold": 70,
+        "min_attack_power_percent": 115,
+        "war_cadence_turns": 10,
+        "max_concurrent_wars": 1
+      },
+      "3": {
+        "plan_horizon_turns": 9,
+        "plan_target_region_limit": 5,
+        "path_search_depth": 12,
+        "plan_move_bonus_percent": 125,
+        "proactive_war": true,
+        "war_threshold": 65,
+        "min_attack_power_percent": 100,
+        "war_cadence_turns": 7,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 4,
+        "start_gold_buffer": 80,
+        "start_grain_buffer": 30
+      }
+    }
+  },
+  "factions": [
+    {
+      "faction_id": "ottoman",
+      "profile": "frontier_expansion",
+      "objectives": [
+        {
+          "id": "unite_anatolian_beyliks",
+          "kind": "expand",
+          "target_factions": ["karesioglu_bey", "germiyan_bey", "ahiler"],
+          "target_regions": ["aydinoglu", "germiyan", "kutahya", "sivrihisar"],
+          "priority": 92,
+          "commitment": 66,
+          "allow_vassalization": true,
+          "annex_region_ids": ["kutahya"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Alanlar:
+
+- `difficulty_policy.fair_movement`: `true` ise AI ve oyuncu aynı hareket havuzunu
+  kullanır; zor AI'ye ayrı `+1` hareket verilmez.
+- `difficulty_policy.levels`: `1`, `2`, `3` için eksiksiz zorluk tanımlarıdır.
+- `plan_horizon_turns`: kalıcı planın varsayılan yeniden değerlendirme aralığı.
+- `plan_target_region_limit`: bir objective'ten plana alınabilecek azami hedef bölge.
+- `path_search_depth`: uzun menzilli hareket aramasının azami derinliği.
+- `plan_move_bonus_percent`: objective kaynaklı hareket puanının seviye çarpanı.
+- `proactive_war`: barışta fırsat savaşı değerlendirmesini açar.
+- `war_threshold`: savaş adayının geçmesi gereken asgari toplam skor.
+- `min_attack_power_percent`: saldıranın hedef gücüne göre asgari güç yüzdesi.
+- `war_cadence_turns`: proaktif savaş taramasının taban tur aralığı.
+- `max_concurrent_wars`: devletin aynı anda taşıyabileceği azami savaş/cephe sayısı.
+- `player_target_score_bonus`: oyuncu hedef olduğunda eklenen zorluk skoru.
+- `start_gold_buffer` / `start_grain_buffer`: yeni oyunda AI'ye verilen küçük başlangıç
+  tamponı; 1300 senaryosunda yalnız Zor seviyede `80/30` değerindedir.
+- `faction_id`: `factions.json` içindeki devlet ID'si; dosyada tekil olmalıdır.
+- `profile`: telemetri ve sonraki profile bağlı ağırlıklar için strateji etiketi.
+- `objectives[].id`: devlet içinde tekil kalıcı objective kimliği.
+- `kind`: `expand`, `defend` veya `consolidate`.
+- `target_factions` / `target_regions`: soft yönelim verilecek hedefler.
+- `priority`: aynı anda uygulanabilir objective'ler arasındaki taban öncelik.
+- `commitment`: plan save state'ine taşınan `25..90` kararlılık değeri.
+- `readiness_regions`: sahip olunan her kayıt için hazırlık bonusu, eksikler için soft
+  ceza üretir; objective'i tek başına kapatmaz.
+- `min_year`: geç/anakronik hedefi verilen yıla kadar kapatan hard gate.
+- `required_event_flags`: event motorunun `set_flags` etkileriyle açılan hard gate listesi.
+- `allow_vassalization`: son toprağında yenilen uygun hedefin vassal bırakılmasına izin verir.
+- `annex_region_ids`: vassallık açık olsa da stratejik sayılıp doğrudan ilhak edilecek bölgeler.
+
+Statik config save'e yazılmaz. Senaryo başlangıcında ve save baz state'i kurulurken
+`scenario.LoadAIConfig()` ile yüklenir; seçilmiş dinamik objective ise
+`GameState.AIPlans` içinde serialize edilir.
 
 ---
 

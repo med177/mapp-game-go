@@ -107,8 +107,12 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 				s.armyIdx++
 				continue
 			}
+			movePointsBefore := a.MovePoints
 			outcome := executeMove(s.gs, a, target, s.fid)
 			updated := s.gs.Armies[aid]
+			if outcome.survived && updated != nil && updated.MovePoints >= movePointsBefore {
+				updated.MovePoints = 0
+			}
 			if !outcome.survived || updated == nil || updated.MovePoints <= 0 {
 				s.armyIdx++
 			}

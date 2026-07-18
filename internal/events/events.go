@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
 
 	"mapp-game-go/internal/diplomacy"
@@ -516,6 +517,7 @@ func applyEffect(gs *state.GameState, eff Effect) {
 		if len(candidates) == 0 {
 			return
 		}
+		sort.Slice(candidates, func(i, j int) bool { return candidates[i] < candidates[j] })
 		rid := candidates[rand.Intn(len(candidates))]
 		r := gs.Regions[rid]
 		r.Satisfaction = clamp(r.Satisfaction+eff.SatDelta, 0, 100)
@@ -812,6 +814,7 @@ func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.Re
 				all = append(all, r.ID)
 			}
 		}
+		sort.Slice(all, func(i, j int) bool { return all[i] < all[j] })
 		return all
 	case "all_armies":
 		var all []world.RegionID
@@ -834,6 +837,7 @@ func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.Re
 			seen[rid] = struct{}{}
 			all = append(all, rid)
 		}
+		sort.Slice(all, func(i, j int) bool { return all[i] < all[j] })
 		return all
 	}
 	return nil
@@ -847,6 +851,7 @@ func factionOwnerRegions(gs *state.GameState, fid string) []world.RegionID {
 			regions = append(regions, r.ID)
 		}
 	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i] < regions[j] })
 	return regions
 }
 

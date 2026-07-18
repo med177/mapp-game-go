@@ -8,7 +8,7 @@ import (
 
 // ArmyMaxMovePoints bu tur için bir ordunun toplam hareket havuzunu hesaplar.
 // Mevsim etkisi önce en yavaş birimin tabanına uygulanır; komutan, teknoloji ve
-// zorluk bonusları bu iklimlendirilmiş değerin üzerine eklenir.
+// runtime bonusları bu iklimlendirilmiş değerin üzerine eklenir.
 func (s *GameState) ArmyMaxMovePoints(a *army.Army) int {
 	if s == nil || a == nil {
 		return 1
@@ -27,7 +27,9 @@ func (s *GameState) ArmyMaxMovePoints(a *army.Army) int {
 			movePoints += effects.NavalMoveBonus
 		}
 	}
-	if s.Difficulty >= 3 && a.OwnerID != string(s.PlayerFactionID) {
+	// Legacy senaryolardaki +1 zor AI hareketi korunur. 1300'ün veri güdümlü
+	// fair_movement politikası oyuncu ve AI için aynı hareket kurallarını kullanır.
+	if !s.AIDifficultyPolicy.FairMovement && s.Difficulty >= 3 && a.OwnerID != string(s.PlayerFactionID) {
 		movePoints++
 	}
 	movePoints += a.CommanderMoveBonus()

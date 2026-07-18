@@ -3,6 +3,7 @@ package ai
 import (
 	"fmt"
 	"hash/fnv"
+	"sort"
 	"strings"
 
 	"mapp-game-go/internal/army"
@@ -62,7 +63,7 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
-	for _, a := range gs.Armies {
+	for _, a := range aiSortedArmies(gs) {
 		if a.OwnerID == string(fid) {
 			ownArmies = append(ownArmies, a)
 		}
@@ -77,9 +78,53 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 	}
 }
 
+func aiSortedFactionIDs(gs *state.GameState) []faction.FactionID {
+	if gs == nil {
+		return nil
+	}
+	ids := make([]faction.FactionID, 0, len(gs.Factions))
+	for id := range gs.Factions {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
+}
+
+func aiSortedRegions(gs *state.GameState) []*world.Region {
+	if gs == nil {
+		return nil
+	}
+	regions := make([]*world.Region, 0, len(gs.Regions))
+	for _, region := range gs.Regions {
+		if region != nil {
+			regions = append(regions, region)
+		}
+	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
+	return regions
+}
+
+func aiSortedArmies(gs *state.GameState) []*army.Army {
+	if gs == nil {
+		return nil
+	}
+	armies := make([]*army.Army, 0, len(gs.Armies))
+	for _, candidate := range gs.Armies {
+		if candidate != nil {
+			armies = append(armies, candidate)
+		}
+	}
+	sort.Slice(armies, func(i, j int) bool { return armies[i].ID < armies[j].ID })
+	return armies
+}
+
 func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
 	if gs == nil {
 		return
+	}
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		strategicContext := buildStrategicContext(gs, fid)
+		ensureStrategicPlan(gs, fid, strategicContext)
 	}
 	// Difficulty 3: koalisyon mantığını çalıştır
 	if gs.Difficulty >= 3 {
@@ -147,7 +192,8 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 		return
 	}
 
-	for otherID, other := range gs.Factions {
+	for _, otherID := range aiSortedFactionIDs(gs) {
+		other := gs.Factions[otherID]
 		if otherID == fid || other == nil || other.IsEliminated {
 			continue
 		}
@@ -527,7 +573,7 @@ func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, actio
 }
 
 func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
-	if gs == nil || gs.Difficulty <= 1 {
+	if gs == nil || !aiProactiveWarEnabled(gs) {
 		return
 	}
 	self := gs.Factions[fid]
@@ -544,13 +590,11 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 		return
 	}
 
-	bestScore := aiWarThreshold
+	bestScore := aiWarThresholdForDifficulty(gs)
 	bestTarget := faction.FactionID("")
-	if gs.Difficulty >= 3 {
-		bestScore -= 10
-	}
 
-	for otherID, other := range gs.Factions {
+	for _, otherID := range aiSortedFactionIDs(gs) {
+		other := gs.Factions[otherID]
 		if otherID == fid || other == nil || other.IsEliminated {
 			continue
 		}
@@ -588,8 +632,11 @@ func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID,
 		return -1
 	}
 	isExpansionTarget := aiHasExpansionTarget(self, target)
+	isPlanTarget := aiPlanTargetsFaction(gs, actor, target)
 	maxPeaceScore := -20
-	if isExpansionTarget {
+	if isPlanTarget {
+		maxPeaceScore = 20
+	} else if isExpansionTarget {
 		maxPeaceScore = 10
 	} else if self.AIAggressiveness >= 70 {
 		maxPeaceScore = -10
@@ -603,7 +650,7 @@ func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID,
 	if selfPower <= 0 {
 		return -1
 	}
-	if targetPower > 0 && selfPower*100 < targetPower*115 {
+	if targetPower > 0 && selfPower*100 < targetPower*aiMinAttackPowerPercent(gs) {
 		return -1
 	}
 
@@ -662,12 +709,17 @@ func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID,
 			score += 4
 		}
 	}
+	if isPlanTarget {
+		commitment := 50
+		if plan := gs.AIPlans[actor]; plan != nil {
+			commitment = plan.Commitment
+		}
+		score += minInt(36, 12+commitment/3)
+	}
 
 	if target == gs.PlayerFactionID {
 		score -= 18
-		if gs.Difficulty >= 3 {
-			score += 8
-		}
+		score += aiPlayerTargetScoreBonus(gs)
 	}
 	return score
 }
@@ -676,10 +728,7 @@ func aiWarCadenceAllows(gs *state.GameState, fid faction.FactionID) bool {
 	if gs == nil || gs.Turn == 0 {
 		return true
 	}
-	interval := 10
-	if gs.Difficulty >= 3 {
-		interval = 7
-	}
+	interval := aiWarCadenceBase(gs)
 	if f := gs.Factions[fid]; f != nil {
 		if len(f.AIExpansionTargets) > 0 {
 			interval -= 2
@@ -757,6 +806,9 @@ func aiActiveAllianceCount(gs *state.GameState, fid faction.FactionID) int {
 	return count
 }
 func aiMaxConcurrentWars(gs *state.GameState, fid faction.FactionID) int {
+	if configured, ok := aiConfiguredWarCapacity(gs); ok {
+		return configured
+	}
 	limit := 1
 	if gs != nil && gs.Difficulty >= 3 {
 		limit = 2
@@ -1227,7 +1279,7 @@ func aiBuildBarracksWithSteps(gs *state.GameState, fid faction.FactionID, cost e
 	if btype == nil {
 		return
 	}
-	for _, r := range gs.Regions {
+	for _, r := range aiSortedRegions(gs) {
 		if r.OwnerID != string(fid) || r.IsSea {
 			continue
 		}
@@ -1318,7 +1370,7 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 	bestRemaining := -1
 	bestLevel := -1
 	bestRegionID := world.RegionID("")
-	for _, r := range gs.Regions {
+	for _, r := range aiSortedRegions(gs) {
 		if r == nil || r.OwnerID != string(fid) || r.IsSea || r.IsLocked {
 			continue
 		}
@@ -1347,7 +1399,7 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 
 func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID, unitType *army.UnitType) bool {
 	pendingInRegion := aiPendingUnitCountByRegionInLane(gs, rid, fid, aiProductionLane(unitType))
-	for _, a := range gs.Armies {
+	for _, a := range aiSortedArmies(gs) {
 		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval || a.IsGarrison {
 			continue
 		}
@@ -1489,7 +1541,7 @@ func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, step
 	}
 
 	// Diğer AI fraksiyonlarla ittifak kur (düşman değillerse)
-	for otherFID := range gs.Factions {
+	for _, otherFID := range aiSortedFactionIDs(gs) {
 		if otherFID == fid || otherFID == gs.PlayerFactionID {
 			continue
 		}
@@ -1526,6 +1578,7 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 		if target == "" {
 			break
 		}
+		movePointsBefore := a.MovePoints
 
 		// Escort mantığı: transport filosu hareket edecekse, önce aynı bölgedeki escort savaş gemisi gitsin
 		if a.IsNaval && a.TransportCapacity(gs.UnitTypes) > 0 {
@@ -1537,6 +1590,12 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 			addTurnStep(steps, outcome.step)
 		}
 		if !outcome.survived {
+			break
+		}
+		// Seçim ve uygulama kuralları geçici olarak ayrışsa bile aynı hedefin
+		// hareket puanı harcanmadan sonsuza kadar yeniden seçilmesine izin verme.
+		if a.MovePoints >= movePointsBefore {
+			a.MovePoints = 0
 			break
 		}
 	}
@@ -1557,7 +1616,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 
 	// Aynı bölgede escort savaş gemisi bul
 	var escort *army.Army
-	for _, a := range gs.Armies {
+	for _, a := range aiSortedArmies(gs) {
 		if a.ID == transport.ID || !a.IsNaval || a.OwnerID != transport.OwnerID || a.RegionID != transport.RegionID {
 			continue
 		}
@@ -1658,7 +1717,7 @@ func aiEnemyNavalInRegion(gs *state.GameState, ownerID string, seaRegionID world
 	if gs == nil {
 		return nil
 	}
-	for _, a := range gs.Armies {
+	for _, a := range aiSortedArmies(gs) {
 		if a == nil || !a.IsNaval || a.OwnerID == ownerID || a.RegionID != seaRegionID {
 			continue
 		}
@@ -1680,7 +1739,7 @@ func aiCanEmbarkArmy(gs *state.GameState, a *army.Army) bool {
 }
 
 func aiFindEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
-	for _, candidate := range gs.Armies {
+	for _, candidate := range aiSortedArmies(gs) {
 		if candidate.OwnerID != ownerID || !candidate.IsNaval || candidate.RegionID != seaRegionID {
 			continue
 		}
@@ -1692,10 +1751,14 @@ func aiFindEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.Re
 }
 
 func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) int {
+	return aiEmbarkScoreWithContext(gs, a, seaRegion, newMoveScoreContext(gs, a))
+}
+
+func aiEmbarkScoreWithContext(gs *state.GameState, a *army.Army, seaRegion *world.Region, ctx *moveScoreContext) int {
 	if gs == nil || a == nil || seaRegion == nil || !seaRegion.IsSea {
 		return 0
 	}
-	if !aiCanEmbarkArmy(gs, a) || aiFindEmbarkFleet(gs, a.OwnerID, seaRegion.ID, len(a.Units)) == nil {
+	if !aiCanEmbarkArmy(gs, a) || ctx.findEmbarkFleet(gs, seaRegion.ID, len(a.Units)) == nil {
 		return 0
 	}
 	best := 10 + aiSeaPressure(gs, a.OwnerID, seaRegion.ID)/2
@@ -1704,12 +1767,94 @@ func aiEmbarkScore(gs *state.GameState, a *army.Army, seaRegion *world.Region) i
 		if !ok || land.IsSea {
 			continue
 		}
-		score := scoreMove(gs, a, land)
+		score := scoreMoveWithContext(gs, a, land, ctx)
 		if score > best {
 			best = score
 		}
 	}
 	return best
+}
+
+type aiLogisticsSnapshot struct {
+	demand   int
+	capacity int
+	overload int
+}
+
+// moveScoreContext, tek bir ordunun hedef seçimi boyunca değişmeyen pahalı
+// state taramalarını önbellekler. Context hareket uygulanmadan önce atılır;
+// böylece sonraki hareket puanında güncel state ile yeniden kurulur.
+type moveScoreContext struct {
+	ownerID        string
+	atCapacity     bool
+	armiesByRegion map[world.RegionID][]*army.Army
+	logistics      map[world.RegionID]aiLogisticsSnapshot
+}
+
+func newMoveScoreContext(gs *state.GameState, a *army.Army) *moveScoreContext {
+	ctx := &moveScoreContext{
+		armiesByRegion: make(map[world.RegionID][]*army.Army),
+		logistics:      make(map[world.RegionID]aiLogisticsSnapshot),
+	}
+	if gs == nil || a == nil {
+		return ctx
+	}
+
+	ctx.ownerID = a.OwnerID
+	allArmies := make([]*army.Army, 0, len(gs.Armies))
+	deployed := 0
+	for _, candidate := range gs.Armies {
+		if candidate == nil {
+			continue
+		}
+		allArmies = append(allArmies, candidate)
+		if candidate.OwnerID == a.OwnerID && !candidate.IsNaval {
+			deployed += len(candidate.Units)
+		}
+	}
+	sort.Slice(allArmies, func(i, j int) bool { return allArmies[i].ID < allArmies[j].ID })
+	for _, candidate := range allArmies {
+		ctx.armiesByRegion[candidate.RegionID] = append(ctx.armiesByRegion[candidate.RegionID], candidate)
+	}
+	ctx.atCapacity = deployed >= gs.ManpowerCap(faction.FactionID(a.OwnerID))
+	return ctx
+}
+
+func (ctx *moveScoreContext) findEmbarkFleet(gs *state.GameState, seaRegionID world.RegionID, unitCount int) *army.Army {
+	if ctx == nil || gs == nil {
+		return nil
+	}
+	for _, candidate := range ctx.armiesByRegion[seaRegionID] {
+		if candidate.OwnerID == ctx.ownerID && candidate.IsNaval && candidate.CanEmbarkUnits(gs.UnitTypes, unitCount) {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func (ctx *moveScoreContext) regionLogistics(gs *state.GameState, region *world.Region) (demand, capacity, overload int) {
+	if ctx == nil || gs == nil || region == nil || region.IsSea || ctx.ownerID == "" {
+		return 0, 0, 0
+	}
+	if cached, ok := ctx.logistics[region.ID]; ok {
+		return cached.demand, cached.capacity, cached.overload
+	}
+
+	production := gs.RegionProductionSummary(region).Grain
+	settlementBuffer := aiRegionSettlementBuffer(gs, region)
+	reserveSupport := aiRegionReserveSupport(gs, ctx.ownerID, production, settlementBuffer)
+	capacity = production + settlementBuffer + reserveSupport
+	if capacity < 4 {
+		capacity = 4
+	}
+	for _, candidate := range ctx.armiesByRegion[region.ID] {
+		if candidate.OwnerID == ctx.ownerID && !candidate.IsNaval {
+			demand += candidate.TotalGrainUpkeep(gs.UnitTypes)
+		}
+	}
+	overload = maxInt(0, demand-capacity)
+	ctx.logistics[region.ID] = aiLogisticsSnapshot{demand: demand, capacity: capacity, overload: overload}
+	return demand, capacity, overload
 }
 
 func aiFactionAtWar(gs *state.GameState, ownerID string) bool {
@@ -1800,7 +1945,7 @@ func aiLandingStrength(gs *state.GameState, fleet *army.Army) int {
 }
 
 func aiEnemyArmyInRegion(gs *state.GameState, ownerID string, rid world.RegionID) *army.Army {
-	for _, ea := range gs.Armies {
+	for _, ea := range aiSortedArmies(gs) {
 		if ea.RegionID == rid && ea.OwnerID != ownerID {
 			return ea
 		}
@@ -1883,7 +2028,13 @@ func aiVirtualSiegeGarrison(gs *state.GameState, target *world.Region) *army.Arm
 	}
 	unitTypeID := aiMilitiaID
 	if _, ok := gs.UnitTypes[unitTypeID]; !ok {
-		for id, ut := range gs.UnitTypes {
+		unitTypeIDs := make([]string, 0, len(gs.UnitTypes))
+		for id := range gs.UnitTypes {
+			unitTypeIDs = append(unitTypeIDs, id)
+		}
+		sort.Strings(unitTypeIDs)
+		for _, id := range unitTypeIDs {
+			ut := gs.UnitTypes[id]
 			if ut != nil && ut.Category == army.CategoryInfantry {
 				unitTypeID = id
 				break
@@ -2017,6 +2168,7 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 		}
 		return bestTarget
 	}
+	ctx := newMoveScoreContext(gs, a)
 
 	for _, nid := range src.Neighbors {
 		n, ok := gs.Regions[nid]
@@ -2024,14 +2176,14 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 			continue
 		}
 		if n.IsSea {
-			score := aiEmbarkScore(gs, a, n)
+			score := aiEmbarkScoreWithContext(gs, a, n, ctx)
 			if score > bestScore {
 				bestScore = score
 				bestTarget = nid
 			}
 			continue
 		}
-		score := scoreMove(gs, a, n)
+		score := scoreMoveWithContext(gs, a, n, ctx)
 		if score > bestScore {
 			bestScore = score
 			bestTarget = nid
@@ -2040,7 +2192,7 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 
 	// Eğer komşularda mantıklı bir hedef yoksa, uzun menzilli planlama yap (BFS)
 	if bestScore == 0 {
-		bestTarget = findLongRangeMove(gs, a, src)
+		bestTarget = findLongRangeMoveWithContext(gs, a, src, ctx)
 	}
 
 	return bestTarget
@@ -2048,6 +2200,10 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 
 // findLongRangeMove BFS kullanarak en yakın değerli (score > 0) bölgeye giden ilk adımı bulur.
 func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) world.RegionID {
+	return findLongRangeMoveWithContext(gs, a, start, newMoveScoreContext(gs, a))
+}
+
+func findLongRangeMoveWithContext(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext) world.RegionID {
 	type queueItem struct {
 		id   world.RegionID
 		path []world.RegionID
@@ -2057,7 +2213,7 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 	queue := []queueItem{{id: start.ID, path: nil}}
 	visited[start.ID] = true
 
-	maxDepth := 8 // En fazla 8 bölge uzağa bak
+	maxDepth := aiPathSearchDepth(gs)
 
 	for len(queue) > 0 {
 		curr := queue[0]
@@ -2074,7 +2230,7 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 
 		// Kendi bölgesi değilse ve score > 0 ise hedef bulduk demektir
 		if curr.id != start.ID {
-			score := scoreMove(gs, a, r)
+			score := scoreMoveWithContext(gs, a, r, ctx)
 			if score > 0 {
 				return curr.path[0] // Hedefe giden ilk adımı dön
 			}
@@ -2103,13 +2259,17 @@ func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) w
 
 // scoreMove bir hedefe yapılacak hareketin değerini puanlar.
 func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
-	fid := faction.FactionID(a.OwnerID)
+	return scoreMoveWithContext(gs, a, target, newMoveScoreContext(gs, a))
+}
+
+func scoreMoveWithContext(gs *state.GameState, a *army.Army, target *world.Region, ctx *moveScoreContext) int {
 	source := gs.Regions[a.RegionID]
+	planBonus := aiPlanMoveScoreBonus(gs, faction.FactionID(a.OwnerID), target)
 	armyDemand := a.TotalGrainUpkeep(gs.UnitTypes)
 	if target.OwnerID == a.OwnerID {
 		score := 0
-		srcDemand, srcCap, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
-		tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+		srcDemand, srcCap, srcOverload := ctx.regionLogistics(gs, source)
+		tgtDemand, tgtCap, tgtOverload := ctx.regionLogistics(gs, target)
 		srcAfter := maxInt(0, srcDemand-armyDemand-srcCap)
 		tgtAfter := maxInt(0, tgtDemand+armyDemand-tgtCap)
 
@@ -2133,7 +2293,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		}
 
 		// Dost bölgede birleşebileceğimiz ordu var mı? (Konsolidasyon)
-		for _, ea := range gs.Armies {
+		for _, ea := range ctx.armiesByRegion[target.ID] {
 			if ea.RegionID == target.ID && ea.OwnerID == a.OwnerID && ea.ID != a.ID && ea.IsNaval == a.IsNaval {
 				if len(a.Units)+len(ea.Units) <= army.MaxArmySize && aiShouldConsolidateInRegion(gs, target, a.OwnerID, a.IsNaval) {
 					if score < 60 {
@@ -2142,7 +2302,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 				}
 			}
 		}
-		return score
+		return score + planBonus
 	}
 
 	// Müttefik veya savaş halindeki fraksiyona göre hareket et.
@@ -2152,9 +2312,9 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 			if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
 				if gs.CanJoinActiveSiege(a, target.ID) {
 					// Müttefik destek: sadece kuşatmaya katılım / lojistik rahatlatma.
-					_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+					_, _, srcOverload := ctx.regionLogistics(gs, source)
 					if srcOverload > 0 || a.OverCapacityTurns > 0 {
-						tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+						tgtDemand, tgtCap, tgtOverload := ctx.regionLogistics(gs, target)
 						if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
 							return aiReliefMoveBase
 						}
@@ -2174,7 +2334,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 							if stance == faction.StanceAllied {
 								return 65
 							}
-							return 95
+							return 95 + planBonus
 						}
 					}
 				}
@@ -2183,9 +2343,9 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		}
 		if stance == faction.StanceAllied {
 			// Müttefik bölgesine savaşsız geçiş: lojistik rahatlatma veya yol amaçlı
-			_, _, srcOverload := aiRegionLogistics(gs, source, a.OwnerID)
+			_, _, srcOverload := ctx.regionLogistics(gs, source)
 			if srcOverload > 0 || a.OverCapacityTurns > 0 {
-				tgtDemand, tgtCap, tgtOverload := aiRegionLogistics(gs, target, a.OwnerID)
+				tgtDemand, tgtCap, tgtOverload := ctx.regionLogistics(gs, target)
 				if tgtDemand+armyDemand <= tgtCap && tgtOverload == 0 {
 					return aiReliefMoveBase
 				}
@@ -2201,17 +2361,17 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 		if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
 			return -1
 		}
-		if atCapacity := gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid); atCapacity {
-			return 100
+		if ctx.atCapacity {
+			return 100 + planBonus
 		}
-		return 92
+		return 92 + planBonus
 	}
 
 	// Kapasite doluysa fetih yaparak manpower artırmak öncelikli
-	atCapacity := gs.DeployedLandUnits(fid) >= gs.ManpowerCap(fid)
+	atCapacity := ctx.atCapacity
 
 	// Düşman ordusu var mı?
-	for _, ea := range gs.Armies {
+	for _, ea := range ctx.armiesByRegion[target.ID] {
 		if ea.RegionID != target.ID || ea.OwnerID == a.OwnerID {
 			continue
 		}
@@ -2221,7 +2381,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 			// Savaş halindeyse öncelikli hedef
 			_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
 			if stance == faction.StanceWar {
-				return 95
+				return 95 + planBonus
 			}
 			return 75
 		}
@@ -2239,9 +2399,9 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 	_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
 	if stance == faction.StanceWar {
 		if atCapacity {
-			return 100
+			return 100 + planBonus
 		}
-		return 90
+		return 90 + planBonus
 	}
 	// Müttefik bölgesine savaşsız geçiş (düşük öncelik)
 	if stance == faction.StanceAllied {
@@ -2339,7 +2499,14 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				if landed != nil {
 					gs.MoveEmbarkedCommanderToArmy(a.ID, landed.ID)
 				}
-				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+				vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
+				if !vassalized {
+					targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+				}
+				message := actorName + " " + targetName + " kıyısına çıkarma yapıp bölgeyi aldı."
+				if vassalized {
+					message = actorName + " " + targetName + " kıyısındaki zaferden sonra devleti vassal bıraktı."
+				}
 				return moveOutcome{
 					survived: true,
 					step: TurnStep{
@@ -2349,7 +2516,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 						FromRegion:   fromRegion,
 						TargetRegion: target,
 						FocusRegion:  target,
-						Message:      actorName + " " + targetName + " kıyısına çıkarma yapıp bölgeyi aldı.",
+						Message:      message,
 					},
 				}
 			}
@@ -2384,9 +2551,16 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			}
 		}
 		if targetRegion.OwnerID != a.OwnerID && !isAlliedDisembark {
-			targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+			vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
+			if !vassalized {
+				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+			}
 			stepKind = TurnStepConquest
-			msg = actorName + " " + targetName + " kıyısına çıktı ve bölgeyi ele geçirdi."
+			if vassalized {
+				msg = actorName + " " + targetName + " kıyısına çıktı ve teslim olan devleti vassal bıraktı."
+			} else {
+				msg = actorName + " " + targetName + " kıyısına çıktı ve bölgeyi ele geçirdi."
+			}
 		}
 		a.MovePoints--
 		return moveOutcome{
@@ -2483,8 +2657,15 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
 					a.MovePoints--
-					targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+					vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
+					if !vassalized {
+						targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+					}
 					aiClearSiege(gs, target)
+					message := actorName + " " + targetName + " tahkimatına genel hücumla girdi ve kazandı."
+					if vassalized {
+						message = actorName + " " + targetName + " tahkimatını düşürdü ve devleti vassal bıraktı."
+					}
 					return moveOutcome{
 						survived: true,
 						step: TurnStep{
@@ -2494,7 +2675,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 							FromRegion:   fromRegion,
 							TargetRegion: target,
 							FocusRegion:  target,
-							Message:      actorName + " " + targetName + " tahkimatına genel hücumla girdi ve kazandı.",
+							Message:      message,
 						},
 					}
 				}
@@ -2517,6 +2698,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				gs.RemoveArmy(a.ID)
 				aiClearSiegesByArmy(gs, a.ID)
 			}
+			a.MovePoints = 0
 			return moveOutcome{
 				survived: len(a.Units) > 0,
 				step: TurnStep{
@@ -2536,7 +2718,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	combinedDef, defSourceIDs := gs.CollectDefenders(a, target, false)
 	var enemyArmy *army.Army
 	if combinedDef == nil {
-		for _, ea := range gs.Armies {
+		for _, ea := range aiSortedArmies(gs) {
 			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
 				enemyArmy = ea
 				break
@@ -2544,7 +2726,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 	} else {
 		// Birleşik ordudan refakat için ilk orduyu bul
-		for _, ea := range gs.Armies {
+		for _, ea := range aiSortedArmies(gs) {
 			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
 				enemyArmy = ea
 				break
@@ -2602,13 +2784,19 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
+				vassalized := false
 				if !isAlliedTarget {
-					targetRegion.OwnerID = a.OwnerID
+					vassalized = TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
+					if !vassalized {
+						targetRegion.OwnerID = a.OwnerID
+					}
 				}
 				a.MovePoints--
 				message := actorName + " " + targetName + " bölgesindeki savaşı kazandı."
 				if isAlliedTarget && battleLiftsSiege {
 					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve kuşatmayı kaldırdı."
+				} else if vassalized {
+					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve devleti vassal bıraktı."
 				}
 				return moveOutcome{
 					survived: true,
@@ -2670,9 +2858,16 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 	}
 	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget {
-		targetRegion.OwnerID = a.OwnerID
+		vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
+		if !vassalized {
+			targetRegion.OwnerID = a.OwnerID
+		}
 		stepKind = TurnStepConquest
-		msg = actorName + " " + targetName + " bölgesini savaşsız ele geçirdi."
+		if vassalized {
+			msg = actorName + " " + targetName + " bölgesinde teslim olan devleti vassal bıraktı."
+		} else {
+			msg = actorName + " " + targetName + " bölgesini savaşsız ele geçirdi."
+		}
 	}
 
 	// Konsolidasyon (Dost orduyla birleşme)
@@ -2732,7 +2927,13 @@ func aiResearchWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]Tu
 	}
 	var candidates []scoredTech
 
-	for _, t := range gs.TechTypes {
+	techIDs := make([]string, 0, len(gs.TechTypes))
+	for id := range gs.TechTypes {
+		techIDs = append(techIDs, id)
+	}
+	sort.Strings(techIDs)
+	for _, techID := range techIDs {
+		t := gs.TechTypes[techID]
 		// Zaten tamamlandı mı?
 		if f.Research.Completed[t.ID] {
 			continue
@@ -2856,7 +3057,7 @@ func aiEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, steps *
 		}
 
 		// Uygun bölge bul
-		for _, r := range gs.Regions {
+		for _, r := range aiSortedRegions(gs) {
 			if r.OwnerID != string(fid) || r.IsSea {
 				continue
 			}
@@ -2898,7 +3099,7 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 
 	// Kıyı bölgesi var mı?
 	var coastalRegions []*world.Region
-	for _, r := range gs.Regions {
+	for _, r := range aiSortedRegions(gs) {
 		if r.OwnerID == string(fid) && !r.IsSea && r.IsCoastal(gs.Regions) {
 			coastalRegions = append(coastalRegions, r)
 		}
@@ -3000,7 +3201,7 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 			continue
 		}
 		currentUnits := 0
-		for _, a := range gs.Armies {
+		for _, a := range aiSortedArmies(gs) {
 			if a.RegionID == seaRegion && a.OwnerID == string(fid) && a.IsNaval {
 				currentUnits = len(a.Units)
 				break
@@ -3137,7 +3338,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 			continue
 		}
 		currentWarshipUnits := 0
-		for _, a := range gs.Armies {
+		for _, a := range aiSortedArmies(gs) {
 			if a.RegionID == candidate.seaID && a.OwnerID == string(fid) && a.IsNaval && isWarshipFleet(a, gs.UnitTypes) {
 				currentWarshipUnits = len(a.Units)
 				break
@@ -3251,7 +3452,7 @@ func aiCanAffordWithReserve(f *faction.Faction, cost economy.ResourceCost) bool 
 // aiConsolidateArmies aynı bölgedeki aynı tipteki (kara/deniz) kendi ordularını birleştirir.
 func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 	var armies []*army.Army
-	for _, a := range gs.Armies {
+	for _, a := range aiSortedArmies(gs) {
 		if a.OwnerID == string(fid) {
 			armies = append(armies, a)
 		}
@@ -3294,7 +3495,8 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 	if !aiShouldConsolidateInRegion(gs, region, a.OwnerID, a.IsNaval) {
 		return false
 	}
-	for otherID, other := range gs.Armies {
+	for _, other := range aiSortedArmies(gs) {
+		otherID := other.ID
 		if otherID == a.ID || other.RegionID != a.RegionID || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}

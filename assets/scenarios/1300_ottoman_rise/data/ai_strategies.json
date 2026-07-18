@@ -1,0 +1,117 @@
+{
+  "difficulty_policy": {
+    "fair_movement": true,
+    "levels": {
+      "1": {
+        "plan_horizon_turns": 4,
+        "plan_target_region_limit": 3,
+        "path_search_depth": 5,
+        "plan_move_bonus_percent": 70,
+        "war_threshold": 82,
+        "min_attack_power_percent": 130,
+        "war_cadence_turns": 12,
+        "max_concurrent_wars": 1
+      },
+      "2": {
+        "plan_horizon_turns": 6,
+        "plan_target_region_limit": 4,
+        "path_search_depth": 8,
+        "plan_move_bonus_percent": 100,
+        "proactive_war": true,
+        "war_threshold": 70,
+        "min_attack_power_percent": 115,
+        "war_cadence_turns": 10,
+        "max_concurrent_wars": 1
+      },
+      "3": {
+        "plan_horizon_turns": 9,
+        "plan_target_region_limit": 5,
+        "path_search_depth": 12,
+        "plan_move_bonus_percent": 125,
+        "proactive_war": true,
+        "war_threshold": 65,
+        "min_attack_power_percent": 100,
+        "war_cadence_turns": 7,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 4,
+        "start_gold_buffer": 80,
+        "start_grain_buffer": 30
+      }
+    }
+  },
+  "factions": [
+    {
+      "faction_id": "ottoman",
+      "profile": "frontier_expansion",
+      "objectives": [
+        {
+          "id": "secure_bithynia",
+          "kind": "expand",
+          "target_factions": ["east_rome"],
+          "target_regions": ["bursa", "nicomedia", "chrysopolis"],
+          "priority": 100,
+          "commitment": 72,
+          "annex_region_ids": ["bursa", "nicomedia", "chrysopolis"]
+        },
+        {
+          "id": "unite_anatolian_beyliks",
+          "kind": "expand",
+          "target_factions": ["karesioglu_bey", "germiyan_bey", "ahiler"],
+          "target_regions": ["aydinoglu", "germiyan", "kutahya", "sivrihisar"],
+          "priority": 92,
+          "commitment": 66,
+          "allow_vassalization": true,
+          "annex_region_ids": ["kutahya"]
+        },
+        {
+          "id": "cross_into_thrace",
+          "kind": "expand",
+          "target_factions": ["east_rome"],
+          "target_regions": ["gallipoli", "thrace", "constantinople"],
+          "priority": 86,
+          "commitment": 78,
+          "readiness_regions": ["bursa", "nicomedia", "chrysopolis"]
+        },
+        {
+          "id": "secure_ankara_corridor",
+          "kind": "expand",
+          "target_factions": ["ahiler", "ilkhanate"],
+          "target_regions": ["sivrihisar", "cankiri"],
+          "priority": 88,
+          "commitment": 66,
+          "readiness_regions": ["bursa", "nicomedia"]
+        },
+        {
+          "id": "eastern_imperial_rivalry",
+          "kind": "expand",
+          "target_factions": ["safavid"],
+          "priority": 80,
+          "commitment": 75,
+          "min_year": 1501
+        }
+      ]
+    },
+    {
+      "faction_id": "east_rome",
+      "profile": "defensive_decline",
+      "objectives": [
+        {
+          "id": "hold_bosporus",
+          "kind": "defend",
+          "target_factions": ["ottoman"],
+          "target_regions": ["constantinople", "thrace", "bursa", "nicomedia", "chrysopolis"],
+          "priority": 100,
+          "commitment": 76
+        },
+        {
+          "id": "recover_bithynian_frontier",
+          "kind": "expand",
+          "target_factions": ["ottoman"],
+          "target_regions": ["bithynia", "bilecik_frontier"],
+          "priority": 72,
+          "commitment": 55
+        }
+      ]
+    }
+  ]
+}

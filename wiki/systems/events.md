@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-07-16
+last_updated: 2026-07-18
 related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -14,6 +14,8 @@ related: [world/regions, architecture/game-loop, architecture/render-pipeline]
 Olaylar JSON'dan yüklenir ve `events.LoadEvents()` ile `[]*Event` listesine dönüştürülür.
 
 Her olay `events.Tick()` içinde yalnızca **tespit edilir**; uygulama sonrasında `events.Apply()` / `events.ApplyChoice()` ile yapılır. Tek seferlik event'ler `gs.FiredEventIDs` içinde takip edilir.
+
+Deterministik simülasyon için `random_region` adayları ile `all_factions`, `all_armies` ve fraksiyon-sahipliği tabanlı aktif event bölge listeleri `RegionID` sırasına sokulur. Rastgele indeks ve `ActiveRegionEvents` sıra düzeni Go map iterasyonundan etkilenmez.
 
 ---
 

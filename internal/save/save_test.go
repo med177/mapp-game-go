@@ -172,6 +172,52 @@ func TestCommanderPoolRoundTripKeepsArmyAssignmentLink(t *testing.T) {
 	}
 }
 
+func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
+	original := &state.AIPlanState{
+		ObjectiveID:        "unite_anatolian_beyliks",
+		Kind:               state.AIObjectiveExpand,
+		TargetFactionID:    "germiyan_bey",
+		TargetRegionIDs:    []world.RegionID{"germiyan", "kutahya"},
+		AnnexRegionIDs:     []world.RegionID{"kutahya"},
+		StartedTurn:        7,
+		ReassessTurn:       13,
+		Commitment:         62,
+		AllowVassalization: true,
+		Reason:             "frontier_expansion profili",
+	}
+	saved := campaignSaveState{
+		ScenarioID: "1300_ottoman_rise",
+		AIPlans:    map[faction.FactionID]*state.AIPlanState{"ottoman": original},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("AI plan compact payload yazılamadı: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(payload)
+	if err != nil {
+		t.Fatalf("AI plan compact payload okunamadı: %v", err)
+	}
+	restored := &state.GameState{}
+	applyCampaignSaveState(restored, decoded)
+
+	got := restored.AIPlans["ottoman"]
+	if got == nil {
+		t.Fatal("AI planı save/load sonrasında kayboldu")
+	}
+	if got.ObjectiveID != original.ObjectiveID || got.Kind != original.Kind || got.TargetFactionID != original.TargetFactionID || got.StartedTurn != 7 || got.ReassessTurn != 13 || got.Commitment != 62 || got.Reason != original.Reason {
+		t.Fatalf("AI plan metadata'sı eksik geri yüklendi: %+v", got)
+	}
+	if len(got.TargetRegionIDs) != 2 || got.TargetRegionIDs[0] != "germiyan" || got.TargetRegionIDs[1] != "kutahya" {
+		t.Fatalf("AI plan bölge öncelikleri korunmadı: %+v", got.TargetRegionIDs)
+	}
+	if len(got.AnnexRegionIDs) != 1 || got.AnnexRegionIDs[0] != "kutahya" || !got.AllowVassalization {
+		t.Fatalf("AI plan savaş sonrası düzeni korunmadı: %+v", got)
+	}
+	if got == original || &got.TargetRegionIDs[0] == &original.TargetRegionIDs[0] || &got.AnnexRegionIDs[0] == &original.AnnexRegionIDs[0] {
+		t.Fatal("AI plan save/load kopyası bağımsız olmalı")
+	}
+}
+
 func TestEmbarkedCommanderRoundTrip(t *testing.T) {
 	commander := army.NewCommander("cmd_embarked", "Filo Komutanı")
 	commander.OwnerID = "player"

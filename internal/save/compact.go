@@ -91,41 +91,42 @@ type armySaveState struct {
 }
 
 type campaignSaveState struct {
-	Turn                    int                                    `json:"t"`
-	Year                    int                                    `json:"y"`
-	Month                   int                                    `json:"m"`
-	StartYear               int                                    `json:"sy,omitempty"`
-	ScenarioID              string                                 `json:"sc"`
-	ScenarioPath            string                                 `json:"scp,omitempty"`
-	PlayerFactionID         faction.FactionID                      `json:"pf"`
-	Difficulty              int                                    `json:"d,omitempty"`
-	DevelopmentMode         bool                                   `json:"dev,omitempty"`
-	EditMode                bool                                   `json:"em,omitempty"`
-	Victory                 state.VictoryCondition                 `json:"v"`
-	SelectedVictoryOptionID string                                 `json:"sv,omitempty"`
-	Regions                 map[world.RegionID]regionSaveState     `json:"rg,omitempty"`
-	Factions                map[faction.FactionID]factionSaveState `json:"fx,omitempty"`
-	Armies                  map[army.ArmyID]armySaveState          `json:"ar,omitempty"`
-	Commanders              map[string]*army.Commander             `json:"cmd,omitempty"`
-	EconomicVictoryTurns    int                                    `json:"evt,omitempty"`
-	FactionsEliminated      int                                    `json:"fel,omitempty"`
-	ReligiousVictoryTurns   int                                    `json:"rvt,omitempty"`
-	VictoryAchieved         bool                                   `json:"va,omitempty"`
-	VictoryAchievedTurn     int                                    `json:"vat,omitempty"`
-	FiredEventIDs           []string                               `json:"fe,omitempty"`
-	Relations               map[string]relationSaveState           `json:"rl,omitempty"`
-	DiplomaticOffers        []state.DiplomaticOffer                `json:"do,omitempty"`
-	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry    `json:"dh,omitempty"`
-	DiplomacyOfferCounts    map[faction.FactionID]int              `json:"dq,omitempty"`
-	TradeRoutes             []*economy.TradeRoute                  `json:"tr,omitempty"`
-	Sieges                  map[world.RegionID]*state.SiegeState   `json:"sg,omitempty"`
-	ProductionQueue         []state.ProductionOrder                `json:"pq,omitempty"`
-	NextProductionSeq       int                                    `json:"np,omitempty"`
-	NextArmySeq             int                                    `json:"na,omitempty"`
-	NextCommanderSeq        int                                    `json:"nc,omitempty"`
-	Phase                   state.Phase                            `json:"ph,omitempty"`
-	WinnerID                faction.FactionID                      `json:"w,omitempty"`
-	ActiveRegionEvents      []state.RegionEventStatus              `json:"ae,omitempty"`
+	Turn                    int                                      `json:"t"`
+	Year                    int                                      `json:"y"`
+	Month                   int                                      `json:"m"`
+	StartYear               int                                      `json:"sy,omitempty"`
+	ScenarioID              string                                   `json:"sc"`
+	ScenarioPath            string                                   `json:"scp,omitempty"`
+	PlayerFactionID         faction.FactionID                        `json:"pf"`
+	Difficulty              int                                      `json:"d,omitempty"`
+	DevelopmentMode         bool                                     `json:"dev,omitempty"`
+	EditMode                bool                                     `json:"em,omitempty"`
+	Victory                 state.VictoryCondition                   `json:"v"`
+	SelectedVictoryOptionID string                                   `json:"sv,omitempty"`
+	Regions                 map[world.RegionID]regionSaveState       `json:"rg,omitempty"`
+	Factions                map[faction.FactionID]factionSaveState   `json:"fx,omitempty"`
+	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
+	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
+	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
+	EconomicVictoryTurns    int                                      `json:"evt,omitempty"`
+	FactionsEliminated      int                                      `json:"fel,omitempty"`
+	ReligiousVictoryTurns   int                                      `json:"rvt,omitempty"`
+	VictoryAchieved         bool                                     `json:"va,omitempty"`
+	VictoryAchievedTurn     int                                      `json:"vat,omitempty"`
+	FiredEventIDs           []string                                 `json:"fe,omitempty"`
+	Relations               map[string]relationSaveState             `json:"rl,omitempty"`
+	DiplomaticOffers        []state.DiplomaticOffer                  `json:"do,omitempty"`
+	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry      `json:"dh,omitempty"`
+	DiplomacyOfferCounts    map[faction.FactionID]int                `json:"dq,omitempty"`
+	TradeRoutes             []*economy.TradeRoute                    `json:"tr,omitempty"`
+	Sieges                  map[world.RegionID]*state.SiegeState     `json:"sg,omitempty"`
+	ProductionQueue         []state.ProductionOrder                  `json:"pq,omitempty"`
+	NextProductionSeq       int                                      `json:"np,omitempty"`
+	NextArmySeq             int                                      `json:"na,omitempty"`
+	NextCommanderSeq        int                                      `json:"nc,omitempty"`
+	Phase                   state.Phase                              `json:"ph,omitempty"`
+	WinnerID                faction.FactionID                        `json:"w,omitempty"`
+	ActiveRegionEvents      []state.RegionEventStatus                `json:"ae,omitempty"`
 }
 
 type legacyRegionSaveState struct {
@@ -174,6 +175,7 @@ type legacyCampaignSaveState struct {
 	Factions                map[faction.FactionID]legacyFactionSaveState `json:"factions"`
 	Armies                  map[army.ArmyID]*army.Army                   `json:"armies"`
 	Commanders              map[string]*army.Commander                   `json:"commanders,omitempty"`
+	AIPlans                 map[faction.FactionID]*state.AIPlanState     `json:"ai_plans,omitempty"`
 	EconomicVictoryTurns    int                                          `json:"economic_victory_turns"`
 	FactionsEliminated      int                                          `json:"factions_eliminated"`
 	ReligiousVictoryTurns   int                                          `json:"religious_victory_turns"`
@@ -316,6 +318,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Factions:                savedFactions,
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
+		AIPlans:                 cloneAIPlans(legacy.AIPlans),
 		EconomicVictoryTurns:    legacy.EconomicVictoryTurns,
 		FactionsEliminated:      legacy.FactionsEliminated,
 		ReligiousVictoryTurns:   legacy.ReligiousVictoryTurns,
@@ -432,6 +435,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Factions:                emptyMapAsNil(savedFactions),
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
+		AIPlans:                 cloneAIPlans(gs.AIPlans),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -517,6 +521,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Factions:                factions,
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
+		AIPlans:                 cloneAIPlans(gs.AIPlans),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -610,6 +615,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		gs.Armies = map[army.ArmyID]*army.Army{}
 	}
 	gs.Commanders = cloneCommanders(saved.Commanders)
+	gs.AIPlans = cloneAIPlans(saved.AIPlans)
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()
 
@@ -1345,6 +1351,23 @@ func cloneCommanders(src map[string]*army.Commander) map[string]*army.Commander 
 			continue
 		}
 		out[id] = cloneCommander(commander)
+	}
+	return out
+}
+
+func cloneAIPlans(src map[faction.FactionID]*state.AIPlanState) map[faction.FactionID]*state.AIPlanState {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]*state.AIPlanState, len(src))
+	for fid, plan := range src {
+		if plan == nil {
+			continue
+		}
+		copyPlan := *plan
+		copyPlan.TargetRegionIDs = append([]world.RegionID(nil), plan.TargetRegionIDs...)
+		copyPlan.AnnexRegionIDs = append([]world.RegionID(nil), plan.AnnexRegionIDs...)
+		out[fid] = &copyPlan
 	}
 	return out
 }
