@@ -1949,8 +1949,6 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		badgeSize := float32(15)
 		badgeX := cx + 8
 		badgeY := cy - 27
-		vector.FillRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, color.RGBA{58, 26, 22, 240}, false)
-		vector.StrokeRect(screen, badgeX-badgeSize/2, badgeY-badgeSize/2, badgeSize, badgeSize, 1.5, color.RGBA{224, 182, 96, 245}, false)
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {

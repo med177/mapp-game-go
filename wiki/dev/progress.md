@@ -7,6 +7,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-18: Kuşatma ordusunun üstündeki kılıç rozeti kare dolgu/çerçeveden çıkarıldı; aynı ölçüde beyaz daire arka planına geçirildi. Kapsam: `internal/render/renderer.go`, `wiki/architecture/render-pipeline.md`, test: `go test ./internal/render`.
 - 2026-07-18: Yerleşim marker ikonlarının beyaz daire arka planına göre dikey hizası düzeltildi; ikon ve daire artık aynı merkez koordinatını kullanıyor. Kapsam: `internal/render/renderer.go`, `wiki/architecture/render-pipeline.md`, test: `go test ./internal/render`.
 - 2026-07-18: Kuşatma emri paneli seçili ordu detay paneli görünür kalacak şekilde ordu panelinin üstündeki boş alana taşındı; buton önceliği korunurken panel dışındaki input/cursor ordu paneline geçebiliyor. Kapsam: `internal/render/{renderer_dialogs.go,renderer_input.go,cursor.go}`.
 - 2026-07-18: Eğitim kuyruğu kartlarına birim adı eklendi; tüm kart footer'ları tam genişlikte opak beyaz çizilerek kenarlardaki sprite sızıntısı kaldırıldı. Kapsam: `internal/render/recruit_panel.go`.
