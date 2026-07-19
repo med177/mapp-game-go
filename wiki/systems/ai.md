@@ -8,7 +8,12 @@ related: [systems/combat, systems/diplomacy, architecture/game-loop]
 # Yapay Zeka Sistemi
 
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
-`internal/ai/strategic_plan.go`, `internal/ai/conquest_policy.go`,
+`internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
+`internal/ai/retreat.go`, `internal/ai/security.go`, `internal/ai/pathfinding.go`,
+`internal/ai/budget.go`, `internal/ai/building_investment.go`,
+`internal/ai/unit_composition.go`, `internal/ai/recruitment_region.go`,
+`internal/ai/research_strategy.go`,
+`internal/ai/conquest_policy.go`,
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`
 
 ## Genel Yapı
@@ -61,6 +66,337 @@ menzilli hareket puanında bonus alır. Hedef bölge tamamlandığında, hedef v
 katıldığında, devlet elendiğinde veya `reassess_turn` geldiğinde plan yenilenir.
 Profil bulunmayan 1300 devletleri `ai_expansion_targets`, aktif savaş ve konsolidasyon
 fallback'ini kullanmaya devam eder.
+
+### Dinamik Acil Rezerv ve Harcama Bütçesi
+
+`internal/ai/budget.go`, yalnız `1300_ottoman_rise` AI turlarında save'e yazılmayan bir
+harcama bütçesi üretir. Acil altın rezervi şu formüldür:
+
+`40 + sahip olunan kara bölgesi*8 + aktif savaş*30 + min(120, efektif aylık altın/3)`
+
+Başkent veya kritik merkez tehdidi rezervi `+40` artırır. Sonuç en az `80`, en fazla
+`420` altındır. Efektif aylık altın, ekonomi tick'iyle aynı
+`RegionProductionSummary()` kaynağından gelir; böylece vergi ve memnuniyet etkisi ham
+bölge değerinden tahmin edilmez. Rezervin altına indirecek hiçbir AI harcamasına izin
+verilmez.
+
+Rezerv üstündeki harcanabilir altın plan durumuna göre soft paylara ayrılır:
+
+| Plan durumu | Ordu | Ekonomi | Araştırma | Donanma |
+|---|---:|---:|---:|---:|
+| Genişleme | %45 | %25 | %20 | %10 |
+| Aktif savaş veya savunma | %60 | %15 | %15 | %10 |
+| Konsolidasyon | %25 | %40 | %25 | %10 |
+
+Kategoriler `araştırma → ekonomi → donanma → ordu` sırasıyla çalışır. Bir kategorinin
+kullanamadığı pay aynı tur esnek havuza bırakılır; sonraki kategoriler kendi payıyla bu
+havuzu birlikte kullanabilir. Ordu son tüketici olduğu için savaş hazırlığı gerekli
+olduğunda atıl kalan yatırım bütçesini kullanabilir. Kıyısı olmayan devlette donanma
+kategorisi oluşturulmaz ve pay kalan kategorilere kendi oranlarında dağıtılır. Bu model
+runtime-only'dir; compact/legacy save şeması değişmez ve diğer senaryolar mevcut sabit
+`80` altın rezerv/hardcoded harcama sırasını korur.
+
+Bütçe dilimi sonrası ölçümde Normal fast 12x2 `8.87 sn`, Osmanlı `2 → 3`, güç `288`;
+Normal medium 42x4 `62.22 sn`, Osmanlı ortalama `2 → 5`, güç `670`; Zor fast 12x2
+`7.35 sn`, Osmanlı `2 → 3`, güç `289` sonucunu verdi.
+
+### Bina Yatırım Puanlaması
+
+1300 senaryosunda ekonomi bütçesi artık sabit `farm → market → walls` taramasını
+kullanmaz. `internal/ai/building_investment.go`, her uygun bölgedeki pazar, çiftlik,
+sur ve ibadet yeri adayını aynı skorda karşılaştırır. Kışla ordu bütçesinde, liman ise
+donanma bütçesinde kalır.
+
+Skorun bileşenleri:
+
+- **ROI:** Bina bölgeye sanal olarak eklenir; mevcut ve sonraki
+  `RegionProductionSummary()` farkı 12 tur için hesaplanır. Altın doğrudan, tahıl güncel
+  piyasa fiyatı ve devletin üretim/bakım baskısıyla altın eşdeğerine çevrilir. Maliyet
+  de tüm hammaddelerin piyasa karşılığıyla hesaplanır.
+- **Kaynak darboğazı:** Tahıl üretimi ordu bakımını karşılamıyorsa veya stok güvenlik
+  eşiğinin altındaysa çiftlik yükselir. Bir aday mevcut demir/kereste/taş/tahıl stokunun
+  büyük bölümünü tüketecekse fırsat maliyeti cezası alır.
+- **Tehdit ve objective:** Aktif savaş, kritik cephe, başkent, defend hedefi ve yüksek
+  yerel tehdit surları öne çıkarır. Expand rally/hedef sınırı çiftlik ve pazarı;
+  consolidate planı uzun vadeli pazar, çiftlik ve istikrar yatırımlarını destekler.
+- **İstikrar:** Bina memnuniyet bonusu mevcut açığa göre değerlenir; gerçek isyan
+  eşiğindeki bölgede ibadet yeri acil bonus alır.
+- **Fırsat maliyeti:** Uzun inşa süresi, aynı binanın seviyesi ve bölgedeki mevcut bina
+  kuyruğu skoru düşürür.
+
+Skor `80`in altındaysa AI sırf ekonomi payını tüketmek için bina kurmaz; kullanılmayan
+altın aynı tur donanma/ordu kategorisine aktarılır. Tur başına tek bina sınırı korunur.
+Eşitlikler sırasıyla toplam skor, ROI, objective, tehdit, kısa süre, region ID ve bina
+ID ile deterministik çözülür. Kuşatma altındaki bölgede yeni yatırım başlatılmaz.
+Diğer senaryoların eski farm/market/walls koşulları değişmemiştir.
+
+Bu dilim sonrası Normal fast 12x2 `8.91 sn`, Osmanlı `2 → 3`, güç `268`; Normal medium
+42x4 `62.12 sn`, Osmanlı ortalama `2 → 5.8`, güç `657`; Zor fast 12x2 `7.22 sn`,
+Osmanlı `2 → 3`, güç `267` ölçüldü.
+
+### Plan Bazlı Kara Ordu Kompozisyonu
+
+`internal/ai/unit_composition.go`, yalnız 1300 senaryosunda üretilecek kara birimini
+aktif stratejik plana bağlar:
+
+| Plan | Piyade | Süvari | Kuşatma |
+|---|---:|---:|---:|
+| Genişleme | %55 | %25 | %20 |
+| Savunma | %75 | %15 | %10 |
+| Konsolidasyon/fallback | %65 | %25 | %10 |
+
+Kompozisyon hesabına haritadaki kara orduları, filolarda taşınan birlikler ve bekleyen
+kara üretim emirleri birlikte girer. Her uygun aday önce hedef orana göre kapatacağı
+açıkla, ardından saldırı/savunma/moral değeri, altın eşdeğeri toplam maliyet, hammadde
+stok baskısı, tahıl bakımı ve üretim süresiyle puanlanır. Mevcut teknoloji, gerekli bina
+ve ordu bütçesi kontrolleri aynen uygulanır.
+
+Savaş bağlamı oyunun gerçek mekaniklerinden türetilir. Genişleme saldırıyı, savunma
+savunma değerini öne çıkarır; hedef dağ/geçit/orman ise saldıran tarafta saldırı ve
+moral, dost savunma hedefinde savunma ve moral ağırlığı artar. Düşman ordularının toplam
+saldırı/savunma profili karşı ağırlığı değiştirir. Birim kategorilerine oyunda olmayan
+arazi veya karşı-birim bonusları eklenmez. Tahkimli objective ya da aktif savaş hedefi
+varsa, kuşatma desteği olmayan `assault/siege` orduları ile kuyruktaki kuşatma üretimi
+karşılaştırılır; açık varsa kuşatma birimi güçlü öncelik alır.
+
+Seçim skor ve bağlayıcı alanlarla deterministiktir. Model runtime-only'dir; save şeması
+değişmez. Diğer senaryolar sabit elite piyade/ağır süvari/piyade sırasını kullanmaya
+devam eder.
+
+Bu dilim sonrası Normal fast 12x2 `9.08 sn`, Osmanlı `2 → 3`, güç `292`; Normal medium
+42x4 `62.53 sn`, Osmanlı ortalama `2 → 5`, güç `733`; Zor fast 12x2 `7.39 sn`,
+Osmanlı `2 → 3`, güç `290` ölçüldü.
+
+### Stratejik Recruitment Bölgesi
+
+`internal/ai/recruitment_region.go`, 1300 senaryosunda seçilen kara biriminin hangi
+bölgede üretileceğini ortak bir skorla belirler. Adayın gerekli kışla seviyesi ve ordu
+slotu bulunmalı, o tur kara üretim hattında boş throughput kalmalıdır.
+
+Skor şu sinyalleri birlikte kullanır:
+
+- kalan throughput ve kışla seviyesi,
+- aynı üretim hattındaki ve bölgedeki toplam pending kuyruk,
+- planın rally, savunma veya ilgili savaş cephesi anchor'ına ağırlıklı Dijkstra maliyeti,
+- mevcut ordular, pending birlikler ve yeni aday sonrasındaki tahıl lojistiği boşluğu,
+- komşu savaş düşmanı gücünün oluşturduğu güvenlik cezası.
+
+Kuşatma altındaki, yabancı ordu barındıran, `Satisfaction < 30` gerçek isyan eşiğindeki
+veya kritik/başkent tehdidi taşıyan cephenin parçası olan bölge doğrudan elenir. Mevcut,
+pending ve yeni birliklerin toplam tahıl bakımı yerel kapasiteyi aşacaksa üretim hattı
+da kullanılmaz. Kuşatma biriminde önce kuşatma desteği eksik `assault/siege` ordusunun
+`FrontFactionID` cephesi seçilir; böylece ekipman genel bir arka bölgeye değil ilgili
+hücum hattına yakın çıkar.
+
+Rota hesabı mevcut güvenli dost-toprak Dijkstra motorunu ve AI turu route cache'ini
+kullanır. Skor eşitliğinde rota, lojistik boşluk, throughput, seviye, kuyruk ve region
+ID sırasıyla deterministik bağ kırıcıdır. Model runtime-only'dir. Diğer senaryolar
+mevcut remaining-capacity, kışla seviyesi ve region ID seçimini korur.
+
+Bu dilim sonrası Normal fast 12x2 `9.56 sn`, Osmanlı `2 → 3`, güç `278`; Normal medium
+42x4 `67.44 sn`, Osmanlı ortalama `2 → 6.5`, güç `568`; Zor fast 12x2 `7.74 sn`,
+Osmanlı `2 → 3`, güç `269` ölçüldü.
+
+### Plan ve Darboğaz Bazlı Araştırma
+
+`internal/ai/research_strategy.go`, yalnız 1300 senaryosunda araştırılabilir ve bütçeye
+uygun teknolojileri aktif stratejik planla puanlar:
+
+- **Genişleme:** askerî saldırı, hareket, tahkimli hedefte kuşatma ve ihtiyaç duyulan
+  birim açılımı öne çıkar.
+- **Savunma:** gerçek `land_defense_mod`, ekonomi, memnuniyet ve diplomatik nefes alanı
+  daha değerlidir.
+- **Konsolidasyon:** altın/tahıl/hammadde üretimi, pazar getirisi, istikrar, din dönüşümü
+  ve barış ilişkisi ağırlık kazanır.
+
+Ekonomi değeri mevcut bölge sayısı, ticaret kapasitesi ve gerçek üretim üzerinden 12
+turluk marjinal getiriyle hesaplanır; tahıl bakım açığı ile düşük demir/kereste/taş
+stoku kaynak modlarının faydasını yükseltir. Memnuniyet ve din farkı yalnız sahip olunan
+bölgelerden türetilir. Kıyısız devlet saf deniz teknolojisinde ceza alır; ancak
+`move_bonus` veya ekonomi etkisi gibi gerçekten kara devletine yarayan efektler yine
+değerlendirilir.
+
+Bir teknoloji `units.json` içindeki birimi doğrudan açıyorsa, birimin kategori açığı,
+savaş değeri, bina erişimi ve tahkimli hedefte kuşatma desteği hesaba katılır. Adayın
+tamamlanmasıyla diğer tüm önkoşulları sağlanacak bir sonraki teknoloji de küçük zincir
+bonusu alır. Maliyet ve süre skoru düşürür. Mevcut savaş motoru saldırı modlarını toplu
+uyguladığı için piyade/süvari/kuşatma saldırı efektlerine oyunda olmayan ayrı karşı-birim
+faydaları uydurulmaz. Yalnız oyuncu ordu panelini açan `reveal_enemy_strength` AI için
+puan üretmez.
+
+Aktif araştırma yarıda bırakılmaz. Eşitlik; toplam skor, birim açılımı, gerçek efekt,
+sonraki teknoloji, süre/maliyet ve teknoloji ID ile deterministik çözülür. Model
+runtime-only'dir; diğer senaryolar mevcut sabit kategori sırasını korur.
+
+Bu dilim sonrası Normal fast 12x2 `9.76 sn`, Osmanlı `2 → 3`, güç `270`; Normal medium
+42x4 `68.84 sn`, Osmanlı ortalama `2 → 5.5`, güç `466`; Zor fast 12x2 `7.80 sn`,
+Osmanlı `2 → 3`, güç `254` ölçüldü. Daha erken ekonomi teknolojileri büyük devletlerin
+42 aylık altın birikimini yaklaşık `27–31 bin` düzeyine taşıdığı için bu sonuç Faz 7
+denge kalibrasyonunda ayrıca izlenecektir.
+
+### Cephe, Dinamik Rezerv ve Ordu Rolleri
+
+`internal/ai/fronts.go`, 1300 senaryosundaki her AI turunda sınır bölgelerini komşu
+devlet ekseninde `AIFront` kayıtlarına ayırır. Her cephe şunları taşır:
+
+- dost/düşman sınır bölgeleri ve stratejik anchor,
+- iki tarafın sınırdaki gerçek ordu gücü,
+- savaş ve aktif objective ilişkisi,
+- başkent, savunma objective'i veya kuşatma kaynaklı kritik tehdit,
+- deterministik tehdit skoru.
+
+Bu snapshot'tan mobil kara ordularına save'e yazılmayan görevler atanır:
+
+| Rol | Davranış |
+|---|---|
+| `assault` | Aktif savaş cephesini, savaş yoksa kalıcı objective hedefini izler |
+| `siege` | Aktif kuşatmayı korur; kuşatma birimli objective ordusunu tahkimat hedefine yöneltir |
+| `defense` | Tehdit altındaki dost cephe/merkeze yaklaşır ve plansız fetih üretmez |
+| `reserve` | Başkent veya kritik merkez anchor'ına çekilir, yabancı toprağa girmez |
+| `relief` | Dost/aynı realm kuşatmasını kaldırmak için kuşatılan bölgeye yönelir |
+| `retreat` | Yıpranmış/ezilen orduyu dost kara hattından güvenli ikmal anchor'ına çeker |
+| `security` | İsyan riski taşıyan bölgeyi en küçük uygun saha ordusuyla güvenceye alır |
+
+Normal durumda rezerv hedefi toplam mobil kara gücünün yaklaşık `%15`idir. Başkent,
+savunma objective'i veya dost kritik merkez aktif tehdit/kuşatma altındaysa hedef `%30`a
+çıkar. Stack granülerliği nedeniyle atanan güç hedefi aşabilir; küçük devletin bütün
+ordusunu dondurmamak için tek saha ordusunda rezerv ayrılmaz ve çok ordulu devlette en
+güçlü stack aktif bırakılır. Aktif kuşatma ve relief görevi rezervden önce atanır.
+
+Rol bonusları yalnız standart hareket/diplomasi kurallarının zaten geçerli saydığı
+hamleleri sıralar; barıştaki yabancı hedefi veya yasak geçişi açamaz. Kalıcı objective
+barıştaki başka bir devleti gösterirken aktif savaş varsa hücum orduları önce mevcut
+savaşı sonuçlandırır. Yeni proaktif savaş da saldırı rolü gücü ile rezerv hedefi hazır
+değilse veya kritik merkez tehdit altındaysa ertelenir. Kuşatma birimi olmadan kuşatma
+başlatıp teslimiyet beklenebilmesine dair mevcut mekanik korunur; kuşatma birimi yalnız
+genel hücum için gereklidir.
+
+### Geri Çekilme ve Takviye
+
+`internal/ai/retreat.go`, yalnız `1300_ottoman_rise` stratejik context'inde mobil kara
+ordusunun mevcut rolünü geçici `retreat` rolüyle ezebilir. Açık arazide iki tetikleyici
+vardır:
+
+- birimlerin deneyim dahil tam-can saldırı gücüne göre ağırlıklı mevcut güç oranı
+  `%45`in altındadır; tam `%45` geri çekilmez,
+- aynı veya komşu bölgelerdeki savaş düşmanı kara gücü ordu gücünün en az `%135`idir.
+
+Recovery anchor, AI'nin kendi kara bölgesidir; kuşatma altında veya yabancı ordu
+barındıran, komşusunda savaş düşmanı bulunan ve ordunun varışından sonra ikmal
+kapasitesi aşılacak bölgeler aday olmaz. Önce graph mesafesi en kısa aday seçilir.
+Eşit mesafede ikmal boşluğu, aynı bölgedeki dost güç, tahkimat, başkent ve region ID
+deterministik bağ kırıcıdır. Rota yalnız AI'nin kendi, kuşatılmamış ve yabancı kara
+ordusu bulunmayan transit bölgelerinden geçer. Ordu anchor'a ulaşınca hareket etmez;
+mevcut konsolidasyon ve tur sonu takviye/iyileşme kuralları burada çalışır. Güvenli
+anchor veya dost rota yoksa mevcut görev korunur.
+
+Aktif kuşatmanın terk edilmesi daha sıkıdır. Kuşatan ordunun bölgesel ikmal aşımı veya
+`OverCapacityTurns` kaydı bulunmalı ve kuşatma hedefinin komşularındaki savaş düşmanı
+yardım gücü kuşatan gücün `%150`sini **aşmalıdır**; tam `%150` kuşatmayı bozmaz. Her iki
+koşul ile güvenli recovery hattı birlikte yoksa siege rolü korunur. Geri çekilme
+başladığında aynı fraksiyondan hedef bölgede kalan ilk uygun ordu kuşatmayı deterministik
+devralır; yoksa kuşatma kaldırılır. `TurnStepper`, bu devri/kaldırmayı normal hareketten
+önce görünür bir step olarak üretir. AI'nin başlattığı yeni kuşatmalar da mevcut
+`AttackerHomeRegionID` alanını doldurur.
+
+### Fetih Sonrası Güvenlik
+
+`internal/ai/security.go`, yeni bir işgal süresi veya save alanı eklemeden mevcut bölge
+state'ini kullanır. Surları (`BuildingLevel("walls") > 0`) veya aynı devlete ait sabit
+`IsGarrison` ordusu bulunan bölge mevcut isyan motorunda zaten korunduğu için mobil
+security görevi üretmez. Diğer AI-owned kara bölgelerinde:
+
+- bölge dini devlet diniyle aynıysa `Satisfaction < 35`,
+- din farklıysa `Satisfaction < 45`
+
+security ihtiyacı oluşturur. Önce gerçek `Region.IsRebellionRisk()` bölgeleri, sonra
+daha düşük memnuniyet, din farkı, stratejik değer ve region ID sırasıyla ele alınır.
+Her hedef için aktif kuşatma, relief, retreat veya kritik düşman cephesi savunmasında
+olmayan en küçük güçlü mobil kara ordusu seçilir; güç eşitliğinde mesafe ve ArmyID
+deterministik bağ kırıcıdır.
+
+Gerçek isyan riski (`Satisfaction < 30`) aynı tur çözüleceği için seçilen ordunun mevcut
+hareket puanıyla hedefe ulaşabilmesi gerekir. Önleyici `%30–34` veya din farkında
+`%30–44` bandında hazırlık birden fazla tura yayılabilir. Tek saha ordusu yalnız `<30`
+acil eşiğinde security rolüne alınır. Security ordusu hedefe yalnız dost, kuşatılmamış ve
+yabancı kara ordusu bulunmayan bölgelerden gider; anchor'a ulaşınca eşik düzelene kadar
+ayrılmaz.
+
+Security için stratejik rezerv kullanılırsa `ReserveAssignedPower` aynı güç kadar
+azaltılır; AI eksilmiş rezervle yeni savaş açamaz. Kritik cephe defense, aktif siege ve
+relief görevleri security tarafından bozulmaz. `applyRetreatAssignments()` daha sonra
+çalıştığı için ağır yıpranmış/ezilen security ordusunun hayatta kalma geri çekilmesi
+önceliklidir. Memnuniyet `35/45` eşiğine ulaştığında rol sonraki AI turunda otomatik
+bırakılır; rol save'e yazılmaz.
+
+### Ağırlıklı Kara Rotaları
+
+`internal/ai/pathfinding.go`, yalnız `1300_ottoman_rise` stratejik kara AI'sında mevcut
+uzun menzilli BFS seçimini deterministik Dijkstra maliyet alanıyla değiştirir. Aynı motor
+cephe rolü mesafeleri, rally, reserve, relief, retreat ve security hedeflerine giden ilk
+adımı da üretir. Gerçek hareket uygulaması hâlâ komşu bölge başına mevcut hareket puanı
+kuralını kullanır; aşağıdaki değerler yalnız AI rota tercih ağırlıklarıdır:
+
+- arazi: `TerrainData.MoveCost × 10` (`plain/coast=10`, `forest=20`, `pass=30`),
+- aynı-realm/müttefik transit: `+5`,
+- sahipsiz veya savaş düşmanı terminal hedef: `+10`,
+- girilebilir aktif kuşatma terminali: `+20`,
+- yerel savaş düşmanı gücü orduyla eşitse `+40`, oranla ölçekli ve en fazla `+80`,
+- öngörülen ikmal açığının her birimi `+6`, en fazla `+60`.
+
+Kilitli kara, dağ ve deniz geçilemez. Genel rota kendi, aynı-realm ve müttefik toprağını
+transit kullanabilir; sahipsiz veya savaş düşmanı bölgesinde ilerleme sonlanır, barış/
+ticaret ilişkisindeki üçüncü taraf toprağı kullanılamaz. `retreat/security` politikası
+yalnız AI'nin kendi, kuşatılmamış ve yabancı kara ordusu bulunmayan bölgelerini kabul
+eder. Uzun menzilli arama `PathSearchDepth` değerini hop sınırı olarak korur.
+
+Hesaplanan alanlar `StrategicContext` içinde ordu, başlangıç bölgesi, politika ve hop
+sınırı anahtarıyla yalnız o AI turunda cache'lenir. Eşit sonuçlar sırasıyla toplam
+maliyet, hop sayısı, region ID ve ilk adımla çözülür. Save alanı eklenmez. Diğer
+senaryolar geriye dönük BFS yolunu kullanır.
+
+### Koordineli Rally Hazırlığı
+
+Bir genişleme planında rezerv/defense/relief dışında en az iki `assault` veya `siege`
+ordusu varsa `internal/ai/rally.go` koordineli hazırlık başlatır. Rally bölgesi:
+
+- aktif savaş hedefi varsa o devletle, yoksa plan hedefiyle doğrudan sınır paylaşır,
+- AI'nin kendi kara toprağıdır,
+- kuşatma altında değildir ve içinde yabancı ordu bulunmaz,
+- ikmal boşluğu, yerel dost/düşman gücü, tahkimat, başkent ve stratejik değerle
+  deterministik puanlanır.
+
+Seçilen `RallyRegionID` ile `RallyDeadlineTurn`, `AIPlanState` içinde compact ve legacy
+save hatlarına yazılır. Böylece kayıt yüklemek üç turluk hazırlığı baştan başlatmaz.
+Rally aktifken hücum/kuşatma rolleri yalnız rally noktasına yaklaşan yasal dost bölge
+hamlelerini seçer; noktaya ulaşan ordu hazırlık tamamlanana kadar sınırı geçmez.
+
+Hazırlığın erken tamamlanması için en az iki ordunun rally bölgesinde bulunması ve
+toplanan gücün şu iki eşiğin büyüğünü karşılaması gerekir:
+
+- atanmış toplam hücum gücünün `%60`ı,
+- hedefin frontier gücünün zorluk seviyesindeki asgari saldırı oranı (`%130/%115/%100`).
+
+Eşik karşılanınca deadline mevcut tura çekilir ve ordular objective hedefine serbest
+bırakılır. Eşik karşılanmasa bile üçüncü turda bekleme sona erer; standart toplam güç,
+frontier ve savaş riski kontrolleri yine korunur. Aktif rally varken yeni proaktif savaş
+ilan edilmez. Tek hücum ordusu bulunan küçük devlet rally yüzünden bekletilmez. Rally
+bölgesi kuşatılır veya hedefle sınırı kaybederse kalıcı kayıt iptal edilip uygun yeni
+bir nokta aranır.
+
+Retreat sonrası tempo ölçümünde Normal fast 12x2 `9.37 sn` ve Osmanlı `2 → 3`; Normal
+medium 42x4 `63.65 sn`, Osmanlı ortalama `2 → 5.8`, güç `664`; Zor fast 12x2 `7.03 sn`
+ve Osmanlı `2 → 3` sonucu verdi. Rally tabanına göre orta profildeki fark yalnız `-0.2`
+bölge ve `-2` güçtür; Memlük büyümesi `+5.0 → +4.8` olmuştur.
+
+Security sonrası ölçümde Normal fast 12x2 `9.38 sn`, Normal medium 42x4 `64.17 sn`,
+Zor fast 12x2 `7.20 sn` sürdü. Osmanlı sonuçları sırasıyla `2 → 3`, ortalama
+`2 → 5.8`/güç `664` ve `2 → 3` olarak retreat tabanıyla aynı kaldı.
+
+Ağırlıklı Dijkstra sonrası Normal fast 12x2 `9.53 sn`, Normal medium 42x4 `66.26 sn`,
+Zor fast 12x2 `7.41 sn` sürdü. Osmanlı sırasıyla `2 → 3`/güç `272`, ortalama
+`2 → 5.8`/güç `665` ve `2 → 3`/güç `284` sonucunu verdi; orta profil bölge kazanımı
+korunurken rota maliyetinin süre etkisi yaklaşık `%3` kaldı.
 
 ### AI Savaş Sonrası Düzen
 
@@ -175,7 +511,12 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 
 `aiHandleDiplomacy()` her AI turunda ilişkileri tarar:
 
-- `war` ilişkisinde skor çok düşmüşse veya AI askeri/bölgesel olarak gerideyse barış teklif eder
+- `war` ilişkisinde 1300 senaryosu taraf çifti başına kalıcı `WarLedger` okur. Objective
+  tamamlanması, fethedilen/kaybedilen bölgeler, muharebe ve kuşatma kayıpları, savaş
+  süresi ve durgunluk, askeri güç oranı, altın/tahıl stresi, eşzamanlı savaş sayısı ve
+  başkent tehdidi ortak barış baskısı üretir. İlk üç savaş turunda normal teklif açılmaz;
+  başkent tehdidi veya askerî çöküş acil istisnadır. Aynı savaşta reddedilen teklif üç
+  tur cooldown uygular. Diğer senaryolar mevcut legacy güç/bölge/skor kararını korur
 - `peace` ilişkisinde ittifak için artık sadece skor yetmez; kara sınırı, aktif ticaret, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ aranır. AI ayrıca küçük devletlerde düşük müttefik tavanı uygular, `ai_expansion_targets` ile çakışan hedeflere ortak tehdit yoksa ittifak teklif etmez ve büyük gücün tek bölgeli/zayıf devlete attığı alliance teklifi için ayrıca gerçek askeri veya stratejik fayda arar
 - `peace` ilişkisinde skor yeterliyse ve bağlanabilir kara/deniz hattı varsa ticaret dener; salt uzak ve nötr devletlere sırf kapasite var diye trade açmaz
 - vassal durumundaki AI bağımsız diplomasi açmaz; overlord'u olmayan devletler ise başka bir overlord'a bağlı hedeflerle doğrudan müzakere başlatmaz
@@ -202,6 +543,12 @@ AI ve oyuncu aynı `internal/diplomacy` motorunu kullandığı için:
 - kabul/red kuralları tutarlıdır
 - ticaret rotaları aynı şekilde açılıp kapanır
 - AI ticaret yaptığı veya müttefik olduğu hedefe saldırmaz
+
+1300'de AI-AI barışı tek taraflı uygulanmaz: teklif sahibi önce kendi barış baskısı
+eşiğini, hedef AI ise aynı değerlendirmeyi karşı perspektiften geçmelidir. Oyuncu
+hedefse teklif `DiplomaticOffers` kuyruğuna girer ve oyuncu yanıtına kadar savaş sürer.
+Barış kabul edildiğinde ilgili AI objective'i aynı tur yeniden değerlendirmeye açılır ve
+kalıcı rally bölgesi/deadline temizlenir.
 - AI savaş ilanında hem saldıran hem savunan taraftaki oyuncu müttefikleri otomatik çekilmez; önce oyuncuya savaş çağrısı modalı düşer
 
 ---
@@ -242,15 +589,19 @@ tamponı alır; Normal ve Kolay kaynak bonusu almaz. Bu politika yalnız 1300 se
 aittir. `difficulty_policy` bulunmayan eski senaryoların mevcut `+1` zor AI hareketi ve
 `+300/+100` başlangıç davranışı geriye uyumluluk için korunur.
 
-Zor politika fast tempo 12x2 ölçümünde `6.84 sn` sürdü; Osmanlı her iki seed'de de
-`2 → 5` kara bölgesine ulaştı. Bu bir tarihsel sonuç şartı değil, Normal ölçümlerle
-birlikte kullanılacak risk/tempo referansıdır.
+Rally katmanı sonrasında Normal fast 12x2 `9.21 sn` ve Osmanlı `2 → 3`, Normal medium
+42x4 `63.18 sn` ve Osmanlı ortalama `2 → 6` sonucunu verdi. Zor fast 12x2 `7.25 sn`
+sürdü ve Osmanlı `2 → 3` bölgeye ulaştı. Çok ordulu Memlük'ün 42 turluk ortalama
+genişlemesi `+8.5`ten `+5`e indi. Bu sayılar tarihsel sonuç şartı değil, güvenlik ile
+genişleme temposu arasındaki sonraki kalibrasyonların referansıdır.
 
 ---
 
 ## Teknoloji Araştırma (`aiResearch`)
 
-Aktif araştırma yoksa başlatır. Öncelik sırası:
+Aktif araştırma yoksa başlatır; devam eden araştırmayı yarıda kesmez. 1300 senaryosunda
+seçim yukarıdaki **Plan ve Darboğaz Bazlı Araştırma** modeliyle yapılır. Aşağıdaki sabit
+puanlar yalnız diğer senaryoların legacy davranışıdır:
 
 | Kategori | Puan | Ek bonus |
 |---|---|---|
@@ -266,12 +617,15 @@ Kısa süreli teknolojilere `TurnsRequired / 2` azaltma uygulanır.
 
 ## Ekonomik Bina (`aiEconomyBuild`)
 
-Her tur en fazla bir bina üretim emri açar. Bina anında `Region.Buildings` listesine eklenmez; AI de `GameState.ProductionQueue` içine `kind=building` emri yazar ve tamamlanma `applyProductionTicks()` sırasında olur. Öncelik:
-1. **Pazar** (prio 80) — her zaman uygun
-2. **Çiftlik** (prio 60) — `BaseGrainOutput < 20` bölgelere
-3. **Sur** (prio 50) — sınır bölgelerine (komşuda farklı fraksiyon varsa)
+Her tur en fazla bir bina üretim emri açar. Bina anında `Region.Buildings` listesine
+eklenmez; `GameState.ProductionQueue` içine `kind=building` emri yazılır ve
+`applyProductionTicks()` sırasında tamamlanır. 1300 senaryosunda seçim yukarıdaki
+**Bina Yatırım Puanlaması** ile yapılır. Diğer senaryolar geriye uyumluluk için ilk
+uygun adayı `çiftlik → pazar → sur` sırasıyla seçen legacy akışı korur.
 
-AI bina inşasında yalnız altını değil, bina reçetesindeki `grain/iron/timber/stone` maliyetlerini de kontrol eder. Kurulu seviye + pending seviye `max_per_region` sınırını aşamaz; inşa süresi oyuncu tarafındaki seviye modeliyle uyumlu şekilde mevcut seviye ve queued seviye arttıkça uzar.
+Her iki akış da yalnız altını değil, bina reçetesindeki `grain/iron/timber/stone`
+maliyetlerini kontrol eder. Kurulu seviye + pending seviye `max_per_region` sınırını
+aşamaz; inşa süresi mevcut ve kuyruktaki seviyeler arttıkça uzar.
 
 ---
 
@@ -321,6 +675,9 @@ AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da t�
 
 Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile birim seçer:
 
+1300 senaryosunda seçim yukarıdaki **Plan Bazlı Kara Ordu Kompozisyonu** modeliyle
+yapılır. Aşağıdaki sabit sıra yalnız diğer senaryoların legacy davranışıdır:
+
 | Öncelik | Birim | Koşul |
 |---|---|---|
 | 1 | `elite_infantry` | Altın ≥ 350 + rezerv, teknoloji tamamlandıysa |
@@ -337,6 +694,8 @@ Queue davranışı:
 - AI gerekli teknoloji, bina ve bina seviyesi olmayan birimi seçmez.
 - Bölge başına pending üretim emri `20` ile sınırlıdır.
 - AI kara recruit seçiminde yalnız ilk uygun bölgeyi almaz; kışla throughput'u dolu bölgeyi atlayıp aynı tur kapasitesi kalan başka uygun bölgeye dağılır. Tüm uygun kışla hatları doluysa yeni kara emri açmaz.
+- 1300 senaryosunda uygun hatlar ayrıca stratejik recruitment bölgesi skoru ile
+  sıralanır; diğer senaryolarda remaining-capacity/kışla seviyesi seçimi korunur.
 - Mevcut ordu doluysa üretim tamamlandığında oyuncu ile aynı `completeLandUnit()` yolu yeni ordu oluşturabilir.
 
 ---

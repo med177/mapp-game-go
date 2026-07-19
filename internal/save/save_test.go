@@ -181,6 +181,8 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 		AnnexRegionIDs:     []world.RegionID{"kutahya"},
 		StartedTurn:        7,
 		ReassessTurn:       13,
+		RallyRegionID:      "bithynia",
+		RallyDeadlineTurn:  10,
 		Commitment:         62,
 		AllowVassalization: true,
 		Reason:             "frontier_expansion profili",
@@ -204,7 +206,7 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 	if got == nil {
 		t.Fatal("AI planı save/load sonrasında kayboldu")
 	}
-	if got.ObjectiveID != original.ObjectiveID || got.Kind != original.Kind || got.TargetFactionID != original.TargetFactionID || got.StartedTurn != 7 || got.ReassessTurn != 13 || got.Commitment != 62 || got.Reason != original.Reason {
+	if got.ObjectiveID != original.ObjectiveID || got.Kind != original.Kind || got.TargetFactionID != original.TargetFactionID || got.StartedTurn != 7 || got.ReassessTurn != 13 || got.RallyRegionID != "bithynia" || got.RallyDeadlineTurn != 10 || got.Commitment != 62 || got.Reason != original.Reason {
 		t.Fatalf("AI plan metadata'sı eksik geri yüklendi: %+v", got)
 	}
 	if len(got.TargetRegionIDs) != 2 || got.TargetRegionIDs[0] != "germiyan" || got.TargetRegionIDs[1] != "kutahya" {

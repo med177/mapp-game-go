@@ -7,6 +7,136 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-19: `1300_ottoman_rise` için save/load uyumlu aktif savaş `WarLedger` state'i
+  ve amaç odaklı barış kararı eklendi. Savaş başlangıç turu/bölge snapshot'ı, iki tarafın
+  birlik kayıpları ve fetihleri, son muharebe ve teklif turu compact + legacy/debug
+  save'de korunuyor; eski save savaşları yükleme turunda sıfır sayaçla göç ediyor.
+  Savaş, çıkarma, huruç, genel hücum, kuşatma yıpratması ve fetih executor'ları sayaçları
+  besliyor. Barış skoru objective ilerlemesi, toprak/kayıp dengesi, süre/durgunluk, güç,
+  ekonomi, çoklu savaş ve başkent tehdidini birleştiriyor; ilk üç tur normal teklif
+  kapalı, askerî çöküş/başkent tehdidi acil istisna ve teklif cooldown'u üç tur. AI-AI
+  tarafları aynı modeli ayrı perspektiften geçiriyor; oyuncuya teklif kuyruklanıyor.
+  Diğer senaryolar legacy davranışı koruyor. Ölçümler: Normal fast 12x2 `9.64 sn`,
+  Osmanlı `2 → 3`, güç `232`; Zor fast 12x2 `7.56 sn`, Osmanlı `2 → 3`, güç `222`;
+  Normal medium 42x4 `69.17 sn`, Osmanlı ortalama `2 → 4.2`, güç `424`. Kapsam:
+  `internal/state/war_ledger.go`, `internal/diplomacy/peace_assessment.go`, savaş/fetih
+  executor'ları ve save overlay zinciri.
+
+- 2026-07-19: `1300_ottoman_rise` araştırma AI'sına plan ve darboğaz tabanlı teknoloji
+  puanlaması eklendi. Genişleme askerî/hareket/kuşatma, savunma kara savunması/istikrar,
+  konsolidasyon ekonomi/tahıl/istikrar yönelimini kullanıyor. Gerçek teknoloji efektleri,
+  12 turluk üretim getirisi, stok ve bakım baskısı, din farkı, aktif savaş, kıyı erişimi,
+  doğrudan birim açılımı, sonraki teknoloji, maliyet ve süre birlikte değerlendiriliyor.
+  Aktif araştırma korunuyor, player-only istihbarat AI değeri üretmiyor ve legacy
+  senaryolar değişmiyor. Ölçümler: Normal fast 12x2 `9.76 sn`, Osmanlı `2 → 3`, güç
+  `270`; Normal medium 42x4 `68.84 sn`, Osmanlı ortalama `2 → 5.5`, güç `466`; Zor
+  fast 12x2 `7.80 sn`, Osmanlı `2 → 3`, güç `254`. Büyük devletlerin daha erken ekonomi
+  teknolojileriyle `27–31 bin` altın biriktirmesi Faz 7 kalibrasyon notuna alındı.
+  Kapsam: `internal/ai/{research_strategy.go,ai.go}` ve
+  `internal/ai/research_strategy_test.go`.
+- 2026-07-19: `1300_ottoman_rise` kara üretimine stratejik recruitment bölgesi seçimi
+  eklendi. Aday hatlar kalan throughput, kışla seviyesi, kuyruk, güvenli ağırlıklı
+  Dijkstra cephe mesafesi ve mevcut + pending + yeni birlik sonrası lojistik boşluğuyla
+  puanlanıyor. Kuşatma, yabancı ordu, gerçek isyan riski, kritik tehdit cephesi veya
+  projekte ikmal aşımı adayı eliyor. Kuşatma desteği ilgili eksik hücum cephesine yakın
+  üretiliyor. Model 1300'e özel, deterministik ve runtime-only; legacy senaryo davranışı
+  korunuyor. Ölçümler: Normal fast 12x2 `9.56 sn`, Osmanlı `2 → 3`, güç `278`; Normal
+  medium 42x4 `67.44 sn`, Osmanlı ortalama `2 → 6.5`, güç `568`; Zor fast 12x2
+  `7.74 sn`, Osmanlı `2 → 3`, güç `269`. Kapsam:
+  `internal/ai/{recruitment_region.go,unit_composition.go,ai.go}` ve
+  `internal/ai/recruitment_region_test.go`.
+- 2026-07-19: `1300_ottoman_rise` kara üretimine plan bazlı ordu kompozisyonu eklendi.
+  Genişleme `%55/%25/%20`, savunma `%75/%15/%10`, konsolidasyon `%65/%25/%10`
+  piyade/süvari/kuşatma hedefi kullanıyor. Haritadaki, gemideki ve kuyruktaki birlikler
+  birlikte sayılıyor; bileşim açığı gerçek saldırı/savunma/moral, hedef arazisi, düşman
+  profili, maliyet, hammadde ve tahıl bakım baskısı ile üretim süresine karşı puanlanıyor.
+  Tahkimli hücum hedefinde kuşatma desteği eksik hücum orduları önceliklendiriliyor.
+  Model runtime-only ve 1300'e özel; diğer senaryolar legacy sırayı koruyor. Ölçümler:
+  Normal fast 12x2 `9.08 sn`, Osmanlı `2 → 3`, güç `292`; Normal medium 42x4
+  `62.53 sn`, Osmanlı ortalama `2 → 5`, güç `733`; Zor fast 12x2 `7.39 sn`, Osmanlı
+  `2 → 3`, güç `290`. Kapsam: `internal/ai/{unit_composition.go,ai.go}` ve
+  `internal/ai/unit_composition_test.go`.
+- 2026-07-19: `1300_ottoman_rise` ekonomi AI'sına bina yatırım puanlaması eklendi.
+  Pazar, çiftlik, sur ve ibadet yeri adayları gerçek marjinal 12 turluk üretim ROI'si,
+  güncel hammadde fiyatı, tahıl/ordu bakım açığı, stok fırsat maliyeti, cephe ve kritik
+  merkez tehdidi, objective/rally, memnuniyet, süre, seviye ve bölgesel kuyrukla
+  karşılaştırılıyor. `80` yatırım eşiğini aşmayan aday ekonomi bütçesini tüketmiyor;
+  pay sonraki donanma/ordu kategorisine geçiyor. Tur başına tek bina ve diğer
+  senaryoların legacy sırası korunuyor; kullanılmayan `buildingPlan.prio` kaldırıldı.
+  Ölçümler: Normal fast 12x2 `8.91 sn`, Osmanlı `2 → 3`, güç `268`; Normal medium
+  42x4 `62.12 sn`, Osmanlı ortalama `2 → 5.8`, güç `657`; Zor fast 12x2 `7.22 sn`,
+  Osmanlı `2 → 3`, güç `267`. Kapsam: `internal/ai/{building_investment.go,ai.go}` ve
+  `internal/ai/building_investment_test.go`.
+- 2026-07-19: `1300_ottoman_rise` AI için plan türüne bağlı runtime harcama bütçesi
+  eklendi. Acil rezerv devlet büyüklüğü, efektif aylık altın, aktif savaş ve kritik
+  merkez tehdidinden türetiliyor; `80–420` aralığında korunuyor. Rezerv üstü altın
+  genişleme, savaş/savunma veya konsolidasyon profiline göre ordu, ekonomi, araştırma
+  ve donanma soft paylarına ayrılıyor. Kullanılmayan pay aynı tur sonraki kategoriye
+  aktarılıyor; kara devletinde donanma payı oransal yeniden dağıtılıyor. Model save'e
+  yazılmıyor ve diğer senaryoların sabit `80` rezerv davranışı korunuyor. Ölçümler:
+  Normal fast 12x2 `8.87 sn`, Osmanlı `2 → 3`, güç `288`; Normal medium 42x4
+  `62.22 sn`, Osmanlı ortalama `2 → 5`, güç `670`; Zor fast 12x2 `7.35 sn`, Osmanlı
+  `2 → 3`, güç `289`. Kapsam: `internal/ai/{budget.go,ai.go,strategic_plan.go}` ve
+  `internal/ai/budget_test.go`.
+- 2026-07-19: `1300_ottoman_rise` kara AI'sı için ortak ağırlıklı Dijkstra rota motoru
+  eklendi. Arazi `MoveCost`, diplomatik erişim, yerel savaş düşmanı gücü ve öngörülen
+  ikmal aşımı rota maliyetine katılıyor. Genel rota aynı-realm/müttefik transitini
+  kullanırken sahipsiz ve savaş düşmanı bölgesini terminal sayıyor; barıştaki üçüncü
+  tarafı geçiş hattı yapmıyor. `retreat/security` yalnız güvenli kendi toprağında kalıyor.
+  Rotalar AI turunda cache'leniyor ve deterministik eşitlik çözümü kullanıyor. Gerçek
+  hareket puanı ve save şeması değişmedi; diğer senaryolar BFS fallback kullanıyor.
+  Ölçümler: Normal fast 12x2 `9.53 sn`, Osmanlı `2 → 3`, güç `272`; Normal medium
+  42x4 `66.26 sn`, Osmanlı `2 → 5.8`, güç `665`; Zor fast 12x2 `7.41 sn`, Osmanlı
+  `2 → 3`, güç `284`. Kapsam: `internal/ai/pathfinding.go`, `internal/ai/{ai,fronts,
+  retreat,security,strategic_plan}.go`, `internal/ai/pathfinding_test.go`.
+- 2026-07-19: `1300_ottoman_rise` için memnuniyet/din tabanlı fetih sonrası `security`
+  rolü eklendi. Sursuz ve sabit garnizonsuz aynı din bölgesi memnuniyet `<35`, farklı
+  din bölgesi `<45` olduğunda en küçük uygun saha ordusunu çağırıyor. `<30` gerçek isyan
+  riskinde ordu aynı tur erişebilir olmalı; tek saha ordulu devlet yalnız bu acil eşikte
+  kuvvet ayırıyor. Security dost ve işgal edilmemiş kara rotası kullanıyor, anchor'da
+  eşik düzelene kadar kalıyor. Kritik cephe defense, relief ve aktif siege korunuyor;
+  kullanılan stratejik rezerv savaş hazırlığı sayacından düşüyor, ağır yıpranmada
+  retreat öncelik kazanıyor. Yeni save alanı yok; rol runtime-only. Ölçümler: Normal
+  fast 12x2 `9.38 sn`, Osmanlı `2 → 3`; Normal medium 42x4 `64.17 sn`, Osmanlı
+  `2 → 5.8`, güç `664`; Zor fast 12x2 `7.20 sn`, Osmanlı `2 → 3`. Kapsam:
+  `internal/ai/{security.go,fronts.go,ai.go}`, `internal/ai/security_test.go`.
+- 2026-07-19: `1300_ottoman_rise` kara AI'sına güvenli geri çekilme/takviye rolü
+  eklendi. Açık arazi ordusu ağırlıklı tam güç oranı `%45`in altına indiğinde veya
+  aynı/komşu bölgelerdeki savaş düşmanı gücü en az `%135` olduğunda `retreat` rolü
+  alıyor. En yakın kuşatılmamış, yabancı ordusuz, komşu düşman tehdidi olmayan ve varış
+  sonrası ikmali aşılmayan dost bölgeye yalnız dost kara hattından ilerliyor. Aktif
+  kuşatma yalnız ikmal aşımı ile komşu relief gücünün kuşatan gücün `%150`sini aşması
+  birlikte gerçekleşirse devrediliyor/kaldırılıyor; güvenli kaçış yoksa korunuyor.
+  Kuşatma withdrawal adımı `TakeTurn` ve `TurnStepper` akışlarında hareketten önce
+  çalışıyor. Ölçümler: Normal fast 12x2 `9.37 sn`, Osmanlı `2 → 3`; Normal medium 42x4
+  `63.65 sn`, Osmanlı `2 → 5.8`, güç `664`; Zor fast 12x2 `7.03 sn`, Osmanlı `2 → 3`.
+  Kapsam: `internal/ai/{retreat.go,fronts.go,ai.go,turn_stepper.go}` ve
+  `internal/ai/retreat_test.go`.
+- 2026-07-19: `1300_ottoman_rise` AI için kalıcı koordineli rally hazırlığı eklendi.
+  En az iki hücum/kuşatma ordusu varsa güvenli dost hedef sınırı ikmal, yerel güç,
+  tahkimat, başkent ve stratejik değerle seçiliyor. Ordular burada toplam hücum gücünün
+  `%60`ı ile zorluğun hedef frontier oranını birlikte karşılayana kadar bekliyor; en
+  fazla üç tur sonra serbest kalıyor. Aktif rally proaktif savaşı erteliyor, tek hücum
+  ordusu bulunan küçük devlet bekletilmiyor, kuşatılan/geçersiz rally iptal ediliyor.
+  `AIPlanState.RallyRegionID/RallyDeadlineTurn` compact/legacy/debug save hattında
+  korunurken güç ve roller runtime-only kalıyor. Ölçümler: Normal fast 12x2 `9.21 sn`,
+  Osmanlı `2 → 3`; Normal medium 42x4 `63.18 sn`, Osmanlı `2 → 6`, güç `666`; Zor
+  fast 12x2 `7.25 sn`, Osmanlı `2 → 3`. Memlük medium büyümesi `+8.5`ten `+5`e indi.
+  Kapsam: `internal/state/ai_plan.go`, `internal/ai/{rally.go,fronts.go}`, save roundtrip
+  ve `internal/ai/rally_test.go`.
+- 2026-07-19: `1300_ottoman_rise` AI için düşman eksenli cephe snapshot'ı, dinamik
+  rezerv ve kara ordusu görevleri eklendi. `AIFront` dost/düşman sınır bölgelerini,
+  gerçek cephe güçlerini, savaş/objective ilişkisini ve başkent/kritik merkez tehdidini
+  runtime'da hesaplıyor. Mobil ordular her AI turunda `assault`, `siege`, `defense`,
+  `reserve` veya `relief` rolü alıyor; aktif savaş barıştaki objective'ten önce
+  sonuçlandırılıyor. Rezerv normalde mobil gücün `%15`i, kritik tehditte `%30`u; tek
+  saha ordusu dondurulmuyor ve en güçlü stack aktif tutuluyor. Yeni savaş saldırı gücü
+  ve rezerv hazır değilse veya kritik merkez tehdit altındaysa erteleniyor. Roller
+  standart hareket/diplomasi kurallarını aşmıyor ve save'e yazılmıyor. Ölçümler: Normal
+  fast 12x2 `9.06 sn`, Osmanlı `2 → 3`; Normal medium 42x4 `60.31 sn`, Osmanlı ortalama
+  `2 → 6`, güç `672`; Zor fast 12x2 `6.96 sn`, Osmanlı `2 → 3`. Kapsam:
+  `internal/ai/{fronts.go,strategic_plan.go,ai.go,turn_stepper.go}`; testler:
+  `internal/ai/fronts_test.go` ve hedef paket regresyonları.
 - 2026-07-19: `1300_ottoman_rise` için veri güdümlü zorluk politikası eklendi.
   Kolay/Normal/Zor artık büyük kaynak hilesi yerine plan ufku (`4/6/9`), objective
   hedef kapsamı (`3/4/5`), yol arama derinliği (`5/8/12`), hareket hedefi ağırlığı,

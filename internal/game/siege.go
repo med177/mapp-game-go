@@ -501,6 +501,11 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		extraLost, _ := applyArmyFlatDamage(attacker, extraDamage)
 		result.AttackerLost += extraLost
 	}
+	defenderOwnerID := targetRegion.OwnerID
+	if !virtualDefense && defender != nil {
+		defenderOwnerID = defender.OwnerID
+	}
+	g.gs.RecordWarCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(defenderOwnerID), result.AttackerLost, result.DefenderLost)
 
 	if result.AttackerWins {
 		prompted := false
@@ -621,6 +626,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		if defender != nil {
 			damage := siegeAttritionDamage(progressGain, siege.BreachLevel, siege.FortLevel)
 			lostUnits, totalHPDamage := applyArmyFlatDamage(defender, damage)
+			g.gs.RecordWarAttritionCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID), 0, lostUnits)
 			if len(defender.Units) == 0 {
 				g.gs.RemoveArmy(defender.ID)
 				defender = nil

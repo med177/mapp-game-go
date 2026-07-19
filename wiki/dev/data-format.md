@@ -265,7 +265,16 @@ Alanlar:
 
 Statik config save'e yazılmaz. Senaryo başlangıcında ve save baz state'i kurulurken
 `scenario.LoadAIConfig()` ile yüklenir; seçilmiş dinamik objective ise
-`GameState.AIPlans` içinde serialize edilir.
+`GameState.AIPlans` içinde serialize edilir. Dinamik planın güvenli dost sınır hazırlığı
+başlatılmışsa `rally_region_id` ve `rally_deadline_turn` da aynı kayıtta korunur; rol,
+toplanan güç ve yol cache'leri save'e yazılmaz.
+
+Aktif savaşların dinamik sonucu compact campaign state'te `wl`, legacy/debug sidecar'da
+`war_ledgers` alanında tutulur. Her sıralı faction çifti `faction_a`, `faction_b`,
+`started_turn`, `initial_regions_a/b`, `casualties_a/b`, `regions_captured_a/b`,
+`last_battle_turn` ve `last_peace_offer_turn` alanlarını taşır. Bu kayıt yalnız aktif
+savaş içindir; barışta silinir. Alanı taşımayan eski save yüklenirse aktif `war`
+ilişkileri mevcut yükleme turundan sıfır sayaçla başlatılır.
 
 ---
 

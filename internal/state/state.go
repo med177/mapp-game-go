@@ -177,6 +177,8 @@ type GameState struct {
 
 	// Diplomatik ilişkiler (key: RelationKey)
 	Relations map[string]*faction.Relation `json:"relations"`
+	// Aktif savaşların başlangıç durumu ve kalıcı kayıp/fetih sayaçları.
+	WarLedgers map[string]*WarLedger `json:"war_ledgers,omitempty"`
 	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.

@@ -9,6 +9,14 @@ import (
 
 const aiVassalResistanceAggressiveness = 65
 
+func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID string) {
+	if gs == nil || region == nil || newOwnerID == "" {
+		return
+	}
+	gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(region.OwnerID))
+	region.ApplyConquest(newOwnerID, aiOwnerReligion(gs, newOwnerID))
+}
+
 // TryResolvePostWarVassalization 1300 senaryosunda bir AI devletinin son
 // toprağında yenilen hedefi vassal bırakıp bırakmayacağını değerlendirir ve
 // onaylanan kararı standart diplomasi executor'ıyla uygular.

@@ -38,13 +38,14 @@ type TurnStep struct {
 }
 
 type TurnStepper struct {
-	gs          *state.GameState
-	fid         faction.FactionID
-	prelude     []TurnStep
-	preludeIdx  int
-	preludeDone bool
-	armyOrder   []army.ArmyID
-	armyIdx     int
+	gs               *state.GameState
+	fid              faction.FactionID
+	prelude          []TurnStep
+	preludeIdx       int
+	preludeDone      bool
+	armyOrder        []army.ArmyID
+	armyIdx          int
+	strategicContext *StrategicContext
 }
 
 func NewTurnStepper(gs *state.GameState, fid faction.FactionID) *TurnStepper {
@@ -75,7 +76,7 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 	}
 	for {
 		if !s.preludeDone {
-			runTurnPrelude(s.gs, s.fid, &s.prelude)
+			s.strategicContext = runTurnPrelude(s.gs, s.fid, &s.prelude)
 			s.preludeDone = true
 			if len(s.prelude) > 0 {
 				step := s.prelude[0]
@@ -102,7 +103,10 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 				s.armyIdx++
 				continue
 			}
-			target := chooseBestMove(s.gs, a)
+			if step, withdrew := executeStrategicSiegeWithdrawal(s.gs, a, s.fid, s.strategicContext); withdrew {
+				return step, false
+			}
+			target := chooseBestMoveWithStrategicContext(s.gs, a, s.strategicContext)
 			if target == "" {
 				s.armyIdx++
 				continue

@@ -17,8 +17,9 @@ const (
 )
 
 // AIPlanState bir fraksiyonun save/load arasında korunması gereken stratejik
-// niyetini taşır. TargetRegionIDs öncelik sırasındadır; runtime puan ve path
-// cache'leri her AI turunda yeniden üretilir.
+// niyetini taşır. TargetRegionIDs öncelik sırasındadır. RallyRegionID ile
+// RallyDeadlineTurn çok turlu hazırlığın save/load sırasında sıfırlanmasını
+// engeller; runtime rol, güç ve path cache'leri her AI turunda yeniden üretilir.
 type AIPlanState struct {
 	ObjectiveID        string            `json:"objective_id"`
 	Kind               AIObjectiveKind   `json:"kind"`
@@ -27,6 +28,8 @@ type AIPlanState struct {
 	AnnexRegionIDs     []world.RegionID  `json:"annex_region_ids,omitempty"`
 	StartedTurn        int               `json:"started_turn"`
 	ReassessTurn       int               `json:"reassess_turn"`
+	RallyRegionID      world.RegionID    `json:"rally_region_id,omitempty"`
+	RallyDeadlineTurn  int               `json:"rally_deadline_turn,omitempty"`
 	Commitment         int               `json:"commitment"`
 	AllowVassalization bool              `json:"allow_vassalization,omitempty"`
 	Reason             string            `json:"reason,omitempty"`

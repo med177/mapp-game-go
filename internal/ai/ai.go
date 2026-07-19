@@ -59,7 +59,7 @@ func relationScore(gs *state.GameState, a, b string) (int, faction.DiplomaticSta
 
 // TakeTurn belirtilen fraksiyon için tüm AI kararlarını verir ve uygular.
 func TakeTurn(gs *state.GameState, fid faction.FactionID) {
-	runTurnPrelude(gs, fid, nil)
+	strategicContext := runTurnPrelude(gs, fid, nil)
 
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
@@ -74,7 +74,7 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 		if _, alive := gs.Armies[a.ID]; !alive {
 			continue
 		}
-		moveArmyWithSteps(gs, a, fid, nil)
+		moveArmyWithStrategicContext(gs, a, fid, nil, strategicContext)
 	}
 }
 
@@ -118,13 +118,13 @@ func aiSortedArmies(gs *state.GameState) []*army.Army {
 	return armies
 }
 
-func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) *StrategicContext {
 	if gs == nil {
-		return
+		return nil
 	}
+	var planningContext *StrategicContext
 	if gs.ScenarioID == "1300_ottoman_rise" {
-		strategicContext := buildStrategicContext(gs, fid)
-		ensureStrategicPlan(gs, fid, strategicContext)
+		planningContext = prepareStrategicContext(gs, fid)
 	}
 	// Difficulty 3: koalisyon mantığını çalıştır
 	if gs.Difficulty >= 3 {
@@ -133,23 +133,41 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 
 	aiHandleDiplomacyWithSteps(gs, fid, steps)
 
-	// Teknoloji araştırma (önce yap, altın biterse diğerlerini etkilemesin)
-	aiResearchWithSteps(gs, fid, steps)
-
-	// Ekonomi optimizasyonu (pazar, çiftlik)
-	aiEconomyBuildWithSteps(gs, fid, steps)
-
-	// Deniz stratejisi (liman + gemi)
-	aiNavalStrategyWithSteps(gs, fid, steps)
-
-	// Birim alımı ve kışla inşası (elite birimler dahil)
-	aiRecruitAndBuildWithSteps(gs, fid, steps)
+	budget := prepareAIBudget(gs, fid, planningContext)
+	if budget == nil {
+		// Diğer senaryoların mevcut harcama sırasını ve sabit rezerv davranışını koru.
+		aiResearchWithSteps(gs, fid, steps)
+		aiEconomyBuildWithSteps(gs, fid, steps)
+		aiNavalStrategyWithSteps(gs, fid, steps)
+		aiRecruitAndBuildWithSteps(gs, fid, steps)
+	} else {
+		for _, category := range budget.Order {
+			switch category {
+			case aiBudgetArmy:
+				aiRecruitAndBuildWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
+			case aiBudgetEconomy:
+				aiEconomyBuildWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
+			case aiBudgetResearch:
+				aiResearchWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
+			case aiBudgetNaval:
+				aiNavalStrategyWithBudgetAndSteps(gs, fid, budget, steps)
+			}
+			budget.release(category)
+		}
+	}
 
 	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
 	aiConsolidateArmies(gs, fid)
 
 	// Yeni üretilen veya daha önce komutansız kalan AI ordularını kariyer havuzuna bağla.
 	gs.EnsureFactionCommanders(string(fid))
+
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		result := prepareStrategicContext(gs, fid)
+		result.budget = budget
+		return result
+	}
+	return nil
 }
 
 func addTurnStep(steps *[]TurnStep, step TurnStep) {
@@ -184,6 +202,7 @@ func aiHandleDiplomacy(gs *state.GameState, fid faction.FactionID) {
 }
 
 func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	gs.SyncWarLedgers()
 	self := gs.Factions[fid]
 	if self == nil || self.IsEliminated {
 		return
@@ -207,12 +226,19 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 				break
 			}
-			selfPower := diplomacy.MilitaryPower(gs, fid)
-			otherPower := diplomacy.MilitaryPower(gs, otherID)
-			if rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID)) {
+			shouldProposePeace := false
+			if gs.ScenarioID == "1300_ottoman_rise" {
+				shouldProposePeace = diplomacy.AssessPeaceDesire(gs, fid, otherID).ShouldPropose()
+			} else {
+				selfPower := diplomacy.MilitaryPower(gs, fid)
+				otherPower := diplomacy.MilitaryPower(gs, otherID)
+				shouldProposePeace = rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID))
+			}
+			if shouldProposePeace {
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposePeace)
 					if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposePeace, priority, reason) {
+						gs.MarkPeaceOffer(fid, otherID)
 						addTurnStep(steps, TurnStep{
 							FactionID:     fid,
 							Kind:          TurnStepDiplomacy,
@@ -222,6 +248,9 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 					}
 				} else {
 					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+					if !result.Applied {
+						gs.MarkPeaceOffer(fid, otherID)
+					}
 					if result.Applied || result.Accepted {
 						addTurnStep(steps, TurnStep{
 							FactionID:     fid,
@@ -590,6 +619,7 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 		return
 	}
 
+	strategicContext := prepareStrategicContext(gs, fid)
 	bestScore := aiWarThresholdForDifficulty(gs)
 	bestTarget := faction.FactionID("")
 
@@ -605,7 +635,7 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 		if rel == nil || rel.Stance != faction.StancePeace {
 			continue
 		}
-		score := aiWarOpportunityScore(gs, fid, otherID, rel)
+		score := aiWarOpportunityScoreWithContext(gs, fid, otherID, rel, strategicContext)
 		if score > bestScore {
 			bestScore = score
 			bestTarget = otherID
@@ -626,6 +656,10 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 }
 
 func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation) int {
+	return aiWarOpportunityScoreWithContext(gs, actor, target, rel, prepareStrategicContext(gs, actor))
+}
+
+func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation, strategicContext *StrategicContext) int {
 	self := gs.Factions[actor]
 	other := gs.Factions[target]
 	if self == nil || other == nil || rel == nil {
@@ -651,6 +685,9 @@ func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID,
 		return -1
 	}
 	if targetPower > 0 && selfPower*100 < targetPower*aiMinAttackPowerPercent(gs) {
+		return -1
+	}
+	if !aiStrategicWarReady(strategicContext, target) {
 		return -1
 	}
 
@@ -1232,6 +1269,14 @@ func aiRecruitAndBuild(gs *state.GameState, fid faction.FactionID) {
 }
 
 func aiRecruitAndBuildWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	aiRecruitAndBuildWithBudgetAndSteps(gs, fid, nil, steps)
+}
+
+func aiRecruitAndBuildWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) {
+	aiRecruitAndBuildWithStrategicContextAndSteps(gs, fid, budget, nil, steps)
+}
+
+func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
 	f, ok := gs.Factions[fid]
 	if !ok || f.IsEliminated {
 		return
@@ -1250,8 +1295,8 @@ func aiRecruitAndBuildWithSteps(gs *state.GameState, fid faction.FactionID, step
 			Stone:  b.StoneCost,
 		}
 	}
-	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordWithReserve(f, barracksCost) {
-		aiBuildBarracksWithSteps(gs, fid, barracksCost, steps)
+	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
+		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
 	}
 
 	// Kapasite dolana veya altın bitene kadar birim al
@@ -1259,10 +1304,10 @@ func aiRecruitAndBuildWithSteps(gs *state.GameState, fid faction.FactionID, step
 		if gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
 			break
 		}
-		if f.Gold < aiMilitiaCost+aiMinGoldReserve {
+		if !aiCanAffordForBudget(f, economy.ResourceCost{Gold: aiMilitiaCost}, budget, aiBudgetArmy) {
 			break
 		}
-		if !aiRecruitOneWithSteps(gs, fid, steps) {
+		if !aiRecruitOneWithStrategicContextAndSteps(gs, fid, budget, strategicContext, steps) {
 			break
 		}
 	}
@@ -1274,6 +1319,10 @@ func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.Re
 }
 
 func aiBuildBarracksWithSteps(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost, steps *[]TurnStep) {
+	aiBuildBarracksWithBudgetAndSteps(gs, fid, cost, nil, steps)
+}
+
+func aiBuildBarracksWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost, budget *aiBudget, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	btype := gs.BuildingTypes["barracks"]
 	if btype == nil {
@@ -1290,7 +1339,11 @@ func aiBuildBarracksWithSteps(gs *state.GameState, fid faction.FactionID, cost e
 		if !aiBuildingAllowed(gs, r, "barracks", btype.RequiredTerrain) {
 			continue
 		}
-		cost.Apply(f)
+		if budget == nil {
+			cost.Apply(f)
+		} else if !aiApplyBudgetedCost(f, cost, budget, aiBudgetArmy) {
+			return
+		}
 		turns := aiBuildingTurnsRequired(r, "barracks", btype.TurnsRequired, queued)
 		aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "barracks", turns)
 		addTurnStep(steps, TurnStep{
@@ -1312,13 +1365,21 @@ func aiRecruitOne(gs *state.GameState, fid faction.FactionID) bool {
 }
 
 func aiRecruitOneWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) bool {
+	return aiRecruitOneWithBudgetAndSteps(gs, fid, nil, steps)
+}
+
+func aiRecruitOneWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) bool {
+	return aiRecruitOneWithStrategicContextAndSteps(gs, fid, budget, nil, steps)
+}
+
+func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) bool {
 	f := gs.Factions[fid]
 	if gs.UnitTypes == nil {
 		return false
 	}
 
 	// En iyi birimi seç (stratejik karar)
-	unitTypeID := aiSelectBestUnit(gs, f)
+	unitTypeID := aiSelectBestUnitForStrategicContext(gs, f, budget, strategicContext)
 	if unitTypeID == "" {
 		return false
 	}
@@ -1335,11 +1396,11 @@ func aiRecruitOneWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
 	}
-	if !aiCanAffordWithReserve(f, unitCost) {
+	if !aiCanAffordForBudget(f, unitCost, budget, aiBudgetArmy) {
 		return false
 	}
 
-	recruitRegion := aiFindRecruitRegion(gs, fid, utype)
+	recruitRegion := aiFindRecruitRegionForStrategicContext(gs, fid, utype, strategicContext)
 	if recruitRegion == "" {
 		return false
 	}
@@ -1350,7 +1411,9 @@ func aiRecruitOneWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]
 		return false
 	}
 
-	unitCost.Apply(f)
+	if !aiApplyBudgetedCost(f, unitCost, budget, aiBudgetArmy) {
+		return false
+	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, recruitRegion, unitTypeID, utype.TurnsRequired)
 	return true
 }
@@ -1411,6 +1474,21 @@ func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.Re
 // aiSelectBestUnit altın ve teknoloji durumuna göre en uygun birim tipini seçer.
 // Öncelik: piyade > süvari > milis. Topçu sadece zengin AI'ler için.
 func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
+	return aiSelectBestUnitForBudget(gs, f, nil)
+}
+
+func aiSelectBestUnitForBudget(gs *state.GameState, f *faction.Faction, budget *aiBudget) string {
+	return aiSelectBestUnitForStrategicContext(gs, f, budget, nil)
+}
+
+func aiSelectBestUnitForStrategicContext(gs *state.GameState, f *faction.Faction, budget *aiBudget, strategicContext *StrategicContext) string {
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		return aiSelectStrategicLandUnit(gs, f, budget, strategicContext)
+	}
+	return aiSelectLegacyLandUnit(gs, f, budget)
+}
+
+func aiSelectLegacyLandUnit(gs *state.GameState, f *faction.Faction, budget *aiBudget) string {
 	// Askeri güç istatistiği
 	armyCount := 0
 	cavalryCount := 0
@@ -1426,50 +1504,50 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	}
 
 	// Tier 3 elite piyade (seçkin piyade) - çok zenginse ve teknolojisi varsa
-	if f.Gold >= 350+aiMinGoldReserve {
+	if aiUnitBudgetThresholdMet(f, budget, 350) {
 		if ut, ok := gs.UnitTypes["elite_infantry"]; ok {
-			if aiUnitAvailableForRecruitment(gs, f, ut) {
+			if aiUnitAvailableForBudget(gs, f, ut, budget) {
 				return "elite_infantry"
 			}
 		}
 	}
 
 	// Ağır süvari - zengin ve teknolojisi varsa
-	if f.Gold >= 450+aiMinGoldReserve && cavalryCount < armyCount*2 {
+	if aiUnitBudgetThresholdMet(f, budget, 450) && cavalryCount < armyCount*2 {
 		if ut, ok := gs.UnitTypes["heavy_cavalry"]; ok {
-			if aiUnitAvailableForRecruitment(gs, f, ut) {
+			if aiUnitAvailableForBudget(gs, f, ut, budget) {
 				return "heavy_cavalry"
 			}
 		}
 	}
 
 	// Tier 2 piyade (normal piyade) - orta düzey altın ve teknoloji
-	if f.Gold >= 180+aiMinGoldReserve {
+	if aiUnitBudgetThresholdMet(f, budget, 180) {
 		if ut, ok := gs.UnitTypes["infantry"]; ok {
-			if aiUnitAvailableForRecruitment(gs, f, ut) {
+			if aiUnitAvailableForBudget(gs, f, ut, budget) {
 				return "infantry"
 			}
 		}
 	}
 
 	// Süvari - teknolojisi varsa ve altın yeterliyse
-	if f.Gold >= 300+aiMinGoldReserve && cavalryCount < armyCount*3 {
+	if aiUnitBudgetThresholdMet(f, budget, 300) && cavalryCount < armyCount*3 {
 		if ut, ok := gs.UnitTypes["cavalry"]; ok {
-			if aiUnitAvailableForRecruitment(gs, f, ut) {
+			if aiUnitAvailableForBudget(gs, f, ut, budget) {
 				return "cavalry"
 			}
 		}
 	}
 
 	// Hafif süvari - her zaman uygun
-	if f.Gold >= 200+aiMinGoldReserve && cavalryCount < armyCount*4 {
-		if ut, ok := gs.UnitTypes["light_cavalry"]; ok && aiUnitAvailableForRecruitment(gs, f, ut) {
+	if aiUnitBudgetThresholdMet(f, budget, 200) && cavalryCount < armyCount*4 {
+		if ut, ok := gs.UnitTypes["light_cavalry"]; ok && aiUnitAvailableForBudget(gs, f, ut, budget) {
 			return "light_cavalry"
 		}
 	}
 
 	// Topçu - çok zenginse ve savaşta ise
-	if f.Gold >= 650+aiMinGoldReserve {
+	if aiUnitBudgetThresholdMet(f, budget, 650) {
 		// Savaş halinde mi kontrol et
 		atWar := false
 		for _, rel := range gs.Relations {
@@ -1480,12 +1558,12 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 		}
 		if atWar {
 			if ut, ok := gs.UnitTypes["cannon"]; ok {
-				if aiUnitAvailableForRecruitment(gs, f, ut) {
+				if aiUnitAvailableForBudget(gs, f, ut, budget) {
 					return "cannon"
 				}
 			}
 			if ut, ok := gs.UnitTypes["bombard"]; ok {
-				if aiUnitAvailableForRecruitment(gs, f, ut) {
+				if aiUnitAvailableForBudget(gs, f, ut, budget) {
 					return "bombard"
 				}
 			}
@@ -1493,13 +1571,17 @@ func aiSelectBestUnit(gs *state.GameState, f *faction.Faction) string {
 	}
 
 	// Varsayılan: milis
-	if ut, ok := gs.UnitTypes["militia"]; ok && aiUnitAvailableForRecruitment(gs, f, ut) {
+	if ut, ok := gs.UnitTypes["militia"]; ok && aiUnitAvailableForBudget(gs, f, ut, budget) {
 		return "militia"
 	}
 	return ""
 }
 
 func aiUnitAvailableForRecruitment(gs *state.GameState, f *faction.Faction, utype *army.UnitType) bool {
+	return aiUnitAvailableForBudget(gs, f, utype, nil)
+}
+
+func aiUnitAvailableForBudget(gs *state.GameState, f *faction.Faction, utype *army.UnitType, budget *aiBudget) bool {
 	if gs == nil || f == nil || utype == nil {
 		return false
 	}
@@ -1513,10 +1595,17 @@ func aiUnitAvailableForRecruitment(gs *state.GameState, f *faction.Faction, utyp
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
 	}
-	if !aiCanAffordWithReserve(f, cost) {
+	if !aiCanAffordForBudget(f, cost, budget, aiBudgetArmy) {
 		return false
 	}
 	return aiFindRecruitRegion(gs, f.ID, utype) != ""
+}
+
+func aiUnitBudgetThresholdMet(f *faction.Faction, budget *aiBudget, gold int) bool {
+	if budget == nil {
+		return f != nil && f.Gold >= gold+aiMinGoldReserve
+	}
+	return aiCanAffordForBudget(f, economy.ResourceCost{Gold: gold}, budget, aiBudgetArmy)
 }
 
 // FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
@@ -1573,8 +1662,15 @@ func moveArmy(gs *state.GameState, a *army.Army) {
 }
 
 func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep) {
+	moveArmyWithStrategicContext(gs, a, fid, steps, nil)
+}
+
+func moveArmyWithStrategicContext(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep, strategicContext *StrategicContext) {
+	if step, withdrew := executeStrategicSiegeWithdrawal(gs, a, fid, strategicContext); withdrew {
+		addTurnStep(steps, step)
+	}
 	for a.MovePoints > 0 {
-		target := chooseBestMove(gs, a)
+		target := chooseBestMoveWithStrategicContext(gs, a, strategicContext)
 		if target == "" {
 			break
 		}
@@ -1668,6 +1764,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
 			seaTerrain := string(world.TerrainSea)
 			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
+			gs.RecordWarCasualties(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID), result.AttackerLost, result.DefenderLost)
 			recordCommanderBattle(gs, escort, enemyInTarget, nil, result.AttackerWins)
 
 			if result.AttackerWins {
@@ -2084,11 +2181,12 @@ func aiStartSiege(gs *state.GameState, a *army.Army, target *world.Region, defen
 	}
 	aiEnsureSiegeMap(gs)
 	siege := &state.SiegeState{
-		RegionID:          target.ID,
-		AttackerArmyID:    a.ID,
-		AttackerFactionID: a.OwnerID,
-		StartedTurn:       gs.Turn,
-		FortLevel:         target.FortificationLevel(),
+		RegionID:             target.ID,
+		AttackerArmyID:       a.ID,
+		AttackerHomeRegionID: a.RegionID,
+		AttackerFactionID:    a.OwnerID,
+		StartedTurn:          gs.Turn,
+		FortLevel:            target.FortificationLevel(),
 	}
 	if defender != nil {
 		siege.DefenderArmyID = defender.ID
@@ -2100,9 +2198,21 @@ func aiStartSiege(gs *state.GameState, a *army.Army, target *world.Region, defen
 // chooseBestMove ordunun komşuları arasında en iyi hedefi seçer.
 // Negatif skor dönen hedefler atlanır; hiç geçerli hedef yoksa "" döner.
 func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
+	return chooseBestMoveWithStrategicContext(gs, a, nil)
+}
+
+func chooseBestMoveWithStrategicContext(gs *state.GameState, a *army.Army, strategicContext *StrategicContext) world.RegionID {
 	src, ok := gs.Regions[a.RegionID]
 	if !ok {
 		return ""
+	}
+	if assignment, assigned := strategicContextAssignment(strategicContext, a.ID); assigned {
+		switch assignment.Role {
+		case AIArmyRoleRetreat:
+			return aiRetreatNextStep(strategicContext, a)
+		case AIArmyRoleSecurity:
+			return aiSecurityNextStep(strategicContext, a)
+		}
 	}
 	if activeSiege := gs.SiegeByArmy(a.ID); activeSiege != nil {
 		target := gs.Regions[activeSiege.RegionID]
@@ -2184,6 +2294,7 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 			continue
 		}
 		score := scoreMoveWithContext(gs, a, n, ctx)
+		score = aiRoleAdjustedMoveScore(strategicContext, a, n, score)
 		if score > bestScore {
 			bestScore = score
 			bestTarget = nid
@@ -2192,18 +2303,75 @@ func chooseBestMove(gs *state.GameState, a *army.Army) world.RegionID {
 
 	// Eğer komşularda mantıklı bir hedef yoksa, uzun menzilli planlama yap (BFS)
 	if bestScore == 0 {
-		bestTarget = findLongRangeMoveWithContext(gs, a, src, ctx)
+		bestTarget = findLongRangeMoveWithStrategicContext(gs, a, src, ctx, strategicContext)
 	}
 
 	return bestTarget
 }
 
-// findLongRangeMove BFS kullanarak en yakın değerli (score > 0) bölgeye giden ilk adımı bulur.
+func strategicContextAssignment(ctx *StrategicContext, armyID army.ArmyID) (AIArmyAssignment, bool) {
+	if ctx == nil || ctx.ArmyAssignments == nil {
+		return AIArmyAssignment{}, false
+	}
+	assignment, ok := ctx.ArmyAssignments[armyID]
+	return assignment, ok
+}
+
+// findLongRangeMove senaryo destekliyorsa ağırlıklı Dijkstra, diğer senaryolarda
+// geriye dönük davranışı korumak için mevcut BFS rotasını kullanır.
 func findLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region) world.RegionID {
 	return findLongRangeMoveWithContext(gs, a, start, newMoveScoreContext(gs, a))
 }
 
 func findLongRangeMoveWithContext(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext) world.RegionID {
+	return findLongRangeMoveWithStrategicContext(gs, a, start, ctx, nil)
+}
+
+func findLongRangeMoveWithStrategicContext(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext, strategicContext *StrategicContext) world.RegionID {
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		return findWeightedLongRangeMove(gs, a, start, ctx, strategicContext)
+	}
+	return findLongRangeMoveBFS(gs, a, start, ctx, strategicContext)
+}
+
+func findWeightedLongRangeMove(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext, strategicContext *StrategicContext) world.RegionID {
+	if gs == nil || a == nil || start == nil {
+		return ""
+	}
+	maxHops := aiPathSearchDepth(gs)
+	var routes *aiRouteMap
+	if strategicContext != nil {
+		routes = strategicContext.routesFor(a, start.ID, aiRouteGeneral, maxHops)
+	} else {
+		routes = aiWeightedLandRoutes(gs, a, start.ID, aiRouteGeneral, maxHops, ctx)
+	}
+
+	bestID := world.RegionID("")
+	bestCost := int(^uint(0) >> 1)
+	bestScore := 0
+	for _, region := range aiSortedRegions(gs) {
+		if region.ID == start.ID {
+			continue
+		}
+		cost, reachable := routes.distance(region.ID)
+		if !reachable || routes.nextStep(region.ID) == "" {
+			continue
+		}
+		score := scoreMoveWithContext(gs, a, region, ctx)
+		score = aiRoleAdjustedMoveScore(strategicContext, a, region, score)
+		if score <= 0 {
+			continue
+		}
+		if cost < bestCost || (cost == bestCost && (score > bestScore || (score == bestScore && (bestID == "" || region.ID < bestID)))) {
+			bestID = region.ID
+			bestCost = cost
+			bestScore = score
+		}
+	}
+	return routes.nextStep(bestID)
+}
+
+func findLongRangeMoveBFS(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext, strategicContext *StrategicContext) world.RegionID {
 	type queueItem struct {
 		id   world.RegionID
 		path []world.RegionID
@@ -2231,6 +2399,7 @@ func findLongRangeMoveWithContext(gs *state.GameState, a *army.Army, start *worl
 		// Kendi bölgesi değilse ve score > 0 ise hedef bulduk demektir
 		if curr.id != start.ID {
 			score := scoreMoveWithContext(gs, a, r, ctx)
+			score = aiRoleAdjustedMoveScore(strategicContext, a, r, score)
 			if score > 0 {
 				return curr.path[0] // Hedefe giden ilk adımı dön
 			}
@@ -2442,6 +2611,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				defMods := aiTechMods(gs, siegeArmy.OwnerID)
 				defMods.DefenseMod += 0.10
 				result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+				gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost)
 				recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
 				if result.AttackerWins {
 					if len(siegeArmy.Units) == 0 {
@@ -2488,6 +2658,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, enemyArmy.OwnerID)
 			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+			gs.RecordWarCasualties(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost)
 			recordCommanderBattle(gs, landing, enemyArmy, nil, result.AttackerWins)
 			a.EmbarkedUnits = a.EmbarkedUnits[:0]
 			a.MovePoints--
@@ -2501,7 +2672,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				}
 				vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 				if !vassalized {
-					targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+					aiApplyConquest(gs, targetRegion, a.OwnerID)
 				}
 				message := actorName + " " + targetName + " kıyısına çıkarma yapıp bölgeyi aldı."
 				if vassalized {
@@ -2553,7 +2724,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		if targetRegion.OwnerID != a.OwnerID && !isAlliedDisembark {
 			vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 			if !vassalized {
-				targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+				aiApplyConquest(gs, targetRegion, a.OwnerID)
 			}
 			stepKind = TurnStepConquest
 			if vassalized {
@@ -2647,6 +2818,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			defMods := aiTechMods(gs, targetRegion.OwnerID)
 			defMods.DefenseMod += aiSiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
+			gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID), result.AttackerLost, result.DefenderLost)
 			recordCommanderBattle(gs, a, defender, nil, result.AttackerWins)
 			if result.AttackerWins {
 				if !virtualDefense && len(defender.Units) == 0 {
@@ -2659,7 +2831,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 					a.MovePoints--
 					vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 					if !vassalized {
-						targetRegion.ApplyConquest(a.OwnerID, aiOwnerReligion(gs, a.OwnerID))
+						aiApplyConquest(gs, targetRegion, a.OwnerID)
 					}
 					aiClearSiege(gs, target)
 					message := actorName + " " + targetName + " tahkimatına genel hücumla girdi ve kazandı."
@@ -2748,6 +2920,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 		defMods := aiTechMods(gs, defOwnerID)
 		result := combat.ResolveBattleWithMods(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+		gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
 		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)
 		if result.AttackerWins {
 			if len(defSourceIDs) > 0 {
@@ -2788,7 +2961,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				if !isAlliedTarget {
 					vassalized = TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 					if !vassalized {
-						targetRegion.OwnerID = a.OwnerID
+						aiApplyConquest(gs, targetRegion, a.OwnerID)
 					}
 				}
 				a.MovePoints--
@@ -2860,7 +3033,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget {
 		vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 		if !vassalized {
-			targetRegion.OwnerID = a.OwnerID
+			aiApplyConquest(gs, targetRegion, a.OwnerID)
 		}
 		stepKind = TurnStepConquest
 		if vassalized {
@@ -2907,6 +3080,14 @@ func aiResearch(gs *state.GameState, fid faction.FactionID) {
 }
 
 func aiResearchWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	aiResearchWithBudgetAndSteps(gs, fid, nil, steps)
+}
+
+func aiResearchWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) {
+	aiResearchWithStrategicContextAndSteps(gs, fid, budget, nil, steps)
+}
+
+func aiResearchWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.TechTypes == nil {
 		return
@@ -2916,79 +3097,17 @@ func aiResearchWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]Tu
 		return
 	}
 	// Yeterli altın var mı?
-	if f.Gold < aiTechReserve {
+	if budget == nil && f.Gold < aiTechReserve {
 		return
 	}
 
-	// Uygun teknolojileri puanla
-	type scoredTech struct {
-		t     *tech.Technology
-		score int
-	}
-	var candidates []scoredTech
-
-	techIDs := make([]string, 0, len(gs.TechTypes))
-	for id := range gs.TechTypes {
-		techIDs = append(techIDs, id)
-	}
-	sort.Strings(techIDs)
-	for _, techID := range techIDs {
-		t := gs.TechTypes[techID]
-		// Zaten tamamlandı mı?
-		if f.Research.Completed[t.ID] {
-			continue
-		}
-		// Gereksinimler sağlanıyor mu?
-		if !tech.IsUnlocked(&f.Research, t) {
-			continue
-		}
-		// Yeterli altın var mı?
-		if f.Gold < t.GoldCost+aiMinGoldReserve {
-			continue
-		}
-
-		score := 0
-		switch t.Category {
-		case tech.CategoryMilitary:
-			score = 100 // Askeri teknolojiler en yüksek öncelik
-			if t.Effects.InfantryAttackMod > 0 || t.Effects.CavalryAttackMod > 0 {
-				score += 20
-			}
-		case tech.CategoryEconomy:
-			score = 70 // Ekonomi ikinci öncelik
-			if t.Effects.GoldPerRegion > 0 {
-				score += 15
-			}
-		case tech.CategoryNaval:
-			score = 50 // Deniz teknolojisi (kıyı fraksiyonları için daha yüksek olabilir)
-		case tech.CategoryDiplomacy:
-			score = 40
-		case tech.CategoryReligion:
-			score = 30
-		}
-
-		// Daha kısa süren teknolojilere hafif bonus
-		score -= t.TurnsRequired / 2
-
-		candidates = append(candidates, scoredTech{t, score})
-	}
-
-	if len(candidates) == 0 {
-		return
-	}
-
-	// En yüksek puanlı teknolojiyi seç
-	var best *tech.Technology
-	bestScore := -1
-	for _, c := range candidates {
-		if c.score > bestScore {
-			bestScore = c.score
-			best = c.t
-		}
-	}
+	best := aiSelectResearchTechnology(gs, f, budget, strategicContext)
 
 	if best != nil {
 		if tech.StartResearch(&f.Research, best, &f.Gold) {
+			if budget != nil {
+				budget.consume(aiBudgetResearch, best.GoldCost)
+			}
 			addTurnStep(steps, TurnStep{
 				FactionID: fid,
 				Kind:      TurnStepResearch,
@@ -2998,92 +3117,18 @@ func aiResearchWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]Tu
 	}
 }
 
-// aiEconomyBuild ekonomik binalar inşa eder (pazar, çiftlik).
+// aiEconomyBuild ekonomik ve bölgesel ihtiyaçlara göre tek bir bina yatırımı seçer.
 // Her tur sadece bir bina inşa eder (limitli).
 func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 	aiEconomyBuildWithSteps(gs, fid, nil)
 }
 
 func aiEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
-	f := gs.Factions[fid]
-	if f.IsEliminated || gs.BuildingTypes == nil {
-		return
-	}
-	if f.Gold < 200+aiMinGoldReserve {
-		return
-	}
+	aiEconomyBuildWithBudgetAndSteps(gs, fid, nil, steps)
+}
 
-	// Bina öncelikleri ve maliyet kontrolü
-	type buildingPlan struct {
-		id     string
-		needFn func(*world.Region) bool
-		prio   int
-	}
-
-	plans := []buildingPlan{
-		{"farm", func(r *world.Region) bool {
-			// Tahıl üretimi düşük bölgelere çiftlik
-			return r.BaseGrainOutput < 20
-		}, 60},
-		{"market", func(r *world.Region) bool {
-			// Geliri artırmak için pazar
-			return true
-		}, 80},
-		{"walls", func(r *world.Region) bool {
-			// Sınır bölgelerine sur
-			for _, nid := range r.Neighbors {
-				if n, ok := gs.Regions[nid]; ok && n.OwnerID != "" && n.OwnerID != string(fid) {
-					return true
-				}
-			}
-			return false
-		}, 50},
-	}
-
-	for _, plan := range plans {
-		btype, ok := gs.BuildingTypes[plan.id]
-		if !ok {
-			continue
-		}
-		buildCost := economy.ResourceCost{
-			Gold:   btype.GoldCost,
-			Grain:  btype.GrainCost,
-			Iron:   btype.IronCost,
-			Timber: btype.TimberCost,
-			Stone:  btype.StoneCost,
-		}
-		if !aiCanAffordWithReserve(f, buildCost) {
-			continue
-		}
-
-		// Uygun bölge bul
-		for _, r := range aiSortedRegions(gs) {
-			if r.OwnerID != string(fid) || r.IsSea {
-				continue
-			}
-			if !aiBuildingAllowed(gs, r, plan.id, btype.RequiredTerrain) {
-				continue
-			}
-			queued := aiQueuedBuildingCount(gs, r.ID, plan.id, fid)
-			if aiBuildingLevel(r, plan.id)+queued >= btype.MaxPerRegion {
-				continue
-			}
-			// İhtiyaç var mı?
-			if plan.needFn(r) {
-				buildCost.Apply(f)
-				turns := aiBuildingTurnsRequired(r, plan.id, btype.TurnsRequired, queued)
-				aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, plan.id, turns)
-				addTurnStep(steps, TurnStep{
-					FactionID:    fid,
-					Kind:         TurnStepBuild,
-					TargetRegion: r.ID,
-					FocusRegion:  r.ID,
-					Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, r.ID) + " bölgesinde " + btype.NameTR + " inşasını başlattı.",
-				})
-				return // Bir bina inşa ettik, turu bitir
-			}
-		}
-	}
+func aiEconomyBuildWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) {
+	aiEconomyBuildWithStrategicContextAndSteps(gs, fid, budget, nil, steps)
 }
 
 // aiNavalStrategy kıyı fraksiyonları için liman ve gemi inşası yapar.
@@ -3092,6 +3137,10 @@ func aiNavalStrategy(gs *state.GameState, fid faction.FactionID) {
 }
 
 func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	aiNavalStrategyWithBudgetAndSteps(gs, fid, nil, steps)
+}
+
+func aiNavalStrategyWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.BuildingTypes == nil || gs.UnitTypes == nil {
 		return
@@ -3130,8 +3179,10 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 		}
 		if aiBuildingLevel(r, "port")+queued < portType.MaxPerRegion &&
 			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
-			aiCanAffordWithReserve(f, portCost) {
-			portCost.Apply(f)
+			aiCanAffordForBudget(f, portCost, budget, aiBudgetNaval) {
+			if !aiApplyBudgetedCost(f, portCost, budget, aiBudgetNaval) {
+				continue
+			}
 			turns := aiBuildingTurnsRequired(r, "port", portType.TurnsRequired, queued)
 			aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "port", turns)
 			addTurnStep(steps, TurnStep{
@@ -3229,11 +3280,13 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 		Timber: transportType.TimberCost,
 		Stone:  transportType.StoneCost,
 	}
-	if !aiCanAffordWithReserve(f, shipCost) {
+	if !aiCanAffordForBudget(f, shipCost, budget, aiBudgetNaval) {
 		return
 	}
 
-	shipCost.Apply(f)
+	if !aiApplyBudgetedCost(f, shipCost, budget, aiBudgetNaval) {
+		return
+	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
 	addTurnStep(steps, TurnStep{
 		FactionID:    fid,
@@ -3244,11 +3297,11 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 	})
 
 	// Escort savaş gemisi üretimi — transport varsa ve savaş halinde veya deniz baskısı yüksekse
-	aiProduceEscortIfNeeded(gs, fid, coastalRegions, steps)
+	aiProduceEscortIfNeeded(gs, fid, coastalRegions, budget, steps)
 }
 
 // aiProduceEscortIfNeeded transport hattı olan AI için escort savaş gemisi üretir.
-func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastalRegions []*world.Region, steps *[]TurnStep) {
+func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastalRegions []*world.Region, budget *aiBudget, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	if f == nil || f.IsEliminated || gs.UnitTypes == nil {
 		return
@@ -3312,7 +3365,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		Timber: warshipType.TimberCost,
 		Stone:  warshipType.StoneCost,
 	}
-	if !aiCanAffordWithReserve(f, warshipCost) {
+	if !aiCanAffordForBudget(f, warshipCost, budget, aiBudgetNaval) {
 		return
 	}
 
@@ -3347,10 +3400,12 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		if currentWarshipUnits+aiPendingNavalUnitCount(gs, candidate.seaID, fid) >= army.MaxArmySize {
 			continue
 		}
-		if !aiCanAffordWithReserve(f, warshipCost) {
+		if !aiCanAffordForBudget(f, warshipCost, budget, aiBudgetNaval) {
 			break
 		}
-		warshipCost.Apply(f)
+		if !aiApplyBudgetedCost(f, warshipCost, budget, aiBudgetNaval) {
+			break
+		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, candidate.region.ID, "warship", warshipType.TurnsRequired)
 		addTurnStep(steps, TurnStep{
 			FactionID:    fid,

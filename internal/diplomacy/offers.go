@@ -142,9 +142,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		if rel.Stance != faction.StanceWar {
 			return Result{Message: "Barış teklifi artık geçerli değil."}
 		}
-		rel.Stance = faction.StancePeace
-		rel.Score = -20
-		removeTradeRoutesBetween(gs, offer.FromFactionID, offer.ToFactionID)
+		setPeaceBetweenCoalitions(gs, offer.FromFactionID, offer.ToFactionID)
 		return Result{
 			Accepted: true,
 			Applied:  true,

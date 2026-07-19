@@ -25,20 +25,23 @@ func strategicPlanTestState() *state.GameState {
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"ottoman_home": {
-				ID:        "ottoman_home",
-				OwnerID:   "ottoman",
-				Neighbors: []world.RegionID{"germiyan_border"},
+				ID:           "ottoman_home",
+				OwnerID:      "ottoman",
+				Neighbors:    []world.RegionID{"germiyan_border"},
+				Satisfaction: 50,
 			},
 			"germiyan_border": {
-				ID:        "germiyan_border",
-				OwnerID:   "germiyan_bey",
-				Neighbors: []world.RegionID{"ottoman_home"},
-				TaxRate:   60,
+				ID:           "germiyan_border",
+				OwnerID:      "germiyan_bey",
+				Neighbors:    []world.RegionID{"ottoman_home"},
+				TaxRate:      60,
+				Satisfaction: 50,
 			},
 			"constantinople": {
-				ID:      "constantinople",
-				OwnerID: "east_rome",
-				TaxRate: 80,
+				ID:           "constantinople",
+				OwnerID:      "east_rome",
+				TaxRate:      80,
+				Satisfaction: 50,
 			},
 		},
 		Armies: map[army.ArmyID]*army.Army{

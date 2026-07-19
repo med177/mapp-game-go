@@ -108,6 +108,7 @@ type campaignSaveState struct {
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
+	WarLedgers              map[string]*state.WarLedger              `json:"wl,omitempty"`
 	EconomicVictoryTurns    int                                      `json:"evt,omitempty"`
 	FactionsEliminated      int                                      `json:"fel,omitempty"`
 	ReligiousVictoryTurns   int                                      `json:"rvt,omitempty"`
@@ -176,6 +177,7 @@ type legacyCampaignSaveState struct {
 	Armies                  map[army.ArmyID]*army.Army                   `json:"armies"`
 	Commanders              map[string]*army.Commander                   `json:"commanders,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState     `json:"ai_plans,omitempty"`
+	WarLedgers              map[string]*state.WarLedger                  `json:"war_ledgers,omitempty"`
 	EconomicVictoryTurns    int                                          `json:"economic_victory_turns"`
 	FactionsEliminated      int                                          `json:"factions_eliminated"`
 	ReligiousVictoryTurns   int                                          `json:"religious_victory_turns"`
@@ -319,6 +321,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
 		AIPlans:                 cloneAIPlans(legacy.AIPlans),
+		WarLedgers:              cloneWarLedgers(legacy.WarLedgers),
 		EconomicVictoryTurns:    legacy.EconomicVictoryTurns,
 		FactionsEliminated:      legacy.FactionsEliminated,
 		ReligiousVictoryTurns:   legacy.ReligiousVictoryTurns,
@@ -436,6 +439,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -522,6 +526,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
 		FactionsEliminated:      gs.FactionsEliminated,
 		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
@@ -616,6 +621,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 	gs.Commanders = cloneCommanders(saved.Commanders)
 	gs.AIPlans = cloneAIPlans(saved.AIPlans)
+	gs.WarLedgers = cloneWarLedgers(saved.WarLedgers)
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()
 
@@ -1231,6 +1237,21 @@ func cloneSieges(sieges map[world.RegionID]*state.SiegeState) map[world.RegionID
 		}
 		copySiege := *siege
 		out[rid] = &copySiege
+	}
+	return out
+}
+
+func cloneWarLedgers(src map[string]*state.WarLedger) map[string]*state.WarLedger {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[string]*state.WarLedger, len(src))
+	for key, ledger := range src {
+		if ledger == nil {
+			continue
+		}
+		copyLedger := *ledger
+		out[key] = &copyLedger
 	}
 	return out
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
@@ -19,18 +20,33 @@ const (
 // StrategicContext bir AI turu boyunca kullanılan, save'e yazılmayan türetilmiş
 // stratejik veridir. Pahalı güç/değer hesapları yalnız ihtiyaç halinde cache'lenir.
 type StrategicContext struct {
-	FactionID          faction.FactionID
-	Turn               int
-	ManpowerCap        int
-	DeployedLandUnits  int
-	OwnedLandRegionIDs []world.RegionID
-	BorderRegionIDs    []world.RegionID
-	WarEnemies         []faction.FactionID
+	FactionID            faction.FactionID
+	Turn                 int
+	ManpowerCap          int
+	DeployedLandUnits    int
+	OwnedLandRegionIDs   []world.RegionID
+	BorderRegionIDs      []world.RegionID
+	WarEnemies           []faction.FactionID
+	Fronts               []AIFront
+	ArmyAssignments      map[army.ArmyID]AIArmyAssignment
+	TotalMobilePower     int
+	ReservePercent       int
+	ReserveTargetPower   int
+	ReserveAssignedPower int
+	CriticalThreat       bool
+	RallyRegionID        world.RegionID
+	RallyDeadlineTurn    int
+	RallyRequiredPower   int
+	RallyGatheredPower   int
+	RallyActive          bool
+	RallyReady           bool
 
 	gs            *state.GameState
 	factionPower  map[faction.FactionID]int
 	frontierPower map[faction.FactionID]int
 	regionValue   map[world.RegionID]int
+	routeCache    map[aiRouteCacheKey]*aiRouteMap
+	budget        *aiBudget
 }
 
 type scenarioObjectiveCandidate struct {

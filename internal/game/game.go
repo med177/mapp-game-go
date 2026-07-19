@@ -2631,6 +2631,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	}
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	diplomacy.NormalizeVassalage(gs)
+	gs.SyncWarLedgers()
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
@@ -3156,6 +3157,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
+		g.gs.RecordWarCasualties(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost)
 		g.recordCommanderBattle(landing, enemyArmy, nil, result.AttackerWins)
 		fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
 		fleet.MovePoints--
@@ -3350,6 +3352,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.clearSiege(targetRegion.ID)
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
+	g.gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
 	if prevOwnerID == "" || prevOwnerID == newOwnerID {
@@ -3562,6 +3565,7 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 	// nedeniyle huruç savaşında küçük bir savunma bonusu korur.
 	defMods.DefenseMod += 0.10
 	result := combat.ResolveBattleWithContextPlan(a, siegeArmy, sourceRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
+	g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost)
 	g.recordCommanderBattle(a, siegeArmy, nil, result.AttackerWins)
 
 	outcomeDetail := "Huruç püskürtüldü; ordu kuşatılan bölgede kaldı."
@@ -3793,6 +3797,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			battleContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
+		g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
 		g.recordCommanderBattle(a, combinedDef, defSourceIDs, result.AttackerWins)
 		var collapse eliminationResult
 		scene := render.BattleSceneLand

@@ -7,7 +7,7 @@ related: [world/factions, systems/ai, architecture/state-management]
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/faction/faction.go`, `internal/game/game.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/peace_assessment.go`, `internal/faction/faction.go`, `internal/game/game.go`
 
 ## İlişki Yapısı
 
@@ -65,7 +65,7 @@ Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşı
 | Aksiyon | Fonksiyon | Koşul |
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
-| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kabul için savaş baskısı + güç dengesi + ekonomik stres değerlendirilir, teklif sahibi `peace_relation_bonus` tech etkisi bu eşiği destekler |
+| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 25`; varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
@@ -150,7 +150,10 @@ Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla ba�
 
 AI:
 
-- uzun savaşta ve zayıf kaldığında barış dener
+- 1300'de savaşın ilk üç turunda normal barış denemez; objective tamamlanması, toprak ve
+  birlik kaybı, süre/durgunluk, güç ve ekonomik stres, çoklu savaş ve başkent tehdidi
+  barış baskısını belirler. Başkent tehdidi veya askerî çöküş erken kapıyı aşabilir;
+  reddedilen teklif aynı savaşta üç tur cooldown'a girer
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar

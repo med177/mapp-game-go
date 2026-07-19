@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-07-13
+last_updated: 2026-07-19
 related: [state-management, render-pipeline]
 ---
 
@@ -111,13 +111,33 @@ Kamera kontrolleri normal harita ile aynıdır.
 1. Oyuncu kameranın anlık konumunu saklar.
 2. AI fraksiyonlarını `FactionOrder` tabanlı deterministik sıraya dizer.
 3. Her fraksiyon için `ai.TurnStepper` oluşturur.
-4. Prelude safhasında diplomasi, araştırma, inşa ve deniz hazırlıkları uygulanır.
-5. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
-6. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez.
-7. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
-8. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
-9. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.
-10. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
+4. Prelude safhasında diplomasi uygulanır. `1300_ottoman_rise` için acil rezerv ve
+   plan türüne bağlı runtime harcama bütçesi üretilir; araştırma, ekonomi, donanma ve
+   ordu hazırlıkları soft kategori paylarıyla çözülür. Araştırma adımı plan profili,
+   gerçek teknoloji efekti, birim açılımı, üretim/stok darboğazı, istikrar, kıyı erişimi,
+   maliyet ve süreyi puanlar; aktif araştırmayı değiştirmez. Ekonomi adımı bina adaylarını
+   marjinal ROI, kaynak darboğazı, cephe/objective, istikrar, süre ve kuyrukla puanlar;
+   zayıf adayda harcamayı pas geçer. Ordu adımı planın piyade/süvari/kuşatma bileşim
+   açığını; gerçek düşman profili, hedef arazisi, kuşatma desteği, maliyet, bakım ve
+   üretim süresiyle birlikte puanlar. Seçilen birimin üretim bölgesi kalan throughput,
+   kuyruk, güvenlik, üretim sonrası ikmal ve cephe/rally/savunma anchor'ına ağırlıklı
+   rota maliyetiyle seçilir. Kullanılmayan kategori payı aynı tur sonraki hazırlığa
+   aktarılır. Diğer senaryolar mevcut sabit rezerv, araştırma, birim ve recruit bölgesi
+   sırasını korur.
+5. Prelude sonunda 1300 senaryosu için cephe, rally ve runtime ordu rolleri yeniden
+   üretilir. Yıpranmış/yerel olarak ezilen kara orduları güvenli ikmal anchor'ına
+   `retreat`; düşük memnuniyetli fetih bölgelerini koruyacak uygun ordular `security`
+   rolü alabilir. Kara rol mesafeleri ve uzun menzilli ilk adım arazi, erişim, tehdit ve
+   ikmal ağırlıklı Dijkstra alanından seçilir → [[systems/ai]].
+6. Riskli aktif kuşatmasını terk edecek AI ordusu varsa kuşatma, normal hareketten önce
+   aynı fraksiyondan kalan uygun orduya devredilir veya kaldırılır; bu işlem ayrı ve
+   görünür bir `TurnStep` üretir.
+7. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
+8. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez.
+9. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
+10. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
+11. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.
+12. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
 
 ---
 

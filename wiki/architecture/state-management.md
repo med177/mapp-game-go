@@ -7,7 +7,7 @@ related: [game-loop, render-pipeline, shape-editor]
 
 # State Yönetimi
 
-**Kaynak:** `internal/state/state.go`
+**Kaynak:** `internal/state/state.go`, `internal/state/war_ledger.go`
 
 ## GameState Yapısı
 
@@ -36,6 +36,7 @@ type GameState struct {
     Armies    map[ArmyID]*Army
     Commanders map[string]*Commander
     AIPlans map[FactionID]*AIPlanState
+    WarLedgers map[string]*WarLedger
     ShapeData CountryShapeJSON           // json:"-"
 
     // Runtime-only (json:"-")
@@ -75,6 +76,15 @@ type GameState struct {
 `GameState.CollectDefenders()` birleşik savunmaya katılan gerçek orduları `ArmyID` sırasıyla toplar. Böylece 20 birim sınırına giren kompozisyon, kaynak ordu ID listesi ve sonrasındaki kayıp dağıtımı map iterasyon sırasından bağımsızdır; aynı state ve aynı savaş zarı aynı sonucu üretir.
 
 `SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
+
+`WarLedger`, `RelationKey` ile aynı sıralı taraf anahtarında yalnız aktif savaşın kalıcı
+sonuç state'ini tutar: başlangıç turu, iki tarafın başlangıç kara bölgesi sayısı, tamamen
+kaybedilen birlikler, ele geçirilen bölge sayıları, son muharebe turu ve son barış teklifi
+turu. `BeginWarLedger()` savaş geçişinde snapshot alır; muharebe/fetih executor'ları
+sayaçları günceller, `EndWarLedger()` barışta kaydı kaldırıp hedef planın rally state'ini
+temizler. `SyncWarLedgers()` eski save veya doğrudan stance düzenleyen legacy yolları
+aktif ilişkilerle uzlaştırır; ledger taşımayan eski save'deki savaş yükleme turunda sıfır
+sayaçla başlar.
 `CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon, müttefik veya aynı vassal zincirindeki bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation/hiyerarşi verisinden okunur.
 `IsArmyDefendingSiegedRegion(candidate)`, aktif kuşatma altındaki bölgede bölge sahibi veya onun müttefiki olarak duran kara ordusunu ortak savunmacı state'i olarak tanımlar. Bu predicate huruç zorunluluğu ile kuşatma altı iyileşme engelinin aynı state kuralını kullanmasını sağlar.
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.
@@ -224,13 +234,13 @@ faction.BuildInitialRelations()  → ilişki map'i (din bonusları dahil)
 army.LoadArmies(scenario.DataPath("armies.json")) → başlangıç orduları
 ```
 
-Kayıttan yüklemede `internal/save/save.go:loadFromPath` önce kayıt JSON'unu okur, gerekiyorsa `state_zstd` payload'unu açar, `ScenarioID` üzerinden senaryo klasörünü çözer ve senaryo baz state'ini tekrar kurar. Ardından kayıt içindeki campaign delta bu baz state'in üstüne overlay edilir. Bu yüzden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData`, `RegionOrder`, `FactionOrder`, `MapConfig`, `TradeCenters` ve tam `ScenarioVictories` listesi dosyadan değil yeniden senaryodan gelir. Yeni save formatı üst seviyede `kind` (`auto`, `quick`, `slot`), `game_version` ve slot kartları için düz `meta` alanı taşır; sıkıştırılmış gövde `state_zstd` içinde tutulur, eski düz `GameState` save'leri ve eski wrapper save'ler de geriye uyumlu okunur. `AIPlans` içindeki objective, target, commitment ve reassess alanları mutable campaign delta olarak saklanır; `StrategicContext` güç/lojistik/yol cache'leri runtime-only olduğu için yüklemede yeniden hesaplanır. Legacy save içinde AI plan alanı yoksa boş state korunur ve ilgili devletin sonraki AI turunda plan üretilir. `DevelopmentMode` açıksa save sırasında ana dosyaya ek olarak `*.debug.json` sidecar'ı da yazılır; bu yardımcı dosya yükleme için zorunlu değildir ve normal mod save alındığında aynı slotun eski debug sidecar'ı temizlenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
+Kayıttan yüklemede `internal/save/save.go:loadFromPath` önce kayıt JSON'unu okur, gerekiyorsa `state_zstd` payload'unu açar, `ScenarioID` üzerinden senaryo klasörünü çözer ve senaryo baz state'ini tekrar kurar. Ardından kayıt içindeki campaign delta bu baz state'in üstüne overlay edilir. Bu yüzden `UnitTypes`, `BuildingTypes`, `TechTypes`, `ShapeData`, `RegionOrder`, `FactionOrder`, `MapConfig`, `TradeCenters` ve tam `ScenarioVictories` listesi dosyadan değil yeniden senaryodan gelir. Yeni save formatı üst seviyede `kind` (`auto`, `quick`, `slot`), `game_version` ve slot kartları için düz `meta` alanı taşır; sıkıştırılmış gövde `state_zstd` içinde tutulur, eski düz `GameState` save'leri ve eski wrapper save'ler de geriye uyumlu okunur. `AIPlans` içindeki objective, target, commitment, reassess, rally bölgesi ve rally deadline alanları mutable campaign delta olarak saklanır; `StrategicContext` güç/lojistik/yol cache'leri, düşman eksenli `AIFront` kayıtları, dinamik rezerv hedefi, rally hazırlık gücü ve ordu rol atamaları runtime-only olduğu için yüklemede ve her AI turunda yeniden hesaplanır. Legacy save içinde AI plan alanı yoksa boş state korunur ve ilgili devletin sonraki AI turunda plan üretilir. `DevelopmentMode` açıksa save sırasında ana dosyaya ek olarak `*.debug.json` sidecar'ı da yazılır; bu yardımcı dosya yükleme için zorunlu değildir ve normal mod save alındığında aynı slotun eski debug sidecar'ı temizlenir. `Game.startLoadSlot()` save yüklendiğinde olay listesini (`events.json`) tekrar kurar; böylece ses/müzik, zafer seçimi ve olay akışı yeni oturumda da aktif senaryoyla tutarlı kalır. `ShapeData`, `country_shapes.json` içindeki ring + isim bilgisini tutar; edit mode shape paint işlemleri bu runtime veriyi günceller ve senaryo kaydında tekrar dosyaya yazar.
 
 Load/startup sonunda `diplomacy.NormalizeVassalage()` çalışır. Böylece geçersiz `OverlordID` referansları temizlenir, realm içi relation kayıtları dost çizgiye çekilir ve vassalın üçüncü taraf trade/offer sızıntıları kapanır.
 
 `AIPlans` mutable campaign niyetidir; objective kimliği/türü, hedef devlet ve bölge
-öncelikleri, commitment, yeniden değerlendirme turu ile vassallık/stratejik ilhak
-tercihlerini save/load arasında korur. Buna karşılık `AIStrategies` ve
+öncelikleri, commitment, yeniden değerlendirme turu, rally bölgesi/deadline ile
+vassallık/stratejik ilhak tercihlerini save/load arasında korur. Buna karşılık `AIStrategies` ve
 `AIDifficultyPolicy`, `ai_strategies.json` dosyasından gelen statik senaryo verileridir
 ve runtime-only tutulur. Save yüklemesinde baz senaryoyla yeniden kurulurlar; böylece
 statik profil ile plan/risk/hareket politikası save payload'ında tekrar edilmez ve eski

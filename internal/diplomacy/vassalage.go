@@ -359,6 +359,7 @@ func normalizeVassalRealmRelations(gs *state.GameState, root faction.FactionID) 
 			}
 		}
 	}
+	gs.SyncWarLedgers()
 }
 
 func setWarBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
@@ -373,11 +374,16 @@ func setWarBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 				continue
 			}
 			rel := EnsureRelation(gs, lhs, rhs)
+			wasWar := rel.Stance == faction.StanceWar
 			rel.Stance = faction.StanceWar
 			rel.Score = -80
 			removeTradeRoutesBetween(gs, lhs, rhs)
+			if !wasWar {
+				gs.BeginWarLedger(lhs, rhs)
+			}
 		}
 	}
+	gs.SyncWarLedgers()
 }
 
 func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
@@ -392,9 +398,13 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 				continue
 			}
 			rel := EnsureRelation(gs, lhs, rhs)
+			wasWar := rel.Stance == faction.StanceWar
 			rel.Stance = faction.StancePeace
 			rel.Score = -20
 			removeTradeRoutesBetween(gs, lhs, rhs)
+			if wasWar {
+				gs.EndWarLedger(lhs, rhs)
+			}
 		}
 	}
 }
@@ -584,6 +594,7 @@ func NormalizeVassalage(gs *state.GameState) {
 			ensureTradeRoutesBetween(gs, f.OverlordID, fid)
 		}
 	}
+	gs.SyncWarLedgers()
 }
 
 func VassalTributeRatePercent() int {

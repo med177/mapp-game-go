@@ -355,6 +355,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	gs.NormalizeFactionCapitals()
 	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(gs.ScenarioVictories, string(gs.PlayerFactionID))
 	diplomacy.NormalizeVassalage(gs)
+	gs.SyncWarLedgers()
 	if gs.TradeRoutes == nil {
 		gs.TradeRoutes = []*economy.TradeRoute{}
 	}
@@ -505,10 +506,12 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		ScenarioVictories:  sc.VictoryConditions,
 		AvailableVictories: scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, ""),
 		Relations:          relations,
+		WarLedgers:         map[string]*state.WarLedger{},
 		TradeCenters:       tradeCenters,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
+	gs.SyncWarLedgers()
 	return gs, nil
 }
 

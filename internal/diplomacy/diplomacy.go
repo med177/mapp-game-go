@@ -195,6 +195,11 @@ func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 	if prevStance == faction.StanceTrade && (rel.Stance == faction.StanceWar || rel.Stance == faction.StancePeace) {
 		removeTradeRoutesBetween(gs, a, b)
 	}
+	if prevStance != faction.StanceWar && rel.Stance == faction.StanceWar {
+		gs.BeginWarLedger(a, b)
+	} else if prevStance == faction.StanceWar && rel.Stance != faction.StanceWar {
+		gs.EndWarLedger(a, b)
+	}
 }
 
 func ApplyRelationDecay(gs *state.GameState) {
@@ -543,6 +548,9 @@ func HasDirectThreat(gs *state.GameState, a, b faction.FactionID) bool {
 }
 
 func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		return AssessPeaceDesire(gs, target, actor).ShouldPropose()
+	}
 	warPressure := 0
 	if rel.Score < -80 {
 		warPressure = -rel.Score - 80
