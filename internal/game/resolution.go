@@ -343,6 +343,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
+	gs.RefreshMerchantTradeBonuses()
 	tradeLogs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
 	for _, log := range tradeLogs {
 		// Ticaret logları oyuncuya aitse göster

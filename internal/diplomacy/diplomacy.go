@@ -48,8 +48,10 @@ const allianceAcceptanceThreshold = 45
 const allianceRelationThreshold = 25
 
 type AllianceProposalAssessment struct {
-	Chance      int
-	BlockReason string
+	Chance          int
+	BlockReason     string
+	ActorStrategic  StrategicAllianceAssessment
+	TargetStrategic StrategicAllianceAssessment
 }
 
 func (a AllianceProposalAssessment) Accepted() bool {
@@ -595,15 +597,33 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		assessment.BlockReason = "Fraksiyon bulunamadı"
 		return assessment
 	}
-	if !HasDiplomaticContact(gs, actor, target) {
-		assessment.BlockReason = "Bu devletle önce ilişki kurmak gerekir"
+	if gs.ScenarioID == "1300_ottoman_rise" && activeAllianceObjectiveConflict(gs, actor, target) {
+		assessment.ActorStrategic.ActiveObjectiveConflict = true
+		assessment.TargetStrategic.ActiveObjectiveConflict = true
+		assessment.BlockReason = "Aktif stratejik hedefler ittifakla çakışıyor"
 		return assessment
 	}
-	if !allianceHasStrategicBasis(gs, actor, target) {
+	sharesLandBorder := sharesBorder(gs, actor, target)
+	hasTradeRoute := HasTradeRouteBetween(gs, actor, target)
+	hasTradeAccess := hasTradeRoute || CanEstablishTradeRoute(gs, actor, target)
+	commonEnemy := HasCommonEnemy(gs, actor, target)
+	sharedMajorThreat := HasSharedMajorThreat(gs, actor, target)
+	if !sharesLandBorder && !hasTradeAccess && !commonEnemy && !sharedMajorThreat {
 		assessment.BlockReason = "İttifak için coğrafi veya stratejik yakınlık yok"
 		return assessment
 	}
-
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		assessment.ActorStrategic = assessStrategicAlliance(gs, actor, target, commonEnemy, sharedMajorThreat)
+		assessment.TargetStrategic = assessStrategicAlliance(gs, target, actor, commonEnemy, sharedMajorThreat)
+		if assessment.ActorStrategic.ActiveObjectiveConflict || assessment.TargetStrategic.ActiveObjectiveConflict {
+			assessment.BlockReason = "Aktif stratejik hedefler ittifakla çakışıyor"
+			return assessment
+		}
+		if target != gs.PlayerFactionID && assessment.TargetStrategic.Score < strategicAllianceAcceptanceFloor {
+			assessment.BlockReason = "İttifak hedef devlet için yeterli stratejik değer üretmiyor"
+			return assessment
+		}
+	}
 	actorPower := MilitaryPower(gs, actor)
 	targetPower := MilitaryPower(gs, target)
 	actorRegions := landRegionCount(gs, actor)
@@ -614,20 +634,26 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		chance += 8
 	}
 	chance += allianceReligionAffinityBonus(actorFaction.Religion, targetFaction.Religion)
-	if sharesBorder(gs, actor, target) {
+	if sharesLandBorder {
 		chance += 6
 	}
-	if HasCommonEnemy(gs, actor, target) {
+	if commonEnemy {
 		chance += 12
 	}
-	if HasSharedMajorThreat(gs, actor, target) {
+	if sharedMajorThreat {
 		chance += 15
 	}
-	if !sharesBorder(gs, actor, target) && !HasTradeRouteBetween(gs, actor, target) {
+	if !sharesLandBorder && !hasTradeRoute {
 		chance -= 10
 	}
 	if HasDirectThreat(gs, actor, target) {
 		chance -= 15
+	}
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		strategic := assessment.TargetStrategic
+		chance += strategic.BufferValue/2 + strategic.FrontSupportValue/2
+		chance += strategic.TradeValue/3 + strategic.PartnerSupportValue/3
+		chance -= strategic.ExpansionTensionPenalty
 	}
 	if actorPower > targetPower {
 		chance += min(10, (actorPower-targetPower)/15)

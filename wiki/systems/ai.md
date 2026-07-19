@@ -12,7 +12,8 @@ related: [systems/combat, systems/diplomacy, architecture/game-loop]
 `internal/ai/retreat.go`, `internal/ai/security.go`, `internal/ai/pathfinding.go`,
 `internal/ai/budget.go`, `internal/ai/building_investment.go`,
 `internal/ai/unit_composition.go`, `internal/ai/recruitment_region.go`,
-`internal/ai/research_strategy.go`,
+`internal/ai/research_strategy.go`, `internal/ai/naval_mission.go`,
+`internal/ai/naval_threat.go`,
 `internal/ai/conquest_policy.go`,
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`
 
@@ -549,6 +550,26 @@ eşiğini, hedef AI ise aynı değerlendirmeyi karşı perspektiften geçmelidir
 hedefse teklif `DiplomaticOffers` kuyruğuna girer ve oyuncu yanıtına kadar savaş sürer.
 Barış kabul edildiğinde ilgili AI objective'i aynı tur yeniden değerlendirmeye açılır ve
 kalıcı rally bölgesi/deadline temizlenir.
+
+### 1300 Stratejik İttifak Değerlendirmesi
+
+`internal/diplomacy/alliance_strategy.go`, ittifak faydasını teklif sahibi ve hedef AI
+için ayrı perspektiften hesaplar. `AssessAllianceProposal()` hedefin kabul değerini,
+`aiShouldAttemptAllianceOffer()` teklif sahibinin girişim değerini okur:
+
+- ortak düşman `+20`, ortak büyük tehdit `+18` stratejik tehdit değeri üretir;
+- adayın actor'u tehditten ayıran gerçek sınır konumu tampon değeridir;
+- aday ordusunun bu tehdit sınırında bulunan gerçek gücü cephe desteği sayılır;
+- aktif/bağlanabilir ticaret hattı, trade capacity, aday güç ve bölge katkısı değer ekler;
+- statik `AIExpansionTargets` çakışması `-18` yumuşak cezadır ve ortak tehditçe aşılabilir;
+- iki taraftan birinin aktif `AIPlanState.TargetFactionID` alanı diğerini gösteriyorsa
+  ittifak kesin engellenir.
+
+Aktif objective sonradan mevcut müttefiki hedeflerse AI ittifakı bitirir; korunmuş trade
+stance'i hedef savaşı kilitlemesin diye aynı çiftin ticaret anlaşmasını da kapatır. Statik
+gelecek hedefi tek başına bu sert temizliği yapmaz. Tehdit/fayda kaybolduğunda retention
+eşiğinin altındaki veya müttefik tavanını aşan düşük değerli ittifaklar çözülür. Bu model
+yalnız `1300_ottoman_rise` için aktiftir.
 - AI savaş ilanında hem saldıran hem savunan taraftaki oyuncu müttefikleri otomatik çekilmez; önce oyuncuya savaş çağrısı modalı düşer
 
 ---
@@ -631,41 +652,96 @@ aşamaz; inşa süresi mevcut ve kuyruktaki seviyeler arttıkça uzar.
 
 ## Deniz Stratejisi (`aiNavalStrategy`)
 
-Kıyı bölgesi varsa:
-1. Limansız kıyı bölgesine liman üretim emri aç
-2. Filo limiti artık dinamiktir:
-   `1` temel + `1` ek kıyı baskısı (3+ kıyı bölgesi) + savaşta `1` ek filo, üst sınır `3`
-   Aynı denize bağlı birden fazla pending gemi emri, filo limiti hesabında tek yaklaşan filo olarak değerlendirilir.
-3. Yeni `transport` emri, ilk bulunan limana değil `aiSeaPressure()` skoru en yüksek deniz hattına bağlı limanda kuyruğa girer
-4. Aynı turda transport hattı ya da mevcut transport filosu olan savaşçı AI, deniz baskısı ve birden fazla cephe tespit ederse uygun limit dahilinde birden çok eskort `warship` emri de kuyruklar
-5. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı komşu denizde filo oluşturur veya mevcut filoya birim ekler
-6. AI artık liman hattı doygunsa aynı kıyıya kör yeni emir yığmaz; mümkünse başka serbest liman hattına dağılır, hepsi doluysa yeni deniz emri açmaz
+`1300_ottoman_rise`, `internal/ai/naval_mission.go` içindeki runtime-only görev modelini
+kullanır. Kıyı sahibi olmak tek başına liman veya transport yatırımı açmaz:
+
+1. Aktif `expand` objective'inin hedef bölgesi ya da aynı hedef devletin kıyısı ve
+   `defend` objective'indeki dost kıyı adayları çıkarılır.
+2. Uygun bir saha ordusunun hedefe güvenli kara rotası varsa deniz görevi kurulmaz.
+3. Kara yolu yoksa taşınabilir, kuşatma/sabit güvenlik/geri çekilme görevi olmayan bir
+   ordu; ulaşabildiği dost çıkış kıyısı ve deniz BFS'iyle erişilen hedef kıyı seçilir.
+4. Seçilen ordunun birim sayısından, çıkış denizine ulaşabilen mevcut filoların boş
+   `TransportCapacity` değeri ve aynı hatta kuyruktaki transport kapasitesi düşülür.
+   Yalnız kalan açık kadar gemi siparişi verilir; yeterli boş kapasite varken yeni
+   transport açılmaz.
+5. Gerekli port seviyesi yoksa liman yalnız seçilen çıkış kıyısında kurulur. Escort
+   değerlendirmesi de ancak bu somut görev varken ve aynı çıkış hattında çalışır.
+6. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı, sipariş limanının ilk
+   komşu denizinde filo oluşturur veya mevcut filoya birim ekler. Görev hesabı da aynı
+   çıkış denizini kullandığı için pending kapasite yanlış hatta sayılmaz.
+
+### 1300 Deniz Tehdit Haritası ve Güvenlik Eşiği
+
+`internal/ai/naval_threat.go`, her stratejik context üretiminde savaş halindeki düşman
+filolarını deniz bölgesi bazında toplar. Güç, muharebe motoruyla aynı tabandan gelir:
+`Army.TotalStrength()` üzerine ilgili tarafın `NavalAttackMod`/`NavalDefenseMod`, komutan
+saldırı/savunma ve moral etkileri uygulanır. `StrategicContext.NavalThreats` düşman ve
+dost gücünü; `ThreatenedPortIDs` ise kendi denizi veya bir komşu denizde savaş düşmanı
+filo bulunan limanları taşır. Bunlar runtime-only'dir ve save'e yazılmaz.
+
+Görev rotası klasik en kısa BFS değildir. Deterministik rota etiketi şu sırayla
+karşılaştırılır:
+
+1. rota üzerindeki en yüksek düşman filo gücü,
+2. rotadaki toplam düşman filo gücü,
+3. deniz adımı sayısı,
+4. ilk adım ve bölge ID'si.
+
+Bu nedenle tehditli kısa koridor yerine daha uzun ama tehdit taşımayan rota seçilir.
+Güvenli alternatif yoksa yüklü transport veya öncü savaş filosu, gireceği denizdeki
+düşman efektif savunma gücünün en az `%110`u kadar efektif saldırı gücüne sahip olana
+kadar bekler. Aynı bölgede birleşebilen savaş gemileri tur öncesi mevcut filo
+konsolidasyonu ile gerçek stack'e katılır; ayrı escort filoları görev hattına yönelip
+tehdidi önce temizler.
+
+Görev rotasının maksimum tehdidi veya çıkış limanına bir adım mesafedeki deniz tehdidi
+pozitifse escort ihtiyacı da aynı `%110` hedefinden hesaplanır. Erişilebilir mevcut
+filolar ve aynı deniz ağındaki pending gemiler projected güce katılır. Açık varsa görev
+limanı önce gerekli port seviyesine çıkarılır, ardından yalnız güç açığını kapatacak
+sayıda `warship` emri kuyruğa yazılır.
+
+Tehdit haritası her rota kenarında filo taramaz: stratejik planlama sırasında context
+başına bir kez cache'lenir. Filo hareketi state'i değiştirebildiği için hareket rotası
+güncel tehdit map'ini çağrı başına bir kez yeniden kurar.
+
+Diğer senaryolar legacy davranışı korur: kıyı/savaş durumuna göre `1–3` filo limiti,
+`aiSeaPressure()` ile liman seçimi ve transport bulunan baskılı hatlarda escort üretimi.
 
 ---
 
 ## AI Deniz Taşıma Akışı
 
-AI artık kara ordularını nakliye filosuna bindirip indirebilir:
+AI kara ordularını nakliye filosuna bindirip indirebilir:
 
-- Kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o denizde uygun `transport` filosu varsa ve `aiEmbarkScore()` pozitifse seçer.
+- 1300 görevinde seçilmiş kara ordusu güvenli dost rotayla çıkış limanına gider; yeterli
+  tek filo kapasitesi hazırsa çıkış denizini seçip gemiye biner.
+- Boş transport filoları görev çıkış denizinde toplanır. Yüklenmiş filo sonraki turda
+  aktif plandan yeniden tanınır, deniz BFS'iyle objective kıyısına gider ve uygun hedefe
+  çıkar. Görev savaş gemileri de taşıma hattına yaklaşır.
+- Somut görev yoksa boş 1300 filosu uzak deniz veya rastgele yabancı kıyı aramaz.
+  Eski save'den yük taşıyan ama objective'i kalmayan filo, yalnız komşu güvenli dost
+  kıyıya tahliye yapar.
+- Diğer senaryolarda kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o
+  denizde uygun `transport` filosu ve pozitif `aiEmbarkScore()` varsa seçen legacy
+  davranışı sürdürür.
 - `executeMove()` kara → deniz geçişinde birimleri filonun `EmbarkedUnits` alanına taşır ve kara ordusunu haritadan kaldırır.
 - Donanma `EmbarkedUnits` taşıyorsa komşu kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir.
 - Hedef kara bölgesi sahipsizse başarılı çıkarma sonrası bölge artık AI sahipliğine yazılır; eski bug'lı save'lerde sahipsiz kalmış ama tek taraflı işgal altında olan kara bölgeleri yükleme/tur çözümlemesinde toparlanır.
 - Düşman kıyıya çıkarma yalnızca savaş halindeyken yapılır; barışta AI çıkarma denemez.
 - Düşman kıyıda ordu varsa AI çıkarma hedeflemesinde güç kıyası yapar; zayıfsa çıkarma girişimini atlar.
 - Çıkarma savaşı yine `combat.ResolveBattleWithMods()` ile çözülür; kazanırsa çıkarma ordusu karaya iner ve bölge el değiştirir.
-- Boş deniz hareketi kör yapılmaz; `aiSeaPressure()` düşman kıyı yoğunluğu, boş/sahipsiz kıyı fırsatı, mevcut dost filo yoğunluğu ve taşıma yükünü birlikte skorlar.
+- Legacy boş deniz hareketinde `aiSeaPressure()` düşman kıyı yoğunluğu, boş/sahipsiz
+  kıyı fırsatı, mevcut dost filo yoğunluğu ve taşıma yükünü birlikte skorlar.
 
 Kaynak kod:
-- `internal/ai/ai.go:377`
-- `internal/ai/ai.go:438`
-- `internal/ai/ai.go:666`
+- `internal/ai/naval_mission.go`
+- `internal/ai/naval_threat.go`
+- `internal/ai/ai.go`
 
 Testler:
-- `internal/ai/ai_test.go:67`
-- `internal/ai/ai_test.go:119`
-- `internal/ai/ai_test.go:172`
-- `internal/ai/ai_test.go:221`
+- `internal/ai/naval_mission_test.go`
+- `internal/ai/naval_threat_test.go`
+- `internal/ai/ai_test.go`
 
 ---
 
@@ -707,3 +783,7 @@ Queue davranışı:
 - [x] Diplomasi teklif önceliklerini teknoloji farkı ve uzun vadeli tehdit seviyesiyle zenginleştir
 - [x] Transport yanında savaş gemisi escort üretimini de filo bileşimine kat
 - [x] Escort üretimini çoklu deniz baskısı ve birden fazla cepheye göre ölçekle
+- [x] 1300 transport/liman/escort üretimini somut denizaşırı göreve ve gerçek kapasite açığına bağla
+- [x] 1300'de görevsiz filoların uzak deniz dolaşımını durdur
+- [x] 1300 deniz rotalarını düşman filo gücü ve `%110` görev filosu güvenlik eşiğine bağla
+- [x] Tehdit edilen görev limanını ihtiyaç kadar escort üretiminde önceliklendir

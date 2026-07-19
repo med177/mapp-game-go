@@ -101,11 +101,47 @@ type TradeRoute struct {
 	AmountPerTurn  int      `json:"amount_per_turn"`
 	GoldPerUnit    int      `json:"gold_per_unit"`   // anlaşmadaki sabit fiyat (dinamik değil)
 	SuspendedTurns int      `json:"suspended_turns"` // korsan/olay nedeniyle kaç tur askıda (0=aktif)
+
+	// MerchantAmountBonus save'e yazılmaz; her ekonomi çözümünde filoların
+	// aktif görevi ve gerçek deniz konumundan yeniden hesaplanır.
+	MerchantAmountBonus int `json:"-"`
+}
+
+const MaxMerchantAmountBonusPerRoute = 2
+
+// TradeRouteAssignmentKey rota yeniden üretildiğinde de değişmeyen görev anahtarıdır.
+func TradeRouteAssignmentKey(fromFactionID, toFactionID string) string {
+	if fromFactionID == "" || toFactionID == "" || fromFactionID == toFactionID {
+		return ""
+	}
+	return fromFactionID + "->" + toFactionID
+}
+
+func (t *TradeRoute) AssignmentKey() string {
+	if t == nil {
+		return ""
+	}
+	return TradeRouteAssignmentKey(t.FromFactionID, t.ToFactionID)
+}
+
+// EffectiveAmountPerTurn merchant filosu katkısı dahil gerçek rota hacmidir.
+func (t *TradeRoute) EffectiveAmountPerTurn() int {
+	if t == nil {
+		return 0
+	}
+	bonus := t.MerchantAmountBonus
+	if bonus < 0 {
+		bonus = 0
+	}
+	if bonus > MaxMerchantAmountBonusPerRoute {
+		bonus = MaxMerchantAmountBonusPerRoute
+	}
+	return t.AmountPerTurn + bonus
 }
 
 // GoldEarned bu güzergahtan tur başına altın kazancını döner (satan taraf için).
 func (t *TradeRoute) GoldEarned() int {
-	return t.AmountPerTurn * t.GoldPerUnit
+	return t.EffectiveAmountPerTurn() * t.GoldPerUnit
 }
 
 // ApplyTradeRoutes tüm aktif ticaret rotalarını bir tur işletir.
@@ -116,6 +152,9 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 	var logs []string
 
 	for _, tr := range routes {
+		if tr == nil || tr.SuspendedTurns > 0 {
+			continue
+		}
 		srcFaction := factions[faction.FactionID(tr.FromFactionID)]
 		dstFaction := factions[faction.FactionID(tr.ToFactionID)]
 
@@ -127,8 +166,12 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 		}
 
 		// Kaynak fraksiyonda yeterli mal var mı?
+		amount := tr.EffectiveAmountPerTurn()
+		if amount <= 0 {
+			continue
+		}
 		available := getGoodAmount(srcFaction, tr.Good)
-		if available < tr.AmountPerTurn {
+		if available < amount {
 			logs = append(logs, tr.FromFactionID+" yetersiz "+string(tr.Good)+" — ticaret rotası atlandı")
 			continue
 		}
@@ -141,8 +184,8 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 		}
 
 		// Mal transferi: kaynaktan çıkar, hedefe ekle
-		addGoodAmount(srcFaction, tr.Good, -tr.AmountPerTurn)
-		addGoodAmount(dstFaction, tr.Good, tr.AmountPerTurn)
+		addGoodAmount(srcFaction, tr.Good, -amount)
+		addGoodAmount(dstFaction, tr.Good, amount)
 
 		// Altın transferi: hedeften çıkar, kaynağa ekle
 		dstFaction.Gold -= totalCost

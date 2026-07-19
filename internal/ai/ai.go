@@ -150,7 +150,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 			case aiBudgetResearch:
 				aiResearchWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
 			case aiBudgetNaval:
-				aiNavalStrategyWithBudgetAndSteps(gs, fid, budget, steps)
+				aiNavalStrategyWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
 			}
 			budget.release(category)
 		}
@@ -322,7 +322,19 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			}
 		case faction.StanceAllied:
 			if aiShouldCancelAlliance(gs, fid, otherID) {
+				activeObjectiveConflict := false
+				if gs.ScenarioID == "1300_ottoman_rise" {
+					activeObjectiveConflict = diplomacy.AssessStrategicAlliance(gs, fid, otherID).ActiveObjectiveConflict
+				}
 				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionCancelAlliance)
+				if result.Applied && activeObjectiveConflict {
+					if current := diplomacy.Relation(gs, fid, otherID); current != nil && current.Stance == faction.StanceTrade {
+						tradeResult := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionCancelTrade)
+						if tradeResult.Applied {
+							result.Message += " Aktif stratejik hedef nedeniyle ticaret anlaşması da sona erdirildi."
+						}
+					}
+				}
 				if result.Applied || result.Accepted {
 					addTurnStep(steps, TurnStep{
 						FactionID:     fid,
@@ -406,6 +418,19 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 	case diplomacy.ActionProposeAlliance:
 		assessment := diplomacy.AssessAllianceProposal(gs, diplomacy.EnsureRelation(gs, from, to), from, to)
 		score += assessment.Chance
+		if gs.ScenarioID == "1300_ottoman_rise" {
+			strategic := assessment.ActorStrategic
+			score += minInt(30, strategic.Score)
+			if strategic.BufferValue > 0 {
+				reasons = append(reasons, "tampon devlet")
+			}
+			if strategic.FrontSupportValue > 0 {
+				reasons = append(reasons, "cephe desteği")
+			}
+			if strategic.TradeValue >= 8 {
+				reasons = append(reasons, "ticaret değeri")
+			}
+		}
 		if diplomacy.HasCommonEnemy(gs, from, to) {
 			reasons = append(reasons, "ortak düşman")
 		}
@@ -449,6 +474,22 @@ func aiEvaluateWarOpportunities(gs *state.GameState, fid faction.FactionID) {
 func aiShouldAttemptAllianceOffer(gs *state.GameState, from, to faction.FactionID, assessment diplomacy.AllianceProposalAssessment) bool {
 	if gs == nil || assessment.BlockReason != "" {
 		return false
+	}
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		strategic := assessment.ActorStrategic
+		if strategic.ActiveObjectiveConflict || strategic.Score < 18 || assessment.Chance < 45 {
+			return false
+		}
+		urgent := strategic.ThreatValue >= 18 || strategic.BufferValue >= 10
+		if aiAllianceSoftCap(gs, from) <= aiActiveAllianceCount(gs, from) && !urgent {
+			return false
+		}
+		if urgent && assessment.Chance >= 60 {
+			return true
+		}
+		threshold := assessment.Chance + minInt(18, maxInt(0, strategic.Score-18)/2)
+		threshold = maxInt(25, minInt(92, threshold))
+		return aiDiplomacyOfferRoll(gs, from, to, diplomacy.ActionProposeAlliance) < threshold
 	}
 	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
 	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
@@ -568,6 +609,22 @@ func aiShouldCancelAlliance(gs *state.GameState, from, to faction.FactionID) boo
 	if rel == nil || rel.Stance != faction.StanceAllied {
 		return false
 	}
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		strategic := diplomacy.AssessStrategicAlliance(gs, from, to)
+		if strategic.ActiveObjectiveConflict {
+			return true
+		}
+		if strategic.ExpansionTensionPenalty > 0 && strategic.ThreatValue == 0 && strategic.Score < 22 {
+			return true
+		}
+		if strategic.Score < strategicAllianceRetentionFloor(gs, from) && rel.Score <= 50 {
+			return true
+		}
+		if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && strategic.ThreatValue == 0 && strategic.Score < 24 {
+			return true
+		}
+		return false
+	}
 	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
 	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
 	if commonEnemy || sharedThreat {
@@ -593,6 +650,17 @@ func aiShouldCancelAlliance(gs *state.GameState, from, to faction.FactionID) boo
 		return true
 	}
 	return false
+}
+
+func strategicAllianceRetentionFloor(gs *state.GameState, fid faction.FactionID) int {
+	floor := 10
+	if gs == nil {
+		return floor
+	}
+	if len(gs.LandRegionsOwnedBy(fid)) >= 8 {
+		floor = 14
+	}
+	return floor
 }
 
 func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) int {
@@ -2227,6 +2295,13 @@ func chooseBestMoveWithStrategicContext(gs *state.GameState, a *army.Army, strat
 		}
 		return ""
 	}
+	if a.IsNaval {
+		if target, handled := aiNavalMissionMove(gs, a, strategicContext); handled {
+			return target
+		}
+	} else if target, handled := aiNavalEmbarkArmyMove(gs, a, strategicContext); handled {
+		return target
+	}
 
 	bestScore := 0
 	var bestTarget world.RegionID
@@ -3141,6 +3216,19 @@ func aiNavalStrategyWithSteps(gs *state.GameState, fid faction.FactionID, steps 
 }
 
 func aiNavalStrategyWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, steps *[]TurnStep) {
+	var strategicContext *StrategicContext
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		strategicContext = prepareStrategicContext(gs, fid)
+	}
+	aiNavalStrategyWithStrategicContextAndSteps(gs, fid, budget, strategicContext, steps)
+}
+
+func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
+		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
+		return
+	}
 	f := gs.Factions[fid]
 	if f.IsEliminated || gs.BuildingTypes == nil || gs.UnitTypes == nil {
 		return
@@ -3524,6 +3612,9 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 				continue
 			}
 			if a1.RegionID == a2.RegionID && a1.IsNaval == a2.IsNaval {
+				if a1.IsNaval && (a1.TradeRouteKey != "" || a2.TradeRouteKey != "") {
+					continue
+				}
 				region := gs.Regions[a1.RegionID]
 				if !aiShouldConsolidateInRegion(gs, region, a1.OwnerID, a1.IsNaval) {
 					continue
@@ -3553,6 +3644,9 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 	for _, other := range aiSortedArmies(gs) {
 		otherID := other.ID
 		if otherID == a.ID || other.RegionID != a.RegionID || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+			continue
+		}
+		if a.IsNaval && (a.TradeRouteKey != "" || other.TradeRouteKey != "") {
 			continue
 		}
 		if len(a.Units)+len(other.Units) <= army.MaxArmySize {

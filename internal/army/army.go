@@ -38,6 +38,11 @@ type Army struct {
 
 	// Limana uğramadan denizde, taşınan birliklerle geçirilen ardışık tur sayısı.
 	TurnsWithoutPort int `json:"turns_without_port,omitempty"`
+
+	// TradeRouteKey, merchant gemileri taşıyan filonun kalıcı ticaret görevidir.
+	// Anahtar ekonomi rotasının gönderen->alan kimliğidir; rota yeniden
+	// oluşturulsa bile görev save/load boyunca korunur.
+	TradeRouteKey string `json:"trade_route_key,omitempty"`
 }
 
 // AssignCommander komutanı bu orduya atar.

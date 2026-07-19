@@ -7,6 +7,44 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-19: `1300_ottoman_rise` AI deniz görevlerine efektif tehdit haritası,
+  güvenli rota ve `%110` filo gücü kapısı eklendi. Düşman güç hesabı gerçek deniz
+  muharebesindeki `TotalStrength`, teknoloji ve komutan etkilerini kullanıyor. Rotalar
+  maksimum tehdit, toplam tehdit, mesafe ve ID sırasıyla deterministik seçildiği için
+  uzun güvenli hat kısa tehlikeli hatta tercih ediliyor. Zorunlu tehditli adımda gerçek
+  filo stack'i düşmanın `%110`una ulaşmadan ilerlemiyor. Görev rotası veya çıkış limanı
+  tehditliyse mevcut/pending filo gücü aynı eşiğe erişene kadar port/escort yatırımı
+  öncelikleniyor. Context tehdidi tur başına, hareket tehdidi rota çağrısı başına bir
+  kez hesaplanıyor. Normal fast 12x2 `6.65 sn`; Osmanlı `2 → 3`, güç `238`, deniz
+  birimi altıncı turda `1`. Kapsam: `internal/ai/naval_threat.go`,
+  `internal/ai/naval_mission.go`, strategic context bağlantıları ve
+  `internal/ai/naval_threat_test.go`; doğrulama `go test -count=1 ./...`.
+
+- 2026-07-19: `1300_ottoman_rise` deniz taşıma AI'sı somut görev ve kapasite açığı
+  modeline taşındı. Aktif genişleme/savunma objective'inde güvenli kara yolu olmayan
+  kıyı hedefi için taşınacak ordu, çıkış limanı, çıkış denizi ve hedef kıyı
+  deterministik seçiliyor. Erişilebilir mevcut boş kapasite ile aynı hattaki pending
+  transport kapasitesi birlikte sayılıyor; yalnız açık kadar gemi üretiliyor. Liman ve
+  escort yatırımı aynı göreve bağlandı. Seçilen ordu limana, boş transport çıkış
+  denizine, yüklenmiş filo objective kıyısına ve görev savaş gemileri taşıma hattına
+  yöneliyor; görevsiz filolar uzak denizde dolaşmıyor. Model 1300'e özel, diğer
+  senaryoların legacy davranışı korunuyor. Normal fast 12x2 `6.39 sn`, Osmanlı `2 → 3`,
+  güç `238`; deniz birimi ilk beş tur `0`, altıncı turda somut görevle `1`. Kapsam:
+  `internal/ai/naval_mission.go`, `internal/ai/{ai.go,fronts.go,strategic_plan.go}` ve
+  `internal/ai/naval_mission_test.go`; doğrulama `go test -count=1 ./...`.
+
+- 2026-07-19: `1300_ottoman_rise` ittifak AI'sı tehdit, tampon devlet, cephe desteği,
+  ticaret ve objective çakışması tabanlı ortak değerlendirmeye taşındı. Teklif sahibi
+  ile hedef AI aynı bileşenleri ayrı perspektiften okuyor. Aktif objective çakışması
+  ittifakı kesin engelliyor; mevcut ittifakta hedef savaşı kilitleyen trade stance'i de
+  kapanıyor. Statik expansion target `-18` aşılabilir gerilim cezası; ortak düşman/büyük
+  tehdit, adayın tehdit sınırındaki tampon konumu, bu cephedeki gerçek ordu gücü, ticaret
+  hattı/kapasitesi ve partner katkısı değer üretiyor. Tehdit ve fayda kaybolduğunda düşük
+  değerli ittifak retention eşiğiyle çözülebiliyor. Model 1300'e özel, legacy senaryolar
+  korunuyor. Normal fast 12x2 `6.25 sn`, Osmanlı `2 → 3`, güç `228`. Kapsam:
+  `internal/diplomacy/alliance_strategy.go`, `internal/ai/ai.go` ve iki paketin stratejik
+  ittifak testleri.
+
 - 2026-07-19: `1300_ottoman_rise` için save/load uyumlu aktif savaş `WarLedger` state'i
   ve amaç odaklı barış kararı eklendi. Savaş başlangıç turu/bölge snapshot'ı, iki tarafın
   birlik kayıpları ve fetihleri, son muharebe ve teklif turu compact + legacy/debug

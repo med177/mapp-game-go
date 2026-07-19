@@ -66,6 +66,8 @@ func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *Strate
 	applySecurityAssignments(ctx)
 	applyRetreatAssignments(ctx)
 	applyRallyAssignments(ctx)
+	buildAINavalThreatSnapshot(ctx)
+	ctx.navalMission = buildAINavalMission(ctx)
 	return ctx
 }
 

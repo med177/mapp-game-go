@@ -42,6 +42,9 @@ type aiBudget struct {
 	Spent         map[aiBudgetCategory]int
 	FlexibleGold  int
 	Order         []aiBudgetCategory
+	// ResourceReserve, somut bir sonraki deniz yatırımı için diğer bütçe
+	// kategorilerinin tüketemeyeceği gerçek malzeme tabanıdır.
+	ResourceReserve economy.ResourceCost
 }
 
 func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) *aiBudget {
@@ -101,7 +104,7 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 		remaining[category] = amount
 		spent[category] = 0
 	}
-	return &aiBudget{
+	budget := &aiBudget{
 		EmergencyGold: emergency,
 		SpendableGold: spendable,
 		Allocation:    allocation,
@@ -109,6 +112,8 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 		Spent:         spent,
 		Order:         aiBudgetExecutionOrder(hasCoast),
 	}
+	budget.ResourceReserve = aiMerchantTradeResourceReserve(gs, fid)
+	return budget
 }
 
 func aiBudgetExecutionOrder(hasCoast bool) []aiBudgetCategory {
@@ -188,6 +193,12 @@ func (budget *aiBudget) canAfford(self *faction.Faction, cost economy.ResourceCo
 	}
 	if self.Grain < cost.Grain || self.Iron < cost.Iron || self.Timber < cost.Timber || self.Stone < cost.Stone {
 		return false
+	}
+	if category != aiBudgetNaval {
+		reserve := budget.ResourceReserve
+		if self.Gold-cost.Gold < budget.EmergencyGold+reserve.Gold || self.Grain-cost.Grain < reserve.Grain || self.Iron-cost.Iron < reserve.Iron || self.Timber-cost.Timber < reserve.Timber || self.Stone-cost.Stone < reserve.Stone {
+			return false
+		}
 	}
 	return cost.Gold <= budget.Remaining[category]+budget.FlexibleGold
 }

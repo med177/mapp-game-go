@@ -135,6 +135,20 @@ func TestArmyCommanderRoundTrip(t *testing.T) {
 	}
 }
 
+func TestArmyMerchantTradeAssignmentRoundTrip(t *testing.T) {
+	original := map[army.ArmyID]*army.Army{
+		"merchant_1": {
+			ID: "merchant_1", OwnerID: "venice", RegionID: "adriatic", IsNaval: true,
+			TradeRouteKey: "venice->mamluk",
+			Units:         []army.Unit{{TypeID: "merchant_ship", CurrentHP: 100}},
+		},
+	}
+	restored := restoreArmiesFromSaveState(convertArmiesToSaveState(original))
+	if got := restored["merchant_1"]; got == nil || got.TradeRouteKey != "venice->mamluk" {
+		t.Fatalf("merchant rota görevi compact save/load sonrasında korunmalıydı: %+v", got)
+	}
+}
+
 func TestCommanderPoolRoundTripKeepsArmyAssignmentLink(t *testing.T) {
 	commander := army.NewCommander("cmd_1", "Mihri Hanım")
 	commander.OwnerID = "player"

@@ -40,13 +40,17 @@ type StrategicContext struct {
 	RallyGatheredPower   int
 	RallyActive          bool
 	RallyReady           bool
+	NavalThreats         []AINavalThreat
+	ThreatenedPortIDs    []world.RegionID
+	navalMission         *aiNavalMission
 
-	gs            *state.GameState
-	factionPower  map[faction.FactionID]int
-	frontierPower map[faction.FactionID]int
-	regionValue   map[world.RegionID]int
-	routeCache    map[aiRouteCacheKey]*aiRouteMap
-	budget        *aiBudget
+	gs               *state.GameState
+	factionPower     map[faction.FactionID]int
+	frontierPower    map[faction.FactionID]int
+	regionValue      map[world.RegionID]int
+	routeCache       map[aiRouteCacheKey]*aiRouteMap
+	navalThreatPower map[world.RegionID]int
+	budget           *aiBudget
 }
 
 type scenarioObjectiveCandidate struct {

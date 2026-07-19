@@ -7,7 +7,7 @@ related: [world/factions, systems/ai, architecture/state-management]
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/peace_assessment.go`, `internal/faction/faction.go`, `internal/game/game.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/faction/faction.go`, `internal/game/game.go`
 
 ## İlişki Yapısı
 
@@ -45,6 +45,13 @@ ayrı bir vassallık state'i ya da relation duruşu oluşturulmaz.
 | `StanceAllied` | İttifak | Score +20 |
 
 Diplomatik duruşların görünen adları, badge metinleri ve editörde dolaşım sırası `internal/faction/stance_metadata.go` içinde merkezileştirilmiştir (`DiplomaticStanceLabelTR`, `DiplomaticStanceBadgeTR`, `AllDiplomaticStances`, `NextDiplomaticStance`).
+
+1300 senaryosunda ittifak kabulü yalnız ilişki ve din puanından oluşmaz. Hedef AI,
+teklif sahibinin ortak düşman/büyük tehdide katkısını, tampon konumunu, tehdit cephesinde
+bulunan gerçek ordu gücünü, ticaret erişimini ve partner güç/bölge katkısını kendi
+perspektifinden değerlendirir. Teklif sahibi AI de aynı bileşenleri ters perspektifte
+asgari girişim eşiğinden geçirir. Aktif objective çakışması hard block'tur; statik
+gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz

@@ -88,6 +88,7 @@ type armySaveState struct {
 	InAmbush           bool                   `json:"a,omitempty"`
 	OverCapacityTurns  int                    `json:"oc,omitempty"`
 	TurnsWithoutPort   int                    `json:"tp,omitempty"`
+	TradeRouteKey      string                 `json:"trk,omitempty"`
 }
 
 type campaignSaveState struct {
@@ -1064,6 +1065,7 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			InAmbush:           current.InAmbush,
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
+			TradeRouteKey:      current.TradeRouteKey,
 		}
 	}
 	return out
@@ -1092,6 +1094,7 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			InAmbush:           current.InAmbush,
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
+			TradeRouteKey:      current.TradeRouteKey,
 		}
 	}
 	return out

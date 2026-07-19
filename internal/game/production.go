@@ -375,6 +375,7 @@ func (g *Game) completeUnit(region *world.Region, ownerID faction.FactionID, uni
 }
 
 func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID, unitTypeID string) string {
+	unitType := g.gs.UnitTypes[unitTypeID]
 	var seaRegion world.RegionID
 	for _, nid := range region.Neighbors {
 		if n, ok := g.gs.Regions[nid]; ok && n.IsSea {
@@ -387,7 +388,7 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 	}
 	var fleet *army.Army
 	for _, a := range g.gs.Armies {
-		if a.RegionID == seaRegion && a.OwnerID == string(ownerID) && a.IsNaval {
+		if a.RegionID == seaRegion && a.OwnerID == string(ownerID) && a.IsNaval && navalFleetAcceptsCompletedUnit(a, unitType, g.gs.UnitTypes) {
 			fleet = a
 			break
 		}
@@ -413,6 +414,30 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 		IsNaval:            true,
 	}
 	return ""
+}
+
+// navalFleetAcceptsCompletedUnit merchant görev filolarını taşıma/savaş
+// filolarından ayrı tutar. Böylece rota başına iki gemilik ekonomik görev,
+// başka bir deniz görevi yüzünden aynı stack içinde sürüklenmez.
+func navalFleetAcceptsCompletedUnit(fleet *army.Army, completed *army.UnitType, unitTypes map[string]*army.UnitType) bool {
+	if fleet == nil || completed == nil || len(fleet.Units) >= army.MaxArmySize {
+		return false
+	}
+	completedMerchant := completed.Category == army.CategoryNavalTrade
+	merchantCount := 0
+	nonMerchantCount := 0
+	for _, unit := range fleet.Units {
+		unitType := unitTypes[unit.TypeID]
+		if unit.TypeID == "merchant_ship" || unitType != nil && unitType.Category == army.CategoryNavalTrade {
+			merchantCount++
+		} else {
+			nonMerchantCount++
+		}
+	}
+	if completedMerchant {
+		return nonMerchantCount == 0 && merchantCount < 2
+	}
+	return merchantCount == 0 && fleet.TradeRouteKey == ""
 }
 
 func preferredDockSettlementID(region *world.Region) string {
