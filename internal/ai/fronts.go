@@ -15,13 +15,15 @@ import (
 type AIArmyRole string
 
 const (
-	AIArmyRoleAssault  AIArmyRole = "assault"
-	AIArmyRoleSiege    AIArmyRole = "siege"
-	AIArmyRoleDefense  AIArmyRole = "defense"
-	AIArmyRoleReserve  AIArmyRole = "reserve"
-	AIArmyRoleRelief   AIArmyRole = "relief"
-	AIArmyRoleRetreat  AIArmyRole = "retreat"
-	AIArmyRoleSecurity AIArmyRole = "security"
+	AIArmyRoleAssault   AIArmyRole = "assault"
+	AIArmyRoleSiege     AIArmyRole = "siege"
+	AIArmyRoleDefense   AIArmyRole = "defense"
+	AIArmyRoleReserve   AIArmyRole = "reserve"
+	AIArmyRoleRelief    AIArmyRole = "relief"
+	AIArmyRoleRetreat   AIArmyRole = "retreat"
+	AIArmyRoleSecurity  AIArmyRole = "security"
+	AIArmyRoleTransport AIArmyRole = "transport"
+	AIArmyRoleEscort    AIArmyRole = "escort"
 )
 
 type AIFront struct {
@@ -68,7 +70,60 @@ func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *Strate
 	applyRallyAssignments(ctx)
 	buildAINavalThreatSnapshot(ctx)
 	ctx.navalMission = buildAINavalMission(ctx)
+	assignAINavalRoles(ctx)
 	return ctx
+}
+
+// assignAINavalRoles projects the active naval mission onto the same runtime
+// ArmyAssignments map used by land forces. Transport and escort fleets keep
+// their operational role visible to movement and diagnostics without entering
+// the land reserve/front allocation.
+func assignAINavalRoles(ctx *StrategicContext) {
+	if ctx == nil || ctx.gs == nil || ctx.FactionID == "" {
+		return
+	}
+	mission := ctx.navalMission
+	for _, fleet := range aiSortedArmies(ctx.gs) {
+		if fleet == nil || !fleet.IsNaval || fleet.OwnerID != string(ctx.FactionID) {
+			continue
+		}
+		if fleet.TransportCapacity(ctx.gs.UnitTypes) > 0 {
+			anchor := fleet.RegionID
+			reason := "nakliye filosu"
+			if mission != nil {
+				if fleet.ID == mission.FleetID && mission.LandingSeaRegionID != "" {
+					anchor = mission.LandingSeaRegionID
+					reason = "aktif nakliye görevi"
+				} else if mission.EmbarkSeaRegionID != "" {
+					anchor = mission.EmbarkSeaRegionID
+					reason = "nakliye çıkışına yaklaş"
+				}
+			}
+			ctx.ArmyAssignments[fleet.ID] = AIArmyAssignment{Role: AIArmyRoleTransport, AnchorRegionID: anchor, Reason: reason}
+			continue
+		}
+		if aiFleetHasWarship(ctx.gs, fleet) {
+			anchor := fleet.RegionID
+			reason := "escort filosu"
+			if mission != nil && mission.EmbarkSeaRegionID != "" {
+				anchor = mission.EmbarkSeaRegionID
+				reason = "nakliye hattı escortu"
+			}
+			ctx.ArmyAssignments[fleet.ID] = AIArmyAssignment{Role: AIArmyRoleEscort, AnchorRegionID: anchor, Reason: reason}
+		}
+	}
+}
+
+func aiFleetHasWarship(gs *state.GameState, fleet *army.Army) bool {
+	if gs == nil || fleet == nil || gs.UnitTypes == nil {
+		return false
+	}
+	for _, unit := range fleet.Units {
+		if unitType := gs.UnitTypes[unit.TypeID]; unitType != nil && unitType.Category == army.CategoryNavalWar {
+			return true
+		}
+	}
+	return false
 }
 
 func buildAIFronts(ctx *StrategicContext) {

@@ -271,6 +271,13 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 				continue
 			}
 			score := objective.Priority*2 - objectiveIndex - targetIndex
+			// Tarihsel olarak kilitli bir objective açıldığında, artık geçerli
+			// olmayan uzun vadeli konsolidasyon planının önüne geçmelidir. Bu
+			// bonus yalnız MinYear/RequiredEventFlags taşıyan objective'lere
+			// verilir; normal profil öncelikleri aynı kalır.
+			if objective.MinYear > 0 || len(objective.RequiredEventFlags) > 0 {
+				score += 10000
+			}
 			if rel := diplomacy.Relation(gs, self.ID, targetID); rel != nil && rel.Stance == faction.StanceWar {
 				score += 50
 			}

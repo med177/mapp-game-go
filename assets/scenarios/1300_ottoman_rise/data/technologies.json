@@ -67,9 +67,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Her bölgeden altın geliri +3",
+    "description_tr": "Her bölgeden altın geliri +2",
     "effects": {
-      "gold_per_region": 3
+      "gold_per_region": 2
     },
     "gold_cost": 12,
     "id": "trade_routes",
@@ -79,10 +79,10 @@
   },
   {
     "category": "economy",
-    "description_tr": "Her bölgeden altın geliri +5; ticari muhasebe gelişir.",
+    "description_tr": "Her bölgeden altın geliri +3; ticari muhasebe gelişir.",
     "effects": {
-      "gold_per_region": 5,
-      "market_gold_mod": 0.15
+      "gold_per_region": 3,
+      "market_gold_mod": 0.1
     },
     "gold_cost": 28,
     "id": "banking",
@@ -106,9 +106,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Pazar geliri iki katına çıkar",
+    "description_tr": "Pazar geliri %75 artar",
     "effects": {
-      "market_gold_mod": 1
+      "market_gold_mod": 0.75
     },
     "gold_cost": 40,
     "id": "guilds",
@@ -331,9 +331,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Vergi kaydı standardizasyonu ile gelir artışı.",
+    "description_tr": "Vergi kaydı standardizasyonu ile ölçülü gelir artışı.",
     "effects": {
-      "gold_per_region": 5
+      "gold_per_region": 3
     },
     "gold_cost": 22,
     "id": "tax_registers",
@@ -436,10 +436,10 @@
   },
   {
     "category": "economy",
-    "description_tr": "Kervansaray ve menzil ağı, iç ticaret akışını hızlandırır.",
+    "description_tr": "Kervansaray ve menzil ağı, iç ticaret akışını ölçülü biçimde hızlandırır.",
     "effects": {
-      "gold_per_region": 3,
-      "market_gold_mod": 0.25
+      "gold_per_region": 2,
+      "market_gold_mod": 0.15
     },
     "gold_cost": 24,
     "id": "caravanserai_network",
@@ -451,9 +451,9 @@
   },
   {
     "category": "economy",
-    "description_tr": "Merkezi darphane ve ayar standardı devlet gelirlerini toparlar.",
+    "description_tr": "Merkezi darphane ve ayar standardı devlet gelirlerini dengeli biçimde toparlar.",
     "effects": {
-      "gold_per_region": 6
+      "gold_per_region": 4
     },
     "gold_cost": 36,
     "id": "mint_standardization",

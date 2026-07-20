@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-06-06
+last_updated: 2026-07-20
 related: [systems/seasons, world/regions, architecture/game-loop]
 ---
 
@@ -96,6 +96,21 @@ Ticaret anlaşması kurulunca aktif olur. `ApplyTradeRoutes()` her tur:
 Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur yeniden hesaplanır).
 
 ## Pasif Ticaret Geliri
+
+### Merchant gemisi rota katkısı (1300)
+
+`TradeRoute` içindeki `MerchantAmountBonus` save'e yazılmayan runtime alanıdır.
+`GameState.RefreshMerchantTradeBonuses()` her ekonomi çözümünden önce merchant
+filolarını yeniden değerlendirir:
+
+- Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; rota başına üst sınır `+2`dir.
+- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve en az bir uçta aktif kıyısal
+  trade center bulunmalıdır. İki uçta da merkez varsa tarihsel link grafiği bağlantısı
+  aranır; filo merkez komşusu denizde değilse bonus verilmez.
+- Askıdaki rota `ApplyTradeRoutes()` tarafından atlanır. Kaynak mal ya da hedef altın
+  yetersizse merchant katkısı bedava gelir üretmez; rota o tur gerçekleşmez.
+- AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
+  yönünü korur ve save/load sonrası yeniden bağlanabilir.
 
 Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:
 

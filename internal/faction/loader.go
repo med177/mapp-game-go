@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 
 	"mapp-game-go/internal/religion"
 )
@@ -84,6 +85,7 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 	for id := range factions {
 		ids = append(ids, id)
 	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
 
 	for i := 0; i < len(ids); i++ {
 		for j := i + 1; j < len(ids); j++ {

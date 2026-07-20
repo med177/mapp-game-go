@@ -57,6 +57,9 @@ const (
 	factionPanelRowH          = 18.0
 	factionPanelSectionH      = 16.0
 	factionPanelTechSummaryH  = 48.0
+	factionHUDFlagSize        = 58.0
+	factionPanelFlagSize      = 44.0
+	regionPanelFlagBadgeSize  = 48.0
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -120,6 +123,10 @@ var (
 
 	settlementImageCache  = map[string]*ebiten.Image{}
 	settlementImageLoaded = map[string]bool{}
+
+	// factionFlagCache senaryo bayraklarını faction ID'siyle eşleştirir.
+	// nil değerler de cache'lenir; böylece eksik asset her frame diskten aranmaz.
+	factionFlagCache = map[string]*ebiten.Image{}
 )
 
 // buildingDisplayOrder bina slotlarının sırasını belirler.
@@ -157,6 +164,50 @@ func ensureMiniMapBg() {
 	}
 	miniMapLoaded = true
 	miniMapBg = tryLoadImage(ActiveScenarioPath + "/maps/mini-map.png")
+}
+
+// factionFlagImage faction ID'sine karşılık gelen senaryo bayrağını döner.
+// Bayrak bulunamazsa nil döner ve HUD mevcut baş harf fallback'ini kullanır.
+func factionFlagImage(fid faction.FactionID) *ebiten.Image {
+	if fid == "" || ActiveScenarioPath == "" {
+		return nil
+	}
+
+	path := filepath.Join(ActiveScenarioPath, "sprites", "flags", string(fid)+".png")
+	if img, loaded := factionFlagCache[path]; loaded {
+		return img
+	}
+
+	img := tryLoadImage(path)
+	factionFlagCache[path] = img
+	return img
+}
+
+func resetFactionFlagCache() {
+	factionFlagCache = map[string]*ebiten.Image{}
+}
+
+// drawFactionFlagBadge kare faction rozetini çizer; asset yoksa baş harfi gösterir.
+func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial string, x, y, size float64, bg, border color.Color) {
+	vector.FillRect(screen, float32(x), float32(y), float32(size), float32(size), bg, false)
+	if flag := factionFlagImage(fid); flag != nil {
+		bounds := flag.Bounds()
+		flagW := float64(bounds.Dx())
+		flagH := float64(bounds.Dy())
+		scale := size / flagW
+		if flagH > flagW {
+			scale = size / flagH
+		}
+		drawW := flagW * scale
+		drawH := flagH * scale
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(scale, scale)
+		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
+		screen.DrawImage(flag, op)
+	} else if initial != "" {
+		DrawTextCentered(screen, initial, x+size/2, y+size/2-8, FaceLarge, color.RGBA{255, 255, 255, 240})
+	}
+	vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
 }
 
 func bottomActionHudRect() (x, y, w, h float32) {
@@ -396,14 +447,12 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	// Sol blok: fraksiyon amblemi + isim
 	if hasPlayer {
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-		cx := float32(34)
-		cy := by + bottomBarH/2
-		vector.FillCircle(screen, cx, cy, 22, fc, true)
-		vector.StrokeCircle(screen, cx, cy, 22, 2, panelBorder, true)
 		initial := string([]rune(f.NameTR)[:1])
-		DrawTextCentered(screen, initial, float64(cx), float64(cy)-8, FaceLarge, color.RGBA{255, 255, 255, 240})
+		flagX := float64(5)
+		flagY := float64(by) + (float64(topStatusH)-factionHUDFlagSize)/2
+		drawFactionFlagBadge(screen, f.ID, initial, flagX, flagY, factionHUDFlagSize, fc, panelBorder)
 
-		DrawText(screen, f.NameTR, 64, float64(by)+25, FaceLarge, fc)
+		DrawText(screen, f.NameTR, flagX+factionHUDFlagSize+13, float64(by)+25, FaceLarge, fc)
 	}
 
 	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
@@ -1775,11 +1824,20 @@ func DrawRegionPanelExpandedScrolled(screen *ebiten.Image, gs *state.GameState, 
 	ly := float64(py) + 10
 	sepW := pw - float32(panelPad*2)
 	production := gs.RegionProductionSummary(region)
+	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
+
+	if region.OwnerID != "" {
+		badgeBG := color.Color(ColorGray)
+		if ownerFaction := gs.Factions[faction.FactionID(region.OwnerID)]; ownerFaction != nil {
+			badgeBG = color.RGBA{ownerFaction.Color[0], ownerFaction.Color[1], ownerFaction.Color[2], 255}
+		}
+		initial := string([]rune(ownerName)[:1])
+		drawFactionFlagBadge(screen, faction.FactionID(region.OwnerID), initial, lx, float64(py)-regionPanelFlagBadgeSize, regionPanelFlagBadgeSize, badgeBG, panelBorder)
+	}
 
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, ColorYellow)
 	ly += 24
 
-	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, ownerName, ownerCol, ownerLabelOutlineColor(ownerCol), gameui.TextLarge, gameui.TextAlignStart)
 	if ownerRect, _, ok := regionOwnerNameRect(gs, rid); ok {
 		underlineY := ownerRect.Y + ownerRect.H - 1
@@ -2027,6 +2085,14 @@ func regionPanelActivityHit(mx, my float64, gs *state.GameState, rid world.Regio
 	return viewport.H > regionPanelActivityMinH && viewport.Hit(mx, my)
 }
 
+func regionActivityContentOrigin(viewport gameui.Rect, scroll float64) (float64, float64) {
+	return viewport.X + panelPad, viewport.Y + 8.0 - scroll
+}
+
+func regionActivityContentCenterX(viewport gameui.Rect) float64 {
+	return viewport.X + viewport.W/2
+}
+
 func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState, region *world.Region, viewport gameui.Rect, scroll float64) {
 	contentHeight := regionActivityNeighborContentHeight(gs, region)
 	scroll = clampRegionPanelValue(scroll, 0, maxFloat64Value(contentHeight-viewport.H))
@@ -2040,12 +2106,15 @@ func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState
 		return
 	}
 	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
-	x := panelPad
-	y := 8.0 - scroll
+	// Ebiten SubImage hedefinin Bounds değeri ana ekran koordinatlarını korur.
+	// Bu nedenle içerik koordinatlarını yerel (12, 8) yerine viewport'un
+	// ekran koordinatında üretmek gerekir; aksi halde metinler ekranın üstüne
+	// çizilip viewport clipping'i tarafından görünmez olur.
+	x, y := regionActivityContentOrigin(viewport, scroll)
 	width := float32(viewport.W)
 
 	if eventCount := regionActiveEventCount(gs, region.ID); eventCount > 0 {
-		drawUICenteredSectionLabel(body, viewport.W/2, y, "AKTİF OLAYLAR")
+		drawUICenteredSectionLabel(body, regionActivityContentCenterX(viewport), y, "AKTİF OLAYLAR")
 		y += 17
 		for i := range gs.ActiveRegionEvents {
 			evt := gs.ActiveRegionEvents[i]
@@ -3038,10 +3107,12 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 		name = string(fid)
 	}
 	nameCol := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-	DrawText(screen, name, lx, ly, FaceLarge, nameCol)
+	drawFactionFlagBadge(screen, fid, string([]rune(name)[:1]), lx, ly-2, factionPanelFlagSize, nameCol, panelBorder)
+	nameX := lx + factionPanelFlagSize + 10
+	DrawText(screen, name, nameX, ly, FaceLarge, nameCol)
 	ly += 24
 
-	drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: sepW}, factionPanelSubtitle(gs, fid, f), ColorGray, gameui.TextSmall, 16, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: nameX, Y: ly, W: sepW - (nameX - lx)}, factionPanelSubtitle(gs, fid, f), ColorGray, gameui.TextSmall, 16, 2)
 	ly += 28
 
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+float32(sepW), 1, panelBorder)

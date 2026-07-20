@@ -662,6 +662,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		legacyArmySheet = nil
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
+		resetFactionFlagCache()
 		resetCommanderPortraitCache()
 	}
 	if prepared != nil {

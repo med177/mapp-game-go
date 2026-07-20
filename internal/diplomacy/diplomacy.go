@@ -522,11 +522,76 @@ func adjacentSeaRegions(gs *state.GameState, regionID world.RegionID) []world.Re
 }
 
 func HasSharedMajorThreat(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+
+	// Build the ownership adjacency and land-count snapshot once. The previous
+	// implementation called sharesBorder and landRegionCount again for every
+	// candidate threat, which made alliance scans quadratic in the region count.
+	landCounts := make(map[faction.FactionID]int, len(gs.Factions))
+	borders := make(map[faction.FactionID]map[faction.FactionID]struct{}, len(gs.Factions))
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID == "" {
+			continue
+		}
+		owner := faction.FactionID(region.OwnerID)
+		landCounts[owner]++
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" {
+				continue
+			}
+			if borders[owner] == nil {
+				borders[owner] = make(map[faction.FactionID]struct{})
+			}
+			borders[owner][faction.FactionID(neighbor.OwnerID)] = struct{}{}
+		}
+	}
+
+	powers := make(map[faction.FactionID]int, len(gs.Factions))
+	powerOf := func(fid faction.FactionID) int {
+		if power, ok := powers[fid]; ok {
+			return power
+		}
+		power := MilitaryPower(gs, fid)
+		powers[fid] = power
+		return power
+	}
+	sharesBorderSnapshot := func(left, right faction.FactionID) bool {
+		_, ok := borders[left][right]
+		return ok
+	}
+	isMajorThreatSnapshot := func(threat, target faction.FactionID) bool {
+		if threat == "" || target == "" || threat == target {
+			return false
+		}
+		threatFaction := gs.Factions[threat]
+		targetFaction := gs.Factions[target]
+		if threatFaction == nil || targetFaction == nil || threatFaction.IsEliminated || targetFaction.IsEliminated {
+			return false
+		}
+		if !sharesBorderSnapshot(threat, target) && !IsWar(gs, threat, target) {
+			return false
+		}
+
+		threatPower := powerOf(threat)
+		targetPower := powerOf(target)
+		powerThreat := false
+		switch {
+		case threatPower > 0 && targetPower == 0:
+			powerThreat = true
+		case targetPower > 0 && threatPower > max(targetPower*13/10, targetPower+15):
+			powerThreat = true
+		}
+		return powerThreat || landCounts[threat] > landCounts[target]+2
+	}
+
 	for otherID, other := range gs.Factions {
 		if otherID == a || otherID == b || other == nil || other.IsEliminated {
 			continue
 		}
-		if isMajorThreatTo(gs, otherID, a) && isMajorThreatTo(gs, otherID, b) {
+		if isMajorThreatSnapshot(otherID, a) && isMajorThreatSnapshot(otherID, b) {
 			return true
 		}
 	}
@@ -613,8 +678,10 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		return assessment
 	}
 	if gs.ScenarioID == "1300_ottoman_rise" {
-		assessment.ActorStrategic = assessStrategicAlliance(gs, actor, target, commonEnemy, sharedMajorThreat)
-		assessment.TargetStrategic = assessStrategicAlliance(gs, target, actor, commonEnemy, sharedMajorThreat)
+		// Trade reachability is a pair-level fact. Reuse the result for both
+		// strategic perspectives instead of running the land/sea BFS twice.
+		assessment.ActorStrategic = assessStrategicAllianceWithTrade(gs, actor, target, commonEnemy, sharedMajorThreat, hasTradeAccess)
+		assessment.TargetStrategic = assessStrategicAllianceWithTrade(gs, target, actor, commonEnemy, sharedMajorThreat, hasTradeAccess)
 		if assessment.ActorStrategic.ActiveObjectiveConflict || assessment.TargetStrategic.ActiveObjectiveConflict {
 			assessment.BlockReason = "Aktif stratejik hedefler ittifakla çakışıyor"
 			return assessment

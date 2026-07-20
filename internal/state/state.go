@@ -149,6 +149,7 @@ type GameState struct {
 	Factions     map[faction.FactionID]*faction.Faction `json:"factions"`
 	FactionOrder []faction.FactionID                    `json:"-"`
 	Armies       map[army.ArmyID]*army.Army             `json:"armies"`
+	ArmyOrder    []army.ArmyID                          `json:"-"`
 	Commanders   map[string]*army.Commander             `json:"commanders,omitempty"`
 	AIPlans      map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
 	ShapeData    world.CountryShapeJSON                 `json:"-"`

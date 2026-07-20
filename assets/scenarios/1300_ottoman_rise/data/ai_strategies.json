@@ -87,7 +87,716 @@
           "target_factions": ["safavid"],
           "priority": 80,
           "commitment": 75,
-          "min_year": 1501
+          "min_year": 1501,
+          "required_event_flags": ["safavid_rise"]
+        }
+      ]
+    },
+    {
+      "faction_id": "ahiler",
+      "profile": "central_buffer_survival",
+      "objectives": [
+        {
+          "id": "hold_sivrihisar_buffer",
+          "kind": "defend",
+          "target_factions": ["ottoman", "germiyan_bey", "ilkhanate"],
+          "target_regions": ["sivrihisar"],
+          "priority": 96,
+          "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "aydin_bey",
+      "profile": "aegean_maritime_competition",
+      "objectives": [
+        {
+          "id": "contest_saruhan_coast",
+          "kind": "expand",
+          "target_factions": ["saruhan_bey"],
+          "target_regions": ["saruhan"],
+          "priority": 92,
+          "commitment": 62,
+          "allow_vassalization": true,
+          "annex_region_ids": ["saruhan"]
+        },
+        {
+          "id": "secure_aegean_survival",
+          "kind": "defend",
+          "target_factions": ["ottoman", "germiyan_bey"],
+          "target_regions": ["izmir"],
+          "priority": 82,
+          "commitment": 72
+        }
+      ]
+    },
+    {
+      "faction_id": "candar_bey",
+      "profile": "black_sea_frontier",
+      "objectives": [
+        {
+          "id": "control_pontic_corridor",
+          "kind": "expand",
+          "target_factions": ["canik_bey"],
+          "target_regions": ["eretna"],
+          "priority": 88,
+          "commitment": 58,
+          "allow_vassalization": true,
+          "annex_region_ids": ["eretna"]
+        },
+        {
+          "id": "hold_sinop_paphlagonia",
+          "kind": "defend",
+          "target_factions": ["ilkhanate", "east_rome"],
+          "target_regions": ["candaroglu", "paphlagonia", "sinop"],
+          "priority": 80,
+          "commitment": 70
+        }
+      ]
+    },
+    {
+      "faction_id": "canik_bey",
+      "profile": "pontic_buffer_survival",
+      "objectives": [
+        {
+          "id": "resist_candar_pressure",
+          "kind": "defend",
+          "target_factions": ["candar_bey", "ilkhanate"],
+          "target_regions": ["eretna"],
+          "priority": 94,
+          "commitment": 76
+        }
+      ]
+    },
+    {
+      "faction_id": "dulkadir_bey",
+      "profile": "levant_buffer_survival",
+      "objectives": [
+        {
+          "id": "hold_dulkadir_buffer",
+          "kind": "defend",
+          "target_factions": ["mamluk", "ilkhanate", "karaman_bey"],
+          "target_regions": ["dulkadir"],
+          "priority": 95,
+          "commitment": 78
+        },
+        {
+          "id": "press_cilician_frontier",
+          "kind": "expand",
+          "target_factions": ["ramazan_bey"],
+          "target_regions": ["cilicia"],
+          "priority": 86,
+          "commitment": 55,
+          "allow_vassalization": true,
+          "annex_region_ids": ["cilicia"]
+        }
+      ]
+    },
+    {
+      "faction_id": "esrefoglu_bey",
+      "profile": "central_anatolian_survival",
+      "objectives": [
+        {
+          "id": "hold_beysehir_pass",
+          "kind": "defend",
+          "target_factions": ["ilkhanate", "ottoman", "karaman_bey"],
+          "target_regions": ["beysehir"],
+          "priority": 94,
+          "commitment": 74
+        },
+        {
+          "id": "contest_taurus_passes",
+          "kind": "expand",
+          "target_factions": ["hamid_bey"],
+          "target_regions": ["teke"],
+          "priority": 84,
+          "commitment": 52,
+          "allow_vassalization": true,
+          "annex_region_ids": ["teke"]
+        }
+      ]
+    },
+    {
+      "faction_id": "germiyan_bey",
+      "profile": "western_anatolian_rival",
+      "objectives": [
+        {
+          "id": "contest_hamid_frontier",
+          "kind": "expand",
+          "target_factions": ["hamid_bey"],
+          "target_regions": ["hamideli", "teke"],
+          "priority": 90,
+          "commitment": 58,
+          "allow_vassalization": true,
+          "annex_region_ids": ["hamideli"]
+        },
+        {
+          "id": "hold_kutahya_against_ottoman",
+          "kind": "defend",
+          "target_factions": ["ottoman"],
+          "target_regions": ["germiyan", "kutahya"],
+          "priority": 84,
+          "commitment": 76
+        }
+      ]
+    },
+    {
+      "faction_id": "hamid_bey",
+      "profile": "taurus_frontier_competition",
+      "objectives": [
+        {
+          "id": "secure_mentese_passes",
+          "kind": "expand",
+          "target_factions": ["mentese_bey"],
+          "target_regions": ["mentese", "mentese_hinterland"],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true,
+          "annex_region_ids": ["mentese"]
+        },
+        {
+          "id": "hold_taurus_beylik",
+          "kind": "defend",
+          "target_factions": ["karaman_bey", "germiyan_bey", "ottoman"],
+          "target_regions": ["teke", "hamideli"],
+          "priority": 82,
+          "commitment": 72
+        }
+      ]
+    },
+    {
+      "faction_id": "karaman_bey",
+      "profile": "central_anatolian_expansion",
+      "objectives": [
+        {
+          "id": "press_cilician_frontier",
+          "kind": "expand",
+          "target_factions": ["ramazan_bey"],
+          "target_regions": ["cilicia"],
+          "priority": 92,
+          "commitment": 65,
+          "allow_vassalization": true,
+          "annex_region_ids": ["cilicia"]
+        },
+        {
+          "id": "hold_karaman_core",
+          "kind": "defend",
+          "target_factions": ["ilkhanate", "hamid_bey", "ottoman"],
+          "target_regions": ["karaman"],
+          "priority": 84,
+          "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "karesioglu_bey",
+      "profile": "marmara_buffer_survival",
+      "objectives": [
+        {
+          "id": "hold_marmara_bridgehead",
+          "kind": "defend",
+          "target_factions": ["ottoman", "germiyan_bey"],
+          "target_regions": ["aydinoglu"],
+          "priority": 96,
+          "commitment": 78
+        },
+        {
+          "id": "contest_saruhan_interior",
+          "kind": "expand",
+          "target_factions": ["saruhan_bey"],
+          "target_regions": ["saruhan"],
+          "priority": 82,
+          "commitment": 52,
+          "allow_vassalization": true,
+          "annex_region_ids": ["saruhan"]
+        }
+      ]
+    },
+    {
+      "faction_id": "mentese_bey",
+      "profile": "aegean_coastal_survival",
+      "objectives": [
+        {
+          "id": "contest_aydin_coast",
+          "kind": "expand",
+          "target_factions": ["aydin_bey"],
+          "target_regions": ["izmir"],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true,
+          "annex_region_ids": ["izmir"]
+        },
+        {
+          "id": "hold_mugla_coast",
+          "kind": "defend",
+          "target_factions": ["aydin_bey", "germiyan_bey", "ottoman"],
+          "target_regions": ["mentese", "mentese_hinterland"],
+          "priority": 82,
+          "commitment": 72
+        }
+      ]
+    },
+    {
+      "faction_id": "ramazan_bey",
+      "profile": "cilician_buffer_survival",
+      "objectives": [
+        {
+          "id": "hold_cilician_gate",
+          "kind": "defend",
+          "target_factions": ["karaman_bey", "mamluk", "ilkhanate"],
+          "target_regions": ["cilicia"],
+          "priority": 96,
+          "commitment": 78
+        },
+        {
+          "id": "press_northern_buffer",
+          "kind": "expand",
+          "target_factions": ["dulkadir_bey"],
+          "target_regions": ["dulkadir"],
+          "priority": 80,
+          "commitment": 50,
+          "allow_vassalization": true,
+          "annex_region_ids": ["dulkadir"]
+        }
+      ]
+    },
+    {
+      "faction_id": "saruhan_bey",
+      "profile": "aegean_interior_survival",
+      "objectives": [
+        {
+          "id": "contest_aydinoglu_coast",
+          "kind": "expand",
+          "target_factions": ["aydin_bey"],
+          "target_regions": ["izmir"],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true,
+          "annex_region_ids": ["izmir"]
+        },
+        {
+          "id": "hold_manisa_buffer",
+          "kind": "defend",
+          "target_factions": ["karesioglu_bey", "germiyan_bey", "ottoman"],
+          "target_regions": ["saruhan"],
+          "priority": 82,
+          "commitment": 70
+        }
+      ]
+    },
+    {
+      "faction_id": "venice",
+      "profile": "adriatic_merchant_thalassocracy",
+      "objectives": [
+        {
+          "id": "protect_adriatic_and_island_trade",
+          "kind": "defend",
+          "target_factions": ["genoa", "ottoman", "east_rome"],
+          "target_regions": ["venice", "crete", "cyprus", "north_cyprus"],
+          "priority": 100,
+          "commitment": 72
+        },
+        {
+          "id": "secure_eastern_trade_gate",
+          "kind": "expand",
+          "target_factions": ["east_rome"],
+          "target_regions": ["constantinople", "thrace"],
+          "priority": 78,
+          "commitment": 48,
+          "readiness_regions": ["venice", "crete"]
+        }
+      ]
+    },
+    {
+      "faction_id": "genoa",
+      "profile": "western_merchant_network",
+      "objectives": [
+        {
+          "id": "protect_ligurian_and_black_sea_trade",
+          "kind": "defend",
+          "target_factions": ["venice", "east_rome", "mamluk"],
+          "target_regions": ["genoa", "crimea", "corsica"],
+          "priority": 100,
+          "commitment": 70
+        },
+        {
+          "id": "secure_black_sea_trade_gate",
+          "kind": "expand",
+          "target_factions": ["trebizond_emp"],
+          "target_regions": ["trebizond"],
+          "priority": 76,
+          "commitment": 46,
+          "readiness_regions": ["crimea", "corsica"]
+        }
+      ]
+    },
+    {
+      "faction_id": "mamluk",
+      "profile": "levant_sultanate_frontier",
+      "objectives": [
+        {
+          "id": "break_ilkhanate_mesopotamian_front",
+          "kind": "expand",
+          "target_factions": ["ilkhanate"],
+          "target_regions": ["mosul", "baghdad", "malatya", "akkoyunlu"],
+          "priority": 94,
+          "commitment": 62,
+          "readiness_regions": ["damascus", "aleppo"],
+          "annex_region_ids": ["mosul", "baghdad"]
+        },
+        {
+          "id": "hold_levant_cairo_corridor",
+          "kind": "defend",
+          "target_factions": ["ilkhanate", "ottoman"],
+          "target_regions": ["damascus", "aleppo", "jordan", "egypt"],
+          "priority": 86,
+          "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "ilkhanate",
+      "profile": "eastern_imperial_frontier",
+      "objectives": [
+        {
+          "id": "press_levant_frontier",
+          "kind": "expand",
+          "target_factions": ["mamluk"],
+          "target_regions": ["damascus", "aleppo", "jordan", "new_region_227"],
+          "priority": 94,
+          "commitment": 70,
+          "readiness_regions": ["mosul", "baghdad", "malatya"],
+          "annex_region_ids": ["damascus", "aleppo"]
+        },
+        {
+          "id": "hold_mesopotamia_persia_core",
+          "kind": "defend",
+          "target_factions": ["mamluk", "safavid", "georgia_kingdom"],
+          "target_regions": ["baghdad", "mosul", "malatya", "azerbaijan"],
+          "priority": 88,
+          "commitment": 84
+        }
+      ]
+    },
+    {
+      "faction_id": "serbian_empire",
+      "profile": "balkan_hegemony_buffer",
+      "objectives": [
+        {
+          "id": "hold_serbian_mountain_core",
+          "kind": "defend",
+          "target_factions": ["east_rome", "hungarian_kingdom", "ottoman"],
+          "target_regions": ["nis", "kosovo", "rascia"],
+          "priority": 96,
+          "commitment": 82
+        },
+        {
+          "id": "press_albanian_frontier",
+          "kind": "expand",
+          "target_factions": ["arnavut_des"],
+          "target_regions": ["albania"],
+          "priority": 55,
+          "commitment": 45,
+          "allow_vassalization": true,
+          "annex_region_ids": ["albania"]
+        }
+      ]
+    },
+    {
+      "faction_id": "bulgarian_empire",
+      "profile": "danubian_balkan_defense",
+      "objectives": [
+        {
+          "id": "hold_danube_balkan_line",
+          "kind": "defend",
+          "target_factions": ["serbian_empire", "east_rome", "wallachia_prince", "ottoman"],
+          "target_regions": ["bulgaria", "vidin", "dobruja"],
+          "priority": 96,
+          "commitment": 80
+        },
+        {
+          "id": "secure_lower_danube",
+          "kind": "expand",
+          "target_factions": ["wallachia_prince"],
+          "target_regions": ["oltenia", "wallachia"],
+          "priority": 78,
+          "commitment": 52,
+          "allow_vassalization": true,
+          "annex_region_ids": ["oltenia"]
+        }
+      ]
+    },
+    {
+      "faction_id": "epir",
+      "profile": "epirus_survival",
+      "objectives": [
+        {
+          "id": "hold_epirus_thessaly",
+          "kind": "defend",
+          "target_factions": ["east_rome", "arnavut_des", "ottoman"],
+          "target_regions": ["epirus", "thessaly"],
+          "priority": 96,
+          "commitment": 76
+        },
+        {
+          "id": "contest_athens_corridor",
+          "kind": "expand",
+          "target_factions": ["athena_duk"],
+          "target_regions": ["greece"],
+          "priority": 78,
+          "commitment": 50,
+          "allow_vassalization": true,
+          "annex_region_ids": ["greece"]
+        }
+      ]
+    },
+    {
+      "faction_id": "arnavut_des",
+      "profile": "albanian_mountain_survival",
+      "objectives": [
+        {
+          "id": "hold_albanian_mountains",
+          "kind": "defend",
+          "target_factions": ["serbian_empire", "epir", "east_rome", "ottoman"],
+          "target_regions": ["albania"],
+          "priority": 98,
+          "commitment": 80
+        },
+        {
+          "id": "press_epirus_passes",
+          "kind": "expand",
+          "target_factions": ["epir"],
+          "target_regions": ["epirus"],
+          "priority": 76,
+          "commitment": 48,
+          "allow_vassalization": true,
+          "annex_region_ids": ["epirus"]
+        }
+      ]
+    },
+    {
+      "faction_id": "athena_duk",
+      "profile": "aegean_city_state_survival",
+      "objectives": [
+        {
+          "id": "hold_athens_coast",
+          "kind": "defend",
+          "target_factions": ["epir", "achaea_principality", "east_rome", "ottoman"],
+          "target_regions": ["greece"],
+          "priority": 98,
+          "commitment": 76
+        }
+      ]
+    },
+    {
+      "faction_id": "wallachia_prince",
+      "profile": "danube_buffer_survival",
+      "objectives": [
+        {
+          "id": "hold_wallachian_buffer",
+          "kind": "defend",
+          "target_factions": ["bulgarian_empire", "serbian_empire", "hungarian_kingdom", "golden_horde", "ottoman"],
+          "target_regions": ["wallachia", "oltenia", "bessarabia"],
+          "priority": 98,
+          "commitment": 78
+        },
+        {
+          "id": "press_dobruja_frontier",
+          "kind": "expand",
+          "target_factions": ["bulgarian_empire"],
+          "target_regions": ["dobruja"],
+          "priority": 74,
+          "commitment": 46,
+          "allow_vassalization": true,
+          "annex_region_ids": ["dobruja"]
+        }
+      ]
+    },
+    {
+      "faction_id": "russia",
+      "profile": "moscow_consolidation",
+      "objectives": [
+        {
+          "id": "consolidate_eastern_rus_frontier",
+          "kind": "expand",
+          "target_factions": ["golden_horde"],
+          "target_regions": ["ukrainian_steppe", "new_region_239"],
+          "priority": 88,
+          "commitment": 58,
+          "readiness_regions": ["moscow", "new_region_236"],
+          "annex_region_ids": ["ukrainian_steppe"]
+        },
+        {
+          "id": "hold_moscow_northern_frontier",
+          "kind": "defend",
+          "target_factions": ["golden_horde", "lithuanian_gd", "novgorod_rep"],
+          "target_regions": ["moscow", "nizhny_novgorod", "new_region_236", "dagestan"],
+          "priority": 84,
+          "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "golden_horde",
+      "profile": "steppe_hegemony",
+      "objectives": [
+        {
+          "id": "press_rus_steppe",
+          "kind": "expand",
+          "target_factions": ["russia"],
+          "target_regions": ["moscow", "new_region_236"],
+          "priority": 94,
+          "commitment": 72,
+          "readiness_regions": ["ukrainian_steppe", "kiev"],
+          "annex_region_ids": ["ukrainian_steppe", "kiev"]
+        },
+        {
+          "id": "hold_kiev_black_sea_steppe",
+          "kind": "defend",
+          "target_factions": ["russia", "lithuanian_gd", "polish_kingdom", "wallachia_prince"],
+          "target_regions": ["ukrainian_steppe", "kiev", "moldova", "new_region_239"],
+          "priority": 86,
+          "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "teutonic_order",
+      "profile": "baltic_crusader_frontier",
+      "objectives": [
+        {
+          "id": "press_lithuanian_frontier",
+          "kind": "expand",
+          "target_factions": ["lithuanian_gd"],
+          "target_regions": ["lithuania", "belarus"],
+          "priority": 92,
+          "commitment": 68,
+          "readiness_regions": ["konigsberg", "latvia"],
+          "annex_region_ids": ["lithuania"]
+        },
+        {
+          "id": "hold_baltic_ports",
+          "kind": "defend",
+          "target_factions": ["lithuanian_gd", "polish_kingdom", "novgorod_rep"],
+          "target_regions": ["konigsberg", "latvia", "estonia"],
+          "priority": 84,
+          "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "novgorod_rep",
+      "profile": "northern_trade_survival",
+      "objectives": [
+        {
+          "id": "hold_novgorod_trade_gate",
+          "kind": "defend",
+          "target_factions": ["teutonic_order", "golden_horde", "lithuanian_gd", "russia"],
+          "target_regions": ["novgorod"],
+          "priority": 98,
+          "commitment": 74
+        }
+      ]
+    },
+    {
+      "faction_id": "lithuanian_gd",
+      "profile": "eastern_baltic_expansion",
+      "objectives": [
+        {
+          "id": "contest_kievan_steppe",
+          "kind": "expand",
+          "target_factions": ["golden_horde"],
+          "target_regions": ["kiev", "ukrainian_steppe"],
+          "priority": 88,
+          "commitment": 62,
+          "readiness_regions": ["lithuania", "belarus"],
+          "annex_region_ids": ["kiev"]
+        },
+        {
+          "id": "hold_lithuanian_core",
+          "kind": "defend",
+          "target_factions": ["teutonic_order", "golden_horde", "polish_kingdom"],
+          "target_regions": ["lithuania", "belarus"],
+          "priority": 84,
+          "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "safavid",
+      "profile": "ardabil_survival_and_awakening",
+      "objectives": [
+        {
+          "id": "hold_southern_persian_core",
+          "kind": "consolidate",
+          "target_regions": ["southern_persia"],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": ["southern_persia"]
+        },
+        {
+          "id": "rise_into_persian_heartland_1501",
+          "kind": "expand",
+          "target_factions": ["ilkhanate"],
+          "target_regions": ["western_persia", "azerbaijan", "northern_persia", "baghdad", "mosul"],
+          "priority": 96,
+          "commitment": 74,
+          "min_year": 1501,
+          "required_event_flags": ["safavid_rise"],
+          "readiness_regions": ["southern_persia"],
+          "annex_region_ids": ["azerbaijan", "western_persia", "northern_persia"]
+        }
+      ]
+    },
+    {
+      "faction_id": "england",
+      "profile": "continental_claim_awakening",
+      "objectives": [
+        {
+          "id": "secure_english_channel_and_isles",
+          "kind": "consolidate",
+          "target_regions": ["london", "wessex", "east_anglia", "mercia", "yorkshire", "lancashire", "wales", "ulster", "the_pale", "new_region_251"],
+          "priority": 100,
+          "commitment": 76,
+          "readiness_regions": ["london", "lancashire"]
+        },
+        {
+          "id": "resume_french_claims_1337",
+          "kind": "expand",
+          "target_factions": ["france"],
+          "target_regions": ["normandy", "anjou", "champagne", "paris"],
+          "priority": 96,
+          "commitment": 70,
+          "min_year": 1337,
+          "required_event_flags": ["hundred_years_war_started"],
+          "readiness_regions": ["london", "lancashire"],
+          "annex_region_ids": ["normandy", "anjou", "champagne"]
+        }
+      ]
+    },
+    {
+      "faction_id": "france",
+      "profile": "royal_recovery_after_1337",
+      "objectives": [
+        {
+          "id": "protect_french_royal_core",
+          "kind": "consolidate",
+          "target_regions": ["paris", "normandy", "anjou", "champagne", "burgundy", "brittany", "provence", "languedoc"],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": ["paris", "normandy"]
+        },
+        {
+          "id": "recover_english_claims_1337",
+          "kind": "expand",
+          "target_factions": ["england"],
+          "target_regions": ["london", "wessex", "east_anglia", "mercia", "yorkshire", "lancashire", "wales"],
+          "priority": 96,
+          "commitment": 72,
+          "min_year": 1337,
+          "required_event_flags": ["hundred_years_war_started"],
+          "readiness_regions": ["paris", "normandy"],
+          "annex_region_ids": ["normandy", "london", "wessex"]
         }
       ]
     },
@@ -109,6 +818,27 @@
           "target_factions": ["ottoman"],
           "target_regions": ["bithynia", "bilecik_frontier"],
           "priority": 72,
+          "commitment": 55
+        }
+      ]
+    },
+    {
+      "faction_id": "flanders_county",
+      "profile": "vassal_trade_defense",
+      "objectives": [
+        {
+          "id": "hold_flanders_trade",
+          "kind": "defend",
+          "target_factions": ["france"],
+          "target_regions": ["flanders"],
+          "priority": 100,
+          "commitment": 68
+        },
+        {
+          "id": "protect_low_country_trade",
+          "kind": "consolidate",
+          "target_regions": ["flanders", "holland", "friesland"],
+          "priority": 76,
           "commitment": 55
         }
       ]

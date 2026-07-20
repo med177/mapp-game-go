@@ -1,11 +1,175 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-20: Bölge panelindeki aktif olaylar ve komşu listesi çerçevesi görünürken
+  metinlerin boş kalmasına neden olan `SubImage` koordinat hatası düzeltildi. İçerik
+  origin'i viewport ekran koordinatlarına taşındı; scroll ve çizim sözleşmesi için
+  regression testi eklendi. Doğrulama: `go test ./...`.
+
+- 2026-07-20: Üst-sol durum HUD'unda oyuncu devletinin baş harfi yerine, aktif senaryoda
+  faction ID'siyle eşleşen `sprites/flags/<faction-id>.png` bayrağı kare rozet içinde
+  gösteriliyor; dosya bulunamazsa aynı kare zeminde baş harfi fallback'i korunuyor. Aynı
+  bayrak rozeti devlet bilgi paneli başlığında da devlet isminin soluna ve bölge bilgi
+  paneli çerçevesinin hemen üstüne bitişik sahiplik kimlik rozeti olarak eklendi; bölge
+  ve devlet adlarının eski sol başlık konumu korundu. Bayrak asset'leri yol bazlı
+  cache'leniyor ve senaryo değişiminde temizleniyor. Kapsam:
+  `internal/render/{panel.go,renderer.go}`; test: `go test ./internal/render`.
+
+- 2026-07-20: Faz 0 event veri bütünlüğü tamamlandı. `events.json` içindeki etkilenen
+  fraksiyonlar, diplomatik ilişki hedefleri, sahip olunması gereken bölgeler ve teknoloji
+  koşulları ile seçim etkilerindeki teknoloji/fraksiyon referansları senaryo testinde
+  doğrulanıyor. Test-local JSON sözleşmesi kullanılarak `scenario -> events -> state ->
+  scenario` import döngüsü engellendi.
+
+- 2026-07-20: Faz 7 Anadolu AI profilleri tamamlandı. 13 beylik için yerel rekabet,
+  çekirdek/geçit savunması ve savaş sonrası vassallık/ilhak objective'leri senaryo
+  verisine işlendi; seçili Ege, Marmara, Pontus ve Toros komşulukları `-10` rekabet
+  ilişkisiyle başlangıçta ayrıştırıldı. `scenario_1300_integrity_test.go` profil ve
+  objective referanslarını doğruluyor; Normal fast iki seed ve medium 42 tur x 4 seed
+  tempo profili (`27.57 sn`) başarılı.
+
+- 2026-07-20: Faz 7 Venedik/Ceneviz deniz-ticaret profilleri tamamlandı. Venedik için
+  Adriyatik-Girit-Kıbrıs savunması ve Konstantinopolis kapısı; Ceneviz için Cenova-
+  Korsika-Kırım ticaret ağı ve Trabzon kapısı objective'leri eklendi. Mevcut merchant,
+  liman ve escort güvenlik akışı veri profilleriyle birleşiyor; bölgesel profil testi iki
+  deniz cumhuriyetini de doğruluyor.
+
+- 2026-07-20: Faz 7 Memlük/İlhanlı ana cephesi tamamlandı. Açılış savaşı Mosul-Bağdat-
+  Şam-Halep hattında karşılıklı expand objective'lerine bağlandı; Memlük'ün Kahire-
+  Levant koridoru, İlhanlı'nın Bağdat-Musul-Malatya-Azerbaycan çekirdeği savunma
+  objective'leri ve readiness bölgeleri tanımlandı. Senaryo plan testi iki devletin
+  hedef devlet/bölge seçimini doğruluyor; Normal fast tempo testi başarılı.
+
+- 2026-07-20: Faz 7 Balkan profilleri tamamlandı. Sırbistan, Bulgaristan, Epir,
+  Arnavutluk, Atina ve Eflak için yakın sınır/geçit savunması ve düşük öncelikli yerel
+  genişleme objective'leri işlendi. Altı devletin açılış planı savunma objective'ine
+  yöneliyor; Normal fast tempo testi başarılı.
+
+- 2026-07-20: Faz 7 Rusya/Altın Orda/Baltık profilleri tamamlandı. Rusya'nın Moskova-
+  Nijni Novgorod-Dağıstan konsolidasyonu ve Ukrayna bozkırı yönü, Altın Orda'nın
+  Kiev-Rusya/Litvanya baskısı, Teuton Tarikatı'nın Konigsberg-Litvanya cephesi ve
+  liman savunması, Novgorod'un ticaret kapısı savunması ve Litvanya'nın Belarus-Kiev
+  yönü senaryo AI verisine işlendi. Beş profilin ilk objective sözleşmesi senaryo
+  bütünlük ve açılış plan testleriyle doğrulandı.
+
+- 2026-07-20: Faz 7 İngiltere-Fransa tarihsel savaş kilidi tamamlandı. 1300'de iki
+  devlet barışta başlıyor ve genel expansion target'ları temizleniyor; İngiltere'nin
+  Kanal/ada, Fransa'nın kraliyet çekirdeği konsolidasyon profilleri aktif kalıyor.
+  Mayıs 1337 event'i savaşı başlatıp `hundred_years_war_started` bayrağını yazıyor;
+  yıl ve event bayrağı hard gate'ini geçen iki kıta objective'i sonraki planlamada
+  devreye giriyor. Diplomasi, profil ve game geçiş testi başarılı.
+
+- 2026-07-20: Faz 7 Safevî survival/yükseliş profili tamamlandı. 1300'de Güney İran
+  çekirdeğini koruyan konsolidasyon objective'i aktif; Ocak 1501 `safavid_rise_1501`
+  olayı `safavid_rise` bayrağıyla kaynak/teknoloji takviyesi veriyor. Bayrak sonrası
+  Safevîlerin Azerbaycan-Batı/Kuzey İran ve Mezopotamya genişleme objective'i, Osmanlı'nın
+  doğu rekabetiyle aynı tarihsel hard gate'e bağlandı. Safevî geçiş testi başarılı.
+
+- 2026-07-20: Erken ekonomi teknolojileri kalibre edildi. Ticaret Yolları, Bankacılık,
+  Loncalar, Tahrir Defterleri, Kervansaray Ağı ve Darphane Standardı'nın bölge/pazar
+  getirileri kademeli olarak düşürüldü; önkoşul, araştırma maliyeti ve askeri teknoloji
+  değerleri korundu. Normal medium 42x4 ölçümünde büyük devletlerin 42 aylık altın
+  birikimi `27–31 bin` bandından yaklaşık `20–25 bin` bandına indi. Senaryo teknoloji
+  sözleşmesi testi eklendi.
+
+- 2026-07-20: Faz 8 çok-seed kabul bantları test sözleşmesine alındı. Medium 42x4 tempo
+  raporu büyük/orta devletlerin altın kazanımını fraksiyon gruplarına göre doğruluyor;
+  fast 12x2 hızlı regresyon ve iki turluk tam state replay deterministiklik kapsamı
+  korunuyor. `assert1300CalibrationBands` yalnız medium veya daha geniş profillerde
+  çalışarak normal test akışını yavaşlatmıyor.
+
+- 2026-07-20: 1300 AI diplomasi taramasında ilişki skoru 25 altındaki barış çiftleri
+  stratejik ittifak değerlendirmesine sokulmuyor. Bu güvenli kısa devre ile 42 tur x 8
+  seed tempo `103.6 sn`den `101.6 sn`ye indi; nihai 60 saniye hedefi için optimizasyon
+  çalışması devam ediyor.
+
+- 2026-07-20: Faz 1 refactor'ın ilk diliminde faction/region/army sıralama yardımcıları
+  `internal/ai/ordering.go` dosyasına taşındı. Sıralı map erişimi, nil davranışı ve
+  deterministik ID sırası için test eklendi; AI ve game davranış sözleşmesi korundu.
+
+- 2026-07-20: Diplomasi karar döngüsü (`aiHandleDiplomacyWithSteps`) `internal/ai/diplomacy.go`
+  dosyasına ayrıldı. Barış, ittifak, ticaret ve vassal diplomasi geçitleri korunurken
+  `ai.go` ortak tur orkestrasyonu ve wrapper'larla sınırlandı; AI/game ve replay testleri
+  başarılı.
+
+- 2026-07-20: Fırsat savaşı aday taraması ve hedef puanlaması `internal/ai/war_strategy.go`
+  dosyasına ayrıldı. Güç, cephe, sınır, objective ve expansion target kararları aynı
+  çağrı sözleşmesiyle çalışıyor; hareket/çarpışma katmanına dokunulmadı.
+
+- 2026-07-20: Üretim/recruitment orkestrasyonu `internal/ai/recruitment_strategy.go`
+  dosyasına taşındı. Kışla, manpower, bütçe ve üretim kuyruğu davranışı korunurken
+  birim seçimi ve recruitment bölgesi değerlendirmesi ayrı yardımcı katmanlarda kaldı.
+
+- 2026-07-20: Araştırma başlatma ve ekonomi bina wrapper'ları
+  `internal/ai/economy_research.go` dosyasına taşındı. Aktif araştırma/rezerv kontrolü,
+  bütçe tüketimi ve bina yatırım stratejisi çağrıları korunarak AI orkestrasyonu küçültüldü.
+
+- 2026-07-20: Deniz stratejisi giriş wrapper'ları `internal/ai/naval_strategy.go`
+  dosyasına ayrıldı. Legacy kıyı üretimi ile 1300 görev/merchant stratejik context geçidi
+  korunurken deniz görev hesaplayıcıları mevcut modüllerde bırakıldı.
+
+- 2026-07-20: Kuşatma state/başlatma, sanal garnizon ve tahkimat savunma katsayısı
+  `internal/ai/siege_strategy.go` dosyasına ayrıldı. Hareket hedefi seçimi ve combat
+  resolve davranışı değiştirilmedi.
+
+- 2026-07-20: Uzun menzilli hareket hedefleme `internal/ai/movement_strategy.go`
+  dosyasına ayrıldı. 1300 ağırlıklı rota ve legacy BFS seçimi ile stratejik rol geçidi
+  korunurken komşu skorlaması ve state uygulaması aynı kaldı; pathfinding testleri geçti.
+
+- 2026-07-20: Komşu hareket hedefi, lojistik score context'i, embark puanı ve `scoreMove`
+  kararları da `internal/ai/movement_strategy.go` dosyasına taşındı. `ai.go` hareketin
+  gerçek state/çarpışma uygulamasına daraltıldı; AI ve game testleri başarılı.
+
+- 2026-07-20: Faz 1 doğrulaması tamamlandı. `Test1300ScenarioAITwoTurnReplayIsDeterministic`
+  aynı seed ile iki tam state akışını eşit doğruladı. Refactor sonrası 42x8 Normal tempo
+  `101.57 sn` test süresinde (`105.07 sn` duvar saati) tamamlandı; önceki `101.6 sn`
+  referansına göre regresyon yok. Nihai 60 saniye optimizasyon maddesi açık.
+
+- 2026-07-20: CPU/allocasyon profiliyle diplomasi hot path'i optimize edildi. Tehdit
+  kontrolü tek snapshot kullanıyor, ittifak perspektifleri ticaret erişimini paylaşıyor;
+  `FactionOrder`/`RegionOrder` doğrudan, dinamik ordular `ArmyOrder` runtime cache'iyle
+  okunuyor. 42x8 Normal tempo `60.416 sn`den `55.658 sn` test süresine indi; duvar saati
+  `58.568 sn` ve nihai 60 saniye hedefi karşılandı.
+
+- 2026-07-20: Faz 3 deniz rol entegrasyonu tamamlandı. `AIArmyRoleTransport` ve
+  `AIArmyRoleEscort`, kara ordusu rollerinin bulunduğu `ArmyAssignments` map'ine taşındı;
+  aktif naval mission anchor'larıyla transport/escort filoları ayrıştırılıyor, merchant
+  filoları rol dışı kalıyor. `TestNavalAssignmentsUseTransportAndEscortRoles` eklendi.
+
+- 2026-07-20: `1300_ottoman_rise` açılış diplomasisi tarihsel cephelere göre düzeltildi.
+  Osmanlı-Doğu Roma, Memlük-İlhanlı, Aragon-Kastilya, Aragon-Napoli, İngiltere-İskoçya
+  ve Fransa-HRE savaşta; İngiltere-Fransa 1337 event'ine kadar barışta, Aragon-Granada
+  müttefik, Venedik-Ceneviz barışta bırakıldı. Yeni `flanders_county` Katolik fraksiyonu Flandre bölgesinin sahibi
+  ve HRE vassalıdır; Flandre-Fransa savaşı HRE-Fransa kök savaşıyla aynı koalisyona
+  bağlanır. Cephe orduları ve başlangıç teknoloji seviyeleri yeniden atandı; ilişki
+  loader'ında deterministik faction ID sırası sabitlendi.
+
+- 2026-07-20: `1300_ottoman_rise` başlangıç donanması tarihsel profil ve oyun
+  ölçeğine göre seed edildi. Venedik/Ceneviz savaş ve ticaret filoları; Doğu Roma,
+  Aragon, İngiltere ve Fransa savaş-nakliye filoları; Portekiz nakliye/ticaret
+  filoları; Memlük nakliye filosu ile başlıyor. Londra, Normandiya, Portekiz,
+  Sicilya ve Mısır'a geçerli dock için başlangıç `port` binası eklendi. Osmanlı,
+  Safevî ve Rusya açılışta donanmasız tutuldu. `internal/scenario` bütünlük testi
+  başlangıç filolarının sahip, deniz, liman ve birim kategorilerini doğruluyor.
+
+- 2026-07-20: `1300_ottoman_rise` AI merchant ticaret akışı tamamlandı. Merchant
+  filoları `TradeRouteKey` ile save uyumlu yönlü rotaya atanıyor; aktif kıyısal trade
+  center uçlarından en az biri ile gerçek deniz konumu doğrulanmadan hacim bonusu verilmiyor.
+  Her gemi rota başına `+1`, en fazla `+2` throughput sağlıyor; askıdaki rota veya
+  mal/altın yetersizliği normal ticaret transfer kapısından geçiyor. Venedik/Ceneviz
+  eksik slotları üretim kuyruğuna alıyor, liman seviyesi ve ilk merchant maliyeti için
+  kaynak rezervi korunuyor; tehditli merkezler aynı `%110` escort eşiğiyle önce
+  savunuluyor. Merchant, transport ve warship filoları konsolidasyon/production
+  tamamlanma katmanında ayrıştırıldı. Normal fast 12x2 `6.71 sn`, Osmanlı `2 → 3`
+  bölge/güç `238`, deniz birimi ilk beş tur `0`, yedinci turda `2`. Test kapsamı:
+  `internal/ai/merchant_trade_test.go`, `internal/state/merchant_trade_test.go`,
+  `internal/save/save_test.go`, `internal/game/production_naval_test.go`.
 
 - 2026-07-19: `1300_ottoman_rise` AI deniz görevlerine efektif tehdit haritası,
   güvenli rota ve `%110` filo gücü kapısı eklendi. Düşman güç hesabı gerçek deniz
@@ -69,7 +233,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   senaryolar değişmiyor. Ölçümler: Normal fast 12x2 `9.76 sn`, Osmanlı `2 → 3`, güç
   `270`; Normal medium 42x4 `68.84 sn`, Osmanlı ortalama `2 → 5.5`, güç `466`; Zor
   fast 12x2 `7.80 sn`, Osmanlı `2 → 3`, güç `254`. Büyük devletlerin daha erken ekonomi
-  teknolojileriyle `27–31 bin` altın biriktirmesi Faz 7 kalibrasyon notuna alındı.
+  teknolojileriyle `27–31 bin` altın biriktirmesi Faz 7 kalibrasyon notuna alındı;
+  sonraki ekonomi veri kalibrasyonuyla bu bant yaklaşık `20–25 bin` seviyesine çekildi.
   Kapsam: `internal/ai/{research_strategy.go,ai.go}` ve
   `internal/ai/research_strategy_test.go`.
 - 2026-07-19: `1300_ottoman_rise` kara üretimine stratejik recruitment bölgesi seçimi

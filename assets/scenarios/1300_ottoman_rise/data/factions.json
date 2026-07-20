@@ -219,7 +219,11 @@
     "cloth": 95,
     "research": {
       "completed": {
-        "harbor_administration": true
+        "cavalry_tactics": true,
+        "harbor_administration": true,
+        "iron_weapons": true,
+        "navigation": true,
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -402,9 +406,7 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 62,
-    "ai_expansion_targets": [
-      "france"
-    ]
+  "ai_expansion_targets": []
   },
   {
     "id": "epir",
@@ -488,6 +490,39 @@
     "ai_aggressiveness": 30
   },
   {
+    "id": "flanders_county",
+    "name": "County of Flanders",
+    "name_tr": "Flandre Kontluğu",
+    "religion": "catholic",
+    "color": [
+      205,
+      170,
+      35
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "hre",
+    "capital_settlement_id": "flanders_brugge",
+    "gold": 460,
+    "grain": 170,
+    "iron": 65,
+    "timber": 80,
+    "stone": 1000,
+    "spice": 30,
+    "cloth": 180,
+    "research": {
+      "completed": {
+        "banking": true,
+        "harbor_administration": true,
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38
+  },
+  {
     "id": "france",
     "name": "Kingdom of France",
     "name_tr": "Fransa Krallığı",
@@ -512,15 +547,14 @@
         "cavalry_tactics": true,
         "horse_breeding": true,
         "iron_weapons": true,
+        "navigation": true,
         "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 59,
-    "ai_expansion_targets": [
-      "england"
-    ]
+  "ai_expansion_targets": []
   },
   {
     "id": "genoa",
@@ -722,6 +756,8 @@
     "research": {
       "completed": {
         "cavalry_tactics": true,
+        "engineering_corps": true,
+        "heavy_armor": true,
         "horse_breeding": true,
         "iron_weapons": true,
         "trade_routes": true
@@ -785,6 +821,8 @@
     "research": {
       "completed": {
         "cavalry_tactics": true,
+        "composite_bow_drills": true,
+        "engineering_corps": true,
         "horse_breeding": true,
         "iron_weapons": true
       },
@@ -935,7 +973,10 @@
     "cloth": 95,
     "research": {
       "completed": {
-        "horse_breeding": true
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true,
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1021,7 +1062,13 @@
     "spice": 50,
     "cloth": 70,
     "research": {
-      "completed": null,
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true,
+        "navigation": true,
+        "trade_routes": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1350,7 +1397,11 @@
     "spice": 10,
     "cloth": 40,
     "research": {
-      "completed": null,
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true
+      },
       "active_id": "",
       "turns_left": 0
     },

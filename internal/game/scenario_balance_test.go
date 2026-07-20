@@ -21,6 +21,7 @@ import (
 	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 type balanceSnapshot struct {
@@ -46,6 +47,11 @@ type balanceAggregate struct {
 	endTechs     float64
 	endTrades    float64
 	score        float64
+}
+
+type scenarioCalibrationBand struct {
+	minGoldGain float64
+	maxGoldGain float64
 }
 
 type scenarioTempoProfile struct {
@@ -84,6 +90,162 @@ func Test1300OttomanOpeningPlanUsesBithynianDirection(t *testing.T) {
 	plan := gs.AIPlans["ottoman"]
 	if plan == nil || plan.ObjectiveID != "secure_bithynia" || plan.TargetFactionID != "east_rome" {
 		t.Fatalf("Osmanlı açılış yönü Bitinya hattında kalmalıydı: %+v", plan)
+	}
+}
+
+func Test1300LevantFrontPlansFollowOpeningWar(t *testing.T) {
+	for _, test := range []struct {
+		factionID   faction.FactionID
+		objective   string
+		targetID    faction.FactionID
+		firstRegion world.RegionID
+	}{
+		{factionID: "mamluk", objective: "break_ilkhanate_mesopotamian_front", targetID: "ilkhanate", firstRegion: "mosul"},
+		{factionID: "ilkhanate", objective: "press_levant_frontier", targetID: "mamluk", firstRegion: "damascus"},
+	} {
+		t.Run(string(test.factionID), func(t *testing.T) {
+			gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
+			if err != nil {
+				t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+			}
+			gs.PlayerFactionID = ""
+			ai.TakeTurn(gs, test.factionID)
+
+			plan := gs.AIPlans[test.factionID]
+			if plan == nil || plan.ObjectiveID != test.objective || plan.TargetFactionID != test.targetID {
+				t.Fatalf("Levant açılış objective'i yanlış: %+v", plan)
+			}
+			if len(plan.TargetRegionIDs) == 0 || plan.TargetRegionIDs[0] != test.firstRegion {
+				t.Fatalf("Levant hedef bölgesi yanlış: %+v", plan.TargetRegionIDs)
+			}
+		})
+	}
+}
+
+func Test1300BalkanOpeningPlansPreferBorderSecurity(t *testing.T) {
+	expected := map[faction.FactionID]string{
+		"serbian_empire":   "hold_serbian_mountain_core",
+		"bulgarian_empire": "hold_danube_balkan_line",
+		"epir":             "hold_epirus_thessaly",
+		"arnavut_des":      "hold_albanian_mountains",
+		"athena_duk":       "hold_athens_coast",
+		"wallachia_prince": "hold_wallachian_buffer",
+	}
+	for factionID, objectiveID := range expected {
+		t.Run(string(factionID), func(t *testing.T) {
+			gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
+			if err != nil {
+				t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+			}
+			gs.PlayerFactionID = ""
+			ai.TakeTurn(gs, factionID)
+			plan := gs.AIPlans[factionID]
+			if plan == nil || plan.ObjectiveID != objectiveID || plan.Kind != state.AIObjectiveDefend {
+				t.Fatalf("Balkan açılış savunma objective'i seçilmedi: %+v", plan)
+			}
+		})
+	}
+}
+
+func Test1300EasternSteppeAndBalticPlansFollowRegionalObjectives(t *testing.T) {
+	expected := map[faction.FactionID]struct {
+		objective string
+		kind      state.AIObjectiveKind
+	}{
+		"russia":         {"consolidate_eastern_rus_frontier", state.AIObjectiveExpand},
+		"golden_horde":   {"press_rus_steppe", state.AIObjectiveExpand},
+		"teutonic_order": {"press_lithuanian_frontier", state.AIObjectiveExpand},
+		"novgorod_rep":   {"hold_novgorod_trade_gate", state.AIObjectiveDefend},
+		"lithuanian_gd":  {"contest_kievan_steppe", state.AIObjectiveExpand},
+	}
+	for factionID, want := range expected {
+		t.Run(string(factionID), func(t *testing.T) {
+			gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
+			if err != nil {
+				t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+			}
+			gs.PlayerFactionID = ""
+			ai.TakeTurn(gs, factionID)
+			plan := gs.AIPlans[factionID]
+			if plan == nil || plan.ObjectiveID != want.objective || plan.Kind != want.kind {
+				t.Fatalf("doğu bozkır/Baltık açılış objective'i seçilmedi: %+v", plan)
+			}
+		})
+	}
+}
+
+func Test1300EnglishFrenchWarWaitsFor1337Event(t *testing.T) {
+	gs, evts, err := loadScenarioData(scenario1300Path(t), 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+	gs.PlayerFactionID = ""
+	ai.TakeTurn(gs, "england")
+	ai.TakeTurn(gs, "france")
+	if relation := diplomacy.Relation(gs, "england", "france"); relation == nil || relation.Stance != faction.StancePeace {
+		t.Fatalf("İngiltere-Fransa 1300'de barışta başlamalı: %+v", relation)
+	}
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "secure_english_channel_and_isles" {
+		t.Fatalf("İngiltere erken dönemde kıta savaşına yönelmemeli: %+v", plan)
+	}
+	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "protect_french_royal_core" {
+		t.Fatalf("Fransa erken dönemde İngiltere savaşına yönelmemeli: %+v", plan)
+	}
+
+	gs.Year = 1337
+	gs.Month = 5
+	evt := events.Tick(gs, evts)
+	if evt == nil || evt.ID != "hundred_years_war_1337" {
+		t.Fatalf("1337 tarihsel savaş olayı tetiklenmedi: %+v", evt)
+	}
+	if _, ok := events.ApplyChoice(gs, evt, 0); !ok {
+		t.Fatal("1337 savaş olayı seçimi uygulanamadı")
+	}
+	if relation := diplomacy.Relation(gs, "england", "france"); relation == nil || relation.Stance != faction.StanceWar {
+		t.Fatalf("1337 olayından sonra İngiltere-Fransa savaşa geçmeli: %+v", relation)
+	}
+	if !gs.FiredEventIDs["flag:hundred_years_war_started"] {
+		t.Fatal("1337 savaş olayı AI hard gate bayrağını ayarlamadı")
+	}
+	gs.AIPlans = nil
+	ai.TakeTurn(gs, "england")
+	ai.TakeTurn(gs, "france")
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "resume_french_claims_1337" || plan.TargetFactionID != "france" {
+		t.Fatalf("1337 sonrası İngiltere Fransız cephe objective'ine geçmeli: %+v", plan)
+	}
+	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "recover_english_claims_1337" || plan.TargetFactionID != "england" {
+		t.Fatalf("1337 sonrası Fransa İngiliz cephe objective'ine geçmeli: %+v", plan)
+	}
+}
+
+func Test1300SafavidRiseWaitsFor1501Event(t *testing.T) {
+	gs, evts, err := loadScenarioData(scenario1300Path(t), 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+	gs.PlayerFactionID = ""
+	ai.TakeTurn(gs, "safavid")
+	if plan := gs.AIPlans["safavid"]; plan == nil || plan.ObjectiveID != "hold_southern_persian_core" || plan.Kind != state.AIObjectiveConsolidate {
+		t.Fatalf("Safevî 1300'de erken genişlememeli: %+v", plan)
+	}
+
+	gs.Year = 1501
+	gs.Month = 1
+	evt := events.Tick(gs, evts)
+	if evt == nil || evt.ID != "safavid_rise_1501" {
+		t.Fatalf("1501 Safevî yükseliş olayı tetiklenmedi: %+v", evt)
+	}
+	events.Apply(gs, evt)
+	if _, ok := events.ApplyChoice(gs, evt, 0); !ok {
+		t.Fatal("1501 Safevî yükseliş seçimi uygulanamadı")
+	}
+	if !gs.FiredEventIDs["flag:safavid_rise"] {
+		t.Fatal("Safevî yükselişi AI hard gate bayrağını ayarlamadı")
+	}
+	gs.AIPlans = nil
+	ai.TakeTurn(gs, "safavid")
+	if plan := gs.AIPlans["safavid"]; plan == nil || plan.ObjectiveID != "rise_into_persian_heartland_1501" || plan.TargetFactionID != "ilkhanate" {
+		t.Fatalf("1501 sonrası Safevî İran çekirdeği objective'ine geçmeli: %+v", plan)
 	}
 }
 
@@ -180,6 +342,9 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 		agg.score = agg.regionGain*120 + agg.goldGain/8 + agg.endPower/25 + agg.endTrades*20 + agg.endTechs*18
 		rows = append(rows, agg)
 	}
+	if profile.turns >= 42 && profile.runs >= 4 {
+		assert1300CalibrationBands(t, aggregates)
+	}
 
 	sort.Slice(rows, func(i, j int) bool {
 		if rows[i].score == rows[j].score {
@@ -231,6 +396,29 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 			row.endTechs,
 			row.endTrades,
 		)
+	}
+}
+
+func assert1300CalibrationBands(t *testing.T, aggregates map[faction.FactionID]*balanceAggregate) {
+	t.Helper()
+	bands := map[faction.FactionID]scenarioCalibrationBand{
+		"mamluk":    {minGoldGain: 18000, maxGoldGain: 32000},
+		"england":   {minGoldGain: 18000, maxGoldGain: 32000},
+		"hre":       {minGoldGain: 18000, maxGoldGain: 32000},
+		"france":    {minGoldGain: 15000, maxGoldGain: 30000},
+		"ilkhanate": {minGoldGain: 15000, maxGoldGain: 30000},
+		"venice":    {minGoldGain: 11000, maxGoldGain: 22000},
+		"ottoman":   {minGoldGain: -2000, maxGoldGain: 6000},
+		"safavid":   {minGoldGain: 500, maxGoldGain: 5000},
+	}
+	for factionID, band := range bands {
+		agg := aggregates[factionID]
+		if agg == nil {
+			t.Fatalf("kalibrasyon bandı için fraksiyon ölçümü yok: %s", factionID)
+		}
+		if agg.goldGain < band.minGoldGain || agg.goldGain > band.maxGoldGain {
+			t.Fatalf("42 aylık altın kabul bandı aşıldı: faction=%s gain=%.0f want=%.0f..%.0f", factionID, agg.goldGain, band.minGoldGain, band.maxGoldGain)
+		}
 	}
 }
 

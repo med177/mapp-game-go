@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-09
+last_updated: 2026-07-20
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -12,6 +12,13 @@ related: [systems/diplomacy, world/regions, architecture/state-management]
 ## Fraksiyon Verisi
 
 Her aktif senaryo 45 fraksiyon içerir; oynanabilir roster senaryoya göre değişir (`is_playable=true`). Örneğin `1300_ottoman_rise` 30 oynanabilir fraksiyon açarken `1444_ottoman_empire` tarihsel hedefi olan 6 devleti, `1512_yavuz_selim` ise tarihsel hedefi olan 5 devleti açık bırakır. Başlangıç orduları fraksiyon dosyasında değil, aynı senaryonun `data/armies.json` dosyasında tutulur.
+
+`1300_ottoman_rise` başlangıç filoları da aynı `armies.json` kaynağında tutulur.
+Venedik ve Ceneviz savaş/ticaret filoları; Doğu Roma, Aragon, İngiltere ve Fransa
+savaş-nakliye filoları; Portekiz nakliye/ticaret filoları; Memlük nakliye filosu
+başlangıçta tarihsel ana limanlarına bağlıdır. Osmanlı, Safevî ve Rusya 1300 açılışında
+donanmasız bırakılmıştır; bu devletlerde deniz gücü kıyı ve liman altyapısı geliştikçe
+oyun içinde kurulacaktır.
 
 ---
 
@@ -93,6 +100,11 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif savaş hedefleri ise fraksiyon kaydındaki `ai_expansion_targets` alanında tutulur; örneğin 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler hedeflenir.
 
 Runtime'da vassallık kabul edilirse hedef fraksiyonun `overlord_id` alanı doldurulur; üçüncü taraf diplomasi kapatılır ve realm içindeki fraksiyonlar dost çizgiye normalize edilir.
+
+`1300_ottoman_rise` başlangıcında `flanders_county`, Flandre bölgesini yöneten Katolik
+bir alt devlettir ve `overlord_id: "hre"` ile Kutsal Roma İmparatorluğu'na bağlıdır.
+Flandre'nin ticaret ve liman kapasitesi korunurken dış savaş ilişkisi HRE kök realm'i
+üzerinden koalisyona katılır; HRE ile garantili iç realm ticareti dış ittifak sayılmaz.
 
 → İlişki sistemi: [[systems/diplomacy]]
 

@@ -8,31 +8,40 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-// MerchantTradeRouteSeaRegions, iki uçta da tarihsel ticaret merkezine sahip
+// MerchantTradeRouteSeaRegions, en az bir uçta tarihsel ticaret merkezine sahip
 // deniz rotalarının merchant filosunun çalışabileceği kıyı denizlerini döner.
-// Ticaret merkezi link ağı rota sözleşmesini, gerçek region komşulukları ise
-// filonun durması gereken deniz hücresini belirler.
+// İki uçta da merkez varsa link ağı bağlantıyı doğrular; gerçek region
+// komşulukları ise filonun durması gereken deniz hücresini belirler.
 func (s *GameState) MerchantTradeRouteSeaRegions(route *economy.TradeRoute) []world.RegionID {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 		return nil
 	}
 	fromCenters, toCenters, centers, adjacency := s.merchantTradeEndpointCenters(route)
-	if len(fromCenters) == 0 || len(toCenters) == 0 {
+	if len(fromCenters) == 0 && len(toCenters) == 0 {
 		return nil
 	}
 
 	validFrom := make(map[world.RegionID]bool, len(fromCenters))
 	validTo := make(map[world.RegionID]bool, len(toCenters))
-	for _, fromID := range fromCenters {
-		for _, toID := range toCenters {
-			if !tradeCentersConnected(fromID, toID, adjacency) {
-				continue
+	if len(fromCenters) == 0 || len(toCenters) == 0 {
+		for _, centerID := range fromCenters {
+			validFrom[centerID] = true
+		}
+		for _, centerID := range toCenters {
+			validTo[centerID] = true
+		}
+	} else {
+		for _, fromID := range fromCenters {
+			for _, toID := range toCenters {
+				if !tradeCentersConnected(fromID, toID, adjacency) {
+					continue
+				}
+				validFrom[fromID] = true
+				validTo[toID] = true
 			}
-			validFrom[fromID] = true
-			validTo[toID] = true
 		}
 	}
-	if len(validFrom) == 0 || len(validTo) == 0 {
+	if len(validFrom) == 0 && len(validTo) == 0 {
 		return nil
 	}
 

@@ -38,6 +38,32 @@ func TestOwnerDisplayUsesSingleColor(t *testing.T) {
 	}
 }
 
+func TestRegionOwnerNameRectKeepsOriginalHeaderColumnWithOwnerFlagBadge(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ven": {ID: "ven", NameTR: "Venedik"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"venice": {ID: "venice", OwnerID: "ven"},
+		},
+	}
+
+	rect, fid, ok := regionOwnerNameRect(gs, "venice")
+	if !ok {
+		t.Fatal("sahip devlet adı dikdörtgeni bulunmalıydı")
+	}
+	if fid != "ven" {
+		t.Fatalf("yanlış faction ID döndü: got=%q", fid)
+	}
+	wantX := float64(infoPanelX()) + panelPad
+	if rect.X != wantX {
+		t.Fatalf("sahip adı eski başlık kolonunda kalmalı: got=%v want=%v", rect.X, wantX)
+	}
+	if rect.W > float64(infoPanelW)-panelPad*2 {
+		t.Fatalf("sahip adı eski panel genişliğini aşmamalı: got=%v max=%v", rect.W, float64(infoPanelW)-panelPad*2)
+	}
+}
+
 func TestVassalOverlordDisplayUsesOverlordInfo(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "osm",

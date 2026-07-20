@@ -33,6 +33,11 @@ func AssessStrategicAlliance(gs *state.GameState, actor, target faction.FactionI
 }
 
 func assessStrategicAlliance(gs *state.GameState, actor, target faction.FactionID, commonEnemy, sharedMajorThreat bool) StrategicAllianceAssessment {
+	tradeAccess := HasTradeRouteBetween(gs, actor, target) || CanEstablishTradeRoute(gs, actor, target)
+	return assessStrategicAllianceWithTrade(gs, actor, target, commonEnemy, sharedMajorThreat, tradeAccess)
+}
+
+func assessStrategicAllianceWithTrade(gs *state.GameState, actor, target faction.FactionID, commonEnemy, sharedMajorThreat bool, tradeAccess bool) StrategicAllianceAssessment {
 	assessment := StrategicAllianceAssessment{}
 	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || actor == "" || target == "" || actor == target {
 		return assessment
@@ -50,7 +55,7 @@ func assessStrategicAlliance(gs *state.GameState, actor, target faction.FactionI
 	threats := allianceThreatsAgainst(gs, actor, target)
 	assessment.BufferValue = allianceBufferValue(gs, target, threats)
 	assessment.FrontSupportValue = allianceFrontSupportValue(gs, target, threats)
-	assessment.TradeValue = allianceTradeValue(gs, actor, target)
+	assessment.TradeValue = allianceTradeValue(gs, actor, target, tradeAccess)
 	assessment.PartnerSupportValue = alliancePartnerSupportValue(gs, target)
 	if staticAllianceExpansionTension(gs, actor, target) {
 		assessment.ExpansionTensionPenalty = 18
@@ -176,11 +181,11 @@ func allianceFrontSupportValue(gs *state.GameState, candidate faction.FactionID,
 	return min(16, frontPower/15)
 }
 
-func allianceTradeValue(gs *state.GameState, actor, target faction.FactionID) int {
+func allianceTradeValue(gs *state.GameState, actor, target faction.FactionID, tradeAccess bool) int {
 	value := 0
 	if HasTradeRouteBetween(gs, actor, target) {
 		value += 10
-	} else if CanEstablishTradeRoute(gs, actor, target) {
+	} else if tradeAccess {
 		value += 5
 	}
 	value += min(6, totalTradeCapacity(gs, target)/4)

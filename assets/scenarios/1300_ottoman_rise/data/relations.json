@@ -632,8 +632,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "castile_kingdom",
-    "score": 25,
-    "stance": "peace"
+    "score": -80,
+    "stance": "war"
   },
   {
     "faction_a": "aragon",
@@ -710,8 +710,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "granada_emirate",
-    "score": -45,
-    "stance": "war"
+    "score": 55,
+    "stance": "allied"
   },
   {
     "faction_a": "aragon",
@@ -782,8 +782,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "naples_kingdom",
-    "score": 25,
-    "stance": "peace"
+    "score": -80,
+    "stance": "war"
   },
   {
     "faction_a": "aragon",
@@ -1598,7 +1598,7 @@
   {
     "faction_a": "aydin_bey",
     "faction_b": "mentese_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -1664,7 +1664,7 @@
   {
     "faction_a": "aydin_bey",
     "faction_b": "saruhan_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -1976,7 +1976,7 @@
   {
     "faction_a": "candar_bey",
     "faction_b": "canik_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -2270,7 +2270,7 @@
   {
     "faction_a": "canik_bey",
     "faction_b": "esrefoglu_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -3344,8 +3344,8 @@
   {
     "faction_a": "east_rome",
     "faction_b": "ottoman",
-    "score": -25,
-    "stance": "peace"
+    "score": -70,
+    "stance": "war"
   },
   {
     "faction_a": "east_rome",
@@ -3452,7 +3452,7 @@
   {
     "faction_a": "england",
     "faction_b": "france",
-    "score": -25,
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -3620,8 +3620,8 @@
   {
     "faction_a": "england",
     "faction_b": "scotland_kingdom",
-    "score": 25,
-    "stance": "peace"
+    "score": -80,
+    "stance": "war"
   },
   {
     "faction_a": "england",
@@ -3896,7 +3896,7 @@
   {
     "faction_a": "germiyan_bey",
     "faction_b": "esrefoglu_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -4322,8 +4322,8 @@
   {
     "faction_a": "france",
     "faction_b": "hre",
-    "score": 25,
-    "stance": "peace"
+    "score": -80,
+    "stance": "war"
   },
   {
     "faction_a": "france",
@@ -4874,7 +4874,7 @@
   {
     "faction_a": "germiyan_bey",
     "faction_b": "hamid_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -4904,7 +4904,7 @@
   {
     "faction_a": "karesioglu_bey",
     "faction_b": "germiyan_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -4994,7 +4994,7 @@
   {
     "faction_a": "germiyan_bey",
     "faction_b": "saruhan_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -5402,7 +5402,7 @@
   {
     "faction_a": "hamid_bey",
     "faction_b": "karaman_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -5432,7 +5432,7 @@
   {
     "faction_a": "hamid_bey",
     "faction_b": "mentese_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -5876,8 +5876,8 @@
   {
     "faction_a": "ilkhanate",
     "faction_b": "mamluk",
-    "score": -25,
-    "stance": "peace"
+    "score": -80,
+    "stance": "war"
   },
   {
     "faction_a": "ilkhanate",
@@ -6218,7 +6218,7 @@
   {
     "faction_a": "karesioglu_bey",
     "faction_b": "saruhan_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -6686,7 +6686,7 @@
   {
     "faction_a": "mentese_bey",
     "faction_b": "saruhan_bey",
-    "score": 25,
+    "score": -10,
     "stance": "peace"
   },
   {
@@ -7648,5 +7648,17 @@
     "faction_b": "wallachia_prince",
     "score": -20,
     "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "hre",
+    "score": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "france",
+    "score": -80,
+    "stance": "war"
   }
 ]

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -13,7 +13,7 @@ related: [systems/combat, systems/diplomacy, architecture/game-loop]
 `internal/ai/budget.go`, `internal/ai/building_investment.go`,
 `internal/ai/unit_composition.go`, `internal/ai/recruitment_region.go`,
 `internal/ai/research_strategy.go`, `internal/ai/naval_mission.go`,
-`internal/ai/naval_threat.go`,
+`internal/ai/naval_threat.go`, `internal/ai/merchant_trade.go`,
 `internal/ai/conquest_policy.go`,
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`
 
@@ -31,11 +31,38 @@ AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları I
 Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
 
 `internal/game/scenario_balance_test.go`, yalnız `1300_ottoman_rise` için deterministik tempo harness'ıdır. `RUN_SCENARIO_TEMPO_REPORT=fast|medium|calibration` sırasıyla 12x2, 42x4 ve 120x8 kapsamını çalıştırır; `SCENARIO_TEMPO_TURNS/RUNS` ile kontrollü override, `SCENARIO_TEMPO_DIFFICULTY=1|2|3` ile zorluk karşılaştırması destekler. Go 1.25'in `rand.Seed` no-op varsayılanı test kapsamında `randseednop=0` ile kapatılır ve savaş zarları tur/fraksiyon/step scope'una ayrılır. Aynı seed'in iki turluk tam state replay testi ile benchmark da bu dosyadadır.
+Hareket karar refactor'ı sonrasında replay testi yine geçti. CPU/allocasyon profiliyle
+diplomasi tehdit snapshot'ı, paylaşılan ticaret erişimi ve state order cache'leri eklendi;
+42x8 Normal ölçümü `60.416 sn`den `55.658 sn` test süresine indi (`58.568 sn` duvar saati).
+Nihai 60 saniye hedefi karşılanmıştır.
 
 2026-07-19 objective dikey dilimi ölçümünde fast profil `9.08 sn`, medium profil
 `59.89 sn` sürdü. Medium 42x4 sonuçta Osmanlı ortalama `2.0 → 7.8` kara bölgesine
 ulaştı; bu sayı tarihsel bir sonucu zorlayan kabul şartı değil, sonraki kalibrasyonlar
 için yön/tempo referansıdır.
+
+### 1300 Çok-Seed Kabul Bantları
+
+`RUN_SCENARIO_TEMPO_REPORT=medium` 42 tur ve 4 seed çalıştırıldığında tempo raporu
+ortalama altın kazanımını aşağıdaki sözleşmeyle doğrular:
+
+| Fraksiyon grubu | 42 aylık altın kazanımı |
+|---|---:|
+| Memlük, İngiltere, HRE | `18.000–32.000` |
+| Fransa, İlhanlı | `15.000–30.000` |
+| Venedik | `11.000–22.000` |
+| Osmanlı | `-2.000–6.000` |
+| Safevî | `500–5.000` |
+
+Bantlar tarihsel sonucu sabitlemez; ekonomi teknolojisi kalibrasyonu, aktif savaşlar,
+bina/ordu harcaması ve bölge kazanımı birlikte ölçülür. Bant dışına çıkılması, yeni
+AI/ekonomi değişikliğinin tempo incelemesi gerektirdiğini gösterir. `fast` profili 12
+tur x 2 seed hızlı regresyon, iki turluk tam state replay testi ise deterministiklik
+kontrolüdür.
+
+Kaynak/test: `internal/game/scenario_balance_test.go` içindeki
+`assert1300CalibrationBands`, `Test1300ScenarioTempoReport` ve
+`Test1300ScenarioAITwoTurnReplayIsDeterministic`.
 
 ### Kalıcı Stratejik Plan
 
@@ -67,6 +94,155 @@ menzilli hareket puanında bonus alır. Hedef bölge tamamlandığında, hedef v
 katıldığında, devlet elendiğinde veya `reassess_turn` geldiğinde plan yenilenir.
 Profil bulunmayan 1300 devletleri `ai_expansion_targets`, aktif savaş ve konsolidasyon
 fallback'ini kullanmaya devam eder.
+
+### Anadolu Beylikleri Objective Kalibrasyonu
+
+`1300_ottoman_rise` artık Anadolu'daki 13 küçük/orta aktörü tek bir genişleme profiliyle
+çalıştırmaz. `ai_strategies.json` içindeki profiller; Ege'de Aydın-Menteşe-Saruhan ve
+Karesi rekabetini, batı/orta hatta Germiyan-Hamid-Eşrefoğlu çekişmesini, Pontus'ta
+Candar-Canik tamponunu ve güneyde Karaman-Ramazan-Dulkadir geçişini ayrı hedeflerle
+tanımlar. Tek bölgeli Ahiler, Canik, Dulkadir, Eşrefoğlu, Karesi ve Ramazan önce kendi
+geçit/çekirdek bölgelerini savunur; genişleme objective'i bulunan devletler ise komşu
+beylik hedefi sürdüğü müddetçe ilgili sınır bölgesine yönelir.
+
+Yerel rakiplerin seçili başlangıç ilişkileri `-10` seviyesinde tutulur. Bu, aynı mezhep
+bonusunu tamamen silmeden Normal/Zor AI'nin objective hedefi için savaş eşiğini
+geçebilmesini sağlar. Genişleme objective'lerinde `allow_vassalization` ve stratejik
+`annex_region_ids` birlikte verilir; sonuç, `TryResolvePostWarVassalization` üzerinden
+hedefin gücü ve savaş planına göre vassal veya ilhak olur. Savunma objective'leri ise
+aktif savaş ve cephe rolleriyle birleşerek küçük devletlerin plansız uzak fetihlere
+gitmesini engeller.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
+`assets/scenarios/1300_ottoman_rise/data/relations.json`.
+Test: `internal/scenario/scenario_1300_integrity_test.go` içindeki Anadolu profil
+sözleşmesi ve genel AI/scenario testleri.
+
+### Venedik ve Ceneviz Deniz-Ticaret Profilleri
+
+Venedik `adriatic_merchant_thalassocracy` profiliyle Venedik, Girit, Kıbrıs ve kuzey
+Kıbrıs hattını aynı savunma objective'inde toplar; Doğu Roma'nın Konstantinopolis/Trakya
+kapısı ikinci yönelimdir. Ceneviz `western_merchant_network` profili Cenova, Korsika ve
+Kırım ticaret merkezlerini korur; Trabzon Karadeniz kapısı sonraki genişleme yönüdür.
+
+Bu objective'ler doğrudan bedava filo üretmez. Mevcut `merchant_trade.go` akışı aktif
+trade route'ları en az kapsanan merkezden doldurur, tehditli merkezde merchant gemisinden
+önce `%110` escort eşiğini tamamlar ve yalnız gerekli liman seviyesini yükseltir. Böylece
+profil, liman/ada/ticaret merkezi önceliğini gerçek üretim ve deniz tehdidi kapılarına
+aktarır; Venedik-Ceneviz rekabeti başlangıçtaki `-10` ilişkiyle korunur.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
+`internal/ai/merchant_trade.go`, `internal/ai/naval_threat.go`.
+
+### Memlük ve İlhanlı Levant-Mezopotamya Cephesi
+
+Memlük `levant_sultanate_frontier` profili açılış savaşını Mosul-Bağdat-Malatya-
+Akkoyunlu hattına yöneltilmiş karşı taarruz objective'iyle yürütür; aynı planın
+readiness bölgeleri Şam ve Halep'tir. Savunma fallback'i Şam-Halep-Ürdün-Mısır
+koridorunu tutar ve Kahire ticaret merkezini cephe rezerviyle birlikte korur.
+
+İlhanlı `eastern_imperial_frontier` profili Şam/Halep/Ürdün yönünde baskı kurar;
+Bağdat, Musul, Malatya ve Azerbaycan savunma çekirdeğidir. Böylece başlangıçtaki
+`ilkhanate|mamluk` savaş ilişkisi yalnız genel fırsat savaşı olarak kalmaz, iki tarafın
+cephe orduları, rally ve rezerv kararlarıyla aynı hedef devlet/bölge objective'ine
+bağlanır. `TryResolvePostWarVassalization` bu iki büyük devlet arasında kullanılmaz;
+stratejik bölgeler doğrudan ilhak listesinde tutulur.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
+`assets/scenarios/1300_ottoman_rise/data/armies.json`.
+Test: `internal/game/scenario_balance_test.go` içindeki Levant açılış plan testi.
+
+### Balkan Devletleri ve Osmanlı Tehdidi
+
+Sırp, Bulgar, Epir, Arnavut, Atina ve Eflak profilleri öncelikle yakın çekirdek ve
+geçitlerini savunur. Sırbistan için Niş-Kosova-Raşka; Bulgaristan için Bulgaristan-
+Vidin-Dobruca; Epir ve Arnavutluk için dağ geçitleri; Atina için kıyı; Eflak için
+Wallachia-Oltenia-Besarabya tamponu korunur. Bu savunma objective'leri Osmanlı'yı
+doğrudan komşu kabul etmek yerine Doğu Roma, Tuna ve Macar cephelerini büyüyen tehdit
+göstergesi olarak kullanır.
+
+Güvenlik planı bozulmadan yerel genişleme düşük öncelikli soft objective olarak kalır:
+Sırbistan-Arnavutluk, Bulgaristan-Aşağı Tuna, Epir-Atina, Arnavutluk-Epir ve Eflak-
+Dobruca yönleri. Böylece küçük devletler ilk turda uzak fethe kilitlenmez; sınır ordusu,
+rezerv ve retreat kararları mevcut `AIFront`/`security` katmanında çalışmaya devam eder.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`.
+Test: `internal/game/scenario_balance_test.go` içindeki Balkan açılış plan testi.
+
+### Rusya, Altın Orda ve Baltık Cephesi
+
+Rusya `moscow_consolidation` profiliyle Moskova, Nijni Novgorod, yeni doğu Rus
+çekirdeği ve Dağıstan hattını güvenceye alır; Altın Orda tehdidi sürerken Ukrayna
+bozkırına yalnız kontrollü bir konsolidasyon genişlemesi açar. Altın Orda
+`steppe_hegemony` profili Kiev-Ukrayna bozkırını ana cephe yapar, Rusya ve Litvanya
+yönündeki baskıyı önceliklendirir ve Moldova/Kiev hattını savunma rezerviyle tutar.
+
+Teuton Tarikatı `baltic_crusader_frontier` profili Konigsberg, Letonya ve Estonya
+limanlarını korurken Litvanya sınırına baskı kurar. Novgorod `northern_trade_survival`
+profili tek merkezli ticaret kapısını Teuton, Altın Orda ve Litvanya tehditlerine karşı
+korur. Litvanya `eastern_baltic_expansion` profili Belarus üzerinden Kiev yönünü soft
+genişleme hedefi olarak izler; Teuton ve Altın Orda baskısı arttığında Litvanya çekirdeği
+savunması önceliği korur.
+
+Bu yönelimler mevcut başlangıç orduları, negatif sınır ilişkileri ve kara/liman
+altyapısıyla eşleşir; yeni bir savaş veya bedava kuvvet üretmez. Objective önceliği,
+readiness bölgeleri, hedef devletler ve savaş sonrası ilhak listeleri `StrategicPlan`
+katmanındaki güvenlik/cephe kontrollerinden geçer.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
+`assets/scenarios/1300_ottoman_rise/data/regions.json`,
+`assets/scenarios/1300_ottoman_rise/data/armies.json`.
+Test: `internal/scenario/scenario_1300_integrity_test.go` profil sözleşmesi ve
+`internal/game/scenario_balance_test.go` doğu bozkır/Baltık açılış plan testi.
+
+### İngiltere-Fransa ve 1337 Tarihsel Savaş Kilidi
+
+1300 başlangıcında İngiltere ile Fransa `-20` ilişki skoruyla barıştadır; iki devletin
+`ai_expansion_targets` alanı boş bırakıldığı için genel fırsat savaşı taraması Yüz Yıl
+Savaşı'nı erkenden başlatamaz. İngiltere'nin ilk yönelimi Kanal ve ada çekirdeğini
+toparlamak, Fransa'nın ilk yönelimi ise Paris-Normandiya kraliyet çekirdeğini korumaktır.
+
+`hundred_years_war_1337` tarihsel olayı Mayıs 1337'de tetiklenir. Olayın otomatik veya
+oyuncu seçimiyle uygulanan kararı `hundred_years_war_started` bayrağını yazar ve
+İngiltere-Fransa ilişkisini savaşa çevirir. Sonraki stratejik plan değerlendirmesinde
+İngiltere'nin Fransız hak iddiası, Fransa'nın İngiliz karşı taarruzu objective'leri
+`min_year: 1337` ve event bayrağı hard gate'ini geçerek açılır. Hard-gate objective'leri
+açıldığında verilen aktivasyon bonusu, eski konsolidasyon planının yeni tarihsel cepheyi
+gölgelemesini önler.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/events.json`,
+`assets/scenarios/1300_ottoman_rise/data/relations.json`,
+`assets/scenarios/1300_ottoman_rise/data/factions.json`,
+`assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`.
+Test: `internal/game/scenario_balance_test.go` içindeki
+`Test1300EnglishFrenchWarWaitsFor1337Event`.
+
+### Safevîler: Erken Survival, 1501 Sonrası Yükseliş
+
+Safevî profili 1300'de yalnız Güney İran'daki tek bölgelik Erdebil çekirdeğini korur;
+erken dönemde İlhanlı veya Osmanlı'ya karşı genel expansion target'ı bulunmadığı için
+zayıf bir tarikat devleti anakronik fetih savaşına sürüklenmez. İlk objective
+`hold_southern_persian_core`, readiness ve yüksek commitment ile iç konsolidasyonu,
+ordu rezervini ve geçiş güvenliğini öne alır.
+
+`safavid_rise_1501` olayı Ocak 1501'de Safevî devleti ilanını temsil eder. Seçim/AI
+uygulaması `safavid_rise` bayrağını, başlangıç kaynak takviyesini ve kompozit yay
+teknolojisini verir. Bayrak ve yıl hard gate'i açıldıktan sonra `rise_into_persian_
+heartland_1501` objective'i Azerbaycan, Batı/Kuzey İran ve Mezopotamya yönünü İlhanlı
+hedefiyle açar; readiness bölgesi Güney İran, stratejik ilhak listesi ise İran çekirdeğidir.
+Osmanlı'nın doğu rekabeti objective'i de aynı event bayrağına bağlı olduğundan iki taraf
+1501 öncesi Safevî savaşına yönelmez.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/events.json`,
+`assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`.
+Test: `internal/game/scenario_balance_test.go` içindeki
+`Test1300SafavidRiseWaitsFor1501Event`.
+
+1300 açılışında Flandre için ayrı `vassal_trade_defense` profili kullanılır. Profil,
+Flandre liman/ticaret gelirini korumayı, Fransa cephesindeki yerel savunmayı ve HRE'nin
+Holland hattından gönderdiği yardımı önceliklendirir. Vassal AI üçüncü tarafla bağımsız
+diplomasi başlatmaz; HRE'nin savaşı ve ticaret garantisi realm koalisyon kurallarından
+gelir.
 
 ### Dinamik Acil Rezerv ve Harcama Bütçesi
 
@@ -229,11 +405,14 @@ Aktif araştırma yarıda bırakılmaz. Eşitlik; toplam skor, birim açılımı
 sonraki teknoloji, süre/maliyet ve teknoloji ID ile deterministik çözülür. Model
 runtime-only'dir; diğer senaryolar mevcut sabit kategori sırasını korur.
 
-Bu dilim sonrası Normal fast 12x2 `9.76 sn`, Osmanlı `2 → 3`, güç `270`; Normal medium
-42x4 `68.84 sn`, Osmanlı ortalama `2 → 5.5`, güç `466`; Zor fast 12x2 `7.80 sn`,
-Osmanlı `2 → 3`, güç `254` ölçüldü. Daha erken ekonomi teknolojileri büyük devletlerin
-42 aylık altın birikimini yaklaşık `27–31 bin` düzeyine taşıdığı için bu sonuç Faz 7
-denge kalibrasyonunda ayrıca izlenecektir.
+Bu dilim sonrası ekonomi getirileri de senaryo verisinde kalibre edildi: Ticaret Yolları
+bölge bonusu `+2`, Bankacılık `+3` ve `%10` pazar, Loncalar `%75` pazar, Tahrir
+Defterleri `+3`, Kervansaray Ağı `+2` ve `%15` pazar, Darphane Standardı `+4` verir.
+Araştırma maliyetleri, önkoşul zinciri ve askeri/deniz teknoloji değerleri değişmedi.
+Normal medium 42x4 ölçümünde büyük devletler yaklaşık `20–25 bin` altın biriktirdi;
+önceki `27–31 bin` bandına göre ekonomi hâlâ büyümeyi finanse ediyor ancak tek başına
+sınırsız hazine birikimi üretmiyor. `Test1300EarlyEconomyTechnologyValuesAreCalibrated`
+bu veri sözleşmesini korur.
 
 ### Cephe, Dinamik Rezerv ve Ordu Rolleri
 
@@ -510,7 +689,34 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 
 ## Diplomasi Safhası
 
-`aiHandleDiplomacy()` her AI turunda ilişkileri tarar:
+`aiHandleDiplomacy()` her AI turunda ilişkileri tarar. Karar döngüsü
+`internal/ai/diplomacy.go` içinde tutulur; map tabanlı faction, region ve
+army sıralama yardımcıları `internal/ai/ordering.go` içinde tutulur; böylece AI karar
+döngüsü deterministik ID sırasını tek bir modülden kullanır.
+Fırsat savaşı aday taraması ve hedef puanlaması `internal/ai/war_strategy.go` içindedir;
+hareket ve çarpışma uygulaması bu karar modülünden ayrı kalır.
+Üretim/recruitment orkestrasyonu `internal/ai/recruitment_strategy.go` içindedir;
+kışla yatırımı ve manpower kuyruğu, birim seçimi ile bölge skorlamasından ayrıdır.
+Araştırma ve ekonomi wrapper katmanı `internal/ai/economy_research.go` içindedir;
+teknoloji seçimi `research_strategy.go`, bina ROI değerlendirmesi ise
+`building_investment.go` tarafından yapılır.
+Deniz stratejisi giriş katmanı `internal/ai/naval_strategy.go` içindedir; 1300 görev ve
+merchant üretimi `naval_mission.go` ile `merchant_trade.go` modüllerine devredilir.
+Kuşatma state ve başlatma yardımcıları `internal/ai/siege_strategy.go` içindedir;
+uzun menzilli hareket hedefleme ve rota seçimi `internal/ai/movement_strategy.go`
+içindedir; komşu hareket skoru ve combat resolve bu karar katmanlarından ayrıdır.
+`1300_ottoman_rise` için ağırlıklı kara rotası, diğer senaryolar için geriye dönük BFS
+seçimi kullanılır. Her iki yol da stratejik rol bonusunu ve deterministik bölge sırasını
+korur. Komşu hedef seçimi, lojistik context önbelleği, denizden karaya çıkış puanı ve
+`scoreMove` kararları da aynı dosyada tutulur; gerçek hareket puanı tüketimi, savaş ve
+state değişikliği ortak `ai.go` akışında kalır.
+Deniz filoları da aynı `ArmyAssignments` modelinde `transport` veya `escort` rolü alır;
+aktif görev varsa anchor çıkış/iniş denizinden türetilir, merchant filoları kara görev
+rollerine karıştırılmaz.
+
+İlişki skoru `25` altındaki barış çiftleri, ittifak kabul eşiği aynı değerde olduğu için
+pahalı stratejik ittifak değerlendirmesine girmeden elenir. Böylece sonuç davranışı
+değişmeden 1300 diplomasi taramasının maliyeti azaltılır.
 
 - `war` ilişkisinde 1300 senaryosu taraf çifti başına kalıcı `WarLedger` okur. Objective
   tamamlanması, fethedilen/kaybedilen bölgeler, muharebe ve kuşatma kayıpları, savaş
@@ -537,7 +743,7 @@ Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 - Askeri güç, cephe gücü, ilişki skoru, hedef bölge değeri, bölge sayısı, din farkı, AI agresifliği ve oyuncu hedef cezası birlikte puanlanır.
 - En iyi hedef eşik üstündeyse standart `diplomacy.Execute(..., ActionDeclareWar)` yolu kullanılır; hareket/fetih yine `scoreMove()` ve `executeMove()` zincirinden geçer.
 
-`ai_expansion_targets` rastgele saldırganlık değildir: hedef olmayan fraksiyonlarda eski negatif ilişki kapısı korunur, ticaret/ittifak ilişkileri bozulmaz ve güçsüz AI daha güçlü hedefe savaş açmaz. 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler; Reconquista, Yüz Yıl Savaşları ve doğu bozkır cepheleri için ilgili tarihsel hedefler bu listeyle tanımlıdır.
+`ai_expansion_targets` rastgele saldırganlık değildir: hedef olmayan fraksiyonlarda eski negatif ilişki kapısı korunur, ticaret/ittifak ilişkileri bozulmaz ve güçsüz AI daha güçlü hedefe savaş açmaz. 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler; Reconquista, Yüz Yıl Savaşları ve doğu bozkır cepheleri için tarihsel hedefler profil objective'leriyle tanımlıdır. Yüz Yıl Savaşı hedefleri ayrıca 1337 event bayrağı açılana kadar genel fırsat savaşı listesinden çıkarılmıştır.
 
 AI ve oyuncu aynı `internal/diplomacy` motorunu kullandığı için:
 
@@ -708,6 +914,37 @@ Diğer senaryolar legacy davranışı korur: kıyı/savaş durumuna göre `1–3
 `aiSeaPressure()` ile liman seçimi ve transport bulunan baskılı hatlarda escort üretimi.
 
 ---
+
+## 1300 Merchant Ticaret Filosu
+
+`internal/ai/merchant_trade.go`, `internal/state/merchant_trade.go` ve
+`internal/economy/economy.go` birlikte merchant gemisini gerçek ticaret rotası
+throughput'una bağlar:
+
+- Her merchant gemisi aktif `gönderen->alan` rotasına `+1` hacim ekler; rota başına
+  en fazla iki gemi katkısı uygulanır. Katkı `TradeRoute.MerchantAmountBonus` olarak
+  runtime hesaplanır ve save'e yazılmaz.
+- Filo görevi `Army.TradeRouteKey` ile compact/legacy/debug save'lerde korunur.
+  Rota yeniden kurulduğunda mal türü veya geçici rota nesnesi değil, yönlü fraksiyon
+  anahtarı kullanılır; askıya alınan ya da silinen rota bonus üretmez.
+- Rota hacmi en az bir uçta aktif kıyısal trade center varsa ve filo o merkezin
+  komşu deniz hücresindeyse uygulanır. İki uçta da merkez varsa merkezler
+  `trade_centers.json` link graph'ında bağlı olmalıdır. Kaynak mal veya alıcı altını yetmiyorsa normal ekonomi
+  kapısı rotayı atlar; merchant gemisi bedava altın üretmez.
+- Merchant filoları savaş/nakliye filolarıyla birleştirilmez. Venedik ve Ceneviz
+  aktif maritime rotalarda önce en az kapsanan hattı seçer; gerekli liman seviyesini
+  kurar, açık merchant slotlarını üretir ve farklı yönlü rotalara deterministik
+  atama yapar.
+- Ticaret merkezine yaklaşan düşman filo tehdidi varsa merchant üretiminden önce
+  aynı `%110` escort eşiğiyle `warship` açığı kapatılır. Bütçe, ilk liman yükseltmesi
+  ve bir merchant gemisinin gerçek hammadde maliyetini ekonomi yatırımlarına karşı
+  rezerve eder.
+
+Kaynak kodu: `internal/ai/merchant_trade.go`, `internal/state/merchant_trade.go`,
+`internal/economy/economy.go`, `internal/game/production.go`.
+
+Testler: `internal/ai/merchant_trade_test.go`, `internal/state/merchant_trade_test.go`,
+`internal/save/save_test.go`, `internal/game/production_naval_test.go`.
 
 ## AI Deniz Taşıma Akışı
 

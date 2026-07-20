@@ -1,5 +1,38 @@
 [
   {
+    "id": "hundred_years_war_1337",
+    "name_tr": "Yüz Yıl Savaşı Başlıyor",
+    "desc_tr": "İngiltere'nin Fransa üzerindeki hanedanlık iddiası yeniden alevleniyor. Kanal cephesi artık açık bir savaşa dönüşüyor.",
+    "historical_year": 1337,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "england",
+    "choice_prompt_tr": "Fransa tahtı üzerindeki iddia savaşa dönüştürülsün mü?",
+    "choices": [
+      {
+        "id": "declare_hundred_years_war",
+        "label_tr": "Fransa'ya savaş ilan et",
+        "desc_tr": "İngiliz ordusu ve donanması kıta üzerindeki hanedanlık iddiasını zorla takip eder.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "relations": [
+            {
+              "faction_id": "france",
+              "score_delta": -20,
+              "stance": "war"
+            }
+          ],
+          "set_flags": ["hundred_years_war_started"]
+        }
+      }
+    ]
+  },
+  {
     "army_hp_mod": 0.85,
     "desc_tr": "Salgın hastalık bölgeye yayıldı. Halk memnuniyeti düşüyor, tahıl üretimi azalıyor.",
     "gold_delta": 0,
@@ -10,6 +43,35 @@
     "probability": 0.025,
     "sat_delta": -25,
     "target": "random_region"
+  },
+  {
+    "id": "safavid_rise_1501",
+    "name_tr": "Safevî Devleti'nin Yükselişi",
+    "desc_tr": "Erdebil merkezli Safevî hareketi İran'da siyasi bir güce dönüşüyor. Yeni hanedan, bölgedeki dağınık mirası birleştirmeye hazırlanıyor.",
+    "historical_year": 1501,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "safavid",
+    "choice_prompt_tr": "Safevî hareketi açık bir hanedanlık iddiasına dönüştürülsün mü?",
+    "choices": [
+      {
+        "id": "proclaim_safavid_state",
+        "label_tr": "Safevî devletini ilan et",
+        "desc_tr": "Erdebil çekirdeği İran'ın birleşmesi için seferber edilir; doğu cephesinde yeni bir güç doğar.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "safavid",
+          "gold_delta": 180,
+          "grain_delta": 80,
+          "complete_techs": ["composite_bow_drills"],
+          "set_flags": ["safavid_rise"]
+        }
+      }
+    ]
   },
   {
     "army_hp_mod": 1,

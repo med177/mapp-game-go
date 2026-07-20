@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -13,13 +13,15 @@ Bölgede aktif kuşatma yürüten oyuncu ordusu seçildiğinde kuşatmaya ait he
 
 Birim görselleri artık tek bir sheet'ten değil, birim türü başına ayrı PNG'den yüklenir. `militia`/`infantry`/`elite_infantry`, süvari, kuşatma ve gemi türleri `sprites/eastern_army/` ile `sprites/western_army/` altındaki kanonik dosya eşlemesine bağlanır. Sünni/Şii fraksiyonlar doğu setini, Katolik/Ortodoks ve diğer tanımlı dinler batı setini kullanır; recruit paneli ve tooltip oyuncu fraksiyonunu, ordu detay paneli ise ilgili ordunun sahibini baz alır. Faksiyon bulunamıyorsa eski senaryolar için `sprites/army.png` fallback'i korunur. Ordu ve recruit kartlarında 10×2 slot düzeni korunurken kart yüksekliği 210×360 görsel oranına göre hesaplanır. Sprite'ın tamamı üstten başlayarak kırpılmadan çizilir; alt etiket alanı kart içinde opak beyazla doldurulur ve isim, HP/progress etiketi ile kuyruk iptal butonu sprite'ın üzerine bindirilir (`internal/render/recruit_panel.go`, `army_panel.go`, `hover_tooltip.go`).
 
+Üst-sol durum HUD'unda oyuncu devletinin amblem alanı, aktif senaryonun `sprites/flags/<faction-id>.png` dosyasını bulduğunda 58×58 px kare bayrağı gösterir. Aynı kare rozet devlet bilgi paneli başlığında da devlet adının solunda 44×44 px ölçüyle kullanılır. Bölge bilgi paneli sahibinin bayrağı panelin üst-sol çerçevesine bitişik, çerçevenin hemen üstünde 48×48 px kimlik rozeti olarak çizilir; bölge ve sahip devlet adlarının mevcut sol başlık konumu korunur. Bayrak asset'i yoksa ilgili kare zeminde devlet baş harfi fallback'i korunur. Bayraklar ilk kullanımda yüklenir, yol bazlı cache'lenir ve senaryo değişiminde cache temizlenir (`internal/render/panel.go`, `renderer.go`).
+
 Kuşatma emri paneli seçili ordu detay paneli görünür kalacak şekilde onun üstündeki boş alana yerleştirilir; böylece iki panelin alt-üst örtüşmesi engellenir. Kuşatma paneli butonları kendi alanında önceliklidir, panel dışındaki input ve imleç normal ordu paneline geçebilir (`internal/render/renderer_dialogs.go`, `renderer_input.go`, `cursor.go`). Recruit eğitim kuyruğu kartlarında birim adı ve üretim süresi iki satırda gösterilir; beyaz footer kartın tam genişliğini kapatır ve sprite kenarlardan görünmez (`internal/render/recruit_panel.go`).
 
 Ordu komutan kartında sağdaki rol, seviye, savaş ve bonus bilgileri portre üst hizasına göre çizilir; bilgi bloğu portreyle aynı üst çizgiden başlar (`internal/render/commander_component.go`).
 
 Aynı bölgede kuşatma ordusu bölünürse ikon yerleşiminde kuşatan parça solda, ayrılan parça sağda tutulur. Hit-test sağdan tarandığı için ayrılan parça deterministik olarak seçilebilir; bölme veya birleşme sonrası bölgede kalan aynı fraksiyon ordusuna kuşatma kaydı devredilebilir (`internal/render/renderer.go`, `internal/game/{game.go,siege.go}`).
 
-Bölge bilgi panelinde bina grid'i artık önce çizilir; hemen altında genişletilebilir aksiyon barı içinde `Diplomasi` bulunur. Aktif olaylar ve geliştirme modundaki komşu listesi bu barın altındaki panel-local viewport'ta gösterilir; uzun içerik mouse wheel ile yalnız viewport içinde kaydırılır ve scrollbar ile sınırlandırılır (`internal/render/panel.go`, `renderer_input.go`).
+Bölge bilgi panelinde bina grid'i artık önce çizilir; hemen altında genişletilebilir aksiyon barı içinde `Diplomasi` bulunur. Aktif olaylar ve geliştirme modundaki komşu listesi bu barın altındaki panel-local viewport'ta gösterilir; uzun içerik mouse wheel ile yalnız viewport içinde kaydırılır ve scrollbar ile sınırlandırılır. Ebitengine `SubImage` hedefinin ekran koordinat sözleşmesi nedeniyle viewport içeriği çizilirken metin origin'i viewport'un ekran konumuna taşınır; aksi halde çerçeve görünürken olay/komşu metinleri clipping dışında kalır (`internal/render/panel.go`, `renderer_input.go`).
 
 **Kaynak:** `internal/render/renderer.go`, `renderer_input.go`, `renderer_dialogs.go`, `map_editor.go`, `trade_overlay.go`
 

@@ -86,6 +86,32 @@ func TestDynamicReserveKeepsWeakStackBackAndStrongStackOnObjective(t *testing.T)
 	}
 }
 
+func TestNavalAssignmentsUseTransportAndEscortRoles(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"transport": {ID: "transport", OwnerID: "ai", RegionID: "sea_home", IsNaval: true, Units: []army.Unit{{TypeID: "transport_ship"}}},
+			"escort":    {ID: "escort", OwnerID: "ai", RegionID: "sea_home", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
+			"merchant":  {ID: "merchant", OwnerID: "ai", RegionID: "sea_home", IsNaval: true, Units: []army.Unit{{TypeID: "merchant_ship"}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport_ship": {ID: "transport_ship", Category: army.CategoryNavalTrans, CarryCapacity: 5},
+			"warship":        {ID: "warship", Category: army.CategoryNavalWar},
+			"merchant_ship":  {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+	}
+	ctx := &StrategicContext{gs: gs, FactionID: "ai", ArmyAssignments: make(map[army.ArmyID]AIArmyAssignment)}
+	assignAINavalRoles(ctx)
+	if got := ctx.ArmyAssignments["transport"]; got.Role != AIArmyRoleTransport || got.AnchorRegionID != "sea_home" {
+		t.Fatalf("transport filosuna transport rolü verilmedi: %+v", got)
+	}
+	if got := ctx.ArmyAssignments["escort"]; got.Role != AIArmyRoleEscort || got.AnchorRegionID != "sea_home" {
+		t.Fatalf("savaş filosuna escort rolü verilmedi: %+v", got)
+	}
+	if _, assigned := ctx.ArmyAssignments["merchant"]; assigned {
+		t.Fatal("merchant filosu kara görev rolüne zorlanmamalıydı")
+	}
+}
+
 func TestCapitalWarThreatRaisesReserveToThirtyPercent(t *testing.T) {
 	gs := aiFrontTestState()
 	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar

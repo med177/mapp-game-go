@@ -34,7 +34,8 @@
     "buildings": [
       "barracks",
       "walls",
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -448,7 +449,9 @@
     "population": 350,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "brittany",
@@ -1011,7 +1014,8 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "port"
     ]
   },
   {
@@ -2197,7 +2201,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "port"
     ]
   },
   {
@@ -4200,7 +4205,7 @@
     "name": "Flanders",
     "name_tr": "Flandre",
     "terrain": "plain",
-    "owner_id": "hre",
+    "owner_id": "flanders_county",
     "neighbors": [
       "atlantic_open_1",
       "champagne",
@@ -4231,7 +4236,9 @@
     "population": 700,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "holland",
@@ -4407,7 +4414,9 @@
     "population": 450,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "sardinia",

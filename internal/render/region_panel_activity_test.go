@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 )
 
@@ -99,5 +100,16 @@ func TestRegionPanelActivityAndDiplomacyUseVisiblePanelGeometry(t *testing.T) {
 	}
 	if !regionDiplomacyButtonHit(btn.X+btn.W/2, btn.Y+btn.H/2, gs, regionID) {
 		t.Fatal("çizilen diplomasi düğmesinin merkezi tıklanabilir olmalı")
+	}
+}
+
+func TestRegionActivityContentUsesViewportScreenCoordinates(t *testing.T) {
+	viewport := gameui.Rect{X: 12, Y: 640, W: 281, H: 120}
+	const scroll = 28.0
+
+	contentX, contentY := regionActivityContentOrigin(viewport, scroll)
+	contentCenterX := regionActivityContentCenterX(viewport)
+	if contentX != 24 || contentY != 620 || contentCenterX != 152.5 {
+		t.Fatalf("aktivite içeriği viewport ekran koordinatına taşınmadı: x=%.1f y=%.1f center=%.1f", contentX, contentY, contentCenterX)
 	}
 }

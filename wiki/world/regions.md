@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-06-19
+last_updated: 2026-07-20
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -51,6 +51,15 @@ type Settlement struct {
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
 
 Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
+
+`1300_ottoman_rise` başlangıç verisinde Londra, Normandiya, Portekiz, Sicilya ve
+Mısır'a tarihsel başlangıç filolarının dock edilebilmesi için birinci seviye `port`
+binası tanımlıdır. Bu limanlar `data/armies.json` içindeki ilgili filo ve port
+settlement kayıtlarıyla birlikte doğrulanır.
+
+Flandre bölgesi (`flanders`) 1300 açılışında doğrudan HRE yerine `flanders_county`
+tarafından yönetilir. Bu sahiplik, yerel vergi/ticaret akışını korurken HRE vassallığı
+ve Flandre limanının savunma görevlerini veri modelinde görünür kılar.
 
 ---
 

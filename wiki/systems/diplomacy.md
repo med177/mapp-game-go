@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -148,6 +148,14 @@ Rota detayları:
 `faction.BuildInitialRelations(factions)` — `internal/faction/loader.go`
 
 Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla başlatılır. Varsayılan duruş barıştır; Sünni-Şii çiftleri başlangıçta savaş durumuna alınır.
+
+`1300_ottoman_rise` senaryo override'ı bu varsayılanı gerçek 1300 cepheleriyle düzeltir:
+Osmanlı-Doğu Roma, Memlük-İlhanlı, Aragon-Kastilya, Aragon-Napoli, İngiltere-Fransa,
+İngiltere-İskoçya ve Fransa-HRE savaşta başlar. Aragon-Granada müttefik kalır;
+Venedik-Ceneviz ile Doğu Roma-Bulgaristan barışta bırakılır. Flandre, HRE'nin vassalı
+olduğu için Flandre-Fransa düşmanlığı HRE-Fransa kök savaşıyla birlikte koalisyona
+katılır; overlord-vassal arasındaki iç ticaret ve geçiş garantisi korunur. İlişki çiftleri
+loader'da sıralı faction ID'leriyle üretildiğinden save/replay yönü deterministiktir.
 
 ---
 
