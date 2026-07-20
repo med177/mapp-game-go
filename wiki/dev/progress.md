@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-21: Üst-sol oyuncu devlet HUD'unda bayrak ve adın altına mevcut askeri güç ile aktif devletler arasındaki güç sırası eklendi. Sıralama mevcut `diplomacy.MilitaryPower` hesabını kullanıyor; elenmiş devletler dışarıda bırakılıyor ve eşit güçte faction ID'siyle deterministik sonuç üretiliyor. Kapsam: `internal/render/{panel.go,panel_test.go}`, `wiki/architecture/render-pipeline.md`; test: `go test ./internal/render`.
+
 - 2026-07-21: Kuşatma başladıktan sonra bölgeye gelen aynı realm/müttefik orduların
   kuşatma katkısı her tur yeniden hesaplanıyor. Böylece başlangıçta kuşatma birimi
   olmayan ordunun kuşatmasına sonradan getirilen kuşatma ekipmanı `BreachProgress` ve

@@ -1,11 +1,13 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`).
 
 Kuşatılan bölgedeki bölge sahibi veya müttefik kara ordusu komşu dost/sahipsiz hedefe sağ tıkladığında savaş planı kuşatan orduya karşı açılır; preview kaynak bölgenin arazisini, başarılı hareket ise seçilen hedefi kullanır. Ordu paneli ve birim kartları bu durumda `Takviye aktif` göstergesi çizmez.
 

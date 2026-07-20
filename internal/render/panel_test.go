@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
@@ -35,5 +36,46 @@ func TestDiplomacyOfferQuotaHUDText(t *testing.T) {
 	}
 	if col != (color.RGBA{220, 90, 90, 255}) {
 		t.Fatalf("hak bitti rengi farklıydı, got=%v", col)
+	}
+}
+
+func TestPlayerMilitaryPowerStandingRanksActiveFactions(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"strong": {ID: "strong"},
+			"weak":   {ID: "weak"},
+			"dead":   {ID: "dead", IsEliminated: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player-army": {ID: "player-army", OwnerID: "player", Units: []army.Unit{{}, {}}},
+			"strong-army": {ID: "strong-army", OwnerID: "strong", Units: []army.Unit{{}, {}, {}}},
+			"dead-army":   {ID: "dead-army", OwnerID: "dead", Units: []army.Unit{{}, {}, {}, {}}},
+		},
+	}
+
+	power, rank, count := playerMilitaryPowerStanding(gs)
+	if power != 20 || rank != 2 || count != 3 {
+		t.Fatalf("oyuncu askeri standing yanlis: power=%d rank=%d count=%d", power, rank, count)
+	}
+}
+
+func TestPlayerMilitaryPowerStandingUsesFactionIDForTies(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "z-player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a-state":  {ID: "a-state"},
+			"z-player": {ID: "z-player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player-army": {ID: "player-army", OwnerID: "z-player", Units: []army.Unit{{}}},
+			"other-army":  {ID: "other-army", OwnerID: "a-state", Units: []army.Unit{{}}},
+		},
+	}
+
+	_, rank, count := playerMilitaryPowerStanding(gs)
+	if rank != 2 || count != 2 {
+		t.Fatalf("esit guc tie-break sirasi yanlis: rank=%d count=%d", rank, count)
 	}
 }

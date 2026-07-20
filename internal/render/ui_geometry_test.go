@@ -315,6 +315,68 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	}
 }
 
+func TestArmyPanelMergeButtonStaysRightmost(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth = 1280
+	ScreenHeight = 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"osm": {ID: "osm", NameTR: "Osmanlı"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"ankara": {ID: "ankara", NameTR: "Ankara", OwnerID: "osm"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"split_and_merge": {
+				ID:       "split_and_merge",
+				OwnerID:  "osm",
+				RegionID: "ankara",
+				Units: []army.Unit{
+					{TypeID: "infantry", CurrentHP: 100},
+					{TypeID: "infantry", CurrentHP: 100},
+				},
+			},
+			"merge_only": {
+				ID:       "merge_only",
+				OwnerID:  "osm",
+				RegionID: "ankara",
+				Units:    []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+			"merge_target": {
+				ID:       "merge_target",
+				OwnerID:  "osm",
+				RegionID: "ankara",
+				Units:    []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+		},
+	}
+
+	splitBtn, splitOK := buildSplitArmyButton(gs, "split_and_merge")
+	mergeBtn, mergeOK := buildMergeArmyButton(gs, "split_and_merge")
+	if !splitOK || !mergeOK {
+		t.Fatalf("iki aksiyon da görünür olmalıydı: split=%v merge=%v", splitOK, mergeOK)
+	}
+	if mergeBtn.X <= splitBtn.X || mergeBtn.X+mergeBtn.W <= splitBtn.X+splitBtn.W {
+		t.Fatalf("BİRLEŞTİR sağdaki düğme olmalıydı: split=%+v merge=%+v", splitBtn, mergeBtn)
+	}
+
+	mergeOnlyBtn, mergeOnlyOK := buildMergeArmyButton(gs, "merge_only")
+	if !mergeOnlyOK {
+		t.Fatal("yalnız BİRLEŞTİR aksiyonu görünür olmalıydı")
+	}
+	layout := armyPanelGeometry()
+	expectedRight := float64(layout.panelX + layout.panelW - armyPanelPadX - actionBtnW - actionBtnRightInset)
+	if mergeOnlyBtn.X != expectedRight {
+		t.Fatalf("yalnız BİRLEŞTİR görünürken sağ hizası korunmalıydı: got=%.1f want=%.1f", mergeOnlyBtn.X, expectedRight)
+	}
+}
+
 func assertScreenStacksInside(t *testing.T, screenW, screenH float64) {
 	t.Helper()
 	scenarioStack := centeredStackRect(3, 560, 130, 16, 20)

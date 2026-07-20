@@ -446,7 +446,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 	f, hasPlayer := gs.Factions[gs.PlayerFactionID]
 
-	// Sol blok: fraksiyon amblemi + isim
+	// Sol blok: fraksiyon amblemi + isim + askeri güç sırası
 	if hasPlayer {
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		initial := string([]rune(f.NameTR)[:1])
@@ -454,7 +454,11 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		flagY := float64(by) + (float64(topStatusH)-factionHUDFlagSize)/2
 		drawFactionFlagBadge(screen, f.ID, initial, flagX, flagY, factionHUDFlagSize, fc, panelBorder)
 
-		DrawText(screen, f.NameTR, flagX+factionHUDFlagSize+13, float64(by)+25, FaceLarge, fc)
+		textX := flagX + factionHUDFlagSize + 13
+		DrawText(screen, f.NameTR, textX, float64(by)+10, FaceLarge, fc)
+		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
+		DrawText(screen, "Askeri güç: "+itoa(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
+		DrawText(screen, "Güç sırası: "+itoa(militaryRank)+"/"+itoa(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
 	}
 
 	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
@@ -550,6 +554,38 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	drawDateMenuHud(screen, gs, mapMode)
 	drawMusicHud(screen)
 	drawTurnTechHud(screen, gs)
+}
+
+// playerMilitaryPowerStanding oyuncunun askeri gücünü ve aktif devletler
+// arasındaki deterministik sırasını döner. Eşit güçte faction ID'si küçük olan
+// devlet üstte kabul edilir; böylece map iterasyon sırası sonucu değiştirmez.
+func playerMilitaryPowerStanding(gs *state.GameState) (power, rank, factionCount int) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return 0, 0, 0
+	}
+
+	player, ok := gs.Factions[gs.PlayerFactionID]
+	if !ok || player == nil {
+		return 0, 0, 0
+	}
+
+	power = diplomacy.MilitaryPower(gs, gs.PlayerFactionID)
+	rank = 1
+	for fid, candidate := range gs.Factions {
+		if candidate == nil || candidate.IsEliminated {
+			continue
+		}
+		factionCount++
+		if fid == gs.PlayerFactionID {
+			continue
+		}
+
+		candidatePower := diplomacy.MilitaryPower(gs, fid)
+		if candidatePower > power || (candidatePower == power && fid < gs.PlayerFactionID) {
+			rank++
+		}
+	}
+	return power, rank, factionCount
 }
 
 func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
