@@ -297,8 +297,8 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	if mergeBtn.Y+mergeBtn.H > float64(py)+float64(armyPanelHdrH)+0.5 {
 		t.Fatalf("merge button header alanini tasiyor: panelY=%.1f btn=%+v", py, mergeBtn)
 	}
-	if splitBtn.X+splitBtn.W >= mergeBtn.X {
-		t.Fatalf("split/merge butonlari birbirine giriyor: split=%+v merge=%+v", splitBtn, mergeBtn)
+	if mergeBtn.X+mergeBtn.W >= splitBtn.X {
+		t.Fatalf("BİRLEŞTİR solda, BÖL sağda olmalıydı: split=%+v merge=%+v", splitBtn, mergeBtn)
 	}
 	statusTextLeft := float64(px+panelW-armyPanelPadX) - MeasureText("Takviye aktif", FaceSmall)
 	if mergeBtn.X+mergeBtn.W > statusTextLeft-8 {
@@ -315,7 +315,7 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	}
 }
 
-func TestArmyPanelMergeButtonStaysRightmost(t *testing.T) {
+func TestArmyPanelSplitButtonStaysRightmost(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {
 		ScreenWidth = oldW
@@ -362,8 +362,8 @@ func TestArmyPanelMergeButtonStaysRightmost(t *testing.T) {
 	if !splitOK || !mergeOK {
 		t.Fatalf("iki aksiyon da görünür olmalıydı: split=%v merge=%v", splitOK, mergeOK)
 	}
-	if mergeBtn.X <= splitBtn.X || mergeBtn.X+mergeBtn.W <= splitBtn.X+splitBtn.W {
-		t.Fatalf("BİRLEŞTİR sağdaki düğme olmalıydı: split=%+v merge=%+v", splitBtn, mergeBtn)
+	if splitBtn.X <= mergeBtn.X || splitBtn.X+splitBtn.W <= mergeBtn.X+mergeBtn.W {
+		t.Fatalf("BÖL sağdaki düğme olmalıydı: split=%+v merge=%+v", splitBtn, mergeBtn)
 	}
 
 	mergeOnlyBtn, mergeOnlyOK := buildMergeArmyButton(gs, "merge_only")
