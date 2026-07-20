@@ -1,5 +1,5 @@
 {
-  "kind": "quick",
+  "kind": "slot",
   "game_version": "135fadc",
   "meta": {
     "scenario_id": "1300_ottoman_rise",
@@ -24992,7 +24992,7 @@
     "next_production_seq": 898,
     "next_army_seq": 466,
     "next_commander_seq": 31,
-    "phase": "player_turn",
+    "phase": "save_select",
     "winner_id": "",
     "active_region_events": [
       {

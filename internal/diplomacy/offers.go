@@ -134,7 +134,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return Result{
 			Accepted: false,
 			Applied:  false,
-			Message:  factionLabel(gs, offer.FromFactionID) + " teklifiniz reddedildi.",
+			Message:  factionLabel(gs, offer.FromFactionID) + " teklif reddedildi.",
 		}
 	}
 	if action == ActionProposePeace {

@@ -556,36 +556,44 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	drawTurnTechHud(screen, gs)
 }
 
-// playerMilitaryPowerStanding oyuncunun askeri gücünü ve aktif devletler
+// factionMilitaryPowerStanding seçili devletin askeri gücünü ve aktif devletler
 // arasındaki deterministik sırasını döner. Eşit güçte faction ID'si küçük olan
 // devlet üstte kabul edilir; böylece map iterasyon sırası sonucu değiştirmez.
-func playerMilitaryPowerStanding(gs *state.GameState) (power, rank, factionCount int) {
-	if gs == nil || gs.PlayerFactionID == "" {
+func factionMilitaryPowerStanding(gs *state.GameState, fid faction.FactionID) (power, rank, factionCount int) {
+	if gs == nil || fid == "" {
 		return 0, 0, 0
 	}
 
-	player, ok := gs.Factions[gs.PlayerFactionID]
-	if !ok || player == nil {
+	selected, ok := gs.Factions[fid]
+	if !ok || selected == nil || selected.IsEliminated {
 		return 0, 0, 0
 	}
 
-	power = diplomacy.MilitaryPower(gs, gs.PlayerFactionID)
+	power = diplomacy.MilitaryPower(gs, fid)
 	rank = 1
-	for fid, candidate := range gs.Factions {
+	for candidateID, candidate := range gs.Factions {
 		if candidate == nil || candidate.IsEliminated {
 			continue
 		}
 		factionCount++
-		if fid == gs.PlayerFactionID {
+		if candidateID == fid {
 			continue
 		}
 
-		candidatePower := diplomacy.MilitaryPower(gs, fid)
-		if candidatePower > power || (candidatePower == power && fid < gs.PlayerFactionID) {
+		candidatePower := diplomacy.MilitaryPower(gs, candidateID)
+		if candidatePower > power || (candidatePower == power && candidateID < fid) {
 			rank++
 		}
 	}
 	return power, rank, factionCount
+}
+
+// playerMilitaryPowerStanding oyuncunun askeri standing'ini döner.
+func playerMilitaryPowerStanding(gs *state.GameState) (power, rank, factionCount int) {
+	if gs == nil {
+		return 0, 0, 0
+	}
+	return factionMilitaryPowerStanding(gs, gs.PlayerFactionID)
 }
 
 func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
@@ -3522,7 +3530,7 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 	_ = width
 	y := 0.0
 	y += factionPanelSectionH
-	y += factionPanelRowH * 3
+	y += factionPanelRowH * 5
 	y += 22
 
 	y += factionPanelSectionH
@@ -3588,6 +3596,15 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
 	y += factionPanelRowH
 	drawUIKeyValueRow(screen, 0, y, width, "Kara Ordusu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	militaryPower, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
+	drawUIKeyValueRow(screen, 0, y, width, "Askeri Güç", itoa(militaryPower), ColorGray, ColorWhite)
+	y += factionPanelRowH
+	rankValue := "Yok"
+	if militaryRank > 0 {
+		rankValue = itoa(militaryRank) + "/" + itoa(factionCount)
+	}
+	drawUIKeyValueRow(screen, 0, y, width, "Güç Sırası", rankValue, ColorGray, ColorWhite)
 	y += factionPanelRowH
 	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" ordu", ColorGray, ColorWhite)
 	y += 22

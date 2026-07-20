@@ -79,3 +79,25 @@ func TestPlayerMilitaryPowerStandingUsesFactionIDForTies(t *testing.T) {
 		t.Fatalf("esit guc tie-break sirasi yanlis: rank=%d count=%d", rank, count)
 	}
 }
+
+func TestFactionMilitaryPowerStandingRanksSelectedFaction(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":   {ID: "player"},
+			"selected": {ID: "selected"},
+			"strong":   {ID: "strong"},
+			"dead":     {ID: "dead", IsEliminated: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"selected-army": {ID: "selected-army", OwnerID: "selected", Units: []army.Unit{{}, {}}},
+			"strong-army":   {ID: "strong-army", OwnerID: "strong", Units: []army.Unit{{}, {}, {}}},
+			"dead-army":     {ID: "dead-army", OwnerID: "dead", Units: []army.Unit{{}, {}, {}, {}}},
+		},
+	}
+
+	power, rank, count := factionMilitaryPowerStanding(gs, "selected")
+	if power != 20 || rank != 2 || count != 3 {
+		t.Fatalf("secili faction askeri standing yanlis: power=%d rank=%d count=%d", power, rank, count)
+	}
+}
