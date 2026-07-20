@@ -16,6 +16,8 @@ import (
 
 const (
 	diplomRowH            = 58.0
+	diplomNameColumnW     = 340.0
+	diplomColumnGap       = 24.0
 	diplomHistoryPanelW   = 286.0
 	diplomHistoryPanelGap = 12.0
 	diplomOfferMainW      = 430.0
@@ -676,6 +678,32 @@ func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.Li
 	return list
 }
 
+func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
+	content := gameui.Rect{
+		X: rowRect.X + 18,
+		Y: rowRect.Y + 7,
+		W: rowRect.W - 36,
+		H: 22,
+	}
+	nameW := diplomNameColumnW
+	maxNameW := content.W - diplomColumnGap - 220
+	if nameW > maxNameW {
+		nameW = maxNameW
+	}
+	if nameW < 0 {
+		nameW = 0
+	}
+	nameRect := content
+	nameRect.W = nameW
+	relationRect := gameui.Rect{
+		X: nameRect.X + nameRect.W + diplomColumnGap,
+		Y: content.Y,
+		W: content.W - nameW - diplomColumnGap,
+		H: content.H,
+	}
+	return nameRect, relationRect
+}
+
 func buildDiplomacyBackButton() gameui.Button {
 	x, y, w, h := diplomBackRect()
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Geri").WithIcon(gameui.IconBack)
@@ -857,16 +885,18 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		drawUICardAccent(screen, rowRect, 6, fc)
 
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		leftRow := gameui.NewTableRow(gameui.Rect{X: rowRect.X + 18, Y: rowRect.Y + 7, W: rowRect.W - 248}, []gameui.TableCell{
-			{Text: trimTextToWidth(f.NameTR, FaceMed, rowRect.W-248), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+		nameRect, relationRect := diplomacyListColumnRects(rowRect)
+		leftRow := gameui.NewTableRow(nameRect, []gameui.TableCell{
+			{Text: trimTextToWidth(f.NameTR, FaceMed, nameRect.W), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 		}, 0)
 		drawUITableRow(screen, leftRow)
-		subRow := gameui.NewTableRow(gameui.Rect{X: rowRect.X + 18, Y: rowRect.Y + 29, W: rowRect.W - 248}, []gameui.TableCell{
+		subRect := nameRect
+		subRect.Y = rowRect.Y + 29
+		subRow := gameui.NewTableRow(subRect, []gameui.TableCell{
 			{Text: itoa(regionCount) + " bölge", Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
 		}, 0)
 		drawUITableRow(screen, subRow)
 
-		statusX := rowRect.X + rowRect.W - 220
 		if rel != nil || diplomacy.DirectOverlord(gs, fid) != "" || diplomacy.DirectOverlord(gs, gs.PlayerFactionID) == fid {
 			stanceCol, stanceTR := diplomacyStatusDisplay(gs, gs.PlayerFactionID, fid, rel)
 			scoreValue := 0
@@ -874,16 +904,18 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 				scoreValue = rel.Score
 			}
 			scoreCol := scoreColor(scoreValue)
-			rightRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 7, W: 206}, []gameui.TableCell{
-				{Text: stanceTR, Color: stanceCol, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+			rightRow := gameui.NewTableRow(relationRect, []gameui.TableCell{
+				{Text: trimTextToWidth(stanceTR, FaceMed, relationRect.W), Color: stanceCol, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 			}, 0)
 			drawUITableRow(screen, rightRow)
-			scoreRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 29, W: 206}, []gameui.TableCell{
+			scoreRect := relationRect
+			scoreRect.Y = rowRect.Y + 29
+			scoreRow := gameui.NewTableRow(scoreRect, []gameui.TableCell{
 				{Text: "İlişki: " + itoa(scoreValue), Color: scoreCol, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
 			}, 0)
 			drawUITableRow(screen, scoreRow)
 		} else {
-			neutralRow := gameui.NewTableRow(gameui.Rect{X: statusX, Y: rowRect.Y + 7, W: 206}, []gameui.TableCell{
+			neutralRow := gameui.NewTableRow(relationRect, []gameui.TableCell{
 				{Text: "Tarafsız", Color: ColorGray, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 			}, 0)
 			drawUITableRow(screen, neutralRow)

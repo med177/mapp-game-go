@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
@@ -149,10 +150,12 @@ type Renderer struct {
 	eventLogScroll      int
 
 	// Savaş / bildirim mesajı (kısa süreli)
-	combatLog      string
-	combatLogTimer int
-	aiTurnActor    string
-	aiTurnDetail   string
+	combatLog       string
+	combatLogTimer  int
+	aiTurnFactionID faction.FactionID
+	aiTurnActor     string
+	aiTurnInitial   string
+	aiTurnDetail    string
 
 	// Tarihsel olay tam ekran bildirimi
 	historicalEventTitle   string
@@ -617,13 +620,20 @@ func (r *Renderer) CenterCameraOnRegion(rid world.RegionID) bool {
 	return true
 }
 
-func (r *Renderer) SetAITurnStatus(actor, detail string) {
+func (r *Renderer) SetAITurnStatus(fid faction.FactionID, actor, detail string) {
+	r.aiTurnFactionID = fid
 	r.aiTurnActor = actor
+	r.aiTurnInitial = ""
+	if _, size := utf8.DecodeRuneInString(actor); size > 0 {
+		r.aiTurnInitial = actor[:size]
+	}
 	r.aiTurnDetail = detail
 }
 
 func (r *Renderer) ClearAITurnStatus() {
+	r.aiTurnFactionID = ""
 	r.aiTurnActor = ""
+	r.aiTurnInitial = ""
 	r.aiTurnDetail = ""
 }
 
@@ -807,6 +817,8 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.victoryDetailScroll = 0
 	r.warSummary = warSummaryState{}
 	r.queuedBattleReport = battleReportState{}
+	r.combatLog = ""
+	r.combatLogTimer = 0
 }
 
 func (r *Renderer) worldInputLockedByPhase() bool {
@@ -1241,7 +1253,8 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	if r.aiTurnActor == "" {
 		return
 	}
-	const panelW, panelH = float32(430), float32(84)
+	const panelW, panelH = float32(620), float32(180)
+	const flagSize = float64(128)
 	x := float32(ScreenWidth)/2 - panelW/2
 	_, turnHudY, _, turnHudH := turnTechHudRect()
 	y := turnHudY + turnHudH + 40
@@ -1249,9 +1262,21 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)
 	DrawText(screen, "AI HAMLESİ", float64(x)+16, float64(y)+10, FaceSmall, ColorGray)
-	DrawText(screen, r.aiTurnActor, float64(x)+16, float64(y)+30, FaceMed, ColorGold)
+
+	flagBG := color.RGBA{70, 58, 32, 255}
+	if r.gs != nil {
+		if f := r.gs.Factions[r.aiTurnFactionID]; f != nil {
+			flagBG = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+		}
+	}
+	flagX := float64(x) + 14
+	flagY := float64(y) + 36
+	drawFactionFlagBadge(screen, r.aiTurnFactionID, r.aiTurnInitial, flagX, flagY, flagSize, flagBG, nil)
+
+	contentX := float64(x) + 160
+	DrawText(screen, r.aiTurnActor, contentX, float64(y)+48, FaceMed, ColorGold)
 	if r.aiTurnDetail != "" {
-		drawUIWrappedLabel(screen, gameui.Rect{X: float64(x) + 16, Y: float64(y) + 48, W: float64(panelW - 32)}, r.aiTurnDetail, color.RGBA{230, 222, 204, 255}, gameui.TextSmall, 16, 2)
+		drawUIWrappedLabel(screen, gameui.Rect{X: contentX, Y: float64(y) + 78, W: float64(panelW) - 176}, r.aiTurnDetail, color.RGBA{230, 222, 204, 255}, gameui.TextSmall, 16, 2)
 	}
 }
 

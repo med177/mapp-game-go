@@ -18,6 +18,30 @@ func TestScoutedEnemyRevealCountUsesSeventyFivePercentForSiegeIntel(t *testing.T
 	}
 }
 
+func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"cav":   {ID: "cav", Category: army.CategoryCavalry},
+		"siege": {ID: "siege", Category: army.CategorySiege},
+		"inf":   {ID: "inf", Category: army.CategoryInfantry},
+	}
+	units := []army.Unit{
+		{TypeID: "cav"},
+		{TypeID: "siege"},
+		{TypeID: "inf"},
+		{TypeID: "inf"},
+	}
+
+	want := []int{2, 3, 0, 1}
+	for displayIndex, wantIndex := range want {
+		if got := armyPanelUnitIndex(units, types, displayIndex); got != wantIndex {
+			t.Fatalf("gösterim index'i %d için gerçek birim index'i %d olmalıydı, got=%d", displayIndex, wantIndex, got)
+		}
+	}
+	if got := armyPanelUnitIndex(units, types, len(units)); got != -1 {
+		t.Fatalf("dolu birimlerin sonrasında boş slot için -1 bekleniyordu, got=%d", got)
+	}
+}
+
 func TestCommanderPortraitHitRectStaysInsideCommanderColumn(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

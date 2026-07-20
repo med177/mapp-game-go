@@ -207,7 +207,9 @@ func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial s
 	} else if initial != "" {
 		DrawTextCentered(screen, initial, x+size/2, y+size/2-8, FaceLarge, color.RGBA{255, 255, 255, 240})
 	}
-	vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
+	if border != nil {
+		vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
+	}
 }
 
 func bottomActionHudRect() (x, y, w, h float32) {

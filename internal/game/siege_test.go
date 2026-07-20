@@ -531,6 +531,53 @@ func TestMoveArmyWithStanceAllowsAlliedSiegeSupport(t *testing.T) {
 	}
 }
 
+func TestResolveSiegesUsesSiegeUnitArrivingAfterSiegeStarted(t *testing.T) {
+	gs := siegeSupportTestState()
+	gs.PlayerFactionID = "ally"
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID: "atk", OwnerID: "p1", RegionID: "src", MovePoints: 2, MaxMovePoints: 2,
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"support": {
+			ID: "support", OwnerID: "ally", RegionID: "ally_src", MovePoints: 2, MaxMovePoints: 2,
+			Units: []army.Unit{{TypeID: "siege", CurrentHP: 100}},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !g.startSiegeForArmy("atk", "dst", false) {
+		t.Fatal("kuşatma birimi olmayan ana ordu kuşatma başlatabilmeliydi")
+	}
+	g.resolveSieges()
+	if siege := gs.SiegeAt("dst"); siege == nil || siege.BreachProgress != 0 {
+		t.Fatalf("kuşatma birimi gelmeden gedik ilerlememeliydi, got=%+v", siege)
+	}
+
+	// Müttefik kuşatma ordusu aktif kuşatma bölgesine ayrı ordu olarak gelir;
+	// aynı owner olmadığı için tryMergeArmies tarafından ana orduya katılmaz.
+	g.moveArmyWithStance("support", "dst", "")
+	if gs.Armies["support"].RegionID != "dst" {
+		t.Fatalf("müttefik kuşatma ordusu aktif kuşatmaya girebilmeliydi, got=%s", gs.Armies["support"].RegionID)
+	}
+	if gs.Armies["atk"].HasSiegeUnits(gs.UnitTypes) {
+		t.Fatal("test kurulumu ana orduda kuşatma birimi olmadan başlamalıydı")
+	}
+
+	minorThreshold, _ := siegeBreachThresholds(gs.Regions["dst"].FortificationLevel())
+	for i := 0; i < minorThreshold; i++ {
+		g.resolveSieges()
+	}
+
+	siege := gs.SiegeAt("dst")
+	if siege == nil {
+		t.Fatal("gedik açılırken kuşatma kaydı korunmalıydı")
+	}
+	if siege.BreachLevel < 1 {
+		t.Fatalf("sonradan gelen kuşatma birimi gedik ilerlemesine katılmalıydı, progress=%d level=%d", siege.BreachProgress, siege.BreachLevel)
+	}
+}
+
 func TestMoveArmyWithStanceCanBreakSiegeInAlliedRegionWithoutConquest(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

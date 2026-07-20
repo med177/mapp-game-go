@@ -1,11 +1,27 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-21: Kuşatma başladıktan sonra bölgeye gelen aynı realm/müttefik orduların
+  kuşatma katkısı her tur yeniden hesaplanıyor. Böylece başlangıçta kuşatma birimi
+  olmayan ordunun kuşatmasına sonradan getirilen kuşatma ekipmanı `BreachProgress` ve
+  gedik seviyesine katılıyor. Regression: `TestResolveSiegesUsesSiegeUnitArrivingAfterSiegeStarted`;
+  doğrulama: `go test ./...`.
+
+- 2026-07-20: Ordu detay panelindeki birim kartları state sırası korunarak kategoriye
+  göre yan yana gruplanıyor; görünüm sırası piyade, süvari ve kuşatma şeklinde.
+  Kapsam: `internal/render/army_panel.go`; test: `go test ./internal/render`.
+
+- 2026-07-20: Diplomasi hedef listesindeki devlet adı kolonu daraltıldı; ilişki/durum
+  kolonu sola taşınarak uzun ilişki etiketlerinin sağ panele taşması engellendi.
+  Kapsam: `internal/render/diplom.go`; test: `go test ./internal/render ./internal/ui`.
+
+- 2026-07-20: Tur bitimindeki AI hamle paneli 620×180 px düzene büyütüldü; o an hamle yapan devletin faction ID'si render durumunda taşınıyor ve ülke adının solunda sarı iç çerçevesiz 128×128 px kare bayrak rozeti gösteriliyor. AI adım mesajı aynı anda genel `Bilgi` popup'ında tekrarlanmıyor; tur başında önceki oyuncu bildirimi temizleniyor. Asset yoksa baş harfi fallback'i korunuyor. Kapsam: `internal/game/game.go`, `internal/render/{panel.go,renderer.go}`, `wiki/architecture/render-pipeline.md`.
 
 - 2026-07-20: Bölge panelindeki aktif olaylar ve komşu listesi çerçevesi görünürken
   metinlerin boş kalmasına neden olan `SubImage` koordinat hatası düzeltildi. İçerik

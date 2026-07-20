@@ -591,7 +591,7 @@ func (g *Game) updateAITurnSequence() {
 		return
 	}
 	if offer, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
-		g.renderer.SetAITurnStatus(turnActorName(g.gs, offer.FromFactionID), "Diplomasi cevabınız bekleniyor.")
+		g.renderer.SetAITurnStatus(offer.FromFactionID, turnActorName(g.gs, offer.FromFactionID), "Diplomasi cevabınız bekleniyor.")
 		return
 	}
 	if g.aiTurn.waitFrames > 0 {
@@ -615,7 +615,7 @@ func (g *Game) updateAITurnSequence() {
 				continue
 			}
 			g.aiTurn.stepper = ai.NewTurnStepper(g.gs, fid)
-			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
+			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionID(), g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
 			g.aiTurn.waitFrames = aiTurnFactionIntroFrames
 			return
 		}
@@ -649,12 +649,11 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 	if nearPlayer && step.FocusRegion != "" {
 		g.renderer.CenterCameraOnRegion(step.FocusRegion)
 	}
-	g.renderer.SetAITurnStatus(actor, aiTurnOverlayDetail(step, nearPlayer))
+	g.renderer.SetAITurnStatus(step.FactionID, actor, aiTurnOverlayDetail(step, nearPlayer))
 	if shouldLogAITurnStep(step) {
 		g.renderer.AddEvent("[AI] " + detail)
 	}
 	if nearPlayer || step.Kind == ai.TurnStepDiplomacy {
-		g.renderer.ShowCombatResult(detail)
 		g.aiTurn.waitFrames = aiTurnVisibleStepFrames
 		return
 	}

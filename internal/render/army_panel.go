@@ -176,7 +176,8 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		cx := layout.gridX + float32(col)*(cardW+cardGap)
 		cy := layout.gridY + float32(row)*(cardH+cardGap)
 
-		if i >= len(a.Units) {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
+		if unitIndex < 0 {
 			// Boş slot — silik çerçeve
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 120}, false)
 			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 130}, false)
@@ -186,7 +187,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			continue
 		}
 
-		u := a.Units[i]
+		u := a.Units[unitIndex]
 		utype := gs.UnitTypes[u.TypeID]
 		hpPct := u.HPPercent()
 		isReplenishing := a.CanReplenishIn(gs.Regions) && !gs.IsArmyDefendingSiegedRegion(a) && u.CurrentHP < army.MaxUnitHP
@@ -431,7 +432,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 		cx := layout.gridX + float32(col)*(cardW+cardGap)
 		cy := layout.gridY + float32(row)*(cardH+cardGap)
 
-		if i >= len(a.Units) {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
+		if unitIndex < 0 {
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 90}, false)
 			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 95}, false)
 			continue
@@ -440,7 +442,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 			drawUnknownEnemyUnitCard(screen, cx, cy)
 			continue
 		}
-		drawScoutedEnemyUnitCard(screen, gs, a.OwnerID, a.Units[i], cx, cy)
+		drawScoutedEnemyUnitCard(screen, gs, a.OwnerID, a.Units[unitIndex], cx, cy)
 	}
 
 	vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
@@ -452,6 +454,47 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 		footer += "  |  Kısmi istihbarat"
 	}
 	DrawText(screen, footer, float64(px)+float64(armyPanelPadX), float64(py+panelH-siegeFooterH+2), FaceSmall, color.RGBA{180, 100, 90, 210})
+}
+
+// armyPanelUnitIndex, oyun state'indeki birim sırasını değiştirmeden paneldeki
+// gösterim sırasındaki birimin gerçek index'ini döndürür. Aynı kategori içindeki
+// sıra korunur; kartlar piyade, süvari, kuşatma ve ardından diğer kategoriler
+// şeklinde gruplanır.
+func armyPanelUnitIndex(units []army.Unit, unitTypes map[string]*army.UnitType, displayIndex int) int {
+	if displayIndex < 0 || displayIndex >= len(units) {
+		return -1
+	}
+
+	seen := 0
+	for categoryRank := 0; categoryRank <= 3; categoryRank++ {
+		for index := range units {
+			if armyPanelUnitCategoryRank(unitTypes, units[index].TypeID) != categoryRank {
+				continue
+			}
+			if seen == displayIndex {
+				return index
+			}
+			seen++
+		}
+	}
+	return -1
+}
+
+func armyPanelUnitCategoryRank(unitTypes map[string]*army.UnitType, typeID string) int {
+	unitType := unitTypes[typeID]
+	if unitType == nil {
+		return 3
+	}
+	switch unitType.Category {
+	case army.CategoryInfantry:
+		return 0
+	case army.CategoryCavalry:
+		return 1
+	case army.CategorySiege:
+		return 2
+	default:
+		return 3
+	}
 }
 
 func drawUnknownEnemyUnitCard(screen *ebiten.Image, cx, cy float32) {
