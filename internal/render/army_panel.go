@@ -197,14 +197,6 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		cardBorderCol := color.RGBA{160, 160, 160, 225}
 		vector.FillRect(screen, cx, cy, cardW, cardH, cardBg, false)
 		vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, cardBorderCol, false)
-		if isReplenishing {
-			badgeW := float32(18)
-			badgeH := float32(12)
-			badgeX := cx + cardW - badgeW - 3
-			badgeY := cy + 3
-			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
-			DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
-		}
 
 		// Sprite 210x360 oranını korur; hedef alanın tamamını doldurur.
 		if sprite := unitSpriteForFaction(gs, a.OwnerID, u.TypeID); sprite != nil && utype != nil {
@@ -213,6 +205,16 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, ColorGray)
 		}
 		drawUnitCardFooter(screen, cx, cy, cardW, cardH, unitCardFooterH)
+		// Sprite tam kart alanını kaplayabildiği için rozet sprite'tan sonra
+		// çizilmelidir; aksi halde zayiatlı birimdeki yeşil artı görünmez.
+		if isReplenishing {
+			badgeW := float32(18)
+			badgeH := float32(12)
+			badgeX := cx + cardW - badgeW - 3
+			badgeY := cy + 3
+			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
+			DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
+		}
 
 		// Birim adı
 		unitName := u.TypeID
