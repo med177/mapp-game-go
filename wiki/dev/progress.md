@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-21: 1300 AI deniz görevinde aktif objective barıştaki bir devlete kilitlenmişken
+  yüklü transport filolarının beklemesi düzeltildi. Filo artık mevcut savaş düşmanları
+  arasındaki ulaşılabilir kıyıları deterministik biçimde tarıyor; en yakın kazanılabilir
+  kıyıya retarget oluyor, barıştaki devlete savaş ilan etmiyor ve güçlü savunuculu hedefi
+  atlıyor. Regression: `Test1300LoadedFleetRetargetsNeutralObjectiveToReachableWarCoast`;
+  doğrulama: `go test ./...`.
+
 - 2026-07-21: Devlet bilgi paneli açıkken bölge seçimi değiştiğinde panel artık kapanmıyor; seçilen bölgenin sahibi devlete otomatik geçiyor. Aynı devletin başka bölgesine geçişte mevcut panel scroll'u korunuyor, farklı devlette sıfırlanıyor. Sahipsiz/deniz bölgesinde eski devlet bilgisi gösterilmemesi için panel kapanıyor. Kapsam: `internal/render/{renderer_input.go,faction_panel_test.go}`; test: `go test ./internal/render`.
 
 - 2026-07-21: Seçilen devlet bilgi panelinin `Durum` bölümüne devletin askeri gücü ve aktif devletler arasındaki güç sırası eklendi. HUD ve devlet paneli aynı `factionMilitaryPowerStanding` hesabını kullanıyor; panel scroll içerik yüksekliği yeni iki satıra göre güncellendi. Kapsam: `internal/render/{panel.go,panel_test.go}`, `wiki/architecture/render-pipeline.md`; test: `go test ./internal/render`.

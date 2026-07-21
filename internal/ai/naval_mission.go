@@ -481,8 +481,19 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 		if mission.FleetID != "" && mission.FleetID != fleet.ID {
 			return "", true
 		}
+		// Plan hedefi savaş state'i değiştikten sonra barışta kalmış olabilir.
+		// Böyle bir hedefe doğru yüklü filoyu göndermek, hedef kıyısında
+		// aiCanDisembarkToLand tarafından reddedildiğinde filoyu sonsuza kadar
+		// kilitler. Önce mevcut savaş düşmanları arasından çıkarılabilir bir kıyıya
+		// retarget et; geçerli hedef yoksa mevcut bekleme davranışını koru.
+		target := gs.Regions[mission.TargetRegionID]
+		if !aiCanDisembarkToLand(gs, fleet, target) {
+			if !aiRetargetLoadedNavalMissionToWarCoast(gs, fleet, ctx, mission) {
+				return "", true
+			}
+			target = gs.Regions[mission.TargetRegionID]
+		}
 		if fleet.RegionID == mission.LandingSeaRegionID {
-			target := gs.Regions[mission.TargetRegionID]
 			if !aiCanDisembarkToLand(gs, fleet, target) {
 				return "", true
 			}
@@ -525,6 +536,81 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 		return "", true
 	}
 	return next, true
+}
+
+type aiNavalWarCoastCandidate struct {
+	target      *world.Region
+	landingSea  world.RegionID
+	seaDistance int
+	route       aiSeaRouteResult
+}
+
+// aiRetargetLoadedNavalMissionToWarCoast, artık çıkarma yapılamayan mevcut
+// plan hedefini mevcut savaşlardan en yakın ve kazanılabilir kıyı hedefiyle
+// değiştirir. Bu yalnız yüklü filonun hareket görevini düzeltir; barışta olan
+// devletlere yeni savaş ilan etmez ve stratejik planı save'e yazmaz.
+func aiRetargetLoadedNavalMissionToWarCoast(gs *state.GameState, fleet *army.Army, ctx *StrategicContext, mission *aiNavalMission) bool {
+	if gs == nil || fleet == nil || ctx == nil || mission == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return false
+	}
+
+	var best *aiNavalWarCoastCandidate
+	landingStrength := aiLandingStrength(gs, fleet)
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.OwnerID == "" || region.OwnerID == fleet.OwnerID || !region.IsCoastal(gs.Regions) {
+			continue
+		}
+		relation := diplomacy.Relation(gs, faction.FactionID(fleet.OwnerID), faction.FactionID(region.OwnerID))
+		if relation == nil || relation.Stance != faction.StanceWar {
+			continue
+		}
+		defender := aiEnemyArmyInRegion(gs, fleet.OwnerID, region.ID)
+		if defender != nil && landingStrength <= defender.TotalStrength(gs.UnitTypes) {
+			continue
+		}
+		landingSea, seaDistance := aiBestLandingSeaForContext(ctx, fleet.RegionID, region)
+		if landingSea == "" || seaDistance < 0 {
+			continue
+		}
+		route := ctx.navalSeaRoute(fleet.RegionID, landingSea)
+		if !route.Reachable {
+			continue
+		}
+		candidate := aiNavalWarCoastCandidate{
+			target:      region,
+			landingSea:  landingSea,
+			seaDistance: seaDistance,
+			route:       route,
+		}
+		if aiNavalWarCoastCandidateBetter(candidate, best) {
+			copy := candidate
+			best = &copy
+		}
+	}
+	if best == nil {
+		return false
+	}
+
+	mission.Kind = aiNavalMissionAssault
+	mission.TargetRegionID = best.target.ID
+	mission.TargetFactionID = faction.FactionID(best.target.OwnerID)
+	mission.LandingSeaRegionID = best.landingSea
+	mission.RouteThreatPower = best.route.MaxThreat
+	mission.Score = 10000 + len(fleet.EmbarkedUnits)*20 - best.seaDistance*5
+	return true
+}
+
+func aiNavalWarCoastCandidateBetter(candidate aiNavalWarCoastCandidate, best *aiNavalWarCoastCandidate) bool {
+	if best == nil || candidate.seaDistance != best.seaDistance {
+		return best == nil || candidate.seaDistance < best.seaDistance
+	}
+	if candidate.route.MaxThreat != best.route.MaxThreat {
+		return candidate.route.MaxThreat < best.route.MaxThreat
+	}
+	if candidate.route.TotalThreat != best.route.TotalThreat {
+		return candidate.route.TotalThreat < best.route.TotalThreat
+	}
+	return candidate.target.ID < best.target.ID
 }
 
 func aiNavalEmbarkArmyMove(gs *state.GameState, landArmy *army.Army, ctx *StrategicContext) (world.RegionID, bool) {

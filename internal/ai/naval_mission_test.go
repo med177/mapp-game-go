@@ -166,6 +166,46 @@ func Test1300NavalMissionGuidesArmyFleetAndLanding(t *testing.T) {
 	}
 }
 
+func Test1300LoadedFleetRetargetsNeutralObjectiveToReachableWarCoast(t *testing.T) {
+	gs := aiNavalMissionTestState(4)
+	gs.Factions["neutral"] = &faction.Faction{ID: "neutral"}
+	gs.Relations[faction.RelationKey("ai", "neutral")] = &faction.Relation{
+		FactionA: "ai", FactionB: "neutral", Stance: faction.StancePeace,
+	}
+	gs.Regions["objective_target"] = &world.Region{
+		ID: "objective_target", OwnerID: "neutral", Neighbors: []world.RegionID{"sea_home"}, Satisfaction: 50,
+	}
+	gs.Regions["sea_home"].Neighbors = append(gs.Regions["sea_home"].Neighbors, "objective_target")
+	gs.Regions["war_coast"] = &world.Region{
+		ID: "war_coast", OwnerID: "enemy", Neighbors: []world.RegionID{"sea_home"}, Satisfaction: 50,
+	}
+	gs.Regions["sea_home"].Neighbors = append(gs.Regions["sea_home"].Neighbors, "war_coast")
+	gs.AIPlans["ai"] = &state.AIPlanState{
+		ObjectiveID: "secure_neutral", Kind: state.AIObjectiveExpand, TargetFactionID: "neutral",
+		TargetRegionIDs: []world.RegionID{"objective_target"}, StartedTurn: 1, ReassessTurn: 12,
+	}
+	gs.Armies["transport"] = &army.Army{
+		ID: "transport", OwnerID: "ai", RegionID: "sea_home", IsNaval: true,
+		Units: []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+		EmbarkedUnits: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+		},
+		MovePoints: 3, MaxMovePoints: 3,
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	if ctx.navalMission == nil || ctx.navalMission.TargetRegionID != "objective_target" {
+		t.Fatalf("test başlangıcında barış hedefi aktif mission olmalıydı: %+v", ctx.navalMission)
+	}
+	if got := chooseBestMoveWithStrategicContext(gs, gs.Armies["transport"], ctx); got != "war_coast" {
+		t.Fatalf("yüklü filo en yakın çıkarılabilir savaş kıyısına retarget olmalıydı, got=%s mission=%+v", got, ctx.navalMission)
+	}
+	if ctx.navalMission.TargetFactionID != "enemy" || ctx.navalMission.TargetRegionID != "war_coast" {
+		t.Fatalf("mission savaş kıyısına güncellenmeliydi: %+v", ctx.navalMission)
+	}
+}
+
 func Test1300NavalStrategyDoesNothingWithoutConcreteMission(t *testing.T) {
 	gs := aiNavalMissionTestState(4)
 	gs.AIPlans["ai"] = &state.AIPlanState{

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 related: [systems/combat, systems/diplomacy, architecture/game-loop]
 ---
 
@@ -955,6 +955,10 @@ AI kara ordularını nakliye filosuna bindirip indirebilir:
 - Boş transport filoları görev çıkış denizinde toplanır. Yüklenmiş filo sonraki turda
   aktif plandan yeniden tanınır, deniz BFS'iyle objective kıyısına gider ve uygun hedefe
   çıkar. Görev savaş gemileri de taşıma hattına yaklaşır.
+- Aktif objective'in hedefi savaş state'i değiştikten sonra barışta kalmışsa, yüklü filo
+  bu hedefte kilitlenmez; mevcut savaş düşmanları arasındaki ulaşılabilir kıyıları tarar,
+  en yakın çıkarılabilir hedefe retarget olur ve savunucu gücü üstün olan kıyıyı atlar.
+  Bu fallback yeni savaş ilan etmez ve yalnız runtime mission state'ini değiştirir.
 - Somut görev yoksa boş 1300 filosu uzak deniz veya rastgele yabancı kıyı aramaz.
   Eski save'den yük taşıyan ama objective'i kalmayan filo, yalnız komşu güvenli dost
   kıyıya tahliye yapar.

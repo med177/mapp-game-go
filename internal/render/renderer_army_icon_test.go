@@ -50,7 +50,7 @@ func TestUnitSpriteAssetNamesCoverAllUnitTypes(t *testing.T) {
 		"bombard":        "siege_mortar.png",
 		"cannon":         "siege_cannon.png",
 		"transport":      "ship_transport.png",
-		"merchant_ship":  "ship_small.png",
+		"merchant_ship":  "ship_merchant.png",
 		"warship":        "ship_war_galley.png",
 	}
 	for unitID, filename := range want {
