@@ -9,6 +9,8 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`).
 
+Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve `SelectedRegion` bölgesinin `OwnerID` değerindeki devlete senkronlanır. Aynı devletin bölgeleri arasında geçiş panel scroll'unu korur; farklı devlete geçiş panel içeriğini baştan başlatır (`internal/render/renderer_input.go`).
+
 Kuşatılan bölgedeki bölge sahibi veya müttefik kara ordusu komşu dost/sahipsiz hedefe sağ tıkladığında savaş planı kuşatan orduya karşı açılır; preview kaynak bölgenin arazisini, başarılı hareket ise seçilen hedefi kullanır. Ordu paneli ve birim kartları bu durumda `Takviye aktif` göstergesi çizmez.
 
 Bölgede aktif kuşatma yürüten oyuncu ordusu seçildiğinde kuşatmaya ait hedef, durum, tahkimat, ilerleme, gedik, teslim süresi ve hücum uygunluğu bilgileri yalnızca seçili `Kuşatma Emri` panelinde gösterilir. Panel, bilgileri ayrı durum ve metrik kartlarına böler; alt ordu detay paneli aynı kuşatma özetini tekrar çizmez (`internal/render/renderer_dialogs.go`, `army_panel.go`).

@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestBuildFactionDiplomacySummaryGroupsRelations(t *testing.T) {
@@ -66,5 +67,46 @@ func TestClampFactionPanelScroll(t *testing.T) {
 	}
 	if got := clampFactionPanelScroll(1000, 592, -10); got != 0 {
 		t.Fatalf("negatif scroll sifirlanmali, got=%v", got)
+	}
+}
+
+func TestSyncFactionPanelToSelectedRegionFollowsOwner(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"region_b": {ID: "region_b", OwnerID: "owner_b"},
+			},
+		},
+		SelectedRegion:       "region_b",
+		selectedFactionPanel: "owner_a",
+		factionPanelScroll:   140,
+	}
+
+	r.syncFactionPanelToSelectedRegion()
+
+	if r.selectedFactionPanel != "owner_b" {
+		t.Fatalf("panel yeni bölgenin sahibine geçmeliydi: got=%q want=%q", r.selectedFactionPanel, "owner_b")
+	}
+	if r.factionPanelScroll != 0 {
+		t.Fatalf("farklı devlet seçilince panel scroll'u sıfırlanmalıydı: got=%v", r.factionPanelScroll)
+	}
+}
+
+func TestSyncFactionPanelToSelectedRegionKeepsPanelForSameOwner(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"region_b": {ID: "region_b", OwnerID: "owner_a"},
+			},
+		},
+		SelectedRegion:       "region_b",
+		selectedFactionPanel: "owner_a",
+		factionPanelScroll:   140,
+	}
+
+	r.syncFactionPanelToSelectedRegion()
+
+	if r.selectedFactionPanel != "owner_a" || r.factionPanelScroll != 140 {
+		t.Fatalf("aynı devlet seçilince panel korunmalıydı: faction=%q scroll=%v", r.selectedFactionPanel, r.factionPanelScroll)
 	}
 }

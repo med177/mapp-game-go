@@ -677,7 +677,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.regionPanelScroll = 0
 		}
 		r.SelectedRegion = rid
-		r.closeFactionPanel()
+		r.syncFactionPanelToSelectedRegion()
 		r.selectSettlement(rid, idx)
 		if !RecruitPanelVisible(r.gs, rid) {
 			r.showRecruitPanel = false
@@ -725,7 +725,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 				r.regionPanelScroll = 0
 			}
 			r.SelectedRegion = rid
-			r.closeFactionPanel()
+			r.syncFactionPanelToSelectedRegion()
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
 			r.resetRecruitSelection()
@@ -738,7 +738,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.regionPanelScroll = 0
 	}
 	r.SelectedRegion = rid
-	r.closeFactionPanel()
+	r.syncFactionPanelToSelectedRegion()
 	r.clearSelectedSettlement()
 	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.
 	r.showRecruitPanel = false
@@ -779,6 +779,26 @@ func (r *Renderer) clearSelectedSettlement() {
 func (r *Renderer) openFactionPanel(fid faction.FactionID) {
 	r.selectedFactionPanel = fid
 	r.factionPanelScroll = 0
+}
+
+func (r *Renderer) syncFactionPanelToSelectedRegion() {
+	if r.selectedFactionPanel == "" {
+		return
+	}
+	if r.gs == nil {
+		r.closeFactionPanel()
+		return
+	}
+	region := r.gs.Regions[r.SelectedRegion]
+	if region == nil || region.OwnerID == "" {
+		r.closeFactionPanel()
+		return
+	}
+	ownerID := faction.FactionID(region.OwnerID)
+	if ownerID == r.selectedFactionPanel {
+		return
+	}
+	r.openFactionPanel(ownerID)
 }
 
 func (r *Renderer) closeFactionPanel() {
