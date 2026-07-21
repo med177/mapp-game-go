@@ -277,7 +277,7 @@ func aiResearchUnitUnlockScore(gs *state.GameState, self *faction.Faction, techn
 	sort.Strings(unitIDs)
 	for _, unitID := range unitIDs {
 		unitType := gs.UnitTypes[unitID]
-		if unitType == nil || unitType.RequiredTech != technology.ID {
+		if unitType == nil || !unitType.RequiresTech(technology.ID) {
 			continue
 		}
 		unlockValue := 60 + (unitType.Attack+unitType.Defense+unitType.Morale/5)/2
@@ -332,7 +332,7 @@ func aiResearchFollowOnScore(gs *state.GameState, self *faction.Faction, technol
 		}
 		score += 15
 		for _, unitType := range gs.UnitTypes {
-			if unitType != nil && unitType.RequiredTech == candidate.ID {
+			if unitType != nil && unitType.RequiresTech(candidate.ID) {
 				score += 30
 				break
 			}

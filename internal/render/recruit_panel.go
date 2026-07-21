@@ -374,7 +374,7 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 				continue
 			}
 		}
-		if utype.RequiredTech != "" && !ff.Research.Completed[utype.RequiredTech] {
+		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
 			continue
 		}
 		if !unitCost(utype).CanAfford(ff) {
@@ -432,7 +432,7 @@ func recruitPanelDisabledReason(gs *state.GameState, rid world.RegionID) string 
 				return "Liman Eksik"
 			}
 		}
-		if utype.RequiredTech != "" && !ff.Research.Completed[utype.RequiredTech] {
+		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
 			return "Teknoloji Eksik"
 		}
 		if shortage := unitCostShortageReason(ff, unitCost(utype)); shortage != "" {
@@ -627,7 +627,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barr
 	}
 	ff := gs.Factions[gs.PlayerFactionID]
 	playerOwnerID := string(gs.PlayerFactionID)
-	needsTech := utype.RequiredTech != "" && (ff == nil || !ff.Research.Completed[utype.RequiredTech])
+	needsTech := ff == nil || !utype.HasAllRequiredTechs(ff.Research.Completed)
 	canAfford := ff != nil && unitCost(utype).CanAfford(ff)
 	fullyAvail := !needsBuilding && !needsTech && canAfford
 	slotBg := color.RGBA{250, 250, 250, 240}

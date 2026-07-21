@@ -1148,7 +1148,7 @@ func aiUnitAvailableForBudget(gs *state.GameState, f *faction.Faction, utype *ar
 	if gs == nil || f == nil || utype == nil {
 		return false
 	}
-	if utype.RequiredTech != "" && !f.Research.Completed[utype.RequiredTech] {
+	if !utype.HasAllRequiredTechs(f.Research.Completed) {
 		return false
 	}
 	cost := economy.ResourceCost{
@@ -2265,7 +2265,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 	}
 
 	// Teknoloji kontrolü
-	if warshipType.RequiredTech != "" && !f.Research.Completed[warshipType.RequiredTech] {
+	if !warshipType.HasAllRequiredTechs(f.Research.Completed) {
 		return
 	}
 

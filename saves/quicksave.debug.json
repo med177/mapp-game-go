@@ -9617,11 +9617,11 @@
       "ottoman": {
         "is_eliminated": false,
         "capital_settlement_id": "constantinople_settlement_3",
-        "gold": 3797,
-        "grain": 43299,
-        "iron": 1967,
-        "timber": 1881,
-        "stone": 4501,
+        "gold": 2727,
+        "grain": 43177,
+        "iron": 1859,
+        "timber": 1675,
+        "stone": 4299,
         "spice": 586,
         "cloth": 7808,
         "research": {
@@ -10128,17 +10128,7 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
+            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           },
@@ -10158,7 +10148,17 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           }
@@ -11206,8 +11206,8 @@
             "experience": 0
           }
         ],
-        "move_points": 3,
-        "max_move_points": 3,
+        "move_points": 2,
+        "max_move_points": 2,
         "is_naval": false,
         "commander": {
           "id": "commander_leon_ferdinand",
@@ -12026,66 +12026,6 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
             "type_id": "militia",
             "current_hp": 100,
             "experience": 0
@@ -12102,6 +12042,66 @@
           },
           {
             "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
@@ -12208,12 +12208,12 @@
             "experience": 0
           },
           {
-            "type_id": "catapult",
+            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           },
           {
-            "type_id": "militia",
+            "type_id": "catapult",
             "current_hp": 100,
             "experience": 0
           }
@@ -12453,17 +12453,17 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           }
@@ -12508,6 +12508,16 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
@@ -12524,16 +12534,6 @@
           },
           {
             "type_id": "cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
@@ -12596,7 +12596,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -12905,6 +12905,31 @@
             "experience": 0
           },
           {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
@@ -12921,31 +12946,6 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           }
@@ -12982,6 +12982,21 @@
             "experience": 0
           },
           {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "cavalry",
             "current_hp": 100,
             "experience": 0
@@ -13018,21 +13033,6 @@
           },
           {
             "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           },
@@ -13487,33 +13487,33 @@
             "experience": 0
           },
           {
-            "type_id": "catapult",
-            "current_hp": 98,
-            "experience": 0
-          },
-          {
-            "type_id": "catapult",
-            "current_hp": 98,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 98,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 98,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 98,
-            "experience": 0
-          },
-          {
             "type_id": "infantry",
             "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "catapult",
+            "current_hp": 98,
+            "experience": 0
+          },
+          {
+            "type_id": "catapult",
+            "current_hp": 98,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 98,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 98,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 98,
             "experience": 0
           }
         ],
@@ -13779,17 +13779,17 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
             "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           },
@@ -14174,6 +14174,16 @@
             "type_id": "warship",
             "current_hp": 100,
             "experience": 0
+          },
+          {
+            "type_id": "warship",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "warship",
+            "current_hp": 100,
+            "experience": 0
           }
         ],
         "move_points": 6,
@@ -14314,7 +14324,7 @@
           }
         ],
         "move_points": 0,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "commander": {
           "id": "commander_aydin_aydin",
@@ -15252,62 +15262,62 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
             "type_id": "infantry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           }
@@ -15884,6 +15894,8 @@
         "id": "fleet_genoa_120",
         "owner_id": "genoa",
         "region_id": "new_region_246",
+        "docked_region_id": "genoa",
+        "docked_settlement_id": "genoa_savona",
         "units": [
           {
             "type_id": "transport",
@@ -15996,33 +16008,6 @@
         "in_ambush": false,
         "trade_route_key": "genoa-\u003enaples_kingdom"
       },
-      "fleet_hamid_bey_446": {
-        "id": "fleet_hamid_bey_446",
-        "owner_id": "ottoman",
-        "region_id": "east_mediterranean",
-        "units": [
-          {
-            "type_id": "transport",
-            "current_hp": 72,
-            "experience": 0
-          }
-        ],
-        "move_points": 4,
-        "max_move_points": 4,
-        "is_naval": true,
-        "commander": {
-          "id": "commander_hamid_bey_31",
-          "owner_id": "ottoman",
-          "assigned_army_id": "fleet_hamid_bey_446",
-          "name": "Komutan 31",
-          "portrait_asset": "default.png",
-          "level": 1,
-          "experience": 0,
-          "battles": 0,
-          "victories": 0
-        },
-        "in_ambush": false
-      },
       "fleet_mamluk_east_med": {
         "id": "fleet_mamluk_east_med",
         "owner_id": "mamluk",
@@ -16068,6 +16053,11 @@
           {
             "type_id": "merchant_ship",
             "current_hp": 72,
+            "experience": 0
+          },
+          {
+            "type_id": "merchant_ship",
+            "current_hp": 100,
             "experience": 0
           }
         ],
@@ -16133,6 +16123,11 @@
           },
           {
             "type_id": "transport",
+            "current_hp": 72,
+            "experience": 0
+          },
+          {
+            "type_id": "transport",
             "current_hp": 81,
             "experience": 0
           }
@@ -16140,47 +16135,17 @@
         "move_points": 6,
         "max_move_points": 6,
         "is_naval": true,
-        "in_ambush": false
-      },
-      "fleet_ottoman_530": {
-        "id": "fleet_ottoman_530",
-        "owner_id": "ottoman",
-        "region_id": "new_region_238",
-        "docked_region_id": "bursa",
-        "docked_settlement_id": "gemlik_bursa",
-        "units": [
-          {
-            "type_id": "merchant_ship",
-            "current_hp": 100,
-            "experience": 0
-          }
-        ],
-        "move_points": 6,
-        "max_move_points": 6,
-        "is_naval": true,
-        "in_ambush": false
-      },
-      "fleet_ottoman_536": {
-        "id": "fleet_ottoman_536",
-        "owner_id": "ottoman",
-        "region_id": "new_region_238",
-        "docked_region_id": "bursa",
-        "docked_settlement_id": "gemlik_bursa",
-        "units": [
-          {
-            "type_id": "warship",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "warship",
-            "current_hp": 100,
-            "experience": 0
-          }
-        ],
-        "move_points": 3,
-        "max_move_points": 3,
-        "is_naval": true,
+        "commander": {
+          "id": "commander_hamid_bey_31",
+          "owner_id": "ottoman",
+          "assigned_army_id": "fleet_ottoman_437",
+          "name": "Komutan 31",
+          "portrait_asset": "default.png",
+          "level": 1,
+          "experience": 0,
+          "battles": 0,
+          "victories": 0
+        },
         "in_ambush": false
       },
       "fleet_portugal_atlantic": {
@@ -16884,7 +16849,7 @@
       "commander_hamid_bey_31": {
         "id": "commander_hamid_bey_31",
         "owner_id": "ottoman",
-        "assigned_army_id": "fleet_hamid_bey_446",
+        "assigned_army_id": "fleet_ottoman_437",
         "name": "Komutan 31",
         "portrait_asset": "default.png",
         "level": 1,
@@ -18138,14 +18103,6 @@
         "initial_regions_b": 2,
         "last_peace_offer_turn": 50
       },
-      "dulkadir_bey|hamid_bey": {
-        "faction_a": "dulkadir_bey",
-        "faction_b": "hamid_bey",
-        "started_turn": 49,
-        "initial_regions_a": 1,
-        "initial_regions_b": 2,
-        "last_peace_offer_turn": 49
-      },
       "england|scotland_kingdom": {
         "faction_a": "england",
         "faction_b": "scotland_kingdom",
@@ -18167,26 +18124,6 @@
         "started_turn": 1,
         "initial_regions_a": 8,
         "initial_regions_b": 18,
-        "last_peace_offer_turn": 49
-      },
-      "hamid_bey|karaman_bey": {
-        "faction_a": "hamid_bey",
-        "faction_b": "karaman_bey",
-        "started_turn": 49,
-        "initial_regions_a": 2,
-        "initial_regions_b": 1,
-        "last_peace_offer_turn": 49
-      },
-      "hamid_bey|ottoman": {
-        "faction_a": "hamid_bey",
-        "faction_b": "ottoman",
-        "started_turn": 49,
-        "initial_regions_a": 2,
-        "initial_regions_b": 20,
-        "casualties_a": 11,
-        "regions_captured_a": 1,
-        "regions_captured_b": 3,
-        "last_battle_turn": 52,
         "last_peace_offer_turn": 49
       },
       "ilkhanate|mamluk": {
@@ -20923,7 +20860,7 @@
       "flanders_county|france": {
         "faction_a": "flanders_county",
         "faction_b": "france",
-        "score": -81,
+        "score": -80,
         "stance": "war"
       },
       "flanders_county|genoa": {
@@ -24479,22 +24416,6 @@
         "suspended_turns": 0
       },
       {
-        "from_faction_id": "hre",
-        "to_faction_id": "flanders_county",
-        "good": "grain",
-        "amount_per_turn": 2,
-        "gold_per_unit": 2,
-        "suspended_turns": 0
-      },
-      {
-        "from_faction_id": "flanders_county",
-        "to_faction_id": "hre",
-        "good": "grain",
-        "amount_per_turn": 2,
-        "gold_per_unit": 2,
-        "suspended_turns": 0
-      },
-      {
         "from_faction_id": "golden_horde",
         "to_faction_id": "mentese_bey",
         "good": "grain",
@@ -24507,6 +24428,22 @@
         "to_faction_id": "golden_horde",
         "good": "grain",
         "amount_per_turn": 3,
+        "gold_per_unit": 2,
+        "suspended_turns": 0
+      },
+      {
+        "from_faction_id": "hre",
+        "to_faction_id": "flanders_county",
+        "good": "grain",
+        "amount_per_turn": 2,
+        "gold_per_unit": 2,
+        "suspended_turns": 0
+      },
+      {
+        "from_faction_id": "flanders_county",
+        "to_faction_id": "hre",
+        "good": "grain",
+        "amount_per_turn": 2,
         "gold_per_unit": 2,
         "suspended_turns": 0
       }
@@ -24727,9 +24664,73 @@
         "region_id": "portugal",
         "type_id": "militia",
         "turns_left": 1
+      },
+      {
+        "id": "prod_1009",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "bithynia",
+        "type_id": "market",
+        "turns_left": 3
+      },
+      {
+        "id": "prod_1016",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "aydinoglu",
+        "type_id": "market",
+        "turns_left": 3
+      },
+      {
+        "id": "prod_1017",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "aydinoglu",
+        "type_id": "farm",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1018",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "saruhan",
+        "type_id": "farm",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1019",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "saruhan",
+        "type_id": "market",
+        "turns_left": 3
+      },
+      {
+        "id": "prod_1020",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "izmir",
+        "type_id": "barracks",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1021",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "izmir",
+        "type_id": "market",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1022",
+        "kind": "building",
+        "faction_id": "ottoman",
+        "region_id": "izmir",
+        "type_id": "walls",
+        "turns_left": 4
       }
     ],
-    "next_production_seq": 1008,
+    "next_production_seq": 1022,
     "next_army_seq": 538,
     "next_commander_seq": 33,
     "phase": "player_turn",

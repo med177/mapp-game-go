@@ -20,7 +20,7 @@ func TestAIResearchExpandPrioritizesRequiredSiegeUnlock(t *testing.T) {
 	}
 	gs.UnitTypes["catapult"] = &army.UnitType{
 		ID: "catapult", Category: army.CategorySiege, Attack: 30, Defense: 3, Morale: 30,
-		GoldCost: 200, GrainUpkeep: 3, TurnsRequired: 3, RequiredTech: "siege_unlock",
+		GoldCost: 200, GrainUpkeep: 3, TurnsRequired: 3, RequiredTech: []string{"siege_unlock"},
 		RequiredBldg: "barracks", RequiredBldgLevel: 1,
 	}
 
@@ -203,7 +203,7 @@ func aiTestTechnology(id string, category tech.Category, goldCost, turns int, ef
 func aiResearchUnlockUnit(id string, category army.UnitCategory, requiredTech string) *army.UnitType {
 	return &army.UnitType{
 		ID: id, Category: category, Attack: 18, Defense: 12, Morale: 60, GoldCost: 150,
-		GrainUpkeep: 3, TurnsRequired: 2, RequiredTech: requiredTech, RequiredBldg: "barracks", RequiredBldgLevel: 1,
+		GrainUpkeep: 3, TurnsRequired: 2, RequiredTech: []string{requiredTech}, RequiredBldg: "barracks", RequiredBldgLevel: 1,
 	}
 }
 

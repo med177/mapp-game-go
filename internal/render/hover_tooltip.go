@@ -335,12 +335,12 @@ func unitRequirementLines(gs *state.GameState, rid world.RegionID, utype *army.U
 		})
 	}
 
-	if utype.RequiredTech != "" {
-		name := utype.RequiredTech
-		if t := gs.TechTypes[utype.RequiredTech]; t != nil {
+	for _, requiredTech := range utype.RequiredTech {
+		name := requiredTech
+		if t := gs.TechTypes[requiredTech]; t != nil {
 			name = t.NameTR
 		}
-		done := ff != nil && ff.Research.Completed[utype.RequiredTech]
+		done := ff != nil && ff.Research.Completed[requiredTech]
 		col := color.RGBA{170, 145, 90, 230}
 		if !done {
 			col = ColorRed

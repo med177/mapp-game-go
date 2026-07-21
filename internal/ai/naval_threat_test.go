@@ -109,7 +109,7 @@ func Test1300ThreatenedMissionQueuesEscortToSafetyRequirement(t *testing.T) {
 	gs.Factions["ai"].Research.Completed = map[string]bool{"naval_doctrine": true}
 	gs.UnitTypes["warship"] = &army.UnitType{
 		ID: "warship", Category: army.CategoryNavalWar, Attack: 28, Defense: 18, Morale: 60,
-		RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: "naval_doctrine",
+		RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: []string{"naval_doctrine"},
 		GoldCost: 100, TimberCost: 10, TurnsRequired: 2,
 	}
 	gs.Armies["transport"] = &army.Army{

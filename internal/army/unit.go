@@ -44,13 +44,54 @@ type UnitType struct {
 	TurnsRequired int `json:"turns_required"`
 
 	// Gereksinimler
-	RequiredTech      string `json:"required_tech"`       // "" = gerek yok
-	RequiredBldg      string `json:"required_bldg"`       // gerekli bina ID
-	RequiredBldgLevel int    `json:"required_bldg_level"` // 0/1 = Lv1, 2 = Lv2 ...
+	RequiredTech      []string `json:"required_tech"`       // tüm listedeki teknolojiler gerekir
+	RequiredBldg      string   `json:"required_bldg"`       // gerekli bina ID
+	RequiredBldgLevel int      `json:"required_bldg_level"` // 0/1 = Lv1, 2 = Lv2 ...
 
 	// Denizde taşınabilir mi?
 	Embarkable    bool `json:"embarkable"`
 	CarryCapacity int  `json:"carry_capacity,omitempty"`
+}
+
+// RequiresTech birim tanımının belirli bir teknolojiyi istediğini bildirir.
+func (t *UnitType) RequiresTech(techID string) bool {
+	if t == nil || techID == "" {
+		return false
+	}
+	for _, required := range t.RequiredTech {
+		if required == techID {
+			return true
+		}
+	}
+	return false
+}
+
+// HasAllRequiredTechs birimin tüm teknoloji gereksinimlerinin tamamlanıp
+// tamamlanmadığını kontrol eder. Liste AND semantiğine sahiptir.
+func (t *UnitType) HasAllRequiredTechs(completed map[string]bool) bool {
+	if t == nil {
+		return false
+	}
+	for _, required := range t.RequiredTech {
+		if required != "" && !completed[required] {
+			return false
+		}
+	}
+	return true
+}
+
+// MissingRequiredTechs tamamlanmamış teknoloji ID'lerini veri sırasıyla döner.
+func (t *UnitType) MissingRequiredTechs(completed map[string]bool) []string {
+	if t == nil {
+		return nil
+	}
+	missing := make([]string, 0, len(t.RequiredTech))
+	for _, required := range t.RequiredTech {
+		if required != "" && !completed[required] {
+			missing = append(missing, required)
+		}
+	}
+	return missing
 }
 
 // BaseMovementPoints veri alanı olmayan eski birim tanımlarına geriye dönük

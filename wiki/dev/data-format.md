@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-07-19
+last_updated: 2026-07-21
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -317,13 +317,15 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
   "hp": 100,
   "category": "infantry",
   "tier": 1,
-  "required_tech": "",
+  "required_tech": [],
   "required_bldg": "barracks",
   "embarkable": true
 }
 ```
 
 `turns_required` üretim kuyruğunda kaç tur sonra birimin ordu/filoya ekleneceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `1` kabul eder.
+
+`required_tech` dizisi AND semantiğine sahiptir; listedeki tüm teknoloji ID'leri tamamlanmadan birim üretilemez. Teknoloji zincirinin ara adımları da açıkça yazılır (ör. top için `gunpowder` ve `cast_bronze_cannon`).
 
 `carry_capacity` sadece `category = "naval_trans"` birimlerinde kullanılır. Her nakliye gemisinin aynı anda taşıyabildiği kara birimi slot sayısını belirtir. Filo toplam kapasitesi, filodaki tüm nakliye gemilerinin `carry_capacity` toplamıdır; ancak mevcut oyun kuralı gereği toplam taşınan kara birimi sayısı yine `MaxArmySize` sınırını aşmaz.
 

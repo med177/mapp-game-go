@@ -3186,11 +3186,11 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction.Faction) string {
 	parts := []string{religion.DisplayNameTR(f.Religion)}
 	if fid == gs.PlayerFactionID {
-		parts = append(parts, "Oyuncu devleti")
+		parts = append(parts, "Siz")
 	} else if f.IsEliminated {
 		parts = append(parts, "Yıkıldı")
 	} else {
-		parts = append(parts, "AI devleti")
+		parts = append(parts, "Rakip")
 	}
 	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
 		parts = append(parts, "İlişki: "+faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")")

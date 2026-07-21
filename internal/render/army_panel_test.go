@@ -83,6 +83,37 @@ func TestScoutedEnemyRevealCountUsesFullIntelWhenEnabled(t *testing.T) {
 	}
 }
 
+func TestArmyPanelStrengthUsesCurrentHPForPlayerArmy(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf": {ID: "inf", Attack: 20, Defense: 10, Morale: 20},
+	}
+	units := []army.Unit{{TypeID: "inf", CurrentHP: 50, Experience: 20}}
+
+	attack, defense := armyPanelStrength(units, types, true)
+	if attack != 11 || defense != 5 {
+		t.Fatalf("oyuncu ordusu gücü mevcut HP/XP ile hesaplanmalıydı: attack=%d defense=%d", attack, defense)
+	}
+}
+
+func TestScoutedEnemyArmyStrengthOnlyUsesVisibleUnitTypes(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"cav": {ID: "cav", Category: army.CategoryCavalry, Attack: 20, Defense: 15},
+		"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 10, Defense: 8},
+	}
+	armyRef := &army.Army{Units: []army.Unit{
+		{TypeID: "cav", CurrentHP: 25},
+		{TypeID: "inf", CurrentHP: 25},
+		{TypeID: "inf", CurrentHP: 25},
+		{TypeID: "cav", CurrentHP: 25},
+	}}
+	gs := &state.GameState{UnitTypes: types}
+
+	attack, defense := scoutedEnemyArmyStrength(gs, armyRef, false, 0.5)
+	if attack != 20 || defense != 16 {
+		t.Fatalf("düşman gücü gizli birimleri içermemeliydi: attack=%d defense=%d", attack, defense)
+	}
+}
+
 func TestArmyPanelBoundsHitCoversWholePanel(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

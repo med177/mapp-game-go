@@ -248,6 +248,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.FillRect(screen, cx+1, hpY+hpBarH, xpW, 2, color.RGBA{80, 160, 255, 180}, false)
 		}
 	}
+	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç")
 
 }
 
@@ -331,7 +332,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 
 	vector.FillRect(screen, px, py+panelH-siegeFooterH, panelW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
 	vector.StrokeLine(screen, px, py+panelH-siegeFooterH, px+panelW, py+panelH-siegeFooterH, 1, panelBorder, false)
-	DrawText(screen, "Bu orduya hareket emri verilemez  |  Birim detayları gizli", float64(px)+float64(armyPanelPadX), float64(py+panelH-siegeFooterH+2), FaceSmall, color.RGBA{180, 100, 90, 210})
+	drawEnemyArmyFooterText(screen, layout, "Bu orduya hareket emri verilemez  |  Birim detayları gizli", "Güç: Gizli")
 }
 
 func playerHasRevealEnemyStrength(gs *state.GameState) bool {
@@ -375,6 +376,87 @@ func scoutedEnemyRevealCount(total int, fullIntel bool, revealRatio float64) int
 		revealed = total
 	}
 	return revealed
+}
+
+// armyPanelStrength birimlerin panelde gösterilecek saldırı/savunma gücünü
+// hesaplar. Düşman ordusunda HP bilgisi istihbaratla açılmadığı için bu helper
+// kısmi istihbaratta birimleri tam HP kabul eder; böylece gizli hasar bilgisi
+// güç metninden sızmaz.
+func armyPanelStrength(units []army.Unit, unitTypes map[string]*army.UnitType, useCurrentHP bool) (attack, defense int) {
+	for _, unit := range units {
+		unitType := unitTypes[unit.TypeID]
+		if unitType == nil {
+			continue
+		}
+		hpRatio := 1.0
+		if useCurrentHP {
+			hpRatio = unit.HPPercent()
+		}
+		attackPower := unit.EffectiveAttack(unitTypes) + unitType.Morale/10
+		if scaled := int(float64(attackPower) * hpRatio); scaled > 0 {
+			attack += scaled
+		} else {
+			attack++
+		}
+		defensePower := int(float64(unit.EffectiveDefense(unitTypes)) * hpRatio)
+		if defensePower > 0 {
+			defense += defensePower
+		} else {
+			defense++
+		}
+	}
+	return attack, defense
+}
+
+func scoutedEnemyArmyStrength(gs *state.GameState, a *army.Army, fullIntel bool, revealRatio float64) (attack, defense int) {
+	if gs == nil || a == nil {
+		return 0, 0
+	}
+	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+	for displayIndex := 0; displayIndex < revealed; displayIndex++ {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		if unitIndex < 0 {
+			break
+		}
+		unitAttack, unitDefense := armyPanelStrength(a.Units[unitIndex:unitIndex+1], gs.UnitTypes, false)
+		attack += unitAttack
+		defense += unitDefense
+	}
+	return attack, defense
+}
+
+func drawArmyPowerFooter(screen *ebiten.Image, layout armyPanelLayout, attack, defense int, label string) {
+	drawArmyPanelFooterBackground(screen, layout)
+	drawArmyPanelFooterRight(screen, layout, label+": "+itoa(attack)+" / "+itoa(defense), color.RGBA{220, 190, 100, 235})
+}
+
+func drawArmyPanelFooterBackground(screen *ebiten.Image, layout armyPanelLayout) {
+	footerY := layout.panelY + layout.panelH - siegeFooterH
+	footerX := layout.gridX
+	footerW := layout.panelX + layout.panelW - armyPanelPadX - footerX
+	vector.FillRect(screen, footerX, footerY, footerW, siegeFooterH, color.RGBA{28, 18, 6, 190}, false)
+	vector.StrokeLine(screen, footerX, footerY, footerX+footerW, footerY, 1, panelBorder, false)
+}
+
+func drawArmyPanelFooterRight(screen *ebiten.Image, layout armyPanelLayout, text string, textColor color.Color) {
+	footerY := layout.panelY + layout.panelH - siegeFooterH
+	footerX := layout.gridX
+	footerW := layout.panelX + layout.panelW - armyPanelPadX - footerX
+	textW := MeasureText(text, FaceSmall)
+	DrawText(screen, text, float64(footerX+footerW)-float64(textW)-float64(armyPanelPadX), float64(footerY+2), FaceSmall, textColor)
+}
+
+func drawEnemyArmyFooterText(screen *ebiten.Image, layout armyPanelLayout, leftText, rightText string) {
+	footerY := layout.panelY + layout.panelH - siegeFooterH
+	leftX := layout.panelX + armyPanelPadX
+	leftW := layout.gridX - leftX - armyPanelPadX
+	rightW := MeasureText(rightText, FaceSmall)
+	maxLeftW := float64(leftW) - rightW - 16
+	if maxLeftW < 0 {
+		maxLeftW = 0
+	}
+	DrawText(screen, trimTextToWidth(leftText, FaceSmall, maxLeftW), float64(leftX), float64(footerY+2), FaceSmall, color.RGBA{180, 100, 90, 210})
+	drawArmyPanelFooterRight(screen, layout, rightText, color.RGBA{220, 190, 100, 235})
 }
 
 func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool, revealRatio float64) {
@@ -453,7 +535,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	} else {
 		footer += "  |  Kısmi istihbarat"
 	}
-	DrawText(screen, footer, float64(px)+float64(armyPanelPadX), float64(py+panelH-siegeFooterH+2), FaceSmall, color.RGBA{180, 100, 90, 210})
+	attack, defense := scoutedEnemyArmyStrength(gs, a, fullIntel, revealRatio)
+	drawEnemyArmyFooterText(screen, layout, footer, "Görünen güç: "+itoa(attack)+" / "+itoa(defense))
 }
 
 // armyPanelUnitIndex, oyun state'indeki birim sırasını değiştirmeden paneldeki

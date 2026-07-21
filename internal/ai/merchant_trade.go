@@ -225,7 +225,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	self := gs.Factions[fid]
 	merchantType := gs.UnitTypes[merchantShipTypeID]
 	portType := gs.BuildingTypes["port"]
-	if self == nil || merchantType == nil || portType == nil || merchantType.RequiredTech != "" && !self.Research.Completed[merchantType.RequiredTech] {
+	if self == nil || merchantType == nil || portType == nil || !merchantType.HasAllRequiredTechs(self.Research.Completed) {
 		return false
 	}
 	desired := len(routes) * economy.MaxMerchantAmountBonusPerRoute
@@ -287,7 +287,7 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 	self := gs.Factions[fid]
 	warshipType := gs.UnitTypes["warship"]
 	portType := gs.BuildingTypes["port"]
-	if self == nil || warshipType == nil || portType == nil || warshipType.RequiredTech != "" && !self.Research.Completed[warshipType.RequiredTech] {
+	if self == nil || warshipType == nil || portType == nil || !warshipType.HasAllRequiredTechs(self.Research.Completed) {
 		return false
 	}
 	var threatenedSea world.RegionID

@@ -33,8 +33,8 @@ func aiMerchantTradeTestState() *state.GameState {
 			{FromFactionID: "mamluk", ToFactionID: "venice", Good: economy.GoodSpice, AmountPerTurn: 2, GoldPerUnit: 12},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade, RequiredBldg: "port", RequiredBldgLevel: 2, RequiredTech: "harbor_administration", GoldCost: 180, TimberCost: 26, TurnsRequired: 3},
-			"warship":       {ID: "warship", Category: army.CategoryNavalWar, Attack: 28, Defense: 18, Morale: 60, RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: "naval_doctrine", GoldCost: 400, TimberCost: 34, TurnsRequired: 4},
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade, RequiredBldg: "port", RequiredBldgLevel: 2, RequiredTech: []string{"harbor_administration"}, GoldCost: 180, TimberCost: 26, TurnsRequired: 3},
+			"warship":       {ID: "warship", Category: army.CategoryNavalWar, Attack: 28, Defense: 18, Morale: 60, RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: []string{"naval_doctrine"}, GoldCost: 400, TimberCost: 34, TurnsRequired: 4},
 		},
 		BuildingTypes: map[string]*city.Building{
 			"port": {ID: "port", MaxPerRegion: 3, GoldCost: 200, TimberCost: 36, TurnsRequired: 2},

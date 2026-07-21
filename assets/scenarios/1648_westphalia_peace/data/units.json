@@ -13,7 +13,7 @@
     "name_tr": "Şehir Milisi",
     "required_bldg": "",
     "required_bldg_level": 0,
-    "required_tech": "",
+    "required_tech": [],
     "tier": 1,
     "turns_required": 2,
     "grain_cost": 12,
@@ -36,7 +36,9 @@
     "name_tr": "Mızraklı-Tüfekçi Piyade",
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "iron_weapons",
+    "required_tech": [
+      "iron_weapons"
+    ],
     "tier": 2,
     "turns_required": 2,
     "grain_cost": 18,
@@ -59,7 +61,9 @@
     "name_tr": "Kıdemli Misketçiler",
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "standing_infantry",
+    "required_tech": [
+      "standing_infantry"
+    ],
     "tier": 3,
     "turns_required": 3,
     "grain_cost": 24,
@@ -82,7 +86,9 @@
     "name_tr": "Karbinalı Hafif Süvari",
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "horse_breeding",
+    "required_tech": [
+      "horse_breeding"
+    ],
     "tier": 1,
     "turns_required": 2,
     "grain_cost": 20,
@@ -105,7 +111,9 @@
     "name_tr": "Dragonlar",
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "cavalry_tactics",
+    "required_tech": [
+      "cavalry_tactics"
+    ],
     "tier": 2,
     "turns_required": 3,
     "grain_cost": 26,
@@ -128,7 +136,9 @@
     "name_tr": "Kürasiyerler",
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "plate_armor",
+    "required_tech": [
+      "plate_armor"
+    ],
     "tier": 3,
     "turns_required": 4,
     "grain_cost": 34,
@@ -151,7 +161,9 @@
     "name_tr": "Alay Topları",
     "required_bldg": "barracks",
     "required_bldg_level": 1,
-    "required_tech": "gunpowder",
+    "required_tech": [
+      "gunpowder"
+    ],
     "tier": 2,
     "turns_required": 3,
     "grain_cost": 10,
@@ -174,7 +186,9 @@
     "name_tr": "Kuşatma Topçusu",
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "cast_bronze_cannon",
+    "required_tech": [
+      "cast_bronze_cannon"
+    ],
     "tier": 3,
     "turns_required": 4,
     "grain_cost": 14,
@@ -197,7 +211,9 @@
     "name_tr": "Sahra Topçu Treni",
     "required_bldg": "barracks",
     "required_bldg_level": 2,
-    "required_tech": "artillery_foundries",
+    "required_tech": [
+      "artillery_foundries"
+    ],
     "tier": 3,
     "turns_required": 5,
     "grain_cost": 18,
@@ -220,7 +236,9 @@
     "name_tr": "Kalyon",
     "required_bldg": "port",
     "required_bldg_level": 2,
-    "required_tech": "naval_doctrine",
+    "required_tech": [
+      "naval_doctrine"
+    ],
     "tier": 3,
     "turns_required": 4,
     "grain_cost": 8,
@@ -244,7 +262,9 @@
     "name_tr": "Asker Nakliye Filosu",
     "required_bldg": "port",
     "required_bldg_level": 1,
-    "required_tech": "navigation",
+    "required_tech": [
+      "navigation"
+    ],
     "tier": 1,
     "turns_required": 2,
     "grain_cost": 8,
@@ -267,7 +287,9 @@
     "name_tr": "Ticaret Konvoyu",
     "required_bldg": "port",
     "required_bldg_level": 1,
-    "required_tech": "trade_routes",
+    "required_tech": [
+      "trade_routes"
+    ],
     "tier": 1,
     "turns_required": 3,
     "grain_cost": 8,

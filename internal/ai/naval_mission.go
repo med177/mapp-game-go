@@ -671,7 +671,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		})
 		return
 	}
-	if transportType.RequiredTech != "" && !self.Research.Completed[transportType.RequiredTech] {
+	if !transportType.HasAllRequiredTechs(self.Research.Completed) {
 		return
 	}
 	if transportType.CarryCapacity <= 0 {
@@ -718,7 +718,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 	self := gs.Factions[fid]
 	warshipType := gs.UnitTypes["warship"]
 	portType := gs.BuildingTypes["port"]
-	if self == nil || warshipType == nil || portType == nil || warshipType.RequiredTech != "" && !self.Research.Completed[warshipType.RequiredTech] {
+	if self == nil || warshipType == nil || portType == nil || !warshipType.HasAllRequiredTechs(self.Research.Completed) {
 		return
 	}
 	threatPower := maxInt(mission.RouteThreatPower, aiPortApproachThreatPower(gs, fid, mission.EmbarkSeaRegionID))

@@ -867,8 +867,8 @@ func TestAINavalStrategyQueuesEscortForPendingTransport(t *testing.T) {
 			"port": {ID: "port", MaxPerRegion: 3},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: "navigation", TurnsRequired: 2},
-			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: "naval_doctrine", RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: []string{"navigation"}, TurnsRequired: 2},
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: []string{"naval_doctrine"}, RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
 		},
 	}
 
@@ -907,8 +907,8 @@ func TestAINavalStrategyQueuesMultipleEscortsForMultipleFronts(t *testing.T) {
 			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "player", RegionID: "sea_a", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
 		},
 		UnitTypes: map[string]*army.UnitType{
-			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: "navigation", TurnsRequired: 2},
-			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: "naval_doctrine", RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10, GoldCost: 200, TimberCost: 20, RequiredTech: []string{"navigation"}, TurnsRequired: 2},
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar, GoldCost: 400, TimberCost: 34, RequiredTech: []string{"naval_doctrine"}, RequiredBldg: "port", RequiredBldgLevel: 3, TurnsRequired: 4},
 		},
 	}
 

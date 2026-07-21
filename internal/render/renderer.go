@@ -1261,7 +1261,7 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 14, 10, 228})
 	drawPanelBorder(screen, x, y, panelW, panelH)
 	vector.FillRect(screen, x, y, panelW, 3, color.RGBA{205, 168, 72, 255}, false)
-	DrawText(screen, "AI HAMLESİ", float64(x)+16, float64(y)+10, FaceSmall, ColorGray)
+	DrawText(screen, "HAMLELER", float64(x)+16, float64(y)+10, FaceSmall, ColorGray)
 
 	flagBG := color.RGBA{70, 58, 32, 255}
 	if r.gs != nil {

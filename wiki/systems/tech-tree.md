@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-06-07
-related: [systems/combat, systems/economy, architecture/state-management]
+last_updated: 2026-07-21
+related: [systems/combat, systems/economy, architecture/state-management, dev/data-format]
 ---
 
 # Teknoloji Ağacı
@@ -18,8 +18,7 @@ type Technology struct {
     TurnsRequired int
     GoldCost     int
     Category     string        // military | economy | diplomacy | naval | culture
-    RequiredTechs []string     // bağımlılıklar
-    RequiredBuilding string    // gerekli bina ID
+    Requires []string           // teknoloji ağacı bağımlılıkları
     Effects      TechEffects
 }
 ```
@@ -67,6 +66,8 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 1300 senaryosu artık başlangıç 26 düğümle sınırlı değildir; orta ve ileri dönem için yeni askeri, ekonomik, diplomatik, denizcilik ve dinî alt dallar eklendi. Özellikle `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength` ve `conversion_speed_mod` effect alanları artık sadece veri içinde tanımlı kalmaz, runtime'da karşılık bulur.
 
 AI zaten aynı `ResearchState` ve `tech.StartResearch / tech.Tick / tech.PauseResearch` akışını kullanır; oyuncu ve AI için teknoloji ilerleme mantığı ayrışmaz.
+
+Birim üretim kapıları `assets/scenarios/<id>/data/units.json` içindeki `required_tech` dizisini AND olarak değerlendirir. Birim, listelenen zincirin tüm halkaları tamamlanmadan oyuncu veya AI tarafından üretilemez.
 
 `applyTechTicks(gs)` — her tur `TurnsLeft--`, `0` olunca teknoloji tamamlanır.
 

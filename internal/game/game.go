@@ -2737,9 +2737,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		return
 	}
 
-	// Teknoloji kontrolü
-	if utype.RequiredTech != "" && !f.Research.Completed[utype.RequiredTech] {
-		g.renderer.ShowCombatResult("Araştırma gerekli: " + utype.RequiredTech)
+	// Teknoloji kontrolü: listedeki tüm teknoloji zinciri tamamlanmış olmalı.
+	if !utype.HasAllRequiredTechs(f.Research.Completed) {
+		missing := utype.MissingRequiredTechs(f.Research.Completed)
+		g.renderer.ShowCombatResult("Araştırma gerekli: " + strings.Join(techLabels(g.gs, missing), ", "))
 		return
 	}
 
