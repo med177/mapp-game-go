@@ -20,7 +20,7 @@ type aiMerchantRoute struct {
 
 // aiExecuteMerchantTradeStrategy 1300 senaryosunda ticaret cumhuriyetlerinin
 // merchant filolarını aktif deniz rotalarına bağlar ve eksik kapasiteyi üretir.
-func aiExecuteMerchantTradeStrategy(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext, steps *[]TurnStep) {
+func aiExecuteMerchantTradeStrategy(gs *state.GameState, fid faction.FactionID, budget *aiBudget, _ *StrategicContext, steps *[]TurnStep) {
 	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || !aiMerchantTradeFaction(fid) {
 		return
 	}

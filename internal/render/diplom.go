@@ -401,7 +401,7 @@ func diplomacyHistoryFilterButtonStyle(active bool, accent color.RGBA) gameui.Bu
 	return style
 }
 
-func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind) [7]diplomacyHistoryFilterButton {
+func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistoryDirectionFilter, _ ActionKind) [7]diplomacyHistoryFilterButton {
 	var buttons [7]diplomacyHistoryFilterButton
 	if panelRect.W <= 0 || panelRect.H <= 0 {
 		return buttons

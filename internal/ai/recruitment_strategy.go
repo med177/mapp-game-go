@@ -90,7 +90,7 @@ func aiRecruitOneWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, 
 	return aiRecruitOneWithStrategicContextAndSteps(gs, fid, budget, nil, steps)
 }
 
-func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) bool {
+func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, _ *[]TurnStep) bool {
 	f := gs.Factions[fid]
 	if gs.UnitTypes == nil {
 		return false

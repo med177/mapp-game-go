@@ -2198,7 +2198,7 @@ func drawRegionPanelScrollbar(screen *ebiten.Image, viewport gameui.Rect, conten
 	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
-func regionDiplomacyButtonRect(i int, px, py, pw, ph float32) (x, y, w, h float32) {
+func regionDiplomacyButtonRect(_ int, px, py, pw, ph float32) (x, y, w, h float32) {
 	btnW := float32(92)
 	btnH := float32(24)
 	x = px + pw - btnW - 5
@@ -3781,7 +3781,7 @@ func buildRegionTaxButtons(gs *state.GameState, rid world.RegionID) (gameui.Butt
 	return buttonFromRectF32(dec, "-"), buttonFromRectF32(inc, "+")
 }
 
-func buildRegionDiplomacyButtons(gs *state.GameState, ownerID string, px, py, pw, ph float32) gameui.Button {
+func buildRegionDiplomacyButtons(_ *state.GameState, _ string, px, py, pw, ph float32) gameui.Button {
 	x, y, w, h := regionDiplomacyButtonRect(0, px, py, pw, ph)
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Diplomasi")
 }
@@ -3920,7 +3920,7 @@ func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid
 	return b.RequiredTerrain == "" || string(region.Terrain) == b.RequiredTerrain
 }
 
-func buildingGridStartY(gs *state.GameState, region *world.Region, neighborExpanded bool) float32 {
+func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float32 {
 	if gs == nil || region == nil {
 		return 0
 	}

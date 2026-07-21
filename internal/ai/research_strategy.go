@@ -226,9 +226,10 @@ func aiResearchEffectScore(gs *state.GameState, self *faction.Faction, technolog
 	score += int(effects.ConversionSpeedMod) * signals.ReligionMismatch * 55
 
 	peaceWeight := 1
-	if kind == state.AIObjectiveDefend {
+	switch kind {
+	case state.AIObjectiveDefend:
 		peaceWeight = 3
-	} else if kind == state.AIObjectiveConsolidate {
+	case state.AIObjectiveConsolidate:
 		peaceWeight = 4
 	}
 	score += effects.PeaceRelationBonus * peaceWeight * maxInt(1, signals.ActiveWars)
