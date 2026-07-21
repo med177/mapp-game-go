@@ -829,6 +829,55 @@ func ArmyPanelBoundsHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bo
 	return ok && rect.Hit(fx, fy)
 }
 
+// ArmyPanelUnitHoverID, oyuncu ordusunun panelde görünen birim kartının
+// gerçek birim türünü döndürür. Kart sırası çizimdeki armyPanelUnitIndex ile
+// aynı tutulur; böylece hover, state içindeki fiziksel sıradan bağımsız olarak
+// ekranda görünen karta bağlanır.
+func ArmyPanelUnitHoverID(mx, my float64, gs *state.GameState, aid army.ArmyID) string {
+	unit, _, ok := armyPanelUnitHover(mx, my, gs, aid)
+	if !ok {
+		return ""
+	}
+	return unit.TypeID
+}
+
+// armyPanelUnitHover, hover edilen kartın gerçek Unit örneğini ve aynı tipin
+// seçili ordudaki adetini döndürür. Popup'ın mevcut can ve adet bilgisini
+// recruit kartındaki UnitType tanımından ayırmak için bu state verisi gerekir.
+func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (army.Unit, int, bool) {
+	if gs == nil || aid == "" {
+		return army.Unit{}, 0, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
+		return army.Unit{}, 0, false
+	}
+
+	layout := armyPanelGeometry()
+	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		if unitIndex < 0 {
+			continue
+		}
+		col := displayIndex % maxCols
+		row := displayIndex / maxCols
+		cx := layout.gridX + float32(col)*(cardW+cardGap)
+		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		if mx >= float64(cx) && mx <= float64(cx+cardW) &&
+			my >= float64(cy) && my <= float64(cy+cardH) {
+			unit := a.Units[unitIndex]
+			count := 0
+			for _, candidate := range a.Units {
+				if candidate.TypeID == unit.TypeID {
+					count++
+				}
+			}
+			return unit, count, true
+		}
+	}
+	return army.Unit{}, 0, false
+}
+
 func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
 	if buildArmyPanelCloseButton().HitTest(fx, fy) {
 		return true

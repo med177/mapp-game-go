@@ -57,9 +57,20 @@ func drawTooltipStatusRow(screen *ebiten.Image, x, y float64, value string, valu
 	drawUIKeyValueWidget(screen, row)
 }
 
-func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, recruitPanelOpen bool) {
+func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, aid army.ArmyID, recruitPanelOpen bool) {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+
+	// Ordu paneli recruit ve bölge panellerinin üstünde çizilir; örtüşme
+	// durumunda hover da aynı görsel katman sırasını izlemelidir.
+	if aid != "" {
+		if a := gs.Armies[aid]; a != nil {
+			if unit, unitCount, ok := armyPanelUnitHover(fx, fy, gs, aid); ok {
+				drawArmyUnitTooltip(screen, gs, a, unit, unitCount, fx, fy)
+				return
+			}
+		}
+	}
 
 	if regionDiplomacyButtonHit(fx, fy, gs, rid) {
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
@@ -282,6 +293,57 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
+}
+
+// drawArmyUnitTooltip, recruit tooltip'ından ayrı olarak seçili ordudaki
+// gerçek birim örneğinin bilgilerini gösterir. Üretim maliyetleri ve
+// gereksinimler bu bağlamda anlamlı olmadığı için yalnız adet, tur başı bakım,
+// savaş değerleri ve anlık can çizilir.
+func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, unit army.Unit, unitCount int, mx, my float64) {
+	if gs == nil || a == nil {
+		return
+	}
+	utype := gs.UnitTypes[unit.TypeID]
+	if utype == nil {
+		return
+	}
+
+	ensureArmySprites()
+	tooltipH := 190.0
+	x, y, w, h := tooltipRect(mx, my, 328, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+
+	iconX, iconY := x+10.0, y+14.0
+	iconW := float64(recruitCardW)
+	iconH := float64(unitSpriteHeight(float32(iconW)))
+	textX := iconX + iconW + 12
+
+	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
+	vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
+
+	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
+	DrawText(screen, fmt.Sprintf("Birlik adedi: %d", unitCount), textX, y+38, FaceSmall, ColorWhite)
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, y+56, FaceSmall, ColorGray)
+
+	statY := y + 80
+	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
+	statY += 16
+	currentHP := unit.CurrentHP
+	if currentHP < 0 {
+		currentHP = 0
+	}
+	if currentHP > army.MaxUnitHP {
+		currentHP = army.MaxUnitHP
+	}
+	DrawText(screen, fmt.Sprintf("Can: %d", currentHP), textX, statY, FaceSmall, ColorGray)
+
+	if sprite := unitSpriteForFaction(gs, a.OwnerID, unit.TypeID); sprite != nil {
+		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
+	}
 }
 
 func unitAvailabilityStatus(gs *state.GameState, utype *army.UnitType, reqMissing bool) (string, color.RGBA) {

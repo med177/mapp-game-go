@@ -7,6 +7,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-21: Ordu birim hover popup'ı recruit verilerinden ayrıştırıldı. Ordu kartlarında üretim maliyeti ve teknoloji/gereksinim satırları kaldırıldı; aynı tipin ordu içindeki birlik adedi, tur başı tahıl bakımı, savaş değerleri ve gerçek `CurrentHP` gösteriliyor. Kapsam: `internal/render/{army_panel.go,hover_tooltip.go}`, `wiki/architecture/render-pipeline.md`; test: `go test ./internal/render`.
+
+- 2026-07-21: Ordu bilgi panelindeki oyuncu birim kartlarına hover ile recruit ekranındaki ortak birim detay popup'ı eklendi. Kart hit-test'i kategoriye göre görünen sıra ile hizalı; düşman ordularında gizli birim detayları açılmıyor. Kapsam: `internal/render/{army_panel.go,army_panel_test.go,hover_tooltip.go,renderer.go}`, `wiki/architecture/render-pipeline.md`; test: `go test ./internal/render`.
+
 - 2026-07-21: Ordu detay panelinin işaretli alt bilgi bandına oyuncu ordusu için saldırı/savunma gücü eklendi. Düşman ordularında güç yalnız görünen birim tiplerinden hesaplanıyor; gizli birimler güç toplamına sızmıyor. Kapsam: `internal/render/{army_panel.go,army_panel_test.go}`, `wiki/architecture/render-pipeline.md`; test: `go test ./internal/render`.
 
 - 2026-07-21: Birimlerin `required_tech` alanı tüm senaryolarda diziye geçirildi. Liste AND semantiğiyle çalışıyor; 1300 senaryosunda ağır süvari, kuşatma ve deniz birimlerinin teknoloji zincirleri ara halkalarıyla birlikte tanımlandı. Oyuncu recruitment, tooltip, AI recruitment ve AI araştırma önceliği aynı ortak birim gereksinimi kontrolünü kullanıyor. Regression: `internal/army/unit_test.go`; doğrulama: `go test ./...`.

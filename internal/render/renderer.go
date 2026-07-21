@@ -1121,7 +1121,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
-		DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.showRecruitPanel)
+		DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel)
 	} else {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)

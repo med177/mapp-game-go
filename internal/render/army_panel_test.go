@@ -42,6 +42,101 @@ func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
 	}
 }
 
+func TestArmyPanelUnitHoverIDUsesDisplayedCardOrder(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth = 1280
+	ScreenHeight = 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		UnitTypes: map[string]*army.UnitType{
+			"cav":   {ID: "cav", Category: army.CategoryCavalry},
+			"siege": {ID: "siege", Category: army.CategorySiege},
+			"inf":   {ID: "inf", Category: army.CategoryInfantry},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {
+				ID:      "a1",
+				OwnerID: "osm",
+				Units:   []army.Unit{{TypeID: "cav"}, {TypeID: "siege"}, {TypeID: "inf"}},
+			},
+		},
+	}
+
+	layout := armyPanelGeometry()
+	cardCenter := func(displayIndex int) (float64, float64) {
+		col := displayIndex % maxCols
+		row := displayIndex / maxCols
+		cx := layout.gridX + float32(col)*(cardW+cardGap) + cardW/2
+		cy := layout.gridY + float32(row)*(cardH+cardGap) + cardH/2
+		return float64(cx), float64(cy)
+	}
+
+	for displayIndex, want := range []string{"inf", "cav", "siege"} {
+		mx, my := cardCenter(displayIndex)
+		if got := ArmyPanelUnitHoverID(mx, my, gs, "a1"); got != want {
+			t.Fatalf("görünen kart %d için %q bekleniyordu, got=%q", displayIndex, want, got)
+		}
+	}
+	emptyX, emptyY := cardCenter(3)
+	if got := ArmyPanelUnitHoverID(emptyX, emptyY, gs, "a1"); got != "" {
+		t.Fatalf("boş kart hover'ı birim döndürmemeliydi, got=%q", got)
+	}
+
+	gs.Armies["a1"].OwnerID = "enemy"
+	mx, my := cardCenter(0)
+	if got := ArmyPanelUnitHoverID(mx, my, gs, "a1"); got != "" {
+		t.Fatalf("düşman ordusunda birim detayı açılmamalıydı, got=%q", got)
+	}
+}
+
+func TestArmyPanelUnitHoverReturnsCurrentHPAndTypeCount(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth = 1280
+	ScreenHeight = 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry},
+			"cav": {ID: "cav", Category: army.CategoryCavalry},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a1": {
+				ID:      "a1",
+				OwnerID: "osm",
+				Units: []army.Unit{
+					{TypeID: "inf", CurrentHP: 73},
+					{TypeID: "inf", CurrentHP: 41},
+					{TypeID: "cav", CurrentHP: 88},
+				},
+			},
+		},
+	}
+
+	layout := armyPanelGeometry()
+	mx := float64(layout.gridX + cardW/2)
+	my := float64(layout.gridY + cardH/2)
+	unit, count, ok := armyPanelUnitHover(mx, my, gs, "a1")
+	if !ok {
+		t.Fatal("ordu birim kartı hover verisi bekleniyordu")
+	}
+	if unit.TypeID != "inf" || unit.CurrentHP != 73 {
+		t.Fatalf("kartın gerçek birim örneği dönmeliydi: unit=%+v", unit)
+	}
+	if count != 2 {
+		t.Fatalf("aynı tipin ordu içindeki adedi 2 olmalıydı, got=%d", count)
+	}
+}
+
 func TestCommanderPortraitHitRectStaysInsideCommanderColumn(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {
