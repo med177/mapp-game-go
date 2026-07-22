@@ -34,7 +34,7 @@ func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
 	}
 }
 
-func TestDiplomacyFactionSortsByMilitaryPowerAndRanking(t *testing.T) {
+func TestDiplomacyFactionSortsByPowerRanking(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -53,21 +53,64 @@ func TestDiplomacyFactionSortsByMilitaryPowerAndRanking(t *testing.T) {
 	}
 
 	want := []faction.FactionID{"strong", "middle", "weak"}
-	for _, sortMode := range []diplomacyListSort{diplomacyListSortMilitaryPower, diplomacyListSortPowerRanking} {
-		got := sortedDiplomacyFactions(gs, sortMode)
-		if len(got) != len(want) {
-			t.Fatalf("sort=%d aktif hedef sayısı yanlış: got=%v", sortMode, got)
-		}
-		for i := range want {
-			if got[i] != want[i] {
-				t.Fatalf("sort=%d sıralama yanlış: got=%v want=%v", sortMode, got, want)
-			}
+	got := sortedDiplomacyFactions(gs, diplomacyListSortPowerRanking)
+	if len(got) != len(want) {
+		t.Fatalf("aktif hedef sayısı yanlış: got=%v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("güç sıralaması yanlış: got=%v want=%v", got, want)
 		}
 	}
 
 	power, rank, count := factionMilitaryPowerStanding(gs, "middle")
 	if power != 20 || rank != 2 || count != 4 {
 		t.Fatalf("liste metriği yanlış: power=%d rank=%d count=%d", power, rank, count)
+	}
+}
+
+func TestDiplomacyFactionRelationSortPrefersAdjacentFactionOnScoreTie(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":   {ID: "player"},
+			"remote":   {ID: "remote"},
+			"border":   {ID: "border"},
+			"friendly": {ID: "friendly"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player-region": {ID: "player-region", OwnerID: "player", Neighbors: []world.RegionID{"border-region"}},
+			"border-region": {ID: "border-region", OwnerID: "border", Neighbors: []world.RegionID{"player-region"}},
+			"remote-region": {ID: "remote-region", OwnerID: "remote"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "remote"): {
+				FactionA: "player",
+				FactionB: "remote",
+				Score:    30,
+			},
+			faction.RelationKey("player", "border"): {
+				FactionA: "player",
+				FactionB: "border",
+				Score:    30,
+			},
+			faction.RelationKey("player", "friendly"): {
+				FactionA: "player",
+				FactionB: "friendly",
+				Score:    60,
+			},
+		},
+	}
+
+	got := sortedDiplomacyFactions(gs, diplomacyListSortRelation)
+	want := []faction.FactionID{"friendly", "border", "remote"}
+	if len(got) != len(want) {
+		t.Fatalf("ilişki sıralamasında hedef sayısı yanlış: got=%v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("ilişki sıralaması yanlış: got=%v want=%v", got, want)
+		}
 	}
 }
 
@@ -95,8 +138,11 @@ func TestDiplomacyListSortButtonsUpdateRendererState(t *testing.T) {
 	}
 
 	r.handleDiplomacyInput(input)
-	if r.diplomacyListSort != diplomacyListSortMilitaryPower {
-		t.Fatalf("askeri güç tuşu sıralamayı değiştirmedi: got=%d", r.diplomacyListSort)
+	if r.diplomacyListSort != diplomacyListSortRelation {
+		t.Fatalf("ilişki tuşu sıralamayı değiştirmedi: got=%d", r.diplomacyListSort)
+	}
+	if buttons[1].Button.Label != "İlişki" {
+		t.Fatalf("ikinci sıralama düğmesi İlişki olarak adlandırılmalı: got=%q", buttons[1].Button.Label)
 	}
 	if r.diplomacyFocus != 0 || r.diplomacyScroll != 0 {
 		t.Fatalf("sıralama değişince liste odağı sıfırlanmalı: focus=%d scroll=%d", r.diplomacyFocus, r.diplomacyScroll)

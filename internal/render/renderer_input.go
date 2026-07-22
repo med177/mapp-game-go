@@ -451,6 +451,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
 		r.devNeighborListExpanded = false
+		r.regionPanelTab = regionPanelTabBuildings
 		r.regionPanelScroll = 0
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
@@ -577,6 +578,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	if r.SelectedRegion != "" {
+		if tab, ok := regionPanelTabHit(fx, fy, r.gs, r.SelectedRegion); ok {
+			r.regionPanelTab = tab
+			r.regionPanelScroll = 0
+			return InputAction{}
+		}
 		if fid, ok := regionOwnerNameHit(fx, fy, r.gs, r.SelectedRegion); ok {
 			r.openFactionPanel(fid)
 			r.clearSelectedSettlement()
@@ -587,16 +593,22 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
-		if regionGrainAidButtonHit(fx, fy, r.gs, r.SelectedRegion) {
+		if regionGrainAidButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
 				return InputAction{Kind: ActionGrainAid, TargetRegion: r.SelectedRegion}
 			}
 			return InputAction{}
 		}
-		if regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion) {
+		if regionDiplomacyButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			region := r.gs.Regions[r.SelectedRegion]
 			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {
 				r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
+				return InputAction{}
+			}
+		}
+		if r.regionPanelTab == regionPanelTabEvents {
+			if idx, ok := regionActiveEventPanelHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll); ok {
+				r.eventDetail = r.activeRegionEventDetailAt(idx)
 				return InputAction{}
 			}
 		}
@@ -604,8 +616,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.devNeighborListExpanded = !r.devNeighborListExpanded
 			return InputAction{}
 		}
-		if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded); bid != "" {
-			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
+		if r.regionPanelTab == regionPanelTabBuildings {
+			if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded); bid != "" {
+				return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
+			}
 		}
 	}
 
@@ -682,6 +696,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.SelectedArmy = ""
 		if r.SelectedRegion != rid {
 			r.devNeighborListExpanded = false
+			r.regionPanelTab = regionPanelTabBuildings
 			r.regionPanelScroll = 0
 		}
 		r.SelectedRegion = rid
@@ -739,6 +754,7 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.SelectedArmy = ""
 	if r.SelectedRegion != rid {
 		r.devNeighborListExpanded = false
+		r.regionPanelTab = regionPanelTabBuildings
 		r.regionPanelScroll = 0
 	}
 	r.SelectedRegion = rid
@@ -1067,7 +1083,7 @@ func (r *Renderer) handleCamera() {
 	_, dy := ebiten.Wheel()
 	if dy != 0 {
 		mx, my := ebiten.CursorPosition()
-		if r.SelectedRegion != "" && regionPanelActivityHit(float64(mx), float64(my), r.gs, r.SelectedRegion) {
+		if r.SelectedRegion != "" && r.regionPanelTab == regionPanelTabEvents && regionPanelActivityHit(float64(mx), float64(my), r.gs, r.SelectedRegion) {
 			r.regionPanelScroll = clampRegionPanelScroll(r.gs, r.SelectedRegion, r.regionPanelScroll-dy*regionPanelScrollStep)
 			return
 		}

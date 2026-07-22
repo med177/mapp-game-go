@@ -78,8 +78,20 @@ const (
 	regionPanelScrollStep      = 28.0
 	regionPanelActivityMinH    = 32.0
 	regionPanelActionBarHeight = 30.0
+	regionPanelTabH            = 24.0
+	regionPanelTabGap          = 4.0
+	regionPanelTabMinContentH  = 120.0
 	buildingGridNameH          = float32(18)
 	buildingGridRowGap         = float32(7)
+)
+
+// regionPanelTab seçili bölge panelindeki ortak içerik alanının görünümünü
+// belirler. Sıfır değer bilinçli olarak Binalar görünümüdür.
+type regionPanelTab int
+
+const (
+	regionPanelTabBuildings regionPanelTab = iota
+	regionPanelTabEvents
 )
 
 func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
@@ -1872,6 +1884,10 @@ func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid worl
 }
 
 func DrawRegionPanelExpandedScrolled(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool, scroll float64) {
+	DrawRegionPanelExpandedScrolledWithTab(screen, gs, rid, neighborExpanded, regionPanelTabBuildings, scroll)
+}
+
+func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool, activeTab regionPanelTab, scroll float64) {
 	if rid == "" {
 		return
 	}
@@ -2020,29 +2036,96 @@ func DrawRegionPanelExpandedScrolled(screen *ebiten.Image, gs *state.GameState, 
 		ly += 18
 	}
 
-	// ── Binalar bölümü ────────────────────────────────────────────────
+	// ── Binalar / olaylar sekmeli ortak içerik alanı ──────────────────
 	ly += 4
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 6
 
-	drawUICenteredSectionLabel(screen, float64(px)+float64(pw)/2, ly, "BİNALAR")
-	ly += 17
-
-	buildingStartY := float32(ly)
-	drawBuildingGrid(screen, gs, region, px, buildingStartY, pw)
+	buildingStartY := float32(ly) + regionPanelTabH + 6
 	buildingEndY := buildingGridEndY(gs, region, buildingStartY)
+	drawRegionPanelTabs(screen, gs, region, activeTab)
 
-	// Binaların hemen altındaki aksiyon bandı; ileride başka bölge aksiyonları
-	// da aynı banda eklenebilir.
-	actionBarY := float64(buildingEndY) + 5
-	drawRegionActionBar(screen, gs, region, px, float32(actionBarY), pw)
-
-	activityTop := actionBarY + regionPanelActionBarHeight + 6
-	activityBottom := float64(py+ph) - 10
-	if regionActivityNeighborVisible(gs, region) && activityBottom > activityTop+regionPanelActivityMinH {
-		viewport := gameui.Rect{X: lx, Y: activityTop, W: float64(sepW), H: activityBottom - activityTop}
-		drawRegionActivityNeighborSection(screen, gs, region, viewport, scroll)
+	contentEndY := buildingEndY
+	if activeTab == regionPanelTabEvents {
+		contentEndY = regionPanelTabContentEndY(gs, region, buildingStartY, buildingEndY)
+		activityViewport := gameui.Rect{
+			X: lx,
+			Y: float64(buildingStartY),
+			W: float64(sepW),
+			H: float64(contentEndY - buildingStartY),
+		}
+		if activityViewport.H > regionPanelActivityMinH {
+			drawRegionActivityNeighborSection(screen, gs, region, activityViewport, scroll)
+		}
+	} else {
+		drawBuildingGrid(screen, gs, region, px, buildingStartY, pw)
 	}
+
+	// Sekme içeriğinin hemen altındaki aksiyon bandı korunur.
+	actionBarY := float64(contentEndY) + 5
+	drawRegionActionBar(screen, gs, region, px, float32(actionBarY), pw)
+}
+
+func regionPanelTabRects(gs *state.GameState, region *world.Region) (gameui.Rect, gameui.Rect) {
+	startY := buildingGridStartY(gs, region, false)
+	y := float64(startY) - regionPanelTabH - 6
+	x := float64(infoPanelX()) + panelPad
+	w := float64(infoPanelW) - panelPad*2
+	tabW := (w - regionPanelTabGap) / 2
+	return gameui.Rect{X: x, Y: y, W: tabW, H: regionPanelTabH},
+		gameui.Rect{X: x + tabW + regionPanelTabGap, Y: y, W: tabW, H: regionPanelTabH}
+}
+
+func drawRegionPanelTabs(screen *ebiten.Image, gs *state.GameState, region *world.Region, activeTab regionPanelTab) {
+	buildingTab, eventTab := regionPanelTabRects(gs, region)
+	for tab, rect := range []gameui.Rect{buildingTab, eventTab} {
+		selected := regionPanelTab(tab) == activeTab
+		fill := color.RGBA{24, 22, 18, 230}
+		border := color.RGBA{90, 78, 48, 255}
+		textCol := ColorGray
+		if selected {
+			fill = color.RGBA{72, 56, 20, 245}
+			border = color.RGBA{220, 176, 55, 255}
+			textCol = ColorGold
+		}
+		drawUICardRect(screen, rect, fill, border, 1)
+		label := "BİNALAR"
+		if tab == int(regionPanelTabEvents) {
+			label = "OLAYLAR"
+		}
+		drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 4, W: rect.W, H: rect.H - 4}, label, textCol, gameui.TextSmall, gameui.TextAlignCenter)
+	}
+}
+
+func regionPanelTabHit(mx, my float64, gs *state.GameState, rid world.RegionID) (regionPanelTab, bool) {
+	if gs == nil || rid == "" {
+		return regionPanelTabBuildings, false
+	}
+	region := gs.Regions[rid]
+	if region == nil {
+		return regionPanelTabBuildings, false
+	}
+	buildingTab, eventTab := regionPanelTabRects(gs, region)
+	if buildingTab.Hit(mx, my) {
+		return regionPanelTabBuildings, true
+	}
+	if eventTab.Hit(mx, my) {
+		return regionPanelTabEvents, true
+	}
+	return regionPanelTabBuildings, false
+}
+
+func regionPanelTabContentEndY(gs *state.GameState, region *world.Region, startY, buildingEndY float32) float32 {
+	endY := buildingEndY
+	minEndY := startY + regionPanelTabMinContentH
+	if endY < minEndY {
+		endY = minEndY
+	}
+	panelBottom := float32(infoPanelY()+infoPanelH) - 10 - regionPanelActionBarHeight - 5
+	if endY > panelBottom {
+		endY = panelBottom
+	}
+	return endY
 }
 
 func regionActiveEventCount(gs *state.GameState, rid world.RegionID) int {
@@ -2129,7 +2212,7 @@ func clampRegionPanelScroll(gs *state.GameState, rid world.RegionID, scroll floa
 	if region == nil {
 		return 0
 	}
-	viewportHeight := float64(infoPanelY()+infoPanelH) - (float64(buildingGridEndY(gs, region, buildingGridStartY(gs, region, false))) + 5 + regionPanelActionBarHeight + 6) - 10
+	viewportHeight := regionPanelActivityViewport(gs, region).H
 	if viewportHeight < regionPanelActivityMinH {
 		return 0
 	}
@@ -2145,13 +2228,17 @@ func maxFloat64Value(value float64) float64 {
 }
 
 func regionPanelActivityViewport(gs *state.GameState, region *world.Region) gameui.Rect {
-	if gs == nil || region == nil || !regionActivityNeighborVisible(gs, region) {
+	if gs == nil || region == nil {
 		return gameui.Rect{}
 	}
 	start := buildingGridStartY(gs, region, false)
-	activityTop := float64(buildingGridEndY(gs, region, start)) + 5 + regionPanelActionBarHeight + 6
-	activityBottom := float64(infoPanelY()+infoPanelH) - 10
-	return gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: activityTop, W: float64(infoPanelW) - panelPad*2, H: activityBottom - activityTop}
+	end := regionPanelTabContentEndY(gs, region, start, buildingGridEndY(gs, region, start))
+	return gameui.Rect{
+		X: float64(infoPanelX()) + panelPad,
+		Y: float64(start),
+		W: float64(infoPanelW) - panelPad*2,
+		H: float64(end - start),
+	}
 }
 
 func regionPanelActivityHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
@@ -2161,6 +2248,30 @@ func regionPanelActivityHit(mx, my float64, gs *state.GameState, rid world.Regio
 	region := gs.Regions[rid]
 	viewport := regionPanelActivityViewport(gs, region)
 	return viewport.H > regionPanelActivityMinH && viewport.Hit(mx, my)
+}
+
+func regionActiveEventPanelHit(mx, my float64, gs *state.GameState, region *world.Region, scroll float64) (int, bool) {
+	if gs == nil || region == nil {
+		return -1, false
+	}
+	viewport := regionPanelActivityViewport(gs, region)
+	if viewport.H <= regionPanelActivityMinH || !viewport.Hit(mx, my) || regionActiveEventCount(gs, region.ID) == 0 {
+		return -1, false
+	}
+	_, y := regionActivityContentOrigin(viewport, scroll)
+	y += 17
+	for i := range gs.ActiveRegionEvents {
+		evt := gs.ActiveRegionEvents[i]
+		if evt.RegionID != region.ID || evt.TurnsLeft <= 0 {
+			continue
+		}
+		row := gameui.Rect{X: viewport.X, Y: y - 2, W: viewport.W, H: 28}
+		if row.Hit(mx, my) && row.Y+row.H >= viewport.Y && row.Y <= viewport.Y+viewport.H {
+			return i, true
+		}
+		y += 28
+	}
+	return -1, false
 }
 
 func regionActivityContentOrigin(viewport gameui.Rect, scroll float64) (float64, float64) {
@@ -2992,8 +3103,15 @@ func regionOwnerNameRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, 
 }
 
 func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionPanelInteractiveHitForTab(mx, my, gs, rid, regionPanelTabBuildings, 0)
+}
+
+func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab, scroll float64) bool {
 	if rid == "" {
 		return false
+	}
+	if _, ok := regionPanelTabHit(mx, my, gs, rid); ok {
+		return true
 	}
 	if regionPanelCloseHit(mx, my) {
 		return true
@@ -3004,14 +3122,19 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
 		return true
 	}
-	if regionGrainAidButtonHit(mx, my, gs, rid) {
+	if regionGrainAidButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
-	if regionDiplomacyButtonHit(mx, my, gs, rid) {
+	if regionDiplomacyButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
 	if regionNeighborToggleHit(mx, my, gs, rid) {
 		return true
+	}
+	if activeTab == regionPanelTabEvents {
+		region := gs.Regions[rid]
+		_, ok := regionActiveEventPanelHit(mx, my, gs, region, scroll)
+		return ok
 	}
 	return buildingGridHitTest(mx, my, gs, rid, false) != ""
 }
@@ -3794,6 +3917,22 @@ func minFloat64(a, b float64) float64 {
 
 // regionDiplomacyButtonHit oyuncuya ait olmayan bölge panelindeki Diplomasi butonunu döner.
 func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionDiplomacyButtonHitForTab(mx, my, gs, rid, regionPanelTabBuildings)
+}
+
+func regionPanelActionBarY(gs *state.GameState, region *world.Region, activeTab regionPanelTab) float64 {
+	if gs == nil || region == nil {
+		return 0
+	}
+	start := buildingGridStartY(gs, region, false)
+	end := buildingGridEndY(gs, region, start)
+	if activeTab == regionPanelTabEvents {
+		end = regionPanelTabContentEndY(gs, region, start, end)
+	}
+	return float64(end) + 5
+}
+
+func regionDiplomacyButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
 	if rid == "" || gs == nil {
 		return false
 	}
@@ -3801,14 +3940,16 @@ func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.Reg
 	if !ok || region.IsSea || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
 		return false
 	}
-	start := buildingGridStartY(gs, region, false)
-	end := buildingGridEndY(gs, region, start)
-	barY := end + 5
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
 	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
 	return buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func regionGrainAidButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionGrainAidButtonHitForTab(mx, my, gs, rid, regionPanelTabBuildings)
+}
+
+func regionGrainAidButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
 	if gs == nil || rid == "" {
 		return false
 	}
@@ -3816,9 +3957,7 @@ func regionGrainAidButtonHit(mx, my float64, gs *state.GameState, rid world.Regi
 	if region == nil || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
 		return false
 	}
-	start := buildingGridStartY(gs, region, false)
-	end := buildingGridEndY(gs, region, start)
-	barY := end + 5
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
 	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
 	return buildRegionGrainAidButton(gs, rid, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
@@ -4033,7 +4172,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 	if region.IsRebellionRisk() {
 		ly += 18
 	}
-	ly += 4 + 6 + 17
+	ly += 4 + 6 + float64(regionPanelTabH) + 6
 	return float32(ly)
 }
 

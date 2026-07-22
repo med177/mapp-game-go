@@ -30,7 +30,7 @@ type diplomacyListSort int
 
 const (
 	diplomacyListSortAlphabetical diplomacyListSort = iota
-	diplomacyListSortMilitaryPower
+	diplomacyListSortRelation
 	diplomacyListSortPowerRanking
 )
 
@@ -683,8 +683,8 @@ func buildDiplomacySideViewButton(panelRect gameui.Rect, historyVisible bool) ga
 
 func diplomacyListSortLabelTR(sortMode diplomacyListSort) string {
 	switch sortMode {
-	case diplomacyListSortMilitaryPower:
-		return "Askeri Güç"
+	case diplomacyListSortRelation:
+		return "İlişki"
 	case diplomacyListSortPowerRanking:
 		return "Güç Sıralaması"
 	default:
@@ -701,7 +701,7 @@ func buildDiplomacyListSortButtons(layout diplomacyListLayout) [3]diplomacyListS
 	buttonW := (layout.sortRect.W - gap*2) / 3
 	for i, sortMode := range [...]diplomacyListSort{
 		diplomacyListSortAlphabetical,
-		diplomacyListSortMilitaryPower,
+		diplomacyListSortRelation,
 		diplomacyListSortPowerRanking,
 	} {
 		buttons[i] = diplomacyListSortButton{
@@ -1653,14 +1653,27 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 		}
 		fids = append(fids, fid)
 	}
+	relationScores := make(map[faction.FactionID]int)
+	adjacentToPlayer := make(map[faction.FactionID]bool)
+	if sortMode == diplomacyListSortRelation {
+		for _, fid := range fids {
+			if rel := diplomacy.Relation(gs, gs.PlayerFactionID, fid); rel != nil {
+				relationScores[fid] = rel.Score
+			}
+			adjacentToPlayer[fid] = factionsShareLandBorder(gs, gs.PlayerFactionID, fid)
+		}
+	}
 	sort.Slice(fids, func(i, j int) bool {
 		leftID, rightID := fids[i], fids[j]
 		switch sortMode {
-		case diplomacyListSortMilitaryPower:
-			leftPower := diplomacy.MilitaryPower(gs, leftID)
-			rightPower := diplomacy.MilitaryPower(gs, rightID)
-			if leftPower != rightPower {
-				return leftPower > rightPower
+		case diplomacyListSortRelation:
+			leftRelation := relationScores[leftID]
+			rightRelation := relationScores[rightID]
+			if leftRelation != rightRelation {
+				return leftRelation > rightRelation
+			}
+			if adjacentToPlayer[leftID] != adjacentToPlayer[rightID] {
+				return adjacentToPlayer[leftID]
 			}
 		case diplomacyListSortPowerRanking:
 			_, leftRank, _ := factionMilitaryPowerStanding(gs, leftID)
@@ -1673,6 +1686,24 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 		return leftID < rightID
 	})
 	return fids
+}
+
+func factionsShareLandBorder(gs *state.GameState, left, right faction.FactionID) bool {
+	if gs == nil || left == "" || right == "" || left == right {
+		return false
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(left) {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == string(right) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int) {

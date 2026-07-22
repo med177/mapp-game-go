@@ -12050,8 +12050,8 @@
             "experience": 0
           }
         ],
-        "move_points": 2,
-        "max_move_points": 2,
+        "move_points": 1,
+        "max_move_points": 1,
         "is_naval": false,
         "in_ambush": false
       },
@@ -12253,8 +12253,8 @@
             "experience": 0
           }
         ],
-        "move_points": 2,
-        "max_move_points": 2,
+        "move_points": 1,
+        "max_move_points": 1,
         "is_naval": false,
         "in_ambush": false
       },
@@ -12366,17 +12366,17 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           }
@@ -12462,17 +12462,17 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
             "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           }
@@ -12824,6 +12824,11 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
@@ -12835,11 +12840,6 @@
           },
           {
             "type_id": "light_cavalry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           }
@@ -13132,12 +13132,12 @@
             "experience": 0
           },
           {
-            "type_id": "infantry",
+            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           },
           {
-            "type_id": "militia",
+            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
@@ -13636,17 +13636,17 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 100,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 100,
             "experience": 0
           },
           {
             "type_id": "infantry",
-            "current_hp": 100,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 100,
             "experience": 0
           }
@@ -13919,6 +13919,8 @@
         "id": "fleet_genoa_121",
         "owner_id": "genoa",
         "region_id": "new_region_246",
+        "docked_region_id": "genoa",
+        "docked_settlement_id": "genoa_savona",
         "units": [
           {
             "type_id": "transport",
@@ -20280,7 +20282,7 @@
       "flanders_county|france": {
         "faction_a": "flanders_county",
         "faction_b": "france",
-        "score": -81,
+        "score": -80,
         "stance": "war"
       },
       "flanders_county|genoa": {

@@ -72,6 +72,7 @@ type Renderer struct {
 	selectedSettlementRegion world.RegionID
 	selectedSettlementIndex  int
 	devNeighborListExpanded  bool
+	regionPanelTab           regionPanelTab
 	regionPanelScroll        float64
 	showRecruitPanel         bool
 	recruitUnitID            string
@@ -789,6 +790,8 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
 	r.devNeighborListExpanded = false
+	r.regionPanelTab = regionPanelTabBuildings
+	r.regionPanelScroll = 0
 	r.clearSelectedSettlement()
 	r.showRecruitPanel = false
 	r.resetRecruitSelection()
@@ -1106,7 +1109,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.mapMode)
-		DrawRegionPanelExpandedScrolled(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelScroll)
+		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
 		}
@@ -1120,7 +1123,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
-		DrawHoverTooltip(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel)
+		DrawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab)
 	} else {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)

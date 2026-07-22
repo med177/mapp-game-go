@@ -291,6 +291,9 @@ func TestNonOwnedBuildingCardsAreNotActionableOrHoverable(t *testing.T) {
 	if got := BuildingGridHoverID(card.SpriteRect.X+card.SpriteRect.W/2, card.SpriteRect.Y+card.SpriteRect.H/2, gs, regionID); got != "" {
 		t.Fatalf("oyuncuya ait olmayan bölgedeki bina hover tooltip üretmemeliydi, got=%q", got)
 	}
+	if got := BuildingGridHoverIDForTab(card.SpriteRect.X+card.SpriteRect.W/2, card.SpriteRect.Y+card.SpriteRect.H/2, gs, regionID, regionPanelTabEvents); got != "" {
+		t.Fatalf("olaylar sekmesinde bina hover tooltip üretmemeliydi, got=%q", got)
+	}
 	if got := BuildingGridHitTest(card.SpriteRect.X+card.SpriteRect.W/2, card.SpriteRect.Y+card.SpriteRect.H/2, gs, regionID, false); got != "" {
 		t.Fatalf("oyuncuya ait olmayan bölgedeki bina tıklanabilir olmamalıydı, got=%q", got)
 	}

@@ -71,6 +71,10 @@ func drawTooltipStatusRow(screen *ebiten.Image, x, y float64, value string, valu
 }
 
 func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, aid army.ArmyID, recruitPanelOpen bool) {
+	DrawHoverTooltipWithTab(screen, gs, rid, aid, recruitPanelOpen, regionPanelTabBuildings)
+}
+
+func DrawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, aid army.ArmyID, recruitPanelOpen bool, activeTab regionPanelTab) {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
@@ -85,11 +89,11 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		}
 	}
 
-	if regionDiplomacyButtonHit(fx, fy, gs, rid) {
+	if regionDiplomacyButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
 		return
 	}
-	if regionGrainAidButtonHit(fx, fy, gs, rid) {
+	if regionGrainAidButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		if reason := gs.GrainAidBlockReason(rid); reason != "" {
 			drawSmallHoverHint(screen, reason, fx, fy)
 		} else {
@@ -98,7 +102,7 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		return
 	}
 
-	if bid := BuildingGridHoverID(fx, fy, gs, rid); bid != "" {
+	if bid := BuildingGridHoverIDForTab(fx, fy, gs, rid, activeTab); bid != "" {
 		drawBuildingTooltip(screen, gs, rid, bid, fx, fy)
 		return
 	}
@@ -107,6 +111,13 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 			drawUnitTooltip(screen, gs, rid, uid, fx, fy)
 		}
 	}
+}
+
+func BuildingGridHoverIDForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) string {
+	if activeTab != regionPanelTabBuildings {
+		return ""
+	}
+	return BuildingGridHoverID(mx, my, gs, rid)
 }
 
 func BuildingGridHoverID(mx, my float64, gs *state.GameState, rid world.RegionID) string {

@@ -10,7 +10,7 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestRegionActivityPanelScrollAndBuildingOrder(t *testing.T) {
+func TestRegionPanelEventTabScrollAndSharedContentArea(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth = 1280
 	ScreenHeight = 720
@@ -50,8 +50,11 @@ func TestRegionActivityPanelScrollAndBuildingOrder(t *testing.T) {
 	start := buildingGridStartY(gs, gs.Regions[regionID], false)
 	end := buildingGridEndY(gs, gs.Regions[regionID], start)
 	viewport := regionPanelActivityViewport(gs, gs.Regions[regionID])
-	if viewport.Y <= float64(end) {
-		t.Fatalf("aktivite alani binalarin altinda olmali: activityY=%.1f buildingEndY=%.1f", viewport.Y, end)
+	if viewport.Y != float64(start) {
+		t.Fatalf("olaylar viewport'u bina kartlarıyla aynı içerik başlangıcında olmalı: activityY=%.1f startY=%.1f", viewport.Y, start)
+	}
+	if viewport.Y+viewport.H > float64(end)+0.01 {
+		t.Fatalf("olaylar viewport'u sekme içerik alanını aşmamalı: activityBottom=%.1f buildingEndY=%.1f", viewport.Y+viewport.H, end)
 	}
 	maxScroll := clampRegionPanelScroll(gs, regionID, 1<<20)
 	if maxScroll <= 0 {
@@ -59,6 +62,47 @@ func TestRegionActivityPanelScrollAndBuildingOrder(t *testing.T) {
 	}
 	if !regionPanelActivityHit(viewport.X+4, viewport.Y+4, gs, regionID) {
 		t.Fatal("aktivite viewport'u mouse wheel hit-test'i kabul etmeli")
+	}
+}
+
+func TestRegionPanelTabsAndActiveEventRowHit(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	regionID := world.RegionID("tab_region")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			regionID:   {ID: regionID, NameTR: "Sekme", OwnerID: "player", Neighbors: []world.RegionID{"neighbor"}},
+			"neighbor": {ID: "neighbor", NameTR: "Komşu"},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"market": {ID: "market", NameTR: "Pazar"},
+		},
+		ActiveRegionEvents: []state.RegionEventStatus{
+			{RegionID: regionID, EventID: "evt", LabelTR: "Veba", TurnsLeft: 3, Type: "plague"},
+		},
+	}
+
+	buildingTab, eventTab := regionPanelTabRects(gs, gs.Regions[regionID])
+	if tab, ok := regionPanelTabHit(buildingTab.X+2, buildingTab.Y+2, gs, regionID); !ok || tab != regionPanelTabBuildings {
+		t.Fatalf("binalar sekmesi hit-test'i başarısız: tab=%d ok=%t", tab, ok)
+	}
+	if tab, ok := regionPanelTabHit(eventTab.X+2, eventTab.Y+2, gs, regionID); !ok || tab != regionPanelTabEvents {
+		t.Fatalf("olaylar sekmesi hit-test'i başarısız: tab=%d ok=%t", tab, ok)
+	}
+
+	viewport := regionPanelActivityViewport(gs, gs.Regions[regionID])
+	idx, ok := regionActiveEventPanelHit(viewport.X+8, viewport.Y+26, gs, gs.Regions[regionID], 0)
+	if !ok || idx != 0 {
+		t.Fatalf("aktif olay satırı popup için tıklanabilir olmalı: idx=%d ok=%t", idx, ok)
 	}
 }
 
