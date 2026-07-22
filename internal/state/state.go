@@ -16,6 +16,14 @@ import (
 // MaxDiplomacyOffersPerTurn bir devletin bir turda gönderebileceği azami teklif sayısıdır.
 const MaxDiplomacyOffersPerTurn = 3
 
+const civilianGrainPopulationUnit = 20
+
+// GrainAidCost bir bölgeye tek seferlik sivil tahıl yardımı için gereken stoktur.
+const GrainAidCost = 12
+
+// GrainAidSatisfactionGain tahıl yardımının bölge memnuniyetine katkısıdır.
+const GrainAidSatisfactionGain = 10
+
 // VictoryType zafer koşulu türü.
 type VictoryType string
 
@@ -83,6 +91,14 @@ type SiegeState struct {
 	BreachLevel          int            `json:"breach_level"`
 }
 
+const (
+	grainUpkeepStationaryPercent = 100
+	grainUpkeepMovingPercent     = 150
+	grainUpkeepGarrisonPercent   = 75
+	grainUpkeepSiegeDefender     = 125
+	grainUpkeepSiegeAttacker     = 200
+)
+
 // SiegeSurrenderTurns tahkimat seviyesine göre kuşatmanın kaç turda teslim olacağını döner.
 func SiegeSurrenderTurns(fortLevel int) int {
 	if fortLevel < 1 {
@@ -109,11 +125,13 @@ func (s *SiegeState) TurnsUntilSurrender() int {
 // Event choice sonrası veya otomatik çözümlenen event'ler sonrası haritada
 // birkaç tur boyunca ikon gösterimi için kullanılır.
 type RegionEventStatus struct {
-	EventID   string         `json:"event_id"`
-	RegionID  world.RegionID `json:"region_id"`
-	TurnsLeft int            `json:"turns_left"` // kaç tur daha görünür kalacak
-	Type      string         `json:"type"`       // plague, famine, blessing, revolt, notification
-	LabelTR   string         `json:"label_tr"`   // kısa açıklama (tooltip için)
+	EventID                string         `json:"event_id"`
+	RegionID               world.RegionID `json:"region_id"`
+	TurnsLeft              int            `json:"turns_left"` // kaç tur daha görünür kalacak
+	Type                   string         `json:"type"`       // plague, famine, blessing, revolt, notification
+	LabelTR                string         `json:"label_tr"`   // kısa açıklama (tooltip için)
+	GrainProductionPercent int            `json:"grain_production_percent,omitempty"`
+	GrainDemandPercent     int            `json:"grain_demand_percent,omitempty"`
 }
 
 // GameState oyunun tüm anlık durumunu tutar. Save/load ham struct snapshot'ı
@@ -133,6 +151,7 @@ type GameState struct {
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
+	AutoGrainExport bool              `json:"auto_grain_export,omitempty"`
 	Difficulty      int               `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
 
 	// Development mode
@@ -165,6 +184,7 @@ type GameState struct {
 	AvailableVictories []scenario.VictoryOptionDef              `json:"-"`
 	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
 	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
+	GrainEconomy       map[faction.FactionID]GrainEconomyStatus `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int  `json:"economic_victory_turns"`
@@ -194,6 +214,13 @@ type GameState struct {
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
 	MarketPrices economy.CurrentMarketPrice `json:"-"`
+
+	// Tur çözümlemesinde MovePoints sıfırlanmadan önce yakalanan hareket bilgisi.
+	// Kalıcı değildir; yüklenen oyunda bir sonraki çözümleme başında yeniden üretilir.
+	ArmyMoveUsage map[army.ArmyID]bool `json:"-"`
+
+	// Bu tur oyuncu tarafından tahıl yardımı uygulanmış bölgeler; kalıcı değildir.
+	GrainAidUsage map[world.RegionID]bool `json:"-"`
 
 	// Devam eden üretimler
 	ProductionQueue   []ProductionOrder `json:"production_queue"`
@@ -229,12 +256,104 @@ type RegionProductionSummary struct {
 	Cloth  int
 }
 
+// CivilianGrainDemand bir bölgenin tur başı sivil tahıl ihtiyacını döner.
+// Population senaryo verisinde soyut birimdir; 20 nüfus bir tahıl birimi
+// tüketir. Nüfusu olmayan legacy/test bölgeleri tüketim oluşturmaz.
+func CivilianGrainDemand(region *world.Region) int {
+	if region == nil || region.Population <= 0 {
+		return 0
+	}
+
+	demand := (region.Population + civilianGrainPopulationUnit - 1) / civilianGrainPopulationUnit
+	if demand < 1 {
+		return 1
+	}
+	return demand
+}
+
+// CivilianGrainDemandForRegion aktif olayların geçici tüketim etkisini de
+// uygulayarak bir bölgenin tur başı sivil tahıl ihtiyacını döner.
+func (s *GameState) CivilianGrainDemandForRegion(region *world.Region) int {
+	base := CivilianGrainDemand(region)
+	if s == nil || region == nil || base <= 0 {
+		return base
+	}
+
+	percent := 100 + s.RegionGrainDemandModifier(region.ID)
+	if percent < 0 {
+		percent = 0
+	}
+	demand := base * percent / 100
+	if demand < 0 {
+		return 0
+	}
+	return demand
+}
+
+// RegionGrainProductionModifier aktif bölge olaylarının toplam üretim
+// çarpanını yüzde puan olarak döner. Süresi bitmiş kayıtlar etkisizdir.
+func (s *GameState) RegionGrainProductionModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.GrainProductionPercent
+		}
+	}
+	if modifier < -100 {
+		return -100
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+// RegionGrainDemandModifier aktif bölge olaylarının toplam sivil tüketim
+// çarpanını yüzde puan olarak döner. Süresi bitmiş kayıtlar etkisizdir.
+func (s *GameState) RegionGrainDemandModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.GrainDemandPercent
+		}
+	}
+	if modifier < -100 {
+		return -100
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+// RegionMilitaryGrainProduction, sivil talep karşılandıktan sonra aynı bölgede
+// kara ordusu ikmaline kalabilecek efektif tahıl üretimini döner. Oyun ve AI
+// lojistik hesapları bu ortak seam'i kullanır.
+func (s *GameState) RegionMilitaryGrainProduction(region *world.Region) int {
+	if s == nil || region == nil {
+		return 0
+	}
+	production := s.RegionProductionSummary(region).Grain
+	production -= s.CivilianGrainDemandForRegion(region)
+	if production < 0 {
+		return 0
+	}
+	return production
+}
+
 type RegionLogisticsStatus struct {
 	RegionID          world.RegionID
 	OwnerID           string
 	LocalProduction   int
 	SettlementBuffer  int
 	ReserveSupport    int
+	BlockadePercent   int
 	Demand            int
 	Capacity          int
 	Overload          int
@@ -257,6 +376,117 @@ type ArmyLogisticsStatus struct {
 	UnitsAffected     int
 	UnitsLost         int
 	TotalHPDamage     int
+}
+
+// GrainSupplyLevel fraksiyonun mevcut tahıl rezervinin şiddetini bildirir.
+// Runtime görünürlüğü için kullanılır; save'e doğrudan yazılmaz.
+type GrainSupplyLevel int
+
+const (
+	GrainSupplyStable GrainSupplyLevel = iota
+	GrainSupplyWarning
+	GrainSupplyCritical
+	GrainSupplyFamine
+)
+
+// GrainEconomyStatus ekonomi tick'inin tahıl üretim/tüketim sonucunu taşır.
+// Stockpile ve MonthsOfSupply tick sonrasındaki gerçek rezervi temsil eder.
+type GrainEconomyStatus struct {
+	FactionID               faction.FactionID
+	Production              int
+	CivilianDemand          int
+	ArmyUpkeep              int
+	StrategicDemand         int
+	ReplenishmentHP         int
+	ReplenishmentGrainSpent int
+	PopulationGrowth        int
+	GrowthGrainSpent        int
+	// ArmyMoraleDelta bu ekonomi tick'inde fraksiyon ordularında gerçekleşen
+	// toplam moral değişimidir; negatif değer ikmal kaynaklı kaybı gösterir.
+	ArmyMoraleDelta int
+	AutoExportSold  int
+	AutoExportGold  int
+	TotalDemand     int
+	NetChange       int
+	Stockpile       int
+	StorageCapacity int
+	Spoiled         int
+	MonthsOfSupply  int
+	Shortage        int
+	SupplyLevel     GrainSupplyLevel
+}
+
+const (
+	strategicGrainReserveMonths      = 3
+	strategicGrainReserveCapacityMin = 100
+)
+
+// StrategicGrainDemandFromStockpile üç aylık rezerv hedefinin mevcut stok
+// tarafından karşılanmayan kısmını döner.
+func StrategicGrainDemandFromStockpile(stockpile, totalDemand int) int {
+	if stockpile < 0 {
+		stockpile = 0
+	}
+	if totalDemand <= 0 {
+		return 0
+	}
+	target := totalDemand * strategicGrainReserveMonths
+	if stockpile >= target {
+		return 0
+	}
+	return target - stockpile
+}
+
+// StrategicGrainDemand mevcut talep ve stoktan türeyen, fraksiyonun üç aylık
+// güvenli rezerv hedefine ulaşmak için ithal etmesi gereken tahıl miktarıdır.
+// Runtime ekonomi snapshot'ı yoksa talep bölge/ordu state'inden yeniden hesaplanır.
+func (s *GameState) StrategicGrainDemand(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	f := s.Factions[fid]
+	if f == nil || f.IsEliminated {
+		return 0
+	}
+	totalDemand := 0
+	if status, ok := s.GrainEconomy[fid]; ok {
+		totalDemand = status.TotalDemand
+	} else {
+		for _, region := range s.Regions {
+			if region != nil && !region.IsSea && region.OwnerID == string(fid) {
+				totalDemand += s.CivilianGrainDemandForRegion(region)
+			}
+		}
+		for _, a := range s.Armies {
+			if a != nil && a.OwnerID == string(fid) {
+				totalDemand += s.EffectiveArmyGrainUpkeep(a)
+			}
+		}
+	}
+	if totalDemand <= 0 {
+		return 0
+	}
+	return StrategicGrainDemandFromStockpile(f.Grain, totalDemand)
+}
+
+// StrategicGrainSurplus kapasite üstündeki, ticaretle güvenle ihraç edilebilecek
+// tahıl miktarını döner. Runtime snapshot yoksa minimum 100'lük legacy rezervi kullanır.
+func (s *GameState) StrategicGrainSurplus(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	f := s.Factions[fid]
+	if f == nil || f.IsEliminated {
+		return 0
+	}
+	capacity := strategicGrainReserveCapacityMin
+	if status, ok := s.GrainEconomy[fid]; ok && status.StorageCapacity > 0 {
+		capacity = status.StorageCapacity
+	}
+	if f.Grain <= capacity {
+		return 0
+	}
+	return f.Grain - capacity
 }
 
 // ProductionOrder bina ve birim üretimlerinin tur bazlı kuyruğunu tutar.
@@ -328,6 +558,194 @@ func (s *GameState) AdvanceTurn() {
 		s.Year++
 	}
 	s.ResetDiplomacyOfferCounts()
+	s.GrainAidUsage = nil
+}
+
+// GrainAidBlockReason tahıl yardımının neden uygulanamayacağını döner.
+func (s *GameState) GrainAidBlockReason(rid world.RegionID) string {
+	if s == nil || rid == "" {
+		return "Geçersiz yardım bölgesi."
+	}
+	region := s.Regions[rid]
+	if region == nil || region.IsSea {
+		return "Deniz veya bilinmeyen bölgeye tahıl yardımı yapılamaz."
+	}
+	if region.OwnerID != string(s.PlayerFactionID) {
+		return "Tahıl yardımı yalnız kendi bölgelerine yapılabilir."
+	}
+	if region.IsLocked {
+		return "Kilitli bölgeye tahıl yardımı yapılamaz."
+	}
+	if s.SiegeAt(rid) != nil {
+		return "Kuşatma altındaki bölgeye tahıl yardımı ulaştırılamaz."
+	}
+	if s.GrainAidUsage != nil && s.GrainAidUsage[rid] {
+		return "Bu bölgeye bu tur zaten tahıl yardımı yapıldı."
+	}
+	if region.Satisfaction >= 90 {
+		return "Bu bölgede tahıl yardımına ihtiyaç yok."
+	}
+	f := s.Factions[s.PlayerFactionID]
+	if f == nil || f.Grain < GrainAidCost {
+		return "Tahıl yardımı için 12 tahıl gerekiyor."
+	}
+	return ""
+}
+
+// CanApplyGrainAid UI ve input katmanının ortak yardım uygunluk kontrolüdür.
+func (s *GameState) CanApplyGrainAid(rid world.RegionID) bool {
+	return s.GrainAidBlockReason(rid) == ""
+}
+
+// ApplyGrainAid kendi bölgesinin tahıl karşılığında memnuniyetini artırır.
+// Yardım state üzerinde tek bir kanonik mutasyon noktasıdır.
+func (s *GameState) ApplyGrainAid(rid world.RegionID) bool {
+	if !s.CanApplyGrainAid(rid) {
+		return false
+	}
+	region := s.Regions[rid]
+	f := s.Factions[s.PlayerFactionID]
+	f.Grain -= GrainAidCost
+	region.Satisfaction += GrainAidSatisfactionGain
+	if region.Satisfaction > 100 {
+		region.Satisfaction = 100
+	}
+	if s.GrainAidUsage == nil {
+		s.GrainAidUsage = make(map[world.RegionID]bool)
+	}
+	s.GrainAidUsage[rid] = true
+	return true
+}
+
+// EmergencyGrainSaleLimit depolama kapasitesinin üzerindeki tahıl miktarını döner.
+// GrainEconomy henüz oluşmadıysa küçük devletler için temel 100 rezervi korunur.
+func (s *GameState) EmergencyGrainSaleLimit() int {
+	if s == nil || s.PlayerFactionID == "" {
+		return 0
+	}
+	f := s.Factions[s.PlayerFactionID]
+	if f == nil || f.Grain <= 0 {
+		return 0
+	}
+	capacity := s.GrainEconomy[s.PlayerFactionID].StorageCapacity
+	if capacity <= 0 {
+		capacity = 100
+	}
+	limit := f.Grain - capacity
+	if limit < 0 {
+		return 0
+	}
+	return limit
+}
+
+// EmergencyGrainSaleUnitPrice acil tahıl satışının güncel birim fiyatını döner.
+func (s *GameState) EmergencyGrainSaleUnitPrice() int {
+	if s == nil {
+		return 0
+	}
+	price := s.MarketPrices[economy.GoodGrain]
+	if price <= 0 {
+		price = economy.BaseGoldValue[economy.GoodGrain]
+	}
+	return economy.EmergencySaleUnitPrice(price)
+}
+
+// ApplyEmergencyGrainSale fazla tahılı doğrudan pazara satar; rezerv kapasitesini korur.
+func (s *GameState) ApplyEmergencyGrainSale(amount int) (sold, gold int) {
+	if s == nil || amount <= 0 {
+		return 0, 0
+	}
+	f := s.Factions[s.PlayerFactionID]
+	if f == nil {
+		return 0, 0
+	}
+	sold = amount
+	if limit := s.EmergencyGrainSaleLimit(); sold > limit {
+		sold = limit
+	}
+	price := s.EmergencyGrainSaleUnitPrice()
+	if sold <= 0 || price <= 0 {
+		return 0, 0
+	}
+	f.Grain -= sold
+	gold = sold * price
+	f.Gold += gold
+	return sold, gold
+}
+
+// ApplyAutomaticGrainExport aktif ticaret ağı partnerlerine kapasite üstü tahılı
+// düşük fiyatla satar. Partner sırası faction ID ile deterministiktir.
+func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
+	if s == nil || !s.AutoGrainExport || s.PlayerFactionID == "" {
+		return 0, 0
+	}
+	limit := s.EmergencyGrainSaleLimit()
+	price := s.EmergencyGrainSaleUnitPrice()
+	if limit <= 0 || price <= 0 {
+		return 0, 0
+	}
+	price = economy.AutomaticExportUnitPrice(s.MarketPrices[economy.GoodGrain])
+	if price <= 0 {
+		price = economy.AutomaticExportUnitPrice(economy.BaseGoldValue[economy.GoodGrain])
+	}
+	if price <= 0 {
+		return 0, 0
+	}
+
+	partnersSet := make(map[faction.FactionID]struct{})
+	for _, route := range s.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 || route.AmountPerTurn <= 0 {
+			continue
+		}
+		var partner faction.FactionID
+		switch {
+		case faction.FactionID(route.FromFactionID) == s.PlayerFactionID:
+			partner = faction.FactionID(route.ToFactionID)
+		case faction.FactionID(route.ToFactionID) == s.PlayerFactionID:
+			partner = faction.FactionID(route.FromFactionID)
+		default:
+			continue
+		}
+		if partner == "" || partner == s.PlayerFactionID {
+			continue
+		}
+		f := s.Factions[partner]
+		if f == nil || f.IsEliminated {
+			continue
+		}
+		if relation := s.Relations[faction.RelationKey(s.PlayerFactionID, partner)]; relation != nil && relation.Stance == faction.StanceWar {
+			continue
+		}
+		partnersSet[partner] = struct{}{}
+	}
+
+	partners := make([]faction.FactionID, 0, len(partnersSet))
+	for partner := range partnersSet {
+		partners = append(partners, partner)
+	}
+	sort.Slice(partners, func(i, j int) bool { return partners[i] < partners[j] })
+
+	remaining := limit
+	for _, partner := range partners {
+		if remaining <= 0 {
+			break
+		}
+		buyer := s.Factions[partner]
+		amount := buyer.Gold / price
+		if amount > remaining {
+			amount = remaining
+		}
+		if amount <= 0 {
+			continue
+		}
+		if !economy.TransferGoodsAtUnitPrice(s.Factions, s.PlayerFactionID, partner, economy.GoodGrain, amount, price) {
+			continue
+		}
+		sold += amount
+		gold += amount * price
+		remaining -= amount
+	}
+	return sold, gold
 }
 
 // ResetDiplomacyOfferCounts mevcut tur teklif sayaçlarını sıfırlar.
@@ -551,6 +969,55 @@ func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
 	return nil
 }
 
+// EffectiveArmyGrainUpkeep ordunun bu turdaki gerçek tahıl bakım ihtiyacını
+// hareket ve kuşatma yüküyle birlikte hesaplar. Aynı hesap ekonomi, bölgesel
+// lojistik ve AI kararlarında kullanılmalıdır.
+func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
+	if s == nil || a == nil {
+		return 0
+	}
+	base := a.TotalGrainUpkeep(s.UnitTypes)
+	if base <= 0 {
+		return 0
+	}
+
+	percent := grainUpkeepStationaryPercent
+	if siege := s.SiegeByArmy(a.ID); siege != nil {
+		percent = grainUpkeepSiegeAttacker
+	} else {
+		for _, siege := range s.Sieges {
+			if siege == nil {
+				continue
+			}
+			if siege.DefenderArmyID == a.ID || s.IsArmyDefendingSiegedRegion(a) {
+				percent = grainUpkeepSiegeDefender
+				break
+			}
+		}
+		if percent == grainUpkeepStationaryPercent && a.IsGarrison {
+			percent = grainUpkeepGarrisonPercent
+		}
+	}
+
+	if percent == grainUpkeepStationaryPercent {
+		moved := false
+		if s.ArmyMoveUsage != nil {
+			moved = s.ArmyMoveUsage[a.ID]
+		} else if a.MaxMovePoints > 0 {
+			moved = a.MovePoints >= 0 && a.MovePoints < a.MaxMovePoints
+		}
+		if moved {
+			percent = grainUpkeepMovingPercent
+		}
+	}
+
+	upkeep := base * percent / 100
+	if upkeep < 1 {
+		return 1
+	}
+	return upkeep
+}
+
 // CanJoinActiveSiege aktif bir kuşatmaya mevcut ordunun destek için katılıp katılamayacağını döner.
 // Aynı fraksiyon ya da müttefik fraksiyonlar destek verebilir; kuşatmayı başlatan ordu hariç tutulur.
 func (s *GameState) CanJoinActiveSiege(attacker *army.Army, regionID world.RegionID) bool {
@@ -720,6 +1187,12 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 		out.Spice += bonus.Spice
 		out.Cloth += bonus.Cloth
 	}
+
+	productionPercent := 100 + s.RegionGrainProductionModifier(region.ID)
+	if productionPercent < 0 {
+		productionPercent = 0
+	}
+	out.Grain = out.Grain * productionPercent / 100
 
 	return out
 }

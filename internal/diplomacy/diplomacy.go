@@ -879,7 +879,7 @@ func relationAllowsTrade(rel *faction.Relation) bool {
 }
 
 func buildTradeRoute(gs *state.GameState, from, to faction.FactionID) *economy.TradeRoute {
-	good := chooseExportGood(gs, from)
+	good := chooseTradeRouteGood(gs, from, to)
 	return &economy.TradeRoute{
 		FromFactionID: string(from),
 		ToFactionID:   string(to),
@@ -887,6 +887,16 @@ func buildTradeRoute(gs *state.GameState, from, to faction.FactionID) *economy.T
 		AmountPerTurn: tradeAmount(gs, from, to),
 		GoldPerUnit:   economy.BaseGoldValue[good],
 	}
+}
+
+// chooseTradeRouteGood, hedefin gerçek tahıl talebi varsa ve kaynakta rezerv
+// üstü stok bulunuyorsa rotayı tahıla yönlendirir. Talep yoksa mevcut yüksek
+// değerli ihracat seçimi korunur.
+func chooseTradeRouteGood(gs *state.GameState, from, to faction.FactionID) economy.GoodType {
+	if gs != nil && gs.StrategicGrainDemand(to) > 0 && gs.StrategicGrainSurplus(from) > 0 {
+		return economy.GoodGrain
+	}
+	return chooseExportGood(gs, from)
 }
 
 func chooseExportGood(gs *state.GameState, fid faction.FactionID) economy.GoodType {

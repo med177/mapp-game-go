@@ -73,16 +73,21 @@ func (ctx *moveScoreContext) regionLogistics(gs *state.GameState, region *world.
 		return cached.demand, cached.capacity, cached.overload
 	}
 
-	production := gs.RegionProductionSummary(region).Grain
+	militaryProduction := gs.RegionMilitaryGrainProduction(region)
+	if region.OwnerID != ctx.ownerID {
+		militaryProduction = 0
+	}
 	settlementBuffer := aiRegionSettlementBuffer(gs, region)
-	reserveSupport := aiRegionReserveSupport(gs, ctx.ownerID, production, settlementBuffer)
-	capacity = production + settlementBuffer + reserveSupport
+	blockadePercent := gs.RegionBlockadePercent(region, ctx.ownerID)
+	settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
+	reserveSupport := aiRegionReserveSupport(gs, ctx.ownerID, militaryProduction, settlementBuffer)
+	capacity = militaryProduction + settlementBuffer + reserveSupport
 	if capacity < 4 {
 		capacity = 4
 	}
 	for _, candidate := range ctx.armiesByRegion[region.ID] {
 		if candidate.OwnerID == ctx.ownerID && !candidate.IsNaval {
-			demand += candidate.TotalGrainUpkeep(gs.UnitTypes)
+			demand += gs.EffectiveArmyGrainUpkeep(candidate)
 		}
 	}
 	overload = maxInt(0, demand-capacity)
@@ -248,7 +253,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 func scoreMoveWithContext(gs *state.GameState, a *army.Army, target *world.Region, ctx *moveScoreContext) int {
 	source := gs.Regions[a.RegionID]
 	planBonus := aiPlanMoveScoreBonus(gs, faction.FactionID(a.OwnerID), target)
-	armyDemand := a.TotalGrainUpkeep(gs.UnitTypes)
+	armyDemand := gs.EffectiveArmyGrainUpkeep(a)
 	if target.OwnerID == a.OwnerID {
 		score := 0
 		srcDemand, srcCap, srcOverload := ctx.regionLogistics(gs, source)

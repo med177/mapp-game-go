@@ -48,7 +48,7 @@ const (
 	maxEventLogEntries = 16
 
 	infoPanelW                = float32(305)
-	infoPanelH                = float32(680)
+	infoPanelH                = float32(780)
 	factionPanelHeaderH       = 70.0
 	factionPanelBodyPadBottom = 12.0
 	factionPanelScrollStep    = 28.0
@@ -78,7 +78,6 @@ const (
 	regionPanelScrollStep      = 28.0
 	regionPanelActivityMinH    = 32.0
 	regionPanelActionBarHeight = 30.0
-	buildingGridSpriteH        = float32(76)
 	buildingGridNameH          = float32(18)
 	buildingGridRowGap         = float32(7)
 )
@@ -116,10 +115,10 @@ var (
 		return ebiten.NewImage(w, h)
 	}()
 
-	// buildingSheet bina sprite sheet'i (assets/sprites/buildings.png)
-	// 3×2 grid: [barracks, market, temple] / [walls, farm, port]
-	buildingSheet       *ebiten.Image
-	buildingSheetLoaded bool
+	// buildingSpriteCache aktif senaryodaki bina ID'lerini ayrı PNG asset'lerine
+	// eşler. Eksik asset'ler de nil olarak cache'lenir; böylece her frame diske
+	// yeniden erişilmez.
+	buildingSpriteCache = map[string]*ebiten.Image{}
 
 	settlementImageCache  = map[string]*ebiten.Image{}
 	settlementImageLoaded = map[string]bool{}
@@ -130,32 +129,32 @@ var (
 )
 
 // buildingDisplayOrder bina slotlarının sırasını belirler.
-var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port"}
+var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port", "granary"}
 
-func ensureBuildingSheet() {
-	if buildingSheetLoaded {
-		return
+func buildingSpritePath(id string) string {
+	if ActiveScenarioPath == "" || id == "" {
+		return ""
 	}
-	buildingSheetLoaded = true
-	buildingSheet = tryLoadImage(ActiveScenarioPath + "/sprites/buildings.png")
+	return filepath.Join(ActiveScenarioPath, "sprites", "buildings", id+".png")
 }
 
-// buildingSpriteRect sprite sheet'in gerçek boyutlarına göre bina hücresini döner.
-// Görüntü 3 sütun × 2 satır eşit hücrelerden oluşur.
-func buildingSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
-	idx := map[string]int{
-		"barracks": 0, "market": 1, "temple": 2,
-		"walls": 3, "farm": 4, "port": 5,
-	}[id]
-	w := sheet.Bounds().Dx()
-	h := sheet.Bounds().Dy()
-	cellW := w / 3
-	cellH := h / 2
-	col := idx % 3
-	row := idx / 3
-	x0 := col * cellW
-	y0 := row * cellH
-	return image.Rect(x0, y0, x0+cellW, y0+cellH)
+// buildingSpriteImage bir bina ID'sinin aynı ID'li PNG asset'ini döner.
+func buildingSpriteImage(id string) *ebiten.Image {
+	path := buildingSpritePath(id)
+	if path == "" {
+		return nil
+	}
+	if img, loaded := buildingSpriteCache[path]; loaded {
+		return img
+	}
+
+	img := tryLoadImage(path)
+	buildingSpriteCache[path] = img
+	return img
+}
+
+func resetBuildingSpriteCache() {
+	buildingSpriteCache = map[string]*ebiten.Image{}
 }
 
 func ensureMiniMapBg() {
@@ -478,7 +477,20 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		rowGap := 22.0
 
 		// 2x2 mallar
-		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), itoa(f.Grain), ColorWhite)
+		grainValue := itoa(f.Grain)
+		grainColor := ColorWhite
+		if grainStatus, ok := gs.GrainEconomy[f.ID]; ok {
+			if grainStatus.StorageCapacity > 0 {
+				grainValue += " / " + itoa(grainStatus.StorageCapacity)
+			}
+			switch grainStatus.SupplyLevel {
+			case state.GrainSupplyWarning:
+				grainColor = ColorYellow
+			case state.GrainSupplyCritical, state.GrainSupplyFamine:
+				grainColor = ColorRed
+			}
+		}
+		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
 		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), itoa(f.Timber), color.RGBA{180, 140, 80, 255})
 		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), itoa(f.Iron), color.RGBA{180, 180, 220, 255})
 		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), itoa(f.Stone), color.RGBA{170, 170, 170, 255})
@@ -2055,14 +2067,19 @@ func buildingGridEndY(gs *state.GameState, region *world.Region, startY float32)
 		return startY
 	}
 	rows := (count + 2) / 3
-	cardH := buildingGridSpriteH + buildingGridNameH
+	cardH := buildingGridSpriteHeight(infoPanelW) + buildingGridNameH
 	return startY + float32(rows)*cardH + float32(rows-1)*buildingGridRowGap
 }
 
 func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *world.Region, px, y, pw float32) {
 	bar := gameui.Rect{X: float64(px) + panelPad, Y: float64(y), W: float64(pw) - panelPad*2, H: regionPanelActionBarHeight}
 	drawUICardRect(screen, bar, color.RGBA{20, 19, 16, 225}, panelBorder, 1)
-	if region == nil || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
+	if region == nil || region.OwnerID == "" {
+		return
+	}
+	if region.OwnerID == string(gs.PlayerFactionID) {
+		btn := buildRegionGrainAidButton(gs, region.ID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
 		return
 	}
 	btn := buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
@@ -2823,11 +2840,9 @@ func calcPlayerIncome(gs *state.GameState) int {
 	return total
 }
 
-// drawBuildingGrid bölgedeki binaları sprite thumbnail'leri olarak 3×2 ızgarada çizer.
+// drawBuildingGrid bölgedeki binaları kare sprite thumbnail'leri olarak 3 sütunlu ızgarada çizer.
 // İnşa edilmiş binalar renkli sprite ile, boş slotlar soluk çerçeve ile gösterilir.
 func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.Region, panelX, startY, panelW float32) {
-	ensureBuildingSheet()
-
 	cards := buildBuildingCardComponents(gs, region, panelX, startY, panelW)
 	cacheBuildingGridComponents(region.ID, cards)
 	for _, card := range cards {
@@ -2954,6 +2969,9 @@ func regionPanelInteractiveHit(mx, my float64, gs *state.GameState, rid world.Re
 		return true
 	}
 	if delta := regionTaxButtonHit(mx, my, gs, rid); delta != 0 {
+		return true
+	}
+	if regionGrainAidButtonHit(mx, my, gs, rid) {
 		return true
 	}
 	if regionDiplomacyButtonHit(mx, my, gs, rid) {
@@ -3757,6 +3775,21 @@ func regionDiplomacyButtonHit(mx, my float64, gs *state.GameState, rid world.Reg
 	return buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
+func regionGrainAidButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	if gs == nil || rid == "" {
+		return false
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+		return false
+	}
+	start := buildingGridStartY(gs, region, false)
+	end := buildingGridEndY(gs, region, start)
+	barY := end + 5
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionGrainAidButton(gs, rid, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
+}
+
 func armyPanelCloseHit(mx, my float64) bool {
 	return buildArmyPanelCloseButton().HitTest(mx, my)
 }
@@ -3784,6 +3817,14 @@ func buildRegionTaxButtons(gs *state.GameState, rid world.RegionID) (gameui.Butt
 func buildRegionDiplomacyButtons(_ *state.GameState, _ string, px, py, pw, ph float32) gameui.Button {
 	x, y, w, h := regionDiplomacyButtonRect(0, px, py, pw, ph)
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Diplomasi")
+}
+
+func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, pw, ph float32) gameui.Button {
+	const btnW = float32(112)
+	const btnH = float32(24)
+	x := px + 5
+	y := py + (ph-btnH)/2
+	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Tahıl Yardımı")
 }
 
 func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, [4]float32) {

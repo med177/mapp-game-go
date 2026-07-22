@@ -482,12 +482,14 @@ func assertTradePanelInside(t *testing.T, screenW, screenH float64) {
 	for _, btn := range buildTradeSortButtons(layout) {
 		assertButtonInside(t, screenW, screenH, btn.Button)
 	}
+	assertButtonInside(t, screenW, screenH, buildTradeAutoExportButton(layout, false))
 	qtyButtons, buyBtn, sellBtn := buildTradeActionButtons(layout, len(tradeSelectableGoods()))
 	for _, btn := range qtyButtons {
 		assertButtonInside(t, screenW, screenH, btn)
 	}
 	assertButtonInside(t, screenW, screenH, buyBtn)
 	assertButtonInside(t, screenW, screenH, sellBtn)
+	assertButtonInside(t, screenW, screenH, buildTradeEmergencyGrainSaleButton(layout, len(tradeSelectableGoods()), true))
 }
 
 func TestTradeFilterPredicates(t *testing.T) {

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
@@ -19,8 +21,198 @@ const (
 	embarkedVoyageMaxDamage  = 12
 )
 
+// civilianGrainDemand bir bölgenin tur başı sivil tahıl ihtiyacını hesaplar.
+// Nüfusu olmayan legacy/test bölgeleri ekonomi havuzundan tüketim yapmaz.
+func civilianGrainDemand(region *world.Region) int {
+	return state.CivilianGrainDemand(region)
+}
+
+const (
+	grainWarningMonths          = 3
+	grainCriticalMonths         = 1
+	grainCivilianStorageMonths  = 6
+	grainArmyStorageMonths      = 3
+	grainMinimumStorageCapacity = 100
+)
+
+const grainSpoilagePercent = 2
+
+const (
+	grainPopulationGrowthMonth = 11
+	grainPerPopulationGrowth   = 2
+	grainFundedReplenishHP     = 10
+)
+
+func grainStorageCapacity(civilianDemand, armyUpkeep, storageBonus int) int {
+	if civilianDemand < 0 {
+		civilianDemand = 0
+	}
+	if armyUpkeep < 0 {
+		armyUpkeep = 0
+	}
+	if storageBonus < 0 {
+		storageBonus = 0
+	}
+	if civilianDemand+armyUpkeep <= 0 {
+		return storageBonus
+	}
+
+	capacity := civilianDemand*grainCivilianStorageMonths + armyUpkeep*grainArmyStorageMonths + storageBonus
+	if capacity <= 0 {
+		return 0
+	}
+	if capacity < grainMinimumStorageCapacity {
+		return grainMinimumStorageCapacity
+	}
+	return capacity
+}
+
+func grainSpoilage(stockpile, capacity int) int {
+	if stockpile <= capacity || capacity <= 0 {
+		return 0
+	}
+	excess := stockpile - capacity
+	spoiled := excess * grainSpoilagePercent / 100
+	if spoiled < 1 {
+		spoiled = 1
+	}
+	return spoiled
+}
+
+// grainEconomyStatus mevcut stok ve tur talebinden oyuncuya/AI'ye gösterilecek
+// tahıl rezerv durumunu üretir. Negatif stok, tüketim sonrası kıtlık miktarıdır;
+// gerçek faction stoku ekonomi tick'inde sıfıra clamp edilir.
+func grainEconomyStatus(fid faction.FactionID, stockpile, production, civilianDemand, armyUpkeep, storageBonus int) state.GrainEconomyStatus {
+	if stockpile < 0 {
+		stockpile = 0
+	}
+	if production < 0 {
+		production = 0
+	}
+	if civilianDemand < 0 {
+		civilianDemand = 0
+	}
+	if armyUpkeep < 0 {
+		armyUpkeep = 0
+	}
+
+	totalDemand := civilianDemand + armyUpkeep
+	rawBalance := stockpile + production - totalDemand
+	status := state.GrainEconomyStatus{
+		FactionID:       fid,
+		Production:      production,
+		CivilianDemand:  civilianDemand,
+		ArmyUpkeep:      armyUpkeep,
+		TotalDemand:     totalDemand,
+		NetChange:       production - totalDemand,
+		Stockpile:       rawBalance,
+		StorageCapacity: grainStorageCapacity(civilianDemand, armyUpkeep, storageBonus),
+		MonthsOfSupply:  -1,
+	}
+	if rawBalance < 0 {
+		status.Shortage = -rawBalance
+		status.Stockpile = 0
+	}
+	if totalDemand > 0 {
+		status.MonthsOfSupply = status.Stockpile / totalDemand
+		switch {
+		case status.Shortage > 0:
+			status.SupplyLevel = state.GrainSupplyFamine
+		case status.MonthsOfSupply < grainCriticalMonths:
+			status.SupplyLevel = state.GrainSupplyCritical
+		case status.MonthsOfSupply < grainWarningMonths:
+			status.SupplyLevel = state.GrainSupplyWarning
+		}
+	}
+	return status
+}
+
+func grainGoldIncomePercent(level state.GrainSupplyLevel) int {
+	switch level {
+	case state.GrainSupplyFamine:
+		return 75
+	case state.GrainSupplyCritical:
+		return 90
+	case state.GrainSupplyWarning:
+		return 95
+	default:
+		return 100
+	}
+}
+
+func grainShortageSatisfactionPenalty(level state.GrainSupplyLevel) int {
+	switch level {
+	case state.GrainSupplyFamine:
+		return 4
+	case state.GrainSupplyCritical:
+		return 2
+	case state.GrainSupplyWarning:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func applyGrainShortageStability(gs *state.GameState, ownerID string, level state.GrainSupplyLevel) {
+	penalty := grainShortageSatisfactionPenalty(level)
+	if gs == nil || ownerID == "" || penalty <= 0 {
+		return
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.OwnerID != ownerID || region.IsSea {
+			continue
+		}
+		region.Satisfaction = clamp(region.Satisfaction-penalty, 0, 100)
+	}
+}
+
+func grainArmyMoraleDelta(level state.GrainSupplyLevel) int {
+	switch level {
+	case state.GrainSupplyFamine:
+		return -6
+	case state.GrainSupplyCritical:
+		return -3
+	case state.GrainSupplyWarning:
+		return -1
+	default:
+		return 1
+	}
+}
+
+// applyGrainArmyMorale, sivil memnuniyeti ve ordu HP kaybından ayrı olarak,
+// tahıl arzını ordunun kalıcı moral state'ine bağlar. ID sırası replay
+// determinism'i korur; aynı tick'te her ordu yalnız bir kez etkilenir.
+func applyGrainArmyMorale(gs *state.GameState, ownerID string, level state.GrainSupplyLevel) int {
+	if gs == nil || ownerID == "" {
+		return 0
+	}
+	delta := grainArmyMoraleDelta(level)
+	if delta == 0 {
+		return 0
+	}
+	armyIDs := gs.ArmyOrder
+	if len(armyIDs) != len(gs.Armies) {
+		armyIDs = make([]army.ArmyID, 0, len(gs.Armies))
+		for aid := range gs.Armies {
+			armyIDs = append(armyIDs, aid)
+		}
+		sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	}
+
+	changed := 0
+	for _, aid := range armyIDs {
+		a := gs.Armies[aid]
+		if a == nil || a.OwnerID != ownerID || len(a.Units) == 0 {
+			continue
+		}
+		changed += a.ApplyMoraleDelta(delta)
+	}
+	return changed
+}
+
 type economyTickReport struct {
 	PlayerLogisticsAlerts []state.RegionLogisticsStatus
+	PlayerGrainStatus     state.GrainEconomyStatus
 }
 
 type navalVoyageAlert struct {
@@ -188,6 +380,7 @@ func applyTechTicks(gs *state.GameState) []struct {
 
 // applySeasonEffects mevsim etkilerini tüm ordulara uygular.
 func applySeasonEffects(gs *state.GameState) {
+	gs.ArmyMoveUsage = make(map[army.ArmyID]bool, len(gs.Armies))
 	s := gs.CurrentSeason()
 
 	if s.IsWinter() {
@@ -197,6 +390,9 @@ func applySeasonEffects(gs *state.GameState) {
 	}
 
 	for _, a := range gs.Armies {
+		if a.MaxMovePoints > 0 {
+			gs.ArmyMoveUsage[a.ID] = a.MovePoints >= 0 && a.MovePoints < a.MaxMovePoints
+		}
 		if !s.IsWinter() {
 			if a.IsNaval {
 				replenishDockedFleet(gs, a, friendlyReplenishHP)
@@ -271,11 +467,14 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 	incomeByFaction := make(map[string]int)
 	grainByFaction := make(map[string]int)
+	civilianGrainDemandByFaction := make(map[string]int)
 	ironByFaction := make(map[string]int)
 	timberByFaction := make(map[string]int)
 	stoneByFaction := make(map[string]int)
 	spiceByFaction := make(map[string]int)
 	clothByFaction := make(map[string]int)
+	storageCapacityByFaction := make(map[string]int)
+	gs.GrainEconomy = make(map[faction.FactionID]state.GrainEconomyStatus, len(gs.Factions))
 
 	for _, r := range gs.Regions {
 		if r.IsSea || r.OwnerID == "" {
@@ -299,6 +498,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 				grainMod *= b.GrainMod
 				tradeCapMod *= b.TradeCapacityMod
 				satBonus += b.SatBonus
+				storageCapacityByFaction[r.OwnerID] += b.StorageCapacity
 			}
 		}
 
@@ -321,21 +521,27 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 
 		incomeByFaction[r.OwnerID] += income + tradeIncome
-		grainByFaction[r.OwnerID] += grain
+		civilianGrainDemandByFaction[r.OwnerID] += gs.CivilianGrainDemandForRegion(r)
 		ironByFaction[r.OwnerID] += iron
 		timberByFaction[r.OwnerID] += timber
 		stoneByFaction[r.OwnerID] += stone
 		spiceByFaction[r.OwnerID] += spice
 		clothByFaction[r.OwnerID] += cloth
+		capitalGrainBonus := 0
 		if bonus := gs.CapitalRegionBonus(r); bonus != (state.RegionProductionSummary{}) {
 			incomeByFaction[r.OwnerID] += bonus.Gold
-			grainByFaction[r.OwnerID] += bonus.Grain
+			capitalGrainBonus = bonus.Grain
 			ironByFaction[r.OwnerID] += bonus.Iron
 			timberByFaction[r.OwnerID] += bonus.Timber
 			stoneByFaction[r.OwnerID] += bonus.Stone
 			spiceByFaction[r.OwnerID] += bonus.Spice
 			clothByFaction[r.OwnerID] += bonus.Cloth
 		}
+		productionPercent := 100 + gs.RegionGrainProductionModifier(r.ID)
+		if productionPercent < 0 {
+			productionPercent = 0
+		}
+		grainByFaction[r.OwnerID] += (grain + capitalGrainBonus) * productionPercent / 100
 
 		// Vergi memnuniyet etkisi + bina bonusu
 		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
@@ -343,6 +549,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
+	gs.RefreshTradeRouteBlockades()
 	gs.RefreshMerchantTradeBonuses()
 	tradeLogs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
 	for _, log := range tradeLogs {
@@ -355,7 +562,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep)
 	upkeepByFaction := make(map[string]int)
 	for _, a := range gs.Armies {
-		upkeepByFaction[a.OwnerID] += a.TotalGrainUpkeep(gs.UnitTypes)
+		upkeepByFaction[a.OwnerID] += gs.EffectiveArmyGrainUpkeep(a)
 	}
 
 	for fid, f := range gs.Factions {
@@ -368,9 +575,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		ownedCount := len(gs.RegionsOwnedBy(fid))
 		techGold := fx.GoldPerRegion * ownedCount
 
-		f.Gold += incomeByFaction[fidStr] + techGold
 		netGrain := int(float64(grainByFaction[fidStr]) * (1.0 + fx.GrainMod))
-		f.Grain += netGrain - upkeepByFaction[fidStr]
+		civilianDemand := civilianGrainDemandByFaction[fidStr]
+		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
+		f.Gold += (incomeByFaction[fidStr] + techGold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		f.Grain = status.Stockpile
+		applyGrainShortageStability(gs, fidStr, status.SupplyLevel)
 		f.Iron += int(float64(ironByFaction[fidStr]) * (1.0 + fx.IronMod))
 		f.Timber += int(float64(timberByFaction[fidStr]) * (1.0 + fx.TimberMod))
 		f.Stone += int(float64(stoneByFaction[fidStr]) * (1.0 + fx.StoneMod))
@@ -389,11 +599,37 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		if f.Gold < 0 {
 			f.Gold = 0
 		}
-		if f.Grain < 0 {
-			applyGrainShortagePenalty(gs, fidStr, -f.Grain)
-			f.Grain = 0
+		if status.Shortage > 0 {
+			applyGrainShortagePenalty(gs, fidStr, status.Shortage)
 		}
+		status.ArmyMoraleDelta = applyGrainArmyMorale(gs, fidStr, status.SupplyLevel)
+		status.Spoiled = grainSpoilage(f.Grain, status.StorageCapacity)
+		if status.Spoiled > 0 {
+			f.Grain -= status.Spoiled
+		}
+		status.Stockpile = f.Grain
+		if status.TotalDemand > 0 {
+			status.MonthsOfSupply = status.Stockpile / status.TotalDemand
+		}
+		status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
+		gs.GrainEconomy[fid] = status
 	}
+	applyGrainFundedArmyReplenishment(gs)
+	if autoSold, autoGold := gs.ApplyAutomaticGrainExport(); autoSold > 0 {
+		fid := gs.PlayerFactionID
+		status := gs.GrainEconomy[fid]
+		status.AutoExportSold = autoSold
+		status.AutoExportGold = autoGold
+		if player := gs.Factions[fid]; player != nil {
+			status.Stockpile = player.Grain
+			if status.TotalDemand > 0 {
+				status.MonthsOfSupply = status.Stockpile / status.TotalDemand
+			}
+			status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
+		}
+		gs.GrainEconomy[fid] = status
+	}
+	applyGrainFundedPopulationGrowth(gs)
 
 	for fid, f := range gs.Factions {
 		if f == nil || f.IsEliminated || f.OverlordID == "" {
@@ -420,10 +656,167 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
+	if gs.PlayerFactionID != "" {
+		report.PlayerGrainStatus = gs.GrainEconomy[gs.PlayerFactionID]
+	}
+	gs.ArmyMoveUsage = nil
 
-	// --- Dinamik piyasa fiyatlarını güncelle ---
-	gs.MarketPrices = economy.ComputeMarketPrices(gs.Factions)
+	// --- Dinamik piyasa fiyatlarını stratejik tahıl talebiyle güncelle ---
+	grainDemandByFaction := make(map[faction.FactionID]int, len(gs.Factions))
+	for fid := range gs.Factions {
+		grainDemandByFaction[fid] = gs.StrategicGrainDemand(fid)
+	}
+	gs.MarketPrices = economy.ComputeMarketPricesWithStrategicDemand(gs.Factions, grainDemandByFaction)
 	return report
+}
+
+// applyGrainFundedArmyReplenishment, mevcut ücretsiz toparlanmaya ek olarak,
+// yalnızca depo kapasitesini aşan tahılla dost kara ordularını yeniler. Ordu ve
+// birim sırası deterministiktir; böylece sınırlı fazla tahıl her replay'de aynı
+// ordulara gider. Bir HP toparlanması bir tahıl tüketir ve ordu başına/turuna
+// en fazla friendlyReplenishHP kadar ek iyileşme yapılır.
+func applyGrainFundedArmyReplenishment(gs *state.GameState) {
+	if gs == nil || gs.CurrentSeason().IsWinter() || len(gs.GrainEconomy) == 0 {
+		return
+	}
+
+	factionIDs := make([]faction.FactionID, 0, len(gs.Factions))
+	for fid := range gs.Factions {
+		factionIDs = append(factionIDs, fid)
+	}
+	sort.Slice(factionIDs, func(i, j int) bool { return factionIDs[i] < factionIDs[j] })
+
+	armyIDs := make([]army.ArmyID, 0, len(gs.Armies))
+	for aid := range gs.Armies {
+		armyIDs = append(armyIDs, aid)
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+
+	for _, fid := range factionIDs {
+		f := gs.Factions[fid]
+		status, ok := gs.GrainEconomy[fid]
+		if f == nil || f.IsEliminated || !ok {
+			continue
+		}
+		budget := f.Grain - status.StorageCapacity
+		if budget <= 0 {
+			continue
+		}
+
+		for _, aid := range armyIDs {
+			if budget <= 0 {
+				break
+			}
+			a := gs.Armies[aid]
+			if a == nil || a.OwnerID != string(fid) || a.IsNaval ||
+				!a.CanReplenishIn(gs.Regions) || gs.IsArmyDefendingSiegedRegion(a) {
+				continue
+			}
+
+			armyBudget := grainFundedReplenishHP
+			for i := range a.Units {
+				if budget <= 0 || armyBudget <= 0 {
+					break
+				}
+				missing := a.Units[i].MissingHP()
+				if missing <= 0 {
+					continue
+				}
+				heal := missing
+				if heal > armyBudget {
+					heal = armyBudget
+				}
+				if heal > budget {
+					heal = budget
+				}
+				a.Units[i].CurrentHP += heal
+				budget -= heal
+				armyBudget -= heal
+				status.ReplenishmentHP += heal
+				status.ReplenishmentGrainSpent += heal
+			}
+		}
+
+		if status.ReplenishmentGrainSpent <= 0 {
+			continue
+		}
+		f.Grain -= status.ReplenishmentGrainSpent
+		status.NetChange -= status.ReplenishmentGrainSpent
+		status.Stockpile = f.Grain
+		if status.TotalDemand > 0 {
+			status.MonthsOfSupply = status.Stockpile / status.TotalDemand
+		}
+		status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
+		gs.GrainEconomy[fid] = status
+	}
+}
+
+// applyGrainFundedPopulationGrowth yılda bir kez, yalnızca depolama kapasitesini
+// aşan ve stabil rezervden tahıl harcayarak nüfusu büyütür. Bölge sırası ve
+// fraksiyon sırası deterministiktir; savaş rezervi kapasite tabanına kadar korunur.
+func applyGrainFundedPopulationGrowth(gs *state.GameState) {
+	if gs == nil || gs.Month != grainPopulationGrowthMonth || len(gs.GrainEconomy) == 0 {
+		return
+	}
+
+	factionIDs := make([]faction.FactionID, 0, len(gs.Factions))
+	for fid := range gs.Factions {
+		factionIDs = append(factionIDs, fid)
+	}
+	sort.Slice(factionIDs, func(i, j int) bool { return factionIDs[i] < factionIDs[j] })
+
+	for _, fid := range factionIDs {
+		f := gs.Factions[fid]
+		status := gs.GrainEconomy[fid]
+		if f == nil || f.IsEliminated || status.SupplyLevel != state.GrainSupplyStable {
+			continue
+		}
+		budget := f.Grain - status.StorageCapacity
+		if budget < grainPerPopulationGrowth {
+			continue
+		}
+
+		regions := make([]*world.Region, 0)
+		for _, region := range gs.Regions {
+			if region == nil || region.IsSea || region.OwnerID != string(fid) || region.Population <= 0 {
+				continue
+			}
+			if region.Satisfaction < 60 || region.IsRebellionRisk() || gs.SiegeAt(region.ID) != nil {
+				continue
+			}
+			regions = append(regions, region)
+		}
+		sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
+
+		for _, region := range regions {
+			growth := region.Population / 100
+			if growth < 1 {
+				growth = 1
+			}
+			cost := growth * grainPerPopulationGrowth
+			if cost > budget {
+				break
+			}
+			region.Population += growth
+			f.Grain -= cost
+			budget -= cost
+			status.PopulationGrowth += growth
+			status.GrowthGrainSpent += cost
+			if budget < grainPerPopulationGrowth {
+				break
+			}
+		}
+
+		if status.GrowthGrainSpent > 0 {
+			status.NetChange -= status.GrowthGrainSpent
+			status.Stockpile = f.Grain
+			if status.TotalDemand > 0 {
+				status.MonthsOfSupply = status.Stockpile / status.TotalDemand
+			}
+			status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
+			gs.GrainEconomy[fid] = status
+		}
+	}
 }
 
 func applyEmbarkedVoyageAttrition(gs *state.GameState) []navalVoyageAlert {
@@ -493,7 +886,19 @@ func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int
 		return
 	}
 	remaining := shortage
-	for _, a := range gs.Armies {
+	armyIDs := gs.ArmyOrder
+	if len(armyIDs) != len(gs.Armies) {
+		armyIDs = make([]army.ArmyID, 0, len(gs.Armies))
+		for aid := range gs.Armies {
+			armyIDs = append(armyIDs, aid)
+		}
+		sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	}
+	for _, aid := range armyIDs {
+		a := gs.Armies[aid]
+		if a == nil {
+			continue
+		}
 		if a.OwnerID != ownerID || len(a.Units) == 0 {
 			continue
 		}
@@ -546,7 +951,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		totalUnits := 0
 		peakTurns := 0
 		for _, a := range armiesInRegion {
-			totalDemand += a.TotalGrainUpkeep(gs.UnitTypes)
+			totalDemand += gs.EffectiveArmyGrainUpkeep(a)
 			totalUnits += len(a.Units)
 			if a.OverCapacityTurns > peakTurns {
 				peakTurns = a.OverCapacityTurns
@@ -559,10 +964,15 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			continue
 		}
 
-		production := gs.RegionProductionSummary(region).Grain
+		militaryProduction := gs.RegionMilitaryGrainProduction(region)
+		if region.OwnerID != ownerID {
+			militaryProduction = 0
+		}
 		settlementBuffer := regionSettlementLogisticsBuffer(gs, region)
-		reserveSupport := regionReserveSupport(gs, ownerID, production, settlementBuffer)
-		capacity := production + settlementBuffer + reserveSupport
+		blockadePercent := gs.RegionBlockadePercent(region, ownerID)
+		settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
+		reserveSupport := regionReserveSupport(gs, ownerID, militaryProduction, settlementBuffer)
+		capacity := militaryProduction + settlementBuffer + reserveSupport
 		if capacity < 4 {
 			capacity = 4
 		}
@@ -571,9 +981,10 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		regionStatus := state.RegionLogisticsStatus{
 			RegionID:         rid,
 			OwnerID:          ownerID,
-			LocalProduction:  production,
+			LocalProduction:  militaryProduction,
 			SettlementBuffer: settlementBuffer,
 			ReserveSupport:   reserveSupport,
+			BlockadePercent:  blockadePercent,
 			Demand:           totalDemand,
 			Capacity:         capacity,
 			Overload:         overload,

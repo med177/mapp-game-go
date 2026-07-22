@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-21
-related: [systems/combat, systems/diplomacy, architecture/game-loop]
+last_updated: 2026-07-22
+related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
@@ -48,9 +48,12 @@ ortalama altın kazanımını aşağıdaki sözleşmeyle doğrular:
 
 | Fraksiyon grubu | 42 aylık altın kazanımı |
 |---|---:|
-| Memlük, İngiltere, HRE | `18.000–32.000` |
-| Fransa, İlhanlı | `15.000–30.000` |
-| Venedik | `11.000–22.000` |
+| Memlük | `12.000–30.000` |
+| İngiltere | `17.000–32.000` |
+| HRE | `15.000–32.000` |
+| Fransa | `12.000–30.000` |
+| İlhanlı | `10.000–30.000` |
+| Venedik | `9.000–22.000` |
 | Osmanlı | `-2.000–6.000` |
 | Safevî | `500–5.000` |
 
@@ -63,6 +66,23 @@ kontrolüdür.
 Kaynak/test: `internal/game/scenario_balance_test.go` içindeki
 `assert1300CalibrationBands`, `Test1300ScenarioTempoReport` ve
 `Test1300ScenarioAITwoTurnReplayIsDeterministic`.
+
+### 1300 Tahıl Ekonomisi Faz 6 Bantları
+
+`Test1300ScenarioGrainEconomyBands`, 24 turu iki seed ile erken (`1–8`), orta
+(`9–16`) ve savaş/ileri (`17–24`) pencerelerine ayırır. Her pencere ve büyük
+fraksiyon için `production`, `civilian demand`, `army upkeep`, `net change`,
+`stockpile months` ve kıtlık oranı raporlanır. Kabul sözleşmesi:
+
+- üretim / sivil talep oranı: `1.0–4.0`
+- net değişim / sivil talep oranı: `-1.0–2.5`
+- kıtlık oranı: dengeyi teşhis eden rapor metriği; ithalat baskısı olan Venedik
+  ve erken Osmanlı gibi profillerin negatif fazı başarısızlık sayılmaz
+
+AI hareket/ikmal kararları `GameState.RegionMilitaryGrainProduction()` ve
+`GameState.EffectiveArmyGrainUpkeep()` üzerinden oyuncu ekonomi tick'iyle aynı
+üretim, sivil talep ve ordu bakım kurallarını kullanır. Bu parity için
+`internal/ai/grain_economy_test.go` regresyonu vardır.
 
 ### Kalıcı Stratejik Plan
 

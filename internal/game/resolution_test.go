@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -109,6 +110,444 @@ func TestCheckRebellionsClearsProductionOrdersForLostRegion(t *testing.T) {
 	}
 	if gs.ProductionQueue[0].RegionID != "other" {
 		t.Fatalf("yalnız diğer bölgenin üretimi kalmalıydı, queue=%+v", gs.ProductionQueue)
+	}
+}
+
+func TestCivilianGrainDemandRoundsUpAndIgnoresEmptyPopulation(t *testing.T) {
+	if got := civilianGrainDemand(&world.Region{Population: 40}); got != 2 {
+		t.Fatalf("40 nüfus için 2 tahıl bekleniyordu, got=%d", got)
+	}
+	if got := civilianGrainDemand(&world.Region{Population: 41}); got != 3 {
+		t.Fatalf("41 nüfus için yukarı yuvarlanan 3 tahıl bekleniyordu, got=%d", got)
+	}
+	if got := civilianGrainDemand(&world.Region{Population: 0}); got != 0 {
+		t.Fatalf("sıfır nüfus tüketim üretmemeli, got=%d", got)
+	}
+}
+
+func TestEffectiveArmyGrainUpkeepUsesMovementAndSiegeCoefficients(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 4},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"stationary": {ID: "stationary", Units: repeatedUnits("inf", 1, 100), MovePoints: 2, MaxMovePoints: 2},
+			"moving":     {ID: "moving", Units: repeatedUnits("inf", 1, 100), MovePoints: 1, MaxMovePoints: 2},
+			"garrison":   {ID: "garrison", IsGarrison: true, Units: repeatedUnits("inf", 1, 100), MovePoints: 2, MaxMovePoints: 2},
+			"attacker":   {ID: "attacker", RegionID: "fort", Units: repeatedUnits("inf", 1, 100), MovePoints: 0, MaxMovePoints: 2},
+			"defender":   {ID: "defender", RegionID: "fort", Units: repeatedUnits("inf", 1, 100), MovePoints: 2, MaxMovePoints: 2},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {RegionID: "fort", AttackerArmyID: "attacker", DefenderArmyID: "defender"},
+		},
+	}
+
+	want := map[army.ArmyID]int{
+		"stationary": 4,
+		"moving":     6,
+		"garrison":   3,
+		"attacker":   8,
+		"defender":   5,
+	}
+	for id, expected := range want {
+		if got := gs.EffectiveArmyGrainUpkeep(gs.Armies[id]); got != expected {
+			t.Fatalf("%s için efektif tahıl bakımı %d olmalıydı, got=%d", id, expected, got)
+		}
+	}
+}
+
+func TestApplySeasonEffectsPreservesMovementUsageForGrainEconomy(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"field": {
+				ID: "field", OwnerID: "player", RegionID: "home",
+				Units: repeatedUnits("inf", 1, 100), MovePoints: 1, MaxMovePoints: 2,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 4, MovementPoints: 2},
+		},
+	}
+
+	applySeasonEffects(gs)
+	if gs.Armies["field"].MovePoints != gs.Armies["field"].MaxMovePoints {
+		t.Fatalf("sezon başlangıcında hareket puanı yenilenmeliydi, got=%d/%d", gs.Armies["field"].MovePoints, gs.Armies["field"].MaxMovePoints)
+	}
+	applyEconomyTick(gs)
+
+	if got := gs.GrainEconomy["player"].ArmyUpkeep; got != 6 {
+		t.Fatalf("reset öncesi hareket kullanımı ekonomi hesabına taşınmalıydı, got=%d", got)
+	}
+}
+
+func TestGrainEconomyStatusUsesStockpileMonthsAndShortageLevels(t *testing.T) {
+	warning := grainEconomyStatus("player", 30, 0, 10, 0, 0)
+	if warning.MonthsOfSupply != 2 || warning.SupplyLevel != state.GrainSupplyWarning || warning.Shortage != 0 {
+		t.Fatalf("2 aylık stok uyarı seviyesinde olmalıydı, got=%+v", warning)
+	}
+
+	critical := grainEconomyStatus("player", 10, 0, 10, 0, 0)
+	if critical.MonthsOfSupply != 0 || critical.SupplyLevel != state.GrainSupplyCritical || critical.Shortage != 0 {
+		t.Fatalf("1 aydan az stok kritik seviyede olmalıydı, got=%+v", critical)
+	}
+
+	famine := grainEconomyStatus("player", 5, 0, 10, 0, 0)
+	if famine.Stockpile != 0 || famine.Shortage != 5 || famine.SupplyLevel != state.GrainSupplyFamine {
+		t.Fatalf("talep karşılanamadığında kıtlık durumu hatalı, got=%+v", famine)
+	}
+}
+
+func TestApplyEconomyTickBindsGrainSupplyToArmyMorale(t *testing.T) {
+	tests := []struct {
+		name       string
+		grain      int
+		morale     int
+		wantMorale int
+		wantDelta  int
+	}{
+		{name: "istikrar toparlar", grain: 100, morale: 40, wantMorale: 41, wantDelta: 1},
+		{name: "kıtlık düşürür", grain: 0, morale: 40, wantMorale: 34, wantDelta: -6},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := &state.GameState{
+				Month: 4,
+				Factions: map[faction.FactionID]*faction.Faction{
+					"player": {ID: "player", Grain: tt.grain},
+				},
+				Regions: map[world.RegionID]*world.Region{
+					"home": {ID: "home", OwnerID: "player", Population: 200},
+				},
+				Armies: map[army.ArmyID]*army.Army{
+					"field": {ID: "field", OwnerID: "player", RegionID: "home", Morale: tt.morale, Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+				},
+				UnitTypes: map[string]*army.UnitType{
+					"inf": {ID: "inf", GrainUpkeep: 0},
+				},
+			}
+
+			applyEconomyTick(gs)
+			status := gs.GrainEconomy["player"]
+			if got := gs.Armies["field"].Morale; got != tt.wantMorale {
+				t.Fatalf("ordu morali arz seviyesine göre güncellenmeli, got=%d want=%d status=%+v", got, tt.wantMorale, status)
+			}
+			if status.ArmyMoraleDelta != tt.wantDelta {
+				t.Fatalf("moral değişimi ekonomi raporuna yazılmalı, got=%d want=%d", status.ArmyMoraleDelta, tt.wantDelta)
+			}
+		})
+	}
+}
+
+func TestApplyEconomyTickUsesActiveGrainEventModifiers(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 0},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"farm": {
+				ID:              "farm",
+				OwnerID:         "player",
+				Population:      200,
+				BaseGrainOutput: 100,
+			},
+		},
+		ActiveRegionEvents: []state.RegionEventStatus{{
+			RegionID:               "farm",
+			TurnsLeft:              2,
+			GrainProductionPercent: -50,
+			GrainDemandPercent:     100,
+		}},
+	}
+
+	applyEconomyTick(gs)
+	status := gs.GrainEconomy["player"]
+	if status.Production != 50 || status.CivilianDemand != 20 || status.Stockpile != 30 {
+		t.Fatalf("ekonomi aktif olay üretim ve tüketim etkisini kullanmalıydı, got=%+v", status)
+	}
+}
+
+func TestGrainStorageCapacityUsesDemandAndMinimumReserve(t *testing.T) {
+	if got := grainStorageCapacity(20, 10, 0); got != 150 {
+		t.Fatalf("20 sivil + 10 ordu talebi için 150 kapasite bekleniyordu, got=%d", got)
+	}
+	if got := grainStorageCapacity(20, 10, 100); got != 250 {
+		t.Fatalf("100 kapasiteli ambar bonusu toplam kapasiteye eklenmeliydi, got=%d", got)
+	}
+	if got := grainStorageCapacity(1, 0, 0); got != grainMinimumStorageCapacity {
+		t.Fatalf("küçük devletlerde minimum depo kapasitesi korunmalıydı, got=%d", got)
+	}
+	if got := grainStorageCapacity(0, 0, 0); got != 0 {
+		t.Fatalf("talep yoksa kapasite hesabı sıfır olmalıydı, got=%d", got)
+	}
+	if got := grainSpoilage(100, 100); got != 0 {
+		t.Fatalf("kapasite sınırında bozulma olmamalıydı, got=%d", got)
+	}
+	if got := grainSpoilage(150, 100); got != 1 {
+		t.Fatalf("küçük stok fazlası en az 1 bozulma üretmeliydi, got=%d", got)
+	}
+}
+
+func TestApplyEconomyTickSpoilsExcessGrainSoftly(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 500},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", Population: 200},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.GrainEconomy["player"]
+	if status.StorageCapacity != 100 || status.Spoiled != 7 || status.Stockpile != 483 {
+		t.Fatalf("fazla tahıl yumuşak bozulma ile azalmalıydı, got=%+v", status)
+	}
+	if gs.Factions["player"].Grain != 483 {
+		t.Fatalf("fraksiyon stoku bozulma sonrası 483 olmalıydı, got=%d", gs.Factions["player"].Grain)
+	}
+}
+
+func TestApplyEconomyTickUsesGranaryStorageBonus(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 500},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", Population: 200, Buildings: []string{"granary"}},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"granary": {ID: "granary", StorageCapacity: 100, MaxPerRegion: 3},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.GrainEconomy["player"]
+	if status.StorageCapacity != 160 || status.Spoiled != 6 {
+		t.Fatalf("ambar kapasite bonusu bozulmayı azaltmalıydı, got=%+v", status)
+	}
+	if gs.Factions["player"].Grain != 484 {
+		t.Fatalf("ambar varken stok bozulma sonrası 484 olmalıydı, got=%d", gs.Factions["player"].Grain)
+	}
+}
+
+func TestApplyEconomyTickFundsAnnualPopulationGrowthFromGrainSurplus(t *testing.T) {
+	gs := &state.GameState{
+		Month: 11,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 160},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:           "home",
+				OwnerID:      "player",
+				Population:   200,
+				Satisfaction: 70,
+			},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.GrainEconomy["player"]
+	if got := gs.Regions["home"].Population; got != 202 {
+		t.Fatalf("stabil rezerv fazlası nüfusu 2 artırmalıydı, got=%d", got)
+	}
+	if got := gs.Factions["player"].Grain; got != 145 {
+		t.Fatalf("bozulma ve nüfus yatırımı sonrası tahıl 145 olmalıydı, got=%d", got)
+	}
+	if status.PopulationGrowth != 2 || status.GrowthGrainSpent != 4 {
+		t.Fatalf("nüfus büyümesi tahıl raporuna yazılmalıydı, got=%+v", status)
+	}
+	if status.NetChange != -14 || status.Stockpile != 145 {
+		t.Fatalf("nüfus yatırımı net değişim ve stoku güncellemeli, got=%+v", status)
+	}
+}
+
+func TestApplyEconomyTickFundsArmyReplenishmentOnlyFromCapacitySurplus(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 116},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", Population: 20},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a-first": {ID: "a-first", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+			"z-last":  {ID: "z-last", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 0},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Armies["a-first"].Units[0].CurrentHP; got != 70 {
+		t.Fatalf("ilk ordu faction/army ID sırasına göre 10 HP almalıydı, got=%d", got)
+	}
+	if got := gs.Armies["z-last"].Units[0].CurrentHP; got != 64 {
+		t.Fatalf("kalan kapasite fazlası ikinci orduya gitmeli, got=%d", got)
+	}
+	if got := gs.Factions["player"].Grain; got != 100 {
+		t.Fatalf("yenileme rezerv kapasite tabanının altına inmemeli, got=%d", got)
+	}
+	status := gs.GrainEconomy["player"]
+	if status.ReplenishmentHP != 14 || status.ReplenishmentGrainSpent != 14 {
+		t.Fatalf("yenileme miktarı ve tahıl harcaması raporlanmalıydı, got=%+v", status)
+	}
+	if status.NetChange != -15 || status.Stockpile != 100 {
+		t.Fatalf("yenileme net değişim ve stoku güncellemeli, got=%+v", status)
+	}
+}
+
+func TestApplyEconomyTickDoesNotFundArmyReplenishmentBelowReserveCapacity(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", Population: 20},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 0},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Armies["army"].Units[0].CurrentHP; got != 60 {
+		t.Fatalf("rezerv kapasitesi altındaki ordu ücretsiz ek yenileme almamalıydı, got=%d", got)
+	}
+	if status := gs.GrainEconomy["player"]; status.ReplenishmentGrainSpent != 0 {
+		t.Fatalf("rezerv kapasitesi altındayken tahıl harcanmamalıydı, got=%+v", status)
+	}
+}
+
+func TestApplyEconomyTickDoesNotFundPopulationGrowthDuringShortageOrOutsideAnnualMonth(t *testing.T) {
+	tests := []struct {
+		name         string
+		month        int
+		grain        int
+		satisfaction int
+		wantPop      int
+	}{
+		{name: "kıtlık", month: 11, grain: 5, satisfaction: 70, wantPop: 200},
+		{name: "yıllık ay değil", month: 10, grain: 160, satisfaction: 70, wantPop: 200},
+		{name: "isyan riski", month: 11, grain: 160, satisfaction: 20, wantPop: 200},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := &state.GameState{
+				Month: tt.month,
+				Factions: map[faction.FactionID]*faction.Faction{
+					"player": {ID: "player", Grain: tt.grain},
+				},
+				Regions: map[world.RegionID]*world.Region{
+					"home": {
+						ID:           "home",
+						OwnerID:      "player",
+						Population:   200,
+						Satisfaction: tt.satisfaction,
+					},
+				},
+				Armies:    map[army.ArmyID]*army.Army{},
+				UnitTypes: map[string]*army.UnitType{},
+			}
+
+			applyEconomyTick(gs)
+
+			if got := gs.Regions["home"].Population; got != tt.wantPop {
+				t.Fatalf("nüfus büyümemeli, got=%d", got)
+			}
+		})
+	}
+}
+
+func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Gold: 100, Grain: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:              "home",
+				OwnerID:         "player",
+				Population:      200,
+				Satisfaction:    50,
+				TaxRate:         50,
+				BaseGoldIncome:  100,
+				BaseGrainOutput: 0,
+			},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	report := applyEconomyTick(gs)
+	status := gs.GrainEconomy["player"]
+	if status.SupplyLevel != state.GrainSupplyCritical || status.MonthsOfSupply != 0 {
+		t.Fatalf("kritik tahıl durumu bekleniyordu, got=%+v", status)
+	}
+	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 145 {
+		t.Fatalf("kritik rezerv etkileri uygulanmadı, faction=%+v", gs.Factions["player"])
+	}
+	if gs.Regions["home"].Satisfaction != 48 {
+		t.Fatalf("kritik tahıl rezervi memnuniyeti 2 azaltmalıydı, got=%d", gs.Regions["home"].Satisfaction)
+	}
+	if report.PlayerGrainStatus.SupplyLevel != state.GrainSupplyCritical {
+		t.Fatalf("oyuncu tahıl raporu kritik durumu taşımadı, got=%+v", report.PlayerGrainStatus)
+	}
+}
+
+func TestApplyEconomyTickConsumesCivilianGrain(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:              "home",
+				OwnerID:         "player",
+				Population:      40,
+				BaseGrainOutput: 0,
+			},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Factions["player"].Grain; got != 98 {
+		t.Fatalf("40 nüfus 2 tahıl tüketmeliydi, got=%d", got)
 	}
 }
 
@@ -438,6 +877,74 @@ func TestApplyEconomyTickRegionalLogisticsAttritionEscalates(t *testing.T) {
 	}
 	if len(report2.PlayerLogisticsAlerts) != 1 || report2.PlayerLogisticsAlerts[0].Overload <= 0 {
 		t.Fatalf("ikinci tur da oyuncu lojistik uyarısı sürmeliydi, got=%+v", report2.PlayerLogisticsAlerts)
+	}
+}
+
+func TestRegionalLogisticsUsesProductionAfterCivilianDemand(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 0},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID: "home", OwnerID: "player", Population: 100,
+				BaseGrainOutput: 20,
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"field": {
+				ID: "field", OwnerID: "player", RegionID: "home",
+				Units: repeatedUnits("inf", 8, 100),
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 2},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.RegionLogistics["home"]
+	if status.LocalProduction != 15 {
+		t.Fatalf("yerel askeri üretim sivil talep sonrası 15 olmalıydı, got=%+v", status)
+	}
+	if status.Demand != 16 || status.Overload != 1 {
+		t.Fatalf("sivil talep sonrası bölgesel askeri açık hesaplanmalıydı, got=%+v", status)
+	}
+}
+
+func TestRegionalLogisticsReducesPortBufferUnderBlockade(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 20},
+			"enemy":  {ID: "enemy"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"port": {ID: "port", OwnerID: "player", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{Type: world.SettlementPort}}},
+			"sea":  {ID: "sea", IsSea: true},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("enemy", "player"): {FactionA: "enemy", FactionB: "player", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"field": {ID: "field", OwnerID: "player", RegionID: "port", Units: repeatedUnits("inf", 1, 100)},
+			"fleet": {ID: "fleet", OwnerID: "enemy", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":     {ID: "inf", GrainUpkeep: 2},
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.RegionLogistics["port"]
+	if status.BlockadePercent != 50 || status.SettlementBuffer != 3 {
+		t.Fatalf("liman tamponu abluka ile yarıya düşmeliydi, got=%+v", status)
 	}
 }
 

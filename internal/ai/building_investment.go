@@ -191,7 +191,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 	}
 	for _, armyRef := range aiSortedArmies(gs) {
 		if armyRef.OwnerID == string(fid) {
-			snapshot.GrainUpkeep += armyRef.TotalGrainUpkeep(gs.UnitTypes)
+			snapshot.GrainUpkeep += gs.EffectiveArmyGrainUpkeep(armyRef)
 		}
 	}
 	return snapshot

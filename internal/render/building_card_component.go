@@ -96,8 +96,8 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 
 		rect, imageRect, labelY := buildingCardLayout(panelX, startY, panelW, i)
 		spriteRect := imageRect
-		if buildingSheet != nil {
-			spriteRect = buildingSpriteDrawRect(bid, imageRect)
+		if sprite := buildingSpriteImage(bid); sprite != nil {
+			spriteRect = buildingSpriteDrawRect(sprite, imageRect)
 		}
 		cards = append(cards, buildingCardComponent{
 			ID:          bid,
@@ -122,7 +122,8 @@ func buildingCardLayout(panelX, startY, panelW float32, index int) (gameui.Rect,
 	pad := float32(panelPad)
 	availW := panelW - pad*2
 	slotW := availW / float32(cols)
-	cardH := buildingGridSpriteH + buildingGridNameH
+	spriteH := buildingGridSpriteHeight(panelW)
+	cardH := spriteH + buildingGridNameH
 	rowH := cardH + buildingGridRowGap
 
 	col := index % cols
@@ -132,9 +133,15 @@ func buildingCardLayout(panelX, startY, panelW float32, index int) (gameui.Rect,
 	w := slotW - 3
 
 	rect := gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(cardH)}
-	imageRect := gameui.Rect{X: rect.X, Y: rect.Y, W: rect.W, H: float64(buildingGridSpriteH)}
+	imageRect := gameui.Rect{X: rect.X, Y: rect.Y, W: rect.W, H: float64(spriteH)}
 	labelY := imageRect.Y + imageRect.H + 3
 	return rect, imageRect, labelY
+}
+
+func buildingGridSpriteHeight(panelW float32) float32 {
+	const cols = 3
+	pad := float32(panelPad)
+	return (panelW-pad*2)/float32(cols) - 3
 }
 
 func (c buildingCardComponent) HitTest(mx, my float64) bool {
@@ -166,20 +173,19 @@ func (c buildingCardComponent) Draw(screen *ebiten.Image) {
 		1, color.RGBA{210, 210, 210, 170}, false,
 	)
 
-	if buildingSheet != nil {
-		c.drawSprite(screen, isBuilt)
+	if sprite := buildingSpriteImage(c.ID); sprite != nil {
+		c.drawSprite(screen, sprite, isBuilt)
 	}
 
-	nameCol := color.RGBA{75, 65, 50, 220}
-	switch {
-	case isBuilt:
-		nameCol = ColorGold
-	case isQueued:
-		nameCol = color.RGBA{210, 190, 120, 230}
-	case c.CanAfford:
-		nameCol = color.RGBA{170, 145, 85, 230}
-	}
-	DrawTextCentered(screen, c.Name, c.Rect.X+c.Rect.W/2, c.LabelY, FaceSmall, nameCol)
+	vector.FillRect(screen,
+		float32(c.Rect.X),
+		float32(c.ImageRect.Y+c.ImageRect.H),
+		float32(c.Rect.W),
+		buildingGridNameH,
+		color.RGBA{218, 178, 64, 255},
+		false,
+	)
+	DrawTextCentered(screen, c.Name, c.Rect.X+c.Rect.W/2, c.LabelY, FaceSmall, color.RGBA{24, 20, 12, 255})
 
 	if isBuilt {
 		c.drawLevelBadge(screen, isMaxLevel)
@@ -189,11 +195,10 @@ func (c buildingCardComponent) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (c buildingCardComponent) drawSprite(screen *ebiten.Image, isBuilt bool) {
-	r := buildingSpriteRect(c.ID, buildingSheet)
-	sub := buildingSheet.SubImage(r).(*ebiten.Image)
+func (c buildingCardComponent) drawSprite(screen, sprite *ebiten.Image, isBuilt bool) {
 	op := &ebiten.DrawImageOptions{}
-	scale := c.SpriteRect.W / float64(r.Dx())
+	bounds := sprite.Bounds()
+	scale := c.SpriteRect.W / float64(bounds.Dx())
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(c.SpriteRect.X, c.SpriteRect.Y)
 	if !isBuilt {
@@ -203,22 +208,22 @@ func (c buildingCardComponent) drawSprite(screen *ebiten.Image, isBuilt bool) {
 			op.ColorScale.Scale(0.35, 0.35, 0.35, 0.85)
 		}
 	}
-	screen.DrawImage(sub, op)
+	screen.DrawImage(sprite, op)
 }
 
-func buildingSpriteDrawRect(bid string, imageRect gameui.Rect) gameui.Rect {
-	if buildingSheet == nil {
+func buildingSpriteDrawRect(sprite *ebiten.Image, imageRect gameui.Rect) gameui.Rect {
+	if sprite == nil {
 		return imageRect
 	}
-	r := buildingSpriteRect(bid, buildingSheet)
+	bounds := sprite.Bounds()
 	fitW := imageRect.W - 2
 	fitH := imageRect.H - 2
-	scale := fitW / float64(r.Dx())
-	if hScale := fitH / float64(r.Dy()); hScale < scale {
+	scale := fitW / float64(bounds.Dx())
+	if hScale := fitH / float64(bounds.Dy()); hScale < scale {
 		scale = hScale
 	}
-	drawW := float64(r.Dx()) * scale
-	drawH := float64(r.Dy()) * scale
+	drawW := float64(bounds.Dx()) * scale
+	drawH := float64(bounds.Dy()) * scale
 	return gameui.Rect{
 		X: imageRect.X + imageRect.W/2 - drawW/2,
 		Y: imageRect.Y + imageRect.H/2 - drawH/2,

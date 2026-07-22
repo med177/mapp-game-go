@@ -664,7 +664,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	if gs.ScenarioPath != "" {
 		ActiveScenarioPath = gs.ScenarioPath
 		// Senaryo değişince asset cache'lerini sıfırla
-		buildingSheetLoaded = false
+		resetBuildingSpriteCache()
 		miniMapLoaded = false
 		armySpritesLoaded = false
 		unitSprites = nil

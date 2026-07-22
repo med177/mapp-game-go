@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-07-18
-related: [world/regions, architecture/game-loop, architecture/render-pipeline]
+last_updated: 2026-07-22
+related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
 # Tarihsel Olaylar Sistemi
@@ -32,7 +32,12 @@ Tetikleme kriterleri:
 
 ## Etki Modeli
 
-Base event etkisi eski alanlarla (`target`, `sat_delta`, `gold_delta`, `grain_delta`, `army_hp_mod`, `affected_faction`) tutulur.
+Base event etkisi eski alanlarla (`target`, `sat_delta`, `gold_delta`, `grain_delta`, `army_hp_mod`, `affected_faction`) tutulur. Hasat/kıtlık/kuraklık gibi bölgesel tahıl olayları ayrıca aktif olay süresi boyunca yüzde modifiyeri taşıyabilir:
+
+- `grain_production_percent`: bölgenin efektif tahıl üretimine eklenen yüzde puan
+- `grain_demand_percent`: sivil tahıl talebine eklenen yüzde puan
+
+Bu alanlar `ActiveRegionEvents` içindeki `RegionEventStatus` kaydına kopyalanır. `GameState.RegionProductionSummary()`, ekonomi tick'i, bölgesel ordu lojistiği ve AI aynı aktif kayıtları okur; `TurnsLeft` sıfırlandığında etki kendiliğinden kalkar. Böylece olayın anlık `grain_delta` etkisi ile birkaç tur süren üretim/tüketim baskısı birbirinden ayrılır. `drought`, `bad_harvest`, `famine` ve `harvest` adlandırmaları event ikon tipine otomatik bağlanır.
 
 Yeni choice katmanı:
 

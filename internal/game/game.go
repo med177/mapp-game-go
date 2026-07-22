@@ -323,6 +323,8 @@ func (g *Game) Update() error {
 			g.improveRelations(action.TargetFaction)
 		case render.ActionSendGift:
 			g.sendGift(action.TargetFaction)
+		case render.ActionGrainAid:
+			g.applyGrainAid(action.TargetRegion)
 		case render.ActionProposeAlliance:
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
@@ -347,6 +349,10 @@ func (g *Game) Update() error {
 			g.proposeTrade(action.TargetFaction)
 		case render.ActionOneTimeTrade:
 			g.oneTimeTrade(action.TargetFaction, action.BuildingID, action.Delta)
+		case render.ActionEmergencyGrainSale:
+			g.emergencyGrainSale(action.Delta)
+		case render.ActionToggleAutoGrainExport:
+			g.toggleAutoGrainExport()
 		case render.ActionSave:
 			g.saveToSlot("quicksave", true, "Hızlı kayıt alındı.")
 		case render.ActionLoad:
@@ -866,6 +872,7 @@ func (g *Game) resolveTurn() {
 	}
 
 	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
+	g.showGrainEconomyAlert(economyReport.PlayerGrainStatus)
 	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
 	g.handleCapitalMoveProgress(capitalMoveUpdates)
 
@@ -947,11 +954,12 @@ func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus)
 			regionName, alert.Capacity, alert.Demand, alert.ArmyCount,
 		)
 		detail := fmt.Sprintf(
-			"%s bölgesinde yerel tahıl %d, depo/yerleşim tamponu %d, stok desteği %d kaldı. Aşım: %d. Etkilenen birlik: %d, kayıp birlik: %d, toplam HP kaybı: %d.",
+			"%s bölgesinde yerel tahıl %d, depo/yerleşim tamponu %d, stok desteği %d kaldı. Abluka: %%%d. Aşım: %d. Etkilenen birlik: %d, kayıp birlik: %d, toplam HP kaybı: %d.",
 			regionName,
 			alert.LocalProduction,
 			alert.SettlementBuffer,
 			alert.ReserveSupport,
+			alert.BlockadePercent,
 			alert.Overload,
 			alert.UnitsAffected,
 			alert.UnitsLost,
@@ -961,6 +969,61 @@ func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus)
 		if alert.PeakOverloadTurns >= 2 {
 			g.renderer.ShowCombatResult(regionName + ": ordular ikmal baskısı altında zayiat veriyor")
 		}
+	}
+}
+
+func (g *Game) showGrainEconomyAlert(status state.GrainEconomyStatus) {
+	if g == nil || g.renderer == nil || status.FactionID == "" || (status.SupplyLevel == state.GrainSupplyStable && status.StrategicDemand <= 0 && status.Spoiled <= 0 && status.ReplenishmentGrainSpent <= 0 && status.GrowthGrainSpent <= 0 && status.AutoExportSold <= 0 && status.ArmyMoraleDelta == 0) {
+		return
+	}
+
+	levelLabel := "tahıl rezervi azalıyor"
+	if status.SupplyLevel == state.GrainSupplyStable && status.Spoiled > 0 {
+		levelLabel = "tahıl stok fazlası bozuluyor"
+	}
+	if status.SupplyLevel == state.GrainSupplyCritical {
+		levelLabel = "tahıl rezervi kritik"
+	} else if status.SupplyLevel == state.GrainSupplyFamine {
+		levelLabel = "tahıl kıtlığı yaşanıyor"
+	} else if status.ArmyMoraleDelta > 0 {
+		levelLabel = "ordular tahılla moral topluyor"
+	} else if status.GrowthGrainSpent > 0 {
+		levelLabel = "tahıl nüfus büyümesine yatırılıyor"
+	} else if status.ReplenishmentGrainSpent > 0 {
+		levelLabel = "tahıl orduların yenilenmesine harcanıyor"
+	} else if status.AutoExportSold > 0 {
+		levelLabel = "tahıl fazlası otomatik ihraç ediliyor"
+	} else if status.StrategicDemand > 0 {
+		levelLabel = "tahıl ithalatı gerekli"
+	}
+	monthsLabel := "belirsiz"
+	if status.MonthsOfSupply >= 0 {
+		monthsLabel = fmt.Sprintf("%d ay", status.MonthsOfSupply)
+	}
+	msg := fmt.Sprintf("%s: %s (%s stok)", g.factionNameTR(string(status.FactionID)), levelLabel, monthsLabel)
+	detail := fmt.Sprintf(
+		"Üretim: %d tahıl, sivil tüketim: %d, ordu bakımı: %d, ordu morali: %+d, ordu yenileme: +%d HP (%d tahıl), nüfus büyümesi: +%d (%d tahıl), otomatik ihracat: %d tahıl (+%d altın), stratejik ithalat ihtiyacı: %d/tur, toplam talep: %d, net değişim: %+d, stok: %d/%d, bozulan: %d, açık: %d.",
+		status.Production,
+		status.CivilianDemand,
+		status.ArmyUpkeep,
+		status.ArmyMoraleDelta,
+		status.ReplenishmentHP,
+		status.ReplenishmentGrainSpent,
+		status.PopulationGrowth,
+		status.GrowthGrainSpent,
+		status.AutoExportSold,
+		status.AutoExportGold,
+		status.StrategicDemand,
+		status.TotalDemand,
+		status.NetChange,
+		status.Stockpile,
+		status.StorageCapacity,
+		status.Spoiled,
+		status.Shortage,
+	)
+	g.renderer.AddEventDetail("[TAHIL] "+msg, detail)
+	if status.SupplyLevel >= state.GrainSupplyCritical {
+		g.renderer.ShowCombatResult(msg)
 	}
 }
 
@@ -1742,6 +1805,31 @@ func (g *Game) sendGift(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) applyGrainAid(regionID world.RegionID) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	if reason := g.gs.GrainAidBlockReason(regionID); reason != "" {
+		g.renderer.ShowCombatResult(reason)
+		return
+	}
+	region := g.gs.Regions[regionID]
+	before := region.Satisfaction
+	if !g.gs.ApplyGrainAid(regionID) {
+		g.renderer.ShowCombatResult("Tahıl yardımı uygulanamadı.")
+		return
+	}
+	regionName := string(regionID)
+	if region.NameTR != "" {
+		regionName = region.NameTR
+	} else if region.Name != "" {
+		regionName = region.Name
+	}
+	msg := fmt.Sprintf("%s bölgesine tahıl yardımı yapıldı.", regionName)
+	g.renderer.ShowCombatResult(msg)
+	g.renderer.AddEventDetail("[TAHIL] "+msg, fmt.Sprintf("%d tahıl harcandı; memnuniyet %d → %d.", state.GrainAidCost, before, region.Satisfaction))
+}
+
 func (g *Game) offerVassalization(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionOfferVassalization)
 	g.renderer.ShowCombatResult(result.Message)
@@ -1867,6 +1955,30 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 		}
 	}
 	g.renderer.ShowCombatResult("Pazar işlemi başarısız.")
+}
+
+func (g *Game) emergencyGrainSale(amount int) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	sold, gold := g.gs.ApplyEmergencyGrainSale(amount)
+	if sold <= 0 {
+		g.renderer.ShowCombatResult("Acil satış için depo kapasitesini aşan tahıl yok.")
+		return
+	}
+	g.renderer.ShowCombatResult(fmt.Sprintf("%d tahıl acil pazarda satıldı. +%d altın.", sold, gold))
+}
+
+func (g *Game) toggleAutoGrainExport() {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	g.gs.AutoGrainExport = !g.gs.AutoGrainExport
+	if g.gs.AutoGrainExport {
+		g.renderer.ShowCombatResult("Otomatik tahıl ihracatı açıldı.")
+		return
+	}
+	g.renderer.ShowCombatResult("Otomatik tahıl ihracatı kapatıldı.")
 }
 
 func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) bool {

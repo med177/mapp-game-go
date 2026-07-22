@@ -26,6 +26,36 @@ var BaseGoldValue = map[GoodType]int{
 	GoodCloth:  8,
 }
 
+// EmergencySalePricePercent acil pazar satışında güncel fiyatın uygulanan oranıdır.
+const EmergencySalePricePercent = 70
+
+// AutomaticExportPricePercent otomatik tahıl ihracatında uygulanan düşük fiyat oranıdır.
+const AutomaticExportPricePercent = 60
+
+// EmergencySaleUnitPrice düşük fiyatlı doğrudan pazar satışının birim fiyatını döner.
+func EmergencySaleUnitPrice(marketPrice int) int {
+	if marketPrice <= 0 {
+		return 0
+	}
+	price := marketPrice * EmergencySalePricePercent / 100
+	if price < 1 {
+		price = 1
+	}
+	return price
+}
+
+// AutomaticExportUnitPrice otomatik ihracatın düşük birim fiyatını döner.
+func AutomaticExportUnitPrice(marketPrice int) int {
+	if marketPrice <= 0 {
+		return 0
+	}
+	price := marketPrice * AutomaticExportPricePercent / 100
+	if price < 1 {
+		price = 1
+	}
+	return price
+}
+
 // CurrentMarketPrice tur başı güncellenen dinamik piyasa fiyatlarını tutar.
 // Fiyatlar, tüm fraksiyonların toplam stok miktarına göre dalgalanır.
 type CurrentMarketPrice map[GoodType]int
@@ -35,6 +65,16 @@ type CurrentMarketPrice map[GoodType]int
 // Arz arttıkça fiyat düşer, arz azaldıkça fiyat yükselir.
 // Minimum fiyat basePrice'ın %25'i, maksimum %300'ü.
 func ComputeMarketPrices(factions map[faction.FactionID]*faction.Faction) CurrentMarketPrice {
+	return ComputeMarketPricesWithStrategicDemand(factions, nil)
+}
+
+// ComputeMarketPricesWithStrategicDemand, kıtlık yaşayan fraksiyonların
+// ithalat ihtiyacını tahıl fiyatına ek talep olarak yansıtır. demandByFaction
+// değerleri fraksiyonun üç aylık rezerv hedefine kalan tahıl açığıdır.
+func ComputeMarketPricesWithStrategicDemand(
+	factions map[faction.FactionID]*faction.Faction,
+	demandByFaction map[faction.FactionID]int,
+) CurrentMarketPrice {
 	prices := make(CurrentMarketPrice, len(BaseGoldValue))
 
 	// Toplam arzı hesapla (tüm fraksiyonların stokları)
@@ -67,6 +107,15 @@ func ComputeMarketPrices(factions map[faction.FactionID]*faction.Faction) Curren
 
 		// Talep faktörü: her aktif fraksiyon ~10 birim talep eder (varsayılan)
 		demandFactor := float64(activeFactions * 10)
+		if good == GoodGrain {
+			for _, demand := range demandByFaction {
+				if demand > 0 {
+					// Sinyali yumuşat: her 5 tahıl açık talebi fiyat talebine
+					// bir birim ekler; fiyat yine mevcut alt/üst sınırlara tabidir.
+					demandFactor += float64(demand / 5)
+				}
+			}
+		}
 		supplyFactor := float64(supply)
 
 		// Fiyat = basePrice * (demandFactor / supplyFactor)
@@ -105,9 +154,14 @@ type TradeRoute struct {
 	// MerchantAmountBonus save'e yazılmaz; her ekonomi çözümünde filoların
 	// aktif görevi ve gerçek deniz konumundan yeniden hesaplanır.
 	MerchantAmountBonus int `json:"-"`
+
+	// BlockadePercent düşman savaş filolarının rota hacmine uyguladığı runtime
+	// kesintidir; save'e yazılmaz ve her ekonomi çözümünde yeniden hesaplanır.
+	BlockadePercent int `json:"-"`
 }
 
 const MaxMerchantAmountBonusPerRoute = 2
+const MaxTradeRouteBlockadePercent = 100
 
 // TradeRouteAssignmentKey rota yeniden üretildiğinde de değişmeyen görev anahtarıdır.
 func TradeRouteAssignmentKey(fromFactionID, toFactionID string) string {
@@ -136,7 +190,15 @@ func (t *TradeRoute) EffectiveAmountPerTurn() int {
 	if bonus > MaxMerchantAmountBonusPerRoute {
 		bonus = MaxMerchantAmountBonusPerRoute
 	}
-	return t.AmountPerTurn + bonus
+	amount := t.AmountPerTurn + bonus
+	blockade := t.BlockadePercent
+	if blockade < 0 {
+		blockade = 0
+	}
+	if blockade > MaxTradeRouteBlockadePercent {
+		blockade = MaxTradeRouteBlockadePercent
+	}
+	return amount * (MaxTradeRouteBlockadePercent - blockade) / MaxTradeRouteBlockadePercent
 }
 
 // GoldEarned bu güzergahtan tur başına altın kazancını döner (satan taraf için).
@@ -232,9 +294,24 @@ func TransferGoods(
 	}
 
 	price := prices[good]
-	totalCost := amount * price
+	return TransferGoodsAtUnitPrice(factions, fromID, toID, good, amount, price)
+}
 
-	if dst.Gold < totalCost {
+// TransferGoodsAtUnitPrice iki fraksiyon arasında belirli birim fiyatla mal takası yapar.
+// Otomatik ihracat gibi piyasa dışı indirimli işlemler bu ortak transfer yolunu kullanır.
+func TransferGoodsAtUnitPrice(
+	factions map[faction.FactionID]*faction.Faction,
+	fromID, toID faction.FactionID,
+	good GoodType,
+	amount, price int,
+) bool {
+	src := factions[fromID]
+	dst := factions[toID]
+	if src == nil || dst == nil || amount <= 0 || price <= 0 {
+		return false
+	}
+	totalCost := amount * price
+	if getGoodAmount(src, good) < amount || dst.Gold < totalCost {
 		return false
 	}
 

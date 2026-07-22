@@ -135,6 +135,20 @@ func TestArmyCommanderRoundTrip(t *testing.T) {
 	}
 }
 
+func TestArmyMoraleRoundTrip(t *testing.T) {
+	original := map[army.ArmyID]*army.Army{
+		"army_1": {
+			ID: "army_1", OwnerID: "player", RegionID: "r1", Morale: 47,
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 90}},
+		},
+	}
+
+	restored := restoreArmiesFromSaveState(convertArmiesToSaveState(original))
+	if got := restored["army_1"].Morale; got != 47 {
+		t.Fatalf("ordu morali compact save/load sonrasında korunmalıydı, got=%d", got)
+	}
+}
+
 func TestArmyMerchantTradeAssignmentRoundTrip(t *testing.T) {
 	original := map[army.ArmyID]*army.Army{
 		"merchant_1": {
@@ -231,6 +245,27 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 	}
 	if got == original || &got.TargetRegionIDs[0] == &original.TargetRegionIDs[0] || &got.AnnexRegionIDs[0] == &original.AnnexRegionIDs[0] {
 		t.Fatal("AI plan save/load kopyası bağımsız olmalı")
+	}
+}
+
+func TestAutoGrainExportPreferenceRoundTrip(t *testing.T) {
+	saved := campaignSaveState{ScenarioID: "test", PlayerFactionID: "player", AutoGrainExport: true}
+	encoding, payload, err := encodeCompressedStatePayload(saved)
+	if err != nil {
+		t.Fatalf("otomatik ihracat tercihi encode edilemedi: %v", err)
+	}
+	decodedBytes, err := decodeCompressedStatePayload(encoding, payload)
+	if err != nil {
+		t.Fatalf("otomatik ihracat tercihi decode edilemedi: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(decodedBytes)
+	if err != nil {
+		t.Fatalf("otomatik ihracat tercihi save state'e parse edilemedi: %v", err)
+	}
+	restored := &state.GameState{}
+	applyCampaignSaveState(restored, decoded)
+	if !restored.AutoGrainExport {
+		t.Fatal("otomatik ihracat tercihi save/load sonrasında açık kalmalıydı")
 	}
 }
 

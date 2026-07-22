@@ -31,20 +31,22 @@ type RelationRequirement struct {
 }
 
 type Effect struct {
-	Target              string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
-	SatDelta            int              `json:"sat_delta,omitempty"`
-	GoldDelta           int              `json:"gold_delta,omitempty"`
-	GrainDelta          int              `json:"grain_delta,omitempty"`
-	ArmyHPMod           float64          `json:"army_hp_mod,omitempty"`        // 1.0 = değişmez
-	AffectedFaction     string           `json:"affected_faction,omitempty"`   // specific_faction için
-	RelationDeltaAll    int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
-	CompleteTechs       []string         `json:"complete_techs,omitempty"`
-	StartResearchTech   string           `json:"start_research_tech,omitempty"`
-	Relations           []RelationEffect `json:"relations,omitempty"`
-	SetFlags            []string         `json:"set_flags,omitempty"`
-	ClearFlags          []string         `json:"clear_flags,omitempty"`
-	CapitalSettlementID string           `json:"capital_settlement_id,omitempty"`
-	CapitalMoveTurns    int              `json:"capital_move_turns,omitempty"`
+	Target                 string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
+	SatDelta               int              `json:"sat_delta,omitempty"`
+	GoldDelta              int              `json:"gold_delta,omitempty"`
+	GrainDelta             int              `json:"grain_delta,omitempty"`
+	ArmyHPMod              float64          `json:"army_hp_mod,omitempty"`              // 1.0 = değişmez
+	GrainProductionPercent int              `json:"grain_production_percent,omitempty"` // aktif olay süresince üretim etkisi
+	GrainDemandPercent     int              `json:"grain_demand_percent,omitempty"`     // aktif olay süresince sivil tüketim etkisi
+	AffectedFaction        string           `json:"affected_faction,omitempty"`         // specific_faction için
+	RelationDeltaAll       int              `json:"relation_delta_all,omitempty"`       // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	CompleteTechs          []string         `json:"complete_techs,omitempty"`
+	StartResearchTech      string           `json:"start_research_tech,omitempty"`
+	Relations              []RelationEffect `json:"relations,omitempty"`
+	SetFlags               []string         `json:"set_flags,omitempty"`
+	ClearFlags             []string         `json:"clear_flags,omitempty"`
+	CapitalSettlementID    string           `json:"capital_settlement_id,omitempty"`
+	CapitalMoveTurns       int              `json:"capital_move_turns,omitempty"`
 }
 
 type Choice struct {
@@ -57,16 +59,18 @@ type Choice struct {
 
 // Event bir tarihsel olayı tanımlar.
 type Event struct {
-	ID          string  `json:"id"`
-	NameTR      string  `json:"name_tr"`
-	DescTR      string  `json:"desc_tr"`
-	Probability float64 `json:"probability"` // 0 = sadece tarihsel tetiklenme
-	MinTurn     int     `json:"min_turn"`    // en erken tur (rastgele olaylar için)
-	Target      string  `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
-	SatDelta    int     `json:"sat_delta"`
-	GoldDelta   int     `json:"gold_delta"`
-	GrainDelta  int     `json:"grain_delta"`
-	ArmyHPMod   float64 `json:"army_hp_mod"` // 1.0 = değişmez
+	ID                     string  `json:"id"`
+	NameTR                 string  `json:"name_tr"`
+	DescTR                 string  `json:"desc_tr"`
+	Probability            float64 `json:"probability"` // 0 = sadece tarihsel tetiklenme
+	MinTurn                int     `json:"min_turn"`    // en erken tur (rastgele olaylar için)
+	Target                 string  `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
+	SatDelta               int     `json:"sat_delta"`
+	GoldDelta              int     `json:"gold_delta"`
+	GrainDelta             int     `json:"grain_delta"`
+	ArmyHPMod              float64 `json:"army_hp_mod"` // 1.0 = değişmez
+	GrainProductionPercent int     `json:"grain_production_percent,omitempty"`
+	GrainDemandPercent     int     `json:"grain_demand_percent,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
@@ -154,18 +158,20 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 
 func (e *Event) BaseEffect() Effect {
 	return Effect{
-		Target:              e.Target,
-		SatDelta:            e.SatDelta,
-		GoldDelta:           e.GoldDelta,
-		GrainDelta:          e.GrainDelta,
-		ArmyHPMod:           e.ArmyHPMod,
-		AffectedFaction:     e.AffectedFaction,
-		RelationDeltaAll:    0,
-		CompleteTechs:       nil,
-		StartResearchTech:   "",
-		Relations:           nil,
-		CapitalSettlementID: "",
-		CapitalMoveTurns:    0,
+		Target:                 e.Target,
+		SatDelta:               e.SatDelta,
+		GoldDelta:              e.GoldDelta,
+		GrainDelta:             e.GrainDelta,
+		ArmyHPMod:              e.ArmyHPMod,
+		GrainProductionPercent: e.GrainProductionPercent,
+		GrainDemandPercent:     e.GrainDemandPercent,
+		AffectedFaction:        e.AffectedFaction,
+		RelationDeltaAll:       0,
+		CompleteTechs:          nil,
+		StartResearchTech:      "",
+		Relations:              nil,
+		CapitalSettlementID:    "",
+		CapitalMoveTurns:       0,
 	}
 }
 
@@ -187,8 +193,8 @@ func Apply(gs *state.GameState, e *Event) {
 	if gs == nil || e == nil {
 		return
 	}
-	applyEffect(gs, e.BaseEffect())
-	addRegionEventStatus(gs, e, nil)
+	targetRegionID := applyEffect(gs, e.BaseEffect())
+	addRegionEventStatus(gs, e, nil, targetRegionID)
 }
 
 func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
@@ -197,8 +203,8 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	}
 	choice := e.Choices[idx]
 	eff := choiceEffect(e, choice)
-	applyEffect(gs, eff)
-	addRegionEventStatus(gs, e, &choice)
+	targetRegionID := applyEffect(gs, eff)
+	addRegionEventStatus(gs, e, &choice, targetRegionID)
 	return choice, true
 }
 
@@ -491,12 +497,23 @@ func choiceEffect(e *Event, c Choice) Effect {
 	return eff
 }
 
+func effectiveEventEffect(e *Event, choice *Choice) Effect {
+	if e == nil {
+		return Effect{}
+	}
+	if choice == nil {
+		return e.BaseEffect()
+	}
+	return choiceEffect(e, *choice)
+}
+
 func eventFlagKey(flag string) string {
 	return "flag:" + flag
 }
 
-func applyEffect(gs *state.GameState, eff Effect) {
+func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 	target := eff.Target
+	var targetRegionID world.RegionID
 	switch target {
 
 	case "player_faction":
@@ -515,7 +532,7 @@ func applyEffect(gs *state.GameState, eff Effect) {
 			}
 		}
 		if len(candidates) == 0 {
-			return
+			return ""
 		}
 		sort.Slice(candidates, func(i, j int) bool { return candidates[i] < candidates[j] })
 		rid := candidates[rand.Intn(len(candidates))]
@@ -526,6 +543,7 @@ func applyEffect(gs *state.GameState, eff Effect) {
 				f.Grain = max0(f.Grain + eff.GrainDelta)
 			}
 		}
+		targetRegionID = rid
 
 	case "all_armies":
 		if eff.ArmyHPMod > 0 && eff.ArmyHPMod < 1.0 {
@@ -545,6 +563,7 @@ func applyEffect(gs *state.GameState, eff Effect) {
 		}
 	}
 	applyFlags(gs, eff)
+	return targetRegionID
 }
 
 // applyToFaction bir fraksiyonun tüm bölgelerine ve hazinesine olay etkilerini uygular.
@@ -717,19 +736,20 @@ func max0(v int) int {
 
 // addRegionEventStatus event uygulandıktan sonra etkilenen bölgelere
 // harita üzerinde ikon gösterimi için RegionEventStatus kaydı ekler.
-func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice) {
+func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice, targetRegionID world.RegionID) {
 	if gs == nil || e == nil {
 		return
 	}
 
 	eventType := eventIconType(e)
+	effect := effectiveEventEffect(e, choice)
 	labelTR := e.NameTR
 	if choice != nil {
 		labelTR = e.NameTR + " — " + choice.LabelTR
 	}
 
 	// Hangi bölgelerin etkilendiğini belirle
-	affectedRegions := affectedRegionIDs(gs, e, choice)
+	affectedRegions := affectedRegionIDs(gs, e, choice, targetRegionID)
 
 	// Her etkilenen bölge için status kaydı ekle (3-6 tur görünür)
 	turnsVisible := 4
@@ -753,11 +773,13 @@ func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice) {
 		}
 
 		gs.ActiveRegionEvents = append(gs.ActiveRegionEvents, state.RegionEventStatus{
-			EventID:   e.ID,
-			RegionID:  rid,
-			TurnsLeft: turnsVisible,
-			Type:      eventType,
-			LabelTR:   labelTR,
+			EventID:                e.ID,
+			RegionID:               rid,
+			TurnsLeft:              turnsVisible,
+			Type:                   eventType,
+			LabelTR:                labelTR,
+			GrainProductionPercent: effect.GrainProductionPercent,
+			GrainDemandPercent:     effect.GrainDemandPercent,
 		})
 	}
 }
@@ -771,8 +793,11 @@ func eventIconType(e *Event) string {
 	if strings.Contains(id, "plague") || strings.Contains(name, "veba") || strings.Contains(name, "salgın") || strings.Contains(desc, "veba") || strings.Contains(desc, "salgın") {
 		return "plague"
 	}
-	if strings.Contains(id, "famine") || strings.Contains(name, "kıtlık") || strings.Contains(desc, "kıtlık") {
+	if strings.Contains(id, "famine") || strings.Contains(id, "drought") || strings.Contains(id, "bad_harvest") || strings.Contains(name, "kıtlık") || strings.Contains(name, "kurak") || strings.Contains(name, "kötü hasat") || strings.Contains(desc, "kıtlık") || strings.Contains(desc, "kurak") {
 		return "famine"
+	}
+	if strings.Contains(id, "harvest") || strings.Contains(name, "hasat") {
+		return "blessing"
 	}
 	if strings.Contains(id, "revolt") || strings.Contains(name, "isyan") || strings.Contains(desc, "isyan") || strings.Contains(name, "taht") || strings.Contains(name, "krizi") {
 		return "revolt"
@@ -784,7 +809,7 @@ func eventIconType(e *Event) string {
 }
 
 // affectedRegionIDs event ve choice'tan etkilenen bölge ID'lerini döner.
-func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.RegionID {
+func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice, targetRegionID world.RegionID) []world.RegionID {
 	if gs == nil || e == nil {
 		return nil
 	}
@@ -801,6 +826,10 @@ func affectedRegionIDs(gs *state.GameState, e *Event, choice *Choice) []world.Re
 	}
 
 	switch target {
+	case "random_region":
+		if targetRegionID != "" {
+			return []world.RegionID{targetRegionID}
+		}
 	case "player_faction":
 		return factionOwnerRegions(gs, string(gs.PlayerFactionID))
 	case "specific_faction":

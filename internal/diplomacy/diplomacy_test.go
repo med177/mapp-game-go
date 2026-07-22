@@ -360,6 +360,19 @@ func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
 	}
 }
 
+func TestBuildTradeRoutePrioritizesGrainForStrategicDemand(t *testing.T) {
+	gs := testGameState()
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"a": {FactionID: "a", StorageCapacity: 100},
+		"b": {FactionID: "b", TotalDemand: 40},
+	}
+
+	route := buildTradeRoute(gs, "a", "b")
+	if route.Good != economy.GoodGrain {
+		t.Fatalf("rezerv açığı olan hedef için kaynak tahıl rotası kurmalıydı, route=%+v", route)
+	}
+}
+
 func TestEnsureTradeRoutesForActiveRelationsRemovesStaleEliminatedRoutes(t *testing.T) {
 	gs := testGameState()
 	enableABLandTrade(gs)

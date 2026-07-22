@@ -20,6 +20,8 @@
     "target": "player_faction",
     "gold_delta": -65,
     "grain_delta": -45,
+    "grain_production_percent": -35,
+    "grain_demand_percent": 15,
     "sat_delta": -12,
     "army_hp_mod": 1
   },

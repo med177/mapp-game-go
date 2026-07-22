@@ -1,8 +1,8 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-20
-related: [game-loop, render-pipeline, shape-editor]
+last_updated: 2026-07-22
+related: [game-loop, systems/events, systems/economy, render-pipeline, shape-editor]
 ---
 
 # State Yönetimi
@@ -49,6 +49,10 @@ type GameState struct {
     AvailableVictories []VictoryOptionDef  // oyuncu fraksiyonuna filtrelenmiş görünür liste
     RegionLogistics    map[RegionID]RegionLogisticsStatus
     ArmyLogistics      map[ArmyID]ArmyLogisticsStatus
+    GrainEconomy       map[FactionID]GrainEconomyStatus
+    AutoGrainExport    bool // oyuncunun save'lenen otomatik ihracat tercihi
+    ArmyMoveUsage      map[ArmyID]bool // ekonomi tick'i öncesi runtime hareket snapshot'ı
+    GrainAidUsage      map[RegionID]bool // tur içi tahıl yardımı kilidi
 
     // Zafer takibi
     EconomicVictoryTurns  int
@@ -199,7 +203,29 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 
 `NormalizeFactionCapitals()` — yükleme sonrası eksik/geçersiz başkentleri en yüksek getirili owned settlement'a normalize eder
 
-`RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
+`RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, abluka yüzdesi, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
+
+`GrainEconomyStatus` / `GameState.GrainEconomy` — son ekonomi tick'inde fraksiyon bazlı tahıl üretimi, sivil tüketimi, ordu bakımı, ordu yenilemesi, ordu `ArmyMoraleDelta` değişimi, stratejik ithalat ihtiyacı, nüfus büyümesi ve otomatik ihracat için harcanan tahıl, net değişim, stok-ay seviyesi ve açık bilgisini render/event bildirimlerine taşır; runtime-only olduğu için save'e yazılmaz.
+
+`GameState.ArmyMoveUsage` — `applySeasonEffects()` hareket puanlarını yenilemeden önce ordunun o tur hareket edip etmediğini geçici olarak yakalar. `GameState.EffectiveArmyGrainUpkeep()` bu snapshot'ı kuşatma ve garnizon katsayılarıyla birleştirir; ekonomi, bölgesel lojistik ve AI aynı efektif talebi kullanır. Alan serialize edilmez.
+
+`GameState.GrainAidUsage` / `CanApplyGrainAid()` / `ApplyGrainAid()` — oyuncunun bölge panelinden yaptığı tahıl yardımını bölge başına turda bir kez sınırlar; 12 tahıl karşılığında memnuniyeti +10 artırır. Kullanım haritası `AdvanceTurn()` içinde sıfırlanır ve save'e yazılmaz.
+
+`EmergencyGrainSaleLimit()` / `EmergencyGrainSaleUnitPrice()` / `ApplyEmergencyGrainSale()` — pazar partneri gerektirmeyen acil tahıl satışını yönetir. Yalnızca fraksiyon depo kapasitesi üzerindeki miktar satılır; `economy.EmergencySaleUnitPrice()` güncel fiyatın %70 indirimli değerini üretir. Bu işlem kalıcı yeni state alanı eklemez.
+
+`GameState.AutoGrainExport` / `ApplyAutomaticGrainExport()` — Pazar sekmesindeki tercihi ve ekonomi tick'inde kapasite üzeri tahılın aktif, savaşta olmayan ticaret ağı partnerlerine faction ID sırasıyla %60 fiyatla satışını yönetir. Alıcı altını yetersizse miktar alıcının bütçesiyle sınırlanır; tercih compact save alanında korunur, gerçekleşen miktar ve altın runtime `GrainEconomyStatus` içinde raporlanır.
+
+`applyGrainFundedArmyReplenishment()` — mevcut ücretsiz dost-toprak toparlanmasına ek olarak kapasite üstü tahılı dost ve kuşatma dışı kara ordularına aktarır. Faction/army ID sırası deterministiktir, ordu başına en fazla +10 HP verilir ve 1 HP başına 1 tahıl tüketilir; rezerv kapasitesi altına inilmez.
+
+`GameState.StrategicGrainDemand()` / `StrategicGrainSurplus()` — fraksiyonun üç aylık güvenli rezerv hedefindeki açığı ve kapasite üstü ihraç edilebilir stoku hesaplar. Diplomasi yeni rota kurarken bu iki sinyalle hedefteki tahıl ihtiyacını kaynak fazlasına bağlar; sinyal save'e yazılmaz ve her ekonomi tick'inde yeniden türetilir.
+
+`RegionEventStatus` içindeki `GrainProductionPercent` ve `GrainDemandPercent`, aktif hasat/kıtlık/kuraklık olaylarının geçici bölgesel tahıl etkileridir. `RegionGrainProductionModifier()`, `RegionGrainDemandModifier()` ve `CivilianGrainDemandForRegion()` bu kayıtları toplar; alanlar `ActiveRegionEvents` ile compact save/load içinde korunur, süre dolunca `TickActiveRegionEvents()` tarafından temizlenir.
+
+`GameState.RegionMilitaryGrainProduction()` bölgesel efektif tahıl üretiminden aktif sivil talebi düşer. Oyun lojistiği ve AI hareket/recruitment lojistiği bu ortak helper'ı; ordu talebi için de `EffectiveArmyGrainUpkeep()` metodunu kullanır. Böylece oyuncu ve AI aynı tahıl tüketim kurallarından sapmaz.
+
+`Army.Morale` ordunun kalıcı ikmal moralidir. `CurrentMorale()` eski kayıt veya fixture'larda eksik alanı 100 başlangıç morali olarak normalize eder; `ApplyMoraleDelta()` değeri 1–100 aralığında tutar. Compact save/load içindeki `mo` alanıyla taşınır ve `Army.TotalStrength()` içinde savaş/AI güç değerlendirmelerine uygulanır.
+
+`TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; save migration gerektirmez.
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 

@@ -27,6 +27,7 @@ const (
 	ActionProposePeace             ActionKind = "propose_peace"
 	ActionImproveRelations         ActionKind = "improve_relations"
 	ActionSendGift                 ActionKind = "send_gift"
+	ActionGrainAid                 ActionKind = "grain_aid"
 	ActionOfferVassalization       ActionKind = "offer_vassalization"
 	ActionReleaseVassal            ActionKind = "release_vassal"
 	ActionAnnexVassal              ActionKind = "annex_vassal"
@@ -78,11 +79,13 @@ const (
 	// Ticaret paneli
 	ActionOpenTradeView         ActionKind = "open_trade_view"
 	ActionCloseTradeView        ActionKind = "close_trade_view"
-	ActionCreateTradeRoute      ActionKind = "create_trade_route" // BuildingID = mal tipi, TargetFaction = hedef, Delta = miktar
-	ActionCancelTradeRoute      ActionKind = "cancel_trade_route" // BuildingID = rota indeksi
-	ActionOneTimeTrade          ActionKind = "one_time_trade"     // BuildingID = mal tipi, Delta = miktar
-	ActionTradeScroll           ActionKind = "trade_scroll"       // Delta: +1/-1
-	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"   // Delta: hangi sekme
+	ActionCreateTradeRoute      ActionKind = "create_trade_route"   // BuildingID = mal tipi, TargetFaction = hedef, Delta = miktar
+	ActionCancelTradeRoute      ActionKind = "cancel_trade_route"   // BuildingID = rota indeksi
+	ActionOneTimeTrade          ActionKind = "one_time_trade"       // BuildingID = mal tipi, Delta = miktar
+	ActionEmergencyGrainSale    ActionKind = "emergency_grain_sale" // Delta = satış miktarı
+	ActionToggleAutoGrainExport ActionKind = "toggle_auto_grain_export"
+	ActionTradeScroll           ActionKind = "trade_scroll"     // Delta: +1/-1
+	ActionTradeTabSwitch        ActionKind = "trade_tab_switch" // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"

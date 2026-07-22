@@ -102,5 +102,24 @@
     "iron_cost": 8,
     "timber_cost": 18,
     "stone_cost": 22
+  },
+  {
+    "def_bonus": 0,
+    "gold_cost": 160,
+    "gold_mod": 1,
+    "grain_mod": 1,
+    "id": "granary",
+    "max_per_region": 3,
+    "name": "Granary",
+    "name_tr": "Ambar",
+    "required_terrain": "",
+    "sat_bonus": 0,
+    "storage_capacity": 100,
+    "trade_capacity_mod": 1,
+    "turns_required": 3,
+    "grain_cost": 20,
+    "iron_cost": 10,
+    "timber_cost": 30,
+    "stone_cost": 20
   }
 ]

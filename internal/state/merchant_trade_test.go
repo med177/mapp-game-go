@@ -60,6 +60,61 @@ func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 	}
 }
 
+func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
+	gs, route := merchantTradeTestState()
+	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("genoa", "venice"): {
+			FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar,
+		},
+	}
+	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
+	gs.Armies["blockader"] = &army.Army{
+		ID: "blockader", OwnerID: "genoa", RegionID: "adriatic", IsNaval: true,
+		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+	}
+
+	gs.RefreshTradeRouteBlockades()
+	gs.RefreshMerchantTradeBonuses()
+	if route.BlockadePercent != 50 || route.EffectiveAmountPerTurn() != 2 {
+		t.Fatalf("tek savaş gemisi rota hacmini yarıya indirmeliydi: route=%+v", route)
+	}
+
+	economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
+	if gs.Factions["venice"].Spice != 8 || gs.Factions["venice"].Gold != 10 || gs.Factions["mamluk"].Spice != 2 || gs.Factions["mamluk"].Gold != 90 {
+		t.Fatalf("abluka sonrası yarım rota hacmi uygulanmalıydı: venice=%+v mamluk=%+v", gs.Factions["venice"], gs.Factions["mamluk"])
+	}
+
+	gs.Armies["blockader"].Units = append(gs.Armies["blockader"].Units, army.Unit{TypeID: "warship", CurrentHP: army.MaxUnitHP})
+	route.BlockadePercent = 0
+	gs.RefreshTradeRouteBlockades()
+	if route.BlockadePercent != 100 || route.EffectiveAmountPerTurn() != 0 {
+		t.Fatalf("iki savaş gemisi rotayı tamamen kapatmalıydı: route=%+v", route)
+	}
+}
+
+func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"port": {ID: "port", OwnerID: "venice", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{Type: world.SettlementPort}}},
+			"sea":  {ID: "sea", IsSea: true},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("genoa", "venice"): {FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+		},
+	}
+
+	if got := gs.RegionBlockadePercent(gs.Regions["port"], "venice"); got != 50 {
+		t.Fatalf("liman ablukası %%%d olmalıydı, got=%d", 50, got)
+	}
+}
+
 func TestMerchantTradeBonusRequiresActiveConnectedCenterSea(t *testing.T) {
 	gs, route := merchantTradeTestState()
 	gs.Armies["merchant"].RegionID = "unknown_sea"

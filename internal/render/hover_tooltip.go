@@ -76,6 +76,14 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
 		return
 	}
+	if regionGrainAidButtonHit(fx, fy, gs, rid) {
+		if reason := gs.GrainAidBlockReason(rid); reason != "" {
+			drawSmallHoverHint(screen, reason, fx, fy)
+		} else {
+			drawSmallHoverHint(screen, "12 tahıl harca, memnuniyeti +10 artır", fx, fy)
+		}
+		return
+	}
 
 	if bid := BuildingGridHoverID(fx, fy, gs, rid); bid != "" {
 		drawBuildingTooltip(screen, gs, rid, bid, fx, fy)
@@ -119,7 +127,6 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 		return
 	}
 
-	ensureBuildingSheet()
 	costLines := buildingCostRequirementLines(gs, b)
 	reqLines, reqMissing := buildingRequirementLines(region, b)
 	effectLines := buildingEffectLines(b)
@@ -142,15 +149,15 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
 	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: reqY + 14}, tooltipRichLines(reqLines), 14)
 
-	if buildingSheet != nil {
+	if sprite := buildingSpriteImage(bid); sprite != nil {
 		vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
 		vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
-		r := buildingSpriteRect(bid, buildingSheet)
-		sub := buildingSheet.SubImage(r).(*ebiten.Image)
+		spriteRect := buildingSpriteDrawRect(sprite, gameui.Rect{X: iconX, Y: iconY, W: iconW, H: iconH})
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(iconW/float64(r.Dx()), iconH/float64(r.Dy()))
-		op.GeoM.Translate(iconX, iconY)
-		screen.DrawImage(sub, op)
+		bounds := sprite.Bounds()
+		op.GeoM.Scale(spriteRect.W/float64(bounds.Dx()), spriteRect.H/float64(bounds.Dy()))
+		op.GeoM.Translate(spriteRect.X, spriteRect.Y)
+		screen.DrawImage(sprite, op)
 	}
 
 	effectY := reqY + 14 + float64(len(reqLines))*14 + 8
@@ -238,6 +245,9 @@ func buildingEffectLines(b *city.Building) []string {
 	}
 	if b.DefBonus != 0 {
 		lines = append(lines, fmt.Sprintf("Savunma: %+d", b.DefBonus))
+	}
+	if b.StorageCapacity != 0 {
+		lines = append(lines, fmt.Sprintf("Tahıl depolama: +%d", b.StorageCapacity))
 	}
 	if len(lines) == 0 {
 		lines = append(lines, "Yerel gelişim binası")

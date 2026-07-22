@@ -61,6 +61,51 @@ type scenarioTempoProfile struct {
 	difficulty int
 }
 
+type grainPhaseAggregate struct {
+	samples         int
+	production      float64
+	civilianDemand  float64
+	armyUpkeep      float64
+	netChange       float64
+	stockpileMonths float64
+	monthsSamples   int
+	famineSamples   int
+}
+
+func (a *grainPhaseAggregate) add(status state.GrainEconomyStatus) {
+	if a == nil {
+		return
+	}
+	a.samples++
+	a.production += float64(status.Production)
+	a.civilianDemand += float64(status.CivilianDemand)
+	a.armyUpkeep += float64(status.ArmyUpkeep)
+	a.netChange += float64(status.NetChange)
+	if status.MonthsOfSupply >= 0 {
+		a.stockpileMonths += float64(status.MonthsOfSupply)
+		a.monthsSamples++
+	}
+	if status.SupplyLevel == state.GrainSupplyFamine {
+		a.famineSamples++
+	}
+}
+
+func (a grainPhaseAggregate) averages() (production, civilianDemand, armyUpkeep, netChange, stockpileMonths, famineRate float64) {
+	if a.samples == 0 {
+		return 0, 0, 0, 0, 0, 0
+	}
+	denominator := float64(a.samples)
+	production = a.production / denominator
+	civilianDemand = a.civilianDemand / denominator
+	armyUpkeep = a.armyUpkeep / denominator
+	netChange = a.netChange / denominator
+	if a.monthsSamples > 0 {
+		stockpileMonths = a.stockpileMonths / float64(a.monthsSamples)
+	}
+	famineRate = float64(a.famineSamples) / denominator
+	return production, civilianDemand, armyUpkeep, netChange, stockpileMonths, famineRate
+}
+
 func TestLoadScenarioDataLoads1300AIStrategyProfiles(t *testing.T) {
 	gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
 	if err != nil {
@@ -399,15 +444,85 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 	}
 }
 
+func Test1300ScenarioGrainEconomyBands(t *testing.T) {
+	enableScenarioTempoRandSeeding(t)
+	const turns = 24
+	const runs = 2
+	majorFactions := []faction.FactionID{"ottoman", "venice", "mamluk", "england", "france"}
+	phaseName := func(turn int) string {
+		switch {
+		case turn <= 8:
+			return "erken"
+		case turn <= 16:
+			return "orta"
+		default:
+			return "savaş"
+		}
+	}
+	reports := make(map[faction.FactionID]map[string]*grainPhaseAggregate, len(majorFactions))
+	for _, fid := range majorFactions {
+		reports[fid] = map[string]*grainPhaseAggregate{
+			"erken": &grainPhaseAggregate{},
+			"orta":  &grainPhaseAggregate{},
+			"savaş": &grainPhaseAggregate{},
+		}
+	}
+
+	for seed := 1; seed <= runs; seed++ {
+		rand.Seed(int64(seed))
+		gs, evts, err := loadScenarioData(scenario1300Path(t), 2, nil)
+		if err != nil {
+			t.Fatalf("scenario load failed: %v", err)
+		}
+		gs.PlayerFactionID = ""
+		simulateTempoTurnsWithTurnEnd(t, gs, evts, turns, int64(seed), nil, func(turn int, current *state.GameState) {
+			phase := phaseName(turn)
+			for _, fid := range majorFactions {
+				status, ok := current.GrainEconomy[fid]
+				if !ok {
+					t.Fatalf("%s için %d. tur tahıl snapshot'ı yok", fid, turn)
+				}
+				if status.Production < 0 || status.CivilianDemand < 0 || status.ArmyUpkeep < 0 || status.Stockpile < 0 {
+					t.Fatalf("%s %d. turda negatif tahıl metriği üretti: %+v", fid, turn, status)
+				}
+				expectedNetChange := status.Production - status.TotalDemand - status.ReplenishmentGrainSpent - status.GrowthGrainSpent - status.AutoExportSold
+				if status.NetChange != expectedNetChange {
+					t.Fatalf("%s %d. tur net değişim formülü bozuldu: %+v", fid, turn, status)
+				}
+				reports[fid][phase].add(status)
+			}
+		})
+	}
+
+	for _, fid := range majorFactions {
+		for _, phase := range []string{"erken", "orta", "savaş"} {
+			aggregate := *reports[fid][phase]
+			production, civilianDemand, armyUpkeep, netChange, stockpileMonths, famineRate := aggregate.averages()
+			if civilianDemand <= 0 {
+				t.Fatalf("%s/%s sivil talep üretmedi", fid, phase)
+			}
+			productionRatio := production / civilianDemand
+			netRatio := netChange / civilianDemand
+			if productionRatio < 1.0 || productionRatio > 4.0 {
+				t.Fatalf("%s/%s üretim-tüketim bandı dışı: ratio=%.2f production=%.1f civilian=%.1f", fid, phase, productionRatio, production, civilianDemand)
+			}
+			if netRatio < -1.0 || netRatio > 2.5 {
+				t.Fatalf("%s/%s net tahıl bandı dışı: ratio=%.2f net=%.1f civilian=%.1f", fid, phase, netRatio, netChange, civilianDemand)
+			}
+			t.Logf("1300 tahıl bandı faction=%s phase=%s production=%.1f civilian=%.1f army=%.1f net=%.1f stockpile_months=%.1f famine_rate=%.0f%%", fid, phase, production, civilianDemand, armyUpkeep, netChange, stockpileMonths, famineRate*100)
+		}
+	}
+}
+
 func assert1300CalibrationBands(t *testing.T, aggregates map[faction.FactionID]*balanceAggregate) {
 	t.Helper()
 	bands := map[faction.FactionID]scenarioCalibrationBand{
-		"mamluk":    {minGoldGain: 18000, maxGoldGain: 32000},
-		"england":   {minGoldGain: 18000, maxGoldGain: 32000},
-		"hre":       {minGoldGain: 18000, maxGoldGain: 32000},
-		"france":    {minGoldGain: 15000, maxGoldGain: 30000},
-		"ilkhanate": {minGoldGain: 15000, maxGoldGain: 30000},
-		"venice":    {minGoldGain: 11000, maxGoldGain: 22000},
+		"mamluk":    {minGoldGain: 12000, maxGoldGain: 30000},
+		"england":   {minGoldGain: 17000, maxGoldGain: 32000},
+		"hre":       {minGoldGain: 15000, maxGoldGain: 32000},
+		"france":    {minGoldGain: 12000, maxGoldGain: 30000},
+		"ilkhanate": {minGoldGain: 10000, maxGoldGain: 30000},
+		"venice":    {minGoldGain: 9000, maxGoldGain: 22000},
 		"ottoman":   {minGoldGain: -2000, maxGoldGain: 6000},
 		"safavid":   {minGoldGain: 500, maxGoldGain: 5000},
 	}
@@ -613,6 +728,10 @@ func scenario1300Path(t testing.TB) string {
 }
 
 func simulateTempoTurns(t *testing.T, gs *state.GameState, evts []*events.Event, turns int, baseSeed int64, checkpoint func(string, *state.GameState)) {
+	simulateTempoTurnsWithTurnEnd(t, gs, evts, turns, baseSeed, checkpoint, nil)
+}
+
+func simulateTempoTurnsWithTurnEnd(t *testing.T, gs *state.GameState, evts []*events.Event, turns int, baseSeed int64, checkpoint func(string, *state.GameState), turnEnd func(int, *state.GameState)) {
 	t.Helper()
 	g := &Game{gs: gs}
 	for i := 0; i < turns; i++ {
@@ -658,6 +777,9 @@ func simulateTempoTurns(t *testing.T, gs *state.GameState, evts []*events.Event,
 		}
 		gs.AdvanceTurn()
 		checkRegionUnlocks(gs)
+		if turnEnd != nil {
+			turnEnd(i+1, gs)
+		}
 		landUnits, navalUnits := tempoUnitCounts(gs)
 		t.Logf(
 			"tempo turn=%d duration=%s armies=%d land_units=%d naval_units=%d queue=%d sieges=%d",

@@ -26,7 +26,10 @@ func TestRegionActivityPanelScrollAndBuildingOrder(t *testing.T) {
 			"player": {ID: "player", NameTR: "Oyuncu"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			regionID: {ID: regionID, NameTR: "Test", OwnerID: "player", Neighbors: []world.RegionID{"n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"}},
+			regionID: {ID: regionID, NameTR: "Test", OwnerID: "player", Neighbors: []world.RegionID{
+				"n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10",
+				"n11", "n12", "n13", "n14", "n15", "n16", "n17", "n18", "n19", "n20",
+			}},
 		},
 		BuildingTypes: map[string]*city.Building{
 			"market":   {ID: "market", NameTR: "Pazar"},
@@ -94,12 +97,44 @@ func TestRegionPanelActivityAndDiplomacyUseVisiblePanelGeometry(t *testing.T) {
 	end := buildingGridEndY(gs, gs.Regions[regionID], start)
 	barY := float64(end) + 5
 	btn := buildRegionDiplomacyButtons(gs, "enemy", infoPanelX()+float32(panelPad), float32(barY), infoPanelW-float32(panelPad*2), regionPanelActionBarHeight)
-	expectedY := barY + (float64(regionPanelActionBarHeight)-btn.H)/2
+	expectedY := float64(barY) + (float64(regionPanelActionBarHeight)-btn.H)/2
 	if btn.Y < expectedY-0.01 || btn.Y > expectedY+0.01 {
 		t.Fatalf("diplomasi düğmesi aksiyon bandında ortalanmadı: %+v", btn)
 	}
 	if !regionDiplomacyButtonHit(btn.X+btn.W/2, btn.Y+btn.H/2, gs, regionID) {
 		t.Fatal("çizilen diplomasi düğmesinin merkezi tıklanabilir olmalı")
+	}
+}
+
+func TestOwnRegionGrainAidButtonUsesRegionActionBarGeometry(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	regionID := world.RegionID("home")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: state.GrainAidCost},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			regionID: {ID: regionID, OwnerID: "player", Satisfaction: 50},
+		},
+	}
+
+	start := buildingGridStartY(gs, gs.Regions[regionID], false)
+	end := buildingGridEndY(gs, gs.Regions[regionID], start)
+	barY := end + 5
+	btn := buildRegionGrainAidButton(gs, regionID, infoPanelX()+float32(panelPad), float32(barY), infoPanelW-float32(panelPad*2), regionPanelActionBarHeight)
+	expectedY := float64(barY) + (float64(regionPanelActionBarHeight)-btn.H)/2
+	if btn.Y < expectedY-0.01 || btn.Y > expectedY+0.01 {
+		t.Fatalf("tahıl yardım düğmesi aksiyon bandında ortalanmadı: %+v", btn)
+	}
+	if !regionGrainAidButtonHit(btn.X+btn.W/2, btn.Y+btn.H/2, gs, regionID) {
+		t.Fatal("çizilen tahıl yardım düğmesinin merkezi tıklanabilir olmalı")
 	}
 }
 

@@ -22,6 +22,7 @@ type Building struct {
 	TradeCapacityMod float64 `json:"trade_capacity_mod"` // ticaret kapasitesi çarpanı (1.0 = değişmez)
 	SatBonus         int     `json:"sat_bonus"`          // tur başına memnuniyet bonusu
 	DefBonus         int     `json:"def_bonus"`          // savunma bonusu
+	StorageCapacity  int     `json:"storage_capacity"`   // tahıl depolama kapasitesi bonusu
 	MaxPerRegion     int     `json:"max_per_region"`     // bölgede max adet (genelde 1)
 	RequiredTerrain  string  `json:"required_terrain"`   // "" = her arazi
 }

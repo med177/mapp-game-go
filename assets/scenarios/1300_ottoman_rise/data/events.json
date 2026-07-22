@@ -78,6 +78,8 @@
     "desc_tr": "Hasatlar yetmedi. Tahıl depoları boşalıyor.",
     "gold_delta": -60,
     "grain_delta": -40,
+    "grain_production_percent": -35,
+    "grain_demand_percent": 15,
     "id": "famine",
     "min_turn": 3,
     "name_tr": "Kıtlık",

@@ -2485,10 +2485,15 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 		return 0, 0, 0
 	}
 
-	production := gs.RegionProductionSummary(region).Grain
+	militaryProduction := gs.RegionMilitaryGrainProduction(region)
+	if region.OwnerID != ownerID {
+		militaryProduction = 0
+	}
 	settlementBuffer := aiRegionSettlementBuffer(gs, region)
-	reserveSupport := aiRegionReserveSupport(gs, ownerID, production, settlementBuffer)
-	capacity = production + settlementBuffer + reserveSupport
+	blockadePercent := gs.RegionBlockadePercent(region, ownerID)
+	settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
+	reserveSupport := aiRegionReserveSupport(gs, ownerID, militaryProduction, settlementBuffer)
+	capacity = militaryProduction + settlementBuffer + reserveSupport
 	if capacity < 4 {
 		capacity = 4
 	}
@@ -2497,7 +2502,7 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 		if candidate == nil || candidate.IsNaval || candidate.OwnerID != ownerID || candidate.RegionID != region.ID {
 			continue
 		}
-		demand += candidate.TotalGrainUpkeep(gs.UnitTypes)
+		demand += gs.EffectiveArmyGrainUpkeep(candidate)
 	}
 	overload = maxInt(0, demand-capacity)
 	return demand, capacity, overload

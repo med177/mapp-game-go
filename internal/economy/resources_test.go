@@ -60,3 +60,35 @@ func TestResourceCostShortTRUsesCentralNames(t *testing.T) {
 		t.Fatalf("ShortTR mismatch: got=%q want=%q", got, want)
 	}
 }
+
+func TestEmergencySaleUnitPriceAppliesDiscountAndMinimum(t *testing.T) {
+	if got := EmergencySaleUnitPrice(10); got != 7 {
+		t.Fatalf("10 altınlık fiyat acil satışta 7 olmalıydı, got=%d", got)
+	}
+	if got := EmergencySaleUnitPrice(1); got != 1 {
+		t.Fatalf("1 altınlık fiyat acil satışta 1'e clamp edilmeli, got=%d", got)
+	}
+	if got := EmergencySaleUnitPrice(0); got != 0 {
+		t.Fatalf("geçersiz fiyat 0 dönmeli, got=%d", got)
+	}
+}
+
+func TestAutomaticExportUnitPriceUsesLowerDiscountedRate(t *testing.T) {
+	if got := AutomaticExportUnitPrice(10); got != 6 {
+		t.Fatalf("10 altınlık fiyat otomatik ihracatta 6 olmalıydı, got=%d", got)
+	}
+	if got := AutomaticExportUnitPrice(1); got != 1 {
+		t.Fatalf("minimum otomatik ihracat fiyatı 1 olmalıydı, got=%d", got)
+	}
+}
+
+func TestStrategicGrainDemandRaisesMarketPrice(t *testing.T) {
+	factions := map[faction.FactionID]*faction.Faction{
+		"player": {ID: "player", Grain: 20},
+	}
+	withoutDemand := ComputeMarketPrices(factions)[GoodGrain]
+	withDemand := ComputeMarketPricesWithStrategicDemand(factions, map[faction.FactionID]int{"player": 100})[GoodGrain]
+	if withoutDemand != 1 || withDemand != 3 {
+		t.Fatalf("stratejik tahıl talebi piyasa fiyatını artırmalıydı, without=%d with=%d", withoutDemand, withDemand)
+	}
+}

@@ -67,3 +67,76 @@ func TestHandleTradePanelInputMarketSelectsFactionAndGoodOnClick(t *testing.T) {
 		t.Fatalf("ikinci mal satiri tiklaninca focus 1 olmali, got=%d", r.tradeGoodFocus)
 	}
 }
+
+func TestHandleTradePanelInputMarketReturnsEmergencyGrainSale(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	playerID := faction.FactionID("player")
+	targetID := faction.FactionID("alpha")
+	gs := &state.GameState{
+		PlayerFactionID: playerID,
+		Factions: map[faction.FactionID]*faction.Faction{
+			playerID: {ID: playerID, NameTR: "Oyuncu", Grain: 160},
+			targetID: {ID: targetID, NameTR: "Alfa", Gold: 200, Grain: 10},
+		},
+		GrainEconomy: map[faction.FactionID]state.GrainEconomyStatus{
+			playerID: {FactionID: playerID, StorageCapacity: 100},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey(playerID, targetID): {FactionA: playerID, FactionB: targetID, Score: 40, Stance: faction.StanceTrade},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: string(playerID), ToFactionID: string(targetID), Good: economy.GoodGrain, AmountPerTurn: 2, GoldPerUnit: 2},
+		},
+		MarketPrices: economy.CurrentMarketPrice{economy.GoodGrain: 10},
+	}
+	r := &Renderer{
+		gs:                gs,
+		showTrade:         true,
+		tradeTab:          TradeTabMarket,
+		tradeFactionFocus: 0,
+		tradeGoodFocus:    0,
+		tradeAmount:       5,
+		tradeListFilter:   TradeListAll,
+		tradeListSort:     TradeSortDistance,
+	}
+
+	layout := tradePanelLayout()
+	btn := buildTradeEmergencyGrainSaleButton(layout, len(tradeSelectableGoods()), true)
+	action := handleTradePanelInput(r, gameui.InputState{
+		MouseX:          btn.X + btn.W/2,
+		MouseY:          btn.Y + btn.H/2,
+		LeftJustPressed: true,
+	})
+	if action.Kind != ActionEmergencyGrainSale || action.Delta != 5 {
+		t.Fatalf("acil tahıl satış aksiyonu dönmeliydi, got=%+v", action)
+	}
+}
+
+func TestHandleTradePanelInputTogglesAutomaticGrainExport(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	r := &Renderer{
+		gs:        &state.GameState{PlayerFactionID: "player"},
+		showTrade: true,
+		tradeTab:  TradeTabMarket,
+	}
+	layout := tradePanelLayout()
+	btn := buildTradeAutoExportButton(layout, false)
+	action := handleTradePanelInput(r, gameui.InputState{
+		MouseX:          btn.X + btn.W/2,
+		MouseY:          btn.Y + btn.H/2,
+		LeftJustPressed: true,
+	})
+	if action.Kind != ActionToggleAutoGrainExport {
+		t.Fatalf("otomatik ihracat toggle aksiyonu dönmeliydi, got=%+v", action)
+	}
+}

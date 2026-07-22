@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-21
-related: [systems/ai, world/regions, systems/tech-tree, architecture/render-pipeline]
+last_updated: 2026-07-22
+related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
 # Çarpışma Sistemi
@@ -188,7 +188,7 @@ Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı
 
 `internal/game/resolution.go`
 
-- kara orduları sahip oldukları kara bölgede tur başına `+10 HP` toparlanır,
+- kara orduları sahip oldukları kara bölgede tur başına ücretsiz `+10 HP` toparlanır; ekonomi tick'inde depo kapasitesini aşan tahılla ordu başına ek `+10 HP`'ye kadar yenileme yapılabilir (`1 HP = 1 tahıl`),
 - toparlanma `CurrentHP < 100` olan birimlerde çalışır ve `%100`e kadar sürer,
 - kış turunda önce attrition uygulanır, aynı sweep içinde ek ücretsiz toparlanma verilmez,
 - donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz.
@@ -220,6 +220,6 @@ Savaş varsa oyuncu gemi-gemi çatışmasında da önce duruş seçer. Düşman 
 
 ## Birim Gücü
 
-`army.TotalStrength(types)` — her birimin `Attack + Morale/10` değeri mevcut HP oranıyla ağırlıklandırılır.
+`army.TotalStrength(types)` — her birimin `Attack + Morale/10` değeri mevcut HP oranıyla ağırlıklandırılır ve ordu `Army.Morale` çarpanından geçirilir. Ordu morali 100'de nötrdür; 50 moral toplam gücü yaklaşık %15, minimum moral ise yaklaşık %30 azaltır. Tahıl arzı bu state'i ekonomi tick'inde günceller; eski save'lerde eksik moral alanı 100 kabul edilir.
 
 → Birim tipleri: `assets/data/units.json`

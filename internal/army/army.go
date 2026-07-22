@@ -26,7 +26,11 @@ type Army struct {
 	MaxMovePoints      int            `json:"max_move_points"`
 	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
 	IsGarrison         bool           `json:"is_garrison,omitempty"`
-	Commander          *Commander     `json:"commander,omitempty"`
+	// Morale ordunun mevcut ikmal/komuta dayanıklılığını temsil eder.
+	// Eski save'lerde alan bulunmadığı için 0, CurrentMorale tarafından 100
+	// başlangıç morali olarak yorumlanır.
+	Morale    int        `json:"morale,omitempty"`
+	Commander *Commander `json:"commander,omitempty"`
 	// EmbarkedCommander kara birlikleri filoda taşınırken komutan bağlantısını korur.
 	EmbarkedCommander *Commander `json:"embarked_commander,omitempty"`
 
@@ -89,6 +93,49 @@ func (a *Army) CommanderMoraleModifier() float64 {
 		return 0
 	}
 	return a.Commander.MoraleModifier()
+}
+
+const (
+	DefaultArmyMorale = 100
+	MinArmyMorale     = 1
+	MaxArmyMorale     = 100
+)
+
+// CurrentMorale, eski save/test orduları için güvenli başlangıç değerini de
+// uygulayarak ordunun geçerli moralini döner.
+func (a *Army) CurrentMorale() int {
+	if a == nil || a.Morale <= 0 {
+		return DefaultArmyMorale
+	}
+	if a.Morale > MaxArmyMorale {
+		return MaxArmyMorale
+	}
+	return a.Morale
+}
+
+// ApplyMoraleDelta ordunun moralini sınırlar içinde değiştirir ve gerçekleşen
+// farkı döner. 0 moral değeri legacy sentinel olduğu için moral çöküşü 1'de
+// durur; böylece eski save ile yeni state birbirinden ayırt edilebilir.
+func (a *Army) ApplyMoraleDelta(delta int) int {
+	if a == nil || len(a.Units) == 0 || delta == 0 {
+		return 0
+	}
+	before := a.CurrentMorale()
+	a.Morale = before + delta
+	if a.Morale < MinArmyMorale {
+		a.Morale = MinArmyMorale
+	}
+	if a.Morale > MaxArmyMorale {
+		a.Morale = MaxArmyMorale
+	}
+	return a.Morale - before
+}
+
+// MoraleStrengthMultiplier ordunun güncel moralini savaş gücüne uygular.
+// 100 moral nötrdür; 50 moral yaklaşık %15, 1 moral yaklaşık %30 zayıflık
+// oluşturur.
+func (a *Army) MoraleStrengthMultiplier() float64 {
+	return 1.0 + float64(a.CurrentMorale()-DefaultArmyMorale)*0.003
 }
 
 // CommanderMoveBonus ordunun komutanından gelen ekstra hareket puanını döner.
@@ -253,7 +300,14 @@ func (a *Army) TotalStrength(types map[string]*UnitType) int {
 		}
 		total += scaled
 	}
-	return total
+	if total <= 0 {
+		return 0
+	}
+	adjusted := int(float64(total) * a.MoraleStrengthMultiplier())
+	if adjusted < 1 {
+		return 1
+	}
+	return adjusted
 }
 
 // TotalDefense ordunun toplam savunma gücünü hesaplar.

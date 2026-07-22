@@ -204,7 +204,7 @@ func (snapshot *aiRouteSnapshot) entryCost(region *world.Region) (int, bool) {
 	if region.OwnerID == snapshot.armyRef.OwnerID && snapshot.moveScore != nil {
 		demand, capacity, _ := snapshot.moveScore.regionLogistics(snapshot.gs, region)
 		if region.ID != snapshot.armyRef.RegionID {
-			demand += snapshot.armyRef.TotalGrainUpkeep(snapshot.gs.UnitTypes)
+			demand += snapshot.gs.EffectiveArmyGrainUpkeep(snapshot.armyRef)
 		}
 		gap := maxInt(0, demand-capacity)
 		cost += minInt(aiRouteLogisticsCostLimit, gap*aiRouteLogisticsCostPerGap)

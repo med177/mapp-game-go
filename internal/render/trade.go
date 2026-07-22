@@ -66,6 +66,7 @@ type tradeLayout struct {
 	rightTitleRect  gameui.Rect
 	rightListRect   gameui.Rect
 	actionCardRect  gameui.Rect
+	autoExportRect  gameui.Rect
 	listH           float32
 }
 
@@ -107,13 +108,13 @@ func tradePanelLayout() tradeLayout {
 	leftBox := gameui.BoxFromRect(bodyCols[0])
 	rightBox := gameui.BoxFromRect(bodyCols[1])
 	leftTitleRect, leftBox := leftBox.CutTop(24, 8)
-	actionCardRect, rightBox := rightBox.CutBottom(138, 18)
+	actionCardRect, rightBox := rightBox.CutBottom(174, 18)
 	rightTitleRect, rightBox := rightBox.CutTop(24, 8)
 	listH := float32(leftBox.Rect.H)
 	if listH < 120 {
 		listH = 120
 	}
-	controlCols := gameui.BoxFromRect(controlRow).SplitColumns(24, 1, 1)
+	controlCols := gameui.BoxFromRect(controlRow).SplitColumns(18, 0.34, 0.33, 0.33)
 	filterLabelRect, filterBtnBox := gameui.BoxFromRect(controlCols[0]).CutLeft(76, 12)
 	sortLabelRect, sortBtnBox := gameui.BoxFromRect(controlCols[1]).CutLeft(52, 12)
 
@@ -131,6 +132,7 @@ func tradePanelLayout() tradeLayout {
 		rightTitleRect:  rightTitleRect,
 		rightListRect:   rightBox.Rect,
 		actionCardRect:  actionCardRect,
+		autoExportRect:  controlCols[2],
 		listH:           listH,
 	}
 }
@@ -362,10 +364,24 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 
 	px, y, w := float32(layout.panelRect.X), float32(layout.leftTitleRect.Y), float32(layout.panelRect.W)
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
-	drawTradeListControls(screen, layout, listFilter, listSort)
+	drawTradeListControls(screen, layout, gs, listFilter, listSort)
 	if len(factions) == 0 {
 		DrawTextCentered(screen, "Aktif ticaret ağına bağlı pazar partneri yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
 		DrawTextCentered(screen, "Filtreyi değiştirin ya da Yeni Rota sekmesinden ticaret anlaşması açın.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
+		cardX, cardY, cardW, cardH := tradeActionCardRect(layout, 1)
+		vector.FillRect(screen, cardX, cardY, cardW, cardH, color.RGBA{16, 14, 10, 220}, false)
+		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, panelBorder, false)
+		drawUIInfoBlock(screen, float64(cardX)+12, float64(cardY)+16, []string{
+			"Acil tahıl satışı",
+			"Yalnızca depo kapasitesini aşan tahıl satılabilir.",
+			"Birim fiyat: " + itoa(gs.EmergencyGrainSaleUnitPrice()) + " altın (-%30)",
+		}, []color.Color{
+			color.RGBA{220, 205, 170, 230},
+			color.RGBA{190, 190, 215, 230},
+			color.RGBA{230, 180, 120, 230},
+		})
+		emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, 1, gs.EmergencyGrainSaleLimit() > 0)
+		drawTradeEmergencyButton(screen, emergencyBtn)
 		return
 	}
 
@@ -410,6 +426,11 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 					}
 				}
 				line := goodName + " | Sende: " + itoa(srcAmount) + " | " + targetF.NameTR + ": " + itoa(dstAmount) + " | Fiyat: " + price
+				if good == economy.GoodGrain {
+					if demand := gs.StrategicGrainDemand(targetFid); demand > 0 {
+						line += " | İthalat ihtiyacı: " + itoa(demand)
+					}
+				}
 				goodItems = append(goodItems, trimTextToWidth(line, FaceSmall, float64(rightW)-12))
 			}
 			goodsList := buildTradeGoodsList(layout, visibleRows, goodItems, focusGood)
@@ -442,16 +463,22 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		maxBuy := tradeMaxBuyAmount(playerF, target, good, price)
 		maxSell := tradeMaxSellAmount(playerF, target, good, price)
 		totalGold := amount * price
+		if good == economy.GoodGrain {
+			emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, goodsRows, gs.EmergencyGrainSaleLimit() > 0)
+			drawTradeEmergencyButton(screen, emergencyBtn)
+		}
 
-		drawUIInfoBlock(screen, float64(cardX)+12, float64(cardY)+16, []string{
+		detailLines := []string{
 			"Seçili: " + economy.GoodNameTR(good) + " | Hedef: " + target.NameTR,
 			"Miktar: " + itoa(amount) + " | Tutar: " + itoa(totalGold) + " altın",
 			"Al max: " + itoa(maxBuy) + " | Sat max: " + itoa(maxSell),
-		}, []color.Color{
+		}
+		detailColors := []color.Color{
 			color.RGBA{200, 190, 170, 220},
 			color.RGBA{230, 210, 155, 230},
 			color.RGBA{160, 190, 210, 220},
-		})
+		}
+		drawUIInfoBlock(screen, float64(cardX)+12, float64(cardY)+16, detailLines, detailColors)
 	}
 }
 
@@ -560,6 +587,13 @@ func buildTradeActionButtons(layout tradeLayout, goodsRows int) ([]gameui.Button
 	return qty, buyBtn, sellBtn
 }
 
+func buildTradeEmergencyGrainSaleButton(layout tradeLayout, goodsRows int, enabled bool) gameui.Button {
+	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, goodsRows)
+	btn := gameui.NewButton(float64(cardX+cardW-244), float64(cardY+cardH-2*tradeActBtnH-28), 234, float64(tradeActBtnH), "ACİL TAHIL SAT").WithIcon(gameui.IconSell)
+	btn.Enabled = enabled
+	return btn
+}
+
 func buildTradeAgreementButton(layout tradeLayout, enabled bool) gameui.Button {
 	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, 1)
 	btn := gameui.NewButton(float64(cardX+cardW-250), float64(cardY+cardH-tradeActBtnH-18), 220, float64(tradeActBtnH), "Ticaret Anlaşması Aç").WithIcon(gameui.IconSend)
@@ -602,6 +636,16 @@ func drawTradeActionButton(screen *ebiten.Image, btn gameui.Button, bg, border c
 	style.Text = ColorWhite
 	style.TextOffsetY = 10
 	drawUIButtonWidget(screen, btn, style)
+}
+
+func drawTradeEmergencyButton(screen *ebiten.Image, btn gameui.Button) {
+	bg := color.RGBA{112, 76, 52, 230}
+	border := color.RGBA{210, 170, 130, 230}
+	if !btn.Enabled {
+		bg = color.RGBA{52, 52, 52, 210}
+		border = color.RGBA{110, 110, 110, 210}
+	}
+	drawTradeActionButton(screen, btn, bg, border)
 }
 
 func drawTradeChoiceButton(screen *ebiten.Image, btn gameui.Button, active bool, activeBG color.RGBA) {
@@ -900,7 +944,16 @@ func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[facti
 	return dist
 }
 
-func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, listFilter TradeListFilter, listSort TradeListSort) {
+func buildTradeAutoExportButton(layout tradeLayout, enabled bool) gameui.Button {
+	r := layout.autoExportRect
+	label := "Oto. İhracat: KAPALI"
+	if enabled {
+		label = "Oto. İhracat: AÇIK"
+	}
+	return gameui.NewButton(r.X, r.Y, r.W, r.H, label)
+}
+
+func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, gs *state.GameState, listFilter TradeListFilter, listSort TradeListSort) {
 	drawUISectionLabel(screen, layout.filterLabelRect.X, layout.filterLabelRect.Y+12, "Filtre:")
 	for _, btn := range buildTradeFilterButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listFilter) == btn.Value, color.RGBA{70, 62, 36, 235})
@@ -909,6 +962,8 @@ func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, listFilter 
 	for _, btn := range buildTradeSortButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listSort) == btn.Value, color.RGBA{52, 70, 82, 235})
 	}
+	autoBtn := buildTradeAutoExportButton(layout, gs != nil && gs.AutoGrainExport)
+	drawTradeChoiceButton(screen, autoBtn, gs != nil && gs.AutoGrainExport, color.RGBA{92, 70, 34, 235})
 }
 
 // getFactionGoodAmount bir fraksiyonun belirli bir maldan kaç adet olduğunu döner.
@@ -1022,6 +1077,9 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 			return true
 		}
 	}
+	if buildTradeAutoExportButton(layout, gs != nil && gs.AutoGrainExport).HitTest(mx, my) {
+		return true
+	}
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
 	visibleRows := int(layout.listH / 28)
 	if visibleRows < 1 {
@@ -1062,7 +1120,8 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 			return true
 		}
 	}
-	return buyBtn.HitTest(mx, my) || sellBtn.HitTest(mx, my)
+	emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, minTradeInt(visibleRows, len(tradeSelectableGoods())), focusGood == 0 && gs.EmergencyGrainSaleLimit() > 0)
+	return buyBtn.HitTest(mx, my) || sellBtn.HitTest(mx, my) || emergencyBtn.HitTest(mx, my)
 }
 
 func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
@@ -1158,6 +1217,9 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 	}
+	if buildTradeAutoExportButton(layout, r.gs != nil && r.gs.AutoGrainExport).HandleInput(input) {
+		return InputAction{Kind: ActionToggleAutoGrainExport}
+	}
 	factions := sortedFactionsForMarket(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
 	factionItems := make([]string, 0, len(factions))
 	for _, fid := range factions {
@@ -1178,6 +1240,10 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 		return InputAction{}
 	}
 	if len(factions) == 0 {
+		emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, 1, r.gs.EmergencyGrainSaleLimit() > 0)
+		if emergencyBtn.HandleInput(input) && emergencyBtn.Enabled {
+			return InputAction{Kind: ActionEmergencyGrainSale, Delta: r.tradeAmount}
+		}
 		return InputAction{}
 	}
 	if r.tradeFactionFocus < 0 {
@@ -1222,6 +1288,12 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 				r.tradeAmount = 999
 			}
 			return InputAction{}
+		}
+	}
+	if r.tradeGoodFocus >= 0 && r.tradeGoodFocus < len(goods) && goods[r.tradeGoodFocus] == economy.GoodGrain {
+		emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, minTradeInt(visibleRows, len(goods)), r.gs.EmergencyGrainSaleLimit() > 0)
+		if emergencyBtn.HandleInput(input) && emergencyBtn.Enabled {
+			return InputAction{Kind: ActionEmergencyGrainSale, Delta: r.tradeAmount}
 		}
 	}
 	buyClicked := buyBtn.HandleInput(input)

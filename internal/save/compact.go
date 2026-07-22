@@ -83,6 +83,7 @@ type armySaveState struct {
 	MaxMovePoints      int                    `json:"mm"`
 	IsNaval            bool                   `json:"n,omitempty"`
 	IsGarrison         bool                   `json:"g,omitempty"`
+	Morale             int                    `json:"mo,omitempty"`
 	Commander          *army.Commander        `json:"c,omitempty"`
 	EmbarkedCommander  *army.Commander        `json:"ec,omitempty"`
 	InAmbush           bool                   `json:"a,omitempty"`
@@ -100,6 +101,7 @@ type campaignSaveState struct {
 	ScenarioPath            string                                   `json:"scp,omitempty"`
 	PlayerFactionID         faction.FactionID                        `json:"pf"`
 	Difficulty              int                                      `json:"d,omitempty"`
+	AutoGrainExport         bool                                     `json:"age,omitempty"`
 	DevelopmentMode         bool                                     `json:"dev,omitempty"`
 	EditMode                bool                                     `json:"em,omitempty"`
 	Victory                 state.VictoryCondition                   `json:"v"`
@@ -169,6 +171,7 @@ type legacyCampaignSaveState struct {
 	ScenarioPath            string                                       `json:"scenario_path,omitempty"`
 	PlayerFactionID         faction.FactionID                            `json:"player_faction_id"`
 	Difficulty              int                                          `json:"difficulty"`
+	AutoGrainExport         bool                                         `json:"auto_grain_export,omitempty"`
 	DevelopmentMode         bool                                         `json:"development_mode"`
 	EditMode                bool                                         `json:"edit_mode"`
 	Victory                 state.VictoryCondition                       `json:"victory"`
@@ -313,6 +316,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		ScenarioPath:            legacy.ScenarioPath,
 		PlayerFactionID:         legacy.PlayerFactionID,
 		Difficulty:              legacy.Difficulty,
+		AutoGrainExport:         legacy.AutoGrainExport,
 		DevelopmentMode:         legacy.DevelopmentMode,
 		EditMode:                legacy.EditMode,
 		Victory:                 legacy.Victory,
@@ -431,6 +435,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
 		PlayerFactionID:         gs.PlayerFactionID,
 		Difficulty:              gs.Difficulty,
+		AutoGrainExport:         gs.AutoGrainExport,
 		DevelopmentMode:         gs.DevelopmentMode,
 		EditMode:                gs.EditMode,
 		Victory:                 gs.Victory,
@@ -518,6 +523,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
 		PlayerFactionID:         gs.PlayerFactionID,
 		Difficulty:              gs.Difficulty,
+		AutoGrainExport:         gs.AutoGrainExport,
 		DevelopmentMode:         gs.DevelopmentMode,
 		EditMode:                gs.EditMode,
 		Victory:                 gs.Victory,
@@ -575,6 +581,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	if saved.Difficulty > 0 {
 		gs.Difficulty = saved.Difficulty
 	}
+	gs.AutoGrainExport = saved.AutoGrainExport
 	gs.DevelopmentMode = saved.DevelopmentMode
 	gs.EditMode = saved.EditMode
 	gs.Victory = saved.Victory
@@ -1060,6 +1067,7 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			Morale:             current.Morale,
 			Commander:          cloneCommander(current.Commander),
 			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
 			InAmbush:           current.InAmbush,
@@ -1089,6 +1097,7 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			Morale:             current.Morale,
 			Commander:          cloneCommander(current.Commander),
 			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
 			InAmbush:           current.InAmbush,

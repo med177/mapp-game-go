@@ -5,8 +5,11 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
+
+const blockadePercentPerWarship = 50
 
 // MerchantTradeRouteSeaRegions, en az bir uçta tarihsel ticaret merkezine sahip
 // deniz rotalarının merchant filosunun çalışabileceği kıyı denizlerini döner.
@@ -110,6 +113,103 @@ func (s *GameState) RefreshMerchantTradeBonuses() {
 			route.MerchantAmountBonus += count
 		}
 	}
+}
+
+// RefreshTradeRouteBlockades deniz savaş filolarının aktif ticaret rotalarına
+// verdiği kesintiyi gerçek konum ve savaş ilişkilerinden yeniden türetir.
+// Bir savaş gemisi rota ucundaki denizdeyse rota %50, iki veya daha fazla
+// savaş gemisi varsa tamamen ablukalı kabul edilir.
+func (s *GameState) RefreshTradeRouteBlockades() {
+	if s == nil {
+		return
+	}
+	for _, route := range s.TradeRoutes {
+		if route == nil {
+			continue
+		}
+		route.BlockadePercent = 0
+		if route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
+			continue
+		}
+		for _, seaID := range s.MerchantTradeRouteSeaRegions(route) {
+			warships := s.hostileWarshipCountInSea(seaID, route.FromFactionID, route.ToFactionID)
+			blockade := warships * blockadePercentPerWarship
+			if blockade > route.BlockadePercent {
+				route.BlockadePercent = blockade
+			}
+		}
+		if route.BlockadePercent > economy.MaxTradeRouteBlockadePercent {
+			route.BlockadePercent = economy.MaxTradeRouteBlockadePercent
+		}
+	}
+}
+
+// RegionBlockadePercent bir liman bölgesinin komşu denizindeki düşman savaş
+// gemilerinin yerleşim/rezerv ikmal tamponunu ne kadar kestiğini döner.
+func (s *GameState) RegionBlockadePercent(region *world.Region, ownerID string) int {
+	if s == nil || region == nil || region.IsSea || ownerID == "" || !region.HasPort() {
+		return 0
+	}
+	maxBlockade := 0
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor == nil || !neighbor.IsSea {
+			continue
+		}
+		blockade := s.hostileWarshipCountInSea(neighborID, ownerID) * blockadePercentPerWarship
+		if blockade > maxBlockade {
+			maxBlockade = blockade
+		}
+	}
+	if maxBlockade > economy.MaxTradeRouteBlockadePercent {
+		return economy.MaxTradeRouteBlockadePercent
+	}
+	return maxBlockade
+}
+
+func (s *GameState) hostileWarshipCountInSea(seaID world.RegionID, targetOwners ...string) int {
+	if s == nil || seaID == "" || len(targetOwners) == 0 {
+		return 0
+	}
+	count := 0
+	for _, fleet := range s.Armies {
+		if fleet == nil || !fleet.IsNaval || fleet.RegionID != seaID {
+			continue
+		}
+		warships := s.fleetWarshipCount(fleet)
+		if warships <= 0 {
+			continue
+		}
+		for _, targetOwner := range targetOwners {
+			if targetOwner != "" && targetOwner != fleet.OwnerID && s.atWar(fleet.OwnerID, targetOwner) {
+				count += warships
+				break
+			}
+		}
+	}
+	return count
+}
+
+func (s *GameState) fleetWarshipCount(fleet *army.Army) int {
+	if s == nil || fleet == nil || !fleet.IsNaval {
+		return 0
+	}
+	count := 0
+	for _, unit := range fleet.Units {
+		unitType := s.UnitTypes[unit.TypeID]
+		if unitType != nil && unitType.Category == army.CategoryNavalWar && unit.CurrentHP > 0 {
+			count++
+		}
+	}
+	return count
+}
+
+func (s *GameState) atWar(a, b string) bool {
+	if s == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	relation := s.Relations[faction.RelationKey(faction.FactionID(a), faction.FactionID(b))]
+	return relation != nil && relation.Stance == faction.StanceWar
 }
 
 func (s *GameState) merchantShipCount(fleet *army.Army) int {

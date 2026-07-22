@@ -585,6 +585,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
+		if regionGrainAidButtonHit(fx, fy, r.gs, r.SelectedRegion) {
+			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
+				return InputAction{Kind: ActionGrainAid, TargetRegion: r.SelectedRegion}
+			}
+			return InputAction{}
+		}
 		if regionDiplomacyButtonHit(fx, fy, r.gs, r.SelectedRegion) {
 			region := r.gs.Regions[r.SelectedRegion]
 			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {

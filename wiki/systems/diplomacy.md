@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-20
+last_updated: 2026-07-22
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -98,6 +98,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 
 - `Savaşta` ve `İttifaklar` listeleri fraksiyonun tüm aktif relation kayıtlarından üretilir.
 - `Ticaret Anlaşmaları` yalnız aktif, askıya alınmamış iki taraflı `TradeRoutes` kayıtlarını gösterir; bu yüzden ittifak ile ticaret birbirine karıştırılmaz.
+- Yeni ticaret rotası kurulurken hedef fraksiyonun üç aylık tahıl rezerv açığı ve kaynak fraksiyonun kapasite üstü tahıl fazlası değerlendirilir; ikisi de pozitifse ilgili yön `GoodGrain` olarak oluşturulur ve sonraki ekonomi tick'lerinde normal altın/stok kontrolleriyle tahıl ithalatı gerçekleşir.
 - Aynı vassal realm içindeki normalizasyon kaynaklı `StanceAllied` kayıtları dış ittifak sayılmaz; overlord veya bağlı devlet sayısı üst bilgide ayrıca gösterilir.
 - Teklif geçmişi sağ kolonda sürekli yer kaplamaz; `Geçmiş` düğmesiyle açılır ve `İlişkiler` düğmesiyle güncel ağa dönülür.
 - Standart teklif düğmeleri `ActionBlockReason()` sonucuna göre aktif veya `PASİF` çizilir; pasif düğmeler fare ve klavye odağına alınmaz. Dış devletle ilişki kurulmuşsa aynı `İttifak / Ticaret` düğmeleri `İttifakı Bitir / Ticareti Bitir` işlemine dönüşür ve alt aksiyon `Anlaşmayı Bitir` olur. Savaş `Barış`, vassallık ise `Vasallığı Bitir` yoluyla sona erdirilir. Doğrudan oyuncu vassalında sağ-alt `Vassal Yönetimi` kartı ayrıca onaylı `Vasallığı Bitir / İlhak Et` eylemlerini gösterir.

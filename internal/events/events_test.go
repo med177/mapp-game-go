@@ -61,7 +61,7 @@ func TestAffectedRegionIDsAllArmiesSkipsSeaRegions(t *testing.T) {
 		},
 	}
 
-	got := affectedRegionIDs(gs, &Event{ID: "harsh_winter", Target: "all_armies"}, nil)
+	got := affectedRegionIDs(gs, &Event{ID: "harsh_winter", Target: "all_armies"}, nil, "")
 	want := map[world.RegionID]bool{"land_a": false, "land_b": false}
 	if len(got) != len(want) {
 		t.Fatalf("beklenen kara bolgesi sayisi %d, got=%d (%v)", len(want), len(got), got)
@@ -372,5 +372,86 @@ func TestApplyChoiceStartsCapitalMove(t *testing.T) {
 	f := gs.Factions["player"]
 	if f.PendingCapitalSettlementID != "new_cap" || f.PendingCapitalTurns != 3 {
 		t.Fatalf("pending başkent taşıma başlamalıydı, got=%+v", f)
+	}
+}
+
+func TestApplyStoresTemporaryGrainEventModifiers(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player"},
+		},
+	}
+	evt := &Event{
+		ID:                     "drought",
+		NameTR:                 "Kuraklık",
+		Target:                 "player_faction",
+		GrainProductionPercent: -40,
+		GrainDemandPercent:     20,
+	}
+
+	Apply(gs, evt)
+	if len(gs.ActiveRegionEvents) != 1 {
+		t.Fatalf("olay bölgeye aktif status eklemeliydi, got=%d", len(gs.ActiveRegionEvents))
+	}
+	status := gs.ActiveRegionEvents[0]
+	if status.Type != "famine" || status.GrainProductionPercent != -40 || status.GrainDemandPercent != 20 {
+		t.Fatalf("geçici tahıl modifiyerleri status'a taşınmalıydı, got=%+v", status)
+	}
+}
+
+func TestApplyStoresRandomRegionGrainModifiersOnSelectedRegion(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"only_region": {ID: "only_region", OwnerID: "player"},
+		},
+	}
+	Apply(gs, &Event{
+		ID:                     "drought_random",
+		Target:                 "random_region",
+		GrainProductionPercent: -50,
+		GrainDemandPercent:     10,
+	})
+
+	if len(gs.ActiveRegionEvents) != 1 || gs.ActiveRegionEvents[0].RegionID != "only_region" {
+		t.Fatalf("random bölge seçimi aktif tahıl status'una taşınmalıydı, got=%+v", gs.ActiveRegionEvents)
+	}
+}
+
+func TestApplyChoiceStoresChoiceGrainModifiers(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player"},
+		},
+	}
+	evt := &Event{
+		ID:     "harvest_choice",
+		NameTR: "Hasat Kararı",
+		Target: "player_faction",
+		Choices: []Choice{{
+			LabelTR: "Ambarları doldur",
+			Effect: Effect{
+				GrainProductionPercent: 25,
+				GrainDemandPercent:     -10,
+			},
+		}},
+	}
+
+	if _, ok := ApplyChoice(gs, evt, 0); !ok {
+		t.Fatal("seçim uygulanmalıydı")
+	}
+	status := gs.ActiveRegionEvents[0]
+	if status.Type != "blessing" || status.GrainProductionPercent != 25 || status.GrainDemandPercent != -10 {
+		t.Fatalf("choice tahıl modifiyerleri status'a taşınmalıydı, got=%+v", status)
 	}
 }
