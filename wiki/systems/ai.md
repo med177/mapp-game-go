@@ -97,6 +97,11 @@ Kalıcı karar `GameState.AIPlans[factionID]` içindeki `AIPlanState` kaydıdır
 - savaş sonrası vassallığa izin verilip verilmediği ve doğrudan ilhak edilecek stratejik bölgeler
 - debug/kalibrasyon için karar nedeni
 
+Senaryo AI config'inde `ally` objective'i diplomatik yönelim metadata'sı olarak
+tanımlanabilir. Bu kayıtlar `LoadAIConfig()` tarafından kabul edilir ancak askeri
+planlayıcıya `AIPlanState` olarak yazılmaz; böylece ittifak niyeti yanlışlıkla saldırı
+veya yabancı bölge yürüyüşü hedefi haline gelmez.
+
 1300 senaryosunun statik yönleri `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`
 dosyasından yüklenir. `GameState.AIStrategies` runtime-only'dir ve save'e yazılmaz;
 aynı dosyadaki `GameState.AIDifficultyPolicy` de runtime-only tutulur. İkisi save
@@ -468,8 +473,8 @@ hamleleri sıralar; barıştaki yabancı hedefi veya yasak geçişi açamaz. Kal
 barıştaki başka bir devleti gösterirken aktif savaş varsa hücum orduları önce mevcut
 savaşı sonuçlandırır. Yeni proaktif savaş da saldırı rolü gücü ile rezerv hedefi hazır
 değilse veya kritik merkez tehdit altındaysa ertelenir. Kuşatma birimi olmadan kuşatma
-başlatıp teslimiyet beklenebilmesine dair mevcut mekanik korunur; kuşatma birimi yalnız
-genel hücum için gereklidir.
+başlatılabilir ve aktif kuşatmada genel hücum da seçilebilir; kuşatma birimi kuşatma
+ilerlemesini hızlandırır, ancak genel hücum için zorunlu değildir.
 
 ### Geri Çekilme ve Takviye
 
@@ -750,6 +755,7 @@ değişmeden 1300 diplomasi taramasının maliyeti azaltılır.
 - `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
 - bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür. Oyuncu bir teklifi reddettiğinde aktör-hedef-aksiyon bazında üç tur cooldown uygulanır; ardından aynı zar mekanizması %35 tekrar deneme şansı verir. Ret ayrıca ilişkiyi `-3` düşürür. Desteksiz dış ittifakların relation skoru ise artık her tur otomatik yükselmez; destek yoksa yavaşça aşınır.
+- aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa veya son kara toprağındaysa oyuncuya teslim olmayı teklif eder. Teklif `RegionID` ile aktif kuşatmaya bağlanır ve normal diplomasi teklif kotası/cooldown kurallarını kullanır. Oyuncu kabulünde savunmacı ordu geri çekilir; AI'ın son toprağı teslim oluyorsa game katmanı otomatik vassallık uygular.
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -111,6 +112,36 @@ func TestExecuteMoveStartsSiegeOnFortifiedTargetWithoutSiegeUnitAndWithDefender(
 	if a.MovePoints != 0 {
 		t.Fatalf("kuşatma sonrası hareket puanı bitmeliydi, got=%d", a.MovePoints)
 	}
+}
+
+func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
+	}
+	gs.Armies["ai_army"].RegionID = "fort"
+	gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "player", RegionID: "fort", MovePoints: 0, MaxMovePoints: 2,
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+
+	for turn := 1; turn <= 100; turn++ {
+		gs.Turn = turn
+		gs.DiplomaticOffers = nil
+		gs.DiplomacyOfferCounts = nil
+		gs.OfferRejectionTurns = nil
+		var steps []TurnStep
+		aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+		if len(gs.DiplomaticOffers) == 0 {
+			continue
+		}
+		offer := gs.DiplomaticOffers[0]
+		if offer.Action != string(diplomacy.ActionProposeSurrender) || offer.RegionID != "fort" || offer.ToFactionID != "player" {
+			t.Fatalf("AI yanlış teslimiyet teklifi üretti: %+v", offer)
+		}
+		return
+	}
+	t.Fatal("AI kuşatanı uygun koşullarda oyuncuya teslimiyet teklifi üretmedi")
 }
 
 func TestMoveArmyStopsAfterFailedGeneralAssault(t *testing.T) {

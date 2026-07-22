@@ -3,6 +3,7 @@ package diplomacy
 import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 const warJoinOfferPriority = 100
@@ -82,6 +83,51 @@ func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy fact
 		PriorityReason:       reason,
 		WarDeclarerFactionID: declarer,
 		WarEnemyFactionID:    enemy,
+	})
+	return true
+}
+
+// QueueSurrenderOffer kuşatma ile ilişkili teslimiyet teklifini kuyruğa ekler.
+// Bölge kimliği teklifin hangi aktif kuşatmaya ait olduğunu ayırt eder.
+func QueueSurrenderOffer(gs *state.GameState, from, to faction.FactionID, regionID world.RegionID, priority int, reason string) bool {
+	if gs == nil || from == "" || to == "" || from == to || regionID == "" {
+		return false
+	}
+	fromFaction := gs.Factions[from]
+	toFaction := gs.Factions[to]
+	if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
+		return false
+	}
+	target := gs.Regions[regionID]
+	siege := gs.SiegeAt(regionID)
+	if target == nil || target.IsSea || siege == nil {
+		return false
+	}
+	attacker := gs.Armies[siege.AttackerArmyID]
+	if attacker == nil || attacker.IsNaval || attacker.OwnerID != siege.AttackerFactionID || attacker.OwnerID == target.OwnerID || !IsWar(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+		return false
+	}
+	validDirection := (from == faction.FactionID(attacker.OwnerID) && to == faction.FactionID(target.OwnerID)) ||
+		(from == faction.FactionID(target.OwnerID) && to == faction.FactionID(attacker.OwnerID))
+	if !validDirection {
+		return false
+	}
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(ActionProposeSurrender) && offer.FromFactionID == from && offer.ToFactionID == to && offer.RegionID == regionID {
+			return false
+		}
+	}
+	if !spendDiplomacyOfferQuota(gs, from) {
+		return false
+	}
+	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
+		FromFactionID:  from,
+		ToFactionID:    to,
+		Action:         string(ActionProposeSurrender),
+		RegionID:       regionID,
+		CreatedTurn:    gs.Turn,
+		Priority:       priority,
+		PriorityReason: reason,
 	})
 	return true
 }

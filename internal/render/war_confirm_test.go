@@ -15,6 +15,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+func buttonRectsOverlap(a, b gameui.Button) bool {
+	return a.X < b.X+b.W && b.X < a.X+a.W && a.Y < b.Y+b.H && b.Y < a.Y+a.H
+}
+
 func TestHandleDiplomacyInputOpensWarConfirmModal(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
@@ -159,14 +163,14 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 	if !r.confirmDialog.show {
 		t.Fatal("kuşatma kararı modalı açılmalıydı")
 	}
-	if r.confirmDialog.thirdLabel != "" {
-		t.Fatalf("kuşatma birimi yokken genel hücum düğmesi gizlenmeliydi, got=%q", r.confirmDialog.thirdLabel)
+	if r.confirmDialog.thirdLabel != "Genel Hücum" {
+		t.Fatalf("kuşatma birimi olmasa da genel hücum düğmesi görünmeli, got=%q", r.confirmDialog.thirdLabel)
 	}
 	if r.confirmDialog.pendingAction.Kind != ActionStartSiege {
 		t.Fatalf("kuşatma kararı start siege üretmeliydi, got=%s", r.confirmDialog.pendingAction.Kind)
 	}
 	if r.battlePlan.show {
-		t.Fatal("kuşatma birimi yokken battle plan açılmamalıydı")
+		t.Fatal("kuşatma kararı modalı doğrudan battle plan açmamalıydı")
 	}
 }
 
@@ -299,6 +303,71 @@ func TestOpenSiegeDecisionIncludesCommanderOperationalSummary(t *testing.T) {
 	}
 	if !strings.Contains(r.confirmDialog.message, "Hareket +1") || !strings.Contains(r.confirmDialog.message, "Kuşatma +1/+1") {
 		t.Fatalf("operasyon bonusları modal mesajında görünmeli, got=%q", r.confirmDialog.message)
+	}
+}
+
+func TestSelectedDefensiveSiegePanelFollowsArmyAndSettlementSelection(t *testing.T) {
+	gs := &state.GameState{
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Kuşatan"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"fort": {ID: "fort", OwnerID: "player", Settlements: []world.Settlement{{ID: "castle", NameTR: "Kale"}}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"besieger": {ID: "besieger", OwnerID: "enemy", RegionID: "fort", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"defender": {ID: "defender", OwnerID: "player", RegionID: "fort", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {RegionID: "fort", AttackerArmyID: "besieger", DefenderArmyID: "defender", AttackerFactionID: "enemy", FortLevel: 2},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	r := &Renderer{gs: gs, SelectedArmy: "defender", SelectedRegion: "fort"}
+	defender, attacker, siege, target, surrenderOffered, ok := r.selectedDefensiveSiegePanelState()
+	if !ok || defender == nil || defender.ID != "defender" || attacker.ID != "besieger" || siege.RegionID != "fort" || target.ID != "fort" {
+		t.Fatalf("ordu seçimi savunma kuşatma paneline bağlanmalıydı: defender=%+v attacker=%+v siege=%+v target=%+v ok=%t", defender, attacker, siege, target, ok)
+	}
+
+	r.SelectedArmy = ""
+	r.SelectedRegion = "fort"
+	defender, attacker, _, _, surrenderOffered, ok = r.selectedDefensiveSiegePanelState()
+	if !ok || defender == nil || defender.ID != "defender" || attacker.ID != "besieger" {
+		t.Fatalf("yerleşim/bölge seçimi canlı savunma ordusunu bulmalıydı: defender=%+v attacker=%+v ok=%t", defender, attacker, ok)
+	}
+	sortie, surrender := buildDefensiveSiegeButtons()
+	if sortie.Label != "Huruç başlat" || surrender.Label != "Teslim ol" {
+		t.Fatalf("savunma kuşatması düğmeleri yanlış: %q / %q", sortie.Label, surrender.Label)
+	}
+	assault, lift, offer := buildSelectedSiegeButtons()
+	if assault.Label != "Genel Hücum" || lift.Label != "Kuşatmayı Kaldır" || offer.Label != "Teslimiyet Teklifi" {
+		t.Fatalf("saldıran kuşatma düğmeleri yanlış: %q / %q / %q", assault.Label, lift.Label, offer.Label)
+	}
+	if buttonRectsOverlap(assault, lift) || buttonRectsOverlap(assault, offer) || buttonRectsOverlap(lift, offer) {
+		t.Fatal("saldıran kuşatma düğmeleri birbirinin üzerine binmemeli")
+	}
+	delete(gs.Armies, "defender")
+	defender, attacker, _, _, surrenderOffered, ok = r.selectedDefensiveSiegePanelState()
+	if !ok || defender != nil || attacker == nil || attacker.ID != "besieger" {
+		t.Fatalf("savunma ordusu kalmasa da yerleşim kuşatma paneli açık kalmalıydı: defender=%+v attacker=%+v ok=%t", defender, attacker, ok)
+	}
+	if surrenderOffered {
+		t.Fatalf("teslimiyet teklifi yokken düğme aktif görünmemeli")
+	}
+	gs.DiplomaticOffers = []state.DiplomaticOffer{{
+		FromFactionID: "enemy", ToFactionID: "player", Action: string(diplomacy.ActionProposeSurrender), RegionID: "fort",
+	}}
+	_, _, _, _, surrenderOffered, ok = r.selectedDefensiveSiegePanelState()
+	if !ok || !surrenderOffered {
+		t.Fatalf("AI teslimiyet teklifi geldiğinde Teslim ol düğmesi aktif olmalı")
 	}
 }
 

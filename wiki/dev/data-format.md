@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-07-21
+last_updated: 2026-07-22
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -152,6 +152,14 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
   "timber": 80,
   "spice": 50,
   "cloth": 60,
+  "research": {
+    "completed": {
+      "iron_weapons": true,
+      "horse_breeding": true
+    },
+    "active_id": "",
+    "turns_left": 0
+  },
   "ai_aggressiveness": 62,
   "ai_expansion_targets": ["east_rome", "germiyan_bey"]
 }
@@ -160,6 +168,10 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
 Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
 
 `ai_expansion_targets` opsiyoneldir ve fraksiyon ID listesi taşır. Normal/zor zorlukta AI bu hedefleri fırsatçı savaş değerlendirmesinde önceliklendirir; hedefin yine kara sınırı paylaşması, ilişkinin `peace` olması ve güç kıyasından geçmesi gerekir.
+
+`research.completed` teknoloji ID'lerini anahtar, tamamlanma durumunu `true` değer
+olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme sırasında
+`faction.ResearchState.Completed map[string]bool` alanına doğrudan eşlenir.
 
 ---
 
@@ -252,7 +264,8 @@ Alanlar:
 - `faction_id`: `factions.json` içindeki devlet ID'si; dosyada tekil olmalıdır.
 - `profile`: telemetri ve sonraki profile bağlı ağırlıklar için strateji etiketi.
 - `objectives[].id`: devlet içinde tekil kalıcı objective kimliği.
-- `kind`: `expand`, `defend` veya `consolidate`.
+- `kind`: `expand`, `defend`, `consolidate` veya diplomatik yönelim metadata'sı olan `ally`.
+  `ally` objective'leri askeri stratejik plan üretmez; saldırı hedefi gibi yorumlanmaz.
 - `target_factions` / `target_regions`: soft yönelim verilecek hedefler.
 - `priority`: aynı anda uygulanabilir objective'ler arasındaki taban öncelik.
 - `commitment`: plan save state'ine taşınan `25..90` kararlılık değeri.

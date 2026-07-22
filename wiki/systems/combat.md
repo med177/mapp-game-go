@@ -11,6 +11,8 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 
 ## Genel Bakış
 
+Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir; son toprakta teslim olan AI, oyuncu tarafından kabul edilirse doğrudan vassal olur ve bölge yerel devlette kalır (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
+
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir. Resolve tamamlanınca oyuncu tarafında render katmanı ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim / HP` önce-sonra kırılımı gösterilir.
 
 ---
@@ -168,11 +170,13 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 7. Aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için normal hareketle girebilir; bu giriş ayrı bir kuşatma başlatmaz. Destek orduları aktif bölgedeki canlı state'ten her kuşatma tick'inde taranır; sonradan getirilen kuşatma birimleri de `BreachProgress` ve gedik kazanımını güçlendirir. İlgisiz fraksiyonlar yeni kuşatma hamlesi yapamaz.
 8. Kuşatmayı yapan ordu başka komşu bölgeye normal hareket emri alırsa bu hareket, eski kuşatmayı otomatik kaldırır; ayrı ikinci onay gerekmez.
 9. Savunucu ordu çözülüp büyük gedik açılırsa tahkimat teslim olabilir; gedik açılamasa bile uzun aç bırakma kuşatması sonunda teslimiyet mümkün kalır.
-10. Kuşatma birimi yoksa `Genel Hücum` kapalıdır; kale ancak kuşatmanın bekleme / aç bırakma süreciyle teslim olabilir.
+10. Kuşatma birimi yoksa da `Genel Hücum` yapılabilir; ancak gedik yoksa tahkimat doğrudan ele geçirilemez ve kale bekleme / aç bırakma / teslimiyet hattında kalır.
 11. `Genel Hücum`, gedik yokken tahkimatı doğrudan düşüremez; saldırı savunucuyu yıpratsa bile kale elde tutulur. En az küçük gedik açıldıysa hücum fetih üretebilir.
 12. Genel hücumda saldıran taraf ayrıca sur tırmanışı ve dar giriş baskısı kaynaklı ek zayiat alır; bu bedel gedik yokken en ağır, küçük gedikte daha düşük, büyük gedikte en düşüktür.
 13. Zaten başka bir devlet tarafından kuşatılmış tahkimli bölgeye üçüncü devlet yeni kuşatma başlatamaz; ancak bölgeye giriş hakkı varsa kuşatma yapan düşman orduya karşı savaş açabilir ve o ordu yenilirse kuşatma kalkar. Böyle bir savaş allied / same realm geçişinde gerçekleşiyorsa sahiplik değişmez, yalnız kuşatma kaldırılır.
 14. Kuşatılan bölgede bölge sahibine veya onun müttefikine ait bir kara ordusu varsa, bu ordu komşu bölgeye çıkmadan önce kuşatan orduya karşı huruç savaşı yapmak zorundadır. Huruç kazanılırsa kuşatma kalkar ve uygun dost/sahipsiz hedefe ilerlenir; kaybedilirse kalan birlikler kuşatılan bölgede kalır ve hareket puanı tükenir.
+15. Saldıran oyuncu da kuşatma panelindeki `Teslimiyet Teklifi` düğmesiyle AI savunmacıya çağrı gönderebilir. AI kabulü kuşatma baskısı, gedik, süre ve güç dengesine göre çözülür; teklif reddedilirse o tur diplomasi kotası harcanır.
+16. AI kuşatan, kuşatma baskısı ve gedik ilerlemesi yeterli olduğunda oyuncuya teslimiyet talebi gönderebilir; AI savunmacı da ağır baskı veya son toprak koşulunda oyuncuya teslim olmayı teklif edebilir. Teklifler `DiplomaticOffers` içinde bölge kimliğiyle saklanır, modal ve kuşatma paneli aynı çözümleyiciyi kullanır.
 
 Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 

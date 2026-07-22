@@ -1769,20 +1769,6 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				},
 			}
 		}
-		if !a.HasSiegeUnits(gs.UnitTypes) {
-			return moveOutcome{
-				survived: true,
-				step: TurnStep{
-					FactionID:    fid,
-					Kind:         TurnStepBattle,
-					ArmyID:       a.ID,
-					FromRegion:   fromRegion,
-					TargetRegion: target,
-					FocusRegion:  target,
-					Message:      actorName + " " + targetName + " kuşatmasını sürdürüyor ve teslimiyet bekliyor.",
-				},
-			}
-		}
 		if activeSiege.AttackerArmyID == a.ID {
 			defender := aiEnemyArmyInRegion(gs, a.OwnerID, target)
 			virtualDefense := false

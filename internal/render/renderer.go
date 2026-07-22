@@ -33,22 +33,23 @@ var (
 )
 
 const (
-	confirmDialogW             = float32(460)
-	confirmDialogH             = float32(166)
-	confirmDialogBtnW          = float32(120)
-	confirmDialogBtnH          = float32(36)
-	selectedSiegePanelW        = 520.0
-	selectedSiegePanelH        = 298.0
-	selectedSiegeButtonW       = 224.0
-	selectedSiegeButtonH       = 38.0
-	initialCameraZoomFactor    = 2.50
-	maxCameraZoomScale         = 10
-	activeEventIconSize        = float32(22)
-	activeEventIconSpacingY    = float32(24)
-	activeEventIconLiftY       = float32(48)
-	settlementMarkerSpriteSize = float32(26)
-	capitalLabelIconSmallSize  = float32(18)
-	capitalLabelIconMediumSize = float32(20)
+	confirmDialogW               = float32(460)
+	confirmDialogH               = float32(166)
+	confirmDialogBtnW            = float32(120)
+	confirmDialogBtnH            = float32(36)
+	selectedSiegePanelW          = 520.0
+	selectedSiegePanelH          = 298.0
+	selectedSiegeButtonW         = 224.0
+	selectedAttackerSiegeButtonW = 160.0
+	selectedSiegeButtonH         = 38.0
+	initialCameraZoomFactor      = 2.50
+	maxCameraZoomScale           = 10
+	activeEventIconSize          = float32(22)
+	activeEventIconSpacingY      = float32(24)
+	activeEventIconLiftY         = float32(48)
+	settlementMarkerSpriteSize   = float32(26)
+	capitalLabelIconSmallSize    = float32(18)
+	capitalLabelIconMediumSize   = float32(20)
 )
 
 // Renderer kamerayı ve dünya haritasını yönetir.

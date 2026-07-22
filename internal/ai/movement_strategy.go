@@ -152,7 +152,7 @@ func chooseBestMoveWithStrategicContext(gs *state.GameState, a *army.Army, strat
 	}
 	if activeSiege := gs.SiegeByArmy(a.ID); activeSiege != nil {
 		target := gs.Regions[activeSiege.RegionID]
-		if !aiCanStartSiege(gs, a, target) || !a.HasSiegeUnits(gs.UnitTypes) {
+		if !aiCanStartSiege(gs, a, target) {
 			return ""
 		}
 		if activeSiege.BreachLevel >= 2 {

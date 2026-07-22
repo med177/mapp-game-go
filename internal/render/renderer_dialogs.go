@@ -34,7 +34,6 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 	}
 	fortLevel := target.FortificationLevel()
 	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
-	hasSiegeUnits := attacker.HasSiegeUnits(r.gs.UnitTypes)
 	commanderSummary := commanderSiegeSummary(attacker.Commander)
 	if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
 		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel, commanderSummary)
@@ -53,10 +52,6 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 	}
 	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel, commanderSummary)
 	thirdLabel := "Genel Hücum"
-	if !hasSiegeUnits {
-		msg += " Bu ordu kuşatma birimi taşımıyor; yalnız kuşatma kurup teslim bekleyebilirsin."
-		thirdLabel = ""
-	}
 	r.confirmDialog = confirmDialogState{
 		show:          true,
 		title:         "Kuşatma Kararı",
@@ -71,12 +66,7 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 }
 
 func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *world.Region, bool) {
-	if r == nil || r.gs == nil || r.gs.Phase != state.PhasePlayerTurn || r.SelectedArmy == "" {
-		return nil, nil, nil, false
-	}
-	if r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.showHistoricalEvent ||
-		r.battleReport.show || r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
-		r.showTech || r.showTrade {
+	if r.siegePanelInteractionBlocked() || r.SelectedArmy == "" {
 		return nil, nil, nil, false
 	}
 	attacker := r.gs.Armies[r.SelectedArmy]
@@ -94,6 +84,68 @@ func (r *Renderer) selectedSiegePanelState() (*army.Army, *state.SiegeState, *wo
 	return attacker, siege, target, true
 }
 
+func (r *Renderer) siegePanelInteractionBlocked() bool {
+	return r == nil || r.gs == nil || r.gs.Phase != state.PhasePlayerTurn ||
+		r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.showHistoricalEvent ||
+		r.battleReport.show || r.eventDetail != "" || r.showVictoryDetail || r.showEventCodex || r.showDiplomacy ||
+		r.showTech || r.showTrade
+}
+
+// selectedDefensiveSiegePanelState, oyuncunun ordusu veya kuşatılmış
+// yerleşimi seçildiğinde aktif düşman kuşatmasının savunma görünümünü döner.
+// DefenderArmyID eski bir save'den kalmış olabileceği için canlı ordular
+// gerektiğinde yeniden taranır.
+func (r *Renderer) selectedDefensiveSiegePanelState() (*army.Army, *army.Army, *state.SiegeState, *world.Region, bool, bool) {
+	if r.siegePanelInteractionBlocked() {
+		return nil, nil, nil, nil, false, false
+	}
+	playerID := string(r.gs.PlayerFactionID)
+	regionID := r.SelectedRegion
+	var selected *army.Army
+	if r.SelectedArmy != "" {
+		selected = r.gs.Armies[r.SelectedArmy]
+		if selected == nil || selected.OwnerID != playerID || !r.gs.IsArmyDefendingSiegedRegion(selected) {
+			return nil, nil, nil, nil, false, false
+		}
+		regionID = selected.RegionID
+	}
+	if regionID == "" {
+		return nil, nil, nil, nil, false, false
+	}
+	target := r.gs.Regions[regionID]
+	siege := r.gs.SiegeAt(regionID)
+	if target == nil || siege == nil || target.OwnerID != playerID || siege.AttackerArmyID == "" {
+		return nil, nil, nil, nil, false, false
+	}
+	attacker := r.gs.Armies[siege.AttackerArmyID]
+	if attacker == nil || attacker.OwnerID == playerID || attacker.IsNaval || !diplomacy.IsWar(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+		return nil, nil, nil, nil, false, false
+	}
+	defender := selected
+	if defender == nil && siege.DefenderArmyID != "" {
+		candidate := r.gs.Armies[siege.DefenderArmyID]
+		if candidate != nil && candidate.OwnerID == playerID && r.gs.IsArmyDefendingSiegedRegion(candidate) {
+			defender = candidate
+		}
+	}
+	if defender == nil {
+		for _, candidate := range r.gs.Armies {
+			if candidate != nil && candidate.OwnerID == playerID && candidate.RegionID == regionID && r.gs.IsArmyDefendingSiegedRegion(candidate) {
+				defender = candidate
+				break
+			}
+		}
+	}
+	surrenderOffered := false
+	for _, offer := range r.gs.DiplomaticOffers {
+		if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.FromFactionID == faction.FactionID(attacker.OwnerID) && offer.ToFactionID == r.gs.PlayerFactionID && offer.RegionID == target.ID {
+			surrenderOffered = true
+			break
+		}
+	}
+	return defender, attacker, siege, target, surrenderOffered, true
+}
+
 func buildSelectedSiegePanel() gameui.Panel {
 	x := (ScreenWidth - selectedSiegePanelW) / 2
 	// Ordu detay paneli ekranın altına sabitlendiği için kuşatma panelini
@@ -105,38 +157,79 @@ func buildSelectedSiegePanel() gameui.Panel {
 	return gameui.NewPanel(x, y, selectedSiegePanelW, selectedSiegePanelH)
 }
 
-func buildSelectedSiegeButtons() (gameui.Button, gameui.Button) {
+func buildSelectedSiegeButtons() (gameui.Button, gameui.Button, gameui.Button) {
+	return buildSelectedSiegeButtonsWithSurrenderLabel("Teslimiyet Teklifi")
+}
+
+func buildSelectedSiegeButtonsWithSurrenderLabel(surrenderLabel string) (gameui.Button, gameui.Button, gameui.Button) {
+	panel := buildSelectedSiegePanel()
+	btnY := panel.Rect.Y + panel.Rect.H - selectedSiegeButtonH - 14
+	gap := 8.0
+	totalW := selectedAttackerSiegeButtonW*3 + gap*2
+	startX := panel.Rect.X + (panel.Rect.W-totalW)/2
+	assaultBtn := gameui.NewButton(startX, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
+	liftBtn := gameui.NewButton(startX+selectedAttackerSiegeButtonW+gap, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, "Kuşatmayı Kaldır").WithIcon(gameui.IconExit)
+	surrenderBtn := gameui.NewButton(startX+(selectedAttackerSiegeButtonW+gap)*2, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, surrenderLabel).WithIcon(gameui.IconSend)
+	return assaultBtn, liftBtn, surrenderBtn
+}
+
+func (r *Renderer) attackerSiegeSurrenderState(attacker *army.Army, target *world.Region) (sent, canSend bool) {
+	if r == nil || r.gs == nil || attacker == nil || target == nil || target.OwnerID == "" || target.OwnerID == string(r.gs.PlayerFactionID) || !diplomacy.IsWar(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+		return false, false
+	}
+	for _, offer := range r.gs.DiplomaticOffers {
+		if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.FromFactionID == r.gs.PlayerFactionID && offer.ToFactionID == faction.FactionID(target.OwnerID) && offer.RegionID == target.ID {
+			return true, false
+		}
+	}
+	return false, r.gs.DiplomacyOfferQuotaRemaining(r.gs.PlayerFactionID) > 0
+}
+
+func buildDefensiveSiegeButtons() (gameui.Button, gameui.Button) {
 	panel := buildSelectedSiegePanel()
 	btnY := panel.Rect.Y + panel.Rect.H - selectedSiegeButtonH - 14
 	gap := 14.0
 	totalW := selectedSiegeButtonW*2 + gap
 	startX := panel.Rect.X + (panel.Rect.W-totalW)/2
-	assaultBtn := gameui.NewButton(startX, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
-	liftBtn := gameui.NewButton(startX+selectedSiegeButtonW+gap, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Kuşatmayı Kaldır").WithIcon(gameui.IconExit)
-	return assaultBtn, liftBtn
+	sortieBtn := gameui.NewButton(startX, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Huruç başlat").WithIcon(gameui.IconSword)
+	surrenderBtn := gameui.NewButton(startX+selectedSiegeButtonW+gap, btnY, selectedSiegeButtonW, selectedSiegeButtonH, "Teslim ol").WithIcon(gameui.IconExit)
+	return sortieBtn, surrenderBtn
 }
 
 func (r *Renderer) selectedSiegePanelHit(fx, fy float64) bool {
 	if _, _, _, ok := r.selectedSiegePanelState(); !ok {
-		return false
+		if _, _, _, _, _, defensiveOK := r.selectedDefensiveSiegePanelState(); !defensiveOK {
+			return false
+		}
 	}
 	return buildSelectedSiegePanel().HitTest(fx, fy)
 }
 
 func (r *Renderer) selectedSiegePanelHovering(fx, fy float64) bool {
-	if _, _, _, ok := r.selectedSiegePanelState(); !ok {
+	if attacker, _, target, ok := r.selectedSiegePanelState(); ok {
+		assaultBtn, liftBtn, surrenderBtn := buildSelectedSiegeButtons()
+		_, canSend := r.attackerSiegeSurrenderState(attacker, target)
+		return (attacker.HasSiegeUnits(r.gs.UnitTypes) && assaultBtn.HitTest(fx, fy)) || liftBtn.HitTest(fx, fy) || (canSend && surrenderBtn.HitTest(fx, fy))
+	}
+	defender, _, _, _, surrenderOffered, ok := r.selectedDefensiveSiegePanelState()
+	if !ok {
 		return false
 	}
-	assaultBtn, liftBtn := buildSelectedSiegeButtons()
-	attacker := r.gs.Armies[r.SelectedArmy]
-	return (attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) && assaultBtn.HitTest(fx, fy)) || liftBtn.HitTest(fx, fy)
+	sortieBtn, surrenderBtn := buildDefensiveSiegeButtons()
+	return (defender != nil && sortieBtn.HitTest(fx, fy)) || (surrenderOffered && surrenderBtn.HitTest(fx, fy))
 }
 
 func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
-	attacker, siege, target, ok := r.selectedSiegePanelState()
-	if !ok {
+	if attacker, siege, target, ok := r.selectedSiegePanelState(); ok {
+		r.drawAttackerSiegePanel(screen, attacker, siege, target)
 		return
 	}
+	if defender, attacker, siege, target, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
+		r.drawDefensiveSiegePanel(screen, defender, attacker, siege, target, surrenderOffered)
+	}
+}
+
+func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.Army, siege *state.SiegeState, target *world.Region) {
 	panel := buildSelectedSiegePanel()
 	gameui.DrawPanel(screen, panel, gameui.PanelStyle{
 		BG:          color.RGBA{14, 10, 7, 246},
@@ -156,7 +249,7 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 	if siege.BreachLevel > 0 {
 		statusColor = color.RGBA{232, 170, 76, 255}
 	}
-	canAssault := attacker.HasSiegeUnits(r.gs.UnitTypes)
+	canAssault := true
 	statusRect := gameui.Rect{X: panel.Rect.X + 16, Y: panel.Rect.Y + 64, W: panel.Rect.W - 32, H: 36}
 	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
@@ -183,13 +276,102 @@ func (r *Renderer) drawSelectedSiegePanel(screen *ebiten.Image) {
 	commanderInfo := trimTextToWidth(commanderSiegeSummary(attacker.Commander), FaceSmall, panel.Rect.W-36)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 216, W: panel.Rect.W - 36}, commanderInfo, color.RGBA{154, 190, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUISeparator(screen, float32(panel.Rect.X+16), float32(panel.Rect.Y+242), float32(panel.Rect.X+panel.Rect.W-16), 1, color.RGBA{96, 72, 38, 190})
-	assaultBtn, liftBtn := buildSelectedSiegeButtons()
+	sent, canSend := r.attackerSiegeSurrenderState(attacker, target)
+	surrenderLabel := "Teslimiyet Teklifi"
+	if sent {
+		surrenderLabel = "Teklif Gönderildi"
+	}
+	assaultBtn, liftBtn, surrenderBtn := buildSelectedSiegeButtonsWithSurrenderLabel(surrenderLabel)
 	if canAssault {
 		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
 	} else {
 		drawUIButtonWidget(screen, assaultBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
 	}
 	drawUIButtonWidget(screen, liftBtn, solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+	if canSend {
+		drawUIButtonWidget(screen, surrenderBtn, solidButtonStyle(color.RGBA{62, 112, 154, 240}, color.RGBA{112, 164, 202, 255}, ColorWhite, 10))
+	} else {
+		drawUIButtonWidget(screen, surrenderBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
+	}
+}
+
+func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attacker *army.Army, siege *state.SiegeState, target *world.Region, surrenderOffered bool) {
+	panel := buildSelectedSiegePanel()
+	gameui.DrawPanel(screen, panel, gameui.PanelStyle{
+		BG:          color.RGBA{14, 10, 7, 246},
+		Border:      color.RGBA{184, 140, 62, 255},
+		BorderWidth: 2,
+	})
+	vector.FillRect(screen, float32(panel.Rect.X), float32(panel.Rect.Y), float32(panel.Rect.W), 4, color.RGBA{205, 160, 66, 255}, false)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 11}, "Savunma Kuşatması", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 140, Y: panel.Rect.Y + 15, W: 140}, "KUŞATMA ALTINDA", color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42}, "Yerleşim", color.RGBA{164, 132, 76, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 84, Y: panel.Rect.Y + 40, W: panel.Rect.W - 102}, trimTextToWidth(target.NameTR, FaceMed, panel.Rect.W-102), color.RGBA{244, 238, 222, 255}, gameui.TextMedium, gameui.TextAlignStart)
+
+	status := siegeBreachLabelTR(siege.BreachLevel)
+	statusColor := color.RGBA{204, 184, 126, 255}
+	if siege.BreachLevel > 0 {
+		statusColor = color.RGBA{232, 170, 76, 255}
+	}
+	statusRect := gameui.Rect{X: panel.Rect.X + 16, Y: panel.Rect.Y + 64, W: panel.Rect.W - 32, H: 36}
+	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
+	remainingText := fmt.Sprintf("Teslim için yaklaşık %d tur", siege.TurnsUntilSurrender())
+	if siege.BreachLevel >= 2 {
+		remainingText = "Büyük gedik: teslim olabilir"
+	}
+	if surrenderOffered {
+		remainingText = "Teslimiyet teklifi geldi"
+	}
+	drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, remainingText, color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+
+	// Kartları birkaç piksel sıkıştırarak alt bilgi satırları, ayırıcı ve
+	// düğmeler arasında net boşluk bırak.
+	metricY := panel.Rect.Y + 108
+	metricW := (panel.Rect.W - 44) / 2
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 44}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 44}, "İLERLEME", itoa(siege.BreachProgress), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 50, W: metricW, H: 44}, "GEDİK", status, statusColor)
+	defenderValue := "GARNİZON YOK"
+	defenderColor := color.RGBA{214, 130, 112, 255}
+	if defender != nil {
+		defenderValue = itoa(defender.TotalStrength(r.gs.UnitTypes))
+		defenderColor = color.RGBA{202, 222, 190, 255}
+	}
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY + 50, W: metricW, H: 44}, "SAVUNMA GÜCÜ", defenderValue, defenderColor)
+
+	attackerName := factionDisplayName(r.gs, attacker.OwnerID)
+	if attackerName == "" {
+		attackerName = attacker.OwnerID
+	}
+	defenderName := "Garnizon yok"
+	defenderPower := "—"
+	if defender != nil {
+		defenderName = factionDisplayName(r.gs, defender.OwnerID)
+		if defenderName == "" {
+			defenderName = defender.OwnerID
+		}
+		defenderPower = itoa(defender.TotalStrength(r.gs.UnitTypes))
+	}
+	attackerLine := fmt.Sprintf("Kuşatan: %s | Güç: %d", attackerName, attacker.TotalStrength(r.gs.UnitTypes))
+	defenderLine := fmt.Sprintf("Savunan: %s | Güç: %s", defenderName, defenderPower)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 206, W: panel.Rect.W - 36}, trimTextToWidth(attackerLine, FaceSmall, panel.Rect.W-36), color.RGBA{214, 154, 138, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 222, W: panel.Rect.W - 36}, trimTextToWidth(defenderLine, FaceSmall, panel.Rect.W-36), color.RGBA{154, 190, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUISeparator(screen, float32(panel.Rect.X+16), float32(panel.Rect.Y+240), float32(panel.Rect.X+panel.Rect.W-16), 1, color.RGBA{96, 72, 38, 190})
+
+	sortieBtn, surrenderBtn := buildDefensiveSiegeButtons()
+	if defender != nil {
+		drawUIButtonWidget(screen, sortieBtn, solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	} else {
+		drawUIButtonWidget(screen, sortieBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
+	}
+	if surrenderOffered {
+		drawUIButtonWidget(screen, surrenderBtn, solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+	} else {
+		drawUIButtonWidget(screen, surrenderBtn, solidButtonStyle(color.RGBA{72, 70, 64, 220}, color.RGBA{104, 102, 96, 255}, color.RGBA{184, 180, 172, 255}, 10))
+	}
 }
 
 func drawSelectedSiegeMetric(screen *ebiten.Image, rect gameui.Rect, label, value string, valueColor color.RGBA) {
@@ -814,6 +996,8 @@ func diplomacyOfferActionLabelTR(action string) string {
 		return "ittifak"
 	case "propose_trade":
 		return "ticaret"
+	case "propose_surrender":
+		return "teslimiyet"
 	default:
 		return "teklif"
 	}
@@ -823,6 +1007,9 @@ func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
 	if offer.Action == string(diplomacy.ActionJoinWarCall) {
 		return "Savaşa Katılım Çağrısı"
 	}
+	if offer.Action == string(diplomacy.ActionProposeSurrender) {
+		return "Kuşatma Teslimiyeti"
+	}
 	return "Anlaşma Teklifi"
 }
 
@@ -830,6 +1017,21 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 	fromName := factionDisplayName(gs, string(offer.FromFactionID))
 	if fromName == "" {
 		fromName = string(offer.FromFactionID)
+	}
+	if offer.Action == string(diplomacy.ActionProposeSurrender) {
+		regionName := string(offer.RegionID)
+		if gs != nil {
+			if region := gs.Regions[offer.RegionID]; region != nil && region.NameTR != "" {
+				regionName = region.NameTR
+			}
+			if region := gs.Regions[offer.RegionID]; region != nil && region.OwnerID == string(offer.FromFactionID) {
+				if len(gs.LandRegionsOwnedBy(offer.FromFactionID)) == 1 {
+					return fromName + " devleti " + regionName + " kuşatmasında teslim oluyor. Kabul edersen bölgeyi koruyup bu devleti vassal olarak bırakacaksın."
+				}
+				return fromName + " devleti " + regionName + " kuşatmasında teslim olmayı teklif ediyor. Kabul edersen savunma ordusu geri çekilecek ve bölgeyi alacaksın."
+			}
+		}
+		return fromName + " devleti " + regionName + " kuşatmasında teslim olmanı istiyor. Kabul edersen kuşatılan bölgeyi kaybedersin."
 	}
 	if offer.Action != string(diplomacy.ActionJoinWarCall) {
 		return fromName + " devleti size " + diplomacyOfferActionLabelTR(offer.Action) + " teklif etti."
@@ -1176,7 +1378,11 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 
 	r.drawDiplomacyOfferSummaryPanel(screen, modal, offer)
 
-	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+	acceptLabel := "Kabul Et"
+	if offer.Action == string(diplomacy.ActionProposeSurrender) {
+		acceptLabel = "Teslim Ol"
+	}
+	acceptBtn, rejectBtn := buildDiplomacyOfferButtonsWithAcceptLabel(acceptLabel)
 	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
 	drawUIButtonWidget(screen, rejectBtn,

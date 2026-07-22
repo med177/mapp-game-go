@@ -314,6 +314,92 @@ func TestMoveArmyFromBesiegedRegionRequiresSortieAndMovesAfterVictory(t *testing
 	}
 }
 
+func TestSortieSiegeActionResolvesInPlace(t *testing.T) {
+	gs := sortieTestState(4, 1)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !g.sortieSiegeWithStance("defender", "besieged", "") {
+		t.Fatal("savunma panelindeki huruç emri çözülmeliydi")
+	}
+	defender := gs.Armies["defender"]
+	if defender == nil || defender.RegionID != "besieged" {
+		t.Fatalf("yerinde huruç zaferinde savunmacı kuşatılan bölgede kalmalıydı: %+v", defender)
+	}
+	if defender.MovePoints < 1 {
+		t.Fatalf("başarılı huruç sonrası savunmacının en az 1 hareket hakkı kalmalıydı, got=%d", defender.MovePoints)
+	}
+	if gs.SiegeAt("besieged") != nil {
+		t.Fatal("başarılı huruç kuşatmayı kaldırmalıydı")
+	}
+}
+
+func TestSurrenderSiegeCapturesRegionAndWithdrawsDefenders(t *testing.T) {
+	gs := sortieTestState(1, 1)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	if !g.surrenderSiege("defender", "besieged") {
+		t.Fatal("teslimiyet emri çözülmeliydi")
+	}
+	if gs.SiegeAt("besieged") != nil {
+		t.Fatal("teslimiyet kuşatma kaydını temizlemeliydi")
+	}
+	if gs.Regions["besieged"].OwnerID != "p1" {
+		t.Fatalf("teslimiyet sonrası bölge kuşatana geçmeliydi, got=%s", gs.Regions["besieged"].OwnerID)
+	}
+	defender := gs.Armies["defender"]
+	if defender == nil || defender.RegionID != "exit" {
+		t.Fatalf("teslimiyet savunma ordusunu en yakın dost bölgeye çekmeliydi: %+v", defender)
+	}
+	if defender.Morale != 85 {
+		t.Fatalf("teslimiyet geri çekilen ordunun moralini düşürmeliydi, got=%d", defender.Morale)
+	}
+	if gs.Armies["besieger"].RegionID != "besieged" {
+		t.Fatalf("kuşatan ordu teslimiyet sonrası bölgede kalmalıydı: %+v", gs.Armies["besieger"])
+	}
+}
+
+func TestAcceptedLastRegionSiegeSurrenderCreatesVassal(t *testing.T) {
+	gs := sortieTestState(1, 1)
+	gs.PlayerFactionID = "p1"
+	delete(gs.Regions, "exit")
+	gs.DiplomaticOffers = []state.DiplomaticOffer{
+		{FromFactionID: "p2", ToFactionID: "p1", Action: "propose_surrender", RegionID: "besieged", CreatedTurn: gs.Turn, Priority: 175},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	_, result, ok := g.resolveDiplomacyOffer(0, true)
+	if !ok || !result.Applied {
+		t.Fatalf("son toprak teslimiyeti uygulanmalıydı: ok=%t result=%+v", ok, result)
+	}
+	if gs.Factions["p2"].OverlordID != "p1" {
+		t.Fatalf("son toprak teslimiyetinde savunmacı vassal olmalıydı: %+v", gs.Factions["p2"])
+	}
+	if gs.Regions["besieged"].OwnerID != "p2" {
+		t.Fatalf("vassallık kabulünde bölge yerel devlette kalmalıydı, got=%s", gs.Regions["besieged"].OwnerID)
+	}
+	if gs.SiegeAt("besieged") != nil || len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("teslimiyet teklifi kuşatmayı ve teklifi tüketmeliydi: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
+	}
+}
+
+func TestPlayerCanSendSiegeSurrenderOfferAndAIAcceptsLastRegion(t *testing.T) {
+	gs := sortieTestState(1, 2)
+	gs.PlayerFactionID = "p1"
+	delete(gs.Regions, "exit")
+	siege := gs.SiegeAt("besieged")
+	siege.TurnsElapsed = 3
+	siege.BreachLevel = 2
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.proposeSiegeSurrender("besieger", "besieged")
+	if gs.Factions["p2"].OverlordID != "p1" {
+		t.Fatalf("oyuncu teslimiyet teklifini AI kabul edince son toprak vassal olmalıydı: %+v", gs.Factions["p2"])
+	}
+	if gs.SiegeAt("besieged") != nil || len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("oyuncu teklifi çözümlenince kuşatma ve bekleyen teklif kalmamalıydı: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
+	}
+}
+
 func TestMoveArmyFromBesiegedRegionStaysWithLossesAndDoesNotReplenish(t *testing.T) {
 	gs := sortieTestState(1, 4)
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
@@ -1076,7 +1162,7 @@ func TestResolveSiegesCanStarveFortWithoutBreach(t *testing.T) {
 	}
 }
 
-func TestAssaultSiegeWithoutSiegeUnitIsBlocked(t *testing.T) {
+func TestAssaultSiegeWithoutSiegeUnitIsAllowed(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{
 		"atk": {
@@ -1105,13 +1191,13 @@ func TestAssaultSiegeWithoutSiegeUnitIsBlocked(t *testing.T) {
 	g.assaultSiegeWithStance("atk", "dst", "")
 
 	if gs.Regions["dst"].OwnerID != "p2" {
-		t.Fatalf("kuşatma birimi olmadan genel hücum kale fethi vermemeliydi, got=%s", gs.Regions["dst"].OwnerID)
+		t.Fatalf("gedik yokken kuşatma birimi olmadan genel hücum kale fethi vermemeliydi, got=%s", gs.Regions["dst"].OwnerID)
 	}
 	if gs.Armies["atk"].RegionID != "src" {
-		t.Fatalf("kuşatma birimi olmadan genel hücumda ordu hedefe girmemeliydi, got=%s", gs.Armies["atk"].RegionID)
+		t.Fatalf("gedik yokken kuşatma birimi olmadan genel hücumda ordu hedefe girmemeliydi, got=%s", gs.Armies["atk"].RegionID)
 	}
 	if gs.SiegeAt("dst") == nil {
-		t.Fatal("aktif kuşatma assault engellense de sürmeliydi")
+		t.Fatal("gediksiz genel hücumdan sonra aktif kuşatma sürmeliydi")
 	}
 }
 

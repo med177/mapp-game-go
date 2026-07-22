@@ -1,5 +1,5 @@
 {
-  "kind": "quick",
+  "kind": "slot",
   "game_version": "135fadc",
   "meta": {
     "scenario_id": "1455_wars_of_the_roses",
@@ -21025,7 +21025,7 @@
     "next_production_seq": 181,
     "next_army_seq": 55,
     "next_commander_seq": 26,
-    "phase": "player_turn",
+    "phase": "save_select",
     "winner_id": ""
   }
 }

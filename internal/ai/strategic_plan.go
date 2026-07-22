@@ -247,6 +247,12 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 		if !scenarioObjectiveHardGateActive(gs, objective) {
 			continue
 		}
+		// İttifak objective'i diplomasi metadata'sıdır. Bu planlayıcı yalnız
+		// askeri expand/defend/consolidate objective'leri için AIPlan üretir;
+		// ally kaydını saldırı hedefi gibi yorumlamak yanlış olur.
+		if objective.Kind == "ally" {
+			continue
+		}
 		kind := state.AIObjectiveKind(objective.Kind)
 		if kind == state.AIObjectiveConsolidate {
 			regions := objectiveRelevantRegions(gs, self.ID, "", objective)

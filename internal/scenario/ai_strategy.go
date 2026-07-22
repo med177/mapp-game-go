@@ -118,7 +118,9 @@ func LoadAIConfig(path string) (LoadedAIConfig, error) {
 			if objective.ID == "" {
 				return LoadedAIConfig{}, fmt.Errorf("AI objective kimliği boş: faction=%s", strategy.FactionID)
 			}
-			if objective.Kind != "expand" && objective.Kind != "defend" && objective.Kind != "consolidate" {
+			// ally, diplomatik yönelim metadata'sıdır; askeri planlayıcı bunu
+			// doğrudan bir saldırı/savunma planına çevirmemelidir.
+			if objective.Kind != "expand" && objective.Kind != "defend" && objective.Kind != "consolidate" && objective.Kind != "ally" {
 				return LoadedAIConfig{}, fmt.Errorf("AI objective türü geçersiz: faction=%s objective=%s kind=%s", strategy.FactionID, objective.ID, objective.Kind)
 			}
 			if _, duplicate := objectiveIDs[objective.ID]; duplicate {

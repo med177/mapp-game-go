@@ -46,3 +46,19 @@ func TestLoadAIConfigIncludesDifficultyPolicy(t *testing.T) {
 		t.Fatalf("zorluk politikası yanlış yüklendi: policy=%+v level=%+v", config.DifficultyPolicy, level)
 	}
 }
+
+func TestLoadAIConfigAllowsAllianceObjectiveMetadata(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ai_strategies.json")
+	data := []byte(`{"factions":[{"faction_id":"york","objectives":[{"id":"channel_backing","kind":"ally","target_factions":["flanders_county"],"priority":48}]}]}`)
+	if err := os.WriteFile(path, data, 0600); err != nil {
+		t.Fatalf("AI alliance fixture yazılamadı: %v", err)
+	}
+
+	config, err := LoadAIConfig(path)
+	if err != nil {
+		t.Fatalf("ally objective metadata'sı reddedilmemeli: %v", err)
+	}
+	if got := config.Strategies["york"].Objectives[0].Kind; got != "ally" {
+		t.Fatalf("ally objective türü korunmadı: %q", got)
+	}
+}

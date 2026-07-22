@@ -20,12 +20,12 @@
     "spice": 30,
     "cloth": 60,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -52,12 +52,12 @@
     "spice": 0,
     "cloth": 25,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -84,12 +84,12 @@
     "spice": 55,
     "cloth": 120,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -119,12 +119,12 @@
     "spice": 0,
     "cloth": 20,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -151,12 +151,12 @@
     "spice": 0,
     "cloth": 25,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -183,12 +183,12 @@
     "spice": 35,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -215,12 +215,12 @@
     "spice": 20,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -247,12 +247,12 @@
     "spice": 75,
     "cloth": 95,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -279,12 +279,12 @@
     "spice": 25,
     "cloth": 40,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -311,12 +311,12 @@
     "spice": 30,
     "cloth": 45,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -343,12 +343,12 @@
     "spice": 40,
     "cloth": 80,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -378,12 +378,12 @@
     "spice": 20,
     "cloth": 60,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -410,12 +410,12 @@
     "spice": 35,
     "cloth": 40,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -442,12 +442,12 @@
     "spice": 15,
     "cloth": 130,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -475,12 +475,12 @@
     "spice": 0,
     "cloth": 25,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -507,12 +507,12 @@
     "spice": 25,
     "cloth": 35,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -539,12 +539,12 @@
     "spice": 90,
     "cloth": 160,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -572,16 +572,16 @@
     "spice": 30,
     "cloth": 460,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation",
-        "guilds",
-        "trade_routes",
-        "banking",
-        "diplomacy"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true,
+        "guilds": true,
+        "trade_routes": true,
+        "banking": true,
+        "diplomacy": true
+      },
       "active_id": "merchant_embassies",
       "turns_left": 4
     },
@@ -608,17 +608,17 @@
     "spice": 25,
     "cloth": 220,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "heavy_armor",
-        "horse_breeding",
-        "cavalry_tactics",
-        "crop_rotation",
-        "guilds",
-        "trade_routes",
-        "tax_registers"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "crop_rotation": true,
+        "guilds": true,
+        "trade_routes": true,
+        "tax_registers": true
+      },
       "active_id": "banking",
       "turns_left": 3
     },
@@ -646,12 +646,12 @@
     "spice": 110,
     "cloth": 125,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -678,12 +678,12 @@
     "spice": 40,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -710,12 +710,12 @@
     "spice": 20,
     "cloth": 35,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -742,12 +742,12 @@
     "spice": 60,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -781,12 +781,12 @@
     "spice": 60,
     "cloth": 80,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -813,12 +813,12 @@
     "spice": 25,
     "cloth": 35,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -845,12 +845,12 @@
     "spice": 40,
     "cloth": 120,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -877,12 +877,12 @@
     "spice": 30,
     "cloth": 80,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -909,12 +909,12 @@
     "spice": 95,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -946,12 +946,12 @@
     "spice": 30,
     "cloth": 40,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -978,12 +978,12 @@
     "spice": 15,
     "cloth": 30,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1010,12 +1010,12 @@
     "spice": 0,
     "cloth": 0,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1045,12 +1045,12 @@
     "spice": 15,
     "cloth": 55,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1081,12 +1081,12 @@
     "spice": 145,
     "cloth": 95,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1117,12 +1117,12 @@
     "spice": 30,
     "cloth": 40,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1149,12 +1149,12 @@
     "spice": 50,
     "cloth": 100,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1181,12 +1181,12 @@
     "spice": 50,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1213,12 +1213,12 @@
     "spice": 30,
     "cloth": 90,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1245,12 +1245,12 @@
     "spice": 10,
     "cloth": 20,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1283,12 +1283,12 @@
     "spice": 40,
     "cloth": 80,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1315,12 +1315,12 @@
     "spice": 20,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1347,12 +1347,12 @@
     "spice": 70,
     "cloth": 80,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1382,12 +1382,12 @@
     "spice": 40,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1414,12 +1414,12 @@
     "spice": 10,
     "cloth": 65,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1449,12 +1449,12 @@
     "spice": 45,
     "cloth": 55,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1481,12 +1481,12 @@
     "spice": 20,
     "cloth": 45,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1513,12 +1513,12 @@
     "spice": 20,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1545,12 +1545,12 @@
     "spice": 10,
     "cloth": 40,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1577,12 +1577,12 @@
     "spice": 20,
     "cloth": 60,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1613,12 +1613,12 @@
     "spice": 10,
     "cloth": 50,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1649,12 +1649,12 @@
     "spice": 80,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1681,12 +1681,12 @@
     "spice": 120,
     "cloth": 120,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1713,12 +1713,12 @@
     "spice": 10,
     "cloth": 30,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1745,16 +1745,16 @@
     "spice": 20,
     "cloth": 180,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "heavy_armor",
-        "horse_breeding",
-        "cavalry_tactics",
-        "crop_rotation",
-        "guilds",
-        "tax_registers"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "crop_rotation": true,
+        "guilds": true,
+        "tax_registers": true
+      },
       "active_id": "plate_armor",
       "turns_left": 4
     },
@@ -1781,15 +1781,15 @@
     "spice": 15,
     "cloth": 140,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "heavy_armor",
-        "horse_breeding",
-        "cavalry_tactics",
-        "crop_rotation",
-        "guilds"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "heavy_armor": true,
+        "horse_breeding": true,
+        "cavalry_tactics": true,
+        "crop_rotation": true,
+        "guilds": true
+      },
       "active_id": "field_fortifications",
       "turns_left": 3
     },
@@ -1816,11 +1816,11 @@
     "spice": 0,
     "cloth": 70,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "horse_breeding",
-        "crop_rotation"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "horse_breeding": true,
+        "crop_rotation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
@@ -1847,13 +1847,13 @@
     "spice": 10,
     "cloth": 110,
     "research": {
-      "completed": [
-        "iron_weapons",
-        "steel_blades",
-        "horse_breeding",
-        "crop_rotation",
-        "trade_routes"
-      ],
+      "completed": {
+        "iron_weapons": true,
+        "steel_blades": true,
+        "horse_breeding": true,
+        "crop_rotation": true,
+        "trade_routes": true
+      },
       "active_id": "",
       "turns_left": 0
     },

@@ -17,6 +17,7 @@ const (
 	ActionProposePeace       Action = "propose_peace"
 	ActionProposeAlliance    Action = "propose_alliance"
 	ActionProposeTrade       Action = "propose_trade"
+	ActionProposeSurrender   Action = "propose_surrender"
 	ActionCancelAlliance     Action = "cancel_alliance"
 	ActionCancelTrade        Action = "cancel_trade"
 	ActionImproveRelations   Action = "improve_relations"

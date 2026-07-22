@@ -65,6 +65,7 @@ type DiplomaticOffer struct {
 	FromFactionID        faction.FactionID `json:"from_faction_id"`
 	ToFactionID          faction.FactionID `json:"to_faction_id"`
 	Action               string            `json:"action"`
+	RegionID             world.RegionID    `json:"region_id,omitempty"`
 	CreatedTurn          int               `json:"created_turn"`
 	Priority             int               `json:"priority,omitempty"`
 	PriorityReason       string            `json:"priority_reason,omitempty"`
@@ -77,6 +78,7 @@ type DiplomaticOfferHistoryEntry struct {
 	FromFactionID        faction.FactionID `json:"from_faction_id"`
 	ToFactionID          faction.FactionID `json:"to_faction_id"`
 	Action               string            `json:"action"`
+	RegionID             world.RegionID    `json:"region_id,omitempty"`
 	CreatedTurn          int               `json:"created_turn"`
 	ResolvedTurn         int               `json:"resolved_turn"`
 	Accepted             bool              `json:"accepted"`

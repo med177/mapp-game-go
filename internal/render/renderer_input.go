@@ -668,13 +668,35 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 	if _, siege, _, ok := r.selectedSiegePanelState(); ok {
-		assaultBtn, liftBtn := buildSelectedSiegeButtons()
+		assaultBtn, liftBtn, surrenderBtn := buildSelectedSiegeButtons()
 		attacker := r.gs.Armies[r.SelectedArmy]
-		if attacker != nil && attacker.HasSiegeUnits(r.gs.UnitTypes) && assaultBtn.HitTest(fx, fy) {
+		if attacker != nil && assaultBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionAssaultSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
 		}
 		if liftBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionLiftSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+		}
+		if attacker != nil {
+			_, canSend := r.attackerSiegeSurrenderState(attacker, r.gs.Regions[siege.RegionID])
+			if canSend && surrenderBtn.HitTest(fx, fy) {
+				return InputAction{Kind: ActionProposeSiegeSurrender, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+			}
+		}
+		if r.selectedSiegePanelHit(fx, fy) {
+			return InputAction{}
+		}
+	}
+	if defender, _, siege, _, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
+		sortieBtn, surrenderBtn := buildDefensiveSiegeButtons()
+		if defender != nil && sortieBtn.HitTest(fx, fy) {
+			return InputAction{Kind: ActionSortieSiege, ArmyID: defender.ID, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
+		}
+		if surrenderOffered && surrenderBtn.HitTest(fx, fy) {
+			armyID := army.ArmyID("")
+			if defender != nil {
+				armyID = defender.ID
+			}
+			return InputAction{Kind: ActionSurrenderSiege, ArmyID: armyID, TargetRegion: siege.RegionID}
 		}
 		if r.selectedSiegePanelHit(fx, fy) {
 			return InputAction{}

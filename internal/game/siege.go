@@ -102,9 +102,6 @@ func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion 
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return nil, false, ""
 	}
-	if !attacker.HasSiegeUnits(gs.UnitTypes) {
-		return nil, false, "Genel hücum için orduda en az bir kuşatma birimi olmalı."
-	}
 	if ok, reason := canArmyStartSiege(gs, attacker, targetRegion); ok {
 		return gs.SiegeAt(targetRegion.ID), true, ""
 	} else if siege := gs.SiegeAt(targetRegion.ID); siege != nil && siege.AttackerArmyID == attacker.ID {
