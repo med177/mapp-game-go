@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Recruit ve ordu birim detay hover popup'larındaki görseller oran korunarak 50 px daha yüksek çiziliyor; genişlik ve popup metin alanı buna göre artırıldı. Kapsam: `internal/render/hover_tooltip.go`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.
+
 - 2026-07-22: Bölge tıklamalarının askeri birim üretim panelini açması kaldırıldı; panel artık yalnızca alt HUD'daki `Ordu` butonuyla açılıyor. Bölge seçiminde açık panel kapanıyor ve bu davranış için regression testi eklendi. Kapsam: `internal/render/{renderer.go,renderer_input.go,renderer_input_test.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.
 
 - 2026-07-22: Askeri birim üretim paneli hover popup'ında maliyet satırları artık mevcut stok/gerekli miktar oranı yerine yalnız gerekli miktarı gösteriyor; kaynak yetersizse ilgili satır kırmızı `eksik` uyarısı taşıyor. Bina tooltip maliyetlerinin mevcut/gerekli formatı korunuyor. Kapsam: `internal/render/{hover_tooltip.go,recruit_panel_test.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./internal/render`.

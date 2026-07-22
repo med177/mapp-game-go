@@ -20,6 +20,19 @@ type tooltipLine struct {
 	col  color.RGBA
 }
 
+const (
+	buildingTooltipImageSize = 200.0
+	buildingTooltipWidth     = 450.0
+	unitTooltipImageExtraH   = 50.0
+	unitTooltipWidth         = 358.0
+)
+
+func unitTooltipImageMetrics() (width, height float64) {
+	height = float64(unitSpriteHeight(recruitCardW)) + unitTooltipImageExtraH
+	width = height / float64(unitSpriteAspectH)
+	return width, height
+}
+
 func tooltipRichLines(lines []tooltipLine) []gameui.RichTextLine {
 	out := make([]gameui.RichTextLine, 0, len(lines))
 	for _, line := range lines {
@@ -130,13 +143,16 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	costLines := buildingCostRequirementLines(gs, b)
 	reqLines, reqMissing := buildingRequirementLines(region, b)
 	effectLines := buildingEffectLines(b)
+	iconW, iconH := buildingTooltipImageSize, buildingTooltipImageSize
 	status, statusCol := buildingAvailabilityStatus(gs, region, b, reqMissing)
 	tooltipH := 146.0 + float64(len(costLines))*14 + float64(len(reqLines))*14 + float64(len(effectLines))*16
-	x, y, w, h := tooltipRect(mx, my, 308, tooltipH)
+	if tooltipH < iconH+28 {
+		tooltipH = iconH + 28
+	}
+	x, y, w, h := tooltipRect(mx, my, buildingTooltipWidth, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 
 	iconX, iconY := x+10.0, y+14.0
-	iconW, iconH := 70.0, 58.0
 	textX := iconX + iconW + 12.0
 
 	DrawText(screen, b.NameTR, textX, y+12, FaceMed, ColorGold)
@@ -267,12 +283,14 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
 	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
 	tooltipH := 190.0 + float64(len(costLines))*14 + float64(len(reqLines))*14
-	x, y, w, h := tooltipRect(mx, my, 328, tooltipH)
+	iconW, iconH := unitTooltipImageMetrics()
+	if tooltipH < iconH+28 {
+		tooltipH = iconH + 28
+	}
+	x, y, w, h := tooltipRect(mx, my, unitTooltipWidth, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 
 	iconX, iconY := x+10.0, y+14.0
-	iconW := float64(recruitCardW)
-	iconH := float64(unitSpriteHeight(float32(iconW)))
 	textX := iconX + iconW + 12
 
 	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
@@ -320,12 +338,14 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 
 	ensureArmySprites()
 	tooltipH := 190.0
-	x, y, w, h := tooltipRect(mx, my, 328, tooltipH)
+	iconW, iconH := unitTooltipImageMetrics()
+	if tooltipH < iconH+28 {
+		tooltipH = iconH + 28
+	}
+	x, y, w, h := tooltipRect(mx, my, unitTooltipWidth, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 
 	iconX, iconY := x+10.0, y+14.0
-	iconW := float64(recruitCardW)
-	iconH := float64(unitSpriteHeight(float32(iconW)))
 	textX := iconX + iconW + 12
 
 	vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
