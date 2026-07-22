@@ -1,0 +1,367 @@
+[
+  {
+    "id": "first_st_albans_1455",
+    "name_tr": "St Albans'ta İlk Kan",
+    "desc_tr": "York yanlıları St Albans'ta Lancaster çevresindeki saray hizbine saldırdı. İngiltere artık iki gülün savaşına sürükleniyor.",
+    "historical_year": 1455,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "york",
+    "choice_prompt_tr": "York hanesi ilk başarıyı nasıl kullanacak?",
+    "choices": [
+      {
+        "id": "press_claim",
+        "label_tr": "Taht iddiasını büyüt",
+        "desc_tr": "Londra üzerindeki baskı artar; Lancaster ile savaş derinleşir.",
+        "ai_weight": 8,
+        "effect": {
+          "gold_delta": 90,
+          "sat_delta": 6,
+          "relations": [
+            {
+              "faction_id": "lancaster",
+              "score_delta": -25,
+              "stance": "war"
+            }
+          ],
+          "set_flags": [
+            "st_albans_victory"
+          ]
+        }
+      },
+      {
+        "id": "guard_the_king",
+        "label_tr": "Kralı denetim altında tut",
+        "desc_tr": "Meşruiyet vurgusu yapılır; kısa süreli düzen sağlanır.",
+        "ai_weight": 5,
+        "effect": {
+          "gold_delta": 30,
+          "sat_delta": 10,
+          "relations": [
+            {
+              "faction_id": "lancaster",
+              "score_delta": -10,
+              "stance": "war"
+            }
+          ],
+          "set_flags": [
+            "protectorate_claim"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "loveday_1458",
+    "name_tr": "Loveday Uzlaşması",
+    "desc_tr": "Londra'da taraflar görünürde barıştırıldı; fakat silahlı maiyetler ve soylu kinleri hâlâ sokaklarda.",
+    "historical_year": 1458,
+    "historical_month": 3,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "all_factions",
+    "choice_prompt_tr": "Geçici barışa nasıl yaklaşılacak?",
+    "choices": [
+      {
+        "id": "accept_loveday",
+        "label_tr": "Uzlaşmayı kabul et",
+        "desc_tr": "Halk memnuniyeti artar, fakat savaş hazırlığı yavaşlar.",
+        "ai_weight": 5,
+        "effect": {
+          "gold_delta": -40,
+          "sat_delta": 12,
+          "relation_delta_all": 6,
+          "target": "player_faction"
+        }
+      },
+      {
+        "id": "retain_private_armies",
+        "label_tr": "Maiyetleri hazır tut",
+        "desc_tr": "Ordu disiplini korunur ama diplomatik tansiyon yükselir.",
+        "ai_weight": 7,
+        "effect": {
+          "army_hp_mod": 1.08,
+          "gold_delta": -80,
+          "sat_delta": -4,
+          "relation_delta_all": -6,
+          "target": "player_faction"
+        }
+      }
+    ]
+  },
+  {
+    "id": "act_of_accord_1460",
+    "name_tr": "Accord Yasası",
+    "desc_tr": "Richard of York, Henry VI hayattayken varis tanınmayı zorluyor. Lancaster soyu bunu taht gaspı sayıyor.",
+    "historical_year": 1460,
+    "historical_month": 10,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "york",
+    "choice_prompt_tr": "York iddiası nasıl ilan edilecek?",
+    "choices": [
+      {
+        "id": "legal_heir",
+        "label_tr": "Yasal varisliği savun",
+        "desc_tr": "Diplomasi ve meşruiyet güçlenir.",
+        "ai_weight": 8,
+        "effect": {
+          "gold_delta": -30,
+          "sat_delta": 8,
+          "complete_techs": [
+            "dynastic_marriages"
+          ],
+          "set_flags": [
+            "act_of_accord"
+          ]
+        }
+      },
+      {
+        "id": "take_crown_now",
+        "label_tr": "Tacın peşine düş",
+        "desc_tr": "Savaş ivmesi artar ama kararsız soylular ürker.",
+        "ai_weight": 6,
+        "effect": {
+          "army_hp_mod": 1.1,
+          "gold_delta": 80,
+          "relation_delta_all": -8,
+          "set_flags": [
+            "open_usurpation"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "towton_1461",
+    "name_tr": "Towton Muharebesi",
+    "desc_tr": "Kuzeydeki kanlı meydan savaşı iki haneden birine İngiltere'nin kapısını açabilir.",
+    "historical_year": 1461,
+    "historical_month": 3,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "york",
+    "requires_owned_regions": [
+      "yorkshire"
+    ],
+    "choice_prompt_tr": "Zafer şansı nasıl kullanılacak?",
+    "choices": [
+      {
+        "id": "march_on_london",
+        "label_tr": "Londra'ya yürü",
+        "desc_tr": "York orduları tahta doğrudan basınç kurar.",
+        "ai_weight": 9,
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": 120,
+          "sat_delta": 10,
+          "set_flags": [
+            "towton_momentum"
+          ]
+        }
+      },
+      {
+        "id": "secure_north",
+        "label_tr": "Kuzeyi sağlamlaştır",
+        "desc_tr": "Kuzey üssü güvene alınır; ilerleme daha temkinlidir.",
+        "ai_weight": 5,
+        "effect": {
+          "grain_delta": 50,
+          "sat_delta": 8,
+          "complete_techs": [
+            "field_fortifications"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "warwick_switches_1470",
+    "name_tr": "Warwick'in Taraf Değiştirmesi",
+    "desc_tr": "Kingmaker lakaplı Warwick, saray dengesi bozulursa eski müttefikini terk edip Lancaster restorasyonunu destekleyebilir.",
+    "historical_year": 1470,
+    "historical_month": 9,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "lancaster",
+    "choice_prompt_tr": "Warwick'in dönüşü nasıl karşılanacak?",
+    "choices": [
+      {
+        "id": "restore_henry",
+        "label_tr": "Henry VI'yı geri çıkar",
+        "desc_tr": "Lancaster meşruiyeti canlanır, fakat York düşmanlığı keskinleşir.",
+        "ai_weight": 8,
+        "effect": {
+          "gold_delta": 160,
+          "sat_delta": 12,
+          "relations": [
+            {
+              "faction_id": "york",
+              "score_delta": -20,
+              "stance": "war"
+            }
+          ],
+          "set_flags": [
+            "readeption"
+          ]
+        }
+      },
+      {
+        "id": "distrust_warwick",
+        "label_tr": "Warwick'e mesafe koy",
+        "desc_tr": "Hazine korunur, ama büyük bir müttefik fırsatı kaçabilir.",
+        "ai_weight": 3,
+        "effect": {
+          "gold_delta": 60,
+          "sat_delta": -6,
+          "relation_delta_all": -3
+        }
+      }
+    ]
+  },
+  {
+    "id": "tewkesbury_1471",
+    "name_tr": "Tewkesbury Darbesi",
+    "desc_tr": "Lancaster veliahtının kaderi ve güneybatıdaki son kuvvetler savaşın yönünü belirleyebilir.",
+    "historical_year": 1471,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "lancaster",
+    "requires_owned_regions": [
+      "wessex"
+    ],
+    "choice_prompt_tr": "Lancaster ordusu nasıl toparlanacak?",
+    "choices": [
+      {
+        "id": "protect_prince",
+        "label_tr": "Veliahdı koru",
+        "desc_tr": "Meşruiyet korunur; askeri hareket daha yavaş olur.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": -70,
+          "sat_delta": 10,
+          "set_flags": [
+            "prince_protected"
+          ]
+        }
+      },
+      {
+        "id": "risk_battle",
+        "label_tr": "Meydan savaşını zorla",
+        "desc_tr": "Son bir zafer olasılığı için ordu tüm gücüyle yüklenir.",
+        "ai_weight": 7,
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": -90,
+          "sat_delta": -4
+        }
+      }
+    ]
+  },
+  {
+    "id": "bosworth_1485",
+    "name_tr": "Bosworth Gölgesi",
+    "desc_tr": "Galler ve sürgün bağlantıları üzerinden yeni bir Tudor iddiası doğabilir. İç savaşın yorgun tarafları son bir hesaplaşmaya sürükleniyor.",
+    "historical_year": 1485,
+    "historical_month": 8,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "lancaster",
+    "requires_owned_regions": [
+      "wales"
+    ],
+    "choice_prompt_tr": "Tudor iddiası desteklensin mi?",
+    "choices": [
+      {
+        "id": "back_tudor",
+        "label_tr": "Tudor'u destekle",
+        "desc_tr": "Yeni bir uzlaşma hanedanı doğabilir.",
+        "ai_weight": 8,
+        "effect": {
+          "gold_delta": 220,
+          "sat_delta": 16,
+          "complete_techs": [
+            "dynastic_marriages"
+          ],
+          "set_flags": [
+            "tudor_claim"
+          ]
+        }
+      },
+      {
+        "id": "pure_lancaster",
+        "label_tr": "Lancaster soyunda kal",
+        "desc_tr": "Hanedan çizgisi korunur, ama savaş yorgunluğu büyür.",
+        "ai_weight": 4,
+        "effect": {
+          "army_hp_mod": 1.06,
+          "sat_delta": -10,
+          "relation_delta_all": -5
+        }
+      }
+    ]
+  },
+  {
+    "id": "poor_harvest",
+    "name_tr": "Zayıf Hasat",
+    "desc_tr": "Yağmurlar ve tedarik aksaklıkları tahıl ambarlarını zorluyor.",
+    "min_turn": 2,
+    "probability": 0.04,
+    "target": "player_faction",
+    "gold_delta": -40,
+    "grain_delta": -45,
+    "sat_delta": -10,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "wool_boom",
+    "name_tr": "Yün Ticareti Canlanıyor",
+    "desc_tr": "Flandre tezgahları ve İngiliz yünü yeniden iyi fiyat buldu.",
+    "min_turn": 3,
+    "probability": 0.035,
+    "target": "player_faction",
+    "gold_delta": 120,
+    "grain_delta": 0,
+    "sat_delta": 4,
+    "army_hp_mod": 1
+  },
+  {
+    "id": "retainer_dispute",
+    "name_tr": "Soylu Maiyeti Çatışması",
+    "desc_tr": "Bir lordun silahlı maiyeti yerel düzeni bozdu.",
+    "min_turn": 4,
+    "probability": 0.045,
+    "target": "random_region",
+    "gold_delta": -30,
+    "grain_delta": -10,
+    "sat_delta": -16,
+    "army_hp_mod": 0.96
+  },
+  {
+    "id": "coastal_raiders",
+    "name_tr": "Kıyı Baskınları",
+    "desc_tr": "Kanal ve İrlanda Denizi çevresindeki korsanlar liman ticaretini vuruyor.",
+    "min_turn": 6,
+    "probability": 0.025,
+    "target": "random_region",
+    "gold_delta": -70,
+    "grain_delta": 0,
+    "sat_delta": -8,
+    "army_hp_mod": 1
+  }
+]

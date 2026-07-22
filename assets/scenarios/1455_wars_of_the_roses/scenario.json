@@ -1,0 +1,143 @@
+{
+  "id": "1455_wars_of_the_roses",
+  "name": "Güller Savaşı",
+  "description": "1455 yılı. Yüz Yıl Savaşı'nın ardından İngiliz tacı zayıfladı; Henry VI'nın kırılgan iktidarı, York hanedanının iddiası ve Warwick gibi kudretli soylular ülkeyi iç savaşa sürüklüyor. Lancaster ve York haneleri Londra, kuzey kontlukları, Galler sınırları ve Kanal ticareti üzerinde üstünlük kurmaya çalışırken Fransa, İskoçya, Burgonya ve İrlanda'daki güçler dengeyi kendi lehine çevirmeye hazır.",
+  "version": 1.0,
+  "author": "Mapp Team",
+  "year": 1455,
+  "month": 5,
+  "map": {
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025
+  },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "03 It Will Never be the Same.mp3",
+          "weight": 1
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "lancaster_keep_the_crown",
+      "title": "Kızıl Gülün Tacı",
+      "description": "Lancaster hanesi olarak Londra'yı ve kuzeydeki rakip York merkezlerini ele geçirerek Henry VI'nın soyunu tahtta tut.",
+      "detail": "Hedef: London, Yorkshire, East Anglia ve Welsh Marches",
+      "type": "conquer_city",
+      "required_regions": [
+        "london",
+        "yorkshire",
+        "east_anglia",
+        "new_region_251"
+      ],
+      "deadline_year": 1485,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "lancaster"
+      ]
+    },
+    {
+      "id": "york_claim_the_throne",
+      "title": "Beyaz Gülün İddiası",
+      "description": "York hanesi olarak kuzey üssünü koru, Londra'yı al ve Lancastrian kalelerini dağıtarak tacı kendi soyuna geçir.",
+      "detail": "Hedef: London, Lancashire, Mercia ve Wessex",
+      "type": "conquer_city",
+      "required_regions": [
+        "london",
+        "lancashire",
+        "mercia",
+        "wessex"
+      ],
+      "deadline_year": 1485,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "york"
+      ]
+    },
+    {
+      "id": "scottish_border_security",
+      "title": "Kuzey Sınırı",
+      "description": "İskoçya olarak İngiliz iç savaşını fırsata çevirip kuzey sınırını güvenceye al.",
+      "detail": "Hedef: Scotland, Lancashire ve Yorkshire",
+      "type": "domination",
+      "target_region_count": 3,
+      "required_regions": [
+        "scotland",
+        "lancashire",
+        "yorkshire"
+      ],
+      "deadline_year": 1485,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "scotland_kingdom"
+      ]
+    },
+    {
+      "id": "burgundian_channel_trade",
+      "title": "Kanal Ticareti",
+      "description": "Burgonya-Flandre olarak yün ve kumaş ticaretini koru, Manş üzerindeki ticaret merkezlerini elde tut.",
+      "detail": "Hedef: Flanders, Holland, Luxembourg, Burgundy ve London ticaret hattı",
+      "type": "domination",
+      "target_region_count": 5,
+      "required_regions": [
+        "flanders",
+        "holland",
+        "luxembourg",
+        "burgundy",
+        "london"
+      ],
+      "deadline_year": 1485,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "flanders_county"
+      ]
+    },
+    {
+      "id": "france_channel_balance",
+      "title": "Kanal Dengesini Koru",
+      "description": "Fransa olarak Normandiya ve Paris'i güvenceye al, İngiliz iç savaşının kıtaya yeniden taşmasını engelle.",
+      "detail": "Hedef: Paris, Normandy, Anjou ve Brittany hattı",
+      "type": "domination",
+      "target_region_count": 8,
+      "required_regions": [
+        "paris",
+        "normandy",
+        "anjou",
+        "brittany"
+      ],
+      "deadline_year": 1485,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "france"
+      ]
+    }
+  ]
+}

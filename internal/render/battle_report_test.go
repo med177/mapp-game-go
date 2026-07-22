@@ -4,7 +4,9 @@ import (
 	"strings"
 	"testing"
 
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestBattleReportCommanderProgressTextIncludesPromotionAndTrait(t *testing.T) {
@@ -130,6 +132,45 @@ func TestPrepareForTurnAdvanceClosesPanelsAndResetsMapMode(t *testing.T) {
 	}
 	if r.devNeighborListExpanded {
 		t.Fatal("debug neighbor paneli de kapanmaliydi")
+	}
+}
+
+func TestSelectPlayerCapitalRegionSelectsActiveCapitalRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital_region": {
+				ID:      "capital_region",
+				OwnerID: "player",
+				Settlements: []world.Settlement{
+					{ID: "capital_city", NameTR: "Başkent", IsCapital: true},
+				},
+			},
+			"other_region": {ID: "other_region", OwnerID: "player"},
+		},
+	}
+	r := &Renderer{
+		gs:                       gs,
+		SelectedRegion:           "other_region",
+		SelectedArmy:             "army_1",
+		selectedSettlementRegion: "other_region",
+		selectedSettlementIndex:  0,
+	}
+
+	if !r.SelectPlayerCapitalRegion() {
+		t.Fatal("oyuncu başkenti seçilebilmeliydi")
+	}
+	if r.SelectedRegion != "capital_region" {
+		t.Fatalf("başkent bölgesi seçilmedi: got=%q", r.SelectedRegion)
+	}
+	if r.SelectedArmy != "" {
+		t.Fatalf("eski ordu seçimi temizlenmeliydi: got=%q", r.SelectedArmy)
+	}
+	if r.selectedSettlementRegion != "" || r.selectedSettlementIndex != -1 {
+		t.Fatalf("eski settlement seçimi temizlenmeliydi: region=%q index=%d", r.selectedSettlementRegion, r.selectedSettlementIndex)
 	}
 }
 

@@ -1,0 +1,86 @@
+{
+  "centers": [
+    {
+      "id": "london",
+      "links": [
+        "flanders",
+        "normandy",
+        "brittany",
+        "the_pale"
+      ],
+      "tier": "primary"
+    },
+    {
+      "id": "flanders",
+      "links": [
+        "london",
+        "holland",
+        "burgundy",
+        "paris",
+        "venice"
+      ],
+      "tier": "primary"
+    },
+    {
+      "id": "paris",
+      "links": [
+        "flanders",
+        "normandy",
+        "anjou",
+        "champagne"
+      ],
+      "tier": "primary"
+    },
+    {
+      "id": "normandy",
+      "links": [
+        "london",
+        "paris",
+        "brittany"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "brittany",
+      "links": [
+        "normandy",
+        "london",
+        "bay_of_biscay"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "holland",
+      "links": [
+        "flanders",
+        "north_sea"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "the_pale",
+      "links": [
+        "london",
+        "ulster",
+        "irish_sea"
+      ],
+      "tier": "secondary"
+    },
+    {
+      "id": "venice",
+      "links": [
+        "flanders",
+        "genoa"
+      ],
+      "tier": "primary"
+    },
+    {
+      "id": "genoa",
+      "links": [
+        "venice",
+        "provence"
+      ],
+      "tier": "secondary"
+    }
+  ]
+}

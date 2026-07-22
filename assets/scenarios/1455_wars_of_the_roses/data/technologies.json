@@ -1,0 +1,634 @@
+[
+  {
+    "category": "military",
+    "description_tr": "Piyade birimlerinin saldırı gücü +10%",
+    "effects": {
+      "infantry_attack_mod": 0.1
+    },
+    "gold_cost": 15,
+    "id": "iron_weapons",
+    "name_tr": "Demir Silahlar",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "military",
+    "description_tr": "Piyade birimlerinin saldırı gücü +20%",
+    "effects": {
+      "infantry_attack_mod": 0.2
+    },
+    "gold_cost": 30,
+    "id": "steel_blades",
+    "name_tr": "Çelik Kılıçlar",
+    "requires": [
+      "iron_weapons"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Tüm kara birimlerinin savunması +15%",
+    "effects": {
+      "land_defense_mod": 0.15
+    },
+    "gold_cost": 20,
+    "id": "heavy_armor",
+    "name_tr": "Ağır Zırh",
+    "requires": [
+      "iron_weapons"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Topçu birimlerinin gücü +25%",
+    "effects": {
+      "siege_attack_mod": 0.25
+    },
+    "gold_cost": 30,
+    "id": "siege_engines",
+    "name_tr": "Kuşatma Makineleri",
+    "requires": [
+      "steel_blades"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "military",
+    "description_tr": "Süvari birimlerinin saldırı gücü +20%",
+    "effects": {
+      "cavalry_attack_mod": 0.2
+    },
+    "gold_cost": 20,
+    "id": "cavalry_tactics",
+    "name_tr": "Süvari Taktikleri",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "economy",
+    "description_tr": "Her bölgeden altın geliri +2",
+    "effects": {
+      "gold_per_region": 2
+    },
+    "gold_cost": 12,
+    "id": "trade_routes",
+    "name_tr": "Ticaret Yolları",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "economy",
+    "description_tr": "Her bölgeden altın geliri +3; ticari muhasebe gelişir.",
+    "effects": {
+      "gold_per_region": 3,
+      "market_gold_mod": 0.1
+    },
+    "gold_cost": 28,
+    "id": "banking",
+    "name_tr": "Bankacılık",
+    "requires": [
+      "trade_routes"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "economy",
+    "description_tr": "Tüm bölgelerden tahıl üretimi +20%",
+    "effects": {
+      "grain_mod": 0.2
+    },
+    "gold_cost": 18,
+    "id": "crop_rotation",
+    "name_tr": "Nöbetleşe Ekim",
+    "requires": [],
+    "turns_required": 4
+  },
+  {
+    "category": "economy",
+    "description_tr": "Pazar geliri %75 artar",
+    "effects": {
+      "market_gold_mod": 0.75
+    },
+    "gold_cost": 40,
+    "id": "guilds",
+    "name_tr": "Loncalar",
+    "requires": [
+      "banking"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Barış teklifleri daha kolay kabul edilir; diplomatik ilişki bonusu +12",
+    "effects": {
+      "peace_relation_bonus": 12
+    },
+    "gold_cost": 10,
+    "id": "diplomacy",
+    "name_tr": "Diplomasi Sanatı",
+    "requires": [],
+    "turns_required": 2
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Düşman ordularının güçlerini gör",
+    "effects": {
+      "reveal_enemy_strength": true
+    },
+    "gold_cost": 20,
+    "id": "espionage",
+    "name_tr": "Casusluk",
+    "requires": [
+      "diplomacy"
+    ],
+    "turns_required": 3
+  },
+  {
+    "category": "naval",
+    "description_tr": "Deniz birimlerinin hareket puanı +1",
+    "effects": {
+      "naval_move_bonus": 1
+    },
+    "gold_cost": 15,
+    "id": "navigation",
+    "name_tr": "Denizcilik",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "naval",
+    "description_tr": "Tüm ordulara +1 hareket puanı",
+    "effects": {
+      "move_bonus": 1
+    },
+    "gold_cost": 20,
+    "id": "cartography",
+    "name_tr": "Kartografya",
+    "requires": [
+      "navigation"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "religion",
+    "description_tr": "Halk memnuniyeti +6 tüm bölgelerde",
+    "effects": {
+      "satisfaction_bonus": 6
+    },
+    "gold_cost": 10,
+    "id": "theology",
+    "name_tr": "İlahiyat",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "religion",
+    "description_tr": "Din dönüşümü hızı iki katına çıkar; dinî kurumlar düzen sağlar.",
+    "effects": {
+      "conversion_speed_mod": 1,
+      "satisfaction_bonus": 2
+    },
+    "gold_cost": 25,
+    "id": "proselytism",
+    "name_tr": "Misyonerlik",
+    "requires": [
+      "theology"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Süvari eğitim altyapısı kurulumu; hafif süvari açılır ve süvari hücumları keskinleşir.",
+    "effects": {
+      "cavalry_attack_mod": 0.12
+    },
+    "gold_cost": 16,
+    "id": "horse_breeding",
+    "name_tr": "At Yetiştiriciliği",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "military",
+    "description_tr": "Ağır süvari ve elit piyade için zırh standardı.",
+    "effects": {
+      "land_defense_mod": 0.1
+    },
+    "gold_cost": 34,
+    "id": "plate_armor",
+    "name_tr": "Plaka Zırh",
+    "requires": [
+      "heavy_armor",
+      "steel_blades"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "military",
+    "description_tr": "Kuşatma ekipleri ve istihkâm organizasyonu.",
+    "effects": {
+      "siege_attack_mod": 0.1
+    },
+    "gold_cost": 22,
+    "id": "engineering_corps",
+    "name_tr": "Mühendis Ocakları",
+    "requires": [
+      "iron_weapons"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Bombarda gibi erken barutlu kuşatma silahlarını açar.",
+    "effects": {
+      "siege_attack_mod": 0.15
+    },
+    "gold_cost": 38,
+    "id": "gunpowder",
+    "name_tr": "Barut Formülleri",
+    "requires": [
+      "siege_engines",
+      "engineering_corps"
+    ],
+    "turns_required": 6
+  },
+  {
+    "category": "military",
+    "description_tr": "Tam ölçekli top üretim teknikleri.",
+    "effects": {
+      "siege_attack_mod": 0.2
+    },
+    "gold_cost": 55,
+    "id": "cast_bronze_cannon",
+    "name_tr": "Bronz Top Dökümü",
+    "requires": [
+      "gunpowder"
+    ],
+    "turns_required": 7
+  },
+  {
+    "category": "naval",
+    "description_tr": "Ticaret filolarının kayıt ve ikmal sistemi; liman verimi artar.",
+    "effects": {
+      "gold_per_region": 2,
+      "market_gold_mod": 0.25
+    },
+    "gold_cost": 16,
+    "id": "harbor_administration",
+    "name_tr": "Liman İdaresi",
+    "requires": [
+      "trade_routes"
+    ],
+    "turns_required": 3
+  },
+  {
+    "category": "naval",
+    "description_tr": "Savaş gemisi manevra ve çatışma doktrini.",
+    "effects": {
+      "naval_attack_mod": 0.1,
+      "naval_defense_mod": 0.08,
+      "naval_move_bonus": 1
+    },
+    "gold_cost": 28,
+    "id": "naval_doctrine",
+    "name_tr": "Donanma Doktrini",
+    "requires": [
+      "navigation"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "naval",
+    "description_tr": "Uzak deniz ticaret hatlarını güvenli hale getirir ve ticari dönüşü hızlandırır.",
+    "effects": {
+      "gold_per_region": 3,
+      "market_gold_mod": 0.35
+    },
+    "gold_cost": 30,
+    "id": "open_sea_convoys",
+    "name_tr": "Açık Deniz Konvoyları",
+    "requires": [
+      "harbor_administration",
+      "cartography"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kıtlık şoklarını azaltan tahıl depolama reformu ve taşra düzeni.",
+    "effects": {
+      "grain_mod": 0.15,
+      "satisfaction_bonus": 2
+    },
+    "gold_cost": 24,
+    "id": "state_granaries",
+    "name_tr": "Devlet Ambarları",
+    "requires": [
+      "crop_rotation"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "economy",
+    "description_tr": "Vergi kaydı standardizasyonu ile ölçülü gelir artışı.",
+    "effects": {
+      "gold_per_region": 3
+    },
+    "gold_cost": 22,
+    "id": "tax_registers",
+    "name_tr": "Tahrir Defterleri",
+    "requires": [
+      "trade_routes"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "naval",
+    "description_tr": "Venedik ve Ceneviz tersane geleneğiyle kadırga savaş kapasitesi artar.",
+    "effects": {
+      "naval_attack_mod": 0.22,
+      "naval_defense_mod": 0.16
+    },
+    "gold_cost": 34,
+    "id": "latin_naval_architecture",
+    "name_tr": "Latin Deniz Mimarisi",
+    "requires": [
+      "naval_doctrine",
+      "harbor_administration"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "military",
+    "description_tr": "Düzenli talim sahaları piyadenin koordinasyonunu ve disiplinini artırır.",
+    "effects": {
+      "infantry_attack_mod": 0.12,
+      "land_defense_mod": 0.08
+    },
+    "gold_cost": 26,
+    "id": "standing_infantry",
+    "name_tr": "Düzenli Piyade Talimi",
+    "requires": [
+      "steel_blades",
+      "heavy_armor"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Hudut kaleleri ve siper düzeni kara savunmasını güçlendirir.",
+    "effects": {
+      "land_defense_mod": 0.12
+    },
+    "gold_cost": 24,
+    "id": "field_fortifications",
+    "name_tr": "Hudut Tahkimatı",
+    "requires": [
+      "heavy_armor"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Atlı okçu ve süratli hücum talimleri süvari baskısını artırır.",
+    "effects": {
+      "cavalry_attack_mod": 0.14
+    },
+    "gold_cost": 28,
+    "id": "composite_bow_drills",
+    "name_tr": "Kompozit Yay Talimleri",
+    "requires": [
+      "horse_breeding",
+      "cavalry_tactics"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Mühimmat, yol ve kuşatma trenleri düzeni ağır silahların temposunu artırır.",
+    "effects": {
+      "siege_attack_mod": 0.12,
+      "land_defense_mod": 0.04
+    },
+    "gold_cost": 30,
+    "id": "siege_logistics",
+    "name_tr": "Kuşatma Lojistiği",
+    "requires": [
+      "engineering_corps"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "military",
+    "description_tr": "Dökümhane standardizasyonu topçu üretimini ve ateş gücünü geliştirir.",
+    "effects": {
+      "siege_attack_mod": 0.25,
+      "iron_mod": 0.15
+    },
+    "gold_cost": 48,
+    "id": "artillery_foundries",
+    "name_tr": "Top Dökümhaneleri",
+    "requires": [
+      "cast_bronze_cannon"
+    ],
+    "turns_required": 6
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kervansaray ve menzil ağı, iç ticaret akışını ölçülü biçimde hızlandırır.",
+    "effects": {
+      "gold_per_region": 2,
+      "market_gold_mod": 0.15
+    },
+    "gold_cost": 24,
+    "id": "caravanserai_network",
+    "name_tr": "Kervansaray Ağı",
+    "requires": [
+      "trade_routes"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "economy",
+    "description_tr": "Merkezi darphane ve ayar standardı devlet gelirlerini dengeli biçimde toparlar.",
+    "effects": {
+      "gold_per_region": 4
+    },
+    "gold_cost": 36,
+    "id": "mint_standardization",
+    "name_tr": "Darphane Standardı",
+    "requires": [
+      "banking",
+      "tax_registers"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "economy",
+    "description_tr": "Maden imtiyazları demir ve taş üretimini kurumsallaştırır.",
+    "effects": {
+      "iron_mod": 0.25,
+      "stone_mod": 0.2
+    },
+    "gold_cost": 28,
+    "id": "mining_concessions",
+    "name_tr": "Maden İmtiyazları",
+    "requires": [
+      "guilds"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kereste depoları ve sevkiyat kayıtları tersane ve inşaat üretimini besler.",
+    "effects": {
+      "timber_mod": 0.3
+    },
+    "gold_cost": 26,
+    "id": "timber_yards",
+    "name_tr": "Kereste Depoları",
+    "requires": [
+      "harbor_administration"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Hanedan bağları barış görüşmelerinde güven unsuru sağlar.",
+    "effects": {
+      "peace_relation_bonus": 12
+    },
+    "gold_cost": 18,
+    "id": "dynastic_marriages",
+    "name_tr": "Hanedan Evlilikleri",
+    "requires": [
+      "diplomacy"
+    ],
+    "turns_required": 3
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Kalıcı yazıhane ve temsilcilikler diplomatik dengeyi güçlendirir.",
+    "effects": {
+      "peace_relation_bonus": 8,
+      "gold_per_region": 2
+    },
+    "gold_cost": 24,
+    "id": "merchant_embassies",
+    "name_tr": "Tüccar Temsilcilikleri",
+    "requires": [
+      "diplomacy",
+      "banking"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Yazıhane ve haber ağları düşman kuvvetleri hakkında tam istihbarat sağlar.",
+    "effects": {
+      "peace_relation_bonus": 6,
+      "reveal_enemy_strength": true
+    },
+    "gold_cost": 28,
+    "id": "chancery_network",
+    "name_tr": "Kançılarya Ağı",
+    "requires": [
+      "espionage"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "naval",
+    "description_tr": "Tersane iş bölümü ve ikmal ritmi filoları daha çevik kılar.",
+    "effects": {
+      "naval_defense_mod": 0.1,
+      "naval_move_bonus": 1
+    },
+    "gold_cost": 24,
+    "id": "shipyard_organization",
+    "name_tr": "Tersane Organizasyonu",
+    "requires": [
+      "harbor_administration"
+    ],
+    "turns_required": 4
+  },
+  {
+    "category": "naval",
+    "description_tr": "Kadırga üstü hafif top kullanımı deniz muharebesini sertleştirir.",
+    "effects": {
+      "naval_attack_mod": 0.18,
+      "siege_attack_mod": 0.05
+    },
+    "gold_cost": 34,
+    "id": "galley_artillery",
+    "name_tr": "Kadırga Topçuluğu",
+    "requires": [
+      "naval_doctrine",
+      "gunpowder"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "naval",
+    "description_tr": "Açık deniz haritaları ve amirallik kayıtları kara ve deniz hareketini hızlandırır.",
+    "effects": {
+      "naval_move_bonus": 1,
+      "move_bonus": 1
+    },
+    "gold_cost": 38,
+    "id": "admiralty_charts",
+    "name_tr": "Amirallik Haritaları",
+    "requires": [
+      "cartography",
+      "open_sea_convoys"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "religion",
+    "description_tr": "Vakıf sistemi taşrada düzen ve iaşe desteği sağlar.",
+    "effects": {
+      "satisfaction_bonus": 4,
+      "gold_per_region": 1
+    },
+    "gold_cost": 18,
+    "id": "waqf_foundations",
+    "name_tr": "Vakıf Düzeni",
+    "requires": [
+      "theology"
+    ],
+    "turns_required": 3
+  },
+  {
+    "category": "religion",
+    "description_tr": "Medrese ve manastır ağları dönüşümü hızlandırırken toplumsal istikrar sağlar.",
+    "effects": {
+      "conversion_speed_mod": 1,
+      "satisfaction_bonus": 3
+    },
+    "gold_cost": 30,
+    "id": "scholastic_centers",
+    "name_tr": "İlim Merkezleri",
+    "requires": [
+      "proselytism"
+    ],
+    "turns_required": 5
+  },
+  {
+    "category": "religion",
+    "description_tr": "Ziyaret yolları ve kutsal şehir ağı ticaretle huzuru birlikte besler.",
+    "effects": {
+      "satisfaction_bonus": 3,
+      "gold_per_region": 2
+    },
+    "gold_cost": 26,
+    "id": "pilgrimage_routes",
+    "name_tr": "Hac ve Ziyaret Yolları",
+    "requires": [
+      "theology",
+      "trade_routes"
+    ],
+    "turns_required": 4
+  }
+]

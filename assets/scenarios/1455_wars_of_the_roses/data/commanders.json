@@ -1,0 +1,151 @@
+[
+  {
+    "id": "commander_lancaster_henry_vi",
+    "owner_id": "lancaster",
+    "name": "Henry VI",
+    "portrait_asset": "lancaster_henry_vi.png",
+    "level": 1,
+    "traits": [
+      "defender",
+      "pious"
+    ]
+  },
+  {
+    "id": "commander_lancaster_margaret",
+    "owner_id": "lancaster",
+    "name": "Margaret of Anjou",
+    "portrait_asset": "lancaster_margaret_anjou.png",
+    "level": 2,
+    "traits": [
+      "tactician",
+      "diplomat"
+    ]
+  },
+  {
+    "id": "commander_lancaster_somerset",
+    "owner_id": "lancaster",
+    "name": "Henry Beaufort, Duke of Somerset",
+    "portrait_asset": "lancaster_somerset.png",
+    "level": 2,
+    "traits": [
+      "aggressor"
+    ]
+  },
+  {
+    "id": "commander_lancaster_jasper_tudor",
+    "owner_id": "lancaster",
+    "name": "Jasper Tudor",
+    "portrait_asset": "lancaster_jasper_tudor.png",
+    "level": 2,
+    "traits": [
+      "defender",
+      "veteran"
+    ]
+  },
+  {
+    "id": "commander_york_richard",
+    "owner_id": "york",
+    "name": "Richard, Duke of York",
+    "portrait_asset": "york_richard.png",
+    "level": 3,
+    "traits": [
+      "tactician",
+      "defender"
+    ]
+  },
+  {
+    "id": "commander_york_warwick",
+    "owner_id": "york",
+    "name": "Richard Neville, Earl of Warwick",
+    "portrait_asset": "york_warwick.png",
+    "level": 3,
+    "traits": [
+      "diplomat",
+      "aggressor"
+    ]
+  },
+  {
+    "id": "commander_york_edward_march",
+    "owner_id": "york",
+    "name": "Edward, Earl of March",
+    "portrait_asset": "york_edward_march.png",
+    "level": 2,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ]
+  },
+  {
+    "id": "commander_york_salisbury",
+    "owner_id": "york",
+    "name": "Richard Neville, Earl of Salisbury",
+    "portrait_asset": "york_salisbury.png",
+    "level": 2,
+    "traits": [
+      "tactician"
+    ]
+  },
+  {
+    "id": "commander_france_charles_vii",
+    "owner_id": "france",
+    "name": "Charles VII",
+    "portrait_asset": "france_charles_vii.png",
+    "level": 3,
+    "traits": [
+      "diplomat",
+      "defender"
+    ]
+  },
+  {
+    "id": "commander_france_louis_dauphin",
+    "owner_id": "france",
+    "name": "Louis, Dauphin of France",
+    "portrait_asset": "france_louis_dauphin.png",
+    "level": 2,
+    "traits": [
+      "diplomat",
+      "schemer"
+    ]
+  },
+  {
+    "id": "commander_scotland_james_ii",
+    "owner_id": "scotland_kingdom",
+    "name": "James II of Scotland",
+    "portrait_asset": "scotland_james_ii.png",
+    "level": 2,
+    "traits": [
+      "aggressor"
+    ]
+  },
+  {
+    "id": "commander_burgundy_philip",
+    "owner_id": "flanders_county",
+    "name": "Philip the Good",
+    "portrait_asset": "burgundy_philip_good.png",
+    "level": 3,
+    "traits": [
+      "diplomat",
+      "merchant"
+    ]
+  },
+  {
+    "id": "commander_brittany_peter_ii",
+    "owner_id": "brittany_duchy",
+    "name": "Peter II of Brittany",
+    "portrait_asset": "brittany_peter_ii.png",
+    "level": 1,
+    "traits": [
+      "defender"
+    ]
+  },
+  {
+    "id": "commander_irish_oneill",
+    "owner_id": "irish_lordships",
+    "name": "Aodh Rua Ó Néill",
+    "portrait_asset": "irish_oneill.png",
+    "level": 1,
+    "traits": [
+      "veteran"
+    ]
+  }
+]

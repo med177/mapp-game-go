@@ -1,0 +1,223 @@
+{
+  "difficulty_policy": {
+    "fair_movement": true,
+    "levels": {
+      "1": {
+        "plan_horizon_turns": 4,
+        "plan_target_region_limit": 3,
+        "path_search_depth": 5,
+        "plan_move_bonus_percent": 70,
+        "war_threshold": 82,
+        "min_attack_power_percent": 130,
+        "war_cadence_turns": 12,
+        "max_concurrent_wars": 1
+      },
+      "2": {
+        "plan_horizon_turns": 6,
+        "plan_target_region_limit": 4,
+        "path_search_depth": 8,
+        "plan_move_bonus_percent": 100,
+        "proactive_war": true,
+        "war_threshold": 70,
+        "min_attack_power_percent": 115,
+        "war_cadence_turns": 10,
+        "max_concurrent_wars": 1
+      },
+      "3": {
+        "plan_horizon_turns": 9,
+        "plan_target_region_limit": 5,
+        "path_search_depth": 12,
+        "plan_move_bonus_percent": 125,
+        "proactive_war": true,
+        "war_threshold": 65,
+        "min_attack_power_percent": 100,
+        "war_cadence_turns": 7,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 4,
+        "start_gold_buffer": 80,
+        "start_grain_buffer": 30
+      }
+    }
+  },
+  "factions": [
+    {
+      "faction_id": "lancaster",
+      "profile": "dynastic_defense",
+      "objectives": [
+        {
+          "id": "hold_london",
+          "kind": "defend",
+          "target_regions": [
+            "london",
+            "wessex",
+            "wales"
+          ],
+          "priority": 100,
+          "commitment": 80
+        },
+        {
+          "id": "crush_york_north",
+          "kind": "expand",
+          "target_factions": [
+            "york"
+          ],
+          "target_regions": [
+            "yorkshire",
+            "east_anglia",
+            "new_region_251"
+          ],
+          "priority": 96,
+          "commitment": 76,
+          "annex_region_ids": [
+            "yorkshire",
+            "east_anglia"
+          ]
+        },
+        {
+          "id": "secure_irish_pale",
+          "kind": "defend",
+          "target_regions": [
+            "the_pale"
+          ],
+          "priority": 52,
+          "commitment": 35
+        }
+      ]
+    },
+    {
+      "faction_id": "york",
+      "profile": "claimant_offensive",
+      "objectives": [
+        {
+          "id": "march_to_london",
+          "kind": "expand",
+          "target_factions": [
+            "lancaster"
+          ],
+          "target_regions": [
+            "london",
+            "mercia",
+            "wessex"
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "annex_region_ids": [
+            "london"
+          ]
+        },
+        {
+          "id": "hold_northern_base",
+          "kind": "defend",
+          "target_regions": [
+            "yorkshire",
+            "east_anglia",
+            "new_region_251"
+          ],
+          "priority": 90,
+          "commitment": 70
+        },
+        {
+          "id": "channel_backing",
+          "kind": "ally",
+          "target_factions": [
+            "flanders_county"
+          ],
+          "target_regions": [
+            "flanders"
+          ],
+          "priority": 48,
+          "commitment": 30
+        }
+      ]
+    },
+    {
+      "faction_id": "france",
+      "profile": "continental_balance",
+      "objectives": [
+        {
+          "id": "keep_normandy",
+          "kind": "defend",
+          "target_regions": [
+            "paris",
+            "normandy",
+            "anjou"
+          ],
+          "priority": 86,
+          "commitment": 58
+        },
+        {
+          "id": "contain_burgundy",
+          "kind": "expand",
+          "target_factions": [
+            "flanders_county"
+          ],
+          "target_regions": [
+            "burgundy",
+            "flanders"
+          ],
+          "priority": 72,
+          "commitment": 45
+        }
+      ]
+    },
+    {
+      "faction_id": "scotland_kingdom",
+      "profile": "border_opportunist",
+      "objectives": [
+        {
+          "id": "probe_north",
+          "kind": "expand",
+          "target_factions": [
+            "lancaster",
+            "york"
+          ],
+          "target_regions": [
+            "lancashire",
+            "yorkshire"
+          ],
+          "priority": 72,
+          "commitment": 50
+        },
+        {
+          "id": "defend_scotland",
+          "kind": "defend",
+          "target_regions": [
+            "scotland"
+          ],
+          "priority": 90,
+          "commitment": 70
+        }
+      ]
+    },
+    {
+      "faction_id": "flanders_county",
+      "profile": "merchant_pragmatist",
+      "objectives": [
+        {
+          "id": "protect_flanders",
+          "kind": "defend",
+          "target_regions": [
+            "flanders",
+            "holland",
+            "burgundy"
+          ],
+          "priority": 92,
+          "commitment": 70
+        },
+        {
+          "id": "channel_trade",
+          "kind": "ally",
+          "target_factions": [
+            "york"
+          ],
+          "target_regions": [
+            "london",
+            "new_region_250"
+          ],
+          "priority": 66,
+          "commitment": 44
+        }
+      ]
+    }
+  ]
+}

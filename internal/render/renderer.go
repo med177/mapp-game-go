@@ -619,6 +619,20 @@ func (r *Renderer) CenterCameraOnRegion(rid world.RegionID) bool {
 	return true
 }
 
+// SelectPlayerCapitalRegion oyuncu turu yeniden açılırken aktif başkentin
+// bulunduğu bölgeyi normal harita seçim akışıyla seçer.
+func (r *Renderer) SelectPlayerCapitalRegion() bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	region, _, _, ok := r.gs.FactionCapital(r.gs.PlayerFactionID)
+	if !ok || region == nil {
+		return false
+	}
+	r.selectMapRegion(region.ID)
+	return true
+}
+
 func (r *Renderer) SetAITurnStatus(fid faction.FactionID, actor, detail string) {
 	r.aiTurnFactionID = fid
 	r.aiTurnActor = actor

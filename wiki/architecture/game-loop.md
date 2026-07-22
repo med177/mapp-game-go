@@ -139,6 +139,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 10. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
 11. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.
 12. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
+13. Turn resolution tamamlanıp oyuncu fazı açıldığında renderer aktif oyuncu başkent bölgesini seçer; başkent state'te geçerli değilse otomatik seçim yapılmaz.
 
 ---
 

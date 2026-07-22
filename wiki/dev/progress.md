@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Tur sonu AI hamleleri ve turn resolution tamamlandığında oyuncu turu aktif başkent bölgesi seçili olarak açılıyor; mevcut başkent geçersizse seçim zorlanmıyor. Kapsam: `internal/{game/game.go,render/renderer.go}`, regression: `TestSelectPlayerCapitalRegionSelectsActiveCapitalRegion`; doğrulama: `go test ./internal/render -run '^TestSelectPlayerCapitalRegionSelectsActiveCapitalRegion$'`, `go test ./internal/game`.
+
 - 2026-07-22: Teknoloji paneli açıkken tekerlek ve fare inputunun arka plandaki haritaya sızması düzeltildi. Teknoloji paneli inputu kamera işleme adımından önce tüketiyor; ağaç scroll/drag yalnız panel pan state'ini, panel dışı tıklamalar ise hiçbir harita seçimini değiştirmiyor. Kapsam: `internal/render/{renderer_input.go,tech_panel.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.
 
 - 2026-07-22: `OLAYLAR` sekmesindeki `Komşu (...) [Daralt] / [Tümünü Göster]` başlığı için eksik kara-bölge hit-test'i düzeltildi. Toggle artık komşu görünümünü değiştiriyor; içerik yüksekliği, scrollbar ve scroll clamp'i daraltılmış/genişletilmiş listeye göre güncelleniyor. Regression: `TestRegionPanelEventTabScrollAndSharedContentArea`; doğrulama: `go test ./...`.

@@ -1,0 +1,306 @@
+[
+  {
+    "id": "army_lancaster_london",
+    "owner_id": "lancaster",
+    "region_id": "london",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_lancaster_north",
+    "owner_id": "lancaster",
+    "region_id": "lancashire",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_lancaster_wales",
+    "owner_id": "lancaster",
+    "region_id": "wales",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      },
+      {
+        "type_id": "infantry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_lancaster_pale",
+    "owner_id": "lancaster",
+    "region_id": "the_pale",
+    "is_garrison": true,
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_york_yorkshire",
+    "owner_id": "york",
+    "region_id": "yorkshire",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_york_marches",
+    "owner_id": "york",
+    "region_id": "new_region_251",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_york_east_anglia",
+    "owner_id": "york",
+    "region_id": "east_anglia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "fleet_lancaster_channel",
+    "owner_id": "lancaster",
+    "region_id": "new_region_250",
+    "docked_region_id": "london",
+    "docked_settlement_id": "london_greenwich",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 1
+      },
+      {
+        "type_id": "transport",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_york_channel",
+    "owner_id": "york",
+    "region_id": "north_sea_shore",
+    "docked_region_id": "east_anglia",
+    "docked_settlement_id": "east_anglia_ipswich",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_france_normandy",
+    "owner_id": "france",
+    "region_id": "normandy",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_france_paris",
+    "owner_id": "france",
+    "region_id": "paris",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "heavy_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_france_channel",
+    "owner_id": "france",
+    "region_id": "new_region_250",
+    "docked_region_id": "normandy",
+    "docked_settlement_id": "normandy_le_havre",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 1
+      },
+      {
+        "type_id": "transport",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_scotland_border",
+    "owner_id": "scotland_kingdom",
+    "region_id": "scotland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_burgundy_flanders",
+    "owner_id": "flanders_county",
+    "region_id": "flanders",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_burgundy_channel",
+    "owner_id": "flanders_county",
+    "region_id": "north_sea_shore",
+    "docked_region_id": "flanders",
+    "docked_settlement_id": "flanders_brugge",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_irish_ulster",
+    "owner_id": "irish_lordships",
+    "region_id": "ulster",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_brittany_rennes",
+    "owner_id": "brittany_duchy",
+    "region_id": "brittany",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  }
+]

@@ -895,6 +895,7 @@ func (g *Game) resolveTurn() {
 		// Aktif araştırma yoksa oyuncu için uygun sonraki teknoloji otomatik başlatılır.
 		g.autoStartResearchIfIdle()
 		g.gs.Phase = state.PhasePlayerTurn
+		g.renderer.SelectPlayerCapitalRegion()
 		g.renderer.MarkMapDirty()
 	}
 	g.refreshEventCodex()
