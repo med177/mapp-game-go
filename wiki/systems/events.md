@@ -112,7 +112,7 @@ Olay tetiklendiğinde:
 - Event log'da historical event veya karar satırına tıklanınca detay popup içinde aynı zincir özeti sonradan tekrar okunabilir
 - Aktif event'ler ana harita ve minimap üzerinde marker olarak çizilmez; event kaydı ilgili bölge seçildiğinde bölge bilgi panelindeki `OLAYLAR` sekmesinde gösterilir
 - Bölge panelindeki `OLAYLAR` sekmesi aktif olayları ve `Komşu Bölgeler` listesini `BİNALAR` kartlarıyla aynı içerik alanında gösterir. Event satırı olay adını, tipini ve kalan tur sayısını taşır; aynı bölgede birden fazla aktif event varsa ayrı satırlarda listelenir.
-- Event satırına tıklamak mevcut detay popup'ını açar; olay/komşu viewport'u kendi scrollbar'ını ve mouse wheel akışını korur.
+- Event satırına tıklamak mevcut detay popup'ını açar; olay/komşu viewport'u kendi scrollbar'ını ve mouse wheel akışını korur. Komşu başlığındaki `[Daralt] / [Tümünü Göster]` kontrolü kara bölge olaylar sekmesinde de çalışır.
 - Detay popup artık başlık, kaynak etiketi ve satır bazlı iz bloğunu ayrı gösterir; `[OLAY]`, `[KARAR]` ve harita izi birbirine karışmaz
 - Event log panelindeki `Kodex` düğmesi, oyuncu fraksiyonu için bekleyen tarihsel event havuzunu açar:
   - `Hazir`: tarih ve koşullar uygun

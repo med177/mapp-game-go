@@ -233,6 +233,50 @@ func (r *Renderer) HandleInput() InputAction {
 		return handleTradePanelInput(r, input)
 	}
 
+	// C: ticaret paneli (tech paneli açıkken ticareti açar)
+	if r.keyJustPressed(ebiten.KeyC) {
+		if r.showTech {
+			r.showTech = false
+		}
+		r.showTrade = !r.showTrade
+		r.tradeTab = TradeTabRoutes
+		r.tradeScroll = 0
+		r.tradeFactionFocus = 0
+		r.tradeGoodFocus = 0
+		r.tradeAmount = 5
+		r.tradeListFilter = TradeListAll
+		r.tradeListSort = TradeSortDistance
+		return InputAction{}
+	}
+
+	// Tech panel aktifken girişi kamera ve harita işlemlerinden önce yönlendir.
+	// Böylece panel üzerindeki tekerlek/drag ve panel dışındaki tıklamalar
+	// arka plandaki harita zoom, pan veya seçim akışına sızmaz.
+	if r.showTech {
+		if f := r.gs.Factions[r.gs.PlayerFactionID]; f != nil {
+			if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyT) {
+				r.showTech = false
+				r.techDragging = false
+				return InputAction{}
+			}
+			mx, my := ebiten.CursorPosition()
+			_, wheelY := ebiten.Wheel()
+			leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+			leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
+			r.prevMouse[ebiten.MouseButtonLeft] = leftPressed
+			input := gameui.InputState{
+				MouseX:           float64(mx),
+				MouseY:           float64(my),
+				LeftPressed:      leftPressed,
+				LeftJustPressed:  leftPressed && !leftWasPressed,
+				LeftJustReleased: !leftPressed && leftWasPressed,
+				WheelY:           wheelY,
+			}
+			return r.handleTechInput(f, input)
+		}
+		return InputAction{}
+	}
+
 	r.handleCamera()
 
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
@@ -282,46 +326,6 @@ func (r *Renderer) HandleInput() InputAction {
 		if r.showTech {
 			r.techPanX = 0
 			r.techPanY = 0
-		}
-		return InputAction{}
-	}
-	// C: ticaret paneli (tech paneli açıkken ticareti açar)
-	if r.keyJustPressed(ebiten.KeyC) {
-		if r.showTech {
-			r.showTech = false
-		}
-		r.showTrade = !r.showTrade
-		r.tradeTab = TradeTabRoutes
-		r.tradeScroll = 0
-		r.tradeFactionFocus = 0
-		r.tradeGoodFocus = 0
-		r.tradeAmount = 5
-		r.tradeListFilter = TradeListAll
-		r.tradeListSort = TradeSortDistance
-		return InputAction{}
-	}
-	// Tech panel aktifken girişi yönlendir
-	if r.showTech {
-		if f := r.gs.Factions[r.gs.PlayerFactionID]; f != nil {
-			if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyT) {
-				r.showTech = false
-				r.techDragging = false
-				return InputAction{}
-			}
-			mx, my := ebiten.CursorPosition()
-			_, wheelY := ebiten.Wheel()
-			leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
-			leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
-			r.prevMouse[ebiten.MouseButtonLeft] = leftPressed
-			input := gameui.InputState{
-				MouseX:           float64(mx),
-				MouseY:           float64(my),
-				LeftPressed:      leftPressed,
-				LeftJustPressed:  leftPressed && !leftWasPressed,
-				LeftJustReleased: !leftPressed && leftWasPressed,
-				WheelY:           wheelY,
-			}
-			return r.handleTechInput(f, input)
 		}
 		return InputAction{}
 	}
@@ -579,6 +583,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	if r.SelectedRegion != "" {
 		if tab, ok := regionPanelTabHit(fx, fy, r.gs, r.SelectedRegion); ok {
+			if tab == regionPanelTabEvents && r.regionPanelTab != regionPanelTabEvents {
+				// Olaylar sekmesi mevcut davranışta komşuları açık gösterir;
+				// kullanıcı isterse başlıktaki düğmeyle daraltabilir.
+				r.devNeighborListExpanded = true
+			}
 			r.regionPanelTab = tab
 			r.regionPanelScroll = 0
 			return InputAction{}
@@ -609,6 +618,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if r.regionPanelTab == regionPanelTabEvents {
 			if idx, ok := regionActiveEventPanelHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll); ok {
 				r.eventDetail = r.activeRegionEventDetailAt(idx)
+				return InputAction{}
+			}
+			if regionActivityNeighborToggleHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll) {
+				r.devNeighborListExpanded = !r.devNeighborListExpanded
+				r.regionPanelScroll = clampRegionPanelScrollForNeighbors(r.gs, r.SelectedRegion, r.regionPanelScroll, r.devNeighborListExpanded)
 				return InputAction{}
 			}
 		}
@@ -1084,7 +1098,7 @@ func (r *Renderer) handleCamera() {
 	if dy != 0 {
 		mx, my := ebiten.CursorPosition()
 		if r.SelectedRegion != "" && r.regionPanelTab == regionPanelTabEvents && regionPanelActivityHit(float64(mx), float64(my), r.gs, r.SelectedRegion) {
-			r.regionPanelScroll = clampRegionPanelScroll(r.gs, r.SelectedRegion, r.regionPanelScroll-dy*regionPanelScrollStep)
+			r.regionPanelScroll = clampRegionPanelScrollForNeighbors(r.gs, r.SelectedRegion, r.regionPanelScroll-dy*regionPanelScrollStep, r.devNeighborListExpanded)
 			return
 		}
 		if r.selectedFactionPanel != "" && factionPanelHit(float64(mx), float64(my)) {

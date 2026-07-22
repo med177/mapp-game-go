@@ -7,6 +7,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Teknoloji paneli açıkken tekerlek ve fare inputunun arka plandaki haritaya sızması düzeltildi. Teknoloji paneli inputu kamera işleme adımından önce tüketiyor; ağaç scroll/drag yalnız panel pan state'ini, panel dışı tıklamalar ise hiçbir harita seçimini değiştirmiyor. Kapsam: `internal/render/{renderer_input.go,tech_panel.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.
+
+- 2026-07-22: `OLAYLAR` sekmesindeki `Komşu (...) [Daralt] / [Tümünü Göster]` başlığı için eksik kara-bölge hit-test'i düzeltildi. Toggle artık komşu görünümünü değiştiriyor; içerik yüksekliği, scrollbar ve scroll clamp'i daraltılmış/genişletilmiş listeye göre güncelleniyor. Regression: `TestRegionPanelEventTabScrollAndSharedContentArea`; doğrulama: `go test ./...`.
+
 - 2026-07-22: `OLAYLAR` sekmesi açıkken gizli bina kartlarının hover tooltip üretmesi düzeltildi. Hover çözümlemesi aktif bölge paneli sekmesine bağlandı; bina tooltip'i yalnız `BİNALAR` sekmesinde çalışıyor. Regression: `TestNonOwnedBuildingCardsAreNotActionableOrHoverable`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-22: Bölge bilgi panelindeki bina ve aktif olay/komşu içeriği iki sekmeli ortak alana taşındı. `BİNALAR` sekmesi bina kartlarını, `OLAYLAR` sekmesi aktif olaylar ile komşuları gösteriyor; olay satırı popup tıklaması, panel-local scrollbar ve wheel davranışı korunuyor. Seçili bölge değişince sekme ve scroll sıfırlanıyor. Kapsam: `internal/render/{panel.go,renderer.go,renderer_input.go,cursor.go}`, `wiki/{architecture/render-pipeline.md,systems/events.md}`; regression: `TestRegionPanelEventTabScrollAndSharedContentArea`, `TestRegionPanelTabsAndActiveEventRowHit`; doğrulama: `go test ./internal/render`.

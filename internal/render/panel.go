@@ -2055,7 +2055,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 			H: float64(contentEndY - buildingStartY),
 		}
 		if activityViewport.H > regionPanelActivityMinH {
-			drawRegionActivityNeighborSection(screen, gs, region, activityViewport, scroll)
+			drawRegionActivityNeighborSection(screen, gs, region, activityViewport, scroll, neighborExpanded)
 		}
 	} else {
 		drawBuildingGrid(screen, gs, region, px, buildingStartY, pw)
@@ -2185,11 +2185,15 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 }
 
 func regionActivityNeighborContentHeight(gs *state.GameState, region *world.Region) float64 {
+	return regionActivityNeighborContentHeightForExpanded(gs, region, true)
+}
+
+func regionActivityNeighborContentHeightForExpanded(gs *state.GameState, region *world.Region, expanded bool) float64 {
 	height := 8.0
 	if eventCount := regionActiveEventCount(gs, region.ID); eventCount > 0 {
 		height += 17 + float64(eventCount)*28 + 6
 	}
-	_, _, _, rows := neighborBlockLayout(gs, region, true)
+	_, _, _, rows := neighborBlockLayout(gs, region, expanded)
 	height += devNeighborTitleHeight + float64(rows)*devNeighborLineHeight
 	return height
 }
@@ -2205,6 +2209,10 @@ func clampRegionPanelValue(value, minValue, maxValue float64) float64 {
 }
 
 func clampRegionPanelScroll(gs *state.GameState, rid world.RegionID, scroll float64) float64 {
+	return clampRegionPanelScrollForNeighbors(gs, rid, scroll, true)
+}
+
+func clampRegionPanelScrollForNeighbors(gs *state.GameState, rid world.RegionID, scroll float64, neighborExpanded bool) float64 {
 	if gs == nil || rid == "" {
 		return 0
 	}
@@ -2216,7 +2224,7 @@ func clampRegionPanelScroll(gs *state.GameState, rid world.RegionID, scroll floa
 	if viewportHeight < regionPanelActivityMinH {
 		return 0
 	}
-	maxScroll := regionActivityNeighborContentHeight(gs, region) - viewportHeight
+	maxScroll := regionActivityNeighborContentHeightForExpanded(gs, region, neighborExpanded) - viewportHeight
 	return clampRegionPanelValue(scroll, 0, maxFloat64Value(maxScroll))
 }
 
@@ -2274,6 +2282,22 @@ func regionActiveEventPanelHit(mx, my float64, gs *state.GameState, region *worl
 	return -1, false
 }
 
+func regionActivityNeighborToggleHit(mx, my float64, gs *state.GameState, region *world.Region, scroll float64) bool {
+	if gs == nil || region == nil || len(region.Neighbors) <= devNeighborCollapsedCount {
+		return false
+	}
+	viewport := regionPanelActivityViewport(gs, region)
+	if viewport.H <= regionPanelActivityMinH || !viewport.Hit(mx, my) {
+		return false
+	}
+	_, y := regionActivityContentOrigin(viewport, scroll)
+	if regionActiveEventCount(gs, region.ID) > 0 {
+		y += 17 + float64(regionActiveEventCount(gs, region.ID))*28 + 6
+	}
+	toggle := gameui.Rect{X: viewport.X, Y: y, W: viewport.W, H: devNeighborTitleHeight}
+	return toggle.Hit(mx, my)
+}
+
 func regionActivityContentOrigin(viewport gameui.Rect, scroll float64) (float64, float64) {
 	return viewport.X + panelPad, viewport.Y + 8.0 - scroll
 }
@@ -2282,8 +2306,8 @@ func regionActivityContentCenterX(viewport gameui.Rect) float64 {
 	return viewport.X + viewport.W/2
 }
 
-func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState, region *world.Region, viewport gameui.Rect, scroll float64) {
-	contentHeight := regionActivityNeighborContentHeight(gs, region)
+func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState, region *world.Region, viewport gameui.Rect, scroll float64, neighborExpanded bool) {
+	contentHeight := regionActivityNeighborContentHeightForExpanded(gs, region, neighborExpanded)
 	scroll = clampRegionPanelValue(scroll, 0, maxFloat64Value(contentHeight-viewport.H))
 	drawUICardRect(screen, viewport, color.RGBA{16, 15, 13, 220}, panelBorder, 1)
 
@@ -2322,7 +2346,7 @@ func drawRegionActivityNeighborSection(screen *ebiten.Image, gs *state.GameState
 		y += 6
 	}
 
-	drawNeighborBlock(body, gs, region, x, y, width, true, color.RGBA{200, 170, 90, 220})
+	drawNeighborBlock(body, gs, region, x, y, width, neighborExpanded, color.RGBA{200, 170, 90, 220})
 	drawRegionPanelScrollbar(screen, viewport, contentHeight, scroll)
 }
 
@@ -3133,6 +3157,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 	}
 	if activeTab == regionPanelTabEvents {
 		region := gs.Regions[rid]
+		if regionActivityNeighborToggleHit(mx, my, gs, region, scroll) {
+			return true
+		}
 		_, ok := regionActiveEventPanelHit(mx, my, gs, region, scroll)
 		return ok
 	}

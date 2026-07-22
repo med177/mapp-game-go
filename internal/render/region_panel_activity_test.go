@@ -63,6 +63,13 @@ func TestRegionPanelEventTabScrollAndSharedContentArea(t *testing.T) {
 	if !regionPanelActivityHit(viewport.X+4, viewport.Y+4, gs, regionID) {
 		t.Fatal("aktivite viewport'u mouse wheel hit-test'i kabul etmeli")
 	}
+	neighborToggleY := viewport.Y + 8 + 17 + 3*28 + 6
+	if !regionActivityNeighborToggleHit(viewport.X+4, neighborToggleY+4, gs, gs.Regions[regionID], 0) {
+		t.Fatal("olaylar sekmesindeki komşu daralt/genişlet başlığı tıklanabilir olmalı")
+	}
+	if expanded, collapsed := regionActivityNeighborContentHeightForExpanded(gs, gs.Regions[regionID], true), regionActivityNeighborContentHeightForExpanded(gs, gs.Regions[regionID], false); expanded <= collapsed {
+		t.Fatalf("komşu görünümü daraltılınca içerik yüksekliği azalmalı: expanded=%.1f collapsed=%.1f", expanded, collapsed)
+	}
 }
 
 func TestRegionPanelTabsAndActiveEventRowHit(t *testing.T) {
