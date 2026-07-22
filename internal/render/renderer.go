@@ -87,6 +87,7 @@ type Renderer struct {
 	showDiplomacy                   bool
 	diplomacyFocus                  int
 	diplomacyScroll                 int
+	diplomacyListSort               diplomacyListSort
 	diplomacyActionFocus            int
 	diplomacyTargetFaction          faction.FactionID
 	diplomacyOfferHistoryBrowse     faction.FactionID
@@ -794,6 +795,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.showDiplomacy = false
 	r.diplomacyFocus = 0
 	r.diplomacyScroll = 0
+	r.diplomacyListSort = diplomacyListSortAlphabetical
 	r.diplomacyActionFocus = 0
 	r.diplomacyTargetFaction = ""
 	r.diplomacyOfferHistoryBrowse = ""
@@ -1127,7 +1129,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		DrawDiplomacyPanel(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter)
+		DrawDiplomacyPanelWithSort(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter, r.diplomacyListSort)
 	}
 
 	// 8. Teknoloji paneli (üst katman)

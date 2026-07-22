@@ -26,6 +26,19 @@ const (
 	diplomHistoryPanelH   = 324.0
 )
 
+type diplomacyListSort int
+
+const (
+	diplomacyListSortAlphabetical diplomacyListSort = iota
+	diplomacyListSortMilitaryPower
+	diplomacyListSortPowerRanking
+)
+
+type diplomacyListSortButton struct {
+	Sort   diplomacyListSort
+	Button gameui.Button
+}
+
 type diplomacyHistoryDirectionFilter int
 
 const (
@@ -161,6 +174,7 @@ type rectF struct {
 type diplomacyListLayout struct {
 	panelRect   gameui.Rect
 	titleRect   gameui.Rect
+	sortRect    gameui.Rect
 	listRect    gameui.Rect
 	historyRect gameui.Rect
 	footerRect  gameui.Rect
@@ -201,6 +215,7 @@ func diplomacyListLayoutForScreen() diplomacyListLayout {
 	box := gameui.BoxFromRect(panel).InsetXY(14, 14)
 	titleRect, box := box.CutTop(24, 14)
 	footerRect, box := box.CutBottom(20, 0)
+	sortRect, box := box.CutTop(28, 8)
 	listRect := box.Rect
 	historyRect := gameui.Rect{}
 	const listHistoryThreshold = 1058.0
@@ -216,6 +231,7 @@ func diplomacyListLayoutForScreen() diplomacyListLayout {
 	return diplomacyListLayout{
 		panelRect:   panel,
 		titleRect:   titleRect,
+		sortRect:    sortRect,
 		listRect:    listRect,
 		historyRect: historyRect,
 		footerRect:  footerRect,
@@ -665,8 +681,74 @@ func buildDiplomacySideViewButton(panelRect gameui.Rect, historyVisible bool) ga
 	return btn
 }
 
+func diplomacyListSortLabelTR(sortMode diplomacyListSort) string {
+	switch sortMode {
+	case diplomacyListSortMilitaryPower:
+		return "Askeri Güç"
+	case diplomacyListSortPowerRanking:
+		return "Güç Sıralaması"
+	default:
+		return "Alfabetik"
+	}
+}
+
+func buildDiplomacyListSortButtons(layout diplomacyListLayout) [3]diplomacyListSortButton {
+	var buttons [3]diplomacyListSortButton
+	if layout.sortRect.W <= 0 || layout.sortRect.H <= 0 {
+		return buttons
+	}
+	const gap = 8.0
+	buttonW := (layout.sortRect.W - gap*2) / 3
+	for i, sortMode := range [...]diplomacyListSort{
+		diplomacyListSortAlphabetical,
+		diplomacyListSortMilitaryPower,
+		diplomacyListSortPowerRanking,
+	} {
+		buttons[i] = diplomacyListSortButton{
+			Sort: sortMode,
+			Button: gameui.NewButton(
+				layout.sortRect.X+float64(i)*(buttonW+gap),
+				layout.sortRect.Y,
+				buttonW,
+				layout.sortRect.H,
+				diplomacyListSortLabelTR(sortMode),
+			),
+		}
+	}
+	return buttons
+}
+
+func diplomacyListSortHit(layout diplomacyListLayout, mx, my float64) (diplomacyListSort, bool) {
+	for _, btn := range buildDiplomacyListSortButtons(layout) {
+		if btn.Button.HitTest(mx, my) {
+			return btn.Sort, true
+		}
+	}
+	return diplomacyListSortAlphabetical, false
+}
+
+func drawDiplomacyListSortButton(screen *ebiten.Image, btn diplomacyListSortButton, active bool) {
+	style := solidButtonStyle(
+		color.RGBA{28, 22, 15, 225},
+		color.RGBA{88, 72, 40, 180},
+		color.RGBA{214, 206, 190, 255},
+		0,
+	)
+	style.TextVariant = gameui.TextSmall
+	if active {
+		style.BG = color.RGBA{112, 82, 32, 235}
+		style.Border = color.RGBA{232, 194, 104, 255}
+		style.Text = ColorWhite
+	}
+	drawUIButtonWidget(screen, btn.Button, style)
+}
+
 func buildDiplomacyListView(gs *state.GameState, focusIdx, scroll int) gameui.ListView {
-	factions := sortedFactions(gs)
+	return buildDiplomacyListViewForSort(gs, focusIdx, scroll, diplomacyListSortAlphabetical)
+}
+
+func buildDiplomacyListViewForSort(gs *state.GameState, focusIdx, scroll int, sortMode diplomacyListSort) gameui.ListView {
+	factions := sortedDiplomacyFactions(gs, sortMode)
 	items := make([]string, 0, len(factions))
 	for _, fid := range factions {
 		if f := gs.Factions[fid]; f != nil {
@@ -708,6 +790,39 @@ func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
 		H: content.H,
 	}
 	return nameRect, relationRect
+}
+
+func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect, powerRect, rankRect gameui.Rect) {
+	var metricsRect gameui.Rect
+	nameRect, metricsRect = diplomacyListColumnRects(rowRect)
+	const metricGap = 10.0
+	powerW := metricsRect.W * 0.24
+	if powerW > 110 {
+		powerW = 110
+	}
+	if powerW < 78 {
+		powerW = 78
+	}
+	rankW := metricsRect.W * 0.24
+	if rankW > 105 {
+		rankW = 105
+	}
+	if rankW < 78 {
+		rankW = 78
+	}
+	relationW := metricsRect.W - powerW - rankW - metricGap*2
+	if relationW < 0 {
+		relationW = 0
+	}
+	relationRect = metricsRect
+	relationRect.W = relationW
+	powerRect = metricsRect
+	powerRect.X = relationRect.X + relationRect.W + metricGap
+	powerRect.W = powerW
+	rankRect = powerRect
+	rankRect.X = powerRect.X + powerRect.W + metricGap
+	rankRect.W = rankW
+	return nameRect, relationRect, powerRect, rankRect
 }
 
 func buildDiplomacyBackButton() gameui.Button {
@@ -825,12 +940,16 @@ func nextEnabledDiplomacyAction(gs *state.GameState, target faction.FactionID, c
 
 // DrawDiplomacyPanel diplomasi panelini çizer.
 func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+	DrawDiplomacyPanelWithSort(screen, gs, focusIdx, scroll, actionFocus, target, browseTarget, historyVisible, historyDirFilter, historyActionFilter, diplomacyListSortAlphabetical)
+}
+
+func DrawDiplomacyPanelWithSort(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort) {
 	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
 	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
 	drawDiplomacyCloseButton(screen)
 
-	factions := sortedFactions(gs)
+	factions := sortedDiplomacyFactions(gs, sortMode)
 	scroll = clampDiplomScroll(len(factions), scroll)
 	focusIdx = clampDiplomFocus(focusIdx, 0, len(factions)-1)
 	start := scroll
@@ -840,7 +959,7 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 
 	if target == "" {
-		drawDiplomacyListPage(screen, gs, factions, focusIdx, start, end, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
+		drawDiplomacyListPage(screen, gs, factions, sortMode, focusIdx, start, end, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
 	} else {
 		drawDiplomacyOfferPanel(screen, gs, factions, target, actionFocus, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
 	}
@@ -852,7 +971,7 @@ func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scr
 	}
 }
 
-func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, focusIdx, start, end int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, sortMode diplomacyListSort, focusIdx, start, end int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
 	layout := diplomacyListLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{15, 12, 9, 235}, panelBorder, 1.2, 3)
 	DrawText(screen, "Diplomatik Hedef", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
@@ -861,9 +980,12 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		hintText += " | " + diplomacyHistoryBrowseLabelTR()
 	}
 	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, hintText)
+	for _, btn := range buildDiplomacyListSortButtons(layout) {
+		drawDiplomacyListSortButton(screen, btn, btn.Sort == sortMode)
+	}
 	drawUICardRect(screen, layout.listRect, color.RGBA{11, 9, 7, 225}, color.RGBA{92, 74, 38, 190}, 1)
 
-	list := buildDiplomacyListView(gs, focusIdx, start)
+	list := buildDiplomacyListViewForSort(gs, focusIdx, start, sortMode)
 	for row, i := 0, list.Scroll; i < end; i, row = i+1, row+1 {
 		fid := factions[i]
 		f := gs.Factions[fid]
@@ -905,7 +1027,7 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		drawFactionFlagBadge(screen, fid, nameInitial, rowRect.X+18, rowRect.Y+4, diplomFactionFlagSize, fc, panelBorder)
 
 		regionCount := len(gs.RegionsOwnedBy(fid))
-		nameRect, relationRect := diplomacyListColumnRects(rowRect)
+		nameRect, relationRect, powerRect, rankRect := diplomacyListMetricColumnRects(rowRect)
 		leftRow := gameui.NewTableRow(nameRect, []gameui.TableCell{
 			{Text: trimTextToWidth(f.NameTR, FaceMed, nameRect.W), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 		}, 0)
@@ -940,6 +1062,20 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 			}, 0)
 			drawUITableRow(screen, neutralRow)
 		}
+
+		militaryPower, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
+		drawUILabel(screen, powerRect, "Askeri güç", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		powerValueRect := powerRect
+		powerValueRect.Y = rowRect.Y + 27
+		drawUILabel(screen, powerValueRect, itoa(militaryPower), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, rankRect, "Güç sırası", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		rankValueRect := rankRect
+		rankValueRect.Y = rowRect.Y + 27
+		rankText := "-"
+		if factionCount > 0 {
+			rankText = itoa(militaryRank) + "/" + itoa(factionCount)
+		}
+		drawUILabel(screen, rankValueRect, rankText, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	}
 	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
 	if layout.historyRect.W > 0 {
@@ -1228,7 +1364,7 @@ func drawDiplomacyRelationName(screen *ebiten.Image, gs *state.GameState, panelR
 
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
 func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
-	factions := sortedFactions(r.gs)
+	factions := sortedDiplomacyFactions(r.gs, r.diplomacyListSort)
 	n := len(factions)
 	if n == 0 {
 		return InputAction{}
@@ -1251,6 +1387,15 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		return InputAction{}
 	}
 	if r.diplomacyTargetFaction == "" {
+		layout := diplomacyListLayoutForScreen()
+		if input.LeftJustPressed {
+			if sortMode, ok := diplomacyListSortHit(layout, input.MouseX, input.MouseY); ok {
+				r.diplomacyListSort = sortMode
+				r.diplomacyFocus = 0
+				r.diplomacyScroll = 0
+				return InputAction{}
+			}
+		}
 		sideRect := diplomacyListLayoutForScreen().historyRect
 		if sideRect.W > 0 && buildDiplomacySideViewButton(sideRect, r.diplomacyHistoryVisible).HandleInput(input) {
 			r.diplomacyHistoryVisible = !r.diplomacyHistoryVisible
@@ -1277,7 +1422,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				return InputAction{}
 			}
 		}
-		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
+		list := buildDiplomacyListViewForSort(r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyListSort)
 		if idx, ok := diplomacyListClickedIndex(list, input); ok {
 			if idx == r.diplomacyFocus && idx < len(factions) {
 				r.openDiplomacyTarget(diplomacyDoubleClickTarget(r.gs, factions[idx]), 0)
@@ -1491,6 +1636,13 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 }
 
 func sortedFactions(gs *state.GameState) []faction.FactionID {
+	return sortedDiplomacyFactions(gs, diplomacyListSortAlphabetical)
+}
+
+func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []faction.FactionID {
+	if gs == nil {
+		return nil
+	}
 	var fids []faction.FactionID
 	for fid := range gs.Factions {
 		if fid == gs.PlayerFactionID {
@@ -1501,7 +1653,25 @@ func sortedFactions(gs *state.GameState) []faction.FactionID {
 		}
 		fids = append(fids, fid)
 	}
-	sort.Slice(fids, func(i, j int) bool { return fids[i] < fids[j] })
+	sort.Slice(fids, func(i, j int) bool {
+		leftID, rightID := fids[i], fids[j]
+		switch sortMode {
+		case diplomacyListSortMilitaryPower:
+			leftPower := diplomacy.MilitaryPower(gs, leftID)
+			rightPower := diplomacy.MilitaryPower(gs, rightID)
+			if leftPower != rightPower {
+				return leftPower > rightPower
+			}
+		case diplomacyListSortPowerRanking:
+			_, leftRank, _ := factionMilitaryPowerStanding(gs, leftID)
+			_, rightRank, _ := factionMilitaryPowerStanding(gs, rightID)
+			if leftRank != rightRank {
+				return leftRank < rightRank
+			}
+		}
+
+		return leftID < rightID
+	})
 	return fids
 }
 
@@ -1513,7 +1683,7 @@ func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int
 	r.diplomacyTargetFaction = target
 	r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, target, actionFocus)
 	r.diplomacyHistoryVisible = false
-	factions := sortedFactions(r.gs)
+	factions := sortedDiplomacyFactions(r.gs, r.diplomacyListSort)
 	for i, fid := range factions {
 		if fid != target {
 			continue
@@ -1561,11 +1731,7 @@ func diplomacyStatusDisplay(gs *state.GameState, actor, target faction.FactionID
 			return color.RGBA{86, 188, 94, 255}, "VASSAL Bağlı Devlet"
 		}
 		if overlord := diplomacy.DirectOverlord(gs, target); overlord != "" {
-			name := string(overlord)
-			if f := gs.Factions[overlord]; f != nil && f.NameTR != "" {
-				name = f.NameTR
-			}
-			return color.RGBA{168, 154, 104, 255}, "VASSAL " + trimTextToWidth(name, FaceSmall, 160) + "'a Bağlı"
+			return color.RGBA{168, 154, 104, 255}, "VASSAL"
 		}
 	}
 	stance := faction.StancePeace

@@ -260,6 +260,7 @@ func (r *Renderer) HandleInput() InputAction {
 		r.showDiplomacy = true
 		r.diplomacyFocus = 0
 		r.diplomacyScroll = 0
+		r.diplomacyListSort = diplomacyListSortAlphabetical
 		r.diplomacyActionFocus = 0
 		r.diplomacyTargetFaction = ""
 		r.diplomacyHistoryVisible = false
@@ -552,6 +553,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showTech = false
 		r.diplomacyFocus = 0
 		r.diplomacyScroll = 0
+		r.diplomacyListSort = diplomacyListSortAlphabetical
 		r.diplomacyActionFocus = 0
 		r.diplomacyTargetFaction = ""
 		r.diplomacyHistoryVisible = false

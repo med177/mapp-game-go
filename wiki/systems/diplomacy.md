@@ -244,6 +244,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 `internal/render/diplom.go`
 
 - Panel iki adımdır: önce hedef devlet listesi, sonra teklif sayfası açılır.
+- Hedef devlet listesi her satırda `Askeri güç` ve aktif devletler arasındaki `Güç sırası` (`X/Y`) değerlerini gösterir. Listenin üstündeki `Alfabetik`, `Askeri Güç` ve `Güç Sıralaması` düğmeleri aynı listeyi sırasıyla varsayılan ID alfabetiğine, askeri gücü azalan düzene veya standing sırası artan düzene göre yeniden düzenler; eşitlikte faction ID'si kullanılır.
 - Teklif paneli artık çekirdek aksiyonların yanında `Heyet`, `Hediye` ve `Vassallık` seçeneklerini de gösterir.
 - Hedef listesi artık panel gövdesi üzerinde mouse wheel ile kaydırılır; scroll sadece dar satır alanına değil panel bağlamına da bağlıdır.
 - Hedef listesinde seçim `mouse down` anında değil, kısa click release anında kesinleşir; basılı tutup sürüklemek listeyi satır yüksekliği bazında kaydırır ve yanlışlıkla devlet seçmez.

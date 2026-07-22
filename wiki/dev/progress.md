@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Diplomasi hedef listesine devletlerin `Askeri güç` ve aktif devletler arasındaki `Güç sırası` değerleri eklendi. Listenin üstüne `Alfabetik`, `Askeri Güç` ve `Güç Sıralaması` düğmeleri kondu; seçim aynı paneldeki liste sırasını değiştiriyor, focus/scroll yeni sıraya göre sıfırlanıyor. Kapsam: `internal/render/{diplom.go,renderer.go,renderer_input.go}`, `wiki/{systems/diplomacy.md,architecture/render-pipeline.md}`; regression: `TestDiplomacyFactionSortsByMilitaryPowerAndRanking`, `TestDiplomacyListSortButtonsUpdateRendererState`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-22: Recruit birim kartlarının alt etiket footer'ları üretilebilirlik durumuna göre renklendirildi: hazır kartlar yeşil, bina/teknoloji eksikleri amber/mavi, kaynak yetersizliği kırmızı; birim adı ve tur süresi metinleri siyah tutuluyor. Kuyruk kartlarının aktif/bekleyen ayrımı korunuyor. Kapsam: `internal/render/recruit_panel.go`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-22: Recruit ve ordu birim detay hover popup'larındaki görseller oran korunarak 50 px daha yüksek çiziliyor; genişlik ve popup metin alanı buna göre artırıldı. Kapsam: `internal/render/hover_tooltip.go`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.

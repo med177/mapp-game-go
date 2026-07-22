@@ -34,6 +34,75 @@ func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
 	}
 }
 
+func TestDiplomacyFactionSortsByMilitaryPowerAndRanking(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"strong": {ID: "strong"},
+			"middle": {ID: "middle"},
+			"weak":   {ID: "weak"},
+			"dead":   {ID: "dead", IsEliminated: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"strong-army": {ID: "strong-army", OwnerID: "strong", Units: []army.Unit{{}, {}, {}}},
+			"middle-army": {ID: "middle-army", OwnerID: "middle", Units: []army.Unit{{}, {}}},
+			"weak-army":   {ID: "weak-army", OwnerID: "weak", Units: []army.Unit{{}}},
+			"dead-army":   {ID: "dead-army", OwnerID: "dead", Units: []army.Unit{{}, {}, {}, {}}},
+		},
+	}
+
+	want := []faction.FactionID{"strong", "middle", "weak"}
+	for _, sortMode := range []diplomacyListSort{diplomacyListSortMilitaryPower, diplomacyListSortPowerRanking} {
+		got := sortedDiplomacyFactions(gs, sortMode)
+		if len(got) != len(want) {
+			t.Fatalf("sort=%d aktif hedef sayısı yanlış: got=%v", sortMode, got)
+		}
+		for i := range want {
+			if got[i] != want[i] {
+				t.Fatalf("sort=%d sıralama yanlış: got=%v want=%v", sortMode, got, want)
+			}
+		}
+	}
+
+	power, rank, count := factionMilitaryPowerStanding(gs, "middle")
+	if power != 20 || rank != 2 || count != 4 {
+		t.Fatalf("liste metriği yanlış: power=%d rank=%d count=%d", power, rank, count)
+	}
+}
+
+func TestDiplomacyListSortButtonsUpdateRendererState(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"a":      {ID: "a"},
+			"b":      {ID: "b"},
+		},
+	}
+	r := &Renderer{gs: gs, showDiplomacy: true, diplomacyFocus: 1, diplomacyScroll: 1}
+	buttons := buildDiplomacyListSortButtons(diplomacyListLayoutForScreen())
+	input := gameui.InputState{
+		MouseX:          buttons[1].Button.X + 4,
+		MouseY:          buttons[1].Button.Y + 4,
+		LeftJustPressed: true,
+	}
+
+	r.handleDiplomacyInput(input)
+	if r.diplomacyListSort != diplomacyListSortMilitaryPower {
+		t.Fatalf("askeri güç tuşu sıralamayı değiştirmedi: got=%d", r.diplomacyListSort)
+	}
+	if r.diplomacyFocus != 0 || r.diplomacyScroll != 0 {
+		t.Fatalf("sıralama değişince liste odağı sıfırlanmalı: focus=%d scroll=%d", r.diplomacyFocus, r.diplomacyScroll)
+	}
+}
+
 func TestDiplomacyListColumnRectsReserveSquareFactionFlag(t *testing.T) {
 	row := gameui.Rect{X: 100, Y: 40, W: 728, H: diplomRowH - 10}
 
