@@ -34,6 +34,25 @@ func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
 	}
 }
 
+func TestDiplomacyListColumnRectsReserveSquareFactionFlag(t *testing.T) {
+	row := gameui.Rect{X: 100, Y: 40, W: 728, H: diplomRowH - 10}
+
+	nameRect, relationRect := diplomacyListColumnRects(row)
+	contentX := row.X + 18
+	wantNameX := contentX + diplomFactionFlagSize + diplomFactionFlagGap
+	wantRelationX := contentX + diplomNameColumnW + diplomColumnGap
+
+	if nameRect.X != wantNameX {
+		t.Fatalf("devlet adı bayrak sonrasından başlamalı: got=%.1f want=%.1f", nameRect.X, wantNameX)
+	}
+	if relationRect.X != wantRelationX {
+		t.Fatalf("ilişki kolonu bayrak eklenince kaymamalı: got=%.1f want=%.1f", relationRect.X, wantRelationX)
+	}
+	if nameRect.W != diplomNameColumnW-diplomFactionFlagSize-diplomFactionFlagGap {
+		t.Fatalf("devlet adı genişliği bayrak alanını düşmeli: got=%.1f", nameRect.W)
+	}
+}
+
 func TestDiplomacyRelationCategoriesUseStanceTradeRoutesAndRealm(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
@@ -392,6 +411,49 @@ func TestHandleDiplomacyInputSelectsOnFirstClickAndOpensOnSecond(t *testing.T) {
 	r.handleDiplomacyInput(click)
 	if r.diplomacyTargetFaction != "b" {
 		t.Fatalf("aynı satıra ikinci tık teklif panelini açmalı, got=%q", r.diplomacyTargetFaction)
+	}
+}
+
+func TestHandleDiplomacyInputVassalDoubleClickOpensOverlord(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":   {ID: "player"},
+			"a_lord":   {ID: "a_lord", NameTR: "Himaye Eden Devlet"},
+			"b_vassal": {ID: "b_vassal", NameTR: "Bağlı Devlet", OverlordID: "a_lord"},
+		},
+	}
+	r := &Renderer{
+		gs:            gs,
+		showDiplomacy: true,
+		prevKeys:      make(map[ebiten.Key]bool),
+		prevMouse:     make(map[ebiten.MouseButton]bool),
+	}
+
+	list := buildDiplomacyListView(gs, r.diplomacyFocus, r.diplomacyScroll)
+	click := gameui.InputState{
+		MouseX:          list.Rect.X + 20,
+		MouseY:          list.Rect.Y + diplomRowH + 8,
+		LeftJustPressed: true,
+	}
+
+	r.handleDiplomacyInput(click)
+	if r.diplomacyFocus != 1 || r.diplomacyTargetFaction != "" {
+		t.Fatalf("vassal ilk tıkta yalnız seçilmeli: focus=%d target=%q", r.diplomacyFocus, r.diplomacyTargetFaction)
+	}
+
+	r.handleDiplomacyInput(click)
+	if r.diplomacyTargetFaction != "a_lord" {
+		t.Fatalf("vassal çift tıklamasında overlord hedeflenmeli, got=%q", r.diplomacyTargetFaction)
+	}
+	if r.diplomacyFocus != 0 {
+		t.Fatalf("teklif paneli açılırken focus overlord satırına taşınmalı, got=%d", r.diplomacyFocus)
 	}
 }
 

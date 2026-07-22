@@ -478,10 +478,11 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 		// 2x2 mallar
 		grainValue := itoa(f.Grain)
+		grainCapacity := gs.GrainStorageCapacityForFaction(f.ID)
 		grainColor := ColorWhite
 		if grainStatus, ok := gs.GrainEconomy[f.ID]; ok {
 			if grainStatus.StorageCapacity > 0 {
-				grainValue += " / " + itoa(grainStatus.StorageCapacity)
+				grainCapacity = grainStatus.StorageCapacity
 			}
 			switch grainStatus.SupplyLevel {
 			case state.GrainSupplyWarning:
@@ -491,6 +492,9 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 			}
 		}
 		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
+		if grainCapacity > 0 {
+			drawResRow(screen, leftCol1, ry+rowGap*2, colW, "Ambar", itoa(grainCapacity), ColorGray)
+		}
 		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), itoa(f.Timber), color.RGBA{180, 140, 80, 255})
 		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), itoa(f.Iron), color.RGBA{180, 180, 220, 255})
 		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), itoa(f.Stone), color.RGBA{170, 170, 170, 255})
@@ -1522,16 +1526,22 @@ func eventDetailLines(message string, maxWidth float64) []string {
 	return lines
 }
 
-func drawInfoPopup(screen *ebiten.Image, message string, alpha uint8) {
-	pw := float32(430)
-	px := float32(ScreenWidth)/2 - pw/2
+func infoPopupHeight(message string) float32 {
+	const pw = float32(430)
+
 	lines := wrapTextLines(message, FaceMed, float64(pw-40))
 	lineCount := len(lines)
 	if lineCount > 3 {
 		lineCount = 3
 	}
-	ph := float32(48 + lineCount*20)
-	py := float32(ScreenHeight)*0.22 - ph/2
+	return float32(48 + lineCount*20)
+}
+
+func drawInfoPopupAt(screen *ebiten.Image, message string, alpha uint8, py float32) {
+	const pw = float32(430)
+
+	px := float32(ScreenWidth)/2 - pw/2
+	ph := infoPopupHeight(message)
 
 	bgAlpha := alpha
 	if bgAlpha > 235 {

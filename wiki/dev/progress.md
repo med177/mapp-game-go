@@ -72,6 +72,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kolonu sola taşınarak uzun ilişki etiketlerinin sağ panele taşması engellendi.
   Kapsam: `internal/render/diplom.go`; test: `go test ./internal/render ./internal/ui`.
 
+- 2026-07-22: Diplomasi hedef listesindeki her devlet satırının en soluna senaryo
+  bayrağı 40×40 px kare rozet olarak eklendi; eksik bayrakta baş harfi fallback'i
+  korunuyor ve devlet adı alanı rozet sonrasına göre hizalanıyor. Kapsam:
+  `internal/render/diplom.go`, `wiki/architecture/render-pipeline.md`; test:
+  `go test ./internal/render`.
+
+- 2026-07-22: AI turundaki `Bilgi` popup'ı `HAMLELER` paneliyle örtüşmeyecek şekilde
+  panelin altına 16 px boşlukla taşındı; normal bildirim konumu da biraz aşağı alındı.
+  Kapsam: `internal/render/{panel.go,renderer.go}`, `wiki/architecture/render-pipeline.md`;
+  test: `go test ./internal/render`.
+
+- 2026-07-22: Diplomasi listesindeki vassal devlet satırına ikinci tıklama dış
+  overlord devletin teklif panelini açıyor; oyuncunun kendi vassalında mevcut
+  vassal yönetim paneli korunuyor. Regression: `TestHandleDiplomacyInputVassalDoubleClickOpensOverlord`;
+  doğrulama: `go test ./internal/render`.
+
 - 2026-07-20: Tur bitimindeki AI hamle paneli 620×180 px düzene büyütüldü; o an hamle yapan devletin faction ID'si render durumunda taşınıyor ve ülke adının solunda sarı iç çerçevesiz 128×128 px kare bayrak rozeti gösteriliyor. AI adım mesajı aynı anda genel `Bilgi` popup'ında tekrarlanmıyor; tur başında önceki oyuncu bildirimi temizleniyor. Asset yoksa baş harfi fallback'i korunuyor. Kapsam: `internal/game/game.go`, `internal/render/{panel.go,renderer.go}`, `wiki/architecture/render-pipeline.md`.
 
 - 2026-07-20: Bölge panelindeki aktif olaylar ve komşu listesi çerçevesi görünürken
@@ -579,6 +595,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Event görünürlüğü | ✅ | Choice sonrası aktif event'ler harita üzerinde kara bölgesi ikonuyla görünür kalır; deniz bölgeleri event marker üretmez ve eski save'lerden gelen deniz event kayıtları ana harita, minimap ve hit-test tarafında gizlenir; aktif bölge event ikonlarına tıklanınca detay popup açılır ve bölge/tip/kalan tur/state izi okunur; detay popup artık başlık/kaynak/gövde ayrımıyla `[OLAY]`, `[KARAR]` ve harita izini birbirinden ayırır |
 | Zafer detay popup scroll | ✅ | Hedef popup'ı artık sabit satır bloklarıyla taşmıyor; içerik gerçek satır yüksekliğine göre akıyor, mouse wheel ile kaydırılıyor ve uzun checklist/not için scrollbar çiziyor |
 | Kompakt UI taşma düzeltmeleri | ✅ | Genel onay modalı mesaj wrap eder; bölge panelinde üretim alanı artık yalnız Tahıl ile sınırlı değildir, efektif `Altın/Tahıl/Demir/Kereste/Taş/Baharat/Kumaş` satırları iki kolon grid halinde çizilir; sahip bilgisi başlığın hemen altında etiketsiz görünür; sahip adı artık fraksiyon rengini korurken adaptif outline ile çizildiği için koyu devlet renklerinde zemine karışmaz; memnuniyet/vergi satırlarında yüzde metni, progress bar ve vergi `-/+` düğmeleri artık birbirine taşmaz; maksimum seviyedeki bina kartlarında alt satırdaki `Maks` yazısı kaldırılır ve uyarı durumu sol üst `Lv` rozetinin kırmızı arka planıyla verilir; kuyruktaki bina kartlarının `N Tur` göstergesi kontrastlı pill rozetine taşındığı için açık sprite üstünde kaybolmaz; recruit kuyruğunda aynı tur tamamlanacak emirler artık daha parlak, bekleyenler daha soluk kart stiliyle ayrılır; zafer seçim kartları genişletilip yükseltildiği ve açıklama/hedef satırları wrap edildiği için uzun tarihsel hedeflerde metin kart dışına taşmaz; teknoloji ağacı kartları da daha geniş/yüksek hale getirilip başlık ve effect özeti wrap edildiği için uzun teknoloji adları ile üç parçalı buff özetleri artık köşe rozeti veya kart sınırıyla çakışmaz |
+| Teknoloji ikon görünürlüğü | ✅ | Teknoloji kartı kategori ikonları 20 px, üst filtre sekmesi ikonları 22 px çizilir; başlık ve sekme etiketleri ikonlarla çakışmayacak şekilde hizalanır |
 | Panel cursor hit-test düzeltmesi | ✅ | Sol alt bölge paneli, olay logu, alt HUD, kayıt slotları ve onay panellerinde parmak imleci sadece gerçek tıklanabilir alanlarda gösterilir |
 | Bölge paneli olay/komşu scroll düzeni | ✅ | Bina grid'i önce, Diplomasi ve diğer bölge aksiyonları ayrı bar içinde hemen altında çizilir; aktif olaylar ve komşular panelin altındaki local viewport'ta scrollbar ve mouse-wheel scroll ile taşmadan gösterilir |
 | Ordu/yerleşim tıklama önceliği | ✅ | Aynı pikselde çakışan inputta seçim sırası artık `ordu/donanma etiketi > yerleşim > bölge`; hover hit-test de aynı helper ile eşlendi |

@@ -17,6 +17,8 @@ import (
 const (
 	diplomRowH            = 58.0
 	diplomNameColumnW     = 340.0
+	diplomFactionFlagSize = 40.0
+	diplomFactionFlagGap  = 10.0
 	diplomColumnGap       = 24.0
 	diplomHistoryPanelW   = 286.0
 	diplomHistoryPanelGap = 12.0
@@ -694,9 +696,13 @@ func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
 		nameW = 0
 	}
 	nameRect := content
-	nameRect.W = nameW
+	nameRect.X += diplomFactionFlagSize + diplomFactionFlagGap
+	nameRect.W = nameW - diplomFactionFlagSize - diplomFactionFlagGap
+	if nameRect.W < 0 {
+		nameRect.W = 0
+	}
 	relationRect := gameui.Rect{
-		X: nameRect.X + nameRect.W + diplomColumnGap,
+		X: content.X + nameW + diplomColumnGap,
 		Y: content.Y,
 		W: content.W - nameW - diplomColumnGap,
 		H: content.H,
@@ -719,6 +725,16 @@ func diplomacyListClickedIndex(list gameui.ListView, input gameui.InputState) (i
 		return -1, false
 	}
 	return idx, true
+}
+
+func diplomacyDoubleClickTarget(gs *state.GameState, target faction.FactionID) faction.FactionID {
+	if gs == nil || target == "" {
+		return target
+	}
+	if overlord := diplomacy.DirectOverlord(gs, target); overlord != "" && overlord != gs.PlayerFactionID {
+		return overlord
+	}
+	return target
 }
 
 func buildDiplomacySendButton() gameui.Button {
@@ -882,7 +898,11 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		}
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-		drawUICardAccent(screen, rowRect, 6, fc)
+		nameInitial := ""
+		if f.NameTR != "" {
+			nameInitial = string([]rune(f.NameTR)[:1])
+		}
+		drawFactionFlagBadge(screen, fid, nameInitial, rowRect.X+18, rowRect.Y+4, diplomFactionFlagSize, fc, panelBorder)
 
 		regionCount := len(gs.RegionsOwnedBy(fid))
 		nameRect, relationRect := diplomacyListColumnRects(rowRect)
@@ -1260,9 +1280,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		list := buildDiplomacyListView(r.gs, r.diplomacyFocus, r.diplomacyScroll)
 		if idx, ok := diplomacyListClickedIndex(list, input); ok {
 			if idx == r.diplomacyFocus && idx < len(factions) {
-				r.diplomacyTargetFaction = factions[idx]
-				r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, factions[idx], 0)
-				r.diplomacyHistoryVisible = false
+				r.openDiplomacyTarget(diplomacyDoubleClickTarget(r.gs, factions[idx]), 0)
 				return InputAction{}
 			}
 			r.diplomacyFocus = idx

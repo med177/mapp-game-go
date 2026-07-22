@@ -44,27 +44,7 @@ const (
 )
 
 func grainStorageCapacity(civilianDemand, armyUpkeep, storageBonus int) int {
-	if civilianDemand < 0 {
-		civilianDemand = 0
-	}
-	if armyUpkeep < 0 {
-		armyUpkeep = 0
-	}
-	if storageBonus < 0 {
-		storageBonus = 0
-	}
-	if civilianDemand+armyUpkeep <= 0 {
-		return storageBonus
-	}
-
-	capacity := civilianDemand*grainCivilianStorageMonths + armyUpkeep*grainArmyStorageMonths + storageBonus
-	if capacity <= 0 {
-		return 0
-	}
-	if capacity < grainMinimumStorageCapacity {
-		return grainMinimumStorageCapacity
-	}
-	return capacity
+	return state.GrainStorageCapacity(civilianDemand, armyUpkeep, storageBonus)
 }
 
 func grainSpoilage(stockpile, capacity int) int {

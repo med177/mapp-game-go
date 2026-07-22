@@ -114,6 +114,12 @@ const (
 	techFilterTabGap  = 8.0
 	techFilterTabPad  = 14.0
 	techFilterTabMinW = 88.0
+
+	// Teknoloji panelindeki kategori ikonları küçük çözünürlükte de net kalmalı.
+	techFilterTabIconSize = 22.0
+	techFilterTabIconX    = 8.0
+	techFilterTabIconY    = 7.0
+	techFilterTabLabelX   = 36.0
 )
 
 type techConnectorStyle struct {
@@ -452,14 +458,14 @@ func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tec
 
 		// Kategori ikonu + etiket
 		iconID := techCategoryIcon(cat)
-		labelX := tabX + 8
+		labelX := tabX + techFilterTabIconX
 		if iconID != gameui.IconNone {
 			iconCol := catColor
 			if !isActive {
 				iconCol = color.RGBA{catColor.R / 2, catColor.G / 2, catColor.B / 2, 200}
 			}
-			gameui.DrawIcon(screen, iconID, tabX+8, rect.Y+10, 14, iconCol)
-			labelX = tabX + 26
+			gameui.DrawIcon(screen, iconID, tabX+techFilterTabIconX, rect.Y+techFilterTabIconY, techFilterTabIconSize, iconCol)
+			labelX = tabX + techFilterTabLabelX
 		}
 
 		label := tech.CategoryLabelTR(cat)

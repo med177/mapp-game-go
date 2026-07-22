@@ -1187,7 +1187,15 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.combatLogTimer < 60 {
 			alpha = uint8(r.combatLogTimer * 255 / 60)
 		}
-		drawInfoPopup(screen, r.combatLog, alpha)
+		popupH := infoPopupHeight(r.combatLog)
+		popupY := float32(ScreenHeight)*0.26 - popupH/2
+		if r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
+			const aiOverlayGap = float32(40)
+			const aiOverlayH = float32(180)
+			_, turnHudY, _, turnHudH := turnTechHudRect()
+			popupY = turnHudY + turnHudH + aiOverlayGap + aiOverlayH + 16
+		}
+		drawInfoPopupAt(screen, r.combatLog, alpha, popupY)
 		r.combatLogTimer--
 	}
 

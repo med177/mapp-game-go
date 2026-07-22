@@ -18,6 +18,12 @@ const MaxDiplomacyOffersPerTurn = 3
 
 const civilianGrainPopulationUnit = 20
 
+const (
+	grainCivilianStorageMonths  = 6
+	grainArmyStorageMonths      = 3
+	grainMinimumStorageCapacity = 100
+)
+
 // GrainAidCost bir bölgeye tek seferlik sivil tahıl yardımı için gereken stoktur.
 const GrainAidCost = 12
 
@@ -288,6 +294,58 @@ func (s *GameState) CivilianGrainDemandForRegion(region *world.Region) int {
 		return 0
 	}
 	return demand
+}
+
+// GrainStorageCapacity toplam sivil/ordu talebinden tahıl ambar kapasitesini
+// hesaplar. Ekonomi tick'i ve HUD başlangıç görünümü aynı kapasite kuralını
+// kullanır.
+func GrainStorageCapacity(civilianDemand, armyUpkeep, storageBonus int) int {
+	if civilianDemand < 0 {
+		civilianDemand = 0
+	}
+	if armyUpkeep < 0 {
+		armyUpkeep = 0
+	}
+	if storageBonus < 0 {
+		storageBonus = 0
+	}
+	if civilianDemand+armyUpkeep <= 0 {
+		return storageBonus
+	}
+
+	capacity := civilianDemand*grainCivilianStorageMonths + armyUpkeep*grainArmyStorageMonths + storageBonus
+	if capacity < grainMinimumStorageCapacity {
+		return grainMinimumStorageCapacity
+	}
+	return capacity
+}
+
+// GrainStorageCapacityForFaction ekonomi tick'i henüz çalışmadığında da HUD
+// için fraksiyonun güncel tahıl ambar kapasitesini hesaplar.
+func (s *GameState) GrainStorageCapacityForFaction(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	civilianDemand := 0
+	storageBonus := 0
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+			continue
+		}
+		civilianDemand += s.CivilianGrainDemandForRegion(region)
+		for _, buildingID := range region.Buildings {
+			if building := s.BuildingTypes[buildingID]; building != nil {
+				storageBonus += building.StorageCapacity
+			}
+		}
+	}
+	armyUpkeep := 0
+	for _, currentArmy := range s.Armies {
+		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
+			armyUpkeep += s.EffectiveArmyGrainUpkeep(currentArmy)
+		}
+	}
+	return GrainStorageCapacity(civilianDemand, armyUpkeep, storageBonus)
 }
 
 // RegionGrainProductionModifier aktif bölge olaylarının toplam üretim
