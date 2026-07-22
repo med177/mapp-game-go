@@ -153,13 +153,52 @@ func drawUnitSpriteCard(screen *ebiten.Image, sprite *ebiten.Image, x, y, width 
 // drawUnitCardFooter sprite'ın altındaki etiket alanını opak beyazla kapatır.
 // 1px içeri alınarak kart çerçevesinin üstüne taşmaz.
 func drawUnitCardFooter(screen *ebiten.Image, x, y, width, height, footerH float32) {
+	drawUnitCardFooterColor(screen, x, y, width, height, footerH, color.RGBA{255, 255, 255, 255})
+}
+
+func drawUnitCardFooterColor(screen *ebiten.Image, x, y, width, height, footerH float32, fill color.RGBA) {
 	if screen == nil || width <= 2 || height <= 0 || footerH <= 0 {
 		return
 	}
 	if footerH > height {
 		footerH = height
 	}
-	vector.FillRect(screen, x, y+height-footerH, width, footerH, color.RGBA{255, 255, 255, 255}, false)
+	vector.FillRect(screen, x, y+height-footerH, width, footerH, fill, false)
+}
+
+type recruitCardAvailability uint8
+
+const (
+	recruitCardReady recruitCardAvailability = iota
+	recruitCardNeedsBuilding
+	recruitCardNeedsTech
+	recruitCardCannotAfford
+)
+
+func recruitCardAvailabilityFor(needsBuilding, needsTech, canAfford bool) recruitCardAvailability {
+	switch {
+	case needsBuilding:
+		return recruitCardNeedsBuilding
+	case needsTech:
+		return recruitCardNeedsTech
+	case !canAfford:
+		return recruitCardCannotAfford
+	default:
+		return recruitCardReady
+	}
+}
+
+func recruitCardFooterColor(availability recruitCardAvailability) color.RGBA {
+	switch availability {
+	case recruitCardNeedsBuilding:
+		return color.RGBA{238, 205, 150, 245}
+	case recruitCardNeedsTech:
+		return color.RGBA{194, 209, 232, 245}
+	case recruitCardCannotAfford:
+		return color.RGBA{238, 178, 170, 245}
+	default:
+		return color.RGBA{184, 220, 184, 245}
+	}
 }
 
 var unitDisplayOrder = []string{
@@ -630,6 +669,7 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barr
 	needsTech := ff == nil || !utype.HasAllRequiredTechs(ff.Research.Completed)
 	canAfford := ff != nil && unitCost(utype).CanAfford(ff)
 	fullyAvail := !needsBuilding && !needsTech && canAfford
+	availability := recruitCardAvailabilityFor(needsBuilding, needsTech, canAfford)
 	slotBg := color.RGBA{250, 250, 250, 240}
 	borderCol := color.RGBA{160, 160, 160, 220}
 	if fullyAvail {
@@ -650,14 +690,11 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barr
 		}
 		drawUnitSpriteCard(screen, sprite, sx, sy, cardW, tint)
 	}
-	drawUnitCardFooter(screen, sx, sy, cardW, cardH, unitCardFooterH)
+	drawUnitCardFooterColor(screen, sx, sy, cardW, cardH, unitCardFooterH, recruitCardFooterColor(availability))
 
-	nameCol := color.RGBA{70, 60, 42, 235}
-	if !fullyAvail {
-		nameCol = color.RGBA{110, 105, 95, 210}
-	}
-	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, nameCol)
-	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardSingleLabelOffset), FaceSmall, color.RGBA{110, 100, 86, 220})
+	labelColor := color.RGBA{0, 0, 0, 255}
+	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, labelColor)
+	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardSingleLabelOffset), FaceSmall, labelColor)
 }
 
 func unitCost(utype *army.UnitType) economy.ResourceCost {

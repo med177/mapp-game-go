@@ -3852,7 +3852,7 @@ func buildRegionDiplomacyButtons(_ *state.GameState, _ string, px, py, pw, ph fl
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Diplomasi")
 }
 
-func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, pw, ph float32) gameui.Button {
+func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, _, ph float32) gameui.Button {
 	const btnW = float32(112)
 	const btnH = float32(24)
 	x := px + 5
