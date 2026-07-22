@@ -658,6 +658,20 @@ func techTreeViewOrigin(treeRect gameui.Rect, contentW float64) (x, y float64) {
 	return x, techTreeTopInset
 }
 
+// techTreeSideBlankHit gerçek flow içeriğinin sağındaki veya solundaki boş
+// alana yapılan tıklamayı yakalar. Tree viewport ekranın büyük bölümünü
+// kaplasa da içerik daha dar olduğunda flow ortalanır; bu yan boşluklar
+// teknoloji panelini kapatmak için kullanılabilir.
+func techTreeSideBlankHit(layout techPanelLayout, contentW, panX, panY, mx, my float64) bool {
+	if !layout.treeRect.Hit(mx, my) {
+		return false
+	}
+
+	originX, _ := techTreeViewOrigin(layout.treeRect, contentW)
+	flowX := layout.treeRect.X + originX - panX
+	return mx < flowX || mx > flowX+contentW
+}
+
 func projectTechTree(levels [][]techNode, offsetX, offsetY float64) [][]techNode {
 	projected := make([][]techNode, len(levels))
 	for levelIdx, levelNodes := range levels {
@@ -830,6 +844,12 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 	_, screenProjectedLevels := projectTechTreeForLayout(layout, treeData, r.techPanX, r.techPanY)
 
 	if buildTechCloseButton().HandleInput(input) {
+		r.showTech = false
+		r.techDragging = false
+		r.techFilterCategory = ""
+		return InputAction{}
+	}
+	if input.LeftJustPressed && techTreeSideBlankHit(layout, treeData.contentW, r.techPanX, r.techPanY, input.MouseX, input.MouseY) {
 		r.showTech = false
 		r.techDragging = false
 		r.techFilterCategory = ""

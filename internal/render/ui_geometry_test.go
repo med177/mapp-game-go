@@ -12,6 +12,7 @@ import (
 	"mapp-game-go/internal/save"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
@@ -457,6 +458,46 @@ func assertTechPanelInside(t *testing.T, screenW, screenH float64) {
 		t.Fatalf("tech panel outside %.0fx%.0f viewport: %+v", screenW, screenH, layout)
 	}
 	assertButtonInside(t, screenW, screenH, buildTechCloseButton())
+}
+
+func TestTechTreeSideBlankClickClosesPanel(t *testing.T) {
+	oldScreenW, oldScreenH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldScreenW, oldScreenH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"root": {ID: "root", NameTR: "Kök", Category: tech.CategoryMilitary},
+		},
+	}
+
+	for _, side := range []string{"sol", "sağ"} {
+		r := &Renderer{gs: gs, showTech: true}
+		f := gs.Factions[gs.PlayerFactionID]
+		layout := techPanelLayoutForScreen()
+		treeData := r.buildLaidOutTechTree(f)
+		originX, _ := techTreeViewOrigin(layout.treeRect, treeData.contentW)
+		flowX := layout.treeRect.X + originX
+		clickX := flowX - 8
+		if side == "sağ" {
+			clickX = flowX + treeData.contentW + 8
+		}
+
+		r.handleTechInput(f, gameui.InputState{
+			MouseX:          clickX,
+			MouseY:          layout.treeRect.Y + 20,
+			LeftJustPressed: true,
+		})
+		if r.showTech {
+			t.Fatalf("teknoloji paneli %s flow boşluğuna tıklayınca kapanmalı", side)
+		}
+	}
 }
 
 func assertTradePanelInside(t *testing.T, screenW, screenH float64) {

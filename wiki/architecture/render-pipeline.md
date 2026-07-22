@@ -43,6 +43,8 @@ Bölge bilgi panelinde bina grid'i artık önce çizilir; hemen altında genişl
 
 Teknoloji paneli açıkken input modal olarak teknoloji ağacına yönlendirilir ve bu yönlendirme `handleCamera()` çağrısından önce yapılır. Böylece ağaç tekerleği yalnız teknoloji pan'ini değiştirir; panel içi sürükleme veya panel dışı tıklamalar kamera zoom/pan ve harita seçim akışına ulaşmaz (`internal/render/renderer_input.go`, `tech_panel.go`).
 
+Teknoloji ağacındaki gerçek flow içeriği viewport'tan daha dar olduğunda ortalanır. Flow'un tree viewport içindeki sağ ve sol boşluklarına yapılan sol tıklama, üstteki teknoloji kapatma düğmesiyle aynı şekilde paneli kapatır; kategori sekmeleri, teknoloji kartları ve ağaç sürükleme alanı korunur (`internal/render/tech_panel.go`).
+
 **Kaynak:** `internal/render/renderer.go`, `renderer_input.go`, `renderer_dialogs.go`, `map_editor.go`, `trade_overlay.go`
 
 `Renderer` tek tip olarak korunur; dosyalar davranış sorumluluğuna göre ayrılır. Ana dosya yaşam döngüsü, kamera ve draw orkestrasyonunu; diğer dosyalar input, modal, editör ve ticaret haritası ayrıntılarını taşır.

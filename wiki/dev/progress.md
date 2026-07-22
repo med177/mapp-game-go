@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Teknoloji ağacının ortadaki flow içeriğinin sağ ve sol boşluklarına tıklama, üstteki teknoloji paneli kapatma düğmesiyle aynı kapanış davranışına bağlandı. Sekme, kart, scroll ve sürükleme hit-test'leri korunuyor. Regression: `TestTechTreeSideBlankClickClosesPanel`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-22: Bekleyen AI diplomasi teklifleri oyuncu tarafından kabul edilirken gönderenin
   tur içi elçi kotasının ikinci kez tüketilmesi düzeltildi. Teklif kuyruğa alınırken kota
   korunuyor; kabul sırasında ilişki/stance/stratejik geçerlilik yeniden doğrulanıyor fakat
