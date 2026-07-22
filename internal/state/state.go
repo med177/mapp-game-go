@@ -1288,6 +1288,53 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 	return out
 }
 
+// FactionProductionSummary devletin kuşatma altında olmayan bölgelerinin
+// efektif tur başı üretimini toplar. HUD ve ekonomi önizlemeleri aynı bina,
+// mevsim, arazi ve teknoloji hesaplarını kullanır.
+func (s *GameState) FactionProductionSummary(fid faction.FactionID) RegionProductionSummary {
+	if s == nil || fid == "" {
+		return RegionProductionSummary{}
+	}
+
+	var out RegionProductionSummary
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+			continue
+		}
+		production := s.RegionProductionSummary(region)
+		out.Gold += production.Gold
+		out.Grain += production.Grain
+		out.Iron += production.Iron
+		out.Timber += production.Timber
+		out.Stone += production.Stone
+		out.Spice += production.Spice
+		out.Cloth += production.Cloth
+	}
+	return out
+}
+
+// FactionGrainNetChange devletin bir turdaki tahıl üretimi ile sivil ve ordu
+// tüketimi arasındaki farkı döner. Negatif sonuç stokun azalacağını gösterir.
+func (s *GameState) FactionGrainNetChange(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+
+	net := s.FactionProductionSummary(fid).Grain
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+			continue
+		}
+		net -= s.CivilianGrainDemandForRegion(region)
+	}
+	for _, currentArmy := range s.Armies {
+		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
+			net -= s.EffectiveArmyGrainUpkeep(currentArmy)
+		}
+	}
+	return net
+}
+
 func applyRegionTerrainSpecialization(
 	terrain world.TerrainType,
 	grain, iron, timber, stone, spice, cloth int,

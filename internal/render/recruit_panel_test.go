@@ -4,10 +4,38 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestUnitCostTooltipLinesShowRequiredAmountAndShortageOnly(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", Gold: 88, Grain: 405, Iron: 461},
+		},
+	}
+
+	lines := unitCostTooltipLines(gs, economy.ResourceCost{Gold: 220, Grain: 24, Iron: 12})
+
+	if got, want := lines[0].text, "Altın: 220 eksik"; got != want {
+		t.Fatalf("altın maliyeti hatalı: got=%q want=%q", got, want)
+	}
+	if got, want := lines[1].text, "Tahıl: 24"; got != want {
+		t.Fatalf("tahıl maliyeti hatalı: got=%q want=%q", got, want)
+	}
+	if got, want := lines[2].text, "Demir: 12"; got != want {
+		t.Fatalf("demir maliyeti hatalı: got=%q want=%q", got, want)
+	}
+
+	for _, line := range lines {
+		if line.text == "Altın: 88/220 eksik" || line.text == "Tahıl: 405/24" || line.text == "Demir: 461/12" {
+			t.Fatalf("mevcut miktar popup maliyetinde gösterilmemeli: %q", line.text)
+		}
+	}
+}
 
 func TestRecruitQueueItemsMarksOnlyCurrentTurnCapacityAsActive(t *testing.T) {
 	gs := &state.GameState{

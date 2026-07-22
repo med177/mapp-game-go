@@ -477,7 +477,9 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		rowGap := 22.0
 
 		// 2x2 mallar
-		grainValue := itoa(f.Grain)
+		production := gs.FactionProductionSummary(f.ID)
+		grainChange := gs.FactionGrainNetChange(f.ID)
+		grainValue := formatResourceHUDValue(f.Grain, grainChange)
 		grainCapacity := gs.GrainStorageCapacityForFaction(f.ID)
 		grainColor := ColorWhite
 		if grainStatus, ok := gs.GrainEconomy[f.ID]; ok {
@@ -491,13 +493,16 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 				grainColor = ColorRed
 			}
 		}
+		if grainChange < 0 {
+			grainColor = ColorRed
+		}
 		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
 		if grainCapacity > 0 {
 			drawResRow(screen, leftCol1, ry+rowGap*2, colW, "Ambar", itoa(grainCapacity), ColorGray)
 		}
-		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), itoa(f.Timber), color.RGBA{180, 140, 80, 255})
-		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), itoa(f.Iron), color.RGBA{180, 180, 220, 255})
-		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), itoa(f.Stone), color.RGBA{170, 170, 170, 255})
+		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), formatResourceHUDValue(f.Timber, production.Timber), resourceHUDChangeColor(production.Timber, color.RGBA{180, 140, 80, 255}))
+		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), formatResourceHUDValue(f.Iron, production.Iron), resourceHUDChangeColor(production.Iron, color.RGBA{180, 180, 220, 255}))
+		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), formatResourceHUDValue(f.Stone, production.Stone), resourceHUDChangeColor(production.Stone, color.RGBA{170, 170, 170, 255}))
 
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
@@ -2838,6 +2843,24 @@ func clampF(v float64) float64 {
 
 func drawResRow(screen *ebiten.Image, x, y, w float64, label, value string, col color.RGBA) {
 	drawUIKeyValueRow(screen, x, y, w, label, value, ColorGray, col)
+}
+
+func formatResourceHUDValue(current, change int) string {
+	return formatSignedAmount(change) + "/" + itoa(current)
+}
+
+func formatSignedAmount(amount int) string {
+	if amount > 0 {
+		return "+" + itoa(amount)
+	}
+	return itoa(amount)
+}
+
+func resourceHUDChangeColor(change int, normal color.RGBA) color.RGBA {
+	if change < 0 {
+		return ColorRed
+	}
+	return normal
 }
 
 func calcPlayerIncome(gs *state.GameState) int {

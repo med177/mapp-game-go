@@ -725,19 +725,15 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if rid != "" {
 		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
 			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
-			r.SelectedArmy = ""
-			if r.SelectedRegion != rid {
-				r.devNeighborListExpanded = false
-				r.regionPanelScroll = 0
-			}
-			r.SelectedRegion = rid
-			r.syncFactionPanelToSelectedRegion()
-			r.clearSelectedSettlement()
-			r.showRecruitPanel = false
-			r.resetRecruitSelection()
+			r.selectMapRegion(rid)
 			return InputAction{}
 		}
 	}
+	r.selectMapRegion(rid)
+	return InputAction{}
+}
+
+func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.SelectedArmy = ""
 	if r.SelectedRegion != rid {
 		r.devNeighborListExpanded = false
@@ -746,21 +742,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	r.SelectedRegion = rid
 	r.syncFactionPanelToSelectedRegion()
 	r.clearSelectedSettlement()
-	// Tek tıkta panel daima kapanır; yalnızca çift tık açar.
+	// Birim oluşturma paneli yalnızca alt paneldeki Ordu butonuyla açılır.
 	r.showRecruitPanel = false
-	isDoubleClick := rid != "" &&
-		rid == r.lastRegionClickID &&
-		r.animationTick-r.lastRegionClickTick <= regionDoubleClickFrames
-	r.lastRegionClickID = rid
-	r.lastRegionClickTick = r.animationTick
-	if isDoubleClick && RecruitPanelButtonEnabled(r.gs, rid) {
-		r.showRecruitPanel = true
-		r.clearSelectedSettlement()
-		r.showDiplomacy = false
-		r.showTech = false
-	}
 	r.resetRecruitSelection()
-	return InputAction{}
 }
 
 func (r *Renderer) ensureRecruitSelection(unitID string) {

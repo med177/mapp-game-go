@@ -25,6 +25,8 @@ Altın ve ikincil kaynaklar birlikte kullanılır; birim/bina üretiminde çoklu
 
 Kaynak adları ve fraksiyon alan eşlemeleri `internal/economy/resources.go` içinde `ResourceKind`/`ResourceDef` modeliyle merkezileştirilmiştir. UI metinleri, ticaret malları listesi ve `ResourceCost` formatlaması bu ortak tanımları kullanır; böylece `Altın/Tahıl/Demir/...` stringleri farklı paketlerde ayrı ayrı hardcode edilmez.
 
+Devletin tur başı efektif üretimi `GameState.FactionProductionSummary()` ile bölge bazlı üretimlerden toplanır; kuşatma altındaki bölgeler üretime katkı vermez. Tahıl HUD değeri ayrıca `FactionGrainNetChange()` ile sivil talep ve ordu bakımını düşerek net stok değişimini gösterir.
+
 ---
 
 ## Vergi Sistemi

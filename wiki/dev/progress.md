@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Bölge tıklamalarının askeri birim üretim panelini açması kaldırıldı; panel artık yalnızca alt HUD'daki `Ordu` butonuyla açılıyor. Bölge seçiminde açık panel kapanıyor ve bu davranış için regression testi eklendi. Kapsam: `internal/render/{renderer.go,renderer_input.go,renderer_input_test.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./...`.
+
+- 2026-07-22: Askeri birim üretim paneli hover popup'ında maliyet satırları artık mevcut stok/gerekli miktar oranı yerine yalnız gerekli miktarı gösteriyor; kaynak yetersizse ilgili satır kırmızı `eksik` uyarısı taşıyor. Bina tooltip maliyetlerinin mevcut/gerekli formatı korunuyor. Kapsam: `internal/render/{hover_tooltip.go,recruit_panel_test.go}`, `wiki/architecture/render-pipeline.md`; doğrulama: `go test ./internal/render`.
+
+- 2026-07-22: Üst-sol devlet HUD'unda Tahıl, Kereste, Demir ve Taş satırları mevcut stokla birlikte tur başı değişimi `+üretim/mevcut` formatında gösteriyor; negatif tahıl neti `-` işareti ve kırmızı renkle görünür. Üretim toplamı kuşatma altındaki bölgeleri dışarıda bırakan ortak state helper'larından hesaplanıyor. Kapsam: `internal/{state/state.go,render/panel.go}`, testler: `internal/{state/faction_production_test.go,render/resource_hud_test.go}`; doğrulama: `go test ./internal/state ./internal/render`.
+
 - 2026-07-22: Bölge bina kartlarında kaynakları yeterli, maksimum seviyeye ulaşmamış ve kuyruğu boş olan binaların isim etiketi yeşil gösteriliyor; oyuncu inşa edebileceği seçenekleri kart ızgarasında doğrudan ayırt edebiliyor. Kapsam: `internal/render/building_card_component.go`, `wiki/architecture/render-pipeline.md`.
 
 - 2026-07-22: Oyuncuya ait olmayan bölge seçildiğinde bina kartı hover popup'ı kapatıldı ve kaynaklar oyuncuda yeterli olsa bile bina etiketi altın sarısı tutuldu; bina hover, tıklama ve uygunluk görünümü ortak oyuncu sahipliği kontrolüne bağlandı. Regression: `TestNonOwnedBuildingCardsAreNotActionableOrHoverable`; doğrulama: `go test ./...`.

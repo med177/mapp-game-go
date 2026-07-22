@@ -438,7 +438,33 @@ func unitCostRequirementLines(gs *state.GameState, utype *army.UnitType) []toolt
 	if utype == nil {
 		return []tooltipLine{{text: "-", col: ColorGray}}
 	}
-	return resourceTooltipLines(gs, unitCost(utype))
+	return unitCostTooltipLines(gs, unitCost(utype))
+}
+
+func unitCostTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tooltipLine {
+	f := gs.Factions[gs.PlayerFactionID]
+	lines := make([]tooltipLine, 0, 5)
+
+	for _, kind := range economy.CostResourceKinds() {
+		need := cost.Amount(kind)
+		if need <= 0 {
+			continue
+		}
+
+		col := ColorWhite
+		text := fmt.Sprintf("%s: %d", economy.ResourceNameTR(kind), need)
+		have := economy.FactionResourceAmount(f, kind)
+		if have < need {
+			col = ColorRed
+			text += " eksik"
+		}
+		lines = append(lines, tooltipLine{text: text, col: col})
+	}
+
+	if len(lines) == 0 {
+		return []tooltipLine{{text: "Bedava", col: ColorWhite}}
+	}
+	return lines
 }
 
 func resourceTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tooltipLine {

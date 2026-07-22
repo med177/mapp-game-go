@@ -41,7 +41,6 @@ const (
 	selectedSiegePanelH        = 298.0
 	selectedSiegeButtonW       = 224.0
 	selectedSiegeButtonH       = 38.0
-	regionDoubleClickFrames    = 18
 	initialCameraZoomFactor    = 2.50
 	maxCameraZoomScale         = 10
 	activeEventIconSize        = float32(22)
@@ -77,8 +76,6 @@ type Renderer struct {
 	showRecruitPanel         bool
 	recruitUnitID            string
 	recruitQty               int
-	lastRegionClickID        world.RegionID
-	lastRegionClickTick      int
 
 	// Senaryo seçim ekranı
 	scenarioCursor int
