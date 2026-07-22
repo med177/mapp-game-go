@@ -196,7 +196,10 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 			Message:  factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
 		}
 	}
-	result := Execute(gs, offer.FromFactionID, offer.ToFactionID, action)
+	// Gönderen diplomasi kotasını teklif kuyruğa alınırken zaten harcadı.
+	// Teklifin güncel koşullarını yeniden doğrula, ancak kabul sırasında aynı
+	// teklif için kotayı ikinci kez tüketme.
+	result := execute(gs, offer.FromFactionID, offer.ToFactionID, action, false)
 	if accepted && !result.Applied {
 		return Result{
 			Accepted: false,

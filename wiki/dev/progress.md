@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Bekleyen AI diplomasi teklifleri oyuncu tarafından kabul edilirken gönderenin
+  tur içi elçi kotasının ikinci kez tüketilmesi düzeltildi. Teklif kuyruğa alınırken kota
+  korunuyor; kabul sırasında ilişki/stance/stratejik geçerlilik yeniden doğrulanıyor fakat
+  aynı teklif tekrar ücretlendirilmiyor. Regression: `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice`;
+  doğrulama: `go test ./internal/diplomacy`.
+
 - 2026-07-22: Savunma panelinden başarılı huruç sonrasında savunmacı ordu aynı bölgede kalırken en az 1 hareket hakkını koruyor. Regression: `TestSortieSiegeActionResolvesInPlace`; doğrulama: `go test ./internal/game -run '^TestSortieSiegeActionResolvesInPlace$'`.
 
 - 2026-07-22: Kuşatılan oyuncu ordusu veya yerleşimi seçildiğinde saldıran kuşatma paneline karşılık gelen savunma paneli açılıyor. Panel tahkimat, ilerleme, gedik, teslim süresi, kuşatan/savunan gücü bilgilerini gösteriyor; `Huruç başlat` aynı bölgede huruç savaşını, `Teslim ol` ise savunma ordularının kaldırılması ve kuşatana fetih akışını çalıştırıyor. Kapsam: `internal/{render/{action.go,renderer_dialogs.go,renderer_input.go},game/{game.go,siege.go}}`, testler: `internal/{render/war_confirm_test.go,game/siege_test.go}`; doğrulama: hedefli render/game testleri geçti.

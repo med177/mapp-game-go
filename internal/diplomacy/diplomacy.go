@@ -64,10 +64,16 @@ func (a AllianceProposalAssessment) Accepted() bool {
 }
 
 func Execute(gs *state.GameState, actor, target faction.FactionID, action Action) Result {
-	if reason := ActionBlockReason(gs, actor, target, action); reason != "" {
+	return execute(gs, actor, target, action, true)
+}
+
+// execute bir diplomasi aksiyonunu uygular. Kuyruktaki teklif çözülürken
+// consumeQuota false olur; gönderenin kotası teklif kuyruğa alınırken harcanmıştır.
+func execute(gs *state.GameState, actor, target faction.FactionID, action Action, consumeQuota bool) Result {
+	if reason := actionBlockReason(gs, actor, target, action, consumeQuota); reason != "" {
 		return Result{Message: reason}
 	}
-	if actionUsesDiplomacyOfferQuota(action) && !spendDiplomacyOfferQuota(gs, actor) {
+	if consumeQuota && actionUsesDiplomacyOfferQuota(action) && !spendDiplomacyOfferQuota(gs, actor) {
 		return Result{Message: diplomacyOfferQuotaBlockReasonTR}
 	}
 

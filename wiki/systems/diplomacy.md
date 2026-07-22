@@ -85,6 +85,14 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
 
+Bekleyen teklif kuyruğa alındığı anda gönderen fraksiyonun tur içi diplomasi kotasını
+tüketir. Oyuncu teklifi kabul ettiğinde `ResolveOffer()` güncel ilişki ve geçerlilik
+koşullarını yeniden kontrol eder, ancak aynı teklif için kotayı ikinci kez tüketmez.
+Bu ayrım, gönderenin üçüncü ve son elçi hakkıyla oluşturduğu tekliflerin kabulde
+yanlışlıkla uygulanamamasını önler. İlgili uygulama seam'leri
+`internal/diplomacy/offers.go:ResolveOffer()` ve `internal/diplomacy/diplomacy.go:execute()`
+ile regression testi `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice`'dır.
+
 Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon akışı izler:
 
 - Hedefin mevcut vassalları savaşa kesin katılır.

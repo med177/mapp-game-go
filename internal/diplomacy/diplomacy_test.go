@@ -86,6 +86,33 @@ func TestQueueOfferWithMetaRespectsTurnQuota(t *testing.T) {
 	}
 }
 
+func TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	gs.DiplomacyOfferCounts = map[faction.FactionID]int{"a": 2}
+	enableABLandTrade(gs)
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 45
+
+	if !QueueOffer(gs, "a", "b", ActionProposeAlliance) {
+		t.Fatal("ittifak teklifi kuyruğa alınmalıydı")
+	}
+	if got := gs.DiplomacyOfferQuotaUsed("a"); got != 3 {
+		t.Fatalf("teklif kuyruğa alınırken üçüncü hak kullanılmalıydı, got=%d", got)
+	}
+
+	result := ResolveOffer(gs, 0, true)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("kota dolu olsa da bekleyen teklif uygulanmalıydı: %+v", result)
+	}
+	if got := gs.DiplomacyOfferQuotaUsed("a"); got != 3 {
+		t.Fatalf("kabul sırasında teklif kotası ikinci kez harcanmamalıydı, got=%d", got)
+	}
+	if rel.Stance != faction.StanceAllied {
+		t.Fatalf("kabul sonrası ittifak kurulmalıydı, got=%s", rel.Stance)
+	}
+}
+
 func TestProposeAllianceAcceptedDespiteDirectThreatWithCommonEnemy(t *testing.T) {
 	gs := testGameState()
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}

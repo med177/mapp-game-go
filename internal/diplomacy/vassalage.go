@@ -185,6 +185,10 @@ func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, act
 }
 
 func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, action Action) string {
+	return actionBlockReason(gs, actor, target, action, true)
+}
+
+func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, action Action, checkQuota bool) string {
 	if gs == nil {
 		return "Diplomasi durumu yok."
 	}
@@ -199,7 +203,7 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	if actorFaction.IsEliminated || targetFaction.IsEliminated {
 		return "Elenmiş fraksiyonlarla diplomasi kurulamaz."
 	}
-	if actionUsesDiplomacyOfferQuota(action) {
+	if checkQuota && actionUsesDiplomacyOfferQuota(action) {
 		if reason := diplomacyOfferQuotaBlockReason(gs, actor); reason != "" {
 			return reason
 		}
