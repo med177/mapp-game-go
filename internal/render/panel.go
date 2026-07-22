@@ -440,6 +440,18 @@ func turnTechHudRect() (x, y, w, h float32) {
 	return x, y, w, h
 }
 
+func turnTechHudTechRect() (x, y, w, h float32) {
+	x, y, w, h = turnTechHudRect()
+	y += 18
+	h -= 18
+	return x, y, w, h
+}
+
+func turnTechHudTechHit(fx, fy float64) bool {
+	x, y, w, h := turnTechHudTechRect()
+	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
+}
+
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.

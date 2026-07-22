@@ -354,7 +354,7 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) {
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) || turnTechHudTechHit(fx, fy) {
 		return true
 	}
 	if victoryProgressHit(fx, fy) {

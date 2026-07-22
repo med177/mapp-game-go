@@ -22,3 +22,23 @@ func TestFormatResourceHUDValue(t *testing.T) {
 		})
 	}
 }
+
+func TestTurnTechHudTechHitUsesResearchRow(t *testing.T) {
+	oldScreenW, oldScreenH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldScreenW, oldScreenH
+	}()
+
+	x, y, w, h := turnTechHudTechRect()
+	if !turnTechHudTechHit(float64(x+w/2), float64(y+h/2)) {
+		t.Fatal("aktif teknoloji satırının ortası tıklanabilir olmalı")
+	}
+	_, hudY, _, _ := turnTechHudRect()
+	if turnTechHudTechHit(float64(x+w/2), float64(hudY+8)) {
+		t.Fatal("teknoloji HUD'ının üst durum satırı teknoloji açma hit-test'ine girmemeli")
+	}
+	if turnTechHudTechHit(float64(x-1), float64(y+h/2)) {
+		t.Fatal("teknoloji HUD'ının dışı hit-test'e girmemeli")
+	}
+}

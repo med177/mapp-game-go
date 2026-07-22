@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Üst HUD'daki aktif araştırma adı tıklanabilir hale getirildi; tıklama alt HUD'daki `Teknoloji` düğmesiyle aynı şekilde teknoloji panelini açıyor. Regression: `TestTurnTechHudTechHitUsesResearchRow`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-22: Teknoloji ağacının ortadaki flow içeriğinin sağ ve sol boşluklarına tıklama, üstteki teknoloji paneli kapatma düğmesiyle aynı kapanış davranışına bağlandı. Sekme, kart, scroll ve sürükleme hit-test'leri korunuyor. Regression: `TestTechTreeSideBlankClickClosesPanel`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-22: Bekleyen AI diplomasi teklifleri oyuncu tarafından kabul edilirken gönderenin

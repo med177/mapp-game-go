@@ -538,6 +538,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{Kind: ActionNextMusic}
 		}
 	}
+	if turnTechHudTechHit(fx, fy) {
+		r.showTech = true
+		r.showRecruitPanel = false
+		r.showDiplomacy = false
+		r.techCursor = 0
+		return InputAction{}
+	}
 
 	// --- Alt panel butonları ---
 	bottomButtons := buildBottomActionButtons(RecruitPanelButtonEnabled(r.gs, r.SelectedRegion))

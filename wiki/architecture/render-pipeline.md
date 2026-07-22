@@ -45,6 +45,8 @@ Teknoloji paneli açıkken input modal olarak teknoloji ağacına yönlendirilir
 
 Teknoloji ağacındaki gerçek flow içeriği viewport'tan daha dar olduğunda ortalanır. Flow'un tree viewport içindeki sağ ve sol boşluklarına yapılan sol tıklama, üstteki teknoloji kapatma düğmesiyle aynı şekilde paneli kapatır; kategori sekmeleri, teknoloji kartları ve ağaç sürükleme alanı korunur (`internal/render/tech_panel.go`).
 
+Üst HUD'da aktif araştırma adının bulunduğu teknoloji satırı tıklanabilir; tıklama alt HUD'daki `Teknoloji` düğmesiyle aynı şekilde teknoloji panelini açar ve recruit/diplomasi panellerini kapatır (`internal/render/panel.go`, `renderer_input.go`, `cursor.go`).
+
 **Kaynak:** `internal/render/renderer.go`, `renderer_input.go`, `renderer_dialogs.go`, `map_editor.go`, `trade_overlay.go`
 
 `Renderer` tek tip olarak korunur; dosyalar davranış sorumluluğuna göre ayrılır. Ana dosya yaşam döngüsü, kamera ve draw orkestrasyonunu; diğer dosyalar input, modal, editör ve ticaret haritası ayrıntılarını taşır.
