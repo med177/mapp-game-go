@@ -1354,7 +1354,7 @@ func (r *Renderer) drawDiplomacyOfferSummaryPanel(screen *ebiten.Image, modal ga
 		X: modal.Panel.Rect.X + 458,
 		Y: modal.Panel.Rect.Y + 16,
 		W: 286,
-		H: 304,
+		H: modal.Panel.Rect.H - 32,
 	}
 	drawDiplomacyOfferSummaryPanel(screen, r.gs, panelRect, offer)
 }
@@ -1366,26 +1366,22 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	modal := buildDiplomacyOfferModal()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
-	leftRect := gameui.Rect{X: modal.Panel.Rect.X + 16, Y: modal.Panel.Rect.Y + 16, W: 430, H: 188}
+	leftRect := gameui.Rect{X: modal.Panel.Rect.X + 16, Y: modal.Panel.Rect.Y + 16, W: 430, H: modal.Panel.Rect.H - 72}
 	drawUIPanelFrame(screen, leftRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
 
 	title := diplomacyOfferTitleTR(offer)
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 10, W: leftRect.W - 28}, title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	message := diplomacyOfferMessageTR(r.gs, offer)
-	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 38, W: leftRect.W - 28}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 38, W: leftRect.W - 28}, message, color.RGBA{220, 220, 220, 255}, gameui.TextMedium, 20, 5)
 	priorityLine := fmt.Sprintf("Tür: %s | Öncelik: %d", actionLabel, offer.Priority)
-	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 82, W: leftRect.W - 28}, priorityLine, color.RGBA{255, 205, 120, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 154, W: leftRect.W - 28}, priorityLine, color.RGBA{255, 205, 120, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	reasonText := diplomacyOfferReasonTextTR(offer)
-	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 104, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 2)
-	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 158, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 178, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 3)
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 246, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 	r.drawDiplomacyOfferSummaryPanel(screen, modal, offer)
 
-	acceptLabel := "Kabul Et"
-	if offer.Action == string(diplomacy.ActionProposeSurrender) {
-		acceptLabel = "Teslim Ol"
-	}
-	acceptBtn, rejectBtn := buildDiplomacyOfferButtonsWithAcceptLabel(acceptLabel)
+	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	drawUIButtonWidget(screen, acceptBtn,
 		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
 	drawUIButtonWidget(screen, rejectBtn,

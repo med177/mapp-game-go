@@ -290,7 +290,7 @@ func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
 }
 
 func buildDiplomacyOfferModal() gameui.Modal {
-	const dlgW, dlgH = 760.0, 344.0
+	const dlgW, dlgH = 760.0, 460.0
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, dlgW, dlgH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)

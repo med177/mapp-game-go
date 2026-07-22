@@ -139,6 +139,16 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 		if offer.Action != string(diplomacy.ActionProposeSurrender) || offer.RegionID != "fort" || offer.ToFactionID != "player" {
 			t.Fatalf("AI yanlış teslimiyet teklifi üretti: %+v", offer)
 		}
+		focused := false
+		for _, step := range steps {
+			if step.Kind == TurnStepDiplomacy && step.TargetRegion == "fort" && step.FocusRegion == "fort" {
+				focused = true
+				break
+			}
+		}
+		if !focused {
+			t.Fatal("AI teslimiyet teklifinin turn adımı kuşatılan bölgeyi kamera odağı olarak taşımalıydı")
+		}
 		return
 	}
 	t.Fatal("AI kuşatanı uygun koşullarda oyuncuya teslimiyet teklifi üretmedi")

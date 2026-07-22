@@ -603,6 +603,9 @@ func (g *Game) updateAITurnSequence() {
 		return
 	}
 	if offer, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
+		if offer.RegionID != "" {
+			g.renderer.CenterCameraOnRegion(offer.RegionID)
+		}
 		g.renderer.SetAITurnStatus(offer.FromFactionID, turnActorName(g.gs, offer.FromFactionID), "Diplomasi cevabınız bekleniyor.")
 		return
 	}

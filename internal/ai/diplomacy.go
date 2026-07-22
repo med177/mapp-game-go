@@ -191,6 +191,7 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 				Kind:          TurnStepDiplomacy,
 				TargetFaction: to,
 				TargetRegion:  target.ID,
+				FocusRegion:   target.ID,
 				Message:       turnFactionName(gs, fid) + " " + turnRegionName(gs, target.ID) + " için teslimiyet teklifi gönderdi.",
 			})
 		}

@@ -182,6 +182,9 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		offerModal := buildDiplomacyOfferModal()
 		assertModalInside(t, tc.w, tc.h, offerModal)
 		acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+		if acceptBtn.Label != "Kabul Et" {
+			t.Fatalf("diplomasi teklifinde kabul düğmesi Kabul Et olmalı, got=%q", acceptBtn.Label)
+		}
 		assertButtonInside(t, tc.w, tc.h, acceptBtn)
 		assertButtonInside(t, tc.w, tc.h, rejectBtn)
 		if rejectBtn.X+rejectBtn.W > offerModal.Panel.Rect.X+offerModal.Panel.Rect.W/2 {
