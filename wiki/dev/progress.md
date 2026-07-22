@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-22: Bölge bina kartlarında kaynakları yeterli, maksimum seviyeye ulaşmamış ve kuyruğu boş olan binaların isim etiketi yeşil gösteriliyor; oyuncu inşa edebileceği seçenekleri kart ızgarasında doğrudan ayırt edebiliyor. Kapsam: `internal/render/building_card_component.go`, `wiki/architecture/render-pipeline.md`.
+
+- 2026-07-22: Oyuncuya ait olmayan bölge seçildiğinde bina kartı hover popup'ı kapatıldı ve kaynaklar oyuncuda yeterli olsa bile bina etiketi altın sarısı tutuldu; bina hover, tıklama ve uygunluk görünümü ortak oyuncu sahipliği kontrolüne bağlandı. Regression: `TestNonOwnedBuildingCardsAreNotActionableOrHoverable`; doğrulama: `go test ./...`.
+
+- 2026-07-22: Oyuncunun reddettiği AI barış/ittifak/ticaret/vassallık teklifleri artık aynı aktör-hedef-aksiyon için üç tur cooldown'a giriyor; sonrasında AI tur bazlı deterministik %35 retry zarı atıyor. Her normal ret ilişkiyi `-3` düşürüyor ve cooldown kaydı compact/debug/legacy save-load ile korunuyor. Savaş çağrısının mevcut ittifak bozma sonucu korunuyor. Kapsam: `internal/{state,diplomacy,ai,save}`, testler: `go test ./internal/diplomacy ./internal/ai ./internal/save`, `go test ./internal/game -run '^Test1300ScenarioGrainEconomyBands$'`.
+
+- 2026-07-22: AI devletlerinin teknoloji tamamlanma mesajları oyuncu bildirimlerinden ayrıştırıldı. AI araştırması state içinde ilerlemeye devam ediyor; ancak AI teknolojileri kısa popup ve oyuncunun olay günlüğüne yazılmıyor. Kapsam: `internal/game/game.go`, `wiki/systems/tech-tree.md`; regression: `internal/game/technology_notification_test.go`.
+
 - 2026-07-22: Tahıl ekonomisi yeniden dengeleme planı tamamlandı. Kasım ayındaki stabil rezerv fazlası nüfus yatırımına bağlandı; nüfus artışı sonraki tick'lerde sivil tahıl talebini artırıyor. Ordu morali save-backed `Army.Morale` alanına eklendi; stabil/uyarı/kritik/kıtlık seviyeleri sırasıyla `+1/-1/-3/-6` moral etkisi uyguluyor ve `TotalStrength()` üzerinden savaş/AI gücüne yansıyor. HUD/event detayında moral delta görünür; eski save'ler 100 başlangıç moraliyle uyumlu. Doğrulama: `go test ./...`.
 
 - 2026-07-22: Tahıl ekonomisi Faz 5 tahıl ithalatı/stratejik talep alt adımı tamamlandı. Fraksiyonun üç aylık rezerv hedefine kalan açığı `StrategicDemand` olarak hesaplanıyor; tahıl piyasa fiyatına ek talep olarak yazılıyor, Pazar panelinde hedef bazında gösteriliyor ve yeni ticaret rotasında kaynakta rezerv fazlası varsa rota tahıla yönlendiriliyor. İthalat mevcut rota transferi üzerinden kaynak stok/altın koşullarıyla sınırlanıyor. Kapsam: `internal/{economy/economy.go,game/{game.go,resolution.go},state/state.go,diplomacy/diplomacy.go,render/trade.go}`; doğrulama: hedefli testler.

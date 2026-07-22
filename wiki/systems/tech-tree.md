@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-07-21
+last_updated: 2026-07-22
 related: [systems/combat, systems/economy, architecture/state-management, dev/data-format]
 ---
 
@@ -70,6 +70,10 @@ AI zaten aynı `ResearchState` ve `tech.StartResearch / tech.Tick / tech.PauseRe
 Birim üretim kapıları `assets/scenarios/<id>/data/units.json` içindeki `required_tech` dizisini AND olarak değerlendirir. Birim, listelenen zincirin tüm halkaları tamamlanmadan oyuncu veya AI tarafından üretilemez.
 
 `applyTechTicks(gs)` — her tur `TurnsLeft--`, `0` olunca teknoloji tamamlanır.
+
+Teknoloji tamamlanma bildirimi yalnız `PlayerFactionID` fraksiyonu için kısa
+popup ve olay günlüğüne yazılır. AI devletlerinin araştırması aynı state akışı
+üzerinden ilerler, ancak tamamlanma mesajları oyuncunun olay günlüğüne düşmez.
 
 ---
 

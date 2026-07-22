@@ -823,6 +823,9 @@ func (g *Game) resolveTurn() {
 
 	// Tamamlanan teknolojiler için mesaj göster
 	for _, ct := range completedTechs {
+		if !shouldNotifyPlayerTechnologyCompletion(g.gs, ct.factionID) {
+			continue
+		}
 		if t, ok := g.gs.TechTypes[ct.techID]; ok {
 			if f, ok := g.gs.Factions[faction.FactionID(ct.factionID)]; ok {
 				msg := f.NameTR + ": " + t.NameTR + " teknolojisi tamamlandı!"
@@ -970,6 +973,13 @@ func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus)
 			g.renderer.ShowCombatResult(regionName + ": ordular ikmal baskısı altında zayiat veriyor")
 		}
 	}
+}
+
+// shouldNotifyPlayerTechnologyCompletion yalnız oyuncunun teknoloji
+// tamamlanmalarının oyuncu bildirimlerine yazılmasını sağlar. AI araştırması
+// state içinde ilerlemeye devam eder, ancak oyuncunun olay günlüğünü kirletmez.
+func shouldNotifyPlayerTechnologyCompletion(gs *state.GameState, factionID string) bool {
+	return gs != nil && faction.FactionID(factionID) == gs.PlayerFactionID
 }
 
 func (g *Game) showGrainEconomyAlert(status state.GrainEconomyStatus) {
@@ -1936,7 +1946,7 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 			return
 		}
 		if economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, actualAmount, g.gs.MarketPrices) {
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı. (%d altın)", targetID, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
 	} else {
@@ -1950,7 +1960,7 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 			return
 		}
 		if economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, actualAmount, g.gs.MarketPrices) {
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı. (%d altın)", targetID, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
 	}

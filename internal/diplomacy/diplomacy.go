@@ -35,6 +35,10 @@ type Result struct {
 const tradeAcceptanceThreshold = 45
 const tradeRelationThreshold = 15
 
+// rejectedOfferRelationPenalty her reddedilen normal diplomasi teklifinin
+// ilişkiye uyguladığı küçük cezadır. Savaş çağrısı kendi özel sonucunu kullanır.
+const rejectedOfferRelationPenalty = 3
+
 type TradeProposalAssessment struct {
 	Chance      int
 	BlockReason string
@@ -73,6 +77,7 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 
 	case ActionProposePeace:
 		if !acceptPeace(gs, rel, actor, target) {
+			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " barışı reddetti."}
 		}
 		setPeaceBetweenCoalitions(gs, actor, target)
@@ -90,6 +95,7 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 			return Result{Message: "Bu müttefik ile ticaret zaten aktif."}
 		}
 		if !acceptTrade(gs, rel, actor, target) {
+			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " ticaret teklifini reddetti."}
 		}
 		prevStance := rel.Stance
@@ -105,6 +111,7 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 
 	case ActionProposeAlliance:
 		if !acceptAlliance(gs, rel, actor, target) {
+			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " ittifak teklifini reddetti."}
 		}
 		rel.Stance = faction.StanceAllied
@@ -137,6 +144,7 @@ func Execute(gs *state.GameState, actor, target faction.FactionID, action Action
 
 	case ActionOfferVassalization:
 		if !AssessVassalizationProposal(gs, rel, actor, target).Accepted() {
+			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " vassallık teklifini reddetti."}
 		}
 		return applyVassalization(gs, actor, target)
@@ -171,6 +179,23 @@ func Relation(gs *state.GameState, a, b faction.FactionID) *faction.Relation {
 		return nil
 	}
 	return gs.Relations[faction.RelationKey(a, b)]
+}
+
+// markRejectedDiplomaticOffer ret bilgisini kaydeder ve ilişkiyi küçük bir
+// miktar azaltır. Retry kaydı AI'nin aynı teklifi her tur otomatik yinelemesini
+// engeller; save/load ile birlikte kalıcıdır.
+func markRejectedDiplomaticOffer(gs *state.GameState, actor, target faction.FactionID, action Action) {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return
+	}
+	// Bu retry/ilişki sonucu oyuncunun cevapladığı diplomasi akışına aittir.
+	// AI-AI otomatik değerlendirmeleri senaryo tempo kalibrasyonunu etkilemez.
+	if gs.PlayerFactionID == "" || (actor != gs.PlayerFactionID && target != gs.PlayerFactionID) {
+		return
+	}
+	rel := EnsureRelation(gs, actor, target)
+	rel.Score = clamp(rel.Score-rejectedOfferRelationPenalty, -100, 100)
+	gs.MarkDiplomaticOfferRejected(string(actor), string(target), string(action))
 }
 
 func IsWar(gs *state.GameState, a, b faction.FactionID) bool {

@@ -482,6 +482,28 @@ func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
 	}
 }
 
+func TestResolveRejectedDiplomaticOfferLowersRelationAndRecordsRetry(t *testing.T) {
+	gs := testGameState()
+	gs.Turn = 5
+	gs.PlayerFactionID = "b"
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 40
+
+	if !QueueOffer(gs, "a", "b", ActionProposeAlliance) {
+		t.Fatal("ittifak teklifi kuyruğa alınmalıydı")
+	}
+	result := ResolveOffer(gs, 0, false)
+	if result.Accepted || result.Applied {
+		t.Fatalf("reddedilen teklif kabul edilmiş görünmemeli: %+v", result)
+	}
+	if rel.Score != 37 {
+		t.Fatalf("ret ilişkiyi 3 puan düşürmeliydi, got=%d", rel.Score)
+	}
+	if !gs.DiplomaticOfferRetryBlocked("a", "b", string(ActionProposeAlliance), state.DiplomaticOfferRetryCooldownTurns) {
+		t.Fatal("ret sonrası teklif retry cooldown'u aktif olmalıydı")
+	}
+}
+
 func TestAssessTradeProposalBlocksLowScore(t *testing.T) {
 	gs := testGameState()
 	enableABLandTrade(gs)

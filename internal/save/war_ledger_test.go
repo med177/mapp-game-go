@@ -25,6 +25,9 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 				LastPeaceOfferTurn: 7,
 			},
 		},
+		OfferRejectionTurns: map[string]int{
+			"a|b|propose_peace": 8,
+		},
 	}
 	raw, err := json.Marshal(original)
 	if err != nil {
@@ -39,5 +42,8 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 	ledger := restored.WarLedgerFor("b", "a")
 	if ledger == nil || ledger.StartedTurn != 3 || ledger.CasualtiesA != 5 || ledger.RegionsCapturedA != 1 || ledger.LastPeaceOfferTurn != 7 {
 		t.Fatalf("war ledger save/load kaybı: %+v", ledger)
+	}
+	if restored.OfferRejectionTurns["a|b|propose_peace"] != 8 {
+		t.Fatalf("diplomasi ret cooldown save/load kaybı: %+v", restored.OfferRejectionTurns)
 	}
 }

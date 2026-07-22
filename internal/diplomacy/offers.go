@@ -131,6 +131,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return resolveRejectedWarJoinOffer(gs, offer)
 	}
 	if !accepted {
+		markRejectedDiplomaticOffer(gs, offer.FromFactionID, offer.ToFactionID, action)
 		return Result{
 			Accepted: false,
 			Applied:  false,

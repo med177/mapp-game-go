@@ -97,11 +97,11 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 }
 
 func BuildingGridHoverID(mx, my float64, gs *state.GameState, rid world.RegionID) string {
-	if rid == "" {
+	if gs == nil || rid == "" {
 		return ""
 	}
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea {
+	if !ok || !regionBuildingActionsAvailable(gs, region) {
 		return ""
 	}
 	if bid, ok := lastDrawnBuildingGridHit(mx, my, rid); ok {

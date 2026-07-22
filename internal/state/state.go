@@ -16,6 +16,10 @@ import (
 // MaxDiplomacyOffersPerTurn bir devletin bir turda gönderebileceği azami teklif sayısıdır.
 const MaxDiplomacyOffersPerTurn = 3
 
+// DiplomaticOfferRetryCooldownTurns reddedilen bir teklifin aynı aktör-hedef-
+// aksiyon üçlüsü için zorunlu bekleme süresidir.
+const DiplomaticOfferRetryCooldownTurns = 3
+
 const civilianGrainPopulationUnit = 20
 
 const (
@@ -212,6 +216,8 @@ type GameState struct {
 	DiplomaticOfferHistory []DiplomaticOfferHistoryEntry `json:"diplomatic_offer_history,omitempty"`
 	// Turn içinde devlet başına gönderilen diplomasi teklif sayacı.
 	DiplomacyOfferCounts map[faction.FactionID]int `json:"diplomacy_offer_counts,omitempty"`
+	// Aktör-hedef-aksiyon bazında son reddedilen teklif turu.
+	OfferRejectionTurns map[string]int `json:"diplomatic_offer_last_rejected_turns,omitempty"`
 
 	// Ticaret güzergahları
 	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`
@@ -850,6 +856,33 @@ func (s *GameState) SpendDiplomacyOfferQuota(fid faction.FactionID) bool {
 	}
 	s.DiplomacyOfferCounts[fid]++
 	return true
+}
+
+// DiplomaticOfferRejectionKey aynı aktörün aynı hedefe aynı aksiyonu tekrar
+// denemesini izlemek için yönlü anahtar üretir.
+func DiplomaticOfferRejectionKey(from, to, action string) string {
+	return from + "|" + to + "|" + action
+}
+
+// MarkDiplomaticOfferRejected son reddedilen teklif turunu kaydeder.
+func (s *GameState) MarkDiplomaticOfferRejected(from, to, action string) {
+	if s == nil || from == "" || to == "" || action == "" {
+		return
+	}
+	if s.OfferRejectionTurns == nil {
+		s.OfferRejectionTurns = make(map[string]int, 4)
+	}
+	s.OfferRejectionTurns[DiplomaticOfferRejectionKey(from, to, action)] = s.Turn
+}
+
+// DiplomaticOfferRetryBlocked reddedilen teklifin bekleme süresi dolmadıysa
+// true döner. Kayıtlı ret yoksa teklif engellenmez.
+func (s *GameState) DiplomaticOfferRetryBlocked(from, to, action string, cooldownTurns int) bool {
+	if s == nil || cooldownTurns <= 0 || len(s.OfferRejectionTurns) == 0 {
+		return false
+	}
+	lastRejected, ok := s.OfferRejectionTurns[DiplomaticOfferRejectionKey(from, to, action)]
+	return ok && s.Turn-lastRejected < cooldownTurns
 }
 
 // SyncTimedRegionUnlocks aktif tur UnlockTurn'a ulaşmış kilitli bölgeleri açar.

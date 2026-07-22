@@ -479,6 +479,25 @@ func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, actio
 	return int(hasher.Sum32() % 100)
 }
 
+// aiDiplomacyOfferRetryAllowed reddedilmiş bir teklifin tekrarını üç tur
+// bekletir. Bekleme bitince her tur deterministik bir zar atılır; böylece aynı
+// teklif koşullar aynı kalsa bile otomatik olarak her tur gönderilmez.
+func aiDiplomacyOfferRetryAllowed(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) bool {
+	if gs == nil {
+		return false
+	}
+	key := state.DiplomaticOfferRejectionKey(string(from), string(to), string(action))
+	lastRejected, rejectedBefore := gs.OfferRejectionTurns[key]
+	if !rejectedBefore {
+		return true
+	}
+	if gs.Turn-lastRejected < state.DiplomaticOfferRetryCooldownTurns {
+		return false
+	}
+	const retryChance = 35
+	return aiDiplomacyOfferRoll(gs, from, to, action) < retryChance
+}
+
 func aiWarCadenceAllows(gs *state.GameState, fid faction.FactionID) bool {
 	if gs == nil || gs.Turn == 0 {
 		return true

@@ -116,11 +116,22 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Hediye | +15 |
 | Ticaret | +15 |
 | İttifak | +20 |
+| Oyuncunun normal diplomasi teklifini reddetme | -3 |
 | `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar ise aşınır |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
 | Din bonusu/cezası | `religion.Relation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
 
 → `applyRelationDecay` tur çözümleme sırası: [[architecture/game-loop]]
+
+### Teklif Retleri ve Tekrar Denemeler
+
+Oyuncunun reddettiği barış, ittifak, ticaret veya vassallık teklifleri
+`GameState.OfferRejectionTurns` içinde aktör-hedef-aksiyon anahtarıyla tutulur.
+İlişki skoru her normal ret için `-3` azalır. Aynı teklif üç tur boyunca yeniden
+gönderilmez; bekleme bitince AI her tur `internal/ai/ai.go:aiDiplomacyOfferRoll`
+üzerinden %35 tekrar deneme zarı atar. Bu kayıt compact ve debug/legacy save
+akışlarında korunur. Savaş çağrısının mevcut ittifak bozma ve `-10` ilişki sonucu
+bu kurala dahil değildir.
 
 ---
 

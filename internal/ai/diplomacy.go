@@ -42,6 +42,9 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				shouldProposePeace = rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID))
 			}
 			if shouldProposePeace {
+				if !aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposePeace) {
+					continue
+				}
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposePeace)
 					if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposePeace, priority, reason) {
@@ -66,7 +69,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			if rel.Score >= 25 {
 				allianceAssessment = diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
 			}
-			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) {
+			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeAlliance) {
 				if otherID == gs.PlayerFactionID {
 					priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, diplomacy.ActionProposeAlliance)
 					if diplomacy.QueueOfferWithMeta(gs, fid, otherID, diplomacy.ActionProposeAlliance, priority, reason) {
@@ -80,7 +83,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				}
 				continue
 			}
-			if rel.Score >= 15 && diplomacy.Relation(gs, fid, otherID).Stance == faction.StancePeace && aiTradePartnerCount(gs, fid) < 3 && aiTradePartnerCount(gs, otherID) < 3 && !diplomacy.HasDirectThreat(gs, fid, otherID) {
+			if rel.Score >= 15 && diplomacy.Relation(gs, fid, otherID).Stance == faction.StancePeace && aiTradePartnerCount(gs, fid) < 3 && aiTradePartnerCount(gs, otherID) < 3 && !diplomacy.HasDirectThreat(gs, fid, otherID) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeTrade) {
 				if otherID == gs.PlayerFactionID {
 					assessment := diplomacy.AssessTradeProposal(gs, diplomacy.Relation(gs, fid, otherID), fid, otherID)
 					if assessment.BlockReason == "" {

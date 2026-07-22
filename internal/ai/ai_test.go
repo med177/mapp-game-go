@@ -58,6 +58,29 @@ func TestAIQueuesPeaceOfferToPlayer(t *testing.T) {
 	}
 }
 
+func TestAIDoesNotRepeatRejectedPeaceOfferDuringCooldown(t *testing.T) {
+	gs := aiTestState()
+	gs.PlayerFactionID = "player"
+	rel := gs.Relations[faction.RelationKey("ai_1", "player")]
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+	gs.Factions["player"].Gold = 30
+
+	aiHandleDiplomacy(gs, "ai_1")
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("ilk barış teklifi bekleniyordu, got=%d", len(gs.DiplomaticOffers))
+	}
+	if result := diplomacy.ResolveOffer(gs, 0, false); result.Accepted || result.Applied {
+		t.Fatalf("oyuncu reddi kabul edilmiş görünmemeli: %+v", result)
+	}
+
+	gs.Turn++
+	aiHandleDiplomacy(gs, "ai_1")
+	if len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("ret sonrası cooldown sırasında barış teklifi tekrarlanmamalı, got=%+v", gs.DiplomaticOffers)
+	}
+}
+
 func TestAIPrioritizesPeaceOffersByThreatAndTechGap(t *testing.T) {
 	gs := aiTestState()
 	gs.Relations[faction.RelationKey("ai_1", "player")].Stance = faction.StanceWar

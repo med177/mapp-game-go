@@ -82,15 +82,17 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 			if b.MaxPerRegion > 0 {
 				maxLevel = b.MaxPerRegion
 			}
-			if f := gs.Factions[gs.PlayerFactionID]; f != nil {
-				cost := economy.ResourceCost{
-					Gold:   b.GoldCost,
-					Grain:  b.GrainCost,
-					Iron:   b.IronCost,
-					Timber: b.TimberCost,
-					Stone:  b.StoneCost,
+			if regionBuildingActionsAvailable(gs, region) {
+				if f := gs.Factions[gs.PlayerFactionID]; f != nil {
+					cost := economy.ResourceCost{
+						Gold:   b.GoldCost,
+						Grain:  b.GrainCost,
+						Iron:   b.IronCost,
+						Timber: b.TimberCost,
+						Stone:  b.StoneCost,
+					}
+					canAfford = cost.CanAfford(f)
 				}
-				canAfford = cost.CanAfford(f)
 			}
 		}
 
@@ -115,6 +117,11 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 		})
 	}
 	return cards
+}
+
+func regionBuildingActionsAvailable(gs *state.GameState, region *world.Region) bool {
+	return gs != nil && region != nil && !region.IsSea && !region.IsLocked &&
+		region.OwnerID != "" && region.OwnerID == string(gs.PlayerFactionID)
 }
 
 func buildingCardLayout(panelX, startY, panelW float32, index int) (gameui.Rect, gameui.Rect, float64) {
@@ -177,12 +184,16 @@ func (c buildingCardComponent) Draw(screen *ebiten.Image) {
 		c.drawSprite(screen, sprite, isBuilt)
 	}
 
+	labelBg := color.RGBA{218, 178, 64, 255}
+	if c.CanAfford && !isMaxLevel && !isQueued {
+		labelBg = ColorGreen
+	}
 	vector.FillRect(screen,
 		float32(c.Rect.X),
 		float32(c.ImageRect.Y+c.ImageRect.H),
 		float32(c.Rect.W),
 		buildingGridNameH,
-		color.RGBA{218, 178, 64, 255},
+		labelBg,
 		false,
 	)
 	DrawTextCentered(screen, c.Name, c.Rect.X+c.Rect.W/2, c.LabelY, FaceSmall, color.RGBA{24, 20, 12, 255})

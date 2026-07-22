@@ -247,3 +247,51 @@ func TestBuildingGridHitTestUsesDrawnSpriteBoundsOnly(t *testing.T) {
 		t.Fatalf("son cizilen sprite merkezinde market bekleniyordu, got=%q", got)
 	}
 }
+
+func TestNonOwnedBuildingCardsAreNotActionableOrHoverable(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	oldCachedRegion := lastBuildingGridRegionID
+	oldCachedCards := lastBuildingGridCards
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+		lastBuildingGridRegionID = oldCachedRegion
+		lastBuildingGridCards = oldCachedCards
+	}()
+
+	regionID := world.RegionID("enemy_region")
+	region := &world.Region{
+		ID:        regionID,
+		OwnerID:   "enemy",
+		Buildings: []string{"market"},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions:         map[world.RegionID]*world.Region{regionID: region},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Gold: 1000, Grain: 1000, Iron: 1000, Timber: 1000, Stone: 1000},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"market": {ID: "market", NameTR: "Pazar", GoldCost: 10, MaxPerRegion: 2},
+		},
+	}
+
+	startY := buildingGridStartY(gs, region, false)
+	cards := buildBuildingCardComponents(gs, region, infoPanelX(), startY, infoPanelW)
+	if len(cards) != 1 {
+		t.Fatalf("1 bina kartı bekleniyordu, got=%d", len(cards))
+	}
+	card := cards[0]
+	cacheBuildingGridComponents(regionID, cards)
+
+	if card.CanAfford {
+		t.Fatal("oyuncuya ait olmayan bölgedeki bina kartı yeşile dönebilecek şekilde CanAfford olmamalı")
+	}
+	if got := BuildingGridHoverID(card.SpriteRect.X+card.SpriteRect.W/2, card.SpriteRect.Y+card.SpriteRect.H/2, gs, regionID); got != "" {
+		t.Fatalf("oyuncuya ait olmayan bölgedeki bina hover tooltip üretmemeliydi, got=%q", got)
+	}
+	if got := BuildingGridHitTest(card.SpriteRect.X+card.SpriteRect.W/2, card.SpriteRect.Y+card.SpriteRect.H/2, gs, regionID, false); got != "" {
+		t.Fatalf("oyuncuya ait olmayan bölgedeki bina tıklanabilir olmamalıydı, got=%q", got)
+	}
+}

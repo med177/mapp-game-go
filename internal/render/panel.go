@@ -3922,11 +3922,11 @@ func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID
 }
 
 func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {
-	if rid == "" {
+	if gs == nil || rid == "" {
 		return ""
 	}
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea || region.IsLocked || region.OwnerID != string(gs.PlayerFactionID) {
+	if !ok || !regionBuildingActionsAvailable(gs, region) {
 		return ""
 	}
 	if bid, ok := lastDrawnBuildingGridHit(mx, my, rid); ok {
