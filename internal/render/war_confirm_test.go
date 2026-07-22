@@ -371,6 +371,42 @@ func TestSelectedDefensiveSiegePanelFollowsArmyAndSettlementSelection(t *testing
 	}
 }
 
+func TestSelectedSiegeSurrenderOfferDisabledAfterSameTurnRejection(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            8,
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"fort":  {ID: "fort", OwnerID: "enemy"},
+			"other": {ID: "other", OwnerID: "enemy"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"besieger": {ID: "besieger", OwnerID: "player", RegionID: "fort", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {RegionID: "fort", AttackerArmyID: "besieger", AttackerFactionID: "player"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		OfferRejectionTurns: map[string]int{
+			state.DiplomaticOfferRegionRejectionKey("player", "enemy", string(diplomacy.ActionProposeSurrender), "fort"): 8,
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	if sent, canSend := r.attackerSiegeSurrenderState(gs.Armies["besieger"], gs.Regions["fort"]); sent || canSend {
+		t.Fatalf("aynı tur reddedilen kuşatmada teklif düğmesi pasif olmalı: sent=%t canSend=%t", sent, canSend)
+	}
+	if sent, canSend := r.attackerSiegeSurrenderState(gs.Armies["besieger"], gs.Regions["other"]); sent || !canSend {
+		t.Fatalf("ret diğer bölgenin teklif düğmesini etkilememeli: sent=%t canSend=%t", sent, canSend)
+	}
+}
+
 func TestWarConfirmScrollHelpersClampAndHitVisibleRows(t *testing.T) {
 	viewport := gameui.Rect{X: 100, Y: 200, W: 320, H: 110}
 	entries := []diplomacy.WarParticipantPreview{

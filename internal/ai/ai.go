@@ -498,6 +498,22 @@ func aiDiplomacyOfferRetryAllowed(gs *state.GameState, from, to faction.FactionI
 	return aiDiplomacyOfferRoll(gs, from, to, action) < retryChance
 }
 
+func aiDiplomacyOfferRetryAllowedForRegion(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action, regionID world.RegionID) bool {
+	if gs == nil || regionID == "" {
+		return false
+	}
+	if gs.DiplomaticOfferRegionRetryBlocked(string(from), string(to), string(action), regionID, state.DiplomaticOfferRetryCooldownTurns) {
+		return false
+	}
+	key := state.DiplomaticOfferRegionRejectionKey(string(from), string(to), string(action), regionID)
+	_, rejectedBefore := gs.OfferRejectionTurns[key]
+	if !rejectedBefore {
+		return true
+	}
+	const retryChance = 35
+	return aiDiplomacyOfferRoll(gs, from, to, action) < retryChance
+}
+
 func aiWarCadenceAllows(gs *state.GameState, fid faction.FactionID) bool {
 	if gs == nil || gs.Turn == 0 {
 		return true

@@ -130,7 +130,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 // gerektirmediği için burada teklif kuyruğuna alınmaz; otomatik savaş akışı
 // onları kendi kararlarıyla çözer.
 func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
-	if gs == nil || fid == "" || gs.PlayerFactionID == "" || fid == gs.PlayerFactionID || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+	if gs == nil || fid == "" || gs.PlayerFactionID == "" || fid == gs.PlayerFactionID {
 		return
 	}
 	for _, target := range aiSortedRegions(gs) {
@@ -182,7 +182,7 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 			priority = 175
 			reason = "Kuşatma baskısı ve savunma çöküşü"
 		}
-		if !shouldOffer || from == "" || to == "" || !aiDiplomacyOfferRetryAllowed(gs, from, to, diplomacy.ActionProposeSurrender) {
+		if !shouldOffer || from == "" || to == "" || !aiDiplomacyOfferRetryAllowedForRegion(gs, from, to, diplomacy.ActionProposeSurrender, target.ID) {
 			continue
 		}
 		if diplomacy.QueueSurrenderOffer(gs, from, to, target.ID, priority, reason) {
@@ -193,9 +193,6 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 				TargetRegion:  target.ID,
 				Message:       turnFactionName(gs, fid) + " " + turnRegionName(gs, target.ID) + " için teslimiyet teklifi gönderdi.",
 			})
-			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
-				return
-			}
 		}
 	}
 }

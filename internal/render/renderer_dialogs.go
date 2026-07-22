@@ -182,7 +182,10 @@ func (r *Renderer) attackerSiegeSurrenderState(attacker *army.Army, target *worl
 			return true, false
 		}
 	}
-	return false, r.gs.DiplomacyOfferQuotaRemaining(r.gs.PlayerFactionID) > 0
+	if r.gs.DiplomaticOfferRegionRetryBlocked(string(r.gs.PlayerFactionID), target.OwnerID, string(diplomacy.ActionProposeSurrender), target.ID, 1) {
+		return false, false
+	}
+	return false, true
 }
 
 func buildDefensiveSiegeButtons() (gameui.Button, gameui.Button) {

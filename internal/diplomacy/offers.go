@@ -117,7 +117,7 @@ func QueueSurrenderOffer(gs *state.GameState, from, to faction.FactionID, region
 			return false
 		}
 	}
-	if !spendDiplomacyOfferQuota(gs, from) {
+	if gs.DiplomaticOfferRegionRetryBlocked(string(from), string(to), string(ActionProposeSurrender), regionID, 1) {
 		return false
 	}
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
@@ -181,7 +181,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return Result{
 			Accepted: false,
 			Applied:  false,
-			Message:  factionLabel(gs, offer.FromFactionID) + " teklif reddedildi.",
+			Message:  factionLabel(gs, offer.FromFactionID) + " den gelen teklif reddedildi.",
 		}
 	}
 	if action == ActionProposePeace {
@@ -196,6 +196,9 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 			Message:  factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
 		}
 	}
+	if action == ActionProposeAlliance {
+		return resolveAcceptedAllianceOffer(gs, offer)
+	}
 	// Gönderen diplomasi kotasını teklif kuyruğa alınırken zaten harcadı.
 	// Teklifin güncel koşullarını yeniden doğrula, ancak kabul sırasında aynı
 	// teklif için kotayı ikinci kez tüketme.
@@ -208,6 +211,39 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		}
 	}
 	return result
+}
+
+// resolveAcceptedAllianceOffer, AI'nin daha önce oluşturduğu ittifak teklifini
+// kabul eder. Teklif kuyruğa alındıktan sonra AI hazırlık akışındaki ortak tehdit
+// veya stratejik durum değişiklikleri teklifin kabulündeki kararı yeniden zar
+// hesabına sokmamalıdır. Sadece ilişkinin artık savaşta veya aynı realm'de olup
+// olmadığı gibi teklifin temel geçerlilik koşulları yeniden kontrol edilir.
+func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	if gs == nil || offer.FromFactionID == "" || offer.ToFactionID == "" || offer.FromFactionID == offer.ToFactionID {
+		return Result{Message: "İttifak teklifi artık geçerli değil."}
+	}
+	actor := gs.Factions[offer.FromFactionID]
+	target := gs.Factions[offer.ToFactionID]
+	if actor == nil || target == nil || actor.IsEliminated || target.IsEliminated {
+		return Result{Message: "İttifak teklifi artık geçerli değil."}
+	}
+	if sameRealm(gs, offer.FromFactionID, offer.ToFactionID) {
+		return Result{Message: "İttifak teklifi artık geçerli değil."}
+	}
+	rel := EnsureRelation(gs, offer.FromFactionID, offer.ToFactionID)
+	if rel.Stance == faction.StanceWar {
+		return Result{Message: "İttifak teklifi artık geçerli değil."}
+	}
+	if rel.Stance == faction.StanceAllied {
+		return Result{Accepted: true, Applied: true, Message: "Zaten müttefiksiniz."}
+	}
+	rel.Stance = faction.StanceAllied
+	rel.Score = clamp(rel.Score+20, -100, 100)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, offer.ToFactionID) + " ile ittifak kuruldu.",
+	}
 }
 
 func resolveAcceptedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {

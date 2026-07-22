@@ -2185,7 +2185,11 @@ func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.Diplomatic
 	if offer.Action == string(diplomacy.ActionProposeSurrender) {
 		g.gs.DiplomaticOffers = append(g.gs.DiplomaticOffers[:index], g.gs.DiplomaticOffers[index+1:]...)
 		if !accepted {
-			g.gs.MarkDiplomaticOfferRejected(string(offer.FromFactionID), string(offer.ToFactionID), offer.Action)
+			if offer.RegionID != "" {
+				g.gs.MarkDiplomaticOfferRejectedForRegion(string(offer.FromFactionID), string(offer.ToFactionID), offer.Action, offer.RegionID)
+			} else {
+				g.gs.MarkDiplomaticOfferRejected(string(offer.FromFactionID), string(offer.ToFactionID), offer.Action)
+			}
 			result = diplomacy.Result{Accepted: false, Message: g.factionNameTR(string(offer.FromFactionID)) + " teslimiyet teklifi reddedildi."}
 		} else {
 			result = g.applySurrenderOffer(offer)

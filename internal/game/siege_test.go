@@ -385,6 +385,7 @@ func TestAcceptedLastRegionSiegeSurrenderCreatesVassal(t *testing.T) {
 func TestPlayerCanSendSiegeSurrenderOfferAndAIAcceptsLastRegion(t *testing.T) {
 	gs := sortieTestState(1, 2)
 	gs.PlayerFactionID = "p1"
+	gs.DiplomacyOfferCounts = map[faction.FactionID]int{"p1": state.MaxDiplomacyOffersPerTurn}
 	delete(gs.Regions, "exit")
 	siege := gs.SiegeAt("besieged")
 	siege.TurnsElapsed = 3
@@ -392,11 +393,18 @@ func TestPlayerCanSendSiegeSurrenderOfferAndAIAcceptsLastRegion(t *testing.T) {
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
 
 	g.proposeSiegeSurrender("besieger", "besieged")
-	if gs.Factions["p2"].OverlordID != "p1" {
-		t.Fatalf("oyuncu teslimiyet teklifini AI kabul edince son toprak vassal olmalıydı: %+v", gs.Factions["p2"])
+	if got := gs.DiplomacyOfferQuotaUsed("p1"); got != state.MaxDiplomacyOffersPerTurn {
+		t.Fatalf("oyuncunun elçi hakkı teslimiyet teklifinde değişmemeli, got=%d", got)
+	}
+	if len(g.pendingConquestDecisions) != 1 {
+		t.Fatalf("son toprak teslimiyetinde savaş sonrası düzen kararı açılmalıydı, got=%d", len(g.pendingConquestDecisions))
 	}
 	if gs.SiegeAt("besieged") != nil || len(gs.DiplomaticOffers) != 0 {
 		t.Fatalf("oyuncu teklifi çözümlenince kuşatma ve bekleyen teklif kalmamalıydı: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
+	}
+	g.resolvePendingConquestDecision(false)
+	if gs.Regions["besieged"].OwnerID != "p1" {
+		t.Fatalf("ilhak kararı sonrası bölge kuşatana geçmeliydi, got=%s", gs.Regions["besieged"].OwnerID)
 	}
 }
 

@@ -86,6 +86,67 @@ func TestQueueOfferWithMetaRespectsTurnQuota(t *testing.T) {
 	}
 }
 
+func TestQueueSurrenderOfferDoesNotSpendDiplomacyQuota(t *testing.T) {
+	gs := testGameState()
+	gs.DiplomacyOfferCounts = map[faction.FactionID]int{
+		"a": state.MaxDiplomacyOffersPerTurn,
+		"b": state.MaxDiplomacyOffersPerTurn,
+	}
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+	gs.Relations[faction.RelationKey("a", "b")] = &faction.Relation{
+		FactionA: "a",
+		FactionB: "b",
+		Stance:   faction.StanceWar,
+		Score:    -80,
+	}
+	gs.Armies["a1"].RegionID = "b_cap"
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"b_cap": {
+			RegionID:          "b_cap",
+			AttackerArmyID:    "a1",
+			AttackerFactionID: "a",
+		},
+	}
+
+	if !QueueSurrenderOffer(gs, "a", "b", "b_cap", 155, "kuşatma baskısı") {
+		t.Fatal("kuşatanın teslimiyet teklifi kotası doluyken de kuyruğa alınmalıydı")
+	}
+	if got := gs.DiplomacyOfferQuotaUsed("a"); got != state.MaxDiplomacyOffersPerTurn {
+		t.Fatalf("kuşatanın elçi hakkı teslimiyet teklifinde değişmemeli, got=%d", got)
+	}
+
+	if !QueueSurrenderOffer(gs, "b", "a", "b_cap", 175, "savunma baskısı") {
+		t.Fatal("kuşatılanın teslimiyet teklifi kotası doluyken de kuyruğa alınmalıydı")
+	}
+	if got := gs.DiplomacyOfferQuotaUsed("b"); got != state.MaxDiplomacyOffersPerTurn {
+		t.Fatalf("kuşatılanın elçi hakkı teslimiyet teklifinde değişmemeli, got=%d", got)
+	}
+}
+
+func TestRejectedSurrenderOfferCannotRepeatInSameRegionThisTurn(t *testing.T) {
+	gs := testGameState()
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+	gs.Relations[faction.RelationKey("a", "b")] = &faction.Relation{
+		FactionA: "a",
+		FactionB: "b",
+		Stance:   faction.StanceWar,
+	}
+	gs.Armies["a1"].RegionID = "b_cap"
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"b_cap": {RegionID: "b_cap", AttackerArmyID: "a1", AttackerFactionID: "a"},
+	}
+	gs.MarkDiplomaticOfferRejectedForRegion("a", "b", string(ActionProposeSurrender), "b_cap")
+
+	if QueueSurrenderOffer(gs, "a", "b", "b_cap", 155, "aynı tur tekrar denemesi") {
+		t.Fatal("aynı tur reddedilen bölgeye teslimiyet teklifi tekrar gönderilmemeliydi")
+	}
+	if got := len(gs.DiplomaticOffers); got != 0 {
+		t.Fatalf("reddedilen bölge için teklif kuyruğa eklenmemeliydi, got=%d", got)
+	}
+}
+
 func TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice(t *testing.T) {
 	gs := testGameState()
 	gs.PlayerFactionID = "b"
@@ -107,6 +168,30 @@ func TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice(t *testing.T) {
 	}
 	if got := gs.DiplomacyOfferQuotaUsed("a"); got != 3 {
 		t.Fatalf("kabul sırasında teklif kotası ikinci kez harcanmamalıydı, got=%d", got)
+	}
+	if rel.Stance != faction.StanceAllied {
+		t.Fatalf("kabul sonrası ittifak kurulmalıydı, got=%s", rel.Stance)
+	}
+}
+
+func TestResolveQueuedAllianceOfferKeepsTermsAfterStrategicStateChanges(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	enableABLandTrade(gs)
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 25
+
+	if !QueueOffer(gs, "a", "b", ActionProposeAlliance) {
+		t.Fatal("ittifak teklifi kuyruğa alınmalıydı")
+	}
+	// Tekliften sonra aynı AI hazırlık akışında koşulların değişmesini taklit et.
+	gs.Regions["a_cap"].Neighbors = nil
+	gs.Regions["b_cap"].Neighbors = nil
+	rel.Score = 10
+
+	result := ResolveOffer(gs, 0, true)
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("koşullar değişse de daha önce sunulmuş teklif uygulanmalıydı: %+v", result)
 	}
 	if rel.Stance != faction.StanceAllied {
 		t.Fatalf("kabul sonrası ittifak kurulmalıydı, got=%s", rel.Stance)

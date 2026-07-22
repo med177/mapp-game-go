@@ -144,6 +144,21 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 	t.Fatal("AI kuşatanı uygun koşullarda oyuncuya teslimiyet teklifi üretmedi")
 }
 
+func TestAISiegeSurrenderRetryCooldownIsRegionScoped(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 5,
+		OfferRejectionTurns: map[string]int{
+			state.DiplomaticOfferRegionRejectionKey("ai_1", "player", string(diplomacy.ActionProposeSurrender), "north"): 5,
+		},
+	}
+	if aiDiplomacyOfferRetryAllowedForRegion(gs, "ai_1", "player", diplomacy.ActionProposeSurrender, "north") {
+		t.Fatal("reddedilen aynı kuşatma bölgesi cooldown sırasında tekrar teklif edilmemeli")
+	}
+	if !aiDiplomacyOfferRetryAllowedForRegion(gs, "ai_1", "player", diplomacy.ActionProposeSurrender, "south") {
+		t.Fatal("başka kuşatma bölgesi reddedilen bölgenin cooldown'undan etkilenmemeli")
+	}
+}
+
 func TestMoveArmyStopsAfterFailedGeneralAssault(t *testing.T) {
 	gs := aiSiegeTestState(true)
 	attacker := gs.Armies["ai_army"]

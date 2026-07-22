@@ -866,6 +866,12 @@ func DiplomaticOfferRejectionKey(from, to, action string) string {
 	return from + "|" + to + "|" + action
 }
 
+// DiplomaticOfferRegionRejectionKey kuşatma gibi aynı aktör-hedef-aksiyon
+// altında birden fazla bölgeye ait teklifleri birbirinden ayırır.
+func DiplomaticOfferRegionRejectionKey(from, to, action string, regionID world.RegionID) string {
+	return DiplomaticOfferRejectionKey(from, to, action) + "|region=" + string(regionID)
+}
+
 // MarkDiplomaticOfferRejected son reddedilen teklif turunu kaydeder.
 func (s *GameState) MarkDiplomaticOfferRejected(from, to, action string) {
 	if s == nil || from == "" || to == "" || action == "" {
@@ -875,6 +881,28 @@ func (s *GameState) MarkDiplomaticOfferRejected(from, to, action string) {
 		s.OfferRejectionTurns = make(map[string]int, 4)
 	}
 	s.OfferRejectionTurns[DiplomaticOfferRejectionKey(from, to, action)] = s.Turn
+}
+
+// MarkDiplomaticOfferRejectedForRegion yalnız belirtilen kuşatma bölgesindeki
+// teklifin tekrarını bekletir; diğer bölgelerdeki teklifler etkilenmez.
+func (s *GameState) MarkDiplomaticOfferRejectedForRegion(from, to, action string, regionID world.RegionID) {
+	if s == nil || from == "" || to == "" || action == "" || regionID == "" {
+		return
+	}
+	if s.OfferRejectionTurns == nil {
+		s.OfferRejectionTurns = make(map[string]int, 4)
+	}
+	s.OfferRejectionTurns[DiplomaticOfferRegionRejectionKey(from, to, action, regionID)] = s.Turn
+}
+
+// DiplomaticOfferRegionRetryBlocked aynı kuşatma bölgesine ait teklifin
+// bölgesel ret cooldown'u içindeyse true döner.
+func (s *GameState) DiplomaticOfferRegionRetryBlocked(from, to, action string, regionID world.RegionID, cooldownTurns int) bool {
+	if s == nil || from == "" || to == "" || action == "" || regionID == "" || cooldownTurns <= 0 || len(s.OfferRejectionTurns) == 0 {
+		return false
+	}
+	lastRejected, ok := s.OfferRejectionTurns[DiplomaticOfferRegionRejectionKey(from, to, action, regionID)]
+	return ok && s.Turn-lastRejected < cooldownTurns
 }
 
 // DiplomaticOfferRetryBlocked reddedilen teklifin bekleme süresi dolmadıysa

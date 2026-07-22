@@ -63,7 +63,7 @@ type GameState struct {
 
     // Diplomatik & ticaret
     Relations     map[string]*Relation
-    OfferRejectionTurns map[string]int // reddedilen tekliflerin retry cooldown state'i
+    OfferRejectionTurns map[string]int // normal ve bölge bazlı ret retry cooldown state'i
     DiplomaticOffers []DiplomaticOffer // normal ve bölge bağlı kuşatma teklifleri
     TradeRoutes   []*TradeRoute
     Sieges        map[RegionID]*SiegeState
