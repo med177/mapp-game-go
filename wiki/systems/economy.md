@@ -51,12 +51,13 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 
 | Bina | Tuş | Gelir Etkisi |
 |---|---|---|
-| Pazar (`market`) | 1 | +altın geliri |
-| Çiftlik (`farm`) | 2 | +tahıl üretimi |
-| Demirci (`barracks`) | 3 | +ordu eğitim hızı |
-| Liman (`port`) | 4 | +deniz birimi, +ticaret |
-| Surlar (`walls`) | 5 | +savunma bonusu |
-| Tapınak/Kilise/Cami (`temple`) | 6 | +din etkisi, +memnuniyet |
+| Pazar (`market`) | 1 | +altın geliri, tur başı memnuniyet `+1` |
+| Çiftlik (`farm`) | 2 | +tahıl üretimi, tur başı memnuniyet `+1` |
+| Kışla (`barracks`) | 3 | +ordu eğitim hızı, seviye başına tur başı memnuniyet `-1` |
+| Liman (`port`) | 4 | +deniz birimi, +ticaret, tur başı memnuniyet `+1` |
+| Surlar (`walls`) | 5 | +savunma bonusu, tur başı memnuniyet `+6` |
+| Tapınak/Kilise/Cami (`temple`) | 6 | +din etkisi, tur başı memnuniyet `+10` |
+| Ambar (`granary`) | — | +tahıl depolama kapasitesi |
 
 Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone_cost`).
 Bina `MaxPerRegion` ile sınırlıdır.
@@ -141,6 +142,10 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 - 1300 Faz 6 denge raporu erken/orta/savaş pencerelerinde büyük fraksiyonların üretim/sivil talep oranını `1.0–4.0`, net değişim/sivil talep oranını `-1.0–2.5` bandında doğrular. Kıtlık oranı ayrıca raporlanır; erken Osmanlı ve Venedik gibi ithalat baskısı yaşayan profillerde negatif dönem kabul edilir ve stratejik tahıl talebi üretir.
 - `GameState.GrainEconomy` runtime snapshot'ı fraksiyon başına üretim, sivil talep, ordu bakımı, net değişim, stok ve stokun kaç ay yeteceğini taşır. Toplam talebin 3 aydan az stoğa oranı uyarı, 1 aydan azı kritik, mevcut tur talebi karşılanamadığında kıtlık sayılır.
 - Uyarı seviyesinde gelir %5 ve memnuniyet 1, kritik seviyede gelir %10 ve memnuniyet 2, kıtlık seviyesinde gelir %25 ve memnuniyet 4 azalır. Gerçek stok açığı varsa mevcut ordu HP cezası yalnız o tick'in hesaplanan açık miktarı kadar uygulanır; ordu sırası deterministiktir.
+- Her ekonomi turunda bölgenin vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkileri tek bir memnuniyet deltası olarak toplanır; sonuç `0–100` aralığına sınırlandırılır. Kışla her kurulu seviye için `-1`, pazar/çiftlik/liman `+1` uygular.
+- Aralık ekonomi turunda yıl sonu yıpranması olarak tüm sahipli kara bölgelerine ek `-1` memnuniyet uygulanır. Bu etki yalnızca yılda bir kez çalışır ve diğer memnuniyet etkileriyle aynı delta içinde toplanır.
+- Bir fraksiyon herhangi bir devletle savaş halindeyse savaş yorgunluğu nedeniyle sahip olduğu tüm kara bölgeleri `-1` alır. Fraksiyon 20'den fazla kara bölgesine sahipse yozlaşma nedeniyle tüm kara bölgeleri ayrıca `-1` alır.
+- Bir bölgede sahibine ait kara orduları varsa toplam `TotalStrength / 10` kadar, en fazla `+10`, memnuniyet bonusu verilir. Düşman ordusu bu bölge istikrar bonusuna dahil değildir.
 - Tahıl arzı ordunun kalıcı moraline de bağlanır: stabil seviyede her ekonomi tick'inde `+1`, uyarı/kritik/kıtlık seviyelerinde sırasıyla `-1/-3/-6` uygulanır. Moral `1–100` arasında tutulur; 100 moral nötr, 50 moral yaklaşık `%15` toplam savaş gücü kaybı üretir. Gerçekleşen toplam değişim `GrainEconomyStatus.ArmyMoraleDelta` ile HUD/event detayına taşınır ve uygulama Army ID sırasıyla deterministiktir.
 - Depolama kapasitesi `6 × sivil talep + 3 × ordu bakımı` olarak hesaplanır; talep varsa minimum kapasite 100'dür. Kapasite üstündeki stok her ekonomi tick'inde fazlanın %2'si oranında, en az 1 tahıl olacak şekilde bozulur. `StorageCapacity` ve `Spoiled` runtime snapshot alanlarıdır; save migration gerektirmez.
 - `granary` / `Ambar` binası her kurulu seviye için +100 tahıl depolama kapasitesi verir. Bina tüm senaryolarda veri tanımı olarak bulunur; özel sprite yoksa mevcut çiftlik sprite'ı görsel fallback olarak kullanılır.

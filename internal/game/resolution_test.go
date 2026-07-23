@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -523,6 +524,106 @@ func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
 	}
 	if report.PlayerGrainStatus.SupplyLevel != state.GrainSupplyCritical {
 		t.Fatalf("oyuncu tahıl raporu kritik durumu taşımadı, got=%+v", report.PlayerGrainStatus)
+	}
+}
+
+func TestApplyEconomyTickCombinesSatisfactionModifiers(t *testing.T) {
+	regions := make(map[world.RegionID]*world.Region, 21)
+	for i := 1; i <= 21; i++ {
+		rid := world.RegionID(fmt.Sprintf("region-%d", i))
+		regions[rid] = &world.Region{ID: rid, OwnerID: "player", Satisfaction: 50, TaxRate: 50}
+	}
+	regions["region-1"].Buildings = []string{"market", "farm", "barracks", "port"}
+
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 100},
+			"enemy":  {ID: "enemy"},
+		},
+		Regions: regions,
+		Armies: map[army.ArmyID]*army.Army{
+			"garrison": {
+				ID: "garrison", OwnerID: "player", RegionID: "region-1",
+				Units: repeatedUnits("guard", 1, 100),
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"guard": {ID: "guard", Attack: 100, HP: 100},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"market":   {ID: "market", SatBonus: 1},
+			"farm":     {ID: "farm", SatBonus: 1},
+			"barracks": {ID: "barracks", SatBonus: -1},
+			"port":     {ID: "port", SatBonus: 1},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {
+				FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar,
+			},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	// Bölge 1: bina +2 + savaş -1 + genişleme -1 + ordu gücü 100 => +10.
+	if got := gs.Regions["region-1"].Satisfaction; got != 60 {
+		t.Fatalf("toplam memnuniyet deltası bölge 1 için +10 olmalıydı, got=%d", got)
+	}
+	// Diğer bölgeler yalnızca savaş yorgunluğu ve 20+ bölge cezasını alır.
+	if got := gs.Regions["region-2"].Satisfaction; got != 48 {
+		t.Fatalf("savaş ve genişleme cezaları toplam -2 olmalıydı, got=%d", got)
+	}
+}
+
+func TestRegionArmySatisfactionBonusScalesAndCaps(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"guard": {ID: "guard", Attack: 75, HP: 100},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"a": {ID: "a", OwnerID: "player", RegionID: "home", Units: repeatedUnits("guard", 1, 100)},
+		},
+	}
+	region := &world.Region{ID: "home", OwnerID: "player"}
+	if got := regionArmySatisfactionBonus(gs, region); got != 7 {
+		t.Fatalf("75 güç +7 bonus vermeliydi, got=%d", got)
+	}
+	gs.Armies["b"] = &army.Army{ID: "b", OwnerID: "player", RegionID: "home", Units: repeatedUnits("guard", 1, 100)}
+	if got := regionArmySatisfactionBonus(gs, region); got != 10 {
+		t.Fatalf("ordu bonusu +10 ile sınırlanmalıydı, got=%d", got)
+	}
+}
+
+func TestApplyEconomyTickAppliesAnnualSatisfactionDecayAtYearEnd(t *testing.T) {
+	tests := []struct {
+		name  string
+		month int
+		want  int
+	}{
+		{name: "aralık", month: 12, want: 49},
+		{name: "yıl içi", month: 11, want: 50},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := &state.GameState{
+				Month: tt.month,
+				Factions: map[faction.FactionID]*faction.Faction{
+					"player": {ID: "player", Grain: 100},
+				},
+				Regions: map[world.RegionID]*world.Region{
+					"home": {ID: "home", OwnerID: "player", TaxRate: 50, Satisfaction: 50},
+				},
+				Armies:    map[army.ArmyID]*army.Army{},
+				UnitTypes: map[string]*army.UnitType{},
+			}
+
+			applyEconomyTick(gs)
+
+			if got := gs.Regions["home"].Satisfaction; got != tt.want {
+				t.Fatalf("memnuniyet %d. ay için %d olmalıydı, got=%d", tt.month, tt.want, got)
+			}
+		})
 	}
 }
 

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [state-management, render-pipeline]
 ---
 
@@ -91,7 +91,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 `resolveTurn()` — `internal/game/game.go:230`
 
 1. `applySeasonEffects(gs)` — kış hasarı, ilkbahar bonusu → [[systems/seasons]]
-2. `applyEconomyTick(gs)` — vergi geliri, ticaret, abluka kesintili ticaret rotaları, bölge tahıl üretimi, nüfus bazlı sivil tahıl tüketimi ve hareket/kuşatma katsayılı ordu tahıl bakımı; stratejik tahıl talebi fiyat sinyaline yazılır, kapasite üstü tahılla kara ordusu yenilemesi ve açık tercihe göre otomatik ihracat işlenir; Kasım ayında stabil rezerv fazlası uygun bölgelere nüfus büyümesi olarak yatırılır; bölgesel ikmal baskısı da aynı efektif talep hesabını kullanır. Oyuncunun bölge panelindeki tahıl yardımı ayrı bir state mutasyonu olarak tur içinde uygulanır → [[systems/economy]]
+2. `applyEconomyTick(gs)` — vergi geliri, ticaret, abluka kesintili ticaret rotaları, bölge tahıl üretimi, nüfus bazlı sivil tahıl tüketimi ve hareket/kuşatma katsayılı ordu tahıl bakımı; stratejik tahıl talebi fiyat sinyaline yazılır, kapasite üstü tahılla kara ordusu yenilemesi ve açık tercihe göre otomatik ihracat işlenir; Kasım ayında stabil rezerv fazlası uygun bölgelere nüfus büyümesi olarak yatırılır; bölgesel ikmal baskısı da aynı efektif talep hesabını kullanır. Aralık turunda yıllık `-1` yıpranma uygulanır. Memnuniyetin vergi, bina, tahıl, teknoloji, savaş yorgunluğu, 20+ bölge yozlaşması, yıllık yıpranma ve yerel ordu gücü etkileri bu adımda tek delta olarak toplanır. Oyuncunun bölge panelindeki tahıl yardımı ayrı bir state mutasyonu olarak tur içinde uygulanır → [[systems/economy]]
 3. `applyTechTicks(gs)` — aktif araştırma ilerleme sayacı → [[systems/tech-tree]]
 4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; aktif kuşatma altındaki bölge emirleri duraklatılır, kuşatma kalkınca aynı `TurnsLeft` ile devam eder; bölge el değiştirince o bölgedeki üretim emirleri temizlenir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
 5. `applyReligionConversion(gs)` — ele geçirilmiş bölgelerde yavaş din dönüşümü
