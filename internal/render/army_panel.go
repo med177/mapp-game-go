@@ -264,7 +264,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.StrokeRect(screen, cx+1, cy+1, cardW-2, cardH-2, 3, color.RGBA{255, 190, 45, 255}, false)
 		}
 	}
-	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç")
+	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç", armyTransportFooterText(gs, a))
 	drawMerchantRouteFooter(screen, gs, a, layout)
 
 }
@@ -442,9 +442,33 @@ func scoutedEnemyArmyStrength(gs *state.GameState, a *army.Army, fullIntel bool,
 	return attack, defense
 }
 
-func drawArmyPowerFooter(screen *ebiten.Image, layout armyPanelLayout, attack, defense int, label string) {
+func armyTransportFooterText(gs *state.GameState, a *army.Army) string {
+	if gs == nil || a == nil || !a.IsNaval {
+		return ""
+	}
+	capacity := a.TransportCapacity(gs.UnitTypes)
+	if capacity <= 0 {
+		return ""
+	}
+	return "Taşıma: " + itoa(a.EmbarkedCount()) + "/" + itoa(capacity)
+}
+
+func drawArmyPowerFooter(screen *ebiten.Image, layout armyPanelLayout, attack, defense int, label, transportText string) {
 	drawArmyPanelFooterBackground(screen, layout)
-	drawArmyPanelFooterRight(screen, layout, label+": "+itoa(attack)+" / "+itoa(defense), color.RGBA{220, 190, 100, 235})
+	powerText := label + ": " + itoa(attack) + " / " + itoa(defense)
+	footerY := layout.panelY + layout.panelH - siegeFooterH
+	footerX := layout.gridX
+	footerW := layout.panelX + layout.panelW - armyPanelPadX - footerX
+	powerW := MeasureText(powerText, FaceSmall)
+	powerX := float64(footerX+footerW) - float64(armyPanelPadX) - powerW
+	if transportText != "" {
+		transportW := MeasureText(transportText, FaceSmall)
+		transportX := powerX - 18 - transportW
+		if transportX >= float64(footerX+armyPanelPadX) {
+			DrawText(screen, transportText, transportX, float64(footerY+2), FaceSmall, color.RGBA{205, 185, 140, 230})
+		}
+	}
+	DrawText(screen, powerText, powerX, float64(footerY+2), FaceSmall, color.RGBA{220, 190, 100, 235})
 }
 
 func drawArmyPanelFooterBackground(screen *ebiten.Image, layout armyPanelLayout) {

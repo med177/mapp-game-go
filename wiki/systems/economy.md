@@ -62,6 +62,8 @@ Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini i
 Bina `MaxPerRegion` ile sınırlıdır.
 Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
 
+1300 Osmanlı yükselişi senaryosunda `farm` üretim çarpanı `x1.30`, bölge başına üst sınırı 3 seviyedir. Bina çarpanları ekonomi tick'inde birlikte uygulanır; bu nedenle üç farm seviyesi güçlü bir tarım yatırımıdır ancak denge testindeki `1.0–4.0` üretim/sivil talep bandını aşmamalıdır.
+
 ---
 
 ## Ticaret Güzergahları

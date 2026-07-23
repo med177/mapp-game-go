@@ -42,6 +42,30 @@ func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
 	}
 }
 
+func TestArmyPanelTransportFooterTextShowsLoadAndCapacity(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 8},
+		},
+	}
+	fleet := &army.Army{
+		IsNaval:       true,
+		Units:         []army.Unit{{TypeID: "transport"}},
+		EmbarkedUnits: []army.Unit{{TypeID: "infantry"}, {TypeID: "cavalry"}},
+	}
+	if got := armyTransportFooterText(gs, fleet); got != "Taşıma: 2/8" {
+		t.Fatalf("nakliye doluluk metni yanlış: got=%q", got)
+	}
+}
+
+func TestArmyPanelTransportFooterTextHiddenWithoutTransportCapacity(t *testing.T) {
+	gs := &state.GameState{UnitTypes: map[string]*army.UnitType{}}
+	fleet := &army.Army{IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}}
+	if got := armyTransportFooterText(gs, fleet); got != "" {
+		t.Fatalf("nakliye kapasitesi olmayan filo için metin çizilmemeliydi: got=%q", got)
+	}
+}
+
 func TestSplitSelectionRequiresOneUnitToRemain(t *testing.T) {
 	a := &army.Army{Units: []army.Unit{{TypeID: "inf"}, {TypeID: "cav"}, {TypeID: "siege"}}}
 
