@@ -7,6 +7,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-23: Hareket puanı bitmiş seçili kara ordusunda dost nakliye filosunun harita üzerindeki `BIN` göstergesi artık çizilmiyor. Görsel aksiyon koşulu sağ tık input kapısıyla hizalandı. Regression: `TestEmbarkPromptRequiresSelectedArmyMovementPoints`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-23: Memnuniyet cezaları oynanabilirlik için yeniden dengelendi. Savaş yorgunluğu `-3` yerine `-1/tur`, 20+ bölge yozlaşması `-5` yerine `-1/tur`, kışla cezası ise seviye başına `-5` yerine `-1/tur` oldu. Böylece üç olumsuz durum birlikte `-3/tur` seviyesinde kalıyor; mevcut vergi, bina, ordu ve yıllık `-1` etkileriyle birlikte uzun vadeli baskı korunuyor ancak memnuniyetin tek yılda çökmesi engelleniyor. Regression: `TestApplyEconomyTickCombinesSatisfactionModifiers`; doğrulama: `go test ./internal/game ./internal/economy ./internal/state`.
 
 - 2026-07-23: Her 12 turda bir yıl sonu yıpranması eklendi. Aralık ekonomi turunda tüm sahipli kara bölgeleri, diğer memnuniyet artı/eksileriyle aynı toplamsal delta içinde `-1` alıyor; yıl içindeki aylarda tekrar uygulanmıyor. Regression: `TestApplyEconomyTickAppliesAnnualSatisfactionDecayAtYearEnd`; doğrulama: `go test ./internal/game ./internal/economy ./internal/state`.

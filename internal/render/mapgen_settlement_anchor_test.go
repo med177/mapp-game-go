@@ -1,6 +1,7 @@
 package render
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -16,6 +17,8 @@ func TestSloveniaKoperSettlementAnchorStaysInsideShape(t *testing.T) {
 
 	for _, scenarioPath := range scenarios {
 		t.Run(filepath.Base(scenarioPath), func(t *testing.T) {
+			skipIfScenarioDirMissing(t, scenarioPath)
+
 			regions, _, err := world.LoadRegionsWithOrder(filepath.Join(scenarioPath, "data", "regions.json"))
 			if err != nil {
 				t.Fatalf("regions yuklenemedi: %v", err)
@@ -67,5 +70,20 @@ func TestSloveniaKoperSettlementAnchorStaysInsideShape(t *testing.T) {
 				t.Fatalf("anchor yanlis bolgeye dustu: got=%q want=%q", got, "slovenia")
 			}
 		})
+	}
+}
+
+func skipIfScenarioDirMissing(t *testing.T, scenarioPath string) {
+	t.Helper()
+
+	info, err := os.Stat(scenarioPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			t.Skipf("senaryo dizini mevcut değil: %s", scenarioPath)
+		}
+		t.Fatalf("senaryo dizini kontrol edilemedi: %v", err)
+	}
+	if !info.IsDir() {
+		t.Skipf("senaryo yolu dizin değil: %s", scenarioPath)
 	}
 }

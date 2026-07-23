@@ -35,6 +35,42 @@ func TestNavalShowsFriendlyDisembark(t *testing.T) {
 	}
 }
 
+func TestEmbarkPromptRequiresSelectedArmyMovementPoints(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 2},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"land": {ID: "land", Neighbors: []world.RegionID{"sea"}},
+			"sea":  {ID: "sea", IsSea: true},
+		},
+	}
+	selected := &army.Army{
+		ID:         "land_army",
+		OwnerID:    "p1",
+		RegionID:   "land",
+		MovePoints: 0,
+		Units:      []army.Unit{{TypeID: "inf"}},
+	}
+	fleet := &army.Army{
+		ID:       "fleet",
+		OwnerID:  "p1",
+		RegionID: "sea",
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+	}
+
+	if embarkableFleetForSelectedArmy(gs, selected, fleet) {
+		t.Fatal("hareket puanı biten seçili orduda BIN göstergesi görünmemeli")
+	}
+
+	selected.MovePoints = 1
+	if !embarkableFleetForSelectedArmy(gs, selected, fleet) {
+		t.Fatal("hareket puanı olan seçili orduda uygun filo için BIN göstergesi görünmeliydi")
+	}
+}
+
 func TestBattlePlanIntentCoversNavalAndAmphibiousCombat(t *testing.T) {
 	r := &Renderer{}
 

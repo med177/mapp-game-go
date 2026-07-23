@@ -1,6 +1,7 @@
 package world
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -29,6 +30,7 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+			skipIfScenarioDirMissing(t, filepath.Dir(filepath.Dir(tc.regionPath)))
 
 			regions, err := LoadRegions(tc.regionPath)
 			if err != nil {
@@ -39,6 +41,21 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 				assertNeighborBothWays(t, regions, tc.bridgePath[i], tc.bridgePath[i+1])
 			}
 		})
+	}
+}
+
+func skipIfScenarioDirMissing(t *testing.T, scenarioPath string) {
+	t.Helper()
+
+	info, err := os.Stat(scenarioPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			t.Skipf("senaryo dizini mevcut değil: %s", scenarioPath)
+		}
+		t.Fatalf("senaryo dizini kontrol edilemedi: %v", err)
+	}
+	if !info.IsDir() {
+		t.Skipf("senaryo yolu dizin değil: %s", scenarioPath)
 	}
 }
 

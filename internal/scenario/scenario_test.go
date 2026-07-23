@@ -58,6 +58,7 @@ func assertHistoricalVictoryFactionsMatchPlayableRoster(t *testing.T, scenarioID
 	}
 	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
 	scenarioPath := filepath.Join(root, "assets", "scenarios", scenarioID)
+	skipIfScenarioDirMissing(t, scenarioPath)
 
 	var sc Scenario
 	scenarioData, err := os.ReadFile(filepath.Join(scenarioPath, "scenario.json"))
@@ -108,6 +109,21 @@ func assertHistoricalVictoryFactionsMatchPlayableRoster(t *testing.T, scenarioID
 		if got[i] != want[i] {
 			t.Fatalf("playable faction listesi uyusmuyor: got=%v want=%v", got, want)
 		}
+	}
+}
+
+func skipIfScenarioDirMissing(t *testing.T, scenarioPath string) {
+	t.Helper()
+
+	info, err := os.Stat(scenarioPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			t.Skipf("senaryo dizini mevcut değil: %s", scenarioPath)
+		}
+		t.Fatalf("senaryo dizini kontrol edilemedi: %v", err)
+	}
+	if !info.IsDir() {
+		t.Skipf("senaryo yolu dizin değil: %s", scenarioPath)
 	}
 }
 

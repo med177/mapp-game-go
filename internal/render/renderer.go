@@ -1462,7 +1462,7 @@ func findFriendlyEmbarkFleetFromRegion(gs *state.GameState, ownerID string, sour
 }
 
 func embarkableFleetForSelectedArmy(gs *state.GameState, selected *army.Army, fleet *army.Army) bool {
-	if gs == nil || selected == nil || fleet == nil || selected.IsNaval || fleet.OwnerID != selected.OwnerID || !fleet.IsNaval {
+	if gs == nil || selected == nil || fleet == nil || selected.IsNaval || selected.MovePoints <= 0 || fleet.OwnerID != selected.OwnerID || !fleet.IsNaval {
 		return false
 	}
 	return fleetCanEmbarkFromRegion(gs, fleet, selected.RegionID) &&

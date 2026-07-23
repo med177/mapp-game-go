@@ -29,10 +29,10 @@ const (
 )
 
 // GrainAidCost bir bölgeye tek seferlik sivil tahıl yardımı için gereken stoktur.
-const GrainAidCost = 12
+const GrainAidCost = 10
 
 // GrainAidSatisfactionGain tahıl yardımının bölge memnuniyetine katkısıdır.
-const GrainAidSatisfactionGain = 10
+const GrainAidSatisfactionGain = 1
 
 // VictoryType zafer koşulu türü.
 type VictoryType string

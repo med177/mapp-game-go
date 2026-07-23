@@ -15,6 +15,8 @@ Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve
 
 Bölge seçimi askeri birim üretim panelini açmaz; seçim sırasında açık recruit paneli kapanır ve yalnızca alt HUD'daki `Ordu` butonuyla açılır. Deniz ve kara bölgesi seçimleri bu ortak input kuralını kullanır (`internal/render/renderer_input.go`).
 
+Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusunun gerçekten yükleme emri verebilmesiyle aynı hareket hakkı kuralını kullanır. Seçili ordunun `MovePoints` değeri sıfırsa gösterge çizilmez; böylece görünür aksiyon ile sağ tık input kapısı ayrışmaz (`internal/render/renderer.go`).
+
 Alt HUD'daki `Ordu` butonunun etkinliği birim maliyetinin karşılanmasına bağlı değildir. Oyuncunun sahip olduğu uygun kara bölgesinde panel açılabiliyorsa buton açık kalır; kaynak yetersizliği recruit kartında gösterilir ve üretim emri oluşturulurken oyun katmanında yeniden doğrulanır (`internal/render/recruit_panel.go`, `internal/game/game.go`).
 
 Bina kartlarının inşa edilebilirlik ve hover davranışı yalnızca oyuncunun sahibi olduğu, kilitli olmayan kara bölgelerinde aktiftir. Oyuncuya ait olmayan bölgelerde kartlar görünmeye devam eder ancak kaynak yeterli olsa bile bina etiketi altın sarısı kalır ve bina detay popup'ı açılmaz; bina tıklama hit-test'i de aynı sahiplik kontrolünü kullanır (`internal/render/building_card_component.go`, `panel.go`, `hover_tooltip.go`).
