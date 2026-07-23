@@ -17,10 +17,32 @@
   "music": {
     "default_playlist": "campaign",
     "playlists": {
-      "campaign": [ {
+      "campaign": [
+        {
           "file": "03 It Will Never be the Same.mp3",
           "weight": 1
-        } ]
+        },
+        {
+          "file": "04 The Inevitable.mp3",
+          "weight": 3
+        },
+        {
+          "file": "05 Rock and a Hard Place v2.mp3",
+          "weight": 5
+        },
+        {
+          "file": "06 Ebb and Flow.mp3",
+          "weight": 5
+        },
+        {
+          "file": "07 A New Enemy.mp3",
+          "weight": 5
+        },
+        {
+          "file": "08 Fallen Spirits.mp3",
+          "weight": 5
+        }
+      ]
     }
   },
   "victory_conditions": [
