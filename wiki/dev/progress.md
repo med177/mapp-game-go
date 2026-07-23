@@ -7,6 +7,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-23: Oyuncu ordularının dost bölgeye hareketinde otomatik birleşme kaldırıldı. Hareket eden ordu, hedefteki aynı fraksiyon ordusuyla ayrı kalıyor; oyuncu isterse ordu panelindeki `BİRLEŞTİR` aksiyonunu kullanarak birleşmeyi başlatıyor. Aktif kuşatma desteği ve kuşatma sonrası yerleşme de otomatik birleşme yapmıyor. Regression: `TestMoveArmyWithStanceDoesNotAutoMergeFriendlyArmy`; doğrulama: `go test ./internal/game`.
+
+- 2026-07-23: Oyuncunun vassal devletlerine ait kara ve deniz orduları artık savaş sisi/istihbarat koşullarından bağımsız olarak kendi orduları gibi tam görünür. Harita ikonunda gerçek birim sayısı, ordu panelinde tüm birim kartları ve kart hover'ında ayrıntılı birlik bilgileri gösteriliyor; vassal ordularının AI tarafından yönetilen hareket ve komuta yetkileri korunuyor. Kapsam: `internal/render/{renderer.go,army_panel.go,army_panel_test.go}`, `wiki/architecture/render-pipeline.md`; regression: `TestPlayerCanSeeArmyDetailsIncludesVassalChain`, `TestArmyPanelUnitHoverIDUsesDisplayedCardOrder`; doğrulama: hedefli `go test ./internal/render -run 'Test(PlayerCanSeeArmyDetailsIncludesVassalChain|ArmyPanelUnitHoverIDUsesDisplayedCardOrder|ArmyIconBorderColorUsesDiplomaticPalette)$'` başarılı.
+
 - 2026-07-23: Savaş halindeki AI teklif akışı düzeltildi. Aynı oyuncuya barış ve kuşatma teslimiyeti teklifleri birlikte oluştuğunda barış kuyruğa ve oyuncu kararına önce geliyor; barış kabul edilirse aynı savaşın teslimiyet teklifi otomatik atlanıyor. Kapsam: `internal/{ai/diplomacy.go,diplomacy/{offers.go,vassalage.go}}`; regression: `TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer`, `TestPeaceOfferPrecedesSiegeSurrenderAndAcceptanceSkipsIt`; doğrulama: `go test ./internal/diplomacy ./internal/ai ./internal/game`.
 
 - 2026-07-23: Ordu panelinde birlik kartlarına tıklayarak seçili birlikleri ayrı bir orduya bölme eklendi. Seçim yokken eski ortadan bölme korunuyor; seçilen kartlar altın çerçeveyle gösteriliyor, fiziksel birim index'leri oyun katmanına aktarılıyor ve ana ordunun tamamen boşaltılması engelleniyor. Regression: `TestSplitArmyWithSelectedUnitsMovesOnlyThoseUnits`, `TestSplitSelectionRequiresOneUnitToRemain`; doğrulama: `go test ./internal/game -run 'Test(SplitArmyWithSelectedUnits|SplitBesiegingArmyKeepsSiegeWithRemainingUnit)$'` ve ilgili render testleri.
@@ -606,7 +610,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, ordu panelinden atama/ayırma, AI saha ordularına deterministik komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
 | Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi kara toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi veya müttefik limanında aynı hızla onarım alır |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
-| Ordu birleşme | ✅ | Dost bölgede otomatik veya panelden manuel birleşme, 20 birim limiti |
+| Ordu birleşme | ✅ | Dost bölgede yalnızca panelden manuel birleşme, 20 birim limiti; hareket orduları otomatik birleşmez |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |
 | Rakip ordu istihbaratı | ✅ | Menzildeki rakip orduda sayı ve yarım birim listesi görünür; menzil dışı detaylar gizlenir; emir verilemez |
 | Çoklu ordu render | ✅ | Aynı bölgede ordular yan yana çizilir |

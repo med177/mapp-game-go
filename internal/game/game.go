@@ -3899,9 +3899,6 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 		g.clearSiege(target.ID)
 		result := diplomacy.ForceVassalizeAfterWar(g.gs, g.gs.PlayerFactionID, faction.FactionID(target.OwnerID))
 		if result.Applied {
-			if merged := g.tryMergeArmies(attacker.ID, target.ID); merged != "" && g.renderer != nil {
-				g.renderer.SelectedArmy = merged
-			}
 			return diplomacy.Result{Accepted: true, Applied: true, Message: fmt.Sprintf("%s teslim oldu; %s vassal olarak bırakıldı.", target.NameTR, g.factionNameTR(target.OwnerID))}
 		}
 		return result
@@ -4278,11 +4275,8 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		a.DockedSettlementID = ""
 		a.MovePoints--
 		if allyJoiningSiege {
-			// Kuşatmaya katılım: bölge fethedilmez, sadece birleşme yapılır.
-			if merged := g.tryMergeArmies(aid, target); merged != "" {
-				g.renderer.SelectedArmy = merged
-			}
-			g.renderer.ShowCombatResult("Ordu kuşatmaya katıldı.")
+			// Kuşatmaya katılım: bölge fethedilmez; destek ordusu ayrı kalır.
+			g.renderer.ShowCombatResult("Ordu kuşatmaya ayrı bir destek gücü olarak katıldı.")
 			return
 		}
 		// Müttefik bölgesi fethedilemez, sadece içinden geçilir.
@@ -4314,51 +4308,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			))
 			g.announceElimination(collapse)
 		}
-		// Dost bölgede başka ordu varsa birleştir
-		if merged := g.tryMergeArmies(aid, target); merged != "" {
-			g.renderer.SelectedArmy = merged
-		}
 	}
-}
-
-// tryMergeArmies taşınan orduyu hedefteki dost orduyla birleştirir.
-// Birleşme olursa hayatta kalan ordu ID'sini döner; yoksa "".
-func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) army.ArmyID {
-	movingID = g.deployGarrisonArmy(movingID)
-	moving, ok := g.gs.Armies[movingID]
-	if !ok {
-		return ""
-	}
-	var targetID army.ArmyID
-	for otherID, other := range g.gs.Armies {
-		if otherID == movingID || other.RegionID != regionID ||
-			other.OwnerID != moving.OwnerID || other.IsNaval != moving.IsNaval {
-			continue
-		}
-		targetID = otherID
-		break
-	}
-	if targetID == "" {
-		return ""
-	}
-	targetID = g.deployGarrisonArmy(targetID)
-	target := g.gs.Armies[targetID]
-	if target == nil || len(moving.Units)+len(target.Units) > army.MaxArmySize {
-		return ""
-	}
-	target.Units = append(target.Units, moving.Units...)
-	if target.Commander == nil && moving.Commander != nil {
-		target.Commander = moving.Commander
-		target.Commander.AssignedArmyID = target.ID
-	} else if moving.Commander != nil {
-		moving.Commander.AssignedArmyID = ""
-	}
-	// Kuşatma ordusu birleşme nedeniyle silinecekse aktif kuşatma hayatta
-	// kalan dost orduya aktarılmalı; aksi halde kayıt eski ArmyID'de kalır.
-	g.transferSiegeToRemainingArmy(regionID, movingID)
-	g.gs.RemoveArmy(movingID)
-	g.renderer.AddEvent("Ordular birleşti: " + fmt.Sprintf("%d", len(target.Units)) + " birim")
-	return targetID
 }
 
 // splitArmy seçili orduyu birim sayısına göre ikiye böler. selectedIndices

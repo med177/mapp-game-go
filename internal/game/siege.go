@@ -499,9 +499,6 @@ func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Re
 			collapse = g.applyConquestWithNavalEviction(targetRegion, attacker.OwnerID)
 		}
 	}
-	if merged := g.tryMergeArmies(attacker.ID, targetRegion.ID); merged != "" && g.renderer != nil {
-		g.renderer.SelectedArmy = merged
-	}
 	return collapse, prompted
 }
 

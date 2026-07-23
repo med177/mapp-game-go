@@ -106,6 +106,36 @@ func TestArmyPanelUnitHoverIDUsesDisplayedCardOrder(t *testing.T) {
 	if got := ArmyPanelUnitHoverID(mx, my, gs, "a1"); got != "" {
 		t.Fatalf("düşman ordusunda birim detayı açılmamalıydı, got=%q", got)
 	}
+
+	gs.Factions = map[faction.FactionID]*faction.Faction{
+		"osm":    {ID: "osm"},
+		"vassal": {ID: "vassal", OverlordID: "osm"},
+	}
+	gs.Armies["a1"].OwnerID = "vassal"
+	if got := ArmyPanelUnitHoverID(mx, my, gs, "a1"); got != "inf" {
+		t.Fatalf("oyuncu vassalının birim detayı görünür olmalıydı, got=%q", got)
+	}
+}
+
+func TestPlayerCanSeeArmyDetailsIncludesVassalChain(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"osm":       {ID: "osm"},
+			"vassal":    {ID: "vassal", OverlordID: "osm"},
+			"subvassal": {ID: "subvassal", OverlordID: "vassal"},
+			"enemy":     {ID: "enemy"},
+		},
+	}
+
+	for _, owner := range []string{"osm", "vassal", "subvassal"} {
+		if !playerCanSeeArmyDetails(gs, &army.Army{OwnerID: owner}) {
+			t.Fatalf("%s ordusu tam istihbarat kapsamında olmalıydı", owner)
+		}
+	}
+	if playerCanSeeArmyDetails(gs, &army.Army{OwnerID: "enemy"}) {
+		t.Fatal("oyuncu dışı düşman ordusu vassal görünürlüğü kapsamına girmemeliydi")
+	}
 }
 
 func TestArmyPanelUnitHoverReturnsCurrentHPAndTypeCount(t *testing.T) {

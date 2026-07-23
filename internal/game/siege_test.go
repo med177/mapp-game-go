@@ -679,8 +679,7 @@ func TestResolveSiegesUsesSiegeUnitArrivingAfterSiegeStarted(t *testing.T) {
 		t.Fatalf("kuşatma birimi gelmeden gedik ilerlememeliydi, got=%+v", siege)
 	}
 
-	// Müttefik kuşatma ordusu aktif kuşatma bölgesine ayrı ordu olarak gelir;
-	// aynı owner olmadığı için tryMergeArmies tarafından ana orduya katılmaz.
+	// Müttefik kuşatma ordusu aktif kuşatma bölgesine ayrı ordu olarak gelir.
 	g.moveArmyWithStance("support", "dst", "")
 	if gs.Armies["support"].RegionID != "dst" {
 		t.Fatalf("müttefik kuşatma ordusu aktif kuşatmaya girebilmeliydi, got=%s", gs.Armies["support"].RegionID)

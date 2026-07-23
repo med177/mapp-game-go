@@ -92,3 +92,48 @@ func TestMoveArmyWithStanceChangesBattleResolution(t *testing.T) {
 		t.Fatalf("duruş seçimi aynı zar altında farklı savaş izi bırakmalıydı, aggressive=%d defensive=%d", totalHP(aggArmy), totalHP(defArmy))
 	}
 }
+
+func TestMoveArmyWithStanceDoesNotAutoMergeFriendlyArmy(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {ID: "src", OwnerID: "p1", Neighbors: []world.RegionID{"dst"}},
+			"dst": {ID: "dst", OwnerID: "p1", Neighbors: []world.RegionID{"src"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"moving": {
+				ID: "moving", OwnerID: "p1", RegionID: "src", MovePoints: 2, MaxMovePoints: 2,
+				Units: repeatedUnits("inf", 2, 100),
+			},
+			"stationed": {
+				ID: "stationed", OwnerID: "p1", RegionID: "dst", MovePoints: 2, MaxMovePoints: 2,
+				Units: repeatedUnits("inf", 3, 100),
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("moving", "dst", combat.BattleStanceBalanced)
+
+	if len(gs.Armies) != 2 {
+		t.Fatalf("dost bölgeye hareket otomatik birleşmemeli, ordu sayısı=%d", len(gs.Armies))
+	}
+	if got := gs.Armies["moving"]; got == nil || got.RegionID != "dst" || len(got.Units) != 2 {
+		t.Fatalf("hareket eden ordu ayrı ve 2 birimle hedefte kalmalıydı, got=%+v", gs.Armies["moving"])
+	}
+	if got := gs.Armies["stationed"]; got == nil || len(got.Units) != 3 {
+		t.Fatalf("hedefteki ordu otomatik olarak değişmemeliydi, got=%+v", gs.Armies["stationed"])
+	}
+
+	// Aynı iki ordu, oyuncu açıkça BİRLEŞTİR aksiyonunu verdiğinde birleşmeye devam eder.
+	g.mergeArmiesManual("moving")
+	if gs.Armies["moving"] != nil || len(gs.Armies["stationed"].Units) != 5 {
+		t.Fatalf("manuel birleştirme çalışmamalıydı: moving=%+v stationed=%+v", gs.Armies["moving"], gs.Armies["stationed"])
+	}
+}

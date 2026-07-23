@@ -1253,6 +1253,23 @@ func (r *Renderer) selectedArmyIsPlayerOwned() bool {
 	return ok && a.OwnerID == string(r.gs.PlayerFactionID)
 }
 
+// playerCanSeeArmyDetails, oyuncunun kendi orduları ile oyuncuya bağlı vassal
+// ordularını tam istihbarat kapsamında tutar. Vassal orduları oyuncu adına
+// hareket ettirilemez; bu yardımcı yalnızca görünürlük/inceleme sözleşmesini
+// ifade eder.
+func playerCanSeeArmyDetails(gs *state.GameState, a *army.Army) bool {
+	if gs == nil || a == nil {
+		return false
+	}
+	if a.OwnerID == string(gs.PlayerFactionID) {
+		return true
+	}
+	if gs.PlayerFactionID == "" || a.OwnerID == "" {
+		return false
+	}
+	return diplomacy.RealmRoot(gs, faction.FactionID(a.OwnerID)) == gs.PlayerFactionID
+}
+
 func (r *Renderer) tradeOverlayVisible() bool {
 	if r.mapMode != MapModeTrade {
 		return false
@@ -1925,7 +1942,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		fc := factionColor(r.gs, a.OwnerID)
 		isSelected := pos.ArmyID == r.SelectedArmy
 		unitCount := len(a.Units)
-		if r.gs.Phase != state.PhaseEditMode && a.OwnerID != string(r.gs.PlayerFactionID) && !enemyArmyInPlayerMoveRange(r.gs, a) {
+		if r.gs.Phase != state.PhaseEditMode && !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) {
 			unitCount = -1
 		}
 		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)

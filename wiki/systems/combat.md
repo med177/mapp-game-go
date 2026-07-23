@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -167,7 +167,7 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 4. Gedik ilerlemesi artık kuşatma ekipmanı tier'i ile kale seviyesi birlikte dikkate alınarak hesaplanır: yüksek tahkimatlar düşük tier araçlarla da zorlanabilir, ama ilerleme çok daha yavaş olur. Daha düşük tier araçlar kuşatmayı sürdürür, savunucuyu yıpratır ve ancak uzun sürede gedik üretir.
 5. Her tur çözümlemesinde kuşatma baskısı savunucu orduya attrition uygular; gedik kapasitesi yetiyorsa ayrıca `BreachProgress` artar ve gedik seviyesi (`yok / küçük / büyük`) güncellenir.
 6. Aktif kuşatma seçildiğinde renderer alt-ortada modal-dışı `Kuşatma Emri` paneli gösterir; oyuncu buradan `Genel Hücum` veya `Kuşatmayı Kaldır` seçebilir.
-7. Aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için normal hareketle girebilir; bu giriş ayrı bir kuşatma başlatmaz. Destek orduları aktif bölgedeki canlı state'ten her kuşatma tick'inde taranır; sonradan getirilen kuşatma birimleri de `BreachProgress` ve gedik kazanımını güçlendirir. İlgisiz fraksiyonlar yeni kuşatma hamlesi yapamaz.
+7. Aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için normal hareketle girebilir; bu giriş ayrı bir kuşatma başlatmaz ve destek ordusu otomatik olarak başka bir orduyla birleşmez. Destek orduları aktif bölgedeki canlı state'ten her kuşatma tick'inde taranır; sonradan getirilen kuşatma birimleri de `BreachProgress` ve gedik kazanımını güçlendirir. İlgisiz fraksiyonlar yeni kuşatma hamlesi yapamaz.
 8. Kuşatmayı yapan ordu başka komşu bölgeye normal hareket emri alırsa bu hareket, eski kuşatmayı otomatik kaldırır; ayrı ikinci onay gerekmez.
 9. Savunucu ordu çözülüp büyük gedik açılırsa tahkimat teslim olabilir; gedik açılamasa bile uzun aç bırakma kuşatması sonunda teslimiyet mümkün kalır.
 10. Kuşatma birimi yoksa da `Genel Hücum` yapılabilir; ancak gedik yoksa tahkimat doğrudan ele geçirilemez ve kale bekleme / aç bırakma / teslimiyet hattında kalır.

@@ -59,7 +59,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	if !ok {
 		return
 	}
-	if a.OwnerID != string(gs.PlayerFactionID) {
+	if !playerCanSeeArmyDetails(gs, a) {
 		fullIntel := playerHasRevealEnemyStrength(gs)
 		siegeIntel := enemyUnderPlayerSiege(gs, a)
 		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) || siegeIntel {
@@ -160,10 +160,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	mergeTarget := FindMergeTarget(gs, aid)
 	hasMerge := mergeTarget != ""
 	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
-	if canSplit || hasMerge {
+	canCommand := a.OwnerID == string(gs.PlayerFactionID)
+	if canCommand && (canSplit || hasMerge) {
 		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
 	}
-	if hasMerge {
+	if canCommand && hasMerge {
 		other := gs.Armies[mergeTarget]
 		canMerge := len(other.Units) < army.MaxArmySize
 		drawArmyActionButton(screen, px, py, panelW, "⊕ BİRLEŞTİR", canMerge, canSplit, false)
@@ -886,7 +887,7 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 		return army.Unit{}, 0, false
 	}
 	a := gs.Armies[aid]
-	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
+	if !playerCanSeeArmyDetails(gs, a) {
 		return army.Unit{}, 0, false
 	}
 
@@ -943,7 +944,7 @@ func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) 
 		return -1, false
 	}
 	a := gs.Armies[aid]
-	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
+	if !playerCanSeeArmyDetails(gs, a) {
 		return -1, false
 	}
 	layout := armyPanelGeometry()
