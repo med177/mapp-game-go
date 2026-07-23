@@ -133,17 +133,51 @@ func grainShortageSatisfactionPenalty(level state.GrainSupplyLevel) int {
 	}
 }
 
-func applyGrainShortageStability(gs *state.GameState, ownerID string, level state.GrainSupplyLevel) {
-	penalty := grainShortageSatisfactionPenalty(level)
-	if gs == nil || ownerID == "" || penalty <= 0 {
-		return
+const (
+	warFatigueSatisfactionPenalty    = 3
+	overextensionSatisfactionPenalty = 5
+	maxArmySatisfactionBonus         = 10
+)
+
+// factionAtWarByID savaşta olan fraksiyonları tek tur için önceden işaretler.
+// Savaş yorgunluğu doğrudan savaşa giren devletin bütün kara bölgelerine uygulanır.
+func factionAtWarByID(gs *state.GameState) map[string]bool {
+	atWar := make(map[string]bool)
+	if gs == nil {
+		return atWar
 	}
-	for _, region := range gs.Regions {
-		if region == nil || region.OwnerID != ownerID || region.IsSea {
+	for _, relation := range gs.Relations {
+		if relation == nil || relation.Stance != faction.StanceWar {
 			continue
 		}
-		region.Satisfaction = clamp(region.Satisfaction-penalty, 0, 100)
+		if relation.FactionA != "" {
+			atWar[string(relation.FactionA)] = true
+		}
+		if relation.FactionB != "" {
+			atWar[string(relation.FactionB)] = true
+		}
 	}
+	return atWar
+}
+
+// regionArmySatisfactionBonus bölgedeki sahibine ait kara ordularının toplam
+// gücünü istikrar bonusuna çevirir. 100 güç +10 verir; bonus +10 ile sınırlıdır.
+func regionArmySatisfactionBonus(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil || region.OwnerID == "" || gs.Armies == nil {
+		return 0
+	}
+	strength := 0
+	for _, currentArmy := range gs.Armies {
+		if currentArmy == nil || currentArmy.IsNaval || currentArmy.OwnerID != region.OwnerID || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
+			continue
+		}
+		strength += currentArmy.TotalStrength(gs.UnitTypes)
+	}
+	bonus := strength / 10
+	if bonus > maxArmySatisfactionBonus {
+		return maxArmySatisfactionBonus
+	}
+	return bonus
 }
 
 func grainArmyMoraleDelta(level state.GrainSupplyLevel) int {
