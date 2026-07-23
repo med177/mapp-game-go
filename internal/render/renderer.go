@@ -68,6 +68,7 @@ type Renderer struct {
 	// Seçim
 	SelectedRegion           world.RegionID
 	SelectedArmy             army.ArmyID
+	splitSelectedUnits       map[int]bool
 	selectedFactionPanel     faction.FactionID
 	factionPanelScroll       float64
 	selectedSettlementRegion world.RegionID
@@ -700,6 +701,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.resetCamera()
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
+	r.clearArmySplitSelection()
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
 	r.clearSelectedSettlement()
@@ -802,6 +804,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	}
 	r.SelectedRegion = ""
 	r.SelectedArmy = ""
+	r.clearArmySplitSelection()
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
 	r.devNeighborListExpanded = false
@@ -1132,7 +1135,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.mapMode != MapModeTrade && r.showRecruitPanel {
 			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		}
-		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy)
+		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 		r.drawSelectedSiegePanel(screen)
 	}

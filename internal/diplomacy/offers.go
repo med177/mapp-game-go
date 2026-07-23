@@ -151,7 +151,7 @@ func BestOfferIndex(gs *state.GameState, target faction.FactionID) (int, bool) {
 		if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
 			continue
 		}
-		if !found || offer.Priority > bestPriority || (offer.Priority == bestPriority && (offer.CreatedTurn < bestTurn || (offer.CreatedTurn == bestTurn && i < bestIdx))) {
+		if !found || pendingOfferPrecedes(offer, gs.DiplomaticOffers[bestIdx], offer.Priority, bestPriority, offer.CreatedTurn, bestTurn, i, bestIdx) {
 			bestIdx = i
 			bestPriority = offer.Priority
 			bestTurn = offer.CreatedTurn
@@ -159,6 +159,29 @@ func BestOfferIndex(gs *state.GameState, target faction.FactionID) (int, bool) {
 		}
 	}
 	return bestIdx, found
+}
+
+// pendingOfferPrecedes, bekleyen tekliflerdeki karar aşamasını uygular:
+// barış, kuşatma teslimiyetinden; teslimiyet de diğer normal tekliflerden önce
+// gösterilir. Aynı aşamadaki teklifler mevcut Priority sıralamasını korur.
+func pendingOfferPrecedes(candidate, current state.DiplomaticOffer, candidatePriority, currentPriority, candidateTurn, currentTurn, candidateIndex, currentIndex int) bool {
+	candidateStage := pendingOfferStage(candidate.Action)
+	currentStage := pendingOfferStage(current.Action)
+	if candidateStage != currentStage {
+		return candidateStage > currentStage
+	}
+	return candidatePriority > currentPriority || (candidatePriority == currentPriority && (candidateTurn < currentTurn || (candidateTurn == currentTurn && candidateIndex < currentIndex)))
+}
+
+func pendingOfferStage(action string) int {
+	switch Action(action) {
+	case ActionProposePeace:
+		return 2
+	case ActionProposeSurrender:
+		return 1
+	default:
+		return 0
+	}
 }
 
 // ResolveOffer teklifi kabul/red ile sonuçlandırır ve kuyruktan düşürür.

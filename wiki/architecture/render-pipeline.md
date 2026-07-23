@@ -29,6 +29,8 @@ Birim detay hover popup'larındaki görsel, aynı 210×360 oranı korunarak mevc
 
 Ordu detay panelindeki birim kartları oyun state'indeki fiziksel birim sırasını değiştirmeden kategoriye göre gruplanır; aynı kategori içindeki sıra korunur ve görünüm önceliği piyade, süvari, kuşatma, ardından diğer kategorilerdir (`internal/render/army_panel.go`).
 
+Oyuncu ordu panelindeki kartlara tıklayarak bölmek istediği fiziksel birlikleri tek tek seçebilir. Seçili kartlar altın çerçeveyle gösterilir ve `Böl` eylemi bu index'leri `InputAction.UnitIndices` üzerinden oyun katmanına taşır; seçim yoksa mevcut ortadan bölme davranışı kullanılır. Tüm birliklerin seçilmesi ana ordunun boş kalmaması için engellenir. Panel seçim state'i geçicidir; ordu değişimi, panel kapanışı, tur geçişi ve save/load akışlarında temizlenir (`internal/render/{army_panel.go,renderer_input.go,renderer.go}`, `internal/render/action.go`, `internal/game/game.go`).
+
 Ordu detay panelindeki oyuncu birim kartları, recruit panelinden ayrı bir ordu birim popup'ı kullanır. Hover hit-test'i çizimdeki kategori sırasını aynen izler; popup gerçek birim örneğinin ordudaki aynı tip adetini, tur başı tahıl bakımını, savaş değerlerini ve anlık canını gösterir. Üretim maliyeti/teknoloji gereksinimi burada çizilmez; düşman ordularındaki gizli kartlar tooltip'e bağlanmaz (`internal/render/army_panel.go`, `hover_tooltip.go`).
 
 Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyuncu ordusu için mevcut HP'ye göre `Güç: saldırı / savunma` değerini gösterir. Düşman ordularında aynı alan yalnız istihbaratla açılan birim tiplerinden hesaplanan `Görünen güç` değerini taşır; gizli birimlerin gücü toplama dahil edilmez (`internal/render/army_panel.go`).

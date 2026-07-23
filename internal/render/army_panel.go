@@ -51,7 +51,7 @@ type armyPanelLayout struct {
 // DrawArmyDetailPanel seçili ordunun birimlerini Total War stilinde ekranın alt
 // orta kısmında birim kart ızgarası olarak gösterir.
 // Her zaman 20 slot gösterilir; dolu slotlar normal, boş slotlar silik çerçeve ile.
-func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
+func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) {
 	if aid == "" {
 		return
 	}
@@ -78,6 +78,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 
 	layout := armyPanelGeometry()
 	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
+	var selectedUnits map[int]bool
+	if len(selectedUnitMaps) > 0 {
+		selectedUnits = selectedUnitMaps[0]
+	}
+	selectedCount := splitSelectedUnitCount(a, selectedUnits)
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
@@ -146,11 +151,15 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
 			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{210, 96, 82, 235})
 	}
+	if selectedCount > 0 {
+		selectedText := "Bölünecek: " + itoa(selectedCount)
+		DrawText(screen, selectedText, float64(layout.gridX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{255, 205, 75, 245})
+	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
 	mergeTarget := FindMergeTarget(gs, aid)
 	hasMerge := mergeTarget != ""
-	canSplit := len(a.Units) >= 2
+	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
 	if canSplit || hasMerge {
 		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
 	}
@@ -195,6 +204,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		// Kart arka planı sabit beyaz.
 		cardBg := color.RGBA{255, 255, 255, 245}
 		cardBorderCol := color.RGBA{160, 160, 160, 225}
+		isSelected := selectedUnits[unitIndex]
 		vector.FillRect(screen, cx, cy, cardW, cardH, cardBg, false)
 		vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, cardBorderCol, false)
 
@@ -248,6 +258,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			xpPct := float64(u.Experience) / 100.0
 			xpW := float32(xpPct * float64(cardW-2))
 			vector.FillRect(screen, cx+1, hpY+hpBarH, xpW, 2, color.RGBA{80, 160, 255, 180}, false)
+		}
+		if isSelected {
+			vector.StrokeRect(screen, cx+1, cy+1, cardW-2, cardH-2, 3, color.RGBA{255, 190, 45, 255}, false)
 		}
 	}
 	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç")
@@ -702,12 +715,15 @@ func mergeButtonRect(px, py, panelW float32, hasSplit bool) (bx, by, bw, bh floa
 	return
 }
 
-func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) (gameui.Button, bool) {
 	if aid == "" {
 		return gameui.Button{}, false
 	}
 	a, ok := gs.Armies[aid]
 	if !ok || len(a.Units) < 2 {
+		return gameui.Button{}, false
+	}
+	if len(selectedUnitMaps) > 0 && !splitSelectionCanBeApplied(a, selectedUnitMaps[0]) {
 		return gameui.Button{}, false
 	}
 	layout := armyPanelGeometry()
@@ -756,6 +772,27 @@ func drawArmyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string,
 
 func hasArmyMergeActions(gs *state.GameState, aid army.ArmyID) bool {
 	return FindMergeTarget(gs, aid) != ""
+}
+
+func splitSelectionCanBeApplied(a *army.Army, selected map[int]bool) bool {
+	if a == nil || len(a.Units) < 2 {
+		return false
+	}
+	selectedCount := splitSelectedUnitCount(a, selected)
+	return selectedCount == 0 || selectedCount < len(a.Units)
+}
+
+func splitSelectedUnitCount(a *army.Army, selected map[int]bool) int {
+	if a == nil {
+		return 0
+	}
+	selectedCount := 0
+	for index, isSelected := range selected {
+		if isSelected && index >= 0 && index < len(a.Units) {
+			selectedCount++
+		}
+	}
+	return selectedCount
 }
 
 func armyPanelDisplayedCommander(a *army.Army) (*army.Commander, string) {
@@ -808,8 +845,8 @@ func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
 }
 
 // SplitButtonHitTest fare BÖL butonuna denk geliyorsa true döner.
-func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
-	btn, ok := buildSplitArmyButton(gs, aid)
+func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) bool {
+	btn, ok := buildSplitArmyButton(gs, aid, selectedUnitMaps...)
 	return ok && btn.HitTest(fx, fy)
 }
 
@@ -878,15 +915,51 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 	return army.Unit{}, 0, false
 }
 
-func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) bool {
 	if buildArmyPanelCloseButton().HitTest(fx, fy) {
 		return true
 	}
-	if SplitButtonHitTest(fx, fy, gs, aid) || MergeButtonHitTest(fx, fy, gs, aid) {
+	if SplitButtonHitTest(fx, fy, gs, aid, selectedUnitMaps...) || MergeButtonHitTest(fx, fy, gs, aid) {
 		return true
 	}
 	if CommanderPortraitHitTest(fx, fy, gs, aid) {
 		return true
 	}
+	if _, ok := ArmyPanelUnitHit(fx, fy, gs, aid); ok {
+		return true
+	}
 	return false
+}
+
+// ArmyPanelUnitHit panelde tıklanan kartın oyun state'indeki fiziksel index'ini
+// döndürür. Kartlar kategoriye göre çizildiği için bu index doğrudan paneldeki
+// display index'i değildir.
+func ArmyPanelUnitHit(mx, my float64, gs *state.GameState, aid army.ArmyID) (int, bool) {
+	return armyPanelUnitIndexAt(mx, my, gs, aid)
+}
+
+func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) (int, bool) {
+	if gs == nil || aid == "" {
+		return -1, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || a.OwnerID != string(gs.PlayerFactionID) {
+		return -1, false
+	}
+	layout := armyPanelGeometry()
+	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		if unitIndex < 0 {
+			continue
+		}
+		col := displayIndex % maxCols
+		row := displayIndex / maxCols
+		cx := layout.gridX + float32(col)*(cardW+cardGap)
+		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		if mx >= float64(cx) && mx <= float64(cx+cardW) &&
+			my >= float64(cy) && my <= float64(cy+cardH) {
+			return unitIndex, true
+		}
+	}
+	return -1, false
 }

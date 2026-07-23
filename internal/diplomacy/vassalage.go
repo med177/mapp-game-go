@@ -411,6 +411,38 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			}
 		}
 	}
+	removePendingSurrenderOffersBetween(gs, left, right)
+}
+
+// removePendingSurrenderOffersBetween, barış kabul edildiğinde aynı savaşın
+// artık geçersiz olan kuşatma teslimiyeti tekliflerini kuyruktan düşürür.
+func removePendingSurrenderOffersBetween(gs *state.GameState, left, right []faction.FactionID) {
+	if gs == nil || len(gs.DiplomaticOffers) == 0 {
+		return
+	}
+	leftSet := make(map[faction.FactionID]struct{}, len(left))
+	rightSet := make(map[faction.FactionID]struct{}, len(right))
+	for _, fid := range left {
+		leftSet[fid] = struct{}{}
+	}
+	for _, fid := range right {
+		rightSet[fid] = struct{}{}
+	}
+	offers := gs.DiplomaticOffers[:0]
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(ActionProposeSurrender) &&
+			((containsFaction(leftSet, offer.FromFactionID) && containsFaction(rightSet, offer.ToFactionID)) ||
+				(containsFaction(rightSet, offer.FromFactionID) && containsFaction(leftSet, offer.ToFactionID))) {
+			continue
+		}
+		offers = append(offers, offer)
+	}
+	gs.DiplomaticOffers = offers
+}
+
+func containsFaction(set map[faction.FactionID]struct{}, fid faction.FactionID) bool {
+	_, ok := set[fid]
+	return ok
 }
 
 func synchronizeVassalWars(gs *state.GameState, root faction.FactionID) {

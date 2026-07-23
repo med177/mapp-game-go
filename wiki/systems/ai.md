@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -755,6 +755,7 @@ değişmeden 1300 diplomasi taramasının maliyeti azaltılır.
 - `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
 - bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür. Oyuncu bir teklifi reddettiğinde aktör-hedef-aksiyon bazında üç tur cooldown uygulanır; ardından aynı zar mekanizması %35 tekrar deneme şansı verir. Ret ayrıca ilişkiyi `-3` düşürür. Desteksiz dış ittifakların relation skoru ise artık her tur otomatik yükselmez; destek yoksa yavaşça aşınır.
+- Aynı oyuncuyla savaşta barış ve kuşatma teslimiyeti koşulları birlikte oluşursa önce barış teklifini kuyruğa alır; barış kabul edilirse geçersiz teslimiyet teklifi diplomasi kuyruğundan temizlenir, ret edilirse teslimiyet sonraki karar olarak kalır.
 - aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa veya son kara toprağındaysa oyuncuya teslim olmayı teklif eder. Teklif `RegionID` ile aktif kuşatmaya bağlanır, normal diplomasi elçi kotasını tüketmez ve ret cooldown'u bölge bazında tutulur. Oyuncu kabulünde savunmacı ordu geri çekilir; AI'ın son toprağı teslim oluyorsa game katmanı otomatik vassallık uygular.
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:

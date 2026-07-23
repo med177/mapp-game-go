@@ -7,6 +7,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-23: Savaş halindeki AI teklif akışı düzeltildi. Aynı oyuncuya barış ve kuşatma teslimiyeti teklifleri birlikte oluştuğunda barış kuyruğa ve oyuncu kararına önce geliyor; barış kabul edilirse aynı savaşın teslimiyet teklifi otomatik atlanıyor. Kapsam: `internal/{ai/diplomacy.go,diplomacy/{offers.go,vassalage.go}}`; regression: `TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer`, `TestPeaceOfferPrecedesSiegeSurrenderAndAcceptanceSkipsIt`; doğrulama: `go test ./internal/diplomacy ./internal/ai ./internal/game`.
+
+- 2026-07-23: Ordu panelinde birlik kartlarına tıklayarak seçili birlikleri ayrı bir orduya bölme eklendi. Seçim yokken eski ortadan bölme korunuyor; seçilen kartlar altın çerçeveyle gösteriliyor, fiziksel birim index'leri oyun katmanına aktarılıyor ve ana ordunun tamamen boşaltılması engelleniyor. Regression: `TestSplitArmyWithSelectedUnitsMovesOnlyThoseUnits`, `TestSplitSelectionRequiresOneUnitToRemain`; doğrulama: `go test ./internal/game -run 'Test(SplitArmyWithSelectedUnits|SplitBesiegingArmyKeepsSiegeWithRemainingUnit)$'` ve ilgili render testleri.
+
 - 2026-07-23: Altın yetersizliği nedeniyle alt HUD'daki `Ordu` butonunun pasifleşmesi düzeltildi. Oyuncuya ait uygun bölgede, Kışla/birim gereksinimleri sağlandığında panel açılabilir kalıyor; kaynak eksikliği kart üzerinde gösteriliyor ve üretim emrinde state/game katmanında doğrulanıyor. Regression: `TestRecruitPanelButtonRemainsEnabledWhenGoldIsInsufficient`; doğrulama: `go test ./internal/render -run 'TestRecruitPanel(ButtonRemainsEnabledWhenGoldIsInsufficient|DisabledReasonUsesResourceShortage)$'`.
 
 - 2026-07-22: Üst HUD'daki aktif araştırma adı tıklanabilir hale getirildi; tıklama alt HUD'daki `Teknoloji` düğmesiyle aynı şekilde teknoloji panelini açıyor. Regression: `TestTurnTechHudTechHitUsesResearchRow`; doğrulama: `go test ./internal/render`.

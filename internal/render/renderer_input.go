@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"math"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
@@ -288,6 +289,7 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
 			r.SelectedArmy = ""
+			r.clearArmySplitSelection()
 			r.SelectedRegion = ""
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
@@ -441,6 +443,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		r.SelectedArmy = ""
+		r.clearArmySplitSelection()
 		return InputAction{}
 	}
 	if r.selectedFactionPanel != "" && factionPanelCloseHit(fx, fy) {
@@ -714,8 +717,16 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.OpenCommanderPanel(r.SelectedArmy)
 			return InputAction{}
 		}
-		if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-			return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy}
+		if r.selectedArmyIsPlayerOwned() {
+			if unitIndex, ok := ArmyPanelUnitHit(fx, fy, r.gs, r.SelectedArmy); ok {
+				r.toggleArmySplitUnit(unitIndex)
+				return InputAction{}
+			}
+		}
+		if r.selectedArmyIsPlayerOwned() && SplitButtonHitTest(fx, fy, r.gs, r.SelectedArmy, r.splitSelectedUnits) {
+			indices := r.selectedArmySplitIndices()
+			r.clearArmySplitSelection()
+			return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy, UnitIndices: indices}
 		}
 		if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
 			return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
@@ -725,8 +736,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if aid, ok := r.armyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			r.SelectedArmy = ""
+			r.clearArmySplitSelection()
 			return InputAction{}
 		}
+		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -737,6 +750,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		r.SelectedArmy = ""
+		r.clearArmySplitSelection()
 		if r.SelectedRegion != rid {
 			r.devNeighborListExpanded = false
 			r.regionPanelTab = regionPanelTabBuildings
@@ -795,6 +809,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.SelectedArmy = ""
+	r.clearArmySplitSelection()
 	if r.SelectedRegion != rid {
 		r.devNeighborListExpanded = false
 		r.regionPanelTab = regionPanelTabBuildings
@@ -937,6 +952,42 @@ func (r *Renderer) resetRecruitSelection() {
 	r.recruitQty = 1
 }
 
+func (r *Renderer) clearArmySplitSelection() {
+	r.splitSelectedUnits = nil
+}
+
+func (r *Renderer) toggleArmySplitUnit(unitIndex int) {
+	if unitIndex < 0 {
+		return
+	}
+	if r.splitSelectedUnits == nil {
+		r.splitSelectedUnits = make(map[int]bool)
+	}
+	if r.splitSelectedUnits[unitIndex] {
+		delete(r.splitSelectedUnits, unitIndex)
+		return
+	}
+	r.splitSelectedUnits[unitIndex] = true
+}
+
+func (r *Renderer) selectedArmySplitIndices() []int {
+	if len(r.splitSelectedUnits) == 0 {
+		return nil
+	}
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil {
+		return nil
+	}
+	indices := make([]int, 0, len(r.splitSelectedUnits))
+	for index, selected := range r.splitSelectedUnits {
+		if selected && index >= 0 && index < len(a.Units) {
+			indices = append(indices, index)
+		}
+	}
+	sort.Ints(indices)
+	return indices
+}
+
 // handleRightClick sağ tıklamayı yorumlar: seçili ordunun hareket/saldırı emri.
 func (r *Renderer) handleRightClick() InputAction {
 	if r.SelectedArmy == "" {
@@ -991,6 +1042,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	// bölgenin deniz merkezine geçiş (undock) emri verebilir.
 	if a.IsNaval && a.DockedRegionID != "" && rid == a.RegionID {
 		r.SelectedArmy = ""
+		r.clearArmySplitSelection()
 		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
 	}
 	for _, n := range src.Neighbors {
@@ -1088,6 +1140,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
 		r.SelectedArmy = ""
+		r.clearArmySplitSelection()
 		return act
 	}
 	return InputAction{}

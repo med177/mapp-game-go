@@ -371,7 +371,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 	}
 	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
-		return ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy)
+		return ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 	}
 	if r.selectedSiegePanelHit(fx, fy) {
 		return true

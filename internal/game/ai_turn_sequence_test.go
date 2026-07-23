@@ -271,13 +271,15 @@ func TestPendingPlayerDiplomacyOfferUsesPriority(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		Factions: map[faction.FactionID]*faction.Faction{
-			"player":  {ID: "player", NameTR: "Oyuncu"},
-			"ai_low":  {ID: "ai_low", NameTR: "AI Low"},
-			"ai_high": {ID: "ai_high", NameTR: "AI High"},
+			"player":   {ID: "player", NameTR: "Oyuncu"},
+			"ai_low":   {ID: "ai_low", NameTR: "AI Low"},
+			"ai_high":  {ID: "ai_high", NameTR: "AI High"},
+			"ai_siege": {ID: "ai_siege", NameTR: "AI Siege"},
 		},
 		DiplomaticOffers: []state.DiplomaticOffer{
 			{FromFactionID: "ai_low", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 6, Priority: 12},
 			{FromFactionID: "ai_high", ToFactionID: "player", Action: "propose_peace", CreatedTurn: 4, Priority: 20},
+			{FromFactionID: "ai_siege", ToFactionID: "player", Action: "propose_surrender", RegionID: "fort", CreatedTurn: 3, Priority: 999},
 		},
 	}
 	g := &Game{gs: gs}

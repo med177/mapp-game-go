@@ -102,6 +102,7 @@ const (
 type InputAction struct {
 	Kind          ActionKind
 	ArmyID        army.ArmyID
+	UnitIndices   []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
 	TargetArmyID  army.ArmyID
 	CommanderID   string
 	TargetRegion  world.RegionID

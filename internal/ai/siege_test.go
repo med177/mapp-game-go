@@ -154,6 +154,35 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 	t.Fatal("AI kuşatanı uygun koşullarda oyuncuya teslimiyet teklifi üretmedi")
 }
 
+func TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Relations[faction.RelationKey("ai_1", "player")].Score = -100
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
+	}
+	gs.Armies["ai_army"].RegionID = "fort"
+	gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "player", RegionID: "fort", MovePoints: 0, MaxMovePoints: 2,
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+
+	for turn := 1; turn <= 100; turn++ {
+		gs.Turn = turn
+		gs.DiplomaticOffers = nil
+		gs.DiplomacyOfferCounts = nil
+		var steps []TurnStep
+		aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+		if len(gs.DiplomaticOffers) != 2 {
+			continue
+		}
+		if gs.DiplomaticOffers[0].Action != string(diplomacy.ActionProposePeace) || gs.DiplomaticOffers[1].Action != string(diplomacy.ActionProposeSurrender) {
+			t.Fatalf("barış önce, teslimiyet sonra kuyruğa alınmalıydı: %+v", gs.DiplomaticOffers)
+		}
+		return
+	}
+	t.Fatal("aynı savaşta barış ve kuşatma teslimiyeti tekliflerinin birlikte üretildiği tur bulunamadı")
+}
+
 func TestAISiegeSurrenderRetryCooldownIsRegionScoped(t *testing.T) {
 	gs := &state.GameState{
 		Turn: 5,

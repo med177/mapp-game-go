@@ -42,6 +42,20 @@ func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
 	}
 }
 
+func TestSplitSelectionRequiresOneUnitToRemain(t *testing.T) {
+	a := &army.Army{Units: []army.Unit{{TypeID: "inf"}, {TypeID: "cav"}, {TypeID: "siege"}}}
+
+	if !splitSelectionCanBeApplied(a, nil) {
+		t.Fatal("seçim yokken varsayılan bölme kullanılabilmeliydi")
+	}
+	if !splitSelectionCanBeApplied(a, map[int]bool{0: true, 2: true}) {
+		t.Fatal("ana orduda bir birlik kaldığında seçili bölme yapılabilmeliydi")
+	}
+	if splitSelectionCanBeApplied(a, map[int]bool{0: true, 1: true, 2: true}) {
+		t.Fatal("tüm birlikler seçiliyken bölme yapılmamalıydı")
+	}
+}
+
 func TestArmyPanelUnitHoverIDUsesDisplayedCardOrder(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

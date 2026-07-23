@@ -17,7 +17,6 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 	if diplomacy.DirectOverlord(gs, fid) != "" {
 		return
 	}
-	aiHandleSiegeSurrenderOffersWithSteps(gs, fid, steps)
 
 	for _, otherID := range aiSortedFactionIDs(gs) {
 		other := gs.Factions[otherID]
@@ -121,6 +120,12 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			}
 		}
 	}
+
+	// Aynı savaşta oyuncuya hem barış hem de kuşatma teslimiyeti koşulu
+	// oluşabiliyorsa önce barış teklifi kuyruğa alınır. Oyuncu barışı kabul
+	// ederse diplomasi katmanı artık geçersiz kalan teslimiyet teklifini siler;
+	// reddederse teslimiyet teklifi sonraki bekleyen teklif olur.
+	aiHandleSiegeSurrenderOffersWithSteps(gs, fid, steps)
 
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
 }

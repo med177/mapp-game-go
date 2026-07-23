@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/faction/faction.go`, `internal/game/game.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/faction/faction.go`, `internal/game/game.go`
 
 ## İlişki Yapısı
 
@@ -99,6 +99,14 @@ yanlışlıkla uygulanamamasını önler. İlgili uygulama seam'leri
 `internal/diplomacy/offers.go:ResolveOffer()` ve `internal/diplomacy/diplomacy.go:execute()`
 ile regression testleri `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice` ve
 `TestResolveQueuedAllianceOfferKeepsTermsAfterStrategicStateChanges`'dır.
+
+Savaş sırasında aynı oyuncuya hem barış hem de kuşatma teslimiyeti teklifi bekliyorsa
+`BestOfferIndex()` barış teklifini teslimiyetten önce seçer; teslimiyetin daha yüksek
+öncelik puanı bu sıra kuralını geçersiz kılamaz. Oyuncu barışı kabul ettiğinde
+`setPeaceBetweenCoalitions()` aynı savaşın bekleyen `propose_surrender` kayıtlarını
+temizler. Böylece teslimiyet yalnızca barış reddedildiğinde veya barış teklifi
+oluşmadığında sonraki karar olarak gösterilir. Regression:
+`TestPeaceOfferPrecedesSiegeSurrenderAndAcceptanceSkipsIt`.
 
 Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon akışı izler:
 

@@ -594,6 +594,30 @@ func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
 	}
 }
 
+func TestPeaceOfferPrecedesSiegeSurrenderAndAcceptanceSkipsIt(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	gs.DiplomaticOffers = []state.DiplomaticOffer{
+		{FromFactionID: "a", ToFactionID: "b", Action: string(ActionProposeSurrender), RegionID: "b_cap", Priority: 175, CreatedTurn: 5},
+		{FromFactionID: "a", ToFactionID: "b", Action: string(ActionProposePeace), Priority: 10, CreatedTurn: 5},
+	}
+
+	bestIndex, ok := BestOfferIndex(gs, "b")
+	if !ok || gs.DiplomaticOffers[bestIndex].Action != string(ActionProposePeace) {
+		t.Fatalf("barış teklifi kuşatma teslimiyetinden önce seçilmeliydi: index=%d offers=%+v", bestIndex, gs.DiplomaticOffers)
+	}
+
+	result := ResolveOffer(gs, bestIndex, true)
+	if !result.Applied || rel.Stance != faction.StancePeace {
+		t.Fatalf("barış kabulü uygulanmalıydı: result=%+v relation=%+v", result, rel)
+	}
+	if len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("barış kabulünden sonra aynı savaşa ait teslimiyet teklifi atlanmalıydı: %+v", gs.DiplomaticOffers)
+	}
+}
+
 func TestResolveRejectedDiplomaticOfferLowersRelationAndRecordsRetry(t *testing.T) {
 	gs := testGameState()
 	gs.Turn = 5

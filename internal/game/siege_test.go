@@ -506,6 +506,37 @@ func TestSplitBesiegingArmyKeepsSiegeWithRemainingUnit(t *testing.T) {
 	}
 }
 
+func TestSplitArmyWithSelectedUnitsMovesOnlyThoseUnits(t *testing.T) {
+	gs := siegeTestState()
+	gs.NextArmySeq = 0
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"main": {
+			ID:       "main",
+			OwnerID:  "p1",
+			RegionID: "src",
+			Units: []army.Unit{
+				{TypeID: "inf", CurrentHP: 91},
+				{TypeID: "cav", CurrentHP: 82},
+				{TypeID: "siege", CurrentHP: 73},
+			},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.splitArmy("main", 0, 2)
+
+	newArmy := gs.Armies["army_p1_1"]
+	if newArmy == nil {
+		t.Fatal("seçilen birliklerden yeni ordu oluşturulmalıydı")
+	}
+	if len(gs.Armies["main"].Units) != 1 || gs.Armies["main"].Units[0].TypeID != "cav" {
+		t.Fatalf("seçilmeyen birlik ana orduda kalmalıydı: %+v", gs.Armies["main"].Units)
+	}
+	if len(newArmy.Units) != 2 || newArmy.Units[0].TypeID != "inf" || newArmy.Units[1].TypeID != "siege" {
+		t.Fatalf("seçilen birlikler yeni orduya aynı sırayla taşınmalıydı: %+v", newArmy.Units)
+	}
+}
+
 func TestMergeBesiegingArmyKeepsSiegeWithSurvivingArmy(t *testing.T) {
 	newGame := func() (*Game, army.ArmyID) {
 		gs := siegeTestState()

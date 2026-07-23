@@ -281,7 +281,7 @@ func (g *Game) Update() error {
 		case render.ActionSurrenderSiege:
 			g.acceptSurrenderOfferForRegion(action.TargetRegion)
 		case render.ActionSplitArmy:
-			g.splitArmy(action.ArmyID)
+			g.splitArmy(action.ArmyID, action.UnitIndices...)
 		case render.ActionMergeArmies:
 			g.mergeArmiesManual(action.ArmyID)
 		case render.ActionAssignCommander:
@@ -4361,17 +4361,51 @@ func (g *Game) tryMergeArmies(movingID army.ArmyID, regionID world.RegionID) arm
 	return targetID
 }
 
-// splitArmy seçili orduyu birim sayısına göre ikiye böler.
-func (g *Game) splitArmy(aid army.ArmyID) {
+// splitArmy seçili orduyu birim sayısına göre ikiye böler. selectedIndices
+// verilirse yalnız o fiziksel birim index'leri yeni orduya taşınır; boşsa
+// mevcut varsayılan ortadan bölme davranışı korunur.
+func (g *Game) splitArmy(aid army.ArmyID, selectedIndices ...int) {
 	aid = g.deployGarrisonArmy(aid)
 	a, ok := g.gs.Armies[aid]
 	if !ok || len(a.Units) < 2 {
+		return
+	}
+	selected := make(map[int]bool, len(selectedIndices))
+	for _, index := range selectedIndices {
+		if index >= 0 && index < len(a.Units) {
+			selected[index] = true
+		}
+	}
+	if len(selected) > 0 {
+		if len(selected) >= len(a.Units) {
+			if g.renderer != nil {
+				g.renderer.ShowCombatResult("En az bir birlik ana orduda kalmalı.")
+			}
+			return
+		}
+		newUnits := make([]army.Unit, 0, len(selected))
+		remainingUnits := make([]army.Unit, 0, len(a.Units)-len(selected))
+		for index, unit := range a.Units {
+			if selected[index] {
+				newUnits = append(newUnits, unit)
+				continue
+			}
+			remainingUnits = append(remainingUnits, unit)
+		}
+		a.Units = remainingUnits
+		selectedIndices = nil
+		newArmyUnits := newUnits
+		g.createSplitArmy(a, newArmyUnits)
 		return
 	}
 	half := len(a.Units) / 2
 	newUnits := make([]army.Unit, half)
 	copy(newUnits, a.Units[len(a.Units)-half:])
 	a.Units = a.Units[:len(a.Units)-half]
+	g.createSplitArmy(a, newUnits)
+}
+
+func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
 
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
