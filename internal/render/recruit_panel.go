@@ -416,9 +416,9 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
 			continue
 		}
-		if !unitCost(utype).CanAfford(ff) {
-			continue
-		}
+		// Ordu düğmesi üretim panelini açar; kaynak uygunluğu kart üzerinde
+		// gösterilir ve üretim emri oluşturulurken oyun katmanında doğrulanır.
+		// Altın yetersizliği paneli erişilemez hale getirmemelidir.
 		return true
 	}
 	return false

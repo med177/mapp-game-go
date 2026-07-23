@@ -185,3 +185,31 @@ func TestRecruitPanelDisabledReasonUsesResourceShortage(t *testing.T) {
 		t.Fatalf("beklenen yetersiz altın nedeni, got=%q", got)
 	}
 }
+
+func TestRecruitPanelButtonRemainsEnabledWhenGoldIsInsufficient(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {
+				ID:        "bursa",
+				OwnerID:   "p1",
+				Buildings: []string{"barracks"},
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", Gold: 0, Grain: 100, Iron: 100, Timber: 100, Stone: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {
+				ID:                "infantry",
+				GoldCost:          120,
+				RequiredBldg:      "barracks",
+				RequiredBldgLevel: 1,
+			},
+		},
+	}
+
+	if !RecruitPanelButtonEnabled(gs, "bursa") {
+		t.Fatal("kışlalı bölgede altın yetersiz olsa da Ordu butonu etkin kalmalıydı")
+	}
+}

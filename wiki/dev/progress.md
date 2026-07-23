@@ -1,11 +1,13 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-23: Altın yetersizliği nedeniyle alt HUD'daki `Ordu` butonunun pasifleşmesi düzeltildi. Oyuncuya ait uygun bölgede, Kışla/birim gereksinimleri sağlandığında panel açılabilir kalıyor; kaynak eksikliği kart üzerinde gösteriliyor ve üretim emrinde state/game katmanında doğrulanıyor. Regression: `TestRecruitPanelButtonRemainsEnabledWhenGoldIsInsufficient`; doğrulama: `go test ./internal/render -run 'TestRecruitPanel(ButtonRemainsEnabledWhenGoldIsInsufficient|DisabledReasonUsesResourceShortage)$'`.
 
 - 2026-07-22: Üst HUD'daki aktif araştırma adı tıklanabilir hale getirildi; tıklama alt HUD'daki `Teknoloji` düğmesiyle aynı şekilde teknoloji panelini açıyor. Regression: `TestTurnTechHudTechHitUsesResearchRow`; doğrulama: `go test ./internal/render`.
 
