@@ -268,6 +268,10 @@ func (g *Game) Update() error {
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
 			g.forceDisembarkFleetWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
+		case render.ActionAssignMerchantRoute:
+			g.assignMerchantTradeRoute(action.ArmyID, action.BuildingID)
+		case render.ActionClearMerchantRoute:
+			g.assignMerchantTradeRoute(action.ArmyID, "")
 		case render.ActionStartSiege:
 			g.startSiege(action.ArmyID, action.TargetRegion)
 		case render.ActionAssaultSiege:
@@ -3283,6 +3287,62 @@ func (g *Game) embarkArmyOntoFleet(armyID, fleetID army.ArmyID) {
 	g.gs.RemoveArmy(armyID)
 	g.renderer.SelectedArmy = fleet.ID
 	g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
+}
+
+// assignMerchantTradeRoute oyuncunun merchant filosuna aktif bir ticaret
+// rotası atar veya mevcut görevi kaldırır. Filo rotanın geçerli denizinde
+// değilse atama korunur; merchant bonusu filo doğru denize ulaştığında başlar.
+func (g *Game) assignMerchantTradeRoute(fleetID army.ArmyID, routeKey string) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	fleet := g.gs.Armies[fleetID]
+	if fleet == nil || fleet.OwnerID != string(g.gs.PlayerFactionID) || !fleet.IsNaval || !armyHasMerchantShip(g.gs, fleet) {
+		g.renderer.ShowCombatResult("Bu filo için ticaret rotası atanamaz.")
+		return
+	}
+	if routeKey == "" {
+		if fleet.TradeRouteKey == "" {
+			g.renderer.ShowCombatResult("Filonun atanmış ticaret rotası yok.")
+			return
+		}
+		if !g.gs.SetMerchantTradeRoute(fleetID, "") {
+			g.renderer.ShowCombatResult("Ticaret rotası kaldırılamadı.")
+			return
+		}
+		g.renderer.ShowCombatResult("Merchant filosunun ticaret görevi kaldırıldı.")
+		return
+	}
+
+	var route *economy.TradeRoute
+	for _, candidate := range g.gs.MerchantTradeRoutesForFleet(fleet) {
+		if candidate.AssignmentKey() == routeKey {
+			route = candidate
+			break
+		}
+	}
+	if route == nil || !g.gs.SetMerchantTradeRoute(fleetID, routeKey) {
+		g.renderer.ShowCombatResult("Bu ticaret rotası merchant filosuna atanamaz.")
+		return
+	}
+	message := "Merchant filosu " + routeKey + " ticaret rotasına atandı."
+	if !g.gs.MerchantFleetSupportsTradeRoute(fleet, route) {
+		message += " Bonus için filoyu rotanın ticaret merkezi denizine taşıyın."
+	}
+	g.renderer.ShowCombatResult(message)
+}
+
+func armyHasMerchantShip(gs *state.GameState, fleet *army.Army) bool {
+	if gs == nil || fleet == nil || !fleet.IsNaval {
+		return false
+	}
+	for _, unit := range fleet.Units {
+		unitType := gs.UnitTypes[unit.TypeID]
+		if unit.TypeID == "merchant_ship" || unitType != nil && unitType.Category == army.CategoryNavalTrade {
+			return true
+		}
+	}
+	return false
 }
 
 func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {

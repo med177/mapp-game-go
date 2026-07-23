@@ -80,6 +80,60 @@ func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *eco
 	return false
 }
 
+// MerchantTradeRoutesForFleet oyuncunun/AI'ın merchant filosuna atanabilecek
+// aktif rotaları döner. Rota yalnızca filonun sahibi rota uçlarından biriyse
+// ve rota en az bir geçerli ticaret merkezi denizine sahipse listelenir.
+func (s *GameState) MerchantTradeRoutesForFleet(fleet *army.Army) []*economy.TradeRoute {
+	if s == nil || fleet == nil || !fleet.IsNaval || s.merchantShipCount(fleet) == 0 {
+		return nil
+	}
+
+	ownerID := fleet.OwnerID
+	routes := make([]*economy.TradeRoute, 0, len(s.TradeRoutes))
+	for _, route := range s.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
+			continue
+		}
+		if route.FromFactionID != ownerID && route.ToFactionID != ownerID {
+			continue
+		}
+		if len(s.MerchantTradeRouteSeaRegions(route)) == 0 {
+			continue
+		}
+		routes = append(routes, route)
+	}
+	sort.Slice(routes, func(i, j int) bool {
+		if routes[i].GoldPerUnit != routes[j].GoldPerUnit {
+			return routes[i].GoldPerUnit > routes[j].GoldPerUnit
+		}
+		return routes[i].AssignmentKey() < routes[j].AssignmentKey()
+	})
+	return routes
+}
+
+// SetMerchantTradeRoute merchant filosunun ticaret görevini doğrulayarak
+// değiştirir. Boş rota anahtarı görevi kaldırır.
+func (s *GameState) SetMerchantTradeRoute(fleetID army.ArmyID, routeKey string) bool {
+	if s == nil || fleetID == "" {
+		return false
+	}
+	fleet := s.Armies[fleetID]
+	if fleet == nil || !fleet.IsNaval || s.merchantShipCount(fleet) == 0 {
+		return false
+	}
+	if routeKey == "" {
+		fleet.TradeRouteKey = ""
+		return true
+	}
+	for _, route := range s.MerchantTradeRoutesForFleet(fleet) {
+		if route.AssignmentKey() == routeKey {
+			fleet.TradeRouteKey = routeKey
+			return true
+		}
+	}
+	return false
+}
+
 // RefreshMerchantTradeBonuses runtime rota hacmini gerçek fleet assignment ve
 // konumundan yeniden türetir. Bir rota en fazla iki merchant gemisinden yararlanır.
 func (s *GameState) RefreshMerchantTradeBonuses() {

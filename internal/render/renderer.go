@@ -14,6 +14,7 @@ import (
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -109,16 +110,20 @@ type Renderer struct {
 	techFilterCategory tech.Category
 
 	// Ticaret paneli
-	showTrade         bool
-	tradeTab          TradeTab
-	tradeScroll       int
-	tradeFactionFocus int
-	tradeGoodFocus    int
-	tradeAmount       int
-	tradeListFilter   TradeListFilter
-	tradeListSort     TradeListSort
-	mapMode           MapMode
-	animationTick     int
+	showTrade              bool
+	tradeTab               TradeTab
+	tradeScroll            int
+	tradeFactionFocus      int
+	tradeGoodFocus         int
+	tradeAmount            int
+	tradeListFilter        TradeListFilter
+	tradeListSort          TradeListSort
+	showMerchantRoutePanel bool
+	merchantRouteArmy      army.ArmyID
+	merchantRouteOptions   []*economy.TradeRoute
+	merchantRouteScroll    int
+	mapMode                MapMode
+	animationTick          int
 
 	// Ana menü
 	menuTick        int
@@ -830,6 +835,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.tradeGoodFocus = 0
 	r.tradeHoverIdx = -1
 	r.tradeCenterIdx = -1
+	r.closeMerchantRoutePanel()
 	r.mapMode = MapModeNormal
 	r.CloseEventCodex()
 	r.eventDetail = ""
@@ -1199,6 +1205,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
 		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
+	}
+
+	if r.showMerchantRoutePanel {
+		r.drawMerchantRoutePanel(screen)
 	}
 
 	// 14. Bildirim mesajı (panellerin üstünde görünmeli)

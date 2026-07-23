@@ -18,6 +18,8 @@ const (
 	ActionMoveArmy                 ActionKind = "move_army"
 	ActionEmbarkArmy               ActionKind = "embark_army"
 	ActionDisembarkArmy            ActionKind = "disembark_army"
+	ActionAssignMerchantRoute      ActionKind = "assign_merchant_route"
+	ActionClearMerchantRoute       ActionKind = "clear_merchant_route"
 	ActionStartSiege               ActionKind = "start_siege"
 	ActionAssaultSiege             ActionKind = "assault_siege"
 	ActionLiftSiege                ActionKind = "lift_siege"

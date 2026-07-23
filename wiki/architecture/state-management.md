@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [game-loop, systems/events, systems/economy, render-pipeline, shape-editor]
 ---
 
@@ -232,6 +232,8 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 `Army.Morale` ordunun kalıcı ikmal moralidir. `CurrentMorale()` eski kayıt veya fixture'larda eksik alanı 100 başlangıç morali olarak normalize eder; `ApplyMoraleDelta()` değeri 1–100 aralığında tutar. Compact save/load içindeki `mo` alanıyla taşınır ve `Army.TotalStrength()` içinde savaş/AI güç değerlendirmelerine uygulanır.
 
 `TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; save migration gerektirmez.
+
+Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeRoutesForFleet()` yalnız filonun sahibi olan fraksiyonun uçlarında bulunan, aktif ve geçerli ticaret merkezi denizine sahip rotaları döndürür; `SetMerchantTradeRoute()` oyuncu UI'sından gelen atamayı aynı state doğrulamasından geçirir. Rota anahtarı save/load ile korunur, merchant hacim bonusu ise ekonomi tick'inde gerçek filo konumu ve görevinden yeniden türetilir (`internal/state/merchant_trade.go`).
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 

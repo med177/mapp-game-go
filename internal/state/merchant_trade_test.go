@@ -60,6 +60,29 @@ func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 	}
 }
 
+func TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter(t *testing.T) {
+	gs, route := merchantTradeTestState()
+	gs.TradeRoutes = append(gs.TradeRoutes,
+		&economy.TradeRoute{FromFactionID: "genoa", ToFactionID: "mamluk", Good: economy.GoodCloth, AmountPerTurn: 1, GoldPerUnit: 6},
+		&economy.TradeRoute{FromFactionID: "venice", ToFactionID: "mamluk", Good: economy.GoodIron, AmountPerTurn: 1, GoldPerUnit: 9, SuspendedTurns: 1},
+	)
+	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}
+
+	routes := gs.MerchantTradeRoutesForFleet(gs.Armies["merchant"])
+	if len(routes) != 1 || routes[0] != route {
+		t.Fatalf("filo yalnız kendi aktif merkez rotasını görmeliydi: %+v", routes)
+	}
+	if !gs.SetMerchantTradeRoute("merchant", route.AssignmentKey()) || gs.Armies["merchant"].TradeRouteKey != route.AssignmentKey() {
+		t.Fatalf("geçerli rota merchant filosuna atanmalıydı")
+	}
+	if gs.SetMerchantTradeRoute("merchant", "genoa->mamluk") {
+		t.Fatalf("başka fraksiyonun rotası merchant filosuna atanamamalıydı")
+	}
+	if !gs.SetMerchantTradeRoute("merchant", "") || gs.Armies["merchant"].TradeRouteKey != "" {
+		t.Fatalf("boş rota anahtarı görevi kaldırmalıydı")
+	}
+}
+
 func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	gs, route := merchantTradeTestState()
 	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}

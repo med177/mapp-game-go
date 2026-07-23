@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-07-22
+last_updated: 2026-07-23
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -115,6 +115,11 @@ filolarını yeniden değerlendirir:
   yetersizse merchant katkısı bedava gelir üretmez; rota o tur gerçekleşmez.
 - AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
   yönünü korur ve save/load sonrası yeniden bağlanabilir.
+- Oyuncu seçili merchant filosundaki `ROTA ATA` düğmesiyle aynı geçerli rota listesinden
+  görev seçebilir veya görevi kaldırabilir. Atama `SetMerchantTradeRoute()` ile doğrulanır;
+  filo rota uçlarının geçerli denizinde değilse görev kayıtlı kalır ancak merchant bonusu
+  filo doğru denize ulaşana kadar uygulanmaz. AI tarafı aynı `TradeRouteKey` modelini
+  otomatik rota seçimi ve deniz hareketiyle kullanır.
 
 Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:
 

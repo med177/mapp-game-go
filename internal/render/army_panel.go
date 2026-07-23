@@ -265,6 +265,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		}
 	}
 	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç")
+	drawMerchantRouteFooter(screen, gs, a, layout)
 
 }
 
@@ -921,6 +922,9 @@ func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyI
 		return true
 	}
 	if SplitButtonHitTest(fx, fy, gs, aid, selectedUnitMaps...) || MergeButtonHitTest(fx, fy, gs, aid) {
+		return true
+	}
+	if merchantRouteButtonHit(fx, fy, gs, aid) {
 		return true
 	}
 	if CommanderPortraitHitTest(fx, fy, gs, aid) {

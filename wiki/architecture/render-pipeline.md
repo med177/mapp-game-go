@@ -37,6 +37,8 @@ Oyuncunun vassal zincirindeki ordular, oyuncu orduları gibi haritada gerçek bi
 
 Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyuncu ordusu için mevcut HP'ye göre `Güç: saldırı / savunma` değerini gösterir. Düşman ordularında aynı alan yalnız istihbaratla açılan birim tiplerinden hesaplanan `Görünen güç` değerini taşır; gizli birimlerin gücü toplama dahil edilmez (`internal/render/army_panel.go`).
 
+Oyuncuya ait merchant filosu seçildiğinde ordu detay panelinin alt bandında `ROTA ATA` düğmesi ve mevcut görev durumu görünür. Düğme, geçerli aktif ticaret rotalarını modal listede gösterir; oyuncu rotayı seçebilir veya görevi kaldırabilir. Filo rota denizinde değilse atama korunur fakat `deniz bekleniyor` uyarısı görünür; modal input'u normal harita/ordu input'unu bloke eder (`internal/render/{army_panel.go,merchant_route_panel.go,renderer_input.go}`, `internal/render/action.go`, `internal/game/game.go`).
+
 Üst-sol durum HUD'unda oyuncu devletinin amblem alanı, aktif senaryonun `sprites/flags/<faction-id>.png` dosyasını bulduğunda 58×58 px kare bayrağı gösterir. Aynı kare rozet devlet bilgi paneli başlığında da devlet adının solunda 44×44 px ölçüyle kullanılır. Bölge bilgi paneli sahibinin bayrağı panelin üst-sol çerçevesine bitişik, çerçevenin hemen üstünde 48×48 px kimlik rozeti olarak çizilir; bölge ve sahip devlet adlarının mevcut sol başlık konumu korunur. Tur bitimindeki AI hamle paneli, 620×180 px genişletilmiş düzen içinde aktif hamleyi yapan faction ID'sini taşıyarak ülke adının solunda sarı iç çerçevesiz 128×128 px kare bayrak rozeti gösterir. AI adımının mesajı bu panelde gösterilir; aynı mesaj genel `Bilgi` popup'ında ikinci kez çizilmez. Tur başında önceki oyuncu bildirim popup'ı da temizlenir. Bayrak asset'i yoksa ilgili kare zeminde devlet baş harfi fallback'i korunur. Bayraklar ilk kullanımda yüklenir, yol bazlı cache'lenir ve senaryo değişiminde cache temizlenir (`internal/render/panel.go`, `renderer.go`).
 
 Kuşatma emri paneli seçili ordu detay paneli görünür kalacak şekilde onun üstündeki boş alana yerleştirilir; böylece iki panelin alt-üst örtüşmesi engellenir. Kuşatma paneli butonları kendi alanında önceliklidir, panel dışındaki input ve imleç normal ordu paneline geçebilir (`internal/render/renderer_dialogs.go`, `renderer_input.go`, `cursor.go`). Recruit eğitim kuyruğu kartlarında birim adı ve üretim süresi iki satırda gösterilir; beyaz footer kartın tam genişliğini kapatır ve sprite kenarlardan görünmez (`internal/render/recruit_panel.go`).
@@ -368,7 +370,8 @@ Tek ordu  →  bölge merkezinde
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `tile.go` | Arazi renk/doku katmanı |
 | `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; event log kaydırma geometrisi; minimap'te ordu konumları |
-| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL butonu |
+| `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL ve merchant rota düğmesi |
+| `merchant_route_panel.go` | Oyuncu merchant filosu için rota atama modalı, liste scroll'u ve hit-test |
 | `diplom.go` | Diplomasi paneli UI + input |
 | `tech_panel.go` | Teknoloji ağacı paneli + input |
 | `pause_menu.go` | Oyun içi duraklama menüsü (ESC) |
