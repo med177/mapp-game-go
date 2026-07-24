@@ -89,3 +89,15 @@ func TestPeaceAssessmentUsesLossesDurationObjectiveAndCooldown(t *testing.T) {
 		t.Fatalf("iki tarafın kabul ettiği barış uygulanmadı: %+v", result)
 	}
 }
+
+func TestPeaceAssessmentRecognizesLongWarStalemate(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 20
+	ledger := gs.WarLedgerFor("a", "b")
+	ledger.LastBattleTurn = 5
+
+	assessment := AssessPeaceDesire(gs, "a", "b")
+	if !assessment.Stalemate || !assessment.ShouldPropose() {
+		t.Fatalf("uzun süre sonuçsuz kalan savaş barış baskısı üretmeliydi: %+v", assessment)
+	}
+}

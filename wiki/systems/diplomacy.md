@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-23
+last_updated: 2026-07-24
 related: [world/factions, systems/ai, architecture/state-management]
 ---
 
@@ -203,7 +203,13 @@ AI:
 - 1300'de savaşın ilk üç turunda normal barış denemez; objective tamamlanması, toprak ve
   birlik kaybı, süre/durgunluk, güç ve ekonomik stres, çoklu savaş ve başkent tehdidi
   barış baskısını belirler. Başkent tehdidi veya askerî çöküş erken kapıyı aşabilir;
-  reddedilen teklif aynı savaşta üç tur cooldown'a girer
+  12 turu geçen ve son 8 turda muharebe/aktif kuşatma üretmeyen savaşlar otomatik
+  `stalemate` kabul edilerek barış teklifine açılır; reddedilen teklif aynı savaşta üç
+  tur cooldown'a girer
+- `warObjectiveCompleted()` yalnız `expand` objective'ini savaş hedefi tamamlanması
+  sayar. `defend` veya `consolidate` planı, savaşın kendisini bitirmiş gibi barış
+  baskısını yanlışlıkla azaltamaz; uzun durgunlukta iki taraf da aynı stalemate kapısından
+  barışı kabul edebilir
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar

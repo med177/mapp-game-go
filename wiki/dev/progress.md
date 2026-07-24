@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-24: AI savaş temposu yeniden değerlendirildi. Savunma/konsolidasyon planına
+  sahip devletlerin aktif savaş cephelerinde kritik tehdit yoksa tek saha ordusu
+  kontrollü `assault`/`siege` rolüne atanıyor; yeni savaşlarda 12 turluk seferberlik
+  korunuyor. 12 turdan uzun ve son 8 turu muharebesiz/kuşatmasız savaşlar stalemate
+  barış kapısını açıyor; `defend/consolidate` planları savaş hedefi tamamlanmış sayılmıyor.
+  Eski `difficulty=0` kayıtları Normal'e göç ediyor. Regression: `internal/ai`,
+  `internal/diplomacy`, `internal/save`; denge: `Test1300ScenarioGrainEconomyBands`.
+
 - 2026-07-24: Hasarlı donanmalar kendi limanına bağlandığında tur çözümündeki tamirat durumu artık ordu paneline de yansıyor. `Army.CanReplenishIn()` dock edilmiş kendi limanını tanıyor; hasarlı gemi kartlarının sağ üstünde mevcut yeşil `+` rozeti ve başlıkta `Takviye aktif` görünür. Açık deniz, düşman limanı ve limansız kıyı göstergeleri kapalı kalıyor. Regression: `TestNavalCanReplenishInOwnPort`, `TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort`; doğrulama: `go test ./internal/army ./internal/render ./internal/game`.
 
 - 2026-07-24: Ordu bölme ve birleştirme sonrasında, o turda henüz hareket edilmemişse hareket havuzu yeni kompozisyonun en yavaş birimine göre yeniden hesaplanıyor. Daha önce hareket edilmiş ordularda puan iadesi yapılmıyor. Regression: `TestSplitArmyRefreshesUnmovedPartsBySlowestUnit`, `TestMergeArmiesRefreshesUnmovedResultBySlowestUnit`, `TestSplitArmyDoesNotRefundMovementAlreadyUsedThisTurn`; doğrulama: `go test ./...`.

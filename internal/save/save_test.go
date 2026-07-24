@@ -108,6 +108,14 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	}
 }
 
+func TestInvalidDifficultyMigratesToNormal(t *testing.T) {
+	restored := &state.GameState{}
+	applyCampaignSaveState(restored, campaignSaveState{Difficulty: 0})
+	if restored.Difficulty != 2 {
+		t.Fatalf("geçersiz kayıt zorluğu normale göç etmeliydi: got=%d", restored.Difficulty)
+	}
+}
+
 func TestArmyCommanderRoundTrip(t *testing.T) {
 	commander := army.NewCommander("cmd_1", "Mihri Hanım")
 	commander.Experience = army.CommanderLevel3XP

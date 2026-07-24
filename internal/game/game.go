@@ -2653,7 +2653,10 @@ func (g *Game) startPreparePlayerTurn() {
 
 // resetToNewGame state'i temizler ve senaryo seçimine geçer.
 func (g *Game) resetToNewGame() {
-	difficulty := g.gs.Difficulty
+	difficulty := g.renderer.CurrentSettings.Difficulty
+	if difficulty < 1 || difficulty > 3 {
+		difficulty = 2
+	}
 	audio.StopMusic()
 	g.finishAITurnSequence()
 	gs := &state.GameState{

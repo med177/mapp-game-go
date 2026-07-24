@@ -214,3 +214,27 @@ func TestAssaultRoleSkipsAlreadyConqueredPriorityRegion(t *testing.T) {
 		t.Fatalf("ele geçirilmiş ilk hedef atlanıp düşmanda kalan bölge seçilmeliydi: %+v", assignment)
 	}
 }
+
+func TestActiveWarOverridesDefensivePlanForNonCriticalFront(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Regions["capital"].Neighbors = []world.RegionID{"rear", "front"}
+	gs.Regions["enemy_border"].Neighbors = []world.RegionID{"front", "enemy_rear"}
+	delete(gs.Armies, "enemy")
+	gs.AIPlans["ai"] = &state.AIPlanState{
+		ObjectiveID:     "hold_frontier",
+		Kind:            state.AIObjectiveDefend,
+		TargetFactionID: "enemy",
+		TargetRegionIDs: []world.RegionID{"rear"},
+		ReassessTurn:    20,
+	}
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Turn = 20
+	ledger := gs.BeginWarLedger("ai", "enemy")
+	ledger.StartedTurn = 1
+
+	ctx := prepareStrategicContext(gs, "ai")
+	assignment := ctx.ArmyAssignments["strong"]
+	if assignment.Role != AIArmyRoleAssault || assignment.FrontFactionID != "enemy" || assignment.AnchorRegionID != "enemy_border" {
+		t.Fatalf("aktif kritik olmayan savaş cephesi savunma planına rağmen hücum almalıydı: %+v", assignment)
+	}
+}

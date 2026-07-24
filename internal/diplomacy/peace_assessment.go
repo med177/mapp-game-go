@@ -23,6 +23,7 @@ type PeaceAssessment struct {
 	CapitalThreat    bool
 	MilitaryCollapse bool
 	ObjectiveDone    bool
+	Stalemate        bool
 	OwnLosses        int
 	EnemyLosses      int
 	OwnRegionsLost   int
@@ -30,7 +31,7 @@ type PeaceAssessment struct {
 }
 
 func (a PeaceAssessment) ShouldPropose() bool {
-	return a.Eligible && a.Score >= a.Threshold
+	return a.Eligible && (a.Score >= a.Threshold || a.Stalemate)
 }
 
 // AssessPeaceDesire aktif savaşı actor perspektifinden değerlendirir. Bu yeni
@@ -116,7 +117,40 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	if ledger.LastPeaceOfferTurn > 0 && gs.Turn-ledger.LastPeaceOfferTurn < peaceOfferCooldown {
 		assessment.Eligible = false
 	}
+	assessment.Stalemate = isWarStalemate(gs, actor, opponent, ledger)
 	return assessment
+}
+
+func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) bool {
+	if gs == nil || ledger == nil || gs.ScenarioID != "1300_ottoman_rise" {
+		return false
+	}
+	warTurns := gs.Turn - ledger.StartedTurn
+	if warTurns < 12 {
+		return false
+	}
+	lastActionTurn := ledger.LastBattleTurn
+	if lastActionTurn == 0 {
+		lastActionTurn = ledger.StartedTurn
+	}
+	if gs.Turn-lastActionTurn < 8 {
+		return false
+	}
+	for regionID, siege := range gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		attacker := gs.Armies[siege.AttackerArmyID]
+		target := gs.Regions[regionID]
+		if attacker == nil || target == nil {
+			continue
+		}
+		if (attacker.OwnerID == string(actor) && target.OwnerID == string(opponent)) ||
+			(attacker.OwnerID == string(opponent) && target.OwnerID == string(actor)) {
+			return false
+		}
+	}
+	return true
 }
 
 func warCasualtiesFor(ledger *state.WarLedger, actor faction.FactionID) (int, int) {
@@ -198,7 +232,7 @@ func warObjectiveCompleted(gs *state.GameState, actor, opponent faction.FactionI
 		return false
 	}
 	plan := gs.AIPlans[actor]
-	if plan == nil || plan.TargetFactionID != opponent || len(plan.TargetRegionIDs) == 0 {
+	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != opponent || len(plan.TargetRegionIDs) == 0 {
 		return false
 	}
 	for _, regionID := range plan.TargetRegionIDs {

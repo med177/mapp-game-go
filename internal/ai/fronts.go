@@ -353,18 +353,59 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 
 	plan := gs.AIPlans[ctx.FactionID]
 	offensiveAnchor, offensiveTarget := aiOffensiveAnchor(ctx, plan)
+	offensiveFrontAssigned := false
 	for _, front := range ctx.Fronts {
-		if !front.AtWar || front.ThreatScore <= 0 || front.AnchorRegionID == "" {
+		if !front.AtWar || front.AnchorRegionID == "" {
 			continue
 		}
-		if (front.ObjectiveRelated || front.EnemyFactionID == offensiveTarget) && !front.CriticalThreat {
+		// Genişleme objective'i zaten aşağıdaki genel objective hücumuyla
+		// yürütülür. Buradaki özel rol yalnız savunma/konsolidasyon planının
+		// aktif savaşı tamamen kilitlemesini önlemek içindir.
+		if plan != nil && plan.Kind == state.AIObjectiveExpand {
+			if front.ThreatScore <= 0 || ((front.ObjectiveRelated || front.EnemyFactionID == offensiveTarget) && !front.CriticalThreat) {
+				continue
+			}
+			candidate := nearestUnassignedArmy(ctx, mobile, front.AnchorRegionID, strongest, true)
+			if candidate == nil {
+				continue
+			}
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
 			continue
 		}
 		candidate := nearestUnassignedArmy(ctx, mobile, front.AnchorRegionID, strongest, true)
 		if candidate == nil {
 			continue
 		}
-		ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
+		if !aiActiveWarMatureForOffense(gs, ctx.FactionID, front.EnemyFactionID) {
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "aktif savaşta seferberlik"}
+			continue
+		}
+		if front.CriticalThreat || front.CapitalThreat {
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
+			continue
+		}
+		attackAnchor := world.RegionID("")
+		if len(front.EnemyRegions) > 0 {
+			attackAnchor = front.EnemyRegions[0]
+		}
+		if attackAnchor == "" {
+			attackAnchor = offensiveAnchor
+		}
+		if attackAnchor == "" {
+			continue
+		}
+		if offensiveFrontAssigned {
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "ikincil savaş cephesi savunması"}
+			continue
+		}
+		role := AIArmyRoleAssault
+		reason := "aktif savaş cephesi hücumu"
+		if candidate.HasSiegeUnits(gs.UnitTypes) {
+			role = AIArmyRoleSiege
+			reason = "aktif savaş cephesi kuşatması"
+		}
+		ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: role, AnchorRegionID: attackAnchor, FrontFactionID: front.EnemyFactionID, Reason: reason}
+		offensiveFrontAssigned = true
 	}
 
 	for _, armyRef := range mobile {
@@ -390,6 +431,14 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 		}
 		ctx.ArmyAssignments[armyRef.ID] = assignment
 	}
+}
+
+func aiActiveWarMatureForOffense(gs *state.GameState, actor, opponent faction.FactionID) bool {
+	if gs == nil || actor == "" || opponent == "" {
+		return false
+	}
+	ledger := gs.WarLedgerFor(actor, opponent)
+	return ledger != nil && gs.Turn-ledger.StartedTurn >= 12
 }
 
 func aiOffensiveAnchor(ctx *StrategicContext, plan *state.AIPlanState) (world.RegionID, faction.FactionID) {

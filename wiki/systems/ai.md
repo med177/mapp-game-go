@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-23
+last_updated: 2026-07-24
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -477,6 +477,15 @@ savaşı sonuçlandırır. Yeni proaktif savaş da saldırı rolü gücü ile re
 değilse veya kritik merkez tehdit altındaysa ertelenir. Kuşatma birimi olmadan kuşatma
 başlatılabilir ve aktif kuşatmada genel hücum da seçilebilir; kuşatma birimi kuşatma
 ilerlemesini hızlandırır, ancak genel hücum için zorunlu değildir.
+
+Savunma veya konsolidasyon objective'i aktif bir savaşı pasif savunmaya kilitlemez.
+`assignAIArmyRoles()` bu durumda kritik/başkent tehdidi yoksa en uygun tek saha ordusunu
+aktif savaşın düşman sınırına `assault` veya kuşatma birimi varsa `siege` rolüyle gönderir;
+diğer savaş cepheleri savunmada tutulur. Yeni başlayan savaşlarda önce 12 turluk
+seferberlik penceresi korunur; savaş ledger'ı bu eşiği geçtiğinde cephe yeniden hücum
+edebilir. Genişleme objective'leri kendi mevcut hücum akışını kullanmaya devam eder.
+Bu ayrım, kayıtlı savaşların uzun süre sonuçsuz kalmasını düzeltirken 1300 açılışındaki
+genişleme ve tahıl tempo bantlarını bozmaz.
 
 ### Geri Çekilme ve Takviye
 

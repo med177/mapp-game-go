@@ -284,6 +284,12 @@ ve runtime-only tutulur. Save yüklemesinde baz senaryoyla yeniden kurulurlar; b
 statik profil ile plan/risk/hareket politikası save payload'ında tekrar edilmez ve eski
 save'ler sonraki AI turunda güncel senaryo konfigürasyonunu kullanabilir.
 
+Save göçünde `difficulty` yalnız `1..3` aralığında geçerli kabul edilir. Eski kayıtlar
+bu alanı `0` taşıyabiliyorsa `internal/save/compact.go:applyCampaignSaveState()` değeri
+Normal (`2`) olarak düzeltir. Yeni oyun reset'i ise artık boş/önceki `GameState` değerini
+değil ayarlar ekranındaki `renderer.CurrentSettings.Difficulty` değerini kullanır; böylece
+oyuncu zorluk seçimi ilk turda AI politikasına gerçekten ulaşır.
+
 `Game` katmanında ayrıca serialize edilmeyen bir `pendingConquestDecisions` kuyruğu vardır. Bu runtime kuyruk, oyuncu savaşta bir devletin son kara toprağını düşürdüğünde battle report ile nihai ilhak/vassallık kararını birbirinden ayırmak için kullanılır; save/load veya yeni oyun başlangıcında temizlenir.
 
 Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar. Ana menüde `Devam Et`, `autosave` ile `quicksave` arasından en yeni olanı açar.

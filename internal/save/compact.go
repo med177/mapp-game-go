@@ -583,8 +583,13 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	if saved.PlayerFactionID != "" {
 		gs.PlayerFactionID = saved.PlayerFactionID
 	}
-	if saved.Difficulty > 0 {
+	if saved.Difficulty >= 1 && saved.Difficulty <= 3 {
 		gs.Difficulty = saved.Difficulty
+	}
+	if gs.Difficulty < 1 || gs.Difficulty > 3 {
+		// Eski kayıtlar zorluk alanını 0 olarak taşıyabiliyor. 0, geçerli bir
+		// zorluk değildir; normal profil güvenli göç varsayılanıdır.
+		gs.Difficulty = 2
 	}
 	gs.AutoGrainExport = saved.AutoGrainExport
 	gs.DevelopmentMode = saved.DevelopmentMode
