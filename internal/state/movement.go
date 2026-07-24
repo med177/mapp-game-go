@@ -60,3 +60,24 @@ func (s *GameState) RefreshArmyMovePoints(reset bool) {
 		}
 	}
 }
+
+// RefreshArmyMovePointsAfterCompositionChange kompozisyonu değişen bir ordunun
+// bu turdaki hareket havuzunu yeniden hesaplar. movementUsed false ise yeni
+// havuz tamamen kullanılabilir; true ise kalan puan geri verilmez.
+func (s *GameState) RefreshArmyMovePointsAfterCompositionChange(a *army.Army, movementUsed bool) {
+	if s == nil || a == nil {
+		return
+	}
+
+	a.MaxMovePoints = s.ArmyMaxMovePoints(a)
+	if !movementUsed {
+		a.MovePoints = a.MaxMovePoints
+		return
+	}
+	if a.MovePoints > a.MaxMovePoints {
+		a.MovePoints = a.MaxMovePoints
+	}
+	if a.MovePoints < 0 {
+		a.MovePoints = 0
+	}
+}

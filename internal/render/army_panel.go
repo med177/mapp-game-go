@@ -140,7 +140,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	DrawText(screen, mpStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
-	if a.CanReplenishIn(gs.Regions) && !gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits() {
+	if armyCanRenderReplenishment(gs, a) {
 		healStr := "Takviye aktif"
 		healW := MeasureText(healStr, FaceSmall)
 		DrawText(screen, healStr,
@@ -150,6 +150,10 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
 		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
 			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{210, 96, 82, 235})
+	}
+	if grainNeed := gs.EffectiveArmyGrainUpkeep(a); grainNeed > 0 {
+		DrawText(screen, "Tahıl ihtiyacı: "+itoa(grainNeed)+" / tur",
+			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+14), FaceSmall, color.RGBA{205, 185, 120, 235})
 	}
 	if selectedCount > 0 {
 		selectedText := "Bölünecek: " + itoa(selectedCount)
@@ -200,7 +204,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		u := a.Units[unitIndex]
 		utype := gs.UnitTypes[u.TypeID]
 		hpPct := u.HPPercent()
-		isReplenishing := a.CanReplenishIn(gs.Regions) && !gs.IsArmyDefendingSiegedRegion(a) && u.CurrentHP < army.MaxUnitHP
+		isReplenishing := armyCanRenderReplenishment(gs, a) && u.CurrentHP < army.MaxUnitHP
 
 		// Kart arka planı sabit beyaz.
 		cardBg := color.RGBA{255, 255, 255, 245}
@@ -267,6 +271,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç", armyTransportFooterText(gs, a))
 	drawMerchantRouteFooter(screen, gs, a, layout)
 
+}
+
+func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
+	return gs != nil && a != nil && a.CanReplenishIn(gs.Regions) &&
+		!gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits()
 }
 
 func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {

@@ -418,6 +418,7 @@ type RegionLogisticsStatus struct {
 	OwnerID           string
 	LocalProduction   int
 	SettlementBuffer  int
+	GranarySupport    int
 	ReserveSupport    int
 	BlockadePercent   int
 	Demand            int

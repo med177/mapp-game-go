@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-24: Hasarlı donanmalar kendi limanına bağlandığında tur çözümündeki tamirat durumu artık ordu paneline de yansıyor. `Army.CanReplenishIn()` dock edilmiş kendi limanını tanıyor; hasarlı gemi kartlarının sağ üstünde mevcut yeşil `+` rozeti ve başlıkta `Takviye aktif` görünür. Açık deniz, düşman limanı ve limansız kıyı göstergeleri kapalı kalıyor. Regression: `TestNavalCanReplenishInOwnPort`, `TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort`; doğrulama: `go test ./internal/army ./internal/render ./internal/game`.
+
+- 2026-07-24: Ordu bölme ve birleştirme sonrasında, o turda henüz hareket edilmemişse hareket havuzu yeni kompozisyonun en yavaş birimine göre yeniden hesaplanıyor. Daha önce hareket edilmiş ordularda puan iadesi yapılmıyor. Regression: `TestSplitArmyRefreshesUnmovedPartsBySlowestUnit`, `TestMergeArmiesRefreshesUnmovedResultBySlowestUnit`, `TestSplitArmyDoesNotRefundMovementAlreadyUsedThisTurn`; doğrulama: `go test ./...`.
+
+- 2026-07-24: Bölgesel tahıl lojistiği ambar rezerviyle düzeltildi. Mevcut fraksiyon stoku, bölgedeki ambar kapasitesi kadar askerî ikmale aktarılabiliyor; aynı devletin bölgeleri rezervi deterministik biçimde paylaşıyor ve başkent önceliği korunuyor. Bölge panelinde tahıl `+kalan/toplam` formatında, ordu panelinde tur başı tahıl ihtiyacı gösteriliyor. Kapsam: `internal/{game/{resolution.go,resolution_test.go},state/state.go,render/{panel.go,panel_test.go,army_panel.go}}`, `wiki/systems/economy.md`.
+
 - 2026-07-24: Savaş ilanı koalisyon önizleme modalında uzun kesin katılanlar ve çağrılabilir müttefik listelerinin birbirinin üzerine çizilmesi düzeltildi. Sol ve sağ cephedeki iki liste alanı ayrı viewport ve bağımsız mouse-wheel scroll state'i kullanıyor; her listenin scrollbar'ı yalnız kendi taşan içeriğinde gösteriliyor ve checkbox hit-test'i yalnız görünür satırlara uygulanıyor. Regression: `TestWarConfirmListViewportsDoNotOverlap`, `TestWarConfirmScrollTargetIsLocalToViewport`; doğrulama: `go test ./internal/render -run 'TestWarConfirm'`.
 
 - 2026-07-24: Bölge panelindeki vergi `+/-` düğmeleri 18×16 px'e küçültüldü ve içerik sağına hizalandı. Etkileşimli vergi barı iki uçtan da düğme genişliği kadar içeri alındı; tam uzunluklu barın butonların altında kalmasına neden olan çift çizim kaldırıldı. Regression: `TestRegionTaxButtonsUseCompactAlignedRects`, `TestRegionTaxInteractiveBarStopsBeforeDecreaseButton`; doğrulama: `go test ./internal/render`.

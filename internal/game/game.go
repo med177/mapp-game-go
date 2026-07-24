@@ -4424,10 +4424,11 @@ func (g *Game) splitArmy(aid army.ArmyID, selectedIndices ...int) {
 }
 
 func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
+	movementUsed := a.MaxMovePoints > 0 && a.MovePoints < a.MaxMovePoints
 
 	g.gs.NextArmySeq++
 	newID := army.ArmyID(fmt.Sprintf("army_%s_%d", string(g.gs.PlayerFactionID), g.gs.NextArmySeq))
-	g.gs.Armies[newID] = &army.Army{
+	newArmy := &army.Army{
 		ID:                 newID,
 		OwnerID:            a.OwnerID,
 		RegionID:           a.RegionID,
@@ -4439,6 +4440,9 @@ func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
 		IsNaval:            a.IsNaval,
 		TurnsWithoutPort:   a.TurnsWithoutPort,
 	}
+	g.gs.Armies[newID] = newArmy
+	g.gs.RefreshArmyMovePointsAfterCompositionChange(a, movementUsed)
+	g.gs.RefreshArmyMovePointsAfterCompositionChange(newArmy, movementUsed)
 	// Bölünen parçayı doğrudan seçili bırak; kuşatma ordusu bölgedeki diğer
 	// parçayı korurken oyuncu yeni parçaya hareket emri verebilsin.
 	if g.renderer != nil {
@@ -4472,6 +4476,8 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 	if target == nil {
 		return
 	}
+	targetMovementUsed := target.MaxMovePoints > 0 && target.MovePoints < target.MaxMovePoints
+	selectedMovementUsed := a.MaxMovePoints > 0 && a.MovePoints < a.MaxMovePoints
 	capacity := army.MaxArmySize - len(target.Units)
 	if capacity <= 0 {
 		g.renderer.ShowCombatResult("Hedef ordu dolu!")
@@ -4483,6 +4489,7 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 	}
 	target.Units = append(target.Units, transfer...)
 	a.Units = a.Units[len(transfer):]
+	g.gs.RefreshArmyMovePointsAfterCompositionChange(target, targetMovementUsed || selectedMovementUsed)
 
 	if len(a.Units) == 0 {
 		if a.Commander != nil && target.Commander == nil {
@@ -4496,6 +4503,8 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 		g.transferSiegeToRemainingArmy(a.RegionID, aid)
 		g.gs.RemoveArmy(aid)
 		g.renderer.SelectedArmy = targetID
+	} else {
+		g.gs.RefreshArmyMovePointsAfterCompositionChange(a, selectedMovementUsed)
 	}
 	g.renderer.AddEvent(fmt.Sprintf("Ordular birleşti: %d birim", len(target.Units)))
 }

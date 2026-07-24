@@ -1016,6 +1016,40 @@ func TestRegionalLogisticsUsesProductionAfterCivilianDemand(t *testing.T) {
 	}
 }
 
+func TestRegionalLogisticsUsesExistingGrainThroughGranary(t *testing.T) {
+	gs := &state.GameState{
+		Month:           4,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 50},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID: "home", OwnerID: "player", Buildings: []string{"granary"},
+			},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"granary": {ID: "granary", StorageCapacity: 100},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"field": {ID: "field", OwnerID: "player", RegionID: "home", Units: repeatedUnits("inf", 1, 100)},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 10},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.RegionLogistics["home"]
+	if status.GranarySupport != 40 {
+		t.Fatalf("ekonomi tick'i sonrası kalan 40 tahıl ambardan bölgesel ikmale açılmalıydı, got=%+v", status)
+	}
+	if status.Overload > 0 || status.TotalHPDamage != 0 {
+		t.Fatalf("mevcut tahıl ve ambar varken bölgesel zayiat olmamalıydı, got=%+v", status)
+	}
+}
+
 func TestRegionalLogisticsReducesPortBufferUnderBlockade(t *testing.T) {
 	gs := &state.GameState{
 		Month:           4,
@@ -1190,9 +1224,9 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 			"ally":   {ID: "ally"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home":      {ID: "home", OwnerID: "player"},
+			"home":      {ID: "home", OwnerID: "player", Buildings: []string{"port"}},
 			"enemy":     {ID: "enemy", OwnerID: "enemy"},
-			"ally_port": {ID: "ally_port", OwnerID: "ally"},
+			"ally_port": {ID: "ally_port", OwnerID: "ally", Buildings: []string{"port"}},
 			"sea":       {ID: "sea", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{

@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestDiplomacyOfferQuotaHUDText(t *testing.T) {
@@ -99,5 +100,18 @@ func TestFactionMilitaryPowerStandingRanksSelectedFaction(t *testing.T) {
 	power, rank, count := factionMilitaryPowerStanding(gs, "selected")
 	if power != 20 || rank != 2 || count != 3 {
 		t.Fatalf("secili faction askeri standing yanlis: power=%d rank=%d count=%d", power, rank, count)
+	}
+}
+
+func TestRegionGrainProductionDisplayShowsMilitaryRemainderAndTotal(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {ID: "bursa", OwnerID: "player", Population: 1000, BaseGrainOutput: 65},
+		},
+	}
+	region := gs.Regions["bursa"]
+
+	if got := regionGrainProductionDisplayValue(gs, region, state.RegionProductionSummary{Grain: 65}); got != "+15/65" {
+		t.Fatalf("tahıl üretiminde sivil tüketim sonrası kalan/toplam görünmeliydi, got=%q", got)
 	}
 }

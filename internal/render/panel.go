@@ -1984,7 +1984,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	ly += 8
 
 	// Üretim — iki sütun
-	drawRegionProductionGrid(screen, lx, ly, sepW, production)
+	drawRegionProductionGrid(screen, gs, region, lx, ly, sepW, production)
 	ly += regionPanelStatRowGap * 4
 
 	drawRegionMeterRow(screen, lx, ly, sepW, "Memnuniyet", "%"+itoa(region.Satisfaction), float64(region.Satisfaction)/100, satisfactionColor(region.Satisfaction))
@@ -2442,6 +2442,10 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 	}
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Hareket", itoa(a.MovePoints)+"/"+itoa(a.MaxMovePoints), ColorGray, mpCol)
 	ly += 18
+	if grainNeed := gs.EffectiveArmyGrainUpkeep(a); grainNeed > 0 {
+		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Tahıl", itoa(grainNeed)+" / tur", ColorGray, color.RGBA{205, 185, 120, 235})
+		ly += 18
+	}
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
 		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Lojistik", "-"+itoa(logistics.DamagePerUnit)+" HP / birim", ColorGray, ColorRed)
 		ly += 18
@@ -4102,21 +4106,22 @@ func drawRegionMeterLabels(screen *ebiten.Image, x, y float64, label, value stri
 	drawUILabel(screen, gameui.Rect{X: valueX, Y: y, W: float64(regionPanelMeterValueW)}, value, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 }
 
-func drawRegionProductionGrid(screen *ebiten.Image, x, y float64, width float32, production state.RegionProductionSummary) {
+func drawRegionProductionGrid(screen *ebiten.Image, gs *state.GameState, region *world.Region, x, y float64, width float32, production state.RegionProductionSummary) {
 	type productionItem struct {
 		kind  economy.ResourceKind
-		value int
+		value string
 		col   color.Color
 	}
 
+	grainValue := regionGrainProductionDisplayValue(gs, region, production)
 	items := [...]productionItem{
-		{kind: economy.ResourceGold, value: production.Gold, col: ColorGold},
-		{kind: economy.ResourceGrain, value: production.Grain, col: ColorWhite},
-		{kind: economy.ResourceIron, value: production.Iron, col: color.RGBA{200, 205, 215, 255}},
-		{kind: economy.ResourceTimber, value: production.Timber, col: color.RGBA{145, 205, 145, 255}},
-		{kind: economy.ResourceStone, value: production.Stone, col: color.RGBA{185, 185, 185, 255}},
-		{kind: economy.ResourceSpice, value: production.Spice, col: color.RGBA{230, 165, 90, 255}},
-		{kind: economy.ResourceCloth, value: production.Cloth, col: color.RGBA{175, 150, 220, 255}},
+		{kind: economy.ResourceGold, value: itoa(production.Gold), col: ColorGold},
+		{kind: economy.ResourceGrain, value: grainValue, col: ColorWhite},
+		{kind: economy.ResourceIron, value: itoa(production.Iron), col: color.RGBA{200, 205, 215, 255}},
+		{kind: economy.ResourceTimber, value: itoa(production.Timber), col: color.RGBA{145, 205, 145, 255}},
+		{kind: economy.ResourceStone, value: itoa(production.Stone), col: color.RGBA{185, 185, 185, 255}},
+		{kind: economy.ResourceSpice, value: itoa(production.Spice), col: color.RGBA{230, 165, 90, 255}},
+		{kind: economy.ResourceCloth, value: itoa(production.Cloth), col: color.RGBA{175, 150, 220, 255}},
 	}
 
 	colGap := 14.0
@@ -4130,11 +4135,18 @@ func drawRegionProductionGrid(screen *ebiten.Image, x, y float64, width float32,
 			y+row*regionPanelStatRowGap,
 			colW,
 			economy.ResourceNameTR(item.kind),
-			itoa(item.value),
+			item.value,
 			ColorGray,
 			item.col,
 		)
 	}
+}
+
+func regionGrainProductionDisplayValue(gs *state.GameState, region *world.Region, production state.RegionProductionSummary) string {
+	if gs == nil || region == nil {
+		return itoa(production.Grain)
+	}
+	return fmt.Sprintf("+%d/%d", gs.RegionMilitaryGrainProduction(region), production.Grain)
 }
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {

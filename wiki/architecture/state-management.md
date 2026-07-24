@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-23
+last_updated: 2026-07-24
 related: [game-loop, systems/events, systems/economy, render-pipeline, shape-editor]
 ---
 
@@ -134,7 +134,9 @@ ilerler. Filo hesabında `EmbarkedUnits` dikkate alınmaz.
 ardından komutan/teknoloji bonuslarını ekler. 1300 senaryosunun `fair_movement`
 politikası oyuncu ve AI hesabını eşitler; config taşımayan eski senaryolarda Zor AI'nin
 legacy `+1` hareketi korunur. `RefreshArmyMovePoints()` ilk senaryo ve save/load
-senkronizasyonunda kullanılır.
+senkronizasyonunda kullanılır. `RefreshArmyMovePointsAfterCompositionChange()` split
+ve merge sonrası kompozisyonu yeniden hesaplar; ordu o turda hareket etmemişse yeni
+hareket havuzunu tamamen kullanılabilir yapar, hareket etmişse kalan puanı iade etmez.
 
 Fraksiyon state'i artık ulusal başkent settlement'ını ve olası taşıma kuyruğunu da serialize eder:
 
@@ -226,6 +228,8 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 `RegionEventStatus` içindeki `GrainProductionPercent` ve `GrainDemandPercent`, aktif hasat/kıtlık/kuraklık olaylarının geçici bölgesel tahıl etkileridir. `RegionGrainProductionModifier()`, `RegionGrainDemandModifier()` ve `CivilianGrainDemandForRegion()` bu kayıtları toplar; alanlar `ActiveRegionEvents` ile compact save/load içinde korunur, süre dolunca `TickActiveRegionEvents()` tarafından temizlenir.
 
 `GameState.RegionMilitaryGrainProduction()` bölgesel efektif tahıl üretiminden aktif sivil talebi düşer. Oyun lojistiği ve AI hareket/recruitment lojistiği bu ortak helper'ı; ordu talebi için de `EffectiveArmyGrainUpkeep()` metodunu kullanır. Böylece oyuncu ve AI aynı tahıl tüketim kurallarından sapmaz.
+
+`applyRegionalLogisticsPressure()` bölgedeki ambar seviyesini, ekonomi tick'i sonrası fraksiyon stokundan bölgeye aktarılabilir rezerv olarak değerlendirir. Destek `min(kalan stok, ambar kapasitesi)` ile sınırlıdır; aynı fraksiyonun bölgeleri rezervi deterministik sırada paylaşır ve başkent önceliği kullanır. `RegionLogisticsStatus.GranarySupport` bu geçici katkıyı UI teşhisi için taşır.
 
 `GrainStorageCapacity()` ve `GameState.GrainStorageCapacityForFaction()` sivil nüfus talebi, efektif ordu bakımı ve ambar bina bonusunu aynı `6 ay sivil + 3 ay ordu`, minimum 100 kapasite kuralında birleştirir. İkinci helper ekonomi tick'i oluşmadan HUD'un başlangıçta da doğru ambar kapasitesini gösterebilmesini sağlar.
 

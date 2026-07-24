@@ -402,8 +402,16 @@ func (a *Army) HasDamagedUnits() bool {
 }
 
 func (a *Army) CanReplenishIn(regions map[world.RegionID]*world.Region) bool {
-	if a == nil || a.IsNaval {
+	if a == nil {
 		return false
+	}
+	if a.IsNaval {
+		// Filo açık denizde değil, kendi limanına bağlıysa gemi kartlarında
+		// kara ordularındaki ikmal göstergesi de kullanılabilir. DockedRegionID
+		// filonun deniz hücresinde kalırken liman bölgesini taşıyan kanonik
+		// konumudur.
+		port := regions[a.DockedRegionID]
+		return port != nil && !port.IsSea && port.OwnerID == a.OwnerID && port.HasPort()
 	}
 	region := regions[a.RegionID]
 	return region != nil && !region.IsSea && region.OwnerID == a.OwnerID

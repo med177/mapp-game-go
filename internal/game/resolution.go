@@ -428,7 +428,7 @@ func replenishDockedFleet(gs *state.GameState, fleet *army.Army, amount int) int
 		return 0
 	}
 	dockedRegion := gs.Regions[fleet.DockedRegionID]
-	if dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID == "" {
+	if dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID == "" || !dockedRegion.HasPort() {
 		return 0
 	}
 	healAmount := amount
@@ -968,11 +968,11 @@ func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int
 }
 
 func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogisticsStatus {
-	gs.RegionLogistics = make(map[world.RegionID]state.RegionLogisticsStatus)
-	gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
 	if gs == nil {
 		return nil
 	}
+	gs.RegionLogistics = make(map[world.RegionID]state.RegionLogisticsStatus)
+	gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
 
 	armiesByRegion := make(map[world.RegionID][]*army.Army)
 	for _, a := range gs.Armies {
@@ -985,9 +985,31 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		}
 		armiesByRegion[a.RegionID] = append(armiesByRegion[a.RegionID], a)
 	}
+	regionIDs := make([]world.RegionID, 0, len(armiesByRegion))
+	for regionID := range armiesByRegion {
+		regionIDs = append(regionIDs, regionID)
+	}
+	// Sınırlı stok desteği deterministik dağıtılır; başkent önce gelir.
+	sort.Slice(regionIDs, func(i, j int) bool {
+		left := gs.Regions[regionIDs[i]]
+		right := gs.Regions[regionIDs[j]]
+		leftCapital := gs.IsCapitalRegion(left)
+		rightCapital := gs.IsCapitalRegion(right)
+		if leftCapital != rightCapital {
+			return leftCapital
+		}
+		return regionIDs[i] < regionIDs[j]
+	})
+	availableReserveByFaction := make(map[string]int, len(gs.Factions))
+	for fid, f := range gs.Factions {
+		if f != nil && f.Grain > 0 {
+			availableReserveByFaction[string(fid)] = f.Grain
+		}
+	}
 
 	alerts := make([]state.RegionLogisticsStatus, 0)
-	for rid, armiesInRegion := range armiesByRegion {
+	for _, rid := range regionIDs {
+		armiesInRegion := armiesByRegion[rid]
 		region := gs.Regions[rid]
 		if region == nil {
 			continue
@@ -1018,8 +1040,12 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		settlementBuffer := regionSettlementLogisticsBuffer(gs, region)
 		blockadePercent := gs.RegionBlockadePercent(region, ownerID)
 		settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
-		reserveSupport := regionReserveSupport(gs, ownerID, militaryProduction, settlementBuffer)
-		capacity := militaryProduction + settlementBuffer + reserveSupport
+		availableReserve := availableReserveByFaction[ownerID]
+		granarySupport := minInt(availableReserve, regionGranaryStorageCapacity(gs, region))
+		availableReserve -= granarySupport
+		reserveSupport := regionReserveSupport(availableReserve, militaryProduction, settlementBuffer)
+		availableReserveByFaction[ownerID] = availableReserve - reserveSupport
+		capacity := militaryProduction + settlementBuffer + granarySupport + reserveSupport
 		if capacity < 4 {
 			capacity = 4
 		}
@@ -1030,6 +1056,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			OwnerID:          ownerID,
 			LocalProduction:  militaryProduction,
 			SettlementBuffer: settlementBuffer,
+			GranarySupport:   granarySupport,
 			ReserveSupport:   reserveSupport,
 			BlockadePercent:  blockadePercent,
 			Demand:           totalDemand,
@@ -1126,23 +1153,33 @@ func regionSettlementLogisticsBuffer(gs *state.GameState, region *world.Region) 
 	return buffer
 }
 
-func regionReserveSupport(gs *state.GameState, ownerID string, production, settlementBuffer int) int {
-	if gs == nil || ownerID == "" {
-		return 0
-	}
-	f := gs.Factions[faction.FactionID(ownerID)]
-	if f == nil || f.Grain <= 0 {
+func regionReserveSupport(availableGrain, production, settlementBuffer int) int {
+	if availableGrain <= 0 {
 		return 0
 	}
 	cap := production/2 + settlementBuffer/2 + 4
 	if cap < 4 {
 		cap = 4
 	}
-	reserve := f.Grain / 10
+	reserve := availableGrain / 10
 	if reserve > cap {
 		reserve = cap
 	}
 	return reserve
+}
+
+func regionGranaryStorageCapacity(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil {
+		return 0
+	}
+	capacity := 0
+	for _, buildingID := range region.Buildings {
+		building := gs.BuildingTypes[buildingID]
+		if building != nil && building.StorageCapacity > 0 {
+			capacity += building.StorageCapacity
+		}
+	}
+	return capacity
 }
 
 func logisticsDamagePerUnit(totalDemand, capacity, overload, nextTurn int) int {

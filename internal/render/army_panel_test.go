@@ -66,6 +66,30 @@ func TestArmyPanelTransportFooterTextHiddenWithoutTransportCapacity(t *testing.T
 	}
 }
 
+func TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sea":  {ID: "sea", IsSea: true},
+			"home": {ID: "home", OwnerID: "p1", Buildings: []string{"port"}},
+		},
+	}
+	fleet := &army.Army{
+		OwnerID:        "p1",
+		RegionID:       "sea",
+		DockedRegionID: "home",
+		IsNaval:        true,
+		Units:          []army.Unit{{TypeID: "warship", CurrentHP: 60}},
+	}
+
+	if !armyCanRenderReplenishment(gs, fleet) {
+		t.Fatal("kendi limanındaki hasarlı filonun tamirat göstergesi aktif olmalıydı")
+	}
+	fleet.DockedRegionID = ""
+	if armyCanRenderReplenishment(gs, fleet) {
+		t.Fatal("açık denizdeki hasarlı filonun tamirat göstergesi görünmemeliydi")
+	}
+}
+
 func TestSplitSelectionRequiresOneUnitToRemain(t *testing.T) {
 	a := &army.Army{Units: []army.Unit{{TypeID: "inf"}, {TypeID: "cav"}, {TypeID: "siege"}}}
 
