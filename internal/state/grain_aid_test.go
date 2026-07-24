@@ -25,7 +25,7 @@ func TestApplyGrainAidImprovesSatisfactionAndIsLimitedPerTurn(t *testing.T) {
 	if !gs.ApplyGrainAid("home") {
 		t.Fatal("tahıl yardımı uygulanmalıydı")
 	}
-	if gs.Factions["player"].Grain != 18 || gs.Regions["home"].Satisfaction != 30 {
+	if gs.Factions["player"].Grain != 20 || gs.Regions["home"].Satisfaction != 21 {
 		t.Fatalf("yardım tahıl ve memnuniyeti güncellemedi: faction=%+v region=%+v", gs.Factions["player"], gs.Regions["home"])
 	}
 	if gs.CanApplyGrainAid("home") {

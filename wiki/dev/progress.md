@@ -1,11 +1,17 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-23
+last_updated: 2026-07-24
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-24: Savaş ilanı koalisyon önizleme modalında uzun kesin katılanlar ve çağrılabilir müttefik listelerinin birbirinin üzerine çizilmesi düzeltildi. Sol ve sağ cephedeki iki liste alanı ayrı viewport ve bağımsız mouse-wheel scroll state'i kullanıyor; her listenin scrollbar'ı yalnız kendi taşan içeriğinde gösteriliyor ve checkbox hit-test'i yalnız görünür satırlara uygulanıyor. Regression: `TestWarConfirmListViewportsDoNotOverlap`, `TestWarConfirmScrollTargetIsLocalToViewport`; doğrulama: `go test ./internal/render -run 'TestWarConfirm'`.
+
+- 2026-07-24: Bölge panelindeki vergi `+/-` düğmeleri 18×16 px'e küçültüldü ve içerik sağına hizalandı. Etkileşimli vergi barı iki uçtan da düğme genişliği kadar içeri alındı; tam uzunluklu barın butonların altında kalmasına neden olan çift çizim kaldırıldı. Regression: `TestRegionTaxButtonsUseCompactAlignedRects`, `TestRegionTaxInteractiveBarStopsBeforeDecreaseButton`; doğrulama: `go test ./internal/render`.
+
+- 2026-07-23: `1300_ottoman_rise` bölge kaynakları tarihsel/coğrafi uzmanlaşmaya göre yeniden dağıtıldı. Tahıl ovalar ve nehir havzalarında, kereste orman/kuzey hatlarında, taş-demir dağ ve maden bölgelerinde, baharat Mısır-Levant-Basra/Akdeniz ticaret düğümlerinde, kumaş ise Bursa/Konstantiniyye/Selanik/Flandre/İtalya tekstil merkezlerinde yoğunlaştırıldı. Bina ve birlik veri modellerine `spice_cost`/`cloth_cost` eklendi; ortak ödeme, iade, AI bütçe, üretim kuyruğu ve tooltip akışları bu kaynakları kullanıyor. Regression: `TestResourceCostAppliesSpiceAndCloth`, `Test1300ScenarioResourceSpecializationsAndProductionCosts`, `Test1300ScenarioGrainEconomyBands`; doğrulama: hedefli paket testleri ve full `go test ./...`.
 
 - 2026-07-23: Hareket puanı bitmiş seçili kara ordusunda dost nakliye filosunun harita üzerindeki `BIN` göstergesi artık çizilmiyor. Görsel aksiyon koşulu sağ tık input kapısıyla hizalandı. Regression: `TestEmbarkPromptRequiresSelectedArmyMovementPoints`; doğrulama: `go test ./internal/render`.
 

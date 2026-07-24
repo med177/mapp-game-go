@@ -7,6 +7,8 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 
 # Yapay Zeka Sistemi
 
+1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır; temel kara birliklerinde erken tempo için mevcut tahıl/demir reçetesi korunur.
+
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
 `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
 `internal/ai/retreat.go`, `internal/ai/security.go`, `internal/ai/pathfinding.go`,

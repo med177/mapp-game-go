@@ -15,7 +15,9 @@
     "grain_cost": 10,
     "iron_cost": 12,
     "timber_cost": 28,
-    "stone_cost": 20
+    "stone_cost": 20,
+    "spice_cost": 3,
+    "cloth_cost": 6
   },
   {
     "def_bonus": 0,
@@ -49,7 +51,8 @@
     "grain_cost": 18,
     "iron_cost": 20,
     "timber_cost": 22,
-    "stone_cost": 26
+    "stone_cost": 26,
+    "cloth_cost": 6
   },
   {
     "def_bonus": 0,
@@ -67,7 +70,9 @@
     "grain_cost": 12,
     "iron_cost": 18,
     "timber_cost": 36,
-    "stone_cost": 30
+    "stone_cost": 30,
+    "spice_cost": 4,
+    "cloth_cost": 10
   },
   {
     "def_bonus": 15,
@@ -101,7 +106,9 @@
     "grain_cost": 14,
     "iron_cost": 8,
     "timber_cost": 18,
-    "stone_cost": 22
+    "stone_cost": 22,
+    "spice_cost": 4,
+    "cloth_cost": 8
   },
   {
     "def_bonus": 0,

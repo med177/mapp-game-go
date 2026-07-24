@@ -310,12 +310,14 @@ func (r *Renderer) warConfirmHovering(fx, fy float64) bool {
 		return true
 	}
 	leftRect, rightRect := warConfirmSideRects(buildWarConfirmModal())
-	leftViewport := warConfirmCallViewport(leftRect, len(r.warConfirm.preview.Attacker.AutoParticipants))
-	rightViewport := warConfirmCallViewport(rightRect, len(r.warConfirm.preview.Defender.AutoParticipants))
-	if leftViewport.Hit(fx, fy) || rightViewport.Hit(fx, fy) {
+	leftAutoViewport := warConfirmAutoViewport(leftRect)
+	leftCallViewport := warConfirmCallViewport(leftRect)
+	rightAutoViewport := warConfirmAutoViewport(rightRect)
+	rightCallViewport := warConfirmCallViewport(rightRect)
+	if leftAutoViewport.Hit(fx, fy) || leftCallViewport.Hit(fx, fy) || rightAutoViewport.Hit(fx, fy) || rightCallViewport.Hit(fx, fy) {
 		return true
 	}
-	for _, checkbox := range warConfirmCheckboxes(leftViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, r.warConfirm.scroll) {
+	for _, checkbox := range warConfirmCheckboxes(leftCallViewport, r.warConfirm.preview.Attacker.CallableAllies, r.warConfirm.selectedAllies, r.warConfirm.attackerCallScroll) {
 		if checkbox.HitTest(fx, fy) {
 			return true
 		}

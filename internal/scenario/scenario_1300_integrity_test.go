@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -89,6 +90,56 @@ func Test1300EarlyEconomyTechnologyValuesAreCalibrated(t *testing.T) {
 		if technology.Effects.GoldPerRegion != want.goldPerRegion || technology.Effects.MarketGoldMod != want.marketGoldMod {
 			t.Errorf("ekonomi teknolojisi değeri kalibre değil: tech=%s gold_per_region=%d/%d market_gold_mod=%.2f/%.2f", technologyID, technology.Effects.GoldPerRegion, want.goldPerRegion, technology.Effects.MarketGoldMod, want.marketGoldMod)
 		}
+	}
+}
+
+func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
+	scenarioPath, regions, _ := load1300IntegrityData(t)
+
+	for _, id := range []world.RegionID{"bursa", "constantinople", "egypt", "damascus", "basra", "venice", "flanders"} {
+		region := regions[id]
+		if region == nil {
+			t.Fatalf("kaynak uzmanlaşması için bölge eksik: %s", id)
+		}
+		if region.BaseSpiceOutput == 0 && region.BaseClothOutput == 0 {
+			t.Errorf("ticaret/tekstil bölgesi kaynak üretmiyor: %s", id)
+		}
+	}
+
+	spiceRegions, clothRegions, stoneRegions := 0, 0, 0
+	for _, region := range regions {
+		if region == nil || region.IsSea {
+			continue
+		}
+		if region.BaseSpiceOutput > 0 {
+			spiceRegions++
+		}
+		if region.BaseClothOutput > 0 {
+			clothRegions++
+		}
+		if region.BaseStoneOutput > 0 {
+			stoneRegions++
+		}
+	}
+	if spiceRegions < 20 || clothRegions < 40 || stoneRegions < 30 {
+		t.Fatalf("kaynak uzmanlaşması çok dar: baharat=%d kumaş=%d taş=%d", spiceRegions, clothRegions, stoneRegions)
+	}
+
+	dataPath := filepath.Join(scenarioPath, "data")
+	buildings, err := city.LoadBuildings(filepath.Join(dataPath, "buildings.json"))
+	if err != nil {
+		t.Fatalf("1300 binaları yüklenemedi: %v", err)
+	}
+	if buildings["market"].SpiceCost != 3 || buildings["market"].ClothCost != 6 {
+		t.Fatalf("pazar lüks kaynak maliyeti kalibre değil: %+v", buildings["market"])
+	}
+
+	units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
+	if err != nil {
+		t.Fatalf("1300 birlikleri yüklenemedi: %v", err)
+	}
+	if units["elite_infantry"].ClothCost != 6 || units["merchant_ship"].SpiceCost != 2 {
+		t.Fatalf("birlik lüks kaynak maliyeti kalibre değil: elite_infantry=%+v merchant=%+v", units["elite_infantry"], units["merchant_ship"])
 	}
 }
 

@@ -21,7 +21,7 @@ related: [systems/seasons, systems/events, systems/ai, systems/combat, world/reg
 | Baharat | İkincil | Ticaret geliri |
 | Kumaş | İkincil | Ticaret geliri |
 
-Altın ve ikincil kaynaklar birlikte kullanılır; birim/bina üretiminde çoklu kaynak reçetesi zorunludur.
+Altın ve ikincil kaynaklar birlikte kullanılır; birim/bina üretiminde çoklu kaynak reçetesi zorunludur. `ResourceCost` artık altın, tahıl, demir, kereste, taş, baharat ve kumaşın tamamını affordability, ödeme, iade ve tooltip akışına taşır (`internal/economy/costs.go`, `resources.go`).
 
 Kaynak adları ve fraksiyon alan eşlemeleri `internal/economy/resources.go` içinde `ResourceKind`/`ResourceDef` modeliyle merkezileştirilmiştir. UI metinleri, ticaret malları listesi ve `ResourceCost` formatlaması bu ortak tanımları kullanır; böylece `Altın/Tahıl/Demir/...` stringleri farklı paketlerde ayrı ayrı hardcode edilmez.
 
@@ -59,7 +59,7 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 | Tapınak/Kilise/Cami (`temple`) | 6 | +din etkisi, tur başı memnuniyet `+10` |
 | Ambar (`granary`) | — | +tahıl depolama kapasitesi |
 
-Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone_cost`).
+Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone/spice/cloth_cost`). Pazar, liman ve ibadet yeri gibi ticaret/kültür yapıları baharat veya kumaş tüketebilir; temel tarım ve savunma yapıları bölgesel hammaddelere dayanır.
 Bina `MaxPerRegion` ile sınırlıdır.
 Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
 
@@ -134,7 +134,7 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 
 ## Üretim Reçeteleri ve Lojistik
 
-- Birim üretimi `gold_cost` yanında `grain_cost`, `iron_cost`, `timber_cost`, `stone_cost` tüketir.
+- Birim üretimi `gold_cost` yanında `grain_cost`, `iron_cost`, `timber_cost`, `stone_cost`, `spice_cost` ve `cloth_cost` tüketebilir. Temel kara birlikleri tahıl/demir eksenini korurken elit birlikler ve deniz birlikleri kumaş; ticaret gemileri ayrıca baharat kullanır.
 - Ordu bakımında `grain_upkeep` temel alınır. Sabit ordu `%100`, o tur hareket etmiş ordu `%150`, garnizon `%75`, kuşatma saldırganı `%200`, kuşatma savunmacısı/destekçisi `%125` tüketir. Hareket bilgisi `ArmyMoveUsage` runtime-only yakalanır; save formatına alan eklenmez.
 - Dost toprakta mevcut ücretsiz toparlanmaya ek olarak, ekonomi tick'inde yalnız `StorageCapacity` üzerindeki tahıl kara ordusu yenilemesine ayrılabilir. Her 1 HP yenileme 1 tahıl harcar; ordu başına/turuna en fazla `+10 HP` verilir. Ordular faction/army ID sırasıyla işlenir, kuşatma altındaki savunmacılar ve düşman toprakları kapsam dışıdır. Rezerv kapasitesi korunur; harcanan tahıl ve yenilenen HP `GrainEconomyStatus` içinde raporlanır.
 - Pozitif nüfuslu her sahip bölge `ceil(population / 20)` tahıl/tur sivil tüketim üretir. Bu tüketim fraksiyonun ortak tahıl havuzundan, bölge üretimi ve ticaret girdilerinden sonra, ordu bakımı uygulanmadan önce düşülür. `Population <= 0` olan legacy/test bölgeleri tüketim oluşturmaz.
@@ -163,6 +163,12 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 - Orman: kereste üretimi artar.
 - Dağ/geçit: demir ve taş üretimi artar.
 - `base_stone_output` olmayan senaryolarda dağ/geçit bölgeleri fallback taş üretimi sağlar.
+
+### 1300 Osmanlı Yükselişi Kaynak Profili
+
+`assets/scenarios/1300_ottoman_rise/data/regions.json` coğrafi uzmanlaşmayı veri seviyesinde taşır. Tahıl verimli ovalar ve nehir havzalarında; kereste orman, kuzey ve kıyı hinterlandlarında; taş ve demir dağ/geçit/maden hatlarında yoğunlaşır. Baharat Mısır-Kızıldeniz, Şam-Halep, Basra ve Akdeniz ticaret düğümlerine; kumaş Bursa, Konstantiniyye, Selanik, Flandre ve İtalyan şehirlerine dağıtılmıştır. Böylece ticaret malları artık yalnız başlangıç stoğundan değil, ele geçirilen bölgesel üretim merkezlerinden de elde edilir.
+
+Senaryo verisi için bütün kara bölgelerinde toplam başlangıç üretimi yaklaşık `tahıl 6154`, `demir 287`, `kereste 1098`, `taş 632`, `baharat 679`, `kumaş 1342` seviyesindedir. Üretim uzmanlaşması `Test1300ScenarioResourceSpecializationsAndProductionCosts`, ekonomi sürdürülebilirliği ise `Test1300ScenarioGrainEconomyBands` ile korunur.
 
 ## UI Üretim Önizlemesi
 

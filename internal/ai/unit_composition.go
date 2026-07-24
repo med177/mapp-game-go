@@ -403,6 +403,7 @@ func aiUnitResourceCost(unitType *army.UnitType) economy.ResourceCost {
 	return economy.ResourceCost{
 		Gold: unitType.GoldCost, Grain: unitType.GrainCost, Iron: unitType.IronCost,
 		Timber: unitType.TimberCost, Stone: unitType.StoneCost,
+		Spice: unitType.SpiceCost, Cloth: unitType.ClothCost,
 	}
 }
 

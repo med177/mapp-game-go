@@ -90,6 +90,8 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 						Iron:   b.IronCost,
 						Timber: b.TimberCost,
 						Stone:  b.StoneCost,
+						Spice:  b.SpiceCost,
+						Cloth:  b.ClothCost,
 					}
 					canAfford = cost.CanAfford(f)
 				}

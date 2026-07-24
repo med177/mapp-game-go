@@ -16,6 +16,8 @@ type Building struct {
 	IronCost         int     `json:"iron_cost"`
 	TimberCost       int     `json:"timber_cost"`
 	StoneCost        int     `json:"stone_cost"`
+	SpiceCost        int     `json:"spice_cost"`
+	ClothCost        int     `json:"cloth_cost"`
 	TurnsRequired    int     `json:"turns_required"`
 	GoldMod          float64 `json:"gold_mod"`           // altın gelir çarpanı (1.0 = değişmez)
 	GrainMod         float64 `json:"grain_mod"`          // tahıl üretim çarpanı

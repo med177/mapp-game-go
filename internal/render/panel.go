@@ -69,8 +69,10 @@ const (
 	regionPanelStatRowGap      = 22.0
 	regionPanelBarYOffset      = 4.0
 	regionPanelBarH            = float32(8)
-	regionPanelTaxButtonH      = float32(18)
-	regionPanelTaxButtonPad    = float32(8)
+	regionPanelTaxButtonW      = float32(18)
+	regionPanelTaxButtonH      = float32(16)
+	regionPanelTaxButtonGap    = float32(4)
+	regionPanelTaxButtonPad    = regionPanelTaxButtonW
 	regionPanelMeterValueW     = float32(54)
 	regionPanelMeterGap        = float32(10)
 	regionOwnerNameH           = float32(20)
@@ -1989,15 +1991,15 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	ly += regionPanelStatRowGap
 
 	taxBarX, taxBarW := regionPanelTaxBarLayout(float32(lx), sepW)
-	drawRegionMeterRow(screen, lx, ly, sepW, "Vergi", "%"+itoa(region.TaxRate), float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 	if region.OwnerID == string(gs.PlayerFactionID) && !region.IsLocked {
+		drawRegionMeterLabels(screen, lx, ly, "Vergi", "%"+itoa(region.TaxRate))
 		dec, inc := regionTaxButtonRects(gs, rid)
-		taxBarW = dec[0] - taxBarX - regionPanelTaxButtonPad
+		taxBarX, taxBarW = regionPanelTaxInteractiveBarLayout(float32(lx), sepW, dec[0])
 		drawBar(screen, taxBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 		drawTinyPanelButton(screen, dec[0], dec[1], dec[2], dec[3], "-", true)
 		drawTinyPanelButton(screen, inc[0], inc[1], inc[2], inc[3], "+", true)
 	} else {
-		drawBar(screen, taxBarX, float32(ly)+regionPanelBarYOffset, taxBarW, regionPanelBarH, float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
+		drawRegionMeterRow(screen, lx, ly, sepW, "Vergi", "%"+itoa(region.TaxRate), float64(region.TaxRate)/100, color.RGBA{200, 140, 40, 255})
 	}
 	ly += regionPanelStatRowGap
 
@@ -4049,7 +4051,10 @@ func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, 
 	}
 	ly := regionPanelStatRowsStartY(gs, ownerID)
 	y := float32(ly + regionPanelStatRowGap + (regionPanelStatRowGap-float64(regionPanelTaxButtonH))/2 - 1)
-	return [4]float32{px + pw - 70, y, 26, regionPanelTaxButtonH}, [4]float32{px + pw - 38, y, 26, regionPanelTaxButtonH}
+	contentRight := px + pw - float32(panelPad)
+	incX := contentRight - regionPanelTaxButtonW
+	decX := incX - regionPanelTaxButtonGap - regionPanelTaxButtonW
+	return [4]float32{decX, y, regionPanelTaxButtonW, regionPanelTaxButtonH}, [4]float32{incX, y, regionPanelTaxButtonW, regionPanelTaxButtonH}
 }
 
 func regionPanelStatRowsStartY(gs *state.GameState, ownerID string) float64 {
@@ -4074,13 +4079,27 @@ func regionPanelTaxBarLayout(x float32, width float32) (float32, float32) {
 	return barX, barW
 }
 
+func regionPanelTaxInteractiveBarLayout(x, width, decreaseButtonX float32) (float32, float32) {
+	barX, _ := regionPanelTaxBarLayout(x, width)
+	barX += regionPanelTaxButtonPad
+	barW := decreaseButtonX - barX - regionPanelTaxButtonPad
+	if barW < 0 {
+		barW = 0
+	}
+	return barX, barW
+}
+
 func drawRegionMeterRow(screen *ebiten.Image, x, y float64, width float32, label, value string, fill float64, barColor color.Color) {
+	drawRegionMeterLabels(screen, x, y, label, value)
+	barX, barW := regionPanelTaxBarLayout(float32(x), width)
+	drawBar(screen, barX, float32(y)+regionPanelBarYOffset, barW, regionPanelBarH, fill, barColor)
+}
+
+func drawRegionMeterLabels(screen *ebiten.Image, x, y float64, label, value string) {
 	labelW := 96.0
 	valueX := x + labelW
 	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: labelW}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: valueX, Y: y, W: float64(regionPanelMeterValueW)}, value, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
-	barX, barW := regionPanelTaxBarLayout(float32(x), width)
-	drawBar(screen, barX, float32(y)+regionPanelBarYOffset, barW, regionPanelBarH, fill, barColor)
 }
 
 func drawRegionProductionGrid(screen *ebiten.Image, x, y float64, width float32, production state.RegionProductionSummary) {

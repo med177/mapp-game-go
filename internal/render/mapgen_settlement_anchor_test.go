@@ -73,6 +73,51 @@ func TestSloveniaKoperSettlementAnchorStaysInsideShape(t *testing.T) {
 	}
 }
 
+func Test1300AzerbaijanShamakhiSettlementAnchorStaysInsideRegion(t *testing.T) {
+	scenarioPath := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise")
+	skipIfScenarioDirMissing(t, scenarioPath)
+
+	regions, _, err := world.LoadRegionsWithOrder(filepath.Join(scenarioPath, "data", "regions.json"))
+	if err != nil {
+		t.Fatalf("regions yuklenemedi: %v", err)
+	}
+	if err := world.LoadRegionSettlements(filepath.Join(scenarioPath, "data", "settlements.json"), regions); err != nil {
+		t.Fatalf("settlements yuklenemedi: %v", err)
+	}
+	shapeData, err := world.LoadCountryShapes(filepath.Join(scenarioPath, "data", "country_shapes.json"), regions)
+	if err != nil {
+		t.Fatalf("shapes yuklenemedi: %v", err)
+	}
+
+	region := regions["azerbaijan"]
+	if region == nil {
+		t.Fatal("azerbaijan bolgesi bulunamadi")
+	}
+	settlementIdx := -1
+	for i, settlement := range region.Settlements {
+		if settlement.ID == "azerbaijan_shamakhi" {
+			settlementIdx = i
+			if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) {
+				t.Fatalf("shamakhi raw koordinati shape disinda: (%d,%d)", settlement.X, settlement.Y)
+			}
+			break
+		}
+	}
+	if settlementIdx < 0 {
+		t.Fatal("azerbaijan_shamakhi yerlesimi bulunamadi")
+	}
+
+	gs := &state.GameState{Regions: regions, ShapeData: shapeData}
+	wm := NewWorldMap(gs)
+	ax, ay, ok := wm.SettlementAnchor("azerbaijan", settlementIdx)
+	if !ok {
+		t.Fatal("shamakhi settlement anchor olusturulamadi")
+	}
+	if got := wm.RegionAt(ax, ay); got != "azerbaijan" {
+		t.Fatalf("shamakhi anchor yanlis bolgeye dustu: got=%q want=%q", got, "azerbaijan")
+	}
+}
+
 func skipIfScenarioDirMissing(t *testing.T, scenarioPath string) {
 	t.Helper()
 

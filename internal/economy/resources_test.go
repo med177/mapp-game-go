@@ -61,6 +61,23 @@ func TestResourceCostShortTRUsesCentralNames(t *testing.T) {
 	}
 }
 
+func TestResourceCostAppliesSpiceAndCloth(t *testing.T) {
+	f := &faction.Faction{Gold: 100, Spice: 8, Cloth: 12}
+	cost := ResourceCost{Gold: 20, Spice: 3, Cloth: 5}
+
+	if !cost.CanAfford(f) {
+		t.Fatal("baharat ve kumaş maliyeti karşılanabilir olmalıydı")
+	}
+	cost.Apply(f)
+	if f.Gold != 80 || f.Spice != 5 || f.Cloth != 7 {
+		t.Fatalf("baharat/kumaş maliyeti uygulanmadı: gold=%d spice=%d cloth=%d", f.Gold, f.Spice, f.Cloth)
+	}
+	cost.Refund(f)
+	if f.Gold != 100 || f.Spice != 8 || f.Cloth != 12 {
+		t.Fatalf("baharat/kumaş iadesi uygulanmadı: gold=%d spice=%d cloth=%d", f.Gold, f.Spice, f.Cloth)
+	}
+}
+
 func TestEmergencySaleUnitPriceAppliesDiscountAndMinimum(t *testing.T) {
 	if got := EmergencySaleUnitPrice(10); got != 7 {
 		t.Fatalf("10 altınlık fiyat acil satışta 7 olmalıydı, got=%d", got)

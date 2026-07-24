@@ -437,27 +437,34 @@ func TestWarConfirmScrollHelpersClampAndHitVisibleRows(t *testing.T) {
 	}
 }
 
-func TestWarConfirmSharedScrollFollowsLongestColumn(t *testing.T) {
-	leftViewport := gameui.Rect{X: 100, Y: 200, W: 320, H: 110}
-	rightViewport := gameui.Rect{X: 460, Y: 200, W: 320, H: 162}
-	leftEntries := []diplomacy.WarParticipantPreview{
-		{FactionID: "a"},
-		{FactionID: "b"},
-	}
-	rightEntries := []diplomacy.WarParticipantPreview{
-		{FactionID: "c"},
-		{FactionID: "d"},
-		{FactionID: "e"},
-		{FactionID: "f"},
-		{FactionID: "g"},
-		{FactionID: "h"},
-		{FactionID: "i"},
-	}
+func TestWarConfirmListViewportsDoNotOverlap(t *testing.T) {
+	side := gameui.Rect{X: 100, Y: 200, W: 320, H: 372}
+	autoViewport := warConfirmAutoViewport(side)
+	callViewport := warConfirmCallViewport(side)
 
-	if got := warConfirmSharedMaxScroll(leftEntries, rightEntries, leftViewport, rightViewport); got != 4 {
-		t.Fatalf("ortak scroll uzun kolona göre belirlenmeliydi, got=%d", got)
+	if autoViewport.Y+autoViewport.H > callViewport.Y {
+		t.Fatalf("otomatik ve çağrılabilir listelerin viewport'ları örtüşmemeli: auto=%+v call=%+v", autoViewport, callViewport)
 	}
-	if boxes := warConfirmCheckboxes(leftViewport, leftEntries, nil, 4); len(boxes) != 0 {
-		t.Fatalf("kısa kolon kendi entry sınırını aşınca checkbox üretmemeliydi, got=%d", len(boxes))
+	if rows := warConfirmVisibleRows(autoViewport); rows < 1 {
+		t.Fatal("otomatik katılanlar viewport'u en az bir satır göstermeli")
+	}
+	if rows := warConfirmVisibleRows(callViewport); rows < 1 {
+		t.Fatal("çağrılabilir müttefikler viewport'u en az bir satır göstermeli")
+	}
+}
+
+func TestWarConfirmScrollTargetIsLocalToViewport(t *testing.T) {
+	side := gameui.Rect{X: 100, Y: 200, W: 320, H: 372}
+	autoViewport := warConfirmAutoViewport(side)
+	callViewport := warConfirmCallViewport(side)
+
+	if hit, auto := warConfirmScrollTarget(side, autoViewport, callViewport, autoViewport.X+4, autoViewport.Y+4); !hit || !auto {
+		t.Fatal("otomatik katılanlar viewport'u kendi scroll hedefi olmalı")
+	}
+	if hit, auto := warConfirmScrollTarget(side, autoViewport, callViewport, callViewport.X+4, callViewport.Y+4); !hit || auto {
+		t.Fatal("çağrılabilir müttefikler viewport'u kendi scroll hedefi olmalı")
+	}
+	if hit, _ := warConfirmScrollTarget(side, autoViewport, callViewport, side.X+4, side.Y+70); hit {
+		t.Fatal("liste dışındaki başlık alanı scroll hedefi olmamalı")
 	}
 }

@@ -13,6 +13,8 @@ type ResourceCost struct {
 	Iron   int
 	Timber int
 	Stone  int
+	Spice  int
+	Cloth  int
 }
 
 func (c ResourceCost) Amount(kind ResourceKind) int {
@@ -27,6 +29,10 @@ func (c ResourceCost) Amount(kind ResourceKind) int {
 		return c.Timber
 	case ResourceStone:
 		return c.Stone
+	case ResourceSpice:
+		return c.Spice
+	case ResourceCloth:
+		return c.Cloth
 	default:
 		return 0
 	}
@@ -63,7 +69,7 @@ func (c ResourceCost) Refund(f *faction.Faction) {
 }
 
 func (c ResourceCost) ShortTR() string {
-	parts := make([]string, 0, 5)
+	parts := make([]string, 0, len(CostResourceKinds()))
 	for _, kind := range CostResourceKinds() {
 		if amount := c.Amount(kind); amount > 0 {
 			parts = append(parts, fmt.Sprintf("%d %s", amount, ResourceNameTR(kind)))

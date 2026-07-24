@@ -659,6 +659,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		portCost := economy.ResourceCost{
 			Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost,
 			Timber: portType.TimberCost, Stone: portType.StoneCost,
+			Spice: portType.SpiceCost, Cloth: portType.ClothCost,
 		}
 		if !aiCanAffordForBudget(self, portCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, portCost, budget, aiBudgetNaval) {
 			return
@@ -682,6 +683,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 	shipCost := economy.ResourceCost{
 		Gold: transportType.GoldCost, Grain: transportType.GrainCost, Iron: transportType.IronCost,
 		Timber: transportType.TimberCost, Stone: transportType.StoneCost,
+		Spice: transportType.SpiceCost, Cloth: transportType.ClothCost,
 	}
 	for missingCapacity > 0 {
 		if aiPendingUnitCountByRegion(gs, embarkRegion.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, embarkRegion.ID, fid, transportType) <= 0 {
@@ -741,6 +743,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		portCost := economy.ResourceCost{
 			Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost,
 			Timber: portType.TimberCost, Stone: portType.StoneCost,
+			Spice: portType.SpiceCost, Cloth: portType.ClothCost,
 		}
 		if !aiCanAffordForBudget(self, portCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, portCost, budget, aiBudgetNaval) {
 			return
@@ -757,6 +760,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 	warshipCost := economy.ResourceCost{
 		Gold: warshipType.GoldCost, Grain: warshipType.GrainCost, Iron: warshipType.IronCost,
 		Timber: warshipType.TimberCost, Stone: warshipType.StoneCost,
+		Spice: warshipType.SpiceCost, Cloth: warshipType.ClothCost,
 	}
 	unitPower := aiEffectiveNavalPower(gs, &army.Army{
 		OwnerID: string(fid), IsNaval: true, Units: []army.Unit{{TypeID: warshipType.ID, CurrentHP: army.MaxUnitHP}},

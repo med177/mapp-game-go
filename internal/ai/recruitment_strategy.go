@@ -29,7 +29,7 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	deployed := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid)
 	barracksCost := economy.ResourceCost{Gold: 150}
 	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
-		barracksCost = economy.ResourceCost{Gold: b.GoldCost, Grain: b.GrainCost, Iron: b.IronCost, Timber: b.TimberCost, Stone: b.StoneCost}
+		barracksCost = economy.ResourceCost{Gold: b.GoldCost, Grain: b.GrainCost, Iron: b.IronCost, Timber: b.TimberCost, Stone: b.StoneCost, Spice: b.SpiceCost, Cloth: b.ClothCost}
 	}
 	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
 		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
@@ -103,7 +103,7 @@ func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.F
 	if !ok {
 		return false
 	}
-	unitCost := economy.ResourceCost{Gold: utype.GoldCost, Grain: utype.GrainCost, Iron: utype.IronCost, Timber: utype.TimberCost, Stone: utype.StoneCost}
+	unitCost := economy.ResourceCost{Gold: utype.GoldCost, Grain: utype.GrainCost, Iron: utype.IronCost, Timber: utype.TimberCost, Stone: utype.StoneCost, Spice: utype.SpiceCost, Cloth: utype.ClothCost}
 	if !aiCanAffordForBudget(f, unitCost, budget, aiBudgetArmy) {
 		return false
 	}

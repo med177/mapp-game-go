@@ -71,6 +71,8 @@ func CostResourceKinds() []ResourceKind {
 		ResourceIron,
 		ResourceTimber,
 		ResourceStone,
+		ResourceSpice,
+		ResourceCloth,
 	}
 }
 

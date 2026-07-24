@@ -383,18 +383,21 @@ const (
 )
 
 type warConfirmState struct {
-	show            bool
-	factionName     string
-	factionID       string
-	pendingArmy     army.ArmyID
-	pendingDest     world.RegionID
-	pendingEnemy    army.ArmyID
-	opensBattlePlan bool
-	battleAction    ActionKind
-	battleContext   combat.BattleContext
-	preview         diplomacy.WarDeclarationPreview
-	selectedAllies  map[faction.FactionID]bool
-	scroll          int
+	show               bool
+	factionName        string
+	factionID          string
+	pendingArmy        army.ArmyID
+	pendingDest        world.RegionID
+	pendingEnemy       army.ArmyID
+	opensBattlePlan    bool
+	battleAction       ActionKind
+	battleContext      combat.BattleContext
+	preview            diplomacy.WarDeclarationPreview
+	selectedAllies     map[faction.FactionID]bool
+	attackerAutoScroll int
+	attackerCallScroll int
+	defenderAutoScroll int
+	defenderCallScroll int
 }
 
 func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army, target *world.Region) bool {

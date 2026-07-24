@@ -1,13 +1,13 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-23
+last_updated: 2026-07-24
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
 
-Üst-sol kaynak satırları tur başı değişimi ve mevcut stoku `+üretim/mevcut` biçiminde gösterir; tahıl değeri sivil ve ordu tüketimi sonrası net değişimdir, negatif değerler `-` işaretiyle ve kırmızı renkle çizilir. Devlet üretim toplamı kuşatma altındaki bölgeleri dışarıda bırakan `GameState.FactionProductionSummary()` ile hesaplanır.
+Üst-sol kaynak satırları tur başı değişimi ve mevcut stoku `+üretim/mevcut` biçiminde gösterir; tahıl değeri sivil ve ordu tüketimi sonrası net değişimdir, negatif değerler `-` işaretiyle ve kırmızı renkle çizilir. Devlet üretim toplamı kuşatma altındaki bölgeleri dışarıda bırakan `GameState.FactionProductionSummary()` ile hesaplanır. Bina ve recruit tooltip'lerinde maliyet satırları `ResourceCost` üzerinden baharat/kumaş dahil tüm kaynakları aynı sırada gösterir.
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`). Kaynak HUD'unda tahıl miktarının altında ayrıca `Ambar` satırı bulunur; kapasite ekonomi tick'i status'undan, status henüz oluşmamışsa `GameState.GrainStorageCapacityForFaction()` hesaplamasından alınır.
 
@@ -56,6 +56,10 @@ Bölge bilgi panelinde bina grid'i artık önce çizilir; hemen altında genişl
 Teknoloji paneli açıkken input modal olarak teknoloji ağacına yönlendirilir ve bu yönlendirme `handleCamera()` çağrısından önce yapılır. Böylece ağaç tekerleği yalnız teknoloji pan'ini değiştirir; panel içi sürükleme veya panel dışı tıklamalar kamera zoom/pan ve harita seçim akışına ulaşmaz (`internal/render/renderer_input.go`, `tech_panel.go`).
 
 Teknoloji ağacındaki gerçek flow içeriği viewport'tan daha dar olduğunda ortalanır. Flow'un tree viewport içindeki sağ ve sol boşluklarına yapılan sol tıklama, üstteki teknoloji kapatma düğmesiyle aynı şekilde paneli kapatır; kategori sekmeleri, teknoloji kartları ve ağaç sürükleme alanı korunur (`internal/render/tech_panel.go`).
+
+Bölge panelindeki oyuncuya ait vergi satırında `+/-` düğmeleri 18×16 px kompakt rect'lerle içerik sağına hizalanır. Etkileşimli vergi barı kullanılabilir alanın iki ucundan da bir düğme genişliği kadar içeri alınır; etiketler ayrı çizildiği için eski tam uzunluklu bar düğmelerin altında kalmaz. Çizim ve hit-test aynı `regionTaxButtonRects` geometri sözleşmesini kullanır (`internal/render/panel.go`).
+
+Savaş ilanı koalisyon önizleme modalında kesin katılanlar ve çağrılabilir müttefikler sabit yükseklikte ayrı liste viewport'larında çizilir. Sol ve sağ cephelerin otomatik katılanlar/çağrılabilir listeleri birbirinden bağımsız scroll state'i ve scrollbar'ı kullanır; uzun listeler başlık veya diğer listeye taşamaz, çağrı checkbox hit-test'i de yalnız görünür satırlara açıktır (`internal/render/renderer.go`, `renderer_dialogs.go`, `cursor.go`).
 
 Üst HUD'da aktif araştırma adının bulunduğu teknoloji satırı tıklanabilir; tıklama alt HUD'daki `Teknoloji` düğmesiyle aynı şekilde teknoloji panelini açar ve recruit/diplomasi panellerini kapatır (`internal/render/panel.go`, `renderer_input.go`, `cursor.go`).
 

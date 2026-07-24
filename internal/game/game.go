@@ -1756,6 +1756,8 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		Iron:   b.IronCost,
 		Timber: b.TimberCost,
 		Stone:  b.StoneCost,
+		Spice:  b.SpiceCost,
+		Cloth:  b.ClothCost,
 	}
 	if !cost.CanAfford(f) {
 		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
@@ -2976,6 +2978,8 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		Iron:   utype.IronCost,
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
+		Spice:  utype.SpiceCost,
+		Cloth:  utype.ClothCost,
 	}
 	if !cost.CanAfford(f) {
 		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
@@ -3127,6 +3131,8 @@ func (g *Game) cancelBuilding(rid world.RegionID, buildingID string) {
 		Iron:   b.IronCost,
 		Timber: b.TimberCost,
 		Stone:  b.StoneCost,
+		Spice:  b.SpiceCost,
+		Cloth:  b.ClothCost,
 	}
 	cost.Refund(f)
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. İade: %s", b.NameTR, cost.ShortTR()))
@@ -3156,6 +3162,8 @@ func (g *Game) cancelRecruitOrder(rid world.RegionID, orderID string) {
 		Iron:   utype.IronCost,
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
+		Spice:  utype.SpiceCost,
+		Cloth:  utype.ClothCost,
 	}
 	refund.Refund(f)
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s emri iptal edildi. İade: %s", utype.NameTR, refund.ShortTR()))

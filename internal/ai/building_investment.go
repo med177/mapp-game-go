@@ -415,6 +415,7 @@ func aiBuildingResourceCost(building *city.Building) economy.ResourceCost {
 	return economy.ResourceCost{
 		Gold: building.GoldCost, Grain: building.GrainCost, Iron: building.IronCost,
 		Timber: building.TimberCost, Stone: building.StoneCost,
+		Spice: building.SpiceCost, Cloth: building.ClothCost,
 	}
 }
 

@@ -232,6 +232,8 @@ func buildingCost(gs *state.GameState, b *city.Building) economy.ResourceCost {
 		Iron:   b.IronCost,
 		Timber: b.TimberCost,
 		Stone:  b.StoneCost,
+		Spice:  b.SpiceCost,
+		Cloth:  b.ClothCost,
 	}
 }
 

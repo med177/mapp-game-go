@@ -707,6 +707,8 @@ func unitCost(utype *army.UnitType) economy.ResourceCost {
 		Iron:   utype.IronCost,
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
+		Spice:  utype.SpiceCost,
+		Cloth:  utype.ClothCost,
 	}
 }
 

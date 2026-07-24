@@ -1192,6 +1192,8 @@ func aiUnitAvailableForBudget(gs *state.GameState, f *faction.Faction, utype *ar
 		Iron:   utype.IronCost,
 		Timber: utype.TimberCost,
 		Stone:  utype.StoneCost,
+		Spice:  utype.SpiceCost,
+		Cloth:  utype.ClothCost,
 	}
 	if !aiCanAffordForBudget(f, cost, budget, aiBudgetArmy) {
 		return false
@@ -2092,6 +2094,8 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 			Iron:   portType.IronCost,
 			Timber: portType.TimberCost,
 			Stone:  portType.StoneCost,
+			Spice:  portType.SpiceCost,
+			Cloth:  portType.ClothCost,
 		}
 		if aiBuildingLevel(r, "port")+queued < portType.MaxPerRegion &&
 			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
@@ -2195,6 +2199,8 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 		Iron:   transportType.IronCost,
 		Timber: transportType.TimberCost,
 		Stone:  transportType.StoneCost,
+		Spice:  transportType.SpiceCost,
+		Cloth:  transportType.ClothCost,
 	}
 	if !aiCanAffordForBudget(f, shipCost, budget, aiBudgetNaval) {
 		return
@@ -2280,6 +2286,8 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		Iron:   warshipType.IronCost,
 		Timber: warshipType.TimberCost,
 		Stone:  warshipType.StoneCost,
+		Spice:  warshipType.SpiceCost,
+		Cloth:  warshipType.ClothCost,
 	}
 	if !aiCanAffordForBudget(f, warshipCost, budget, aiBudgetNaval) {
 		return

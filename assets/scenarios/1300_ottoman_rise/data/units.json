@@ -71,6 +71,7 @@
     "iron_cost": 12,
     "timber_cost": 0,
     "stone_cost": 0,
+    "cloth_cost": 6,
     "movement_points": 2
   },
   {
@@ -150,6 +151,7 @@
     "iron_cost": 14,
     "timber_cost": 0,
     "stone_cost": 0,
+    "cloth_cost": 8,
     "movement_points": 3
   },
   {
@@ -235,6 +237,7 @@
     "iron_cost": 24,
     "timber_cost": 12,
     "stone_cost": 34,
+    "cloth_cost": 3,
     "movement_points": 1
   },
   {
@@ -261,6 +264,7 @@
     "iron_cost": 12,
     "timber_cost": 34,
     "stone_cost": 0,
+    "cloth_cost": 8,
     "movement_points": 3
   },
   {
@@ -287,6 +291,7 @@
     "iron_cost": 6,
     "timber_cost": 20,
     "stone_cost": 0,
+    "cloth_cost": 5,
     "movement_points": 3
   },
   {
@@ -313,6 +318,8 @@
     "iron_cost": 8,
     "timber_cost": 26,
     "stone_cost": 0,
+    "spice_cost": 2,
+    "cloth_cost": 6,
     "movement_points": 3
   }
 ]

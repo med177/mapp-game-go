@@ -40,6 +40,8 @@ type UnitType struct {
 	IronCost      int `json:"iron_cost"`
 	TimberCost    int `json:"timber_cost"`
 	StoneCost     int `json:"stone_cost"`
+	SpiceCost     int `json:"spice_cost"`
+	ClothCost     int `json:"cloth_cost"`
 	GrainUpkeep   int `json:"grain_upkeep"` // tur başına bakım
 	TurnsRequired int `json:"turns_required"`
 
