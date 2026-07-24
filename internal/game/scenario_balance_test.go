@@ -47,6 +47,178 @@ type balanceAggregate struct {
 	endTechs     float64
 	endTrades    float64
 	score        float64
+	warTempoAggregate
+}
+
+type warTempoAggregate struct {
+	warsStarted       float64
+	activeWarTurns    float64
+	completedWars     float64
+	completedWarTurns float64
+	conquests         float64
+	peaceSettlements  float64
+	stalemates        float64
+}
+
+type warTempoTelemetry struct {
+	previousWars   map[string]state.WarLedger
+	previousOwners map[world.RegionID]faction.FactionID
+	byFaction      map[faction.FactionID]warTempoAggregate
+}
+
+func newWarTempoTelemetry(gs *state.GameState) *warTempoTelemetry {
+	telemetry := &warTempoTelemetry{
+		previousWars:   make(map[string]state.WarLedger),
+		previousOwners: make(map[world.RegionID]faction.FactionID),
+		byFaction:      make(map[faction.FactionID]warTempoAggregate),
+	}
+	if gs == nil {
+		return telemetry
+	}
+	for rid, region := range gs.Regions {
+		if region != nil && region.OwnerID != "" {
+			telemetry.previousOwners[rid] = faction.FactionID(region.OwnerID)
+		}
+	}
+	for key, ledger := range gs.WarLedgers {
+		if ledger == nil {
+			continue
+		}
+		telemetry.previousWars[key] = *ledger
+		telemetry.addBoth(*ledger, func(metrics *warTempoAggregate) {
+			metrics.warsStarted++
+		})
+	}
+	return telemetry
+}
+
+func (t *warTempoTelemetry) addBoth(ledger state.WarLedger, apply func(*warTempoAggregate)) {
+	if t == nil || apply == nil {
+		return
+	}
+	for _, fid := range []faction.FactionID{ledger.FactionA, ledger.FactionB} {
+		metrics := t.byFaction[fid]
+		apply(&metrics)
+		t.byFaction[fid] = metrics
+	}
+}
+
+func (t *warTempoTelemetry) addFor(fid faction.FactionID, apply func(*warTempoAggregate)) {
+	if t == nil || fid == "" || apply == nil {
+		return
+	}
+	metrics := t.byFaction[fid]
+	apply(&metrics)
+	t.byFaction[fid] = metrics
+}
+
+func (t *warTempoTelemetry) observe(gs *state.GameState) {
+	if t == nil || gs == nil {
+		return
+	}
+	currentWars := make(map[string]state.WarLedger, len(gs.WarLedgers))
+	for key, ledger := range gs.WarLedgers {
+		if ledger == nil {
+			continue
+		}
+		currentWars[key] = *ledger
+		if _, existed := t.previousWars[key]; !existed {
+			t.addBoth(*ledger, func(metrics *warTempoAggregate) {
+				metrics.warsStarted++
+			})
+		}
+		t.addBoth(*ledger, func(metrics *warTempoAggregate) {
+			metrics.activeWarTurns++
+		})
+	}
+
+	for rid, region := range gs.Regions {
+		if region == nil || region.OwnerID == "" {
+			continue
+		}
+		oldOwner := t.previousOwners[rid]
+		newOwner := faction.FactionID(region.OwnerID)
+		if oldOwner == "" || oldOwner == newOwner {
+			continue
+		}
+		if _, activeBefore := t.warForPair(oldOwner, newOwner, t.previousWars); !activeBefore {
+			if _, activeNow := t.warForPair(oldOwner, newOwner, currentWars); !activeNow {
+				continue
+			}
+		}
+		t.addFor(newOwner, func(metrics *warTempoAggregate) {
+			metrics.conquests++
+		})
+	}
+
+	for key, ledger := range t.previousWars {
+		if _, stillActive := currentWars[key]; stillActive {
+			continue
+		}
+		duration := gs.Turn - ledger.StartedTurn
+		if duration < 1 {
+			duration = 1
+		}
+		t.addBoth(ledger, func(metrics *warTempoAggregate) {
+			metrics.completedWars++
+			metrics.completedWarTurns += float64(duration)
+			metrics.peaceSettlements++
+		})
+		if warTempoWasStalemate(gs, ledger) {
+			t.addBoth(ledger, func(metrics *warTempoAggregate) {
+				metrics.stalemates++
+			})
+		}
+	}
+
+	t.previousWars = currentWars
+	t.previousOwners = make(map[world.RegionID]faction.FactionID, len(gs.Regions))
+	for rid, region := range gs.Regions {
+		if region != nil && region.OwnerID != "" {
+			t.previousOwners[rid] = faction.FactionID(region.OwnerID)
+		}
+	}
+}
+
+func (t *warTempoTelemetry) warForPair(a, b faction.FactionID, wars map[string]state.WarLedger) (state.WarLedger, bool) {
+	if t == nil || a == "" || b == "" || a == b {
+		return state.WarLedger{}, false
+	}
+	key := faction.RelationKey(a, b)
+	ledger, ok := wars[key]
+	return ledger, ok
+}
+
+func warTempoWasStalemate(gs *state.GameState, ledger state.WarLedger) bool {
+	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" {
+		return false
+	}
+	warTurns := gs.Turn - ledger.StartedTurn
+	if warTurns < 12 {
+		return false
+	}
+	lastActionTurn := ledger.LastBattleTurn
+	if lastActionTurn == 0 {
+		lastActionTurn = ledger.StartedTurn
+	}
+	if gs.Turn-lastActionTurn < 8 {
+		return false
+	}
+	for regionID, siege := range gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		attacker := gs.Armies[siege.AttackerArmyID]
+		target := gs.Regions[regionID]
+		if attacker == nil || target == nil {
+			continue
+		}
+		if (attacker.OwnerID == string(ledger.FactionA) && target.OwnerID == string(ledger.FactionB)) ||
+			(attacker.OwnerID == string(ledger.FactionB) && target.OwnerID == string(ledger.FactionA)) {
+			return false
+		}
+	}
+	return true
 }
 
 type scenarioCalibrationBand struct {
@@ -344,7 +516,10 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 		gs.PlayerFactionID = ""
 
 		start := snapshotAll(gs)
-		simulateTempoTurns(t, gs, evts, turns, int64(seed), nil)
+		warTelemetry := newWarTempoTelemetry(gs)
+		simulateTempoTurnsWithTurnEnd(t, gs, evts, turns, int64(seed), nil, func(_ int, current *state.GameState) {
+			warTelemetry.observe(current)
+		})
 		end := snapshotAll(gs)
 
 		for fid, f := range gs.Factions {
@@ -369,6 +544,15 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 			agg.endPower += float64(end[fid].power)
 			agg.endTechs += float64(end[fid].techs)
 			agg.endTrades += float64(end[fid].trades)
+			if metrics, ok := warTelemetry.byFaction[fid]; ok {
+				agg.warTempoAggregate.warsStarted += metrics.warsStarted
+				agg.warTempoAggregate.activeWarTurns += metrics.activeWarTurns
+				agg.warTempoAggregate.completedWars += metrics.completedWars
+				agg.warTempoAggregate.completedWarTurns += metrics.completedWarTurns
+				agg.warTempoAggregate.conquests += metrics.conquests
+				agg.warTempoAggregate.peaceSettlements += metrics.peaceSettlements
+				agg.warTempoAggregate.stalemates += metrics.stalemates
+			}
 		}
 	}
 
@@ -384,10 +568,20 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 		agg.endPower /= runCount
 		agg.endTechs /= runCount
 		agg.endTrades /= runCount
+		agg.warsStarted /= runCount
+		agg.activeWarTurns /= runCount
+		agg.completedWars /= runCount
+		agg.completedWarTurns /= runCount
+		agg.conquests /= runCount
+		agg.peaceSettlements /= runCount
+		agg.stalemates /= runCount
 		agg.score = agg.regionGain*120 + agg.goldGain/8 + agg.endPower/25 + agg.endTrades*20 + agg.endTechs*18
 		rows = append(rows, agg)
 	}
-	if profile.turns >= 42 && profile.runs >= 4 {
+	// Bu bantlar 42 aylık medium profilin sözleşmesidir. 120 aylık calibration
+	// raporu toplam birikimi ölçer; aynı sınırlarla karşılaştırmak uzun ömürlü
+	// fraksiyonları yanlış negatif üretir.
+	if profile.turns == 42 && profile.runs >= 4 {
 		assert1300CalibrationBands(t, aggregates)
 	}
 
@@ -442,6 +636,30 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 			row.endTrades,
 		)
 	}
+
+	warRows := append([]*balanceAggregate(nil), rows...)
+	sort.Slice(warRows, func(i, j int) bool { return warRows[i].id < warRows[j].id })
+	t.Log("war telemetry (average per run):")
+	for _, row := range warRows {
+		if row.warsStarted == 0 && row.activeWarTurns == 0 && row.completedWars == 0 && row.conquests == 0 {
+			continue
+		}
+		averageCompletedWarTurns := 0.0
+		if row.completedWars > 0 {
+			averageCompletedWarTurns = row.completedWarTurns / row.completedWars
+		}
+		t.Logf(
+			"  %-22s wars_started=%.1f active_war_turns=%.1f completed_wars=%.1f avg_war_turns=%.1f conquests=%.1f peace=%.1f stalemate=%.1f",
+			row.id,
+			row.warsStarted,
+			row.activeWarTurns,
+			row.completedWars,
+			averageCompletedWarTurns,
+			row.conquests,
+			row.peaceSettlements,
+			row.stalemates,
+		)
+	}
 }
 
 func Test1300ScenarioGrainEconomyBands(t *testing.T) {
@@ -460,6 +678,7 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 		}
 	}
 	reports := make(map[faction.FactionID]map[string]*grainPhaseAggregate, len(majorFactions))
+	warReports := make(map[faction.FactionID]warTempoAggregate)
 	for _, fid := range majorFactions {
 		reports[fid] = map[string]*grainPhaseAggregate{
 			"erken": &grainPhaseAggregate{},
@@ -475,7 +694,9 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 			t.Fatalf("scenario load failed: %v", err)
 		}
 		gs.PlayerFactionID = ""
+		warTelemetry := newWarTempoTelemetry(gs)
 		simulateTempoTurnsWithTurnEnd(t, gs, evts, turns, int64(seed), nil, func(turn int, current *state.GameState) {
+			warTelemetry.observe(current)
 			phase := phaseName(turn)
 			for _, fid := range majorFactions {
 				status, ok := current.GrainEconomy[fid]
@@ -492,6 +713,17 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 				reports[fid][phase].add(status)
 			}
 		})
+		for fid, metrics := range warTelemetry.byFaction {
+			aggregate := warReports[fid]
+			aggregate.warsStarted += metrics.warsStarted
+			aggregate.activeWarTurns += metrics.activeWarTurns
+			aggregate.completedWars += metrics.completedWars
+			aggregate.completedWarTurns += metrics.completedWarTurns
+			aggregate.conquests += metrics.conquests
+			aggregate.peaceSettlements += metrics.peaceSettlements
+			aggregate.stalemates += metrics.stalemates
+			warReports[fid] = aggregate
+		}
 	}
 
 	for _, fid := range majorFactions {
@@ -511,6 +743,31 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 			}
 			t.Logf("1300 tahıl bandı faction=%s phase=%s production=%.1f civilian=%.1f army=%.1f net=%.1f stockpile_months=%.1f famine_rate=%.0f%%", fid, phase, production, civilianDemand, armyUpkeep, netChange, stockpileMonths, famineRate*100)
 		}
+	}
+
+	ids := make([]faction.FactionID, 0, len(warReports))
+	for fid := range warReports {
+		ids = append(ids, fid)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	t.Log("1300 war telemetry (24 turns, average per run):")
+	for _, fid := range ids {
+		metrics := warReports[fid]
+		averageCompletedWarTurns := 0.0
+		if metrics.completedWars > 0 {
+			averageCompletedWarTurns = metrics.completedWarTurns / metrics.completedWars
+		}
+		t.Logf(
+			"  %-22s wars_started=%.1f active_war_turns=%.1f completed_wars=%.1f avg_war_turns=%.1f conquests=%.1f peace=%.1f stalemate=%.1f",
+			fid,
+			metrics.warsStarted/float64(runs),
+			metrics.activeWarTurns/float64(runs),
+			metrics.completedWars/float64(runs),
+			averageCompletedWarTurns,
+			metrics.conquests/float64(runs),
+			metrics.peaceSettlements/float64(runs),
+			metrics.stalemates/float64(runs),
+		)
 	}
 }
 

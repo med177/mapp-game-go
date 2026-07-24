@@ -22,7 +22,7 @@ func aiFrontTestState() *state.GameState {
 		ScenarioID: "1300_ottoman_rise",
 		Difficulty: 2,
 		Factions: map[faction.FactionID]*faction.Faction{
-			"ai":    {ID: "ai", CapitalSettlementID: "capital_city", AIAggressiveness: 60},
+			"ai":    {ID: "ai", CapitalSettlementID: "capital_city", AIAggressiveness: 60, Gold: 500, Grain: 500},
 			"enemy": {ID: "enemy"},
 			"other": {ID: "other"},
 		},
@@ -86,6 +86,98 @@ func TestDynamicReserveKeepsWeakStackBackAndStrongStackOnObjective(t *testing.T)
 	}
 }
 
+func TestAIDiagnosticSnapshotExposesFrontTargetAndRoles(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Turn = 30
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.BeginWarLedger("ai", "enemy")
+
+	snapshot := BuildAIDiagnosticSnapshot(gs, "ai")
+	if snapshot.PlanTargetFactionID != "enemy" || len(snapshot.Fronts) != 1 {
+		t.Fatalf("diagnostic snapshot plan/cephe bilgisini taşımalıydı: %+v", snapshot)
+	}
+	if snapshot.Fronts[0].TargetRegionID == "" {
+		t.Fatalf("diagnostic snapshot aktif cephe hedefini taşımalıydı: %+v", snapshot.Fronts[0])
+	}
+	if snapshot.ArmyRoleCounts[AIArmyRoleAssault] == 0 && snapshot.ArmyRoleCounts[AIArmyRoleSiege] == 0 && snapshot.ArmyRoleCounts[AIArmyRoleDefense] == 0 {
+		t.Fatalf("diagnostic snapshot ordu rollerini taşımalıydı: %+v", snapshot.ArmyRoleCounts)
+	}
+}
+
+func TestFrontTargetPrefersStrategicValueOverFirstRegion(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Regions["capital"].Neighbors = append(gs.Regions["capital"].Neighbors, "enemy_rear")
+	gs.Regions["enemy_border"].BaseGrainOutput = 1
+	gs.Regions["enemy_rear"].BaseGrainOutput = 100
+
+	ctx := prepareStrategicContext(gs, "ai")
+	for _, front := range ctx.Fronts {
+		if front.EnemyFactionID == "enemy" {
+			if front.TargetRegionID != "enemy_rear" {
+				t.Fatalf("cephe ilk bölgeye değil stratejik değeri yüksek hedefe yönelmeli: %+v", front)
+			}
+			return
+		}
+	}
+	t.Fatal("enemy cephesi bulunamadı")
+}
+
+func TestWarFrontTargetStaysLockedForShortWindow(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Regions["capital"].Neighbors = append(gs.Regions["capital"].Neighbors, "enemy_rear")
+	gs.Regions["enemy_border"].BaseGrainOutput = 1
+	gs.Regions["enemy_rear"].BaseGrainOutput = 100
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Turn = 20
+	ledger := gs.BeginWarLedger("ai", "enemy")
+	ledger.StartedTurn = 1
+	ledger.TargetRegionID = "enemy_border"
+	ledger.TargetLockedTurn = 19
+
+	ctx := prepareStrategicContext(gs, "ai")
+	for _, front := range ctx.Fronts {
+		if front.EnemyFactionID == "enemy" && front.TargetRegionID != "enemy_border" {
+			t.Fatalf("kısa hedef kilidi stratejik skorla hemen değişmemeli: %+v", front)
+		}
+	}
+}
+
+func TestSameRealmWarFrontSharesTargetAndFriendlyPower(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Turn = 20
+	gs.Factions["vassal"] = &faction.Faction{ID: "vassal", OverlordID: "ai"}
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Relations[faction.RelationKey("vassal", "enemy")] = &faction.Relation{
+		FactionA: "vassal", FactionB: "enemy", Stance: faction.StanceWar,
+	}
+	gs.Armies["vassal_field"] = &army.Army{
+		ID: "vassal_field", OwnerID: "vassal", RegionID: "front", Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+		},
+	}
+	gs.Regions["enemy_border"].BaseGrainOutput = 1
+	gs.Regions["enemy_rear"].BaseGrainOutput = 100
+	gs.Regions["capital"].Neighbors = append(gs.Regions["capital"].Neighbors, "enemy_rear")
+	vassalLedger := gs.BeginWarLedger("vassal", "enemy")
+	vassalLedger.TargetRegionID = "enemy_rear"
+	vassalLedger.TargetLockedTurn = 19
+
+	ctx := prepareStrategicContext(gs, "ai")
+	for _, front := range ctx.Fronts {
+		if front.EnemyFactionID != "enemy" {
+			continue
+		}
+		if front.TargetRegionID != "enemy_rear" {
+			t.Fatalf("aynı realm vassalının hedef kilidi overlord cephesine taşınmalıydı: %+v", front)
+		}
+		if front.FriendlyPower < 135 {
+			t.Fatalf("vassal saha gücü ortak cephe gücüne eklenmeliydi: %+v", front)
+		}
+		return
+	}
+	t.Fatal("enemy cephesi bulunamadı")
+}
+
 func TestNavalAssignmentsUseTransportAndEscortRoles(t *testing.T) {
 	gs := &state.GameState{
 		Armies: map[army.ArmyID]*army.Army{
@@ -122,6 +214,27 @@ func TestCapitalWarThreatRaisesReserveToThirtyPercent(t *testing.T) {
 	}
 	if len(ctx.Fronts) == 0 || !ctx.Fronts[0].CapitalThreat {
 		t.Fatalf("başkent tehdidi cephe snapshot'ına yazılmadı: %+v", ctx.Fronts)
+	}
+}
+
+func TestMultipleActiveFrontsRaiseReserveWithoutCriticalThreat(t *testing.T) {
+	gs := aiFrontTestState()
+	ctx := &StrategicContext{
+		gs:        gs,
+		FactionID: "ai",
+		Fronts: []AIFront{
+			{EnemyFactionID: "enemy", AtWar: true, ThreatScore: -20},
+			{EnemyFactionID: "other", AtWar: true, ThreatScore: -10},
+		},
+	}
+	if got := aiReservePercentForFrontRisk(ctx); got != 25 {
+		t.Fatalf("iki aktif cephede yedek oranı yüzde 25 olmalıydı: got=%d", got)
+	}
+
+	ctx.Fronts[0].AtWar = false
+	ctx.Fronts[1].AtWar = false
+	if got := aiReservePercentForFrontRisk(ctx); got != 15 {
+		t.Fatalf("savaşsız durumda temel yedek oranı yüzde 15 olmalıydı: got=%d", got)
 	}
 }
 

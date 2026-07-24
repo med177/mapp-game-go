@@ -1,6 +1,32 @@
 package state
 
-import "mapp-game-go/internal/faction"
+import (
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
+)
+
+const postPeaceTruceTurns = 6
+
+// RecordTruce barıştan sonra aynı tarafların hemen yeniden savaşa girmesini
+// önleyen save-backed ateşkes bitişini kaydeder.
+func (s *GameState) RecordTruce(a, b faction.FactionID) {
+	if s == nil || a == "" || b == "" || a == b {
+		return
+	}
+	if s.RecentTruces == nil {
+		s.RecentTruces = make(map[string]int)
+	}
+	s.RecentTruces[faction.RelationKey(a, b)] = s.Turn + postPeaceTruceTurns
+}
+
+// TruceRemaining kalan ateşkes turunu döner; sıfır, savaş ilanının serbest
+// olduğunu belirtir. Süresi dolan kayıtlar okunurken etkisiz kabul edilir.
+func (s *GameState) TruceRemaining(a, b faction.FactionID) int {
+	if s == nil || s.RecentTruces == nil {
+		return 0
+	}
+	return max(0, s.RecentTruces[faction.RelationKey(a, b)]-s.Turn)
+}
 
 // WarLedger aktif bir savaşın barış değerlendirmesinde kullanılan kalıcı
 // başlangıç durumunu ve iki taraflı sonuçlarını tutar. FactionA/FactionB,
@@ -17,6 +43,8 @@ type WarLedger struct {
 	RegionsCapturedB   int               `json:"regions_captured_b,omitempty"`
 	LastBattleTurn     int               `json:"last_battle_turn,omitempty"`
 	LastPeaceOfferTurn int               `json:"last_peace_offer_turn,omitempty"`
+	TargetRegionID     world.RegionID    `json:"target_region_id,omitempty"`
+	TargetLockedTurn   int               `json:"target_locked_turn,omitempty"`
 }
 
 // BeginWarLedger savaş başlangıcını yalnızca ilk geçişte kaydeder.

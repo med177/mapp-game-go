@@ -42,6 +42,7 @@ type Game struct {
 	lastCommanderProgress    []render.BattleReportCommanderProgress
 	loading                  *loadingJob
 	aiTurn                   *aiTurnState
+	aiDiagnosticReportSaved  bool
 }
 
 type pendingSortieState struct {
@@ -510,6 +511,9 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		g.gs.AIDiagnosticHistory = nil
+		g.gs.AIDiagnosticCaptureTurnsRemain = 0
+		g.aiDiagnosticReportSaved = false
 		g.pendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
@@ -522,6 +526,11 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
+		if g.gs.DevelopmentMode {
+			g.gs.AIDiagnosticHistory = nil
+			g.gs.AIDiagnosticCaptureTurnsRemain = 5
+		}
+		g.aiDiagnosticReportSaved = false
 		g.pendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
@@ -556,6 +565,9 @@ func (g *Game) startAITurnSequence() {
 		return
 	}
 	camera := g.renderer.CameraSnapshot()
+	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain > 0 {
+		ai.RecordAIDiagnosticRound(g.gs)
+	}
 	g.renderer.PrepareForTurnAdvance()
 	g.aiTurn = &aiTurnState{
 		order:        g.orderedAIFactions(),
@@ -902,6 +914,12 @@ func (g *Game) resolveTurn() {
 	events.TickActiveRegionEvents(g.gs)
 
 	g.gs.AdvanceTurn()
+	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain == 0 &&
+		len(g.gs.AIDiagnosticHistory) > 0 && !g.aiDiagnosticReportSaved {
+		if g.saveToSlot("autosave", false, "") {
+			g.aiDiagnosticReportSaved = true
+		}
+	}
 	unlocked := checkRegionUnlocks(g.gs)
 	g.showRegionUnlockNotifications(unlocked)
 	if g.gs.Phase != state.PhaseGameOver {

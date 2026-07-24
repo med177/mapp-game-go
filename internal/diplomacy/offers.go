@@ -212,11 +212,13 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		if rel.Stance != faction.StanceWar {
 			return Result{Message: "Barış teklifi artık geçerli değil."}
 		}
+		settlement := AssessPeaceSettlement(gs, offer.FromFactionID, offer.ToFactionID)
 		setPeaceBetweenCoalitions(gs, offer.FromFactionID, offer.ToFactionID)
 		return Result{
-			Accepted: true,
-			Applied:  true,
-			Message:  factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
+			Accepted:   true,
+			Applied:    true,
+			Settlement: &settlement,
+			Message:    factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
 		}
 	}
 	if action == ActionProposeAlliance {

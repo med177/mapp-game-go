@@ -242,6 +242,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceWar {
 			return factionLabel(gs, target) + " ile zaten savaş halindesiniz."
 		}
+		if remaining := gs.TruceRemaining(actor, target); remaining > 0 {
+			return factionLabel(gs, target) + " ile ateşkes sürüyor (" + itoa(remaining) + " tur)."
+		}
 	case ActionProposePeace:
 		if stance != faction.StanceWar {
 			return "Barış teklifi sadece savaşta yapılır."
@@ -408,6 +411,7 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			removeTradeRoutesBetween(gs, lhs, rhs)
 			if wasWar {
 				gs.EndWarLedger(lhs, rhs)
+				gs.RecordTruce(lhs, rhs)
 			}
 		}
 	}

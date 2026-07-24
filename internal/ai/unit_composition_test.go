@@ -29,6 +29,29 @@ func TestAICompositionTargetsFollowApprovedPlanShares(t *testing.T) {
 	}
 }
 
+func TestAICompositionTargetFollowsMaturePrimaryFront(t *testing.T) {
+	gs, ctx := aiUnitCompositionTestState(state.AIObjectiveDefend)
+	gs.Turn = 20
+	ledger := gs.BeginWarLedger("ai", "enemy")
+	ledger.StartedTurn = 1
+	ctx.Fronts = []AIFront{{
+		EnemyFactionID: "enemy",
+		TargetRegionID: "target",
+		AnchorRegionID: "home",
+		AtWar:          true,
+	}}
+	ctx.regionValue = make(map[world.RegionID]int)
+	ctx.factionPower = make(map[faction.FactionID]int)
+	ctx.frontierPower = make(map[faction.FactionID]int)
+	gs.Regions["target"].Buildings = []string{"walls"}
+
+	got := aiCompositionTargetForStrategicContext(gs, "ai", gs.AIPlans["ai"], ctx)
+	want := aiCompositionTarget{Infantry: 55, Cavalry: 25, Siege: 20}
+	if got != want {
+		t.Fatalf("tahkimli ana cephe kuşatma ağırlığını artırmalıydı: got=%+v want=%+v", got, want)
+	}
+}
+
 func TestAIStrategicRecruitmentFillsLargestCompositionDeficit(t *testing.T) {
 	gs, ctx := aiUnitCompositionTestState(state.AIObjectiveExpand)
 	gs.UnitTypes = map[string]*army.UnitType{

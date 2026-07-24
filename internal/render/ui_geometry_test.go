@@ -196,6 +196,7 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		assertButtonInside(t, tc.w, tc.h, buildBattleReportContinueButton())
 		assertModalInside(t, tc.w, tc.h, buildVictoryDetailModal())
 		assertModalInside(t, tc.w, tc.h, buildHistoricalEventModal())
+		assertRectInside(t, tc.w, tc.h, aiDiagnosticPanelRect())
 		for _, btn := range battlePlanCardRects() {
 			assertRectInside(t, tc.w, tc.h, btn)
 		}

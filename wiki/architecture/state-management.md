@@ -13,6 +13,13 @@ related: [game-loop, systems/events, systems/economy, render-pipeline, shape-edi
 
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
 
+Geliştirme modunda save yükleme sonrası ilk beş AI fazı için
+`AIDiagnosticHistory` ve `AIDiagnosticCaptureTurnsRemain` geçici runtime alanları
+kullanılır. Bu alanlar normal compact campaign payload'ına girmez; beşinci fazdan
+sonra yalnız debug sidecar'a `state.ai_diagnostic_history` olarak yazılır. Böylece
+oynanabilir save formatı büyümeden AI plan/hedef/cephe/rezerv değişimi
+karşılaştırılabilir.
+
 Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efektif üretimini toplar. `FactionGrainNetChange()` bu toplamdan sivil tahıl talebi ile orduların efektif tahıl bakımını çıkarır; böylece HUD'daki negatif net tahıl göstergesi ekonomi kurallarıyla aynı state hesaplarına dayanır.
 
 ```go
@@ -39,6 +46,7 @@ type GameState struct {
     Commanders map[string]*Commander
     AIPlans map[FactionID]*AIPlanState
     WarLedgers map[string]*WarLedger
+    RecentTruces map[string]int // relation key -> ateşkes bitiş turu
     ShapeData CountryShapeJSON           // json:"-"
 
     // Runtime-only (json:"-")
@@ -88,11 +96,16 @@ type GameState struct {
 `WarLedger`, `RelationKey` ile aynı sıralı taraf anahtarında yalnız aktif savaşın kalıcı
 sonuç state'ini tutar: başlangıç turu, iki tarafın başlangıç kara bölgesi sayısı, tamamen
 kaybedilen birlikler, ele geçirilen bölge sayıları, son muharebe turu ve son barış teklifi
-turu. `BeginWarLedger()` savaş geçişinde snapshot alır; muharebe/fetih executor'ları
+turu. Aktif savaşın runtime AI hedef kilidi de `TargetRegionID`/`TargetLockedTurn` ile
+kısa süreli olarak save'e yazılır; hedef geçersizleşirse veya kilit süresi dolarsa AI
+stratejik skorla yeni hedef seçer. `BeginWarLedger()` savaş geçişinde snapshot alır; muharebe/fetih executor'ları
 sayaçları günceller, `EndWarLedger()` barışta kaydı kaldırıp hedef planın rally state'ini
 temizler. `SyncWarLedgers()` eski save veya doğrudan stance düzenleyen legacy yolları
 aktif ilişkilerle uzlaştırır; ledger taşımayan eski save'deki savaş yükleme turunda sıfır
 sayaçla başlar.
+Barış çözümünde `RecordTruce()` aynı relation key için altı tur sonrasını
+`RecentTruces` içine yazar; bu alan compact save'e alınır ve eski save'lerde boş kabul
+edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
 `CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon, müttefik veya aynı vassal zincirindeki bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation/hiyerarşi verisinden okunur.
 `IsArmyDefendingSiegedRegion(candidate)`, aktif kuşatma altındaki bölgede bölge sahibi veya onun müttefiki olarak duran kara ordusunu ortak savunmacı state'i olarak tanımlar. Bu predicate huruç zorunluluğu ile kuşatma altı iyileşme engelinin aynı state kuralını kullanmasını sağlar.
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.

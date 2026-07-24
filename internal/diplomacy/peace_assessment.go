@@ -15,19 +15,27 @@ const (
 // PeaceAssessment 1300 senaryosundaki bir savaş tarafının barış isteğini
 // açıklar. Score yükseldikçe savaşı bitirme baskısı artar.
 type PeaceAssessment struct {
-	Score            int
-	Threshold        int
-	WarTurns         int
-	Eligible         bool
-	Emergency        bool
-	CapitalThreat    bool
-	MilitaryCollapse bool
-	ObjectiveDone    bool
-	Stalemate        bool
-	OwnLosses        int
-	EnemyLosses      int
-	OwnRegionsLost   int
-	RegionsGained    int
+	Score                int
+	WarScore             int
+	WarExhaustion        int
+	GoldPressure         int
+	GrainPressure        int
+	SatisfactionPressure int
+	RelationshipPressure int
+	Threshold            int
+	WarTurns             int
+	Eligible             bool
+	Emergency            bool
+	CapitalThreat        bool
+	MilitaryCollapse     bool
+	ObjectiveDone        bool
+	Stalemate            bool
+	OwnLosses            int
+	EnemyLosses          int
+	OwnRegionsLost       int
+	RegionsGained        int
+	ObjectiveHeld        int
+	ObjectiveTotal       int
 }
 
 func (a PeaceAssessment) ShouldPropose() bool {
@@ -55,6 +63,12 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	initialActor, _ := warInitialRegionsFor(ledger, actor)
 	currentActor := landRegionCount(gs, actor)
 	assessment.OwnRegionsLost = max(assessment.OwnRegionsLost, max(0, initialActor-currentActor))
+	assessment.WarScore, assessment.ObjectiveHeld, assessment.ObjectiveTotal = warScoreFor(gs, actor, opponent, ledger)
+	assessment.WarExhaustion = warExhaustionFor(gs, actor, opponent, ledger, assessment.WarTurns, assessment.OwnLosses, assessment.OwnRegionsLost)
+	assessment.GoldPressure = goldPressureFor(gs, actor)
+	assessment.GrainPressure = grainPressureFor(gs, actor)
+	assessment.SatisfactionPressure = satisfactionPressureFor(gs, actor)
+	assessment.RelationshipPressure = relationshipPressureFor(gs, actor, opponent)
 
 	assessment.Score += min(24, max(0, assessment.WarTurns-peaceMinimumWarTurns)*3)
 	assessment.Score += assessment.OwnRegionsLost * 9
@@ -64,7 +78,6 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	} else if assessment.EnemyLosses > assessment.OwnLosses {
 		assessment.Score -= min(14, (assessment.EnemyLosses-assessment.OwnLosses)*2)
 	}
-
 	actorPower := MilitaryPower(gs, actor)
 	opponentPower := MilitaryPower(gs, opponent)
 	switch {
@@ -119,6 +132,77 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	}
 	assessment.Stalemate = isWarStalemate(gs, actor, opponent, ledger)
 	return assessment
+}
+
+func warExhaustionFor(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger, warTurns, ownLosses, ownRegionsLost int) int {
+	if gs == nil || ledger == nil {
+		return 0
+	}
+	exhaustion := min(35, max(0, warTurns-2)*2)
+	exhaustion += min(25, max(0, ownLosses)*2)
+	exhaustion += min(20, max(0, ownRegionsLost)*5)
+	if activeWarCount(gs, actor) > 1 {
+		exhaustion += min(12, (activeWarCount(gs, actor)-1)*6)
+	}
+	if capitalUnderWarThreat(gs, actor, opponent) {
+		exhaustion += 8
+	}
+	return min(100, exhaustion)
+}
+
+func goldPressureFor(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || gs.Factions[fid] == nil || gs.Factions[fid].Gold >= 80 {
+		return 0
+	}
+	return min(20, 8+(80-gs.Factions[fid].Gold)/10)
+}
+
+func grainPressureFor(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || gs.Factions[fid] == nil {
+		return 0
+	}
+	if status, ok := gs.GrainEconomy[fid]; ok {
+		switch status.SupplyLevel {
+		case state.GrainSupplyFamine:
+			return 20
+		case state.GrainSupplyCritical:
+			return 14
+		case state.GrainSupplyWarning:
+			return 6
+		}
+		return 0
+	}
+	if gs.Factions[fid].Grain < 40 {
+		return 8
+	}
+	return 0
+}
+
+func satisfactionPressureFor(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil {
+		return 0
+	}
+	totalDeficit := 0
+	regions := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || region.Satisfaction <= 0 {
+			continue
+		}
+		regions++
+		totalDeficit += max(0, 50-region.Satisfaction)
+	}
+	if regions == 0 {
+		return 0
+	}
+	return min(20, totalDeficit/regions)
+}
+
+func relationshipPressureFor(gs *state.GameState, actor, opponent faction.FactionID) int {
+	rel := Relation(gs, actor, opponent)
+	if rel == nil || rel.Score >= 0 {
+		return 0
+	}
+	return min(20, -rel.Score/5)
 }
 
 func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) bool {
@@ -181,6 +265,59 @@ func warInitialRegionsFor(ledger *state.WarLedger, actor faction.FactionID) (int
 		return ledger.InitialRegionsA, ledger.InitialRegionsB
 	}
 	return ledger.InitialRegionsB, ledger.InitialRegionsA
+}
+
+// warScoreFor savaş sonucunu actor perspektifinden türetir. Pozitif değer actor'un
+// avantajını, negatif değer opponent baskısını gösterir. Bu değer save'e yazılmaz;
+// ledger, mevcut sahiplik ve plan hedeflerinden her değerlendirmede yeniden hesaplanır.
+func warScoreFor(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) (int, int, int) {
+	if gs == nil || ledger == nil || actor == "" || opponent == "" {
+		return 0, 0, 0
+	}
+	actorLosses, opponentLosses := warCasualtiesFor(ledger, actor)
+	actorCaptured, opponentCaptured := warCapturesFor(ledger, actor)
+	score := clamp((actorCaptured-opponentCaptured)*20, -40, 40)
+	score += clamp((opponentLosses-actorLosses)*2, -30, 30)
+
+	initialActor, initialOpponent := warInitialRegionsFor(ledger, actor)
+	currentActor := landRegionCount(gs, actor)
+	currentOpponent := landRegionCount(gs, opponent)
+	score += clamp((initialActor-currentActor)*15, -30, 30)
+	score += clamp((initialOpponent-currentOpponent)*15, -30, 30)
+
+	if capitalUnderWarThreat(gs, actor, opponent) {
+		score -= 25
+	}
+	if capitalUnderWarThreat(gs, opponent, actor) {
+		score += 25
+	}
+
+	held, total := warObjectiveProgress(gs, actor, opponent)
+	if total > 0 {
+		score += held * 12
+	}
+	return clamp(score, -100, 100), held, total
+}
+
+func warObjectiveProgress(gs *state.GameState, actor, opponent faction.FactionID) (held, total int) {
+	if gs == nil {
+		return 0, 0
+	}
+	plan := gs.AIPlans[actor]
+	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != opponent {
+		return 0, 0
+	}
+	for _, regionID := range plan.TargetRegionIDs {
+		region := gs.Regions[regionID]
+		if region == nil {
+			continue
+		}
+		total++
+		if region.OwnerID == string(actor) {
+			held++
+		}
+	}
+	return held, total
 }
 
 func activeWarCount(gs *state.GameState, actor faction.FactionID) int {

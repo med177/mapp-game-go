@@ -21,6 +21,30 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 
 ## Genel Yapı
 
+AI diplomasi kapanışında `PeaceAssessment` savaş yorgunluğu ile altın, tahıl,
+memnuniyet ve ilişki baskılarını raporlar. `AssessPeaceSettlement` AI-AI
+barışını beyaz barış, bölge bırakma, tazminat veya vassallık sonucuna ayırır;
+`ExecuteAIPeace` sonucu uygular. Oyuncuya gelen bekleyen barış teklifi, açık
+seçim olmadan toprak veya altın kaybettirmez.
+
+`BuildAIDiagnosticSnapshot` planı, cephe hedeflerini, güç/tehdit değerlerini,
+ordu rol dağılımını ve lojistik/yedek kuvvet bloklanma nedenlerini tek runtime
+çıktısında toplar. Normal save state'ine yazılmaz; debug paneli ve senaryo tempo raporu için
+gerçek AI karar context'inin aynısını kullanır.
+
+Geliştirme modunda bu snapshot'lar `quicksave.debug.json` veya
+`autosave.debug.json` sidecar'ındaki `state.ai_diagnostics` alanına eklenir.
+Oyun içinde aynı veri `F3` ile açılan modalda gösterilir; `TAB` devletler arasında,
+mouse tekeri teşhis satırları arasında geçiş yapar. Bu görünüm yalnız geliştirme
+modunda aktiftir.
+
+Geliştirme save'i yüklendiğinde `GameState` beş AI fazı boyunca geçici bir
+`AIDiagnosticHistoryEntry` listesi toplar. Her kayıt tur, plan türü, hedef bölge,
+aktif savaş/cephe sayısı, yedek kuvvet seviyesi ve bloklanma nedenlerini taşır.
+Beşinci AI fazı tamamlanınca history, normal sıkıştırılmış save'e eklenmeden
+`autosave.debug.json` içindeki `state.ai_diagnostic_history` alanına yazılır; F3
+modalı seçili devletin bu beş turdaki satırlarını karşılaştırmalı olarak gösterir.
+
 Her `PhaseAITurn` artık iki katmandan oluşur:
 
 - `ai.TakeTurn()` hâlâ tam turu tek çağrıda çözebilen saf AI entrypoint'idir.
@@ -33,6 +57,13 @@ AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları I
 Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
 
 `internal/game/scenario_balance_test.go`, yalnız `1300_ottoman_rise` için deterministik tempo harness'ıdır. `RUN_SCENARIO_TEMPO_REPORT=fast|medium|calibration` sırasıyla 12x2, 42x4 ve 120x8 kapsamını çalıştırır; `SCENARIO_TEMPO_TURNS/RUNS` ile kontrollü override, `SCENARIO_TEMPO_DIFFICULTY=1|2|3` ile zorluk karşılaştırması destekler. Go 1.25'in `rand.Seed` no-op varsayılanı test kapsamında `randseednop=0` ile kapatılır ve savaş zarları tur/fraksiyon/step scope'una ayrılır. Aynı seed'in iki turluk tam state replay testi ile benchmark da bu dosyadadır.
+
+Tempo raporu her profil için devlet bazında `wars_started`, aktif savaş-ay,
+tamamlanan savaşların ortalama süresi, fetih, barış ve stalemate sayaçlarını da
+çıkarır. Bu telemetry yalnız test harness'inde tutulur; `GameState` ve save formatı
+genişletilmez. 24 aylık tahıl bandı, 42 aylık medium tempo ve 120 aylık calibration
+raporu aynı savaş davranış görünürlüğünü kullanır; 42 aylık altın bantları yalnız
+medium profilde doğrulanır.
 Hareket karar refactor'ı sonrasında replay testi yine geçti. CPU/allocasyon profiliyle
 diplomasi tehdit snapshot'ı, paylaşılan ticaret erişimi ve state order cache'leri eklendi;
 42x8 Normal ölçümü `60.416 sn`den `55.658 sn` test süresine indi (`58.568 sn` duvar saati).
@@ -61,9 +92,11 @@ ortalama altın kazanımını aşağıdaki sözleşmeyle doğrular:
 
 Bantlar tarihsel sonucu sabitlemez; ekonomi teknolojisi kalibrasyonu, aktif savaşlar,
 bina/ordu harcaması ve bölge kazanımı birlikte ölçülür. Bant dışına çıkılması, yeni
-AI/ekonomi değişikliğinin tempo incelemesi gerektirdiğini gösterir. `fast` profili 12
-tur x 2 seed hızlı regresyon, iki turluk tam state replay testi ise deterministiklik
-kontrolüdür.
+AI/ekonomi değişikliğinin tempo incelemesi gerektirdiğini gösterir. Bant kontrolü
+yalnız 42 tur/4 seed medium profilinde yapılır; 120 tur/8 seed `calibration` profili
+uzun dönem birikimi raporlar ve 42 aylık toplam bantla karşılaştırılmaz. `fast`
+profili 12 tur x 2 seed hızlı regresyon, iki turluk tam state replay testi ise
+deterministiklik kontrolüdür.
 
 Kaynak/test: `internal/game/scenario_balance_test.go` içindeki
 `assert1300CalibrationBands`, `Test1300ScenarioTempoReport` ve
@@ -469,6 +502,10 @@ savunma objective'i veya dost kritik merkez aktif tehdit/kuşatma altındaysa he
 çıkar. Stack granülerliği nedeniyle atanan güç hedefi aşabilir; küçük devletin bütün
 ordusunu dondurmamak için tek saha ordusunda rezerv ayrılmaz ve çok ordulu devlette en
 güçlü stack aktif bırakılır. Aktif kuşatma ve relief görevi rezervden önce atanır.
+Birden fazla aktif savaş veya pozitif tehdit skoru taşıyan ama henüz kritik olmayan
+cepheler varsa oran `%25`e çıkar; savaşlar yatıştığında `%15` tabanına döner. Bu yedek
+oranı uzun savaşta recovery/ikmal için güvenli güç bırakır ve başkent tehdidindeki
+`%30` kuralını ezmez.
 
 Rol bonusları yalnız standart hareket/diplomasi kurallarının zaten geçerli saydığı
 hamleleri sıralar; barıştaki yabancı hedefi veya yasak geçişi açamaz. Kalıcı objective
@@ -486,6 +523,47 @@ seferberlik penceresi korunur; savaş ledger'ı bu eşiği geçtiğinde cephe ye
 edebilir. Genişleme objective'leri kendi mevcut hücum akışını kullanmaya devam eder.
 Bu ayrım, kayıtlı savaşların uzun süre sonuçsuz kalmasını düzeltirken 1300 açılışındaki
 genişleme ve tahıl tempo bantlarını bozmaz.
+
+Savaş hazırlığı ekonomiyle de sınırlıdır. 1300 senaryosunda ilk 24 tur tarihsel
+açılış temposunu koruyan bir hazırlık penceresidir; sonrasında yeni proaktif savaş
+ancak `prepareAIBudget()` tarafından hesaplanan altın acil rezervi ve en az iki aylık
+operasyonel tahıl stoku korunuyorsa açılır. Runtime `GrainEconomyStatus` kritik/kıtlık
+seviyesindeyse kapı kapanır. Aktif savaşlarda uyarı seviyesi cepheyi durdurmaz; kritik
+ve kıtlık seviyesinde saldırı rolleri savunma/ikmal rolüne çekilir. Bu kural mevcut
+`StrategicGrainDemand()`, `EffectiveArmyGrainUpkeep()` ve bölgesel ikmal hesaplarını
+yeniden kullanır; ekonomi tick'i henüz çalışmamış save/ilk tur için aynı state fallback'i
+uygulanır. Regression: `TestStrategicWarReadinessUsesGoldAndGrainReserves`,
+`TestStrategicWarLogisticsGatePreservesOpeningTempo`.
+
+Aktif savunma/konsolidasyon savaşlarında hedef artık `EnemyRegions[0]` değildir.
+`AIFront.TargetRegionID`, bölgenin ekonomik/stratejik değeri, başkent olması, kuşatma
+durumu, hedefteki savunma gücü, dost erişimi ve mevcut expand plan hedefleriyle
+deterministik seçilir. Mevcut `expand` objective'lerinin öncelik sırası açılış temposunu
+korumak için aynen kullanılır; yeni hedef skoru özellikle planı savaşı kilitleyen
+devletlerin fallback saldırı rotasına uygulanır. Recruitment da aynı cephe hedefini
+kullanarak ordunun yanlış sınırda toplanmasını önler.
+
+Üretim kompozisyonu da bu bağlamı okur. Mature ana cephede tahkimli hedef varsa
+`55/25/20` piyade/süvari/kuşatma oranı, tahkimatsız hedefte `60/25/15` oranı kullanılır;
+dost kritik tehditte `75/15/10` savunma oranına dönülür. Ana saldırı dışındaki aktif
+cepheler bu override'ı almaz; genel `AIPlanState` oranları geçerli kalır. Böylece
+kuşatma birimi doğru cephe için artırılırken tüm devletin rastgele topçu yığması
+engellenir. Kaynak: `internal/ai/unit_composition.go`.
+
+### Müttefik ve Vassal Ortak Cephesi
+
+`buildAIFronts()` aynı realm içindeki overlord/vassal ordularını, ayrıca aktif savaşta
+olan doğrudan müttefikleri ortak cephe gücüne dahil eder. Bu katkı yalnız ilgili
+ordunun kendi düşmanla `war` ilişkisi varsa geçerlidir; barıştaki veya savaşa
+katılmamış müttefik ordu yapay biçimde cephe gücü sayılmaz. Ortak katılımcılardan
+birinin `WarLedger.TargetRegionID` kilidi varsa hedef, diğer katılımcının aynı düşman
+cephesinde geçerli hedef listesinde bulunması koşuluyla paylaşılır. Böylece vassal ve
+overlord farklı sınır bölgelerine dağılmaz; her fraksiyonun hareket/komuta yetkisi
+ise kendi AI turunda kalır. Regression: `TestSameRealmWarFrontSharesTargetAndFriendlyPower`.
+Relief hedefleri de aynı kuralla vassal veya savaşa katılmış müttefik bölgesine
+genişletilir; kuşatma yapan aynı-realm orduya karşı yardım görevi üretilmez ve hedef
+sahibi ile kuşatan arasında gerçek `war` ilişkisi aranır. Böylece müttefik kuşatması
+boşta kalmazken barıştaki ortakların orduları yanlışlıkla savaşa çekilmez.
 
 ### Geri Çekilme ve Takviye
 

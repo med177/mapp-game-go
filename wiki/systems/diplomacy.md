@@ -194,6 +194,17 @@ loader'da sıralı faction ID'leriyle üretildiğinden save/replay yönü determ
 
 ---
 
+## Barış sonucu ve ateşkes
+
+`AssessPeaceSettlement` savaş skoruna göre barışı beyaz barış, bölge bırakma,
+altın tazminatı veya vassallık olarak sınıflandırır. `ExecuteAIPeace` AI-AI
+barışlarında sonucu uygular. Oyuncunun mevcut barış aksiyonu ise seçim yapılmadan
+toprak veya altın kaybettirmemek için varsayılan olarak beyaz barıştır.
+
+Barış sonrası taraflara altı turluk save-backed ateşkes verilir. Bu bilgi
+`GameState.RecentTruces` içinde relation key ve bitiş turu olarak tutulur;
+`ActionDeclareWar` ateşkes bitene kadar bloklanır.
+
 ## AI Diplomasi Davranışı
 
 `aiHandleDiplomacy()` ve `FormCoalitionAgainstPlayer()` — zorluk 3 koalisyon dahil aynı motoru kullanır
@@ -210,10 +221,24 @@ AI:
   sayar. `defend` veya `consolidate` planı, savaşın kendisini bitirmiş gibi barış
   baskısını yanlışlıkla azaltamaz; uzun durgunlukta iki taraf da aynı stalemate kapısından
   barışı kabul edebilir
+- `PeaceAssessment.WarScore`, actor perspektifinden türetilen `-100..100` arası savaş
+  sonucudur. Fetih/kayıp ledger'ı, mevcut bölge değişimi, başkent tehdidi ve `expand`
+  planındaki elde tutulan hedef bölgeleri birleştirir. `ObjectiveHeld` ve
+  `ObjectiveTotal` değerleri hedef ilerlemesini ayrıca görünür kılar; bu skor save'e
+  yazılmaz, her değerlendirmede güncel state'ten yeniden hesaplanır.
+- `PeaceAssessment` ayrıca `WarExhaustion`, `GoldPressure`, `GrainPressure`,
+  `SatisfactionPressure` ve `RelationshipPressure` alanlarıyla barış baskısının
+  açıklamasını taşır. Savaş süresi/kayıpları, mevcut altın ve tahıl seviyesi, sahipli
+  bölgelerin ortalama memnuniyet açığı ve savaş ilişkisinin negatif skoru ayrı raporlanır;
+  bunlar save'e yazılmaz, güncel state'ten türetilir.
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
+- barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde altı turluk
+  save-backed ateşkes alır; bu sürede `ActionDeclareWar` engellenir, süre bitince
+  savaş ilanı yeniden açılır. Koalisyon barışı taraf çiftlerinin her biri için aynı
+  kaydı üretir
 - dış ittifakın ortak tehdit/ticaret/sınır dayanağı kalmazsa relation skoru otomatik şişmez; AI yeterince zayıflayan veya artık anlamlı fayda üretmeyen ittifakı bozabilir
 - koalisyon anında oyuncuya savaş açıp diğer AI'larla ittifak kurmaya çalışır
 

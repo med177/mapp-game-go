@@ -441,6 +441,9 @@ func TestSaveToSlotWritesEnvelopeAndLoadSlotReadsIt(t *testing.T) {
 		Year:            1455,
 		Month:           4,
 		DevelopmentMode: true,
+		AIDiagnosticHistory: []state.AIDiagnosticHistoryEntry{{
+			Turn: 17, FactionID: "player", FrontCount: 1,
+		}},
 		PlayerFactionID: "player",
 		Regions: map[world.RegionID]*world.Region{
 			"r1": {
@@ -540,6 +543,12 @@ func TestSaveToSlotWritesEnvelopeAndLoadSlotReadsIt(t *testing.T) {
 	}
 	if debugSaved.State.Regions["r1"].Population != 1234 {
 		t.Fatalf("debug sidecar region durumu eksik: %+v", debugSaved.State.Regions["r1"])
+	}
+	if diagnostic := debugSaved.State.AIDiagnostics["player"]; diagnostic == nil || diagnostic.FactionID != "player" {
+		t.Fatalf("debug sidecar AI teşhis snapshot'ı eksik: %+v", debugSaved.State.AIDiagnostics)
+	}
+	if len(debugSaved.State.AIDiagnosticHistory) != 1 || debugSaved.State.AIDiagnosticHistory[0].Turn != 17 {
+		t.Fatalf("debug sidecar AI teşhis geçmişi eksik: %+v", debugSaved.State.AIDiagnosticHistory)
 	}
 	if armyState := debugSaved.State.Armies["army_1"]; armyState == nil || len(armyState.Units) != 4 {
 		t.Fatalf("debug sidecar army state eksik: %+v", armyState)

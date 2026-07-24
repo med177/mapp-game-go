@@ -91,6 +91,64 @@ func TestRallyIsNotCreatedWithoutTwoOffensiveArmies(t *testing.T) {
 	}
 }
 
+func TestStrategicWarReadinessUsesGoldAndGrainReserves(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"ai": {
+			FactionID:      "ai",
+			TotalDemand:    80,
+			Stockpile:      80,
+			MonthsOfSupply: 1,
+			SupplyLevel:    state.GrainSupplyWarning,
+		},
+	}
+
+	if aiWarLogisticsReady(gs, "ai") {
+		t.Fatal("tek aylık tahıl rezerviyle yeni savaş açılmamalıydı")
+	}
+
+	gs.GrainEconomy["ai"] = state.GrainEconomyStatus{
+		FactionID:      "ai",
+		TotalDemand:    80,
+		Stockpile:      160,
+		MonthsOfSupply: 2,
+		SupplyLevel:    state.GrainSupplyWarning,
+	}
+	gs.Factions["ai"].Gold = 79
+	if aiWarLogisticsReady(gs, "ai") {
+		t.Fatal("acil altın rezervinin altında yeni savaş açılmamalıydı")
+	}
+
+	gs.Factions["ai"].Gold = 500
+	if !aiWarLogisticsReady(gs, "ai") {
+		t.Fatal("iki aylık tahıl ve yeterli altın rezervi savaşa izin vermeliydi")
+	}
+}
+
+func TestStrategicWarLogisticsGatePreservesOpeningTempo(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"ai": {
+			FactionID:      "ai",
+			TotalDemand:    80,
+			Stockpile:      80,
+			MonthsOfSupply: 1,
+			SupplyLevel:    state.GrainSupplyWarning,
+		},
+	}
+
+	openingContext := prepareStrategicContext(gs, "ai")
+	gs.Turn = aiWarLogisticsActivationTurn
+	if !aiStrategicWarReady(openingContext, "enemy") {
+		t.Fatal("açılış koruma penceresinde lojistik freni savaş hazırlığını kesmemeliydi")
+	}
+
+	gs.Turn = aiWarLogisticsActivationTurn + 1
+	if aiStrategicWarReady(openingContext, "enemy") {
+		t.Fatal("açılış penceresinden sonra yetersiz rezerv yeni savaşı engellemeliydi")
+	}
+}
+
 func TestRallyFollowsActiveWarInsteadOfPeaceTimePlanTarget(t *testing.T) {
 	gs := aiRallyTestState()
 	gs.Factions["war_enemy"] = &faction.Faction{ID: "war_enemy"}

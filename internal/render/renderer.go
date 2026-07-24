@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
 	"mapp-game-go/internal/combat"
@@ -176,6 +177,10 @@ type Renderer struct {
 	showCommanderPanel     bool
 	commanderPanelArmy     army.ArmyID
 	commanderPanelFocus    int
+	showAIDiagnostic       bool
+	aiDiagnosticFaction    faction.FactionID
+	aiDiagnosticScroll     int
+	aiDiagnosticSnapshot   *ai.AIDiagnosticSnapshot
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -1233,6 +1238,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 15. Tarihsel olay popup'ı gerçek üst modal olmalı.
+	if r.showAIDiagnostic {
+		r.drawAIDiagnostic(screen)
+	}
 	if r.showHistoricalEvent {
 		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
 	}

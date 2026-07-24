@@ -527,6 +527,31 @@ func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	}
 }
 
+func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
+	gs := testGameState()
+	gs.Turn = 10
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+	gs.BeginWarLedger("a", "b")
+	gs.Factions["b"].Gold = 40
+
+	if result := Execute(gs, "a", "b", ActionProposePeace); !result.Applied {
+		t.Fatalf("barış uygulanmalıydı: %+v", result)
+	}
+	if remaining := gs.TruceRemaining("a", "b"); remaining != 6 {
+		t.Fatalf("barış sonrası altı turluk ateşkes bekleniyordu: remaining=%d", remaining)
+	}
+	if result := Execute(gs, "a", "b", ActionDeclareWar); result.Applied {
+		t.Fatalf("ateşkes sürerken yeniden savaş ilan edilmemeliydi: %+v", result)
+	}
+
+	gs.Turn += 6
+	if result := Execute(gs, "a", "b", ActionDeclareWar); !result.Applied {
+		t.Fatalf("ateşkes bitince savaş ilanı yeniden açılmalıydı: %+v", result)
+	}
+}
+
 func TestProposePeaceAcceptedWithPeaceTechBonus(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")

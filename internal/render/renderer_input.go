@@ -180,6 +180,13 @@ func (r *Renderer) HandleInput() InputAction {
 		r.ensureWorldMap()
 		return r.handleEditModeInput()
 	}
+	if r.showAIDiagnostic {
+		return r.handleAIDiagnosticInput()
+	}
+	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF3) {
+		r.toggleAIDiagnostic()
+		return InputAction{}
+	}
 	if r.worldInputLockedByPhase() {
 		if r.keyJustPressed(ebiten.KeyF11) {
 			ebiten.SetFullscreen(!ebiten.IsFullscreen())

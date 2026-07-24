@@ -15,21 +15,23 @@ import (
 type AIArmyRole string
 
 const (
-	AIArmyRoleAssault   AIArmyRole = "assault"
-	AIArmyRoleSiege     AIArmyRole = "siege"
-	AIArmyRoleDefense   AIArmyRole = "defense"
-	AIArmyRoleReserve   AIArmyRole = "reserve"
-	AIArmyRoleRelief    AIArmyRole = "relief"
-	AIArmyRoleRetreat   AIArmyRole = "retreat"
-	AIArmyRoleSecurity  AIArmyRole = "security"
-	AIArmyRoleTransport AIArmyRole = "transport"
-	AIArmyRoleEscort    AIArmyRole = "escort"
+	AIArmyRoleAssault      AIArmyRole = "assault"
+	AIArmyRoleSiege        AIArmyRole = "siege"
+	AIArmyRoleDefense      AIArmyRole = "defense"
+	AIArmyRoleReserve      AIArmyRole = "reserve"
+	AIArmyRoleRelief       AIArmyRole = "relief"
+	AIArmyRoleRetreat      AIArmyRole = "retreat"
+	AIArmyRoleSecurity     AIArmyRole = "security"
+	AIArmyRoleTransport    AIArmyRole = "transport"
+	AIArmyRoleEscort       AIArmyRole = "escort"
+	aiFrontTargetLockTurns            = 4
 )
 
 type AIFront struct {
 	EnemyFactionID   faction.FactionID
 	FriendlyRegions  []world.RegionID
 	EnemyRegions     []world.RegionID
+	TargetRegionID   world.RegionID
 	AnchorRegionID   world.RegionID
 	FriendlyPower    int
 	EnemyPower       int
@@ -202,6 +204,19 @@ func buildAIFronts(ctx *StrategicContext) {
 				if _, ok := builder.enemyRegion[armyRef.RegionID]; ok {
 					builder.front.EnemyPower += armyRef.TotalStrength(gs.UnitTypes)
 				}
+				continue
+			}
+			if aiCoordinatedWarParticipant(gs, ctx.FactionID, faction.FactionID(armyRef.OwnerID), enemyID) {
+				if _, ok := builder.friendlyRegion[armyRef.RegionID]; ok {
+					builder.front.FriendlyPower += armyRef.TotalStrength(gs.UnitTypes)
+				}
+			}
+		}
+
+		if sharedTarget := sharedAIWarTarget(ctx, builder.front); sharedTarget != "" {
+			if ledger := gs.WarLedgerFor(ctx.FactionID, enemyID); ledger != nil {
+				ledger.TargetRegionID = sharedTarget
+				ledger.TargetLockedTurn = gs.Turn
 			}
 		}
 
@@ -245,6 +260,7 @@ func buildAIFronts(ctx *StrategicContext) {
 		if builder.front.CapitalThreat {
 			builder.front.ThreatScore += 80
 		}
+		builder.front.TargetRegionID = selectAIFrontTarget(ctx, builder.front)
 		ctx.Fronts = append(ctx.Fronts, builder.front)
 	}
 
@@ -261,6 +277,136 @@ func buildAIFronts(ctx *StrategicContext) {
 	}
 }
 
+func selectAIFrontTarget(ctx *StrategicContext, front AIFront) world.RegionID {
+	if ctx == nil || ctx.gs == nil {
+		return ""
+	}
+	if front.AtWar {
+		if ledger := ctx.gs.WarLedgerFor(ctx.FactionID, front.EnemyFactionID); ledger != nil && ledger.TargetRegionID != "" {
+			if target := ctx.gs.Regions[ledger.TargetRegionID]; target != nil && target.OwnerID == string(front.EnemyFactionID) && containsRegionID(front.EnemyRegions, target.ID) {
+				if siege := ctx.gs.SiegeAt(target.ID); siege != nil || ctx.gs.Turn-ledger.TargetLockedTurn < aiFrontTargetLockTurns {
+					return target.ID
+				}
+			}
+		}
+		if target := sharedAIWarTarget(ctx, front); target != "" {
+			return target
+		}
+	}
+	plan := ctx.gs.AIPlans[ctx.FactionID]
+	capitalRegionID := world.RegionID("")
+	if capital, _, _, ok := ctx.gs.FactionCapital(front.EnemyFactionID); ok && capital != nil {
+		capitalRegionID = capital.ID
+	}
+
+	bestRegion := world.RegionID("")
+	bestScore := -1
+	for _, regionID := range front.EnemyRegions {
+		region := ctx.gs.Regions[regionID]
+		if region == nil || region.IsSea || region.OwnerID != string(front.EnemyFactionID) {
+			continue
+		}
+		score := ctx.strategicRegionValue(region)
+		score += len(region.Settlements) * 12
+		score += region.FortificationLevel() * 10
+		if region.ID == capitalRegionID {
+			score += 350
+		}
+		if siege := ctx.gs.SiegeAt(region.ID); siege != nil {
+			attacker := ctx.gs.Armies[siege.AttackerArmyID]
+			if attacker != nil && diplomacy.SameRealm(ctx.gs, ctx.FactionID, faction.FactionID(attacker.OwnerID)) {
+				score += 220
+			}
+		}
+		for index, targetID := range planTargetRegions(plan) {
+			if targetID == region.ID {
+				score += 180 - index*30
+				break
+			}
+		}
+
+		defenderPower := 0
+		friendlyAccess := 0
+		for _, neighborID := range region.Neighbors {
+			neighbor := ctx.gs.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea {
+				continue
+			}
+			if neighbor.OwnerID == string(ctx.FactionID) {
+				friendlyAccess++
+			}
+		}
+		for _, armyRef := range aiSortedArmies(ctx.gs) {
+			if armyRef != nil && !armyRef.IsNaval && armyRef.OwnerID == string(front.EnemyFactionID) && armyRef.RegionID == region.ID {
+				defenderPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
+			}
+		}
+		score += friendlyAccess * 15
+		score -= minInt(240, defenderPower/4)
+		if bestRegion == "" || score > bestScore || (score == bestScore && region.ID < bestRegion) {
+			bestRegion = region.ID
+			bestScore = score
+		}
+	}
+	if front.AtWar {
+		if ledger := ctx.gs.WarLedgerFor(ctx.FactionID, front.EnemyFactionID); ledger != nil && bestRegion != "" {
+			ledger.TargetRegionID = bestRegion
+			ledger.TargetLockedTurn = ctx.gs.Turn
+		}
+	}
+	return bestRegion
+}
+
+func aiCoordinatedWarParticipant(gs *state.GameState, commander, candidate, enemy faction.FactionID) bool {
+	if gs == nil || commander == "" || candidate == "" || enemy == "" || candidate == enemy {
+		return false
+	}
+	if !diplomacy.SameRealm(gs, commander, candidate) {
+		rel := diplomacy.Relation(gs, commander, candidate)
+		if rel == nil || rel.Stance != faction.StanceAllied {
+			return false
+		}
+	}
+	war := diplomacy.Relation(gs, candidate, enemy)
+	return war != nil && war.Stance == faction.StanceWar
+}
+
+func sharedAIWarTarget(ctx *StrategicContext, front AIFront) world.RegionID {
+	if ctx == nil || ctx.gs == nil || !front.AtWar {
+		return ""
+	}
+	for _, candidate := range aiSortedFactionIDs(ctx.gs) {
+		if candidate == ctx.FactionID || !aiCoordinatedWarParticipant(ctx.gs, ctx.FactionID, candidate, front.EnemyFactionID) {
+			continue
+		}
+		ledger := ctx.gs.WarLedgerFor(candidate, front.EnemyFactionID)
+		if ledger == nil || ledger.TargetRegionID == "" {
+			continue
+		}
+		target := ctx.gs.Regions[ledger.TargetRegionID]
+		if target != nil && target.OwnerID == string(front.EnemyFactionID) && containsRegionID(front.EnemyRegions, target.ID) {
+			return target.ID
+		}
+	}
+	return ""
+}
+
+func planTargetRegions(plan *state.AIPlanState) []world.RegionID {
+	if plan == nil {
+		return nil
+	}
+	return plan.TargetRegionIDs
+}
+
+func containsRegionID(regionIDs []world.RegionID, target world.RegionID) bool {
+	for _, regionID := range regionIDs {
+		if regionID == target {
+			return true
+		}
+	}
+	return false
+}
+
 func sortedRegionSet(values map[world.RegionID]struct{}) []world.RegionID {
 	result := make([]world.RegionID, 0, len(values))
 	for regionID := range values {
@@ -275,6 +421,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 		return
 	}
 	gs := ctx.gs
+	warSupplyCrisis := aiWarLogisticsPolicyActive(gs) && aiWarSupplyCrisis(gs, ctx.FactionID)
 	ctx.ArmyAssignments = make(map[army.ArmyID]AIArmyAssignment)
 
 	var mobile []*army.Army
@@ -313,10 +460,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 	}
 
 	reserveAnchor := aiReserveAnchor(ctx)
-	ctx.ReservePercent = 15
-	if ctx.CriticalThreat {
-		ctx.ReservePercent = 30
-	}
+	ctx.ReservePercent = aiReservePercentForFrontRisk(ctx)
 	ctx.ReserveTargetPower = (ctx.TotalMobilePower*ctx.ReservePercent + 99) / 100
 	if len(mobile) <= 1 {
 		ctx.ReserveTargetPower = 0
@@ -353,7 +497,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 
 	plan := gs.AIPlans[ctx.FactionID]
 	offensiveAnchor, offensiveTarget := aiOffensiveAnchor(ctx, plan)
-	offensiveFrontAssigned := false
+	primaryOffensiveEnemy := primaryOffensiveFrontEnemy(ctx, plan)
 	for _, front := range ctx.Fronts {
 		if !front.AtWar || front.AnchorRegionID == "" {
 			continue
@@ -380,13 +524,17 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "aktif savaşta seferberlik"}
 			continue
 		}
+		if warSupplyCrisis {
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "lojistik rezerv toparlanması"}
+			continue
+		}
 		if front.CriticalThreat || front.CapitalThreat {
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
 			continue
 		}
 		attackAnchor := world.RegionID("")
-		if len(front.EnemyRegions) > 0 {
-			attackAnchor = front.EnemyRegions[0]
+		if front.TargetRegionID != "" {
+			attackAnchor = front.TargetRegionID
 		}
 		if attackAnchor == "" {
 			attackAnchor = offensiveAnchor
@@ -394,7 +542,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 		if attackAnchor == "" {
 			continue
 		}
-		if offensiveFrontAssigned {
+		if primaryOffensiveEnemy != front.EnemyFactionID {
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "ikincil savaş cephesi savunması"}
 			continue
 		}
@@ -405,7 +553,6 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 			reason = "aktif savaş cephesi kuşatması"
 		}
 		ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: role, AnchorRegionID: attackAnchor, FrontFactionID: front.EnemyFactionID, Reason: reason}
-		offensiveFrontAssigned = true
 	}
 
 	for _, armyRef := range mobile {
@@ -426,11 +573,74 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 				assignment.Reason = "objective kuşatma gücü"
 			}
 		}
+		if warSupplyCrisis && (assignment.Role == AIArmyRoleAssault || assignment.Role == AIArmyRoleSiege) {
+			assignment.Role = AIArmyRoleDefense
+			assignment.AnchorRegionID = aiDefenseAnchor(ctx)
+			assignment.FrontFactionID = ""
+			assignment.Reason = "lojistik rezerv toparlanması"
+		}
 		if assignment.AnchorRegionID == "" {
 			assignment.AnchorRegionID = armyRef.RegionID
 		}
 		ctx.ArmyAssignments[armyRef.ID] = assignment
 	}
+}
+
+func aiReservePercentForFrontRisk(ctx *StrategicContext) int {
+	if ctx == nil {
+		return 15
+	}
+	if ctx.CriticalThreat {
+		return 30
+	}
+	activeWars := 0
+	threatenedFront := false
+	for _, front := range ctx.Fronts {
+		if !front.AtWar {
+			continue
+		}
+		activeWars++
+		if front.ThreatScore > 0 {
+			threatenedFront = true
+		}
+	}
+	if activeWars >= 2 || threatenedFront {
+		return 25
+	}
+	return 15
+}
+
+func primaryOffensiveFrontEnemy(ctx *StrategicContext, plan *state.AIPlanState) faction.FactionID {
+	if ctx == nil || ctx.gs == nil {
+		return ""
+	}
+	bestEnemy := faction.FactionID("")
+	bestScore := -1
+	for _, front := range ctx.Fronts {
+		if !front.AtWar || front.AnchorRegionID == "" || front.CriticalThreat || front.CapitalThreat || front.TargetRegionID == "" {
+			continue
+		}
+		if !aiActiveWarMatureForOffense(ctx.gs, ctx.FactionID, front.EnemyFactionID) {
+			continue
+		}
+		score := 0
+		if plan != nil && plan.TargetFactionID == front.EnemyFactionID {
+			score += 300
+		}
+		if target := ctx.gs.Regions[front.TargetRegionID]; target != nil {
+			score += ctx.strategicRegionValue(target)
+		}
+		score += maxInt(0, front.FriendlyPower-front.EnemyPower) / 4
+		if bestEnemy == "" || score > bestScore || (score == bestScore && front.EnemyFactionID < bestEnemy) {
+			bestEnemy = front.EnemyFactionID
+			bestScore = score
+		}
+	}
+	return bestEnemy
+}
+
+func aiWarLogisticsPolicyActive(gs *state.GameState) bool {
+	return gs != nil && gs.ScenarioID == "1300_ottoman_rise" && gs.Turn > aiWarLogisticsActivationTurn
 }
 
 func aiActiveWarMatureForOffense(gs *state.GameState, actor, opponent faction.FactionID) bool {
@@ -447,14 +657,17 @@ func aiOffensiveAnchor(ctx *StrategicContext, plan *state.AIPlanState) (world.Re
 	}
 	for _, front := range ctx.Fronts {
 		if front.AtWar && front.EnemyFactionID == plan.TargetFactionID {
+			// Mevcut expand objective'inin öncelik sırası açılış temposunun
+			// parçasıdır; yeni cephe hedef skoru savunma/konsolidasyon fallback'i
+			// için kullanılmalıdır.
 			return firstOwnedRegion(ctx.gs, plan.TargetRegionIDs, plan.TargetFactionID), plan.TargetFactionID
 		}
 	}
 	// Kalıcı objective başka bir devleti gösterse bile ilan edilmiş savaşı sahipsiz
 	// bırakma. Plan yeniden değerlendirildiğinde kalıcı hedef de bu cepheyle hizalanır.
 	for _, front := range ctx.Fronts {
-		if front.AtWar && len(front.EnemyRegions) > 0 {
-			return front.EnemyRegions[0], front.EnemyFactionID
+		if front.AtWar && front.TargetRegionID != "" {
+			return front.TargetRegionID, front.EnemyFactionID
 		}
 	}
 	return firstOwnedRegion(ctx.gs, plan.TargetRegionIDs, plan.TargetFactionID), plan.TargetFactionID
@@ -467,11 +680,21 @@ func aiFriendlyReliefTargets(ctx *StrategicContext) []world.RegionID {
 	var targets []world.RegionID
 	for regionID, siege := range ctx.gs.Sieges {
 		region := ctx.gs.Regions[regionID]
-		if siege == nil || region == nil || region.IsSea || !diplomacy.SameRealm(ctx.gs, ctx.FactionID, faction.FactionID(region.OwnerID)) {
+		if siege == nil || region == nil || region.IsSea {
+			continue
+		}
+		targetOwner := faction.FactionID(region.OwnerID)
+		if targetOwner == "" || (targetOwner != ctx.FactionID && !aiCoordinatedWarParticipant(ctx.gs, ctx.FactionID, targetOwner, faction.FactionID(siege.AttackerFactionID))) {
 			continue
 		}
 		siegeArmy := ctx.gs.Armies[siege.AttackerArmyID]
 		if siegeArmy == nil || diplomacy.SameRealm(ctx.gs, ctx.FactionID, faction.FactionID(siegeArmy.OwnerID)) {
+			continue
+		}
+		if siege.AttackerFactionID == "" || faction.FactionID(siegeArmy.OwnerID) != faction.FactionID(siege.AttackerFactionID) {
+			continue
+		}
+		if rel := diplomacy.Relation(ctx.gs, targetOwner, faction.FactionID(siege.AttackerFactionID)); rel == nil || rel.Stance != faction.StanceWar {
 			continue
 		}
 		targets = append(targets, regionID)
@@ -623,6 +846,9 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 	if ctx == nil || ctx.gs == nil || ctx.gs.ScenarioID != "1300_ottoman_rise" {
 		return true
 	}
+	if aiWarLogisticsPolicyActive(ctx.gs) && !aiWarLogisticsReady(ctx.gs, ctx.FactionID) {
+		return false
+	}
 	if ctx.CriticalThreat || ctx.ReserveAssignedPower < ctx.ReserveTargetPower {
 		return false
 	}
@@ -654,4 +880,81 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 		}
 	}
 	return true
+}
+
+// aiWarLogisticsReady yeni bir cephe açmadan önce mevcut ekonomik durumun
+// saldırıyı taşıyıp taşıyamadığını kontrol eder. Runtime tahıl snapshot'ı
+// varsa ekonomi tick'inin sonucu, yoksa aynı talep hesaplarının state fallback'i
+// kullanılır. Böylece save yükleme veya ilk tur planlaması farklı davranmaz.
+func aiWarLogisticsReady(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+		return true
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return false
+	}
+
+	goldReserve := aiMinGoldReserve
+	if budget := prepareAIBudget(gs, fid, nil); budget != nil && budget.EmergencyGold > goldReserve {
+		goldReserve = budget.EmergencyGold
+	}
+	if self.Gold < goldReserve {
+		return false
+	}
+
+	if status, ok := gs.GrainEconomy[fid]; ok && status.TotalDemand > 0 {
+		if status.SupplyLevel >= state.GrainSupplyCritical {
+			return false
+		}
+		return status.MonthsOfSupply < 0 || status.MonthsOfSupply >= aiWarMinimumGrainReserveMonths
+	}
+
+	totalDemand := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		totalDemand += gs.CivilianGrainDemandForRegion(region)
+	}
+	for _, currentArmy := range gs.Armies {
+		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
+			totalDemand += gs.EffectiveArmyGrainUpkeep(currentArmy)
+		}
+	}
+	if totalDemand <= 0 {
+		return true
+	}
+	requiredGrain := maxInt(aiWarMinimumGrainReserve, totalDemand*aiWarMinimumGrainReserveMonths)
+	return self.Grain >= requiredGrain
+}
+
+// aiWarSupplyCrisis aktif savaşın hücumunu tamamen durduracak kadar ağır
+// tahıl kıtlığını bildirir. Warning seviyesi savaşın temposunu düşürür, fakat
+// cepheyi gereksiz yere savunmaya kilitlemez; kritik/famine seviyesi ise
+// saldırı ordularını savunma ve ikmal görevine çevirir.
+func aiWarSupplyCrisis(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+		return false
+	}
+	if status, ok := gs.GrainEconomy[fid]; ok && status.TotalDemand > 0 {
+		return status.SupplyLevel >= state.GrainSupplyCritical
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return true
+	}
+	totalDemand := 0
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		totalDemand += gs.CivilianGrainDemandForRegion(region)
+	}
+	for _, currentArmy := range gs.Armies {
+		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
+			totalDemand += gs.EffectiveArmyGrainUpkeep(currentArmy)
+		}
+	}
+	return totalDemand > 0 && self.Grain < totalDemand
 }

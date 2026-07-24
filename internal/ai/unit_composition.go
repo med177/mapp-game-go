@@ -64,7 +64,7 @@ func aiSelectStrategicLandUnit(gs *state.GameState, self *faction.Faction, budge
 		ctx = prepareStrategicContext(gs, self.ID)
 	}
 	plan := gs.AIPlans[self.ID]
-	target := aiCompositionTargetForPlan(plan)
+	target := aiCompositionTargetForStrategicContext(gs, self.ID, plan, ctx)
 	composition := aiFactionLandComposition(gs, self.ID)
 	needs := aiBuildRecruitmentBattleNeeds(gs, self.ID, ctx)
 	economySnapshot := aiBuildEconomySnapshot(gs, self.ID)
@@ -95,6 +95,35 @@ func aiSelectStrategicLandUnit(gs *state.GameState, self *faction.Faction, budge
 		return ""
 	}
 	return best.TypeID
+}
+
+// aiCompositionTargetForStrategicContext planın genel oranını aktif ana
+// cephenin ihtiyacına göre daraltır. Böylece aynı devlet savunma objective'inde
+// olsa bile uzun savaştaki gerçek ana saldırı için kuşatma ağırlığı üretebilir;
+// ikincil cepheler ise gereksiz hücum birimi yığmaz.
+func aiCompositionTargetForStrategicContext(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState, ctx *StrategicContext) aiCompositionTarget {
+	target := aiCompositionTargetForPlan(plan)
+	if gs == nil || ctx == nil {
+		return target
+	}
+	if ctx.CriticalThreat {
+		return aiCompositionTarget{Infantry: 75, Cavalry: 15, Siege: 10}
+	}
+	primaryEnemy := primaryOffensiveFrontEnemy(ctx, plan)
+	if primaryEnemy == "" {
+		return target
+	}
+	for _, front := range ctx.Fronts {
+		if !front.AtWar || front.EnemyFactionID != primaryEnemy || front.TargetRegionID == "" {
+			continue
+		}
+		region := gs.Regions[front.TargetRegionID]
+		if region != nil && region.FortificationLevel() > 0 {
+			return aiCompositionTarget{Infantry: 55, Cavalry: 25, Siege: 20}
+		}
+		return aiCompositionTarget{Infantry: 60, Cavalry: 25, Siege: 15}
+	}
+	return target
 }
 
 func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitType *army.UnitType, target aiCompositionTarget, composition aiLandComposition, needs aiRecruitmentBattleNeeds, economySnapshot aiEconomySnapshot) aiUnitCandidate {
@@ -257,6 +286,11 @@ func aiHasFortifiedHostileTarget(gs *state.GameState, fid faction.FactionID, pla
 			if !front.AtWar {
 				continue
 			}
+			if front.TargetRegionID != "" {
+				if fortifiedHostile(front.TargetRegionID) {
+					return true
+				}
+			}
 			for _, regionID := range front.EnemyRegions {
 				if fortifiedHostile(regionID) {
 					return true
@@ -315,6 +349,11 @@ func aiRecruitmentTargetRegion(gs *state.GameState, plan *state.AIPlanState, ctx
 		for _, front := range ctx.Fronts {
 			if !front.AtWar {
 				continue
+			}
+			if front.TargetRegionID != "" {
+				if region := gs.Regions[front.TargetRegionID]; region != nil && !region.IsSea {
+					return region
+				}
 			}
 			for _, regionID := range front.EnemyRegions {
 				if region := gs.Regions[regionID]; region != nil && !region.IsSea {

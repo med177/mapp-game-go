@@ -7,6 +7,77 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-24: AI savaş/diplomasi planının Faz 6 teşhis geçmişi tamamlandı. Geliştirme
+  save'i yüklendiğinde ilk beş AI fazının plan, hedef, cephe, aktif savaş, yedek ve
+  bloklanma özeti deterministik sırayla toplanıyor; beşinci faz sonrası
+  `autosave.debug.json` içindeki `state.ai_diagnostic_history` alanına yazılıyor ve
+  F3 modalında devlet bazında gösteriliyor. Normal compact save payload'ı bu geçici
+  geçmişi taşımıyor. Regression: `TestRecordAIDiagnosticRoundCapturesSortedAIHistory`
+  ve debug sidecar save doğrulaması; doğrulama: `go test ./internal/ai ./internal/save ./internal/render ./internal/diplomacy ./internal/state`.
+- 2026-07-24: 1300 tempo kabul ölçümü ayrıştırıldı. 42 aylık altın bantları yalnız
+  medium profilinde doğrulanıyor; 120 aylık calibration raporu uzun dönem teşhisi
+  olarak kalıyor. Böylece Venedik'in 120 ayda biriken altını yanlışlıkla 42 aylık
+  banda sokulmuyor. `RUN_SCENARIO_TEMPO_REPORT=medium` ve `calibration` profilleri
+  doğrulandı.
+- 2026-07-24: AI savaş/diplomasi planının son telemetry adımı tamamlandı. 24, 42 ve
+  120 tur tempo raporları devlet bazında savaş başlangıcı, aktif savaş-ay,
+  tamamlanan savaş süresi, fetih, barış ve stalemate ortalamalarını logluyor.
+  Telemetry test harness'inde kalıyor; save/state şeması değişmiyor. Doğrulama:
+  `Test1300ScenarioGrainEconomyBands` tekil, `RUN_SCENARIO_TEMPO_REPORT=medium`
+  ve `Test1300ScenarioAITwoTurnReplayIsDeterministic`.
+
+- 2026-07-24: AI savaş/diplomasi planının Faz 3 mobilizasyon ilk adımı tamamlandı.
+  1300 senaryosunda ilk 24 tur açılış temposu korunuyor; sonrasında yeni savaş ilanı
+  altın acil rezervi ve iki aylık operasyon tahıl stoğuyla sınırlandırılıyor. Aktif
+  savaşta kritik/kıtlık seviyesi saldırı rolünü savunma/ikmal rolüne çeviriyor; uyarı
+  seviyesi cepheyi kilitlemiyor. `GrainEconomyStatus` yoksa aynı state talep fallback'i
+  kullanılıyor. Regression: `TestStrategicWarReadinessUsesGoldAndGrainReserves`,
+  `TestStrategicWarLogisticsGatePreservesOpeningTempo`; ayrıca mature ana cephedeki
+  tahkimli hedef için `55/25/20`, tahkimatsız hedef için `60/25/15`
+  piyade/süvari/kuşatma kompozisyonu ve kritik tehditte `75/15/10` savunma
+  kompozisyonu seçiliyor. Birden fazla aktif veya pozitif tehditli cephede stratejik
+  yedek oranı `%25`e, kritik tehditle `%30`a çıkıyor. Regression:
+  `TestAICompositionTargetFollowsMaturePrimaryFront`, `TestMultipleActiveFrontsRaiseReserveWithoutCriticalThreat`;
+  doğrulama: `go test ./internal/ai` ve
+  `go test ./internal/game -run '^Test1300ScenarioGrainEconomyBands$'`.
+
+- 2026-07-24: Faz 4 ortak cephe koordinasyonunun ilk dilimi tamamlandı. Aynı realm
+  vassal/overlord ve aktif savaşa katılmış müttefik orduları ilgili savaş cephesinin
+  dost gücüne dahil ediliyor; katılımcılardan birinin geçerli `WarLedger` hedef kilidi
+  diğer katılımcılara aktarılıyor. Barıştaki müttefikler ve savaşa katılmamış ordular
+  hesaba katılmıyor; komuta yetkisi fraksiyonlarda kalıyor. Regression:
+  `TestSameRealmWarFrontSharesTargetAndFriendlyPower`; relief görevleri de aktif
+  savaşa katılmış müttefik/vassal bölgelerine genişletildi; doğrulama:
+  `go test ./internal/ai ./internal/game`.
+
+- 2026-07-24: Faz 5 geçici ateşkes adımı tamamlandı. Barış çözümünde taraf çifti için
+  save-backed altı turluk `RecentTruces` kaydı tutuluyor; ateşkes sürerken savaş ilanı
+  engelleniyor, süresi dolunca yeniden açılıyor. Compact save/load ve koalisyon barışı
+  korunuyor. Regression: `TestAcceptedPeaceCreatesTemporaryTruce`,
+  `TestCompactCampaignStatePreservesWarLedger`; doğrulama: `go test ./internal/diplomacy ./internal/save`.
+
+- 2026-07-24: Faz 5 savaş yorgunluğu görünürlük adımı tamamlandı. `PeaceAssessment`
+  artık savaş süresi/kayıpları, altın, tahıl, memnuniyet ve ilişki baskılarını ayrı
+  türetilmiş alanlarda raporluyor. İlk iterasyonda skor davranışı açılış dengesini
+  değiştirmemesi için bu alanlar açıklama/telemetry olarak tutuluyor. Regression:
+  `TestPeaceAssessmentReportsWarExhaustionPressures`; doğrulama:
+  `go test ./internal/diplomacy`.
+
+- 2026-07-24: AI savaş/diplomasi iyileştirme planının Faz 1 temeli başladı ve tamamlandı.
+  `PeaceAssessment` actor perspektifinden `WarScore` ile fetih, kayıp, mevcut bölge,
+  başkent tehdidi ve expand objective ilerlemesini birleştiriyor; `ObjectiveHeld`/
+  `ObjectiveTotal` hedef ilerlemesini raporluyor. Savaş skoru save'e yazılmıyor,
+  güncel state'ten türetiliyor. Regression: `TestPeaceAssessmentReportsWarScoreAndObjectiveProgress`.
+
+- 2026-07-24: AI savaş/diplomasi planının Faz 2 hedef seçimi başladı. Aktif
+  savunma/konsolidasyon cephelerinde `AIFront.TargetRegionID`; stratejik değer,
+  başkent, kuşatma, düşman savunma gücü ve dost erişimiyle deterministik seçiliyor;
+  recruitment aynı hedefi kullanıyor. Ana saldırı cephesi seçimi ve dört turluk
+  `WarLedger` hedef kilidi eklendi; diğer cepheler ikincil savunmada kalıyor. Mevcut
+  expand objective sırası açılış tahıl temposunu korumak için değiştirilmedi. Regression:
+  `TestFrontTargetPrefersStrategicValueOverFirstRegion`, `TestWarFrontTargetStaysLockedForShortWindow`;
+  doğrulama: `go test ./...`.
+
 - 2026-07-24: AI savaş temposu yeniden değerlendirildi. Savunma/konsolidasyon planına
   sahip devletlerin aktif savaş cephelerinde kritik tehdit yoksa tek saha ordusu
   kontrollü `assault`/`siege` rolüne atanıyor; yeni savaşlarda 12 turluk seferberlik
@@ -721,6 +792,17 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Başkent sistemi | ✅ | Ulusal başkent artık fraksiyon üstünde `capital_settlement_id` ile tutulur; başkent bölgesi ek üretim/lojistik bonusu alır; başkent fethedilince hazine-hammadde stoğunun yarısı ve eksik teknolojilerin yaklaşık yarısı fethedene geçer; savunan için yeni başkent en yüksek getirili bölgenin merkez settlement'ına atanır; settlement panelinden 5 turluk taşıma kuyruğu başlatılabilir; tüm başkent settlement'ları haritada yıldız rozetiyle görünür |
 
 | WSL / Windows build hattı | ✅ | `wiki/dev/build-setup.md` içinde Ebitengine için Ubuntu paketleri, `go test ./...` doğrulaması ve `GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game` akışı belgelendi |
+
+## Son AI savaş/diplomasi ilerlemesi
+
+- ✅ Aktif savaşlara stratejik hedef, hedef kilidi, seferberlik/lojistik rezervi ve
+  müttefik-vassal ortak cephe katkısı eklendi.
+- ✅ Barış sonrası altı turluk ateşkes ve savaş yorgunluğu/ekonomik baskı metrikleri
+  eklendi.
+- ✅ AI-AI barışları beyaz barış, bölge bırakma, tazminat veya vassallık sonucuna
+  ayrılabiliyor; oyuncu barışı seçim yapılmadan güvenli beyaz barış olarak kalıyor.
+- ✅ Geliştirme modunda `F3` AI teşhis modalı plan, cephe, hedef, roller ve
+  bloklanma nedenlerini gösteriyor; aynı snapshot debug save sidecar'ına yazılıyor.
 
 ## Bilinen Sorunlar
 

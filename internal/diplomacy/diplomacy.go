@@ -28,9 +28,10 @@ const (
 )
 
 type Result struct {
-	Accepted bool
-	Applied  bool
-	Message  string
+	Accepted   bool
+	Applied    bool
+	Message    string
+	Settlement *PeaceSettlement
 }
 
 const tradeAcceptanceThreshold = 45
@@ -87,8 +88,9 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " barışı reddetti."}
 		}
+		settlement := AssessPeaceSettlement(gs, actor, target)
 		setPeaceBetweenCoalitions(gs, actor, target)
-		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " barışı kabul etti."}
+		return Result{Accepted: true, Applied: true, Settlement: &settlement, Message: factionLabel(gs, target) + " barışı kabul etti."}
 
 	case ActionProposeTrade:
 		if rel.Stance == faction.StanceTrade {

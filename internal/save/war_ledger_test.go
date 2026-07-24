@@ -23,8 +23,11 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 				RegionsCapturedA:   1,
 				LastBattleTurn:     8,
 				LastPeaceOfferTurn: 7,
+				TargetRegionID:     "b1",
+				TargetLockedTurn:   8,
 			},
 		},
+		RecentTruces: map[string]int{"a|c": 15},
 		OfferRejectionTurns: map[string]int{
 			"a|b|propose_peace": 8,
 		},
@@ -40,10 +43,13 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 	restored := &state.GameState{}
 	applyCampaignSaveState(restored, decoded)
 	ledger := restored.WarLedgerFor("b", "a")
-	if ledger == nil || ledger.StartedTurn != 3 || ledger.CasualtiesA != 5 || ledger.RegionsCapturedA != 1 || ledger.LastPeaceOfferTurn != 7 {
+	if ledger == nil || ledger.StartedTurn != 3 || ledger.CasualtiesA != 5 || ledger.RegionsCapturedA != 1 || ledger.LastPeaceOfferTurn != 7 || ledger.TargetRegionID != "b1" || ledger.TargetLockedTurn != 8 {
 		t.Fatalf("war ledger save/load kaybı: %+v", ledger)
 	}
 	if restored.OfferRejectionTurns["a|b|propose_peace"] != 8 {
 		t.Fatalf("diplomasi ret cooldown save/load kaybı: %+v", restored.OfferRejectionTurns)
+	}
+	if restored.RecentTruces["a|c"] != 15 {
+		t.Fatalf("ateşkes save/load kaybı: %+v", restored.RecentTruces)
 	}
 }

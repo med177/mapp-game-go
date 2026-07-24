@@ -34,6 +34,23 @@ const GrainAidCost = 10
 // GrainAidSatisfactionGain tahıl yardımının bölge memnuniyetine katkısıdır.
 const GrainAidSatisfactionGain = 1
 
+// AIDiagnosticHistoryEntry, geliştirme save'i yüklendikten sonra bir tam AI
+// fazının karşılaştırmalı karar özetini taşır. Ayrıntılı runtime context yerine
+// rapor için gerekli sabit alanlar tutulur.
+type AIDiagnosticHistoryEntry struct {
+	Turn                 int               `json:"turn"`
+	FactionID            faction.FactionID `json:"faction_id"`
+	PlanKind             AIObjectiveKind   `json:"plan_kind,omitempty"`
+	PlanTargetFactionID  faction.FactionID `json:"plan_target_faction_id,omitempty"`
+	TargetRegionID       world.RegionID    `json:"target_region_id,omitempty"`
+	FrontCount           int               `json:"front_count"`
+	ActiveWarCount       int               `json:"active_war_count"`
+	ReservePercent       int               `json:"reserve_percent"`
+	ReserveTargetPower   int               `json:"reserve_target_power"`
+	ReserveAssignedPower int               `json:"reserve_assigned_power"`
+	BlockReasons         []string          `json:"block_reasons,omitempty"`
+}
+
 // VictoryType zafer koşulu türü.
 type VictoryType string
 
@@ -212,6 +229,13 @@ type GameState struct {
 	Relations map[string]*faction.Relation `json:"relations"`
 	// Aktif savaşların başlangıç durumu ve kalıcı kayıp/fetih sayaçları.
 	WarLedgers map[string]*WarLedger `json:"war_ledgers,omitempty"`
+	// Barış sonrası geçici ateşkes bitiş turları (relation key -> expiry turn).
+	RecentTruces map[string]int `json:"recent_truces,omitempty"`
+	// Geliştirme modunda save yükleme sonrası ilk AI turlarını karşılaştırmak
+	// için tutulan geçici telemetri. Normal campaign payload'ına yazılmaz;
+	// yalnız debug sidecar'a aktarılır.
+	AIDiagnosticHistory            []AIDiagnosticHistoryEntry `json:"-"`
+	AIDiagnosticCaptureTurnsRemain int                        `json:"-"`
 	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
 	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.

@@ -7,6 +7,12 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Geliştirme modunda `F3` ile açılan AI teşhis modalı, `ai.BuildAIDiagnosticSnapshot`
+çıktısını gösterir. `ESC/F3` modalı kapatır, `TAB` devlet değiştirir ve mouse
+tekeri yalnız modal içeriğini kaydırır; modal açıkken harita input'u tüketilir.
+Teşhis görünümü `internal/render/ai_diagnostic.go` içinde tutulur ve normal
+oyuncu build'lerinde geliştirme modu kapalı olduğu için erişilemez.
+
 Oyuncu ordu detay paneli, seçili ordunun gerçek hareket/kuşatma katsayılarını içeren `GameState.EffectiveArmyGrainUpkeep()` hesabından `Tahıl ihtiyacı: X / tur` satırını gösterir. Bölge bilgi panelindeki tahıl üretimi `+kalan/toplam` biçiminde, `RegionMilitaryGrainProduction()` ile sivil tüketim sonrası kalan miktarı toplam efektif üretimle birlikte çizer.
 
 Üst-sol kaynak satırları tur başı değişimi ve mevcut stoku `+üretim/mevcut` biçiminde gösterir; tahıl değeri sivil ve ordu tüketimi sonrası net değişimdir, negatif değerler `-` işaretiyle ve kırmızı renkle çizilir. Devlet üretim toplamı kuşatma altındaki bölgeleri dışarıda bırakan `GameState.FactionProductionSummary()` ile hesaplanır. Bölge panelindeki tahıl üretimi ayrıca `+kalan/toplam` biçiminde çizilir; kalan değer `RegionMilitaryGrainProduction()` ile sivil tüketim düşüldükten sonra bölgesel askerî ikmale ayrılabilen miktardır. Bina ve recruit tooltip'lerinde maliyet satırları `ResourceCost` üzerinden baharat/kumaş dahil tüm kaynakları aynı sırada gösterir.

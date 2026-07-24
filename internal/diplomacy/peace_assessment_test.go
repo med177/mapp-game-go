@@ -101,3 +101,88 @@ func TestPeaceAssessmentRecognizesLongWarStalemate(t *testing.T) {
 		t.Fatalf("uzun süre sonuçsuz kalan savaş barış baskısı üretmeliydi: %+v", assessment)
 	}
 }
+
+func TestPeaceAssessmentReportsWarScoreAndObjectiveProgress(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 12
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"a": {
+			Kind:            state.AIObjectiveExpand,
+			TargetFactionID: "b",
+			TargetRegionIDs: []world.RegionID{"b1", "b2"},
+		},
+	}
+	gs.Regions["b1"].OwnerID = "a"
+	ledger := gs.WarLedgerFor("a", "b")
+	ledger.RegionsCapturedA = 1
+	ledger.CasualtiesA = 2
+	ledger.CasualtiesB = 8
+
+	assessment := AssessPeaceDesire(gs, "a", "b")
+	if assessment.WarScore <= 0 || assessment.ObjectiveHeld != 1 || assessment.ObjectiveTotal != 2 {
+		t.Fatalf("savaş skoru/objective ilerlemesi yanlış: %+v", assessment)
+	}
+}
+
+func TestPeaceAssessmentReportsWarExhaustionPressures(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 20
+	gs.Factions["a"].Gold = 40
+	gs.Factions["a"].Grain = 20
+	gs.Regions["a1"].Satisfaction = 20
+	gs.Regions["a2"].Satisfaction = 40
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"a": {FactionID: "a", SupplyLevel: state.GrainSupplyFamine, TotalDemand: 20},
+	}
+	ledger := gs.WarLedgerFor("a", "b")
+	ledger.StartedTurn = 1
+	ledger.CasualtiesA = 5
+	ledger.LastBattleTurn = 19
+
+	assessment := AssessPeaceDesire(gs, "a", "b")
+	if assessment.WarExhaustion <= 0 || assessment.GoldPressure <= 0 || assessment.GrainPressure != 20 || assessment.SatisfactionPressure <= 0 || assessment.RelationshipPressure <= 0 {
+		t.Fatalf("savaş yorgunluğu baskıları görünür raporlanmalıydı: %+v", assessment)
+	}
+}
+
+func TestAssessPeaceSettlementSelectsCessionForClearWinner(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 12
+	gs.Regions["b1"].OwnerID = "a"
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b2"}
+	gs.Regions["b2"].Neighbors = []world.RegionID{"a1"}
+	ledger := gs.WarLedgerFor("a", "b")
+	ledger.RegionsCapturedA = 1
+	ledger.CasualtiesA = 1
+	ledger.CasualtiesB = 12
+
+	settlement := AssessPeaceSettlement(gs, "a", "b")
+	if settlement.Outcome != PeaceOutcomeCedeRegion || settlement.Winner != "a" || settlement.Loser != "b" || settlement.RegionID != "b2" {
+		t.Fatalf("açık üstünlükte bölge bırakma seçilmeliydi: %+v", settlement)
+	}
+}
+
+func TestExecuteAIPeaceAppliesReparations(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 50
+	gs.Factions["a"].Gold = 200
+	gs.Factions["b"].Gold = 100
+	gs.Factions["a"].CapitalSettlementID = "a_cap"
+	gs.Factions["b"].CapitalSettlementID = "b_cap"
+	gs.Regions["a1"].Settlements = []world.Settlement{{ID: "a_cap", IsCapital: true}}
+	gs.Regions["b1"].Settlements = []world.Settlement{{ID: "b_cap", IsCapital: true}}
+	gs.Factions["b"].CapitalSettlementID = "b_cap"
+	gs.Regions["b2"].OwnerID = "a"
+	ledger := gs.WarLedgerFor("a", "b")
+	ledger.RegionsCapturedA = 2
+	ledger.CasualtiesA = 1
+	ledger.CasualtiesB = 12
+
+	result := ExecuteAIPeace(gs, "a", "b")
+	if !result.Applied || result.Settlement == nil || result.Settlement.Outcome != PeaceOutcomeReparations {
+		t.Fatalf("AI-AI barışında tazminat sonucu uygulanmalıydı: %+v", result)
+	}
+	if gs.Factions["a"].Gold <= 200 || gs.Factions["b"].Gold >= 100 {
+		t.Fatalf("tazminat altınları aktarmalıydı: a=%d b=%d", gs.Factions["a"].Gold, gs.Factions["b"].Gold)
+	}
+}

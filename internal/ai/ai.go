@@ -22,6 +22,12 @@ const (
 	aiTechReserve    = 100 // Teknoloji için ayırılacak minimum altın
 	aiReliefMoveBase = 35
 	aiWarThreshold   = 70
+	// Yeni bir cephe açılmadan önce en az iki aylık operasyonel tahıl stoğu
+	// korunur. Üç aylık stratejik rezerv ekonomi/ticaret sistemi içindir;
+	// savaş hazırlığı bu rezervin tamamını kilitlemez.
+	aiWarMinimumGrainReserveMonths = 2
+	aiWarMinimumGrainReserve       = 100
+	aiWarLogisticsActivationTurn   = 24
 )
 
 const (

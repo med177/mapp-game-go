@@ -52,7 +52,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 						addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: otherID, Message: turnFactionName(gs, fid) + " sana barış teklif ediyor."})
 					}
 				} else {
-					result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionProposePeace)
+					result := diplomacy.ExecuteAIPeace(gs, fid, otherID)
 					if !result.Applied {
 						gs.MarkPeaceOffer(fid, otherID)
 					}
