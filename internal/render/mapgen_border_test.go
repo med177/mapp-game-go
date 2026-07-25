@@ -1,7 +1,6 @@
 package render
 
 import (
-	"image/color"
 	"testing"
 
 	"mapp-game-go/internal/faction"
@@ -9,7 +8,7 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestDrawRegionBordersHighlightsPlayerRealmAndAlliedRealms(t *testing.T) {
+func TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms(t *testing.T) {
 	oldW, oldH := WorldW, WorldH
 	WorldW, WorldH = 12, 7
 	defer func() {
@@ -38,16 +37,8 @@ func TestDrawRegionBordersHighlightsPlayerRealmAndAlliedRealms(t *testing.T) {
 		},
 	}
 	wm := &WorldMap{
-		dispPixels: make([]byte, WorldW*WorldH*4),
-		regionAt:   make([]uint16, WorldW*WorldH),
-		regionIDs:  []world.RegionID{"", "player_land", "vassal_land", "ally_land", "enemy_land", "ally_vassal_land"},
-	}
-	base := color.RGBA{100, 100, 100, 255}
-	for i := 0; i < WorldW*WorldH; i++ {
-		wm.dispPixels[i*4] = base.R
-		wm.dispPixels[i*4+1] = base.G
-		wm.dispPixels[i*4+2] = base.B
-		wm.dispPixels[i*4+3] = base.A
+		regionAt:  make([]uint16, WorldW*WorldH),
+		regionIDs: []world.RegionID{"", "player_land", "vassal_land", "ally_land", "enemy_land", "ally_vassal_land"},
 	}
 	for y := 1; y < WorldH-1; y++ {
 		for x := 1; x <= 3; x++ {
@@ -73,15 +64,23 @@ func TestDrawRegionBordersHighlightsPlayerRealmAndAlliedRealms(t *testing.T) {
 		t.Fatalf("savaştaki devlet düşman konturu almalı: affiliation=%d", affiliations[4])
 	}
 
-	wm.drawRegionBorders(gs, "", MapModeNormal)
-	row := 3
-	assertBorderPixel(t, wm, 3, row, blendedBorderColor(base, color.RGBA{35, 22, 10, 255}, 52))
-	assertBorderPixel(t, wm, 5, row, base)
-	assertBorderPixel(t, wm, 6, row, color.RGBA{255, 205, 74, 255})
-	assertBorderPixel(t, wm, 7, row, base)
-	assertBorderPixel(t, wm, 8, row, base)
-	assertBorderPixel(t, wm, 8, 1, color.RGBA{82, 210, 166, 255})
-	assertBorderPixel(t, wm, 10, row, color.RGBA{218, 62, 54, 255})
+	wm.rebuildBorderSegments(gs)
+	wm.updateBorderStyles(gs, "", MapModeNormal)
+	if !hasBorderSegment(wm, 4, 1, 4, 6, mapBorderStyleSubtle) {
+		t.Fatal("oyuncu realm içindeki vassal sınırı sıkıştırılmış subtle kontur olarak bulunamadı")
+	}
+	if !hasBorderSegment(wm, 7, 1, 7, 6, mapBorderStylePlayerRealm) {
+		t.Fatal("oyuncu-ally sınırı oyuncu realm rengiyle bulunamadı")
+	}
+	if !hasBorderSegment(wm, 10, 1, 10, 6, mapBorderStyleEnemy) {
+		t.Fatal("ally-enemy sınırı düşman rengiyle bulunamadı")
+	}
+	if !hasBorderSegment(wm, 7, 1, 10, 1, mapBorderStyleAlly) {
+		t.Fatal("ally kıyı sınırı ally rengiyle bulunamadı")
+	}
+	if len(wm.borderSegments) >= (WorldW*WorldH)/2 {
+		t.Fatalf("kontur parçaları yeterince sıkıştırılmamış: %d", len(wm.borderSegments))
+	}
 }
 
 func TestBorderDiplomacySignatureChangesWithAllianceAndVassalage(t *testing.T) {
@@ -107,20 +106,30 @@ func TestBorderDiplomacySignatureChangesWithAllianceAndVassalage(t *testing.T) {
 	}
 }
 
-func assertBorderPixel(t *testing.T, wm *WorldMap, x, y int, want color.RGBA) {
-	t.Helper()
-	i := (y*WorldW + x) * 4
-	got := color.RGBA{wm.dispPixels[i], wm.dispPixels[i+1], wm.dispPixels[i+2], wm.dispPixels[i+3]}
-	if got != want {
-		t.Fatalf("(%d,%d) sınır rengi yanlış: got=%v want=%v", x, y, got, want)
+func TestFarZoomSkipsMinorBorderStyles(t *testing.T) {
+	for _, style := range []uint8{mapBorderStyleSubtle, mapBorderStyleTradeSubtle, mapBorderStyleSea} {
+		if shouldDrawMapBorderStyle(style, 0.7) {
+			t.Fatalf("uzak zoom'da stil çizilmemeli: %d", style)
+		}
+	}
+	for _, style := range []uint8{mapBorderStyleSelected, mapBorderStylePlayerRealm, mapBorderStyleAlly, mapBorderStyleEnemy, mapBorderStyleStrong} {
+		if !shouldDrawMapBorderStyle(style, 0.7) {
+			t.Fatalf("uzak zoom'da önemli stil korunmalı: %d", style)
+		}
+	}
+	if !shouldDrawMapBorderStyle(mapBorderStyleSubtle, 1.0) {
+		t.Fatal("yakın zoom'da subtle sınır korunmalı")
 	}
 }
 
-func blendedBorderColor(base, target color.RGBA, alpha byte) color.RGBA {
-	return color.RGBA{
-		R: blend(base.R, target.R, alpha),
-		G: blend(base.G, target.G, alpha),
-		B: blend(base.B, target.B, alpha),
-		A: 255,
+func hasBorderSegment(wm *WorldMap, x1, y1, x2, y2 float32, style uint8) bool {
+	for i, segment := range wm.borderSegments {
+		if i >= len(wm.borderStyles) || wm.borderStyles[i] != style {
+			continue
+		}
+		if segment.x1 == x1 && segment.y1 == y1 && segment.x2 == x2 && segment.y2 == y2 {
+			return true
+		}
 	}
+	return false
 }

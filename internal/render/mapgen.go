@@ -82,6 +82,9 @@ type WorldMap struct {
 	settlementAnchor   map[settlementAnchorKey][2]int
 	primarySettlement  map[world.RegionID][2]int
 	seaIdx             map[uint16]bool // deniz bölgesi indeksleri
+	borderSegments     []mapBorderSegment
+	borderStyles       []uint8
+	borderVersion      uint64
 	hasBgImage         bool
 	ownerDirty         bool
 	selected           world.RegionID
@@ -185,6 +188,7 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		copy(wm.baseRegionAt, wm.regionAt)
 		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 	}
+	wm.rebuildBorderSegments(gs)
 	wm.computeRegionAnchors()
 	if setProgress != nil {
 		setProgress(84)
@@ -412,6 +416,7 @@ func (wm *WorldMap) RefreshAfterRegionAssignments(gs *state.GameState, selected 
 		return
 	}
 	wm.rebuildRegionPixelsFromAssignments()
+	wm.rebuildBorderSegments(gs)
 	clear(wm.regionAnchor)
 	wm.computeRegionAnchors()
 	clear(wm.settlementAnchor)
@@ -681,32 +686,6 @@ func (wm *WorldMap) buildSeaRegions(gs *state.GameState) {
 		}
 	}
 
-	// ── 5. Sınır tespiti ve basePixels'a bake ───────────────────────
-	// Farklı deniz bölgelerine ait 4-komşu piksel çiftleri → sınır çizgisi
-	const bR, bG, bB byte = 100, 160, 220 // açık mavi sınır rengi
-	const bAlpha = byte(160)
-	bake := func(pIdx int) {
-		wm.basePixels[pIdx*4] = blend(wm.basePixels[pIdx*4], bR, bAlpha)
-		wm.basePixels[pIdx*4+1] = blend(wm.basePixels[pIdx*4+1], bG, bAlpha)
-		wm.basePixels[pIdx*4+2] = blend(wm.basePixels[pIdx*4+2], bB, bAlpha)
-	}
-	for py := 1; py < WorldH-1; py++ {
-		for px := 1; px < WorldW-1; px++ {
-			pIdx := py*WorldW + px
-			cur := wm.regionAt[pIdx]
-			if !wm.seaIdx[cur] {
-				continue
-			}
-			// Sağ veya alt komşu farklı deniz bölgesindeyse bu piksel sınırda
-			right := wm.regionAt[pIdx+1]
-			down := wm.regionAt[pIdx+WorldW]
-			if (wm.seaIdx[right] && right != cur) || (wm.seaIdx[down] && down != cur) {
-				bake(pIdx)
-				bake(pIdx + 1) // 2px genişlik için komşuyu da işaretle
-				bake(pIdx + WorldW)
-			}
-		}
-	}
 }
 
 func (wm *WorldMap) findSeaSeed(cx, cy int) int {
@@ -1082,7 +1061,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 		}
 	}
 
-	wm.drawRegionBorders(gs, selected, mode)
+	wm.updateBorderStyles(gs, selected, mode)
 	wm.diplomacySignature = borderDiplomacySignature(gs)
 	if wm.img != nil {
 		wm.img.WritePixels(wm.dispPixels)
@@ -1180,158 +1159,6 @@ func buildBorderDiplomacyContext(gs *state.GameState, regionIDs []world.RegionID
 		}
 	}
 	return realmByRegion, affiliationByRegion
-}
-
-func (wm *WorldMap) drawRegionBorders(gs *state.GameState, selected world.RegionID, mode MapMode) {
-	isSeaOrEmpty := func(idx uint16) bool {
-		if idx == 0 {
-			return true
-		}
-		if int(idx) >= len(wm.regionIDs) {
-			return true
-		}
-		rid := wm.regionIDs[idx]
-		r := gs.Regions[rid]
-		return r == nil || r.IsSea
-	}
-	realmByRegion, affiliationByRegion := buildBorderDiplomacyContext(gs, wm.regionIDs)
-	isOutsideRealm := func(idx uint16, realm faction.FactionID) bool {
-		if isSeaOrEmpty(idx) {
-			return true
-		}
-		if int(idx) >= len(realmByRegion) {
-			return true
-		}
-		return realmByRegion[idx] != realm
-	}
-
-	// Pre-build region to trade center mapping
-	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
-	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
-		for rid, r := range gs.Regions {
-			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions, gs.Year)
-		}
-	}
-
-	for py := 1; py < WorldH-1; py++ {
-		for px := 1; px < WorldW-1; px++ {
-			pIdx := py*WorldW + px
-			curIdx := wm.regionAt[pIdx]
-			if curIdx == 0 {
-				continue
-			}
-			cur := wm.regionIDs[curIdx]
-			curRegion := gs.Regions[cur]
-			if curRegion == nil || curRegion.IsSea {
-				continue
-			}
-
-			rightIdx := wm.regionAt[pIdx+1]
-			downIdx := wm.regionAt[pIdx+WorldW]
-			leftIdx := wm.regionAt[pIdx-1]
-			upIdx := wm.regionAt[pIdx-WorldW]
-
-			// Eğer seçili bölgeysek, dört komşudan biri bile farklıysa tam kapalı sarı border (highlight) çiziyoruz.
-			if cur == selected {
-				if rightIdx != curIdx || leftIdx != curIdx || downIdx != curIdx || upIdx != curIdx {
-					wm.setOverlayPixel(pIdx, 255, 222, 72, 245)
-				}
-				continue
-			}
-
-			if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
-				isBorder := rightIdx != curIdx || downIdx != curIdx
-				if !isBorder && leftIdx != curIdx && isSeaOrEmpty(leftIdx) {
-					isBorder = true
-				}
-				if !isBorder && upIdx != curIdx && isSeaOrEmpty(upIdx) {
-					isBorder = true
-				}
-				if isBorder {
-					curTC := regionTradeNode[cur]
-					var other world.RegionID
-					if rightIdx != curIdx && rightIdx != 0 {
-						other = wm.regionIDs[rightIdx]
-					} else if downIdx != curIdx && downIdx != 0 {
-						other = wm.regionIDs[downIdx]
-					}
-					otherTC := -1
-					if other != "" {
-						otherTC = regionTradeNode[other]
-					}
-					if otherTC != curTC && otherTC != -1 {
-						// Farklı ticaret bölgesi sınırı -> Altın/krem parıltı
-						wm.setOverlayPixel(pIdx, 242, 226, 174, 230)
-					} else {
-						// Aynı ticaret bölgesi içindeki idari bölge sınırı -> Çok silik ince kahverengi
-						wm.setOverlayPixel(pIdx, 35, 22, 10, 80)
-					}
-				}
-				continue
-			}
-
-			curRealm := realmByRegion[curIdx]
-			affiliation := affiliationByRegion[curIdx]
-			strongBoundary := false
-			if isOutsideRealm(rightIdx, curRealm) {
-				strongBoundary = true
-				if rightIdx != 0 && !isSeaOrEmpty(rightIdx) && int(rightIdx) < len(affiliationByRegion) {
-					affiliation = strongerBorderAffiliation(affiliation, affiliationByRegion[rightIdx])
-				}
-			}
-			if isOutsideRealm(downIdx, curRealm) {
-				strongBoundary = true
-				if downIdx != 0 && !isSeaOrEmpty(downIdx) && int(downIdx) < len(affiliationByRegion) {
-					affiliation = strongerBorderAffiliation(affiliation, affiliationByRegion[downIdx])
-				}
-			}
-			if isSeaOrEmpty(leftIdx) {
-				strongBoundary = true
-			}
-			if isSeaOrEmpty(upIdx) {
-				strongBoundary = true
-			}
-			if strongBoundary {
-				switch affiliation {
-				case borderAffiliationPlayerRealm:
-					wm.setDiplomaticBorderPixel(pIdx, borderColorPlayerRealm.R, borderColorPlayerRealm.G, borderColorPlayerRealm.B)
-				case borderAffiliationAlly:
-					wm.setDiplomaticBorderPixel(pIdx, borderColorAlly.R, borderColorAlly.G, borderColorAlly.B)
-				case borderAffiliationEnemy:
-					wm.setDiplomaticBorderPixel(pIdx, borderColorEnemy.R, borderColorEnemy.G, borderColorEnemy.B)
-				default:
-					wm.setDiplomaticBorderPixel(pIdx, 30, 18, 10)
-				}
-				continue
-			}
-
-			// Aynı devlet veya aynı vassal realm içindeki idari sınırlar geri planda kalır.
-			if rightIdx != curIdx || downIdx != curIdx {
-				wm.setSubtleBorderPixel(pIdx, 35, 22, 10, 52)
-			}
-		}
-	}
-}
-
-func (wm *WorldMap) setDiplomaticBorderPixel(pIdx int, r, g, b byte) {
-	wm.dispPixels[pIdx*4] = r
-	wm.dispPixels[pIdx*4+1] = g
-	wm.dispPixels[pIdx*4+2] = b
-	wm.dispPixels[pIdx*4+3] = 255
-}
-
-func (wm *WorldMap) setSubtleBorderPixel(pIdx int, r, g, b, alpha byte) {
-	wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], r, alpha)
-	wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], g, alpha)
-	wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], b, alpha)
-	wm.dispPixels[pIdx*4+3] = 255
-}
-
-func (wm *WorldMap) setOverlayPixel(pIdx int, r, g, b, a byte) {
-	wm.dispPixels[pIdx*4] = r
-	wm.dispPixels[pIdx*4+1] = g
-	wm.dispPixels[pIdx*4+2] = b
-	wm.dispPixels[pIdx*4+3] = a
 }
 
 func intPolygonBounds(poly [][2]int) (int, int, int, int) {

@@ -59,6 +59,9 @@ type Renderer struct {
 	gs       *state.GameState
 	worldMap *WorldMap
 
+	mapBorderMeshes mapBorderMeshSet
+	mapBorderCache  mapBorderOverlayCache
+
 	// Kamera: dünya uzayında merkez noktası ve zoom
 	camX, camY float64
 	camScale   float64
@@ -1080,6 +1083,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		mapOp := &ebiten.DrawImageOptions{}
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
+		r.drawVectorMapBorders(screen)
 		r.menuTick++
 		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick, r.CurrentSettings)
 		return
@@ -1102,6 +1106,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	mapOp := &ebiten.DrawImageOptions{}
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
+	r.drawVectorMapBorders(screen)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-25
+last_updated: 2026-07-26
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -133,6 +133,7 @@ type Renderer struct {
 | 0 | Kayıt slot seçim ekranları (PhaseLoadSelect / PhaseSaveSelect) | `load_select.go` |
 | 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
+| 2 | Vektör bölge/deniz sınırları; kamera zoom'undan bağımsız yaklaşık 1.25 px antialiased kontur | `map_borders.go`, `renderer.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Ticaret koridorları (çift yön rotalar tek hatta birleştirilir; uzak zoom'da yalnızca oyuncuya bağlı koridorlar çizilir; `trade_centers.json` içindeki `off_map` düğümler sadece etiket + bağlantı olarak çizilip bölge boyamasına katılmaz) | `trade_overlay.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
@@ -262,7 +263,7 @@ Bu seam, `internal/game/game.go` içindeki AI stepper akışının yalnız yakı
 
 Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve bir sonraki `Refresh()` çağrısında yeniden üretilir. `Refresh()` ayrıca oyuncu, relation stance ve `OverlordID` alanlarından allocation üretmeyen bir diplomasi imzası çıkarır; bu imza değiştiğinde AI veya oyuncu kaynaklı ittifak/vassallık güncellemesi harita dokusunu bir kez yeniler. Bölge poligonları normalde `country_shapes.json`'dan gelir; edit mode sırasında ise `GameState.ShapeData` içindeki anlık shape verisi önceliklidir, böylece paint edit sonrası `rebuildEditWorldMap()` doğrudan yeni sınırı gösterir.
 
-Normal harita modunda sınırlar realm bazında sınıflandırılır. Oyuncu ile vassalları tek realm sayılır ve dış konturları tek dünya pikseli kalınlığında keskin altın renkle çizilir. Oyuncunun müttefikleri ile onların vassalları doygun turkuaz-yeşil, savaş halindeki düşman realm'leri ve vassalları doygun kırmızı dış kontur alır. Ortak kara sınırı iki taraflı boyanmaz; tek taraflı tek piksel üretildiği için zoom altında katlanarak kalınlaşmaz. Aynı devlet veya aynı vassal realm içindeki bölge sınırları dış konturla aynı tek piksel kalınlığındadır ancak arazi rengine düşük oranlı koyu blend uygulanarak daha soluk idari çizgi halinde kalır. Tarafsız devletlerin dış sınırları da net görünür; ticaret modu kendi ticaret merkezi sınır paletini korur.
+Normal harita modunda sınırlar realm bazında sınıflandırılır. Oyuncu ile vassalları tek realm sayılır ve dış konturları altın, müttefik realm'ler turkuaz-yeşil, savaş halindeki düşman realm'leri kırmızı çizilir. `WorldMap` içindeki raster `regionAt` kenarları artık `dispPixels` içine sınır rengi olarak bake edilmez; `map_borders.go` bu kenarları uzun yatay/dikey kontur parçalarına sıkıştırıp cache'ler. `Renderer` bu parçaları kamera dönüşümünden sonra screen-space mesh olarak yaklaşık 1.25 px çizip ekran boyutunda transparan bir overlay'e alır. Mesh yalnız kamera/zoom, ekran boyutu veya harita sınır stili değiştiğinde hazırlanır; statik framelerde sadece hazır image çizilir ve viewport dışındaki parçalar mesh'e eklenmez. Uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları elenir. Böylece DirectX tarafında her frame büyük dinamik vertex buffer ve path tessellation üretilmez. Harita 10x'e kadar yakınlaştırıldığında sınır pikselleri geometrik olarak kalınlaşmaz veya basamaklanmaz. Aynı devlet veya aynı vassal realm içindeki sınırlar daha düşük alfa ile subtle idari çizgi olarak kalır; ticaret modu kendi ticaret merkezi sınır paletini korur. Region paint veya edit mode `regionAt` değiştiğinde kontur cache'i yeniden oluşturulur.
 
 Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara pikselleri bariyer kabul eden multi-source BFS ile üretilir. Seed araması önce mevcut shape dönüşümlü koordinatı, sonuç çıkmazsa ham `world_x/world_y` koordinatını dener; bu, senaryo verisindeki deniz merkezlerinin dünya pikseli olarak tutulduğu durumlarda `_sea_*` seed uyarılarını engeller.
 
@@ -272,7 +273,7 @@ Kara bölgelerde görünen yerleşim işaretleri `regions.json` içindeki `settl
 
 Yerleşim marker sprite'ları beyaz daire arka planıyla aynı `(sx, sy)` merkezinde çizilir; sprite'ın dikey eksende ayrıca kaydırılması kullanılmaz. Böylece ikonun beyaz daire içinde üstte fazla, altta eksik boşluk bırakması engellenir (`internal/render/renderer.go:2371`).
 
-Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve deniz bölgesi odak noktaları farklı renktedir; deniz seçiliyken odak işareti kara seçiminden farklı mavi/camgöbeği tona döner. Shift + sol sürükleme bu koordinatları değiştirir; Voronoi sınırları `WorldMap` raster cache'ine bağlı olduğu için sürükleme sırasında sadece merkez işareti güncellenir, fare bırakıldığında cache bir kez yeniden oluşturulur.
+Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve deniz bölgesi odak noktaları farklı renktedir; deniz seçiliyken odak işareti kara seçiminden farklı mavi/camgöbeği tona döner. Shift + sol sürükleme bu koordinatları değiştirir; Voronoi debug overlay'i ayrıntılı piksel teşhisi için raster `BoundaryPixels` kullanmaya devam ederken normal sınır görünümü vektör kontur cache'inden çizilir ve fare bırakıldığında cache bir kez yeniden oluşturulur.
 
 ---
 
@@ -402,6 +403,7 @@ Tek ordu  →  bölge merkezinde
 | `map_editor.go` | Edit mode HUD/input, undo-redo, region/settlement/faction/army düzenleme ve snapshot yardımcıları |
 | `trade_overlay.go` | Ticaret merkezi/koridor modeli, rota çizimi, hover ve hit-test akışı |
 | `mapgen.go` | WorldMap cache, poligon doldurma |
+| `map_borders.go` | Raster regionAt kenarlarını sıkıştırılmış kontur geometrisine çevirme, diplomasi/map-mode stil sınıflandırması ve screen-space mesh çizimi |
 | `tile.go` | Arazi renk/doku katmanı |
 | `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; event log kaydırma geometrisi; minimap'te ordu konumları |
 | `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL ve merchant rota düğmesi |

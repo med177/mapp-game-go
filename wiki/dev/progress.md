@@ -1,11 +1,15 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-25
+last_updated: 2026-07-26
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-26: Harita bölge ve deniz sınırları raster harita dokusundan ayrıldı. `regionAt` kenarları cache'lenmiş yatay/dikey kontur parçalarına sıkıştırılıyor; diplomasi, seçili bölge ve ticaret modu renkleri `map_borders.go` üzerinden antialiased screen-space mesh olarak çiziliyor. Zoom sırasında sınır kalınlaşması/basamaklanması giderildi; edit mode region assignment değişiklikleri kontur cache'ini yeniliyor. Regression: `TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms`; doğrulama: `go test ./internal/render` ve `go test ./...`.
+
+- 2026-07-26: Vektör sınır overlay'inin performans sorunu düzeltildi. Screen-space mesh yalnız kamera/ekran/harita durumu değiştiğinde hazırlanıyor; hazır transparan overlay statik framelerde tekrar kullanılıyor, ekran dışı segmentler eleniyor ve uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları çizilmiyor. DirectX dinamik buffer baskısı azaltıldı. Doğrulama: `go test ./internal/render`, `go test ./...`, `GOOS=windows GOARCH=amd64 go build -o /tmp/mapp-game-go-vector-mesh-check.exe ./cmd/game`.
 
 - 2026-07-25: Bölge panelinde nüfus satırı sonrasında oluşan dikey geometri kayması düzeltildi. Vergi `+/-` düğmeleri artık vergi satırıyla hizalı; `BİNALAR/OLAYLAR` sekmeleri de nüfus satırının altında çizim ve hit-test ile birlikte aşağı taşınıyor. Regression: `TestRegionTaxButtonsUseCompactAlignedRects`, `TestRegionTaxInteractiveBarStopsBeforeDecreaseButton`; doğrulama: `go test ./...`.
 
