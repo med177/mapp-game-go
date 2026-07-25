@@ -91,3 +91,20 @@ func TestArmyIconBorderColorUsesDiplomaticPalette(t *testing.T) {
 		t.Fatalf("selected army border rengi sabit altın olmalı: got=%v", got)
 	}
 }
+
+func TestArmyCommanderBadgeAlignsAboveLandAndNavalIcons(t *testing.T) {
+	_, landY, landSize := armyCommanderBadgeRect(100, 100, false, false)
+	if landY+landSize != 88 {
+		t.Fatalf("kara komutan rozeti sayı karesinin üstünde bitmeli: bottom=%.1f", landY+landSize)
+	}
+
+	_, navalY, navalSize := armyCommanderBadgeRect(100, 100, true, false)
+	if navalY+navalSize != 87 {
+		t.Fatalf("deniz komutan rozeti dairenin üstünde bitmeli: bottom=%.1f", navalY+navalSize)
+	}
+
+	_, embarkedY, embarkedSize := armyCommanderBadgeRect(100, 100, true, true)
+	if embarkedY+embarkedSize != 70 {
+		t.Fatalf("taşıma rozeti olan filoda komutan portresi üstte kalmalı: bottom=%.1f", embarkedY+embarkedSize)
+	}
+}

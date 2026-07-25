@@ -2086,14 +2086,13 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-	if !isNaval {
-		if a := r.gs.Armies[aid]; a != nil && a.Commander != nil {
-			x, y, size := armyCommanderBadgeRect(cx, cy)
-			drawCommanderPortrait(screen, a.Commander, float64(x), float64(y), float64(size), float64(size))
-		}
+	a := r.gs.Armies[aid]
+	if commander, _ := armyPanelDisplayedCommander(a); commander != nil {
+		x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, a != nil && len(a.EmbarkedUnits) > 0)
+		drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
 	}
 	if isNaval {
-		if a := r.gs.Armies[aid]; a != nil && len(a.EmbarkedUnits) > 0 {
+		if a != nil && len(a.EmbarkedUnits) > 0 {
 			badgeW := float32(14)
 			badgeX := cx - badgeW/2
 			badgeY := cy - 28
@@ -2127,12 +2126,19 @@ func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float
 	return attackerX + armyIconInnerHalf + 8
 }
 
-// armyCommanderBadgeRect, komutan portresini sayı karesinin hemen üstüne
-// yerleştirir. Sayı karesi 24 px dış ölçüye sahipken portre rozeti 28 px'tir.
-func armyCommanderBadgeRect(cx, cy float32) (x, y, size float32) {
+// armyCommanderBadgeRect, komutan portresini kara sayı karesinin veya deniz
+// ikonunun hemen üstüne yerleştirir. Nakliye rozeti varsa portre onun üstüne
+// taşınır.
+func armyCommanderBadgeRect(cx, cy float32, isNaval, hasEmbarkedUnits bool) (x, y, size float32) {
 	size = armyCommanderBadgeSize
-	countSquareTop := cy - armyIconInnerHalf - armyIconBorderWidth
-	return cx - size/2, countSquareTop - size, size
+	iconTop := cy - armyIconInnerHalf - armyIconBorderWidth
+	if isNaval {
+		iconTop = cy - 13
+		if hasEmbarkedUnits {
+			iconTop = cy - 30
+		}
+	}
+	return cx - size/2, iconTop - size, size
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {

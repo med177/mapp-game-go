@@ -447,16 +447,17 @@ func TestSaveToSlotWritesEnvelopeAndLoadSlotReadsIt(t *testing.T) {
 		PlayerFactionID: "player",
 		Regions: map[world.RegionID]*world.Region{
 			"r1": {
-				ID:           "r1",
-				NameTR:       "R1",
-				OwnerID:      "player",
-				ShapeID:      "AAA",
-				TaxRate:      50,
-				Satisfaction: 50,
-				Population:   1234,
+				ID:              "r1",
+				NameTR:          "R1",
+				OwnerID:         "player",
+				ShapeID:         "AAA",
+				TaxRate:         50,
+				Satisfaction:    50,
+				Population:      1234,
+				RuralPopulation: 900,
 				Settlements: []world.Settlement{
-					{ID: "r1_city", NameTR: "Sehir", X: 10, Y: 10, Type: world.SettlementCity},
-					{ID: "r1_port", NameTR: "Liman", X: 12, Y: 10, Type: world.SettlementPort},
+					{ID: "r1_city", NameTR: "Sehir", X: 10, Y: 10, Type: world.SettlementCity, Population: 200},
+					{ID: "r1_port", NameTR: "Liman", X: 12, Y: 10, Type: world.SettlementPort, Population: 134},
 				},
 				Buildings: []string{"market"},
 			},
@@ -676,6 +677,9 @@ func TestSaveToSlotWritesEnvelopeAndLoadSlotReadsIt(t *testing.T) {
 	}
 	if loaded.Regions["r1"].Population != 1234 || len(loaded.Regions["r1"].Buildings) != 1 || loaded.Regions["r1"].Buildings[0] != "market" {
 		t.Fatalf("region mutable save state geri yuklenemedi: %+v", loaded.Regions["r1"])
+	}
+	if loaded.Regions["r1"].RuralPopulation != 900 || loaded.Regions["r1"].SettlementPopulation() != 334 {
+		t.Fatalf("nüfus bileşenleri save/load sonrası korunmalıydı: rural=%d settlement=%d", loaded.Regions["r1"].RuralPopulation, loaded.Regions["r1"].SettlementPopulation())
 	}
 	if len(loaded.Regions["r1"].Settlements) != 2 || loaded.Regions["r1"].Settlements[1].ID != "r1_port" {
 		t.Fatalf("settlement patch geri yuklenemedi: %+v", loaded.Regions["r1"].Settlements)

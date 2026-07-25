@@ -38,6 +38,7 @@ type regionSaveState struct {
 	Satisfaction    *int             `json:"sat,omitempty"`
 	TaxRate         *int             `json:"tx,omitempty"`
 	Population      *int             `json:"pop,omitempty"`
+	RuralPopulation *int             `json:"rpop,omitempty"`
 	Religion        *string          `json:"rel,omitempty"`
 	ConversionTurns *int             `json:"conv,omitempty"`
 	ActiveEventID   *string          `json:"evt,omitempty"`
@@ -143,6 +144,7 @@ type legacyRegionSaveState struct {
 	Satisfaction    int                `json:"satisfaction"`
 	TaxRate         int                `json:"tax_rate"`
 	Population      int                `json:"population"`
+	RuralPopulation int                `json:"rural_population,omitempty"`
 	Religion        string             `json:"religion"`
 	ConversionTurns int                `json:"conversion_turns,omitempty"`
 	ActiveEventID   string             `json:"active_event_id"`
@@ -281,6 +283,9 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 			Religion:        cloneStringPtr(regionCopy.Religion),
 			ConversionTurns: cloneIntPtr(regionCopy.ConversionTurns),
 			ActiveEventID:   cloneStringPtr(regionCopy.ActiveEventID),
+		}
+		if regionCopy.RuralPopulation > 0 {
+			converted.RuralPopulation = cloneIntPtr(regionCopy.RuralPopulation)
 		}
 		if regionCopy.Buildings != nil {
 			buildings := stringList(append([]string(nil), regionCopy.Buildings...))
@@ -648,6 +653,11 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		}
 		applyRegionSaveState(region, regionState)
 	}
+	for _, region := range gs.Regions {
+		if region != nil {
+			region.RecalculatePopulation()
+		}
+	}
 
 	for fid, factionState := range saved.Factions {
 		fx := gs.Factions[fid]
@@ -695,6 +705,9 @@ func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
 	if base == nil || current.Population != base.Population {
 		out.Population = cloneIntPtr(current.Population)
 	}
+	if base == nil || current.RuralPopulation != base.RuralPopulation {
+		out.RuralPopulation = cloneIntPtr(current.RuralPopulation)
+	}
 	if base == nil || current.Religion != base.Religion {
 		out.Religion = cloneStringPtr(current.Religion)
 	}
@@ -730,6 +743,9 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 	if saved.Population != nil {
 		region.Population = *saved.Population
 	}
+	if saved.RuralPopulation != nil {
+		region.RuralPopulation = *saved.RuralPopulation
+	}
 	if saved.Religion != nil {
 		region.Religion = *saved.Religion
 	}
@@ -745,6 +761,15 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 	if saved.Settlements != nil {
 		region.Settlements = applySettlementPatch(region.Settlements, *saved.Settlements)
 	}
+	if saved.RuralPopulation == nil && saved.Population != nil {
+		// Eski save'lerde yalnız toplam bölge nüfusu vardı. Yeni yerleşim
+		// dağılımını koruyup farkı kırsal nüfusa taşıyarak toplamı muhafaza et.
+		region.RuralPopulation = *saved.Population - region.SettlementPopulation()
+		if region.RuralPopulation < 0 {
+			region.RuralPopulation = 0
+		}
+	}
+	region.RecalculatePopulation()
 }
 
 func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, bool) {
@@ -1448,6 +1473,7 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 		saved.Satisfaction == nil &&
 		saved.TaxRate == nil &&
 		saved.Population == nil &&
+		saved.RuralPopulation == nil &&
 		saved.Religion == nil &&
 		saved.ConversionTurns == nil &&
 		saved.ActiveEventID == nil &&

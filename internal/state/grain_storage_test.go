@@ -33,7 +33,7 @@ func TestGrainStorageCapacityForFactionUsesPopulationArmyAndGranary(t *testing.T
 		},
 	}
 
-	if got := gs.GrainStorageCapacityForFaction("player"); got != 172 {
+	if got := gs.GrainStorageCapacityForFaction("player"); got != 184 {
 		t.Fatalf("HUD kapasitesi nüfus + ordu + ambar bonusunu kullanmalı, got=%d", got)
 	}
 }

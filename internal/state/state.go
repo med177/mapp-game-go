@@ -20,7 +20,15 @@ const MaxDiplomacyOffersPerTurn = 3
 // aksiyon üçlüsü için zorunlu bekleme süresidir.
 const DiplomaticOfferRetryCooldownTurns = 3
 
-const civilianGrainPopulationUnit = 20
+// civilianGrainPopulationUnit nüfusun aylık temel tahıl tüketim oranını taşır.
+// 18 nüfus bir tahıl birimi tüketir; 1300 senaryosundaki üretim ve stoklar
+// birlikte değerlendirildiğinde bu oran barışta küçük rezerv, savaşta açık
+// oluşturacak tarihsel kıtlık baskısını korur.
+const civilianGrainPopulationUnit = 18
+
+// grainSaleGoldCapPercentOfTaxIncome acil/otomatik tahıl satışının bir turda
+// üretebileceği altını mevcut temel vergi gelirine bağlar.
+const grainSaleGoldCapPercentOfTaxIncome = 100
 
 const (
 	grainCivilianStorageMonths  = 6
@@ -214,6 +222,7 @@ type GameState struct {
 	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
 	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
 	GrainEconomy       map[faction.FactionID]GrainEconomyStatus `json:"-"`
+	GrainSaleGoldUsed  map[faction.FactionID]int                `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int  `json:"economic_victory_turns"`
@@ -295,8 +304,8 @@ type RegionProductionSummary struct {
 }
 
 // CivilianGrainDemand bir bölgenin tur başı sivil tahıl ihtiyacını döner.
-// Population senaryo verisinde soyut birimdir; 20 nüfus bir tahıl birimi
-// tüketir. Nüfusu olmayan legacy/test bölgeleri tüketim oluşturmaz.
+// Population bölgenin kırsal ve yerleşim nüfuslarının toplamıdır; 18 nüfus bir
+// tahıl birimi tüketir. Nüfusu olmayan legacy/test bölgeleri tüketim oluşturmaz.
 func CivilianGrainDemand(region *world.Region) int {
 	if region == nil || region.Population <= 0 {
 		return 0
@@ -650,6 +659,7 @@ func (s *GameState) AdvanceTurn() {
 	}
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil
+	s.GrainSaleGoldUsed = nil
 }
 
 // GrainAidBlockReason tahıl yardımının neden uygulanamayacağını döner.
@@ -708,23 +718,91 @@ func (s *GameState) ApplyGrainAid(rid world.RegionID) bool {
 	return true
 }
 
-// EmergencyGrainSaleLimit depolama kapasitesinin üzerindeki tahıl miktarını döner.
-// GrainEconomy henüz oluşmadıysa küçük devletler için temel 100 rezervi korunur.
-func (s *GameState) EmergencyGrainSaleLimit() int {
-	if s == nil || s.PlayerFactionID == "" {
+// TaxIncomeForFaction kuşatma altındaki bölgeleri dışarıda bırakarak fraksiyonun
+// mevcut temel vergi gelirini döner. Ticaret, teknoloji ve mevsim bonusları bu
+// limite dahil değildir; tahıl satışı doğrudan vergi gelirinin yerine geçmez.
+func (s *GameState) TaxIncomeForFaction(fid faction.FactionID) int {
+	if s == nil || fid == "" {
 		return 0
 	}
-	f := s.Factions[s.PlayerFactionID]
+	total := 0
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+			continue
+		}
+		total += region.GoldIncome()
+	}
+	return total
+}
+
+// GrainSaleGoldBudget bu turda acil/otomatik tahıl satışında kullanılabilecek
+// kalan altın bütçesini döner. Bütçe temel vergi gelirinin %100'ü ile sınırlıdır.
+func (s *GameState) GrainSaleGoldBudget(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	cap := s.TaxIncomeForFaction(fid) * grainSaleGoldCapPercentOfTaxIncome / 100
+	used := s.GrainSaleGoldUsed[fid]
+	if cap <= used {
+		return 0
+	}
+	return cap - used
+}
+
+// RecordGrainSaleGold satışın bu turdaki vergi gelirine bağlı bütçesini tüketir.
+func (s *GameState) RecordGrainSaleGold(fid faction.FactionID, gold int) {
+	if s == nil || fid == "" || gold <= 0 {
+		return
+	}
+	budget := s.GrainSaleGoldBudget(fid)
+	if gold > budget {
+		gold = budget
+	}
+	if gold <= 0 {
+		return
+	}
+	if s.GrainSaleGoldUsed == nil {
+		s.GrainSaleGoldUsed = make(map[faction.FactionID]int)
+	}
+	s.GrainSaleGoldUsed[fid] += gold
+}
+
+// grainExcessStock depolama kapasitesinin üzerindeki tahıl miktarını döner.
+// GrainEconomy henüz oluşmadıysa küçük devletler için temel 100 rezervi korunur.
+func (s *GameState) grainExcessStock(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	f := s.Factions[fid]
 	if f == nil || f.Grain <= 0 {
 		return 0
 	}
-	capacity := s.GrainEconomy[s.PlayerFactionID].StorageCapacity
+	capacity := s.GrainEconomy[fid].StorageCapacity
 	if capacity <= 0 {
 		capacity = 100
 	}
 	limit := f.Grain - capacity
 	if limit < 0 {
 		return 0
+	}
+	return limit
+}
+
+// EmergencyGrainSaleLimit depolama kapasitesinin üzerindeki tahıldan bu tur
+// satılabilecek miktarı döner. Miktar ayrıca vergi gelirine bağlı altın bütçesi
+// ile sınırlandırılır; böylece satış tek başına vergi gelirinin üstüne çıkamaz.
+func (s *GameState) EmergencyGrainSaleLimit() int {
+	if s == nil || s.PlayerFactionID == "" {
+		return 0
+	}
+	price := s.EmergencyGrainSaleUnitPrice()
+	if price <= 0 {
+		return 0
+	}
+	limit := s.grainExcessStock(s.PlayerFactionID)
+	byBudget := s.GrainSaleGoldBudget(s.PlayerFactionID) / price
+	if byBudget < limit {
+		limit = byBudget
 	}
 	return limit
 }
@@ -761,6 +839,7 @@ func (s *GameState) ApplyEmergencyGrainSale(amount int) (sold, gold int) {
 	f.Grain -= sold
 	gold = sold * price
 	f.Gold += gold
+	s.RecordGrainSaleGold(s.PlayerFactionID, gold)
 	return sold, gold
 }
 
@@ -770,17 +849,20 @@ func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
 	if s == nil || !s.AutoGrainExport || s.PlayerFactionID == "" {
 		return 0, 0
 	}
-	limit := s.EmergencyGrainSaleLimit()
-	price := s.EmergencyGrainSaleUnitPrice()
-	if limit <= 0 || price <= 0 {
-		return 0, 0
-	}
-	price = economy.AutomaticExportUnitPrice(s.MarketPrices[economy.GoodGrain])
+	limit := s.grainExcessStock(s.PlayerFactionID)
+	price := economy.AutomaticExportUnitPrice(s.MarketPrices[economy.GoodGrain])
 	if price <= 0 {
 		price = economy.AutomaticExportUnitPrice(economy.BaseGoldValue[economy.GoodGrain])
 	}
-	if price <= 0 {
+	if price <= 0 || limit <= 0 {
 		return 0, 0
+	}
+	byBudget := s.GrainSaleGoldBudget(s.PlayerFactionID) / price
+	if byBudget <= 0 {
+		return 0, 0
+	}
+	if byBudget < limit {
+		limit = byBudget
 	}
 
 	partnersSet := make(map[faction.FactionID]struct{})
@@ -834,6 +916,7 @@ func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
 		}
 		sold += amount
 		gold += amount * price
+		s.RecordGrainSaleGold(s.PlayerFactionID, amount*price)
 		remaining -= amount
 	}
 	return sold, gold

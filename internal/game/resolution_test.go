@@ -115,11 +115,11 @@ func TestCheckRebellionsClearsProductionOrdersForLostRegion(t *testing.T) {
 }
 
 func TestCivilianGrainDemandRoundsUpAndIgnoresEmptyPopulation(t *testing.T) {
-	if got := civilianGrainDemand(&world.Region{Population: 40}); got != 2 {
-		t.Fatalf("40 nüfus için 2 tahıl bekleniyordu, got=%d", got)
+	if got := civilianGrainDemand(&world.Region{Population: 36}); got != 2 {
+		t.Fatalf("36 nüfus için 2 tahıl bekleniyordu, got=%d", got)
 	}
-	if got := civilianGrainDemand(&world.Region{Population: 41}); got != 3 {
-		t.Fatalf("41 nüfus için yukarı yuvarlanan 3 tahıl bekleniyordu, got=%d", got)
+	if got := civilianGrainDemand(&world.Region{Population: 37}); got != 3 {
+		t.Fatalf("37 nüfus için yukarı yuvarlanan 3 tahıl bekleniyordu, got=%d", got)
 	}
 	if got := civilianGrainDemand(&world.Region{Population: 0}); got != 0 {
 		t.Fatalf("sıfır nüfus tüketim üretmemeli, got=%d", got)
@@ -271,7 +271,7 @@ func TestApplyEconomyTickUsesActiveGrainEventModifiers(t *testing.T) {
 
 	applyEconomyTick(gs)
 	status := gs.GrainEconomy["player"]
-	if status.Production != 50 || status.CivilianDemand != 20 || status.Stockpile != 30 {
+	if status.Production != 50 || status.CivilianDemand != 24 || status.Stockpile != 26 {
 		t.Fatalf("ekonomi aktif olay üretim ve tüketim etkisini kullanmalıydı, got=%+v", status)
 	}
 }
@@ -313,11 +313,11 @@ func TestApplyEconomyTickSpoilsExcessGrainSoftly(t *testing.T) {
 	applyEconomyTick(gs)
 
 	status := gs.GrainEconomy["player"]
-	if status.StorageCapacity != 100 || status.Spoiled != 7 || status.Stockpile != 483 {
+	if status.StorageCapacity != 100 || status.Spoiled != 7 || status.Stockpile != 481 {
 		t.Fatalf("fazla tahıl yumuşak bozulma ile azalmalıydı, got=%+v", status)
 	}
-	if gs.Factions["player"].Grain != 483 {
-		t.Fatalf("fraksiyon stoku bozulma sonrası 483 olmalıydı, got=%d", gs.Factions["player"].Grain)
+	if gs.Factions["player"].Grain != 481 {
+		t.Fatalf("fraksiyon stoku bozulma sonrası 481 olmalıydı, got=%d", gs.Factions["player"].Grain)
 	}
 }
 
@@ -340,11 +340,11 @@ func TestApplyEconomyTickUsesGranaryStorageBonus(t *testing.T) {
 	applyEconomyTick(gs)
 
 	status := gs.GrainEconomy["player"]
-	if status.StorageCapacity != 160 || status.Spoiled != 6 {
+	if status.StorageCapacity != 172 || status.Spoiled != 6 {
 		t.Fatalf("ambar kapasite bonusu bozulmayı azaltmalıydı, got=%+v", status)
 	}
-	if gs.Factions["player"].Grain != 484 {
-		t.Fatalf("ambar varken stok bozulma sonrası 484 olmalıydı, got=%d", gs.Factions["player"].Grain)
+	if gs.Factions["player"].Grain != 482 {
+		t.Fatalf("ambar varken stok bozulma sonrası 482 olmalıydı, got=%d", gs.Factions["player"].Grain)
 	}
 }
 
@@ -372,13 +372,13 @@ func TestApplyEconomyTickFundsAnnualPopulationGrowthFromGrainSurplus(t *testing.
 	if got := gs.Regions["home"].Population; got != 202 {
 		t.Fatalf("stabil rezerv fazlası nüfusu 2 artırmalıydı, got=%d", got)
 	}
-	if got := gs.Factions["player"].Grain; got != 145 {
-		t.Fatalf("bozulma ve nüfus yatırımı sonrası tahıl 145 olmalıydı, got=%d", got)
+	if got := gs.Factions["player"].Grain; got != 143 {
+		t.Fatalf("bozulma ve nüfus yatırımı sonrası tahıl 143 olmalıydı, got=%d", got)
 	}
 	if status.PopulationGrowth != 2 || status.GrowthGrainSpent != 4 {
 		t.Fatalf("nüfus büyümesi tahıl raporuna yazılmalıydı, got=%+v", status)
 	}
-	if status.NetChange != -14 || status.Stockpile != 145 {
+	if status.NetChange != -16 || status.Stockpile != 143 {
 		t.Fatalf("nüfus yatırımı net değişim ve stoku güncellemeli, got=%+v", status)
 	}
 }
@@ -406,14 +406,14 @@ func TestApplyEconomyTickFundsArmyReplenishmentOnlyFromCapacitySurplus(t *testin
 	if got := gs.Armies["a-first"].Units[0].CurrentHP; got != 70 {
 		t.Fatalf("ilk ordu faction/army ID sırasına göre 10 HP almalıydı, got=%d", got)
 	}
-	if got := gs.Armies["z-last"].Units[0].CurrentHP; got != 64 {
+	if got := gs.Armies["z-last"].Units[0].CurrentHP; got != 63 {
 		t.Fatalf("kalan kapasite fazlası ikinci orduya gitmeli, got=%d", got)
 	}
 	if got := gs.Factions["player"].Grain; got != 100 {
 		t.Fatalf("yenileme rezerv kapasite tabanının altına inmemeli, got=%d", got)
 	}
 	status := gs.GrainEconomy["player"]
-	if status.ReplenishmentHP != 14 || status.ReplenishmentGrainSpent != 14 {
+	if status.ReplenishmentHP != 13 || status.ReplenishmentGrainSpent != 13 {
 		t.Fatalf("yenileme miktarı ve tahıl harcaması raporlanmalıydı, got=%+v", status)
 	}
 	if status.NetChange != -15 || status.Stockpile != 100 {
@@ -513,16 +513,16 @@ func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
 
 	report := applyEconomyTick(gs)
 	status := gs.GrainEconomy["player"]
-	if status.SupplyLevel != state.GrainSupplyCritical || status.MonthsOfSupply != 0 {
-		t.Fatalf("kritik tahıl durumu bekleniyordu, got=%+v", status)
+	if status.SupplyLevel != state.GrainSupplyFamine || status.MonthsOfSupply != 0 {
+		t.Fatalf("kıtlık tahıl durumu bekleniyordu, got=%+v", status)
 	}
-	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 145 {
+	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 137 {
 		t.Fatalf("kritik rezerv etkileri uygulanmadı, faction=%+v", gs.Factions["player"])
 	}
-	if gs.Regions["home"].Satisfaction != 48 {
-		t.Fatalf("kritik tahıl rezervi memnuniyeti 2 azaltmalıydı, got=%d", gs.Regions["home"].Satisfaction)
+	if gs.Regions["home"].Satisfaction != 46 {
+		t.Fatalf("kıtlık tahıl rezervi memnuniyeti 4 azaltmalıydı, got=%d", gs.Regions["home"].Satisfaction)
 	}
-	if report.PlayerGrainStatus.SupplyLevel != state.GrainSupplyCritical {
+	if report.PlayerGrainStatus.SupplyLevel != state.GrainSupplyFamine {
 		t.Fatalf("oyuncu tahıl raporu kritik durumu taşımadı, got=%+v", report.PlayerGrainStatus)
 	}
 }
@@ -647,8 +647,8 @@ func TestApplyEconomyTickConsumesCivilianGrain(t *testing.T) {
 
 	applyEconomyTick(gs)
 
-	if got := gs.Factions["player"].Grain; got != 98 {
-		t.Fatalf("40 nüfus 2 tahıl tüketmeliydi, got=%d", got)
+	if got := gs.Factions["player"].Grain; got != 97 {
+		t.Fatalf("40 nüfus 3 tahıl tüketmeliydi, got=%d", got)
 	}
 }
 
@@ -1008,10 +1008,10 @@ func TestRegionalLogisticsUsesProductionAfterCivilianDemand(t *testing.T) {
 	applyEconomyTick(gs)
 
 	status := gs.RegionLogistics["home"]
-	if status.LocalProduction != 15 {
-		t.Fatalf("yerel askeri üretim sivil talep sonrası 15 olmalıydı, got=%+v", status)
+	if status.LocalProduction != 14 {
+		t.Fatalf("yerel askeri üretim sivil talep sonrası 14 olmalıydı, got=%+v", status)
 	}
-	if status.Demand != 16 || status.Overload != 1 {
+	if status.Demand != 16 || status.Overload != 2 {
 		t.Fatalf("sivil talep sonrası bölgesel askeri açık hesaplanmalıydı, got=%+v", status)
 	}
 }

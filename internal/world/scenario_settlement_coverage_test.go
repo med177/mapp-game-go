@@ -41,3 +41,27 @@ func Test1300ScenarioEveryLandRegionHasSettlement(t *testing.T) {
 		}
 	}
 }
+
+func Test1300ScenarioSettlementPopulationLeavesRuralPopulation(t *testing.T) {
+	dataDir := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data")
+	regions, err := LoadRegions(filepath.Join(dataDir, "regions.json"))
+	if err != nil {
+		t.Fatalf("1300 bölgeleri yüklenemedi: %v", err)
+	}
+	if err := LoadRegionSettlements(filepath.Join(dataDir, "settlements.json"), regions); err != nil {
+		t.Fatalf("1300 yerleşimleri yüklenemedi: %v", err)
+	}
+
+	for regionID, region := range regions {
+		if region == nil || region.IsSea {
+			continue
+		}
+		settlementPopulation := region.SettlementPopulation()
+		if region.Population != region.RuralPopulation+settlementPopulation {
+			t.Errorf("%s nüfus toplamı tutarsız: population=%d rural=%d settlement=%d", regionID, region.Population, region.RuralPopulation, settlementPopulation)
+		}
+		if region.Population > 0 && region.RuralPopulation <= settlementPopulation {
+			t.Errorf("%s kırsal nüfusu yerleşim toplamından büyük olmalı: rural=%d settlement=%d", regionID, region.RuralPopulation, settlementPopulation)
+		}
+	}
+}

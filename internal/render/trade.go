@@ -461,7 +461,7 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		good := goods[focusGood]
 		price := gs.MarketPrices[good]
 		maxBuy := tradeMaxBuyAmount(playerF, target, good, price)
-		maxSell := tradeMaxSellAmount(playerF, target, good, price)
+		maxSell := tradeMaxSellAmount(gs, playerF, target, good, price)
 		totalGold := amount * price
 		if good == economy.GoodGrain {
 			emergencyBtn := buildTradeEmergencyGrainSaleButton(layout, goodsRows, gs.EmergencyGrainSaleLimit() > 0)
@@ -1008,12 +1008,18 @@ func tradeMaxBuyAmount(player, target *faction.Faction, good economy.GoodType, p
 	return targetStock
 }
 
-func tradeMaxSellAmount(player, target *faction.Faction, good economy.GoodType, price int) int {
+func tradeMaxSellAmount(gs *state.GameState, player, target *faction.Faction, good economy.GoodType, price int) int {
 	if player == nil || target == nil || price <= 0 {
 		return 0
 	}
 	maxByBuyerGold := target.Gold / price
 	playerStock := getFactionGoodAmount(player, good)
+	if good == economy.GoodGrain && gs != nil {
+		maxBySaleBudget := gs.GrainSaleGoldBudget(gs.PlayerFactionID) / price
+		if maxBySaleBudget < playerStock {
+			playerStock = maxBySaleBudget
+		}
+	}
 	if maxByBuyerGold < playerStock {
 		return maxByBuyerGold
 	}

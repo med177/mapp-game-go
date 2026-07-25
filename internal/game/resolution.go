@@ -844,7 +844,7 @@ func applyGrainFundedPopulationGrowth(gs *state.GameState) {
 			if cost > budget {
 				break
 			}
-			region.Population += growth
+			region.AddPopulation(growth)
 			f.Grain -= cost
 			budget -= cost
 			status.PopulationGrowth += growth

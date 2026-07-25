@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-07-20
+last_updated: 2026-07-25
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -28,7 +28,8 @@ type Region struct {
     Buildings    []string      // inşa edilmiş bina ID'leri
     TaxRate      int           // 0-100
     Satisfaction int           // halk memnuniyeti
-    Population   int
+    Population      int // RuralPopulation + SettlementPopulation()
+    RuralPopulation int // yerleşim dışındaki köy/kırsal nüfus
 
     Religion        string     // mevcut bölge dini
     ConversionTurns int        // din dönüşüm sayacı
@@ -40,12 +41,15 @@ type Region struct {
 
 ```go
 type Settlement struct {
-    ID        string
-    NameTR    string
-    X, Y      int     // world_x/world_y ile aynı koordinat uzayı
-    Type      string  // city, town, port, fortress
-    IsCapital bool
+    ID         string
+    NameTR     string
+    X, Y       int     // world_x/world_y ile aynı koordinat uzayı
+    Type       string  // city, town, port, fortress
+    IsCapital  bool
+    Population int
 }
+
+`Region.Population` artık doğrudan bağımsız bir nüfus kaynağı değildir; `RuralPopulation` ile bölgedeki tüm `Settlement.Population` değerlerinin toplamıdır. Kırsal pay; köyler, mezralar ve yerleşim dışındaki tarımsal nüfusu temsil eder. Tahıl sivil tüketimi bu toplam bölge nüfusu üzerinden hesaplanır. Eski kayıtlarda bileşen alanları yoksa mevcut toplam nüfus kırsal nüfus olarak göç edilir.
 ```
 
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.

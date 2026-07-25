@@ -20,7 +20,7 @@ sonra yalnız debug sidecar'a `state.ai_diagnostic_history` olarak yazılır. B�
 oynanabilir save formatı büyümeden AI plan/hedef/cephe/rezerv değişimi
 karşılaştırılabilir.
 
-Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efektif üretimini toplar. `FactionGrainNetChange()` bu toplamdan sivil tahıl talebi ile orduların efektif tahıl bakımını çıkarır; böylece HUD'daki negatif net tahıl göstergesi ekonomi kurallarıyla aynı state hesaplarına dayanır.
+Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efektif üretimini toplar. `FactionGrainNetChange()` bu toplamdan sivil tahıl talebi ile orduların efektif tahıl bakımını çıkarır; böylece HUD'daki negatif net tahıl göstergesi ekonomi kurallarıyla aynı state hesaplarına dayanır. Bölge nüfusu `Region.RecalculatePopulation()` ile kırsal nüfus ve yerleşim nüfuslarının toplamından türetilir; `CivilianGrainDemand()` bu toplamı kullanır.
 
 ```go
 type GameState struct {
@@ -218,6 +218,8 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 
 `FindSettlementByID(settlementID)` — settlement ID'den region + settlement çözümlemesi yapar
 
+`Region.SettlementPopulation()` / `Region.RecalculatePopulation()` — yerleşim nüfuslarını toplar ve `Population = RuralPopulation + yerleşim toplamı` sözleşmesini korur. Eski save'lerde yalnız toplam nüfus varsa fark kırsal nüfusa göç edilir.
+
 `FactionCapital(fid)` — fraksiyonun geçerli başkent settlement ve bölgesini döner
 
 `SetFactionCapital(fid, settlementID)` — başkenti anında değiştirir ve pending kuyruğu temizler
@@ -230,11 +232,13 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 
 `GrainEconomyStatus` / `GameState.GrainEconomy` — son ekonomi tick'inde fraksiyon bazlı tahıl üretimi, sivil tüketimi, ordu bakımı, ordu yenilemesi, ordu `ArmyMoraleDelta` değişimi, stratejik ithalat ihtiyacı, nüfus büyümesi ve otomatik ihracat için harcanan tahıl, net değişim, stok-ay seviyesi ve açık bilgisini render/event bildirimlerine taşır; runtime-only olduğu için save'e yazılmaz.
 
+`GameState.TaxIncomeForFaction()` ve `GrainSaleGoldBudget()` — kuşatma dışı temel vergi gelirini ve o turda tahıl satışından kullanılabilecek kalan altın bütçesini hesaplar. Acil satış, otomatik ihracat ve oyuncunun doğrudan tahıl satışı aynı bütçeyi paylaşır; `GrainSaleGoldUsed` tur sonunda sıfırlanır ve save'e yazılmaz.
+
 `GameState.ArmyMoveUsage` — `applySeasonEffects()` hareket puanlarını yenilemeden önce ordunun o tur hareket edip etmediğini geçici olarak yakalar. `GameState.EffectiveArmyGrainUpkeep()` bu snapshot'ı kuşatma ve garnizon katsayılarıyla birleştirir; ekonomi, bölgesel lojistik ve AI aynı efektif talebi kullanır. Alan serialize edilmez.
 
 `GameState.GrainAidUsage` / `CanApplyGrainAid()` / `ApplyGrainAid()` — oyuncunun bölge panelinden yaptığı tahıl yardımını bölge başına turda bir kez sınırlar; 12 tahıl karşılığında memnuniyeti +10 artırır. Kullanım haritası `AdvanceTurn()` içinde sıfırlanır ve save'e yazılmaz.
 
-`EmergencyGrainSaleLimit()` / `EmergencyGrainSaleUnitPrice()` / `ApplyEmergencyGrainSale()` — pazar partneri gerektirmeyen acil tahıl satışını yönetir. Yalnızca fraksiyon depo kapasitesi üzerindeki miktar satılır; `economy.EmergencySaleUnitPrice()` güncel fiyatın %70 indirimli değerini üretir. Bu işlem kalıcı yeni state alanı eklemez.
+`EmergencyGrainSaleLimit()` / `EmergencyGrainSaleUnitPrice()` / `ApplyEmergencyGrainSale()` — pazar partneri gerektirmeyen acil tahıl satışını yönetir. Yalnızca fraksiyon depo kapasitesi üzerindeki miktar satılır; `economy.EmergencySaleUnitPrice()` güncel fiyatın %70 indirimli değerini üretir ve miktar kalan vergi bazlı satış bütçesiyle sınırlanır.
 
 `GameState.AutoGrainExport` / `ApplyAutomaticGrainExport()` — Pazar sekmesindeki tercihi ve ekonomi tick'inde kapasite üzeri tahılın aktif, savaşta olmayan ticaret ağı partnerlerine faction ID sırasıyla %60 fiyatla satışını yönetir. Alıcı altını yetersizse miktar alıcının bütçesiyle sınırlanır; tercih compact save alanında korunur, gerçekleşen miktar ve altın runtime `GrainEconomyStatus` içinde raporlanır.
 

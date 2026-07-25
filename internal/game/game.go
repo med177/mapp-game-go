@@ -1989,11 +1989,18 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 		maxByBuyerGold := target.Gold / price
 		maxByStock := tradeGoodAmount(player, good)
 		actualAmount = minTradeInt(amount, minTradeInt(maxByBuyerGold, maxByStock))
+		if good == economy.GoodGrain {
+			maxBySaleBudget := g.gs.GrainSaleGoldBudget(g.gs.PlayerFactionID) / price
+			actualAmount = minTradeInt(actualAmount, maxBySaleBudget)
+		}
 		if actualAmount <= 0 {
 			g.renderer.ShowCombatResult("Satış başarısız: sende stok yok veya alıcıda altın yok.")
 			return
 		}
 		if economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, actualAmount, g.gs.MarketPrices) {
+			if good == economy.GoodGrain {
+				g.gs.RecordGrainSaleGold(g.gs.PlayerFactionID, actualAmount*price)
+			}
 			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
@@ -2345,6 +2352,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		Satisfaction     int               `json:"satisfaction"`
 		TaxRate          int               `json:"tax_rate"`
 		Population       int               `json:"population"`
+		RuralPopulation  int               `json:"rural_population"`
 		Religion         string            `json:"religion"`
 		ConversionTurns  int               `json:"conversion_turns,omitempty"`
 		ActiveEventID    string            `json:"active_event_id"`
@@ -2378,6 +2386,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 			Satisfaction:     region.Satisfaction,
 			TaxRate:          region.TaxRate,
 			Population:       region.Population,
+			RuralPopulation:  region.RuralPopulation,
 			Religion:         region.Religion,
 			ConversionTurns:  region.ConversionTurns,
 			ActiveEventID:    region.ActiveEventID,

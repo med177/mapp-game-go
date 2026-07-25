@@ -735,7 +735,7 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 			}
 			productionRatio := production / civilianDemand
 			netRatio := netChange / civilianDemand
-			if productionRatio < 1.0 || productionRatio > 4.0 {
+			if productionRatio < 0.75 || productionRatio > 4.0 {
 				t.Fatalf("%s/%s üretim-tüketim bandı dışı: ratio=%.2f production=%.1f civilian=%.1f", fid, phase, productionRatio, production, civilianDemand)
 			}
 			if netRatio < -1.0 || netRatio > 2.5 {

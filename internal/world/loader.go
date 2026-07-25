@@ -68,6 +68,11 @@ func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
 			region.Settlements = append(region.Settlements[:0], entry.Settlements...)
 		}
 	}
+	for _, region := range regions {
+		if region != nil {
+			region.RecalculatePopulation()
+		}
+	}
 	return nil
 }
 

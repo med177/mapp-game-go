@@ -68,6 +68,9 @@ func TestApplyEmergencyGrainSalePreservesStorageCapacity(t *testing.T) {
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player", Grain: 160, Gold: 10},
 		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", BaseGoldIncome: 1000, TaxRate: 100, Satisfaction: 50},
+		},
 		GrainEconomy: map[faction.FactionID]GrainEconomyStatus{
 			"player": {FactionID: "player", StorageCapacity: 100},
 		},
@@ -97,6 +100,9 @@ func TestApplyAutomaticGrainExportUsesTradePartnersDeterministically(t *testing.
 			"alpha":  {ID: "alpha", Gold: 24},
 			"beta":   {ID: "beta", Gold: 12},
 			"enemy":  {ID: "enemy", Gold: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", BaseGoldIncome: 100, TaxRate: 100, Satisfaction: 50},
 		},
 		GrainEconomy: map[faction.FactionID]GrainEconomyStatus{
 			"player": {FactionID: "player", StorageCapacity: 100},
@@ -132,6 +138,38 @@ func TestApplyAutomaticGrainExportUsesTradePartnersDeterministically(t *testing.
 	}
 }
 
+func TestGrainSaleBudgetTracksTaxIncomeAndResetsEachTurn(t *testing.T) {
+	gs := &GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 300},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player", BaseGoldIncome: 40, TaxRate: 100, Satisfaction: 50},
+		},
+		GrainEconomy: map[faction.FactionID]GrainEconomyStatus{
+			"player": {FactionID: "player", StorageCapacity: 100},
+		},
+		MarketPrices: economy.CurrentMarketPrice{economy.GoodGrain: 2},
+	}
+
+	sold, gold := gs.ApplyEmergencyGrainSale(200)
+	if sold != 40 || gold != 40 {
+		t.Fatalf("acil satış vergi gelirini aşmamalıydı: sold=%d gold=%d", sold, gold)
+	}
+	if got := gs.GrainSaleGoldBudget("player"); got != 0 {
+		t.Fatalf("satış bütçesi tur sonunda sıfırlanmalıydı: got=%d", got)
+	}
+	if sold, gold = gs.ApplyEmergencyGrainSale(1); sold != 0 || gold != 0 {
+		t.Fatalf("aynı turda ikinci satış bütçeyi aşmamalıydı: sold=%d gold=%d", sold, gold)
+	}
+
+	gs.AdvanceTurn()
+	if sold, gold = gs.ApplyEmergencyGrainSale(200); sold != 40 || gold != 40 {
+		t.Fatalf("yeni turda vergi bazlı satış bütçesi yenilenmeliydi: sold=%d gold=%d", sold, gold)
+	}
+}
+
 func TestActiveGrainEventModifiersAffectProductionAndDemandUntilExpiry(t *testing.T) {
 	gs := &GameState{
 		ActiveRegionEvents: []RegionEventStatus{
@@ -145,8 +183,8 @@ func TestActiveGrainEventModifiersAffectProductionAndDemandUntilExpiry(t *testin
 	if got := gs.RegionGrainProductionModifier(region.ID); got != -45 {
 		t.Fatalf("aktif üretim etkileri toplanmalı, got=%d", got)
 	}
-	if got := gs.CivilianGrainDemandForRegion(region); got != 6 {
-		t.Fatalf("aktif tüketim etkisi 5 taban talebi 6 yapmalıydı, got=%d", got)
+	if got := gs.CivilianGrainDemandForRegion(region); got != 7 {
+		t.Fatalf("aktif tüketim etkisi 6 taban talebi 7 yapmalıydı, got=%d", got)
 	}
 
 	gs.ActiveRegionEvents[0].TurnsLeft = 0
@@ -154,7 +192,7 @@ func TestActiveGrainEventModifiersAffectProductionAndDemandUntilExpiry(t *testin
 	if got := gs.RegionGrainProductionModifier(region.ID); got != 0 {
 		t.Fatalf("süresi biten üretim etkileri yok sayılmalı, got=%d", got)
 	}
-	if got := gs.CivilianGrainDemandForRegion(region); got != 5 {
+	if got := gs.CivilianGrainDemandForRegion(region); got != 6 {
 		t.Fatalf("süresi biten tüketim etkisi taban talebi geri getirmeli, got=%d", got)
 	}
 }
@@ -176,7 +214,7 @@ func TestRegionMilitaryGrainProductionUsesSameProductionAndCivilianDemandSeams(t
 	}
 	region := &world.Region{ID: "farm", OwnerID: "player", Population: 200, BaseGrainOutput: 100}
 
-	if got := gs.RegionMilitaryGrainProduction(region); got != 45 {
+	if got := gs.RegionMilitaryGrainProduction(region); got != 41 {
 		t.Fatalf("askeri ikmal üretimi efektif üretimden aktif sivil talebi düşmeli, got=%d", got)
 	}
 }

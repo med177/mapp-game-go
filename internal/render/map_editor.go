@@ -126,7 +126,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		}
 		DrawText(screen, "Secili yerlesim: "+sName, float64(x)+14, ly, FaceSmall, ColorGold)
 		ly += 18
-		DrawText(screen, settlement.ID+"  "+string(settlement.Type)+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
+		DrawText(screen, settlement.ID+"  "+string(settlement.Type)+"  nüfus "+itoa(settlement.Population)+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
 			float64(x)+14, ly, FaceSmall, ColorGray)
 		if settlement.IsCapital {
 			ly += 18
@@ -1802,6 +1802,7 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 		IsCapital: len(region.Settlements) == 0,
 	}
 	region.Settlements = append(region.Settlements, settlement)
+	region.RecalculatePopulation()
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = len(region.Settlements) - 1
 	r.editDraggingSettlement = false
@@ -1820,7 +1821,10 @@ func (r *Renderer) deleteSelectedSettlement() {
 	rid := region.ID
 	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
 	removedCapital := region.Settlements[r.editSelectedSettlement].IsCapital
+	removedPopulation := region.Settlements[r.editSelectedSettlement].Population
 	region.Settlements = append(region.Settlements[:r.editSelectedSettlement], region.Settlements[r.editSelectedSettlement+1:]...)
+	region.RuralPopulation += removedPopulation
+	region.RecalculatePopulation()
 	if removedCapital {
 		ensurePrimarySettlement(region)
 	}
@@ -1881,6 +1885,7 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 		Satisfaction:     source.Satisfaction,
 		TaxRate:          source.TaxRate,
 		Population:       source.Population,
+		RuralPopulation:  source.RuralPopulation,
 		Religion:         source.Religion,
 		ActiveEventID:    source.ActiveEventID,
 		Buildings:        cloneStringSlice(source.Buildings),
@@ -3613,6 +3618,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	settlement.X = x
 	settlement.Y = y
 	source.Settlements = append(source.Settlements[:r.editSelectedSettlement], source.Settlements[r.editSelectedSettlement+1:]...)
+	source.RecalculatePopulation()
 
 	if settlement.IsCapital {
 		settlement.IsCapital = false
@@ -3623,6 +3629,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	}
 
 	target.Settlements = append(target.Settlements, settlement)
+	target.RecalculatePopulation()
 	r.editSelectedRegion = targetID
 	r.editSelectedSettlement = len(target.Settlements) - 1
 	r.worldMap.RebuildSettlementAnchors(r.gs)

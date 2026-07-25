@@ -111,7 +111,7 @@ func TestRegionGrainProductionDisplayShowsMilitaryRemainderAndTotal(t *testing.T
 	}
 	region := gs.Regions["bursa"]
 
-	if got := regionGrainProductionDisplayValue(gs, region, state.RegionProductionSummary{Grain: 65}); got != "+15/65" {
+	if got := regionGrainProductionDisplayValue(gs, region, state.RegionProductionSummary{Grain: 65}); got != "+9/65" {
 		t.Fatalf("tahıl üretiminde sivil tüketim sonrası kalan/toplam görünmeliydi, got=%q", got)
 	}
 }

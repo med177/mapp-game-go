@@ -40,7 +40,7 @@ func TestAILogisticsUsesSharedGrainProductionDemandAndUpkeepRules(t *testing.T) 
 	if demand != gs.EffectiveArmyGrainUpkeep(gs.Armies["field"]) {
 		t.Fatalf("AI ordu talebi ortak efektif bakım kuralını kullanmalıydı: got=%d", demand)
 	}
-	if got := gs.RegionMilitaryGrainProduction(gs.Regions["farm"]); got != 30 {
+	if got := gs.RegionMilitaryGrainProduction(gs.Regions["farm"]); got != 26 {
 		t.Fatalf("AI lojistik için ortak askeri üretim seam'i yanlış: got=%d", got)
 	}
 

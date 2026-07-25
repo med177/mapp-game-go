@@ -45,7 +45,9 @@ type Region struct {
 	// Durum
 	Satisfaction int `json:"satisfaction"` // 0-100
 	TaxRate      int `json:"tax_rate"`     // 0-100 yüzde
-	Population   int `json:"population"`
+	// Population kırsal nüfus ile yerleşim nüfuslarının toplamıdır.
+	Population      int `json:"population"`
+	RuralPopulation int `json:"rural_population"`
 
 	Religion string `json:"religion"`
 	// ConversionTurns: sahip fraksiyon dini bölgeyle uyuşmuyorsa her tur artar.
@@ -110,13 +112,59 @@ func (t SettlementType) LabelTR() string {
 }
 
 type Settlement struct {
-	ID        string         `json:"id"`
-	Name      string         `json:"name,omitempty"`
-	NameTR    string         `json:"name_tr"`
-	X         int            `json:"x"`
-	Y         int            `json:"y"`
-	Type      SettlementType `json:"type,omitempty"`
-	IsCapital bool           `json:"is_capital,omitempty"`
+	ID         string         `json:"id"`
+	Name       string         `json:"name,omitempty"`
+	NameTR     string         `json:"name_tr"`
+	X          int            `json:"x"`
+	Y          int            `json:"y"`
+	Type       SettlementType `json:"type,omitempty"`
+	IsCapital  bool           `json:"is_capital,omitempty"`
+	Population int            `json:"population"`
+}
+
+// SettlementPopulation bölgedeki yerleşimlerin toplam nüfusunu döner.
+func (r *Region) SettlementPopulation() int {
+	if r == nil {
+		return 0
+	}
+	total := 0
+	for _, settlement := range r.Settlements {
+		if settlement.Population > 0 {
+			total += settlement.Population
+		}
+	}
+	return total
+}
+
+// RecalculatePopulation, kırsal ve yerleşim nüfuslarını bölge toplamına bağlar.
+// Eski senaryo/kayıt verisinde bileşenler bulunmuyorsa mevcut Population değeri
+// geriye dönük uyumluluk için kırsal nüfus kabul edilir.
+func (r *Region) RecalculatePopulation() int {
+	if r == nil {
+		return 0
+	}
+	if r.RuralPopulation < 0 {
+		r.RuralPopulation = 0
+	}
+	settlementPopulation := r.SettlementPopulation()
+	if r.RuralPopulation == 0 && r.Population > settlementPopulation {
+		r.RuralPopulation = r.Population - settlementPopulation
+	}
+	r.Population = r.RuralPopulation + settlementPopulation
+	return r.Population
+}
+
+// AddPopulation büyümeyi kırsal nüfusa ekler; yerleşim nüfusları korunur.
+func (r *Region) AddPopulation(amount int) {
+	if r == nil || amount <= 0 {
+		return
+	}
+	settlementPopulation := r.SettlementPopulation()
+	if r.RuralPopulation == 0 && r.Population > settlementPopulation {
+		r.RuralPopulation = r.Population - settlementPopulation
+	}
+	r.RuralPopulation += amount
+	r.RecalculatePopulation()
 }
 
 // IsCoastal komşularda deniz olan kara bölgesiyse true döner.

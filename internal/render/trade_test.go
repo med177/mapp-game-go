@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 )
 
 func TestHandleTradePanelInputMarketSelectsFactionAndGoodOnClick(t *testing.T) {
@@ -82,6 +83,9 @@ func TestHandleTradePanelInputMarketReturnsEmergencyGrainSale(t *testing.T) {
 		Factions: map[faction.FactionID]*faction.Faction{
 			playerID: {ID: playerID, NameTR: "Oyuncu", Grain: 160},
 			targetID: {ID: targetID, NameTR: "Alfa", Gold: 200, Grain: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: string(playerID), BaseGoldIncome: 100, TaxRate: 100, Satisfaction: 50},
 		},
 		GrainEconomy: map[faction.FactionID]state.GrainEconomyStatus{
 			playerID: {FactionID: playerID, StorageCapacity: 100},

@@ -133,6 +133,21 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	if buildings["market"].SpiceCost != 3 || buildings["market"].ClothCost != 6 {
 		t.Fatalf("pazar lüks kaynak maliyeti kalibre değil: %+v", buildings["market"])
 	}
+	wantBuildingGrainCosts := map[string]int{
+		"market":   12,
+		"farm":     30,
+		"barracks": 22,
+		"port":     15,
+		"walls":    17,
+		"temple":   17,
+		"granary":  24,
+	}
+	for buildingID, wantGrainCost := range wantBuildingGrainCosts {
+		building := buildings[buildingID]
+		if building == nil || building.GrainCost != wantGrainCost {
+			t.Errorf("%s bina işçi iaşesi maliyeti kalibre değil: got=%d want=%d", buildingID, buildingGrainCost(building), wantGrainCost)
+		}
+	}
 
 	units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
 	if err != nil {
@@ -141,6 +156,13 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	if units["elite_infantry"].ClothCost != 6 || units["merchant_ship"].SpiceCost != 2 {
 		t.Fatalf("birlik lüks kaynak maliyeti kalibre değil: elite_infantry=%+v merchant=%+v", units["elite_infantry"], units["merchant_ship"])
 	}
+}
+
+func buildingGrainCost(building *city.Building) int {
+	if building == nil {
+		return 0
+	}
+	return building.GrainCost
 }
 
 func load1300IntegrityData(t *testing.T) (string, map[world.RegionID]*world.Region, map[faction.FactionID]*faction.Faction) {
