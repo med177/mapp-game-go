@@ -1,11 +1,21 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-25: Merchant rota modalındaki görsel örtüşme düzeltildi. İki satırlı seçenekler 48 px satır yüksekliği ve daha güvenli iç boşlukla çiziliyor; modal karartması güçlendirilerek alttaki ordu panelinin `ROTA ATA` butonu ve metinleri arka plana alınıyor. Regression: `TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance`; doğrulama: `go test ./internal/render`.
+
+- 2026-07-25: Merchant rota filtresindeki yapısal boşluk düzeltildi. Tarihsel ticaret merkezi olmayan aktif anlaşmalar, tarafların sahip olduğu bağlı limanlar ve deniz bağlantısı üzerinden `ROTA ATA` panelinde listeleniyor; `MerchantTradeRoutePortPairs()` ortak uç modeliyle oyuncunun kendi aktif anlaşmaları `Ticaret` haritasında turuncu renkli kesikli liman-liman koridor olarak çiziliyor. Regression: `TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters`; doğrulama: `go test ./internal/state ./internal/render`.
+
+- 2026-07-25: Aktif kuşatma ikonları savaş ilişkisini gösterecek şekilde yeniden dizildi. Kuşatan ordu karesi solda, yuvarlak kılıç rozeti ortadaki ayrı slotta, savunan/rakip ordu karesi sağda çiziliyor; kuşatan ve savunmacı merkezleri arasında 52 px boşluk bırakılıyor. Regression: `TestArmyIconPositionsKeepBesiegerLeftOfSplitPart`; doğrulama: `go test ./internal/render`.
+
+- 2026-07-25: Harita üzerindeki kara ordularında komutan portresi görünür hale getirildi. Atanmış `Army.Commander` için portre, birim sayısı karesinin hemen üstünde sayı karesinden biraz büyük 28×28 px rozet olarak çiziliyor; sayı karesi ve donanma ikonlarının mevcut düzeni korunuyor. Kapsam: `internal/render/{renderer.go,renderer_army_icon_test.go}`, `wiki/architecture/render-pipeline.md`; regression: `TestArmyCommanderBadgeSitsAboveAndExceedsCountSquare`; doğrulama: `go test ./internal/render`.
+
+- 2026-07-25: Bölge panelindeki oyuncu vergi barı yatayda genişletildi. Bar normal seviye barıyla aynı x konumundan başlıyor, `-` butonundan önce yalnızca 4 px boşluk bırakıyor ve yüksekliği değişmiyor. Regression: `TestRegionTaxInteractiveBarStopsBeforeDecreaseButton`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-24: AI savaş/diplomasi planının Faz 6 teşhis geçmişi tamamlandı. Geliştirme
   save'i yüklendiğinde ilk beş AI fazının plan, hedef, cephe, aktif savaş, yedek ve

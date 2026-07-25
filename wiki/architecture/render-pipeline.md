@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -35,6 +35,8 @@ Bölgede aktif kuşatma yürüten oyuncu ordusu seçildiğinde kuşatmaya ait he
 
 Birim görselleri artık tek bir sheet'ten değil, birim türü başına ayrı PNG'den yüklenir. `militia`/`infantry`/`elite_infantry`, süvari, kuşatma ve gemi türleri `sprites/eastern_army/` ile `sprites/western_army/` altındaki kanonik dosya eşlemesine bağlanır. Sünni/Şii fraksiyonlar doğu setini, Katolik/Ortodoks ve diğer tanımlı dinler batı setini kullanır; recruit paneli ve tooltip oyuncu fraksiyonunu, ordu detay paneli ise ilgili ordunun sahibini baz alır. Faksiyon bulunamıyorsa eski senaryolar için `sprites/army.png` fallback'i korunur. Ordu ve recruit kartlarında 10×2 slot düzeni korunurken kart yüksekliği 210×360 görsel oranına göre hesaplanır. Sprite'ın tamamı üstten başlayarak kırpılmadan çizilir; ordu/kuyruk kartlarının footer'ı opak beyaz kalırken recruit üretim kartlarının alt etiket alanı üretilebilirlik durumuna göre yeşil, amber, mavi veya kırmızı renklendirilir. Bu footer'lardaki isim ve tur metinleri siyah çizilir; isim, HP/progress etiketi ile kuyruk iptal butonu sprite'ın üzerine bindirilir (`internal/render/recruit_panel.go`, `army_panel.go`, `hover_tooltip.go`).
 
+Haritadaki kara ordusuna komutan atanmışsa, birim sayısının çizildiği 24×24 px dış kare korunur ve komutan portresi bunun hemen üstünde 28×28 px kare rozet olarak gösterilir. Portre yalnız `Army.Commander` mevcut olduğunda çizilir; donanma ikonlarının daire düzeni ve mevcut sayı/kuşatma/lojistik rozetleri korunur. Portre asset'leri komutan paneliyle aynı senaryo yolu tabanlı cache'i kullanır (`internal/render/renderer.go`, `commander_panel.go`).
+
 Birim detay hover popup'larındaki görsel, aynı 210×360 oranı korunarak mevcut yüksekliğine 50 px eklenmiş ölçüyle çizilir. Recruit ve ordu popup'larının metin alanı daralmasın diye popup genişliği bu yeni görsel kolonuna göre 358 px'e çıkarılmıştır (`internal/render/hover_tooltip.go`).
 
 Ordu detay panelindeki birim kartları oyun state'indeki fiziksel birim sırasını değiştirmeden kategoriye göre gruplanır; aynı kategori içindeki sıra korunur ve görünüm önceliği piyade, süvari, kuşatma, ardından diğer kategorilerdir (`internal/render/army_panel.go`).
@@ -45,11 +47,17 @@ Ordu detay panelindeki oyuncu birim kartları, recruit panelinden ayrı bir ordu
 
 Oyuncunun vassal zincirindeki ordular, oyuncu orduları gibi haritada gerçek birim sayısı ve tam ordu detay paneliyle gösterilir; kart hover'ı birim türü, adet, bakım, savaş değerleri ve anlık can bilgilerini açar. Bu tam istihbarat görünürlüğü `diplomacy.RealmRoot` üzerinden çözülür ve vassalın bağımsız AI ordusunu hareket ettirme, bölme/birleştirme veya komutan atama yetkisi vermez (`internal/render/renderer.go`, `army_panel.go`).
 
+Aktif kuşatmada harita ikonları kuşatan ordu karesi, aradaki yuvarlak kılıç rozeti ve savunan ordu karesi sırasını kullanır. Kuşatan ile `DefenderArmyID` ordusu arasında kılıç rozeti için ayrı yatay slot açılır; böylece rozet artık ordu karesinin üstünde/altında değil, iki ordunun savaş ilişkisini gösteren orta konumda çizilir (`internal/render/renderer.go`, `army_siege_split_test.go`).
+
 Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyuncu ordusu için mevcut HP'ye göre `Güç: saldırı / savunma` değerini gösterir. Düşman ordularında aynı alan yalnız istihbaratla açılan birim tiplerinden hesaplanan `Görünen güç` değerini taşır; gizli birimlerin gücü toplama dahil edilmez (`internal/render/army_panel.go`).
 
 Nakliye kapasitesi olan oyuncu filolarında aynı alt bilgi bandında güç değerinin solunda `Taşıma: dolu/kapasite` gösterilir. Doluluk `Army.EmbarkedCount()`, kapasite ise `Army.TransportCapacity()` üzerinden okunur; savaş ve merchant filolarında nakliye kapasitesi yoksa bu metin çizilmez (`internal/render/army_panel.go`, `internal/army/army.go`).
 
 Oyuncuya ait merchant filosu seçildiğinde ordu detay panelinin alt bandında `ROTA ATA` düğmesi ve mevcut görev durumu görünür. Düğme, geçerli aktif ticaret rotalarını modal listede gösterir; oyuncu rotayı seçebilir veya görevi kaldırabilir. Filo rota denizinde değilse atama korunur fakat `deniz bekleniyor` uyarısı görünür; modal input'u normal harita/ordu input'unu bloke eder (`internal/render/{army_panel.go,merchant_route_panel.go,renderer_input.go}`, `internal/render/action.go`, `internal/game/game.go`).
+
+Merchant rota filtresi tarihsel ticaret merkezi bulunmayan aktif anlaşmaları da destekler. Tarafların sahip olduğu ve denize bağlı `port` binaları arasında bağlantı varsa rota paneli bu anlaşmayı listeler; `Ticaret` harita modunda oyuncunun kendi aktif anlaşmaları ilgili limanlar arasında turuncu renkli kesikli bezier koridor, uç işaretleri ve hacim etiketiyle çizilir. Koridor hover'ı liman adlarını, emtiayı ve hacmi gösterir (`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).
+
+Merchant rota modalındaki seçenek satırları iki satırlı rota adı ve ayrıntı metnine göre 48 px yüksekliğinde çizilir; iç kutu ile satır sınırı arasında boşluk bırakılır. Modal açıldığında 205 alfa karartma katmanı alttaki ordu panelinin `ROTA ATA` kontrolünü ve diğer metinlerini görsel olarak pasifleştirir; modal input'u zaten bu katmanda tüketilir (`internal/render/merchant_route_panel.go`).
 
 Üst-sol durum HUD'unda oyuncu devletinin amblem alanı, aktif senaryonun `sprites/flags/<faction-id>.png` dosyasını bulduğunda 58×58 px kare bayrağı gösterir. Aynı kare rozet devlet bilgi paneli başlığında da devlet adının solunda 44×44 px ölçüyle kullanılır. Bölge bilgi paneli sahibinin bayrağı panelin üst-sol çerçevesine bitişik, çerçevenin hemen üstünde 48×48 px kimlik rozeti olarak çizilir; bölge ve sahip devlet adlarının mevcut sol başlık konumu korunur. Tur bitimindeki AI hamle paneli, 620×180 px genişletilmiş düzen içinde aktif hamleyi yapan faction ID'sini taşıyarak ülke adının solunda sarı iç çerçevesiz 128×128 px kare bayrak rozeti gösterir. AI adımının mesajı bu panelde gösterilir; aynı mesaj genel `Bilgi` popup'ında ikinci kez çizilmez. Tur başında önceki oyuncu bildirim popup'ı da temizlenir. Bayrak asset'i yoksa ilgili kare zeminde devlet baş harfi fallback'i korunur. Bayraklar ilk kullanımda yüklenir, yol bazlı cache'lenir ve senaryo değişiminde cache temizlenir (`internal/render/panel.go`, `renderer.go`).
 
@@ -65,7 +73,7 @@ Teknoloji paneli açıkken input modal olarak teknoloji ağacına yönlendirilir
 
 Teknoloji ağacındaki gerçek flow içeriği viewport'tan daha dar olduğunda ortalanır. Flow'un tree viewport içindeki sağ ve sol boşluklarına yapılan sol tıklama, üstteki teknoloji kapatma düğmesiyle aynı şekilde paneli kapatır; kategori sekmeleri, teknoloji kartları ve ağaç sürükleme alanı korunur (`internal/render/tech_panel.go`).
 
-Bölge panelindeki oyuncuya ait vergi satırında `+/-` düğmeleri 18×16 px kompakt rect'lerle içerik sağına hizalanır. Etkileşimli vergi barı kullanılabilir alanın iki ucundan da bir düğme genişliği kadar içeri alınır; etiketler ayrı çizildiği için eski tam uzunluklu bar düğmelerin altında kalmaz. Çizim ve hit-test aynı `regionTaxButtonRects` geometri sözleşmesini kullanır (`internal/render/panel.go`).
+Bölge panelindeki oyuncuya ait vergi satırında `+/-` düğmeleri 18×16 px kompakt rect'lerle içerik sağına hizalanır. Etkileşimli vergi barı normal seviye barıyla aynı başlangıç x konumunu kullanır ve `-` düğmesinden önce yalnızca düğme aralığı kadar boşluk bırakacak şekilde yatayda genişletilir; yüksekliği korunur. Etiketler ayrı çizilir, çizim ve hit-test aynı `regionTaxButtonRects` geometri sözleşmesini kullanır (`internal/render/panel.go`).
 
 Savaş ilanı koalisyon önizleme modalında kesin katılanlar ve çağrılabilir müttefikler sabit yükseklikte ayrı liste viewport'larında çizilir. Sol ve sağ cephelerin otomatik katılanlar/çağrılabilir listeleri birbirinden bağımsız scroll state'i ve scrollbar'ı kullanır; uzun listeler başlık veya diğer listeye taşamaz, çağrı checkbox hit-test'i de yalnız görünür satırlara açıktır (`internal/render/renderer.go`, `renderer_dialogs.go`, `cursor.go`).
 
@@ -292,7 +300,7 @@ Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt
 
 Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
 
-`Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir. Merkezler arası akış doğrudan her çift arasında çizilmez; senaryoda tanımlı `links` graph'ı üzerindeki kısa yol boyunca dağıtılır (ör. Halep -> Konstantinopolis -> Venedik). Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
+`Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir (ör. Halep -> Konstantinopolis -> Venedik). Oyuncunun aktif liman-tabanlı anlaşmaları bu tarihsel ağdan ayrı olarak limanlar arasında turuncu renkli kesikli koridorla çizilir; böylece merkez verisi bulunmayan Osmanlı–Altın Orda gibi gerçek liman bağlantıları da görünür. Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
 
 Trade overlay görünürlüğü `Renderer.tradeOverlayVisible()` ile merkezileştirilmiştir. Yani `MapModeTrade` seçili kalsa bile teknoloji/diplomasi/ticaret overlay'i, confirm modalı, event detail/codex, historical event veya gelen diplomasi teklifi gibi üst ekranlar açıkken trade backdrop, koridorlar, merkez tabelaları ve hover tooltip'i hiç çizilmez; overlay kapanınca trade görünümü aynı mod state'iyle geri gelir.
 

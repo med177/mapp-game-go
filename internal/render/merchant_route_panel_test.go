@@ -56,3 +56,14 @@ func TestMerchantRoutePanelStaysInsideViewport(t *testing.T) {
 		t.Fatalf("merchant rota paneli viewport dışına taştı: %+v", layout)
 	}
 }
+
+func TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance(t *testing.T) {
+	if merchantRoutePanelRowH < 46 {
+		t.Fatalf("iki satırlı rota seçenekleri için satır yüksekliği yetersiz: %.1f", merchantRoutePanelRowH)
+	}
+
+	rowRectHeight := merchantRoutePanelRowH - 10
+	if rowRectHeight < 38 {
+		t.Fatalf("rota satırının iç kutusu iki satırlı metne sığmıyor: %.1f", rowRectHeight)
+	}
+}

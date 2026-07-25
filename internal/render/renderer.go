@@ -1771,15 +1771,31 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			if aiSieging != ajSieging {
 				return aiSieging
 			}
+			if aiSieging {
+				if siege := r.gs.SiegeByArmy(ai.ID); siege != nil && siege.DefenderArmyID == aj.ID {
+					return true
+				}
+				if siege := r.gs.SiegeByArmy(aj.ID); siege != nil && siege.DefenderArmyID == ai.ID {
+					return false
+				}
+			}
 			return aids[i] < aids[j]
 		})
 
-		n := float32(len(aids))
-		startX := base[0] - (n-1)*iconStep/2
+		attackerIndex, _, hasSiegePair := r.siegePairIndices(aids)
+		slotCount := len(aids)
+		if hasSiegePair {
+			slotCount++
+		}
+		startX := base[0] - float32(slotCount-1)*iconStep/2
 		for i, aid := range aids {
+			slot := i
+			if hasSiegePair && i > attackerIndex {
+				slot++
+			}
 			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
 				ArmyID: aid,
-				X:      startX + float32(i)*iconStep,
+				X:      startX + float32(slot)*iconStep,
 				Y:      base[1],
 			})
 		}
@@ -1826,6 +1842,21 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
 	})
 	return r.armyIconBuf
+}
+
+func (r *Renderer) siegePairIndices(aids []army.ArmyID) (attackerIndex, defenderIndex int, ok bool) {
+	for i, aid := range aids {
+		siege := r.gs.SiegeByArmy(aid)
+		if siege == nil || siege.DefenderArmyID == "" {
+			continue
+		}
+		for j, candidateID := range aids {
+			if candidateID == siege.DefenderArmyID {
+				return i, j, true
+			}
+		}
+	}
+	return -1, -1, false
 }
 
 func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32, float32, bool) {
@@ -1966,7 +1997,16 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if r.gs.Phase != state.PhaseEditMode && !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) {
 			unitCount = -1
 		}
-		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval)
+		siegeBadgeX := pos.X + armyIconInnerHalf + 8
+		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+			for _, candidate := range positions {
+				if candidate.ArmyID == siege.DefenderArmyID {
+					siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
+					break
+				}
+			}
+		}
+		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, siegeBadgeX)
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
@@ -1999,7 +2039,13 @@ func armyIconBorderColor(gs *state.GameState, ownerID string, selected bool) col
 
 // drawArmyIcon tek bir ordu ikonunu çizer.
 // Kara ordusu → kare, deniz donanması → daire.
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool) {
+const (
+	armyIconInnerHalf      = float32(10)
+	armyIconBorderWidth    = float32(2)
+	armyCommanderBadgeSize = float32(32)
+)
+
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, siegeBadgeX float32) {
 	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
 
 	if isNaval {
@@ -2008,9 +2054,10 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		vector.FillCircle(screen, cx, cy, 11, col, false)
 	} else {
 		// Dış kare (border) + iç kare (fraksiyon rengi)
-		half := float32(10)
-		vector.FillRect(screen, cx-half-2, cy-half-2, half*2+4, half*2+4, borderCol, false)
-		vector.FillRect(screen, cx-half, cy-half, half*2, half*2, col, false)
+		vector.FillRect(screen, cx-armyIconInnerHalf-armyIconBorderWidth, cy-armyIconInnerHalf-armyIconBorderWidth,
+			armyIconInnerHalf*2+armyIconBorderWidth*2, armyIconInnerHalf*2+armyIconBorderWidth*2, borderCol, false)
+		vector.FillRect(screen, cx-armyIconInnerHalf, cy-armyIconInnerHalf,
+			armyIconInnerHalf*2, armyIconInnerHalf*2, col, false)
 	}
 
 	// Birim sayısı
@@ -2023,6 +2070,12 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
+	if !isNaval {
+		if a := r.gs.Armies[aid]; a != nil && a.Commander != nil {
+			x, y, size := armyCommanderBadgeRect(cx, cy)
+			drawCommanderPortrait(screen, a.Commander, float64(x), float64(y), float64(size), float64(size))
+		}
+	}
 	if isNaval {
 		if a := r.gs.Armies[aid]; a != nil && len(a.EmbarkedUnits) > 0 {
 			badgeW := float32(14)
@@ -2039,8 +2092,8 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	}
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {
 		badgeSize := float32(15)
-		badgeX := cx + 8
-		badgeY := cy - 27
+		badgeX := siegeBadgeX
+		badgeY := cy
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
@@ -2049,6 +2102,21 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
+}
+
+func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float32 {
+	if hasDefender {
+		return (attackerX + defenderX) / 2
+	}
+	return attackerX + armyIconInnerHalf + 8
+}
+
+// armyCommanderBadgeRect, komutan portresini sayı karesinin hemen üstüne
+// yerleştirir. Sayı karesi 24 px dış ölçüye sahipken portre rozeti 28 px'tir.
+func armyCommanderBadgeRect(cx, cy float32) (x, y, size float32) {
+	size = armyCommanderBadgeSize
+	countSquareTop := cy - armyIconInnerHalf - armyIconBorderWidth
+	return cx - size/2, countSquareTop - size, size
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {

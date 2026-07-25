@@ -16,7 +16,7 @@ import (
 const (
 	merchantRoutePanelW           = float32(660)
 	merchantRoutePanelHeaderH     = float32(66)
-	merchantRoutePanelRowH        = float32(42)
+	merchantRoutePanelRowH        = float32(48)
 	merchantRoutePanelFooterH     = float32(42)
 	merchantRoutePanelVisibleRows = 7
 )
@@ -165,7 +165,9 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		return
 	}
 	layout := merchantRoutePanelLayoutFor(merchantRoutePanelRowCount(r))
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{0, 0, 0, 150}, false)
+	// Modal açıkken alttaki ordu panelinin butonları ve metinleri okunabilir
+	// kalmamalı; input zaten bu katmanda tüketiliyor.
+	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{0, 0, 0, 205}, false)
 	vector.FillRect(screen, layout.panelX, layout.panelY, layout.panelW, layout.panelH, panelBg, false)
 	drawPanelBorder(screen, layout.panelX, layout.panelY, layout.panelW, layout.panelH)
 	vector.FillRect(screen, layout.panelX, layout.panelY, layout.panelW, 3, panelBorder, false)
@@ -191,7 +193,7 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 	}
 	for row := start; row < end; row++ {
 		y := layout.rowY + float32(row-start)*merchantRoutePanelRowH
-		rowRect := gameui.Rect{X: float64(layout.rowX), Y: float64(y + 4), W: float64(layout.rowW), H: float64(merchantRoutePanelRowH - 8)}
+		rowRect := gameui.Rect{X: float64(layout.rowX), Y: float64(y + 5), W: float64(layout.rowW), H: float64(merchantRoutePanelRowH - 10)}
 		bg := color.RGBA{28, 22, 14, 220}
 		if row%2 == 0 {
 			bg = color.RGBA{38, 29, 16, 230}
@@ -200,7 +202,7 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		vector.StrokeRect(screen, float32(rowRect.X), float32(rowRect.Y), float32(rowRect.W), float32(rowRect.H), 1, color.RGBA{92, 70, 34, 180}, false)
 
 		if row == 0 {
-			DrawText(screen, "Görev yok", rowRect.X+14, rowRect.Y+9, FaceMed, color.RGBA{215, 180, 120, 255})
+			DrawText(screen, "Görev yok", rowRect.X+14, rowRect.Y+8, FaceMed, color.RGBA{215, 180, 120, 255})
 			DrawText(screen, "Bu filonun merchant rotasını kaldır", rowRect.X+180, rowRect.Y+11, FaceSmall, ColorGray)
 			continue
 		}
@@ -218,8 +220,8 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		if active {
 			textColor = color.RGBA{170, 235, 170, 255}
 		}
-		DrawText(screen, merchantRouteDisplayName(r.gs, route), rowRect.X+14, rowRect.Y+8, FaceMed, textColor)
-		DrawText(screen, fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), rowRect.X+14, rowRect.Y+26, FaceSmall, ColorGray)
+		DrawText(screen, merchantRouteDisplayName(r.gs, route), rowRect.X+14, rowRect.Y+7, FaceMed, textColor)
+		DrawText(screen, fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), rowRect.X+14, rowRect.Y+25, FaceSmall, ColorGray)
 		if active {
 			DrawText(screen, "AKTİF", rowRect.X+rowRect.W-62, rowRect.Y+12, FaceSmall, color.RGBA{170, 235, 170, 255})
 		}

@@ -21,6 +21,7 @@ type tradeRouteVisual struct {
 	goodName string
 	amount   int
 	bestFlow int
+	route    *economy.TradeRoute
 }
 
 type tradeCenterVisual struct {
@@ -52,7 +53,15 @@ type tradeCorridorInfo struct {
 	dx       float64
 	dy       float64
 	hitWidth float64
+	dashed   bool
 }
+
+var (
+	playerTradeRouteGlowColor     = color.RGBA{255, 126, 32, 72}
+	playerTradeRouteCoreColor     = color.RGBA{255, 150, 54, 230}
+	playerTradeRouteEndpointColor = color.RGBA{255, 155, 58, 230}
+	playerTradeRouteLabelColor    = color.RGBA{255, 177, 86, 240}
+)
 
 func tradeRoutePairKey(a, b string) string {
 	if a > b {
@@ -242,23 +251,28 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	c := r.tradeCorridors[r.tradeHoverIdx]
-	segments := 28
-	for i := 0; i < segments; i++ {
-		t1 := float64(i) / float64(segments)
-		t2 := float64(i+1) / float64(segments)
-		x1, y1 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t1)
-		x2, y2 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t2)
-		if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
-			continue
+	if c.dashed {
+		drawDashedTradeCurve(screen, c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 9.0, 3.0,
+			playerTradeRouteGlowColor, playerTradeRouteCoreColor, r.tradeOverlayOccludesSegment)
+	} else {
+		segments := 28
+		for i := 0; i < segments; i++ {
+			t1 := float64(i) / float64(segments)
+			t2 := float64(i+1) / float64(segments)
+			x1, y1 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t1)
+			x2, y2 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t2)
+			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+				continue
+			}
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, color.RGBA{255, 228, 144, 56}, false)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, color.RGBA{255, 241, 192, 230}, false)
 		}
-		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, color.RGBA{255, 228, 144, 56}, false)
-		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, color.RGBA{255, 241, 192, 230}, false)
 	}
 	if !r.tradeOverlayOccludesPoint(c.sx, c.sy) {
-		vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, color.RGBA{255, 236, 180, 230}, true)
+		vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, playerTradeRouteEndpointColor, true)
 	}
 	if !r.tradeOverlayOccludesPoint(c.dx, c.dy) {
-		vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, color.RGBA{255, 236, 180, 230}, true)
+		vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, playerTradeRouteEndpointColor, true)
 	}
 
 	rect, ok := r.tradeHoverTooltipRect()
@@ -275,6 +289,111 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	DrawText(screen, c.fromName+" ↔ "+c.toName, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
 	DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
 	DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
+}
+
+func drawDashedTradeCurve(screen *ebiten.Image, sx, sy, cx, cy, dx, dy float64, glowW, coreW float32, glow, core color.RGBA, occludes func(float64, float64, float64, float64) bool) {
+	const segments = 36
+	for i := 0; i < segments; i++ {
+		if i%3 == 2 {
+			continue
+		}
+		t1 := float64(i) / float64(segments)
+		t2 := float64(i+1) / float64(segments)
+		x1, y1 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t1)
+		x2, y2 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t2)
+		if occludes != nil && occludes(x1, y1, x2, y2) {
+			continue
+		}
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
+	}
+}
+
+func (r *Renderer) tradePortScreenPos(region *world.Region) (float64, float64) {
+	if r != nil && r.worldMap != nil && region != nil {
+		for index, settlement := range region.Settlements {
+			if settlement.Type != world.SettlementPort {
+				continue
+			}
+			if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, index); ok {
+				return r.worldToScreen(float64(ax), float64(ay))
+			}
+		}
+	}
+	return r.regionScreenPos(region)
+}
+
+func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[string]tradeRouteVisual) {
+	if r == nil || r.gs == nil || len(merged) == 0 {
+		return
+	}
+	playerID := string(r.gs.PlayerFactionID)
+	keys := make([]string, 0, len(merged))
+	for key, route := range merged {
+		if route.route == nil || (route.factionA != playerID && route.factionB != playerID) {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		route := merged[key]
+		pairs := r.gs.MerchantTradeRoutePortPairs(route.route)
+		if len(pairs) == 0 {
+			continue
+		}
+		pair := pairs[0]
+		fromRegion := r.gs.Regions[pair.FromRegionID]
+		toRegion := r.gs.Regions[pair.ToRegionID]
+		if fromRegion == nil || toRegion == nil {
+			continue
+		}
+		sx, sy := r.tradePortScreenPos(fromRegion)
+		dx, dy := r.tradePortScreenPos(toRegion)
+		mx := (sx + dx) / 2
+		my := (sy + dy) / 2
+		vx := dx - sx
+		vy := dy - sy
+		dist := math.Hypot(vx, vy)
+		if dist < 1 {
+			continue
+		}
+		curve := routeCurveOffset("player-port|"+key, dist)
+		cx := mx + (-vy/dist)*curve
+		cy := my + (vx/dist)*curve
+		drawDashedTradeCurve(screen, sx, sy, cx, cy, dx, dy, 6.0, 2.0, playerTradeRouteGlowColor, playerTradeRouteCoreColor, r.tradeOverlayOccludesSegment)
+		if !r.tradeOverlayOccludesPoint(sx, sy) {
+			vector.FillCircle(screen, float32(sx), float32(sy), 5, playerTradeRouteEndpointColor, true)
+			vector.StrokeCircle(screen, float32(sx), float32(sy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
+		}
+		if !r.tradeOverlayOccludesPoint(dx, dy) {
+			vector.FillCircle(screen, float32(dx), float32(dy), 5, playerTradeRouteEndpointColor, true)
+			vector.StrokeCircle(screen, float32(dx), float32(dy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
+		}
+		if r.camScale >= 1.05 {
+			label := itoa(route.amount) + "/tur"
+			labelW := MeasureText(label, FaceSmall)
+			if !r.tradeOverlayOccludesPoint(mx, my) {
+				DrawText(screen, label, mx-labelW/2, my-8, FaceSmall, playerTradeRouteLabelColor)
+			}
+		}
+		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
+			fromName: chooseRegionLabel(fromRegion),
+			toName:   chooseRegionLabel(toRegion),
+			amount:   route.amount,
+			factions: 2,
+			goods:    route.goodName,
+			sx:       sx,
+			sy:       sy,
+			cx:       cx,
+			cy:       cy,
+			dx:       dx,
+			dy:       dy,
+			hitWidth: 10,
+			dashed:   true,
+		})
+	}
 }
 
 func (r *Renderer) nearestTradeCenterIndex(region *world.Region, centers []tradeCenterVisual) int {
@@ -415,19 +534,20 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if route.goodName == "" || tr.AmountPerTurn > route.bestFlow {
 			route.goodName = candidateGood
 			route.bestFlow = tr.AmountPerTurn
+			route.route = tr
 		}
 		merged[key] = route
 	}
+	r.tradeCorridors = r.tradeCorridors[:0]
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
+	r.tradeCenters = append(r.tradeCenters[:0], centers...)
+	r.drawPlayerTradePortRoutes(screen, merged)
 	if len(centers) == 0 {
-		r.tradeCorridors = r.tradeCorridors[:0]
 		r.tradeHoverIdx = -1
-		r.tradeCenters = r.tradeCenters[:0]
 		r.tradeCenterIdx = -1
+		r.updateTradeHover()
 		return
 	}
-	r.tradeCorridors = r.tradeCorridors[:0]
-	r.tradeCenters = append(r.tradeCenters[:0], centers...)
 	mx, my := ebiten.CursorPosition()
 	preFocusCenter := -1
 	bestD := 13.0

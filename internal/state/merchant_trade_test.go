@@ -83,6 +83,46 @@ func TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter(t *testing.T) 
 	}
 }
 
+func TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters(t *testing.T) {
+	route := &economy.TradeRoute{
+		FromFactionID: "ottoman", ToFactionID: "golden_horde",
+		Good: economy.GoodGrain, AmountPerTurn: 3, GoldPerUnit: 2,
+	}
+	gs := &GameState{
+		Year: 1303,
+		Regions: map[world.RegionID]*world.Region{
+			"bursa":          {ID: "bursa", OwnerID: "ottoman", Buildings: []string{"port"}, Neighbors: []world.RegionID{"marmara"}},
+			"dobruja":        {ID: "dobruja", OwnerID: "golden_horde", Buildings: []string{"port"}, Neighbors: []world.RegionID{"black_sea_port"}},
+			"marmara":        {ID: "marmara", IsSea: true, Neighbors: []world.RegionID{"bursa", "black_sea"}},
+			"black_sea":      {ID: "black_sea", IsSea: true, Neighbors: []world.RegionID{"marmara", "black_sea_port"}},
+			"black_sea_port": {ID: "black_sea_port", IsSea: true, Neighbors: []world.RegionID{"black_sea", "dobruja"}},
+		},
+		TradeRoutes: []*economy.TradeRoute{route},
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"merchant": {
+				ID: "merchant", OwnerID: "ottoman", RegionID: "marmara", IsNaval: true,
+				Units: []army.Unit{{TypeID: "merchant_ship"}},
+			},
+		},
+	}
+
+	pairs := gs.MerchantTradeRoutePortPairs(route)
+	if len(pairs) != 1 || pairs[0].FromRegionID != "bursa" || pairs[0].ToRegionID != "dobruja" {
+		t.Fatalf("gerçek limanlar arasındaki rota çifti bulunmalıydı: %+v", pairs)
+	}
+	got := gs.MerchantTradeRouteSeaRegions(route)
+	if len(got) != 2 || got[0] != "black_sea_port" || got[1] != "marmara" {
+		t.Fatalf("liman fallback'i rota uçlarının denizlerini döndürmeliydi: %+v", got)
+	}
+	routes := gs.MerchantTradeRoutesForFleet(gs.Armies["merchant"])
+	if len(routes) != 1 || routes[0] != route {
+		t.Fatalf("tarihsel merkez olmadan aktif liman rotası merchant panelinde görünmeliydi: %+v", routes)
+	}
+}
+
 func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	gs, route := merchantTradeTestState()
 	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}

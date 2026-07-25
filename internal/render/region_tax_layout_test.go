@@ -47,10 +47,10 @@ func TestRegionTaxInteractiveBarStopsBeforeDecreaseButton(t *testing.T) {
 		t.Fatalf("etkileşimli vergi barı görünür genişlikte olmalı: got=%v", barW)
 	}
 	baseBarX, _ := regionPanelTaxBarLayout(infoPanelX()+float32(panelPad), infoPanelW-float32(panelPad*2))
-	if barX-baseBarX != regionPanelTaxButtonPad {
-		t.Fatalf("vergi barı başlangıçta buton genişliği kadar içeri alınmalı: got=%v want=%v", barX-baseBarX, regionPanelTaxButtonPad)
+	if barX != baseBarX {
+		t.Fatalf("vergi barı normal seviye barıyla aynı x konumundan başlamalı: got=%v want=%v", barX, baseBarX)
 	}
-	if barX+barW+regionPanelTaxButtonPad != dec[0] {
-		t.Fatalf("vergi barı bitişte de buton genişliği kadar mesafede olmalı: got=%v want=%v", barX+barW+regionPanelTaxButtonPad, dec[0])
+	if barX+barW+regionPanelTaxButtonGap != dec[0] {
+		t.Fatalf("vergi barı eksi butonundan önce küçük boşlukla bitmeli: got=%v want=%v", barX+barW+regionPanelTaxButtonGap, dec[0])
 	}
 }

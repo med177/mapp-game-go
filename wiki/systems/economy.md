@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-07-23
+last_updated: 2026-07-25
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -111,9 +111,10 @@ Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur 
 filolarını yeniden değerlendirir:
 
 - Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; rota başına üst sınır `+2`dir.
-- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve en az bir uçta aktif kıyısal
-  trade center bulunmalıdır. İki uçta da merkez varsa tarihsel link grafiği bağlantısı
-  aranır; filo merkez komşusu denizde değilse bonus verilmez.
+- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve en az bir geçerli kıyısal
+  ticaret merkezi veya aktif liman denizinde bulunmalıdır. İki tarihsel merkez varsa
+  link grafiği bağlantısı aranır; merkez ağı uç üretmiyorsa tarafların gerçek limanları
+  ve bağlı denizler fallback olarak kullanılır.
 - Askıdaki rota `ApplyTradeRoutes()` tarafından atlanır. Kaynak mal ya da hedef altın
   yetersizse merchant katkısı bedava gelir üretmez; rota o tur gerçekleşmez.
 - AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
@@ -123,6 +124,12 @@ filolarını yeniden değerlendirir:
   filo rota uçlarının geçerli denizinde değilse görev kayıtlı kalır ancak merchant bonusu
   filo doğru denize ulaşana kadar uygulanmaz. AI tarafı aynı `TradeRouteKey` modelini
   otomatik rota seçimi ve deniz hareketiyle kullanır.
+
+Merchant rotası olmayan tarihsel merkez bağlantılı anlaşmalar panelden gizlenmez; aktif
+limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` bu liman çiftini
+üretir. Haritanın `Ticaret` modunda oyuncuya ait aktif anlaşmalar, seçilen liman çiftleri
+arasında turuncu renkli kesikli koridor ve liman uçlarındaki işaretlerle gösterilir
+(`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).
 
 Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:
 

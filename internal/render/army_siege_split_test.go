@@ -34,7 +34,11 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 			},
 		},
 		Sieges: map[world.RegionID]*state.SiegeState{
-			"fort": {RegionID: "fort", AttackerArmyID: "army_p1_9"},
+			"fort": {
+				RegionID:       "fort",
+				AttackerArmyID: "army_p1_9",
+				DefenderArmyID: "army_p1_10",
+			},
 		},
 	}
 	r := &Renderer{
@@ -55,5 +59,11 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 	}
 	if positions[0].ArmyID != "army_p1_9" || positions[1].ArmyID != "army_p1_10" {
 		t.Fatalf("kuşatan ordu solda, ayrılan parça sağda olmalıydı: %+v", positions)
+	}
+	if got := positions[1].X - positions[0].X; got != 52 {
+		t.Fatalf("kuşatma çiftinde kılıç rozeti için arada bir slot bırakılmalıydı: delta=%.1f", got)
+	}
+	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+26 {
+		t.Fatalf("kılıç rozeti kuşatan ile savunan ordunun ortasında olmalıydı: got=%.1f", got)
 	}
 }

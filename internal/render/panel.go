@@ -72,7 +72,6 @@ const (
 	regionPanelTaxButtonW      = float32(18)
 	regionPanelTaxButtonH      = float32(16)
 	regionPanelTaxButtonGap    = float32(4)
-	regionPanelTaxButtonPad    = regionPanelTaxButtonW
 	regionPanelMeterValueW     = float32(54)
 	regionPanelMeterGap        = float32(10)
 	regionOwnerNameH           = float32(20)
@@ -4085,8 +4084,7 @@ func regionPanelTaxBarLayout(x float32, width float32) (float32, float32) {
 
 func regionPanelTaxInteractiveBarLayout(x, width, decreaseButtonX float32) (float32, float32) {
 	barX, _ := regionPanelTaxBarLayout(x, width)
-	barX += regionPanelTaxButtonPad
-	barW := decreaseButtonX - barX - regionPanelTaxButtonPad
+	barW := decreaseButtonX - barX - regionPanelTaxButtonGap
 	if barW < 0 {
 		barW = 0
 	}
