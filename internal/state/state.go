@@ -989,6 +989,9 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
 			continue
 		}
+		if navalSeaMove && candidate.IsDocked() {
+			continue
+		}
 		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
 		rel, exists := s.Relations[key]
 		if !exists || rel == nil || rel.Stance != faction.StanceWar {
@@ -1024,6 +1027,9 @@ func (s *GameState) CollectDefenders(attacker *army.Army, target world.RegionID,
 	sort.Slice(candidates, func(i, j int) bool { return candidates[i].ID < candidates[j].ID })
 	for _, candidate := range candidates {
 		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
+			continue
+		}
+		if navalSeaMove && candidate.IsDocked() {
 			continue
 		}
 		// Deniz savaşında sadece savaş halindekiler; kara savaşında savaş halindeki herkes

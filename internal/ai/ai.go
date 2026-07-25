@@ -850,7 +850,7 @@ func aiPendingNavalFleetCount(gs *state.GameState, fid faction.FactionID) int {
 			}
 			hasExistingFleet := false
 			for _, a := range gs.Armies {
-				if a.OwnerID == string(fid) && a.IsNaval && a.RegionID == seaRegion {
+				if a.OwnerID == string(fid) && a.IsDocked() && a.DockedRegionID == region.ID {
 					hasExistingFleet = true
 					break
 				}
@@ -1319,7 +1319,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 	// Aynı bölgede escort savaş gemisi bul
 	var escort *army.Army
 	for _, a := range aiSortedArmies(gs) {
-		if a.ID == transport.ID || !a.IsNaval || a.OwnerID != transport.OwnerID || a.RegionID != transport.RegionID {
+		if a.ID == transport.ID || !a.IsAtSea() || a.OwnerID != transport.OwnerID || a.RegionID != transport.RegionID {
 			continue
 		}
 		if isWarshipFleet(a, gs.UnitTypes) && a.MovePoints > 0 {
@@ -1334,7 +1334,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 	// Hedef deniz bölgesinde düşman filosu var mı?
 	hasEnemy := false
 	for _, ea := range gs.Armies {
-		if ea.RegionID == target && ea.OwnerID != transport.OwnerID && ea.IsNaval {
+		if ea.RegionID == target && ea.OwnerID != transport.OwnerID && ea.IsAtSea() {
 			_, stance := relationScore(gs, transport.OwnerID, ea.OwnerID)
 			if stance == faction.StanceWar {
 				hasEnemy = true
@@ -1421,7 +1421,7 @@ func aiEnemyNavalInRegion(gs *state.GameState, ownerID string, seaRegionID world
 		return nil
 	}
 	for _, a := range aiSortedArmies(gs) {
-		if a == nil || !a.IsNaval || a.OwnerID == ownerID || a.RegionID != seaRegionID {
+		if a == nil || !a.IsAtSea() || a.OwnerID == ownerID || a.RegionID != seaRegionID {
 			continue
 		}
 		return a
@@ -1504,7 +1504,7 @@ func aiSeaPressure(gs *state.GameState, ownerID string, seaRegionID world.Region
 
 	friendlyFleets := 0
 	for _, a := range gs.Armies {
-		if a == nil || a.OwnerID != ownerID || !a.IsNaval || a.RegionID != seaRegionID {
+		if a == nil || a.OwnerID != ownerID || !a.IsAtSea() || a.RegionID != seaRegionID {
 			continue
 		}
 		friendlyFleets++
@@ -1590,6 +1590,12 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	actorName := turnFactionName(gs, fid)
 	targetName := turnRegionName(gs, target)
 	sourceName := turnRegionName(gs, fromRegion)
+	if a.IsNaval && a.IsDocked() && targetRegion.IsSea {
+		// Docked filonun RegionID'si rota hesapları için deniz ankrajıdır;
+		// gerçek konum ancak denize çıkış emriyle tekrar deniz bölgesi olur.
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+	}
 
 	if !a.IsNaval {
 		if siege := gs.SiegeAt(target); siege != nil && siege.AttackerArmyID != a.ID {
@@ -1905,11 +1911,11 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	}
 
 	// Hedefte düşman ordusu var mı? (müttefikler dahil birleşik savunma)
-	combinedDef, defSourceIDs := gs.CollectDefenders(a, target, false)
+	combinedDef, defSourceIDs := gs.CollectDefenders(a, target, a.IsNaval && targetRegion.IsSea)
 	var enemyArmy *army.Army
 	if combinedDef == nil {
 		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
 				break
 			}
@@ -1917,7 +1923,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	} else {
 		// Birleşik ordudan refakat için ilk orduyu bul
 		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
 				break
 			}
@@ -2485,7 +2491,7 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 			if _, ok := gs.Armies[a2.ID]; !ok {
 				continue
 			}
-			if a1.RegionID == a2.RegionID && a1.IsNaval == a2.IsNaval {
+			if a1.LocationID() == a2.LocationID() && a1.IsNaval == a2.IsNaval {
 				if a1.IsNaval && (a1.TradeRouteKey != "" || a2.TradeRouteKey != "") {
 					continue
 				}
@@ -2517,7 +2523,7 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 	}
 	for _, other := range aiSortedArmies(gs) {
 		otherID := other.ID
-		if otherID == a.ID || other.RegionID != a.RegionID || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+		if otherID == a.ID || other.LocationID() != a.LocationID() || other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}
 		if a.IsNaval && (a.TradeRouteKey != "" || other.TradeRouteKey != "") {

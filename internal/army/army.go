@@ -49,6 +49,33 @@ type Army struct {
 	TradeRouteKey string `json:"trade_route_key,omitempty"`
 }
 
+// IsDocked, filonun deniz ankrajı liman olsa bile RegionID üzerinde tutulan
+// deniz bölgesinde değil, bir kara bölgesinin limanında bulunduğunu bildirir.
+func (a *Army) IsDocked() bool {
+	return a != nil && a.IsNaval && a.DockedRegionID != ""
+}
+
+// IsAtSea, filonun aktif konumunun bir deniz bölgesi olduğunu bildirir.
+func (a *Army) IsAtSea() bool {
+	return a != nil && a.IsNaval && !a.IsDocked()
+}
+
+// LocationID oyun mekaniklerinde eş-konum karşılaştırmaları için kanonik
+// konum kimliğini döner. Docked filolar settlement ID'siyle ayrıştırılır;
+// legacy veride settlement ID yoksa docked kara bölgesi güvenli fallback'tir.
+func (a *Army) LocationID() string {
+	if a == nil {
+		return ""
+	}
+	if a.IsDocked() {
+		if a.DockedSettlementID != "" {
+			return a.DockedSettlementID
+		}
+		return string(a.DockedRegionID)
+	}
+	return string(a.RegionID)
+}
+
 // AssignCommander komutanı bu orduya atar.
 func (a *Army) AssignCommander(commander *Commander) bool {
 	if a == nil || commander == nil {

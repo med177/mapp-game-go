@@ -386,12 +386,17 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 	if seaRegion == "" {
 		return "komşu deniz bölgesi bulunamadı"
 	}
+	portSettlementID := preferredDockSettlementID(region)
 	var fleet *army.Army
 	for _, a := range g.gs.Armies {
-		if a.RegionID == seaRegion && a.OwnerID == string(ownerID) && a.IsNaval && navalFleetAcceptsCompletedUnit(a, unitType, g.gs.UnitTypes) {
-			fleet = a
-			break
+		if !a.IsDocked() || a.DockedRegionID != region.ID ||
+			a.OwnerID != string(ownerID) ||
+			(portSettlementID != "" && a.DockedSettlementID != portSettlementID) ||
+			!navalFleetAcceptsCompletedUnit(a, unitType, g.gs.UnitTypes) {
+			continue
 		}
+		fleet = a
+		break
 	}
 	if fleet != nil {
 		if len(fleet.Units) >= army.MaxArmySize {

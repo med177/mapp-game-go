@@ -120,7 +120,7 @@ func aiHostileNavalPowerAtSea(gs *state.GameState, owner faction.FactionID, seaR
 	}
 	power := 0
 	for _, fleet := range aiSortedArmies(gs) {
-		if fleet == nil || !fleet.IsNaval || fleet.RegionID != seaRegionID || fleet.OwnerID == string(owner) {
+		if fleet == nil || !fleet.IsAtSea() || fleet.RegionID != seaRegionID || fleet.OwnerID == string(owner) {
 			continue
 		}
 		relation := diplomacy.Relation(gs, owner, faction.FactionID(fleet.OwnerID))
@@ -139,7 +139,7 @@ func aiNavalPowerMaps(gs *state.GameState, owner faction.FactionID) (map[world.R
 		return hostile, friendly
 	}
 	for _, fleet := range aiSortedArmies(gs) {
-		if fleet == nil || !fleet.IsNaval {
+		if fleet == nil || !fleet.IsAtSea() {
 			continue
 		}
 		if fleet.OwnerID == string(owner) {

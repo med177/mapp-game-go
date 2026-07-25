@@ -110,6 +110,8 @@ edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
 `IsArmyDefendingSiegedRegion(candidate)`, aktif kuşatma altındaki bölgede bölge sahibi veya onun müttefiki olarak duran kara ordusunu ortak savunmacı state'i olarak tanımlar. Bu predicate huruç zorunluluğu ile kuşatma altı iyileşme engelinin aynı state kuralını kullanmasını sağlar.
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.
 
+Donanma konumu iki katmanlıdır: `Army.RegionID` deniz rotası için kullanılan deniz ankrajını korur; filo limandaysa gerçek eş-konum `DockedSettlementID` (eski veride `DockedRegionID` fallback'i) olan `Army.LocationID()` ile okunur. `Army.IsAtSea()` yalnız dock bağı olmayan filoları açık deniz savaşı, abluka ve AI deniz tehdidi hesaplarına dahil eder. Deniz hareketi dock bağını temizleyerek hedef deniz bölgesini tekrar kanonik konum yapar.
+
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
 
 `Army.Commander` alanı komutanın kalıcı kariyer state'ini taşır. Komutan ID'si, adı,
@@ -250,7 +252,7 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 
 `Army.Morale` ordunun kalıcı ikmal moralidir. `CurrentMorale()` eski kayıt veya fixture'larda eksik alanı 100 başlangıç morali olarak normalize eder; `ApplyMoraleDelta()` değeri 1–100 aralığında tutar. Compact save/load içindeki `mo` alanıyla taşınır ve `Army.TotalStrength()` içinde savaş/AI güç değerlendirmelerine uygulanır.
 
-`TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; save migration gerektirmez.
+`TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan, açık denizdeki düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; limana bağlı filo bu deniz bölgesinde sayılmaz ve save migration gerektirmez.
 
 Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeRoutesForFleet()` yalnız filonun sahibi olan fraksiyonun uçlarında bulunan, aktif ve geçerli ticaret merkezi denizine sahip rotaları döndürür; `SetMerchantTradeRoute()` oyuncu UI'sından gelen atamayı aynı state doğrulamasından geçirir. Rota anahtarı save/load ile korunur, merchant hacim bonusu ise ekonomi tick'inde gerçek filo konumu ve görevinden yeniden türetilir (`internal/state/merchant_trade.go`).
 

@@ -313,7 +313,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 - Donanmalar komşu deniz bölgelerine ek olarak, yalnız `port` binası tamamlanmış komşu kara bölgesine docking emri alabilir
 - Docking yalnız iki durumda geçerlidir: bölge oyuncunun/devletin kendi toprağıysa veya iki fraksiyon arasında `StanceAllied` varsa
 - Hedef kara bölgesinde `port` settlement olsa bile bina yoksa filo oraya taşınamaz; ancak cargo taşıyorsa kıyıya saldırı veya çıkarma yine yapılabilir
-- Dock edilmiş filo deniz `RegionID` değerini korur, ama `DockedRegionID` ve `DockedSettlementID` üzerinden liman anchor'ında çizilir
+- Dock edilmiş filo deniz rota ankrajı olan `RegionID` değerini korur; oyun mekaniğindeki kanonik konumu `LocationID()` ile `DockedSettlementID`, açık denize çıkınca ise deniz bölgesi ID'sidir. Render tarafı docked settlement anchor'ını kullanır
 - İttifak biter ya da liman el değiştirirse `sanitizeDockedFleets()` bu bağı düşürür ve filoyu en yakın deniz bölgesine çıkarır
 
 ---

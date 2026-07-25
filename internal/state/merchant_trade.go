@@ -203,7 +203,7 @@ func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) boo
 // MerchantFleetSupportsTradeRoute filonun rota ucundaki geçerli ticaret
 // merkezi veya liman denizinde bulunup bulunmadığını bildirir.
 func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *economy.TradeRoute) bool {
-	if s == nil || fleet == nil || route == nil || !fleet.IsNaval || fleet.TradeRouteKey != route.AssignmentKey() {
+	if s == nil || fleet == nil || route == nil || !fleet.IsAtSea() || fleet.TradeRouteKey != route.AssignmentKey() {
 		return false
 	}
 	if fleet.OwnerID != route.FromFactionID && fleet.OwnerID != route.ToFactionID {
@@ -379,7 +379,7 @@ func (s *GameState) hostileWarshipCountInSea(seaID world.RegionID, targetOwners 
 	}
 	count := 0
 	for _, fleet := range s.Armies {
-		if fleet == nil || !fleet.IsNaval || fleet.RegionID != seaID {
+		if fleet == nil || !fleet.IsAtSea() || fleet.RegionID != seaID {
 			continue
 		}
 		warships := s.fleetWarshipCount(fleet)

@@ -419,7 +419,7 @@ Başlangıç orduları senaryo verisidir:
 }
 ```
 
-`is_naval` opsiyoneldir; eksikse `false` kabul edilir. Donanmalar `is_naval: true` ile deniz region'larında tutulur. `internal/army/loader.go` `count` değerlerini `army.Unit` listesine açar.
+`is_naval` opsiyoneldir; eksikse `false` kabul edilir. Donanmaların `region_id` alanı deniz rotası ankrajıdır. Limanda bekleyen donanmalarda `docked_region_id` ve gerçek liman `docked_settlement_id` bulunur; `Army.LocationID()` limanda settlement ID'sini, denizde `region_id` değerini kanonik konum olarak döndürür. `internal/army/loader.go` `count` değerlerini `army.Unit` listesine açar.
 
 ---
 

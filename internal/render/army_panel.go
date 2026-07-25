@@ -870,7 +870,7 @@ func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
 		return ""
 	}
 	for otherID, other := range gs.Armies {
-		if otherID == aid || other.RegionID != a.RegionID ||
+		if otherID == aid || other.LocationID() != a.LocationID() ||
 			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}

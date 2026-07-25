@@ -3025,8 +3025,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			return
 		}
 		queued := 0
+		portSettlementID := preferredDockSettlementID(region)
 		for _, a := range g.gs.Armies {
-			if a.RegionID == seaRegion && a.OwnerID == string(g.gs.PlayerFactionID) && a.IsNaval {
+			if a.IsDocked() && a.DockedRegionID == region.ID && a.OwnerID == string(g.gs.PlayerFactionID) &&
+				(portSettlementID == "" || a.DockedSettlementID == portSettlementID) {
 				queued = len(a.Units)
 				break
 			}
@@ -4157,6 +4159,12 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		return
 	}
 	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
+	if navalSeaMove && a.IsDocked() {
+		// RegionID deniz rotası için korunur; açık denize çıkışta gerçek
+		// konum docked settlement olmaktan çıkıp hedef deniz bölgesi olur.
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+	}
 
 	// Naval/kara uyumluluk kontrolü
 	if a.IsNaval {
@@ -4522,7 +4530,7 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID) {
 	// Aynı bölgede dost ordu bul
 	var targetID army.ArmyID
 	for oid, other := range g.gs.Armies {
-		if oid == aid || other.RegionID != a.RegionID ||
+		if oid == aid || other.LocationID() != a.LocationID() ||
 			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}

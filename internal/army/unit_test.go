@@ -55,3 +55,21 @@ func TestNavalCanReplenishInOwnPort(t *testing.T) {
 		})
 	}
 }
+
+func TestNavalLocationSeparatesPortFromSea(t *testing.T) {
+	docked := &Army{
+		IsNaval:            true,
+		RegionID:           "sea_1",
+		DockedRegionID:     "land_a",
+		DockedSettlementID: "port_a",
+	}
+	if !docked.IsDocked() || docked.IsAtSea() || docked.LocationID() != "port_a" {
+		t.Fatalf("limandaki filonun konumu settlement ID olmaliydi: docked=%v at_sea=%v location=%q", docked.IsDocked(), docked.IsAtSea(), docked.LocationID())
+	}
+
+	docked.DockedRegionID = ""
+	docked.DockedSettlementID = ""
+	if docked.IsDocked() || !docked.IsAtSea() || docked.LocationID() != "sea_1" {
+		t.Fatalf("denize çıkan filonun konumu deniz bolgesi olmaliydi: docked=%v at_sea=%v location=%q", docked.IsDocked(), docked.IsAtSea(), docked.LocationID())
+	}
+}

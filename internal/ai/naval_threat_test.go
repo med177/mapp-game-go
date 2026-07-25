@@ -47,6 +47,11 @@ func Test1300NavalRoutePrefersLongerThreatFreePath(t *testing.T) {
 
 func Test1300NavalThreatSnapshotMarksApproachedPort(t *testing.T) {
 	gs := aiNavalThreatRouteState()
+	gs.Armies["docked_enemy"] = &army.Army{
+		ID: "docked_enemy", OwnerID: "enemy", RegionID: "short", IsNaval: true,
+		DockedRegionID: "enemy_port", DockedSettlementID: "enemy_port_settlement",
+		Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}},
+	}
 	ctx := buildStrategicContext(gs, "ai")
 	buildAINavalThreatSnapshot(ctx)
 
@@ -55,6 +60,9 @@ func Test1300NavalThreatSnapshotMarksApproachedPort(t *testing.T) {
 	}
 	if len(ctx.ThreatenedPortIDs) != 1 || ctx.ThreatenedPortIDs[0] != "port" {
 		t.Fatalf("bir deniz adımı uzaktaki düşman görev limanını tehdit etmeliydi: %+v", ctx.ThreatenedPortIDs)
+	}
+	if got := aiHostileNavalPowerAtSea(gs, "ai", "short"); got != aiEffectiveNavalPower(gs, gs.Armies["enemy_fleet"], false) {
+		t.Fatalf("limandaki düşman filosu deniz tehdidine katılmamalıydı: got=%d", got)
 	}
 }
 

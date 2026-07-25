@@ -54,6 +54,41 @@ func TestSelectBattleDefenderFiltersNavalTargetsByWarState(t *testing.T) {
 	}
 }
 
+func TestSelectBattleDefenderIgnoresDockedFleetAtSea(t *testing.T) {
+	gs := &GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID: "atk", OwnerID: "p1", RegionID: "sea_a", IsNaval: true,
+			},
+			"docked": {
+				ID: "docked", OwnerID: "p2", RegionID: "sea_b", IsNaval: true,
+				DockedRegionID: "land_b", DockedSettlementID: "port_b",
+				Units: []army.Unit{{TypeID: "ship", CurrentHP: 100}, {TypeID: "ship", CurrentHP: 100}},
+			},
+			"active": {
+				ID: "active", OwnerID: "p3", RegionID: "sea_b", IsNaval: true,
+				Units: []army.Unit{{TypeID: "ship", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"ship": {ID: "ship", Attack: 10, Defense: 10, Morale: 40},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Stance: faction.StanceWar},
+			faction.RelationKey("p1", "p3"): {FactionA: "p1", FactionB: "p3", Stance: faction.StanceWar},
+		},
+	}
+
+	defender := gs.SelectBattleDefender(gs.Armies["atk"], "sea_b", true)
+	if defender == nil || defender.ID != "active" {
+		t.Fatalf("limandaki filo deniz savunmasına katılmamalı, açık deniz filosu seçilmeli: got=%v", defender)
+	}
+	_, sourceIDs := gs.CollectDefenders(gs.Armies["atk"], "sea_b", true)
+	if len(sourceIDs) != 1 || sourceIDs[0] != "active" {
+		t.Fatalf("limandaki filo birleşik deniz savunmasına katılmamalı: got=%v", sourceIDs)
+	}
+}
+
 func TestSelectBattleDefenderIgnoresAlliedArmyOnLand(t *testing.T) {
 	gs := &GameState{
 		Armies: map[army.ArmyID]*army.Army{

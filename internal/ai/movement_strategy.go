@@ -281,7 +281,8 @@ func scoreMoveWithContext(gs *state.GameState, a *army.Army, target *world.Regio
 		}
 
 		for _, ea := range ctx.armiesByRegion[target.ID] {
-			if ea.RegionID == target.ID && ea.OwnerID == a.OwnerID && ea.ID != a.ID && ea.IsNaval == a.IsNaval {
+			if ea.RegionID == target.ID && ea.OwnerID == a.OwnerID && ea.ID != a.ID && ea.IsNaval == a.IsNaval &&
+				(!a.IsNaval || ea.LocationID() == a.LocationID()) {
 				if len(a.Units)+len(ea.Units) <= army.MaxArmySize && aiShouldConsolidateInRegion(gs, target, a.OwnerID, a.IsNaval) && score < 60 {
 					score = 60
 				}

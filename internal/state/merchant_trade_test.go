@@ -172,7 +172,8 @@ func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
 			"warship": {ID: "warship", Category: army.CategoryNavalWar},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+			"enemy_fleet":  {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+			"docked_enemy": {ID: "docked_enemy", OwnerID: "genoa", RegionID: "sea", IsNaval: true, DockedRegionID: "genoa_port", DockedSettlementID: "genoa_port_settlement", Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
 		},
 	}
 

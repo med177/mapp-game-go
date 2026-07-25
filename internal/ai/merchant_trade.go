@@ -409,7 +409,7 @@ func aiOwnedTradeCenterPort(gs *state.GameState, fid faction.FactionID, allowedS
 func aiProjectedTradeCenterPower(gs *state.GameState, fid faction.FactionID, portID, seaID world.RegionID) int {
 	power := 0
 	for _, fleet := range aiSortedArmies(gs) {
-		if fleet.OwnerID == string(fid) && fleet.IsNaval && fleet.RegionID == seaID {
+		if fleet.OwnerID == string(fid) && fleet.IsAtSea() && fleet.RegionID == seaID {
 			power += aiEffectiveNavalPower(gs, fleet, true)
 		}
 	}
