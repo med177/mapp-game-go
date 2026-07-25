@@ -108,6 +108,51 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	}
 }
 
+func TestLoadFromPathKeepsOpenSeaFleetUndocked(t *testing.T) {
+	oldBaseDir := scenarioBaseDir
+	scenarioBaseDir = filepath.Join("..", "..", "assets", "scenarios")
+	t.Cleanup(func() { scenarioBaseDir = oldBaseDir })
+
+	savePath := filepath.Join(t.TempDir(), "open-sea.json")
+	saved := campaignSaveState{
+		ScenarioID:      "1300_ottoman_rise",
+		PlayerFactionID: "east_rome",
+		Armies: map[army.ArmyID]armySaveState{
+			"open_sea_fleet": {
+				OwnerID:       "east_rome",
+				RegionID:      "aegean_sea",
+				IsNaval:       true,
+				MovePoints:    3,
+				MaxMovePoints: 3,
+				Units:         []stackedUnitSaveState{{TypeID: "warship", Count: 1}},
+			},
+		},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("test save marshal edilemedi: %v", err)
+	}
+	if err := os.WriteFile(savePath, payload, 0644); err != nil {
+		t.Fatalf("test save yazilamadi: %v", err)
+	}
+
+	gs, err := loadFromPath(savePath)
+	if err != nil {
+		t.Fatalf("loadFromPath hata verdi: %v", err)
+	}
+
+	fleet := gs.Armies["open_sea_fleet"]
+	if fleet == nil {
+		t.Fatal("acik deniz filosu save/load sonrasinda kayboldu")
+	}
+	if fleet.RegionID != "aegean_sea" {
+		t.Fatalf("deniz bolgesi korunmadi: got=%q", fleet.RegionID)
+	}
+	if fleet.DockedRegionID != "" || fleet.DockedSettlementID != "" {
+		t.Fatalf("acik deniz filosu save/load sonrasinda limana alindi: docked_region=%q docked_settlement=%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+}
+
 func TestInvalidDifficultyMigratesToNormal(t *testing.T) {
 	restored := &state.GameState{}
 	applyCampaignSaveState(restored, campaignSaveState{Difficulty: 0})

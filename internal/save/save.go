@@ -349,7 +349,6 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	applyCampaignSaveState(gs, saved)
 	army.NormalizeLegacyGarrisons(gs.Armies)
-	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	gs.RefreshArmyMovePoints(false)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()

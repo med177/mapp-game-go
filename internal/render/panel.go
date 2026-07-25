@@ -4071,7 +4071,8 @@ func regionPanelStatRowsStartY(gs *state.GameState, ownerID string) float64 {
 	if gs.DevelopmentMode {
 		ly += 34
 	}
-	ly += 16
+	ly += 16 // arazi/din satırı
+	ly += 16 // nüfus satırı
 	ly += 8
 	ly += regionPanelStatRowGap * 4
 	return ly
@@ -4223,7 +4224,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 	if gs.DevelopmentMode {
 		ly += 34
 	}
-	ly += 16 + 8
+	ly += 16 + 16 + 8 // arazi/din ve nüfus satırları
 	ly += regionPanelStatRowGap * 4
 	ly += regionPanelStatRowGap * 2
 	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
