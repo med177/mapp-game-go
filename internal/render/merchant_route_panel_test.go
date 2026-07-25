@@ -44,6 +44,22 @@ func TestMerchantRouteButtonOnlyTargetsPlayerMerchantFleet(t *testing.T) {
 	}
 }
 
+func TestMerchantRouteButtonHasFooterInset(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	layout := armyPanelGeometry()
+	button := merchantRouteAssignmentButtonRect(layout)
+	footerY := float64(layout.panelY + layout.panelH - siegeFooterH)
+	footerBottom := float64(layout.panelY + layout.panelH)
+	if button.Y <= footerY || button.Y+button.H >= footerBottom {
+		t.Fatalf("merchant rota butonu footer içine dengeli oturmuyor: button=%+v footerY=%.1f bottom=%.1f", button, footerY, footerBottom)
+	}
+}
+
 func TestMerchantRoutePanelStaysInsideViewport(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

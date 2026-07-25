@@ -67,6 +67,49 @@ func TestMoveArmyEmbarkSuccess(t *testing.T) {
 	}
 }
 
+func TestMoveArmyEmbarkTransfersLandCommanderInsteadOfFleetCommander(t *testing.T) {
+	landCommander := army.NewCommander("cmd_land", "Kara Komutanı")
+	fleetCommander := army.NewCommander("cmd_fleet", "Donanma Komutanı")
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land_a": {ID: "land_a", OwnerID: "p1", Neighbors: []world.RegionID{"sea_1"}},
+			"sea_1":  {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"land_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_p1_1": {
+				ID: "army_p1_1", OwnerID: "p1", RegionID: "land_a",
+				Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}}, MovePoints: 2, MaxMovePoints: 2,
+				Commander: landCommander,
+			},
+			"fleet_p1_1": {
+				ID: "fleet_p1_1", OwnerID: "p1", RegionID: "sea_1",
+				Units: []army.Unit{{TypeID: "transport", CurrentHP: 100}}, MovePoints: 3, MaxMovePoints: 3,
+				IsNaval: true, Commander: fleetCommander,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{"p1": {ID: "p1"}},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("army_p1_1", "sea_1")
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if fleet.EmbarkedCommander != landCommander {
+		t.Fatalf("kara komutanı filoda taşınmalıydı, got=%v", fleet.EmbarkedCommander)
+	}
+	if fleet.Commander != fleetCommander {
+		t.Fatalf("filo komutanı filoda kalmalıydı, got=%v", fleet.Commander)
+	}
+	if gs.AmphibiousCommander(fleet.ID) != landCommander {
+		t.Fatal("çıkarma komutanı taşınan kara komutanı olmalıydı")
+	}
+}
+
 func TestMoveArmyEmbarkRejectsInsufficientTransportCapacity(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",
@@ -613,6 +656,90 @@ func TestMoveArmyDisembarkEnemyCoastNoArmyConquersOnWar(t *testing.T) {
 	g.resolvePendingConquestDecision(false)
 	if gs.Regions["land_e"].OwnerID != "p1" {
 		t.Fatalf("ilhak kararı sonrası sahiplik değişmeliydi, got=%s", gs.Regions["land_e"].OwnerID)
+	}
+}
+
+func fortifiedDisembarkTestState(withDefender bool) *state.GameState {
+	landingCommander := army.NewCommander("cmd_land", "Çıkarma Komutanı")
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		NextArmySeq:     30,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"fort"}},
+			"fort": {
+				ID: "fort", NameTR: "Kale Limanı", OwnerID: "p2", Neighbors: []world.RegionID{"sea_1"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fortress", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID: "fleet_p1_1", OwnerID: "p1", RegionID: "sea_1",
+				Units:             []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits:     []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				EmbarkedCommander: landingCommander,
+				MovePoints:        3, MaxMovePoints: 3, IsNaval: true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"}, "p2": {ID: "p2"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("p1", "p2"): {FactionA: "p1", FactionB: "p2", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": testTransportType(),
+		},
+	}
+	if withDefender {
+		gs.Armies["defender"] = &army.Army{
+			ID: "defender", OwnerID: "p2", RegionID: "fort",
+			Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}}, MovePoints: 2, MaxMovePoints: 2,
+		}
+	}
+	return gs
+}
+
+func TestMoveArmyDisembarkEnemyFortressStartsSiegeWithoutBattle(t *testing.T) {
+	gs := fortifiedDisembarkTestState(true)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "fort")
+
+	siege := gs.SiegeAt("fort")
+	if siege == nil || siege.AttackerArmyID != "army_p1_31" {
+		t.Fatalf("kale kıyısı çıkarması aktif kuşatma oluşturmalıydı, got=%+v", siege)
+	}
+	if gs.Regions["fort"].OwnerID != "p2" {
+		t.Fatalf("kuşatma başlarken bölge sahibi değişmemeli, got=%s", gs.Regions["fort"].OwnerID)
+	}
+	if _, ok := gs.Armies["defender"]; !ok {
+		t.Fatal("kale savunucusu aynı hamlede savaşa sokulup silinmemeli")
+	}
+	landed := gs.Armies["army_p1_31"]
+	if landed == nil || landed.Commander == nil || landed.Commander.Name != "Çıkarma Komutanı" {
+		t.Fatalf("karaya çıkan ordu kara komutanını taşımalıydı, got=%+v", landed)
+	}
+	if len(gs.Armies["fleet_p1_1"].EmbarkedUnits) != 0 || len(g.pendingConquestDecisions) != 0 {
+		t.Fatal("kuşatma çıkarma sırasında cargo veya fetih kararı kalmamalı")
+	}
+}
+
+func TestMoveArmyDisembarkEnemyFortressWithoutDefenderStillStartsSiege(t *testing.T) {
+	gs := fortifiedDisembarkTestState(false)
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmy("fleet_p1_1", "fort")
+
+	if gs.SiegeAt("fort") == nil {
+		t.Fatal("savunmasız kale kıyısında bile kuşatma state'i başlamalıydı")
+	}
+	if gs.Regions["fort"].OwnerID != "p2" {
+		t.Fatalf("savunmasız kale aynı hamlede fethedilmemeli, got=%s", gs.Regions["fort"].OwnerID)
+	}
+	if len(g.pendingConquestDecisions) != 0 {
+		t.Fatal("savunmasız kale çıkarma sırasında fetih kararı açılmamalı")
 	}
 }
 

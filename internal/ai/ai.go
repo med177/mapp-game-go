@@ -1649,6 +1649,38 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 			return moveOutcome{survived: true}
 		}
 		enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target)
+		isAlliedDisembark := false
+		if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+			if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+				isAlliedDisembark = true
+			} else if rel := diplomacy.Relation(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)); rel != nil && rel.Stance == faction.StanceAllied {
+				isAlliedDisembark = true
+			}
+		}
+		if !isAlliedDisembark && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID && targetRegion.IsFortified() {
+			units := make([]army.Unit, len(a.EmbarkedUnits))
+			copy(units, a.EmbarkedUnits)
+			a.EmbarkedUnits = a.EmbarkedUnits[:0]
+			landed := aiSpawnDisembarkedArmy(gs, a.OwnerID, target, units)
+			if landed != nil {
+				gs.MoveEmbarkedCommanderToArmy(a.ID, landed.ID)
+			}
+			a.MovePoints--
+			if landed != nil {
+				if active := gs.SiegeAt(target); active != nil {
+					if gs.CanJoinActiveSiege(landed, target) {
+						landed.MovePoints = 0
+						return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepDisembark, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: target, Message: actorName + " " + targetName + " kuşatmasına denizden destek verdi."}}
+					}
+					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepDisembark, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: target, Message: actorName + " " + targetName + " kıyısına çıktı; kale zaten kuşatma altında."}}
+				}
+				if aiCanStartSiege(gs, landed, targetRegion) {
+					aiStartSiege(gs, landed, targetRegion, enemyArmy)
+					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepDisembark, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: target, Message: actorName + " " + targetName + " kıyısına çıktı ve kuşatma başlattı."}}
+				}
+			}
+			return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepDisembark, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: target, Message: actorName + " " + targetName + " kıyısına çıktı."}}
+		}
 		if enemyArmy != nil {
 			landing := &army.Army{
 				OwnerID:   a.OwnerID,
@@ -1714,7 +1746,7 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 		stepKind := TurnStepDisembark
 		msg := actorName + " " + targetName + " kıyısına çıkarma yaptı."
-		isAlliedDisembark := false
+		isAlliedDisembark = false
 		if targetRegion.OwnerID != a.OwnerID && targetRegion.OwnerID != "" {
 			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
 			if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {

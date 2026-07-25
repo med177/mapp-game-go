@@ -3374,9 +3374,9 @@ func armyHasMerchantShip(gs *state.GameState, fleet *army.Army) bool {
 	return false
 }
 
-func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
+func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) *army.Army {
 	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
-		return
+		return nil
 	}
 	units := make([]army.Unit, len(fleet.EmbarkedUnits))
 	copy(units, fleet.EmbarkedUnits)
@@ -3385,6 +3385,7 @@ func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) {
 	if landed != nil {
 		g.gs.MoveEmbarkedCommanderToArmy(fleet.ID, landed.ID)
 	}
+	return landed
 }
 
 func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units []army.Unit) *army.Army {
@@ -3450,6 +3451,44 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		}
 	}
 	if !isAlliedDisembark {
+		if targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != fleet.OwnerID {
+			// Kale kıyısına çıkan kara ordusu önce sahil başı kurup kuşatma
+			// başlatır; garnizonla aynı hamlede amfibi savaşa girmez.
+			landed := g.disembarkFleet(fleet, target)
+			fleet.MovePoints--
+			if landed == nil {
+				return true
+			}
+
+			if active := g.gs.SiegeAt(target); active != nil {
+				if g.gs.CanJoinActiveSiege(landed, target) {
+					landed.MovePoints = 0
+					if g.renderer != nil {
+						g.renderer.MarkMapDirty()
+						g.renderer.ShowCombatResult("Kara ordusu mevcut kuşatmaya destek için çıktı.")
+					}
+					return true
+				}
+				if g.renderer != nil {
+					g.renderer.ShowCombatResult("Bu kale başka bir ordu tarafından kuşatılıyor.")
+				}
+				return true
+			}
+
+			if g.startSiegeForArmy(landed.ID, target, false) {
+				if g.renderer != nil {
+					g.renderer.MarkMapDirty()
+					msg := fmt.Sprintf("%s kıyısına çıkıldı; kale kuşatması başladı.", targetRegion.NameTR)
+					g.renderer.ShowCombatResult(msg)
+					g.renderer.AddEvent("[KUSATMA] " + msg)
+				}
+				return true
+			}
+
+			// Beklenmeyen bir state uyuşmazlığında çıkarma yine sahiplik
+			// değiştirmeden tamamlanır; doğrudan fetih/savaş yapılmaz.
+			return true
+		}
 		for _, ea := range g.gs.Armies {
 			if ea.RegionID == target && ea.OwnerID != fleet.OwnerID {
 				enemyArmy = ea
@@ -4166,6 +4205,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			}
 			fleet.EmbarkedUnits = append(fleet.EmbarkedUnits, a.Units...)
 			fleet.MovePoints = max(0, fleet.MovePoints-1)
+			g.gs.MoveCommanderIntoFleet(aid, fleet.ID)
 			g.gs.RemoveArmy(aid)
 			g.renderer.SelectedArmy = fleet.ID
 			g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))

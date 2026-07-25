@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -1082,11 +1082,11 @@ AI kara ordularını nakliye filosuna bindirip indirebilir:
   denizde uygun `transport` filosu ve pozitif `aiEmbarkScore()` varsa seçen legacy
   davranışı sürdürür.
 - `executeMove()` kara → deniz geçişinde birimleri filonun `EmbarkedUnits` alanına taşır ve kara ordusunu haritadan kaldırır.
-- Donanma `EmbarkedUnits` taşıyorsa komşu kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir.
+- Donanma `EmbarkedUnits` taşıyorsa komşu kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir. Hedef düşman tahkimatlı kıyıysa çıkarma savaşı/fetih yerine bu orduyla kuşatma başlatılır; mevcut kuşatma varsa yasal destek olarak katılır.
 - Hedef kara bölgesi sahipsizse başarılı çıkarma sonrası bölge artık AI sahipliğine yazılır; eski bug'lı save'lerde sahipsiz kalmış ama tek taraflı işgal altında olan kara bölgeleri yükleme/tur çözümlemesinde toparlanır.
 - Düşman kıyıya çıkarma yalnızca savaş halindeyken yapılır; barışta AI çıkarma denemez.
 - Düşman kıyıda ordu varsa AI çıkarma hedeflemesinde güç kıyası yapar; zayıfsa çıkarma girişimini atlar.
-- Çıkarma savaşı yine `combat.ResolveBattleWithMods()` ile çözülür; kazanırsa çıkarma ordusu karaya iner ve bölge el değiştirir.
+- Tahkimatsız düşman kıyısındaki çıkarma savaşı `combat.ResolveBattleWithMods()` ile çözülür; kazanırsa çıkarma ordusu karaya iner ve bölge el değiştirir. Çıkarma savaşında kullanılan komutan, filoda taşınan kara ordusunun komutanıdır; filo komutanı bu savaşa dahil edilmez.
 - Legacy boş deniz hareketinde `aiSeaPressure()` düşman kıyı yoğunluğu, boş/sahipsiz
   kıyı fırsatı, mevcut dost filo yoğunluğu ve taşıma yükünü birlikte skorlar.
 

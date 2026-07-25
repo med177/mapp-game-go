@@ -123,6 +123,26 @@ func TestBattlePlanIntentCoversNavalAndAmphibiousCombat(t *testing.T) {
 	}
 }
 
+func TestRenderTargetRequiresAmphibiousSiegeLanding(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"}, "p2": {ID: "p2"},
+		},
+	}
+	fleet := &army.Army{
+		ID: "fleet", OwnerID: "p1", IsNaval: true,
+		EmbarkedUnits: []army.Unit{{TypeID: "inf"}},
+	}
+	fort := &world.Region{ID: "fort", OwnerID: "p2", Buildings: []string{"walls"}}
+	if !renderTargetRequiresAmphibiousSiegeLanding(gs, fleet, fort) {
+		t.Fatal("düşman tahkimli kıyı için amfibi kuşatma inişi bekleniyordu")
+	}
+	fort.OwnerID = ""
+	if renderTargetRequiresAmphibiousSiegeLanding(gs, fleet, fort) {
+		t.Fatal("sahipsiz tahkimli kıyı amfibi düşman kuşatması sayılmamalı")
+	}
+}
+
 func TestOpenBattlePlanUsesEmbarkedUnitsForAmphibiousPreview(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

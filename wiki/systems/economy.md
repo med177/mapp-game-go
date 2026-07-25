@@ -128,7 +128,7 @@ filolarını yeniden değerlendirir:
 Merchant rotası olmayan tarihsel merkez bağlantılı anlaşmalar panelden gizlenmez; aktif
 limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` bu liman çiftini
 üretir. Haritanın `Ticaret` modunda oyuncuya ait aktif anlaşmalar, seçilen liman çiftleri
-arasında turuncu renkli kesikli koridor ve liman uçlarındaki işaretlerle gösterilir
+arasında tek turuncu renkli, eşit uzunlukta çizgi/boşluklardan oluşan kesikli koridor ve liman uçlarındaki işaretlerle gösterilir
 (`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).
 
 Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:

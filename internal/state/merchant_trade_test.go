@@ -50,6 +50,9 @@ func merchantTradeTestState() (*GameState, *economy.TradeRoute) {
 
 func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 	gs, route := merchantTradeTestState()
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 2 {
+		t.Fatalf("uygun konumdaki üç merchant gemisi +2 bonus vermeliydi, got=%d", got)
+	}
 	gs.RefreshMerchantTradeBonuses()
 	if route.MerchantAmountBonus != 2 || route.EffectiveAmountPerTurn() != 4 {
 		t.Fatalf("üç merchant gemisi rota başına +2 sınırında kalmalıydı: %+v", route)
@@ -181,6 +184,9 @@ func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
 func TestMerchantTradeBonusRequiresActiveConnectedCenterSea(t *testing.T) {
 	gs, route := merchantTradeTestState()
 	gs.Armies["merchant"].RegionID = "unknown_sea"
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 0 {
+		t.Fatalf("rota denizi dışındaki filo bonus vermemeliydi, got=%d", got)
+	}
 	route.MerchantAmountBonus = 2
 	gs.RefreshMerchantTradeBonuses()
 	if route.MerchantAmountBonus != 0 {

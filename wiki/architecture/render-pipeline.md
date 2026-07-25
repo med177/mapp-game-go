@@ -7,6 +7,12 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Çıkarma input'u, düşman ve tahkimli kıyı hedefini normal amfibi savaş planından
+ayırır; bu hedefte `ActionDisembarkArmy` doğrudan kara ordusunu indirip kuşatma
+başlatır. Tahkimatsız düşman kıyısında açılan çıkarma savaş planının komutan özeti
+`EmbarkedCommander` üzerinden taşınan kara komutanını gösterir; filo komutanı bu
+preview ve savaş bonuslarına dahil edilmez (`internal/render/{renderer.go,renderer_input.go}`, `internal/game/game.go`).
+
 Geliştirme modunda `F3` ile açılan AI teşhis modalı, `ai.BuildAIDiagnosticSnapshot`
 çıktısını gösterir. `ESC/F3` modalı kapatır, `TAB` devlet değiştirir ve mouse
 tekeri yalnız modal içeriğini kaydırır; modal açıkken harita input'u tüketilir.
@@ -53,9 +59,9 @@ Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyunc
 
 Nakliye kapasitesi olan oyuncu filolarında aynı alt bilgi bandında güç değerinin solunda `Taşıma: dolu/kapasite` gösterilir. Doluluk `Army.EmbarkedCount()`, kapasite ise `Army.TransportCapacity()` üzerinden okunur; savaş ve merchant filolarında nakliye kapasitesi yoksa bu metin çizilmez (`internal/render/army_panel.go`, `internal/army/army.go`).
 
-Oyuncuya ait merchant filosu seçildiğinde ordu detay panelinin alt bandında `ROTA ATA` düğmesi ve mevcut görev durumu görünür. Düğme, geçerli aktif ticaret rotalarını modal listede gösterir; oyuncu rotayı seçebilir veya görevi kaldırabilir. Filo rota denizinde değilse atama korunur fakat `deniz bekleniyor` uyarısı görünür; modal input'u normal harita/ordu input'unu bloke eder (`internal/render/{army_panel.go,merchant_route_panel.go,renderer_input.go}`, `internal/render/action.go`, `internal/game/game.go`).
+Oyuncuya ait merchant filosu seçildiğinde ordu detay panelinin alt bandında `ROTA ATA` düğmesi, mevcut görev durumu ve `Gemi bonusu: +N hacim/tur` bilgisi görünür. Bonus, filodaki merchant gemisi sayısını rota başına iki gemi sınırıyla ve filonun gerçek rota denizindeki konumuyla hesaplar; uygun konumda `konum uygun`, yanlış denizde `rota denizine git` uyarısı gösterilir. Düğme footer'ın içine üst ve alt boşlukla oturur; durum metni butonun gerçek geometrisinden sonra başlar ve kalan alana kırpılır. Düğme, geçerli aktif ticaret rotalarını modal listede gösterir; oyuncu rotayı seçebilir veya görevi kaldırabilir. Modal input'u normal harita/ordu input'unu bloke eder (`internal/render/{army_panel.go,merchant_route_panel.go,renderer_input.go}`, `internal/state/merchant_trade.go`, `internal/render/action.go`, `internal/game/game.go`).
 
-Merchant rota filtresi tarihsel ticaret merkezi bulunmayan aktif anlaşmaları da destekler. Tarafların sahip olduğu ve denize bağlı `port` binaları arasında bağlantı varsa rota paneli bu anlaşmayı listeler; `Ticaret` harita modunda oyuncunun kendi aktif anlaşmaları ilgili limanlar arasında turuncu renkli kesikli bezier koridor, uç işaretleri ve hacim etiketiyle çizilir. Koridor hover'ı liman adlarını, emtiayı ve hacmi gösterir (`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).
+Merchant rota filtresi tarihsel ticaret merkezi bulunmayan aktif anlaşmaları da destekler. Tarafların sahip olduğu ve denize bağlı `port` binaları arasında bağlantı varsa rota paneli bu anlaşmayı listeler; `Ticaret` harita modunda oyuncunun kendi aktif anlaşmaları ilgili limanlar arasında tek turuncu renkli, sabit 12 px çizgi + 10 px boşluk paternli kesikli bezier koridor, uç işaretleri ve hacim etiketiyle çizilir. Koridor hover'ı liman adlarını, emtiayı, etkin hacmi, oyuncunun verdiği malı, aldığı altını veya ödediği altını ve aldığı malı tur başına gösterir (`internal/state/merchant_trade.go`, `internal/render/{trade_overlay.go,renderer.go}`).
 
 Merchant rota modalındaki seçenek satırları iki satırlı rota adı ve ayrıntı metnine göre 48 px yüksekliğinde çizilir; iç kutu ile satır sınırı arasında boşluk bırakılır. Modal açıldığında 205 alfa karartma katmanı alttaki ordu panelinin `ROTA ATA` kontrolünü ve diğer metinlerini görsel olarak pasifleştirir; modal input'u zaten bu katmanda tüketilir (`internal/render/merchant_route_panel.go`).
 
@@ -300,7 +306,7 @@ Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt
 
 Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
 
-`Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir (ör. Halep -> Konstantinopolis -> Venedik). Oyuncunun aktif liman-tabanlı anlaşmaları bu tarihsel ağdan ayrı olarak limanlar arasında turuncu renkli kesikli koridorla çizilir; böylece merkez verisi bulunmayan Osmanlı–Altın Orda gibi gerçek liman bağlantıları da görünür. Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
+`Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir (ör. Halep -> Konstantinopolis -> Venedik). Oyuncunun aktif liman-tabanlı anlaşmaları bu tarihsel ağdan ayrı olarak tek turuncu renkte, sabit çizgi/boşluk uzunluklarıyla kesikli koridorla çizilir; böylece merkez verisi bulunmayan Osmanlı–Altın Orda gibi gerçek liman bağlantıları da görünür. Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
 
 Trade overlay görünürlüğü `Renderer.tradeOverlayVisible()` ile merkezileştirilmiştir. Yani `MapModeTrade` seçili kalsa bile teknoloji/diplomasi/ticaret overlay'i, confirm modalı, event detail/codex, historical event veya gelen diplomasi teklifi gibi üst ekranlar açıkken trade backdrop, koridorlar, merkez tabelaları ve hover tooltip'i hiç çizilmez; overlay kapanınca trade görünümü aynı mod state'iyle geri gelir.
 

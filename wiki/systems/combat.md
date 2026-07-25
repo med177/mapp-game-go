@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-23
+last_updated: 2026-07-25
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -111,8 +111,10 @@ panelindeki `KOMUTAN ATA` / `KOMUTAN DEĞİŞTİR` aksiyonu, boşta olan komutan
 modalı açar; atama ve ayırma işlemleri `GameState.Commanders` havuzunu ve
 `Army.Commander` bağlantısını birlikte günceller. Ordu birleşmesi, garnizon dönüşümü
 ve save/load akışları da bu tekil atamayı korur. Kara ordusu nakliye filosuna bindiğinde
-komutan `EmbarkedCommander` olarak korunur; çıkarma savaşı ve başarılı karaya çıkış
-aynı kariyer bağlantısını kullanır. AI tur prelude'u ise her aktif saha
+	komutan `EmbarkedCommander` olarak korunur; çıkarma savaşı ve başarılı karaya çıkış
+aynı kariyer bağlantısını kullanır. Bu savaşta kullanılan komutan, filoya taşınan kara
+ordusunun komutanıdır; filo komutanı taşıma görevi nedeniyle çıkarma savaşına katılmaz.
+AI tur prelude'u ise her aktif saha
 ordusu için (garnizon hariç) deterministik bir komutan üretip atar; deniz filoları da
 naval savaşlara katıldıkları için aynı kariyer hattını kullanır. Savaş raporu ve olay
 günlüğü detayı, katılan komutanların kazandığı XP'yi, seviye artışını ve yeni trait'leri
@@ -218,7 +220,12 @@ else:
 
 Donanmalar deniz bölgeleri arasında savaş ilanı olmadan serbest hareket eder.
 Denizde çatışma yalnızca iki fraksiyon arasında `StanceWar` varsa tetiklenir; barış/ittifak/trade durumunda aynı deniz bölgesine girildiğinde savaş açılmaz.
-Savaş varsa oyuncu gemi-gemi çatışmasında da önce duruş seçer. Düşman kıyıya çıkarma sırasında savunan ordu varsa aynı modal `Çıkarma Muharebesi` başlığıyla açılır ve seçilen duruş `ActionDisembarkArmy` üzerinden oyun katmanına taşınır.
+Savaş varsa oyuncu gemi-gemi çatışmasında da önce duruş seçer. Tahkimatsız düşman
+kıyıya çıkarma sırasında savunan ordu varsa `Çıkarma Muharebesi` planı açılır ve
+seçilen duruş `ActionDisembarkArmy` üzerinden oyun katmanına taşınır. Hedefte kale
+veya duvar tahkimatı varsa çıkarma doğrudan amfibi savaşa girmez; kara ordusu kıyıya
+iner ve `GameState.Sieges` içinde kuşatma başlar. Savunmacı ordu bulunsun veya
+bulunmasın, bölge sahibi kuşatma çözülene kadar korunur.
 
 ---
 

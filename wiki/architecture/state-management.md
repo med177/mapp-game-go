@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 related: [game-loop, systems/events, systems/economy, render-pipeline, shape-editor]
 ---
 
@@ -133,10 +133,12 @@ bu otomatik atamanın dışındadır.
 Ordu yaşam döngüsü de komutan bağlantısını state katmanında korur. `RemoveArmy()`
 silinen ordunun normal veya nakliye filosunda taşınan komutanını havuza geri bırakır;
 `TransferArmyOwnership()` fetih ya da fraksiyon eliminasyonu sonrası hem ordu hem de
-komutan `OwnerID` alanlarını birlikte günceller. Kara ordusu filoya bindiğinde komutan
-`Army.EmbarkedCommander` alanında korunur; `AmphibiousCommander()` çıkarma savaşında
-bu komutanı kullanır, başarılı karaya çıkışta yeni orduya geri bağlar ve başarısız
-çıkarma veya iptal durumunda havuza serbest bırakır.
+komutan `OwnerID` alanlarını birlikte günceller. Kara ordusu filoya bindiğinde, hem
+ayrı embark aksiyonunda hem de denize hareket ederek yapılan otomatik embark'ta kara
+komutanı `Army.EmbarkedCommander` alanında korunur; `AmphibiousCommander()` yalnız bu
+komutanı döndürür. Filo komutanı çıkarma savaşına katılmaz. Başarılı karaya çıkışta
+kara komutanı yeni orduya geri bağlanır; başarısız çıkarma veya iptal durumunda havuza
+serbest bırakılır.
 
 Ordu hareket havuzu da runtime state'te birim kompozisyonundan türetilir.
 `Army.BaseMovePoints(UnitTypes)` kendi `Units` listesindeki en düşük

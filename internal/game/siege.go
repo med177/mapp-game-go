@@ -80,7 +80,7 @@ func canArmyStartSiege(gs *state.GameState, attacker *army.Army, targetRegion *w
 	if !gameFactionsAtWar(gs, attacker.OwnerID, targetRegion.OwnerID) {
 		return false, "Kuşatma için önce savaş halinde olmalısın."
 	}
-	if !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
+	if attacker.RegionID != targetRegion.ID && !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
 		return false, "Kuşatma için hedef bölgeye komşu olmalısın."
 	}
 	if active := gs.SiegeByArmy(attacker.ID); active != nil && active.RegionID != targetRegion.ID {

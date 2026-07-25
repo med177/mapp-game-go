@@ -7,6 +7,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-25: Donanma çıkarma akışı tahkimli kıyılarda düzeltildi. Kale/duvar bulunan düşman kıyısına çıkarma artık amfibi savaş veya anında fetih üretmiyor; kara ordusu karaya inerek aktif kuşatma başlatıyor. Otomatik embark sırasında kara komutanı `EmbarkedCommander` olarak filoya taşınıyor; çıkarma preview'si, savaş hesabı ve karaya çıkan ordu filo komutanı yerine kara komutanının bonuslarını kullanıyor. Regression: `TestMoveArmyDisembarkEnemyFortressStartsSiegeWithoutBattle`, `TestMoveArmyDisembarkEnemyFortressWithoutDefenderStillStartsSiege`, `TestMoveArmyEmbarkTransfersLandCommanderInsteadOfFleetCommander`, `TestAIMoveArmyDisembarksToEnemyFortressAndStartsSiege`; doğrulama: `go test ./internal/state ./internal/game ./internal/render ./internal/ai`.
+
+- 2026-07-25: Merchant filo footer'ına gemi katkısı ve konum doğrulaması eklendi. Seçili filonun gemi sayısı, rotaya uyguladığı `+N hacim/tur` bonusu ve rota denizinde olup olmadığı aynı satırda gösteriliyor; hesap `MerchantFleetTradeRouteBonus()` ile state çözümündeki iki gemi sınırıyla ortaklaştırıldı. Regression: `TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap`, `TestMerchantTradeBonusRequiresActiveConnectedCenterSea`; doğrulama: `go test ./internal/state ./internal/render`.
+
+- 2026-07-25: Ticaret koridoru hover bilgisi oyuncu akışıyla genişletildi. Liman rotalarında etkin hacim, emtia, oyuncunun verdiği/alacağı kaynak, tur başına altın geliri veya altın ödemesi ve askı durumu gösteriliyor; tooltip yüksekliği içeriğe göre büyüyor. Değerler `EffectiveAmountPerTurn()` ve rota birim fiyatından türetiliyor; doğrulama: `go test ./internal/render`.
+
+- 2026-07-25: Limanlar arası ticaret koridorlarının çizimi sadeleştirildi. Oyuncu rotaları tek turuncu renkte çiziliyor; dash/gap uzunlukları eğrinin ve rotanın toplam uzunluğundan bağımsız olarak 12/10 px sabit tutuluyor. Regression kapsamı `drawDashedTradeCurve` yay uzunluğu örneklemesini kullanıyor; doğrulama: `go test ./internal/render`.
+
+- 2026-07-25: Merchant filo footer'ındaki görsel sıkışma düzeltildi. `ROTA ATA` butonu artık footer alt sınırına yapışmıyor; 22 px yüksekliğinde, üst-alt inset'li çiziliyor ve aktif rota metni butonun gerçek bitişinden sonra başlıyor. Regression: `TestMerchantRouteButtonHasFooterInset`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-25: Merchant rota modalındaki görsel örtüşme düzeltildi. İki satırlı seçenekler 48 px satır yüksekliği ve daha güvenli iç boşlukla çiziliyor; modal karartması güçlendirilerek alttaki ordu panelinin `ROTA ATA` butonu ve metinleri arka plana alınıyor. Regression: `TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-25: Merchant rota filtresindeki yapısal boşluk düzeltildi. Tarihsel ticaret merkezi olmayan aktif anlaşmalar, tarafların sahip olduğu bağlı limanlar ve deniz bağlantısı üzerinden `ROTA ATA` panelinde listeleniyor; `MerchantTradeRoutePortPairs()` ortak uç modeliyle oyuncunun kendi aktif anlaşmaları `Ticaret` haritasında turuncu renkli kesikli liman-liman koridor olarak çiziliyor. Regression: `TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters`; doğrulama: `go test ./internal/state ./internal/render`.

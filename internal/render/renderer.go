@@ -416,6 +416,19 @@ func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army,
 		target.IsFortified()
 }
 
+func renderTargetRequiresAmphibiousSiegeLanding(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	return gs != nil &&
+		attacker != nil &&
+		target != nil &&
+		attacker.IsNaval &&
+		len(attacker.EmbarkedUnits) > 0 &&
+		target.CanLandEnter() &&
+		target.OwnerID != "" &&
+		target.OwnerID != attacker.OwnerID &&
+		target.IsFortified() &&
+		!armyRegionIsFriendly(gs, attacker, target)
+}
+
 func (r *Renderer) canJoinActiveSiege(attacker *army.Army, regionID world.RegionID) bool {
 	return r != nil && r.gs != nil && r.gs.CanJoinActiveSiege(attacker, regionID)
 }
@@ -1411,6 +1424,9 @@ func (r *Renderer) tradeHoverTooltipRect() (gameui.Rect, bool) {
 	y := float64(my + 16)
 	w := 292.0
 	h := 90.0
+	if r.tradeHoverIdx >= 0 && r.tradeHoverIdx < len(r.tradeCorridors) {
+		h = tradeCorridorTooltipHeight(r.tradeCorridors[r.tradeHoverIdx])
+	}
 	if x+w > ScreenWidth-6 {
 		x = float64(mx) - w - 14
 	}

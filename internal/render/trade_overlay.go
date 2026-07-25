@@ -54,14 +54,32 @@ type tradeCorridorInfo struct {
 	dy       float64
 	hitWidth float64
 	dashed   bool
+	route    *economy.TradeRoute
 }
 
 var (
-	playerTradeRouteGlowColor     = color.RGBA{255, 126, 32, 72}
-	playerTradeRouteCoreColor     = color.RGBA{255, 150, 54, 230}
-	playerTradeRouteEndpointColor = color.RGBA{255, 155, 58, 230}
-	playerTradeRouteLabelColor    = color.RGBA{255, 177, 86, 240}
+	playerTradeRouteColor = color.RGBA{255, 145, 42, 235}
 )
+
+const (
+	tradeRouteDashLength = 12.0
+	tradeRouteGapLength  = 10.0
+	tradeRouteDashParts  = 72
+)
+
+func tradeRouteDisplayAmount(route *economy.TradeRoute) int {
+	if route == nil || route.SuspendedTurns > 0 {
+		return 0
+	}
+	return route.EffectiveAmountPerTurn()
+}
+
+func tradeCorridorTooltipHeight(c tradeCorridorInfo) float64 {
+	if c.dashed && c.route != nil {
+		return 142
+	}
+	return 90
+}
 
 func tradeRoutePairKey(a, b string) string {
 	if a > b {
@@ -252,8 +270,8 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	}
 	c := r.tradeCorridors[r.tradeHoverIdx]
 	if c.dashed {
-		drawDashedTradeCurve(screen, c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 9.0, 3.0,
-			playerTradeRouteGlowColor, playerTradeRouteCoreColor, r.tradeOverlayOccludesSegment)
+		drawDashedTradeCurve(screen, c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 4.0,
+			playerTradeRouteColor, r.tradeOverlayOccludesSegment)
 	} else {
 		segments := 28
 		for i := 0; i < segments; i++ {
@@ -269,10 +287,10 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		}
 	}
 	if !r.tradeOverlayOccludesPoint(c.sx, c.sy) {
-		vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, playerTradeRouteEndpointColor, true)
+		vector.FillCircle(screen, float32(c.sx), float32(c.sy), 6, playerTradeRouteColor, true)
 	}
 	if !r.tradeOverlayOccludesPoint(c.dx, c.dy) {
-		vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, playerTradeRouteEndpointColor, true)
+		vector.FillCircle(screen, float32(c.dx), float32(c.dy), 6, playerTradeRouteColor, true)
 	}
 
 	rect, ok := r.tradeHoverTooltipRect()
@@ -287,25 +305,84 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
 	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
 	DrawText(screen, c.fromName+" ↔ "+c.toName, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
-	DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
-	DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
+	if c.dashed && c.route != nil && r.gs != nil {
+		amount := tradeRouteDisplayAmount(c.route)
+		gold := amount * c.route.GoldPerUnit
+		goodName := economy.GoodNameTR(c.route.Good)
+		playerID := string(r.gs.PlayerFactionID)
+		DrawText(screen, "Hacim: "+itoa(amount)+"/tur   Emtia: "+goodName, float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+		if c.route.FromFactionID == playerID {
+			DrawText(screen, "Veriyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Alıyoruz: Altın +"+itoa(gold)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Gelir: +"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{145, 220, 155, 245})
+		} else {
+			DrawText(screen, "Veriyoruz: Altın "+itoa(gold)+"/tur", float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Alıyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Ödeme: -"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{230, 170, 135, 240})
+		}
+		if c.route.SuspendedTurns > 0 {
+			DrawText(screen, "Askıda: "+itoa(c.route.SuspendedTurns)+" tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{230, 170, 135, 240})
+		}
+	} else {
+		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+		DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
+	}
 }
 
-func drawDashedTradeCurve(screen *ebiten.Image, sx, sy, cx, cy, dx, dy float64, glowW, coreW float32, glow, core color.RGBA, occludes func(float64, float64, float64, float64) bool) {
-	const segments = 36
-	for i := 0; i < segments; i++ {
-		if i%3 == 2 {
+func drawDashedTradeCurve(screen *ebiten.Image, sx, sy, cx, cy, dx, dy float64, lineW float32, lineColor color.RGBA, occludes func(float64, float64, float64, float64) bool) {
+	// Eşit t aralıkları eğrinin farklı noktalarında farklı fiziksel uzunluklar
+	// üretir. Önce eğriyi sabit sayıda küçük yay parçasına örnekleyip, dash/gap
+	// paternini bu parçaların yaklaşık gerçek piksel uzunluğu üzerinden uygula.
+	var xs [tradeRouteDashParts + 1]float64
+	var ys [tradeRouteDashParts + 1]float64
+	var distances [tradeRouteDashParts + 1]float64
+	for i := 0; i <= tradeRouteDashParts; i++ {
+		t := float64(i) / float64(tradeRouteDashParts)
+		xs[i], ys[i] = quadBezierPoint(sx, sy, cx, cy, dx, dy, t)
+		if i == 0 {
 			continue
 		}
-		t1 := float64(i) / float64(segments)
-		t2 := float64(i+1) / float64(segments)
-		x1, y1 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t1)
-		x2, y2 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t2)
-		if occludes != nil && occludes(x1, y1, x2, y2) {
+		distances[i] = distances[i-1] + math.Hypot(xs[i]-xs[i-1], ys[i]-ys[i-1])
+	}
+
+	patternLength := tradeRouteDashLength + tradeRouteGapLength
+	for i := 0; i < tradeRouteDashParts; i++ {
+		segmentStart := distances[i]
+		segmentEnd := distances[i+1]
+		segmentLength := segmentEnd - segmentStart
+		if segmentLength <= 0 {
 			continue
 		}
-		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
-		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
+
+		position := segmentStart
+		for position < segmentEnd {
+			patternPosition := math.Mod(position, patternLength)
+			drawing := patternPosition < tradeRouteDashLength
+			chunkLength := tradeRouteDashLength - patternPosition
+			if !drawing {
+				chunkLength = patternLength - patternPosition
+			}
+			chunkEnd := position + chunkLength
+			if chunkEnd > segmentEnd {
+				chunkEnd = segmentEnd
+			}
+
+			if drawing {
+				startRatio := (position - segmentStart) / segmentLength
+				endRatio := (chunkEnd - segmentStart) / segmentLength
+				x1 := xs[i] + (xs[i+1]-xs[i])*startRatio
+				y1 := ys[i] + (ys[i+1]-ys[i])*startRatio
+				x2 := xs[i] + (xs[i+1]-xs[i])*endRatio
+				y2 := ys[i] + (ys[i+1]-ys[i])*endRatio
+				if occludes == nil || !occludes(x1, y1, x2, y2) {
+					vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), lineW, lineColor, false)
+				}
+			}
+			if chunkEnd <= position {
+				break
+			}
+			position = chunkEnd
+		}
 	}
 }
 
@@ -362,26 +439,26 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 		curve := routeCurveOffset("player-port|"+key, dist)
 		cx := mx + (-vy/dist)*curve
 		cy := my + (vx/dist)*curve
-		drawDashedTradeCurve(screen, sx, sy, cx, cy, dx, dy, 6.0, 2.0, playerTradeRouteGlowColor, playerTradeRouteCoreColor, r.tradeOverlayOccludesSegment)
+		drawDashedTradeCurve(screen, sx, sy, cx, cy, dx, dy, 3.0, playerTradeRouteColor, r.tradeOverlayOccludesSegment)
 		if !r.tradeOverlayOccludesPoint(sx, sy) {
-			vector.FillCircle(screen, float32(sx), float32(sy), 5, playerTradeRouteEndpointColor, true)
+			vector.FillCircle(screen, float32(sx), float32(sy), 5, playerTradeRouteColor, true)
 			vector.StrokeCircle(screen, float32(sx), float32(sy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
 		}
 		if !r.tradeOverlayOccludesPoint(dx, dy) {
-			vector.FillCircle(screen, float32(dx), float32(dy), 5, playerTradeRouteEndpointColor, true)
+			vector.FillCircle(screen, float32(dx), float32(dy), 5, playerTradeRouteColor, true)
 			vector.StrokeCircle(screen, float32(dx), float32(dy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
 		}
 		if r.camScale >= 1.05 {
-			label := itoa(route.amount) + "/tur"
+			label := itoa(tradeRouteDisplayAmount(route.route)) + "/tur"
 			labelW := MeasureText(label, FaceSmall)
 			if !r.tradeOverlayOccludesPoint(mx, my) {
-				DrawText(screen, label, mx-labelW/2, my-8, FaceSmall, playerTradeRouteLabelColor)
+				DrawText(screen, label, mx-labelW/2, my-8, FaceSmall, playerTradeRouteColor)
 			}
 		}
 		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
 			fromName: chooseRegionLabel(fromRegion),
 			toName:   chooseRegionLabel(toRegion),
-			amount:   route.amount,
+			amount:   tradeRouteDisplayAmount(route.route),
 			factions: 2,
 			goods:    route.goodName,
 			sx:       sx,
@@ -392,6 +469,7 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 			dy:       dy,
 			hitWidth: 10,
 			dashed:   true,
+			route:    route.route,
 		})
 	}
 }

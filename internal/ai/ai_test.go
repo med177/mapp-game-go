@@ -633,6 +633,52 @@ func TestAIMoveArmyDisembarksToEnemyCoastWhenAtWar(t *testing.T) {
 	}
 }
 
+func TestAIMoveArmyDisembarksToEnemyFortressAndStartsSiege(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		NextArmySeq:     70,
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {ID: "sea_1", IsSea: true, Neighbors: []world.RegionID{"fort"}},
+			"fort": {
+				ID: "fort", OwnerID: "player", Neighbors: []world.RegionID{"sea_1"},
+				Buildings:   []string{"walls"},
+				Settlements: []world.Settlement{{ID: "fortress", Type: world.SettlementFortress}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ai_fleet": {
+				ID: "ai_fleet", OwnerID: "ai_1", RegionID: "sea_1",
+				Units:         []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+				MovePoints:    3, MaxMovePoints: 3, IsNaval: true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic},
+			"ai_1":   {ID: "ai_1", NameTR: "AI 1", Religion: religion.Sunni},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai_1", "player"): {FactionA: "ai_1", FactionB: "player", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true, Attack: 10, Defense: 10, Morale: 50},
+			"transport": aiTestTransportType(),
+		},
+	}
+
+	step := executeMove(gs, gs.Armies["ai_fleet"], "fort", "ai_1")
+
+	if gs.Regions["fort"].OwnerID != "player" {
+		t.Fatalf("AI kale kıyısına çıkarma ile bölgeyi hemen almamalıydı, got=%s", gs.Regions["fort"].OwnerID)
+	}
+	if gs.SiegeAt("fort") == nil {
+		t.Fatal("AI kale kıyısında kuşatma başlatmalıydı")
+	}
+	if step.step.Kind != TurnStepDisembark {
+		t.Fatalf("AI çıkarma sonucu disembark step'i bekleniyordu, got=%s", step.step.Kind)
+	}
+}
+
 func TestAIMoveArmyDoesNotDisembarkToEnemyCoastAtPeace(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

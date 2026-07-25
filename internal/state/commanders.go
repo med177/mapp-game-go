@@ -164,7 +164,9 @@ func (s *GameState) ReleaseEmbarkedCommander(fleetID army.ArmyID) {
 	}
 }
 
-// AmphibiousCommander çıkarma savaşında kullanılacak komutanı döner.
+// AmphibiousCommander çıkarma savaşında kullanılacak kara komutanını döner.
+// Filo komutanı yalnızca donanmayı yönetir; taşıma göreviyle ilgisi olmayan
+// filo komutanı çıkarma savaşına veya kara ordusunun bonuslarına katılmaz.
 func (s *GameState) AmphibiousCommander(fleetID army.ArmyID) *army.Commander {
 	if s == nil {
 		return nil
@@ -176,7 +178,7 @@ func (s *GameState) AmphibiousCommander(fleetID army.ArmyID) *army.Commander {
 	if fleet.EmbarkedCommander != nil {
 		return fleet.EmbarkedCommander
 	}
-	return fleet.Commander
+	return nil
 }
 
 // InitializePlayerCommanders mevcut komutanları korur ve oyuncu için ilk boş havuzu oluşturur.

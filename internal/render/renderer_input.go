@@ -1090,6 +1090,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		enemyArmy := r.gs.SelectBattleDefender(a, rid, a.IsNaval && target.CanNavalEnter())
 		targetSiege := r.gs.SiegeAt(rid)
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
+		amphibiousSiegeLanding := renderTargetRequiresAmphibiousSiegeLanding(r.gs, a, target)
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		// Müttefik bölgesine çıkarma için "Karaya In" göster.
@@ -1115,7 +1116,7 @@ func (r *Renderer) handleRightClick() InputAction {
 				if enemyArmy != nil {
 					pendingEnemy = enemyArmy.ID
 				}
-				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan, battleAction, battleContext)
+				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan && !amphibiousSiegeLanding, battleAction, battleContext)
 				return InputAction{}
 			}
 		}
@@ -1148,7 +1149,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
-		if opensBattlePlan && !allySieging {
+		if opensBattlePlan && !allySieging && !amphibiousSiegeLanding {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}
