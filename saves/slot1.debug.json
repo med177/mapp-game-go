@@ -5110,11 +5110,11 @@
           "farm"
         ]
       },
-      "new_region_225": {
+      "raqqa": {
         "owner_id": "mamluk",
         "settlements": [
           {
-            "id": "new_region_225_settlement_1",
+            "id": "raqqa_settlement_1",
             "name_tr": "Rakka",
             "x": 1257,
             "y": 552,
@@ -5140,7 +5140,7 @@
           "walls"
         ]
       },
-      "new_region_226": {
+      "luxor": {
         "owner_id": "mamluk",
         "settlements": [
           {
@@ -5178,7 +5178,7 @@
           "farm"
         ]
       },
-      "new_region_227": {
+      "arabian_desert": {
         "owner_id": "ilkhanate",
         "settlements": [
           {
@@ -5214,7 +5214,7 @@
           "walls"
         ]
       },
-      "new_region_228": {
+      "cyrenaica": {
         "owner_id": "mamluk",
         "settlements": [
           {
@@ -5243,7 +5243,7 @@
           "temple"
         ]
       },
-      "new_region_229": {
+      "central_algeria": {
         "owner_id": "mamluk",
         "settlements": [
           {
@@ -5255,14 +5255,14 @@
             "is_capital": true
           },
           {
-            "id": "new_region_229_settlement_2",
+            "id": "central_algeria_settlement_2",
             "name_tr": "Annaba",
             "x": 620,
             "y": 535,
             "type": "city"
           },
           {
-            "id": "new_region_229_settlement_3",
+            "id": "central_algeria_settlement_3",
             "name_tr": "Biskra",
             "x": 592,
             "y": 571,
@@ -5277,7 +5277,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_230": {
+      "sardinia_channel": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5288,7 +5288,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_231": {
+      "alboran_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5299,7 +5299,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_232": {
+      "balearic_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5310,7 +5310,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_233": {
+      "north_atlantic_iberia": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5321,7 +5321,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_234": {
+      "toledo": {
         "owner_id": "castile_kingdom",
         "settlements": [
           {
@@ -5340,7 +5340,7 @@
             "type": "town"
           },
           {
-            "id": "new_region_234_settlement_4",
+            "id": "toledo_settlement_4",
             "name_tr": "Bilbao",
             "x": 415,
             "y": 414,
@@ -5362,7 +5362,7 @@
           "farm"
         ]
       },
-      "new_region_235": {
+      "western_baltic_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5373,11 +5373,11 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_236": {
+      "north_caucasus": {
         "owner_id": "russia",
         "settlements": [
           {
-            "id": "new_region_236_settlement_1",
+            "id": "north_caucasus_settlement_1",
             "name_tr": "Temrük",
             "x": 1233,
             "y": 377,
@@ -5385,7 +5385,7 @@
             "is_capital": true
           },
           {
-            "id": "new_region_236_settlement_2",
+            "id": "north_caucasus_settlement_2",
             "name_tr": "Mahaçkale",
             "x": 1423,
             "y": 418,
@@ -5406,14 +5406,14 @@
             "type": "fortress"
           },
           {
-            "id": "new_region_236_settlement_5",
+            "id": "north_caucasus_settlement_5",
             "name_tr": "Volgodonsk",
             "x": 1321,
             "y": 333,
             "type": "city"
           },
           {
-            "id": "new_region_236_port",
+            "id": "north_caucasus_port",
             "name": "Port",
             "name_tr": "Liman",
             "x": 1331,
@@ -5437,7 +5437,7 @@
           "market"
         ]
       },
-      "new_region_237": {
+      "kerch_strait": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5448,7 +5448,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_238": {
+      "sea_of_marmara": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5459,7 +5459,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_239": {
+      "podolia": {
         "owner_id": "golden_horde",
         "settlements": [
           {
@@ -5514,7 +5514,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_240": {
+      "levantine_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5525,7 +5525,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_241": {
+      "gulf_of_iskenderun": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5536,7 +5536,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_242": {
+      "eastern_mediterranean_basin": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5547,7 +5547,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_243": {
+      "libyan_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5558,7 +5558,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_244": {
+      "gulf_of_sirte": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5569,7 +5569,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_245": {
+      "otranto_strait": {
         "owner_id": "aragon",
         "settlements": null,
         "is_locked": false,
@@ -5580,7 +5580,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_246": {
+      "northern_tyrrhenian_sea": {
         "owner_id": "genoa",
         "settlements": null,
         "is_locked": false,
@@ -5591,7 +5591,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_247": {
+      "gulf_of_genoa": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5602,7 +5602,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_248": {
+      "gulf_of_cadiz": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5613,7 +5613,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_249": {
+      "portuguese_atlantic": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5624,7 +5624,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_250": {
+      "english_channel": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5635,7 +5635,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_251": {
+      "welsh_marches": {
         "owner_id": "england",
         "settlements": [
           {
@@ -5690,7 +5690,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_252": {
+      "algarve": {
         "owner_id": "granada_emirate",
         "settlements": [
           {
@@ -5720,7 +5720,7 @@
           "temple"
         ]
       },
-      "new_region_253": {
+      "cretan_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5731,7 +5731,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_254": {
+      "central_black_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -5742,7 +5742,7 @@
         "active_event_id": "",
         "buildings": null
       },
-      "new_region_255": {
+      "western_black_sea": {
         "owner_id": "",
         "settlements": null,
         "is_locked": false,
@@ -10305,7 +10305,7 @@
       "army_castile_murcia_front": {
         "id": "army_castile_murcia_front",
         "owner_id": "castile_kingdom",
-        "region_id": "new_region_234",
+        "region_id": "toledo",
         "units": [
           {
             "type_id": "cavalry",
@@ -13812,7 +13812,7 @@
       "army_russia_108": {
         "id": "army_russia_108",
         "owner_id": "russia",
-        "region_id": "new_region_236",
+        "region_id": "north_caucasus",
         "units": [
           {
             "type_id": "light_cavalry",
@@ -14447,7 +14447,7 @@
       "fleet_east_rome_guard": {
         "id": "fleet_east_rome_guard",
         "owner_id": "east_rome",
-        "region_id": "new_region_238",
+        "region_id": "sea_of_marmara",
         "docked_region_id": "constantinople",
         "docked_settlement_id": "galata",
         "units": [
@@ -14482,7 +14482,7 @@
       "fleet_england_channel": {
         "id": "fleet_england_channel",
         "owner_id": "england",
-        "region_id": "new_region_250",
+        "region_id": "english_channel",
         "docked_region_id": "london",
         "docked_settlement_id": "london_greenwich",
         "units": [
@@ -14520,7 +14520,7 @@
       "fleet_france_channel": {
         "id": "fleet_france_channel",
         "owner_id": "france",
-        "region_id": "new_region_250",
+        "region_id": "english_channel",
         "docked_region_id": "normandy",
         "docked_settlement_id": "normandy_le_havre",
         "units": [
@@ -14622,7 +14622,7 @@
       "fleet_genoa_guard": {
         "id": "fleet_genoa_guard",
         "owner_id": "genoa",
-        "region_id": "new_region_246",
+        "region_id": "northern_tyrrhenian_sea",
         "docked_region_id": "genoa",
         "docked_settlement_id": "genoa_savona",
         "units": [
@@ -14671,7 +14671,7 @@
       "fleet_golden_horde_238": {
         "id": "fleet_golden_horde_238",
         "owner_id": "golden_horde",
-        "region_id": "new_region_237",
+        "region_id": "kerch_strait",
         "docked_region_id": "ukrainian_steppe",
         "docked_settlement_id": "ukrainian_steppe_port",
         "units": [
@@ -15924,7 +15924,7 @@
         "target_region_ids": [
           "aragon",
           "granada",
-          "new_region_252"
+          "algarve"
         ],
         "started_turn": 25,
         "reassess_turn": 31,
@@ -16004,7 +16004,7 @@
         "target_region_ids": [
           "aragon",
           "granada",
-          "new_region_252"
+          "algarve"
         ],
         "started_turn": 25,
         "reassess_turn": 31,
@@ -16143,7 +16143,7 @@
         "target_faction_id": "russia",
         "target_region_ids": [
           "moscow",
-          "new_region_236"
+          "north_caucasus"
         ],
         "annex_region_ids": [
           "ukrainian_steppe",
@@ -16160,7 +16160,7 @@
         "target_region_ids": [
           "aragon",
           "granada",
-          "new_region_252"
+          "algarve"
         ],
         "started_turn": 25,
         "reassess_turn": 31,
@@ -16243,7 +16243,7 @@
         "target_region_ids": [
           "granada",
           "aragon",
-          "new_region_252"
+          "algarve"
         ],
         "started_turn": 25,
         "reassess_turn": 31,
@@ -16362,7 +16362,7 @@
         "target_faction_id": "granada_emirate",
         "target_region_ids": [
           "granada",
-          "new_region_252",
+          "algarve",
           "aragon"
         ],
         "started_turn": 25,
@@ -16388,7 +16388,7 @@
         "target_faction_id": "golden_horde",
         "target_region_ids": [
           "ukrainian_steppe",
-          "new_region_239"
+          "podolia"
         ],
         "annex_region_ids": [
           "ukrainian_steppe"

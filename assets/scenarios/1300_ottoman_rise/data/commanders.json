@@ -400,6 +400,30 @@
     "traits": [ "aggressor" ]
   },
   {
+    "id": "commander_croatia_subic",
+    "owner_id": "croatian_kingdom",
+    "name": "Paul Šubić",
+    "portrait_asset": "_default.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_bosnia_stephen_kotromanic",
+    "owner_id": "bosnian_banate",
+    "name": "Stephen I Kotromanić",
+    "portrait_asset": "_default.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_carniola_ljubljana",
+    "owner_id": "carniola_margraviate",
+    "name": "Rudolf of Habsburg-Laufenburg",
+    "portrait_asset": "_default.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
     "id": "commander_teutonic_gottfried",
     "owner_id": "teutonic_order",
     "name": "Gottfried von Hohenlohe",
@@ -580,6 +604,62 @@
     "owner_id": "genoa",
     "name": "Antonio Doria",
     "portrait_asset": "genoa_antonio.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_marinid_abu_yusuf",
+    "owner_id": "marinid_sultanate",
+    "name": "Abu Yusuf Yaqub",
+    "portrait_asset": "marinid_abu_yusuf.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_zayyanid_abu_said",
+    "owner_id": "zayyanid_tlemcen",
+    "name": "Abu Said Uthman I",
+    "portrait_asset": "zayyanid_abu_said.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_hafsid_abu_yahya",
+    "owner_id": "hafsid_sultanate",
+    "name": "Abu Yahya Abu Bakr II",
+    "portrait_asset": "hafsid_abu_yahya.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_barqa_local",
+    "owner_id": "barqa_emirate",
+    "name": "Emir of Barqa",
+    "portrait_asset": "barqa_local.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_usfurid_usfur",
+    "owner_id": "usfurid_emirate",
+    "name": "Usfur ibn Rashid",
+    "portrait_asset": "usfurid_usfur.png",
+    "level": 1,
+    "traits": [ "veteran" ]
+  },
+  {
+    "id": "commander_hormuz_qalhati",
+    "owner_id": "hormuz_sultanate",
+    "name": "Mahmud Qalhati",
+    "portrait_asset": "hormuz_qalhati.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_mecca_sharif_abu_numayy",
+    "owner_id": "mecca_sharifate",
+    "name": "Abu Numayy Muhammad",
+    "portrait_asset": "mecca_sharif_abu_numayy.png",
     "level": 1,
     "traits": [ "defender" ]
   }

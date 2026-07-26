@@ -16,6 +16,21 @@
   },
   {
     "from": "denmark",
+    "to": "scania",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      691,
+      185
+    ],
+    "end": [
+      699,
+      178
+    ]
+  },
+  {
+    "from": "denmark",
     "to": "sweden",
     "type": "strait",
     "move_cost": 1,
@@ -90,18 +105,18 @@
     ]
   },
   {
-    "from": "denmark",
-    "to": "new_region_260",
+    "from": "crimea",
+    "to": "north_caucasus",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,
     "start": [
-      691,
-      185
+      1202,
+      375
     ],
     "end": [
-      699,
-      178
+      1214,
+      375
     ]
   }
 ]

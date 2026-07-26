@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
@@ -389,7 +390,13 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 	}
 	portSettlementID := preferredDockSettlementID(region)
 	var fleet *army.Army
-	for _, a := range g.gs.Armies {
+	armyIDs := make([]army.ArmyID, 0, len(g.gs.Armies))
+	for aid := range g.gs.Armies {
+		armyIDs = append(armyIDs, aid)
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	for _, aid := range armyIDs {
+		a := g.gs.Armies[aid]
 		if !a.IsDocked() || a.DockedRegionID != region.ID ||
 			a.OwnerID != string(ownerID) ||
 			(portSettlementID != "" && a.DockedSettlementID != portSettlementID) ||
@@ -484,7 +491,13 @@ func (g *Game) completeLandUnit(region *world.Region, ownerID faction.FactionID,
 }
 
 func (g *Game) findRecruitableLandArmy(regionID world.RegionID, ownerID faction.FactionID) (*army.Army, bool) {
-	for _, a := range g.gs.Armies {
+	armyIDs := make([]army.ArmyID, 0, len(g.gs.Armies))
+	for aid := range g.gs.Armies {
+		armyIDs = append(armyIDs, aid)
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	for _, aid := range armyIDs {
+		a := g.gs.Armies[aid]
 		if a.RegionID != regionID || a.OwnerID != string(ownerID) || a.IsNaval || a.IsGarrison {
 			continue
 		}

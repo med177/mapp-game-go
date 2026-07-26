@@ -985,6 +985,11 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		}
 		armiesByRegion[a.RegionID] = append(armiesByRegion[a.RegionID], a)
 	}
+	for _, armiesInRegion := range armiesByRegion {
+		sort.Slice(armiesInRegion, func(i, j int) bool {
+			return armiesInRegion[i].ID < armiesInRegion[j].ID
+		})
+	}
 	regionIDs := make([]world.RegionID, 0, len(armiesByRegion))
 	for regionID := range armiesByRegion {
 		regionIDs = append(regionIDs, regionID)

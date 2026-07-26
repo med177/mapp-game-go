@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-20
+last_updated: 2026-07-26
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -19,6 +19,26 @@ savaş-nakliye filoları; Portekiz nakliye/ticaret filoları; Memlük nakliye fi
 başlangıçta tarihsel ana limanlarına bağlıdır. Osmanlı, Safevî ve Rusya 1300 açılışında
 donanmasız bırakılmıştır; bu devletlerde deniz gücü kıyı ve liman altyapısı geliştikçe
 oyun içinde kurulacaktır.
+
+1300 açılışında daha önce sahipsiz kalan Kuzey Afrika ve Körfez bölgeleri için
+`marinid_sultanate`, `zayyanid_tlemcen`, `hafsid_sultanate`, `barqa_emirate`,
+`usfurid_emirate` ve `hormuz_sultanate` veri fraksiyonları tanımlıdır. Bunlar tarihsel
+dengeyi ve AI cephelerini doldurur, ancak başlangıç roster'ında oynanabilir değildir.
+Berka, Memlük overlord'u olarak; yeni devletlerin ordu, stok, teknoloji ve AI hedefleri
+aynı senaryo veri dosyalarında tutulur.
+
+Hicaz doğrudan Memlük toprağı yerine `mecca_sharifate` adlı AI-only vassal ile modellenir;
+Mekke Şerifliği Memlük üst-egemenliğini kabul eder, fakat yerel yönetim ve kutsal şehirlerin
+korunması kendisinde kalır.
+
+1300 Balkan başlangıcında Macar tacının doğrudan yönetimi dört çekirdek bölgeyle
+(`hungary`, `alfold`, `slovakia`, `transylvania`) sınırlandırıldı. Sırbistan mevcut
+`serbian_empire` devletine verildi; Slovenya ise Kutsal Roma İmparatorluğu'na bağlı
+`carniola_margraviate` olarak ayrıldı. Hırvatistan ve Bosna'nın Macar tacıyla kişisel
+birlik/vasallık ilişkisini göstermek için `croatian_kingdom` ve `bosnian_banate` AI-only
+bağlı devletleri eklendi. Hırvat bağlı devletinin Kvarner, Hum ve Hersek sınırları için
+başlangıç ordusu, komutanı, stokları ve Adriyatik hedefleri; Bosna ve Carniola için de
+ayrı savunma orduları ve AI profilleri tanımlıdır.
 
 ---
 

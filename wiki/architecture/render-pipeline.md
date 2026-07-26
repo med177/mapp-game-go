@@ -49,6 +49,14 @@ Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve
 
 Bölge seçimi askeri birim üretim panelini açmaz; seçim sırasında açık recruit paneli kapanır ve yalnızca alt HUD'daki `Ordu` butonuyla açılır. Deniz ve kara bölgesi seçimleri bu ortak input kuralını kullanır (`internal/render/renderer_input.go`).
 
+Haritada oyuncuya ait olmayan bir kara bölgesine aynı bölge içinde 400 ms içinde
+çift tıklanırsa bölge seçimi korunarak `openDiplomacyTarget()` üzerinden o
+bölgenin sahibini hedefleyen teklif paneli doğrudan açılır. İlk tıklama yalnızca
+bölgeyi seçer; oyuncunun kendi bölgeleri, deniz bölgeleri ve sahipsiz bölgeler
+bu kısayolu tetiklemez. Yerleşim etiketi üzerinden yapılan seçim de aynı
+region-ID tabanlı çift tıklama akışını kullanır (`internal/render/renderer.go`,
+`internal/render/renderer_input.go`).
+
 Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusunun gerçekten yükleme emri verebilmesiyle aynı hareket hakkı kuralını kullanır. Seçili ordunun `MovePoints` değeri sıfırsa gösterge çizilmez; böylece görünür aksiyon ile sağ tık input kapısı ayrışmaz (`internal/render/renderer.go`).
 
 Alt HUD'daki `Ordu` butonunun etkinliği birim maliyetinin karşılanmasına bağlı değildir. Oyuncunun sahip olduğu uygun kara bölgesinde panel açılabiliyorsa buton açık kalır; kaynak yetersizliği recruit kartında gösterilir ve üretim emri oluşturulurken oyun katmanında yeniden doğrulanır (`internal/render/recruit_panel.go`, `internal/game/game.go`).

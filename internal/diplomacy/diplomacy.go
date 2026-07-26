@@ -1,6 +1,8 @@
 package diplomacy
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -285,7 +287,13 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 		return
 	}
 	SanitizeTradeRoutes(gs)
-	for _, rel := range gs.Relations {
+	relationKeys := make([]string, 0, len(gs.Relations))
+	for key := range gs.Relations {
+		relationKeys = append(relationKeys, key)
+	}
+	sort.Strings(relationKeys)
+	for _, key := range relationKeys {
+		rel := gs.Relations[key]
 		if rel == nil {
 			continue
 		}
@@ -329,7 +337,14 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		seen[key] = struct{}{}
 		filtered = append(filtered, route)
 	}
+	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
+}
+
+func sortTradeRoutes(routes []*economy.TradeRoute) {
+	sort.SliceStable(routes, func(i, j int) bool {
+		return routes[i].AssignmentKey() < routes[j].AssignmentKey()
+	})
 }
 
 func MilitaryPower(gs *state.GameState, fid faction.FactionID) int {
@@ -868,6 +883,7 @@ func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	routeAB := buildTradeRoute(gs, a, b)
 	routeBA := buildTradeRoute(gs, b, a)
 	gs.TradeRoutes = append(gs.TradeRoutes, routeAB, routeBA)
+	sortTradeRoutes(gs.TradeRoutes)
 }
 
 func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
@@ -887,6 +903,7 @@ func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 		}
 		filtered = append(filtered, route)
 	}
+	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
 }
 

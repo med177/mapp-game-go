@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -93,6 +94,23 @@ func Test1300EarlyEconomyTechnologyValuesAreCalibrated(t *testing.T) {
 	}
 }
 
+func Test1300ScenarioRegionNamesAndIDsAreSemantic(t *testing.T) {
+	_, regions, _ := load1300IntegrityData(t)
+
+	for regionID, region := range regions {
+		if strings.HasPrefix(string(regionID), "new_region_") {
+			t.Errorf("placeholder bölge ID'si kaldı: %s", regionID)
+		}
+		if strings.Contains(strings.ToLower(region.Name), "new region") {
+			t.Errorf("placeholder İngilizce bölge adı kaldı: id=%s name=%q", regionID, region.Name)
+		}
+		nameTR := strings.ToLower(region.NameTR)
+		if strings.Contains(nameTR, "yeni bolge") || strings.Contains(nameTR, "yeni bölge") {
+			t.Errorf("placeholder Türkçe bölge adı kaldı: id=%s name=%q", regionID, region.NameTR)
+		}
+	}
+}
+
 func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	scenarioPath, regions, _ := load1300IntegrityData(t)
 
@@ -155,6 +173,87 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	}
 	if units["elite_infantry"].ClothCost != 6 || units["merchant_ship"].SpiceCost != 2 {
 		t.Fatalf("birlik lüks kaynak maliyeti kalibre değil: elite_infantry=%+v merchant=%+v", units["elite_infantry"], units["merchant_ship"])
+	}
+}
+
+func Test1300HistoricalUnownedRegionsAreAssignedToNewStates(t *testing.T) {
+	_, regions, factions := load1300IntegrityData(t)
+
+	expectedOwners := map[world.RegionID]faction.FactionID{
+		"morocco":         "marinid_sultanate",
+		"algiers":         "zayyanid_tlemcen",
+		"central_algeria": "zayyanid_tlemcen",
+		"constantine":     "hafsid_sultanate",
+		"tunis":           "hafsid_sultanate",
+		"tripolitania":    "hafsid_sultanate",
+		"hejaz":           "mecca_sharifate",
+		"serbia":          "serbian_empire",
+		"slovenia":        "carniola_margraviate",
+		"croatia":         "croatian_kingdom",
+		"kvarner":         "croatian_kingdom",
+		"bosnia":          "bosnian_banate",
+		"hum":             "croatian_kingdom",
+		"herzegovina":     "croatian_kingdom",
+		"cyrenaica":       "barqa_emirate",
+		"armenia":         "ilkhanate",
+		"kuwait":          "ilkhanate",
+		"malta":           "aragon",
+		"uae":             "hormuz_sultanate",
+		"qatar":           "usfurid_emirate",
+		"bahrain":         "usfurid_emirate",
+	}
+	for regionID, ownerID := range expectedOwners {
+		region := regions[regionID]
+		if region == nil {
+			t.Errorf("tarihsel atama bölgesi eksik: %s", regionID)
+			continue
+		}
+		if region.OwnerID != string(ownerID) {
+			t.Errorf("tarihsel bölge sahibi hatalı: region=%s got=%s want=%s", regionID, region.OwnerID, ownerID)
+		}
+		if factions[ownerID] == nil {
+			t.Errorf("tarihsel atama devleti eksik: %s", ownerID)
+		}
+		if region.BaseGoldIncome <= 0 || region.BaseGrainOutput <= 0 {
+			t.Errorf("yeni atanan bölgenin temel üretimi eksik: region=%s gold=%d grain=%d", regionID, region.BaseGoldIncome, region.BaseGrainOutput)
+		}
+	}
+
+	constantine := regions["constantine"]
+	if constantine == nil {
+		t.Fatal("Konstantin bölgesi bulunamadı")
+	}
+	if len(constantine.Settlements) != 2 {
+		t.Fatalf("Konstantin bölünmesinde Annaba ve Biskra korunmalı: settlements=%d", len(constantine.Settlements))
+	}
+	marinid := factions["marinid_sultanate"]
+	hafsid := factions["hafsid_sultanate"]
+	hormuz := factions["hormuz_sultanate"]
+	if marinid == nil || hafsid == nil || hormuz == nil {
+		t.Fatal("yeni devlet kaynak kontrolü için fraksiyon eksik")
+	}
+	if marinid.Gold <= 0 || hafsid.Grain <= 0 || hormuz.Spice <= 0 {
+		t.Fatalf("yeni devletlerin başlangıç kaynakları doldurulmamış: marinid=%d hafsid_grain=%d hormuz_spice=%d", factions["marinid_sultanate"].Gold, factions["hafsid_sultanate"].Grain, factions["hormuz_sultanate"].Spice)
+	}
+	sharifate := factions["mecca_sharifate"]
+	if sharifate == nil || sharifate.OverlordID != "mamluk" {
+		t.Fatalf("Hicaz Memlük bağlısı Mekke Şerifliği olarak yüklenmeli: faction=%+v", sharifate)
+	}
+	for factionID, wantOverlord := range map[faction.FactionID]faction.FactionID{
+		"croatian_kingdom":     "hungarian_kingdom",
+		"bosnian_banate":       "hungarian_kingdom",
+		"carniola_margraviate": "hre",
+	} {
+		definition := factions[factionID]
+		if definition == nil || definition.OverlordID != wantOverlord {
+			t.Fatalf("Balkan yerel devleti doğru üst devlete bağlı değil: faction=%s definition=%+v want_overlord=%s", factionID, definition, wantOverlord)
+		}
+		if definition.Gold <= 0 || definition.Grain <= 0 || definition.Iron <= 0 {
+			t.Fatalf("Balkan yerel devletinin başlangıç kaynakları eksik: faction=%s gold=%d grain=%d iron=%d", factionID, definition.Gold, definition.Grain, definition.Iron)
+		}
+	}
+	if arabianDesert := regions["arabian_desert"]; arabianDesert == nil || arabianDesert.OwnerID != "" {
+		t.Fatalf("Arab Çölü 1300'de Memlük çekirdek toprağı olarak başlamamalı: region=%+v", arabianDesert)
 	}
 }
 
@@ -234,15 +333,16 @@ func Test1300ScenarioStartingNaviesAreDockedAtHistoricalPorts(t *testing.T) {
 	}{
 		"fleet_venice_guard":      {owner: "venice", sea: "adriatic_sea_dalmatia", dock: "venice"},
 		"fleet_venice_trade":      {owner: "venice", sea: "adriatic_sea_dalmatia", dock: "venice"},
-		"fleet_genoa_guard":       {owner: "genoa", sea: "new_region_246", dock: "genoa"},
-		"fleet_genoa_trade":       {owner: "genoa", sea: "new_region_246", dock: "genoa"},
-		"fleet_east_rome_guard":   {owner: "east_rome", sea: "new_region_238", dock: "constantinople"},
+		"fleet_genoa_guard":       {owner: "genoa", sea: "northern_tyrrhenian_sea", dock: "genoa"},
+		"fleet_genoa_trade":       {owner: "genoa", sea: "northern_tyrrhenian_sea", dock: "genoa"},
+		"fleet_east_rome_guard":   {owner: "east_rome", sea: "sea_of_marmara", dock: "constantinople"},
 		"fleet_aragon_west":       {owner: "aragon", sea: "mediterranean_open_2", dock: "sicily"},
-		"fleet_england_channel":   {owner: "england", sea: "new_region_250", dock: "london"},
-		"fleet_france_channel":    {owner: "france", sea: "new_region_250", dock: "normandy"},
+		"fleet_england_channel":   {owner: "england", sea: "english_channel", dock: "london"},
+		"fleet_france_channel":    {owner: "france", sea: "english_channel", dock: "normandy"},
 		"fleet_portugal_atlantic": {owner: "portugal", sea: "atlantic_open_3", dock: "portugal"},
 		"fleet_portugal_trade":    {owner: "portugal", sea: "atlantic_open_3", dock: "portugal"},
 		"fleet_mamluk_east_med":   {owner: "mamluk", sea: "eastern_mediterranean", dock: "egypt"},
+		"fleet_hormuz_julfar":     {owner: "hormuz_sultanate", sea: "persian_open_1", dock: "uae"},
 	}
 
 	for fleetID, want := range expected {
@@ -374,7 +474,7 @@ func Test1300ScenarioHistoricalFrontArmiesAndTechnology(t *testing.T) {
 		"army_france_normandy":          {"france", "normandy", map[string]int{"cavalry": 1, "infantry": 3, "light_cavalry": 1, "militia": 2}},
 		"army_england_scotland_front":   {"england", "lancashire", map[string]int{"cavalry": 1, "infantry": 3, "militia": 2}},
 		"army_scotland_border":          {"scotland_kingdom", "scotland", map[string]int{"infantry": 2, "light_cavalry": 1, "militia": 3}},
-		"army_castile_murcia_front":     {"castile_kingdom", "new_region_234", map[string]int{"cavalry": 1, "infantry": 3, "light_cavalry": 1, "militia": 2}},
+		"army_castile_murcia_front":     {"castile_kingdom", "toledo", map[string]int{"cavalry": 1, "infantry": 3, "light_cavalry": 1, "militia": 2}},
 		"army_flanders_bruges_guard":    {"flanders_county", "flanders", map[string]int{"infantry": 2, "light_cavalry": 1, "militia": 3}},
 		"army_hre_flanders_relief":      {"hre", "holland", map[string]int{"cavalry": 2, "infantry": 3, "militia": 2}},
 	}
@@ -632,37 +732,40 @@ func Test1300ScenarioProfilesCoverRegionalObjectives(t *testing.T) {
 		objectiveID   string
 		objectiveKind string
 	}{
-		"ahiler":           {"central_buffer_survival", "hold_sivrihisar_buffer", "defend"},
-		"aydin_bey":        {"aegean_maritime_competition", "contest_saruhan_coast", "expand"},
-		"candar_bey":       {"black_sea_frontier", "control_pontic_corridor", "expand"},
-		"canik_bey":        {"pontic_buffer_survival", "resist_candar_pressure", "defend"},
-		"dulkadir_bey":     {"levant_buffer_survival", "hold_dulkadir_buffer", "defend"},
-		"esrefoglu_bey":    {"central_anatolian_survival", "hold_beysehir_pass", "defend"},
-		"germiyan_bey":     {"western_anatolian_rival", "contest_hamid_frontier", "expand"},
-		"hamid_bey":        {"taurus_frontier_competition", "secure_mentese_passes", "expand"},
-		"karaman_bey":      {"central_anatolian_expansion", "press_cilician_frontier", "expand"},
-		"karesioglu_bey":   {"marmara_buffer_survival", "hold_marmara_bridgehead", "defend"},
-		"mentese_bey":      {"aegean_coastal_survival", "contest_aydin_coast", "expand"},
-		"ramazan_bey":      {"cilician_buffer_survival", "hold_cilician_gate", "defend"},
-		"saruhan_bey":      {"aegean_interior_survival", "contest_aydinoglu_coast", "expand"},
-		"venice":           {"adriatic_merchant_thalassocracy", "protect_adriatic_and_island_trade", "defend"},
-		"genoa":            {"western_merchant_network", "protect_ligurian_and_black_sea_trade", "defend"},
-		"mamluk":           {"levant_sultanate_frontier", "break_ilkhanate_mesopotamian_front", "expand"},
-		"ilkhanate":        {"eastern_imperial_frontier", "press_levant_frontier", "expand"},
-		"serbian_empire":   {"balkan_hegemony_buffer", "hold_serbian_mountain_core", "defend"},
-		"bulgarian_empire": {"danubian_balkan_defense", "hold_danube_balkan_line", "defend"},
-		"epir":             {"epirus_survival", "hold_epirus_thessaly", "defend"},
-		"arnavut_des":      {"albanian_mountain_survival", "hold_albanian_mountains", "defend"},
-		"athena_duk":       {"aegean_city_state_survival", "hold_athens_coast", "defend"},
-		"wallachia_prince": {"danube_buffer_survival", "hold_wallachian_buffer", "defend"},
-		"russia":           {"moscow_consolidation", "consolidate_eastern_rus_frontier", "expand"},
-		"golden_horde":     {"steppe_hegemony", "press_rus_steppe", "expand"},
-		"teutonic_order":   {"baltic_crusader_frontier", "press_lithuanian_frontier", "expand"},
-		"novgorod_rep":     {"northern_trade_survival", "hold_novgorod_trade_gate", "defend"},
-		"lithuanian_gd":    {"eastern_baltic_expansion", "contest_kievan_steppe", "expand"},
-		"england":          {"continental_claim_awakening", "secure_english_channel_and_isles", "consolidate"},
-		"france":           {"royal_recovery_after_1337", "protect_french_royal_core", "consolidate"},
-		"safavid":          {"ardabil_survival_and_awakening", "hold_southern_persian_core", "consolidate"},
+		"ahiler":               {"central_buffer_survival", "hold_sivrihisar_buffer", "defend"},
+		"aydin_bey":            {"aegean_maritime_competition", "contest_saruhan_coast", "expand"},
+		"candar_bey":           {"black_sea_frontier", "control_pontic_corridor", "expand"},
+		"canik_bey":            {"pontic_buffer_survival", "resist_candar_pressure", "defend"},
+		"dulkadir_bey":         {"levant_buffer_survival", "hold_dulkadir_buffer", "defend"},
+		"esrefoglu_bey":        {"central_anatolian_survival", "hold_beysehir_pass", "defend"},
+		"germiyan_bey":         {"western_anatolian_rival", "contest_hamid_frontier", "expand"},
+		"hamid_bey":            {"taurus_frontier_competition", "secure_mentese_passes", "expand"},
+		"karaman_bey":          {"central_anatolian_expansion", "press_cilician_frontier", "expand"},
+		"karesioglu_bey":       {"marmara_buffer_survival", "hold_marmara_bridgehead", "defend"},
+		"mentese_bey":          {"aegean_coastal_survival", "contest_aydin_coast", "expand"},
+		"ramazan_bey":          {"cilician_buffer_survival", "hold_cilician_gate", "defend"},
+		"saruhan_bey":          {"aegean_interior_survival", "contest_aydinoglu_coast", "expand"},
+		"venice":               {"adriatic_merchant_thalassocracy", "protect_adriatic_and_island_trade", "defend"},
+		"genoa":                {"western_merchant_network", "protect_ligurian_and_black_sea_trade", "defend"},
+		"mamluk":               {"levant_sultanate_frontier", "break_ilkhanate_mesopotamian_front", "expand"},
+		"ilkhanate":            {"eastern_imperial_frontier", "press_levant_frontier", "expand"},
+		"serbian_empire":       {"balkan_hegemony_buffer", "hold_serbian_mountain_core", "defend"},
+		"croatian_kingdom":     {"subic_adriatic_frontier", "hold_croatian_and_hum_core", "defend"},
+		"bosnian_banate":       {"bosnian_border_survival", "hold_bosnian_banate", "defend"},
+		"carniola_margraviate": {"carniolan_imperial_buffer", "hold_carniola_passes", "defend"},
+		"bulgarian_empire":     {"danubian_balkan_defense", "hold_danube_balkan_line", "defend"},
+		"epir":                 {"epirus_survival", "hold_epirus_thessaly", "defend"},
+		"arnavut_des":          {"albanian_mountain_survival", "hold_albanian_mountains", "defend"},
+		"athena_duk":           {"aegean_city_state_survival", "hold_athens_coast", "defend"},
+		"wallachia_prince":     {"danube_buffer_survival", "hold_wallachian_buffer", "defend"},
+		"russia":               {"moscow_consolidation", "consolidate_eastern_rus_frontier", "expand"},
+		"golden_horde":         {"steppe_hegemony", "press_rus_steppe", "expand"},
+		"teutonic_order":       {"baltic_crusader_frontier", "press_lithuanian_frontier", "expand"},
+		"novgorod_rep":         {"northern_trade_survival", "hold_novgorod_trade_gate", "defend"},
+		"lithuanian_gd":        {"eastern_baltic_expansion", "contest_kievan_steppe", "expand"},
+		"england":              {"continental_claim_awakening", "secure_english_channel_and_isles", "consolidate"},
+		"france":               {"royal_recovery_after_1337", "protect_french_royal_core", "consolidate"},
+		"safavid":              {"ardabil_survival_and_awakening", "hold_southern_persian_core", "consolidate"},
 	}
 	for factionID, want := range expected {
 		if factions[faction.FactionID(factionID)] == nil {

@@ -17,7 +17,7 @@ func TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea(t *testing.T) {
 		{
 			name:       "1300 ottoman rise",
 			regionPath: filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data", "regions.json"),
-			bridgePath: []RegionID{"aegean_sea", "new_region_238", "new_region_255", "black_sea"},
+			bridgePath: []RegionID{"aegean_sea", "sea_of_marmara", "bosphorus", "black_sea"},
 		},
 		{
 			name:       "1444 ottoman empire",

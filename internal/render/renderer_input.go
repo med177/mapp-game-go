@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"time"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/audio"
@@ -16,6 +17,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+const mapRegionDoubleClickWindow = 400 * time.Millisecond
 
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
@@ -763,15 +766,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
-		r.SelectedArmy = ""
-		r.clearArmySplitSelection()
-		if r.SelectedRegion != rid {
-			r.devNeighborListExpanded = false
-			r.regionPanelTab = regionPanelTabBuildings
-			r.regionPanelScroll = 0
+		if r.selectMapRegionFromMapClick(rid) {
+			return InputAction{}
 		}
-		r.SelectedRegion = rid
-		r.syncFactionPanelToSelectedRegion()
 		r.selectSettlement(rid, idx)
 		if !RecruitPanelVisible(r.gs, rid) {
 			r.showRecruitPanel = false
@@ -810,15 +807,45 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// Bölge / deniz bölgesi seçimi
 	wx, wy := r.screenToWorld(fx, fy)
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
-	if rid != "" {
-		if region, ok := r.gs.Regions[rid]; ok && region.IsSea {
-			// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
-			r.selectMapRegion(rid)
-			return InputAction{}
-		}
-	}
-	r.selectMapRegion(rid)
+	// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
+	// Kara bölgesine çift tıklanırsa seçimden sonra bölge sahibinin diplomasi
+	// teklif paneli açılır.
+	r.selectMapRegionFromMapClick(rid)
 	return InputAction{}
+}
+
+func (r *Renderer) selectMapRegionFromMapClick(rid world.RegionID) bool {
+	doubleClick := r.mapRegionDoubleClicked(rid)
+	r.selectMapRegion(rid)
+	if !doubleClick || r.gs == nil {
+		return false
+	}
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea || region.OwnerID == "" || region.OwnerID == string(r.gs.PlayerFactionID) {
+		return false
+	}
+	r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
+	r.resetMapRegionDoubleClick()
+	return true
+}
+
+func (r *Renderer) mapRegionDoubleClicked(rid world.RegionID) bool {
+	if rid == "" {
+		r.resetMapRegionDoubleClick()
+		return false
+	}
+	now := time.Now()
+	doubleClick := r.lastMapRegionClickID == rid &&
+		!r.lastMapRegionClickAt.IsZero() &&
+		now.Sub(r.lastMapRegionClickAt) <= mapRegionDoubleClickWindow
+	r.lastMapRegionClickID = rid
+	r.lastMapRegionClickAt = now
+	return doubleClick
+}
+
+func (r *Renderer) resetMapRegionDoubleClick() {
+	r.lastMapRegionClickID = ""
+	r.lastMapRegionClickAt = time.Time{}
 }
 
 func (r *Renderer) selectMapRegion(rid world.RegionID) {

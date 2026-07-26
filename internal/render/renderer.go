@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"mapp-game-go/internal/ai"
@@ -191,6 +192,10 @@ type Renderer struct {
 	// Input state (just-pressed takibi)
 	prevKeys  map[ebiten.Key]bool
 	prevMouse map[ebiten.MouseButton]bool
+
+	// Harita bölgesi çift tıklama takibi
+	lastMapRegionClickID world.RegionID
+	lastMapRegionClickAt time.Time
 
 	// Genel onay diyaloğu
 	warConfirm          warConfirmState

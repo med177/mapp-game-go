@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-07-25
+last_updated: 2026-07-26
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -64,6 +64,33 @@ settlement kayıtlarıyla birlikte doğrulanır.
 Flandre bölgesi (`flanders`) 1300 açılışında doğrudan HRE yerine `flanders_county`
 tarafından yönetilir. Bu sahiplik, yerel vergi/ticaret akışını korurken HRE vassallığı
 ve Flandre limanının savunma görevlerini veri modelinde görünür kılar.
+
+1300 açılışındaki sahipsiz kara bölgeleri tarihsel devletlere atanmıştır: Fas Merînîlere;
+Batı/Orta Cezayir Tlemsen Zeyyânîlerine; Konstantin, Tunus ve Trablus Hafsîlere;
+Berka Memlük bağlısı Berka Emirliği'ne; Bahreyn-Katar Usfûrîlere; Hürmüz kıyısı
+Hürmüz Sultanlığı'na; Malta Aragon'a; Ermenistan ve Basra/Kuveyt İlhanlılara aittir.
+Orta Cezayir, Konstantin bölgesi olarak ayrılmış; Annaba ve Biskra yerleşimleri bu yeni
+bölgeye taşınmıştır. Başlangıç orduları `data/armies.json`, üretim ve stok değerleri
+ise `regions.json` ile `factions.json` içinde doğrulanır.
+Hicaz ise Mekke Şerifliği'ne verilmiş, Memlük vassallığı korunmuştur.
+Arab Çölü (`arabian_desert`) ise Memlüklerden çıkarılmış, 1300 için sahipsiz/çekişmeli
+bir keşif ve geçiş bölgesi olarak bırakılmıştır; bu alanı doğrudan yöneten tek bir
+merkezî devlet yoktur.
+
+1300 Balkan düzeltmesinde `serbia` Sırp devletine, `slovenia` Kranj Marklığı'na,
+`croatia` ve `kvarner` (Kvarner) Hırvat Krallığı'na, `bosnia` Bosna Banlığı'na;
+`hum` ve `herzegovina` (Hersek) ise 14. yüzyıl başındaki Šubić etkisini temsil eden
+Hırvat bağlı devletine verildi. `kvarner` için Senj, `herzegovina` için
+Trebinye başlangıç yerleşimleri eklendi. Böylece Macaristan'ın doğrudan renk alanı
+çekirdek havza ve tarihsel Macar krallığı bölgeleriyle sınırlı kalırken, kişisel birlik
+ve yerel banlık ilişkileri harita üzerinde görünürdür.
+
+1300 senaryosundaki otomatik `new_region_*` kayıtları anlamlı coğrafi ID'lere taşındı.
+Kara tarafında `welsh_marches`, `scania`, `algarve`, `toledo`, `luxor`, `raqqa`,
+`podolia` ve `north_caucasus`; deniz tarafında `sea_of_marmara`, `bosphorus`,
+`western_black_sea`, `cretan_sea`, `alboran_sea`, `levantine_sea` ve ilgili körfez/
+boğaz kayıtları kullanılır. Aynı koordinattaki komşusuz iki sahte deniz kaydı kaldırıldı;
+Scania ve Ragusa'ya da başlangıç yerleşimleri eklendi.
 
 ---
 

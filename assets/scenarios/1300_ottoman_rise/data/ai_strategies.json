@@ -462,7 +462,7 @@
           "id": "press_levant_frontier",
           "kind": "expand",
           "target_factions": ["mamluk"],
-          "target_regions": ["damascus", "aleppo", "jordan", "new_region_227"],
+          "target_regions": ["damascus", "aleppo", "jordan"],
           "priority": 94,
           "commitment": 70,
           "readiness_regions": ["mosul", "baghdad", "malatya"],
@@ -486,7 +486,7 @@
           "id": "hold_serbian_mountain_core",
           "kind": "defend",
           "target_factions": ["east_rome", "hungarian_kingdom", "ottoman"],
-          "target_regions": ["nis", "kosovo", "rascia"],
+          "target_regions": ["nis", "kosovo", "rascia", "serbia"],
           "priority": 96,
           "commitment": 82
         },
@@ -620,17 +620,17 @@
           "id": "consolidate_eastern_rus_frontier",
           "kind": "expand",
           "target_factions": ["golden_horde"],
-          "target_regions": ["ukrainian_steppe", "new_region_239"],
+          "target_regions": ["ukrainian_steppe", "podolia"],
           "priority": 88,
           "commitment": 58,
-          "readiness_regions": ["moscow", "new_region_236"],
+          "readiness_regions": ["moscow", "north_caucasus"],
           "annex_region_ids": ["ukrainian_steppe"]
         },
         {
           "id": "hold_moscow_northern_frontier",
           "kind": "defend",
           "target_factions": ["golden_horde", "lithuanian_gd", "novgorod_rep"],
-          "target_regions": ["moscow", "nizhny_novgorod", "new_region_236", "dagestan"],
+          "target_regions": ["moscow", "nizhny_novgorod", "north_caucasus", "dagestan"],
           "priority": 84,
           "commitment": 78
         }
@@ -644,7 +644,7 @@
           "id": "press_rus_steppe",
           "kind": "expand",
           "target_factions": ["russia"],
-          "target_regions": ["moscow", "new_region_236"],
+          "target_regions": ["moscow", "north_caucasus"],
           "priority": 94,
           "commitment": 72,
           "readiness_regions": ["ukrainian_steppe", "kiev"],
@@ -654,7 +654,7 @@
           "id": "hold_kiev_black_sea_steppe",
           "kind": "defend",
           "target_factions": ["russia", "lithuanian_gd", "polish_kingdom", "wallachia_prince"],
-          "target_regions": ["ukrainian_steppe", "kiev", "moldova", "new_region_239"],
+          "target_regions": ["ukrainian_steppe", "kiev", "moldova", "podolia"],
           "priority": 86,
           "commitment": 82
         }
@@ -755,7 +755,7 @@
         {
           "id": "secure_english_channel_and_isles",
           "kind": "consolidate",
-          "target_regions": ["london", "wessex", "east_anglia", "mercia", "yorkshire", "lancashire", "wales", "ulster", "the_pale", "new_region_251"],
+          "target_regions": ["london", "wessex", "east_anglia", "mercia", "yorkshire", "lancashire", "wales", "ulster", "the_pale", "welsh_marches"],
           "priority": 100,
           "commitment": 76,
           "readiness_regions": ["london", "lancashire"]
@@ -840,6 +840,212 @@
           "target_regions": ["flanders", "holland", "friesland"],
           "priority": 76,
           "commitment": 55
+        }
+      ]
+    },
+    {
+      "faction_id": "marinid_sultanate",
+      "profile": "maghreb_dynastic_expansion",
+      "objectives": [
+        {
+          "id": "hold_marininid_morocco",
+          "kind": "consolidate",
+          "target_regions": ["morocco"],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": ["morocco"]
+        },
+        {
+          "id": "contest_tlemcen_frontier",
+          "kind": "expand",
+          "target_factions": ["zayyanid_tlemcen"],
+          "target_regions": ["algiers", "central_algeria"],
+          "priority": 82,
+          "commitment": 58,
+          "readiness_regions": ["morocco"],
+          "annex_region_ids": ["algiers"]
+        }
+      ]
+    },
+    {
+      "faction_id": "zayyanid_tlemcen",
+      "profile": "tlemcen_frontier_survival",
+      "objectives": [
+        {
+          "id": "hold_central_maghrib",
+          "kind": "consolidate",
+          "target_regions": ["algiers", "central_algeria"],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": ["algiers"]
+        },
+        {
+          "id": "contest_hafsid_algeria",
+          "kind": "expand",
+          "target_factions": ["hafsid_sultanate"],
+          "target_regions": ["constantine", "tunis"],
+          "priority": 78,
+          "commitment": 52,
+          "readiness_regions": ["central_algeria"],
+          "annex_region_ids": ["constantine"]
+        }
+      ]
+    },
+    {
+      "faction_id": "hafsid_sultanate",
+      "profile": "ifriqiya_coastal_sultanate",
+      "objectives": [
+        {
+          "id": "hold_ifriqiya_core",
+          "kind": "consolidate",
+          "target_regions": ["constantine", "tunis", "tripolitania"],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": ["tunis"]
+        },
+        {
+          "id": "restore_tripolitanian_influence",
+          "kind": "expand",
+          "target_factions": ["barqa_emirate"],
+          "target_regions": ["cyrenaica"],
+          "priority": 72,
+          "commitment": 48,
+          "readiness_regions": ["tripolitania"],
+          "annex_region_ids": ["cyrenaica"]
+        }
+      ]
+    },
+    {
+      "faction_id": "barqa_emirate",
+      "profile": "barqa_survival",
+      "objectives": [
+        {
+          "id": "hold_barqa_coast",
+          "kind": "defend",
+          "target_factions": ["hafsid_sultanate", "mamluk"],
+          "target_regions": ["cyrenaica"],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": ["cyrenaica"]
+        }
+      ]
+    },
+    {
+      "faction_id": "usfurid_emirate",
+      "profile": "eastern_arabian_pearl_trade",
+      "objectives": [
+        {
+          "id": "hold_bahrain_qatar",
+          "kind": "consolidate",
+          "target_regions": ["bahrain", "qatar"],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": ["bahrain"]
+        },
+        {
+          "id": "contest_hormuz_trade",
+          "kind": "expand",
+          "target_factions": ["hormuz_sultanate"],
+          "target_regions": ["uae"],
+          "priority": 68,
+          "commitment": 42,
+          "readiness_regions": ["qatar"],
+          "annex_region_ids": ["uae"]
+        }
+      ]
+    },
+    {
+      "faction_id": "hormuz_sultanate",
+      "profile": "gulf_maritime_hegemony",
+      "objectives": [
+        {
+          "id": "hold_julfar_trade_gate",
+          "kind": "consolidate",
+          "target_regions": ["uae"],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": ["uae"]
+        },
+        {
+          "id": "secure_lower_gulf_trade",
+          "kind": "expand",
+          "target_factions": ["usfurid_emirate"],
+          "target_regions": ["qatar", "bahrain"],
+          "priority": 76,
+          "commitment": 50,
+          "readiness_regions": ["uae"],
+          "annex_region_ids": ["qatar"]
+        }
+      ]
+    },
+    {
+      "faction_id": "mecca_sharifate",
+      "profile": "mecca_holy_cities_defense",
+      "objectives": [
+        {
+          "id": "protect_holy_cities",
+          "kind": "defend",
+          "target_factions": ["mamluk"],
+          "target_regions": ["hejaz"],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": ["hejaz"]
+        }
+      ]
+    },
+    {
+      "faction_id": "croatian_kingdom",
+      "profile": "subic_adriatic_frontier",
+      "objectives": [
+        {
+          "id": "hold_croatian_and_hum_core",
+          "kind": "defend",
+          "target_factions": ["venice", "bosnian_banate", "serbian_empire"],
+          "target_regions": ["croatia", "kvarner", "hum", "herzegovina"],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": ["croatia", "hum"]
+        },
+        {
+          "id": "contest_dalmatian_coast",
+          "kind": "expand",
+          "target_factions": ["venice"],
+          "target_regions": ["dalmatia", "ragusa"],
+          "priority": 68,
+          "commitment": 48,
+          "readiness_regions": ["kvarner"],
+          "allow_vassalization": true,
+          "annex_region_ids": ["ragusa"]
+        }
+      ]
+    },
+    {
+      "faction_id": "bosnian_banate",
+      "profile": "bosnian_border_survival",
+      "objectives": [
+        {
+          "id": "hold_bosnian_banate",
+          "kind": "defend",
+          "target_factions": ["croatian_kingdom", "serbian_empire", "hungarian_kingdom"],
+          "target_regions": ["bosnia"],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": ["bosnia"]
+        }
+      ]
+    },
+    {
+      "faction_id": "carniola_margraviate",
+      "profile": "carniolan_imperial_buffer",
+      "objectives": [
+        {
+          "id": "hold_carniola_passes",
+          "kind": "defend",
+          "target_factions": ["venice", "hungarian_kingdom"],
+          "target_regions": ["slovenia"],
+          "priority": 96,
+          "commitment": 76,
+          "readiness_regions": ["slovenia"]
         }
       ]
     }

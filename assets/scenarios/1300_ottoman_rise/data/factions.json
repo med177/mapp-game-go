@@ -1556,5 +1556,349 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 45
+  },
+  {
+    "id": "marinid_sultanate",
+    "name": "Marinid Sultanate",
+    "name_tr": "Merînî Sultanlığı",
+    "religion": "sunni",
+    "color": [
+      115,
+      155,
+      70
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "morocco_main",
+    "gold": 480,
+    "grain": 260,
+    "iron": 75,
+    "timber": 90,
+    "stone": 1000,
+    "spice": 70,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 42,
+    "ai_expansion_targets": [
+      "zayyanid_tlemcen",
+      "granada_emirate",
+      "hafsid_sultanate"
+    ]
+  },
+  {
+    "id": "zayyanid_tlemcen",
+    "name": "Zayyanid Kingdom of Tlemcen",
+    "name_tr": "Zeyyânî Tlemsen Krallığı",
+    "religion": "sunni",
+    "color": [
+      180,
+      105,
+      55
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "tlemcen_main",
+    "gold": 360,
+    "grain": 180,
+    "iron": 65,
+    "timber": 55,
+    "stone": 1000,
+    "spice": 35,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "cavalry_tactics": true,
+        "horse_breeding": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 48,
+    "ai_expansion_targets": [
+      "marinid_sultanate",
+      "hafsid_sultanate"
+    ]
+  },
+  {
+    "id": "hafsid_sultanate",
+    "name": "Hafsid Sultanate",
+    "name_tr": "Hafsî Sultanlığı",
+    "religion": "sunni",
+    "color": [
+      55,
+      145,
+      165
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "tunis_main",
+    "gold": 480,
+    "grain": 280,
+    "iron": 65,
+    "timber": 55,
+    "stone": 1000,
+    "spice": 115,
+    "cloth": 85,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "trade_routes": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35,
+    "ai_expansion_targets": [
+      "zayyanid_tlemcen",
+      "barqa_emirate",
+      "usfurid_emirate"
+    ]
+  },
+  {
+    "id": "barqa_emirate",
+    "name": "Emirate of Barqa",
+    "name_tr": "Berka Emirliği",
+    "religion": "sunni",
+    "color": [
+      155,
+      125,
+      75
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "mamluk",
+    "capital_settlement_id": "tripolitania_settlement_10",
+    "gold": 170,
+    "grain": 100,
+    "iron": 25,
+    "timber": 25,
+    "stone": 1000,
+    "spice": 15,
+    "cloth": 20,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 28,
+    "ai_expansion_targets": [
+      "hafsid_sultanate",
+      "mamluk"
+    ]
+  },
+  {
+    "id": "usfurid_emirate",
+    "name": "Usfurid Emirate",
+    "name_tr": "Usfûrî Emirliği",
+    "religion": "sunni",
+    "color": [
+      190,
+      135,
+      55
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "bahrain_main",
+    "gold": 220,
+    "grain": 135,
+    "iron": 25,
+    "timber": 30,
+    "stone": 1000,
+    "spice": 60,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 30,
+    "ai_expansion_targets": [
+      "hormuz_sultanate",
+      "hafsid_sultanate"
+    ]
+  },
+  {
+    "id": "hormuz_sultanate",
+    "name": "Sultanate of Hormuz",
+    "name_tr": "Hürmüz Sultanlığı",
+    "religion": "sunni",
+    "color": [
+      75,
+      125,
+      175
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "uae_main",
+    "gold": 280,
+    "grain": 110,
+    "iron": 35,
+    "timber": 40,
+    "stone": 1000,
+    "spice": 95,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "banking": true,
+        "navigation": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38,
+    "ai_expansion_targets": [
+      "usfurid_emirate",
+      "ilkhanate"
+    ]
+  },
+  {
+    "id": "mecca_sharifate",
+    "name": "Sharifate of Mecca",
+    "name_tr": "Mekke Şerifliği",
+    "religion": "sunni",
+    "color": [
+      170,
+      120,
+      160
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "mamluk",
+    "capital_settlement_id": "hejaz_mecca",
+    "gold": 180,
+    "grain": 125,
+    "iron": 20,
+    "timber": 20,
+    "stone": 1000,
+    "spice": 35,
+    "cloth": 25,
+    "research": {
+      "completed": {
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 18,
+    "ai_expansion_targets": []
+  },
+  {
+    "id": "croatian_kingdom",
+    "name": "Kingdom of Croatia",
+    "name_tr": "Hırvat Krallığı",
+    "religion": "catholic",
+    "color": [
+      170,
+      55,
+      75
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "hungarian_kingdom",
+    "capital_settlement_id": "croatia_zagreb",
+    "gold": 320,
+    "grain": 175,
+    "iron": 55,
+    "timber": 70,
+    "stone": 1000,
+    "spice": 20,
+    "cloth": 55,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 45,
+    "ai_expansion_targets": [
+      "venice",
+      "bosnian_banate"
+    ]
+  },
+  {
+    "id": "bosnian_banate",
+    "name": "Banate of Bosnia",
+    "name_tr": "Bosna Banlığı",
+    "religion": "catholic",
+    "color": [
+      105,
+      125,
+      80
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "hungarian_kingdom",
+    "capital_settlement_id": "bosnia_main",
+    "gold": 190,
+    "grain": 145,
+    "iron": 45,
+    "timber": 65,
+    "stone": 1000,
+    "spice": 10,
+    "cloth": 25,
+    "research": {
+      "completed": {
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 30,
+    "ai_expansion_targets": [
+      "croatian_kingdom",
+      "serbian_empire"
+    ]
+  },
+  {
+    "id": "carniola_margraviate",
+    "name": "Margraviate of Carniola",
+    "name_tr": "Kranj Marklığı",
+    "religion": "catholic",
+    "color": [
+      120,
+      105,
+      165
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "overlord_id": "hre",
+    "capital_settlement_id": "slovenia_ljubljana",
+    "gold": 255,
+    "grain": 140,
+    "iron": 40,
+    "timber": 75,
+    "stone": 1000,
+    "spice": 10,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 24,
+    "ai_expansion_targets": [
+      "venice",
+      "hungarian_kingdom"
+    ]
   }
 ]

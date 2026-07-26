@@ -8,8 +8,8 @@
     "neighbors": [
       "east_anglia",
       "mercia",
-      "new_region_250",
-      "new_region_251",
+      "english_channel",
+      "welsh_marches",
       "wessex"
     ],
     "world_x": 486,
@@ -49,8 +49,8 @@
       "irish_sea",
       "irish_sea_shore",
       "london",
-      "new_region_250",
-      "new_region_251",
+      "english_channel",
+      "welsh_marches",
       "wales"
     ],
     "world_x": 417,
@@ -84,7 +84,7 @@
     "neighbors": [
       "london",
       "mercia",
-      "new_region_250",
+      "english_channel",
       "north_sea_shore"
     ],
     "world_x": 502,
@@ -118,7 +118,7 @@
     "neighbors": [
       "east_anglia",
       "london",
-      "new_region_251",
+      "welsh_marches",
       "north_sea_shore",
       "yorkshire"
     ],
@@ -154,7 +154,7 @@
       "atlantic_open_6",
       "lancashire",
       "mercia",
-      "new_region_251",
+      "welsh_marches",
       "north_sea_shore"
     ],
     "world_x": 465,
@@ -188,7 +188,7 @@
     "neighbors": [
       "atlantic_open_6",
       "irish_sea",
-      "new_region_251",
+      "welsh_marches",
       "scotland",
       "yorkshire"
     ],
@@ -215,9 +215,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_251",
-    "name": "New Region 251",
-    "name_tr": "Yeni Bolge 251",
+    "id": "welsh_marches",
+    "name": "Welsh Marches",
+    "name_tr": "Galler Sınırları",
     "terrain": "mountain",
     "owner_id": "england",
     "neighbors": [
@@ -261,7 +261,8 @@
       "atlantic_open_5",
       "atlantic_open_6",
       "irish_sea",
-      "lancashire"
+      "lancashire",
+      "ulster"
     ],
     "world_x": 404,
     "world_y": 169,
@@ -293,7 +294,7 @@
     "owner_id": "england",
     "neighbors": [
       "irish_sea",
-      "new_region_251",
+      "welsh_marches",
       "wessex"
     ],
     "world_x": 414,
@@ -327,6 +328,7 @@
     "neighbors": [
       "atlantic_open_5",
       "irish_sea",
+      "scotland",
       "the_pale"
     ],
     "world_x": 353,
@@ -398,7 +400,7 @@
       "champagne",
       "flanders",
       "languedoc",
-      "new_region_250",
+      "english_channel",
       "normandy",
       "savoy"
     ],
@@ -439,7 +441,7 @@
       "anjou",
       "brittany",
       "london",
-      "new_region_250",
+      "english_channel",
       "paris"
     ],
     "world_x": 480,
@@ -476,7 +478,7 @@
       "anjou",
       "bay_of_biscay",
       "irish_sea_shore",
-      "new_region_250",
+      "english_channel",
       "normandy"
     ],
     "world_x": 445,
@@ -617,7 +619,7 @@
       "burgundy",
       "genoa",
       "languedoc",
-      "new_region_247",
+      "gulf_of_genoa",
       "switzerland"
     ],
     "world_x": 620,
@@ -652,7 +654,7 @@
       "burgundy",
       "gulf_of_lion",
       "navarre",
-      "new_region_247",
+      "gulf_of_genoa",
       "paris",
       "provence",
       "savoy"
@@ -724,7 +726,7 @@
     "neighbors": [
       "brandenburg",
       "denmark",
-      "new_region_235",
+      "western_baltic_sea",
       "pomerania",
       "thuringia",
       "westphalia"
@@ -909,7 +911,8 @@
     "owner_id": "denmark_kingdom",
     "neighbors": [
       "kattegat",
-      "new_region_235",
+      "western_baltic_sea",
+      "scania",
       "saxony",
       "westphalia"
     ],
@@ -936,13 +939,15 @@
     "buildings": null
   },
   {
-    "id": "new_region_260",
-    "name": "New Region 258",
-    "name_tr": "Yeni Bolge 258",
+    "id": "scania",
+    "name": "Scania",
+    "name_tr": "Skåne",
     "terrain": "coast",
     "owner_id": "denmark_kingdom",
     "neighbors": [
-      "new_region_235"
+      "denmark",
+      "western_baltic_sea",
+      "sweden"
     ],
     "world_x": 715,
     "world_y": 179,
@@ -960,7 +965,7 @@
     "trade_capacity": 4,
     "satisfaction": 68,
     "tax_rate": 38,
-    "population": 600,
+    "population": 390,
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
@@ -1050,8 +1055,8 @@
       "atlantic_open_3",
       "castile",
       "granada",
-      "new_region_249",
-      "new_region_252"
+      "portuguese_atlantic",
+      "algarve"
     ],
     "world_x": 316,
     "world_y": 481,
@@ -1079,15 +1084,15 @@
     ]
   },
   {
-    "id": "new_region_252",
-    "name": "New Region 252",
-    "name_tr": "Yeni Bolge 252",
+    "id": "algarve",
+    "name": "Algarve",
+    "name_tr": "Algarve",
     "terrain": "coast",
     "owner_id": "granada_emirate",
     "neighbors": [
       "granada",
-      "new_region_248",
-      "new_region_249",
+      "gulf_of_cadiz",
+      "portuguese_atlantic",
       "portugal"
     ],
     "world_x": 322,
@@ -1125,8 +1130,8 @@
       "atlantic_open_3",
       "bay_of_biscay",
       "granada",
-      "new_region_233",
-      "new_region_234",
+      "north_atlantic_iberia",
+      "toledo",
       "portugal"
     ],
     "world_x": 357,
@@ -1155,9 +1160,9 @@
     ]
   },
   {
-    "id": "new_region_234",
-    "name": "New Region 234",
-    "name_tr": "Yeni Bolge 234",
+    "id": "toledo",
+    "name": "Toledo",
+    "name_tr": "Toledo",
     "terrain": "plain",
     "owner_id": "castile_kingdom",
     "neighbors": [
@@ -1202,9 +1207,9 @@
       "atlantic_open_2",
       "granada",
       "navarre",
-      "new_region_231",
-      "new_region_232",
-      "new_region_234"
+      "alboran_sea",
+      "balearic_sea",
+      "toledo"
     ],
     "world_x": 446,
     "world_y": 491,
@@ -1316,7 +1321,7 @@
       "adriatic_sea_shore",
       "apulia",
       "mediterranean_open_5",
-      "new_region_245",
+      "otranto_strait",
       "papal_states",
       "sicily"
     ],
@@ -1352,7 +1357,7 @@
       "bohemia",
       "hungary",
       "moravia",
-      "new_region_255",
+      "western_black_sea",
       "slovakia",
       "slovenia",
       "styria"
@@ -1499,7 +1504,7 @@
       "alfold",
       "austria",
       "croatia",
-      "new_region_255",
+      "western_black_sea",
       "serbia",
       "slovakia",
       "slovenia"
@@ -1534,13 +1539,13 @@
     "name": "Serbia",
     "name_tr": "Sırbistan",
     "terrain": "mountain",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "serbian_empire",
     "neighbors": [
       "alfold",
       "croatia",
       "hum",
       "hungary",
-      "new_region_255",
+      "western_black_sea",
       "nis",
       "rascia",
       "transylvania"
@@ -1580,7 +1585,7 @@
     "owner_id": "serbian_empire",
     "neighbors": [
       "kosovo",
-      "new_region_255",
+      "western_black_sea",
       "north_macedonia",
       "oltenia",
       "rascia",
@@ -1621,7 +1626,7 @@
       "bulgaria",
       "dobruja",
       "moldova",
-      "new_region_255",
+      "western_black_sea",
       "oltenia",
       "transylvania"
     ],
@@ -1655,7 +1660,7 @@
     "owner_id": "wallachia_prince",
     "neighbors": [
       "bulgaria",
-      "new_region_255",
+      "western_black_sea",
       "nis",
       "transylvania",
       "vidin",
@@ -1726,9 +1731,9 @@
     "neighbors": [
       "dobruja",
       "gallipoli",
-      "new_region_255",
-      "new_region_256",
-      "new_region_257",
+      "western_black_sea",
+      "northwestern_black_sea",
+      "bosphorus",
       "oltenia",
       "serres",
       "thrace",
@@ -1762,12 +1767,13 @@
     "name": "Morocco",
     "name_tr": "Fas",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "marinid_sultanate",
     "neighbors": [
       "algiers",
       "atlantic_ocean",
-      "new_region_231",
-      "new_region_248"
+      "granada",
+      "alboran_sea",
+      "gulf_of_cadiz"
     ],
     "world_x": 349,
     "world_y": 581,
@@ -1793,15 +1799,15 @@
   },
   {
     "id": "algiers",
-    "name": "Algiers",
-    "name_tr": "Cezayir",
+    "name": "Western Algeria",
+    "name_tr": "Batı Cezayir",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "zayyanid_tlemcen",
     "neighbors": [
       "morocco",
-      "new_region_229",
-      "new_region_231",
-      "new_region_232"
+      "central_algeria",
+      "alboran_sea",
+      "balearic_sea"
     ],
     "world_x": 501,
     "world_y": 584,
@@ -1819,26 +1825,27 @@
     "trade_capacity": 3,
     "satisfaction": 55,
     "tax_rate": 30,
-    "population": 430,
-    "rural_population": 280,
+    "population": 450,
+    "rural_population": 245,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
   },
   {
-    "id": "new_region_229",
-    "name": "East Morocco",
-    "name_tr": "Doğu Cezayir",
+    "id": "central_algeria",
+    "name": "Central Algeria",
+    "name_tr": "Orta Cezayir",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "zayyanid_tlemcen",
     "neighbors": [
       "algiers",
       "ligurian_sea",
       "mediterranean_open_2",
       "mediterranean_open_3",
       "mediterranean_open_4",
-      "new_region_230",
-      "new_region_232",
+      "sardinia_channel",
+      "balearic_sea",
+      "constantine",
       "tripolitania",
       "tunis",
       "western_mediterranean",
@@ -1850,18 +1857,52 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 35,
-    "base_grain_output": 20,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_stone_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
+    "base_gold_income": 32,
+    "base_grain_output": 16,
+    "base_iron_output": 2,
+    "base_timber_output": 2,
+    "base_stone_output": 3,
+    "base_spice_output": 2,
+    "base_cloth_output": 4,
     "trade_capacity": 3,
     "satisfaction": 55,
     "tax_rate": 30,
-    "population": 400,
-    "rural_population": 260,
+    "population": 228,
+    "rural_population": 180,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "constantine",
+    "name": "Constantine",
+    "name_tr": "Konstantin",
+    "terrain": "coast",
+    "owner_id": "hafsid_sultanate",
+    "neighbors": [
+      "central_algeria",
+      "tunis",
+      "mediterranean_open_2",
+      "western_mediterranean_shore"
+    ],
+    "world_x": 620,
+    "world_y": 548,
+    "shape_id": "DZA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 18,
+    "base_iron_output": 4,
+    "base_timber_output": 0,
+    "base_stone_output": 2,
+    "base_spice_output": 0,
+    "base_cloth_output": 3,
+    "trade_capacity": 3,
+    "satisfaction": 55,
+    "tax_rate": 30,
+    "population": 212,
+    "rural_population": 120,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": null
@@ -1871,13 +1912,14 @@
     "name": "Tunis",
     "name_tr": "Tunus",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "hafsid_sultanate",
     "neighbors": [
       "ionian_sea",
       "ligurian_sea",
       "mediterranean_open_2",
       "mediterranean_open_4",
-      "new_region_229",
+      "constantine",
+      "central_algeria",
       "tripolitania",
       "tyrrhenian_sea",
       "western_mediterranean",
@@ -1910,13 +1952,13 @@
     "name": "Tripolitania",
     "name_tr": "Trablusgarp",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "hafsid_sultanate",
     "neighbors": [
       "ionian_sea",
       "mediterranean_open_3",
-      "new_region_228",
-      "new_region_229",
-      "new_region_244",
+      "cyrenaica",
+      "central_algeria",
+      "gulf_of_sirte",
       "tunis",
       "tyrrhenian_sea"
     ],
@@ -1943,17 +1985,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_228",
-    "name": "New Region 228",
-    "name_tr": "Yeni Bolge 228",
+    "id": "cyrenaica",
+    "name": "Cyrenaica",
+    "name_tr": "Berka",
     "terrain": "pass",
-    "owner_id": "",
+    "owner_id": "barqa_emirate",
     "neighbors": [
       "eastern_mediterranean_shore",
       "egypt",
-      "new_region_226",
-      "new_region_243",
-      "new_region_244",
+      "luxor",
+      "libyan_sea",
+      "gulf_of_sirte",
       "tripolitania"
     ],
     "world_x": 884,
@@ -1988,7 +2030,7 @@
       "aegean_sea",
       "mediterranean_open_6",
       "morea",
-      "new_region_253",
+      "cretan_sea",
       "thessaly"
     ],
     "world_x": 977,
@@ -2023,7 +2065,7 @@
       "aydinoglu",
       "bilecik_frontier",
       "bithynia",
-      "new_region_238",
+      "sea_of_marmara",
       "nicomedia"
     ],
     "world_x": 1054,
@@ -2096,8 +2138,9 @@
     "neighbors": [
       "black_open_4",
       "black_sea",
-      "new_region_237",
-      "new_region_239",
+      "north_caucasus",
+      "kerch_strait",
+      "podolia",
       "sea_of_azov",
       "ukrainian_steppe"
     ],
@@ -2130,7 +2173,7 @@
     "terrain": "forest",
     "owner_id": "russia",
     "neighbors": [
-      "new_region_236",
+      "north_caucasus",
       "nizhny_novgorod",
       "novgorod",
       "ukrainian_steppe"
@@ -2241,7 +2284,7 @@
       "azerbaijan",
       "black_sea_shore",
       "erzurum",
-      "new_region_236",
+      "north_caucasus",
       "trebizond"
     ],
     "world_x": 1312,
@@ -2276,9 +2319,9 @@
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
       "israel",
-      "new_region_226",
-      "new_region_228",
-      "new_region_240",
+      "luxor",
+      "cyrenaica",
+      "levantine_sea",
       "red_open_2"
     ],
     "world_x": 1104,
@@ -2307,14 +2350,14 @@
     ]
   },
   {
-    "id": "new_region_226",
-    "name": "Luksor",
+    "id": "luxor",
+    "name": "Luxor",
     "name_tr": "Luksor",
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
       "egypt",
-      "new_region_228",
+      "cyrenaica",
       "red_open_2",
       "red_sea"
     ],
@@ -2386,7 +2429,7 @@
       "jordan",
       "lebanon",
       "mosul",
-      "new_region_225"
+      "raqqa"
     ],
     "world_x": 1214,
     "world_y": 602,
@@ -2419,7 +2462,7 @@
     "neighbors": [
       "basra",
       "mosul",
-      "new_region_227",
+      "arabian_desert",
       "western_persia"
     ],
     "world_x": 1372,
@@ -2565,10 +2608,10 @@
     "name": "Hejaz",
     "name_tr": "Hicaz",
     "terrain": "plain",
-    "owner_id": "mamluk",
+    "owner_id": "mecca_sharifate",
     "neighbors": [
       "jordan",
-      "new_region_227",
+      "arabian_desert",
       "red_open_2",
       "red_sea"
     ],
@@ -2595,11 +2638,11 @@
     "buildings": null
   },
   {
-    "id": "new_region_227",
+    "id": "arabian_desert",
     "name": "Arabian Desert",
     "name_tr": "Arab Çölü",
     "terrain": "pass",
-    "owner_id": "mamluk",
+    "owner_id": "",
     "neighbors": [
       "baghdad",
       "basra",
@@ -2639,14 +2682,14 @@
     "name": "Slovenia",
     "name_tr": "Slovenya",
     "terrain": "forest",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "carniola_margraviate",
     "neighbors": [
       "adriatic_sea_dalmatia",
       "austria",
       "croatia",
       "dalmatia",
       "hungary",
-      "new_region_261",
+      "kvarner",
       "styria",
       "venice"
     ],
@@ -2677,13 +2720,13 @@
     "name": "Croatia",
     "name_tr": "Hırvatistan Krallığı",
     "terrain": "coast",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "croatian_kingdom",
     "neighbors": [
       "bosnia",
       "hum",
       "hungary",
-      "new_region_255",
-      "new_region_261",
+      "western_black_sea",
+      "kvarner",
       "serbia",
       "slovenia"
     ],
@@ -2714,13 +2757,13 @@
     "name": "Bosnia",
     "name_tr": "Bosna Banlığı",
     "terrain": "mountain",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "bosnian_banate",
     "neighbors": [
       "croatia",
       "hum",
-      "new_region_261",
-      "new_region_262",
-      "new_region_263"
+      "kvarner",
+      "ragusa",
+      "herzegovina"
     ],
     "world_x": 823,
     "world_y": 384,
@@ -2755,8 +2798,8 @@
       "albania",
       "hum",
       "kosovo",
-      "new_region_245",
-      "new_region_263",
+      "otranto_strait",
+      "herzegovina",
       "rascia"
     ],
     "world_x": 860,
@@ -2826,7 +2869,7 @@
       "epirus",
       "kosovo",
       "montenegro",
-      "new_region_245",
+      "otranto_strait",
       "north_macedonia"
     ],
     "world_x": 862,
@@ -2899,8 +2942,8 @@
       "dobruja",
       "galicia_volhynia",
       "kiev",
-      "new_region_239",
-      "new_region_255",
+      "podolia",
+      "western_black_sea",
       "wallachia"
     ],
     "world_x": 1050,
@@ -2933,8 +2976,8 @@
     "owner_id": "",
     "neighbors": [
       "morocco",
-      "new_region_248",
-      "new_region_249"
+      "gulf_of_cadiz",
+      "portuguese_atlantic"
     ],
     "world_x": 279,
     "world_y": 597,
@@ -2958,18 +3001,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_248",
-    "name": "New Region 248",
-    "name_tr": "Yeni Bolge 248",
+    "id": "gulf_of_cadiz",
+    "name": "Gulf of Cadiz",
+    "name_tr": "Cadiz Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "atlantic_ocean",
       "granada",
       "morocco",
-      "new_region_231",
-      "new_region_249",
-      "new_region_252"
+      "alboran_sea",
+      "portuguese_atlantic",
+      "algarve"
     ],
     "world_x": 334,
     "world_y": 556,
@@ -2993,9 +3036,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_233",
-    "name": "New Region 233",
-    "name_tr": "Yeni Bolge 233",
+    "id": "north_atlantic_iberia",
+    "name": "North Atlantic (Iberia)",
+    "name_tr": "İberya Kuzey Atlantik'i",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3026,16 +3069,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_249",
-    "name": "New Region 249",
-    "name_tr": "Yeni Bolge 249",
+    "id": "portuguese_atlantic",
+    "name": "Portuguese Atlantic",
+    "name_tr": "Portekiz Açıkları",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "atlantic_ocean",
       "atlantic_open_3",
-      "new_region_248",
-      "new_region_252",
+      "gulf_of_cadiz",
+      "algarve",
       "portugal"
     ],
     "world_x": 276,
@@ -3069,7 +3112,7 @@
       "atlantic_open_5",
       "irish_sea_shore",
       "lancashire",
-      "new_region_251",
+      "welsh_marches",
       "scotland",
       "the_pale",
       "ulster",
@@ -3139,7 +3182,7 @@
     "owner_id": "",
     "neighbors": [
       "denmark",
-      "new_region_235",
+      "western_baltic_sea",
       "north_sea",
       "north_sea_shore",
       "norway",
@@ -3167,16 +3210,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_235",
-    "name": "New Region 235",
-    "name_tr": "Yeni Bolge 235",
+    "id": "western_baltic_sea",
+    "name": "Western Baltic Sea",
+    "name_tr": "Batı Baltık Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "baltic_sea",
       "denmark",
       "kattegat",
-      "new_region_260",
+      "scania",
       "norway",
       "pomerania",
       "saxony",
@@ -3214,7 +3257,7 @@
       "konigsberg",
       "latvia",
       "lithuania",
-      "new_region_235",
+      "western_baltic_sea",
       "poland",
       "pomerania",
       "silesia",
@@ -3286,7 +3329,7 @@
       "ligurian_sea",
       "malta",
       "mediterranean_open_4",
-      "new_region_229",
+      "central_algeria",
       "sardinia",
       "tunis",
       "tyrrhenian_sea",
@@ -3324,9 +3367,9 @@
       "apulia",
       "montenegro",
       "naples",
-      "new_region_245",
-      "new_region_262",
-      "new_region_263",
+      "otranto_strait",
+      "ragusa",
+      "herzegovina",
       "papal_states"
     ],
     "world_x": 818,
@@ -3351,9 +3394,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_245",
-    "name": "New Region 245",
-    "name_tr": "Yeni Bolge 245",
+    "id": "otranto_strait",
+    "name": "Strait of Otranto",
+    "name_tr": "Otranto Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3399,7 +3442,7 @@
       "adriatic_sea",
       "dalmatia",
       "ferrara",
-      "new_region_262",
+      "ragusa",
       "papal_states",
       "slovenia",
       "venice"
@@ -3435,7 +3478,7 @@
       "adriatic_sea_shore",
       "malta",
       "mediterranean_open_2",
-      "new_region_244",
+      "gulf_of_sirte",
       "sicily",
       "tripolitania",
       "tunis"
@@ -3471,8 +3514,8 @@
       "eastern_mediterranean_shore",
       "egypt",
       "mediterranean_open_1",
-      "new_region_240",
-      "new_region_242"
+      "levantine_sea",
+      "eastern_mediterranean_basin"
     ],
     "world_x": 1010,
     "world_y": 700,
@@ -3509,8 +3552,8 @@
       "izmir",
       "mediterranean_open_6",
       "mentese_hinterland",
-      "new_region_238",
-      "new_region_253",
+      "sea_of_marmara",
+      "cretan_sea",
       "saruhan",
       "serres"
     ],
@@ -3536,9 +3579,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_253",
-    "name": "New Region 253",
-    "name_tr": "Yeni Bolge 253",
+    "id": "cretan_sea",
+    "name": "Cretan Sea",
+    "name_tr": "Girit Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3550,7 +3593,7 @@
       "mediterranean_open_6",
       "mentese_hinterland",
       "morea",
-      "new_region_242",
+      "eastern_mediterranean_basin",
       "rhodes"
     ],
     "world_x": 977,
@@ -3584,9 +3627,9 @@
       "black_open_1",
       "black_open_4",
       "crimea",
-      "new_region_254",
-      "new_region_256",
-      "new_region_257",
+      "central_black_sea",
+      "northwestern_black_sea",
+      "bosphorus",
       "sea_of_azov"
     ],
     "world_x": 1136,
@@ -3611,9 +3654,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_238",
-    "name": "New Region 238",
-    "name_tr": "Yeni Bolge 238",
+    "id": "sea_of_marmara",
+    "name": "Sea of Marmara",
+    "name_tr": "Marmara Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3622,7 +3665,7 @@
       "bursa",
       "constantinople",
       "gallipoli",
-      "new_region_257",
+      "bosphorus",
       "nicomedia",
       "thrace"
     ],
@@ -3648,9 +3691,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_255",
-    "name": "New Region 253",
-    "name_tr": "Yeni Bolge 253",
+    "id": "western_black_sea",
+    "name": "Western Black Sea",
+    "name_tr": "Batı Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3660,8 +3703,8 @@
       "dobruja",
       "hungary",
       "moldova",
-      "new_region_239",
-      "new_region_256",
+      "podolia",
+      "northwestern_black_sea",
       "nis",
       "oltenia",
       "serbia",
@@ -3691,65 +3734,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_259",
-    "name": "New Region 257",
-    "name_tr": "Yeni Bolge 257",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": null,
-    "world_x": 824,
-    "world_y": 332,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_stone_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 45,
-    "population": 0,
-    "rural_population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "new_region_258",
-    "name": "New Region 256",
-    "name_tr": "Yeni Bolge 256",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": null,
-    "world_x": 820,
-    "world_y": 332,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_stone_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 45,
-    "population": 0,
-    "rural_population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
-    "id": "new_region_257",
-    "name": "New Region 255",
-    "name_tr": "Yeni Bolge 255",
+    "id": "bosphorus",
+    "name": "Bosphorus",
+    "name_tr": "İstanbul Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3757,9 +3744,9 @@
       "bulgaria",
       "chrysopolis",
       "constantinople",
-      "new_region_238",
-      "new_region_254",
-      "new_region_256",
+      "sea_of_marmara",
+      "central_black_sea",
+      "northwestern_black_sea",
       "nicomedia",
       "thrace"
     ],
@@ -3785,9 +3772,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_256",
-    "name": "New Region 254",
-    "name_tr": "Yeni Bolge 254",
+    "id": "northwestern_black_sea",
+    "name": "Northwestern Black Sea",
+    "name_tr": "Kuzeybatı Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3795,9 +3782,9 @@
       "black_sea",
       "bulgaria",
       "dobruja",
-      "new_region_239",
-      "new_region_255",
-      "new_region_257"
+      "podolia",
+      "western_black_sea",
+      "bosphorus"
     ],
     "world_x": 1063,
     "world_y": 402,
@@ -3821,16 +3808,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_254",
-    "name": "New Region 252",
-    "name_tr": "Yeni Bolge 252",
+    "id": "central_black_sea",
+    "name": "Central Black Sea",
+    "name_tr": "Orta Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "black_open_1",
       "black_sea",
       "chrysopolis",
-      "new_region_257",
+      "bosphorus",
       "paphlagonia",
       "sinop"
     ],
@@ -3863,7 +3850,7 @@
     "owner_id": "",
     "neighbors": [
       "hejaz",
-      "new_region_226",
+      "luxor",
       "red_open_2"
     ],
     "world_x": 1199,
@@ -3929,7 +3916,7 @@
     "owner_id": "",
     "neighbors": [
       "bahrain",
-      "new_region_227",
+      "arabian_desert",
       "persian_open_1",
       "persian_open_2",
       "qatar",
@@ -3970,7 +3957,7 @@
       "hungary",
       "mazovia",
       "moravia",
-      "new_region_255",
+      "western_black_sea",
       "poland"
     ],
     "world_x": 865,
@@ -4108,7 +4095,7 @@
     "owner_id": "denmark_kingdom",
     "neighbors": [
       "kattegat",
-      "new_region_235",
+      "western_baltic_sea",
       "norwegian_sea",
       "sweden"
     ],
@@ -4143,7 +4130,8 @@
     "neighbors": [
       "baltic_sea",
       "gulf_of_finland",
-      "new_region_235",
+      "western_baltic_sea",
+      "scania",
       "norway"
     ],
     "world_x": 806,
@@ -4178,8 +4166,8 @@
       "bulgaria",
       "constantinople",
       "gallipoli",
-      "new_region_238",
-      "new_region_257"
+      "sea_of_marmara",
+      "bosphorus"
     ],
     "world_x": 1024,
     "world_y": 446,
@@ -4213,8 +4201,9 @@
     "owner_id": "east_rome",
     "neighbors": [
       "aegean_sea",
+      "aydinoglu",
       "bulgaria",
-      "new_region_238",
+      "sea_of_marmara",
       "serres",
       "thrace"
     ],
@@ -4249,8 +4238,9 @@
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
-      "new_region_238",
-      "new_region_257",
+      "sea_of_marmara",
+      "bosphorus",
+      "nicomedia",
       "thrace"
     ],
     "world_x": 1055,
@@ -4293,7 +4283,7 @@
       "hejaz",
       "israel",
       "mosul",
-      "new_region_227",
+      "arabian_desert",
       "palestine",
       "red_open_2"
     ],
@@ -4335,7 +4325,7 @@
       "caspian_sea",
       "dagestan",
       "georgia",
-      "new_region_236",
+      "north_caucasus",
       "western_persia"
     ],
     "world_x": 1429,
@@ -4367,7 +4357,7 @@
     "name": "Erivan",
     "name_tr": "Erivan",
     "terrain": "mountain",
-    "owner_id": "",
+    "owner_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
       "azerbaijan",
@@ -4407,7 +4397,7 @@
       "aleppo",
       "damascus",
       "israel",
-      "new_region_241"
+      "gulf_of_iskenderun"
     ],
     "world_x": 1193,
     "world_y": 591,
@@ -4436,10 +4426,10 @@
     "name": "Kuwait",
     "name_tr": "Basra",
     "terrain": "desert",
-    "owner_id": "",
+    "owner_id": "ilkhanate",
     "neighbors": [
       "basra",
-      "new_region_227",
+      "arabian_desert",
       "persian_open_2",
       "uae"
     ],
@@ -4473,8 +4463,8 @@
     "owner_id": "venice",
     "neighbors": [
       "east_mediterranean",
-      "new_region_240",
-      "new_region_241",
+      "levantine_sea",
+      "gulf_of_iskenderun",
       "north_cyprus"
     ],
     "world_x": 1135,
@@ -4513,7 +4503,7 @@
       "holland",
       "lorraine",
       "luxembourg",
-      "new_region_250",
+      "english_channel",
       "north_sea_shore",
       "palatinate",
       "paris"
@@ -4622,9 +4612,9 @@
       "crimea",
       "kiev",
       "moscow",
-      "new_region_236",
-      "new_region_237",
-      "new_region_239",
+      "north_caucasus",
+      "kerch_strait",
+      "podolia",
       "novgorod"
     ],
     "world_x": 1171,
@@ -4733,9 +4723,9 @@
     "owner_id": "aragon",
     "neighbors": [
       "mediterranean_open_2",
-      "new_region_230",
-      "new_region_246",
-      "new_region_247",
+      "sardinia_channel",
+      "northern_tyrrhenian_sea",
+      "gulf_of_genoa",
       "western_mediterranean"
     ],
     "world_x": 656,
@@ -4768,8 +4758,8 @@
     "owner_id": "genoa",
     "neighbors": [
       "languedoc",
-      "new_region_246",
-      "new_region_247",
+      "northern_tyrrhenian_sea",
+      "gulf_of_genoa",
       "provence",
       "western_mediterranean"
     ],
@@ -4804,8 +4794,8 @@
     "neighbors": [
       "aegean_sea_shore",
       "eastern_mediterranean_shore",
-      "new_region_242",
-      "new_region_253"
+      "eastern_mediterranean_basin",
+      "cretan_sea"
     ],
     "world_x": 973,
     "world_y": 566,
@@ -4834,7 +4824,7 @@
     "name": "Malta",
     "name_tr": "Malta",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "aragon",
     "neighbors": [
       "western_mediterranean",
       "ionian_sea"
@@ -4872,8 +4862,8 @@
       "egypt",
       "jordan",
       "lebanon",
-      "new_region_240",
-      "new_region_241",
+      "levantine_sea",
+      "gulf_of_iskenderun",
       "palestine",
       "red_open_2"
     ],
@@ -4904,9 +4894,9 @@
     "name": "Uae",
     "name_tr": "BAE",
     "terrain": "desert",
-    "owner_id": "",
+    "owner_id": "hormuz_sultanate",
     "neighbors": [
-      "new_region_227",
+      "arabian_desert",
       "persian_gulf",
       "persian_gulf_shore",
       "persian_open_1"
@@ -4931,17 +4921,19 @@
     "rural_population": 130,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "qatar",
     "name": "Qatar",
     "name_tr": "Katar",
     "terrain": "desert",
-    "owner_id": "",
+    "owner_id": "usfurid_emirate",
     "neighbors": [
       "bahrain",
-      "new_region_227",
+      "arabian_desert",
       "persian_gulf"
     ],
     "world_x": 1499,
@@ -4971,7 +4963,7 @@
     "name": "Bahrain",
     "name_tr": "Bahreyn",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "usfurid_emirate",
     "neighbors": [
       "persian_gulf",
       "persian_open_2",
@@ -5008,7 +5000,7 @@
     "neighbors": [
       "cyprus",
       "east_mediterranean",
-      "new_region_241"
+      "gulf_of_iskenderun"
     ],
     "world_x": 1146,
     "world_y": 565,
@@ -5040,7 +5032,7 @@
     "owner_id": "venice",
     "neighbors": [
       "mediterranean_open_1",
-      "new_region_253"
+      "cretan_sea"
     ],
     "world_x": 1034,
     "world_y": 547,
@@ -5147,8 +5139,9 @@
       "aegean_sea",
       "bithynia",
       "bursa",
+      "gallipoli",
       "kutahya",
-      "new_region_238",
+      "sea_of_marmara",
       "saruhan"
     ],
     "world_x": 1018,
@@ -5253,7 +5246,7 @@
       "kutahya",
       "mediterranean_open_1",
       "mentese",
-      "new_region_253"
+      "cretan_sea"
     ],
     "world_x": 1033,
     "world_y": 523,
@@ -5360,7 +5353,7 @@
       "kayseri",
       "konya",
       "malatya",
-      "new_region_241",
+      "gulf_of_iskenderun",
       "sivas"
     ],
     "world_x": 1182,
@@ -5397,7 +5390,7 @@
       "erzurum",
       "georgia",
       "mosul",
-      "new_region_225",
+      "raqqa",
       "western_persia"
     ],
     "world_x": 1330,
@@ -5431,7 +5424,7 @@
     "neighbors": [
       "ferrara",
       "milan",
-      "new_region_246",
+      "northern_tyrrhenian_sea",
       "siena",
       "verona"
     ],
@@ -5465,8 +5458,8 @@
     "owner_id": "genoa",
     "neighbors": [
       "milan",
-      "new_region_246",
-      "new_region_247",
+      "northern_tyrrhenian_sea",
+      "gulf_of_genoa",
       "provence",
       "switzerland"
     ],
@@ -5504,7 +5497,7 @@
     "neighbors": [
       "florence",
       "genoa",
-      "new_region_246",
+      "northern_tyrrhenian_sea",
       "switzerland",
       "verona"
     ],
@@ -5539,10 +5532,11 @@
     "neighbors": [
       "aragon",
       "castile",
-      "new_region_231",
-      "new_region_234",
-      "new_region_248",
-      "new_region_252",
+      "morocco",
+      "alboran_sea",
+      "toledo",
+      "gulf_of_cadiz",
+      "algarve",
       "portugal"
     ],
     "world_x": 365,
@@ -5579,7 +5573,7 @@
       "bay_of_biscay",
       "gulf_of_lion",
       "languedoc",
-      "new_region_234",
+      "toledo",
       "savoy"
     ],
     "world_x": 459,
@@ -5613,7 +5607,7 @@
     "neighbors": [
       "baltic_sea",
       "brandenburg",
-      "new_region_235",
+      "western_baltic_sea",
       "saxony",
       "silesia"
     ],
@@ -6046,7 +6040,7 @@
       "dulkadir",
       "eretna",
       "erzincan",
-      "new_region_225",
+      "raqqa",
       "sivas"
     ],
     "world_x": 1247,
@@ -6082,7 +6076,7 @@
       "erzincan",
       "erzurum",
       "malatya",
-      "new_region_225"
+      "raqqa"
     ],
     "world_x": 1277,
     "world_y": 506,
@@ -6150,7 +6144,7 @@
     "neighbors": [
       "bulgaria",
       "chalcidice",
-      "new_region_255",
+      "western_black_sea",
       "nis",
       "north_macedonia",
       "oltenia",
@@ -6578,7 +6572,7 @@
       "ferrara",
       "florence",
       "mediterranean_open_5",
-      "new_region_246",
+      "northern_tyrrhenian_sea",
       "papal_states"
     ],
     "world_x": 710,
@@ -6612,7 +6606,7 @@
     "neighbors": [
       "adriatic_sea",
       "naples",
-      "new_region_245"
+      "otranto_strait"
     ],
     "world_x": 847,
     "world_y": 437,
@@ -6679,8 +6673,8 @@
     "owner_id": "venice",
     "neighbors": [
       "adriatic_sea_dalmatia",
-      "new_region_261",
-      "new_region_262",
+      "kvarner",
+      "ragusa",
       "slovenia"
     ],
     "world_x": 776,
@@ -6706,9 +6700,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_262",
-    "name": "New Region 260",
-    "name_tr": "Yeni Bolge 260",
+    "id": "ragusa",
+    "name": "Ragusa",
+    "name_tr": "Ragusa",
     "terrain": "coast",
     "owner_id": "venice",
     "neighbors": [
@@ -6716,8 +6710,8 @@
       "adriatic_sea_dalmatia",
       "bosnia",
       "dalmatia",
-      "new_region_261",
-      "new_region_263"
+      "kvarner",
+      "herzegovina"
     ],
     "world_x": 802,
     "world_y": 403,
@@ -6735,23 +6729,23 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 380,
+    "population": 247,
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": null
   },
   {
-    "id": "new_region_261",
-    "name": "New Region 259",
-    "name_tr": "Yeni Bolge 259",
+    "id": "kvarner",
+    "name": "Kvarner",
+    "name_tr": "Kvarner",
     "terrain": "coast",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "croatian_kingdom",
     "neighbors": [
       "bosnia",
       "croatia",
       "dalmatia",
-      "new_region_262",
+      "ragusa",
       "slovenia"
     ],
     "world_x": 795,
@@ -6770,7 +6764,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 380,
+    "population": 247,
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
@@ -6781,12 +6775,12 @@
     "name": "Hum",
     "name_tr": "Hum",
     "terrain": "mountain",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "croatian_kingdom",
     "neighbors": [
       "bosnia",
       "croatia",
       "montenegro",
-      "new_region_263",
+      "herzegovina",
       "rascia",
       "serbia"
     ],
@@ -6813,17 +6807,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_263",
-    "name": "New Region 261",
-    "name_tr": "Yeni Bolge 261",
+    "id": "herzegovina",
+    "name": "Herzegovina",
+    "name_tr": "Hersek",
     "terrain": "mountain",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "croatian_kingdom",
     "neighbors": [
       "adriatic_sea",
       "bosnia",
       "hum",
       "montenegro",
-      "new_region_262"
+      "ragusa"
     ],
     "world_x": 833,
     "world_y": 408,
@@ -6841,7 +6835,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 25,
-    "population": 320,
+    "population": 208,
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
@@ -6855,7 +6849,7 @@
     "owner_id": "epir",
     "neighbors": [
       "albania",
-      "new_region_245",
+      "otranto_strait",
       "north_macedonia",
       "thessaloniki_hinterland",
       "thessaly"
@@ -6893,7 +6887,7 @@
       "greece",
       "mediterranean_open_6",
       "morea",
-      "new_region_245",
+      "otranto_strait",
       "thessaloniki_hinterland"
     ],
     "world_x": 911,
@@ -6962,8 +6956,8 @@
     "neighbors": [
       "aegean_sea_shore",
       "greece",
-      "new_region_245",
-      "new_region_253",
+      "otranto_strait",
+      "cretan_sea",
       "thessaly"
     ],
     "world_x": 909,
@@ -6997,9 +6991,9 @@
     "neighbors": [
       "bulgaria",
       "moldova",
-      "new_region_239",
-      "new_region_255",
-      "new_region_256",
+      "podolia",
+      "western_black_sea",
+      "northwestern_black_sea",
       "wallachia"
     ],
     "world_x": 1045,
@@ -7146,7 +7140,7 @@
       "belarus",
       "galicia_volhynia",
       "moldova",
-      "new_region_239",
+      "podolia",
       "novgorod",
       "ukrainian_steppe"
     ],
@@ -7173,9 +7167,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_239",
-    "name": "New Region 239",
-    "name_tr": "Yeni Bolge 239",
+    "id": "podolia",
+    "name": "Podolia",
+    "name_tr": "Podolya",
     "terrain": "plain",
     "owner_id": "golden_horde",
     "neighbors": [
@@ -7184,8 +7178,8 @@
       "dobruja",
       "kiev",
       "moldova",
-      "new_region_255",
-      "new_region_256",
+      "western_black_sea",
+      "northwestern_black_sea",
       "ukrainian_steppe"
     ],
     "world_x": 1087,
@@ -7221,8 +7215,8 @@
       "damascus",
       "lebanon",
       "malatya",
-      "new_region_225",
-      "new_region_241"
+      "raqqa",
+      "gulf_of_iskenderun"
     ],
     "world_x": 1217,
     "world_y": 557,
@@ -7250,9 +7244,9 @@
     ]
   },
   {
-    "id": "new_region_225",
-    "name": "Rakka Region",
-    "name_tr": "Rakka bölgesi",
+    "id": "raqqa",
+    "name": "Raqqa Region",
+    "name_tr": "Rakka Bölgesi",
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
@@ -7298,8 +7292,8 @@
       "baghdad",
       "damascus",
       "jordan",
-      "new_region_225",
-      "new_region_227",
+      "raqqa",
+      "arabian_desert",
       "western_persia"
     ],
     "world_x": 1344,
@@ -7335,7 +7329,7 @@
     "neighbors": [
       "baghdad",
       "kuwait",
-      "new_region_227",
+      "arabian_desert",
       "persian_open_2",
       "western_persia"
     ],
@@ -7374,8 +7368,9 @@
       "bilecik_frontier",
       "bursa",
       "chrysopolis",
-      "new_region_238",
-      "new_region_257"
+      "constantinople",
+      "sea_of_marmara",
+      "bosphorus"
     ],
     "world_x": 1075,
     "world_y": 457,
@@ -7446,7 +7441,7 @@
     "neighbors": [
       "cankiri",
       "chrysopolis",
-      "new_region_254",
+      "central_black_sea",
       "sinop"
     ],
     "world_x": 1122,
@@ -7482,7 +7477,7 @@
       "candaroglu",
       "cankiri",
       "konya",
-      "new_region_254",
+      "central_black_sea",
       "paphlagonia"
     ],
     "world_x": 1171,
@@ -7516,8 +7511,8 @@
     "neighbors": [
       "bilecik_frontier",
       "cankiri",
-      "new_region_254",
-      "new_region_257",
+      "central_black_sea",
+      "bosphorus",
       "nicomedia",
       "paphlagonia",
       "sivrihisar"
@@ -7591,7 +7586,7 @@
       "caspian_open_2",
       "dagestan",
       "moscow",
-      "new_region_236"
+      "north_caucasus"
     ],
     "world_x": 1512,
     "world_y": 261,
@@ -7616,19 +7611,20 @@
     "buildings": null
   },
   {
-    "id": "new_region_236",
-    "name": "New Region 236",
-    "name_tr": "Yeni Bolge 236",
+    "id": "north_caucasus",
+    "name": "North Caucasus",
+    "name_tr": "Kuzey Kafkasya",
     "terrain": "forest",
     "owner_id": "russia",
     "neighbors": [
       "azerbaijan",
       "black_sea_shore",
       "caspian_open_2",
+      "crimea",
       "dagestan",
       "georgia",
       "moscow",
-      "new_region_237",
+      "kerch_strait",
       "nizhny_novgorod",
       "sea_of_azov",
       "ukrainian_steppe"
@@ -7665,7 +7661,7 @@
       "azerbaijan",
       "caspian_open_2",
       "caspian_sea",
-      "new_region_236",
+      "north_caucasus",
       "nizhny_novgorod",
       "northern_persia"
     ],
@@ -7807,8 +7803,8 @@
       "gulf_of_lion",
       "mallorca",
       "navarre",
-      "new_region_230",
-      "new_region_232"
+      "sardinia_channel",
+      "balearic_sea"
     ],
     "world_x": 501,
     "world_y": 504,
@@ -7832,9 +7828,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_231",
-    "name": "New Region 231",
-    "name_tr": "Yeni Bolge 231",
+    "id": "alboran_sea",
+    "name": "Alboran Sea",
+    "name_tr": "Alboran Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -7842,8 +7838,8 @@
       "aragon",
       "granada",
       "morocco",
-      "new_region_232",
-      "new_region_248"
+      "balearic_sea",
+      "gulf_of_cadiz"
     ],
     "world_x": 393,
     "world_y": 555,
@@ -7867,18 +7863,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_232",
-    "name": "New Region 232",
-    "name_tr": "Yeni Bolge 232",
+    "id": "balearic_sea",
+    "name": "Balearic Sea",
+    "name_tr": "Balear Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "algiers",
       "aragon",
       "atlantic_open_2",
-      "new_region_229",
-      "new_region_230",
-      "new_region_231"
+      "central_algeria",
+      "sardinia_channel",
+      "alboran_sea"
     ],
     "world_x": 514,
     "world_y": 522,
@@ -7912,8 +7908,8 @@
       "languedoc",
       "mallorca",
       "navarre",
-      "new_region_230",
-      "new_region_247"
+      "sardinia_channel",
+      "gulf_of_genoa"
     ],
     "world_x": 575,
     "world_y": 456,
@@ -7937,9 +7933,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_247",
-    "name": "New Region 247",
-    "name_tr": "Yeni Bolge 247",
+    "id": "gulf_of_genoa",
+    "name": "Gulf of Genoa",
+    "name_tr": "Cenova Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -7947,8 +7943,8 @@
       "genoa",
       "gulf_of_lion",
       "languedoc",
-      "new_region_230",
-      "new_region_246",
+      "sardinia_channel",
+      "northern_tyrrhenian_sea",
       "provence",
       "sardinia"
     ],
@@ -7974,18 +7970,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_230",
-    "name": "New Region 230",
-    "name_tr": "Yeni Bolge 230",
+    "id": "sardinia_channel",
+    "name": "Sardinia Channel",
+    "name_tr": "Sardinya Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "atlantic_open_2",
       "gulf_of_lion",
       "mediterranean_open_2",
-      "new_region_229",
-      "new_region_232",
-      "new_region_247",
+      "central_algeria",
+      "balearic_sea",
+      "gulf_of_genoa",
       "sardinia"
     ],
     "world_x": 599,
@@ -8017,8 +8013,8 @@
     "owner_id": "",
     "neighbors": [
       "castile",
-      "new_region_233",
-      "new_region_249",
+      "north_atlantic_iberia",
+      "portuguese_atlantic",
       "portugal"
     ],
     "world_x": 321,
@@ -8052,7 +8048,7 @@
       "atlantic_ocean_shore",
       "atlantic_open_5",
       "irish_sea_shore",
-      "new_region_233",
+      "north_atlantic_iberia",
       "the_pale"
     ],
     "world_x": 276,
@@ -8158,7 +8154,7 @@
       "bay_of_biscay",
       "castile",
       "irish_sea_shore",
-      "new_region_233"
+      "north_atlantic_iberia"
     ],
     "world_x": 323,
     "world_y": 392,
@@ -8193,7 +8189,7 @@
       "bay_of_biscay",
       "brittany",
       "irish_sea",
-      "new_region_250",
+      "english_channel",
       "the_pale",
       "wessex"
     ],
@@ -8219,9 +8215,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_250",
-    "name": "New Region 250",
-    "name_tr": "Yeni Bolge 250",
+    "id": "english_channel",
+    "name": "English Channel",
+    "name_tr": "Manş Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -8269,7 +8265,7 @@
       "holland",
       "kattegat",
       "mercia",
-      "new_region_250",
+      "english_channel",
       "north_sea",
       "norwegian_sea",
       "yorkshire"
@@ -8306,9 +8302,9 @@
       "eastern_mediterranean",
       "mentese",
       "mentese_hinterland",
-      "new_region_240",
-      "new_region_242",
-      "new_region_253",
+      "levantine_sea",
+      "eastern_mediterranean_basin",
+      "cretan_sea",
       "rhodes"
     ],
     "world_x": 1059,
@@ -8333,9 +8329,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_242",
-    "name": "New Region 242",
-    "name_tr": "Yeni Bolge 242",
+    "id": "eastern_mediterranean_basin",
+    "name": "Eastern Mediterranean Basin",
+    "name_tr": "Doğu Akdeniz Havzası",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -8343,7 +8339,7 @@
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
       "mediterranean_open_1",
-      "new_region_253"
+      "cretan_sea"
     ],
     "world_x": 1012,
     "world_y": 604,
@@ -8375,9 +8371,9 @@
     "neighbors": [
       "ionian_sea",
       "mediterranean_open_5",
-      "new_region_229",
-      "new_region_230",
-      "new_region_246",
+      "central_algeria",
+      "sardinia_channel",
+      "northern_tyrrhenian_sea",
       "sardinia",
       "sicily",
       "tunis"
@@ -8411,7 +8407,7 @@
     "owner_id": "",
     "neighbors": [
       "mediterranean_open_4",
-      "new_region_229",
+      "central_algeria",
       "tripolitania",
       "tyrrhenian_sea",
       "western_mediterranean_shore"
@@ -8445,7 +8441,7 @@
     "owner_id": "",
     "neighbors": [
       "ligurian_sea",
-      "new_region_229",
+      "central_algeria",
       "tunis",
       "tyrrhenian_sea",
       "western_mediterranean",
@@ -8482,7 +8478,7 @@
       "adriatic_sea_shore",
       "mediterranean_open_2",
       "naples",
-      "new_region_246",
+      "northern_tyrrhenian_sea",
       "papal_states",
       "sicily",
       "siena"
@@ -8509,9 +8505,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_246",
-    "name": "New Region 246",
-    "name_tr": "Yeni Bolge 246",
+    "id": "northern_tyrrhenian_sea",
+    "name": "Northern Tyrrhenian Sea",
+    "name_tr": "Kuzey Tiren Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -8521,7 +8517,7 @@
       "mediterranean_open_2",
       "mediterranean_open_5",
       "milan",
-      "new_region_247",
+      "gulf_of_genoa",
       "sardinia",
       "siena"
     ],
@@ -8556,7 +8552,7 @@
       "aegean_sea",
       "chalcidice",
       "greece",
-      "new_region_253",
+      "cretan_sea",
       "thessaloniki_hinterland",
       "thessaly"
     ],
@@ -8590,7 +8586,7 @@
     "neighbors": [
       "ligurian_sea",
       "mediterranean_open_4",
-      "new_region_229",
+      "central_algeria",
       "tunis",
       "tyrrhenian_sea",
       "western_mediterranean"
@@ -8627,8 +8623,8 @@
       "ionian_sea",
       "mediterranean_open_5",
       "naples",
-      "new_region_244",
-      "new_region_245",
+      "gulf_of_sirte",
+      "otranto_strait",
       "sicily"
     ],
     "world_x": 835,
@@ -8653,17 +8649,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_244",
-    "name": "New Region 244",
-    "name_tr": "Yeni Bolge 244",
+    "id": "gulf_of_sirte",
+    "name": "Gulf of Sirte",
+    "name_tr": "Sirte Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "adriatic_sea_shore",
       "aegean_sea_shore",
       "ionian_sea",
-      "new_region_228",
-      "new_region_243",
+      "cyrenaica",
+      "libyan_sea",
       "tripolitania"
     ],
     "world_x": 846,
@@ -8698,10 +8694,10 @@
       "crete",
       "eastern_mediterranean_shore",
       "morea",
-      "new_region_243",
-      "new_region_244",
-      "new_region_245",
-      "new_region_253"
+      "libyan_sea",
+      "gulf_of_sirte",
+      "otranto_strait",
+      "cretan_sea"
     ],
     "world_x": 927,
     "world_y": 556,
@@ -8725,16 +8721,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_243",
-    "name": "New Region 243",
-    "name_tr": "Yeni Bolge 243",
+    "id": "libyan_sea",
+    "name": "Libyan Sea",
+    "name_tr": "Libya Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "aegean_sea_shore",
       "eastern_mediterranean_shore",
-      "new_region_228",
-      "new_region_244"
+      "cyrenaica",
+      "gulf_of_sirte"
     ],
     "world_x": 932,
     "world_y": 601,
@@ -8768,9 +8764,9 @@
       "crete",
       "eastern_mediterranean",
       "egypt",
-      "new_region_228",
-      "new_region_242",
-      "new_region_243"
+      "cyrenaica",
+      "eastern_mediterranean_basin",
+      "libyan_sea"
     ],
     "world_x": 969,
     "world_y": 614,
@@ -8804,7 +8800,7 @@
       "black_sea_shore",
       "candaroglu",
       "eretna",
-      "new_region_254",
+      "central_black_sea",
       "sea_of_azov",
       "sinop"
     ],
@@ -8841,8 +8837,8 @@
       "karaman",
       "mediterranean_open_1",
       "mentese",
-      "new_region_240",
-      "new_region_241",
+      "levantine_sea",
+      "gulf_of_iskenderun",
       "north_cyprus",
       "teke"
     ],
@@ -8868,9 +8864,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_241",
-    "name": "New Region 241",
-    "name_tr": "Yeni Bolge 241",
+    "id": "gulf_of_iskenderun",
+    "name": "Gulf of Iskenderun",
+    "name_tr": "İskenderun Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -8880,7 +8876,7 @@
       "east_mediterranean",
       "israel",
       "lebanon",
-      "new_region_240",
+      "levantine_sea",
       "north_cyprus"
     ],
     "world_x": 1168,
@@ -8905,9 +8901,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_240",
-    "name": "New Region 240",
-    "name_tr": "Yeni Bolge 240",
+    "id": "levantine_sea",
+    "name": "Levantine Sea",
+    "name_tr": "Levant Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -8917,7 +8913,7 @@
       "egypt",
       "israel",
       "mediterranean_open_1",
-      "new_region_241"
+      "gulf_of_iskenderun"
     ],
     "world_x": 1137,
     "world_y": 605,
@@ -8949,8 +8945,8 @@
     "neighbors": [
       "black_sea",
       "crimea",
-      "new_region_239",
-      "new_region_256"
+      "podolia",
+      "northwestern_black_sea"
     ],
     "world_x": 1108,
     "world_y": 374,
@@ -8983,7 +8979,7 @@
       "black_open_1",
       "eretna",
       "georgia",
-      "new_region_236",
+      "north_caucasus",
       "sea_of_azov",
       "trebizond"
     ],
@@ -9019,7 +9015,7 @@
       "hejaz",
       "israel",
       "jordan",
-      "new_region_226",
+      "luxor",
       "red_sea"
     ],
     "world_x": 1167,
@@ -9086,7 +9082,7 @@
       "bahrain",
       "basra",
       "kuwait",
-      "new_region_227",
+      "arabian_desert",
       "persian_gulf",
       "southern_persia",
       "western_persia"
@@ -9154,7 +9150,7 @@
       "azerbaijan",
       "caspian_sea",
       "dagestan",
-      "new_region_236",
+      "north_caucasus",
       "nizhny_novgorod"
     ],
     "world_x": 1485,
@@ -9220,7 +9216,7 @@
     "owner_id": "",
     "neighbors": [
       "mediterranean_open_4",
-      "new_region_229",
+      "central_algeria",
       "tunis",
       "tyrrhenian_sea",
       "western_mediterranean",
@@ -9258,8 +9254,8 @@
       "black_sea",
       "black_sea_shore",
       "crimea",
-      "new_region_236",
-      "new_region_237"
+      "north_caucasus",
+      "kerch_strait"
     ],
     "world_x": 1220,
     "world_y": 390,
@@ -9283,14 +9279,14 @@
     "buildings": null
   },
   {
-    "id": "new_region_237",
-    "name": "New Region 237",
-    "name_tr": "Yeni Bolge 237",
+    "id": "kerch_strait",
+    "name": "Strait of Kerch",
+    "name_tr": "Kerç Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "crimea",
-      "new_region_236",
+      "north_caucasus",
       "sea_of_azov",
       "ukrainian_steppe"
     ],
@@ -9328,7 +9324,7 @@
       "castile",
       "irish_sea_shore",
       "navarre",
-      "new_region_234",
+      "toledo",
       "savoy"
     ],
     "world_x": 383,

@@ -7954,5 +7954,95 @@
     "faction_b": "wallachia_prince",
     "score": -20,
     "stance": "peace"
+  },
+  {
+    "faction_a": "marinid_sultanate",
+    "faction_b": "zayyanid_tlemcen",
+    "score": -35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "marinid_sultanate",
+    "faction_b": "hafsid_sultanate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "zayyanid_tlemcen",
+    "faction_b": "hafsid_sultanate",
+    "score": -35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hafsid_sultanate",
+    "faction_b": "barqa_emirate",
+    "score": 15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "barqa_emirate",
+    "faction_b": "mamluk",
+    "score": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "hafsid_sultanate",
+    "faction_b": "usfurid_emirate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "usfurid_emirate",
+    "faction_b": "hormuz_sultanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hormuz_sultanate",
+    "faction_b": "ilkhanate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "mamluk",
+    "faction_b": "mecca_sharifate",
+    "score": 70,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "hungarian_kingdom",
+    "faction_b": "croatian_kingdom",
+    "score": 68,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "hungarian_kingdom",
+    "faction_b": "bosnian_banate",
+    "score": 55,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "carniola_margraviate",
+    "score": 68,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "bosnian_banate",
+    "faction_b": "croatian_kingdom",
+    "score": 20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "carniola_margraviate",
+    "faction_b": "croatian_kingdom",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "carniola_margraviate",
+    "faction_b": "venice",
+    "score": -35,
+    "stance": "peace"
   }
 ]

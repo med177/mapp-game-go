@@ -7,6 +7,35 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-26: 1300 senaryosundaki 37 otomatik `new_region_*` kaydı anlamlı coğrafi
+  kara/deniz ID ve görünen adlara taşındı; Marmara-Boğaz-Karadeniz deniz bağlantısı
+  semantic ID'lerle korundu. Aynı koordinattaki iki komşusuz sahte deniz kaydı ile boş
+  settlement girdileri kaldırıldı; Scania (Lund/Malmö) ve Ragusa (Dubrovnik/Kotor)
+  yerleşimleri eklendi. Regression: `Test1300ScenarioRegionNamesAndIDsAreSemantic`,
+  `Test1300ScenarioEveryLandRegionHasSettlement`, `TestScenarioSeaAdjacency_MarmaraBridgesAegeanAndBlackSea`;
+  doğrulama: `go test ./internal/scenario ./internal/world`.
+
+- 2026-07-26: 1300 senaryosunda Macaristan'ın doğrudan sahiplikleri tarihsel olarak
+  ayrıştırıldı. `serbia` Sırp devletine, `slovenia` HRE vassalı `carniola_margraviate`'e;
+  `croatia`/Kvarner/Hum/Hersek Hırvat vassalına ve `bosnia` `bosnian_banate`'e verildi.
+  Üç bağlı devlet için kaynak-üretim stokları, teknoloji, başlangıç orduları, komutanlar,
+  diplomasi ve AI hedefleri eklendi; Kvarner-Senj ve Hersek-Trebinye yerleşimleriyle boş
+  bölge kayıtları tamamlandı. Regression: `Test1300HistoricalUnownedRegionsAreAssignedToNewStates`,
+  `Test1300ScenarioArmyReferencesExist`, `Test1300ScenarioCapitalSettlementsExist` ve
+  `Test1300ScenarioProfilesCoverRegionalObjectives`; doğrulama: `go test ./internal/scenario`.
+
+- 2026-07-26: 1300 senaryosunda sahipsiz kara bölgeleri tarihsel devletlerle dolduruldu;
+  merkezî devlet kontrolü olmayan Arab Çölü istisna olarak çekişmeli bölge bırakıldı.
+  Merînî, Zeyyânî Tlemsen, Hafsî, Berka, Usfûrî ve Hürmüz devletleri AI-only olarak
+  eklendi; Orta Cezayir Konstantin olarak bölündü, Annaba/Biskra yerleşimleri taşındı,
+  Malta Aragon'a, Ermenistan/Basra İlhanlılara ve Körfez bölgeleri ilgili sultanlıklara
+  bağlandı. Başlangıç kara orduları, Hürmüz filosu, komutanlar, stok/üretim değerleri,
+  diplomasi ve AI hedefleri senaryo JSON'larına işlendi. Hicaz doğrudan Memlük yerine
+  Memlük vassalı Mekke Şerifliği'ne verildi; Arab Çölü sahipsiz/çekişmeli bırakıldı. Regression:
+  `Test1300HistoricalUnownedRegionsAreAssignedToNewStates`,
+  `Test1300ScenarioStartingNaviesAreDockedAtHistoricalPorts`; doğrulama:
+  `go test ./internal/scenario ./internal/diplomacy ./internal/game -run '1300|Replay'`.
+
 - 2026-07-26: Shape edit araçları toggle davranışına geçirildi. Aktif `Shape
   Boya/Sil` veya `Bolge Boya/Sil` butonuna ikinci tıklama aracı kapatıyor;
   `>` seçimi, canlı fırça önizlemesi ve brush cursor'u temizleniyor.
@@ -23,6 +52,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   deniz üstü kara hareket bağlantısı yazıyor. Hareket/savaş entegrasyonu sonraki fazda.
 
 - 2026-07-26: Harita bölge ve deniz sınırları raster harita dokusundan ayrıldı. `regionAt` kenarları cache'lenmiş yatay/dikey kontur parçalarına sıkıştırılıyor; diplomasi, seçili bölge ve ticaret modu renkleri `map_borders.go` üzerinden antialiased screen-space mesh olarak çiziliyor. Zoom sırasında sınır kalınlaşması/basamaklanması giderildi; edit mode region assignment değişiklikleri kontur cache'ini yeniliyor. Regression: `TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms`; doğrulama: `go test ./internal/render` ve `go test ./...`.
+
+- 2026-07-26: Oyuncuya ait olmayan kara bölgesine aynı bölge içinde 400 ms
+  içinde çift tıklanınca, bölge bilgi panelindeki `Diplomasi` düğmesiyle aynı
+  `openDiplomacyTarget()` akışı kullanılarak ilgili devletin teklif paneli
+  doğrudan açılıyor. İlk tıklama yalnız bölgeyi seçiyor; oyuncu bölgeleri,
+  deniz/sahipsiz bölgeler açılımı tetiklemiyor. Yerleşim etiketi tıklaması da
+  region-ID tabanlı ortak seçim akışına bağlandı. Regression:
+  `TestMapRegionDoubleClickOpensDiplomacyForForeignRegion`; doğrulama:
+  `go test ./internal/render`.
 
 - 2026-07-26: Vektör sınır overlay'inin performans sorunu düzeltildi. Screen-space mesh yalnız kamera/ekran/harita durumu değiştiğinde hazırlanıyor; hazır transparan overlay statik framelerde tekrar kullanılıyor, ekran dışı segmentler eleniyor ve uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları çizilmiyor. DirectX dinamik buffer baskısı azaltıldı. Doğrulama: `go test ./internal/render`, `go test ./...`, `GOOS=windows GOARCH=amd64 go build -o /tmp/mapp-game-go-vector-mesh-check.exe ./cmd/game`.
 

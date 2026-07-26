@@ -172,7 +172,7 @@
     ]
   },
   {
-    "region_id": "new_region_251",
+    "region_id": "welsh_marches",
     "settlements": [
       {
         "id": "lancashire_liverpool",
@@ -905,8 +905,26 @@
     ]
   },
   {
-    "region_id": "new_region_260",
-    "settlements": null
+    "region_id": "scania",
+    "settlements": [
+      {
+        "id": "scania_lund",
+        "name_tr": "Lund",
+        "x": 715,
+        "y": 179,
+        "type": "city",
+        "is_capital": true,
+        "population": 120
+      },
+      {
+        "id": "scania_malmo",
+        "name_tr": "Malmö",
+        "x": 719,
+        "y": 184,
+        "type": "port",
+        "population": 70
+      }
+    ]
   },
   {
     "region_id": "switzerland",
@@ -975,7 +993,7 @@
     ]
   },
   {
-    "region_id": "new_region_252",
+    "region_id": "algarve",
     "settlements": [
       {
         "id": "portugal_main",
@@ -1019,7 +1037,7 @@
     ]
   },
   {
-    "region_id": "new_region_234",
+    "region_id": "toledo",
     "settlements": [
       {
         "id": "castile_burgos",
@@ -1039,7 +1057,7 @@
         "population": 120
       },
       {
-        "id": "new_region_234_settlement_4",
+        "id": "toledo_settlement_4",
         "name_tr": "Bilbao",
         "x": 415,
         "y": 414,
@@ -1699,8 +1717,16 @@
         "x": 460,
         "y": 557,
         "type": "city",
-        "is_capital": true,
         "population": 75
+      },
+      {
+        "id": "tlemcen_main",
+        "name_tr": "Tlemsen",
+        "x": 449,
+        "y": 578,
+        "type": "city",
+        "is_capital": true,
+        "population": 55
       },
       {
         "id": "algiers_settlement_2",
@@ -1713,7 +1739,7 @@
     ]
   },
   {
-    "region_id": "new_region_229",
+    "region_id": "central_algeria",
     "settlements": [
       {
         "id": "algiers_main",
@@ -1723,9 +1749,14 @@
         "type": "city",
         "is_capital": true,
         "population": 48
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "constantine",
+    "settlements": [
       {
-        "id": "new_region_229_settlement_2",
+        "id": "central_algeria_settlement_2",
         "name_tr": "Annaba",
         "x": 620,
         "y": 535,
@@ -1733,7 +1764,7 @@
         "population": 46
       },
       {
-        "id": "new_region_229_settlement_3",
+        "id": "central_algeria_settlement_3",
         "name_tr": "Biskra",
         "x": 592,
         "y": 571,
@@ -1883,7 +1914,7 @@
     ]
   },
   {
-    "region_id": "new_region_228",
+    "region_id": "cyrenaica",
     "settlements": [
       {
         "id": "tripolitania_settlement_10",
@@ -2368,7 +2399,7 @@
     ]
   },
   {
-    "region_id": "new_region_226",
+    "region_id": "luxor",
     "settlements": [
       {
         "id": "egypt_qena",
@@ -2738,8 +2769,16 @@
         "x": 1276,
         "y": 766,
         "type": "fortress",
-        "is_capital": true,
         "population": 17
+      },
+      {
+        "id": "hejaz_mecca",
+        "name_tr": "Mekke",
+        "x": 1298,
+        "y": 827,
+        "type": "city",
+        "is_capital": true,
+        "population": 70
       },
       {
         "id": "hejaz_medina",
@@ -2768,7 +2807,7 @@
     ]
   },
   {
-    "region_id": "new_region_227",
+    "region_id": "arabian_desert",
     "settlements": [
       {
         "id": "arabian_desert_hail",
@@ -3076,15 +3115,15 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_248",
+    "region_id": "gulf_of_cadiz",
     "settlements": null
   },
   {
-    "region_id": "new_region_233",
+    "region_id": "north_atlantic_iberia",
     "settlements": null
   },
   {
-    "region_id": "new_region_249",
+    "region_id": "portuguese_atlantic",
     "settlements": null
   },
   {
@@ -3100,7 +3139,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_235",
+    "region_id": "western_baltic_sea",
     "settlements": null
   },
   {
@@ -3120,7 +3159,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_245",
+    "region_id": "otranto_strait",
     "settlements": null
   },
   {
@@ -3140,7 +3179,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_253",
+    "region_id": "cretan_sea",
     "settlements": null
   },
   {
@@ -3148,31 +3187,23 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_238",
+    "region_id": "sea_of_marmara",
     "settlements": null
   },
   {
-    "region_id": "new_region_255",
+    "region_id": "western_black_sea",
     "settlements": null
   },
   {
-    "region_id": "new_region_259",
+    "region_id": "bosphorus",
     "settlements": null
   },
   {
-    "region_id": "new_region_258",
+    "region_id": "northwestern_black_sea",
     "settlements": null
   },
   {
-    "region_id": "new_region_257",
-    "settlements": null
-  },
-  {
-    "region_id": "new_region_256",
-    "settlements": null
-  },
-  {
-    "region_id": "new_region_254",
+    "region_id": "central_black_sea",
     "settlements": null
   },
   {
@@ -3941,10 +3972,10 @@
     "settlements": [
       {
         "id": "uae_main",
-        "name_tr": "BAE",
+        "name_tr": "Julfar",
         "x": 1572,
         "y": 772,
-        "type": "city",
+        "type": "port",
         "is_capital": true,
         "population": 70
       }
@@ -5661,12 +5692,39 @@
     ]
   },
   {
-    "region_id": "new_region_262",
-    "settlements": null
+    "region_id": "ragusa",
+    "settlements": [
+      {
+        "id": "ragusa_main",
+        "name_tr": "Dubrovnik",
+        "x": 802,
+        "y": 403,
+        "type": "city",
+        "is_capital": true,
+        "population": 100
+      },
+      {
+        "id": "ragusa_cattaro",
+        "name_tr": "Kotor",
+        "x": 816,
+        "y": 411,
+        "type": "town",
+        "population": 38
+      }
+    ]
   },
   {
-    "region_id": "new_region_261",
-    "settlements": null
+    "region_id": "kvarner",
+    "settlements": [
+      {
+        "id": "kvarner_senj",
+        "name_tr": "Senj",
+        "x": 793,
+        "y": 378,
+        "type": "fortress",
+        "population": 28
+      }
+    ]
   },
   {
     "region_id": "hum",
@@ -5699,8 +5757,17 @@
     ]
   },
   {
-    "region_id": "new_region_263",
-    "settlements": null
+    "region_id": "herzegovina",
+    "settlements": [
+      {
+        "id": "herzegovina_trebinje",
+        "name_tr": "Trebinye",
+        "x": 833,
+        "y": 410,
+        "type": "fortress",
+        "population": 24
+      }
+    ]
   },
   {
     "region_id": "epirus",
@@ -6047,7 +6114,7 @@
     ]
   },
   {
-    "region_id": "new_region_239",
+    "region_id": "podolia",
     "settlements": [
       {
         "id": "ukrainian_steppe_ochakiv",
@@ -6155,10 +6222,10 @@
     ]
   },
   {
-    "region_id": "new_region_225",
+    "region_id": "raqqa",
     "settlements": [
       {
-        "id": "new_region_225_settlement_1",
+        "id": "raqqa_settlement_1",
         "name_tr": "Rakka",
         "x": 1257,
         "y": 552,
@@ -6551,10 +6618,10 @@
     ]
   },
   {
-    "region_id": "new_region_236",
+    "region_id": "north_caucasus",
     "settlements": [
       {
-        "id": "new_region_236_settlement_1",
+        "id": "north_caucasus_settlement_1",
         "name_tr": "Temrük",
         "x": 1233,
         "y": 377,
@@ -6563,7 +6630,7 @@
         "population": 33
       },
       {
-        "id": "new_region_236_settlement_2",
+        "id": "north_caucasus_settlement_2",
         "name_tr": "Mahaçkale",
         "x": 1423,
         "y": 418,
@@ -6587,7 +6654,7 @@
         "population": 7
       },
       {
-        "id": "new_region_236_settlement_5",
+        "id": "north_caucasus_settlement_5",
         "name_tr": "Volgodonsk",
         "x": 1321,
         "y": 333,
@@ -6703,11 +6770,11 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_231",
+    "region_id": "alboran_sea",
     "settlements": null
   },
   {
-    "region_id": "new_region_232",
+    "region_id": "balearic_sea",
     "settlements": null
   },
   {
@@ -6715,11 +6782,11 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_247",
+    "region_id": "gulf_of_genoa",
     "settlements": null
   },
   {
-    "region_id": "new_region_230",
+    "region_id": "sardinia_channel",
     "settlements": null
   },
   {
@@ -6747,7 +6814,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_250",
+    "region_id": "english_channel",
     "settlements": null
   },
   {
@@ -6759,7 +6826,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_242",
+    "region_id": "eastern_mediterranean_basin",
     "settlements": null
   },
   {
@@ -6779,7 +6846,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_246",
+    "region_id": "northern_tyrrhenian_sea",
     "settlements": null
   },
   {
@@ -6795,7 +6862,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_244",
+    "region_id": "gulf_of_sirte",
     "settlements": null
   },
   {
@@ -6803,7 +6870,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_243",
+    "region_id": "libyan_sea",
     "settlements": null
   },
   {
@@ -6819,11 +6886,11 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_241",
+    "region_id": "gulf_of_iskenderun",
     "settlements": null
   },
   {
-    "region_id": "new_region_240",
+    "region_id": "levantine_sea",
     "settlements": null
   },
   {
@@ -6867,7 +6934,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_237",
+    "region_id": "kerch_strait",
     "settlements": null
   },
   {
