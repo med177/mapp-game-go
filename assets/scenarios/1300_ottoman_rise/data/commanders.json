@@ -662,5 +662,45 @@
     "portrait_asset": "mecca_sharif_abu_numayy.png",
     "level": 1,
     "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_austria_rudolf",
+    "owner_id": "austria_duchy",
+    "name": "Rudolf III von Habsburg",
+    "portrait_asset": "austria_rudolf.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_bohemia_wenceslaus",
+    "owner_id": "bohemian_kingdom",
+    "name": "Wenceslaus II of Bohemia",
+    "portrait_asset": "bohemia_wenceslaus.png",
+    "level": 1,
+    "traits": [ "tactician" ]
+  },
+  {
+    "id": "commander_bavaria_louis",
+    "owner_id": "bavaria_duchy",
+    "name": "Louis IV of Bavaria",
+    "portrait_asset": "bavaria_louis.png",
+    "level": 1,
+    "traits": [ "aggressor" ]
+  },
+  {
+    "id": "commander_saxony_albert",
+    "owner_id": "saxony_duchy",
+    "name": "Albert II of Saxony",
+    "portrait_asset": "saxony_albert.png",
+    "level": 1,
+    "traits": [ "defender" ]
+  },
+  {
+    "id": "commander_brandenburg_hermann",
+    "owner_id": "brandenburg_margraviate",
+    "name": "Hermann the Long of Brandenburg",
+    "portrait_asset": "brandenburg_hermann.png",
+    "level": 1,
+    "traits": [ "veteran" ]
   }
 ]

@@ -1035,6 +1035,81 @@
       ]
     },
     {
+      "faction_id": "austria_duchy",
+      "profile": "austrian_imperial_frontier",
+      "objectives": [
+        {
+          "id": "hold_austrian_core",
+          "kind": "defend",
+          "target_factions": ["hungarian_kingdom", "carniola_margraviate"],
+          "target_regions": ["austria"],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": ["austria"]
+        }
+      ]
+    },
+    {
+      "faction_id": "bohemian_kingdom",
+      "profile": "bohemian_imperial_electorate",
+      "objectives": [
+        {
+          "id": "hold_bohemian_core",
+          "kind": "defend",
+          "target_factions": ["polish_kingdom", "hungarian_kingdom"],
+          "target_regions": ["bohemia"],
+          "priority": 100,
+          "commitment": 74,
+          "readiness_regions": ["bohemia"]
+        }
+      ]
+    },
+    {
+      "faction_id": "bavaria_duchy",
+      "profile": "bavarian_imperial_principality",
+      "objectives": [
+        {
+          "id": "hold_bavarian_core",
+          "kind": "defend",
+          "target_factions": ["austria_duchy", "milan_duchy"],
+          "target_regions": ["bavaria"],
+          "priority": 96,
+          "commitment": 70,
+          "readiness_regions": ["bavaria"]
+        }
+      ]
+    },
+    {
+      "faction_id": "saxony_duchy",
+      "profile": "saxon_electorate_frontier",
+      "objectives": [
+        {
+          "id": "hold_saxon_core",
+          "kind": "defend",
+          "target_factions": ["brandenburg_margraviate", "polish_kingdom"],
+          "target_regions": ["saxony"],
+          "priority": 96,
+          "commitment": 68,
+          "readiness_regions": ["saxony"]
+        }
+      ]
+    },
+    {
+      "faction_id": "brandenburg_margraviate",
+      "profile": "brandenburg_eastern_march",
+      "objectives": [
+        {
+          "id": "hold_brandenburg_march",
+          "kind": "defend",
+          "target_factions": ["polish_kingdom", "saxony_duchy"],
+          "target_regions": ["brandenburg"],
+          "priority": 96,
+          "commitment": 66,
+          "readiness_regions": ["brandenburg"]
+        }
+      ]
+    },
+    {
       "faction_id": "carniola_margraviate",
       "profile": "carniolan_imperial_buffer",
       "objectives": [

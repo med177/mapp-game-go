@@ -126,6 +126,14 @@ bir alt devlettir ve `overlord_id: "hre"` ile Kutsal Roma İmparatorluğu'na ba�
 Flandre'nin ticaret ve liman kapasitesi korunurken dış savaş ilişkisi HRE kök realm'i
 üzerinden koalisyona katılır; HRE ile garantili iç realm ticareti dış ittifak sayılmaz.
 
+1300 senaryosunda HRE'nin bağımsız imparatorluk üyeleri `data/imperial.json` içinde
+ayrıca tanımlıdır. Avusturya, Bohemya, Bavyera, Saksonya ve Brandenburg çekirdek
+prenslikleri ile Milano, Savoy ve Töton Şövalyeleri `OverlordID` almadan imparatorluk
+çağrısı alır; bu nedenle çağrıya katılabilir, sınırlı kaynak desteği verebilir veya
+tarafsız kalabilirler. Beş çekirdek prensliğin ayrıca başlangıç ordusu, komutan şablonu
+ve kendi AI savunma hedefi vardır. Flandre ve Kranj ise gerçek vassal olarak otomatik realm
+katılımını korur.
+
 → İlişki sistemi: [[systems/diplomacy]]
 
 ---

@@ -1,0 +1,86 @@
+{
+  "empire_id": "hre",
+  "emperor_id": "hre",
+  "authority": 62,
+  "next_diet_turn": 12,
+  "election_due_turn": 97,
+  "members": [
+    {
+      "faction_id": "flanders_county",
+      "status": "vassal",
+      "loyalty": 78,
+      "autonomy": 35,
+      "military_commitment": 82
+    },
+    {
+      "faction_id": "carniola_margraviate",
+      "status": "vassal",
+      "loyalty": 72,
+      "autonomy": 42,
+      "military_commitment": 76
+    },
+    {
+      "faction_id": "milan_duchy",
+      "status": "prince",
+      "loyalty": 54,
+      "autonomy": 88,
+      "military_commitment": 48,
+      "elector_weight": 1
+    },
+    {
+      "faction_id": "austria_duchy",
+      "status": "elector",
+      "loyalty": 68,
+      "autonomy": 72,
+      "military_commitment": 58,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "bohemian_kingdom",
+      "status": "elector",
+      "loyalty": 61,
+      "autonomy": 78,
+      "military_commitment": 54,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "bavaria_duchy",
+      "status": "prince",
+      "loyalty": 57,
+      "autonomy": 84,
+      "military_commitment": 52
+    },
+    {
+      "faction_id": "saxony_duchy",
+      "status": "elector",
+      "loyalty": 63,
+      "autonomy": 76,
+      "military_commitment": 50,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "brandenburg_margraviate",
+      "status": "elector",
+      "loyalty": 59,
+      "autonomy": 82,
+      "military_commitment": 46,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "savoy_county",
+      "status": "prince",
+      "loyalty": 46,
+      "autonomy": 92,
+      "military_commitment": 42,
+      "elector_weight": 1
+    },
+    {
+      "faction_id": "teutonic_order",
+      "status": "order",
+      "loyalty": 58,
+      "autonomy": 80,
+      "military_commitment": 64,
+      "elector_weight": 1
+    }
+  ]
+}

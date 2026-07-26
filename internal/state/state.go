@@ -209,7 +209,10 @@ type GameState struct {
 	ArmyOrder    []army.ArmyID                          `json:"-"`
 	Commanders   map[string]*army.Commander             `json:"commanders,omitempty"`
 	AIPlans      map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
-	ShapeData    world.CountryShapeJSON                 `json:"-"`
+	// Imperial, bağımsız üyelerin HRE çağrı/otorite state'ini taşır. Gerçek
+	// vassalların realm davranışı yine Faction.OverlordID ile belirlenir.
+	Imperial  *ImperialState         `json:"imperial,omitempty"`
+	ShapeData world.CountryShapeJSON `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
 	AIStrategies       map[string]scenario.AIFactionStrategy    `json:"-"`

@@ -314,6 +314,49 @@ func Test1300ScenarioArmyReferencesExist(t *testing.T) {
 	}
 }
 
+func Test1300CoreImperialMembersHaveStartingCommandersAndArmies(t *testing.T) {
+	scenarioPath, _, factions := load1300IntegrityData(t)
+	dataPath := filepath.Join(scenarioPath, "data")
+	unitTypes, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
+	if err != nil {
+		t.Fatalf("1300 birlik tipleri yüklenemedi: %v", err)
+	}
+	armies, err := army.LoadArmies(filepath.Join(dataPath, "armies.json"), unitTypes)
+	if err != nil {
+		t.Fatalf("1300 orduları yüklenemedi: %v", err)
+	}
+	commanders, err := army.LoadCommanderTemplates(filepath.Join(dataPath, "commanders.json"))
+	if err != nil {
+		t.Fatalf("1300 komutanları yüklenemedi: %v", err)
+	}
+
+	expected := map[string]world.RegionID{
+		"austria_duchy":           "austria",
+		"bohemian_kingdom":        "bohemia",
+		"bavaria_duchy":           "bavaria",
+		"saxony_duchy":            "saxony",
+		"brandenburg_margraviate": "brandenburg",
+	}
+	for ownerID, regionID := range expected {
+		if factions[faction.FactionID(ownerID)] == nil {
+			t.Errorf("çekirdek HRE devleti eksik: %s", ownerID)
+		}
+		if len(commanders[ownerID]) == 0 {
+			t.Errorf("çekirdek HRE devleti için komutan şablonu eksik: %s", ownerID)
+		}
+		foundArmy := false
+		for _, candidate := range armies {
+			if candidate != nil && candidate.OwnerID == ownerID && candidate.RegionID == regionID && len(candidate.Units) > 0 {
+				foundArmy = true
+				break
+			}
+		}
+		if !foundArmy {
+			t.Errorf("çekirdek HRE devleti için başlangıç ordusu eksik: owner=%s region=%s", ownerID, regionID)
+		}
+	}
+}
+
 func Test1300ScenarioStartingNaviesAreDockedAtHistoricalPorts(t *testing.T) {
 	scenarioPath, regions, factions := load1300IntegrityData(t)
 	dataPath := filepath.Join(scenarioPath, "data")

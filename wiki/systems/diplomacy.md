@@ -1,13 +1,32 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-24
-related: [world/factions, systems/ai, architecture/state-management]
+last_updated: 2026-07-26
+related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/faction/faction.go`, `internal/game/game.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`
+
+## İmparatorluk Sistemi
+
+HRE, bağımsız prensliklerin doğrudan tek sahibi olarak değil, ayrı bir siyasi kurum
+olarak `GameState.Imperial` içinde tutulur. Gerçek vassallar hâlâ `OverlordID` ve
+`SameRealm()` üzerinden otomatik geçiş/koalisyon kurallarını kullanır; imparatorluk
+prensleri ise `ImperialMember` kaydıyla bağımsız kalır.
+
+`AssessImperialWarCall()` üyeleri ortak savaşa çağırırken otorite, sadakat, özerklik,
+askerî bağlılık, sınır tehdidi, mevcut savaşlar ve kaynak durumunu birlikte değerlendirir.
+Katılım üç sonuca ayrılır: tam savaşa katılım, sınırlı altın/tahıl desteği veya tarafsız
+kalma. Bağımsız üye savaşa girerse normal savaş relation/ledger kayıtları oluşturulur;
+sınırlı destek veren üye savaş relation'ına geçirilmez.
+
+`ImperialState.Authority` ve `ImperialMember.Loyalty` Diyet ve seçim akışının save-backed
+temelidir. `AdvanceImperialPolitics()` periyodik Diyet'i çalıştırır; `HoldImperialElection()`
+üyelerin `ElectorWeight` değerleri ve adayların askerî/diplomatik gücüyle yeni imparatoru
+belirler. 1300 senaryosunda elektör ağırlıkları Altın Ferman öncesi değişken tutulur;
+senaryo verisi `data/imperial.json` dosyasındadır.
 
 ## İlişki Yapısı
 

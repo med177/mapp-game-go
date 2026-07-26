@@ -118,6 +118,57 @@ func Test1300AzerbaijanShamakhiSettlementAnchorStaysInsideRegion(t *testing.T) {
 	}
 }
 
+func Test1300MeccaSettlementAnchorUsesConfiguredCoordinate(t *testing.T) {
+	scenarioPath := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise")
+	skipIfScenarioDirMissing(t, scenarioPath)
+
+	regions, _, err := world.LoadRegionsWithOrder(filepath.Join(scenarioPath, "data", "regions.json"))
+	if err != nil {
+		t.Fatalf("regions yuklenemedi: %v", err)
+	}
+	if err := world.LoadRegionSettlements(filepath.Join(scenarioPath, "data", "settlements.json"), regions); err != nil {
+		t.Fatalf("settlements yuklenemedi: %v", err)
+	}
+	shapeData, err := world.LoadCountryShapes(filepath.Join(scenarioPath, "data", "country_shapes.json"), regions)
+	if err != nil {
+		t.Fatalf("shapes yuklenemedi: %v", err)
+	}
+
+	region := regions["hejaz"]
+	if region == nil {
+		t.Fatal("hejaz bolgesi bulunamadi")
+	}
+	settlementIdx := -1
+	for i, settlement := range region.Settlements {
+		if settlement.ID == "hejaz_mecca" {
+			settlementIdx = i
+			if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) {
+				t.Fatalf("mekke koordinati shape disinda: (%d,%d)", settlement.X, settlement.Y)
+			}
+			break
+		}
+	}
+	if settlementIdx < 0 {
+		t.Fatal("hejaz_mecca yerlesimi bulunamadi")
+	}
+
+	gs := &state.GameState{Regions: regions, ShapeData: shapeData}
+	wm := NewWorldMap(gs)
+	settlement := region.Settlements[settlementIdx]
+	rawX := int(shapeOffX + float64(settlement.X)*shapeScaleX)
+	rawY := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
+	if got := wm.RegionAt(rawX, rawY); got != "hejaz" {
+		t.Fatalf("mekke raw koordinati yanlis bolgeye dustu: got=%q want=%q", got, "hejaz")
+	}
+	ax, ay, ok := wm.SettlementAnchor("hejaz", settlementIdx)
+	if !ok {
+		t.Fatal("mekke settlement anchor olusturulamadi")
+	}
+	if ax != rawX || ay != rawY {
+		t.Fatalf("mekke anchor fallback/duzeltme uyguladi: got=(%d,%d) raw=(%d,%d)", ax, ay, rawX, rawY)
+	}
+}
+
 func skipIfScenarioDirMissing(t *testing.T, scenarioPath string) {
 	t.Helper()
 

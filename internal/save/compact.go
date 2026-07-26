@@ -113,6 +113,7 @@ type campaignSaveState struct {
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
+	Imperial                *state.ImperialState                     `json:"im,omitempty"`
 	WarLedgers              map[string]*state.WarLedger              `json:"wl,omitempty"`
 	RecentTruces            map[string]int                           `json:"rt,omitempty"`
 	EconomicVictoryTurns    int                                      `json:"evt,omitempty"`
@@ -186,6 +187,7 @@ type legacyCampaignSaveState struct {
 	Armies                  map[army.ArmyID]*army.Army                     `json:"armies"`
 	Commanders              map[string]*army.Commander                     `json:"commanders,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
+	Imperial                *state.ImperialState                           `json:"imperial,omitempty"`
 	WarLedgers              map[string]*state.WarLedger                    `json:"war_ledgers,omitempty"`
 	RecentTruces            map[string]int                                 `json:"recent_truces,omitempty"`
 	EconomicVictoryTurns    int                                            `json:"economic_victory_turns"`
@@ -338,6 +340,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
 		AIPlans:                 cloneAIPlans(legacy.AIPlans),
+		Imperial:                legacy.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(legacy.WarLedgers),
 		RecentTruces:            cloneStringIntMap(legacy.RecentTruces),
 		EconomicVictoryTurns:    legacy.EconomicVictoryTurns,
@@ -459,6 +462,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		Imperial:                gs.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
@@ -549,6 +553,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		Imperial:                gs.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
 		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
@@ -674,6 +679,9 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 	gs.Commanders = cloneCommanders(saved.Commanders)
 	gs.AIPlans = cloneAIPlans(saved.AIPlans)
+	if saved.Imperial != nil {
+		gs.Imperial = saved.Imperial.Clone()
+	}
 	gs.WarLedgers = cloneWarLedgers(saved.WarLedgers)
 	gs.RecentTruces = cloneStringIntMap(saved.RecentTruces)
 	gs.NextCommanderSeq = saved.NextCommanderSeq

@@ -1,11 +1,37 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-26
+last_updated: 2026-07-27
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-27: 1300 senaryosunda Mekke'nin shape sınırı dışındaki `y=827` yerleşim
+  koordinatı `y=797` olarak düzeltildi. Anchor artık `hejaz` bölgesindeki ham
+  koordinatı kullanıyor; `Test1300MeccaSettlementAnchorUsesConfiguredCoordinate`
+  regression testi fallback'e geri dönüşü yakalıyor. Doğrulama: `go test ./internal/render`.
+
+- 2026-07-26: HRE için bağımsız imparatorluk kurumu eklendi. `GameState.Imperial`
+  ve 1300 `data/imperial.json` artık otorite, Diyet takvimi, üyelik sadakati/özerkliği
+  ve elektör ağırlıklarını save-backed taşıyor. `AssessImperialWarCall()` mevcut savaş
+  önizlemesi ve koalisyon akışına bağlandı: imparatorluk üyeleri tam savaşa katılabiliyor,
+  sınırlı altın/tahıl desteği verebiliyor veya tarafsız kalabiliyor; gerçek vassalların
+  `SameRealm` otomatik katılımı korunuyor. `AdvanceImperialPolitics()` periyodik Diyet'i
+  ve `HoldImperialElection()` imparator seçimini çözüyor. Regression:
+  `TestImperialWarPreviewIncludesIndependentMembers`,
+  `TestImperialWarCallJoinsHighCommitmentMember`,
+  `TestImperialWarCallCanSendLimitedSupportWithoutEnteringWar`,
+  `TestImperialElectionUpdatesEmperorAndResetsAuthority`; doğrulama:
+  `go test ./internal/state ./internal/diplomacy ./internal/save ./internal/game ./internal/scenario`.
+
+- 2026-07-26: 1300 HRE haritasındaki çekirdek siyasi parçalanma veri seviyesinde
+  görünür hale getirildi. Avusturya, Bohemya, Bavyera, Saksonya ve Brandenburg artık
+  HRE'nin doğrudan sahipliği yerine ayrı imparatorluk üyeleri olarak kendi başkent,
+  ordu, komutan, ekonomi ve AI hedeflerine sahip; HRE yalnızca kalan imparatorluk
+  bölgelerini ve gerçek vassalı Flandre'yi tutuyor. Regression:
+  `TestLoad1300LoadsImperialState`, `Test1300CoreImperialMembersHaveStartingCommandersAndArmies`;
+  doğrulama: `go test ./internal/scenario ./internal/game ./internal/diplomacy`.
 
 - 2026-07-26: Bölge bilgi paneli ilk açıldığında komşu listesi artık varsayılan
   olarak `Tümünü Göster` durumunda geliyor. Aynı bölge içindeki kullanıcı daraltması

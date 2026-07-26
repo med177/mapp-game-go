@@ -168,6 +168,36 @@ func TestInvalidDifficultyMigratesToNormal(t *testing.T) {
 	}
 }
 
+func TestImperialStateRoundTripInCompactPayload(t *testing.T) {
+	original := &state.ImperialState{
+		EmpireID: "hre", EmperorID: "milan_duchy", Authority: 41,
+		Members: map[faction.FactionID]*state.ImperialMember{
+			"milan_duchy": {FactionID: "milan_duchy", Status: state.ImperialMemberPrince, Loyalty: 37, Autonomy: 88, MilitaryCommitment: 42},
+		},
+		LastWarCall: &state.ImperialWarCall{CallerID: "hre", EnemyID: "france", StartedTurn: 7},
+	}
+	encoding, payload, err := encodeCompressedStatePayload(campaignSaveState{Imperial: original})
+	if err != nil {
+		t.Fatalf("imperial compact payload oluşturulamadı: %v", err)
+	}
+	raw, err := decodeCompressedStatePayload(encoding, payload)
+	if err != nil {
+		t.Fatalf("imperial compact payload çözülemedi: %v", err)
+	}
+	var saved campaignSaveState
+	if err := json.Unmarshal(raw, &saved); err != nil {
+		t.Fatalf("imperial compact payload parse edilemedi: %v", err)
+	}
+	restored := &state.GameState{}
+	applyCampaignSaveState(restored, saved)
+	if restored.Imperial == nil || restored.Imperial.EmperorID != "milan_duchy" || restored.Imperial.Authority != 41 {
+		t.Fatalf("imperial state compact save/load sonrasında korunmadı: %+v", restored.Imperial)
+	}
+	if restored.Imperial.Members["milan_duchy"].Loyalty != 37 || restored.Imperial.LastWarCall.EnemyID != "france" {
+		t.Fatalf("imperial üye/çağrı state'i korunmadı: %+v", restored.Imperial)
+	}
+}
+
 func TestArmyCommanderRoundTrip(t *testing.T) {
 	commander := army.NewCommander("cmd_1", "Mihri Hanım")
 	commander.Experience = army.CommanderLevel3XP

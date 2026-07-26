@@ -741,9 +741,9 @@
       195,
       45
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "saxony_main",
+    "capital_settlement_id": "holland_settlement_2",
     "gold": 900,
     "grain": 300,
     "iron": 200,
@@ -764,6 +764,175 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 50
+  },
+  {
+    "id": "austria_duchy",
+    "name": "Duchy of Austria",
+    "name_tr": "Avusturya Dükalığı",
+    "religion": "catholic",
+    "color": [
+      165,
+      70,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "austria_vienna",
+    "gold": 260,
+    "grain": 150,
+    "iron": 70,
+    "timber": 65,
+    "stone": 300,
+    "spice": 15,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "horse_breeding": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 48,
+    "ai_expansion_targets": [
+      "hungarian_kingdom",
+      "carniola_margraviate"
+    ]
+  },
+  {
+    "id": "bohemian_kingdom",
+    "name": "Kingdom of Bohemia",
+    "name_tr": "Bohemya Krallığı",
+    "religion": "catholic",
+    "color": [
+      90,
+      125,
+      180
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "bohemia_prague",
+    "gold": 300,
+    "grain": 180,
+    "iron": 75,
+    "timber": 80,
+    "stone": 350,
+    "spice": 20,
+    "cloth": 45,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 42,
+    "ai_expansion_targets": [
+      "polish_kingdom",
+      "brandenburg_margraviate"
+    ]
+  },
+  {
+    "id": "bavaria_duchy",
+    "name": "Duchy of Bavaria",
+    "name_tr": "Bavyera Dükalığı",
+    "religion": "catholic",
+    "color": [
+      70,
+      145,
+      90
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "bavaria_munich",
+    "gold": 280,
+    "grain": 190,
+    "iron": 70,
+    "timber": 95,
+    "stone": 350,
+    "spice": 15,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "heavy_armor": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 44,
+    "ai_expansion_targets": [
+      "austria_duchy",
+      "milan_duchy"
+    ]
+  },
+  {
+    "id": "saxony_duchy",
+    "name": "Duchy of Saxony",
+    "name_tr": "Saksonya Dükalığı",
+    "religion": "catholic",
+    "color": [
+      185,
+      125,
+      55
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "saxony_main",
+    "gold": 260,
+    "grain": 190,
+    "iron": 55,
+    "timber": 65,
+    "stone": 300,
+    "spice": 15,
+    "cloth": 40,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "trade_routes": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 40,
+    "ai_expansion_targets": [
+      "brandenburg_margraviate",
+      "polish_kingdom"
+    ]
+  },
+  {
+    "id": "brandenburg_margraviate",
+    "name": "Margraviate of Brandenburg",
+    "name_tr": "Brandenburg Markgraflığı",
+    "religion": "catholic",
+    "color": [
+      125,
+      105,
+      175
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "brandenburg_main",
+    "gold": 220,
+    "grain": 160,
+    "iron": 45,
+    "timber": 80,
+    "stone": 260,
+    "spice": 10,
+    "cloth": 25,
+    "research": {
+      "completed": {
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 38,
+    "ai_expansion_targets": [
+      "saxony_duchy",
+      "polish_kingdom"
+    ]
   },
   {
     "id": "hungarian_kingdom",
@@ -1795,7 +1964,7 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 18,
-    "ai_expansion_targets": []
+    "ai_expansion_targets": [ ]
   },
   {
     "id": "croatian_kingdom",

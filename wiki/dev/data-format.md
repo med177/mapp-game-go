@@ -66,6 +66,35 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 
 Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
 
+## imperial.json
+
+HRE gibi bağımsız üyelerden oluşan üst siyasi kurumları tanımlar:
+
+```json
+{
+  "empire_id": "hre",
+  "emperor_id": "hre",
+  "authority": 62,
+  "next_diet_turn": 12,
+  "election_due_turn": 97,
+  "members": [
+    {
+      "faction_id": "milan_duchy",
+      "status": "prince",
+      "loyalty": 54,
+      "autonomy": 88,
+      "military_commitment": 48,
+      "elector_weight": 1
+    }
+  ]
+}
+```
+
+`status`: `elector`, `prince`, `free_city`, `order` veya `vassal` olabilir. `vassal`
+üyeler yalnız bilgilendirme içindir; otomatik savaş/erişim davranışını `OverlordID`
+belirler. `authority`, `loyalty`, `autonomy` ve `military_commitment` 0–100 aralığında
+normalize edilir. `imperial.json` yoksa senaryo imparatorluk sistemi olmadan yüklenir.
+
 ## trade_centers.json
 
 Ticaret harita modunda kullanılacak tarihsel merkez düğümleri ve aralarındaki koridor graph'ı.

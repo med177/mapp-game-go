@@ -735,9 +735,9 @@
     ]
   },
   {
-    "id": "army_hre_1",
-    "owner_id": "hre",
-    "region_id": "bavaria",
+    "id": "army_bavaria_1",
+      "owner_id": "bavaria_duchy",
+      "region_id": "bavaria",
     "units": [
       {
         "type_id": "cavalry",
@@ -754,6 +754,86 @@
       {
         "type_id": "militia",
         "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_austria_1",
+    "owner_id": "austria_duchy",
+    "region_id": "austria",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_bohemia_1",
+    "owner_id": "bohemian_kingdom",
+    "region_id": "bohemia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_saxony_1",
+    "owner_id": "saxony_duchy",
+    "region_id": "saxony",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_brandenburg_1",
+    "owner_id": "brandenburg_margraviate",
+    "region_id": "brandenburg",
+    "units": [
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },

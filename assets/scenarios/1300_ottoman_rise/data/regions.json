@@ -686,7 +686,7 @@
     "name": "Brandenburg",
     "name_tr": "Brandenburg",
     "terrain": "plain",
-    "owner_id": "hre",
+    "owner_id": "brandenburg_margraviate",
     "neighbors": [
       "bavaria",
       "bohemia",
@@ -722,7 +722,7 @@
     "name": "Saxony",
     "name_tr": "Saksonya",
     "terrain": "plain",
-    "owner_id": "hre",
+    "owner_id": "saxony_duchy",
     "neighbors": [
       "brandenburg",
       "denmark",
@@ -758,7 +758,7 @@
     "name": "Bavaria",
     "name_tr": "Bavyera",
     "terrain": "forest",
-    "owner_id": "hre",
+    "owner_id": "bavaria_duchy",
     "neighbors": [
       "bohemia",
       "brandenburg",
@@ -1352,7 +1352,7 @@
     "name": "Austria",
     "name_tr": "Avusturya",
     "terrain": "mountain",
-    "owner_id": "hre",
+    "owner_id": "austria_duchy",
     "neighbors": [
       "bohemia",
       "hungary",
@@ -1389,7 +1389,7 @@
     "name": "Bohemia",
     "name_tr": "Bohemya",
     "terrain": "forest",
-    "owner_id": "hre",
+    "owner_id": "bohemian_kingdom",
     "neighbors": [
       "austria",
       "bavaria",

@@ -484,6 +484,10 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Ticaret merkezleri yüklenemedi: %v", err)
 	}
+	imperialState, err := state.LoadImperialState(dp("imperial.json"), factions)
+	if err != nil {
+		return nil, err
+	}
 
 	gs := &state.GameState{
 		Turn:               1,
@@ -510,6 +514,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		ScenarioVictories:  sc.VictoryConditions,
 		AvailableVictories: scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, ""),
 		Relations:          relations,
+		Imperial:           imperialState,
 		WarLedgers:         map[string]*state.WarLedger{},
 		TradeCenters:       tradeCenters,
 		NextArmySeq:        len(armies),

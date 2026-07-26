@@ -25,15 +25,16 @@ func (a WarCallAssessment) Accepted() bool {
 }
 
 type WarParticipantPreview struct {
-	FactionID   faction.FactionID
-	NameTR      string
-	RoleTR      string
-	StatusTR    string
-	NoteTR      string
-	JoinChance  int
-	AutoJoin    bool
-	Selectable  bool
-	VassalCount int
+	FactionID      faction.FactionID
+	NameTR         string
+	RoleTR         string
+	StatusTR       string
+	NoteTR         string
+	JoinChance     int
+	AutoJoin       bool
+	Selectable     bool
+	VassalCount    int
+	ImperialMember bool
 }
 
 type WarSidePreview struct {
@@ -56,6 +57,11 @@ type WarCallOutcome struct {
 	PendingDecision bool
 	AllianceBroken  bool
 	RelationPenalty int
+	ImperialMember  bool
+	LimitedSupport  bool
+	SupportGold     int
+	SupportGrain    int
+	StatusTR        string
 }
 
 type WarDeclarationResult struct {
@@ -297,6 +303,9 @@ func buildWarSidePreview(gs *state.GameState, leader, enemy faction.FactionID, s
 		}
 		side.CallableAllies = append(side.CallableAllies, entry)
 	}
+	imperialAuto, imperialCallable := imperialPreviewMembers(gs, leader, enemy, selectableAllies)
+	side.AutoParticipants = append(side.AutoParticipants, imperialAuto...)
+	side.CallableAllies = append(side.CallableAllies, imperialCallable...)
 
 	sortWarParticipants(side.AutoParticipants)
 	sortWarParticipants(side.CallableAllies)
@@ -333,6 +342,10 @@ func resolvePlayerWarCalls(gs *state.GameState, actorRoot, targetRoot faction.Fa
 			continue
 		}
 		seen[allyRoot] = struct{}{}
+		if imperialMemberFor(gs, actorRoot, allyRoot) != nil {
+			out = append(out, imperialWarCallOutcome(gs, actorRoot, allyRoot, targetRoot, actorRoot))
+			continue
+		}
 		out = append(out, resolveWarCall(gs, actorRoot, allyRoot, targetRoot, true))
 	}
 	return out
@@ -347,11 +360,8 @@ func resolveAttackerWarCalls(gs *state.GameState, actorRoot, targetRoot faction.
 
 func resolveAutoWarCalls(gs *state.GameState, callerRoot, enemyRoot, warDeclarerRoot faction.FactionID) []WarCallOutcome {
 	allies := directExternalAlliesOf(gs, callerRoot)
-	if len(allies) == 0 {
-		return nil
-	}
 	playerRoot := playerRealmRoot(gs)
-	out := make([]WarCallOutcome, 0, len(allies))
+	out := make([]WarCallOutcome, 0, len(allies)+4)
 	for _, allyID := range allies {
 		allyRoot := realmRoot(gs, allyID)
 		if allyRoot == "" {
@@ -372,6 +382,9 @@ func resolveAutoWarCalls(gs *state.GameState, callerRoot, enemyRoot, warDeclarer
 			continue
 		}
 		out = append(out, resolveWarCall(gs, callerRoot, allyRoot, enemyRoot, false))
+	}
+	if gs != nil && gs.Imperial != nil && gs.Imperial.EmpireID == callerRoot {
+		out = append(out, imperialWarCallMembers(gs, callerRoot, enemyRoot, warDeclarerRoot)...)
 	}
 	return out
 }
@@ -429,6 +442,9 @@ func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot facti
 	if refused := refusedNames(attackerCalls); refused != "" {
 		parts = append(parts, factionLabel(gs, actorRoot)+" tarafında çağrıyı reddedenler: "+refused+" (ittifak bozuldu).")
 	}
+	if limited := limitedSupportNames(attackerCalls); limited != "" {
+		parts = append(parts, factionLabel(gs, actorRoot)+" tarafına sınırlı yardım gönderenler: "+limited+".")
+	}
 	if joined := joinedNames(defenderCalls); joined != "" {
 		parts = append(parts, factionLabel(gs, targetRoot)+" tarafına katılanlar: "+joined+".")
 	}
@@ -437,6 +453,9 @@ func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot facti
 	}
 	if refused := refusedNames(defenderCalls); refused != "" {
 		parts = append(parts, factionLabel(gs, targetRoot)+" tarafında çağrıyı reddedenler: "+refused+".")
+	}
+	if limited := limitedSupportNames(defenderCalls); limited != "" {
+		parts = append(parts, factionLabel(gs, targetRoot)+" tarafına sınırlı yardım gönderenler: "+limited+".")
 	}
 	return strings.Join(parts, " ")
 }
@@ -454,7 +473,17 @@ func joinedNames(outcomes []WarCallOutcome) string {
 func refusedNames(outcomes []WarCallOutcome) string {
 	names := make([]string, 0, len(outcomes))
 	for _, outcome := range outcomes {
-		if !outcome.Joined && !outcome.PendingDecision {
+		if !outcome.Joined && !outcome.PendingDecision && !outcome.LimitedSupport {
+			names = append(names, outcome.NameTR)
+		}
+	}
+	return strings.Join(names, ", ")
+}
+
+func limitedSupportNames(outcomes []WarCallOutcome) string {
+	names := make([]string, 0, len(outcomes))
+	for _, outcome := range outcomes {
+		if outcome.LimitedSupport {
 			names = append(names, outcome.NameTR)
 		}
 	}

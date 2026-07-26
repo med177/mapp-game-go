@@ -909,6 +909,9 @@ func (g *Game) resolveTurn() {
 		events.Apply(g.gs, evt)
 		g.handleTriggeredEvent(evt)
 	}
+	if imperialReport := diplomacy.AdvanceImperialPolitics(g.gs); imperialReport.Message != "" {
+		g.renderer.AddEvent("[İMPARATORLUK] " + imperialReport.Message)
+	}
 
 	// Bölge event ikon sürelerini güncelle
 	events.TickActiveRegionEvents(g.gs)
@@ -2762,7 +2765,7 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)) (*state.GameState, []*events.Event, error) {
 	sc := scenarioByPath(scenarioPath)
 	yield := func() { runtime.Gosched() }
-	progressTotal := 12
+	progressTotal := 13
 	progressStep := 0
 	advance := func() {
 		progressStep++
@@ -2858,6 +2861,12 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	}
 	advance()
 	yield()
+	imperialState, err := state.LoadImperialState(dp("imperial.json"), factions)
+	if err != nil {
+		return nil, nil, err
+	}
+	advance()
+	yield()
 
 	devMode := os.Getenv("DEV_MODE") == "true"
 	editMode := os.Getenv("EDIT_MODE") == "true"
@@ -2901,6 +2910,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		ScenarioVictories:  victoryOpts,
 		AvailableVictories: scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
 		Relations:          relations,
+		Imperial:           imperialState,
 		TradeCenters:       tradeCenters,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},

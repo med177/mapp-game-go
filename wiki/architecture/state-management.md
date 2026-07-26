@@ -1,8 +1,8 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-25
-related: [game-loop, systems/events, systems/economy, render-pipeline, shape-editor]
+last_updated: 2026-07-26
+related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
 # State Yönetimi
@@ -46,6 +46,7 @@ type GameState struct {
     Armies    map[ArmyID]*Army
     Commanders map[string]*Commander
     AIPlans map[FactionID]*AIPlanState
+    Imperial *ImperialState // HRE otoritesi, üyelik ve seçim state'i
     WarLedgers map[string]*WarLedger
     RecentTruces map[string]int // relation key -> ateşkes bitiş turu
     ShapeData CountryShapeJSON           // json:"-"
@@ -87,6 +88,12 @@ type GameState struct {
     WinnerID FactionID
 }
 ```
+
+`ImperialState`, HRE gibi üst siyasi kurumları bağımsız üye fraksiyonlardan ayırır.
+`EmpireID` kurumu, `EmperorID` mevcut seçilmiş hükümdarı, `Authority` merkezî
+meşruiyeti, `Members` ise sadakat/özerklik/askerî bağlılık ve elektör ağırlıklarını
+tutar. Bu alan compact save (`im`) ve debug/legacy save akışlarında korunur;
+`data/imperial.json` yalnız senaryo başlangıç state'ini sağlar.
 
 `ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; ancak bölge aktif kuşatma altındaysa bina ve birim emirleri duraklatılır, kuşatma kalkınca aynı sayaçtan devam eder; bölge el değiştirirse o bölgedeki üretim emirleri kuyruktan silinir; sıfırlandığında üretim uygulanır.
 
