@@ -11,6 +11,25 @@
     ]
   },
   {
+    "id": "army_aragon_sicily",
+    "owner_id": "aragon",
+    "region_id": "sicily",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_aydin_1",
     "owner_id": "aydin_bey",
     "region_id": "aydinoglu",
@@ -40,6 +59,29 @@
       {
         "type_id": "militia",
         "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_castile_murcia_front",
+    "owner_id": "castile_kingdom",
+    "region_id": "new_region_234",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -91,6 +133,25 @@
     "units": [
       {
         "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_east_rome_anatolia_guard",
+    "owner_id": "east_rome",
+    "region_id": "nicomedia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
         "count": 1
       },
       {
@@ -232,6 +293,25 @@
     ]
   },
   {
+    "id": "army_england_scotland_front",
+    "owner_id": "england",
+    "region_id": "lancashire",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_eretna_1",
     "owner_id": "canik_bey",
     "region_id": "eretna",
@@ -239,6 +319,25 @@
       {
         "type_id": "militia",
         "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_flanders_bruges_guard",
+    "owner_id": "flanders_county",
+    "region_id": "flanders",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 3
       }
     ]
   },
@@ -273,6 +372,29 @@
       {
         "type_id": "militia",
         "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_france_normandy",
+    "owner_id": "france",
+    "region_id": "normandy",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -636,6 +758,25 @@
     ]
   },
   {
+    "id": "army_hre_flanders_relief",
+    "owner_id": "hre",
+    "region_id": "holland",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_hungarian_kingdom_1",
     "owner_id": "hungarian_kingdom",
     "region_id": "hungary",
@@ -684,6 +825,29 @@
     "units": [
       {
         "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ilkhanate_mosul_front",
+    "owner_id": "ilkhanate",
+    "region_id": "mosul",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
         "count": 1
       },
       {
@@ -761,6 +925,29 @@
     ]
   },
   {
+    "id": "army_mamluk_aleppo_relief",
+    "owner_id": "mamluk",
+    "region_id": "aleppo",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_mentese_1",
     "owner_id": "mentese_bey",
     "region_id": "mentese",
@@ -790,6 +977,29 @@
       {
         "type_id": "militia",
         "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_naples_sicily_front",
+    "owner_id": "naples_kingdom",
+    "region_id": "naples",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -956,6 +1166,25 @@
     ]
   },
   {
+    "id": "army_scotland_border",
+    "owner_id": "scotland_kingdom",
+    "region_id": "scotland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
     "id": "army_serbian_empire_1",
     "owner_id": "hungarian_kingdom",
     "region_id": "serbia",
@@ -1050,30 +1279,74 @@
     ]
   },
   {
-    "id": "fleet_venice_guard",
-    "owner_id": "venice",
-    "region_id": "adriatic_sea_dalmatia",
-    "docked_region_id": "venice",
-    "docked_settlement_id": "venice_chioggia",
+    "id": "fleet_aragon_west",
+    "owner_id": "aragon",
+    "region_id": "mediterranean_open_2",
+    "docked_region_id": "sicily",
+    "docked_settlement_id": "sicily_messina",
     "is_naval": true,
     "units": [
       {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
         "type_id": "warship",
-        "count": 2
+        "count": 1
       }
     ]
   },
   {
-    "id": "fleet_venice_trade",
-    "owner_id": "venice",
-    "region_id": "adriatic_sea_dalmatia",
-    "docked_region_id": "venice",
-    "docked_settlement_id": "venice_chioggia",
+    "id": "fleet_east_rome_guard",
+    "owner_id": "east_rome",
+    "region_id": "new_region_238",
+    "docked_region_id": "constantinople",
+    "docked_settlement_id": "galata",
     "is_naval": true,
     "units": [
       {
-        "type_id": "merchant_ship",
-        "count": 2
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_england_channel",
+    "owner_id": "england",
+    "region_id": "new_region_250",
+    "docked_region_id": "london",
+    "docked_settlement_id": "london_greenwich",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_france_channel",
+    "owner_id": "france",
+    "region_id": "new_region_250",
+    "docked_region_id": "normandy",
+    "docked_settlement_id": "normandy_le_havre",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
       }
     ]
   },
@@ -1106,71 +1379,13 @@
     ]
   },
   {
-    "id": "fleet_east_rome_guard",
-    "owner_id": "east_rome",
-    "region_id": "new_region_238",
-    "docked_region_id": "constantinople",
-    "docked_settlement_id": "galata",
+    "id": "fleet_mamluk_east_med",
+    "owner_id": "mamluk",
+    "region_id": "eastern_mediterranean",
+    "docked_region_id": "egypt",
+    "docked_settlement_id": "alexandria",
     "is_naval": true,
     "units": [
-      {
-        "type_id": "warship",
-        "count": 1
-      },
-      {
-        "type_id": "transport",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_aragon_west",
-    "owner_id": "aragon",
-    "region_id": "mediterranean_open_2",
-    "docked_region_id": "sicily",
-    "docked_settlement_id": "sicily_messina",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
-        "count": 1
-      },
-      {
-        "type_id": "transport",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_england_channel",
-    "owner_id": "england",
-    "region_id": "new_region_250",
-    "docked_region_id": "london",
-    "docked_settlement_id": "london_greenwich",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
-        "count": 1
-      },
-      {
-        "type_id": "transport",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_france_channel",
-    "owner_id": "france",
-    "region_id": "new_region_250",
-    "docked_region_id": "normandy",
-    "docked_settlement_id": "normandy_le_havre",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
-        "count": 1
-      },
       {
         "type_id": "transport",
         "count": 1
@@ -1206,244 +1421,29 @@
     ]
   },
   {
-    "id": "fleet_mamluk_east_med",
-    "owner_id": "mamluk",
-    "region_id": "eastern_mediterranean",
-    "docked_region_id": "egypt",
-    "docked_settlement_id": "alexandria",
+    "id": "fleet_venice_guard",
+    "owner_id": "venice",
+    "region_id": "adriatic_sea_dalmatia",
+    "docked_region_id": "venice",
+    "docked_settlement_id": "venice_chioggia",
     "is_naval": true,
     "units": [
       {
-        "type_id": "transport",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "army_east_rome_anatolia_guard",
-    "owner_id": "east_rome",
-    "region_id": "nicomedia",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
+        "type_id": "warship",
         "count": 2
       }
     ]
   },
   {
-    "id": "army_mamluk_aleppo_relief",
-    "owner_id": "mamluk",
-    "region_id": "aleppo",
+    "id": "fleet_venice_trade",
+    "owner_id": "venice",
+    "region_id": "adriatic_sea_dalmatia",
+    "docked_region_id": "venice",
+    "docked_settlement_id": "venice_chioggia",
+    "is_naval": true,
     "units": [
       {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_ilkhanate_mosul_front",
-    "owner_id": "ilkhanate",
-    "region_id": "mosul",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_aragon_sicily",
-    "owner_id": "aragon",
-    "region_id": "sicily",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_naples_sicily_front",
-    "owner_id": "naples_kingdom",
-    "region_id": "naples",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_france_normandy",
-    "owner_id": "france",
-    "region_id": "normandy",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_england_scotland_front",
-    "owner_id": "england",
-    "region_id": "lancashire",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_scotland_border",
-    "owner_id": "scotland_kingdom",
-    "region_id": "scotland",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_castile_murcia_front",
-    "owner_id": "castile_kingdom",
-    "region_id": "new_region_234",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_flanders_bruges_guard",
-    "owner_id": "flanders_county",
-    "region_id": "flanders",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_hre_flanders_relief",
-    "owner_id": "hre",
-    "region_id": "holland",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
+        "type_id": "merchant_ship",
         "count": 2
       }
     ]

@@ -29,6 +29,7 @@
     "satisfaction": 75,
     "tax_rate": 45,
     "population": 400,
+    "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -36,8 +37,7 @@
       "walls",
       "walls",
       "port"
-    ],
-    "rural_population": 260
+    ]
   },
   {
     "id": "wessex",
@@ -70,10 +70,10 @@
     "satisfaction": 70,
     "tax_rate": 35,
     "population": 250,
+    "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 163
+    "buildings": null
   },
   {
     "id": "east_anglia",
@@ -104,10 +104,10 @@
     "satisfaction": 72,
     "tax_rate": 35,
     "population": 280,
+    "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "mercia",
@@ -139,10 +139,10 @@
     "satisfaction": 70,
     "tax_rate": 38,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "yorkshire",
@@ -174,10 +174,10 @@
     "satisfaction": 68,
     "tax_rate": 35,
     "population": 320,
+    "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "lancashire",
@@ -209,10 +209,10 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 220,
+    "rural_population": 143,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 143
+    "buildings": null
   },
   {
     "id": "new_region_251",
@@ -246,10 +246,10 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 220,
+    "rural_population": 143,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 143
+    "buildings": null
   },
   {
     "id": "scotland",
@@ -280,10 +280,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 400,
+    "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "wales",
@@ -313,10 +313,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "ulster",
@@ -346,10 +346,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 500,
+    "rural_population": 325,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 325
+    "buildings": null
   },
   {
     "id": "the_pale",
@@ -381,10 +381,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 420,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "paris",
@@ -419,6 +419,7 @@
     "satisfaction": 75,
     "tax_rate": 45,
     "population": 500,
+    "rural_population": 325,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -426,8 +427,7 @@
       "barracks",
       "walls",
       "walls"
-    ],
-    "rural_population": 325
+    ]
   },
   {
     "id": "normandy",
@@ -459,12 +459,12 @@
     "satisfaction": 70,
     "tax_rate": 38,
     "population": 350,
+    "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "port"
-    ],
-    "rural_population": 228
+    ]
   },
   {
     "id": "brittany",
@@ -496,10 +496,10 @@
     "satisfaction": 68,
     "tax_rate": 35,
     "population": 280,
+    "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "anjou",
@@ -531,10 +531,10 @@
     "satisfaction": 70,
     "tax_rate": 36,
     "population": 320,
+    "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "champagne",
@@ -565,10 +565,10 @@
     "satisfaction": 72,
     "tax_rate": 40,
     "population": 380,
+    "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "burgundy",
@@ -602,10 +602,10 @@
     "satisfaction": 70,
     "tax_rate": 42,
     "population": 420,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "provence",
@@ -637,10 +637,10 @@
     "satisfaction": 72,
     "tax_rate": 38,
     "population": 360,
+    "rural_population": 234,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "languedoc",
@@ -674,10 +674,10 @@
     "satisfaction": 68,
     "tax_rate": 36,
     "population": 340,
+    "rural_population": 221,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 221
+    "buildings": null
   },
   {
     "id": "brandenburg",
@@ -710,10 +710,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 450,
+    "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 293
+    "buildings": null
   },
   {
     "id": "saxony",
@@ -746,10 +746,10 @@
     "satisfaction": 68,
     "tax_rate": 35,
     "population": 550,
+    "rural_population": 358,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 358
+    "buildings": null
   },
   {
     "id": "bavaria",
@@ -781,13 +781,13 @@
     "satisfaction": 70,
     "tax_rate": 38,
     "population": 600,
+    "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 390
+    ]
   },
   {
     "id": "westphalia",
@@ -821,10 +821,10 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 480,
+    "rural_population": 312,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 312
+    "buildings": null
   },
   {
     "id": "thuringia",
@@ -858,10 +858,10 @@
     "satisfaction": 66,
     "tax_rate": 33,
     "population": 380,
+    "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "palatinate",
@@ -896,10 +896,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 420,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "denmark",
@@ -913,8 +913,8 @@
       "saxony",
       "westphalia"
     ],
-    "world_x": 660,
-    "world_y": 171,
+    "world_x": 673,
+    "world_y": 174,
     "shape_id": "DNK",
     "is_sea": false,
     "is_locked": false,
@@ -930,10 +930,41 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 600,
+    "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 390
+    "buildings": null
+  },
+  {
+    "id": "new_region_260",
+    "name": "New Region 258",
+    "name_tr": "Yeni Bolge 258",
+    "terrain": "coast",
+    "owner_id": "denmark_kingdom",
+    "neighbors": [
+      "new_region_235"
+    ],
+    "world_x": 715,
+    "world_y": 179,
+    "shape_id": "DNK",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 40,
+    "base_grain_output": 25,
+    "base_iron_output": 0,
+    "base_timber_output": 16,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 6,
+    "trade_capacity": 4,
+    "satisfaction": 68,
+    "tax_rate": 38,
+    "population": 600,
+    "rural_population": 390,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
   },
   {
     "id": "switzerland",
@@ -969,10 +1000,10 @@
     "satisfaction": 75,
     "tax_rate": 45,
     "population": 400,
+    "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "savoy",
@@ -1004,10 +1035,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 350,
+    "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "portugal",
@@ -1039,13 +1070,13 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
+    "rural_population": 585,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "port"
-    ],
-    "rural_population": 585
+    ]
   },
   {
     "id": "new_region_252",
@@ -1076,12 +1107,12 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
+    "rural_population": 585,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 585
+    ]
   },
   {
     "id": "castile",
@@ -1115,13 +1146,13 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 1200,
+    "rural_population": 780,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 780
+    ]
   },
   {
     "id": "new_region_234",
@@ -1153,13 +1184,13 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 1200,
+    "rural_population": 780,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 780
+    ]
   },
   {
     "id": "aragon",
@@ -1192,12 +1223,12 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 1100,
+    "rural_population": 715,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 715
+    ]
   },
   {
     "id": "venice",
@@ -1230,13 +1261,13 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 800,
+    "rural_population": 520,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "market",
       "port"
-    ],
-    "rural_population": 520
+    ]
   },
   {
     "id": "papal_states",
@@ -1269,10 +1300,10 @@
     "satisfaction": 78,
     "tax_rate": 20,
     "population": 700,
+    "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "naples",
@@ -1306,10 +1337,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 600,
+    "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 390
+    "buildings": null
   },
   {
     "id": "austria",
@@ -1321,6 +1352,7 @@
       "bohemia",
       "hungary",
       "moravia",
+      "new_region_255",
       "slovakia",
       "slovenia",
       "styria"
@@ -1342,10 +1374,10 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 800,
+    "rural_population": 520,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 520
+    "buildings": null
   },
   {
     "id": "bohemia",
@@ -1378,10 +1410,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "poland",
@@ -1414,13 +1446,13 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 1500,
+    "rural_population": 975,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 975
+    ]
   },
   {
     "id": "lithuania",
@@ -1452,10 +1484,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 1200,
+    "rural_population": 780,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 780
+    "buildings": null
   },
   {
     "id": "hungary",
@@ -1467,6 +1499,7 @@
       "alfold",
       "austria",
       "croatia",
+      "new_region_255",
       "serbia",
       "slovakia",
       "slovenia"
@@ -1488,13 +1521,13 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 1100,
+    "rural_population": 715,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 715
+    ]
   },
   {
     "id": "serbia",
@@ -1504,9 +1537,10 @@
     "owner_id": "hungarian_kingdom",
     "neighbors": [
       "alfold",
-      "bosnia",
       "croatia",
+      "hum",
       "hungary",
+      "new_region_255",
       "nis",
       "rascia",
       "transylvania"
@@ -1528,6 +1562,7 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 600,
+    "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -1535,8 +1570,7 @@
       "barracks",
       "walls",
       "walls"
-    ],
-    "rural_population": 390
+    ]
   },
   {
     "id": "nis",
@@ -1546,6 +1580,7 @@
     "owner_id": "serbian_empire",
     "neighbors": [
       "kosovo",
+      "new_region_255",
       "north_macedonia",
       "oltenia",
       "rascia",
@@ -1570,10 +1605,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 520,
+    "rural_population": 338,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 338
+    "buildings": null
   },
   {
     "id": "wallachia",
@@ -1586,6 +1621,7 @@
       "bulgaria",
       "dobruja",
       "moldova",
+      "new_region_255",
       "oltenia",
       "transylvania"
     ],
@@ -1606,10 +1642,10 @@
     "satisfaction": 50,
     "tax_rate": 25,
     "population": 500,
+    "rural_population": 325,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 325
+    "buildings": null
   },
   {
     "id": "oltenia",
@@ -1619,6 +1655,7 @@
     "owner_id": "wallachia_prince",
     "neighbors": [
       "bulgaria",
+      "new_region_255",
       "nis",
       "transylvania",
       "vidin",
@@ -1641,10 +1678,10 @@
     "satisfaction": 50,
     "tax_rate": 25,
     "population": 460,
+    "rural_population": 299,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 299
+    "buildings": null
   },
   {
     "id": "bessarabia",
@@ -1675,10 +1712,10 @@
     "satisfaction": 50,
     "tax_rate": 25,
     "population": 460,
+    "rural_population": 299,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 299
+    "buildings": null
   },
   {
     "id": "bulgaria",
@@ -1690,6 +1727,8 @@
       "dobruja",
       "gallipoli",
       "new_region_255",
+      "new_region_256",
+      "new_region_257",
       "oltenia",
       "serres",
       "thrace",
@@ -1713,10 +1752,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "morocco",
@@ -1747,10 +1786,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "algiers",
@@ -1781,10 +1820,10 @@
     "satisfaction": 55,
     "tax_rate": 30,
     "population": 430,
+    "rural_population": 280,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 280
+    "buildings": null
   },
   {
     "id": "new_region_229",
@@ -1822,10 +1861,10 @@
     "satisfaction": 55,
     "tax_rate": 30,
     "population": 400,
+    "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "tunis",
@@ -1861,10 +1900,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 500,
+    "rural_population": 325,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 325
+    "buildings": null
   },
   {
     "id": "tripolitania",
@@ -1898,10 +1937,10 @@
     "satisfaction": 50,
     "tax_rate": 25,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "new_region_228",
@@ -1934,10 +1973,10 @@
     "satisfaction": 50,
     "tax_rate": 25,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "greece",
@@ -1969,10 +2008,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 600,
+    "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 390
+    "buildings": null
   },
   {
     "id": "bursa",
@@ -2004,10 +2043,10 @@
     "satisfaction": 55,
     "tax_rate": 30,
     "population": 1000,
+    "rural_population": 650,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 650
+    "buildings": null
   },
   {
     "id": "konya",
@@ -2040,13 +2079,13 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
+    "rural_population": 585,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "farm"
-    ],
-    "rural_population": 585
+    ]
   },
   {
     "id": "crimea",
@@ -2079,10 +2118,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 400,
+    "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "moscow",
@@ -2113,12 +2152,12 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 1000,
+    "rural_population": 650,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 650
+    ]
   },
   {
     "id": "trebizond",
@@ -2150,10 +2189,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "erzurum",
@@ -2185,10 +2224,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 380,
+    "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "georgia",
@@ -2222,10 +2261,10 @@
     "satisfaction": 55,
     "tax_rate": 20,
     "population": 300,
+    "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "egypt",
@@ -2259,13 +2298,13 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 1400,
+    "rural_population": 910,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "port"
-    ],
-    "rural_population": 910
+    ]
   },
   {
     "id": "new_region_226",
@@ -2296,12 +2335,12 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 1400,
+    "rural_population": 910,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 910
+    ]
   },
   {
     "id": "palestine",
@@ -2330,10 +2369,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 500,
+    "rural_population": 325,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 325
+    "buildings": null
   },
   {
     "id": "damascus",
@@ -2366,10 +2405,10 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
+    "rural_population": 585,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 585
+    "buildings": null
   },
   {
     "id": "baghdad",
@@ -2400,10 +2439,10 @@
     "satisfaction": 55,
     "tax_rate": 30,
     "population": 800,
+    "rural_population": 520,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 520
+    "buildings": null
   },
   {
     "id": "northern_persia",
@@ -2434,13 +2473,13 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 600,
+    "rural_population": 390,
     "religion": "shia",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 390
+    ]
   },
   {
     "id": "western_persia",
@@ -2477,10 +2516,10 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 700,
+    "rural_population": 455,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "southern_persia",
@@ -2513,13 +2552,13 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
+    "rural_population": 585,
     "religion": "shia",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 585
+    ]
   },
   {
     "id": "hejaz",
@@ -2550,10 +2589,10 @@
     "satisfaction": 80,
     "tax_rate": 20,
     "population": 400,
+    "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "new_region_227",
@@ -2590,10 +2629,10 @@
     "satisfaction": 80,
     "tax_rate": 20,
     "population": 400,
+    "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "slovenia",
@@ -2607,6 +2646,7 @@
       "croatia",
       "dalmatia",
       "hungary",
+      "new_region_261",
       "styria",
       "venice"
     ],
@@ -2627,10 +2667,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 450,
+    "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 293
+    "buildings": null
   },
   {
     "id": "croatia",
@@ -2640,8 +2680,10 @@
     "owner_id": "hungarian_kingdom",
     "neighbors": [
       "bosnia",
-      "dalmatia",
+      "hum",
       "hungary",
+      "new_region_255",
+      "new_region_261",
       "serbia",
       "slovenia"
     ],
@@ -2662,10 +2704,10 @@
     "satisfaction": 58,
     "tax_rate": 30,
     "population": 650,
+    "rural_population": 423,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 423
+    "buildings": null
   },
   {
     "id": "bosnia",
@@ -2675,13 +2717,13 @@
     "owner_id": "hungarian_kingdom",
     "neighbors": [
       "croatia",
-      "dalmatia",
       "hum",
-      "rascia",
-      "serbia"
+      "new_region_261",
+      "new_region_262",
+      "new_region_263"
     ],
-    "world_x": 833,
-    "world_y": 388,
+    "world_x": 823,
+    "world_y": 384,
     "shape_id": "BIH",
     "is_sea": false,
     "is_locked": false,
@@ -2697,26 +2739,27 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 550,
+    "rural_population": 358,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 358
+    "buildings": null
   },
   {
     "id": "montenegro",
     "name": "Montenegro",
     "name_tr": "Karadağ",
     "terrain": "mountain",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "venice",
     "neighbors": [
       "adriatic_sea",
       "albania",
       "hum",
       "kosovo",
       "new_region_245",
+      "new_region_263",
       "rascia"
     ],
-    "world_x": 855,
+    "world_x": 860,
     "world_y": 427,
     "shape_id": "MNE",
     "is_sea": false,
@@ -2733,10 +2776,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 250,
+    "rural_population": 163,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 163
+    "buildings": null
   },
   {
     "id": "kosovo",
@@ -2768,10 +2811,10 @@
     "satisfaction": 52,
     "tax_rate": 25,
     "population": 250,
+    "rural_population": 163,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 163
+    "buildings": null
   },
   {
     "id": "albania",
@@ -2803,10 +2846,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 350,
+    "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "north_macedonia",
@@ -2840,10 +2883,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 350,
+    "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "moldova",
@@ -2857,6 +2900,7 @@
       "galicia_volhynia",
       "kiev",
       "new_region_239",
+      "new_region_255",
       "wallachia"
     ],
     "world_x": 1050,
@@ -2876,10 +2920,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 350,
+    "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "atlantic_ocean",
@@ -2908,10 +2952,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_248",
@@ -2943,10 +2987,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_233",
@@ -2976,10 +3020,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_249",
@@ -3010,10 +3054,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "irish_sea",
@@ -3048,10 +3092,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "north_sea",
@@ -3082,10 +3126,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "kattegat",
@@ -3117,10 +3161,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_235",
@@ -3132,6 +3176,7 @@
       "baltic_sea",
       "denmark",
       "kattegat",
+      "new_region_260",
       "norway",
       "pomerania",
       "saxony",
@@ -3153,10 +3198,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "baltic_sea",
@@ -3191,10 +3236,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "gulf_of_finland",
@@ -3225,10 +3270,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "western_mediterranean",
@@ -3263,10 +3308,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "adriatic_sea",
@@ -3277,11 +3322,11 @@
     "neighbors": [
       "adriatic_sea_dalmatia",
       "apulia",
-      "dalmatia",
-      "hum",
       "montenegro",
       "naples",
       "new_region_245",
+      "new_region_262",
+      "new_region_263",
       "papal_states"
     ],
     "world_x": 818,
@@ -3300,10 +3345,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_245",
@@ -3339,10 +3384,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "adriatic_sea_dalmatia",
@@ -3354,6 +3399,7 @@
       "adriatic_sea",
       "dalmatia",
       "ferrara",
+      "new_region_262",
       "papal_states",
       "slovenia",
       "venice"
@@ -3374,10 +3420,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "ionian_sea",
@@ -3410,10 +3456,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "eastern_mediterranean",
@@ -3444,10 +3490,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "aegean_sea",
@@ -3484,10 +3530,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_253",
@@ -3523,10 +3569,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "black_sea",
@@ -3539,7 +3585,8 @@
       "black_open_4",
       "crimea",
       "new_region_254",
-      "new_region_255",
+      "new_region_256",
+      "new_region_257",
       "sea_of_azov"
     ],
     "world_x": 1136,
@@ -3558,10 +3605,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_238",
@@ -3575,7 +3622,7 @@
       "bursa",
       "constantinople",
       "gallipoli",
-      "new_region_255",
+      "new_region_257",
       "nicomedia",
       "thrace"
     ],
@@ -3595,10 +3642,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_255",
@@ -3607,19 +3654,23 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "black_open_4",
-      "black_sea",
+      "austria",
       "bulgaria",
-      "chrysopolis",
-      "constantinople",
+      "croatia",
       "dobruja",
-      "new_region_238",
-      "new_region_254",
-      "nicomedia",
-      "thrace"
+      "hungary",
+      "moldova",
+      "new_region_239",
+      "new_region_256",
+      "nis",
+      "oltenia",
+      "serbia",
+      "slovakia",
+      "vidin",
+      "wallachia"
     ],
-    "world_x": 1061,
-    "world_y": 439,
+    "world_x": 904,
+    "world_y": 384,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3634,10 +3685,140 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
+  },
+  {
+    "id": "new_region_259",
+    "name": "New Region 257",
+    "name_tr": "Yeni Bolge 257",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": null,
+    "world_x": 824,
+    "world_y": 332,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_258",
+    "name": "New Region 256",
+    "name_tr": "Yeni Bolge 256",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": null,
+    "world_x": 820,
+    "world_y": 332,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_257",
+    "name": "New Region 255",
+    "name_tr": "Yeni Bolge 255",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "black_sea",
+      "bulgaria",
+      "chrysopolis",
+      "constantinople",
+      "new_region_238",
+      "new_region_254",
+      "new_region_256",
+      "nicomedia",
+      "thrace"
+    ],
+    "world_x": 1071,
+    "world_y": 433,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_256",
+    "name": "New Region 254",
+    "name_tr": "Yeni Bolge 254",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "black_open_4",
+      "black_sea",
+      "bulgaria",
+      "dobruja",
+      "new_region_239",
+      "new_region_255",
+      "new_region_257"
+    ],
+    "world_x": 1063,
+    "world_y": 402,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
   },
   {
     "id": "new_region_254",
@@ -3649,7 +3830,7 @@
       "black_open_1",
       "black_sea",
       "chrysopolis",
-      "new_region_255",
+      "new_region_257",
       "paphlagonia",
       "sinop"
     ],
@@ -3669,10 +3850,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "red_sea",
@@ -3701,10 +3882,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "caspian_sea",
@@ -3735,10 +3916,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "persian_gulf",
@@ -3771,10 +3952,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "slovakia",
@@ -3789,6 +3970,7 @@
       "hungary",
       "mazovia",
       "moravia",
+      "new_region_255",
       "poland"
     ],
     "world_x": 865,
@@ -3808,10 +3990,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 500,
+    "rural_population": 325,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 325
+    "buildings": null
   },
   {
     "id": "estonia",
@@ -3841,10 +4023,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 200,
+    "rural_population": 130,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "latvia",
@@ -3877,10 +4059,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 250,
+    "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 163
+    "buildings": null
   },
   {
     "id": "belarus",
@@ -3913,10 +4095,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 600,
+    "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 390
+    "buildings": null
   },
   {
     "id": "norway",
@@ -3947,10 +4129,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 350,
+    "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "sweden",
@@ -3981,10 +4163,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "thrace",
@@ -3997,7 +4179,7 @@
       "constantinople",
       "gallipoli",
       "new_region_238",
-      "new_region_255"
+      "new_region_257"
     ],
     "world_x": 1024,
     "world_y": 446,
@@ -4016,12 +4198,12 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 400,
+    "rural_population": 260,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 260
+    ]
   },
   {
     "id": "gallipoli",
@@ -4053,12 +4235,12 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 350,
+    "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
       "port"
-    ],
-    "rural_population": 228
+    ]
   },
   {
     "id": "constantinople",
@@ -4068,7 +4250,7 @@
     "owner_id": "east_rome",
     "neighbors": [
       "new_region_238",
-      "new_region_255",
+      "new_region_257",
       "thrace"
     ],
     "world_x": 1055,
@@ -4088,6 +4270,7 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 520,
+    "rural_population": 338,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -4097,8 +4280,7 @@
       "walls",
       "walls",
       "walls"
-    ],
-    "rural_population": 338
+    ]
   },
   {
     "id": "jordan",
@@ -4132,14 +4314,14 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 250,
+    "rural_population": 163,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "walls",
       "walls",
       "walls"
-    ],
-    "rural_population": 163
+    ]
   },
   {
     "id": "azerbaijan",
@@ -4173,12 +4355,12 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 450,
+    "rural_population": 293,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 293
+    ]
   },
   {
     "id": "armenia",
@@ -4210,10 +4392,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "lebanon",
@@ -4244,10 +4426,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "kuwait",
@@ -4278,10 +4460,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 200,
+    "rural_population": 130,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "cyprus",
@@ -4312,12 +4494,12 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 350,
+    "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 228
+    ]
   },
   {
     "id": "flanders",
@@ -4353,12 +4535,12 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "port"
-    ],
-    "rural_population": 455
+    ]
   },
   {
     "id": "holland",
@@ -4391,10 +4573,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 600,
+    "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 390
+    "buildings": null
   },
   {
     "id": "luxembourg",
@@ -4425,10 +4607,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 200,
+    "rural_population": 130,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "ukrainian_steppe",
@@ -4445,8 +4627,8 @@
       "new_region_239",
       "novgorod"
     ],
-    "world_x": 1178,
-    "world_y": 291,
+    "world_x": 1171,
+    "world_y": 295,
     "shape_id": "UKR",
     "is_sea": false,
     "is_locked": false,
@@ -4462,13 +4644,13 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 600,
+    "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
       "barracks",
       "barracks"
-    ],
-    "rural_population": 390
+    ]
   },
   {
     "id": "konigsberg",
@@ -4499,12 +4681,12 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 195
+    ]
   },
   {
     "id": "sicily",
@@ -4536,12 +4718,12 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 450,
+    "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "port"
-    ],
-    "rural_population": 293
+    ]
   },
   {
     "id": "sardinia",
@@ -4573,10 +4755,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 250,
+    "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 163
+    "buildings": null
   },
   {
     "id": "corsica",
@@ -4608,10 +4790,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 200,
+    "rural_population": 130,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "crete",
@@ -4642,10 +4824,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 350,
+    "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "malta",
@@ -4674,10 +4856,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 150,
+    "rural_population": 98,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 98
+    "buildings": null
   },
   {
     "id": "israel",
@@ -4712,10 +4894,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "uae",
@@ -4746,10 +4928,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 200,
+    "rural_population": 130,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "qatar",
@@ -4779,10 +4961,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 120,
+    "rural_population": 78,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 78
+    "buildings": null
   },
   {
     "id": "bahrain",
@@ -4812,10 +4994,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 100,
+    "rural_population": 65,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 65
+    "buildings": null
   },
   {
     "id": "north_cyprus",
@@ -4845,17 +5027,17 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 200,
+    "rural_population": 130,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 130
+    "buildings": null
   },
   {
     "id": "rhodes",
     "name": "Rhodes",
     "name_tr": "Rodos",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "venice",
     "neighbors": [
       "mediterranean_open_1",
       "new_region_253"
@@ -4877,14 +5059,14 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 250,
+    "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "walls",
       "walls",
       "walls"
-    ],
-    "rural_population": 163
+    ]
   },
   {
     "id": "mallorca",
@@ -4913,10 +5095,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "germiyan",
@@ -4950,10 +5132,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 380,
+    "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "aydinoglu",
@@ -4986,10 +5168,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 320,
+    "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "saruhan",
@@ -5020,10 +5202,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "izmir",
@@ -5054,10 +5236,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "mentese_hinterland",
@@ -5090,10 +5272,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 340,
+    "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 221
+    "buildings": null
   },
   {
     "id": "candaroglu",
@@ -5125,10 +5307,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 280,
+    "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "sivas",
@@ -5160,10 +5342,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 420,
+    "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "cilicia",
@@ -5198,10 +5380,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 420,
+    "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "akkoyunlu",
@@ -5235,10 +5417,10 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 420,
+    "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "florence",
@@ -5270,10 +5452,10 @@
     "satisfaction": 68,
     "tax_rate": 35,
     "population": 750,
+    "rural_population": 488,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 488
+    "buildings": null
   },
   {
     "id": "genoa",
@@ -5305,13 +5487,13 @@
     "satisfaction": 70,
     "tax_rate": 35,
     "population": 600,
+    "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "market",
       "port"
-    ],
-    "rural_population": 390
+    ]
   },
   {
     "id": "milan",
@@ -5343,10 +5525,10 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 850,
+    "rural_population": 553,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 553
+    "buildings": null
   },
   {
     "id": "granada",
@@ -5380,10 +5562,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "navarre",
@@ -5417,10 +5599,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 280,
+    "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "pomerania",
@@ -5452,10 +5634,10 @@
     "satisfaction": 62,
     "tax_rate": 30,
     "population": 700,
+    "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 455
+    "buildings": null
   },
   {
     "id": "transylvania",
@@ -5489,10 +5671,10 @@
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 650,
+    "rural_population": 423,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 423
+    "buildings": null
   },
   {
     "id": "mentese",
@@ -5526,10 +5708,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "teke",
@@ -5562,10 +5744,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 260,
+    "rural_population": 169,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 169
+    "buildings": null
   },
   {
     "id": "hamideli",
@@ -5596,10 +5778,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 320,
+    "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "beysehir",
@@ -5631,10 +5813,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "aksaray",
@@ -5667,10 +5849,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 340,
+    "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 221
+    "buildings": null
   },
   {
     "id": "sivrihisar",
@@ -5703,10 +5885,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "cankiri",
@@ -5740,10 +5922,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 320,
+    "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "karaman",
@@ -5775,10 +5957,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 380,
+    "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "kayseri",
@@ -5810,10 +5992,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "eretna",
@@ -5847,10 +6029,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 800,
+    "rural_population": 520,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 520
+    "buildings": null
   },
   {
     "id": "malatya",
@@ -5884,10 +6066,10 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 620,
+    "rural_population": 403,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 403
+    "buildings": null
   },
   {
     "id": "dulkadir",
@@ -5919,10 +6101,10 @@
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 380,
+    "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "erzincan",
@@ -5954,10 +6136,10 @@
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "vidin",
@@ -5968,6 +6150,7 @@
     "neighbors": [
       "bulgaria",
       "chalcidice",
+      "new_region_255",
       "nis",
       "north_macedonia",
       "oltenia",
@@ -5990,10 +6173,10 @@
     "satisfaction": 55,
     "tax_rate": 28,
     "population": 420,
+    "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "styria",
@@ -6026,10 +6209,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 320,
+    "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "tyrol",
@@ -6062,10 +6245,10 @@
     "satisfaction": 66,
     "tax_rate": 28,
     "population": 280,
+    "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "moravia",
@@ -6097,10 +6280,10 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 420,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "silesia",
@@ -6133,10 +6316,10 @@
     "satisfaction": 64,
     "tax_rate": 33,
     "population": 450,
+    "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 293
+    "buildings": null
   },
   {
     "id": "mazovia",
@@ -6169,10 +6352,10 @@
     "satisfaction": 63,
     "tax_rate": 30,
     "population": 380,
+    "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "friesland",
@@ -6202,10 +6385,10 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "lorraine",
@@ -6239,10 +6422,10 @@
     "satisfaction": 64,
     "tax_rate": 32,
     "population": 360,
+    "rural_population": 234,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "alsace",
@@ -6273,10 +6456,10 @@
     "satisfaction": 65,
     "tax_rate": 33,
     "population": 340,
+    "rural_population": 221,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 221
+    "buildings": null
   },
   {
     "id": "alfold",
@@ -6308,10 +6491,10 @@
     "satisfaction": 62,
     "tax_rate": 28,
     "population": 400,
+    "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 260
+    "buildings": null
   },
   {
     "id": "verona",
@@ -6344,10 +6527,10 @@
     "satisfaction": 66,
     "tax_rate": 35,
     "population": 550,
+    "rural_population": 358,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 358
+    "buildings": null
   },
   {
     "id": "ferrara",
@@ -6380,10 +6563,10 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 420,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "siena",
@@ -6415,10 +6598,10 @@
     "satisfaction": 65,
     "tax_rate": 33,
     "population": 480,
+    "rural_population": 312,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 312
+    "buildings": null
   },
   {
     "id": "apulia",
@@ -6448,10 +6631,10 @@
     "satisfaction": 62,
     "tax_rate": 28,
     "population": 450,
+    "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 293
+    "buildings": null
   },
   {
     "id": "rascia",
@@ -6460,7 +6643,6 @@
     "terrain": "mountain",
     "owner_id": "serbian_empire",
     "neighbors": [
-      "bosnia",
       "hum",
       "kosovo",
       "montenegro",
@@ -6484,27 +6666,25 @@
     "satisfaction": 65,
     "tax_rate": 28,
     "population": 480,
+    "rural_population": 312,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 312
+    "buildings": null
   },
   {
     "id": "dalmatia",
     "name": "Dalmatia",
     "name_tr": "Dalmasya",
     "terrain": "coast",
-    "owner_id": "hungarian_kingdom",
+    "owner_id": "venice",
     "neighbors": [
-      "adriatic_sea",
       "adriatic_sea_dalmatia",
-      "bosnia",
-      "croatia",
-      "hum",
+      "new_region_261",
+      "new_region_262",
       "slovenia"
     ],
-    "world_x": 790,
-    "world_y": 391,
+    "world_x": 776,
+    "world_y": 386,
     "shape_id": "HRV",
     "is_sea": false,
     "is_locked": false,
@@ -6520,10 +6700,81 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 380,
+    "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
+  },
+  {
+    "id": "new_region_262",
+    "name": "New Region 260",
+    "name_tr": "Yeni Bolge 260",
+    "terrain": "coast",
+    "owner_id": "venice",
+    "neighbors": [
+      "adriatic_sea",
+      "adriatic_sea_dalmatia",
+      "bosnia",
+      "dalmatia",
+      "new_region_261",
+      "new_region_263"
+    ],
+    "world_x": 802,
+    "world_y": 403,
+    "shape_id": "HRV",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 55,
+    "base_grain_output": 25,
+    "base_iron_output": 0,
+    "base_timber_output": 10,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 8,
+    "trade_capacity": 4,
+    "satisfaction": 65,
+    "tax_rate": 32,
+    "population": 380,
+    "rural_population": 247,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_261",
+    "name": "New Region 259",
+    "name_tr": "Yeni Bolge 259",
+    "terrain": "coast",
+    "owner_id": "hungarian_kingdom",
+    "neighbors": [
+      "bosnia",
+      "croatia",
+      "dalmatia",
+      "new_region_262",
+      "slovenia"
+    ],
+    "world_x": 795,
+    "world_y": 373,
+    "shape_id": "HRV",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 55,
+    "base_grain_output": 25,
+    "base_iron_output": 0,
+    "base_timber_output": 10,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 8,
+    "trade_capacity": 4,
+    "satisfaction": 65,
+    "tax_rate": 32,
+    "population": 380,
+    "rural_population": 247,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
   },
   {
     "id": "hum",
@@ -6532,14 +6783,15 @@
     "terrain": "mountain",
     "owner_id": "hungarian_kingdom",
     "neighbors": [
-      "adriatic_sea",
       "bosnia",
-      "dalmatia",
+      "croatia",
       "montenegro",
-      "rascia"
+      "new_region_263",
+      "rascia",
+      "serbia"
     ],
-    "world_x": 848,
-    "world_y": 415,
+    "world_x": 839,
+    "world_y": 399,
     "shape_id": "BIH",
     "is_sea": false,
     "is_locked": false,
@@ -6555,10 +6807,45 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 320,
+    "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
+  },
+  {
+    "id": "new_region_263",
+    "name": "New Region 261",
+    "name_tr": "Yeni Bolge 261",
+    "terrain": "mountain",
+    "owner_id": "hungarian_kingdom",
+    "neighbors": [
+      "adriatic_sea",
+      "bosnia",
+      "hum",
+      "montenegro",
+      "new_region_262"
+    ],
+    "world_x": 833,
+    "world_y": 408,
+    "shape_id": "BIH",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 22,
+    "base_grain_output": 30,
+    "base_iron_output": 0,
+    "base_timber_output": 12,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 2,
+    "satisfaction": 62,
+    "tax_rate": 25,
+    "population": 320,
+    "rural_population": 208,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
   },
   {
     "id": "epirus",
@@ -6590,10 +6877,10 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 300,
+    "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 195
+    "buildings": null
   },
   {
     "id": "thessaly",
@@ -6626,10 +6913,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 340,
+    "rural_population": 221,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 221
+    "buildings": null
   },
   {
     "id": "thessaloniki_hinterland",
@@ -6661,10 +6948,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 420,
+    "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "morea",
@@ -6696,10 +6983,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 350,
+    "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 228
+    "buildings": null
   },
   {
     "id": "dobruja",
@@ -6708,11 +6995,11 @@
     "terrain": "plain",
     "owner_id": "bulgarian_empire",
     "neighbors": [
-      "black_open_4",
       "bulgaria",
       "moldova",
       "new_region_239",
       "new_region_255",
+      "new_region_256",
       "wallachia"
     ],
     "world_x": 1045,
@@ -6732,10 +7019,10 @@
     "satisfaction": 60,
     "tax_rate": 25,
     "population": 280,
+    "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "bithynia",
@@ -6767,12 +7054,12 @@
     "satisfaction": 62,
     "tax_rate": 28,
     "population": 340,
+    "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 221
+    ]
   },
   {
     "id": "kutahya",
@@ -6806,10 +7093,10 @@
     "satisfaction": 62,
     "tax_rate": 28,
     "population": 420,
+    "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "galicia_volhynia",
@@ -6844,10 +7131,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 420,
+    "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 273
+    "buildings": null
   },
   {
     "id": "kiev",
@@ -6863,8 +7150,8 @@
       "novgorod",
       "ukrainian_steppe"
     ],
-    "world_x": 1098,
-    "world_y": 302,
+    "world_x": 1086,
+    "world_y": 307,
     "shape_id": "UKR",
     "is_sea": false,
     "is_locked": false,
@@ -6880,10 +7167,10 @@
     "satisfaction": 58,
     "tax_rate": 25,
     "population": 380,
+    "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "new_region_239",
@@ -6897,10 +7184,12 @@
       "dobruja",
       "kiev",
       "moldova",
+      "new_region_255",
+      "new_region_256",
       "ukrainian_steppe"
     ],
-    "world_x": 1100,
-    "world_y": 346,
+    "world_x": 1087,
+    "world_y": 339,
     "shape_id": "UKR",
     "is_sea": false,
     "is_locked": false,
@@ -6916,10 +7205,10 @@
     "satisfaction": 58,
     "tax_rate": 25,
     "population": 380,
+    "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 247
+    "buildings": null
   },
   {
     "id": "aleppo",
@@ -6952,13 +7241,13 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 480,
+    "rural_population": 312,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "market",
       "walls"
-    ],
-    "rural_population": 312
+    ]
   },
   {
     "id": "new_region_225",
@@ -6991,12 +7280,12 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 480,
+    "rural_population": 312,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "market"
-    ],
-    "rural_population": 312
+    ]
   },
   {
     "id": "mosul",
@@ -7030,12 +7319,12 @@
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 360,
+    "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "market"
-    ],
-    "rural_population": 234
+    ]
   },
   {
     "id": "basra",
@@ -7067,13 +7356,13 @@
     "satisfaction": 58,
     "tax_rate": 28,
     "population": 320,
+    "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "market",
       "port"
-    ],
-    "rural_population": 208
+    ]
   },
   {
     "id": "nicomedia",
@@ -7086,7 +7375,7 @@
       "bursa",
       "chrysopolis",
       "new_region_238",
-      "new_region_255"
+      "new_region_257"
     ],
     "world_x": 1075,
     "world_y": 457,
@@ -7105,10 +7394,10 @@
     "satisfaction": 62,
     "tax_rate": 30,
     "population": 280,
+    "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "bilecik_frontier",
@@ -7141,12 +7430,12 @@
     "satisfaction": 62,
     "tax_rate": 30,
     "population": 300,
+    "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
       "barracks"
-    ],
-    "rural_population": 195
+    ]
   },
   {
     "id": "paphlagonia",
@@ -7177,10 +7466,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 220,
+    "rural_population": 143,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 143
+    "buildings": null
   },
   {
     "id": "sinop",
@@ -7213,10 +7502,10 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 280,
+    "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "chrysopolis",
@@ -7225,13 +7514,13 @@
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
-      "sivrihisar",
       "bilecik_frontier",
       "cankiri",
       "new_region_254",
-      "new_region_255",
+      "new_region_257",
       "nicomedia",
-      "paphlagonia"
+      "paphlagonia",
+      "sivrihisar"
     ],
     "world_x": 1096,
     "world_y": 459,
@@ -7250,10 +7539,10 @@
     "satisfaction": 65,
     "tax_rate": 28,
     "population": 180,
+    "rural_population": 117,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 117
+    "buildings": null
   },
   {
     "id": "novgorod",
@@ -7287,10 +7576,10 @@
     "satisfaction": 70,
     "tax_rate": 30,
     "population": 800,
+    "rural_population": 520,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 520
+    "buildings": null
   },
   {
     "id": "nizhny_novgorod",
@@ -7321,10 +7610,10 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 320,
+    "rural_population": 208,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "new_region_236",
@@ -7361,10 +7650,10 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 320,
+    "rural_population": 208,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 208
+    "buildings": null
   },
   {
     "id": "dagestan",
@@ -7397,10 +7686,10 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 360,
+    "rural_population": 234,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 234
+    "buildings": null
   },
   {
     "id": "chalcidice",
@@ -7433,10 +7722,10 @@
     "satisfaction": 72,
     "tax_rate": 20,
     "population": 180,
+    "rural_population": 117,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 117
+    "buildings": null
   },
   {
     "id": "serres",
@@ -7468,10 +7757,10 @@
     "satisfaction": 72,
     "tax_rate": 20,
     "population": 280,
+    "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 182
+    "buildings": null
   },
   {
     "id": "atlantic_open_1",
@@ -7502,10 +7791,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_open_2",
@@ -7537,10 +7826,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_231",
@@ -7572,10 +7861,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_232",
@@ -7607,10 +7896,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "gulf_of_lion",
@@ -7642,10 +7931,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_247",
@@ -7679,10 +7968,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_230",
@@ -7715,10 +8004,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_open_3",
@@ -7748,10 +8037,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_open_4",
@@ -7782,10 +8071,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_open_5",
@@ -7818,10 +8107,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_open_6",
@@ -7853,10 +8142,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "atlantic_ocean_shore",
@@ -7887,10 +8176,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "irish_sea_shore",
@@ -7924,10 +8213,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_250",
@@ -7962,10 +8251,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "north_sea_shore",
@@ -8001,10 +8290,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_1",
@@ -8038,10 +8327,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_242",
@@ -8072,10 +8361,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_2",
@@ -8109,10 +8398,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_3",
@@ -8143,10 +8432,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_4",
@@ -8178,10 +8467,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_5",
@@ -8214,10 +8503,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_246",
@@ -8252,10 +8541,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "mediterranean_open_6",
@@ -8287,10 +8576,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "western_mediterranean_shore",
@@ -8322,10 +8611,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "adriatic_sea_shore",
@@ -8358,10 +8647,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_244",
@@ -8393,10 +8682,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "aegean_sea_shore",
@@ -8430,10 +8719,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_243",
@@ -8463,10 +8752,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "eastern_mediterranean_shore",
@@ -8499,10 +8788,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "black_open_1",
@@ -8535,10 +8824,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "east_mediterranean",
@@ -8573,10 +8862,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_241",
@@ -8610,10 +8899,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_240",
@@ -8646,10 +8935,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "black_open_4",
@@ -8660,9 +8949,8 @@
     "neighbors": [
       "black_sea",
       "crimea",
-      "dobruja",
       "new_region_239",
-      "new_region_255"
+      "new_region_256"
     ],
     "world_x": 1108,
     "world_y": 374,
@@ -8680,10 +8968,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "black_sea_shore",
@@ -8715,10 +9003,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "red_open_2",
@@ -8750,10 +9038,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "persian_open_1",
@@ -8783,10 +9071,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "persian_open_2",
@@ -8819,10 +9107,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "persian_gulf_shore",
@@ -8851,10 +9139,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "caspian_open_2",
@@ -8885,10 +9173,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "tyrrhenian_sea",
@@ -8919,10 +9207,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "ligurian_sea",
@@ -8954,10 +9242,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "sea_of_azov",
@@ -8989,10 +9277,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "new_region_237",
@@ -9022,10 +9310,10 @@
     "satisfaction": 100,
     "tax_rate": 45,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "bay_of_biscay",
@@ -9059,10 +9347,10 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   },
   {
     "id": "norwegian_sea",
@@ -9093,9 +9381,9 @@
     "satisfaction": 100,
     "tax_rate": 0,
     "population": 0,
+    "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null,
-    "rural_population": 0
+    "buildings": null
   }
 ]

@@ -202,6 +202,7 @@ type GameState struct {
 	// Dünya verisi
 	Regions      map[world.RegionID]*world.Region       `json:"regions"`
 	RegionOrder  []world.RegionID                       `json:"-"`
+	LandPassages []world.LandPassage                    `json:"land_passages,omitempty"`
 	Factions     map[faction.FactionID]*faction.Faction `json:"factions"`
 	FactionOrder []faction.FactionID                    `json:"-"`
 	Armies       map[army.ArmyID]*army.Army             `json:"armies"`

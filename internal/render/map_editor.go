@@ -19,7 +19,7 @@ import (
 )
 
 func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
-	const panelW, panelH = float32(620), float32(112)
+	const panelW, panelH = float32(620), float32(132)
 	x, y := float32(18), float32(18)
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 20, 24, 220})
 	drawPanelBorder(screen, x, y, panelW, panelH)
@@ -51,6 +51,32 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	} else {
 		DrawText(screen, debugState+"   "+historyState+"   V: debug   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
 	}
+	passageState := "P: karasal geçiş modu kapalı"
+	if r.editLandPassageMode {
+		passageState = "Geçiş ekleme açık"
+		if r.editLandPassageFrom != "" {
+			passageState += "   İlk: " + string(r.editLandPassageFrom) + "  (bitiş noktasına tıkla)"
+		} else {
+			passageState += "   Başlangıç noktasına tıkla"
+		}
+	} else if r.editLandPassageAdjustMode {
+		passageState = "Geçiş düzenleme açık"
+		if r.editLandPassageSelected >= 0 {
+			passageState += "   Seçili geçiş: " + itoa(r.editLandPassageSelected+1)
+		}
+	} else if r.editNeighborAddMode {
+		passageState = "Komşu ekleme açık"
+		if r.editNeighborAddFrom != "" {
+			passageState += "   Kaynak: " + string(r.editNeighborAddFrom) + "  (hedef kara bölgesine tıkla)"
+		}
+	}
+	if r.editLandPassageMessage != "" {
+		passageState += "   " + r.editLandPassageMessage
+	}
+	if r.editNeighborAddMessage != "" {
+		passageState += "   " + r.editNeighborAddMessage
+	}
+	DrawText(screen, passageState, float64(x)+14, float64(y)+100, FaceSmall, ColorGold)
 }
 
 func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
@@ -518,6 +544,10 @@ const (
 	editButtonShapeRegionErase
 	editButtonShapeBrushMinus
 	editButtonShapeBrushPlus
+	editButtonLandPassageAdd
+	editButtonLandPassageAdjust
+	editButtonLandPassageDelete
+	editButtonAddNeighbor
 	editButtonAddFaction
 	editButtonEditFaction
 	editButtonDeleteFaction
@@ -598,6 +628,14 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row3, bw, bh}
 	case editButtonShapeBrushPlus:
 		return uiRect{right, row3, bw, bh}
+	case editButtonLandPassageAdd:
+		return uiRect{left, row4, bw, bh}
+	case editButtonLandPassageAdjust:
+		return uiRect{right, row4, bw, bh}
+	case editButtonLandPassageDelete:
+		return uiRect{left, row5, bw, bh}
+	case editButtonAddNeighbor:
+		return uiRect{right, row5, bw, bh}
 	case editButtonAddFaction:
 		return uiRect{left, row1, bw, bh}
 	case editButtonEditFaction:
@@ -655,7 +693,7 @@ func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 }
 
 func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
-	for kind := editButtonShapePaint; kind <= editButtonShapeBrushPlus; kind++ {
+	for kind := editButtonShapePaint; kind <= editButtonAddNeighbor; kind++ {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
@@ -1103,6 +1141,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyV) {
 		r.editVoronoiDebug = !r.editVoronoiDebug
 	}
+	if r.keyJustPressed(ebiten.KeyP) {
+		r.toggleEditLandPassageMode()
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyZ) {
 		if editRedoPressed() {
 			r.redoEditCommand()
@@ -1132,6 +1174,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)) {
 		return InputAction{Kind: ActionSaveScenario}
 	}
+	if r.keyJustPressed(ebiten.KeyDelete) && r.editLandPassageAdjustMode {
+		r.deleteSelectedLandPassage()
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyDelete) && !r.hasEditSelection() && r.editSelectedRegion != "" {
 		r.deleteSelectedRegion()
 		return InputAction{}
@@ -1145,10 +1191,30 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		return InputAction{}
 	}
 
+	if r.editLandPassageAdjustMode && r.editLandPassageDragEndpoint >= 0 {
+		if leftPressed {
+			r.updateEditLandPassageDrag(fx, fy)
+			return InputAction{}
+		}
+		r.finishEditLandPassageDrag()
+		return InputAction{}
+	}
 	if leftJustPressed {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
 			return action
 		}
+	}
+	if r.editLandPassageMode && leftJustPressed {
+		r.handleEditLandPassageClick(fx, fy)
+		return InputAction{}
+	}
+	if r.editLandPassageAdjustMode && leftJustPressed {
+		r.handleEditLandPassageAdjustClick(fx, fy)
+		return InputAction{}
+	}
+	if r.editNeighborAddMode && leftJustPressed {
+		r.handleEditNeighborAddClick(fx, fy)
+		return InputAction{}
 	}
 
 	if r.editInspectorTab == editInspectorShape && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
@@ -2188,6 +2254,7 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 	return editWorldSnapshot{
 		Regions:              cloneRegionMap(r.gs.Regions),
 		RegionOrder:          cloneRegionIDSlice(r.gs.RegionOrder),
+		LandPassages:         cloneLandPassages(r.gs.LandPassages),
 		Factions:             cloneFactionMap(r.gs.Factions),
 		Armies:               cloneArmyMap(r.gs.Armies),
 		Relations:            cloneRelationMap(r.gs.Relations),
@@ -2211,6 +2278,7 @@ func (r *Renderer) pushWorldSnapshotCommand(before, after editWorldSnapshot) {
 func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.Regions = cloneRegionMap(snapshot.Regions)
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
+	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
@@ -2234,6 +2302,19 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.PlayerFactionID = snapshot.Player
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
+	r.editLandPassageFrom = ""
+	r.editLandPassageMode = false
+	r.editLandPassageAdjustMode = false
+	r.editLandPassageStart = [2]int{}
+	r.editLandPassageStartSet = false
+	r.editLandPassageSelected = -1
+	r.editLandPassageDragEndpoint = -1
+	r.editLandPassageDragBefore = nil
+	r.editLandPassageDragChanged = false
+	r.editLandPassageMessage = ""
+	r.editNeighborAddMode = false
+	r.editNeighborAddFrom = ""
+	r.editNeighborAddMessage = ""
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
 	r.editRenaming = false

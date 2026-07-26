@@ -210,6 +210,19 @@ type Renderer struct {
 	editSelectedRegion               world.RegionID
 	editSelectedSettlement           int
 	editSelectedFaction              faction.FactionID
+	editLandPassageMode              bool
+	editLandPassageAdjustMode        bool
+	editLandPassageFrom              world.RegionID
+	editLandPassageStart             [2]int
+	editLandPassageStartSet          bool
+	editLandPassageSelected          int
+	editLandPassageDragEndpoint      int
+	editLandPassageDragBefore        []world.LandPassage
+	editLandPassageDragChanged       bool
+	editLandPassageMessage           string
+	editNeighborAddMode              bool
+	editNeighborAddFrom              world.RegionID
+	editNeighborAddMessage           string
 	editDraggingSettlement           bool
 	editDraggingRegion               bool
 	editRenaming                     bool
@@ -283,7 +296,8 @@ type editRegionCenterSnapshot struct {
 type editShapeTool int
 
 const (
-	editShapeToolShape editShapeTool = iota
+	editShapeToolNone editShapeTool = iota
+	editShapeToolShape
 	editShapeToolRegion
 )
 
@@ -295,6 +309,7 @@ type editRegionSettlementsSnapshot struct {
 type editWorldSnapshot struct {
 	Regions              map[world.RegionID]*world.Region
 	RegionOrder          []world.RegionID
+	LandPassages         []world.LandPassage
 	Factions             map[faction.FactionID]*faction.Faction
 	Armies               map[army.ArmyID]*army.Army
 	Relations            map[string]*faction.Relation
@@ -484,31 +499,34 @@ func New(gs *state.GameState) *Renderer {
 	dropY := y
 
 	r := &Renderer{
-		gs:                         gs,
-		worldMap:                   NewWorldMap(gs),
-		prevKeys:                   make(map[ebiten.Key]bool),
-		prevMouse:                  make(map[ebiten.MouseButton]bool),
-		editVoronoiDebug:           true,
-		armyNeighborBuf:            make([]world.RegionID, 0, 16),
-		editVisualNeighborBuf:      make([]world.RegionID, 0, 16),
-		editBoundaryPixelBuf:       make([]int, 0, 4096),
-		editShapeBrushMode:         editShapeBrushPaint,
-		editShapeBrushRadius:       6,
-		editUndoStack:              make([]editCommand, 0, 64),
-		editRedoStack:              make([]editCommand, 0, 64),
-		editRegionPaintOverrides:   make(map[int]world.RegionID),
-		editRegionPaintStrokeStart: make(map[int]uint16),
-		editRegionPaintStrokeList:  make([]int, 0, 2048),
-		editOwnerDropdown:          gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
-		editTerrainDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
-		editSettlementTypeDropdown: gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
-		editUnitTypeDropdown:       gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
-		tradeCorridors:             make([]tradeCorridorInfo, 0, 96),
-		tradeHoverIdx:              -1,
-		tradeCenters:               make([]tradeCenterVisual, 0, 12),
-		tradeCenterIdx:             -1,
-		tradeAmount:                5,
-		selectedSettlementIndex:    -1,
+		gs:                          gs,
+		worldMap:                    NewWorldMap(gs),
+		prevKeys:                    make(map[ebiten.Key]bool),
+		prevMouse:                   make(map[ebiten.MouseButton]bool),
+		editVoronoiDebug:            true,
+		armyNeighborBuf:             make([]world.RegionID, 0, 16),
+		editVisualNeighborBuf:       make([]world.RegionID, 0, 16),
+		editBoundaryPixelBuf:        make([]int, 0, 4096),
+		editShapeBrushMode:          editShapeBrushPaint,
+		editShapeBrushRadius:        6,
+		editUndoStack:               make([]editCommand, 0, 64),
+		editRedoStack:               make([]editCommand, 0, 64),
+		editRegionPaintOverrides:    make(map[int]world.RegionID),
+		editRegionPaintStrokeStart:  make(map[int]uint16),
+		editRegionPaintStrokeList:   make([]int, 0, 2048),
+		editOwnerDropdown:           gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editTerrainDropdown:         gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editUnitTypeDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		tradeCorridors:              make([]tradeCorridorInfo, 0, 96),
+		tradeHoverIdx:               -1,
+		tradeCenters:                make([]tradeCenterVisual, 0, 12),
+		tradeCenterIdx:              -1,
+		tradeAmount:                 5,
+		selectedSettlementIndex:     -1,
+		editSelectedSettlement:      -1,
+		editLandPassageSelected:     -1,
+		editLandPassageDragEndpoint: -1,
 	}
 	r.resetCamera()
 	return r
@@ -1084,6 +1102,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
 		r.drawVectorMapBorders(screen)
+		r.drawLandPassages(screen)
 		r.menuTick++
 		DrawPauseMenu(screen, r.pauseCursor, r.HasSave, r.menuTick, r.CurrentSettings)
 		return
@@ -1107,6 +1126,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
 	r.drawVectorMapBorders(screen)
+	r.drawLandPassages(screen)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 

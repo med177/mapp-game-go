@@ -40,7 +40,8 @@ type GameState struct {
     Victory VictoryCondition
 
     // Dünya verisi
-    Regions   map[RegionID]*Region
+    Regions      map[RegionID]*Region
+    LandPassages []world.LandPassage
     Factions  map[FactionID]*Faction
     Armies    map[ArmyID]*Army
     Commanders map[string]*Commander
@@ -205,6 +206,12 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 `AdvanceTurn()` — `Turn++`, `Month++`, Ocak geçince `Year++`
 
 `SyncTimedRegionUnlocks() []RegionID` — `is_locked=true` ve `unlock_turn>0` olan bölgelerde aktif tur `unlock_turn` değerine ulaştıysa kilidi kaldırır; save/load ve tur ilerlemesinde senkron için kullanılır
+
+`LandPassages` senaryo verisinden yüklenen, iki kara bölgesi arasındaki özel
+geçiş kayıtlarını taşır. Bu fazda render ve edit mode tarafından kullanılır;
+oyuncu hareketi ile savaş çözümü henüz bu alanı tüketmez. Senaryo yüklemesinde
+`data/land_passages.json`, edit mode kaydında aynı dosya kullanılır; normal
+save/load ise alanı campaign state içinde korur.
 
 `RegionsOwnedBy(fid) []*Region` — fraksiyon bölge listesi
 

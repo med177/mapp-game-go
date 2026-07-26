@@ -40,6 +40,10 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	})
 	writeJSONFile(t, filepath.Join(scenarioPath, "data", "regions.json"), []*world.Region{
 		{ID: "r1", NameTR: "R1", OwnerID: "player", ShapeID: "AAA", TaxRate: 50, Satisfaction: 50},
+		{ID: "r2", NameTR: "R2", OwnerID: "other", ShapeID: "AAA", TaxRate: 50, Satisfaction: 50},
+	})
+	writeJSONFile(t, filepath.Join(scenarioPath, "data", "land_passages.json"), []world.LandPassage{
+		{From: "r1", To: "r2", Type: world.LandPassageStrait, MoveCost: 1, DefenseBonus: 15},
 	})
 	writeJSONFile(t, filepath.Join(scenarioPath, "data", "factions.json"), []*faction.Faction{
 		{ID: "player", NameTR: "Oyuncu", IsPlayable: true},
@@ -94,8 +98,11 @@ func TestLoadFromPathRehydratesScenarioRuntimeFromScenarioID(t *testing.T) {
 	if gs.Turn != 1 || gs.Year != 1453 || gs.Month != 4 {
 		t.Fatalf("legacy save eksik zaman alanlarinda senaryo varsayimi korunmadi: turn=%d year=%d month=%d", gs.Turn, gs.Year, gs.Month)
 	}
-	if len(gs.RegionOrder) != 1 || gs.RegionOrder[0] != "r1" {
+	if len(gs.RegionOrder) != 2 || gs.RegionOrder[0] != "r1" || gs.RegionOrder[1] != "r2" {
 		t.Fatalf("region order geri yuklenmedi: %+v", gs.RegionOrder)
+	}
+	if len(gs.LandPassages) != 1 || !world.HasLandPassage(gs.LandPassages, "r1", "r2") {
+		t.Fatalf("land passage senaryo tabanından geri yüklenmedi: %+v", gs.LandPassages)
 	}
 	if len(gs.FactionOrder) != 2 || gs.FactionOrder[0] != "player" || gs.FactionOrder[1] != "other" {
 		t.Fatalf("faction order geri yuklenmedi: %+v", gs.FactionOrder)

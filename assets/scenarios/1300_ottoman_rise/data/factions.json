@@ -405,8 +405,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62,
-  "ai_expansion_targets": []
+    "ai_aggressiveness": 62
   },
   {
     "id": "epir",
@@ -553,8 +552,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 59,
-  "ai_expansion_targets": []
+    "ai_aggressiveness": 59
   },
   {
     "id": "genoa",

@@ -7,6 +7,24 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Harita image ve vektör sınır katmanından sonra özel karasal geçişler çizilir.
+`GameState.LandPassages` içindeki her geçiş, `start` ve `end` koordinatları
+verilmişse doğrudan bu iki senaryo noktası arasında, yoksa iki kara region
+anchor'ı arasında 3 px kalınlığında 12 px çizgi / 8 px boşluk desenli sarı
+kesikli çizgi ve iki uç noktasıyla gösterilir (`internal/render/land_passages.go`). Bu çizgi
+şimdilik yalnız görseldir; `move_cost` ve `defense_bonus` hareket/savaş
+çözümüne bağlanmamıştır. Edit mode `Shape` sekmesindeki `Geçiş Ekle` veya `P`
+iki tıklamalı ekleme modunu açar; `Geçiş Düzenle` mevcut çizginin uç noktalarını
+sürükletir, `Geçiş Sil`/`Delete` seçili geçişi kaldırır. Bu işlemler undo/redo
+world history içinde tutulur. Aynı sekmedeki `Komşu Ekle`, seçili kara bölgeyi
+kaynak alıp haritadan seçilen ikinci kara bölgeye karşılıklı `neighbors` kaydı
+ekler; böylece arada deniz olsa bile kara hareket grafiğinde doğrudan bağlantı
+oluşur.
+
+Shape sekmesindeki `Shape Boya`, `Shape Sil`, `Bolge Boya` ve `Bolge Sil`
+butonları toggle çalışır; aktif araca tekrar tıklamak aracı kapatır, `>` işareti
+ile canlı fırça önizlemesi ve brush cursor'u temizlenir.
+
 Çıkarma input'u, düşman ve tahkimli kıyı hedefini normal amfibi savaş planından
 ayırır; bu hedefte `ActionDisembarkArmy` doğrudan kara ordusunu indirip kuşatma
 başlatır. Tahkimatsız düşman kıyısında açılan çıkarma savaş planının komutan özeti

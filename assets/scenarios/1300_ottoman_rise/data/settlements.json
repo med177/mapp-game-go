@@ -905,6 +905,10 @@
     ]
   },
   {
+    "region_id": "new_region_260",
+    "settlements": null
+  },
+  {
     "region_id": "switzerland",
     "settlements": [
       {
@@ -3149,6 +3153,22 @@
   },
   {
     "region_id": "new_region_255",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_259",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_258",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_257",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_256",
     "settlements": null
   },
   {
@@ -5641,6 +5661,14 @@
     ]
   },
   {
+    "region_id": "new_region_262",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_261",
+    "settlements": null
+  },
+  {
     "region_id": "hum",
     "settlements": [
       {
@@ -5669,6 +5697,10 @@
         "population": 22
       }
     ]
+  },
+  {
+    "region_id": "new_region_263",
+    "settlements": null
   },
   {
     "region_id": "epirus",

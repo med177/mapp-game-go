@@ -92,6 +92,40 @@ Kurallar:
 - Koridor akışı doğrudan her merkez çifti arasında değil, bu link graph'ı üzerindeki kısa yol boyunca dağıtılır.
 - Dosya yoksa merkez listesi boş kalır (trade map çizimi yapılmaz).
 
+## land_passages.json
+
+Deniz veya başka bir görsel boşluk olsa bile iki kara bölgesini haritada özel
+karasal geçiş olarak göstermek için kullanılır. Dosya doğrudan bir listedir:
+
+```json
+[
+  {
+    "from": "sicily",
+    "to": "naples",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [784, 509],
+    "end": [770, 480]
+  }
+]
+```
+
+`from` ve `to` mevcut, deniz olmayan region ID'leri olmalıdır. Loader aynı iki
+region arasındaki ters yönlü yinelenen kaydı tek kayda indirir. `type` şu anda
+`strait` ile sınırlıdır; `move_cost` ve `defense_bonus` runtime state'te
+korunur, hareket/savaş hesabına bağlanması sonraki fazdır. `start` ve `end`,
+senaryo koordinatlarında çizginin tam `[x,y]` uçlarıdır; verilmezse eski kayıtlar
+bölge/yerleşim anchor'ına geri döner. Edit mode `Shape` sekmesindeki `Geçiş Ekle`
+butonu veya `P` ile ekleme modu açılır; önce başlangıç kara noktasına, sonra
+bitiş kara noktasına tıklamak `strait / 1 / 15` ve iki koordinatlı kaydı oluşturur.
+`Geçiş Düzenle` mevcut çizgiyi seçip uç noktalarını sürükleyerek `start/end`
+değerlerini değiştirir. Seçili geçiş `Geçiş Sil` butonuyla veya `Delete` tuşuyla
+silinir. Aynı `Shape` sekmesindeki `Komşu Ekle`, seçili kara bölgeyi kaynak
+kabul edip haritadan seçilen hedef kara bölgeye iki yönlü `neighbors` bağlantısı
+ekler; bu bağlantı deniz aralığı olsa bile kara ordusu hareket grafiğinde
+kullanılır. `Ctrl+S` bu değişiklikleri `regions.json` ile birlikte yazar.
+
 ## regions.json
 
 Bölge listesi. Her kayıt:

@@ -230,6 +230,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		drawEditInspectorButton(screen, editButtonShapeRegionErase, "Bolge Sil", false)
 		drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", false)
 		drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", false)
+		r.drawEditShapeLandPassageButtons(screen)
 		drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 		return
 	}
@@ -264,17 +265,24 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	}
 	DrawText(screen, "Ring: "+itoa(ringCount), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	toolLabel := "Shape"
-	if r.editShapeTool == editShapeToolRegion {
+	toolLabel := "Kapalı"
+	if r.editShapeTool == editShapeToolShape {
+		toolLabel = "Shape"
+	} else if r.editShapeTool == editShapeToolRegion {
 		toolLabel = "Bolge"
 	}
-	modeLabel := "Boya"
-	if r.editShapeBrushMode == editShapeBrushErase {
+	modeLabel := "Kapalı"
+	if r.editShapeTool != editShapeToolNone && r.editShapeBrushMode == editShapeBrushPaint {
+		modeLabel = "Boya"
+	} else if r.editShapeBrushMode == editShapeBrushErase {
 		modeLabel = "Sil"
 	}
 	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sag mouse drag", float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	info := "Canli preview acik. Yesil ekler, kirmizi siler."
+	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
+	if r.editShapeTool != editShapeToolNone {
+		info = "Canli preview acik. Yesil ekler, kirmizi siler."
+	}
 	if selectedRegion.IsSea {
 		info = "Deniz bolgesinde Bolge Boya/Sil ile alan dagitimi yap."
 	} else if !r.canEditSelectedShape() {
@@ -309,23 +317,41 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	canAdjustBrush := r.canEditSelectedShape() || r.canRegionPaintSelected()
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > 1)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < 64)
+	r.drawEditShapeLandPassageButtons(screen)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+}
+
+func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
+	addLabel := "Geçiş Ekle"
+	if r.editLandPassageMode {
+		addLabel = "> Geçiş Ekle"
+	}
+	adjustLabel := "Geçiş Düzenle"
+	if r.editLandPassageAdjustMode {
+		adjustLabel = "> Geçiş Düzenle"
+	}
+	neighborLabel := "Komşu Ekle"
+	if r.editNeighborAddMode {
+		neighborLabel = "> Komşu Ekle"
+	}
+	canDelete := r.editLandPassageSelected >= 0 && r.editLandPassageSelected < len(r.gs.LandPassages)
+	canAddNeighbor := r.gs.Regions[r.editSelectedRegion] != nil && !r.gs.Regions[r.editSelectedRegion].IsSea
+	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, true)
+	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, true)
+	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
+	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, canAddNeighbor || r.editNeighborAddMode)
 }
 
 func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, bool) {
 	switch editShapeInspectorButtonAt(fx, fy) {
 	case editButtonShapePaint:
-		r.editShapeTool = editShapeToolShape
-		r.editShapeBrushMode = editShapeBrushPaint
+		r.toggleEditShapeTool(editShapeToolShape, editShapeBrushPaint)
 	case editButtonShapeErase:
-		r.editShapeTool = editShapeToolShape
-		r.editShapeBrushMode = editShapeBrushErase
+		r.toggleEditShapeTool(editShapeToolShape, editShapeBrushErase)
 	case editButtonShapeRegionPaint:
-		r.editShapeTool = editShapeToolRegion
-		r.editShapeBrushMode = editShapeBrushPaint
+		r.toggleEditShapeTool(editShapeToolRegion, editShapeBrushPaint)
 	case editButtonShapeRegionErase:
-		r.editShapeTool = editShapeToolRegion
-		r.editShapeBrushMode = editShapeBrushErase
+		r.toggleEditShapeTool(editShapeToolRegion, editShapeBrushErase)
 	case editButtonShapeBrushMinus:
 		if r.editShapeBrushRadius > 1 {
 			r.editShapeBrushRadius--
@@ -334,10 +360,32 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		if r.editShapeBrushRadius < 64 {
 			r.editShapeBrushRadius++
 		}
+	case editButtonLandPassageAdd:
+		r.toggleEditLandPassageMode()
+	case editButtonLandPassageAdjust:
+		r.toggleEditLandPassageAdjustMode()
+	case editButtonLandPassageDelete:
+		r.deleteSelectedLandPassage()
+	case editButtonAddNeighbor:
+		r.toggleEditNeighborAddMode()
 	case editButtonSaveScenario:
 		return InputAction{Kind: ActionSaveScenario}, true
 	}
 	return InputAction{}, true
+}
+
+func (r *Renderer) toggleEditShapeTool(tool editShapeTool, mode editShapeBrushMode) {
+	if r.editShapeTool == tool && r.editShapeBrushMode == mode {
+		r.editShapeTool = editShapeToolNone
+		r.editShapePainting = false
+		r.editShapeStrokeBefore = nil
+		r.editShapeStrokeHasLast = false
+		r.editShapeStrokeDirty = false
+		r.resetRegionPaintStrokePreview()
+		return
+	}
+	r.editShapeTool = tool
+	r.editShapeBrushMode = mode
 }
 
 func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
@@ -451,15 +499,20 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	panel := buildEditShapeHelpPanel()
 	gameui.DrawPanel(screen, panel, shapeHelpPanelStyle)
 	x, y := float32(panel.Rect.X), float32(panel.Rect.Y)
-	mode := "Boya"
-	if r.editShapeBrushMode == editShapeBrushErase {
+	mode := "Kapalı"
+	if r.editShapeTool != editShapeToolNone && r.editShapeBrushMode == editShapeBrushPaint {
+		mode = "Boya"
+	} else if r.editShapeBrushMode == editShapeBrushErase {
 		mode = "Sil"
 	}
 	selectedLabel := string(region.ID)
 	if session != nil {
 		selectedLabel = session.ShapeID
 	}
-	actionLabel := "Yesil=ekle  Kirmizi=sil  Sol tik=secim"
+	actionLabel := "Shape/Bolge butonundan arac sec"
+	if r.editShapeTool != editShapeToolNone {
+		actionLabel = "Yesil=ekle  Kirmizi=sil  Sol tik=secim"
+	}
 	if region.IsSea {
 		actionLabel = "Deniz icin Bolge Boya/Sil kullan  Sol tik=secim"
 	}
@@ -487,6 +540,8 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 		if !r.canRegionPaintSelected() {
 			return false
 		}
+	default:
+		return false
 	}
 	r.resetRegionPaintStrokePreview()
 	session := r.editShapeSession

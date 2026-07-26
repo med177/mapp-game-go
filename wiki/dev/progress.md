@@ -7,6 +7,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-26: Shape edit araçları toggle davranışına geçirildi. Aktif `Shape
+  Boya/Sil` veya `Bolge Boya/Sil` butonuna ikinci tıklama aracı kapatıyor;
+  `>` seçimi, canlı fırça önizlemesi ve brush cursor'u temizleniyor.
+
+- 2026-07-26: Özel karasal geçiş veri modeli eklendi. Senaryo başına
+  `data/land_passages.json` dosyası `from/to/type/move_cost/defense_bonus`
+  alanlarına ek olarak isteğe bağlı `start/end` `[x,y]` uç noktalarını
+  taşıyor; 1300 senaryosuna Sicilya-Napoli, Konstantiniyye-Bitinya,
+  Gelibolu-Atikhisar, Danimarka-İsveç, Ulster-İskoçya ve Fas-Gırnata geçişleri
+  eklendi. Renderer bu bağlantıları kalın kesikli çizgi ve uç noktalarıyla
+  gösteriyor; edit mode `Shape` sekmesindeki `Geçiş Ekle`/`Geçiş Düzenle`/
+  `Geçiş Sil`/`Komşu Ekle` butonları veya `P`/`Delete` ile tam koordinatlı
+  boğaz geçişi ekleyip mevcut uçları ayarlayabiliyor; `Komşu Ekle` iki yönlü
+  deniz üstü kara hareket bağlantısı yazıyor. Hareket/savaş entegrasyonu sonraki fazda.
+
 - 2026-07-26: Harita bölge ve deniz sınırları raster harita dokusundan ayrıldı. `regionAt` kenarları cache'lenmiş yatay/dikey kontur parçalarına sıkıştırılıyor; diplomasi, seçili bölge ve ticaret modu renkleri `map_borders.go` üzerinden antialiased screen-space mesh olarak çiziliyor. Zoom sırasında sınır kalınlaşması/basamaklanması giderildi; edit mode region assignment değişiklikleri kontur cache'ini yeniliyor. Regression: `TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms`; doğrulama: `go test ./internal/render` ve `go test ./...`.
 
 - 2026-07-26: Vektör sınır overlay'inin performans sorunu düzeltildi. Screen-space mesh yalnız kamera/ekran/harita durumu değiştiğinde hazırlanıyor; hazır transparan overlay statik framelerde tekrar kullanılıyor, ekran dışı segmentler eleniyor ve uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları çizilmiyor. DirectX dinamik buffer baskısı azaltıldı. Doğrulama: `go test ./internal/render`, `go test ./...`, `GOOS=windows GOARCH=amd64 go build -o /tmp/mapp-game-go-vector-mesh-check.exe ./cmd/game`.

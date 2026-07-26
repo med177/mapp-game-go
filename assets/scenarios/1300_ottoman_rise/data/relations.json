@@ -91,6 +91,12 @@
   },
   {
     "faction_a": "achaea_principality",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "achaea_principality",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -385,6 +391,12 @@
   },
   {
     "faction_a": "ahiler",
+    "faction_b": "flanders_county",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "ahiler",
     "faction_b": "florence_rep",
     "score": -30,
     "stance": "peace"
@@ -669,6 +681,12 @@
     "faction_a": "aragon",
     "faction_b": "esrefoglu_bey",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "aragon",
+    "faction_b": "flanders_county",
+    "score": 25,
     "stance": "peace"
   },
   {
@@ -955,6 +973,12 @@
   },
   {
     "faction_a": "arnavut_des",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arnavut_des",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -1231,6 +1255,12 @@
   },
   {
     "faction_a": "athena_duk",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "athena_duk",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -1501,6 +1531,12 @@
   },
   {
     "faction_a": "aydin_bey",
+    "faction_b": "flanders_county",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "aydin_bey",
     "faction_b": "florence_rep",
     "score": -30,
     "stance": "peace"
@@ -1765,6 +1801,12 @@
   },
   {
     "faction_a": "bulgarian_empire",
+    "faction_b": "flanders_county",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "bulgarian_empire",
     "faction_b": "florence_rep",
     "score": -20,
     "stance": "peace"
@@ -2019,6 +2061,12 @@
     "faction_a": "candar_bey",
     "faction_b": "esrefoglu_bey",
     "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "candar_bey",
+    "faction_b": "flanders_county",
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -2275,6 +2323,12 @@
   },
   {
     "faction_a": "canik_bey",
+    "faction_b": "flanders_county",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "canik_bey",
     "faction_b": "florence_rep",
     "score": -30,
     "stance": "peace"
@@ -2521,6 +2575,12 @@
   },
   {
     "faction_a": "castile_kingdom",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "castile_kingdom",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -2761,6 +2821,12 @@
   },
   {
     "faction_a": "denmark_kingdom",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "denmark_kingdom",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -2991,6 +3057,12 @@
     "faction_a": "dulkadir_bey",
     "faction_b": "esrefoglu_bey",
     "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "flanders_county",
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -3219,6 +3291,12 @@
     "faction_a": "east_rome",
     "faction_b": "esrefoglu_bey",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "east_rome",
+    "faction_b": "flanders_county",
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -3445,6 +3523,12 @@
   },
   {
     "faction_a": "england",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "england",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -3661,6 +3745,12 @@
   },
   {
     "faction_a": "epir",
+    "faction_b": "flanders_county",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "epir",
     "faction_b": "florence_rep",
     "score": 25,
     "stance": "peace"
@@ -3866,6 +3956,12 @@
   {
     "faction_a": "epir",
     "faction_b": "wallachia_prince",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "esrefoglu_bey",
+    "faction_b": "flanders_county",
     "score": -20,
     "stance": "peace"
   },
@@ -4077,6 +4173,216 @@
     "faction_a": "esrefoglu_bey",
     "faction_b": "wallachia_prince",
     "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "florence_rep",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "france",
+    "score": -80,
+    "stance": "war"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "genoa",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "georgia_kingdom",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "germiyan_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "golden_horde",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "granada_emirate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "hamid_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "hre",
+    "score": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "hungarian_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "ilkhanate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "karaman_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "karesioglu_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "leon_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "lithuanian_gd",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "mamluk",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "mentese_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "milan_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "naples_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "novgorod_rep",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "ottoman",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "papal_states_f",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "polish_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "portugal",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "ramazan_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "russia",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "safavid",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "saruhan_bey",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "savoy_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "scotland_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "serbian_empire",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "teutonic_order",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "trebizond_emp",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "venice",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "wallachia_prince",
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -7648,17 +7954,5 @@
     "faction_b": "wallachia_prince",
     "score": -20,
     "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "hre",
-    "score": 60,
-    "stance": "allied"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "france",
-    "score": -80,
-    "stance": "war"
   }
 ]

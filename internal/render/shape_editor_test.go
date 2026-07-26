@@ -10,10 +10,39 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestShapeInspectorToolButtonsToggleOff(t *testing.T) {
+	r := &Renderer{}
+
+	shapePaint := editInspectorButtonRect(editButtonShapePaint)
+	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
+		t.Fatal("shape boya butonu tıklanmadı")
+	}
+	if r.editShapeTool != editShapeToolShape || r.editShapeBrushMode != editShapeBrushPaint {
+		t.Fatalf("shape boya seçilmedi: tool=%d mode=%d", r.editShapeTool, r.editShapeBrushMode)
+	}
+	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
+		t.Fatal("shape boya ikinci tıklaması işlenmedi")
+	}
+	if r.editShapeTool != editShapeToolNone {
+		t.Fatalf("shape boya ikinci tıklamada kapanmadı: tool=%d", r.editShapeTool)
+	}
+
+	regionErase := editInspectorButtonRect(editButtonShapeRegionErase)
+	r.handleEditShapeInspectorClick(regionErase[0]+regionErase[2]/2, regionErase[1]+regionErase[3]/2)
+	if r.editShapeTool != editShapeToolRegion || r.editShapeBrushMode != editShapeBrushErase {
+		t.Fatalf("bölge sil seçilmedi: tool=%d mode=%d", r.editShapeTool, r.editShapeBrushMode)
+	}
+	r.handleEditShapeInspectorClick(regionErase[0]+regionErase[2]/2, regionErase[1]+regionErase[3]/2)
+	if r.editShapeTool != editShapeToolNone {
+		t.Fatalf("bölge sil ikinci tıklamada kapanmadı: tool=%d", r.editShapeTool)
+	}
+}
+
 func TestShapePaintStrokeUpdatesShapeDataAndWorldMap(t *testing.T) {
 	r := newLandShapeEditRenderer()
 	r.editInspectorTab = editInspectorShape
 	r.editSelectedRegion = "land_test"
+	r.editShapeTool = editShapeToolShape
 	r.editShapeBrushRadius = 1
 
 	if got := r.worldMap.RegionAt(14, 10); got != "" {
@@ -40,6 +69,7 @@ func TestShapePaintStrokeTracksLivePreviewDiff(t *testing.T) {
 	r := newLandShapeEditRenderer()
 	r.editInspectorTab = editInspectorShape
 	r.editSelectedRegion = "land_test"
+	r.editShapeTool = editShapeToolShape
 	r.editShapeBrushRadius = 1
 
 	sx, sy := r.worldToScreen(wcX(14), wcY(10))

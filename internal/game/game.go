@@ -2301,6 +2301,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioRegions(gs); err != nil {
 		return err
 	}
+	if err := writeScenarioLandPassages(gs); err != nil {
+		return err
+	}
 	if err := writeScenarioSettlements(gs); err != nil {
 		return err
 	}
@@ -2324,6 +2327,17 @@ func writeScenarioEditData(gs *state.GameState) error {
 		}
 	}
 	return nil
+}
+
+func writeScenarioLandPassages(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "land_passages.json")
+	passages := append([]world.LandPassage(nil), gs.LandPassages...)
+	data, err := json.MarshalIndent(passages, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
 }
 
 func writeScenarioRegions(gs *state.GameState) error {
@@ -2766,6 +2780,10 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	if err != nil {
 		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
 	}
+	landPassages, err := world.LoadLandPassages(dp("land_passages.json"), regions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("karasal geçişler yüklenemedi: %w", err)
+	}
 	advance()
 	yield()
 	if err := world.LoadRegionSettlements(dp("settlements.json"), regions); err != nil {
@@ -2869,6 +2887,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 		MapConfig:          mapConfig,
 		Regions:            regions,
 		RegionOrder:        regionOrder,
+		LandPassages:       landPassages,
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
