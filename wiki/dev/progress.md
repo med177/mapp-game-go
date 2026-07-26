@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-26: Bölge bilgi paneli ilk açıldığında komşu listesi artık varsayılan
+  olarak `Tümünü Göster` durumunda geliyor. Aynı bölge içindeki kullanıcı daraltması
+  korunuyor; yeni bölge seçiminde genişletilmiş varsayılana dönülüyor. Regression:
+  `TestSelectMapRegionDefaultsToExpandedNeighborList`; doğrulama: `go test ./internal/render`.
+
 - 2026-07-26: 1300 senaryosundaki 37 otomatik `new_region_*` kaydı anlamlı coğrafi
   kara/deniz ID ve görünen adlara taşındı; Marmara-Boğaz-Karadeniz deniz bağlantısı
   semantic ID'lerle korundu. Aynı koordinattaki iki komşusuz sahte deniz kaydı ile boş

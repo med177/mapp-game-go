@@ -32,6 +32,30 @@ func TestSelectMapRegionDoesNotOpenRecruitPanel(t *testing.T) {
 	}
 }
 
+func TestSelectMapRegionDefaultsToExpandedNeighborList(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"bursa":  {ID: "bursa"},
+				"ankara": {ID: "ankara"},
+			},
+		},
+		SelectedRegion:          "ankara",
+		devNeighborListExpanded: false,
+	}
+
+	r.selectMapRegion("bursa")
+	if !r.devNeighborListExpanded {
+		t.Fatal("yeni bölge seçildiğinde komşu listesi varsayılan olarak genişletilmiş gelmeli")
+	}
+
+	r.devNeighborListExpanded = false
+	r.selectMapRegion("bursa")
+	if r.devNeighborListExpanded {
+		t.Fatal("aynı bölge yeniden seçildiğinde kullanıcının daraltma tercihi korunmalı")
+	}
+}
+
 func TestMapRegionDoubleClickOpensDiplomacyForForeignRegion(t *testing.T) {
 	r := &Renderer{
 		gs: &state.GameState{

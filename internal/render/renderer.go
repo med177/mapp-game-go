@@ -532,6 +532,7 @@ func New(gs *state.GameState) *Renderer {
 		editSelectedSettlement:      -1,
 		editLandPassageSelected:     -1,
 		editLandPassageDragEndpoint: -1,
+		devNeighborListExpanded:     true,
 	}
 	r.resetCamera()
 	return r

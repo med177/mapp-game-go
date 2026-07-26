@@ -852,7 +852,7 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.SelectedArmy = ""
 	r.clearArmySplitSelection()
 	if r.SelectedRegion != rid {
-		r.devNeighborListExpanded = false
+		r.devNeighborListExpanded = true
 		r.regionPanelTab = regionPanelTabBuildings
 		r.regionPanelScroll = 0
 	}

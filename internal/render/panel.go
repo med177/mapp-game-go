@@ -1889,7 +1889,7 @@ func drawMinimapOwnershipOverlay(screen *ebiten.Image, gs *state.GameState, scal
 
 // DrawRegionPanel seçili bölge bilgisini sol altta gösterir.
 func DrawRegionPanel(screen *ebiten.Image, gs *state.GameState, rid world.RegionID) {
-	DrawRegionPanelExpandedScrolled(screen, gs, rid, false, 0)
+	DrawRegionPanelExpandedScrolled(screen, gs, rid, true, 0)
 }
 
 func DrawRegionPanelExpanded(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, neighborExpanded bool) {
