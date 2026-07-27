@@ -37,14 +37,22 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 `Bolge Boya/Sil` performans notu:
 - Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
 - `region_shapes.json` override'ları yüklendiğinde world map override öncesi `baseRegionAt` snapshot'ı alınır; edit mode erase baseline'ı ikinci bir tam world map kurmadan bundan okunur.
-- `Bolge Boya/Sil` canlı preview'i stroke başlangıcındaki piksel sahipliğine göre yeşil/kırmızı overlay çizer; bu akış `shapeEditSession` kurmadan çalışır, yani region tool aktifken büyük country mask'i lazy kalır.
+- `Shape/Bolge Boya/Sil` canlı preview'i stroke sırasında world-space önizleme görüntüsüne artımlı işlenir; her frame'de etkilenen piksel listesi ve yeni UI overlay'i yeniden çizilmez. Region tool büyük country mask'ini lazy tutar.
+- Boyama koordinatı raster hücresinin bulunduğu aralığa `floor` ile atanır;
+  önizleme ve fırça imleci aynı hücrenin merkezini (`x+0.5`, `y+0.5`) kullanır.
+  Böylece işaretlenen nokta ile boyanan piksel arasında yarım hücrelik sol-üst
+  kayma oluşmaz.
+- Shape konturu da world raster üretimindeki aynı ölçekleme ve kesme sırasını
+  kullanır; böylece kontur, renkli raster alanının kenarından ayrışmaz.
 
 ## UX kuralları
 
 - Sol tık seçim davranışını korur.
 - Shape düzenleme `Shape` sekmesinde ve **sağ mouse drag** ile yapılır; böylece region seçimiyle çakışmaz.
 - `Boya` ve `Sil` modları inspector butonlarından değişir.
-- Fırça yarıçapı inspector'dan artırılıp azaltılır.
+- Fırça yarıçapı inspector'dan artırılıp azaltılır; `1.00` altına iki ince kademe
+  (`0.75` ve `0.50`) bulunur. Bu seviyeler rasterde tek piksel hassasiyetini
+  korurken canlı imleç boyutunu küçültür.
 - Brush stroke sırasında imleç yarıçapı ekranda gösterilir.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.

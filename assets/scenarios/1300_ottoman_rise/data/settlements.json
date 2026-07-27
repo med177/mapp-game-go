@@ -3453,15 +3453,15 @@
         "id": "blachernae_constantinople",
         "name_tr": "Blaherne",
         "x": 1051,
-        "y": 455,
+        "y": 453,
         "type": "town",
         "population": 26
       },
       {
         "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
-        "x": 1053,
-        "y": 455,
+        "x": 1056,
+        "y": 456,
         "type": "fortress",
         "is_capital": true,
         "population": 12
@@ -3469,15 +3469,15 @@
       {
         "id": "pera_constantinople",
         "name_tr": "Pera",
-        "x": 1052,
-        "y": 452,
+        "x": 1056,
+        "y": 451,
         "type": "port",
         "population": 36
       },
       {
         "id": "galata",
         "name_tr": "Galata",
-        "x": 1054,
+        "x": 1058,
         "y": 453,
         "type": "port",
         "population": 36
@@ -4214,7 +4214,7 @@
       {
         "id": "aydin",
         "name_tr": "Aydın / Tralles",
-        "x": 1030,
+        "x": 1031,
         "y": 516,
         "type": "fortress",
         "population": 9
@@ -5742,6 +5742,10 @@
     ]
   },
   {
+    "region_id": "new_region_264",
+    "settlements": null
+  },
+  {
     "region_id": "kvarner",
     "settlements": [
       {
@@ -6361,7 +6365,7 @@
       {
         "id": "nicomedia",
         "name_tr": "Nikomedia",
-        "x": 1072,
+        "x": 1073,
         "y": 460,
         "type": "city",
         "is_capital": true,
@@ -6378,7 +6382,7 @@
       {
         "id": "nicomedia_izmit_castle",
         "name_tr": "İzmit Kalesi",
-        "x": 1071,
+        "x": 1070,
         "y": 458,
         "type": "fortress",
         "population": 7
@@ -6386,7 +6390,7 @@
       {
         "id": "scutari",
         "name_tr": "Üsküdar",
-        "x": 1058,
+        "x": 1063,
         "y": 455,
         "type": "town",
         "population": 15
@@ -6394,8 +6398,8 @@
       {
         "id": "chalcedon",
         "name_tr": "Kadıköy / Khalkedon",
-        "x": 1059,
-        "y": 457,
+        "x": 1061,
+        "y": 458,
         "type": "port",
         "population": 22
       }
@@ -6863,10 +6867,6 @@
   },
   {
     "region_id": "mediterranean_open_3",
-    "settlements": null
-  },
-  {
-    "region_id": "mediterranean_open_4",
     "settlements": null
   },
   {

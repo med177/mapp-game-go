@@ -53,6 +53,17 @@ func TestAllianceStrategyBlocksActiveObjectiveConflict(t *testing.T) {
 	}
 }
 
+func Test1300AllianceRequiresMoreThanReligiousBaseline(t *testing.T) {
+	gs := allianceStrategyTestState()
+	rel := Relation(gs, "a", "b")
+	rel.Score = 25
+
+	assessment := AssessAllianceProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "İttifak için ilişki puanı 40 altı" {
+		t.Fatalf("1300 dinî taban puanı doğrudan ittifak açmamalıydı: %+v", assessment)
+	}
+}
+
 func TestAllianceStrategyTreatsFutureExpansionAsOverridablePenalty(t *testing.T) {
 	gs := allianceStrategyTestState()
 	gs.Factions["a"].AIExpansionTargets = []faction.FactionID{"b"}

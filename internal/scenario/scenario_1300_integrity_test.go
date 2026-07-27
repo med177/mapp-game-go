@@ -490,6 +490,41 @@ func Test1300ScenarioHistoricalDiplomacyAndFlandersVassalage(t *testing.T) {
 	if aragonGranada == nil || aragonGranada.Stance != faction.StanceAllied {
 		t.Errorf("Aragon-Gırnata başlangıçta müttefik olmalı: relation=%+v", aragonGranada)
 	}
+
+}
+
+func Test1300ScenarioHistoricalAllianceFrictionScores(t *testing.T) {
+	scenarioPath := scenario1300IntegrityPath(t)
+	var definitions []*faction.Relation
+	read1300JSON(t, filepath.Join(scenarioPath, "data", "relations.json"), &definitions)
+	relations := make(map[string]*faction.Relation, len(definitions))
+	for _, relation := range definitions {
+		if relation != nil {
+			relations[faction.RelationKey(relation.FactionA, relation.FactionB)] = relation
+		}
+	}
+
+	historicalFriction := map[[2]faction.FactionID]int{
+		{"aragon", "france"}:                   -15,
+		{"bulgarian_empire", "serbian_empire"}: -15,
+		{"castile_kingdom", "portugal"}:        -15,
+		{"croatian_kingdom", "venice"}:         -15,
+		{"east_rome", "serbian_empire"}:        -10,
+		{"germiyan_bey", "karaman_bey"}:        -10,
+		{"genoa", "venice"}:                    -35,
+		{"hungarian_kingdom", "venice"}:        -15,
+		{"karaman_bey", "ottoman"}:             -20,
+		{"leon_kingdom", "castile_kingdom"}:    -20,
+		{"leon_kingdom", "portugal"}:           -10,
+		{"milan_duchy", "venice"}:              -10,
+		{"naples_kingdom", "papal_states_f"}:   -10,
+	}
+	for pair, wantScore := range historicalFriction {
+		relation := relations[faction.RelationKey(pair[0], pair[1])]
+		if relation == nil || relation.Stance != faction.StancePeace || relation.Score != wantScore {
+			t.Errorf("tarihsel sürtüşme kalibrasyonu yok: %s-%s relation=%+v want_score=%d", pair[0], pair[1], relation, wantScore)
+		}
+	}
 }
 
 func Test1300ScenarioHistoricalFrontArmiesAndTechnology(t *testing.T) {

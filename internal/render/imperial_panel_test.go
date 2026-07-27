@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -21,6 +22,16 @@ func TestImperialPanelAvailableOnlyForHREPlayer(t *testing.T) {
 	gs.PlayerFactionID = "milan"
 	if imperialPanelAvailable(gs) {
 		t.Fatal("HRE üyesi veya normal devlet için oyuncu paneli görünmemeli")
+	}
+}
+
+func TestImperialPanelUsesSharedBackIconButton(t *testing.T) {
+	button := imperialPanelCloseButton()
+	if button.Label != "" || button.Icon != gameui.IconBack {
+		t.Fatalf("HRE paneli ortak geri ikonlu düğmeyi kullanmalı: %+v", button)
+	}
+	if button.IconSize != 14 {
+		t.Fatalf("geri ikonu panel başlığı için doğru boyutta olmalı: got=%v", button.IconSize)
 	}
 }
 
@@ -65,5 +76,20 @@ func TestImperialPanelLayoutDrawsAtCampaignResolutions(t *testing.T) {
 		if button[0] < 0 || button[0]+button[2] > float32(ScreenWidth) {
 			t.Fatalf("HRE HUD düğmesi ekrana sığmıyor: width=%v rect=%v", width, button)
 		}
+	}
+}
+
+func TestImperialDietOptionDescriptionsDoNotOverlapButtons(t *testing.T) {
+	box := gameui.Rect{X: 600, Y: 100, W: 360, H: 420}
+	buttons := imperialDecisionButtonRects(box)
+	for i := 1; i < len(buttons); i++ {
+		previousDescriptionBottom := buttons[i-1].Y + imperialDecisionDescY + 16
+		if previousDescriptionBottom > buttons[i].Y {
+			t.Fatalf("Diyet açıklaması sonraki düğmeye taşıyor: previous=%+v next=%+v", buttons[i-1], buttons[i])
+		}
+	}
+	last := buttons[len(buttons)-1]
+	if last.Y+imperialDecisionDescY+16 > box.Y+box.H {
+		t.Fatalf("son Diyet açıklaması karar alanından taşıyor: button=%+v box=%+v", last, box)
 	}
 }

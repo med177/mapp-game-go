@@ -54,6 +54,21 @@ func (a TradeProposalAssessment) Accepted() bool {
 
 const allianceAcceptanceThreshold = 45
 const allianceRelationThreshold = 25
+const historicalAllianceRelationThreshold = 40
+
+func allianceRelationThresholdFor(gs *state.GameState) int {
+	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+		return historicalAllianceRelationThreshold
+	}
+	return allianceRelationThreshold
+}
+
+func allianceRelationBlockReason(gs *state.GameState) string {
+	if allianceRelationThresholdFor(gs) == historicalAllianceRelationThreshold {
+		return "İttifak için ilişki puanı 40 altı"
+	}
+	return "İttifak için ilişki puanı 25 altı"
+}
 
 type AllianceProposalAssessment struct {
 	Chance          int
@@ -701,14 +716,18 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
 	}
-	if rel.Score < allianceRelationThreshold {
-		assessment.BlockReason = "İttifak için ilişki puanı 25 altı"
+	if rel.Score < allianceRelationThresholdFor(gs) {
+		assessment.BlockReason = allianceRelationBlockReason(gs)
 		return assessment
 	}
 	actorFaction := gs.Factions[actor]
 	targetFaction := gs.Factions[target]
 	if actorFaction == nil || targetFaction == nil {
 		assessment.BlockReason = "Fraksiyon bulunamadı"
+		return assessment
+	}
+	if allyID, conflict := allianceWarConflictBetween(gs, actor, target); conflict {
+		assessment.BlockReason = factionLabel(gs, allyID) + " ile savaş halinde olan devlete ittifak teklif edilemez"
 		return assessment
 	}
 	if gs.ScenarioID == "1300_ottoman_rise" && activeAllianceObjectiveConflict(gs, actor, target) {

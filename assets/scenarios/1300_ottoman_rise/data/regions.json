@@ -638,7 +638,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 42,
-    "population": 273,
+    "population": 327,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -1391,6 +1391,7 @@
       "adriatic_sea",
       "adriatic_sea_shore",
       "apulia",
+      "ionian_sea",
       "mediterranean_open_5",
       "otranto_strait",
       "papal_states",
@@ -1914,17 +1915,12 @@
     "owner_id": "zayyanid_tlemcen",
     "neighbors": [
       "algiers",
-      "ligurian_sea",
-      "mediterranean_open_2",
       "mediterranean_open_3",
-      "mediterranean_open_4",
-      "sardinia_channel",
       "balearic_sea",
       "constantine",
       "tripolitania",
       "tunis",
-      "western_mediterranean",
-      "western_mediterranean_shore"
+      "western_mediterranean"
     ],
     "world_x": 569,
     "world_y": 581,
@@ -1956,12 +1952,13 @@
     "owner_id": "hafsid_sultanate",
     "neighbors": [
       "central_algeria",
-      "tunis",
       "mediterranean_open_2",
-      "western_mediterranean_shore"
+      "sardinia_channel",
+      "tunis",
+      "western_mediterranean"
     ],
-    "world_x": 620,
-    "world_y": 548,
+    "world_x": 630,
+    "world_y": 540,
     "shape_id": "DZA",
     "is_sea": false,
     "is_locked": false,
@@ -1989,19 +1986,14 @@
     "terrain": "coast",
     "owner_id": "hafsid_sultanate",
     "neighbors": [
-      "ionian_sea",
+      "central_algeria",
+      "constantine",
       "ligurian_sea",
       "mediterranean_open_2",
-      "mediterranean_open_4",
-      "constantine",
-      "central_algeria",
-      "tripolitania",
-      "tyrrhenian_sea",
-      "western_mediterranean",
-      "western_mediterranean_shore"
+      "tripolitania"
     ],
-    "world_x": 665,
-    "world_y": 567,
+    "world_x": 669,
+    "world_y": 548,
     "shape_id": "TUN",
     "is_sea": false,
     "is_locked": false,
@@ -2029,13 +2021,13 @@
     "terrain": "plain",
     "owner_id": "hafsid_sultanate",
     "neighbors": [
-      "ionian_sea",
-      "mediterranean_open_3",
-      "cyrenaica",
       "central_algeria",
+      "cyrenaica",
       "gulf_of_sirte",
+      "ligurian_sea",
+      "mediterranean_open_3",
       "tunis",
-      "tyrrhenian_sea"
+      "western_mediterranean_shore"
     ],
     "world_x": 766,
     "world_y": 645,
@@ -2103,9 +2095,10 @@
     "owner_id": "athena_duk",
     "neighbors": [
       "aegean_sea",
+      "aegean_sea_shore",
+      "cretan_sea",
       "mediterranean_open_6",
       "morea",
-      "cretan_sea",
       "thessaly"
     ],
     "world_x": 977,
@@ -2947,8 +2940,8 @@
       "otranto_strait",
       "north_macedonia"
     ],
-    "world_x": 862,
-    "world_y": 447,
+    "world_x": 875,
+    "world_y": 441,
     "shape_id": "ALB",
     "is_sea": false,
     "is_locked": false,
@@ -3400,18 +3393,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "corsica",
-      "ligurian_sea",
-      "malta",
-      "mediterranean_open_4",
+      "atlantic_open_2",
+      "balearic_sea",
       "central_algeria",
-      "sardinia",
-      "tunis",
-      "tyrrhenian_sea",
-      "western_mediterranean_shore"
+      "constantine",
+      "gulf_of_lion",
+      "mallorca",
+      "sardinia_channel"
     ],
-    "world_x": 570,
-    "world_y": 635,
+    "world_x": 565,
+    "world_y": 521,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3440,12 +3431,13 @@
     "neighbors": [
       "adriatic_sea_dalmatia",
       "apulia",
+      "herzegovina",
       "montenegro",
       "naples",
+      "new_region_264",
       "otranto_strait",
-      "ragusa",
-      "herzegovina",
-      "papal_states"
+      "papal_states",
+      "ragusa"
     ],
     "world_x": 818,
     "world_y": 433,
@@ -3551,15 +3543,16 @@
     "owner_id": "",
     "neighbors": [
       "adriatic_sea_shore",
+      "ligurian_sea",
       "malta",
       "mediterranean_open_2",
-      "gulf_of_sirte",
+      "mediterranean_open_5",
+      "naples",
       "sicily",
-      "tripolitania",
-      "tunis"
+      "tyrrhenian_sea"
     ],
-    "world_x": 747,
-    "world_y": 589,
+    "world_x": 752,
+    "world_y": 545,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3622,14 +3615,14 @@
     "neighbors": [
       "aydinoglu",
       "chalcidice",
+      "cretan_sea",
       "gallipoli",
       "greece",
       "izmir",
       "mediterranean_open_6",
       "mentese_hinterland",
-      "sea_of_marmara",
-      "cretan_sea",
       "saruhan",
+      "sea_of_marmara",
       "serres"
     ],
     "world_x": 993,
@@ -3663,16 +3656,15 @@
       "aegean_sea",
       "aegean_sea_shore",
       "crete",
+      "eastern_mediterranean_basin",
       "greece",
       "mediterranean_open_1",
       "mediterranean_open_6",
       "mentese_hinterland",
-      "morea",
-      "eastern_mediterranean_basin",
       "rhodes"
     ],
-    "world_x": 977,
-    "world_y": 543,
+    "world_x": 975,
+    "world_y": 546,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3737,10 +3729,10 @@
     "neighbors": [
       "aegean_sea",
       "aydinoglu",
+      "bosphorus",
       "bursa",
       "constantinople",
       "gallipoli",
-      "bosphorus",
       "nicomedia",
       "thrace"
     ],
@@ -3879,12 +3871,12 @@
     "neighbors": [
       "black_sea",
       "bulgaria",
+      "central_black_sea",
       "chrysopolis",
       "constantinople",
-      "sea_of_marmara",
-      "central_black_sea",
-      "northwestern_black_sea",
       "nicomedia",
+      "northwestern_black_sea",
+      "sea_of_marmara",
       "thrace"
     ],
     "world_x": 1071,
@@ -4824,7 +4816,6 @@
     "terrain": "coast",
     "owner_id": "aragon",
     "neighbors": [
-      "adriatic_sea_shore",
       "ionian_sea",
       "mediterranean_open_2",
       "mediterranean_open_5",
@@ -4864,8 +4855,7 @@
       "mediterranean_open_2",
       "sardinia_channel",
       "northern_tyrrhenian_sea",
-      "gulf_of_genoa",
-      "western_mediterranean"
+      "gulf_of_genoa"
     ],
     "world_x": 656,
     "world_y": 473,
@@ -4899,8 +4889,7 @@
       "languedoc",
       "northern_tyrrhenian_sea",
       "gulf_of_genoa",
-      "provence",
-      "western_mediterranean"
+      "provence"
     ],
     "world_x": 657,
     "world_y": 434,
@@ -4965,7 +4954,6 @@
     "terrain": "coast",
     "owner_id": "aragon",
     "neighbors": [
-      "western_mediterranean",
       "ionian_sea"
     ],
     "world_x": 764,
@@ -5207,7 +5195,8 @@
     "owner_id": "aragon",
     "neighbors": [
       "atlantic_open_2",
-      "gulf_of_lion"
+      "gulf_of_lion",
+      "western_mediterranean"
     ],
     "world_x": 535,
     "world_y": 482,
@@ -5639,7 +5628,6 @@
     "neighbors": [
       "florence",
       "genoa",
-      "northern_tyrrhenian_sea",
       "switzerland",
       "verona"
     ],
@@ -6852,8 +6840,9 @@
       "adriatic_sea_dalmatia",
       "bosnia",
       "dalmatia",
+      "herzegovina",
       "kvarner",
-      "herzegovina"
+      "new_region_264"
     ],
     "world_x": 802,
     "world_y": 403,
@@ -6872,6 +6861,39 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 385,
+    "rural_population": 247,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_264",
+    "name": "New Region 264",
+    "name_tr": "Yeni Bolge 264",
+    "terrain": "coast",
+    "owner_id": "venice",
+    "neighbors": [
+      "adriatic_sea",
+      "herzegovina",
+      "ragusa"
+    ],
+    "world_x": 825,
+    "world_y": 417,
+    "shape_id": "HRV",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 55,
+    "base_grain_output": 25,
+    "base_iron_output": 0,
+    "base_timber_output": 10,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 8,
+    "trade_capacity": 4,
+    "satisfaction": 65,
+    "tax_rate": 32,
+    "population": 247,
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
@@ -6959,6 +6981,7 @@
       "bosnia",
       "hum",
       "montenegro",
+      "new_region_264",
       "ragusa"
     ],
     "world_x": 833,
@@ -7099,7 +7122,6 @@
       "aegean_sea_shore",
       "greece",
       "otranto_strait",
-      "cretan_sea",
       "thessaly"
     ],
     "world_x": 909,
@@ -7940,11 +7962,11 @@
     "owner_id": "",
     "neighbors": [
       "aragon",
+      "balearic_sea",
       "gulf_of_lion",
       "mallorca",
       "navarre",
-      "sardinia_channel",
-      "balearic_sea"
+      "western_mediterranean"
     ],
     "world_x": 501,
     "world_y": 504,
@@ -8009,12 +8031,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "alboran_sea",
       "algiers",
       "aragon",
       "atlantic_open_2",
       "central_algeria",
-      "sardinia_channel",
-      "alboran_sea"
+      "western_mediterranean"
     ],
     "world_x": 514,
     "world_y": 522,
@@ -8050,7 +8072,8 @@
       "mallorca",
       "navarre",
       "provence",
-      "sardinia_channel"
+      "sardinia_channel",
+      "western_mediterranean"
     ],
     "world_x": 575,
     "world_y": 456,
@@ -8116,13 +8139,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "atlantic_open_2",
+      "constantine",
+      "gulf_of_genoa",
       "gulf_of_lion",
       "mediterranean_open_2",
-      "central_algeria",
-      "balearic_sea",
-      "gulf_of_genoa",
-      "sardinia"
+      "sardinia",
+      "western_mediterranean"
     ],
     "world_x": 599,
     "world_y": 505,
@@ -8509,17 +8531,18 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "constantine",
       "ionian_sea",
+      "ligurian_sea",
       "mediterranean_open_5",
-      "central_algeria",
-      "sardinia_channel",
       "northern_tyrrhenian_sea",
       "sardinia",
+      "sardinia_channel",
       "sicily",
       "tunis"
     ],
-    "world_x": 692,
-    "world_y": 525,
+    "world_x": 689,
+    "world_y": 520,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8546,7 +8569,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "mediterranean_open_4",
       "central_algeria",
       "tripolitania",
       "tyrrhenian_sea",
@@ -8574,48 +8596,13 @@
     "buildings": null
   },
   {
-    "id": "mediterranean_open_4",
-    "name": "Mediterranean Open 4",
-    "name_tr": "Akdeniz Açık 4",
-    "terrain": "sea",
-    "owner_id": "",
-    "neighbors": [
-      "ligurian_sea",
-      "central_algeria",
-      "tunis",
-      "tyrrhenian_sea",
-      "western_mediterranean",
-      "western_mediterranean_shore"
-    ],
-    "world_x": 638,
-    "world_y": 622,
-    "is_sea": true,
-    "is_locked": false,
-    "unlock_turn": 0,
-    "base_gold_income": 0,
-    "base_grain_output": 0,
-    "base_iron_output": 0,
-    "base_timber_output": 0,
-    "base_stone_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 0,
-    "satisfaction": 100,
-    "tax_rate": 0,
-    "population": 0,
-    "rural_population": 0,
-    "religion": "",
-    "active_event_id": "",
-    "buildings": null
-  },
-  {
     "id": "mediterranean_open_5",
     "name": "Mediterranean Open 5",
     "name_tr": "Akdeniz Açık 5",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "adriatic_sea_shore",
+      "ionian_sea",
       "mediterranean_open_2",
       "naples",
       "northern_tyrrhenian_sea",
@@ -8623,8 +8610,8 @@
       "sicily",
       "siena"
     ],
-    "world_x": 728,
-    "world_y": 477,
+    "world_x": 748,
+    "world_y": 487,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8654,10 +8641,9 @@
       "corsica",
       "florence",
       "genoa",
+      "gulf_of_genoa",
       "mediterranean_open_2",
       "mediterranean_open_5",
-      "milan",
-      "gulf_of_genoa",
       "sardinia",
       "siena"
     ],
@@ -8724,15 +8710,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "gulf_of_sirte",
       "ligurian_sea",
-      "mediterranean_open_4",
-      "central_algeria",
-      "tunis",
-      "tyrrhenian_sea",
-      "western_mediterranean"
+      "tripolitania",
+      "tyrrhenian_sea"
     ],
-    "world_x": 649,
-    "world_y": 631,
+    "world_x": 733,
+    "world_y": 602,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8760,12 +8744,11 @@
     "owner_id": "",
     "neighbors": [
       "aegean_sea_shore",
-      "ionian_sea",
-      "mediterranean_open_5",
-      "naples",
       "gulf_of_sirte",
+      "ionian_sea",
+      "naples",
       "otranto_strait",
-      "sicily"
+      "tyrrhenian_sea"
     ],
     "world_x": 835,
     "world_y": 559,
@@ -8797,10 +8780,11 @@
     "neighbors": [
       "adriatic_sea_shore",
       "aegean_sea_shore",
-      "ionian_sea",
       "cyrenaica",
       "libyan_sea",
-      "tripolitania"
+      "tripolitania",
+      "tyrrhenian_sea",
+      "western_mediterranean_shore"
     ],
     "world_x": 846,
     "world_y": 609,
@@ -8831,16 +8815,17 @@
     "owner_id": "",
     "neighbors": [
       "adriatic_sea_shore",
+      "cretan_sea",
       "crete",
       "eastern_mediterranean_shore",
-      "morea",
-      "libyan_sea",
+      "greece",
       "gulf_of_sirte",
-      "otranto_strait",
-      "cretan_sea"
+      "libyan_sea",
+      "morea",
+      "otranto_strait"
     ],
-    "world_x": 927,
-    "world_y": 556,
+    "world_x": 930,
+    "world_y": 554,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9321,14 +9306,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "adriatic_sea_shore",
+      "gulf_of_sirte",
+      "ionian_sea",
       "ligurian_sea",
-      "mediterranean_open_4",
-      "western_mediterranean_shore",
-      "tripolitania",
-      "tunis"
+      "western_mediterranean_shore"
     ],
-    "world_x": 710,
-    "world_y": 620,
+    "world_x": 752,
+    "world_y": 581,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9355,15 +9340,15 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "mediterranean_open_4",
-      "central_algeria",
+      "ionian_sea",
+      "mediterranean_open_2",
+      "tripolitania",
       "tunis",
       "tyrrhenian_sea",
-      "western_mediterranean",
       "western_mediterranean_shore"
     ],
-    "world_x": 640,
-    "world_y": 585,
+    "world_x": 703,
+    "world_y": 582,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,

@@ -5,6 +5,39 @@ import (
 	"mapp-game-go/internal/state"
 )
 
+// AllianceRelationThreshold, AI'nin teklif üretirken kullandığı senaryo bazlı
+// ilişki eşiğini dışarıya açar. Teklif üretimi ile actionBlockReason aynı kapıyı
+// kullanmalıdır; aksi halde AI kota harcayıp kesin bloke olacak teklif üretir.
+func AllianceRelationThreshold(gs *state.GameState) int {
+	return allianceRelationThresholdFor(gs)
+}
+
+// allianceWarConflictBetween, iki devlet arasındaki olası ittifakın mevcut
+// müttefiklerden birini doğrudan karşı cepheye düşürüp düşürmediğini kontrol eder.
+// Kontrol iki yönlüdür: teklif sahibi kendi müttefikinin düşmanına yaklaşamaz,
+// hedef de kendi müttefikinin savaşta olduğu devleti ittifakla yanına alamaz.
+func allianceWarConflictBetween(gs *state.GameState, a, b faction.FactionID) (faction.FactionID, bool) {
+	if gs == nil || a == "" || b == "" || a == b {
+		return "", false
+	}
+	for _, rel := range gs.Relations {
+		if rel == nil || rel.Stance != faction.StanceAllied {
+			continue
+		}
+		switch {
+		case rel.FactionA == a && rel.FactionB != b && IsWar(gs, rel.FactionB, b):
+			return rel.FactionB, true
+		case rel.FactionB == a && rel.FactionA != b && IsWar(gs, rel.FactionA, b):
+			return rel.FactionA, true
+		case rel.FactionA == b && rel.FactionB != a && IsWar(gs, rel.FactionB, a):
+			return rel.FactionB, true
+		case rel.FactionB == b && rel.FactionA != a && IsWar(gs, rel.FactionA, a):
+			return rel.FactionA, true
+		}
+	}
+	return "", false
+}
+
 const strategicAllianceAcceptanceFloor = 12
 
 // StrategicAllianceAssessment 1300 senaryosunda actor'un target ile ittifaktan

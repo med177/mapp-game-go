@@ -259,6 +259,9 @@ func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOff
 	if rel.Stance == faction.StanceWar {
 		return Result{Message: "İttifak teklifi artık geçerli değil."}
 	}
+	if _, conflict := allianceWarConflictBetween(gs, offer.FromFactionID, offer.ToFactionID); conflict {
+		return Result{Message: "İttifak teklifi artık geçerli değil."}
+	}
 	if rel.Stance == faction.StanceAllied {
 		return Result{Accepted: true, Applied: true, Message: "Zaten müttefiksiniz."}
 	}

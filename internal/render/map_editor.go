@@ -817,9 +817,9 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 		mx, my := ebiten.CursorPosition()
 		rid = r.editRegionAt(float64(mx), float64(my))
 	}
+	r.editVoronoiDebugRegion = rid
 	region := r.gs.Regions[rid]
 	if region == nil {
-		r.drawEditVoronoiLegend(screen, "", nil)
 		return
 	}
 
@@ -857,7 +857,13 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 	}
 
 	vector.StrokeCircle(screen, float32(cx), float32(cy), 12, 2.5, color.RGBA{255, 220, 70, 245}, true)
-	r.drawEditVoronoiLegend(screen, rid, r.editVisualNeighborBuf)
+}
+
+func (r *Renderer) drawEditVoronoiLegendOverlay(screen *ebiten.Image) {
+	if !r.editVoronoiDebug {
+		return
+	}
+	r.drawEditVoronoiLegend(screen, r.editVoronoiDebugRegion, r.editVisualNeighborBuf)
 }
 
 func (r *Renderer) drawEditVoronoiBoundary(screen *ebiten.Image, pixels []int) {
@@ -875,8 +881,8 @@ func (r *Renderer) drawEditVoronoiBoundary(screen *ebiten.Image, pixels []int) {
 	col := color.RGBA{80, 210, 255, 215}
 	for i := 0; i < len(pixels); i += step {
 		pIdx := pixels[i]
-		wx := float64(pIdx % WorldW)
-		wy := float64(pIdx / WorldW)
+		wx := float64(pIdx%WorldW) + 0.5
+		wy := float64(pIdx/WorldW) + 0.5
 		sx, sy := r.worldToScreen(wx, wy)
 		if sx < -4 || sx > ScreenWidth+4 || sy < -4 || sy > ScreenHeight+4 {
 			continue

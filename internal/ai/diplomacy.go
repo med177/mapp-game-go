@@ -66,7 +66,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				break
 			}
 			var allianceAssessment diplomacy.AllianceProposalAssessment
-			if rel.Score >= 25 {
+			if rel.Score >= diplomacy.AllianceRelationThreshold(gs) {
 				allianceAssessment = diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
 			}
 			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeAlliance) {

@@ -241,6 +241,7 @@ type Renderer struct {
 	editInspectorTab                 editInspectorTab
 	editDirty                        bool
 	editVoronoiDebug                 bool
+	editVoronoiDebugRegion           world.RegionID
 	editOwnerDropdown                *gameui.Dropdown
 	editTerrainDropdown              *gameui.Dropdown
 	editSettlementTypeDropdown       *gameui.Dropdown
@@ -251,9 +252,10 @@ type Renderer struct {
 	editBoundaryPixelBuf             []int
 	editShapeSession                 *shapeEditSession
 	editShapePainting                bool
+	editPaintPreviewImage            *ebiten.Image
 	editShapeTool                    editShapeTool
 	editShapeBrushMode               editShapeBrushMode
-	editShapeBrushRadius             int
+	editShapeBrushRadius             float64
 	editShapeStrokeBefore            *editWorldSnapshot
 	editShapeStrokeLastX             int
 	editShapeStrokeLastY             int
@@ -262,8 +264,6 @@ type Renderer struct {
 	editShapeStrokeAffectsLandShapes bool
 	editRegionPaintOverrides         map[int]world.RegionID
 	editRegionPaintBaseline          []uint16
-	editRegionPaintStrokeStart       map[int]uint16
-	editRegionPaintStrokeList        []int
 	editUndoStack                    []editCommand
 	editRedoStack                    []editCommand
 	editRegionDragStart              *editRegionCenterSnapshot
@@ -523,8 +523,6 @@ func New(gs *state.GameState) *Renderer {
 		editUndoStack:               make([]editCommand, 0, 64),
 		editRedoStack:               make([]editCommand, 0, 64),
 		editRegionPaintOverrides:    make(map[int]world.RegionID),
-		editRegionPaintStrokeStart:  make(map[int]uint16),
-		editRegionPaintStrokeList:   make([]int, 0, 2048),
 		editOwnerDropdown:           gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editTerrainDropdown:         gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
@@ -1193,6 +1191,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 6. Ordu ikonları (ticaret modunda gizlenir)
 	if r.mapMode != MapModeTrade {
 		r.drawArmies(screen, armyPositions)
+	}
+	if r.gs.Phase == state.PhaseEditMode {
+		// Debug paneli ordu karelerinin altında kalmamalı; harita işaretleri
+		// önce, panel ise ordu ikonlarından sonra çizilir.
+		r.drawEditVoronoiLegendOverlay(screen)
 	}
 
 	// 7. Ticaret rotaları + ticaret merkezi tabelaları (en üst harita katmanı)

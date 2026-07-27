@@ -38,7 +38,19 @@ oluşur.
 
 Shape sekmesindeki `Shape Boya`, `Shape Sil`, `Bolge Boya` ve `Bolge Sil`
 butonları toggle çalışır; aktif araca tekrar tıklamak aracı kapatır, `>` işareti
-ile canlı fırça önizlemesi ve brush cursor'u temizlenir.
+ile canlı fırça önizlemesi ve brush cursor'u temizlenir. Inspector, normal
+yarıçaplarda tam piksel adımı kullanır; `1.00` altındaki `0.75` ve `0.50`
+kademeleri daha hassas sınır boyaması için kullanılabilir. Stroke preview'i
+world-space cache'e artımlı yazılır ve ekranda tek image draw olarak gösterilir;
+per-frame piksel başına overlay/vertex üretimi yapılmaz. Boyama input'u hücreyi
+`floor` ile seçer; preview ve cursor aynı raster hücresinin `+0.5` merkezine
+çizilerek screen/world koordinat kayması önlenir. Shape konturu, raster üretimiyle
+aynı `scenario -> world pixel` ölçekleme/kesme yardımcılarını kullanır; Voronoi
+debug sınır noktaları da world piksel merkezine çizilir.
+
+Edit mode Voronoi debug görünümünde sınır/merkez işaretleri harita katmanında
+kalır; `VORONOI DEBUG` bilgi paneli ise ordu ikonlarından sonra çizilir. Böylece
+ordu kareleri panel metninin ve arka planının üzerine binemez (`internal/render/{renderer.go,map_editor.go}`).
 
 Çıkarma input'u, düşman ve tahkimli kıyı hedefini normal amfibi savaş planından
 ayırır; bu hedefte `ActionDisembarkArmy` doğrudan kara ordusunu indirip kuşatma

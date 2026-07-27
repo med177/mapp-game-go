@@ -1,6 +1,7 @@
 package diplomacy
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -34,6 +35,52 @@ func TestProposeAllianceRejectedOnLowScore(t *testing.T) {
 	}
 	if rel.Stance != faction.StancePeace {
 		t.Fatalf("stance peace kalmalı, got=%s", rel.Stance)
+	}
+}
+
+func TestProposeAllianceRejectedAgainstCurrentAllyWarEnemy(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	ally := EnsureRelation(gs, "a", "b")
+	ally.Stance = faction.StanceAllied
+	ally.Score = 60
+	war := EnsureRelation(gs, "b", "c")
+	war.Stance = faction.StanceWar
+	war.Score = -80
+	target := EnsureRelation(gs, "a", "c")
+	target.Score = 60
+
+	assessment := AssessAllianceProposal(gs, target, "a", "c")
+	if !strings.Contains(assessment.BlockReason, "savaş halinde olan devlete") {
+		t.Fatalf("müttefikin savaş düşmanına ittifak engellenmeliydi: %+v", assessment)
+	}
+	if result := Execute(gs, "a", "c", ActionProposeAlliance); result.Applied {
+		t.Fatalf("müttefikin savaş düşmanıyla ittifak uygulanmamalıydı: %+v", result)
+	}
+}
+
+func TestQueuedAllianceOfferExpiresWhenAllyWarConflictAppears(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "c"
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	enableABLandTrade(gs)
+	target := EnsureRelation(gs, "a", "c")
+	target.Score = 60
+	if !QueueOffer(gs, "a", "c", ActionProposeAlliance) {
+		t.Fatal("ittifak teklifi kuyruğa alınmalıydı")
+	}
+	ally := EnsureRelation(gs, "a", "b")
+	ally.Stance = faction.StanceAllied
+	war := EnsureRelation(gs, "b", "c")
+	war.Stance = faction.StanceWar
+	war.Score = -80
+
+	result := ResolveOffer(gs, 0, true)
+	if result.Applied {
+		t.Fatalf("müttefikin savaşı sonradan oluşunca bekleyen ittifak uygulanmamalıydı: %+v", result)
+	}
+	if target.Stance != faction.StancePeace {
+		t.Fatalf("geçersiz bekleyen teklif sonrası hedef ilişki barışta kalmalıydı: %s", target.Stance)
 	}
 }
 

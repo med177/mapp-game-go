@@ -828,9 +828,11 @@ Deniz filoları da aynı `ArmyAssignments` modelinde `transport` veya `escort` r
 aktif görev varsa anchor çıkış/iniş denizinden türetilir, merchant filoları kara görev
 rollerine karıştırılmaz.
 
-İlişki skoru `25` altındaki barış çiftleri, ittifak kabul eşiği aynı değerde olduğu için
-pahalı stratejik ittifak değerlendirmesine girmeden elenir. Böylece sonuç davranışı
-değişmeden 1300 diplomasi taramasının maliyeti azaltılır.
+1300'de ilişki skoru `40` altındaki barış çiftleri, aynı dinin varsayılan `25` puanı
+ittifak için yeterli olmadığı için pahalı stratejik ittifak değerlendirmesine girmeden
+elenir. Diğer senaryolarda genel `25` eşiği korunur. AI ayrıca mevcut müttefiki hedefle
+savaş halinde olan bir devlete teklif göndermez; aynı savaş çakışması doğrudan diplomasi
+geçidinde ve kuyruk çözümünde de yeniden doğrulanır.
 
 - `war` ilişkisinde 1300 senaryosu taraf çifti başına kalıcı `WarLedger` okur. Objective
   tamamlanması, fethedilen/kaybedilen bölgeler, muharebe ve kuşatma kayıpları, savaş
@@ -838,7 +840,7 @@ değişmeden 1300 diplomasi taramasının maliyeti azaltılır.
   başkent tehdidi ortak barış baskısı üretir. İlk üç savaş turunda normal teklif açılmaz;
   başkent tehdidi veya askerî çöküş acil istisnadır. Aynı savaşta reddedilen teklif üç
   tur cooldown uygular. Diğer senaryolar mevcut legacy güç/bölge/skor kararını korur
-- `peace` ilişkisinde ittifak için artık sadece skor yetmez; kara sınırı, aktif ticaret, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ aranır. AI ayrıca küçük devletlerde düşük müttefik tavanı uygular, `ai_expansion_targets` ile çakışan hedeflere ortak tehdit yoksa ittifak teklif etmez ve büyük gücün tek bölgeli/zayıf devlete attığı alliance teklifi için ayrıca gerçek askeri veya stratejik fayda arar
+- `peace` ilişkisinde ittifak için artık sadece skor yetmez; 1300'de skorun `40` olması, kara sınırı, aktif ticaret, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ aranır. AI ayrıca küçük devletlerde düşük müttefik tavanı uygular, `ai_expansion_targets` ile çakışan hedeflere ortak tehdit yoksa ittifak teklif etmez, mevcut müttefikin savaş düşmanına teklif göndermez ve büyük gücün tek bölgeli/zayıf devlete attığı alliance teklifi için ayrıca gerçek askeri veya stratejik fayda arar
 - `peace` ilişkisinde skor yeterliyse ve bağlanabilir kara/deniz hattı varsa ticaret dener; salt uzak ve nötr devletlere sırf kapasite var diye trade açmaz
 - vassal durumundaki AI bağımsız diplomasi açmaz; overlord'u olmayan devletler ise başka bir overlord'a bağlı hedeflerle doğrudan müzakere başlatmaz
 - `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir

@@ -2,7 +2,9 @@ package render
 
 import (
 	"image/color"
+	"math"
 	"sort"
+	"strconv"
 
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -13,6 +15,13 @@ import (
 )
 
 type editShapeBrushMode int
+
+const (
+	editShapeBrushMinRadius = 0.5
+	editShapeBrushStep      = 0.25
+	editShapeBrushMaxRadius = 64.0
+	editShapeBrushFineLimit = 1.0
+)
 
 const (
 	editShapeBrushPaint editShapeBrushMode = iota
@@ -30,8 +39,6 @@ type shapeEditSession struct {
 	Height   int
 	Mask     []byte
 	BaseMask []byte
-	DiffMask []byte
-	DiffList []int
 	Dirty    bool
 	LastX    int
 	LastY    int
@@ -59,7 +66,7 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editShapeSession = nil
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
-	r.resetRegionPaintStrokePreview()
+	r.clearEditPaintPreview()
 }
 
 func (r *Renderer) selectedShapeRegion() *world.Region {
@@ -103,17 +110,15 @@ func newShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession 
 	width := maxX - minX + 1
 	height := maxY - minY + 1
 	session := &shapeEditSession{
-		ShapeID:  shapeID,
-		Name:     gs.ShapeData.Names[shapeID],
-		MinX:     minX,
-		MinY:     minY,
-		MaxX:     maxX,
-		MaxY:     maxY,
-		Width:    width,
-		Height:   height,
-		Mask:     make([]byte, width*height),
-		DiffMask: make([]byte, width*height),
-		DiffList: make([]int, 0, 2048),
+		ShapeID: shapeID,
+		Name:    gs.ShapeData.Names[shapeID],
+		MinX:    minX,
+		MinY:    minY,
+		MaxX:    maxX,
+		MaxY:    maxY,
+		Width:   width,
+		Height:  height,
+		Mask:    make([]byte, width*height),
 	}
 	if session.Name == "" {
 		session.Name = shapeID
@@ -124,30 +129,6 @@ func newShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession 
 	session.BaseMask = make([]byte, len(session.Mask))
 	copy(session.BaseMask, session.Mask)
 	return session
-}
-
-func (s *shapeEditSession) resetStrokeDiff() {
-	if s == nil {
-		return
-	}
-	for _, idx := range s.DiffList {
-		s.DiffMask[idx] = 0
-	}
-	s.DiffList = s.DiffList[:0]
-}
-
-func (s *shapeEditSession) trackDiff(idx int) {
-	if s == nil || idx < 0 || idx >= len(s.Mask) || idx >= len(s.BaseMask) {
-		return
-	}
-	if s.Mask[idx] != s.BaseMask[idx] {
-		if s.DiffMask[idx] == 0 {
-			s.DiffMask[idx] = 1
-			s.DiffList = append(s.DiffList, idx)
-		}
-		return
-	}
-	s.DiffMask[idx] = 0
 }
 
 func editableShapeCoordBounds() (int, int, int, int) {
@@ -257,7 +238,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	ly += 18
 	DrawText(screen, "Ad: "+name, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
-	DrawText(screen, "Shape ID: "+shapeID+"   Firca: "+itoa(r.editShapeBrushRadius), float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Shape ID: "+shapeID+"   Firca: "+editShapeBrushRadiusLabel(r.editShapeBrushRadius), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	ringCount := 0
 	if shapeRegion != nil {
@@ -315,8 +296,8 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	drawEditInspectorButton(screen, editButtonShapeRegionPaint, regionPaintLabel, r.canRegionPaintSelected())
 	drawEditInspectorButton(screen, editButtonShapeRegionErase, regionEraseLabel, r.canRegionPaintSelected())
 	canAdjustBrush := r.canEditSelectedShape() || r.canRegionPaintSelected()
-	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > 1)
-	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < 64)
+	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
+	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
 	r.drawEditShapeLandPassageButtons(screen)
 	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
@@ -353,13 +334,9 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 	case editButtonShapeRegionErase:
 		r.toggleEditShapeTool(editShapeToolRegion, editShapeBrushErase)
 	case editButtonShapeBrushMinus:
-		if r.editShapeBrushRadius > 1 {
-			r.editShapeBrushRadius--
-		}
+		r.editShapeBrushRadius = decreaseEditShapeBrushRadius(r.editShapeBrushRadius)
 	case editButtonShapeBrushPlus:
-		if r.editShapeBrushRadius < 64 {
-			r.editShapeBrushRadius++
-		}
+		r.editShapeBrushRadius = increaseEditShapeBrushRadius(r.editShapeBrushRadius)
 	case editButtonLandPassageAdd:
 		r.toggleEditLandPassageMode()
 	case editButtonLandPassageAdjust:
@@ -381,7 +358,7 @@ func (r *Renderer) toggleEditShapeTool(tool editShapeTool, mode editShapeBrushMo
 		r.editShapeStrokeBefore = nil
 		r.editShapeStrokeHasLast = false
 		r.editShapeStrokeDirty = false
-		r.resetRegionPaintStrokePreview()
+		r.clearEditPaintPreview()
 		return
 	}
 	r.editShapeTool = tool
@@ -405,19 +382,14 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 			for i := range ring {
 				a := ring[i]
 				b := ring[(i+1)%len(ring)]
-				ax, ay := r.worldToScreen(wcX(int(a[0]+0.5)), wcY(int(a[1]+0.5)))
-				bx, by := r.worldToScreen(wcX(int(b[0]+0.5)), wcY(int(b[1]+0.5)))
+				ax, ay := r.worldToScreen(shapeRasterWorldPoint(a))
+				bx, by := r.worldToScreen(shapeRasterWorldPoint(b))
 				vector.StrokeLine(screen, float32(ax), float32(ay), float32(bx), float32(by), 2, color.RGBA{60, 235, 255, 215}, true)
 			}
 		}
 	}
 	session := r.editShapeSession
-	if session != nil {
-		r.drawEditShapeStrokePreview(screen, session)
-	}
-	if r.editShapeTool == editShapeToolRegion {
-		r.drawEditRegionPaintStrokePreview(screen)
-	}
+	r.drawEditPaintPreview(screen)
 	r.drawEditShapeHelp(screen, session)
 	switch r.editShapeTool {
 	case editShapeToolShape:
@@ -436,8 +408,16 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 		return
 	}
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
-	sx, sy := r.worldToScreen(wx, wy)
-	radius := float32(maxF(6, float64(r.editShapeBrushRadius)*maxF(shapeScaleX, shapeScaleY)*r.camScale))
+	var cursorWX, cursorWY float64
+	if r.editShapeTool == editShapeToolShape {
+		cellX, cellY := shapePaintCellFromWorld(wx, wy)
+		cursorWX, cursorWY = shapePaintCellCenterWorld(cellX, cellY)
+	} else {
+		cellX, cellY := regionPaintCellFromWorld(wx, wy)
+		cursorWX, cursorWY = regionPaintCellCenterWorld(cellX, cellY)
+	}
+	sx, sy := r.worldToScreen(cursorWX, cursorWY)
+	radius := float32(maxF(1, r.editShapeBrushRadius*maxF(shapeScaleX, shapeScaleY)*r.camScale))
 	brushCol := color.RGBA{80, 235, 255, 180}
 	if r.editShapeBrushMode == editShapeBrushErase {
 		brushCol = color.RGBA{255, 110, 110, 185}
@@ -458,37 +438,6 @@ func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {
 		return false
 	}
 	return buildEditShapeHelpPanel().HitTest(mx, my)
-}
-
-func (r *Renderer) drawEditShapeStrokePreview(screen *ebiten.Image, session *shapeEditSession) {
-	if session == nil || len(session.DiffList) == 0 {
-		return
-	}
-	buildEditShapeStrokeOverlay(r, session).Draw(screen, renderText)
-}
-
-func buildEditShapeStrokeOverlay(r *Renderer, session *shapeEditSession) gameui.Overlay {
-	overlay := gameui.NewOverlay(0, 0, ScreenWidth, ScreenHeight)
-	overlay.DrawFunc = func(screen *ebiten.Image) {
-		size := float32(maxF(2, maxF(shapeScaleX, shapeScaleY)*r.camScale))
-		for _, idx := range session.DiffList {
-			if idx < 0 || idx >= len(session.DiffMask) || session.DiffMask[idx] == 0 {
-				continue
-			}
-			x := idx%session.Width + session.MinX
-			y := idx/session.Width + session.MinY
-			sx, sy := r.worldToScreen(wcX(x), wcY(y))
-			if sx < -8 || sx > ScreenWidth+8 || sy < -8 || sy > ScreenHeight+8 {
-				continue
-			}
-			col := color.RGBA{80, 235, 120, 165}
-			if session.Mask[idx] == 0 {
-				col = color.RGBA{255, 90, 90, 170}
-			}
-			drawPixelRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, col)
-		}
-	}
-	return overlay
 }
 
 func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSession) {
@@ -518,13 +467,92 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	}
 	labels := [...]gameui.Label{
 		gameui.NewLabel(float64(x)+12, float64(y)+10, "SHAPE YARDIM", ColorGold),
-		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+selectedLabel+"  Firca: "+itoa(r.editShapeBrushRadius), ColorWhite),
+		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+selectedLabel+"  Firca: "+editShapeBrushRadiusLabel(r.editShapeBrushRadius), ColorWhite),
 		gameui.NewLabel(float64(x)+12, float64(y)+48, "Mod: "+mode+"  Sag mouse drag  Birakinca uygula", ColorGray),
 		gameui.NewLabel(float64(x)+12, float64(y)+66, actionLabel, ColorGray),
 	}
 	for _, label := range labels {
 		label.Draw(screen, renderText)
 	}
+}
+
+func (r *Renderer) ensureEditPaintPreviewImage() *ebiten.Image {
+	if r == nil {
+		return nil
+	}
+	if r.editPaintPreviewImage == nil || r.editPaintPreviewImage.Bounds().Dx() != WorldW || r.editPaintPreviewImage.Bounds().Dy() != WorldH {
+		r.editPaintPreviewImage = ebiten.NewImage(WorldW, WorldH)
+	}
+	return r.editPaintPreviewImage
+}
+
+func (r *Renderer) resetEditPaintPreview() {
+	if image := r.ensureEditPaintPreviewImage(); image != nil {
+		image.Clear()
+	}
+}
+
+func (r *Renderer) clearEditPaintPreview() {
+	if r != nil && r.editPaintPreviewImage != nil {
+		r.editPaintPreviewImage.Clear()
+	}
+}
+
+// Paint koordinatları raster hücrelerinin sol-üst köşesine göre tutulur.
+// Mouse konumu hücreye yuvarlanmaz; bulunduğu hücreye floor ile atanır.
+// Çizim tarafında aynı hücrenin merkezi +0.5 ile kullanılır.
+func shapePaintCellFromWorld(wx, wy float64) (int, int) {
+	return int(math.Floor((wx - shapeOffX) / shapeScaleX)), int(math.Floor((wy - shapeOffY) / shapeScaleY))
+}
+
+func regionPaintCellFromWorld(wx, wy float64) (int, int) {
+	return int(math.Floor(wx)), int(math.Floor(wy))
+}
+
+func shapePaintCellCenterWorld(x, y int) (float64, float64) {
+	return shapeOffX + (float64(x)+0.5)*shapeScaleX, shapeOffY + (float64(y)+0.5)*shapeScaleY
+}
+
+func regionPaintCellCenterWorld(x, y int) (float64, float64) {
+	return float64(x) + 0.5, float64(y) + 0.5
+}
+
+func (r *Renderer) drawEditPaintPreview(screen *ebiten.Image) {
+	if r == nil || !r.editShapePainting || r.editPaintPreviewImage == nil {
+		return
+	}
+	var op ebiten.DrawImageOptions
+	r.applyMapGeoM(&op, float64(WorldW), float64(WorldH))
+	screen.DrawImage(r.editPaintPreviewImage, &op)
+}
+
+func (r *Renderer) drawShapePaintPreviewPixel(x, y int, fill bool) {
+	image := r.editPaintPreviewImage
+	if image == nil {
+		return
+	}
+	col := color.RGBA{255, 90, 90, 170}
+	if fill {
+		col = color.RGBA{80, 235, 120, 165}
+	}
+	width := maxF(shapeScaleX, 2/r.camScale)
+	height := maxF(shapeScaleY, 2/r.camScale)
+	cx, cy := shapePaintCellCenterWorld(x, y)
+	vector.FillRect(image, float32(cx)-float32(width/2), float32(cy)-float32(height/2), float32(width), float32(height), col, true)
+}
+
+func (r *Renderer) drawRegionPaintPreviewPixel(x, y int, fill bool) {
+	image := r.editPaintPreviewImage
+	if image == nil {
+		return
+	}
+	col := color.RGBA{255, 90, 90, 170}
+	if fill {
+		col = color.RGBA{80, 235, 120, 165}
+	}
+	size := maxF(1, 2/r.camScale)
+	cx, cy := regionPaintCellCenterWorld(x, y)
+	vector.FillRect(image, float32(cx)-float32(size/2), float32(cy)-float32(size/2), float32(size), float32(size), col, true)
 }
 
 func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
@@ -543,7 +571,6 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	default:
 		return false
 	}
-	r.resetRegionPaintStrokePreview()
 	session := r.editShapeSession
 	if r.editShapeTool == editShapeToolShape {
 		session = r.ensureShapeEditSession()
@@ -554,9 +581,9 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	wx, wy := r.screenToWorld(fx, fy)
 	var sx, sy int
 	if r.editShapeTool == editShapeToolRegion {
-		sx, sy = int(wx+0.5), int(wy+0.5)
+		sx, sy = regionPaintCellFromWorld(wx, wy)
 	} else {
-		sx, sy = scenarioCoordsFromWorld(wx, wy)
+		sx, sy = shapePaintCellFromWorld(wx, wy)
 		if !session.inBounds(sx, sy) {
 			return false
 		}
@@ -570,8 +597,8 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	if session != nil {
 		session.Dirty = false
 		session.HasLast = false
-		session.resetStrokeDiff()
 	}
+	r.resetEditPaintPreview()
 	r.applyShapeBrushAt(session, sx, sy)
 	return true
 }
@@ -586,7 +613,7 @@ func (r *Renderer) continueShapePaintStroke(fx, fy float64) {
 			return
 		}
 		wx, wy := r.screenToWorld(fx, fy)
-		sx, sy := scenarioCoordsFromWorld(wx, wy)
+		sx, sy := shapePaintCellFromWorld(wx, wy)
 		r.applyShapeBrushAt(session, sx, sy)
 		return
 	}
@@ -595,7 +622,7 @@ func (r *Renderer) continueShapePaintStroke(fx, fy float64) {
 			return
 		}
 		wx, wy := r.screenToWorld(fx, fy)
-		sx, sy := int(wx+0.5), int(wy+0.5)
+		sx, sy := regionPaintCellFromWorld(wx, wy)
 		r.applyShapeBrushAt(nil, sx, sy)
 	}
 }
@@ -605,7 +632,7 @@ func (r *Renderer) finishShapePaintStroke() {
 	session := r.editShapeSession
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
-	defer r.resetRegionPaintStrokePreview()
+	defer r.clearEditPaintPreview()
 	if before == nil {
 		return
 	}
@@ -669,46 +696,89 @@ func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
 		return
 	}
 	if !session.HasLast {
-		if applyShapeBrushCircle(session, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+		if r.applyShapeBrushCircle(session, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
 			session.Dirty = true
 		}
 		session.LastX, session.LastY, session.HasLast = x, y, true
 		return
 	}
-	if applyShapeBrushLine(session, session.LastX, session.LastY, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+	if r.applyShapeBrushLine(session, session.LastX, session.LastY, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
 		session.Dirty = true
 	}
 	session.LastX, session.LastY = x, y
 }
 
-func applyShapeBrushLine(session *shapeEditSession, x0, y0, x1, y1, radius int, fill bool) bool {
+func editShapeBrushRadiusLabel(radius float64) string {
+	if radius == math.Trunc(radius) {
+		return itoa(int(radius))
+	}
+	return strconv.FormatFloat(radius, 'f', 2, 64)
+}
+
+func decreaseEditShapeBrushRadius(radius float64) float64 {
+	if radius <= editShapeBrushMinRadius {
+		return editShapeBrushMinRadius
+	}
+	if radius <= editShapeBrushFineLimit {
+		radius -= editShapeBrushStep
+		if radius < editShapeBrushMinRadius {
+			return editShapeBrushMinRadius
+		}
+		return radius
+	}
+	return radius - 1
+}
+
+func increaseEditShapeBrushRadius(radius float64) float64 {
+	if radius >= editShapeBrushMaxRadius {
+		return editShapeBrushMaxRadius
+	}
+	if radius < editShapeBrushFineLimit {
+		radius += editShapeBrushStep
+		if radius > editShapeBrushFineLimit {
+			return editShapeBrushFineLimit
+		}
+		return radius
+	}
+	radius++
+	if radius > editShapeBrushMaxRadius {
+		return editShapeBrushMaxRadius
+	}
+	return radius
+}
+
+func (r *Renderer) applyShapeBrushLine(session *shapeEditSession, x0, y0, x1, y1 int, radius float64, fill bool) bool {
 	steps := maxInt(absInt(x1-x0), absInt(y1-y0))
 	if steps == 0 {
-		return applyShapeBrushCircle(session, x0, y0, radius, fill)
+		return r.applyShapeBrushCircle(session, x0, y0, radius, fill)
 	}
 	changed := false
 	for i := 0; i <= steps; i++ {
 		x := x0 + (x1-x0)*i/steps
 		y := y0 + (y1-y0)*i/steps
-		if applyShapeBrushCircle(session, x, y, radius, fill) {
+		if r.applyShapeBrushCircle(session, x, y, radius, fill) {
 			changed = true
 		}
 	}
 	return changed
 }
 
-func applyShapeBrushCircle(session *shapeEditSession, cx, cy, radius int, fill bool) bool {
+func (r *Renderer) applyShapeBrushCircle(session *shapeEditSession, cx, cy int, radius float64, fill bool) bool {
 	if session == nil || radius < 0 {
 		return false
 	}
 	changed := false
 	r2 := radius * radius
-	for y := cy - radius; y <= cy+radius; y++ {
-		for x := cx - radius; x <= cx+radius; x++ {
+	minX := int(math.Ceil(float64(cx) - radius))
+	maxX := int(math.Floor(float64(cx) + radius))
+	minY := int(math.Ceil(float64(cy) - radius))
+	maxY := int(math.Floor(float64(cy) + radius))
+	for y := minY; y <= maxY; y++ {
+		for x := minX; x <= maxX; x++ {
 			if !session.inBounds(x, y) {
 				continue
 			}
-			dx, dy := x-cx, y-cy
+			dx, dy := float64(x-cx), float64(y-cy)
 			if dx*dx+dy*dy > r2 {
 				continue
 			}
@@ -719,7 +789,7 @@ func applyShapeBrushCircle(session *shapeEditSession, cx, cy, radius int, fill b
 			}
 			if session.Mask[idx] != want {
 				session.Mask[idx] = want
-				session.trackDiff(idx)
+				r.drawShapePaintPreviewPixel(x, y, fill)
 				changed = true
 			}
 		}
@@ -727,7 +797,7 @@ func applyShapeBrushCircle(session *shapeEditSession, cx, cy, radius int, fill b
 	return changed
 }
 
-func (r *Renderer) applyRegionBrushLine(x0, y0, x1, y1, radius int, fill bool) bool {
+func (r *Renderer) applyRegionBrushLine(x0, y0, x1, y1 int, radius float64, fill bool) bool {
 	steps := maxInt(absInt(x1-x0), absInt(y1-y0))
 	if steps == 0 {
 		return r.applyRegionBrushCircle(x0, y0, radius, fill)
@@ -743,7 +813,7 @@ func (r *Renderer) applyRegionBrushLine(x0, y0, x1, y1, radius int, fill bool) b
 	return changed
 }
 
-func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
+func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool) bool {
 	if r.worldMap == nil || radius < 0 || !r.canRegionPaintSelected() {
 		return false
 	}
@@ -752,15 +822,19 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 	targetIdx := r.worldMap.ensureRegionIndex(regionID)
 	changed := false
 	r2 := radius * radius
-	for y := cy - radius; y <= cy+radius; y++ {
+	minX := int(math.Ceil(float64(cx) - radius))
+	maxX := int(math.Floor(float64(cx) + radius))
+	minY := int(math.Ceil(float64(cy) - radius))
+	maxY := int(math.Floor(float64(cy) + radius))
+	for y := minY; y <= maxY; y++ {
 		if y < 0 || y >= WorldH {
 			continue
 		}
-		for x := cx - radius; x <= cx+radius; x++ {
+		for x := minX; x <= maxX; x++ {
 			if x < 0 || x >= WorldW {
 				continue
 			}
-			dx, dy := x-cx, y-cy
+			dx, dy := float64(x-cx), float64(y-cy)
 			if dx*dx+dy*dy > r2 {
 				continue
 			}
@@ -770,7 +844,6 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 				baselineIdx = r.editRegionPaintBaseline[pIdx]
 			}
 			oldIdx := r.worldMap.regionAt[pIdx]
-			r.trackRegionPaintStrokeStart(pIdx, oldIdx)
 			if regionPaintTouchesLandShape(r.gs, targetRegion, baselineIdx, oldIdx, r.worldMap.regionIDs) {
 				r.editShapeStrokeAffectsLandShapes = true
 			}
@@ -779,6 +852,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 					delete(r.editRegionPaintOverrides, pIdx)
 					if oldIdx != baselineIdx {
 						r.worldMap.regionAt[pIdx] = baselineIdx
+						r.drawRegionPaintPreviewPixel(x, y, false)
 						changed = true
 					}
 					continue
@@ -786,6 +860,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 				r.editRegionPaintOverrides[pIdx] = regionID
 				if oldIdx != targetIdx {
 					r.worldMap.regionAt[pIdx] = targetIdx
+					r.drawRegionPaintPreviewPixel(x, y, true)
 					changed = true
 				}
 				continue
@@ -796,78 +871,12 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy, radius int, fill bool) bool {
 			delete(r.editRegionPaintOverrides, pIdx)
 			if oldIdx != baselineIdx {
 				r.worldMap.regionAt[pIdx] = baselineIdx
+				r.drawRegionPaintPreviewPixel(x, y, false)
 				changed = true
 			}
 		}
 	}
 	return changed
-}
-
-func (r *Renderer) resetRegionPaintStrokePreview() {
-	if r == nil || len(r.editRegionPaintStrokeStart) == 0 {
-		r.editRegionPaintStrokeList = r.editRegionPaintStrokeList[:0]
-		return
-	}
-	for _, pIdx := range r.editRegionPaintStrokeList {
-		delete(r.editRegionPaintStrokeStart, pIdx)
-	}
-	r.editRegionPaintStrokeList = r.editRegionPaintStrokeList[:0]
-}
-
-func (r *Renderer) trackRegionPaintStrokeStart(pIdx int, startIdx uint16) {
-	if r == nil {
-		return
-	}
-	if _, ok := r.editRegionPaintStrokeStart[pIdx]; ok {
-		return
-	}
-	r.editRegionPaintStrokeStart[pIdx] = startIdx
-	r.editRegionPaintStrokeList = append(r.editRegionPaintStrokeList, pIdx)
-}
-
-func (r *Renderer) regionPaintPreviewStateAt(pIdx int) byte {
-	if r == nil || r.worldMap == nil {
-		return 0
-	}
-	startIdx, ok := r.editRegionPaintStrokeStart[pIdx]
-	if !ok || pIdx < 0 || pIdx >= len(r.worldMap.regionAt) {
-		return 0
-	}
-	currentIdx := r.worldMap.regionAt[pIdx]
-	if currentIdx == startIdx {
-		return 0
-	}
-	if currentIdx == r.worldMap.regionIdx[r.editSelectedRegion] {
-		return 1
-	}
-	return 2
-}
-
-func (r *Renderer) drawEditRegionPaintStrokePreview(screen *ebiten.Image) {
-	if r.worldMap == nil || len(r.editRegionPaintStrokeList) == 0 {
-		return
-	}
-	overlay := gameui.NewOverlay(0, 0, ScreenWidth, ScreenHeight)
-	overlay.DrawFunc = func(screen *ebiten.Image) {
-		size := float32(maxF(2, maxF(shapeScaleX, shapeScaleY)*r.camScale))
-		for _, pIdx := range r.editRegionPaintStrokeList {
-			state := r.regionPaintPreviewStateAt(pIdx)
-			if state == 0 {
-				continue
-			}
-			px, py := pIdx%WorldW, pIdx/WorldW
-			sx, sy := r.worldToScreen(float64(px), float64(py))
-			if sx < -8 || sx > ScreenWidth+8 || sy < -8 || sy > ScreenHeight+8 {
-				continue
-			}
-			col := color.RGBA{80, 235, 120, 165}
-			if state == 2 {
-				col = color.RGBA{255, 90, 90, 170}
-			}
-			drawPixelRect(screen, float32(sx)-size/2, float32(sy)-size/2, size, col)
-		}
-	}
-	overlay.Draw(screen, renderText)
 }
 
 func (r *Renderer) syncRegionPaintOverridesToGameState() {
@@ -979,7 +988,6 @@ func newBlankShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSes
 	for i := range session.BaseMask {
 		session.BaseMask[i] = 0
 	}
-	session.resetStrokeDiff()
 	session.Dirty = false
 	session.HasLast = false
 	return session

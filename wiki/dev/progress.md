@@ -7,6 +7,46 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-27: Edit mode shape konturu ile renkli raster alanı hizalandı. Kontur
+  ve raster aynı world-pixel dönüşümünü kullanıyor; Voronoi debug sınırları piksel
+  merkezine çiziliyor. Regression: `TestShapeOutlineUsesRasterizedWorldBoundary`.
+
+- 2026-07-27: Edit mode boya/sil araçlarında dünya koordinatı ile raster hücre
+  merkezi hizalandı. Shape ve bölge boyama `floor` ile doğru hücreyi seçiyor;
+  preview ve cursor hücre merkezine snap oluyor. Regression: `TestPaintCoordinatesUseContainingCellAndItsCenter`; doğrulama: `go test ./... -count=1`.
+
+- 2026-07-27: Edit mode `Shape/Bolge Boya/Sil` preview performansı düzeltildi.
+  Her frame'de piksel listesi ve `Overlay` üretmek yerine stroke değişimleri tek
+  world-space preview image'a artımlı yazılıyor; region stroke sırasında geçici
+  piksel map/list allocation'ı kaldırıldı. Doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-07-27: Edit mode `Shape Boya/Sil` ve `Bolge Boya/Sil` araçlarında fırça
+  yarıçapının `1.00` altına iki ince kademe (`0.75`, `0.50`) eklendi. Canlı
+  cursor, shape mask ve region override stroke aynı float yarıçapı kullanıyor;
+  regression: `TestShapeBrushSupportsTwoFineStepsBelowOnePixelRadius`.
+
+- 2026-07-27: Edit mode Voronoi debug paneli artık ordu ikonlarından sonra çiziliyor;
+  ordu kareleri panelin arka planı ve metinleri üzerine binmiyor. Sınır ve merkez
+  işaretleri harita katmanında bırakıldı; doğrulama: `go test ./internal/render` ve
+  `go test ./... -count=1`.
+
+- 2026-07-27: İttifak teklifleri mevcut müttefiklerin savaşlarıyla uyumlu hale getirildi;
+  bir devlet, müttefikinin o anda savaşta olduğu hedefe ittifak teklifi gönderemiyor.
+  Kural AI teklif üretiminde, doğrudan `ActionBlockReason()` geçidinde ve bekleyen
+  teklifin kabulünde ortak `allianceWarConflictBetween()` helper'ıyla uygulanıyor.
+  1300'de ittifak ilişki eşiği `25`ten `40`a çıkarıldı; aynı dinin varsayılan puanı
+  artık hemen ittifak kurdurmuyor. Kastilya-Portekiz, Leon-Kastilya,
+  Osmanlı-Karamanoğulları, Ceneviz-Venedik ve diğer tarihsel sürtüşmeli çiftlerin
+  başlangıç relation skorları da senaryo verisinde düşürüldü. Regression:
+  `TestProposeAllianceRejectedAgainstCurrentAllyWarEnemy`,
+  `TestQueuedAllianceOfferExpiresWhenAllyWarConflictAppears`,
+  `Test1300AllianceRequiresMoreThanReligiousBaseline`; doğrulama: hedefli diplomasi,
+  AI ve senaryo integrity testleri. Aynı 1300 veri paketindeki kalan bütünlük
+  hataları da kapatıldı: Bosna ve Flandre üst-devlet kayıtları tamamlandı; eksik
+  devlet başkentleri mevcut ve doğru sahipliğe bağlı settlement kimlikleriyle
+  dolduruldu. Doğrulama: `go test ./internal/scenario -count=1` ve
+  `go test ./... -count=1`.
+
 - 2026-07-27: Edit mode `Harita` inspector'ına region `ID` değiştirme aksiyonu
   eklendi. Mevcut ID önden dolduruluyor, Ctrl+A ile değiştirilebiliyor; boş ve
   çakışan ID'ler reddediliyor. Rename sırasında region map anahtarıyla birlikte

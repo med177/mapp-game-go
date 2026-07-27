@@ -1,6 +1,7 @@
 package render
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,6 +10,39 @@ import (
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestPaintCoordinatesUseContainingCellAndItsCenter(t *testing.T) {
+	shapeX, shapeY := 14, 10
+	shapeWX := shapeOffX + (float64(shapeX)+0.9)*shapeScaleX
+	shapeWY := shapeOffY + (float64(shapeY)+0.9)*shapeScaleY
+	if gotX, gotY := shapePaintCellFromWorld(shapeWX, shapeWY); gotX != shapeX || gotY != shapeY {
+		t.Fatalf("shape mouse konumu bulundugu hucreye ait olmali: got=(%d,%d) want=(%d,%d)", gotX, gotY, shapeX, shapeY)
+	}
+	centerX, centerY := shapePaintCellCenterWorld(shapeX, shapeY)
+	wantCenterX := shapeOffX + (float64(shapeX)+0.5)*shapeScaleX
+	wantCenterY := shapeOffY + (float64(shapeY)+0.5)*shapeScaleY
+	if math.Abs(centerX-wantCenterX) > 0.0001 || math.Abs(centerY-wantCenterY) > 0.0001 {
+		t.Fatalf("shape preview hucenin merkezine oturmali: got=(%.4f,%.4f) want=(%.4f,%.4f)", centerX, centerY, wantCenterX, wantCenterY)
+	}
+
+	regionX, regionY := regionPaintCellFromWorld(14.9, 10.9)
+	if regionX != 14 || regionY != 10 {
+		t.Fatalf("region mouse konumu floor ile bulundugu hucreye ait olmali: got=(%d,%d)", regionX, regionY)
+	}
+	if centerX, centerY := regionPaintCellCenterWorld(regionX, regionY); centerX != 14.5 || centerY != 10.5 {
+		t.Fatalf("region preview hucenin merkezine oturmali: got=(%.1f,%.1f)", centerX, centerY)
+	}
+}
+
+func TestShapeOutlineUsesRasterizedWorldBoundary(t *testing.T) {
+	point := [2]float32{1016.49, 436.49}
+	gotX, gotY := shapeRasterWorldPoint(point)
+	wantX := float64(int(shapeOffX + float64(int(point[0]+0.5))*shapeScaleX))
+	wantY := float64(int(shapeOffY + float64(int(point[1]+0.5))*shapeScaleY))
+	if gotX != wantX || gotY != wantY {
+		t.Fatalf("shape outline raster siniriyle ayni donusumu kullanmali: got=(%.2f,%.2f) want=(%.2f,%.2f)", gotX, gotY, wantX, wantY)
+	}
+}
 
 func TestShapeInspectorToolButtonsToggleOff(t *testing.T) {
 	r := &Renderer{}
@@ -35,6 +69,45 @@ func TestShapeInspectorToolButtonsToggleOff(t *testing.T) {
 	r.handleEditShapeInspectorClick(regionErase[0]+regionErase[2]/2, regionErase[1]+regionErase[3]/2)
 	if r.editShapeTool != editShapeToolNone {
 		t.Fatalf("bölge sil ikinci tıklamada kapanmadı: tool=%d", r.editShapeTool)
+	}
+}
+
+func TestShapeBrushSupportsTwoFineStepsBelowOnePixelRadius(t *testing.T) {
+	r := &Renderer{editShapeBrushRadius: 1}
+	brushMinus := editInspectorButtonRect(editButtonShapeBrushMinus)
+	click := func() {
+		r.handleEditShapeInspectorClick(brushMinus[0]+brushMinus[2]/2, brushMinus[1]+brushMinus[3]/2)
+	}
+
+	click()
+	if r.editShapeBrushRadius != 0.75 {
+		t.Fatalf("ilk ince kademe 0.75 olmali: got=%v", r.editShapeBrushRadius)
+	}
+	click()
+	if r.editShapeBrushRadius != editShapeBrushMinRadius {
+		t.Fatalf("ikinci ince kademe %.2f olmali: got=%v", editShapeBrushMinRadius, r.editShapeBrushRadius)
+	}
+	click()
+	if r.editShapeBrushRadius != editShapeBrushMinRadius {
+		t.Fatalf("minimum fırça yarıçapının altına inilmemeli: got=%v", r.editShapeBrushRadius)
+	}
+}
+
+func TestShapeBrushKeepsWholePixelStepsAboveFineRange(t *testing.T) {
+	r := &Renderer{editShapeBrushRadius: 6}
+	brushMinus := editInspectorButtonRect(editButtonShapeBrushMinus)
+	r.handleEditShapeInspectorClick(brushMinus[0]+brushMinus[2]/2, brushMinus[1]+brushMinus[3]/2)
+	if r.editShapeBrushRadius != 5 {
+		t.Fatalf("büyük fırçada mevcut tam piksel adımı korunmalı: got=%v", r.editShapeBrushRadius)
+	}
+
+	r.editShapeBrushRadius = editShapeBrushMinRadius
+	brushPlus := editInspectorButtonRect(editButtonShapeBrushPlus)
+	for _, want := range []float64{0.75, 1, 2} {
+		r.handleEditShapeInspectorClick(brushPlus[0]+brushPlus[2]/2, brushPlus[1]+brushPlus[3]/2)
+		if r.editShapeBrushRadius != want {
+			t.Fatalf("Firca + kademesi yanlis: want=%v got=%v", want, r.editShapeBrushRadius)
+		}
 	}
 }
 
@@ -81,11 +154,8 @@ func TestShapePaintStrokeTracksLivePreviewDiff(t *testing.T) {
 		t.Fatal("shape session olusmadi")
 	}
 	idx := session.index(14, 10)
-	if len(session.DiffList) == 0 {
-		t.Fatal("canli preview diff kaydi olusmadi")
-	}
-	if session.DiffMask[idx] == 0 {
-		t.Fatal("boyanan piksel diff mask'e islenmedi")
+	if r.editPaintPreviewImage == nil {
+		t.Fatal("canli preview goruntusu olusturulmadi")
 	}
 	if session.Mask[idx] == 0 {
 		t.Fatal("boyanan piksel mask'e islenmedi")
@@ -110,9 +180,6 @@ func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
 	if r.editShapeSession != nil {
 		t.Fatal("region paint stroke shape session olusturmamali")
 	}
-	if state := r.regionPaintPreviewStateAt(10*WorldW + 14); state != 1 {
-		t.Fatalf("region paint canli preview yesil olmali, got=%d", state)
-	}
 	r.finishShapePaintStroke()
 
 	if got := r.worldMap.RegionAt(14, 10); got != "land_test" {
@@ -120,9 +187,6 @@ func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
 	}
 	if len(r.editRegionPaintOverrides) == 0 {
 		t.Fatal("region paint overrides kayit edilmedi")
-	}
-	if len(r.editRegionPaintStrokeList) != 0 {
-		t.Fatal("stroke bitince region paint preview temizlenmeli")
 	}
 }
 

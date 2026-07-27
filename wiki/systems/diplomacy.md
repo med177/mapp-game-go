@@ -86,7 +86,8 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz
-- İttifak için `Score >= 25` gerekir; ayrıca salt din bazlı varsayılan skor tek başına yeterli sayılmaz. İki taraf arasında önceden değişmiş gerçek ilişki puanı, kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle diplomatik temas aranır. Buna ek olarak kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ gerekir. Doğrudan sınır tehdidi mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
+- İttifak için genel senaryolarda `Score >= 25`, `1300_ottoman_rise` senaryosunda ise `Score >= 40` gerekir; böylece aynı dinin varsayılan `25` puanı tek başına hemen ittifak açmaz. İki taraf arasında önceden değişmiş gerçek ilişki puanı, kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle diplomatik temas aranır. Buna ek olarak kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ gerekir. Doğrudan sınır tehdidi mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
+- Bir devletin mevcut müttefiki hedef devletle savaş halindeyse, `allianceWarConflictBetween()` ittifak teklifini engeller. Bu kontrol AI teklif üretiminde, doğrudan aksiyon geçidinde ve kuyruktaki teklifin kabulünde tekrar kullanılır.
 - Ticaret için `Score >= 15`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
 - Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
 - Ticaret anlaşması ayrıca bağlanabilir gerçek bir hat ister: ya iki realm arasında kesintisiz kara hattı, ya da her iki tarafta liman olup komşu deniz bölgeleri üzerinden bağlanabilen bir deniz hattı bulunmalıdır
@@ -106,7 +107,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
-| İttifak kur | `proposeAlliance()` | Savaşta değil + `Score >= 25`; varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
+| İttifak kur | `proposeAlliance()` | Savaşta değil + genel senaryolarda `Score >= 25`, 1300'de `Score >= 40`; mevcut müttefikin hedefle savaşıyorsa teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
@@ -123,7 +124,8 @@ teklifi kabul ettiğinde `ResolveOffer()` güncel ilişki ve geçerlilik
 koşullarını yeniden kontrol eder, ancak aynı teklif için kotayı ikinci kez tüketmez.
 İttifak teklifinde kabul kararı ayrıca yeniden şans/strateji hesabına sokulmaz; teklif
 sonrasında değişebilen ortak tehdit veya ticaret koşulları, oyuncunun geçerli teklifi
-kabul etmesini tek başına engellemez. Savaş, elenme veya aynı realm'e dönüşme ise
+kabul etmesini tek başına engellemez. Savaş, elenme, aynı realm'e dönüşme veya teklif
+taraflarından birinin mevcut müttefikiyle karşı cepheye düşmesi ise
 teklifi geçersiz kılar.
 Bu ayrım, gönderenin üçüncü ve son elçi hakkıyla oluşturduğu tekliflerin kabulde
 yanlışlıkla uygulanamamasını önler. İlgili uygulama seam'leri
@@ -218,7 +220,10 @@ Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla ba�
 `1300_ottoman_rise` senaryo override'ı bu varsayılanı gerçek 1300 cepheleriyle düzeltir:
 Osmanlı-Doğu Roma, Memlük-İlhanlı, Aragon-Kastilya, Aragon-Napoli, İngiltere-Fransa,
 İngiltere-İskoçya ve Fransa-HRE savaşta başlar. Aragon-Granada müttefik kalır;
-Venedik-Ceneviz ile Doğu Roma-Bulgaristan barışta bırakılır. Flandre, HRE'nin vassalı
+Venedik-Ceneviz ile Doğu Roma-Bulgaristan barışta bırakılır. İttifak eşiği ve
+başlangıç sürtüşme puanları Kastilya-Portekiz, Leon-Kastilya,
+Osmanlı-Karamanoğulları, Macaristan/Venedik ve benzeri çiftlerin hemen müttefik
+olmasını engeller. Flandre, HRE'nin vassalı
 olduğu için Flandre-Fransa düşmanlığı HRE-Fransa kök savaşıyla birlikte koalisyona
 katılır; overlord-vassal arasındaki iç ticaret ve geçiş garantisi korunur. İlişki çiftleri
 loader'da sıralı faction ID'leriyle üretildiğinden save/replay yönü deterministiktir.

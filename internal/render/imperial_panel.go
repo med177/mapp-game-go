@@ -21,6 +21,8 @@ const (
 	imperialPanelSummaryH      = 88.0
 	imperialPanelMemberRowH    = 48.0
 	imperialPanelMemberFooterH = 28.0
+	imperialDecisionOptionRowH = 68.0
+	imperialDecisionDescY      = 46.0
 )
 
 func imperialPanelRect() gameui.Rect {
@@ -54,7 +56,9 @@ func imperialPanelRect() gameui.Rect {
 
 func imperialPanelCloseButton() gameui.Button {
 	r := imperialPanelRect()
-	return gameui.NewButton(r.X+r.W-42, r.Y+12, 28, 28, "×")
+	btn := gameui.NewButton(r.X+r.W-42, r.Y+12, 28, 28, "").WithIcon(gameui.IconBack)
+	btn.IconSize = 14
+	return btn
 }
 
 func imperialPanelAvailableCandidates(gs *state.GameState) []faction.FactionID {
@@ -112,11 +116,11 @@ func imperialDecisionButtonRects(r gameui.Rect) [3]gameui.Rect {
 		buttonW = 330
 	}
 	x := r.X + r.W - buttonW - 20
-	startY := r.Y + 225
+	startY := r.Y + 126
 	return [3]gameui.Rect{
 		{X: x, Y: startY, W: buttonW, H: 42},
-		{X: x, Y: startY + 50, W: buttonW, H: 42},
-		{X: x, Y: startY + 100, W: buttonW, H: 42},
+		{X: x, Y: startY + imperialDecisionOptionRowH, W: buttonW, H: 42},
+		{X: x, Y: startY + imperialDecisionOptionRowH*2, W: buttonW, H: 42},
 	}
 }
 
@@ -297,7 +301,7 @@ func (r *Renderer) drawImperialDecisionArea(screen *ebiten.Image, panel gameui.R
 		for i, rect := range buttons {
 			btn := gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, labels[i])
 			drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{86, 63, 28, 240}, color.RGBA{190, 148, 70, 255}, ColorWhite, 9))
-			drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 44, W: rect.W}, desc[i], ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + imperialDecisionDescY, W: rect.W}, desc[i], ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		}
 		return
 	}

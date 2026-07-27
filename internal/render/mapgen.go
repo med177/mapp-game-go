@@ -559,8 +559,8 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 	scaled := make([][2]int, len(ring))
 	for i, pt := range ring {
 		scaled[i] = [2]int{
-			int(shapeOffX + float64(pt[0])*shapeScaleX),
-			int(shapeOffY + float64(pt[1])*shapeScaleY),
+			shapeRasterWorldPixelX(pt[0]),
+			shapeRasterWorldPixelY(pt[1]),
 		}
 	}
 	minX, minY, maxX, maxY := intPolygonBounds(scaled)
@@ -1278,26 +1278,6 @@ func clampByte(v float64) byte {
 	return byte(v)
 }
 
-var whitePixelImg *ebiten.Image
-
-func drawPixelRect(screen *ebiten.Image, x, y, size float32, col color.RGBA) {
-	if whitePixelImg == nil {
-		whitePixelImg = ebiten.NewImage(1, 1)
-		whitePixelImg.Fill(color.White)
-	}
-	r := float32(col.R) / 255
-	g := float32(col.G) / 255
-	b := float32(col.B) / 255
-	a := float32(col.A) / 255
-	vs := []ebiten.Vertex{
-		{DstX: x, DstY: y, SrcX: 0.5, SrcY: 0.5, ColorR: r, ColorG: g, ColorB: b, ColorA: a},
-		{DstX: x + size, DstY: y, SrcX: 0.5, SrcY: 0.5, ColorR: r, ColorG: g, ColorB: b, ColorA: a},
-		{DstX: x + size, DstY: y + size, SrcX: 0.5, SrcY: 0.5, ColorR: r, ColorG: g, ColorB: b, ColorA: a},
-		{DstX: x, DstY: y + size, SrcX: 0.5, SrcY: 0.5, ColorR: r, ColorG: g, ColorB: b, ColorA: a},
-	}
-	screen.DrawTriangles(vs, []uint16{0, 1, 2, 0, 2, 3}, whitePixelImg, nil)
-}
-
 func maxF(a, b float64) float64 {
 	if a > b {
 		return a
@@ -1307,6 +1287,22 @@ func maxF(a, b float64) float64 {
 
 func wcX(v int) float64 { return shapeOffX + float64(v)*shapeScaleX }
 func wcY(v int) float64 { return shapeOffY + float64(v)*shapeScaleY }
+
+// Shape rasterı önce senaryo koordinatını dünya koordinatına ölçekler,
+// ardından dünya piksel sınırına keser. Shape çizgisi ve renkli raster aynı
+// dönüşüm sırasını kullanmalıdır; wcX/wcY ise merkez/anchor hesapları içindir.
+func shapeRasterWorldPixelX(v int) int {
+	return int(shapeOffX + float64(v)*shapeScaleX)
+}
+
+func shapeRasterWorldPixelY(v int) int {
+	return int(shapeOffY + float64(v)*shapeScaleY)
+}
+
+func shapeRasterWorldPoint(pt [2]float32) (float64, float64) {
+	x, y := int(pt[0]+0.5), int(pt[1]+0.5)
+	return float64(shapeRasterWorldPixelX(x)), float64(shapeRasterWorldPixelY(y))
+}
 
 // regionShapeOverridesFile region_shapes.json formatı (paint overrides)
 type regionShapeOverridesFile struct {
