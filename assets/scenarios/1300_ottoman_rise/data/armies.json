@@ -30,10 +30,132 @@
     ]
   },
   {
+    "id": "army_austria_1",
+    "owner_id": "austria_duchy",
+    "region_id": "austria",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_aydin_1",
     "owner_id": "aydin_bey",
     "region_id": "aydinoglu",
     "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_barqa_benghazi",
+    "owner_id": "barqa_emirate",
+    "region_id": "cyrenaica",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_bavaria_1",
+    "owner_id": "bavaria_duchy",
+    "region_id": "bavaria",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_bohemia_1",
+    "owner_id": "bohemian_kingdom",
+    "region_id": "bohemia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_bosnian_banate_bosnia",
+    "owner_id": "bosnian_banate",
+    "region_id": "bosnia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_brandenburg_1",
+    "owner_id": "brandenburg_margraviate",
+    "region_id": "brandenburg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
       {
         "type_id": "militia",
         "count": 2
@@ -63,6 +185,25 @@
     ]
   },
   {
+    "id": "army_carniola_ljubljana",
+    "owner_id": "carniola_margraviate",
+    "region_id": "slovenia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_castile_murcia_front",
     "owner_id": "castile_kingdom",
     "region_id": "toledo",
@@ -74,6 +215,48 @@
       {
         "type_id": "infantry",
         "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_croatian_kingdom_hum",
+    "owner_id": "croatian_kingdom",
+    "region_id": "hum",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 1
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_croatian_kingdom_zagreb",
+    "owner_id": "croatian_kingdom",
+    "region_id": "croatia",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
       },
       {
         "type_id": "light_cavalry",
@@ -735,32 +918,9 @@
     ]
   },
   {
-    "id": "army_bavaria_1",
-      "owner_id": "bavaria_duchy",
-      "region_id": "bavaria",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "army_austria_1",
-    "owner_id": "austria_duchy",
-    "region_id": "austria",
+    "id": "army_hafsid_tunis",
+    "owner_id": "hafsid_sultanate",
+    "region_id": "tunis",
     "units": [
       {
         "type_id": "cavalry",
@@ -781,55 +941,13 @@
     ]
   },
   {
-    "id": "army_bohemia_1",
-    "owner_id": "bohemian_kingdom",
-    "region_id": "bohemia",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_saxony_1",
-    "owner_id": "saxony_duchy",
-    "region_id": "saxony",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_brandenburg_1",
-    "owner_id": "brandenburg_margraviate",
-    "region_id": "brandenburg",
+    "id": "army_hormuz_julfar",
+    "owner_id": "hormuz_sultanate",
+    "region_id": "uae",
     "units": [
       {
         "type_id": "light_cavalry",
         "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
       },
       {
         "type_id": "militia",
@@ -1017,6 +1135,44 @@
         "type_id": "infantry",
         "count": 3
       },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_marinid_morocco",
+    "owner_id": "marinid_sultanate",
+    "region_id": "morocco",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_mecca_sharifate",
+    "owner_id": "mecca_sharifate",
+    "region_id": "hejaz",
+    "units": [
       {
         "type_id": "light_cavalry",
         "count": 1
@@ -1235,6 +1391,25 @@
     ]
   },
   {
+    "id": "army_saxony_1",
+    "owner_id": "saxony_duchy",
+    "region_id": "saxony",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_scotland_1",
     "owner_id": "scotland_kingdom",
     "region_id": "scotland",
@@ -1288,86 +1463,6 @@
     ]
   },
   {
-    "id": "army_croatian_kingdom_zagreb",
-    "owner_id": "croatian_kingdom",
-    "region_id": "croatia",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_croatian_kingdom_hum",
-    "owner_id": "croatian_kingdom",
-    "region_id": "hum",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_bosnian_banate_bosnia",
-    "owner_id": "bosnian_banate",
-    "region_id": "bosnia",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_carniola_ljubljana",
-    "owner_id": "carniola_margraviate",
-    "region_id": "slovenia",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_teke_1",
     "owner_id": "hamid_bey",
     "region_id": "teke",
@@ -1409,6 +1504,21 @@
     ]
   },
   {
+    "id": "army_usfurid_bahrain",
+    "owner_id": "usfurid_emirate",
+    "region_id": "bahrain",
+    "units": [
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_venice_1",
     "owner_id": "venice",
     "region_id": "venice",
@@ -1432,6 +1542,29 @@
     "owner_id": "wallachia_prince",
     "region_id": "wallachia",
     "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_zayyanid_tlemcen",
+    "owner_id": "zayyanid_tlemcen",
+    "region_id": "algiers",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      },
       {
         "type_id": "militia",
         "count": 2
@@ -1539,6 +1672,24 @@
     ]
   },
   {
+    "id": "fleet_hormuz_julfar",
+    "owner_id": "hormuz_sultanate",
+    "region_id": "persian_open_1",
+    "docked_region_id": "uae",
+    "docked_settlement_id": "uae_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
     "id": "fleet_mamluk_east_med",
     "owner_id": "mamluk",
     "region_id": "eastern_mediterranean",
@@ -1606,88 +1757,6 @@
         "type_id": "merchant_ship",
         "count": 2
       }
-    ]
-  },
-  {
-    "id": "army_marinid_morocco",
-    "owner_id": "marinid_sultanate",
-    "region_id": "morocco",
-    "units": [
-      { "type_id": "cavalry", "count": 1 },
-      { "type_id": "infantry", "count": 2 },
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "army_zayyanid_tlemcen",
-    "owner_id": "zayyanid_tlemcen",
-    "region_id": "algiers",
-    "units": [
-      { "type_id": "cavalry", "count": 1 },
-      { "type_id": "infantry", "count": 2 },
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "army_hafsid_tunis",
-    "owner_id": "hafsid_sultanate",
-    "region_id": "tunis",
-    "units": [
-      { "type_id": "cavalry", "count": 1 },
-      { "type_id": "infantry", "count": 2 },
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "army_barqa_benghazi",
-    "owner_id": "barqa_emirate",
-    "region_id": "cyrenaica",
-    "units": [
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "infantry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "army_usfurid_bahrain",
-    "owner_id": "usfurid_emirate",
-    "region_id": "bahrain",
-    "units": [
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "army_hormuz_julfar",
-    "owner_id": "hormuz_sultanate",
-    "region_id": "uae",
-    "units": [
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
-    ]
-  },
-  {
-    "id": "fleet_hormuz_julfar",
-    "owner_id": "hormuz_sultanate",
-    "region_id": "persian_open_1",
-    "docked_region_id": "uae",
-    "docked_settlement_id": "uae_main",
-    "is_naval": true,
-    "units": [
-      { "type_id": "warship", "count": 1 },
-      { "type_id": "merchant_ship", "count": 1 }
-    ]
-  },
-  {
-    "id": "army_mecca_sharifate",
-    "owner_id": "mecca_sharifate",
-    "region_id": "hejaz",
-    "units": [
-      { "type_id": "light_cavalry", "count": 1 },
-      { "type_id": "militia", "count": 2 }
     ]
   }
 ]

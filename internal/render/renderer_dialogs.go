@@ -693,7 +693,11 @@ func drawWarConfirmSide(screen *ebiten.Image, sideRect gameui.Rect, title, leade
 	}
 
 	callHeaderY := warConfirmCallHeaderY(sideRect)
-	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: callHeaderY, W: sideRect.W - 28}, "Çağrılabilir Müttefikler", color.RGBA{194, 184, 136, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	callHeader := "Çağrılabilir Müttefikler"
+	if warParticipantListHasImperial(callableEntries) {
+		callHeader = "İmparatorluk Üyeleri / Çağrılabilir Müttefikler"
+	}
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: callHeaderY, W: sideRect.W - 28}, callHeader, color.RGBA{194, 184, 136, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	if selectable {
 		drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: callHeaderY + 16, W: sideRect.W - 28}, "Seçip de gelmeyen müttefik ittifakı bozar ve ilişki düşürür.", color.RGBA{174, 146, 118, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	}
@@ -703,6 +707,15 @@ func drawWarConfirmSide(screen *ebiten.Image, sideRect gameui.Rect, title, leade
 		return
 	}
 	drawWarConfirmParticipantList(screen, viewport, callableEntries, selected, selectable, callScroll)
+}
+
+func warParticipantListHasImperial(entries []diplomacy.WarParticipantPreview) bool {
+	for _, entry := range entries {
+		if entry.ImperialMember {
+			return true
+		}
+	}
+	return false
 }
 
 func selectedWarAlliesFromState(wc warConfirmState) []faction.FactionID {

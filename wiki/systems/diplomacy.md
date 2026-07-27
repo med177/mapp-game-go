@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-26
+last_updated: 2026-07-27
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -27,6 +27,18 @@ temelidir. `AdvanceImperialPolitics()` periyodik Diyet'i çalıştırır; `HoldI
 üyelerin `ElectorWeight` değerleri ve adayların askerî/diplomatik gücüyle yeni imparatoru
 belirler. 1300 senaryosunda elektör ağırlıkları Altın Ferman öncesi değişken tutulur;
 senaryo verisi `data/imperial.json` dosyasındadır.
+
+HRE oyuncusu, oyun içindeki `İmparatorluk` HUD düğmesi veya `I` kısayoluyla
+`internal/render/imperial_panel.go` panelini açar. Panel otoriteyi, mevcut imparatoru,
+Diyet/seçim takvimini ve üyelerin sadakat/özerklik/askerî bağlılık değerlerini gösterir.
+Üye satırından mevcut canonical diplomasi hedefi açılır. HRE savaş ilanında savaş
+önizlemesi bağımsız üyeleri `İmparatorluk Üyeleri / Çağrılabilir Müttefikler` başlığıyla
+gösterir; tam katılım, sınırlı kaynak desteği ve tarafsızlık ayrı statülerdir.
+
+HRE oyuncusunun Diyet ve seçim kararları `ImperialState.PendingDecision` içinde save-backed
+bekler. Diyet için merkezî otorite, prenslik imtiyazları veya askerî katkı seçenekleri;
+seçim için geçerli aday seçenekleri sunulur. Karar verilmeden oyuncu turu bitiremez.
+Oyuncu HRE değilse mevcut deterministik AI Diyet/seçim çözümü korunur.
 
 ## İlişki Yapısı
 

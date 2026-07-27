@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
@@ -48,6 +49,9 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	historyState := "Geri/Ileri: " + itoa(len(r.editUndoStack)) + "/" + itoa(len(r.editRedoStack))
 	if r.editRenaming {
 		DrawText(screen, r.editTextLabel()+": "+string(r.editTextRunes), float64(x)+14, float64(y)+80, FaceSmall, ColorGold)
+		if r.editTextError != "" {
+			DrawText(screen, r.editTextError, float64(x)+14, float64(y)+100, FaceSmall, ColorRed)
+		}
 	} else {
 		DrawText(screen, debugState+"   "+historyState+"   V: debug   Esc: ana menu", float64(x)+14, float64(y)+80, FaceSmall, ColorGray)
 	}
@@ -76,7 +80,9 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	if r.editNeighborAddMessage != "" {
 		passageState += "   " + r.editNeighborAddMessage
 	}
-	DrawText(screen, passageState, float64(x)+14, float64(y)+100, FaceSmall, ColorGold)
+	if !(r.editRenaming && r.editTextError != "") {
+		DrawText(screen, passageState, float64(x)+14, float64(y)+100, FaceSmall, ColorGold)
+	}
 }
 
 func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
@@ -197,6 +203,7 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionName, "Ad EN", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
@@ -530,6 +537,7 @@ const (
 	editButtonRegionOwner
 	editButtonRegionNameTR
 	editButtonRegionName
+	editButtonRegionID
 	editButtonRegionLock
 	editButtonUnlockMinus
 	editButtonUnlockPlus
@@ -572,7 +580,7 @@ func editInspectorHit(mx, my float64) bool {
 
 func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	x, y, _, h := editInspectorRect()
-	const bw, bh, gap = float64(158), float64(24), float64(8)
+	const bw, bh, gap = float64(158), float64(24), float64(4)
 	left := float64(x) + 14
 	right := left + bw + gap
 	row1 := float64(y) + float64(h) - 264
@@ -583,6 +591,7 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	row6 := row5 + bh + gap
 	row7 := row6 + bh + gap
 	row8 := row7 + bh + gap
+	row9 := row8 + bh + gap
 	switch kind {
 	case editButtonAddSettlement:
 		return uiRect{left, row1, bw, bh}
@@ -600,22 +609,24 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row4, bw, bh}
 	case editButtonRegionName:
 		return uiRect{right, row4, bw, bh}
-	case editButtonRegionLock:
+	case editButtonRegionID:
 		return uiRect{left, row5, bw, bh}
+	case editButtonRegionLock:
+		return uiRect{right, row5, bw, bh}
 	case editButtonUnlockMinus:
-		return uiRect{right, row5, (bw - gap) / 2, bh}
+		return uiRect{left, row6, (bw - gap) / 2, bh}
 	case editButtonUnlockPlus:
-		return uiRect{right + (bw+gap)/2, row5, (bw - gap) / 2, bh}
+		return uiRect{left + (bw+gap)/2, row6, (bw - gap) / 2, bh}
 	case editButtonSyncNeighbors:
-		return uiRect{left, row6, bw, bh}
-	case editButtonAddRegion:
-		return uiRect{right, row6, bw, bh}
-	case editButtonDeleteRegion:
 		return uiRect{left, row7, bw, bh}
-	case editButtonDeleteSettlement:
+	case editButtonAddRegion:
 		return uiRect{right, row7, bw, bh}
+	case editButtonDeleteRegion:
+		return uiRect{left, row8, bw, bh}
+	case editButtonDeleteSettlement:
+		return uiRect{right, row8, bw, bh}
 	case editButtonSaveScenario:
-		return uiRect{left, row8, bw*2 + gap, bh}
+		return uiRect{left, row9, bw*2 + gap, bh}
 	case editButtonShapePaint:
 		return uiRect{left, row1, bw, bh}
 	case editButtonShapeErase:
@@ -1448,6 +1459,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.beginEditRename(editTextRegionNameTR)
 	case editButtonRegionName:
 		r.beginEditRename(editTextRegionName)
+	case editButtonRegionID:
+		r.beginEditRename(editTextRegionID)
 	case editButtonRegionLock:
 		r.toggleSelectedRegionLock()
 	case editButtonUnlockMinus:
@@ -1575,11 +1588,16 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 		}
 	case editTextRegionNameTR:
 	case editTextRegionName:
+	case editTextRegionID:
 	default:
 		return
 	}
 	r.editTextTarget = target
+	r.editTextError = ""
 	r.editTextRunes = r.editTextRunes[:0]
+	if target == editTextRegionID {
+		r.editTextRunes = append(r.editTextRunes, []rune(string(region.ID))...)
+	}
 	r.editRenaming = true
 	r.editDraggingSettlement = false
 }
@@ -1588,6 +1606,7 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editRenaming = false
 		r.editTextTarget = editTextNone
+		r.editTextError = ""
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
@@ -1596,6 +1615,10 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 	}
 	if r.keyJustPressed(ebiten.KeyBackspace) && len(r.editTextRunes) > 0 {
 		r.editTextRunes = r.editTextRunes[:len(r.editTextRunes)-1]
+	}
+	if r.editTextTarget == editTextRegionID && r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
+		r.editTextRunes = r.editTextRunes[:0]
+		return InputAction{}
 	}
 	r.editTextRunes = ebiten.AppendInputChars(r.editTextRunes)
 	if len(r.editTextRunes) > 64 {
@@ -1609,11 +1632,36 @@ func (r *Renderer) commitEditRename() {
 	if region == nil {
 		r.editRenaming = false
 		r.editTextTarget = editTextNone
+		r.editTextError = ""
 		return
 	}
 	newName := strings.TrimSpace(string(r.editTextRunes))
 	rid := region.ID
 	switch r.editTextTarget {
+	case editTextRegionID:
+		newID := world.RegionID(newName)
+		if newID == "" {
+			r.editTextError = "ID bos olamaz."
+			return
+		}
+		if strings.IndexFunc(newName, unicode.IsSpace) >= 0 {
+			r.editTextError = "ID bosluk icermemeli."
+			return
+		}
+		if newID != rid && r.gs.Regions[newID] != nil {
+			r.editTextError = "Bu region ID zaten var."
+			return
+		}
+		if newID != rid {
+			before := r.worldSnapshot()
+			r.renameRegionID(rid, newID)
+			after := r.worldSnapshot()
+			r.pushWorldSnapshotCommand(before, after)
+		}
+		r.editRenaming = false
+		r.editTextTarget = editTextNone
+		r.editTextError = ""
+		return
 	case editTextSettlementNameTR:
 		if !r.hasEditSelection() {
 			break
@@ -1655,6 +1703,7 @@ func (r *Renderer) commitEditRename() {
 	}
 	r.editRenaming = false
 	r.editTextTarget = editTextNone
+	r.editTextError = ""
 }
 
 func (r *Renderer) editTextLabel() string {
@@ -1663,6 +1712,8 @@ func (r *Renderer) editTextLabel() string {
 		return "Bolge Ad TR"
 	case editTextRegionName:
 		return "Bolge Ad EN"
+	case editTextRegionID:
+		return "Bolge ID"
 	default:
 		return "Isim"
 	}
@@ -2129,6 +2180,90 @@ func (r *Renderer) setRegionName(rid world.RegionID, name string) {
 	region.Name = name
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = -1
+}
+
+// renameRegionID, editorde bir bölgenin map anahtarını değiştirirken aynı ID'yi
+// taşıyan editör/runtime referanslarını da birlikte günceller. Senaryo
+// kayıtlarının regions, settlements, land_passages, armies ve region_shapes
+// dosyaları bu state alanlarından üretildiği için bu alanların ayrışmasına izin
+// verilmez.
+func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
+	if r == nil || r.gs == nil || oldID == "" || newID == "" || oldID == newID {
+		return
+	}
+	region := r.gs.Regions[oldID]
+	if region == nil || r.gs.Regions[newID] != nil {
+		return
+	}
+
+	delete(r.gs.Regions, oldID)
+	region.ID = newID
+	r.gs.Regions[newID] = region
+
+	for _, candidate := range r.gs.Regions {
+		if candidate == nil {
+			continue
+		}
+		for i, neighborID := range candidate.Neighbors {
+			if neighborID == oldID {
+				candidate.Neighbors[i] = newID
+			}
+		}
+	}
+	for i, rid := range r.gs.RegionOrder {
+		if rid == oldID {
+			r.gs.RegionOrder[i] = newID
+		}
+	}
+	for i := range r.gs.LandPassages {
+		if r.gs.LandPassages[i].From == oldID {
+			r.gs.LandPassages[i].From = newID
+		}
+		if r.gs.LandPassages[i].To == oldID {
+			r.gs.LandPassages[i].To = newID
+		}
+	}
+	for _, a := range r.gs.Armies {
+		if a == nil {
+			continue
+		}
+		if a.RegionID == oldID {
+			a.RegionID = newID
+		}
+		if a.DockedRegionID == oldID {
+			a.DockedRegionID = newID
+		}
+	}
+	for pIdx, rid := range r.gs.RegionPaintOverrides {
+		if rid == oldID {
+			r.gs.RegionPaintOverrides[pIdx] = newID
+		}
+	}
+	for pIdx, rid := range r.editRegionPaintOverrides {
+		if rid == oldID {
+			r.editRegionPaintOverrides[pIdx] = newID
+		}
+	}
+
+	if r.editSelectedRegion == oldID {
+		r.editSelectedRegion = newID
+	}
+	if r.SelectedRegion == oldID {
+		r.SelectedRegion = newID
+	}
+	if r.selectedSettlementRegion == oldID {
+		r.selectedSettlementRegion = newID
+	}
+	if r.lastMapRegionClickID == oldID {
+		r.lastMapRegionClickID = newID
+	}
+	if r.editLandPassageFrom == oldID {
+		r.editLandPassageFrom = newID
+	}
+	if r.editNeighborAddFrom == oldID {
+		r.editNeighborAddFrom = newID
+	}
+	r.rebuildEditWorldMap()
 }
 
 func (r *Renderer) toggleSelectedRegionLock() {

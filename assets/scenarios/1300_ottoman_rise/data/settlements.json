@@ -611,6 +611,20 @@
     ]
   },
   {
+    "region_id": "dijon",
+    "settlements": [
+      {
+        "id": "dijon_main",
+        "name_tr": "Dijon",
+        "x": 584,
+        "y": 352,
+        "type": "city",
+        "is_capital": true,
+        "population": 54
+      }
+    ]
+  },
+  {
     "region_id": "provence",
     "settlements": [
       {
@@ -621,13 +635,19 @@
         "type": "port",
         "is_capital": true,
         "population": 54
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "savoy",
+    "settlements": [
       {
         "id": "savoy_main",
         "name_tr": "Savoy",
-        "x": 604,
-        "y": 370,
+        "x": 611,
+        "y": 371,
         "type": "city",
+        "is_capital": true,
         "population": 72
       }
     ]
@@ -949,11 +969,11 @@
     ]
   },
   {
-    "region_id": "savoy",
+    "region_id": "aquitaine",
     "settlements": [
       {
-        "id": "savoy_settlement_2",
-        "name_tr": "Bordoks",
+        "id": "aquitaine_bordeaux",
+        "name_tr": "Bordeaux",
         "x": 464,
         "y": 384,
         "type": "city",
@@ -3191,7 +3211,15 @@
     "settlements": null
   },
   {
-    "region_id": "western_black_sea",
+    "region_id": "danube_austria",
+    "settlements": null
+  },
+  {
+    "region_id": "danube_serbia",
+    "settlements": null
+  },
+  {
+    "region_id": "danube_wallacia",
     "settlements": null
   },
   {

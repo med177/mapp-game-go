@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-07-22
+last_updated: 2026-07-27
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -94,6 +94,21 @@ HRE gibi bağımsız üyelerden oluşan üst siyasi kurumları tanımlar:
 üyeler yalnız bilgilendirme içindir; otomatik savaş/erişim davranışını `OverlordID`
 belirler. `authority`, `loyalty`, `autonomy` ve `military_commitment` 0–100 aralığında
 normalize edilir. `imperial.json` yoksa senaryo imparatorluk sistemi olmadan yüklenir.
+
+Oyuncu HRE olarak oynarken Diyet veya seçim kararı bekliyorsa runtime save içinde
+`imperial.pending_decision` alanı oluşur:
+
+```json
+{
+  "pending_decision": {
+    "kind": "diet",
+    "created_turn": 12
+  }
+}
+```
+
+`kind` değeri `diet` veya `election` olabilir. Bu alan senaryo başlangıç verisinde
+zorunlu değildir; karar tur çözümlemesinde oluşturulur ve karar verildiğinde silinir.
 
 ## trade_centers.json
 

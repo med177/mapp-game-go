@@ -104,6 +104,10 @@ type Renderer struct {
 	diplomacyHistoryDirectionFilter diplomacyHistoryDirectionFilter
 	diplomacyHistoryActionFilter    ActionKind
 
+	// HRE / imparatorluk paneli
+	showImperialPanel bool
+	imperialScroll    int
+
 	// Teknoloji paneli
 	showTech           bool
 	techCursor         int
@@ -233,6 +237,7 @@ type Renderer struct {
 	editRenaming                     bool
 	editTextTarget                   editTextTarget
 	editTextRunes                    []rune
+	editTextError                    string
 	editInspectorTab                 editInspectorTab
 	editDirty                        bool
 	editVoronoiDebug                 bool
@@ -400,6 +405,7 @@ const (
 	editTextSettlementNameTR
 	editTextRegionNameTR
 	editTextRegionName
+	editTextRegionID
 )
 
 type editInspectorTab int
@@ -885,6 +891,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.tradeCenterIdx = -1
 	r.closeMerchantRoutePanel()
 	r.mapMode = MapModeNormal
+	r.CloseImperialPanel()
 	r.CloseEventCodex()
 	r.eventDetail = ""
 	r.showVictoryDetail = false
@@ -1004,6 +1011,28 @@ func (r *Renderer) HideHistoricalEvent() {
 func (r *Renderer) ShowTechPanel() {
 	r.showTech = true
 	r.techCursor = 0
+}
+
+// ShowImperialPanel HRE oyuncusunun imparatorluk panelini açar.
+func (r *Renderer) ShowImperialPanel() {
+	if r == nil || r.gs == nil || !imperialPanelAvailable(r.gs) {
+		return
+	}
+	r.showImperialPanel = true
+	r.imperialScroll = 0
+	r.showDiplomacy = false
+	r.showTech = false
+	r.showTrade = false
+	r.showRecruitPanel = false
+}
+
+// CloseImperialPanel imparatorluk panelini kapatır.
+func (r *Renderer) CloseImperialPanel() {
+	if r == nil {
+		return
+	}
+	r.showImperialPanel = false
+	r.imperialScroll = 0
 }
 
 // --- Kamera dönüşümleri ---
@@ -1214,6 +1243,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 8. Teknoloji paneli (üst katman)
 	if r.showTech {
 		r.DrawTechPanel(screen)
+	}
+
+	if r.showImperialPanel {
+		r.DrawImperialPanel(screen)
 	}
 
 	if r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {

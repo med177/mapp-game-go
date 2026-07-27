@@ -1,11 +1,26 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-26
+last_updated: 2026-07-27
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+HRE oyuncusu için `internal/render/imperial_panel.go` ayrı bir modal katmanı
+sağlar. Alt HUD'daki koşullu `İmparatorluk` düğmesi ve `I` kısayolu aynı paneli
+açar; panel açıkken input önce bu katmana yönlendirilir, böylece harita seçimi
+ve alttaki aksiyonlar yanlışlıkla çalışmaz. Panelin üye satırları mevcut
+`openDiplomacyTarget` akışını kullanır. Diyet/seçim pending state'i açıkken
+Escape ve dışarı tıklama kararı atlamaz; oyuncu bir seçenek seçene kadar tur
+bitirme aksiyonu `internal/game/game.go` içinde bloklanır. HUD düğmesi HRE
+oyuncusunda otorite ve siyasi takvimin kısa özetini de gösterir.
+
+Bölge bilgi panelinde bağımsız bir imparatorluk üyesinin sahibi gösterilirken,
+sahip bayrağının sağına `regionImperialEmpireID` ile bulunan üst kurumun daha
+küçük bayrağı eklenir. Çizim ve koordinatları `regionPanelOwnerFlagRect` ile
+`regionPanelImperialFlagRect` paylaşır; imparatorluğun doğrudan sahip olduğu
+bölgelerde ikinci rozet çizilmez (`internal/render/panel.go`).
 
 Harita image ve vektör sınır katmanından sonra özel karasal geçişler çizilir.
 `GameState.LandPassages` içindeki her geçiş, `start` ve `end` koordinatları

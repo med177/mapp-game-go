@@ -121,3 +121,39 @@ func TestImperialElectionUpdatesEmperorAndResetsAuthority(t *testing.T) {
 		t.Fatalf("seçim otoriteyi 8 artırmalı: got=%d", gs.Imperial.Authority)
 	}
 }
+
+func TestPlayerImperialPoliticsCreatesAndResolvesDietDecision(t *testing.T) {
+	gs := imperialTestState()
+	gs.PlayerFactionID = "hre"
+	gs.Turn = 12
+	gs.Imperial.NextDietTurn = 12
+
+	report := AdvanceImperialPolitics(gs)
+	if !report.Pending || gs.Imperial.PendingDecision == nil || gs.Imperial.PendingDecision.Kind != state.ImperialDecisionDiet {
+		t.Fatalf("oyuncu Diyet kararı beklemeli: report=%+v imperial=%+v", report, gs.Imperial)
+	}
+	if ok, _ := ResolveImperialDiet(gs, 2); !ok {
+		t.Fatal("oyuncu Diyet kararı çözülebilmeli")
+	}
+	if gs.Imperial.PendingDecision != nil {
+		t.Fatalf("Diyet kararı sonrasında pending state temizlenmedi: %+v", gs.Imperial.PendingDecision)
+	}
+}
+
+func TestPlayerImperialElectionUsesSelectedValidCandidate(t *testing.T) {
+	gs := imperialTestState()
+	gs.PlayerFactionID = "hre"
+	gs.Turn = 97
+	gs.Imperial.ElectionDueTurn = 97
+
+	report := AdvanceImperialPolitics(gs)
+	if !report.Pending || gs.Imperial.PendingDecision == nil || gs.Imperial.PendingDecision.Kind != state.ImperialDecisionElection {
+		t.Fatalf("oyuncu seçim kararı beklemeli: report=%+v imperial=%+v", report, gs.Imperial)
+	}
+	if ok, _ := ResolveImperialElection(gs, "milan"); !ok {
+		t.Fatal("geçerli aday seçilebilmeli")
+	}
+	if gs.Imperial.EmperorID != "milan" || gs.Imperial.PendingDecision != nil {
+		t.Fatalf("seçim state'i yanlış çözüldü: emperor=%q pending=%+v", gs.Imperial.EmperorID, gs.Imperial.PendingDecision)
+	}
+}

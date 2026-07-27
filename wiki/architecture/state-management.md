@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-26
+last_updated: 2026-07-27
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -94,6 +94,11 @@ type GameState struct {
 meşruiyeti, `Members` ise sadakat/özerklik/askerî bağlılık ve elektör ağırlıklarını
 tutar. Bu alan compact save (`im`) ve debug/legacy save akışlarında korunur;
 `data/imperial.json` yalnız senaryo başlangıç state'ini sağlar.
+
+`ImperialState.PendingDecision`, HRE oyuncusunun çözmesi gereken Diyet veya seçim
+kararını (`ImperialDecisionKind`) taşır. Bu state tur çözümünden sonra paneli açmak,
+oyuncu kararını zorunlu kılmak ve save/load sonrasında modalı geri kurmak için kullanılır.
+AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korunur.
 
 `ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; ancak bölge aktif kuşatma altındaysa bina ve birim emirleri duraklatılır, kuşatma kalkınca aynı sayaçtan devam eder; bölge el değiştirirse o bölgedeki üretim emirleri kuyruktan silinir; sıfırlandığında üretim uygulanır.
 

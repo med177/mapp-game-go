@@ -107,6 +107,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.showImperialPanel {
+		if imperialPanelRect().Hit(fx, fy) || imperialPanelCloseButton().HitTest(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.showDiplomacy {
 		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -356,7 +364,7 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || musicHudInteractiveHit(fx, fy) || turnTechHudTechHit(fx, fy) {
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || turnTechHudTechHit(fx, fy) {
 		return true
 	}
 	if victoryProgressHit(fx, fy) {

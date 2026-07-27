@@ -64,6 +64,40 @@ func TestRegionOwnerNameRectKeepsOriginalHeaderColumnWithOwnerFlagBadge(t *testi
 	}
 }
 
+func TestRegionImperialBadgeUsesMemberEmpireAndSitsBesideOwnerFlag(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"hre":     {ID: "hre", NameTR: "Kutsal Roma İmparatorluğu"},
+			"bavaria": {ID: "bavaria", NameTR: "Bavyera Dükalığı"},
+		},
+		Imperial: &state.ImperialState{
+			EmpireID: "hre",
+			Members: map[faction.FactionID]*state.ImperialMember{
+				"bavaria": {FactionID: "bavaria", Status: state.ImperialMemberPrince},
+			},
+		},
+	}
+
+	if got := regionImperialEmpireID(gs, "bavaria"); got != "hre" {
+		t.Fatalf("imparatorluk üyesi için HRE dönmeliydi: got=%q", got)
+	}
+	if got := regionImperialEmpireID(gs, "hre"); got != "" {
+		t.Fatalf("imparatorluğun kendi bölgesinde ikinci bayrak gösterilmemeli: got=%q", got)
+	}
+	if got := regionImperialEmpireID(gs, "unknown"); got != "" {
+		t.Fatalf("imparatorluk dışı devlet için rozet dönmemeli: got=%q", got)
+	}
+
+	ownerRect := regionPanelOwnerFlagRect(20, 200)
+	empireRect := regionPanelImperialFlagRect(20, 200)
+	if empireRect.W >= ownerRect.W || empireRect.H >= ownerRect.H {
+		t.Fatalf("imparatorluk bayrağı sahibi bayrağından küçük olmalı: owner=%+v empire=%+v", ownerRect, empireRect)
+	}
+	if empireRect.X <= ownerRect.X+ownerRect.W || empireRect.Y <= ownerRect.Y || empireRect.Y+empireRect.H >= ownerRect.Y+ownerRect.H {
+		t.Fatalf("imparatorluk bayrağı sahibi bayrağının sağında ve dikey ortasında olmalı: owner=%+v empire=%+v", ownerRect, empireRect)
+	}
+}
+
 func TestVassalOverlordDisplayUsesOverlordInfo(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "osm",

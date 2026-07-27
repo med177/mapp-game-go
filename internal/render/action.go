@@ -95,6 +95,9 @@ const (
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"
 	ActionScheduleCapitalMove   ActionKind = "schedule_capital_move"
+	ActionOpenImperialPanel     ActionKind = "open_imperial_panel"
+	ActionImperialDietChoice    ActionKind = "imperial_diet_choice"
+	ActionImperialElectionVote  ActionKind = "imperial_election_vote"
 )
 
 // InputAction'da BuildingID bina inşa işlemleri için kullanılır.

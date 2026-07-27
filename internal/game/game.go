@@ -231,6 +231,20 @@ func (g *Game) Update() error {
 
 	case state.PhasePlayerTurn:
 		switch action.Kind {
+		case render.ActionOpenImperialPanel:
+			// Panel state renderer tarafından yönetilir.
+		case render.ActionImperialDietChoice:
+			if ok, message := diplomacy.ResolveImperialDiet(g.gs, action.ChoiceIndex); ok {
+				g.renderer.CloseImperialPanel()
+				g.renderer.ShowCombatResult(message)
+				g.renderer.AddEvent("[İMPARATORLUK] " + message)
+			}
+		case render.ActionImperialElectionVote:
+			if ok, message := diplomacy.ResolveImperialElection(g.gs, action.TargetFaction); ok {
+				g.renderer.CloseImperialPanel()
+				g.renderer.ShowCombatResult(message)
+				g.renderer.AddEvent("[İMPARATORLUK] " + message)
+			}
 		case render.ActionOpenEventCodex:
 			// renderer event detail popup'ını kendi açıyor; burada state değişikliği gerekmiyor.
 		case render.ActionChooseHistoricalEvent:
@@ -238,6 +252,11 @@ func (g *Game) Update() error {
 		case render.ActionScheduleCapitalMove:
 			g.queueCapitalMove(g.gs.PlayerFactionID, action.BuildingID, state.DefaultCapitalMoveTurns, "yerel karar")
 		case render.ActionEndTurn:
+			if g.gs.Imperial != nil && g.gs.Imperial.PendingDecision != nil &&
+				g.gs.Imperial.EmpireID == g.gs.PlayerFactionID {
+				g.renderer.ShowImperialPanel()
+				break
+			}
 			// Turn resolution'a geçmeden önce otomatik seçim bir sebeple
 			// gerçekleşmediyse son bir kez dene; yine de aktif araştırma yoksa
 			// oyuncunun araştırılabilir bir teknoloji bırakıp bırakmadığını bildir.
@@ -540,10 +559,16 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.HasSave = save.AnySlotExists()
 		g.renderer.HasAutoSave = save.ContinueSaveExists()
 		g.renderer.ShowCombatResult(res.successMsg)
+		if g.gs.Imperial != nil && g.gs.Imperial.PendingDecision != nil && g.gs.Imperial.EmpireID == g.gs.PlayerFactionID {
+			g.renderer.ShowImperialPanel()
+		}
 		g.refreshEventCodex()
 	case loadingWorldMap:
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.ReloadGameStateWithPreparedMap(g.gs, res.worldMap)
+		if g.gs.Imperial != nil && g.gs.Imperial.PendingDecision != nil && g.gs.Imperial.EmpireID == g.gs.PlayerFactionID {
+			g.renderer.ShowImperialPanel()
+		}
 		g.refreshEventCodex()
 	}
 }
@@ -909,8 +934,12 @@ func (g *Game) resolveTurn() {
 		events.Apply(g.gs, evt)
 		g.handleTriggeredEvent(evt)
 	}
-	if imperialReport := diplomacy.AdvanceImperialPolitics(g.gs); imperialReport.Message != "" {
+	imperialReport := diplomacy.AdvanceImperialPolitics(g.gs)
+	if imperialReport.Message != "" {
 		g.renderer.AddEvent("[İMPARATORLUK] " + imperialReport.Message)
+	}
+	if imperialReport.Pending {
+		g.renderer.ShowImperialPanel()
 	}
 
 	// Bölge event ikon sürelerini güncelle

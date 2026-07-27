@@ -174,7 +174,8 @@ func TestImperialStateRoundTripInCompactPayload(t *testing.T) {
 		Members: map[faction.FactionID]*state.ImperialMember{
 			"milan_duchy": {FactionID: "milan_duchy", Status: state.ImperialMemberPrince, Loyalty: 37, Autonomy: 88, MilitaryCommitment: 42},
 		},
-		LastWarCall: &state.ImperialWarCall{CallerID: "hre", EnemyID: "france", StartedTurn: 7},
+		LastWarCall:     &state.ImperialWarCall{CallerID: "hre", EnemyID: "france", StartedTurn: 7},
+		PendingDecision: &state.ImperialPendingDecision{Kind: state.ImperialDecisionDiet, CreatedTurn: 12},
 	}
 	encoding, payload, err := encodeCompressedStatePayload(campaignSaveState{Imperial: original})
 	if err != nil {
@@ -195,6 +196,9 @@ func TestImperialStateRoundTripInCompactPayload(t *testing.T) {
 	}
 	if restored.Imperial.Members["milan_duchy"].Loyalty != 37 || restored.Imperial.LastWarCall.EnemyID != "france" {
 		t.Fatalf("imperial üye/çağrı state'i korunmadı: %+v", restored.Imperial)
+	}
+	if restored.Imperial.PendingDecision == nil || restored.Imperial.PendingDecision.Kind != state.ImperialDecisionDiet {
+		t.Fatalf("pending imparatorluk kararı compact save/load sonrasında korunmadı: %+v", restored.Imperial.PendingDecision)
 	}
 }
 

@@ -31,6 +31,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showCommanderPanel {
 		return r.handleCommanderPanelInput()
 	}
+	if r.showImperialPanel {
+		return r.handleImperialPanelInput()
+	}
 	if r.showMerchantRoutePanel {
 		return r.handleMerchantRoutePanelInput()
 	}
@@ -344,6 +347,14 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 		return InputAction{}
 	}
+	if r.keyJustPressed(ebiten.KeyI) && imperialPanelAvailable(r.gs) {
+		if r.showImperialPanel {
+			r.CloseImperialPanel()
+		} else {
+			r.ShowImperialPanel()
+		}
+		return InputAction{Kind: ActionOpenImperialPanel}
+	}
 	// R: birlik al, N: gemi inşa et
 	if r.keyJustPressed(ebiten.KeyR) && r.SelectedRegion != "" {
 		return InputAction{Kind: ActionRecruitUnit, TargetRegion: r.SelectedRegion}
@@ -560,6 +571,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
+	}
+	if imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy) {
+		if r.showImperialPanel {
+			r.CloseImperialPanel()
+		} else {
+			r.ShowImperialPanel()
+		}
+		return InputAction{Kind: ActionOpenImperialPanel}
 	}
 
 	// --- Alt panel butonları ---

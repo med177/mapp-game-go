@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-06-19
+last_updated: 2026-07-27
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -49,6 +49,11 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.
 - Stroke commit'i mouse bırakıldığında yapılır; bu sırada undo snapshot alınır.
+- `Harita` sekmesindeki `ID` aksiyonu seçili region kimliğini mevcut değerle
+  doldurur; Ctrl+A ile yeni kimlik girilebilir. Boş veya mevcut bir region ile
+  çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,
+  komşuları, geçişleri, ordu/donanma konumlarını, paint override'larını ve
+  editor seçim state'ini birlikte taşır; undo/redo world snapshot ile korunur.
 - Deniz region'ları `shape_id` taşımadıkları için `Shape Boya/Sil` değil, aynı sekmedeki `Bolge Boya/Sil` aracıyla düzenlenir; bu akış `region_shapes.json` override katmanına yazar ve deniz bölgeleri arasında alan aktarımı yapar. Aynı araç kara region seçiliyken de ülke dış sınırının dışına taşan bölge genişletmelerini kalıcı override olarak saklar; sonraki stroke'larda baseline override öncesi world map'ten üretildiği için daha önce boyanan dış piksel tekrar fırçadan geçti diye kayıttan düşmez.
 
 ## Sınırlamalar

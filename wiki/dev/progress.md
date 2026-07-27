@@ -7,10 +7,35 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-27: Edit mode `Harita` inspector'ına region `ID` değiştirme aksiyonu
+  eklendi. Mevcut ID önden dolduruluyor, Ctrl+A ile değiştirilebiliyor; boş ve
+  çakışan ID'ler reddediliyor. Rename sırasında region map anahtarıyla birlikte
+  komşular, karasal geçişler, kara/deniz ordularının konumları, paint override'ları
+  ve seçim state'i güncelleniyor; world snapshot undo/redo bu değişikliği koruyor.
+  Regression: `TestRenameRegionIDUpdatesEditorReferences`; doğrulama:
+  `go test ./internal/render`.
+
 - 2026-07-27: 1300 senaryosunda Mekke'nin shape sınırı dışındaki `y=827` yerleşim
   koordinatı `y=797` olarak düzeltildi. Anchor artık `hejaz` bölgesindeki ham
   koordinatı kullanıyor; `Test1300MeccaSettlementAnchorUsesConfiguredCoordinate`
   regression testi fallback'e geri dönüşü yakalıyor. Doğrulama: `go test ./internal/render`.
+
+- 2026-07-27: HRE oyuncu akışı tamamlandı. HRE seçildiğinde alt HUD'daki
+  `İmparatorluk` düğmesi veya `I` kısayolu otorite, imparator, siyasi takvim ve
+  bağımsız üye listesini açıyor; üye satırları mevcut diplomasi akışına bağlanıyor.
+  Diyet ve imparatorluk seçimi HRE oyuncusunda pending karar olarak panelde açılıyor,
+  karar verilmeden tur bitmiyor ve compact save/load içinde korunuyor. Savaş önizlemesi
+  imparatorluk üyelerinin tam katılım/sınırlı destek/tarafsızlık sonuçlarını ayrı
+  başlıkta gösteriyor. Regression: `TestImperialPanelAvailableOnlyForHREPlayer`,
+  `TestImperialPanelLayoutDrawsAtCampaignResolutions`,
+  `TestPlayerImperialPoliticsCreatesAndResolvesDietDecision`,
+  `TestPlayerImperialElectionUsesSelectedValidCandidate`.
+
+- 2026-07-27: İmparatorluk üyesi bölgelerin bilgi paneline, sahip devlet
+  bayrağının sağında bağlı imparatorluğun küçük bayrak rozeti eklendi. Rozet
+  yalnız `ImperialState.Members` içindeki sahiplerde gösteriliyor; doğrudan
+  imparatorluk bölgelerinde ikinci bayrak çizilmiyor. Regression:
+  `TestRegionImperialBadgeUsesMemberEmpireAndSitsBesideOwnerFlag`.
 
 - 2026-07-26: HRE için bağımsız imparatorluk kurumu eklendi. `GameState.Imperial`
   ve 1300 `data/imperial.json` artık otorite, Diyet takvimi, üyelik sadakati/özerkliği

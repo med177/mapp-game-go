@@ -59,18 +59,17 @@
     "name_tr": "Aragon Krallığı",
     "religion": "catholic",
     "color": [
-      220,
-      120,
-      30
+      205,
+      0,
+      0
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "aragon_zaragoza",
     "gold": 600,
     "grain": 200,
     "iron": 90,
     "timber": 100,
-    "stone": 1000,
+    "stone": 0,
     "spice": 55,
     "cloth": 120,
     "research": {
@@ -84,10 +83,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52,
-    "ai_expansion_targets": [
-      "granada_emirate"
-    ]
+    "ai_aggressiveness": 52
   },
   {
     "id": "arnavut_des",
@@ -326,18 +322,17 @@
     "name_tr": "Danimarka Krallığı",
     "religion": "catholic",
     "color": [
-      200,
-      40,
-      40
+      255,
+      0,
+      200
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "sweden_main",
     "gold": 350,
     "grain": 200,
     "iron": 80,
     "timber": 120,
-    "stone": 1000,
+    "stone": 0,
     "spice": 20,
     "cloth": 60,
     "research": {
@@ -380,18 +375,17 @@
     "name_tr": "İngiltere Krallığı",
     "religion": "catholic",
     "color": [
-      180,
-      30,
-      30
+      120,
+      0,
+      200
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "london_main",
     "gold": 680,
     "grain": 230,
     "iron": 95,
     "timber": 190,
-    "stone": 1000,
+    "stone": 0,
     "spice": 15,
     "cloth": 130,
     "research": {
@@ -494,19 +488,17 @@
     "name_tr": "Flandre Kontluğu",
     "religion": "catholic",
     "color": [
-      205,
+      245,
       170,
-      35
+      80
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "overlord_id": "hre",
-    "capital_settlement_id": "flanders_brugge",
     "gold": 460,
     "grain": 170,
     "iron": 65,
     "timber": 80,
-    "stone": 1000,
+    "stone": 0,
     "spice": 30,
     "cloth": 180,
     "research": {
@@ -560,18 +552,17 @@
     "name_tr": "Ceneviz Cumhuriyeti",
     "religion": "catholic",
     "color": [
-      215,
-      215,
-      215
+      225,
+      185,
+      85
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "genoa_main",
     "gold": 620,
     "grain": 75,
     "iron": 55,
     "timber": 90,
-    "stone": 1000,
+    "stone": 0,
     "spice": 110,
     "cloth": 125,
     "research": {
@@ -647,17 +638,16 @@
     "religion": "sunni",
     "color": [
       210,
-      175,
+      245,
       45
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "kiev_bila_tserkva",
     "gold": 550,
     "grain": 200,
     "iron": 80,
     "timber": 50,
-    "stone": 1000,
+    "stone": 0,
     "spice": 60,
     "cloth": 70,
     "research": {
@@ -668,14 +658,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 66,
-    "ai_expansion_targets": [
-      "russia",
-      "polish_kingdom",
-      "lithuanian_gd",
-      "novgorod_rep",
-      "bulgarian_empire"
-    ]
+    "ai_aggressiveness": 66
   },
   {
     "id": "granada_emirate",
@@ -737,18 +720,17 @@
     "name_tr": "Kutsal Roma İmparatorluğu",
     "religion": "catholic",
     "color": [
-      220,
-      195,
-      45
+      0,
+      0,
+      0
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "holland_settlement_2",
     "gold": 900,
     "grain": 300,
     "iron": 200,
     "timber": 180,
-    "stone": 1000,
+    "stone": 0,
     "spice": 40,
     "cloth": 120,
     "research": {
@@ -771,33 +753,28 @@
     "name_tr": "Avusturya Dükalığı",
     "religion": "catholic",
     "color": [
-      165,
-      70,
-      45
+      255,
+      255,
+      255
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "austria_vienna",
     "gold": 260,
     "grain": 150,
     "iron": 70,
     "timber": 65,
-    "stone": 300,
+    "stone": 0,
     "spice": 15,
     "cloth": 35,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "horse_breeding": true
+        "horse_breeding": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 48,
-    "ai_expansion_targets": [
-      "hungarian_kingdom",
-      "carniola_margraviate"
-    ]
+    "ai_aggressiveness": 48
   },
   {
     "id": "bohemian_kingdom",
@@ -805,18 +782,17 @@
     "name_tr": "Bohemya Krallığı",
     "religion": "catholic",
     "color": [
-      90,
-      125,
-      180
+      105,
+      20,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "bohemia_prague",
     "gold": 300,
     "grain": 180,
     "iron": 75,
     "timber": 80,
-    "stone": 350,
+    "stone": 0,
     "spice": 20,
     "cloth": 45,
     "research": {
@@ -827,11 +803,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 42,
-    "ai_expansion_targets": [
-      "polish_kingdom",
-      "brandenburg_margraviate"
-    ]
+    "ai_aggressiveness": 42
   },
   {
     "id": "bavaria_duchy",
@@ -839,33 +811,28 @@
     "name_tr": "Bavyera Dükalığı",
     "religion": "catholic",
     "color": [
-      70,
-      145,
-      90
+      0,
+      155,
+      210
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "bavaria_munich",
     "gold": 280,
     "grain": 190,
     "iron": 70,
     "timber": 95,
-    "stone": 350,
+    "stone": 0,
     "spice": 15,
     "cloth": 35,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "heavy_armor": true
+        "heavy_armor": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 44,
-    "ai_expansion_targets": [
-      "austria_duchy",
-      "milan_duchy"
-    ]
+    "ai_aggressiveness": 44
   },
   {
     "id": "saxony_duchy",
@@ -873,18 +840,17 @@
     "name_tr": "Saksonya Dükalığı",
     "religion": "catholic",
     "color": [
-      185,
-      125,
-      55
+      20,
+      105,
+      40
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "saxony_main",
     "gold": 260,
     "grain": 190,
     "iron": 55,
     "timber": 65,
-    "stone": 300,
+    "stone": 0,
     "spice": 15,
     "cloth": 40,
     "research": {
@@ -895,11 +861,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 40,
-    "ai_expansion_targets": [
-      "brandenburg_margraviate",
-      "polish_kingdom"
-    ]
+    "ai_aggressiveness": 40
   },
   {
     "id": "brandenburg_margraviate",
@@ -940,18 +902,17 @@
     "name_tr": "Macaristan Krallığı",
     "religion": "catholic",
     "color": [
-      210,
-      75,
-      35
+      250,
+      95,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "hungary_buda",
     "gold": 600,
     "grain": 350,
     "iron": 150,
     "timber": 130,
-    "stone": 1000,
+    "stone": 0,
     "spice": 30,
     "cloth": 80,
     "research": {
@@ -1338,18 +1299,17 @@
     "name_tr": "Polonya Krallığı",
     "religion": "catholic",
     "color": [
-      200,
-      45,
+      170,
+      5,
       45
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "poland_warsaw",
     "gold": 450,
     "grain": 300,
     "iron": 120,
     "timber": 150,
-    "stone": 1000,
+    "stone": 0,
     "spice": 20,
     "cloth": 70,
     "research": {
@@ -1528,7 +1488,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "savoy_settlement_2",
+    "capital_settlement_id": "savoy_main",
     "gold": 250,
     "grain": 150,
     "iron": 60,
@@ -1673,18 +1633,17 @@
     "name_tr": "Venedik Cumhuriyeti",
     "religion": "catholic",
     "color": [
-      180,
+      0,
       140,
-      20
+      255
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "venice",
     "gold": 680,
     "grain": 85,
     "iron": 50,
     "timber": 95,
-    "stone": 1000,
+    "stone": 0,
     "spice": 120,
     "cloth": 120,
     "research": {
@@ -1820,9 +1779,9 @@
     "cloth": 85,
     "research": {
       "completed": {
+        "iron_weapons": true,
         "navigation": true,
-        "trade_routes": true,
-        "iron_weapons": true
+        "trade_routes": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1963,8 +1922,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 18,
-    "ai_expansion_targets": [ ]
+    "ai_aggressiveness": 18
   },
   {
     "id": "croatian_kingdom",
@@ -2009,17 +1967,15 @@
     "color": [
       105,
       125,
-      80
+      240
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "overlord_id": "hungarian_kingdom",
-    "capital_settlement_id": "bosnia_main",
     "gold": 190,
     "grain": 145,
     "iron": 45,
     "timber": 65,
-    "stone": 1000,
+    "stone": 0,
     "spice": 10,
     "cloth": 25,
     "research": {
@@ -2029,11 +1985,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30,
-    "ai_expansion_targets": [
-      "croatian_kingdom",
-      "serbian_empire"
-    ]
+    "ai_aggressiveness": 30
   },
   {
     "id": "carniola_margraviate",

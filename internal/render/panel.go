@@ -47,19 +47,21 @@ const (
 	eventCardGap       = float32(7)
 	maxEventLogEntries = 16
 
-	infoPanelW                = float32(305)
-	infoPanelH                = float32(780)
-	factionPanelHeaderH       = 70.0
-	factionPanelBodyPadBottom = 12.0
-	factionPanelScrollStep    = 28.0
-	factionPanelScrollBarW    = 4.0
-	factionPanelScrollBarGap  = 6.0
-	factionPanelRowH          = 18.0
-	factionPanelSectionH      = 16.0
-	factionPanelTechSummaryH  = 48.0
-	factionHUDFlagSize        = 58.0
-	factionPanelFlagSize      = 44.0
-	regionPanelFlagBadgeSize  = 48.0
+	infoPanelW                  = float32(305)
+	infoPanelH                  = float32(780)
+	factionPanelHeaderH         = 70.0
+	factionPanelBodyPadBottom   = 12.0
+	factionPanelScrollStep      = 28.0
+	factionPanelScrollBarW      = 4.0
+	factionPanelScrollBarGap    = 6.0
+	factionPanelRowH            = 18.0
+	factionPanelSectionH        = 16.0
+	factionPanelTechSummaryH    = 48.0
+	factionHUDFlagSize          = 58.0
+	factionPanelFlagSize        = 44.0
+	regionPanelFlagBadgeSize    = 48.0
+	regionPanelImperialFlagSize = 30.0
+	regionPanelFlagGap          = 6.0
 
 	btnW = float32(90)
 	btnH = float32(52)
@@ -224,6 +226,46 @@ func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial s
 	}
 }
 
+func factionInitial(name string) string {
+	for _, r := range name {
+		return string(r)
+	}
+	return "?"
+}
+
+func regionPanelOwnerFlagRect(lx, py float64) gameui.Rect {
+	return gameui.Rect{
+		X: lx,
+		Y: py - regionPanelFlagBadgeSize,
+		W: regionPanelFlagBadgeSize,
+		H: regionPanelFlagBadgeSize,
+	}
+}
+
+func regionPanelImperialFlagRect(lx, py float64) gameui.Rect {
+	ownerRect := regionPanelOwnerFlagRect(lx, py)
+	return gameui.Rect{
+		X: ownerRect.X + ownerRect.W + regionPanelFlagGap,
+		Y: ownerRect.Y + (ownerRect.H-regionPanelImperialFlagSize)/2,
+		W: regionPanelImperialFlagSize,
+		H: regionPanelImperialFlagSize,
+	}
+}
+
+// regionImperialEmpireID bölge sahibinin bağımsız bir imparatorluk üyesi
+// olup olmadığını belirler. İmparatorluğun doğrudan sahip olduğu bölgelerde
+// ikinci bayrak gösterilmez; zaten ilk bayrak kurumun kendisidir.
+func regionImperialEmpireID(gs *state.GameState, ownerID string) faction.FactionID {
+	if gs == nil || gs.Imperial == nil || ownerID == "" || ownerID == string(gs.Imperial.EmpireID) {
+		return ""
+	}
+	member, ok := gs.Imperial.Members[faction.FactionID(ownerID)]
+	if !ok || member == nil {
+		return ""
+	}
+	return gs.Imperial.EmpireID
+}
+
 func bottomActionHudRect() (x, y, w, h float32) {
 	w = btnW*4 + actionHudGap*3 + actionHudPad*2
 	h = btnH + actionHudPad*2
@@ -293,6 +335,42 @@ func buildMapModeButtons() [2]gameui.Button {
 
 func buildTradeToggleButton() gameui.Button {
 	return buttonFromRectF32(tradeToggleButtonRect(), "Pazar")
+}
+
+func imperialPanelAvailable(gs *state.GameState) bool {
+	return gs != nil && gs.Imperial != nil && gs.Imperial.EmpireID != "" && gs.PlayerFactionID == gs.Imperial.EmpireID
+}
+
+func imperialHUDButtonRect() [4]float32 {
+	ax, ay, aw, _ := bottomActionHudRect()
+	const buttonW = float32(116)
+	x := ax + aw + actionHudGap
+	y := ay + actionHudPad
+	if x+buttonW > float32(ScreenWidth)-8 {
+		x = float32(ScreenWidth) - buttonW - 8
+	}
+	if x < 8 {
+		x = 8
+	}
+	return [4]float32{x, y, buttonW, btnH}
+}
+
+func buildImperialHUDButton() gameui.Button {
+	return buttonFromRectF32(imperialHUDButtonRect(), "İmparatorluk")
+}
+
+func imperialHUDStatusText(gs *state.GameState) string {
+	if gs == nil || gs.Imperial == nil {
+		return ""
+	}
+	if gs.Imperial.PendingDecision != nil {
+		return "Karar bekliyor"
+	}
+	return "Otorite " + itoa(gs.Imperial.Authority) + " • Diyet " + itoa(gs.Imperial.NextDietTurn)
+}
+
+func imperialHUDButtonHit(fx, fy float64) bool {
+	return buildImperialHUDButton().HitTest(fx, fy)
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
@@ -596,6 +674,14 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		}
 	}
 	drawMapModeHud(screen, mapMode)
+	if imperialPanelAvailable(gs) {
+		btn := buildImperialHUDButton()
+		style := solidButtonStyle(color.RGBA{48, 38, 23, 235}, color.RGBA{184, 148, 70, 255}, ColorWhite, 6)
+		drawUIButtonWidget(screen, btn, style)
+		status := imperialHUDStatusText(gs)
+		status = trimTextToWidth(status, FaceSmall, float64(btn.W)-10)
+		drawUILabel(screen, gameui.Rect{X: btn.X + 5, Y: btn.Y + 32, W: btn.W - 10}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignCenter)
+	}
 
 	drawDateMenuHud(screen, gs, mapMode)
 	drawMusicHud(screen)
@@ -1933,8 +2019,19 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		if ownerFaction := gs.Factions[faction.FactionID(region.OwnerID)]; ownerFaction != nil {
 			badgeBG = color.RGBA{ownerFaction.Color[0], ownerFaction.Color[1], ownerFaction.Color[2], 255}
 		}
-		initial := string([]rune(ownerName)[:1])
-		drawFactionFlagBadge(screen, faction.FactionID(region.OwnerID), initial, lx, float64(py)-regionPanelFlagBadgeSize, regionPanelFlagBadgeSize, badgeBG, panelBorder)
+		ownerFlag := regionPanelOwnerFlagRect(lx, float64(py))
+		drawFactionFlagBadge(screen, faction.FactionID(region.OwnerID), factionInitial(ownerName), ownerFlag.X, ownerFlag.Y, ownerFlag.W, badgeBG, panelBorder)
+
+		if empireID := regionImperialEmpireID(gs, region.OwnerID); empireID != "" {
+			empireName, _ := ownerDisplay(gs, string(empireID))
+			empireFaction := gs.Factions[empireID]
+			empireBG := color.Color(ColorGray)
+			if empireFaction != nil {
+				empireBG = color.RGBA{empireFaction.Color[0], empireFaction.Color[1], empireFaction.Color[2], 255}
+			}
+			empireFlag := regionPanelImperialFlagRect(lx, float64(py))
+			drawFactionFlagBadge(screen, empireID, factionInitial(empireName), empireFlag.X, empireFlag.Y, empireFlag.W, empireBG, color.RGBA{212, 172, 76, 255})
+		}
 	}
 
 	DrawText(screen, region.NameTR, lx, ly, FaceLarge, ColorYellow)

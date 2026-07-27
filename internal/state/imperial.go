@@ -42,6 +42,21 @@ type ImperialWarCall struct {
 	StartedTurn int               `json:"started_turn"`
 }
 
+// ImperialDecisionKind oyuncunun çözmesi gereken imparatorluk kararını belirtir.
+type ImperialDecisionKind string
+
+const (
+	ImperialDecisionDiet     ImperialDecisionKind = "diet"
+	ImperialDecisionElection ImperialDecisionKind = "election"
+)
+
+// ImperialPendingDecision imparatorluk kararının tur geçişinde kaybolmaması
+// için save-backed olarak tutulur.
+type ImperialPendingDecision struct {
+	Kind        ImperialDecisionKind `json:"kind"`
+	CreatedTurn int                  `json:"created_turn"`
+}
+
 // ImperialState HRE gibi seçilmiş bir imparatorluk kurumunun, onu oluşturan
 // bağımsız üyelerden ayrı kampanya state'idir.
 type ImperialState struct {
@@ -52,6 +67,7 @@ type ImperialState struct {
 	ElectionDueTurn int                                   `json:"election_due_turn,omitempty"`
 	Members         map[faction.FactionID]*ImperialMember `json:"members"`
 	LastWarCall     *ImperialWarCall                      `json:"last_war_call,omitempty"`
+	PendingDecision *ImperialPendingDecision              `json:"pending_decision,omitempty"`
 }
 
 // Clone deep-copies the mutable imperial campaign state for save payloads.
@@ -73,6 +89,10 @@ func (s *ImperialState) Clone() *ImperialState {
 	if s.LastWarCall != nil {
 		call := *s.LastWarCall
 		out.LastWarCall = &call
+	}
+	if s.PendingDecision != nil {
+		decision := *s.PendingDecision
+		out.PendingDecision = &decision
 	}
 	return &out
 }
