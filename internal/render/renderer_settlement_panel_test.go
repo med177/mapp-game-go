@@ -158,6 +158,81 @@ func TestAppendSettlementDrawsKeepsFactionCapitalLabelVisible(t *testing.T) {
 	}
 }
 
+func TestSettlementVisibilityUsesZoomTiers(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+
+	region := &world.Region{
+		ID: "home",
+		Settlements: []world.Settlement{
+			{ID: "capital", NameTR: "Başkent", Type: world.SettlementCity, IsCapital: true},
+			{ID: "castle", NameTR: "Kale", Type: world.SettlementFortress},
+			{ID: "port", NameTR: "Liman", Type: world.SettlementPort},
+			{ID: "city", NameTR: "Şehir", Type: world.SettlementCity},
+			{ID: "town", NameTR: "Kasaba", Type: world.SettlementTown},
+		},
+	}
+	anchors := make(map[settlementAnchorKey][2]int, len(region.Settlements))
+	for i := range region.Settlements {
+		anchors[settlementAnchorKey{Region: region.ID, Index: i}] = [2]int{120 + i*40, 120}
+	}
+
+	r := &Renderer{
+		worldMap: &WorldMap{settlementAnchor: anchors},
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{region.ID: region},
+		},
+	}
+
+	tests := []struct {
+		name  string
+		scale float64
+		want  map[string]bool
+	}{
+		{
+			name:  "uzak",
+			scale: 0.45,
+			want:  map[string]bool{"capital": true, "castle": true},
+		},
+		{
+			name:  "orta",
+			scale: 1.4,
+			want:  map[string]bool{"capital": true, "castle": true, "port": true, "city": true},
+		},
+		{
+			name:  "yakin",
+			scale: 2.0,
+			want:  map[string]bool{"capital": true, "castle": true, "port": true, "city": true, "town": true},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r.camScale = tc.scale
+			r.regionLabelBuf = r.regionLabelBuf[:0]
+			r.appendSettlementDraws(region)
+
+			got := make(map[string]bool, len(r.regionLabelBuf))
+			for _, item := range r.regionLabelBuf {
+				got[item.Region.Settlements[item.Index].ID] = true
+			}
+			if len(got) != len(tc.want) {
+				t.Fatalf("zoom %.2f için settlement sayısı: got=%v want=%v", tc.scale, got, tc.want)
+			}
+			for id, wantVisible := range tc.want {
+				if got[id] != wantVisible {
+					t.Fatalf("zoom %.2f için %q görünürlüğü: got=%v want=%v", tc.scale, id, got[id], wantVisible)
+				}
+			}
+		})
+	}
+}
+
 func TestSettlementMarkerSpriteSwitchesToSiegeAssetForPrimarySiegedSettlement(t *testing.T) {
 	r := &Renderer{
 		gs: &state.GameState{

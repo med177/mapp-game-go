@@ -12,6 +12,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   dönüşümünden sonra aynı yerde kalması regression testiyle doğrulanıyor:
   `TestSingleShapeWorldPixelRoundTripsThroughRings`.
 
+- 2026-07-28: Yerleşim marker ve etiketleri zoom seviyesine göre LOD filtresine
+  bağlandı. Uzakta yalnız başkent/kale, orta yakınlıkta liman/şehir, yakında
+  kasabalar dahil tüm yerleşimler görünür. LOD eşikleri `1.25` ve `1.8` olarak
+  ayarlandı; gizli yerleşimler hover ve tıklama hedefi de oluşturmaz. Regression:
+  `TestSettlementVisibilityUsesZoomTiers`.
+
 - 2026-07-28: Shape ve Bölge boyama fırçalarının yarıçap ölçüsü ortak dünya
   pikseline getirildi. Shape maskesi ölçekli mesafe hesabı kullanıyor; böylece
   aynı fırça kademesi Shape seçiminde gereksiz büyümüyor. Regression:
@@ -972,7 +978,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Render başlangıç log temizliği | ✅ | Boş senaryo path'inde shape dosyası okunmaz; deniz seed araması ham `world_x/world_y` fallback kullanır |
 | Açılış kamera zoom ayarı | ✅ | İlk frame `resetCamera()` minimum sığdırma yerine `1.55x` yakın başlar; kampanya daha yakın açılır, sıkışık yerleşim kümeleri daha rahat ayrılır ve fare tekerleğiyle `5.5x` seviyesine kadar daha derin yakınlaşma yapılabilir. Yeni oyun veya save load sonrası oyuncu fraksiyonunun geçerli başkent settlement'ı varsa kamera bu noktaya odaklanır; kenara yakın başkentlerde ilk viewport clamp'lenir |
 | Deniz anchor ve çakışma stabilizasyonu | ✅ | Deniz orduları gerçek su piksel anchor'ına çizilir; ordu/etiket çizim sırası deterministik, çakışan etiket metinleri bastırılır |
-| Çoklu yerleşim noktaları | ✅ | `regions.json` içinde `settlements[]`; ana yerleşim ordu/etiket anchor'ı, yakın zoom'da ek yerleşim noktaları/isimleri, bölge dışı koordinatta log + nearest-region fallback; `port` settlement'lar liman simgesi, `fortress` settlement'lar kale simgesiyle ayrışır |
+| Çoklu yerleşim noktaları | ✅ | `regions.json` içinde `settlements[]`; ana yerleşim ordu/etiket anchor'ı, zoom LOD'una göre uzak görünümde başkent/kale, orta görünümde liman/şehir, yakın görünümde kasaba dahil tüm yerleşim noktaları/isimleri, görünür marker ile ortak hit-test, bölge dışı koordinatta log + nearest-region fallback; `port` settlement'lar liman simgesi, `fortress` settlement'lar kale simgesiyle ayrışır |
 | Settlement edit mode | ✅ | `.env` `EDIT_MODE=true`; senaryo seçince harita editörü açılır, alt-sol bilgi/aksiyon HUD'u, settlement ekleme/silme, tip/capital değiştirme, bölge terrain/owner değiştirme, sürükleme, bölge arası taşıma, isim düzenleme, Shift+sürükle ile bölge merkezi taşıma ve Ctrl+S ile `regions.json` kaydı |
 | Dropdown component | ✅ | `internal/ui/dropdown.go`; edit mode'da sahip/arazi/yerleşim tipi seçimlerinde yeniden kullanılabilir dropdown, scroll ve tam içerik desteği |
 | Edit mode Voronoi debug overlay | ✅ | Edit mode'da `V` ile aç/kapatılır; seçili/hover bölgenin raster/Voronoi sınırını ve görsel komşularını JSON `neighbors` ile karşılaştırır, merkezler arası çizgiler ve hover koordinat paneli gösterir |

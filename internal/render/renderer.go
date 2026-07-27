@@ -47,6 +47,8 @@ const (
 	selectedSiegeButtonH         = 38.0
 	initialCameraZoomFactor      = 2.50
 	maxCameraZoomScale           = 10
+	settlementMediumZoomScale    = 1.25
+	settlementCloseZoomScale     = 1.8
 	activeEventIconSize          = float32(22)
 	activeEventIconSpacingY      = float32(24)
 	activeEventIconLiftY         = float32(48)
@@ -2218,7 +2220,7 @@ func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {
 
 // drawRegionLabels zoom yeterliyse bölgedeki yerleşim noktalarını ve adlarını yazar.
 func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIconPos) {
-	if r.camScale < 0.5 {
+	if r.camScale <= 0 {
 		return
 	}
 
@@ -2345,7 +2347,10 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 		if name == "" {
 			name = region.NameTR
 		}
-		drawLabel := r.shouldDrawSettlementLabel(settlement, isPrimary, isFactionCapital)
+		if !r.shouldDrawSettlementAtZoom(settlement, isFactionCapital) {
+			continue
+		}
+		drawLabel := true
 		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel, settlementLabelPriority(settlement, isPrimary, isFactionCapital), isFactionCapital)
 	}
 }
@@ -2414,21 +2419,20 @@ func settlementLabelPriority(settlement world.Settlement, isPrimary bool, isFact
 	}
 }
 
-func (r *Renderer) shouldDrawSettlementLabel(settlement world.Settlement, isPrimary bool, isFactionCapital bool) bool {
-	// Zoom düşükken sadece başkent/şehir etiketleri.
-	if r.camScale < 0.8 {
-		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementCity
+func (r *Renderer) shouldDrawSettlementAtZoom(settlement world.Settlement, isFactionCapital bool) bool {
+	// Uzak görünümde harita gürültüsünü başkentler ve kaleler oluşturmaz.
+	if r.camScale < settlementMediumZoomScale {
+		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementFortress
 	}
-	// Orta zoomda liman ve kaleler de açılır.
-	if r.camScale < 1.05 {
-		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementCity ||
-			settlement.Type == world.SettlementPort || settlement.Type == world.SettlementFortress
+	// Orta görünümde limanlar ve şehirler de stratejik işaret olarak açılır.
+	if r.camScale < settlementCloseZoomScale {
+		return isFactionCapital || settlement.IsCapital ||
+			settlement.Type == world.SettlementFortress ||
+			settlement.Type == world.SettlementPort ||
+			settlement.Type == world.SettlementCity
 	}
-	// Yüksek zoomda tüm yerleşim etiketleri açılır.
-	if r.camScale >= 1.05 {
-		return true
-	}
-	return isPrimary
+	// Yakın görünümde kasabalar dahil tüm yerleşimler görünür.
+	return true
 }
 
 func (r *Renderer) selectedSettlementIdentity() (world.RegionID, int, bool) {
