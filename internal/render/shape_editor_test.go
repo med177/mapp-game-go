@@ -13,14 +13,14 @@ import (
 
 func TestPaintCoordinatesUseContainingCellAndItsCenter(t *testing.T) {
 	shapeX, shapeY := 14, 10
-	shapeWX := shapeOffX + (float64(shapeX)+0.9)*shapeScaleX
-	shapeWY := shapeOffY + (float64(shapeY)+0.9)*shapeScaleY
+	shapeWX := float64(shapeX) + 0.9
+	shapeWY := float64(shapeY) + 0.9
 	if gotX, gotY := shapePaintCellFromWorld(shapeWX, shapeWY); gotX != shapeX || gotY != shapeY {
 		t.Fatalf("shape mouse konumu bulundugu hucreye ait olmali: got=(%d,%d) want=(%d,%d)", gotX, gotY, shapeX, shapeY)
 	}
 	centerX, centerY := shapePaintCellCenterWorld(shapeX, shapeY)
-	wantCenterX := shapeOffX + (float64(shapeX)+0.5)*shapeScaleX
-	wantCenterY := shapeOffY + (float64(shapeY)+0.5)*shapeScaleY
+	wantCenterX := float64(shapeX) + 0.5
+	wantCenterY := float64(shapeY) + 0.5
 	if math.Abs(centerX-wantCenterX) > 0.0001 || math.Abs(centerY-wantCenterY) > 0.0001 {
 		t.Fatalf("shape preview hucenin merkezine oturmali: got=(%.4f,%.4f) want=(%.4f,%.4f)", centerX, centerY, wantCenterX, wantCenterY)
 	}
@@ -37,10 +37,78 @@ func TestPaintCoordinatesUseContainingCellAndItsCenter(t *testing.T) {
 func TestShapeOutlineUsesRasterizedWorldBoundary(t *testing.T) {
 	point := [2]float32{1016.49, 436.49}
 	gotX, gotY := shapeRasterWorldPoint(point)
-	wantX := float64(int(shapeOffX + float64(int(point[0]+0.5))*shapeScaleX))
-	wantY := float64(int(shapeOffY + float64(int(point[1]+0.5))*shapeScaleY))
+	wantX := float64(int(shapeOffX + float64(point[0])*shapeScaleX))
+	wantY := float64(int(shapeOffY + float64(point[1])*shapeScaleY))
 	if gotX != wantX || gotY != wantY {
 		t.Fatalf("shape outline raster siniriyle ayni donusumu kullanmali: got=(%.2f,%.2f) want=(%.2f,%.2f)", gotX, gotY, wantX, wantY)
+	}
+}
+
+func TestShapeBrushRadiusUsesWorldPixelUnits(t *testing.T) {
+	oldShapeScaleX, oldShapeScaleY := shapeScaleX, shapeScaleY
+	defer func() {
+		shapeScaleX, shapeScaleY = oldShapeScaleX, oldShapeScaleY
+	}()
+	shapeScaleX, shapeScaleY = 2, 2
+
+	session := &shapeEditSession{MinX: 0, MinY: 0, MaxX: 10, MaxY: 10, Width: 11, Height: 11, Mask: make([]byte, 121)}
+	r := &Renderer{}
+	if !r.applyShapeBrushCircle(session, 5, 5, 0.5, true) {
+		t.Fatal("shape brush tek hucreyi boyamali")
+	}
+	count := 0
+	for _, value := range session.Mask {
+		count += int(value)
+	}
+	if count != 1 {
+		t.Fatalf("0.5 dunya pikseli yaricapi tek hucre olmali: got=%d", count)
+	}
+
+	for i := range session.Mask {
+		session.Mask[i] = 0
+	}
+	if !r.applyShapeBrushCircle(session, 5, 5, 1, true) {
+		t.Fatal("shape brush bir dunya pikseli yaricapinda degismeli")
+	}
+	count = 0
+	for _, value := range session.Mask {
+		count += int(value)
+	}
+	if count != 5 {
+		t.Fatalf("1 dunya pikseli yaricapi dort komsu ve merkezi icermeli: got=%d", count)
+	}
+}
+
+func TestSingleShapeWorldPixelRoundTripsThroughRings(t *testing.T) {
+	oldShapeOffX, oldShapeOffY := shapeOffX, shapeOffY
+	oldShapeScaleX, oldShapeScaleY := shapeScaleX, shapeScaleY
+	defer func() {
+		shapeOffX, shapeOffY = oldShapeOffX, oldShapeOffY
+		shapeScaleX, shapeScaleY = oldShapeScaleX, oldShapeScaleY
+	}()
+	shapeOffX, shapeOffY = -530, -180
+	shapeScaleX, shapeScaleY = 2.025, 2.025
+
+	session := &shapeEditSession{MinX: 1490, MinY: 690, MaxX: 1510, MaxY: 710, Width: 21, Height: 21, Mask: make([]byte, 21*21)}
+	session.Mask[session.index(1500, 700)] = 1
+	rings := shapeMaskToFloatRings(session)
+	if len(rings) != 1 {
+		t.Fatalf("tek piksel tek ring uretmeli: got=%d", len(rings))
+	}
+
+	roundTrip := &shapeEditSession{MinX: session.MinX, MinY: session.MinY, MaxX: session.MaxX, MaxY: session.MaxY, Width: session.Width, Height: session.Height, Mask: make([]byte, len(session.Mask))}
+	for _, ring := range rings {
+		rasterizeFloatRingToMask(roundTrip, ring)
+	}
+	if !roundTrip.filled(1500, 700) {
+		t.Fatal("tek shape dunya pikseli ring donusumunde kayboldu")
+	}
+	count := 0
+	for _, value := range roundTrip.Mask {
+		count += int(value)
+	}
+	if count != 1 {
+		t.Fatalf("tek shape dunya pikseli round-trip sonrasi tek kalmali: got=%d", count)
 	}
 }
 

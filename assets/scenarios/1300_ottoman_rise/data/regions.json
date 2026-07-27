@@ -1705,8 +1705,8 @@
       "oltenia",
       "transylvania"
     ],
-    "world_x": 1016,
-    "world_y": 385,
+    "world_x": 1029,
+    "world_y": 390,
     "shape_id": "ROU",
     "is_sea": false,
     "is_locked": false,
@@ -7159,8 +7159,8 @@
       "northwestern_black_sea",
       "wallachia"
     ],
-    "world_x": 1045,
-    "world_y": 396,
+    "world_x": 1035,
+    "world_y": 392,
     "shape_id": "ROU",
     "is_sea": false,
     "is_locked": false,

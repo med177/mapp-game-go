@@ -1,11 +1,21 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-28: Shape boya/sil maskesi dünya piksel çözünürlüğüne taşındı. En küçük
+  fırça artık görünen nokta/çizgi karesini doğrudan boyuyor; tek pikselin ring
+  dönüşümünden sonra aynı yerde kalması regression testiyle doğrulanıyor:
+  `TestSingleShapeWorldPixelRoundTripsThroughRings`.
+
+- 2026-07-28: Shape ve Bölge boyama fırçalarının yarıçap ölçüsü ortak dünya
+  pikseline getirildi. Shape maskesi ölçekli mesafe hesabı kullanıyor; böylece
+  aynı fırça kademesi Shape seçiminde gereksiz büyümüyor. Regression:
+  `TestShapeBrushRadiusUsesWorldPixelUnits`.
 
 - 2026-07-27: Edit mode shape konturu ile renkli raster alanı hizalandı. Kontur
   ve raster aynı world-pixel dönüşümünü kullanıyor; Voronoi debug sınırları piksel

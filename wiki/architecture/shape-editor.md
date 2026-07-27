@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -44,6 +44,9 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
   kayma oluşmaz.
 - Shape konturu da world raster üretimindeki aynı ölçekleme ve kesme sırasını
   kullanır; böylece kontur, renkli raster alanının kenarından ayrışmaz.
+- Shape maskesi dünya piksel çözünürlüğünde tutulur; commit sırasında hücre
+  sınırları tekrar shape senaryo koordinatlarına çevrilir. Böylece en küçük
+  fırça doğrudan görünen nokta/çizgi karesini boyar veya siler.
 
 ## UX kuralları
 
@@ -51,8 +54,8 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - Shape düzenleme `Shape` sekmesinde ve **sağ mouse drag** ile yapılır; böylece region seçimiyle çakışmaz.
 - `Boya` ve `Sil` modları inspector butonlarından değişir.
 - Fırça yarıçapı inspector'dan artırılıp azaltılır; `1.00` altına iki ince kademe
-  (`0.75` ve `0.50`) bulunur. Bu seviyeler rasterde tek piksel hassasiyetini
-  korurken canlı imleç boyutunu küçültür.
+  (`0.75` ve `0.50`) bulunur. Yarıçap değeri dünya pikseli cinsindendir; bu
+  seviyeler bölge ve shape araçlarında aynı fiziksel fırça boyutunu hedefler.
 - Brush stroke sırasında imleç yarıçapı ekranda gösterilir.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.

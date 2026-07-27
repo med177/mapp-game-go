@@ -97,9 +97,9 @@ type countryShapeFile struct {
 }
 
 type countryShape struct {
-	ID    string     `json:"id"`
-	Name  string     `json:"name"`
-	Rings [][][2]int `json:"rings"`
+	ID    string         `json:"id"`
+	Name  string         `json:"name"`
+	Rings [][][2]float32 `json:"rings"`
 }
 
 type settlementAnchorKey struct {
@@ -239,21 +239,19 @@ func countryShapeMapFromState(shapeData world.CountryShapeJSON) map[string]count
 		if len(rings) == 0 {
 			continue
 		}
-		intRings := make([][][2]int, 0, len(rings))
+		floatRings := make([][][2]float32, 0, len(rings))
 		for _, ring := range rings {
 			if len(ring) < 3 {
 				continue
 			}
-			intRing := make([][2]int, len(ring))
-			for i, pt := range ring {
-				intRing[i] = [2]int{int(pt[0] + 0.5), int(pt[1] + 0.5)}
-			}
-			intRings = append(intRings, intRing)
+			floatRing := make([][2]float32, len(ring))
+			copy(floatRing, ring)
+			floatRings = append(floatRings, floatRing)
 		}
-		if len(intRings) == 0 {
+		if len(floatRings) == 0 {
 			continue
 		}
-		shapes[id] = countryShape{ID: id, Name: shapeData.Names[id], Rings: intRings}
+		shapes[id] = countryShape{ID: id, Name: shapeData.Names[id], Rings: floatRings}
 	}
 	return shapes
 }
@@ -552,15 +550,16 @@ func (wm *WorldMap) buildCountryShapes(gs *state.GameState, shapes map[string]co
 	return true
 }
 
-func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Region, ring [][2]int) {
+func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Region, ring [][2]float32) {
 	if len(regions) == 0 || len(ring) < 3 {
 		return
 	}
 	scaled := make([][2]int, len(ring))
 	for i, pt := range ring {
+		wx, wy := shapeRasterWorldPoint(pt)
 		scaled[i] = [2]int{
-			shapeRasterWorldPixelX(pt[0]),
-			shapeRasterWorldPixelY(pt[1]),
+			int(wx),
+			int(wy),
 		}
 	}
 	minX, minY, maxX, maxY := intPolygonBounds(scaled)
@@ -1292,16 +1291,24 @@ func wcY(v int) float64 { return shapeOffY + float64(v)*shapeScaleY }
 // ardından dünya piksel sınırına keser. Shape çizgisi ve renkli raster aynı
 // dönüşüm sırasını kullanmalıdır; wcX/wcY ise merkez/anchor hesapları içindir.
 func shapeRasterWorldPixelX(v int) int {
-	return int(shapeOffX + float64(v)*shapeScaleX)
+	return shapeRasterWorldBoundary(shapeOffX + float64(v)*shapeScaleX)
 }
 
 func shapeRasterWorldPixelY(v int) int {
-	return int(shapeOffY + float64(v)*shapeScaleY)
+	return shapeRasterWorldBoundary(shapeOffY + float64(v)*shapeScaleY)
 }
 
 func shapeRasterWorldPoint(pt [2]float32) (float64, float64) {
-	x, y := int(pt[0]+0.5), int(pt[1]+0.5)
-	return float64(shapeRasterWorldPixelX(x)), float64(shapeRasterWorldPixelY(y))
+	return float64(shapeRasterWorldBoundary(shapeOffX + float64(pt[0])*shapeScaleX)),
+		float64(shapeRasterWorldBoundary(shapeOffY + float64(pt[1])*shapeScaleY))
+}
+
+func shapeRasterWorldBoundary(value float64) int {
+	nearest := math.Round(value)
+	if math.Abs(value-nearest) < 0.0001 {
+		return int(nearest)
+	}
+	return int(value)
 }
 
 // regionShapeOverridesFile region_shapes.json formatı (paint overrides)

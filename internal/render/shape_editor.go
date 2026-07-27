@@ -103,7 +103,7 @@ func (r *Renderer) ensureShapeEditSession() *shapeEditSession {
 }
 
 func newShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession {
-	minX, minY, maxX, maxY := editableShapeCoordBounds()
+	minX, minY, maxX, maxY := editableShapePixelBounds()
 	if maxX < minX || maxY < minY {
 		return nil
 	}
@@ -131,25 +131,22 @@ func newShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession 
 	return session
 }
 
-func editableShapeCoordBounds() (int, int, int, int) {
-	maxX := int((float64(WorldW)-shapeOffX)/shapeScaleX + 1.5)
-	maxY := int((float64(WorldH)-shapeOffY)/shapeScaleY + 1.5)
-	if maxX < 1 {
-		maxX = 1
-	}
-	if maxY < 1 {
-		maxY = 1
-	}
-	return 0, 0, maxX, maxY
+func editableShapePixelBounds() (int, int, int, int) {
+	return 0, 0, WorldW - 1, WorldH - 1
 }
 
 func rasterizeFloatRingToMask(session *shapeEditSession, ring [][2]float32) {
 	if session == nil || len(ring) < 3 {
 		return
 	}
-	minX, minY := int(ring[0][0]), int(ring[0][1])
+	worldRing := make([][2]float32, len(ring))
+	for i, pt := range ring {
+		wx, wy := shapeRasterWorldPoint(pt)
+		worldRing[i] = [2]float32{float32(wx), float32(wy)}
+	}
+	minX, minY := int(worldRing[0][0]), int(worldRing[0][1])
 	maxX, maxY := minX, minY
-	for _, pt := range ring[1:] {
+	for _, pt := range worldRing[1:] {
 		x, y := int(pt[0]), int(pt[1])
 		if x < minX {
 			minX = x
@@ -178,7 +175,7 @@ func rasterizeFloatRingToMask(session *shapeEditSession, ring [][2]float32) {
 	}
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
-			if pointInFloatPolygon(float64(x)+0.5, float64(y)+0.5, ring) {
+			if pointInFloatPolygon(float64(x)+0.5, float64(y)+0.5, worldRing) {
 				session.Mask[session.index(x, y)] = 1
 			}
 		}
@@ -417,7 +414,7 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 		cursorWX, cursorWY = regionPaintCellCenterWorld(cellX, cellY)
 	}
 	sx, sy := r.worldToScreen(cursorWX, cursorWY)
-	radius := float32(maxF(1, r.editShapeBrushRadius*maxF(shapeScaleX, shapeScaleY)*r.camScale))
+	radius := float32(maxF(1, r.editShapeBrushRadius*r.camScale))
 	brushCol := color.RGBA{80, 235, 255, 180}
 	if r.editShapeBrushMode == editShapeBrushErase {
 		brushCol = color.RGBA{255, 110, 110, 185}
@@ -502,7 +499,7 @@ func (r *Renderer) clearEditPaintPreview() {
 // Mouse konumu hücreye yuvarlanmaz; bulunduğu hücreye floor ile atanır.
 // Çizim tarafında aynı hücrenin merkezi +0.5 ile kullanılır.
 func shapePaintCellFromWorld(wx, wy float64) (int, int) {
-	return int(math.Floor((wx - shapeOffX) / shapeScaleX)), int(math.Floor((wy - shapeOffY) / shapeScaleY))
+	return int(math.Floor(wx)), int(math.Floor(wy))
 }
 
 func regionPaintCellFromWorld(wx, wy float64) (int, int) {
@@ -510,7 +507,7 @@ func regionPaintCellFromWorld(wx, wy float64) (int, int) {
 }
 
 func shapePaintCellCenterWorld(x, y int) (float64, float64) {
-	return shapeOffX + (float64(x)+0.5)*shapeScaleX, shapeOffY + (float64(y)+0.5)*shapeScaleY
+	return float64(x) + 0.5, float64(y) + 0.5
 }
 
 func regionPaintCellCenterWorld(x, y int) (float64, float64) {
@@ -535,8 +532,8 @@ func (r *Renderer) drawShapePaintPreviewPixel(x, y int, fill bool) {
 	if fill {
 		col = color.RGBA{80, 235, 120, 165}
 	}
-	width := maxF(shapeScaleX, 2/r.camScale)
-	height := maxF(shapeScaleY, 2/r.camScale)
+	width := maxF(1, 2/r.camScale)
+	height := maxF(1, 2/r.camScale)
 	cx, cy := shapePaintCellCenterWorld(x, y)
 	vector.FillRect(image, float32(cx)-float32(width/2), float32(cy)-float32(height/2), float32(width), float32(height), col, true)
 }
@@ -769,16 +766,19 @@ func (r *Renderer) applyShapeBrushCircle(session *shapeEditSession, cx, cy int, 
 	}
 	changed := false
 	r2 := radius * radius
-	minX := int(math.Ceil(float64(cx) - radius))
-	maxX := int(math.Floor(float64(cx) + radius))
-	minY := int(math.Ceil(float64(cy) - radius))
-	maxY := int(math.Floor(float64(cy) + radius))
+	radiusX := radius
+	radiusY := radius
+	minX := int(math.Ceil(float64(cx) - radiusX))
+	maxX := int(math.Floor(float64(cx) + radiusX))
+	minY := int(math.Ceil(float64(cy) - radiusY))
+	maxY := int(math.Floor(float64(cy) + radiusY))
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
 			if !session.inBounds(x, y) {
 				continue
 			}
-			dx, dy := float64(x-cx), float64(y-cy)
+			dx := float64(x - cx)
+			dy := float64(y - cy)
 			if dx*dx+dy*dy > r2 {
 				continue
 			}
@@ -966,11 +966,10 @@ func syncLandShapesFromWorldMap(gs *state.GameState, wm *WorldMap) {
 			for _, pIdx := range wm.regionPx[rid] {
 				px := pIdx % WorldW
 				py := pIdx / WorldW
-				sx, sy := scenarioCoordsFromWorld(float64(px), float64(py))
-				if !session.inBounds(sx, sy) {
+				if !session.inBounds(px, py) {
 					continue
 				}
-				session.Mask[session.index(sx, sy)] = 1
+				session.Mask[session.index(px, py)] = 1
 			}
 		}
 		applyShapeRingsToState(gs, shapeID, shapeMaskToFloatRings(session))
@@ -1078,7 +1077,10 @@ func shapeMaskToFloatRings(session *shapeEditSession) [][][2]float32 {
 	for _, ring := range intRings {
 		floatRing := make([][2]float32, len(ring))
 		for i, pt := range ring {
-			floatRing[i] = [2]float32{float32(pt[0]), float32(pt[1])}
+			floatRing[i] = [2]float32{
+				float32((float64(pt[0]) - shapeOffX) / shapeScaleX),
+				float32((float64(pt[1]) - shapeOffY) / shapeScaleY),
+			}
 		}
 		floatRings = append(floatRings, floatRing)
 	}

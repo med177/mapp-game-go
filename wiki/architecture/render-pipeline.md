@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -40,7 +40,9 @@ Shape sekmesindeki `Shape Boya`, `Shape Sil`, `Bolge Boya` ve `Bolge Sil`
 butonları toggle çalışır; aktif araca tekrar tıklamak aracı kapatır, `>` işareti
 ile canlı fırça önizlemesi ve brush cursor'u temizlenir. Inspector, normal
 yarıçaplarda tam piksel adımı kullanır; `1.00` altındaki `0.75` ve `0.50`
-kademeleri daha hassas sınır boyaması için kullanılabilir. Stroke preview'i
+kademeleri daha hassas sınır boyaması için kullanılabilir. Yarıçap değeri ortak
+olarak dünya pikseli cinsindendir; Shape ve Bölge brush doğrudan aynı world
+raster çözünürlüğünde uygular. Stroke preview'i
 world-space cache'e artımlı yazılır ve ekranda tek image draw olarak gösterilir;
 per-frame piksel başına overlay/vertex üretimi yapılmaz. Boyama input'u hücreyi
 `floor` ile seçer; preview ve cursor aynı raster hücresinin `+0.5` merkezine
