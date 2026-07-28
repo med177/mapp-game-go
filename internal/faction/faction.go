@@ -24,6 +24,9 @@ type Faction struct {
 	IsPlayable   bool          `json:"is_playable"`
 	IsEliminated bool          `json:"is_eliminated"`
 	OverlordID   FactionID     `json:"overlord_id,omitempty"`
+	// VassalizedTurn, vassallık bağının kurulduğu toplam turu tutar. Bu alan
+	// ilhak bekleme süresinin save/load sonrasında da korunmasını sağlar.
+	VassalizedTurn int `json:"vassalized_turn,omitempty"`
 	// CapitalSettlementID fraksiyonun aktif başkent settlement'ını tutar.
 	CapitalSettlementID string `json:"capital_settlement_id,omitempty"`
 	// PendingCapitalSettlementID başkent taşıma kuyruğundaki hedef settlement'tır.

@@ -14,7 +14,7 @@ const (
 	aiMinBuildingInvestmentScore = 80
 )
 
-var aiEconomyBuildingIDs = []string{"farm", "market", "temple", "walls"}
+var aiEconomyBuildingIDs = []string{"granary", "farm", "market", "temple", "walls"}
 
 type aiBuildingCandidate struct {
 	RegionID        world.RegionID
@@ -35,6 +35,8 @@ type aiEconomySnapshot struct {
 	GrainProduction int
 	GrainUpkeep     int
 	GrainStock      int
+	GrainCapacity   int
+	GranaryCount    int
 }
 
 type aiRegionInvestmentSignals struct {
@@ -154,6 +156,25 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	if btype.ID == "temple" && region.Satisfaction < 30 {
 		stabilityScore += 180
 	}
+	if btype.ID == "granary" {
+		// Granary doğrudan üretim vermez; bu yüzden tahıl rezervi ve ordu
+		// toparlanması için ilk ambarı puanlamada ayrıca öne çıkarıyoruz.
+		if snapshot.GranaryCount == 0 {
+			bottleneckScore += 260
+		}
+		if snapshot.GrainStock < maxInt(120, snapshot.GrainUpkeep*aiGrainReserveMonths) {
+			bottleneckScore += 180
+		}
+		if snapshot.GrainCapacity < maxInt(120, snapshot.GrainUpkeep*aiGrainReserveMonths) {
+			bottleneckScore += 100
+		}
+		if snapshot.GrainProduction <= snapshot.GrainUpkeep {
+			bottleneckScore += 70
+		}
+		if signals.AtWar {
+			bottleneckScore += 40
+		}
+	}
 	queuePenalty := aiQueuedBuildingCountForRegion(gs, region.ID, self.ID)*30 + queued*25
 	durationPenalty := maxInt(0, turns-1) * 8
 	levelPenalty := level * 12
@@ -181,6 +202,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 	if self := gs.Factions[fid]; self != nil {
 		snapshot.GrainStock = self.Grain
 	}
+	snapshot.GrainCapacity = gs.GrainStorageCapacityForFaction(fid)
 	for _, region := range aiSortedRegions(gs) {
 		if region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
 			continue
@@ -188,6 +210,16 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 		production := gs.RegionProductionSummary(region)
 		snapshot.GoldProduction += production.Gold
 		snapshot.GrainProduction += production.Grain
+		for _, buildingID := range region.Buildings {
+			if buildingID == "granary" {
+				snapshot.GranaryCount++
+			}
+		}
+	}
+	for _, order := range gs.ProductionQueue {
+		if order.FactionID == string(fid) && order.Kind == aiProductionKindBuilding && order.TypeID == "granary" {
+			snapshot.GranaryCount++
+		}
 	}
 	for _, armyRef := range aiSortedArmies(gs) {
 		if armyRef.OwnerID == string(fid) {

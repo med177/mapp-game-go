@@ -26,6 +26,13 @@ func DefaultSettings() Settings {
 
 var difficultyLabels = []string{"", "Kolay", "Normal", "Zor"}
 
+func difficultyLabelTR(difficulty int) string {
+	if difficulty >= 1 && difficulty < len(difficultyLabels) {
+		return difficultyLabels[difficulty]
+	}
+	return difficultyLabels[2]
+}
+
 const settingsPath = "saves/settings.json"
 
 func settingsRowsRect(rowCount int) gameui.Rect {
@@ -62,7 +69,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		value string
 	}
 	rows := []row{
-		{"Zorluk", difficultyLabels[s.Difficulty]},
+		{"Zorluk", difficultyLabelTR(s.Difficulty)},
 		{"Müzik", boolLabel(s.MusicOn)},
 		{"Müzik Seviyesi", itoa(s.MusicVolume) + "%"},
 		{"Ses Efektleri", boolLabel(s.SoundOn)},

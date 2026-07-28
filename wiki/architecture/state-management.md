@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -274,6 +274,11 @@ save/load ise alanı campaign state içinde korur.
 `GrainStorageCapacity()` ve `GameState.GrainStorageCapacityForFaction()` sivil nüfus talebi, efektif ordu bakımı ve ambar bina bonusunu aynı `6 ay sivil + 3 ay ordu`, minimum 100 kapasite kuralında birleştirir. İkinci helper ekonomi tick'i oluşmadan HUD'un başlangıçta da doğru ambar kapasitesini gösterebilmesini sağlar.
 
 `Army.Morale` ordunun kalıcı ikmal moralidir. `CurrentMorale()` eski kayıt veya fixture'larda eksik alanı 100 başlangıç morali olarak normalize eder; `ApplyMoraleDelta()` değeri 1–100 aralığında tutar. Compact save/load içindeki `mo` alanıyla taşınır ve `Army.TotalStrength()` içinde savaş/AI güç değerlendirmelerine uygulanır.
+
+`GameState.NormalizeEmptyArmies()` birim veya taşınmış birlik içermeyen artık ordu
+kayıtlarını kaldırır ve varsa komutanı havuza bırakır. Save yüklemede legacy garrison
+normalizasyonundan sonra, tur çözümünün sonunda da çalışır; böylece eski edit/save
+kayıtlarındaki boş ordu nesneleri AI manpower/komutan/UI hesaplarını kirletmez.
 
 `TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan, açık denizdeki düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; limana bağlı filo bu deniz bölgesinde sayılmaz ve save migration gerektirmez.
 

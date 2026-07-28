@@ -1,11 +1,38 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
+focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.
+`.env` içindeki `EDIT_MODE=true` değeri menüye `EDIT MODE` satırını
+`Yeni Oyun`'un üstünde ekler. Bu buton senaryo seçiminden sonra doğrudan edit
+haritasını açar; `Yeni Oyun` akışı aynı değer açık olsa bile normal fraksiyon ve
+zafer seçimine gider. Görsel seçim ve klavye/fare input'u aynı `factionCursor`
+state'ini kullanır (`internal/game/game.go`, `internal/render/main_menu.go`).
+
+Tarih HUD'u, ay ve yılı üst satırda; mevsim ile turu ikinci satırda; aktif
+oyunun zorluk seviyesini (`Kolay`, `Normal` veya `Zor`) üçüncü satırda gösterir.
+Zorluk etiketi `GameState.Difficulty` değerinden okunur ve ayarlar ekranındaki
+etiketlerle ortak `difficultyLabelTR` yardımcısını kullanır
+(`internal/render/panel.go`, `settings.go`).
+
+Ordu detay panelindeki manuel birleştirme aksiyonu artık aynı konumdaki tüm
+uygun dost orduları için ayrı `->N` düğmeleri çizer. `N`, kaynak ve hedef
+N, seçilmek istenen hedef ordunun mevcut birim sayısıdır;
+`MergeButtonTargetAt` tıklanan düğmenin `TargetArmyID` değerini input aksiyonuna
+taşır. Düğme hover'ında hedef ordunun birim kompozisyonu küçük kartlar halinde
+önizlenir (`internal/render/{army_panel.go,hover_tooltip.go}`); oyun katmanı
+seçilen hedefi yeniden doğrular (`internal/game/game.go`).
+
+Savaş ilanı onay panelindeki katılımcı kartları 52 px satır aralığını tamamen
+doldurur; üç satırlı vassal kartının notu artık kart alt sınırına taşmaz.
+`warConfirmEntryRowRect` ve `drawWarConfirmParticipantRow` aynı satır
+geometrisini kullanır (`internal/render/renderer_dialogs.go`).
 
 HRE oyuncusu için `internal/render/imperial_panel.go` ayrı bir modal katmanı
 sağlar. Alt HUD'daki koşullu `İmparatorluk` düğmesi ve `I` kısayolu aynı paneli
@@ -76,17 +103,23 @@ Bölge bilgi paneli ilk açıldığında komşu listesi varsayılan olarak `Tüm
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`). Kaynak HUD'unda tahıl miktarının altında ayrıca `Ambar` satırı bulunur; kapasite ekonomi tick'i status'undan, status henüz oluşmamışsa `GameState.GrainStorageCapacityForFaction()` hesaplamasından alınır.
 
+Üst müzik HUD'unda şarkı bilgisinin yanında yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
+
 Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve `SelectedRegion` bölgesinin `OwnerID` değerindeki devlete senkronlanır. Aynı devletin bölgeleri arasında geçiş panel scroll'unu korur; farklı devlete geçiş panel içeriğini baştan başlatır (`internal/render/renderer_input.go`).
 
-Bölge seçimi askeri birim üretim panelini açmaz; seçim sırasında açık recruit paneli kapanır ve yalnızca alt HUD'daki `Ordu` butonuyla açılır. Deniz ve kara bölgesi seçimleri bu ortak input kuralını kullanır (`internal/render/renderer_input.go`).
+Bölge seçimi normal tek tıklamada askeri birim üretim panelini açmaz; seçim sırasında
+açık recruit paneli kapanır. Oyuncunun uygun kara bölgesine çift tıklaması ise alt
+HUD'daki `Ordu` butonuyla aynı panel geçişini çalıştırır. Deniz ve kara bölgesi
+seçimleri bu ortak input kuralını kullanır (`internal/render/renderer_input.go`).
 
 Haritada oyuncuya ait olmayan bir kara bölgesine aynı bölge içinde 400 ms içinde
 çift tıklanırsa bölge seçimi korunarak `openDiplomacyTarget()` üzerinden o
 bölgenin sahibini hedefleyen teklif paneli doğrudan açılır. İlk tıklama yalnızca
-bölgeyi seçer; oyuncunun kendi bölgeleri, deniz bölgeleri ve sahipsiz bölgeler
-bu kısayolu tetiklemez. Yerleşim etiketi üzerinden yapılan seçim de aynı
-region-ID tabanlı çift tıklama akışını kullanır (`internal/render/renderer.go`,
-`internal/render/renderer_input.go`).
+bölgeyi seçer. Oyuncunun kendi, üretime uygun kara bölgesine çift tıklanırsa
+alt HUD'daki `Ordu` butonuyla aynı recruit paneli state geçişi çalışır; deniz ve
+sahipsiz bölgeler bu kısayolları tetiklemez. Yerleşim etiketi üzerinden yapılan
+seçim de aynı region-ID tabanlı çift tıklama akışını kullanır
+(`internal/render/renderer.go`, `internal/render/renderer_input.go`).
 
 Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusunun gerçekten yükleme emri verebilmesiyle aynı hareket hakkı kuralını kullanır. Seçili ordunun `MovePoints` değeri sıfırsa gösterge çizilmez; böylece görünür aksiyon ile sağ tık input kapısı ayrışmaz (`internal/render/renderer.go`).
 
@@ -190,7 +223,7 @@ type Renderer struct {
 | 0 | Kayıt slot seçim ekranları (PhaseLoadSelect / PhaseSaveSelect) | `load_select.go` |
 | 0 | Duraklama menüsü (PhasePauseMenu) — harita altta, overlay üstte | `pause_menu.go` |
 | 1 | Dünya haritası (WorldMap cache) | `mapgen.go`, `tile.go` |
-| 2 | Vektör bölge/deniz sınırları; kamera zoom'undan bağımsız yaklaşık 1.25 px antialiased kontur | `map_borders.go`, `renderer.go` |
+| 2 | Vektör bölge/deniz sınırları; normalde yaklaşık 1.25 px, seçili bölgenin tam çevresinde 3 px antialiased kontur | `map_borders.go`, `renderer.go` |
 | 2 | Seçim halkası (bölge) | `renderer.go` |
 | 3 | Ticaret koridorları (çift yön rotalar tek hatta birleştirilir; uzak zoom'da yalnızca oyuncuya bağlı koridorlar çizilir; `trade_centers.json` içindeki `off_map` düğümler sadece etiket + bağlantı olarak çizilip bölge boyamasına katılmaz) | `trade_overlay.go` |
 | 3 | Hareket hedefleri (ordu komşuları) | `renderer.go` |
@@ -209,6 +242,11 @@ type Renderer struct {
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedDiplomacyFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez. Liste üstündeki `Alfabetik`, `İlişki` ve `Güç Sıralaması` butonları renderer state'indeki sıralama modunu değiştirir; `İlişki` modu oyuncuyla olan `Relation.Score` değerini azalan sıralar, eşitlikte oyuncuyla kara sınırı paylaşan fraksiyonu öne alır ve son eşitliği faction ID'siyle çözer. `Güç Sıralaması` aktif devletler arasında `factionMilitaryPowerStanding` kaynağını kullanır; seçim sonrası focus ve scroll başa alınır.
+
+Not: Teklif panelindeki barış kabul oranı `diplomacy.AssessPeaceProposal()`
+sonucundan üretilir; renderer ayrı bir yaklaşık formül kullanmaz. Hedefin gerçek
+kararı kabul değilse oran 100'e yuvarlanmaz, kabul sonucu 100 ise metin `Kesin
+kabul` olarak gösterilir (`internal/render/diplom.go`).
 Not: Diplomasi hedef listesindeki her satırın en solunda 40×40 px kare faction bayrağı çizilir; asset bulunamazsa devlet adının baş harfi fallback'i kullanılır. Devlet adı kolonu bayrak ve 10 px boşluk sonrasında toplam 340 px içinde çizilir; ilişki/durum kolonu aynı satır geometrisinden daha solda ve kalan genişlikte çizilir. Uzun durum etiketleri ilişki kolonunun genişliğine göre kırpılır (`internal/render/diplom.go`).
 Not: Edit mode region paint override'ları için `WorldMap` override öncesi `baseRegionAt` snapshot'ını saklar; böylece baseline hesabı ikinci bir tam `prepareWorldMapData` çağrısı yapmadan aynı build içinden alınır.
 Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_centers.json` içindeki `off_map=true` dış hat düğümlerini destekler; bu düğümler `name_tr`, `world_x`, `world_y` ve `links` ile tanımlanır, yalnız render etiketinde görünür ve nearest-center / trade-map tint hesabında dışarıda bırakılır. `unlock_year` verildiğinde düğüm ve ona bağlı koridorlar belirtilen yıl gelene kadar tamamen pasif kalır.
@@ -320,7 +358,7 @@ Bu seam, `internal/game/game.go` içindeki AI stepper akışının yalnız yakı
 
 Harita, her fraksiyon sahipliği değişiminde `MarkDirty()` ile işaretlenir ve bir sonraki `Refresh()` çağrısında yeniden üretilir. `Refresh()` ayrıca oyuncu, relation stance ve `OverlordID` alanlarından allocation üretmeyen bir diplomasi imzası çıkarır; bu imza değiştiğinde AI veya oyuncu kaynaklı ittifak/vassallık güncellemesi harita dokusunu bir kez yeniler. Bölge poligonları normalde `country_shapes.json`'dan gelir; edit mode sırasında ise `GameState.ShapeData` içindeki anlık shape verisi önceliklidir, böylece paint edit sonrası `rebuildEditWorldMap()` doğrudan yeni sınırı gösterir.
 
-Normal harita modunda sınırlar realm bazında sınıflandırılır. Oyuncu ile vassalları tek realm sayılır ve dış konturları altın, müttefik realm'ler turkuaz-yeşil, savaş halindeki düşman realm'leri kırmızı çizilir. `WorldMap` içindeki raster `regionAt` kenarları artık `dispPixels` içine sınır rengi olarak bake edilmez; `map_borders.go` bu kenarları uzun yatay/dikey kontur parçalarına sıkıştırıp cache'ler. `Renderer` bu parçaları kamera dönüşümünden sonra screen-space mesh olarak yaklaşık 1.25 px çizip ekran boyutunda transparan bir overlay'e alır. Mesh yalnız kamera/zoom, ekran boyutu veya harita sınır stili değiştiğinde hazırlanır; statik framelerde sadece hazır image çizilir ve viewport dışındaki parçalar mesh'e eklenmez. Uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları elenir. Böylece DirectX tarafında her frame büyük dinamik vertex buffer ve path tessellation üretilmez. Harita 10x'e kadar yakınlaştırıldığında sınır pikselleri geometrik olarak kalınlaşmaz veya basamaklanmaz. Aynı devlet veya aynı vassal realm içindeki sınırlar daha düşük alfa ile subtle idari çizgi olarak kalır; ticaret modu kendi ticaret merkezi sınır paletini korur. Region paint veya edit mode `regionAt` değiştiğinde kontur cache'i yeniden oluşturulur.
+Normal harita modunda sınırlar realm bazında sınıflandırılır. Oyuncu ile vassalları tek realm sayılır ve dış konturları altın, müttefik realm'ler turkuaz-yeşil, savaş halindeki düşman realm'leri kırmızı çizilir. `WorldMap` içindeki raster `regionAt` kenarları artık `dispPixels` içine sınır rengi olarak bake edilmez; `map_borders.go` bu kenarları uzun yatay/dikey kontur parçalarına sıkıştırıp cache'ler. `Renderer` bu parçaları kamera dönüşümünden sonra screen-space mesh olarak normalde yaklaşık 1.25 px, seçili bölgenin tüm çevresinde ise 3 px çizip ekran boyutunda transparan bir overlay'e alır. Sınır segmentinin kanonik kara tarafı seçili bölge olmasa bile diğer taraf seçiliyse segment seçili sarı stile atanır; böylece seçili kontur üst/sol kenarlarda normal koyu çizgiye dönüşmez. Mesh yalnız kamera/zoom, ekran boyutu veya harita sınır stili değiştiğinde hazırlanır; statik framelerde sadece hazır image çizilir ve viewport dışındaki parçalar mesh'e eklenmez. Uzak zoom'da bir pikselden küçük yardımcı/deniz sınırları elenir. Böylece DirectX tarafında her frame büyük dinamik vertex buffer ve path tessellation üretilmez. Harita 10x'e kadar yakınlaştırıldığında sınır pikselleri geometrik olarak kalınlaşmaz veya basamaklanmaz. Aynı devlet veya aynı vassal realm içindeki sınırlar daha düşük alfa ile subtle idari çizgi olarak kalır; ticaret modu kendi ticaret merkezi sınır paletini korur. Region paint veya edit mode `regionAt` değiştiğinde kontur cache'i yeniden oluşturulur.
 
 Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara pikselleri bariyer kabul eden multi-source BFS ile üretilir. Seed araması önce mevcut shape dönüşümlü koordinatı, sonuç çıkmazsa ham `world_x/world_y` koordinatını dener; bu, senaryo verisindeki deniz merkezlerinin dünya pikseli olarak tutulduğu durumlarda `_sea_*` seed uyarılarını engeller.
 
@@ -364,7 +402,7 @@ Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı ü
 
 Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme, shape paint commit'i ve ordu/donanma ekleme-silme/birim sayısı değişiklikleri region map, order, başlangıç orduları ve `ShapeData` için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
 
-Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Save/load kartında silme onayı açıkken slot adı üst bantta daha küçük çizilir ve onay sorusu ayrı satıra alınır; böylece başlık ile `Silinecek! Emin misiniz?` metni üst üste binmez. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir.
+Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Save/load kartında silme onayı açıkken slot adı üst bantta daha küçük çizilir ve onay sorusu ayrı satıra alınır; böylece başlık ile `Silinecek! Emin misiniz?` metni üst üste binmez. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir. Pause menüsünde ses seviyesi satırının sol yarısı azaltma (`-10`), sağ yarısı artırma (`+10`) olarak aynı hit-test üzerinden ayrıştırılır.
 
 Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
 
@@ -476,5 +514,5 @@ Tek ordu  →  bölge merkezinde
 | `cursor.go` | İmleç şekli yönetimi (tüm fazlar) |
 | `faction_select.go` | Fraksiyon seçim ekranı |
 | `victory_select.go` | Zafer koşulu seçim ekranı |
-| `main_menu.go` | Ana menü ("Devam et" → en yeni `autosave`/`quicksave`, "Kayıttan Yükle" → slot seçim ekranı) |
+| `main_menu.go` | Ana menü (opsiyonel `EDIT MODE`, "Devam et" → en yeni `autosave`/`quicksave`, "Kayıttan Yükle" → slot seçim ekranı) |
 | `settings.go` | Ayarlar ekranı |

@@ -16,10 +16,10 @@ type menuItem struct {
 	disabled bool
 }
 
-func buildMainMenuButtons(hasSave bool, hasAutoSave bool) []gameui.Button {
-	items := buildMenuItems(hasSave, hasAutoSave)
+func buildMainMenuButtons(hasSave bool, hasAutoSave bool, editModeEnabled bool) []gameui.Button {
+	items := buildMenuItems(hasSave, hasAutoSave, editModeEnabled)
 	itemH := 52.0
-	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
+	startY := mainMenuItemStartY(len(items))
 	barW := 280.0
 	barX := ScreenWidth/2 - barW/2
 	buttons := make([]gameui.Button, 0, len(items))
@@ -33,7 +33,7 @@ func buildMainMenuButtons(hasSave bool, hasAutoSave bool) []gameui.Button {
 }
 
 // DrawMainMenu ana menü ekranını çizer.
-func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bool, tick int) {
+func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bool, editModeEnabled bool, tick int) {
 	screen.Fill(color.RGBA{8, 10, 18, 255})
 
 	// Animasyonlu arka plan — yavaş titreşen renk şeritleri
@@ -59,9 +59,9 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	vector.FillRect(screen, float32(ScreenWidth/2)-120, sepY, 240, 1, color.RGBA{120, 100, 50, 180}, false)
 
 	// Menü maddeleri
-	items := buildMenuItems(hasSave, hasAutoSave)
+	items := buildMenuItems(hasSave, hasAutoSave, editModeEnabled)
 	itemH := 52.0
-	startY := ScreenHeight/2 - float64(len(items))*itemH/2 + 20
+	startY := mainMenuItemStartY(len(items))
 
 	for i, item := range items {
 		y := startY + float64(i)*itemH
@@ -87,14 +87,42 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Menü seçeneğini tıklayarak devam et", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
-func buildMenuItems(hasSave bool, hasAutoSave bool) []menuItem {
-	return []menuItem{
-		{"Yeni Oyun", ActionNewGame, false},
-		{"Devam et", ActionContinue, !hasAutoSave},
-		{"Kayıttan Yükle", ActionOpenLoadSelect, !hasSave},
-		{"Ayarlar", ActionOpenSettings, false},
-		{"Çıkış", ActionQuit, false},
+func mainMenuItemStartY(itemCount int) float64 {
+	const itemH = 52.0
+	centeredY := ScreenHeight/2 - float64(itemCount)*itemH/2 + 20
+	separatorY := ScreenHeight/2 - 200 + 80
+	minimumY := separatorY + 24
+	if centeredY < minimumY {
+		return minimumY
 	}
+	return centeredY
+}
+
+func buildMenuItems(hasSave bool, hasAutoSave bool, editModeEnabled bool) []menuItem {
+	items := make([]menuItem, 0, 6)
+	if editModeEnabled {
+		items = append(items, menuItem{"EDIT MODE", ActionEditMode, false})
+	}
+	items = append(items,
+		menuItem{"Yeni Oyun", ActionNewGame, false},
+		menuItem{"Devam et", ActionContinue, !hasAutoSave},
+		menuItem{"Kayıttan Yükle", ActionOpenLoadSelect, !hasSave},
+		menuItem{"Ayarlar", ActionOpenSettings, false},
+		menuItem{"Çıkış", ActionQuit, false},
+	)
+	return items
+}
+
+// InitialMainMenuCursor yeni açılan ana menüdeki ilk seçimi belirler.
+func InitialMainMenuCursor(hasAutoSave bool, editModeEnabled bool) int {
+	editModeOffset := 0
+	if editModeEnabled {
+		editModeOffset = 1
+	}
+	if hasAutoSave {
+		return 1 + editModeOffset
+	}
+	return editModeOffset
 }
 
 func menuItemColor(selected, disabled bool) color.RGBA {
@@ -109,9 +137,9 @@ func menuItemColor(selected, disabled bool) color.RGBA {
 
 // handleMainMenuInput ana menü klavye ve fare girişini işler.
 func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool, input gameui.InputState) InputAction {
-	items := buildMenuItems(hasSave, hasAutoSave)
+	items := buildMenuItems(hasSave, hasAutoSave, r.EditModeEnabled)
 	n := len(items)
-	buttons := buildMainMenuButtons(hasSave, hasAutoSave)
+	buttons := buildMainMenuButtons(hasSave, hasAutoSave, r.EditModeEnabled)
 
 	// Hover ile satır vurgusunu güncelle
 	for i, btn := range buttons {

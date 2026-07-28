@@ -861,7 +861,9 @@ func TestReleaseVassalRestoresIndependenceAndKeepsTrade(t *testing.T) {
 
 func TestVassalManagementActionsRequireDirectOverlord(t *testing.T) {
 	gs := testGameState()
+	gs.Turn = 20
 	gs.Factions["b"].OverlordID = "a"
+	gs.Factions["b"].VassalizedTurn = 1
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
 
 	if reason := ActionBlockReason(gs, "a", "b", ActionAnnexVassal); reason != "" {
@@ -869,6 +871,56 @@ func TestVassalManagementActionsRequireDirectOverlord(t *testing.T) {
 	}
 	if reason := ActionBlockReason(gs, "c", "b", ActionAnnexVassal); reason == "" {
 		t.Fatal("üçüncü taraf vassalı ilhak edememeli")
+	}
+}
+
+func TestAnnexVassalRequiresTwelveCompletedTurns(t *testing.T) {
+	gs := testGameState()
+	gs.Turn = 20
+	gs.Factions["b"].OverlordID = "a"
+	gs.Factions["b"].VassalizedTurn = 9
+
+	if reason := ActionBlockReason(gs, "a", "b", ActionAnnexVassal); reason == "" {
+		t.Fatal("vassallığın 11. turunda ilhak engellenmeliydi")
+	}
+
+	gs.Turn = 21
+	if reason := ActionBlockReason(gs, "a", "b", ActionAnnexVassal); reason != "" {
+		t.Fatalf("12 tamamlanmış turdan sonra ilhak açılmalıydı: %q", reason)
+	}
+}
+
+func TestVassalizationStoresStartTurnForAnnexationCooldown(t *testing.T) {
+	gs := testGameState()
+	gs.Turn = 7
+	gs.Factions["b"].OverlordID = ""
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 100
+	gs.Factions["a"].Gold = 1000
+	gs.Factions["b"].Gold = 0
+	gs.Factions["a"].Grain = 1000
+
+	result := applyVassalization(gs, "a", "b")
+	if !result.Applied {
+		t.Fatalf("vassallık uygulanmalıydı: %+v", result)
+	}
+	if got := gs.Factions["b"].VassalizedTurn; got != 7 {
+		t.Fatalf("vassallık başlangıç turu kaydedilmedi: got=%d", got)
+	}
+}
+
+func TestNormalizeVassalageBackfillsStartTurnForExistingVassal(t *testing.T) {
+	gs := testGameState()
+	gs.Turn = 4
+	gs.Factions["b"].OverlordID = "a"
+
+	NormalizeVassalage(gs)
+
+	if got := gs.Factions["b"].VassalizedTurn; got != 4 {
+		t.Fatalf("mevcut vassalın başlangıç turu normalize edilmeliydi: got=%d", got)
+	}
+	if reason := ActionBlockReason(gs, "a", "b", ActionAnnexVassal); reason == "" {
+		t.Fatal("normalize edilen vassal 12 tur dolmadan ilhak edilememeliydi")
 	}
 }
 

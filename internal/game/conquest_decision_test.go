@@ -90,7 +90,9 @@ func TestResolvePendingConquestDecisionVassalizesDefender(t *testing.T) {
 
 func TestAnnexVassalTransfersRealmAssets(t *testing.T) {
 	g := conquestDecisionTestGame()
+	g.gs.Turn = 20
 	g.gs.Factions["enemy"].OverlordID = "player"
+	g.gs.Factions["enemy"].VassalizedTurn = 1
 	g.gs.Factions["enemy"].Gold = 90
 	g.gs.Factions["enemy"].Grain = 45
 	g.gs.Regions["enemy_second"] = &world.Region{ID: "enemy_second", OwnerID: "enemy", NameTR: "İkinci Bölge"}

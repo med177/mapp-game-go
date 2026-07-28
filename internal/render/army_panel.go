@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image/color"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
@@ -122,7 +123,11 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
 	mpW := MeasureText(mpStr, FaceSmall)
-	actionStartX := splitButtonBlockLeft(px, panelW, hasArmyMergeActions(gs, aid))
+	mergeTargets := FindMergeTargets(gs, aid)
+	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
+	hasMerge := len(mergeTargets) > 0
+	hasSplitButton := canSplit || hasMerge
+	actionStartX := splitButtonBlockLeft(px, panelW, len(mergeTargets), hasSplitButton)
 	headerMaxW := float64(actionStartX - px - armyPanelPadX - 10)
 	if rightLimited := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12; rightLimited < headerMaxW {
 		headerMaxW = rightLimited
@@ -161,17 +166,21 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
-	mergeTarget := FindMergeTarget(gs, aid)
-	hasMerge := mergeTarget != ""
-	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
 	canCommand := a.OwnerID == string(gs.PlayerFactionID)
 	if canCommand && (canSplit || hasMerge) {
 		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
 	}
 	if canCommand && hasMerge {
-		other := gs.Armies[mergeTarget]
-		canMerge := len(other.Units) < army.MaxArmySize
-		drawArmyActionButton(screen, px, py, panelW, "⊕ BİRLEŞTİR", canMerge, canSplit, false)
+		for index, targetID := range mergeTargets {
+			other := gs.Armies[targetID]
+			if other == nil {
+				continue
+			}
+			canMerge := len(other.Units) < army.MaxArmySize
+			label := "->" + itoa(len(other.Units))
+			bx, by, bw, bh := mergeButtonRectAt(px, py, panelW, index, len(mergeTargets), canSplit)
+			drawArmyPanelButton(screen, bx, by, bw, bh, label, canMerge)
+		}
 	}
 
 	// Ayırıcı
@@ -730,9 +739,13 @@ func splitButtonRect(px, py, panelW float32, _ bool) (bx, by, bw, bh float32) {
 	return
 }
 
-func splitButtonBlockLeft(px, panelW float32, hasMerge bool) float32 {
-	if hasMerge {
-		return px + panelW - armyPanelPadX - actionBtnW*2 - actionBtnGap - actionBtnRightInset
+func splitButtonBlockLeft(px, panelW float32, mergeCount int, hasSplit bool) float32 {
+	actionCount := mergeCount
+	if hasSplit {
+		actionCount++
+	}
+	if actionCount > 0 {
+		return px + panelW - armyPanelPadX - actionBtnW*float32(actionCount) - actionBtnGap*float32(actionCount-1) - actionBtnRightInset
 	}
 	return px + panelW - armyPanelPadX - actionBtnW - actionBtnRightInset
 }
@@ -740,13 +753,24 @@ func splitButtonBlockLeft(px, panelW float32, hasMerge bool) float32 {
 // mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
 // hasSplit true ise BİRLEŞTİR, BÖL butonunun soluna yerleşir.
 func mergeButtonRect(px, py, panelW float32, hasSplit bool) (bx, by, bw, bh float32) {
+	return mergeButtonRectAt(px, py, panelW, 0, 1, hasSplit)
+}
+
+// mergeButtonRectAt birleştirme hedeflerini soldan sağa, BÖL düğümünün
+// hemen öncesine yerleştirir. Her hedef kendi dikdörtgenine sahip olduğu için
+// hit-test tıklanan hedef ordunun ID'sini koruyabilir.
+func mergeButtonRectAt(px, py, panelW float32, index, mergeCount int, hasSplit bool) (bx, by, bw, bh float32) {
 	bw, bh = actionBtnW, actionBtnH
 	by = py + armyPanelBtnY
-	if hasSplit {
-		bx = px + panelW - armyPanelPadX - actionBtnW*2 - actionBtnGap - actionBtnRightInset
-	} else {
-		bx = px + panelW - armyPanelPadX - actionBtnW - actionBtnRightInset
+	if mergeCount < 1 {
+		return
 	}
+	actionCount := mergeCount
+	if hasSplit {
+		actionCount++
+	}
+	groupLeft := px + panelW - armyPanelPadX - actionBtnRightInset - actionBtnW*float32(actionCount) - actionBtnGap*float32(actionCount-1)
+	bx = groupLeft + actionBtnW*float32(index) + actionBtnGap*float32(index)
 	return
 }
 
@@ -768,13 +792,23 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps
 }
 
 func buildMergeArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
-	a, ok := gs.Armies[aid]
-	if !ok || FindMergeTarget(gs, aid) == "" {
+	targets := FindMergeTargets(gs, aid)
+	if len(targets) == 0 {
+		return gameui.Button{}, false
+	}
+	return buildMergeArmyButtonForTarget(gs, aid, targets[0], 0, len(targets))
+}
+
+func buildMergeArmyButtonForTarget(gs *state.GameState, aid, targetID army.ArmyID, index, mergeCount int) (gameui.Button, bool) {
+	a := gs.Armies[aid]
+	target := gs.Armies[targetID]
+	if a == nil || target == nil || mergeCount < 1 {
 		return gameui.Button{}, false
 	}
 	layout := armyPanelGeometry()
-	bx, by, bw, bh := mergeButtonRect(layout.panelX, layout.panelY, layout.panelW, len(a.Units) >= 2)
-	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "⊕ BİRLEŞTİR"), true
+	bx, by, bw, bh := mergeButtonRectAt(layout.panelX, layout.panelY, layout.panelW, index, mergeCount, len(a.Units) >= 2)
+	label := "->" + itoa(len(target.Units))
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), label), true
 }
 
 // drawArmyActionButton tek bir aksiyon butonunu çizer.
@@ -806,7 +840,7 @@ func drawArmyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string,
 }
 
 func hasArmyMergeActions(gs *state.GameState, aid army.ArmyID) bool {
-	return FindMergeTarget(gs, aid) != ""
+	return len(FindMergeTargets(gs, aid)) > 0
 }
 
 func splitSelectionCanBeApplied(a *army.Army, selected map[int]bool) bool {
@@ -863,20 +897,35 @@ func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelL
 	})
 }
 
-// FindMergeTarget aynı bölgede aynı türde (naval/kara) başka dost ordu varsa ID'sini döner.
-func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
-	a, ok := gs.Armies[aid]
-	if !ok {
-		return ""
+// FindMergeTargets aynı bölgede aynı türde (naval/kara) başka dost orduları
+// deterministik ID sırasıyla döner.
+func FindMergeTargets(gs *state.GameState, aid army.ArmyID) []army.ArmyID {
+	if gs == nil {
+		return nil
 	}
+	a := gs.Armies[aid]
+	if a == nil {
+		return nil
+	}
+	targets := make([]army.ArmyID, 0)
 	for otherID, other := range gs.Armies {
-		if otherID == aid || other.LocationID() != a.LocationID() ||
+		if otherID == aid || other == nil || other.LocationID() != a.LocationID() ||
 			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
 			continue
 		}
-		return otherID
+		targets = append(targets, otherID)
 	}
-	return ""
+	sort.Slice(targets, func(i, j int) bool { return targets[i] < targets[j] })
+	return targets
+}
+
+// FindMergeTarget aynı bölgede aynı türde (naval/kara) ilk dost ordu varsa ID'sini döner.
+func FindMergeTarget(gs *state.GameState, aid army.ArmyID) army.ArmyID {
+	targets := FindMergeTargets(gs, aid)
+	if len(targets) == 0 {
+		return ""
+	}
+	return targets[0]
 }
 
 // SplitButtonHitTest fare BÖL butonuna denk geliyorsa true döner.
@@ -887,8 +936,40 @@ func SplitButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID, se
 
 // MergeButtonHitTest fare BİRLEŞTİR butonuna denk geliyorsa true döner.
 func MergeButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
-	btn, ok := buildMergeArmyButton(gs, aid)
-	return ok && btn.HitTest(fx, fy)
+	_, ok := MergeButtonTargetAt(fx, fy, gs, aid)
+	return ok
+}
+
+// MergeButtonTargetAt fare konumundaki BİRLEŞTİR düğmesinin hedef ordusunu
+// döner. Hedef ordunun birim sayısı buton etiketinde gösterilen sonuçla aynı
+// state'ten hesaplanır.
+func MergeButtonTargetAt(fx, fy float64, gs *state.GameState, aid army.ArmyID) (army.ArmyID, bool) {
+	if gs == nil {
+		return "", false
+	}
+	source := gs.Armies[aid]
+	if source == nil || source.OwnerID != string(gs.PlayerFactionID) {
+		return "", false
+	}
+	targets := FindMergeTargets(gs, aid)
+	for index, targetID := range targets {
+		btn, ok := buildMergeArmyButtonForTarget(gs, aid, targetID, index, len(targets))
+		if ok && btn.HitTest(fx, fy) {
+			return targetID, true
+		}
+	}
+	return "", false
+}
+
+func mergeResultUnitCount(source, target *army.Army) int {
+	if source == nil || target == nil {
+		return 0
+	}
+	count := len(source.Units) + len(target.Units)
+	if count > army.MaxArmySize {
+		return army.MaxArmySize
+	}
+	return count
 }
 
 func CommanderPortraitHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {

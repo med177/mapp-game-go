@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-26
+last_updated: 2026-07-28
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -54,6 +54,7 @@ type Faction struct {
     IsPlayable   bool
     IsEliminated bool
     OverlordID   FactionID
+    VassalizedTurn int       // vassallık bağının kurulduğu toplam tur
     CapitalSettlementID        string
     PendingCapitalSettlementID string
     PendingCapitalTurns        int

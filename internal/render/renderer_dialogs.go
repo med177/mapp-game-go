@@ -512,8 +512,10 @@ func warConfirmCallViewport(sideRect gameui.Rect) gameui.Rect {
 	}
 }
 
+const warConfirmRowPitch = 52.0
+
 func warConfirmVisibleRows(viewport gameui.Rect) int {
-	rows := int(viewport.H / 52)
+	rows := int(viewport.H / warConfirmRowPitch)
 	if rows < 1 {
 		return 1
 	}
@@ -555,9 +557,9 @@ func clampWarConfirmScroll(entryCount int, viewport gameui.Rect, scroll int) int
 func warConfirmEntryRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
 	return gameui.Rect{
 		X: viewport.X,
-		Y: viewport.Y + float64(visibleIndex*52),
+		Y: viewport.Y + float64(visibleIndex)*warConfirmRowPitch,
 		W: viewport.W,
-		H: 44,
+		H: warConfirmRowPitch,
 	}
 }
 
@@ -658,7 +660,7 @@ func drawWarConfirmParticipantRow(screen *ebiten.Image, rowRect gameui.Rect, ent
 	drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 108, Y: rowRect.Y + 8, W: 96}, entry.RoleTR, color.RGBA{190, 170, 108, 255}, gameui.TextSmall, gameui.TextAlignEnd)
 	drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 24, W: rowRect.W - (textX - rowRect.X) - 10}, warConfirmStatusText(entry), color.RGBA{176, 200, 164, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	if entry.NoteTR != "" {
-		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 38, W: rowRect.W - (textX - rowRect.X) - 10}, entry.NoteTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 36, W: rowRect.W - (textX - rowRect.X) - 10}, entry.NoteTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	}
 }
 

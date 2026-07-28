@@ -1188,7 +1188,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 
 	drawDiplomacySidePanel(screen, gs, layout.historyRect, target, factions, historyVisible, 3, historyDirFilter, historyActionFilter)
 	if diplomacy.DirectOverlord(gs, target) == gs.PlayerFactionID {
-		drawDiplomacyVassalManagementPanel(screen)
+		drawDiplomacyVassalManagementPanel(screen, gs, target)
 	}
 
 	drawDiplomacyButton(screen, buildDiplomacyBackButton(), color.RGBA{70, 70, 70, 230}, panelBorder, FaceMed, 10)
@@ -1235,12 +1235,13 @@ func drawDiplomacyActionButton(screen *ebiten.Image, btn gameui.Button, bg color
 	drawUIButtonWidget(screen, btn, style)
 }
 
-func drawDiplomacyVassalManagementPanel(screen *ebiten.Image) {
+func drawDiplomacyVassalManagementPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID) {
 	layout := buildDiplomacyVassalManagementLayout()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{104, 82, 42, 190}, 1, 3)
 	drawUILabel(screen, gameui.Rect{X: layout.panelRect.X + 12, Y: layout.panelRect.Y + 10, W: layout.panelRect.W - 24}, "Vassal Yönetimi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	drawDiplomacyButton(screen, layout.releaseButton, color.RGBA{62, 104, 142, 225}, panelBorder, FaceSmall, 6)
-	drawDiplomacyButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, panelBorder, FaceSmall, 6)
+	annexDisabled := diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, diplomacy.ActionAnnexVassal) != ""
+	drawDiplomacyActionButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, annexDisabled)
 }
 
 func diplomacyRelationCategoryMatches(gs *state.GameState, subject, other faction.FactionID, category diplomacyRelationCategory) bool {
@@ -1483,6 +1484,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				return InputAction{}
 			}
 			if management.annexButton.HandleInput(input) {
+				if reason := diplomacy.ActionBlockReason(r.gs, r.gs.PlayerFactionID, target, diplomacy.ActionAnnexVassal); reason != "" {
+					r.ShowCombatResult(reason)
+					return InputAction{}
+				}
 				r.ShowConfirmDialog(
 					"Vassalı İlhak Et",
 					name+" devleti tamamen ilhak edilecek; bölgeleri, kuvvetleri ve kaynakları doğrudan yönetimine geçecek.",
@@ -1817,10 +1822,6 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		score = rel.Score
 		stance = rel.Stance
 	}
-	playerRegions := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
-	targetRegions := len(gs.RegionsOwnedBy(target))
-	regionDelta := playerRegions - targetRegions
-
 	chance := 50 + score/2
 	switch action {
 	case ActionDeclareWar:
@@ -1830,11 +1831,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 			chance = 100
 		}
 	case ActionProposePeace:
-		if stance != faction.StanceWar {
-			chance = 0
-		} else {
-			chance = 35 + (-score / 2) + regionDelta*4
-		}
+		assessment := diplomacy.AssessPeaceProposal(gs, gs.PlayerFactionID, target)
+		chance = assessment.Chance
 	case ActionProposeAlliance:
 		assessment := diplomacy.AssessAllianceProposal(gs, rel, gs.PlayerFactionID, target)
 		chance = assessment.Chance
@@ -1861,6 +1859,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 	switch {
 	case chance == 0:
 		return chance, "Geçersiz / Mümkün değil"
+	case chance == 100:
+		return chance, "Kesin kabul"
 	case chance >= 75:
 		return chance, "Yüksek kabul olasılığı"
 	case chance >= 45:

@@ -1,11 +1,93 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-29: Edit mode başlangıcı ana menüde ayrı bir `EDIT MODE` seçeneğine
+  taşındı. Seçenek yalnız `.env` içindeki `EDIT_MODE=true` iken görünür; önce
+  senaryo seçimini açıp seçilen senaryoyu normal edit haritasına yükler. `Yeni
+  Oyun`, `EDIT_MODE=true` olsa bile normal fraksiyon/zafer seçim akışını korur.
+  Regression: `TestEditModeMenuItemIsOptionalAndAboveNewGame`,
+  `TestScenarioLoadEditModeIsExplicit`; doğrulama: `go test ./internal/render ./internal/game`.
+
+- 2026-07-29: 1300 senaryosunda tahılsız AI devletleri için aktif ticaret ağı üzerinden
+  otomatik tahıl tedariki eklendi; alım üç aylık kapasite hedefi ve iki aylık pencereyle
+  sınırlı, tedarikçi güvenli fazlasını koruyor. AI bina yatırımında ilk `granary` ambarı
+  öne alındı, üretim bütçesi iki aylık operasyonel tahıl rezervini koruyor ve askerî bütçe
+  oranları konsolidasyonda `%35`, genişlemede `%55`, savaş/savunmada `%70` oldu. Boş
+  ordu kayıtları load ve tur sonu normalizasyonuyla temizleniyor; birimsiz devletlerin
+  ilk kışlayı manpower doluluğu beklemeden kurması sağlandı. Regression: `internal/ai/strategy_regression_test.go`,
+  `internal/state/commanders_test.go`; doğrulama: hedefli AI/state/save/game testleri geçti.
+
+- 2026-07-29: Üst müzik HUD'una yuvarlak kılıç ikonuyla aktif savaş göstergesi eklendi. Açılan non-modal panel tarafları, savaşın geçen turunu, güncel askeri gücü, ordu/birim sayılarını ve ledger kayıplarını listeliyor; panel dışı harita tıklaması ve orta tuş sürüklemesi korunuyor. Regression: `TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts`, `TestActiveWarsPanelLeavesOutsideMapPointAvailable`; doğrulama: `go test ./internal/render -count=1`. `go test ./... -count=1` oyun/render paketlerinde geçti; mevcut 1300 fixture eksikleri `new_region_264` ve Ragusa başkenti nedeniyle scenario/world paketlerinde başarısız.
+
+- 2026-07-28: Save varsa ana menü ilk açılışında varsayılan seçim `Yeni Oyun`
+  yerine `Devam et` satırına alındı. Save yoksa başlangıç seçimi değişmeden
+  `Yeni Oyun` olarak kalır. Regression: `TestInitialMainMenuCursorPrefersContinueWhenSaveExists`;
+  doğrulama: `go test ./internal/render ./internal/game`.
+
+- 2026-07-28: Barış teklif panelindeki oran ile gerçek kabul kararı ayrışıyordu;
+  özellikle 1300 senaryosunda ekran eski yaklaşık formülle `%100` gösterirken
+  hedefin barış değerlendirmesi teklifi reddedebiliyordu. `AssessPeaceProposal()`
+  hedef-perspektifli ortak seam olarak renderer ve `Execute()` akışına bağlandı;
+  kabul edilmeyen teklif artık `%100` gösterilmiyor, kabul edilen `%100` ise
+  `Kesin kabul` etiketi taşıyor. Regression:
+  `TestPeaceProposalAssessmentMatchesExecutionAndNeverShowsFalseCertainty`,
+  `TestDiplomacyPeaceChanceUsesRealAcceptanceRules`; doğrulama: hedefli
+  diplomasi/render testleri.
+
+- 2026-07-28: Deniz savaşını kaybeden donanmalar artık kısmi zayiatla denizde
+  kalmıyor; filo batıyor ve üzerindeki `EmbarkedUnits` kara ordusu da state'ten
+  birlikte siliniyor. Birleşik savunmadaki tüm yenilen filolar ve taşınan
+  komutan bağlantıları `GameState.RemoveArmy()` üzerinden temizleniyor. Regression:
+  `TestNavalBattleLossSinksFleetAndEmbarkedArmy`,
+  `TestNavalBattleDefeatSinksDefenderFleetAndEmbarkedArmy`; doğrulama:
+  `go test ./internal/game -run 'TestNavalBattle' -count=1`.
+
+- 2026-07-28: Üst tarih HUD'una aktif zorluk seviyesi üçüncü satırda
+  (`Zorluk: Kolay/Normal/Zor`) gösterildi. Etiket ayarlar ekranıyla ortak
+  yardımcıdan üretiliyor; doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-07-28: Yeni vassal yapılan devletler artık en az 12 tamamlanmış tur
+  geçmeden ilhak edilemiyor. Vassallık başlangıç turu save/load ile korunuyor;
+  ilhak yönetim kartı aynı diplomasi kapısından beslenerek süre dolana kadar
+  pasifleşiyor. Regression: `TestAnnexVassalRequiresTwelveCompletedTurns`,
+  `TestVassalizationStoresStartTurnForAnnexationCooldown`; doğrulama: hedefli
+  diplomasi/oyun testleri.
+
+- 2026-07-28: Oyuncunun kendi üretime uygun kara bölgesine çift tıklama, harita
+  bölgesini seçtikten sonra alt HUD'daki `Ordu` butonuyla aynı recruit paneli
+  state geçişini çalıştırıyor. Yabancı bölge çift tıklamasının diplomasi akışı
+  korunuyor. Ortak `toggleRecruitPanelFromBottomAction()` helper'ı ve regression:
+  `TestMapRegionDoubleClickOpensDiplomacyForForeignRegion`; doğrulama:
+  `go test ./internal/render -run 'TestMapRegionDoubleClick|TestSelectMapRegion' -count=1`.
+
+- 2026-07-28: Ordu detay panelindeki manuel birleştirme tek hedef yerine aynı
+  konumdaki her dost ordu için ayrı, hedef ordunun mevcut birim sayısını gösteren
+  `->N` düğmesi kullanıyor. Düğme tıklaması
+  hedef ArmyID'sini taşıyor; hover'da hedef ordunun küçük birim kompozisyonu
+  popup'ı gösteriliyor. Regression: `TestMergeButtonsCarryTargetAndResultingUnitCount`,
+  `TestMergeArmiesUsesExplicitTargetArmy`; hedefli render/game testleri geçti.
+
+- 2026-07-28: Savaş ilanı onay panelinde vassal katılımcı kartlarının not satırı
+  kart altına taşıyordu; kart yüksekliği satır aralığıyla eşitlendi ve not satırı
+  içeri alındı. Regression: `TestWarConfirmListViewportsDoNotOverlap`; doğrulama:
+  `go test ./internal/render -run 'TestWarConfirm' -count=1`.
+
+- 2026-07-28: Pause menüsünde müzik seviyesi azaltma tıklaması düzeltildi. Sol ok
+  artık `-10`, sağ ok `+10` üretir; keyboard ok tuşlarının `-5/+5` davranışı korunur.
+  Regression: `TestPauseMusicVolumeClickUsesArrowSide`; doğrulama: `go test ./... -count=1`
+  (mevcut 1300 scenario fixture hataları dışında).
+
+- 2026-07-28: Seçili bölge sınır vurgusu düzeltildi. Sınır segmentinin seçili
+  bölgeyi `a` veya `b` tarafında taşımasından bağımsız olarak tüm çevre sarı
+  stile atanıyor; seçili kontur 3 px, diğer harita sınırları mevcut 1.25 px
+  kalınlığını koruyor. Regression: `TestSelectedBorderStyleCoversBothSidesOfRegionBoundary`,
+  `TestSelectedMapBorderUsesThreePixelStroke`; doğrulama: `go test ./internal/render -count=1`.
 
 - 2026-07-28: Shape boya/sil maskesi dünya piksel çözünürlüğüne taşındı. En küçük
   fırça artık görünen nokta/çizgi karesini doğrudan boyuyor; tek pikselin ring

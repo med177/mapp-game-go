@@ -31,7 +31,8 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
 		barracksCost = economy.ResourceCost{Gold: b.GoldCost, Grain: b.GrainCost, Iron: b.IronCost, Timber: b.TimberCost, Stone: b.StoneCost, Spice: b.SpiceCost, Cloth: b.ClothCost}
 	}
-	if cap-deployed <= state.ManpowerPerRegion && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
+	needsFirstBarracks := aiFactionBarracksCount(gs, fid) == 0
+	if (needsFirstBarracks || cap-deployed <= state.ManpowerPerRegion) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
 		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
 	}
 	for {
@@ -42,6 +43,22 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 			break
 		}
 	}
+}
+
+func aiFactionBarracksCount(gs *state.GameState, fid faction.FactionID) int {
+	count := 0
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		count += aiBuildingLevel(region, "barracks")
+	}
+	for _, order := range gs.ProductionQueue {
+		if order.FactionID == string(fid) && order.Kind == aiProductionKindBuilding && order.TypeID == "barracks" {
+			count++
+		}
+	}
+	return count
 }
 
 func aiBuildBarracks(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost) {

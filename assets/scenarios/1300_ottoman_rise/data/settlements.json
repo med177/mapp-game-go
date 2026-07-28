@@ -2017,7 +2017,7 @@
         "id": "mudanya_bursa",
         "name_tr": "Mudanya",
         "x": 1046,
-        "y": 469,
+        "y": 468,
         "type": "port",
         "population": 52
       },
@@ -2904,8 +2904,8 @@
       {
         "id": "slovenia_koper",
         "name_tr": "Koper",
-        "x": 750,
-        "y": 369,
+        "x": 748,
+        "y": 370,
         "type": "port",
         "population": 29
       }
@@ -2932,29 +2932,12 @@
         "population": 69
       },
       {
-        "id": "croatia_sisak",
-        "name_tr": "Sisak",
-        "x": 807,
-        "y": 372,
-        "type": "fortress",
-        "population": 17
-      },
-      {
         "id": "croatia_varazdin",
         "name_tr": "Varazdin",
-        "x": 803,
+        "x": 804,
         "y": 354,
         "type": "town",
         "population": 34
-      },
-      {
-        "id": "croatia_zagreb",
-        "name_tr": "Zagreb",
-        "x": 799,
-        "y": 364,
-        "type": "city",
-        "is_capital": true,
-        "population": 69
       }
     ]
   },
@@ -2999,6 +2982,14 @@
         "type": "city",
         "is_capital": true,
         "population": 87
+      },
+      {
+        "id": "ragusa_cattaro",
+        "name_tr": "Kotor",
+        "x": 851,
+        "y": 429,
+        "type": "port",
+        "population": 38
       }
     ]
   },
@@ -3425,7 +3416,7 @@
         "name_tr": "Tekfurdağı",
         "x": 1025,
         "y": 456,
-        "type": "port",
+        "type": "city",
         "population": 28
       },
       {
@@ -3471,7 +3462,7 @@
         "name_tr": "Pera",
         "x": 1056,
         "y": 451,
-        "type": "port",
+        "type": "town",
         "population": 36
       },
       {
@@ -4169,7 +4160,7 @@
         "name_tr": "İzmir",
         "x": 1018,
         "y": 504,
-        "type": "town",
+        "type": "port",
         "is_capital": true,
         "population": 126
       }
@@ -5657,7 +5648,29 @@
     ]
   },
   {
-    "region_id": "dalmatia",
+    "region_id": "rijeka",
+    "settlements": [
+      {
+        "id": "dalmatia_zadar",
+        "name_tr": "Zadar",
+        "x": 782,
+        "y": 398,
+        "type": "port",
+        "population": 23
+      },
+      {
+        "id": "rijeka_settlement_2",
+        "name_tr": "Rijeka",
+        "x": 764,
+        "y": 374,
+        "type": "port",
+        "is_capital": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "knin",
     "settlements": [
       {
         "id": "dalmatia_knin",
@@ -5665,24 +5678,16 @@
         "x": 801,
         "y": 401,
         "type": "fortress",
+        "is_capital": true,
         "population": 11
       },
       {
-        "id": "dalmatia_main",
-        "name_tr": "Dalmasya",
-        "x": 819,
-        "y": 414,
-        "type": "city",
-        "is_capital": true,
-        "population": 31
-      },
-      {
-        "id": "dalmatia_sibenik",
-        "name_tr": "Şibenik",
-        "x": 789,
-        "y": 371,
-        "type": "port",
-        "population": 23
+        "id": "dalmatia_trogir",
+        "name_tr": "Trogir",
+        "x": 796,
+        "y": 397,
+        "type": "town",
+        "population": 15
       },
       {
         "id": "dalmatia_split",
@@ -5691,59 +5696,30 @@
         "y": 407,
         "type": "port",
         "population": 23
-      },
-      {
-        "id": "dalmatia_trogir",
-        "name_tr": "Trogir",
-        "x": 797,
-        "y": 397,
-        "type": "town",
-        "population": 15
-      },
-      {
-        "id": "dalmatia_zadar",
-        "name_tr": "Zadar",
-        "x": 782,
-        "y": 398,
-        "type": "port",
-        "is_capital": true,
-        "population": 23
-      },
-      {
-        "id": "croatia_karlovac",
-        "name_tr": "Karlovac",
-        "x": 788,
-        "y": 380,
-        "type": "fortress",
-        "population": 7
       }
     ]
   },
   {
-    "region_id": "ragusa",
+    "region_id": "dalmatia",
     "settlements": [
       {
-        "id": "ragusa_main",
-        "name_tr": "Dubrovnik",
-        "x": 802,
-        "y": 403,
-        "type": "city",
-        "is_capital": true,
-        "population": 100
+        "id": "dalmatia_main",
+        "name_tr": "Makarska",
+        "x": 819,
+        "y": 414,
+        "type": "port",
+        "population": 31
       },
       {
-        "id": "ragusa_cattaro",
-        "name_tr": "Kotor",
-        "x": 816,
-        "y": 411,
-        "type": "town",
-        "population": 38
+        "id": "ragusa_main",
+        "name_tr": "Ragusa",
+        "x": 837,
+        "y": 425,
+        "type": "port",
+        "is_capital": true,
+        "population": 100
       }
     ]
-  },
-  {
-    "region_id": "new_region_264",
-    "settlements": null
   },
   {
     "region_id": "kvarner",
@@ -5752,9 +5728,42 @@
         "id": "kvarner_senj",
         "name_tr": "Senj",
         "x": 793,
-        "y": 378,
+        "y": 376,
         "type": "fortress",
         "population": 28
+      },
+      {
+        "id": "croatia_karlovac",
+        "name_tr": "Karlovac",
+        "x": 788,
+        "y": 380,
+        "type": "fortress",
+        "population": 7
+      },
+      {
+        "id": "croatia_sisak",
+        "name_tr": "Sisak",
+        "x": 807,
+        "y": 372,
+        "type": "fortress",
+        "population": 17
+      },
+      {
+        "id": "croatia_zagreb",
+        "name_tr": "Zagreb",
+        "x": 800,
+        "y": 364,
+        "type": "city",
+        "is_capital": true,
+        "population": 69
+      },
+      {
+        "id": "dalmatia_sibenik",
+        "name_tr": "Şibenik",
+        "x": 790,
+        "y": 371,
+        "type": "town",
+        "population": 23
       }
     ]
   },
@@ -5762,20 +5771,12 @@
     "region_id": "hum",
     "settlements": [
       {
-        "id": "hum_main",
-        "name_tr": "Hum",
-        "x": 838,
-        "y": 423,
-        "type": "city",
-        "is_capital": true,
-        "population": 46
-      },
-      {
         "id": "bosnia_sarajevo",
         "name_tr": "Saraybosna",
         "x": 843,
         "y": 402,
         "type": "city",
+        "is_capital": true,
         "population": 44
       },
       {
@@ -5798,6 +5799,15 @@
         "y": 410,
         "type": "fortress",
         "population": 24
+      },
+      {
+        "id": "hum_main",
+        "name_tr": "Hum",
+        "x": 839,
+        "y": 422,
+        "type": "city",
+        "is_capital": true,
+        "population": 46
       }
     ]
   },

@@ -449,6 +449,48 @@ func TestDiplomacyTradeChanceUsesRealAcceptanceRules(t *testing.T) {
 	}
 }
 
+func TestDiplomacyPeaceChanceUsesRealAcceptanceRules(t *testing.T) {
+	gs := &state.GameState{
+		ScenarioID:      "1300_ottoman_rise",
+		Turn:            1,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman", Gold: 0, Grain: 80},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"p1": {ID: "p1", OwnerID: "player"},
+			"e1": {ID: "e1", OwnerID: "enemy"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player_army": {ID: "player_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+			"enemy_army":  {ID: "enemy_army", OwnerID: "enemy", RegionID: "e1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {
+				FactionA: "player",
+				FactionB: "enemy",
+				Stance:   faction.StanceWar,
+				Score:    -44,
+			},
+		},
+	}
+	for i := 0; i < 11; i++ {
+		id := world.RegionID("p_extra_" + itoa(i))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "player"}
+	}
+	gs.BeginWarLedger("player", "enemy")
+
+	want := diplomacy.AssessPeaceProposal(gs, "player", "enemy")
+	chance, status := estimateDiplomacyChance(gs, "enemy", ActionProposePeace)
+	if chance != want.Chance {
+		t.Fatalf("ekran ve gerçek barış değerlendirmesi ayrıştı: screen=%d want=%d", chance, want.Chance)
+	}
+	if chance >= 100 || status == "Kesin kabul" {
+		t.Fatalf("reddedilecek barış teklifi ekranda kesin görünmemeli: chance=%d status=%q", chance, status)
+	}
+}
+
 func TestAllianceChanceAllowsDirectThreatWhenCommonEnemyExists(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

@@ -451,6 +451,13 @@ func TestWarConfirmListViewportsDoNotOverlap(t *testing.T) {
 	if rows := warConfirmVisibleRows(callViewport); rows < 1 {
 		t.Fatal("çağrılabilir müttefikler viewport'u en az bir satır göstermeli")
 	}
+	row := warConfirmEntryRowRect(autoViewport, 0)
+	if row.Y+row.H > autoViewport.Y+autoViewport.H {
+		t.Fatalf("katılımcı kartı viewport dışına taşmamalı: row=%+v viewport=%+v", row, autoViewport)
+	}
+	if row.H < warConfirmRowPitch {
+		t.Fatalf("üç satırlı katılımcı kartı not satırını kapsamalı: height=%.1f", row.H)
+	}
 }
 
 func TestWarConfirmScrollTargetIsLocalToViewport(t *testing.T) {

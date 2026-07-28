@@ -83,6 +83,59 @@ func TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms(t *testing.T) {
 	}
 }
 
+func TestSelectedBorderStyleCoversBothSidesOfRegionBoundary(t *testing.T) {
+	oldW, oldH := WorldW, WorldH
+	WorldW, WorldH = 4, 4
+	defer func() {
+		WorldW, WorldH = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"upper_left": {ID: "upper_left", OwnerID: "other"},
+			"selected":   {ID: "selected", OwnerID: "player"},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"other":  {ID: "other"},
+		},
+	}
+	wm := &WorldMap{
+		regionAt:  make([]uint16, WorldW*WorldH),
+		regionIDs: []world.RegionID{"", "upper_left", "selected"},
+	}
+	for y := 0; y < 2; y++ {
+		wm.regionAt[y*WorldW] = 1
+		wm.regionAt[y*WorldW+1] = 1
+		wm.regionAt[y*WorldW+2] = 2
+		wm.regionAt[y*WorldW+3] = 2
+	}
+	for y := 2; y < WorldH; y++ {
+		for x := 0; x < WorldW; x++ {
+			wm.regionAt[y*WorldW+x] = 2
+		}
+	}
+
+	wm.rebuildBorderSegments(gs)
+	wm.updateBorderStyles(gs, "selected", MapModeNormal)
+
+	if !hasBorderSegment(wm, 2, 0, 2, 2, mapBorderStyleSelected) {
+		t.Fatal("seçili bölgenin sağ tarafında kalan dikey sınır sarı seçili stil almalı")
+	}
+	if !hasBorderSegment(wm, 0, 2, 2, 2, mapBorderStyleSelected) {
+		t.Fatal("seçili bölgenin alt tarafında kalan yatay sınır sarı seçili stil almalı")
+	}
+}
+
+func TestSelectedMapBorderUsesThreePixelStroke(t *testing.T) {
+	if got := mapBorderStyleStrokeWidth(mapBorderStyleSelected); got != 3 {
+		t.Fatalf("seçili border kalınlığı yanlış: got=%v want=3", got)
+	}
+	if got := mapBorderStyleStrokeWidth(mapBorderStyleStrong); got != mapBorderStrokeWidth {
+		t.Fatalf("normal border kalınlığı değişmemeli: got=%v want=%v", got, mapBorderStrokeWidth)
+	}
+}
+
 func TestBorderDiplomacySignatureChangesWithAllianceAndVassalage(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

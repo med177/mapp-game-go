@@ -80,6 +80,13 @@ func buildPauseItems(hasSave bool) []pauseMenuItem {
 	}
 }
 
+func pauseMusicDeltaForClick(button gameui.Button, mouseX float64, delta int) int {
+	if mouseX < button.X+button.W/2 {
+		return -delta
+	}
+	return delta
+}
+
 // DrawPauseMenu oyun içi duraklama menüsünü yarı saydam overlay üzerine çizer.
 func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, settings Settings) {
 	// Karartma katmanı
@@ -184,7 +191,11 @@ func (r *Renderer) handlePauseMenuInput(input gameui.InputState) InputAction {
 	if input.LeftJustPressed {
 		for i, btn := range buttons {
 			if btn.HandleInput(input) && !items[i].disabled {
-				return InputAction{Kind: items[i].action, Delta: items[i].delta}
+				delta := items[i].delta
+				if items[i].action == ActionAdjustMusic {
+					delta = pauseMusicDeltaForClick(btn, input.MouseX, delta)
+				}
+				return InputAction{Kind: items[i].action, Delta: delta}
 			}
 		}
 	}

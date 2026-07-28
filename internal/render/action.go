@@ -56,6 +56,7 @@ const (
 	ActionVassalizeDefeatedFaction ActionKind = "vassalize_defeated_faction"
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"
+	ActionEditMode                  ActionKind = "edit_mode"
 	ActionContinue                  ActionKind = "continue"
 	ActionOpenSettings              ActionKind = "open_settings"
 	ActionQuit                      ActionKind = "quit"
@@ -70,7 +71,7 @@ const (
 	ActionSelectSave                ActionKind = "select_save"      // belirli slotu yükle/kaydet (BuildingID = slot adı)
 	ActionDeleteSave                ActionKind = "delete_save"      // belirli slotu sil (BuildingID = slot adı)
 	ActionSplitArmy                 ActionKind = "split_army"       // seçili orduyu ikiye böl
-	ActionMergeArmies               ActionKind = "merge_armies"     // iki orduyu birleştir (ArmyID + TargetRegion içindeki diğeri)
+	ActionMergeArmies               ActionKind = "merge_armies"     // ArmyID'yi TargetArmyID ile birleştir
 	ActionAssignCommander           ActionKind = "assign_commander"
 	ActionUnassignCommander         ActionKind = "unassign_commander"
 	ActionUnassignEmbarkedCommander ActionKind = "unassign_embarked_commander"

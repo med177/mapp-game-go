@@ -101,7 +101,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		return ExecuteWarDeclaration(gs, actor, target, nil).Result
 
 	case ActionProposePeace:
-		if !acceptPeace(gs, rel, actor, target) {
+		if !acceptPeace(gs, actor, target) {
 			markRejectedDiplomaticOffer(gs, actor, target, action)
 			return Result{Message: factionLabel(gs, target) + " barışı reddetti."}
 		}
@@ -678,9 +678,16 @@ func HasDirectThreat(gs *state.GameState, a, b faction.FactionID) bool {
 		frontierArmyCount(gs, b, a) > frontierArmyCount(gs, a, b)+1
 }
 
-func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
-	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
-		return AssessPeaceDesire(gs, target, actor).ShouldPropose()
+func acceptPeace(gs *state.GameState, actor, target faction.FactionID) bool {
+	if assessment := AssessPeaceProposal(gs, actor, target); assessment.BlockReason == "" {
+		return assessment.Accepted
+	}
+	return false
+}
+
+func peaceAcceptanceScore(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) int {
+	if gs == nil || rel == nil {
+		return 0
 	}
 	warPressure := 0
 	if rel.Score < -80 {
@@ -702,7 +709,7 @@ func acceptPeace(gs *state.GameState, rel *faction.Relation, actor, target facti
 		strengthPressure += min(20, (actorRegions-targetRegions)*4)
 	}
 
-	return warPressure+strengthPressure+economicStress(gs, target)+peaceTechBonus(gs, actor) >= 18
+	return warPressure + strengthPressure + economicStress(gs, target) + peaceTechBonus(gs, actor)
 }
 
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {

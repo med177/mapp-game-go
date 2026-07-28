@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -104,7 +104,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Aksiyon | Fonksiyon | Koşul |
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
-| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur |
+| Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur. Teklif ekranı ve backend aynı `AssessPeaceProposal()` sonucunu kullanır |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + genel senaryolarda `Score >= 25`, 1300'de `Score >= 40`; mevcut müttefikin hedefle savaşıyorsa teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
@@ -116,6 +116,13 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
+
+Barış oranı deterministik kabul eşiği üzerinden gösterilir; `AssessPeaceProposal()`
+hedefin kabul edecek taraf perspektifini kullanır. Değerlendirme kabul etmiyorsa
+oran `%100` olamaz; kabul ediyorsa `%100` kesin kabul anlamına gelir ve panel bunu
+`Kesin kabul` olarak etiketler. Böylece renderer'daki yaklaşık bölge/ilişki formülü
+ile `Execute()` içindeki gerçek barış kararı birbirinden ayrılmaz
+(`internal/diplomacy/peace_assessment.go`, `internal/render/diplom.go`).
 
 Bekleyen normal teklif kuyruğa alındığı anda gönderen fraksiyonun tur içi diplomasi
 kotası tüketilir. Kuşatma bağlamındaki `propose_surrender` teklifi bu kotadan
@@ -299,6 +306,10 @@ Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam 
 ## Vassallık Kuralları
 
 - Vassallık kabul edilince hedef fraksiyonun `OverlordID` alanı doldurulur.
+- Vassallık kabulünde `VassalizedTurn` kaydedilir; doğrudan overlord, bağın
+  kurulmasından itibaren en az 12 tamamlanmış tur geçmeden vassalı ilhak edemez.
+  Bekleme süresi dolana kadar aynı `ActionBlockReason()` kapısı yönetim kartını
+  ve backend aksiyonunu pasif tutar.
 - Aynı realm içindeki relation kayıtları `NormalizeVassalage()` ile dost çizgiye çekilir.
 - Vassal, overlord dışındaki devletlerle doğrudan savaş/barış/ittifak/ticaret/vassallık diplomasisi kuramaz.
 - Üçüncü taraf devletler de vassal ile doğrudan diplomasi kuramaz; muhatap overlord'dur.

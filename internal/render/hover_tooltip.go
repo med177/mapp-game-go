@@ -82,6 +82,12 @@ func DrawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 	// durumunda hover da aynı görsel katman sırasını izlemelidir.
 	if aid != "" {
 		if a := gs.Armies[aid]; a != nil {
+			if targetID, ok := MergeButtonTargetAt(fx, fy, gs, aid); ok {
+				if target := gs.Armies[targetID]; target != nil {
+					drawArmyMergePreviewTooltip(screen, gs, a, target, fx, fy)
+					return
+				}
+			}
 			if unit, unitCount, ok := armyPanelUnitHover(fx, fy, gs, aid); ok {
 				drawArmyUnitTooltip(screen, gs, a, unit, unitCount, fx, fy)
 				return
@@ -110,6 +116,70 @@ func DrawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		if uid := RecruitPanelHitTest(fx, fy, gs, rid); uid != "" {
 			drawUnitTooltip(screen, gs, rid, uid, fx, fy)
 		}
+	}
+}
+
+type armyMergePreviewRow struct {
+	typeID string
+	count  int
+}
+
+// drawArmyMergePreviewTooltip hedef ordunun birim kompozisyonunu küçük kartlar
+// halinde gösterir. Butonun etiketiyle aynı target state'i kullanır; böylece
+// hover önizlemesi tıklanacak ordudan farklı bir orduyu anlatamaz.
+func drawArmyMergePreviewTooltip(screen *ebiten.Image, gs *state.GameState, source, target *army.Army, mx, my float64) {
+	if gs == nil || source == nil || target == nil {
+		return
+	}
+
+	var rows [army.MaxArmySize]armyMergePreviewRow
+	rowCount := 0
+	for _, unit := range target.Units {
+		rowIndex := -1
+		for i := 0; i < rowCount; i++ {
+			if rows[i].typeID == unit.TypeID {
+				rowIndex = i
+				break
+			}
+		}
+		if rowIndex < 0 && rowCount < len(rows) {
+			rowIndex = rowCount
+			rows[rowIndex].typeID = unit.TypeID
+			rowCount++
+		}
+		if rowIndex >= 0 {
+			rows[rowIndex].count++
+		}
+	}
+
+	const (
+		previewWidth   = 326.0
+		tileWidth      = 76.0
+		tileHeight     = 72.0
+		tileGap        = 4.0
+		previewPadding = 8.0
+	)
+	columns := 4
+	rowLines := (rowCount + columns - 1) / columns
+	previewHeight := 52.0 + float64(rowLines)*tileHeight + float64(maxInt(rowLines-1, 0))*tileGap + previewPadding
+	x, y, w, h := tooltipRect(mx, my, previewWidth, previewHeight)
+	drawTooltipBox(screen, x, y, w, h)
+
+	DrawText(screen, "Hedef ordu: "+itoa(len(target.Units))+" birim", x+10, y+10, FaceSmall, ColorGold)
+	DrawText(screen, "Birleşince: "+itoa(mergeResultUnitCount(source, target)), x+10, y+27, FaceSmall, ColorWhite)
+
+	for index := 0; index < rowCount; index++ {
+		column := index % columns
+		line := index / columns
+		tileX := x + previewPadding + float64(column)*(tileWidth+tileGap)
+		tileY := y + 46 + float64(line)*(tileHeight+tileGap)
+		vector.FillRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), color.RGBA{248, 246, 238, 235}, false)
+		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
+
+		if sprite := unitSpriteForFaction(gs, target.OwnerID, rows[index].typeID); sprite != nil {
+			drawUnitSpriteCard(screen, sprite, float32(tileX+(tileWidth-30)/2), float32(tileY+3), 30, [3]float32{1, 1, 1})
+		}
+		DrawTextCentered(screen, "x"+itoa(rows[index].count), tileX+tileWidth/2, tileY+57, FaceMed, color.RGBA{115, 80, 20, 255})
 	}
 }
 

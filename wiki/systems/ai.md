@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-25
+last_updated: 2026-07-29
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
 
-1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır; temel kara birliklerinde erken tempo için mevcut tahıl/demir reçetesi korunur.
+1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır; temel kara birliklerinde erken tempo için mevcut tahıl/demir reçetesi korunur. Tahıl açığı yaşayan devletler aktif ticaret ağından otomatik stratejik alım yapar; askerî bütçe ve ilk kışla kararı da bu rezervi koruyacak şekilde çalışır.
 
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
 `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
@@ -17,7 +17,8 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 `internal/ai/research_strategy.go`, `internal/ai/naval_mission.go`,
 `internal/ai/naval_threat.go`, `internal/ai/merchant_trade.go`,
 `internal/ai/conquest_policy.go`,
-`internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`
+`internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
+`internal/ai/grain_procurement.go`
 
 ## Genel Yapı
 
@@ -321,9 +322,9 @@ Rezerv üstündeki harcanabilir altın plan durumuna göre soft paylara ayrılı
 
 | Plan durumu | Ordu | Ekonomi | Araştırma | Donanma |
 |---|---:|---:|---:|---:|
-| Genişleme | %45 | %25 | %20 | %10 |
-| Aktif savaş veya savunma | %60 | %15 | %15 | %10 |
-| Konsolidasyon | %25 | %40 | %25 | %10 |
+| Genişleme | %55 | %20 | %15 | %10 |
+| Aktif savaş veya savunma | %70 | %10 | %10 | %10 |
+| Konsolidasyon | %35 | %35 | %20 | %10 |
 
 Kategoriler `araştırma → ekonomi → donanma → ordu` sırasıyla çalışır. Bir kategorinin
 kullanamadığı pay aynı tur esnek havuza bırakılır; sonraki kategoriler kendi payıyla bu
@@ -337,11 +338,19 @@ Bütçe dilimi sonrası ölçümde Normal fast 12x2 `8.87 sn`, Osmanlı `2 → 3
 Normal medium 42x4 `62.22 sn`, Osmanlı ortalama `2 → 5`, güç `670`; Zor fast 12x2
 `7.35 sn`, Osmanlı `2 → 3`, güç `289` sonucunu verdi.
 
+AI bütçesi tahıl maliyetli bir emir sonrasında `OperationalGrainReserve` altına
+inemez; hedef rezerv normalde iki aylık toplam talep, kritik tehditte en az bir
+buçuk aylık talep olarak korunur. `aiProcureGrain()` üç aylık kapasite hedefi ile
+iki aylık satın alma penceresini karşılaştırır, kaynakta da güvenli fazlalık bırakır.
+Bağlı ticaret ağında doğrudan rota olmasa bile aktif rota grafiği üzerinden tedarikçi
+bulunur. Böylece Venedik, Ceneviz ve Arnavutluk gibi yüksek altınlı ancak tahılsız
+devletler üretim ve askerî harcama öncesi otomatik olarak stok toplamaya başlar.
+
 ### Bina Yatırım Puanlaması
 
 1300 senaryosunda ekonomi bütçesi artık sabit `farm → market → walls` taramasını
-kullanmaz. `internal/ai/building_investment.go`, her uygun bölgedeki pazar, çiftlik,
-sur ve ibadet yeri adayını aynı skorda karşılaştırır. Kışla ordu bütçesinde, liman ise
+kullanmaz. `internal/ai/building_investment.go`, her uygun bölgedeki ambar, pazar,
+çiftlik, sur ve ibadet yeri adayını aynı skorda karşılaştırır. Kışla ordu bütçesinde, liman ise
 donanma bütçesinde kalır.
 
 Skorun bileşenleri:
@@ -353,6 +362,9 @@ Skorun bileşenleri:
 - **Kaynak darboğazı:** Tahıl üretimi ordu bakımını karşılamıyorsa veya stok güvenlik
   eşiğinin altındaysa çiftlik yükselir. Bir aday mevcut demir/kereste/taş/tahıl stokunun
   büyük bölümünü tüketecekse fırsat maliyeti cezası alır.
+- **Ambar ve askerî dayanıklılık:** İlk `granary` yatırımı doğrudan üretim vermese de
+  depolama kapasitesi ve lojistik toparlanma sağladığı için güçlü başlangıç bonusu alır;
+  tahıl stoğu, kapasitesi veya üretim-bakım dengesi zayıf devletlerde ambar öne çıkar.
 - **Tehdit ve objective:** Aktif savaş, kritik cephe, başkent, defend hedefi ve yüksek
   yerel tehdit surları öne çıkarır. Expand rally/hedef sınırı çiftlik ve pazarı;
   consolidate planı uzun vadeli pazar, çiftlik ve istikrar yatırımlarını destekler.
@@ -1108,7 +1120,10 @@ Testler:
 
 AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da tüketir; `aiMinGoldReserve` korunurken diğer kaynaklar yetersizse alım yapılmaz. Birimler artık anında orduya eklenmez; `GameState.ProductionQueue` içine `kind=unit` emri yazılır ve çözümleme fazında tamamlanır.
 
-Manpower sıkışıksa önce kışla inşa eder. Sonra `aiSelectBestUnit()` ile birim seçer:
+Manpower sıkışıksa önce kışla inşa eder. Hiç kara birimi ve hiç kışlası olmayan devlet,
+manpower kapasitesi doluluğa yaklaşmamış olsa bile ilk kışlayı kuyruğa alır; böylece
+boş/legacy ordu kaydı AI'nin askerî üretime başlamasını kilitlemez. Sonra
+`aiSelectBestUnit()` ile birim seçer:
 
 1300 senaryosunda seçim yukarıdaki **Plan Bazlı Kara Ordu Kompozisyonu** modeliyle
 yapılır. Aşağıdaki sabit sıra yalnız diğer senaryoların legacy davranışıdır:

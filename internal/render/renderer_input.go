@@ -201,6 +201,9 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 
 	r.ensureWorldMap()
+	if r.handleActiveWarsOverlayInput() {
+		return InputAction{}
+	}
 
 	// Diplomasi paneli açıkken ayrı input
 	if r.showDiplomacy {
@@ -565,6 +568,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{Kind: ActionNextMusic}
 		}
 	}
+	if activeWarsHudButtonHit(fx, fy) {
+		r.showActiveWars = !r.showActiveWars
+		if !r.showActiveWars {
+			r.activeWarsScroll = 0
+		}
+		return InputAction{}
+	}
 	if turnTechHudTechHit(fx, fy) {
 		r.showTech = true
 		r.showRecruitPanel = false
@@ -584,14 +594,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// --- Alt panel butonları ---
 	bottomButtons := buildBottomActionButtons(RecruitPanelButtonEnabled(r.gs, r.SelectedRegion))
 	if bottomButtons[0].HitTest(fx, fy) {
-		if RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) && !r.isSettlementPanelOpen() {
-			r.showRecruitPanel = !r.showRecruitPanel
-			if r.showRecruitPanel {
-				r.clearSelectedSettlement()
-			}
-			r.showDiplomacy = false
-			r.showTech = false
-		}
+		r.toggleRecruitPanelFromBottomAction()
 		return InputAction{}
 	}
 	if bottomButtons[1].HitTest(fx, fy) {
@@ -619,6 +622,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	// UI alanlarında tıklama işleme
 	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
+		activeWarsPanelHit(fx, fy) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}
@@ -764,8 +768,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.clearArmySplitSelection()
 			return InputAction{Kind: ActionSplitArmy, ArmyID: r.SelectedArmy, UnitIndices: indices}
 		}
-		if r.selectedArmyIsPlayerOwned() && MergeButtonHitTest(fx, fy, r.gs, r.SelectedArmy) {
-			return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy}
+		if r.selectedArmyIsPlayerOwned() {
+			if targetID, ok := MergeButtonTargetAt(fx, fy, r.gs, r.SelectedArmy); ok {
+				return InputAction{Kind: ActionMergeArmies, ArmyID: r.SelectedArmy, TargetArmyID: targetID}
+			}
 		}
 		return InputAction{}
 	}
@@ -840,11 +846,33 @@ func (r *Renderer) selectMapRegionFromMapClick(rid world.RegionID) bool {
 		return false
 	}
 	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea || region.OwnerID == "" || region.OwnerID == string(r.gs.PlayerFactionID) {
+	if region == nil || region.IsSea || region.OwnerID == "" {
+		return false
+	}
+	if region.OwnerID == string(r.gs.PlayerFactionID) {
+		if r.toggleRecruitPanelFromBottomAction() {
+			r.resetMapRegionDoubleClick()
+			return true
+		}
 		return false
 	}
 	r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
 	r.resetMapRegionDoubleClick()
+	return true
+}
+
+// toggleRecruitPanelFromBottomAction alt paneldeki Ordu butonunun state geçişini
+// tek bir yerde tutar; harita çift tıklama kısayolu da aynı davranışı kullanır.
+func (r *Renderer) toggleRecruitPanelFromBottomAction() bool {
+	if r == nil || r.gs == nil || !RecruitPanelButtonEnabled(r.gs, r.SelectedRegion) || r.isSettlementPanelOpen() {
+		return false
+	}
+	r.showRecruitPanel = !r.showRecruitPanel
+	if r.showRecruitPanel {
+		r.clearSelectedSettlement()
+	}
+	r.showDiplomacy = false
+	r.showTech = false
 	return true
 }
 
@@ -878,7 +906,8 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.SelectedRegion = rid
 	r.syncFactionPanelToSelectedRegion()
 	r.clearSelectedSettlement()
-	// Birim oluşturma paneli yalnızca alt paneldeki Ordu butonuyla açılır.
+	// Birim oluşturma paneli alt paneldeki Ordu butonuyla veya kendi bölgesine
+	// çift tıklama kısayoluyla açılabilir.
 	r.showRecruitPanel = false
 	r.resetRecruitSelection()
 }

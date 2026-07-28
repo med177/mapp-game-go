@@ -45,6 +45,9 @@ type aiBudget struct {
 	// ResourceReserve, somut bir sonraki deniz yatırımı için diğer bütçe
 	// kategorilerinin tüketemeyeceği gerçek malzeme tabanıdır.
 	ResourceReserve economy.ResourceCost
+	// OperationalGrainReserve, üretim ve asker harcamasından sonra korunacak
+	// minimum tahıl stoğudur.
+	OperationalGrainReserve int
 }
 
 func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) *aiBudget {
@@ -113,6 +116,13 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 		Order:         aiBudgetExecutionOrder(hasCoast),
 	}
 	budget.ResourceReserve = aiMerchantTradeResourceReserve(gs, fid)
+	if demand := aiFactionGrainDemand(gs, fid); demand > 0 {
+		budget.OperationalGrainReserve = demand * 2
+		if criticalThreat {
+			budget.OperationalGrainReserve = demand * 3 / 2
+		}
+		budget.OperationalGrainReserve = maxInt(demand, budget.OperationalGrainReserve)
+	}
 	return budget
 }
 
@@ -126,20 +136,20 @@ func aiBudgetExecutionOrder(hasCoast bool) []aiBudgetCategory {
 
 func aiBudgetWeights(planKind state.AIObjectiveKind, atWar, hasCoast bool) map[aiBudgetCategory]int {
 	weights := map[aiBudgetCategory]int{
-		aiBudgetArmy:     25,
-		aiBudgetEconomy:  40,
-		aiBudgetResearch: 25,
+		aiBudgetArmy:     35,
+		aiBudgetEconomy:  35,
+		aiBudgetResearch: 20,
 		aiBudgetNaval:    10,
 	}
 	if atWar || planKind == state.AIObjectiveDefend {
-		weights[aiBudgetArmy] = 60
-		weights[aiBudgetEconomy] = 15
-		weights[aiBudgetResearch] = 15
+		weights[aiBudgetArmy] = 70
+		weights[aiBudgetEconomy] = 10
+		weights[aiBudgetResearch] = 10
 		weights[aiBudgetNaval] = 10
 	} else if planKind == state.AIObjectiveExpand {
-		weights[aiBudgetArmy] = 45
-		weights[aiBudgetEconomy] = 25
-		weights[aiBudgetResearch] = 20
+		weights[aiBudgetArmy] = 55
+		weights[aiBudgetEconomy] = 20
+		weights[aiBudgetResearch] = 15
 		weights[aiBudgetNaval] = 10
 	}
 	if !hasCoast {
@@ -192,6 +202,9 @@ func (budget *aiBudget) canAfford(self *faction.Faction, cost economy.ResourceCo
 		return false
 	}
 	if self.Grain < cost.Grain || self.Iron < cost.Iron || self.Timber < cost.Timber || self.Stone < cost.Stone {
+		return false
+	}
+	if self.Grain-cost.Grain < budget.OperationalGrainReserve {
 		return false
 	}
 	if category != aiBudgetNaval {

@@ -35,6 +35,7 @@ import (
 type Game struct {
 	gs                       *state.GameState
 	renderer                 *render.Renderer
+	editModeRequested        bool
 	evts                     []*events.Event
 	pendingHistoricalEvt     *events.Event
 	pendingSortie            *pendingSortieState
@@ -124,6 +125,8 @@ func New() *Game {
 	r := render.New(gs)
 	r.HasSave = save.AnySlotExists()
 	r.HasAutoSave = save.ContinueSaveExists()
+	r.EditModeEnabled = envFlagEnabled("EDIT_MODE")
+	r.SetCursor(render.InitialMainMenuCursor(r.HasAutoSave, r.EditModeEnabled))
 	r.CurrentSettings = render.LoadSettings()
 	audio.SetMusicEnabled(r.CurrentSettings.MusicOn)
 	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
@@ -155,6 +158,10 @@ func (g *Game) Update() error {
 		switch action.Kind {
 		case render.ActionNewGame:
 			g.resetToNewGame()
+		case render.ActionEditMode:
+			if g.renderer.EditModeEnabled {
+				g.resetToScenarioSelect(true)
+			}
 		case render.ActionContinue:
 			if slotName, ok := save.LatestContinueSlot(); ok {
 				g.startLoadSlot(slotName, state.PhaseMainMenu)
@@ -307,7 +314,7 @@ func (g *Game) Update() error {
 		case render.ActionSplitArmy:
 			g.splitArmy(action.ArmyID, action.UnitIndices...)
 		case render.ActionMergeArmies:
-			g.mergeArmiesManual(action.ArmyID)
+			g.mergeArmiesManual(action.ArmyID, action.TargetArmyID)
 		case render.ActionAssignCommander:
 			if g.gs.AssignCommanderToArmy(action.CommanderID, action.ArmyID) {
 				g.renderer.CloseCommanderPanel()
@@ -861,6 +868,7 @@ func (g *Game) resolveTurn() {
 	siegeUpdates := g.resolveSieges()
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
+	g.gs.NormalizeEmptyArmies()
 	capitalMoveUpdates := g.gs.AdvanceCapitalMoves()
 	applyRelationDecay(g.gs)
 	prevVictoryAchieved := g.gs.VictoryAchieved
@@ -2726,6 +2734,10 @@ func (g *Game) startPreparePlayerTurn() {
 
 // resetToNewGame state'i temizler ve senaryo seçimine geçer.
 func (g *Game) resetToNewGame() {
+	g.resetToScenarioSelect(false)
+}
+
+func (g *Game) resetToScenarioSelect(editMode bool) {
 	difficulty := g.renderer.CurrentSettings.Difficulty
 	if difficulty < 1 || difficulty > 3 {
 		difficulty = 2
@@ -2737,6 +2749,7 @@ func (g *Game) resetToNewGame() {
 		Difficulty: difficulty,
 	}
 	g.gs = gs
+	g.editModeRequested = editMode && g.renderer.EditModeEnabled
 	g.pendingConquestDecisions = nil
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetEventCodexEntries([4][]render.EventCodexEntry{})
@@ -2778,8 +2791,9 @@ func (g *Game) loadScenario(scenarioPath string) {
 
 func (g *Game) startLoadScenario(scenarioPath string) {
 	difficulty := g.gs.Difficulty
+	editMode := g.editModeRequested && g.renderer.EditModeEnabled
 	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func(setProgress func(int)) loadingResult {
-		gs, evts, err := loadScenarioData(scenarioPath, difficulty, setProgress)
+		gs, evts, err := loadScenarioDataForMode(scenarioPath, difficulty, editMode, setProgress)
 		if err != nil {
 			return loadingResult{err: err, fallback: state.PhaseScenarioSelect}
 		}
@@ -2792,6 +2806,10 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 }
 
 func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)) (*state.GameState, []*events.Event, error) {
+	return loadScenarioDataForMode(scenarioPath, difficulty, false, setProgress)
+}
+
+func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool, setProgress func(int)) (*state.GameState, []*events.Event, error) {
 	sc := scenarioByPath(scenarioPath)
 	yield := func() { runtime.Gosched() }
 	progressTotal := 13
@@ -2897,8 +2915,7 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	advance()
 	yield()
 
-	devMode := os.Getenv("DEV_MODE") == "true"
-	editMode := os.Getenv("EDIT_MODE") == "true"
+	devMode := envFlagEnabled("DEV_MODE")
 
 	year := 1300
 	month := 3
@@ -2957,6 +2974,10 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 	yield()
 
 	return gs, evts, nil
+}
+
+func envFlagEnabled(name string) bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv(name)), "true")
 }
 
 func loadScenarioEvents(scenarioPath string) ([]*events.Event, error) {
@@ -4180,6 +4201,45 @@ func (g *Game) surrenderSiege(defenderID army.ArmyID, regionID world.RegionID) b
 	return true
 }
 
+// sinkNavalFleet deniz savaşını kaybeden filoyu ve filodaki taşınan kara
+// birliklerini state'ten birlikte kaldırır. Dönen değer, kaybolan taşınan
+// birlik sayısıdır; savaş raporu için kullanılır.
+func (g *Game) sinkNavalFleet(fleetID army.ArmyID) int {
+	if g == nil || g.gs == nil || fleetID == "" {
+		return 0
+	}
+	fleet := g.gs.Armies[fleetID]
+	if fleet == nil || !fleet.IsNaval {
+		return 0
+	}
+	cargoLost := len(fleet.EmbarkedUnits)
+	g.gs.RemoveArmy(fleetID)
+	return cargoLost
+}
+
+// sinkNavalBattleDefenders deniz savaşını kaybeden birleşik savunmadaki tüm
+// gerçek filoları batırır. Birleşik liste boşsa fallback savunucu kullanılır.
+func (g *Game) sinkNavalBattleDefenders(sourceIDs []army.ArmyID, fallback *army.Army) int {
+	cargoLost := 0
+	if len(sourceIDs) > 0 {
+		for _, fleetID := range sourceIDs {
+			cargoLost += g.sinkNavalFleet(fleetID)
+		}
+		return cargoLost
+	}
+	if fallback != nil {
+		cargoLost = g.sinkNavalFleet(fallback.ID)
+	}
+	return cargoLost
+}
+
+func navalBattleOutcomeDetail(detail string, cargoLost int) string {
+	if cargoLost > 0 {
+		return detail + " Taşınan kara ordusu da denizde yok oldu."
+	}
+	return detail
+}
+
 // moveArmyWithStance oyuncu ordusunu hedef bölgeye taşır; savaş çıkarsa seçilen saldırı duruşunu uygular.
 func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battleStance combat.BattleStance) {
 	battleStance = combat.NormalizeBattleStance(battleStance)
@@ -4380,9 +4440,13 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 			defenderFaction = fmt.Sprintf("Birleşik Savunma (%d ordu)", len(defSourceIDs))
 		}
 		outcomeDetail := "Saldırı püskürtüldü."
+		defenderCargoLost := 0
+		attackerCargoLost := 0
 
 		if result.AttackerWins {
-			if len(defSourceIDs) > 0 {
+			if navalSeaMove {
+				defenderCargoLost = g.sinkNavalBattleDefenders(defSourceIDs, enemyArmy)
+			} else if len(defSourceIDs) > 0 {
 				g.gs.DistributeDefenderLosses(defSourceIDs, result.DefenderLost)
 			} else if len(enemyArmy.Units) == 0 {
 				g.gs.RemoveArmy(enemyArmy.ID)
@@ -4409,7 +4473,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				a.MovePoints--
 				if isAlliedRegion {
 					if navalSeaMove {
-						outcomeDetail = "Düşman filo dağıtıldı ve kuşatma kaldırıldı."
+						outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)
 					} else {
 						outcomeDetail = "Savunma yarıldı; kuşatma kaldırıldı."
 					}
@@ -4421,9 +4485,9 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 					}
 					if navalSeaMove {
 						if prompted {
-							outcomeDetail = "Düşman filo dağıtıldı; teslim şartları için savaş sonrası karar bekleniyor."
+							outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı; teslim şartları için savaş sonrası karar bekleniyor.", defenderCargoLost)
 						} else {
-							outcomeDetail = "Düşman filo dağıtıldı ve deniz hattı açıldı."
+							outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)
 						}
 					} else {
 						if prompted {
@@ -4442,12 +4506,15 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 				}
 			}
 		} else {
-			// Saldıran yenildi — yerinde kalır
-			if len(a.Units) == 0 {
+			// Deniz savaşında yenilen filo batar; taşıdığı kara ordusu da
+			// filo state'ten kaldırılırken birlikte kaybolur.
+			if navalSeaMove {
+				attackerCargoLost = g.sinkNavalFleet(a.ID)
+			} else if len(a.Units) == 0 {
 				g.gs.RemoveArmy(aid)
 			}
 			if navalSeaMove {
-				outcomeDetail = "Taarruz filosu geri çekildi."
+				outcomeDetail = navalBattleOutcomeDetail("Taarruz filosu battı.", attackerCargoLost)
 			}
 		}
 
@@ -4587,22 +4654,34 @@ func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
 	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
 }
 
-// mergeArmiesManual seçili orduyu aynı bölgedeki dost orduya elle birleştirir (20 kapasitesine kadar).
-func (g *Game) mergeArmiesManual(aid army.ArmyID) {
+// mergeArmiesManual seçili orduyu aynı bölgedeki seçilen dost orduya elle
+// birleştirir (20 kapasitesine kadar). Eski iç çağrılar için hedef verilmezse
+// ilk uygun hedef kullanılabilir; UI çağrıları her zaman TargetArmyID taşır.
+func (g *Game) mergeArmiesManual(aid army.ArmyID, requestedTargets ...army.ArmyID) {
 	aid = g.deployGarrisonArmy(aid)
 	a, ok := g.gs.Armies[aid]
 	if !ok {
 		return
 	}
-	// Aynı bölgede dost ordu bul
+	// UI'dan gelen hedefi doğrula; hedef verilmemiş eski çağrılarda geriye
+	// dönük olarak ilk uygun orduyu seç.
 	var targetID army.ArmyID
-	for oid, other := range g.gs.Armies {
-		if oid == aid || other.LocationID() != a.LocationID() ||
+	if len(requestedTargets) > 0 && requestedTargets[0] != "" {
+		targetID = requestedTargets[0]
+		other := g.gs.Armies[targetID]
+		if other == nil || targetID == aid || other.LocationID() != a.LocationID() ||
 			other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
-			continue
+			return
 		}
-		targetID = oid
-		break
+	} else {
+		for oid, other := range g.gs.Armies {
+			if oid == aid || other == nil || other.LocationID() != a.LocationID() ||
+				other.OwnerID != a.OwnerID || other.IsNaval != a.IsNaval {
+				continue
+			}
+			targetID = oid
+			break
+		}
 	}
 	if targetID == "" {
 		return

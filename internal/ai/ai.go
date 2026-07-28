@@ -97,6 +97,13 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 	}
 
 	aiHandleDiplomacyWithSteps(gs, fid, steps)
+	if purchased := aiProcureGrain(gs, fid); purchased > 0 {
+		addTurnStep(steps, TurnStep{
+			FactionID: fid,
+			Kind:      TurnStepInfo,
+			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini ticaret ağı üzerinden tamamlıyor.",
+		})
+	}
 
 	budget := prepareAIBudget(gs, fid, planningContext)
 	if budget == nil {

@@ -85,6 +85,37 @@ func TestMergeArmiesRefreshesUnmovedResultBySlowestUnit(t *testing.T) {
 	}
 }
 
+func TestMergeArmiesUsesExplicitTargetArmy(t *testing.T) {
+	gs := movementCompositionTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"source": {
+			ID: "source", OwnerID: "p1", RegionID: "home",
+			Units: []army.Unit{{TypeID: "inf"}, {TypeID: "inf"}},
+		},
+		"target_a": {
+			ID: "target_a", OwnerID: "p1", RegionID: "home",
+			Units: []army.Unit{{TypeID: "inf"}},
+		},
+		"target_b": {
+			ID: "target_b", OwnerID: "p1", RegionID: "home",
+			Units: []army.Unit{{TypeID: "inf"}, {TypeID: "inf"}, {TypeID: "inf"}},
+		},
+	}
+	game := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	game.mergeArmiesManual("source", "target_b")
+
+	if gs.Armies["source"] != nil || gs.Armies["target_b"] == nil {
+		t.Fatal("açık hedefle birleşmede kaynak ordu silinip seçilen hedef korunmalıydı")
+	}
+	if got := len(gs.Armies["target_b"].Units); got != 5 {
+		t.Fatalf("seçilen hedef orduya kaynak birimleri eklenmeliydi: got=%d", got)
+	}
+	if got := len(gs.Armies["target_a"].Units); got != 1 {
+		t.Fatalf("seçilmeyen hedef ordu değişmemeliydi: got=%d", got)
+	}
+}
+
 func TestSplitArmyDoesNotRefundMovementAlreadyUsedThisTurn(t *testing.T) {
 	gs := movementCompositionTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{

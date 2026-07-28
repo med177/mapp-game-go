@@ -24,7 +24,10 @@ const (
 	mapBorderStyleCount
 )
 
-const mapBorderStrokeWidth float32 = 1.25
+const (
+	mapBorderStrokeWidth         float32 = 1.25
+	selectedMapBorderStrokeWidth float32 = 3
+)
 
 // mapBorderSegment, raster regionAt ızgarasındaki tek bir sınır hattının
 // birleştirilmiş yatay veya dikey parçasıdır. Geometri dünya uzayında tutulur;
@@ -274,7 +277,11 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 		}
 
 		landID := wm.regionIDs[landIdx]
-		if landID == selected {
+		selectedOnEitherSide := landID == selected
+		if !selectedOnEitherSide && otherIdx != 0 && int(otherIdx) < len(wm.regionIDs) {
+			selectedOnEitherSide = wm.regionIDs[otherIdx] == selected
+		}
+		if selectedOnEitherSide {
 			wm.borderStyles[i] = mapBorderStyleSelected
 			continue
 		}
@@ -336,6 +343,13 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 	}
 }
 
+func mapBorderStyleStrokeWidth(style uint8) float32 {
+	if style == mapBorderStyleSelected {
+		return selectedMapBorderStrokeWidth
+	}
+	return mapBorderStrokeWidth
+}
+
 func shouldDrawMapBorderStyle(style uint8, camScale float64) bool {
 	if camScale >= 0.85 {
 		return true
@@ -351,7 +365,7 @@ func shouldDrawMapBorderStyle(style uint8, camScale float64) bool {
 	}
 }
 
-func appendMapBorderQuad(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 float64) {
+func appendMapBorderQuad(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 float64, strokeWidth float32) {
 	dx, dy := x2-x1, y2-y1
 	length := math.Hypot(dx, dy)
 	if length <= 0.001 {
@@ -361,7 +375,7 @@ func appendMapBorderQuad(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 f
 	// Uçları yarım çizgi genişliği kadar uzatmak, komşu yatay/dikey parçaların
 	// köşelerde boşluk bırakmasını önler. Kenar yine gerçek vektör geometri
 	// olarak kalır; yalnızca ekrana basılan mesh dikdörtgendir.
-	halfWidth := float64(mapBorderStrokeWidth) * 0.5
+	halfWidth := float64(strokeWidth) * 0.5
 	ux, uy := dx/length, dy/length
 	x1 -= ux * halfWidth
 	y1 -= uy * halfWidth
@@ -430,7 +444,7 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 			math.Max(y1, y2) < -2 || math.Min(y1, y2) > float64(screenHeight)+2 {
 			continue
 		}
-		appendMapBorderQuad(&r.mapBorderMeshes, style, x1, y1, x2, y2)
+		appendMapBorderQuad(&r.mapBorderMeshes, style, x1, y1, x2, y2, mapBorderStyleStrokeWidth(style))
 	}
 
 	// Path tessellation yerine ekran uzayında hazırlanmış mesh kullanılır.

@@ -140,6 +140,7 @@ type Renderer struct {
 	menuTick        int
 	HasSave         bool
 	HasAutoSave     bool
+	EditModeEnabled bool
 	CurrentSettings Settings
 	LoadingMessage  string
 	LoadingProgress int
@@ -184,6 +185,9 @@ type Renderer struct {
 	battleReport           battleReportState
 	queuedBattleReport     battleReportState
 	warSummary             warSummaryState
+	showActiveWars         bool
+	activeWarsScroll       int
+	activeWarsBuf          []ActiveWarSummary
 	showCommanderPanel     bool
 	commanderPanelArmy     army.ArmyID
 	commanderPanelFocus    int
@@ -530,6 +534,7 @@ func New(gs *state.GameState) *Renderer {
 		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editUnitTypeDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		tradeCorridors:              make([]tradeCorridorInfo, 0, 96),
+		activeWarsBuf:               make([]ActiveWarSummary, 0, 16),
 		tradeHoverIdx:               -1,
 		tradeCenters:                make([]tradeCenterVisual, 0, 12),
 		tradeCenterIdx:              -1,
@@ -897,6 +902,8 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.showVictoryDetail = false
 	r.victoryDetailScroll = 0
 	r.warSummary = warSummaryState{}
+	r.showActiveWars = false
+	r.activeWarsScroll = 0
 	r.queuedBattleReport = battleReportState{}
 	r.combatLog = ""
 	r.combatLogTimer = 0
@@ -1079,7 +1086,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// Ana menü
 	if r.gs.Phase == state.PhaseMainMenu {
 		r.menuTick++
-		DrawMainMenu(screen, r.factionCursor, r.HasSave, r.HasAutoSave, r.menuTick)
+		DrawMainMenu(screen, r.factionCursor, r.HasSave, r.HasAutoSave, r.EditModeEnabled, r.menuTick)
 		return
 	}
 
@@ -1155,6 +1162,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		}
 	}
 	r.worldMap.Refresh(r.gs, highlightRegion, r.mapMode)
+	r.activeWarsBuf = collectActiveWarSummaries(r.gs, r.activeWarsBuf)
 
 	// 1. Üretilen dünya haritası
 	mapOp := &ebiten.DrawImageOptions{}
@@ -1218,7 +1226,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
-		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.mapMode)
+		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)
@@ -1299,6 +1307,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.showMerchantRoutePanel {
 		r.drawMerchantRoutePanel(screen)
+	}
+	if r.showActiveWars {
+		drawActiveWarsPanel(screen, r.activeWarsBuf, r.activeWarsScroll)
 	}
 
 	// 14. Bildirim mesajı (panellerin üstünde görünmeli)

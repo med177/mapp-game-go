@@ -102,6 +102,38 @@ func TestPeaceAssessmentRecognizesLongWarStalemate(t *testing.T) {
 	}
 }
 
+func TestPeaceProposalAssessmentMatchesExecutionAndNeverShowsFalseCertainty(t *testing.T) {
+	gs := testGameState()
+	gs.ScenarioID = "1300_ottoman_rise"
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -44
+	gs.Turn = 1
+	gs.BeginWarLedger("a", "b")
+	for i := 0; i < 11; i++ {
+		id := world.RegionID("a_extra_" + itoa(i))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "a"}
+	}
+
+	assessment := AssessPeaceProposal(gs, "a", "b")
+	if assessment.Accepted || assessment.Chance >= 100 {
+		t.Fatalf("reddedilecek barış teklifi kesin kabul görünmemeli: %+v", assessment)
+	}
+	if result := Execute(gs, "a", "b", ActionProposePeace); result.Applied || result.Accepted {
+		t.Fatalf("aynı değerlendirmedeki barış teklifi reddedilmeliydi: %+v", result)
+	}
+
+	gs.Factions["b"].Grain = 0
+	delete(gs.Armies, "b1")
+	assessment = AssessPeaceProposal(gs, "a", "b")
+	if !assessment.Accepted || assessment.Chance != 100 {
+		t.Fatalf("kabul edilecek barış teklifi kesin kabul görünmeli: %+v", assessment)
+	}
+	if result := Execute(gs, "a", "b", ActionProposePeace); !result.Applied || !result.Accepted {
+		t.Fatalf("%%100 görünen barış teklifi uygulanmalıydı: %+v", result)
+	}
+}
+
 func TestPeaceAssessmentReportsWarScoreAndObjectiveProgress(t *testing.T) {
 	gs := peaceTestState()
 	gs.Turn = 12

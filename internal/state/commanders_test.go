@@ -34,6 +34,22 @@ func TestCommanderPoolAssignsAndReleasesUniqueCommander(t *testing.T) {
 	}
 }
 
+func TestNormalizeEmptyArmiesRemovesOnlyEmptyStacks(t *testing.T) {
+	gs := &GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"empty":    {ID: "empty", OwnerID: "ai"},
+			"land":     {ID: "land", OwnerID: "ai", Units: []army.Unit{{TypeID: "inf"}}},
+			"embarked": {ID: "embarked", OwnerID: "ai", IsNaval: true, EmbarkedUnits: []army.Unit{{TypeID: "inf"}}},
+		},
+	}
+	if got := gs.NormalizeEmptyArmies(); got != 1 {
+		t.Fatalf("yalnız boş stack temizlenmeliydi: removed=%d", got)
+	}
+	if gs.Armies["empty"] != nil || gs.Armies["land"] == nil || gs.Armies["embarked"] == nil {
+		t.Fatalf("geçerli ordular da temizlendi: %+v", gs.Armies)
+	}
+}
+
 func TestCommanderPoolUsesScenarioTemplatesBeforeFallback(t *testing.T) {
 	gs := &GameState{
 		PlayerFactionID: "ottoman",

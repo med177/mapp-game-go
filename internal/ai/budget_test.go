@@ -18,19 +18,19 @@ func TestAIBudgetProfilesUseApprovedShares(t *testing.T) {
 	}{
 		{
 			name: "expansion", kind: state.AIObjectiveExpand,
-			expected: map[aiBudgetCategory]int{aiBudgetArmy: 45, aiBudgetEconomy: 25, aiBudgetResearch: 20, aiBudgetNaval: 10},
+			expected: map[aiBudgetCategory]int{aiBudgetArmy: 55, aiBudgetEconomy: 20, aiBudgetResearch: 15, aiBudgetNaval: 10},
 		},
 		{
 			name: "defense", kind: state.AIObjectiveDefend,
-			expected: map[aiBudgetCategory]int{aiBudgetArmy: 60, aiBudgetEconomy: 15, aiBudgetResearch: 15, aiBudgetNaval: 10},
+			expected: map[aiBudgetCategory]int{aiBudgetArmy: 70, aiBudgetEconomy: 10, aiBudgetResearch: 10, aiBudgetNaval: 10},
 		},
 		{
 			name: "war overrides plan", kind: state.AIObjectiveExpand, atWar: true,
-			expected: map[aiBudgetCategory]int{aiBudgetArmy: 60, aiBudgetEconomy: 15, aiBudgetResearch: 15, aiBudgetNaval: 10},
+			expected: map[aiBudgetCategory]int{aiBudgetArmy: 70, aiBudgetEconomy: 10, aiBudgetResearch: 10, aiBudgetNaval: 10},
 		},
 		{
 			name: "consolidation", kind: state.AIObjectiveConsolidate,
-			expected: map[aiBudgetCategory]int{aiBudgetArmy: 25, aiBudgetEconomy: 40, aiBudgetResearch: 25, aiBudgetNaval: 10},
+			expected: map[aiBudgetCategory]int{aiBudgetArmy: 35, aiBudgetEconomy: 35, aiBudgetResearch: 20, aiBudgetNaval: 10},
 		},
 	}
 	for _, test := range tests {
@@ -50,7 +50,7 @@ func TestLandlockedBudgetRedistributesNavalShare(t *testing.T) {
 	if _, exists := allocation[aiBudgetNaval]; exists {
 		t.Fatalf("kara devletinde donanma bütçesi oluşmamalıydı: %+v", allocation)
 	}
-	if allocation[aiBudgetArmy] != 45 || allocation[aiBudgetEconomy] != 25 || allocation[aiBudgetResearch] != 20 {
+	if allocation[aiBudgetArmy] != 55 || allocation[aiBudgetEconomy] != 20 || allocation[aiBudgetResearch] != 15 {
 		t.Fatalf("donanma payı kalan kategorilere oransal dağılmalıydı: %+v", allocation)
 	}
 	order := aiBudgetExecutionOrder(false)

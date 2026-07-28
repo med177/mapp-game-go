@@ -6,11 +6,68 @@ import (
 )
 
 const (
-	peaceDesireThreshold   = 42
-	peaceMinimumWarTurns   = 3
-	peaceOfferCooldown     = 3
-	peaceEmergencyDiscount = 10
+	peaceDesireThreshold     = 42
+	peaceMinimumWarTurns     = 3
+	peaceOfferCooldown       = 3
+	peaceEmergencyDiscount   = 10
+	peaceAcceptanceThreshold = 18
 )
+
+// PeaceProposalAssessment, teklif ekranı ile gerçek barış kararının aynı
+// değerlendirmeyi kullanmasını sağlar. Chance burada rastgele zar sonucu
+// değildir; eşik tabanlı diplomasi modelindeki kabul kesinliğidir. Bu nedenle
+// Accepted false iken Chance hiçbir zaman 100 olamaz.
+type PeaceProposalAssessment struct {
+	Chance      int
+	Score       int
+	Threshold   int
+	Accepted    bool
+	BlockReason string
+}
+
+// AssessPeaceProposal barış teklifini actor perspektifinden değerlendirir.
+// Hedefin kabul kararını hesapladığı için renderer'ın yaklaşık bir formülle
+// farklı sonuç göstermesini engeller.
+func AssessPeaceProposal(gs *state.GameState, actor, target faction.FactionID) PeaceProposalAssessment {
+	assessment := PeaceProposalAssessment{Threshold: peaceAcceptanceThreshold}
+	if gs == nil || actor == "" || target == "" || actor == target {
+		assessment.BlockReason = "Geçersiz diplomasi hedefi"
+		return assessment
+	}
+	rel := Relation(gs, actor, target)
+	if rel == nil || rel.Stance != faction.StanceWar {
+		assessment.BlockReason = "Barış teklifi sadece savaşta yapılır."
+		return assessment
+	}
+
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		// AssessPeaceDesire hedefin (kabul edecek tarafın) perspektifindedir.
+		desire := AssessPeaceDesire(gs, target, actor)
+		assessment.Score = desire.Score
+		assessment.Threshold = desire.Threshold
+		assessment.Accepted = desire.ShouldPropose()
+		return finalizePeaceProposalAssessment(assessment)
+	}
+
+	assessment.Score = peaceAcceptanceScore(gs, rel, actor, target)
+	assessment.Accepted = assessment.Score >= assessment.Threshold
+	return finalizePeaceProposalAssessment(assessment)
+}
+
+func finalizePeaceProposalAssessment(assessment PeaceProposalAssessment) PeaceProposalAssessment {
+	if assessment.Accepted {
+		assessment.Chance = 100
+		return assessment
+	}
+	if assessment.Threshold <= 0 || assessment.Score <= 0 {
+		return assessment
+	}
+	assessment.Chance = assessment.Score * 100 / assessment.Threshold
+	if assessment.Chance >= 100 {
+		assessment.Chance = 99
+	}
+	return assessment
+}
 
 // PeaceAssessment 1300 senaryosundaki bir savaş tarafının barış isteğini
 // açıklar. Score yükseldikçe savaşı bitirme baskısı artar.

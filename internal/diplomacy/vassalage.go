@@ -17,6 +17,9 @@ const (
 	vassalAcceptanceThreshold   = 65
 	vassalTributeRatePercent    = 20
 	vassalInternalRelationFloor = 40
+	// VassalAnnexationMinimumTurns, yeni vassal yapılan devletin ilhak
+	// edilebilmesi için realm içinde kalması gereken asgari tur sayısıdır.
+	VassalAnnexationMinimumTurns = 12
 )
 
 type VassalProposalAssessment struct {
@@ -323,6 +326,13 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if DirectOverlord(gs, target) != actor {
 			return "Hedef doğrudan sana bağlı bir devlet değil."
 		}
+		if action == ActionAnnexVassal && targetFaction.VassalizedTurn > 0 {
+			elapsed := gs.Turn - targetFaction.VassalizedTurn
+			if elapsed < VassalAnnexationMinimumTurns {
+				remaining := VassalAnnexationMinimumTurns - elapsed
+				return factionLabel(gs, target) + " en az 12 tur vassal kaldıktan sonra ilhak edilebilir (" + itoa(remaining) + " tur kaldı)."
+			}
+		}
 	}
 	return ""
 }
@@ -495,6 +505,10 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
 	targetFaction.OverlordID = actor
+	targetFaction.VassalizedTurn = gs.Turn
+	if targetFaction.VassalizedTurn <= 0 {
+		targetFaction.VassalizedTurn = 1
+	}
 	root := realmRoot(gs, actor)
 	if root == "" {
 		root = actor
@@ -516,6 +530,7 @@ func releaseVassalage(gs *state.GameState, actor, target faction.FactionID) Resu
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
 	targetFaction.OverlordID = ""
+	targetFaction.VassalizedTurn = 0
 	rel := EnsureRelation(gs, actor, target)
 	rel.Stance = faction.StanceTrade
 	if rel.Score < 25 {
@@ -612,15 +627,25 @@ func NormalizeVassalage(gs *state.GameState) {
 			continue
 		}
 		if f.OverlordID == "" {
+			f.VassalizedTurn = 0
 			continue
 		}
 		if f.OverlordID == fid {
 			f.OverlordID = ""
+			f.VassalizedTurn = 0
 			continue
 		}
 		overlord := gs.Factions[f.OverlordID]
 		if overlord == nil || overlord.IsEliminated {
 			f.OverlordID = ""
+			f.VassalizedTurn = 0
+			continue
+		}
+		if f.VassalizedTurn <= 0 {
+			f.VassalizedTurn = gs.Turn
+			if f.VassalizedTurn <= 0 {
+				f.VassalizedTurn = 1
+			}
 		}
 	}
 

@@ -48,6 +48,7 @@ type regionSaveState struct {
 type factionSaveState struct {
 	IsEliminated               *bool                  `json:"el,omitempty"`
 	OverlordID                 *faction.FactionID     `json:"ov,omitempty"`
+	VassalizedTurn             *int                   `json:"vt,omitempty"`
 	CapitalSettlementID        *string                `json:"cap,omitempty"`
 	PendingCapitalSettlementID *string                `json:"pcap,omitempty"`
 	PendingCapitalTurns        *int                   `json:"pct,omitempty"`
@@ -155,6 +156,7 @@ type legacyRegionSaveState struct {
 type legacyFactionSaveState struct {
 	IsEliminated               bool                  `json:"is_eliminated"`
 	OverlordID                 faction.FactionID     `json:"overlord_id,omitempty"`
+	VassalizedTurn             int                   `json:"vassalized_turn,omitempty"`
 	CapitalSettlementID        string                `json:"capital_settlement_id,omitempty"`
 	PendingCapitalSettlementID string                `json:"pending_capital_settlement_id,omitempty"`
 	PendingCapitalTurns        int                   `json:"pending_capital_turns,omitempty"`
@@ -307,6 +309,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		savedFactions[fid] = factionSaveState{
 			IsEliminated:               cloneBoolPtr(factionCopy.IsEliminated),
 			OverlordID:                 cloneFactionIDPtr(factionCopy.OverlordID),
+			VassalizedTurn:             cloneIntPtr(factionCopy.VassalizedTurn),
 			CapitalSettlementID:        cloneStringPtr(factionCopy.CapitalSettlementID),
 			PendingCapitalSettlementID: cloneStringPtr(factionCopy.PendingCapitalSettlementID),
 			PendingCapitalTurns:        cloneIntPtr(factionCopy.PendingCapitalTurns),
@@ -520,6 +523,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		factions[fid] = legacyFactionSaveState{
 			IsEliminated:               fx.IsEliminated,
 			OverlordID:                 fx.OverlordID,
+			VassalizedTurn:             fx.VassalizedTurn,
 			CapitalSettlementID:        fx.CapitalSettlementID,
 			PendingCapitalSettlementID: fx.PendingCapitalSettlementID,
 			PendingCapitalTurns:        fx.PendingCapitalTurns,
@@ -791,6 +795,9 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.OverlordID != base.OverlordID {
 		out.OverlordID = cloneFactionIDPtr(current.OverlordID)
 	}
+	if base == nil || current.VassalizedTurn != base.VassalizedTurn {
+		out.VassalizedTurn = cloneIntPtr(current.VassalizedTurn)
+	}
 	if base == nil || current.CapitalSettlementID != base.CapitalSettlementID {
 		out.CapitalSettlementID = cloneStringPtr(current.CapitalSettlementID)
 	}
@@ -836,6 +843,9 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.OverlordID != nil {
 		fx.OverlordID = *saved.OverlordID
+	}
+	if saved.VassalizedTurn != nil {
+		fx.VassalizedTurn = *saved.VassalizedTurn
 	}
 	if saved.CapitalSettlementID != nil {
 		fx.CapitalSettlementID = *saved.CapitalSettlementID
@@ -1491,6 +1501,7 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 func isZeroFactionSaveState(saved factionSaveState) bool {
 	return saved.IsEliminated == nil &&
 		saved.OverlordID == nil &&
+		saved.VassalizedTurn == nil &&
 		saved.CapitalSettlementID == nil &&
 		saved.PendingCapitalSettlementID == nil &&
 		saved.PendingCapitalTurns == nil &&

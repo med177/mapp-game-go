@@ -93,6 +93,26 @@ func (s *GameState) RemoveArmy(armyID army.ArmyID) *army.Army {
 	return current
 }
 
+// NormalizeEmptyArmies, birim ve taşınmış birlik taşımayan artık ordu
+// kayıtlarını state'ten kaldırır. Savaş/lojistik sırasında boşalan eski save
+// kayıtları askeri gücü zaten artırmaz; map'te kalmaları ise AI'nin kapasite,
+// komutan ve UI hesaplarını gereksiz yere kirletir.
+func (s *GameState) NormalizeEmptyArmies() int {
+	if s == nil || len(s.Armies) == 0 {
+		return 0
+	}
+	removed := 0
+	for id, current := range s.Armies {
+		if current == nil || len(current.Units) > 0 || len(current.EmbarkedUnits) > 0 {
+			continue
+		}
+		if s.RemoveArmy(id) != nil {
+			removed++
+		}
+	}
+	return removed
+}
+
 // TransferArmyOwnership ordu ve taşıdığı komutanların sahipliğini birlikte değiştirir.
 func (s *GameState) TransferArmyOwnership(current *army.Army, ownerID string) {
 	if current == nil || ownerID == "" {

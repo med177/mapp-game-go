@@ -349,6 +349,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	applyCampaignSaveState(gs, saved)
 	army.NormalizeLegacyGarrisons(gs.Armies)
+	gs.NormalizeEmptyArmies()
 	gs.RefreshArmyMovePoints(false)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()

@@ -534,7 +534,7 @@ func turnTechHudTechHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showDiplomacy, showTech bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -685,6 +685,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 
 	drawDateMenuHud(screen, gs, mapMode)
 	drawMusicHud(screen)
+	drawActiveWarsHUDButton(screen, gs, showActiveWars)
 	drawTurnTechHud(screen, gs)
 }
 
@@ -757,7 +758,7 @@ func drawMusicHud(screen *ebiten.Image) {
 	track = strings.TrimSuffix(track, ".ogg")
 	track = strings.TrimSuffix(track, ".mp3")
 	track = strings.TrimSuffix(track, ".wav")
-	label := trimTextToWidth("Müzik: "+track, FaceSmall, 292)
+	label := trimTextToWidth("Müzik: "+track, FaceSmall, 250)
 	DrawText(screen, label, float64(x)+10, float64(y)+11, FaceSmall, ColorGray)
 
 	toggleBtn, nextBtn := buildMusicHudButtons(status.Playing)
@@ -828,6 +829,8 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 	DrawText(screen, dateStr, float64(x)+12, float64(y)+13, FaceMed, ColorGold)
 	DrawText(screen, gs.CurrentSeason().DisplayName()+"  •  Tur "+itoa(gs.Turn),
 		float64(x)+12, float64(y)+42, FaceSmall, color.RGBA{160, 200, 100, 220})
+	DrawText(screen, "Zorluk: "+difficultyLabelTR(gs.Difficulty),
+		float64(x)+12, float64(y)+61, FaceSmall, ColorGray)
 
 	_ = mapMode
 

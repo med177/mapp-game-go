@@ -271,8 +271,8 @@ func historicalEventPopupHit(fx, fy float64) bool {
 // --- Hit-test yardımcıları ---
 
 func (r *Renderer) mainMenuHoverIndex(fx, fy float64) int {
-	items := buildMenuItems(r.HasSave, r.HasAutoSave)
-	for i, btn := range buildMainMenuButtons(r.HasSave, r.HasAutoSave) {
+	items := buildMenuItems(r.HasSave, r.HasAutoSave, r.EditModeEnabled)
+	for i, btn := range buildMainMenuButtons(r.HasSave, r.HasAutoSave, r.EditModeEnabled) {
 		if items[i].disabled {
 			continue
 		}

@@ -3,6 +3,7 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -66,7 +67,10 @@ func TestMapRegionDoubleClickOpensDiplomacyForForeignRegion(t *testing.T) {
 			},
 			Regions: map[world.RegionID]*world.Region{
 				"enemy_region": {ID: "enemy_region", OwnerID: "enemy"},
-				"home_region":  {ID: "home_region", OwnerID: "player"},
+				"home_region":  {ID: "home_region", OwnerID: "player", Buildings: []string{"barracks"}},
+			},
+			UnitTypes: map[string]*army.UnitType{
+				"infantry": {ID: "infantry", RequiredBldg: "barracks", RequiredBldgLevel: 1},
 			},
 		},
 	}
@@ -86,10 +90,13 @@ func TestMapRegionDoubleClickOpensDiplomacyForForeignRegion(t *testing.T) {
 	}
 
 	r.CloseDiplomacyPanel()
-	if r.selectMapRegionFromMapClick("home_region") || r.selectMapRegionFromMapClick("home_region") {
-		t.Fatal("oyuncunun kendi bölgesine çift tıklama diplomasi açmamalı")
+	if r.selectMapRegionFromMapClick("home_region") {
+		t.Fatal("ilk oyuncu bölgesi tıklaması Ordu panelini açmamalı")
 	}
-	if r.showDiplomacy {
-		t.Fatal("oyuncu bölgesinde diplomasi paneli açık kalmamalı")
+	if !r.selectMapRegionFromMapClick("home_region") {
+		t.Fatal("oyuncunun kendi bölgesine çift tıklama Ordu kısayolunu tetiklemeli")
+	}
+	if r.showDiplomacy || !r.showRecruitPanel {
+		t.Fatalf("oyuncu bölgesi çift tıklaması Ordu davranışını açmalı: diplomacy=%t recruit=%t", r.showDiplomacy, r.showRecruitPanel)
 	}
 }

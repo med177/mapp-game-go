@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-07-25
+last_updated: 2026-07-29
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -89,6 +89,11 @@ Ticaret anlaşması kurulunca aktif olur. `ApplyTradeRoutes()` her tur:
 
 Hedef fraksiyonun `StrategicGrainDemand` değeri üç aylık güvenli rezerv hedefine kalan açığı gösterir. Yeni rota kurulurken hedefte bu sinyal pozitif, kaynakta `StrategicGrainSurplus` pozitifse kaynak-hedef rotası tahıl malına yönlendirilir; böylece ithalat mevcut rota transferi üzerinden gerçekleşir. Abluka rota hacmini azaltabilir; kaynakta stok veya hedefte altın yetersizse rota o tur çalışmaz.
 
+AI ayrıca `internal/ai/grain_procurement.go` üzerinden aktif rota grafiğine bağlı
+devletlerden doğrudan tahıl satın alır. Bu tamamlayıcı alım, rota başına sabit transfer
+beklemek yerine üç aylık kapasite hedefindeki açığı iki aylık pencereyle kapatır; tedarikçi
+devletin güvenli rezervi korunur ve alıcının altını acil rezervin altına düşürülmez.
+
 → Diplomasi anlaşmaları: [[systems/diplomacy]]
 
 ## Dinamik Piyasa Fiyatlandırması
@@ -156,6 +161,7 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 - Tahıl arzı ordunun kalıcı moraline de bağlanır: stabil seviyede her ekonomi tick'inde `+1`, uyarı/kritik/kıtlık seviyelerinde sırasıyla `-1/-3/-6` uygulanır. Moral `1–100` arasında tutulur; 100 moral nötr, 50 moral yaklaşık `%15` toplam savaş gücü kaybı üretir. Gerçekleşen toplam değişim `GrainEconomyStatus.ArmyMoraleDelta` ile HUD/event detayına taşınır ve uygulama Army ID sırasıyla deterministiktir.
 - Depolama kapasitesi `6 × sivil talep + 3 × ordu bakımı` olarak hesaplanır; talep varsa minimum kapasite 100'dür. Kapasite üstündeki stok her ekonomi tick'inde fazlanın %2'si oranında, en az 1 tahıl olacak şekilde bozulur. `StorageCapacity` ve `Spoiled` runtime snapshot alanlarıdır; save migration gerektirmez.
 - `granary` / `Ambar` binası her kurulu seviye için +100 tahıl depolama kapasitesi verir. Bina tüm senaryolarda veri tanımı olarak bulunur; özel sprite yoksa mevcut çiftlik sprite'ı görsel fallback olarak kullanılır.
+- 1300 AI ekonomi puanlamasında ilk ambar, stok/kapasite/üretim-bakım açığı varsa çiftlik ve pazarın önüne çıkar. Ambar kapasitesi yalnız stok saklamaz; `applyRegionalLogisticsPressure()` ve kapasite üzeri tahıl yenilemesi üzerinden orduların toparlanabilirliğini de artırır.
 - Bölgesel lojistikte ambar, ekonomi tick'i sonrası elde kalan tahıldan `min(kalan stok, ambar kapasitesi)` kadarını bölgeye aktarılabilir askerî rezerv yapar. Bu tahıl ikinci kez tüketilmez; genel ordu bakımında zaten düşülmüş stokun bölgesel dağıtım kapasitesini temsil eder. Aynı fraksiyonun bölgeleri sınırlı rezervi deterministik sırayla paylaşır ve başkent önce gelir.
 - Kara orduları ayrıca bölge bazlı ikmal kapasitesine tabidir. Yerel askeri kapasite, bölge üretiminden önce sivil talep düşüldükten sonraki fazlalık + yerleşim/ticaret tamponu + fraksiyon stokundan sınırlı destek olarak hesaplanır. Yabancı/düşman bölgede yerel üretim desteği yoktur. Efektif ordu talebi kapasiteyi karşılamazsa aynı bölgede bekleyen ordular turdan tura artan HP zayiatı alır. AI hareket, geri çekilme, birleşme ve bina yatırımındaki lojistik tahminlerde `GameState.EffectiveArmyGrainUpkeep()` kullanır.
 - Limanlı bölgenin komşu denizinde düşman savaş gemisi varsa abluka oluşur: savaş gemisi başına ilgili ticaret rotası hacmi ve limanın yerleşim/rezerv ikmal tamponu %50 azalır; iki veya daha fazla gemi rotayı/tamponu tamamen keser. Abluka yüzdesi runtime state'ten her ekonomi tick'inde yeniden türetilir.

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-25
+last_updated: 2026-07-28
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -226,6 +226,13 @@ seçilen duruş `ActionDisembarkArmy` üzerinden oyun katmanına taşınır. Hed
 veya duvar tahkimatı varsa çıkarma doğrudan amfibi savaşa girmez; kara ordusu kıyıya
 iner ve `GameState.Sieges` içinde kuşatma başlar. Savunmacı ordu bulunsun veya
 bulunmasın, bölge sahibi kuşatma çözülene kadar korunur.
+
+Deniz savaşını kaybeden tarafın gerçek filosu kısmi zayiatla denizde bırakılmaz;
+filo batar ve `internal/game/game.go:sinkNavalFleet()` /
+`sinkNavalBattleDefenders()` üzerinden `GameState.RemoveArmy()` ile state'ten
+kaldırılır. Bu işlem filonun `EmbarkedUnits` alanındaki taşınan kara ordusunu ve
+varsa `EmbarkedCommander` bağlantısını da birlikte yok eder/serbest bırakır.
+Birleşik savunmadaki her yenilen filo aynı kurala tabiidir.
 
 ---
 

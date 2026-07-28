@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/scenario"
+	"mapp-game-go/internal/state"
 )
 
 func TestLoad1455WarsOfTheRosesScenario(t *testing.T) {
@@ -56,5 +57,31 @@ func TestLoad1300LoadsImperialState(t *testing.T) {
 		if gs.Imperial.Members[faction.FactionID(memberID)] == nil {
 			t.Fatalf("HRE üyesi eksik: %s", memberID)
 		}
+	}
+}
+
+func TestScenarioLoadEditModeIsExplicit(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	scenarioPath := filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise")
+	t.Setenv("EDIT_MODE", "true")
+
+	normal, _, err := loadScenarioData(scenarioPath, 2, nil)
+	if err != nil {
+		t.Fatalf("normal senaryo yüklenemedi: %v", err)
+	}
+	if normal.EditMode || normal.Phase != state.PhaseFactionSelect {
+		t.Fatalf("Yeni Oyun EDIT_MODE=true olsa bile normal başlamalı: edit=%v phase=%s", normal.EditMode, normal.Phase)
+	}
+
+	edit, _, err := loadScenarioDataForMode(scenarioPath, 2, true, nil)
+	if err != nil {
+		t.Fatalf("edit mode senaryosu yüklenemedi: %v", err)
+	}
+	if !edit.EditMode || edit.Phase != state.PhaseEditMode {
+		t.Fatalf("EDIT MODE butonu senaryoyu edit modda başlatmalı: edit=%v phase=%s", edit.EditMode, edit.Phase)
 	}
 }

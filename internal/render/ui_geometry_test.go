@@ -375,10 +375,65 @@ func TestArmyPanelSplitButtonStaysRightmost(t *testing.T) {
 	if !mergeOnlyOK {
 		t.Fatal("yalnız BİRLEŞTİR aksiyonu görünür olmalıydı")
 	}
-	layout := armyPanelGeometry()
-	expectedRight := float64(layout.panelX + layout.panelW - armyPanelPadX - actionBtnW - actionBtnRightInset)
-	if mergeOnlyBtn.X != expectedRight {
-		t.Fatalf("yalnız BİRLEŞTİR görünürken sağ hizası korunmalıydı: got=%.1f want=%.1f", mergeOnlyBtn.X, expectedRight)
+	mergeOnlyTargets := FindMergeTargets(gs, "merge_only")
+	if len(mergeOnlyTargets) != 2 {
+		t.Fatalf("merge_only için iki ayrı hedef butonu bekleniyordu: got=%v", mergeOnlyTargets)
+	}
+	mergeOnlySecond, secondOK := buildMergeArmyButtonForTarget(gs, "merge_only", mergeOnlyTargets[1], 1, len(mergeOnlyTargets))
+	if !secondOK || mergeOnlyBtn.X >= mergeOnlySecond.X {
+		t.Fatalf("hedef butonları soldan sağa sıralanmalıydı: first=%+v second=%+v", mergeOnlyBtn, mergeOnlySecond)
+	}
+}
+
+func TestMergeButtonsCarryTargetAndResultingUnitCount(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth = 1280
+	ScreenHeight = 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Armies: map[army.ArmyID]*army.Army{
+			"source": {
+				ID: "source", OwnerID: "osm", RegionID: "ankara",
+				Units: []army.Unit{{TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"}},
+			},
+			"target_a": {
+				ID: "target_a", OwnerID: "osm", RegionID: "ankara",
+				Units: make([]army.Unit, 7),
+			},
+			"target_b": {
+				ID: "target_b", OwnerID: "osm", RegionID: "ankara",
+				Units: make([]army.Unit, 5),
+			},
+		},
+	}
+	for _, target := range gs.Armies {
+		for i := range target.Units {
+			target.Units[i].TypeID = "infantry"
+		}
+	}
+
+	targets := FindMergeTargets(gs, "source")
+	if len(targets) != 2 || targets[0] != "target_a" || targets[1] != "target_b" {
+		t.Fatalf("birleştirme hedefleri deterministik olmalıydı: %v", targets)
+	}
+	first, firstOK := buildMergeArmyButtonForTarget(gs, "source", targets[0], 0, len(targets))
+	second, secondOK := buildMergeArmyButtonForTarget(gs, "source", targets[1], 1, len(targets))
+	if !firstOK || !secondOK {
+		t.Fatal("iki ayrı birleştirme butonu bekleniyordu")
+	}
+	if first.Label != "->7" || second.Label != "->5" {
+		t.Fatalf("buton etiketleri hedef orduların mevcut birim sayısını göstermeliydi: first=%q second=%q", first.Label, second.Label)
+	}
+	if targetID, ok := MergeButtonTargetAt(first.X+first.W/2, first.Y+first.H/2, gs, "source"); !ok || targetID != targets[0] {
+		t.Fatalf("ilk buton target_a ordusunu seçmeliydi: got=%q ok=%v", targetID, ok)
+	}
+	if targetID, ok := MergeButtonTargetAt(second.X+second.W/2, second.Y+second.H/2, gs, "source"); !ok || targetID != targets[1] {
+		t.Fatalf("ikinci buton target_b ordusunu seçmeliydi: got=%q ok=%v", targetID, ok)
 	}
 }
 
@@ -574,7 +629,7 @@ func TestMainMenuRenderSmokeCommonViewports(t *testing.T) {
 		ScreenWidth = float64(tc.w)
 		ScreenHeight = float64(tc.h)
 		screen := ebiten.NewImage(tc.w, tc.h)
-		DrawMainMenu(screen, 0, true, true, 0)
+		DrawMainMenu(screen, 0, true, true, true, 0)
 	}
 }
 
@@ -735,7 +790,7 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 		ScreenWidth = float64(tc.w)
 		ScreenHeight = float64(tc.h)
 		screen := ebiten.NewImage(tc.w, tc.h)
-		DrawBottomPanel(screen, gs, true, true, "", true, true, MapModeNormal)
+		DrawBottomPanel(screen, gs, true, true, "", true, true, false, MapModeNormal)
 		DrawRegionPanel(screen, gs, regionID)
 		DrawArmyPanel(screen, gs, "a1")
 		DrawSettlementPanel(screen, gs, gs.Regions[regionID], &gs.Regions[regionID].Settlements[0])
