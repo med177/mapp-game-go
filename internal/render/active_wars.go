@@ -8,18 +8,27 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
-	activeWarsPanelW       = 430.0
-	activeWarsPanelMaxH    = 600.0
-	activeWarsPanelPad     = 12.0
-	activeWarsPanelHeaderH = 42.0
-	activeWarRowH          = 82.0
-	activeWarRowGap        = 7.0
+	activeWarsPanelW        = 570.0
+	activeWarsPanelMaxH     = 600.0
+	activeWarsPanelPad      = 12.0
+	activeWarsPanelHeaderH  = 42.0
+	activeWarRowH           = 82.0
+	activeWarRowGap         = 7.0
+	activeWarFlagSize       = 50.0
+	activeWarFlagSidePad    = 10.0
+	activeWarFlagTextGap    = 10.0
+	activeWarsHudButtonGap  = 20.0
+	activeWarsHudButtonSize = 36.0
+	activeWarsHudButtonStep = 46.0
+	activeWarsHudButtonTop  = 5.0
+	activeWarsPanelGap      = 12.0
 )
 
 // ActiveWarSummary, panelin harita state'inden bağımsız çizilebilir snapshot'ıdır.
@@ -40,15 +49,25 @@ type ActiveWarSummary struct {
 	CasualtiesB    int
 }
 
+// topHudUtilityButtonRect, müzik kartının sağındaki ortak küçük düğme
+// şeridindeki slotu döndürür. Yeni HUD durum düğmeleri aynı şeritte slot
+// index'i artırılarak yan yana eklenebilir.
+func topHudUtilityButtonRect(slot int) [4]float32 {
+	if slot < 0 {
+		slot = 0
+	}
+	x, y, w, _ := musicHudRect()
+	return [4]float32{x + w + activeWarsHudButtonGap + float32(slot)*activeWarsHudButtonStep, y + activeWarsHudButtonTop, activeWarsHudButtonSize, activeWarsHudButtonSize}
+}
+
 func activeWarsHudButtonRect() [4]float32 {
-	x, y, _, _ := musicHudRect()
-	return [4]float32{x + 267, y + 5, 28, 28}
+	return topHudUtilityButtonRect(0)
 }
 
 func buildActiveWarsHUDButton() gameui.Button {
 	r := activeWarsHudButtonRect()
 	btn := buttonFromRectF32(r, "").WithIcon(gameui.IconSword)
-	btn.IconSize = 17
+	btn.IconSize = 21
 	return btn
 }
 
@@ -66,10 +85,23 @@ func activeWarsPanelRect() gameui.Rect {
 	if h < 150 {
 		h = 150
 	}
+	// Olaylar paneli ekranın sağ kenarında kalır; aktif savaşlar onun
+	// solundaki ayrılmış kolona oturur ve iki panel yatayda çakışmaz.
+	right := float64(evLogX()) - activeWarsPanelGap
+	if right < 10 {
+		right = 10
+	}
+	panelW := activeWarsPanelW
+	if available := right - 10; available < panelW {
+		panelW = available
+	}
+	if panelW < 0 {
+		panelW = 0
+	}
 	return gameui.Rect{
-		X: ScreenWidth - activeWarsPanelW - 10,
+		X: right - panelW,
 		Y: y,
-		W: activeWarsPanelW,
+		W: panelW,
 		H: h,
 	}
 }
@@ -128,6 +160,24 @@ func activeWarRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
 		W: viewport.W,
 		H: activeWarRowH,
 	}
+}
+
+func activeWarRowAt(mx, my float64, wars []ActiveWarSummary, scroll int) int {
+	viewport := activeWarsPanelViewport()
+	if !viewport.Hit(mx, my) {
+		return -1
+	}
+	visibleRows := activeWarVisibleRows(viewport)
+	end := scroll + visibleRows
+	if end > len(wars) {
+		end = len(wars)
+	}
+	for index := scroll; index < end; index++ {
+		if activeWarRowRect(viewport, index-scroll).Hit(mx, my) {
+			return index
+		}
+	}
+	return -1
 }
 
 func activeWarFactionName(gs *state.GameState, id faction.FactionID) string {
@@ -229,6 +279,51 @@ func countActiveWars(gs *state.GameState) int {
 	return count
 }
 
+func activeWarRepresentativeRegion(gs *state.GameState, fid faction.FactionID) *world.Region {
+	if gs == nil || fid == "" {
+		return nil
+	}
+	if capital, _, _, ok := gs.FactionCapital(fid); ok && capital != nil {
+		return capital
+	}
+	var representative *world.Region
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		if representative == nil || region.ID < representative.ID {
+			representative = region
+		}
+	}
+	return representative
+}
+
+func (r *Renderer) focusActiveWar(war ActiveWarSummary) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	regionA := activeWarRepresentativeRegion(r.gs, war.FactionA)
+	regionB := activeWarRepresentativeRegion(r.gs, war.FactionB)
+	if regionA == nil && regionB == nil {
+		return false
+	}
+
+	focusX, focusY := 0.0, 0.0
+	switch {
+	case regionA != nil && regionB != nil:
+		focusX = (wcX(regionA.WorldX) + wcX(regionB.WorldX)) / 2
+		focusY = (wcY(regionA.WorldY) + wcY(regionB.WorldY)) / 2
+	case regionA != nil:
+		focusX = wcX(regionA.WorldX)
+		focusY = wcY(regionA.WorldY)
+	default:
+		focusX = wcX(regionB.WorldX)
+		focusY = wcY(regionB.WorldY)
+	}
+	r.camX, r.camY = clampCameraCenter(focusX, focusY, r.camScale)
+	return true
+}
+
 func drawActiveWarsHUDButton(screen *ebiten.Image, gs *state.GameState, open bool) {
 	btn := buildActiveWarsHUDButton()
 	centerX := float32(btn.X + btn.W/2)
@@ -273,19 +368,53 @@ func drawActiveWarsScrollbar(screen *ebiten.Image, viewport gameui.Rect, entryCo
 	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{190, 148, 74, 235}, color.RGBA{238, 206, 130, 220}, 1)
 }
 
-func drawActiveWarRow(screen *ebiten.Image, row gameui.Rect, war ActiveWarSummary) {
-	drawUICardRect(screen, row, color.RGBA{28, 22, 16, 235}, color.RGBA{92, 68, 38, 215}, 1)
-	drawUILabel(screen, gameui.Rect{X: row.X + 10, Y: row.Y + 7, W: row.W - 20}, war.FactionANameTR+"  ↔  "+war.FactionBNameTR, color.RGBA{255, 220, 118, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: row.X + 10, Y: row.Y + 28, W: row.W - 20}, itoa(war.Turns)+" turdur savaşta • Kayıp "+itoa(war.CasualtiesA)+" / "+itoa(war.CasualtiesB), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: row.X + 10, Y: row.Y + 47, W: row.W - 20}, "Güç "+itoa(war.PowerA)+"  ↔  "+itoa(war.PowerB), color.RGBA{220, 202, 164, 255}, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: row.X + 10, Y: row.Y + 64, W: row.W - 20}, "Ordu "+itoa(war.ArmiesA)+" ("+itoa(war.UnitsA)+" birim)  ↔  "+itoa(war.ArmiesB)+" ("+itoa(war.UnitsB)+" birim)", color.RGBA{176, 168, 148, 245}, gameui.TextSmall, gameui.TextAlignStart)
+func activeWarFactionFlagColor(gs *state.GameState, id faction.FactionID) color.RGBA {
+	if gs != nil {
+		if f := gs.Factions[id]; f != nil {
+			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+		}
+	}
+	return color.RGBA{62, 52, 38, 255}
 }
 
-func drawActiveWarsPanel(screen *ebiten.Image, wars []ActiveWarSummary, scroll int) {
+func activeWarRowContentRects(row gameui.Rect) (leftFlag, center, rightFlag gameui.Rect) {
+	leftFlag = gameui.Rect{
+		X: row.X + activeWarFlagSidePad,
+		Y: row.Y + (row.H-activeWarFlagSize)/2,
+		W: activeWarFlagSize,
+		H: activeWarFlagSize,
+	}
+	rightFlag = gameui.Rect{
+		X: row.X + row.W - activeWarFlagSidePad - activeWarFlagSize,
+		Y: leftFlag.Y,
+		W: activeWarFlagSize,
+		H: activeWarFlagSize,
+	}
+	center = gameui.Rect{
+		X: leftFlag.X + leftFlag.W + activeWarFlagTextGap,
+		Y: row.Y + 4,
+		W: rightFlag.X - (leftFlag.X + leftFlag.W) - activeWarFlagTextGap*2,
+		H: row.H - 8,
+	}
+	return leftFlag, center, rightFlag
+}
+
+func drawActiveWarRow(screen *ebiten.Image, gs *state.GameState, row gameui.Rect, war ActiveWarSummary) {
+	drawUICardRect(screen, row, color.RGBA{28, 22, 16, 235}, color.RGBA{92, 68, 38, 215}, 1)
+	leftFlag, center, rightFlag := activeWarRowContentRects(row)
+	drawFactionFlagBadge(screen, war.FactionA, factionInitial(war.FactionANameTR), leftFlag.X, leftFlag.Y, leftFlag.W, activeWarFactionFlagColor(gs, war.FactionA), panelBorder)
+	drawFactionFlagBadge(screen, war.FactionB, factionInitial(war.FactionBNameTR), rightFlag.X, rightFlag.Y, rightFlag.W, activeWarFactionFlagColor(gs, war.FactionB), panelBorder)
+
+	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 7, W: center.W, H: 18}, trimTextToWidth(war.FactionANameTR+"  ↔  "+war.FactionBNameTR, FaceMed, center.W), color.RGBA{255, 220, 118, 255}, gameui.TextMedium, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 28, W: center.W, H: 16}, trimTextToWidth(itoa(war.Turns)+" turdur savaşta • Kayıp "+itoa(war.CasualtiesA)+" / "+itoa(war.CasualtiesB), FaceSmall, center.W), ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 47, W: center.W, H: 16}, trimTextToWidth("Güç "+itoa(war.PowerA)+"  ↔  "+itoa(war.PowerB), FaceSmall, center.W), color.RGBA{220, 202, 164, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 64, W: center.W, H: 16}, trimTextToWidth("Ordu "+itoa(war.ArmiesA)+" ("+itoa(war.UnitsA)+" birim)  ↔  "+itoa(war.ArmiesB)+" ("+itoa(war.UnitsB)+" birim)", FaceSmall, center.W), color.RGBA{176, 168, 148, 245}, gameui.TextSmall, gameui.TextAlignCenter)
+}
+
+func drawActiveWarsPanel(screen *ebiten.Image, gs *state.GameState, wars []ActiveWarSummary, scroll int) {
 	panel := activeWarsPanelRect()
 	drawUIPanelFrame(screen, panel, color.RGBA{12, 10, 8, 244}, color.RGBA{154, 112, 54, 255}, 1.5, 5)
 	drawUILabel(screen, gameui.Rect{X: panel.X + activeWarsPanelPad, Y: panel.Y + 9, W: panel.W - 60}, "Aktif Savaşlar ("+itoa(len(wars))+")", color.RGBA{255, 220, 118, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: panel.X + activeWarsPanelPad, Y: panel.Y + 28, W: panel.W - 64}, "Haritayı incelemek için panel dışına tıklayabilir veya sürükleyebilirsin.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUIButtonWidget(screen, activeWarsPanelCloseButton(), eventLogButtonStyle(ColorGray))
 
 	viewport := activeWarsPanelViewport()
@@ -300,7 +429,7 @@ func drawActiveWarsPanel(screen *ebiten.Image, wars []ActiveWarSummary, scroll i
 		end = len(wars)
 	}
 	for i := scroll; i < end; i++ {
-		drawActiveWarRow(screen, activeWarRowRect(viewport, i-scroll), wars[i])
+		drawActiveWarRow(screen, gs, activeWarRowRect(viewport, i-scroll), wars[i])
 	}
 	drawActiveWarsScrollbar(screen, viewport, len(wars), scroll)
 }
@@ -329,6 +458,12 @@ func (r *Renderer) handleActiveWarsOverlayInput() bool {
 		r.showActiveWars = false
 		r.activeWarsScroll = 0
 		return true
+	}
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		if index := activeWarRowAt(float64(mx), float64(my), r.activeWarsBuf, r.activeWarsScroll); index >= 0 {
+			r.focusActiveWar(r.activeWarsBuf[index])
+			return true
+		}
 	}
 	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 	leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]

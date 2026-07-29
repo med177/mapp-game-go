@@ -622,7 +622,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	// UI alanlarında tıklama işleme
 	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
-		activeWarsPanelHit(fx, fy) ||
+		(r.showActiveWars && activeWarsPanelHit(fx, fy)) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}

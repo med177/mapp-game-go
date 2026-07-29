@@ -1325,7 +1325,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawMerchantRoutePanel(screen)
 	}
 	if r.showActiveWars {
-		drawActiveWarsPanel(screen, r.activeWarsBuf, r.activeWarsScroll)
+		drawActiveWarsPanel(screen, r.gs, r.activeWarsBuf, r.activeWarsScroll)
 	}
 
 	// 14. Bildirim mesajı (panellerin üstünde görünmeli)

@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 )
 
@@ -59,11 +60,65 @@ func TestActiveWarsPanelDoesNotCoverWarHUDButton(t *testing.T) {
 	}
 }
 
+func TestActiveWarsHUDButtonUsesUtilitySlotAfterMusic(t *testing.T) {
+	oldWidth := ScreenWidth
+	ScreenWidth = 1920
+	defer func() { ScreenWidth = oldWidth }()
+
+	musicX, _, musicW, _ := musicHudRect()
+	button := buildActiveWarsHUDButton()
+	if button.X != float64(musicX+musicW+activeWarsHudButtonGap) {
+		t.Fatalf("aktif savaş düğmesi müzik HUD'unun sağındaki yardımcı slota yerleşmeli: musicRight=%.0f buttonX=%.0f", musicX+musicW, button.X)
+	}
+	if button.W != activeWarsHudButtonSize || button.H != activeWarsHudButtonSize || button.Y != activeWarsHudButtonTop {
+		t.Fatalf("aktif savaş düğmesi boyut/margin yanlış: %+v", button)
+	}
+}
+
+func TestActiveWarsPanelStaysLeftOfEventLog(t *testing.T) {
+	panel := activeWarsPanelRect()
+	if panel.X+panel.W > float64(evLogX()) {
+		t.Fatalf("aktif savaş paneli olaylar paneliyle yatayda çakışmamalı: panelRight=%.0f eventLogX=%.0f", panel.X+panel.W, evLogX())
+	}
+}
+
+func TestActiveWarRowKeepsCenteredTextBetweenFactionFlags(t *testing.T) {
+	row := gameui.Rect{X: 100, Y: 40, W: activeWarsPanelW - activeWarsPanelPad*2, H: activeWarRowH}
+	leftFlag, center, rightFlag := activeWarRowContentRects(row)
+	if leftFlag.W != activeWarFlagSize || rightFlag.W != activeWarFlagSize || leftFlag.H != rightFlag.H {
+		t.Fatalf("bayrak alanları kare olmalı: left=%+v right=%+v", leftFlag, rightFlag)
+	}
+	if center.X <= leftFlag.X+leftFlag.W || center.X+center.W >= rightFlag.X {
+		t.Fatalf("metin alanı iki bayrağın arasında kalmalı: left=%+v center=%+v right=%+v", leftFlag, center, rightFlag)
+	}
+}
+
 func TestActiveWarsPanelLeavesOutsideMapPointAvailable(t *testing.T) {
 	panel := activeWarsPanelRect()
 	mapX := panel.X - 24
 	mapY := panel.Y + 120
 	if activeWarsPanelHit(mapX, mapY) {
 		t.Fatal("panel dışındaki harita noktası aktif savaş paneli tarafından tüketilmemeli")
+	}
+}
+
+func TestActiveWarRowAtReturnsClickedVisibleWar(t *testing.T) {
+	viewport := activeWarsPanelViewport()
+	wars := []ActiveWarSummary{{FactionA: "a", FactionB: "b"}, {FactionA: "c", FactionB: "d"}}
+	row := activeWarRowRect(viewport, 1)
+	if got := activeWarRowAt(row.X+row.W/2, row.Y+row.H/2, wars, 0); got != 1 {
+		t.Fatalf("ikinci görünen savaş satırı seçilmeliydi: got=%d", got)
+	}
+}
+
+func TestActiveWarRepresentativeRegionPrefersCapitalThenDeterministicRegion(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"z-region": {ID: "z-region", OwnerID: "faction"},
+			"a-region": {ID: "a-region", OwnerID: "faction"},
+		},
+	}
+	if region := activeWarRepresentativeRegion(gs, "faction"); region == nil || region.ID != "a-region" {
+		t.Fatalf("başkent yokken deterministik ilk bölge seçilmeliydi: %+v", region)
 	}
 }

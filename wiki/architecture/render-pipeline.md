@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -32,10 +32,11 @@ kesinleştirilince hesaplama, harita yenileme ve tek undo snapshot'ı üretilir.
 Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
 focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.
 `.env` içindeki `EDIT_MODE=true` değeri menüye `EDIT MODE` satırını
-`Yeni Oyun`'un üstünde ekler. Bu buton senaryo seçiminden sonra doğrudan edit
-haritasını açar; `Yeni Oyun` akışı aynı değer açık olsa bile normal fraksiyon ve
-zafer seçimine gider. Görsel seçim ve klavye/fare input'u aynı `factionCursor`
-state'ini kullanır (`internal/game/game.go`, `internal/render/main_menu.go`).
+`Çıkış` satırının altında, bir standart menü satırı boşlukla ekler. Bu buton
+senaryo seçiminden sonra doğrudan edit haritasını açar; `Yeni Oyun` akışı aynı
+değer açık olsa bile normal fraksiyon ve zafer seçimine gider. Görsel seçim ve
+klavye/fare input'u aynı `factionCursor` state'ini kullanır
+(`internal/game/game.go`, `internal/render/main_menu.go`).
 
 Tarih HUD'u, ay ve yılı üst satırda; mevsim ile turu ikinci satırda; aktif
 oyunun zorluk seviyesini (`Kolay`, `Normal` veya `Zor`) üçüncü satırda gösterir.
@@ -125,7 +126,7 @@ Bölge bilgi paneli ilk açıldığında komşu listesi varsayılan olarak `Tüm
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`). Kaynak HUD'unda tahıl miktarının altında ayrıca `Ambar` satırı bulunur; kapasite ekonomi tick'i status'undan, status henüz oluşmamışsa `GameState.GrainStorageCapacityForFaction()` hesaplamasından alınır.
 
-Üst müzik HUD'unda şarkı bilgisinin yanında yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
+Üst müzik HUD'unun sağındaki ayrılmış yardımcı düğme şeridinde 36×36 px yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir; ikon üstten 5 px boşlukla yerleşir ve üzerine gelindiğinde parmak imleci kullanır. Şerit ileride benzer durum düğmelerinin sıralanmasına açıktır. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Genişletilmiş savaş satırlarının iki ucunda 50×50 px kare faction bayrak alanı bulunur; mevcut savaş adı, süre, kayıp, güç ve ordu metinleri iki bayrağın arasındaki merkez kolonda hizalanır. Bayrak asset'i yoksa ortak baş harf fallback'i kullanılır. Satıra tıklamak kamerayı iki tarafın başkentleri arasındaki harita noktasına taşır; başkent bulunamazsa deterministic faction bölgesi fallback'i kullanılır. Panel kapalıyken kendi eski rect'i harita hit-test'ini engellemez. Panel, sağdaki olay logunun soluna 12 px boşlukla yerleşir; böylece olay logunu kapatmaz. Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
 
 Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve `SelectedRegion` bölgesinin `OwnerID` değerindeki devlete senkronlanır. Aynı devletin bölgeleri arasında geçiş panel scroll'unu korur; farklı devlete geçiş panel içeriğini baştan başlatır (`internal/render/renderer_input.go`).
 

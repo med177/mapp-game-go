@@ -18,14 +18,13 @@ type menuItem struct {
 
 func buildMainMenuButtons(hasSave bool, hasAutoSave bool, editModeEnabled bool) []gameui.Button {
 	items := buildMenuItems(hasSave, hasAutoSave, editModeEnabled)
-	itemH := 52.0
-	startY := mainMenuItemStartY(len(items))
+	startY := mainMenuItemStartY(mainMenuVisualRowCount(items))
 	barW := 280.0
 	barX := ScreenWidth/2 - barW/2
 	buttons := make([]gameui.Button, 0, len(items))
 	for i, item := range items {
-		y := startY + float64(i)*itemH
-		btn := gameui.NewButton(barX, y-6, barW, itemH-8, item.label)
+		y := mainMenuItemY(startY, items, i)
+		btn := gameui.NewButton(barX, y-6, barW, mainMenuButtonHeight-8, item.label)
 		btn.Enabled = !item.disabled
 		buttons = append(buttons, btn)
 	}
@@ -60,19 +59,18 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 
 	// Menü maddeleri
 	items := buildMenuItems(hasSave, hasAutoSave, editModeEnabled)
-	itemH := 52.0
-	startY := mainMenuItemStartY(len(items))
+	startY := mainMenuItemStartY(mainMenuVisualRowCount(items))
 
 	for i, item := range items {
-		y := startY + float64(i)*itemH
+		y := mainMenuItemY(startY, items, i)
 		isSelected := i == cursor
 
 		// Seçili satır vurgusu
 		if isSelected && !item.disabled {
 			barW := float32(280)
 			barX := float32(ScreenWidth/2) - barW/2
-			vector.FillRect(screen, barX, float32(y)-6, barW, float32(itemH)-8, color.RGBA{50, 40, 15, 180}, false)
-			vector.StrokeRect(screen, barX, float32(y)-6, barW, float32(itemH)-8, 1, color.RGBA{200, 160, 60, 180}, false)
+			vector.FillRect(screen, barX, float32(y)-6, barW, float32(mainMenuButtonHeight-8), color.RGBA{50, 40, 15, 180}, false)
+			vector.StrokeRect(screen, barX, float32(y)-6, barW, float32(mainMenuButtonHeight-8), 1, color.RGBA{200, 160, 60, 180}, false)
 		}
 
 		col := menuItemColor(isSelected, item.disabled)
@@ -87,9 +85,13 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Menü seçeneğini tıklayarak devam et", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
+const (
+	mainMenuButtonHeight = 52.0
+	mainMenuButtonGap    = 52.0
+)
+
 func mainMenuItemStartY(itemCount int) float64 {
-	const itemH = 52.0
-	centeredY := ScreenHeight/2 - float64(itemCount)*itemH/2 + 20
+	centeredY := ScreenHeight/2 - float64(itemCount)*mainMenuButtonHeight/2 + 20
 	separatorY := ScreenHeight/2 - 200 + 80
 	minimumY := separatorY + 24
 	if centeredY < minimumY {
@@ -98,11 +100,28 @@ func mainMenuItemStartY(itemCount int) float64 {
 	return centeredY
 }
 
+func mainMenuVisualRowCount(items []menuItem) int {
+	rows := len(items)
+	for _, item := range items {
+		if item.action == ActionQuit {
+			rows++
+		}
+	}
+	return rows
+}
+
+func mainMenuItemY(startY float64, items []menuItem, index int) float64 {
+	y := startY + float64(index)*mainMenuButtonHeight
+	for i := 0; i < index; i++ {
+		if items[i].action == ActionQuit {
+			y += mainMenuButtonGap
+		}
+	}
+	return y
+}
+
 func buildMenuItems(hasSave bool, hasAutoSave bool, editModeEnabled bool) []menuItem {
 	items := make([]menuItem, 0, 6)
-	if editModeEnabled {
-		items = append(items, menuItem{"EDIT MODE", ActionEditMode, false})
-	}
 	items = append(items,
 		menuItem{"Yeni Oyun", ActionNewGame, false},
 		menuItem{"Devam et", ActionContinue, !hasAutoSave},
@@ -110,19 +129,18 @@ func buildMenuItems(hasSave bool, hasAutoSave bool, editModeEnabled bool) []menu
 		menuItem{"Ayarlar", ActionOpenSettings, false},
 		menuItem{"Çıkış", ActionQuit, false},
 	)
+	if editModeEnabled {
+		items = append(items, menuItem{"EDIT MODE", ActionEditMode, false})
+	}
 	return items
 }
 
 // InitialMainMenuCursor yeni açılan ana menüdeki ilk seçimi belirler.
 func InitialMainMenuCursor(hasAutoSave bool, editModeEnabled bool) int {
-	editModeOffset := 0
-	if editModeEnabled {
-		editModeOffset = 1
-	}
 	if hasAutoSave {
-		return 1 + editModeOffset
+		return 1
 	}
-	return editModeOffset
+	return 0
 }
 
 func menuItemColor(selected, disabled bool) color.RGBA {

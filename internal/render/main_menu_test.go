@@ -11,21 +11,27 @@ func TestInitialMainMenuCursorPrefersContinueWhenSaveExists(t *testing.T) {
 	}
 }
 
-func TestEditModeMenuItemIsOptionalAndAboveNewGame(t *testing.T) {
+func TestEditModeMenuItemIsOptionalAndBelowExit(t *testing.T) {
 	withoutEdit := buildMenuItems(false, false, false)
 	if len(withoutEdit) != 5 || withoutEdit[0].action != ActionNewGame {
 		t.Fatalf("EDIT_MODE=false iken menü sırası yanlış: %+v", withoutEdit)
 	}
 
 	withEdit := buildMenuItems(false, false, true)
-	if len(withEdit) != 6 || withEdit[0].label != "EDIT MODE" || withEdit[0].action != ActionEditMode || withEdit[1].action != ActionNewGame {
-		t.Fatalf("EDIT_MODE=true iken EDIT MODE Yeni Oyun'un üstünde olmalı: %+v", withEdit)
+	if len(withEdit) != 6 || withEdit[5].label != "EDIT MODE" || withEdit[5].action != ActionEditMode || withEdit[4].action != ActionQuit {
+		t.Fatalf("EDIT_MODE=true iken EDIT MODE Çıkış'ın altında olmalı: %+v", withEdit)
 	}
-	if got := InitialMainMenuCursor(false, true); got != 1 {
-		t.Fatalf("EDIT_MODE=true iken varsayılan seçim Yeni Oyun olmalı: got=%d want=1", got)
+	if got := InitialMainMenuCursor(false, true); got != 0 {
+		t.Fatalf("EDIT_MODE=true iken kayıt yokken varsayılan seçim Yeni Oyun olmalı: got=%d want=0", got)
 	}
-	if got := InitialMainMenuCursor(true, true); got != 2 {
-		t.Fatalf("EDIT_MODE=true ve kayıt varken varsayılan seçim Devam et olmalı: got=%d want=2", got)
+	if got := InitialMainMenuCursor(true, true); got != 1 {
+		t.Fatalf("EDIT_MODE=true ve kayıt varken varsayılan seçim Devam et olmalı: got=%d want=1", got)
+	}
+
+	exitY := mainMenuItemY(100, withEdit, 4)
+	editY := mainMenuItemY(100, withEdit, 5)
+	if got, want := editY-exitY, mainMenuButtonHeight+mainMenuButtonGap; got != want {
+		t.Fatalf("EDIT MODE ile Çıkış arasında standart boşluk olmalı: got=%.1f want=%.1f", got, want)
 	}
 }
 

@@ -1,11 +1,18 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-30: Ana menüde `EDIT MODE` düğmesi `Çıkış`ın altına taşındı ve araya
+  standart bir menü satırı boşluğu eklendi. Çizim, fare hit-test'i ve klavye
+  cursor'u ortak geometriyi kullanıyor; başlangıç seçimi kayıt durumuna göre
+  `Yeni Oyun`/`Devam et` olarak korunuyor. Regression:
+  `TestEditModeMenuItemIsOptionalAndBelowExit`; doğrulama:
+  `go test ./internal/render`.
 
 - 2026-07-29: Edit Mode mouse sözleşmesi ayrıştırıldı. Settlement konumu sağ
   tık sürüklemeyle, Shape/Bölge boya-sil fırçaları sol tık sürüklemeyle
@@ -93,7 +100,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ilk kışlayı manpower doluluğu beklemeden kurması sağlandı. Regression: `internal/ai/strategy_regression_test.go`,
   `internal/state/commanders_test.go`; doğrulama: hedefli AI/state/save/game testleri geçti.
 
-- 2026-07-29: Üst müzik HUD'una yuvarlak kılıç ikonuyla aktif savaş göstergesi eklendi. Açılan non-modal panel tarafları, savaşın geçen turunu, güncel askeri gücü, ordu/birim sayılarını ve ledger kayıplarını listeliyor; panel dışı harita tıklaması ve orta tuş sürüklemesi korunuyor. Regression: `TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts`, `TestActiveWarsPanelLeavesOutsideMapPointAvailable`; doğrulama: `go test ./internal/render -count=1`. `go test ./... -count=1` oyun/render paketlerinde geçti; mevcut 1300 fixture eksikleri `new_region_264` ve Ragusa başkenti nedeniyle scenario/world paketlerinde başarısız.
+- 2026-07-30: Aktif savaş düğmesi müzik HUD'unun sağındaki ayrılmış yardımcı slota taşındı. Aktif savaş paneli olaylar panelinin soluna kaydırılarak iki panelin üst üste binmesi kaldırıldı; yeni slot ve panel sınırı için regression testleri eklendi. Doğrulama: `go test ./internal/render`.
+- 2026-07-30: Aktif savaş paneli satırları 570 px genişliğe çıkarıldı. Her satırın iki ucuna 50×50 px faction bayrak alanı, mevcut savaş bilgileri için ortalanmış metin kolonu eklendi; ortak bayrak asset/cache ve baş harf fallback'i kullanılıyor. Regression: `TestActiveWarRowKeepsCenteredTextBetweenFactionFlags`; doğrulama: `go test ./internal/render`.
+- 2026-07-30: Aktif savaş HUD düğmesi 36×36 px’e büyütüldü, üstten 5 px margin aldı ve hover durumunda parmak imleci gösterecek şekilde ortak in-game cursor hit-test’ine bağlandı. Regression: `TestActiveWarsHUDButtonUsesUtilitySlotAfterMusic`; doğrulama: `go test ./internal/render`.
+- 2026-07-30: Aktif savaş paneli kapalıyken eski panel alanının harita tıklamalarını engellemesi düzeltildi. Açık panelde savaş satırı tıklaması, iki tarafın başkentleri arasındaki harita odağına kamerayı taşıyor; satır ve deterministik bölge fallback testleri eklendi. Regression: `TestActiveWarRowAtReturnsClickedVisibleWar`, `TestActiveWarRepresentativeRegionPrefersCapitalThenDeterministicRegion`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-28: Save varsa ana menü ilk açılışında varsayılan seçim `Yeni Oyun`
   yerine `Devam et` satırına alındı. Save yoksa başlangıç seçimi değişmeden
