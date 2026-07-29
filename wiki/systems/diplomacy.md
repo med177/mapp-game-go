@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -51,6 +51,11 @@ type Relation struct {
 ```
 
 `RelationKey(a, b)` → her zaman sıralı `"a|b"` string'i üretir (çift kayıt önler).
+
+Özgürleştirilen ardıl devlet, özgürleştiren oyuncu devletiyle doğrudan
+`StanceAllied` relation'ı alır. Bu ilişki yeni devletin ilk diplomatik güvenlik
+durumudur; `OverlordID` atanmaz, yani yeniden kurulan devlet bağımsız AI fraksiyonu
+olarak davranır.
 
 Vassallık relation duruşu olarak değil, doğrudan fraksiyon üstünde `OverlordID` alanıyla tutulur. Böylece:
 

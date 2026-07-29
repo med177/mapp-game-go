@@ -738,6 +738,31 @@ func Test1300ScenarioCapitalSettlementsExist(t *testing.T) {
 	}
 }
 
+func Test1300ScenarioCapitalRegionsHaveSuccessorFaction(t *testing.T) {
+	_, regions, factions := load1300IntegrityData(t)
+	settlementRegions := make(map[string]*world.Region)
+	for _, region := range regions {
+		if region == nil {
+			continue
+		}
+		for i := range region.Settlements {
+			settlementRegions[region.Settlements[i].ID] = region
+		}
+	}
+	for fid, definition := range factions {
+		if definition == nil || definition.CapitalSettlementID == "" {
+			continue
+		}
+		region := settlementRegions[definition.CapitalSettlementID]
+		if region == nil {
+			continue
+		}
+		if region.OwnerID == string(fid) && region.SuccessorFactionID != string(fid) {
+			t.Errorf("başkent bölgesinin ardıl devleti sahibiyle eşleşmiyor: faction=%s region=%s successor=%s", fid, region.ID, region.SuccessorFactionID)
+		}
+	}
+}
+
 func Test1300ScenarioLandSettlementCentersAreUnique(t *testing.T) {
 	_, regions, _ := load1300IntegrityData(t)
 

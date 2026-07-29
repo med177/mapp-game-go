@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -81,6 +81,15 @@ type Faction struct {
 - vassallık zincirini save/load içinde taşır
 - diplomasi UI'sında hiyerarşik durum etiketini besler
 - ekonomi tick'indeki altın haracı ve savaş coalition yayılımı için kullanılır
+
+## Ardıl Devletin Yeniden Kurulması
+
+Bir bölgedeki `successor_faction_id`, o bölge özgürleştirildiğinde yeniden oyuna
+alınacak mevcut fraksiyonu gösterir. Fraksiyon `is_eliminated=true` ve başka kara
+bölgesi yoksa oyuncu `Özgürleştir` aksiyonuyla devleti etkinleştirir. Yeniden kurulan
+devlet düşük başlangıç kaynakları, aynı bölgede beş `militia` birimi ve onu
+özgürleştiren devletle `StanceAllied` ilişkisi alır; ardından normal AI tur sırasına
+katılır.
 
 `ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
 

@@ -5,12 +5,15 @@ type RegionID string
 
 // Region harita üzerindeki tek bir bölgeyi temsil eder.
 type Region struct {
-	ID        RegionID    `json:"id"`
-	Name      string      `json:"name"`
-	NameTR    string      `json:"name_tr"`
-	Terrain   TerrainType `json:"terrain"`
-	OwnerID   string      `json:"owner_id"`
-	Neighbors []RegionID  `json:"neighbors"`
+	ID      RegionID    `json:"id"`
+	Name    string      `json:"name"`
+	NameTR  string      `json:"name_tr"`
+	Terrain TerrainType `json:"terrain"`
+	OwnerID string      `json:"owner_id"`
+	// SuccessorFactionID, bölge fethedildikten sonra yeniden kurulabilecek
+	// tarihsel devletin fraksiyon kimliğidir.
+	SuccessorFactionID string     `json:"successor_faction_id,omitempty"`
+	Neighbors          []RegionID `json:"neighbors"`
 
 	// Dünya haritası koordinatları (renderer WorldW×WorldH dünya uzayı)
 	WorldX int `json:"world_x"`

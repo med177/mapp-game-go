@@ -5,6 +5,7 @@
     "name_tr": "Londra",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "east_anglia",
       "english_channel",
@@ -257,6 +258,7 @@
     "name_tr": "İskoçya",
     "terrain": "mountain",
     "owner_id": "scotland_kingdom",
+    "successor_faction_id": "scotland_kingdom",
     "neighbors": [
       "atlantic_open_5",
       "atlantic_open_6",
@@ -394,6 +396,7 @@
     "name_tr": "Paris",
     "terrain": "plain",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "anjou",
       "burgundy",
@@ -686,6 +689,7 @@
     "name_tr": "Savoy",
     "terrain": "mountain",
     "owner_id": "savoy_county",
+    "successor_faction_id": "savoy_county",
     "neighbors": [
       "genoa",
       "languedoc",
@@ -758,6 +762,7 @@
     "name_tr": "Brandenburg",
     "terrain": "plain",
     "owner_id": "brandenburg_margraviate",
+    "successor_faction_id": "brandenburg_margraviate",
     "neighbors": [
       "bavaria",
       "bohemia",
@@ -794,6 +799,7 @@
     "name_tr": "Saksonya",
     "terrain": "plain",
     "owner_id": "saxony_duchy",
+    "successor_faction_id": "saxony_duchy",
     "neighbors": [
       "brandenburg",
       "denmark",
@@ -830,6 +836,7 @@
     "name_tr": "Bavyera",
     "terrain": "forest",
     "owner_id": "bavaria_duchy",
+    "successor_faction_id": "bavaria_duchy",
     "neighbors": [
       "bohemia",
       "brandenburg",
@@ -868,6 +875,7 @@
     "name_tr": "Vestfalya",
     "terrain": "forest",
     "owner_id": "hre",
+    "successor_faction_id": "hre",
     "neighbors": [
       "denmark",
       "friesland",
@@ -981,6 +989,7 @@
     "name_tr": "Danimarka",
     "terrain": "coast",
     "owner_id": "denmark_kingdom",
+    "successor_faction_id": "denmark_kingdom",
     "neighbors": [
       "kattegat",
       "western_baltic_sea",
@@ -1126,6 +1135,7 @@
     "name_tr": "Portekiz",
     "terrain": "coast",
     "owner_id": "portugal",
+    "successor_faction_id": "portugal",
     "neighbors": [
       "atlantic_open_3",
       "castile",
@@ -1200,6 +1210,7 @@
     "name_tr": "Kastilya",
     "terrain": "plain",
     "owner_id": "leon_kingdom",
+    "successor_faction_id": "leon_kingdom",
     "neighbors": [
       "atlantic_ocean_shore",
       "atlantic_open_3",
@@ -1240,6 +1251,7 @@
     "name_tr": "Toledo",
     "terrain": "plain",
     "owner_id": "castile_kingdom",
+    "successor_faction_id": "castile_kingdom",
     "neighbors": [
       "aragon",
       "bay_of_biscay",
@@ -1279,6 +1291,7 @@
     "name_tr": "Aragon",
     "terrain": "plain",
     "owner_id": "aragon",
+    "successor_faction_id": "aragon",
     "neighbors": [
       "aquitaine",
       "catalonia",
@@ -1316,6 +1329,7 @@
     "name_tr": "Venedik Cumhuriyeti",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "adriatic_sea_dalmatia",
       "ferrara",
@@ -1429,6 +1443,7 @@
     "name_tr": "Avusturya",
     "terrain": "mountain",
     "owner_id": "austria_duchy",
+    "successor_faction_id": "austria_duchy",
     "neighbors": [
       "bohemia",
       "hungary",
@@ -1466,6 +1481,7 @@
     "name_tr": "Bohemya",
     "terrain": "forest",
     "owner_id": "bohemian_kingdom",
+    "successor_faction_id": "bohemian_kingdom",
     "neighbors": [
       "austria",
       "bavaria",
@@ -1502,6 +1518,7 @@
     "name_tr": "Polonya",
     "terrain": "plain",
     "owner_id": "polish_kingdom",
+    "successor_faction_id": "polish_kingdom",
     "neighbors": [
       "baltic_sea",
       "konigsberg",
@@ -1541,6 +1558,7 @@
     "name_tr": "Litvanya",
     "terrain": "forest",
     "owner_id": "lithuanian_gd",
+    "successor_faction_id": "lithuanian_gd",
     "neighbors": [
       "baltic_sea",
       "belarus",
@@ -1576,6 +1594,7 @@
     "name_tr": "Macaristan",
     "terrain": "plain",
     "owner_id": "hungarian_kingdom",
+    "successor_faction_id": "hungarian_kingdom",
     "neighbors": [
       "alfold",
       "austria",
@@ -1660,6 +1679,7 @@
     "name_tr": "Niş",
     "terrain": "mountain",
     "owner_id": "serbian_empire",
+    "successor_faction_id": "serbian_empire",
     "neighbors": [
       "kosovo",
       "danube_wallacia",
@@ -1774,6 +1794,7 @@
     "name_tr": "Besarabya",
     "terrain": "plain",
     "owner_id": "wallachia_prince",
+    "successor_faction_id": "wallachia_prince",
     "neighbors": [
       "galicia_volhynia",
       "moldova",
@@ -1848,6 +1869,7 @@
     "name_tr": "Fas",
     "terrain": "plain",
     "owner_id": "marinid_sultanate",
+    "successor_faction_id": "marinid_sultanate",
     "neighbors": [
       "algiers",
       "atlantic_ocean",
@@ -1883,6 +1905,7 @@
     "name_tr": "Batı Cezayir",
     "terrain": "coast",
     "owner_id": "zayyanid_tlemcen",
+    "successor_faction_id": "zayyanid_tlemcen",
     "neighbors": [
       "morocco",
       "central_algeria",
@@ -1989,6 +2012,7 @@
     "name_tr": "Tunus",
     "terrain": "coast",
     "owner_id": "hafsid_sultanate",
+    "successor_faction_id": "hafsid_sultanate",
     "neighbors": [
       "central_algeria",
       "constantine",
@@ -2061,6 +2085,7 @@
     "name_tr": "Berka",
     "terrain": "pass",
     "owner_id": "barqa_emirate",
+    "successor_faction_id": "barqa_emirate",
     "neighbors": [
       "eastern_mediterranean_shore",
       "egypt",
@@ -2097,6 +2122,7 @@
     "name_tr": "Atina Dükalığı",
     "terrain": "coast",
     "owner_id": "athena_duk",
+    "successor_faction_id": "athena_duk",
     "neighbors": [
       "aegean_sea",
       "aegean_sea_shore",
@@ -2244,6 +2270,7 @@
     "name_tr": "Moskova",
     "terrain": "forest",
     "owner_id": "russia",
+    "successor_faction_id": "russia",
     "neighbors": [
       "north_caucasus",
       "nizhny_novgorod",
@@ -2280,6 +2307,7 @@
     "name_tr": "Trabzon Rum İmparatorluğu",
     "terrain": "coast",
     "owner_id": "trebizond_emp",
+    "successor_faction_id": "trebizond_emp",
     "neighbors": [
       "black_sea_shore",
       "eretna",
@@ -2350,6 +2378,7 @@
     "name_tr": "Gürcistan",
     "terrain": "mountain",
     "owner_id": "georgia_kingdom",
+    "successor_faction_id": "georgia_kingdom",
     "neighbors": [
       "akkoyunlu",
       "armenia",
@@ -2387,6 +2416,7 @@
     "name_tr": "Mısır",
     "terrain": "plain",
     "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
     "neighbors": [
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
@@ -2602,6 +2632,7 @@
     "name_tr": "Batı İran",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
       "armenia",
@@ -2642,6 +2673,7 @@
     "name_tr": "Güney İran",
     "terrain": "plain",
     "owner_id": "safavid",
+    "successor_faction_id": "safavid",
     "neighbors": [
       "northern_persia",
       "persian_gulf",
@@ -2681,6 +2713,7 @@
     "name_tr": "Hicaz",
     "terrain": "plain",
     "owner_id": "mecca_sharifate",
+    "successor_faction_id": "mecca_sharifate",
     "neighbors": [
       "jordan",
       "arabian_desert",
@@ -2755,6 +2788,7 @@
     "name_tr": "Slovenya",
     "terrain": "forest",
     "owner_id": "carniola_margraviate",
+    "successor_faction_id": "carniola_margraviate",
     "neighbors": [
       "adriatic_sea_dalmatia",
       "austria",
@@ -2830,6 +2864,7 @@
     "name_tr": "Bosna Banlığı",
     "terrain": "mountain",
     "owner_id": "bosnian_banate",
+    "successor_faction_id": "bosnian_banate",
     "neighbors": [
       "croatia",
       "hum",
@@ -2938,6 +2973,7 @@
     "name_tr": "Arnavutluk",
     "terrain": "mountain",
     "owner_id": "arnavut_des",
+    "successor_faction_id": "arnavut_des",
     "neighbors": [
       "epirus",
       "kosovo",
@@ -4374,6 +4410,7 @@
     "name_tr": "Konstantiniyye",
     "terrain": "coast",
     "owner_id": "east_rome",
+    "successor_faction_id": "east_rome",
     "neighbors": [
       "sea_of_marmara",
       "bosphorus",
@@ -4632,6 +4669,7 @@
     "name_tr": "Flandre",
     "terrain": "plain",
     "owner_id": "flanders_county",
+    "successor_faction_id": "flanders_county",
     "neighbors": [
       "atlantic_open_1",
       "champagne",
@@ -4743,6 +4781,7 @@
     "name_tr": "Ukrayna Bozkırı",
     "terrain": "plain",
     "owner_id": "golden_horde",
+    "successor_faction_id": "golden_horde",
     "neighbors": [
       "crimea",
       "kiev",
@@ -4783,6 +4822,7 @@
     "name_tr": "Königsberg",
     "terrain": "plain",
     "owner_id": "teutonic_order",
+    "successor_faction_id": "teutonic_order",
     "neighbors": [
       "baltic_sea",
       "lithuania",
@@ -5024,6 +5064,7 @@
     "name_tr": "BAE",
     "terrain": "desert",
     "owner_id": "hormuz_sultanate",
+    "successor_faction_id": "hormuz_sultanate",
     "neighbors": [
       "arabian_desert",
       "persian_gulf",
@@ -5092,6 +5133,7 @@
     "name_tr": "Bahreyn",
     "terrain": "coast",
     "owner_id": "usfurid_emirate",
+    "successor_faction_id": "usfurid_emirate",
     "neighbors": [
       "persian_gulf",
       "persian_open_2"
@@ -5263,6 +5305,7 @@
     "name_tr": "Atikhisar",
     "terrain": "coast",
     "owner_id": "karesioglu_bey",
+    "successor_faction_id": "karesioglu_bey",
     "neighbors": [
       "aegean_sea",
       "bithynia",
@@ -5300,6 +5343,7 @@
     "name_tr": "Saruhan",
     "terrain": "coast",
     "owner_id": "saruhan_bey",
+    "successor_faction_id": "saruhan_bey",
     "neighbors": [
       "aegean_sea",
       "aydinoglu",
@@ -5334,6 +5378,7 @@
     "name_tr": "İzmir",
     "terrain": "coast",
     "owner_id": "aydin_bey",
+    "successor_faction_id": "aydin_bey",
     "neighbors": [
       "aegean_sea",
       "kutahya",
@@ -5368,6 +5413,7 @@
     "name_tr": "Menteşe İçleri",
     "terrain": "coast",
     "owner_id": "mentese_bey",
+    "successor_faction_id": "mentese_bey",
     "neighbors": [
       "aegean_sea",
       "izmir",
@@ -5474,6 +5520,7 @@
     "name_tr": "Kilikya Ermeni Krallığı",
     "terrain": "plain",
     "owner_id": "ramazan_bey",
+    "successor_faction_id": "ramazan_bey",
     "neighbors": [
       "aleppo",
       "east_mediterranean",
@@ -5549,6 +5596,7 @@
     "name_tr": "Floransa Cumhuriyeti",
     "terrain": "plain",
     "owner_id": "florence_rep",
+    "successor_faction_id": "florence_rep",
     "neighbors": [
       "ferrara",
       "genoa",
@@ -5585,6 +5633,7 @@
     "name_tr": "Ceneviz Cumhuriyeti",
     "terrain": "coast",
     "owner_id": "genoa",
+    "successor_faction_id": "genoa",
     "neighbors": [
       "florence",
       "gulf_of_genoa",
@@ -5625,6 +5674,7 @@
     "name_tr": "Milano",
     "terrain": "plain",
     "owner_id": "milan_duchy",
+    "successor_faction_id": "milan_duchy",
     "neighbors": [
       "florence",
       "genoa",
@@ -5659,6 +5709,7 @@
     "name_tr": "Gırnata Emirliği",
     "terrain": "mountain",
     "owner_id": "granada_emirate",
+    "successor_faction_id": "granada_emirate",
     "neighbors": [
       "alboran_sea",
       "algarve",
@@ -5697,6 +5748,7 @@
     "name_tr": "Navarra",
     "terrain": "mountain",
     "owner_id": "navarra",
+    "successor_faction_id": "navarra",
     "neighbors": [
       "aquitaine",
       "aragon",
@@ -5792,7 +5844,7 @@
     "trade_capacity": 1,
     "satisfaction": 65,
     "tax_rate": 30,
-    "population": 567,
+    "population": 667,
     "rural_population": 282,
     "religion": "catholic",
     "active_event_id": "",
@@ -5949,6 +6001,7 @@
     "name_tr": "Hamideli",
     "terrain": "mountain",
     "owner_id": "hamid_bey",
+    "successor_faction_id": "hamid_bey",
     "neighbors": [
       "germiyan",
       "mentese",
@@ -5983,6 +6036,7 @@
     "name_tr": "Beyşehir",
     "terrain": "plain",
     "owner_id": "esrefoglu_bey",
+    "successor_faction_id": "esrefoglu_bey",
     "neighbors": [
       "aksaray",
       "sivrihisar",
@@ -6054,6 +6108,7 @@
     "name_tr": "Sivrihisar",
     "terrain": "plain",
     "owner_id": "ahiler",
+    "successor_faction_id": "ahiler",
     "neighbors": [
       "chrysopolis",
       "germiyan",
@@ -6127,6 +6182,7 @@
     "name_tr": "Karaman",
     "terrain": "plain",
     "owner_id": "karaman_bey",
+    "successor_faction_id": "karaman_bey",
     "neighbors": [
       "aksaray",
       "cilicia",
@@ -6197,6 +6253,7 @@
     "name_tr": "Eretna Devleti",
     "terrain": "plain",
     "owner_id": "canik_bey",
+    "successor_faction_id": "canik_bey",
     "neighbors": [
       "black_open_1",
       "black_sea_shore",
@@ -6271,6 +6328,7 @@
     "name_tr": "Dulkadiroğulları Beyliği",
     "terrain": "mountain",
     "owner_id": "dulkadir_bey",
+    "successor_faction_id": "dulkadir_bey",
     "neighbors": [
       "akkoyunlu",
       "erzincan",
@@ -6733,6 +6791,7 @@
     "name_tr": "Ferrara",
     "terrain": "plain",
     "owner_id": "papal_states_f",
+    "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_dalmatia",
       "florence",
@@ -6804,6 +6863,7 @@
     "name_tr": "Apulia",
     "terrain": "plain",
     "owner_id": "naples_kingdom",
+    "successor_faction_id": "naples_kingdom",
     "neighbors": [
       "adriatic_sea",
       "naples",
@@ -6910,13 +6970,13 @@
       "adriatic_sea",
       "adriatic_sea_dalmatia",
       "bosnia",
-      "rijeka",
+      "dalmatia",
       "herzegovina",
       "kvarner",
-      "dalmatia"
+      "rijeka"
     ],
-    "world_x": 802,
-    "world_y": 403,
+    "world_x": 810,
+    "world_y": 404,
     "shape_id": "HRV",
     "is_sea": false,
     "is_locked": false,
@@ -6943,6 +7003,7 @@
     "name_tr": "dalmaçya",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "ragusa",
     "neighbors": [
       "adriatic_sea",
       "herzegovina",
@@ -6977,6 +7038,7 @@
     "name_tr": "Kvarner",
     "terrain": "coast",
     "owner_id": "croatian_kingdom",
+    "successor_faction_id": "croatian_kingdom",
     "neighbors": [
       "bosnia",
       "croatia",
@@ -7119,6 +7181,7 @@
     "name_tr": "Tesalya",
     "terrain": "plain",
     "owner_id": "epir",
+    "successor_faction_id": "epir",
     "neighbors": [
       "epirus",
       "greece",
@@ -7190,6 +7253,7 @@
     "name_tr": "Mora Prensliği",
     "terrain": "coast",
     "owner_id": "achaea_principality",
+    "successor_faction_id": "achaea_principality",
     "neighbors": [
       "aegean_sea_shore",
       "greece",
@@ -7224,6 +7288,7 @@
     "name_tr": "Dobrica",
     "terrain": "plain",
     "owner_id": "bulgarian_empire",
+    "successor_faction_id": "bulgarian_empire",
     "neighbors": [
       "bulgaria",
       "moldova",
@@ -7296,6 +7361,7 @@
     "name_tr": "Kütahya",
     "terrain": "plain",
     "owner_id": "germiyan_bey",
+    "successor_faction_id": "germiyan_bey",
     "neighbors": [
       "aydinoglu",
       "bithynia",
@@ -7634,6 +7700,7 @@
     "name_tr": "Bilecik Uçları",
     "terrain": "forest",
     "owner_id": "ottoman",
+    "successor_faction_id": "ottoman",
     "neighbors": [
       "bithynia",
       "chrysopolis",
@@ -7706,6 +7773,7 @@
     "name_tr": "Sinop",
     "terrain": "coast",
     "owner_id": "candar_bey",
+    "successor_faction_id": "candar_bey",
     "neighbors": [
       "black_open_1",
       "candaroglu",
@@ -7779,6 +7847,7 @@
     "name_tr": "Novgorod Cumhuriyeti",
     "terrain": "forest",
     "owner_id": "novgorod_rep",
+    "successor_faction_id": "novgorod_rep",
     "neighbors": [
       "belarus",
       "estonia",

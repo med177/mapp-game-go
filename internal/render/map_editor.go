@@ -92,18 +92,28 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawPanelBorder(screen, x, y, w, h)
 
 	DrawText(screen, "EDITOR", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	drawEditInspectorTab(screen, editInspectorMap, "Harita")
-	drawEditInspectorTab(screen, editInspectorShape, "Shape")
-	drawEditInspectorTab(screen, editInspectorData, "Veri")
-	ly := float64(y) + 58
+	r.drawEditInspectorTab(screen, editInspectorSettlement, "Yerleşim Birimi")
+	r.drawEditInspectorTab(screen, editInspectorRegion, "Bölge")
+	r.drawEditInspectorTab(screen, editInspectorFaction, "Devlet")
+	r.drawEditInspectorTab(screen, editInspectorMap, "Harita")
+	r.drawEditInspectorTab(screen, editInspectorData, "Veri")
+	ly := float64(y) + 82
 
-	if r.editInspectorTab == editInspectorShape {
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		r.drawEditShapeInspector(screen, ly)
+		drawEditInspectorSaveButton(screen)
 		return
 	}
 
 	if r.editInspectorTab == editInspectorData {
+		r.drawEditScenarioDataInspector(screen, ly)
+		drawEditInspectorSaveButton(screen)
+		return
+	}
+
+	if r.editInspectorTab == editInspectorFaction {
 		r.drawEditDataInspector(screen, ly)
+		drawEditInspectorSaveButton(screen)
 		return
 	}
 
@@ -115,14 +125,20 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			DrawText(screen, "Bolge: "+string(a.RegionID), float64(x)+14, ly, FaceSmall, ColorGray)
 			ly += 18
 			DrawText(screen, "Birim: "+itoa(len(a.Units))+" / 20", float64(x)+14, ly, FaceSmall, ColorGray)
-			r.drawEditInspectorButtons(screen, nil)
+			if r.editInspectorTab == editInspectorSettlement {
+				r.drawEditSettlementButtons(screen, region)
+			} else {
+				r.drawEditRegionButtons(screen, region)
+			}
+			drawEditInspectorSaveButton(screen)
 			return
 		}
 	}
 
 	if region == nil {
 		DrawText(screen, "Haritadan bir bolge veya yerlesim sec.", float64(x)+14, ly, FaceSmall, ColorGray)
-		r.drawEditInspectorButtons(screen, nil)
+		r.drawEditRegionButtons(screen, nil)
+		drawEditInspectorSaveButton(screen)
 		return
 	}
 
@@ -145,6 +161,12 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	DrawText(screen, "ID: "+string(region.ID), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	DrawText(screen, "Tur: "+regionKind+"   Sahip: "+ownerLabel+"   Arazi: "+string(region.Terrain), float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 18
+	successorLabel := region.SuccessorFactionID
+	if successorLabel == "" {
+		successorLabel = "-"
+	}
+	DrawText(screen, "Ardil Devlet: "+successorLabel, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+settlementLabel, float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 22
@@ -171,16 +193,21 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		DrawText(screen, "Yerlesim secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
 	}
 
-	r.drawEditInspectorButtons(screen, region)
+	if r.editInspectorTab == editInspectorSettlement {
+		r.drawEditSettlementButtons(screen, region)
+	} else {
+		r.drawEditRegionButtons(screen, region)
+	}
 	drawUIDropdown(screen, r.editOwnerDropdown)
+	drawUIDropdown(screen, r.editSuccessorDropdown)
 	drawUIDropdown(screen, r.editTerrainDropdown)
 	drawUIDropdown(screen, r.editSettlementTypeDropdown)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
+	drawEditInspectorSaveButton(screen)
 }
 
-func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.Region) {
+func (r *Renderer) drawEditSettlementButtons(screen *ebiten.Image, region *world.Region) {
 	canAdd := region != nil && !region.IsSea
-	canRegion := region != nil
 	canSettlement := r.hasEditSelection()
 	addSettlementLabel := "Yerlesim Ekle"
 	settlementTypeLabel := "Yerlesim Tipi"
@@ -200,25 +227,47 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	drawEditInspectorButton(screen, editButtonSettlementType, settlementTypeLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonSetCenterSettlement, "Merkez Yap", canSettlement)
 	drawEditInspectorButton(screen, editButtonRenameSettlement, renameSettlementLabel, canSettlement)
+	drawEditInspectorButton(screen, editButtonDeleteSettlement, deleteSettlementLabel, canSettlement)
+	r.drawEditArmyButtons(screen, region)
+}
+
+func (r *Renderer) drawEditArmyButtons(screen *ebiten.Image, region *world.Region) {
+	drawEditInspectorButton(screen, editButtonAddArmy, "Ordu Ekle", r.canAddEditLandArmy(region))
+	drawEditInspectorButton(screen, editButtonAddFleet, "Donanma Ekle", r.canAddEditFleet(region))
+	drawEditInspectorButton(screen, editButtonDeleteArmy, "Ordu Sil", r.SelectedArmy != "")
+	unitTypeLabel := "Birim Tipi"
+	if r.editSelectedUnitType != "" {
+		unitTypeLabel = "Birim Tipi: " + r.editSelectedUnitType
+	}
+	drawEditInspectorButton(screen, editButtonArmyUnitType, unitTypeLabel, r.SelectedArmy != "")
+	drawEditInspectorButton(screen, editButtonArmyUnitMinus, "Birim -", r.canRemoveSelectedArmyUnit())
+	drawEditInspectorButton(screen, editButtonArmyUnitPlus, "Birim +", r.canAddSelectedArmyUnit())
+	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
+}
+
+func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Region) {
+	canRegion := region != nil
+	drawEditInspectorButton(screen, editButtonAddRegion, "Bölge Ekle", canRegion)
+	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölge Sil", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
-	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionName, "Ad EN", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
-	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komsu Sync", canRegion)
-	drawEditInspectorButton(screen, editButtonAddRegion, "Bolge Ekle", canRegion)
-	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bolge Sil", canRegion)
-	drawEditInspectorButton(screen, editButtonDeleteSettlement, deleteSettlementLabel, canSettlement)
-	drawEditInspectorButton(screen, editButtonSetFactionCapital, "Başkent Yap", r.canSetSelectedFactionCapital())
-	drawEditInspectorButton(screen, editButtonSaveScenario, "Değişiklikleri Kaydet", true)
+	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", canRegion)
 }
 
-func drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
+func drawEditInspectorSaveButton(screen *ebiten.Image) {
+	rect := editInspectorButtonRect(editButtonSaveScenario)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), "Değişiklikleri Kaydet", true)
+}
+
+func (r *Renderer) drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
 	rect := editInspectorTabRect(tab)
-	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, true)
+	active := r.editInspectorTab == tab || (tab == editInspectorMap && r.editInspectorTab == editInspectorShape)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, active)
 }
 
 func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
@@ -226,7 +275,7 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 	region := r.gs.Regions[r.editSelectedRegion]
 	f := r.selectedEditFaction()
 
-	DrawText(screen, "GENIS VERI EDITORU", float64(x)+14, ly, FaceSmall, ColorGold)
+	DrawText(screen, "DEVLET VE ORDU", float64(x)+14, ly, FaceSmall, ColorGold)
 	ly += 22
 	if f == nil {
 		DrawText(screen, "Sahipli bolge veya ordu sec.", float64(x)+14, ly, FaceSmall, ColorGray)
@@ -265,22 +314,33 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 		DrawText(screen, "Ordu secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
 	}
 
-	drawEditInspectorButton(screen, editButtonAddFaction, "Faction Ekle", true)
-	drawEditInspectorButton(screen, editButtonEditFaction, "Faction Duzenle", f != nil)
-	drawEditInspectorButton(screen, editButtonDeleteFaction, "Faction Sil", f != nil)
-	drawEditInspectorButton(screen, editButtonAddArmy, "Ordu Ekle", r.canAddEditLandArmy(region))
-	drawEditInspectorButton(screen, editButtonAddFleet, "Donanma Ekle", r.canAddEditFleet(region))
-	drawEditInspectorButton(screen, editButtonDeleteArmy, "Ordu Sil", r.SelectedArmy != "")
-	unitTypeLabel := "Birim Tipi"
-	if r.editSelectedUnitType != "" {
-		unitTypeLabel = "Birim Tipi: " + r.editSelectedUnitType
-	}
-	drawEditInspectorButton(screen, editButtonArmyUnitType, unitTypeLabel, r.SelectedArmy != "")
-	drawEditInspectorButton(screen, editButtonArmyUnitMinus, "Birim -", r.canRemoveSelectedArmyUnit())
-	drawEditInspectorButton(screen, editButtonArmyUnitPlus, "Birim +", r.canAddSelectedArmyUnit())
-	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
-	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+	canRegion := region != nil
+	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionSuccessor, "Ardıl Devlet", canRegion && !region.IsSea)
+	drawEditInspectorButton(screen, editButtonSetFactionCapital, "Başkent Yap", r.canSetSelectedFactionCapital())
+	drawEditInspectorButton(screen, editButtonAddFaction, "Devlet Ekle", true)
+	drawEditInspectorButton(screen, editButtonEditFaction, "Devlet Düzenle", f != nil)
+	drawEditInspectorButton(screen, editButtonDeleteFaction, "Devlet Sil", f != nil)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
+	drawUIDropdown(screen, r.editOwnerDropdown)
+	drawUIDropdown(screen, r.editSuccessorDropdown)
+}
+
+func (r *Renderer) drawEditScenarioDataInspector(screen *ebiten.Image, ly float64) {
+	x, _, _, _ := editInspectorRect()
+	DrawText(screen, "SENARYO VERİLERİ", float64(x)+14, ly, FaceSmall, ColorGold)
+	ly += 24
+	DrawText(screen, "Bu senaryodaki düzenlemeler geçici olarak tutulur.", float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 18
+	DrawText(screen, "Kaydet düğmesi tüm sekmelerde panelin altındadır.", float64(x)+14, ly, FaceSmall, ColorGray)
+	ly += 24
+	DrawText(screen, "Undo: "+itoa(len(r.editUndoStack))+"   Redo: "+itoa(len(r.editRedoStack)), float64(x)+14, ly, FaceSmall, ColorWhite)
+	ly += 22
+	if r.editDirty {
+		DrawText(screen, "Durum: Kaydedilmemiş değişiklikler var.", float64(x)+14, ly, FaceSmall, ColorGold)
+	} else {
+		DrawText(screen, "Durum: Tüm değişiklikler kayıtlı.", float64(x)+14, ly, FaceSmall, ColorGray)
+	}
 }
 
 func (r *Renderer) drawEditArmyUnitCounts(screen *ebiten.Image, a *army.Army, x, y float64) {
@@ -288,46 +348,9 @@ func (r *Renderer) drawEditArmyUnitCounts(screen *ebiten.Image, a *army.Army, x,
 		DrawText(screen, "Birim yok.", x, y, FaceSmall, ColorGray)
 		return
 	}
-	var types [army.MaxArmySize]string
-	var counts [army.MaxArmySize]int
-	typeCount := 0
-	for _, unit := range a.Units {
-		found := -1
-		for i := 0; i < typeCount; i++ {
-			if types[i] == unit.TypeID {
-				found = i
-				break
-			}
-		}
-		if found >= 0 {
-			counts[found]++
-			continue
-		}
-		if typeCount < len(types) {
-			types[typeCount] = unit.TypeID
-			counts[typeCount] = 1
-			typeCount++
-		}
-	}
-	drawn := 0
-	for i := 0; i < typeCount; i++ {
-		typeID := types[i]
-		name := typeID
-		if utype := r.gs.UnitTypes[typeID]; utype != nil {
-			name = utype.NameTR
-			if name == "" {
-				name = utype.Name
-			}
-		}
-		DrawText(screen, name+": "+itoa(counts[i]), x, y+float64(drawn*16), FaceSmall, ColorGray)
-		drawn++
-		if drawn >= 4 {
-			if typeCount > drawn {
-				DrawText(screen, "...", x, y+float64(drawn*16), FaceSmall, ColorGray)
-			}
-			return
-		}
-	}
+	// Devlet sekmesinin düğmeleriyle çakışmaması için ayrıntılı dağılımı
+	// satır satır büyütmek yerine tek satırlık özet tutuyoruz.
+	DrawText(screen, "Birim toplamı: "+itoa(len(a.Units)), x, y, FaceSmall, ColorGray)
 }
 
 func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
@@ -538,6 +561,7 @@ const (
 	editButtonSetFactionCapital
 	editButtonRegionTerrain
 	editButtonRegionOwner
+	editButtonRegionSuccessor
 	editButtonRegionNameTR
 	editButtonRegionName
 	editButtonRegionID
@@ -572,7 +596,10 @@ const (
 )
 
 func editInspectorRect() (float32, float32, float32, float32) {
-	const w, h = float32(360), float32(580)
+	// 550 px yükseklik, üstteki Edit Mode yardım HUD'ı ile çakışmayı önler.
+	// İçerik sekmelere dağıtıldığı için önceki dar panelden daha dengeli
+	// ve beş sekmenin okunabildiği 440 px genişlik kullanılır.
+	const w, h = float32(440), float32(550)
 	return 18, float32(ScreenHeight) - h - 18, w, h
 }
 
@@ -582,96 +609,103 @@ func editInspectorHit(mx, my float64) bool {
 }
 
 func editInspectorButtonRect(kind editInspectorButton) uiRect {
-	x, y, _, h := editInspectorRect()
-	const bw, bh, gap = float64(158), float64(24), float64(4)
+	x, y, w, h := editInspectorRect()
+	const bh, gap = float64(26), float64(6)
 	left := float64(x) + 14
-	right := left + bw + gap
-	row1 := float64(y) + float64(h) - 264
-	row2 := row1 + bh + gap
-	row3 := row2 + bh + gap
-	row4 := row3 + bh + gap
-	row5 := row4 + bh + gap
-	row6 := row5 + bh + gap
-	row7 := row6 + bh + gap
-	row8 := row7 + bh + gap
-	row9 := row8 + bh + gap
+	bw := float64(w) - 28
+	colW := (bw - gap) / 2
+	right := left + colW + gap
+	row := func(index int) float64 {
+		return float64(y) + float64(h) - 298 + float64(index)*(bh+gap)
+	}
+	full := func(index int) uiRect {
+		return uiRect{left, row(index), bw, bh}
+	}
+	leftRect := func(index int) uiRect {
+		return uiRect{left, row(index), colW, bh}
+	}
+	rightRect := func(index int) uiRect {
+		return uiRect{right, row(index), colW, bh}
+	}
 	switch kind {
 	case editButtonAddSettlement:
-		return uiRect{left, row1, bw, bh}
+		return leftRect(0)
 	case editButtonSettlementType:
-		return uiRect{right, row1, bw, bh}
+		return rightRect(0)
 	case editButtonSetCenterSettlement:
-		return uiRect{left, row2, bw, bh}
+		return leftRect(1)
 	case editButtonRenameSettlement:
-		return uiRect{right, row2, bw, bh}
-	case editButtonRegionTerrain:
-		return uiRect{left, row3, bw, bh}
-	case editButtonRegionOwner:
-		return uiRect{right, row3, bw, bh}
-	case editButtonRegionNameTR:
-		return uiRect{left, row4, bw, bh}
-	case editButtonRegionName:
-		return uiRect{right, row4, bw, bh}
-	case editButtonRegionID:
-		return uiRect{left, row5, bw, bh}
-	case editButtonRegionLock:
-		return uiRect{right, row5, bw, bh}
-	case editButtonUnlockMinus:
-		return uiRect{left, row6, (bw - gap) / 2, bh}
-	case editButtonUnlockPlus:
-		return uiRect{left + (bw+gap)/2, row6, (bw - gap) / 2, bh}
-	case editButtonSyncNeighbors:
-		return uiRect{left, row7, bw, bh}
-	case editButtonAddRegion:
-		return uiRect{right, row7, bw, bh}
-	case editButtonDeleteRegion:
-		return uiRect{left, row8, bw, bh}
+		return rightRect(1)
 	case editButtonDeleteSettlement:
-		return uiRect{right, row8, bw, bh}
+		return leftRect(2)
+	case editButtonAddRegion:
+		return leftRect(0)
+	case editButtonDeleteRegion:
+		return rightRect(0)
+	case editButtonRegionTerrain:
+		return rightRect(1)
+	case editButtonRegionNameTR:
+		return leftRect(2)
+	case editButtonRegionName:
+		return rightRect(2)
+	case editButtonRegionID:
+		return leftRect(3)
+	case editButtonRegionLock:
+		return rightRect(3)
+	case editButtonUnlockMinus:
+		return leftRect(4)
+	case editButtonUnlockPlus:
+		return rightRect(4)
+	case editButtonSyncNeighbors:
+		return full(5)
 	case editButtonSetFactionCapital:
-		return uiRect{left, row9, bw, bh}
+		return leftRect(1)
 	case editButtonSaveScenario:
-		return uiRect{right, row9, bw, bh}
+		return uiRect{left, float64(y) + float64(h) - 42, bw, 32}
+	case editButtonRegionSuccessor:
+		return rightRect(0)
+	case editButtonRegionOwner:
+		return leftRect(0)
 	case editButtonShapePaint:
-		return uiRect{left, row1, bw, bh}
+		return leftRect(0)
 	case editButtonShapeErase:
-		return uiRect{right, row1, bw, bh}
+		return rightRect(0)
 	case editButtonShapeRegionPaint:
-		return uiRect{left, row2, bw, bh}
+		return leftRect(1)
 	case editButtonShapeRegionErase:
-		return uiRect{right, row2, bw, bh}
+		return rightRect(1)
 	case editButtonShapeBrushMinus:
-		return uiRect{left, row3, bw, bh}
+		return leftRect(2)
 	case editButtonShapeBrushPlus:
-		return uiRect{right, row3, bw, bh}
+		return rightRect(2)
 	case editButtonLandPassageAdd:
-		return uiRect{left, row4, bw, bh}
+		return leftRect(3)
 	case editButtonLandPassageAdjust:
-		return uiRect{right, row4, bw, bh}
+		return rightRect(3)
 	case editButtonLandPassageDelete:
-		return uiRect{left, row5, bw, bh}
+		return leftRect(4)
 	case editButtonAddNeighbor:
-		return uiRect{right, row5, bw, bh}
+		return rightRect(4)
 	case editButtonAddFaction:
-		return uiRect{left, row1, bw, bh}
+		return rightRect(1)
 	case editButtonEditFaction:
-		return uiRect{right, row1, bw, bh}
+		return leftRect(2)
 	case editButtonDeleteFaction:
-		return uiRect{left, row2, bw, bh}
+		return rightRect(2)
 	case editButtonAddArmy:
-		return uiRect{right, row2, bw, bh}
+		return leftRect(3)
 	case editButtonAddFleet:
-		return uiRect{left, row3, bw, bh}
+		return rightRect(3)
 	case editButtonDeleteArmy:
-		return uiRect{right, row3, bw, bh}
+		return leftRect(4)
 	case editButtonArmyUnitType:
-		return uiRect{left, row4, bw, bh}
+		return full(5)
 	case editButtonArmyUnitMinus:
-		return uiRect{right, row4, (bw - gap) / 2, bh}
+		return leftRect(6)
 	case editButtonArmyUnitPlus:
-		return uiRect{right + (bw+gap)/2, row4, (bw - gap) / 2, bh}
+		return rightRect(6)
 	case editButtonArmyOwnerFromRegion:
-		return uiRect{right, row5, bw, bh}
+		return full(7)
 	default:
 		return uiRect{}
 	}
@@ -679,9 +713,28 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 
 func editInspectorTabRect(tab editInspectorTab) uiRect {
 	x, y, _, _ := editInspectorRect()
-	const tw, th, gap = float64(68), float64(24), float64(8)
-	left := float64(x) + 82 + float64(tab)*(tw+gap)
-	return uiRect{left, float64(y) + 9, tw, th}
+	const th, gap = float64(30), float64(5)
+	left := float64(x) + 82
+	widths := [...]float64{112, 54, 54, 58, 54}
+	index := -1
+	switch tab {
+	case editInspectorSettlement:
+		index = 0
+	case editInspectorRegion:
+		index = 1
+	case editInspectorFaction:
+		index = 2
+	case editInspectorMap:
+		index = 3
+	case editInspectorData:
+		index = 4
+	default:
+		return uiRect{}
+	}
+	for i := 0; i < index; i++ {
+		left += widths[i] + gap
+	}
+	return uiRect{left, float64(y) + 9, widths[index], th}
 }
 
 func buildEditInspectorTabButton(tab editInspectorTab, label string) gameui.Button {
@@ -700,7 +753,72 @@ func editInspectorButtonAt(mx, my float64) editInspectorButton {
 }
 
 func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
-	for kind := editButtonAddSettlement; kind <= editButtonSaveScenario; kind++ {
+	// Geriye dönük yardımcı: eski çağrılar hem bölge hem yerleşim
+	// düğmelerini bu fonksiyon üzerinden arıyordu. Çakışan gizli sekme
+	// düğmelerinin yanlış action üretmemesi için açık liste kullanılır.
+	if buildEditInspectorActionButton(editButtonSetFactionCapital, "").HitTest(mx, my) {
+		return editButtonSetFactionCapital
+	}
+	if kind := editRegionInspectorButtonAt(mx, my); kind != editButtonNone {
+		return kind
+	}
+	if kind := editSettlementInspectorButtonAt(mx, my); kind != editButtonNone {
+		return kind
+	}
+	return editButtonNone
+}
+
+func editSettlementInspectorButtonAt(mx, my float64) editInspectorButton {
+	for _, kind := range [...]editInspectorButton{
+		editButtonAddSettlement,
+		editButtonSettlementType,
+		editButtonSetCenterSettlement,
+		editButtonRenameSettlement,
+		editButtonDeleteSettlement,
+		editButtonAddArmy,
+		editButtonAddFleet,
+		editButtonDeleteArmy,
+		editButtonArmyUnitType,
+		editButtonArmyUnitMinus,
+		editButtonArmyUnitPlus,
+		editButtonArmyOwnerFromRegion,
+	} {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
+			return kind
+		}
+	}
+	return editButtonNone
+}
+
+func editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
+	for _, kind := range [...]editInspectorButton{
+		editButtonAddRegion,
+		editButtonDeleteRegion,
+		editButtonRegionTerrain,
+		editButtonRegionNameTR,
+		editButtonRegionName,
+		editButtonRegionID,
+		editButtonRegionLock,
+		editButtonUnlockMinus,
+		editButtonUnlockPlus,
+		editButtonSyncNeighbors,
+	} {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
+			return kind
+		}
+	}
+	return editButtonNone
+}
+
+func editFactionInspectorButtonAt(mx, my float64) editInspectorButton {
+	for _, kind := range [...]editInspectorButton{
+		editButtonRegionOwner,
+		editButtonRegionSuccessor,
+		editButtonSetFactionCapital,
+		editButtonAddFaction,
+		editButtonEditFaction,
+		editButtonDeleteFaction,
+	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
@@ -709,23 +827,26 @@ func editMapInspectorButtonAt(mx, my float64) editInspectorButton {
 }
 
 func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
-	for kind := editButtonShapePaint; kind <= editButtonAddNeighbor; kind++ {
+	for _, kind := range [...]editInspectorButton{
+		editButtonShapePaint,
+		editButtonShapeErase,
+		editButtonShapeRegionPaint,
+		editButtonShapeRegionErase,
+		editButtonShapeBrushMinus,
+		editButtonShapeBrushPlus,
+		editButtonLandPassageAdd,
+		editButtonLandPassageAdjust,
+		editButtonLandPassageDelete,
+		editButtonAddNeighbor,
+	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
-	}
-	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
-		return editButtonSaveScenario
 	}
 	return editButtonNone
 }
 
 func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
-	for kind := editButtonAddFaction; kind <= editButtonArmyOwnerFromRegion; kind++ {
-		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
-			return kind
-		}
-	}
 	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
@@ -733,18 +854,29 @@ func editDataInspectorButtonAt(mx, my float64) editInspectorButton {
 }
 
 func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButton {
-	if buildEditInspectorTabButton(editInspectorMap, "").HitTest(mx, my) ||
-		buildEditInspectorTabButton(editInspectorShape, "").HitTest(mx, my) ||
+	if buildEditInspectorTabButton(editInspectorSettlement, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorRegion, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorFaction, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorMap, "").HitTest(mx, my) ||
 		buildEditInspectorTabButton(editInspectorData, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
-	if r.editInspectorTab == editInspectorShape {
+	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
+		return editButtonSaveScenario
+	}
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		return editShapeInspectorButtonAt(mx, my)
 	}
 	if r.editInspectorTab == editInspectorData {
 		return editDataInspectorButtonAt(mx, my)
 	}
-	return editMapInspectorButtonAt(mx, my)
+	if r.editInspectorTab == editInspectorSettlement {
+		return editSettlementInspectorButtonAt(mx, my)
+	}
+	if r.editInspectorTab == editInspectorFaction {
+		return editFactionInspectorButtonAt(mx, my)
+	}
+	return editRegionInspectorButtonAt(mx, my)
 }
 
 const (
@@ -777,6 +909,7 @@ func editSettlementTypeDropdownRect() (float32, float32, float32, float32) {
 func (r *Renderer) updateEditDropdownPositions() {
 	dx, dy, _, _ := editOwnerDropdownRect()
 	r.editOwnerDropdown.SetPosition(float64(dx), float64(dy))
+	r.editSuccessorDropdown.SetPosition(float64(dx), float64(dy))
 	r.editTerrainDropdown.SetPosition(float64(dx), float64(dy))
 	r.editSettlementTypeDropdown.SetPosition(float64(dx), float64(dy))
 	r.editUnitTypeDropdown.SetPosition(float64(dx), float64(dy))
@@ -1124,6 +1257,14 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
+	if r.editSuccessorDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editSuccessorDropdown.HitTest(fx, fy) {
+			r.editSuccessorDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+	}
+
 	if r.editTerrainDropdown.IsOpen() {
 		_, wheelY := ebiten.Wheel()
 		if wheelY != 0 && r.editTerrainDropdown.HitTest(fx, fy) {
@@ -1148,7 +1289,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
-	if !r.editOwnerDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() && !r.editUnitTypeDropdown.IsOpen() {
+	if !r.editOwnerDropdown.IsOpen() && !r.editSuccessorDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() && !r.editUnitTypeDropdown.IsOpen() {
 		r.handleCamera()
 	}
 
@@ -1183,6 +1324,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editOwnerDropdown.Close()
+		r.editSuccessorDropdown.Close()
 		r.editTerrainDropdown.Close()
 		r.editSettlementTypeDropdown.Close()
 		r.editUnitTypeDropdown.Close()
@@ -1239,11 +1381,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		return InputAction{}
 	}
 
-	if r.editInspectorTab == editInspectorShape && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
+	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
 		return InputAction{}
 	}
 
-	if r.editInspectorTab == editInspectorShape {
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		if rightJustPressed && r.beginShapePaintStroke(fx, fy) {
 			return InputAction{}
 		}
@@ -1260,6 +1402,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if leftJustPressed {
+		r.editSuccessorDropdown.Close()
 		if editModifierPressed() {
 			rid := r.editRegionAt(fx, fy)
 			if rid != "" {
@@ -1384,6 +1527,20 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 			return InputAction{}, false
 		}
 	}
+	if r.editSuccessorDropdown.IsOpen() {
+		if idx, ok := r.editSuccessorDropdown.GetSelectedOption(fx, fy); ok {
+			r.setSelectedRegionSuccessor(r.editSuccessorDropdown.OptionAt(idx))
+			r.editSuccessorDropdown.Close()
+			return InputAction{}, true
+		}
+		if r.editSuccessorDropdown.HitTest(fx, fy) {
+			return InputAction{}, true
+		}
+		if !editInspectorHit(fx, fy) {
+			r.editSuccessorDropdown.Close()
+			return InputAction{}, false
+		}
+	}
 	if r.editTerrainDropdown.IsOpen() {
 		if idx, ok := r.editTerrainDropdown.GetSelectedOption(fx, fy); ok {
 			r.setSelectedRegionTerrain(world.TerrainType(r.editTerrainDropdown.OptionAt(idx)))
@@ -1429,45 +1586,82 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
-	if buildEditInspectorTabButton(editInspectorMap, "Harita").HitTest(fx, fy) {
-		r.editInspectorTab = editInspectorMap
+	if buildEditInspectorTabButton(editInspectorSettlement, "Yerleşim Birimi").HitTest(fx, fy) {
+		r.editInspectorTab = editInspectorSettlement
 		return InputAction{}, true
 	}
-	if buildEditInspectorTabButton(editInspectorShape, "Shape").HitTest(fx, fy) {
-		r.editInspectorTab = editInspectorShape
+	if buildEditInspectorTabButton(editInspectorRegion, "Bölge").HitTest(fx, fy) {
+		r.editInspectorTab = editInspectorRegion
+		return InputAction{}, true
+	}
+	if buildEditInspectorTabButton(editInspectorFaction, "Devlet").HitTest(fx, fy) {
+		r.editInspectorTab = editInspectorFaction
+		return InputAction{}, true
+	}
+	if buildEditInspectorTabButton(editInspectorMap, "Harita").HitTest(fx, fy) {
+		r.editInspectorTab = editInspectorMap
 		return InputAction{}, true
 	}
 	if buildEditInspectorTabButton(editInspectorData, "Veri").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorData
 		return InputAction{}, true
 	}
-	if r.editInspectorTab == editInspectorShape {
+	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
+		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		return r.handleEditShapeInspectorClick(fx, fy)
 	}
 	if r.editInspectorTab == editInspectorData {
 		return r.handleEditDataInspectorClick(fx, fy)
 	}
-	switch editMapInspectorButtonAt(fx, fy) {
-	case editButtonAddSettlement:
-		r.addSettlementToSelectedRegion()
-	case editButtonSettlementType:
-		if r.hasEditSelection() {
-			r.toggleEditSettlementTypeDropdown()
+	if r.editInspectorTab == editInspectorFaction {
+		return r.handleEditFactionInspectorClick(fx, fy)
+	}
+	if r.editInspectorTab == editInspectorSettlement {
+		switch editSettlementInspectorButtonAt(fx, fy) {
+		case editButtonAddSettlement:
+			r.addSettlementToSelectedRegion()
+		case editButtonSettlementType:
+			if r.hasEditSelection() {
+				r.toggleEditSettlementTypeDropdown()
+			}
+		case editButtonSetCenterSettlement:
+			if r.hasEditSelection() {
+				r.setSelectedSettlementCapital()
+			}
+		case editButtonRenameSettlement:
+			if r.hasEditSelection() {
+				r.beginEditRename(editTextSettlementNameTR)
+			}
+		case editButtonDeleteSettlement:
+			if r.hasEditSelection() {
+				r.deleteSelectedSettlement()
+			}
+		case editButtonAddArmy:
+			r.addEditLandArmy()
+		case editButtonAddFleet:
+			r.addEditFleet()
+		case editButtonDeleteArmy:
+			r.deleteSelectedArmy()
+		case editButtonArmyUnitType:
+			r.toggleEditUnitTypeDropdown()
+		case editButtonArmyUnitMinus:
+			r.removeSelectedArmyUnit()
+		case editButtonArmyUnitPlus:
+			r.addSelectedArmyUnit()
+		case editButtonArmyOwnerFromRegion:
+			r.setSelectedArmyOwnerFromRegion()
 		}
-	case editButtonSetCenterSettlement:
-		if r.hasEditSelection() {
-			r.setSelectedSettlementCapital()
-		}
-	case editButtonSetFactionCapital:
+		return InputAction{}, true
+	}
+	if r.hasEditSelection() && buildEditInspectorActionButton(editButtonSetFactionCapital, "").HitTest(fx, fy) {
 		r.setSelectedFactionCapital()
-	case editButtonRenameSettlement:
-		if r.hasEditSelection() {
-			r.beginEditRename(editTextSettlementNameTR)
-		}
+		return InputAction{}, true
+	}
+	switch editRegionInspectorButtonAt(fx, fy) {
 	case editButtonRegionTerrain:
 		r.toggleEditTerrainDropdown()
-	case editButtonRegionOwner:
-		r.toggleEditOwnerDropdown()
 	case editButtonRegionNameTR:
 		r.beginEditRename(editTextRegionNameTR)
 	case editButtonRegionName:
@@ -1490,8 +1684,24 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		if r.hasEditSelection() {
 			r.deleteSelectedSettlement()
 		}
-	case editButtonSaveScenario:
-		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	return InputAction{}, true
+}
+
+func (r *Renderer) handleEditFactionInspectorClick(fx, fy float64) (InputAction, bool) {
+	switch editFactionInspectorButtonAt(fx, fy) {
+	case editButtonRegionOwner:
+		r.toggleEditOwnerDropdown()
+	case editButtonRegionSuccessor:
+		r.toggleEditSuccessorDropdown()
+	case editButtonSetFactionCapital:
+		r.setSelectedFactionCapital()
+	case editButtonAddFaction:
+		r.openFactionCreateForm()
+	case editButtonEditFaction:
+		r.openFactionEditForm()
+	case editButtonDeleteFaction:
+		r.deleteSelectedFaction()
 	}
 	return InputAction{}, true
 }
@@ -1545,10 +1755,27 @@ func (r *Renderer) toggleEditOwnerDropdown() {
 		return
 	}
 
+	r.editSuccessorDropdown.Close()
 	dx, dy, _, _ := editOwnerDropdownRect()
 	r.editOwnerDropdown.SetPosition(float64(dx), float64(dy))
 	r.editOwnerDropdown.SetOptions(editOwnerOptions(r.gs.Factions), region.OwnerID)
 	r.editOwnerDropdown.Toggle()
+}
+
+func (r *Renderer) toggleEditSuccessorDropdown() {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea {
+		r.editSuccessorDropdown.Close()
+		return
+	}
+	r.editOwnerDropdown.Close()
+	r.editTerrainDropdown.Close()
+	r.editSettlementTypeDropdown.Close()
+	r.editUnitTypeDropdown.Close()
+	dx, dy, _, _ := editOwnerDropdownRect()
+	r.editSuccessorDropdown.SetPosition(float64(dx), float64(dy))
+	r.editSuccessorDropdown.SetOptions(editOwnerOptions(r.gs.Factions), region.SuccessorFactionID)
+	r.editSuccessorDropdown.Toggle()
 }
 
 func (r *Renderer) toggleEditTerrainDropdown() {
@@ -1994,31 +2221,32 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 	rid := nextRegionID(r.gs)
 	nameNo := itoa(len(r.gs.Regions) + 1)
 	region := &world.Region{
-		ID:               rid,
-		Name:             "New Region " + nameNo,
-		NameTR:           "Yeni Bolge " + nameNo,
-		Terrain:          source.Terrain,
-		OwnerID:          source.OwnerID,
-		WorldX:           x,
-		WorldY:           y,
-		ShapeID:          source.ShapeID,
-		IsSea:            source.IsSea,
-		IsLocked:         source.IsLocked,
-		UnlockTurn:       source.UnlockTurn,
-		BaseGoldIncome:   source.BaseGoldIncome,
-		BaseGrainOutput:  source.BaseGrainOutput,
-		BaseIronOutput:   source.BaseIronOutput,
-		BaseTimberOutput: source.BaseTimberOutput,
-		BaseSpiceOutput:  source.BaseSpiceOutput,
-		BaseClothOutput:  source.BaseClothOutput,
-		TradeCapacity:    source.TradeCapacity,
-		Satisfaction:     source.Satisfaction,
-		TaxRate:          source.TaxRate,
-		Population:       source.Population,
-		RuralPopulation:  source.RuralPopulation,
-		Religion:         source.Religion,
-		ActiveEventID:    source.ActiveEventID,
-		Buildings:        cloneStringSlice(source.Buildings),
+		ID:                 rid,
+		Name:               "New Region " + nameNo,
+		NameTR:             "Yeni Bolge " + nameNo,
+		Terrain:            source.Terrain,
+		OwnerID:            source.OwnerID,
+		SuccessorFactionID: source.SuccessorFactionID,
+		WorldX:             x,
+		WorldY:             y,
+		ShapeID:            source.ShapeID,
+		IsSea:              source.IsSea,
+		IsLocked:           source.IsLocked,
+		UnlockTurn:         source.UnlockTurn,
+		BaseGoldIncome:     source.BaseGoldIncome,
+		BaseGrainOutput:    source.BaseGrainOutput,
+		BaseIronOutput:     source.BaseIronOutput,
+		BaseTimberOutput:   source.BaseTimberOutput,
+		BaseSpiceOutput:    source.BaseSpiceOutput,
+		BaseClothOutput:    source.BaseClothOutput,
+		TradeCapacity:      source.TradeCapacity,
+		Satisfaction:       source.Satisfaction,
+		TaxRate:            source.TaxRate,
+		Population:         source.Population,
+		RuralPopulation:    source.RuralPopulation,
+		Religion:           source.Religion,
+		ActiveEventID:      source.ActiveEventID,
+		Buildings:          cloneStringSlice(source.Buildings),
 	}
 	if region.Terrain == "" {
 		if region.IsSea {
@@ -2194,6 +2422,30 @@ func (r *Renderer) setSelectedRegionOwner(ownerID string) {
 		},
 	})
 	r.editDirty = true
+}
+
+func (r *Renderer) setSelectedRegionSuccessor(successorID string) {
+	region, ok := r.gs.Regions[r.editSelectedRegion]
+	if !ok || region == nil || region.IsSea || region.SuccessorFactionID == successorID {
+		return
+	}
+	rid := region.ID
+	old := region.SuccessorFactionID
+	region.SuccessorFactionID = successorID
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setRegionSuccessorValue(rid, old) },
+		redo: func(rr *Renderer) { rr.setRegionSuccessorValue(rid, successorID) },
+	})
+}
+
+func (r *Renderer) setRegionSuccessorValue(rid world.RegionID, successorID string) {
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	region.SuccessorFactionID = successorID
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
 }
 
 func (r *Renderer) setSettlementNameTR(rid world.RegionID, index int, name string) {

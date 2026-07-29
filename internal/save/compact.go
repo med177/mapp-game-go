@@ -32,17 +32,18 @@ type settlementPatch struct {
 }
 
 type regionSaveState struct {
-	OwnerID         *string          `json:"o,omitempty"`
-	Settlements     *settlementPatch `json:"sp,omitempty"`
-	IsLocked        *bool            `json:"l,omitempty"`
-	Satisfaction    *int             `json:"sat,omitempty"`
-	TaxRate         *int             `json:"tx,omitempty"`
-	Population      *int             `json:"pop,omitempty"`
-	RuralPopulation *int             `json:"rpop,omitempty"`
-	Religion        *string          `json:"rel,omitempty"`
-	ConversionTurns *int             `json:"conv,omitempty"`
-	ActiveEventID   *string          `json:"evt,omitempty"`
-	Buildings       *stringList      `json:"b,omitempty"`
+	OwnerID            *string          `json:"o,omitempty"`
+	SuccessorFactionID *string          `json:"sf,omitempty"`
+	Settlements        *settlementPatch `json:"sp,omitempty"`
+	IsLocked           *bool            `json:"l,omitempty"`
+	Satisfaction       *int             `json:"sat,omitempty"`
+	TaxRate            *int             `json:"tx,omitempty"`
+	Population         *int             `json:"pop,omitempty"`
+	RuralPopulation    *int             `json:"rpop,omitempty"`
+	Religion           *string          `json:"rel,omitempty"`
+	ConversionTurns    *int             `json:"conv,omitempty"`
+	ActiveEventID      *string          `json:"evt,omitempty"`
+	Buildings          *stringList      `json:"b,omitempty"`
 }
 
 type factionSaveState struct {
@@ -140,17 +141,18 @@ type campaignSaveState struct {
 }
 
 type legacyRegionSaveState struct {
-	OwnerID         string             `json:"owner_id"`
-	Settlements     []world.Settlement `json:"settlements"`
-	IsLocked        bool               `json:"is_locked"`
-	Satisfaction    int                `json:"satisfaction"`
-	TaxRate         int                `json:"tax_rate"`
-	Population      int                `json:"population"`
-	RuralPopulation int                `json:"rural_population,omitempty"`
-	Religion        string             `json:"religion"`
-	ConversionTurns int                `json:"conversion_turns,omitempty"`
-	ActiveEventID   string             `json:"active_event_id"`
-	Buildings       []string           `json:"buildings"`
+	OwnerID            string             `json:"owner_id"`
+	SuccessorFactionID string             `json:"successor_faction_id,omitempty"`
+	Settlements        []world.Settlement `json:"settlements"`
+	IsLocked           bool               `json:"is_locked"`
+	Satisfaction       int                `json:"satisfaction"`
+	TaxRate            int                `json:"tax_rate"`
+	Population         int                `json:"population"`
+	RuralPopulation    int                `json:"rural_population,omitempty"`
+	Religion           string             `json:"religion"`
+	ConversionTurns    int                `json:"conversion_turns,omitempty"`
+	ActiveEventID      string             `json:"active_event_id"`
+	Buildings          []string           `json:"buildings"`
 }
 
 type legacyFactionSaveState struct {
@@ -279,14 +281,15 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 	for rid, region := range legacy.Regions {
 		regionCopy := region
 		converted := regionSaveState{
-			OwnerID:         cloneStringPtr(regionCopy.OwnerID),
-			IsLocked:        cloneBoolPtr(regionCopy.IsLocked),
-			Satisfaction:    cloneIntPtr(regionCopy.Satisfaction),
-			TaxRate:         cloneIntPtr(regionCopy.TaxRate),
-			Population:      cloneIntPtr(regionCopy.Population),
-			Religion:        cloneStringPtr(regionCopy.Religion),
-			ConversionTurns: cloneIntPtr(regionCopy.ConversionTurns),
-			ActiveEventID:   cloneStringPtr(regionCopy.ActiveEventID),
+			OwnerID:            cloneStringPtr(regionCopy.OwnerID),
+			SuccessorFactionID: cloneStringPtr(regionCopy.SuccessorFactionID),
+			IsLocked:           cloneBoolPtr(regionCopy.IsLocked),
+			Satisfaction:       cloneIntPtr(regionCopy.Satisfaction),
+			TaxRate:            cloneIntPtr(regionCopy.TaxRate),
+			Population:         cloneIntPtr(regionCopy.Population),
+			Religion:           cloneStringPtr(regionCopy.Religion),
+			ConversionTurns:    cloneIntPtr(regionCopy.ConversionTurns),
+			ActiveEventID:      cloneStringPtr(regionCopy.ActiveEventID),
 		}
 		if regionCopy.RuralPopulation > 0 {
 			converted.RuralPopulation = cloneIntPtr(regionCopy.RuralPopulation)
@@ -502,16 +505,17 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 			continue
 		}
 		regions[rid] = legacyRegionSaveState{
-			OwnerID:         region.OwnerID,
-			Settlements:     append([]world.Settlement(nil), region.Settlements...),
-			IsLocked:        region.IsLocked,
-			Satisfaction:    region.Satisfaction,
-			TaxRate:         region.TaxRate,
-			Population:      region.Population,
-			Religion:        region.Religion,
-			ConversionTurns: region.ConversionTurns,
-			ActiveEventID:   region.ActiveEventID,
-			Buildings:       append([]string(nil), region.Buildings...),
+			OwnerID:            region.OwnerID,
+			SuccessorFactionID: region.SuccessorFactionID,
+			Settlements:        append([]world.Settlement(nil), region.Settlements...),
+			IsLocked:           region.IsLocked,
+			Satisfaction:       region.Satisfaction,
+			TaxRate:            region.TaxRate,
+			Population:         region.Population,
+			Religion:           region.Religion,
+			ConversionTurns:    region.ConversionTurns,
+			ActiveEventID:      region.ActiveEventID,
+			Buildings:          append([]string(nil), region.Buildings...),
 		}
 	}
 
@@ -702,6 +706,9 @@ func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
 	if base == nil || current.OwnerID != base.OwnerID {
 		out.OwnerID = cloneStringPtr(current.OwnerID)
 	}
+	if base == nil || current.SuccessorFactionID != base.SuccessorFactionID {
+		out.SuccessorFactionID = cloneStringPtr(current.SuccessorFactionID)
+	}
 	if patch, ok := diffSettlements(base, current); ok {
 		out.Settlements = patch
 	}
@@ -742,6 +749,9 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 	}
 	if saved.OwnerID != nil {
 		region.OwnerID = *saved.OwnerID
+	}
+	if saved.SuccessorFactionID != nil {
+		region.SuccessorFactionID = *saved.SuccessorFactionID
 	}
 	if saved.IsLocked != nil {
 		region.IsLocked = *saved.IsLocked
@@ -1486,6 +1496,7 @@ func cloneAIPlans(src map[faction.FactionID]*state.AIPlanState) map[faction.Fact
 
 func isZeroRegionSaveState(saved regionSaveState) bool {
 	return saved.OwnerID == nil &&
+		saved.SuccessorFactionID == nil &&
 		saved.Settlements == nil &&
 		saved.IsLocked == nil &&
 		saved.Satisfaction == nil &&

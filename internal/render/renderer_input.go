@@ -648,6 +648,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
+		if regionLiberateButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
+			return InputAction{Kind: ActionLiberateSuccessor, TargetRegion: r.SelectedRegion}
+		}
 		if regionGrainAidButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
 				return InputAction{Kind: ActionGrainAid, TargetRegion: r.SelectedRegion}

@@ -202,6 +202,38 @@ func TestImperialStateRoundTripInCompactPayload(t *testing.T) {
 	}
 }
 
+func TestRegionSuccessorRoundTripInCompactPayload(t *testing.T) {
+	base := &world.Region{ID: "r1", OwnerID: "player", SuccessorFactionID: "old_state"}
+	current := &world.Region{ID: "r1", OwnerID: "player", SuccessorFactionID: "old_state"}
+
+	current.SuccessorFactionID = "restored_state"
+	delta, changed := makeRegionSaveState(current, base)
+	if !changed || delta.SuccessorFactionID == nil || *delta.SuccessorFactionID != "restored_state" {
+		t.Fatalf("ardıl devlet save delta'sına yazılmadı: changed=%v delta=%+v", changed, delta)
+	}
+
+	encoding, payload, err := encodeCompressedStatePayload(campaignSaveState{
+		Regions: map[world.RegionID]regionSaveState{"r1": delta},
+	})
+	if err != nil {
+		t.Fatalf("ardıl devlet compact payload oluşturulamadı: %v", err)
+	}
+	raw, err := decodeCompressedStatePayload(encoding, payload)
+	if err != nil {
+		t.Fatalf("ardıl devlet compact payload çözülemedi: %v", err)
+	}
+	var saved campaignSaveState
+	if err := json.Unmarshal(raw, &saved); err != nil {
+		t.Fatalf("ardıl devlet compact payload parse edilemedi: %v", err)
+	}
+
+	restored := *base
+	applyRegionSaveState(&restored, saved.Regions["r1"])
+	if restored.SuccessorFactionID != "restored_state" {
+		t.Fatalf("ardıl devlet save/load sonrasında korunmadı: got=%q", restored.SuccessorFactionID)
+	}
+}
+
 func TestArmyCommanderRoundTrip(t *testing.T) {
 	commander := army.NewCommander("cmd_1", "Mihri Hanım")
 	commander.Experience = army.CommanderLevel3XP

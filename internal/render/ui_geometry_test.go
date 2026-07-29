@@ -212,6 +212,50 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	}
 }
 
+func TestEditInspectorTabsAndSaveAreaStaySeparated(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	px, py, pw, ph := editInspectorRect()
+	if pw < 440 || ph != 550 {
+		t.Fatalf("editor paneli beklenmeyen boyutta: %.0fx%.0f", pw, ph)
+	}
+
+	tabs := [...]editInspectorTab{
+		editInspectorSettlement,
+		editInspectorRegion,
+		editInspectorFaction,
+		editInspectorMap,
+		editInspectorData,
+	}
+	for i, tab := range tabs {
+		rect := editInspectorTabRect(tab)
+		if rect[0] < float64(px) || rect[1] < float64(py) || rect[0]+rect[2] > float64(px+pw) || rect[1]+rect[3] > float64(py+ph) {
+			t.Fatalf("%d. edit sekmesi panel dışına taşıyor: %+v panel=(%.0f,%.0f,%.0f,%.0f)", i, rect, px, py, pw, ph)
+		}
+		if i > 0 {
+			prev := editInspectorTabRect(tabs[i-1])
+			if rect[0] < prev[0]+prev[2] {
+				t.Fatalf("edit sekmeleri örtüşüyor: önceki=%+v mevcut=%+v", prev, rect)
+			}
+		}
+	}
+
+	save := editInspectorButtonRect(editButtonSaveScenario)
+	if save[1]+save[3] != float64(py+ph-10) || save[0] != float64(px+14) || save[2] != float64(pw-28) {
+		t.Fatalf("kaydet alanı panelin altına sabitlenmemiş: %+v panel=(%.0f,%.0f,%.0f,%.0f)", save, px, py, pw, ph)
+	}
+	if editShapeInspectorButtonAt(save[0]+save[2]/2, save[1]+save[3]/2) != editButtonNone {
+		t.Fatalf("Harita action hit-test'i ortak kaydet alanını tüketiyor")
+	}
+	if editDataInspectorButtonAt(save[0]+save[2]/2, save[1]+save[3]/2) != editButtonSaveScenario {
+		t.Fatalf("ortak kaydet alanı Veri hit-test'inde bulunamadı")
+	}
+}
+
 func TestEmptyRegionDoesNotCreateSettlementLabel(t *testing.T) {
 	r := &Renderer{
 		gs: &state.GameState{

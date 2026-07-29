@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
 ---
 
@@ -65,6 +65,21 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 ## Veri Dosyaları (`data/` klasörü)
 
 Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
+
+### regions.json ardıl devlet alanı
+
+Kara bölgesinde isteğe bağlı `successor_faction_id` alanı, fetih sonrası yeniden
+kurulabilecek fraksiyonun ID'sini taşır:
+
+```json
+{
+  "id": "constantinople",
+  "owner_id": "east_rome",
+  "successor_faction_id": "east_rome"
+}
+```
+
+Bu alan edit mode `Ardıl Devlet` düğmesiyle yazılır; compact save karşılığı `sf`dir.
 
 ## imperial.json
 

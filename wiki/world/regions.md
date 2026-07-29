@@ -1,7 +1,7 @@
 ---
 type: world
-tags: [regions, terrain, map, neighbors, coastal]
-last_updated: 2026-07-26
+tags: [regions, terrain, map, neighbors, coastal, succession]
+last_updated: 2026-07-29
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -16,6 +16,7 @@ type Region struct {
     ID        RegionID
     NameTR    string
     OwnerID   string           // fraksiyon ID veya ""
+    SuccessorFactionID string   // fetih sonrası yeniden kurulabilecek devlet
     Terrain   TerrainType
     Neighbors []RegionID       // komşu bölge listesi
 
@@ -36,6 +37,12 @@ type Region struct {
     ActiveEventID   string
 }
 ```
+
+`successor_faction_id`, edit mode'da `Ardıl Devlet` düğmesiyle atanır. Bölge oyuncu
+tarafından fethedildiğinde bu fraksiyon `is_eliminated=true` ise bilgi panelinde
+`Özgürleştir` görünür; aksiyon bölgeyi ardıl devlete verir ve devletin yeniden
+kuruluş state'ini başlatır. 1300 senaryosunda başkent settlement'ı bulunan ve
+sahibi eşleşen 68 bölge başlangıçta kendi sahibiyle işaretlidir.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_capital` ile seçilir. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 

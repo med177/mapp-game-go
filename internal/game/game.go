@@ -362,6 +362,8 @@ func (g *Game) Update() error {
 			g.sendGift(action.TargetFaction)
 		case render.ActionGrainAid:
 			g.applyGrainAid(action.TargetRegion)
+		case render.ActionLiberateSuccessor:
+			g.liberateSuccessor(action.TargetRegion)
 		case render.ActionProposeAlliance:
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
@@ -2389,68 +2391,70 @@ func writeScenarioLandPassages(gs *state.GameState) error {
 func writeScenarioRegions(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "regions.json")
 	type regionExport struct {
-		ID               world.RegionID    `json:"id"`
-		Name             string            `json:"name"`
-		NameTR           string            `json:"name_tr"`
-		Terrain          world.TerrainType `json:"terrain"`
-		OwnerID          string            `json:"owner_id"`
-		Neighbors        []world.RegionID  `json:"neighbors"`
-		WorldX           int               `json:"world_x"`
-		WorldY           int               `json:"world_y"`
-		ShapeID          string            `json:"shape_id,omitempty"`
-		IsSea            bool              `json:"is_sea"`
-		IsLocked         bool              `json:"is_locked"`
-		UnlockTurn       int               `json:"unlock_turn"`
-		BaseGoldIncome   int               `json:"base_gold_income"`
-		BaseGrainOutput  int               `json:"base_grain_output"`
-		BaseIronOutput   int               `json:"base_iron_output"`
-		BaseTimberOutput int               `json:"base_timber_output"`
-		BaseStoneOutput  int               `json:"base_stone_output"`
-		BaseSpiceOutput  int               `json:"base_spice_output"`
-		BaseClothOutput  int               `json:"base_cloth_output"`
-		TradeCapacity    int               `json:"trade_capacity"`
-		Satisfaction     int               `json:"satisfaction"`
-		TaxRate          int               `json:"tax_rate"`
-		Population       int               `json:"population"`
-		RuralPopulation  int               `json:"rural_population"`
-		Religion         string            `json:"religion"`
-		ConversionTurns  int               `json:"conversion_turns,omitempty"`
-		ActiveEventID    string            `json:"active_event_id"`
-		Buildings        []string          `json:"buildings"`
+		ID                 world.RegionID    `json:"id"`
+		Name               string            `json:"name"`
+		NameTR             string            `json:"name_tr"`
+		Terrain            world.TerrainType `json:"terrain"`
+		OwnerID            string            `json:"owner_id"`
+		SuccessorFactionID string            `json:"successor_faction_id,omitempty"`
+		Neighbors          []world.RegionID  `json:"neighbors"`
+		WorldX             int               `json:"world_x"`
+		WorldY             int               `json:"world_y"`
+		ShapeID            string            `json:"shape_id,omitempty"`
+		IsSea              bool              `json:"is_sea"`
+		IsLocked           bool              `json:"is_locked"`
+		UnlockTurn         int               `json:"unlock_turn"`
+		BaseGoldIncome     int               `json:"base_gold_income"`
+		BaseGrainOutput    int               `json:"base_grain_output"`
+		BaseIronOutput     int               `json:"base_iron_output"`
+		BaseTimberOutput   int               `json:"base_timber_output"`
+		BaseStoneOutput    int               `json:"base_stone_output"`
+		BaseSpiceOutput    int               `json:"base_spice_output"`
+		BaseClothOutput    int               `json:"base_cloth_output"`
+		TradeCapacity      int               `json:"trade_capacity"`
+		Satisfaction       int               `json:"satisfaction"`
+		TaxRate            int               `json:"tax_rate"`
+		Population         int               `json:"population"`
+		RuralPopulation    int               `json:"rural_population"`
+		Religion           string            `json:"religion"`
+		ConversionTurns    int               `json:"conversion_turns,omitempty"`
+		ActiveEventID      string            `json:"active_event_id"`
+		Buildings          []string          `json:"buildings"`
 	}
 	cloneRegion := func(region *world.Region) *regionExport {
 		if region == nil {
 			return nil
 		}
 		out := &regionExport{
-			ID:               region.ID,
-			Name:             region.Name,
-			NameTR:           region.NameTR,
-			Terrain:          region.Terrain,
-			OwnerID:          region.OwnerID,
-			Neighbors:        append([]world.RegionID(nil), region.Neighbors...),
-			WorldX:           region.WorldX,
-			WorldY:           region.WorldY,
-			ShapeID:          region.ShapeID,
-			IsSea:            region.IsSea,
-			IsLocked:         region.IsLocked,
-			UnlockTurn:       region.UnlockTurn,
-			BaseGoldIncome:   region.BaseGoldIncome,
-			BaseGrainOutput:  region.BaseGrainOutput,
-			BaseIronOutput:   region.BaseIronOutput,
-			BaseTimberOutput: region.BaseTimberOutput,
-			BaseStoneOutput:  region.BaseStoneOutput,
-			BaseSpiceOutput:  region.BaseSpiceOutput,
-			BaseClothOutput:  region.BaseClothOutput,
-			TradeCapacity:    region.TradeCapacity,
-			Satisfaction:     region.Satisfaction,
-			TaxRate:          region.TaxRate,
-			Population:       region.Population,
-			RuralPopulation:  region.RuralPopulation,
-			Religion:         region.Religion,
-			ConversionTurns:  region.ConversionTurns,
-			ActiveEventID:    region.ActiveEventID,
-			Buildings:        append([]string(nil), region.Buildings...),
+			ID:                 region.ID,
+			Name:               region.Name,
+			NameTR:             region.NameTR,
+			Terrain:            region.Terrain,
+			OwnerID:            region.OwnerID,
+			SuccessorFactionID: region.SuccessorFactionID,
+			Neighbors:          append([]world.RegionID(nil), region.Neighbors...),
+			WorldX:             region.WorldX,
+			WorldY:             region.WorldY,
+			ShapeID:            region.ShapeID,
+			IsSea:              region.IsSea,
+			IsLocked:           region.IsLocked,
+			UnlockTurn:         region.UnlockTurn,
+			BaseGoldIncome:     region.BaseGoldIncome,
+			BaseGrainOutput:    region.BaseGrainOutput,
+			BaseIronOutput:     region.BaseIronOutput,
+			BaseTimberOutput:   region.BaseTimberOutput,
+			BaseStoneOutput:    region.BaseStoneOutput,
+			BaseSpiceOutput:    region.BaseSpiceOutput,
+			BaseClothOutput:    region.BaseClothOutput,
+			TradeCapacity:      region.TradeCapacity,
+			Satisfaction:       region.Satisfaction,
+			TaxRate:            region.TaxRate,
+			Population:         region.Population,
+			RuralPopulation:    region.RuralPopulation,
+			Religion:           region.Religion,
+			ConversionTurns:    region.ConversionTurns,
+			ActiveEventID:      region.ActiveEventID,
+			Buildings:          append([]string(nil), region.Buildings...),
 		}
 		return out
 	}
@@ -3855,6 +3859,95 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.retreatArmiesFromCapturedRegion(targetRegion.ID, newOwnerID)
 	g.evictDockedFleetsFromCapturedPort(targetRegion.ID, newOwnerID)
 	return eliminationResult{}
+}
+
+const (
+	liberatedFactionGold   = 150
+	liberatedFactionGrain  = 100
+	liberatedFactionIron   = 20
+	liberatedFactionTimber = 20
+	liberatedFactionCloth  = 10
+	liberatedMilitiaCount  = 5
+)
+
+// liberateSuccessor, seçili bölgede tanımlı ardıl devleti yeniden oyuna alır.
+// İşlem yalnız oyuncunun kontrol ettiği, ardıl devletin ise gerçekten elendiği
+// bölgelerde geçerlidir; böylece editör metadata'sı tek başına sahte diriliş
+// oluşturamaz.
+func (g *Game) liberateSuccessor(regionID world.RegionID) {
+	if g == nil || g.gs == nil || regionID == "" {
+		return
+	}
+	region := g.gs.Regions[regionID]
+	if region == nil || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) || region.SuccessorFactionID == "" {
+		return
+	}
+	successorID := faction.FactionID(region.SuccessorFactionID)
+	if successorID == g.gs.PlayerFactionID {
+		return
+	}
+	successor := g.gs.Factions[successorID]
+	if successor == nil || !successor.IsEliminated || len(g.gs.LandRegionsOwnedBy(successorID)) != 0 {
+		return
+	}
+
+	// Oyuncunun fetih orduları yeni kurulan devletin toprağında kalmasın.
+	g.retreatArmiesFromCapturedRegion(regionID, string(successorID))
+	region.OwnerID = string(successorID)
+	successor.IsEliminated = false
+	successor.Gold = liberatedFactionGold
+	successor.Grain = liberatedFactionGrain
+	successor.Iron = liberatedFactionIron
+	successor.Timber = liberatedFactionTimber
+	successor.Stone = 0
+	successor.Spice = 0
+	successor.Cloth = liberatedFactionCloth
+	successor.OverlordID = ""
+	successor.PendingCapitalSettlementID = ""
+	successor.PendingCapitalTurns = 0
+
+	if g.gs.Armies == nil {
+		g.gs.Armies = make(map[army.ArmyID]*army.Army)
+	}
+	g.gs.NextArmySeq++
+	armyID := army.ArmyID(fmt.Sprintf("army_%s_%d", successorID, g.gs.NextArmySeq))
+	for g.gs.Armies[armyID] != nil {
+		g.gs.NextArmySeq++
+		armyID = army.ArmyID(fmt.Sprintf("army_%s_%d", successorID, g.gs.NextArmySeq))
+	}
+	newArmy := &army.Army{
+		ID:            armyID,
+		OwnerID:       string(successorID),
+		RegionID:      regionID,
+		Units:         army.MakeUnits("militia", liberatedMilitiaCount),
+		IsNaval:       false,
+		IsGarrison:    false,
+		MaxMovePoints: army.DefaultArmyMovePoints,
+		MovePoints:    army.DefaultArmyMovePoints,
+	}
+	if g.gs.UnitTypes != nil {
+		newArmy.MaxMovePoints = newArmy.BaseMovePoints(g.gs.UnitTypes)
+		newArmy.MovePoints = newArmy.MaxMovePoints
+	}
+	g.gs.Armies[armyID] = newArmy
+
+	// Ardıl devlet, onu özgürleştiren devletin müttefiki olarak başlar.
+	diplomacy.ForceRelation(g.gs, g.gs.PlayerFactionID, successorID, faction.StanceAllied, 50)
+	g.gs.NormalizeFactionCapitals()
+	g.gs.RefreshArmyMovePoints(false)
+	if g.renderer != nil {
+		name := successor.NameTR
+		if name == "" {
+			name = successor.Name
+		}
+		if name == "" {
+			name = string(successorID)
+		}
+		message := fmt.Sprintf("%s yeniden kuruldu: %s bölgesi özgürleştirildi, 5 milis göreve başladı.", name, region.NameTR)
+		g.renderer.ShowCombatResult(message)
+		g.renderer.AddEventDetail("[ÖZGÜRLÜK] "+message, fmt.Sprintf("%s devleti yeniden oyuna döndü ve özgürleştiren devletle müttefik oldu.", name))
+		g.renderer.MarkMapDirty()
+	}
 }
 
 func (g *Game) announceElimination(result eliminationResult) {

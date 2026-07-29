@@ -191,6 +191,10 @@ func (r *Renderer) updateCursorShape() {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
+		if r.editSuccessorDropdown.IsOpen() && r.editSuccessorDropdown.HitTest(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if r.editTerrainDropdown.IsOpen() && r.editTerrainDropdown.HitTest(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return

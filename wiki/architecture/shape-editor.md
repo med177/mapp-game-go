@@ -65,7 +65,7 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,
   komşuları, geçişleri, ordu/donanma konumlarını, paint override'larını ve
   editor seçim state'ini birlikte taşır; undo/redo world snapshot ile korunur.
-- Deniz region'ları `shape_id` taşımadıkları için `Shape Boya/Sil` değil, aynı sekmedeki `Bolge Boya/Sil` aracıyla düzenlenir; bu akış `region_shapes.json` override katmanına yazar ve deniz bölgeleri arasında alan aktarımı yapar. Aynı araç kara region seçiliyken de ülke dış sınırının dışına taşan bölge genişletmelerini kalıcı override olarak saklar; sonraki stroke'larda baseline override öncesi world map'ten üretildiği için daha önce boyanan dış piksel tekrar fırçadan geçti diye kayıttan düşmez.
+- Deniz region'ları `shape_id` taşımadıkları için `Sınır Boya/Sil` değil, aynı sekmedeki `Bölge Boya/Sil` aracıyla düzenlenir; bu akış `region_shapes.json` override katmanına yazar ve deniz bölgeleri arasında alan aktarımı yapar. Aynı araç kara region seçiliyken de ülke dış sınırının dışına taşan bölge genişletmelerini kalıcı override olarak saklar; sonraki stroke'larda baseline override öncesi world map'ten üretildiği için daha önce boyanan dış piksel tekrar fırçadan geçti diye kayıttan düşmez.
 
 ## Sınırlamalar
 

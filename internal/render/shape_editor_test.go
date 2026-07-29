@@ -117,16 +117,16 @@ func TestShapeInspectorToolButtonsToggleOff(t *testing.T) {
 
 	shapePaint := editInspectorButtonRect(editButtonShapePaint)
 	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
-		t.Fatal("shape boya butonu tıklanmadı")
+		t.Fatal("sınır boya butonu tıklanmadı")
 	}
 	if r.editShapeTool != editShapeToolShape || r.editShapeBrushMode != editShapeBrushPaint {
-		t.Fatalf("shape boya seçilmedi: tool=%d mode=%d", r.editShapeTool, r.editShapeBrushMode)
+		t.Fatalf("sınır boya seçilmedi: tool=%d mode=%d", r.editShapeTool, r.editShapeBrushMode)
 	}
 	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
-		t.Fatal("shape boya ikinci tıklaması işlenmedi")
+		t.Fatal("sınır boya ikinci tıklaması işlenmedi")
 	}
 	if r.editShapeTool != editShapeToolNone {
-		t.Fatalf("shape boya ikinci tıklamada kapanmadı: tool=%d", r.editShapeTool)
+		t.Fatalf("sınır boya ikinci tıklamada kapanmadı: tool=%d", r.editShapeTool)
 	}
 
 	regionErase := editInspectorButtonRect(editButtonShapeRegionErase)

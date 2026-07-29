@@ -13,6 +13,12 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
 
+`world.Region.SuccessorFactionID` senaryo metadata'sıdır ve compact save'de `sf`
+delta alanıyla korunur. Böylece edit mode ataması, fetih sonrası özgürleştirme ve
+save/load aynı bölge state'ini kullanır. Özgürleştirme runtime'da ardıl fraksiyonun
+`IsEliminated` bayrağını kaldırır, kaynak/ordu/ittifak başlangıcını kurar ve başkenti
+`NormalizeFactionCapitals()` ile yeniden belirler.
+
 Geliştirme modunda save yükleme sonrası ilk beş AI fazı için
 `AIDiagnosticHistory` ve `AIDiagnosticCaptureTurnsRemain` geçici runtime alanları
 kullanılır. Bu alanlar normal compact campaign payload'ına girmez; beşinci fazdan

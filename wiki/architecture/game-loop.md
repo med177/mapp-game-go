@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-07-23
+last_updated: 2026-07-29
 related: [state-management, render-pipeline]
 ---
 
@@ -71,14 +71,18 @@ PhaseTurnResolution                    │
 | Bölge adı değiştir | HUD `Ad TR` / `Ad EN` | Region `name_tr` veya `name` alanını inline metin girişiyle düzenler |
 | Bölge kilidi düzenle | HUD `Kilit`, `-10 Tur`, `+10 Tur` | `is_locked` ve `unlock_turn` alanlarını düzenler |
 | Komşuları senkronize et | HUD `Komsu Sync` | Seçili region'ın raster/Voronoi görsel komşularını JSON `neighbors` listesine yazar ve karşı tarafı iki yönlü günceller |
-| Geniş veri düzenle | HUD `Veri` sekmesi | Faction ekleme/düzenleme formu açılır; ID, adlar, din, renk, playable, kaynaklar, AI değeri ve seçili hedef faction ile başlangıç diplomasi `stance/score` değeri formdan girilir. Faction silme ve seçili ordunun başlangıç region/owner alanı da buradadır |
+| Yerleşim ve ordu düzenle | `Yerleşim Birimi` sekmesi | Yerleşim ekle, tip değiştir, ana yerleşim yap, adlandır/sil ve başlangıç ordusu-donanması ile birim sayısı işlemleri aynı sekmede toplanır |
+| Bölge düzenle | `Bölge` sekmesi | Bölge ekle/sil, arazi, ad, ID, kilit, açılış turu ve görsel komşu senkronu burada bulunur |
+| Devlet düzenle | `Devlet` sekmesi | Sahip/ardıl devlet, ulusal başkent ve devlet formu işlemleri burada bulunur |
+| Harita şekli ve geçit | `Harita` sekmesi | Shape/region boya-sil, fırça, kara geçidi ve komşu ekleme araçlarını içerir |
+| Senaryo verisi | `Veri` sekmesi | Undo/redo durumu ve kayıt bilgisi burada gösterilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |
 | Geri al / ileri al | Ctrl+Z / Ctrl+Y veya Ctrl+Shift+Z | Edit command stack üzerinden settlement, bölge merkezi ve temel alan değişikliklerini geri alır veya yeniden uygular |
 | Senaryo kaydet | Ctrl+S | Aktif senaryonun `data/regions.json`, `data/factions.json`, `data/relations.json` ve `data/armies.json` dosyalarına yazar |
 | Ana menüye dön | Esc | Değişiklik yoksa edit mode'dan çıkar; kaydedilmemiş değişiklik varsa `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekli modal açar |
 
-Alt-sol bilgi HUD'u seçili bölge, settlement veya ordu özetini gösterir. `Harita` sekmesi settlement/region metadata araçlarını, `Veri` sekmesi region dışı başlangıç verisi araçlarını gösterir. `Tip`, `Arazi` ve `Sahip` seçimleri dropdown ile yapılır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
+Alt-sol inspector beş sekmeye ayrılır: `Yerleşim Birimi`, `Bölge`, `Devlet`, `Harita` ve `Veri`. Seçili bölge/settlement/ordu özeti sekme içeriğinin üstünde kalır; düğmeler ortak geometriyle çizilir ve aynı geometriyle hit-test edilir. `Değişiklikleri Kaydet` tüm sekmelerde panelin en altında sabitlenmiştir; `Tip`, `Arazi`, `Sahip` ve `Ardıl Devlet` seçimleri ilgili sekmeden dropdown ile yapılır. Bölge seçiliyken HUD'dan eklenen settlement bölge merkezine konur ve sonradan sürüklenebilir.
 
 Voronoi debug overlay açıkken camgöbeği pikseller seçili/hover bölgenin gerçek raster sınırını gösterir. Yeşil çizgi hem raster/Voronoi komşusu hem JSON komşusu olan bölgeyi, kırmızı çizgi sadece görsel komşu olan bölgeyi, gri çizgi ise sadece JSON `neighbors` listesinde olan bölgeyi gösterir. Sağ üst debug paneli hover edilen pixel'in `RegionAt` sonucunu ve senaryo koordinatını gösterir.
 

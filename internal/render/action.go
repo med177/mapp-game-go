@@ -54,6 +54,7 @@ const (
 	ActionDeclareWarAndMove        ActionKind = "declare_war_and_move" // savaş ilan et + orduyu taşı
 	ActionAnnexDefeatedFaction     ActionKind = "annex_defeated_faction"
 	ActionVassalizeDefeatedFaction ActionKind = "vassalize_defeated_faction"
+	ActionLiberateSuccessor        ActionKind = "liberate_successor"
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"
 	ActionEditMode                  ActionKind = "edit_mode"

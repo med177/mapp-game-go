@@ -244,6 +244,28 @@ func TestEditModeSetsSelectedSettlementAsFactionCapital(t *testing.T) {
 	}
 }
 
+func TestEditArmyActionsUseSettlementInspector(t *testing.T) {
+	actions := [...]editInspectorButton{
+		editButtonAddArmy,
+		editButtonAddFleet,
+		editButtonDeleteArmy,
+		editButtonArmyUnitType,
+		editButtonArmyUnitMinus,
+		editButtonArmyUnitPlus,
+		editButtonArmyOwnerFromRegion,
+	}
+	for _, want := range actions {
+		rect := editInspectorButtonRect(want)
+		mx, my := rect[0]+rect[2]/2, rect[1]+rect[3]/2
+		if got := editSettlementInspectorButtonAt(mx, my); got != want {
+			t.Fatalf("%v Yerleşim Birimi sekmesinde bulunamadı: got=%v rect=%v", want, got, rect)
+		}
+		if got := editFactionInspectorButtonAt(mx, my); got == want {
+			t.Fatalf("%v Devlet sekmesinde hâlâ aktif: rect=%v", want, rect)
+		}
+	}
+}
+
 func newSeaEditRenderer() *Renderer {
 	worldW := 64
 	worldH := 64

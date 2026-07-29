@@ -250,6 +250,7 @@ type Renderer struct {
 	editVoronoiDebug                 bool
 	editVoronoiDebugRegion           world.RegionID
 	editOwnerDropdown                *gameui.Dropdown
+	editSuccessorDropdown            *gameui.Dropdown
 	editTerrainDropdown              *gameui.Dropdown
 	editSettlementTypeDropdown       *gameui.Dropdown
 	editUnitTypeDropdown             *gameui.Dropdown
@@ -420,9 +421,16 @@ const (
 type editInspectorTab int
 
 const (
-	editInspectorMap editInspectorTab = iota
-	editInspectorShape
+	// editInspectorRegion sıfır değer olarak tutulur; eski test/akışlarda
+	// sekme seçilmeden yapılan bölge düzenleme tıklamalarını korur.
+	editInspectorRegion editInspectorTab = iota
+	editInspectorSettlement
+	editInspectorFaction
+	editInspectorMap
 	editInspectorData
+	// Shape ayrı bir görünür sekme değildir. Eski shape editor testleri ve
+	// kayıtlı editor state'leri için geriye dönük bir çalışma modu olarak kalır.
+	editInspectorShape
 )
 
 type warConfirmState struct {
@@ -533,6 +541,7 @@ func New(gs *state.GameState) *Renderer {
 		editRedoStack:               make([]editCommand, 0, 64),
 		editRegionPaintOverrides:    make(map[int]world.RegionID),
 		editOwnerDropdown:           gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editSuccessorDropdown:       gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Ardil Devlet Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editTerrainDropdown:         gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editUnitTypeDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
@@ -743,6 +752,7 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.gs = gs
+	r.editSuccessorDropdown.Close()
 	if gs.ScenarioPath != "" {
 		ActiveScenarioPath = gs.ScenarioPath
 		// Senaryo değişince asset cache'lerini sıfırla

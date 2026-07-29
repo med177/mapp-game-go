@@ -2291,6 +2291,11 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 		return
 	}
 	if region.OwnerID == string(gs.PlayerFactionID) {
+		if _, ok := regionLiberationSuccessor(gs, region); ok {
+			btn := buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+			drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
+			return
+		}
 		btn := buildRegionGrainAidButton(gs, region.ID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
 		return
@@ -4108,6 +4113,44 @@ func regionGrainAidButtonHitForTab(mx, my float64, gs *state.GameState, rid worl
 	barY := float32(regionPanelActionBarY(gs, region, activeTab))
 	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
 	return buildRegionGrainAidButton(gs, rid, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
+}
+
+func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (faction.FactionID, bool) {
+	if gs == nil || region == nil || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) || region.SuccessorFactionID == "" {
+		return "", false
+	}
+	successorID := faction.FactionID(region.SuccessorFactionID)
+	successor := gs.Factions[successorID]
+	if successor == nil || !successor.IsEliminated || len(gs.LandRegionsOwnedBy(successorID)) != 0 || successorID == gs.PlayerFactionID {
+		return "", false
+	}
+	return successorID, true
+}
+
+func buildRegionLiberateButton(px, py, pw, ph float32) gameui.Button {
+	const btnW = float32(112)
+	const btnH = float32(24)
+	x := px + 5
+	y := py + (ph-btnH)/2
+	_ = pw
+	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Özgürleştir")
+}
+
+func regionLiberateButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionLiberateButtonHitForTab(mx, my, gs, rid, regionPanelTabBuildings)
+}
+
+func regionLiberateButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
+	if gs == nil || rid == "" {
+		return false
+	}
+	region := gs.Regions[rid]
+	if _, ok := regionLiberationSuccessor(gs, region); !ok {
+		return false
+	}
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func armyPanelCloseHit(mx, my float64) bool {

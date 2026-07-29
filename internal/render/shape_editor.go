@@ -209,7 +209,6 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", false)
 		drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", false)
 		r.drawEditShapeLandPassageButtons(screen)
-		drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 		return
 	}
 	session := r.editShapeSession
@@ -274,19 +273,19 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	}
 	DrawText(screen, "Durum: "+strokeLabel+"   Mouse birakinca uygula+undo", float64(x)+14, ly, FaceSmall, ColorGray)
 
-	shapePaintLabel := "Shape Boya"
-	shapeEraseLabel := "Shape Sil"
+	shapePaintLabel := "Sınır Boya"
+	shapeEraseLabel := "Sınır Sil"
 	regionPaintLabel := "Bolge Boya"
 	regionEraseLabel := "Bolge Sil"
 	if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushPaint {
-		shapePaintLabel = "> Shape Boya"
+		shapePaintLabel = "> Sınır Boya"
 	} else if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushErase {
-		shapeEraseLabel = "> Shape Sil"
+		shapeEraseLabel = "> Sınır Sil"
 	}
 	if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushPaint {
-		regionPaintLabel = "> Bolge Boya"
+		regionPaintLabel = "> Bölge Boya"
 	} else if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushErase {
-		regionEraseLabel = "> Bolge Sil"
+		regionEraseLabel = "> Bölge Sil"
 	}
 	drawEditInspectorButton(screen, editButtonShapePaint, shapePaintLabel, r.canEditSelectedShape())
 	drawEditInspectorButton(screen, editButtonShapeErase, shapeEraseLabel, r.canEditSelectedShape())
@@ -296,7 +295,6 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
 	r.drawEditShapeLandPassageButtons(screen)
-	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
 }
 
 func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
@@ -363,7 +361,7 @@ func (r *Renderer) toggleEditShapeTool(tool editShapeTool, mode editShapeBrushMo
 }
 
 func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
-	if r.gs.Phase != state.PhaseEditMode || r.editInspectorTab != editInspectorShape {
+	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape) {
 		return
 	}
 	selectedRegion := r.selectedRegionForShapeTools()
@@ -428,7 +426,7 @@ func buildEditShapeHelpPanel() gameui.Panel {
 }
 
 func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {
-	if r.gs.Phase != state.PhaseEditMode || r.editInspectorTab != editInspectorShape {
+	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape) {
 		return false
 	}
 	if !r.canEditSelectedShape() && !r.canRegionPaintSelected() {

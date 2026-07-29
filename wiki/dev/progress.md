@@ -7,6 +7,25 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-29: Edit Mode inspector görsel olarak yeniden düzenlendi. `Yerleşim
+  Birimi`, `Bölge`, `Devlet`, `Harita` ve `Veri` sekmeleriyle settlement/ordu,
+  region, faction ve shape/geçit araçları ayrıştırıldı; ortak
+  `Değişiklikleri Kaydet` düğmesi tüm sekmelerde panelin en altında sabitlendi.
+  Dinamik sekme/action rect'leri ortak hit-test geometriyle çakışmayacak şekilde
+  düzenlendi. Regression: `TestEditInspectorTabsAndSaveAreaStaySeparated`;
+  doğrulama: `go test ./internal/render`.
+
+- 2026-07-29: Ardıl devlet/özgürleştirme mekaniği eklendi. Edit mode bölge
+  inspector'ında `Ardıl Devlet` dropdown'ı `successor_faction_id` yazar ve undo/redo
+  ile korunur. Fethedilen bölgenin ardıl fraksiyonu elenmişse bölge panelinde
+  `Özgürleştir` çıkar; aksiyon devleti düşük kaynaklarla, beş milisle ve
+  özgürleştiriciyle müttefik olarak normal AI akışına döndürür. 1300 senaryosunda
+  başkent sahibi eşleşen 68 bölge işaretlendi. Regression:
+  `TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance`,
+  `TestLiberationButtonOnlyAppearsForEliminatedSuccessor`,
+  `TestEditModeAssignsSuccessorWithUndoRedo`,
+  `Test1300ScenarioCapitalRegionsHaveSuccessorFaction`.
+
 - 2026-07-29: 1300 senaryosunda kara bölgelerinin settlement merkezleri tekilleştirildi;
   Constantine için Annaba merkez olarak tanımlandı. Iberia veri grafiğinde Aragon
   bölgesinin sahibi düzeltildi, Zaragoza Aragon'a taşındı, Almeria Granada'ya ve
@@ -118,7 +137,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kalınlığını koruyor. Regression: `TestSelectedBorderStyleCoversBothSidesOfRegionBoundary`,
   `TestSelectedMapBorderUsesThreePixelStroke`; doğrulama: `go test ./internal/render -count=1`.
 
-- 2026-07-28: Shape boya/sil maskesi dünya piksel çözünürlüğüne taşındı. En küçük
+- 2026-07-28: Sınır boya/sil maskesi dünya piksel çözünürlüğüne taşındı. En küçük
   fırça artık görünen nokta/çizgi karesini doğrudan boyuyor; tek pikselin ring
   dönüşümünden sonra aynı yerde kalması regression testiyle doğrulanıyor:
   `TestSingleShapeWorldPixelRoundTripsThroughRings`.
@@ -147,7 +166,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   world-space preview image'a artımlı yazılıyor; region stroke sırasında geçici
   piksel map/list allocation'ı kaldırıldı. Doğrulama: `go test ./internal/render -count=1`.
 
-- 2026-07-27: Edit mode `Shape Boya/Sil` ve `Bolge Boya/Sil` araçlarında fırça
+- 2026-07-27: Edit mode `Sınır Boya/Sil` ve `Bölge Boya/Sil` araçlarında fırça
   yarıçapının `1.00` altına iki ince kademe (`0.75`, `0.50`) eklendi. Canlı
   cursor, shape mask ve region override stroke aynı float yarıçapı kullanıyor;
   regression: `TestShapeBrushSupportsTwoFineStepsBelowOnePixelRadius`.
