@@ -23,6 +23,10 @@ bağımsız olarak panelin en altındaki ortak düğmedir. Panel geometrisi
 `internal/render/map_editor.go` içindeki rect helper'ları paylaşır; çizim ve
 hit-test böylece gizli sekme düğmelerinin üst üste binmesine izin vermez.
 
+Edit Mode input sözleşmesinde settlement konumu sağ tık sürüklemeyle taşınır;
+Shape ve Bölge boya/sil fırçaları sol tık sürüklemeyle çalışır. Sol tık harita
+seçimi ve diğer editor aksiyonları için korunur.
+
 Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
 focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.
 `.env` içindeki `EDIT_MODE=true` değeri menüye `EDIT MODE` satırını

@@ -266,6 +266,81 @@ func TestEditArmyActionsUseSettlementInspector(t *testing.T) {
 	}
 }
 
+func TestEditFleetCanUsePortSettlementWithoutPortBuilding(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", RequiredBldg: "port"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"coast": {
+				ID:        "coast",
+				OwnerID:   "player",
+				Neighbors: []world.RegionID{"sea"},
+				Settlements: []world.Settlement{{
+					ID:   "coast_port",
+					Type: world.SettlementPort,
+				}},
+			},
+			"sea": {ID: "sea", IsSea: true},
+		},
+	}
+	r := New(gs)
+	r.editSelectedRegion = "coast"
+	r.editSelectedSettlement = 0
+
+	if !r.canAddEditFleet(gs.Regions["coast"]) {
+		t.Fatal("port yerleşimi olan bölgede donanma ekleme pasif kaldı")
+	}
+	r.addEditFleet()
+
+	if len(gs.Armies) != 1 {
+		t.Fatalf("donanma eklenmedi: armies=%d", len(gs.Armies))
+	}
+	for _, fleet := range gs.Armies {
+		if !fleet.IsNaval || fleet.RegionID != "sea" || fleet.DockedRegionID != "coast" || fleet.DockedSettlementID != "coast_port" {
+			t.Fatalf("donanma liman/deniz konumu yanlış: %+v", fleet)
+		}
+	}
+}
+
+func TestSelectedArmyOwnerAssignmentUsesDockedRegion(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:             "fleet",
+				OwnerID:        "old_owner",
+				IsNaval:        true,
+				RegionID:       "sea",
+				DockedRegionID: "port_region",
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea":         {ID: "sea", IsSea: true},
+			"port_region": {ID: "port_region", OwnerID: "new_owner"},
+		},
+	}
+	r := New(gs)
+	r.SelectedArmy = "fleet"
+	r.editSelectedRegion = "sea"
+
+	if !r.canAssignSelectedArmyToRegionOwner() {
+		t.Fatal("farklı sahibi olan docked donanma için atama tuşu pasif")
+	}
+	r.setSelectedArmyOwnerFromRegion()
+	if got := gs.Armies["fleet"].OwnerID; got != "new_owner" {
+		t.Fatalf("docked donanma liman bölgesi sahibine atanmadı: got=%q", got)
+	}
+
+	if r.canAssignSelectedArmyToRegionOwner() {
+		t.Fatal("aynı sahibi olan donanma için atama tuşu aktif kalmamalı")
+	}
+	r.undoEditCommand()
+	if got := gs.Armies["fleet"].OwnerID; got != "old_owner" {
+		t.Fatalf("sahiplik undo ile geri alınmadı: got=%q", got)
+	}
+}
+
 func newSeaEditRenderer() *Renderer {
 	worldW := 64
 	worldH := 64

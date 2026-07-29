@@ -58,7 +58,7 @@ PhaseTurnResolution                    │
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | Yerleşim seç | Sol tık | En yakın settlement noktasını seçer |
-| Yerleşim taşı | Sol tık sürükle | `regions.json` içindeki settlement `x/y` değerlerini canlı günceller; başka kara bölgeye sürüklenirse settlement o bölgenin `settlements[]` listesine aktarılır |
+| Yerleşim taşı | Sağ tık sürükle | Seçili settlement'ın `regions.json` içindeki `x/y` değerlerini canlı günceller; başka kara bölgeye sürüklenirse settlement o bölgenin `settlements[]` listesine aktarılır |
 | Yerleşim ekle | Alt + sol tık | Tıklanan kara bölgeye yeni `city` settlement ekler; ID region içinde çakışmayacak şekilde üretilir |
 | Yerleşim sil | Delete | Seçili settlement'ı kaldırır; silinen settlement capital ise kalan ilk settlement capital yapılır |
 | Bölge ekle | Ctrl + Alt + sol tık veya HUD `Bolge Ekle` | Tıklanan/seçili region'ın `shape_id` alanını paylaşan yeni kara region seed'i oluşturur; Voronoi cache'i yenilenir ve görsel komşular iki yönlü yazılır |
@@ -74,7 +74,7 @@ PhaseTurnResolution                    │
 | Yerleşim ve ordu düzenle | `Yerleşim Birimi` sekmesi | Yerleşim ekle, tip değiştir, ana yerleşim yap, adlandır/sil ve başlangıç ordusu-donanması ile birim sayısı işlemleri aynı sekmede toplanır |
 | Bölge düzenle | `Bölge` sekmesi | Bölge ekle/sil, arazi, ad, ID, kilit, açılış turu ve görsel komşu senkronu burada bulunur |
 | Devlet düzenle | `Devlet` sekmesi | Sahip/ardıl devlet, ulusal başkent ve devlet formu işlemleri burada bulunur |
-| Harita şekli ve geçit | `Harita` sekmesi | Shape/region boya-sil, fırça, kara geçidi ve komşu ekleme araçlarını içerir |
+| Harita şekli ve geçit | `Harita` sekmesi | Shape/region boya-sil işlemleri sol tık sürükleyle, kara geçidi ve komşu ekleme araçları sol tıkla çalışır |
 | Senaryo verisi | `Veri` sekmesi | Undo/redo durumu ve kayıt bilgisi burada gösterilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |

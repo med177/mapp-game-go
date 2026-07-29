@@ -254,7 +254,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	} else if r.editShapeBrushMode == editShapeBrushErase {
 		modeLabel = "Sil"
 	}
-	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sag mouse drag", float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sol mouse drag", float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
 	if r.editShapeTool != editShapeToolNone {

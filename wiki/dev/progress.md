@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-29: Edit Mode mouse sözleşmesi ayrıştırıldı. Settlement konumu sağ
+  tık sürüklemeyle, Shape/Bölge boya-sil fırçaları sol tık sürüklemeyle
+  çalışıyor; sol tık seçim ve diğer editor aksiyonları için korunuyor.
+
+- 2026-07-29: Edit Mode ordu/filo aksiyonu `Bu Devlete Ata` olarak yeniden
+  adlandırıldı. Kara orduları için seçili bölge, docked filolar için
+  `DockedRegionID` ile gösterilen liman bölgesi sahiplik kaynağıdır; aksiyon
+  yalnız ordu sahibi ile bölge sahibi farklıysa aktifleşir. Regression:
+  `TestSelectedArmyOwnerAssignmentUsesDockedRegion`.
+
+- 2026-07-29: Edit Mode `Donanma Ekle` pasiflik hatası düzeltildi. Donanma
+  uygun kıyı bölgesindeki `port` yerleşimi veya `port` binası üzerinden
+  oluşturulabiliyor; filo komşu deniz bölgesine ve tercih edilen liman
+  settlement'ına dock ediliyor. Regression:
+  `TestEditFleetCanUsePortSettlementWithoutPortBuilding`.
+
 - 2026-07-29: Edit Mode inspector görsel olarak yeniden düzenlendi. `Yerleşim
   Birimi`, `Bölge`, `Devlet`, `Harita` ve `Veri` sekmeleriyle settlement/ordu,
   region, faction ve shape/geçit araçları ayrıştırıldı; ortak

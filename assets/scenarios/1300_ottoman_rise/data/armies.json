@@ -370,6 +370,20 @@
     ]
   },
   {
+    "id": "army_edit_114",
+    "owner_id": "papal_states_f",
+    "region_id": "adriatic_sea",
+    "docked_region_id": "papal_states",
+    "docked_settlement_id": "papal_states_ostia",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "army_edit_47",
     "owner_id": "ottoman",
     "region_id": "bilecik_frontier",

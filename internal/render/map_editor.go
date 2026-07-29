@@ -31,7 +31,8 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 		title += " *"
 	}
 	DrawText(screen, title, float64(x)+14, float64(y)+10, FaceMed, ColorGold)
-	DrawText(screen, "Sol: sec/tasi   Alt+sol: yerlesim   Ctrl+Alt+sol: bolge   Shift+sol: merkez   Ctrl+Z/Y: geri/ileri",
+	help := "Sol: sec | Sag surukle: yerlesim tasi | Alt+sol: ekle | Ctrl+Alt+sol: bolge | Shift+sol: merkez | Ctrl+Z/Y"
+	DrawText(screen, trimTextToWidth(help, FaceSmall, float64(panelW)-28),
 		float64(x)+14, float64(y)+36, FaceSmall, ColorWhite)
 
 	info := "Secili: yok"
@@ -242,7 +243,7 @@ func (r *Renderer) drawEditArmyButtons(screen *ebiten.Image, region *world.Regio
 	drawEditInspectorButton(screen, editButtonArmyUnitType, unitTypeLabel, r.SelectedArmy != "")
 	drawEditInspectorButton(screen, editButtonArmyUnitMinus, "Birim -", r.canRemoveSelectedArmyUnit())
 	drawEditInspectorButton(screen, editButtonArmyUnitPlus, "Birim +", r.canAddSelectedArmyUnit())
-	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Sahibi Al", r.SelectedArmy != "" && region != nil && region.OwnerID != "")
+	drawEditInspectorButton(screen, editButtonArmyOwnerFromRegion, "Bu Devlete Ata", r.canAssignSelectedArmyToRegionOwner())
 }
 
 func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Region) {
@@ -1293,7 +1294,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.handleCamera()
 	}
 
-	if r.editShapePainting && !rightPressed {
+	if r.editShapePainting && !leftPressed {
 		r.finishShapePaintStroke()
 		return InputAction{}
 	}
@@ -1363,6 +1364,37 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.finishEditLandPassageDrag()
 		return InputAction{}
 	}
+	if r.editDraggingSettlement {
+		if rightPressed {
+			r.moveSelectedSettlementTo(fx, fy)
+			return InputAction{}
+		}
+		r.finishSettlementDrag()
+		r.editDraggingSettlement = false
+		return InputAction{}
+	}
+	inspectorOverlayOpen := r.editOwnerDropdown.IsOpen() ||
+		r.editSuccessorDropdown.IsOpen() ||
+		r.editTerrainDropdown.IsOpen() ||
+		r.editSettlementTypeDropdown.IsOpen() ||
+		r.editUnitTypeDropdown.IsOpen()
+	if !r.editShapePainting && rightJustPressed && !inspectorOverlayOpen && !editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
+		if rid, idx, ok := r.editSettlementAt(fx, fy); ok {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
+			r.SelectedArmy = ""
+			r.editSelectedRegion = rid
+			r.setEditFactionFromRegion(rid)
+			r.editSelectedSettlement = idx
+			r.editDraggingRegion = false
+			r.editRenaming = false
+			r.beginSettlementDrag(rid)
+			r.editDraggingSettlement = true
+			return InputAction{}
+		}
+	}
 	if leftJustPressed {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
 			return action
@@ -1386,7 +1418,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
-		if rightJustPressed && r.beginShapePaintStroke(fx, fy) {
+		if leftJustPressed && r.beginShapePaintStroke(fx, fy) {
 			return InputAction{}
 		}
 		if r.editShapePainting {
@@ -1462,9 +1494,8 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editSelectedRegion = rid
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = idx
-			r.editDraggingSettlement = true
+			r.editDraggingSettlement = false
 			r.editDraggingRegion = false
-			r.beginSettlementDrag(rid)
 			return InputAction{}
 		}
 		if rid := r.editRegionAt(fx, fy); rid != "" {
@@ -1493,20 +1524,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.editDraggingRegion = false
 	}
 
-	if !leftPressed {
-		if r.editDraggingSettlement {
-			r.finishSettlementDrag()
-		}
-		r.editDraggingSettlement = false
-	}
-
 	if r.editDraggingRegion {
 		r.moveSelectedRegionCenterTo(fx, fy)
 		return InputAction{}
-	}
-
-	if r.editDraggingSettlement {
-		r.moveSelectedSettlementTo(fx, fy)
 	}
 
 	return InputAction{}
@@ -3809,7 +3829,7 @@ func (r *Renderer) canAddEditLandArmy(region *world.Region) bool {
 
 func (r *Renderer) canAddEditFleet(region *world.Region) bool {
 	return region != nil && !region.IsSea && r.editOwnerForRegion(region) != "" &&
-		region.HasPortBuilding() && r.selectedRegionHasPortSettlement(region) &&
+		region.HasPort() &&
 		r.editFleetSeaRegion(region) != "" && r.defaultEditUnitType(true) != ""
 }
 
@@ -3889,21 +3909,6 @@ func (r *Renderer) defaultEditUnitType(isNaval bool) string {
 	return options[0]
 }
 
-func (r *Renderer) selectedRegionHasPortSettlement(region *world.Region) bool {
-	if region == nil {
-		return false
-	}
-	if r.editSelectedSettlement >= 0 && r.editSelectedSettlement < len(region.Settlements) {
-		return region.Settlements[r.editSelectedSettlement].Type == world.SettlementPort
-	}
-	for _, settlement := range region.Settlements {
-		if settlement.Type == world.SettlementPort {
-			return true
-		}
-	}
-	return false
-}
-
 func (r *Renderer) editFleetSeaRegion(region *world.Region) world.RegionID {
 	if region == nil {
 		return ""
@@ -3943,7 +3948,7 @@ func nextEditArmyID(gs *state.GameState) army.ArmyID {
 
 func (r *Renderer) setSelectedArmyOwnerFromRegion() {
 	a := r.gs.Armies[r.SelectedArmy]
-	region := r.gs.Regions[r.editSelectedRegion]
+	region := r.selectedArmyOwnerRegion(a)
 	if a == nil || region == nil || region.OwnerID == "" || a.OwnerID == region.OwnerID {
 		return
 	}
@@ -3956,6 +3961,25 @@ func (r *Renderer) setSelectedArmyOwnerFromRegion() {
 		redo: func(rr *Renderer) { rr.setArmyOwner(aid, next) },
 	})
 	r.editDirty = true
+}
+
+func (r *Renderer) canAssignSelectedArmyToRegionOwner() bool {
+	a := r.gs.Armies[r.SelectedArmy]
+	region := r.selectedArmyOwnerRegion(a)
+	return a != nil && region != nil && region.OwnerID != "" && a.OwnerID != region.OwnerID
+}
+
+func (r *Renderer) selectedArmyOwnerRegion(a *army.Army) *world.Region {
+	if a == nil || r.gs == nil {
+		return nil
+	}
+	rid := r.editSelectedRegion
+	if a.IsNaval && a.DockedRegionID != "" {
+		rid = a.DockedRegionID
+	} else if rid == "" {
+		rid = a.RegionID
+	}
+	return r.gs.Regions[rid]
 }
 
 func (r *Renderer) setArmyLocation(aid army.ArmyID, rid, dockedRegionID world.RegionID, dockedSettlementID string) {

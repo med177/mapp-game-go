@@ -1511,20 +1511,12 @@
     "region_id": "wallachia",
     "settlements": [
       {
-        "id": "wallachia_targoviste",
-        "name_tr": "Targovişte",
-        "x": 996,
-        "y": 380,
-        "type": "fortress",
-        "is_center": true,
-        "population": 30
-      },
-      {
         "id": "wallachia_bucharest",
         "name_tr": "Bükreş",
         "x": 1002,
         "y": 392,
         "type": "town",
+        "is_center": true,
         "population": 58
       },
       {
@@ -1564,6 +1556,14 @@
         "y": 399,
         "type": "fortress",
         "population": 23
+      },
+      {
+        "id": "wallachia_targoviste",
+        "name_tr": "Targovişte",
+        "x": 994,
+        "y": 379,
+        "type": "fortress",
+        "population": 30
       }
     ]
   },
@@ -5468,8 +5468,8 @@
       {
         "id": "alfold_gyula",
         "name_tr": "Gyula",
-        "x": 900,
-        "y": 350,
+        "x": 899,
+        "y": 349,
         "type": "fortress",
         "population": 15
       },
