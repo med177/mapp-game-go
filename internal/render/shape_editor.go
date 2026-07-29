@@ -63,9 +63,15 @@ func (s *shapeEditSession) filled(x, y int) bool {
 }
 
 func (r *Renderer) invalidateShapeEditSession() {
+	if r != nil && r.editShapePaintPending && r.gs != nil {
+		r.editRegionPaintOverrides = cloneRegionPaintOverrides(r.gs.RegionPaintOverrides)
+	}
 	r.editShapeSession = nil
 	r.editShapePainting = false
+	r.editShapePaintPending = false
 	r.editShapeStrokeBefore = nil
+	r.editShapePendingBefore = nil
+	r.editShapePendingAffectsLandShapes = false
 	r.clearEditPaintPreview()
 }
 
@@ -258,7 +264,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	ly += 18
 	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
 	if r.editShapeTool != editShapeToolNone {
-		info = "Canli preview acik. Yesil ekler, kirmizi siler."
+		info = "Canli preview acik. Yesil ekler, kirmizi siler. Uygula ile kesinlestir."
 	}
 	if selectedRegion.IsSea {
 		info = "Deniz bolgesinde Bolge Boya/Sil ile alan dagitimi yap."
@@ -271,21 +277,24 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	if r.editShapePainting {
 		strokeLabel = "Boyaniyor"
 	}
-	DrawText(screen, "Durum: "+strokeLabel+"   Mouse birakinca uygula+undo", float64(x)+14, ly, FaceSmall, ColorGray)
+	if r.editShapePaintPending {
+		strokeLabel = "Uygulama bekliyor"
+	}
+	DrawText(screen, "Durum: "+strokeLabel+"   Uygula ile haritaya işle", float64(x)+14, ly, FaceSmall, ColorGray)
 
 	shapePaintLabel := "Sınır Boya"
 	shapeEraseLabel := "Sınır Sil"
-	regionPaintLabel := "Bolge Boya"
-	regionEraseLabel := "Bolge Sil"
+	regionPaintLabel := "Bölge Boya"
+	regionEraseLabel := "Bölge Sil"
 	if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushPaint {
-		shapePaintLabel = "> Sınır Boya"
+		shapePaintLabel = "Uygula"
 	} else if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushErase {
-		shapeEraseLabel = "> Sınır Sil"
+		shapeEraseLabel = "Uygula"
 	}
 	if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushPaint {
-		regionPaintLabel = "> Bölge Boya"
+		regionPaintLabel = "Uygula"
 	} else if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushErase {
-		regionEraseLabel = "> Bölge Sil"
+		regionEraseLabel = "Uygula"
 	}
 	drawEditInspectorButton(screen, editButtonShapePaint, shapePaintLabel, r.canEditSelectedShape())
 	drawEditInspectorButton(screen, editButtonShapeErase, shapeEraseLabel, r.canEditSelectedShape())
@@ -321,13 +330,13 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, bool) {
 	switch editShapeInspectorButtonAt(fx, fy) {
 	case editButtonShapePaint:
-		r.toggleEditShapeTool(editShapeToolShape, editShapeBrushPaint)
+		r.handleEditShapeToolButton(editShapeToolShape, editShapeBrushPaint)
 	case editButtonShapeErase:
-		r.toggleEditShapeTool(editShapeToolShape, editShapeBrushErase)
+		r.handleEditShapeToolButton(editShapeToolShape, editShapeBrushErase)
 	case editButtonShapeRegionPaint:
-		r.toggleEditShapeTool(editShapeToolRegion, editShapeBrushPaint)
+		r.handleEditShapeToolButton(editShapeToolRegion, editShapeBrushPaint)
 	case editButtonShapeRegionErase:
-		r.toggleEditShapeTool(editShapeToolRegion, editShapeBrushErase)
+		r.handleEditShapeToolButton(editShapeToolRegion, editShapeBrushErase)
 	case editButtonShapeBrushMinus:
 		r.editShapeBrushRadius = decreaseEditShapeBrushRadius(r.editShapeBrushRadius)
 	case editButtonShapeBrushPlus:
@@ -346,6 +355,18 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 	return InputAction{}, true
 }
 
+func (r *Renderer) handleEditShapeToolButton(tool editShapeTool, mode editShapeBrushMode) {
+	if r.editShapeTool == tool && r.editShapeBrushMode == mode {
+		r.applyPendingShapePaint()
+		return
+	}
+	if r.editShapePaintPending {
+		r.ShowCombatResult("Önce seçili boya değişikliğini Uygula.")
+		return
+	}
+	r.toggleEditShapeTool(tool, mode)
+}
+
 func (r *Renderer) toggleEditShapeTool(tool editShapeTool, mode editShapeBrushMode) {
 	if r.editShapeTool == tool && r.editShapeBrushMode == mode {
 		r.editShapeTool = editShapeToolNone
@@ -358,6 +379,63 @@ func (r *Renderer) toggleEditShapeTool(tool editShapeTool, mode editShapeBrushMo
 	}
 	r.editShapeTool = tool
 	r.editShapeBrushMode = mode
+}
+
+func (r *Renderer) applyPendingShapePaint() {
+	if r == nil {
+		return
+	}
+	before := r.editShapePendingBefore
+	if before == nil {
+		r.editShapeTool = editShapeToolNone
+		r.editShapePainting = false
+		r.editShapePaintPending = false
+		r.editShapeStrokeBefore = nil
+		r.editShapePendingBefore = nil
+		r.editShapePendingAffectsLandShapes = false
+		r.clearEditPaintPreview()
+		return
+	}
+
+	tool := r.editShapeTool
+	session := r.editShapeSession
+	if tool == editShapeToolShape && session != nil && session.Dirty {
+		rings := shapeMaskToFloatRings(session)
+		applyShapeRingsToState(r.gs, session.ShapeID, rings)
+		r.rebuildEditWorldMap()
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(*before, after)
+		r.editDirty = true
+		if len(rings) == 0 {
+			r.ShowCombatResult("Shape tamamen silindi.")
+		}
+	} else if tool == editShapeToolRegion {
+		pendingAffectsLandShapes := r.editShapePendingAffectsLandShapes
+		r.syncRegionPaintOverridesToGameState()
+		r.rebuildEditWorldMap()
+		if pendingAffectsLandShapes {
+			syncLandShapesFromWorldMap(r.gs, r.worldMap)
+			r.rebuildEditWorldMap()
+		}
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(*before, after)
+		r.editDirty = true
+	}
+
+	if session != nil {
+		session.Dirty = false
+		session.HasLast = false
+	}
+	r.editShapeTool = editShapeToolNone
+	r.editShapePainting = false
+	r.editShapePaintPending = false
+	r.editShapeStrokeBefore = nil
+	r.editShapePendingBefore = nil
+	r.editShapeStrokeHasLast = false
+	r.editShapeStrokeDirty = false
+	r.editShapeStrokeAffectsLandShapes = false
+	r.editShapePendingAffectsLandShapes = false
+	r.clearEditPaintPreview()
 }
 
 func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
@@ -455,15 +533,15 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	}
 	actionLabel := "Shape/Bolge butonundan arac sec"
 	if r.editShapeTool != editShapeToolNone {
-		actionLabel = "Yesil=ekle  Kirmizi=sil  Sol tik=secim"
+		actionLabel = "Yesil=ekle  Kirmizi=sil  Sol tik=boya"
 	}
 	if region.IsSea {
-		actionLabel = "Deniz icin Bolge Boya/Sil kullan  Sol tik=secim"
+		actionLabel = "Deniz icin Bölge Boya/Sil kullan  Uygula ile kesinlestir"
 	}
 	labels := [...]gameui.Label{
 		gameui.NewLabel(float64(x)+12, float64(y)+10, "SHAPE YARDIM", ColorGold),
 		gameui.NewLabel(float64(x)+12, float64(y)+30, "Secili: "+selectedLabel+"  Firca: "+editShapeBrushRadiusLabel(r.editShapeBrushRadius), ColorWhite),
-		gameui.NewLabel(float64(x)+12, float64(y)+48, "Mod: "+mode+"  Sag mouse drag  Birakinca uygula", ColorGray),
+		gameui.NewLabel(float64(x)+12, float64(y)+48, "Mod: "+mode+"  Sol mouse drag  Uygula ile haritaya işle", ColorGray),
 		gameui.NewLabel(float64(x)+12, float64(y)+66, actionLabel, ColorGray),
 	}
 	for _, label := range labels {
@@ -513,7 +591,7 @@ func regionPaintCellCenterWorld(x, y int) (float64, float64) {
 }
 
 func (r *Renderer) drawEditPaintPreview(screen *ebiten.Image) {
-	if r == nil || !r.editShapePainting || r.editPaintPreviewImage == nil {
+	if r == nil || (!r.editShapePainting && !r.editShapePaintPending) || r.editPaintPreviewImage == nil {
 		return
 	}
 	var op ebiten.DrawImageOptions
@@ -583,8 +661,11 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 			return false
 		}
 	}
-	before := r.worldSnapshot()
-	r.editShapeStrokeBefore = &before
+	if !r.editShapePaintPending {
+		before := r.worldSnapshot()
+		r.editShapePendingBefore = &before
+	}
+	r.editShapeStrokeBefore = r.editShapePendingBefore
 	r.editShapePainting = true
 	r.editShapeStrokeHasLast = false
 	r.editShapeStrokeDirty = false
@@ -593,7 +674,9 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 		session.Dirty = false
 		session.HasLast = false
 	}
-	r.resetEditPaintPreview()
+	if !r.editShapePaintPending {
+		r.resetEditPaintPreview()
+	}
 	r.applyShapeBrushAt(session, sx, sy)
 	return true
 }
@@ -623,44 +706,22 @@ func (r *Renderer) continueShapePaintStroke(fx, fy float64) {
 }
 
 func (r *Renderer) finishShapePaintStroke() {
-	before := r.editShapeStrokeBefore
 	session := r.editShapeSession
+	strokeBefore := r.editShapeStrokeBefore
 	r.editShapePainting = false
 	r.editShapeStrokeBefore = nil
-	defer r.clearEditPaintPreview()
-	if before == nil {
+	if strokeBefore == nil && r.editShapePendingBefore == nil {
 		return
 	}
-	if r.editShapeTool == editShapeToolShape {
-		if session == nil || !session.Dirty {
-			return
-		}
-		rings := shapeMaskToFloatRings(session)
-		applyShapeRingsToState(r.gs, session.ShapeID, rings)
-		r.rebuildEditWorldMap()
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(*before, after)
-		r.editDirty = true
-		if len(rings) == 0 {
-			r.ShowCombatResult("Shape tamamen silindi.")
-		}
-		return
+	if (r.editShapeTool == editShapeToolShape && session != nil && session.Dirty) ||
+		(r.editShapeTool == editShapeToolRegion && r.editShapeStrokeDirty) {
+		r.editShapePaintPending = true
+		r.editShapePendingAffectsLandShapes = r.editShapePendingAffectsLandShapes || r.editShapeStrokeAffectsLandShapes
+	} else if !r.editShapePaintPending {
+		r.editShapePendingBefore = nil
 	}
-	if r.editShapeTool == editShapeToolRegion {
-		if !r.editShapeStrokeDirty {
-			return
-		}
-		r.syncRegionPaintOverridesToGameState()
-		if r.editShapeStrokeAffectsLandShapes {
-			syncLandShapesFromWorldMap(r.gs, r.worldMap)
-			r.rebuildEditWorldMap()
-		} else if r.worldMap != nil {
-			r.worldMap.RefreshAfterRegionAssignments(r.gs, r.SelectedRegion, r.mapMode)
-		}
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(*before, after)
-		r.editDirty = true
-	}
+	r.editShapeStrokeDirty = false
+	r.editShapeStrokeAffectsLandShapes = false
 }
 
 func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
@@ -841,7 +902,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 			if len(r.editRegionPaintBaseline) == len(r.worldMap.regionAt) {
 				baselineIdx = r.editRegionPaintBaseline[pIdx]
 			}
-			oldIdx := r.worldMap.regionAt[pIdx]
+			oldIdx := r.editRegionPaintCurrentIndex(pIdx, baselineIdx)
 			if regionPaintTouchesLandShape(r.gs, targetRegion, baselineIdx, oldIdx, r.worldMap.regionIDs) {
 				r.editShapeStrokeAffectsLandShapes = true
 			}
@@ -849,7 +910,6 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 				if baselineIdx == targetIdx {
 					delete(r.editRegionPaintOverrides, pIdx)
 					if oldIdx != baselineIdx {
-						r.worldMap.regionAt[pIdx] = baselineIdx
 						r.drawRegionPaintPreviewPixel(x, y, false)
 						changed = true
 					}
@@ -857,7 +917,6 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 				}
 				r.editRegionPaintOverrides[pIdx] = regionID
 				if oldIdx != targetIdx {
-					r.worldMap.regionAt[pIdx] = targetIdx
 					r.drawRegionPaintPreviewPixel(x, y, true)
 					changed = true
 				}
@@ -868,13 +927,27 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 			}
 			delete(r.editRegionPaintOverrides, pIdx)
 			if oldIdx != baselineIdx {
-				r.worldMap.regionAt[pIdx] = baselineIdx
 				r.drawRegionPaintPreviewPixel(x, y, false)
 				changed = true
 			}
 		}
 	}
 	return changed
+}
+
+func (r *Renderer) editRegionPaintCurrentIndex(pIdx int, baselineIdx uint16) uint16 {
+	if r != nil {
+		if rid, ok := r.editRegionPaintOverrides[pIdx]; ok && r.worldMap != nil {
+			return r.worldMap.ensureRegionIndex(rid)
+		}
+	}
+	if baselineIdx != 0 {
+		return baselineIdx
+	}
+	if r != nil && r.worldMap != nil && pIdx >= 0 && pIdx < len(r.worldMap.regionAt) {
+		return r.worldMap.regionAt[pIdx]
+	}
+	return 0
 }
 
 func (r *Renderer) syncRegionPaintOverridesToGameState() {

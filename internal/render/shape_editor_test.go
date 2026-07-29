@@ -195,8 +195,17 @@ func TestShapePaintStrokeUpdatesShapeDataAndWorldMap(t *testing.T) {
 	}
 	r.finishShapePaintStroke()
 
+	if got := r.worldMap.RegionAt(14, 10); got != "" {
+		t.Fatalf("mouse birakilinca harita hemen guncellenmemeli: got=%q", got)
+	}
+	if !r.editShapePaintPending {
+		t.Fatal("boya islemi Uygula icin beklemeli")
+	}
+	shapePaint := editInspectorButtonRect(editButtonShapePaint)
+	r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2)
+
 	if got := r.worldMap.RegionAt(14, 10); got != "land_test" {
-		t.Fatalf("paint sonrasi piksel region'a baglanmadi: got=%q", got)
+		t.Fatalf("Uygula sonrasi piksel region'a baglanmadi: got=%q", got)
 	}
 	if len(r.gs.ShapeData.Shapes["land_shape"]) == 0 {
 		t.Fatal("shape ringleri guncellenmedi")
@@ -249,9 +258,13 @@ func TestRegionPaintStrokeOverridesWorldMapRegionAt(t *testing.T) {
 		t.Fatal("region paint stroke shape session olusturmamali")
 	}
 	r.finishShapePaintStroke()
+	if got := r.worldMap.RegionAt(14, 10); got != "" {
+		t.Fatalf("region paint mouse birakilinca haritayi hemen degistirmemeli: got=%q", got)
+	}
+	r.applyPendingShapePaint()
 
 	if got := r.worldMap.RegionAt(14, 10); got != "land_test" {
-		t.Fatalf("paint sonrasi piksel region'a baglanmadi: got=%q", got)
+		t.Fatalf("Uygula sonrasi piksel region'a baglanmadi: got=%q", got)
 	}
 	if len(r.editRegionPaintOverrides) == 0 {
 		t.Fatal("region paint overrides kayit edilmedi")
@@ -275,15 +288,19 @@ func TestRegionPaintStrokeAllowsSeaRegions(t *testing.T) {
 	}
 	beforeWM := r.worldMap
 	r.finishShapePaintStroke()
+	if got := r.worldMap.RegionAt(40, 20); got != "sea_right" {
+		t.Fatalf("deniz paint mouse birakilinca haritayi hemen degistirmemeli: got=%q", got)
+	}
+	r.applyPendingShapePaint()
 
 	if got := r.worldMap.RegionAt(40, 20); got != "sea_left" {
-		t.Fatalf("paint sonrasi piksel sea_left olmali, got=%q", got)
+		t.Fatalf("Uygula sonrasi piksel sea_left olmali, got=%q", got)
 	}
 	if len(r.editRegionPaintOverrides) == 0 {
 		t.Fatal("sea region paint overrides kayit edilmedi")
 	}
-	if r.worldMap != beforeWM {
-		t.Fatal("sea region paint full world map rebuild yapmamali")
+	if r.worldMap == beforeWM {
+		t.Fatal("Uygula sonrasi deniz paint haritayi yenilemeli")
 	}
 }
 
@@ -314,6 +331,7 @@ func TestRegionPaintStrokeKeepsExistingExternalOverridesAcrossMultipleStrokes(t 
 	}
 	r.continueShapePaintStroke(sx2, sy2)
 	r.finishShapePaintStroke()
+	r.applyPendingShapePaint()
 
 	if got := r.worldMap.RegionAt(firstX, firstY); got != "land_test" {
 		t.Fatalf("ikinci stroke sonrasi ilk dis piksel secili region'da kalmali, got=%q", got)
@@ -342,6 +360,7 @@ func TestRegionPaintStrokeEraseClearsGameStateOverrides(t *testing.T) {
 		t.Fatal("erase stroke baslatilamadi")
 	}
 	r.finishShapePaintStroke()
+	r.applyPendingShapePaint()
 
 	if len(r.gs.RegionPaintOverrides) != 0 {
 		t.Fatalf("erase sonrasi game state overrides temizlenmeli, got=%d", len(r.gs.RegionPaintOverrides))
@@ -362,6 +381,7 @@ func TestRegionPaintOverridesPersistOutsideBaseShapeAfterReload(t *testing.T) {
 		t.Fatal("region paint stroke baslatilamadi")
 	}
 	r.finishShapePaintStroke()
+	r.applyPendingShapePaint()
 
 	tempDir := t.TempDir()
 	dataDir := filepath.Join(tempDir, "data")

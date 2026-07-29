@@ -2791,7 +2791,10 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.editNeighborAddFrom = ""
 	r.editNeighborAddMessage = ""
 	r.editShapePainting = false
+	r.editShapePaintPending = false
 	r.editShapeStrokeBefore = nil
+	r.editShapePendingBefore = nil
+	r.editShapePendingAffectsLandShapes = false
 	r.editRenaming = false
 	r.rebuildEditWorldMap()
 }

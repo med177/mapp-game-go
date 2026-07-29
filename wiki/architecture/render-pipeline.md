@@ -25,7 +25,9 @@ hit-test böylece gizli sekme düğmelerinin üst üste binmesine izin vermez.
 
 Edit Mode input sözleşmesinde settlement konumu sağ tık sürüklemeyle taşınır;
 Shape ve Bölge boya/sil fırçaları sol tık sürüklemeyle çalışır. Sol tık harita
-seçimi ve diğer editor aksiyonları için korunur.
+seçimi ve diğer editor aksiyonları için korunur. Boya/sil bırakıldığında yalnız
+geçici önizleme ve bekleyen değişiklik tutulur; ilgili araç `Uygula` ile
+kesinleştirilince hesaplama, harita yenileme ve tek undo snapshot'ı üretilir.
 
 Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
 focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.

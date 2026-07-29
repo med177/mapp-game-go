@@ -10,6 +10,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-07-29: Edit Mode mouse sözleşmesi ayrıştırıldı. Settlement konumu sağ
   tık sürüklemeyle, Shape/Bölge boya-sil fırçaları sol tık sürüklemeyle
   çalışıyor; sol tık seçim ve diğer editor aksiyonları için korunuyor.
+- 2026-07-29: Edit Mode Shape/Bölge boya-sil işlemleri ertelendi. Mouse bırakılınca
+  yalnız geçici boya önizlemesi kalıyor; aktif araç `Uygula` ile hesaplama, harita
+  yenileme ve undo snapshot'ını tek seferde çalıştırıyor.
 
 - 2026-07-29: Edit Mode ordu/filo aksiyonu `Bu Devlete Ata` olarak yeniden
   adlandırıldı. Kara orduları için seçili bölge, docked filolar için

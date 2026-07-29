@@ -74,7 +74,7 @@ PhaseTurnResolution                    │
 | Yerleşim ve ordu düzenle | `Yerleşim Birimi` sekmesi | Yerleşim ekle, tip değiştir, ana yerleşim yap, adlandır/sil ve başlangıç ordusu-donanması ile birim sayısı işlemleri aynı sekmede toplanır |
 | Bölge düzenle | `Bölge` sekmesi | Bölge ekle/sil, arazi, ad, ID, kilit, açılış turu ve görsel komşu senkronu burada bulunur |
 | Devlet düzenle | `Devlet` sekmesi | Sahip/ardıl devlet, ulusal başkent ve devlet formu işlemleri burada bulunur |
-| Harita şekli ve geçit | `Harita` sekmesi | Shape/region boya-sil işlemleri sol tık sürükleyle, kara geçidi ve komşu ekleme araçları sol tıkla çalışır |
+| Harita şekli ve geçit | `Harita` sekmesi | Shape/region boya-sil işlemleri sol tık sürükleyle geçici önizleme oluşturur; `Uygula` ile hesaplanır, kara geçidi ve komşu ekleme araçları sol tıkla çalışır |
 | Senaryo verisi | `Veri` sekmesi | Undo/redo durumu ve kayıt bilgisi burada gösterilir |
 | Bölge merkezi taşı | Shift + sol tık sürükle | Tıklanan kara bölgenin `world_x/world_y` koordinatlarını taşır; Voronoi harita cache'i fare bırakıldığında yeniden kurulur |
 | Voronoi debug aç/kapat | V | Seçili veya hover bölgenin görsel Voronoi komşularını JSON `neighbors` listesiyle karşılaştıran overlay'i açar/kapatır |

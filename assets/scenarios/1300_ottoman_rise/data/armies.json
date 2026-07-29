@@ -373,8 +373,6 @@
     "id": "army_edit_114",
     "owner_id": "papal_states_f",
     "region_id": "adriatic_sea",
-    "docked_region_id": "papal_states",
-    "docked_settlement_id": "papal_states_ostia",
     "is_naval": true,
     "units": [
       {
