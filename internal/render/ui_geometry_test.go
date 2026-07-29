@@ -81,7 +81,7 @@ func TestResetCameraFocusesPlayerCapitalOnInitialOpen(t *testing.T) {
 				WorldX:  1090,
 				WorldY:  468,
 				Settlements: []world.Settlement{
-					{ID: "sogut", NameTR: "Sogut", X: 1030, Y: 520, IsCapital: true},
+					{ID: "sogut", NameTR: "Sogut", X: 1030, Y: 520, IsCenter: true},
 				},
 			},
 		},
@@ -129,7 +129,7 @@ func TestResetCameraClampsInitialCapitalFocusNearMapEdge(t *testing.T) {
 				WorldX:  40,
 				WorldY:  30,
 				Settlements: []world.Settlement{
-					{ID: "venice", NameTR: "Venedik", X: 24, Y: 18, IsCapital: true},
+					{ID: "venice", NameTR: "Venedik", X: 24, Y: 18, IsCenter: true},
 				},
 			},
 		},
@@ -733,7 +733,7 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 				Religion:        string(religion.Sunni),
 				Buildings:       []string{"market"},
 				Settlements: []world.Settlement{
-					{ID: "ankara_city", NameTR: "Ankara", X: 100, Y: 100, Type: world.SettlementCity, IsCapital: true},
+					{ID: "ankara_city", NameTR: "Ankara", X: 100, Y: 100, Type: world.SettlementCity, IsCenter: true},
 				},
 			},
 			seaID: {

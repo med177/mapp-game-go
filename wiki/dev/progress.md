@@ -7,6 +7,35 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-29: 1300 senaryosunda kara bölgelerinin settlement merkezleri tekilleştirildi;
+  Constantine için Annaba merkez olarak tanımlandı. Iberia veri grafiğinde Aragon
+  bölgesinin sahibi düzeltildi, Zaragoza Aragon'a taşındı, Almeria Granada'ya ve
+  Guadalajara Toledo'ya bağlandı; Catalonia'nın merkezi Barcelona oldu. Regression:
+  `Test1300ScenarioLandSettlementCentersAreUnique`,
+  `Test1300IberianSettlementOwnershipGraph`; doğrulama: `go test ./...`.
+
+- 2026-07-29: Edit Mode Harita sekmesine `Başkent Yap` aksiyonu eklendi. Seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında güncelliyor, bekleyen başkent taşımasını temizliyor ve undo/redo ile geri alınabiliyor; mevcut `Ana Yap` yalnızca bölgesel `is_capital` işaretini değiştirmeye devam ediyor. Regression: `TestEditModeSetsSelectedSettlementAsFactionCapital`.
+
+- 2026-07-29: `1300_ottoman_rise` senaryosunda tüm 68 devletin başlangıç tahıl
+  stokları, mevcut başlangıç ordularının canonical `EffectiveArmyGrainUpkeep`
+  hesabına göre en az 12 turluk askerî bakımı karşılayacak şekilde güncellendi;
+  garrison indirimi ve filolar hesaba dahil. Regression:
+  `TestLoad1300StartingGrainCoversTwelveArmyTurns`; doğrulama: hedefli game/state/AI
+  testleri geçti; doğrulama sonrasında full suite de geçti.
+
+- 2026-07-29: Edit mode bölge ID değişimi artık komşuluk, geçit, ordu, paint,
+  AI objective ve trade-center ID/link referanslarını aynı state işlemi içinde
+  taşıyor; undo/redo snapshot'ları da AI/ticaret verisini kapsıyor. Senaryo
+  kaydı `ai_strategies.json` ve `trade_centers.json` dosyalarını güncel runtime
+  state'ten yeniden yazıyor. 1300 verisinde artık mevcut bölge grafiğinde
+  bulunmayan `ragusa` AI hedefi `dalmatia` ile düzeltildi; toprağı olmayan Ragusa
+  devleti `is_eliminated` olarak işaretlendi. Koper anchor testi güncel shape
+  geometrisini kabul ederken shape dışı anchor fallback'ini koruyor.
+  Regression: `TestRenameRegionIDUpdatesEditorReferences`,
+  `TestTradeCenterVisualFollowsEditedRegionMetadata`,
+  `TestWriteScenarioEditDataWritesAIStrategiesAndTradeCenters`; doğrulama:
+  `go test ./...`.
+
 - 2026-07-29: Edit mode başlangıcı ana menüde ayrı bir `EDIT MODE` seçeneğine
   taşındı. Seçenek yalnız `.env` içindeki `EDIT_MODE=true` iken görünür; önce
   senaryo seçimini açıp seçilen senaryoyu normal edit haritasına yükler. `Yeni

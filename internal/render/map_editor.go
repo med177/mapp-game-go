@@ -11,6 +11,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -160,7 +161,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		ly += 18
 		DrawText(screen, settlement.ID+"  "+string(settlement.Type)+"  nüfus "+itoa(settlement.Population)+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
 			float64(x)+14, ly, FaceSmall, ColorGray)
-		if settlement.IsCapital {
+		if settlement.IsCenter {
 			ly += 18
 			DrawText(screen, "Ana yerlesim", float64(x)+14, ly, FaceSmall, ColorGray)
 		}
@@ -182,8 +183,8 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	canRegion := region != nil
 	canSettlement := r.hasEditSelection()
 	addSettlementLabel := "Yerlesim Ekle"
-	settlementTypeLabel := "Tip"
-	renameSettlementLabel := "Isim"
+	settlementTypeLabel := "Yerlesim Tipi"
+	renameSettlementLabel := "Yerlesim Adı"
 	deleteSettlementLabel := "Yerlesim Sil"
 	if region != nil && region.IsSea {
 		addSettlementLabel = "Denizde Yok"
@@ -197,7 +198,7 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	}
 	drawEditInspectorButton(screen, editButtonAddSettlement, addSettlementLabel, canAdd)
 	drawEditInspectorButton(screen, editButtonSettlementType, settlementTypeLabel, canSettlement)
-	drawEditInspectorButton(screen, editButtonSetCapitalSettlement, "Ana Yap", canSettlement)
+	drawEditInspectorButton(screen, editButtonSetCenterSettlement, "Merkez Yap", canSettlement)
 	drawEditInspectorButton(screen, editButtonRenameSettlement, renameSettlementLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
@@ -211,7 +212,8 @@ func (r *Renderer) drawEditInspectorButtons(screen *ebiten.Image, region *world.
 	drawEditInspectorButton(screen, editButtonAddRegion, "Bolge Ekle", canRegion)
 	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bolge Sil", canRegion)
 	drawEditInspectorButton(screen, editButtonDeleteSettlement, deleteSettlementLabel, canSettlement)
-	drawEditInspectorButton(screen, editButtonSaveScenario, "Kaydet", true)
+	drawEditInspectorButton(screen, editButtonSetFactionCapital, "Başkent Yap", r.canSetSelectedFactionCapital())
+	drawEditInspectorButton(screen, editButtonSaveScenario, "Değişiklikleri Kaydet", true)
 }
 
 func drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
@@ -531,8 +533,9 @@ const (
 	editButtonNone editInspectorButton = iota
 	editButtonAddSettlement
 	editButtonSettlementType
-	editButtonSetCapitalSettlement
+	editButtonSetCenterSettlement
 	editButtonRenameSettlement
+	editButtonSetFactionCapital
 	editButtonRegionTerrain
 	editButtonRegionOwner
 	editButtonRegionNameTR
@@ -597,7 +600,7 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row1, bw, bh}
 	case editButtonSettlementType:
 		return uiRect{right, row1, bw, bh}
-	case editButtonSetCapitalSettlement:
+	case editButtonSetCenterSettlement:
 		return uiRect{left, row2, bw, bh}
 	case editButtonRenameSettlement:
 		return uiRect{right, row2, bw, bh}
@@ -625,8 +628,10 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return uiRect{left, row8, bw, bh}
 	case editButtonDeleteSettlement:
 		return uiRect{right, row8, bw, bh}
+	case editButtonSetFactionCapital:
+		return uiRect{left, row9, bw, bh}
 	case editButtonSaveScenario:
-		return uiRect{left, row9, bw*2 + gap, bh}
+		return uiRect{right, row9, bw, bh}
 	case editButtonShapePaint:
 		return uiRect{left, row1, bw, bh}
 	case editButtonShapeErase:
@@ -1449,10 +1454,12 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		if r.hasEditSelection() {
 			r.toggleEditSettlementTypeDropdown()
 		}
-	case editButtonSetCapitalSettlement:
+	case editButtonSetCenterSettlement:
 		if r.hasEditSelection() {
 			r.setSelectedSettlementCapital()
 		}
+	case editButtonSetFactionCapital:
+		r.setSelectedFactionCapital()
 	case editButtonRenameSettlement:
 		if r.hasEditSelection() {
 			r.beginEditRename(editTextSettlementNameTR)
@@ -1917,12 +1924,12 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 		name += " " + itoa(len(region.Settlements)+1)
 	}
 	settlement := world.Settlement{
-		ID:        nextSettlementID(region),
-		NameTR:    name,
-		X:         x,
-		Y:         y,
-		Type:      "city",
-		IsCapital: len(region.Settlements) == 0,
+		ID:       nextSettlementID(region),
+		NameTR:   name,
+		X:        x,
+		Y:        y,
+		Type:     "city",
+		IsCenter: len(region.Settlements) == 0,
 	}
 	region.Settlements = append(region.Settlements, settlement)
 	region.RecalculatePopulation()
@@ -1943,7 +1950,7 @@ func (r *Renderer) deleteSelectedSettlement() {
 	region := r.gs.Regions[r.editSelectedRegion]
 	rid := region.ID
 	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
-	removedCapital := region.Settlements[r.editSelectedSettlement].IsCapital
+	removedCapital := region.Settlements[r.editSelectedSettlement].IsCenter
 	removedPopulation := region.Settlements[r.editSelectedSettlement].Population
 	region.Settlements = append(region.Settlements[:r.editSelectedSettlement], region.Settlements[r.editSelectedSettlement+1:]...)
 	region.RuralPopulation += removedPopulation
@@ -2074,8 +2081,8 @@ func (r *Renderer) setSelectedSettlementCapital() {
 	changed := false
 	for i := range region.Settlements {
 		isCapital := i == r.editSelectedSettlement
-		if region.Settlements[i].IsCapital != isCapital {
-			region.Settlements[i].IsCapital = isCapital
+		if region.Settlements[i].IsCenter != isCapital {
+			region.Settlements[i].IsCenter = isCapital
 			changed = true
 		}
 	}
@@ -2085,6 +2092,37 @@ func (r *Renderer) setSelectedSettlementCapital() {
 		after := []editRegionSettlementsSnapshot{r.settlementSnapshot(region.ID)}
 		r.pushSettlementSnapshots(before, after, region.ID, r.editSelectedSettlement)
 	}
+}
+
+func (r *Renderer) canSetSelectedFactionCapital() bool {
+	if !r.hasEditSelection() {
+		return false
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea || region.OwnerID == "" {
+		return false
+	}
+	return r.gs.Factions[faction.FactionID(region.OwnerID)] != nil
+}
+
+func (r *Renderer) setSelectedFactionCapital() {
+	if !r.canSetSelectedFactionCapital() {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	settlement := &region.Settlements[r.editSelectedSettlement]
+	fid := faction.FactionID(region.OwnerID)
+	f := r.gs.Factions[fid]
+	if f.CapitalSettlementID == settlement.ID && f.PendingCapitalSettlementID == "" {
+		return
+	}
+
+	before := r.worldSnapshot()
+	if !r.gs.SetFactionCapital(fid, settlement.ID) {
+		return
+	}
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
 }
 
 func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
@@ -2190,7 +2228,8 @@ func (r *Renderer) setRegionName(rid world.RegionID, name string) {
 
 // renameRegionID, editorde bir bölgenin map anahtarını değiştirirken aynı ID'yi
 // taşıyan editör/runtime referanslarını da birlikte günceller. Senaryo
-// kayıtlarının regions, settlements, land_passages, armies ve region_shapes
+// kayıtlarının regions, settlements, land_passages, armies, AI stratejileri,
+// ticaret merkezleri ve region_shapes
 // dosyaları bu state alanlarından üretildiği için bu alanların ayrışmasına izin
 // verilmez.
 func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
@@ -2238,6 +2277,25 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 		}
 		if a.DockedRegionID == oldID {
 			a.DockedRegionID = newID
+		}
+	}
+	for factionID, strategy := range r.gs.AIStrategies {
+		for i := range strategy.Objectives {
+			replaceRegionIDInStrings(strategy.Objectives[i].TargetRegions, oldID, newID)
+			replaceRegionIDInStrings(strategy.Objectives[i].ReadinessRegions, oldID, newID)
+			replaceRegionIDInStrings(strategy.Objectives[i].AnnexRegionIDs, oldID, newID)
+		}
+		r.gs.AIStrategies[factionID] = strategy
+	}
+	for i := range r.gs.TradeCenters.Centers {
+		center := &r.gs.TradeCenters.Centers[i]
+		if center.ID == oldID {
+			center.ID = newID
+		}
+		for j := range center.Links {
+			if center.Links[j] == oldID {
+				center.Links[j] = newID
+			}
 		}
 	}
 	for pIdx, rid := range r.gs.RegionPaintOverrides {
@@ -2397,6 +2455,8 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		RegionOrder:          cloneRegionIDSlice(r.gs.RegionOrder),
 		LandPassages:         cloneLandPassages(r.gs.LandPassages),
 		Factions:             cloneFactionMap(r.gs.Factions),
+		AIStrategies:         cloneAIStrategyMap(r.gs.AIStrategies),
+		TradeCenters:         cloneTradeCenterConfig(r.gs.TradeCenters),
 		Armies:               cloneArmyMap(r.gs.Armies),
 		Relations:            cloneRelationMap(r.gs.Relations),
 		ShapeData:            cloneCountryShapeJSON(r.gs.ShapeData),
@@ -2421,6 +2481,8 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
 	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
+	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
+	r.gs.TradeCenters = cloneTradeCenterConfig(snapshot.TradeCenters)
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
 	r.gs.ShapeData = cloneCountryShapeJSON(snapshot.ShapeData)
@@ -2538,6 +2600,48 @@ func cloneRelationMap(src map[string]*faction.Relation) map[string]*faction.Rela
 		dst[key] = &copyRel
 	}
 	return dst
+}
+
+func cloneAIStrategyMap(src map[string]scenario.AIFactionStrategy) map[string]scenario.AIFactionStrategy {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[string]scenario.AIFactionStrategy, len(src))
+	for id, strategy := range src {
+		copyStrategy := strategy
+		copyStrategy.Objectives = make([]scenario.AIObjectiveDef, len(strategy.Objectives))
+		for i, objective := range strategy.Objectives {
+			copyObjective := objective
+			copyObjective.TargetFactions = cloneStringSlice(objective.TargetFactions)
+			copyObjective.TargetRegions = cloneStringSlice(objective.TargetRegions)
+			copyObjective.ReadinessRegions = cloneStringSlice(objective.ReadinessRegions)
+			copyObjective.RequiredEventFlags = cloneStringSlice(objective.RequiredEventFlags)
+			copyObjective.AnnexRegionIDs = cloneStringSlice(objective.AnnexRegionIDs)
+			copyStrategy.Objectives[i] = copyObjective
+		}
+		dst[id] = copyStrategy
+	}
+	return dst
+}
+
+func cloneTradeCenterConfig(src world.TradeCenterConfig) world.TradeCenterConfig {
+	if src.Centers == nil {
+		return world.TradeCenterConfig{}
+	}
+	dst := world.TradeCenterConfig{Centers: make([]world.TradeCenterDef, len(src.Centers))}
+	for i, center := range src.Centers {
+		dst.Centers[i] = center
+		dst.Centers[i].Links = cloneRegionIDSlice(center.Links)
+	}
+	return dst
+}
+
+func replaceRegionIDInStrings(ids []string, oldID, newID world.RegionID) {
+	for i := range ids {
+		if world.RegionID(ids[i]) == oldID {
+			ids[i] = string(newID)
+		}
+	}
 }
 
 func cloneRegionIDSlice(src []world.RegionID) []world.RegionID {
@@ -3842,12 +3946,12 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	source.Settlements = append(source.Settlements[:r.editSelectedSettlement], source.Settlements[r.editSelectedSettlement+1:]...)
 	source.RecalculatePopulation()
 
-	if settlement.IsCapital {
-		settlement.IsCapital = false
+	if settlement.IsCenter {
+		settlement.IsCenter = false
 		ensurePrimarySettlement(source)
 	}
 	if !hasCapitalSettlement(target) {
-		settlement.IsCapital = true
+		settlement.IsCenter = true
 	}
 
 	target.Settlements = append(target.Settlements, settlement)
@@ -3860,7 +3964,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 
 func hasCapitalSettlement(region *world.Region) bool {
 	for _, settlement := range region.Settlements {
-		if settlement.IsCapital {
+		if settlement.IsCenter {
 			return true
 		}
 	}
@@ -3871,5 +3975,5 @@ func ensurePrimarySettlement(region *world.Region) {
 	if region == nil || len(region.Settlements) == 0 || hasCapitalSettlement(region) {
 		return
 	}
-	region.Settlements[0].IsCapital = true
+	region.Settlements[0].IsCenter = true
 }

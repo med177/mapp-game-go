@@ -386,7 +386,7 @@ func (wm *WorldMap) UpdateSettlementAnchor(gs *state.GameState, rid world.Region
 	}
 
 	wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: index}] = [2]int{ax, ay}
-	if settlement.IsCapital || index == 0 {
+	if settlement.IsCenter || index == 0 {
 		wm.primarySettlement[rid] = [2]int{ax, ay}
 	}
 }
@@ -810,7 +810,7 @@ func (wm *WorldMap) computeSettlementAnchors(gs *state.GameState) {
 			}
 
 			wm.settlementAnchor[settlementAnchorKey{Region: rid, Index: i}] = [2]int{ax, ay}
-			if settlement.IsCapital || !primarySet {
+			if settlement.IsCenter || !primarySet {
 				wm.primarySettlement[rid] = [2]int{ax, ay}
 				primarySet = true
 			}

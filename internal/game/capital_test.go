@@ -45,7 +45,7 @@ func TestApplyConquestWithCapitalCaptureTransfersLootTechAndReassigns(t *testing
 				ID:      "capital_region",
 				OwnerID: "defender",
 				Settlements: []world.Settlement{
-					{ID: "capital_city", NameTR: "Payitaht", IsCapital: true},
+					{ID: "capital_city", NameTR: "Payitaht", IsCenter: true},
 				},
 			},
 			"fallback": {
@@ -54,7 +54,7 @@ func TestApplyConquestWithCapitalCaptureTransfersLootTechAndReassigns(t *testing
 				BaseGoldIncome: 90,
 				TradeCapacity:  6,
 				Settlements: []world.Settlement{
-					{ID: "fallback_city", NameTR: "Bursa", IsCapital: true},
+					{ID: "fallback_city", NameTR: "Bursa", IsCenter: true},
 				},
 			},
 		},

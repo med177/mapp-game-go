@@ -170,7 +170,7 @@ func TestSettlementVisibilityUsesZoomTiers(t *testing.T) {
 	region := &world.Region{
 		ID: "home",
 		Settlements: []world.Settlement{
-			{ID: "capital", NameTR: "Başkent", Type: world.SettlementCity, IsCapital: true},
+			{ID: "capital", NameTR: "Başkent", Type: world.SettlementCity, IsCenter: true},
 			{ID: "castle", NameTR: "Kale", Type: world.SettlementFortress},
 			{ID: "port", NameTR: "Liman", Type: world.SettlementPort},
 			{ID: "city", NameTR: "Şehir", Type: world.SettlementCity},

@@ -2353,6 +2353,12 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioFactions(gs); err != nil {
 		return err
 	}
+	if err := writeScenarioAIStrategies(gs); err != nil {
+		return err
+	}
+	if err := writeScenarioTradeCenters(gs); err != nil {
+		return err
+	}
 	if err := writeScenarioRelations(gs); err != nil {
 		return err
 	}
@@ -2547,6 +2553,45 @@ func writeScenarioFactions(gs *state.GameState) error {
 		}
 	}
 	data, err := json.MarshalIndent(factions, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioAIStrategies(gs *state.GameState) error {
+	if gs.AIStrategies == nil {
+		return nil
+	}
+	path := filepath.Join(gs.ScenarioPath, "data", "ai_strategies.json")
+	ids := make([]string, 0, len(gs.AIStrategies))
+	for id := range gs.AIStrategies {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	factions := make([]scenario.AIFactionStrategy, 0, len(ids))
+	for _, id := range ids {
+		factions = append(factions, gs.AIStrategies[id])
+	}
+	payload := scenario.AIStrategyConfig{
+		DifficultyPolicy: gs.AIDifficultyPolicy,
+		Factions:         factions,
+	}
+	data, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func writeScenarioTradeCenters(gs *state.GameState) error {
+	if gs.TradeCenters.Centers == nil {
+		return nil
+	}
+	path := filepath.Join(gs.ScenarioPath, "data", "trade_centers.json")
+	data, err := json.MarshalIndent(gs.TradeCenters, "", "  ")
 	if err != nil {
 		return err
 	}

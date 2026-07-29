@@ -146,7 +146,7 @@ func TestSelectPlayerCapitalRegionSelectsActiveCapitalRegion(t *testing.T) {
 				ID:      "capital_region",
 				OwnerID: "player",
 				Settlements: []world.Settlement{
-					{ID: "capital_city", NameTR: "Başkent", IsCapital: true},
+					{ID: "capital_city", NameTR: "Başkent", IsCenter: true},
 				},
 			},
 			"other_region": {ID: "other_region", OwnerID: "player"},

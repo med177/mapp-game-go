@@ -7,8 +7,8 @@
     "owner_id": "england",
     "neighbors": [
       "east_anglia",
-      "mercia",
       "english_channel",
+      "mercia",
       "welsh_marches",
       "wessex"
     ],
@@ -398,7 +398,6 @@
       "anjou",
       "burgundy",
       "champagne",
-      "english_channel",
       "flanders",
       "languedoc",
       "dijon",
@@ -441,7 +440,7 @@
     "neighbors": [
       "anjou",
       "brittany",
-      "london",
+      "champagne",
       "english_channel",
       "paris"
     ],
@@ -547,8 +546,10 @@
     "owner_id": "france",
     "neighbors": [
       "burgundy",
+      "english_channel",
       "flanders",
       "lorraine",
+      "normandy",
       "paris"
     ],
     "world_x": 568,
@@ -721,13 +722,13 @@
     "terrain": "coast",
     "owner_id": "france",
     "neighbors": [
-      "gulf_of_lion",
-      "navarre",
-      "savoy",
+      "aquitaine",
+      "catalonia",
       "dijon",
+      "gulf_of_lion",
       "paris",
       "provence",
-      "aquitaine"
+      "savoy"
     ],
     "world_x": 560,
     "world_y": 400,
@@ -871,6 +872,7 @@
       "denmark",
       "friesland",
       "holland",
+      "kattegat",
       "north_sea",
       "palatinate",
       "saxony",
@@ -1088,10 +1090,12 @@
     "terrain": "plain",
     "owner_id": "england",
     "neighbors": [
-      "bay_of_biscay",
       "anjou",
+      "aragon",
+      "bay_of_biscay",
+      "catalonia",
       "languedoc",
-      "navarre",
+      "navarra",
       "paris"
     ],
     "world_x": 495,
@@ -1241,7 +1245,8 @@
       "bay_of_biscay",
       "castile",
       "granada",
-      "navarre"
+      "navarra",
+      "murcia"
     ],
     "world_x": 385,
     "world_y": 436,
@@ -1259,7 +1264,7 @@
     "trade_capacity": 3,
     "satisfaction": 68,
     "tax_rate": 38,
-    "population": 1200,
+    "population": 960,
     "rural_population": 780,
     "religion": "catholic",
     "active_event_id": "",
@@ -1273,17 +1278,16 @@
     "name": "Aragon",
     "name_tr": "Aragon",
     "terrain": "plain",
-    "owner_id": "granada_emirate",
+    "owner_id": "aragon",
     "neighbors": [
-      "atlantic_open_2",
-      "granada",
-      "navarre",
-      "alboran_sea",
-      "balearic_sea",
+      "aquitaine",
+      "catalonia",
+      "navarra",
+      "murcia",
       "toledo"
     ],
-    "world_x": 446,
-    "world_y": 491,
+    "world_x": 465,
+    "world_y": 431,
     "shape_id": "ESP",
     "is_sea": false,
     "is_locked": false,
@@ -1298,7 +1302,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1100,
+    "population": 757,
     "rural_population": 715,
     "religion": "catholic",
     "active_event_id": "",
@@ -2626,7 +2630,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 700,
+    "population": 682,
     "rural_population": 455,
     "religion": "shia",
     "active_event_id": "",
@@ -3251,11 +3255,12 @@
     "owner_id": "",
     "neighbors": [
       "denmark",
-      "western_baltic_sea",
       "north_sea",
       "north_sea_shore",
       "norway",
-      "norwegian_sea"
+      "norwegian_sea",
+      "western_baltic_sea",
+      "westphalia"
     ],
     "world_x": 604,
     "world_y": 189,
@@ -4476,7 +4481,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 450,
+    "population": 456,
     "rural_population": 293,
     "religion": "sunni",
     "active_event_id": "",
@@ -4494,7 +4499,6 @@
       "akkoyunlu",
       "azerbaijan",
       "georgia",
-      "konya",
       "western_persia"
     ],
     "world_x": 1374,
@@ -4513,7 +4517,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 300,
+    "population": 312,
     "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
@@ -4560,10 +4564,9 @@
     "terrain": "desert",
     "owner_id": "ilkhanate",
     "neighbors": [
-      "basra",
       "arabian_desert",
-      "persian_open_2",
-      "uae"
+      "basra",
+      "persian_open_2"
     ],
     "world_x": 1427,
     "world_y": 678,
@@ -4853,10 +4856,10 @@
     "terrain": "mountain",
     "owner_id": "aragon",
     "neighbors": [
+      "gulf_of_genoa",
       "mediterranean_open_2",
-      "sardinia_channel",
       "northern_tyrrhenian_sea",
-      "gulf_of_genoa"
+      "sardinia_channel"
     ],
     "world_x": 656,
     "world_y": 473,
@@ -4887,10 +4890,8 @@
     "terrain": "mountain",
     "owner_id": "genoa",
     "neighbors": [
-      "languedoc",
-      "northern_tyrrhenian_sea",
       "gulf_of_genoa",
-      "provence"
+      "northern_tyrrhenian_sea"
     ],
     "world_x": 657,
     "world_y": 434,
@@ -5060,7 +5061,6 @@
     "terrain": "desert",
     "owner_id": "usfurid_emirate",
     "neighbors": [
-      "bahrain",
       "arabian_desert",
       "persian_gulf"
     ],
@@ -5094,8 +5094,7 @@
     "owner_id": "usfurid_emirate",
     "neighbors": [
       "persian_gulf",
-      "persian_open_2",
-      "qatar"
+      "persian_open_2"
     ],
     "world_x": 1486,
     "world_y": 740,
@@ -5478,11 +5477,11 @@
     "neighbors": [
       "aleppo",
       "east_mediterranean",
+      "gulf_of_iskenderun",
       "karaman",
       "kayseri",
       "konya",
       "malatya",
-      "gulf_of_iskenderun",
       "sivas"
     ],
     "world_x": 1182,
@@ -5661,14 +5660,14 @@
     "terrain": "mountain",
     "owner_id": "granada_emirate",
     "neighbors": [
-      "aragon",
-      "castile",
-      "morocco",
       "alboran_sea",
-      "toledo",
-      "gulf_of_cadiz",
       "algarve",
-      "portugal"
+      "castile",
+      "gulf_of_cadiz",
+      "morocco",
+      "murcia",
+      "portugal",
+      "toledo"
     ],
     "world_x": 365,
     "world_y": 508,
@@ -5693,22 +5692,19 @@
     "buildings": null
   },
   {
-    "id": "navarre",
-    "name": "Navarre",
-    "name_tr": "Navarra Krallığı",
+    "id": "navarra",
+    "name": "Navarra",
+    "name_tr": "Navarra",
     "terrain": "mountain",
-    "owner_id": "aragon",
+    "owner_id": "navarra",
     "neighbors": [
+      "aquitaine",
       "aragon",
-      "atlantic_open_2",
       "bay_of_biscay",
-      "gulf_of_lion",
-      "languedoc",
-      "toledo",
-      "aquitaine"
+      "toledo"
     ],
-    "world_x": 459,
-    "world_y": 437,
+    "world_x": 445,
+    "world_y": 414,
     "shape_id": "ESP",
     "is_sea": false,
     "is_locked": false,
@@ -5723,8 +5719,81 @@
     "trade_capacity": 1,
     "satisfaction": 65,
     "tax_rate": 30,
-    "population": 280,
+    "population": 354,
     "rural_population": 182,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "catalonia",
+    "name": "Catalonia",
+    "name_tr": "Katalonya",
+    "terrain": "mountain",
+    "owner_id": "aragon",
+    "neighbors": [
+      "aquitaine",
+      "aragon",
+      "atlantic_open_2",
+      "gulf_of_lion",
+      "languedoc",
+      "murcia"
+    ],
+    "world_x": 497,
+    "world_y": 446,
+    "shape_id": "ESP",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 30,
+    "base_iron_output": 0,
+    "base_timber_output": 10,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 65,
+    "tax_rate": 30,
+    "population": 206,
+    "rural_population": 182,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "murcia",
+    "name": "Murcia",
+    "name_tr": "Murcia",
+    "terrain": "mountain",
+    "owner_id": "granada_emirate",
+    "neighbors": [
+      "alboran_sea",
+      "aragon",
+      "atlantic_open_2",
+      "balearic_sea",
+      "catalonia",
+      "granada",
+      "toledo"
+    ],
+    "world_x": 443,
+    "world_y": 508,
+    "shape_id": "ESP",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 30,
+    "base_iron_output": 0,
+    "base_timber_output": 10,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 65,
+    "tax_rate": 30,
+    "population": 567,
+    "rural_population": 282,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": null
@@ -6094,11 +6163,11 @@
     "terrain": "plain",
     "owner_id": "ilkhanate",
     "neighbors": [
-      "konya",
-      "karaman",
       "aksaray",
       "cankiri",
-      "cilicia"
+      "cilicia",
+      "karaman",
+      "konya"
     ],
     "world_x": 1146,
     "world_y": 508,
@@ -6491,6 +6560,7 @@
     "neighbors": [
       "holland",
       "north_sea",
+      "north_sea_shore",
       "westphalia"
     ],
     "world_x": 599,
@@ -7825,8 +7895,8 @@
       "azerbaijan",
       "caspian_open_2",
       "caspian_sea",
-      "north_caucasus",
       "nizhny_novgorod",
+      "north_caucasus",
       "northern_persia"
     ],
     "world_x": 1540,
@@ -7963,11 +8033,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "aragon",
       "balearic_sea",
+      "catalonia",
       "gulf_of_lion",
       "mallorca",
-      "navarre",
+      "murcia",
       "western_mediterranean"
     ],
     "world_x": 501,
@@ -7999,11 +8069,11 @@
     "owner_id": "",
     "neighbors": [
       "algiers",
-      "aragon",
-      "granada",
-      "morocco",
       "balearic_sea",
-      "gulf_of_cadiz"
+      "granada",
+      "gulf_of_cadiz",
+      "morocco",
+      "murcia"
     ],
     "world_x": 393,
     "world_y": 555,
@@ -8035,9 +8105,9 @@
     "neighbors": [
       "alboran_sea",
       "algiers",
-      "aragon",
       "atlantic_open_2",
       "central_algeria",
+      "murcia",
       "western_mediterranean"
     ],
     "world_x": 514,
@@ -8069,10 +8139,10 @@
     "owner_id": "",
     "neighbors": [
       "atlantic_open_2",
+      "catalonia",
       "gulf_of_genoa",
       "languedoc",
       "mallorca",
-      "navarre",
       "provence",
       "sardinia_channel",
       "western_mediterranean"
@@ -8352,8 +8422,8 @@
       "atlantic_open_4",
       "bay_of_biscay",
       "brittany",
-      "irish_sea",
       "english_channel",
+      "irish_sea",
       "the_pale",
       "wessex"
     ],
@@ -8386,13 +8456,13 @@
     "owner_id": "",
     "neighbors": [
       "brittany",
+      "champagne",
       "east_anglia",
       "flanders",
       "irish_sea_shore",
       "london",
       "normandy",
       "north_sea_shore",
-      "paris",
       "wessex"
     ],
     "world_x": 473,
@@ -8425,11 +8495,12 @@
     "neighbors": [
       "atlantic_open_6",
       "east_anglia",
+      "english_channel",
       "flanders",
+      "friesland",
       "holland",
       "kattegat",
       "mercia",
-      "english_channel",
       "north_sea",
       "norwegian_sea",
       "yorkshire"
@@ -9446,13 +9517,13 @@
     "owner_id": "",
     "neighbors": [
       "anjou",
+      "aquitaine",
       "atlantic_ocean_shore",
       "brittany",
       "castile",
       "irish_sea_shore",
-      "navarre",
-      "toledo",
-      "aquitaine"
+      "navarra",
+      "toledo"
     ],
     "world_x": 383,
     "world_y": 378,

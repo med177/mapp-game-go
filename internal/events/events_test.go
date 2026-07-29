@@ -347,7 +347,7 @@ func TestApplyChoiceStartsCapitalMove(t *testing.T) {
 				ID:      "home",
 				OwnerID: "player",
 				Settlements: []world.Settlement{
-					{ID: "old_cap", NameTR: "Eski Başkent", IsCapital: true},
+					{ID: "old_cap", NameTR: "Eski Başkent", IsCenter: true},
 					{ID: "new_cap", NameTR: "Yeni Başkent"},
 				},
 			},

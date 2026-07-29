@@ -16,7 +16,7 @@
         "x": 482,
         "y": 257,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       },
       {
@@ -38,7 +38,7 @@
         "x": 436,
         "y": 273,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -76,7 +76,7 @@
         "x": 492,
         "y": 241,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 23
       },
       {
@@ -106,7 +106,7 @@
         "x": 467,
         "y": 231,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 35
       },
       {
@@ -128,7 +128,7 @@
         "x": 474,
         "y": 216,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 84
       },
       {
@@ -150,7 +150,7 @@
         "x": 415,
         "y": 213,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 44
       },
       {
@@ -180,7 +180,7 @@
         "x": 417,
         "y": 221,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 17
       },
       {
@@ -242,7 +242,7 @@
         "x": 418,
         "y": 171,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 35
       },
       {
@@ -296,7 +296,7 @@
         "x": 413,
         "y": 256,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 24
       },
       {
@@ -305,7 +305,6 @@
         "x": 399,
         "y": 239,
         "type": "city",
-        "is_capital": true,
         "population": 32
       },
       {
@@ -327,7 +326,7 @@
         "x": 359,
         "y": 195,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 59
       },
       {
@@ -357,7 +356,7 @@
         "x": 350,
         "y": 221,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 12
       },
       {
@@ -395,7 +394,7 @@
         "x": 523,
         "y": 310,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 100
       },
       {
@@ -441,7 +440,7 @@
         "x": 493,
         "y": 290,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 40
       },
       {
@@ -450,7 +449,6 @@
         "x": 488,
         "y": 299,
         "type": "city",
-        "is_capital": true,
         "population": 40
       }
     ]
@@ -472,7 +470,7 @@
         "x": 422,
         "y": 319,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 20
       },
       {
@@ -489,7 +487,6 @@
         "x": 437,
         "y": 322,
         "type": "city",
-        "is_capital": true,
         "population": 20
       },
       {
@@ -519,7 +516,7 @@
         "x": 485,
         "y": 340,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 112
       }
     ]
@@ -541,7 +538,7 @@
         "x": 557,
         "y": 318,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 44
       },
       {
@@ -550,7 +547,6 @@
         "x": 551,
         "y": 302,
         "type": "city",
-        "is_capital": true,
         "population": 44
       },
       {
@@ -588,7 +584,7 @@
         "x": 585,
         "y": 340,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 53
       },
       {
@@ -597,7 +593,6 @@
         "x": 595,
         "y": 329,
         "type": "city",
-        "is_capital": true,
         "population": 53
       },
       {
@@ -619,7 +614,7 @@
         "x": 584,
         "y": 352,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 54
       }
     ]
@@ -633,7 +628,7 @@
         "x": 624,
         "y": 403,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 54
       }
     ]
@@ -647,7 +642,7 @@
         "x": 611,
         "y": 371,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 72
       }
     ]
@@ -661,7 +656,7 @@
         "x": 555,
         "y": 410,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -707,7 +702,7 @@
         "x": 749,
         "y": 244,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 47
       },
       {
@@ -761,7 +756,7 @@
         "x": 685,
         "y": 227,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 59
       },
       {
@@ -799,7 +794,7 @@
         "x": 722,
         "y": 322,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       },
       {
@@ -829,7 +824,7 @@
         "x": 645,
         "y": 233,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 135
       },
       {
@@ -851,7 +846,7 @@
         "x": 657,
         "y": 311,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 45
       },
       {
@@ -889,7 +884,7 @@
         "x": 618,
         "y": 269,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 65
       },
       {
@@ -911,7 +906,7 @@
         "x": 720,
         "y": 182,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 168
       },
       {
@@ -933,7 +928,7 @@
         "x": 715,
         "y": 179,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 120
       },
       {
@@ -955,7 +950,7 @@
         "x": 622,
         "y": 345,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       },
       {
@@ -976,8 +971,8 @@
         "name_tr": "Bordeaux",
         "x": 464,
         "y": 384,
-        "type": "city",
-        "is_capital": true,
+        "type": "fortress",
+        "is_center": true,
         "population": 122
       }
     ]
@@ -999,7 +994,7 @@
         "x": 292,
         "y": 497,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 135
       },
       {
@@ -1021,7 +1016,7 @@
         "x": 301,
         "y": 528,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 210
       },
       {
@@ -1051,7 +1046,7 @@
         "x": 364,
         "y": 429,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 140
       }
     ]
@@ -1065,7 +1060,7 @@
         "x": 393,
         "y": 427,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 60
       },
       {
@@ -1075,14 +1070,6 @@
         "y": 442,
         "type": "town",
         "population": 120
-      },
-      {
-        "id": "toledo_settlement_4",
-        "name_tr": "Bilbao",
-        "x": 415,
-        "y": 414,
-        "type": "city",
-        "population": 240
       }
     ]
   },
@@ -1090,37 +1077,29 @@
     "region_id": "aragon",
     "settlements": [
       {
-        "id": "aragon_valencia",
-        "name_tr": "Valensiya",
-        "x": 469,
-        "y": 486,
-        "type": "port",
-        "is_capital": true,
-        "population": 83
+        "id": "aragon_zaragoza",
+        "name_tr": "Saragossa",
+        "x": 458,
+        "y": 444,
+        "type": "fortress",
+        "is_center": true,
+        "population": 17
       },
       {
-        "id": "granada_almeria",
-        "name_tr": "Almeria",
-        "x": 426,
-        "y": 534,
-        "type": "port",
-        "population": 82
+        "id": "navarre_tudela",
+        "name_tr": "Tudela",
+        "x": 446,
+        "y": 438,
+        "type": "town",
+        "population": 8
       },
       {
-        "id": "aragon_settlement_4",
-        "name_tr": "Guadalajara",
-        "x": 418,
-        "y": 472,
+        "id": "aragon_main",
+        "name_tr": "Teruel",
+        "x": 453,
+        "y": 466,
         "type": "city",
-        "population": 110
-      },
-      {
-        "id": "aragon_settlement_5",
-        "name_tr": "Cartegena",
-        "x": 457,
-        "y": 519,
-        "type": "city",
-        "population": 110
+        "population": 17
       }
     ]
   },
@@ -1146,10 +1125,10 @@
       {
         "id": "venice",
         "name_tr": "Venedik",
-        "x": 722,
-        "y": 371,
+        "x": 723,
+        "y": 370,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 93
       },
       {
@@ -1187,7 +1166,7 @@
         "x": 733,
         "y": 446,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 98
       },
       {
@@ -1216,8 +1195,8 @@
         "name_tr": "Napoli Krallığı",
         "x": 763,
         "y": 457,
-        "type": "city",
-        "is_capital": true,
+        "type": "fortress",
+        "is_center": true,
         "population": 140
       },
       {
@@ -1247,7 +1226,7 @@
         "x": 798,
         "y": 319,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 93
       },
       {
@@ -1277,7 +1256,7 @@
         "x": 784,
         "y": 278,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 78
       },
       {
@@ -1294,7 +1273,6 @@
         "x": 757,
         "y": 283,
         "type": "city",
-        "is_capital": true,
         "population": 75
       },
       {
@@ -1340,7 +1318,7 @@
         "x": 886,
         "y": 238,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 262
       }
     ]
@@ -1378,7 +1356,7 @@
         "x": 981,
         "y": 193,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 168
       }
     ]
@@ -1392,7 +1370,7 @@
         "x": 855,
         "y": 336,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 63
       },
       {
@@ -1478,7 +1456,7 @@
         "x": 886,
         "y": 384,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       }
     ]
@@ -1492,7 +1470,7 @@
         "x": 912,
         "y": 409,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 48
       },
       {
@@ -1538,7 +1516,7 @@
         "x": 996,
         "y": 380,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 30
       },
       {
@@ -1568,7 +1546,7 @@
         "x": 954,
         "y": 392,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 46
       },
       {
@@ -1598,7 +1576,7 @@
         "x": 1012,
         "y": 343,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 161
       }
     ]
@@ -1636,7 +1614,7 @@
         "x": 986,
         "y": 414,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 61
       },
       {
@@ -1682,7 +1660,7 @@
         "x": 373,
         "y": 585,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 42
       },
       {
@@ -1691,7 +1669,6 @@
         "x": 326,
         "y": 627,
         "type": "city",
-        "is_capital": true,
         "population": 42
       },
       {
@@ -1745,7 +1722,7 @@
         "x": 449,
         "y": 578,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 55
       },
       {
@@ -1767,7 +1744,7 @@
         "x": 535,
         "y": 538,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 48
       }
     ]
@@ -1781,6 +1758,7 @@
         "x": 620,
         "y": 535,
         "type": "city",
+        "is_center": true,
         "population": 46
       },
       {
@@ -1842,7 +1820,7 @@
         "x": 680,
         "y": 537,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 30
       },
       {
@@ -1880,7 +1858,7 @@
         "x": 741,
         "y": 611,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 20
       },
       {
@@ -1942,7 +1920,7 @@
         "x": 880,
         "y": 632,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 53
       },
       {
@@ -1964,7 +1942,7 @@
         "x": 953,
         "y": 514,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 20
       },
       {
@@ -2010,7 +1988,7 @@
         "x": 1055,
         "y": 467,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 54
       },
       {
@@ -2064,7 +2042,7 @@
         "x": 1189,
         "y": 476,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 63
       },
       {
@@ -2150,7 +2128,7 @@
         "x": 1150,
         "y": 386,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 32
       }
     ]
@@ -2180,7 +2158,7 @@
         "x": 1222,
         "y": 197,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 107
       },
       {
@@ -2226,7 +2204,7 @@
         "x": 1284,
         "y": 455,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 36
       },
       {
@@ -2264,7 +2242,7 @@
         "x": 1295,
         "y": 480,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 38
       },
       {
@@ -2326,7 +2304,7 @@
         "x": 1319,
         "y": 438,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 22
       },
       {
@@ -2351,7 +2329,6 @@
         "x": 1342,
         "y": 436,
         "type": "fortress",
-        "is_capital": true,
         "population": 5
       }
     ]
@@ -2373,7 +2350,7 @@
         "x": 1099,
         "y": 663,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -2427,7 +2404,7 @@
         "x": 1132,
         "y": 739,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 140
       },
       {
@@ -2457,7 +2434,7 @@
         "x": 1186,
         "y": 617,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       },
       {
@@ -2487,7 +2464,7 @@
         "x": 1201,
         "y": 601,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 180
       },
       {
@@ -2517,7 +2494,7 @@
         "x": 1360,
         "y": 592,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 63
       },
       {
@@ -2595,7 +2572,7 @@
         "x": 1668,
         "y": 543,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 56
       },
       {
@@ -2657,7 +2634,7 @@
         "x": 1405,
         "y": 514,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 9
       },
       {
@@ -2689,14 +2666,6 @@
         "name_tr": "Urmiye",
         "x": 1375,
         "y": 523,
-        "type": "town",
-        "population": 18
-      },
-      {
-        "id": "azerbaijan_nakhchivan",
-        "name_tr": "Nahçıvan",
-        "x": 1384,
-        "y": 490,
         "type": "town",
         "population": 18
       },
@@ -2743,7 +2712,7 @@
         "x": 1635,
         "y": 699,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 27
       },
       {
@@ -2797,7 +2766,7 @@
         "x": 1298,
         "y": 797,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       },
       {
@@ -2835,7 +2804,7 @@
         "x": 1342,
         "y": 735,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 56
       },
       {
@@ -2873,7 +2842,7 @@
         "x": 767,
         "y": 361,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 39
       },
       {
@@ -2882,7 +2851,6 @@
         "x": 759,
         "y": 355,
         "type": "city",
-        "is_capital": true,
         "population": 39
       },
       {
@@ -2928,7 +2896,7 @@
         "x": 850,
         "y": 368,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 69
       },
       {
@@ -2958,7 +2926,7 @@
         "x": 820,
         "y": 386,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 128
       },
       {
@@ -2980,7 +2948,7 @@
         "x": 858,
         "y": 431,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 87
       },
       {
@@ -3002,7 +2970,7 @@
         "x": 897,
         "y": 422,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 58
       },
       {
@@ -3040,7 +3008,7 @@
         "x": 866,
         "y": 436,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 61
       }
     ]
@@ -3062,7 +3030,7 @@
         "x": 903,
         "y": 438,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 44
       },
       {
@@ -3100,7 +3068,7 @@
         "x": 1037,
         "y": 327,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 71
       },
       {
@@ -3246,7 +3214,7 @@
         "x": 831,
         "y": 314,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 35
       },
       {
@@ -3268,7 +3236,7 @@
         "x": 972,
         "y": 106,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       }
     ]
@@ -3282,7 +3250,7 @@
         "x": 957,
         "y": 151,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 87
       }
     ]
@@ -3304,7 +3272,7 @@
         "x": 1084,
         "y": 212,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 49
       },
       {
@@ -3350,7 +3318,7 @@
         "x": 691,
         "y": 95,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 122
       }
     ]
@@ -3364,7 +3332,7 @@
         "x": 835,
         "y": 106,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 245
       }
     ]
@@ -3378,7 +3346,7 @@
         "x": 1010,
         "y": 443,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 47
       },
       {
@@ -3400,7 +3368,7 @@
         "x": 1008,
         "y": 466,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 20
       },
       {
@@ -3454,7 +3422,7 @@
         "x": 1056,
         "y": 456,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 12
       },
       {
@@ -3500,7 +3468,7 @@
         "x": 1195,
         "y": 632,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 25
       },
       {
@@ -3532,7 +3500,7 @@
         "name_tr": "Kerek",
         "x": 1190,
         "y": 643,
-        "type": "fort",
+        "type": "fortress",
         "population": 10
       }
     ]
@@ -3549,37 +3517,37 @@
         "population": 25
       },
       {
-        "id": "azerbaijan_dvin",
-        "name_tr": "Dvin",
-        "x": 1409,
-        "y": 460,
-        "type": "fortress",
-        "population": 12
-      },
-      {
         "id": "azerbaijan_ganja",
         "name_tr": "Gence",
-        "x": 1489,
-        "y": 451,
+        "x": 1413,
+        "y": 461,
         "type": "city",
         "population": 48
       },
       {
         "id": "azerbaijan_main",
-        "name_tr": "Tebriz",
-        "x": 1466,
-        "y": 467,
+        "name_tr": "Bakü",
+        "x": 1470,
+        "y": 469,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 48
       },
       {
         "id": "azerbaijan_shamakhi",
         "name_tr": "Şamahı",
-        "x": 1478,
-        "y": 466,
-        "type": "town",
+        "x": 1455,
+        "y": 465,
+        "type": "fortress",
         "population": 24
+      },
+      {
+        "id": "azerbaijan_nakhchivan",
+        "name_tr": "Nahçıvan",
+        "x": 1384,
+        "y": 491,
+        "type": "town",
+        "population": 18
       }
     ]
   },
@@ -3592,8 +3560,16 @@
         "x": 1361,
         "y": 462,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
+      },
+      {
+        "id": "azerbaijan_dvin",
+        "name_tr": "Dvin",
+        "x": 1370,
+        "y": 473,
+        "type": "fortress",
+        "population": 12
       }
     ]
   },
@@ -3606,7 +3582,7 @@
         "x": 1186,
         "y": 592,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 25
       },
       {
@@ -3652,7 +3628,7 @@
         "x": 1436,
         "y": 680,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       }
     ]
@@ -3666,7 +3642,7 @@
         "x": 1134,
         "y": 572,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 122
       }
     ]
@@ -3680,7 +3656,7 @@
         "x": 542,
         "y": 265,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 93
       },
       {
@@ -3710,7 +3686,7 @@
         "x": 575,
         "y": 240,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       },
       {
@@ -3732,7 +3708,7 @@
         "x": 598,
         "y": 292,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       }
     ]
@@ -3746,7 +3722,7 @@
         "x": 1202,
         "y": 325,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 120
       },
       {
@@ -3776,7 +3752,7 @@
         "x": 884,
         "y": 196,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       }
     ]
@@ -3814,7 +3790,7 @@
         "x": 781,
         "y": 531,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 39
       }
     ]
@@ -3836,7 +3812,7 @@
         "x": 658,
         "y": 490,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 26
       },
       {
@@ -3874,7 +3850,7 @@
         "x": 665,
         "y": 425,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 17
       },
       {
@@ -3899,7 +3875,6 @@
         "x": 663,
         "y": 437,
         "type": "city",
-        "is_capital": true,
         "population": 23
       }
     ]
@@ -3913,7 +3888,7 @@
         "x": 987,
         "y": 566,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 122
       }
     ]
@@ -3927,7 +3902,7 @@
         "x": 764,
         "y": 553,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 52
       }
     ]
@@ -3949,7 +3924,7 @@
         "x": 1165,
         "y": 638,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -3995,7 +3970,7 @@
         "x": 1572,
         "y": 772,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 70
       }
     ]
@@ -4009,7 +3984,7 @@
         "x": 1500,
         "y": 746,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 42
       }
     ]
@@ -4023,7 +3998,7 @@
         "x": 1487,
         "y": 740,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 35
       }
     ]
@@ -4037,7 +4012,7 @@
         "x": 1146,
         "y": 565,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 18
       },
       {
@@ -4059,7 +4034,7 @@
         "x": 1041,
         "y": 547,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 87
       }
     ]
@@ -4073,7 +4048,7 @@
         "x": 531,
         "y": 483,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       }
     ]
@@ -4087,7 +4062,7 @@
         "x": 1070,
         "y": 489,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 133
       }
     ]
@@ -4109,7 +4084,7 @@
         "x": 1017,
         "y": 473,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 64
       },
       {
@@ -4131,7 +4106,7 @@
         "x": 1022,
         "y": 498,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 51
       },
       {
@@ -4161,7 +4136,7 @@
         "x": 1018,
         "y": 504,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 126
       }
     ]
@@ -4175,7 +4150,7 @@
         "x": 1050,
         "y": 535,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 20
       },
       {
@@ -4221,7 +4196,7 @@
         "x": 1218,
         "y": 453,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 38
       },
       {
@@ -4251,7 +4226,7 @@
         "x": 1210,
         "y": 482,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 25
       },
       {
@@ -4337,7 +4312,7 @@
         "x": 1171,
         "y": 535,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 13
       },
       {
@@ -4383,7 +4358,7 @@
         "x": 1342,
         "y": 500,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 147
       }
     ]
@@ -4401,11 +4376,11 @@
       },
       {
         "id": "florence_main",
-        "name_tr": "Floransa Cumhuriyeti",
+        "name_tr": "Floransa",
         "x": 700,
         "y": 404,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 104
       },
       {
@@ -4447,11 +4422,11 @@
       },
       {
         "id": "genoa_main",
-        "name_tr": "Ceneviz Cumhuriyeti",
+        "name_tr": "Cenova",
         "x": 653,
         "y": 389,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 84
       },
       {
@@ -4489,7 +4464,7 @@
         "x": 665,
         "y": 369,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 99
       },
       {
@@ -4516,17 +4491,18 @@
       {
         "id": "granada_guadix",
         "name_tr": "Guadix",
-        "x": 399,
-        "y": 517,
+        "x": 395,
+        "y": 515,
         "type": "fortress",
         "population": 14
       },
       {
         "id": "granada_main",
-        "name_tr": "Gırnata Emirliği",
-        "x": 396,
-        "y": 525,
+        "name_tr": "Gırnata",
+        "x": 390,
+        "y": 523,
         "type": "city",
+        "is_center": true,
         "population": 44
       },
       {
@@ -4548,10 +4524,9 @@
       {
         "id": "granada_settlement_5",
         "name_tr": "Kurtuba",
-        "x": 376,
+        "x": 375,
         "y": 516,
-        "type": "city",
-        "is_capital": true,
+        "type": "fortress",
         "population": 44
       },
       {
@@ -4573,7 +4548,7 @@
     ]
   },
   {
-    "region_id": "navarre",
+    "region_id": "navarra",
     "settlements": [
       {
         "id": "navarre_estella",
@@ -4586,59 +4561,87 @@
       {
         "id": "navarre_olite",
         "name_tr": "Olite",
-        "x": 443,
-        "y": 428,
+        "x": 442,
+        "y": 427,
         "type": "fortress",
         "population": 4
       },
       {
         "id": "navarre_pamplona",
         "name_tr": "Pamplona",
-        "x": 443,
+        "x": 444,
         "y": 422,
         "type": "city",
+        "is_center": true,
         "population": 17
       },
       {
-        "id": "navarre_tudela",
-        "name_tr": "Tudela",
-        "x": 447,
-        "y": 437,
-        "type": "town",
-        "population": 8
-      },
+        "id": "toledo_settlement_4",
+        "name_tr": "Bilbao",
+        "x": 416,
+        "y": 414,
+        "type": "fortress",
+        "population": 140
+      }
+    ]
+  },
+  {
+    "region_id": "catalonia",
+    "settlements": [
       {
         "id": "aragon_barcelona",
         "name_tr": "Barselona",
-        "x": 510,
-        "y": 450,
+        "x": 512,
+        "y": 451,
         "type": "port",
+        "is_center": true,
         "population": 12
       },
       {
         "id": "aragon_tarragona",
         "name_tr": "Tarragona",
-        "x": 497,
-        "y": 454,
+        "x": 490,
+        "y": 460,
         "type": "port",
         "population": 12
+      }
+    ]
+  },
+  {
+    "region_id": "murcia",
+    "settlements": [
+      {
+        "id": "aragon_settlement_4",
+        "name_tr": "Guadalajara",
+        "x": 417,
+        "y": 473,
+        "type": "fortress",
+        "is_center": true,
+        "population": 110
       },
       {
-        "id": "aragon_zaragoza",
-        "name_tr": "Saragossa",
-        "x": 459,
-        "y": 441,
+        "id": "aragon_settlement_5",
+        "name_tr": "Cartegena",
+        "x": 458,
+        "y": 520,
         "type": "city",
-        "is_capital": true,
-        "population": 17
+        "population": 110
       },
       {
-        "id": "aragon_main",
-        "name_tr": "Aragon",
-        "x": 450,
-        "y": 459,
+        "id": "granada_almeria",
+        "name_tr": "Almeria",
+        "x": 426,
+        "y": 534,
+        "type": "port",
+        "population": 82
+      },
+      {
+        "id": "aragon_valencia",
+        "name_tr": "Valensiya",
+        "x": 468,
+        "y": 486,
         "type": "city",
-        "population": 17
+        "population": 83
       }
     ]
   },
@@ -4651,7 +4654,7 @@
         "x": 738,
         "y": 212,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 91
       },
       {
@@ -4660,7 +4663,6 @@
         "x": 748,
         "y": 222,
         "type": "port",
-        "is_capital": true,
         "population": 66
       },
       {
@@ -4690,7 +4692,7 @@
         "x": 899,
         "y": 364,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 182
       },
       {
@@ -4712,7 +4714,7 @@
         "x": 1058,
         "y": 540,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 24
       },
       {
@@ -4766,7 +4768,7 @@
         "x": 1091,
         "y": 533,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 31
       },
       {
@@ -4812,7 +4814,7 @@
         "x": 1089,
         "y": 502,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 112
       }
     ]
@@ -4826,7 +4828,7 @@
         "x": 1097,
         "y": 491,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       }
     ]
@@ -4840,7 +4842,7 @@
         "x": 1120,
         "y": 491,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 96
       },
       {
@@ -4862,7 +4864,7 @@
         "x": 1096,
         "y": 479,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 126
       }
     ]
@@ -4876,7 +4878,7 @@
         "x": 1142,
         "y": 463,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 19
       },
       {
@@ -4946,7 +4948,7 @@
         "x": 1149,
         "y": 534,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 33
       },
       {
@@ -4984,7 +4986,7 @@
         "x": 1157,
         "y": 521,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 19
       },
       {
@@ -5054,7 +5056,7 @@
         "x": 1239,
         "y": 463,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 21
       },
       {
@@ -5100,7 +5102,7 @@
         "x": 1238,
         "y": 502,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 31
       },
       {
@@ -5154,7 +5156,7 @@
         "x": 1272,
         "y": 524,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 45
       },
       {
@@ -5184,7 +5186,7 @@
         "x": 1274,
         "y": 486,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 33
       },
       {
@@ -5270,7 +5272,7 @@
         "x": 946,
         "y": 424,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 16
       }
     ]
@@ -5284,7 +5286,7 @@
         "x": 738,
         "y": 327,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 23
       },
       {
@@ -5306,7 +5308,7 @@
         "x": 690,
         "y": 342,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 98
       }
     ]
@@ -5320,7 +5322,7 @@
         "x": 813,
         "y": 296,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 24
       },
       {
@@ -5366,7 +5368,7 @@
         "x": 828,
         "y": 274,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 32
       },
       {
@@ -5388,7 +5390,7 @@
         "x": 903,
         "y": 226,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 76
       },
       {
@@ -5418,7 +5420,7 @@
         "x": 592,
         "y": 224,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 105
       }
     ]
@@ -5432,7 +5434,7 @@
         "x": 601,
         "y": 301,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 126
       }
     ]
@@ -5446,7 +5448,7 @@
         "x": 628,
         "y": 316,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 119
       }
     ]
@@ -5460,7 +5462,7 @@
         "x": 910,
         "y": 333,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 63
       },
       {
@@ -5498,7 +5500,7 @@
         "x": 702,
         "y": 372,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 96
       },
       {
@@ -5520,7 +5522,7 @@
         "x": 717,
         "y": 387,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 48
       },
       {
@@ -5554,11 +5556,11 @@
     "settlements": [
       {
         "id": "siena_main",
-        "name_tr": "Siena Cumhuriyeti",
+        "name_tr": "Siena",
         "x": 710,
         "y": 425,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 84
       },
       {
@@ -5588,7 +5590,7 @@
         "x": 835,
         "y": 463,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 63
       },
       {
@@ -5626,7 +5628,7 @@
         "x": 887,
         "y": 411,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 74
       },
       {
@@ -5664,7 +5666,7 @@
         "x": 764,
         "y": 374,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 0
       }
     ]
@@ -5678,7 +5680,7 @@
         "x": 801,
         "y": 401,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 11
       },
       {
@@ -5716,7 +5718,7 @@
         "x": 837,
         "y": 425,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 100
       }
     ]
@@ -5754,7 +5756,7 @@
         "x": 800,
         "y": 364,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 69
       },
       {
@@ -5776,7 +5778,7 @@
         "x": 843,
         "y": 402,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 44
       },
       {
@@ -5806,7 +5808,7 @@
         "x": 839,
         "y": 422,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 46
       }
     ]
@@ -5820,7 +5822,7 @@
         "x": 875,
         "y": 472,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 14
       },
       {
@@ -5858,7 +5860,7 @@
         "x": 927,
         "y": 482,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 19
       },
       {
@@ -5928,7 +5930,7 @@
         "x": 913,
         "y": 460,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 147
       }
     ]
@@ -5942,7 +5944,7 @@
         "x": 921,
         "y": 518,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 12
       },
       {
@@ -5951,7 +5953,6 @@
         "x": 920,
         "y": 531,
         "type": "city",
-        "is_capital": true,
         "population": 40
       },
       {
@@ -5989,7 +5990,7 @@
         "x": 1048,
         "y": 395,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 38
       },
       {
@@ -6019,7 +6020,7 @@
         "x": 1068,
         "y": 481,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 25
       },
       {
@@ -6049,7 +6050,7 @@
         "x": 1059,
         "y": 502,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 49
       },
       {
@@ -6067,11 +6068,11 @@
     "settlements": [
       {
         "id": "galicia_main",
-        "name_tr": "Galicya-Volhiyn Prensliği",
+        "name_tr": "Galicya",
         "x": 968,
         "y": 260,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 47
       },
       {
@@ -6096,7 +6097,6 @@
         "x": 955,
         "y": 288,
         "type": "city",
-        "is_capital": true,
         "population": 45
       },
       {
@@ -6118,7 +6118,7 @@
         "x": 1084,
         "y": 291,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -6164,7 +6164,7 @@
         "x": 1109,
         "y": 347,
         "type": "port",
-        "is_capital": true,
+        "is_center": true,
         "population": 28
       },
       {
@@ -6218,7 +6218,7 @@
         "x": 1219,
         "y": 546,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 56
       },
       {
@@ -6272,7 +6272,7 @@
         "x": 1257,
         "y": 552,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 112
       },
       {
@@ -6302,7 +6302,7 @@
         "x": 1338,
         "y": 542,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 38
       },
       {
@@ -6340,7 +6340,7 @@
         "x": 1433,
         "y": 656,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 42
       },
       {
@@ -6378,7 +6378,7 @@
         "x": 1073,
         "y": 460,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 32
       },
       {
@@ -6424,7 +6424,7 @@
         "x": 1078,
         "y": 471,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 53
       },
       {
@@ -6446,7 +6446,7 @@
         "x": 1139,
         "y": 449,
         "type": "fortress",
-        "is_capital": true,
+        "is_center": true,
         "population": 7
       },
       {
@@ -6492,7 +6492,7 @@
         "x": 1174,
         "y": 437,
         "type": "town",
-        "is_capital": true,
+        "is_center": true,
         "population": 26
       },
       {
@@ -6538,7 +6538,7 @@
         "x": 1087,
         "y": 453,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 42
       },
       {
@@ -6568,7 +6568,7 @@
         "x": 1106,
         "y": 120,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 80
       },
       {
@@ -6638,7 +6638,7 @@
         "x": 1419,
         "y": 172,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 32
       },
       {
@@ -6668,7 +6668,7 @@
         "x": 1233,
         "y": 377,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 33
       },
       {
@@ -6714,7 +6714,7 @@
         "x": 1535,
         "y": 468,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 42
       },
       {
@@ -6744,7 +6744,7 @@
         "x": 949,
         "y": 467,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 19
       },
       {
@@ -6798,7 +6798,7 @@
         "x": 991,
         "y": 456,
         "type": "city",
-        "is_capital": true,
+        "is_center": true,
         "population": 98
       }
     ]

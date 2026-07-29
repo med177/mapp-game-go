@@ -19,7 +19,7 @@ func TestNormalizeFactionCapitalsChoosesBestOwnedSettlement(t *testing.T) {
 				BaseGoldIncome: 30,
 				TradeCapacity:  2,
 				Settlements: []world.Settlement{
-					{ID: "ankara_city", NameTR: "Ankara", IsCapital: true},
+					{ID: "ankara_city", NameTR: "Ankara", IsCenter: true},
 				},
 			},
 			"bursa": {
@@ -29,7 +29,7 @@ func TestNormalizeFactionCapitalsChoosesBestOwnedSettlement(t *testing.T) {
 				BaseGrainOutput: 6,
 				TradeCapacity:   8,
 				Settlements: []world.Settlement{
-					{ID: "bursa_city", NameTR: "Bursa", IsCapital: true},
+					{ID: "bursa_city", NameTR: "Bursa", IsCenter: true},
 				},
 			},
 		},
@@ -52,14 +52,14 @@ func TestAdvanceCapitalMovesCompletesAndCancels(t *testing.T) {
 				ID:      "ankara",
 				OwnerID: "ottoman",
 				Settlements: []world.Settlement{
-					{ID: "ankara_city", NameTR: "Ankara", IsCapital: true},
+					{ID: "ankara_city", NameTR: "Ankara", IsCenter: true},
 				},
 			},
 			"bursa": {
 				ID:      "bursa",
 				OwnerID: "ottoman",
 				Settlements: []world.Settlement{
-					{ID: "bursa_city", NameTR: "Bursa", IsCapital: true},
+					{ID: "bursa_city", NameTR: "Bursa", IsCenter: true},
 				},
 			},
 		},

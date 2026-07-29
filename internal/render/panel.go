@@ -2068,7 +2068,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	if len(region.Settlements) > 0 {
 		capital := region.Settlements[0]
 		for _, s := range region.Settlements {
-			if s.IsCapital {
+			if s.IsCenter {
 				capital = s
 				break
 			}

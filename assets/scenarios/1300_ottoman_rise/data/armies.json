@@ -344,6 +344,32 @@
     ]
   },
   {
+    "id": "army_edit_112",
+    "owner_id": "aragon",
+    "region_id": "catalonia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_113",
+    "owner_id": "granada_emirate",
+    "region_id": "murcia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "army_edit_47",
     "owner_id": "ottoman",
     "region_id": "bilecik_frontier",
@@ -398,8 +424,8 @@
   },
   {
     "id": "army_edit_71",
-    "owner_id": "aragon",
-    "region_id": "navarre",
+    "owner_id": "navarra",
+    "region_id": "navarra",
     "units": [
       {
         "type_id": "infantry",
@@ -408,21 +434,6 @@
       {
         "type_id": "militia",
         "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_edit_72",
-    "owner_id": "granada_emirate",
-    "region_id": "aragon",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "militia",
-        "count": 2
       }
     ]
   },

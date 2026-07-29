@@ -282,6 +282,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "achaea_principality",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "achaea_principality",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -678,6 +684,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "ahiler",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "ahiler",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -1068,6 +1080,12 @@
     "stance": "war"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "aragon",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "aragon",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -1452,6 +1470,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "arnavut_des",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "arnavut_des",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -1830,6 +1854,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "athena_duk",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "athena_duk",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -2202,6 +2232,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "austria_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "austria_duchy",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -2568,6 +2604,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "aydin_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "aydin_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -2928,6 +2970,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "barqa_emirate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "barqa_emirate",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -3282,6 +3330,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "bavaria_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bavaria_duchy",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -3630,6 +3684,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "bohemian_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bohemian_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -3972,6 +4032,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "bosnian_banate",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bosnian_banate",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -4308,6 +4374,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "brandenburg_margraviate",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "brandenburg_margraviate",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -4638,6 +4710,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "bulgarian_empire",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "bulgarian_empire",
     "faction_b": "novgorod_rep",
     "score": 25,
@@ -4962,6 +5040,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "candar_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "candar_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -5280,6 +5364,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "canik_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "canik_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -5592,6 +5682,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "carniola_margraviate",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "carniola_margraviate",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -5898,6 +5994,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "castile_kingdom",
+    "score": 25,
+    "stance": "war"
+  },
+  {
     "faction_a": "castile_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -6198,6 +6300,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "croatian_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "croatian_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -6492,6 +6600,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "denmark_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "denmark_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -6780,6 +6894,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "dulkadir_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "dulkadir_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -7062,6 +7182,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "east_rome",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "east_rome",
     "faction_b": "novgorod_rep",
     "score": 25,
@@ -7338,6 +7464,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "england",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "england",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -7608,6 +7740,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "epir",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "epir",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -7872,6 +8010,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "esrefoglu_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "novgorod_rep",
     "faction_b": "esrefoglu_bey",
     "score": -30,
@@ -8130,6 +8274,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "flanders_county",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -8382,6 +8532,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "florence_rep",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "florence_rep",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -8628,6 +8784,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "france",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "france",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -8868,6 +9030,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "genoa",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "genoa",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -9102,6 +9270,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "georgia_kingdom",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "georgia_kingdom",
     "faction_b": "novgorod_rep",
     "score": 25,
@@ -9330,6 +9504,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "germiyan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "germiyan_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -9552,6 +9732,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "golden_horde",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "golden_horde",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -9768,6 +9954,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "granada_emirate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "granada_emirate",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -9978,6 +10170,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "hafsid_sultanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hafsid_sultanate",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -10182,6 +10380,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "hamid_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hamid_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -10380,6 +10584,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "hormuz_sultanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hormuz_sultanate",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -10572,6 +10782,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "hre",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hre",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -10758,6 +10974,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "hungarian_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hungarian_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -10938,6 +11160,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "ilkhanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "ilkhanate",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -11112,6 +11340,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "karaman_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "karaman_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -11280,6 +11514,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "karesioglu_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "karesioglu_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -11442,6 +11682,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "leon_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "leon_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -11598,6 +11844,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "lithuanian_gd",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "lithuanian_gd",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -11748,6 +12000,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "mamluk",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "mamluk",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -11892,6 +12150,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "marinid_sultanate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "marinid_sultanate",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -12030,6 +12294,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "mecca_sharifate",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
     "faction_a": "mecca_sharifate",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -12162,6 +12432,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "mentese_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
     "faction_a": "mentese_bey",
     "faction_b": "novgorod_rep",
     "score": -30,
@@ -12288,6 +12564,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "milan_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "milan_duchy",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -12408,6 +12690,12 @@
     "stance": "peace"
   },
   {
+    "faction_a": "navarra",
+    "faction_b": "naples_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
     "faction_a": "naples_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
@@ -12523,6 +12811,126 @@
   },
   {
     "faction_a": "naples_kingdom",
+    "faction_b": "zayyanid_tlemcen",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "novgorod_rep",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "ottoman",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "papal_states_f",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "polish_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "portugal",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "ragusa",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "ramazan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "russia",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "safavid",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "saruhan_bey",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "savoy_county",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "saxony_duchy",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "scotland_kingdom",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "serbian_empire",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "teutonic_order",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "trebizond_emp",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "usfurid_emirate",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "venice",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
+    "faction_b": "wallachia_prince",
+    "score": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "navarra",
     "faction_b": "zayyanid_tlemcen",
     "score": -30,
     "stance": "peace"

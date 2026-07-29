@@ -19,6 +19,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
@@ -327,6 +328,8 @@ type editWorldSnapshot struct {
 	RegionOrder          []world.RegionID
 	LandPassages         []world.LandPassage
 	Factions             map[faction.FactionID]*faction.Faction
+	AIStrategies         map[string]scenario.AIFactionStrategy
+	TradeCenters         world.TradeCenterConfig
 	Armies               map[army.ArmyID]*army.Army
 	Relations            map[string]*faction.Relation
 	ShapeData            world.CountryShapeJSON
@@ -2004,7 +2007,7 @@ func (r *Renderer) landArmyAnchor(region *world.Region) (int, int, bool) {
 		if fallbackIdx < 0 {
 			fallbackIdx = i
 		}
-		if settlement.IsCapital {
+		if settlement.IsCenter {
 			preferredIdx = i
 			break
 		}
@@ -2291,7 +2294,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			shadowColor = color.RGBA{34, 22, 8, 210}
 		}
 		if !item.DrawLabel && !forceLabel {
-			isPrimary := settlement.IsCapital || item.Index == 0
+			isPrimary := settlement.IsCenter || item.Index == 0
 			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 			continue
@@ -2331,7 +2334,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
-		isPrimary := settlement.IsCapital || item.Index == 0
+		isPrimary := settlement.IsCenter || item.Index == 0
 		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
 	}
@@ -2343,7 +2346,7 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 	}
 
 	for i, settlement := range region.Settlements {
-		isPrimary := settlement.IsCapital || i == 0
+		isPrimary := settlement.IsCenter || i == 0
 		isFactionCapital := r.isCapitalSettlement(region, settlement)
 
 		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
@@ -2410,7 +2413,7 @@ func settlementLabelPriority(settlement world.Settlement, isPrimary bool, isFact
 	if isFactionCapital {
 		return 110
 	}
-	if settlement.IsCapital {
+	if settlement.IsCenter {
 		return 100
 	}
 	switch settlement.Type {
@@ -2433,11 +2436,11 @@ func settlementLabelPriority(settlement world.Settlement, isPrimary bool, isFact
 func (r *Renderer) shouldDrawSettlementAtZoom(settlement world.Settlement, isFactionCapital bool) bool {
 	// Uzak görünümde harita gürültüsünü başkentler ve kaleler oluşturmaz.
 	if r.camScale < settlementMediumZoomScale {
-		return isFactionCapital || settlement.IsCapital || settlement.Type == world.SettlementFortress
+		return isFactionCapital || settlement.IsCenter || settlement.Type == world.SettlementFortress
 	}
 	// Orta görünümde limanlar ve şehirler de stratejik işaret olarak açılır.
 	if r.camScale < settlementCloseZoomScale {
-		return isFactionCapital || settlement.IsCapital ||
+		return isFactionCapital || settlement.IsCenter ||
 			settlement.Type == world.SettlementFortress ||
 			settlement.Type == world.SettlementPort ||
 			settlement.Type == world.SettlementCity

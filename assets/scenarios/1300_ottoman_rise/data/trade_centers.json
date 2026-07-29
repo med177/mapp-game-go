@@ -2,211 +2,211 @@
   "centers": [
     {
       "id": "venice",
+      "tier": "primary",
       "links": [
         "dalmatia",
         "egypt",
-        "genoa",
-        "flanders"
-      ],
-      "tier": "primary"
+        "flanders",
+        "genoa"
+      ]
     },
     {
       "id": "constantinople",
+      "tier": "primary",
       "links": [
         "aleppo",
         "crimea",
         "dalmatia",
         "egypt",
         "trebizond"
-      ],
-      "tier": "primary"
+      ]
     },
     {
       "id": "flanders",
+      "tier": "primary",
       "links": [
         "denmark",
+        "genoa",
         "london",
         "paris",
-        "genoa",
         "portugal",
         "venice"
-      ],
-      "tier": "primary"
+      ]
     },
     {
       "id": "genoa",
+      "tier": "primary",
       "links": [
         "crimea",
         "flanders",
         "tunis",
         "venice"
-      ],
-      "tier": "primary"
+      ]
     },
     {
       "id": "london",
+      "tier": "secondary",
       "links": [
         "flanders"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "paris",
+      "tier": "secondary",
       "links": [
         "flanders"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "aleppo",
+      "tier": "secondary",
       "links": [
         "baghdad",
         "constantinople",
         "egypt",
         "trebizond"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "egypt",
+      "tier": "secondary",
       "links": [
         "aleppo",
         "constantinople",
         "spice_route",
         "tunis",
         "venice"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "basra",
+      "tier": "secondary",
       "links": [
         "baghdad",
-        "spice_route",
-        "southern_persia"
-      ],
-      "tier": "secondary"
+        "southern_persia",
+        "spice_route"
+      ]
     },
     {
       "id": "novgorod",
+      "tier": "secondary",
       "links": [
         "crimea",
         "denmark",
         "silesia"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "denmark",
+      "tier": "secondary",
       "links": [
         "flanders",
         "london",
         "novgorod"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "portugal",
+      "tier": "secondary",
       "links": [
         "atlantic_route",
         "london"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "algiers",
+      "tier": "secondary",
       "links": [
         "tunis"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "tunis",
+      "tier": "secondary",
       "links": [
         "algiers",
-        "genoa",
         "egypt",
+        "genoa",
         "trans_saharan_route"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "crimea",
+      "tier": "secondary",
       "links": [
         "constantinople",
         "novgorod",
         "trebizond"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "silesia",
+      "tier": "secondary",
       "links": [
         "flanders",
         "novgorod"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "dalmatia",
+      "tier": "secondary",
       "links": [
         "constantinople",
         "venice"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "azerbaijan",
+      "tier": "secondary",
       "links": [
         "silk_road",
-        "western_persia",
-        "trebizond"
-      ],
-      "tier": "secondary"
+        "trebizond",
+        "western_persia"
+      ]
     },
     {
       "id": "western_persia",
+      "tier": "secondary",
       "links": [
         "azerbaijan",
         "baghdad",
         "southern_persia"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "southern_persia",
+      "tier": "secondary",
       "links": [
         "basra",
         "western_persia"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "baghdad",
+      "tier": "secondary",
       "links": [
         "aleppo",
         "basra",
         "western_persia"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "trebizond",
+      "tier": "secondary",
       "links": [
-        "azerbaijan",
         "aleppo",
+        "azerbaijan",
         "constantinople",
         "crimea"
-      ],
-      "tier": "secondary"
+      ]
     },
     {
       "id": "silk_road",
       "name_tr": "İpek Yolu",
+      "tier": "secondary",
       "links": [
         "azerbaijan"
       ],
-      "tier": "secondary",
       "world_x": 3000,
       "world_y": 515,
       "off_map": true
@@ -214,11 +214,11 @@
     {
       "id": "spice_route",
       "name_tr": "Baharat Yolu",
+      "tier": "secondary",
       "links": [
         "basra",
         "egypt"
       ],
-      "tier": "secondary",
       "world_x": 2880,
       "world_y": 1260,
       "off_map": true
@@ -226,11 +226,11 @@
     {
       "id": "atlantic_route",
       "name_tr": "Atlantik Yolu",
+      "tier": "secondary",
       "links": [
         "london",
         "portugal"
       ],
-      "tier": "secondary",
       "world_x": -120,
       "world_y": 220,
       "off_map": true
@@ -238,10 +238,10 @@
     {
       "id": "north_america_route",
       "name_tr": "Kuzey Amerika Yolu",
+      "tier": "secondary",
       "links": [
         "atlantic_route"
       ],
-      "tier": "secondary",
       "world_x": -340,
       "world_y": 120,
       "off_map": true,
@@ -250,10 +250,10 @@
     {
       "id": "south_america_route",
       "name_tr": "Güney Amerika Yolu",
+      "tier": "secondary",
       "links": [
         "atlantic_route"
       ],
-      "tier": "secondary",
       "world_x": -280,
       "world_y": 520,
       "off_map": true,
@@ -262,10 +262,10 @@
     {
       "id": "trans_saharan_route",
       "name_tr": "Sahra Altı Altın Yolu",
+      "tier": "secondary",
       "links": [
         "tunis"
       ],
-      "tier": "secondary",
       "world_x": 560,
       "world_y": 1410,
       "off_map": true

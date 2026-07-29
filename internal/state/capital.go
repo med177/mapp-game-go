@@ -286,7 +286,7 @@ func primarySettlementIndex(region *world.Region) int {
 		return -1
 	}
 	for i, settlement := range region.Settlements {
-		if settlement.IsCapital {
+		if settlement.IsCenter {
 			return i
 		}
 	}

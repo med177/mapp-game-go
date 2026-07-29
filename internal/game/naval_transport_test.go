@@ -1322,7 +1322,7 @@ func TestCompleteBuildingPortCreatesPortSettlement(t *testing.T) {
 					},
 				},
 				Neighbors:   []world.RegionID{"sea_1"},
-				Settlements: []world.Settlement{{ID: "town_a", NameTR: "Kasaba", X: 92, Y: 118, Type: world.SettlementTown, IsCapital: true}},
+				Settlements: []world.Settlement{{ID: "town_a", NameTR: "Kasaba", X: 92, Y: 118, Type: world.SettlementTown, IsCenter: true}},
 			},
 			"sea_1": {ID: "sea_1", IsSea: true, WorldX: 120, WorldY: 120},
 		},

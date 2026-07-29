@@ -201,8 +201,8 @@ func TestExecuteAIPeaceAppliesReparations(t *testing.T) {
 	gs.Factions["b"].Gold = 100
 	gs.Factions["a"].CapitalSettlementID = "a_cap"
 	gs.Factions["b"].CapitalSettlementID = "b_cap"
-	gs.Regions["a1"].Settlements = []world.Settlement{{ID: "a_cap", IsCapital: true}}
-	gs.Regions["b1"].Settlements = []world.Settlement{{ID: "b_cap", IsCapital: true}}
+	gs.Regions["a1"].Settlements = []world.Settlement{{ID: "a_cap", IsCenter: true}}
+	gs.Regions["b1"].Settlements = []world.Settlement{{ID: "b_cap", IsCenter: true}}
 	gs.Factions["b"].CapitalSettlementID = "b_cap"
 	gs.Regions["b2"].OwnerID = "a"
 	ledger := gs.WarLedgerFor("a", "b")

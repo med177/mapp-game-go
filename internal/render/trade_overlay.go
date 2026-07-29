@@ -1064,7 +1064,7 @@ func (r *Renderer) factionPrimaryRegion(factionID string) *world.Region {
 	for _, region := range candidates {
 		capital := false
 		for _, settlement := range region.Settlements {
-			if settlement.IsCapital {
+			if settlement.IsCenter {
 				capital = true
 				break
 			}

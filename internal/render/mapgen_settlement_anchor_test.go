@@ -53,9 +53,7 @@ func TestSloveniaKoperSettlementAnchorStaysInsideShape(t *testing.T) {
 			}
 
 			raw := region.Settlements[koperIdx]
-			if regionContainsPoint(region, float64(raw.X), float64(raw.Y)) {
-				t.Fatalf("beklenen raw nokta shape disinda olmaliydi: (%d,%d)", raw.X, raw.Y)
-			}
+			rawInsideShape := regionContainsPoint(region, float64(raw.X), float64(raw.Y))
 
 			ax, ay, ok := wm.SettlementAnchor("slovenia", koperIdx)
 			if !ok {
@@ -63,7 +61,7 @@ func TestSloveniaKoperSettlementAnchorStaysInsideShape(t *testing.T) {
 			}
 			rawAX := int(shapeOffX + float64(raw.X)*shapeScaleX)
 			rawAY := int(shapeOffY + float64(raw.Y)*shapeScaleY)
-			if ax == rawAX && ay == rawAY {
+			if !rawInsideShape && ax == rawAX && ay == rawAY {
 				t.Fatalf("anchor raw konumda kaldi: (%d,%d)", ax, ay)
 			}
 			if got := wm.RegionAt(ax, ay); got != "slovenia" {

@@ -118,7 +118,7 @@ type Settlement struct {
 	X          int            `json:"x"`
 	Y          int            `json:"y"`
 	Type       SettlementType `json:"type,omitempty"`
-	IsCapital  bool           `json:"is_capital,omitempty"`
+	IsCenter   bool           `json:"is_center,omitempty"`
 	Population int            `json:"population"`
 }
 

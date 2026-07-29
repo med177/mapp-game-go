@@ -1142,7 +1142,7 @@ func regionSettlementLogisticsBuffer(gs *state.GameState, region *world.Region) 
 		default:
 			buffer += 4
 		}
-		if settlement.IsCapital {
+		if settlement.IsCenter {
 			buffer += 4
 		}
 	}

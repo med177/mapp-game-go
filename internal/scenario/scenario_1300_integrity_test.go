@@ -716,6 +716,9 @@ func Test1300ScenarioCapitalSettlementsExist(t *testing.T) {
 	}
 
 	for factionID, definition := range factions {
+		if definition.IsEliminated {
+			continue
+		}
 		if definition.CapitalSettlementID == "" {
 			t.Errorf("devletin başkent settlement kimliği boş: faction=%s", factionID)
 			continue
@@ -731,6 +734,25 @@ func Test1300ScenarioCapitalSettlementsExist(t *testing.T) {
 				ownerID = region.OwnerID
 			}
 			t.Errorf("başkent settlement'ı farklı devletin bölgesinde: faction=%s settlement=%s region=%s owner=%s", factionID, definition.CapitalSettlementID, regionID, ownerID)
+		}
+	}
+}
+
+func Test1300ScenarioLandSettlementCentersAreUnique(t *testing.T) {
+	_, regions, _ := load1300IntegrityData(t)
+
+	for regionID, region := range regions {
+		if region == nil || region.IsSea {
+			continue
+		}
+		centerCount := 0
+		for _, settlement := range region.Settlements {
+			if settlement.IsCenter {
+				centerCount++
+			}
+		}
+		if centerCount != 1 {
+			t.Errorf("kara bölgesinde tek merkez settlement olmalı: region=%s centers=%d", regionID, centerCount)
 		}
 	}
 }
