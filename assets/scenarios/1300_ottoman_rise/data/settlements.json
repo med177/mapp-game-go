@@ -2202,7 +2202,7 @@
         "id": "rize",
         "name_tr": "Rize",
         "x": 1284,
-        "y": 455,
+        "y": 457,
         "type": "port",
         "is_center": true,
         "population": 36
@@ -2210,8 +2210,8 @@
       {
         "id": "trebizond",
         "name_tr": "Trabzon",
-        "x": 1270,
-        "y": 455,
+        "x": 1269,
+        "y": 456,
         "type": "fortress",
         "population": 11
       },
@@ -2219,7 +2219,7 @@
         "id": "trebizond_hopa",
         "name_tr": "Hopa",
         "x": 1296,
-        "y": 450,
+        "y": 453,
         "type": "port",
         "population": 35
       },
@@ -3428,7 +3428,7 @@
       {
         "id": "pera_constantinople",
         "name_tr": "Pera",
-        "x": 1056,
+        "x": 1055,
         "y": 451,
         "type": "town",
         "population": 36
@@ -5062,8 +5062,8 @@
       {
         "id": "trebizond_ordu",
         "name_tr": "Ordu",
-        "x": 1233,
-        "y": 456,
+        "x": 1234,
+        "y": 457,
         "type": "port",
         "population": 64
       },
@@ -5071,7 +5071,7 @@
         "id": "giresun",
         "name_tr": "Giresun",
         "x": 1247,
-        "y": 456,
+        "y": 458,
         "type": "port",
         "population": 64
       }
@@ -6452,8 +6452,8 @@
       {
         "id": "paphlagonia_amastris",
         "name_tr": "Amasra",
-        "x": 1113,
-        "y": 446,
+        "x": 1114,
+        "y": 448,
         "type": "port",
         "population": 21
       },
@@ -6461,7 +6461,7 @@
         "id": "paphlagonia_inebolu",
         "name_tr": "İnebolu",
         "x": 1139,
-        "y": 438,
+        "y": 439,
         "type": "port",
         "population": 21
       },
@@ -6490,7 +6490,7 @@
         "id": "sinop",
         "name_tr": "Sinop",
         "x": 1174,
-        "y": 437,
+        "y": 438,
         "type": "town",
         "is_center": true,
         "population": 26
@@ -6498,8 +6498,8 @@
       {
         "id": "sinop_bafra",
         "name_tr": "Bafra",
-        "x": 1185,
-        "y": 443,
+        "x": 1186,
+        "y": 444,
         "type": "town",
         "population": 24
       },
@@ -6533,21 +6533,21 @@
     "region_id": "chrysopolis",
     "settlements": [
       {
-        "id": "chrysopolis",
-        "name_tr": "Hrisopolis",
-        "x": 1087,
-        "y": 453,
-        "type": "city",
-        "is_center": true,
-        "population": 42
-      },
-      {
         "id": "paphlagonia_bolu",
         "name_tr": "Bolu",
         "x": 1092,
         "y": 461,
         "type": "town",
+        "is_center": true,
         "population": 21
+      },
+      {
+        "id": "chrysopolis",
+        "name_tr": "Hrisopolis",
+        "x": 1088,
+        "y": 454,
+        "type": "city",
+        "population": 42
       }
     ]
   },

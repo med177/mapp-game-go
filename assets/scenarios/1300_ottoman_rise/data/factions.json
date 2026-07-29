@@ -119,9 +119,9 @@
     "name_tr": "Atina Dükalığı",
     "religion": "catholic",
     "color": [
-      24,
-      166,
-      142
+      255,
+      255,
+      255
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -130,7 +130,7 @@
     "grain": 120,
     "iron": 45,
     "timber": 40,
-    "stone": 1000,
+    "stone": 0,
     "spice": 0,
     "cloth": 25,
     "research": {

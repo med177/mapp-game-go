@@ -520,6 +520,6 @@ Başlangıç orduları senaryo verisidir:
 
 `tools/populate_all_shapes.py` tarafından Natural Earth `ne_10m_admin_0_countries` şekillerinden üretilir. Büyük toplu üretimler hâlâ araç tarafında yapılır; küçük kıyı/sınır düzeltmeleri edit mode `Shape` sekmesinden oyun içi paint editor ile yapılabilir.
 
-Format: `{"shapes": [{"id": string, "name": string, "rings": [[[x, y], ...]]}]}`. `rings` içindeki koordinatlar shape/scenario uzayındadır; aktif senaryonun `map.shape_offset_*` ve `map.shape_scale_*` alanlarıyla world pikseline dönüştürülür.
+Format: `{"shapes": [{"id": string, "name": string, "rings": [[[x, y], ...]]}]}`. `rings` içindeki koordinatlar shape/scenario uzayındadır ve ondalıklı olabilir; aktif senaryonun `map.shape_offset_*` ve `map.shape_scale_*` alanlarıyla world pikseline dönüştürülür. Edit mode kayıt akışı bu ondalık hassasiyeti korur; tam sayıya yuvarlama dünya pikseli sınırını kaydırabilir.
 
 > **Not:** Eski `assets/data/generated/country_shapes.json` yolu artık kullanılmıyor. Her senaryo kendi `data/country_shapes.json` dosyasına sahip.

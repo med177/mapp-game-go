@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-07-28
+last_updated: 2026-07-30
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -20,7 +20,7 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - seçili region'ın `shape_id` değeri okunur
 - aynı `shape_id` paylaşan tüm region'ların ortak country shape'i düzenlenir
 - sağ mouse ile boya/sil fırçası uygulanır
-- mouse bırakılınca mask → ring dönüşümü yapılır
+- mouse bırakılınca yalnız geçici önizleme tutulur; `Uygula` ile mask → ring dönüşümü yapılır
 - `Ctrl+S` / `Kaydet` akışı `country_shapes.json` dosyasını da yazar
 - undo/redo world snapshot içine shape verisini de alır
 
@@ -29,7 +29,7 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 1. `world.LoadCountryShapes()` JSON'u `GameState.ShapeData` içine yükler.
 2. Shape tab açılınca seçili `shape_id` için raster mask oluşturulur.
 3. Brush bu mask üzerinde add/erase yapar.
-4. Stroke bitince mask grid sınırlarından polygon ring'leri yeniden üretilir.
+4. `Uygula` tıklanınca mask grid sınırlarından polygon ring'leri yeniden üretilir.
 5. Yeni ring'ler hem `GameState.ShapeData.Shapes[shape_id]` hem ilgili `Region.Shape` alanlarına geri yazılır.
 6. `rebuildEditWorldMap()` ile harita cache'i yeniden üretilir.
 7. Senaryo kaydında `writeScenarioShapes()` ile `data/country_shapes.json` güncellenir.
@@ -59,7 +59,13 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - Brush stroke sırasında imleç yarıçapı ekranda gösterilir.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.
-- Stroke commit'i mouse bırakıldığında yapılır; bu sırada undo snapshot alınır.
+- Stroke bırakıldığında yalnız önizleme ve bekleyen mask değişikliği tutulur; aktif
+  aracın `Uygula` düğmesi commit, harita yenileme ve undo snapshot'ını tek seferde
+  üretir.
+- `country_shapes.json` yazımı ring koordinatlarını `float32` hassasiyetinde korur.
+  Editörün dünya-piksel sınırları ölçekli shape koordinatına çevrildiği için
+  koordinatları tekrar tam sayıya yuvarlamak yeniden açılışta hassas boyama/silme
+  piksellerini kaydırır.
 - `Harita` sekmesindeki `ID` aksiyonu seçili region kimliğini mevcut değerle
   doldurur; Ctrl+A ile yeni kimlik girilebilir. Boş veya mevcut bir region ile
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,

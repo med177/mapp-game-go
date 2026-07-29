@@ -2607,9 +2607,9 @@ func writeScenarioShapes(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "country_shapes.json")
 	render.SyncLandShapesFromRegionPaint(gs)
 	type shapeEntryJSON struct {
-		ID    string     `json:"id"`
-		Name  string     `json:"name,omitempty"`
-		Rings [][][2]int `json:"rings"`
+		ID    string         `json:"id"`
+		Name  string         `json:"name,omitempty"`
+		Rings [][][2]float32 `json:"rings"`
 	}
 	type shapeFileJSON struct {
 		Shapes []shapeEntryJSON `json:"shapes"`
@@ -2624,23 +2624,23 @@ func writeScenarioShapes(gs *state.GameState) error {
 	entries := make([]shapeEntryJSON, 0, len(ids))
 	for _, id := range ids {
 		rings := gs.ShapeData.Shapes[id]
-		intRings := make([][][2]int, 0, len(rings))
+		preciseRings := make([][][2]float32, 0, len(rings))
 		for _, ring := range rings {
 			if len(ring) < 3 {
 				continue
 			}
-			intRing := make([][2]int, 0, len(ring))
+			preciseRing := make([][2]float32, 0, len(ring))
 			for _, pt := range ring {
-				intRing = append(intRing, [2]int{int(pt[0] + 0.5), int(pt[1] + 0.5)})
+				preciseRing = append(preciseRing, pt)
 			}
-			if len(intRing) >= 3 {
-				intRings = append(intRings, intRing)
+			if len(preciseRing) >= 3 {
+				preciseRings = append(preciseRings, preciseRing)
 			}
 		}
-		if len(intRings) == 0 {
+		if len(preciseRings) == 0 {
 			continue
 		}
-		entry := shapeEntryJSON{ID: id, Rings: intRings}
+		entry := shapeEntryJSON{ID: id, Rings: preciseRings}
 		if name := gs.ShapeData.Names[id]; name != "" {
 			entry.Name = name
 		}
