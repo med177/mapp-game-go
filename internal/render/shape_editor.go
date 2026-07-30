@@ -286,24 +286,66 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	shapeEraseLabel := "Sınır Sil"
 	regionPaintLabel := "Bölge Boya"
 	regionEraseLabel := "Bölge Sil"
-	if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushPaint {
-		shapePaintLabel = "Uygula"
-	} else if r.editShapeTool == editShapeToolShape && r.editShapeBrushMode == editShapeBrushErase {
-		shapeEraseLabel = "Uygula"
-	}
-	if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushPaint {
-		regionPaintLabel = "Uygula"
-	} else if r.editShapeTool == editShapeToolRegion && r.editShapeBrushMode == editShapeBrushErase {
-		regionEraseLabel = "Uygula"
-	}
-	drawEditInspectorButton(screen, editButtonShapePaint, shapePaintLabel, r.canEditSelectedShape())
-	drawEditInspectorButton(screen, editButtonShapeErase, shapeEraseLabel, r.canEditSelectedShape())
-	drawEditInspectorButton(screen, editButtonShapeRegionPaint, regionPaintLabel, r.canRegionPaintSelected())
-	drawEditInspectorButton(screen, editButtonShapeRegionErase, regionEraseLabel, r.canRegionPaintSelected())
+	shapePaintLabel, shapePaintEnabled, shapePaintApply := r.editShapeToolButtonView(editButtonShapePaint, shapePaintLabel, r.canEditSelectedShape())
+	shapeEraseLabel, shapeEraseEnabled, shapeEraseApply := r.editShapeToolButtonView(editButtonShapeErase, shapeEraseLabel, r.canEditSelectedShape())
+	regionPaintLabel, regionPaintEnabled, regionPaintApply := r.editShapeToolButtonView(editButtonShapeRegionPaint, regionPaintLabel, r.canRegionPaintSelected())
+	regionEraseLabel, regionEraseEnabled, regionEraseApply := r.editShapeToolButtonView(editButtonShapeRegionErase, regionEraseLabel, r.canRegionPaintSelected())
+	drawEditShapeToolButton(screen, editButtonShapePaint, shapePaintLabel, shapePaintEnabled, shapePaintApply)
+	drawEditShapeToolButton(screen, editButtonShapeErase, shapeEraseLabel, shapeEraseEnabled, shapeEraseApply)
+	drawEditShapeToolButton(screen, editButtonShapeRegionPaint, regionPaintLabel, regionPaintEnabled, regionPaintApply)
+	drawEditShapeToolButton(screen, editButtonShapeRegionErase, regionEraseLabel, regionEraseEnabled, regionEraseApply)
 	canAdjustBrush := r.canEditSelectedShape() || r.canRegionPaintSelected()
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
 	r.drawEditShapeLandPassageButtons(screen)
+}
+
+func (r *Renderer) editShapeToolButtonView(kind editInspectorButton, label string, available bool) (string, bool, bool) {
+	active := r.activeEditShapeToolButton()
+	if active == editButtonNone {
+		return label, available, false
+	}
+	if kind == active {
+		return "Uygula", available, available
+	}
+	return label, false, false
+}
+
+func drawEditShapeToolButton(screen *ebiten.Image, kind editInspectorButton, label string, enabled, apply bool) {
+	rect := editInspectorButtonRect(kind)
+	if apply {
+		drawUIButton(screen, rect[0], rect[1], rect[2], rect[3], label, enabled, applyTinyButtonStyle)
+		return
+	}
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, enabled)
+}
+
+func (r *Renderer) activeEditShapeToolButton() editInspectorButton {
+	return editShapeToolButtonFor(r.editShapeTool, r.editShapeBrushMode)
+}
+
+func editShapeToolButtonFor(tool editShapeTool, mode editShapeBrushMode) editInspectorButton {
+	switch {
+	case tool == editShapeToolShape && mode == editShapeBrushPaint:
+		return editButtonShapePaint
+	case tool == editShapeToolShape && mode == editShapeBrushErase:
+		return editButtonShapeErase
+	case tool == editShapeToolRegion && mode == editShapeBrushPaint:
+		return editButtonShapeRegionPaint
+	case tool == editShapeToolRegion && mode == editShapeBrushErase:
+		return editButtonShapeRegionErase
+	default:
+		return editButtonNone
+	}
+}
+
+func isEditShapeToolButton(kind editInspectorButton) bool {
+	switch kind {
+	case editButtonShapePaint, editButtonShapeErase, editButtonShapeRegionPaint, editButtonShapeRegionErase:
+		return true
+	default:
+		return false
+	}
 }
 
 func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
@@ -328,7 +370,17 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 }
 
 func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, bool) {
-	switch editShapeInspectorButtonAt(fx, fy) {
+	kind := editShapeInspectorButtonAt(fx, fy)
+	if isEditShapeToolButton(kind) {
+		active := r.activeEditShapeToolButton()
+		if active != editButtonNone && kind != active {
+			return InputAction{}, true
+		}
+		if active == editButtonNone && r.gs != nil && !r.editShapeToolButtonAvailable(kind) {
+			return InputAction{}, true
+		}
+	}
+	switch kind {
 	case editButtonShapePaint:
 		r.handleEditShapeToolButton(editShapeToolShape, editShapeBrushPaint)
 	case editButtonShapeErase:
@@ -353,6 +405,17 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		return InputAction{Kind: ActionSaveScenario}, true
 	}
 	return InputAction{}, true
+}
+
+func (r *Renderer) editShapeToolButtonAvailable(kind editInspectorButton) bool {
+	switch kind {
+	case editButtonShapePaint, editButtonShapeErase:
+		return r.canEditSelectedShape()
+	case editButtonShapeRegionPaint, editButtonShapeRegionErase:
+		return r.canRegionPaintSelected()
+	default:
+		return false
+	}
 }
 
 func (r *Renderer) handleEditShapeToolButton(tool editShapeTool, mode editShapeBrushMode) {

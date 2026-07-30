@@ -140,6 +140,57 @@ func TestShapeInspectorToolButtonsToggleOff(t *testing.T) {
 	}
 }
 
+func TestShapeInspectorToolButtonsLockOtherToolsUntilApply(t *testing.T) {
+	r := &Renderer{}
+	shapePaint := editInspectorButtonRect(editButtonShapePaint)
+	shapeErase := editInspectorButtonRect(editButtonShapeErase)
+	regionPaint := editInspectorButtonRect(editButtonShapeRegionPaint)
+	regionErase := editInspectorButtonRect(editButtonShapeRegionErase)
+
+	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
+		t.Fatal("sınır boya butonu tıklanmadı")
+	}
+	if r.activeEditShapeToolButton() != editButtonShapePaint {
+		t.Fatalf("aktif araç sınır boya olmalı: got=%v", r.activeEditShapeToolButton())
+	}
+
+	for _, rect := range [][4]float64{shapeErase, regionPaint, regionErase} {
+		if _, handled := r.handleEditShapeInspectorClick(rect[0]+rect[2]/2, rect[1]+rect[3]/2); !handled {
+			t.Fatal("pasif boya/sil butonu tıklamayı tüketmeli")
+		}
+		if r.activeEditShapeToolButton() != editButtonShapePaint {
+			t.Fatalf("pasif buton aktif aracı değiştirdi: got=%v", r.activeEditShapeToolButton())
+		}
+	}
+
+	label, enabled, apply := r.editShapeToolButtonView(editButtonShapePaint, "Sınır Boya", true)
+	if label != "Uygula" || !enabled || !apply {
+		t.Fatalf("aktif araç Uygula görünümünde olmalı: label=%q enabled=%v apply=%v", label, enabled, apply)
+	}
+	for _, kind := range []editInspectorButton{editButtonShapeErase, editButtonShapeRegionPaint, editButtonShapeRegionErase} {
+		label, enabled, apply = r.editShapeToolButtonView(kind, "pasif", true)
+		if enabled || apply || label == "Uygula" {
+			t.Fatalf("diğer araç pasif olmalı: kind=%v label=%q enabled=%v apply=%v", kind, label, enabled, apply)
+		}
+	}
+	if applyTinyButtonStyle.BG.G <= applyTinyButtonStyle.BG.R || applyTinyButtonStyle.BG.G <= applyTinyButtonStyle.BG.B {
+		t.Fatalf("Uygula stili yeşil olmalı: bg=%v", applyTinyButtonStyle.BG)
+	}
+
+	if _, handled := r.handleEditShapeInspectorClick(shapePaint[0]+shapePaint[2]/2, shapePaint[1]+shapePaint[3]/2); !handled {
+		t.Fatal("Uygula tıklanmadı")
+	}
+	if r.activeEditShapeToolButton() != editButtonNone {
+		t.Fatalf("Uygula sonrası diğer araçlar erişilebilir duruma dönmeden önce aktif araç kapanmalı: got=%v", r.activeEditShapeToolButton())
+	}
+	for _, kind := range []editInspectorButton{editButtonShapeErase, editButtonShapeRegionPaint, editButtonShapeRegionErase} {
+		_, enabled, _ := r.editShapeToolButtonView(kind, "araç", true)
+		if !enabled {
+			t.Fatalf("Uygula sonrası araç yeniden erişilebilir olmalı: kind=%v", kind)
+		}
+	}
+}
+
 func TestShapeBrushSupportsTwoFineStepsBelowOnePixelRadius(t *testing.T) {
 	r := &Renderer{editShapeBrushRadius: 1}
 	brushMinus := editInspectorButtonRect(editButtonShapeBrushMinus)

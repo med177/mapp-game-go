@@ -20,6 +20,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-07-29: Edit Mode Shape/Bölge boya-sil işlemleri ertelendi. Mouse bırakılınca
   yalnız geçici boya önizlemesi kalıyor; aktif araç `Uygula` ile hesaplama, harita
   yenileme ve undo snapshot'ını tek seferde çalıştırıyor.
+- 2026-07-30: Edit Mode boya/sil araçlarında aktif araç kilidi eklendi. Sınır/Bölge
+  boya veya sil araçlarından biri seçilince yalnız seçili düğme yeşil `Uygula`
+  olarak kalıyor; diğer üç düğme pasifleşiyor. Uygula sonrası dört araç yeniden
+  erişilebilir oluyor. Regression: `TestShapeInspectorToolButtonsLockOtherToolsUntilApply`;
+  doğrulama: `go test ./internal/render`.
 - 2026-07-30: Edit Mode hassas shape boyama kalıcılığı düzeltildi. `country_shapes.json`
   artık ring noktalarını tam sayıya yuvarlamadan ondalık koordinatla yazıyor; böylece
   ölçekli dünya pikseli sınırları kapatıp açtıktan sonra kaymıyor.

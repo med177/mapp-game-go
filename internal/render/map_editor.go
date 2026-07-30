@@ -866,7 +866,17 @@ func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButt
 		return editButtonSaveScenario
 	}
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
-		return editShapeInspectorButtonAt(mx, my)
+		kind := editShapeInspectorButtonAt(mx, my)
+		if isEditShapeToolButton(kind) {
+			active := r.activeEditShapeToolButton()
+			if active != editButtonNone && kind != active {
+				return editButtonNone
+			}
+			if active == editButtonNone && r.gs != nil && !r.editShapeToolButtonAvailable(kind) {
+				return editButtonNone
+			}
+		}
+		return kind
 	}
 	if r.editInspectorTab == editInspectorData {
 		return editDataInspectorButtonAt(mx, my)

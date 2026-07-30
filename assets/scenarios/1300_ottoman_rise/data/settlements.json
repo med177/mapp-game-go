@@ -3744,6 +3744,14 @@
     ]
   },
   {
+    "region_id": "new_region_267",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_266",
+    "settlements": null
+  },
+  {
     "region_id": "konigsberg",
     "settlements": [
       {
@@ -6141,7 +6149,7 @@
         "id": "kiev_podil",
         "name_tr": "Podil",
         "x": 1091,
-        "y": 281,
+        "y": 279,
         "type": "town",
         "population": 26
       },
@@ -6149,7 +6157,7 @@
         "id": "kiev_vyshhorod",
         "name_tr": "Vyshhorod",
         "x": 1086,
-        "y": 275,
+        "y": 276,
         "type": "fortress",
         "population": 13
       }
@@ -6660,52 +6668,6 @@
     ]
   },
   {
-    "region_id": "north_caucasus",
-    "settlements": [
-      {
-        "id": "north_caucasus_settlement_1",
-        "name_tr": "Temrük",
-        "x": 1233,
-        "y": 377,
-        "type": "city",
-        "is_center": true,
-        "population": 33
-      },
-      {
-        "id": "north_caucasus_settlement_2",
-        "name_tr": "Mahaçkale",
-        "x": 1423,
-        "y": 418,
-        "type": "city",
-        "population": 29
-      },
-      {
-        "id": "derbent",
-        "name_tr": "Derbent",
-        "x": 1435,
-        "y": 432,
-        "type": "town",
-        "population": 14
-      },
-      {
-        "id": "ukrainian_steppe_azov",
-        "name_tr": "Azak",
-        "x": 1266,
-        "y": 339,
-        "type": "fortress",
-        "population": 7
-      },
-      {
-        "id": "north_caucasus_settlement_5",
-        "name_tr": "Volgodonsk",
-        "x": 1321,
-        "y": 333,
-        "type": "city",
-        "population": 29
-      }
-    ]
-  },
-  {
     "region_id": "dagestan",
     "settlements": [
       {
@@ -6969,10 +6931,6 @@
   },
   {
     "region_id": "sea_of_azov",
-    "settlements": null
-  },
-  {
-    "region_id": "kerch_strait",
     "settlements": null
   },
   {

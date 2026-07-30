@@ -100,6 +100,11 @@ per-frame piksel başına overlay/vertex üretimi yapılmaz. Boyama input'u hüc
 aynı `scenario -> world pixel` ölçekleme/kesme yardımcılarını kullanır; Voronoi
 debug sınır noktaları da world piksel merkezine çizilir.
 
+Aktif dört araçtan yalnız seçilen boya/sil düğmesi erişilebilir kalır ve etiketi
+`Uygula` olur; diğer üçü disabled çizilir ve tıklamayı tüketir. `Uygula` yeşil
+tema ile çizilir. Uygulama sonrası paint state temizlenir ve dört araç yeniden
+seçilebilir (`internal/render/shape_editor.go`, `map_editor.go`).
+
 Edit mode Voronoi debug görünümünde sınır/merkez işaretleri harita katmanında
 kalır; `VORONOI DEBUG` bilgi paneli ise ordu ikonlarından sonra çizilir. Böylece
 ordu kareleri panel metninin ve arka planının üzerine binemez (`internal/render/{renderer.go,map_editor.go}`).

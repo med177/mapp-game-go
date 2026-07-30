@@ -53,6 +53,17 @@ var dropdownStyle = gameui.DropdownStyle{
 	BorderWidth:   1,
 }
 
+var applyTinyButtonStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{42, 104, 58, 240},
+	Border:         color.RGBA{132, 210, 138, 255},
+	Text:           ColorWhite,
+	DisabledBG:     color.RGBA{24, 54, 31, 190},
+	DisabledBorder: color.RGBA{62, 106, 68, 180},
+	DisabledText:   color.RGBA{150, 190, 154, 190},
+	TextOffsetY:    2,
+	BorderWidth:    1,
+}
+
 var standardModalStyle = gameui.ModalStyle{
 	Overlay: color.RGBA{0, 0, 0, 140},
 	Panel: gameui.PanelStyle{
