@@ -2097,5 +2097,31 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 50
+  },
+  {
+    "id": "burgundy",
+    "name": "Ducy of Burgundy",
+    "name_tr": "Burgonya  Düklüğü",
+    "religion": "catholic",
+    "color": [
+      115,
+      0,
+      70
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 100,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
   }
 ]

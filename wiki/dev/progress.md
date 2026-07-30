@@ -7,6 +7,18 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-30: Oyuncu ordusu ardıl devlet metadata'sı dolu bir düşman bölgesini
+  ele geçirdiğinde savaş raporu kapanana kadar fetih state'i bekletiliyor; ardından
+  `İlhak Et`, `Serbest Bırak` veya `Vassal Yap` seçenekli karar paneli açılıyor.
+  Serbest bırakma ardılı bağımsız müttefik, vassal seçeneği doğrudan oyuncu vassalı
+  yapıyor; elenmiş ardıllar düşük kaynak ve beş milisle yeniden kuruluyor. Kapsam:
+  `internal/game/conquest_decision.go`, `internal/game/game.go`,
+  `internal/diplomacy/vassalage.go`, `internal/render/{action.go,renderer_dialogs.go}`;
+  regression: `TestSuccessorMetadataQueuesThreeWayDecisionAfterBattle`,
+  `TestSuccessorDecisionReleaseTransfersRegionAndDefeatsPreviousOwner`,
+  `TestSuccessorDecisionVassalizesEliminatedSuccessor`,
+  `TestHideBattleReportShowsQueuedThreeChoiceSuccessorDialog`.
+
 - 2026-07-30: Ana menüde `EDIT MODE` düğmesi `Çıkış`ın altına taşındı ve araya
   standart bir menü satırı boşluğu eklendi. Çizim, fare hit-test'i ve klavye
   cursor'u ortak geometriyi kullanıyor; başlangıç seçimi kayıt durumuna göre

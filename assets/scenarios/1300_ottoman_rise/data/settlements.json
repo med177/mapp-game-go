@@ -285,7 +285,7 @@
       {
         "id": "wales_caernarfon",
         "name_tr": "Caernarfon",
-        "x": 391,
+        "x": 392,
         "y": 226,
         "type": "fortress",
         "population": 8
@@ -469,15 +469,15 @@
         "name_tr": "Bretonya",
         "x": 422,
         "y": 319,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 20
       },
       {
         "id": "brittany_nantes",
         "name_tr": "Nantes",
-        "x": 446,
-        "y": 335,
+        "x": 447,
+        "y": 336,
         "type": "port",
         "population": 15
       },
@@ -571,37 +571,13 @@
     "region_id": "burgundy",
     "settlements": [
       {
-        "id": "burgundy_beaune",
-        "name_tr": "Beaune",
-        "x": 580,
-        "y": 345,
-        "type": "town",
-        "population": 28
-      },
-      {
-        "id": "burgundy_dijon",
-        "name_tr": "Dijon",
-        "x": 585,
-        "y": 340,
+        "id": "burgundy_main",
+        "name_tr": "Burgonya",
+        "x": 594,
+        "y": 324,
         "type": "city",
         "is_center": true,
         "population": 53
-      },
-      {
-        "id": "burgundy_main",
-        "name_tr": "Burgonya",
-        "x": 595,
-        "y": 329,
-        "type": "city",
-        "population": 53
-      },
-      {
-        "id": "burgundy_nevers",
-        "name_tr": "Nevers",
-        "x": 555,
-        "y": 347,
-        "type": "fortress",
-        "population": 13
       }
     ]
   },
@@ -611,11 +587,27 @@
       {
         "id": "dijon_main",
         "name_tr": "Dijon",
-        "x": 584,
-        "y": 352,
+        "x": 588,
+        "y": 348,
         "type": "city",
         "is_center": true,
         "population": 54
+      },
+      {
+        "id": "burgundy_beaune",
+        "name_tr": "Beaune",
+        "x": 580,
+        "y": 345,
+        "type": "town",
+        "population": 28
+      },
+      {
+        "id": "burgundy_nevers",
+        "name_tr": "Nevers",
+        "x": 555,
+        "y": 348,
+        "type": "fortress",
+        "population": 13
       }
     ]
   },
@@ -630,6 +622,22 @@
         "type": "port",
         "is_center": true,
         "population": 54
+      },
+      {
+        "id": "provence_marseille",
+        "name_tr": "Marsilya",
+        "x": 582,
+        "y": 411,
+        "type": "port",
+        "population": 21
+      },
+      {
+        "id": "provence_main",
+        "name_tr": "Provence",
+        "x": 584,
+        "y": 404,
+        "type": "fortress",
+        "population": 28
       }
     ]
   },
@@ -641,7 +649,7 @@
         "name_tr": "Savoy",
         "x": 611,
         "y": 371,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 72
       }
@@ -660,27 +668,11 @@
         "population": 28
       },
       {
-        "id": "provence_marseille",
-        "name_tr": "Marsilya",
-        "x": 582,
-        "y": 411,
-        "type": "port",
-        "population": 21
-      },
-      {
-        "id": "provence_main",
-        "name_tr": "Provence",
-        "x": 583,
-        "y": 404,
-        "type": "city",
-        "population": 28
-      },
-      {
         "id": "provence_avignon",
         "name_tr": "Avignon",
         "x": 572,
         "y": 398,
-        "type": "city",
+        "type": "fortress",
         "population": 28
       },
       {
@@ -718,7 +710,7 @@
         "name_tr": "Dresden",
         "x": 754,
         "y": 266,
-        "type": "town",
+        "type": "fortress",
         "population": 22
       },
       {
@@ -793,7 +785,7 @@
         "name_tr": "Münih",
         "x": 722,
         "y": 322,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 70
       },
@@ -862,7 +854,7 @@
         "name_tr": "Würzburg",
         "x": 675,
         "y": 285,
-        "type": "city",
+        "type": "fortress",
         "population": 44
       }
     ]
@@ -974,6 +966,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 122
+      },
+      {
+        "id": "aquitaine_settlement_2",
+        "name_tr": "Toulouse",
+        "x": 494,
+        "y": 396,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -3130,6 +3130,10 @@
     "settlements": null
   },
   {
+    "region_id": "elbe_river",
+    "settlements": null
+  },
+  {
     "region_id": "kattegat",
     "settlements": null
   },
@@ -4512,6 +4516,14 @@
         "y": 400,
         "type": "town",
         "population": 42
+      },
+      {
+        "id": "genoa_la_spezia",
+        "name_tr": "La Spezia",
+        "x": 664,
+        "y": 393,
+        "type": "port",
+        "population": 74
       }
     ]
   },
@@ -4550,14 +4562,6 @@
         "y": 381,
         "type": "town",
         "population": 49
-      },
-      {
-        "id": "genoa_la_spezia",
-        "name_tr": "La Spezia",
-        "x": 664,
-        "y": 393,
-        "type": "port",
-        "population": 74
       }
     ]
   },
@@ -6876,6 +6880,10 @@
     "settlements": null
   },
   {
+    "region_id": "rhine_river",
+    "settlements": null
+  },
+  {
     "region_id": "mediterranean_open_1",
     "settlements": null
   },
@@ -6945,6 +6953,14 @@
   },
   {
     "region_id": "black_open_4",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_274",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_275",
     "settlements": null
   },
   {

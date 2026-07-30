@@ -1554,6 +1554,25 @@ func (r *Renderer) ShowChoiceDialog(title, message, acceptLabel, declineLabel st
 	}
 }
 
+func (r *Renderer) ShowThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction) {
+	if r == nil {
+		return
+	}
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         title,
+		message:       message,
+		messageLines:  wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   acceptLabel,
+		thirdLabel:    thirdLabel,
+		declineLabel:  declineLabel,
+		pendingAction: acceptAction,
+		thirdAction:   thirdAction,
+		declineAction: declineAction,
+		declineActs:   true,
+	}
+}
+
 func (r *Renderer) QueueChoiceDialogAfterBattleReport(title, message, acceptLabel, declineLabel string, acceptAction, declineAction InputAction) {
 	r.queuedConfirmDialog = confirmDialogState{
 		show:          true,
@@ -1563,6 +1582,28 @@ func (r *Renderer) QueueChoiceDialogAfterBattleReport(title, message, acceptLabe
 		acceptLabel:   acceptLabel,
 		declineLabel:  declineLabel,
 		pendingAction: acceptAction,
+		declineAction: declineAction,
+		declineActs:   true,
+	}
+}
+
+// QueueThreeChoiceDialogAfterBattleReport, savaş raporu kapatıldıktan sonra
+// üç alternatifli bir karar paneli açar. Üçüncü butonun geometrisi mevcut
+// onay diyaloğuyla paylaşılır; böylece rapor ve karar sırası korunur.
+func (r *Renderer) QueueThreeChoiceDialogAfterBattleReport(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction) {
+	if r == nil {
+		return
+	}
+	r.queuedConfirmDialog = confirmDialogState{
+		show:          true,
+		title:         title,
+		message:       message,
+		messageLines:  wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:   acceptLabel,
+		thirdLabel:    thirdLabel,
+		declineLabel:  declineLabel,
+		pendingAction: acceptAction,
+		thirdAction:   thirdAction,
 		declineAction: declineAction,
 		declineActs:   true,
 	}
@@ -1628,6 +1669,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		return btn.WithIcon(gameui.IconCheck)
 	case "third":
 		if label == "Kaydetmeden Cik" {
+			return btn.WithIcon(gameui.IconExit)
+		}
+		if label == "Serbest Bırak" {
 			return btn.WithIcon(gameui.IconExit)
 		}
 		return btn.WithIcon(gameui.IconSave)

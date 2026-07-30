@@ -404,8 +404,7 @@
       "flanders",
       "languedoc",
       "dijon",
-      "normandy",
-      "aquitaine"
+      "normandy"
     ],
     "world_x": 522,
     "world_y": 323,
@@ -513,14 +512,15 @@
     "terrain": "plain",
     "owner_id": "france",
     "neighbors": [
+      "aquitaine",
       "bay_of_biscay",
       "brittany",
+      "languedoc",
       "normandy",
-      "paris",
-      "aquitaine"
+      "paris"
     ],
-    "world_x": 485,
-    "world_y": 340,
+    "world_x": 478,
+    "world_y": 346,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -583,6 +583,7 @@
     "name_tr": "Burgonya",
     "terrain": "plain",
     "owner_id": "france",
+    "successor_faction_id": "burgundy",
     "neighbors": [
       "alsace",
       "champagne",
@@ -607,8 +608,8 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 42,
-    "population": 420,
-    "rural_population": 273,
+    "population": 379,
+    "rural_population": 326,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": null
@@ -642,7 +643,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 42,
-    "population": 327,
+    "population": 368,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -677,7 +678,7 @@
     "trade_capacity": 4,
     "satisfaction": 72,
     "tax_rate": 38,
-    "population": 288,
+    "population": 337,
     "rural_population": 234,
     "religion": "catholic",
     "active_event_id": "",
@@ -726,6 +727,7 @@
     "terrain": "coast",
     "owner_id": "france",
     "neighbors": [
+      "anjou",
       "aquitaine",
       "catalonia",
       "dijon",
@@ -750,7 +752,7 @@
     "trade_capacity": 3,
     "satisfaction": 68,
     "tax_rate": 36,
-    "population": 340,
+    "population": 291,
     "rural_population": 221,
     "religion": "catholic",
     "active_event_id": "",
@@ -803,9 +805,10 @@
     "neighbors": [
       "brandenburg",
       "denmark",
-      "western_baltic_sea",
+      "elbe_river",
       "pomerania",
       "thuringia",
+      "western_baltic_sea",
       "westphalia"
     ],
     "world_x": 684,
@@ -881,8 +884,10 @@
       "friesland",
       "holland",
       "kattegat",
+      "elbe_river",
       "north_sea",
       "palatinate",
+      "rhine_river",
       "saxony",
       "thuringia"
     ],
@@ -957,6 +962,7 @@
       "holland",
       "lorraine",
       "luxembourg",
+      "rhine_river",
       "switzerland",
       "thuringia",
       "westphalia"
@@ -992,9 +998,9 @@
     "successor_faction_id": "denmark_kingdom",
     "neighbors": [
       "kattegat",
-      "western_baltic_sea",
-      "scania",
       "saxony",
+      "scania",
+      "western_baltic_sea",
       "westphalia"
     ],
     "world_x": 673,
@@ -1104,11 +1110,10 @@
       "bay_of_biscay",
       "catalonia",
       "languedoc",
-      "navarra",
-      "paris"
+      "navarra"
     ],
-    "world_x": 495,
-    "world_y": 391,
+    "world_x": 468,
+    "world_y": 398,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -1723,10 +1728,11 @@
       "bulgaria",
       "danube_wallacia",
       "dobruja",
-      "western_black_sea",
+      "moldova",
       "northern_black_sea",
       "oltenia",
-      "transylvania"
+      "transylvania",
+      "western_black_sea"
     ],
     "world_x": 1018,
     "world_y": 392,
@@ -1797,6 +1803,7 @@
     "successor_faction_id": "wallachia_prince",
     "neighbors": [
       "galicia_volhynia",
+      "moldova",
       "northern_black_sea",
       "northwestern_black_sea",
       "transylvania",
@@ -2235,9 +2242,9 @@
     "owner_id": "genoa",
     "neighbors": [
       "black_open_4",
-      "lower_ukrainian_steppe",
       "crimean_black_sea",
       "kerch_strait",
+      "lower_ukrainian_steppe",
       "sea_of_azov"
     ],
     "world_x": 1162,
@@ -3046,11 +3053,13 @@
     "terrain": "plain",
     "owner_id": "golden_horde",
     "neighbors": [
+      "bessarabia",
       "kiev",
-      "western_black_sea",
       "northern_black_sea",
       "northwestern_black_sea",
-      "podolia"
+      "podolia",
+      "wallachia",
+      "western_black_sea"
     ],
     "world_x": 1050,
     "world_y": 347,
@@ -3256,11 +3265,12 @@
       "friesland",
       "holland",
       "kattegat",
+      "elbe_river",
       "north_sea_shore",
       "westphalia"
     ],
-    "world_x": 613,
-    "world_y": 205,
+    "world_x": 612,
+    "world_y": 201,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3281,6 +3291,38 @@
     "buildings": null
   },
   {
+    "id": "elbe_river",
+    "name": "Elbe River",
+    "name_tr": "Elbe Nehri",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "north_sea",
+      "saxony",
+      "westphalia"
+    ],
+    "world_x": 687,
+    "world_y": 223,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "kattegat",
     "name": "Kattegat",
     "name_tr": "Kattegat",
@@ -3290,13 +3332,12 @@
       "denmark",
       "north_sea",
       "north_sea_shore",
-      "norway",
       "norwegian_sea",
       "western_baltic_sea",
       "westphalia"
     ],
-    "world_x": 604,
-    "world_y": 189,
+    "world_x": 617,
+    "world_y": 187,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3326,10 +3367,11 @@
       "baltic_sea",
       "denmark",
       "kattegat",
-      "scania",
       "norway",
+      "norwegian_sea",
       "pomerania",
       "saxony",
+      "scania",
       "sweden"
     ],
     "world_x": 667,
@@ -3732,8 +3774,8 @@
     "neighbors": [
       "black_open_4",
       "bosphorus",
-      "central_black_sea",
       "bosphorus_approaches",
+      "central_black_sea",
       "crimean_black_sea"
     ],
     "world_x": 1113,
@@ -3870,12 +3912,11 @@
     "owner_id": "",
     "neighbors": [
       "croatia",
+      "danube_austria",
       "hungary",
-      "danube_wallacia",
       "nis",
       "oltenia",
-      "serbia",
-      "danube_austria"
+      "serbia"
     ],
     "world_x": 880,
     "world_y": 376,
@@ -3906,12 +3947,11 @@
     "owner_id": "",
     "neighbors": [
       "bulgaria",
-      "danube_serbia",
-      "western_black_sea",
       "nis",
       "oltenia",
       "vidin",
-      "wallachia"
+      "wallachia",
+      "western_black_sea"
     ],
     "world_x": 937,
     "world_y": 402,
@@ -4015,7 +4055,6 @@
     "neighbors": [
       "bessarabia",
       "moldova",
-      "western_black_sea",
       "northwestern_black_sea",
       "wallachia"
     ],
@@ -4048,12 +4087,11 @@
     "owner_id": "",
     "neighbors": [
       "black_open_4",
+      "bosphorus_approaches",
       "bulgaria",
       "danube_wallacia",
       "dobruja",
       "moldova",
-      "northern_black_sea",
-      "bosphorus_approaches",
       "podolia",
       "wallachia"
     ],
@@ -4403,7 +4441,6 @@
     "terrain": "mountain",
     "owner_id": "denmark_kingdom",
     "neighbors": [
-      "kattegat",
       "western_baltic_sea",
       "norwegian_sea",
       "sweden"
@@ -4807,10 +4844,10 @@
     "neighbors": [
       "atlantic_open_1",
       "champagne",
+      "english_channel",
       "holland",
       "lorraine",
       "luxembourg",
-      "english_channel",
       "north_sea_shore",
       "palatinate",
       "paris"
@@ -4848,6 +4885,7 @@
     "neighbors": [
       "flanders",
       "friesland",
+      "rhine_river",
       "north_sea",
       "north_sea_shore",
       "palatinate",
@@ -4919,11 +4957,11 @@
     "neighbors": [
       "belarus",
       "kiev",
-      "moscow",
-      "upper_ukrainian_steppe",
       "lower_ukrainian_steppe",
+      "moscow",
+      "novgorod",
       "upper_dnieper",
-      "novgorod"
+      "upper_ukrainian_steppe"
     ],
     "world_x": 1159,
     "world_y": 251,
@@ -4961,11 +4999,13 @@
       "black_open_4",
       "crimea",
       "kiev",
-      "upper_ukrainian_steppe",
-      "upper_dnieper",
+      "new_region_274",
+      "new_region_275",
       "podolia",
       "sea_of_azov",
-      "ukrainian_steppe"
+      "ukrainian_steppe",
+      "upper_dnieper",
+      "upper_ukrainian_steppe"
     ],
     "world_x": 1139,
     "world_y": 355,
@@ -5000,13 +5040,13 @@
     "owner_id": "golden_horde",
     "successor_faction_id": "golden_horde",
     "neighbors": [
-      "black_open_4",
-      "moscow",
       "lower_ukrainian_steppe",
+      "moscow",
+      "new_region_275",
       "north_caucasus",
-      "upper_dnieper",
       "sea_of_azov",
-      "ukrainian_steppe"
+      "ukrainian_steppe",
+      "upper_dnieper"
     ],
     "world_x": 1188,
     "world_y": 316,
@@ -5875,7 +5915,7 @@
     "trade_capacity": 8,
     "satisfaction": 70,
     "tax_rate": 35,
-    "population": 600,
+    "population": 674,
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
@@ -5913,7 +5953,7 @@
     "trade_capacity": 5,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 850,
+    "population": 776,
     "rural_population": 553,
     "religion": "catholic",
     "active_event_id": "",
@@ -6833,6 +6873,7 @@
       "holland",
       "north_sea",
       "north_sea_shore",
+      "rhine_river",
       "westphalia"
     ],
     "world_x": 599,
@@ -7506,11 +7547,11 @@
     "owner_id": "bulgarian_empire",
     "successor_faction_id": "bulgarian_empire",
     "neighbors": [
-      "bulgaria",
-      "western_black_sea",
       "bosphorus_approaches",
+      "bulgaria",
       "podolia",
-      "wallachia"
+      "wallachia",
+      "western_black_sea"
     ],
     "world_x": 1042,
     "world_y": 400,
@@ -7655,14 +7696,13 @@
     "owner_id": "golden_horde",
     "neighbors": [
       "belarus",
-      "black_open_4",
       "galicia_volhynia",
-      "moldova",
       "lower_ukrainian_steppe",
-      "upper_dnieper",
+      "moldova",
       "northwestern_black_sea",
       "podolia",
-      "ukrainian_steppe"
+      "ukrainian_steppe",
+      "upper_dnieper"
     ],
     "world_x": 1037,
     "world_y": 288,
@@ -7696,8 +7736,8 @@
       "black_open_4",
       "dobruja",
       "kiev",
-      "moldova",
       "lower_ukrainian_steppe",
+      "moldova",
       "western_black_sea"
     ],
     "world_x": 1052,
@@ -8784,6 +8824,7 @@
       "holland",
       "kattegat",
       "mercia",
+      "rhine_river",
       "north_sea",
       "norwegian_sea",
       "yorkshire"
@@ -8803,6 +8844,40 @@
     "trade_capacity": 0,
     "satisfaction": 100,
     "tax_rate": 0,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "rhine_river",
+    "name": "Rhine River",
+    "name_tr": "Ren Nehri",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "friesland",
+      "holland",
+      "north_sea_shore",
+      "palatinate",
+      "westphalia"
+    ],
+    "world_x": 608,
+    "world_y": 257,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
     "population": 0,
     "rural_population": 0,
     "religion": "",
@@ -9425,18 +9500,17 @@
     "owner_id": "",
     "neighbors": [
       "black_sea",
-      "crimea",
-      "kiev",
-      "upper_ukrainian_steppe",
-      "lower_ukrainian_steppe",
-      "western_black_sea",
       "bosphorus_approaches",
+      "crimea",
       "crimean_black_sea",
-      "upper_dnieper",
-      "podolia"
+      "lower_ukrainian_steppe",
+      "new_region_274",
+      "new_region_275",
+      "podolia",
+      "western_black_sea"
     ],
-    "world_x": 1097,
-    "world_y": 355,
+    "world_x": 1109,
+    "world_y": 369,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -9457,6 +9531,69 @@
     "buildings": null
   },
   {
+    "id": "new_region_274",
+    "name": "New Region 274",
+    "name_tr": "Yeni Bolge 274",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "black_open_4",
+      "lower_ukrainian_steppe"
+    ],
+    "world_x": 1102,
+    "world_y": 332,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_275",
+    "name": "New Region 275",
+    "name_tr": "Yeni Bolge 275",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "black_open_4",
+      "lower_ukrainian_steppe",
+      "upper_ukrainian_steppe"
+    ],
+    "world_x": 1153,
+    "world_y": 341,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "upper_dnieper",
     "name": "Upper Dnieper",
     "name_tr": "Yukarı Dinyeper",
@@ -9464,11 +9601,10 @@
     "owner_id": "",
     "neighbors": [
       "belarus",
-      "black_open_4",
       "kiev",
-      "upper_ukrainian_steppe",
       "lower_ukrainian_steppe",
-      "ukrainian_steppe"
+      "ukrainian_steppe",
+      "upper_ukrainian_steppe"
     ],
     "world_x": 1088,
     "world_y": 269,
@@ -9879,7 +10015,8 @@
       "atlantic_open_6",
       "kattegat",
       "north_sea_shore",
-      "norway"
+      "norway",
+      "western_baltic_sea"
     ],
     "world_x": 517,
     "world_y": 95,

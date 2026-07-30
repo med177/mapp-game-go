@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -43,6 +43,13 @@ tarafından fethedildiğinde bu fraksiyon `is_eliminated=true` ise bilgi panelin
 `Özgürleştir` görünür; aksiyon bölgeyi ardıl devlete verir ve devletin yeniden
 kuruluş state'ini başlatır. 1300 senaryosunda başkent settlement'ı bulunan ve
 sahibi eşleşen 68 bölge başlangıçta kendi sahibiyle işaretlidir.
+
+Oyuncu ordusu bu metadata'yı taşıyan düşman kara bölgesini savaşla veya savaşsız
+ele geçirdiğinde, savaş raporu kapatıldıktan sonra `Ardıl Devlet Kararı` paneli
+açılır. `İlhak Et` bölgeyi oyuncuya verir; `Serbest Bırak` ardıl devleti bağımsız
+müttefik olarak kurar; `Vassal Yap` bölgeyi ardıla verip onu oyuncunun doğrudan
+vassalı yapar. Elenmiş ardıl, iki bölgesel kurulum seçeneğinde düşük kaynak ve
+beş milisle yeniden etkinleştirilir.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_capital` ile seçilir. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 

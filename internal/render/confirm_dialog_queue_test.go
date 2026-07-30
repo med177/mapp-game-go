@@ -36,3 +36,25 @@ func TestHideBattleReportShowsQueuedChoiceDialog(t *testing.T) {
 		t.Fatal("kuyruk boşaltılmalıydı")
 	}
 }
+
+func TestHideBattleReportShowsQueuedThreeChoiceSuccessorDialog(t *testing.T) {
+	r := &Renderer{battleReport: battleReportState{show: true, data: BattleReport{Scene: BattleSceneLand}}}
+	r.QueueThreeChoiceDialogAfterBattleReport(
+		"Ardıl Devlet Kararı",
+		"Bölgenin kaderi",
+		"İlhak Et",
+		"Serbest Bırak",
+		"Vassal Yap",
+		InputAction{Kind: ActionAnnexSuccessor},
+		InputAction{Kind: ActionReleaseSuccessor},
+		InputAction{Kind: ActionVassalizeSuccessor},
+	)
+	r.HideBattleReport()
+
+	if !r.confirmDialog.show || !r.confirmDialog.declineActs {
+		t.Fatal("üç seçenekli ardıl kararı görünür olmalıydı")
+	}
+	if r.confirmDialog.pendingAction.Kind != ActionAnnexSuccessor || r.confirmDialog.thirdAction.Kind != ActionReleaseSuccessor || r.confirmDialog.declineAction.Kind != ActionVassalizeSuccessor {
+		t.Fatalf("ardıl karar aksiyonları yanlış: %+v", r.confirmDialog)
+	}
+}

@@ -55,6 +55,11 @@ const (
 	ActionAnnexDefeatedFaction     ActionKind = "annex_defeated_faction"
 	ActionVassalizeDefeatedFaction ActionKind = "vassalize_defeated_faction"
 	ActionLiberateSuccessor        ActionKind = "liberate_successor"
+	// Ardıl devlet kararları, genel vassal yönetiminden ve son düşman
+	// toprağına ilişkin iki seçenekli karardan ayrı tutulur.
+	ActionAnnexSuccessor     ActionKind = "annex_successor"
+	ActionVassalizeSuccessor ActionKind = "vassalize_successor"
+	ActionReleaseSuccessor   ActionKind = "release_successor"
 	// Ana menü
 	ActionNewGame                   ActionKind = "new_game"
 	ActionEditMode                  ActionKind = "edit_mode"

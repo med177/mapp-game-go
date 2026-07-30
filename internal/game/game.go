@@ -383,6 +383,12 @@ func (g *Game) Update() error {
 			g.resolvePendingConquestDecision(false)
 		case render.ActionVassalizeDefeatedFaction:
 			g.resolvePendingConquestDecision(true)
+		case render.ActionAnnexSuccessor:
+			g.resolvePendingSuccessorDecision(successorDecisionAnnex)
+		case render.ActionReleaseSuccessor:
+			g.resolvePendingSuccessorDecision(successorDecisionRelease)
+		case render.ActionVassalizeSuccessor:
+			g.resolvePendingSuccessorDecision(successorDecisionVassalize)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
 		case render.ActionCreateTradeRoute:
@@ -3924,6 +3930,61 @@ const (
 	liberatedFactionCloth  = 10
 	liberatedMilitiaCount  = 5
 )
+
+// reviveSuccessorAtRegion, savaş sonrası ardıl devlet kararında elenmiş bir
+// fraksiyonu yeniden oyuna sokar. Aktif ve mevcut toprağı olan ardıllar için
+// yalnızca true döner; bu durumda yeni başlangıç kaynak/ordu üretmez.
+func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID faction.FactionID) bool {
+	if g == nil || g.gs == nil || regionID == "" || successorID == "" {
+		return false
+	}
+	successor := g.gs.Factions[successorID]
+	if successor == nil {
+		return false
+	}
+	if !successor.IsEliminated {
+		return true
+	}
+	if len(g.gs.LandRegionsOwnedBy(successorID)) != 0 {
+		return false
+	}
+	successor.IsEliminated = false
+	successor.Gold = liberatedFactionGold
+	successor.Grain = liberatedFactionGrain
+	successor.Iron = liberatedFactionIron
+	successor.Timber = liberatedFactionTimber
+	successor.Stone = 0
+	successor.Spice = 0
+	successor.Cloth = liberatedFactionCloth
+	successor.OverlordID = ""
+	successor.PendingCapitalSettlementID = ""
+	successor.PendingCapitalTurns = 0
+
+	if g.gs.Armies == nil {
+		g.gs.Armies = make(map[army.ArmyID]*army.Army)
+	}
+	g.gs.NextArmySeq++
+	armyID := army.ArmyID(fmt.Sprintf("army_%s_%d", successorID, g.gs.NextArmySeq))
+	for g.gs.Armies[armyID] != nil {
+		g.gs.NextArmySeq++
+		armyID = army.ArmyID(fmt.Sprintf("army_%s_%d", successorID, g.gs.NextArmySeq))
+	}
+	newArmy := &army.Army{
+		ID:            armyID,
+		OwnerID:       string(successorID),
+		RegionID:      regionID,
+		Units:         army.MakeUnits("militia", liberatedMilitiaCount),
+		MaxMovePoints: army.DefaultArmyMovePoints,
+		MovePoints:    army.DefaultArmyMovePoints,
+	}
+	if g.gs.UnitTypes != nil {
+		newArmy.MaxMovePoints = newArmy.BaseMovePoints(g.gs.UnitTypes)
+		newArmy.MovePoints = newArmy.MaxMovePoints
+	}
+	g.gs.Armies[armyID] = newArmy
+	g.gs.NormalizeFactionCapitals()
+	return true
+}
 
 // liberateSuccessor, seçili bölgede tanımlı ardıl devleti yeniden oyuna alır.
 // İşlem yalnız oyuncunun kontrol ettiği, ardıl devletin ise gerçekten elendiği

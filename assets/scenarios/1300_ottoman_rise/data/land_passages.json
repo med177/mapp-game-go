@@ -1,5 +1,20 @@
 [
   {
+    "from": "bessarabia",
+    "to": "moldova",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1027,
+      336
+    ],
+    "end": [
+      1029,
+      334
+    ]
+  },
+  {
     "from": "constantinople",
     "to": "bithynia",
     "type": "strait",
@@ -87,6 +102,21 @@
     "end": [
       366,
       549
+    ]
+  },
+  {
+    "from": "nis",
+    "to": "oltenia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      925,
+      389
+    ],
+    "end": [
+      929,
+      385
     ]
   },
   {

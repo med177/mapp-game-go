@@ -568,6 +568,31 @@ func ForceVassalizeAfterWar(gs *state.GameState, actor, target faction.FactionID
 	return applyVassalization(gs, actor, target)
 }
 
+// ForceReleaseAfterWar, savaş sonrası ardıl devlet kararında hedefi
+// bağımsız bırakır. Normal diplomasi ekranındaki Vasallığı Bitir aksiyonundan
+// farklı olarak burada ilişki savaşın hemen ardından müttefikliğe çekilir.
+func ForceReleaseAfterWar(gs *state.GameState, actor, target faction.FactionID) Result {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return Result{Message: "Geçersiz diplomasi hedefi."}
+	}
+	actorFaction := gs.Factions[actor]
+	targetFaction := gs.Factions[target]
+	if actorFaction == nil || targetFaction == nil || actorFaction.IsEliminated || targetFaction.IsEliminated {
+		return Result{Message: "Elenmiş fraksiyonlarla bu karar uygulanamaz."}
+	}
+	setPeaceBetweenCoalitions(gs, actor, target)
+	targetFaction.OverlordID = ""
+	targetFaction.VassalizedTurn = 0
+	ForceRelation(gs, actor, target, faction.StanceAllied, 50)
+	normalizeVassalRealmRelations(gs, actor)
+	normalizeVassalRealmRelations(gs, target)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, target) + " serbest bırakıldı ve bağımsız müttefik oldu.",
+	}
+}
+
 func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.FactionID) {
 	if gs == nil || vassal == "" {
 		return

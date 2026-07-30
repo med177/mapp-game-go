@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -56,6 +56,12 @@ type Relation struct {
 `StanceAllied` relation'ı alır. Bu ilişki yeni devletin ilk diplomatik güvenlik
 durumudur; `OverlordID` atanmaz, yani yeniden kurulan devlet bağımsız AI fraksiyonu
 olarak davranır.
+
+Savaş sonrası ardıl kararında `ForceReleaseAfterWar()` aynı barışı kapatıp ardılı
+bağımsız ve doğrudan müttefik yapar. `Vassal Yap` seçeneği ise ardıl bölgeyi ardıl
+fraksiyona devrettikten sonra `ForceVassalizeAfterWar()` ile `OverlordID` ve
+vassallık turunu kaydeder. Bu kararlar diplomasi panelindeki mevcut `Vasallığı
+Bitir / İlhak Et` yönetim aksiyonlarından ayrı tutulur.
 
 Vassallık relation duruşu olarak değil, doğrudan fraksiyon üstünde `OverlordID` alanıyla tutulur. Böylece:
 

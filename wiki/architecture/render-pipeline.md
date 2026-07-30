@@ -16,6 +16,12 @@ metadata'nın işaret ettiği devlet elenmişse `Özgürleştir` düğmesini çi
 de aynı action-bar geometrisini kullanır. Aksiyon `internal/game/game.go` içinde
 devleti beş milis ve düşük kaynaklarla yeniden etkinleştirir.
 
+Savaş raporu sonrasında ardıl metadata'sı için kullanılan üçlü karar paneli,
+`QueueThreeChoiceDialogAfterBattleReport()` ile rapor kapanana kadar kuyruğa alınır.
+`HideBattleReport()` sonrasında aynı modalın üç buton geometrisi ve input önceliği
+korunur; aksiyonlar `ActionAnnexSuccessor`, `ActionReleaseSuccessor` ve
+`ActionVassalizeSuccessor` olarak game katmanına iletilir.
+
 Edit Mode inspector beş görünür sekmeden oluşur: `Yerleşim Birimi`, `Bölge`,
 `Devlet`, `Harita` ve `Veri`. Yerleşim/ordu, bölge, devlet ve shape/geçit
 araçları kendi sekmelerine dağıtılır; `Değişiklikleri Kaydet` ise sekmeden

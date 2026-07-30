@@ -88,6 +88,58 @@ func TestResolvePendingConquestDecisionVassalizesDefender(t *testing.T) {
 	}
 }
 
+func TestSuccessorMetadataQueuesThreeWayDecisionAfterBattle(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
+
+	if ok := g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], true); !ok {
+		t.Fatal("ardıl metadata'sı olan fetih için karar kuyruğa alınmalıydı")
+	}
+	if got := g.pendingConquestDecisions[0].SuccessorFactionID; got != "successor" {
+		t.Fatalf("ardıl fraksiyon karara taşınmadı: %q", got)
+	}
+}
+
+func TestSuccessorDecisionReleaseTransfersRegionAndDefeatsPreviousOwner(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
+	if !g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false) {
+		t.Fatal("ardıl kararı kuyruğa alınamadı")
+	}
+
+	g.resolvePendingSuccessorDecision(successorDecisionRelease)
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "successor" {
+		t.Fatalf("serbest bırakmada bölge ardıla geçmeliydi, got=%s", got)
+	}
+	if !g.gs.Factions["enemy"].IsEliminated {
+		t.Fatal("bölgesi alınan eski sahip elenmeliydi")
+	}
+	if rel := g.gs.Relations[faction.RelationKey("player", "successor")]; rel == nil || rel.Stance != faction.StanceAllied {
+		t.Fatalf("ardıl bağımsız müttefik olmalıydı: %+v", rel)
+	}
+}
+
+func TestSuccessorDecisionVassalizesEliminatedSuccessor(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl", IsEliminated: true}
+	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
+	if !g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false) {
+		t.Fatal("elenmiş ardıl için karar kuyruğa alınamadı")
+	}
+
+	g.resolvePendingSuccessorDecision(successorDecisionVassalize)
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "successor" {
+		t.Fatalf("vassal kararında bölge ardıla geçmeliydi, got=%s", got)
+	}
+	if g.gs.Factions["successor"].IsEliminated || g.gs.Factions["successor"].OverlordID != "player" {
+		t.Fatalf("ardıl yeniden kurulup oyuncuya bağlanmalıydı: %+v", g.gs.Factions["successor"])
+	}
+}
+
 func TestAnnexVassalTransfersRealmAssets(t *testing.T) {
 	g := conquestDecisionTestGame()
 	g.gs.Turn = 20
