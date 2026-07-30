@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -2606,6 +2607,7 @@ func writeScenarioTradeCenters(gs *state.GameState) error {
 func writeScenarioShapes(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "country_shapes.json")
 	render.SyncLandShapesFromRegionPaint(gs)
+	offsetX, offsetY, scaleX, scaleY := scenarioShapeTransform(gs)
 	type shapeEntryJSON struct {
 		ID    string         `json:"id"`
 		Name  string         `json:"name,omitempty"`
@@ -2631,7 +2633,10 @@ func writeScenarioShapes(gs *state.GameState) error {
 			}
 			preciseRing := make([][2]float32, 0, len(ring))
 			for _, pt := range ring {
-				preciseRing = append(preciseRing, pt)
+				preciseRing = append(preciseRing, [2]float32{
+					roundShapeCoordinateForRaster(pt[0], offsetX, scaleX),
+					roundShapeCoordinateForRaster(pt[1], offsetY, scaleY),
+				})
 			}
 			if len(preciseRing) >= 3 {
 				preciseRings = append(preciseRings, preciseRing)
@@ -2653,6 +2658,56 @@ func writeScenarioShapes(gs *state.GameState) error {
 	}
 	data = append(data, '\n')
 	return os.WriteFile(path, data, 0644)
+}
+
+func scenarioShapeTransform(gs *state.GameState) (float64, float64, float64, float64) {
+	offsetX, offsetY := -530.0, -180.0
+	scaleX, scaleY := 2.025, 2.025
+	if gs == nil {
+		return offsetX, offsetY, scaleX, scaleY
+	}
+	if gs.MapConfig.ShapeOffsetX != nil {
+		offsetX = *gs.MapConfig.ShapeOffsetX
+	}
+	if gs.MapConfig.ShapeOffsetY != nil {
+		offsetY = *gs.MapConfig.ShapeOffsetY
+	}
+	if gs.MapConfig.ShapeScaleX != nil && *gs.MapConfig.ShapeScaleX != 0 {
+		scaleX = *gs.MapConfig.ShapeScaleX
+	}
+	if gs.MapConfig.ShapeScaleY != nil && *gs.MapConfig.ShapeScaleY != 0 {
+		scaleY = *gs.MapConfig.ShapeScaleY
+	}
+	return offsetX, offsetY, scaleX, scaleY
+}
+
+func roundShapeCoordinateForRaster(value float32, offset, scale float64) float32 {
+	base := math.Round(float64(value) * 10)
+	target := rasterBoundaryForShapeSave(offset + float64(value)*scale)
+	best := base
+	bestDistance := math.Inf(1)
+	// Bir ondalik basamak kullanirken, mevcut raster hucre sinirini
+	// koruyan en yakin koordinati sec. Aksi halde int kesmesi 1 px kaydirabilir.
+	for delta := -10.0; delta <= 10.0; delta++ {
+		candidate := base + delta
+		if rasterBoundaryForShapeSave(offset+(candidate/10)*scale) != target {
+			continue
+		}
+		distance := math.Abs(candidate - float64(value)*10)
+		if distance < bestDistance {
+			best = candidate
+			bestDistance = distance
+		}
+	}
+	return float32(best / 10)
+}
+
+func rasterBoundaryForShapeSave(value float64) int {
+	nearest := math.Round(value)
+	if math.Abs(value-nearest) < 0.0001 {
+		return int(nearest)
+	}
+	return int(value)
 }
 
 func writeScenarioRelations(gs *state.GameState) error {

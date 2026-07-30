@@ -64,8 +64,8 @@ func TestWriteScenarioShapesPreservesSubPixelBoundaries(t *testing.T) {
 	}
 
 	// Editor maskesi dunya pikseli sinirini, senaryo koordinatinda ondalikli
-	// bir noktaya cevirir. 2.025 olcekte bunu tam sayiya yuvarlamak dunya
-	// pikselini kaydirir; kayit/yukleme ayni koordinati korumali.
+	// bir noktaya cevirir. Kayit tek ondalik basamakla sinirlanir; yukleme
+	// kayitli bu yuvarlanmis koordinati korumali.
 	scale := float32(2.025)
 	boundaryX := float32(15) / scale
 	boundaryY := float32(8) / scale
@@ -75,8 +75,19 @@ func TestWriteScenarioShapesPreservesSubPixelBoundaries(t *testing.T) {
 		{float32(19) / scale, float32(12) / scale},
 		{boundaryX, float32(12) / scale},
 	}
+	worldW, worldH := 64, 64
+	offsetX, offsetY := 0.0, 0.0
+	scaleX, scaleY := 2.025, 2.025
 	gs := &state.GameState{
 		ScenarioPath: tmp,
+		MapConfig: scenario.MapConfig{
+			WorldWidth:   &worldW,
+			WorldHeight:  &worldH,
+			ShapeOffsetX: &offsetX,
+			ShapeOffsetY: &offsetY,
+			ShapeScaleX:  &scaleX,
+			ShapeScaleY:  &scaleY,
+		},
 		ShapeData: world.CountryShapeJSON{
 			Shapes: map[string][][][2]float32{"AAA": {ring}},
 			Names:  map[string]string{"AAA": "Hassas Shape"},
@@ -96,15 +107,13 @@ func TestWriteScenarioShapesPreservesSubPixelBoundaries(t *testing.T) {
 	}
 	for i := range ring {
 		for axis := 0; axis < 2; axis++ {
-			if math.Abs(float64(got[i][axis]-ring[i][axis])) > 0.00001 {
-				t.Fatalf("sub-pixel koordinat kayboldu: point=%d axis=%d got=%v want=%v", i, axis, got[i][axis], ring[i][axis])
+			want := roundShapeCoordinateForRaster(ring[i][axis], 0, 2.025)
+			if math.Abs(float64(got[i][axis]-want)) > 0.00001 {
+				t.Fatalf("tek ondalik koordinat korunmadi: point=%d axis=%d got=%v want=%v", i, axis, got[i][axis], want)
 			}
 		}
 	}
 
-	worldW, worldH := 64, 64
-	offsetX, offsetY := 0.0, 0.0
-	scaleX, scaleY := 2.025, 2.025
 	regions := map[world.RegionID]*world.Region{
 		"AAA": {
 			ID:      "AAA",

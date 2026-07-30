@@ -62,10 +62,11 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - Stroke bırakıldığında yalnız önizleme ve bekleyen mask değişikliği tutulur; aktif
   aracın `Uygula` düğmesi commit, harita yenileme ve undo snapshot'ını tek seferde
   üretir.
-- `country_shapes.json` yazımı ring koordinatlarını `float32` hassasiyetinde korur.
-  Editörün dünya-piksel sınırları ölçekli shape koordinatına çevrildiği için
-  koordinatları tekrar tam sayıya yuvarlamak yeniden açılışta hassas boyama/silme
-  piksellerini kaydırır.
+- `country_shapes.json` yazımı ring koordinatlarını virgülden sonra tek basamakla
+  korur. Editörün dünya-piksel sınırları ölçekli shape koordinatına çevrildiği
+  için koordinatları tekrar tam sayıya yuvarlamak yeniden açılışta hassas
+  boyama/silme piksellerini kaydırır; kayıt yuvarlaması mevcut raster hücresini
+  koruyan en yakın tek ondalık değeri seçer.
 - `Harita` sekmesindeki `ID` aksiyonu seçili region kimliğini mevcut değerle
   doldurur; Ctrl+A ile yeni kimlik girilebilir. Boş veya mevcut bir region ile
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,

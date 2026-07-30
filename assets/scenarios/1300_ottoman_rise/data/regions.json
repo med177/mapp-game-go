@@ -2087,7 +2087,6 @@
     "neighbors": [
       "eastern_mediterranean_shore",
       "egypt",
-      "luxor",
       "libyan_sea",
       "gulf_of_sirte",
       "tripolitania"
@@ -2416,13 +2415,10 @@
     "owner_id": "mamluk",
     "successor_faction_id": "mamluk",
     "neighbors": [
+      "cyrenaica",
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
-      "israel",
-      "luxor",
-      "cyrenaica",
-      "levantine_sea",
-      "red_open_2"
+      "luxor"
     ],
     "world_x": 1010,
     "world_y": 700,
@@ -2456,8 +2452,9 @@
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
-      "cyrenaica",
+      "eastern_mediterranean",
       "egypt",
+      "israel",
       "levantine_sea",
       "red_open_2",
       "red_sea"
@@ -2714,8 +2711,8 @@
     "owner_id": "mecca_sharifate",
     "successor_faction_id": "mecca_sharifate",
     "neighbors": [
-      "jordan",
       "arabian_desert",
+      "jordan",
       "red_open_2",
       "red_sea"
     ],
@@ -3623,6 +3620,7 @@
       "eastern_mediterranean_shore",
       "egypt",
       "levantine_sea",
+      "luxor",
       "mediterranean_open_1"
     ],
     "world_x": 1010,
@@ -4450,13 +4448,12 @@
     "terrain": "desert",
     "owner_id": "mamluk",
     "neighbors": [
+      "arabian_desert",
       "damascus",
       "hejaz",
       "israel",
       "mosul",
-      "arabian_desert",
-      "palestine",
-      "red_open_2"
+      "palestine"
     ],
     "world_x": 1211,
     "world_y": 641,
@@ -5025,11 +5022,11 @@
     "owner_id": "mamluk",
     "neighbors": [
       "damascus",
-      "egypt",
+      "gulf_of_iskenderun",
       "jordan",
       "lebanon",
       "levantine_sea",
-      "gulf_of_iskenderun",
+      "luxor",
       "palestine",
       "red_open_2"
     ],
@@ -9170,7 +9167,6 @@
       "cyprus",
       "east_mediterranean",
       "eastern_mediterranean",
-      "egypt",
       "gulf_of_iskenderun",
       "israel",
       "luxor",
@@ -9272,10 +9268,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "egypt",
       "hejaz",
       "israel",
-      "jordan",
       "luxor",
       "red_sea"
     ],
