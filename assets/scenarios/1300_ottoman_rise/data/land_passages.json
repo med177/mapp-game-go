@@ -45,6 +45,21 @@
     ]
   },
   {
+    "from": "dobruja",
+    "to": "podolia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1049,
+      379
+    ],
+    "end": [
+      1049,
+      375
+    ]
+  },
+  {
     "from": "gallipoli",
     "to": "aydinoglu",
     "type": "strait",
@@ -117,21 +132,6 @@
     "end": [
       947,
       400
-    ]
-  },
-  {
-    "from": "dobruja",
-    "to": "podolia",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      1049,
-      379
-    ],
-    "end": [
-      1049,
-      375
     ]
   }
 ]

@@ -1723,8 +1723,8 @@
       "bulgaria",
       "danube_wallacia",
       "dobruja",
-      "new_region_268",
-      "new_region_269",
+      "western_black_sea",
+      "northern_black_sea",
       "oltenia",
       "transylvania"
     ],
@@ -1782,7 +1782,7 @@
     "trade_capacity": 1,
     "satisfaction": 50,
     "tax_rate": 25,
-    "population": 490,
+    "population": 672,
     "rural_population": 299,
     "religion": "orthodox",
     "active_event_id": "",
@@ -1797,7 +1797,7 @@
     "successor_faction_id": "wallachia_prince",
     "neighbors": [
       "galicia_volhynia",
-      "new_region_269",
+      "northern_black_sea",
       "northwestern_black_sea",
       "transylvania",
       "wallachia"
@@ -1835,8 +1835,8 @@
       "danube_wallacia",
       "dobruja",
       "gallipoli",
-      "new_region_268",
-      "new_region_270",
+      "western_black_sea",
+      "bosphorus_approaches",
       "serres",
       "thrace",
       "vidin",
@@ -2235,9 +2235,9 @@
     "owner_id": "genoa",
     "neighbors": [
       "black_open_4",
-      "new_region_267",
-      "new_region_271",
-      "new_region_274",
+      "lower_ukrainian_steppe",
+      "crimean_black_sea",
+      "kerch_strait",
       "sea_of_azov"
     ],
     "world_x": 1162,
@@ -2270,8 +2270,8 @@
     "owner_id": "russia",
     "successor_faction_id": "russia",
     "neighbors": [
-      "new_region_266",
-      "new_region_272",
+      "upper_ukrainian_steppe",
+      "north_caucasus",
       "nizhny_novgorod",
       "novgorod",
       "ukrainian_steppe"
@@ -2292,7 +2292,7 @@
     "trade_capacity": 2,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1000,
+    "population": 1008,
     "rural_population": 650,
     "religion": "orthodox",
     "active_event_id": "",
@@ -2384,7 +2384,7 @@
       "azerbaijan",
       "black_sea_shore",
       "erzurum",
-      "new_region_272",
+      "north_caucasus",
       "trebizond"
     ],
     "world_x": 1312,
@@ -2827,15 +2827,15 @@
     "owner_id": "croatian_kingdom",
     "neighbors": [
       "bosnia",
+      "danube_serbia",
       "hum",
       "hungary",
       "kvarner",
-      "danube_serbia",
       "serbia",
       "slovenia"
     ],
-    "world_x": 820,
-    "world_y": 366,
+    "world_x": 814,
+    "world_y": 365,
     "shape_id": "HRV",
     "is_sea": false,
     "is_locked": false,
@@ -2850,7 +2850,7 @@
     "trade_capacity": 3,
     "satisfaction": 58,
     "tax_rate": 30,
-    "population": 564,
+    "population": 581,
     "rural_population": 423,
     "religion": "catholic",
     "active_event_id": "",
@@ -2865,10 +2865,11 @@
     "successor_faction_id": "bosnian_banate",
     "neighbors": [
       "croatia",
+      "herzegovina",
       "hum",
-      "kvarner",
       "knin",
-      "herzegovina"
+      "kvarner",
+      "rijeka"
     ],
     "world_x": 823,
     "world_y": 384,
@@ -2886,7 +2887,7 @@
     "trade_capacity": 1,
     "satisfaction": 55,
     "tax_rate": 25,
-    "population": 550,
+    "population": 518,
     "rural_population": 358,
     "religion": "orthodox",
     "active_event_id": "",
@@ -3046,8 +3047,8 @@
     "owner_id": "golden_horde",
     "neighbors": [
       "kiev",
-      "new_region_268",
-      "new_region_269",
+      "western_black_sea",
+      "northern_black_sea",
       "northwestern_black_sea",
       "podolia"
     ],
@@ -3732,8 +3733,8 @@
       "black_open_4",
       "bosphorus",
       "central_black_sea",
-      "new_region_270",
-      "new_region_271"
+      "bosphorus_approaches",
+      "crimean_black_sea"
     ],
     "world_x": 1113,
     "world_y": 403,
@@ -3757,9 +3758,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_271",
-    "name": "New Region 270",
-    "name_tr": "Yeni Bolge 270",
+    "id": "crimean_black_sea",
+    "name": "Crimean Black Sea",
+    "name_tr": "Kırım Karadenizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3768,7 +3769,7 @@
       "black_sea",
       "central_black_sea",
       "crimea",
-      "new_region_274"
+      "kerch_strait"
     ],
     "world_x": 1147,
     "world_y": 395,
@@ -3906,7 +3907,7 @@
     "neighbors": [
       "bulgaria",
       "danube_serbia",
-      "new_region_268",
+      "western_black_sea",
       "nis",
       "oltenia",
       "vidin",
@@ -3945,7 +3946,7 @@
       "central_black_sea",
       "chrysopolis",
       "constantinople",
-      "new_region_270",
+      "bosphorus_approaches",
       "nicomedia",
       "sea_of_marmara",
       "thrace"
@@ -3982,7 +3983,7 @@
       "galicia_volhynia",
       "kiev",
       "moldova",
-      "new_region_269"
+      "northern_black_sea"
     ],
     "world_x": 1002,
     "world_y": 320,
@@ -4006,15 +4007,15 @@
     "buildings": null
   },
   {
-    "id": "new_region_269",
-    "name": "New Region 268",
-    "name_tr": "Yeni Bolge 268",
+    "id": "northern_black_sea",
+    "name": "Northern Black Sea",
+    "name_tr": "Kuzey Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "bessarabia",
       "moldova",
-      "new_region_268",
+      "western_black_sea",
       "northwestern_black_sea",
       "wallachia"
     ],
@@ -4040,9 +4041,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_268",
-    "name": "New Region 267",
-    "name_tr": "Yeni Bolge 267",
+    "id": "western_black_sea",
+    "name": "Western Black Sea",
+    "name_tr": "Batı Karadeniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -4051,8 +4052,8 @@
       "danube_wallacia",
       "dobruja",
       "moldova",
-      "new_region_269",
-      "new_region_270",
+      "northern_black_sea",
+      "bosphorus_approaches",
       "podolia",
       "wallachia"
     ],
@@ -4078,9 +4079,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_270",
-    "name": "New Region 269",
-    "name_tr": "Yeni Bolge 269",
+    "id": "bosphorus_approaches",
+    "name": "Bosphorus Approaches",
+    "name_tr": "Boğaz Yaklaşımı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -4089,7 +4090,7 @@
       "bosphorus",
       "bulgaria",
       "dobruja",
-      "new_region_268"
+      "western_black_sea"
     ],
     "world_x": 1051,
     "world_y": 403,
@@ -4123,7 +4124,7 @@
       "black_sea",
       "bosphorus",
       "chrysopolis",
-      "new_region_271",
+      "crimean_black_sea",
       "paphlagonia",
       "sinop"
     ],
@@ -4369,7 +4370,7 @@
       "latvia",
       "lithuania",
       "mazovia",
-      "new_region_273",
+      "upper_dnieper",
       "novgorod",
       "ukrainian_steppe"
     ],
@@ -4632,7 +4633,7 @@
       "caspian_open_2",
       "caspian_sea",
       "georgia",
-      "new_region_272",
+      "north_caucasus",
       "western_persia"
     ],
     "world_x": 1429,
@@ -4919,9 +4920,9 @@
       "belarus",
       "kiev",
       "moscow",
-      "new_region_266",
-      "new_region_267",
-      "new_region_273",
+      "upper_ukrainian_steppe",
+      "lower_ukrainian_steppe",
+      "upper_dnieper",
       "novgorod"
     ],
     "world_x": 1159,
@@ -4940,7 +4941,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 600,
+    "population": 456,
     "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
@@ -4950,9 +4951,9 @@
     ]
   },
   {
-    "id": "new_region_267",
-    "name": "New Region 267",
-    "name_tr": "Yeni Bolge 267",
+    "id": "lower_ukrainian_steppe",
+    "name": "Lower Ukrainian Steppe",
+    "name_tr": "Aşağı Ukrayna Bozkırı",
     "terrain": "plain",
     "owner_id": "golden_horde",
     "successor_faction_id": "golden_horde",
@@ -4960,8 +4961,8 @@
       "black_open_4",
       "crimea",
       "kiev",
-      "new_region_266",
-      "new_region_273",
+      "upper_ukrainian_steppe",
+      "upper_dnieper",
       "podolia",
       "sea_of_azov",
       "ukrainian_steppe"
@@ -4982,7 +4983,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 390,
+    "population": 434,
     "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
@@ -4992,18 +4993,18 @@
     ]
   },
   {
-    "id": "new_region_266",
-    "name": "New Region 266",
-    "name_tr": "Yeni Bolge 266",
+    "id": "upper_ukrainian_steppe",
+    "name": "Upper Ukrainian Steppe",
+    "name_tr": "Yukarı Ukrayna Bozkırı",
     "terrain": "plain",
     "owner_id": "golden_horde",
     "successor_faction_id": "golden_horde",
     "neighbors": [
       "black_open_4",
       "moscow",
-      "new_region_267",
-      "new_region_272",
-      "new_region_273",
+      "lower_ukrainian_steppe",
+      "north_caucasus",
+      "upper_dnieper",
       "sea_of_azov",
       "ukrainian_steppe"
     ],
@@ -5023,7 +5024,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 390,
+    "population": 600,
     "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
@@ -6129,7 +6130,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 650,
+    "population": 468,
     "rural_population": 423,
     "religion": "orthodox",
     "active_event_id": "",
@@ -6977,8 +6978,8 @@
       "tyrol",
       "venice"
     ],
-    "world_x": 698,
-    "world_y": 373,
+    "world_x": 697,
+    "world_y": 370,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7148,12 +7149,13 @@
     "owner_id": "venice",
     "neighbors": [
       "adriatic_sea_dalmatia",
-      "kvarner",
+      "bosnia",
       "knin",
+      "kvarner",
       "slovenia"
     ],
-    "world_x": 776,
-    "world_y": 386,
+    "world_x": 782,
+    "world_y": 385,
     "shape_id": "HRV",
     "is_sea": false,
     "is_locked": false,
@@ -7168,7 +7170,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 270,
+    "population": 277,
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
@@ -7276,7 +7278,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 391,
+    "population": 367,
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
@@ -7291,8 +7293,8 @@
     "neighbors": [
       "bosnia",
       "croatia",
-      "montenegro",
       "herzegovina",
+      "montenegro",
       "rascia",
       "serbia"
     ],
@@ -7312,7 +7314,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 25,
-    "population": 274,
+    "population": 284,
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
@@ -7348,7 +7350,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 25,
-    "population": 278,
+    "population": 300,
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
@@ -7505,8 +7507,8 @@
     "successor_faction_id": "bulgarian_empire",
     "neighbors": [
       "bulgaria",
-      "new_region_268",
-      "new_region_270",
+      "western_black_sea",
+      "bosphorus_approaches",
       "podolia",
       "wallachia"
     ],
@@ -7656,8 +7658,8 @@
       "black_open_4",
       "galicia_volhynia",
       "moldova",
-      "new_region_267",
-      "new_region_273",
+      "lower_ukrainian_steppe",
+      "upper_dnieper",
       "northwestern_black_sea",
       "podolia",
       "ukrainian_steppe"
@@ -7678,7 +7680,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 25,
-    "population": 380,
+    "population": 314,
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
@@ -7695,8 +7697,8 @@
       "dobruja",
       "kiev",
       "moldova",
-      "new_region_267",
-      "new_region_268"
+      "lower_ukrainian_steppe",
+      "western_black_sea"
     ],
     "world_x": 1052,
     "world_y": 368,
@@ -7714,7 +7716,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 25,
-    "population": 380,
+    "population": 336,
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
@@ -8103,7 +8105,7 @@
     "neighbors": [
       "dagestan",
       "moscow",
-      "new_region_272"
+      "north_caucasus"
     ],
     "world_x": 1523,
     "world_y": 146,
@@ -8121,16 +8123,16 @@
     "trade_capacity": 3,
     "satisfaction": 62,
     "tax_rate": 25,
-    "population": 320,
+    "population": 312,
     "rural_population": 208,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": null
   },
   {
-    "id": "new_region_272",
-    "name": "New Region 271",
-    "name_tr": "Yeni Bolge 271",
+    "id": "north_caucasus",
+    "name": "North Caucausus",
+    "name_tr": "Kuzey Kafkasya",
     "terrain": "forest",
     "owner_id": "russia",
     "neighbors": [
@@ -8140,8 +8142,8 @@
       "dagestan",
       "georgia",
       "moscow",
-      "new_region_266",
-      "new_region_274",
+      "upper_ukrainian_steppe",
+      "kerch_strait",
       "nizhny_novgorod",
       "sea_of_azov"
     ],
@@ -8176,7 +8178,7 @@
     "neighbors": [
       "caspian_open_2",
       "caspian_sea",
-      "new_region_272",
+      "north_caucasus",
       "nizhny_novgorod",
       "northern_persia"
     ],
@@ -9280,8 +9282,8 @@
       "candaroglu",
       "central_black_sea",
       "eretna",
-      "new_region_271",
-      "new_region_274",
+      "crimean_black_sea",
+      "kerch_strait",
       "sinop"
     ],
     "world_x": 1211,
@@ -9425,12 +9427,12 @@
       "black_sea",
       "crimea",
       "kiev",
-      "new_region_266",
-      "new_region_267",
-      "new_region_268",
-      "new_region_270",
-      "new_region_271",
-      "new_region_273",
+      "upper_ukrainian_steppe",
+      "lower_ukrainian_steppe",
+      "western_black_sea",
+      "bosphorus_approaches",
+      "crimean_black_sea",
+      "upper_dnieper",
       "podolia"
     ],
     "world_x": 1097,
@@ -9455,17 +9457,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_273",
-    "name": "New Region 272",
-    "name_tr": "Yeni Bolge 272",
+    "id": "upper_dnieper",
+    "name": "Upper Dnieper",
+    "name_tr": "Yukarı Dinyeper",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "belarus",
       "black_open_4",
       "kiev",
-      "new_region_266",
-      "new_region_267",
+      "upper_ukrainian_steppe",
+      "lower_ukrainian_steppe",
       "ukrainian_steppe"
     ],
     "world_x": 1088,
@@ -9499,8 +9501,8 @@
       "black_open_1",
       "eretna",
       "georgia",
-      "new_region_272",
-      "new_region_274",
+      "north_caucasus",
+      "kerch_strait",
       "trebizond"
     ],
     "world_x": 1279,
@@ -9668,7 +9670,7 @@
       "azerbaijan",
       "caspian_sea",
       "dagestan",
-      "new_region_272"
+      "north_caucasus"
     ],
     "world_x": 1485,
     "world_y": 410,
@@ -9768,10 +9770,10 @@
     "owner_id": "",
     "neighbors": [
       "crimea",
-      "new_region_266",
-      "new_region_267",
-      "new_region_272",
-      "new_region_274"
+      "upper_ukrainian_steppe",
+      "lower_ukrainian_steppe",
+      "north_caucasus",
+      "kerch_strait"
     ],
     "world_x": 1216,
     "world_y": 361,
@@ -9795,17 +9797,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_274",
-    "name": "New Region 273",
-    "name_tr": "Yeni Bolge 273",
+    "id": "kerch_strait",
+    "name": "Kerch Strait",
+    "name_tr": "Kerç Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "black_open_1",
       "black_sea_shore",
       "crimea",
-      "new_region_271",
-      "new_region_272",
+      "crimean_black_sea",
+      "north_caucasus",
       "sea_of_azov"
     ],
     "world_x": 1215,

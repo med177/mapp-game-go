@@ -370,18 +370,6 @@
     ]
   },
   {
-    "id": "army_edit_114",
-    "owner_id": "papal_states_f",
-    "region_id": "adriatic_sea",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 4
-      }
-    ]
-  },
-  {
     "id": "army_edit_47",
     "owner_id": "ottoman",
     "region_id": "bilecik_frontier",

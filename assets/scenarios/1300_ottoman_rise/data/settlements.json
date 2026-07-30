@@ -1377,7 +1377,7 @@
         "id": "hungary_esztergom",
         "name_tr": "Estergon",
         "x": 850,
-        "y": 328,
+        "y": 329,
         "type": "fortress",
         "population": 14
       },
@@ -1385,7 +1385,7 @@
         "id": "hungary_gyor",
         "name_tr": "Gyor",
         "x": 830,
-        "y": 329,
+        "y": 330,
         "type": "town",
         "population": 29
       },
@@ -1564,6 +1564,14 @@
         "y": 379,
         "type": "fortress",
         "population": 30
+      },
+      {
+        "id": "transylvania_main",
+        "name_tr": "Tamışvar",
+        "x": 900,
+        "y": 365,
+        "type": "city",
+        "population": 182
       }
     ]
   },
@@ -2192,6 +2200,14 @@
         "y": 171,
         "type": "town",
         "population": 53
+      },
+      {
+        "id": "nizhny_novgorod_murom",
+        "name_tr": "Murom",
+        "x": 1377,
+        "y": 202,
+        "type": "fortress",
+        "population": 8
       }
     ]
   },
@@ -2906,6 +2922,14 @@
         "y": 354,
         "type": "town",
         "population": 34
+      },
+      {
+        "id": "croatia_sisak",
+        "name_tr": "Sisak",
+        "x": 807,
+        "y": 372,
+        "type": "fortress",
+        "population": 17
       }
     ]
   },
@@ -2915,27 +2939,19 @@
       {
         "id": "bosnia_jajce",
         "name_tr": "Yayçe",
-        "x": 819,
-        "y": 394,
+        "x": 817,
+        "y": 393,
         "type": "fortress",
         "population": 32
       },
       {
         "id": "bosnia_main",
-        "name_tr": "Bosna Banlığı",
-        "x": 820,
+        "name_tr": "Banja Luka",
+        "x": 816,
         "y": 386,
         "type": "city",
         "is_center": true,
         "population": 128
-      },
-      {
-        "id": "bosnia_srebrenik",
-        "name_tr": "Srebrenik",
-        "x": 848,
-        "y": 383,
-        "type": "fortress",
-        "population": 32
       }
     ]
   },
@@ -3166,7 +3182,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_271",
+    "region_id": "crimean_black_sea",
     "settlements": null
   },
   {
@@ -3194,15 +3210,15 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_269",
+    "region_id": "northern_black_sea",
     "settlements": null
   },
   {
-    "region_id": "new_region_268",
+    "region_id": "western_black_sea",
     "settlements": null
   },
   {
-    "region_id": "new_region_270",
+    "region_id": "bosphorus_approaches",
     "settlements": null
   },
   {
@@ -3733,39 +3749,75 @@
     "region_id": "ukrainian_steppe",
     "settlements": [
       {
-        "id": "ukraine_main",
-        "name_tr": "Ukrayna Bozkırı",
-        "x": 1202,
-        "y": 325,
-        "type": "city",
+        "id": "kiev_pereyaslav",
+        "name_tr": "Pereyaslav",
+        "x": 1112,
+        "y": 285,
+        "type": "fortress",
         "is_center": true,
-        "population": 120
+        "population": 13
+      },
+      {
+        "id": "kiev_chernihiv",
+        "name_tr": "Çernihiv",
+        "x": 1104,
+        "y": 258,
+        "type": "city",
+        "population": 53
+      }
+    ]
+  },
+  {
+    "region_id": "lower_ukrainian_steppe",
+    "settlements": [
+      {
+        "id": "ukrainian_steppe_kherson",
+        "name_tr": "Herson",
+        "x": 1132,
+        "y": 345,
+        "type": "town",
+        "is_center": true,
+        "population": 16
+      },
+      {
+        "id": "ukrainian_steppe_ochakiv",
+        "name_tr": "Özi",
+        "x": 1110,
+        "y": 346,
+        "type": "port",
+        "population": 28
+      }
+    ]
+  },
+  {
+    "region_id": "upper_ukrainian_steppe",
+    "settlements": [
+      {
+        "id": "ukrainian_steppe_poltava",
+        "name_tr": "Poltava",
+        "x": 1165,
+        "y": 295,
+        "type": "town",
+        "population": 60
       },
       {
         "id": "ukrainian_steppe_bakhmut",
         "name_tr": "Bahmut",
-        "x": 1244,
+        "x": 1245,
         "y": 307,
         "type": "fortress",
         "population": 30
       },
       {
-        "id": "ukrainian_steppe_poltava",
-        "name_tr": "Poltava",
-        "x": 1164,
-        "y": 294,
-        "type": "town",
-        "population": 60
+        "id": "ukraine_main",
+        "name_tr": "Ukrayna Bozkırı",
+        "x": 1202,
+        "y": 326,
+        "type": "city",
+        "is_center": true,
+        "population": 120
       }
     ]
-  },
-  {
-    "region_id": "new_region_267",
-    "settlements": null
-  },
-  {
-    "region_id": "new_region_266",
-    "settlements": null
   },
   {
     "region_id": "konigsberg",
@@ -4711,20 +4763,12 @@
     "region_id": "transylvania",
     "settlements": [
       {
-        "id": "transylvania_main",
-        "name_tr": "Tamışvar",
-        "x": 899,
-        "y": 364,
-        "type": "city",
-        "is_center": true,
-        "population": 182
-      },
-      {
         "id": "alfold_main",
         "name_tr": "Kaloşvar",
         "x": 952,
         "y": 344,
         "type": "fortress",
+        "is_center": true,
         "population": 45
       }
     ]
@@ -5692,6 +5736,14 @@
         "type": "port",
         "is_center": true,
         "population": 0
+      },
+      {
+        "id": "croatia_karlovac",
+        "name_tr": "Karlovac",
+        "x": 788,
+        "y": 380,
+        "type": "fortress",
+        "population": 7
       }
     ]
   },
@@ -5759,22 +5811,6 @@
         "population": 28
       },
       {
-        "id": "croatia_karlovac",
-        "name_tr": "Karlovac",
-        "x": 788,
-        "y": 380,
-        "type": "fortress",
-        "population": 7
-      },
-      {
-        "id": "croatia_sisak",
-        "name_tr": "Sisak",
-        "x": 807,
-        "y": 372,
-        "type": "fortress",
-        "population": 17
-      },
-      {
         "id": "croatia_zagreb",
         "name_tr": "Zagreb",
         "x": 800,
@@ -5806,12 +5842,12 @@
         "population": 44
       },
       {
-        "id": "bosnia_mostar",
-        "name_tr": "Mostar",
-        "x": 832,
-        "y": 412,
-        "type": "town",
-        "population": 22
+        "id": "bosnia_srebrenik",
+        "name_tr": "Srebrenik",
+        "x": 848,
+        "y": 383,
+        "type": "fortress",
+        "population": 32
       }
     ]
   },
@@ -5822,7 +5858,7 @@
         "id": "herzegovina_trebinje",
         "name_tr": "Trebinye",
         "x": 833,
-        "y": 410,
+        "y": 409,
         "type": "fortress",
         "population": 24
       },
@@ -5832,8 +5868,16 @@
         "x": 839,
         "y": 422,
         "type": "city",
-        "is_center": true,
         "population": 46
+      },
+      {
+        "id": "bosnia_mostar",
+        "name_tr": "Mostar",
+        "x": 832,
+        "y": 412,
+        "type": "town",
+        "is_center": true,
+        "population": 22
       }
     ]
   },
@@ -6142,24 +6186,7 @@
         "x": 1084,
         "y": 291,
         "type": "town",
-        "is_center": true,
         "population": 28
-      },
-      {
-        "id": "kiev_chernihiv",
-        "name_tr": "Çernihiv",
-        "x": 1104,
-        "y": 257,
-        "type": "city",
-        "population": 53
-      },
-      {
-        "id": "kiev_pereyaslav",
-        "name_tr": "Pereyaslav",
-        "x": 1110,
-        "y": 285,
-        "type": "fortress",
-        "population": 13
       },
       {
         "id": "kiev_podil",
@@ -6175,6 +6202,7 @@
         "x": 1086,
         "y": 276,
         "type": "fortress",
+        "is_center": true,
         "population": 13
       }
     ]
@@ -6183,29 +6211,13 @@
     "region_id": "podolia",
     "settlements": [
       {
-        "id": "ukrainian_steppe_ochakiv",
-        "name_tr": "Özi",
-        "x": 1109,
-        "y": 347,
-        "type": "port",
-        "is_center": true,
-        "population": 28
-      },
-      {
         "id": "kiev_main",
         "name_tr": "Odessa",
         "x": 1089,
         "y": 353,
         "type": "city",
+        "is_center": true,
         "population": 33
-      },
-      {
-        "id": "ukrainian_steppe_kherson",
-        "name_tr": "Herson",
-        "x": 1132,
-        "y": 345,
-        "type": "town",
-        "population": 16
       },
       {
         "id": "bessarabia_ismail",
@@ -6666,14 +6678,6 @@
         "population": 32
       },
       {
-        "id": "nizhny_novgorod_murom",
-        "name_tr": "Murom",
-        "x": 1376,
-        "y": 202,
-        "type": "fortress",
-        "population": 8
-      },
-      {
         "id": "nizhny_novgorod_settlement_6",
         "name_tr": "Samara",
         "x": 1500,
@@ -6684,7 +6688,7 @@
     ]
   },
   {
-    "region_id": "new_region_272",
+    "region_id": "north_caucasus",
     "settlements": [
       {
         "id": "new_region_272_settlement_1",
@@ -6692,15 +6696,15 @@
         "x": 1438,
         "y": 356,
         "type": "city",
-        "is_center": true,
         "population": 0
       },
       {
         "id": "new_region_272_settlement_2",
         "name_tr": "Azak",
-        "x": 1265,
+        "x": 1266,
         "y": 342,
         "type": "fortress",
+        "is_center": true,
         "population": 0
       },
       {
@@ -6944,7 +6948,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_273",
+    "region_id": "upper_dnieper",
     "settlements": null
   },
   {
@@ -6984,7 +6988,7 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_274",
+    "region_id": "kerch_strait",
     "settlements": null
   },
   {
