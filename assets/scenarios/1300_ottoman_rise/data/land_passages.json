@@ -103,5 +103,35 @@
       374,
       192
     ]
+  },
+  {
+    "from": "vidin",
+    "to": "oltenia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      947,
+      404
+    ],
+    "end": [
+      947,
+      400
+    ]
+  },
+  {
+    "from": "dobruja",
+    "to": "podolia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1049,
+      379
+    ],
+    "end": [
+      1049,
+      375
+    ]
   }
 ]

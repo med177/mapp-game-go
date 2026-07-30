@@ -3166,6 +3166,10 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_271",
+    "settlements": null
+  },
+  {
     "region_id": "sea_of_marmara",
     "settlements": null
   },
@@ -3187,6 +3191,18 @@
   },
   {
     "region_id": "northwestern_black_sea",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_269",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_268",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_270",
     "settlements": null
   },
   {
@@ -6668,6 +6684,36 @@
     ]
   },
   {
+    "region_id": "new_region_272",
+    "settlements": [
+      {
+        "id": "new_region_272_settlement_1",
+        "name_tr": "Astrahan",
+        "x": 1438,
+        "y": 356,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "new_region_272_settlement_2",
+        "name_tr": "Azak",
+        "x": 1265,
+        "y": 342,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "new_region_272_settlement_3",
+        "name_tr": "Çerkezya",
+        "x": 1269,
+        "y": 404,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "dagestan",
     "settlements": [
       {
@@ -6675,7 +6721,7 @@
         "name_tr": "Aktav",
         "x": 1535,
         "y": 468,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 42
       },
@@ -6898,6 +6944,10 @@
     "settlements": null
   },
   {
+    "region_id": "new_region_273",
+    "settlements": null
+  },
+  {
     "region_id": "black_sea_shore",
     "settlements": null
   },
@@ -6931,6 +6981,10 @@
   },
   {
     "region_id": "sea_of_azov",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_274",
     "settlements": null
   },
   {
