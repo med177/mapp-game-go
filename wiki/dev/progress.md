@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-01: AI savaş ilanı kararı artık yalnız hedef devletin gücüne bakmıyor.
+  Hedefin vassalları, dış müttefikleri ve müttefik vassalları savunma koalisyonu
+  gücüne dahil ediliyor; müttefik ordularının hedef kara bölgelerine mesafesi
+  katkıyı `%100 / %75 / %50 / %25 / %10` kademeleriyle ağırlıklandırıyor.
+  Yakın güçlü koalisyon savaş ilanını engellerken uzak müttefik tam cephe gücü
+  sayılmıyor. Regression: `TestAIWarAssessmentIncludesAlliedAndVassalMilitaryPower`,
+  `TestAIWarDecisionUsesAlliedDistanceAndCoalitionPower`; doğrulama:
+  `go test ./internal/ai ./internal/diplomacy -count=1`.
+
+- 2026-08-01: Savaş açmayı düşünen AI’nin saldıran koalisyon hesabı genişletildi.
+  `AssessWarCall().AutoJoin` ile kesin katılacak dış müttefikler ve onların
+  vassalları, hedef kara bölgelerine uzaklıklarına göre AI’nin etkin saldırı
+  gücüne ekleniyor; oyuncunun bekleyen savaş katılımı kesin destek sayılmıyor.
+  Regression: `TestAIWarAssessmentIncludesCertainAttackingAlly`,
+  `TestAIWarDecisionUsesCertainAttackingAllyDistance`.
+
 - 2026-08-01: `settlements.json` dışa aktarımı yalnızca kara region kayıtlarını yazacak
   şekilde düzenlendi; deniz region'larının 83 boş settlement satırı temizlendi.
   Edit Mode settlement ekleme ve taşıma yolları deniz region'larını filtreliyor.
@@ -467,6 +483,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-07-25: Merchant filo footer'ındaki görsel sıkışma düzeltildi. `ROTA ATA` butonu artık footer alt sınırına yapışmıyor; 22 px yüksekliğinde, üst-alt inset'li çiziliyor ve aktif rota metni butonun gerçek bitişinden sonra başlıyor. Regression: `TestMerchantRouteButtonHasFooterInset`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-25: Merchant rota modalındaki görsel örtüşme düzeltildi. İki satırlı seçenekler 48 px satır yüksekliği ve daha güvenli iç boşlukla çiziliyor; modal karartması güçlendirilerek alttaki ordu panelinin `ROTA ATA` butonu ve metinleri arka plana alınıyor. Regression: `TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-01: Merchant rota modalındaki iki satırlı seçenek alanları 58 px satır yüksekliğine çıkarıldı; rota adı ve mal/gelir satırı artık iç kutuya taşmadan sığması için gerçek genişliğe göre kırpılıyor. Modal çerçevesi, başlık/alt metinler, rota satırları ve kapatma düğmesi ortak UI component/compose yüzeylerine taşındı; kapatma düğmesi diğer panellerdeki `IconClose` + `tinyButtonStyle` sözleşmesini kullanıyor. Regression: `TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance`, `TestMerchantRoutePanelUsesSharedCloseIconButton`, `TestMerchantRoutePanelRowGeometryMatchesExpandedHeight`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-01: Donanma görev modalındaki iki satırlı seçenek alanları 62 px satır yüksekliğine çıkarıldı; görev adı/açıklaması gerçek satır genişliğine göre taşmasız kırpılıyor. Panel çerçevesi, başlık/alt metinler, görev satırları ve kapatma düğmesi ortak UI component/compose yüzeylerine taşındı; kapatma düğmesi `IconClose` + `tinyButtonStyle` kullanıyor. Regression: `TestNavalMissionPanelTwoLineRowsHaveVerticalClearance`, `TestNavalMissionPanelUsesSharedCloseIconButton`, `TestNavalMissionPanelRowGeometryMatchesExpandedHeight`; doğrulama: `go test ./internal/render`.
 
 - 2026-07-25: Merchant rota filtresindeki yapısal boşluk düzeltildi. Tarihsel ticaret merkezi olmayan aktif anlaşmalar, tarafların sahip olduğu bağlı limanlar ve deniz bağlantısı üzerinden `ROTA ATA` panelinde listeleniyor; `MerchantTradeRoutePortPairs()` ortak uç modeliyle oyuncunun kendi aktif anlaşmaları `Ticaret` haritasında turuncu renkli kesikli liman-liman koridor olarak çiziliyor. Regression: `TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters`; doğrulama: `go test ./internal/state ./internal/render`.
 

@@ -72,6 +72,17 @@ The development environment is WSL (Ubuntu) on Windows.
 3. Separation of Concerns: Strictly separate Game State (business logic, map data, troop movements) from the View (rendering logic). The map data structure (grids, graphs, regions) must be independent of the Ebitengine drawing operations.
 4. Environment Awareness: Code must compile and run flawlessly within WSL (Ubuntu). Avoid Windows-specific syscalls or paths unless guarded by Go build tags.
 
+5. Ortak UI Komponent Seti (ZORUNLU): Yeni veya değiştirilen tüm UI'larda;
+   panel, sayfa, modal, overlay, buton, kapatma düğmesi, satır, etiket ve
+   etkileşimli liste gibi öğeler mevcut `internal/ui` komponent seti ve
+   `internal/render` UI bridge/theme helper'ları kullanılarak yapılmalıdır.
+   Aynı görünümü manuel `vector`/`DrawText` çizimleriyle yeniden oluşturma.
+   Mevcut komponent ihtiyacı karşılamıyorsa önce ortak komponenti veya helper'ı
+   genişlet; tek kullanımlık özel UI çizimi ekleme.
+   Çizim, geometri, hit-test, cursor ve input dispatch aynı ortak komponent ve
+   rect/helper sözleşmesinden türetilmelidir. Özellikle panel kapatma düğmeleri
+   diğer panellerle aynı `IconClose`/ortak buton stilini kullanmalıdır.
+
 # Output Format & Behavior
 - When writing code, provide context-aware, production-ready Go snippets.
 - Briefly explain *why* a specific data structure (e.g., 1D array vs. 2D slice for spatial maps, spatial hashing for collision) was chosen for performance.

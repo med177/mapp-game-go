@@ -33,6 +33,16 @@ ordu rol dağılımını ve lojistik/yedek kuvvet bloklanma nedenlerini tek runt
 çıktısında toplar. Normal save state'ine yazılmaz; debug paneli ve senaryo tempo raporu için
 gerçek AI karar context'inin aynısını kullanır.
 
+Savaş ilanı fırsatı yalnız hedef devletin askerî gücüyle değerlendirilmez.
+`internal/ai/war_strategy.go:aiWarCoalitionAssessment`, hedefin otomatik katılan
+vassallarını ve hedefin dış müttefiklerini savunma koalisyonuna ekler. Saldıran
+tarafta ise yalnız `AssessWarCall().AutoJoin` sonucu kesin olan dış müttefikler
+ve onların vassalları hesaba katılır; oyuncuya gönderilen bekleyen katılım teklifi
+kesin destek sayılmaz. Müttefik ve vassal ordularının katkısı, ordunun hedefin
+kara bölgelerine komşuluk grafiğindeki mesafesine göre `%100 / %75 / %50 / %25 / %10`
+ağırlıklandırılır. Ağırlıklı savunma koalisyonu gücü saldırı eşiğini yükseltir;
+kesin saldıran müttefik gücü ise saldırı gücünü artırır.
+
 Geliştirme modunda bu snapshot'lar `quicksave.debug.json` veya
 `autosave.debug.json` sidecar'ındaki `state.ai_diagnostics` alanına eklenir.
 Oyun içinde aynı veri `F3` ile açılan modalda gösterilir; `TAB` devletler arasında,

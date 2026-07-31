@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 )
 
 func TestMerchantRouteButtonOnlyTargetsPlayerMerchantFleet(t *testing.T) {
@@ -74,12 +75,34 @@ func TestMerchantRoutePanelStaysInsideViewport(t *testing.T) {
 }
 
 func TestMerchantRoutePanelTwoLineRowsHaveVerticalClearance(t *testing.T) {
-	if merchantRoutePanelRowH < 46 {
+	if merchantRoutePanelRowH < 56 {
 		t.Fatalf("iki satırlı rota seçenekleri için satır yüksekliği yetersiz: %.1f", merchantRoutePanelRowH)
 	}
 
 	rowRectHeight := merchantRoutePanelRowH - 10
-	if rowRectHeight < 38 {
+	if rowRectHeight < 46 {
 		t.Fatalf("rota satırının iç kutusu iki satırlı metne sığmıyor: %.1f", rowRectHeight)
+	}
+}
+
+func TestMerchantRoutePanelUsesSharedCloseIconButton(t *testing.T) {
+	layout := merchantRoutePanelLayoutFor(1)
+	if layout.close.Label != "" || layout.close.Icon != gameui.IconClose {
+		t.Fatalf("merchant rota paneli ortak kapatma ikonunu kullanmalı: %+v", layout.close)
+	}
+	if layout.close.IconSize != 13 {
+		t.Fatalf("merchant rota kapatma ikonu diğer panellerdeki boyutu kullanmalı: %.1f", layout.close.IconSize)
+	}
+}
+
+func TestMerchantRoutePanelRowGeometryMatchesExpandedHeight(t *testing.T) {
+	layout := merchantRoutePanelLayoutFor(2)
+	first := merchantRoutePanelRowRect(layout, 0)
+	second := merchantRoutePanelRowRect(layout, 1)
+	if first.H != float64(merchantRoutePanelRowH-10) {
+		t.Fatalf("ilk rota satırı yüksekliği ortak row geometry ile eşleşmiyor: %+v", first)
+	}
+	if second.Y-first.Y != float64(merchantRoutePanelRowH) {
+		t.Fatalf("rota satırları genişletilmiş row yüksekliğini kullanmıyor: first=%+v second=%+v", first, second)
 	}
 }

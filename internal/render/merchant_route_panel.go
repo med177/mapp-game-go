@@ -10,13 +10,12 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
 	merchantRoutePanelW           = float32(660)
 	merchantRoutePanelHeaderH     = float32(66)
-	merchantRoutePanelRowH        = float32(48)
+	merchantRoutePanelRowH        = float32(58)
 	merchantRoutePanelFooterH     = float32(42)
 	merchantRoutePanelVisibleRows = 7
 	merchantRouteFooterButtonH    = float32(20)
@@ -40,7 +39,8 @@ func merchantRoutePanelLayoutFor(rowCount int) merchantRoutePanelLayout {
 	panelH := merchantRoutePanelHeaderH + float32(visibleRows)*merchantRoutePanelRowH + merchantRoutePanelFooterH
 	panelX := float32(ScreenWidth)/2 - merchantRoutePanelW/2
 	panelY := float32(ScreenHeight)/2 - panelH/2
-	close := gameui.NewButton(float64(panelX+merchantRoutePanelW-42), float64(panelY+10), 28, 28, "×")
+	close := gameui.NewButton(float64(panelX+merchantRoutePanelW-42), float64(panelY+10), 28, 28, "").WithIcon(gameui.IconClose)
+	close.IconSize = 13
 	return merchantRoutePanelLayout{
 		panelX: panelX, panelY: panelY, panelW: merchantRoutePanelW, panelH: panelH,
 		rowX: panelX + 18, rowY: panelY + merchantRoutePanelHeaderH,
@@ -58,6 +58,18 @@ func merchantRoutePanelRowCount(r *Renderer) int {
 func merchantRoutePanelRect(r *Renderer) gameui.Rect {
 	layout := merchantRoutePanelLayoutFor(merchantRoutePanelRowCount(r))
 	return gameui.Rect{X: float64(layout.panelX), Y: float64(layout.panelY), W: float64(layout.panelW), H: float64(layout.panelH)}
+}
+
+func merchantRoutePanelRowRect(layout merchantRoutePanelLayout, visibleRow int) gameui.Rect {
+	y := layout.rowY + float32(visibleRow)*merchantRoutePanelRowH
+	return gameui.Rect{
+		X: float64(layout.rowX), Y: float64(y + 5),
+		W: float64(layout.rowW), H: float64(merchantRoutePanelRowH - 10),
+	}
+}
+
+func merchantRoutePanelRowButton(rect gameui.Rect) gameui.Button {
+	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "")
 }
 
 func merchantRouteAssignmentButtonRect(layout armyPanelLayout) gameui.Rect {
@@ -198,16 +210,15 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 	layout := merchantRoutePanelLayoutFor(merchantRoutePanelRowCount(r))
 	// Modal açıkken alttaki ordu panelinin butonları ve metinleri okunabilir
 	// kalmamalı; input zaten bu katmanda tüketiliyor.
-	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{0, 0, 0, 205}, false)
-	vector.FillRect(screen, layout.panelX, layout.panelY, layout.panelW, layout.panelH, panelBg, false)
-	drawPanelBorder(screen, layout.panelX, layout.panelY, layout.panelW, layout.panelH)
-	vector.FillRect(screen, layout.panelX, layout.panelY, layout.panelW, 3, panelBorder, false)
+	drawUIOverlay(screen, color.RGBA{0, 0, 0, 205})
+	drawUIPanelFrame(screen, gameui.Rect{
+		X: float64(layout.panelX), Y: float64(layout.panelY),
+		W: float64(layout.panelW), H: float64(layout.panelH),
+	}, panelBg, panelBorder, 1.5, 3)
 
-	DrawText(screen, "Merchant Ticaret Rotası", float64(layout.panelX+20), float64(layout.panelY+22), FaceLarge, ColorGold)
-	DrawText(screen, "Seçili filonun görev rotasını belirleyin.", float64(layout.panelX+20), float64(layout.panelY+47), FaceSmall, ColorGray)
-	gameui.DrawButton(screen, layout.close, gameui.ButtonStyle{
-		BG: panelBg, Border: panelBorder, Text: ColorWhite, BorderWidth: 1,
-	}, sharedTextRenderer{})
+	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 22), W: float64(layout.panelW - 80)}, "Merchant Ticaret Rotası", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 47), W: float64(layout.panelW - 80)}, "Seçili filonun görev rotasını belirleyin.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUIButtonWidget(screen, layout.close, tinyButtonStyle)
 
 	rowCount := merchantRoutePanelRowCount(r)
 	maxScroll := rowCount - merchantRoutePanelVisibleRows
@@ -223,18 +234,19 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		end = rowCount
 	}
 	for row := start; row < end; row++ {
-		y := layout.rowY + float32(row-start)*merchantRoutePanelRowH
-		rowRect := gameui.Rect{X: float64(layout.rowX), Y: float64(y + 5), W: float64(layout.rowW), H: float64(merchantRoutePanelRowH - 10)}
+		rowRect := merchantRoutePanelRowRect(layout, row-start)
 		bg := color.RGBA{28, 22, 14, 220}
 		if row%2 == 0 {
 			bg = color.RGBA{38, 29, 16, 230}
 		}
-		vector.FillRect(screen, float32(rowRect.X), float32(rowRect.Y), float32(rowRect.W), float32(rowRect.H), bg, false)
-		vector.StrokeRect(screen, float32(rowRect.X), float32(rowRect.Y), float32(rowRect.W), float32(rowRect.H), 1, color.RGBA{92, 70, 34, 180}, false)
+		rowButton := merchantRoutePanelRowButton(rowRect)
+		gameui.DrawButton(screen, rowButton, gameui.ButtonStyle{
+			BG: bg, Border: color.RGBA{92, 70, 34, 180}, Text: ColorWhite, BorderWidth: 1,
+		}, sharedTextRenderer{})
 
 		if row == 0 {
-			DrawText(screen, "Görev yok", rowRect.X+14, rowRect.Y+8, FaceMed, color.RGBA{215, 180, 120, 255})
-			DrawText(screen, "Bu filonun merchant rotasını kaldır", rowRect.X+180, rowRect.Y+11, FaceSmall, ColorGray)
+			drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 8, W: 170}, "Görev yok", color.RGBA{215, 180, 120, 255}, gameui.TextMedium, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: rowRect.X + 180, Y: rowRect.Y + 11, W: rowRect.W - 194}, "Bu filonun merchant rotasını kaldır", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 			continue
 		}
 		route := r.merchantRouteOptions[row-1]
@@ -251,18 +263,24 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		if active {
 			textColor = color.RGBA{170, 235, 170, 255}
 		}
-		DrawText(screen, merchantRouteDisplayName(r.gs, route), rowRect.X+14, rowRect.Y+7, FaceMed, textColor)
-		DrawText(screen, fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), rowRect.X+14, rowRect.Y+25, FaceSmall, ColorGray)
+		nameW := rowRect.W - 28
 		if active {
-			DrawText(screen, "AKTİF", rowRect.X+rowRect.W-62, rowRect.Y+12, FaceSmall, color.RGBA{170, 235, 170, 255})
+			nameW -= 70
+		}
+		name := trimTextToWidth(merchantRouteDisplayName(r.gs, route), FaceMed, nameW)
+		detail := trimTextToWidth(fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), FaceSmall, rowRect.W-28)
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 7, W: nameW}, name, textColor, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 27, W: rowRect.W - 28}, detail, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		if active {
+			drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 62, Y: rowRect.Y + 12, W: 48}, "AKTİF", color.RGBA{170, 235, 170, 255}, gameui.TextSmall, gameui.TextAlignEnd)
 		}
 	}
 
 	footerY := layout.panelY + layout.panelH - merchantRoutePanelFooterH
 	if rowCount > merchantRoutePanelVisibleRows {
-		DrawText(screen, fmt.Sprintf("Rotalar: %d-%d/%d", start+1, end, rowCount), float64(layout.panelX+18), float64(footerY+15), FaceSmall, ColorGray)
+		drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 18), Y: float64(footerY + 15), W: 180}, fmt.Sprintf("Rotalar: %d-%d/%d", start+1, end, rowCount), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	}
-	DrawText(screen, "ESC: kapat", float64(layout.panelX+layout.panelW-90), float64(footerY+15), FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + layout.panelW - 120), Y: float64(footerY + 15), W: 102}, "ESC: kapat", ColorGray, gameui.TextSmall, gameui.TextAlignEnd)
 }
 
 func (r *Renderer) handleMerchantRoutePanelInput() InputAction {
@@ -297,8 +315,8 @@ func (r *Renderer) handleMerchantRoutePanelInput() InputAction {
 		r.closeMerchantRoutePanel()
 		return InputAction{}
 	}
-	row := int((fy - float64(layout.rowY+4)) / float64(merchantRoutePanelRowH))
-	if fx < float64(layout.rowX) || fx > float64(layout.rowX+layout.rowW) || row < 0 || row >= merchantRoutePanelVisibleRows {
+	row := int((fy - float64(layout.rowY+5)) / float64(merchantRoutePanelRowH))
+	if row < 0 || row >= merchantRoutePanelVisibleRows || !merchantRoutePanelRowRect(layout, row).Hit(fx, fy) {
 		return InputAction{}
 	}
 	row += r.merchantRouteScroll

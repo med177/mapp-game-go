@@ -32,6 +32,22 @@ aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu gö
 harfi rozeti, panel footer'ı ise görev ve hedef bölge metni gösterir; görev
 temizleme ve yeniden atama aynı input önceliğini kullanır.
 
+Merchant rota atama modalı `internal/render/merchant_route_panel.go` içinde
+ortak UI compose/widget yüzeylerini kullanır: panel frame ve overlay için
+`drawUIPanelFrame`/`drawUIOverlay`, kapatma için `IconClose` taşıyan ortak
+`Button` ve `tinyButtonStyle`, rota satırları için de aynı `Button` bileşeni
+ile `Label` primitive'leri kullanılır. İki satırlı rota metinlerinin iç kutusu
+58 px satır yüksekliğine göre hesaplanır ve metin genişliği satırın gerçek
+alanına kırpılır; satır çizimi ve görünür satır hit-test'i ortak
+`merchantRoutePanelRowRect()` geometrisini izler.
+
+Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
+`tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
+çerçevesini ve overlay'i, `Button` + `Label` primitive'leri ise görev satırlarını
+oluşturur. Görev satırları 62 px yüksekliğindedir; uzun görev adı/açıklaması
+satır genişliğine kırpılır ve çizim ile görünür satır hit-test'i
+`navalMissionPanelRowRect()` geometrisini paylaşır (`internal/render/naval_mission_panel.go`).
+
 Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
 `armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
 bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak

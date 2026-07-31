@@ -172,6 +172,17 @@ Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon ak
 - Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
 - Resolve tamamlanınca render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir.
 
+AI savaş ilanı öncesinde iki tarafın koalisyon gücünü projekte eder. Hedefin
+vassalları, hedefin dış müttefikleri ve bu müttefiklerin vassalları savunma
+tarafına eklenir. Saldıran AI tarafında yalnız `AssessWarCall().AutoJoin` ile
+kesin katılacak dış müttefikler ve onların vassalları saldırı gücüne eklenir;
+oyuncunun bekleyen savaş katılım teklifi kesin destek olarak sayılmaz.
+Müttefik ordularının hedef kara bölgelerine rota mesafesi katkıyı azaltır;
+yakın müttefik gücü minimum saldırı eşiğine veya saldırı gücüne tam ağırlıkla,
+uzak kuvvet ise daha düşük ağırlıkla girer. Bu hesap `AI` karar katmanında
+`internal/ai/war_strategy.go:aiWarCoalitionAssessment` ile yapılır; savaş
+çözümündeki koalisyon katılımı ve vassal otomatik katılım kuralları değişmez.
+
 Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gösterir:
 
 - `Savaşta` ve `İttifaklar` listeleri fraksiyonun tüm aktif relation kayıtlarından üretilir.
