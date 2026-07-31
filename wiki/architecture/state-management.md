@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -341,7 +341,7 @@ Normal (`2`) olarak düzeltir. Yeni oyun reset'i ise artık boş/önceki `GameSt
 değil ayarlar ekranındaki `renderer.CurrentSettings.Difficulty` değerini kullanır; böylece
 oyuncu zorluk seçimi ilk turda AI politikasına gerçekten ulaşır.
 
-`Game` katmanında ayrıca serialize edilmeyen bir `pendingConquestDecisions` kuyruğu vardır. Bu runtime kuyruk, oyuncu savaşta bir devletin son kara toprağını düşürdüğünde battle report ile nihai ilhak/vassallık kararını birbirinden ayırmak için kullanılır; `SuccessorFactionID` taşıyan her düşman kara fethinde aynı kuyruk üçlü ardıl kararını (`İlhak Et`, `Serbest Bırak`, `Vassal Yap`) taşır. Save/load veya yeni oyun başlangıcında temizlenir. Ardıl kararları `internal/game/conquest_decision.go`, renderer modalı ise `internal/render/renderer_dialogs.go` içinde tutulur.
+`Game` katmanında ayrıca serialize edilmeyen bir `pendingConquestDecisions` kuyruğu vardır. Bu runtime kuyruk, oyuncu savaşta bir devletin son kara toprağını düşürdüğünde battle report ile nihai ilhak/vassallık kararını birbirinden ayırmak için kullanılır. `SuccessorFactionID` taşıyan fetihlerde yalnız `GameState.CanRestoreSuccessorAtRegion()` true ise üçlü ardıl kararını (`İlhak Et`, `Serbest Bırak`, `Vassal Yap`) taşır; aktif ardıl devlet metadata'sı doğrudan ilhaka gider. Save/load veya yeni oyun başlangıcında temizlenir. Ardıl kararları `internal/game/conquest_decision.go`, renderer modalı ise `internal/render/renderer_dialogs.go` içinde tutulur.
 
 Kayıt slotları: `autosave`, `quicksave`, `slot1`, `slot2`, `slot3`. Oyun içinde `ActionSave` (Ctrl+S/S) `quicksave` slotuna yazar; `ActionEndTurn` ve araştırma onayından gelen `ActionConfirmEndTurn` AI turuna geçmeden hemen önce `autosave` slotuna yazar. Ana menüde `Devam Et`, `autosave` ile `quicksave` arasından en yeni olanı açar.
 

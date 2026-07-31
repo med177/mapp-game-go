@@ -46,6 +46,11 @@ func (g *Game) queueConquestDecision(attackerID faction.FactionID, targetRegion 
 	}
 	defenderID := faction.FactionID(targetRegion.OwnerID)
 	successorID := faction.FactionID(targetRegion.SuccessorFactionID)
+	if successorID != "" && !g.gs.CanRestoreSuccessorAtRegion(targetRegion) {
+		// Ardıl devlet hâlâ oyundaysa veya geçersiz bir state taşıyorsa,
+		// genel son-toprak vassallık paneline düşmeden bölge ilhak edilir.
+		return false
+	}
 	if g.shouldOfferSuccessorDecision(attackerID, defenderID, successorID, targetRegion) {
 		g.pendingConquestDecisions = append(g.pendingConquestDecisions, pendingConquestDecision{
 			RegionID:           targetRegion.ID,
@@ -79,7 +84,7 @@ func (g *Game) shouldOfferSuccessorDecision(attackerID, defenderID, successorID 
 	if g.gs.PlayerFactionID != attackerID || targetRegion.IsSea || targetRegion.OwnerID != string(defenderID) || attackerID == successorID {
 		return false
 	}
-	if g.gs.Factions[successorID] == nil || g.gs.Factions[successorID].IsEliminated && len(g.gs.LandRegionsOwnedBy(successorID)) > 0 {
+	if !g.gs.CanRestoreSuccessorAtRegion(targetRegion) {
 		return false
 	}
 	return true
@@ -151,6 +156,12 @@ func (g *Game) resolvePendingSuccessorDecision(outcome successorDecisionOutcome)
 		if g.renderer != nil {
 			g.renderer.ShowCombatResult("Ardıl devlet kararı uygulanamadı.")
 		}
+		g.showPendingConquestDecision(false)
+		return
+	}
+	if !g.gs.CanRestoreSuccessorAtRegion(region) {
+		collapse := g.applyConquestWithNavalEviction(region, string(decision.AttackerFactionID))
+		g.finishSuccessorDecision(region, "İlhak edildi.", collapse)
 		g.showPendingConquestDecision(false)
 		return
 	}

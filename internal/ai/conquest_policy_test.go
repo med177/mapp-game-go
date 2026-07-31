@@ -67,6 +67,19 @@ func TestTryResolvePostWarVassalizationKeepsStrategicRegionForAnnexation(t *test
 	}
 }
 
+func TestTryResolvePostWarVassalizationRejectsActiveSuccessorMetadata(t *testing.T) {
+	gs := conquestPolicyTestState()
+	gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	gs.Regions["beylik_last"].SuccessorFactionID = "successor"
+
+	if result := TryResolvePostWarVassalization(gs, "ottoman", gs.Regions["beylik_last"]); result.Applied {
+		t.Fatalf("aktif ardıl devlet metadata'sında AI vassallık uygulamamalıydı: %+v", result)
+	}
+	if got := gs.Factions["beylik"].OverlordID; got != "" {
+		t.Fatalf("aktif ardıl metadata'sında savunmacı vassal yapılmamalıydı: %q", got)
+	}
+}
+
 func TestTryResolvePostWarVassalizationRejectsResistantOrAlliedTarget(t *testing.T) {
 	for _, test := range []struct {
 		name  string

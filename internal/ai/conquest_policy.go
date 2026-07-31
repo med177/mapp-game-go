@@ -28,6 +28,11 @@ func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.Fact
 	if defenderID == "" || defenderID == attackerID || len(gs.LandRegionsOwnedBy(defenderID)) != 1 {
 		return diplomacy.Result{}
 	}
+	if targetRegion.SuccessorFactionID != "" && !gs.CanRestoreSuccessorAtRegion(targetRegion) {
+		// Aktif ardıl devlet metadata'sı olan bölge vassal bırakılmaz; çağıran
+		// conquest akışı bu sonucu doğrudan ilhak olarak çözer.
+		return diplomacy.Result{}
+	}
 	plan := gs.AIPlans[attackerID]
 	if plan == nil || !plan.AllowVassalization || plan.TargetFactionID != defenderID {
 		return diplomacy.Result{}

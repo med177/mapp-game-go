@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"path/filepath"
 	"strings"
@@ -19,6 +20,8 @@ const (
 	commanderPanelH       = 500.0
 	commanderPanelRowH    = 88.0
 	commanderPanelListW   = 330.0
+	commanderPanelListTop = 104.0
+	commanderPanelListGap = 6.0
 	commanderPanelButtonW = 150.0
 	commanderPanelButtonH = 34.0
 )
@@ -146,14 +149,104 @@ func commanderPanelUnassignEmbarkedButton(gs *state.GameState, aid army.ArmyID) 
 	return gameui.NewButton(panel.X+24, panel.Y+panel.H-54, commanderPanelButtonW, commanderPanelButtonH, "Taşınanı Ayır"), true
 }
 
-func commanderPanelRow(index int) gameui.Rect {
+func commanderPanelListViewport(gs *state.GameState, aid army.ArmyID) gameui.Rect {
+	panel := commanderPanelRect()
+	top := panel.Y + commanderPanelListTop
+	bottom := panel.Y + panel.H - 24
+	// Taşınan komutanı ayırma düğmesi sol kolonda olduğunda liste bu
+	// düğmenin üzerine çizilmemeli.
+	if _, ok := commanderPanelUnassignEmbarkedButton(gs, aid); ok {
+		bottom = panel.Y + panel.H - 64
+	}
+	if bottom < top {
+		bottom = top
+	}
+	return gameui.Rect{
+		X: panel.X + 24,
+		Y: top,
+		W: commanderPanelListW,
+		H: bottom - top,
+	}
+}
+
+func commanderPanelVisibleRows(viewport gameui.Rect) int {
+	rows := int((viewport.H + commanderPanelListGap) / commanderPanelRowH)
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func commanderPanelMaxScroll(count int, viewport gameui.Rect) int {
+	maxScroll := count - commanderPanelVisibleRows(viewport)
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func clampCommanderPanelScroll(scroll, count int, viewport gameui.Rect) int {
+	if scroll < 0 {
+		return 0
+	}
+	if maxScroll := commanderPanelMaxScroll(count, viewport); scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func commanderPanelRow(index, scroll int) gameui.Rect {
 	panel := commanderPanelRect()
 	return gameui.Rect{
 		X: panel.X + 24,
-		Y: panel.Y + 104 + float64(index)*commanderPanelRowH,
+		Y: panel.Y + commanderPanelListTop + float64(index-scroll)*commanderPanelRowH,
 		W: commanderPanelListW,
-		H: commanderPanelRowH - 6,
+		H: commanderPanelRowH - commanderPanelListGap,
 	}
+}
+
+func commanderPanelRowAt(fx, fy float64, count, scroll int, viewport gameui.Rect) int {
+	if count == 0 || !viewport.Hit(fx, fy) {
+		return -1
+	}
+	scroll = clampCommanderPanelScroll(scroll, count, viewport)
+	visibleRows := commanderPanelVisibleRows(viewport)
+	for visibleIndex := 0; visibleIndex < visibleRows; visibleIndex++ {
+		index := scroll + visibleIndex
+		if index >= count {
+			break
+		}
+		if commanderPanelRow(index, scroll).Hit(fx, fy) {
+			return index
+		}
+	}
+	return -1
+}
+
+func drawCommanderPanelScrollbar(screen *ebiten.Image, viewport gameui.Rect, count, scroll int) {
+	maxScroll := commanderPanelMaxScroll(count, viewport)
+	if maxScroll <= 0 {
+		return
+	}
+	scroll = clampCommanderPanelScroll(scroll, count, viewport)
+	visibleRows := commanderPanelVisibleRows(viewport)
+	track := gameui.Rect{X: viewport.X + viewport.W + 10, Y: viewport.Y + 4, W: 5, H: viewport.H - 8}
+	if track.H <= 0 {
+		return
+	}
+	thumbH := track.H * float64(visibleRows) / float64(count)
+	if thumbH < 18 {
+		thumbH = 18
+	}
+	if thumbH > track.H {
+		thumbH = track.H
+	}
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * float64(scroll) / float64(maxScroll)
+	}
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{70, 65, 55, 180})
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
 func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
@@ -180,25 +273,41 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	DrawText(screen, "Boştaki Komutanlar — seçim için tıkla", panel.X+24, panel.Y+82, FaceMed, ColorGold)
 
 	available := r.gs.AvailableCommanders(current.OwnerID)
+	viewport := commanderPanelListViewport(r.gs, current.ID)
+	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(available), viewport)
 	if len(available) == 0 {
 		DrawText(screen, "Boşta komutan yok.", panel.X+24, panel.Y+122, FaceSmall, ColorGray)
 	} else {
-		for i, commander := range available {
-			row := commanderPanelRow(i)
-			rowBG := color.RGBA{35, 26, 14, 210}
-			rowBorder := color.RGBA{100, 75, 30, 180}
-			if i == r.commanderPanelFocus {
-				rowBG = color.RGBA{75, 54, 20, 235}
-				rowBorder = ColorGold
+		left := int(viewport.X)
+		top := int(viewport.Y)
+		right := int(viewport.X + viewport.W)
+		bottom := int(viewport.Y + viewport.H)
+		if right > left && bottom > top {
+			body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+			visibleRows := commanderPanelVisibleRows(viewport)
+			end := r.commanderPanelScroll + visibleRows
+			if end > len(available) {
+				end = len(available)
 			}
-			vector.FillRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), rowBG, false)
-			vector.StrokeRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), 1, rowBorder, false)
-			drawCommanderPortrait(screen, commander, row.X+8, row.Y+8, 64, 64)
-			textX := row.X + 84
-			DrawText(screen, commander.Name, textX, row.Y+12, FaceSmall, ColorWhite)
-			DrawText(screen, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
-			drawCommanderTraitBadges(screen, commander, textX, row.Y+56, row.W-(textX-row.X)-12, commanderTraitBadgeOptions{MaxRows: 1})
+			for i := r.commanderPanelScroll; i < end; i++ {
+				commander := available[i]
+				row := commanderPanelRow(i, r.commanderPanelScroll)
+				rowBG := color.RGBA{35, 26, 14, 210}
+				rowBorder := color.RGBA{100, 75, 30, 180}
+				if i == r.commanderPanelFocus {
+					rowBG = color.RGBA{75, 54, 20, 235}
+					rowBorder = ColorGold
+				}
+				vector.FillRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), rowBG, false)
+				vector.StrokeRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), 1, rowBorder, false)
+				drawCommanderPortrait(body, commander, row.X+8, row.Y+8, 64, 64)
+				textX := row.X + 84
+				DrawText(body, commander.Name, textX, row.Y+12, FaceSmall, ColorWhite)
+				DrawText(body, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
+				drawCommanderTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, commanderTraitBadgeOptions{MaxRows: 1})
+			}
 		}
+		drawCommanderPanelScrollbar(screen, viewport, len(available), r.commanderPanelScroll)
 	}
 
 	r.drawCommanderDetail(screen, current)
@@ -375,8 +484,15 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 		return InputAction{Kind: ActionUnassignEmbarkedCommander, ArmyID: current.ID}
 	}
 	available := r.gs.AvailableCommanders(current.OwnerID)
+	viewport := commanderPanelListViewport(r.gs, current.ID)
+	if _, wheelY := ebiten.Wheel(); wheelY != 0 && viewport.Hit(fx, fy) {
+		r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll-int(wheelY), len(available), viewport)
+		return InputAction{}
+	}
+	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(available), viewport)
 	if r.keyJustPressed(ebiten.KeyArrowDown) && len(available) > 0 {
 		r.commanderPanelFocus = (r.commanderPanelFocus + 1) % len(available)
+		r.ensureCommanderPanelFocusVisible(len(available), viewport)
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) && len(available) > 0 {
@@ -384,20 +500,35 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 		if r.commanderPanelFocus < 0 {
 			r.commanderPanelFocus = len(available) - 1
 		}
+		r.ensureCommanderPanelFocusVisible(len(available), viewport)
 		return InputAction{}
 	}
 	if (r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace)) && len(available) > 0 {
+		if r.commanderPanelFocus >= len(available) {
+			r.commanderPanelFocus = len(available) - 1
+		}
 		return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[r.commanderPanelFocus].ID}
 	}
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		for i, commander := range available {
-			if commanderPanelRow(i).Hit(fx, fy) {
-				r.commanderPanelFocus = i
-				return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: commander.ID}
-			}
+		if i := commanderPanelRowAt(fx, fy, len(available), r.commanderPanelScroll, viewport); i >= 0 {
+			r.commanderPanelFocus = i
+			return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[i].ID}
 		}
 	}
 	return InputAction{}
+}
+
+func (r *Renderer) ensureCommanderPanelFocusVisible(count int, viewport gameui.Rect) {
+	if r == nil || count <= 0 {
+		return
+	}
+	visibleRows := commanderPanelVisibleRows(viewport)
+	if r.commanderPanelFocus < r.commanderPanelScroll {
+		r.commanderPanelScroll = r.commanderPanelFocus
+	} else if r.commanderPanelFocus >= r.commanderPanelScroll+visibleRows {
+		r.commanderPanelScroll = r.commanderPanelFocus - visibleRows + 1
+	}
+	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, count, viewport)
 }
 
 func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
@@ -418,10 +549,9 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 		return true
 	}
 	available := r.gs.AvailableCommanders(current.OwnerID)
-	for i := range available {
-		if commanderPanelRow(i).Hit(fx, fy) {
-			return true
-		}
+	viewport := commanderPanelListViewport(r.gs, current.ID)
+	if commanderPanelRowAt(fx, fy, len(available), r.commanderPanelScroll, viewport) >= 0 {
+		return true
 	}
 	return false
 }
@@ -437,6 +567,7 @@ func (r *Renderer) OpenCommanderPanel(aid army.ArmyID) {
 	r.showCommanderPanel = true
 	r.commanderPanelArmy = aid
 	r.commanderPanelFocus = 0
+	r.commanderPanelScroll = 0
 	r.gs.SyncCommanderLinks()
 }
 
@@ -447,4 +578,5 @@ func (r *Renderer) CloseCommanderPanel() {
 	r.showCommanderPanel = false
 	r.commanderPanelArmy = ""
 	r.commanderPanelFocus = 0
+	r.commanderPanelScroll = 0
 }

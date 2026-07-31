@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -89,7 +89,8 @@ alınacak mevcut fraksiyonu gösterir. Fraksiyon `is_eliminated=true` ve başka 
 bölgesi yoksa oyuncu `Özgürleştir` aksiyonuyla devleti etkinleştirir. Yeniden kurulan
 devlet düşük başlangıç kaynakları, aynı bölgede beş `militia` birimi ve onu
 özgürleştiren devletle `StanceAllied` ilişkisi alır; ardından normal AI tur sırasına
-katılır.
+katılır. Ardıl fraksiyon hâlâ aktifse bu metadata vassallık/serbest bırakma
+seçeneği üretmez; fethedilen bölge doğrudan ilhak edilir.
 
 `ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
 

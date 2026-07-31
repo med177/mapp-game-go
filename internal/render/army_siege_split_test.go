@@ -67,3 +67,66 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 		t.Fatalf("kılıç rozeti kuşatan ile savunan ordunun ortasında olmalıydı: got=%.1f", got)
 	}
 }
+
+func TestArmyIconPositionsPutNewArrivalLeftOfExistingArmy(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"target": {
+				ID:      "target",
+				OwnerID: "p1",
+				Settlements: []world.Settlement{
+					{ID: "target_center", IsCenter: true},
+				},
+			},
+			"other": {
+				ID:      "other",
+				OwnerID: "p1",
+				Settlements: []world.Settlement{
+					{ID: "other_center", IsCenter: true},
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			// ID sırası geliş sırasını temsil etmiyor; test özellikle bu
+			// durumda konuma ilk gelen ordunun korunmasını doğrular.
+			"army_zulu": {
+				ID:       "army_zulu",
+				OwnerID:  "p1",
+				RegionID: "target",
+				Units:    []army.Unit{{TypeID: "inf"}},
+			},
+			"army_alpha": {
+				ID:       "army_alpha",
+				OwnerID:  "p1",
+				RegionID: "other",
+				Units:    []army.Unit{{TypeID: "inf"}},
+			},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			settlementAnchor: map[settlementAnchorKey][2]int{
+				{Region: "target", Index: 0}: {100, 100},
+				{Region: "other", Index: 0}:  {200, 100},
+			},
+			primarySettlement: map[world.RegionID][2]int{
+				"target": {100, 100},
+				"other":  {200, 100},
+			},
+		},
+	}
+
+	// İlk frame'de target'taki ordu mevcut ordudur; diğer ordu başka
+	// bölgededir ve henüz target grubuna dahil değildir.
+	r.armyIconPositions()
+	gs.Armies["army_alpha"].RegionID = "target"
+
+	positions := r.armyIconPositions()
+	if len(positions) != 2 {
+		t.Fatalf("target grubunda iki ordu ikonu bekleniyordu, got=%d", len(positions))
+	}
+	if positions[0].ArmyID != "army_alpha" || positions[1].ArmyID != "army_zulu" {
+		t.Fatalf("yeni gelen ordu mevcut ordunun solunda olmalıydı: %+v", positions)
+	}
+}

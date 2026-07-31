@@ -1,11 +1,25 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-07-31: Aynı bölgede mevcut ordunun yanına gelen oyuncu veya müttefik
+  ordusu artık ikon grubunda mevcut ordunun soluna yerleşiyor. Grup bazlı ilk
+  görülme sırası korunurken kuşatma çifti yerleşimi değişmedi. Regression:
+  `TestArmyIconPositionsPutNewArrivalLeftOfExistingArmy`; doğrulama:
+  `go test ./internal/render -run 'TestArmyIconPositions|Test.*Army.*Icon' -count=1 -v`.
+
+- 2026-07-31: Komutan atama panelindeki boş komutan listesi panel-local viewport'a
+  taşındı. Uzun listeler mouse-wheel ve ok tuşlarıyla satır bazında kayıyor;
+  `SubImage` clipping'i panel dışına taşmayı engelliyor, scrollbar yalnızca liste
+  viewport'a sığmadığında çiziliyor ve görünmeyen satırlar tıklanamıyor. Regression:
+  `TestCommanderPanelListViewportAndScrollClamp`,
+  `TestCommanderPanelRowHitOnlyUsesVisibleRows`; doğrulama:
+  `go test ./internal/render`.
 
 - 2026-07-30: Oyuncu ordusu ardıl devlet metadata'sı dolu bir düşman bölgesini
   ele geçirdiğinde savaş raporu kapanana kadar fetih state'i bekletiliyor; ardından
@@ -71,6 +85,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestLiberationButtonOnlyAppearsForEliminatedSuccessor`,
   `TestEditModeAssignsSuccessorWithUndoRedo`,
   `Test1300ScenarioCapitalRegionsHaveSuccessorFaction`.
+
+- 2026-07-31: Ardıl devlet metadata'sı olan fetihlerde karar kapısı düzeltildi.
+  `GameState.CanRestoreSuccessorAtRegion()` yalnız `is_eliminated=true` ve
+  topraksız ardıllar için `İlhak Et / Serbest Bırak / Vassal Yap` panelini açar;
+  aktif ardıl devlet bulunan bölge oyuncu ve AI akışlarında doğrudan ilhak edilir.
+  Regression: `TestActiveSuccessorMetadataDirectlyAnnexesWithoutDecision`,
+  `TestTryResolvePostWarVassalizationRejectsActiveSuccessorMetadata`.
 
 - 2026-07-29: 1300 senaryosunda kara bölgelerinin settlement merkezleri tekilleştirildi;
   Constantine için Annaba merkez olarak tanımlandı. Iberia veri grafiğinde Aragon

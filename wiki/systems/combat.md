@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -15,9 +15,11 @@ Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `
 
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir. Resolve tamamlanınca oyuncu tarafında render katmanı ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim / HP` önce-sonra kırılımı gösterilir.
 
-Fethedilen bölgede `SuccessorFactionID` doluysa fetih sonucu otomatik uygulanmaz.
-Savaş raporu kapatıldıktan sonra `Ardıl Devlet Kararı` üç seçenekli modalı açılır:
-`İlhak Et`, `Serbest Bırak` ve `Vassal Yap`. Karar kuyruğu rapor görünürken oyun
+Fethedilen bölgede `SuccessorFactionID` doluysa yalnız ardıl fraksiyon
+`is_eliminated=true` ve kara toprağı kalmamışsa fetih sonucu ertelenir. Savaş
+raporu kapatıldıktan sonra `Ardıl Devlet Kararı` üç seçenekli modalı açılır:
+`İlhak Et`, `Serbest Bırak` ve `Vassal Yap`. Ardıl fraksiyon hâlâ oyundaysa
+bölge panel açılmadan doğrudan ilhak edilir. Karar kuyruğu rapor görünürken oyun
 akışını durdurur; seçim yapılana kadar bölgenin sahibi değişmez. Aynı karar akışı
 savaşsız işgali ve kuşatma sonrası fethi de kapsar.
 

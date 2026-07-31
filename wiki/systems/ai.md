@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -717,7 +717,9 @@ toprağında yenilen hedef:
 `diplomacy.ForceVassalizeAfterWar()` ile vassal bırakılır ve yerel bölge sahipliği
 korunur. Dirençli, diplomatik destekli veya stratejik bölge sahibi hedeflerde mevcut
 doğrudan fetih/ilhak akışı sürer. Bu karar açık arazi savaşı, savaşsız işgal, çıkarma,
-genel hücum ve kuşatma teslimi çıkışlarında aynı politika helper'ından geçer.
+genel hücum ve kuşatma teslimi çıkışlarında aynı politika helper'ından geçer. Hedef
+bölgede ardıl fraksiyon hâlâ aktifse `CanRestoreSuccessorAtRegion()` false olur ve
+AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.
 
 `TakeTurn` sırasıyla şu adımları yapar:
 1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`

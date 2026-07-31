@@ -1,11 +1,24 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
+`armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
+bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak
+soldaki slota yerleşir; kuşatma çifti için kuşatanın solda, savunmacının sağda
+kalması kuralı önceliğini korur (`internal/render/renderer.go`).
+
+Komutan atama modalındaki boş komutan listesi `commanderPanelListViewport()` ile
+panel-local bir viewport içinde çizilir. Liste satırları `SubImage` clipping'i
+ile panel dışına taşamaz; `commanderPanelScroll` tekerlek ve klavye focus'u ile
+satır bazında güncellenir. Scroll clamp'i ve `commanderPanelRowAt()` yalnız
+görünür satırları tıklanabilir kabul eder; taşan içerikte scrollbar yalnızca
+gerektiğinde gösterilir (`internal/render/commander_panel.go`).
 
 Edit Mode Harita sekmesindeki `Başkent Yap` butonu, seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında günceller ve bekleyen başkent taşımasını temizler. Bu aksiyon, bölgesel ana yerleşimi belirleyen `Ana Yap` (`is_capital`) davranışından ayrıdır; undo/redo world snapshot'ı üzerinden çalışır ve `Kaydet` ile `factions.json` dosyasına yazılır.
 
@@ -14,7 +27,9 @@ Edit Mode Harita sekmesindeki `Ardıl Devlet` düğmesi seçili kara bölgesinin
 undo/redo ve `regions.json` senaryo kaydıyla korunur. Kampanya bölge paneli, bu
 metadata'nın işaret ettiği devlet elenmişse `Özgürleştir` düğmesini çizer ve hit-test
 de aynı action-bar geometrisini kullanır. Aksiyon `internal/game/game.go` içinde
-devleti beş milis ve düşük kaynaklarla yeniden etkinleştirir.
+devleti beş milis ve düşük kaynaklarla yeniden etkinleştirir. Savaş sonrası ardıl
+karar paneli ise yalnız `GameState.CanRestoreSuccessorAtRegion()` true olduğunda
+açılır; aktif ardıl devlet için fetih panel beklemeden ilhak edilir.
 
 Savaş raporu sonrasında ardıl metadata'sı için kullanılan üçlü karar paneli,
 `QueueThreeChoiceDialogAfterBattleReport()` ile rapor kapanana kadar kuyruğa alınır.

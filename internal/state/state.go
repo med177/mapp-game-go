@@ -1512,6 +1512,18 @@ func (s *GameState) IsEliminated(fid faction.FactionID) bool {
 	return len(s.LandRegionsOwnedBy(fid)) == 0
 }
 
+// CanRestoreSuccessorAtRegion, bir bölgenin ardıl devlet karar paneline
+// girebilmesi için ardıl fraksiyonun gerçekten oyundan elenmiş ve kara toprağı
+// kalmamış olması gerektiğini doğrular.
+func (s *GameState) CanRestoreSuccessorAtRegion(region *world.Region) bool {
+	if s == nil || region == nil || region.SuccessorFactionID == "" {
+		return false
+	}
+	successorID := faction.FactionID(region.SuccessorFactionID)
+	successor := s.Factions[successorID]
+	return successor != nil && successor.IsEliminated && len(s.LandRegionsOwnedBy(successorID)) == 0
+}
+
 // ── Askeri Kapasite ───────────────────────────────────────────────────────
 
 const (

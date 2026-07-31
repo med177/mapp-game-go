@@ -90,7 +90,7 @@ func TestResolvePendingConquestDecisionVassalizesDefender(t *testing.T) {
 
 func TestSuccessorMetadataQueuesThreeWayDecisionAfterBattle(t *testing.T) {
 	g := conquestDecisionTestGame()
-	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl", IsEliminated: true}
 	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
 
 	if ok := g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], true); !ok {
@@ -103,7 +103,7 @@ func TestSuccessorMetadataQueuesThreeWayDecisionAfterBattle(t *testing.T) {
 
 func TestSuccessorDecisionReleaseTransfersRegionAndDefeatsPreviousOwner(t *testing.T) {
 	g := conquestDecisionTestGame()
-	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl", IsEliminated: true}
 	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
 	if !g.queueConquestDecision("player", g.gs.Regions["enemy_cap"], false) {
 		t.Fatal("ardıl kararı kuyruğa alınamadı")
@@ -119,6 +119,27 @@ func TestSuccessorDecisionReleaseTransfersRegionAndDefeatsPreviousOwner(t *testi
 	}
 	if rel := g.gs.Relations[faction.RelationKey("player", "successor")]; rel == nil || rel.Stance != faction.StanceAllied {
 		t.Fatalf("ardıl bağımsız müttefik olmalıydı: %+v", rel)
+	}
+}
+
+func TestActiveSuccessorMetadataDirectlyAnnexesWithoutDecision(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.gs.Factions["successor"] = &faction.Faction{ID: "successor", NameTR: "Ardıl"}
+	g.gs.Regions["enemy_cap"].SuccessorFactionID = "successor"
+
+	collapse, prompted := g.captureBesiegedRegion(g.gs.Armies["atk"], g.gs.Regions["enemy_cap"], false)
+
+	if prompted {
+		t.Fatal("aktif ardıl devlet için vassal/serbest bırak paneli açılmamalıydı")
+	}
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "player" {
+		t.Fatalf("aktif ardıl metadata'sında bölge doğrudan oyuncuya ilhak edilmeliydi, got=%s", got)
+	}
+	if !g.gs.Factions["enemy"].IsEliminated {
+		t.Fatal("doğrudan ilhak eski sahibi elemeliydi")
+	}
+	if len(g.pendingConquestDecisions) != 0 || collapse.FactionID == "" {
+		t.Fatalf("doğrudan ilhak karar kuyruğu/collapse üretmeliydi: pending=%d collapse=%+v", len(g.pendingConquestDecisions), collapse)
 	}
 }
 

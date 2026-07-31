@@ -3932,8 +3932,8 @@ const (
 )
 
 // reviveSuccessorAtRegion, savaş sonrası ardıl devlet kararında elenmiş bir
-// fraksiyonu yeniden oyuna sokar. Aktif ve mevcut toprağı olan ardıllar için
-// yalnızca true döner; bu durumda yeni başlangıç kaynak/ordu üretmez.
+// fraksiyonu yeniden oyuna sokar. Aktif veya mevcut toprağı olan ardıllar
+// karar akışına giremez.
 func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID faction.FactionID) bool {
 	if g == nil || g.gs == nil || regionID == "" || successorID == "" {
 		return false
@@ -3942,10 +3942,7 @@ func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID fact
 	if successor == nil {
 		return false
 	}
-	if !successor.IsEliminated {
-		return true
-	}
-	if len(g.gs.LandRegionsOwnedBy(successorID)) != 0 {
+	if !successor.IsEliminated || len(g.gs.LandRegionsOwnedBy(successorID)) != 0 {
 		return false
 	}
 	successor.IsEliminated = false

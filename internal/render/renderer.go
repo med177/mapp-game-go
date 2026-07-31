@@ -192,6 +192,7 @@ type Renderer struct {
 	showCommanderPanel     bool
 	commanderPanelArmy     army.ArmyID
 	commanderPanelFocus    int
+	commanderPanelScroll   int
 	showAIDiagnostic       bool
 	aiDiagnosticFaction    faction.FactionID
 	aiDiagnosticScroll     int
@@ -215,13 +216,17 @@ type Renderer struct {
 	queuedConfirmDialog confirmDialogState
 	offerCursor         int
 
-	armyIconBuf    []armyIconPos
-	regionLabelBuf []settlementDraw
-	labelRectBuf   []screenRect
-	tradeCorridors []tradeCorridorInfo
-	tradeHoverIdx  int
-	tradeCenters   []tradeCenterVisual
-	tradeCenterIdx int
+	armyIconBuf []armyIconPos
+	// armyGroupDisplayOrder, aynı anchor'a sonradan giren ordunun mevcut
+	// orduların soluna yerleşebilmesi için grup bazlı ilk görülme sırasını tutar.
+	armyGroupDisplayOrder map[armyDisplayGroupKey]map[army.ArmyID]uint64
+	nextArmyDisplayOrder  uint64
+	regionLabelBuf        []settlementDraw
+	labelRectBuf          []screenRect
+	tradeCorridors        []tradeCorridorInfo
+	tradeHoverIdx         int
+	tradeCenters          []tradeCenterVisual
+	tradeCenterIdx        int
 
 	editSelectedRegion                world.RegionID
 	editSelectedSettlement            int
@@ -1872,6 +1877,7 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 
 	r.armyIconBuf = r.armyIconBuf[:0]
 	for key, aids := range byGroup {
+		order := r.armyGroupOrder(key, aids)
 		base := groupBase[key]
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
@@ -1891,7 +1897,9 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 					return false
 				}
 			}
-			return aids[i] < aids[j]
+			// Yeni gelen ordu grubun sonuna kaydedilir; ekranda son gelen
+			// ordu solda görünsün diye sıralama tersten yapılır.
+			return order[aids[i]] > order[aids[j]]
 		})
 
 		attackerIndex, _, hasSiegePair := r.siegePairIndices(aids)
@@ -1954,6 +1962,33 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
 	})
 	return r.armyIconBuf
+}
+
+// armyGroupOrder, bir grubun mevcut üyelerinin sırasını korur ve yeni gelen
+// üyeleri sona ekler. Böylece yeni ordu, konumu yeniden ortalansa bile mevcut
+// ordunun sağına değil soluna yerleşir. Aynı frame'deki ilk keşif deterministic
+// kalsın diye yeni üyeler ArmyID ile sıralanır.
+func (r *Renderer) armyGroupOrder(key armyDisplayGroupKey, aids []army.ArmyID) map[army.ArmyID]uint64 {
+	if r.armyGroupDisplayOrder == nil {
+		r.armyGroupDisplayOrder = make(map[armyDisplayGroupKey]map[army.ArmyID]uint64)
+	}
+	order := r.armyGroupDisplayOrder[key]
+	if order == nil {
+		order = make(map[army.ArmyID]uint64, len(aids))
+		r.armyGroupDisplayOrder[key] = order
+	}
+	newIDs := make([]army.ArmyID, 0, len(aids))
+	for _, aid := range aids {
+		if _, exists := order[aid]; !exists {
+			newIDs = append(newIDs, aid)
+		}
+	}
+	sort.Slice(newIDs, func(i, j int) bool { return newIDs[i] < newIDs[j] })
+	for _, aid := range newIDs {
+		r.nextArmyDisplayOrder++
+		order[aid] = r.nextArmyDisplayOrder
+	}
+	return order
 }
 
 func (r *Renderer) siegePairIndices(aids []army.ArmyID) (attackerIndex, defenderIndex int, ok bool) {

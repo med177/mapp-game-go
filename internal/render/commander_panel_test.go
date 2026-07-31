@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	gameui "mapp-game-go/internal/ui"
 )
 
 func TestCommanderPortraitPathUsesCommandersDirForBasename(t *testing.T) {
@@ -139,5 +140,48 @@ func TestArmyPanelCommanderCardFitsProfileAndTraitOverflow(t *testing.T) {
 	cardBottomY := float64(layout.commanderY + layout.commanderH)
 	if badgesBottomY > cardBottomY {
 		t.Fatalf("komutan uzmanlık rozetleri karttan taşıyor: badgesBottom=%.1f cardBottom=%.1f", badgesBottomY, cardBottomY)
+	}
+}
+
+func TestCommanderPanelListViewportAndScrollClamp(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	viewport := commanderPanelListViewport(nil, "army_1")
+	if viewport.Y <= commanderPanelRect().Y || viewport.Y+viewport.H > commanderPanelRect().Y+commanderPanelRect().H-24 {
+		t.Fatalf("komutan listesi panel sınırları içinde değil: viewport=%+v panel=%+v", viewport, commanderPanelRect())
+	}
+	if visible := commanderPanelVisibleRows(viewport); visible != 4 {
+		t.Fatalf("beklenen görünür komutan satırı 4, got=%d viewport=%+v", visible, viewport)
+	}
+	if got := clampCommanderPanelScroll(99, 7, viewport); got != 3 {
+		t.Fatalf("scroll üst sınırı yanlış: got=%d want=3", got)
+	}
+	if got := clampCommanderPanelScroll(-1, 7, viewport); got != 0 {
+		t.Fatalf("scroll alt sınırı yanlış: got=%d want=0", got)
+	}
+}
+
+func TestCommanderPanelRowHitOnlyUsesVisibleRows(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	viewport := commanderPanelListViewport(nil, "army_1")
+	lastVisible := commanderPanelRow(3, 0)
+	if got := commanderPanelRowAt(lastVisible.X+4, lastVisible.Y+4, 7, 0, viewport); got != 3 {
+		t.Fatalf("görünür satır yanlış eşlendi: got=%d want=3", got)
+	}
+	if got := commanderPanelRowAt(lastVisible.X+4, lastVisible.Y+4, 7, 3, viewport); got != 6 {
+		t.Fatalf("scroll sonrası satır yanlış eşlendi: got=%d want=6", got)
+	}
+	outside := gameui.Rect{X: viewport.X, Y: viewport.Y + viewport.H + 2, W: viewport.W, H: 20}
+	if got := commanderPanelRowAt(outside.X+4, outside.Y+4, 7, 0, viewport); got != -1 {
+		t.Fatalf("viewport dışı satır tıklanabilir olmamalı: got=%d", got)
 	}
 }
