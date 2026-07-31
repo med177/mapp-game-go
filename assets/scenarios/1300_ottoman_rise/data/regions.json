@@ -1453,7 +1453,7 @@
       "bohemia",
       "hungary",
       "moravia",
-      "danube_austria",
+      "danube_hungary",
       "slovakia",
       "slovenia",
       "styria"
@@ -1608,7 +1608,7 @@
       "serbia",
       "slovakia",
       "slovenia",
-      "danube_austria"
+      "danube_hungary"
     ],
     "world_x": 866,
     "world_y": 339,
@@ -1729,10 +1729,10 @@
       "danube_wallacia",
       "dobruja",
       "moldova",
-      "northern_black_sea",
+      "prut_river_south",
       "oltenia",
       "transylvania",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 1018,
     "world_y": 392,
@@ -1804,8 +1804,8 @@
     "neighbors": [
       "galicia_volhynia",
       "moldova",
-      "northern_black_sea",
-      "northwestern_black_sea",
+      "prut_river_south",
+      "prut_river_north",
       "transylvania",
       "wallachia"
     ],
@@ -1842,7 +1842,7 @@
       "danube_wallacia",
       "dobruja",
       "gallipoli",
-      "western_black_sea",
+      "danube_romania",
       "bosphorus_approaches",
       "serres",
       "thrace",
@@ -2170,11 +2170,11 @@
       "aydinoglu",
       "bilecik_frontier",
       "bithynia",
-      "sea_of_marmara",
-      "nicomedia"
+      "nicomedia",
+      "sea_of_marmara"
     ],
     "world_x": 1054,
-    "world_y": 475,
+    "world_y": 476,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -2189,7 +2189,7 @@
     "trade_capacity": 4,
     "satisfaction": 55,
     "tax_rate": 30,
-    "population": 1000,
+    "population": 995,
     "rural_population": 650,
     "religion": "orthodox",
     "active_event_id": "",
@@ -2225,7 +2225,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 900,
+    "population": 850,
     "rural_population": 585,
     "religion": "sunni",
     "active_event_id": "",
@@ -3055,11 +3055,11 @@
     "neighbors": [
       "bessarabia",
       "kiev",
-      "northern_black_sea",
-      "northwestern_black_sea",
+      "prut_river_south",
+      "prut_river_north",
       "podolia",
       "wallachia",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 1050,
     "world_y": 347,
@@ -3708,7 +3708,7 @@
       "serres"
     ],
     "world_x": 993,
-    "world_y": 485,
+    "world_y": 486,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3742,10 +3742,11 @@
       "greece",
       "mediterranean_open_1",
       "mediterranean_open_6",
-      "mentese_hinterland"
+      "mentese_hinterland",
+      "morea"
     ],
-    "world_x": 975,
-    "world_y": 546,
+    "world_x": 971,
+    "world_y": 547,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3872,9 +3873,9 @@
     "buildings": null
   },
   {
-    "id": "danube_austria",
-    "name": "Danube Austria",
-    "name_tr": "Tuna Avusturya",
+    "id": "danube_hungary",
+    "name": "Danube Hungary",
+    "name_tr": "Tuna Macaristan",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -3912,7 +3913,7 @@
     "owner_id": "",
     "neighbors": [
       "croatia",
-      "danube_austria",
+      "danube_hungary",
       "hungary",
       "nis",
       "oltenia",
@@ -3951,7 +3952,7 @@
       "oltenia",
       "vidin",
       "wallachia",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 937,
     "world_y": 402,
@@ -4013,9 +4014,9 @@
     "buildings": null
   },
   {
-    "id": "northwestern_black_sea",
-    "name": "Northwestern Black Sea",
-    "name_tr": "Kuzeybatı Karadeniz",
+    "id": "prut_river_north",
+    "name": "Prut River North",
+    "name_tr": "Prut Nehri Yukarı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -4023,7 +4024,7 @@
       "galicia_volhynia",
       "kiev",
       "moldova",
-      "northern_black_sea"
+      "prut_river_south"
     ],
     "world_x": 1002,
     "world_y": 320,
@@ -4047,15 +4048,15 @@
     "buildings": null
   },
   {
-    "id": "northern_black_sea",
-    "name": "Northern Black Sea",
-    "name_tr": "Kuzey Karadeniz",
+    "id": "prut_river_south",
+    "name": "Prut River South",
+    "name_tr": "Prut Nehri Aşağı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "bessarabia",
       "moldova",
-      "northwestern_black_sea",
+      "prut_river_north",
       "wallachia"
     ],
     "world_x": 1037,
@@ -4080,9 +4081,9 @@
     "buildings": null
   },
   {
-    "id": "western_black_sea",
-    "name": "Western Black Sea",
-    "name_tr": "Batı Karadeniz",
+    "id": "danube_romania",
+    "name": "Danube Romania",
+    "name_tr": "Tuna Boğdan",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -4127,8 +4128,8 @@
       "black_sea",
       "bosphorus",
       "bulgaria",
-      "dobruja",
-      "western_black_sea"
+      "danube_romania",
+      "dobruja"
     ],
     "world_x": 1051,
     "world_y": 403,
@@ -4302,7 +4303,7 @@
       "hungary",
       "mazovia",
       "moravia",
-      "danube_austria",
+      "danube_hungary",
       "poland"
     ],
     "world_x": 865,
@@ -4999,8 +5000,8 @@
       "black_open_4",
       "crimea",
       "kiev",
-      "new_region_274",
-      "new_region_275",
+      "pivdennyi_river",
+      "denieper_south",
       "podolia",
       "sea_of_azov",
       "ukrainian_steppe",
@@ -5042,7 +5043,7 @@
     "neighbors": [
       "lower_ukrainian_steppe",
       "moscow",
-      "new_region_275",
+      "denieper_south",
       "north_caucasus",
       "sea_of_azov",
       "ukrainian_steppe",
@@ -5557,8 +5558,8 @@
   },
   {
     "id": "aydinoglu",
-    "name": "Atikhisar",
-    "name_tr": "Atikhisar",
+    "name": "Dardanel",
+    "name_tr": "Çanakkale",
     "terrain": "coast",
     "owner_id": "karesioglu_bey",
     "successor_faction_id": "karesioglu_bey",
@@ -5567,12 +5568,11 @@
       "bithynia",
       "bursa",
       "gallipoli",
-      "kutahya",
       "sea_of_marmara",
       "saruhan"
     ],
-    "world_x": 1018,
-    "world_y": 478,
+    "world_x": 1022,
+    "world_y": 477,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -5587,7 +5587,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 320,
+    "population": 372,
     "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
@@ -5603,11 +5603,12 @@
     "neighbors": [
       "aegean_sea",
       "aydinoglu",
+      "bithynia",
       "izmir",
       "kutahya"
     ],
-    "world_x": 1019,
-    "world_y": 494,
+    "world_x": 1022,
+    "world_y": 495,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -5641,8 +5642,8 @@
       "mentese_hinterland",
       "saruhan"
     ],
-    "world_x": 1020,
-    "world_y": 503,
+    "world_x": 1022,
+    "world_y": 507,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -5657,7 +5658,7 @@
     "trade_capacity": 4,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 360,
+    "population": 369,
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
@@ -5672,14 +5673,14 @@
     "successor_faction_id": "mentese_bey",
     "neighbors": [
       "aegean_sea",
+      "cretan_sea",
       "izmir",
       "kutahya",
       "mediterranean_open_1",
-      "mentese",
-      "cretan_sea"
+      "mentese"
     ],
-    "world_x": 1033,
-    "world_y": 523,
+    "world_x": 1039,
+    "world_y": 526,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -5694,7 +5695,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 340,
+    "population": 331,
     "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
@@ -5787,8 +5788,8 @@
       "malatya",
       "sivas"
     ],
-    "world_x": 1182,
-    "world_y": 526,
+    "world_x": 1184,
+    "world_y": 537,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -5803,7 +5804,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 420,
+    "population": 407,
     "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
@@ -6190,8 +6191,8 @@
       "hamideli",
       "teke"
     ],
-    "world_x": 1076,
-    "world_y": 527,
+    "world_x": 1071,
+    "world_y": 523,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6460,7 +6461,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 380,
+    "population": 414,
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
@@ -6479,8 +6480,8 @@
       "karaman",
       "konya"
     ],
-    "world_x": 1146,
-    "world_y": 508,
+    "world_x": 1154,
+    "world_y": 503,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6495,7 +6496,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 360,
+    "population": 389,
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
@@ -6591,7 +6592,7 @@
       "raqqa"
     ],
     "world_x": 1277,
-    "world_y": 506,
+    "world_y": 511,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6606,7 +6607,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 380,
+    "population": 336,
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
@@ -6625,8 +6626,8 @@
       "malatya",
       "trebizond"
     ],
-    "world_x": 1275,
-    "world_y": 489,
+    "world_x": 1274,
+    "world_y": 492,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6641,7 +6642,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 360,
+    "population": 404,
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
@@ -7513,6 +7514,7 @@
     "successor_faction_id": "achaea_principality",
     "neighbors": [
       "aegean_sea_shore",
+      "cretan_sea",
       "greece",
       "otranto_strait",
       "thessaly"
@@ -7551,7 +7553,7 @@
       "bulgaria",
       "podolia",
       "wallachia",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 1042,
     "world_y": 400,
@@ -7586,10 +7588,11 @@
       "bilecik_frontier",
       "bursa",
       "germiyan",
-      "kutahya"
+      "kutahya",
+      "saruhan"
     ],
     "world_x": 1054,
-    "world_y": 476,
+    "world_y": 480,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -7604,7 +7607,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 340,
+    "population": 293,
     "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
@@ -7620,16 +7623,15 @@
     "owner_id": "germiyan_bey",
     "successor_faction_id": "germiyan_bey",
     "neighbors": [
-      "aydinoglu",
       "bithynia",
       "germiyan",
-      "mentese",
-      "saruhan",
       "izmir",
-      "mentese_hinterland"
+      "mentese",
+      "mentese_hinterland",
+      "saruhan"
     ],
     "world_x": 1051,
-    "world_y": 494,
+    "world_y": 499,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -7662,7 +7664,7 @@
       "bessarabia",
       "kiev",
       "mazovia",
-      "northwestern_black_sea",
+      "prut_river_north",
       "slovakia",
       "transylvania"
     ],
@@ -7699,7 +7701,7 @@
       "galicia_volhynia",
       "lower_ukrainian_steppe",
       "moldova",
-      "northwestern_black_sea",
+      "prut_river_north",
       "podolia",
       "ukrainian_steppe",
       "upper_dnieper"
@@ -7738,7 +7740,7 @@
       "kiev",
       "lower_ukrainian_steppe",
       "moldova",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 1052,
     "world_y": 368,
@@ -9503,11 +9505,11 @@
       "bosphorus_approaches",
       "crimea",
       "crimean_black_sea",
+      "denieper_south",
       "lower_ukrainian_steppe",
-      "new_region_274",
-      "new_region_275",
+      "pivdennyi_river",
       "podolia",
-      "western_black_sea"
+      "danube_romania"
     ],
     "world_x": 1109,
     "world_y": 369,
@@ -9531,9 +9533,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_274",
-    "name": "New Region 274",
-    "name_tr": "Yeni Bolge 274",
+    "id": "pivdennyi_river",
+    "name": "Pivdennyi Buh River",
+    "name_tr": "Pivdennyi Buh Nehri",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -9562,9 +9564,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_275",
-    "name": "New Region 275",
-    "name_tr": "Yeni Bolge 275",
+    "id": "denieper_south",
+    "name": "Denieper River South",
+    "name_tr": "Dinyeper Nehri Aşağı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [

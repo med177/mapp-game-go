@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-30
+last_updated: 2026-07-31
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -122,11 +122,15 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
-| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + belirgin askeri/bölgesel üstünlük varsa |
+| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + doğrudan sınır tehdidi veya birlikte belirgin askerî ve bölgesel üstünlük varsa |
 | Vasallığı bitir | `releaseVassal()` | Yalnız oyuncunun doğrudan vassalında; devlet bağımsızlaşır, overlord ile ticaret anlaşması devam eder |
 | Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
+Vassallıkta `Score >= 55` yalnızca teklifin ilişki ön koşuludur; hedef, teklif sahibinin
+doğrudan sınır tehdidi altında değilse askerî gücün ve kara bölgesinin en az `5x` olmasını
+birlikte arar. Böylece ilişki puanı tek başına veya sınırlı üstünlükle uzak/zayıf hedefler
+otomatik olarak vassal olmaz (`internal/diplomacy/vassalage.go:136`).
 
 Barış oranı deterministik kabul eşiği üzerinden gösterilir; `AssessPeaceProposal()`
 hedefin kabul edecek taraf perspektifini kullanır. Değerlendirme kabul etmiyorsa

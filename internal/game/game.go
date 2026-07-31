@@ -300,6 +300,10 @@ func (g *Game) Update() error {
 			g.assignMerchantTradeRoute(action.ArmyID, action.BuildingID)
 		case render.ActionClearMerchantRoute:
 			g.assignMerchantTradeRoute(action.ArmyID, "")
+		case render.ActionAssignNavalMission:
+			g.assignNavalMission(action.ArmyID, army.NavalMissionKind(action.BuildingID), action.TargetRegion, action.TargetArmyID)
+		case render.ActionClearNavalMission:
+			g.clearNavalMission(action.ArmyID)
 		case render.ActionStartSiege:
 			g.startSiege(action.ArmyID, action.TargetRegion)
 		case render.ActionAssaultSiege:
@@ -869,6 +873,7 @@ func (g *Game) resolveTurn() {
 	g.sanitizeOccupiedNeutralRegions()
 	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
+	g.executePlayerNavalMissions()
 	economyReport := applyEconomyTick(g.gs)
 	navalVoyageAlerts := applyEmbarkedVoyageAttrition(g.gs)
 	completedTechs := applyTechTicks(g.gs)
@@ -3559,6 +3564,68 @@ func (g *Game) assignMerchantTradeRoute(fleetID army.ArmyID, routeKey string) {
 		message += " Bonus için filoyu rotanın ticaret merkezi denizine taşıyın."
 	}
 	g.renderer.ShowCombatResult(message)
+}
+
+func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKind, targetRegion world.RegionID, targetFleetID army.ArmyID) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	fleet := g.gs.Armies[fleetID]
+	if fleet == nil || fleet.OwnerID != string(g.gs.PlayerFactionID) || !fleet.IsNaval {
+		g.renderer.ShowCombatResult("Bu filo için görev atanamaz.")
+		return
+	}
+	mission := army.NavalMission{Kind: kind, TargetRegionID: targetRegion, TargetFleetID: targetFleetID}
+	if ok, reason := g.gs.AssignNavalMission(fleetID, mission); !ok {
+		g.renderer.ShowCombatResult(reason)
+		return
+	}
+	label := navalMissionLabelTR(kind)
+	message := fleetNameTR(g.gs, fleetID) + " için " + label + " görevi atandı."
+	if targetRegion != "" {
+		if region := g.gs.Regions[targetRegion]; region != nil && region.NameTR != "" {
+			message += " Hedef: " + region.NameTR + "."
+		}
+	}
+	g.renderer.ShowCombatResult(message)
+}
+
+func (g *Game) clearNavalMission(fleetID army.ArmyID) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	if !g.gs.ClearNavalMission(fleetID) {
+		g.renderer.ShowCombatResult("Filo görevi kaldırılamadı.")
+		return
+	}
+	g.renderer.ShowCombatResult("Filo görevi kaldırıldı.")
+}
+
+func navalMissionLabelTR(kind army.NavalMissionKind) string {
+	switch kind {
+	case army.NavalMissionPatrol:
+		return "devriye"
+	case army.NavalMissionBlockade:
+		return "abluka"
+	case army.NavalMissionEscort:
+		return "escort"
+	case army.NavalMissionTransport:
+		return "nakliye"
+	default:
+		return "deniz"
+	}
+}
+
+func fleetNameTR(gs *state.GameState, fleetID army.ArmyID) string {
+	if gs == nil {
+		return "Filo"
+	}
+	if fleet := gs.Armies[fleetID]; fleet != nil {
+		if fleet.IsNaval {
+			return "Filo " + string(fleet.ID)
+		}
+	}
+	return "Filo"
 }
 
 func armyHasMerchantShip(gs *state.GameState, fleet *army.Army) bool {

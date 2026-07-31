@@ -134,6 +134,11 @@ type Renderer struct {
 	merchantRouteArmy      army.ArmyID
 	merchantRouteOptions   []*economy.TradeRoute
 	merchantRouteScroll    int
+	showNavalMissionPanel  bool
+	navalMissionArmy       army.ArmyID
+	navalMissionScroll     int
+	navalMissionTargeting  bool
+	navalMissionKind       army.NavalMissionKind
 	mapMode                MapMode
 	animationTick          int
 
@@ -916,6 +921,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.tradeHoverIdx = -1
 	r.tradeCenterIdx = -1
 	r.closeMerchantRoutePanel()
+	r.closeNavalMissionPanel()
 	r.mapMode = MapModeNormal
 	r.CloseImperialPanel()
 	r.CloseEventCodex()
@@ -1210,6 +1216,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() {
 		r.drawMoveTargets(screen)
 	}
+	if r.navalMissionTargeting {
+		r.drawNavalMissionTargetingOverlay(screen)
+	}
 
 	// 5. Bölge etiketleri
 	r.drawRegionLabels(screen, armyPositions)
@@ -1328,6 +1337,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.showMerchantRoutePanel {
 		r.drawMerchantRoutePanel(screen)
+	}
+	if r.showNavalMissionPanel {
+		r.drawNavalMissionPanel(screen)
 	}
 	if r.showActiveWars {
 		drawActiveWarsPanel(screen, r.gs, r.activeWarsBuf, r.activeWarsScroll)
@@ -2234,6 +2246,25 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 				embarkedStr = "99"
 			}
 			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{245, 248, 252, 255})
+		}
+		if a != nil && a.NavalMission != nil {
+			badgeW := float32(14)
+			badgeX := cx + 12
+			badgeY := cy - 25
+			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{23, 67, 39, 245}, false)
+			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1.5, color.RGBA{145, 238, 170, 240}, false)
+			missionBadge := "G"
+			switch a.NavalMission.Kind {
+			case army.NavalMissionPatrol:
+				missionBadge = "D"
+			case army.NavalMissionBlockade:
+				missionBadge = "A"
+			case army.NavalMissionEscort:
+				missionBadge = "E"
+			case army.NavalMissionTransport:
+				missionBadge = "N"
+			}
+			DrawTextCentered(screen, missionBadge, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{228, 255, 232, 255})
 		}
 	}
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {

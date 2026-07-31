@@ -1538,7 +1538,6 @@
         "x": 954,
         "y": 392,
         "type": "town",
-        "is_center": true,
         "population": 46
       },
       {
@@ -1563,6 +1562,7 @@
         "x": 994,
         "y": 379,
         "type": "fortress",
+        "is_center": true,
         "population": 30
       },
       {
@@ -1606,6 +1606,7 @@
         "x": 1024,
         "y": 413,
         "type": "fortress",
+        "is_center": true,
         "population": 15
       },
       {
@@ -1622,7 +1623,6 @@
         "x": 986,
         "y": 414,
         "type": "city",
-        "is_center": true,
         "population": 61
       },
       {
@@ -1996,13 +1996,12 @@
         "x": 1055,
         "y": 467,
         "type": "port",
-        "is_center": true,
         "population": 54
       },
       {
         "id": "mudanya_bursa",
         "name_tr": "Mudanya",
-        "x": 1046,
+        "x": 1049,
         "y": 468,
         "type": "port",
         "population": 52
@@ -2013,6 +2012,7 @@
         "x": 1052,
         "y": 474,
         "type": "city",
+        "is_center": true,
         "population": 70
       },
       {
@@ -2032,12 +2032,12 @@
         "population": 52
       },
       {
-        "id": "bithynia_bursa_port",
-        "name_tr": "Tirilye",
-        "x": 1040,
-        "y": 468,
-        "type": "port",
-        "population": 52
+        "id": "nicaea",
+        "name_tr": "Yenişehir",
+        "x": 1060,
+        "y": 477,
+        "type": "town",
+        "population": 47
       }
     ]
   },
@@ -2062,14 +2062,6 @@
         "population": 63
       },
       {
-        "id": "incesu_kayseri",
-        "name_tr": "İncesu",
-        "x": 1169,
-        "y": 503,
-        "type": "town",
-        "population": 63
-      },
-      {
         "id": "konya_kaman",
         "name_tr": "Kaman",
         "x": 1175,
@@ -2084,6 +2076,14 @@
         "y": 479,
         "type": "town",
         "population": 63
+      },
+      {
+        "id": "develi_kayseri",
+        "name_tr": "Develi",
+        "x": 1186,
+        "y": 509,
+        "type": "town",
+        "population": 13
       }
     ]
   },
@@ -2220,7 +2220,6 @@
         "x": 1284,
         "y": 457,
         "type": "port",
-        "is_center": true,
         "population": 36
       },
       {
@@ -2229,6 +2228,7 @@
         "x": 1269,
         "y": 456,
         "type": "fortress",
+        "is_center": true,
         "population": 11
       },
       {
@@ -2258,7 +2258,6 @@
         "x": 1295,
         "y": 480,
         "type": "town",
-        "is_center": true,
         "population": 38
       },
       {
@@ -2267,6 +2266,7 @@
         "x": 1304,
         "y": 479,
         "type": "fortress",
+        "is_center": true,
         "population": 19
       },
       {
@@ -2320,7 +2320,6 @@
         "x": 1319,
         "y": 438,
         "type": "city",
-        "is_center": true,
         "population": 22
       },
       {
@@ -2345,6 +2344,7 @@
         "x": 1342,
         "y": 436,
         "type": "fortress",
+        "is_center": true,
         "population": 5
       }
     ]
@@ -2510,7 +2510,6 @@
         "x": 1360,
         "y": 592,
         "type": "city",
-        "is_center": true,
         "population": 63
       },
       {
@@ -2519,6 +2518,7 @@
         "x": 1345,
         "y": 606,
         "type": "fortress",
+        "is_center": true,
         "population": 14
       },
       {
@@ -2588,7 +2588,6 @@
         "x": 1668,
         "y": 543,
         "type": "city",
-        "is_center": true,
         "population": 56
       },
       {
@@ -2613,6 +2612,7 @@
         "x": 1622,
         "y": 569,
         "type": "fortress",
+        "is_center": true,
         "population": 14
       },
       {
@@ -3046,7 +3046,6 @@
         "x": 903,
         "y": 438,
         "type": "city",
-        "is_center": true,
         "population": 44
       },
       {
@@ -3055,6 +3054,7 @@
         "x": 925,
         "y": 450,
         "type": "fortress",
+        "is_center": true,
         "population": 11
       },
       {
@@ -3194,7 +3194,7 @@
     "settlements": null
   },
   {
-    "region_id": "danube_austria",
+    "region_id": "danube_hungary",
     "settlements": null
   },
   {
@@ -3210,15 +3210,15 @@
     "settlements": null
   },
   {
-    "region_id": "northwestern_black_sea",
+    "region_id": "prut_river_north",
     "settlements": null
   },
   {
-    "region_id": "northern_black_sea",
+    "region_id": "prut_river_south",
     "settlements": null
   },
   {
-    "region_id": "western_black_sea",
+    "region_id": "danube_romania",
     "settlements": null
   },
   {
@@ -3404,7 +3404,6 @@
         "x": 1008,
         "y": 466,
         "type": "town",
-        "is_center": true,
         "population": 20
       },
       {
@@ -3421,6 +3420,7 @@
         "x": 1025,
         "y": 456,
         "type": "city",
+        "is_center": true,
         "population": 28
       },
       {
@@ -3566,7 +3566,6 @@
         "x": 1470,
         "y": 469,
         "type": "city",
-        "is_center": true,
         "population": 48
       },
       {
@@ -3575,6 +3574,7 @@
         "x": 1455,
         "y": 465,
         "type": "fortress",
+        "is_center": true,
         "population": 24
       },
       {
@@ -4164,16 +4164,24 @@
         "x": 1017,
         "y": 473,
         "type": "city",
-        "is_center": true,
         "population": 64
       },
       {
         "id": "aydinoglu_settlement_3",
         "name_tr": "Atikhisar",
         "x": 1021,
-        "y": 480,
+        "y": 479,
         "type": "fortress",
+        "is_center": true,
         "population": 16
+      },
+      {
+        "id": "bithynia_bursa_port",
+        "name_tr": "Bandırma",
+        "x": 1034,
+        "y": 469,
+        "type": "port",
+        "population": 52
       }
     ]
   },
@@ -4186,7 +4194,6 @@
         "x": 1022,
         "y": 498,
         "type": "town",
-        "is_center": true,
         "population": 51
       },
       {
@@ -4203,6 +4210,7 @@
         "x": 1034,
         "y": 488,
         "type": "fortress",
+        "is_center": true,
         "population": 25
       }
     ]
@@ -4216,8 +4224,16 @@
         "x": 1018,
         "y": 504,
         "type": "port",
-        "is_center": true,
         "population": 126
+      },
+      {
+        "id": "aydin",
+        "name_tr": "Aydın / Tralles",
+        "x": 1031,
+        "y": 514,
+        "type": "fortress",
+        "is_center": true,
+        "population": 9
       }
     ]
   },
@@ -4230,7 +4246,6 @@
         "x": 1050,
         "y": 535,
         "type": "town",
-        "is_center": true,
         "population": 20
       },
       {
@@ -4251,19 +4266,12 @@
       },
       {
         "id": "milas",
-        "name_tr": "Milas",
+        "name_tr": "Menteşe",
         "x": 1031,
         "y": 526,
-        "type": "city",
-        "population": 36
-      },
-      {
-        "id": "aydin",
-        "name_tr": "Aydın / Tralles",
-        "x": 1031,
-        "y": 516,
         "type": "fortress",
-        "population": 9
+        "is_center": true,
+        "population": 36
       }
     ]
   },
@@ -4276,7 +4284,6 @@
         "x": 1218,
         "y": 453,
         "type": "port",
-        "is_center": true,
         "population": 38
       },
       {
@@ -4293,6 +4300,7 @@
         "x": 1192,
         "y": 466,
         "type": "town",
+        "is_center": true,
         "population": 24
       }
     ]
@@ -4404,17 +4412,9 @@
         "population": 20
       },
       {
-        "id": "develi_kayseri",
-        "name_tr": "Develi",
-        "x": 1186,
-        "y": 510,
-        "type": "town",
-        "population": 13
-      },
-      {
         "id": "kayseri_karahisar",
         "name_tr": "Zamantı",
-        "x": 1161,
+        "x": 1164,
         "y": 528,
         "type": "fortress",
         "population": 6
@@ -4786,7 +4786,6 @@
         "x": 1058,
         "y": 540,
         "type": "port",
-        "is_center": true,
         "population": 24
       },
       {
@@ -4827,6 +4826,7 @@
         "x": 1064,
         "y": 518,
         "type": "fortress",
+        "is_center": true,
         "population": 7
       }
     ]
@@ -4950,7 +4950,6 @@
         "x": 1142,
         "y": 463,
         "type": "town",
-        "is_center": true,
         "population": 19
       },
       {
@@ -4991,6 +4990,7 @@
         "x": 1141,
         "y": 470,
         "type": "fortress",
+        "is_center": true,
         "population": 8
       },
       {
@@ -5020,7 +5020,6 @@
         "x": 1149,
         "y": 534,
         "type": "town",
-        "is_center": true,
         "population": 33
       },
       {
@@ -5034,18 +5033,35 @@
       {
         "id": "konya_main",
         "name_tr": "Konya",
-        "x": 1125,
-        "y": 512,
+        "x": 1128,
+        "y": 513,
         "type": "fortress",
+        "is_center": true,
         "population": 16
       },
       {
         "id": "karaman_konya",
         "name_tr": "Karaman",
-        "x": 1138,
-        "y": 524,
+        "x": 1137,
+        "y": 523,
         "type": "town",
         "population": 33
+      },
+      {
+        "id": "karaman_karapinar",
+        "name_tr": "Karapınar",
+        "x": 1146,
+        "y": 516,
+        "type": "town",
+        "population": 15
+      },
+      {
+        "id": "eregli_konya",
+        "name_tr": "Ereğli",
+        "x": 1156,
+        "y": 522,
+        "type": "town",
+        "population": 19
       }
     ]
   },
@@ -5053,28 +5069,12 @@
     "region_id": "kayseri",
     "settlements": [
       {
-        "id": "eregli_konya",
-        "name_tr": "Ereğli",
-        "x": 1157,
-        "y": 521,
-        "type": "town",
-        "is_center": true,
-        "population": 19
-      },
-      {
-        "id": "karaman_karapinar",
-        "name_tr": "Karapınar",
-        "x": 1147,
-        "y": 516,
-        "type": "town",
-        "population": 15
-      },
-      {
         "id": "konya_aksaray",
         "name_tr": "Sultanhanı",
         "x": 1148,
         "y": 508,
         "type": "city",
+        "is_center": true,
         "population": 31
       },
       {
@@ -5100,6 +5100,14 @@
         "y": 495,
         "type": "town",
         "population": 15
+      },
+      {
+        "id": "incesu_kayseri",
+        "name_tr": "İncesu",
+        "x": 1168,
+        "y": 503,
+        "type": "town",
+        "population": 63
       }
     ]
   },
@@ -5232,14 +5240,6 @@
         "population": 45
       },
       {
-        "id": "erzincan_iskenderun",
-        "name_tr": "Kemaliye",
-        "x": 1263,
-        "y": 501,
-        "type": "fortress",
-        "population": 44
-      },
-      {
         "id": "mosul_nisibis",
         "name_tr": "Nusaybin",
         "x": 1288,
@@ -5258,7 +5258,6 @@
         "x": 1274,
         "y": 486,
         "type": "town",
-        "is_center": true,
         "population": 33
       },
       {
@@ -5284,6 +5283,15 @@
         "y": 484,
         "type": "town",
         "population": 31
+      },
+      {
+        "id": "erzincan_iskenderun",
+        "name_tr": "Kemaliye",
+        "x": 1264,
+        "y": 501,
+        "type": "fortress",
+        "is_center": true,
+        "population": 44
       }
     ]
   },
@@ -6102,14 +6110,6 @@
         "y": 480,
         "type": "town",
         "population": 47
-      },
-      {
-        "id": "nicaea",
-        "name_tr": "Yenişehir",
-        "x": 1060,
-        "y": 477,
-        "type": "town",
-        "population": 47
       }
     ]
   },
@@ -6122,7 +6122,6 @@
         "x": 1059,
         "y": 502,
         "type": "town",
-        "is_center": true,
         "population": 49
       },
       {
@@ -6131,6 +6130,7 @@
         "x": 1053,
         "y": 496,
         "type": "city",
+        "is_center": true,
         "population": 98
       }
     ]
@@ -6265,7 +6265,7 @@
         "id": "aleppo_azaz",
         "name_tr": "Azez",
         "x": 1227,
-        "y": 539,
+        "y": 540,
         "type": "fortress",
         "population": 12
       },
@@ -6342,7 +6342,6 @@
         "x": 1338,
         "y": 542,
         "type": "city",
-        "is_center": true,
         "population": 38
       },
       {
@@ -6367,6 +6366,7 @@
         "x": 1349,
         "y": 578,
         "type": "fortress",
+        "is_center": true,
         "population": 9
       }
     ]
@@ -6418,7 +6418,6 @@
         "x": 1073,
         "y": 460,
         "type": "city",
-        "is_center": true,
         "population": 32
       },
       {
@@ -6435,6 +6434,7 @@
         "x": 1070,
         "y": 458,
         "type": "fortress",
+        "is_center": true,
         "population": 7
       },
       {
@@ -6532,7 +6532,6 @@
         "x": 1174,
         "y": 438,
         "type": "town",
-        "is_center": true,
         "population": 26
       },
       {
@@ -6549,6 +6548,7 @@
         "x": 1178,
         "y": 438,
         "type": "fortress",
+        "is_center": true,
         "population": 12
       },
       {
@@ -6578,7 +6578,6 @@
         "x": 1092,
         "y": 461,
         "type": "town",
-        "is_center": true,
         "population": 21
       },
       {
@@ -6587,6 +6586,7 @@
         "x": 1088,
         "y": 454,
         "type": "city",
+        "is_center": true,
         "population": 42
       }
     ]
@@ -6760,7 +6760,6 @@
         "x": 949,
         "y": 467,
         "type": "city",
-        "is_center": true,
         "population": 19
       },
       {
@@ -6769,6 +6768,7 @@
         "x": 937,
         "y": 468,
         "type": "fortress",
+        "is_center": true,
         "population": 4
       },
       {
@@ -6956,11 +6956,11 @@
     "settlements": null
   },
   {
-    "region_id": "new_region_274",
+    "region_id": "pivdennyi_river",
     "settlements": null
   },
   {
-    "region_id": "new_region_275",
+    "region_id": "denieper_south",
     "settlements": null
   },
   {

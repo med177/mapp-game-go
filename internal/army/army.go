@@ -10,6 +10,27 @@ const MaxArmySize = 20
 
 const DefaultArmyMovePoints = 2
 
+// NavalMissionKind, oyuncu filosunun kalıcı deniz görevini belirtir. AI'nin
+// runtime-only stratejik görevi bundan ayrı kalır; oyuncu görevi save/load ile
+// birlikte taşınır ve ortak UI/game doğrulama katmanını kullanır.
+type NavalMissionKind string
+
+const (
+	NavalMissionPatrol    NavalMissionKind = "patrol"
+	NavalMissionBlockade  NavalMissionKind = "blockade"
+	NavalMissionEscort    NavalMissionKind = "escort"
+	NavalMissionTransport NavalMissionKind = "transport"
+)
+
+// NavalMission oyuncu filosunun açık deniz görevidir. TargetRegionID devriye,
+// blokaj ve nakliye hedefini; TargetFleetID escort edilen taşıma filosunu
+// belirtir.
+type NavalMission struct {
+	Kind           NavalMissionKind `json:"kind"`
+	TargetRegionID world.RegionID   `json:"target_region_id,omitempty"`
+	TargetFleetID  ArmyID           `json:"target_fleet_id,omitempty"`
+}
+
 // ArmyID ordu benzersiz kimliği.
 type ArmyID string
 
@@ -47,6 +68,8 @@ type Army struct {
 	// Anahtar ekonomi rotasının gönderen->alan kimliğidir; rota yeniden
 	// oluşturulsa bile görev save/load boyunca korunur.
 	TradeRouteKey string `json:"trade_route_key,omitempty"`
+	// NavalMission, merchant rotasından bağımsız savaş/nakliye görevidir.
+	NavalMission *NavalMission `json:"naval_mission,omitempty"`
 }
 
 // IsDocked, filonun deniz ankrajı liman olsa bile RegionID üzerinde tutulan

@@ -774,6 +774,9 @@ func TestOfferVassalizationMakesTargetVassalAndBlocksThirdParties(t *testing.T) 
 	gs := testGameState()
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic, Gold: 90, Grain: 60}
 	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	for _, regionID := range []world.RegionID{"a_frontier_1", "a_frontier_2", "a_frontier_3", "a_frontier_4"} {
+		gs.Regions[regionID] = &world.Region{ID: regionID, OwnerID: "a", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	}
 	gs.Relations[faction.RelationKey("a", "b")] = &faction.Relation{FactionA: "a", FactionB: "b", Stance: faction.StancePeace, Score: 70}
 	gs.Relations[faction.RelationKey("b", "c")] = &faction.Relation{FactionA: "b", FactionB: "c", Stance: faction.StanceTrade, Score: 35}
 	gs.TradeRoutes = []*economy.TradeRoute{
@@ -781,6 +784,7 @@ func TestOfferVassalizationMakesTargetVassalAndBlocksThirdParties(t *testing.T) 
 		{FromFactionID: "c", ToFactionID: "b", Good: economy.GoodGrain, AmountPerTurn: 2, GoldPerUnit: 5},
 	}
 	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units,
+		army.Unit{TypeID: "inf", CurrentHP: 100},
 		army.Unit{TypeID: "inf", CurrentHP: 100},
 		army.Unit{TypeID: "inf", CurrentHP: 100},
 		army.Unit{TypeID: "inf", CurrentHP: 100},
@@ -805,6 +809,76 @@ func TestOfferVassalizationMakesTargetVassalAndBlocksThirdParties(t *testing.T) 
 	}
 	if reason := ActionBlockReason(gs, "b", "c", ActionProposeTrade); reason == "" {
 		t.Fatal("vassalın üçüncü tarafla diplomasi kurması engellenmeliydi")
+	}
+}
+
+func TestAssessVassalizationDoesNotAcceptRelationScoreAlone(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 55
+
+	assessment := AssessVassalizationProposal(gs, rel, "a", "b")
+	if assessment.BlockReason == "" || assessment.Accepted() {
+		t.Fatalf("55 ilişki skoru tek başına vassallık kabulü sağlamamalıydı: %+v", assessment)
+	}
+	if result := Execute(gs, "a", "b", ActionOfferVassalization); result.Applied {
+		t.Fatalf("tehdit/üstünlük yokken vassallık uygulanmamalıydı: %+v", result)
+	}
+}
+
+func TestAssessVassalizationRequiresFivefoldMilitaryAndRegionalSuperiority(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 55
+	gs.Armies["a1"].Units = append(gs.Armies["a1"].Units,
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+		army.Unit{TypeID: "inf", CurrentHP: 100},
+	)
+	for _, regionID := range []world.RegionID{"a_extra_1", "a_extra_2", "a_extra_3"} {
+		gs.Regions[regionID] = &world.Region{ID: regionID, OwnerID: "a", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	}
+
+	assessment := AssessVassalizationProposal(gs, rel, "a", "b")
+	if assessment.BlockReason == "" || assessment.Accepted() {
+		t.Fatalf("5 katın altındaki askeri veya bölgesel üstünlük vassallık için yeterli olmamalıydı: %+v", assessment)
+	}
+}
+
+func TestAssessVassalizationAcceptsDirectFrontierThreatWithoutRegionalSuperiority(t *testing.T) {
+	gs := testGameState()
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 55
+	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
+	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+	gs.Regions["b_rear"] = &world.Region{ID: "b_rear", OwnerID: "b", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Armies["a2"] = &army.Army{
+		ID:       "a2",
+		OwnerID:  "a",
+		RegionID: "a_cap",
+		Units:    []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+	gs.Armies["a3"] = &army.Army{
+		ID:       "a3",
+		OwnerID:  "a",
+		RegionID: "a_cap",
+		Units:    []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+	gs.Armies["b2"] = &army.Army{
+		ID:       "b2",
+		OwnerID:  "b",
+		RegionID: "b_rear",
+		Units: []army.Unit{
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+			{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+		},
+	}
+
+	assessment := AssessVassalizationProposal(gs, rel, "a", "b")
+	if !assessment.Accepted() {
+		t.Fatalf("doğrudan sınır tehdidi varken vassallık kabul edilebilmeliydi: %+v", assessment)
 	}
 }
 

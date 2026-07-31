@@ -20,6 +20,8 @@ const (
 	ActionDisembarkArmy            ActionKind = "disembark_army"
 	ActionAssignMerchantRoute      ActionKind = "assign_merchant_route"
 	ActionClearMerchantRoute       ActionKind = "clear_merchant_route"
+	ActionAssignNavalMission       ActionKind = "assign_naval_mission"
+	ActionClearNavalMission        ActionKind = "clear_naval_mission"
 	ActionStartSiege               ActionKind = "start_siege"
 	ActionAssaultSiege             ActionKind = "assault_siege"
 	ActionLiftSiege                ActionKind = "lift_siege"

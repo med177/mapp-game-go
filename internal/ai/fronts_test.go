@@ -104,6 +104,24 @@ func TestAIDiagnosticSnapshotExposesFrontTargetAndRoles(t *testing.T) {
 	}
 }
 
+func TestAIDiagnosticSnapshotExposesNavalState(t *testing.T) {
+	gs := aiMerchantTradeTestState()
+	fleet := gs.Armies["merchant"]
+	fleet.DockedRegionID = "venice"
+	fleet.DockedSettlementID = "venice_port"
+
+	snapshot := BuildAIDiagnosticSnapshot(gs, "venice")
+	if snapshot.NavalFleetCount != 1 || snapshot.NavalDockedFleetCount != 1 {
+		t.Fatalf("donanma sayıları diagnostic snapshot'a taşınmalıydı: %+v", snapshot)
+	}
+	if snapshot.NavalMissionKind != "patrol" {
+		t.Fatalf("görevsiz filonun patrol görünmesi bekleniyordu: %+v", snapshot)
+	}
+	if len(snapshot.BlockReasons) == 0 || snapshot.BlockReasons[len(snapshot.BlockReasons)-1] != "donanmanın bir kısmı limanda; ilk hareket denize çıkış" {
+		t.Fatalf("dock teşhis engeli görünmeliydi: %+v", snapshot.BlockReasons)
+	}
+}
+
 func TestFrontTargetPrefersStrategicValueOverFirstRegion(t *testing.T) {
 	gs := aiFrontTestState()
 	gs.Regions["capital"].Neighbors = append(gs.Regions["capital"].Neighbors, "enemy_rear")

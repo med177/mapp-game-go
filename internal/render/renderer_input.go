@@ -37,6 +37,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showMerchantRoutePanel {
 		return r.handleMerchantRoutePanelInput()
 	}
+	if r.showNavalMissionPanel || r.navalMissionTargeting {
+		return r.handleNavalMissionPanelInput()
+	}
 
 	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
@@ -754,6 +757,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
 		if r.selectedArmyIsPlayerOwned() && merchantRouteButtonHit(fx, fy, r.gs, r.SelectedArmy) {
 			r.openMerchantRoutePanel()
+			return InputAction{}
+		}
+		if r.selectedArmyIsPlayerOwned() && navalMissionButtonHit(fx, fy, r.gs, r.SelectedArmy) {
+			r.openNavalMissionPanel()
 			return InputAction{}
 		}
 		if r.selectedArmyIsPlayerOwned() && CommanderPortraitHitTest(fx, fy, r.gs, r.SelectedArmy) {

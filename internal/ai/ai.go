@@ -1597,6 +1597,25 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 	actorName := turnFactionName(gs, fid)
 	targetName := turnRegionName(gs, target)
 	sourceName := turnRegionName(gs, fromRegion)
+	if a.IsNaval && a.IsDocked() && targetRegion.IsSea && target == a.RegionID {
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+		if a.MovePoints > 0 {
+			a.MovePoints--
+		}
+		return moveOutcome{
+			survived: true,
+			step: TurnStep{
+				FactionID:    fid,
+				Kind:         TurnStepMove,
+				ArmyID:       a.ID,
+				FromRegion:   fromRegion,
+				TargetRegion: target,
+				FocusRegion:  target,
+				Message:      actorName + " " + sourceName + " limanından denize çıktı.",
+			},
+		}
+	}
 	if a.IsNaval && a.IsDocked() && targetRegion.IsSea {
 		// Docked filonun RegionID'si rota hesapları için deniz ankrajıdır;
 		// gerçek konum ancak denize çıkış emriyle tekrar deniz bölgesi olur.

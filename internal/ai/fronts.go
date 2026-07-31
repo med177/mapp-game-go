@@ -24,6 +24,7 @@ const (
 	AIArmyRoleSecurity     AIArmyRole = "security"
 	AIArmyRoleTransport    AIArmyRole = "transport"
 	AIArmyRoleEscort       AIArmyRole = "escort"
+	AIArmyRolePatrol       AIArmyRole = "patrol"
 	aiFrontTargetLockTurns            = 4
 )
 
@@ -106,12 +107,17 @@ func assignAINavalRoles(ctx *StrategicContext) {
 		}
 		if aiFleetHasWarship(ctx.gs, fleet) {
 			anchor := fleet.RegionID
-			reason := "escort filosu"
+			reason := "ticaret ve liman devriyesi"
+			role := AIArmyRoleEscort
+			if ctx.gs.ScenarioID == "1300_ottoman_rise" {
+				role = AIArmyRolePatrol
+			}
 			if mission != nil && mission.EmbarkSeaRegionID != "" {
 				anchor = mission.EmbarkSeaRegionID
 				reason = "nakliye hattı escortu"
+				role = AIArmyRoleEscort
 			}
-			ctx.ArmyAssignments[fleet.ID] = AIArmyAssignment{Role: AIArmyRoleEscort, AnchorRegionID: anchor, Reason: reason}
+			ctx.ArmyAssignments[fleet.ID] = AIArmyAssignment{Role: role, AnchorRegionID: anchor, Reason: reason}
 		}
 	}
 }
@@ -855,6 +861,7 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 	if ctx.RallyActive {
 		return false
 	}
+	navalMissionReady := ctx.navalMission != nil && ctx.navalMission.Kind == aiNavalMissionAssault && ctx.navalMission.TargetFactionID == target && ctx.navalMission.EmbarkArmyID != ""
 	attackPower := 0
 	for armyID, assignment := range ctx.ArmyAssignments {
 		if assignment.Role != AIArmyRoleAssault && assignment.Role != AIArmyRoleSiege {
@@ -866,8 +873,13 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 		}
 		attackPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
 	}
-	if attackPower <= 0 {
+	if attackPower <= 0 && !navalMissionReady {
 		return false
+	}
+	if attackPower <= 0 && navalMissionReady {
+		if embarkArmy := ctx.gs.Armies[ctx.navalMission.EmbarkArmyID]; embarkArmy != nil {
+			attackPower = embarkArmy.TotalStrength(ctx.gs.UnitTypes)
+		}
 	}
 	availablePower := maxInt(1, ctx.TotalMobilePower-ctx.ReserveAssignedPower)
 	if attackPower*100 < availablePower*60 {

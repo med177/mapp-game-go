@@ -15,7 +15,7 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 `internal/ai/budget.go`, `internal/ai/building_investment.go`,
 `internal/ai/unit_composition.go`, `internal/ai/recruitment_region.go`,
 `internal/ai/research_strategy.go`, `internal/ai/naval_mission.go`,
-`internal/ai/naval_threat.go`, `internal/ai/merchant_trade.go`,
+`internal/ai/naval_threat.go`, `internal/ai/naval_patrol.go`, `internal/ai/merchant_trade.go`,
 `internal/ai/conquest_policy.go`,
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
 `internal/ai/grain_procurement.go`
@@ -1045,6 +1045,26 @@ güncel tehdit map'ini çağrı başına bir kez yeniden kurar.
 Diğer senaryolar legacy davranışı korur: kıyı/savaş durumuna göre `1–3` filo limiti,
 `aiSeaPressure()` ile liman seçimi ve transport bulunan baskılı hatlarda escort üretimi.
 
+### 1300 Savaş Filo Devriyesi ve Liman Çıkışı
+
+Savaş gemisi somut bir çıkarma görevi taşımıyorsa artık boşta kalmaz. `Patrol` rolü
+ile düşman filosu görülen denizleri, tehdit altındaki liman yaklaşımlarını ve kendi
+aktif ticaret rotalarının denizlerini hedefler. Rota seçiminde tehdit haritası,
+güvenlik eşiği ve deterministik BFS kullanılır; filo rastgele yabancı kıyıya
+gönderilmez. Somut çıkarma görevi varsa aynı filo `Escort` rolünde kalır.
+
+Üretim veya senaryo yüklemesi filoyu limana bağlı oluşturduğunda deniz `RegionID`si
+korunur, fakat ilk AI emri aynı deniz ankrajına yöneltilen özel bir çıkış adımıdır.
+Bu adım `executeMove()` içindeki kanonik dock temizliğini çalıştırır; sonraki turda
+filo devriye, escort veya ticaret rotası hareketine devam eder. F3 AI teşhis ekranı
+filo toplamını, limanda bekleyen sayısını, aktif deniz görevini ve ilgili engelleri
+gösterir.
+
+Denizaşırı savaş ilanı da artık yalnızca somut çıkarma görevi hazırsa açılır:
+hedef kıyı, çıkış limanı, deniz rotası, transport teknolojisi/kapasitesi ve
+taşınacak saha ordusu birlikte doğrulanır. Kara sınırı olmayan hedef için bu kapı
+geçilmeden savaş fırsatı puanlanmaz.
+
 ---
 
 ## 1300 Merchant Ticaret Filosu
@@ -1078,6 +1098,24 @@ Kaynak kodu: `internal/ai/merchant_trade.go`, `internal/state/merchant_trade.go`
 Testler: `internal/ai/merchant_trade_test.go`, `internal/state/merchant_trade_test.go`,
 `internal/save/save_test.go`, `internal/game/production_naval_test.go`.
 
+## Oyuncu Donanma Görevleri
+
+AI'nin runtime deniz görevlerinden ayrı olarak oyuncu filoları artık kalıcı
+`patrol`, `blockade`, `escort` ve `transport` görevleri alabilir. Savaş filosu
+devriye/abluka için deniz bölgesi seçer; escort satırı aynı devlete ait bir
+nakliye filosunu izler; taşınan kara ordusu bulunan transport filosu kıyı kara
+bölgesini hedefler. Görev seçimi `GÖREV` butonundan yapılır, geçerli hedefler
+haritada renkli işaretlerle gösterilir ve görev değiştirilebilir veya
+kaldırılabilir.
+
+Atama yalnız state doğrulamasından sonra kaydedilir. Her tur başında görevli
+oyuncu filosu komşuluk grafiğinde deterministik BFS ile hedefe yaklaşır;
+nakliye hedef kıyıya geldiğinde mevcut çıkarma ve savaş kurallarını kullanır.
+Görev, filo ikonunda harf rozetiyle ve panel footer'ında hedef metniyle görünür.
+Kaynak/test: `internal/army/army.go`, `internal/state/naval_mission.go`,
+`internal/game/player_naval_mission.go`, `internal/render/naval_mission_panel.go`,
+`internal/save/compact.go`; `internal/{state,game,render,save}/*naval_mission*_test.go`.
+
 ## AI Deniz Taşıma Akışı
 
 AI kara ordularını nakliye filosuna bindirip indirebilir:
@@ -1091,7 +1129,9 @@ AI kara ordularını nakliye filosuna bindirip indirebilir:
   bu hedefte kilitlenmez; mevcut savaş düşmanları arasındaki ulaşılabilir kıyıları tarar,
   en yakın çıkarılabilir hedefe retarget olur ve savunucu gücü üstün olan kıyıyı atlar.
   Bu fallback yeni savaş ilan etmez ve yalnız runtime mission state'ini değiştirir.
-- Somut görev yoksa boş 1300 filosu uzak deniz veya rastgele yabancı kıyı aramaz.
+- Somut görev yoksa boş 1300 transport filosu uzak deniz veya rastgele yabancı kıyı aramaz;
+  görev taşımayan savaş gemileri ise `Patrol` rolüyle güvenlik ve ticaret denizlerini
+  devriye gezer.
   Eski save'den yük taşıyan ama objective'i kalmayan filo, yalnız komşu güvenli dost
   kıyıya tahliye yapar.
 - Diğer senaryolarda kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o

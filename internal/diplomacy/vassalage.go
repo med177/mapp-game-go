@@ -15,6 +15,8 @@ const (
 	giftRelationBonus           = 15
 	vassalizationMinScore       = 55
 	vassalAcceptanceThreshold   = 65
+	vassalMilitaryPowerRatio    = 5
+	vassalRegionRatio           = 5
 	vassalTributeRatePercent    = 20
 	vassalInternalRelationFloor = 40
 	// VassalAnnexationMinimumTurns, yeni vassal yapılan devletin ilhak
@@ -168,8 +170,9 @@ func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, act
 	targetPower := MilitaryPower(gs, target)
 	actorRegions := len(gs.LandRegionsOwnedBy(actor))
 	targetRegions := len(gs.LandRegionsOwnedBy(target))
-	if actorPower < targetPower*3/2 && actorRegions <= targetRegions+1 {
-		assessment.BlockReason = "Askeri ve bölgesel üstünlük yetersiz"
+	if !vassalizationThreatensTarget(gs, actor, target) &&
+		!(hasMilitarySuperiority(actorPower, targetPower) && hasRegionalSuperiority(actorRegions, targetRegions)) {
+		assessment.BlockReason = "Doğrudan tehdit veya askeri ve bölgesel üstünlük yok"
 		return assessment
 	}
 
@@ -180,11 +183,50 @@ func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, act
 	if HasCommonEnemy(gs, actor, target) {
 		chance += 6
 	}
-	if HasDirectThreat(gs, actor, target) {
+	if vassalizationThreatensTarget(gs, actor, target) {
 		chance += 6
 	}
 	assessment.Chance = clamp(chance, 0, 100)
 	return assessment
+}
+
+func hasMilitarySuperiority(actorPower, targetPower int) bool {
+	if actorPower <= 0 {
+		return false
+	}
+	if targetPower <= 0 {
+		return true
+	}
+	return actorPower >= targetPower*vassalMilitaryPowerRatio
+}
+
+func hasRegionalSuperiority(actorRegions, targetRegions int) bool {
+	if actorRegions <= 0 {
+		return false
+	}
+	if targetRegions <= 0 {
+		return true
+	}
+	return actorRegions >= targetRegions*vassalRegionRatio
+}
+
+// vassalizationThreatensTarget, teklif sahibinin hedef üzerinde gerçek bir
+// baskı kurup kurmadığını hedef perspektifinden hesaplar. HasDirectThreat
+// iki taraflı bir tehdit döndürdüğü için burada zayıf hedefin güçlü aktöre
+// vassal olmasını yanlışlıkla gerekçelendirmemek adına yönlü kontrol kullanılır.
+func vassalizationThreatensTarget(gs *state.GameState, actor, target faction.FactionID) bool {
+	if gs == nil || !sharesBorder(gs, actor, target) {
+		return false
+	}
+	actorPower := MilitaryPower(gs, actor)
+	targetPower := MilitaryPower(gs, target)
+	if actorPower > 0 && targetPower == 0 {
+		return true
+	}
+	if actorPower > 0 && actorPower*10 > targetPower*12 {
+		return true
+	}
+	return frontierArmyCount(gs, actor, target) > frontierArmyCount(gs, target, actor)+1
 }
 
 func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, action Action) string {

@@ -131,6 +131,15 @@ edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
 
 Donanma konumu iki katmanlıdır: `Army.RegionID` deniz rotası için kullanılan deniz ankrajını korur; filo limandaysa gerçek eş-konum `DockedSettlementID` (eski veride `DockedRegionID` fallback'i) olan `Army.LocationID()` ile okunur. `Army.IsAtSea()` yalnız dock bağı olmayan filoları açık deniz savaşı, abluka ve AI deniz tehdidi hesaplarına dahil eder. Deniz hareketi dock bağını temizleyerek hedef deniz bölgesini tekrar kanonik konum yapar. Save yükleme bu state'i olduğu gibi korur; eski dock migrasyonu yalnız başlangıç senaryosundaki eksik dock verisi için çalışır.
 
+Oyuncu filosunun kalıcı görevi `Army.NavalMission` içinde tutulur. `patrol` ve
+`blockade` deniz bölgesi, `escort` aynı devlete ait nakliye filosu, `transport`
+ise taşınan kara ordusu ile kıyı kara bölgesini hedefler. Atama ve temizleme
+`GameState.CanAssignNavalMission()`, `AssignNavalMission()` ve
+`ClearNavalMission()` kapılarından geçer; compact save/load `nm` alanıyla bu
+görevi korur. `internal/game/player_naval_mission.go` her yeni turda hareket
+puanı yenilendikten sonra deterministik deniz BFS'iyle filoyu hedefe yaklaştırır;
+nakliye hedef kıyıya ulaştığında mevcut çıkarma/komşuluk çözümünü kullanır.
+
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
 
 `Army.Commander` alanı komutanın kalıcı kariyer state'ini taşır. Komutan ID'si, adı,

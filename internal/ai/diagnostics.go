@@ -25,18 +25,22 @@ type AIDiagnosticFront struct {
 // tek yerde toplar. Save'e yazılmaz; debug paneli veya tempo raporu doğrudan
 // bunu tüketebilir.
 type AIDiagnosticSnapshot struct {
-	FactionID            faction.FactionID
-	Turn                 int
-	PlanKind             state.AIObjectiveKind
-	PlanTargetFactionID  faction.FactionID
-	PlanTargetRegionIDs  []world.RegionID
-	ReservePercent       int
-	ReserveTargetPower   int
-	ReserveAssignedPower int
-	CriticalThreat       bool
-	Fronts               []AIDiagnosticFront
-	ArmyRoleCounts       map[AIArmyRole]int
-	BlockReasons         []string
+	FactionID             faction.FactionID
+	Turn                  int
+	PlanKind              state.AIObjectiveKind
+	PlanTargetFactionID   faction.FactionID
+	PlanTargetRegionIDs   []world.RegionID
+	ReservePercent        int
+	ReserveTargetPower    int
+	ReserveAssignedPower  int
+	CriticalThreat        bool
+	Fronts                []AIDiagnosticFront
+	ArmyRoleCounts        map[AIArmyRole]int
+	NavalMissionKind      string
+	NavalTargetRegionID   world.RegionID
+	NavalFleetCount       int
+	NavalDockedFleetCount int
+	BlockReasons          []string
 }
 
 // BuildAIDiagnosticSnapshot mevcut AI karar akışını tekrar kullanır; ayrı bir
@@ -75,6 +79,27 @@ func BuildAIDiagnosticSnapshot(gs *state.GameState, fid faction.FactionID) *AIDi
 	}
 	for _, assignment := range ctx.ArmyAssignments {
 		snapshot.ArmyRoleCounts[assignment.Role]++
+	}
+	for _, fleet := range aiSortedArmies(gs) {
+		if fleet == nil || fleet.OwnerID != string(fid) || !fleet.IsNaval {
+			continue
+		}
+		snapshot.NavalFleetCount++
+		if fleet.IsDocked() {
+			snapshot.NavalDockedFleetCount++
+		}
+	}
+	if ctx.navalMission != nil {
+		snapshot.NavalMissionKind = string(ctx.navalMission.Kind)
+		snapshot.NavalTargetRegionID = ctx.navalMission.TargetRegionID
+		if ctx.navalMission.MissingCapacity > 0 {
+			snapshot.BlockReasons = append(snapshot.BlockReasons, "deniz görevi için nakliye kapasitesi eksik")
+		}
+	} else if snapshot.NavalFleetCount > 0 {
+		snapshot.NavalMissionKind = "patrol"
+	}
+	if snapshot.NavalDockedFleetCount > 0 {
+		snapshot.BlockReasons = append(snapshot.BlockReasons, "donanmanın bir kısmı limanda; ilk hareket denize çıkış")
 	}
 	if ctx.CriticalThreat {
 		snapshot.BlockReasons = append(snapshot.BlockReasons, "kritik tehdit")

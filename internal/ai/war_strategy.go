@@ -4,7 +4,47 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
+
+// aiNavalWarReady yalnız mevcut stratejik planın somut bir deniz çıkarma
+// görevi üretebildiği durumda kara sınırı olmayan hedefe savaş izni verir.
+// Böylece her kıyı devleti rastgele denizaşırı savaş açmaz; transport/liman
+// hattı kurulabilen tarihsel hedefler ise diplomasi katmanında kilitlenmez.
+func aiNavalWarReady(ctx *StrategicContext, target faction.FactionID) bool {
+	if ctx == nil || ctx.gs == nil || target == "" || ctx.navalMission == nil {
+		return false
+	}
+	mission := ctx.navalMission
+	if mission.Kind != aiNavalMissionAssault || mission.TargetFactionID != target || mission.EmbarkArmyID == "" || mission.EmbarkRegionID == "" || mission.EmbarkSeaRegionID == "" || mission.LandingSeaRegionID == "" {
+		return false
+	}
+	landing := ctx.gs.Regions[mission.TargetRegionID]
+	if landing == nil || landing.IsSea || landing.OwnerID != string(target) || !landing.IsCoastal(ctx.gs.Regions) {
+		return false
+	}
+	armyRef := ctx.gs.Armies[mission.EmbarkArmyID]
+	if armyRef == nil || armyRef.IsNaval || len(armyRef.Units) == 0 {
+		return false
+	}
+	self := ctx.gs.Factions[ctx.FactionID]
+	if self == nil {
+		return false
+	}
+	transportType := ctx.gs.UnitTypes["transport"]
+	if transportType == nil || transportType.CarryCapacity <= 0 || !transportType.HasAllRequiredTechs(self.Research.Completed) {
+		return false
+	}
+	return aiSeaRouteDistance(ctx.gs, mission.EmbarkSeaRegionID, mission.LandingSeaRegionID) >= 0 && aiNavalWarPortReady(ctx.gs, ctx.FactionID, mission.EmbarkRegionID)
+}
+
+func aiNavalWarPortReady(gs *state.GameState, fid faction.FactionID, regionID world.RegionID) bool {
+	if gs == nil || fid == "" || regionID == "" {
+		return false
+	}
+	region := gs.Regions[regionID]
+	return region != nil && region.OwnerID == string(fid) && !region.IsSea && aiNavalEmbarkPortViable(gs, fid, region)
+}
 
 // aiEvaluateWarOpportunitiesWithSteps selects at most one opportunistic war
 // target after diplomacy has resolved peace/alliance/trade actions.
@@ -74,7 +114,11 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	} else if self.AIAggressiveness >= 70 {
 		maxPeaceScore = -10
 	}
-	if rel.Score > maxPeaceScore || !aiSharesLandBorder(gs, actor, target) {
+	sharesLandBorder := aiSharesLandBorder(gs, actor, target)
+	if rel.Score > maxPeaceScore {
+		return -1
+	}
+	if !sharesLandBorder && !aiNavalWarReady(strategicContext, target) {
 		return -1
 	}
 
@@ -84,7 +128,7 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 		return -1
 	}
 	frontierPower := aiFrontierPower(gs, actor, target)
-	if frontierPower <= 0 {
+	if frontierPower <= 0 && sharesLandBorder {
 		return -1
 	}
 	targetFrontierPower := aiFrontierPower(gs, target, actor)
@@ -139,6 +183,11 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 			commitment = plan.Commitment
 		}
 		score += minInt(36, 12+commitment/3)
+	}
+	if !sharesLandBorder {
+		// Deniz aşırı savaş kara sınırı puanını taşımadığı için, yalnızca
+		// gerçek bir deniz görevi hazırsa kontrollü bir hazırlık bonusu alır.
+		score += 12
 	}
 	if target == gs.PlayerFactionID {
 		score -= 18

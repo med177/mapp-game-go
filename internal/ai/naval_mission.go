@@ -453,10 +453,23 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 	if gs == nil || fleet == nil || !fleet.IsNaval || gs.ScenarioID != "1300_ottoman_rise" {
 		return "", false
 	}
+	// Docked filoların RegionID'si zaten komşu deniz ankrajıdır. Bu yüzden
+	// merchant rota kontrolü bu ankrajı "hedefe ulaştı" sanıp hiçbir hareket
+	// üretmeden önce filonun gerçek liman bağını bırakmasını sağlamalıdır.
+	if fleet.IsDocked() {
+		sea := gs.Regions[fleet.RegionID]
+		if sea == nil || !sea.IsSea {
+			return "", true
+		}
+		return fleet.RegionID, true
+	}
 	if target, handled := aiMerchantTradeFleetMove(gs, fleet, ctx); handled {
 		return target, true
 	}
 	if ctx == nil || ctx.FactionID != faction.FactionID(fleet.OwnerID) {
+		if isWarshipFleet(fleet, gs.UnitTypes) {
+			return aiNavalPatrolMove(gs, fleet, nil)
+		}
 		return "", true
 	}
 	mission := ctx.navalMission
@@ -473,6 +486,9 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 					return target.ID, true
 				}
 			}
+		}
+		if isWarshipFleet(fleet, gs.UnitTypes) {
+			return aiNavalPatrolMove(gs, fleet, ctx)
 		}
 		return "", true
 	}

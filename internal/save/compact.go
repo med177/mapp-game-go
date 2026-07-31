@@ -94,6 +94,7 @@ type armySaveState struct {
 	OverCapacityTurns  int                    `json:"oc,omitempty"`
 	TurnsWithoutPort   int                    `json:"tp,omitempty"`
 	TradeRouteKey      string                 `json:"trk,omitempty"`
+	NavalMission       *army.NavalMission     `json:"nm,omitempty"`
 }
 
 type campaignSaveState struct {
@@ -1163,6 +1164,7 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
 			TradeRouteKey:      current.TradeRouteKey,
+			NavalMission:       cloneNavalMission(current.NavalMission),
 		}
 	}
 	return out
@@ -1193,9 +1195,18 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
 			TradeRouteKey:      current.TradeRouteKey,
+			NavalMission:       cloneNavalMission(current.NavalMission),
 		}
 	}
 	return out
+}
+
+func cloneNavalMission(mission *army.NavalMission) *army.NavalMission {
+	if mission == nil {
+		return nil
+	}
+	copy := *mission
+	return &copy
 }
 
 func stackUnits(units []army.Unit) []stackedUnitSaveState {

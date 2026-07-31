@@ -95,6 +95,54 @@ func Test1300MerchantFleetMovesToAssignedTradeCenterSea(t *testing.T) {
 	}
 }
 
+func Test1300DockedMerchantFleetUndocksBeforeTradeRouteMove(t *testing.T) {
+	gs := aiMerchantTradeTestState()
+	fleet := gs.Armies["merchant"]
+	fleet.DockedRegionID = "venice"
+	fleet.DockedSettlementID = "venice_port"
+	fleet.MovePoints = 3
+
+	aiExecuteMerchantTradeStrategy(gs, "venice", nil, nil, nil)
+	ctx := prepareStrategicContext(gs, "venice")
+	if !fleet.IsDocked() {
+		t.Fatal("test merchant filosu başlangıçta limanda olmalıydı")
+	}
+	if got := chooseBestMoveWithStrategicContext(gs, fleet, ctx); got != "adriatic" {
+		t.Fatalf("docked merchant filosu önce kendi deniz ankrajına çıkmalıydı, got=%s", got)
+	}
+
+	outcome := executeMove(gs, fleet, "adriatic", "venice")
+	if !outcome.survived {
+		t.Fatal("docked merchant filosunun denize çıkışı filoyu yok etmemeliydi")
+	}
+	if fleet.IsDocked() || !fleet.IsAtSea() {
+		t.Fatalf("merchant filosu denize çıktıktan sonra docked kalmamalıydı: %+v", fleet)
+	}
+	if fleet.RegionID != "adriatic" || fleet.MovePoints != 2 {
+		t.Fatalf("undock sonrası deniz ankrajı veya hareket puanı hatalı: region=%s move=%d", fleet.RegionID, fleet.MovePoints)
+	}
+}
+
+func Test1300WarshipPatrolMovesTowardActiveTradeSea(t *testing.T) {
+	gs := aiMerchantTradeTestState()
+	gs.Regions["outer"] = &world.Region{ID: "outer", IsSea: true, Neighbors: []world.RegionID{"adriatic"}}
+	gs.Regions["adriatic"].Neighbors = append(gs.Regions["adriatic"].Neighbors, "outer")
+	gs.Armies["guard"] = &army.Army{
+		ID: "guard", OwnerID: "venice", RegionID: "outer", IsNaval: true,
+		Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}, MovePoints: 3, MaxMovePoints: 3,
+	}
+	aiExecuteMerchantTradeStrategy(gs, "venice", nil, nil, nil)
+	ctx := prepareStrategicContext(gs, "venice")
+
+	if got := chooseBestMoveWithStrategicContext(gs, gs.Armies["guard"], ctx); got != "adriatic" {
+		t.Fatalf("görevsiz warship aktif ticaret denizine devriye yapmalıydı, got=%s", got)
+	}
+	assignment, ok := ctx.ArmyAssignments["guard"]
+	if !ok || assignment.Role != AIArmyRolePatrol {
+		t.Fatalf("görevsiz savaş filosu patrol rolü almalıydı: %+v", assignment)
+	}
+}
+
 func Test1300ThreatenedTradeCenterQueuesEscortBeforeMerchant(t *testing.T) {
 	gs := aiMerchantTradeTestState()
 	gs.Factions["venice"].Research.Completed["naval_doctrine"] = true

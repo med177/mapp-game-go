@@ -962,6 +962,7 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions, gs.Year)
 		}
 	}
+	enemyNavalRegions := enemyNavalRegionSet(gs)
 
 	for rid, r := range gs.Regions {
 		if r.IsSea {
@@ -971,6 +972,14 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 					wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], 80, 120)
 					wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], 180, 120)
 					wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], 255, 120)
+					wm.dispPixels[pIdx*4+3] = 255
+				}
+			}
+			if enemyNavalRegions[rid] {
+				for _, pIdx := range wm.regionPx[rid] {
+					wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], borderColorEnemy.R, 62)
+					wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], borderColorEnemy.G, 62)
+					wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], borderColorEnemy.B, 62)
 					wm.dispPixels[pIdx*4+3] = 255
 				}
 			}
@@ -1110,7 +1119,42 @@ func borderDiplomacySignature(gs *state.GameState) uint64 {
 		}
 		signature ^= borderHashString(key) ^ borderHashString(string(rel.Stance))
 	}
+	for armyID, fleet := range gs.Armies {
+		if fleet == nil || !fleet.IsNaval {
+			continue
+		}
+		entry := borderHashString(string(armyID)) ^ borderHashString(fleet.OwnerID) ^ borderHashString(string(fleet.RegionID))
+		if fleet.IsDocked() {
+			entry ^= 0xd1ce5e7a9b3c41f2
+		}
+		signature ^= entry
+	}
 	return signature
+}
+
+func enemyNavalRegionSet(gs *state.GameState) map[world.RegionID]bool {
+	regions := make(map[world.RegionID]bool)
+	if gs == nil || gs.PlayerFactionID == "" {
+		return regions
+	}
+	playerRoot := diplomacy.RealmRoot(gs, gs.PlayerFactionID)
+	if playerRoot == "" {
+		playerRoot = gs.PlayerFactionID
+	}
+	for _, fleet := range gs.Armies {
+		if fleet == nil || !fleet.IsAtSea() || fleet.OwnerID == "" || fleet.RegionID == "" {
+			continue
+		}
+		ownerRoot := diplomacy.RealmRoot(gs, faction.FactionID(fleet.OwnerID))
+		if ownerRoot == "" {
+			ownerRoot = faction.FactionID(fleet.OwnerID)
+		}
+		if ownerRoot == playerRoot || !diplomacy.IsWar(gs, playerRoot, ownerRoot) {
+			continue
+		}
+		regions[fleet.RegionID] = true
+	}
+	return regions
 }
 
 func buildBorderDiplomacyContext(gs *state.GameState, regionIDs []world.RegionID) ([]faction.FactionID, []uint8) {

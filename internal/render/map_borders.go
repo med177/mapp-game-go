@@ -262,6 +262,7 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 			regionTradeNode[rid] = nearestTradeCenterIndex(r, gs.TradeCenters.Centers, gs.Regions, gs.Year)
 		}
 	}
+	enemyNavalRegions := enemyNavalRegionSet(gs)
 
 	for i, segment := range wm.borderSegments {
 		landIdx := segment.a
@@ -271,11 +272,14 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 		}
 		if !wm.isLandRegionIndex(gs, landIdx) {
 			if wm.isSeaRegionIndex(gs, segment.a) && wm.isSeaRegionIndex(gs, segment.b) {
-				wm.borderStyles[i] = mapBorderStyleSea
+				if enemyNavalRegions[wm.regionIDs[segment.a]] || enemyNavalRegions[wm.regionIDs[segment.b]] {
+					wm.borderStyles[i] = mapBorderStyleEnemy
+				} else {
+					wm.borderStyles[i] = mapBorderStyleSea
+				}
 			}
 			continue
 		}
-
 		landID := wm.regionIDs[landIdx]
 		selectedOnEitherSide := landID == selected
 		if !selectedOnEitherSide && otherIdx != 0 && int(otherIdx) < len(wm.regionIDs) {
@@ -283,6 +287,10 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 		}
 		if selectedOnEitherSide {
 			wm.borderStyles[i] = mapBorderStyleSelected
+			continue
+		}
+		if otherIdx != 0 && int(otherIdx) < len(wm.regionIDs) && enemyNavalRegions[wm.regionIDs[otherIdx]] {
+			wm.borderStyles[i] = mapBorderStyleEnemy
 			continue
 		}
 

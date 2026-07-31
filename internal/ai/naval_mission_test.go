@@ -72,6 +72,18 @@ func aiNavalMissionTestState(unitCount int) *state.GameState {
 	}
 }
 
+func Test1300NavalWarReadyRequiresConcreteAssaultMission(t *testing.T) {
+	gs := aiNavalMissionTestState(4)
+	ctx := prepareStrategicContext(gs, "ai")
+	if !aiNavalWarReady(ctx, "enemy") {
+		t.Fatalf("kara sınırı olmayan hedef için somut çıkarma görevi hazır sayılmalıydı: %+v", ctx.navalMission)
+	}
+	ctx.navalMission = nil
+	if aiNavalWarReady(ctx, "enemy") {
+		t.Fatal("çıkarma görevi yokken denizaşırı savaş hazırlığı hazır sayılmamalıydı")
+	}
+}
+
 func Test1300NavalMissionMatchesExistingAndPendingTransportCapacity(t *testing.T) {
 	gs := aiNavalMissionTestState(12)
 	gs.Armies["transport"] = &army.Army{

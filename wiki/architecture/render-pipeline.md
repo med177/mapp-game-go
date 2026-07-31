@@ -7,6 +7,24 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Deniz haritası da oyun durumunun tehdit bilgisini görsel olarak taşır. Oyuncuyla
+savaş halinde olan realm'e ait açık deniz filolarının bulunduğu deniz bölgesinin
+pikselleri `internal/render/mapgen.go:applyOwnership` içinde düşük opaklıklı kırmızı
+overlay ile boyanır; aynı hücrenin kara/deniz ve deniz/deniz sınırları da düşman
+border stiliyle kırmızı çizilir. Limanda bağlı filolar bu tehdide dahil edilmez. Filo konumu
+`borderDiplomacySignature()` içine katıldığı için hareket eden veya limana giren
+filolar harita dokusu cache'ini geçersiz kılar ve kırmızı alan eski deniz hücresinde
+kalmaz. `enemyNavalRegionSet()` oyuncu realm'i, savaş ilişkisi ve `IsAtSea()`
+kanonik state helper'larını birlikte kullanır.
+
+Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
+`internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/nakliye
+hedefi için modal kapanıp haritaya hedef seçme modu girer; geçerli deniz veya
+kıyı bölgeleri renkli dairelerle işaretlenir ve ESC iptal eder. Escort görevi
+aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu görev
+harfi rozeti, panel footer'ı ise görev ve hedef bölge metni gösterir; görev
+temizleme ve yeniden atama aynı input önceliğini kullanır.
+
 Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
 `armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
 bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak

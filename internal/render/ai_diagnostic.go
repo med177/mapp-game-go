@@ -132,7 +132,7 @@ func (r *Renderer) aiDiagnosticLineCount() int {
 	if r == nil || r.aiDiagnosticSnapshot == nil {
 		return 0
 	}
-	return 9 + len(r.aiDiagnosticSnapshot.Fronts) + len(r.aiDiagnosticSnapshot.BlockReasons) + r.aiDiagnosticHistoryLineCount()
+	return 10 + len(r.aiDiagnosticSnapshot.Fronts) + len(r.aiDiagnosticSnapshot.BlockReasons) + r.aiDiagnosticHistoryLineCount()
 }
 
 func (r *Renderer) aiDiagnosticHistoryLineCount() int {
@@ -200,6 +200,7 @@ func (r *Renderer) aiDiagnosticLines() []string {
 		"Yedek: %" + strconv.Itoa(snapshot.ReservePercent) + "   hedef güç " + strconv.Itoa(snapshot.ReserveTargetPower) + "   ayrılan " + strconv.Itoa(snapshot.ReserveAssignedPower),
 		"Kritik tehdit: " + diagnosticBool(snapshot.CriticalThreat),
 		"Ordu rolleri: " + diagnosticRoleText(snapshot.ArmyRoleCounts),
+		"DONANMA: " + diagnosticNavalText(r.gs, snapshot),
 		"CEPHELER",
 	}
 	history := r.aiDiagnosticHistoryLines()
@@ -221,6 +222,21 @@ func (r *Renderer) aiDiagnosticLines() []string {
 		}
 	}
 	return lines
+}
+
+func diagnosticNavalText(gs *state.GameState, snapshot *ai.AIDiagnosticSnapshot) string {
+	if snapshot == nil || snapshot.NavalFleetCount == 0 {
+		return "filo yok"
+	}
+	kind := snapshot.NavalMissionKind
+	if kind == "" {
+		kind = "bekleme"
+	}
+	target := "yok"
+	if snapshot.NavalTargetRegionID != "" {
+		target = diagnosticRegionName(gs, snapshot.NavalTargetRegionID)
+	}
+	return "filo " + strconv.Itoa(snapshot.NavalFleetCount) + " | liman " + strconv.Itoa(snapshot.NavalDockedFleetCount) + " | görev " + kind + " | hedef " + target
 }
 
 func (r *Renderer) aiDiagnosticHistoryLines() []string {

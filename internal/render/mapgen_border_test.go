@@ -3,6 +3,7 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -157,6 +158,96 @@ func TestBorderDiplomacySignatureChangesWithAllianceAndVassalage(t *testing.T) {
 	if vassal := borderDiplomacySignature(gs); vassal == allied {
 		t.Fatal("vassallık değişimi sınır cache imzasını değiştirmeli")
 	}
+}
+
+func TestEnemyNavalRegionSetMarksOnlyOpenWarFleets(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy"},
+			"ally":   {ID: "ally"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_open":   {ID: "enemy_open", OwnerID: "enemy", RegionID: "sea_red", IsNaval: true},
+			"enemy_docked": {ID: "enemy_docked", OwnerID: "enemy", RegionID: "sea_red", DockedRegionID: "port", IsNaval: true},
+			"ally_open":    {ID: "ally_open", OwnerID: "ally", RegionID: "sea_blue", IsNaval: true},
+		},
+	}
+
+	marked := enemyNavalRegionSet(gs)
+	if !marked["sea_red"] {
+		t.Fatal("savaş halindeki açık düşman filosunun deniz bölgesi işaretlenmeliydi")
+	}
+	if marked["sea_blue"] {
+		t.Fatal("müttefik filosunun deniz bölgesi düşman olarak işaretlenmemeliydi")
+	}
+	if got := len(marked); got != 1 {
+		t.Fatalf("yalnız açık düşman filosunun bölgesi işaretlenmeliydi: %+v", marked)
+	}
+
+	baseSignature := borderDiplomacySignature(gs)
+	gs.Armies["enemy_open"].RegionID = "sea_other"
+	if movedSignature := borderDiplomacySignature(gs); movedSignature == baseSignature {
+		t.Fatal("filo deniz bölgesi değişince harita cache imzası değişmeliydi")
+	}
+}
+
+func TestEnemyNavalRegionUsesEnemyBorderStyle(t *testing.T) {
+	oldW, oldH := WorldW, WorldH
+	WorldW, WorldH = 3, 3
+	defer func() {
+		WorldW, WorldH = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_red":     {ID: "sea_red", IsSea: true},
+			"player_land": {ID: "player_land", OwnerID: "player"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "enemy", RegionID: "sea_red", IsNaval: true},
+		},
+	}
+	wm := &WorldMap{
+		regionAt:  make([]uint16, WorldW*WorldH),
+		regionIDs: []world.RegionID{"", "sea_red", "player_land"},
+	}
+	for y := 0; y < WorldH; y++ {
+		wm.regionAt[y*WorldW] = 1
+		wm.regionAt[y*WorldW+1] = 2
+		wm.regionAt[y*WorldW+2] = 2
+	}
+
+	wm.rebuildBorderSegments(gs)
+	wm.updateBorderStyles(gs, "", MapModeNormal)
+	for _, style := range wm.borderStyles {
+		if style == mapBorderStyleEnemy {
+			goto enemyBorderFound
+		}
+	}
+	t.Fatalf("düşman filosu bulunan deniz hücresinin sınırı enemy stilinde olmalıydı: %+v", wm.borderStyles)
+
+enemyBorderFound:
+	wm.updateBorderStyles(gs, "sea_red", MapModeNormal)
+	for _, style := range wm.borderStyles {
+		if style == mapBorderStyleSelected {
+			return
+		}
+	}
+	t.Fatalf("seçili düşman denizinin kara sınırı sarı selected stilini korumalıydı: %+v", wm.borderStyles)
 }
 
 func TestFarZoomSkipsMinorBorderStyles(t *testing.T) {

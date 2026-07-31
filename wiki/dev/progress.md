@@ -7,6 +7,44 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-07-31: Oyuncu donanma görevlerinin ilk dikey dilimi tamamlandı. Savaş ve
+  nakliye filoları için `GÖREV` paneli, devriye/abluka/escort/nakliye atama,
+  hedef seçiminde harita işaretleri, görev rozeti, temizleme/yeniden atama ve
+  compact save/load desteği eklendi. Tur başında görevli filolar deterministik
+  deniz rotasıyla otomatik ilerliyor; nakliye kıyıya ulaştığında mevcut çıkarma
+  akışı çalışıyor. Regression: `go test ./internal/game ./internal/state
+  ./internal/save ./internal/render`.
+
+- 2026-07-31: Oyuncuyla savaş halindeki realm'lerin açık deniz filoları haritada
+  bulundukları deniz bölgesini düşük opaklıklı kırmızı tehdit overlay'i ve kırmızı
+  border ile işaretliyor. Docked filolar işaretlenmiyor; filo konumu harita cache
+  imzasına bağlandığı için hareket sonrası eski kırmızı alan temizleniyor; deniz
+  seçildiğinde kara kıyısındaki kalın sarı `Selected` border önceliğini koruyor.
+  Regression:
+  `TestEnemyNavalRegionSetMarksOnlyOpenWarFleets`,
+  `TestEnemyNavalRegionUsesEnemyBorderStyle`.
+
+- 2026-07-31: AI deniz operasyonları tamamlandı. Limanda üretilen/senaryodan gelen
+  donanmalar ilk AI adımında kanonik dock temizliğiyle denize çıkıyor; görevsiz savaş
+  gemileri düşman denizi, tehditli liman ve aktif ticaret hattı arasında `Patrol`
+  rolüyle hareket ediyor, görevli filolar `Escort` rolünü koruyor. Kara sınırı olmayan
+  savaş ilanları somut çıkarma görevi, kıyı hedefi, port, deniz rotası ve transport
+  kapasitesi hazır olmadan açılmıyor. F3 AI teşhisine filo/docked/görev/engel satırı
+  eklendi. Regression: `Test1300DockedMerchantFleetUndocksBeforeTradeRouteMove`,
+  `Test1300WarshipPatrolMovesTowardActiveTradeSea`,
+  `Test1300NavalWarReadyRequiresConcreteAssaultMission`,
+  `TestAIDiagnosticSnapshotExposesNavalState`; doğrulama:
+  `go test ./internal/ai ./internal/render -count=1`.
+
+- 2026-07-31: Vassallık tekliflerinin kabul kapısı sıkılaştırıldı. `Score >= 55` artık
+  tek başına yeterli değil; hedef AI doğrudan sınır tehdidi altında olmalı veya teklif
+  sahibi en az `5x` askerî güç ve `5x` kara bölgesine sahip olmalı.
+  Yönlü tehdit hesabı zayıf hedefin güçlü devlete yanlışlıkla vassal olmasını engelliyor.
+  Regression: `TestAssessVassalizationDoesNotAcceptRelationScoreAlone`,
+  `TestAssessVassalizationRequiresRegionalSuperiorityWithMilitarySuperiority`,
+  `TestAssessVassalizationAcceptsDirectFrontierThreatWithoutRegionalSuperiority`;
+  doğrulama: `go test ./internal/diplomacy -count=1`.
+
 - 2026-07-31: Aynı bölgede mevcut ordunun yanına gelen oyuncu veya müttefik
   ordusu artık ikon grubunda mevcut ordunun soluna yerleşiyor. Grup bazlı ilk
   görülme sırası korunurken kuşatma çifti yerleşimi değişmedi. Regression:
