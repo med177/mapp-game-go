@@ -276,7 +276,7 @@ save/load ise alanı campaign state içinde korur.
 
 `GameState.AutoGrainExport` / `ApplyAutomaticGrainExport()` — Pazar sekmesindeki tercihi ve ekonomi tick'inde kapasite üzeri tahılın aktif, savaşta olmayan ticaret ağı partnerlerine faction ID sırasıyla %60 fiyatla satışını yönetir. Alıcı altını yetersizse miktar alıcının bütçesiyle sınırlanır; tercih compact save alanında korunur, gerçekleşen miktar ve altın runtime `GrainEconomyStatus` içinde raporlanır.
 
-`applyGrainFundedArmyReplenishment()` — mevcut ücretsiz dost-toprak toparlanmasına ek olarak kapasite üstü tahılı dost ve kuşatma dışı kara ordularına aktarır. Faction/army ID sırası deterministiktir, ordu başına en fazla +10 HP verilir ve 1 HP başına 1 tahıl tüketilir; rezerv kapasitesi altına inilmez.
+`GameState.CanArmyReplenishIn()` / `ReplenishArmyInFriendlyTerritory()` — kendi, müttefik veya aynı realm içindeki vassal bölgesinde bulunan ordunun dost ikmal uygunluğunu ve ücretsiz HP uygulamasını ortaklaştırır; aktif kuşatma istisnası çözümleme katmanında korunur. `applyGrainFundedArmyReplenishment()` mevcut ücretsiz dost-toprak toparlanmasına ek olarak kapasite üstü tahılı dost ve kuşatma dışı kara ordularına aktarır. Faction/army ID sırası deterministiktir, ordu başına en fazla +10 HP verilir ve 1 HP başına 1 tahıl tüketilir; rezerv kapasitesi altına inilmez.
 
 `GameState.StrategicGrainDemand()` / `StrategicGrainSurplus()` — fraksiyonun üç aylık güvenli rezerv hedefindeki açığı ve kapasite üstü ihraç edilebilir stoku hesaplar. Diplomasi yeni rota kurarken bu iki sinyalle hedefteki tahıl ihtiyacını kaynak fazlasına bağlar; sinyal save'e yazılmaz ve her ekonomi tick'inde yeniden türetilir.
 

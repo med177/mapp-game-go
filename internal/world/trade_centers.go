@@ -15,7 +15,7 @@ const (
 )
 
 type TradeCenterDef struct {
-	ID         RegionID        `json:"id"`
+	ID         RegionID        `json:"region_id"`
 	NameTR     string          `json:"name_tr,omitempty"`
 	Tier       TradeCenterTier `json:"tier,omitempty"`
 	Links      []RegionID      `json:"links,omitempty"`

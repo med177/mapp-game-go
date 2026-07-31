@@ -1376,6 +1376,48 @@ func stateSameRealm(s *GameState, a, b faction.FactionID) bool {
 	return a != "" && b != "" && stateRealmRoot(s, a) == stateRealmRoot(s, b)
 }
 
+// CanArmyReplenishIn ordunun bulunduğu kara bölgesinde veya bağlı olduğu
+// limanda toparlanıp toparlanamayacağını döner. Kendi ve müttefik bölgelerine
+// ek olarak aynı realm içindeki vassal bölgeleri de dost ikmal alanıdır.
+func (s *GameState) CanArmyReplenishIn(a *army.Army) bool {
+	if s == nil || a == nil || a.OwnerID == "" {
+		return false
+	}
+
+	regionID := a.RegionID
+	if a.IsNaval {
+		regionID = a.DockedRegionID
+	}
+	region := s.Regions[regionID]
+	if region == nil || region.IsSea || region.OwnerID == "" {
+		return false
+	}
+	if a.IsNaval && !region.HasPort() {
+		return false
+	}
+	return s.canFactionReplenishIn(a.OwnerID, region.OwnerID)
+}
+
+// ReplenishArmyInFriendlyTerritory, ücretsiz kara ordusu toparlanmasının
+// konum kararını state'teki vassal/ittifak ilişkileriyle birlikte uygular.
+func (s *GameState) ReplenishArmyInFriendlyTerritory(a *army.Army, amount int) int {
+	if s == nil || a == nil || a.IsNaval || !s.CanArmyReplenishIn(a) {
+		return 0
+	}
+	return a.Replenish(amount)
+}
+
+func (s *GameState) canFactionReplenishIn(armyOwner, regionOwner string) bool {
+	if s == nil || armyOwner == "" || regionOwner == "" {
+		return false
+	}
+	if armyOwner == regionOwner || stateSameRealm(s, faction.FactionID(armyOwner), faction.FactionID(regionOwner)) {
+		return true
+	}
+	rel := s.Relations[faction.RelationKey(faction.FactionID(armyOwner), faction.FactionID(regionOwner))]
+	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.
 func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
 	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {

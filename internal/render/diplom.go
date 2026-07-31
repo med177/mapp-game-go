@@ -1162,7 +1162,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 				selectedDisabledReason = disabledReason
 			}
 		}
-		drawDiplomacyActionButton(screen, btn.Button, bg, disabledReason != "")
+		drawDiplomacyActionButton(screen, btn.Button, bg, disabledReason != "", i == actionFocus)
 		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
 		if action == ActionCancelAlliance || action == ActionCancelTrade {
@@ -1221,17 +1221,26 @@ func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA,
 	drawUIButtonWidget(screen, btn, style)
 }
 
-func drawDiplomacyActionButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, disabled bool) {
+func diplomacyActionButtonStyle(bg color.RGBA, disabled, selected bool) gameui.ButtonStyle {
 	style := menuButtonStyle
 	style.BG = bg
 	style.Border = color.RGBA{108, 88, 52, 185}
 	style.Text = ColorWhite
 	style.TextOffsetY = 7
 	style.TextVariant = gameui.TextMedium
+	if selected && !disabled {
+		style.Border = color.RGBA{242, 198, 82, 255}
+		style.BorderWidth = 2
+	}
 	if disabled {
 		style.Border = color.RGBA{72, 68, 60, 145}
 		style.Text = color.RGBA{142, 138, 130, 230}
 	}
+	return style
+}
+
+func drawDiplomacyActionButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, disabled, selected bool) {
+	style := diplomacyActionButtonStyle(bg, disabled, selected)
 	drawUIButtonWidget(screen, btn, style)
 }
 
@@ -1241,7 +1250,7 @@ func drawDiplomacyVassalManagementPanel(screen *ebiten.Image, gs *state.GameStat
 	drawUILabel(screen, gameui.Rect{X: layout.panelRect.X + 12, Y: layout.panelRect.Y + 10, W: layout.panelRect.W - 24}, "Vassal Yönetimi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	drawDiplomacyButton(screen, layout.releaseButton, color.RGBA{62, 104, 142, 225}, panelBorder, FaceSmall, 6)
 	annexDisabled := diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, diplomacy.ActionAnnexVassal) != ""
-	drawDiplomacyActionButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, annexDisabled)
+	drawDiplomacyActionButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, annexDisabled, false)
 }
 
 func diplomacyRelationCategoryMatches(gs *state.GameState, subject, other faction.FactionID, category diplomacyRelationCategory) bool {

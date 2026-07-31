@@ -130,3 +130,87 @@ func TestArmyIconPositionsPutNewArrivalLeftOfExistingArmy(t *testing.T) {
 		t.Fatalf("yeni gelen ordu mevcut ordunun solunda olmalıydı: %+v", positions)
 	}
 }
+
+func TestArmyIconPositionsPutSiegeSupportLeftOfBesieger(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"fort": {
+				ID:      "fort",
+				OwnerID: "p2",
+				Settlements: []world.Settlement{
+					{ID: "castle", Type: world.SettlementFortress},
+				},
+			},
+			"other": {
+				ID:      "other",
+				OwnerID: "p1",
+				Settlements: []world.Settlement{
+					{ID: "other_center", IsCenter: true},
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"besieger": {
+				ID:       "besieger",
+				OwnerID:  "p1",
+				RegionID: "fort",
+				Units:    repeatedTestUnits(10),
+			},
+			"defender": {
+				ID:       "defender",
+				OwnerID:  "p2",
+				RegionID: "fort",
+				Units:    repeatedTestUnits(4),
+			},
+			"support": {
+				ID:       "support",
+				OwnerID:  "p1",
+				RegionID: "other",
+				Units:    repeatedTestUnits(1),
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {
+				RegionID:       "fort",
+				AttackerArmyID: "besieger",
+				DefenderArmyID: "defender",
+			},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			settlementAnchor: map[settlementAnchorKey][2]int{
+				{Region: "fort", Index: 0}:  {100, 100},
+				{Region: "other", Index: 0}: {200, 100},
+			},
+			primarySettlement: map[world.RegionID][2]int{
+				"fort":  {100, 100},
+				"other": {200, 100},
+			},
+		},
+	}
+
+	// Kuşatan ve savunmacı daha önce aynı gruptaydı; destek daha sonra gelir.
+	r.armyIconPositions()
+	gs.Armies["support"].RegionID = "fort"
+
+	positions := r.armyIconPositions()
+	if len(positions) != 3 {
+		t.Fatalf("üç ordu ikonu bekleniyordu, got=%d", len(positions))
+	}
+	if positions[0].ArmyID != "support" || positions[1].ArmyID != "besieger" || positions[2].ArmyID != "defender" {
+		t.Fatalf("destek ordusu kuşatanın solunda, savunmacı sağında olmalıydı: %+v", positions)
+	}
+	if got := positions[1].X - positions[0].X; got != 26 {
+		t.Fatalf("destek ile kuşatan bitişik slotlarda olmalıydı: delta=%.1f", got)
+	}
+}
+
+func repeatedTestUnits(count int) []army.Unit {
+	units := make([]army.Unit, count)
+	for i := range units {
+		units[i] = army.Unit{TypeID: "inf"}
+	}
+	return units
+}

@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image/color"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -374,6 +375,58 @@ func TestHandleDiplomacyInputVassalManagementAndDisabledActions(t *testing.T) {
 	}
 	if r.confirmDialog.pendingAction.Kind != ActionReleaseVassal || r.confirmDialog.pendingAction.TargetFaction != "vassal" {
 		t.Fatalf("yanlış vasallık yönetim aksiyonu: %+v", r.confirmDialog.pendingAction)
+	}
+}
+
+func TestDiplomacyActionSelectionUsesHighlightedBorder(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {
+				FactionA: "player",
+				FactionB: "enemy",
+				Stance:   faction.StancePeace,
+			},
+		},
+	}
+	r := &Renderer{
+		gs:                     gs,
+		showDiplomacy:          true,
+		diplomacyTargetFaction: "enemy",
+		diplomacyActionFocus:   2,
+	}
+
+	buttons := buildDiplomacyActionButtons(gs, "enemy")
+	warButton := buttons[0].Button
+	r.handleDiplomacyInput(gameui.InputState{
+		MouseX:          warButton.X + 1,
+		MouseY:          warButton.Y + 1,
+		LeftJustPressed: true,
+	})
+	if r.diplomacyActionFocus != 0 {
+		t.Fatalf("tıklanan teklif türü seçili duruma geçmeli, got=%d", r.diplomacyActionFocus)
+	}
+
+	selected := diplomacyActionButtonStyle(color.RGBA{50, 120, 180, 220}, false, true)
+	ordinary := diplomacyActionButtonStyle(color.RGBA{50, 120, 180, 220}, false, false)
+	if selected.Border != (color.RGBA{242, 198, 82, 255}) {
+		t.Fatalf("seçili teklif border'ı sarı olmalı, got=%v", selected.Border)
+	}
+	if selected.BorderWidth <= ordinary.BorderWidth {
+		t.Fatalf("seçili teklif border'ı belirginleşmeli: selected=%v ordinary=%v", selected.BorderWidth, ordinary.BorderWidth)
+	}
+	if disabled := diplomacyActionButtonStyle(color.RGBA{50, 120, 180, 220}, true, true); disabled.Border == (color.RGBA{242, 198, 82, 255}) {
+		t.Fatal("pasif teklif seçili sarı border stilini kullanmamalı")
 	}
 }
 

@@ -278,11 +278,22 @@ func bottomActionHudRect() (x, y, w, h float32) {
 }
 
 func mapModeHudRect() (x, y, w, h float32) {
-	ax, ay, aw, _ := bottomActionHudRect()
 	w = 230
 	h = 30
-	x = ax + aw/2 - w/2
-	y = ay - h - 6
+	// Harita modu düğmeleri minimap'in hemen üstünde, onunla aynı yatay
+	// eksende durur. Böylece Normal/Ticaret ve Ticaret modundaki Pazar
+	// düğmesi aynı minimap HUD kümesinde kalır.
+	x = minimapX() + minimapW/2 - w/2
+	y = minimapY() - h - 6
+	if x < 0 {
+		x = 0
+	}
+	if x+w > float32(ScreenWidth) {
+		x = float32(ScreenWidth) - w
+	}
+	if y < 0 {
+		y = 0
+	}
 	return x, y, w, h
 }
 
@@ -396,7 +407,10 @@ func bottomActionHudHit(fx, fy float64) bool {
 		return true
 	}
 	mx, my, mw, mh := mapModeHudRect()
-	return fx >= float64(mx) && fx <= float64(mx+mw) && fy >= float64(my) && fy <= float64(my+mh)
+	if fx >= float64(mx) && fx <= float64(mx+mw) && fy >= float64(my) && fy <= float64(my+mh) {
+		return true
+	}
+	return buildTradeToggleButton().HitTest(fx, fy)
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
@@ -1708,12 +1722,9 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 		drawMinimapPolygons(screen, gs, mx, my)
 	}
 
-	// Ordu konumları için dünya->minimap ölçeği.
+	// Dünya->minimap ölçeği viewport dikdörtgeni için kullanılır.
 	scaleX := float64(minimapW) / float64(WorldW)
 	scaleY := float64(minimapH) / float64(WorldH)
-
-	// Ordu konumları katmanı
-	drawMinimapArmies(screen, gs, float32(scaleX), float32(scaleY), mx, my)
 
 	// İç kenara ince koyu çizgi
 	vector.StrokeRect(screen, mx, my, minimapW, minimapH, 1, color.RGBA{30, 25, 15, 200}, false)
@@ -1882,49 +1893,6 @@ func colorToScale(clr color.Color) (float32, float32, float32, float32) {
 	bf := float32(b) / 0xffff
 	af := float32(a) / 0xffff
 	return rf, gf, bf, af
-}
-
-// drawMinimapArmies ordu konumlarını minimap üzerinde fraksiyon rengiyle gösterir.
-// Kara ordusu → kare, deniz donanması → daire.
-func drawMinimapArmies(screen *ebiten.Image, gs *state.GameState, scaleX, scaleY, offsetX, offsetY float32) {
-	playerID := gs.PlayerFactionID
-	for _, a := range gs.Armies {
-		region, ok := gs.Regions[a.RegionID]
-		if !ok {
-			continue
-		}
-		px := offsetX + float32(wcX(region.WorldX))*scaleX
-		py := offsetY + float32(wcY(region.WorldY))*scaleY
-
-		if faction.FactionID(a.OwnerID) == playerID {
-			// Oyuncu orduları/donanmaları minimap'te yeşil nokta olarak gösterilir.
-			vector.FillCircle(screen, px+1, py+1, 3.5, color.RGBA{0, 0, 0, 90}, true)
-			vector.FillCircle(screen, px, py, 2.5, color.RGBA{80, 220, 120, 240}, true)
-			vector.StrokeCircle(screen, px, py, 2.5, 1, color.RGBA{20, 60, 30, 220}, true)
-			continue
-		}
-		rel := gs.Relations[faction.RelationKey(playerID, faction.FactionID(a.OwnerID))]
-		if rel == nil || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied) {
-			continue
-		}
-
-		col := factionColor(gs, a.OwnerID)
-		col.A = 220
-
-		borderCol := color.RGBA{0, 0, 0, 100}
-
-		if a.IsNaval {
-			r := float32(4)
-			vector.FillCircle(screen, px+1, py+1, r+1, color.RGBA{0, 0, 0, 80}, true)
-			vector.FillCircle(screen, px, py, r, col, true)
-			vector.StrokeCircle(screen, px, py, r, 1.2, borderCol, true)
-		} else {
-			h := float32(3.5)
-			vector.FillRect(screen, px-h-1, py-h-1, h*2+2, h*2+2, color.RGBA{0, 0, 0, 80}, false)
-			vector.FillRect(screen, px-h, py-h, h*2, h*2, col, false)
-			vector.StrokeRect(screen, px-h-0.5, py-h-0.5, h*2+1, h*2+1, 1.2, borderCol, false)
-		}
-	}
 }
 
 // drawMinimapOwnership fraksiyon sahipliğini minimap üzerinde küçük daireler olarak gösterir.

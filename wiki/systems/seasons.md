@@ -48,7 +48,7 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 - İlkbahar `%110`, yaz `%100`, sonbahar `%95`, kış `%70` hareket çarpanı uygular;
   sonuç en az `1` puandır.
 - Sonbahar: Gelir çarpanı
-- Kış dışı turlar: Kara orduları kendi kara toprağında toparlanır; donanmalar ise kendi veya müttefik limanına bağlı (`DockedRegionID`) durumdaysa toparlanır. Kendi limanında gemiler ve taşınan kara birlikleri `+10 HP`, müttefik limanında ise `+5 HP` alır
+- Kış dışı turlar: Kara orduları kendi, müttefik veya aynı realm içindeki vassal devletin kara toprağında toparlanır; donanmalar ise kendi, müttefik veya vassal limanına bağlı (`DockedRegionID`) durumdaysa toparlanır. Kendi limanında gemiler ve taşınan kara birlikleri `+10 HP`, müttefik/vassal limanında ise `+5 HP` alır
 - Gemide kara birimi taşıyan filolar limana uğramadan uzun süre açık denizde kalırsa `turns_without_port` sayacı işler; 3 turluk emniyet penceresinden sonra taşınan birlikler her tur artan HP zayiatı alır ve limana bağlanınca sayaç sıfırlanır
 
 → Çözümleme sırası için [[architecture/game-loop]]

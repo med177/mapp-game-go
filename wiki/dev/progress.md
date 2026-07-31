@@ -1,11 +1,35 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-07-31
+last_updated: 2026-08-01
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-01: `settlements.json` dışa aktarımı yalnızca kara region kayıtlarını yazacak
+  şekilde düzenlendi; deniz region'larının 83 boş settlement satırı temizlendi.
+  Edit Mode settlement ekleme ve taşıma yolları deniz region'larını filtreliyor.
+  Regression: `TestWriteScenarioSettlementsSkipsSeaRegions`,
+  `TestEditModeDoesNotAddSettlementToSeaRegion`; doğrulama:
+  `go test ./internal/game ./internal/render -run 'TestWriteScenarioSettlementsSkipsSeaRegions|TestEditModeDoesNotAddSettlementToSeaRegion' -count=1`.
+
+- 2026-07-31: Minimap'teki oyuncu ve düşman ordu/donanma ikonları kaldırıldı;
+  minimap dünya görünümü ile kameranın ekrandaki alanını gösteren viewport
+  dikdörtgenini göstermeye devam ediyor. Kapsam: `internal/render/panel.go`;
+  doğrulama: `go test ./internal/render`.
+
+- 2026-07-31: Aktif kuşatma altındaki kuşatan orduya sonradan gelen destek ordusu,
+  aynı settlement anchor'ında kuşatanın soluna hizalanıyor; kuşatma rozeti için
+  kuşatan-savunmacı arası özel slot ve mevcut hit-test sırası korunuyor.
+  Regression: `TestArmyIconPositionsPutSiegeSupportLeftOfBesieger`; doğrulama:
+  `go test ./internal/render -count=1`.
+
+- 2026-07-31: Diplomasi teklif panelinde tıklanan teklif türü artık seçili durumunu
+  koruyor ve etkin seçili düğme altın-sarı border ile görsel olarak vurgulanıyor.
+  `Teklif Gönder` öncesi aksiyon seçimi netleştirildi. Regression:
+  `TestDiplomacyActionSelectionUsesHighlightedBorder`; doğrulama:
+  `go test ./internal/render -count=1`.
 
 - 2026-07-31: Oyuncu donanma görevlerinin ilk dikey dilimi tamamlandı. Savaş ve
   nakliye filoları için `GÖREV` paneli, devriye/abluka/escort/nakliye atama,
@@ -402,6 +426,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   deniz üstü kara hareket bağlantısı yazıyor. Hareket/savaş entegrasyonu sonraki fazda.
 
 - 2026-07-26: Harita bölge ve deniz sınırları raster harita dokusundan ayrıldı. `regionAt` kenarları cache'lenmiş yatay/dikey kontur parçalarına sıkıştırılıyor; diplomasi, seçili bölge ve ticaret modu renkleri `map_borders.go` üzerinden antialiased screen-space mesh olarak çiziliyor. Zoom sırasında sınır kalınlaşması/basamaklanması giderildi; edit mode region assignment değişiklikleri kontur cache'ini yeniliyor. Regression: `TestVectorBorderStylesHighlightPlayerRealmAndAlliedRealms`; doğrulama: `go test ./internal/render` ve `go test ./...`.
+
+- 2026-07-31: `Normal`/`Ticaret` harita modu düğmeleri minimap'in hemen üstüne taşındı; Ticaret modundaki `Pazar` düğmesi aynı HUD kümesinin üst satırında kalıyor. Çizim ve tıklama geometrisi ortak helper'lardan okunuyor, `Pazar` HUD hit-test ve ticaret overlay engellemesine dahil ediliyor. Regression: `TestMapModeHudSitsAboveMinimapWithTradeToggle`; doğrulama: `go test ./internal/render -run 'Test(MapModeHudSitsAboveMinimapWithTradeToggle|CoreUIGeometryFitsCommonViewports)$'`.
 
 - 2026-07-26: Oyuncuya ait olmayan kara bölgesine aynı bölge içinde 400 ms
   içinde çift tıklanınca, bölge bilgi panelindeki `Diplomasi` düğmesiyle aynı
@@ -1156,7 +1182,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi; saldırı duruşu (`agresif/dengeli/savunmacı`) gerçek savaş sonucu ve saldırı öncesi preview hesabında aynı combat helper'larıyla işlenir. `land/naval/amphibious` bağlamları ayrı stance çarpanları ve açıklama metinleri taşır; muhtemel kayıp paneli bu bağlama göre hesaplanır |
 | Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, ordu panelinden atama/ayırma, AI saha ordularına deterministik komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
-| Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi kara toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi veya müttefik limanında aynı hızla onarım alır |
+| Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi, müttefik veya vassal realm toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi, müttefik veya vassal limanında onarım alır; birim kartındaki `+` rozeti aynı ortak uygunluk kuralını kullanır |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
 | Ordu birleşme | ✅ | Dost bölgede yalnızca panelden manuel birleşme, 20 birim limiti; hareket orduları otomatik birleşmez |
 | Ordu bölme | ✅ | Seçili orduyu iki parçaya böler |

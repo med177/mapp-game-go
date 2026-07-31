@@ -208,7 +208,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 }
 
 func (r *Renderer) drawEditSettlementButtons(screen *ebiten.Image, region *world.Region) {
-	canAdd := region != nil && !region.IsSea
+	canAdd := canAddSettlementToRegion(region)
 	canSettlement := r.hasEditSelection()
 	addSettlementLabel := "Yerlesim Ekle"
 	settlementTypeLabel := "Yerlesim Tipi"
@@ -2160,7 +2160,7 @@ func (r *Renderer) addSettlementAt(fx, fy float64) {
 
 func (r *Renderer) addSettlementToSelectedRegion() {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil || region.IsSea {
+	if !ok || !canAddSettlementToRegion(region) {
 		return
 	}
 	r.addSettlement(region.ID, region.WorldX, region.WorldY)
@@ -2168,7 +2168,7 @@ func (r *Renderer) addSettlementToSelectedRegion() {
 
 func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	region, ok := r.gs.Regions[rid]
-	if !ok || region == nil || region.IsSea {
+	if !ok || !canAddSettlementToRegion(region) {
 		return
 	}
 	before := []editRegionSettlementsSnapshot{r.settlementSnapshot(rid)}
@@ -4223,7 +4223,7 @@ func nextRegionID(gs *state.GameState) world.RegionID {
 func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int) {
 	source := r.gs.Regions[r.editSelectedRegion]
 	target := r.gs.Regions[targetID]
-	if source == nil || target == nil || r.editSelectedSettlement < 0 ||
+	if source == nil || !canAddSettlementToRegion(target) || r.editSelectedSettlement < 0 ||
 		r.editSelectedSettlement >= len(source.Settlements) {
 		return
 	}
@@ -4249,6 +4249,10 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	r.editSelectedSettlement = len(target.Settlements) - 1
 	r.worldMap.RebuildSettlementAnchors(r.gs)
 	r.editDirty = true
+}
+
+func canAddSettlementToRegion(region *world.Region) bool {
+	return region != nil && !region.IsSea
 }
 
 func hasCapitalSettlement(region *world.Region) bool {

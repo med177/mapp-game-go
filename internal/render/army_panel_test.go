@@ -90,6 +90,27 @@ func TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort(t *testing
 	}
 }
 
+func TestArmyPanelReplenishmentBadgeActivatesInVassalRegion(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"vassal": {ID: "vassal", OverlordID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"vassal_land": {ID: "vassal_land", OwnerID: "vassal"},
+		},
+	}
+	armyRef := &army.Army{
+		OwnerID:  "player",
+		RegionID: "vassal_land",
+		Units:    []army.Unit{{TypeID: "inf", CurrentHP: 60}},
+	}
+
+	if !armyCanRenderReplenishment(gs, armyRef) {
+		t.Fatal("vassal bölgesindeki hasarlı kara ordusunun toparlanma rozeti aktif olmalıydı")
+	}
+}
+
 func TestSplitSelectionRequiresOneUnitToRemain(t *testing.T) {
 	a := &army.Army{Units: []army.Unit{{TypeID: "inf"}, {TypeID: "cav"}, {TypeID: "siege"}}}
 

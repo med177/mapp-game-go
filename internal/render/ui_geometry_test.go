@@ -212,6 +212,33 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	}
 }
 
+func TestMapModeHudSitsAboveMinimapWithTradeToggle(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	mapX, mapY, mapW, mapH := mapModeHudRect()
+	if mapX+mapW/2 != minimapX()+minimapW/2 {
+		t.Fatalf("harita modu HUD'ı minimap ile hizalanmalı: mapX=%.1f mapW=%.1f minimapX=%.1f minimapW=%.1f", mapX, mapW, minimapX(), minimapW)
+	}
+	if mapY+mapH > minimapY() {
+		t.Fatalf("harita modu HUD'ı minimap'in üstüne taşmamalı: bottom=%.1f minimapY=%.1f", mapY+mapH, minimapY())
+	}
+
+	market := buildTradeToggleButton()
+	if market.Y+market.H > float64(mapY) {
+		t.Fatalf("Pazar düğmesi harita modu HUD'ının üstünde kalmalı: bottom=%.1f mapY=%.1f", market.Y+market.H, mapY)
+	}
+	if !bottomActionHudHit(market.X+market.W/2, market.Y+market.H/2) {
+		t.Fatal("Pazar düğmesi ortak HUD hit-test alanına dahil olmalı")
+	}
+	if minimapHit(market.X+market.W/2, market.Y+market.H/2) {
+		t.Fatal("Pazar düğmesi minimap tıklama alanıyla çakışmamalı")
+	}
+}
+
 func TestEditInspectorTabsAndSaveAreaStaySeparated(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

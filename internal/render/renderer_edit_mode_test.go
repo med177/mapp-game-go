@@ -44,6 +44,31 @@ func TestAddRegionFromSourcePreservesSeaFlag(t *testing.T) {
 	t.Fatal("yeni region bulunamadi")
 }
 
+func TestEditModeDoesNotAddSettlementToSeaRegion(t *testing.T) {
+	r := newSeaEditRenderer()
+
+	r.addSettlement("sea_test", 20, 20)
+	r.addSettlementToSelectedRegion()
+
+	if got := len(r.gs.Regions["sea_test"].Settlements); got != 0 {
+		t.Fatalf("deniz bölgesine settlement eklenmemeli: got=%d", got)
+	}
+
+	r.gs.Regions["land_test"] = &world.Region{
+		ID:          "land_test",
+		Settlements: []world.Settlement{{ID: "land_city", IsCenter: true}},
+	}
+	r.editSelectedRegion = "land_test"
+	r.editSelectedSettlement = 0
+	r.transferSelectedSettlement("sea_test", 20, 20)
+	if got := len(r.gs.Regions["sea_test"].Settlements); got != 0 {
+		t.Fatalf("settlement deniz bölgesine taşınmamalı: got=%d", got)
+	}
+	if got := len(r.gs.Regions["land_test"].Settlements); got != 1 {
+		t.Fatalf("deniz bölgesine taşıma engellenirken kara settlement'ı kayboldu: got=%d", got)
+	}
+}
+
 func TestMoveSelectedRegionCenterToAllowsSea(t *testing.T) {
 	r := newSeaEditRenderer()
 	r.editSelectedRegion = "sea_test"

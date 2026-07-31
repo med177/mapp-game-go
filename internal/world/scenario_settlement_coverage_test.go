@@ -57,11 +57,14 @@ func Test1300ScenarioSettlementPopulationLeavesRuralPopulation(t *testing.T) {
 			continue
 		}
 		settlementPopulation := region.SettlementPopulation()
+		expectedPopulation := region.RuralPopulation + settlementPopulation
 		if region.Population != region.RuralPopulation+settlementPopulation {
-			t.Errorf("%s nüfus toplamı tutarsız: population=%d rural=%d settlement=%d", regionID, region.Population, region.RuralPopulation, settlementPopulation)
+			t.Errorf("%s nüfus toplamı tutarsız: mevcut population=%d, beklenen population=%d (rural=%d + settlement=%d)", regionID, region.Population, expectedPopulation, region.RuralPopulation, settlementPopulation)
 		}
 		if region.Population > 0 && region.RuralPopulation <= settlementPopulation {
-			t.Errorf("%s kırsal nüfusu yerleşim toplamından büyük olmalı: rural=%d settlement=%d", regionID, region.RuralPopulation, settlementPopulation)
+			minimumRuralPopulation := settlementPopulation + 1
+			minimumPopulation := minimumRuralPopulation + settlementPopulation
+			t.Errorf("%s kırsal nüfusu yerleşim toplamından büyük olmalı: mevcut rural=%d, settlement=%d, gereken minimum rural=%d, buna göre minimum population=%d", regionID, region.RuralPopulation, settlementPopulation, minimumRuralPopulation, minimumPopulation)
 		}
 	}
 }

@@ -2503,7 +2503,7 @@ func writeScenarioSettlements(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "settlements.json")
 	entries := make([]world.SettlementListEntry, 0, len(gs.Regions))
 	appendEntry := func(rid world.RegionID, region *world.Region) {
-		if region == nil {
+		if region == nil || region.IsSea {
 			return
 		}
 		entry := world.SettlementListEntry{

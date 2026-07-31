@@ -421,6 +421,31 @@ func TestApplyEconomyTickFundsArmyReplenishmentOnlyFromCapacitySurplus(t *testin
 	}
 }
 
+func TestApplyEconomyTickFundsArmyReplenishmentInVassalRegion(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 110},
+			"vassal": {ID: "vassal", OverlordID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"vassal_land": {ID: "vassal_land", OwnerID: "vassal", Population: 20},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: "vassal_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 0},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Armies["army"].Units[0].CurrentHP; got != 70 {
+		t.Fatalf("vassal bölgesindeki ordu kapasite üstü tahılla iyileşmeli, got=%d", got)
+	}
+}
+
 func TestApplyEconomyTickDoesNotFundArmyReplenishmentBelowReserveCapacity(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,
@@ -1222,17 +1247,22 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player"},
 			"ally":   {ID: "ally"},
+			"vassal": {ID: "vassal", OverlordID: "player"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home":      {ID: "home", OwnerID: "player", Buildings: []string{"port"}},
-			"enemy":     {ID: "enemy", OwnerID: "enemy"},
-			"ally_port": {ID: "ally_port", OwnerID: "ally", Buildings: []string{"port"}},
-			"sea":       {ID: "sea", IsSea: true},
+			"home":        {ID: "home", OwnerID: "player", Buildings: []string{"port"}},
+			"enemy":       {ID: "enemy", OwnerID: "enemy"},
+			"ally_land":   {ID: "ally_land", OwnerID: "ally"},
+			"ally_port":   {ID: "ally_port", OwnerID: "ally", Buildings: []string{"port"}},
+			"vassal_land": {ID: "vassal_land", OwnerID: "vassal"},
+			"sea":         {ID: "sea", IsSea: true},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"home_army":  {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"enemy_army": {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
-			"fleet":      {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
+			"home_army":   {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"enemy_army":  {ID: "enemy_army", OwnerID: "player", RegionID: "enemy", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"ally_army":   {ID: "ally_army", OwnerID: "player", RegionID: "ally_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"vassal_army": {ID: "vassal_army", OwnerID: "player", RegionID: "vassal_land", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
+			"fleet":       {ID: "fleet", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport", CurrentHP: 65}}},
 			"docked_self": {
 				ID:             "docked_self",
 				OwnerID:        "player",
@@ -1264,6 +1294,12 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 	}
 	if got := gs.Armies["enemy_army"].Units[0].CurrentHP; got != 65 {
 		t.Fatalf("dost olmayan toprakta iyilesme olmamali, got=%d", got)
+	}
+	if got := gs.Armies["vassal_army"].Units[0].CurrentHP; got != 75 {
+		t.Fatalf("vassal bölgesindeki ordu iyileşmeli, got=%d", got)
+	}
+	if got := gs.Armies["ally_army"].Units[0].CurrentHP; got != 75 {
+		t.Fatalf("müttefik bölgesindeki ordu iyileşmeli, got=%d", got)
 	}
 	if got := gs.Armies["fleet"].Units[0].CurrentHP; got != 65 {
 		t.Fatalf("donanma kara takviyesi almamali, got=%d", got)

@@ -412,7 +412,7 @@ func applySeasonEffects(gs *state.GameState) {
 			if a.IsNaval {
 				replenishDockedFleet(gs, a, friendlyReplenishHP)
 			} else if !gs.IsArmyDefendingSiegedRegion(a) {
-				a.ReplenishInFriendlyTerritory(gs.Regions, friendlyReplenishHP)
+				gs.ReplenishArmyInFriendlyTerritory(a, friendlyReplenishHP)
 			}
 		}
 		// Mevsim etkisi en yavaş birimin tabanına uygulanır; diğer hareket
@@ -428,16 +428,11 @@ func replenishDockedFleet(gs *state.GameState, fleet *army.Army, amount int) int
 		return 0
 	}
 	dockedRegion := gs.Regions[fleet.DockedRegionID]
-	if dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID == "" || !dockedRegion.HasPort() {
+	if dockedRegion == nil || dockedRegion.IsSea || dockedRegion.OwnerID == "" || !dockedRegion.HasPort() || !gs.CanArmyReplenishIn(fleet) {
 		return 0
 	}
 	healAmount := amount
 	if dockedRegion.OwnerID != fleet.OwnerID {
-		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(dockedRegion.OwnerID))
-		rel, ok := gs.Relations[key]
-		if !ok || rel.Stance != faction.StanceAllied {
-			return 0
-		}
 		healAmount = amount / 2
 		if healAmount < 1 {
 			healAmount = 1
@@ -756,7 +751,7 @@ func applyGrainFundedArmyReplenishment(gs *state.GameState) {
 			}
 			a := gs.Armies[aid]
 			if a == nil || a.OwnerID != string(fid) || a.IsNaval ||
-				!a.CanReplenishIn(gs.Regions) || gs.IsArmyDefendingSiegedRegion(a) {
+				!gs.CanArmyReplenishIn(a) || gs.IsArmyDefendingSiegedRegion(a) {
 				continue
 			}
 

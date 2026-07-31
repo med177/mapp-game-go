@@ -1896,15 +1896,15 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			aj := r.gs.Armies[aids[j]]
 			aiSieging := ai != nil && r.gs.SiegeByArmy(ai.ID) != nil
 			ajSieging := aj != nil && r.gs.SiegeByArmy(aj.ID) != nil
-			// Kuşatma ordusu solda, ayrılan ve hareket edebilen parça sağda
-			// kalsın; armyHitAt sağdan taradığı için seçim deterministik olur.
-			if aiSieging != ajSieging {
-				return aiSieging
-			}
+			// Sadece kuşatma çifti kendi içinde sabitlenir: kuşatan solda,
+			// kuşatılan/ayrılan parça sağda kalır. Destek ordusu kuşatan
+			// ordudan sonra geldiyse arrival order'a göre onun soluna geçebilir.
 			if aiSieging {
 				if siege := r.gs.SiegeByArmy(ai.ID); siege != nil && siege.DefenderArmyID == aj.ID {
 					return true
 				}
+			}
+			if ajSieging {
 				if siege := r.gs.SiegeByArmy(aj.ID); siege != nil && siege.DefenderArmyID == ai.ID {
 					return false
 				}

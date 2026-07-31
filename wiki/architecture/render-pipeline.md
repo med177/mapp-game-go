@@ -1,11 +1,18 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-07-31
+last_updated: 2026-08-01
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Alt harita modu HUD'ı (`Normal`/`Ticaret`) artık ekran altına değil minimap'in
+hemen üstüne hizalanır. Ticaret modunda açılan `Pazar` düğmesi de aynı kümenin
+üst satırında konumlanır. `mapModeHudRect()`, `tradeToggleButtonRect()` ve
+`bottomActionHudHit()` ortak geometriyi kullandığı için çizim, sol tık, sağ tık
+ve ticaret overlay'inin input engellemesi aynı koordinat sözleşmesini izler
+(`internal/render/panel.go`, `internal/render/renderer_input.go`).
 
 Deniz haritası da oyun durumunun tehdit bilgisini görsel olarak taşır. Oyuncuyla
 savaş halinde olan realm'e ait açık deniz filolarının bulunduğu deniz bölgesinin
@@ -29,7 +36,8 @@ Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
 `armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
 bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak
 soldaki slota yerleşir; kuşatma çifti için kuşatanın solda, savunmacının sağda
-kalması kuralı önceliğini korur (`internal/render/renderer.go`).
+kalması kuralı yalnızca doğrudan kuşatma çifti arasında önceliğini korur; sonradan
+gelen destek ordusu kuşatanın soluna yerleşebilir (`internal/render/renderer.go`).
 
 Komutan atama modalındaki boş komutan listesi `commanderPanelListViewport()` ile
 panel-local bir viewport içinde çizilir. Liste satırları `SubImage` clipping'i
@@ -187,6 +195,11 @@ alt HUD'daki `Ordu` butonuyla aynı recruit paneli state geçişi çalışır; d
 sahipsiz bölgeler bu kısayolları tetiklemez. Yerleşim etiketi üzerinden yapılan
 seçim de aynı region-ID tabanlı çift tıklama akışını kullanır
 (`internal/render/renderer.go`, `internal/render/renderer_input.go`).
+
+Diplomasi teklif sayfasındaki aksiyon düğmeleri ortak `gameui.Button` primitive'iyle
+çizilir. `diplomacyActionFocus` seçili düğmeyi belirler; etkin seçili aksiyon 2 px
+altın-sarı border ile vurgulanırken pasif aksiyonların gri görünümü korunur. Çizim
+ve mouse hit-test aynı aksiyon index'lerini kullanır (`internal/render/diplom.go`).
 
 Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusunun gerçekten yükleme emri verebilmesiyle aynı hareket hakkı kuralını kullanır. Seçili ordunun `MovePoints` değeri sıfırsa gösterge çizilmez; böylece görünür aksiyon ile sağ tık input kapısı ayrışmaz (`internal/render/renderer.go`).
 
@@ -461,7 +474,7 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve d
 
 Bölge bilgi panelindeki sahip devlet satırı ayrı hit-test yüzeyidir. Bu satıra tıklanınca yerleşim paneli slotunda devlet detay paneli açılır; aktif araştırma, tamamlanan teknolojiler, toplam mallar ve ticaret özeti gösterilir. Settlement paneli ayrıca başkent statüsü, aktif başkent taşıma kuyruğu ve oyuncu için `Başkent Yap` aksiyonunu gösterebilir. Panel açıkken tıklamalar arkadaki haritaya düşmez.
 
-Edit mode'da oyun HUD/panelleri çizilmez; harita, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; Ctrl + Alt + sol tık tıklanan bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme seçili bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. Bölge ID'si değiştiğinde editor aynı atomik işlemde komşu/geçit/ordu/paint referanslarını, AI objective bölge listelerini ve trade-center ID/link graph'ını günceller; `Kaydet` / `Ctrl+S` ayrıca `ai_strategies.json` ve `trade_centers.json` dosyalarını runtime state'ten yazar. Harita içi trade-center adı ve konumu her çizimde güncel region `name_tr` ve `world_x/world_y` alanlarından türetildiği için region adı/merkezi editleri ayrı kopya bırakmaz. `+10/-10 Tur`, `unlock_turn` alanını değiştirir; `is_locked=true` ve `unlock_turn>0` ise bölge aktif tur o değere ulaştığında otomatik açılır. Deniz region'larında settlement işlemleri kapalı kalır ama bölge odaklı seçim, merkez taşıma, komşu sync, ekleme/silme ve owner/terrain düzenleme aynıdır; inspector bu seçimlerde açıkça `Deniz Bolgesi`, `Deniz bolgesinde yerlesim yok.` ve pasif `Denizde Yok` etiketi gösterir. Settlement odaklı pasif butonlar da bağlama göre `Tip Yok`, `Isim Yok`, `Silinmez` ya da settlement seçimi bekleniyorsa `Tip Sec`, `Isim Sec`, `Sil Sec` etiketine döner. `Shape` sekmesinde `Sınır Boya/Sil` yalnız `shape_id` taşıyan kara region'ları düzenler; `Bölge Boya/Sil` ise kara veya deniz seçiliyken doğrudan `region_shapes.json` override katmanına yazar, böylece ülke dış sınırının dışına taşan kara genişletmeleri ve deniz alanı dağılımı restart sonrası da korunur. Stroke baseline'ı override öncesi world map'ten alındığı için aynı dış sınır üstünden tekrar geçmek eski override kaydını düşürmez. Sağ üst yardım paneli ortak `Panel + Label` primitive'leriyle çizilir; canlı brush preview katmanı ise halen render-spesifik overlay olarak kalır. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim tip-sayılarını düzenler. Donanma ekleme liman tipli yerleşimin kara region'ından komşu deniz region'ına `is_naval: true` ordu yerleştirir. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. `Kaydet` / `Ctrl+S` artık `regions.json`, `country_shapes.json`, `factions.json`, `relations.json`, `armies.json` ve gerektiğinde `region_shapes.json` dosyalarını birlikte yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
+Edit mode'da oyun HUD/panelleri çizilmez; harita, üst edit HUD ve alt-sol sekmeli inspector görünür. Sol tık settlement, bölge veya ordu seçer; settlement sürükleme koordinatı canlı taşır ve başka kara region'a bırakılan settlement o region'ın `settlements[]` listesine aktarılır. Alt + sol tık tıklanan kara bölgeye yeni settlement ekler; deniz region'ları hem inspector hem harita ekleme yolunda filtrelenir. Ctrl + Alt + sol tık tıklanan bölgenin `shape_id` alanını paylaşan yeni Voronoi seed region oluşturur. Delete seçili settlement'ı, settlement seçili değilse seçili region'ı siler. Shift + sol sürükleme seçili bölgenin `world_x/world_y` merkezini taşır ve fare bırakıldığında harita cache'ini yeniler. Inspector `Harita` sekmesindeki `Yerlesim Ekle`, `Tip`, `Ana Yap`, `Isim`, `Arazi`, `Sahip`, `Ad TR`, `Ad EN`, `Kilit`, `-10 Tur`, `+10 Tur`, `Komsu Sync`, `Bolge Ekle`, `Bolge Sil`, `Yerlesim Sil` ve `Kaydet` butonları region/settlement metadata işlemlerini doğrudan çalıştırır. Bölge ID'si değiştiğinde editor aynı atomik işlemde komşu/geçit/ordu/paint referanslarını, AI objective bölge listelerini ve trade-center ID/link graph'ını günceller; `Kaydet` / `Ctrl+S` ayrıca `ai_strategies.json` ve `trade_centers.json` dosyalarını runtime state'ten yazar. Harita içi trade-center adı ve konumu her çizimde güncel region `name_tr` ve `world_x/world_y` alanlarından türetildiği için region adı/merkezi editleri ayrı kopya bırakmaz. `+10/-10 Tur`, `unlock_turn` alanını değiştirir; `is_locked=true` ve `unlock_turn>0` ise bölge aktif tur o değere ulaştığında otomatik açılır. Deniz region'larında settlement işlemleri kapalı kalır ama bölge odaklı seçim, merkez taşıma, komşu sync, ekleme/silme ve owner/terrain düzenleme aynıdır; inspector bu seçimlerde açıkça `Deniz Bolgesi`, `Deniz bolgesinde yerlesim yok.` ve pasif `Denizde Yok` etiketi gösterir. Settlement odaklı pasif butonlar da bağlama göre `Tip Yok`, `Isim Yok`, `Silinmez` ya da settlement seçimi bekleniyorsa `Tip Sec`, `Isim Sec`, `Sil Sec` etiketine döner. `Shape` sekmesinde `Sınır Boya/Sil` yalnız `shape_id` taşıyan kara region'ları düzenler; `Bölge Boya/Sil` ise kara veya deniz seçiliyken doğrudan `region_shapes.json` override katmanına yazar, böylece ülke dış sınırının dışına taşan kara genişletmeleri ve deniz alanı dağılımı restart sonrası da korunur. Stroke baseline'ı override öncesi world map'ten alındığı için aynı dış sınır üstünden tekrar geçmek eski override kaydını düşürmez. Sağ üst yardım paneli ortak `Panel + Label` primitive'leriyle çizilir; canlı brush preview katmanı ise halen render-spesifik overlay olarak kalır. `Tip`, `Arazi` ve `Sahip` inspector yanında kaydırılabilir dropdown açar; seçilen satır ilgili `type`, `terrain` veya `owner_id` değerini doğrudan yazar. `Veri` sekmesi faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim tip-sayılarını düzenler. Donanma ekleme liman tipli yerleşimin kara region'ından komşu deniz region'ına `is_naval: true` ordu yerleştirir. Faction formu ID, `name`, `name_tr`, din, renk, playable, kaynaklar, AI, hedef faction, diplomasi `stance` ve `score` alanlarını tek yerde toplar; formdaki `Kaydet` değişikliği uygular ve senaryo JSON dosyalarını yazar. `settlements.json` artık yalnızca kara region kayıtlarını dışa aktarır; deniz region'larının boş settlement satırları üretilmez. `Kaydet` / `Ctrl+S` artık `regions.json`, `country_shapes.json`, `factions.json`, `relations.json`, `armies.json` ve gerektiğinde `region_shapes.json` dosyalarını birlikte yazar. F2/Enter seçili settlement adını düzenler, Ctrl+S `ActionSaveScenario` üretir.
 
 Voronoi debug overlay `V` ile açılıp kapanır. Overlay `WorldMap.BoundaryPixels` ile seçili veya hover bölgenin gerçek raster sınırını camgöbeği piksellerle çizer. `WorldMap.VisualNeighbors` üzerinden raster sınır komşularını çıkarır ve JSON `neighbors` listesiyle karşılaştırır: yeşil çizgi görsel+JSON komşu, kırmızı çizgi sadece görsel komşu, gri çizgi sadece JSON komşudur. Sağ üst panel hover pixel'in `RegionAt` sonucunu, senaryo koordinatını ve seçili bölgenin visual/json komşu sayısını gösterir. `Komsu Sync`, seçili region'ın görsel komşularını JSON `neighbors` listesine yazar; eklenen/çıkarılan her komşuda karşı region listesi de iki yönlü güncellenir.
 
@@ -493,7 +506,7 @@ Uzun sürebilen senaryo/kayıt yükleme işleri `PhaseLoading` ekranına geçer.
 
 Rakip orduları seçilebilir ama emir verilemez. Renderer rakip ordusu için hareket hedefi çizmez ve sağ/sol tık hareket aksiyonu üretmez. Oyuncu ordularından birinin mevcut hareket menzilindeki rakip ordularda ikon birim sayısını gösterir; detay panelinde birimlerin yaklaşık yarısı görünür, kalanları `Gizli` kartlarıyla saklanır. Menzil dışındaki rakip ordularda birim sayısı ve hareket/birim detayları gizli kalır.
 
-Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bina maliyetlerinde mevcut/gerekli kaynak formatı korunur; recruit birim popup'ında yalnız gerekli miktar gösterilir ve kaynak yetersizse satırın sonuna `eksik` uyarısı eklenir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez. Ordu detay paneli dost toprakta toparlanan hasarlı birimler için başlıkta kısa durum metni ve kart sağ üstünde küçük `+` rozeti gösterir. Bu kural donanma için de geçerlidir: filo kendi sahibinin limanına bağlıysa `DockedRegionID` üzerinden tamirat aktif kabul edilir ve hasarlı gemi kartlarının sağ üstünde aynı rozet çizilir; açık deniz, düşman limanı ve limansız kıyı bu göstergeden dışlanır (`internal/army/army.go`, `internal/render/army_panel.go`).
+Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bina maliyetlerinde mevcut/gerekli kaynak formatı korunur; recruit birim popup'ında yalnız gerekli miktar gösterilir ve kaynak yetersizse satırın sonuna `eksik` uyarısı eklenir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez. Ordu detay paneli kendi, müttefik veya vassal realm toprağında toparlanan hasarlı birimler için başlıkta kısa durum metni ve kart sağ üstünde küçük `+` rozeti gösterir. Bu kural donanma için de geçerlidir: filo kendi, müttefik veya vassal limanına bağlıysa `DockedRegionID` üzerinden tamirat aktif kabul edilir ve hasarlı gemi kartlarının sağ üstünde aynı rozet çizilir; açık deniz, düşman limanı ve limansız kıyı bu göstergeden dışlanır (`internal/state/state.go`, `internal/army/army.go`, `internal/render/army_panel.go`).
 
 Bölge bilgi panelinde parmak imleci panelin tamamında değil, yalnızca kapatma düğmesi, vergi `-/+` düğmeleri, bina/olay sekmeleri, inşa edilebilir bina kartları ve olay satırları üzerinde gösterilir. Oyun içi HUD/panel cursor davranışı gerçek etkileşim alanlarına bağlıdır: sağ üstte yalnızca `Menü`, alt HUD'da yalnızca üç aksiyon butonu, olay logunda toggle/kart/X, birim panelinde yalnızca birim kartları pointer üretir. Boş panel alanları tıklamayı tüketmeye devam eder ama clickable cursor üretmez. Aynı panelde kaynak satırı ile memnuniyet/vergi çubukları artık ortak `regionPanelStatRowGap` ve `regionPanelBarYOffset` sabitleriyle yerleşir; böylece `Tahıl` satırı ile memnuniyet göstergesi üst üste binmez ve vergi düğmeleri de aynı geometriye bağlı kalır.
 
@@ -529,7 +542,7 @@ Tek ordu  →  bölge merkezinde
 
 ## Minimap — Ordu Konumları
 
-`panel.go:drawMinimapArmies` bölge sahiplik noktaları yerine orduların konumlarını çizer. Her ordu fraksiyon rengiyle dolu bir daire + ortada beyaz nokta olarak gösterilir; oyuncunun orduları altın kenarlıkla ayrışır.
+Minimap yalnızca dünya haritasını ve kameranın ekrandaki alanını gösteren viewport dikdörtgenini çizer; oyuncu veya düşman orduları minimap üzerinde gösterilmez.
 
 ---
 
@@ -567,7 +580,7 @@ Tek ordu  →  bölge merkezinde
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `map_borders.go` | Raster regionAt kenarlarını sıkıştırılmış kontur geometrisine çevirme, diplomasi/map-mode stil sınıflandırması ve screen-space mesh çizimi |
 | `tile.go` | Arazi renk/doku katmanı |
-| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; event log kaydırma geometrisi; minimap'te ordu konumları |
+| `panel.go` | Alt bar, bölge/ordu/minimap/event log panelleri; event log kaydırma geometrisi; minimap dünya görünümü ve kamera viewport'u |
 | `army_panel.go` | Ordu detay paneli — 20 slot ızgara, HP çubuğu, BÖL ve merchant rota düğmesi |
 | `merchant_route_panel.go` | Oyuncu merchant filosu için rota atama modalı, liste scroll'u ve hit-test |
 | `diplom.go` | Diplomasi paneli UI + input |

@@ -1788,8 +1788,8 @@
     "trade_capacity": 1,
     "satisfaction": 50,
     "tax_rate": 25,
-    "population": 672,
-    "rural_population": 299,
+    "population": 747,
+    "rural_population": 374,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": null
@@ -5525,6 +5525,7 @@
     "name_tr": "Germiyan Beyliği",
     "terrain": "plain",
     "owner_id": "germiyan_bey",
+    "successor_faction_id": "germiyan_bey",
     "neighbors": [
       "sivrihisar",
       "beysehir",
@@ -6101,8 +6102,8 @@
     "trade_capacity": 1,
     "satisfaction": 65,
     "tax_rate": 30,
-    "population": 667,
-    "rural_population": 282,
+    "population": 771,
+    "rural_population": 386,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": null

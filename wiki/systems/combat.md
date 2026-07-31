@@ -202,10 +202,10 @@ Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı
 
 `internal/game/resolution.go`
 
-- kara orduları sahip oldukları kara bölgede tur başına ücretsiz `+10 HP` toparlanır; ekonomi tick'inde depo kapasitesini aşan tahılla ordu başına ek `+10 HP`'ye kadar yenileme yapılabilir (`1 HP = 1 tahıl`),
+- kara orduları kendi, müttefik veya aynı realm içindeki vassal devletin kara bölgesinde tur başına ücretsiz `+10 HP` toparlanır; ekonomi tick'inde depo kapasitesini aşan tahılla ordu başına ek `+10 HP`'ye kadar yenileme yapılabilir (`1 HP = 1 tahıl`),
 - toparlanma `CurrentHP < 100` olan birimlerde çalışır ve `%100`e kadar sürer,
 - kış turunda önce attrition uygulanır, aynı sweep içinde ek ücretsiz toparlanma verilmez,
-- donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz.
+- donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz. Dost bölge kararı `GameState.CanArmyReplenishIn()` ile kendi sahipliği, ittifak ve vassal realm bağını birlikte değerlendirir.
 - aktif kuşatma altındaki savunmacı ordular, bölge sahibi kendi toprağı olsa bile toparlanmaz; `GameState.IsArmyDefendingSiegedRegion()` hareket, iyileşme ve UI tarafındaki ortak predicate'tir.
 
 ## Savaş Sonrası Uygulama

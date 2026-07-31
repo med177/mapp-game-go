@@ -284,7 +284,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 }
 
 func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
-	return gs != nil && a != nil && a.CanReplenishIn(gs.Regions) &&
+	return gs != nil && a != nil && gs.CanArmyReplenishIn(a) &&
 		!gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits()
 }
 

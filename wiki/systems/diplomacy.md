@@ -362,6 +362,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 - Panel iki adımdır: önce hedef devlet listesi, sonra teklif sayfası açılır.
 - Hedef devlet listesi her satırda `Askeri güç` ve aktif devletler arasındaki `Güç sırası` (`X/Y`) değerlerini gösterir. Listenin üstündeki `Alfabetik`, `İlişki` ve `Güç Sıralaması` düğmeleri listeyi sırasıyla varsayılan ID alfabetiğine, oyuncuyla olan ilişki puanı azalan düzene veya standing sırası artan düzene göre yeniden düzenler. `İlişki` sıralamasında aynı ilişki puanına sahip hedefler içinde oyuncuyla kara sınırı paylaşan devletler önce gelir; kalan eşitlik faction ID'siyle çözülür.
 - Teklif paneli artık çekirdek aksiyonların yanında `Heyet`, `Hediye` ve `Vassallık` seçeneklerini de gösterir.
+- Teklif türü düğmelerine tıklanınca seçilen aksiyon `diplomacyActionFocus` ile korunur; seçili ve etkin düğme 2 px altın-sarı border ile vurgulanır, böylece `Teklif Gönder` öncesi hangi teklifin seçildiği net görünür.
 - Hedef listesi artık panel gövdesi üzerinde mouse wheel ile kaydırılır; scroll sadece dar satır alanına değil panel bağlamına da bağlıdır.
 - Hedef listesinde seçim `mouse down` anında değil, kısa click release anında kesinleşir; basılı tutup sürüklemek listeyi satır yüksekliği bazında kaydırır ve yanlışlıkla devlet seçmez.
 - Liste kartları fraksiyon rengi accent şeridi, ilişki/duruş özeti ve görünür scrollbar ile çizilir; teklif sayfası aynı UI compose ailesindeki kart/panel çerçevesini kullanır.

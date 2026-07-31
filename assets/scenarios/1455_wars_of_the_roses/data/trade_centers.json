@@ -1,7 +1,7 @@
 {
   "centers": [
     {
-      "id": "london",
+      "region_id": "london",
       "links": [
         "flanders",
         "normandy",
@@ -11,7 +11,7 @@
       "tier": "primary"
     },
     {
-      "id": "flanders",
+      "region_id": "flanders",
       "links": [
         "london",
         "holland",
@@ -22,7 +22,7 @@
       "tier": "primary"
     },
     {
-      "id": "paris",
+      "region_id": "paris",
       "links": [
         "flanders",
         "normandy",
@@ -32,7 +32,7 @@
       "tier": "primary"
     },
     {
-      "id": "normandy",
+      "region_id": "normandy",
       "links": [
         "london",
         "paris",
@@ -41,7 +41,7 @@
       "tier": "secondary"
     },
     {
-      "id": "brittany",
+      "region_id": "brittany",
       "links": [
         "normandy",
         "london",
@@ -50,7 +50,7 @@
       "tier": "secondary"
     },
     {
-      "id": "holland",
+      "region_id": "holland",
       "links": [
         "flanders",
         "north_sea"
@@ -58,7 +58,7 @@
       "tier": "secondary"
     },
     {
-      "id": "the_pale",
+      "region_id": "the_pale",
       "links": [
         "london",
         "ulster",
@@ -67,7 +67,7 @@
       "tier": "secondary"
     },
     {
-      "id": "venice",
+      "region_id": "venice",
       "links": [
         "flanders",
         "genoa"
@@ -75,7 +75,7 @@
       "tier": "primary"
     },
     {
-      "id": "genoa",
+      "region_id": "genoa",
       "links": [
         "venice",
         "provence"

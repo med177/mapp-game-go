@@ -471,6 +471,16 @@ func (a *Army) ReplenishInFriendlyTerritory(regions map[world.RegionID]*world.Re
 	if !a.CanReplenishIn(regions) || amount <= 0 {
 		return 0
 	}
+	return a.Replenish(amount)
+}
+
+// Replenish hasarlı kara birliklerini verilen miktar kadar iyileştirir.
+// Bölgenin dostluk/ikmal uygunluğu GameState tarafından belirlendiğinde
+// konum kontrolü yapılmadan ortak HP uygulama yolu olarak kullanılır.
+func (a *Army) Replenish(amount int) (healedUnits int) {
+	if a == nil || amount <= 0 {
+		return 0
+	}
 	for i := range a.Units {
 		if a.Units[i].CurrentHP >= MaxUnitHP {
 			continue
