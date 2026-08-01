@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-01: Escort görev bonus rozeti sarıdan yeşil-haki renge çevrildi;
+  devriye, abluka ve ticaret bonus renkleri korunuyor. Regression:
+  `TestNavalMissionEscortBadgeUsesKhakiGreen`; doğrulama:
+  `go test ./internal/render -run 'TestNavalMission.*Badge' -count=1`.
+
+- 2026-08-01: Ordu taşıyan donanmanın kara hedefleri settlement bazında ayrıştırıldı.
+  Merkez yerleşim kare çıkarma border'ı, limanlar koyu mavi yuvarlak docking
+  hedefi olarak aynı anda gösteriliyor; liman tıklaması `TargetSettlementID`
+  ile dock state'ini koruyor, merkez tıklaması mevcut çıkarma action'ını
+  kullanıyor. Regression: `TestNavalLandMoveTargetSettlementShowsPortsAndLandingCenters`,
+  `TestMoveArmyExplicitPortTargetKeepsEmbarkedUnitsDocked`; doğrulama:
+  `go test ./internal/game ./internal/render -count=1`.
+
 - 2026-08-01: Donanma görev ikonları sadeleştirildi. Devriye/escort görev harfi
   kareleri kaldırıldı; hedefteki `+N`/yüzde bonus dairesi taşınan ordu rozetiyle
   aynı üst-sağ anchor'a hizalandı ve açık renkli dış border kaldırıldı.
@@ -16,9 +29,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-08-01: Mavi görev ve sarı ticaret bonus rozetleri tüm donanma marker'ları
   ve komutan portrelerinden sonra ön-plan geçişinde çiziliyor; komşu marker veya
-  portreler rozetleri kapatamıyor. Zayiat `!` rozeti sol-üst konuma taşındı.
-  Regression: `TestNavalDamageBadgeUsesUpperLeftAnchor`;
-  doğrulama: `go test ./internal/render -run 'TestNavalMission|TestNavalArmyBadges|TestNavalDamageBadge|TestArmyCommanderBadge' -count=1`.
+  portreler rozetleri kapatamıyor. Kara ordusu ve donanmadaki zayiat `!` rozeti
+  ortak sol-üst konuma taşındı. Regression: `TestNavalDamageBadgeUsesUpperLeftAnchor`,
+  `TestArmyDamageBadgeUsesUpperLeftAnchor`;
+  doğrulama: `go test ./internal/render -run 'TestNavalMission|TestNavalArmyBadges|TestNavalDamageBadge|TestArmyDamageBadge|TestArmyCommanderBadge' -count=1`.
 
 - 2026-08-01: Aynı gruptaki yan yana donanma marker'ları 26 px yerine 29 px
   merkez aralığıyla diziliyor; 26 px marker çapı korunurken aralarında 3 px
@@ -51,9 +65,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-08-01: Seçili donanmanın komşu kara bölgesi hareket hedefleri settlement
   türüne göre ayrıştırıldı. Ordu taşımayan filo yalnız liman settlement'larını,
-  `EmbarkedUnits` taşıyan filo ise çıkarma hedefi olarak yalnız merkez
-  settlement'ını işaretliyor; bölge merkezinde yanlış hedef halkası çizilmiyor.
-  Regression: `TestNavalLandMoveTargetSettlementUsesPortsUntilLanding`;
+  `EmbarkedUnits` taşıyan filo liman docking ve merkez çıkarma settlement'larını
+  ayrı işaretliyor; bölge merkezinde yanlış hedef halkası çizilmiyor.
+  Regression: `TestNavalLandMoveTargetSettlementShowsPortsAndLandingCenters`;
   doğrulama: `go test ./internal/render ./internal/game ./internal/state`.
 
 - 2026-08-01: Oyuncu donanma görevleri mekanik olarak ayrıştırıldı. Abluka

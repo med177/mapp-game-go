@@ -85,7 +85,7 @@ func navalMissionReachedColor(kind army.NavalMissionKind) color.RGBA {
 	case army.NavalMissionBlockade:
 		return color.RGBA{232, 78, 78, 245}
 	case army.NavalMissionEscort:
-		return color.RGBA{220, 178, 62, 245}
+		return color.RGBA{128, 150, 72, 245}
 	case army.NavalMissionTransport:
 		return color.RGBA{232, 154, 54, 245}
 	default:

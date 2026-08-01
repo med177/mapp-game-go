@@ -114,19 +114,22 @@ const (
 
 // InputAction renderer'ın bir çerçevede ürettiği tek oyun eylemi.
 type InputAction struct {
-	Kind          ActionKind
-	ArmyID        army.ArmyID
-	UnitIndices   []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
-	TargetArmyID  army.ArmyID
-	CommanderID   string
-	TargetRegion  world.RegionID
-	BuildingID    string
-	Quantity      int
-	TargetFaction faction.FactionID
-	WarAllies     []faction.FactionID
-	Delta         int // AdjustTax için: +5 veya -5
-	OfferIndex    int
-	OfferAccepted bool
-	ChoiceIndex   int
-	BattleStance  combat.BattleStance
+	Kind         ActionKind
+	ArmyID       army.ArmyID
+	UnitIndices  []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
+	TargetArmyID army.ArmyID
+	CommanderID  string
+	TargetRegion world.RegionID
+	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
+	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.
+	TargetSettlementID string
+	BuildingID         string
+	Quantity           int
+	TargetFaction      faction.FactionID
+	WarAllies          []faction.FactionID
+	Delta              int // AdjustTax için: +5 veya -5
+	OfferIndex         int
+	OfferAccepted      bool
+	ChoiceIndex        int
+	BattleStance       combat.BattleStance
 }

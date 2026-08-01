@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
@@ -1057,6 +1058,64 @@ func TestMoveArmyDisembarkFromDockedOwnedPort(t *testing.T) {
 	}
 	if newArmy.RegionID != "land_a" || newArmy.IsNaval || len(newArmy.Units) != 1 {
 		t.Fatalf("indirme sonucu ordu hatalı: %+v", newArmy)
+	}
+}
+
+func TestMoveArmyExplicitPortTargetKeepsEmbarkedUnitsDocked(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"sea_1": {
+				ID:        "sea_1",
+				IsSea:     true,
+				Neighbors: []world.RegionID{"land_a"},
+			},
+			"land_a": {
+				ID:        "land_a",
+				OwnerID:   "p1",
+				Neighbors: []world.RegionID{"sea_1"},
+				Buildings: []string{"port"},
+				Settlements: []world.Settlement{
+					{ID: "port_a", Type: world.SettlementPort, NameTR: "Liman"},
+					{ID: "center_a", Type: world.SettlementCity, IsCenter: true, NameTR: "Merkez"},
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_p1_1": {
+				ID:                 "fleet_p1_1",
+				OwnerID:            "p1",
+				RegionID:           "sea_1",
+				DockedRegionID:     "land_a",
+				DockedSettlementID: "port_a",
+				Units:              []army.Unit{{TypeID: "transport", CurrentHP: 100}},
+				EmbarkedUnits:      []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+				MovePoints:         3,
+				MaxMovePoints:      3,
+				IsNaval:            true,
+			},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": testTransportType(),
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyToSettlementWithStance("fleet_p1_1", "land_a", "port_a", combat.BattleStanceBalanced)
+
+	fleet := gs.Armies["fleet_p1_1"]
+	if len(fleet.EmbarkedUnits) != 1 {
+		t.Fatalf("açık liman hedefi seçilince taşınan ordu boşaltılmamalıydı: %d", len(fleet.EmbarkedUnits))
+	}
+	if fleet.DockedRegionID != "land_a" || fleet.DockedSettlementID != "port_a" {
+		t.Fatalf("liman hedefi dock state'i korumalıydı, got=%q/%q", fleet.DockedRegionID, fleet.DockedSettlementID)
+	}
+	if fleet.MovePoints != 2 {
+		t.Fatalf("liman hedefi bir hareket puanı tüketmeli, got=%d", fleet.MovePoints)
 	}
 }
 

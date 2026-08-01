@@ -1198,16 +1198,25 @@ func (r *Renderer) handleRightClick() InputAction {
 		return InputAction{}
 	}
 	// Donanmanın kara hedefi settlement marker'ı üzerinden seçilir. Taşıyan
-	// filo yalnız çıkarma merkezi, boş filo yalnız geçerli liman marker'ını
-	// tıklanabilir kabul eder; bölge içindeki boş bir noktaya tıklama hareket
-	// emri üretmez.
+	// filo merkez settlement'ını çıkarma, liman settlement'ını docking hedefi;
+	// boş filo yalnız geçerli liman marker'ını tıklanabilir kabul eder. Bölge
+	// içindeki boş bir noktaya tıklama hareket emri üretmez.
+	navalTargetSettlementID := ""
+	navalTargetIsCenter := false
 	if a.IsNaval {
 		if target := r.gs.Regions[rid]; target != nil && target.CanLandEnter() {
-			settlementRegion, ok := r.navalLandMoveTargetAt(fx, fy, a)
+			settlementRegion, settlementID, ok := r.navalLandMoveTargetAt(fx, fy, a)
 			if !ok {
 				return InputAction{}
 			}
 			rid = settlementRegion
+			navalTargetSettlementID = settlementID
+			for _, settlement := range target.Settlements {
+				if settlement.ID == settlementID {
+					navalTargetIsCenter = settlement.IsCenter
+					break
+				}
+			}
 		}
 	}
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
@@ -1279,7 +1288,7 @@ func (r *Renderer) handleRightClick() InputAction {
 				return InputAction{}
 			}
 		}
-		if a.IsNaval && navalShowsFriendlyDisembark(r.gs, a, target) {
+		if a.IsNaval && navalTargetIsCenter && navalShowsFriendlyDisembark(r.gs, a, target) {
 			r.ShowConfirmDialog(
 				"Karaya In",
 				"Gemideki birlikler bu bölgeye insin mi?",
@@ -1312,7 +1321,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}
-		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
+		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID}
 		r.SelectedArmy = ""
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()

@@ -138,6 +138,16 @@ func TestNavalDamageBadgeUsesUpperLeftAnchor(t *testing.T) {
 	}
 }
 
+func TestArmyDamageBadgeUsesUpperLeftAnchor(t *testing.T) {
+	x, y := armyDamageBadgeCenter(100, 100)
+	if x >= 100 || y >= 100 {
+		t.Fatalf("zayiat rozeti sol üstte olmalı: x=%.1f y=%.1f", x, y)
+	}
+	if x != 86 || y != 86 {
+		t.Fatalf("kara ordusu zayiat rozeti donanmayla aynı sol-üst konumda olmalı: x=%.1f y=%.1f", x, y)
+	}
+}
+
 func TestNavalEmbarkedArmyBadgeFollowsFleetVisibility(t *testing.T) {
 	fleet := &army.Army{EmbarkedUnits: make([]army.Unit, 17)}
 	if got := navalEmbarkedArmyBadgeText(fleet, false); got != "?" {

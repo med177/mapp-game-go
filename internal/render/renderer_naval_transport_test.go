@@ -35,7 +35,7 @@ func TestNavalShowsFriendlyDisembark(t *testing.T) {
 	}
 }
 
-func TestNavalLandMoveTargetSettlementUsesPortsUntilLanding(t *testing.T) {
+func TestNavalLandMoveTargetSettlementShowsPortsAndLandingCenters(t *testing.T) {
 	port := world.Settlement{ID: "port", Type: world.SettlementPort}
 	center := world.Settlement{ID: "center", Type: world.SettlementCity, IsCenter: true}
 	town := world.Settlement{ID: "town", Type: world.SettlementTown}
@@ -49,8 +49,8 @@ func TestNavalLandMoveTargetSettlementUsesPortsUntilLanding(t *testing.T) {
 	if !navalLandMoveTargetSettlement(center, true) {
 		t.Fatal("çıkarma taşıyan donanma için merkez settlement işaretlenmeliydi")
 	}
-	if navalLandMoveTargetSettlement(port, true) {
-		t.Fatal("çıkarma hedefinde liman settlement merkez yerine kullanılmamalıydı")
+	if !navalLandMoveTargetSettlement(port, true) {
+		t.Fatal("çıkarma taşıyan donanma için liman settlement docking hedefi olarak işaretlenmeliydi")
 	}
 	if navalLandMoveTargetSettlement(town, false) || navalLandMoveTargetSettlement(town, true) {
 		t.Fatal("sıradan settlement donanma kara hedefi olmamalıydı")
@@ -81,19 +81,19 @@ func TestNavalLandMoveTargetAtMatchesRenderedSettlementMode(t *testing.T) {
 
 	portX, portY := r.worldToScreen(100, 100)
 	centerX, centerY := r.worldToScreen(140, 100)
-	if got, ok := r.navalLandMoveTargetAt(portX, portY, fleet); !ok || got != "coast" {
-		t.Fatalf("boş filo liman settlement'ını hedeflemeli: got=%q ok=%t", got, ok)
+	if got, settlementID, ok := r.navalLandMoveTargetAt(portX, portY, fleet); !ok || got != "coast" || settlementID != "port" {
+		t.Fatalf("boş filo liman settlement'ını hedeflemeli: region=%q settlement=%q ok=%t", got, settlementID, ok)
 	}
-	if got, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); ok || got != "" {
-		t.Fatalf("boş filo merkez çıkarma settlement'ını hedeflememeli: got=%q ok=%t", got, ok)
+	if got, settlementID, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); ok || got != "" || settlementID != "" {
+		t.Fatalf("boş filo merkez çıkarma settlement'ını hedeflememeli: region=%q settlement=%q ok=%t", got, settlementID, ok)
 	}
 
 	fleet.EmbarkedUnits = []army.Unit{{TypeID: "inf"}}
-	if got, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); !ok || got != "coast" {
-		t.Fatalf("taşıyan filo merkez settlement'ını çıkarma hedeflemeli: got=%q ok=%t", got, ok)
+	if got, settlementID, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); !ok || got != "coast" || settlementID != "center" {
+		t.Fatalf("taşıyan filo merkez settlement'ını çıkarma hedeflemeli: region=%q settlement=%q ok=%t", got, settlementID, ok)
 	}
-	if got, ok := r.navalLandMoveTargetAt(portX, portY, fleet); ok || got != "" {
-		t.Fatalf("taşıyan filo liman settlement'ını dock hedefi olarak seçmemeli: got=%q ok=%t", got, ok)
+	if got, settlementID, ok := r.navalLandMoveTargetAt(portX, portY, fleet); !ok || got != "coast" || settlementID != "port" {
+		t.Fatalf("taşıyan filo liman settlement'ını dock hedefi olarak seçmeli: region=%q settlement=%q ok=%t", got, settlementID, ok)
 	}
 }
 

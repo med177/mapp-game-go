@@ -1804,8 +1804,8 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		// settlement'ı işaretlenir. Sağ tık yine bölge ID'si ürettiğinden bu
 		// yalnızca hedef göstergesinin ankrajını değiştirir.
 		if a.IsNaval && nRegion.CanLandEnter() {
-			col, label := navalLandMoveTargetStyle(r.gs, a, nRegion)
-			if r.drawNavalLandMoveTargets(screen, nRegion, len(a.EmbarkedUnits) > 0, col, label) {
+			col := navalLandMoveTargetStyle(r.gs, a, nRegion)
+			if r.drawNavalLandMoveTargets(screen, nRegion, len(a.EmbarkedUnits) > 0, col) {
 				continue
 			}
 			// Geçerli bir liman settlement ankrajı yoksa kara bölgesinin
@@ -1856,21 +1856,20 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 // navalLandMoveTargetSettlement, donanma kara hedefi göstergesinin hangi
 // settlement tipine bağlanacağını belirler. Taşıyıcıda kara ordusu yoksa
-// yalnız limanlar; ordu varsa yalnız merkez settlement çıkarma hedefidir.
+// yalnız liman; ordu varsa liman docking ve merkez settlement çıkarma hedefidir.
 func navalLandMoveTargetSettlement(settlement world.Settlement, landing bool) bool {
-	if landing {
-		return settlement.IsCenter
+	if settlement.Type == world.SettlementPort {
+		return true
 	}
-	return settlement.Type == world.SettlementPort
+	return landing && settlement.IsCenter
 }
 
-func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *world.Region) (color.RGBA, string) {
+func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *world.Region) color.RGBA {
 	if target == nil || fleet == nil {
-		return color.RGBA{80, 160, 255, 160}, ""
+		return color.RGBA{80, 160, 255, 160}
 	}
 
 	col := color.RGBA{80, 160, 255, 160}
-	label := ""
 	if target.OwnerID != "" && target.OwnerID != fleet.OwnerID {
 		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
 		var rel *faction.Relation
@@ -1883,19 +1882,15 @@ func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *wor
 		} else {
 			col = color.RGBA{220, 140, 30, 210}
 		}
-		label = "WAR"
 	} else if target.OwnerID == "" {
 		col = color.RGBA{60, 220, 60, 200}
 	}
-	if navalShowsFriendlyDisembark(gs, fleet, target) {
-		label = "IN"
-	}
-	return col, label
+	return col
 }
 
 // drawNavalLandMoveTargets, geçerli kara hedefindeki liman veya çıkarma
 // merkezlerini bölge merkezinden bağımsız olarak işaretler.
-func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.Region, landing bool, col color.RGBA, label string) bool {
+func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.Region, landing bool, col color.RGBA) bool {
 	if r == nil || r.worldMap == nil || region == nil || region.IsSea {
 		return false
 	}
@@ -1910,19 +1905,12 @@ func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.
 			continue
 		}
 		sx, sy := r.worldToScreen(float64(ax), float64(ay))
-		if !landing && settlement.Type == world.SettlementPort {
+		if settlement.Type == world.SettlementPort {
 			// Liman hedefi, filonun dock olacağını anlatan sabit koyu mavi
 			// daireyle gösterilir; liman docking'i çıkarma hedefi gibi görünmez.
 			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, navalDockTargetColor, true)
 		} else {
 			vector.StrokeRect(screen, float32(sx)-16, float32(sy)-14, 32, 28, 3, col, true)
-		}
-		if label != "" {
-			labelCol := color.RGBA{255, 200, 80, 230}
-			if label == "IN" {
-				labelCol = color.RGBA{210, 248, 255, 230}
-			}
-			DrawTextCentered(screen, label, sx, sy-20, FaceSmall, labelCol)
 		}
 		drawn = true
 	}
@@ -1932,17 +1920,18 @@ func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.
 // navalLandMoveTargetAt, haritada çizilen settlement hedeflerinden hangisine
 // tıklandığını döndürür. Böylece kara bölgesinin boş bir pikseline tıklamak,
 // liman/dock veya çıkarma hedefi seçimi gibi yorumlanmaz.
-func (r *Renderer) navalLandMoveTargetAt(mx, my float64, fleet *army.Army) (world.RegionID, bool) {
+func (r *Renderer) navalLandMoveTargetAt(mx, my float64, fleet *army.Army) (world.RegionID, string, bool) {
 	if r == nil || r.gs == nil || r.worldMap == nil || fleet == nil || !fleet.IsNaval {
-		return "", false
+		return "", "", false
 	}
 	source := r.gs.Regions[fleet.RegionID]
 	if source == nil {
-		return "", false
+		return "", "", false
 	}
 	landing := len(fleet.EmbarkedUnits) > 0
 	bestDistance := math.MaxFloat64
 	var bestRegion world.RegionID
+	var bestSettlementID string
 	for _, neighborID := range source.Neighbors {
 		region := r.gs.Regions[neighborID]
 		if region == nil || region.IsLocked || !region.CanLandEnter() {
@@ -1969,9 +1958,10 @@ func (r *Renderer) navalLandMoveTargetAt(mx, my float64, fleet *army.Army) (worl
 			}
 			bestDistance = distance
 			bestRegion = region.ID
+			bestSettlementID = settlement.ID
 		}
 	}
-	return bestRegion, bestRegion != ""
+	return bestRegion, bestSettlementID, bestRegion != ""
 }
 
 // armyIconPos bir ordunun ekrandaki ikon koordinatlarını tutar.
@@ -2450,10 +2440,7 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
-		badgeX, badgeY := cx+8, cy-12
-		if isNaval {
-			badgeX, badgeY = navalDamageBadgeCenter(cx, cy)
-		}
+		badgeX, badgeY := armyDamageBadgeCenter(cx, cy)
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
@@ -2537,8 +2524,12 @@ func navalEmbarkedArmyBadgeText(a *army.Army, detailsVisible bool) string {
 	return itoa(count)
 }
 
-func navalDamageBadgeCenter(cx, cy float32) (float32, float32) {
+func armyDamageBadgeCenter(cx, cy float32) (float32, float32) {
 	return cx - 14, cy - 14
+}
+
+func navalDamageBadgeCenter(cx, cy float32) (float32, float32) {
+	return armyDamageBadgeCenter(cx, cy)
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {

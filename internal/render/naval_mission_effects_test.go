@@ -121,3 +121,10 @@ func TestNavalMissionBonusBadgeTextContrast(t *testing.T) {
 		t.Fatalf("abluka bonus rozeti metin rengi yanlış: %+v", got)
 	}
 }
+
+func TestNavalMissionEscortBadgeUsesKhakiGreen(t *testing.T) {
+	want := color.RGBA{128, 150, 72, 245}
+	if got := navalMissionReachedColor(army.NavalMissionEscort); got != want {
+		t.Fatalf("escort rozeti yeşil haki olmalı: got=%+v want=%+v", got, want)
+	}
+}

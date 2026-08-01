@@ -291,7 +291,7 @@ func (g *Game) Update() error {
 			}
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
-			g.moveArmyWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
+			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
 		case render.ActionEmbarkArmy:
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
@@ -358,7 +358,7 @@ func (g *Game) Update() error {
 			g.declareWar(action.TargetFaction, action.WarAllies)
 			// Savaş ilan edildikten sonra relation map güncelleniyor,
 			// moveArmy içinde bu güncel durum kontrol edilecek.
-			g.moveArmyWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
+			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
 		case render.ActionProposePeace:
 			g.proposePeace(action.TargetFaction)
 		case render.ActionImproveRelations:
@@ -3949,6 +3949,18 @@ func (g *Game) dockSettlementIDForRegion(region *world.Region) string {
 	return ""
 }
 
+func (g *Game) isPortSettlement(region *world.Region, settlementID string) bool {
+	if region == nil || settlementID == "" {
+		return false
+	}
+	for _, settlement := range region.Settlements {
+		if settlement.ID == settlementID {
+			return settlement.Type == world.SettlementPort
+		}
+	}
+	return false
+}
+
 func (g *Game) canDockFleetAtRegion(fleet *army.Army, targetRegion *world.Region) bool {
 	if fleet == nil || targetRegion == nil || !fleet.IsNaval || targetRegion.IsSea {
 		return false
@@ -4560,6 +4572,13 @@ func navalBattleOutcomeDetail(detail string, cargoLost int) string {
 
 // moveArmyWithStance oyuncu ordusunu hedef bölgeye taşır; savaş çıkarsa seçilen saldırı duruşunu uygular.
 func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battleStance combat.BattleStance) {
+	g.moveArmyToSettlementWithStance(aid, target, "", battleStance)
+}
+
+// moveArmyToSettlementWithStance, denizden kara hedefinde seçilen settlement
+// ile liman docking ve merkez settlement çıkarma niyetini ayırır. Settlement
+// verilmediğinde mevcut bölge tabanlı hareket davranışı korunur.
+func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance) {
 	battleStance = combat.NormalizeBattleStance(battleStance)
 	a, ok := g.gs.Armies[aid]
 	if !ok || a.OwnerID != string(g.gs.PlayerFactionID) {
@@ -4614,8 +4633,9 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 	// Naval/kara uyumluluk kontrolü
 	if a.IsNaval {
 		if targetRegion.CanLandEnter() {
+			explicitPortTarget := targetSettlementID != "" && g.isPortSettlement(targetRegion, targetSettlementID)
 			shouldDisembark := len(a.EmbarkedUnits) > 0 &&
-				(a.DockedRegionID == targetRegion.ID || !g.canDockFleetAtRegion(a, targetRegion))
+				(!explicitPortTarget && (a.DockedRegionID == targetRegion.ID || !g.canDockFleetAtRegion(a, targetRegion)))
 			if shouldDisembark {
 				g.resolveFleetDisembarkWithStance(a, target, targetRegion, battleStance)
 				return
