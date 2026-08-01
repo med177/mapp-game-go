@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
@@ -104,7 +105,45 @@ func TestArmyCommanderBadgeAlignsAboveLandAndNavalIcons(t *testing.T) {
 	}
 
 	_, embarkedY, embarkedSize := armyCommanderBadgeRect(100, 100, true, true)
-	if embarkedY+embarkedSize != 70 {
-		t.Fatalf("taşıma rozeti olan filoda komutan portresi üstte kalmalı: bottom=%.1f", embarkedY+embarkedSize)
+	if embarkedY+embarkedSize != 87 {
+		t.Fatalf("taşıma rozeti olan filoda komutan portresi dairenin üstünde kalmalı: bottom=%.1f", embarkedY+embarkedSize)
+	}
+}
+
+func TestNavalArmyBadgesShareUpperRightAnchor(t *testing.T) {
+	badge := navalEmbarkedArmyBadgeRect(100, 100)
+	if badge.X <= 100 || badge.Y >= 100 {
+		t.Fatalf("taşınan ordu rozeti markerın sağ üstünde olmalı: %+v", badge)
+	}
+	if badge.W != 16 || badge.H != 16 {
+		t.Fatalf("taşınan ordu rozeti 16 px kare olmalı: %+v", badge)
+	}
+	if badge.X+badge.W/2 != 114 || badge.Y+badge.H/2 != 86 {
+		t.Fatalf("taşınan ordu rozeti ortak üst-sağ anchor'da olmalı: %+v", badge)
+	}
+
+	bonus := navalMissionBonusBadgeRect(100, 100)
+	if bonus.X+bonus.W/2 != badge.X+badge.W/2 || bonus.Y+bonus.H/2 != badge.Y+badge.H/2 {
+		t.Fatalf("bonus rozeti taşınan ordu rozetiyle aynı anchor'ı paylaşmalı: embarked=%+v bonus=%+v", badge, bonus)
+	}
+}
+
+func TestNavalDamageBadgeUsesUpperLeftAnchor(t *testing.T) {
+	x, y := navalDamageBadgeCenter(100, 100)
+	if x >= 100 || y >= 100 {
+		t.Fatalf("zayiat rozeti sol üstte olmalı: x=%.1f y=%.1f", x, y)
+	}
+	if x != 86 || y != 86 {
+		t.Fatalf("zayiat rozeti ortak sol-üst konumda olmalı: x=%.1f y=%.1f", x, y)
+	}
+}
+
+func TestNavalEmbarkedArmyBadgeFollowsFleetVisibility(t *testing.T) {
+	fleet := &army.Army{EmbarkedUnits: make([]army.Unit, 17)}
+	if got := navalEmbarkedArmyBadgeText(fleet, false); got != "?" {
+		t.Fatalf("görünmeyen düşman taşıma sayısı ? olmalı: got=%q", got)
+	}
+	if got := navalEmbarkedArmyBadgeText(fleet, true); got != "17" {
+		t.Fatalf("görünür taşıma sayısı gerçek adet olmalı: got=%q", got)
 	}
 }

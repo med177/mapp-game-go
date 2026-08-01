@@ -1110,11 +1110,11 @@ Testler: `internal/ai/merchant_trade_test.go`, `internal/state/merchant_trade_te
 
 ## Oyuncu Donanma Görevleri
 
-AI'nin runtime deniz görevlerinden ayrı olarak oyuncu filoları artık kalıcı
-`patrol`, `blockade`, `escort` ve `transport` görevleri alabilir. Savaş filosu
+AI'nin runtime deniz görevlerinden ayrı olarak oyuncu savaş filoları artık kalıcı
+`patrol`, `blockade` ve `escort` görevleri alabilir. Saf nakliye filosuna oyuncu
+görevi atanmaz; mevcut taşıma/çıkarma hareketi korunur. Savaş filosu
 devriye/abluka için deniz bölgesi seçer; escort satırı aynı devlete ait bir
-nakliye filosunu izler; taşınan kara ordusu bulunan transport filosu kıyı kara
-bölgesini hedefler. Görev seçimi `GÖREV` butonundan yapılır, geçerli hedefler
+nakliye filosunu izler. Görev seçimi `GÖREV` butonundan yapılır, geçerli hedefler
 haritada renkli işaretlerle gösterilir ve görev değiştirilebilir veya
 kaldırılabilir.
 
@@ -1124,8 +1124,8 @@ ikon yanındaki küçük bonus rozetiyle aynı etkiyi tekrar görünür kılar. 
 hover'ında hedef bölge ve uygulanan etki tooltip'te ayrıntılı gösterilir.
 Her tur başında görevli
 oyuncu filosu komşuluk grafiğinde deterministik BFS ile hedefe yaklaşır;
-nakliye hedef kıyıya geldiğinde mevcut çıkarma ve savaş kurallarını kullanır.
-Görev, filo ikonunda harf rozetiyle ve panel footer'ında hedef metniyle görünür.
+Görev, filo ikonunda ilgili rol rozetiyle ve panel footer'ında hedef metniyle
+görünür; Abluka'nın ayrıca `A` kare rozeti yoktur, kırmızı yüzde rozeti yeterlidir.
 Görevlerin ekonomik/askerî rolleri ayrıdır: Abluka görevi hedef denizdeki savaş
 gemilerini ticaret rotası ve liman ikmal kesintisine dahil eder; bir gemi yüzde
 50, iki veya fazlası yüzde 100 kesinti üretir. Devriye görevi dost rota/liman

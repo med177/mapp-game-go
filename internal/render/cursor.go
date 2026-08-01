@@ -419,6 +419,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 	}
 	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
+			return buildArmyPanelCloseButton().HitTest(fx, fy)
+		}
 		return ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 	}
 	if r.selectedSiegePanelHit(fx, fy) {
@@ -429,6 +432,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	// Ordu/donanma etiketi üzerinde mi?
 	if _, ok := r.navalMissionBonusHitAt(fx, fy); ok {
+		return true
+	}
+	if _, ok := r.embarkedArmyHitAt(fx, fy); ok {
 		return true
 	}
 	if _, ok := r.armyHitAt(fx, fy); ok {

@@ -78,20 +78,24 @@ type Renderer struct {
 	isDragging     bool
 
 	// Seçim
-	SelectedRegion           world.RegionID
-	merchantRouteHighlight   world.RegionID
-	SelectedArmy             army.ArmyID
-	splitSelectedUnits       map[int]bool
-	selectedFactionPanel     faction.FactionID
-	factionPanelScroll       float64
-	selectedSettlementRegion world.RegionID
-	selectedSettlementIndex  int
-	devNeighborListExpanded  bool
-	regionPanelTab           regionPanelTab
-	regionPanelScroll        float64
-	showRecruitPanel         bool
-	recruitUnitID            string
-	recruitQty               int
+	SelectedRegion         world.RegionID
+	merchantRouteHighlight world.RegionID
+	SelectedArmy           army.ArmyID
+	// SelectedEmbarkedArmyFleet, seçili filonun üzerindeki kara ordusunun
+	// bilgi panelini gösterdiğini belirtir. Mekanik seçim ve hareket akışı
+	// yine SelectedArmy üzerinden filoyu kullanmaya devam eder.
+	SelectedEmbarkedArmyFleet army.ArmyID
+	splitSelectedUnits        map[int]bool
+	selectedFactionPanel      faction.FactionID
+	factionPanelScroll        float64
+	selectedSettlementRegion  world.RegionID
+	selectedSettlementIndex   int
+	devNeighborListExpanded   bool
+	regionPanelTab            regionPanelTab
+	regionPanelScroll         float64
+	showRecruitPanel          bool
+	recruitUnitID             string
+	recruitQty                int
 
 	// Senaryo seçim ekranı
 	scenarioCursor int
@@ -804,6 +808,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.SelectedRegion = ""
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
+	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
@@ -908,6 +913,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.SelectedRegion = ""
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
+	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
@@ -1284,7 +1290,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.mapMode != MapModeTrade && r.showRecruitPanel {
 			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		}
-		DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy, r.splitSelectedUnits)
+		if r.SelectedEmbarkedArmyFleet != "" && r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
+			DrawEmbarkedArmyDetailPanel(screen, r.gs, r.SelectedEmbarkedArmyFleet)
+		} else {
+			DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy, r.splitSelectedUnits)
+		}
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
 		r.drawSelectedSiegePanel(screen)
 	}
@@ -1918,6 +1928,51 @@ func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.
 	return drawn
 }
 
+// navalLandMoveTargetAt, haritada çizilen settlement hedeflerinden hangisine
+// tıklandığını döndürür. Böylece kara bölgesinin boş bir pikseline tıklamak,
+// liman/dock veya çıkarma hedefi seçimi gibi yorumlanmaz.
+func (r *Renderer) navalLandMoveTargetAt(mx, my float64, fleet *army.Army) (world.RegionID, bool) {
+	if r == nil || r.gs == nil || r.worldMap == nil || fleet == nil || !fleet.IsNaval {
+		return "", false
+	}
+	source := r.gs.Regions[fleet.RegionID]
+	if source == nil {
+		return "", false
+	}
+	landing := len(fleet.EmbarkedUnits) > 0
+	bestDistance := math.MaxFloat64
+	var bestRegion world.RegionID
+	for _, neighborID := range source.Neighbors {
+		region := r.gs.Regions[neighborID]
+		if region == nil || region.IsLocked || !region.CanLandEnter() {
+			continue
+		}
+		canPreviewWarLanding := landing && region.OwnerID != "" && region.OwnerID != fleet.OwnerID
+		if !armyCanEnterRegion(r.gs, fleet, region) && !canPreviewWarLanding {
+			continue
+		}
+		for index, settlement := range region.Settlements {
+			if !navalLandMoveTargetSettlement(settlement, landing) {
+				continue
+			}
+			ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, index)
+			if !ok {
+				continue
+			}
+			sx, sy := r.worldToScreen(float64(ax), float64(ay))
+			dx := mx - sx
+			dy := my - sy
+			distance := dx*dx + dy*dy
+			if distance > 22*22 || distance >= bestDistance {
+				continue
+			}
+			bestDistance = distance
+			bestRegion = region.ID
+		}
+	}
+	return bestRegion, bestRegion != ""
+}
+
 // armyIconPos bir ordunun ekrandaki ikon koordinatlarını tutar.
 type armyIconPos struct {
 	ArmyID army.ArmyID
@@ -1976,7 +2031,10 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
-	const iconStep = float32(26) // ikon genişliği 20 + 6px boşluk
+	const (
+		armyIconStep  = float32(26) // 26 px marker çapı/ölçüsü
+		navalIconStep = float32(29) // 26 px marker + 3 px donanma boşluğu
+	)
 
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
@@ -1995,6 +2053,17 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	for key, aids := range byGroup {
 		order := r.armyGroupOrder(key, aids)
 		base := groupBase[key]
+		iconStep := armyIconStep
+		allNaval := true
+		for _, aid := range aids {
+			if a := r.gs.Armies[aid]; a == nil || !a.IsNaval {
+				allNaval = false
+				break
+			}
+		}
+		if allNaval {
+			iconStep = navalIconStep
+		}
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
 			aj := r.gs.Armies[aids[j]]
@@ -2062,9 +2131,20 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		})
 		baseX := r.armyIconBuf[idxs[0]].X
 		n := float32(len(idxs))
-		startX := baseX - (n-1)*iconStep/2
+		coordStep := armyIconStep
+		allNaval := true
+		for _, idx := range idxs {
+			if a := r.gs.Armies[r.armyIconBuf[idx].ArmyID]; a == nil || !a.IsNaval {
+				allNaval = false
+				break
+			}
+		}
+		if allNaval {
+			coordStep = navalIconStep
+		}
+		startX := baseX - (n-1)*coordStep/2
 		for j, idx := range idxs {
-			r.armyIconBuf[idx].X = startX + float32(j)*iconStep
+			r.armyIconBuf[idx].X = startX + float32(j)*coordStep
 		}
 	}
 
@@ -2275,6 +2355,15 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
 		}
 	}
+	// Bonus rozetleri tüm donanma marker'larından sonra çizilir. Böylece bir
+	// sonraki filonun dairesi veya başka marker'ı mavi/sarı rozeti kapatamaz.
+	for _, pos := range positions {
+		a, ok := r.gs.Armies[pos.ArmyID]
+		if !ok || a == nil || !a.IsNaval {
+			continue
+		}
+		r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
+	}
 }
 
 func armyIconBorderColor(gs *state.GameState, ownerID string, selected bool) color.RGBA {
@@ -2323,7 +2412,9 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 			armyIconInnerHalf*2, armyIconInnerHalf*2, col, false)
 	}
 
-	// Birim sayısı
+	a := r.gs.Armies[aid]
+	// Filo birim sayısı dairesel marker'ın içinde her zaman görünür. Taşınan
+	// kara ordusunun sayısı bununla karıştırılmaması için ayrı kare rozettedir.
 	countStr := "?"
 	if unitCount >= 0 {
 		countStr = itoa(unitCount)
@@ -2333,51 +2424,22 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-	a := r.gs.Armies[aid]
 	if commander, _ := armyPanelDisplayedCommander(a); commander != nil {
 		x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, a != nil && len(a.EmbarkedUnits) > 0)
 		drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
 	}
 	if isNaval {
 		if a != nil && len(a.EmbarkedUnits) > 0 {
-			badgeW := float32(14)
-			badgeX := cx - badgeW/2
-			badgeY := cy - 28
-			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{24, 34, 48, 240}, false)
-			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1.5, color.RGBA{214, 226, 242, 230}, false)
-			embarkedStr := itoa(len(a.EmbarkedUnits))
-			if len(a.EmbarkedUnits) > 99 {
-				embarkedStr = "99"
-			}
-			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{245, 248, 252, 255})
-		}
-		if a != nil && a.NavalMission != nil {
-			badgeW := float32(14)
-			badgeX := cx + 12
-			badgeY := cy - 25
-			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{23, 67, 39, 245}, false)
-			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1.5, color.RGBA{145, 238, 170, 240}, false)
-			missionBadge := "G"
-			switch a.NavalMission.Kind {
-			case army.NavalMissionPatrol:
-				missionBadge = "D"
-			case army.NavalMissionBlockade:
-				missionBadge = "A"
-			case army.NavalMissionEscort:
-				missionBadge = "E"
-			case army.NavalMissionTransport:
-				missionBadge = "N"
-			}
-			DrawTextCentered(screen, missionBadge, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{228, 255, 232, 255})
-			if bonusText, bonusColor, ok := navalMissionBonusBadge(r.gs, a); ok {
-				bonusRect := navalMissionBonusBadgeRect(cx, cy)
-				bonusCX := float32(bonusRect.X + bonusRect.W/2)
-				bonusCY := float32(bonusRect.Y + bonusRect.H/2)
-				vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
-				vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
-				vector.StrokeCircle(screen, bonusCX, bonusCY, 10, 1.5, color.RGBA{255, 230, 180, 240}, false)
-				DrawTextCentered(screen, bonusText, float64(bonusCX), float64(bonusCY)-5, FaceTiny, color.RGBA{35, 25, 15, 255})
-			}
+			badgeRect := navalEmbarkedArmyBadgeRect(cx, cy)
+			badgeX := float32(badgeRect.X)
+			badgeY := float32(badgeRect.Y)
+			badgeW := float32(badgeRect.W)
+			// Taşınan ordu rozeti yalnızca tek sarı bir çerçeve taşımalı;
+			// siyah alan çerçevenin iç dolgusu olarak kalır.
+			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{8, 8, 8, 245}, true)
+			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1, color.RGBA{244, 195, 52, 255}, true)
+			embarkedStr := navalEmbarkedArmyBadgeText(a, unitCount >= 0)
+			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceTiny, ColorWhite)
 		}
 	}
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {
@@ -2387,10 +2449,30 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
 	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
-		badgeX := cx + 8
-		badgeY := cy - 12
+		badgeX, badgeY := cx+8, cy-12
+		if isNaval {
+			badgeX, badgeY = navalDamageBadgeCenter(cx, cy)
+		}
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
+	}
+}
+
+// drawNavalPriorityBadges, tüm filo marker'larından sonra çağrılan ön-plan
+// geçişidir. Bonus rozetleri komşu donanma ikonlarının altında kalmaz.
+func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, cx, cy float32) {
+	if r == nil || r.gs == nil || a == nil || !a.IsNaval {
+		return
+	}
+	if a.NavalMission != nil {
+		if bonusText, bonusColor, ok := navalMissionBonusBadge(r.gs, a); ok {
+			bonusRect := navalMissionBonusBadgeRect(cx, cy)
+			bonusCX := float32(bonusRect.X + bonusRect.W/2)
+			bonusCY := float32(bonusRect.Y + bonusRect.H/2)
+			vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
+			vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
+			DrawTextCentered(screen, bonusText, float64(bonusCX), float64(bonusCY)-5, FaceTiny, navalMissionBonusBadgeTextColor(a.NavalMission.Kind))
+		}
 	}
 	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
 		badgeX := cx - 14
@@ -2427,11 +2509,35 @@ func armyCommanderBadgeRect(cx, cy float32, isNaval, hasEmbarkedUnits bool) (x, 
 	iconTop := cy - armyIconInnerHalf - armyIconBorderWidth
 	if isNaval {
 		iconTop = cy - 13
-		if hasEmbarkedUnits {
-			iconTop = cy - 30
-		}
 	}
 	return cx - size/2, iconTop - size, size
+}
+
+func navalEmbarkedArmyBadgeRect(cx, cy float32) gameui.Rect {
+	// Bonus rozetiyle aynı üst-sağ anchor'ı paylaşır; yalnızca şekil ve boyut
+	// değişir. Böylece aynı filo üzerindeki rozetler farklı noktalara kaymaz.
+	const badgeSize = 16.0
+	centerX, centerY := navalUpperRightBadgeCenter(cx, cy)
+	return gameui.Rect{X: centerX - badgeSize/2, Y: centerY - badgeSize/2, W: badgeSize, H: badgeSize}
+}
+
+func navalUpperRightBadgeCenter(cx, cy float32) (float64, float64) {
+	return float64(cx + 14), float64(cy - 14)
+}
+
+func navalEmbarkedArmyBadgeText(a *army.Army, detailsVisible bool) string {
+	if a == nil || !detailsVisible {
+		return "?"
+	}
+	count := len(a.EmbarkedUnits)
+	if count > 99 {
+		return "99"
+	}
+	return itoa(count)
+}
+
+func navalDamageBadgeCenter(cx, cy float32) (float32, float32) {
+	return cx - 14, cy - 14
 }
 
 func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {

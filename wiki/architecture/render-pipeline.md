@@ -37,8 +37,8 @@ Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
 `internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/nakliye
 hedefi için modal kapanıp haritaya hedef seçme modu girer; geçerli deniz veya
 kıyı bölgeleri renkli dairelerle işaretlenir ve ESC iptal eder. Escort görevi
-aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu görev
-harfi rozeti, panel footer'ı ise görev ve hedef bölge metni gösterir; görev
+aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu aktif
+bonus rozetini, panel footer'ı ise görev ve hedef bölge metnini gösterir; görev
 temizleme ve yeniden atama aynı input önceliğini kullanır.
 
 Merchant rota atama modalı `internal/render/merchant_route_panel.go` içinde
@@ -73,10 +73,50 @@ filoları, ikonlarının yanında küçük dairesel bonus rozeti taşır; abluka
 hedef bölge ile etkinin açıklamasını gösterir (`internal/render/renderer.go`,
 `internal/render/naval_mission_effects.go`). Büyük, kalıcı hedef bölge marker'ı
 çizilmez.
+Mavi görev ve sarı ticaret bonus rozetleri tüm ordu ikonları ve komutan
+portreleri çizildikten sonra ayrı bir ön-plan geçişinde çizilir; komşu donanma
+marker'ları veya komutan resimleri bu rozetlerin üstüne çıkamaz. Zayiat `!`
+rozeti filonun sol-üst anchor'ında tutulur.
+Abluka, Devriye ve Escort için ayrı görev harfi kareleri çizilmez. Bonus
+dairesindeki açık renkli dış border kaldırılmıştır; değer metni görev türüne
+göre kontrast renk alır.
 Aktif görevi temizleme seçeneği liste içinde ayrı bir satır kaplamaz; panel
 footer'ındaki kırmızı `Görevi Kaldır` düğmesi `commanderUnassignButtonStyle()`
 ile ortak kaldırma görünümünü kullanır ve hit-test/cursor aynı buton rect'inden
 türetilir.
+
+Filonun taşıdığı kara ordusu rozeti `navalEmbarkedArmyBadgeRect()` ile çizim ve
+hit-test'te aynı 16 px kare geometriyi kullanır. Bonus dairesi ve taşınan ordu
+karesi `navalUpperRightBadgeCenter()` ortak anchor'ını paylaşır; böylece filo
+rozetleri görev türüne veya çizim sırasına göre farklı noktalara kaymaz. Taşıma
+rozetinde yalnız tek sarı border bulunur; siyah alan iç dolgu, birlik sayısı ise
+outlinesız beyaz metindir (`internal/render/renderer.go`).
+Oyuncunun tam istihbaratında olmayan düşman filosunun taşınan ordu karesi de
+filo sayısıyla aynı görünürlük sözleşmesini kullanır ve gerçek adet yerine `?`
+gösterir; tam görülen filoda gerçek taşınan birlik sayısı yazılır.
+
+Saf nakliye filoları için `GÖREV` düğmesi ve görev durumu çizilmez; mevcut
+taşıma/çıkarma mekanizması normal hareket akışında kalır. Taşınan ordu bulunan
+filonun ikonunda filo sayısı yuvarlak marker içinde korunur, birlik sayısı sağ
+üstte kare rozetle, komutan portresi ise doğrudan yuvarlak marker'ın üzerinde
+gösterilir. Kare rozet merchant bonus rozetiyle aynı düşey hizadadır.
+Bu kare rozet tıklanabilir bir yüzeydir; tıklama filoyu mekanik olarak seçili
+tutarken `SelectedEmbarkedArmyFleet` üzerinden taşınan kara ordusunun bilgi
+panelini açar. Panel mevcut ordu paneli geometrisini ve birim kartlarını yeniden
+kullanır, ancak taşıma/bölme/birleştirme aksiyonlarını göstermez. Rozetin içi
+siyahtır, metni beyazdır ve ince sarı border kullanır.
+Filo bilgi panelindeki `Taşıma: X/Y` kapasite metni de aynı footer kolonunda
+ortak `Button` yüzeyi olarak çizilir. Bu butona tıklamak aynı taşınan ordu bilgi
+panelini açar; çizim, hit-test ve cursor `armyTransportInfoButtonFromFooter()`
+geometrisini paylaşır (`internal/render/army_panel.go`,
+`internal/render/renderer_input.go`).
+Taşınan birlik sayısı sıfırdan büyükse buton yeşil aktif taşıma stiliyle ayrışır;
+butonun üst ve alt tarafında footer ile aynı ortak `4 px` boşluk korunur.
+Seçili donanmanın kara hedefleri settlement anchor'larından türetilir:
+taşıyan filo yalnız merkez çıkarma settlement'ını dikdörtgenle, boş filo
+yalnız geçerli limanı koyu mavi daireyle görür; sağ tık da aynı settlement
+hit-test'inden geçmeden hareket/çıkarma aksiyonu üretmez
+(`internal/render/renderer.go`, `internal/render/renderer_input.go`).
 
 Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
 `armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
@@ -84,6 +124,10 @@ bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak
 soldaki slota yerleşir; kuşatma çifti için kuşatanın solda, savunmacının sağda
 kalması kuralı yalnızca doğrudan kuşatma çifti arasında önceliğini korur; sonradan
 gelen destek ordusu kuşatanın soluna yerleşebilir (`internal/render/renderer.go`).
+
+Yan yana aynı gruptaki donanma marker'ları 29 px merkez aralığıyla çizilir;
+26 px marker çapı korunduğu için aralarında 3 px görsel boşluk kalır. Kara ordu
+grupları mevcut 26 px merkez aralığını kullanmaya devam eder.
 
 Komutan atama modalındaki boş komutan listesi `commanderPanelListViewport()` ile
 panel-local bir viewport içinde çizilir. Liste satırları `SubImage` clipping'i

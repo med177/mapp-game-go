@@ -7,6 +7,31 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-01: Donanma görev ikonları sadeleştirildi. Devriye/escort görev harfi
+  kareleri kaldırıldı; hedefteki `+N`/yüzde bonus dairesi taşınan ordu rozetiyle
+  aynı üst-sağ anchor'a hizalandı ve açık renkli dış border kaldırıldı.
+  Regression: `TestNavalArmyBadgesShareUpperRightAnchor`,
+  `TestNavalMissionBonusBadgeTextContrast`;
+  doğrulama: `go test ./internal/render -run 'TestNavalMission|TestNavalArmyBadges|TestArmyCommanderBadge' -count=1`.
+
+- 2026-08-01: Mavi görev ve sarı ticaret bonus rozetleri tüm donanma marker'ları
+  ve komutan portrelerinden sonra ön-plan geçişinde çiziliyor; komşu marker veya
+  portreler rozetleri kapatamıyor. Zayiat `!` rozeti sol-üst konuma taşındı.
+  Regression: `TestNavalDamageBadgeUsesUpperLeftAnchor`;
+  doğrulama: `go test ./internal/render -run 'TestNavalMission|TestNavalArmyBadges|TestNavalDamageBadge|TestArmyCommanderBadge' -count=1`.
+
+- 2026-08-01: Aynı gruptaki yan yana donanma marker'ları 26 px yerine 29 px
+  merkez aralığıyla diziliyor; 26 px marker çapı korunurken aralarında 3 px
+  görsel boşluk bırakılıyor. Kara ordu gruplarının 26 px düzeni değişmedi.
+  Regression: `TestArmyIconPositionsLeaveThreePixelsBetweenNavalMarkers`;
+  doğrulama: `go test ./internal/render -run 'TestArmyIconPositions|TestNavalMission|TestNavalArmyBadges|TestNavalDamageBadge' -count=1`.
+
+- 2026-08-01: Düşman filosunun taşınan ordu rozeti filo istihbarat görünürlüğüne
+  bağlandı. Filo sayısı `?` görünüyorsa taşınan birlik sayısı da `?`; tam
+  istihbaratta gerçek adet gösteriliyor. Regression:
+  `TestNavalEmbarkedArmyBadgeFollowsFleetVisibility`;
+  doğrulama: `go test ./internal/render -run 'TestNavalEmbarkedArmyBadge|TestArmyIconPositions|TestNavalMission' -count=1`.
+
 - 2026-08-01: Donanma hareket hedeflerindeki liman settlement işareti açık mavi
   kareden koyu mavi daireye dönüştürüldü; daire, filonun hedef limana dock
   olacağını çıkarma merkezinden görsel olarak ayırıyor.
@@ -55,6 +80,28 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   rozeti eklendi (`50/100`, `+1`, `15`). Rozet hover'ında ortak tooltip ile hedef
   ve gerçek etki açıklanıyor; badge hit-test'i ordu ikon seçim akışıyla uyumlu.
   Regression: `TestNavalMissionBonusBadgeUsesCompactActiveValues`;
+  doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-08-01: Saf nakliye filoları görev UI'ından çıkarıldı; bu filolarda `GÖREV`
+  butonu ve görev durumu çizilmiyor, mevcut embark/disembark mekaniği korunuyor.
+  Taşınan ordunun merkez sayısı marker içinden kaldırıldı; birlik sayısı sağ
+  üstte kare rozetle, komutan portresi doğrudan filo dairesi üzerinde çiziliyor.
+  Donanma kara hedefleri settlement hit-test'iyle eşleştirildi: çıkarma merkezi
+  dikdörtgen, normal dock limanı koyu mavi daire olarak seçiliyor.
+  Regression: `TestNavalEmbarkedArmyBadgeStaysAtUpperRight`,
+  `TestNavalLandMoveTargetSettlementUsesPortsUntilLanding`;
+  doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-08-01: Donanma görevlerinin harita üzerindeki ayrı `A/D/E` kare rol
+  rozetleri kaldırıldı. Bonus daireleri görev etkisini taşımaya devam ediyor;
+  açık renkli dış border kullanılmıyor ve metin görev türüne göre kontrast
+  alıyor. Regression: `TestNavalMissionBonusBadgeTextContrast`;
+  doğrulama: `go test ./internal/render -run '^TestNavalMission' -count=1`.
+
+- 2026-08-01: Taşıma marker'ında filo birim sayısı yuvarlak marker içine geri
+  getirildi. Taşınan ordu sayısı karesi merchant bonus rozetiyle aynı düşey
+  hizaya alınıp marker'ın sağ üstüne taşındı; komutan portresi marker üzerinde
+  kaldı. Regression: `TestNavalEmbarkedArmyBadgeStaysAtUpperRight`;
   doğrulama: `go test ./internal/render -count=1`.
 
 - 2026-08-01: Ordu detay panelindeki komutan kartına, ana komutan mevcut
@@ -1431,3 +1478,9 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 - 2026-07-22: Genel hücum için kuşatma birimi zorunluluğu kaldırıldı. Kuşatma birimi olmayan kara ordusu da kuşatma kararından veya aktif kuşatma panelinden `Genel Hücum` başlatabilir; gedik yokken tahkimatın doğrudan ele geçirilmesini engelleyen mevcut gedik kuralı korunur. AI aktif kuşatmada aynı şekilde genel hücum çözebilir. Kapsam: `internal/{game/{game.go,siege.go},ai/{ai.go,movement_strategy.go},render/{renderer_dialogs.go,renderer_input.go}}`, testler: `internal/{game/siege_test.go,render/war_confirm_test.go}`.
 - 2026-07-22: Kuşatma teslimiyet teklifleri normal diplomasi elçi kotasından çıkarıldı. Oyuncu ve AI, elçi hakkı dolu olsa bile geçerli kuşatmalar için teslimiyet teklifi gönderebilir; aynı bölge tekrar teklif ve bölge bazlı ret cooldown kuralları korunur.
 - 2026-07-22: Reddedilen kuşatma teslimiyet teklifi aynı turda aynı bölgeye yeniden gönderilemiyor. Saldıran kuşatma panelindeki `Teslimiyet Teklifi` düğmesi yalnız ilgili bölge için pasifleşiyor; diğer bölgeler ve sonraki turdaki cooldown akışı etkilenmiyor. Regression: `TestRejectedSurrenderOfferCannotRepeatInSameRegionThisTurn`, `TestSelectedSiegeSurrenderOfferDisabledAfterSameTurnRejection`.
+- 2026-08-01: Taşınan ordu biriminin sağ üst karesi, ticaret görevinin `+2` rozetindeki iki katmanlı ince border stiline uyarlandı. Koyu dış zemin, yaklaşık 1 px altın iç kenar ve koyu küçük metin kullanılıyor; filo gemi sayısı da ana dairesindeki yerini koruyor. Regression: `go test ./internal/render -count=1`.
+- 2026-08-01: Taşınan ordu karesi tıklanabilir yapıldı. Tıklama filoyu mekanik olarak seçili tutup aynı geometriyi kullanan taşınan kara ordusu bilgi panelini açıyor; panel yalnız bilgi gösteriyor. Rozetin içi siyah, metni beyaz ve border'ı ince sarı olarak güncellendi. Regression: `TestEmbarkedArmyBadgeHitSelectsTransportedArmyView`, `go test ./internal/render -count=1`.
+- 2026-08-01: Filo panelindeki `Taşıma: X/Y` kapasite metni ortak buton yüzeyine taşındı. Tıklama taşınan kara ordusu bilgi panelini açıyor; çizim, hit-test ve cursor aynı footer geometrisini kullanıyor. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
+- 2026-08-01: Taşıma butonunun görünümü düzeltildi. `gameui.Button` ortak dikey merkezleme hesabı etkinleştirildi, sabit text offset kaldırıldı ve etiket çevresine 10 px yatay padding eklendi. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
+- 2026-08-01: Taşınan birlik içeren filolarda `Taşıma: X/Y` butonu yeşil aktif taşıma rengine alındı. Footer ile buton arasında üst-alt 4 px margin bırakıldı; boşluk merchant/görev footer butonlarıyla hizalandı. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
+- 2026-08-01: Filonun taşıdığı kara ordusu rozeti 16 px'e büyütüldü; çift siyah/sarı katman yerine yalnız sarı border ve siyah iç dolgu kullanılıyor. Birlik sayısı outlinesız beyaz metin olarak kalıyor. Regression: `TestNavalEmbarkedArmyBadgeStaysAtUpperRight`, `TestEmbarkedArmyBadgeHitSelectsTransportedArmyView`, `go test ./internal/render -count=1`.

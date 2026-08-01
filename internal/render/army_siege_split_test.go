@@ -68,6 +68,32 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 	}
 }
 
+func TestArmyIconPositionsLeaveThreePixelsBetweenNavalMarkers(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_a": {ID: "fleet_a", OwnerID: "p1", RegionID: "sea", IsNaval: true},
+			"fleet_b": {ID: "fleet_b", OwnerID: "p1", RegionID: "sea", IsNaval: true},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			regionAnchor: map[world.RegionID][2]int{"sea": {100, 100}},
+		},
+	}
+
+	positions := r.armyIconPositions()
+	if len(positions) != 2 {
+		t.Fatalf("iki donanma ikonu bekleniyordu, got=%d", len(positions))
+	}
+	if got := positions[1].X - positions[0].X; got != 29 {
+		t.Fatalf("yan yana donanma markerları arasında 3 px boşluk olmalıydı: delta=%.1f", got)
+	}
+}
+
 func TestArmyIconPositionsPutNewArrivalLeftOfExistingArmy(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

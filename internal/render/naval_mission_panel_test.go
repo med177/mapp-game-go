@@ -36,15 +36,18 @@ func TestNavalMissionButtonOnlyTargetsEligiblePlayerFleet(t *testing.T) {
 	gs := navalMissionPanelStateFixture()
 	button := navalMissionButtonRect(armyPanelGeometry(), false)
 	x, y := button.X+button.W/2, button.Y+button.H/2
-	if !navalMissionButtonHit(x, y, gs, "war") || !navalMissionButtonHit(x, y, gs, "transport") {
-		t.Fatal("oyuncunun savaş/nakliye filosunda görev butonu hit olmalıydı")
+	if !navalMissionButtonHit(x, y, gs, "war") {
+		t.Fatal("oyuncunun savaş filosunda görev butonu hit olmalıydı")
+	}
+	if navalMissionButtonHit(x, y, gs, "transport") {
+		t.Fatal("sırf nakliye filosunda görev butonu olmamalıydı")
 	}
 	if navalMissionButtonHit(x, y, gs, "enemy") {
 		t.Fatal("düşman filosunda görev butonu hit olmamalıydı")
 	}
 }
 
-func TestNavalMissionOptionsExposeWarshipAndTransportTasks(t *testing.T) {
+func TestNavalMissionOptionsExposeWarshipTasks(t *testing.T) {
 	gs := navalMissionPanelStateFixture()
 	options := navalMissionOptions(gs, gs.Armies["war"])
 	if len(options) != 3 {
@@ -64,8 +67,8 @@ func TestNavalMissionOptionsExposeWarshipAndTransportTasks(t *testing.T) {
 	}
 	gs.Armies["transport"].EmbarkedUnits = []army.Unit{{TypeID: "infantry"}}
 	transportOptions := navalMissionOptions(gs, gs.Armies["transport"])
-	if len(transportOptions) != 1 || transportOptions[0].kind != army.NavalMissionTransport {
-		t.Fatalf("taşıma filosunda yalnız nakliye görevi bekleniyordu: %+v", transportOptions)
+	if len(transportOptions) != 0 {
+		t.Fatalf("sırf nakliye filosunda görev seçeneği olmamalıydı: %+v", transportOptions)
 	}
 }
 

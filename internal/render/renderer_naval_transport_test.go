@@ -57,6 +57,46 @@ func TestNavalLandMoveTargetSettlementUsesPortsUntilLanding(t *testing.T) {
 	}
 }
 
+func TestNavalLandMoveTargetAtMatchesRenderedSettlementMode(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"sea": {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"coast"}},
+			"coast": {ID: "coast", OwnerID: "p1", Terrain: world.TerrainCoast, Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{
+				{ID: "port", Type: world.SettlementPort},
+				{ID: "center", Type: world.SettlementCity, IsCenter: true},
+			}},
+		},
+	}
+	fleet := &army.Army{ID: "fleet", OwnerID: "p1", IsNaval: true, RegionID: "sea", Units: []army.Unit{{TypeID: "transport"}}}
+	gs.Armies = map[army.ArmyID]*army.Army{"fleet": fleet}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{settlementAnchor: map[settlementAnchorKey][2]int{
+			{Region: "coast", Index: 0}: {100, 100},
+			{Region: "coast", Index: 1}: {140, 100},
+		}},
+		camScale: 1,
+	}
+
+	portX, portY := r.worldToScreen(100, 100)
+	centerX, centerY := r.worldToScreen(140, 100)
+	if got, ok := r.navalLandMoveTargetAt(portX, portY, fleet); !ok || got != "coast" {
+		t.Fatalf("boş filo liman settlement'ını hedeflemeli: got=%q ok=%t", got, ok)
+	}
+	if got, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); ok || got != "" {
+		t.Fatalf("boş filo merkez çıkarma settlement'ını hedeflememeli: got=%q ok=%t", got, ok)
+	}
+
+	fleet.EmbarkedUnits = []army.Unit{{TypeID: "inf"}}
+	if got, ok := r.navalLandMoveTargetAt(centerX, centerY, fleet); !ok || got != "coast" {
+		t.Fatalf("taşıyan filo merkez settlement'ını çıkarma hedeflemeli: got=%q ok=%t", got, ok)
+	}
+	if got, ok := r.navalLandMoveTargetAt(portX, portY, fleet); ok || got != "" {
+		t.Fatalf("taşıyan filo liman settlement'ını dock hedefi olarak seçmemeli: got=%q ok=%t", got, ok)
+	}
+}
+
 func TestEmbarkPromptRequiresSelectedArmyMovementPoints(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

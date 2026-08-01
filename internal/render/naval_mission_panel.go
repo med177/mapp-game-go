@@ -81,7 +81,7 @@ func playerNavalMissionEligible(gs *state.GameState, fleet *army.Army) bool {
 	if gs == nil || fleet == nil || fleet.OwnerID != string(gs.PlayerFactionID) || !fleet.IsNaval {
 		return false
 	}
-	return fleetHasWarshipUI(gs, fleet) || fleet.TransportCapacity(gs.UnitTypes) > 0
+	return fleetHasWarshipUI(gs, fleet)
 }
 
 func fleetHasWarshipUI(gs *state.GameState, fleet *army.Army) bool {
@@ -157,9 +157,6 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 				label: "Escort → " + string(candidate.ID), description: "Seçili nakliye filosuna eşlik et.", effect: "Etki: aynı denizde nakliyeye +%15 deniz savunması; azami +%30.",
 			})
 		}
-	}
-	if fleet.TransportCapacity(gs.UnitTypes) > 0 && len(fleet.EmbarkedUnits) > 0 {
-		options = append(options, navalMissionOption{kind: army.NavalMissionTransport, label: "Nakliye", description: "Taşınan kara ordusunu seçilecek kıyıya götür.", effect: "Etki: hedef kıyıya ulaşınca otomatik çıkarma yapılır."})
 	}
 	return options
 }

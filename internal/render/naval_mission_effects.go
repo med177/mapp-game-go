@@ -96,7 +96,17 @@ func navalMissionReachedColor(kind army.NavalMissionKind) color.RGBA {
 // navalMissionBonusBadgeRect, hedefte bonus kazanan filonun ikon yanındaki
 // küçük dairesel rozeti için çizim, hover ve input geometry'sini paylaşır.
 func navalMissionBonusBadgeRect(cx, cy float32) gameui.Rect {
-	return gameui.Rect{X: float64(cx + 25), Y: float64(cy - 27), W: 20, H: 20}
+	const badgeSize = 20.0
+	centerX, centerY := navalUpperRightBadgeCenter(cx, cy)
+	return gameui.Rect{X: centerX - badgeSize/2, Y: centerY - badgeSize/2, W: badgeSize, H: badgeSize}
+}
+
+func navalMissionBonusBadgeTextColor(kind army.NavalMissionKind) color.RGBA {
+	text := color.RGBA{35, 25, 15, 255}
+	if kind == army.NavalMissionBlockade {
+		text = color.RGBA{255, 255, 255, 255}
+	}
+	return text
 }
 
 func navalMissionWarshipCount(gs *state.GameState, fleet *army.Army) int {

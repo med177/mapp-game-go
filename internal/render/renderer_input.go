@@ -311,6 +311,7 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
 			r.SelectedArmy = ""
+			r.SelectedEmbarkedArmyFleet = ""
 			r.clearArmySplitSelection()
 			r.SelectedRegion = ""
 			r.clearSelectedSettlement()
@@ -473,6 +474,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		r.SelectedArmy = ""
+		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{}
 	}
@@ -757,6 +759,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
+			return InputAction{}
+		}
+		if armyTransportInfoButtonHit(fx, fy, r.gs, r.SelectedArmy) {
+			r.SelectedEmbarkedArmyFleet = r.SelectedArmy
+			return InputAction{}
+		}
 		if r.selectedArmyIsPlayerOwned() && merchantRouteButtonHit(fx, fy, r.gs, r.SelectedArmy) {
 			r.openMerchantRoutePanel()
 			return InputAction{}
@@ -790,14 +799,30 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
+	if aid, ok := r.embarkedArmyHitAt(fx, fy); ok {
+		if r.SelectedArmy == aid && r.SelectedEmbarkedArmyFleet == aid {
+			return InputAction{}
+		}
+		r.clearArmySplitSelection()
+		r.SelectedArmy = aid
+		r.SelectedEmbarkedArmyFleet = aid
+		r.SelectedRegion = ""
+		r.closeFactionPanel()
+		r.clearSelectedSettlement()
+		r.showRecruitPanel = false
+		r.resetRecruitSelection()
+		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+	}
 	if aid, ok := r.armyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			r.SelectedArmy = ""
+			r.SelectedEmbarkedArmyFleet = ""
 			r.clearArmySplitSelection()
 			return InputAction{}
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
+		r.SelectedEmbarkedArmyFleet = ""
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
 		r.clearSelectedSettlement()
@@ -915,6 +940,7 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 		r.merchantRouteHighlight = ""
 	}
 	r.SelectedArmy = ""
+	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	if r.SelectedRegion != rid {
 		r.devNeighborListExpanded = true
@@ -1024,6 +1050,27 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 			if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 				return pos.ArmyID, true
 			}
+		}
+	}
+	return "", false
+}
+
+// embarkedArmyHitAt, filonun sağ üstündeki taşınan ordu karesini filo
+// dairesinden önce yakalar. Böylece aynı marker üzerinde iki farklı bilgi
+// seçimi birbirine karışmaz.
+func (r *Renderer) embarkedArmyHitAt(mx, my float64) (army.ArmyID, bool) {
+	if r == nil || r.gs == nil {
+		return "", false
+	}
+	armyPositions := r.armyIconPositions()
+	for i := len(armyPositions) - 1; i >= 0; i-- {
+		pos := armyPositions[i]
+		fleet := r.gs.Armies[pos.ArmyID]
+		if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(r.gs, fleet) {
+			continue
+		}
+		if navalEmbarkedArmyBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+			return pos.ArmyID, true
 		}
 	}
 	return "", false
@@ -1150,10 +1197,24 @@ func (r *Renderer) handleRightClick() InputAction {
 	if rid == "" {
 		return InputAction{}
 	}
+	// Donanmanın kara hedefi settlement marker'ı üzerinden seçilir. Taşıyan
+	// filo yalnız çıkarma merkezi, boş filo yalnız geçerli liman marker'ını
+	// tıklanabilir kabul eder; bölge içindeki boş bir noktaya tıklama hareket
+	// emri üretmez.
+	if a.IsNaval {
+		if target := r.gs.Regions[rid]; target != nil && target.CanLandEnter() {
+			settlementRegion, ok := r.navalLandMoveTargetAt(fx, fy, a)
+			if !ok {
+				return InputAction{}
+			}
+			rid = settlementRegion
+		}
+	}
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
 	// bölgenin deniz merkezine geçiş (undock) emri verebilir.
 	if a.IsNaval && a.DockedRegionID != "" && rid == a.RegionID {
 		r.SelectedArmy = ""
+		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
 	}
@@ -1253,6 +1314,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid}
 		r.SelectedArmy = ""
+		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return act
 	}

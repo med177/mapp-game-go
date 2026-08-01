@@ -28,6 +28,19 @@ var tinyButtonStyle = gameui.ButtonStyle{
 	BorderWidth:    1,
 }
 
+var transportInfoButtonStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{45, 38, 28, 230},
+	Border:         panelBorder,
+	Text:           color.RGBA{205, 185, 140, 230},
+	DisabledBG:     color.RGBA{28, 24, 18, 180},
+	DisabledBorder: color.RGBA{70, 58, 38, 160},
+	DisabledText:   color.RGBA{125, 112, 88, 180},
+	// Sıfır offset, gameui.Button'ın ortak dikey merkezleme hesabını kullanır.
+	TextOffsetY: 0,
+	TextVariant: gameui.TextSmall,
+	BorderWidth: 1,
+}
+
 var slotMiniButtonStyle = gameui.ButtonStyle{
 	BG:             color.RGBA{45, 45, 45, 230},
 	Border:         panelBorder,
@@ -36,6 +49,18 @@ var slotMiniButtonStyle = gameui.ButtonStyle{
 	DisabledBorder: color.RGBA{45, 38, 25, 160},
 	DisabledText:   color.RGBA{120, 120, 120, 180},
 	TextOffsetY:    5,
+	BorderWidth:    1,
+}
+
+var transportInfoButtonLoadedStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{30, 70, 42, 235},
+	Border:         color.RGBA{105, 220, 145, 235},
+	Text:           color.RGBA{220, 255, 228, 255},
+	DisabledBG:     color.RGBA{24, 54, 31, 190},
+	DisabledBorder: color.RGBA{62, 106, 68, 180},
+	DisabledText:   color.RGBA{150, 190, 154, 190},
+	TextOffsetY:    0,
+	TextVariant:    gameui.TextSmall,
 	BorderWidth:    1,
 }
 

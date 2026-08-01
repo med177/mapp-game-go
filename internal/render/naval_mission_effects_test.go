@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image/color"
 	"strings"
 	"testing"
 
@@ -98,5 +99,14 @@ func TestNavalMissionBonusTooltipIncludesTargetAndEffect(t *testing.T) {
 	title, detail, ok := navalMissionBonusTooltipText(gs, fleet)
 	if !ok || title != "Abluka bonusu" || !strings.Contains(detail, "Marmara") || !strings.Contains(detail, "-%50") {
 		t.Fatalf("abluka tooltip hedef ve yüzde etkisini göstermeli: title=%q detail=%q ok=%t", title, detail, ok)
+	}
+}
+
+func TestNavalMissionBonusBadgeTextContrast(t *testing.T) {
+	if got := navalMissionBonusBadgeTextColor(army.NavalMissionPatrol); got != (color.RGBA{35, 25, 15, 255}) {
+		t.Fatalf("devriye bonus rozeti metin rengi yanlış: %+v", got)
+	}
+	if got := navalMissionBonusBadgeTextColor(army.NavalMissionBlockade); got != (color.RGBA{255, 255, 255, 255}) {
+		t.Fatalf("abluka bonus rozeti metin rengi yanlış: %+v", got)
 	}
 }

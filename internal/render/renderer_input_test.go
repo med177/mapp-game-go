@@ -33,6 +33,43 @@ func TestSelectMapRegionDoesNotOpenRecruitPanel(t *testing.T) {
 	}
 }
 
+func TestEmbarkedArmyBadgeHitSelectsTransportedArmyView(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:            "fleet",
+				OwnerID:       "player",
+				RegionID:      "sea",
+				IsNaval:       true,
+				Units:         []army.Unit{{TypeID: "transport"}},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry"}},
+			},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			regionAnchor: map[world.RegionID][2]int{
+				"sea": {100, 100},
+			},
+		},
+	}
+
+	positions := r.armyIconPositions()
+	if len(positions) != 1 {
+		t.Fatalf("tek filo ikonu bekleniyordu, got=%d", len(positions))
+	}
+	badge := navalEmbarkedArmyBadgeRect(positions[0].X, positions[0].Y)
+	aid, ok := r.embarkedArmyHitAt(badge.X+badge.W/2, badge.Y+badge.H/2)
+	if !ok || aid != "fleet" {
+		t.Fatalf("taşınan ordu karesi filoyu taşıdığı ordu görünümüne yönlendirmeli: aid=%q hit=%t", aid, ok)
+	}
+}
+
 func TestSelectMapRegionDefaultsToExpandedNeighborList(t *testing.T) {
 	r := &Renderer{
 		gs: &state.GameState{

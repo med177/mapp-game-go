@@ -66,6 +66,59 @@ func TestArmyPanelTransportFooterTextHiddenWithoutTransportCapacity(t *testing.T
 	}
 }
 
+func TestArmyTransportFooterTextUsesInfoButtonGeometry(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 20},
+			"infantry":  {ID: "infantry", Category: army.CategoryInfantry},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:            "fleet",
+				OwnerID:       "player",
+				IsNaval:       true,
+				Units:         []army.Unit{{TypeID: "transport"}},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"}},
+			},
+		},
+	}
+
+	footer := armyPanelFooterLayoutFor(gs, gs.Armies["fleet"], armyPanelGeometry())
+	button, ok := armyTransportInfoButtonFromFooter(footer)
+	if !ok {
+		t.Fatal("taşıma kapasitesi metni bilgi butonu üretmeliydi")
+	}
+	if button.Label != "Taşıma: 4/20" {
+		t.Fatalf("taşıma butonu etiketi yanlış: got=%q", button.Label)
+	}
+	textW := float32(MeasureText(button.Label, FaceSmall))
+	if button.W < float64(textW+20) {
+		t.Fatalf("taşıma butonu yatay padding'i yetersiz: width=%.1f text=%.1f", button.W, textW)
+	}
+	if got, want := button.X+button.W/2, float64(footer.transportX+textW/2); got != want {
+		t.Fatalf("taşıma etiketi yatayda footer metin merkezine oturmalı: got=%.1f want=%.1f", got, want)
+	}
+	if transportInfoButtonStyle.TextOffsetY != 0 {
+		t.Fatal("taşıma butonu ortak dikey merkezleme için sabit offset kullanmamalı")
+	}
+	if button.Y != float64(footer.footerY+merchantRouteFooterButtonGap) || button.H != float64(merchantRouteFooterButtonH) {
+		t.Fatalf("taşıma butonu footer içinde üst-alt margin ile durmalı: y=%.1f h=%.1f", button.Y, button.H)
+	}
+	if loaded := transportInfoButtonStyleFor(gs.Armies["fleet"]); loaded.BG == transportInfoButtonStyle.BG || loaded.Border == transportInfoButtonStyle.Border {
+		t.Fatal("taşınan birlik bulunan filo farklı aktif buton rengi kullanmalı")
+	}
+	if !armyTransportInfoButtonHit(button.X+button.W/2, button.Y+button.H/2, gs, "fleet") {
+		t.Fatal("taşıma bilgi butonu kendi merkezinde tıklanabilir olmalı")
+	}
+}
+
 func TestArmyPanelMixedFleetFooterColumnsStaySeparated(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	defer func() {

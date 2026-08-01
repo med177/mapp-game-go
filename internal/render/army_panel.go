@@ -277,7 +277,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			vector.StrokeRect(screen, cx+1, cy+1, cardW-2, cardH-2, 3, color.RGBA{255, 190, 45, 255}, false)
 		}
 	}
-	drawArmyPowerFooter(screen, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç", armyTransportFooterText(gs, a))
+	drawArmyPowerFooter(screen, gs, a, layout, a.TotalStrength(gs.UnitTypes), a.TotalDefense(gs.UnitTypes), "Güç", armyTransportFooterText(gs, a))
 	drawMerchantRouteFooter(screen, gs, a, layout)
 	drawNavalMissionFooter(screen, gs, a, layout)
 
@@ -286,6 +286,123 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
 	return gs != nil && a != nil && gs.CanArmyReplenishIn(a) &&
 		!gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits()
+}
+
+// DrawEmbarkedArmyDetailPanel, filonun üzerindeki kara birliklerini mevcut
+// ordu panelinin aynı geometri ve birim kartlarıyla gösterir. Bu panel yalnız
+// bilgilendirme içindir; hareket, bölme ve birleştirme gibi aksiyonlar hâlâ
+// filonun seçimi üzerinden çalışır.
+func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, fleetID army.ArmyID) {
+	if gs == nil || fleetID == "" {
+		return
+	}
+	fleet := gs.Armies[fleetID]
+	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(gs, fleet) {
+		return
+	}
+
+	ensureArmySprites()
+	layout := armyPanelGeometry()
+	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
+
+	// Filo state'ini değiştirmeden, panel için taşınan birlikleri kara ordusu
+	// görünümünde kullanan geçici bir değer görünümü oluşturulur.
+	displayArmy := *fleet
+	displayArmy.IsNaval = false
+	displayArmy.Units = fleet.EmbarkedUnits
+	displayArmy.EmbarkedUnits = nil
+	displayArmy.Commander = fleet.EmbarkedCommander
+	displayArmy.EmbarkedCommander = nil
+
+	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
+	drawPanelBorder(screen, px, py, panelW, panelH)
+	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+
+	factionName := "Bilinmeyen Devlet"
+	factionCol := ColorGold
+	for fid, f := range gs.Factions {
+		if string(fid) == fleet.OwnerID {
+			factionName = f.NameTR
+			factionCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			break
+		}
+	}
+	locationID := fleet.RegionID
+	if fleet.IsDocked() {
+		locationID = fleet.DockedRegionID
+	}
+	location := ""
+	if region := gs.Regions[locationID]; region != nil {
+		location = region.NameTR
+	}
+	headerLeft := factionName
+	if location != "" {
+		headerLeft += "  —  " + location
+	}
+	headerLeft += "  |  Taşınan Kara Ordusu"
+	countText := "Birim: " + itoa(len(displayArmy.Units))
+	countW := MeasureText(countText, FaceSmall)
+	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - countW - 12
+	if headerMaxW < 0 {
+		headerMaxW = 0
+	}
+	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
+	DrawText(screen, countText,
+		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
+		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
+
+	sepY := layout.headerY
+	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
+	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
+	drawArmyCommanderCard(screen, &displayArmy, layout)
+
+	const totalSlots = army.MaxArmySize
+	for i := 0; i < totalSlots; i++ {
+		cx, cy := armyPanelUnitPosition(layout, i)
+		unitIndex := armyPanelUnitIndex(displayArmy.Units, gs.UnitTypes, i)
+		if unitIndex < 0 {
+			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 120}, false)
+			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 130}, false)
+			DrawTextCentered(screen, "+", float64(cx)+float64(cardW)/2, float64(cy)+float64(cardH)/2-10, FaceLarge, color.RGBA{40, 35, 22, 100})
+			continue
+		}
+
+		u := displayArmy.Units[unitIndex]
+		utype := gs.UnitTypes[u.TypeID]
+		vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{255, 255, 255, 245}, false)
+		vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{160, 160, 160, 225}, false)
+		if sprite := unitSpriteForFaction(gs, displayArmy.OwnerID, u.TypeID); sprite != nil && utype != nil {
+			drawUnitSpriteCard(screen, sprite, cx, cy, cardW, [3]float32{1, 1, 1})
+		} else if utype == nil {
+			DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, ColorGray)
+		}
+		drawUnitCardFooter(screen, cx, cy, cardW, cardH, unitCardFooterH)
+		unitName := u.TypeID
+		if utype != nil {
+			unitName = utype.NameTR
+		}
+		nameCol := color.RGBA{25, 25, 25, 235}
+		if u.HPPercent() <= 0.33 {
+			nameCol = color.RGBA{140, 35, 35, 235}
+		}
+		DrawTextCentered(screen, shortUnitName(unitName, 14), float64(cx)+float64(cardW)/2, float64(cy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, nameCol)
+
+		hpY := cy + cardH - hpBarH - 2
+		hpPct := u.HPPercent()
+		hpCol := color.RGBA{55, 195, 55, 255}
+		if hpPct <= 0.33 {
+			hpCol = color.RGBA{210, 55, 55, 255}
+		} else if hpPct <= 0.66 {
+			hpCol = color.RGBA{215, 175, 35, 255}
+		}
+		drawBar(screen, cx+1, hpY, cardW-2, hpBarH-1, hpPct, hpCol)
+		if u.Experience > 0 {
+			xpPct := float64(u.Experience) / 100.0
+			vector.FillRect(screen, cx+1, hpY+hpBarH, float32(xpPct*float64(cardW-2)), 2, color.RGBA{80, 160, 255, 180}, false)
+		}
+	}
+
+	drawArmyPowerFooter(screen, nil, nil, layout, displayArmy.TotalStrength(gs.UnitTypes), displayArmy.TotalDefense(gs.UnitTypes), "Güç", "")
 }
 
 func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
@@ -469,14 +586,63 @@ func armyTransportFooterText(gs *state.GameState, a *army.Army) string {
 	return "Taşıma: " + itoa(a.EmbarkedCount()) + "/" + itoa(capacity)
 }
 
-func drawArmyPowerFooter(screen *ebiten.Image, layout armyPanelLayout, attack, defense int, label, transportText string) {
+func drawArmyPowerFooter(screen *ebiten.Image, gs *state.GameState, a *army.Army, layout armyPanelLayout, attack, defense int, label, transportText string) {
 	drawArmyPanelFooterBackground(screen, layout)
 	powerText := label + ": " + itoa(attack) + " / " + itoa(defense)
-	footer := armyPanelFooterLayoutFor(nil, nil, layout)
+	footer := armyPanelFooterLayoutFor(gs, a, layout)
 	footer.powerText = powerText
 	footer.transportText = transportText
 	footer.recalculateRightAnchoredText()
+	transportButton, hasTransportButton := armyTransportInfoButtonFromFooter(footer)
+	footer.transportText = ""
 	drawArmyPanelFooterRightTexts(screen, footer)
+	if hasTransportButton {
+		gameui.DrawButton(screen, transportButton, transportInfoButtonStyleFor(a), sharedTextRenderer{})
+	}
+}
+
+func transportInfoButtonStyleFor(a *army.Army) gameui.ButtonStyle {
+	if a != nil && a.IsNaval && len(a.EmbarkedUnits) > 0 {
+		return transportInfoButtonLoadedStyle
+	}
+	return transportInfoButtonStyle
+}
+
+func armyTransportInfoButtonFromFooter(footer armyPanelFooterLayout) (gameui.Button, bool) {
+	if footer.transportText == "" {
+		return gameui.Button{}, false
+	}
+	textW := float32(MeasureText(footer.transportText, FaceSmall))
+	const horizontalPadding = float32(10)
+	buttonW := textW + horizontalPadding*2
+	return gameui.NewButton(
+		float64(footer.transportX-horizontalPadding),
+		float64(footer.footerY+merchantRouteFooterButtonGap),
+		float64(buttonW),
+		float64(merchantRouteFooterButtonH),
+		footer.transportText,
+	), true
+}
+
+func armyTransportInfoButtonRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Rect{}, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || !a.IsNaval || armyTransportFooterText(gs, a) == "" {
+		return gameui.Rect{}, false
+	}
+	footer := armyPanelFooterLayoutFor(gs, a, armyPanelGeometry())
+	button, ok := armyTransportInfoButtonFromFooter(footer)
+	if !ok {
+		return gameui.Rect{}, false
+	}
+	return gameui.Rect{X: button.X, Y: button.Y, W: button.W, H: button.H}, true
+}
+
+func armyTransportInfoButtonHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	button, ok := armyTransportInfoButtonRect(gs, aid)
+	return ok && button.Hit(fx, fy)
 }
 
 // armyPanelFooterLayout, alt banttaki düğme ve bilgi alanlarının tek ortak
@@ -913,7 +1079,7 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps
 	layout := armyPanelGeometry()
 	hasMerge := FindMergeTarget(gs, aid) != ""
 	bx, by, bw, bh := splitButtonRect(layout.panelX, layout.panelY, layout.panelW, hasMerge)
-	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "✂ BÖL"), true
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "<-Böl->"), true
 }
 
 func buildMergeArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
@@ -1166,6 +1332,9 @@ func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyI
 		return true
 	}
 	if merchantRouteButtonHit(fx, fy, gs, aid) {
+		return true
+	}
+	if armyTransportInfoButtonHit(fx, fy, gs, aid) {
 		return true
 	}
 	if navalMissionButtonHit(fx, fy, gs, aid) {
