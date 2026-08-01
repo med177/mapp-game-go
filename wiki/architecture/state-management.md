@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-07-31
+last_updated: 2026-08-01
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -139,6 +139,12 @@ ise taşınan kara ordusu ile kıyı kara bölgesini hedefler. Atama ve temizlem
 görevi korur. `internal/game/player_naval_mission.go` her yeni turda hareket
 puanı yenilendikten sonra deterministik deniz BFS'iyle filoyu hedefe yaklaştırır;
 nakliye hedef kıyıya ulaştığında mevcut çıkarma/komşuluk çözümünü kullanır.
+Görev etkileri de konuma ve göreve göre ayrıdır: açık denizdeki `blockade`
+filoları rota/liman kesintisi üretir; `patrol` filoları aynı denizdeki dost rota
+ve liman üzerindeki düşman abluka gemilerini dengeleyebilir. `escort` görevi,
+aynı denizde savunmaya katılan nakliye filosuna yüzde 15 deniz savunması verir;
+çoklu escort bonusu yüzde 30 ile sınırlıdır. Devriye veya escort görevi verilen
+oyuncu savaş gemisi hedef denizde abluka kesintisi sayılmaz.
 
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
 

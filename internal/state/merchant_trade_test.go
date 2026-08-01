@@ -214,6 +214,60 @@ func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	}
 }
 
+func TestPatrolCountersEnemyBlockadeForTradeRoute(t *testing.T) {
+	gs, route := merchantTradeTestState()
+	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("genoa", "venice"): {
+			FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar,
+		},
+	}
+	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
+	gs.Armies["blockader"] = &army.Army{
+		ID: "blockader", OwnerID: "genoa", RegionID: "med", IsNaval: true,
+		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+	}
+	gs.RefreshTradeRouteBlockades()
+	if route.BlockadePercent != 50 {
+		t.Fatalf("devriye eklenmeden düşman abluka etkisi %%50 olmalıydı: %d", route.BlockadePercent)
+	}
+	gs.Armies["patrol"] = &army.Army{
+		ID: "patrol", OwnerID: "venice", RegionID: "med", IsNaval: true,
+		NavalMission: &army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: "med"},
+		Units:        []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+	}
+	gs.RefreshTradeRouteBlockades()
+	if route.BlockadePercent != 0 {
+		t.Fatalf("aynı denizdeki devriye bir düşman gemisinin ablukasını dengelemeliydi: %d", route.BlockadePercent)
+	}
+}
+
+func TestPatrolAndBlockadeMissionsHaveDifferentCommerceEffects(t *testing.T) {
+	gs, route := merchantTradeTestState()
+	gs.Factions["genoa"] = &faction.Faction{ID: "genoa"}
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("genoa", "venice"): {
+			FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar,
+		},
+	}
+	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
+	fleet := &army.Army{
+		ID: "fleet", OwnerID: "genoa", RegionID: "med", IsNaval: true,
+		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+	}
+	gs.Armies["fleet"] = fleet
+	fleet.NavalMission = &army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: "med"}
+	gs.RefreshTradeRouteBlockades()
+	if route.BlockadePercent != 0 {
+		t.Fatalf("devriye görevi ticaret ablukası oluşturmamalıydı: %d", route.BlockadePercent)
+	}
+	fleet.NavalMission = &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "med"}
+	gs.RefreshTradeRouteBlockades()
+	if route.BlockadePercent != 50 {
+		t.Fatalf("abluka görevi ticaret kesintisi oluşturmalıydı: %d", route.BlockadePercent)
+	}
+}
+
 func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
 	gs := &GameState{
 		Regions: map[world.RegionID]*world.Region{
@@ -234,6 +288,28 @@ func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
 
 	if got := gs.RegionBlockadePercent(gs.Regions["port"], "venice"); got != 50 {
 		t.Fatalf("liman ablukası %%%d olmalıydı, got=%d", 50, got)
+	}
+}
+
+func TestPatrolProtectsPortLogisticsFromEnemyBlockade(t *testing.T) {
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"port": {ID: "port", OwnerID: "venice", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{Type: world.SettlementPort}}},
+			"sea":  {ID: "sea", IsSea: true},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("genoa", "venice"): {FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy":  {ID: "enemy", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+			"patrol": {ID: "patrol", OwnerID: "venice", RegionID: "sea", IsNaval: true, NavalMission: &army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: "sea"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+		},
+	}
+	if got := gs.RegionBlockadePercent(gs.Regions["port"], "venice"); got != 0 {
+		t.Fatalf("devriye dost liman lojistiğini korumalıydı, got=%d", got)
 	}
 }
 

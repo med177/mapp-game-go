@@ -321,7 +321,7 @@ func (s *GameState) RefreshTradeRouteBlockades() {
 			continue
 		}
 		for _, seaID := range s.MerchantTradeRouteSeaRegions(route) {
-			warships := s.hostileWarshipCountInSea(seaID, route.FromFactionID, route.ToFactionID)
+			warships := s.effectiveHostileWarshipCountInSea(seaID, route.FromFactionID, route.ToFactionID)
 			blockade := warships * blockadePercentPerWarship
 			if blockade > route.BlockadePercent {
 				route.BlockadePercent = blockade
@@ -345,7 +345,7 @@ func (s *GameState) RegionBlockadePercent(region *world.Region, ownerID string) 
 		if neighbor == nil || !neighbor.IsSea {
 			continue
 		}
-		blockade := s.hostileWarshipCountInSea(neighborID, ownerID) * blockadePercentPerWarship
+		blockade := s.effectiveHostileWarshipCountInSea(neighborID, ownerID) * blockadePercentPerWarship
 		if blockade > maxBlockade {
 			maxBlockade = blockade
 		}
@@ -362,7 +362,7 @@ func (s *GameState) hostileWarshipCountInSea(seaID world.RegionID, targetOwners 
 	}
 	count := 0
 	for _, fleet := range s.Armies {
-		if fleet == nil || !fleet.IsAtSea() || fleet.RegionID != seaID {
+		if fleet == nil || !fleet.IsAtSea() || fleet.RegionID != seaID || !s.fleetCountsAsBlockade(fleet, seaID) {
 			continue
 		}
 		warships := s.fleetWarshipCount(fleet)
@@ -372,6 +372,50 @@ func (s *GameState) hostileWarshipCountInSea(seaID world.RegionID, targetOwners 
 		for _, targetOwner := range targetOwners {
 			if targetOwner != "" && targetOwner != fleet.OwnerID && s.atWar(fleet.OwnerID, targetOwner) {
 				count += warships
+				break
+			}
+		}
+	}
+	return count
+}
+
+// effectiveHostileWarshipCountInSea, açıkça Abluka görevi verilen veya legacy
+// görevsiz şekilde düşman denizinde duran gemilerin etkisinden, aynı denizdeki
+// sahip devriye gemilerini düşer. Böylece Devriye ticaret ve liman ikmalini
+// korur; Abluka ise aynı konumda gerçek ekonomik baskı yaratır.
+func (s *GameState) effectiveHostileWarshipCountInSea(seaID world.RegionID, targetOwners ...string) int {
+	hostile := s.hostileWarshipCountInSea(seaID, targetOwners...)
+	patrol := s.patrolWarshipCountInSea(seaID, targetOwners...)
+	if patrol >= hostile {
+		return 0
+	}
+	return hostile - patrol
+}
+
+func (s *GameState) fleetCountsAsBlockade(fleet *army.Army, seaID world.RegionID) bool {
+	if fleet == nil || fleet.NavalMission == nil {
+		return true // eski/manual filo konumunun geriye dönük davranışı
+	}
+	mission := fleet.NavalMission
+	return mission.Kind == army.NavalMissionBlockade && mission.TargetRegionID == seaID
+}
+
+func (s *GameState) patrolWarshipCountInSea(seaID world.RegionID, owners ...string) int {
+	if s == nil || seaID == "" || len(owners) == 0 {
+		return 0
+	}
+	count := 0
+	for _, fleet := range s.Armies {
+		if fleet == nil || !fleet.IsAtSea() || fleet.RegionID != seaID || fleet.NavalMission == nil {
+			continue
+		}
+		mission := fleet.NavalMission
+		if mission.Kind != army.NavalMissionPatrol || mission.TargetRegionID != seaID || s.fleetWarshipCount(fleet) <= 0 {
+			continue
+		}
+		for _, ownerID := range owners {
+			if ownerID == fleet.OwnerID {
+				count += s.fleetWarshipCount(fleet)
 				break
 			}
 		}

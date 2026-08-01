@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-07-31
+last_updated: 2026-08-01
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -1118,10 +1118,21 @@ bölgesini hedefler. Görev seçimi `GÖREV` butonundan yapılır, geçerli hede
 haritada renkli işaretlerle gösterilir ve görev değiştirilebilir veya
 kaldırılabilir.
 
-Atama yalnız state doğrulamasından sonra kaydedilir. Her tur başında görevli
+Atama yalnız state doğrulamasından sonra kaydedilir. Görev seçim satırları
+görevin ekonomik/askerî etkisini doğrudan gösterir; hedefe ulaşan filo da
+ikon yanındaki küçük bonus rozetiyle aynı etkiyi tekrar görünür kılar. Rozet
+hover'ında hedef bölge ve uygulanan etki tooltip'te ayrıntılı gösterilir.
+Her tur başında görevli
 oyuncu filosu komşuluk grafiğinde deterministik BFS ile hedefe yaklaşır;
 nakliye hedef kıyıya geldiğinde mevcut çıkarma ve savaş kurallarını kullanır.
 Görev, filo ikonunda harf rozetiyle ve panel footer'ında hedef metniyle görünür.
+Görevlerin ekonomik/askerî rolleri ayrıdır: Abluka görevi hedef denizdeki savaş
+gemilerini ticaret rotası ve liman ikmal kesintisine dahil eder; bir gemi yüzde
+50, iki veya fazlası yüzde 100 kesinti üretir. Devriye görevi dost rota/liman
+üzerindeki düşman abluka gücünü aynı sayıdaki savaş gemisi kadar azaltır ve
+devriye gemisi kendi başına abluka kesintisi üretmez. Escort, aynı denizdeki
+nakliye savunmasına yüzde 15 deniz savunması ekler; toplam bonus yüzde 30 ile
+sınırlıdır.
 Kaynak/test: `internal/army/army.go`, `internal/state/naval_mission.go`,
 `internal/game/player_naval_mission.go`, `internal/render/naval_mission_panel.go`,
 `internal/save/compact.go`; `internal/{state,game,render,save}/*naval_mission*_test.go`.

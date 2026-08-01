@@ -35,6 +35,28 @@ func TestNavalShowsFriendlyDisembark(t *testing.T) {
 	}
 }
 
+func TestNavalLandMoveTargetSettlementUsesPortsUntilLanding(t *testing.T) {
+	port := world.Settlement{ID: "port", Type: world.SettlementPort}
+	center := world.Settlement{ID: "center", Type: world.SettlementCity, IsCenter: true}
+	town := world.Settlement{ID: "town", Type: world.SettlementTown}
+
+	if !navalLandMoveTargetSettlement(port, false) {
+		t.Fatal("ordusuz donanma için liman settlement işaretlenmeliydi")
+	}
+	if navalLandMoveTargetSettlement(center, false) {
+		t.Fatal("ordusuz donanma için merkez settlement işaretlenmemeliydi")
+	}
+	if !navalLandMoveTargetSettlement(center, true) {
+		t.Fatal("çıkarma taşıyan donanma için merkez settlement işaretlenmeliydi")
+	}
+	if navalLandMoveTargetSettlement(port, true) {
+		t.Fatal("çıkarma hedefinde liman settlement merkez yerine kullanılmamalıydı")
+	}
+	if navalLandMoveTargetSettlement(town, false) || navalLandMoveTargetSettlement(town, true) {
+		t.Fatal("sıradan settlement donanma kara hedefi olmamalıydı")
+	}
+}
+
 func TestEmbarkPromptRequiresSelectedArmyMovementPoints(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

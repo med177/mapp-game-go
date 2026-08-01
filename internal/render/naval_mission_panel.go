@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	navalMissionPanelW           = float32(720)
+	navalMissionPanelW           = float32(600)
 	navalMissionPanelHeaderH     = float32(70)
-	navalMissionPanelRowH        = float32(62)
-	navalMissionPanelFooterH     = float32(42)
+	navalMissionPanelRowH        = float32(80)
+	navalMissionPanelFooterH     = float32(56)
 	navalMissionPanelVisibleRows = 7
 	navalMissionButtonW          = float64(78)
 	navalMissionButtonGap        = float64(6)
@@ -27,6 +27,7 @@ type navalMissionPanelLayout struct {
 	panelX, panelY, panelW, panelH float32
 	rowX, rowY, rowW               float32
 	close                          gameui.Button
+	clear                          gameui.Button
 }
 
 type navalMissionOption struct {
@@ -34,6 +35,7 @@ type navalMissionOption struct {
 	targetFleet army.ArmyID
 	label       string
 	description string
+	effect      string
 }
 
 func navalMissionPanelLayoutFor(rowCount int) navalMissionPanelLayout {
@@ -49,17 +51,28 @@ func navalMissionPanelLayoutFor(rowCount int) navalMissionPanelLayout {
 	panelY := float32(ScreenHeight)/2 - panelH/2
 	close := gameui.NewButton(float64(panelX+navalMissionPanelW-42), float64(panelY+10), 28, 28, "").WithIcon(gameui.IconClose)
 	close.IconSize = 13
+	clear := gameui.NewButton(
+		float64(panelX+18),
+		float64(panelY+panelH-navalMissionPanelFooterH+11),
+		commanderPanelButtonW,
+		commanderPanelButtonH,
+		"Görevi Kaldır",
+	)
 	return navalMissionPanelLayout{
 		panelX: panelX, panelY: panelY, panelW: navalMissionPanelW, panelH: panelH,
 		rowX: panelX + 18, rowY: panelY + navalMissionPanelHeaderH,
-		rowW: navalMissionPanelW - 36, close: close,
+		rowW: navalMissionPanelW - 36, close: close, clear: clear,
 	}
 }
 
-func navalMissionButtonRect(layout armyPanelLayout) gameui.Rect {
+func navalMissionButtonRect(layout armyPanelLayout, hasMerchant bool) gameui.Rect {
 	footerY := layout.panelY + layout.panelH - siegeFooterH
+	buttonX := layout.gridX + 8
+	if hasMerchant {
+		buttonX += 132 + 8
+	}
 	return gameui.Rect{
-		X: float64(layout.gridX + 148), Y: float64(footerY + 4),
+		X: float64(buttonX), Y: float64(footerY + 4),
 		W: navalMissionButtonW, H: float64(merchantRouteFooterButtonH),
 	}
 }
@@ -91,14 +104,15 @@ func navalMissionButtonHit(fx, fy float64, gs *state.GameState, aid army.ArmyID)
 	if !playerNavalMissionEligible(gs, fleet) {
 		return false
 	}
-	return navalMissionButtonRect(armyPanelGeometry()).Hit(fx, fy)
+	return navalMissionButtonRect(armyPanelGeometry(), armyHasMerchantShip(gs, fleet)).Hit(fx, fy)
 }
 
 func drawNavalMissionFooter(screen *ebiten.Image, gs *state.GameState, fleet *army.Army, layout armyPanelLayout) {
 	if !playerNavalMissionEligible(gs, fleet) {
 		return
 	}
-	rect := navalMissionButtonRect(layout)
+	hasMerchant := armyHasMerchantShip(gs, fleet)
+	rect := navalMissionButtonRect(layout, hasMerchant)
 	button := gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "GÖREV")
 	buttonBG := color.RGBA{50, 35, 12, 220}
 	buttonBorder := color.RGBA{160, 120, 40, 220}
@@ -121,11 +135,9 @@ func drawNavalMissionFooter(screen *ebiten.Image, gs *state.GameState, fleet *ar
 		}
 		statusColor = color.RGBA{160, 230, 175, 235}
 	}
-	statusX := rect.X + rect.W + navalMissionButtonGap
-	statusRight := layout.panelX + layout.panelW - armyPanelPadX - 160
-	maxWidth := statusRight - float32(statusX)
-	if maxWidth > 0 {
-		DrawText(screen, trimTextToWidth(status, FaceSmall, float64(maxWidth)), statusX, rect.Y+7, FaceSmall, statusColor)
+	footer := armyPanelFooterLayoutFor(gs, fleet, layout)
+	if footer.missionStatus.W > 0 {
+		drawArmyPanelFooterCenteredText(screen, footer.missionStatus, status, statusColor)
 	}
 }
 
@@ -136,18 +148,18 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 	options := make([]navalMissionOption, 0, 6)
 	if fleetHasWarshipUI(gs, fleet) {
 		options = append(options,
-			navalMissionOption{kind: army.NavalMissionPatrol, label: "Devriye", description: "Hedef deniz bölgesini gözetle ve düşman filosunu takip et."},
-			navalMissionOption{kind: army.NavalMissionBlockade, label: "Abluka", description: "Hedef denizindeki düşman ticaretini baskıla."},
+			navalMissionOption{kind: army.NavalMissionPatrol, label: "Devriye", description: "Hedef deniz bölgesini gözetle ve düşman filosunu takip et.", effect: "Etki: dost ticaretinde gemi başına 1 düşman ablukasını dengeler."},
+			navalMissionOption{kind: army.NavalMissionBlockade, label: "Abluka", description: "Hedef denizindeki düşman ticaretini baskıla.", effect: "Etki: savaş gemisi başına -%50 ticaret; azami -%100."},
 		)
 		for _, candidate := range playerTransportFleets(gs, fleet.ID) {
 			options = append(options, navalMissionOption{
 				kind: army.NavalMissionEscort, targetFleet: candidate.ID,
-				label: "Escort → " + string(candidate.ID), description: "Seçili nakliye filosuna eşlik et.",
+				label: "Escort → " + string(candidate.ID), description: "Seçili nakliye filosuna eşlik et.", effect: "Etki: aynı denizde nakliyeye +%15 deniz savunması; azami +%30.",
 			})
 		}
 	}
 	if fleet.TransportCapacity(gs.UnitTypes) > 0 && len(fleet.EmbarkedUnits) > 0 {
-		options = append(options, navalMissionOption{kind: army.NavalMissionTransport, label: "Nakliye", description: "Taşınan kara ordusunu seçilecek kıyıya götür."})
+		options = append(options, navalMissionOption{kind: army.NavalMissionTransport, label: "Nakliye", description: "Taşınan kara ordusunu seçilecek kıyıya götür.", effect: "Etki: hedef kıyıya ulaşınca otomatik çıkarma yapılır."})
 	}
 	return options
 }
@@ -200,7 +212,7 @@ func (r *Renderer) navalMissionPanelRowCount() int {
 	if r == nil || r.gs == nil {
 		return 1
 	}
-	return len(navalMissionOptions(r.gs, r.gs.Armies[r.navalMissionArmy])) + 1
+	return len(navalMissionOptions(r.gs, r.gs.Armies[r.navalMissionArmy]))
 }
 
 func (r *Renderer) navalMissionPanelRect() gameui.Rect {
@@ -228,6 +240,10 @@ func (r *Renderer) navalMissionPanelInteractiveHit(fx, fy float64) bool {
 	}
 	layout := navalMissionPanelLayoutFor(r.navalMissionPanelRowCount())
 	if layout.close.HitTest(fx, fy) {
+		return true
+	}
+	fleet := r.gs.Armies[r.navalMissionArmy]
+	if fleet != nil && fleet.NavalMission != nil && layout.clear.HitTest(fx, fy) {
 		return true
 	}
 	if !r.navalMissionPanelRect().Hit(fx, fy) {
@@ -265,12 +281,11 @@ func (r *Renderer) drawNavalMissionPanel(screen *ebiten.Image) {
 		W: float64(layout.panelW), H: float64(layout.panelH),
 	}, panelBg, panelBorder, 1.5, 3)
 	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 23), W: float64(layout.panelW - 80)}, "Donanma Görevi", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 49), W: float64(layout.panelW - 80)}, "Görev seçin; hedef isteyen görevlerde sonra haritadan deniz/kıyı seçin.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUIButtonWidget(screen, layout.close, tinyButtonStyle)
 
 	fleet := r.gs.Armies[r.navalMissionArmy]
 	options := navalMissionOptions(r.gs, fleet)
-	rowCount := len(options) + 1
+	rowCount := len(options)
 	maxScroll := rowCount - navalMissionPanelVisibleRows
 	if maxScroll < 0 {
 		maxScroll = 0
@@ -294,12 +309,7 @@ func (r *Renderer) drawNavalMissionPanel(screen *ebiten.Image) {
 		gameui.DrawButton(screen, rowButton, gameui.ButtonStyle{
 			BG: bg, Border: color.RGBA{92, 70, 34, 180}, Text: ColorWhite, BorderWidth: 1,
 		}, sharedTextRenderer{})
-		if row == 0 {
-			drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 10, W: 176}, "Görevi kaldır", color.RGBA{230, 190, 130, 255}, gameui.TextMedium, gameui.TextAlignStart)
-			drawUILabel(screen, gameui.Rect{X: rowRect.X + 190, Y: rowRect.Y + 13, W: rowRect.W - 204}, "Bu filonun aktif görevini temizle", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-			continue
-		}
-		option := options[row-1]
+		option := options[row]
 		active := fleet != nil && fleet.NavalMission != nil && fleet.NavalMission.Kind == option.kind && fleet.NavalMission.TargetFleetID == option.targetFleet
 		textColor := ColorWhite
 		if active {
@@ -311,13 +321,22 @@ func (r *Renderer) drawNavalMissionPanel(screen *ebiten.Image) {
 		}
 		label := trimTextToWidth(option.label, FaceMed, labelW)
 		description := trimTextToWidth(option.description, FaceSmall, rowRect.W-28)
+		effect := trimTextToWidth(option.effect, FaceSmall, rowRect.W-28)
 		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 7, W: labelW}, label, textColor, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 29, W: rowRect.W - 28}, description, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		effectColor := ColorGold
+		if active {
+			effectColor = color.RGBA{180, 240, 190, 255}
+		}
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 50, W: rowRect.W - 28}, effect, effectColor, gameui.TextSmall, gameui.TextAlignStart)
 		if active {
 			drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 62, Y: rowRect.Y + 14, W: 48}, "AKTİF", color.RGBA{165, 235, 175, 255}, gameui.TextSmall, gameui.TextAlignEnd)
 		}
 	}
 	footerY := layout.panelY + layout.panelH - navalMissionPanelFooterH
+	if fleet != nil && fleet.NavalMission != nil {
+		gameui.DrawButton(screen, layout.clear, commanderUnassignButtonStyle(), sharedTextRenderer{})
+	}
 	if rowCount > navalMissionPanelVisibleRows {
 		drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 18), Y: float64(footerY + 15), W: 190}, "Görevler: "+itoa(start+1)+"-"+itoa(end)+"/"+itoa(rowCount), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	}
@@ -405,6 +424,12 @@ func (r *Renderer) handleNavalMissionPanelInput() InputAction {
 	}
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	fleet := r.gs.Armies[r.navalMissionArmy]
+	if layout.clear.HitTest(fx, fy) && fleet != nil && fleet.NavalMission != nil {
+		aid := r.navalMissionArmy
+		r.closeNavalMissionPanel()
+		return InputAction{Kind: ActionClearNavalMission, ArmyID: aid}
+	}
 	if layout.close.HitTest(fx, fy) || !r.navalMissionPanelRect().Hit(fx, fy) {
 		r.closeNavalMissionPanel()
 		return InputAction{}
@@ -415,15 +440,10 @@ func (r *Renderer) handleNavalMissionPanelInput() InputAction {
 	}
 	row += r.navalMissionScroll
 	options := navalMissionOptions(r.gs, r.gs.Armies[r.navalMissionArmy])
-	if row < 0 || row > len(options) {
+	if row < 0 || row >= len(options) {
 		return InputAction{}
 	}
-	if row == 0 {
-		aid := r.navalMissionArmy
-		r.closeNavalMissionPanel()
-		return InputAction{Kind: ActionClearNavalMission, ArmyID: aid}
-	}
-	option := options[row-1]
+	option := options[row]
 	if option.kind == army.NavalMissionEscort {
 		aid := r.navalMissionArmy
 		r.closeNavalMissionPanel()

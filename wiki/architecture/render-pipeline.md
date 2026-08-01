@@ -64,9 +64,19 @@ oyuncu başka bir bölge seçtiğinde temizlenir (`renderer.go`,
 Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
 `tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
 çerçevesini ve overlay'i, `Button` + `Label` primitive'leri ise görev satırlarını
-oluşturur. Görev satırları 62 px yüksekliğindedir; uzun görev adı/açıklaması
-satır genişliğine kırpılır ve çizim ile görünür satır hit-test'i
-`navalMissionPanelRowRect()` geometrisini paylaşır (`internal/render/naval_mission_panel.go`).
+oluşturur. Görev satırları 80 px yüksekliğindedir; görev adı, açıklama ve gerçek
+bonus satırı satır genişliğine kırpılır ve çizim ile görünür satır hit-test'i
+`navalMissionPanelRowRect()` geometrisini paylaşır. Hedefe ulaşan oyuncu
+filoları, ikonlarının yanında küçük dairesel bonus rozeti taşır; ablukada
+`50/100`, devriyede `+1`, escort'ta `15` değeri görünür. Rozetin hover alanı
+`navalMissionBonusBadgeRect()` ile aynı geometry'yi kullanır ve ayrıntı tooltip'i
+hedef bölge ile etkinin açıklamasını gösterir (`internal/render/renderer.go`,
+`internal/render/naval_mission_effects.go`). Büyük, kalıcı hedef bölge marker'ı
+çizilmez.
+Aktif görevi temizleme seçeneği liste içinde ayrı bir satır kaplamaz; panel
+footer'ındaki kırmızı `Görevi Kaldır` düğmesi `commanderUnassignButtonStyle()`
+ile ortak kaldırma görünümünü kullanır ve hit-test/cursor aynı buton rect'inden
+türetilir.
 
 Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
 `armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
@@ -205,6 +215,15 @@ ayırır; bu hedefte `ActionDisembarkArmy` doğrudan kara ordusunu indirip kuşa
 başlatır. Tahkimatsız düşman kıyısında açılan çıkarma savaş planının komutan özeti
 `EmbarkedCommander` üzerinden taşınan kara komutanını gösterir; filo komutanı bu
 preview ve savaş bonuslarına dahil edilmez (`internal/render/{renderer.go,renderer_input.go}`, `internal/game/game.go`).
+
+Seçili oyuncu donanması komşu kara bölgesine hareket hedefi gösterirken bölge
+merkezini kullanmaz. `EmbarkedUnits` boşsa hedef işaretleri bölgedeki tüm
+`SettlementPort` ankrajlarına çizilir; filo kara ordusu taşıyorsa ve çıkarma
+yapabilecek durumdaysa yalnız `IsCenter` settlement ankrajı işaretlenir. Hedefin
+`WAR`/`IN` etiketi ve rengi aynı deniz/çıkarma uygunluk kurallarından türetilir;
+liman hedefi sabit koyu mavi daireyle, çıkarma merkezi ise kareyle ayrıştırılır;
+sağ tık ise mevcut bölge ID'si akışını korur (`internal/render/renderer.go`,
+`renderer_naval_transport_test.go`).
 
 Geliştirme modunda `F3` ile açılan AI teşhis modalı, `ai.BuildAIDiagnosticSnapshot`
 çıktısını gösterir. `ESC/F3` modalı kapatır, `TAB` devlet değiştirir ve mouse
@@ -493,7 +512,7 @@ Deniz bölgeleri `internal/render/mapgen.go:buildSeaRegions` içinde kara piksel
 
 Deniz ve kara region raster alanlarından `WorldMap.RegionAnchor` hesaplanır. Deniz orduları ve deniz hareket hedefleri JSON merkez koordinatı yerine bu gerçek piksel anchor'ını kullanır; anchor, bölgenin kendi piksel alanı içinden seçildiği için kıyıda kara poligonunun kapattığı deniz bölgelerinde filo ikonları karanın üstüne düşmez.
 
-Kara bölgelerde görünen yerleşim işaretleri `regions.json` içindeki `settlements[]` alanından gelir. `WorldMap` her yerleşim için `SettlementAnchor` hesaplar; koordinat yanlışlıkla bölge dışına verilirse log uyarısı basılır ve aynı region içindeki en yakın piksele fallback yapılır. `port` settlement'lar liman simgesi, `fortress` settlement'lar kale simgesi, diğerleri nokta olarak çizilir; ulusal başkent olan settlement'lara bunların yanında ek bir yıldız rozeti çizilir. Yerleşim LOD'u marker, etiket ve hit-test için ortaktır: `camScale < 1.25` uzak görünümde yalnız başkentler ve kaleler, `1.25 <= camScale < 1.8` orta görünümde bunlara ek olarak limanlar ve şehirler, `camScale >= 1.8` yakın görünümde ise kasabalar dahil tüm yerleşimler çizilir. Haritada seçili settlement etiketi altın tonla vurgulanır. Kara ordu ikonları mümkünse `port` olmayan yerleşim anchor'ına kaydırılır; dock edilmiş filolar ise `DockedSettlementID` ile doğrudan liman anchor'ında görünür. Nakliye filosu cargo taşıyorsa yuvarlak filo ikonunun üstüne küçük kare bir badge ve içindeki taşınan birlik sayısı çizilir.
+Kara bölgelerde görünen yerleşim işaretleri `regions.json` içindeki `settlements[]` alanından gelir. `WorldMap` her yerleşim için `SettlementAnchor` hesaplar; koordinat yanlışlıkla bölge dışına verilirse log uyarısı basılır ve aynı region içindeki en yakın piksele fallback yapılır. `port` settlement'lar liman simgesi, `fortress` settlement'lar kale simgesi, diğerleri nokta olarak çizilir; ulusal başkent olan settlement'lara bunların yanında ek bir yıldız rozeti çizilir. Yerleşim LOD'u marker, etiket ve hit-test için ortaktır: `camScale < 1.25` uzak görünümde yalnız başkentler ve kaleler, `1.25 <= camScale < 1.8` orta görünümde bunlara ek olarak limanlar ve şehirler, `camScale >= 1.8` yakın görünümde ise kasabalar dahil tüm yerleşimler çizilir. Haritada seçili settlement etiketi altın tonla vurgulanır; seçili bölgenin `IsCenter` settlement marker'ı ise marker'ın çevresine sarı seçim halkası çizilir. Bu vurgu `drawRegionLabels` içindeki ortak marker akışından üretildiği için marker görünürlüğüyle aynı LOD sözleşmesini izler. Kara ordu ikonları mümkünse `port` olmayan yerleşim anchor'ına kaydırılır; dock edilmiş filolar ise `DockedSettlementID` ile doğrudan liman anchor'ında görünür. Nakliye filosu cargo taşıyorsa yuvarlak filo ikonunun üstüne küçük kare bir badge ve içindeki taşınan birlik sayısı çizilir.
 
 Yerleşim marker sprite'ları beyaz daire arka planıyla aynı `(sx, sy)` merkezinde çizilir; sprite'ın dikey eksende ayrıca kaydırılması kullanılmaz. Böylece ikonun beyaz daire içinde üstte fazla, altta eksik boşluk bırakması engellenir (`internal/render/renderer.go:2371`).
 

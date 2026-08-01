@@ -185,44 +185,38 @@ func drawMerchantRouteFooter(screen *ebiten.Image, gs *state.GameState, a *army.
 		Text: ColorGold, BorderWidth: 1, TextVariant: gameui.TextSmall,
 	}, sharedTextRenderer{})
 
-	label := "Rota yok"
-	if route := merchantRouteForKey(gs, a.TradeRouteKey); route != nil {
+	footer := armyPanelFooterLayoutFor(gs, a, layout)
+	if footer.routeStatus.W > 0 {
+		label, _, _ := merchantRouteFooterInfo(gs, a)
+		drawArmyPanelFooterCenteredText(screen, footer.routeStatus, label, color.RGBA{205, 185, 140, 230})
+	}
+}
+
+func merchantRouteFooterInfo(gs *state.GameState, a *army.Army) (label, bonusText string, bonusColor color.Color) {
+	label = "Rota yok"
+	bonusColor = color.RGBA{180, 180, 180, 220}
+	if gs == nil || a == nil {
+		return label, "", bonusColor
+	}
+	route := merchantRouteForKey(gs, a.TradeRouteKey)
+	if route != nil {
 		label = "Aktif: " + merchantRouteDisplayName(gs, route)
 	}
-	footerX := float32(rect.X + rect.W + 12)
-	footerY := layout.panelY + layout.panelH - siegeFooterH
-	powerText := "Güç: " + itoa(a.TotalStrength(gs.UnitTypes)) + " / " + itoa(a.TotalDefense(gs.UnitTypes))
-	powerX := layout.panelX + layout.panelW - armyPanelPadX*2 - float32(MeasureText(powerText, FaceSmall))
-
-	route := merchantRouteForKey(gs, a.TradeRouteKey)
 	shipCount := merchantShipCount(gs, a)
-	bonusText := "Gemi bonusu: +0 hacim/tur · " + itoa(shipCount) + " gemi · rota yok"
-	bonusColor := color.RGBA{180, 180, 180, 220}
-	if route != nil {
-		bonus := gs.MerchantFleetTradeRouteBonus(a, route)
-		bonusText = "Gemi bonusu: +" + itoa(bonus) + " hacim/tur · " + itoa(shipCount) + " gemi"
-		if gs.MerchantFleetSupportsTradeRoute(a, route) {
-			bonusText += " · konum uygun"
-			bonusColor = color.RGBA{145, 220, 155, 240}
-		} else {
-			bonusText += " · hedef denize git"
-			bonusColor = color.RGBA{230, 180, 105, 240}
-		}
+	bonusText = "Gemi bonusu: +0 hacim/tur · " + itoa(shipCount) + " gemi · rota yok"
+	if route == nil {
+		return label, bonusText, bonusColor
 	}
-	bonusRight := powerX - 14
-	bonusMaxW := bonusRight - footerX - 12
-	if bonusMaxW < 0 {
-		bonusMaxW = 0
+	bonus := gs.MerchantFleetTradeRouteBonus(a, route)
+	bonusText = "Gemi bonusu: +" + itoa(bonus) + " hacim/tur · " + itoa(shipCount) + " gemi"
+	if gs.MerchantFleetSupportsTradeRoute(a, route) {
+		bonusText += " · konum uygun"
+		bonusColor = color.RGBA{145, 220, 155, 240}
+	} else {
+		bonusText += " · hedef denize git"
+		bonusColor = color.RGBA{230, 180, 105, 240}
 	}
-	bonusText = trimTextToWidth(bonusText, FaceSmall, float64(bonusMaxW))
-	bonusW := float32(MeasureText(bonusText, FaceSmall))
-	bonusX := bonusRight - bonusW
-	routeW := bonusX - footerX - 12
-	if routeW < 0 {
-		routeW = 0
-	}
-	DrawText(screen, trimTextToWidth(label, FaceSmall, float64(routeW)), float64(footerX), float64(footerY+7), FaceSmall, color.RGBA{205, 185, 140, 230})
-	DrawText(screen, bonusText, float64(bonusX), float64(footerY+7), FaceSmall, bonusColor)
+	return label, bonusText, bonusColor
 }
 
 func (r *Renderer) openMerchantRoutePanel() {

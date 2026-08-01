@@ -1020,6 +1020,11 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
 			return pos.ArmyID, true
 		}
+		if fleet := r.gs.Armies[pos.ArmyID]; fleet != nil {
+			if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+				return pos.ArmyID, true
+			}
+		}
 	}
 	return "", false
 }

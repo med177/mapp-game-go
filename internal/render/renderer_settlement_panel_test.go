@@ -108,6 +108,35 @@ func TestSettlementCapitalStatusTextIncludesCapitalBonuses(t *testing.T) {
 	}
 }
 
+func TestSettlementSelectionOverlayTargetsSelectedRegionCenter(t *testing.T) {
+	region := &world.Region{
+		ID: "home",
+		Settlements: []world.Settlement{
+			{ID: "home_center", IsCenter: true},
+			{ID: "home_town"},
+		},
+	}
+	r := &Renderer{
+		gs:             &state.GameState{Regions: map[world.RegionID]*world.Region{"home": region}},
+		SelectedRegion: "home",
+	}
+
+	if !r.shouldDrawSettlementSelectionOverlay(region, 0, region.Settlements[0]) {
+		t.Fatal("seçili bölgenin merkez settlement marker'ı vurgulanmalı")
+	}
+	if r.shouldDrawSettlementSelectionOverlay(region, 1, region.Settlements[1]) {
+		t.Fatal("seçili bölgenin merkez olmayan settlement marker'ı vurgulanmamalı")
+	}
+
+	other := &world.Region{
+		ID:          "other",
+		Settlements: []world.Settlement{{ID: "other_center", IsCenter: true}},
+	}
+	if r.shouldDrawSettlementSelectionOverlay(other, 0, other.Settlements[0]) {
+		t.Fatal("başka bölgenin merkez settlement marker'ı vurgulanmamalı")
+	}
+}
+
 func TestAppendSettlementDrawsKeepsFactionCapitalLabelVisible(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth = 1280

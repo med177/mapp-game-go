@@ -34,7 +34,7 @@ func TestNavalMissionButtonOnlyTargetsEligiblePlayerFleet(t *testing.T) {
 	ScreenWidth, ScreenHeight = 1280, 720
 
 	gs := navalMissionPanelStateFixture()
-	button := navalMissionButtonRect(armyPanelGeometry())
+	button := navalMissionButtonRect(armyPanelGeometry(), false)
 	x, y := button.X+button.W/2, button.Y+button.H/2
 	if !navalMissionButtonHit(x, y, gs, "war") || !navalMissionButtonHit(x, y, gs, "transport") {
 		t.Fatal("oyuncunun savaş/nakliye filosunda görev butonu hit olmalıydı")
@@ -52,6 +52,15 @@ func TestNavalMissionOptionsExposeWarshipAndTransportTasks(t *testing.T) {
 	}
 	if options[0].kind != army.NavalMissionPatrol || options[1].kind != army.NavalMissionBlockade || options[2].kind != army.NavalMissionEscort {
 		t.Fatalf("savaş filosu görevleri beklenen sırada değil: %+v", options)
+	}
+	if options[0].effect == "" || options[1].effect == "" || options[2].effect == "" {
+		t.Fatalf("savaş filosu görev bonusları görünür olmalı: %+v", options)
+	}
+	if options[0].effect != "Etki: dost ticaretinde gemi başına 1 düşman ablukasını dengeler." {
+		t.Fatalf("devriye bonusu beklenen açıklamayı taşımıyor: %q", options[0].effect)
+	}
+	if options[1].effect != "Etki: savaş gemisi başına -%50 ticaret; azami -%100." {
+		t.Fatalf("abluka bonusu beklenen açıklamayı taşımıyor: %q", options[1].effect)
 	}
 	gs.Armies["transport"].EmbarkedUnits = []army.Unit{{TypeID: "infantry"}}
 	transportOptions := navalMissionOptions(gs, gs.Armies["transport"])
@@ -71,14 +80,30 @@ func TestNavalMissionPanelStaysInsideViewport(t *testing.T) {
 	}
 }
 
-func TestNavalMissionPanelTwoLineRowsHaveVerticalClearance(t *testing.T) {
-	if navalMissionPanelRowH < 60 {
-		t.Fatalf("iki satırlı görev seçenekleri için satır yüksekliği yetersiz: %.1f", navalMissionPanelRowH)
+func TestNavalMissionPanelThreeLineRowsHaveVerticalClearance(t *testing.T) {
+	if navalMissionPanelRowH < 80 {
+		t.Fatalf("üç satırlı görev seçenekleri için satır yüksekliği yetersiz: %.1f", navalMissionPanelRowH)
 	}
 
 	rowRectHeight := navalMissionPanelRowH - 10
-	if rowRectHeight < 50 {
-		t.Fatalf("görev satırının iç kutusu iki satırlı metne sığmıyor: %.1f", rowRectHeight)
+	if rowRectHeight < 60 {
+		t.Fatalf("görev satırının iç kutusu bonus satırına sığmıyor: %.1f", rowRectHeight)
+	}
+}
+
+func TestNavalMissionPanelClearButtonUsesCommanderStylePlacement(t *testing.T) {
+	layout := navalMissionPanelLayoutFor(3)
+	if layout.clear.Label != "Görevi Kaldır" {
+		t.Fatalf("görev temizleme düğmesi beklenen etiketi taşımıyor: %+v", layout.clear)
+	}
+	if layout.clear.W != commanderPanelButtonW || layout.clear.H != commanderPanelButtonH {
+		t.Fatalf("görev temizleme düğmesi ortak kaldırma düğmesi ölçüsünde olmalı: %+v", layout.clear)
+	}
+	if layout.clear.Y <= float64(layout.rowY) {
+		t.Fatalf("görev temizleme düğmesi satırların altında olmalı: %+v", layout.clear)
+	}
+	if layout.panelW >= 720 {
+		t.Fatalf("donanma görev paneli daraltılmalı: %.1f", layout.panelW)
 	}
 }
 

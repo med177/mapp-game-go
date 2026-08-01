@@ -428,6 +428,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		return true
 	}
 	// Ordu/donanma etiketi üzerinde mi?
+	if _, ok := r.navalMissionBonusHitAt(fx, fy); ok {
+		return true
+	}
 	if _, ok := r.armyHitAt(fx, fy); ok {
 		return true
 	}

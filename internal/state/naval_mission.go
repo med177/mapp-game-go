@@ -5,6 +5,11 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+const (
+	navalEscortDefenseBonusPerFleet = 0.15
+	navalEscortDefenseBonusCap      = 0.30
+)
+
 // CanAssignNavalMission merkezi oyuncu filo görevi doğrulamasıdır. Renderer
 // yalnız adayları gösterir; gerçek state değişikliği bu kapıdan geçer.
 func (s *GameState) CanAssignNavalMission(fleetID army.ArmyID, mission army.NavalMission) (bool, string) {
@@ -81,6 +86,33 @@ func (s *GameState) ClearNavalMission(fleetID army.ArmyID) bool {
 	}
 	fleet.NavalMission = nil
 	return true
+}
+
+// NavalEscortDefenseBonus, aynı deniz bölgesindeki nakliye filosuna atanmış
+// escort savaş gemilerinin deniz savunmasına katkısını döndürür. Bonus yalnız
+// gerçek escort hedefi de aynı savaşa savunmacı olarak katılıyorsa uygulanır.
+// Birden fazla escort toplamda yüzde 30 ile sınırlıdır.
+func (s *GameState) NavalEscortDefenseBonus(sourceIDs []army.ArmyID, targetRegionID world.RegionID) float64 {
+	if s == nil || targetRegionID == "" || len(sourceIDs) == 0 {
+		return 0
+	}
+	escortCount := 0
+	for _, sourceID := range sourceIDs {
+		escort := s.Armies[sourceID]
+		if escort == nil || escort.RegionID != targetRegionID || escort.NavalMission == nil || escort.NavalMission.Kind != army.NavalMissionEscort {
+			continue
+		}
+		transport := s.Armies[escort.NavalMission.TargetFleetID]
+		if transport == nil || transport.ID == escort.ID || transport.RegionID != targetRegionID || !transport.IsNaval || transport.TransportCapacity(s.UnitTypes) <= 0 {
+			continue
+		}
+		escortCount++
+	}
+	bonus := float64(escortCount) * navalEscortDefenseBonusPerFleet
+	if bonus > navalEscortDefenseBonusCap {
+		return navalEscortDefenseBonusCap
+	}
+	return bonus
 }
 
 func fleetHasWarship(s *GameState, fleet *army.Army) bool {

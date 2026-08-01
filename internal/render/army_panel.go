@@ -197,11 +197,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	// ── Birim kartları — 20 slot, boş olanlar silik görünür ─────────────
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
-		col := i % maxCols
-		row := i / maxCols
-
-		cx := layout.gridX + float32(col)*(cardW+cardGap)
-		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		cx, cy := armyPanelUnitPosition(layout, i)
 
 		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
 		if unitIndex < 0 {
@@ -363,10 +359,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
-		col := i % maxCols
-		row := i / maxCols
-		cx := layout.gridX + float32(col)*(cardW+cardGap)
-		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		cx, cy := armyPanelUnitPosition(layout, i)
 		drawUnknownEnemyUnitCard(screen, cx, cy)
 	}
 
@@ -479,19 +472,122 @@ func armyTransportFooterText(gs *state.GameState, a *army.Army) string {
 func drawArmyPowerFooter(screen *ebiten.Image, layout armyPanelLayout, attack, defense int, label, transportText string) {
 	drawArmyPanelFooterBackground(screen, layout)
 	powerText := label + ": " + itoa(attack) + " / " + itoa(defense)
-	footerY := layout.panelY + layout.panelH - siegeFooterH
-	footerX := layout.gridX
-	footerW := layout.panelX + layout.panelW - armyPanelPadX - footerX
-	powerW := MeasureText(powerText, FaceSmall)
-	powerX := float64(footerX+footerW) - float64(armyPanelPadX) - powerW
-	if transportText != "" {
-		transportW := MeasureText(transportText, FaceSmall)
-		transportX := powerX - 18 - transportW
-		if transportX >= float64(footerX+armyPanelPadX) {
-			DrawText(screen, transportText, transportX, float64(footerY+2), FaceSmall, color.RGBA{205, 185, 140, 230})
-		}
+	footer := armyPanelFooterLayoutFor(nil, nil, layout)
+	footer.powerText = powerText
+	footer.transportText = transportText
+	footer.recalculateRightAnchoredText()
+	drawArmyPanelFooterRightTexts(screen, footer)
+}
+
+// armyPanelFooterLayout, alt banttaki düğme ve bilgi alanlarının tek ortak
+// geometri sözleşmesidir. Merchant ve naval footer'ları ayrı çizilse de aynı
+// kolonları paylaşır; böylece bir footer diğerinin metin alanına taşamaz.
+type armyPanelFooterLayout struct {
+	footerY, footerRight float32
+
+	routeButton, missionButton gameui.Rect
+	routeStatus, missionStatus gameui.Rect
+
+	powerText, transportText, bonusText string
+	bonusColor                          color.Color
+	powerX, transportX, bonusX          float32
+}
+
+func armyPanelFooterLayoutFor(gs *state.GameState, a *army.Army, layout armyPanelLayout) armyPanelFooterLayout {
+	footer := armyPanelFooterLayout{
+		footerY:     layout.panelY + layout.panelH - siegeFooterH,
+		footerRight: layout.panelX + layout.panelW - armyPanelPadX,
+		bonusColor:  color.RGBA{180, 180, 180, 220},
 	}
-	DrawText(screen, powerText, powerX, float64(footerY+2), FaceSmall, color.RGBA{220, 190, 100, 235})
+
+	hasMerchant := gs != nil && a != nil && a.OwnerID == string(gs.PlayerFactionID) && armyHasMerchantShip(gs, a)
+	hasMission := playerNavalMissionEligible(gs, a)
+	if hasMerchant {
+		footer.routeButton = merchantRouteAssignmentButtonRect(layout)
+	}
+	if hasMission {
+		footer.missionButton = navalMissionButtonRect(layout, hasMerchant)
+	}
+
+	footer.powerText = "Güç: "
+	if gs != nil && a != nil {
+		footer.powerText += itoa(a.TotalStrength(gs.UnitTypes)) + " / " + itoa(a.TotalDefense(gs.UnitTypes))
+	} else {
+		footer.powerText += "0 / 0"
+	}
+	if gs != nil && a != nil {
+		footer.transportText = armyTransportFooterText(gs, a)
+	}
+	if hasMerchant {
+		_, footer.bonusText, footer.bonusColor = merchantRouteFooterInfo(gs, a)
+	}
+
+	footer.recalculateRightAnchoredText()
+	actionEnd := layout.gridX + 8
+	if hasMerchant {
+		actionEnd = maxFloat32(actionEnd, float32(footer.routeButton.X+footer.routeButton.W))
+	}
+	if hasMission {
+		actionEnd = maxFloat32(actionEnd, float32(footer.missionButton.X+footer.missionButton.W))
+	}
+	statusLeft := actionEnd + 10
+	statusRight := footer.powerX - 12
+	if footer.bonusText != "" {
+		statusRight = footer.bonusX - 12
+	}
+	if statusRight < statusLeft {
+		statusRight = statusLeft
+	}
+	statusW := statusRight - statusLeft
+	switch {
+	case hasMerchant && hasMission:
+		routeW := (statusW - 8) * 0.48
+		if routeW < 0 {
+			routeW = 0
+		}
+		footer.routeStatus = gameui.Rect{X: float64(statusLeft), Y: float64(footer.footerY), W: float64(routeW), H: float64(siegeFooterH)}
+		footer.missionStatus = gameui.Rect{X: float64(statusLeft + routeW + 8), Y: float64(footer.footerY), W: float64(statusW - routeW - 8), H: float64(siegeFooterH)}
+	case hasMerchant:
+		footer.routeStatus = gameui.Rect{X: float64(statusLeft), Y: float64(footer.footerY), W: float64(statusW), H: float64(siegeFooterH)}
+	case hasMission:
+		footer.missionStatus = gameui.Rect{X: float64(statusLeft), Y: float64(footer.footerY), W: float64(statusW), H: float64(siegeFooterH)}
+	}
+	return footer
+}
+
+func (footer *armyPanelFooterLayout) recalculateRightAnchoredText() {
+	if footer == nil {
+		return
+	}
+	x := footer.footerRight - float32(MeasureText(footer.powerText, FaceSmall))
+	footer.powerX = x
+	if footer.transportText != "" {
+		x -= 12 + float32(MeasureText(footer.transportText, FaceSmall))
+		footer.transportX = x
+	}
+	if footer.bonusText != "" {
+		x -= 12 + float32(MeasureText(footer.bonusText, FaceSmall))
+		footer.bonusX = x
+	}
+}
+
+func drawArmyPanelFooterRightTexts(screen *ebiten.Image, footer armyPanelFooterLayout) {
+	if footer.transportText != "" {
+		DrawText(screen, footer.transportText, float64(footer.transportX), float64(footer.footerY+7), FaceSmall, color.RGBA{205, 185, 140, 230})
+	}
+	if footer.bonusText != "" {
+		DrawText(screen, footer.bonusText, float64(footer.bonusX), float64(footer.footerY+7), FaceSmall, footer.bonusColor)
+	}
+	DrawText(screen, footer.powerText, float64(footer.powerX), float64(footer.footerY+7), FaceSmall, color.RGBA{220, 190, 100, 235})
+}
+
+func drawArmyPanelFooterCenteredText(screen *ebiten.Image, rect gameui.Rect, text string, textColor color.Color) {
+	if rect.W <= 0 || rect.H <= 0 || text == "" {
+		return
+	}
+	text = trimTextToWidth(text, FaceSmall, rect.W-8)
+	textW := MeasureText(text, FaceSmall)
+	DrawText(screen, text, rect.X+(rect.W-textW)/2, rect.Y+7, FaceSmall, textColor)
 }
 
 func drawArmyPanelFooterBackground(screen *ebiten.Image, layout armyPanelLayout) {
@@ -573,10 +669,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 
 	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for i := 0; i < totalSlots; i++ {
-		col := i % maxCols
-		row := i / maxCols
-		cx := layout.gridX + float32(col)*(cardW+cardGap)
-		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		cx, cy := armyPanelUnitPosition(layout, i)
 
 		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
 		if unitIndex < 0 {
@@ -708,6 +801,15 @@ func armyPanelGeometry() armyPanelLayout {
 		commanderW: armyPanelCommanderW,
 		commanderH: panelH - armyPanelHdrH - armyPanelPadY - siegeFooterH,
 	}
+}
+
+// armyPanelUnitPosition, donanma dahil tüm birim kartlarının çizim ve hit-test
+// koordinatını aynı slot hesabından üretir. Böylece farklı gemi türleri hiçbir
+// zaman aynı kartın üzerine çizilmez.
+func armyPanelUnitPosition(layout armyPanelLayout, displayIndex int) (float32, float32) {
+	col := displayIndex % maxCols
+	row := displayIndex / maxCols
+	return layout.gridX + float32(col)*(cardW+cardGap), layout.gridY + float32(row)*(cardH+cardGap)
 }
 
 func buildArmyPanelCloseButton() gameui.Button {
@@ -1040,10 +1142,7 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 		if unitIndex < 0 {
 			continue
 		}
-		col := displayIndex % maxCols
-		row := displayIndex / maxCols
-		cx := layout.gridX + float32(col)*(cardW+cardGap)
-		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		cx, cy := armyPanelUnitPosition(layout, displayIndex)
 		if mx >= float64(cx) && mx <= float64(cx+cardW) &&
 			my >= float64(cy) && my <= float64(cy+cardH) {
 			unit := a.Units[unitIndex]
@@ -1105,10 +1204,7 @@ func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) 
 		if unitIndex < 0 {
 			continue
 		}
-		col := displayIndex % maxCols
-		row := displayIndex / maxCols
-		cx := layout.gridX + float32(col)*(cardW+cardGap)
-		cy := layout.gridY + float32(row)*(cardH+cardGap)
+		cx, cy := armyPanelUnitPosition(layout, displayIndex)
 		if mx >= float64(cx) && mx <= float64(cx+cardW) &&
 			my >= float64(cy) && my <= float64(cy+cardH) {
 			return unitIndex, true

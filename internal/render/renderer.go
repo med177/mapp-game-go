@@ -56,7 +56,10 @@ const (
 	settlementMarkerSpriteSize   = float32(26)
 	capitalLabelIconSmallSize    = float32(18)
 	capitalLabelIconMediumSize   = float32(20)
+	navalDockTargetRadius        = float32(18)
 )
+
+var navalDockTargetColor = color.RGBA{24, 72, 145, 235}
 
 // Renderer kamerayı ve dünya haritasını yönetir.
 type Renderer struct {
@@ -1288,6 +1291,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
 		DrawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab)
+		r.drawNavalMissionBonusHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)
@@ -1784,33 +1788,26 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			continue
 		}
 
+		// Donanmanın kara hedefi bölge merkezi değildir: ordusuz filo için
+		// liman settlement'ları, gemide ordu varsa çıkarma yapılacak merkez
+		// settlement'ı işaretlenir. Sağ tık yine bölge ID'si ürettiğinden bu
+		// yalnızca hedef göstergesinin ankrajını değiştirir.
+		if a.IsNaval && nRegion.CanLandEnter() {
+			col, label := navalLandMoveTargetStyle(r.gs, a, nRegion)
+			if r.drawNavalLandMoveTargets(screen, nRegion, len(a.EmbarkedUnits) > 0, col, label) {
+				continue
+			}
+			// Geçerli bir liman settlement ankrajı yoksa kara bölgesinin
+			// merkezini yanlış hedef gibi göstermemek gerekir.
+			continue
+		}
+
 		sx, sy := r.regionScreenPos(nRegion)
 
 		var col color.RGBA
 		if a.IsNaval {
-			if nRegion.CanLandEnter() {
-				switch {
-				case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
-					key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
-					rel, exists := r.gs.Relations[key]
-					if exists && rel.Stance == faction.StanceWar {
-						col = color.RGBA{220, 60, 60, 200}
-					} else {
-						col = color.RGBA{220, 140, 30, 210}
-					}
-					DrawTextCentered(screen, "WAR", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
-				case nRegion.OwnerID == "":
-					col = color.RGBA{60, 220, 60, 200}
-				default:
-					col = color.RGBA{80, 160, 255, 160}
-				}
-				if navalShowsFriendlyDisembark(r.gs, a, nRegion) {
-					DrawTextCentered(screen, "IN", sx, sy-8, FaceSmall, color.RGBA{210, 248, 255, 230})
-				}
-			} else {
-				// Deniz bölgeleri için sabit açık mavi — tarafsız su
-				col = color.RGBA{100, 200, 255, 220}
-			}
+			// Deniz bölgeleri için sabit açık mavi — tarafsız su
+			col = color.RGBA{100, 200, 255, 220}
 		} else {
 			if nRegion.IsSea {
 				col = color.RGBA{120, 230, 240, 220}
@@ -1844,6 +1841,81 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
 	}
+}
+
+// navalLandMoveTargetSettlement, donanma kara hedefi göstergesinin hangi
+// settlement tipine bağlanacağını belirler. Taşıyıcıda kara ordusu yoksa
+// yalnız limanlar; ordu varsa yalnız merkez settlement çıkarma hedefidir.
+func navalLandMoveTargetSettlement(settlement world.Settlement, landing bool) bool {
+	if landing {
+		return settlement.IsCenter
+	}
+	return settlement.Type == world.SettlementPort
+}
+
+func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *world.Region) (color.RGBA, string) {
+	if target == nil || fleet == nil {
+		return color.RGBA{80, 160, 255, 160}, ""
+	}
+
+	col := color.RGBA{80, 160, 255, 160}
+	label := ""
+	if target.OwnerID != "" && target.OwnerID != fleet.OwnerID {
+		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
+		var rel *faction.Relation
+		var exists bool
+		if gs != nil {
+			rel, exists = gs.Relations[key]
+		}
+		if exists && rel.Stance == faction.StanceWar {
+			col = color.RGBA{220, 60, 60, 200}
+		} else {
+			col = color.RGBA{220, 140, 30, 210}
+		}
+		label = "WAR"
+	} else if target.OwnerID == "" {
+		col = color.RGBA{60, 220, 60, 200}
+	}
+	if navalShowsFriendlyDisembark(gs, fleet, target) {
+		label = "IN"
+	}
+	return col, label
+}
+
+// drawNavalLandMoveTargets, geçerli kara hedefindeki liman veya çıkarma
+// merkezlerini bölge merkezinden bağımsız olarak işaretler.
+func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.Region, landing bool, col color.RGBA, label string) bool {
+	if r == nil || r.worldMap == nil || region == nil || region.IsSea {
+		return false
+	}
+
+	drawn := false
+	for i, settlement := range region.Settlements {
+		if !navalLandMoveTargetSettlement(settlement, landing) {
+			continue
+		}
+		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
+		if !ok {
+			continue
+		}
+		sx, sy := r.worldToScreen(float64(ax), float64(ay))
+		if !landing && settlement.Type == world.SettlementPort {
+			// Liman hedefi, filonun dock olacağını anlatan sabit koyu mavi
+			// daireyle gösterilir; liman docking'i çıkarma hedefi gibi görünmez.
+			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, navalDockTargetColor, true)
+		} else {
+			vector.StrokeRect(screen, float32(sx)-16, float32(sy)-14, 32, 28, 3, col, true)
+		}
+		if label != "" {
+			labelCol := color.RGBA{255, 200, 80, 230}
+			if label == "IN" {
+				labelCol = color.RGBA{210, 248, 255, 230}
+			}
+			DrawTextCentered(screen, label, sx, sy-20, FaceSmall, labelCol)
+		}
+		drawn = true
+	}
+	return drawn
 }
 
 // armyIconPos bir ordunun ekrandaki ikon koordinatlarını tutar.
@@ -2297,6 +2369,15 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 				missionBadge = "N"
 			}
 			DrawTextCentered(screen, missionBadge, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceSmall, color.RGBA{228, 255, 232, 255})
+			if bonusText, bonusColor, ok := navalMissionBonusBadge(r.gs, a); ok {
+				bonusRect := navalMissionBonusBadgeRect(cx, cy)
+				bonusCX := float32(bonusRect.X + bonusRect.W/2)
+				bonusCY := float32(bonusRect.Y + bonusRect.H/2)
+				vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
+				vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
+				vector.StrokeCircle(screen, bonusCX, bonusCY, 10, 1.5, color.RGBA{255, 230, 180, 240}, false)
+				DrawTextCentered(screen, bonusText, float64(bonusCX), float64(bonusCY)-5, FaceTiny, color.RGBA{35, 25, 15, 255})
+			}
 		}
 	}
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {
@@ -2425,7 +2506,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		if !item.DrawLabel && !forceLabel {
 			isPrimary := settlement.IsCenter || item.Index == 0
 			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
-			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
+			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 			continue
 		}
 
@@ -2465,7 +2546,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 
 		isPrimary := settlement.IsCenter || item.Index == 0
 		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
-		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, float32(item.SX), float32(item.SY))
+		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 	}
 }
 
@@ -3261,18 +3342,39 @@ func (r *Renderer) drawPortMarker(screen *ebiten.Image, region *world.Region, sx
 	vector.StrokeLine(screen, sx+2, waterY+2, sx+6, waterY+2, 1.2, waterCol, true)
 }
 
-func (r *Renderer) drawSettlementSelectionOverlay(screen *ebiten.Image, settlement world.Settlement, region *world.Region, sx, sy float32) {
-	if r.gs == nil || r.gs.Phase != state.PhaseEditMode || region == nil {
+func (r *Renderer) drawSettlementSelectionOverlay(screen *ebiten.Image, settlement world.Settlement, region *world.Region, index int, sx, sy float32) {
+	if r == nil || r.gs == nil || region == nil {
 		return
 	}
-	if region.ID != r.editSelectedRegion || r.editSelectedSettlement < 0 || r.editSelectedSettlement >= len(region.Settlements) {
+
+	// Kampanya haritasında bölge seçimi settlement seçiminden ayrıdır. Bölge
+	// seçiliyken yalnızca o bölgenin kanonik merkez settlement'ını işaretle;
+	// böylece aynı bölgedeki diğer şehir/kasaba marker'ları seçilmiş görünmez.
+	if !r.shouldDrawSettlementSelectionOverlay(region, index, settlement) {
 		return
 	}
-	if settlement.Type == world.SettlementFortress || settlement.Type == world.SettlementPort {
+	selectedRegionCenter := region.ID == r.SelectedRegion && settlement.IsCenter
+	editSelectedSettlement := r.gs.Phase == state.PhaseEditMode &&
+		region.ID == r.editSelectedRegion &&
+		r.editSelectedSettlement == index
+
+	// Edit Mode'da kale/liman için kullanılan mevcut dikdörtgen seçim işaretini
+	// koru. Normal kampanya seçiminde ise marker'ın beyaz rozetini çevreleyen
+	// tek tip sarı halka kullanılır.
+	if editSelectedSettlement && !selectedRegionCenter &&
+		(settlement.Type == world.SettlementFortress || settlement.Type == world.SettlementPort) {
 		vector.StrokeRect(screen, sx-9, sy-8, 18, 16, 2, color.RGBA{255, 190, 45, 230}, true)
 		return
 	}
-	vector.StrokeCircle(screen, sx, sy+4, 10, 2, color.RGBA{255, 190, 45, 230}, true)
+	vector.StrokeCircle(screen, sx, sy, settlementMarkerSpriteSize/2+4, 2.5, color.RGBA{255, 220, 70, 245}, true)
+}
+
+func (r *Renderer) shouldDrawSettlementSelectionOverlay(region *world.Region, index int, settlement world.Settlement) bool {
+	if r == nil || r.gs == nil || region == nil || index < 0 || index >= len(region.Settlements) {
+		return false
+	}
+	return (region.ID == r.SelectedRegion && settlement.IsCenter) ||
+		(r.gs.Phase == state.PhaseEditMode && region.ID == r.editSelectedRegion && index == r.editSelectedSettlement)
 }
 
 // --- Input ---

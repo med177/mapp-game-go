@@ -7,6 +7,56 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-01: Donanma hareket hedeflerindeki liman settlement işareti açık mavi
+  kareden koyu mavi daireye dönüştürüldü; daire, filonun hedef limana dock
+  olacağını çıkarma merkezinden görsel olarak ayırıyor.
+
+- 2026-08-01: Bölge seçildiğinde, seçili bölgenin `IsCenter` settlement
+  marker'ı sarı bir seçim halkasıyla çevreleniyor. Aynı bölgedeki diğer
+  settlement marker'ları ve seçili olmayan bölgelerin merkezleri vurgulanmıyor;
+  Edit Mode settlement seçimi de index bazında doğru marker'a sınırlandı.
+  Regression: `TestSettlementSelectionOverlayTargetsSelectedRegionCenter`;
+  doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-08-01: Seçili donanmanın komşu kara bölgesi hareket hedefleri settlement
+  türüne göre ayrıştırıldı. Ordu taşımayan filo yalnız liman settlement'larını,
+  `EmbarkedUnits` taşıyan filo ise çıkarma hedefi olarak yalnız merkez
+  settlement'ını işaretliyor; bölge merkezinde yanlış hedef halkası çizilmiyor.
+  Regression: `TestNavalLandMoveTargetSettlementUsesPortsUntilLanding`;
+  doğrulama: `go test ./internal/render ./internal/game ./internal/state`.
+
+- 2026-08-01: Oyuncu donanma görevleri mekanik olarak ayrıştırıldı. Abluka
+  görevi hedef denizde ticaret rotası ve liman lojistiği kesintisi üretirken,
+  Devriye aynı denizdeki düşman abluka gücünü dengeleyip dost ticaret/ikmali
+  koruyor. Escort görevine aynı denizdeki nakliye filosu için yüzde 15 savunma
+  bonusu eklendi; çoklu escort yüzde 30 ile sınırlandı. Regression:
+  `TestPatrolCountersEnemyBlockadeForTradeRoute`,
+  `TestPatrolAndBlockadeMissionsHaveDifferentCommerceEffects`,
+  `TestPatrolProtectsPortLogisticsFromEnemyBlockade`,
+  `TestNavalEscortDefenseBonusAppliesOnlyToSameSeaTransport`.
+
+- 2026-08-01: Donanma görevlerinin etkileri oyuncu UI'ında görünür hale getirildi.
+  Görev seçim satırları artık her rolün gerçek bonusunu gösteriyor; hedefe ulaşan
+  oyuncu filosu haritada görev türüne özel renkli `HEDEFTE` marker'ı ile
+  `DEVRİYE`, `ABLUKA`, `ESCORT` veya `NAKLİYE` etkisini tekrar gösteriyor.
+  Regression: `TestNavalMissionPanelThreeLineRowsHaveVerticalClearance`,
+  `TestNavalMissionReachedRegionOnlyShowsActiveTarget`;
+  doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-08-01: Donanma görev paneli sadeleştirildi. Liste içindeki ayrı görev
+  temizleme satırı kaldırıldı; aktif görev için panel footer'ına `Komutanı Ayır`
+  stiliyle kırmızı `Görevi Kaldır` düğmesi eklendi. Panel genişliği 600 px'e,
+  görev satırları 80 px'e ayarlandı; çizim, cursor ve input aynı layout/button
+  geometry'sini kullanıyor. Regression: `TestNavalMissionPanelClearButtonUsesCommanderStylePlacement`;
+  doğrulama: `go test ./internal/render -run '^TestNavalMissionPanel|^TestOverlayPanel' -count=1`.
+
+- 2026-08-01: Donanma bonuslarının harita gösterimi sadeleştirildi. Büyük hedef
+  bölge marker'ı kaldırıldı; hedefe ulaşan filonun ikonuna küçük dairesel bonus
+  rozeti eklendi (`50/100`, `+1`, `15`). Rozet hover'ında ortak tooltip ile hedef
+  ve gerçek etki açıklanıyor; badge hit-test'i ordu ikon seçim akışıyla uyumlu.
+  Regression: `TestNavalMissionBonusBadgeUsesCompactActiveValues`;
+  doğrulama: `go test ./internal/render -count=1`.
+
 - 2026-08-01: Ordu detay panelindeki komutan kartına, ana komutan mevcut
   olduğunda kırmızı `Komutanı Ayır` düğmesi eklendi. Düğme yalnız oyuncunun
   ordusunda görünür; çizim, hit-test ve cursor aynı ortak `gameui.Button`

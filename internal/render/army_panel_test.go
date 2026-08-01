@@ -66,6 +66,47 @@ func TestArmyPanelTransportFooterTextHiddenWithoutTransportCapacity(t *testing.T
 	}
 }
 
+func TestArmyPanelMixedFleetFooterColumnsStaySeparated(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+			"warship":       {ID: "warship", Category: army.CategoryNavalWar},
+			"transport":     {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 8},
+		},
+	}
+	fleet := &army.Army{
+		OwnerID: "player",
+		IsNaval: true,
+		Units: []army.Unit{
+			{TypeID: "merchant_ship"},
+			{TypeID: "warship"},
+			{TypeID: "transport"},
+		},
+		EmbarkedUnits: []army.Unit{{TypeID: "infantry"}},
+	}
+
+	layout := armyPanelFooterLayoutFor(gs, fleet, armyPanelGeometry())
+	if layout.routeButton.X+layout.routeButton.W > layout.missionButton.X {
+		t.Fatalf("ROTA ATA ve GÖREV düğmeleri örtüşüyor: route=%+v mission=%+v", layout.routeButton, layout.missionButton)
+	}
+	if layout.routeStatus.X+layout.routeStatus.W > layout.missionStatus.X {
+		t.Fatalf("rota ve görev bilgi alanları örtüşüyor: route=%+v mission=%+v", layout.routeStatus, layout.missionStatus)
+	}
+	if layout.missionStatus.X+layout.missionStatus.W > float64(layout.bonusX)-12 {
+		t.Fatalf("görev durumu gemi bonusu alanına taşıyor: mission=%+v bonusX=%.1f", layout.missionStatus, layout.bonusX)
+	}
+	if float64(layout.bonusX)+float64(MeasureText(layout.bonusText, FaceSmall)) > float64(layout.powerX)-12 {
+		t.Fatalf("gemi bonusu güç alanına taşıyor: bonusX=%.1f powerX=%.1f", layout.bonusX, layout.powerX)
+	}
+}
+
 func TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
@@ -152,10 +193,9 @@ func TestArmyPanelUnitHoverIDUsesDisplayedCardOrder(t *testing.T) {
 
 	layout := armyPanelGeometry()
 	cardCenter := func(displayIndex int) (float64, float64) {
-		col := displayIndex % maxCols
-		row := displayIndex / maxCols
-		cx := layout.gridX + float32(col)*(cardW+cardGap) + cardW/2
-		cy := layout.gridY + float32(row)*(cardH+cardGap) + cardH/2
+		cardX, cardY := armyPanelUnitPosition(layout, displayIndex)
+		cx := cardX + cardW/2
+		cy := cardY + cardH/2
 		return float64(cx), float64(cy)
 	}
 

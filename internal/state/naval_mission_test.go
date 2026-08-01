@@ -93,3 +93,19 @@ func TestClearNavalMissionRemovesPlayerTask(t *testing.T) {
 		t.Fatal("görev temizlenmedi")
 	}
 }
+
+func TestNavalEscortDefenseBonusAppliesOnlyToSameSeaTransport(t *testing.T) {
+	gs := navalMissionStateFixture()
+	gs.Armies["war-fleet"].RegionID = "sea"
+	gs.Armies["transport-fleet"].RegionID = "sea"
+	gs.Armies["war-fleet"].NavalMission = &army.NavalMission{
+		Kind: army.NavalMissionEscort, TargetFleetID: "transport-fleet",
+	}
+	if got := gs.NavalEscortDefenseBonus([]army.ArmyID{"war-fleet", "transport-fleet"}, "sea"); got != 0.15 {
+		t.Fatalf("aynı denizde escort %%15 savunma bonusu vermeli: %.2f", got)
+	}
+	gs.Armies["war-fleet"].RegionID = "other-sea"
+	if got := gs.NavalEscortDefenseBonus([]army.ArmyID{"war-fleet", "transport-fleet"}, "sea"); got != 0 {
+		t.Fatalf("farklı denizde escort bonusu uygulanmamalı: %.2f", got)
+	}
+}

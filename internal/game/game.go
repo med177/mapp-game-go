@@ -4740,6 +4740,7 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 		battleContext := combat.BattleContextLand
 		if navalSeaMove {
 			battleContext = combat.BattleContextNaval
+			defMods.NavalDefenseMod += g.gs.NavalEscortDefenseBonus(defSourceIDs, target)
 		}
 		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
 		g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
