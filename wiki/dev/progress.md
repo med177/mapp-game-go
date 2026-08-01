@@ -32,6 +32,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestNavalEmbarkedArmyBadgeFollowsFleetVisibility`;
   doğrulama: `go test ./internal/render -run 'TestNavalEmbarkedArmyBadge|TestArmyIconPositions|TestNavalMission' -count=1`.
 
+- 2026-08-01: Oyuncunun kendi filosundaki taşınan ordu karesi hover tooltip'ine
+  bağlandı. Tooltip `Nakliye Görevi` başlığını ve `Taşınan ordu N birim`
+  ayrıntısını gösteriyor; hit-test mevcut taşınan ordu rozetiyle aynı.
+  Regression: `TestNavalEmbarkedArmyTooltipText`;
+  doğrulama: `go test ./internal/render -run 'TestNavalEmbarkedArmyTooltip|TestNavalMission' -count=1`.
+
 - 2026-08-01: Donanma hareket hedeflerindeki liman settlement işareti açık mavi
   kareden koyu mavi daireye dönüştürüldü; daire, filonun hedef limana dock
   olacağını çıkarma merkezinden görsel olarak ayırıyor.

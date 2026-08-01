@@ -94,6 +94,9 @@ outlinesız beyaz metindir (`internal/render/renderer.go`).
 Oyuncunun tam istihbaratında olmayan düşman filosunun taşınan ordu karesi de
 filo sayısıyla aynı görünürlük sözleşmesini kullanır ve gerçek adet yerine `?`
 gösterir; tam görülen filoda gerçek taşınan birlik sayısı yazılır.
+Oyuncunun kendi filosundaki taşınan ordu karesi hover edildiğinde görev bonus
+rozetleriyle aynı tooltip katmanı açılır: başlık `Nakliye Görevi`, ayrıntı ise
+`Taşınan ordu N birim` formatındadır (`internal/render/naval_mission_effects.go`).
 
 Saf nakliye filoları için `GÖREV` düğmesi ve görev durumu çizilmez; mevcut
 taşıma/çıkarma mekanizması normal hareket akışında kalır. Taşınan ordu bulunan

@@ -102,6 +102,17 @@ func TestNavalMissionBonusTooltipIncludesTargetAndEffect(t *testing.T) {
 	}
 }
 
+func TestNavalEmbarkedArmyTooltipText(t *testing.T) {
+	fleet := &army.Army{IsNaval: true, EmbarkedUnits: make([]army.Unit, 4)}
+	title, detail, ok := navalEmbarkedArmyTooltipText(fleet)
+	if !ok || title != "Nakliye Görevi" || detail != "Taşınan ordu 4 birim" {
+		t.Fatalf("nakliye tooltip metni yanlış: title=%q detail=%q ok=%t", title, detail, ok)
+	}
+	if _, _, ok := navalEmbarkedArmyTooltipText(&army.Army{IsNaval: true}); ok {
+		t.Fatal("boş filoda taşınan ordu tooltip'i gösterilmemeli")
+	}
+}
+
 func TestNavalMissionBonusBadgeTextContrast(t *testing.T) {
 	if got := navalMissionBonusBadgeTextColor(army.NavalMissionPatrol); got != (color.RGBA{35, 25, 15, 255}) {
 		t.Fatalf("devriye bonus rozeti metin rengi yanlış: %+v", got)

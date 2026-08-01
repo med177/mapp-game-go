@@ -189,6 +189,13 @@ func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string
 	}
 }
 
+func navalEmbarkedArmyTooltipText(fleet *army.Army) (string, string, bool) {
+	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return "", "", false
+	}
+	return "Nakliye Görevi", "Taşınan ordu " + itoa(len(fleet.EmbarkedUnits)) + " birim", true
+}
+
 // drawNavalMissionBonusHoverTooltip, yalnız küçük bonus rozeti üzerine
 // gelindiğinde ayrıntıyı gösterir; haritanın üzerinde kalıcı büyük yazı çizmez.
 func (r *Renderer) drawNavalMissionBonusHoverTooltip(screen *ebiten.Image) {
@@ -201,6 +208,31 @@ func (r *Renderer) drawNavalMissionBonusHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	title, detail, ok := navalMissionBonusTooltipText(r.gs, r.gs.Armies[aid])
+	if !ok {
+		return
+	}
+	const tooltipW = 360.0
+	const tooltipH = 82.0
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+}
+
+func (r *Renderer) drawNavalEmbarkedArmyHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade || r.gs.PlayerFactionID == "" {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	aid, ok := r.embarkedArmyHitAt(float64(mx), float64(my))
+	if !ok {
+		return
+	}
+	fleet := r.gs.Armies[aid]
+	if fleet == nil || fleet.OwnerID != string(r.gs.PlayerFactionID) {
+		return
+	}
+	title, detail, ok := navalEmbarkedArmyTooltipText(fleet)
 	if !ok {
 		return
 	}
