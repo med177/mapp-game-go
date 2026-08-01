@@ -911,6 +911,9 @@ func (r *Renderer) resetMapRegionDoubleClick() {
 }
 
 func (r *Renderer) selectMapRegion(rid world.RegionID) {
+	if rid != "" && rid != r.merchantRouteHighlight {
+		r.merchantRouteHighlight = ""
+	}
 	r.SelectedArmy = ""
 	r.clearArmySplitSelection()
 	if r.SelectedRegion != rid {

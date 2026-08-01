@@ -23,6 +23,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea`; doğrulama:
   `go test ./internal/render -run '^TestMerchantRoute' -count=1`.
 
+- 2026-08-01: Merchant rota satırı seçildiğinde satırdaki hedef deniz haritada
+  seçili deniz vurgusuyla işaretleniyor. Vurgu panel kapanınca ve başka filo
+  seçilince korunuyor; oyuncu başka bir bölge seçtiğinde temizleniyor. Açık
+  ordu paneli kapanıyor ve hedef normal bölge seçiminden farklı altın/cyan
+  reticle ile gösteriliyor. Regression:
+  `TestMerchantRouteHighlightClearsWhenAnotherRegionIsSelected`,
+  `TestMerchantRouteSelectionFocusesTargetAndClosesArmyPanel`;
+  doğrulama: `go test ./internal/render -run '^TestMerchantRoute' -count=1`.
+
+- 2026-08-01: Hedef denizde bonus kazanan merchant filolarının yuvarlak harita
+  ikonunun sol üstüne bonus miktarını (`+1`/`+2`) gösteren küçük altın rozet
+  eklendi. Rozet yalnız `MerchantFleetTradeRouteBonus()` pozitif olduğunda
+  çiziliyor. Regression: `TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus`;
+  doğrulama: `go test ./internal/render -run '^TestMerchant' -count=1`.
+
 - 2026-08-01: Merchant rotaları artık bağlı tüm ticaret merkezi denizlerini
   birleştirmek yerine gerçek yönlü liman çiftinin hedef denizini kullanıyor.
   Gemlik → Özi örneği `black_open_4` / `Karadeniz Açık 4` olarak doğrulandı;

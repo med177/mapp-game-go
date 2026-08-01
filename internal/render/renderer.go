@@ -76,6 +76,7 @@ type Renderer struct {
 
 	// Seçim
 	SelectedRegion           world.RegionID
+	merchantRouteHighlight   world.RegionID
 	SelectedArmy             army.ArmyID
 	splitSelectedUnits       map[int]bool
 	selectedFactionPanel     faction.FactionID
@@ -798,6 +799,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.invalidateShapeEditSession()
 	r.resetCamera()
 	r.SelectedRegion = ""
+	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -901,6 +903,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 		return
 	}
 	r.SelectedRegion = ""
+	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -1187,9 +1190,13 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	r.ensureWorldMap()
 
-	// Seçili bölge veya donanmanın deniz bölgesini vurgula
+	// Seçili bölge, atanmış merchant rotasının hedef denizi veya donanmanın
+	// mevcut deniz bölgesini vurgula. Rota hedefi, oyuncu başka bir bölge
+	// seçene kadar seçili bölgeden önceliklidir.
 	highlightRegion := world.RegionID(r.SelectedRegion)
-	if r.SelectedArmy != "" {
+	if r.merchantRouteHighlight != "" && r.gs.Regions[r.merchantRouteHighlight] != nil {
+		highlightRegion = r.merchantRouteHighlight
+	} else if r.SelectedArmy != "" {
 		if a, ok := r.gs.Armies[r.SelectedArmy]; ok {
 			if reg, ok2 := r.gs.Regions[a.RegionID]; ok2 && reg.IsSea {
 				highlightRegion = a.RegionID
@@ -1214,6 +1221,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if tradeOverlayVisible {
 		r.drawTradeModeBackdrop(screen)
 	}
+	r.drawMerchantRouteHighlight(screen)
 
 	var armyPositions []armyIconPos
 	if r.mapMode != MapModeTrade {
@@ -1393,6 +1401,30 @@ func (r *Renderer) drawSelectionHighlight(screen *ebiten.Image) {
 		vector.StrokeCircle(screen, float32(sx), float32(sy+4), 16, 3, color.RGBA{255, 220, 70, 230}, true)
 		vector.StrokeCircle(screen, float32(sx), float32(sy+4), 22, 1.5, color.RGBA{30, 20, 5, 180}, true)
 	}
+}
+
+// drawMerchantRouteHighlight, rota hedefini normal bölge seçimi tinti yerine
+// belirgin altın/cyan bir hedef işaretiyle gösterir.
+func (r *Renderer) drawMerchantRouteHighlight(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.merchantRouteHighlight == "" {
+		return
+	}
+	region := r.gs.Regions[r.merchantRouteHighlight]
+	if region == nil || !region.IsSea {
+		return
+	}
+
+	sx, sy := r.regionScreenPos(region)
+	outer := color.RGBA{255, 205, 70, 245}
+	inner := color.RGBA{70, 225, 255, 245}
+	vector.FillCircle(screen, float32(sx), float32(sy), 7, color.RGBA{16, 25, 32, 220}, true)
+	vector.StrokeCircle(screen, float32(sx), float32(sy), 31, 3, outer, true)
+	vector.StrokeCircle(screen, float32(sx), float32(sy), 21, 2, inner, true)
+	vector.FillCircle(screen, float32(sx), float32(sy), 5, outer, true)
+	vector.StrokeLine(screen, float32(sx-40), float32(sy), float32(sx-31), float32(sy), 2, outer, true)
+	vector.StrokeLine(screen, float32(sx+31), float32(sy), float32(sx+40), float32(sy), 2, outer, true)
+	vector.StrokeLine(screen, float32(sx), float32(sy-40), float32(sx), float32(sy-31), 2, outer, true)
+	vector.StrokeLine(screen, float32(sx), float32(sy+31), float32(sx), float32(sy+40), 2, outer, true)
 }
 
 func (r *Renderer) selectedArmyIsPlayerOwned() bool {
@@ -2279,6 +2311,24 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
+	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
+		badgeX := cx - 14
+		badgeY := cy - 14
+		vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{35, 27, 12, 245}, false)
+		vector.FillCircle(screen, badgeX, badgeY, 7.5, color.RGBA{244, 195, 52, 255}, true)
+		DrawTextCentered(screen, "+"+itoa(bonus), float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})
+	}
+}
+
+func (r *Renderer) merchantTradeBonusForArmy(a *army.Army) int {
+	if r == nil || r.gs == nil || a == nil || !a.IsNaval || a.TradeRouteKey == "" {
+		return 0
+	}
+	route := merchantRouteForKey(r.gs, a.TradeRouteKey)
+	if route == nil {
+		return 0
+	}
+	return r.gs.MerchantFleetTradeRouteBonus(a, route)
 }
 
 func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float32 {

@@ -130,8 +130,102 @@ func TestMerchantRouteSeaDisplayNameUsesTargetSeaRegion(t *testing.T) {
 	}
 }
 
+func TestMerchantRouteHighlightClearsWhenAnotherRegionIsSelected(t *testing.T) {
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				"target_sea": {ID: "target_sea", IsSea: true},
+				"other":      {ID: "other"},
+			},
+		},
+		merchantRouteHighlight: "target_sea",
+	}
+
+	r.selectMapRegion("target_sea")
+	if r.merchantRouteHighlight != "target_sea" {
+		t.Fatalf("hedef deniz seçildiğinde rota vurgusu korunmalıydı: %q", r.merchantRouteHighlight)
+	}
+
+	r.selectMapRegion("other")
+	if r.merchantRouteHighlight != "" {
+		t.Fatalf("başka bölge seçildiğinde rota vurgusu temizlenmeliydi: %q", r.merchantRouteHighlight)
+	}
+}
+
+func TestMerchantRouteSelectionFocusesTargetAndClosesArmyPanel(t *testing.T) {
+	gs := &state.GameState{
+		Year: 1300,
+		Regions: map[world.RegionID]*world.Region{
+			"from":    {ID: "from", OwnerID: "from_faction", Neighbors: []world.RegionID{"aegean"}},
+			"to":      {ID: "to", OwnerID: "to_faction", Neighbors: []world.RegionID{"marmara"}},
+			"aegean":  {ID: "aegean", IsSea: true},
+			"marmara": {ID: "marmara", IsSea: true},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from", Links: []world.RegionID{"to"}},
+			{ID: "to", Links: []world.RegionID{"from"}},
+		}},
+	}
+	r := &Renderer{
+		gs:                     gs,
+		SelectedArmy:           "fleet",
+		splitSelectedUnits:     map[int]bool{0: true},
+		merchantRouteHighlight: "",
+	}
+	r.focusMerchantRouteTarget(&economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction"})
+
+	if r.merchantRouteHighlight != "marmara" {
+		t.Fatalf("rota seçimi hedef denizi işaretlemeliydi: %q", r.merchantRouteHighlight)
+	}
+	if r.SelectedArmy != "" {
+		t.Fatalf("rota seçimi açık ordu panelinin seçimini temizlemeliydi: %q", r.SelectedArmy)
+	}
+	if len(r.splitSelectedUnits) != 0 {
+		t.Fatalf("rota seçimi ordu bölme seçimini temizlemeliydi: %+v", r.splitSelectedUnits)
+	}
+}
+
 func TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea(t *testing.T) {
 	if got := merchantRouteSeaDisplayName(nil, nil); got != "Bilinmiyor" {
 		t.Fatalf("eksik rota denizi için fallback yanlış: %q", got)
+	}
+}
+
+func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction"}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from":    {ID: "from", OwnerID: "from_faction", Neighbors: []world.RegionID{"aegean"}},
+			"to":      {ID: "to", OwnerID: "to_faction", Neighbors: []world.RegionID{"marmara"}},
+			"aegean":  {ID: "aegean", IsSea: true},
+			"marmara": {ID: "marmara", IsSea: true},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from", Links: []world.RegionID{"to"}},
+			{ID: "to", Links: []world.RegionID{"from"}},
+		}},
+		TradeRoutes: []*economy.TradeRoute{route},
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+	}
+	active := &army.Army{
+		ID: "active", OwnerID: "from_faction", IsNaval: true, RegionID: "marmara",
+		TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
+	}
+	away := *active
+	away.ID = "away"
+	away.RegionID = "aegean"
+	gs.Armies = map[army.ArmyID]*army.Army{"active": active, "away": &away}
+	r := &Renderer{gs: gs}
+
+	if got := r.merchantTradeBonusForArmy(active); got != 2 {
+		t.Fatalf("aktif hedef denizde merchant bonusu +2 olmalıydı, got=%d", got)
+	}
+	if got := r.merchantTradeBonusForArmy(&army.Army{IsNaval: true, RegionID: "marmara", Units: []army.Unit{{TypeID: "merchant_ship"}}}); got != 0 {
+		t.Fatalf("rotasız filo bonus rozeti üretmemeliydi, got=%d", got)
+	}
+	if got := r.merchantTradeBonusForArmy(&away); got != 0 {
+		t.Fatalf("hedef denizden uzaktaki filo bonus rozeti üretmemeliydi, got=%d", got)
 	}
 }

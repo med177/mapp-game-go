@@ -255,6 +255,19 @@ func (r *Renderer) closeMerchantRoutePanel() {
 	r.merchantRouteScroll = 0
 }
 
+func (r *Renderer) focusMerchantRouteTarget(route *economy.TradeRoute) {
+	if r == nil || r.gs == nil || route == nil {
+		return
+	}
+	seaID, ok := r.gs.MerchantTradeRouteTargetSeaRegion(route)
+	if !ok {
+		return
+	}
+	r.merchantRouteHighlight = seaID
+	r.SelectedArmy = ""
+	r.clearArmySplitSelection()
+}
+
 func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 	if r == nil || !r.showMerchantRoutePanel {
 		return
@@ -393,6 +406,7 @@ func (r *Renderer) handleMerchantRoutePanelInput() InputAction {
 	if route == nil {
 		return InputAction{}
 	}
+	r.focusMerchantRouteTarget(route)
 	r.closeMerchantRoutePanel()
 	return InputAction{Kind: ActionAssignMerchantRoute, ArmyID: aid, BuildingID: route.AssignmentKey()}
 }

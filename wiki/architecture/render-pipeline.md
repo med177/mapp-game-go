@@ -53,6 +53,13 @@ Her rota satırının ilk satırındaki sağ orta alan, rota state'indeki geçer
 `MerchantTradeRouteTargetSeaRegion()` sonucunu yalnız deniz adı olarak mavi
 renkte gösterir. Etiket rota adına yaklaştırılmıştır ve satır alanına göre
 kırpılır (`merchantRouteSeaDisplayName()`).
+Oyuncu bir rota satırını seçtiğinde aynı hedef deniz `merchantRouteHighlight`
+renderer state'ine yazılır ve `WorldMap.Refresh()` seçili deniz vurgusuyla
+haritada işaretler. Buna ek olarak hedefin merkezinde normal bölge seçimi
+tint'inden farklı altın/cyan reticle çizilir. Seçim sırasında açık ordu paneli
+kapatılır; rota hedefi panel kapansa veya başka bir filo seçilse de korunur,
+oyuncu başka bir bölge seçtiğinde temizlenir (`renderer.go`,
+`renderer_input.go`).
 
 Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
 `tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
@@ -271,6 +278,11 @@ Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyunc
 Nakliye kapasitesi olan oyuncu filolarında aynı alt bilgi bandında güç değerinin solunda `Taşıma: dolu/kapasite` gösterilir. Doluluk `Army.EmbarkedCount()`, kapasite ise `Army.TransportCapacity()` üzerinden okunur; savaş ve merchant filolarında nakliye kapasitesi yoksa bu metin çizilmez (`internal/render/army_panel.go`, `internal/army/army.go`).
 
 Oyuncuya ait merchant filosu seçildiğinde ordu detay panelinin alt bandında `ROTA ATA` düğmesi, mevcut görev durumu ve `Gemi bonusu: +N hacim/tur` bilgisi görünür. Bonus, filodaki merchant gemisi sayısını rota başına iki gemi sınırıyla ve filonun gerçek rota denizindeki konumuyla hesaplar; uygun konumda `konum uygun`, yanlış denizde `rota denizine git` uyarısı gösterilir. Düğme footer'ın içine üst ve alt boşlukla oturur; durum metni butonun gerçek geometrisinden sonra başlar ve kalan alana kırpılır. Düğme, geçerli aktif ticaret rotalarını modal listede gösterir; oyuncu rotayı seçebilir veya görevi kaldırabilir. Modal input'u normal harita/ordu input'unu bloke eder (`internal/render/{army_panel.go,merchant_route_panel.go,renderer_input.go}`, `internal/state/merchant_trade.go`, `internal/render/action.go`, `internal/game/game.go`).
+Hedef denizde aktif bonus üreten merchant filosunun harita üzerindeki yuvarlak
+ikonunun sol üstüne küçük altın daire rozet çizilir; rozet `+1` veya `+2`
+değerini gösterir. Değer `MerchantFleetTradeRouteBonus()` ile aynı konum,
+rota ve merchant gemisi sayısı hesabından türetilir; yanlış denizdeki veya
+rotasız filolarda rozet görünmez (`internal/render/renderer.go`).
 
 Merchant rota filtresi tarihsel ticaret merkezi bulunmayan aktif anlaşmaları da destekler. Tarafların sahip olduğu ve denize bağlı `port` binaları arasında bağlantı varsa rota paneli bu anlaşmayı listeler; `Ticaret` harita modunda oyuncunun kendi aktif anlaşmaları ilgili limanlar arasında tek turuncu renkli, sabit 12 px çizgi + 10 px boşluk paternli kesikli bezier koridor, uç işaretleri ve hacim etiketiyle çizilir. Koridor hover'ı liman adlarını, emtiayı, etkin hacmi, oyuncunun verdiği malı, aldığı altını veya ödediği altını ve aldığı malı tur başına gösterir (`internal/state/merchant_trade.go`, `internal/render/{trade_overlay.go,renderer.go}`).
 
