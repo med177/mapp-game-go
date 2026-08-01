@@ -36,7 +36,7 @@ func merchantTradeTestState() (*GameState, *economy.TradeRoute) {
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"merchant": {
-				ID: "merchant", OwnerID: "venice", RegionID: "adriatic", IsNaval: true,
+				ID: "merchant", OwnerID: "venice", RegionID: "med", IsNaval: true,
 				TradeRouteKey: route.AssignmentKey(),
 				Units: []army.Unit{
 					{TypeID: "merchant_ship", CurrentHP: 100},
@@ -117,12 +117,67 @@ func TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters(t *te
 		t.Fatalf("gerçek limanlar arasındaki rota çifti bulunmalıydı: %+v", pairs)
 	}
 	got := gs.MerchantTradeRouteSeaRegions(route)
-	if len(got) != 2 || got[0] != "black_sea_port" || got[1] != "marmara" {
-		t.Fatalf("liman fallback'i rota uçlarının denizlerini döndürmeliydi: %+v", got)
+	if len(got) != 1 || got[0] != "black_sea_port" {
+		t.Fatalf("liman çifti rotanın hedef denizini döndürmeliydi: %+v", got)
+	}
+	if target, ok := gs.MerchantTradeRouteTargetSeaRegion(route); !ok || target != "black_sea_port" {
+		t.Fatalf("kanonik hedef deniz yanlış: target=%s ok=%v", target, ok)
 	}
 	routes := gs.MerchantTradeRoutesForFleet(gs.Armies["merchant"])
 	if len(routes) != 1 || routes[0] != route {
 		t.Fatalf("tarihsel merkez olmadan aktif liman rotası merchant panelinde görünmeliydi: %+v", routes)
+	}
+}
+
+func TestMerchantTradeRouteUsesDestinationPortSeaForGemlikOzi(t *testing.T) {
+	route := &economy.TradeRoute{
+		FromFactionID: "ottoman", ToFactionID: "golden_horde",
+		Good: economy.GoodGrain, AmountPerTurn: 4, GoldPerUnit: 2,
+	}
+	gs := &GameState{
+		Year: 1300,
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {
+				ID: "bursa", OwnerID: "ottoman", Neighbors: []world.RegionID{"marmara"},
+				Settlements: []world.Settlement{{ID: "gemlik", NameTR: "Gemlik", Type: world.SettlementPort}},
+			},
+			"lower_ukrainian_steppe": {
+				ID: "lower_ukrainian_steppe", OwnerID: "golden_horde", Neighbors: []world.RegionID{"black_open_4"},
+				Settlements: []world.Settlement{{ID: "ozi", NameTR: "Özi", Type: world.SettlementPort}},
+			},
+			"marmara":      {ID: "marmara", IsSea: true, Neighbors: []world.RegionID{"bursa", "black_sea"}},
+			"black_sea":    {ID: "black_sea", IsSea: true, Neighbors: []world.RegionID{"marmara", "black_open_4"}},
+			"black_open_4": {ID: "black_open_4", NameTR: "Karadeniz Açık 4", IsSea: true, Neighbors: []world.RegionID{"black_sea", "lower_ukrainian_steppe"}},
+		},
+		TradeRoutes: []*economy.TradeRoute{route},
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"merchant": {
+				ID: "merchant", OwnerID: "ottoman", RegionID: "black_open_4", IsNaval: true,
+				TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{{TypeID: "merchant_ship"}},
+			},
+		},
+	}
+
+	pairs := gs.MerchantTradeRoutePortPairs(route)
+	if len(pairs) != 1 || pairs[0].FromRegionID != "bursa" || pairs[0].ToRegionID != "lower_ukrainian_steppe" || pairs[0].ToSeaID != "black_open_4" {
+		t.Fatalf("Gemlik-Özi liman çifti yanlış: %+v", pairs)
+	}
+	if target, ok := gs.MerchantTradeRouteTargetSeaRegion(route); !ok || target != "black_open_4" {
+		t.Fatalf("Gemlik-Özi rotası Karadeniz Açık 4'ü hedeflemeli: target=%s ok=%v", target, ok)
+	}
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 1 {
+		t.Fatalf("Özi denizindeki merchant filosu bonus vermeli: got=%d", got)
+	}
+	gs.Armies["merchant"].RegionID = "marmara"
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 0 {
+		t.Fatalf("Gemlik tarafındaki deniz tek hedef kuralında bonus vermemeli: got=%d", got)
+	}
+	reverse := &economy.TradeRoute{FromFactionID: "golden_horde", ToFactionID: "ottoman"}
+	if target, ok := gs.MerchantTradeRouteTargetSeaRegion(reverse); !ok || target != "marmara" {
+		t.Fatalf("Özi -> Gemlik yönü Marmara denizini hedeflemeli: target=%s ok=%v", target, ok)
 	}
 }
 
@@ -136,7 +191,7 @@ func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	}
 	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
 	gs.Armies["blockader"] = &army.Army{
-		ID: "blockader", OwnerID: "genoa", RegionID: "adriatic", IsNaval: true,
+		ID: "blockader", OwnerID: "genoa", RegionID: "med", IsNaval: true,
 		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
 	}
 

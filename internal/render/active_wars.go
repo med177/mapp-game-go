@@ -127,6 +127,19 @@ func activeWarsPanelHit(mx, my float64) bool {
 	return activeWarsPanelRect().Hit(mx, my)
 }
 
+// activeWarsPanelInteractiveHit yalnızca gerçekten tıklanabilen savaş satırları
+// ve ortak kapatma düğmesi için pointer cursor üretir. Panelin geri kalanı
+// bilgi/scroll yüzeyidir; dışı ise harita input'una bırakılır.
+func activeWarsPanelInteractiveHit(r *Renderer, mx, my float64) bool {
+	if r == nil || !r.showActiveWars {
+		return false
+	}
+	if activeWarsPanelCloseButton().HitTest(mx, my) {
+		return true
+	}
+	return activeWarRowAt(mx, my, r.activeWarsBuf, r.activeWarsScroll) >= 0
+}
+
 func activeWarVisibleRows(viewport gameui.Rect) int {
 	rows := int((viewport.H + activeWarRowGap) / (activeWarRowH + activeWarRowGap))
 	if rows < 1 {

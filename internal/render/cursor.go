@@ -115,6 +115,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if pointer, handled := r.overlayPanelCursorHit(fx, fy); handled {
+		if pointer {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+		} else {
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		}
+		return
+	}
 	if r.showDiplomacy {
 		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -250,6 +258,32 @@ func (r *Renderer) updateCursorShape() {
 	}
 
 	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+}
+
+// overlayPanelCursorHit cursor önceliğini input ve draw stack'iyle aynı sırada
+// uygular. Üstteki panel kendi yüzeyindeyse alttaki panelin hover'ı görünmez.
+func (r *Renderer) overlayPanelCursorHit(fx, fy float64) (pointer, handled bool) {
+	if r == nil {
+		return false, false
+	}
+	r.ensureOverlayPanelOrder()
+	for i := r.overlayPanelOrderLen - 1; i >= 0; i-- {
+		panel := r.overlayPanelOrder[i]
+		if !r.overlayPanelVisible(panel) {
+			continue
+		}
+		switch panel {
+		case overlayPanelMerchantRoute:
+			return merchantRoutePanelInteractiveHit(r, fx, fy), true
+		case overlayPanelNavalMission:
+			return r.navalMissionPanelInteractiveHit(fx, fy), true
+		case overlayPanelActiveWars:
+			if activeWarsPanelHit(fx, fy) {
+				return activeWarsPanelInteractiveHit(r, fx, fy), true
+			}
+		}
+	}
+	return false, false
 }
 
 func (r *Renderer) historicalEventHovering(fx, fy float64) bool {

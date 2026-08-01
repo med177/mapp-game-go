@@ -133,6 +133,7 @@ type Renderer struct {
 	showMerchantRoutePanel bool
 	merchantRouteArmy      army.ArmyID
 	merchantRouteOptions   []*economy.TradeRoute
+	merchantRouteSeaLabels []string
 	merchantRouteScroll    int
 	showNavalMissionPanel  bool
 	navalMissionArmy       army.ArmyID
@@ -141,6 +142,11 @@ type Renderer struct {
 	navalMissionKind       army.NavalMissionKind
 	mapMode                MapMode
 	animationTick          int
+
+	// Utility panellerin çizim ve input önceliği: son açılan panel en sonda
+	// çizilir ve input/cursor taramasında ilk ele alınır.
+	overlayPanelOrder    [overlayPanelCount]overlayPanelID
+	overlayPanelOrderLen int
 
 	// Ana menü
 	menuTick        int
@@ -569,6 +575,8 @@ func New(gs *state.GameState) *Renderer {
 		editLandPassageSelected:     -1,
 		editLandPassageDragEndpoint: -1,
 		devNeighborListExpanded:     true,
+		overlayPanelOrder:           defaultOverlayPanelOrder(),
+		overlayPanelOrderLen:        overlayPanelCount,
 	}
 	r.resetCamera()
 	return r
@@ -1335,15 +1343,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
 	}
 
-	if r.showMerchantRoutePanel {
-		r.drawMerchantRoutePanel(screen)
-	}
-	if r.showNavalMissionPanel {
-		r.drawNavalMissionPanel(screen)
-	}
-	if r.showActiveWars {
-		drawActiveWarsPanel(screen, r.gs, r.activeWarsBuf, r.activeWarsScroll)
-	}
+	r.drawOverlayPanels(screen)
 
 	// 14. Bildirim mesajı (panellerin üstünde görünmeli)
 	if r.combatLogTimer > 0 {

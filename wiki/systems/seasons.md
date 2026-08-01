@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-07-19
+last_updated: 2026-08-01
 related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
@@ -36,7 +36,9 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 
 `applySeasonEffects(gs)` — tur çözümleme sırasında **ilk** çalışır.
 
-- Kış: Her ordu için birim hasar kontrolü
+- Kış: Her ordu için birim hasar kontrolü; hedef denizde aktif rota bonusu kazanan
+  merchant gemileri bu kış attrition'ından muaftır, aynı filodaki savaş/nakliye
+  gemileri normal kurala tabidir.
 - Hareket havuzu `ArmyMaxMovePoints()` ile hesaplanır: önce ordudaki en yavaş
   birimin `UnitType.MovementPoints` değeri alınır, sonra mevsim çarpanı uygulanır;
   komutan ve teknoloji bonusları bu iklimlendirilmiş tabana eklenir. 1300 senaryosunun

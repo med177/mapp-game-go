@@ -400,7 +400,7 @@ func applySeasonEffects(gs *state.GameState) {
 
 	if s.IsWinter() {
 		for _, a := range gs.Armies {
-			a.ApplyWinterAttrition()
+			applyWinterAttrition(gs, a)
 		}
 	}
 
@@ -421,6 +421,53 @@ func applySeasonEffects(gs *state.GameState) {
 		a.MaxMovePoints = mp
 		a.ResetMovePoints()
 	}
+}
+
+func applyWinterAttrition(gs *state.GameState, a *army.Army) (lost int) {
+	if a == nil {
+		return 0
+	}
+	route := merchantRouteForFleet(gs, a)
+	merchantRouteActive := a.IsNaval && route != nil && gs.MerchantFleetTradeRouteBonus(a, route) > 0
+	if !merchantRouteActive {
+		return a.ApplyWinterAttrition()
+	}
+
+	surviving := a.Units[:0]
+	for _, u := range a.Units {
+		if isMerchantTradeUnit(gs, u) {
+			surviving = append(surviving, u)
+			continue
+		}
+		u.CurrentHP = u.CurrentHP * 90 / 100
+		if u.CurrentHP <= 0 {
+			lost++
+			continue
+		}
+		surviving = append(surviving, u)
+	}
+	a.Units = surviving
+	return lost
+}
+
+func merchantRouteForFleet(gs *state.GameState, fleet *army.Army) *economy.TradeRoute {
+	if gs == nil || fleet == nil || fleet.TradeRouteKey == "" {
+		return nil
+	}
+	for _, route := range gs.TradeRoutes {
+		if route != nil && route.AssignmentKey() == fleet.TradeRouteKey {
+			return route
+		}
+	}
+	return nil
+}
+
+func isMerchantTradeUnit(gs *state.GameState, u army.Unit) bool {
+	if u.TypeID == "merchant_ship" {
+		return true
+	}
+	unitType := gs.UnitTypes[u.TypeID]
+	return unitType != nil && unitType.Category == army.CategoryNavalTrade
 }
 
 func replenishDockedFleet(gs *state.GameState, fleet *army.Army, amount int) int {

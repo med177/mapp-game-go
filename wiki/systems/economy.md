@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-07-29
+last_updated: 2026-08-01
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -116,19 +116,19 @@ Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur 
 filolarını yeniden değerlendirir:
 
 - Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; rota başına üst sınır `+2`dir.
-- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve en az bir geçerli kıyısal
-  ticaret merkezi veya aktif liman denizinde bulunmalıdır. İki tarihsel merkez varsa
-  link grafiği bağlantısı aranır; merkez ağı uç üretmiyorsa tarafların gerçek limanları
-  ve bağlı denizler fallback olarak kullanılır.
+- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve yönlü liman çiftinin hedef
+  denizinde bulunmalıdır. Gemlik → Özi gibi rotalarda hedef deniz, Özi tarafındaki
+  gerçek liman denizidir; bağlı tüm denizler aynı anda geçerli sayılmaz.
 - Askıdaki rota `ApplyTradeRoutes()` tarafından atlanır. Kaynak mal ya da hedef altın
   yetersizse merchant katkısı bedava gelir üretmez; rota o tur gerçekleşmez.
 - AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
   yönünü korur ve save/load sonrası yeniden bağlanabilir.
 - Oyuncu seçili merchant filosundaki `ROTA ATA` düğmesiyle aynı geçerli rota listesinden
   görev seçebilir veya görevi kaldırabilir. Atama `SetMerchantTradeRoute()` ile doğrulanır;
-  filo rota uçlarının geçerli denizinde değilse görev kayıtlı kalır ancak merchant bonusu
-  filo doğru denize ulaşana kadar uygulanmaz. AI tarafı aynı `TradeRouteKey` modelini
-  otomatik rota seçimi ve deniz hareketiyle kullanır.
+  filo hedef denizde değilse görev kayıtlı kalır ancak merchant bonusu filo doğru denize
+  ulaşana kadar uygulanmaz. Aktif hedef denizde bonus kazanan merchant gemileri kış
+  attrition'ından muaftır; aynı filodaki savaş ve nakliye gemileri normal kış hasarı alır.
+  AI tarafı aynı `TradeRouteKey` modelini otomatik rota seçimi ve deniz hareketiyle kullanır.
 
 Merchant rotası olmayan tarihsel merkez bağlantılı anlaşmalar panelden gizlenmez; aktif
 limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` bu liman çiftini

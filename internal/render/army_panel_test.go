@@ -285,6 +285,43 @@ func TestCommanderPortraitHitRectStaysInsideCommanderColumn(t *testing.T) {
 	}
 }
 
+func TestArmyPanelCommanderUnassignButtonUsesPrimaryCommanderAndOwnArmy(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth = oldW
+		ScreenHeight = oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	gs := &state.GameState{
+		PlayerFactionID: "osm",
+		Armies: map[army.ArmyID]*army.Army{
+			"owned": {
+				ID: "owned", OwnerID: "osm", Commander: &army.Commander{ID: "cmd_1"},
+			},
+			"empty": {ID: "empty", OwnerID: "osm"},
+			"enemy": {
+				ID: "enemy", OwnerID: "byz", Commander: &army.Commander{ID: "cmd_2"},
+			},
+		},
+	}
+
+	button, ok := buildArmyPanelCommanderUnassignButton(gs, "owned")
+	if !ok {
+		t.Fatal("kendi ana komutanı için ayırma düğmesi oluşturulmalıydı")
+	}
+	if !button.HitTest(button.X+button.W/2, button.Y+button.H/2) ||
+		!ArmyPanelCommanderUnassignHitTest(button.X+button.W/2, button.Y+button.H/2, gs, "owned") {
+		t.Fatal("ordu panelindeki Komutanı Ayır düğmesi kendi rect'inde hit olmalıydı")
+	}
+	if _, ok := buildArmyPanelCommanderUnassignButton(gs, "empty"); ok {
+		t.Fatal("komutansız ordu için ayırma düğmesi çizilmemeliydi")
+	}
+	if _, ok := buildArmyPanelCommanderUnassignButton(gs, "enemy"); ok {
+		t.Fatal("düşman ordusu için ayırma düğmesi çizilmemeliydi")
+	}
+}
+
 func TestScoutedEnemyRevealCountUsesFullIntelWhenEnabled(t *testing.T) {
 	if got := scoutedEnemyRevealCount(8, true, 0.75); got != 8 {
 		t.Fatalf("tam istihbaratta tüm birimler görünmeliydi, got=%d", got)

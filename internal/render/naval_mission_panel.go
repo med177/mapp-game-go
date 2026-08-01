@@ -183,6 +183,7 @@ func (r *Renderer) openNavalMissionPanel() {
 	r.navalMissionTargeting = false
 	r.navalMissionKind = ""
 	r.showNavalMissionPanel = true
+	r.bringOverlayPanelToFront(overlayPanelNavalMission)
 }
 
 func (r *Renderer) closeNavalMissionPanel() {
@@ -217,6 +218,40 @@ func navalMissionPanelRowRect(layout navalMissionPanelLayout, visibleRow int) ga
 
 func navalMissionPanelRowButton(rect gameui.Rect) gameui.Button {
 	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "")
+}
+
+// navalMissionPanelInteractiveHit, cursor ve input tarafında aynı görünür
+// satır/kapatma düğmesi geometry'sini kullanır.
+func (r *Renderer) navalMissionPanelInteractiveHit(fx, fy float64) bool {
+	if r == nil || !r.showNavalMissionPanel || r.gs == nil {
+		return false
+	}
+	layout := navalMissionPanelLayoutFor(r.navalMissionPanelRowCount())
+	if layout.close.HitTest(fx, fy) {
+		return true
+	}
+	if !r.navalMissionPanelRect().Hit(fx, fy) {
+		return false
+	}
+
+	rowCount := r.navalMissionPanelRowCount()
+	maxScroll := rowCount - navalMissionPanelVisibleRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	start := r.navalMissionScroll
+	if start < 0 {
+		start = 0
+	}
+	if start > maxScroll {
+		start = maxScroll
+	}
+	visibleRow := int((fy - float64(layout.rowY+5)) / float64(navalMissionPanelRowH))
+	if visibleRow < 0 || visibleRow >= navalMissionPanelVisibleRows {
+		return false
+	}
+	row := visibleRow + start
+	return row >= 0 && row < rowCount && navalMissionPanelRowRect(layout, visibleRow).Hit(fx, fy)
 }
 
 func (r *Renderer) drawNavalMissionPanel(screen *ebiten.Image) {

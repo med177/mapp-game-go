@@ -7,6 +7,45 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-01: Ordu detay panelindeki komutan kartına, ana komutan mevcut
+  olduğunda kırmızı `Komutanı Ayır` düğmesi eklendi. Düğme yalnız oyuncunun
+  ordusunda görünür; çizim, hit-test ve cursor aynı ortak `gameui.Button`
+  rect'inden türetilir ve mevcut komutan havuza iade akışını kullanır.
+  Regression: `TestArmyPanelCommanderUnassignButtonUsesPrimaryCommanderAndOwnArmy`;
+  doğrulama: `go test ./internal/render -run
+  '^Test(ArmyPanelCommanderUnassignButtonUsesPrimaryCommanderAndOwnArmy|CommanderPanel|ArmyPanelInteractiveHit)' -count=1`.
+
+- 2026-08-01: Merchant rota modalı satırlarına, filonun gitmesi gereken geçerli
+  hedef deniz bölgesi mavi etiketle eklendi. Etiket doğrudan
+  `MerchantTradeRouteSeaRegions()` state yardımcısından türetiliyor; satır alanına
+  göre kırpılıyor. Regression:
+  `TestMerchantRouteSeaDisplayNameUsesTargetSeaRegion`,
+  `TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea`; doğrulama:
+  `go test ./internal/render -run '^TestMerchantRoute' -count=1`.
+
+- 2026-08-01: Merchant rotaları artık bağlı tüm ticaret merkezi denizlerini
+  birleştirmek yerine gerçek yönlü liman çiftinin hedef denizini kullanıyor.
+  Gemlik → Özi örneği `black_open_4` / `Karadeniz Açık 4` olarak doğrulandı;
+  merchant bonusu, AI hareketi ve abluka aynı tek hedef denizden türetiliyor.
+  AI merchant üretimi rakip hedef denizinde değil kendi uç limanında yapıyor.
+  Regression: `TestMerchantTradeRouteUsesDestinationPortSeaForGemlikOzi`;
+  doğrulama: `go test ./internal/state ./internal/ai ./internal/render`.
+
+- 2026-08-01: Hedef denizde bonus kazanan merchant gemileri kış attrition'ından
+  muaf tutuldu; aynı filodaki savaş veya nakliye gemileri normal kış hasarını
+  almaya devam ediyor. Hedef denizden uzaktaki veya rotasız merchant gemileri
+  muaf değil. Regression:
+  `TestApplySeasonEffectsProtectsActiveMerchantShipsFromWinterAttrition`;
+  doğrulama: `go test ./internal/game`.
+
+- 2026-08-01: Merchant rota, Donanma Görevi ve Aktif Savaşlar panellerinin
+  cursor hover'ı ortak satır/kapatma düğmesi hit-test'lerine bağlandı. Aynı
+  paneller için son açılanı öne alan overlay stack'i çizim, input ve cursor
+  önceliğini birlikte yönetiyor; panel kapanınca alttaki açık panel görünür.
+  Regression: `TestOverlayPanelOrderBringsLastOpenedPanelToFront`,
+  `TestOverlayPanelCursorUsesFrontPanelSurface`; doğrulama:
+  `go test ./internal/render -run '^Test(OverlayPanel|MerchantRoutePanel|NavalMissionPanel|ActiveWars)' -count=1`.
+
 - 2026-08-01: AI savaş ilanı kararı artık yalnız hedef devletin gücüne bakmıyor.
   Hedefin vassalları, dış müttefikleri ve müttefik vassalları savunma koalisyonu
   gücüne dahil ediliyor; müttefik ordularının hedef kara bölgelerine mesafesi

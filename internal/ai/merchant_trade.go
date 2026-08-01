@@ -68,7 +68,7 @@ func aiMerchantTradeResourceReserve(gs *state.GameState, fid faction.FactionID) 
 		return economy.ResourceCost{}
 	}
 	target := aiLeastCoveredMerchantRoute(gs, routes)
-	port, _ := aiOwnedTradeCenterPort(gs, fid, target.seas)
+	port, _ := aiOwnedMerchantProductionPort(gs, fid, target.route)
 	if port == nil {
 		return economy.ResourceCost{}
 	}
@@ -246,7 +246,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	}
 
 	target := aiLeastCoveredMerchantRoute(gs, routes)
-	port, sea := aiOwnedTradeCenterPort(gs, fid, target.seas)
+	port, sea := aiOwnedMerchantProductionPort(gs, fid, target.route)
 	if port == nil || sea == "" {
 		return false
 	}
@@ -400,6 +400,48 @@ func aiOwnedTradeCenterPort(gs *state.GameState, fid faction.FactionID, allowedS
 			if bestPort == nil || aiBuildingLevel(port, "port") > aiBuildingLevel(bestPort, "port") || aiBuildingLevel(port, "port") == aiBuildingLevel(bestPort, "port") && port.ID < bestPort.ID {
 				bestPort = port
 				bestSea = neighborID
+			}
+		}
+	}
+	return bestPort, bestSea
+}
+
+// aiOwnedMerchantProductionPort merchant filosunu rota hedef denizine
+// göndermeden önce üretimin yapılacağı kendi limanını bulur. Hedef deniz rakip
+// fraksiyonun kıyısındaysa üretim doğrudan orada yapılamayacağı için gerçek
+// liman çifti varsa kendi uç limanı, yoksa kendi aktif ticaret merkezi seçilir.
+func aiOwnedMerchantProductionPort(gs *state.GameState, fid faction.FactionID, route *economy.TradeRoute) (*world.Region, world.RegionID) {
+	if gs == nil || route == nil || fid == "" {
+		return nil, ""
+	}
+	for _, pair := range gs.MerchantTradeRoutePortPairs(route) {
+		if route.FromFactionID == string(fid) {
+			return gs.Regions[pair.FromRegionID], pair.FromSeaID
+		}
+		if route.ToFactionID == string(fid) {
+			return gs.Regions[pair.ToRegionID], pair.ToSeaID
+		}
+	}
+
+	var bestPort *world.Region
+	var bestSea world.RegionID
+	for _, def := range gs.TradeCenters.Centers {
+		if !def.ActiveInYear(gs.Year) {
+			continue
+		}
+		port := gs.Regions[def.ID]
+		if port == nil || port.OwnerID != string(fid) || port.IsSea {
+			continue
+		}
+		for _, seaID := range aiSortedNeighborIDs(port) {
+			sea := gs.Regions[seaID]
+			if sea == nil || !sea.IsSea || sea.IsLocked {
+				continue
+			}
+			if bestPort == nil || aiBuildingLevel(port, "port") > aiBuildingLevel(bestPort, "port") ||
+				aiBuildingLevel(port, "port") == aiBuildingLevel(bestPort, "port") && port.ID < bestPort.ID {
+				bestPort = port
+				bestSea = seaID
 			}
 		}
 	}

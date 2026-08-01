@@ -39,6 +39,7 @@ const (
 	armyPanelCommanderPortrait = float32(92)
 	armyPanelCommanderCardPad  = float32(10)
 	armyPanelCommanderSectionY = float32(8)
+	armyPanelCommanderButtonY  = float32(10)
 )
 
 type armyPanelLayout struct {
@@ -189,6 +190,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
 	drawArmyCommanderCard(screen, a, layout)
+	if btn, ok := buildArmyPanelCommanderUnassignButton(gs, aid); ok {
+		gameui.DrawButton(screen, btn, commanderUnassignButtonStyle(), sharedTextRenderer{})
+	}
 
 	// ── Birim kartları — 20 slot, boş olanlar silik görünür ─────────────
 	const totalSlots = army.MaxArmySize
@@ -324,12 +328,12 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	drawPanelBorder(screen, px, py, panelW, panelH)
 	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
 
-	factionName := "Bilinmeyen Fraksiyon"
+	factionName := "Bilinmeyen Devlet"
 	factionCol := ColorGold
 	for fid, f := range gs.Factions {
 		if string(fid) == a.OwnerID {
 			factionName = f.NameTR
-			factionCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			factionCol = ColorWhite
 			break
 		}
 	}
@@ -338,9 +342,9 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 		location = r.NameTR
 	}
 
-	headerLeft := "Rakip Ordu: " + factionName
+	headerLeft := factionName
 	if location != "" {
-		headerLeft += "  —  " + location
+		headerLeft += "  |  " + location
 	}
 	headerRight := "Birim sayısı bilinmiyor"
 	rightW := MeasureText(headerRight, FaceSmall)
@@ -530,12 +534,12 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	drawPanelBorder(screen, px, py, panelW, panelH)
 	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
 
-	factionName := "Bilinmeyen Fraksiyon"
+	factionName := "Bilinmeyen Devlet"
 	factionCol := ColorGold
 	for fid, f := range gs.Factions {
 		if string(fid) == a.OwnerID {
 			factionName = f.NameTR
-			factionCol = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			factionCol = ColorWhite
 			break
 		}
 	}
@@ -543,9 +547,9 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	if r, ok := gs.Regions[a.RegionID]; ok {
 		location = r.NameTR
 	}
-	headerLeft := "Keşfedilen Düşman: " + factionName
+	headerLeft := factionName
 	if location != "" {
-		headerLeft += "  —  " + location
+		headerLeft += "  |  " + location
 	}
 	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat (%" + itoa(int(revealRatio*100+0.5)) + ")"
 	if fullIntel {
@@ -712,6 +716,24 @@ func buildArmyPanelCloseButton() gameui.Button {
 	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
 	btn.IconSize = 12
 	return btn
+}
+
+func buildArmyPanelCommanderUnassignButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Button{}, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || a.OwnerID != string(gs.PlayerFactionID) || a.Commander == nil {
+		return gameui.Button{}, false
+	}
+	layout := armyPanelGeometry()
+	return gameui.NewButton(
+		float64(layout.commanderX+(layout.commanderW-float32(commanderPanelButtonW))/2),
+		float64(layout.commanderY+layout.commanderH-float32(commanderPanelButtonH)-armyPanelCommanderButtonY),
+		commanderPanelButtonW,
+		commanderPanelButtonH,
+		"Komutanı Ayır",
+	), true
 }
 
 func commanderPortraitHitRect(gs *state.GameState, aid army.ArmyID) (gameui.Rect, bool) {
@@ -978,6 +1000,11 @@ func CommanderPortraitHitTest(fx, fy float64, gs *state.GameState, aid army.Army
 	return ok && rect.Hit(fx, fy)
 }
 
+func ArmyPanelCommanderUnassignHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
+	btn, ok := buildArmyPanelCommanderUnassignButton(gs, aid)
+	return ok && btn.HitTest(fx, fy)
+}
+
 func ArmyPanelBoundsHit(fx, fy float64, gs *state.GameState, aid army.ArmyID) bool {
 	rect, ok := armyDetailPanelRect(gs, aid)
 	return ok && rect.Hit(fx, fy)
@@ -1043,6 +1070,9 @@ func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyI
 		return true
 	}
 	if navalMissionButtonHit(fx, fy, gs, aid) {
+		return true
+	}
+	if ArmyPanelCommanderUnassignHitTest(fx, fy, gs, aid) {
 		return true
 	}
 	if CommanderPortraitHitTest(fx, fy, gs, aid) {

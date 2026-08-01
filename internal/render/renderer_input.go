@@ -34,11 +34,11 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showImperialPanel {
 		return r.handleImperialPanelInput()
 	}
-	if r.showMerchantRoutePanel {
-		return r.handleMerchantRoutePanelInput()
-	}
-	if r.showNavalMissionPanel || r.navalMissionTargeting {
+	if r.navalMissionTargeting {
 		return r.handleNavalMissionPanelInput()
+	}
+	if action, handled := r.handleOverlayPanelInput(); handled {
+		return action
 	}
 
 	// Onay diyaloğu açıkken normal input engellenir
@@ -575,6 +575,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.showActiveWars = !r.showActiveWars
 		if !r.showActiveWars {
 			r.activeWarsScroll = 0
+		} else {
+			r.bringOverlayPanelToFront(overlayPanelActiveWars)
 		}
 		return InputAction{}
 	}
@@ -762,6 +764,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		if r.selectedArmyIsPlayerOwned() && navalMissionButtonHit(fx, fy, r.gs, r.SelectedArmy) {
 			r.openNavalMissionPanel()
 			return InputAction{}
+		}
+		if r.selectedArmyIsPlayerOwned() && ArmyPanelCommanderUnassignHitTest(fx, fy, r.gs, r.SelectedArmy) {
+			return InputAction{Kind: ActionUnassignCommander, ArmyID: r.SelectedArmy}
 		}
 		if r.selectedArmyIsPlayerOwned() && CommanderPortraitHitTest(fx, fy, r.gs, r.SelectedArmy) {
 			r.OpenCommanderPanel(r.SelectedArmy)

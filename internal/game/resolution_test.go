@@ -188,6 +188,57 @@ func TestApplySeasonEffectsPreservesMovementUsageForGrainEconomy(t *testing.T) {
 	}
 }
 
+func TestApplySeasonEffectsProtectsActiveMerchantShipsFromWinterAttrition(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "player", ToFactionID: "partner"}
+	gs := &state.GameState{
+		Month: 12,
+		Regions: map[world.RegionID]*world.Region{
+			"source":     {ID: "source", OwnerID: "player", Neighbors: []world.RegionID{"source_sea"}},
+			"target":     {ID: "target", OwnerID: "partner", Neighbors: []world.RegionID{"target_sea"}},
+			"source_sea": {ID: "source_sea", IsSea: true},
+			"target_sea": {ID: "target_sea", IsSea: true},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "source", Links: []world.RegionID{"target"}},
+			{ID: "target", Links: []world.RegionID{"source"}},
+		}},
+		TradeRoutes: []*economy.TradeRoute{route},
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade, MovementPoints: 3},
+			"warship":       {ID: "warship", Category: army.CategoryNavalWar, MovementPoints: 3},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID: "fleet", OwnerID: "player", RegionID: "target_sea", IsNaval: true,
+				TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{
+					{TypeID: "merchant_ship", CurrentHP: 80},
+					{TypeID: "warship", CurrentHP: 80},
+				},
+			},
+		},
+	}
+
+	applySeasonEffects(gs)
+
+	units := gs.Armies["fleet"].Units
+	if units[0].CurrentHP != 80 {
+		t.Fatalf("aktif rota hedefindeki merchant gemisi kış attrition almamalıydı, got=%d", units[0].CurrentHP)
+	}
+	if units[1].CurrentHP != 72 {
+		t.Fatalf("aynı filodaki savaş gemisi kış attrition almaya devam etmeli, got=%d", units[1].CurrentHP)
+	}
+
+	// Rota atanmış olsa bile filo hedef denizden uzaktaysa merchant gemisi
+	// bonus üretmez ve normal kış attrition'ı alır.
+	units[0].CurrentHP = 80
+	units[1].CurrentHP = 80
+	gs.Armies["fleet"].RegionID = "source_sea"
+	applySeasonEffects(gs)
+	if units[0].CurrentHP != 72 {
+		t.Fatalf("hedef denizden uzaktaki merchant gemisi normal kış attrition almalıydı, got=%d", units[0].CurrentHP)
+	}
+}
+
 func TestGrainEconomyStatusUsesStockpileMonthsAndShortageLevels(t *testing.T) {
 	warning := grainEconomyStatus("player", 30, 0, 10, 0, 0)
 	if warning.MonthsOfSupply != 2 || warning.SupplyLevel != state.GrainSupplyWarning || warning.Shortage != 0 {

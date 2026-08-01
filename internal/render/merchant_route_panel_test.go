@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 )
 
 func TestMerchantRouteButtonOnlyTargetsPlayerMerchantFleet(t *testing.T) {
@@ -104,5 +106,32 @@ func TestMerchantRoutePanelRowGeometryMatchesExpandedHeight(t *testing.T) {
 	}
 	if second.Y-first.Y != float64(merchantRoutePanelRowH) {
 		t.Fatalf("rota satırları genişletilmiş row yüksekliğini kullanmıyor: first=%+v second=%+v", first, second)
+	}
+}
+
+func TestMerchantRouteSeaDisplayNameUsesTargetSeaRegion(t *testing.T) {
+	gs := &state.GameState{
+		Year: 1300,
+		Regions: map[world.RegionID]*world.Region{
+			"from":    {ID: "from", OwnerID: "from_faction", Neighbors: []world.RegionID{"aegean"}},
+			"to":      {ID: "to", OwnerID: "to_faction", Neighbors: []world.RegionID{"marmara"}},
+			"aegean":  {ID: "aegean", NameTR: "Ege Denizi", IsSea: true},
+			"marmara": {ID: "marmara", NameTR: "Marmara Denizi", IsSea: true},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from", Links: []world.RegionID{"to"}},
+			{ID: "to", Links: []world.RegionID{"from"}},
+		}},
+	}
+	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction"}
+
+	if got := merchantRouteSeaDisplayName(gs, route); got != "Marmara Denizi" {
+		t.Fatalf("rota denizleri yanlış gösteriliyor: %q", got)
+	}
+}
+
+func TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea(t *testing.T) {
+	if got := merchantRouteSeaDisplayName(nil, nil); got != "Bilinmiyor" {
+		t.Fatalf("eksik rota denizi için fallback yanlış: %q", got)
 	}
 }

@@ -149,6 +149,13 @@ func commanderPanelUnassignEmbarkedButton(gs *state.GameState, aid army.ArmyID) 
 	return gameui.NewButton(panel.X+24, panel.Y+panel.H-54, commanderPanelButtonW, commanderPanelButtonH, "Taşınanı Ayır"), true
 }
 
+func commanderUnassignButtonStyle() gameui.ButtonStyle {
+	return gameui.ButtonStyle{
+		BG: color.RGBA{80, 35, 25, 230}, Border: color.RGBA{190, 90, 65, 255},
+		Text: ColorWhite, BorderWidth: 1,
+	}
+}
+
 func commanderPanelListViewport(gs *state.GameState, aid army.ArmyID) gameui.Rect {
 	panel := commanderPanelRect()
 	top := panel.Y + commanderPanelListTop
@@ -340,10 +347,10 @@ func (r *Renderer) drawCommanderDetail(screen *ebiten.Image, current *army.Army)
 	}
 
 	if btn, ok := commanderPanelUnassignEmbarkedButton(r.gs, current.ID); ok {
-		gameui.DrawButton(screen, btn, gameui.ButtonStyle{BG: color.RGBA{80, 35, 25, 230}, Border: color.RGBA{190, 90, 65, 255}, Text: ColorWhite, BorderWidth: 1}, sharedTextRenderer{})
+		gameui.DrawButton(screen, btn, commanderUnassignButtonStyle(), sharedTextRenderer{})
 	}
 	if btn, ok := commanderPanelUnassignButton(r.gs, current.ID); ok {
-		gameui.DrawButton(screen, btn, gameui.ButtonStyle{BG: color.RGBA{80, 35, 25, 230}, Border: color.RGBA{190, 90, 65, 255}, Text: ColorWhite, BorderWidth: 1}, sharedTextRenderer{})
+		gameui.DrawButton(screen, btn, commanderUnassignButtonStyle(), sharedTextRenderer{})
 	}
 }
 

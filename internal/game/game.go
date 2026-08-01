@@ -3561,7 +3561,7 @@ func (g *Game) assignMerchantTradeRoute(fleetID army.ArmyID, routeKey string) {
 	}
 	message := "Merchant filosu " + routeKey + " ticaret rotasına atandı."
 	if !g.gs.MerchantFleetSupportsTradeRoute(fleet, route) {
-		message += " Bonus için filoyu rotanın ticaret merkezi denizine taşıyın."
+		message += " Bonus için filoyu rotanın hedef denizine taşıyın."
 	}
 	g.renderer.ShowCombatResult(message)
 }

@@ -7,6 +7,15 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Merchant rota, Donanma Görevi ve Aktif Savaşlar panelleri `overlayPanelOrder`
+stack'i üzerinden çizim, input ve cursor önceliğini paylaşır. Yeni açılan panel
+stack'in en üstüne taşınır; çizim alttan üste, input/cursor taraması üstten alta
+yapılır. Kapatılan panel görünürlükten çıkar ve alttaki açık panel yeniden öne
+gelir (`internal/render/overlay_panel_stack.go`, `internal/render/cursor.go`).
+Panel satırları ve ortak `IconClose` düğmeleri `gameui.Button` hit-test'lerinden
+türetilir; `Button` içinde ayrı cursor alanı tutulmaz, OS pointer merkezi
+renderer cursor akışından güncellenir.
+
 Alt harita modu HUD'ı (`Normal`/`Ticaret`) artık ekran altına değil minimap'in
 hemen üstüne hizalanır. Ticaret modunda açılan `Pazar` düğmesi de aynı kümenin
 üst satırında konumlanır. `mapModeHudRect()`, `tradeToggleButtonRect()` ve
@@ -40,6 +49,10 @@ ile `Label` primitive'leri kullanılır. İki satırlı rota metinlerinin iç ku
 58 px satır yüksekliğine göre hesaplanır ve metin genişliği satırın gerçek
 alanına kırpılır; satır çizimi ve görünür satır hit-test'i ortak
 `merchantRoutePanelRowRect()` geometrisini izler.
+Her rota satırının ilk satırındaki sağ orta alan, rota state'indeki geçerli
+`MerchantTradeRouteTargetSeaRegion()` sonucunu yalnız deniz adı olarak mavi
+renkte gösterir. Etiket rota adına yaklaştırılmıştır ve satır alanına göre
+kırpılır (`merchantRouteSeaDisplayName()`).
 
 Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
 `tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
@@ -61,6 +74,14 @@ ile panel dışına taşamaz; `commanderPanelScroll` tekerlek ve klavye focus'u 
 satır bazında güncellenir. Scroll clamp'i ve `commanderPanelRowAt()` yalnız
 görünür satırları tıklanabilir kabul eder; taşan içerikte scrollbar yalnızca
 gerektiğinde gösterilir (`internal/render/commander_panel.go`).
+
+Oyuncuya ait ordunun komutan kartında ana komutan mevcutsa kartın altına kırmızı
+`Komutanı Ayır` düğmesi çizilir. Düğmenin rect'i çizim, hit-test ve cursor için
+`buildArmyPanelCommanderUnassignButton()` üzerinden paylaşılır; tıklama mevcut
+`ActionUnassignCommander` ve `GameState.UnassignCommanderFromArmy()` akışına
+gider. `EmbarkedCommander` bu düğmeye dahil değildir; taşınan kara komutanı
+komutan atama panelindeki ayrı `Taşınanı Ayır` aksiyonuyla yönetilir
+(`internal/render/{army_panel.go,commander_panel.go,renderer_input.go}`).
 
 Edit Mode Harita sekmesindeki `Başkent Yap` butonu, seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında günceller ve bekleyen başkent taşımasını temizler. Bu aksiyon, bölgesel ana yerleşimi belirleyen `Ana Yap` (`is_capital`) davranışından ayrıdır; undo/redo world snapshot'ı üzerinden çalışır ve `Kaydet` ile `factions.json` dosyasına yazılır.
 

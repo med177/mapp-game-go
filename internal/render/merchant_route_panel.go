@@ -72,6 +72,41 @@ func merchantRoutePanelRowButton(rect gameui.Rect) gameui.Button {
 	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "")
 }
 
+// merchantRoutePanelInteractiveHit, cursor ve input tarafında aynı görünür
+// satır/kapatma düğmesi geometry'sini kullanır. Satır araları ve panel içindeki
+// salt bilgi alanları etkileşimli kabul edilmez.
+func merchantRoutePanelInteractiveHit(r *Renderer, fx, fy float64) bool {
+	if r == nil || !r.showMerchantRoutePanel {
+		return false
+	}
+	layout := merchantRoutePanelLayoutFor(merchantRoutePanelRowCount(r))
+	if layout.close.HitTest(fx, fy) {
+		return true
+	}
+	if !merchantRoutePanelRect(r).Hit(fx, fy) {
+		return false
+	}
+
+	rowCount := merchantRoutePanelRowCount(r)
+	maxScroll := rowCount - merchantRoutePanelVisibleRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	start := r.merchantRouteScroll
+	if start < 0 {
+		start = 0
+	}
+	if start > maxScroll {
+		start = maxScroll
+	}
+	visibleRow := int((fy - float64(layout.rowY+5)) / float64(merchantRoutePanelRowH))
+	if visibleRow < 0 || visibleRow >= merchantRoutePanelVisibleRows {
+		return false
+	}
+	row := visibleRow + start
+	return row >= 0 && row < rowCount && merchantRoutePanelRowRect(layout, visibleRow).Hit(fx, fy)
+}
+
 func merchantRouteAssignmentButtonRect(layout armyPanelLayout) gameui.Rect {
 	footerY := layout.panelY + layout.panelH - siegeFooterH
 	return gameui.Rect{
@@ -114,6 +149,17 @@ func merchantRouteDisplayName(gs *state.GameState, route *economy.TradeRoute) st
 		return "Rota atanmadı"
 	}
 	return factionDisplayName(gs, route.FromFactionID) + " → " + factionDisplayName(gs, route.ToFactionID)
+}
+
+func merchantRouteSeaDisplayName(gs *state.GameState, route *economy.TradeRoute) string {
+	if gs == nil || route == nil {
+		return "Bilinmiyor"
+	}
+	seaID, ok := gs.MerchantTradeRouteTargetSeaRegion(route)
+	if !ok {
+		return "Bilinmiyor"
+	}
+	return regionDisplayName(gs, string(seaID))
 }
 
 func merchantRouteForKey(gs *state.GameState, key string) *economy.TradeRoute {
@@ -159,7 +205,7 @@ func drawMerchantRouteFooter(screen *ebiten.Image, gs *state.GameState, a *army.
 			bonusText += " · konum uygun"
 			bonusColor = color.RGBA{145, 220, 155, 240}
 		} else {
-			bonusText += " · rota denizine git"
+			bonusText += " · hedef denize git"
 			bonusColor = color.RGBA{230, 180, 105, 240}
 		}
 	}
@@ -189,8 +235,13 @@ func (r *Renderer) openMerchantRoutePanel() {
 	}
 	r.merchantRouteArmy = fleet.ID
 	r.merchantRouteOptions = r.gs.MerchantTradeRoutesForFleet(fleet)
+	r.merchantRouteSeaLabels = make([]string, len(r.merchantRouteOptions))
+	for i, route := range r.merchantRouteOptions {
+		r.merchantRouteSeaLabels[i] = merchantRouteSeaDisplayName(r.gs, route)
+	}
 	r.merchantRouteScroll = 0
 	r.showMerchantRoutePanel = true
+	r.bringOverlayPanelToFront(overlayPanelMerchantRoute)
 }
 
 func (r *Renderer) closeMerchantRoutePanel() {
@@ -200,6 +251,7 @@ func (r *Renderer) closeMerchantRoutePanel() {
 	r.showMerchantRoutePanel = false
 	r.merchantRouteArmy = ""
 	r.merchantRouteOptions = r.merchantRouteOptions[:0]
+	r.merchantRouteSeaLabels = r.merchantRouteSeaLabels[:0]
 	r.merchantRouteScroll = 0
 }
 
@@ -263,13 +315,22 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		if active {
 			textColor = color.RGBA{170, 235, 170, 255}
 		}
-		nameW := rowRect.W - 28
+		seaX := rowRect.X + rowRect.W*0.56
+		seaRight := rowRect.X + rowRect.W - 14
 		if active {
-			nameW -= 70
+			seaRight -= 70
 		}
+		seaW := seaRight - seaX
+		nameW := seaX - rowRect.X - 28
 		name := trimTextToWidth(merchantRouteDisplayName(r.gs, route), FaceMed, nameW)
 		detail := trimTextToWidth(fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), FaceSmall, rowRect.W-28)
 		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 7, W: nameW}, name, textColor, gameui.TextMedium, gameui.TextAlignStart)
+		seaLabel := "Bilinmiyor"
+		if routeIndex := row - 1; routeIndex >= 0 && routeIndex < len(r.merchantRouteSeaLabels) {
+			seaLabel = r.merchantRouteSeaLabels[routeIndex]
+		}
+		seaLabel = trimTextToWidth(seaLabel, FaceSmall, seaW)
+		drawUILabel(screen, gameui.Rect{X: seaX, Y: rowRect.Y + 10, W: seaW}, seaLabel, color.RGBA{100, 185, 255, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 27, W: rowRect.W - 28}, detail, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		if active {
 			drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 62, Y: rowRect.Y + 12, W: 48}, "AKTİF", color.RGBA{170, 235, 170, 255}, gameui.TextSmall, gameui.TextAlignEnd)

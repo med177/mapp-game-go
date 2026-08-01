@@ -21,62 +21,60 @@ type MerchantTradePortPair struct {
 	ToSeaID      world.RegionID
 }
 
-// MerchantTradeRouteSeaRegions, merchant filosunun çalışabileceği kıyı
-// denizlerini döner. Öncelik tarihsel ticaret merkezi/link ağıdır; bu ağ rota
-// ucu üretmiyorsa anlaşma taraflarının sahip olduğu, denize bağlı aktif
-// limanlar fallback olarak kullanılır.
-func (s *GameState) MerchantTradeRouteSeaRegions(route *economy.TradeRoute) []world.RegionID {
+// MerchantTradeRouteTargetSeaRegion rotanın tek kanonik hedef denizini döner.
+// Gerçek liman çiftleri varsa rota yönündeki hedef limanın denizi kullanılır;
+// böylece örneğin Gemlik -> Özi rotası Karadeniz Açık 4'te çalışır. Gerçek
+// liman çifti bulunamazsa aktif tarihsel ticaret merkezlerinin hedef tarafı
+// deterministik fallback olarak kullanılır.
+func (s *GameState) MerchantTradeRouteTargetSeaRegion(route *economy.TradeRoute) (world.RegionID, bool) {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
-		return nil
+		return "", false
 	}
-	fromCenters, toCenters, centers, adjacency := s.merchantTradeEndpointCenters(route)
-	if len(fromCenters) == 0 && len(toCenters) == 0 {
-		return s.merchantTradePortSeaRegions(route)
+	if pairs := s.MerchantTradeRoutePortPairs(route); len(pairs) > 0 {
+		if pairs[0].ToSeaID != "" {
+			return pairs[0].ToSeaID, true
+		}
 	}
 
-	validFrom := make(map[world.RegionID]bool, len(fromCenters))
-	validTo := make(map[world.RegionID]bool, len(toCenters))
-	if len(fromCenters) == 0 || len(toCenters) == 0 {
-		for _, centerID := range fromCenters {
-			validFrom[centerID] = true
-		}
-		for _, centerID := range toCenters {
-			validTo[centerID] = true
-		}
-	} else {
-		for _, fromID := range fromCenters {
-			for _, toID := range toCenters {
-				if !tradeCentersConnected(fromID, toID, adjacency) {
-					continue
+	fromCenters, toCenters, centers, adjacency := s.merchantTradeEndpointCenters(route)
+	if len(toCenters) == 0 {
+		return "", false
+	}
+	for _, toID := range toCenters {
+		connected := len(fromCenters) == 0
+		if !connected {
+			for _, fromID := range fromCenters {
+				if tradeCentersConnected(fromID, toID, adjacency) {
+					connected = true
+					break
 				}
-				validFrom[fromID] = true
-				validTo[toID] = true
 			}
 		}
+		if !connected {
+			continue
+		}
+		seaIDs := s.tradeCenterSeaIDs(centers[toID])
+		if len(seaIDs) > 0 {
+			return seaIDs[0], true
+		}
 	}
-	if len(validFrom) == 0 && len(validTo) == 0 {
-		return s.merchantTradePortSeaRegions(route)
-	}
-
-	seen := make(map[world.RegionID]struct{})
-	for centerID := range validFrom {
-		s.addTradeCenterSeas(seen, centers[centerID])
-	}
-	for centerID := range validTo {
-		s.addTradeCenterSeas(seen, centers[centerID])
-	}
-	result := make([]world.RegionID, 0, len(seen))
-	for seaID := range seen {
-		result = append(result, seaID)
-	}
-	sort.Slice(result, func(i, j int) bool { return result[i] < result[j] })
-	return result
+	return "", false
 }
 
-// MerchantTradeRoutePortPairs, tarihsel merkez ağı rota uçlarını
-// sağlayamadığında anlaşmanın taraflarına ait gerçek limanlar arasındaki
-// deniz bağlantılarını döner. Limanlar yalnızca gerçek deniz bölgeleriyle
-// kıyı komşuluğu varsa aday kabul edilir.
+// MerchantTradeRouteSeaRegions, geriye dönük ortak API sözleşmesi olarak
+// rotanın tek hedef denizini slice içinde döner. Bonus, AI hareketi ve abluka
+// bu aynı kanonik hedefi kullanır.
+func (s *GameState) MerchantTradeRouteSeaRegions(route *economy.TradeRoute) []world.RegionID {
+	seaID, ok := s.MerchantTradeRouteTargetSeaRegion(route)
+	if !ok {
+		return nil
+	}
+	return []world.RegionID{seaID}
+}
+
+// MerchantTradeRoutePortPairs, anlaşmanın taraflarına ait gerçek limanlar
+// arasındaki deniz bağlantılarını döner. Limanlar yalnızca gerçek deniz
+// bölgeleriyle kıyı komşuluğu varsa aday kabul edilir.
 func (s *GameState) MerchantTradeRoutePortPairs(route *economy.TradeRoute) []MerchantTradePortPair {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 		return nil
@@ -152,20 +150,6 @@ func (s *GameState) merchantTradePortEndpoints(ownerID string) []merchantTradePo
 	return result
 }
 
-func (s *GameState) merchantTradePortSeaRegions(route *economy.TradeRoute) []world.RegionID {
-	seen := make(map[world.RegionID]struct{})
-	for _, pair := range s.MerchantTradeRoutePortPairs(route) {
-		seen[pair.FromSeaID] = struct{}{}
-		seen[pair.ToSeaID] = struct{}{}
-	}
-	result := make([]world.RegionID, 0, len(seen))
-	for seaID := range seen {
-		result = append(result, seaID)
-	}
-	sort.Slice(result, func(i, j int) bool { return result[i] < result[j] })
-	return result
-}
-
 func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) bool {
 	if s == nil || start == "" || target == "" {
 		return false
@@ -219,7 +203,7 @@ func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *eco
 
 // MerchantFleetTradeRouteBonus, seçili merchant filosunun mevcut konumunda
 // rotaya sağlayacağı hacim bonusunu döner. Her rota en fazla iki merchant
-// gemisinden yararlanır; filo rota denizinde değilse bonus sıfırdır.
+// gemisinden yararlanır; filo rotanın hedef denizinde değilse bonus sıfırdır.
 func (s *GameState) MerchantFleetTradeRouteBonus(fleet *army.Army, route *economy.TradeRoute) int {
 	if s == nil || fleet == nil || route == nil || !s.MerchantFleetSupportsTradeRoute(fleet, route) {
 		return 0
@@ -233,8 +217,7 @@ func (s *GameState) MerchantFleetTradeRouteBonus(fleet *army.Army, route *econom
 
 // MerchantTradeRoutesForFleet oyuncunun/AI'ın merchant filosuna atanabilecek
 // aktif rotaları döner. Rota yalnızca filonun sahibi rota uçlarından biriyse
-// ve rota en az bir geçerli ticaret merkezi veya liman denizine sahipse
-// listelenir.
+// ve rota için kanonik bir hedef deniz bulunuyorsa listelenir.
 func (s *GameState) MerchantTradeRoutesForFleet(fleet *army.Army) []*economy.TradeRoute {
 	if s == nil || fleet == nil || !fleet.IsNaval || s.merchantShipCount(fleet) == 0 {
 		return nil
@@ -469,15 +452,18 @@ func (s *GameState) merchantTradeEndpointCenters(route *economy.TradeRoute) ([]w
 	return fromCenters, toCenters, centers, adjacency
 }
 
-func (s *GameState) addTradeCenterSeas(seen map[world.RegionID]struct{}, center *world.Region) {
+func (s *GameState) tradeCenterSeaIDs(center *world.Region) []world.RegionID {
 	if s == nil || center == nil {
-		return
+		return nil
 	}
+	seaIDs := make([]world.RegionID, 0, len(center.Neighbors))
 	for _, neighborID := range center.Neighbors {
 		if neighbor := s.Regions[neighborID]; neighbor != nil && neighbor.IsSea {
-			seen[neighborID] = struct{}{}
+			seaIDs = append(seaIDs, neighborID)
 		}
 	}
+	sort.Slice(seaIDs, func(i, j int) bool { return seaIDs[i] < seaIDs[j] })
+	return seaIDs
 }
 
 func tradeCentersConnected(start, target world.RegionID, adjacency map[world.RegionID][]world.RegionID) bool {
