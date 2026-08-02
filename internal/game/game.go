@@ -291,7 +291,9 @@ func (g *Game) Update() error {
 			}
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
-			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.NavalContactResolved, action.NavalContactMovementConsumed)
+		case render.ActionResolveNavalContact:
+			g.resolveNavalContactChoice(action.ChoiceIndex)
 		case render.ActionEmbarkArmy:
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
@@ -346,6 +348,8 @@ func (g *Game) Update() error {
 			g.cancelRecruitOrder(action.TargetRegion, action.BuildingID)
 		case render.ActionBuild:
 			g.buildBuilding(action.TargetRegion, action.BuildingID)
+		case render.ActionDemolishBuilding:
+			g.demolishBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionCancelBuilding:
 			g.cancelBuilding(action.TargetRegion, action.BuildingID)
 		case render.ActionResearch:
@@ -419,12 +423,22 @@ func (g *Game) Update() error {
 		}
 
 	case state.PhaseAITurn:
-		if action.Kind == render.ActionRespondDiplomacyOffer {
+		if action.Kind == render.ActionResolveNavalContact {
+			g.resolveNavalContactChoice(action.ChoiceIndex)
+		} else if action.Kind == render.ActionRespondDiplomacyOffer {
 			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
+		}
+		if g.gs.PendingNavalContact != nil {
+			g.presentPendingNavalContact()
+			return nil
 		}
 		g.updateAITurnSequence()
 
 	case state.PhaseTurnResolution:
+		if action.Kind == render.ActionResolveNavalContact {
+			g.resolveNavalContactChoice(action.ChoiceIndex)
+			return nil
+		}
 		g.resolveTurn()
 
 	case state.PhasePauseMenu:
@@ -977,6 +991,7 @@ func (g *Game) resolveTurn() {
 	unlocked := checkRegionUnlocks(g.gs)
 	g.showRegionUnlockNotifications(unlocked)
 	if g.gs.Phase != state.PhaseGameOver {
+		g.presentPendingNavalContact()
 		// Aktif araştırma yoksa oyuncu için uygun sonraki teknoloji otomatik başlatılır.
 		g.autoStartResearchIfIdle()
 		g.gs.Phase = state.PhasePlayerTurn
@@ -1854,6 +1869,73 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s seviye inşaatı başladı! Lv%d→Lv%d (%d tur)", b.NameTR, count+1, count+2, turnsRequired))
 }
 
+// demolishBuilding oyuncunun kendi bölgesindeki tamamlanmış bir bina seviyesini kaldırır.
+func (g *Game) demolishBuilding(rid world.RegionID, buildingID string) {
+	region, ok := g.gs.Regions[rid]
+	if !ok || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) {
+		g.renderer.ShowCombatResult("Sadece kendi bölgendeki binaları yıkabilirsin!")
+		return
+	}
+	if region.IsLocked {
+		g.renderer.ShowCombatResult("Bu bölgedeki bina yıkılamaz.")
+		return
+	}
+	if g.gs.SiegeAt(rid) != nil {
+		g.renderer.ShowCombatResult("Kuşatma altındaki bölgede bina yıkılamaz!")
+		return
+	}
+	if _, queued := g.hasProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID); queued {
+		g.renderer.ShowCombatResult("İnşaat devam ederken bina yıkılamaz; önce inşaatı iptal et.")
+		return
+	}
+	if _, ok := g.gs.BuildingTypes[buildingID]; !ok {
+		return
+	}
+	buildingIndex := -1
+	for i := len(region.Buildings) - 1; i >= 0; i-- {
+		if region.Buildings[i] == buildingID {
+			buildingIndex = i
+			break
+		}
+	}
+	if buildingIndex < 0 {
+		g.renderer.ShowCombatResult("Yıkılacak tamamlanmış bina bulunamadı.")
+		return
+	}
+	copy(region.Buildings[buildingIndex:], region.Buildings[buildingIndex+1:])
+	last := len(region.Buildings) - 1
+	region.Buildings[last] = ""
+	region.Buildings = region.Buildings[:last]
+	if buildingID == "port" && !region.HasPortBuilding() {
+		g.removeGeneratedPortSettlement(region)
+	}
+	if g.renderer != nil {
+		g.renderer.RebuildSettlementAnchors()
+		g.renderer.MarkMapDirty()
+		g.renderer.ShowCombatResult(g.gs.BuildingTypes[buildingID].NameTR + " yıkıldı.")
+	}
+}
+
+func (g *Game) removeGeneratedPortSettlement(region *world.Region) {
+	if region == nil {
+		return
+	}
+	prefix := string(region.ID) + "_port"
+	for i := len(region.Settlements) - 1; i >= 0; i-- {
+		settlement := region.Settlements[i]
+		generatedID := settlement.ID == prefix || strings.HasPrefix(settlement.ID, prefix+"_")
+		if settlement.Type != world.SettlementPort || !generatedID || settlement.Name != "Port" || settlement.NameTR != "Liman" {
+			continue
+		}
+		copy(region.Settlements[i:], region.Settlements[i+1:])
+		last := len(region.Settlements) - 1
+		region.Settlements[last] = world.Settlement{}
+		region.Settlements = region.Settlements[:last]
+		region.RecalculatePopulation()
+		return
+	}
+}
+
 // declareWar hedef fraksiyona savaş ilan eder.
 func (g *Game) declareWar(targetID faction.FactionID, calledAllies []faction.FactionID) {
 	result := diplomacy.ExecuteWarDeclaration(g.gs, g.gs.PlayerFactionID, targetID, calledAllies)
@@ -1862,6 +1944,8 @@ func (g *Game) declareWar(targetID faction.FactionID, calledAllies []faction.Fac
 		report := g.buildWarSummary(targetID, result)
 		g.renderer.ShowWarSummary(report)
 		g.renderer.AddEventDetail("[SAVAŞ] "+result.Message, warSummaryDetailText(report))
+		g.gs.QueueNavalContactForWar(g.gs.PlayerFactionID, targetID)
+		g.presentPendingNavalContact()
 	}
 }
 
@@ -3576,12 +3660,19 @@ func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKin
 		return
 	}
 	mission := army.NavalMission{Kind: kind, TargetRegionID: targetRegion, TargetFleetID: targetFleetID}
+	previousMission := fleet.NavalMission
+	missionChanged := previousMission == nil || previousMission.Kind != mission.Kind || previousMission.TargetRegionID != mission.TargetRegionID || previousMission.TargetFleetID != mission.TargetFleetID
 	if ok, reason := g.gs.AssignNavalMission(fleetID, mission); !ok {
 		g.renderer.ShowCombatResult(reason)
 		return
 	}
+	if missionChanged && (kind == army.NavalMissionPatrol || kind == army.NavalMissionBlockade) && fleet.IsAtSea() {
+		if enemy := g.gs.SelectBattleDefender(fleet, fleet.RegionID, true); enemy != nil {
+			g.beginNavalContact(fleet, enemy, fleet.RegionID, "", state.NavalContactMissionAssignment, false)
+		}
+	}
 	label := navalMissionLabelTR(kind)
-	message := fleetNameTR(g.gs, fleetID) + " için " + label + " görevi atandı."
+	message := "Seçilen Donanma için " + label + " görevi atandı."
 	if targetRegion != "" {
 		if region := g.gs.Regions[targetRegion]; region != nil && region.NameTR != "" {
 			message += " Hedef: " + region.NameTR + "."
@@ -3743,6 +3834,9 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			}
 
 			if g.startSiegeForArmy(landed.ID, target, false) {
+				if siege := g.gs.SiegeAt(target); siege != nil {
+					siege.NavalLanding = true
+				}
 				if g.renderer != nil {
 					g.renderer.MarkMapDirty()
 					msg := fmt.Sprintf("%s kıyısına çıkıldı; kale kuşatması başladı.", targetRegion.NameTR)
@@ -4579,6 +4673,23 @@ func (g *Game) moveArmyWithStance(aid army.ArmyID, target world.RegionID, battle
 // ile liman docking ve merkez settlement çıkarma niyetini ayırır. Settlement
 // verilmediğinde mevcut bölge tabanlı hareket davranışı korunur.
 func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance) {
+	g.moveArmyToSettlementWithStanceAndNavalAttack(aid, target, targetSettlementID, battleStance, false)
+}
+
+// moveArmyToSettlementWithStanceAndNavalAttack, normal hareket ile savaş
+// planından onaylanan açık deniz saldırısını ayırır. NavalAttack false ise
+// aynı denizde bulunan görevsiz filolarla savaş açılmaz; yalnız görevlerin
+// devriye-abluka otomatik karşılaşması savaş üretebilir.
+func (g *Game) moveArmyToSettlementWithStanceAndNavalAttack(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
+	g.moveArmyToSettlementWithStanceAndNavalContactResolved(aid, target, targetSettlementID, battleStance, navalAttack, contactResolved...)
+}
+
+// moveArmyToSettlementWithStanceAndNavalContactResolved, temas kararı iki
+// tarafta da Çatış olduktan sonra aynı deniz için savaş çözümünü yeniden temas
+// üretmeden çalıştırır.
+func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
+	resolved := len(contactResolved) > 0 && contactResolved[0]
+	contactMovementConsumed := len(contactResolved) > 1 && contactResolved[1]
 	battleStance = combat.NormalizeBattleStance(battleStance)
 	a, ok := g.gs.Armies[aid]
 	if !ok || a.OwnerID != string(g.gs.PlayerFactionID) {
@@ -4586,7 +4697,7 @@ func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.Regi
 	}
 	aid = g.deployGarrisonArmy(aid)
 	a = g.gs.Armies[aid]
-	if a.MovePoints <= 0 {
+	if a.MovePoints <= 0 && !(resolved && a.IsNaval && a.RegionID == target) {
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
 	}
@@ -4614,15 +4725,14 @@ func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.Regi
 			break
 		}
 	}
-	if !isNeighbor {
-		return
-	}
-
 	targetRegion, ok := g.gs.Regions[target]
 	if !ok {
 		return
 	}
 	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
+	if !isNeighbor && !(resolved && navalSeaMove && target == a.RegionID) {
+		return
+	}
 	if navalSeaMove && a.IsDocked() {
 		// RegionID deniz rotası için korunur; açık denize çıkışta gerçek
 		// konum docked settlement olmaktan çıkıp hedef deniz bölgesi olur.
@@ -4715,6 +4825,12 @@ func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.Regi
 		liftedSiegeRegion = activeSiege.RegionID
 	}
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
+	if navalSeaMove && !navalAttack && !resolved && enemyArmy != nil {
+		trigger := state.NavalContactMovement
+		if g.beginNavalContact(a, enemyArmy, target, a.RegionID, trigger, true) {
+			return
+		}
+	}
 	targetSiege := g.gs.SiegeAt(target)
 	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
@@ -4809,7 +4925,9 @@ func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.Regi
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
-				a.MovePoints--
+				if !contactMovementConsumed && a.MovePoints > 0 {
+					a.MovePoints--
+				}
 				if isAlliedRegion {
 					if navalSeaMove {
 						outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)

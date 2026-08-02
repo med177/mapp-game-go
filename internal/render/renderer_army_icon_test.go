@@ -126,6 +126,10 @@ func TestNavalArmyBadgesShareUpperRightAnchor(t *testing.T) {
 	if bonus.X+bonus.W/2 != badge.X+badge.W/2 || bonus.Y+bonus.H/2 != badge.Y+badge.H/2 {
 		t.Fatalf("bonus rozeti taşınan ordu rozetiyle aynı anchor'ı paylaşmalı: embarked=%+v bonus=%+v", badge, bonus)
 	}
+	merchant := merchantTradeBonusBadgeRect(100, 100)
+	if merchant.X+merchant.W/2 != bonus.X+bonus.W/2 || merchant.Y+merchant.H/2 != bonus.Y+bonus.H/2 {
+		t.Fatalf("ticaret rozeti diğer görev rozetleriyle aynı anchor'ı paylaşmalı: merchant=%+v bonus=%+v", merchant, bonus)
+	}
 }
 
 func TestNavalDamageBadgeUsesUpperLeftAnchor(t *testing.T) {

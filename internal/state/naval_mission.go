@@ -25,12 +25,25 @@ func (s *GameState) CanAssignNavalMission(fleetID army.ArmyID, mission army.Nava
 	}
 
 	switch mission.Kind {
-	case army.NavalMissionPatrol, army.NavalMissionBlockade:
+	case army.NavalMissionPatrol:
 		if !fleetHasWarship(s, fleet) {
 			return false, "Bu görev için savaş gemisi gerekir."
 		}
+		if !fleet.IsAtSea() || mission.TargetRegionID != fleet.RegionID {
+			return false, "Devriye görevi yalnızca filonun bulunduğu açık denizde atanabilir."
+		}
 		if !s.validSeaMissionTarget(mission.TargetRegionID) {
 			return false, "Hedef deniz bölgesi geçerli değil."
+		}
+	case army.NavalMissionBlockade:
+		if !fleetHasWarship(s, fleet) {
+			return false, "Bu görev için savaş gemisi gerekir."
+		}
+		if !fleet.IsAtSea() || mission.TargetRegionID != fleet.RegionID {
+			return false, "Abluka görevi yalnızca filonun bulunduğu açık denizde atanabilir."
+		}
+		if !s.IsValidNavalBlockadeTarget(fleet, mission.TargetRegionID) {
+			return false, "Abluka yalnızca düşman kıyısına komşu deniz bölgesine atanabilir."
 		}
 	case army.NavalMissionEscort:
 		if !fleetHasWarship(s, fleet) {
@@ -65,6 +78,25 @@ func (s *GameState) validSeaMissionTarget(regionID world.RegionID) bool {
 	return region != nil && region.IsSea && !region.IsLocked
 }
 
+// IsValidNavalBlockadeTarget, ablukanın yalnızca savaş halindeki düşmanın
+// kıyı kara bölgelerine komşu denizlerde kurulabilmesini sağlar.
+func (s *GameState) IsValidNavalBlockadeTarget(fleet *army.Army, seaID world.RegionID) bool {
+	if s == nil || fleet == nil || !fleet.IsNaval || !s.validSeaMissionTarget(seaID) {
+		return false
+	}
+	for _, land := range s.Regions {
+		if land == nil || land.IsSea || land.OwnerID == "" || land.OwnerID == fleet.OwnerID || !s.atWar(fleet.OwnerID, land.OwnerID) {
+			continue
+		}
+		for _, neighborID := range land.Neighbors {
+			if neighborID == seaID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // AssignNavalMission doğrulanmış görevi filoya kopyalar.
 func (s *GameState) AssignNavalMission(fleetID army.ArmyID, mission army.NavalMission) (bool, string) {
 	if ok, reason := s.CanAssignNavalMission(fleetID, mission); !ok {
@@ -86,6 +118,30 @@ func (s *GameState) ClearNavalMission(fleetID army.ArmyID) bool {
 	}
 	fleet.NavalMission = nil
 	return true
+}
+
+// NavalFleetsAutoEngage, otomatik deniz savaşının tek görev kombinasyonunu
+// tanımlar: aynı denizdeki Devriye filosu açıkça hedeflenmiş Abluka filosunu
+// yakalar. Görevsiz filo, escort veya nakliye bu kapıdan otomatik savaş açmaz.
+func (s *GameState) NavalFleetsAutoEngage(attacker, defender *army.Army) bool {
+	if s == nil || attacker == nil || defender == nil || attacker.ID == defender.ID || attacker.OwnerID == defender.OwnerID || !attacker.IsAtSea() || !defender.IsAtSea() || attacker.RegionID != defender.RegionID {
+		return false
+	}
+	return s.NavalFleetsAutoEngageAtSea(attacker, defender, attacker.RegionID)
+}
+
+// NavalFleetsAutoEngageAtSea, hareket eden filo henüz hedef denize yazılmadan
+// savunucu seçilirken görev çiftini hedef deniz üzerinde değerlendirir.
+func (s *GameState) NavalFleetsAutoEngageAtSea(attacker, defender *army.Army, seaID world.RegionID) bool {
+	if s == nil || attacker == nil || defender == nil || seaID == "" || attacker.ID == defender.ID || attacker.OwnerID == defender.OwnerID || !attacker.IsAtSea() || !defender.IsAtSea() {
+		return false
+	}
+	return navalMissionTargetsSea(attacker, army.NavalMissionPatrol, seaID) && navalMissionTargetsSea(defender, army.NavalMissionBlockade, seaID) ||
+		navalMissionTargetsSea(attacker, army.NavalMissionBlockade, seaID) && navalMissionTargetsSea(defender, army.NavalMissionPatrol, seaID)
+}
+
+func navalMissionTargetsSea(fleet *army.Army, kind army.NavalMissionKind, seaID world.RegionID) bool {
+	return fleet != nil && fleet.NavalMission != nil && fleet.NavalMission.Kind == kind && fleet.NavalMission.TargetRegionID == seaID
 }
 
 // NavalEscortDefenseBonus, aynı deniz bölgesindeki nakliye filosuna atanmış

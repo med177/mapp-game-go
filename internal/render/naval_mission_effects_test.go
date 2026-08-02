@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -94,10 +95,23 @@ func TestNavalMissionBonusBadgeUsesCompactActiveValues(t *testing.T) {
 func TestNavalMissionBonusTooltipIncludesTargetAndEffect(t *testing.T) {
 	gs := navalMissionEffectsFixture()
 	gs.Regions["sea"].NameTR = "Marmara"
+	gs.Factions = map[faction.FactionID]*faction.Faction{
+		"player": {ID: "player"},
+		"enemy":  {ID: "enemy"},
+	}
+	gs.Regions["coast"].OwnerID = "enemy"
+	gs.Regions["coast"].Settlements = []world.Settlement{{ID: "port", Type: world.SettlementPort}}
+	gs.Regions["coast"].BaseGoldIncome = 100
+	gs.Regions["coast"].TaxRate = 100
+	gs.Regions["coast"].Satisfaction = 50
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+	}
 	fleet := gs.Armies["patrol"]
+	fleet.Units[0].CurrentHP = army.MaxUnitHP
 	fleet.NavalMission = &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea"}
 	title, detail, ok := navalMissionBonusTooltipText(gs, fleet)
-	if !ok || title != "Abluka bonusu" || !strings.Contains(detail, "Marmara") || !strings.Contains(detail, "-%50") {
+	if !ok || title != "Abluka bonusu" || !strings.Contains(detail, "Marmara") || !strings.Contains(detail, "-%50") || !strings.Contains(detail, "Gelir katkısı (ganimet): +5 altın/tur") {
 		t.Fatalf("abluka tooltip hedef ve yüzde etkisini göstermeli: title=%q detail=%q ok=%t", title, detail, ok)
 	}
 }

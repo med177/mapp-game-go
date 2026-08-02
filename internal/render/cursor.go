@@ -15,6 +15,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeMove)
 		return
 	}
+	if r.navalMissionTargeting {
+		if r.navalMissionTargetHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+		} else {
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		}
+		return
+	}
 
 	// Açık paneller öncelikli kontrol
 	if r.showHistoricalEvent {
@@ -344,7 +352,7 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 	if acceptBtn.HitTest(fx, fy) {
 		return true
 	}
-	if hasThird && thirdBtn.HitTest(fx, fy) {
+	if hasThird && thirdBtn.Enabled && thirdBtn.HitTest(fx, fy) {
 		return true
 	}
 	return declineBtn.HitTest(fx, fy)
@@ -432,6 +440,9 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	// Ordu/donanma etiketi üzerinde mi?
 	if _, ok := r.navalMissionBonusHitAt(fx, fy); ok {
+		return true
+	}
+	if _, ok := r.merchantTradeBonusHitAt(fx, fy); ok {
 		return true
 	}
 	if _, ok := r.embarkedArmyHitAt(fx, fy); ok {

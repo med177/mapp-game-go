@@ -318,6 +318,7 @@ type confirmDialogState struct {
 	declineAction InputAction
 	declineActs   bool
 	thirdAction   InputAction
+	thirdDisabled bool
 	declineHook   func()
 }
 
@@ -511,19 +512,22 @@ func (r *Renderer) canEnterActiveSiegedRegion(attacker *army.Army, regionID worl
 }
 
 type battlePlanState struct {
-	show            bool
-	actionKind      ActionKind
-	battleContext   combat.BattleContext
-	pendingArmy     army.ArmyID
-	pendingEnemy    army.ArmyID
-	pendingDest     world.RegionID
-	regionName      string
-	defenderName    string
-	defenderFaction string
-	attackerSummary string
-	defenderSummary string
-	focus           int
-	previews        [3]combat.Preview
+	show                         bool
+	actionKind                   ActionKind
+	battleContext                combat.BattleContext
+	pendingArmy                  army.ArmyID
+	pendingEnemy                 army.ArmyID
+	pendingDest                  world.RegionID
+	regionName                   string
+	defenderName                 string
+	defenderFaction              string
+	attackerSummary              string
+	defenderSummary              string
+	focus                        int
+	previews                     [3]combat.Preview
+	navalAttack                  bool
+	navalContactResolved         bool
+	navalContactMovementConsumed bool
 }
 
 func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext) {
@@ -720,6 +724,13 @@ func (r *Renderer) CenterCameraOnRegion(rid world.RegionID) bool {
 	region := r.gs.Regions[rid]
 	if region == nil {
 		return false
+	}
+	if region.IsSea && r.worldMap != nil {
+		if ax, ay, ok := r.worldMap.RegionAnchor(region.ID); ok {
+			r.camX = float64(ax)
+			r.camY = float64(ay)
+			return true
+		}
 	}
 	r.camX = wcX(region.WorldX)
 	r.camY = wcY(region.WorldY)
@@ -1302,6 +1313,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
 		DrawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab)
 		r.drawNavalMissionBonusHoverTooltip(screen)
+		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
@@ -2457,14 +2469,19 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 			bonusRect := navalMissionBonusBadgeRect(cx, cy)
 			bonusCX := float32(bonusRect.X + bonusRect.W/2)
 			bonusCY := float32(bonusRect.Y + bonusRect.H/2)
-			vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
-			vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
+			if a.NavalMission.Kind == army.NavalMissionEscort {
+				drawNavalMissionEscortBadge(screen, bonusCX, bonusCY, bonusColor)
+			} else {
+				vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
+				vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
+			}
 			DrawTextCentered(screen, bonusText, float64(bonusCX), float64(bonusCY)-5, FaceTiny, navalMissionBonusBadgeTextColor(a.NavalMission.Kind))
 		}
 	}
 	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
-		badgeX := cx - 14
-		badgeY := cy - 14
+		badgeRect := merchantTradeBonusBadgeRect(cx, cy)
+		badgeX := float32(badgeRect.X + badgeRect.W/2)
+		badgeY := float32(badgeRect.Y + badgeRect.H/2)
 		vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{35, 27, 12, 245}, false)
 		vector.FillCircle(screen, badgeX, badgeY, 7.5, color.RGBA{244, 195, 52, 255}, true)
 		DrawTextCentered(screen, "+"+itoa(bonus), float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})

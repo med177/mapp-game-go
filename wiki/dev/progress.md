@@ -1,11 +1,191 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-01
+last_updated: 2026-08-02
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-02: Devriye ve abluka görevleri artık hedef bölge seçimi istemiyor;
+  görev panelinde yalnızca filonun bulunduğu açık denizde atanabiliyor ve doğrudan
+  mevcut deniz bölgesini hedefliyor. Abluka seçeneği yalnız savaş halindeki düşman
+  kıyısına komşu denizde görünür; limandaki filoda bu görevler gizlenir. Nakliye
+  hedef daireleri korunarak bu dairelerin üzerinde cursor pointer olur. Regression:
+  `TestPatrolAndBlockadeMustUseCurrentOpenSea`,
+  `TestNavalMissionOptionsHideBlockadeOutsideValidCurrentSea`,
+  `TestNavalMissionTargetCircleUsesPointerHitRadius`.
+
+- 2026-08-02: Abluka altındaki düşman kıyı şeridi overlay'i koyu gri yerine
+  koyu kırmızı olarak güncellendi; abluka yüzdesi ve kıyı kaplama geometrisi
+  değişmedi. Regression: `TestSelectedMapBorderUsesThreePixelStroke`.
+
+- 2026-08-02: Abluka görevi yalnızca savaş halindeki düşmanın kıyı kara
+  bölgelerine komşu denizlerde atanabilir hale getirildi. Okyanus ortası hedefler
+  state doğrulamasında reddediliyor; hedef seçimindeki merkez yuvarlakları da
+  aynı kuralla filtreleniyor ve üzerlerinde cursor parmağa dönüşüyor. Regression:
+  `TestNavalBlockadeRequiresEnemyCoastalSea`,
+  `TestNavalMissionTargetCircleUsesPointerHitRadius`.
+
+- 2026-08-02: Denizden çıkarma ile başlatılan düşman kale kuşatması barışla sona
+  erdiğinde kuşatan ordu artık düşman kıyısında bırakılmıyor. `NavalLanding`
+  işaretli kuşatmalar ortak barış akışında hedefe en yakın yeterli nakliye
+  filolarına geri yükleniyor; nakliye yoksa en yakın kendi kara bölgesine
+  çekiliyor. Oyuncu ve AI çıkarma yolları aynı state çözümünü kullanıyor.
+  Regression: `TestEvacuateNavalLandingSiegeReembarksAtNearestTransportFleet`,
+  `TestEvacuateNavalLandingSiegeRetreatsToNearestOwnedRegionWithoutFleet`,
+  `TestAcceptedPeaceEvacuatesNavalLandingSiege`; doğrulama:
+  `go test ./internal/state ./internal/diplomacy ./internal/game ./internal/ai`.
+
+- 2026-08-02: Abluka filosu bonus rozeti hover edildiğinde `%5/%10` ganimet
+  oranının hedef kıyı üretimindeki altın karşılığı `Gelir katkısı (ganimet):
+  +N altın/tur` biçiminde gösteriliyor. Tooltip, tek filo katkısını state
+  katmanındaki `BlockadeLootGoldForFleet()` hesabından alıyor. Regression:
+  `TestNavalMissionBonusTooltipIncludesTargetAndEffect`,
+  `TestRegionProductionAndBlockadeLootFollowRetentionRates`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-02: AI müttefikinin, oyuncunun zaten savaşta olduğu hedefe açtığı savaş
+  için gereksiz `Savaşa Katılım Çağrısı` modalı göstermesi düzeltildi. Savaş
+  çağrısı kuyruğu realm kökleri üzerinden mevcut savaşı kontrol ediyor; eski
+  geçersiz çağrılar da modal seçimine alınmıyor. Regression:
+  `TestExecuteWarDeclarationDoesNotQueuePlayerAlreadyAtWarWithTarget`,
+  `TestBestOfferIndexSkipsWarJoinOfferForExistingWar`; doğrulama:
+  `go test ./internal/diplomacy`.
+
+- 2026-08-02: Rotaya atanmış ticaret filolarının sarı `+N` rozeti görev
+  rozetleriyle aynı sağ-üst konuma taşındı. Rozet hover edildiğinde rota hacim
+  bonusu ve abluka sonrası tur başına altın katkısı tooltip'te gösteriliyor;
+  çizim, cursor ve hit-test ortak rozet geometry'sini kullanıyor. Regression:
+  `TestNavalArmyBadgesShareUpperRightAnchor`,
+  `TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-02: Deniz temasındaki `Geri Çekil` seçeneği, oyuncu filosunun hareket
+  puanı yoksa disabled hale getirildi. Renderer butonu pasif çiziyor; state
+  katmanı da geçersiz geri çekilme kararını reddediyor. Regression:
+  `TestNavalContactWithdrawRequiresMovementPoint`,
+  `TestNavalContactWithdrawButtonCanBeDisabled`.
+
+- 2026-08-02: Deniz temasında AI filo gücü ve hareket puanına göre karar veriyor.
+  Güçleri yakın görevsiz AI filosu `Çatış` seçiyor; karşı taraf `%125` veya daha
+  güçlüyse ve hareket hakkı varsa `Geri Çekil` seçip komşu denize dönüyor.
+  Abluka filosunun normal `Pozisyonu Koru` varsayılanı, güçlü düşman karşısında
+  geri çekilmeyi engellemiyor. Regression:
+  `TestUnassignedEnemyContactWithdrawsWhenOutmatched`,
+  `TestUnassignedEnemyContactClashesWhenComparable`.
+
+- 2026-08-02: Hareket puanı olmayan AI filosu geri çekilme kararı veremiyor;
+  AI-AI temasında seçilen geri çekilme gerçek deniz hareketine ve hareket puanı
+  düşümüne bağlandı. Geri çekilme maliyeti 2 hareket puanı olarak sabitlendi;
+  kalan puan daha azsa sıfırlanıyor. Regression:
+  `TestAIContactRetreatMovesWeakFleetBackAfterEntry`,
+  `TestAIContactCannotChooseWithdrawWithoutMovementPoint`,
+  `TestAIContactRetreatPrefersUnoccupiedSea`.
+
+- 2026-08-02: Oyuncu filosu düşman filosunun bulunduğu denize giderken temas
+  modalı artık hareketten önce açılmıyor. Filo önce hedef denize taşınıyor ve
+  hareket puanını harcıyor; ardından `Düşman Filo Tespit Edildi` modalı açılıyor.
+  Temas sonrası çatışma planı bu harcama bilgisini koruyor.
+
+- 2026-08-02: Filo zaten düşman filosuyla aynı denizdeyken yeni `Devriye` veya
+  `Abluka` görevi atanması temas akışına bağlandı. Aynı görev tekrar atanırsa
+  yeni modal açılmıyor; görev değişirse temas yeniden başlıyor. Regression:
+  `TestAssigningPatrolOrBlockadeInOccupiedSeaCreatesContactOnce`.
+
+- 2026-08-02: Deniz temasında `Geri Çekil` seçimi artık filoyu gerçek bir deniz
+  komşusuna taşıyor ve 2 hareket puanı harcıyor. Hareket sırasında hedef denize
+  giriş puanı zaten harcandıysa kalan puan sıfıra kadar düşürülüyor; rota
+  düşmansız deniz komşusunu tercih ediyor ve düşmanın geldiği kaynak denizi
+  dışarıda bırakıyor. Güvenli hedef yoksa geri çekilme pasif kalıyor. Regression:
+  `TestNavalContactWithdrawPrefersUnoccupiedSea`.
+  Regression: `TestNavalContactWithdrawMovesFleetToAnotherSea`.
+
+- 2026-08-02: Düşman denizine hareket sırasında `Deniz Muharebesi Planı` artık
+  temas modalından önce açılmıyor. Filo önce hedef denize hareket ediyor, iki
+  taraf da `Çatış` seçerse savaş duruşu planı açılıyor. Regression:
+  `TestNavalContactClashOpensBattlePlan`.
+
+- 2026-08-02: Port binası tamamlandığında oluşturulan otomatik `Liman`
+  settlement'ı artık ülke shape'inin rastgele kenarına değil, ilgili kara
+  bölgesi ile komşu deniz bölgesinin gerçek raster kıyı sınırına yerleşiyor.
+  Aynı `ShapeID`'yi paylaşan alt bölgelerde uzak/dağlık ülke kenarı fallback'te
+  kullanılmıyor. Regression: `TestCoastalSettlementPointUsesActualLandSeaRasterBoundary`,
+  `TestAutoPortSettlementPointRejectsSharedCountryShape`,
+  `TestCompleteBuildingPortCreatesPortSettlement`; doğrulama:
+  `go test ./internal/game ./internal/render ./internal/world`.
+
+- 2026-08-02: Bölge bilgi panelindeki tamamlanmış ve kuyruğu boş bina kartlarına
+  sağ üstte kırmızı `X` yıkım düğmesi eklendi. Tıklama ortak confirm modalını açıyor;
+  onay sonrası oyuncunun kendi bölgesinden bir bina seviyesi kaldırılıyor, kaynak
+  iadesi yapılmıyor ve portun otomatik yerleşim temizliği korunuyor. Regression:
+  `TestBuildingDemolishButtonIsAtCardTopRightAndHitTestable`,
+  `TestBuildingDemolitionOpensConfirmationDialog`,
+  `TestDemolishBuildingRemovesOneCompletedLevelWithoutRefund`; doğrulama:
+  `go test ./internal/render ./internal/game`.
+
+- 2026-08-02: Deniz temas olayı eklendi. Aynı denize giren düşman filoları veya
+  savaş açılışında zaten aynı denizde bulunan filolar önce `Düşman Filo Tespit
+  Edildi` modalında karşılıklı karar verir. `Çatış` yalnız iki taraf da seçerse
+  savaşı başlatır; `Geri Çekil` ve `Pozisyonu Koru` savaşsız temas çözümü üretir.
+  Devriye varsayılan olarak çatışır, abluka ve görevsiz filolar pozisyonunu korur.
+  Kapsam: `internal/state/naval_contact.go`, `internal/game/naval_contact.go`,
+  `internal/render/action.go`, `internal/ai/ai.go`; regression:
+  `TestNavalContactBattlesOnlyWhenBothClash`, `TestNavalContactMissionDefaults`,
+  `TestQueueNavalContactForWar`.
+
+- 2026-08-02: Devlet bilgi panelinin `Kaynaklar` bölümüne seçilen devletin
+  tur başı brüt altın geliri `Gelir +N/tur` satırı olarak eklendi. Oyuncu HUD'u
+  ve devlet paneli aynı `victory.GoldIncomeForFaction()` hesabını kullanıyor;
+  gelir mevcut bölge üretimi, ticaret rotaları, abluka etkisi, ganimet ve
+  teknoloji bonuslarıyla birlikte gösteriliyor. Regression: `TestCurrentGoldIncomeIncludesRegionsTradeAndTech`;
+  doğrulama: `go test ./internal/victory ./internal/render`.
+
+- 2026-08-02: Deniz filo görevleri ile doğrudan saldırı ayrıştırıldı. Görevsiz
+  filolar aynı denizde savaşmıyor; `Saldır` emri savaş planı onayından sonra
+  doğrudan deniz savaşı başlatıyor. `Devriye` yalnız görevli düşman `Abluka`
+  filosunu otomatik yakalıyor, `Abluka` sadece ekonomik baskı kuruyor ve
+  `Escort` yalnız bağlı nakliye filosunu koruyor. Eski görevsiz abluka ve
+  görevsiz deniz çarpışması kaldırıldı. Regression:
+  `TestUnassignedNavalFleetsCanShareSeaWithoutBattle`,
+  `TestPatrolAutomaticallyEngagesEnemyBlockade`,
+  `TestNavalFleetsAutoEngageOnlyPatrolAndBlockadePair`,
+  `TestUnassignedFleetDoesNotCreateBlockade`.
+
+- 2026-08-01: Abluka ekonomisi uygulandı. Limanlı bölgede `%50` abluka vergi,
+  yerel ticaret ve bölgesel mal üretimini `%75` seviyesinde bırakıyor; `%100`
+  abluka `%50` seviyesine indiriyor. Ablukacı etkili katkısına göre `%50` için
+  `%5`, `%100` için `%10` altın ve mal loot'u alıyor. Bölge paneli anında
+  `sonraki tur yerel -%X` bilgisini, üst HUD ise azaltılmış üretim/geliri gösteriyor.
+  Kapsam: `internal/{state/{state.go,blockade_economy.go},game/resolution.go,victory/victory.go,render/panel.go}`;
+  regression: `TestRegionBlockadeEconomicEffectUsesApprovedRetentionAndLootRates`,
+  `TestRegionProductionAndBlockadeLootFollowRetentionRates`,
+  `TestApplyEconomyTickAppliesBlockadeOutputAndBlockaderLoot`.
+
+- 2026-08-01: Abluka altındaki liman bölgelerinin kara-deniz kıyı sınırı kalın
+  koyu gri overlay ile gösteriliyor. `RegionBlockadePercent()` sonucu toplam kıyı
+  uzunluğuna uygulanıyor; `%50` yarıyı, `%100` tamamını boyuyor. Cache imzası
+  abluka yüzdesini izliyor. Regression: `TestBlockadeCoastlineUsesBlockadePercentOfTotalCoast`;
+  doğrulama: `go test ./internal/render ./internal/state -count=1`.
+
+- 2026-08-01: Kendi, vassal ve müttefik limanlı kara bölgelerine komşu deniz
+  hücreleri donanmalar için güvenli kıyı sayılıyor. Bu hücrelerde kış gemi
+  yıpranması ve embarked sefer yıpranması uygulanmıyor; limansız dost kıyılarda
+  normal yıpranma sürüyor. Güvenli bölgeden çıkışta eski limansızlık sayacı
+  taşınmıyor. Ortak kapı
+  `GameState.CanFleetAvoidSeaAttrition()` ile iki çözümleme akışında kullanılıyor.
+  Regression: `TestFriendlyCoastalSeaPreventsNavalAttrition`; doğrulama:
+  `go test ./internal/game ./internal/state -run 'Test(FriendlyCoastalSeaPreventsNavalAttrition|ApplySeasonEffectsProtectsActiveMerchantShipsFromWinterAttrition|ApplyEmbarkedVoyageAttrition)' -count=1`.
+
+- 2026-08-01: Bölge panelinde ardıl devlet elenmişken `Tahıl Yardımı` ve
+  `Özgürleştir` düğmeleri aynı aksiyon bandında ayrıştırıldı; tahıl yardımı sola,
+  özgürleştirme sağa hizalandı. Özgürleştirme hover'ı ardıl devlet adını gösterir.
+  Regression: `TestOwnRegionActionButtonsStaySeparatedForLiberation`; doğrulama:
+  `go test ./internal/render -count=1`.
+
+- 2026-08-01: Escort bonus rozeti daireden düz üst kenarlı, altı eğri birleşen
+  kalkan siluetine dönüştürüldü; yeşil-haki dolgu ve mevcut 20 px rozet alanı
+  korundu. Doğrulama: `go test ./internal/render -run 'TestNavalMission.*(Badge|Color)|TestNavalMissionBonus' -count=1`.
 
 - 2026-08-01: Escort görev bonus rozeti sarıdan yeşil-haki renge çevrildi;
   devriye, abluka ve ticaret bonus renkleri korunuyor. Regression:
@@ -144,7 +324,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   seçili deniz vurgusuyla işaretleniyor. Vurgu panel kapanınca ve başka filo
   seçilince korunuyor; oyuncu başka bir bölge seçtiğinde temizleniyor. Açık
   ordu paneli kapanıyor ve hedef normal bölge seçiminden farklı altın/cyan
-  reticle ile gösteriliyor. Regression:
+  reticle ile gösteriliyor; kamera hedef denizin gerçek raster anchor'ına
+  odaklanıyor. Regression:
   `TestMerchantRouteHighlightClearsWhenAnotherRegionIsSelected`,
   `TestMerchantRouteSelectionFocusesTargetAndClosesArmyPanel`;
   doğrulama: `go test ./internal/render -run '^TestMerchantRoute' -count=1`.

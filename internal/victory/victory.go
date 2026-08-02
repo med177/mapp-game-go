@@ -2,6 +2,7 @@ package victory
 
 import (
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -137,8 +138,13 @@ func CurrentGoldIncome(gs *state.GameState) int {
 	if gs == nil {
 		return 0
 	}
-	fid := gs.PlayerFactionID
-	if gs.Factions[fid] == nil {
+	return GoldIncomeForFaction(gs, gs.PlayerFactionID)
+}
+
+// GoldIncomeForFaction seçilen devletin mevcut tur başı brüt altın gelirini
+// hesaplar. Oyuncu HUD'u ve devlet bilgi paneli aynı gelir hesabını kullanır.
+func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" || gs.Factions[fid] == nil {
 		return 0
 	}
 
@@ -162,14 +168,18 @@ func CurrentGoldIncome(gs *state.GameState) int {
 				tradeCapMod *= building.TradeCapacityMod
 			}
 		}
-		income += int(float64(region.GoldIncome()) * goldMod * float64(harvestMod) / 100)
+		retention := gs.RegionBlockadeOutputRetentionPercent(region)
+		income += state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
 		tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod)
 		tradeIncome = tradeIncome * seasonMod / 100
+		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
 		if fx.MarketGoldMod != 0 {
 			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
 		}
 		income += tradeIncome
 	}
+	loot := gs.BlockadeLootForFaction(fid)
+	income += loot.Gold
 
 	for _, route := range gs.TradeRoutes {
 		if route != nil && route.FromFactionID == string(fid) {

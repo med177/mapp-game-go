@@ -330,6 +330,7 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 	}
 	result := diplomacy.Execute(gs, fid, bestTarget, diplomacy.ActionDeclareWar)
 	if result.Applied || result.Accepted {
+		gs.QueueNavalContactForWar(fid, bestTarget)
 		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: bestTarget, Message: turnFactionName(gs, fid) + ": " + result.Message})
 	}
 }

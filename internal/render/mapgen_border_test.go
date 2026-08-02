@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image/color"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -134,6 +135,58 @@ func TestSelectedMapBorderUsesThreePixelStroke(t *testing.T) {
 	}
 	if got := mapBorderStyleStrokeWidth(mapBorderStyleStrong); got != mapBorderStrokeWidth {
 		t.Fatalf("normal border kalınlığı değişmemeli: got=%v want=%v", got, mapBorderStrokeWidth)
+	}
+	if got := mapBorderStyleStrokeWidth(mapBorderStyleBlockade); got != blockadeMapBorderStrokeWidth {
+		t.Fatalf("abluka kıyı çizgisi kalınlığı yanlış: got=%v want=%v", got, blockadeMapBorderStrokeWidth)
+	}
+	if got := mapBorderStyleColor(mapBorderStyleBlockade); got != (color.RGBA{128, 24, 24, 255}) {
+		t.Fatalf("abluka kıyı çizgisi rengi koyu kırmızı olmalı: got=%v", got)
+	}
+}
+
+func TestBlockadeCoastlineUsesBlockadePercentOfTotalCoast(t *testing.T) {
+	oldW, oldH := WorldW, WorldH
+	WorldW, WorldH = 5, 4
+	defer func() {
+		WorldW, WorldH = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sea":  {ID: "sea", IsSea: true},
+			"port": {ID: "port", OwnerID: "venice", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{Type: world.SettlementPort}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("genoa", "venice"): {FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_fleet": {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+		},
+	}
+	wm := &WorldMap{
+		regionAt:  make([]uint16, WorldW*WorldH),
+		regionIDs: []world.RegionID{"", "sea", "port"},
+	}
+	for y := 0; y < WorldH; y++ {
+		wm.regionAt[y*WorldW] = 1
+		for x := 1; x < WorldW; x++ {
+			wm.regionAt[y*WorldW+x] = 2
+		}
+	}
+
+	wm.rebuildBorderSegments(gs)
+	wm.updateBorderStyles(gs, "", MapModeNormal)
+	if len(wm.borderSegments) != 1 || wm.blockadeFractions[0] != 0.5 {
+		t.Fatalf("%%50 abluka toplam kıyının yarısını boyamalı: segments=%+v fractions=%+v", wm.borderSegments, wm.blockadeFractions)
+	}
+
+	gs.Armies["enemy_fleet"].Units = append(gs.Armies["enemy_fleet"].Units, army.Unit{TypeID: "warship", CurrentHP: army.MaxUnitHP})
+	wm.updateBorderStyles(gs, "", MapModeNormal)
+	if got := wm.blockadeFractions[0]; got != 1 {
+		t.Fatalf("%%100 abluka kıyının tamamını boyamalı: got=%v", got)
 	}
 }
 

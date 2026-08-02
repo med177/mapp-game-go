@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 )
 
 func navalMissionPanelStateFixture() *state.GameState {
@@ -20,8 +21,15 @@ func navalMissionPanelStateFixture() *state.GameState {
 			"warship":   {ID: "warship", Category: army.CategoryNavalWar},
 			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10},
 		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea":         {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"enemy_coast"}},
+			"enemy_coast": {ID: "enemy_coast", OwnerID: "enemy", Neighbors: []world.RegionID{"sea"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
 		Armies: map[army.ArmyID]*army.Army{
-			"war":       {ID: "war", OwnerID: "player", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
+			"war":       {ID: "war", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
 			"transport": {ID: "transport", OwnerID: "player", IsNaval: true, Units: []army.Unit{{TypeID: "transport"}}},
 			"enemy":     {ID: "enemy", OwnerID: "enemy", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
 		},
@@ -59,7 +67,7 @@ func TestNavalMissionOptionsExposeWarshipTasks(t *testing.T) {
 	if options[0].effect == "" || options[1].effect == "" || options[2].effect == "" {
 		t.Fatalf("savaş filosu görev bonusları görünür olmalı: %+v", options)
 	}
-	if options[0].effect != "Etki: dost ticaretinde gemi başına 1 düşman ablukasını dengeler." {
+	if options[0].effect != "Etki: aynı denizdeki abluka filosuyla otomatik savaşır; ticaret ve lojistik kesintisini dengeler." {
 		t.Fatalf("devriye bonusu beklenen açıklamayı taşımıyor: %q", options[0].effect)
 	}
 	if options[1].effect != "Etki: savaş gemisi başına -%50 ticaret; azami -%100." {
@@ -69,6 +77,27 @@ func TestNavalMissionOptionsExposeWarshipTasks(t *testing.T) {
 	transportOptions := navalMissionOptions(gs, gs.Armies["transport"])
 	if len(transportOptions) != 0 {
 		t.Fatalf("sırf nakliye filosunda görev seçeneği olmamalıydı: %+v", transportOptions)
+	}
+}
+
+func TestNavalMissionTargetCircleUsesPointerHitRadius(t *testing.T) {
+	if !navalMissionTargetCircleHit(100, 100, 108, 100) {
+		t.Fatal("hedef yuvarlağının üzerinde cursor parmak olmalı")
+	}
+	if navalMissionTargetCircleHit(100, 100, 113, 100) {
+		t.Fatal("hedef yuvarlağından uzak cursor parmak olmamalı")
+	}
+}
+
+func TestNavalMissionOptionsHideBlockadeOutsideValidCurrentSea(t *testing.T) {
+	gs := navalMissionPanelStateFixture()
+	gs.Armies["war"].RegionID = "open_sea"
+	gs.Regions["open_sea"] = &world.Region{ID: "open_sea", IsSea: true}
+	options := navalMissionOptions(gs, gs.Armies["war"])
+	for _, option := range options {
+		if option.kind == army.NavalMissionBlockade {
+			t.Fatalf("açık deniz konumunda abluka görünmemeli: %+v", option)
+		}
 	}
 }
 

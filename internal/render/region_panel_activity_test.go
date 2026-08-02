@@ -189,6 +189,43 @@ func TestOwnRegionGrainAidButtonUsesRegionActionBarGeometry(t *testing.T) {
 	}
 }
 
+func TestOwnRegionActionButtonsStaySeparatedForLiberation(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth = 1280
+	ScreenHeight = 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	regionID := world.RegionID("former_capital")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":    {ID: "player", Grain: state.GrainAidCost},
+			"successor": {ID: "successor", IsEliminated: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			regionID: {ID: regionID, OwnerID: "player", SuccessorFactionID: "successor", Satisfaction: 50},
+		},
+	}
+
+	barY := float32(regionPanelActionBarY(gs, gs.Regions[regionID], regionPanelTabBuildings))
+	barX := infoPanelX() + float32(panelPad)
+	barW := infoPanelW - float32(panelPad*2)
+	grainBtn := buildRegionGrainAidButton(gs, regionID, barX, barY, barW, regionPanelActionBarHeight)
+	liberateBtn := buildRegionLiberateButton(barX, barY, barW, regionPanelActionBarHeight)
+
+	if grainBtn.X+grainBtn.W > liberateBtn.X {
+		t.Fatalf("aksiyon düğmeleri üst üste biniyor: grain=%+v liberate=%+v", grainBtn, liberateBtn)
+	}
+	if !regionGrainAidButtonHitForTab(grainBtn.X+grainBtn.W/2, grainBtn.Y+grainBtn.H/2, gs, regionID, regionPanelTabBuildings) {
+		t.Fatal("tahıl yardım düğmesinin merkezi tıklanabilir olmalı")
+	}
+	if !regionLiberateButtonHitForTab(liberateBtn.X+liberateBtn.W/2, liberateBtn.Y+liberateBtn.H/2, gs, regionID, regionPanelTabBuildings) {
+		t.Fatal("özgürleştir düğmesinin merkezi tıklanabilir olmalı")
+	}
+}
+
 func TestRegionActivityContentUsesViewportScreenCoordinates(t *testing.T) {
 	viewport := gameui.Rect{X: 12, Y: 640, W: 281, H: 120}
 	const scroll = 28.0

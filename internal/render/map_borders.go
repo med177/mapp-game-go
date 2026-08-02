@@ -21,12 +21,14 @@ const (
 	mapBorderStyleTradeStrong
 	mapBorderStyleTradeSubtle
 	mapBorderStyleSea
+	mapBorderStyleBlockade
 	mapBorderStyleCount
 )
 
 const (
 	mapBorderStrokeWidth         float32 = 1.25
 	selectedMapBorderStrokeWidth float32 = 3
+	blockadeMapBorderStrokeWidth float32 = 4
 )
 
 // mapBorderSegment, raster regionAt ızgarasındaki tek bir sınır hattının
@@ -223,6 +225,7 @@ func (wm *WorldMap) rebuildBorderSegments(gs *state.GameState) {
 	}
 
 	wm.borderStyles = make([]uint8, len(wm.borderSegments))
+	wm.blockadeFractions = make([]float32, len(wm.borderSegments))
 	wm.borderVersion++
 }
 
@@ -248,8 +251,12 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 	if len(wm.borderStyles) != len(wm.borderSegments) {
 		wm.borderStyles = make([]uint8, len(wm.borderSegments))
 	}
+	if len(wm.blockadeFractions) != len(wm.borderSegments) {
+		wm.blockadeFractions = make([]float32, len(wm.borderSegments))
+	}
 	for i := range wm.borderStyles {
 		wm.borderStyles[i] = mapBorderStyleNone
+		wm.blockadeFractions[i] = 0
 	}
 	if gs == nil {
 		return
@@ -263,6 +270,29 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 		}
 	}
 	enemyNavalRegions := enemyNavalRegionSet(gs)
+	coastalBlockadePercent := make(map[world.RegionID]int)
+	coastalLengths := make(map[world.RegionID]float64)
+	for _, segment := range wm.borderSegments {
+		landIdx, otherIdx := segment.a, segment.b
+		if !wm.isLandRegionIndex(gs, landIdx) {
+			landIdx, otherIdx = segment.b, segment.a
+		}
+		if !wm.isLandRegionIndex(gs, landIdx) || !wm.isSeaRegionIndex(gs, otherIdx) {
+			continue
+		}
+		regionID := wm.regionIDs[landIdx]
+		region := gs.Regions[regionID]
+		if region == nil {
+			continue
+		}
+		percent := gs.RegionBlockadePercent(region, region.OwnerID)
+		if percent <= 0 {
+			continue
+		}
+		coastalBlockadePercent[regionID] = percent
+		coastalLengths[regionID] += math.Hypot(float64(segment.x2-segment.x1), float64(segment.y2-segment.y1))
+	}
+	coastalConsumed := make(map[world.RegionID]float64, len(coastalLengths))
 
 	for i, segment := range wm.borderSegments {
 		landIdx := segment.a
@@ -281,6 +311,20 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 			continue
 		}
 		landID := wm.regionIDs[landIdx]
+		if wm.isSeaRegionIndex(gs, otherIdx) {
+			percent := coastalBlockadePercent[landID]
+			totalLength := coastalLengths[landID]
+			segmentLength := math.Hypot(float64(segment.x2-segment.x1), float64(segment.y2-segment.y1))
+			if percent > 0 && totalLength > 0 && segmentLength > 0 {
+				targetLength := totalLength * float64(percent) / 100
+				remaining := targetLength - coastalConsumed[landID]
+				if remaining > 0 {
+					coveredLength := math.Min(segmentLength, remaining)
+					wm.blockadeFractions[i] = float32(coveredLength / segmentLength)
+					coastalConsumed[landID] += coveredLength
+				}
+			}
+		}
 		selectedOnEitherSide := landID == selected
 		if !selectedOnEitherSide && otherIdx != 0 && int(otherIdx) < len(wm.regionIDs) {
 			selectedOnEitherSide = wm.regionIDs[otherIdx] == selected
@@ -346,6 +390,8 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 		return color.RGBA{35, 22, 10, 90}
 	case mapBorderStyleSea:
 		return color.RGBA{100, 160, 220, 160}
+	case mapBorderStyleBlockade:
+		return color.RGBA{128, 24, 24, 255}
 	default:
 		return color.RGBA{}
 	}
@@ -354,6 +400,9 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 func mapBorderStyleStrokeWidth(style uint8) float32 {
 	if style == mapBorderStyleSelected {
 		return selectedMapBorderStrokeWidth
+	}
+	if style == mapBorderStyleBlockade {
+		return blockadeMapBorderStrokeWidth
 	}
 	return mapBorderStrokeWidth
 }
@@ -407,6 +456,18 @@ func appendMapBorderQuad(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 f
 	chunk.indices = append(chunk.indices, base, base+1, base+2, base+2, base+3, base)
 }
 
+func appendMapBorderQuadFraction(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 float64, fraction float32, strokeWidth float32) {
+	if fraction <= 0 {
+		return
+	}
+	if fraction > 1 {
+		fraction = 1
+	}
+	endX := x1 + (x2-x1)*float64(fraction)
+	endY := y1 + (y2-y1)*float64(fraction)
+	appendMapBorderQuad(meshes, style, x1, y1, endX, endY, strokeWidth)
+}
+
 func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 	if r == nil || r.worldMap == nil || len(r.worldMap.borderSegments) == 0 {
 		return
@@ -453,6 +514,18 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 			continue
 		}
 		appendMapBorderQuad(&r.mapBorderMeshes, style, x1, y1, x2, y2, mapBorderStyleStrokeWidth(style))
+	}
+	for i, segment := range r.worldMap.borderSegments {
+		if i >= len(r.worldMap.blockadeFractions) || r.worldMap.blockadeFractions[i] <= 0 {
+			continue
+		}
+		x1, y1 := r.worldToScreen(float64(segment.x1), float64(segment.y1))
+		x2, y2 := r.worldToScreen(float64(segment.x2), float64(segment.y2))
+		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > float64(screenWidth)+2 ||
+			math.Max(y1, y2) < -2 || math.Min(y1, y2) > float64(screenHeight)+2 {
+			continue
+		}
+		appendMapBorderQuadFraction(&r.mapBorderMeshes, mapBorderStyleBlockade, x1, y1, x2, y2, r.worldMap.blockadeFractions[i], blockadeMapBorderStrokeWidth)
 	}
 
 	// Path tessellation yerine ekran uzayında hazırlanmış mesh kullanılır.

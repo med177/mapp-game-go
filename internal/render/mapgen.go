@@ -84,6 +84,7 @@ type WorldMap struct {
 	seaIdx             map[uint16]bool // deniz bölgesi indeksleri
 	borderSegments     []mapBorderSegment
 	borderStyles       []uint8
+	blockadeFractions  []float32 // kara-deniz segmentinin abluka ile kaplanan [0,1] oranı
 	borderVersion      uint64
 	hasBgImage         bool
 	ownerDirty         bool
@@ -351,6 +352,151 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 func (wm *WorldMap) MarkDirty()                            { wm.ownerDirty = true }
 func (wm *WorldMap) RegionPixels(rid world.RegionID) []int { return wm.regionPx[rid] }
 func (wm *WorldMap) Image() *ebiten.Image                  { return wm.img }
+
+// CoastalSettlementPoint, verilen kara bölgesinin gerçek raster haritasında
+// deniz komşusuyla ortak sınırdaki kara pikselinden yerleşim noktası üretir.
+// Region.Shape ülke seviyesinde paylaşılabildiği için tek başına kıyı hesabında
+// güvenilir değildir; regionAt ise ekranda gerçekten çizilen kara/deniz ayrımını
+// temsil eder.
+func (wm *WorldMap) CoastalSettlementPoint(region *world.Region, regions map[world.RegionID]*world.Region) (int, int, bool) {
+	if wm == nil || region == nil || region.IsSea || len(region.Neighbors) == 0 {
+		return 0, 0, false
+	}
+
+	seaID, seaX, seaY, ok := nearestSeaNeighborCenterForMap(region, regions)
+	if !ok {
+		return 0, 0, false
+	}
+	if x, y, ok := wm.coastalSettlementPointForSea(region, seaID, seaX, seaY); ok {
+		return x, y, true
+	}
+
+	// Veri ile raster arasında eski senaryolardan kalma küçük bir fark varsa,
+	// diğer deniz komşularını da dene; ilk seçim yine merkez mesafesine göre yapılır.
+	for _, nid := range region.Neighbors {
+		if nid == seaID {
+			continue
+		}
+		sea := regions[nid]
+		if sea == nil || !sea.IsSea {
+			continue
+		}
+		if x, y, ok := wm.coastalSettlementPointForSea(region, nid, float64(sea.WorldX), float64(sea.WorldY)); ok {
+			return x, y, true
+		}
+	}
+	return 0, 0, false
+}
+
+const coastalSettlementInset = 2.0
+
+func nearestSeaNeighborCenterForMap(region *world.Region, regions map[world.RegionID]*world.Region) (world.RegionID, float64, float64, bool) {
+	if region == nil {
+		return "", 0, 0, false
+	}
+	centerX := float64(region.WorldX)
+	centerY := float64(region.WorldY)
+	bestDist := math.MaxFloat64
+	var bestID world.RegionID
+	var bestX, bestY float64
+	for _, nid := range region.Neighbors {
+		sea := regions[nid]
+		if sea == nil || !sea.IsSea {
+			continue
+		}
+		dx := float64(sea.WorldX) - centerX
+		dy := float64(sea.WorldY) - centerY
+		dist := dx*dx + dy*dy
+		if dist >= bestDist {
+			continue
+		}
+		bestDist = dist
+		bestID = nid
+		bestX = float64(sea.WorldX)
+		bestY = float64(sea.WorldY)
+	}
+	return bestID, bestX, bestY, bestID != ""
+}
+
+func (wm *WorldMap) coastalSettlementPointForSea(region *world.Region, seaID world.RegionID, seaX, seaY float64) (int, int, bool) {
+	if wm == nil || region == nil || seaID == "" {
+		return 0, 0, false
+	}
+	pixels := wm.regionPx[region.ID]
+	if len(pixels) == 0 {
+		return 0, 0, false
+	}
+
+	centerX := float64(region.WorldX)
+	centerY := float64(region.WorldY)
+	dx := seaX - centerX
+	dy := seaY - centerY
+	dist := math.Hypot(dx, dy)
+	if dist == 0 {
+		return 0, 0, false
+	}
+	ux, uy := dx/dist, dy/dist
+	bestScore := math.MaxFloat64
+	bestProjection := -math.MaxFloat64
+	bestX, bestY := 0.0, 0.0
+	found := false
+
+	for _, pIdx := range pixels {
+		px := pIdx % WorldW
+		py := pIdx / WorldW
+		if !wm.pixelTouchesRegion(px, py, seaID) {
+			continue
+		}
+		worldX := (float64(px) + 0.5 - shapeOffX) / shapeScaleX
+		worldY := (float64(py) + 0.5 - shapeOffY) / shapeScaleY
+		fromCenterX := worldX - centerX
+		fromCenterY := worldY - centerY
+		projection := fromCenterX*ux + fromCenterY*uy
+		if projection < -coastalSettlementInset {
+			continue
+		}
+		perpendicularX := fromCenterX - projection*ux
+		perpendicularY := fromCenterY - projection*uy
+		score := perpendicularX*perpendicularX + perpendicularY*perpendicularY
+		if score > bestScore+0.0001 || (math.Abs(score-bestScore) <= 0.0001 && projection <= bestProjection) {
+			continue
+		}
+		bestScore = score
+		bestProjection = projection
+		bestX, bestY = worldX, worldY
+		found = true
+	}
+	if !found {
+		return 0, 0, false
+	}
+
+	// Sınır pikselinin kara tarafında kalması için küçük bir kara içi pay bırak.
+	bestX -= ux * coastalSettlementInset
+	bestY -= uy * coastalSettlementInset
+	return int(math.Round(bestX)), int(math.Round(bestY)), true
+}
+
+func (wm *WorldMap) pixelTouchesRegion(px, py int, target world.RegionID) bool {
+	if px > 0 && wm.RegionAt(px-1, py) == target {
+		return true
+	}
+	if px+1 < WorldW && wm.RegionAt(px+1, py) == target {
+		return true
+	}
+	if py > 0 && wm.RegionAt(px, py-1) == target {
+		return true
+	}
+	return py+1 < WorldH && wm.RegionAt(px, py+1) == target
+}
+
+// CoastalSettlementPoint, oyun katmanının mevcut WorldMap'e erişmesi için
+// renderer üzerinden sunulan ince köprüdür.
+func (r *Renderer) CoastalSettlementPoint(regionID world.RegionID, regions map[world.RegionID]*world.Region) (int, int, bool) {
+	if r == nil || r.worldMap == nil {
+		return 0, 0, false
+	}
+	return r.worldMap.CoastalSettlementPoint(regions[regionID], regions)
+}
 
 func (wm *WorldMap) RegionAnchor(rid world.RegionID) (int, int, bool) {
 	p, ok := wm.regionAnchor[rid]
@@ -1128,6 +1274,15 @@ func borderDiplomacySignature(gs *state.GameState) uint64 {
 			entry ^= 0xd1ce5e7a9b3c41f2
 		}
 		signature ^= entry
+	}
+	for regionID, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID == "" {
+			continue
+		}
+		blockadePercent := gs.RegionBlockadePercent(region, region.OwnerID)
+		if blockadePercent > 0 {
+			signature ^= borderHashString(string(regionID)) ^ uint64(blockadePercent)*0x9e3779b97f4a7c15
+		}
 	}
 	return signature
 }

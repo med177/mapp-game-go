@@ -401,6 +401,27 @@ func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, def
 	r.openBattlePlanWithDestination(attacker, target, defender, actionKind, battleContext, target.ID)
 }
 
+// ShowNavalContactBattlePlan, temas kararı iki tarafta da Çatış olduktan
+// sonra oyuncunun deniz muharebesi duruşunu seçmesini sağlar.
+func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID, seaID world.RegionID, movementConsumed bool) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	attacker := r.gs.Armies[attackerID]
+	defender := r.gs.Armies[defenderID]
+	sea := r.gs.Regions[seaID]
+	if attacker == nil || defender == nil || sea == nil || !attacker.IsNaval || !defender.IsNaval || !sea.IsSea {
+		return false
+	}
+	r.openBattlePlan(attacker, sea, defender, ActionMoveArmy, combat.BattleContextNaval)
+	if !r.battlePlan.show {
+		return false
+	}
+	r.battlePlan.navalContactResolved = true
+	r.battlePlan.navalContactMovementConsumed = movementConsumed
+	return true
+}
+
 // openBattlePlanWithDestination savaşın gerçekleştiği bölge ile zaferden
 // sonra ordunun ilerleyeceği bölge farklı olduğunda kullanılır. Huruçta savaş
 // kuşatılan bölgede gerçekleşir, ancak başarılı sonuçta seçilen hedefe çıkılır.
@@ -431,6 +452,7 @@ func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *wo
 		attackerSummary: commanderBattlePlanSummary("Saldıran komutan", previewCommander),
 		defenderSummary: commanderBattlePlanSummary("Savunan komutan", defender.Commander),
 		focus:           1,
+		navalAttack:     combat.NormalizeBattleContext(battleContext) == combat.BattleContextNaval,
 	}
 	for i, stance := range battlePlanStances {
 		state.previews[i] = combat.PreviewBattleWithContextMods(previewAttacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, state.battleContext, stance)
@@ -958,10 +980,13 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 		r.battlePlan = battlePlanState{}
 		r.SelectedArmy = ""
 		return InputAction{
-			Kind:         bp.actionKind,
-			ArmyID:       bp.pendingArmy,
-			TargetRegion: bp.pendingDest,
-			BattleStance: battlePlanStances[bp.focus],
+			Kind:                         bp.actionKind,
+			ArmyID:                       bp.pendingArmy,
+			TargetRegion:                 bp.pendingDest,
+			BattleStance:                 battlePlanStances[bp.focus],
+			NavalAttack:                  bp.navalAttack,
+			NavalContactResolved:         bp.navalContactResolved,
+			NavalContactMovementConsumed: bp.navalContactMovementConsumed,
 		}
 	}
 
@@ -981,10 +1006,13 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 			r.battlePlan = battlePlanState{}
 			r.SelectedArmy = ""
 			return InputAction{
-				Kind:         bp.actionKind,
-				ArmyID:       bp.pendingArmy,
-				TargetRegion: bp.pendingDest,
-				BattleStance: battlePlanStances[i],
+				Kind:                         bp.actionKind,
+				ArmyID:                       bp.pendingArmy,
+				TargetRegion:                 bp.pendingDest,
+				BattleStance:                 battlePlanStances[i],
+				NavalAttack:                  bp.navalAttack,
+				NavalContactResolved:         bp.navalContactResolved,
+				NavalContactMovementConsumed: bp.navalContactMovementConsumed,
 			}
 		}
 	}
@@ -1540,6 +1568,25 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 	}
 }
 
+func (r *Renderer) openBuildingDemolitionConfirm(rid world.RegionID, buildingID string) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	region := r.gs.Regions[rid]
+	building := r.gs.BuildingTypes[buildingID]
+	if region == nil || building == nil || !regionBuildingDemolitionAvailable(r.gs, region) || region.BuildingLevel(buildingID) <= 0 {
+		return
+	}
+	r.ShowConfirmDialog(
+		"Bina Yıkımı",
+		building.NameTR+" binasını yıkmak istiyor musunuz?",
+		"Yık",
+		"Vazgeç",
+		InputAction{Kind: ActionDemolishBuilding, TargetRegion: rid, BuildingID: buildingID},
+		nil,
+	)
+}
+
 func (r *Renderer) ShowChoiceDialog(title, message, acceptLabel, declineLabel string, acceptAction, declineAction InputAction) {
 	r.confirmDialog = confirmDialogState{
 		show:          true,
@@ -1555,6 +1602,16 @@ func (r *Renderer) ShowChoiceDialog(title, message, acceptLabel, declineLabel st
 }
 
 func (r *Renderer) ShowThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction) {
+	r.showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel, acceptAction, thirdAction, declineAction, false)
+}
+
+// ShowThreeChoiceDialogWithThirdEnabled, üçlü modalın üçüncü seçeneğini
+// bağlama göre pasif göstermek için kullanılır.
+func (r *Renderer) ShowThreeChoiceDialogWithThirdEnabled(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction, thirdEnabled bool) {
+	r.showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel, acceptAction, thirdAction, declineAction, !thirdEnabled)
+}
+
+func (r *Renderer) showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction, thirdDisabled bool) {
 	if r == nil {
 		return
 	}
@@ -1568,6 +1625,7 @@ func (r *Renderer) ShowThreeChoiceDialog(title, message, acceptLabel, thirdLabel
 		declineLabel:  declineLabel,
 		pendingAction: acceptAction,
 		thirdAction:   thirdAction,
+		thirdDisabled: thirdDisabled,
 		declineAction: declineAction,
 		declineActs:   true,
 	}
@@ -1703,7 +1761,7 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
-		if hasThird && thirdBtn.HitTest(mx, my) {
+		if hasThird && thirdBtn.Enabled && thirdBtn.HitTest(mx, my) {
 			action := r.confirmDialog.thirdAction
 			r.confirmDialog = confirmDialogState{}
 			return action

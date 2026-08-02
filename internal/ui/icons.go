@@ -14,25 +14,26 @@ import (
 type IconID string
 
 const (
-	IconNone   IconID = ""
-	IconBack   IconID = "back"
-	IconClose  IconID = "close"
-	IconMenu   IconID = "menu"
-	IconBook   IconID = "book"
-	IconMinus  IconID = "minus"
-	IconPlus   IconID = "plus"
-	IconPlay   IconID = "play"
-	IconPause  IconID = "pause"
-	IconNext   IconID = "next"
-	IconSend   IconID = "send"
-	IconTrash  IconID = "trash"
-	IconCheck  IconID = "check"
-	IconSword  IconID = "sword"
-	IconSave   IconID = "save"
-	IconLoad   IconID = "load"
-	IconBuy    IconID = "buy"
-	IconSell   IconID = "sell"
-	IconExit   IconID = "exit"
+	IconNone  IconID = ""
+	IconBack  IconID = "back"
+	IconClose IconID = "close"
+	IconX     IconID = "x"
+	IconMenu  IconID = "menu"
+	IconBook  IconID = "book"
+	IconMinus IconID = "minus"
+	IconPlus  IconID = "plus"
+	IconPlay  IconID = "play"
+	IconPause IconID = "pause"
+	IconNext  IconID = "next"
+	IconSend  IconID = "send"
+	IconTrash IconID = "trash"
+	IconCheck IconID = "check"
+	IconSword IconID = "sword"
+	IconSave  IconID = "save"
+	IconLoad  IconID = "load"
+	IconBuy   IconID = "buy"
+	IconSell  IconID = "sell"
+	IconExit  IconID = "exit"
 )
 
 const iconAssetDir = "assets/ui/icons"
@@ -43,6 +44,7 @@ func init() {
 	for _, id := range []IconID{
 		IconBack,
 		IconClose,
+		IconX,
 		IconMenu,
 		IconBook,
 		IconMinus,

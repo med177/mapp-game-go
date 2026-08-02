@@ -9,9 +9,9 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-// executePlayerNavalMissions, oyuncunun kalıcı filo görevlerini yeni turda
-// hareket havuzu yenilendikten sonra işler. Görev atamak filoyu haritada
-// teleporte etmez; filo komşuluk/path kurallarına uyarak hedefe yaklaşır.
+// executePlayerNavalMissions, oyuncunun kalıcı hareketli filo görevlerini yeni
+// turda hareket havuzu yenilendikten sonra işler. Devriye ve abluka mevcut
+// denizde sabit kaldığı için yalnız escort ve nakliye burada rota izler.
 func (g *Game) executePlayerNavalMissions() {
 	if g == nil || g.gs == nil || len(g.gs.Armies) == 0 {
 		return
@@ -59,6 +59,9 @@ func (g *Game) executePlayerNavalMissions() {
 			} else {
 				g.moveArmyWithStance(fleetID, target, combat.BattleStanceBalanced)
 			}
+			if g.gs.PendingNavalContact != nil {
+				break
+			}
 
 			fleet = g.gs.Armies[fleetID]
 			if fleet == nil {
@@ -79,8 +82,9 @@ func (g *Game) executePlayerNavalMissions() {
 	}
 }
 
-// playerNavalMissionNextTarget, görevin bir sonraki komşu deniz/kıyı adımını
-// döndürür. Escort hedef filosunu, nakliye ise hedef kıyının deniz komşusunu
+// playerNavalMissionNextTarget, yalnız hareket edebilen görevler için bir
+// sonraki komşu deniz/kıyı adımını döndürür. Devriye ve abluka mevcut denizde
+// sabittir; escort hedef filosunu, nakliye ise hedef kıyının deniz komşusunu
 // takip eder.
 func playerNavalMissionNextTarget(gs *state.GameState, fleet *army.Army) (world.RegionID, bool) {
 	if gs == nil || fleet == nil || fleet.NavalMission == nil {
@@ -88,7 +92,10 @@ func playerNavalMissionNextTarget(gs *state.GameState, fleet *army.Army) (world.
 	}
 	switch fleet.NavalMission.Kind {
 	case army.NavalMissionPatrol, army.NavalMissionBlockade:
-		return playerSeaRouteNext(gs, fleet.RegionID, fleet.NavalMission.TargetRegionID)
+		if !fleet.IsAtSea() || fleet.RegionID == "" {
+			return "", false
+		}
+		return fleet.RegionID, true
 	case army.NavalMissionEscort:
 		targetFleet := gs.Armies[fleet.NavalMission.TargetFleetID]
 		if targetFleet == nil || !targetFleet.IsNaval || targetFleet.OwnerID != fleet.OwnerID {

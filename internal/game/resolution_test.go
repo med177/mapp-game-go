@@ -126,6 +126,59 @@ func TestCivilianGrainDemandRoundsUpAndIgnoresEmptyPopulation(t *testing.T) {
 	}
 }
 
+func TestApplyEconomyTickAppliesBlockadeOutputAndBlockaderLoot(t *testing.T) {
+	gs := &state.GameState{
+		Month:           6,
+		PlayerFactionID: "target",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"target": {ID: "target", Grain: 1000},
+			"raider": {ID: "raider"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"port": {
+				ID: "port", OwnerID: "target", Terrain: world.TerrainPlain,
+				Neighbors:      []world.RegionID{"sea"},
+				Settlements:    []world.Settlement{{ID: "port-town", Type: world.SettlementPort}},
+				BaseGoldIncome: 100, TaxRate: 100, Satisfaction: 100,
+				BaseGrainOutput: 100, BaseIronOutput: 20, TradeCapacity: 10,
+			},
+			"sea": {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"port"}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("raider", "target"): {
+				FactionA: "raider", FactionB: "target", Stance: faction.StanceWar,
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"raider-fleet": {
+				ID: "raider-fleet", OwnerID: "raider", RegionID: "sea", IsNaval: true,
+				Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+			},
+		},
+	}
+
+	region := gs.Regions["port"]
+	blocked := gs.RegionProductionSummary(region)
+	loot := gs.BlockadeLootForFaction("raider")
+	applyEconomyTick(gs)
+
+	if got, want := gs.Factions["target"].Gold, blocked.Gold; got != want {
+		t.Fatalf("abluka altındaki sahibin altın geliri %d değil %d olmalıydı", got, want)
+	}
+	if got, want := gs.Factions["target"].Grain, 1000+blocked.Grain; got != want {
+		t.Fatalf("abluka altındaki sahibin tahıl stoku %d değil %d olmalıydı", got, want)
+	}
+	if got, want := gs.Factions["raider"].Gold, loot.Gold; got != want {
+		t.Fatalf("ablukacının altın loot'u %d değil %d olmalıydı", got, want)
+	}
+	if got, want := gs.Factions["raider"].Grain, loot.Grain; got != want {
+		t.Fatalf("ablukacının tahıl loot'u %d değil %d olmalıydı", got, want)
+	}
+}
+
 func TestEffectiveArmyGrainUpkeepUsesMovementAndSiegeCoefficients(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{
@@ -236,6 +289,81 @@ func TestApplySeasonEffectsProtectsActiveMerchantShipsFromWinterAttrition(t *tes
 	applySeasonEffects(gs)
 	if units[0].CurrentHP != 72 {
 		t.Fatalf("hedef denizden uzaktaki merchant gemisi normal kış attrition almalıydı, got=%d", units[0].CurrentHP)
+	}
+}
+
+func TestFriendlyCoastalSeaPreventsNavalAttrition(t *testing.T) {
+	gs := &state.GameState{
+		Month:           12,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"vassal": {ID: "vassal", OverlordID: "player"},
+			"ally":   {ID: "ally"},
+			"enemy":  {ID: "enemy"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"): {
+				FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"own_coast":     {ID: "own_coast", OwnerID: "player", Buildings: []string{"port"}},
+			"vassal_coast":  {ID: "vassal_coast", OwnerID: "vassal", Buildings: []string{"port"}},
+			"ally_coast":    {ID: "ally_coast", OwnerID: "ally", Buildings: []string{"port"}},
+			"enemy_coast":   {ID: "enemy_coast", OwnerID: "enemy"},
+			"no_port_coast": {ID: "no_port_coast", OwnerID: "player"},
+			"own_sea":       {ID: "own_sea", IsSea: true, Neighbors: []world.RegionID{"own_coast"}},
+			"vassal_sea":    {ID: "vassal_sea", IsSea: true, Neighbors: []world.RegionID{"vassal_coast"}},
+			"ally_sea":      {ID: "ally_sea", IsSea: true, Neighbors: []world.RegionID{"ally_coast"}},
+			"enemy_sea":     {ID: "enemy_sea", IsSea: true, Neighbors: []world.RegionID{"enemy_coast"}},
+			"no_port_sea":   {ID: "no_port_sea", IsSea: true, Neighbors: []world.RegionID{"no_port_coast"}},
+			"open_sea":      {ID: "open_sea", IsSea: true},
+		},
+		Armies:        map[army.ArmyID]*army.Army{},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{},
+	}
+	for _, tc := range []struct {
+		id, sea string
+	}{
+		{"own_fleet", "own_sea"},
+		{"vassal_fleet", "vassal_sea"},
+		{"ally_fleet", "ally_sea"},
+		{"enemy_fleet", "enemy_sea"},
+		{"no_port_fleet", "no_port_sea"},
+		{"open_fleet", "open_sea"},
+	} {
+		gs.Armies[army.ArmyID(tc.id)] = &army.Army{
+			ID: army.ArmyID(tc.id), OwnerID: "player", RegionID: world.RegionID(tc.sea), IsNaval: true,
+			Units:         []army.Unit{{TypeID: "warship", CurrentHP: 80}},
+			EmbarkedUnits: []army.Unit{{TypeID: "inf", CurrentHP: 100}}, TurnsWithoutPort: 3,
+		}
+	}
+
+	applySeasonEffects(gs)
+	alerts := applyEmbarkedVoyageAttrition(gs)
+
+	for _, fleetID := range []army.ArmyID{"own_fleet", "vassal_fleet", "ally_fleet"} {
+		fleet := gs.Armies[fleetID]
+		if fleet.Units[0].CurrentHP != 80 || fleet.EmbarkedUnits[0].CurrentHP != 100 {
+			t.Errorf("%s limanlı dost kıyı komşuluğunda yıpranmamalıydı: ship=%d embarked=%d", fleetID, fleet.Units[0].CurrentHP, fleet.EmbarkedUnits[0].CurrentHP)
+		}
+		if fleet.TurnsWithoutPort != 0 {
+			t.Errorf("%s güvenli denizde limansızlık sayacı sıfırlanmalıydı: got=%d", fleetID, fleet.TurnsWithoutPort)
+		}
+		if _, ok := gs.ArmyLogistics[fleetID]; ok {
+			t.Errorf("%s için deniz yıpranması lojistik kaydı yazılmamalıydı", fleetID)
+		}
+	}
+
+	for _, fleetID := range []army.ArmyID{"enemy_fleet", "no_port_fleet", "open_fleet"} {
+		fleet := gs.Armies[fleetID]
+		if fleet.Units[0].CurrentHP != 72 || fleet.EmbarkedUnits[0].CurrentHP != 96 {
+			t.Errorf("%s limansız veya dost kıyı komşuluğu olmadan normal yıpranmayı almalıydı: ship=%d embarked=%d", fleetID, fleet.Units[0].CurrentHP, fleet.EmbarkedUnits[0].CurrentHP)
+		}
+	}
+	if len(alerts) != 3 {
+		t.Fatalf("yalnız limanlı dost kıyıdaki üç filo için yıpranma uyarısı beklenmiyordu, got=%d", len(alerts))
 	}
 }
 
@@ -1143,7 +1271,7 @@ func TestRegionalLogisticsReducesPortBufferUnderBlockade(t *testing.T) {
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"field": {ID: "field", OwnerID: "player", RegionID: "port", Units: repeatedUnits("inf", 1, 100)},
-			"fleet": {ID: "fleet", OwnerID: "enemy", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+			"fleet": {ID: "fleet", OwnerID: "enemy", RegionID: "sea", IsNaval: true, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf":     {ID: "inf", GrainUpkeep: 2},

@@ -574,6 +574,36 @@ func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	}
 }
 
+func TestAcceptedPeaceEvacuatesNavalLandingSiege(t *testing.T) {
+	gs := testGameState()
+	gs.Regions["b_cap"].WorldX = 100
+	gs.Regions["b_cap"].WorldY = 0
+	gs.Regions["a_cap"].WorldX = 0
+	gs.Regions["a_cap"].WorldY = 100
+	gs.Regions["nearland"] = &world.Region{ID: "nearland", OwnerID: "a", WorldX: 110, WorldY: 0}
+	gs.Regions["nearsea"] = &world.Region{ID: "nearsea", IsSea: true, WorldX: 100, WorldY: 20}
+	gs.Armies["a1"].RegionID = "b_cap"
+	gs.Armies["fleet"] = &army.Army{
+		ID: "fleet", OwnerID: "a", RegionID: "nearsea", IsNaval: true,
+		Units: []army.Unit{{TypeID: "transport"}},
+	}
+	gs.UnitTypes["transport"] = &army.UnitType{ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"b_cap": {RegionID: "b_cap", AttackerArmyID: "a1", AttackerFactionID: "a", NavalLanding: true},
+	}
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+
+	result := Execute(gs, "a", "b", ActionProposePeace)
+	if !result.Applied {
+		t.Fatalf("barış uygulanmalıydı: %+v", result)
+	}
+	if _, ok := gs.Armies["a1"]; ok || len(gs.Armies["fleet"].EmbarkedUnits) != 1 {
+		t.Fatalf("barış sonrası çıkarma ordusu en yakın nakliye filosuna binmeliydi: armies=%+v", gs.Armies)
+	}
+}
+
 func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
 	gs := testGameState()
 	gs.Turn = 10
@@ -1109,6 +1139,56 @@ func TestExecuteWarDeclarationQueuesPlayerWhenAlliedAttackerCallsToWar(t *testin
 	}
 	if len(result.PlayerCalls) != 1 || !result.PlayerCalls[0].PendingDecision {
 		t.Fatalf("saldıran taraf için bekleyen oyuncu çağrısı görünmeliydi: %+v", result.PlayerCalls)
+	}
+}
+
+func TestExecuteWarDeclarationDoesNotQueuePlayerAlreadyAtWarWithTarget(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "player"
+	gs.Factions["player"] = &faction.Faction{ID: "player", NameTR: "Oyuncu", Religion: religion.Catholic}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Catholic}
+	gs.Regions["player_cap"] = &world.Region{ID: "player_cap", OwnerID: "player", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	gs.Regions["ally_cap"] = &world.Region{ID: "ally_cap", OwnerID: "ally", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	playerRel := EnsureRelation(gs, "ally", "player")
+	playerRel.Stance = faction.StanceAllied
+	playerRel.Score = 55
+	EnsureRelation(gs, "player", "b").Stance = faction.StanceWar
+
+	result := ExecuteWarDeclaration(gs, "ally", "b", nil)
+
+	if !result.Accepted || !result.Applied {
+		t.Fatalf("AI savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("oyuncu zaten savaşta olduğu hedef için savaş çağrısı kuyruğa düşmemeliydi: %+v", gs.DiplomaticOffers)
+	}
+	if len(result.PlayerCalls) != 0 {
+		t.Fatalf("oyuncu zaten savaşta olduğu hedef için bekleyen çağrı üretilmemeliydi: %+v", result.PlayerCalls)
+	}
+	if !IsWar(gs, "player", "b") {
+		t.Fatal("mevcut oyuncu-b savaşı korunmalıydı")
+	}
+}
+
+func TestBestOfferIndexSkipsWarJoinOfferForExistingWar(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+	EnsureRelation(gs, "b", "c").Stance = faction.StanceWar
+	gs.DiplomaticOffers = []state.DiplomaticOffer{
+		{
+			FromFactionID:        "a",
+			ToFactionID:          "b",
+			Action:               string(ActionJoinWarCall),
+			WarDeclarerFactionID: "a",
+			WarEnemyFactionID:    "c",
+		},
+	}
+
+	if _, ok := BestOfferIndex(gs, "b"); ok {
+		t.Fatal("oyuncu hedefle zaten savaşta olduğunda savaş çağrısı modal için seçilmemeliydi")
 	}
 }
 

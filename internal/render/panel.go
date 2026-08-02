@@ -2055,6 +2055,19 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	// Üretim — iki sütun
 	drawRegionProductionGrid(screen, gs, region, lx, ly, sepW, production)
 	ly += regionPanelStatRowGap * 4
+	blockadeEffect := gs.RegionBlockadeEconomicEffect(region)
+	if blockadeEffect.BlockadePercent > 0 {
+		lossPercent := 100 - blockadeEffect.OutputRetentionPercent
+		drawUILabel(
+			screen,
+			gameui.Rect{X: lx, Y: ly, W: float64(sepW)},
+			fmt.Sprintf("Abluka %%%d • sonraki tur yerel -%%%d", blockadeEffect.BlockadePercent, lossPercent),
+			color.RGBA{225, 135, 45, 255},
+			gameui.TextSmall,
+			gameui.TextAlignStart,
+		)
+		ly += 16
+	}
 
 	drawRegionMeterRow(screen, lx, ly, sepW, "Memnuniyet", "%"+itoa(region.Satisfaction), float64(region.Satisfaction)/100, satisfactionColor(region.Satisfaction))
 	ly += regionPanelStatRowGap
@@ -2260,9 +2273,8 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 	}
 	if region.OwnerID == string(gs.PlayerFactionID) {
 		if _, ok := regionLiberationSuccessor(gs, region); ok {
-			btn := buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
-			drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
-			return
+			liberateBtn := buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+			drawUIButtonWidget(screen, liberateBtn, solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
 		}
 		btn := buildRegionGrainAidButton(gs, region.ID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
@@ -3091,13 +3103,7 @@ func resourceHUDChangeColor(change int, normal color.RGBA) color.RGBA {
 }
 
 func calcPlayerIncome(gs *state.GameState) int {
-	total := 0
-	for _, r := range gs.Regions {
-		if r.OwnerID == string(gs.PlayerFactionID) {
-			total += r.GoldIncome()
-		}
-	}
-	return total
+	return victory.CurrentGoldIncome(gs)
 }
 
 // drawBuildingGrid bölgedeki binaları kare sprite thumbnail'leri olarak 3 sütunlu ızgarada çizer.
@@ -3254,6 +3260,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 		}
 		_, ok := regionActiveEventPanelHit(mx, my, gs, region, scroll)
 		return ok
+	}
+	if _, ok := BuildingGridDemolishHitTest(mx, my, gs, rid, false); ok {
+		return true
 	}
 	return buildingGridHitTest(mx, my, gs, rid, false) != ""
 }
@@ -3522,7 +3531,7 @@ func factionActiveResearchLabel(gs *state.GameState, f *faction.Faction) string 
 	return f.Research.ActiveID + " • " + itoa(f.Research.TurnsLeft) + " tur"
 }
 
-func drawFactionResourceGrid(screen *ebiten.Image, f *faction.Faction, x, y float64, width float32) {
+func drawFactionResourceGrid(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, f *faction.Faction, x, y float64, width float32) {
 	type resourceItem struct {
 		label string
 		value string
@@ -3537,6 +3546,7 @@ func drawFactionResourceGrid(screen *ebiten.Image, f *faction.Faction, x, y floa
 		{label: "Taş", value: itoa(f.Stone), col: color.RGBA{185, 185, 185, 255}},
 		{label: "Baharat", value: itoa(f.Spice), col: color.RGBA{230, 165, 90, 255}},
 		{label: "Kumaş", value: itoa(f.Cloth), col: color.RGBA{175, 150, 220, 255}},
+		{label: "Gelir", value: "+" + itoa(victory.GoldIncomeForFaction(gs, fid)) + "/tur", col: ColorGold},
 	}
 
 	colGap := 14.0
@@ -3920,7 +3930,7 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 
 	drawUISectionLabel(screen, 0, y, "Kaynaklar")
 	y += factionPanelSectionH
-	drawFactionResourceGrid(screen, f, 0, y, float32(width))
+	drawFactionResourceGrid(screen, gs, fid, f, 0, y, float32(width))
 	y += regionPanelStatRowGap * 4
 
 	drawUISectionLabel(screen, 0, y, "Ticaret")
@@ -4098,9 +4108,8 @@ func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (facti
 func buildRegionLiberateButton(px, py, pw, ph float32) gameui.Button {
 	const btnW = float32(112)
 	const btnH = float32(24)
-	x := px + 5
+	x := px + pw - btnW - 5
 	y := py + (ph-btnH)/2
-	_ = pw
 	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Özgürleştir")
 }
 
@@ -4272,6 +4281,27 @@ func regionGrainProductionDisplayValue(gs *state.GameState, region *world.Region
 
 func BuildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {
 	return buildingGridHitTest(mx, my, gs, rid, neighborExpanded)
+}
+
+func BuildingGridDemolishHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) (string, bool) {
+	if gs == nil || rid == "" {
+		return "", false
+	}
+	region, ok := gs.Regions[rid]
+	if !ok || !regionBuildingDemolitionAvailable(gs, region) {
+		return "", false
+	}
+	if bid, ok := lastDrawnBuildingGridDemolishHit(mx, my, rid); ok {
+		return bid, true
+	}
+	px := infoPanelX()
+	startY := buildingGridStartY(gs, region, neighborExpanded)
+	for _, card := range buildBuildingCardComponents(gs, region, px, startY, infoPanelW) {
+		if card.CanDemolish && card.DemolishBtn.HitTest(mx, my) {
+			return card.ID, true
+		}
+	}
+	return "", false
 }
 
 func buildingGridHitTest(mx, my float64, gs *state.GameState, rid world.RegionID, neighborExpanded bool) string {
@@ -4554,9 +4584,11 @@ func projectedFactionTributeIncome(gs *state.GameState, fid faction.FactionID) i
 			}
 		}
 
-		regionIncome := int(float64(region.GoldIncome()) * goldMod * float64(harvestMod) / 100)
+		retention := gs.RegionBlockadeOutputRetentionPercent(region)
+		regionIncome := state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
 		tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod)
 		tradeIncome = tradeIncome * tradeMod / 100
+		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
 		if fx.MarketGoldMod != 0 {
 			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
 		}
@@ -4567,6 +4599,7 @@ func projectedFactionTributeIncome(gs *state.GameState, fid faction.FactionID) i
 		}
 	}
 
+	income += gs.BlockadeLootForFaction(fid).Gold
 	income += fx.GoldPerRegion * ownedCount
 	if income < 0 {
 		return 0

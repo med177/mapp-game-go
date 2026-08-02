@@ -147,14 +147,20 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 	}
 	options := make([]navalMissionOption, 0, 6)
 	if fleetHasWarshipUI(gs, fleet) {
-		options = append(options,
-			navalMissionOption{kind: army.NavalMissionPatrol, label: "Devriye", description: "Hedef deniz bölgesini gözetle ve düşman filosunu takip et.", effect: "Etki: dost ticaretinde gemi başına 1 düşman ablukasını dengeler."},
-			navalMissionOption{kind: army.NavalMissionBlockade, label: "Abluka", description: "Hedef denizindeki düşman ticaretini baskıla.", effect: "Etki: savaş gemisi başına -%50 ticaret; azami -%100."},
-		)
+		if fleet.IsAtSea() {
+			options = append(options, navalMissionOption{
+				kind: army.NavalMissionPatrol, label: "Devriye", description: "Bulunduğun denizi gözetle; görevli düşman abluka filosunu yakala.", effect: "Etki: aynı denizdeki abluka filosuyla otomatik savaşır; ticaret ve lojistik kesintisini dengeler.",
+			})
+			if gs.IsValidNavalBlockadeTarget(fleet, fleet.RegionID) {
+				options = append(options, navalMissionOption{
+					kind: army.NavalMissionBlockade, label: "Abluka", description: "Bulunduğun denizdeki düşman ticaretini baskıla; tek başına savaş başlatmaz.", effect: "Etki: savaş gemisi başına -%50 ticaret; azami -%100.",
+				})
+			}
+		}
 		for _, candidate := range playerTransportFleets(gs, fleet.ID) {
 			options = append(options, navalMissionOption{
 				kind: army.NavalMissionEscort, targetFleet: candidate.ID,
-				label: "Escort → " + string(candidate.ID), description: "Seçili nakliye filosuna eşlik et.", effect: "Etki: aynı denizde nakliyeye +%15 deniz savunması; azami +%30.",
+				label: "Escort → " + string(candidate.ID), description: "Yalnız seçili nakliye filosunu koru.", effect: "Etki: aynı denizde nakliyeye +%15 deniz savunması; azami +%30.",
 			})
 		}
 	}
@@ -344,8 +350,9 @@ func (r *Renderer) drawNavalMissionTargetingOverlay(screen *ebiten.Image) {
 	if r == nil || !r.navalMissionTargeting || r.gs == nil {
 		return
 	}
+	fleet := r.gs.Armies[r.navalMissionArmy]
 	for _, region := range r.gs.Regions {
-		if !navalMissionTargetCandidate(r.gs, r.navalMissionKind, region) {
+		if !navalMissionTargetCandidate(r.gs, r.navalMissionKind, fleet, region) {
 			continue
 		}
 		sx, sy := r.regionScreenPos(region)
@@ -363,18 +370,43 @@ func (r *Renderer) drawNavalMissionTargetingOverlay(screen *ebiten.Image) {
 	DrawTextCentered(screen, stringsUpperTR(label)+" HEDEFİ: haritada uygun bölgeye tıkla • ESC: iptal", float64(ScreenWidth)/2, 14, FaceSmall, ColorGold)
 }
 
-func navalMissionTargetCandidate(gs *state.GameState, kind army.NavalMissionKind, region *world.Region) bool {
+func navalMissionTargetCandidate(gs *state.GameState, kind army.NavalMissionKind, fleet *army.Army, region *world.Region) bool {
 	if gs == nil || region == nil || region.IsLocked {
 		return false
 	}
 	switch kind {
-	case army.NavalMissionPatrol, army.NavalMissionBlockade:
-		return region.IsSea
+	case army.NavalMissionPatrol:
+		return fleet != nil && fleet.IsAtSea() && region.IsSea && region.ID == fleet.RegionID
+	case army.NavalMissionBlockade:
+		return fleet != nil && fleet.IsAtSea() && region.ID == fleet.RegionID && gs.IsValidNavalBlockadeTarget(fleet, region.ID)
 	case army.NavalMissionTransport:
 		return !region.IsSea && region.CanLandEnter() && region.IsCoastal(gs.Regions)
 	default:
 		return false
 	}
+}
+
+func navalMissionTargetCircleHit(cx, cy, mx, my float64) bool {
+	dx := mx - cx
+	dy := my - cy
+	return dx*dx+dy*dy <= 12*12
+}
+
+func (r *Renderer) navalMissionTargetHovering(fx, fy float64) bool {
+	if r == nil || !r.navalMissionTargeting || r.gs == nil {
+		return false
+	}
+	fleet := r.gs.Armies[r.navalMissionArmy]
+	for _, region := range r.gs.Regions {
+		if !navalMissionTargetCandidate(r.gs, r.navalMissionKind, fleet, region) {
+			continue
+		}
+		sx, sy := r.regionScreenPos(region)
+		if navalMissionTargetCircleHit(sx, sy, fx, fy) {
+			return true
+		}
+	}
+	return false
 }
 
 func stringsUpperTR(value string) string {
@@ -445,6 +477,16 @@ func (r *Renderer) handleNavalMissionPanelInput() InputAction {
 		aid := r.navalMissionArmy
 		r.closeNavalMissionPanel()
 		return InputAction{Kind: ActionAssignNavalMission, ArmyID: aid, BuildingID: string(option.kind), TargetArmyID: option.targetFleet}
+	}
+	if option.kind == army.NavalMissionPatrol || option.kind == army.NavalMissionBlockade {
+		aid := r.navalMissionArmy
+		fleet := r.gs.Armies[aid]
+		if fleet == nil {
+			r.closeNavalMissionPanel()
+			return InputAction{}
+		}
+		r.closeNavalMissionPanel()
+		return InputAction{Kind: ActionAssignNavalMission, ArmyID: aid, BuildingID: string(option.kind), TargetRegion: fleet.RegionID}
 	}
 	r.navalMissionTargeting = true
 	r.navalMissionKind = option.kind

@@ -112,7 +112,7 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 				continue
 			}
 			movePointsBefore := a.MovePoints
-			outcome := executeMove(s.gs, a, target, s.fid)
+			outcome := executeMoveWithNavalPatrol(s.gs, a, target, s.fid, aiNavalPatrolMoveIntent(s.gs, a, target, s.strategicContext))
 			updated := s.gs.Armies[aid]
 			if outcome.survived && updated != nil && updated.MovePoints >= movePointsBefore {
 				updated.MovePoints = 0

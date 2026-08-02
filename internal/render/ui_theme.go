@@ -28,6 +28,17 @@ var tinyButtonStyle = gameui.ButtonStyle{
 	BorderWidth:    1,
 }
 
+var dangerTinyButtonStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{145, 38, 32, 240},
+	Border:         color.RGBA{235, 105, 92, 255},
+	Text:           ColorWhite,
+	DisabledBG:     color.RGBA{65, 28, 25, 180},
+	DisabledBorder: color.RGBA{110, 55, 50, 170},
+	DisabledText:   color.RGBA{170, 125, 120, 190},
+	TextOffsetY:    0,
+	BorderWidth:    1,
+}
+
 var transportInfoButtonStyle = gameui.ButtonStyle{
 	BG:             color.RGBA{45, 38, 28, 230},
 	Border:         panelBorder,

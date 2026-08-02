@@ -304,7 +304,8 @@ func (s *GameState) RefreshMerchantTradeBonuses() {
 	}
 }
 
-// RefreshTradeRouteBlockades deniz savaş filolarının aktif ticaret rotalarına
+// RefreshTradeRouteBlockades açıkça Abluka görevi taşıyan deniz savaş
+// filolarının aktif ticaret rotalarına
 // verdiği kesintiyi gerçek konum ve savaş ilişkilerinden yeniden türetir.
 // Bir savaş gemisi rota ucundaki denizdeyse rota %50, iki veya daha fazla
 // savaş gemisi varsa tamamen ablukalı kabul edilir.
@@ -379,10 +380,10 @@ func (s *GameState) hostileWarshipCountInSea(seaID world.RegionID, targetOwners 
 	return count
 }
 
-// effectiveHostileWarshipCountInSea, açıkça Abluka görevi verilen veya legacy
-// görevsiz şekilde düşman denizinde duran gemilerin etkisinden, aynı denizdeki
-// sahip devriye gemilerini düşer. Böylece Devriye ticaret ve liman ikmalini
-// korur; Abluka ise aynı konumda gerçek ekonomik baskı yaratır.
+// effectiveHostileWarshipCountInSea, açıkça Abluka görevi verilen düşman
+// gemilerinin etkisinden, aynı denizdeki sahip devriye gemilerini düşer.
+// Böylece Devriye ticaret ve liman ikmalini korur; Abluka aynı konumda gerçek
+// ekonomik baskı yaratır.
 func (s *GameState) effectiveHostileWarshipCountInSea(seaID world.RegionID, targetOwners ...string) int {
 	hostile := s.hostileWarshipCountInSea(seaID, targetOwners...)
 	patrol := s.patrolWarshipCountInSea(seaID, targetOwners...)
@@ -394,7 +395,7 @@ func (s *GameState) effectiveHostileWarshipCountInSea(seaID world.RegionID, targ
 
 func (s *GameState) fleetCountsAsBlockade(fleet *army.Army, seaID world.RegionID) bool {
 	if fleet == nil || fleet.NavalMission == nil {
-		return true // eski/manual filo konumunun geriye dönük davranışı
+		return false
 	}
 	mission := fleet.NavalMission
 	return mission.Kind == army.NavalMissionBlockade && mission.TargetRegionID == seaID

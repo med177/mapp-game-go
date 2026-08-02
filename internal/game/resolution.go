@@ -427,6 +427,9 @@ func applyWinterAttrition(gs *state.GameState, a *army.Army) (lost int) {
 	if a == nil {
 		return 0
 	}
+	if a.IsNaval && gs.CanFleetAvoidSeaAttrition(a) {
+		return 0
+	}
 	route := merchantRouteForFleet(gs, a)
 	merchantRouteActive := a.IsNaval && route != nil && gs.MerchantFleetTradeRouteBonus(a, route) > 0
 	if !merchantRouteActive {
@@ -565,7 +568,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			}
 		}
 
-		income := int(float64(r.GoldIncome()) * goldMod * float64(harvestMod) / 100)
+		blockadeRetention := gs.RegionBlockadeOutputRetentionPercent(r)
+		income := state.ScaleBlockadeOutputForEconomy(int(float64(r.GoldIncome())*goldMod*float64(harvestMod)/100), blockadeRetention)
 		grain := int(float64(r.BaseGrainOutput) * grainMod)
 		iron := r.BaseIronOutput
 		timber := r.BaseTimberOutput
@@ -573,12 +577,19 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		spice := r.BaseSpiceOutput
 		cloth := r.BaseClothOutput
 		grain, iron, timber, stone, spice, cloth = applyTerrainSpecialization(r.Terrain, grain, iron, timber, stone, spice, cloth)
+		grain = state.ScaleBlockadeOutputForEconomy(grain, blockadeRetention)
+		iron = state.ScaleBlockadeOutputForEconomy(iron, blockadeRetention)
+		timber = state.ScaleBlockadeOutputForEconomy(timber, blockadeRetention)
+		stone = state.ScaleBlockadeOutputForEconomy(stone, blockadeRetention)
+		spice = state.ScaleBlockadeOutputForEconomy(spice, blockadeRetention)
+		cloth = state.ScaleBlockadeOutputForEconomy(cloth, blockadeRetention)
 
 		// Pasif ticaret geliri (TradeCapacity bazlı)
 		// TradeCapacityMod: pazar ve liman gibi binalar ticaret kapasitesini artırır
 		tradeIncome := economy.RegionTradeIncome(r.TradeCapacity, tradeCapMod)
 		// Mevsimsel ticaret modu uygula
 		tradeIncome = tradeIncome * s.TradeMod() / 100
+		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, blockadeRetention)
 		if fx, ok := effectsByFaction[r.OwnerID]; ok && fx.MarketGoldMod != 0 {
 			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
 		}
@@ -630,6 +641,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 	for fid, f := range gs.Factions {
 		fidStr := string(fid)
+		loot := gs.BlockadeLootForFaction(fid)
 
 		// Teknoloji bonusları
 		fx := effectsByFaction[fidStr]
@@ -638,10 +650,10 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		ownedCount := len(gs.RegionsOwnedBy(fid))
 		techGold := fx.GoldPerRegion * ownedCount
 
-		netGrain := int(float64(grainByFaction[fidStr]) * (1.0 + fx.GrainMod))
+		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
-		f.Gold += (incomeByFaction[fidStr] + techGold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		f.Gold += (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
 		f.Grain = status.Stockpile
 		if grainPenalty := grainShortageSatisfactionPenalty(status.SupplyLevel); grainPenalty > 0 {
 			for _, r := range gs.Regions {
@@ -651,11 +663,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 				satisfactionDeltaByRegion[r.ID] -= grainPenalty
 			}
 		}
-		f.Iron += int(float64(ironByFaction[fidStr]) * (1.0 + fx.IronMod))
-		f.Timber += int(float64(timberByFaction[fidStr]) * (1.0 + fx.TimberMod))
-		f.Stone += int(float64(stoneByFaction[fidStr]) * (1.0 + fx.StoneMod))
-		f.Spice += spiceByFaction[fidStr]
-		f.Cloth += clothByFaction[fidStr]
+		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron
+		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber
+		f.Stone += int(float64(stoneByFaction[fidStr])*(1.0+fx.StoneMod)) + loot.Stone
+		f.Spice += spiceByFaction[fidStr] + loot.Spice
+		f.Cloth += clothByFaction[fidStr] + loot.Cloth
 
 		// Memnuniyet tech bonusu tüm bölgelere
 		if fx.SatisfactionBonus > 0 {
@@ -729,7 +741,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			f.OverlordID = ""
 			continue
 		}
-		income := incomeByFaction[string(fid)] + effectsByFaction[string(fid)].GoldPerRegion*len(gs.RegionsOwnedBy(fid))
+		income := incomeByFaction[string(fid)] + effectsByFaction[string(fid)].GoldPerRegion*len(gs.RegionsOwnedBy(fid)) + gs.BlockadeLootForFaction(fid).Gold
 		if income <= 0 {
 			continue
 		}
@@ -920,7 +932,7 @@ func applyEmbarkedVoyageAttrition(gs *state.GameState) []navalVoyageAlert {
 		if a == nil || !a.IsNaval {
 			continue
 		}
-		if a.DockedRegionID != "" || len(a.EmbarkedUnits) == 0 {
+		if a.DockedRegionID != "" || gs.CanFleetAvoidSeaAttrition(a) || len(a.EmbarkedUnits) == 0 {
 			a.TurnsWithoutPort = 0
 			continue
 		}

@@ -192,7 +192,8 @@ func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
 	gs.Armies["blockader"] = &army.Army{
 		ID: "blockader", OwnerID: "genoa", RegionID: "med", IsNaval: true,
-		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+		NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "med"},
+		Units:        []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
 	}
 
 	gs.RefreshTradeRouteBlockades()
@@ -225,7 +226,8 @@ func TestPatrolCountersEnemyBlockadeForTradeRoute(t *testing.T) {
 	gs.UnitTypes["warship"] = &army.UnitType{ID: "warship", Category: army.CategoryNavalWar}
 	gs.Armies["blockader"] = &army.Army{
 		ID: "blockader", OwnerID: "genoa", RegionID: "med", IsNaval: true,
-		Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+		NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "med"},
+		Units:        []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
 	}
 	gs.RefreshTradeRouteBlockades()
 	if route.BlockadePercent != 50 {
@@ -281,13 +283,34 @@ func TestRegionBlockadePercentUsesHostileWarshipsAtPort(t *testing.T) {
 			"warship": {ID: "warship", Category: army.CategoryNavalWar},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"enemy_fleet":  {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+			"enemy_fleet":  {ID: "enemy_fleet", OwnerID: "genoa", RegionID: "sea", IsNaval: true, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
 			"docked_enemy": {ID: "docked_enemy", OwnerID: "genoa", RegionID: "sea", IsNaval: true, DockedRegionID: "genoa_port", DockedSettlementID: "genoa_port_settlement", Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
 		},
 	}
 
 	if got := gs.RegionBlockadePercent(gs.Regions["port"], "venice"); got != 50 {
 		t.Fatalf("liman ablukası %%%d olmalıydı, got=%d", 50, got)
+	}
+}
+
+func TestUnassignedFleetDoesNotCreateBlockade(t *testing.T) {
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"port": {ID: "port", OwnerID: "venice", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{Type: world.SettlementPort}}},
+			"sea":  {ID: "sea", IsSea: true},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("genoa", "venice"): {FactionA: "genoa", FactionB: "venice", Stance: faction.StanceWar},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy": {ID: "enemy", OwnerID: "genoa", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}},
+		},
+	}
+	if got := gs.RegionBlockadePercent(gs.Regions["port"], "venice"); got != 0 {
+		t.Fatalf("görevsiz filo ekonomik abluka oluşturmamalıydı, got=%d", got)
 	}
 }
 

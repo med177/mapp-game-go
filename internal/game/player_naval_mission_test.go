@@ -40,7 +40,7 @@ func TestPlayerTransportMissionTargetsCoastAfterSeaRoute(t *testing.T) {
 	}
 }
 
-func TestExecutePlayerNavalMissionsMovesFleetTowardAssignedSea(t *testing.T) {
+func TestExecutePlayerNavalMissionsKeepsPatrolInCurrentSea(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		UnitTypes: map[string]*army.UnitType{
@@ -59,10 +59,10 @@ func TestExecutePlayerNavalMissionsMovesFleetTowardAssignedSea(t *testing.T) {
 		},
 	}
 	(&Game{gs: gs}).executePlayerNavalMissions()
-	if gs.Armies["fleet"].RegionID != "target" {
-		t.Fatalf("görevli oyuncu filosu hedefe ilerlemedi: %s", gs.Armies["fleet"].RegionID)
+	if gs.Armies["fleet"].RegionID != "start" {
+		t.Fatalf("devriye filosu görev atandığı mevcut denizden ayrılmamalı: %s", gs.Armies["fleet"].RegionID)
 	}
-	if !gs.ArmyMoveUsage["fleet"] {
-		t.Fatal("otomatik görev hareketi ekonomi hareket kullanımına işlenmedi")
+	if gs.ArmyMoveUsage["fleet"] {
+		t.Fatal("mevcut denizde sabit kalan devriye filosu otomatik hareket kullanımı yazmamalı")
 	}
 }

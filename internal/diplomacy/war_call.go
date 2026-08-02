@@ -396,6 +396,24 @@ func queuePlayerWarJoinOffer(gs *state.GameState, callerRoot, enemyRoot, warDecl
 	return QueueWarJoinOffer(gs, callerRoot, gs.PlayerFactionID, warDeclarerRoot, enemyRoot, "Aktif ittifak savaş çağrısı")
 }
 
+// alreadyAtWar, savaş çağrısının alıcısının hedef düşmanla zaten aynı cephede
+// olup olmadığını realm kökleri üzerinden kontrol eder. Teklif kuyruğu ve modal
+// seçimi aynı geçerlilik kuralını kullanmalıdır.
+func alreadyAtWar(gs *state.GameState, first, second faction.FactionID) bool {
+	if gs == nil || first == "" || second == "" || first == second {
+		return false
+	}
+	firstRoot := realmRoot(gs, first)
+	if firstRoot == "" {
+		firstRoot = first
+	}
+	secondRoot := realmRoot(gs, second)
+	if secondRoot == "" {
+		secondRoot = second
+	}
+	return IsWar(gs, firstRoot, secondRoot)
+}
+
 func resolveWarCall(gs *state.GameState, callerRoot, allyRoot, enemyRoot faction.FactionID, breakOnRefusal bool) WarCallOutcome {
 	assessment := AssessWarCall(gs, callerRoot, allyRoot, enemyRoot)
 	outcome := WarCallOutcome{

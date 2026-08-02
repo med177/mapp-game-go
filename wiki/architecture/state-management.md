@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-01
+last_updated: 2026-08-02
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -110,7 +110,7 @@ AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korun
 
 `GameState.CollectDefenders()` birleşik savunmaya katılan gerçek orduları `ArmyID` sırasıyla toplar. Böylece 20 birim sınırına giren kompozisyon, kaynak ordu ID listesi ve sonrasındaki kayıp dağıtımı map iterasyon sırasından bağımsızdır; aynı state ve aynı savaş zarı aynı sonucu üretir.
 
-`SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz.
+`SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Denizden tahkimli kıyıya inerek başlatılan kuşatmalar `NavalLanding` ile işaretlenir. Barış bu kuşatmayı kapattığında `EvacuateNavalLandingSiegesAfterPeace()` hedefe en yakın toplam yeterli kapasitedeki dost nakliye filolarına birlikleri geri yükler; uygun filo yoksa orduyu en yakın kendi kara bölgesine taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz ve barışta düşman bölgesinde kara ordusu bırakılmaz.
 
 `WarLedger`, `RelationKey` ile aynı sıralı taraf anahtarında yalnız aktif savaşın kalıcı
 sonuç state'ini tutar: başlangıç turu, iki tarafın başlangıç kara bölgesi sayısı, tamamen
@@ -132,19 +132,48 @@ edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
 Donanma konumu iki katmanlıdır: `Army.RegionID` deniz rotası için kullanılan deniz ankrajını korur; filo limandaysa gerçek eş-konum `DockedSettlementID` (eski veride `DockedRegionID` fallback'i) olan `Army.LocationID()` ile okunur. `Army.IsAtSea()` yalnız dock bağı olmayan filoları açık deniz savaşı, abluka ve AI deniz tehdidi hesaplarına dahil eder. Deniz hareketi dock bağını temizleyerek hedef deniz bölgesini tekrar kanonik konum yapar. Save yükleme bu state'i olduğu gibi korur; eski dock migrasyonu yalnız başlangıç senaryosundaki eksik dock verisi için çalışır.
 
 Oyuncu filosunun kalıcı görevi `Army.NavalMission` içinde tutulur. `patrol` ve
-`blockade` deniz bölgesi, `escort` aynı devlete ait nakliye filosu, `transport`
+`blockade` filonun o an bulunduğu açık deniz bölgesini, `escort` aynı devlete ait nakliye filosu, `transport`
 ise taşınan kara ordusu ile kıyı kara bölgesini hedefler. Atama ve temizleme
 `GameState.CanAssignNavalMission()`, `AssignNavalMission()` ve
 `ClearNavalMission()` kapılarından geçer; compact save/load `nm` alanıyla bu
 görevi korur. `internal/game/player_naval_mission.go` her yeni turda hareket
-puanı yenilendikten sonra deterministik deniz BFS'iyle filoyu hedefe yaklaştırır;
-nakliye hedef kıyıya ulaştığında mevcut çıkarma/komşuluk çözümünü kullanır.
-Görev etkileri de konuma ve göreve göre ayrıdır: açık denizdeki `blockade`
-filoları rota/liman kesintisi üretir; `patrol` filoları aynı denizdeki dost rota
-ve liman üzerindeki düşman abluka gemilerini dengeleyebilir. `escort` görevi,
+puanı yenilendikten sonra yalnız nakliye filosunu deterministik deniz BFS'iyle
+hedef kıyıya yaklaştırır; nakliye hedef kıyıya ulaştığında mevcut
+çıkarma/komşuluk çözümünü kullanır. Devriye ve abluka görevi mevcut denizde
+kalır, görev ataması filoyu başka bir denize hareket ettirmez.
+Devriye ve abluka yalnızca filo açık denizdeyken görev panelinden atanır; panel
+hedef haritası açmaz ve tıklanan görev doğrudan mevcut `RegionID`'yi hedefler.
+Limana bağlı filo için bu iki görev seçeneği gösterilmez. Devriye açık denizde
+atanabilir; `blockade` hedefi ise yalnızca savaş halindeki düşmanın kıyı kara bölgelerine
+komşu denizler arasından seçilebilir; açık deniz hedefleri state kapısından
+reddedilir.
+Görev etkileri de konuma ve göreve göre ayrıdır: görevsiz filolar aynı denizde
+savaş başlatmaz. Açık denizdeki `blockade` filoları rota/liman kesintisi üretir;
+`patrol` filoları aynı denizdeki dost rota ve liman üzerindeki hedef denize
+atanmış düşman `blockade` filosunu otomatik yakalar; `blockade` görevi tek
+başına savaş başlatmaz. Açık deniz saldırısı yalnız savaş planı onayındaki
+doğrudan saldırı emriyle başlar. `escort` görevi,
 aynı denizde savunmaya katılan nakliye filosuna yüzde 15 deniz savunması verir;
 çoklu escort bonusu yüzde 30 ile sınırlıdır. Devriye veya escort görevi verilen
 oyuncu savaş gemisi hedef denizde abluka kesintisi sayılmaz.
+
+Açık denizde düşman filo tespit edildiğinde geçici `GameState.PendingNavalContact`
+kaydı oluşturulur. Kayıt iki filo, deniz bölgesi, temas nedeni ve iki tarafın
+kararını taşır; save'e yazılmaz. Aynı denize hareket ve savaş açıldığı anda zaten
+aynı denizde bulunan filolar için temas üretilebilir. Filo zaten düşmanla aynı
+denizdeyken yeni `Devriye` veya `Abluka` görevi atanması da temas üretir; aynı
+görevin tekrar atanması yeni temas oluşturmaz. Oyuncuya ortak üç seçenekli
+modal açılır: `Çatış`, `Geri çekil`, `Pozisyonu koru`. Devriye ve görevsiz filo
+varsayılan olarak `Çatış`, abluka filosu `Pozisyonu koru` seçer; savaş yalnız iki tarafın
+kararı da `Çatış` olduğunda çözülür. Savaş açılışı temasında AI tarafı varsayılan
+olarak `Çatış` seçer. `QueueNavalContactForWar()` ve
+`NavalContactDecisionForPlayer()` bu geçici kararı merkezi state kapısından yönetir.
+Oyuncu filosunun hareket puanı yoksa `Geri çekil` seçeneği modalda pasif kalır ve
+state katmanı da bu kararı kabul etmez. Geçerli bir geri çekilme, 2 hareket puanı
+harcar; filonun kalan puanı 2'den azsa sıfıra indirilir. Hedef komşu denizler
+arasında düşman filosu olmayan bölge varsa geri çekilme rotası onu seçer ve
+temasın geldiği kaynak denizi dışarıda bırakır. Güvenli hedef yoksa state kapısı
+geri çekilme kararını reddeder.
 
 `Army` state'i içinde artık `IsGarrison` alanı bulunur. Senaryo/save dosyalarındaki eski `army_garrison_*` veya `*_garrison` ID'leri load sırasında normalize edilerek bu bayrağa taşınır; böylece saha ordusu limiti ile sabit garnizon başlangıç birlikleri birbirine karışmaz.
 
@@ -256,6 +285,8 @@ save/load ise alanı campaign state içinde korur.
 
 `RegionProductionSummary(region) RegionProductionSummary` — seçili bölgenin efektif altın/mal üretimini hesaplar; bina çarpanları, arazi uzmanlaşması, mevsim ticaret/hasat etkileri ve sahip fraksiyonun ekonomi teknolojilerini UI önizlemesiyle paylaşır
 
+`RegionBlockadeEconomicEffect(region)` liman ablukasını ekonomi katsayılarına çevirir: `%50` abluka bölgesel vergi, yerel ticaret ve kaynak üretiminin `%75`'ini bırakır; `%100` abluka `%50` bırakır. `RegionProductionSummary()` ve `applyEconomyTick()` aynı retention hesabını kullanır. `BlockadeLootForFaction()` ise etkili savaş gemisi katkısını deterministik paylaşarak ablukacıya sırasıyla `%5` veya `%10` oranında altın ve mal aktarır; kuşatma altındaki limanlar ekonomi tick'inde olduğu gibi loot tabanına dahil edilmez. `UnblockedRegionProductionSummary()` yalnız bu loot tabanı için kullanılır. `BlockadeLootGoldForFleet()` aynı zinciri tek bir abluka filosunun tooltip'te gösterilecek altın katkısına indirger.
+
 `FindSettlementByID(settlementID)` — settlement ID'den region + settlement çözümlemesi yapar
 
 `Region.SettlementPopulation()` / `Region.RecalculatePopulation()` — yerleşim nüfuslarını toplar ve `Population = RuralPopulation + yerleşim toplamı` sözleşmesini korur. Eski save'lerde yalnız toplam nüfus varsa fark kırsal nüfusa göç edilir.
@@ -283,6 +314,8 @@ save/load ise alanı campaign state içinde korur.
 `GameState.AutoGrainExport` / `ApplyAutomaticGrainExport()` — Pazar sekmesindeki tercihi ve ekonomi tick'inde kapasite üzeri tahılın aktif, savaşta olmayan ticaret ağı partnerlerine faction ID sırasıyla %60 fiyatla satışını yönetir. Alıcı altını yetersizse miktar alıcının bütçesiyle sınırlanır; tercih compact save alanında korunur, gerçekleşen miktar ve altın runtime `GrainEconomyStatus` içinde raporlanır.
 
 `GameState.CanArmyReplenishIn()` / `ReplenishArmyInFriendlyTerritory()` — kendi, müttefik veya aynı realm içindeki vassal bölgesinde bulunan ordunun dost ikmal uygunluğunu ve ücretsiz HP uygulamasını ortaklaştırır; aktif kuşatma istisnası çözümleme katmanında korunur. `applyGrainFundedArmyReplenishment()` mevcut ücretsiz dost-toprak toparlanmasına ek olarak kapasite üstü tahılı dost ve kuşatma dışı kara ordularına aktarır. Faction/army ID sırası deterministiktir, ordu başına en fazla +10 HP verilir ve 1 HP başına 1 tahıl tüketilir; rezerv kapasitesi altına inilmez.
+
+`GameState.CanFleetAvoidSeaAttrition()` — açık denizdeki filonun komşu deniz bölgesine bağlı limanlı kara bölgeleri arasında filo sahibinin kendi toprağını, aynı realm içindeki vassal toprağını veya müttefik toprağını arar. Bu kapı kış donanma yıpranması ile embarked sefer yıpranmasında birlikte kullanılır; limanlı dost kıyı komşuluğunda gemi ve taşınan birlik hasar almaz, limansız kıyıda normal yıpranma sürer.
 
 `GameState.StrategicGrainDemand()` / `StrategicGrainSurplus()` — fraksiyonun üç aylık güvenli rezerv hedefindeki açığı ve kapasite üstü ihraç edilebilir stoku hesaplar. Diplomasi yeni rota kurarken bu iki sinyalle hedefteki tahıl ihtiyacını kaynak fazlasına bağlar; sinyal save'e yazılmaz ve her ekonomi tick'inde yeniden türetilir.
 

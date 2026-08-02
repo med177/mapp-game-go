@@ -2310,7 +2310,7 @@
   {
     "id": "trebizond",
     "name": "Trebizond",
-    "name_tr": "Trabzon Rum İmparatorluğu",
+    "name_tr": "Trabzon İmparatorluğu",
     "terrain": "coast",
     "owner_id": "trebizond_emp",
     "successor_faction_id": "trebizond_emp",

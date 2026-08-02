@@ -1,0 +1,88 @@
+package state
+
+import (
+	"testing"
+
+	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
+)
+
+func navalLandingPeaceState(withFleet bool) *GameState {
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"target":   {ID: "target", OwnerID: "b", WorldX: 100, WorldY: 0},
+			"home":     {ID: "home", OwnerID: "a", WorldX: 0, WorldY: 100},
+			"nearland": {ID: "nearland", OwnerID: "a", WorldX: 110, WorldY: 0},
+			"farland":  {ID: "farland", OwnerID: "a", WorldX: 1000, WorldY: 0},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Embarkable: true},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"landing": {
+				ID: "landing", OwnerID: "a", RegionID: "target",
+				Units: []army.Unit{{TypeID: "inf"}, {TypeID: "inf"}},
+			},
+		},
+		Sieges: map[world.RegionID]*SiegeState{
+			"target": {RegionID: "target", AttackerArmyID: "landing", AttackerFactionID: "a", NavalLanding: true},
+		},
+	}
+	if withFleet {
+		gs.Regions["nearsea"] = &world.Region{ID: "nearsea", IsSea: true, WorldX: 100, WorldY: 20}
+		gs.Regions["farsea"] = &world.Region{ID: "farsea", IsSea: true, WorldX: 0, WorldY: 1000}
+		gs.Armies["near-fleet"] = &army.Army{
+			ID: "near-fleet", OwnerID: "a", RegionID: "nearsea", IsNaval: true,
+			Units: []army.Unit{{TypeID: "transport"}},
+		}
+		gs.Armies["far-fleet"] = &army.Army{
+			ID: "far-fleet", OwnerID: "a", RegionID: "farsea", IsNaval: true,
+			Units: []army.Unit{{TypeID: "transport"}},
+		}
+	}
+	return gs
+}
+
+func TestEvacuateNavalLandingSiegeReembarksAtNearestTransportFleet(t *testing.T) {
+	gs := navalLandingPeaceState(true)
+	commander := army.NewCommander("landing-commander", "Çıkarma Komutanı")
+	gs.Armies["landing"].Commander = commander
+	commander.AssignedArmyID = "landing"
+
+	if got := gs.EvacuateNavalLandingSiegesAfterPeace([]faction.FactionID{"a"}, []faction.FactionID{"b"}); got != 1 {
+		t.Fatalf("tek kuşatma tahliye edilmeli, got=%d", got)
+	}
+	if _, ok := gs.Armies["landing"]; ok {
+		t.Fatal("yeniden gemiye binen kara ordusu state'ten kaldırılmalı")
+	}
+	nearFleet := gs.Armies["near-fleet"]
+	if len(nearFleet.EmbarkedUnits) != 2 || nearFleet.EmbarkedCommander != commander {
+		t.Fatalf("en yakın nakliye filosuna birlik ve kara komutanı aktarılmalıydı: %+v", nearFleet)
+	}
+	if len(gs.Armies["far-fleet"].EmbarkedUnits) != 0 {
+		t.Fatal("uzak nakliye filosu tercih edilmemeliydi")
+	}
+	if gs.SiegeAt("target") != nil {
+		t.Fatal("barış sonrası denizden kurulan kuşatma kaldırılmalı")
+	}
+}
+
+func TestEvacuateNavalLandingSiegeRetreatsToNearestOwnedRegionWithoutFleet(t *testing.T) {
+	gs := navalLandingPeaceState(false)
+
+	if got := gs.EvacuateNavalLandingSiegesAfterPeace([]faction.FactionID{"a"}, []faction.FactionID{"b"}); got != 1 {
+		t.Fatalf("tek kuşatma geri çekilmeli, got=%d", got)
+	}
+	if army := gs.Armies["landing"]; army == nil || army.RegionID != "nearland" {
+		t.Fatalf("nakliye yoksa ordu en yakın kendi bölgesine çekilmeli: %+v", army)
+	}
+	if gs.SiegeAt("target") != nil {
+		t.Fatal("geri çekilmede kuşatma kaldırılmalı")
+	}
+}

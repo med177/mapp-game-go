@@ -26,6 +26,8 @@ type buildingCardComponent struct {
 	QueuedCount int
 	TurnsLeft   int
 	CanAfford   bool
+	CanDemolish bool
+	DemolishBtn gameui.Button
 }
 
 var (
@@ -48,6 +50,18 @@ func lastDrawnBuildingGridHit(mx, my float64, rid world.RegionID) (string, bool)
 		}
 	}
 	return "", true
+}
+
+func lastDrawnBuildingGridDemolishHit(mx, my float64, rid world.RegionID) (string, bool) {
+	if rid == "" || lastBuildingGridRegionID != rid || lastBuildingGridCards == nil {
+		return "", false
+	}
+	for _, card := range lastBuildingGridCards {
+		if card.CanDemolish && card.DemolishBtn.HitTest(mx, my) {
+			return card.ID, true
+		}
+	}
+	return "", false
 }
 
 func buildBuildingCardComponents(gs *state.GameState, region *world.Region, panelX, startY, panelW float32) []buildingCardComponent {
@@ -99,6 +113,7 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 		}
 
 		rect, imageRect, labelY := buildingCardLayout(panelX, startY, panelW, i)
+		canDemolish := builtCount[bid] > 0 && queuedSet[bid] == 0 && regionBuildingDemolitionAvailable(gs, region)
 		spriteRect := imageRect
 		if sprite := buildingSpriteImage(bid); sprite != nil {
 			spriteRect = buildingSpriteDrawRect(sprite, imageRect)
@@ -116,14 +131,27 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 			QueuedCount: queuedSet[bid],
 			TurnsLeft:   queuedTurnsMin[bid],
 			CanAfford:   canAfford,
+			CanDemolish: canDemolish,
+			DemolishBtn: buildingDemolishButton(rect),
 		})
 	}
 	return cards
 }
 
+func buildingDemolishButton(cardRect gameui.Rect) gameui.Button {
+	const size = 16.0
+	btn := gameui.NewButton(cardRect.X+cardRect.W-size-2, cardRect.Y+2, size, size, "").WithIcon(gameui.IconX)
+	btn.IconSize = 10
+	return btn
+}
+
 func regionBuildingActionsAvailable(gs *state.GameState, region *world.Region) bool {
 	return gs != nil && region != nil && !region.IsSea && !region.IsLocked &&
 		region.OwnerID != "" && region.OwnerID == string(gs.PlayerFactionID)
+}
+
+func regionBuildingDemolitionAvailable(gs *state.GameState, region *world.Region) bool {
+	return regionBuildingActionsAvailable(gs, region) && gs.SiegeAt(region.ID) == nil
 }
 
 func buildingCardLayout(panelX, startY, panelW float32, index int) (gameui.Rect, gameui.Rect, float64) {
@@ -205,6 +233,9 @@ func (c buildingCardComponent) Draw(screen *ebiten.Image) {
 	}
 	if isQueued {
 		c.drawQueuedBadge(screen)
+	}
+	if c.CanDemolish {
+		drawUIButtonWidget(screen, c.DemolishBtn, dangerTinyButtonStyle)
 	}
 }
 

@@ -162,7 +162,7 @@ new_factions = [
     {
         "id": "trebizond_emp",
         "name": "Empire of Trebizond",
-        "name_tr": "Trabzon Rum İmparatorluğu",
+        "name_tr": "Trabzon İmparatorluğu",
         "religion": "orthodox",
         "color": [55, 175, 120],
         "is_playable": True,

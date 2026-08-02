@@ -1412,3 +1412,24 @@ func TestCompleteBuildingPortCreatesPortSettlement(t *testing.T) {
 		t.Fatalf("port settlement deniz sinirina yakin olmalıydı, got=(%d,%d)", portSettlement.X, portSettlement.Y)
 	}
 }
+
+func TestAutoPortSettlementPointRejectsSharedCountryShape(t *testing.T) {
+	land := &world.Region{
+		ID:        "land",
+		ShapeID:   "RUS",
+		WorldX:    100,
+		WorldY:    100,
+		Neighbors: []world.RegionID{"sea"},
+		Shape:     [][][2]float32{{{70, 70}, {130, 70}, {130, 130}, {70, 130}}},
+	}
+	otherLand := &world.Region{ID: "other", ShapeID: "RUS"}
+	sea := &world.Region{ID: "sea", IsSea: true, WorldX: 160, WorldY: 100}
+
+	if _, _, ok := autoPortSettlementPoint(land, map[world.RegionID]*world.Region{
+		land.ID:      land,
+		otherLand.ID: otherLand,
+		sea.ID:       sea,
+	}); ok {
+		t.Fatal("paylaşılan ülke shape'i bölgenin gerçek kıyısı yerine kullanılmamalıydı")
+	}
+}

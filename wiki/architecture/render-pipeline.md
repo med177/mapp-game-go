@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-01
+last_updated: 2026-08-02
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
@@ -33,10 +33,35 @@ filolar harita dokusu cache'ini geçersiz kılar ve kırmızı alan eski deniz h
 kalmaz. `enemyNavalRegionSet()` oyuncu realm'i, savaş ilişkisi ve `IsAtSea()`
 kanonik state helper'larını birlikte kullanır.
 
+Bir liman bölgesi `GameState.RegionBlockadePercent()` ile abluka altındaysa kara-
+deniz sınırının üzerine 4 px kalın koyu kırmızı kıyı overlay'i çizilir. Overlay,
+bölgenin toplam kıyı segment uzunluğuna göre deterministik biçimde kaplanır:
+`%50` kıyının yarısını, `%100` tamamını boyar. Base diplomasi sınırı korunur;
+seçili bölge veya normal düşman sınırı üstünde yalnızca abluka kısmı eklenir.
+Abluka yüzdesi `borderDiplomacySignature()` içinde cache anahtarına dahil edildiği
+için filo görevi, savaş gemisi sayısı veya devriye karşılığı değiştiğinde çizgi
+aynı yenilemede güncellenir (`internal/render/map_borders.go`, `mapgen.go`).
+
+Bölge panelindeki üretim grid'i `GameState.RegionProductionSummary()` ile sonraki
+turun abluka etkisini anında gösterir. Abluka varsa grid'in altında koyu turuncu
+`Abluka %X • sonraki tur yerel -%Y` satırı çizilir; üst kaynak HUD'u da
+`FactionProductionSummary()`, tahıl net değişimi ve `victory.CurrentGoldIncome()`
+üzerinden aynı azaltılmış değerleri kullanır. Böylece gemi liman denizine girdiği
+anda oyuncu vergi, yerel ticaret ve üretim kaybını sonraki tur geliri olarak görür.
+
+Devlet bilgi panelindeki `Kaynaklar` grid'inin son satırı seçilen devletin brüt
+tur başı altın gelirini `Gelir +N/tur` biçiminde gösterir. Bu değer oyuncu HUD'undan
+ayrı hesaplanmaz; her iki görünüm `victory.GoldIncomeForFaction()` üzerinden aynı
+bölge, ticaret rotası, abluka, ganimet ve teknoloji gelir zincirini kullanır
+(`internal/render/panel.go`, `internal/victory/victory.go`).
+
 Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
 `internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/nakliye
-hedefi için modal kapanıp haritaya hedef seçme modu girer; geçerli deniz veya
-kıyı bölgeleri renkli dairelerle işaretlenir ve ESC iptal eder. Escort görevi
+görevlerinden yalnızca nakliye için modal kapanıp haritaya hedef seçme modu
+girer; geçerli kıyı bölgeleri renkli dairelerle işaretlenir. Devriye ve abluka
+filonun bulunduğu açık denizde doğrudan uygulanır; abluka seçeneği yalnız savaş
+halindeki düşmanın kıyısına komşu denizde gösterilir. Hedef dairelerinin üzerinde OS
+cursor parmağa dönüşür ve ESC seçim modunu iptal eder. Escort görevi
 aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu aktif
 bonus rozetini, panel footer'ı ise görev ve hedef bölge metnini gösterir; görev
 temizleme ve yeniden atama aynı input önceliğini kullanır.
@@ -67,7 +92,8 @@ Oyuncu bir rota satırını seçtiğinde aynı hedef deniz `merchantRouteHighlig
 renderer state'ine yazılır ve `WorldMap.Refresh()` seçili deniz vurgusuyla
 haritada işaretler. Buna ek olarak hedefin merkezinde normal bölge seçimi
 tint'inden farklı altın/cyan reticle çizilir. Seçim sırasında açık ordu paneli
-kapatılır; rota hedefi panel kapansa veya başka bir filo seçilse de korunur,
+kapatılır ve kamera hedef deniz bölgesinin gerçek `RegionAnchor` noktasına
+odaklanır; rota hedefi panel kapansa veya başka bir filo seçilse de korunur,
 oyuncu başka bir bölge seçtiğinde temizlenir (`renderer.go`,
 `renderer_input.go`).
 
@@ -80,16 +106,29 @@ bonus satırı satır genişliğine kırpılır ve çizim ile görünür satır 
 filoları, ikonlarının yanında küçük dairesel bonus rozeti taşır; ablukada
 `50/100`, devriyede `+1`, escort'ta `15` değeri görünür. Rozetin hover alanı
 `navalMissionBonusBadgeRect()` ile aynı geometry'yi kullanır ve ayrıntı tooltip'i
-hedef bölge ile etkinin açıklamasını gösterir (`internal/render/renderer.go`,
+hedef bölge ile etkinin açıklamasını gösterir. Abluka tooltip'i ayrıca
+`BlockadeLootGoldForFleet()` sonucunu `Gelir katkısı (ganimet): +N altın/tur`
+olarak gösterir (`internal/render/renderer.go`,
 `internal/render/naval_mission_effects.go`). Büyük, kalıcı hedef bölge marker'ı
 çizilmez.
+Görevsiz filoların aynı denizde savaşmaması ve doğrudan saldırının savaş planı
+onayıyla işaretlenmesi `InputAction.NavalAttack` alanıyla oyun katmanına taşınır;
+devriye-abluka otomatik karşılaşması ise görev hareketinde ayrıca çözülür.
 Mavi görev ve sarı ticaret bonus rozetleri tüm ordu ikonları ve komutan
 portreleri çizildikten sonra ayrı bir ön-plan geçişinde çizilir; komşu donanma
 marker'ları veya komutan resimleri bu rozetlerin üstüne çıkamaz. Zayiat `!`
 rozeti kara ordusu ve filonun ortak sol-üst anchor'ında tutulur
 (`armyDamageBadgeCenter()`).
-Aynı görev bonus rozetinde escort rengi sarı yerine yeşil-haki olarak ayrıştırılır;
-devriye, abluka ve ticaret bonus renkleri korunur (`internal/render/naval_mission_effects.go`).
+Ticaret rotasına atanmış filonun sarı `+N` rozeti de görev rozetleriyle aynı
+`navalUpperRightBadgeCenter()` sağ-üst anchor'ını paylaşır. Çizim, cursor
+hit-test'i ve hover tooltip'i `merchantTradeBonusBadgeRect()` geometry'sinden
+türetilir; tooltip rota hacim bonusunu ve abluka sonrası tur başına altın
+katkısını gösterir (`merchantTradeBonusHitAt()`,
+`merchantTradeBonusTooltipText()`).
+Aynı görev bonus rozetinde escort rengi yeşil-haki olarak ayrıştırılır ve escort
+bonusu dairesel rozet yerine düz üst kenarlı, altı eğri birleşen kalkan silueti
+olarak çizilir; devriye, abluka ve ticaret bonus görünümleri korunur
+(`internal/render/naval_mission_effects.go`, `internal/render/renderer.go`).
 Abluka, Devriye ve Escort için ayrı görev harfi kareleri çizilmez. Bonus
 dairesindeki açık renkli dış border kaldırılmıştır; değer metni görev türüne
 göre kontrast renk alır.
@@ -170,6 +209,10 @@ de aynı action-bar geometrisini kullanır. Aksiyon `internal/game/game.go` içi
 devleti beş milis ve düşük kaynaklarla yeniden etkinleştirir. Savaş sonrası ardıl
 karar paneli ise yalnız `GameState.CanRestoreSuccessorAtRegion()` true olduğunda
 açılır; aktif ardıl devlet için fetih panel beklemeden ilhak edilir.
+Ardıl devlet elenmişse bölge aksiyon bandı hem solda `Tahıl Yardımı` hem sağda
+`Özgürleştir` düğmesini gösterir; iki düğmenin rect'i ortak çizim/hit-test
+geometrisinden türetilir. `Özgürleştir` hover'ı ardıl devletin görünen adını
+tooltip olarak gösterir (`internal/render/{panel.go,hover_tooltip.go}`).
 
 Savaş raporu sonrasında ardıl metadata'sı için kullanılan üçlü karar paneli,
 `QueueThreeChoiceDialogAfterBattleReport()` ile rapor kapanana kadar kuyruğa alınır.
@@ -285,6 +328,15 @@ liman hedefi sabit koyu mavi daireyle, çıkarma merkezi ise kareyle ayrıştır
 sağ tık ise mevcut bölge ID'si akışını korur (`internal/render/renderer.go`,
 `renderer_naval_transport_test.go`).
 
+Port binası tamamlandığında otomatik oluşturulan `SettlementPort` noktası,
+`WorldMap.CoastalSettlementPoint()` ile ilgili kara bölgesinin gerçek raster
+haritasında deniz komşusuyla ortak kara piksel sınırından seçilir ve küçük bir
+kara içi payla yerleştirilir. Böylece aynı `ShapeID`'yi paylaşan büyük ülke
+poligonlarının uzak veya dağlık kenarları liman konumu olarak seçilmez. Dünya
+haritası hazır değilse yalnız benzersiz bölge shape'i kullanılabilir; aksi halde
+merkez-deniz güvenli fallback'i korunur (`internal/render/mapgen.go`,
+`internal/game/production.go`).
+
 Geliştirme modunda `F3` ile açılan AI teşhis modalı, `ai.BuildAIDiagnosticSnapshot`
 çıktısını gösterir. `ESC/F3` modalı kapatır, `TAB` devlet değiştirir ve mouse
 tekeri yalnız modal içeriğini kaydırır; modal açıkken harita input'u tüketilir.
@@ -329,6 +381,14 @@ Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusu
 Alt HUD'daki `Ordu` butonunun etkinliği birim maliyetinin karşılanmasına bağlı değildir. Oyuncunun sahip olduğu uygun kara bölgesinde panel açılabiliyorsa buton açık kalır; kaynak yetersizliği recruit kartında gösterilir ve üretim emri oluşturulurken oyun katmanında yeniden doğrulanır (`internal/render/recruit_panel.go`, `internal/game/game.go`).
 
 Bina kartlarının inşa edilebilirlik ve hover davranışı yalnızca oyuncunun sahibi olduğu, kilitli olmayan kara bölgelerinde aktiftir. Oyuncuya ait olmayan bölgelerde kartlar görünmeye devam eder ancak kaynak yeterli olsa bile bina etiketi altın sarısı kalır ve bina detay popup'ı açılmaz; bina tıklama hit-test'i de aynı sahiplik kontrolünü kullanır (`internal/render/building_card_component.go`, `panel.go`, `hover_tooltip.go`).
+
+Oyuncunun kendi bölgesindeki tamamlanmış ve bekleyen inşaatı olmayan bina kartlarının
+sağ üstünde kırmızı ortak `gameui.Button`/`IconX` yıkım düğmesi çizilir.
+Düğmenin rect'i kart komponentinden türetilir; cursor, input ve çizim aynı
+`BuildingGridDemolishHitTest` seam'ini kullanır. Tıklama doğrudan state'i değiştirmez,
+`renderer_dialogs.go` içindeki ortak confirm modalını açarak `ActionDemolishBuilding`
+aksiyonunu bekletir (`internal/render/building_card_component.go`, `panel.go`,
+`renderer_input.go`, `renderer_dialogs.go`).
 
 Kuşatılan bölgedeki bölge sahibi veya müttefik kara ordusu komşu dost/sahipsiz hedefe sağ tıkladığında savaş planı kuşatan orduya karşı açılır; preview kaynak bölgenin arazisini, başarılı hareket ise seçilen hedefi kullanır. Ordu paneli ve birim kartları bu durumda `Takviye aktif` göstergesi çizmez.
 
@@ -461,6 +521,15 @@ Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_c
 Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Her iki sayfadaki sağ kolon seçili devletin aktif ilişkilerini esas alır; savaş ve ittifak `Relation.Stance`, ticaret ise ittifaktan bağımsız aktif `TradeRoutes` kayıtları üzerinden listelenir. Vassal realm içindeki zorunlu allied kayıtları dış ittifak listesine karıştırılmaz. Geçmiş sürekli açık tutulmaz; `Geçmiş / İlişkiler` düğmesi aynı kolonda görünüm değiştirir. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir. Liste seçimi press yerine release ile tamamlanır; drag eşiği aşılırsa satır seçimi iptal edilip liste row-height bazlı sürükleme scroll'una geçer. Vassal satırına ikinci kez tıklanınca dış overlord teklif paneli açılır; oyuncunun kendi vassalında mevcut vassal yönetim kartı korunur. Tam teklif paneli ile bölge panelindeki hızlı diplomasi butonları aynı validasyon helper'ını kullanır; geçersiz aksiyonlar `PASİF` görünür, fare/klavye odağına alınmaz ve `Teklif Gönder` backend çağrısından önce de bloklanır. Doğrudan oyuncu vassalında standart tekliflerden ayrı yönetim kartı açılır; iki yönetim eylemi de genel confirm modalı üzerinden oyun katmanına iletilir. Ticaret teklifindeki yüzde gerçek kabul motoruyla aynı helper'dan gelir; yani panelde görülen olasılık, submit anındaki trade acceptance kuralından ayrı akmaz. Teklif paneli ayrıca `Heyet`, `Hediye` ve `Vassallık` aksiyonlarını taşır; vassal / overlord hedeflerinde durum satırı özel hiyerarşi etiketi gösterir.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir. Ancak hedef deniz bölgesinde savaş halindeki düşman donanma varsa artık doğrudan move üretilmez; önce `Deniz Muharebesi Planı` modalı açılır ve seçilen duruş `ActionMoveArmy.BattleStance` alanıyla oyun katmanına taşınır. Kara ordusu savaş halindeki veya savaş ilanı sonrası çatışmaya gireceği düşman kara bölgesine sağ tıkladığında da aynı modal `Kara Muharebesi` başlığıyla açılır. Hedef kara bölgesi tahkimliyse savaş ilanı onayından sonra doğrudan move yerine `Kuşatma Kararı` modalına geçilir; kuşatma birimi olmayan ordu da kuşatma başlatabilir ve `Genel Hücum` düğmesini kullanabilir, ancak gedik yoksa tahkimat doğrudan düşmez. Aktif kuşatma yürüten bir ordu seçildiğinde ayrı `Kuşatma Emri` paneli açılır; panel ve kuşatma karar mesajı komutanın operasyon bonuslarını (`moral / hareket / kuşatma`) da açıkça yazar. Oyuncu bu panel açıkken başka komşu bölgeye sağ tıklarsa kuşatma ayrıca onay istemeden kaldırılmış sayılır ve hareket emri çözülür. Aynı aktif kuşatmaya aynı fraksiyon, müttefik fraksiyon veya aynı vassal zincirindeki realm üyeleri normal hareketle destek verebilir; ilgisiz üçüncü devletlerin ikinci kuşatma hamlesi render'da da bloklanır. Tahkimli ve zaten kuşatılmış kara bölgesinde enemy besieger ile savaş mümkünse sağ tık hareketi kuşatma kararına gitmez; battle plan / declare-war flow açılır ve kazanılan savaş kuşatmayı kaldırır ama yeni kuşatma oluşturmaz. Seçili nakliye filosu düşman kıyıya çıkarma yaparken savunan ordu varsa bu kez `Çıkarma Muharebesi Planı` açılır ve seçim `ActionDisembarkArmy.BattleStance` olarak iletilir; preview üst bandı bu durumda da gerçek çıkarma komutanını gösterir. Donanma ayrıca sahibi olunan, müttefik olunan veya aynı realm içinde olunan, port settlement içeren komşu kara bölgesine docking emri de alabilir; bu durumda savaş onayı açılmaz ve filo deniz bölgesi konumunu koruyup liman anchor'ına bağlanır. Seçili kara ordusu, komşu deniz bölgesindeki dost nakliye filosuna doğrudan sağ tıklarsa ayrı `Gemiye Bin` onay diyaloğu açılır; UI yalnız filonun kalan kapasitesi orduyu taşımaya yetiyorsa bu emri sunar ve uygun filo ikonu ayrıca `BIN` hedef rozeti ile vurgulanır. Seçili nakliye filosu gemide birlik taşırken dost, aynı realm veya boş kara bölgesine indirme yapabiliyorsa hedef bölge üstünde `IN` rozeti görünür ve sağ tık önce `Karaya In` onay diyaloğu açar; bu onay normal move değil zorunlu indirme aksiyonunu tetikler, yani liman uygunsa bile asker önce karaya iner ve filo denizde kalır.
+Not: Aynı denize giriş veya savaş açılışı sırasında tespit edilen düşman filo için
+`Düşman Filo Tespit Edildi` üç seçenekli ortak modalı açılır; `Çatış`, `Geri Çekil`
+ve `Pozisyonu Koru` seçimleri `ActionResolveNavalContact` ile game katmanına
+taşınır. Temas eden oyuncu filosunun hareket puanı yoksa `Geri Çekil` butonu
+ortak disabled button stiliyle çizilir ve input alamaz. Modal açıkken alttaki
+harita hareketi ve diğer aksiyonlar input alamaz. İki taraf da `Çatış` seçerse
+temas modalı kapanır ve aynı düşman/deniz hedefi için `Deniz Muharebesi Planı`
+ayrıca açılır; duruş seçilmeden savaş çözülmez.
+
 Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır. Zafer seçim ekranındaki kartlar da aynı wrap primitive'lerini kullanır; açıklama ve hedef özeti badge alanına çarpmadan iki satıra akabilir ve uzun senaryo hedeflerinde kart yüksekliği buna göre artırılmıştır.
 
 ---
@@ -591,7 +660,7 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve d
 2. Alt-orta aksiyon HUD butonları (diplomasi, teknoloji, tur bitir)
 3. Olay logu akordiyonu: başlık butonu paneli daraltır/genişletir, kart X'i olayı kapatır, kart gövdesi detay popup açar
 4. UI bölgesi (üst-sol durum paneli / sağ-üst tarih-menü HUD / alt-orta aksiyon HUD / sağ panel) → geçersiz say
-5. Bölge paneli aksiyonları: vergi +/- düğmeleri, bina kartına (kurulu kartlar dahil) tıklayarak inşa/yükseltme veya kuyruk iptali; `is_locked=true` bölgelerde vergi/inşa/birim alımı hit-test'te kapatılır
+5. Bölge paneli aksiyonları: vergi +/- düğmeleri, bina kartına (kurulu kartlar dahil) tıklayarak inşa/yükseltme veya kuyruk iptali; tamamlanmış ve kuyruğu boş bina kartlarının sağ üstündeki kırmızı X ortak confirm modalından yıkım aksiyonu üretir; `is_locked=true` bölgelerde vergi/inşa/birim alımı/yıkım hit-test'te kapatılır
 6. Birim oluştur paneli (`recruit_panel.go:RecruitPanelHitTest`); kıyı olmayan bölgelerde deniz birimleri gösterilmez
 7. Bölge/birim oluştur paneli boş alan tıklamaları → tüketilir, arkadaki haritaya düşmez
 8. BÖL/BİRLEŞTİR butonları (seçili ordu varsa, `army_panel.go` hit-test)

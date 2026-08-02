@@ -258,6 +258,7 @@ func (r *Renderer) focusMerchantRouteTarget(route *economy.TradeRoute) {
 		return
 	}
 	r.merchantRouteHighlight = seaID
+	r.CenterCameraOnRegion(seaID)
 	r.SelectedArmy = ""
 	r.clearArmySplitSelection()
 }

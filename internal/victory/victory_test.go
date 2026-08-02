@@ -143,6 +143,9 @@ func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 	if got != 280 {
 		t.Fatalf("beklenen gelir 280, got=%d", got)
 	}
+	if got := GoldIncomeForFaction(gs, "ottoman"); got != 280 {
+		t.Fatalf("seçilen devlet geliri mevcut gelirle aynı olmalı: got=%d", got)
+	}
 }
 
 func TestEconomicVictoryUsesIncomeThreshold(t *testing.T) {

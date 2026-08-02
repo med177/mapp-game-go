@@ -65,6 +65,18 @@ Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fra
 
 AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları ID sırasıyla değerlendirilir. Eşit puanlı seçimler Go map iterasyon sırasına bağlı değildir. `TakeTurn` ve gerçek oyun akışındaki `TurnStepper`, seçilen aksiyon hareket puanı tüketmeden geri dönerse ordunun kalan hareketini sıfırlar; engellenmiş hedef veya başarısız genel hücum aynı hedefi sonsuz kez yeniden seçemez.
 
+Deniz temasında AI tarafı kararını temas modalı açılmadan hemen önce verir. Filo
+gücü karşı tarafın gücünün `%125` eşiğini aşıyorsa ve en az bir hareket puanı
+varsa `Geri Çekil` seçer; bu karar filoyu gerçek bir deniz komşusuna taşır ve
+geri çekilme için 2 hareket puanı harcar; girişte harcanan puanla birlikte kalan
+puan sıfıra kadar düşebilir. Hareket puanı kalmayan AI
+geri çekilemez. Güçleri yakın görevsiz veya devriye filoları `Çatış`; abluka,
+escort ve nakliye filoları normalde `Pozisyonu Koru` tutumunu kullanır. Geri
+çekilme rotası önce düşman filosu olmayan deniz komşusunu seçer. Bu
+rota düşmanın geldiği kaynak denizi de dışarıda bırakır; güvenli hedef yoksa AI
+geri çekilme kararı vermez. Bu varsayılan, güçlü düşman karşısında geri
+çekilme kararını engellemez.
+
 Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
 
 `internal/game/scenario_balance_test.go`, yalnız `1300_ottoman_rise` için deterministik tempo harness'ıdır. `RUN_SCENARIO_TEMPO_REPORT=fast|medium|calibration` sırasıyla 12x2, 42x4 ve 120x8 kapsamını çalıştırır; `SCENARIO_TEMPO_TURNS/RUNS` ile kontrollü override, `SCENARIO_TEMPO_DIFFICULTY=1|2|3` ile zorluk karşılaştırması destekler. Go 1.25'in `rand.Seed` no-op varsayılanı test kapsamında `randseednop=0` ile kapatılır ve savaş zarları tur/fraksiyon/step scope'una ayrılır. Aynı seed'in iki turluk tam state replay testi ile benchmark da bu dosyadadır.
@@ -586,6 +598,10 @@ Relief hedefleri de aynı kuralla vassal veya savaşa katılmış müttefik böl
 genişletilir; kuşatma yapan aynı-realm orduya karşı yardım görevi üretilmez ve hedef
 sahibi ile kuşatan arasında gerçek `war` ilişkisi aranır. Böylece müttefik kuşatması
 boşta kalmazken barıştaki ortakların orduları yanlışlıkla savaşa çekilmez.
+
+AI'nin denizden tahkimli kıyıya indirerek başlattığı kuşatma `NavalLanding` olarak
+işaretlenir; barış kabulünde kara ordusu en yakın yeterli nakliye filosuna geri
+yüklenir, nakliye yoksa en yakın kendi kara bölgesine çekilir.
 
 ### Geri Çekilme ve Takviye
 

@@ -119,6 +119,7 @@ type SiegeState struct {
 	RegionID             world.RegionID `json:"region_id"`
 	AttackerArmyID       army.ArmyID    `json:"attacker_army_id"`
 	AttackerHomeRegionID world.RegionID `json:"attacker_home_region_id,omitempty"`
+	NavalLanding         bool           `json:"naval_landing,omitempty"`
 	DefenderArmyID       army.ArmyID    `json:"defender_army_id,omitempty"`
 	AttackerFactionID    string         `json:"attacker_faction_id"`
 	StartedTurn          int            `json:"started_turn"`
@@ -292,6 +293,9 @@ type GameState struct {
 
 	// Aktif bölge event ikonları (haritada birkaç tur görünür kalır)
 	ActiveRegionEvents []RegionEventStatus `json:"active_region_events,omitempty"`
+
+	// Geçici açık deniz temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
+	PendingNavalContact *NavalContact `json:"-"`
 }
 
 // RegionProductionSummary bir bölgenin tur başı efektif ekonomik katkısını özetler.
@@ -734,7 +738,7 @@ func (s *GameState) TaxIncomeForFaction(fid faction.FactionID) int {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
 			continue
 		}
-		total += region.GoldIncome()
+		total += scaleBlockadeOutput(region.GoldIncome(), s.RegionBlockadeOutputRetentionPercent(region))
 	}
 	return total
 }
@@ -1096,6 +1100,50 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 	return best
 }
 
+// SelectNavalAutoEngagementDefender, yalnız devriye-abluka görevi çifti
+// otomatik karşılaşma oluşturduğunda savaşacak düşman filoyu seçer. Görevsiz
+// filolar aynı denizde bulunabilir ancak bu seçimden dışarıda kalır.
+func (s *GameState) SelectNavalAutoEngagementDefender(attacker *army.Army, target world.RegionID) *army.Army {
+	if s == nil || attacker == nil || !attacker.IsAtSea() {
+		return nil
+	}
+	var best *army.Army
+	bestPower := -1
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID || !candidate.IsAtSea() {
+			continue
+		}
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+		rel, exists := s.Relations[key]
+		if !exists || rel == nil || rel.Stance != faction.StanceWar || !s.NavalFleetsAutoEngageAtSea(attacker, candidate, target) {
+			continue
+		}
+		power := 0
+		if s.UnitTypes != nil {
+			power = candidate.TotalStrength(s.UnitTypes)
+		}
+		if best == nil || power > bestPower || power == bestPower && candidate.ID < best.ID {
+			best = candidate
+			bestPower = power
+		}
+	}
+	return best
+}
+
+// SelectNavalPatrolDefender, AI devriyesinin hedef denizdeki açık abluka
+// filosunu yakalayıp yakalayamayacağını kontrol eder. AI devriyesi kalıcı
+// oyuncu görevi taşımadığı için burada saldıran filonun devriye niyeti geçici
+// bir kopya görevle ifade edilir; gerçek filo state'i değiştirilmez.
+func (s *GameState) SelectNavalPatrolDefender(attacker *army.Army, target world.RegionID) *army.Army {
+	if s == nil || attacker == nil {
+		return nil
+	}
+	patrol := *attacker
+	patrolMission := army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: target}
+	patrol.NavalMission = &patrolMission
+	return s.SelectNavalAutoEngagementDefender(&patrol, target)
+}
+
 // CollectDefenders hedef bölgede saldırana karşı savaşacak TÜM düşman ordularını
 // (düşmanın müttefikleri dahil) tek bir birleşik orduda toplar.
 // Dönen ordu sanaldır — gerçek Army map'ine eklenmez, sadece savaş simülasyonu içindir.
@@ -1153,6 +1201,54 @@ func (s *GameState) CollectDefenders(attacker *army.Army, target world.RegionID,
 		Units:   units,
 	}
 	return combined, sourceIDs
+}
+
+// CollectNavalAutoEngagementDefenders, devriye ile yakalanan düşman abluka
+// filosunun aynı görev çatışmasına dahil olan filolarını toplar. Görevsiz
+// filolar bu otomatik savaşta savunma hattına eklenmez.
+func (s *GameState) CollectNavalAutoEngagementDefenders(attacker *army.Army, target world.RegionID) (combined *army.Army, sourceIDs []army.ArmyID) {
+	if s == nil || attacker == nil || !attacker.IsAtSea() {
+		return nil, nil
+	}
+	candidates := make([]*army.Army, 0, len(s.Armies))
+	for _, candidate := range s.Armies {
+		if candidate != nil {
+			candidates = append(candidates, candidate)
+		}
+	}
+	sort.Slice(candidates, func(i, j int) bool { return candidates[i].ID < candidates[j].ID })
+	var units []army.Unit
+	for _, candidate := range candidates {
+		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID || !candidate.IsAtSea() {
+			continue
+		}
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+		rel, exists := s.Relations[key]
+		if !exists || rel == nil || rel.Stance != faction.StanceWar || !s.NavalFleetsAutoEngageAtSea(attacker, candidate, target) {
+			continue
+		}
+		units = append(units, candidate.Units...)
+		sourceIDs = append(sourceIDs, candidate.ID)
+	}
+	if len(units) == 0 {
+		return nil, nil
+	}
+	if len(units) > army.MaxArmySize {
+		units = units[:army.MaxArmySize]
+	}
+	return &army.Army{OwnerID: attacker.OwnerID, Units: units}, sourceIDs
+}
+
+// CollectNavalPatrolDefenders, AI devriyesinin yalnız abluka görevi taşıyan
+// düşman filolarını yakaladığı otomatik deniz savaşını kurar.
+func (s *GameState) CollectNavalPatrolDefenders(attacker *army.Army, target world.RegionID) (*army.Army, []army.ArmyID) {
+	if s == nil || attacker == nil {
+		return nil, nil
+	}
+	patrol := *attacker
+	patrolMission := army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: target}
+	patrol.NavalMission = &patrolMission
+	return s.CollectNavalAutoEngagementDefenders(&patrol, target)
 }
 
 // DistributeDefenderLosses birleşik savunma ordusuna verilen kayıpları
@@ -1407,6 +1503,31 @@ func (s *GameState) ReplenishArmyInFriendlyTerritory(a *army.Army, amount int) i
 	return a.Replenish(amount)
 }
 
+// CanFleetAvoidSeaAttrition, filonun bulunduğu deniz bölgesine komşu en az
+// bir limanlı kara bölgesinin filo sahibine ait, aynı realm içinde veya
+// müttefik olup olmadığını döner. Liman, denizdeki güvenli ikmal hattının
+// zorunlu parçasıdır.
+func (s *GameState) CanFleetAvoidSeaAttrition(a *army.Army) bool {
+	if s == nil || a == nil || !a.IsAtSea() || a.OwnerID == "" {
+		return false
+	}
+
+	seaRegion := s.Regions[a.RegionID]
+	if seaRegion == nil || !seaRegion.IsSea {
+		return false
+	}
+	for _, neighborID := range seaRegion.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" || !neighbor.HasPort() {
+			continue
+		}
+		if s.canFactionReplenishIn(a.OwnerID, neighbor.OwnerID) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *GameState) canFactionReplenishIn(armyOwner, regionOwner string) bool {
 	if s == nil || armyOwner == "" || regionOwner == "" {
 		return false
@@ -1419,9 +1540,13 @@ func (s *GameState) canFactionReplenishIn(armyOwner, regionOwner string) bool {
 }
 
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.
-func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
+func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade bool) RegionProductionSummary {
 	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {
 		return RegionProductionSummary{}
+	}
+	blockadeRetention := 100
+	if applyBlockade {
+		blockadeRetention = s.RegionBlockadeOutputRetentionPercent(region)
 	}
 
 	goldMod := 1.0
@@ -1436,7 +1561,7 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 	}
 
 	out := RegionProductionSummary{
-		Gold:   int(float64(region.GoldIncome()) * goldMod * float64(s.CurrentSeason().HarvestMod()) / 100),
+		Gold:   scaleBlockadeOutput(int(float64(region.GoldIncome())*goldMod*float64(s.CurrentSeason().HarvestMod())/100), blockadeRetention),
 		Grain:  int(float64(region.BaseGrainOutput) * grainMod),
 		Iron:   region.BaseIronOutput,
 		Timber: region.BaseTimberOutput,
@@ -1447,8 +1572,15 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 	out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth = applyRegionTerrainSpecialization(
 		region.Terrain, out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth,
 	)
+	out.Grain = scaleBlockadeOutput(out.Grain, blockadeRetention)
+	out.Iron = scaleBlockadeOutput(out.Iron, blockadeRetention)
+	out.Timber = scaleBlockadeOutput(out.Timber, blockadeRetention)
+	out.Stone = scaleBlockadeOutput(out.Stone, blockadeRetention)
+	out.Spice = scaleBlockadeOutput(out.Spice, blockadeRetention)
+	out.Cloth = scaleBlockadeOutput(out.Cloth, blockadeRetention)
 
-	out.Gold += economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod) * s.CurrentSeason().TradeMod() / 100
+	tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod) * s.CurrentSeason().TradeMod() / 100
+	out.Gold += scaleBlockadeOutput(tradeIncome, blockadeRetention)
 
 	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
 		effects := tech.ComputeEffects(fx.Research.Completed, s.TechTypes)
@@ -1478,6 +1610,20 @@ func (s *GameState) RegionProductionSummary(region *world.Region) RegionProducti
 	return out
 }
 
+// RegionProductionSummary, abluka etkisi dahil bölgenin sonraki tur üretim
+// önizlemesini döner. Gerçek ekonomi tick'i ile UI/AI aynı helper zincirini
+// kullanır.
+func (s *GameState) RegionProductionSummary(region *world.Region) RegionProductionSummary {
+	return s.regionProductionSummary(region, true)
+}
+
+// UnblockedRegionProductionSummary abluka uygulanmadan önceki yerel çıktıyı
+// döner. Abluka loot'u, hedef bölgenin gerçekten üretebildiği mevcut tabanını
+// değil, ablukasız ekonomik değerini baz alır.
+func (s *GameState) UnblockedRegionProductionSummary(region *world.Region) RegionProductionSummary {
+	return s.regionProductionSummary(region, false)
+}
+
 // FactionProductionSummary devletin kuşatma altında olmayan bölgelerinin
 // efektif tur başı üretimini toplar. HUD ve ekonomi önizlemeleri aynı bina,
 // mevsim, arazi ve teknoloji hesaplarını kullanır.
@@ -1500,6 +1646,14 @@ func (s *GameState) FactionProductionSummary(fid faction.FactionID) RegionProduc
 		out.Spice += production.Spice
 		out.Cloth += production.Cloth
 	}
+	loot := s.BlockadeLootForFaction(fid)
+	out.Gold += loot.Gold
+	out.Grain += loot.Grain
+	out.Iron += loot.Iron
+	out.Timber += loot.Timber
+	out.Stone += loot.Stone
+	out.Spice += loot.Spice
+	out.Cloth += loot.Cloth
 	return out
 }
 

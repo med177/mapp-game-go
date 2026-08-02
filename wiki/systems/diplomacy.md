@@ -274,6 +274,13 @@ Barış sonrası taraflara altı turluk save-backed ateşkes verilir. Bu bilgi
 `GameState.RecentTruces` içinde relation key ve bitiş turu olarak tutulur;
 `ActionDeclareWar` ateşkes bitene kadar bloklanır.
 
+Barış kabul edildiğinde koalisyon taraflarının denizden başlattığı aktif
+`NavalLanding` kuşatmaları da kapanır. Kuşatan kara ordusu hedefe en yakın ve
+toplam kapasitesi yeterli dost nakliye filolarına yeniden bindirilir; yeterli
+nakliye yoksa en yakın kendi kara bölgesine çekilir. Bu tahliye oyuncu barışı,
+bekleyen barış teklifi ve AI-AI barışı için ortak `setPeaceBetweenCoalitions()`
+akışında uygulanır.
+
 ## AI Diplomasi Davranışı
 
 `aiHandleDiplomacy()` ve `FormCoalitionAgainstPlayer()` — zorluk 3 koalisyon dahil aynı motoru kullanır
@@ -361,6 +368,7 @@ Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde stand
 AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuyruk artık `join_war_call` tipiyle kullanılır:
 
 - Müttefik AI başka bir devlete savaş ilan ettiğinde oyuncuya `Savaşa Katılım Çağrısı` gelir
+- Oyuncu hedef devletle zaten savaş halindeyse bu çağrı kuyruğa alınmaz; eski/geçersiz bir çağrı da modal seçimine sokulmaz
 - Bir AI oyuncunun müttefikine savaş ilan ettiğinde bu kez savunan müttefik oyuncuyu kendi safına çağırır
 - Oyuncu kabul etmeden savaşa çekilmez; kabulde oyuncu realm'i ilgili düşman koalisyonuyla savaşa girer
 - Reddederse çağrıyı yapan müttefikle ittifak bozulur ve ilişki puanı `-10` düşer

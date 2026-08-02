@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-08-01
+last_updated: 2026-08-02
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -62,6 +62,12 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone/spice/cloth_cost`). Pazar, liman ve ibadet yeri gibi ticaret/kültür yapıları baharat veya kumaş tüketebilir; temel tarım ve savunma yapıları bölgesel hammaddelere dayanır.
 Bina `MaxPerRegion` ile sınırlıdır.
 Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
+
+Oyuncu, bölge panelindeki tamamlanmış bina seviyelerinden birini kırmızı `X`
+düğmesiyle yıkabilir. Yıkım ortak onay modalından sonra `Game.demolishBuilding()`
+ile uygulanır; kaynak iadesi yapılmaz, devam eden yükseltme kuyruğu varken yıkım
+engellenir. Port binasının otomatik oluşturduğu liman yerleşimi, son port seviyesi
+de kaldırıldığında temizlenir; senaryo ile tanımlı port yerleşimleri korunur.
 
 1300 Osmanlı yükselişi senaryosunda `farm` üretim çarpanı `x1.30`, bölge başına üst sınırı 3 seviyedir. Bina çarpanları ekonomi tick'inde birlikte uygulanır; bu nedenle üç farm seviyesi güçlü bir tarım yatırımıdır ancak denge testindeki `1.0–4.0` üretim/sivil talep bandını aşmamalıdır.
 
@@ -164,7 +170,7 @@ Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artır
 - 1300 AI ekonomi puanlamasında ilk ambar, stok/kapasite/üretim-bakım açığı varsa çiftlik ve pazarın önüne çıkar. Ambar kapasitesi yalnız stok saklamaz; `applyRegionalLogisticsPressure()` ve kapasite üzeri tahıl yenilemesi üzerinden orduların toparlanabilirliğini de artırır.
 - Bölgesel lojistikte ambar, ekonomi tick'i sonrası elde kalan tahıldan `min(kalan stok, ambar kapasitesi)` kadarını bölgeye aktarılabilir askerî rezerv yapar. Bu tahıl ikinci kez tüketilmez; genel ordu bakımında zaten düşülmüş stokun bölgesel dağıtım kapasitesini temsil eder. Aynı fraksiyonun bölgeleri sınırlı rezervi deterministik sırayla paylaşır ve başkent önce gelir.
 - Kara orduları ayrıca bölge bazlı ikmal kapasitesine tabidir. Yerel askeri kapasite, bölge üretiminden önce sivil talep düşüldükten sonraki fazlalık + yerleşim/ticaret tamponu + fraksiyon stokundan sınırlı destek olarak hesaplanır. Yabancı/düşman bölgede yerel üretim desteği yoktur. Efektif ordu talebi kapasiteyi karşılamazsa aynı bölgede bekleyen ordular turdan tura artan HP zayiatı alır. AI hareket, geri çekilme, birleşme ve bina yatırımındaki lojistik tahminlerde `GameState.EffectiveArmyGrainUpkeep()` kullanır.
-- Limanlı bölgenin komşu denizinde düşman savaş gemisi varsa abluka oluşur: savaş gemisi başına ilgili ticaret rotası hacmi ve limanın yerleşim/rezerv ikmal tamponu %50 azalır; iki veya daha fazla gemi rotayı/tamponu tamamen keser. Abluka yüzdesi runtime state'ten her ekonomi tick'inde yeniden türetilir.
+- Limanlı bölgenin komşu denizinde düşman savaş gemisi varsa abluka oluşur: savaş gemisi başına ilgili ticaret rotası hacmi ve limanın yerleşim/rezerv ikmal tamponu %50 azalır; iki veya daha fazla gemi rotayı/tamponu tamamen keser. Buna ek olarak `%50` liman ablukası bölgesel vergi, yerel ticaret ve mal üretimini `%75` seviyesinde bırakır; `%100` abluka `%50` seviyesinde bırakır. Ablukacı, etkili gemi katkısına göre hedef bölgenin ablukasız yerel çıktısının `%50` durumda `%5`'ini, `%100` durumda `%10`'unu altın ve mal olarak alır. Abluka yüzdesi runtime state'ten her ekonomi tick'inde yeniden türetilir; `RegionProductionSummary()` aynı oranı UI önizlemesine taşır.
 - Kasım ekonomi tick'inde arz seviyesi stabil olan fraksiyon, yalnızca depolama kapasitesini aşan tahılını nüfus yatırımında kullanır. Memnuniyeti en az 60 olan, isyan riski taşımayan ve kuşatma altında olmayan bölgelerde toplam bölge nüfusunun %1'i (minimum 1) kırsal nüfusa eklenir; her 1 nüfus artışı 2 tahıl harcar. Bu harcama `GrainEconomyStatus` içinde runtime raporlanır; sonraki tick'lerde artan toplam nüfus `ceil(population / 18)` sivil talebe dönüşerek büyümeyi aynı tahıl döngüsüne bağlar ve rezerv kapasite tabanı korunur.
 - Bölge panelindeki `Tahıl Yardımı` aksiyonu kendi bölgesine 12 tahıl aktararak memnuniyeti +10 artırır; bölge başına turda bir kez kullanılabilir. Kuşatma altındaki, oyuncuya ait olmayan, zaten yüksek memnuniyetli veya yetersiz stoklu bölgeler yardım alamaz. Tur ilerlediğinde yardım kullanım kilidi runtime olarak sıfırlanır.
 - Pazar ekranındaki `ACİL TAHIL SAT` aksiyonu ticaret partneri gerektirmez. Yalnızca fraksiyonun `StorageCapacity` üstündeki tahıl satılabilir; satış fiyatı güncel tahıl piyasa fiyatının %70'idir ve minimum 1 altın/tahıl olarak hesaplanır. Ancak bu satışın bir turdaki toplam altın getirisi, kuşatma dışı temel vergi gelirinin %100'ü ile sınırlıdır; `GrainSaleGoldUsed` runtime haritası tur sonunda sıfırlanır. Böylece tahıl acil nakit sağlayabilir ama verginin yerini alamaz.

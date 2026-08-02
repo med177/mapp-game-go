@@ -687,6 +687,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 		if r.regionPanelTab == regionPanelTabBuildings {
+			if bid, ok := BuildingGridDemolishHitTest(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded); ok {
+				r.openBuildingDemolitionConfirm(r.SelectedRegion, bid)
+				return InputAction{}
+			}
 			if bid := BuildingGridHitTest(fx, fy, r.gs, r.SelectedRegion, r.devNeighborListExpanded); bid != "" {
 				return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: bid}
 			}
@@ -1050,6 +1054,9 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 			if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 				return pos.ArmyID, true
 			}
+			if r.merchantTradeBonusForArmy(fleet) > 0 && merchantTradeBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+				return pos.ArmyID, true
+			}
 		}
 	}
 	return "", false
@@ -1317,7 +1324,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
-		if opensBattlePlan && !allySieging && !amphibiousSiegeLanding {
+		if opensBattlePlan && !(a.IsNaval && target.CanNavalEnter()) && !allySieging && !amphibiousSiegeLanding {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-07-31
+last_updated: 2026-08-02
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -14,6 +14,19 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir; son toprakta teslim olan AI, oyuncu tarafından kabul edilirse doğrudan vassal olur ve bölge yerel devlette kalır (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
 
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir. Resolve tamamlanınca oyuncu tarafında render katmanı ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim / HP` önce-sonra kırılımı gösterilir.
+
+## Deniz Teması
+
+İki düşman filo aynı açık denizde buluştuğunda önce temas kararı alınır;
+savaş yalnız iki taraf da `Çatış` seçerse çözülür. Oyuncu kararı modal üzerinden
+verir. AI, temas kurulmadan önce filo gücünü karşılaştırır: karşı taraf `%125`
+veya daha güçlü ise, hareket puanı varsa `Geri Çekil` seçer ve komşu bir denize
+döner. Geri çekilme 2 hareket puanı harcar; filonun kalan puanı daha azsa sıfıra
+indirilir. Hareket puanı olmayan AI geri çekilme seçemez. Devriye ve denk görevsiz filolar
+çatışmayı, abluka filoları ise normalde pozisyonu korumayı tercih eder. Geri
+çekilme rotası düşman filosu olmayan komşu denizi önceliklendirir. Saldıran
+filo, temas sırasında geldiği kaynak denize geri çekilemez; güvenli komşu deniz
+yoksa geri çekilme seçeneği kullanılamaz.
 
 Fethedilen bölgede `SuccessorFactionID` doluysa yalnız ardıl fraksiyon
 `is_eliminated=true` ve kara toprağı kalmamışsa fetih sonucu ertelenir. Savaş
@@ -206,6 +219,7 @@ Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı
 - toparlanma `CurrentHP < 100` olan birimlerde çalışır ve `%100`e kadar sürer,
 - kış turunda önce attrition uygulanır, aynı sweep içinde ek ücretsiz toparlanma verilmez,
 - donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz. Dost bölge kararı `GameState.CanArmyReplenishIn()` ile kendi sahipliği, ittifak ve vassal realm bağını birlikte değerlendirir.
+- açık denizdeki filolar, kendi, aynı realm içindeki vassal veya müttefik bir kara bölgesinin limanına komşu deniz hücrelerinde kış ve embarked sefer yıpranması almaz; limansız dost kıyıda normal yıpranma sürer. Bu karar `GameState.CanFleetAvoidSeaAttrition()` ile merkezi uygulanır.
 - aktif kuşatma altındaki savunmacı ordular, bölge sahibi kendi toprağı olsa bile toparlanmaz; `GameState.IsArmyDefendingSiegedRegion()` hareket, iyileşme ve UI tarafındaki ortak predicate'tir.
 
 ## Savaş Sonrası Uygulama
@@ -227,13 +241,37 @@ else:
 ## Deniz Hareketi ve Çatışma Kuralı
 
 Donanmalar deniz bölgeleri arasında savaş ilanı olmadan serbest hareket eder.
-Denizde çatışma yalnızca iki fraksiyon arasında `StanceWar` varsa tetiklenir; barış/ittifak/trade durumunda aynı deniz bölgesine girildiğinde savaş açılmaz.
+Görevsiz filolar aynı deniz bölgesine geldiğinde savaş başlatmaz. `Abluka`
+görevi yalnız ekonomik baskı üretir; `Devriye` görevi hedef denizdeki görevli
+düşman `Abluka` filosunu otomatik yakalar. `Escort` yalnız bağlı nakliye
+filosunu korur. Açık deniz saldırısı, oyuncunun savaş planında onayladığı
+doğrudan saldırı emriyle başlar. Bu çatışmalar için de iki fraksiyon arasında
+`StanceWar` bulunması gerekir; barış/ittifak/trade durumunda savaş açılmaz.
+Pasif bir filo aynı düşman denizine girdiğinde veya savaş ilanı sırasında iki
+düşman filo zaten aynı açık denizdeyse `Düşman Filo Tespit Edildi` temas olayı
+açılır. Her iki tarafın kararı `Çatış` değilse savaş çözülmez; `Geri çekil` ve
+`Pozisyonu koru` sonuçları filoları savaşsız ayırır ya da aynı denizde bırakır.
+Filo zaten aynı denizdeyken yeni `Devriye` veya `Abluka` görevi atanması da aynı
+temas akışını başlatır; görev tekrar atanırsa aynı temas her tur tekrarlanmaz.
+Devriye ve görevsiz filo otomatik `Çatış`, abluka filosu otomatik
+`Pozisyonu koru` kararı taşır. Oyuncu tarafı üç seçenekli ortak modal üzerinden
+karar verir; oyuncu filosunun hareket puanı yoksa `Geri Çekil` seçeneği pasiftir.
+Açıkça verilen `Saldır` emri ise önceki doğrudan saldırı kuralı
+olarak temas beklemeden savaş planındaki deniz savaşını başlatır.
+Temas üzerinden `Çatış` seçildiğinde ise oyuncu için önce `Deniz Muharebesi
+Planı` açılır; agresif, dengeli veya savunmacı duruş seçilmeden muharebe
+çözülmez.
 Savaş varsa oyuncu gemi-gemi çatışmasında da önce duruş seçer. Tahkimatsız düşman
 kıyıya çıkarma sırasında savunan ordu varsa `Çıkarma Muharebesi` planı açılır ve
 seçilen duruş `ActionDisembarkArmy` üzerinden oyun katmanına taşınır. Hedefte kale
 veya duvar tahkimatı varsa çıkarma doğrudan amfibi savaşa girmez; kara ordusu kıyıya
 iner ve `GameState.Sieges` içinde kuşatma başlar. Savunmacı ordu bulunsun veya
 bulunmasın, bölge sahibi kuşatma çözülene kadar korunur.
+
+Bu kuşatma denizden başlatıldıysa `SiegeState.NavalLanding` ile işaretlenir. Savaş
+barışla sona erdiğinde kuşatma ordusu düşman kıyısında bırakılmaz: en yakın yeterli
+nakliye filolarına geri biner, nakliye bulunamazsa en yakın kendi kara bölgesine
+çekilir.
 
 Deniz savaşını kaybeden tarafın gerçek filosu kısmi zayiatla denizde bırakılmaz;
 filo batar ve `internal/game/game.go:sinkNavalFleet()` /

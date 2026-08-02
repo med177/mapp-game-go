@@ -1234,6 +1234,7 @@ func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, step
 
 	result := diplomacy.Execute(gs, fid, gs.PlayerFactionID, diplomacy.ActionDeclareWar)
 	if result.Applied || result.Accepted {
+		gs.QueueNavalContactForWar(fid, gs.PlayerFactionID)
 		addTurnStep(steps, TurnStep{
 			FactionID:     fid,
 			Kind:          TurnStepDiplomacy,
@@ -1274,6 +1275,24 @@ func moveArmy(gs *state.GameState, a *army.Army) {
 	moveArmyWithSteps(gs, a, faction.FactionID(a.OwnerID), nil)
 }
 
+// aiNavalPatrolMoveIntent, AI'nin denize yaptığı adımın devriye hareketi olup
+// olmadığını belirler. Oyuncu filosunun görev state'i bu yola hiç girmez;
+// AI'de ise stratejik rol geçici tur bağlamından okunur.
+func aiNavalPatrolMoveIntent(gs *state.GameState, a *army.Army, target world.RegionID, ctx *StrategicContext) bool {
+	if gs == nil || a == nil || !a.IsNaval || a.OwnerID == string(gs.PlayerFactionID) || !isWarshipFleet(a, gs.UnitTypes) {
+		return false
+	}
+	targetRegion := gs.Regions[target]
+	if targetRegion == nil || !targetRegion.IsSea {
+		return false
+	}
+	if ctx == nil {
+		return true
+	}
+	assignment, assigned := ctx.ArmyAssignments[a.ID]
+	return assigned && assignment.Role == AIArmyRolePatrol
+}
+
 func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep) {
 	moveArmyWithStrategicContext(gs, a, fid, steps, nil)
 }
@@ -1294,7 +1313,7 @@ func moveArmyWithStrategicContext(gs *state.GameState, a *army.Army, fid faction
 			aiEscortMoveFirst(gs, a, target, fid, steps)
 		}
 
-		outcome := executeMove(gs, a, target, fid)
+		outcome := executeMoveWithNavalPatrol(gs, a, target, fid, aiNavalPatrolMoveIntent(gs, a, target, strategicContext))
 		if outcome.step.Message != "" {
 			addTurnStep(steps, outcome.step)
 		}
@@ -1589,6 +1608,31 @@ func aiOwnerReligion(gs *state.GameState, ownerID string) string {
 // executeMove hareketi ve varsa savaşı uygular.
 // Ordu hayatta kaldıysa true, yok edildiyse false döner.
 func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID) moveOutcome {
+	return executeMoveWithNavalPatrol(gs, a, target, fid, false)
+}
+
+// executeMoveWithNavalPatrol hareketi ve varsa savaşı uygular. navalPatrol
+// yalnız AI savaş gemisinin devriye rolünü belirtir; bu rol açık denizde
+// sadece hedefteki düşman abluka görevini otomatik olarak yakalayabilir.
+func executeMoveWithNavalPatrol(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID, navalPatrol bool) moveOutcome {
+	return executeMoveWithNavalPatrolAndContact(gs, a, target, fid, navalPatrol, false)
+}
+
+// ResolveNavalContactBattle, oyuncu temas kararında Çatış seçtiğinde AI
+// filosunun bekleyen teması savaş olarak sürdürmesini sağlar.
+func ResolveNavalContactBattle(gs *state.GameState, attackerID army.ArmyID, target world.RegionID) TurnStep {
+	if gs == nil {
+		return TurnStep{}
+	}
+	attacker := gs.Armies[attackerID]
+	if attacker == nil {
+		return TurnStep{}
+	}
+	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true)
+	return outcome.step
+}
+
+func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID, navalPatrol, contactResolved bool) moveOutcome {
 	targetRegion, ok := gs.Regions[target]
 	if !ok {
 		return moveOutcome{survived: true}
@@ -1708,6 +1752,9 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 				}
 				if aiCanStartSiege(gs, landed, targetRegion) {
 					aiStartSiege(gs, landed, targetRegion, enemyArmy)
+					if siege := gs.SiegeAt(target); siege != nil {
+						siege.NavalLanding = true
+					}
 					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepDisembark, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: target, Message: actorName + " " + targetName + " kıyısına çıktı ve kuşatma başlattı."}}
 				}
 			}
@@ -1936,18 +1983,61 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 		}
 	}
 
-	// Hedefte düşman ordusu var mı? (müttefikler dahil birleşik savunma)
-	combinedDef, defSourceIDs := gs.CollectDefenders(a, target, a.IsNaval && targetRegion.IsSea)
+	var contactEnemy *army.Army
+	contactMovementConsumed := false
+	if a.IsNaval && targetRegion.IsSea && !contactResolved {
+		contactEnemy = gs.SelectBattleDefender(a, target, true)
+		if contactEnemy != nil {
+			contactFromRegion := a.RegionID
+			contact := gs.BeginNavalContact(a, contactEnemy, target, contactFromRegion, state.NavalContactMovement)
+			if contact != nil {
+				ResolveNavalContactDecision(gs, contact)
+				if contact.AttackerArmyID == a.ID && contact.AttackerFromRegionID == contactFromRegion && a.RegionID == contactFromRegion {
+					a.RegionID = target
+					a.DockedRegionID = ""
+					a.DockedSettlementID = ""
+					if a.MovePoints > 0 {
+						a.MovePoints--
+					}
+					contact.MovementConsumed = true
+					contactMovementConsumed = true
+				}
+				if contact.PlayerArmyID != "" {
+					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: contactFromRegion, TargetRegion: target, FocusRegion: target, Message: "Düşman filo tespit edildi."}}
+				}
+				if !gs.NavalContactBothClash(contact) {
+					resolveAINavalContactWithoutBattle(gs, contact, a, contactEnemy)
+					gs.ClearNavalContact()
+					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepMove, ArmyID: a.ID, FromRegion: contactFromRegion, TargetRegion: target, FocusRegion: target, Message: "Deniz teması çatışmaya dönüşmeden sona erdi."}}
+				}
+				gs.ClearNavalContact()
+				contactResolved = true
+			}
+		}
+	}
+
+	// Hedefte düşman ordusu var mı? Temas çözüldüyse iki tarafın da Çatış
+	// kararını onayladığı doğrudan deniz savunması kullanılır.
+	navalAutoEngagement := a.IsNaval && targetRegion.IsSea && navalPatrol && !contactResolved
+	var combinedDef *army.Army
+	var defSourceIDs []army.ArmyID
+	if navalAutoEngagement {
+		combinedDef, defSourceIDs = gs.CollectNavalPatrolDefenders(a, target)
+	} else {
+		combinedDef, defSourceIDs = gs.CollectDefenders(a, target, a.IsNaval && targetRegion.IsSea)
+	}
 	var enemyArmy *army.Army
-	if combinedDef == nil {
+	if combinedDef == nil && !navalAutoEngagement {
 		for _, ea := range aiSortedArmies(gs) {
 			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
 				break
 			}
 		}
+	} else if navalAutoEngagement {
+		enemyArmy = gs.SelectNavalPatrolDefender(a, target)
 	} else {
-		// Birleşik ordudan refakat için ilk orduyu bul
+		// Birleşik ordudan refakat için ilk orduyu bul.
 		for _, ea := range aiSortedArmies(gs) {
 			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
@@ -2014,7 +2104,9 @@ func executeMove(gs *state.GameState, a *army.Army, target world.RegionID, fid f
 						aiApplyConquest(gs, targetRegion, a.OwnerID)
 					}
 				}
-				a.MovePoints--
+				if !contactMovementConsumed && a.MovePoints > 0 {
+					a.MovePoints--
+				}
 				message := actorName + " " + targetName + " bölgesindeki savaşı kazandı."
 				if isAlliedTarget && battleLiftsSiege {
 					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve kuşatmayı kaldırdı."

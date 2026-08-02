@@ -1,6 +1,7 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -168,6 +169,7 @@ func TestMerchantRouteSelectionFocusesTargetAndClosesArmyPanel(t *testing.T) {
 	}
 	r := &Renderer{
 		gs:                     gs,
+		worldMap:               &WorldMap{regionAnchor: map[world.RegionID][2]int{"marmara": {700, 500}}},
 		SelectedArmy:           "fleet",
 		splitSelectedUnits:     map[int]bool{0: true},
 		merchantRouteHighlight: "",
@@ -176,6 +178,9 @@ func TestMerchantRouteSelectionFocusesTargetAndClosesArmyPanel(t *testing.T) {
 
 	if r.merchantRouteHighlight != "marmara" {
 		t.Fatalf("rota seçimi hedef denizi işaretlemeliydi: %q", r.merchantRouteHighlight)
+	}
+	if r.camX != 700 || r.camY != 500 {
+		t.Fatalf("rota seçimi kamerayı hedef deniz anchor'ına odaklamalıydı: got=(%.1f,%.1f)", r.camX, r.camY)
 	}
 	if r.SelectedArmy != "" {
 		t.Fatalf("rota seçimi açık ordu panelinin seçimini temizlemeliydi: %q", r.SelectedArmy)
@@ -192,7 +197,7 @@ func TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea(t *testing.T) {
 }
 
 func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
-	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction"}
+	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction", GoldPerUnit: 5}
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
 			"from":    {ID: "from", OwnerID: "from_faction", Neighbors: []world.RegionID{"aegean"}},
@@ -217,7 +222,12 @@ func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
 	away.ID = "away"
 	away.RegionID = "aegean"
 	gs.Armies = map[army.ArmyID]*army.Army{"active": active, "away": &away}
-	r := &Renderer{gs: gs}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{regionAnchor: map[world.RegionID][2]int{
+			"marmara": {100, 100},
+		}},
+	}
 
 	if got := r.merchantTradeBonusForArmy(active); got != 2 {
 		t.Fatalf("aktif hedef denizde merchant bonusu +2 olmalıydı, got=%d", got)
@@ -227,5 +237,31 @@ func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
 	}
 	if got := r.merchantTradeBonusForArmy(&away); got != 0 {
 		t.Fatalf("hedef denizden uzaktaki filo bonus rozeti üretmemeliydi, got=%d", got)
+	}
+	positions := r.armyIconPositions()
+	var activePos armyIconPos
+	activeFound := false
+	for _, pos := range positions {
+		if pos.ArmyID == active.ID {
+			activePos = pos
+			activeFound = true
+			break
+		}
+	}
+	if !activeFound {
+		t.Fatal("aktif merchant filosunun harita konumu bulunmalı")
+	}
+	badge := merchantTradeBonusBadgeRect(activePos.X, activePos.Y)
+	if aid, ok := r.merchantTradeBonusHitAt(badge.X+badge.W/2, badge.Y+badge.H/2); !ok || aid != active.ID {
+		t.Fatalf("ticaret rozeti hover hit-test'i aktif filoyu bulmalı: aid=%q hit=%t", aid, ok)
+	}
+	title, detail, ok := merchantTradeBonusTooltipText(gs, active)
+	if !ok || title != "Ticaret rotası bonusu" || !strings.Contains(detail, "+2 mal/tur") || !strings.Contains(detail, "+10 altın/tur") {
+		t.Fatalf("ticaret rozeti tooltip'i bonus ve tur başı geliri göstermeli: title=%q detail=%q ok=%t", title, detail, ok)
+	}
+	route.BlockadePercent = 50
+	_, detail, ok = merchantTradeBonusTooltipText(gs, active)
+	if !ok || !strings.Contains(detail, "+5 altın/tur") {
+		t.Fatalf("abluka altındaki ticaret geliri tooltip'te kesintili görünmeli: detail=%q ok=%t", detail, ok)
 	}
 }

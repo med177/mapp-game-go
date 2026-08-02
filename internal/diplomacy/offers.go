@@ -59,6 +59,9 @@ func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy fact
 	if callerFaction == nil || playerFaction == nil || callerFaction.IsEliminated || playerFaction.IsEliminated {
 		return false
 	}
+	if alreadyAtWar(gs, player, enemy) {
+		return false
+	}
 	for _, offer := range gs.DiplomaticOffers {
 		if offer.Action != string(ActionJoinWarCall) {
 			continue
@@ -144,6 +147,9 @@ func BestOfferIndex(gs *state.GameState, target faction.FactionID) (int, bool) {
 	found := false
 	for i, offer := range gs.DiplomaticOffers {
 		if offer.ToFactionID != target {
+			continue
+		}
+		if offer.Action == string(ActionJoinWarCall) && alreadyAtWar(gs, offer.ToFactionID, offer.WarEnemyFactionID) {
 			continue
 		}
 		fromFaction := gs.Factions[offer.FromFactionID]

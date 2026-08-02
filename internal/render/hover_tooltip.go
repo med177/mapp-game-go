@@ -99,6 +99,15 @@ func DrawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
 		return
 	}
+	if regionLiberateButtonHitForTab(fx, fy, gs, rid, activeTab) {
+		successorID, _ := regionLiberationSuccessor(gs, gs.Regions[rid])
+		successorName := factionDisplayName(gs, string(successorID))
+		if successorName == "" {
+			successorName = string(successorID)
+		}
+		drawSmallHoverHint(screen, "Ardıl devlet: "+successorName, fx, fy)
+		return
+	}
 	if regionGrainAidButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		if reason := gs.GrainAidBlockReason(rid); reason != "" {
 			drawSmallHoverHint(screen, reason, fx, fy)

@@ -4,12 +4,16 @@ import (
 	"image/color"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+var escortShieldPath vector.Path
 
 // navalMissionReachedRegion, görev bonusunun artık uygulanabileceği hedef
 // konumunu döndürür. Hedefe ulaşmamış görevler haritada yalnızca filo rozetiyle
@@ -101,6 +105,38 @@ func navalMissionBonusBadgeRect(cx, cy float32) gameui.Rect {
 	return gameui.Rect{X: centerX - badgeSize/2, Y: centerY - badgeSize/2, W: badgeSize, H: badgeSize}
 }
 
+// merchantTradeBonusBadgeRect, ticaret rotası rozetini diğer deniz görevi
+// rozetleriyle aynı üst-sağ anchor'a bağlar. Çizim, hit-test ve hover bu
+// geometry'yi birlikte kullanır.
+func merchantTradeBonusBadgeRect(cx, cy float32) gameui.Rect {
+	return navalMissionBonusBadgeRect(cx, cy)
+}
+
+func appendEscortShieldPath(path *vector.Path, cx, cy, halfWidth, sideBottom, bottom float32) {
+	path.Reset()
+	path.MoveTo(cx-halfWidth, cy-halfWidth)
+	path.LineTo(cx+halfWidth, cy-halfWidth)
+	path.LineTo(cx+halfWidth, cy+sideBottom)
+	path.QuadTo(cx+halfWidth, cy+sideBottom+4, cx+halfWidth*0.62, cy+bottom-2)
+	path.QuadTo(cx+halfWidth*0.30, cy+bottom, cx, cy+bottom)
+	path.QuadTo(cx-halfWidth*0.30, cy+bottom, cx-halfWidth*0.62, cy+bottom-2)
+	path.QuadTo(cx-halfWidth, cy+sideBottom+4, cx-halfWidth, cy+sideBottom)
+	path.Close()
+}
+
+func drawNavalMissionEscortBadge(screen *ebiten.Image, cx, cy float32, badgeColor color.RGBA) {
+	appendEscortShieldPath(&escortShieldPath, cx, cy, 10, -2, 10)
+	var drawOptions vector.DrawPathOptions
+	drawOptions.AntiAlias = true
+	drawOptions.ColorScale.ScaleWithColor(color.RGBA{22, 24, 30, 245})
+	vector.FillPath(screen, &escortShieldPath, nil, &drawOptions)
+
+	appendEscortShieldPath(&escortShieldPath, cx, cy, 8.5, -1.5, 8.5)
+	drawOptions.ColorScale.Reset()
+	drawOptions.ColorScale.ScaleWithColor(badgeColor)
+	vector.FillPath(screen, &escortShieldPath, nil, &drawOptions)
+}
+
 func navalMissionBonusBadgeTextColor(kind army.NavalMissionKind) color.RGBA {
 	text := color.RGBA{35, 25, 15, 255}
 	if kind == army.NavalMissionBlockade {
@@ -163,6 +199,24 @@ func (r *Renderer) navalMissionBonusHitAt(mx, my float64) (army.ArmyID, bool) {
 	return "", false
 }
 
+func (r *Renderer) merchantTradeBonusHitAt(mx, my float64) (army.ArmyID, bool) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade {
+		return "", false
+	}
+	positions := r.armyIconPositions()
+	for i := len(positions) - 1; i >= 0; i-- {
+		pos := positions[i]
+		fleet := r.gs.Armies[pos.ArmyID]
+		if r.merchantTradeBonusForArmy(fleet) <= 0 {
+			continue
+		}
+		if merchantTradeBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+			return pos.ArmyID, true
+		}
+	}
+	return "", false
+}
+
 func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
 	badge, _, ok := navalMissionBonusBadge(gs, fleet)
 	if !ok || fleet.NavalMission == nil {
@@ -179,14 +233,32 @@ func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string
 	}
 	switch fleet.NavalMission.Kind {
 	case army.NavalMissionPatrol:
-		return "Devriye bonusu", targetName + " denizinde " + badge + " düşman abluka gemisini dengeliyor.", true
+		return "Devriye bonusu", targetName + " denizinde " + badge + " görevli düşman abluka gemisini dengeliyor.", true
 	case army.NavalMissionBlockade:
-		return "Abluka bonusu", targetName + " denizinde ticarete toplam -%" + badge + " kesinti uyguluyor.", true
+		lootGold := gs.BlockadeLootGoldForFleet(fleet)
+		return "Abluka bonusu", targetName + " denizinde ticarete toplam -%" + badge + " kesinti uyguluyor. Gelir katkısı (ganimet): +" + itoa(lootGold) + " altın/tur.", true
 	case army.NavalMissionEscort:
 		return "Escort bonusu", targetName + " denizindeki nakliye filosuna +%15 deniz savunması veriyor.", true
 	default:
 		return "", "", false
 	}
+}
+
+func merchantTradeBonusTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
+	if gs == nil || fleet == nil {
+		return "", "", false
+	}
+	route := merchantRouteForKey(gs, fleet.TradeRouteKey)
+	bonus := gs.MerchantFleetTradeRouteBonus(fleet, route)
+	if route == nil || bonus <= 0 {
+		return "", "", false
+	}
+	income := bonus * route.GoldPerUnit
+	if route.BlockadePercent > 0 {
+		income = income * (economy.MaxTradeRouteBlockadePercent - route.BlockadePercent) / economy.MaxTradeRouteBlockadePercent
+	}
+	detail := "Rota bonusu: +" + itoa(bonus) + " mal/tur • Gelir katkısı: +" + itoa(income) + " altın/tur"
+	return "Ticaret rotası bonusu", detail, true
 }
 
 func navalEmbarkedArmyTooltipText(fleet *army.Army) (string, string, bool) {
@@ -208,6 +280,27 @@ func (r *Renderer) drawNavalMissionBonusHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	title, detail, ok := navalMissionBonusTooltipText(r.gs, r.gs.Armies[aid])
+	if !ok {
+		return
+	}
+	const tooltipW = 360.0
+	const tooltipH = 82.0
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+}
+
+func (r *Renderer) drawMerchantTradeBonusHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	aid, ok := r.merchantTradeBonusHitAt(float64(mx), float64(my))
+	if !ok {
+		return
+	}
+	title, detail, ok := merchantTradeBonusTooltipText(r.gs, r.gs.Armies[aid])
 	if !ok {
 		return
 	}

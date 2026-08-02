@@ -214,7 +214,13 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 		}
 	}
 	x, y := region.WorldX, region.WorldY
-	if px, py, ok := autoPortSettlementPoint(region, g.gs.Regions); ok {
+	if g.renderer != nil {
+		if px, py, ok := g.renderer.CoastalSettlementPoint(region.ID, g.gs.Regions); ok {
+			x, y = px, py
+		} else if px, py, ok := autoPortSettlementPoint(region, g.gs.Regions); ok {
+			x, y = px, py
+		}
+	} else if px, py, ok := autoPortSettlementPoint(region, g.gs.Regions); ok {
 		x, y = px, py
 	} else {
 		for _, nid := range region.Neighbors {
@@ -240,7 +246,7 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 }
 
 func autoPortSettlementPoint(region *world.Region, regions map[world.RegionID]*world.Region) (int, int, bool) {
-	if region == nil || len(region.Shape) == 0 {
+	if region == nil || len(region.Shape) == 0 || !regionHasUniqueShape(region, regions) {
 		return 0, 0, false
 	}
 	centerX := float64(region.WorldX)
@@ -265,6 +271,26 @@ func autoPortSettlementPoint(region *world.Region, regions map[world.RegionID]*w
 		coastY += dy / dist * inset
 	}
 	return int(math.Round(coastX)), int(math.Round(coastY)), true
+}
+
+func regionHasUniqueShape(region *world.Region, regions map[world.RegionID]*world.Region) bool {
+	if region == nil {
+		return false
+	}
+	// Test/legacy verilerinde Shape doğrudan bölgeye atanmış olabilir; bu
+	// durumda paylaşım bilgisi bulunmadığından mevcut shape hesabı güvenlidir.
+	if region.ShapeID == "" {
+		return true
+	}
+	for _, other := range regions {
+		if other == nil || other == region || other.IsSea {
+			continue
+		}
+		if other.ShapeID == region.ShapeID {
+			return false
+		}
+	}
+	return true
 }
 
 func nearestSeaNeighborCenter(region *world.Region, regions map[world.RegionID]*world.Region) (float64, float64, bool) {
