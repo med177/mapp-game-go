@@ -68,6 +68,68 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 	}
 }
 
+func TestArmyIconPositionsKeepSiegePairOnFortressAnchor(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"fort": {
+				ID:      "fort",
+				OwnerID: "p2",
+				Settlements: []world.Settlement{
+					{ID: "center", IsCenter: true},
+					{ID: "castle", Type: world.SettlementFortress},
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"besieger": {
+				ID:       "besieger",
+				OwnerID:  "p1",
+				RegionID: "fort",
+				Units:    []army.Unit{{TypeID: "inf"}},
+			},
+			"defender": {
+				ID:       "defender",
+				OwnerID:  "p2",
+				RegionID: "fort",
+				Units:    []army.Unit{{TypeID: "inf"}},
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"fort": {
+				RegionID:       "fort",
+				AttackerArmyID: "besieger",
+				DefenderArmyID: "defender",
+			},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			settlementAnchor: map[settlementAnchorKey][2]int{
+				{Region: "fort", Index: 0}: {100, 100},
+				{Region: "fort", Index: 1}: {150, 100},
+			},
+			primarySettlement: map[world.RegionID][2]int{
+				"fort": {100, 100},
+			},
+		},
+	}
+
+	positions := r.armyIconPositions()
+	if len(positions) != 2 {
+		t.Fatalf("iki kuşatma ordusu ikonu bekleniyordu, got=%d", len(positions))
+	}
+	if positions[0].ArmyID != "besieger" || positions[1].ArmyID != "defender" {
+		t.Fatalf("kuşatma çifti kale anchor'ında kuşatan-savunmacı sırasını korumalıydı: %+v", positions)
+	}
+	if got := positions[1].X - positions[0].X; got != 52 {
+		t.Fatalf("kuşatma çifti tek ortak marker grubunda 52 px ayrılmalıydı: delta=%.1f", got)
+	}
+	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+26 {
+		t.Fatalf("kılıç rozeti kuşatma çiftinin ortak orta slotunda olmalıydı: got=%.1f", got)
+	}
+}
+
 func TestArmyIconPositionsLeaveThreePixelsBetweenNavalMarkers(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

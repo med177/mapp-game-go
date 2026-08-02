@@ -82,6 +82,40 @@ func (g *Game) executePlayerNavalMissions() {
 	}
 }
 
+// followEscortingFleets, oyuncu tarafından hareket ettirilen açık deniz
+// filosunu koruyan filoları aynı denize taşır. Escort kendi normal hareket
+// doğrulamasından geçtiği için komşuluk, temas/savaş ve hareket puanı kuralları
+// burada da aynen uygulanır; hareket puanı yoksa escort yerinde kalır.
+func (g *Game) followEscortingFleets(targetFleetID army.ArmyID, previousLocation string) {
+	if g == nil || g.gs == nil || targetFleetID == "" || previousLocation == "" || g.gs.PendingNavalContact != nil {
+		return
+	}
+	targetFleet := g.gs.Armies[targetFleetID]
+	if targetFleet == nil || !targetFleet.IsAtSea() || targetFleet.LocationID() == previousLocation {
+		return
+	}
+
+	escortIDs := make([]army.ArmyID, 0)
+	for fleetID, fleet := range g.gs.Armies {
+		if fleet == nil || fleet.ID == targetFleetID || fleet.OwnerID != targetFleet.OwnerID || !fleet.IsAtSea() || fleet.MovePoints <= 0 || fleet.NavalMission == nil {
+			continue
+		}
+		if fleet.NavalMission.Kind == army.NavalMissionEscort && fleet.NavalMission.TargetFleetID == targetFleetID && fleet.RegionID != targetFleet.RegionID {
+			escortIDs = append(escortIDs, fleetID)
+		}
+	}
+	sort.Slice(escortIDs, func(i, j int) bool { return escortIDs[i] < escortIDs[j] })
+
+	for _, escortID := range escortIDs {
+		if escort := g.gs.Armies[escortID]; escort == nil || escort.MovePoints <= 0 || escort.RegionID == targetFleet.RegionID {
+			continue
+		}
+		g.escortFollowDepth++
+		g.moveArmyWithStance(escortID, targetFleet.RegionID, combat.BattleStanceBalanced)
+		g.escortFollowDepth--
+	}
+}
+
 // playerNavalMissionNextTarget, yalnız hareket edebilen görevler için bir
 // sonraki komşu deniz/kıyı adımını döndürür. Devriye ve abluka mevcut denizde
 // sabittir; escort hedef filosunu, nakliye ise hedef kıyının deniz komşusunu

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -140,6 +141,43 @@ func Test1300ThreatenedMissionQueuesEscortToSafetyRequirement(t *testing.T) {
 	for _, order := range gs.ProductionQueue {
 		if order.TypeID != "warship" || order.RegionID != "port" {
 			t.Fatalf("escortlar tehdit edilen görev limanında üretilmeliydi: %+v", gs.ProductionQueue)
+		}
+	}
+}
+
+func Test1300ThreatenedPortQueuesNavalDefenseWithoutMission(t *testing.T) {
+	gs := aiNavalThreatRouteState()
+	gs.ScenarioID = "1300_ottoman_rise"
+	gs.Factions["ai"].Gold = 5000
+	gs.Factions["ai"].Grain = 500
+	gs.Factions["ai"].Iron = 100
+	gs.Factions["ai"].Timber = 500
+	gs.Factions["ai"].Research.Completed = map[string]bool{"navigation": true, "naval_doctrine": true}
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai": {ObjectiveID: "consolidate:ai", Kind: state.AIObjectiveConsolidate, TargetRegionIDs: []world.RegionID{"port"}},
+	}
+	gs.Regions["port"].Buildings = []string{"port", "port", "port"}
+	gs.BuildingTypes = map[string]*city.Building{
+		"port": {ID: "port", MaxPerRegion: 3, TurnsRequired: 2},
+	}
+	gs.UnitTypes["warship"] = &army.UnitType{
+		ID: "warship", Category: army.CategoryNavalWar, Attack: 28, Defense: 18, Morale: 60,
+		RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: []string{"navigation", "naval_doctrine"},
+		GoldCost: 400, GrainCost: 8, IronCost: 12, TimberCost: 34, ClothCost: 8, TurnsRequired: 4,
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	if len(ctx.ThreatenedPortIDs) != 1 || ctx.ThreatenedPortIDs[0] != "port" {
+		t.Fatalf("abluka altındaki liman stratejik context'e girmeliydi: %+v", ctx.ThreatenedPortIDs)
+	}
+	aiNavalStrategyWithStrategicContextAndSteps(gs, "ai", nil, ctx, nil)
+
+	if len(gs.ProductionQueue) == 0 {
+		t.Fatal("somut çıkarma görevi olmasa bile tehditli liman için savaş gemisi kuyruğu açılmalıydı")
+	}
+	for _, order := range gs.ProductionQueue {
+		if order.TypeID != "warship" || order.RegionID != "port" {
+			t.Fatalf("abluka savunması yanlış üretim emri verdi: %+v", gs.ProductionQueue)
 		}
 	}
 }

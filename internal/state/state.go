@@ -296,6 +296,8 @@ type GameState struct {
 
 	// Geçici açık deniz temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
 	PendingNavalContact *NavalContact `json:"-"`
+	// Geçici kara temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
+	PendingLandContact *LandContact `json:"-"`
 }
 
 // RegionProductionSummary bir bölgenin tur başı efektif ekonomik katkısını özetler.
@@ -1501,6 +1503,30 @@ func (s *GameState) ReplenishArmyInFriendlyTerritory(a *army.Army, amount int) i
 		return 0
 	}
 	return a.Replenish(amount)
+}
+
+// ClearArmyLogisticsAfterRelocation eski konumda üretilmiş lojistik yıpranma
+// snapshot'ını farklı konuma geçen ordudan ayırır. Kara ordusunun aşırı yük
+// sayacı da bölgeye özgü olduğu için hedef bölgede yeniden başlatılır; deniz
+// filosunun TurnsWithoutPort sayacı ise açık deniz yolculuğunun toplam süresini
+// temsil ettiğinden korunur.
+func (s *GameState) ClearArmyLogisticsAfterRelocation(a *army.Army, previousLocation string) bool {
+	if s == nil || a == nil || previousLocation == "" || a.LocationID() == previousLocation {
+		return false
+	}
+
+	cleared := false
+	if s.ArmyLogistics != nil {
+		if _, ok := s.ArmyLogistics[a.ID]; ok {
+			delete(s.ArmyLogistics, a.ID)
+			cleared = true
+		}
+	}
+	if !a.IsNaval && a.OverCapacityTurns != 0 {
+		a.OverCapacityTurns = 0
+		cleared = true
+	}
+	return cleared
 }
 
 // CanFleetAvoidSeaAttrition, filonun bulunduğu deniz bölgesine komşu en az

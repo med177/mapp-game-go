@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -16,12 +17,13 @@ import (
 )
 
 type tradeRouteVisual struct {
-	factionA string
-	factionB string
-	goodName string
-	amount   int
-	bestFlow int
-	route    *economy.TradeRoute
+	factionA  string
+	factionB  string
+	goodName  string
+	amount    int
+	bestFlow  int
+	route     *economy.TradeRoute
+	routeKeys []string
 }
 
 type tradeCenterVisual struct {
@@ -41,20 +43,21 @@ type tradeCenterVisual struct {
 }
 
 type tradeCorridorInfo struct {
-	fromName string
-	toName   string
-	amount   int
-	factions int
-	goods    string
-	sx       float64
-	sy       float64
-	cx       float64
-	cy       float64
-	dx       float64
-	dy       float64
-	hitWidth float64
-	dashed   bool
-	route    *economy.TradeRoute
+	fromName  string
+	toName    string
+	amount    int
+	factions  int
+	goods     string
+	sx        float64
+	sy        float64
+	cx        float64
+	cy        float64
+	dx        float64
+	dy        float64
+	hitWidth  float64
+	dashed    bool
+	route     *economy.TradeRoute
+	routeKeys []string
 }
 
 var (
@@ -456,21 +459,185 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 			}
 		}
 		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
-			fromName: chooseRegionLabel(fromRegion),
-			toName:   chooseRegionLabel(toRegion),
-			amount:   tradeRouteDisplayAmount(route.route),
-			factions: 2,
-			goods:    route.goodName,
-			sx:       sx,
-			sy:       sy,
-			cx:       cx,
-			cy:       cy,
-			dx:       dx,
-			dy:       dy,
-			hitWidth: 10,
-			dashed:   true,
-			route:    route.route,
+			fromName:  chooseRegionLabel(fromRegion),
+			toName:    chooseRegionLabel(toRegion),
+			amount:    tradeRouteDisplayAmount(route.route),
+			factions:  2,
+			goods:     route.goodName,
+			sx:        sx,
+			sy:        sy,
+			cx:        cx,
+			cy:        cy,
+			dx:        dx,
+			dy:        dy,
+			hitWidth:  10,
+			dashed:    true,
+			route:     route.route,
+			routeKeys: route.routeKeys,
 		})
+	}
+}
+
+func tradeCorridorHasRoute(c tradeCorridorInfo, routeKey string) bool {
+	if routeKey == "" {
+		return false
+	}
+	if c.route != nil && c.route.AssignmentKey() == routeKey {
+		return true
+	}
+	for _, key := range c.routeKeys {
+		if key == routeKey {
+			return true
+		}
+	}
+	return false
+}
+
+func closestPointOnTradeSegment(px, py, ax, ay, bx, by float64) (float64, float64, float64) {
+	abx := bx - ax
+	aby := by - ay
+	den := abx*abx + aby*aby
+	t := 0.0
+	if den > 1e-6 {
+		t = ((px-ax)*abx + (py-ay)*aby) / den
+		if t < 0 {
+			t = 0
+		} else if t > 1 {
+			t = 1
+		}
+	}
+	x := ax + abx*t
+	y := ay + aby*t
+	dx := px - x
+	dy := py - y
+	return x, y, dx*dx + dy*dy
+}
+
+func nearestTradeCorridorPoint(c tradeCorridorInfo, px, py float64) (float64, float64, float64, bool) {
+	const segments = 28
+	bestD2 := math.MaxFloat64
+	bestX, bestY := 0.0, 0.0
+	prevX, prevY := c.sx, c.sy
+	for i := 1; i <= segments; i++ {
+		t := float64(i) / float64(segments)
+		x, y := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t)
+		candidateX, candidateY, d2 := closestPointOnTradeSegment(px, py, prevX, prevY, x, y)
+		if d2 < bestD2 {
+			bestX, bestY, bestD2 = candidateX, candidateY, d2
+		}
+		prevX, prevY = x, y
+	}
+	if bestD2 == math.MaxFloat64 {
+		return 0, 0, 0, false
+	}
+	return bestX, bestY, bestD2, true
+}
+
+func (r *Renderer) tradeRouteConnectionPoint(routeKey string, px, py float64) (float64, float64, bool) {
+	if r == nil || routeKey == "" {
+		return 0, 0, false
+	}
+	bestD2 := math.MaxFloat64
+	bestX, bestY := 0.0, 0.0
+	for _, corridor := range r.tradeCorridors {
+		if !tradeCorridorHasRoute(corridor, routeKey) {
+			continue
+		}
+		x, y, d2, ok := nearestTradeCorridorPoint(corridor, px, py)
+		if ok && d2 < bestD2 {
+			bestX, bestY, bestD2 = x, y, d2
+		}
+	}
+	return bestX, bestY, bestD2 < math.MaxFloat64
+}
+
+type tradeBonusFleetVisual struct {
+	position armyIconPos
+	fleet    *army.Army
+	bonus    int
+	routeKey string
+}
+
+func (r *Renderer) tradeBonusFleetAtPosition(position armyIconPos) (*army.Army, bool) {
+	if r == nil || r.gs == nil {
+		return nil, false
+	}
+	fleet := r.gs.Armies[position.ArmyID]
+	return fleet, fleet != nil && r.merchantTradeBonusForArmy(fleet) > 0
+}
+
+func (r *Renderer) tradeBonusFleetVisuals() []tradeBonusFleetVisual {
+	if r == nil || r.gs == nil {
+		return nil
+	}
+	positions := r.armyIconPositions()
+	visuals := make([]tradeBonusFleetVisual, 0, len(positions))
+	for _, position := range positions {
+		fleet, ok := r.tradeBonusFleetAtPosition(position)
+		if !ok {
+			continue
+		}
+		bonus := r.merchantTradeBonusForArmy(fleet)
+		visuals = append(visuals, tradeBonusFleetVisual{
+			position: position,
+			fleet:    fleet,
+			bonus:    bonus,
+			routeKey: fleet.TradeRouteKey,
+		})
+	}
+	return visuals
+}
+
+func (r *Renderer) drawTradeBonusFleetMarkers(screen *ebiten.Image) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	positions := r.armyIconPositions()
+	if len(positions) == 0 {
+		return
+	}
+
+	// Connector'lar markerların altında kalır; marker ve mevcut bonus rozeti
+	// en son çizilerek rota hattı tarafından kapatılmaz.
+	for _, position := range positions {
+		fleet, ok := r.tradeBonusFleetAtPosition(position)
+		if !ok {
+			continue
+		}
+		fromX, fromY := float64(position.X), float64(position.Y)
+		toX, toY, ok := r.tradeRouteConnectionPoint(fleet.TradeRouteKey, fromX, fromY)
+		if !ok {
+			continue
+		}
+		vx := toX - fromX
+		vy := toY - fromY
+		distance := math.Hypot(vx, vy)
+		if distance < 18 {
+			continue
+		}
+		fromX += vx / distance * 15
+		fromY += vy / distance * 15
+		toX -= vx / distance * 3
+		toY -= vy / distance * 3
+		if r.tradeOverlayOccludesSegment(fromX, fromY, toX, toY) {
+			continue
+		}
+		vector.StrokeLine(screen, float32(fromX), float32(fromY), float32(toX), float32(toY), 4.5, color.RGBA{22, 25, 30, 180}, false)
+		vector.StrokeLine(screen, float32(fromX), float32(fromY), float32(toX), float32(toY), 1.8, color.RGBA{244, 195, 52, 210}, false)
+	}
+
+	for _, position := range positions {
+		fleet, ok := r.tradeBonusFleetAtPosition(position)
+		if !ok {
+			continue
+		}
+		if _, _, connected := r.tradeRouteConnectionPoint(fleet.TradeRouteKey, float64(position.X), float64(position.Y)); !connected {
+			continue
+		}
+		unitCount := len(fleet.Units)
+		fc := factionColor(r.gs, fleet.OwnerID)
+		r.drawArmyIcon(screen, fleet.ID, fleet.OwnerID, position.X, position.Y, fc, unitCount, false, true, position.X+armyIconInnerHalf+8)
+		r.drawNavalPriorityBadges(screen, fleet, position.X, position.Y)
 	}
 }
 
@@ -608,6 +775,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 		route.amount += tr.AmountPerTurn
+		if routeKey := tr.AssignmentKey(); routeKey != "" {
+			route.routeKeys = append(route.routeKeys, routeKey)
+		}
 		candidateGood := economy.GoodNameTR(tr.Good)
 		if route.goodName == "" || tr.AmountPerTurn > route.bestFlow {
 			route.goodName = candidateGood
@@ -621,6 +791,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	r.tradeCenters = append(r.tradeCenters[:0], centers...)
 	r.drawPlayerTradePortRoutes(screen, merged)
 	if len(centers) == 0 {
+		r.drawTradeBonusFleetMarkers(screen)
 		r.tradeHoverIdx = -1
 		r.tradeCenterIdx = -1
 		r.updateTradeHover()
@@ -640,9 +811,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	factionHub := make(map[string]*world.Region, len(merged)*2)
 	factionCenter := make(map[string]int, len(merged)*2)
 	type linkAgg struct {
-		flow     int
-		factions map[string]struct{}
-		goods    map[string]int
+		flow      int
+		factions  map[string]struct{}
+		goods     map[string]int
+		routeKeys []string
 	}
 	centerLinkFlow := map[string]*linkAgg{}
 	centerSpokeFlow := map[string]int{}
@@ -699,6 +871,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			agg.flow += route.amount
 			agg.factions[route.factionA] = struct{}{}
 			agg.factions[route.factionB] = struct{}{}
+			agg.routeKeys = append(agg.routeKeys, route.routeKeys...)
 			if route.goodName != "" {
 				agg.goods[route.goodName] += route.amount
 			}
@@ -890,6 +1063,12 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			dx:       dx,
 			dy:       dy,
 			hitWidth: float64(glowW) + 4,
+			routeKeys: func() []string {
+				if agg == nil {
+					return nil
+				}
+				return agg.routeKeys
+			}(),
 		})
 	}
 	r.updateTradeHover()
@@ -1027,6 +1206,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			DrawText(screen, volStr, float64(x)+20, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, alphaText})
 		}
 	}
+	r.drawTradeBonusFleetMarkers(screen)
 }
 
 // factionPrimaryRegion bir fraksiyonun görsel temsili için ana bölgesini döner.

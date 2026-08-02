@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -12,6 +12,11 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 ## GameState Yapısı
 
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
+
+`PendingNavalContact` ve `PendingLandContact`, oyuncu kararını bekleyen geçici
+temas state'leridir ve `json:"-"` ile kayda girmez. Temas kararı iki taraf için
+de tamamlandığında state temizlenir; kara temasında ordular karar verilene kadar
+hedef bölgeye taşınmaz.
 
 `world.Region.SuccessorFactionID` senaryo metadata'sıdır ve compact save'de `sf`
 delta alanıyla korunur. Böylece edit mode ataması, fetih sonrası özgürleştirme ve
@@ -122,9 +127,11 @@ sayaçları günceller, `EndWarLedger()` barışta kaydı kaldırıp hedef plan�
 temizler. `SyncWarLedgers()` eski save veya doğrudan stance düzenleyen legacy yolları
 aktif ilişkilerle uzlaştırır; ledger taşımayan eski save'deki savaş yükleme turunda sıfır
 sayaçla başlar.
-Barış çözümünde `RecordTruce()` aynı relation key için altı tur sonrasını
-`RecentTruces` içine yazar; bu alan compact save'e alınır ve eski save'lerde boş kabul
-edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
+Barış çözümünde `RecordTruce()` `PostPeaceTruceTurns` sabitiyle aynı relation key
+için altı tur sonrasını `RecentTruces` içine yazar; bu alan compact save'e alınır
+ve eski save'lerde boş kabul edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz
+sayar. Render katmanı da aynı sabiti kullanarak barış teklifi modalında ateşkes
+süresini gösterir.
 `CanJoinActiveSiege(attacker, regionID)`, aynı fraksiyon, müttefik veya aynı vassal zincirindeki bir ordunun mevcut kuşatmaya normal hareketle destek verip veremeyeceğini döner; bu kural render ve game katmanında aynı relation/hiyerarşi verisinden okunur.
 `IsArmyDefendingSiegedRegion(candidate)`, aktif kuşatma altındaki bölgede bölge sahibi veya onun müttefiki olarak duran kara ordusunu ortak savunmacı state'i olarak tanımlar. Bu predicate huruç zorunluluğu ile kuşatma altı iyileşme engelinin aynı state kuralını kullanmasını sağlar.
 `SelectBattleDefender(attacker, target, navalSeaMove)` artık kara ve deniz için savunucu seçimini yalnız gerçekten savaş halindeki ordularla sınırlar; müttefik veya barış durumundaki ordular hedef bölgede dursa bile savaş planı/presolve akışına girmez.
@@ -305,6 +312,8 @@ save/load ise alanı campaign state içinde korur.
 `NormalizeFactionCapitals()` — yükleme sonrası eksik/geçersiz başkentleri en yüksek getirili owned settlement'a normalize eder
 
 `RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, abluka yüzdesi, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
+
+`GameState.ClearArmyLogisticsAfterRelocation()` — ordu veya filonun `LocationID()` değeri değiştiğinde eski konuma ait ordu yıpranma snapshot'ını temizler. Kara ordusunun bölgeye özgü `OverCapacityTurns` sayacı sıfırlanır; filonun açık deniz yolculuk süresini ifade eden `TurnsWithoutPort` korunur.
 
 `GrainEconomyStatus` / `GameState.GrainEconomy` — son ekonomi tick'inde fraksiyon bazlı tahıl üretimi, sivil tüketimi, ordu bakımı, ordu yenilemesi, ordu `ArmyMoraleDelta` değişimi, stratejik ithalat ihtiyacı, nüfus büyümesi ve otomatik ihracat için harcanan tahıl, net değişim, stok-ay seviyesi ve açık bilgisini render/event bildirimlerine taşır; runtime-only olduğu için save'e yazılmaz.
 

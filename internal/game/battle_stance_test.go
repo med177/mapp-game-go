@@ -68,10 +68,18 @@ func TestMoveArmyWithStanceChangesBattleResolution(t *testing.T) {
 	rand.Seed(7)
 	aggressiveGame := newGame()
 	aggressiveGame.moveArmyWithStance("atk", "dst", combat.BattleStanceAggressive)
+	if aggressiveGame.gs.PendingLandContact != nil {
+		aggressiveGame.gs.ClearLandContact()
+		aggressiveGame.moveArmyToSettlementWithStanceAndContactResolved("atk", "dst", "", combat.BattleStanceAggressive, false, true)
+	}
 
 	rand.Seed(7)
 	defensiveGame := newGame()
 	defensiveGame.moveArmyWithStance("atk", "dst", combat.BattleStanceDefensive)
+	if defensiveGame.gs.PendingLandContact != nil {
+		defensiveGame.gs.ClearLandContact()
+		defensiveGame.moveArmyToSettlementWithStanceAndContactResolved("atk", "dst", "", combat.BattleStanceDefensive, false, true)
+	}
 
 	aggArmy := aggressiveGame.gs.Armies["atk"]
 	defArmy := defensiveGame.gs.Armies["atk"]

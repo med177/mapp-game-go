@@ -2,6 +2,7 @@ package render
 
 import (
 	"image/color"
+	"math"
 
 	gameui "mapp-game-go/internal/ui"
 
@@ -111,12 +112,35 @@ func drawUIInfoBlock(screen *ebiten.Image, x, y float64, lines []string, colors 
 
 func drawUIScreenChrome(screen *ebiten.Image, bg color.RGBA, title string, subtitle string) {
 	screen.Fill(bg)
+	drawUIScreenChromeOverlay(screen, title, subtitle)
+}
+
+func drawUIScreenChromeOverlay(screen *ebiten.Image, title string, subtitle string) {
 	vector.FillRect(screen, 0, 0, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
 	vector.FillRect(screen, 0, float32(ScreenHeight)-3, float32(ScreenWidth), 3, color.RGBA{180, 150, 60, 200}, false)
 	drawUILabel(screen, gameui.Rect{X: 0, Y: 40, W: ScreenWidth}, title, ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
 	if subtitle != "" {
 		drawUILabel(screen, gameui.Rect{X: 0, Y: 70, W: ScreenWidth}, subtitle, ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 	}
+}
+
+func drawUIImageCover(screen, image *ebiten.Image) {
+	if image == nil {
+		return
+	}
+
+	bounds := image.Bounds()
+	sourceW := float64(bounds.Dx())
+	sourceH := float64(bounds.Dy())
+	if sourceW <= 0 || sourceH <= 0 {
+		return
+	}
+
+	scale := math.Max(ScreenWidth/sourceW, ScreenHeight/sourceH)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate((ScreenWidth-sourceW*scale)/2, (ScreenHeight-sourceH*scale)/2)
+	screen.DrawImage(image, op)
 }
 
 func drawUICardRect(screen *ebiten.Image, rect gameui.Rect, fill color.RGBA, border color.RGBA, borderWidth float32) {

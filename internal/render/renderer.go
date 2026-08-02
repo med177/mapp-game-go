@@ -490,6 +490,21 @@ func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army,
 		target.IsFortified()
 }
 
+func hasLandContactOpponent(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	if gs == nil || attacker == nil || target == nil || attacker.IsNaval || !target.CanLandEnter() {
+		return false
+	}
+	if gs.SiegeAt(target.ID) != nil {
+		return false
+	}
+	for _, candidate := range gs.Armies {
+		if candidate != nil && !candidate.IsNaval && candidate.ID != attacker.ID && candidate.RegionID == target.ID && candidate.OwnerID != attacker.OwnerID {
+			return true
+		}
+	}
+	return false
+}
+
 func renderTargetRequiresAmphibiousSiegeLanding(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
 	return gs != nil &&
 		attacker != nil &&
@@ -512,22 +527,22 @@ func (r *Renderer) canEnterActiveSiegedRegion(attacker *army.Army, regionID worl
 }
 
 type battlePlanState struct {
-	show                         bool
-	actionKind                   ActionKind
-	battleContext                combat.BattleContext
-	pendingArmy                  army.ArmyID
-	pendingEnemy                 army.ArmyID
-	pendingDest                  world.RegionID
-	regionName                   string
-	defenderName                 string
-	defenderFaction              string
-	attackerSummary              string
-	defenderSummary              string
-	focus                        int
-	previews                     [3]combat.Preview
-	navalAttack                  bool
-	navalContactResolved         bool
-	navalContactMovementConsumed bool
+	show                    bool
+	actionKind              ActionKind
+	battleContext           combat.BattleContext
+	pendingArmy             army.ArmyID
+	pendingEnemy            army.ArmyID
+	pendingDest             world.RegionID
+	regionName              string
+	defenderName            string
+	defenderFaction         string
+	attackerSummary         string
+	defenderSummary         string
+	focus                   int
+	previews                [3]combat.Preview
+	navalAttack             bool
+	contactResolved         bool
+	contactMovementConsumed bool
 }
 
 func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext) {
@@ -974,6 +989,44 @@ func (r *Renderer) worldInputLockedByPhase() bool {
 	return r.gs.Phase == state.PhaseAITurn || r.gs.Phase == state.PhaseTurnResolution
 }
 
+// armyPanelTooltipActive, çizim/input sırasındaki üst katman sözleşmesini
+// tooltip'e taşır. Ordu paneli başka bir modal veya overlay panelinin altında
+// kaldığında, fare koordinatı eski kart alanına denk gelse bile popup
+// gösterilmemelidir.
+func (r *Renderer) armyPanelTooltipActive() bool {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" || r.worldInputLockedByPhase() || r.navalMissionTargeting {
+		return false
+	}
+	if r.showHistoricalEvent || r.showCommanderPanel || r.showImperialPanel || r.showAIDiagnostic ||
+		r.showDiplomacy || r.showTech || r.showTrade || r.showEventCodex || r.showVictoryDetail ||
+		r.eventDetail != "" || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show ||
+		r.battlePlan.show || r.battleReport.show {
+		return false
+	}
+	if _, ok := r.playerDiplomacyOfferIndex(); ok {
+		return false
+	}
+	if _, _, _, ok := r.selectedSiegePanelState(); ok {
+		return false
+	}
+	if _, _, _, _, _, ok := r.selectedDefensiveSiegePanelState(); ok {
+		return false
+	}
+
+	r.ensureOverlayPanelOrder()
+	for i := 0; i < r.overlayPanelOrderLen; i++ {
+		// Aktif Savaşlar paneli yalnız kendi yüzeyinde input tüketir; harita
+		// ve ordu paneli bu panel açıkken pasifleşmez.
+		if r.overlayPanelOrder[i] == overlayPanelActiveWars {
+			continue
+		}
+		if r.overlayPanelVisible(r.overlayPanelOrder[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 func (r *Renderer) currentEventCodexEntries() []EventCodexEntry {
 	return r.eventCodexEntries[int(r.eventCodexFilter)]
 }
@@ -1311,7 +1364,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
-		DrawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab)
+		drawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab, r.armyPanelTooltipActive())
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
@@ -1498,6 +1551,14 @@ func (r *Renderer) BattleReportVisible() bool {
 
 func (r *Renderer) WarSummaryVisible() bool {
 	return r != nil && r.warSummary.show
+}
+
+func (r *Renderer) BattlePlanVisible() bool {
+	return r != nil && r.battlePlan.show
+}
+
+func (r *Renderer) ConfirmDialogVisible() bool {
+	return r != nil && r.confirmDialog.show
 }
 
 func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
@@ -2210,7 +2271,7 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 		return armyDisplayGroupKey{}, 0, 0, false
 	}
 	if !a.IsNaval {
-		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+		if siege := r.siegeForArmyDisplay(a); siege != nil {
 			if region := r.gs.Regions[siege.RegionID]; region != nil {
 				if ax, ay, ok := r.siegeLandArmyAnchor(region); ok {
 					sx, sy := r.worldToScreen(float64(ax), float64(ay))
@@ -2239,6 +2300,25 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 	}
 	sx, sy := r.regionScreenPos(region)
 	return armyDisplayGroupKey{RegionID: region.ID}, float32(sx), float32(sy), true
+}
+
+// siegeForArmyDisplay, aktif kuşatmanın hem kuşatanını hem de kuşatılan
+// garnizonunu aynı kale anchor'ında toplar. Garnizonun normal landArmyAnchor
+// ile merkez yerleşime gitmesi, marker grubunu ikiye böler ve savaş rozeti
+// bir durumda marker'ın sağına, diğerinde merkezine düşer.
+func (r *Renderer) siegeForArmyDisplay(a *army.Army) *state.SiegeState {
+	if r == nil || r.gs == nil || a == nil || r.gs.Sieges == nil {
+		return nil
+	}
+	for _, siege := range r.gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		if siege.AttackerArmyID == a.ID || siege.DefenderArmyID == a.ID {
+			return siege
+		}
+	}
+	return nil
 }
 
 func (r *Renderer) landArmyAnchor(region *world.Region) (int, int, bool) {
@@ -2464,7 +2544,13 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 	if r == nil || r.gs == nil || a == nil || !a.IsNaval {
 		return
 	}
-	if a.NavalMission != nil {
+	if navalMissionPendingBadge(r.gs, a) {
+		badgeRect := navalMissionPendingBadgeRect(cx, cy)
+		badgeCX := float32(badgeRect.X + badgeRect.W/2)
+		badgeCY := float32(badgeRect.Y + badgeRect.H/2)
+		vector.FillCircle(screen, badgeCX, badgeCY, 10, color.RGBA{8, 8, 8, 245}, false)
+		vector.FillCircle(screen, badgeCX, badgeCY, 8.5, color.RGBA{156, 156, 156, 245}, false)
+	} else if a.NavalMission != nil {
 		if bonusText, bonusColor, ok := navalMissionBonusBadge(r.gs, a); ok {
 			bonusRect := navalMissionBonusBadgeRect(cx, cy)
 			bonusCX := float32(bonusRect.X + bonusRect.W/2)

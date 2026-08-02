@@ -238,6 +238,9 @@ func aiResearchEffectScore(gs *state.GameState, self *faction.Faction, technolog
 		navalPercent := int((effects.NavalAttackMod + effects.NavalDefenseMod) * 100)
 		score += navalPercent * 3
 		score += effects.NavalMoveBonus * 50
+		if signals.Context != nil && (len(signals.Context.NavalThreats) > 0 || len(signals.Context.ThreatenedPortIDs) > 0) && technology.Category == tech.CategoryNaval {
+			score += 220
+		}
 	} else if technology.Category == tech.CategoryNaval {
 		score -= 140
 	}
@@ -297,6 +300,8 @@ func aiResearchUnitUnlockScore(gs *state.GameState, self *faction.Faction, techn
 				unlockValue /= 4
 			} else if unitType.Category == army.CategoryNavalTrans && signals.ActiveWars > 0 {
 				unlockValue += 80
+			} else if unitType.Category == army.CategoryNavalWar && signals.ActiveWars > 0 {
+				unlockValue += 180
 			}
 		}
 		score += unlockValue

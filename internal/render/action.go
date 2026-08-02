@@ -17,6 +17,7 @@ const (
 	ActionSelectArmy               ActionKind = "select_army"
 	ActionMoveArmy                 ActionKind = "move_army"
 	ActionResolveNavalContact      ActionKind = "resolve_naval_contact"
+	ActionResolveLandContact       ActionKind = "resolve_land_contact"
 	ActionEmbarkArmy               ActionKind = "embark_army"
 	ActionDisembarkArmy            ActionKind = "disembark_army"
 	ActionAssignMerchantRoute      ActionKind = "assign_merchant_route"
@@ -137,7 +138,7 @@ type InputAction struct {
 	BattleStance combat.BattleStance
 	// NavalAttack yalnız savaş planından onaylanan açık filo saldırısında
 	// true olur. Görevlerin otomatik hareketi bu bayrağı taşımaz.
-	NavalAttack                  bool
-	NavalContactResolved         bool // Temas modalında iki taraf da Çatış seçti.
-	NavalContactMovementConsumed bool // Temas öncesi filo hedef denize taşındı.
+	NavalAttack             bool
+	ContactResolved         bool // Temas modalında iki taraf da Çatış seçti.
+	ContactMovementConsumed bool // Temas öncesi hareket puanı tüketildi.
 }

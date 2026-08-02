@@ -3,6 +3,7 @@ package render
 import (
 	"image/color"
 	"math"
+	"sync"
 
 	gameui "mapp-game-go/internal/ui"
 
@@ -15,6 +16,11 @@ type menuItem struct {
 	action   ActionKind
 	disabled bool
 }
+
+var (
+	mainMenuBackgroundOnce sync.Once
+	mainMenuBackground     *ebiten.Image
+)
 
 func buildMainMenuButtons(hasSave bool, hasAutoSave bool, editModeEnabled bool) []gameui.Button {
 	items := buildMenuItems(hasSave, hasAutoSave, editModeEnabled)
@@ -33,14 +39,20 @@ func buildMainMenuButtons(hasSave bool, hasAutoSave bool, editModeEnabled bool) 
 
 // DrawMainMenu ana menü ekranını çizer.
 func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bool, editModeEnabled bool, tick int) {
-	screen.Fill(color.RGBA{8, 10, 18, 255})
-
-	// Animasyonlu arka plan — yavaş titreşen renk şeritleri
-	for i := 0; i < 6; i++ {
-		phase := float64(tick)/180.0 + float64(i)*0.4
-		alpha := uint8(18 + 10*math.Sin(phase))
-		y := float32(float64(i) * ScreenHeight / 6)
-		vector.FillRect(screen, 0, y, float32(ScreenWidth), float32(ScreenHeight/6), color.RGBA{20, 30, 60, alpha}, false)
+	if background := mainMenuBackgroundImage(); background != nil {
+		drawMainMenuBackground(screen, background)
+		// Yalnızca menü ekseninde yumuşak bir siyah geçiş kullanılır; görselin
+		// geri kalanındaki renkler genel bir karartmayla soldurulmaz.
+		drawMainMenuFocusGradient(screen)
+	} else {
+		screen.Fill(color.RGBA{8, 10, 18, 255})
+		// Asset yoksa eski animasyonlu koyu arka plan korunur.
+		for i := 0; i < 6; i++ {
+			phase := float64(tick)/180.0 + float64(i)*0.4
+			alpha := uint8(18 + 10*math.Sin(phase))
+			y := float32(float64(i) * ScreenHeight / 6)
+			vector.FillRect(screen, 0, y, float32(ScreenWidth), float32(ScreenHeight/6), color.RGBA{20, 30, 60, alpha}, false)
+		}
 	}
 
 	// Üst dekoratif çizgi
@@ -83,6 +95,47 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 
 	// Alt bilgi
 	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Menü seçeneğini tıklayarak devam et", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+}
+
+func mainMenuBackgroundImage() *ebiten.Image {
+	mainMenuBackgroundOnce.Do(func() {
+		mainMenuBackground = tryLoadImage("assets/images/main_menu_bg.png")
+	})
+	return mainMenuBackground
+}
+
+func drawMainMenuBackground(screen, background *ebiten.Image) {
+	if background == nil || background.Bounds().Dx() <= 0 || background.Bounds().Dy() <= 0 {
+		screen.Fill(color.RGBA{8, 10, 18, 255})
+		return
+	}
+
+	// Görsel ekranı tamamen kaplar; farklı pencere oranlarında kenarlardan
+	// kırpılır ve menü arkasında siyah bar oluşmaz.
+	drawUIImageCover(screen, background)
+}
+
+func drawMainMenuFocusGradient(screen *ebiten.Image) {
+	const (
+		gradientSteps    = 40
+		maxGradientAlpha = 128
+	)
+
+	// Kırmızıyla işaretlenen merkezi alan yaklaşık menü genişliğinde tutulur;
+	// iki kenarda alpha sıfıra yaklaşarak arka planla yumuşakça birleşir.
+	halfWidth := math.Min(240, math.Max(160, ScreenWidth*0.17))
+	startX := ScreenWidth/2 - halfWidth
+	stepWidth := halfWidth * 2 / gradientSteps
+	for i := 0; i < gradientSteps; i++ {
+		centerDistance := math.Abs((float64(i)+0.5)/gradientSteps*2 - 1)
+		fade := 1 - centerDistance*centerDistance
+		alpha := uint8(float64(maxGradientAlpha) * fade)
+		if alpha == 0 {
+			continue
+		}
+		x := startX + float64(i)*stepWidth
+		vector.FillRect(screen, float32(x), 0, float32(stepWidth+1), float32(ScreenHeight), color.RGBA{0, 0, 0, alpha}, false)
+	}
 }
 
 const (

@@ -803,6 +803,20 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
+	if aid, ok := r.navalMissionPendingHitAt(fx, fy); ok {
+		if r.SelectedArmy == aid {
+			return InputAction{}
+		}
+		r.clearArmySplitSelection()
+		r.SelectedArmy = aid
+		r.SelectedEmbarkedArmyFleet = ""
+		r.SelectedRegion = ""
+		r.closeFactionPanel()
+		r.clearSelectedSettlement()
+		r.showRecruitPanel = false
+		r.resetRecruitSelection()
+		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+	}
 	if aid, ok := r.embarkedArmyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid && r.SelectedEmbarkedArmyFleet == aid {
 			return InputAction{}
@@ -1266,6 +1280,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		targetSiege := r.gs.SiegeAt(rid)
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(a, target, enemyArmy)
 		amphibiousSiegeLanding := renderTargetRequiresAmphibiousSiegeLanding(r.gs, a, target)
+		landContact := !a.IsNaval && target.CanLandEnter() && (enemyArmy != nil || hasLandContactOpponent(r.gs, a, target)) && !allySieging
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		// Müttefik bölgesine çıkarma için "Karaya In" göster.
@@ -1291,7 +1306,7 @@ func (r *Renderer) handleRightClick() InputAction {
 				if enemyArmy != nil {
 					pendingEnemy = enemyArmy.ID
 				}
-				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan && !amphibiousSiegeLanding, battleAction, battleContext)
+				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan && !amphibiousSiegeLanding && !landContact, battleAction, battleContext)
 				return InputAction{}
 			}
 		}
@@ -1320,11 +1335,11 @@ func (r *Renderer) handleRightClick() InputAction {
 				return InputAction{}
 			}
 		}
-		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !allySieging && !isAlliedRegion && (targetSiege == nil || targetSiege.AttackerArmyID == a.ID) {
+		if renderTargetRequiresSiegeDecision(r.gs, a, target) && !landContact && !allySieging && !isAlliedRegion && (targetSiege == nil || targetSiege.AttackerArmyID == a.ID) {
 			r.openSiegeDecision(a, target)
 			return InputAction{}
 		}
-		if opensBattlePlan && !(a.IsNaval && target.CanNavalEnter()) && !allySieging && !amphibiousSiegeLanding {
+		if opensBattlePlan && !(a.IsNaval && target.CanNavalEnter()) && !allySieging && !amphibiousSiegeLanding && !landContact {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}

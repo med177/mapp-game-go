@@ -417,9 +417,51 @@ func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID
 	if !r.battlePlan.show {
 		return false
 	}
-	r.battlePlan.navalContactResolved = true
-	r.battlePlan.navalContactMovementConsumed = movementConsumed
+	r.battlePlan.contactResolved = true
+	r.battlePlan.contactMovementConsumed = movementConsumed
 	return true
+}
+
+// ShowLandContactBattlePlan, kara temasında iki taraf da Çatış seçtikten
+// sonra oyuncunun kara muharebesi duruşunu seçmesini sağlar.
+func (r *Renderer) ShowLandContactBattlePlan(attackerID, defenderID army.ArmyID, landID world.RegionID) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	attacker := r.gs.Armies[attackerID]
+	defender := r.gs.Armies[defenderID]
+	land := r.gs.Regions[landID]
+	if attacker == nil || defender == nil || land == nil || attacker.IsNaval || defender.IsNaval || !land.CanLandEnter() {
+		return false
+	}
+	r.openBattlePlan(attacker, land, defender, ActionMoveArmy, combat.BattleContextLand)
+	if !r.battlePlan.show {
+		return false
+	}
+	r.battlePlan.contactResolved = true
+	r.battlePlan.contactMovementConsumed = true
+	return true
+}
+
+// ShowSiegeDecision, savaş ilanı veya temas akışı tamamlandıktan sonra
+// kuşatma kararını açar.
+func (r *Renderer) ShowSiegeDecision(attackerID army.ArmyID, landID world.RegionID) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	attacker := r.gs.Armies[attackerID]
+	target := r.gs.Regions[landID]
+	if attacker == nil || target == nil || attacker.IsNaval || !target.IsFortified() {
+		return false
+	}
+	r.openSiegeDecision(attacker, target)
+	return r.confirmDialog.show
+}
+
+// ShowLandContactSiegeDecision, tahkimli kara temasında Çatış kararından sonra
+// mevcut kuşatma kararını açar; böylece temas seçimi kuşatmayı doğrudan başlatmaz.
+func (r *Renderer) ShowLandContactSiegeDecision(attackerID army.ArmyID, landID world.RegionID) bool {
+	return r.ShowSiegeDecision(attackerID, landID)
 }
 
 // openBattlePlanWithDestination savaşın gerçekleştiği bölge ile zaferden
@@ -771,6 +813,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 	supportingSiege := r.canJoinActiveSiege(attacker, wc.pendingDest)
 	canEnterSiege := r.canEnterActiveSiegedRegion(attacker, wc.pendingDest)
 	activeSiege := r.gs.SiegeAt(wc.pendingDest)
+	landContact := hasLandContactOpponent(r.gs, attacker, target) && !supportingSiege
 	if attacker != nil && r.gs.IsArmyDefendingSiegedRegion(attacker) {
 		if siege := r.gs.SiegeAt(attacker.RegionID); siege != nil {
 			if siegeArmy := r.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil {
@@ -782,9 +825,14 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 		}
 		return action
 	}
-	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !supportingSiege {
+	if renderTargetRequiresSiegeDecision(r.gs, attacker, target) && !landContact && !supportingSiege {
 		if (activeSiege == nil || activeSiege.AttackerArmyID == attacker.ID) && !isAlliedRegion {
-			r.openSiegeDecision(attacker, target)
+			// Savaş ilanı gerçekleşmeden kuşatma modalı açılırsa confirmDialog,
+			// aynı frame'de açılacak Savaş Özeti'nin üstüne çıkar. Ordu ve hedef
+			// bilgisi ActionDeclareWar ile game katmanına taşınır; özet kapandıktan
+			// sonra resumeWarDeclarationFlow kuşatma kararını açar.
+			action.ArmyID = wc.pendingArmy
+			action.TargetRegion = wc.pendingDest
 			return action
 		}
 	}
@@ -799,7 +847,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 		action.TargetRegion = wc.pendingDest
 		return action
 	}
-	if wc.opensBattlePlan {
+	if wc.opensBattlePlan && !landContact {
 		if attacker != nil && target != nil {
 			if defender := r.gs.Armies[wc.pendingEnemy]; defender != nil {
 				r.openBattlePlan(attacker, target, defender, wc.battleAction, wc.battleContext)
@@ -980,13 +1028,13 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 		r.battlePlan = battlePlanState{}
 		r.SelectedArmy = ""
 		return InputAction{
-			Kind:                         bp.actionKind,
-			ArmyID:                       bp.pendingArmy,
-			TargetRegion:                 bp.pendingDest,
-			BattleStance:                 battlePlanStances[bp.focus],
-			NavalAttack:                  bp.navalAttack,
-			NavalContactResolved:         bp.navalContactResolved,
-			NavalContactMovementConsumed: bp.navalContactMovementConsumed,
+			Kind:                    bp.actionKind,
+			ArmyID:                  bp.pendingArmy,
+			TargetRegion:            bp.pendingDest,
+			BattleStance:            battlePlanStances[bp.focus],
+			NavalAttack:             bp.navalAttack,
+			ContactResolved:         bp.contactResolved,
+			ContactMovementConsumed: bp.contactMovementConsumed,
 		}
 	}
 
@@ -1006,13 +1054,13 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 			r.battlePlan = battlePlanState{}
 			r.SelectedArmy = ""
 			return InputAction{
-				Kind:                         bp.actionKind,
-				ArmyID:                       bp.pendingArmy,
-				TargetRegion:                 bp.pendingDest,
-				BattleStance:                 battlePlanStances[i],
-				NavalAttack:                  bp.navalAttack,
-				NavalContactResolved:         bp.navalContactResolved,
-				NavalContactMovementConsumed: bp.navalContactMovementConsumed,
+				Kind:                    bp.actionKind,
+				ArmyID:                  bp.pendingArmy,
+				TargetRegion:            bp.pendingDest,
+				BattleStance:            battlePlanStances[i],
+				NavalAttack:             bp.navalAttack,
+				ContactResolved:         bp.contactResolved,
+				ContactMovementConsumed: bp.contactMovementConsumed,
 			}
 		}
 	}
@@ -1102,6 +1150,13 @@ func diplomacyOfferReasonTextTR(offer state.DiplomaticOffer) string {
 		return "Sebep: aktif ittifak nedeniyle savaşa çağrıldınız"
 	}
 	return "Sebep: standart diplomasi akışı"
+}
+
+func diplomacyOfferTruceNoticeTR(offer state.DiplomaticOffer) string {
+	if offer.Action != string(diplomacy.ActionProposePeace) {
+		return ""
+	}
+	return fmt.Sprintf("Ateşkes: Barışı kabul ederseniz %d tur boyunca bu devlete yeniden savaş ilan edemezsiniz.", state.PostPeaceTruceTurns)
 }
 
 func diplomacyOfferOutcomeLabelTR(entry state.DiplomaticOfferHistoryEntry) string {
@@ -1417,7 +1472,12 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 154, W: leftRect.W - 28}, priorityLine, color.RGBA{255, 205, 120, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	reasonText := diplomacyOfferReasonTextTR(offer)
 	drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 178, W: leftRect.W - 28}, reasonText, color.RGBA{210, 210, 210, 255}, gameui.TextSmall, 18, 3)
-	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 246, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	instructionY := 246.0
+	if truceNotice := diplomacyOfferTruceNoticeTR(offer); truceNotice != "" {
+		drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 214, W: leftRect.W - 28}, truceNotice, color.RGBA{235, 205, 110, 255}, gameui.TextSmall, 18, 2)
+		instructionY = 268
+	}
+	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + instructionY, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 	r.drawDiplomacyOfferSummaryPanel(screen, modal, offer)
 

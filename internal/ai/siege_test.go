@@ -83,7 +83,7 @@ func TestExecuteMoveStartsSiegeOnFortifiedTarget(t *testing.T) {
 	}
 }
 
-func TestExecuteMoveStartsSiegeOnFortifiedTargetWithoutSiegeUnitAndWithDefender(t *testing.T) {
+func TestExecuteMoveCreatesContactBeforeSiegeOnFortifiedTargetWithDefender(t *testing.T) {
 	gs := aiSiegeTestState(false)
 	gs.Armies["defender"] = &army.Army{
 		ID:            "defender",
@@ -97,20 +97,17 @@ func TestExecuteMoveStartsSiegeOnFortifiedTargetWithoutSiegeUnitAndWithDefender(
 
 	outcome := executeMove(gs, a, "fort", "ai_1")
 
-	if !outcome.survived {
-		t.Fatal("kuşatma başlatan AI ordusu hayatta kalmalıydı")
+	if !outcome.survived || gs.PendingLandContact == nil {
+		t.Fatalf("AI tahkimli hedefte önce kara teması oluşturmalıydı: outcome=%+v contact=%+v", outcome, gs.PendingLandContact)
 	}
-	if gs.SiegeAt("fort") == nil {
-		t.Fatal("AI savunma ordusu varken de kuşatma başlatmalıydı")
+	if gs.SiegeAt("fort") != nil {
+		t.Fatal("temas kararı verilmeden tahkimli hedefte doğrudan kuşatma başlamamalı")
 	}
-	if gs.SiegeAt("fort").DefenderArmyID != "defender" {
-		t.Fatalf("kuşatma savunma ordusunu bağlamalıydı, got=%+v", gs.SiegeAt("fort"))
+	if a.RegionID != "fort" {
+		t.Fatalf("temas sırasında AI ordusu hedefte görünmeli, got=%s", a.RegionID)
 	}
-	if a.RegionID != "src" {
-		t.Fatalf("kuşatma başlatan AI ordusu hedefe girmemeli, got=%s", a.RegionID)
-	}
-	if a.MovePoints != 0 {
-		t.Fatalf("kuşatma sonrası hareket puanı bitmeliydi, got=%d", a.MovePoints)
+	if a.MovePoints != 1 {
+		t.Fatalf("temas popup'ı açılırken hareket puanı tüketilmeli, got=%d", a.MovePoints)
 	}
 }
 

@@ -1,17 +1,49 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Ana menü ilk çizimde `assets/images/main_menu_bg.png` görselini bir kez cache'leyip
+ekran oranını koruyarak arka plana yerleştirir; görsel ekranı kaplayacak şekilde
+kenarlardan kırpılır. Görselin canlılığını korumak için genel karartma uygulanmaz;
+menü ekseninde merkezde koyu, kenarlara doğru saydamlaşan siyah bir focus gradient'i
+başlık ve ortak UI metinlerinin okunurluğunu artırır. Asset yüklenemezse mevcut koyu
+arka plan fallback'i kullanılır (`internal/render/main_menu.go`).
+
+Fraksiyon seçim ekranı, yüklenen senaryonun kök dizinindeki `scenario_bg.png`
+dosyasını `GameState.ScenarioPath` üzerinden çözüp cover ölçekleme ile arka plana
+yerleştirir. Görsel bulunamazsa ekranın koyu fallback arka planı korunur; üstteki
+başlık, çerçeve ve kart okunabilirliği ortak UI chrome/overlay helper'larıyla
+sürdürülür (`internal/render/faction_select.go`, `ui_compose.go`).
 
 Merchant rota, Donanma Görevi ve Aktif Savaşlar panelleri `overlayPanelOrder`
 stack'i üzerinden çizim, input ve cursor önceliğini paylaşır. Yeni açılan panel
 stack'in en üstüne taşınır; çizim alttan üste, input/cursor taraması üstten alta
 yapılır. Kapatılan panel görünürlükten çıkar ve alttaki açık panel yeniden öne
 gelir (`internal/render/overlay_panel_stack.go`, `internal/render/cursor.go`).
+
+Ordu bilgi panelindeki birim popup'ı da aynı üst katman kuralını izler.
+Diplomasi, teknoloji, ticaret, kuşatma, modal veya utility overlay paneli
+aktifken seçili ordu paneli pasif kabul edilir ve eski kart koordinatında hover
+olsa bile popup üretilmez. Yalnız kendi yüzeyinde input tüketen Aktif Savaşlar
+paneli bu kurala istisnadır; harita ve ordu paneli aktif kalır. Bu görünürlük
+kararı `armyPanelTooltipActive()` ile çizim sırasına bağlanır; kart
+geometri/hit-test sözleşmesi değişmez
+(`internal/render/renderer.go`, `hover_tooltip.go`).
+
+Tahkimli bölgeye düşman kara ordusu hareketinde de temas popup'ı, kuşatma
+kararından önce gelir. Oyuncu `Çatış` seçerse tahkimli hedefte
+`ShowLandContactSiegeDecision` mevcut `Kuşatma Kararı` modalını açar; açık
+arazide ise `ShowLandContactBattlePlan` kara muharebesi planını açar. Her iki
+akışta da çizim ve input ortak modal/action state'inden türetilir. Temas
+popup'ı açılırken saldıran ordunun `RegionID` değeri hedefe taşınır ve harita
+marker'ı hedef bölgede görünür; `MovementConsumed` bilgisi savaş planına
+aktarılıp hareket puanının ikinci kez düşmesi engellenir.
+
 Panel satırları ve ortak `IconClose` düğmeleri `gameui.Button` hit-test'lerinden
 türetilir; `Button` içinde ayrı cursor alanı tutulmaz, OS pointer merkezi
 renderer cursor akışından güncellenir.
@@ -122,12 +154,25 @@ portreleri çizildikten sonra ayrı bir ön-plan geçişinde çizilir; komşu do
 marker'ları veya komutan resimleri bu rozetlerin üstüne çıkamaz. Zayiat `!`
 rozeti kara ordusu ve filonun ortak sol-üst anchor'ında tutulur
 (`armyDamageBadgeCenter()`).
+Görevi atanmış ancak henüz görev bölgesine ulaşmamış oyuncu filosu aynı
+sağ-üst anchor'da siyah borderlı gri dairesel bekleyen-görev rozeti taşır.
+Rozet, hedefe ulaşınca sayısal bonus rozetiyle yer değiştirir; çizim, cursor ve
+seçim hit-test'i `navalMissionPendingBadgeRect()` geometry'sini paylaşır.
 Ticaret rotasına atanmış filonun sarı `+N` rozeti de görev rozetleriyle aynı
 `navalUpperRightBadgeCenter()` sağ-üst anchor'ını paylaşır. Çizim, cursor
 hit-test'i ve hover tooltip'i `merchantTradeBonusBadgeRect()` geometry'sinden
 türetilir; tooltip rota hacim bonusunu ve abluka sonrası tur başına altın
 katkısını gösterir (`merchantTradeBonusHitAt()`,
 `merchantTradeBonusTooltipText()`).
+Ticaret Haritası da bu pozitif bonus üreten merchant filolarını gizlemez:
+`drawTradeBonusFleetMarkers()` normal donanma marker'ı ve sarı bonus rozetini
+Ticaret overlay'inde yeniden kullanır. Rota koridorları, kendilerine ait
+`TradeRouteKey` değerlerini taşıdığı için marker, atanmış olduğu koridorun en
+yakın bezier noktasına ince altın/cyan connector ile bağlanır. Görsel koridoru
+olmayan uzak zoom rotaları için bağlantısız marker çizilmez; böylece marker ve
+rota çizimi arasında yanlış eşleşme oluşmaz (`trade_overlay.go`).
+Marker rozeti üzerine gelindiğinde normal haritadaki aynı `Ticaret rotası bonusu`
+popup'ı açılır; hit-test yalnız görünür ve rotaya bağlı markerı kabul eder.
 Aynı görev bonus rozetinde escort rengi yeşil-haki olarak ayrıştırılır ve escort
 bonusu dairesel rozet yerine düz üst kenarlı, altı eğri birleşen kalkan silueti
 olarak çizilir; devriye, abluka ve ticaret bonus görünümleri korunur
@@ -139,6 +184,13 @@ Aktif görevi temizleme seçeneği liste içinde ayrı bir satır kaplamaz; pane
 footer'ındaki kırmızı `Görevi Kaldır` düğmesi `commanderUnassignButtonStyle()`
 ile ortak kaldırma görünümünü kullanır ve hit-test/cursor aynı buton rect'inden
 türetilir.
+
+Oyuncuya gelen diplomasi teklif modalında barış teklifleri için kabul sonucunun
+oyuncuya etkisi ayrıca gösterilir: `diplomacyOfferTruceNoticeTR()` ortak
+`PostPeaceTruceTurns` değerini kullanarak kabul sonrası altı tur boyunca aynı
+devlete savaş ilan edilemeyeceğini bildirir. Bildirim yalnız
+`ActionProposePeace` tekliflerinde çizilir; diğer teklif türlerinin modal
+geometrisi ve metni değişmez (`internal/render/renderer_dialogs.go`).
 
 Filonun taşıdığı kara ordusu rozeti `navalEmbarkedArmyBadgeRect()` ile çizim ve
 hit-test'te aynı 16 px kare geometriyi kullanır. Bonus dairesi ve taşınan ordu
@@ -411,7 +463,7 @@ Ordu detay panelindeki oyuncu birim kartları, recruit panelinden ayrı bir ordu
 
 Oyuncunun vassal zincirindeki ordular, oyuncu orduları gibi haritada gerçek birim sayısı ve tam ordu detay paneliyle gösterilir; kart hover'ı birim türü, adet, bakım, savaş değerleri ve anlık can bilgilerini açar. Bu tam istihbarat görünürlüğü `diplomacy.RealmRoot` üzerinden çözülür ve vassalın bağımsız AI ordusunu hareket ettirme, bölme/birleştirme veya komutan atama yetkisi vermez (`internal/render/renderer.go`, `army_panel.go`).
 
-Aktif kuşatmada harita ikonları kuşatan ordu karesi, aradaki yuvarlak kılıç rozeti ve savunan ordu karesi sırasını kullanır. Kuşatan ile `DefenderArmyID` ordusu arasında kılıç rozeti için ayrı yatay slot açılır; böylece rozet artık ordu karesinin üstünde/altında değil, iki ordunun savaş ilişkisini gösteren orta konumda çizilir (`internal/render/renderer.go`, `army_siege_split_test.go`).
+Aktif kuşatmada harita ikonları kuşatan ordu karesi, aradaki yuvarlak kılıç rozeti ve savunan ordu karesi sırasını kullanır. Kuşatan ile `DefenderArmyID` ordusu arasında kılıç rozeti için ayrı yatay slot açılır; böylece rozet artık ordu karesinin üstünde/altında değil, iki ordunun savaş ilişkisini gösteren orta konumda çizilir. Kuşatılan garnizonun merkez yerleşim anchor'ı kale anchor'ından farklı olsa bile iki ordu aynı kale marker grubunda tutulur; rozetin konumu bu nedenle her kuşatmada tutarlı kalır (`internal/render/renderer.go`, `army_siege_split_test.go`).
 
 Komutan portresi haritadaki deniz ikonlarında da gösterilir. Filo komutanı, filo komutanı yoksa taşınan kara komutanı kullanılır; nakliye filosundaki `EmbarkedUnits` rozeti varsa komutan portresi onun üstüne taşınarak iki rozetin çakışması önlenir (`internal/render/renderer.go`, `army_panel.go`).
 
@@ -509,7 +561,7 @@ type Renderer struct {
 | 8 | Teknoloji paneli (T) — tam ekran ağaç görünümü; prerequisite bağlantıları node arkasında köşeli/ortogonal hatlarla çizilir, çoklu prerequisite dalları küçük lane offset'leri ile ayrılır; teknoloji kartının görünüm ve hit-test seam'i ortak `techCardComponent` üstünden yürütülür, böylece çizilen rect ile tıklama rect'i aynı projection çıktısını paylaşır. Kart başlığı badge alanını hesaba katar, gerekirse iki satıra wrap olur; effect özeti de kontrollü çok satır kullanır, bu yüzden uzun Osmanlı/Türkçe teknoloji adları kart dışına taşmaz. Kart kategori ikonları 20 px, üst filtre sekmesi ikonları 22 px çizilir ve başlık/etiket boşlukları bu ölçülere göre ayrılır | `tech_panel.go`, `tech_card_component.go` |
 | 8 | AI tur overlay'i — aktif AI devletinin adı ve yakın/uzak hamle durumu üst-orta bantta gösterilir | `renderer.go` |
 | 9 | Info popup bildirimi (combatLog, olay loguna yazmaz); normal akışta üst-orta konumu biraz aşağı alınır, AI tur overlay'i görünürken HAMLELER panelinin altına güvenli boşlukla yerleşir | `renderer.go`, `panel.go` |
-| 10 | Savaş ilan, savaş planı, kuşatma kararı, savaş raporu, genel onay, zafer detay ve event detail diyalogları; savaş ilan modalı artık tek satırlık `evet/hayır` onayı değil, iki cepheli koalisyon önizlemesi çizer. Sol tarafta oyuncu cephesi, sağ tarafta savunan cephe görünür; kesin katılan vassallar ve mevcut savaş içindeki müttefikler ayrı kartlarda listelenir, oyuncu kendi müttefikleri için checkbox ile çağrı seçer. Bu seçim `InputAction.WarAllies` alanıyla oyun katmanına taşınır. İlan resolve olduktan hemen sonra ayrıca ayrı `Savaş Özeti` modalı açılarak gerçek katılımcıları gösterir. Savaş planı modalı üç duruş kartı (`Agresif/Dengeli/Savunmacı`) ve combat matematiğinden türetilmiş önizlemeleri taşır; üst satırda saldıran ve savunan komutanın gerçek muharebe bonusları (`saldırı/savunma/moral`) ayrıca yazılır. Tahkimli kara hedefleri ayrıca kuşatma kararı akışına girer; kuşatma kararı ve aktif `Kuşatma Emri` paneli de seçili komutanın `moral / hareket / kuşatma` katkılarını ayrıca görünür tutar. Savaş raporu taraf kartları da artık ayrı `Komutan` bloğu içerir; her taraf için portre, isim, muharebe etkileri ve operasyon etkileri aynı modalda görünür, alttaki `Komutan gelişimi` bölümü ise savaş sonrası XP/trait ilerlemesini taşımaya devam eder. Bu komutan bloğu da `commander_component.go` içindeki ortak kompakt strip helper’ını kullanır; böylece ordu paneli, komutan paneli ve savaş raporu aynı commander chrome dilini paylaşır | `renderer_dialogs.go`, `ui_modals.go`, `battle_report.go`, `war_summary.go`, `commander_component.go` |
+| 10 | Savaş ilan, savaş planı, kuşatma kararı, savaş raporu, genel onay, zafer detay ve event detail diyalogları; savaş ilan modalı artık tek satırlık `evet/hayır` onayı değil, iki cepheli koalisyon önizlemesi çizer. Sol tarafta oyuncu cephesi, sağ tarafta savunan cephe görünür; kesin katılan vassallar ve mevcut savaş içindeki müttefikler ayrı kartlarda listelenir, oyuncu kendi müttefikleri için checkbox ile çağrı seçer. Bu seçim `InputAction.WarAllies` alanıyla oyun katmanına taşınır. Savaş ilanı uygulandığı anda ayrı `Savaş Özeti` modalı açılır; bekleyen hareket, temas ve savunucu ordusu olmayan tahkimli hedefteki `Kuşatma Kararı` akışları özet kapanana kadar ertelenir, ardından normal devam aksiyonu çalıştırılır. Savaş planı modalı üç duruş kartı (`Agresif/Dengeli/Savunmacı`) ve combat matematiğinden türetilmiş önizlemeleri taşır; üst satırda saldıran ve savunan komutanın gerçek muharebe bonusları (`saldırı/savunma/moral`) ayrıca yazılır. Tahkimli kara hedefleri ayrıca kuşatma kararı akışına girer; kuşatma kararı ve aktif `Kuşatma Emri` paneli de seçili komutanın `moral / hareket / kuşatma` katkılarını ayrıca görünür tutar. Savaş raporu taraf kartları da artık ayrı `Komutan` bloğu içerir; her taraf için portre, isim, muharebe etkileri ve operasyon etkileri aynı modalda görünür, alttaki `Komutan gelişimi` bölümü ise savaş sonrası XP/trait ilerlemesini taşımaya devam eder. Bu komutan bloğu da `commander_component.go` içindeki ortak kompakt strip helper’ını kullanır; böylece ordu paneli, komutan paneli ve savaş raporu aynı commander chrome dilini paylaşır | `renderer_dialogs.go`, `ui_modals.go`, `battle_report.go`, `war_summary.go`, `commander_component.go` |
 | 11 | Tarihsel olay popup; choice varsa aynı modal üzerinde A/B karar butonları, effect özeti, follow-up event etiketi ve trigger koşulu önizlemesi çizer. Bu popup draw ve input tarafında gerçek üst modal önceliğine sahiptir; altta bekleyen onay/teklif diyalogları choice butonlarının tıklamasını yutamaz | `panel.go`, `ui_modals.go`, `game.go`, `renderer.go`, `cursor.go` |
 
 Not: Diplomasi panelindeki liste üretimi `sortedDiplomacyFactions()` üzerinden yapılır ve elenmiş (`IsEliminated=true`) fraksiyonlar listelenmez. Liste üstündeki `Alfabetik`, `İlişki` ve `Güç Sıralaması` butonları renderer state'indeki sıralama modunu değiştirir; `İlişki` modu oyuncuyla olan `Relation.Score` değerini azalan sıralar, eşitlikte oyuncuyla kara sınırı paylaşan fraksiyonu öne alır ve son eşitliği faction ID'siyle çözer. `Güç Sıralaması` aktif devletler arasında `factionMilitaryPowerStanding` kaynağını kullanır; seçim sonrası focus ve scroll başa alınır.
@@ -532,6 +584,13 @@ ortak disabled button stiliyle çizilir ve input alamaz. Modal açıkken alttaki
 harita hareketi ve diğer aksiyonlar input alamaz. İki taraf da `Çatış` seçerse
 temas modalı kapanır ve aynı düşman/deniz hedefi için `Deniz Muharebesi Planı`
 ayrıca açılır; duruş seçilmeden savaş çözülmez.
+
+Not: Komşu kara bölgesindeki düşman orduya verilen hareket emri de aynı üçlü
+temas modalını kullanır. `Düşman Ordusu Tespit Edildi` popup'ı
+`ActionResolveLandContact` ile game katmanına iletilir; iki taraf da `Çatış`
+seçerse mevcut `Kara Muharebesi` planı açılır, diğer kararlar savaşsız temas
+çözümü üretir. Draw, input ve disabled `Geri Çekil` durumu ortak üçlü modal
+buton helper'ından türetilir.
 
 Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır. Zafer seçim ekranındaki kartlar da aynı wrap primitive'lerini kullanır; açıklama ve hedef özeti badge alanına çarpmadan iki satıra akabilir ve uzun senaryo hedeflerinde kart yüksekliği buna göre artırılmıştır.
 
@@ -687,6 +746,7 @@ Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt
 Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
 
 `Ticaret` modunda harita üstüne hafif desatüre/sisli bir overlay eklenir ve çizim tüm fraksiyon çiftleri arasında birebir mesh yerine `ticaret merkezi` odaklı yapılır: merkez düğümleri senaryo bazlı `data/trade_centers.json` dosyasından okunur, fraksiyonlar en yakın merkeze ince spoke ile bağlanır, ana ağ ise merkezler arası kavisli bezier glow/core koridorlar olarak çizilir (ör. Halep -> Konstantinopolis -> Venedik). Oyuncunun aktif liman-tabanlı anlaşmaları bu tarihsel ağdan ayrı olarak tek turuncu renkte, sabit çizgi/boşluk uzunluklarıyla kesikli koridorla çizilir; böylece merkez verisi bulunmayan Osmanlı–Altın Orda gibi gerçek liman bağlantıları da görünür. Çizim sırası deterministik tutulduğu için frame-frame titreme/yanıp sönme engellenir.
+Pozitif merchant filo bonusu üreten donanmalar bu harita modunda rota koridorunun üzerinde/yanında yuvarlak marker ve sarı `+N` rozetle görünür; marker ile koridor arasındaki connector aynı `TradeRouteKey` eşleşmesinden türetilir.
 
 Trade overlay görünürlüğü `Renderer.tradeOverlayVisible()` ile merkezileştirilmiştir. Yani `MapModeTrade` seçili kalsa bile teknoloji/diplomasi/ticaret overlay'i, confirm modalı, event detail/codex, historical event veya gelen diplomasi teklifi gibi üst ekranlar açıkken trade backdrop, koridorlar, merkez tabelaları ve hover tooltip'i hiç çizilmez; overlay kapanınca trade görünümü aynı mod state'iyle geri gelir.
 

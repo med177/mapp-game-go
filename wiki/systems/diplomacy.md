@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-07-31
+last_updated: 2026-08-03
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -170,7 +170,7 @@ Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon ak
 - Oyuncu, savaş önizleme modalında hangi müttefiklerini çağıracağını checkbox ile seçer.
 - Seçilip de çağrıya gelmeyen müttefiğin ittifakı bozulur; ilişki puanı `-10` düşer.
 - Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
-- Resolve tamamlanınca render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir.
+- Savaş ilanı uygulandığı anda render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir. Özet kapanmadan hareket, temas ve diğer savaş devam akışları çalıştırılmaz; özet kapandıktan sonra bekleyen normal aksiyon sürdürülür.
 
 AI savaş ilanı öncesinde iki tarafın koalisyon gücünü projekte eder. Hedefin
 vassalları, hedefin dış müttefikleri ve bu müttefiklerin vassalları savunma
@@ -364,6 +364,11 @@ AI artık oyuncuya doğrudan barış sonucu dayatmaz. Savaş baskısı şartı o
 - UI paneli: `internal/render/renderer.go` (`drawDiplomacyOfferDialog`, `handleDiplomacyOfferInput`)
 
 Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde standart diplomasi motoru (`Execute`) çalışır, redde ise teklif kuyruktan düşer ve savaş sürer.
+
+Barış teklifi modalı kabulün ek sonucunu da açıkça belirtir: kabul edilirse
+`PostPeaceTruceTurns` değerine göre altı tur boyunca teklif gönderen devlete
+yeniden savaş ilan edilemez. Bu bildirim yalnız barış tekliflerinde gösterilir;
+ittifak, ticaret ve savaşa katılım çağrılarında modal metni değişmez.
 
 AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuyruk artık `join_war_call` tipiyle kullanılır:
 

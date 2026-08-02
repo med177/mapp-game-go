@@ -75,12 +75,16 @@ func DrawHoverTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 }
 
 func DrawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, aid army.ArmyID, recruitPanelOpen bool, activeTab regionPanelTab) {
+	drawHoverTooltipWithTab(screen, gs, rid, aid, recruitPanelOpen, activeTab, true)
+}
+
+func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, aid army.ArmyID, recruitPanelOpen bool, activeTab regionPanelTab, armyPanelActive bool) {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
 	// Ordu paneli recruit ve bölge panellerinin üstünde çizilir; örtüşme
 	// durumunda hover da aynı görsel katman sırasını izlemelidir.
-	if aid != "" {
+	if armyPanelActive && aid != "" {
 		if a := gs.Armies[aid]; a != nil {
 			if targetID, ok := MergeButtonTargetAt(fx, fy, gs, aid); ok {
 				if target := gs.Armies[targetID]; target != nil {

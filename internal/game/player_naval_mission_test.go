@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -64,5 +65,76 @@ func TestExecutePlayerNavalMissionsKeepsPatrolInCurrentSea(t *testing.T) {
 	}
 	if gs.ArmyMoveUsage["fleet"] {
 		t.Fatal("mevcut denizde sabit kalan devriye filosu otomatik hareket kullanımı yazmamalı")
+	}
+}
+
+func TestMovingEscortedFleetMovesEscortWithAvailableMovement(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_a": {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"sea_b"}},
+			"sea_b": {ID: "sea_b", IsSea: true, Neighbors: []world.RegionID{"sea_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"transport": {
+				ID: "transport", OwnerID: "player", RegionID: "sea_a", IsNaval: true,
+				Units: []army.Unit{{TypeID: "transport"}}, MovePoints: 1, MaxMovePoints: 1,
+			},
+			"escort": {
+				ID: "escort", OwnerID: "player", RegionID: "sea_a", IsNaval: true,
+				Units: []army.Unit{{TypeID: "warship"}}, MovePoints: 1, MaxMovePoints: 1,
+				NavalMission: &army.NavalMission{Kind: army.NavalMissionEscort, TargetFleetID: "transport"},
+			},
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).moveArmy("transport", "sea_b")
+
+	if got := gs.Armies["transport"].RegionID; got != "sea_b" {
+		t.Fatalf("korunan filo hedef denize gidemedi: %s", got)
+	}
+	if got := gs.Armies["escort"].RegionID; got != "sea_b" {
+		t.Fatalf("escort filosu korunan filoyu takip etmedi: %s", got)
+	}
+	if gs.Armies["escort"].MovePoints != 0 {
+		t.Fatalf("escort hareketi kendi hareket puanını harcamalı: %d", gs.Armies["escort"].MovePoints)
+	}
+}
+
+func TestMovingEscortedFleetLeavesEscortWhenMovementIsInsufficient(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"warship":   {ID: "warship", Category: army.CategoryNavalWar},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_a": {ID: "sea_a", IsSea: true, Neighbors: []world.RegionID{"sea_b"}},
+			"sea_b": {ID: "sea_b", IsSea: true, Neighbors: []world.RegionID{"sea_a"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"transport": {
+				ID: "transport", OwnerID: "player", RegionID: "sea_a", IsNaval: true,
+				Units: []army.Unit{{TypeID: "transport"}}, MovePoints: 1, MaxMovePoints: 1,
+			},
+			"escort": {
+				ID: "escort", OwnerID: "player", RegionID: "sea_a", IsNaval: true,
+				Units: []army.Unit{{TypeID: "warship"}}, MovePoints: 0, MaxMovePoints: 1,
+				NavalMission: &army.NavalMission{Kind: army.NavalMissionEscort, TargetFleetID: "transport"},
+			},
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).moveArmy("transport", "sea_b")
+
+	if got := gs.Armies["transport"].RegionID; got != "sea_b" {
+		t.Fatalf("korunan filo hareket edebilmeliydi: %s", got)
+	}
+	if got := gs.Armies["escort"].RegionID; got != "sea_a" {
+		t.Fatalf("hareket puanı olmayan escort yerinden ayrılmamalı: %s", got)
 	}
 }

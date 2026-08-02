@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -67,5 +68,85 @@ func TestBuildWarSummaryIncludesJoinedCoalitionsAndRefusals(t *testing.T) {
 	}
 	if report.BalanceLabel == "" || report.PowerText == "" {
 		t.Fatal("üst bilgi boş olmamalı")
+	}
+}
+
+func TestWarDeclarationShowsSummaryBeforeQueuedMovementContinues(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Sunni},
+			"enemy":  {ID: "enemy", NameTR: "Düşman", Religion: religion.Catholic},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"source": {ID: "source", OwnerID: "player", Neighbors: []world.RegionID{"target"}},
+			"target": {ID: "target", OwnerID: "enemy", Neighbors: []world.RegionID{"source"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: "source", MovePoints: 1, MaxMovePoints: 1},
+		},
+	}
+	g := &Game{gs: gs, renderer: render.New(gs)}
+
+	if !g.declareWar("enemy", nil) {
+		t.Fatal("savaş ilanı uygulanmalıydı")
+	}
+	g.pendingWarFollowUp = &render.InputAction{Kind: render.ActionMoveArmy, ArmyID: "army", TargetRegion: "target"}
+
+	if !g.renderer.WarSummaryVisible() || gs.Armies["army"].RegionID != "source" {
+		t.Fatal("savaş özeti görünürken normal hareket başlamamalıydı")
+	}
+
+	g.renderer.HideWarSummary()
+	g.resumeWarDeclarationFlow()
+	if g.renderer.WarSummaryVisible() || g.warDeclarationContinuationPending || gs.Armies["army"].RegionID != "target" {
+		t.Fatalf("özet kapandıktan sonra bekleyen akış devam etmeli: summary=%v pending=%v army=%+v", g.renderer.WarSummaryVisible(), g.warDeclarationContinuationPending, gs.Armies["army"])
+	}
+}
+
+func TestWarDeclarationWithoutDefenderShowsSummaryBeforeSiegeDecision(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu", Religion: religion.Sunni},
+			"enemy":  {ID: "enemy", NameTR: "Düşman", Religion: religion.Catholic},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"source": {ID: "source", OwnerID: "player", Neighbors: []world.RegionID{"target"}},
+			"target": {
+				ID:          "target",
+				OwnerID:     "enemy",
+				Neighbors:   []world.RegionID{"source"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {
+				ID:            "army",
+				OwnerID:       "player",
+				RegionID:      "source",
+				MovePoints:    1,
+				MaxMovePoints: 1,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	g := &Game{gs: gs, renderer: render.New(gs)}
+
+	if !g.declareWar("enemy", nil) {
+		t.Fatal("savaş ilanı uygulanmalıydı")
+	}
+	g.pendingWarFollowUp = &render.InputAction{Kind: render.ActionDeclareWar, ArmyID: "army", TargetRegion: "target"}
+	if !g.renderer.WarSummaryVisible() || g.renderer.ConfirmDialogVisible() {
+		t.Fatal("savunucu ordusu olmayan tahkimli hedefte önce yalnız Savaş Özeti görünmeli")
+	}
+
+	g.renderer.HideWarSummary()
+	g.resumeWarDeclarationFlow()
+	if g.renderer.WarSummaryVisible() || !g.renderer.ConfirmDialogVisible() {
+		t.Fatal("özet kapandıktan sonra kuşatma kararı açılmalıydı")
 	}
 }

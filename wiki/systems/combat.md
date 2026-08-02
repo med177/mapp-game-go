@@ -13,7 +13,21 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 
 Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir; son toprakta teslim olan AI, oyuncu tarafından kabul edilirse doğrudan vassal olur ve bölge yerel devlette kalır (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
 
-Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Ordu bir düşman bölgesine hareket edince `ResolveBattleWithPlan()` veya `ResolveBattleWithContextPlan()` tetiklenir; oyuncu kara, deniz ve çıkarma saldırılarında önce duruş seçer. Tahkimli kara bölgelerde ise akış artık doğrudan fetih değildir: önce kuşatma veya genel hücum kararı gerekir. Resolve tamamlanınca oyuncu tarafında render katmanı ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim / HP` önce-sonra kırılımı gösterilir.
+Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Düşman
+orduya hareket emri verildiğinde önce kara teması değerlendirilir; iki taraf da
+`Çatış` seçerse `ResolveBattleWithPlan()` veya
+`ResolveBattleWithContextPlan()` hattına geçilir. Oyuncu önce `Çatış / Geri
+çekil / Pozisyonu koru`, ardından çatışma seçildiyse kara duruşunu (`Agresif /
+Dengeli / Savunmacı`) seçer. Temas sırasında kara orduları hedef bölgeye
+girer ve haritada görünür; hareket puanı bu girişte tüketilir. Saldıran geri
+çekilirse kaynak bölgesine döner, savunmacı geri çekilirse güvenli dost/boş
+komşu kara bölgesine taşınır.
+Tahkimli kara bölgelerde de önce temas kararı alınır; bölgeye kuşatma başlatma
+veya genel hücum doğrudan tetiklenmez. Temas popup'ında iki taraf da `Çatış`
+seçerse mevcut `Kuşatma Kararı` akışı açılır ve normal kuşatma/genel hücum
+çözümüne devam edilir. Resolve tamamlanınca oyuncu tarafında render katmanı
+ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim
+/ HP` önce-sonra kırılımı gösterilir.
 
 ## Deniz Teması
 
@@ -27,6 +41,21 @@ indirilir. Hareket puanı olmayan AI geri çekilme seçemez. Devriye ve denk gö
 çekilme rotası düşman filosu olmayan komşu denizi önceliklendirir. Saldıran
 filo, temas sırasında geldiği kaynak denize geri çekilemez; güvenli komşu deniz
 yoksa geri çekilme seçeneği kullanılamaz.
+
+## Kara Teması
+
+İki düşman kara ordusu komşu bir bölgeye aynı hareket emri üzerinden karşı karşıya
+geldiğinde `PendingLandContact` geçici state'i oluşturulur. Oyuncuya donanma
+temasıyla aynı üç seçenek gösterilir. Savaş yalnız iki taraf da `Çatış` seçerse
+başlar; `Pozisyonu koru` temas emrini savaşsız sonlandırır. Saldıran ordunun
+`Geri çekil` kararı hareketi iptal edip kaynak konumunda bırakır; savunmacının
+geri çekilmesi ise hareket puanı ve güvenli kara komşusu şartlarına bağlıdır.
+
+AI kara temasında güç farkı `%135` veya daha yüksekse ve güvenli geri çekilme
+rotası varsa geri çekilir; aksi halde çatışmayı kabul eder. Tahkimli hedeflerde
+de aynı temas popup'ı kullanılır; `Çatış` sonrası kuşatma/genel hücum sözleşmesi
+korunur. Zaten aktif kuşatma altındaki destek/huruç akışı ise kendi mevcut
+kuşatma kurallarıyla devam eder.
 
 Fethedilen bölgede `SuccessorFactionID` doluysa yalnız ardıl fraksiyon
 `is_eliminated=true` ve kara toprağı kalmamışsa fetih sonucu ertelenir. Savaş
@@ -244,7 +273,10 @@ Donanmalar deniz bölgeleri arasında savaş ilanı olmadan serbest hareket eder
 Görevsiz filolar aynı deniz bölgesine geldiğinde savaş başlatmaz. `Abluka`
 görevi yalnız ekonomik baskı üretir; `Devriye` görevi hedef denizdeki görevli
 düşman `Abluka` filosunu otomatik yakalar. `Escort` yalnız bağlı nakliye
-filosunu korur. Açık deniz saldırısı, oyuncunun savaş planında onayladığı
+filosunu korur. Korunan filo oyuncu emriyle başka bir açık deniz bölgesine
+başarıyla taşınırsa, escort filosu da kendi hareket puanı varsa aynı hareket
+adımını normal deniz hareketi/temas doğrulamasından geçerek izler; puanı yoksa
+mevcut denizinde kalır. Açık deniz saldırısı, oyuncunun savaş planında onayladığı
 doğrudan saldırı emriyle başlar. Bu çatışmalar için de iki fraksiyon arasında
 `StanceWar` bulunması gerekir; barış/ittifak/trade durumunda savaş açılmaz.
 Pasif bir filo aynı düşman denizine girdiğinde veya savaş ilanı sırasında iki

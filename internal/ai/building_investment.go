@@ -86,6 +86,16 @@ func aiEconomyBuildWithStrategicContextAndSteps(gs *state.GameState, fid faction
 }
 
 func aiBestBuildingInvestment(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext) (aiBuildingCandidate, bool) {
+	return aiBestBuildingInvestmentWithResourceCheck(gs, fid, budget, ctx, true)
+}
+
+// aiBestBuildingInvestmentForProcurement, kaynak stoğu eksik olsa bile bu
+// turdaki en iyi yatırım adayının maliyetini tedarik planına aktarır.
+func aiBestBuildingInvestmentForProcurement(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) (aiBuildingCandidate, bool) {
+	return aiBestBuildingInvestmentWithResourceCheck(gs, fid, nil, ctx, false)
+}
+
+func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext, requireResources bool) (aiBuildingCandidate, bool) {
 	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || gs.Factions[fid] == nil {
 		return aiBuildingCandidate{}, false
 	}
@@ -116,7 +126,10 @@ func aiBestBuildingInvestment(gs *state.GameState, fid faction.FactionID, budget
 			}
 
 			cost := aiBuildingResourceCost(btype)
-			if !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
+			if requireResources && !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
+				continue
+			}
+			if !requireResources && self.Gold-cost.Gold < aiMinGoldReserve {
 				continue
 			}
 			turns := aiBuildingTurnsRequired(region, buildingID, btype.TurnsRequired, queued)

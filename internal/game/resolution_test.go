@@ -1434,7 +1434,9 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 			"ally_land":   {ID: "ally_land", OwnerID: "ally"},
 			"ally_port":   {ID: "ally_port", OwnerID: "ally", Buildings: []string{"port"}},
 			"vassal_land": {ID: "vassal_land", OwnerID: "vassal"},
-			"sea":         {ID: "sea", IsSea: true},
+			// Açık denizdeki filo liman komşuluğunda olsa bile dock edilmediği
+			// için iyileşmemeli; yalnızca kış yıpranmasından korunmalı.
+			"sea": {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"home"}},
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"home_army":   {ID: "home_army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 65}}},
@@ -1567,5 +1569,81 @@ func TestApplyEmbarkedVoyageAttritionResetsAtPort(t *testing.T) {
 	}
 	if _, ok := gs.ArmyLogistics["fleet"]; ok {
 		t.Fatalf("limandaki filo icin deniz attrition kaydi yazilmamali")
+	}
+}
+
+func TestMovingArmyClearsPreviousRegionLogisticsWarning(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"source": {ID: "source", OwnerID: "player", Neighbors: []world.RegionID{"target"}},
+			"target": {ID: "target", OwnerID: "player", Neighbors: []world.RegionID{"source"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"field": {
+				ID: "field", OwnerID: "player", RegionID: "source", MovePoints: 1, MaxMovePoints: 1,
+				OverCapacityTurns: 3, Units: repeatedUnits("inf", 1, 80),
+			},
+		},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{
+			"field": {ArmyID: "field", RegionID: "source", TotalHPDamage: 6, DamagePerUnit: 6},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("field", "target", "")
+
+	field := gs.Armies["field"]
+	if field == nil || field.RegionID != "target" {
+		t.Fatalf("ordu hedef bölgeye taşınmalıydı, got=%+v", field)
+	}
+	if _, ok := gs.ArmyLogistics["field"]; ok {
+		t.Fatal("eski bölgenin lojistik uyarısı hareket sonrası marker state'inde kalmamalı")
+	}
+	if field.OverCapacityTurns != 0 {
+		t.Fatalf("kara ordusunun bölgeye özgü aşım sayacı sıfırlanmalı, got=%d", field.OverCapacityTurns)
+	}
+}
+
+func TestMovingFleetClearsPreviousSeaAttritionWarning(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"sea_source": {ID: "sea_source", IsSea: true, Neighbors: []world.RegionID{"sea_target"}},
+			"sea_target": {ID: "sea_target", IsSea: true, Neighbors: []world.RegionID{"sea_source"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID: "fleet", OwnerID: "player", RegionID: "sea_source", IsNaval: true,
+				MovePoints: 1, MaxMovePoints: 1, TurnsWithoutPort: 4,
+				Units: []army.Unit{{TypeID: "warship", CurrentHP: 80}},
+			},
+		},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{
+			"fleet": {ArmyID: "fleet", RegionID: "sea_source", TotalHPDamage: 4, DamagePerUnit: 4},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.moveArmyWithStance("fleet", "sea_target", "")
+
+	fleet := gs.Armies["fleet"]
+	if fleet == nil || fleet.RegionID != "sea_target" {
+		t.Fatalf("filo hedef denize taşınmalıydı, got=%+v", fleet)
+	}
+	if _, ok := gs.ArmyLogistics["fleet"]; ok {
+		t.Fatal("eski deniz bölgesinin lojistik uyarısı hareket sonrası marker state'inde kalmamalı")
+	}
+	if fleet.TurnsWithoutPort != 4 {
+		t.Fatalf("açık deniz yolculuk sayacı bölge değişiminde korunmalı, got=%d", fleet.TurnsWithoutPort)
 	}
 }

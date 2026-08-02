@@ -1,12 +1,35 @@
 package render
 
 import (
+	"path/filepath"
 	"testing"
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 )
+
+func TestFactionSelectBackgroundLoadsFromScenarioDirectory(t *testing.T) {
+	oldPath := factionSelectBackgroundPath
+	oldImage := factionSelectBackground
+	t.Cleanup(func() {
+		factionSelectBackgroundPath = oldPath
+		factionSelectBackground = oldImage
+	})
+
+	scenarioPath, err := filepath.Abs(filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
+	if err != nil {
+		t.Fatalf("senaryo yolu çözülemedi: %v", err)
+	}
+
+	background := factionSelectBackgroundImage(&state.GameState{ScenarioPath: scenarioPath})
+	if background == nil {
+		t.Fatal("senaryo arka planı yüklenemedi")
+	}
+	if gotW, gotH := background.Bounds().Dx(), background.Bounds().Dy(); gotW != 1408 || gotH != 768 {
+		t.Fatalf("senaryo arka planı boyutu yanlış: got=%dx%d want=1408x768", gotW, gotH)
+	}
+}
 
 func TestSelectableFactionsPrioritizeHistoricalVictoryGroups(t *testing.T) {
 	gs := &state.GameState{

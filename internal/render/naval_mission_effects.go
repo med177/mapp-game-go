@@ -105,6 +105,19 @@ func navalMissionBonusBadgeRect(cx, cy float32) gameui.Rect {
 	return gameui.Rect{X: centerX - badgeSize/2, Y: centerY - badgeSize/2, W: badgeSize, H: badgeSize}
 }
 
+// navalMissionPendingBadge, görevi atanmış ancak henüz görev konumuna
+// ulaşmamış oyuncu filosunu gösterir. Hedefteki bonus rozetiyle aynı anchor'ı
+// paylaşır; böylece görev durumu filo marker'ından bağımsız ama tutarlı kalır.
+func navalMissionPendingBadge(gs *state.GameState, fleet *army.Army) bool {
+	return gs != nil && fleet != nil && fleet.IsNaval &&
+		fleet.OwnerID == string(gs.PlayerFactionID) && fleet.NavalMission != nil &&
+		navalMissionReachedRegion(gs, fleet) == nil
+}
+
+func navalMissionPendingBadgeRect(cx, cy float32) gameui.Rect {
+	return navalMissionBonusBadgeRect(cx, cy)
+}
+
 // merchantTradeBonusBadgeRect, ticaret rotası rozetini diğer deniz görevi
 // rozetleriyle aynı üst-sağ anchor'a bağlar. Çizim, hit-test ve hover bu
 // geometry'yi birlikte kullanır.
@@ -199,8 +212,29 @@ func (r *Renderer) navalMissionBonusHitAt(mx, my float64) (army.ArmyID, bool) {
 	return "", false
 }
 
-func (r *Renderer) merchantTradeBonusHitAt(mx, my float64) (army.ArmyID, bool) {
+func (r *Renderer) navalMissionPendingHitAt(mx, my float64) (army.ArmyID, bool) {
 	if r == nil || r.gs == nil || r.mapMode == MapModeTrade {
+		return "", false
+	}
+	positions := r.armyIconPositions()
+	for i := len(positions) - 1; i >= 0; i-- {
+		pos := positions[i]
+		fleet := r.gs.Armies[pos.ArmyID]
+		if !navalMissionPendingBadge(r.gs, fleet) {
+			continue
+		}
+		if navalMissionPendingBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+			return pos.ArmyID, true
+		}
+	}
+	return "", false
+}
+
+func (r *Renderer) merchantTradeBonusHitAt(mx, my float64) (army.ArmyID, bool) {
+	if r == nil || r.gs == nil {
+		return "", false
+	}
+	if r.mapMode == MapModeTrade && !r.tradeOverlayVisible() {
 		return "", false
 	}
 	positions := r.armyIconPositions()
@@ -209,6 +243,11 @@ func (r *Renderer) merchantTradeBonusHitAt(mx, my float64) (army.ArmyID, bool) {
 		fleet := r.gs.Armies[pos.ArmyID]
 		if r.merchantTradeBonusForArmy(fleet) <= 0 {
 			continue
+		}
+		if r.mapMode == MapModeTrade {
+			if _, _, connected := r.tradeRouteConnectionPoint(fleet.TradeRouteKey, float64(pos.X), float64(pos.Y)); !connected {
+				continue
+			}
 		}
 		if merchantTradeBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 			return pos.ArmyID, true
@@ -292,7 +331,7 @@ func (r *Renderer) drawNavalMissionBonusHoverTooltip(screen *ebiten.Image) {
 }
 
 func (r *Renderer) drawMerchantTradeBonusHoverTooltip(screen *ebiten.Image) {
-	if r == nil || r.gs == nil || r.mapMode == MapModeTrade {
+	if r == nil || r.gs == nil || (r.mapMode == MapModeTrade && !r.tradeOverlayVisible()) {
 		return
 	}
 	mx, my := ebiten.CursorPosition()

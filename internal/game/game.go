@@ -34,17 +34,20 @@ import (
 
 // Game Ebitengine'in Game interface'ini uygular.
 type Game struct {
-	gs                       *state.GameState
-	renderer                 *render.Renderer
-	editModeRequested        bool
-	evts                     []*events.Event
-	pendingHistoricalEvt     *events.Event
-	pendingSortie            *pendingSortieState
-	pendingConquestDecisions []pendingConquestDecision
-	lastCommanderProgress    []render.BattleReportCommanderProgress
-	loading                  *loadingJob
-	aiTurn                   *aiTurnState
-	aiDiagnosticReportSaved  bool
+	gs                                *state.GameState
+	renderer                          *render.Renderer
+	editModeRequested                 bool
+	evts                              []*events.Event
+	pendingHistoricalEvt              *events.Event
+	pendingSortie                     *pendingSortieState
+	pendingConquestDecisions          []pendingConquestDecision
+	lastCommanderProgress             []render.BattleReportCommanderProgress
+	loading                           *loadingJob
+	aiTurn                            *aiTurnState
+	aiDiagnosticReportSaved           bool
+	escortFollowDepth                 int
+	pendingWarFollowUp                *render.InputAction
+	warDeclarationContinuationPending bool
 }
 
 type pendingSortieState struct {
@@ -291,9 +294,11 @@ func (g *Game) Update() error {
 			}
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
-			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.NavalContactResolved, action.NavalContactMovementConsumed)
+			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed)
 		case render.ActionResolveNavalContact:
 			g.resolveNavalContactChoice(action.ChoiceIndex)
+		case render.ActionResolveLandContact:
+			g.resolveLandContactChoice(action.ChoiceIndex)
 		case render.ActionEmbarkArmy:
 			g.embarkArmyOntoFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionDisembarkArmy:
@@ -357,12 +362,20 @@ func (g *Game) Update() error {
 		case render.ActionCancelResearch:
 			g.cancelResearch()
 		case render.ActionDeclareWar:
-			g.declareWar(action.TargetFaction, action.WarAllies)
+			if g.declareWar(action.TargetFaction, action.WarAllies) && action.ArmyID != "" && action.TargetRegion != "" {
+				followUp := action
+				g.pendingWarFollowUp = &followUp
+			}
 		case render.ActionDeclareWarAndMove:
-			g.declareWar(action.TargetFaction, action.WarAllies)
-			// Savaş ilan edildikten sonra relation map güncelleniyor,
-			// moveArmy içinde bu güncel durum kontrol edilecek.
-			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+			if g.declareWar(action.TargetFaction, action.WarAllies) {
+				if g.renderer.WarSummaryVisible() {
+					followUp := action
+					followUp.Kind = render.ActionMoveArmy
+					g.pendingWarFollowUp = &followUp
+				} else {
+					g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+				}
+			}
 		case render.ActionProposePeace:
 			g.proposePeace(action.TargetFaction)
 		case render.ActionImproveRelations:
@@ -425,6 +438,8 @@ func (g *Game) Update() error {
 	case state.PhaseAITurn:
 		if action.Kind == render.ActionResolveNavalContact {
 			g.resolveNavalContactChoice(action.ChoiceIndex)
+		} else if action.Kind == render.ActionResolveLandContact {
+			g.resolveLandContactChoice(action.ChoiceIndex)
 		} else if action.Kind == render.ActionRespondDiplomacyOffer {
 			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
 		}
@@ -432,11 +447,19 @@ func (g *Game) Update() error {
 			g.presentPendingNavalContact()
 			return nil
 		}
+		if g.gs.PendingLandContact != nil {
+			g.presentPendingLandContact()
+			return nil
+		}
 		g.updateAITurnSequence()
 
 	case state.PhaseTurnResolution:
 		if action.Kind == render.ActionResolveNavalContact {
 			g.resolveNavalContactChoice(action.ChoiceIndex)
+			return nil
+		}
+		if action.Kind == render.ActionResolveLandContact {
+			g.resolveLandContactChoice(action.ChoiceIndex)
 			return nil
 		}
 		g.resolveTurn()
@@ -503,6 +526,8 @@ func (g *Game) Update() error {
 		}
 	}
 
+	g.resumeWarDeclarationFlow()
+
 	if action.Kind != render.ActionNone {
 		g.refreshEventCodex()
 	}
@@ -564,6 +589,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		g.pendingWarFollowUp = nil
+		g.warDeclarationContinuationPending = false
 		g.gs.AIDiagnosticHistory = nil
 		g.gs.AIDiagnosticCaptureTurnsRemain = 0
 		g.aiDiagnosticReportSaved = false
@@ -579,6 +606,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
+		g.pendingWarFollowUp = nil
+		g.warDeclarationContinuationPending = false
 		if g.gs.DevelopmentMode {
 			g.gs.AIDiagnosticHistory = nil
 			g.gs.AIDiagnosticCaptureTurnsRemain = 5
@@ -992,6 +1021,7 @@ func (g *Game) resolveTurn() {
 	g.showRegionUnlockNotifications(unlocked)
 	if g.gs.Phase != state.PhaseGameOver {
 		g.presentPendingNavalContact()
+		g.presentPendingLandContact()
 		// Aktif araştırma yoksa oyuncu için uygun sonraki teknoloji otomatik başlatılır.
 		g.autoStartResearchIfIdle()
 		g.gs.Phase = state.PhasePlayerTurn
@@ -1937,16 +1967,44 @@ func (g *Game) removeGeneratedPortSettlement(region *world.Region) {
 }
 
 // declareWar hedef fraksiyona savaş ilan eder.
-func (g *Game) declareWar(targetID faction.FactionID, calledAllies []faction.FactionID) {
+func (g *Game) declareWar(targetID faction.FactionID, calledAllies []faction.FactionID) bool {
 	result := diplomacy.ExecuteWarDeclaration(g.gs, g.gs.PlayerFactionID, targetID, calledAllies)
 	g.renderer.ShowCombatResult(result.Message)
-	if result.Applied {
-		report := g.buildWarSummary(targetID, result)
-		g.renderer.ShowWarSummary(report)
-		g.renderer.AddEventDetail("[SAVAŞ] "+result.Message, warSummaryDetailText(report))
-		g.gs.QueueNavalContactForWar(g.gs.PlayerFactionID, targetID)
-		g.presentPendingNavalContact()
+	if !result.Applied {
+		return false
 	}
+	report := g.buildWarSummary(targetID, result)
+	g.renderer.ShowWarSummary(report)
+	g.renderer.AddEventDetail("[SAVAŞ] "+result.Message, warSummaryDetailText(report))
+	g.gs.QueueNavalContactForWar(g.gs.PlayerFactionID, targetID)
+	g.warDeclarationContinuationPending = true
+	return true
+}
+
+func (g *Game) resumeWarDeclarationFlow() {
+	if g == nil || g.gs == nil || g.renderer == nil || !g.warDeclarationContinuationPending || g.renderer.WarSummaryVisible() {
+		return
+	}
+	if contact := g.gs.PendingNavalContact; contact != nil {
+		if !contact.Prompted {
+			g.presentPendingNavalContact()
+		}
+		return
+	}
+	if g.renderer.BattlePlanVisible() || g.renderer.BattleReportVisible() {
+		return
+	}
+	if g.pendingWarFollowUp != nil {
+		action := *g.pendingWarFollowUp
+		g.pendingWarFollowUp = nil
+		switch action.Kind {
+		case render.ActionDeclareWar:
+			g.renderer.ShowSiegeDecision(action.ArmyID, action.TargetRegion)
+		case render.ActionMoveArmy:
+			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+		}
+	}
+	g.warDeclarationContinuationPending = false
 }
 
 // proposeAlliance hedefe ittifak teklif eder; kabul aynı diplomacy assessment helper'ı ile belirlenir.
@@ -2950,6 +3008,8 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 	g.gs = gs
 	g.editModeRequested = editMode && g.renderer.EditModeEnabled
 	g.pendingConquestDecisions = nil
+	g.pendingWarFollowUp = nil
+	g.warDeclarationContinuationPending = false
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetEventCodexEntries([4][]render.EventCodexEntry{})
 	g.renderer.SetCursor(0)
@@ -4681,13 +4741,13 @@ func (g *Game) moveArmyToSettlementWithStance(aid army.ArmyID, target world.Regi
 // aynı denizde bulunan görevsiz filolarla savaş açılmaz; yalnız görevlerin
 // devriye-abluka otomatik karşılaşması savaş üretebilir.
 func (g *Game) moveArmyToSettlementWithStanceAndNavalAttack(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
-	g.moveArmyToSettlementWithStanceAndNavalContactResolved(aid, target, targetSettlementID, battleStance, navalAttack, contactResolved...)
+	g.moveArmyToSettlementWithStanceAndContactResolved(aid, target, targetSettlementID, battleStance, navalAttack, contactResolved...)
 }
 
-// moveArmyToSettlementWithStanceAndNavalContactResolved, temas kararı iki
-// tarafta da Çatış olduktan sonra aynı deniz için savaş çözümünü yeniden temas
-// üretmeden çalıştırır.
-func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
+// moveArmyToSettlementWithStanceAndContactResolved, temas kararı iki tarafta
+// da Çatış olduktan sonra kara veya deniz savaşını yeniden temas üretmeden
+// çalıştırır.
+func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
 	resolved := len(contactResolved) > 0 && contactResolved[0]
 	contactMovementConsumed := len(contactResolved) > 1 && contactResolved[1]
 	battleStance = combat.NormalizeBattleStance(battleStance)
@@ -4697,12 +4757,18 @@ func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.Ar
 	}
 	aid = g.deployGarrisonArmy(aid)
 	a = g.gs.Armies[aid]
-	if a.MovePoints <= 0 && !(resolved && a.IsNaval && a.RegionID == target) {
+	if a.MovePoints <= 0 && !(resolved && a.RegionID == target) {
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
 	}
 	previousLocation := a.LocationID()
-	defer g.gs.ClearNavalMissionAfterRelocation(a, previousLocation)
+	defer func() {
+		g.gs.ClearArmyLogisticsAfterRelocation(a, previousLocation)
+		g.gs.ClearNavalMissionAfterRelocation(a, previousLocation)
+		if g.escortFollowDepth == 0 {
+			g.followEscortingFleets(a.ID, previousLocation)
+		}
+	}()
 
 	// Komşu mu kontrol et
 	src, ok := g.gs.Regions[a.RegionID]
@@ -4732,7 +4798,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.Ar
 		return
 	}
 	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
-	if !isNeighbor && !(resolved && navalSeaMove && target == a.RegionID) {
+	if !isNeighbor && !(resolved && target == a.RegionID) {
 		return
 	}
 	if navalSeaMove && a.IsDocked() {
@@ -4830,6 +4896,11 @@ func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.Ar
 	if navalSeaMove && !navalAttack && !resolved && enemyArmy != nil {
 		trigger := state.NavalContactMovement
 		if g.beginNavalContact(a, enemyArmy, target, a.RegionID, trigger, true) {
+			return
+		}
+	}
+	if !a.IsNaval && !resolved && g.gs.SiegeAt(target) == nil && enemyArmy != nil {
+		if g.beginLandContact(a, enemyArmy, target, a.RegionID, state.LandContactMovement, true) {
 			return
 		}
 	}

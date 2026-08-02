@@ -157,20 +157,67 @@ func TestFinalizeWarConfirmOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 
 	act := r.finalizeWarConfirm(wc)
 
-	if act.Kind != ActionDeclareWar {
-		t.Fatalf("savaş ilanı geri dönmeliydi, got=%s", act.Kind)
+	if act.Kind != ActionDeclareWarAndMove {
+		t.Fatalf("savaş ilanı temas için hareket emrine dönüşmeliydi, got=%s", act.Kind)
 	}
-	if !r.confirmDialog.show {
-		t.Fatal("kuşatma kararı modalı açılmalıydı")
-	}
-	if r.confirmDialog.thirdLabel != "Genel Hücum" {
-		t.Fatalf("kuşatma birimi olmasa da genel hücum düğmesi görünmeli, got=%q", r.confirmDialog.thirdLabel)
-	}
-	if r.confirmDialog.pendingAction.Kind != ActionStartSiege {
-		t.Fatalf("kuşatma kararı start siege üretmeliydi, got=%s", r.confirmDialog.pendingAction.Kind)
+	if r.confirmDialog.show {
+		t.Fatal("tahkimli düşman ordusunda önce kara temas popup'ı açılmalıydı")
 	}
 	if r.battlePlan.show {
-		t.Fatal("kuşatma kararı modalı doğrudan battle plan açmamalıydı")
+		t.Fatal("temas kararı verilmeden battle plan açılmamalıydı")
+	}
+	if act.ArmyID != "atk" || act.TargetRegion != "dst" {
+		t.Fatalf("temas için ordu hareket bilgisi korunmalıydı: %+v", act)
+	}
+}
+
+func TestFinalizeWarConfirmDefersSiegeDecisionUntilWarIsDeclared(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Düşman"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"src": {
+				ID:        "src",
+				OwnerID:   "player",
+				Neighbors: []world.RegionID{"dst"},
+			},
+			"dst": {
+				ID:          "dst",
+				OwnerID:     "enemy",
+				Neighbors:   []world.RegionID{"src"},
+				Settlements: []world.Settlement{{ID: "fort", Type: world.SettlementFortress, NameTR: "Kale"}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"atk": {
+				ID:            "atk",
+				OwnerID:       "player",
+				RegionID:      "src",
+				MovePoints:    2,
+				MaxMovePoints: 2,
+				Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry, Attack: 12, Defense: 10, Morale: 55},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	act := r.finalizeWarConfirm(warConfirmState{
+		factionID:   "enemy",
+		pendingArmy: "atk",
+		pendingDest: "dst",
+	})
+
+	if act.Kind != ActionDeclareWar || act.ArmyID != "atk" || act.TargetRegion != "dst" {
+		t.Fatalf("tahkimli boş hedef için savaş ilanı sonrası kuşatma devamı taşınmalıydı: %+v", act)
+	}
+	if r.confirmDialog.show {
+		t.Fatal("savaş ilanı uygulanmadan kuşatma kararı açılmamalıydı")
 	}
 }
 

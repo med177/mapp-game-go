@@ -129,7 +129,7 @@ func (g *Game) resolveNavalContactChoice(choice int) {
 			if g.renderer.ShowNavalContactBattlePlan(attacker.ID, defender.ID, contact.SeaRegionID, movementConsumed) {
 				return
 			}
-			g.moveArmyToSettlementWithStanceAndNavalContactResolved(attacker.ID, contact.SeaRegionID, "", combat.BattleStanceBalanced, true, true, movementConsumed)
+			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.SeaRegionID, "", combat.BattleStanceBalanced, true, true, movementConsumed)
 			return
 		}
 		step := ai.ResolveNavalContactBattle(g.gs, attacker.ID, contact.SeaRegionID)

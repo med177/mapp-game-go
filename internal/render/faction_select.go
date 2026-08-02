@@ -2,6 +2,7 @@ package render
 
 import (
 	"image/color"
+	"path/filepath"
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -14,6 +15,11 @@ import (
 
 const factionGroupGap = 34.0
 const factionGroupLabelH = 20.0
+
+var (
+	factionSelectBackgroundPath string
+	factionSelectBackground     *ebiten.Image
+)
 
 func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
 	factions, historicalCount := selectableFactions(gs)
@@ -37,7 +43,14 @@ func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
 
 // DrawFactionSelect fraksiyon seçim ekranını çizer.
 func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
-	drawUIScreenChrome(screen, color.RGBA{10, 8, 5, 255}, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
+	if background := factionSelectBackgroundImage(gs); background != nil {
+		drawUIImageCover(screen, background)
+		// Senaryo görseli üzerindeki kart ve başlık metinlerini okunabilir tut.
+		drawUIOverlay(screen, color.RGBA{0, 0, 0, 82})
+		drawUIScreenChromeOverlay(screen, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
+	} else {
+		drawUIScreenChrome(screen, color.RGBA{10, 8, 5, 255}, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
+	}
 
 	factions, historicalCount := selectableFactions(gs)
 	cols := 3
@@ -95,6 +108,23 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 			drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 94), W: float64(cardW - 32)}, trimTextToWidth("Öne çıkan: "+featuredVictory, FaceSmall, float64(cardW-32)), color.RGBA{210, 188, 118, 235}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
+}
+
+func factionSelectBackgroundImage(gs *state.GameState) *ebiten.Image {
+	path := ""
+	if gs != nil && gs.ScenarioPath != "" {
+		path = filepath.Join(gs.ScenarioPath, "scenario_bg.png")
+	}
+	if path == factionSelectBackgroundPath {
+		return factionSelectBackground
+	}
+
+	factionSelectBackgroundPath = path
+	factionSelectBackground = nil
+	if path != "" {
+		factionSelectBackground = tryLoadImage(path)
+	}
+	return factionSelectBackground
 }
 
 func factionVictorySummary(gs *state.GameState, fid faction.FactionID) (total, historical, general int, featured string) {

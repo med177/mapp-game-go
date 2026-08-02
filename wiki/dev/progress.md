@@ -1,11 +1,123 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-03: Yeni Oyun → Senaryo Seç akışından sonra açılan oynanabilir devlet
+  seçim ekranı, seçilen senaryo dizinindeki `scenario_bg.png` görselini arka plan
+  olarak kullanıyor. Görsel cover ölçekleniyor, okunabilirlik için hafif overlay
+  uygulanıyor ve asset yoksa koyu fallback korunuyor. Regression:
+  `TestFactionSelectBackgroundLoadsFromScenarioDirectory`; doğrulama:
+  `go test ./internal/render -run 'Test(FactionSelectBackground|SelectionScreensRenderSmoke)' -count=1`.
+
+- 2026-08-03: Ana menüye `assets/images/main_menu_bg.png` arka planı eklendi.
+  Görsel bir kez cache'leniyor, farklı ekran oranlarında cover ölçekleme ile
+  menünün arkasında kalıyor; canlı renkler korunurken menü ekseninde siyah,
+  kenarlara doğru saydamlaşan focus gradient'i kullanılıyor. Yükleme başarısız
+  olursa koyu fallback korunuyor.
+  Doğrulama: `go test ./internal/render -run 'Test(MainMenu|SelectionScreensRenderSmoke)' -count=1`.
+
+- 2026-08-03: 1300 AI'nin aktif savaşta eksik üretim kaynağı nedeniyle üretimi
+  tamamen durdurması düzeltildi. `aiProcureStrategicResources()` seçilen birim,
+  bina, nakliye veya savaş gemisinin `ResourceCost` maliyetinden tüm eksik tahıl,
+  demir, kereste, taş, baharat ve kumaşı otomatik çıkarıp aktif ticaret ağından
+  satın alıyor; yeterli altın yoksa yalnız karşılanabilen kısmı alıyor. Abluka
+  altındaki limanlar somut çıkarma görevi olmasa da `%110` deniz savunma eşiğine
+  kadar savaş gemisi kuyruğu açıyor ve deniz tehdidinde ilgili araştırmalar öne
+  alınıyor. Regression: `TestAIProcuresEveryMissingProductionResource`,
+  `TestAIProcuresMilitaryIronFromConnectedTradeNetwork`,
+  `Test1300ThreatenedPortQueuesNavalDefenseWithoutMission`; doğrulama:
+  `go test ./internal/ai`.
+
+- 2026-08-03: Oyuncuya gelen barış teklifi modalına kabul sonrası ateşkes uyarısı
+  eklendi. Modal, barış kabul edilirse altı tur boyunca aynı devlete yeniden savaş
+  ilan edilemeyeceğini ortak `PostPeaceTruceTurns` sabitinden okuyarak gösteriyor;
+  diğer diplomasi teklifleri etkilenmiyor. Regression: `TestDiplomacyOfferTruceNoticeTR`;
+  doğrulama: `go test ./internal/render ./internal/diplomacy ./internal/state`.
+
+- 2026-08-03: Ordu veya filo yıpranmış konumdan farklı bir bölgeye taşındığında eski `ArmyLogisticsStatus` temizleniyor; kara ordusunun bölgesel `OverCapacityTurns` sayacı hedefte yeniden başlıyor, filonun `TurnsWithoutPort` yolculuk sayacı korunuyor. Böylece marker üzerindeki `!` eski konumun yıpranmasını taşımıyor. Regression: `TestMovingArmyClearsPreviousRegionLogisticsWarning`, `TestMovingFleetClearsPreviousSeaAttritionWarning`; doğrulama: hedefli paket testleri ve `go test ./...`.
+
+- 2026-08-03: Savaş ilanı sonrası akış sıralaması düzeltildi. `Savaş Özeti`
+  artık ilan uygulandığı anda modal olarak öne çıkıyor; bekleyen ordu hareketi
+  ve savaş açılış teması özet kapanana kadar erteleniyor, ardından normal akış
+  devam ediyor. Regression: `TestWarDeclarationShowsSummaryBeforeQueuedMovementContinues`;
+  doğrulama: `go test ./internal/game ./internal/render`.
+
+- 2026-08-03: Savunucu ordusu bulunmayan tahkimli rakip bölgelerde de savaş ilanı
+  uygulandığı anda `Savaş Özeti` gösteriliyor. `Kuşatma Kararı` artık özeti
+  örtmeden, özet kapandıktan sonra açılıyor. Regression:
+  `TestWarDeclarationWithoutDefenderShowsSummaryBeforeSiegeDecision`,
+  `TestFinalizeWarConfirmDefersSiegeDecisionUntilWarIsDeclared`.
+
+- 2026-08-03: Kuşatma kılıç rozeti hizası düzeltildi. Kuşatan ve kuşatılan
+  ordular, merkez ve kale yerleşim anchor'ları farklı olduğunda bile aynı kale
+  marker grubunda çiziliyor; böylece kılıç rozeti bir kuşatmada marker'ın sağına,
+  diğerinde merkezine kaymıyor. Regression: `TestArmyIconPositionsKeepSiegePairOnFortressAnchor`;
+  doğrulama: `go test ./internal/render -run 'TestArmyIconPositions|TestArmySiegeBadge' -count=1`.
+
+- 2026-08-02: Ordu bilgi paneli arkada kaldığında askeri birim kartı hover
+  popup'ının görünmeye devam etmesi düzeltildi. Popup yalnız ordu paneli üst
+  etkileşim katmanındaysa çiziliyor; diplomasi, Merchant Route, kuşatma ve
+  modal/overlay panelleri açıkken arka panelin hover'ı bastırılıyor. Yalnız
+  kendi yüzeyinde input tüketen Aktif Savaşlar paneli açıkken harita ve ordu
+  paneli aktif kalıyor.
+  Regression: `TestArmyPanelTooltipOnlyActiveOnTopLayer`; doğrulama:
+  `go test ./internal/render/...`.
+
+- 2026-08-02: Ticaret Haritasında pozitif hacim bonusu üreten merchant donanmaları
+  artık kendi yuvarlak marker'ı ve sarı `+N` rozetiyle görünür. Her marker,
+  atandığı `TradeRouteKey` koridorunun en yakın bezier noktasına ince altın/cyan
+  connector ile bağlanır; koridoru görünmeyen uzak zoom rotalarında bağlantısız
+  marker çizilmez. Rozet hover'ı normal haritadaki aynı ticaret bonusu popup'ını
+  gösterir. Regression: `TestTradeBonusFleetVisualsFilterToActiveAssignedFleets`,
+  `TestTradeBonusFleetConnectsToItsAssignedCorridor`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-02: Kara ordusu temas akışı donanma temasına paralel hale getirildi.
+  Düşman kara ordusuna verilen hareket emri artık doğrudan savaşa girmeden önce
+  `Düşman Ordusu Tespit Edildi` modalında `Çatış / Geri Çekil / Pozisyonu Koru`
+  seçeneklerini sunuyor. İki taraf da `Çatış` seçerse mevcut kara muharebesi
+  planı ve seçilen saldırı duruşu korunuyor; savunmacı geri çekilirse güvenli
+  dost/boş komşu kara bölgesine taşınıyor. AI `%135` güç farkı ve güvenli rota
+  varsa geri çekiliyor. Tahkimli hedeflerde temas sonrası mevcut kuşatma akışı
+  korunuyor. Regression:
+  `TestPlayerLandMovementCreatesContactBeforeBattle`,
+  `TestPlayerLandContactClashResolvesBattle`,
+  `TestPlayerLandDefenderCanWithdrawFromContact`,
+  `TestLandContactOutmatchedAIWithdraws`,
+  `TestLandContactClashOpensBattlePlan`; doğrulama:
+  `go test ./internal/...`.
+
+- 2026-08-02: Tahkimli kara hedefleri de kuşatma başlatmadan önce kara temasına
+  alındı. Temas popup'ı açılırken saldıran ordu hedef bölgede görünür ve hareket
+  puanını tüketir; `Çatış` seçilince açık arazideki muharebe planı yerine
+  tahkimli hedefte mevcut `Kuşatma Kararı` modalı açılıyor; `Kuşatma Başlat` veya
+  `Genel Hücum` seçimi normal kuşatma çözümüne devrediliyor. Aktif kuşatma destek/
+  huruç akışı korunuyor. Regression:
+  `TestPlayerLandMovementCreatesContactBeforeFortifiedSiege`,
+  `TestExecuteMoveCreatesContactBeforeSiegeOnFortifiedTargetWithDefender`,
+  `TestFortifiedLandContactClashOpensSiegeDecision`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-02: Görevi atanmış ancak görev bölgesine ulaşmamış oyuncu filolarında
+  sağ-üstte siyah borderlı gri dairesel bekleyen-görev rozeti gösteriliyor.
+  Hedefe ulaşınca mevcut görev bonus rozeti korunuyor; çizim, cursor ve seçim
+  aynı rozet geometry'sini kullanıyor. Regression:
+  `TestNavalMissionPendingBadgeOnlyShowsBeforeMissionRegion`,
+  `TestNavalMissionPendingBadgeSharesMissionBadgeGeometry`; doğrulama:
+  `go test ./internal/render`.
+
+- 2026-08-02: Escort görevi atanmış savaş filosu, koruduğu nakliye filosu başka
+  bir açık deniz bölgesine başarıyla taşındığında kendi hareket puanı yeterliyse
+  aynı denize otomatik olarak takip ediyor. Escort hareketi normal filo hareketi
+  doğrulamasını ve kendi hareket puanı tüketimini kullanıyor; puanı olmayan escort
+  bulunduğu denizde kalıyor. Regression: `TestMovingEscortedFleetMovesEscortWithAvailableMovement`,
+  `TestMovingEscortedFleetLeavesEscortWhenMovementIsInsufficient`; doğrulama:
+  `go test ./internal/game`.
 
 - 2026-08-02: Abluka veya devriye görevli filo farklı bir denize, limana ya da
   temas geri çekilmesiyle başka bir konuma taşındığında görev otomatik temizleniyor.

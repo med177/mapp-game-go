@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-01
+last_updated: 2026-08-03
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
 
-1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır; temel kara birliklerinde erken tempo için mevcut tahıl/demir reçetesi korunur. Tahıl açığı yaşayan devletler aktif ticaret ağından otomatik stratejik alım yapar; askerî bütçe ve ilk kışla kararı da bu rezervi koruyacak şekilde çalışır.
+1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır. Tahıl açığı yaşayan devletler stratejik rezerv alımı yapar; üretim kararındaki birim, bina, nakliye veya savaş gemisinin eksik tahıl, demir, kereste, taş, baharat ve kumaş maliyetleri `aiProcureStrategicResources()` tarafından otomatik çıkarılır ve yeterli altın kaldığı sürece aktif ticaret ağından tamamlanır. Abluka altındaki limanlar, somut çıkarma görevi olmasa bile deniz tehdidi snapshot'ından seçilir; gerekli liman seviyesi ve `%110` savunma gücü tamamlanana kadar savaş gemisi üretimi planlanır. Askerî bütçe ve ilk kışla kararı bu rezervleri koruyacak şekilde çalışır.
 
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
 `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
@@ -216,6 +216,16 @@ aktarır; Venedik-Ceneviz rekabeti başlangıçtaki `-10` ilişkiyle korunur.
 
 Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
 `internal/ai/merchant_trade.go`, `internal/ai/naval_threat.go`.
+
+Aktif savaşta liman ablukası görüldüğünde AI yalnız ticaret rotasının merchant
+escort kararını beklemez. `aiProcureStrategicResources()` o turdaki gerçek üretim
+maliyetlerinden tüm eksik ticari kaynakları aktif ticaret ağından satın alır;
+`aiProcureMilitaryIron()` yalnız geriye dönük uyumluluk sarmalayıcısıdır.
+`aiProduceNavalDefenseAtThreatenedPort()` ise liman seviyesi ve savaş gemisi
+teknolojisi uygunsa tehdit gücünün `%110` eşiğine kadar savaş gemisi kuyruğu açar.
+Kıyı/abluka tehdidi araştırma seçiminde de deniz teknolojisi ve savaş gemisi
+açılımına öncelik verir. Böylece yüksek altın stoğu, eksik bir tek kaynak
+nedeniyle sonsuza kadar kullanılmayan bir üretim bütçesine dönüşmez.
 
 ### Memlük ve İlhanlı Levant-Mezopotamya Cephesi
 
@@ -799,6 +809,8 @@ Kuşatılan bölgede duran bölge sahibi veya müttefik AI ordusu da normal hare
 ### Lojistik Farkındalığı
 
 AI artık dost kara bölgelerini sadece diplomasi/savaş açısından değil, ikmal baskısı açısından da puanlar.
+
+AI hareket executor'ü de konum değişiminde `GameState.ClearArmyLogisticsAfterRelocation()` çağırır; eski bölgenin `!` uyarısı ve kara ordusunun bölgeye özgü aşım sayacı yeni konuma taşınmaz.
 
 - Kaynak bölge aşırı doluysa (`grain_upkeep` toplamı bölgenin efektif tahıl + yerleşim tamponu + sınırlı stok desteğini aşıyorsa) `scoreMove()` dost komşular arasında baskıyı azaltan bölgeye pozitif puan verir.
 - Komşu dost bölgeye geçiş sonrası aşım sıfırlanıyorsa ek bonus verilir; baskıyı daha kötü yapacak dost hedefler cezalandırılır.

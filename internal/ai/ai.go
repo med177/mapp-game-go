@@ -104,6 +104,13 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini ticaret ağı üzerinden tamamlıyor.",
 		})
 	}
+	if purchased := aiProcureStrategicResources(gs, fid, planningContext); purchased != (economy.ResourceCost{}) {
+		addTurnStep(steps, TurnStep{
+			FactionID: fid,
+			Kind:      TurnStepInfo,
+			Message:   turnFactionName(gs, fid) + " gerekli üretim kaynaklarını ticaret ağından tamamlıyor.",
+		})
+	}
 
 	budget := prepareAIBudget(gs, fid, planningContext)
 	if budget == nil {
@@ -1628,11 +1635,15 @@ func ResolveNavalContactBattle(gs *state.GameState, attackerID army.ArmyID, targ
 	if attacker == nil {
 		return TurnStep{}
 	}
-	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true)
+	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true, true)
 	return outcome.step
 }
 
-func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID, navalPatrol, contactResolved bool) moveOutcome {
+func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, target world.RegionID, fid faction.FactionID, navalPatrol, contactResolved bool, movementConsumed ...bool) moveOutcome {
+	previousLocation := a.LocationID()
+	defer gs.ClearArmyLogisticsAfterRelocation(a, previousLocation)
+
+	contactMovementConsumed := len(movementConsumed) > 0 && movementConsumed[0]
 	targetRegion, ok := gs.Regions[target]
 	if !ok {
 		return moveOutcome{survived: true}
@@ -1671,6 +1682,52 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		if siege := gs.SiegeAt(target); siege != nil && siege.AttackerArmyID != a.ID {
 			if !gs.CanJoinActiveSiege(a, target) && !gs.CanEnterActiveSiegedRegion(a, target) {
 				return moveOutcome{survived: true}
+			}
+		}
+	}
+
+	var landContactEnemy *army.Army
+	if !a.IsNaval && targetRegion.CanLandEnter() && gs.SiegeAt(target) == nil && !contactResolved {
+		landContactEnemy = gs.SelectBattleDefender(a, target, false)
+		if landContactEnemy != nil {
+			contactFromRegion := a.RegionID
+			contact := gs.BeginLandContact(a, landContactEnemy, target, contactFromRegion, state.LandContactMovement)
+			if contact != nil {
+				ResolveLandContactDecision(gs, contact)
+				if a.RegionID == contactFromRegion && a.MovePoints > 0 {
+					a.RegionID = target
+					a.DockedRegionID = ""
+					a.DockedSettlementID = ""
+					a.MovePoints--
+					contactMovementConsumed = true
+					contact.MovementConsumed = true
+				}
+				if contact.PlayerArmyID != "" {
+					return moveOutcome{survived: true, step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepBattle,
+						ArmyID:       a.ID,
+						FromRegion:   contactFromRegion,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      "Düşman ordusuyla kara teması kuruldu.",
+					}}
+				}
+				if !gs.LandContactBothClash(contact) {
+					ResolveLandContactWithoutBattle(gs, contact, landContactEnemy)
+					gs.ClearLandContact()
+					return moveOutcome{survived: true, step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepMove,
+						ArmyID:       a.ID,
+						FromRegion:   contactFromRegion,
+						TargetRegion: target,
+						FocusRegion:  target,
+						Message:      "Kara teması çatışmaya dönüşmeden sona erdi.",
+					}}
+				}
+				gs.ClearLandContact()
+				contactResolved = true
 			}
 		}
 	}
@@ -1984,7 +2041,6 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 
 	var contactEnemy *army.Army
-	contactMovementConsumed := false
 	if a.IsNaval && targetRegion.IsSea && !contactResolved {
 		contactEnemy = gs.SelectBattleDefender(a, target, true)
 		if contactEnemy != nil {
@@ -2218,6 +2274,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
 	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
 		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
+		aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
 		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
 		return
 	}
@@ -2382,6 +2439,104 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 
 	// Escort savaş gemisi üretimi — transport varsa ve savaş halinde veya deniz baskısı yüksekse
 	aiProduceEscortIfNeeded(gs, fid, coastalRegions, budget, steps)
+}
+
+// aiProduceNavalDefenseAtThreatenedPort, somut bir çıkarma görevi olmasa bile
+// düşman savaş gemilerinin ablukaya aldığı AI limanının savunmasını kurar.
+// Merchant escort mantığından bağımsızdır; çünkü ticaret rotası olmasa da
+// abluka doğrudan limanın üretimini ve kıyı ikmalini bozar.
+func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext, steps *[]TurnStep) {
+	if gs == nil || ctx == nil || len(ctx.ThreatenedPortIDs) == 0 || gs.UnitTypes == nil || gs.BuildingTypes == nil {
+		return
+	}
+	self := gs.Factions[fid]
+	warshipType := gs.UnitTypes["warship"]
+	portType := gs.BuildingTypes["port"]
+	if self == nil || self.IsEliminated || warshipType == nil || portType == nil || !warshipType.HasAllRequiredTechs(self.Research.Completed) {
+		return
+	}
+
+	var threatenedPort *world.Region
+	var threatenedSea world.RegionID
+	threatPower := 0
+	for _, portID := range ctx.ThreatenedPortIDs {
+		port := gs.Regions[portID]
+		if port == nil || port.OwnerID != string(fid) {
+			continue
+		}
+		for _, seaID := range aiSortedNeighborIDs(port) {
+			sea := gs.Regions[seaID]
+			if sea == nil || !sea.IsSea {
+				continue
+			}
+			candidateThreat := aiPortApproachThreatPower(gs, fid, seaID)
+			if candidateThreat > threatPower || candidateThreat == threatPower && candidateThreat > 0 && (threatenedPort == nil || port.ID < threatenedPort.ID) {
+				threatenedPort = port
+				threatenedSea = seaID
+				threatPower = candidateThreat
+			}
+		}
+	}
+	if threatenedPort == nil || threatenedSea == "" || threatPower <= 0 {
+		return
+	}
+
+	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
+	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
+	if currentPortLevel < requiredPortLevel {
+		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
+			return
+		}
+		cost := aiBuildingResourceCost(portType)
+		if !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+			return
+		}
+		turns := aiBuildingTurnsRequired(threatenedPort, "port", portType.TurnsRequired, queuedPortLevels)
+		aiEnqueueProduction(gs, fid, aiProductionKindBuilding, threatenedPort.ID, "port", turns)
+		addTurnStep(steps, TurnStep{
+			FactionID: fid, Kind: TurnStepBuild, TargetRegion: threatenedPort.ID, FocusRegion: threatenedSea,
+			Message: turnFactionName(gs, fid) + " abluka altındaki " + turnRegionName(gs, threatenedPort.ID) + " limanını savaş gemileri için büyütüyor.",
+		})
+		return
+	}
+
+	projectedPower := 0
+	for _, fleet := range aiSortedArmies(gs) {
+		if fleet.OwnerID != string(fid) || !fleet.IsAtSea() || fleet.RegionID != threatenedSea {
+			continue
+		}
+		projectedPower += aiEffectiveNavalPower(gs, fleet, true)
+	}
+	warshipPower := aiEffectiveNavalPower(gs, &army.Army{
+		OwnerID: string(fid), IsNaval: true,
+		Units: []army.Unit{{TypeID: warshipType.ID, CurrentHP: army.MaxUnitHP}},
+	}, true)
+	if warshipPower <= 0 {
+		return
+	}
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) || order.RegionID != threatenedPort.ID || order.TypeID != warshipType.ID {
+			continue
+		}
+		projectedPower += warshipPower
+	}
+	requiredPower := (threatPower*aiNavalMissionSafetyPercent + 99) / 100
+	cost := aiUnitResourceCost(warshipType)
+	for projectedPower < requiredPower {
+		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
+			break
+		}
+		if !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+			break
+		}
+		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)
+		addTurnStep(steps, TurnStep{
+			FactionID: fid, Kind: TurnStepRecruit, TargetRegion: threatenedPort.ID, FocusRegion: threatenedSea,
+			Message: turnFactionName(gs, fid) + " abluka hattını kırmak için savaş gemisi hazırlıyor.",
+		})
+		projectedPower += warshipPower
+	}
 }
 
 // aiProduceEscortIfNeeded transport hattı olan AI için escort savaş gemisi üretir.

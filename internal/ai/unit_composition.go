@@ -57,6 +57,17 @@ func aiCompositionTargetForPlan(plan *state.AIPlanState) aiCompositionTarget {
 }
 
 func aiSelectStrategicLandUnit(gs *state.GameState, self *faction.Faction, budget *aiBudget, ctx *StrategicContext) string {
+	return aiSelectStrategicLandUnitWithResourceCheck(gs, self, budget, ctx, true)
+}
+
+// aiSelectStrategicLandUnitForProcurement aynı askerî seçim puanını kullanır,
+// ancak mevcut malzeme stoğu eksik olduğu için adayı elmez. Böylece tedarik
+// aşaması hangi üretimin bloke olduğunu önceden görebilir.
+func aiSelectStrategicLandUnitForProcurement(gs *state.GameState, self *faction.Faction, ctx *StrategicContext) string {
+	return aiSelectStrategicLandUnitWithResourceCheck(gs, self, nil, ctx, false)
+}
+
+func aiSelectStrategicLandUnitWithResourceCheck(gs *state.GameState, self *faction.Faction, budget *aiBudget, ctx *StrategicContext, requireResources bool) string {
 	if gs == nil || self == nil || self.IsEliminated || gs.UnitTypes == nil {
 		return ""
 	}
@@ -79,7 +90,7 @@ func aiSelectStrategicLandUnit(gs *state.GameState, self *faction.Faction, budge
 	found := false
 	for _, unitTypeID := range unitIDs {
 		unitType := gs.UnitTypes[unitTypeID]
-		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !aiUnitAvailableForBudget(gs, self, unitType, budget) {
+		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !aiUnitCandidateAvailableForSelection(gs, self, unitType, budget, ctx, requireResources) {
 			continue
 		}
 		if aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) == "" {
@@ -95,6 +106,16 @@ func aiSelectStrategicLandUnit(gs *state.GameState, self *faction.Faction, budge
 		return ""
 	}
 	return best.TypeID
+}
+
+func aiUnitCandidateAvailableForSelection(gs *state.GameState, self *faction.Faction, unitType *army.UnitType, budget *aiBudget, ctx *StrategicContext, requireResources bool) bool {
+	if gs == nil || self == nil || unitType == nil || !unitType.HasAllRequiredTechs(self.Research.Completed) {
+		return false
+	}
+	if !requireResources {
+		return self.Gold-unitType.GoldCost >= aiMinGoldReserve && aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) != ""
+	}
+	return aiUnitAvailableForBudget(gs, self, unitType, budget)
 }
 
 // aiCompositionTargetForStrategicContext planın genel oranını aktif ana

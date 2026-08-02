@@ -182,6 +182,12 @@ func TestArmyPanelReplenishmentBadgeActivatesForDamagedFleetInOwnPort(t *testing
 	if armyCanRenderReplenishment(gs, fleet) {
 		t.Fatal("açık denizdeki hasarlı filonun tamirat göstergesi görünmemeliydi")
 	}
+	fleet.DockedRegionID = "home"
+	fleet.Units[0].CurrentHP = army.MaxUnitHP
+	fleet.EmbarkedUnits = []army.Unit{{TypeID: "inf", CurrentHP: 60}}
+	if !armyCanRenderReplenishment(gs, fleet) {
+		t.Fatal("yalnız taşınan kara birimi hasarlıysa dock edilmiş filonun tamirat göstergesi aktif olmalıydı")
+	}
 }
 
 func TestArmyPanelReplenishmentBadgeActivatesInVassalRegion(t *testing.T) {
@@ -340,6 +346,33 @@ func TestArmyPanelUnitHoverReturnsCurrentHPAndTypeCount(t *testing.T) {
 	}
 	if count != 2 {
 		t.Fatalf("aynı tipin ordu içindeki adedi 2 olmalıydı, got=%d", count)
+	}
+}
+
+func TestArmyPanelTooltipOnlyActiveOnTopLayer(t *testing.T) {
+	gs := &state.GameState{Phase: state.PhasePlayerTurn}
+	r := &Renderer{gs: gs, SelectedArmy: "army"}
+	if !r.armyPanelTooltipActive() {
+		t.Fatal("başka bir üst panel yokken ordu popup'ı aktif olmalıydı")
+	}
+
+	r.showDiplomacy = true
+	if r.armyPanelTooltipActive() {
+		t.Fatal("diplomasi paneli açıkken arkadaki ordu popup'ı görünmemeliydi")
+	}
+	r.showDiplomacy = false
+	r.showMerchantRoutePanel = true
+	if r.armyPanelTooltipActive() {
+		t.Fatal("merchant route paneli açıkken arkadaki ordu popup'ı görünmemeliydi")
+	}
+	r.showMerchantRoutePanel = false
+	r.showActiveWars = true
+	if !r.armyPanelTooltipActive() {
+		t.Fatal("aktif savaşlar paneli açıkken harita pasifleşmediği için ordu popup'ı görünmeliydi")
+	}
+	r.showMerchantRoutePanel = true
+	if r.armyPanelTooltipActive() {
+		t.Fatal("aktif savaşlar paneliyle birlikte merchant route paneli açıkken arkadaki ordu popup'ı görünmemeliydi")
 	}
 }
 

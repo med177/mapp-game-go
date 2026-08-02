@@ -51,6 +51,32 @@ func TestNavalMissionReachedRegionOnlyShowsActiveTarget(t *testing.T) {
 	}
 }
 
+func TestNavalMissionPendingBadgeOnlyShowsBeforeMissionRegion(t *testing.T) {
+	gs := navalMissionEffectsFixture()
+	fleet := gs.Armies["patrol"]
+	if navalMissionPendingBadge(gs, fleet) {
+		t.Fatal("hedef denizdeki filo bekleyen görev rozeti göstermemeli")
+	}
+
+	fleet.RegionID = "sea-2"
+	if !navalMissionPendingBadge(gs, fleet) {
+		t.Fatal("hedef bölge dışında kalan görevli filo bekleyen görev rozeti göstermeli")
+	}
+
+	fleet.OwnerID = "enemy"
+	if navalMissionPendingBadge(gs, fleet) {
+		t.Fatal("oyuncuya ait olmayan filo için görev istihbaratı gösterilmemeli")
+	}
+}
+
+func TestNavalMissionPendingBadgeSharesMissionBadgeGeometry(t *testing.T) {
+	bonus := navalMissionBonusBadgeRect(100, 100)
+	pending := navalMissionPendingBadgeRect(100, 100)
+	if pending != bonus {
+		t.Fatalf("bekleyen görev rozeti aktif görev rozetiyle aynı geometry'yi kullanmalı: pending=%+v bonus=%+v", pending, bonus)
+	}
+}
+
 func TestNavalMissionReachedLabelsExposeDifferentEffects(t *testing.T) {
 	want := map[army.NavalMissionKind]string{
 		army.NavalMissionPatrol:    "DEVRİYE",

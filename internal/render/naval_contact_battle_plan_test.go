@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -32,7 +33,58 @@ func TestNavalContactClashOpensBattlePlan(t *testing.T) {
 	if !r.ShowNavalContactBattlePlan("player-fleet", "enemy-fleet", "sea", false) {
 		t.Fatal("temas çatışmaya dönüştüğünde deniz muharebesi planı açılmalı")
 	}
-	if !r.battlePlan.show || !r.battlePlan.navalContactResolved {
+	if !r.battlePlan.show || !r.battlePlan.contactResolved {
 		t.Fatalf("temas sonrası battle plan state'i kurulmadı: %+v", r.battlePlan)
+	}
+}
+
+func TestLandContactClashOpensBattlePlan(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"land": {ID: "land", NameTR: "Test Bölgesi"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player-army": {ID: "player-army", OwnerID: "p1", RegionID: "land", Units: []army.Unit{{TypeID: "inf"}}},
+			"enemy-army":  {ID: "enemy-army", OwnerID: "p2", RegionID: "land", Units: []army.Unit{{TypeID: "inf"}}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"p1": {ID: "p1", NameTR: "Oyuncu"},
+			"p2": {ID: "p2", NameTR: "Düşman"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	if !r.ShowLandContactBattlePlan("player-army", "enemy-army", "land") {
+		t.Fatal("kara temasında çatış seçilince kara muharebesi planı açılmalı")
+	}
+	if !r.battlePlan.show || !r.battlePlan.contactResolved || r.battlePlan.battleContext != combat.BattleContextLand {
+		t.Fatalf("kara temas battle plan state'i kurulmadı: %+v", r.battlePlan)
+	}
+}
+
+func TestFortifiedLandContactClashOpensSiegeDecision(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"fort": {ID: "fort", NameTR: "Test Kalesi", OwnerID: "p2", Buildings: []string{"walls"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"player-army": {ID: "player-army", OwnerID: "p1", RegionID: "source", Units: []army.Unit{{TypeID: "inf"}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", Category: army.CategoryInfantry},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	if !r.ShowLandContactSiegeDecision("player-army", "fort") {
+		t.Fatal("tahkimli kara temasında çatış seçilince kuşatma kararı açılmalı")
+	}
+	if !r.confirmDialog.show || r.confirmDialog.pendingAction.Kind != ActionStartSiege {
+		t.Fatalf("temas sonrası kuşatma kararı yerine başka modal açıldı: %+v", r.confirmDialog)
 	}
 }

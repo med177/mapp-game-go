@@ -232,12 +232,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		// Sprite tam kart alanını kaplayabildiği için rozet sprite'tan sonra
 		// çizilmelidir; aksi halde zayiatlı birimdeki yeşil artı görünmez.
 		if isReplenishing {
-			badgeW := float32(18)
-			badgeH := float32(12)
-			badgeX := cx + cardW - badgeW - 3
-			badgeY := cy + 3
-			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
-			DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
+			drawArmyReplenishmentBadge(screen, cx, cy)
 		}
 
 		// Birim adı
@@ -285,7 +280,36 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 
 func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
 	return gs != nil && a != nil && gs.CanArmyReplenishIn(a) &&
-		!gs.IsArmyDefendingSiegedRegion(a) && a.HasDamagedUnits()
+		!gs.IsArmyDefendingSiegedRegion(a) && armyHasDamagedReplenishableUnits(a)
+}
+
+func armyHasDamagedReplenishableUnits(a *army.Army) bool {
+	if a == nil {
+		return false
+	}
+	if a.HasDamagedUnits() {
+		return true
+	}
+	if !a.IsNaval {
+		return false
+	}
+	for _, u := range a.EmbarkedUnits {
+		if u.CurrentHP < army.MaxUnitHP {
+			return true
+		}
+	}
+	return false
+}
+
+func drawArmyReplenishmentBadge(screen *ebiten.Image, cx, cy float32) {
+	const (
+		badgeW = float32(18)
+		badgeH = float32(12)
+	)
+	badgeX := cx + cardW - badgeW - 3
+	badgeY := cy + 3
+	vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
+	DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
 }
 
 // DrawEmbarkedArmyDetailPanel, filonun üzerindeki kara birliklerini mevcut
@@ -377,6 +401,9 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 			DrawTextCentered(screen, "?", float64(cx)+float64(cardW)/2, float64(cy)+20, FaceLarge, ColorGray)
 		}
 		drawUnitCardFooter(screen, cx, cy, cardW, cardH, unitCardFooterH)
+		if armyCanRenderReplenishment(gs, fleet) && u.CurrentHP < army.MaxUnitHP {
+			drawArmyReplenishmentBadge(screen, cx, cy)
+		}
 		unitName := u.TypeID
 		if utype != nil {
 			unitName = utype.NameTR

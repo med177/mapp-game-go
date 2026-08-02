@@ -5,7 +5,9 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-const postPeaceTruceTurns = 6
+// PostPeaceTruceTurns kabul edilen barıştan sonra tarafların yeniden savaş
+// ilan edemeyeceği ateşkes süresidir.
+const PostPeaceTruceTurns = 6
 
 // RecordTruce barıştan sonra aynı tarafların hemen yeniden savaşa girmesini
 // önleyen save-backed ateşkes bitişini kaydeder.
@@ -16,7 +18,7 @@ func (s *GameState) RecordTruce(a, b faction.FactionID) {
 	if s.RecentTruces == nil {
 		s.RecentTruces = make(map[string]int)
 	}
-	s.RecentTruces[faction.RelationKey(a, b)] = s.Turn + postPeaceTruceTurns
+	s.RecentTruces[faction.RelationKey(a, b)] = s.Turn + PostPeaceTruceTurns
 }
 
 // TruceRemaining kalan ateşkes turunu döner; sıfır, savaş ilanının serbest
