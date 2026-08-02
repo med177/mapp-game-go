@@ -53,6 +53,9 @@ func (s *GameState) CanAssignNavalMission(fleetID army.ArmyID, mission army.Nava
 		if target == nil || target.ID == fleet.ID || target.OwnerID != fleet.OwnerID || !target.IsNaval || target.TransportCapacity(s.UnitTypes) <= 0 {
 			return false, "Escort hedefi aynı devlete ait nakliye filosu olmalı."
 		}
+		if !fleet.IsAtSea() || !target.IsAtSea() || target.RegionID != fleet.RegionID {
+			return false, "Escort hedefi, savaş filosuyla aynı açık deniz bölgesinde olmalı."
+		}
 	case army.NavalMissionTransport:
 		if fleet.TransportCapacity(s.UnitTypes) <= 0 {
 			return false, "Bu görev için nakliye kapasitesi gerekir."
@@ -114,6 +117,21 @@ func (s *GameState) ClearNavalMission(fleetID army.ArmyID) bool {
 	}
 	fleet := s.Armies[fleetID]
 	if fleet == nil || !fleet.IsNaval {
+		return false
+	}
+	fleet.NavalMission = nil
+	return true
+}
+
+// ClearNavalMissionAfterRelocation, devriye veya abluka görevi taşıyan filo
+// gerçek konumundan ayrıldığında görevi temizler. LocationID kullanılır;
+// böylece aynı deniz ankrajında limana girme/limandan çıkma da yeni konum
+// sayılır.
+func (s *GameState) ClearNavalMissionAfterRelocation(fleet *army.Army, previousLocation string) bool {
+	if fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || previousLocation == "" || fleet.LocationID() == previousLocation {
+		return false
+	}
+	if fleet.NavalMission.Kind != army.NavalMissionPatrol && fleet.NavalMission.Kind != army.NavalMissionBlockade {
 		return false
 	}
 	fleet.NavalMission = nil

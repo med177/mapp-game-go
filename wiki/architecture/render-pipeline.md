@@ -60,11 +60,14 @@ Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
 görevlerinden yalnızca nakliye için modal kapanıp haritaya hedef seçme modu
 girer; geçerli kıyı bölgeleri renkli dairelerle işaretlenir. Devriye ve abluka
 filonun bulunduğu açık denizde doğrudan uygulanır; abluka seçeneği yalnız savaş
-halindeki düşmanın kıyısına komşu denizde gösterilir. Hedef dairelerinin üzerinde OS
-cursor parmağa dönüşür ve ESC seçim modunu iptal eder. Escort görevi
-aynı modalda uygun nakliye filosu satırından atanır. Görevli filo ikonu aktif
+halindeki düşmanın kıyısına komşu denizde gösterilir. Aynı açık denizde uygun
+nakliye filosu varsa Escort satırı gösterilir; satırda dahili filo ID'si yerine
+ortak `Escort` etiketi kullanılır. Hedef dairelerinin üzerinde OS cursor parmağa
+dönüşür ve ESC seçim modunu iptal eder. Görevli filo ikonu aktif
 bonus rozetini, panel footer'ı ise görev ve hedef bölge metnini gösterir; görev
-temizleme ve yeniden atama aynı input önceliğini kullanır.
+temizleme ve yeniden atama aynı input önceliğini kullanır. Devriye veya abluka
+görevli filo farklı bir konuma taşınırsa görev state katmanında otomatik silinir;
+eski deniz için görev rozeti ve ekonomik etki kalmaz.
 
 Denizden kara hareket hedefleri settlement türüne göre ayrıdır. Ordu taşıyan
 filoda merkez settlement kare border ile çıkarma hedefi, komşu limanlar ise

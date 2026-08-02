@@ -131,6 +131,31 @@ func TestUnassignedNavalFleetsCanShareSeaWithoutBattle(t *testing.T) {
 	}
 }
 
+func TestMovingPatrolOrBlockadeFleetClearsMission(t *testing.T) {
+	for _, kind := range []army.NavalMissionKind{army.NavalMissionPatrol, army.NavalMissionBlockade} {
+		t.Run(string(kind), func(t *testing.T) {
+			g := newNavalBattleGame(
+				&army.Army{
+					ID: "moving_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true,
+					MovePoints: 1, MaxMovePoints: 1,
+					NavalMission: &army.NavalMission{Kind: kind, TargetRegionID: "sea_a"},
+					Units:        []army.Unit{{TypeID: "warship", CurrentHP: 100}},
+				},
+				&army.Army{ID: "far_fleet", OwnerID: "p2", RegionID: "sea_c", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+			)
+
+			g.moveArmy("moving_fleet", "sea_b")
+			fleet := g.gs.Armies["moving_fleet"]
+			if fleet.RegionID != "sea_b" {
+				t.Fatalf("filo yeni denize hareket etmedi: %s", fleet.RegionID)
+			}
+			if fleet.NavalMission != nil {
+				t.Fatalf("%s görevi farklı denize hareketten sonra temizlenmeli: %+v", kind, fleet.NavalMission)
+			}
+		})
+	}
+}
+
 func TestPatrolLetsOutmatchedEnemyBlockadeWithdraw(t *testing.T) {
 	g := newNavalBattleGame(
 		&army.Army{ID: "patrol_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionPatrol, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},

@@ -4701,6 +4701,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndNavalContactResolved(aid army.Ar
 		g.renderer.ShowCombatResult("Hareket puanı kalmadı!")
 		return
 	}
+	previousLocation := a.LocationID()
+	defer g.gs.ClearNavalMissionAfterRelocation(a, previousLocation)
 
 	// Komşu mu kontrol et
 	src, ok := g.gs.Regions[a.RegionID]

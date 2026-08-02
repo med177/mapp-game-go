@@ -30,7 +30,7 @@ func navalMissionPanelStateFixture() *state.GameState {
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"war":       {ID: "war", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
-			"transport": {ID: "transport", OwnerID: "player", IsNaval: true, Units: []army.Unit{{TypeID: "transport"}}},
+			"transport": {ID: "transport", OwnerID: "player", RegionID: "sea", IsNaval: true, Units: []army.Unit{{TypeID: "transport"}}},
 			"enemy":     {ID: "enemy", OwnerID: "enemy", IsNaval: true, Units: []army.Unit{{TypeID: "warship"}}},
 		},
 	}
@@ -73,10 +73,24 @@ func TestNavalMissionOptionsExposeWarshipTasks(t *testing.T) {
 	if options[1].effect != "Etki: savaş gemisi başına -%50 ticaret; azami -%100." {
 		t.Fatalf("abluka bonusu beklenen açıklamayı taşımıyor: %q", options[1].effect)
 	}
+	if options[2].label != "Escort" || options[2].targetFleet != "transport" {
+		t.Fatalf("escort satırı ID yerine ortak etiketi ve doğru hedefi taşımalı: %+v", options[2])
+	}
 	gs.Armies["transport"].EmbarkedUnits = []army.Unit{{TypeID: "infantry"}}
 	transportOptions := navalMissionOptions(gs, gs.Armies["transport"])
 	if len(transportOptions) != 0 {
 		t.Fatalf("sırf nakliye filosunda görev seçeneği olmamalıydı: %+v", transportOptions)
+	}
+}
+
+func TestNavalMissionOptionsOnlyShowSameSeaTransportEscort(t *testing.T) {
+	gs := navalMissionPanelStateFixture()
+	gs.Armies["transport"].RegionID = "other_sea"
+	options := navalMissionOptions(gs, gs.Armies["war"])
+	for _, option := range options {
+		if option.kind == army.NavalMissionEscort {
+			t.Fatalf("farklı denizdeki nakliye filosu escort seçeneği olarak görünmemeli: %+v", option)
+		}
 	}
 }
 

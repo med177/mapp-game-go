@@ -7,6 +7,18 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-02: Abluka veya devriye görevli filo farklı bir denize, limana ya da
+  temas geri çekilmesiyle başka bir konuma taşındığında görev otomatik temizleniyor.
+  Merkezi hareket çözümü ve deniz teması geri çekilmesi aynı state helper'ını
+  kullanıyor. Regression: `TestMovingPatrolOrBlockadeFleetClearsMission`.
+
+- 2026-08-02: Escort görev satırı artık hedef nakliye filosunun dahili ID'sini
+  göstermiyor. Yalnızca savaş filosuyla aynı açık denizde bulunan uygun nakliye
+  filoları `Escort` seçeneği olarak listeleniyor; state katmanı da farklı deniz
+  veya liman konumundaki hedefleri reddediyor. Regression:
+  `TestEscortRequiresSameOpenSeaAsTransport`,
+  `TestNavalMissionOptionsOnlyShowSameSeaTransportEscort`.
+
 - 2026-08-02: Devriye ve abluka görevleri artık hedef bölge seçimi istemiyor;
   görev panelinde yalnızca filonun bulunduğu açık denizde atanabiliyor ve doğrudan
   mevcut deniz bölgesini hedefliyor. Abluka seçeneği yalnız savaş halindeki düşman

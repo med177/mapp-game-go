@@ -151,20 +151,24 @@ func (g *Game) resolveNavalContactWithoutBattle(contact *state.NavalContact, att
 		return
 	}
 	if contact.AttackerDecision == state.NavalContactWithdraw {
+		previousLocation := attacker.LocationID()
 		retreat := navalContactRetreatRegion(g.gs, attacker, contact.AttackerFromRegionID)
 		if retreat != "" {
 			attacker.RegionID = retreat
 			attacker.DockedRegionID = ""
 			attacker.DockedSettlementID = ""
 			attacker.MovePoints = max(0, attacker.MovePoints-state.NavalContactWithdrawMovementCost)
+			g.gs.ClearNavalMissionAfterRelocation(attacker, previousLocation)
 		}
 	}
 	if contact.DefenderDecision == state.NavalContactWithdraw {
+		previousLocation := defender.LocationID()
 		if retreat := navalContactRetreatRegion(g.gs, defender, contact.AttackerFromRegionID); retreat != "" {
 			defender.RegionID = retreat
 			defender.DockedRegionID = ""
 			defender.DockedSettlementID = ""
 			defender.MovePoints = max(0, defender.MovePoints-state.NavalContactWithdrawMovementCost)
+			g.gs.ClearNavalMissionAfterRelocation(defender, previousLocation)
 		}
 	}
 }

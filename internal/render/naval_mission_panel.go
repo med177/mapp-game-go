@@ -157,23 +157,23 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 				})
 			}
 		}
-		for _, candidate := range playerTransportFleets(gs, fleet.ID) {
+		for _, candidate := range playerTransportFleets(gs, fleet) {
 			options = append(options, navalMissionOption{
 				kind: army.NavalMissionEscort, targetFleet: candidate.ID,
-				label: "Escort → " + string(candidate.ID), description: "Yalnız seçili nakliye filosunu koru.", effect: "Etki: aynı denizde nakliyeye +%15 deniz savunması; azami +%30.",
+				label: "Escort", description: "Aynı açık denizdeki nakliye filosunu koru.", effect: "Etki: nakliyeye +%15 deniz savunması; azami +%30.",
 			})
 		}
 	}
 	return options
 }
 
-func playerTransportFleets(gs *state.GameState, exclude army.ArmyID) []*army.Army {
-	if gs == nil {
+func playerTransportFleets(gs *state.GameState, escorter *army.Army) []*army.Army {
+	if gs == nil || escorter == nil || !escorter.IsAtSea() {
 		return nil
 	}
 	ids := make([]army.ArmyID, 0, len(gs.Armies))
 	for id, fleet := range gs.Armies {
-		if fleet == nil || id == exclude || fleet.OwnerID != string(gs.PlayerFactionID) || !fleet.IsNaval || fleet.TransportCapacity(gs.UnitTypes) <= 0 {
+		if fleet == nil || id == escorter.ID || fleet.OwnerID != string(gs.PlayerFactionID) || !fleet.IsAtSea() || fleet.RegionID != escorter.RegionID || fleet.TransportCapacity(gs.UnitTypes) <= 0 {
 			continue
 		}
 		ids = append(ids, id)

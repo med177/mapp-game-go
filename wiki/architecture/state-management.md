@@ -132,7 +132,7 @@ edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz sayar.
 Donanma konumu iki katmanlıdır: `Army.RegionID` deniz rotası için kullanılan deniz ankrajını korur; filo limandaysa gerçek eş-konum `DockedSettlementID` (eski veride `DockedRegionID` fallback'i) olan `Army.LocationID()` ile okunur. `Army.IsAtSea()` yalnız dock bağı olmayan filoları açık deniz savaşı, abluka ve AI deniz tehdidi hesaplarına dahil eder. Deniz hareketi dock bağını temizleyerek hedef deniz bölgesini tekrar kanonik konum yapar. Save yükleme bu state'i olduğu gibi korur; eski dock migrasyonu yalnız başlangıç senaryosundaki eksik dock verisi için çalışır.
 
 Oyuncu filosunun kalıcı görevi `Army.NavalMission` içinde tutulur. `patrol` ve
-`blockade` filonun o an bulunduğu açık deniz bölgesini, `escort` aynı devlete ait nakliye filosu, `transport`
+`blockade` filonun o an bulunduğu açık deniz bölgesini, `escort` aynı açık deniz bölgesindeki aynı devlete ait nakliye filosunu, `transport`
 ise taşınan kara ordusu ile kıyı kara bölgesini hedefler. Atama ve temizleme
 `GameState.CanAssignNavalMission()`, `AssignNavalMission()` ve
 `ClearNavalMission()` kapılarından geçer; compact save/load `nm` alanıyla bu
@@ -141,7 +141,12 @@ puanı yenilendikten sonra yalnız nakliye filosunu deterministik deniz BFS'iyle
 hedef kıyıya yaklaştırır; nakliye hedef kıyıya ulaştığında mevcut
 çıkarma/komşuluk çözümünü kullanır. Devriye ve abluka görevi mevcut denizde
 kalır, görev ataması filoyu başka bir denize hareket ettirmez.
-Devriye ve abluka yalnızca filo açık denizdeyken görev panelinden atanır; panel
+Bu görevlerden birini taşıyan filo manuel hareket, temas geri çekilmesi veya
+liman bağlantısı nedeniyle gerçek konumunu değiştirirse
+`ClearNavalMissionAfterRelocation()` görevi otomatik temizler; böylece görev
+eski deniz bölgesinde ekonomik veya devriye etkisi üretmeye devam etmez.
+Devriye, abluka ve escort yalnızca ilgili filolar aynı açık denizdeyken görev
+panelinden atanır; panel
 hedef haritası açmaz ve tıklanan görev doğrudan mevcut `RegionID`'yi hedefler.
 Limana bağlı filo için bu iki görev seçeneği gösterilmez. Devriye açık denizde
 atanabilir; `blockade` hedefi ise yalnızca savaş halindeki düşmanın kıyı kara bölgelerine

@@ -30,7 +30,7 @@ func navalMissionStateFixture() *GameState {
 				Units: []army.Unit{{TypeID: "warship"}},
 			},
 			"transport-fleet": {
-				ID: "transport-fleet", OwnerID: "player", IsNaval: true,
+				ID: "transport-fleet", OwnerID: "player", RegionID: "sea", IsNaval: true,
 				Units: []army.Unit{{TypeID: "transport"}},
 			},
 		},
@@ -117,6 +117,20 @@ func TestPatrolAndBlockadeMustUseCurrentOpenSea(t *testing.T) {
 		t.Fatal("limanda bağlı filo devriye görevi alamamalı")
 	} else if reason == "" {
 		t.Fatal("limandaki filo için neden döndürülmeli")
+	}
+}
+
+func TestEscortRequiresSameOpenSeaAsTransport(t *testing.T) {
+	gs := navalMissionStateFixture()
+	mission := army.NavalMission{Kind: army.NavalMissionEscort, TargetFleetID: "transport-fleet"}
+	if ok, reason := gs.CanAssignNavalMission("war-fleet", mission); !ok {
+		t.Fatalf("aynı açık denizdeki nakliye filosuna escort atanabilmeli: %s", reason)
+	}
+	gs.Armies["transport-fleet"].RegionID = "other_sea"
+	if ok, reason := gs.CanAssignNavalMission("war-fleet", mission); ok {
+		t.Fatal("farklı denizdeki nakliye filosuna escort atanamamalı")
+	} else if reason == "" {
+		t.Fatal("farklı denizdeki escort hedefi için neden döndürülmeli")
 	}
 }
 
