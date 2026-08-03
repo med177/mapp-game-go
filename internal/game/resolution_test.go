@@ -179,6 +179,53 @@ func TestApplyEconomyTickAppliesBlockadeOutputAndBlockaderLoot(t *testing.T) {
 	}
 }
 
+func TestApplyEconomyTickTransfersRaidTaxAndProduction(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 4, Month: 6, PlayerFactionID: "raider",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"target": {ID: "target", Grain: 1000},
+			"raider": {ID: "raider", Grain: 1000},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"enemy": {
+				ID: "enemy", OwnerID: "target", Terrain: world.TerrainPlain,
+				BaseGoldIncome: 100, TaxRate: 100,
+				Satisfaction:    100,
+				BaseGrainOutput: 100, BaseIronOutput: 20, BaseTimberOutput: 10,
+				BaseStoneOutput: 8, BaseSpiceOutput: 6, BaseClothOutput: 4,
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"raider-army": {ID: "raider-army", OwnerID: "raider", RegionID: "enemy"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("raider", "target"): {FactionA: "raider", FactionB: "target", Stance: faction.StanceWar},
+		},
+		Raids: map[world.RegionID]*state.RaidState{
+			"enemy": {RegionID: "enemy", RaiderFactionID: "raider", Turn: 4},
+		},
+	}
+	applyEconomyTick(gs)
+
+	if got, want := gs.Factions["target"].Gold, 25; got != want {
+		t.Fatalf("hedef vergi gelirinin %%20'si kalmalıydı: got=%d want=%d", got, want)
+	}
+	if got, want := gs.Factions["raider"].Gold, 100; got != want {
+		t.Fatalf("yağmacı verginin %%80'ini almalıydı: got=%d want=%d", got, want)
+	}
+	if got, want := gs.Factions["target"].Iron, 10; got != want {
+		t.Fatalf("hedef demir üretimin %%50'sini kaybetmeli: got=%d want=%d", got, want)
+	}
+	if got, want := gs.Factions["raider"].Iron, 10; got != want {
+		t.Fatalf("yağmacı demirin %%50'sini almalı: got=%d want=%d", got, want)
+	}
+	if gs.Raids != nil {
+		if _, exists := gs.Raids["enemy"]; exists {
+			t.Fatal("uygulanan yağma kaydı ekonomi tick'i sonunda temizlenmeli")
+		}
+	}
+}
+
 func TestEffectiveArmyGrainUpkeepUsesMovementAndSiegeCoefficients(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

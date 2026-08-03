@@ -36,6 +36,34 @@ func conquestDecisionTestGame() *Game {
 	return &Game{gs: gs, renderer: &render.Renderer{}}
 }
 
+func TestCaptureUnfortifiedRegionDirectlyAnnexesHeldEnemyRegion(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.renderer = nil
+	g.gs.Armies["atk"].RegionID = "enemy_cap"
+	g.gs.Armies["def"].RegionID = "player_cap"
+
+	g.captureUnfortifiedRegion("atk", "enemy_cap")
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "player" {
+		t.Fatalf("tahkimatsız bölge doğrudan oyuncuya geçmeliydi, got=%s", got)
+	}
+	if len(g.pendingConquestDecisions) != 0 {
+		t.Fatalf("doğrudan fetih savaş sonrası karar kuyruğu açmamalıydı, got=%d", len(g.pendingConquestDecisions))
+	}
+}
+
+func TestCaptureUnfortifiedRegionRejectsHeldEnemyArmy(t *testing.T) {
+	g := conquestDecisionTestGame()
+	g.renderer = nil
+	g.gs.Armies["atk"].RegionID = "enemy_cap"
+
+	g.captureUnfortifiedRegion("atk", "enemy_cap")
+
+	if got := g.gs.Regions["enemy_cap"].OwnerID; got != "enemy" {
+		t.Fatalf("düşman ordusu varken bölge doğrudan ele geçirilmemeliydi, got=%s", got)
+	}
+}
+
 func TestQueueConquestDecisionForPlayersLastEnemyRegion(t *testing.T) {
 	g := conquestDecisionTestGame()
 

@@ -1310,7 +1310,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if r.keyJustPressed(ebiten.KeyF11) {
-		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+		r.toggleFullscreen()
 	}
 	if r.keyJustPressed(ebiten.KeyV) {
 		r.editVoronoiDebug = !r.editVoronoiDebug

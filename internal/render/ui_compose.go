@@ -85,6 +85,10 @@ func drawUIMutedText(screen *ebiten.Image, x, y float64, label string) {
 }
 
 func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color) {
+	drawUIKeyValueRowWithGap(screen, x, y, w, label, value, labelColor, valueColor, 26)
+}
+
+func drawUIKeyValueRowWithGap(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color, gap float64) {
 	if labelColor == nil {
 		labelColor = ColorGray
 	}
@@ -97,6 +101,7 @@ func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value strin
 	row.ValueColor = valueColor
 	row.LabelVariant = gameui.TextSmall
 	row.ValueVariant = gameui.TextMedium
+	row.Gap = gap
 	drawUIKeyValueWidget(screen, row)
 }
 

@@ -49,6 +49,14 @@ func (r *Renderer) updateCursorShape() {
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 		return
 	}
+	if r.regionTaskDialog.show {
+		if r.regionTaskDialogHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if r.confirmDialog.show {
 		if r.confirmDialogHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -190,6 +198,10 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhasePlayerTurn:
+		if r.currentRegionArmyTaskHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if r.inGameHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
@@ -266,6 +278,21 @@ func (r *Renderer) updateCursorShape() {
 	}
 
 	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+}
+
+func (r *Renderer) currentRegionArmyTaskHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.worldMap == nil || r.SelectedArmy == "" {
+		return false
+	}
+	attacker := r.gs.Armies[r.SelectedArmy]
+	if attacker == nil || attacker.OwnerID != string(r.gs.PlayerFactionID) || attacker.IsNaval {
+		return false
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	if r.worldMap.RegionAt(int(wx), int(wy)) != attacker.RegionID {
+		return false
+	}
+	return r.currentRegionArmyTaskIndicatorVisible(attacker, r.gs.Regions[attacker.RegionID])
 }
 
 // overlayPanelCursorHit cursor önceliğini input ve draw stack'iyle aynı sırada
@@ -355,7 +382,7 @@ func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
 	if hasThird && thirdBtn.Enabled && thirdBtn.HitTest(fx, fy) {
 		return true
 	}
-	return declineBtn.HitTest(fx, fy)
+	return declineBtn.Enabled && declineBtn.HitTest(fx, fy)
 }
 
 func (r *Renderer) warConfirmHovering(fx, fy float64) bool {

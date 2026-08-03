@@ -39,6 +39,8 @@ var (
 const (
 	confirmDialogW               = float32(460)
 	confirmDialogH               = float32(166)
+	navalContactDialogW          = float32(720)
+	navalContactDialogH          = float32(380)
 	confirmDialogBtnW            = float32(120)
 	confirmDialogBtnH            = float32(36)
 	selectedSiegePanelW          = 520.0
@@ -70,8 +72,10 @@ type Renderer struct {
 	mapBorderCache  mapBorderOverlayCache
 
 	// Kamera: dünya uzayında merkez noktası ve zoom
-	camX, camY float64
-	camScale   float64
+	camX, camY               float64
+	camScale                 float64
+	navalContactCameraBefore CameraState
+	navalContactCameraSaved  bool
 
 	// Sürükleme takibi
 	lastMX, lastMY int
@@ -164,6 +168,8 @@ type Renderer struct {
 	CurrentSettings Settings
 	LoadingMessage  string
 	LoadingProgress int
+	// LoadingScenarioPath yükleme ekranında gösterilecek senaryonun klasörüdür.
+	LoadingScenarioPath string
 
 	// Duraklama menüsü
 	pauseCursor int
@@ -232,6 +238,7 @@ type Renderer struct {
 	warConfirm          warConfirmState
 	battlePlan          battlePlanState
 	confirmDialog       confirmDialogState
+	regionTaskDialog    regionTaskDialogState
 	queuedConfirmDialog confirmDialogState
 	offerCursor         int
 
@@ -307,19 +314,36 @@ type Renderer struct {
 }
 
 type confirmDialogState struct {
-	show          bool
-	title         string
-	message       string
-	messageLines  []string
-	acceptLabel   string
-	declineLabel  string
-	thirdLabel    string
-	pendingAction InputAction
-	declineAction InputAction
-	declineActs   bool
-	thirdAction   InputAction
-	thirdDisabled bool
-	declineHook   func()
+	show            bool
+	title           string
+	message         string
+	messageLines    []string
+	acceptLabel     string
+	declineLabel    string
+	thirdLabel      string
+	pendingAction   InputAction
+	declineAction   InputAction
+	declineActs     bool
+	thirdAction     InputAction
+	thirdDisabled   bool
+	declineDisabled bool
+	declineHook     func()
+	navalContact    *navalContactDialogState
+}
+
+type navalContactDialogState struct {
+	playerArmyID     army.ArmyID
+	opponentArmyID   army.ArmyID
+	seaID            world.RegionID
+	opponentDecision state.NavalContactDecision
+}
+
+type regionTaskDialogState struct {
+	show    bool
+	title   string
+	message string
+	buttons [4]gameui.Button
+	actions [4]InputAction
 }
 
 type CameraState struct {
@@ -628,6 +652,7 @@ func (r *Renderer) ensureWorldMap() {
 
 // resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
 func (r *Renderer) resetCamera() {
+	r.navalContactCameraSaved = false
 	r.camScale = initialCameraScale()
 	r.camX = float64(WorldW) / 2
 	// Haritanın üst kenarını ekranın üstüne hizala.
@@ -686,6 +711,53 @@ func clampCameraCenter(camX, camY, scale float64) (float64, float64) {
 		camY = math.Max(minY, math.Min(maxY, camY))
 	}
 	return camX, camY
+}
+
+func (r *Renderer) updateNavalContactCamera() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	contact := r.gs.PendingNavalContact
+	sea := (*world.Region)(nil)
+	if contact != nil {
+		sea = r.gs.Regions[contact.SeaRegionID]
+	}
+	if contact == nil || sea == nil || !sea.IsSea || r.camScale <= 0 {
+		if r.navalContactCameraSaved {
+			r.camX = r.navalContactCameraBefore.X
+			r.camY = r.navalContactCameraBefore.Y
+			r.camScale = r.navalContactCameraBefore.Scale
+			r.navalContactCameraSaved = false
+		}
+		return
+	}
+	if !r.navalContactCameraSaved {
+		r.navalContactCameraBefore = r.CameraSnapshot()
+		r.navalContactCameraSaved = true
+	}
+
+	modalY, modalH := 0.0, 0.0
+	if r.confirmDialog.navalContact != nil {
+		modal := buildConfirmDialogModalFor(r.confirmDialog)
+		modalY = modal.Panel.Rect.Y
+		modalH = modal.Panel.Rect.H
+	}
+	targetY := navalContactCameraTargetY(ScreenHeight, modalY+modalH)
+	_, anchorY := r.regionWorldPos(sea)
+	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
+	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
+	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
+}
+
+func navalContactCameraTargetY(screenH, modalBottom float64) float64 {
+	targetY := screenH * 0.72
+	if targetY < modalBottom+40 {
+		targetY = modalBottom + 40
+	}
+	if targetY > screenH-40 {
+		targetY = screenH - 40
+	}
+	return targetY
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
@@ -797,6 +869,10 @@ func (r *Renderer) SetLoadingProgress(progress int) {
 	r.LoadingProgress = progress
 }
 
+func (r *Renderer) SetLoadingScenarioPath(path string) {
+	r.LoadingScenarioPath = path
+}
+
 // ReloadGameState yükleme sonrası yeni state ve yeni worldmap ile günceller.
 // ActiveScenarioPath aktif senaryonun klasör yolu; asset yükleyiciler buradan türetir.
 var ActiveScenarioPath string
@@ -808,6 +884,7 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.gs = gs
 	r.editSuccessorDropdown.Close()
+	r.LoadingScenarioPath = gs.ScenarioPath
 	if gs.ScenarioPath != "" {
 		ActiveScenarioPath = gs.ScenarioPath
 		// Senaryo değişince asset cache'lerini sıfırla
@@ -841,6 +918,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.clearSelectedSettlement()
 	r.ClearAITurnStatus()
 	r.confirmDialog = confirmDialogState{}
+	r.regionTaskDialog = regionTaskDialogState{}
 	r.queuedConfirmDialog = confirmDialogState{}
 	r.battleReport = battleReportState{}
 	r.queuedBattleReport = battleReportState{}
@@ -999,7 +1077,7 @@ func (r *Renderer) armyPanelTooltipActive() bool {
 	}
 	if r.showHistoricalEvent || r.showCommanderPanel || r.showImperialPanel || r.showAIDiagnostic ||
 		r.showDiplomacy || r.showTech || r.showTrade || r.showEventCodex || r.showVictoryDetail ||
-		r.eventDetail != "" || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show ||
+		r.eventDetail != "" || r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show ||
 		r.battlePlan.show || r.battleReport.show {
 		return false
 	}
@@ -1203,7 +1281,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	if r.gs.Phase == state.PhaseLoading {
 		r.menuTick++
-		DrawLoadingScreen(screen, r.LoadingMessage, r.LoadingProgress, r.menuTick)
+		DrawLoadingScreen(screen, r.LoadingMessage, r.LoadingProgress, r.menuTick, r.LoadingScenarioPath)
 		return
 	}
 
@@ -1262,12 +1340,15 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	r.ensureWorldMap()
+	r.updateNavalContactCamera()
 
 	// Seçili bölge, atanmış merchant rotasının hedef denizi veya donanmanın
 	// mevcut deniz bölgesini vurgula. Rota hedefi, oyuncu başka bir bölge
 	// seçene kadar seçili bölgeden önceliklidir.
 	highlightRegion := world.RegionID(r.SelectedRegion)
-	if r.merchantRouteHighlight != "" && r.gs.Regions[r.merchantRouteHighlight] != nil {
+	if contact := r.gs.PendingNavalContact; contact != nil && r.gs.Regions[contact.SeaRegionID] != nil {
+		highlightRegion = contact.SeaRegionID
+	} else if r.merchantRouteHighlight != "" && r.gs.Regions[r.merchantRouteHighlight] != nil {
 		highlightRegion = r.merchantRouteHighlight
 	} else if r.SelectedArmy != "" {
 		if a, ok := r.gs.Armies[r.SelectedArmy]; ok {
@@ -1320,6 +1401,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 6. Ordu ikonları (ticaret modunda gizlenir)
 	if r.mapMode != MapModeTrade {
 		r.drawArmies(screen, armyPositions)
+		r.drawPendingNavalContactHighlight(screen, armyPositions)
+		r.drawCurrentRegionArmyTaskTarget(screen, armyPositions)
+		r.drawArmyTaskStatusBadges(screen, armyPositions)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		// Debug paneli ordu karelerinin altında kalmamalı; harita işaretleri
@@ -1365,6 +1449,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
 		drawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab, r.armyPanelTooltipActive())
+		r.drawArmyTaskStatusHoverTooltip(screen)
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
@@ -1393,7 +1478,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 9. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
-	if r.confirmDialog.show {
+	if r.regionTaskDialog.show {
+		r.drawRegionTaskDialog(screen)
+	} else if r.confirmDialog.show {
 		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
@@ -1536,7 +1623,7 @@ func (r *Renderer) tradeOverlayVisible() bool {
 	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
 		return false
 	}
-	if r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
+	if r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -1927,6 +2014,39 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 	}
 }
 
+// drawCurrentRegionArmyTaskTarget, düşman toprağında bekleyen seçili ordunun
+// bulunduğu bölgeye yeni görev verilebildiğini harita üzerinde gösterir.
+func (r *Renderer) drawCurrentRegionArmyTaskTarget(screen *ebiten.Image, positions []armyIconPos) {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" {
+		return
+	}
+	attacker := r.gs.Armies[r.SelectedArmy]
+	if attacker == nil {
+		return
+	}
+	target := r.gs.Regions[attacker.RegionID]
+	if !r.currentRegionArmyTaskIndicatorVisible(attacker, target) {
+		return
+	}
+	for _, position := range positions {
+		if position.ArmyID != attacker.ID {
+			continue
+		}
+		gold := color.RGBA{255, 214, 82, 235}
+		vector.StrokeCircle(screen, position.X, position.Y, 24, 3, gold, true)
+		badgeX, badgeY := currentRegionArmyTaskBadgeCenter(position.X, position.Y)
+		vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{82, 48, 12, 245}, true)
+		if !gameui.DrawIcon(screen, gameui.IconSword, float64(badgeX-6), float64(badgeY-6), 12, gold) {
+			DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-5, FaceSmall, gold)
+		}
+		return
+	}
+}
+
+func currentRegionArmyTaskBadgeCenter(cx, cy float32) (float32, float32) {
+	return cx - 16, cy + 16
+}
+
 // navalLandMoveTargetSettlement, donanma kara hedefi göstergesinin hangi
 // settlement tipine bağlanacağını belirler. Taşıyıcıda kara ordusu yoksa
 // yalnız liman; ordu varsa liman docking ve merkez settlement çıkarma hedefidir.
@@ -2103,6 +2223,9 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {
+		if r.gs.ArmyHiddenFrom(a, r.gs.PlayerFactionID) {
+			continue
+		}
 		key, sx, sy, ok := r.armyDisplayGroup(a)
 		if !ok {
 			continue
@@ -2127,6 +2250,8 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		}
 		if allNaval {
 			iconStep = navalIconStep
+		} else {
+			iconStep = r.armyIconStepForTaskStatus(aids, iconStep)
 		}
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
@@ -2196,15 +2321,21 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		baseX := r.armyIconBuf[idxs[0]].X
 		n := float32(len(idxs))
 		coordStep := armyIconStep
+		hasTaskStatus := false
 		allNaval := true
 		for _, idx := range idxs {
-			if a := r.gs.Armies[r.armyIconBuf[idx].ArmyID]; a == nil || !a.IsNaval {
+			a := r.gs.Armies[r.armyIconBuf[idx].ArmyID]
+			if a == nil || !a.IsNaval {
 				allNaval = false
-				break
+			}
+			if armyTaskStatusVisible(r.gs, a) {
+				hasTaskStatus = true
 			}
 		}
 		if allNaval {
 			coordStep = navalIconStep
+		} else if hasTaskStatus {
+			coordStep = armyTaskStatusIconStep
 		}
 		startX := baseX - (n-1)*coordStep/2
 		for j, idx := range idxs {
@@ -2538,8 +2669,47 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	}
 }
 
+// drawPendingNavalContactHighlight, karar modalı açıkken temasın hangi deniz
+// bölgesinde olduğunu haritada kalıcı bir odakla gösterir. Filo ikonları aynı
+// anchor'da üst üste gruplanmışsa bile iki temas tarafı ayrı halkalarla
+// görünür kalır.
+func (r *Renderer) drawPendingNavalContactHighlight(screen *ebiten.Image, positions []armyIconPos) {
+	if r == nil || r.gs == nil || r.gs.PendingNavalContact == nil {
+		return
+	}
+	contact := r.gs.PendingNavalContact
+	sea := r.gs.Regions[contact.SeaRegionID]
+	if sea == nil || !sea.IsSea {
+		return
+	}
+	seaX, seaY := r.regionScreenPos(sea)
+
+	for _, pos := range positions {
+		if pos.ArmyID != contact.PlayerArmyID && pos.ArmyID != contact.AttackerArmyID && pos.ArmyID != contact.DefenderArmyID {
+			continue
+		}
+		col := color.RGBA{112, 190, 244, 230}
+		if pos.ArmyID != contact.PlayerArmyID {
+			col = color.RGBA{238, 112, 96, 230}
+		}
+		vector.StrokeCircle(screen, pos.X, pos.Y, 19, 2, col, true)
+	}
+	vector.FillCircle(screen, float32(seaX), float32(seaY), 25, color.RGBA{214, 70, 54, 42}, true)
+	vector.StrokeCircle(screen, float32(seaX), float32(seaY), 31, 2.5, color.RGBA{255, 205, 78, 245}, true)
+	vector.StrokeCircle(screen, float32(seaX), float32(seaY), 39, 1.5, color.RGBA{214, 70, 54, 180}, true)
+}
+
 // drawNavalPriorityBadges, tüm filo marker'larından sonra çağrılan ön-plan
 // geçişidir. Bonus rozetleri komşu donanma ikonlarının altında kalmaz.
+func drawGoldPlusBadge(screen *ebiten.Image, cx, cy float32, label string) {
+	badgeRect := merchantTradeBonusBadgeRect(cx, cy)
+	badgeX := float32(badgeRect.X + badgeRect.W/2)
+	badgeY := float32(badgeRect.Y + badgeRect.H/2)
+	vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{35, 27, 12, 245}, false)
+	vector.FillCircle(screen, badgeX, badgeY, 7.5, color.RGBA{244, 195, 52, 255}, true)
+	DrawTextCentered(screen, label, float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})
+}
+
 func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, cx, cy float32) {
 	if r == nil || r.gs == nil || a == nil || !a.IsNaval {
 		return
@@ -2565,12 +2735,7 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 		}
 	}
 	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
-		badgeRect := merchantTradeBonusBadgeRect(cx, cy)
-		badgeX := float32(badgeRect.X + badgeRect.W/2)
-		badgeY := float32(badgeRect.Y + badgeRect.H/2)
-		vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{35, 27, 12, 245}, false)
-		vector.FillCircle(screen, badgeX, badgeY, 7.5, color.RGBA{244, 195, 52, 255}, true)
-		DrawTextCentered(screen, "+"+itoa(bonus), float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})
+		drawGoldPlusBadge(screen, cx, cy, "+"+itoa(bonus))
 	}
 }
 

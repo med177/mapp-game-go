@@ -113,6 +113,7 @@ func TestExecuteMoveCreatesContactBeforeSiegeOnFortifiedTargetWithDefender(t *te
 
 func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 	gs := aiSiegeTestState(false)
+	gs.Regions["player_second"] = &world.Region{ID: "player_second", OwnerID: "player"}
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
 		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
 	}
@@ -132,9 +133,15 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 		if len(gs.DiplomaticOffers) == 0 {
 			continue
 		}
-		offer := gs.DiplomaticOffers[0]
-		if offer.Action != string(diplomacy.ActionProposeSurrender) || offer.RegionID != "fort" || offer.ToFactionID != "player" {
-			t.Fatalf("AI yanlış teslimiyet teklifi üretti: %+v", offer)
+		foundSurrender := false
+		for _, offer := range gs.DiplomaticOffers {
+			if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.RegionID == "fort" && offer.ToFactionID == "player" {
+				foundSurrender = true
+				break
+			}
+		}
+		if !foundSurrender {
+			continue
 		}
 		focused := false
 		for _, step := range steps {
@@ -153,6 +160,7 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 
 func TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer(t *testing.T) {
 	gs := aiSiegeTestState(false)
+	gs.Regions["player_second"] = &world.Region{ID: "player_second", OwnerID: "player"}
 	gs.Relations[faction.RelationKey("ai_1", "player")].Score = -100
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
 		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
@@ -178,6 +186,27 @@ func TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer(t *testing.T) {
 		return
 	}
 	t.Fatal("aynı savaşta barış ve kuşatma teslimiyeti tekliflerinin birlikte üretildiği tur bulunamadı")
+}
+
+func TestAILastRegionSiegeDoesNotOfferSurrender(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
+	}
+	gs.Armies["ai_army"].RegionID = "fort"
+	gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "player", RegionID: "fort", MovePoints: 0, MaxMovePoints: 2,
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+
+	var steps []TurnStep
+	aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.RegionID == "fort" {
+			t.Fatalf("son toprağa teslimiyet teklifi üretilmemeliydi: %+v", offer)
+		}
+	}
 }
 
 func TestAISiegeSurrenderRetryCooldownIsRegionScoped(t *testing.T) {

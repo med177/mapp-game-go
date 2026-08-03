@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"math"
 	"sync"
@@ -20,6 +21,8 @@ type menuItem struct {
 var (
 	mainMenuBackgroundOnce sync.Once
 	mainMenuBackground     *ebiten.Image
+	mainMenuGradientImage  *ebiten.Image
+	mainMenuGradientWidth  int
 )
 
 func buildMainMenuButtons(hasSave bool, hasAutoSave bool, editModeEnabled bool) []gameui.Button {
@@ -94,7 +97,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	}
 
 	// Alt bilgi
-	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Menü seçeneğini tıklayarak devam et", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Versiyon 1.0.0	Alfa", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func mainMenuBackgroundImage() *ebiten.Image {
@@ -116,26 +119,34 @@ func drawMainMenuBackground(screen, background *ebiten.Image) {
 }
 
 func drawMainMenuFocusGradient(screen *ebiten.Image) {
-	const (
-		gradientSteps    = 40
-		maxGradientAlpha = 128
-	)
-
-	// Kırmızıyla işaretlenen merkezi alan yaklaşık menü genişliğinde tutulur;
-	// iki kenarda alpha sıfıra yaklaşarak arka planla yumuşakça birleşir.
-	halfWidth := math.Min(240, math.Max(160, ScreenWidth*0.17))
-	startX := ScreenWidth/2 - halfWidth
-	stepWidth := halfWidth * 2 / gradientSteps
-	for i := 0; i < gradientSteps; i++ {
-		centerDistance := math.Abs((float64(i)+0.5)/gradientSteps*2 - 1)
-		fade := 1 - centerDistance*centerDistance
-		alpha := uint8(float64(maxGradientAlpha) * fade)
-		if alpha == 0 {
-			continue
-		}
-		x := startX + float64(i)*stepWidth
-		vector.FillRect(screen, float32(x), 0, float32(stepWidth+1), float32(ScreenHeight), color.RGBA{0, 0, 0, alpha}, false)
+	gradientWidth := int(math.Round(ScreenWidth))
+	if gradientWidth <= 0 {
+		return
 	}
+	if mainMenuGradientImage == nil || mainMenuGradientWidth != gradientWidth {
+		const maxGradientAlpha = 170
+
+		// Tek piksellik yatay alfa dokusu, dikdörtgen şeritlerin oluşturduğu
+		// çizgileri ortadan kaldırır. Görsel ekran yüksekliğine ölçeklenir.
+		gradient := image.NewRGBA(image.Rect(0, 0, gradientWidth, 1))
+		halfWidth := math.Min(240, math.Max(160, ScreenWidth*0.17))
+		for x := 0; x < gradientWidth; x++ {
+			distance := math.Abs((float64(x) + 0.5 - ScreenWidth/2) / halfWidth)
+			if distance >= 1 {
+				continue
+			}
+			fade := 1 - distance*distance
+			alpha := uint8(float64(maxGradientAlpha) * fade)
+			gradient.SetRGBA(x, 0, color.RGBA{0, 0, 0, alpha})
+		}
+		mainMenuGradientImage = ebiten.NewImageFromImage(gradient)
+		mainMenuGradientWidth = gradientWidth
+	}
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(ScreenWidth/float64(gradientWidth), ScreenHeight)
+	op.Filter = ebiten.FilterLinear
+	screen.DrawImage(mainMenuGradientImage, op)
 }
 
 const (
@@ -252,7 +263,7 @@ func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool, input gam
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyF11) {
-		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+		r.toggleFullscreen()
 	}
 	return InputAction{}
 }

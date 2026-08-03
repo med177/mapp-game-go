@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 )
 
 func TestFactionSelectBackgroundLoadsFromScenarioDirectory(t *testing.T) {
@@ -28,6 +29,18 @@ func TestFactionSelectBackgroundLoadsFromScenarioDirectory(t *testing.T) {
 	}
 	if gotW, gotH := background.Bounds().Dx(), background.Bounds().Dy(); gotW != 1408 || gotH != 768 {
 		t.Fatalf("senaryo arka planı boyutu yanlış: got=%dx%d want=1408x768", gotW, gotH)
+	}
+}
+
+func TestFactionCardFlagRectStaysUnderTitleInsideCard(t *testing.T) {
+	card := gameui.Rect{X: 100, Y: 200, W: 350, H: 138}
+	flag := factionCardFlagRect(card)
+
+	if flag.X+flag.W > card.X+card.W || flag.Y+flag.H > card.Y+card.H {
+		t.Fatalf("bayrak kartın dışına taşıyor: card=%+v flag=%+v", card, flag)
+	}
+	if flag.Y < card.Y+factionCardFlagTop {
+		t.Fatalf("bayrak başlık altı anchor'ından önce başlıyor: card=%+v flag=%+v", card, flag)
 	}
 }
 

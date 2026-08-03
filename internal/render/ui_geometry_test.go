@@ -518,7 +518,7 @@ func assertScreenStacksInside(t *testing.T, screenW, screenH float64) {
 	if factionGrid.X < 0 || factionGrid.Y < 0 || factionGrid.X+factionGrid.W > screenW || factionGrid.Y+factionGrid.H > screenH {
 		t.Fatalf("faction grid outside %.0fx%.0f viewport: %+v", screenW, screenH, factionGrid)
 	}
-	settingsStack := centeredStackRect(6, 500, 56, 4, 40)
+	settingsStack := centeredStackRect(settingsRowCount, 500, 56, 4, 40)
 	if settingsStack.X < 0 || settingsStack.Y < 0 || settingsStack.X+settingsStack.W > screenW || settingsStack.Y+settingsStack.H > screenH {
 		t.Fatalf("settings stack outside %.0fx%.0f viewport: %+v", screenW, screenH, settingsStack)
 	}

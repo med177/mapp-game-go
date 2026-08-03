@@ -18,6 +18,21 @@ temas state'leridir ve `json:"-"` ile kayda girmez. Temas kararı iki taraf içi
 de tamamlandığında state temizlenir; kara temasında ordular karar verilene kadar
 hedef bölgeye taşınmaz.
 
+Temas sonrası `Pozisyonu Koru` seçen oyuncu ordusu düşman bölgesinde kalabilir.
+Hareket puanı bitmiş olsa bile aynı bölge görevleri için input kilidi kaldırılır:
+tahkimli bölgede mevcut kuşatma kararları, tahkimatsız bölgede
+`ActionCaptureRegion` yalnız hedefte düşman ordusu yoksa çalışır. Düşman ordusu
+varsa aynı-bölge kara muharebesi planı açılır. `captureUnfortifiedRegion()`
+doğrudan ortak fetih ve liman tahliye yordamını kullanır; savaş kaydı, düşman
+ordularının çıkarılması ve fraksiyon eliminasyonu ayrı bir sahiplik kopyasıyla
+uygulanmaz. `Raids` kalıcı kampanya state'inde bölge başına tur kaydı tutar ve
+ekonomi çözümlemesine ertelenmiş vergi/üretim transferi olarak uygulanır;
+`RaidState.RaiderArmyID` görev rozetinin doğru orduya bağlanmasını sağlar ve
+`RaidLootPreview()` ekonomi öncesi kazancı ortak hesap olarak sunar.
+`Army.InAmbush` save/load ile korunur; pusu yalnız hedefe giren düşman ordusunun
+özel temas seçiminde görünür hale gelir. `PendingLandContact.AmbushArmyID`
+geçici olarak temas modalının geri çekilme/pozisyon kurallarını taşır.
+
 `world.Region.SuccessorFactionID` senaryo metadata'sıdır ve compact save'de `sf`
 delta alanıyla korunur. Böylece edit mode ataması, fetih sonrası özgürleştirme ve
 save/load aynı bölge state'ini kullanır. Özgürleştirme runtime'da ardıl fraksiyonun

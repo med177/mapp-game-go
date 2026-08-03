@@ -20,6 +20,12 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
 `internal/ai/grain_procurement.go`
 
+AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir:
+deterministik görev planı yağma veya uygun arazide pusu kurar. Pusu orduları AI
+hedef seçimi ve normal bölge savunucu taramasında gizlidir; düşman ordu bölgeye
+girdiğinde `SelectAmbushDefender` ile özel temas tetiklenir. AI pusu tarafının
+çatışma bonusu da oyuncu ile aynı arazi `AmbushBonus` değerinden gelir.
+
 ## Genel Yapı
 
 AI diplomasi kapanışında `PeaceAssessment` savaş yorgunluğu ile altın, tahıl,
@@ -899,7 +905,7 @@ geçidinde ve kuyruk çözümünde de yeniden doğrulanır.
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
 - bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür. Oyuncu bir teklifi reddettiğinde aktör-hedef-aksiyon bazında üç tur cooldown uygulanır; ardından aynı zar mekanizması %35 tekrar deneme şansı verir. Ret ayrıca ilişkiyi `-3` düşürür. Desteksiz dış ittifakların relation skoru ise artık her tur otomatik yükselmez; destek yoksa yavaşça aşınır.
 - Aynı oyuncuyla savaşta barış ve kuşatma teslimiyeti koşulları birlikte oluşursa önce barış teklifini kuyruğa alır; barış kabul edilirse geçersiz teslimiyet teklifi diplomasi kuyruğundan temizlenir, ret edilirse teslimiyet sonraki karar olarak kalır.
-- aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa veya son kara toprağındaysa oyuncuya teslim olmayı teklif eder. Teklif `RegionID` ile aktif kuşatmaya bağlanır, normal diplomasi elçi kotasını tüketmez ve ret cooldown'u bölge bazında tutulur. Oyuncu kabulünde savunmacı ordu geri çekilir; AI'ın son toprağı teslim oluyorsa game katmanı otomatik vassallık uygular.
+- aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa oyuncuya teslim olmayı teklif eder. Son kara toprağı için teklif üretilmez; dışarıdan kalan teklif de game katmanındaki ortak çözümleyicide kabul edilmez. Teklif `RegionID` ile aktif kuşatmaya bağlanır, normal diplomasi elçi kotasını tüketmez ve ret cooldown'u bölge bazında tutulur. Oyuncu kabulünde savunmacı ordu geri çekilir.
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 

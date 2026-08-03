@@ -23,7 +23,14 @@ func ResolveLandContactDecision(gs *state.GameState, contact *state.LandContact)
 			return
 		}
 		chosen := state.LandContactClash
-		if current.MovePoints > 0 && gs.LandContactRetreatRegion(current, contact.AttackerFromRegionID) != "" && aiLandContactShouldRetreat(gs, current, opponent) {
+		// Pusuya giren hareketli tarafın geri çekilme hakkı yoktur; temas
+		// otomatik olarak çatışma kararına gider.
+		if contact.AmbushArmyID != "" && armyID == contact.AttackerArmyID {
+			*decision = state.LandContactClash
+			return
+		}
+		canRetreat := current.MovePoints > 0 || contact.AmbushArmyID == current.ID
+		if canRetreat && gs.LandContactRetreatRegion(current, contact.AttackerFromRegionID) != "" && aiLandContactShouldRetreat(gs, current, opponent) {
 			chosen = state.LandContactWithdraw
 		}
 		*decision = chosen
@@ -82,5 +89,8 @@ func ResolveLandContactWithoutBattle(gs *state.GameState, contact *state.LandCon
 			defender.DockedSettlementID = ""
 			defender.MovePoints = maxInt(0, defender.MovePoints-1)
 		}
+	}
+	if ambusher := gs.Armies[contact.AmbushArmyID]; ambusher != nil {
+		ambusher.InAmbush = false
 	}
 }

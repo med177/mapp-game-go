@@ -7,6 +7,87 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-03: Kuşatılan devletin son kara toprağı için teslimiyet teklifi artık
+  kabul edilmiyor. AI bu durumda teklif üretmiyor; stale veya oyuncunun AI'ya
+  gönderdiği teklif de merkezi `applySurrenderOffer` doğrulamasında reddedilip
+  kuşatmayı ve bölge sahipliğini koruyor. Regression: `TestAcceptedLastRegionSiegeSurrenderIsRejected`,
+  `TestPlayerCanSendSiegeSurrenderOfferAndAIRejectsLastRegion`,
+  `TestAILastRegionSiegeDoesNotOfferSurrender`; doğrulama: hedefli paket testleri
+  geçti, `go test ./...` mevcut Norway/Sweden capital settlement verisi nedeniyle
+  senaryo integrity testlerinde başarısız.
+
+- 2026-08-03: Üst oyuncu HUD'unda Gelir/Altın sütunu sağa yaslanarak Kereste/Taş
+  değerleriyle örtüşmesi giderildi. Kaynak, gelir, altın, ambar ve askeri güç
+  değerleri Türkçe binlik ayıracıyla (`10.000`) gösteriliyor; formatlı uzun
+  değerlerin satır içinde taşmaması için ortak KeyValue satırında HUD'a özel
+  sıkı aralık kullanılıyor. Regression: `TestFormatNumberTR`,
+  `TestTopResourceHUDColumnsKeepIncomeSeparate`; doğrulama:
+  `go test ./internal/render ./internal/ui`.
+
+- 2026-08-03: Filo teması beklenirken kamera dikey olarak yeniden çerçeveleniyor;
+  gerçek deniz anchor'ı modalın altında alt-orta alana taşınıyor. Böylece sahte
+  ikinci bir marker yerine temas eden gerçek filo ikonları, komutan portreleri
+  ve temas halkası görünür kalıyor. Temas kapandığında önceki kamera konumu
+  geri yükleniyor. Regression: `TestNavalContactCameraTargetLeavesMapBelowModal`;
+  doğrulama: `go test ./internal/render -run 'TestNavalContact' -count=1`.
+
+- 2026-08-03: Filo temas kartlarında `Birim`, `Saldırı / Savunma`, `Moral`,
+  `Hareket` ve `Görev / Komutan` değerleri ayrıştırıldı. Toplam `GÜÇ`, kartın
+  en altında ayraçlı ve daha büyük vurgu alanında gösteriliyor.
+
+- 2026-08-03: Açık deniz filo temas modalı, genel karar akışını koruyarak iki
+  filonun devlet, birim/güç, savunma/moral, hareket hakkı, görev ve komutan
+  durumlarını karşılaştırmalı kartlarda gösteriyor. Modal üst HUD/`HAMLELER`
+  panelinin altına taşındı; temas denizi haritada seçili kalıyor ve iki filo
+  marker'ı temas halkasıyla vurgulanıyor. Geri çekil düğmesinin mevcut hareket
+  hakkı koşulu korunuyor. Regression: `TestNavalContactDialogShowsFleetComparisonAndUpperPlacement`,
+  `TestNavalContactWithdrawButtonCanBeDisabled`; doğrulama: `go test ./...`.
+
+- 2026-08-03: Temas sonrası düşman bölgesinde `Pozisyonu Koru` seçen oyuncu
+  ordusu artık aynı bölgeye sağ tıklayarak görev alabiliyor. Tahkimli hedefte
+  mevcut `Kuşatma Kararı` açılıyor; tahkimatsız ve savunma ordusu olmayan
+  hedefte görev modalından `Ele Geçir` seçilince bölge doğrudan oyuncu toprağına
+  katılıyor. Düşman ordusu varsa `Kara Muharebesi` planı açılıyor. Görevler için
+  genel onay penceresinden ayrılmış dört seçenekli modal kullanılıyor; `Vazgeç`
+  ile aksiyon almadan kapanıyor ve buton ikonları göreve göre anlamlandırılıyor.
+  Aynı-bölge görev göstergesi seçili ordu üzerinde altın görev rozetiyle
+  çiziliyor; bölge üzerinde cursor parmağa dönüyor. Pusu ve aktif yağma için
+  markerın sağ-üstüne görev rozetleri eklendi; hover tooltip'i pusu etkisini
+  veya yağmanın gerçek altın/kaynak kazancını gösteriyor. Rozet taşıyan yan yana
+  kara marker gruplarında aralık rozetlerin çakışmaması için genişletildi.
+  Aynı görev menüsüne `Yağmala` ve `Pusu` da eklendi. Yağma bölge başına turda
+  bir kez uygulanıp ekonomi tick'inde verginin %80'ini ve üretimin %50'sini
+  yağmalayan devlete aktarır. Pusu ordusu düşman görünürlüğünden çıkarılır;
+  hedefe girişte özel kara teması açılır ve hareketli tarafın geri çekilmesi
+  ile `Pozisyonu Koru` seçimi kapatılır. AI aynı görev ve görünürlük kurallarını
+  kullanır. Regression:
+  `TestCurrentRegionTaskOpensSiegeForFortifiedHeldEnemyRegion`,
+  `TestCurrentRegionTaskOffersDirectCaptureForUnfortifiedHeldEnemyRegion`,
+  `TestCurrentRegionTaskOpensBattlePlanWhenUnfortifiedRegionHasEnemyArmy`,
+  `TestCaptureUnfortifiedRegionDirectlyAnnexesHeldEnemyRegion`; doğrulama:
+  `go test ./internal/game ./internal/render ./internal/state ./internal/ai -count=1`.
+
+- 2026-08-03: Senaryo yüklenirken gösterilen yükleme ekranına da seçilen senaryonun
+  `scenario_bg.png` arka planı eklendi. Yeni senaryo yolu yükleme süresince renderer
+  state'inde taşınıyor; asset yoksa koyu fallback korunuyor. Regression:
+  `TestLoadingBackgroundLoadsFromScenarioDirectory`; doğrulama:
+  `go test ./internal/render -run TestLoadingBackgroundLoadsFromScenarioDirectory -count=1`.
+
+- 2026-08-03: Yükleme ekranındaki spinner, mesaj, ilerleme çubuğu, yüzde ve
+  bekleme metni ekranın alt-orta bölümüne taşındı; üst dekoratif çizgiler ve
+  yükleme ilerleme mantığı korunuyor.
+
+- 2026-08-03: Fraksiyon seçim kartlarına, devlet başlığının altında sağ tarafa
+  senaryoya ait bayraklar eklendi. Kartın tıklanabilir alanı korunurken metin
+  genişliği bayrak alanına göre kırpılıyor; eksik bayraklarda mevcut baş harf
+  fallback'i kullanılıyor. Regression: `TestFactionCardFlagRectStaysUnderTitleInsideCard`;
+  doğrulama: `go test ./internal/render -run 'Test(FactionCardFlagRect|FactionSelectBackground|SelectionScreensRenderSmoke)' -count=1`.
+
+- 2026-08-03: Ayarlar ekranına `Tam Ekran`/`Pencereli` ekran modu eklendi. Seçim
+  anında uygulanıyor, `saves/settings.json` içine kaydediliyor ve sonraki açılışta
+  yükleniyor; F11 kısayolu da aynı ayarla senkron kalıyor. Doğrulama:
+  `go test ./internal/render ./internal/game`.
+
 - 2026-08-03: Yeni Oyun → Senaryo Seç akışından sonra açılan oynanabilir devlet
   seçim ekranı, seçilen senaryo dizinindeki `scenario_bg.png` görselini arka plan
   olarak kullanıyor. Görsel cover ölçekleniyor, okunabilirlik için hafif overlay
@@ -17,8 +98,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-08-03: Ana menüye `assets/images/main_menu_bg.png` arka planı eklendi.
   Görsel bir kez cache'leniyor, farklı ekran oranlarında cover ölçekleme ile
   menünün arkasında kalıyor; canlı renkler korunurken menü ekseninde siyah,
-  kenarlara doğru saydamlaşan focus gradient'i kullanılıyor. Yükleme başarısız
-  olursa koyu fallback korunuyor.
+  kenarlara doğru saydamlaşan focus gradient'i kullanılıyor. Aynı görsel senaryo
+  seçim ekranında da kartların arkasında hafif overlay ile kullanılıyor. Yükleme
+  başarısız olursa koyu fallback korunuyor.
   Doğrulama: `go test ./internal/render -run 'Test(MainMenu|SelectionScreensRenderSmoke)' -count=1`.
 
 - 2026-08-03: 1300 AI'nin aktif savaşta eksik üretim kaynağı nedeniyle üretimi

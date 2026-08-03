@@ -4440,7 +4440,8 @@
     "name": "Norway",
     "name_tr": "Norveç",
     "terrain": "mountain",
-    "owner_id": "denmark_kingdom",
+    "owner_id": "norway_kingdom",
+    "successor_faction_id": "norway_kingdom",
     "neighbors": [
       "western_baltic_sea",
       "norwegian_sea",
@@ -4473,7 +4474,8 @@
     "name": "Sweden",
     "name_tr": "İsveç",
     "terrain": "forest",
-    "owner_id": "denmark_kingdom",
+    "owner_id": "sweden_kingdom",
+    "successor_faction_id": "sweden",
     "neighbors": [
       "baltic_sea",
       "gulf_of_finland",

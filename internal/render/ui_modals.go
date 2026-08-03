@@ -43,21 +43,47 @@ func eventDetailHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box
 }
 
 func buildConfirmDialogModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, float64(confirmDialogW), float64(confirmDialogH), gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	return buildConfirmDialogModalFor(confirmDialogState{})
+}
+
+func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
+	modalW := float64(confirmDialogW)
+	modalH := float64(confirmDialogH)
+	anchor := gameui.AnchorMiddle
+	if state.navalContact != nil {
+		modalW = float64(navalContactDialogW)
+		modalH = float64(navalContactDialogH)
+		anchor = gameui.AnchorTop
+	}
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, modalW, modalH, gameui.AnchorCenter, anchor, 0, 0)
+	if state.navalContact != nil {
+		// Üst HUD/"Hamleler" kartının altında kalır; temas denizi modalın
+		// altında görünür ve merkezdeki map marker'ı kapatılmaz.
+		_, hudY, _, hudH := turnTechHudRect()
+		// `drawAITurnOverlay` HAMLELER kartı HUD'ın altında 40 px boşlukla
+		// başlar ve 180 px sürer; temas modalı bu kartın altına yerleşir.
+		y := float64(hudY + hudH + 40 + 180 + 12)
+		if y+modalH > ScreenHeight-24 {
+			y = ScreenHeight - modalH - 24
+		}
+		rect.Y = y
+	}
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
 func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.Button, gameui.Button, bool) {
-	modal := buildConfirmDialogModal()
+	modal := buildConfirmDialogModalFor(state)
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 16
 	if state.thirdLabel != "" {
 		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(modal.Panel.Rect.X))
 		third := gameui.NewButton(float64(discardX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.thirdLabel)
 		third.Enabled = !state.thirdDisabled
+		decline := gameui.NewButton(float64(cancelX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.declineLabel)
+		decline.Enabled = !state.declineDisabled
 		return gameui.NewButton(float64(saveX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.acceptLabel),
 			third,
-			gameui.NewButton(float64(cancelX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.declineLabel),
+			decline,
 			true
 	}
 	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - float64(confirmDialogBtnW) - 10

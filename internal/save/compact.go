@@ -132,6 +132,7 @@ type campaignSaveState struct {
 	OfferRejectionTurns     map[string]int                           `json:"dr,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                    `json:"tr,omitempty"`
 	Sieges                  map[world.RegionID]*state.SiegeState     `json:"sg,omitempty"`
+	Raids                   map[world.RegionID]*state.RaidState      `json:"rd,omitempty"`
 	ProductionQueue         []state.ProductionOrder                  `json:"pq,omitempty"`
 	NextProductionSeq       int                                      `json:"np,omitempty"`
 	NextArmySeq             int                                      `json:"na,omitempty"`
@@ -208,6 +209,7 @@ type legacyCampaignSaveState struct {
 	OfferRejectionTurns     map[string]int                                 `json:"diplomatic_offer_last_rejected_turns,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                          `json:"trade_routes"`
 	Sieges                  map[world.RegionID]*state.SiegeState           `json:"sieges,omitempty"`
+	Raids                   map[world.RegionID]*state.RaidState            `json:"raids,omitempty"`
 	ProductionQueue         []state.ProductionOrder                        `json:"production_queue"`
 	NextProductionSeq       int                                            `json:"next_production_seq"`
 	NextArmySeq             int                                            `json:"next_army_seq"`
@@ -363,6 +365,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		OfferRejectionTurns:     cloneStringIntMap(legacy.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(legacy.TradeRoutes),
 		Sieges:                  cloneSieges(legacy.Sieges),
+		Raids:                   cloneRaids(legacy.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
 		NextProductionSeq:       legacy.NextProductionSeq,
 		NextArmySeq:             legacy.NextArmySeq,
@@ -485,6 +488,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
 		Sieges:                  cloneSieges(gs.Sieges),
+		Raids:                   cloneRaids(gs.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:       gs.NextProductionSeq,
 		NextArmySeq:             gs.NextArmySeq,
@@ -578,6 +582,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
 		Sieges:                  cloneSieges(gs.Sieges),
+		Raids:                   cloneRaids(gs.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:       gs.NextProductionSeq,
 		NextArmySeq:             gs.NextArmySeq,
@@ -651,6 +656,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.OfferRejectionTurns = cloneStringIntMap(saved.OfferRejectionTurns)
 	gs.TradeRoutes = cloneTradeRoutes(saved.TradeRoutes)
 	gs.Sieges = cloneSieges(saved.Sieges)
+	gs.Raids = cloneRaids(saved.Raids)
 	gs.ProductionQueue = append([]state.ProductionOrder(nil), saved.ProductionQueue...)
 	gs.NextProductionSeq = saved.NextProductionSeq
 	gs.NextArmySeq = saved.NextArmySeq
@@ -1349,6 +1355,21 @@ func cloneSieges(sieges map[world.RegionID]*state.SiegeState) map[world.RegionID
 		}
 		copySiege := *siege
 		out[rid] = &copySiege
+	}
+	return out
+}
+
+func cloneRaids(raids map[world.RegionID]*state.RaidState) map[world.RegionID]*state.RaidState {
+	if len(raids) == 0 {
+		return nil
+	}
+	out := make(map[world.RegionID]*state.RaidState, len(raids))
+	for rid, raid := range raids {
+		if raid == nil {
+			continue
+		}
+		copyRaid := *raid
+		out[rid] = &copyRaid
 	}
 	return out
 }

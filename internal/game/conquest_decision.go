@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
@@ -75,6 +76,33 @@ func (g *Game) queueConquestDecision(attackerID faction.FactionID, targetRegion 
 		g.showPendingConquestDecision(showAfterBattleReport)
 	}
 	return true
+}
+
+// captureUnfortifiedRegion, düşman bölgesinde temas sonrası pozisyonunu koruyan
+// ordunun, hedefte düşman ordusu yoksa, tahkimatsız hedefi doğrudan ele
+// geçirmesini sağlar. Tahkimatlı veya düşman ordusu bulunan hedef bu aksiyona
+// hiç giremez; sırasıyla kuşatma veya muharebe akışından devam edilmelidir.
+func (g *Game) captureUnfortifiedRegion(aid army.ArmyID, targetID world.RegionID) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	attacker := g.gs.Armies[aid]
+	target := g.gs.Regions[targetID]
+	if attacker == nil || target == nil || attacker.OwnerID != string(g.gs.PlayerFactionID) || attacker.IsNaval ||
+		target.IsSea || target.OwnerID == "" || target.OwnerID == attacker.OwnerID || target.IsFortified() ||
+		attacker.RegionID != target.ID || !gameFactionsAtWar(g.gs, attacker.OwnerID, target.OwnerID) ||
+		g.gs.SelectBattleDefender(attacker, target.ID, false) != nil {
+		return
+	}
+
+	collapse := g.applyConquestWithNavalEviction(target, attacker.OwnerID)
+	if g.renderer != nil {
+		g.renderer.MarkMapDirty()
+		message := fmt.Sprintf("%s ele geçirildi.", target.NameTR)
+		g.renderer.ShowCombatResult(message)
+		g.renderer.AddEventDetail("[FETİH] "+message, fmt.Sprintf("%s tahkimli olmadığı için bölge doğrudan %s yönetimine katıldı.", target.NameTR, g.factionNameTR(attacker.OwnerID)))
+	}
+	g.announceElimination(collapse)
 }
 
 func (g *Game) shouldOfferSuccessorDecision(attackerID, defenderID, successorID faction.FactionID, targetRegion *world.Region) bool {

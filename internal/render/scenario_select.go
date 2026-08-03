@@ -29,7 +29,15 @@ func buildScenarioCardButtons(scenarios []*scenario.Scenario) []gameui.Button {
 
 // DrawScenarioSelect senaryo seçim ekranını çizer.
 func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cursor int) {
-	drawUIScreenChrome(screen, color.RGBA{6, 8, 14, 255}, "MAPP — Senaryo Seç", "Senaryo kartını seçmek için tıkla")
+	if background := mainMenuBackgroundImage(); background != nil {
+		drawUIImageCover(screen, background)
+		// Görsel kartların ve üst başlığın arkasında kalır; kartların kendi
+		// koyu yüzeyi korunurken ekranın tamamı hafifçe karartılır.
+		drawUIOverlay(screen, color.RGBA{0, 0, 0, 100})
+		drawUIScreenChromeOverlay(screen, "MAPP — Senaryo Seç", "Senaryo kartını seçmek için tıkla")
+	} else {
+		drawUIScreenChrome(screen, color.RGBA{6, 8, 14, 255}, "MAPP — Senaryo Seç", "Senaryo kartını seçmek için tıkla")
+	}
 	drawBackButton(screen)
 
 	if len(scenarios) == 0 {

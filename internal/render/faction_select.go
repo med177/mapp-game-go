@@ -16,6 +16,12 @@ import (
 const factionGroupGap = 34.0
 const factionGroupLabelH = 20.0
 
+const (
+	factionCardFlagSize     = 94.0
+	factionCardFlagRightGap = 14.0
+	factionCardFlagTop      = 34.0
+)
+
 var (
 	factionSelectBackgroundPath string
 	factionSelectBackground     *ebiten.Image
@@ -47,9 +53,9 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		drawUIImageCover(screen, background)
 		// Senaryo görseli üzerindeki kart ve başlık metinlerini okunabilir tut.
 		drawUIOverlay(screen, color.RGBA{0, 0, 0, 82})
-		drawUIScreenChromeOverlay(screen, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
+		drawUIScreenChromeOverlay(screen, "MAPP — Devlet Seç", "Devlet seçmek için tıkla")
 	} else {
-		drawUIScreenChrome(screen, color.RGBA{10, 8, 5, 255}, "MAPP — Fraksiyon Seç", "Fraksiyon kartını seçmek için tıkla")
+		drawUIScreenChrome(screen, color.RGBA{10, 8, 5, 255}, "MAPP — Devlet Seç", "Devlet seçmek için tıkla")
 	}
 
 	factions, historicalCount := selectableFactions(gs)
@@ -67,6 +73,8 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		cell := factionCardRect(i, historicalCount, len(factions), cols, float64(cardW), float64(cardH), 30, 12, headerH)
 		x := float32(cell.X)
 		y := float32(cell.Y)
+		flagRect := factionCardFlagRect(cell)
+		textW := flagRect.X - cell.X - 24
 
 		fc := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
 		bgCol := color.RGBA{22, 18, 12, 220}
@@ -87,6 +95,7 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 			nameCol = ColorYellow
 		}
 		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+		drawFactionFlagBadge(screen, f.ID, factionInitial(f.NameTR), flagRect.X, flagRect.Y, flagRect.W, fc, panelBorder)
 
 		// Din
 		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
@@ -103,10 +112,19 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		if generalVictories > 0 {
 			victoryLine += "  |  " + itoa(generalVictories) + " genel"
 		}
-		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 74), W: float64(cardW - 32)}, trimTextToWidth(victoryLine, FaceSmall, float64(cardW-32)), color.RGBA{188, 176, 142, 235}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 74), W: textW}, trimTextToWidth(victoryLine, FaceSmall, textW), color.RGBA{188, 176, 142, 235}, gameui.TextSmall, gameui.TextAlignStart)
 		if featuredVictory != "" {
-			drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 94), W: float64(cardW - 32)}, trimTextToWidth("Öne çıkan: "+featuredVictory, FaceSmall, float64(cardW-32)), color.RGBA{210, 188, 118, 235}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 94), W: textW}, trimTextToWidth("Öne çıkan: "+featuredVictory, FaceSmall, textW), color.RGBA{210, 188, 118, 235}, gameui.TextSmall, gameui.TextAlignStart)
 		}
+	}
+}
+
+func factionCardFlagRect(card gameui.Rect) gameui.Rect {
+	return gameui.Rect{
+		X: card.X + card.W - factionCardFlagSize - factionCardFlagRightGap,
+		Y: card.Y + factionCardFlagTop,
+		W: factionCardFlagSize,
+		H: factionCardFlagSize,
 	}
 }
 

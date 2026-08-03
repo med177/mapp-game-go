@@ -9,6 +9,111 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func currentRegionTaskTestRenderer(fortified bool) *Renderer {
+	target := &world.Region{ID: "enemy_region", OwnerID: "enemy", NameTR: "Düşman Bölgesi"}
+	if fortified {
+		target.Buildings = []string{"walls"}
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			target.ID: target,
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"attacker": {ID: "attacker", OwnerID: "player", RegionID: target.ID},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+	}
+	return &Renderer{gs: gs}
+}
+
+func TestCurrentRegionTaskOpensSiegeForFortifiedHeldEnemyRegion(t *testing.T) {
+	r := currentRegionTaskTestRenderer(true)
+	attacker := r.gs.Armies["attacker"]
+	target := r.gs.Regions[attacker.RegionID]
+
+	if !r.openCurrentRegionArmyTask(attacker, target) {
+		t.Fatal("tahkimli düşman bölgesinde aynı bölge görevi açılmalıydı")
+	}
+	if !r.regionTaskDialog.show || r.regionTaskDialog.buttons[0].Label != "Kuşatma" || r.regionTaskDialog.actions[0].Kind != ActionStartSiege {
+		t.Fatalf("tahkimli hedefte görev modali açılmalıydı: %+v", r.regionTaskDialog)
+	}
+	if r.regionTaskDialog.buttons[3].Label != "Vazgeç" || r.regionTaskDialog.actions[3].Kind != ActionNone {
+		t.Fatal("görev modalında vazgeç seçeneği bulunmalı ve oyun aksiyonu üretmemeli")
+	}
+}
+
+func TestCurrentRegionArmyTaskHoveringUsesCurrentRegionTaskAvailability(t *testing.T) {
+	oldWorldW, oldWorldH := WorldW, WorldH
+	defer func() {
+		WorldW, WorldH = oldWorldW, oldWorldH
+	}()
+	WorldW, WorldH = 1, 1
+
+	r := currentRegionTaskTestRenderer(false)
+	r.SelectedArmy = "attacker"
+	r.worldMap = &WorldMap{
+		regionAt:  []uint16{1},
+		regionIDs: []world.RegionID{"", "enemy_region"},
+	}
+	r.camScale = 1
+
+	if !r.currentRegionArmyTaskHovering(ScreenWidth/2, ScreenHeight/2) {
+		t.Fatal("görev verilebilir mevcut bölge üzerinde cursor hover durumu etkin olmalı")
+	}
+}
+
+func TestCurrentRegionArmyTaskIndicatorHiddenForBesiegingArmy(t *testing.T) {
+	r := currentRegionTaskTestRenderer(true)
+	attacker := r.gs.Armies["attacker"]
+	target := r.gs.Regions[attacker.RegionID]
+	r.gs.Sieges = map[world.RegionID]*state.SiegeState{
+		target.ID: {RegionID: target.ID, AttackerArmyID: attacker.ID},
+	}
+
+	if r.currentRegionArmyTaskIndicatorVisible(attacker, target) {
+		t.Fatal("aktif kuşatma yürüten orduda aynı-bölge görev göstergesi görünmemeli")
+	}
+}
+
+func TestCurrentRegionTaskOffersDirectCaptureForUnfortifiedHeldEnemyRegion(t *testing.T) {
+	r := currentRegionTaskTestRenderer(false)
+	attacker := r.gs.Armies["attacker"]
+	target := r.gs.Regions[attacker.RegionID]
+
+	if !r.openCurrentRegionArmyTask(attacker, target) {
+		t.Fatal("tahkimatsız düşman bölgesinde ele geçirme görevi açılmalıydı")
+	}
+	if !r.regionTaskDialog.show || r.regionTaskDialog.buttons[0].Label != "Ele Geçir" || r.regionTaskDialog.actions[0].Kind != ActionCaptureRegion {
+		t.Fatalf("tahkimatsız hedefte ele geçir aksiyonu bekleniyordu: %+v", r.regionTaskDialog)
+	}
+}
+
+func TestCurrentRegionTaskOpensBattlePlanWhenUnfortifiedRegionHasEnemyArmy(t *testing.T) {
+	r := currentRegionTaskTestRenderer(false)
+	target := r.gs.Regions["enemy_region"]
+	r.gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "enemy", RegionID: target.ID,
+		Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+	}
+	r.gs.UnitTypes = map[string]*army.UnitType{
+		"infantry": {ID: "infantry", Category: army.CategoryInfantry, Attack: 10, Defense: 10, Morale: 50},
+	}
+
+	if !r.openCurrentRegionArmyTask(r.gs.Armies["attacker"], target) {
+		t.Fatal("düşman ordusu varken aynı bölge çatışma görevi açılmalıydı")
+	}
+	if !r.battlePlan.show || r.battlePlan.actionKind != ActionMoveArmy || !r.battlePlan.contactResolved {
+		t.Fatalf("düşman ordusu varken ele geçirme yerine temas çözülmüş savaş planı açılmalıydı: %+v", r.battlePlan)
+	}
+}
+
 func TestSelectMapRegionDoesNotOpenRecruitPanel(t *testing.T) {
 	r := &Renderer{
 		gs: &state.GameState{

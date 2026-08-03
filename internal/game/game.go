@@ -132,6 +132,7 @@ func New() *Game {
 	r.EditModeEnabled = envFlagEnabled("EDIT_MODE")
 	r.SetCursor(render.InitialMainMenuCursor(r.HasAutoSave, r.EditModeEnabled))
 	r.CurrentSettings = render.LoadSettings()
+	render.ApplyDisplaySettings(r.CurrentSettings)
 	audio.SetMusicEnabled(r.CurrentSettings.MusicOn)
 	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
 	audio.SetSoundEnabled(r.CurrentSettings.SoundOn)
@@ -198,6 +199,7 @@ func (g *Game) Update() error {
 	case state.PhaseSettings:
 		if action.Kind == render.ActionSaveSettings {
 			g.gs.Difficulty = g.renderer.CurrentSettings.Difficulty
+			render.ApplyDisplaySettings(g.renderer.CurrentSettings)
 			audio.SetMusicEnabled(g.renderer.CurrentSettings.MusicOn)
 			audio.SetMusicVolume(g.renderer.CurrentSettings.MusicVolume)
 			audio.SetSoundEnabled(g.renderer.CurrentSettings.SoundOn)
@@ -317,6 +319,12 @@ func (g *Game) Update() error {
 			g.assaultSiegeWithStance(action.ArmyID, action.TargetRegion, action.BattleStance)
 		case render.ActionLiftSiege:
 			g.liftSiege(action.ArmyID, action.TargetRegion)
+		case render.ActionCaptureRegion:
+			g.captureUnfortifiedRegion(action.ArmyID, action.TargetRegion)
+		case render.ActionRaidRegion:
+			g.raidRegion(action.ArmyID, action.TargetRegion)
+		case render.ActionSetAmbush:
+			g.setArmyAmbush(action.ArmyID, action.TargetRegion)
 		case render.ActionProposeSiegeSurrender:
 			g.proposeSiegeSurrender(action.ArmyID, action.TargetRegion)
 		case render.ActionSortieSiege:
@@ -2367,7 +2375,7 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 		return false
 	}
 	if len(g.gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
-		return true
+		return false
 	}
 	if siege.BreachLevel >= 2 || siege.TurnsElapsed >= state.SiegeSurrenderTurns(siege.FortLevel) {
 		return true
@@ -3051,6 +3059,7 @@ func (g *Game) loadScenario(scenarioPath string) {
 func (g *Game) startLoadScenario(scenarioPath string) {
 	difficulty := g.gs.Difficulty
 	editMode := g.editModeRequested && g.renderer.EditModeEnabled
+	g.renderer.SetLoadingScenarioPath(scenarioPath)
 	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func(setProgress func(int)) loadingResult {
 		gs, evts, err := loadScenarioDataForMode(scenarioPath, difficulty, editMode, setProgress)
 		if err != nil {
@@ -4587,23 +4596,12 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 	if offer.FromFactionID != faction.FactionID(target.OwnerID) && offer.FromFactionID != faction.FactionID(attacker.OwnerID) {
 		return diplomacy.Result{Message: "Teslimiyet teklifinin göndereni değişti."}
 	}
-
-	// Kuşatılan son toprak oyuncu tarafından kabul ediliyorsa, fetih yerine
-	// doğrudan vassallık uygulanır. Bölge yerel devlette kalır.
-	if offer.FromFactionID == faction.FactionID(target.OwnerID) &&
-		offer.ToFactionID == g.gs.PlayerFactionID &&
-		attacker.OwnerID == string(g.gs.PlayerFactionID) &&
-		g.shouldOfferPostWarVassalization(g.gs.PlayerFactionID, faction.FactionID(target.OwnerID), target) {
-		attacker.RegionID = target.ID
-		attacker.DockedRegionID = ""
-		attacker.DockedSettlementID = ""
-		attacker.MovePoints = 0
-		g.clearSiege(target.ID)
-		result := diplomacy.ForceVassalizeAfterWar(g.gs, g.gs.PlayerFactionID, faction.FactionID(target.OwnerID))
-		if result.Applied {
-			return diplomacy.Result{Accepted: true, Applied: true, Message: fmt.Sprintf("%s teslim oldu; %s vassal olarak bırakıldı.", target.NameTR, g.factionNameTR(target.OwnerID))}
+	if len(g.gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
+		return diplomacy.Result{
+			Accepted: false,
+			Applied:  false,
+			Message:  fmt.Sprintf("%s devletinin son toprağı için teslimiyet teklifi kabul edilemez.", g.factionNameTR(target.OwnerID)),
 		}
-		return result
 	}
 
 	// Teslim olan savunma ordusu varsa, mevcut birlikleri koruyarak en yakın
@@ -4762,6 +4760,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		return
 	}
 	previousLocation := a.LocationID()
+	if a.InAmbush && target != a.RegionID {
+		a.InAmbush = false
+	}
 	defer func() {
 		g.gs.ClearArmyLogisticsAfterRelocation(a, previousLocation)
 		g.gs.ClearNavalMissionAfterRelocation(a, previousLocation)
@@ -4893,6 +4894,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		liftedSiegeRegion = activeSiege.RegionID
 	}
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
+	if enemyArmy == nil && !a.IsNaval && !navalSeaMove {
+		enemyArmy = g.gs.SelectAmbushDefender(a, target, false)
+	}
 	if navalSeaMove && !navalAttack && !resolved && enemyArmy != nil {
 		trigger := state.NavalContactMovement
 		if g.beginNavalContact(a, enemyArmy, target, a.RegionID, trigger, true) {
@@ -4946,6 +4950,10 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
 		defOwnerID := enemyArmy.OwnerID
 		defMods := techModsFor(g.gs, defOwnerID)
+		if !navalSeaMove && enemyArmy != nil && enemyArmy.InAmbush {
+			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
+			enemyArmy.InAmbush = false
+		}
 		battleContext := combat.BattleContextLand
 		if navalSeaMove {
 			battleContext = combat.BattleContextNaval

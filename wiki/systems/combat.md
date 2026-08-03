@@ -11,7 +11,7 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 
 ## Genel Bakış
 
-Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir; son toprakta teslim olan AI, oyuncu tarafından kabul edilirse doğrudan vassal olur ve bölge yerel devlette kalır (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
+Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir. Kuşatılan devletin tek kara bölgesi kaldıysa teslimiyet teklifi kabul edilmez; kuşatma ve sahiplik korunur (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
 
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Düşman
 orduya hareket emri verildiğinde önce kara teması değerlendirilir; iki taraf da
@@ -56,6 +56,17 @@ rotası varsa geri çekilir; aksi halde çatışmayı kabul eder. Tahkimli hedef
 de aynı temas popup'ı kullanılır; `Çatış` sonrası kuşatma/genel hücum sözleşmesi
 korunur. Zaten aktif kuşatma altındaki destek/huruç akışı ise kendi mevcut
 kuşatma kurallarıyla devam eder.
+
+Temas sonrası `Pozisyonu Koru` seçilip ordu düşman toprağında kaldığında aynı
+bölgeye sağ tıklama yeni görev akışını açar. Hedef tahkimliyse mevcut kuşatma
+kararı, tahkimatsız ve düşman ordusu yoksa ortak onay modalındaki `Ele Geçir`
+aksiyonu kullanılır. Tahkimatsız hedefte düşman ordusu varsa `Kara Muharebesi`
+planı açılır; bölge savaş çözülmeden ele geçirilemez. Yağmalama ve pusu için
+aynı giriş noktası görev menüsünden açılır. `Army.InAmbush` olan savunucu normal
+düşman görünürlüğünden ve `SelectBattleDefender` seçiminden çıkar; hedefe giren
+ordu özel pusu seçicisiyle temas başlatır. Hareketli taraf geri çekilemez ve
+`Pozisyonu Koru` seçemez; pusu tarafı çatışabilir veya geri çekilebilir.
+Çatışmada bölgenin `TerrainData.AmbushBonus` değeri ilk savunma hesabına eklenir.
 
 Fethedilen bölgede `SuccessorFactionID` doluysa yalnız ardıl fraksiyon
 `is_eliminated=true` ve kara toprağı kalmamışsa fetih sonucu ertelenir. Savaş
@@ -228,7 +239,7 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 13. Zaten başka bir devlet tarafından kuşatılmış tahkimli bölgeye üçüncü devlet yeni kuşatma başlatamaz; ancak bölgeye giriş hakkı varsa kuşatma yapan düşman orduya karşı savaş açabilir ve o ordu yenilirse kuşatma kalkar. Böyle bir savaş allied / same realm geçişinde gerçekleşiyorsa sahiplik değişmez, yalnız kuşatma kaldırılır.
 14. Kuşatılan bölgede bölge sahibine veya onun müttefikine ait bir kara ordusu varsa, bu ordu komşu bölgeye çıkmadan önce kuşatan orduya karşı huruç savaşı yapmak zorundadır. Huruç kazanılırsa kuşatma kalkar ve uygun dost/sahipsiz hedefe ilerlenir; kaybedilirse kalan birlikler kuşatılan bölgede kalır ve hareket puanı tükenir.
 15. Saldıran oyuncu da kuşatma panelindeki `Teslimiyet Teklifi` düğmesiyle AI savunmacıya çağrı gönderebilir. AI kabulü kuşatma baskısı, gedik, süre ve güç dengesine göre çözülür; bu özel kuşatma teklifi oyuncu veya AI'ın normal elçi kotasını azaltmaz.
-16. AI kuşatan, kuşatma baskısı ve gedik ilerlemesi yeterli olduğunda oyuncuya teslimiyet talebi gönderebilir; AI savunmacı da ağır baskı veya son toprak koşulunda oyuncuya teslim olmayı teklif edebilir. Teklifler `DiplomaticOffers` içinde bölge kimliğiyle saklanır, modal ve kuşatma paneli aynı çözümleyiciyi kullanır.
+16. AI kuşatan, kuşatma baskısı ve gedik ilerlemesi yeterli olduğunda oyuncuya teslimiyet talebi gönderebilir; AI savunmacı da ağır baskı koşulunda oyuncuya teslim olmayı teklif edebilir. Son kara toprağı için teslimiyet teklifi üretilmez ve eski/stale teklif merkezi çözümleyicide kabul edilmez. Teklifler `DiplomaticOffers` içinde bölge kimliğiyle saklanır, modal ve kuşatma paneli aynı çözümleyiciyi kullanır.
 
 Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 

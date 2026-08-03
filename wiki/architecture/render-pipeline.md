@@ -7,18 +7,38 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
-Ana menü ilk çizimde `assets/images/main_menu_bg.png` görselini bir kez cache'leyip
-ekran oranını koruyarak arka plana yerleştirir; görsel ekranı kaplayacak şekilde
-kenarlardan kırpılır. Görselin canlılığını korumak için genel karartma uygulanmaz;
-menü ekseninde merkezde koyu, kenarlara doğru saydamlaşan siyah bir focus gradient'i
-başlık ve ortak UI metinlerinin okunurluğunu artırır. Asset yüklenemezse mevcut koyu
-arka plan fallback'i kullanılır (`internal/render/main_menu.go`).
+Kuşatma teslimiyeti modalı, son kara toprağına ait stale bir teklif için vassallık
+sonucu vaat etmez; ortak teklif mesajı bunun kabul edilemeyeceğini açıklar. Modal
+ve kuşatma panelinin geçerlilik davranışı game katmanındaki `applySurrenderOffer`
+sonucuyla aynı sözleşmeyi izler (`internal/render/renderer_dialogs.go`).
+
+Ana menü ve senaryo seçim ekranı ilk çizimde `assets/images/main_menu_bg.png`
+görselini bir kez cache'leyip ekran oranını koruyarak arka plana yerleştirir; görsel
+ekranı kaplayacak şekilde kenarlardan kırpılır. Görselin canlılığını korumak için
+genel karartma uygulanmaz; ana menü ekseninde merkezde koyu, kenarlara doğru
+saydamlaşan siyah bir focus gradient'i başlık ve ortak UI metinlerinin okunurluğunu
+artırır. Senaryo seçiminde ayrıca hafif bir tam ekran overlay kartların arkasında
+kullanılır. Asset yüklenemezse mevcut koyu arka plan fallback'i kullanılır
+(`internal/render/main_menu.go`, `scenario_select.go`).
+
+Yükleme ekranındaki spinner, durum mesajı, ilerleme çubuğu, yüzde ve bekleme
+metni ortak bir alt-orta içerik grubunda çizilir; grubun dikey referansı ekranın
+altından sabit bir pay bırakacak şekilde hesaplanır. Böylece yükleme geri bildirimi
+ekran merkezini kaplamaz (`internal/render/loading.go`).
 
 Fraksiyon seçim ekranı, yüklenen senaryonun kök dizinindeki `scenario_bg.png`
 dosyasını `GameState.ScenarioPath` üzerinden çözüp cover ölçekleme ile arka plana
 yerleştirir. Görsel bulunamazsa ekranın koyu fallback arka planı korunur; üstteki
 başlık, çerçeve ve kart okunabilirliği ortak UI chrome/overlay helper'larıyla
-sürdürülür (`internal/render/faction_select.go`, `ui_compose.go`).
+sürdürülür. Her devlet kartının sağ tarafında, başlık satırının altında ayrılmış
+bayrak alanı bulunur; bayraklar ortak `drawFactionFlagBadge` helper'ı ve senaryo
+`sprites/flags/<factionID>.png` asset cache'i üzerinden çizilir
+(`internal/render/faction_select.go`, `panel.go`).
+
+Senaryo yükleme ekranı da seçilen senaryo yolunu geçici renderer loading state'inde
+taşır ve aynı kök dizindeki `scenario_bg.png` görselini arka plan olarak kullanır.
+Yükleme başarısız olursa düz koyu arka plan fallback'i korunur
+(`internal/render/loading.go`, `renderer.go`, `game.go`).
 
 Merchant rota, Donanma Görevi ve Aktif Savaşlar panelleri `overlayPanelOrder`
 stack'i üzerinden çizim, input ve cursor önceliğini paylaşır. Yeni açılan panel
@@ -43,6 +63,38 @@ akışta da çizim ve input ortak modal/action state'inden türetilir. Temas
 popup'ı açılırken saldıran ordunun `RegionID` değeri hedefe taşınır ve harita
 marker'ı hedef bölgede görünür; `MovementConsumed` bilgisi savaş planına
 aktarılıp hareket puanının ikinci kez düşmesi engellenir.
+
+Açık deniz temasında `ShowNavalContactDialog`, genel üçlü karar aksiyonlarını
+koruyarak iki filoyu karşılaştırmalı kartlarda gösterir: devlet, birim/güç,
+savunma/moral, kalan/azami hareket, görev ve komutan bilgileri görünür. Modal
+üst HUD/`HAMLELER` kümesinin altında konumlanır; temas denizi
+`PendingNavalContact` üzerinden haritada seçili tutulur ve iki filo marker'ı
+altın temas halkası ile bağlanır. Böylece oyuncu `Çatış`, `Geri Çekil` veya
+`Pozisyonu Koru` kararını haritadaki gerçek temas konumunu ve filo durumlarını
+görerek verir (`internal/game/naval_contact.go`, `internal/render/renderer.go`,
+`renderer_dialogs.go`, `ui_modals.go`).
+Temas modalı açıldığında kamera dikey olarak yeniden çerçevelenir; gerçek deniz
+anchor'ı modalın altında kalacak alt-orta alana taşınır. Böylece ayrı bir sahte
+marker yerine temas eden filo ikonları, komutan portreleri ve gerçek temas
+halkası birlikte görünür. Temas kapanınca önceki kamera konumu geri yüklenir.
+Filo kartlarında birim, `Saldırı / Savunma`, moral, hareket ve görev/komutan
+satırları ayrıdır; toplam `GÜÇ` kartın altındaki daha büyük vurgu alanında
+gösterilir.
+
+Düşman bölgesinde temas sonrası bekleyen kara ordusunun aynı-bölge görevleri,
+genel onay penceresinden ayrı `regionTaskDialogState` ile yönetilir. Tahkimli
+hedefte `Kuşatma`, tahkimatsız ve savunmasız hedefte `Ele Geçir`; her iki durumda
+`Yağmala`, `Pusu` ve aksiyon üretmeyen `Vazgeç` seçenekleri aynı ortak `Button`
+geometrisinden çizilir, hit-test edilir ve cursor pointer davranışına bağlanır
+(`internal/render/region_task_dialog.go`, `renderer_input.go`).
+
+Pusu ve yağma durumları da kara ordu markerının sağ-üstündeki ortak badge
+geometrisinden çizilir. Gri daire pusu görünmezliğini, altın `+` rozeti aktif
+yağmayı gösterir; badge hit-test'i cursor ve tooltip akışıyla paylaşılır.
+Yağma tooltip'i `GameState.RaidLootPreview()` üzerinden ekonomi tick'inin aynı
+vergi/üretim değerlerini listeler (`internal/render/army_task_status.go`).
+Görev rozeti taşıyan yan yana kara orduları için marker spacing 38 px'e çıkarılır;
+aynı ekran koordinatına yeniden dağıtılan gruplar da bu spacing'i kullanır.
 
 Panel satırları ve ortak `IconClose` düğmeleri `gameui.Button` hit-test'lerinden
 türetilir; `Button` içinde ayrı cursor alanı tutulmaz, OS pointer merkezi
@@ -86,6 +138,12 @@ tur başı altın gelirini `Gelir +N/tur` biçiminde gösterir. Bu değer oyuncu
 ayrı hesaplanmaz; her iki görünüm `victory.GoldIncomeForFaction()` üzerinden aynı
 bölge, ticaret rotası, abluka, ganimet ve teknoloji gelir zincirini kullanır
 (`internal/render/panel.go`, `internal/victory/victory.go`).
+
+Üst oyuncu HUD'unda Gelir/Altın sütunu zafer kartından önceki alana sağa yaslanır;
+kaynak satırları ortak `KeyValueRow` bileşeninin 8 px aralıklı varyantını kullanır.
+HUD miktarları `formatNumberTR()` ile Türkçe binlik ayıracıyla (`10.000`) çizilir;
+askeri güç, stok/değişim, gelir, altın ve ambar kapasitesi aynı gösterim kuralını
+paylaşır (`internal/render/panel.go`, `ui_compose.go`).
 
 Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
 `internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/nakliye
@@ -592,6 +650,18 @@ seçerse mevcut `Kara Muharebesi` planı açılır, diğer kararlar savaşsız t
 çözümü üretir. Draw, input ve disabled `Geri Çekil` durumu ortak üçlü modal
 buton helper'ından türetilir.
 
+Not: `Pozisyonu Koru` sonrası düşman bölgesinde kalan kara ordusu, hareket puanı
+bitmiş olsa da aynı bölgeye sağ tıklayabilir. Tahkimli hedefte `Kuşatma Kararı`
+açılır; tahkimatsız ve düşman ordusu olmayan hedefte ortak `ShowConfirmDialog`
+üzerinden `Ele Geçir` onayı gösterilir ve `ActionCaptureRegion` üretilir.
+Tahkimatsız hedefte düşman ordusu varsa aynı akış `Kara Muharebesi` planını
+açar. Bu akış, ileride yağmalama ve pusu görevlerinin ekleneceği aynı-bölge
+görev seam'ini kullanır. Görev geçerli olduğu sürece seçili kara ordusu üzerinde
+altın çerçeve ve kılıç rozeti çizilir; aynı bölge üzerindeyken cursor pointer
+olur. Draw, cursor ve input bu durumu `currentRegionArmyTaskAvailable()` ile
+aynı koşullardan üretir. Aktif kuşatma yürüten ordular bu görev göstergesinden
+hariç tutulur; onların aksiyonları `Kuşatma Emri` panelinden yönetilir.
+
 Not: Tam ekran seçim/menü ailesindeki metinler (`main_menu`, `scenario_select`, `faction_select`, `victory_select`, `load_select`) artık doğrudan `DrawText*` çağrılarıyla değil, `internal/ui.Label` üstünden ortak `TextRenderer` ile çizilir; font varyantı ve hizalama UI primitive'inde tanımlanır. Modal açıklamaları, info popup, event detail/codex detail ve historical event açıklama blokları `WrappedLabel`, ikon/sayaç gölgeleri ise `OutlinedLabel` primitive'i üzerinden ortaklaştırılmıştır. Zafer seçim ekranındaki kartlar da aynı wrap primitive'lerini kullanır; açıklama ve hedef özeti badge alanına çarpmadan iki satıra akabilir ve uzun senaryo hedeflerinde kart yüksekliği buna göre artırılmıştır.
 
 ---
@@ -741,7 +811,7 @@ Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı ü
 
 Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme, shape paint commit'i ve ordu/donanma ekleme-silme/birim sayısı değişiklikleri region map, order, başlangıç orduları ve `ShapeData` için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
 
-Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Save/load kartında silme onayı açıkken slot adı üst bantta daha küçük çizilir ve onay sorusu ayrı satıra alınır; böylece başlık ile `Silinecek! Emin misiniz?` metni üst üste binmez. Ayarlar ekranında müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir. Pause menüsünde ses seviyesi satırının sol yarısı azaltma (`-10`), sağ yarısı artırma (`+10`) olarak aynı hit-test üzerinden ayrıştırılır.
+Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Save/load kartında silme onayı açıkken slot adı üst bantta daha küçük çizilir ve onay sorusu ayrı satıra alınır; böylece başlık ile `Silinecek! Emin misiniz?` metni üst üste binmez. Ayarlar ekranında `Ekran Modu` satırı `Tam Ekran`/`Pencereli` seçimini anında uygular ve `saves/settings.json` içine kaydeder; F11 kısayolu da aynı state'i günceller. Müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir. Pause menüsünde ses seviyesi satırının sol yarısı azaltma (`-10`), sağ yarısı artırma (`+10`) olarak aynı hit-test üzerinden ayrıştırılır.
 
 Harita modu anahtarı alt-orta aksiyon HUD'unun üstündeki `Normal | Ticaret` segmentinde yer alır. `M` kısayolu veya bu segment ile mod değişir. Ticaret koridor çizimi yalnızca `Ticaret` modunda render edilir; `Normal` modda ticaret çizgileri tamamen gizlidir.
 

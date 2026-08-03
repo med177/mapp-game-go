@@ -2,12 +2,14 @@ package render
 
 import (
 	"image/color"
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestArmySpriteSetFollowsFactionReligion(t *testing.T) {
@@ -159,5 +161,108 @@ func TestNavalEmbarkedArmyBadgeFollowsFleetVisibility(t *testing.T) {
 	}
 	if got := navalEmbarkedArmyBadgeText(fleet, true); got != "17" {
 		t.Fatalf("görünür taşıma sayısı gerçek adet olmalı: got=%q", got)
+	}
+}
+
+func TestArmyTaskStatusBadgeUsesUpperRightAnchor(t *testing.T) {
+	badge := armyTaskStatusBadgeRect(100, 100)
+	if badge.X <= 100 || badge.Y >= 100 {
+		t.Fatalf("görev rozeti markerın sağ üstünde olmalı: %+v", badge)
+	}
+	if badge.X+badge.W/2 != 114 || badge.Y+badge.H/2 != 86 {
+		t.Fatalf("görev rozeti ortak sağ-üst anchor'da olmalı: %+v", badge)
+	}
+}
+
+func TestCurrentRegionArmyTaskBadgeUsesLowerLeftAnchor(t *testing.T) {
+	x, y := currentRegionArmyTaskBadgeCenter(100, 100)
+	if x != 84 || y != 116 {
+		t.Fatalf("aynı-bölge görev kılıcı markerın alt-soluna taşınmalı: x=%.1f y=%.1f", x, y)
+	}
+}
+
+func TestArmyIconPositionsSeparateAdjacentTaskBadges(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"enemy": {
+				ID: "enemy", OwnerID: "enemy",
+				Settlements: []world.Settlement{{ID: "center", IsCenter: true}},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ambusher": {ID: "ambusher", OwnerID: "player", RegionID: "enemy", InAmbush: true},
+			"other":    {ID: "other", OwnerID: "player", RegionID: "enemy"},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		worldMap: &WorldMap{
+			settlementAnchor:  map[settlementAnchorKey][2]int{{Region: "enemy", Index: 0}: {100, 100}},
+			primarySettlement: map[world.RegionID][2]int{"enemy": {100, 100}},
+		},
+	}
+
+	positions := r.armyIconPositions()
+	if len(positions) != 2 {
+		t.Fatalf("iki kara ordusu bekleniyordu, got=%d", len(positions))
+	}
+	if got := positions[1].X - positions[0].X; got != armyTaskStatusIconStep {
+		t.Fatalf("görev rozeti taşıyan marker grubunda aralık büyütülmeli: got=%.1f want=%.1f", got, armyTaskStatusIconStep)
+	}
+	left := armyTaskStatusBadgeRect(positions[0].X, positions[0].Y)
+	right := armyTaskStatusBadgeRect(positions[1].X, positions[1].Y)
+	if left.X+left.W > right.X {
+		t.Fatalf("yan yana görev rozetleri üst üste binmemeli: left=%+v right=%+v", left, right)
+	}
+}
+
+func TestArmyTaskStatusUsesRaidArmyIDAndShowsLootTooltip(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            4,
+		Month:           6,
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"enemy": {ID: "enemy", OwnerID: "enemy", NameTR: "Düşman", BaseGoldIncome: 100, TaxRate: 100, Satisfaction: 50, BaseGrainOutput: 20},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"raider": {ID: "raider", OwnerID: "player", RegionID: "enemy"},
+			"other":  {ID: "other", OwnerID: "player", RegionID: "enemy"},
+		},
+		Raids: map[world.RegionID]*state.RaidState{
+			"enemy": {RegionID: "enemy", RaiderFactionID: "player", RaiderArmyID: "raider", Turn: 4},
+		},
+	}
+
+	if activeRaidForArmy(gs, gs.Armies["raider"]) == nil {
+		t.Fatal("yağma rozeti yağmayı başlatan orduya bağlanmalı")
+	}
+	if activeRaidForArmy(gs, gs.Armies["other"]) != nil {
+		t.Fatal("aynı bölgedeki başka ordu yağma rozeti almamalı")
+	}
+	title, detail, ok := armyTaskStatusTooltipText(gs, gs.Armies["raider"])
+	if !ok || title != "Yağmalama" || !strings.Contains(detail, "+80 altın") || !strings.Contains(detail, "+10 tahıl") {
+		t.Fatalf("yağma tooltip'i gerçek kazancı göstermeli: title=%q detail=%q ok=%t", title, detail, ok)
+	}
+}
+
+func TestArmyTaskStatusShowsAmbushBadgeAndTooltip(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            4,
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"enemy": {ID: "enemy", OwnerID: "enemy", NameTR: "Düşman"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"ambusher": {ID: "ambusher", OwnerID: "player", RegionID: "enemy", InAmbush: true},
+		},
+	}
+
+	if !armyTaskStatusVisible(gs, gs.Armies["ambusher"]) {
+		t.Fatal("oyuncunun pusu ordusu görev rozeti göstermeli")
+	}
+	title, detail, ok := armyTaskStatusTooltipText(gs, gs.Armies["ambusher"])
+	if !ok || title != "Pusu" || !strings.Contains(detail, "düşmandan gizleniyor") {
+		t.Fatalf("pusu tooltip'i görev etkisini göstermeli: title=%q detail=%q ok=%t", title, detail, ok)
 	}
 }

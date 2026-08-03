@@ -2123,5 +2123,57 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 50
+  },
+  {
+    "id": "norway_kingdom",
+    "name": "Norway Kingdom",
+    "name_tr": "Norveç Krallığı",
+    "religion": "catholic",
+    "color": [
+      186,
+      10,
+      48
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 60,
+    "timber": 500,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
+  },
+  {
+    "id": "sweden_kingdom",
+    "name": "Sweden Kingdom",
+    "name_tr": "İsveç Krallığı",
+    "religion": "catholic",
+    "color": [
+      0,
+      107,
+      165
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 400,
+    "timber": 1000,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
   }
 ]

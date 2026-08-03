@@ -1305,6 +1305,10 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 }
 
 func moveArmyWithStrategicContext(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep, strategicContext *StrategicContext) {
+	if step, handled := executeAITerritoryTask(gs, a, fid); handled {
+		addTurnStep(steps, step)
+		return
+	}
 	if step, withdrew := executeStrategicSiegeWithdrawal(gs, a, fid, strategicContext); withdrew {
 		addTurnStep(steps, step)
 	}
@@ -1649,6 +1653,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		return moveOutcome{survived: true}
 	}
 	fromRegion := a.RegionID
+	if a.InAmbush && target != a.RegionID {
+		a.InAmbush = false
+	}
 	actorName := turnFactionName(gs, fid)
 	targetName := turnRegionName(gs, target)
 	sourceName := turnRegionName(gs, fromRegion)
@@ -1688,7 +1695,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 
 	var landContactEnemy *army.Army
 	if !a.IsNaval && targetRegion.CanLandEnter() && gs.SiegeAt(target) == nil && !contactResolved {
-		landContactEnemy = gs.SelectBattleDefender(a, target, false)
+		landContactEnemy = gs.SelectAmbushDefender(a, target, false)
+		if landContactEnemy == nil {
+			landContactEnemy = gs.SelectBattleDefender(a, target, false)
+		}
 		if landContactEnemy != nil {
 			contactFromRegion := a.RegionID
 			contact := gs.BeginLandContact(a, landContactEnemy, target, contactFromRegion, state.LandContactMovement)
@@ -2077,15 +2087,24 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	navalAutoEngagement := a.IsNaval && targetRegion.IsSea && navalPatrol && !contactResolved
 	var combinedDef *army.Army
 	var defSourceIDs []army.ArmyID
+	var ambushDefender *army.Army
+	if !a.IsNaval && contactResolved {
+		ambushDefender = gs.SelectAmbushDefender(a, target, false)
+	}
 	if navalAutoEngagement {
 		combinedDef, defSourceIDs = gs.CollectNavalPatrolDefenders(a, target)
 	} else {
 		combinedDef, defSourceIDs = gs.CollectDefenders(a, target, a.IsNaval && targetRegion.IsSea)
 	}
 	var enemyArmy *army.Army
+	if ambushDefender != nil {
+		enemyArmy = ambushDefender
+		combinedDef = nil
+		defSourceIDs = nil
+	}
 	if combinedDef == nil && !navalAutoEngagement {
 		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID && !ea.InAmbush && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
 				break
 			}
@@ -2095,7 +2114,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	} else {
 		// Birleşik ordudan refakat için ilk orduyu bul.
 		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
+			if ea.RegionID == target && ea.OwnerID != a.OwnerID && !ea.InAmbush && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
 				enemyArmy = ea
 				break
 			}
@@ -2115,6 +2134,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			defOwnerID = enemyArmy.OwnerID
 		}
 		defMods := aiTechMods(gs, defOwnerID)
+		if ambushDefender != nil {
+			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
+			ambushDefender.InAmbush = false
+		}
 		result := combat.ResolveBattleWithMods(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
 		gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
 		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)

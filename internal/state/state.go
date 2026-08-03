@@ -263,6 +263,10 @@ type GameState struct {
 	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`
 	TradeCenters world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
 	Sieges       map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
+	// Bu tur uygulanacak yağmalar. Ekonomi tick'inde hedef üretiminden düşülüp
+	// yağmalayan fraksiyona aktarılır; aynı bölge aynı turda yalnız bir kez
+	// yağmalanabilir.
+	Raids map[world.RegionID]*RaidState `json:"raids,omitempty"`
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
 	MarketPrices economy.CurrentMarketPrice `json:"-"`
@@ -1082,6 +1086,12 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID {
 			continue
 		}
+		// Pusu ordusu normal keşif ve hedef seçiminde görünmezdir. Bölgeye
+		// giren hareketli ordu için özel SelectAmbushDefender çağrısı bunu
+		// temas tetikleyicisi olarak ayrıca bulur.
+		if candidate.InAmbush {
+			continue
+		}
 		if navalSeaMove && candidate.IsDocked() {
 			continue
 		}
@@ -1100,6 +1110,45 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 		}
 	}
 	return best
+}
+
+// SelectAmbushDefender, hedef bölgedeki gizli pusu ordusunu deterministik
+// olarak seçer. Bu helper yalnız hedefe giriş anındaki temas kontrolünde
+// kullanılmalıdır; normal düşman görüşü pusu ordusunu görmez.
+func (s *GameState) SelectAmbushDefender(attacker *army.Army, target world.RegionID, navalSeaMove bool) *army.Army {
+	if s == nil || attacker == nil {
+		return nil
+	}
+	var best *army.Army
+	bestPower := -1
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.RegionID != target || candidate.OwnerID == attacker.OwnerID || !candidate.InAmbush {
+			continue
+		}
+		if navalSeaMove || candidate.IsNaval {
+			continue
+		}
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+		rel, exists := s.Relations[key]
+		if !exists || rel == nil || rel.Stance != faction.StanceWar {
+			continue
+		}
+		power := 0
+		if s.UnitTypes != nil {
+			power = candidate.TotalStrength(s.UnitTypes)
+		}
+		if best == nil || power > bestPower || (power == bestPower && string(candidate.ID) < string(best.ID)) {
+			best = candidate
+			bestPower = power
+		}
+	}
+	return best
+}
+
+// ArmyHiddenFrom reports whether an army's pusu stance hides it from the
+// opposing faction. The owning faction always retains visibility.
+func (s *GameState) ArmyHiddenFrom(candidate *army.Army, observer faction.FactionID) bool {
+	return candidate != nil && candidate.InAmbush && candidate.OwnerID != string(observer)
 }
 
 // SelectNavalAutoEngagementDefender, yalnız devriye-abluka görevi çifti

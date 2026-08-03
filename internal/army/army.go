@@ -497,7 +497,6 @@ func (a *Army) Replenish(amount int) (healedUnits int) {
 // ResetMovePoints tur başında hareket puanlarını sıfırlar.
 func (a *Army) ResetMovePoints() {
 	a.MovePoints = a.MaxMovePoints
-	a.InAmbush = false
 }
 
 // LooksLikeGarrisonID legacy scenario/save verilerindeki garnizon ID desenlerini tanır.

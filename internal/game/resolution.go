@@ -533,6 +533,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	stoneByFaction := make(map[string]int)
 	spiceByFaction := make(map[string]int)
 	clothByFaction := make(map[string]int)
+	raidLootByFaction := make(map[string]state.RegionProductionSummary)
 	storageCapacityByFaction := make(map[string]int)
 	landRegionCountByFaction := make(map[string]int)
 	satisfactionDeltaByRegion := make(map[world.RegionID]int, len(gs.Regions))
@@ -615,7 +616,25 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		if productionPercent < 0 {
 			productionPercent = 0
 		}
-		grainByFaction[r.OwnerID] += (grain + capitalGrainBonus) * productionPercent / 100
+		grain = (grain + capitalGrainBonus) * productionPercent / 100
+		if raid := gs.Raids[r.ID]; raid != nil && raid.Turn == gs.Turn && raid.RaiderFactionID != faction.FactionID(r.OwnerID) {
+			loot := gs.RaidLootPreview(r)
+			income -= loot.Gold
+			grain -= loot.Grain
+			iron -= loot.Iron
+			timber -= loot.Timber
+			stone -= loot.Stone
+			spice -= loot.Spice
+			cloth -= loot.Cloth
+			incomeByFaction[r.OwnerID] -= loot.Gold
+			ironByFaction[r.OwnerID] -= loot.Iron
+			timberByFaction[r.OwnerID] -= loot.Timber
+			stoneByFaction[r.OwnerID] -= loot.Stone
+			spiceByFaction[r.OwnerID] -= loot.Spice
+			clothByFaction[r.OwnerID] -= loot.Cloth
+			raidLootByFaction[string(raid.RaiderFactionID)] = addProductionSummary(raidLootByFaction[string(raid.RaiderFactionID)], loot)
+		}
+		grainByFaction[r.OwnerID] += grain
 
 		// Vergi memnuniyet etkisi + bina bonusu
 		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
@@ -650,10 +669,14 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		ownedCount := len(gs.RegionsOwnedBy(fid))
 		techGold := fx.GoldPerRegion * ownedCount
 
-		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain
+		raidLoot := raidLootByFaction[fidStr]
+		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain + raidLoot.Grain
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
 		f.Gold += (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
+		// devletin tahıl arz cezasından etkilenmez.
+		f.Gold += raidLoot.Gold
 		f.Grain = status.Stockpile
 		if grainPenalty := grainShortageSatisfactionPenalty(status.SupplyLevel); grainPenalty > 0 {
 			for _, r := range gs.Regions {
@@ -663,11 +686,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 				satisfactionDeltaByRegion[r.ID] -= grainPenalty
 			}
 		}
-		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron
-		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber
-		f.Stone += int(float64(stoneByFaction[fidStr])*(1.0+fx.StoneMod)) + loot.Stone
-		f.Spice += spiceByFaction[fidStr] + loot.Spice
-		f.Cloth += clothByFaction[fidStr] + loot.Cloth
+		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron + raidLoot.Iron
+		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber + raidLoot.Timber
+		f.Stone += int(float64(stoneByFaction[fidStr])*(1.0+fx.StoneMod)) + loot.Stone + raidLoot.Stone
+		f.Spice += spiceByFaction[fidStr] + loot.Spice + raidLoot.Spice
+		f.Cloth += clothByFaction[fidStr] + loot.Cloth + raidLoot.Cloth
 
 		// Memnuniyet tech bonusu tüm bölgelere
 		if fx.SatisfactionBonus > 0 {
@@ -696,6 +719,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
 		gs.GrainEconomy[fid] = status
+	}
+	for regionID, raid := range gs.Raids {
+		if raid == nil || raid.Turn == gs.Turn {
+			delete(gs.Raids, regionID)
+		}
 	}
 
 	// Vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkilerini tek
@@ -769,6 +797,17 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 	gs.MarketPrices = economy.ComputeMarketPricesWithStrategicDemand(gs.Factions, grainDemandByFaction)
 	return report
+}
+
+func addProductionSummary(a, b state.RegionProductionSummary) state.RegionProductionSummary {
+	a.Gold += b.Gold
+	a.Grain += b.Grain
+	a.Iron += b.Iron
+	a.Timber += b.Timber
+	a.Stone += b.Stone
+	a.Spice += b.Spice
+	a.Cloth += b.Cloth
+	return a
 }
 
 // applyGrainFundedArmyReplenishment, mevcut ücretsiz toparlanmaya ek olarak,

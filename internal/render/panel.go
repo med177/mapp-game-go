@@ -573,23 +573,13 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		textX := flagX + factionHUDFlagSize + 13
 		DrawText(screen, f.NameTR, textX, float64(by)+10, FaceLarge, fc)
 		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
-		DrawText(screen, "Askeri güç: "+itoa(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
-		DrawText(screen, "Güç sırası: "+itoa(militaryRank)+"/"+itoa(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
+		DrawText(screen, "Askeri güç: "+formatNumberTR(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
+		DrawText(screen, "Güç sırası: "+formatNumberTR(militaryRank)+"/"+formatNumberTR(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
 	}
 
 	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
 	if hasPlayer {
-		const victoryCardX = 718.0
-		resStartX := float64(300)
-		resEndX := victoryCardX - 12
-		colGap := 12.0
-		colW := (resEndX - resStartX - colGap*2) / 3
-		if colW < 88 {
-			colW = 88
-		}
-		leftCol1 := resStartX
-		leftCol2 := leftCol1 + colW + colGap
-		rightCol := leftCol2 + colW + colGap
+		leftCol1, leftCol2, rightCol, leftColW, rightColW := topResourceHUDColumns()
 		ry := float64(by) + 12
 		rowGap := 22.0
 
@@ -613,13 +603,13 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if grainChange < 0 {
 			grainColor = ColorRed
 		}
-		drawResRow(screen, leftCol1, ry, colW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
+		drawResRow(screen, leftCol1, ry, leftColW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
 		if grainCapacity > 0 {
-			drawResRow(screen, leftCol1, ry+rowGap*2, colW, "Ambar", itoa(grainCapacity), ColorGray)
+			drawResRow(screen, leftCol1, ry+rowGap*2, leftColW, "Ambar", formatNumberTR(grainCapacity), ColorGray)
 		}
-		drawResRow(screen, leftCol2, ry, colW, economy.ResourceNameTR(economy.ResourceTimber), formatResourceHUDValue(f.Timber, production.Timber), resourceHUDChangeColor(production.Timber, color.RGBA{180, 140, 80, 255}))
-		drawResRow(screen, leftCol1, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceIron), formatResourceHUDValue(f.Iron, production.Iron), resourceHUDChangeColor(production.Iron, color.RGBA{180, 180, 220, 255}))
-		drawResRow(screen, leftCol2, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceStone), formatResourceHUDValue(f.Stone, production.Stone), resourceHUDChangeColor(production.Stone, color.RGBA{170, 170, 170, 255}))
+		drawResRow(screen, leftCol2, ry, leftColW, economy.ResourceNameTR(economy.ResourceTimber), formatResourceHUDValue(f.Timber, production.Timber), resourceHUDChangeColor(production.Timber, color.RGBA{180, 140, 80, 255}))
+		drawResRow(screen, leftCol1, ry+rowGap, leftColW, economy.ResourceNameTR(economy.ResourceIron), formatResourceHUDValue(f.Iron, production.Iron), resourceHUDChangeColor(production.Iron, color.RGBA{180, 180, 220, 255}))
+		drawResRow(screen, leftCol2, ry+rowGap, leftColW, economy.ResourceNameTR(economy.ResourceStone), formatResourceHUDValue(f.Stone, production.Stone), resourceHUDChangeColor(production.Stone, color.RGBA{170, 170, 170, 255}))
 
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
@@ -630,8 +620,8 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if income < 0 {
 			sign = ""
 		}
-		drawResRow(screen, rightCol, ry, colW, "Gelir", sign+itoa(income)+"/tur", incCol)
-		drawResRow(screen, rightCol, ry+rowGap, colW, economy.ResourceNameTR(economy.ResourceGold), itoa(f.Gold), ColorGold)
+		drawResRow(screen, rightCol, ry, rightColW, "Gelir", sign+formatNumberTR(income)+"/tur", incCol)
+		drawResRow(screen, rightCol, ry+rowGap, rightColW, economy.ResourceNameTR(economy.ResourceGold), formatNumberTR(f.Gold), ColorGold)
 	}
 
 	// Askeri kapasite göstergesi
@@ -3081,18 +3071,73 @@ func clampF(v float64) float64 {
 }
 
 func drawResRow(screen *ebiten.Image, x, y, w float64, label, value string, col color.RGBA) {
-	drawUIKeyValueRow(screen, x, y, w, label, value, ColorGray, col)
+	drawUIKeyValueRowWithGap(screen, x, y, w, label, value, ColorGray, col, 8)
+}
+
+func topResourceHUDColumns() (leftCol1, leftCol2, rightCol, leftColW, rightColW float64) {
+	const resStartX = 300.0
+	const colGap = 10.0
+	rightColW = 118.0
+	resEndX := victoryProgressPanelRect().X - 12
+	// Gelir/Altın sütunu sağa yaslanır. Dar kaynak sütunlarının sonuna
+	// sıkıştırılmadığı için formatlı değerler Kereste/Taş değerlerine
+	// taşmaz; zafer kartından önce de sabit bir boşluk korunur.
+	leftColW = (resEndX - resStartX - rightColW - colGap*2) / 2
+	if leftColW < 88 {
+		leftColW = 88
+	}
+	leftCol1 = resStartX
+	leftCol2 = leftCol1 + leftColW + colGap
+	rightCol = resEndX - rightColW
+	return
 }
 
 func formatResourceHUDValue(current, change int) string {
-	return formatSignedAmount(change) + "/" + itoa(current)
+	return formatSignedAmount(change) + "/" + formatNumberTR(current)
 }
 
 func formatSignedAmount(amount int) string {
 	if amount > 0 {
-		return "+" + itoa(amount)
+		return "+" + formatNumberTR(amount)
 	}
-	return itoa(amount)
+	return formatNumberTR(amount)
+}
+
+// formatNumberTR sayıları Türkçe binlik ayıracıyla gösterir (10.000 gibi).
+// HUD değerleri için kendi tamponunu kullandığından fmt.Sprintf'e göre daha
+// az geçici veri üretir.
+func formatNumberTR(n int) string {
+	value := int64(n)
+	negative := value < 0
+	var magnitude uint64
+	if negative {
+		magnitude = uint64(-(value + 1)) + 1
+	} else {
+		magnitude = uint64(value)
+	}
+	if magnitude == 0 {
+		return "0"
+	}
+
+	var buf [32]byte
+	pos := len(buf)
+	digits := 0
+	for magnitude > 0 {
+		if digits == 3 {
+			pos--
+			buf[pos] = '.'
+			digits = 0
+		}
+		pos--
+		buf[pos] = byte('0' + magnitude%10)
+		magnitude /= 10
+		digits++
+	}
+	if negative {
+		pos--
+		buf[pos] = '-'
+	}
+	return string(buf[pos:])
 }
 
 func resourceHUDChangeColor(change int, normal color.RGBA) color.RGBA {

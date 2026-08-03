@@ -358,7 +358,7 @@ func TestSurrenderSiegeCapturesRegionAndWithdrawsDefenders(t *testing.T) {
 	}
 }
 
-func TestAcceptedLastRegionSiegeSurrenderCreatesVassal(t *testing.T) {
+func TestAcceptedLastRegionSiegeSurrenderIsRejected(t *testing.T) {
 	gs := sortieTestState(1, 1)
 	gs.PlayerFactionID = "p1"
 	delete(gs.Regions, "exit")
@@ -368,21 +368,21 @@ func TestAcceptedLastRegionSiegeSurrenderCreatesVassal(t *testing.T) {
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
 
 	_, result, ok := g.resolveDiplomacyOffer(0, true)
-	if !ok || !result.Applied {
-		t.Fatalf("son toprak teslimiyeti uygulanmalıydı: ok=%t result=%+v", ok, result)
+	if !ok || result.Accepted || result.Applied {
+		t.Fatalf("son toprak teslimiyeti kabul edilmemeliydi: ok=%t result=%+v", ok, result)
 	}
-	if gs.Factions["p2"].OverlordID != "p1" {
-		t.Fatalf("son toprak teslimiyetinde savunmacı vassal olmalıydı: %+v", gs.Factions["p2"])
+	if gs.Factions["p2"].OverlordID != "" {
+		t.Fatalf("reddedilen son toprak teslimiyeti vassallık kurmamalıydı: %+v", gs.Factions["p2"])
 	}
 	if gs.Regions["besieged"].OwnerID != "p2" {
-		t.Fatalf("vassallık kabulünde bölge yerel devlette kalmalıydı, got=%s", gs.Regions["besieged"].OwnerID)
+		t.Fatalf("reddedilen teslimiyette bölge sahibi değişmemeliydi, got=%s", gs.Regions["besieged"].OwnerID)
 	}
-	if gs.SiegeAt("besieged") != nil || len(gs.DiplomaticOffers) != 0 {
-		t.Fatalf("teslimiyet teklifi kuşatmayı ve teklifi tüketmeliydi: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
+	if gs.SiegeAt("besieged") == nil || len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("reddedilen son toprak teslimiyeti kuşatmayı koruyup teklifi tüketmeliydi: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
 	}
 }
 
-func TestPlayerCanSendSiegeSurrenderOfferAndAIAcceptsLastRegion(t *testing.T) {
+func TestPlayerCanSendSiegeSurrenderOfferAndAIRejectsLastRegion(t *testing.T) {
 	gs := sortieTestState(1, 2)
 	gs.PlayerFactionID = "p1"
 	gs.DiplomacyOfferCounts = map[faction.FactionID]int{"p1": state.MaxDiplomacyOffersPerTurn}
@@ -396,15 +396,14 @@ func TestPlayerCanSendSiegeSurrenderOfferAndAIAcceptsLastRegion(t *testing.T) {
 	if got := gs.DiplomacyOfferQuotaUsed("p1"); got != state.MaxDiplomacyOffersPerTurn {
 		t.Fatalf("oyuncunun elçi hakkı teslimiyet teklifinde değişmemeli, got=%d", got)
 	}
-	if len(g.pendingConquestDecisions) != 1 {
-		t.Fatalf("son toprak teslimiyetinde savaş sonrası düzen kararı açılmalıydı, got=%d", len(g.pendingConquestDecisions))
+	if len(g.pendingConquestDecisions) != 0 {
+		t.Fatalf("son toprak teslimiyeti kabul edilmediğinde savaş sonrası düzen kararı açılmamalıydı, got=%d", len(g.pendingConquestDecisions))
 	}
-	if gs.SiegeAt("besieged") != nil || len(gs.DiplomaticOffers) != 0 {
-		t.Fatalf("oyuncu teklifi çözümlenince kuşatma ve bekleyen teklif kalmamalıydı: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
+	if gs.SiegeAt("besieged") == nil || len(gs.DiplomaticOffers) != 0 {
+		t.Fatalf("son toprak teslimiyeti reddedilince kuşatma korunup teklif tüketilmeliydi: siege=%+v offers=%+v", gs.SiegeAt("besieged"), gs.DiplomaticOffers)
 	}
-	g.resolvePendingConquestDecision(false)
-	if gs.Regions["besieged"].OwnerID != "p1" {
-		t.Fatalf("ilhak kararı sonrası bölge kuşatana geçmeliydi, got=%s", gs.Regions["besieged"].OwnerID)
+	if gs.Regions["besieged"].OwnerID != "p2" {
+		t.Fatalf("reddedilen teslimiyette bölge sahibi değişmemeliydi, got=%s", gs.Regions["besieged"].OwnerID)
 	}
 }
 

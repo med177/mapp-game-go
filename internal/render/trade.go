@@ -306,7 +306,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 
 	drawUISectionLabel(screen, layout.rightTitleRect.X, layout.rightTitleRect.Y+2, "Anlaşma Özeti:")
 	if focusFaction < 0 || focusFaction >= len(candidates) {
-		drawUIMutedText(screen, layout.rightListRect.X+6, layout.rightListRect.Y+10, "Önce sol listeden bir hedef fraksiyon seçin.")
+		drawUIMutedText(screen, layout.rightListRect.X+6, layout.rightListRect.Y+10, "Önce sol listeden bir hedef devlet seçin.")
 		return
 	}
 	selected := candidates[focusFaction]

@@ -41,6 +41,10 @@ func (r *Renderer) HandleInput() InputAction {
 		return action
 	}
 
+	// Bölge görevi modalı açıkken normal input engellenir.
+	if r.regionTaskDialog.show {
+		return r.handleRegionTaskDialogInput()
+	}
 	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
 		return r.handleConfirmDialogInput()
@@ -198,7 +202,7 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 	if r.worldInputLockedByPhase() {
 		if r.keyJustPressed(ebiten.KeyF11) {
-			ebiten.SetFullscreen(!ebiten.IsFullscreen())
+			r.toggleFullscreen()
 		}
 		return InputAction{}
 	}
@@ -306,7 +310,7 @@ func (r *Renderer) HandleInput() InputAction {
 		return InputAction{Kind: ActionEndTurn}
 	}
 	if r.keyJustPressed(ebiten.KeyF11) {
-		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+		r.toggleFullscreen()
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
@@ -1064,6 +1068,9 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
 			return pos.ArmyID, true
 		}
+		if armyTaskStatusVisible(r.gs, r.gs.Armies[pos.ArmyID]) && armyTaskStatusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+			return pos.ArmyID, true
+		}
 		if fleet := r.gs.Armies[pos.ArmyID]; fleet != nil {
 			if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 				return pos.ArmyID, true
@@ -1182,7 +1189,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 
 	a, ok := r.gs.Armies[r.SelectedArmy]
-	if !ok || a.OwnerID != string(r.gs.PlayerFactionID) || a.MovePoints <= 0 {
+	if !ok || a.OwnerID != string(r.gs.PlayerFactionID) {
 		return InputAction{}
 	}
 
@@ -1216,6 +1223,13 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 	}
 	if rid == "" {
+		return InputAction{}
+	}
+	if a.MovePoints <= 0 && rid != a.RegionID {
+		return InputAction{}
+	}
+	if !a.IsNaval && rid == a.RegionID {
+		r.openCurrentRegionArmyTask(a, src)
 		return InputAction{}
 	}
 	// Donanmanın kara hedefi settlement marker'ı üzerinden seçilir. Taşıyan
@@ -1350,6 +1364,64 @@ func (r *Renderer) handleRightClick() InputAction {
 		return act
 	}
 	return InputAction{}
+}
+
+// openCurrentRegionArmyTask, hareket puanı kalmayan ordunun düşman bölgesinde
+// beklerken aynı bölgeye yeni görev vermesi için ortak görev menüsüdür.
+func (r *Renderer) openCurrentRegionArmyTask(attacker *army.Army, target *world.Region) bool {
+	if !r.currentRegionArmyTaskAvailable(attacker, target) {
+		return false
+	}
+	if target.IsFortified() {
+		if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
+			r.openSiegeDecision(attacker, target)
+			return r.confirmDialog.show
+		}
+		r.showRegionTaskDialog(attacker, target, true)
+		return r.regionTaskDialog.show
+	}
+	if defender := r.gs.SelectBattleDefender(attacker, target.ID, false); defender != nil {
+		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(attacker, target, defender)
+		if opensBattlePlan {
+			r.openBattlePlan(attacker, target, defender, battleAction, battleContext)
+			if r.battlePlan.show {
+				// Ordu zaten temas sonrası hedef bölgede olduğundan bu karar
+				// yeniden hareket puanı tüketmemelidir.
+				r.battlePlan.contactResolved = true
+				r.battlePlan.contactMovementConsumed = true
+				return true
+			}
+		}
+		return false
+	}
+	r.showRegionTaskDialog(attacker, target, false)
+	return r.regionTaskDialog.show
+}
+
+// currentRegionArmyTaskAvailable, aynı bölge görevlerinin draw, cursor ve
+// input katmanlarında aynı geçerlilik koşulunu kullanmasını sağlar.
+func (r *Renderer) currentRegionArmyTaskAvailable(attacker *army.Army, target *world.Region) bool {
+	if r == nil || r.gs == nil || attacker == nil || target == nil || attacker.IsNaval ||
+		attacker.RegionID != target.ID || target.IsSea || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+		return false
+	}
+	key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+	rel := r.gs.Relations[key]
+	if rel == nil || rel.Stance != faction.StanceWar {
+		return false
+	}
+	if target.IsFortified() {
+		active := r.gs.SiegeAt(target.ID)
+		return active == nil || active.AttackerArmyID == attacker.ID
+	}
+	return true
+}
+
+func (r *Renderer) currentRegionArmyTaskIndicatorVisible(attacker *army.Army, target *world.Region) bool {
+	if !r.currentRegionArmyTaskAvailable(attacker, target) {
+		return false
+	}
+	return r.gs.SiegeByArmy(attacker.ID) == nil
 }
 
 func (r *Renderer) handleCamera() {

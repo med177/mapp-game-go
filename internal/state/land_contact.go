@@ -40,6 +40,7 @@ type LandContact struct {
 	PlayerArmyID         army.ArmyID
 	Prompted             bool
 	MovementConsumed     bool
+	AmbushArmyID         army.ArmyID
 }
 
 // BeginLandContact yeni kara temasını başlatır. Temas popup'ı açıldığında
@@ -61,6 +62,9 @@ func (s *GameState) BeginLandContact(attacker, defender *army.Army, landID, atta
 		AttackerDecision:     LandContactClash,
 		DefenderDecision:     LandContactClash,
 	}
+	if defender.InAmbush {
+		contact.AmbushArmyID = defender.ID
+	}
 	if attacker.OwnerID == string(s.PlayerFactionID) {
 		contact.PlayerArmyID = attacker.ID
 		contact.AttackerDecision = LandContactUndecided
@@ -80,6 +84,9 @@ func (s *GameState) LandContactDecisionForPlayer(contact *LandContact, decision 
 		return false
 	}
 	if decision == LandContactWithdraw {
+		if contact.AmbushArmyID != "" && contact.PlayerArmyID == contact.AttackerArmyID {
+			return false
+		}
 		playerArmy := s.Armies[contact.PlayerArmyID]
 		if playerArmy == nil {
 			return false
@@ -88,9 +95,12 @@ func (s *GameState) LandContactDecisionForPlayer(contact *LandContact, decision 
 			if playerArmy.RegionID != contact.LandRegionID || contact.AttackerFromRegionID == "" {
 				return false
 			}
-		} else if playerArmy.MovePoints <= 0 || s.LandContactRetreatRegion(playerArmy, contact.AttackerFromRegionID) == "" {
+		} else if (playerArmy.MovePoints <= 0 && contact.AmbushArmyID != playerArmy.ID) || s.LandContactRetreatRegion(playerArmy, contact.AttackerFromRegionID) == "" {
 			return false
 		}
+	}
+	if contact.AmbushArmyID != "" && decision == LandContactHold {
+		return false
 	}
 	if contact.PlayerArmyID == contact.AttackerArmyID {
 		contact.AttackerDecision = decision
@@ -166,8 +176,11 @@ func (s *GameState) LandContactHasSafeWithdrawal(contact *LandContact) bool {
 	if playerArmy == nil {
 		return false
 	}
+	if contact.AmbushArmyID != "" && contact.PlayerArmyID == contact.AttackerArmyID {
+		return false
+	}
 	if contact.PlayerArmyID == contact.AttackerArmyID {
 		return playerArmy.RegionID == contact.LandRegionID && contact.AttackerFromRegionID != ""
 	}
-	return playerArmy.MovePoints > 0 && s.LandContactRetreatRegion(playerArmy, contact.AttackerFromRegionID) != ""
+	return (playerArmy.MovePoints > 0 || contact.AmbushArmyID == playerArmy.ID) && s.LandContactRetreatRegion(playerArmy, contact.AttackerFromRegionID) != ""
 }

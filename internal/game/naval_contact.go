@@ -4,7 +4,6 @@ import (
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
-	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -51,43 +50,18 @@ func (g *Game) presentPendingNavalContact() {
 	if opponentID == playerFleet.ID {
 		opponentID = contact.DefenderArmyID
 	}
-	opponent := g.gs.Armies[opponentID]
-	seaName := string(contact.SeaRegionID)
-	if sea := g.gs.Regions[contact.SeaRegionID]; sea != nil && sea.NameTR != "" {
-		seaName = sea.NameTR
-	}
-	opponentName := "Düşman filosu"
-	if opponent != nil {
-		opponentName = g.factionNameTR(opponent.OwnerID) + " filosu"
-	}
 	defaultDecision := contact.DefenderDecision
 	if contact.PlayerArmyID == contact.DefenderArmyID {
 		defaultDecision = contact.AttackerDecision
 	}
-	message := opponentName + " " + seaName + " denizinde tespit edildi. Savaş yalnız iki taraf da Çatış seçerse başlayacak. Karşı tarafın varsayılan tutumu: " + navalContactDecisionLabel(defaultDecision) + "."
 	contact.Prompted = true
-	g.renderer.ShowThreeChoiceDialogWithThirdEnabled(
-		"Düşman Filo Tespit Edildi",
-		message,
-		"Çatış",
-		"Geri Çekil",
-		"Pozisyonu Koru",
-		render.InputAction{Kind: render.ActionResolveNavalContact, ChoiceIndex: 0},
-		render.InputAction{Kind: render.ActionResolveNavalContact, ChoiceIndex: 1},
-		render.InputAction{Kind: render.ActionResolveNavalContact, ChoiceIndex: 2},
+	g.renderer.ShowNavalContactDialog(
+		contact.PlayerArmyID,
+		opponentID,
+		contact.SeaRegionID,
+		defaultDecision,
 		playerFleet.MovePoints > 0 && g.gs.NavalContactRetreatRegion(playerFleet, contact.AttackerFromRegionID) != "",
 	)
-}
-
-func navalContactDecisionLabel(decision state.NavalContactDecision) string {
-	switch decision {
-	case state.NavalContactClash:
-		return "Çatış"
-	case state.NavalContactWithdraw:
-		return "Geri çekil"
-	default:
-		return "Pozisyonu koru"
-	}
 }
 
 func navalContactDecisionFromChoice(choice int) state.NavalContactDecision {

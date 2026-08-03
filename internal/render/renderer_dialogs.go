@@ -483,6 +483,9 @@ func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *wo
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
+	if defender.InAmbush {
+		defMods.DefenseMod += float64(world.TerrainData[target.Terrain].AmbushBonus) / 100.0
+	}
 	state := battlePlanState{
 		show:            true,
 		actionKind:      actionKind,
@@ -927,7 +930,7 @@ func (r *Renderer) handleWarConfirmInput() InputAction {
 			r.warConfirm = warConfirmState{}
 			return r.finalizeWarConfirm(wc)
 		}
-		if declineBtn.HitTest(mx, my) {
+		if declineBtn.Enabled && declineBtn.HitTest(mx, my) {
 			r.warConfirm = warConfirmState{}
 			return InputAction{}
 		}
@@ -1117,7 +1120,7 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 			}
 			if region := gs.Regions[offer.RegionID]; region != nil && region.OwnerID == string(offer.FromFactionID) {
 				if len(gs.LandRegionsOwnedBy(offer.FromFactionID)) == 1 {
-					return fromName + " devleti " + regionName + " kuşatmasında teslim oluyor. Kabul edersen bölgeyi koruyup bu devleti vassal olarak bırakacaksın."
+					return fromName + " devleti " + regionName + " kuşatmasında son toprağı için teslimiyet teklif ediyor. Bu teklif kabul edilemez."
 				}
 				return fromName + " devleti " + regionName + " kuşatmasında teslim olmayı teklif ediyor. Kabul edersen savunma ordusu geri çekilecek ve bölgeyi alacaksın."
 			}
@@ -1671,6 +1674,49 @@ func (r *Renderer) ShowThreeChoiceDialogWithThirdEnabled(title, message, acceptL
 	r.showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel, acceptAction, thirdAction, declineAction, !thirdEnabled)
 }
 
+// ShowNavalContactDialog, üçlü temas kararını filoların karşılaştırılabilir
+// durumlarıyla birlikte gösterir. Karar aksiyonları genel onay modalıyla aynı
+// input sözleşmesini kullanır; yalnızca görünüm ve yerleşim temas için özeldir.
+func (r *Renderer) ShowNavalContactDialog(playerID, opponentID army.ArmyID, seaID world.RegionID, opponentDecision state.NavalContactDecision, thirdEnabled bool) {
+	if r == nil {
+		return
+	}
+	seaName := string(seaID)
+	if r.gs != nil {
+		if sea := r.gs.Regions[seaID]; sea != nil && sea.NameTR != "" {
+			seaName = sea.NameTR
+		}
+	}
+	decisionLabel := navalContactDecisionLabelTR(opponentDecision)
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         "Düşman Filo Tespit Edildi",
+		message:       seaName + " de temas. Karar vermeden önce iki filonun gücünü ve bu turdaki hareket hakkını karşılaştır. Karşı tarafın varsayılan tutumu: " + decisionLabel + ".",
+		acceptLabel:   "Çatış",
+		thirdLabel:    "Geri Çekil",
+		declineLabel:  "Pozisyonu Koru",
+		pendingAction: InputAction{Kind: ActionResolveNavalContact, ChoiceIndex: 0},
+		thirdAction:   InputAction{Kind: ActionResolveNavalContact, ChoiceIndex: 1},
+		declineAction: InputAction{Kind: ActionResolveNavalContact, ChoiceIndex: 2},
+		declineActs:   true,
+		thirdDisabled: !thirdEnabled,
+		navalContact: &navalContactDialogState{
+			playerArmyID:     playerID,
+			opponentArmyID:   opponentID,
+			seaID:            seaID,
+			opponentDecision: opponentDecision,
+		},
+	}
+}
+
+// SetPendingContactHoldDisabled, pusu temasında Pozisyonu Koru düğmesini
+// ortak modalın mevcut disabled sözleşmesiyle pasifleştirir.
+func (r *Renderer) SetPendingContactHoldDisabled() {
+	if r != nil && r.confirmDialog.show {
+		r.confirmDialog.declineDisabled = true
+	}
+}
+
 func (r *Renderer) showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction, thirdDisabled bool) {
 	if r == nil {
 		return
@@ -1742,12 +1788,97 @@ func (r *Renderer) showEditExitConfirm() {
 }
 
 func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
-	modal := buildConfirmDialogModal()
+	if r.confirmDialog.navalContact != nil {
+		r.drawNavalContactDialog(screen)
+		return
+	}
+	modal := buildConfirmDialogModalFor(r.confirmDialog)
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
 	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 28}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
 	drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
 	r.drawConfirmDialogButtons(screen)
+}
+
+func (r *Renderer) drawNavalContactDialog(screen *ebiten.Image) {
+	contact := r.confirmDialog.navalContact
+	if contact == nil {
+		return
+	}
+	modal := buildConfirmDialogModalFor(r.confirmDialog)
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
+	panel := modal.Panel.Rect
+	drawUILabel(screen, gameui.Rect{X: panel.X + 22, Y: panel.Y + 13, W: panel.W - 44}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.X + 22, Y: panel.Y + 42, W: panel.W - 44, H: 32}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 16, 2)
+
+	cardY := panel.Y + 78
+	cardH := float64(navalContactDialogH) - 78 - 64
+	gap := 14.0
+	cardW := (panel.W - 44 - gap) / 2
+	playerCard := gameui.Rect{X: panel.X + 22, Y: cardY, W: cardW, H: cardH}
+	opponentCard := gameui.Rect{X: playerCard.X + cardW + gap, Y: cardY, W: cardW, H: cardH}
+	r.drawNavalContactFleetCard(screen, playerCard, "SENİN FİLON", contact.playerArmyID, color.RGBA{104, 164, 222, 255})
+	r.drawNavalContactFleetCard(screen, opponentCard, "TESPİT EDİLEN FİLO", contact.opponentArmyID, color.RGBA{218, 116, 101, 255})
+
+	r.drawConfirmDialogButtons(screen)
+}
+
+func (r *Renderer) drawNavalContactFleetCard(screen *ebiten.Image, rect gameui.Rect, header string, armyID army.ArmyID, accent color.RGBA) {
+	drawUICardRect(screen, rect, color.RGBA{22, 19, 15, 242}, color.RGBA{91, 74, 45, 230}, 1)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: rect.Y + 9, W: rect.W - 24}, header, accent, gameui.TextSmall, gameui.TextAlignStart)
+
+	var fleet *army.Army
+	if r.gs != nil {
+		fleet = r.gs.Armies[armyID]
+	}
+	if fleet == nil {
+		drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: rect.Y + 46, W: rect.W - 24}, "Filo bilgisi kullanılamıyor", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		return
+	}
+	factionName := fleet.OwnerID
+	if r.gs != nil {
+		factionName = factionDisplayName(r.gs, fleet.OwnerID)
+	}
+	mission := "Görev yok"
+	if fleet.NavalMission != nil {
+		mission = navalMissionLabelTR(fleet.NavalMission.Kind)
+	} else if fleet.TradeRouteKey != "" {
+		mission = "Ticaret"
+	}
+	commander := "Yok"
+	if fleet.Commander != nil && fleet.Commander.Name != "" {
+		commander = fleet.Commander.Name
+	}
+	metrics := [][2]string{
+		{"Devlet", factionName},
+		{"Birim", itoa(len(fleet.Units))},
+		{"Saldırı / Savunma", itoa(fleet.TotalStrength(r.gs.UnitTypes)) + " / " + itoa(fleet.TotalDefense(r.gs.UnitTypes))},
+		{"Moral", itoa(fleet.CurrentMorale())},
+		{"Hareket", itoa(fleet.MovePoints) + " / " + itoa(fleet.MaxMovePoints)},
+		{"Görev / Komutan", mission + " / " + commander},
+	}
+	rowY := rect.Y + 34
+	for _, metric := range metrics {
+		drawUIKeyValueRow(screen, rect.X+12, rowY, rect.W-24, metric[0], trimTextToWidth(metric[1], FaceSmall, rect.W-92), ColorGray, ColorWhite)
+		rowY += 23
+	}
+
+	power := fleet.TotalStrength(r.gs.UnitTypes)
+	powerY := rect.Y + rect.H - 54
+	drawUISeparator(screen, float32(rect.X+12), float32(powerY-9), float32(rect.X+rect.W-12), 1, color.RGBA{112, 88, 48, 220})
+	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY, W: rect.W - 24}, "GÜÇ", accent, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY + 17, W: rect.W - 24}, itoa(power), ColorWhite, gameui.TextLarge, gameui.TextAlignCenter)
+}
+
+func navalContactDecisionLabelTR(decision state.NavalContactDecision) string {
+	switch decision {
+	case state.NavalContactClash:
+		return "Çatış"
+	case state.NavalContactWithdraw:
+		return "Geri çekil"
+	default:
+		return "Pozisyonu koru"
+	}
 }
 
 func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {

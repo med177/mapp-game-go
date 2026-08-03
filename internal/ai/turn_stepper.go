@@ -103,6 +103,9 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 				s.armyIdx++
 				continue
 			}
+			if step, handled := executeAITerritoryTask(s.gs, a, s.fid); handled {
+				return step, false
+			}
 			if step, withdrew := executeStrategicSiegeWithdrawal(s.gs, a, s.fid, s.strategicContext); withdrew {
 				return step, false
 			}

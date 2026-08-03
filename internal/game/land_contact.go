@@ -65,6 +65,11 @@ func (g *Game) presentPendingLandContact() {
 		defaultDecision = contact.AttackerDecision
 	}
 	message := opponentName + " " + landName + " bölgesinde temas etti. Savaş yalnız iki taraf da Çatış seçerse başlayacak. Karşı tarafın varsayılan tutumu: " + landContactDecisionLabel(defaultDecision) + "."
+	thirdEnabled := g.gs.LandContactHasSafeWithdrawal(contact)
+	if contact.AmbushArmyID != "" {
+		message = opponentName + " " + landName + " bölgesine girdi ve pusuya düştü. Düşman ordusu geri çekilemez; pusu tarafı Çatış veya Geri Çekil seçebilir."
+		thirdEnabled = contact.PlayerArmyID == contact.DefenderArmyID && g.gs.LandContactHasSafeWithdrawal(contact)
+	}
 	contact.Prompted = true
 	g.renderer.ShowThreeChoiceDialogWithThirdEnabled(
 		"Düşman Ordusu Tespit Edildi",
@@ -75,8 +80,11 @@ func (g *Game) presentPendingLandContact() {
 		render.InputAction{Kind: render.ActionResolveLandContact, ChoiceIndex: 0},
 		render.InputAction{Kind: render.ActionResolveLandContact, ChoiceIndex: 1},
 		render.InputAction{Kind: render.ActionResolveLandContact, ChoiceIndex: 2},
-		g.gs.LandContactHasSafeWithdrawal(contact),
+		thirdEnabled,
 	)
+	if contact.AmbushArmyID != "" {
+		g.renderer.SetPendingContactHoldDisabled()
+	}
 }
 
 func landContactDecisionLabel(decision state.LandContactDecision) string {
@@ -126,9 +134,11 @@ func (g *Game) resolveLandContactChoice(choice int) {
 		movementConsumed := contact.MovementConsumed
 		g.gs.ClearLandContact()
 		if playerIsAttacker {
-			if target := g.gs.Regions[contact.LandRegionID]; target != nil && target.IsFortified() {
-				if g.renderer.ShowLandContactSiegeDecision(attacker.ID, contact.LandRegionID) {
-					return
+			if contact.AmbushArmyID == "" {
+				if target := g.gs.Regions[contact.LandRegionID]; target != nil && target.IsFortified() {
+					if g.renderer.ShowLandContactSiegeDecision(attacker.ID, contact.LandRegionID) {
+						return
+					}
 				}
 			}
 			if g.renderer.ShowLandContactBattlePlan(attacker.ID, defender.ID, contact.LandRegionID) {
@@ -146,6 +156,9 @@ func (g *Game) resolveLandContactChoice(choice int) {
 	}
 
 	ai.ResolveLandContactWithoutBattle(g.gs, contact, defender)
+	if ambusher := g.gs.Armies[contact.AmbushArmyID]; ambusher != nil {
+		ambusher.InAmbush = false
+	}
 	g.gs.ClearLandContact()
 	g.renderer.MarkMapDirty()
 	g.renderer.ShowCombatResult("Kara teması çatışmaya dönüşmeden sona erdi.")

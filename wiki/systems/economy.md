@@ -27,6 +27,15 @@ Kaynak adları ve fraksiyon alan eşlemeleri `internal/economy/resources.go` iç
 
 Devletin tur başı efektif üretimi `GameState.FactionProductionSummary()` ile bölge bazlı üretimlerden toplanır; kuşatma altındaki bölgeler üretime katkı vermez. Tahıl HUD değeri ayrıca `FactionGrainNetChange()` ile sivil talep ve ordu bakımını düşerek net stok değişimini gösterir.
 
+Düşman toprağında bekleyen ordu `Yağmala` görevini verdiğinde `GameState.Raids`
+aynı bölgeyi o tur için tek kez işaretler. Ekonomi tick'i hedefin efektif vergi
+gelirinin `%80`'ini ve üretimlerinin `%50`'sini hedef devletten düşüp yağmalayan
+fraksiyona aktarır; işlem sonrasında raid kaydı temizlenir. Aktif kuşatma yapan
+ordu yağmalayamaz. `RaidLootPreview()` aynı hesabı görev rozetinin hover
+tooltip'ine taşır; `RaidState.RaiderArmyID` yağma kazancını doğru marker'a
+bağlar (`internal/state/raid_ambush.go`, `internal/game/resolution.go`,
+`internal/render/army_task_status.go`).
+
 ---
 
 ## Vergi Sistemi
