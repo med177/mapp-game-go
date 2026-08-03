@@ -3162,8 +3162,8 @@
       "atlantic_open_4",
       "castile"
     ],
-    "world_x": 277,
-    "world_y": 432,
+    "world_x": 265,
+    "world_y": 405,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -8576,11 +8576,11 @@
     "neighbors": [
       "castile",
       "north_atlantic_iberia",
-      "portuguese_atlantic",
-      "portugal"
+      "portugal",
+      "portuguese_atlantic"
     ],
-    "world_x": 321,
-    "world_y": 465,
+    "world_x": 290,
+    "world_y": 457,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,

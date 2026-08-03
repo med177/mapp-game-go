@@ -3110,7 +3110,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "barqa_emirate",
-    "score": -30,
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -3200,7 +3200,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "barqa_emirate",
-    "score": -30,
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -13256,7 +13256,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "mecca_sharifate",
-    "score": -30,
+    "score": -20,
     "stance": "peace"
   },
   {
@@ -13346,7 +13346,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "mecca_sharifate",
-    "score": -30,
+    "score": -20,
     "stance": "peace"
   },
   {

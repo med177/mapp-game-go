@@ -1112,6 +1112,7 @@
         "x": 717,
         "y": 368,
         "type": "town",
+        "is_center": true,
         "population": 48
       },
       {
@@ -1123,19 +1124,10 @@
         "population": 23
       },
       {
-        "id": "venice",
-        "name_tr": "Venedik",
-        "x": 723,
-        "y": 370,
-        "type": "city",
-        "is_center": true,
-        "population": 93
-      },
-      {
         "id": "venice_chioggia",
         "name_tr": "Chioggia",
         "x": 722,
-        "y": 374,
+        "y": 375,
         "type": "port",
         "population": 70
       },
@@ -1146,6 +1138,14 @@
         "y": 359,
         "type": "town",
         "population": 46
+      },
+      {
+        "id": "venice",
+        "name_tr": "Venedik",
+        "x": 725,
+        "y": 372,
+        "type": "city",
+        "population": 93
       }
     ]
   },
@@ -2020,7 +2020,7 @@
         "name_tr": "İznik",
         "x": 1062,
         "y": 466,
-        "type": "city",
+        "type": "fortress",
         "population": 70
       },
       {
@@ -4231,7 +4231,7 @@
         "name_tr": "Adana",
         "x": 1182,
         "y": 533,
-        "type": "city",
+        "type": "fortress",
         "population": 30
       },
       {
@@ -4280,7 +4280,7 @@
         "name_tr": "Zamantı",
         "x": 1164,
         "y": 528,
-        "type": "fortress",
+        "type": "town",
         "population": 6
       },
       {
@@ -4875,7 +4875,7 @@
         "name_tr": "Ermenek",
         "x": 1128,
         "y": 548,
-        "type": "fortress",
+        "type": "town",
         "population": 18
       },
       {
@@ -6121,7 +6121,7 @@
         "name_tr": "Halep",
         "x": 1219,
         "y": 546,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 56
       },
@@ -6130,7 +6130,7 @@
         "name_tr": "Azez",
         "x": 1227,
         "y": 540,
-        "type": "fortress",
+        "type": "town",
         "population": 12
       },
       {
