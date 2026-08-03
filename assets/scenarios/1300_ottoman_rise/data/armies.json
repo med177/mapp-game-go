@@ -370,25 +370,6 @@
     ]
   },
   {
-    "id": "army_edit_47",
-    "owner_id": "ottoman",
-    "region_id": "bilecik_frontier",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
     "id": "army_edit_49",
     "owner_id": "venice",
     "region_id": "venice",

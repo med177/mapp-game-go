@@ -3724,7 +3724,7 @@
         "id": "sicily_palermo",
         "name_tr": "Palermo",
         "x": 742,
-        "y": 510,
+        "y": 511,
         "type": "port",
         "population": 39
       },
@@ -3745,15 +3745,15 @@
       {
         "id": "sardinia_alghero",
         "name_tr": "Alghero",
-        "x": 645,
-        "y": 467,
+        "x": 646,
+        "y": 468,
         "type": "port",
         "population": 27
       },
       {
         "id": "sardinia_cagliari",
         "name_tr": "Cagliari",
-        "x": 658,
+        "x": 659,
         "y": 490,
         "type": "port",
         "is_center": true,
@@ -3763,7 +3763,7 @@
         "id": "sardinia_oristano",
         "name_tr": "Oristano",
         "x": 647,
-        "y": 477,
+        "y": 476,
         "type": "town",
         "population": 17
       },
@@ -3791,8 +3791,8 @@
       {
         "id": "corsica_bastia",
         "name_tr": "Bastia",
-        "x": 665,
-        "y": 425,
+        "x": 666,
+        "y": 426,
         "type": "port",
         "is_center": true,
         "population": 17
@@ -3801,14 +3801,14 @@
         "id": "corsica_bonifacio",
         "name_tr": "Bonifacio",
         "x": 658,
-        "y": 448,
+        "y": 447,
         "type": "fortress",
         "population": 5
       },
       {
         "id": "corsica_calvi",
         "name_tr": "Calvi",
-        "x": 650,
+        "x": 652,
         "y": 429,
         "type": "fortress",
         "population": 5
@@ -3817,7 +3817,7 @@
         "id": "corsica_main",
         "name_tr": "Korsika",
         "x": 663,
-        "y": 437,
+        "y": 438,
         "type": "city",
         "population": 23
       }
@@ -4351,16 +4351,16 @@
       {
         "id": "genoa_corsica_admin",
         "name_tr": "Capraia",
-        "x": 650,
-        "y": 414,
+        "x": 638,
+        "y": 398,
         "type": "fortress",
         "population": 21
       },
       {
         "id": "genoa_savona",
         "name_tr": "Savona",
-        "x": 642,
-        "y": 394,
+        "x": 643,
+        "y": 395,
         "type": "port",
         "population": 63
       },
@@ -4384,7 +4384,7 @@
       {
         "id": "genoa_la_spezia",
         "name_tr": "La Spezia",
-        "x": 664,
+        "x": 665,
         "y": 393,
         "type": "port",
         "population": 74

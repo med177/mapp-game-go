@@ -37,7 +37,10 @@
       "barracks",
       "walls",
       "walls",
-      "port"
+      "port",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -74,7 +77,9 @@
     "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "east_anglia",
@@ -108,7 +113,9 @@
     "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "mercia",
@@ -178,7 +185,10 @@
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "lancashire",
@@ -213,7 +223,9 @@
     "rural_population": 143,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "welsh_marches",
@@ -250,7 +262,10 @@
     "rural_population": 143,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "scotland",
@@ -286,7 +301,14 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "wales",
@@ -319,7 +341,10 @@
     "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "ulster",
@@ -388,7 +413,9 @@
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "paris",
@@ -429,6 +456,10 @@
     "buildings": [
       "barracks",
       "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
       "walls",
       "walls"
     ]
@@ -467,7 +498,8 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "walls"
     ]
   },
   {
@@ -503,7 +535,10 @@
     "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "anjou",
@@ -575,7 +610,9 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "burgundy",
@@ -647,7 +684,9 @@
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "provence",
@@ -682,7 +721,10 @@
     "rural_population": 234,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "savoy",
@@ -718,7 +760,13 @@
     "rural_population": 234,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "languedoc",
@@ -756,7 +804,9 @@
     "rural_population": 221,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "brandenburg",
@@ -793,7 +843,13 @@
     "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "saxony",
@@ -831,7 +887,13 @@
     "rural_population": 358,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "bavaria",
@@ -869,7 +931,11 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -911,7 +977,13 @@
     "rural_population": 312,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "thuringia",
@@ -948,7 +1020,9 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "palatinate",
@@ -987,7 +1061,9 @@
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "denmark",
@@ -1023,7 +1099,13 @@
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "scania",
@@ -1056,7 +1138,9 @@
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "switzerland",
@@ -1132,7 +1216,9 @@
     "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "portugal",
@@ -1170,7 +1256,11 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "port"
+      "port",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1247,7 +1337,11 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1287,7 +1381,11 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1325,7 +1423,11 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1365,7 +1467,11 @@
     "active_event_id": "",
     "buildings": [
       "market",
-      "port"
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple"
     ]
   },
   {
@@ -1402,7 +1508,10 @@
     "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "naples",
@@ -1440,7 +1549,9 @@
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "austria",
@@ -1478,7 +1589,15 @@
     "rural_population": 520,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "bohemia",
@@ -1515,7 +1634,13 @@
     "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "poland",
@@ -1554,7 +1679,12 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "port",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1591,7 +1721,14 @@
     "rural_population": 780,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "hungary",
@@ -1632,7 +1769,13 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -1675,6 +1818,7 @@
       "barracks",
       "barracks",
       "walls",
+      "walls",
       "walls"
     ]
   },
@@ -1715,7 +1859,14 @@
     "rural_population": 338,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "wallachia",
@@ -1754,7 +1905,9 @@
     "rural_population": 325,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "oltenia",
@@ -1792,7 +1945,9 @@
     "rural_population": 374,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "bessarabia",
@@ -1829,7 +1984,12 @@
     "rural_population": 299,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "bulgaria",
@@ -1869,7 +2029,10 @@
     "rural_population": 455,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "morocco",
@@ -1905,7 +2068,14 @@
     "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "algiers",
@@ -1940,7 +2110,12 @@
     "rural_population": 245,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "central_algeria",
@@ -2048,7 +2223,14 @@
     "rural_population": 325,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "tripolitania",
@@ -2085,7 +2267,10 @@
     "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "cyrenaica",
@@ -2121,7 +2306,12 @@
     "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "greece",
@@ -2158,7 +2348,14 @@
     "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "bursa",
@@ -2193,7 +2390,11 @@
     "rural_population": 650,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "konya",
@@ -2267,7 +2468,10 @@
     "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "moscow",
@@ -2304,7 +2508,11 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -2341,7 +2549,14 @@
     "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "erzurum",
@@ -2376,7 +2591,9 @@
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "georgia",
@@ -2414,7 +2631,14 @@
     "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "egypt",
@@ -2451,7 +2675,13 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "port"
+      "port",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -2489,7 +2719,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls"
     ]
   },
   {
@@ -2522,7 +2753,9 @@
     "rural_population": 325,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "damascus",
@@ -2558,7 +2791,9 @@
     "rural_population": 585,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "baghdad",
@@ -2592,7 +2827,9 @@
     "rural_population": 520,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "northern_persia",
@@ -2628,7 +2865,8 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls"
     ]
   },
   {
@@ -2670,7 +2908,13 @@
     "rural_population": 455,
     "religion": "shia",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "southern_persia",
@@ -2709,7 +2953,12 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "port",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -2745,7 +2994,14 @@
     "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "arabian_desert",
@@ -2785,7 +3041,9 @@
     "rural_population": 260,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "slovenia",
@@ -2824,7 +3082,14 @@
     "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "croatia",
@@ -2861,7 +3126,9 @@
     "rural_population": 423,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "bosnia",
@@ -2898,7 +3165,13 @@
     "rural_population": 358,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "montenegro",
@@ -2936,7 +3209,9 @@
     "rural_population": 163,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "kosovo",
@@ -3007,7 +3282,14 @@
     "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "north_macedonia",
@@ -3044,7 +3326,9 @@
     "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "moldova",
@@ -3081,7 +3365,9 @@
     "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "atlantic_ocean",
@@ -4326,7 +4612,9 @@
     "rural_population": 325,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "estonia",
@@ -4395,7 +4683,9 @@
     "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "belarus",
@@ -4433,7 +4723,9 @@
     "rural_population": 390,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "norway",
@@ -4467,7 +4759,12 @@
     "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "sweden",
@@ -4475,7 +4772,7 @@
     "name_tr": "İsveç",
     "terrain": "forest",
     "owner_id": "sweden_kingdom",
-    "successor_faction_id": "sweden",
+    "successor_faction_id": "sweden_kingdom",
     "neighbors": [
       "baltic_sea",
       "gulf_of_finland",
@@ -4503,7 +4800,12 @@
     "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "thrace",
@@ -4539,7 +4841,9 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -4617,6 +4921,8 @@
       "barracks",
       "market",
       "port",
+      "granary",
+      "temple",
       "walls",
       "walls",
       "walls"
@@ -4697,7 +5003,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls"
     ]
   },
   {
@@ -4732,7 +5039,9 @@
     "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "lebanon",
@@ -4766,7 +5075,10 @@
     "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "kuwait",
@@ -4834,7 +5146,8 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls"
     ]
   },
   {
@@ -4876,7 +5189,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -4948,7 +5266,9 @@
     "rural_population": 130,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "ukrainian_steppe",
@@ -4988,7 +5308,8 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls"
     ]
   },
   {
@@ -5032,7 +5353,8 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "port"
     ]
   },
   {
@@ -5073,7 +5395,11 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "barracks"
+      "barracks",
+      "walls",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -5110,7 +5436,10 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -5181,7 +5510,9 @@
     "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "corsica",
@@ -5213,7 +5544,10 @@
     "rural_population": 130,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "crete",
@@ -5247,7 +5581,9 @@
     "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "malta",
@@ -5316,7 +5652,10 @@
     "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "uae",
@@ -5352,7 +5691,11 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -5418,7 +5761,12 @@
     "rural_population": 65,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "north_cyprus",
@@ -5451,7 +5799,10 @@
     "rural_population": 130,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "rhodes",
@@ -5557,7 +5908,13 @@
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "aydinoglu",
@@ -5594,7 +5951,14 @@
     "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "saruhan",
@@ -5630,7 +5994,13 @@
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "izmir",
@@ -5665,7 +6035,14 @@
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "mentese_hinterland",
@@ -5702,7 +6079,14 @@
     "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "candaroglu",
@@ -5737,7 +6121,9 @@
     "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "sivas",
@@ -5772,7 +6158,9 @@
     "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "cilicia",
@@ -5811,7 +6199,14 @@
     "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "akkoyunlu",
@@ -5848,7 +6243,9 @@
     "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "florence",
@@ -5885,7 +6282,14 @@
     "rural_population": 488,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "genoa",
@@ -5925,7 +6329,11 @@
     "active_event_id": "",
     "buildings": [
       "market",
-      "port"
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple"
     ]
   },
   {
@@ -5961,7 +6369,13 @@
     "rural_population": 553,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "granada",
@@ -6000,7 +6414,14 @@
     "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "navarra",
@@ -6035,7 +6456,13 @@
     "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "catalonia",
@@ -6071,7 +6498,9 @@
     "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "murcia",
@@ -6108,7 +6537,10 @@
     "rural_population": 386,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "pomerania",
@@ -6143,7 +6575,10 @@
     "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "transylvania",
@@ -6178,7 +6613,9 @@
     "rural_population": 423,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "mentese",
@@ -6214,7 +6651,10 @@
     "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "teke",
@@ -6286,7 +6726,13 @@
     "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "beysehir",
@@ -6322,7 +6768,12 @@
     "rural_population": 195,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "aksaray",
@@ -6358,7 +6809,9 @@
     "rural_population": 221,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sivrihisar",
@@ -6395,7 +6848,13 @@
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "cankiri",
@@ -6432,7 +6891,9 @@
     "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "karaman",
@@ -6468,7 +6929,13 @@
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "kayseri",
@@ -6541,7 +7008,14 @@
     "rural_population": 520,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "malatya",
@@ -6578,7 +7052,9 @@
     "rural_population": 403,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "dulkadir",
@@ -6614,7 +7090,13 @@
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "erzincan",
@@ -6649,7 +7131,9 @@
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "vidin",
@@ -6686,7 +7170,11 @@
     "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "styria",
@@ -6722,7 +7210,9 @@
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "tyrol",
@@ -6793,7 +7283,9 @@
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "silesia",
@@ -6829,7 +7321,9 @@
     "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "mazovia",
@@ -6865,7 +7359,9 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "friesland",
@@ -7007,7 +7503,9 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "verona",
@@ -7080,7 +7578,13 @@
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "siena",
@@ -7149,7 +7653,13 @@
     "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "rascia",
@@ -7184,7 +7694,9 @@
     "rural_population": 312,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "rijeka",
@@ -7219,7 +7731,10 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "knin",
@@ -7256,7 +7771,10 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "dalmatia",
@@ -7291,7 +7809,9 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "kvarner",
@@ -7327,7 +7847,13 @@
     "rural_population": 247,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "hum",
@@ -7363,7 +7889,9 @@
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "herzegovina",
@@ -7399,7 +7927,9 @@
     "rural_population": 208,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "epirus",
@@ -7434,7 +7964,10 @@
     "rural_population": 195,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "thessaly",
@@ -7471,7 +8004,14 @@
     "rural_population": 221,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "thessaloniki_hinterland",
@@ -7542,7 +8082,14 @@
     "rural_population": 228,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "dobruja",
@@ -7578,7 +8125,13 @@
     "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "bithynia",
@@ -7615,7 +8168,10 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "farm",
+      "walls",
+      "walls"
     ]
   },
   {
@@ -7691,7 +8247,9 @@
     "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "kiev",
@@ -7729,7 +8287,9 @@
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "podolia",
@@ -7765,7 +8325,10 @@
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "aleppo",
@@ -7841,7 +8404,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "market"
+      "market",
+      "walls"
     ]
   },
   {
@@ -7880,7 +8444,8 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "market"
+      "market",
+      "walls"
     ]
   },
   {
@@ -7955,7 +8520,11 @@
     "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "bilecik_frontier",
@@ -7993,7 +8562,11 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "farm",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -8028,7 +8601,10 @@
     "rural_population": 143,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "sinop",
@@ -8065,7 +8641,14 @@
     "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls"
+    ]
   },
   {
     "id": "chrysopolis",
@@ -8139,7 +8722,13 @@
     "rural_population": 520,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "nizhny_novgorod",
@@ -8172,7 +8761,9 @@
     "rural_population": 208,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "north_caucasus",
@@ -8212,7 +8803,9 @@
     "rural_population": 208,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "dagestan",
@@ -8247,7 +8840,9 @@
     "rural_population": 234,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "chalcidice",
@@ -8283,7 +8878,10 @@
     "rural_population": 117,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "serres",

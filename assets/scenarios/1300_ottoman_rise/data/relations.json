@@ -7250,7 +7250,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "denmark_kingdom",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -7340,7 +7340,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "denmark_kingdom",
-    "score": 25,
+    "score": -25,
     "stance": "peace"
   },
   {
@@ -8150,7 +8150,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "england",
-    "score": 25,
+    "score": 40,
     "stance": "peace"
   },
   {
@@ -8240,7 +8240,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "england",
-    "score": 25,
+    "score": 20,
     "stance": "peace"
   },
   {
@@ -13952,7 +13952,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "novgorod_rep",
-    "score": -20,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -14024,7 +14024,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "scotland_kingdom",
-    "score": 25,
+    "score": 20,
     "stance": "peace"
   },
   {
@@ -14036,7 +14036,7 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "sweden_kingdom",
-    "score": 25,
+    "score": 55,
     "stance": "peace"
   },
   {
@@ -14156,7 +14156,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "novgorod_rep",
-    "score": -20,
+    "score": -35,
     "stance": "peace"
   },
   {
@@ -15128,7 +15128,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "scotland_kingdom",
-    "score": 25,
+    "score": 20,
     "stance": "peace"
   },
   {
@@ -15212,7 +15212,7 @@
   {
     "faction_a": "sweden_kingdom",
     "faction_b": "teutonic_order",
-    "score": 25,
+    "score": 10,
     "stance": "peace"
   },
   {

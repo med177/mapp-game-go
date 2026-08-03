@@ -1267,6 +1267,47 @@
       ]
     },
     {
+      "faction_id": "norway_kingdom",
+      "profile": "north_sea_kingdom",
+      "objectives": [
+        {
+          "id": "hold_norwegian_core",
+          "kind": "consolidate",
+          "target_regions": [
+            "norway"
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "norway"
+          ]
+        },
+        {
+          "id": "protect_north_sea_frontier",
+          "kind": "defend",
+          "target_factions": [
+            "denmark_kingdom",
+            "sweden_kingdom",
+            "scotland_kingdom"
+          ],
+          "target_regions": [
+            "norway"
+          ],
+          "priority": 88,
+          "commitment": 78
+        },
+        {
+          "id": "maintain_swedish_dynastic_ties",
+          "kind": "ally",
+          "target_factions": [
+            "sweden_kingdom"
+          ],
+          "priority": 76,
+          "commitment": 60
+        }
+      ]
+    },
+    {
       "faction_id": "novgorod_rep",
       "profile": "northern_trade_survival",
       "objectives": [
@@ -1601,6 +1642,72 @@
           "allow_vassalization": true,
           "annex_region_ids": [
             "albania"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "sweden_kingdom",
+      "profile": "baltic_frontier_kingdom",
+      "objectives": [
+        {
+          "id": "hold_swedish_core",
+          "kind": "consolidate",
+          "target_regions": [
+            "sweden"
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "sweden"
+          ]
+        },
+        {
+          "id": "hold_eastern_baltic_frontier",
+          "kind": "defend",
+          "target_factions": [
+            "novgorod_rep",
+            "teutonic_order",
+            "denmark_kingdom"
+          ],
+          "target_regions": [
+            "sweden"
+          ],
+          "priority": 94,
+          "commitment": 80
+        },
+        {
+          "id": "press_novgorod_baltic_frontier",
+          "kind": "expand",
+          "target_factions": [
+            "novgorod_rep"
+          ],
+          "target_regions": [
+            "novgorod"
+          ],
+          "priority": 86,
+          "commitment": 58,
+          "readiness_regions": [
+            "sweden"
+          ]
+        },
+        {
+          "id": "contest_scanian_bridgehead",
+          "kind": "expand",
+          "target_factions": [
+            "denmark_kingdom"
+          ],
+          "target_regions": [
+            "scania"
+          ],
+          "priority": 82,
+          "commitment": 58,
+          "min_year": 1332,
+          "readiness_regions": [
+            "sweden"
+          ],
+          "annex_region_ids": [
+            "scania"
           ]
         }
       ]

@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-03: 1300 başlangıç senaryosunun bina altyapısı tarihsel yerleşim ve devlet
+  yapısına göre dolduruldu. Port yerleşimleri en az 1. seviye liman, kale yerleşimleri
+  en az 1. seviye sur, devlet başkentleri ise 1. seviye kışla/ambar/ibadethane/pazar
+  ile başlıyor. Konstantiniyye, Viyana, Belgrad, Buda, Paris, Kahire ve Rodos 3.
+  seviye; Edirne, Niş-Semendire, Vidin, Bursa, İzmit, Sinop ve Bitinya 2. seviye
+  surla işaretlendi. Regression: `Test1300ScenarioSettlementInfrastructureHasMinimumBuildings`,
+  `Test1300ScenarioHistoricalStrongholdsHaveExpectedWallLevels`; doğrulama:
+  `go test ./...`.
+
 - 2026-08-03: Kuşatılan devletin son kara toprağı için teslimiyet teklifi artık
   kabul edilmiyor. AI bu durumda teklif üretmiyor; stale veya oyuncunun AI'ya
   gönderdiği teklif de merkezi `applySurrenderOffer` doğrulamasında reddedilip
