@@ -1,11 +1,28 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-04: 1300 senaryosundaki tüm 72 devlet için AI strateji profili
+  tanımlandı. Eksik İber, İtalya, Orta Avrupa, Kafkasya, Balkan ve Britanya
+  devletleri kendi savunma çekirdekleri ile sınırlı genişleme hedeflerini aldı;
+  başlangıçta elimine Ragusa ile Burgonya da yeniden kurulduğunda kullanacakları
+  profil ve geri alma hedefleriyle kapsandı. `Test1300ScenarioAIStrategyReferencesExist`
+  artık her fraksiyon için en az bir profile/amaç tanımı zorunluluğu getiriyor.
+
+- 2026-08-04: AI'nin yeni yağma/pusu görevleri amaç ve risk temelli hale getirildi.
+  Normal zorlukta mevcut proaktif savaş, ekonomi, araştırma, donanma ve üretim
+  planının yanında; AI artık ana fetih hedefini görevle geciktirmiyor, yalnız
+  komşu düşman kuvvetinin yaklaşabildiği uygun arazide pusu kuruyor ve gerçek
+  yağma ganimeti yüksek düşman bölgelerini yağmalıyor. Belirgin karşı taarruz
+  üstünlüğünde normal güvenlik/geri çekilme akışına dönüyor. Regression:
+  `TestAITerritoryTaskCanSetAmbushAndKeepArmyHidden`,
+  `TestAITerritoryTaskRaidsValuableRegionWithoutAmbushOpportunity`,
+  `TestAITerritoryTaskDoesNotDelayPrimaryConquestTarget`.
 
 - 2026-08-03: 1300 başlangıç senaryosunun bina altyapısı tarihsel yerleşim ve devlet
   yapısına göre dolduruldu. Port yerleşimleri en az 1. seviye liman, kale yerleşimleri

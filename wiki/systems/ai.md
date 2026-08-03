@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -20,11 +20,22 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
 `internal/ai/grain_procurement.go`
 
-AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir:
-deterministik görev planı yağma veya uygun arazide pusu kurar. Pusu orduları AI
-hedef seçimi ve normal bölge savunucu taramasında gizlidir; düşman ordu bölgeye
-girdiğinde `SelectAmbushDefender` ile özel temas tetiklenir. AI pusu tarafının
-çatışma bonusu da oyuncu ile aynı arazi `AmbushBonus` değerinden gelir.
+AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir.
+Ana fetih planındaki hedef bölge görevle geciktirilmez; AI normal taarruz/kuşatma
+akışına döner. Diğer bölgelerde karar deterministiktir: komşu düşman ordusunun
+bir sonraki hamlede ulaşabildiği, pusu bonuslu arazi ve kuvvet dengesi pusu
+puanını; gerçek `RaidLootPreview` altın/kaynak çıktısı yağma puanını belirler.
+Belirgin biçimde güçlü karşı taarruz varken AI açıkta yağma veya pusu yapmaz.
+Pusu orduları AI hedef seçimi ve normal bölge savunucu taramasında gizlidir;
+düşman ordu bölgeye girdiğinde `SelectAmbushDefender` ile özel temas tetiklenir.
+AI pusu tarafının çatışma bonusu da oyuncu ile aynı arazi `AmbushBonus`
+değerinden gelir.
+
+`assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`, başlangıçta
+elimine olan Ragusa ve Burgonya dahil senaryodaki her fraksiyon için profil
+taşır. Elimine devletler normal turda plan üretmese de özgürleşip yeniden
+kurulduklarında aynı amaçlarını kullanır. `Test1300ScenarioAIStrategyReferencesExist`
+bu tam kapsama ile hedef devlet/bölge referanslarını birlikte zorunlu tutar.
 
 ## Genel Yapı
 

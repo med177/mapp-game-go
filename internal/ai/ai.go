@@ -1305,7 +1305,7 @@ func moveArmyWithSteps(gs *state.GameState, a *army.Army, fid faction.FactionID,
 }
 
 func moveArmyWithStrategicContext(gs *state.GameState, a *army.Army, fid faction.FactionID, steps *[]TurnStep, strategicContext *StrategicContext) {
-	if step, handled := executeAITerritoryTask(gs, a, fid); handled {
+	if step, handled := executeAITerritoryTaskWithStrategicContext(gs, a, fid, strategicContext); handled {
 		addTurnStep(steps, step)
 		return
 	}

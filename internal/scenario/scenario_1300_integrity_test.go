@@ -824,6 +824,19 @@ func Test1300ScenarioAIStrategyReferencesExist(t *testing.T) {
 	if len(strategies) == 0 {
 		t.Fatal("1300 AI strateji profilleri boş")
 	}
+	// Elimine devletler de özgürleştirme/ardıl devlet dönüşüyle yeniden oyuna
+	// katılabilir. Bu nedenle profil kapsaması yalnız başlangıçta aktif olanlarla
+	// sınırlı değildir; senaryodaki her fraksiyonun en az bir amacı olmalıdır.
+	for factionID := range factions {
+		strategy, ok := strategies[string(factionID)]
+		if !ok {
+			t.Errorf("senaryo devletinin AI profili eksik: faction=%s", factionID)
+			continue
+		}
+		if len(strategy.Objectives) == 0 {
+			t.Errorf("senaryo devletinin AI profilinde amaç yok: faction=%s", factionID)
+		}
+	}
 	for factionID, strategy := range strategies {
 		if factions[faction.FactionID(factionID)] == nil {
 			t.Errorf("AI profili bilinmeyen devlete bağlı: faction=%s", factionID)
