@@ -473,7 +473,6 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Teknolojiler yüklenemedi: %v", err)
 	}
-
 	armies, err := army.LoadArmies(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
@@ -494,6 +493,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		Turn:               1,
 		Year:               sc.Year,
 		Month:              sc.Month,
+		MonthsPerTurn:      sc.CalendarMonthsPerTurn(),
 		StartYear:          sc.Year,
 		Phase:              state.PhasePlayerTurn,
 		ScenarioID:         scenarioIDFromPath(scenarioPath),

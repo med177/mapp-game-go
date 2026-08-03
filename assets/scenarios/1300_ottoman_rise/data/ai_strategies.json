@@ -3,35 +3,35 @@
     "fair_movement": true,
     "levels": {
       "1": {
-        "plan_horizon_turns": 4,
+        "plan_horizon_turns": 2,
         "plan_target_region_limit": 3,
         "path_search_depth": 5,
         "plan_move_bonus_percent": 70,
         "war_threshold": 82,
         "min_attack_power_percent": 130,
-        "war_cadence_turns": 12,
+        "war_cadence_turns": 4,
         "max_concurrent_wars": 1
       },
       "2": {
-        "plan_horizon_turns": 6,
+        "plan_horizon_turns": 2,
         "plan_target_region_limit": 4,
         "path_search_depth": 8,
         "plan_move_bonus_percent": 100,
         "proactive_war": true,
         "war_threshold": 70,
         "min_attack_power_percent": 115,
-        "war_cadence_turns": 10,
+        "war_cadence_turns": 4,
         "max_concurrent_wars": 1
       },
       "3": {
-        "plan_horizon_turns": 9,
+        "plan_horizon_turns": 3,
         "plan_target_region_limit": 5,
         "path_search_depth": 12,
         "plan_move_bonus_percent": 125,
         "proactive_war": true,
         "war_threshold": 65,
         "min_attack_power_percent": 100,
-        "war_cadence_turns": 7,
+        "war_cadence_turns": 3,
         "max_concurrent_wars": 2,
         "player_target_score_bonus": 4,
         "start_gold_buffer": 80,
@@ -548,7 +548,7 @@
           ]
         },
         {
-          "id": "resume_french_claims_1337",
+          "id": "renew_french_crown_campaign_1415",
           "kind": "expand",
           "target_factions": [
             "france"
@@ -561,7 +561,7 @@
           ],
           "priority": 96,
           "commitment": 70,
-          "min_year": 1337,
+          "min_year": 1415,
           "required_event_flags": [
             "hundred_years_war_started"
           ],
@@ -704,19 +704,13 @@
           ]
         },
         {
-          "id": "recover_english_claims_1337",
+          "id": "recover_plantagenet_aquitaine_1337",
           "kind": "expand",
           "target_factions": [
             "england"
           ],
           "target_regions": [
-            "london",
-            "wessex",
-            "east_anglia",
-            "mercia",
-            "yorkshire",
-            "lancashire",
-            "wales"
+            "aquitaine"
           ],
           "priority": 96,
           "commitment": 72,
@@ -729,9 +723,7 @@
             "normandy"
           ],
           "annex_region_ids": [
-            "normandy",
-            "london",
-            "wessex"
+            "aquitaine"
           ]
         }
       ]
@@ -1131,26 +1123,25 @@
       "profile": "levant_sultanate_frontier",
       "objectives": [
         {
-          "id": "break_ilkhanate_mesopotamian_front",
+          "id": "break_ilkhanate_mesopotamian_front_1320",
           "kind": "expand",
           "target_factions": [
             "ilkhanate"
           ],
           "target_regions": [
-            "mosul",
             "baghdad",
-            "malatya",
-            "akkoyunlu"
+            "mosul"
           ],
           "priority": 94,
-          "commitment": 62,
+          "commitment": 76,
+          "min_year": 1320,
           "readiness_regions": [
             "damascus",
             "aleppo"
           ],
           "annex_region_ids": [
-            "mosul",
-            "baghdad"
+            "baghdad",
+            "mosul"
           ]
         },
         {
@@ -1333,80 +1324,58 @@
       "profile": "frontier_expansion",
       "objectives": [
         {
-          "id": "secure_bithynia",
-          "kind": "expand",
-          "target_factions": [
-            "east_rome"
-          ],
+          "id": "forge_anatolian_power_base",
+          "kind": "consolidate",
           "target_regions": [
-            "bursa",
-            "nicomedia",
-            "chrysopolis"
+            "bilecik_frontier",
+            "bithynia"
           ],
           "priority": 100,
-          "commitment": 72,
-          "annex_region_ids": [
-            "bursa",
-            "nicomedia",
-            "chrysopolis"
+          "commitment": 82,
+          "readiness_regions": [
+            "bilecik_frontier",
+            "bithynia"
           ]
         },
         {
-          "id": "unite_anatolian_beyliks",
-          "kind": "expand",
-          "target_factions": [
-            "karesioglu_bey",
-            "germiyan_bey",
-            "ahiler"
-          ],
-          "target_regions": [
-            "aydinoglu",
-            "germiyan",
-            "kutahya",
-            "sivrihisar"
-          ],
-          "priority": 92,
-          "commitment": 66,
-          "allow_vassalization": true,
-          "annex_region_ids": [
-            "kutahya"
-          ]
-        },
-        {
-          "id": "cross_into_thrace",
+          "id": "establish_rumelian_bridgehead_1354",
           "kind": "expand",
           "target_factions": [
             "east_rome"
           ],
           "target_regions": [
             "gallipoli",
-            "thrace",
-            "constantinople"
+            "thrace"
           ],
-          "priority": 86,
-          "commitment": 78,
+          "priority": 94,
+          "commitment": 84,
+          "min_year": 1354,
           "readiness_regions": [
-            "bursa",
-            "nicomedia",
-            "chrysopolis"
+            "bithynia"
+          ],
+          "annex_region_ids": [
+            "gallipoli",
+            "thrace"
           ]
         },
         {
-          "id": "secure_ankara_corridor",
+          "id": "conquer_constantinople_1453",
           "kind": "expand",
           "target_factions": [
-            "ahiler",
-            "ilkhanate"
+            "east_rome"
           ],
           "target_regions": [
-            "sivrihisar",
-            "cankiri"
+            "constantinople"
           ],
-          "priority": 88,
-          "commitment": 66,
+          "priority": 100,
+          "commitment": 90,
+          "min_year": 1453,
           "readiness_regions": [
-            "bursa",
-            "nicomedia"
+            "gallipoli",
+            "thrace"
+          ],
+          "annex_region_ids": [
+            "constantinople"
           ]
         },
         {
@@ -1465,23 +1434,26 @@
       "profile": "moscow_consolidation",
       "objectives": [
         {
-          "id": "consolidate_eastern_rus_frontier",
+          "id": "gather_rus_and_reach_black_sea_1478",
           "kind": "expand",
           "target_factions": [
-            "golden_horde"
+            "novgorod_rep",
+            "genoa"
           ],
           "target_regions": [
-            "ukrainian_steppe",
-            "podolia"
+            "novgorod",
+            "crimea"
           ],
-          "priority": 88,
-          "commitment": 58,
+          "priority": 94,
+          "commitment": 82,
+          "min_year": 1478,
           "readiness_regions": [
             "moscow",
             "north_caucasus"
           ],
           "annex_region_ids": [
-            "ukrainian_steppe"
+            "novgorod",
+            "crimea"
           ]
         },
         {
@@ -1813,7 +1785,7 @@
           "commitment": 72
         },
         {
-          "id": "secure_eastern_trade_gate",
+          "id": "restore_eastern_mediterranean_trade_gate_1340",
           "kind": "expand",
           "target_factions": [
             "east_rome"
@@ -1822,8 +1794,9 @@
             "constantinople",
             "thrace"
           ],
-          "priority": 78,
-          "commitment": 48,
+          "priority": 92,
+          "commitment": 76,
+          "min_year": 1340,
           "readiness_regions": [
             "venice",
             "crete"
@@ -1945,14 +1918,15 @@
           "commitment": 76
         },
         {
-          "id": "secure_murcian_coast",
+          "id": "pursue_neapolitan_crown_1416",
           "kind": "expand",
-          "target_factions": ["granada_emirate"],
-          "target_regions": ["murcia"],
-          "priority": 74,
-          "commitment": 50,
-          "readiness_regions": ["catalonia"],
-          "annex_region_ids": ["murcia"]
+          "target_factions": ["naples_kingdom"],
+          "target_regions": ["naples", "apulia"],
+          "priority": 94,
+          "commitment": 82,
+          "min_year": 1416,
+          "readiness_regions": ["sicily"],
+          "annex_region_ids": ["naples", "apulia"]
         }
       ]
     },
@@ -2108,13 +2082,14 @@
           "readiness_regions": ["thuringia", "switzerland"]
         },
         {
-          "id": "assert_eastern_imperial_frontier",
+          "id": "restore_imperial_authority_in_italy_1311",
           "kind": "expand",
-          "target_factions": ["polish_kingdom", "hungarian_kingdom"],
-          "target_regions": ["silesia", "slovakia"],
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": ["moravia"]
+          "target_factions": ["milan_duchy", "florence_rep", "venice"],
+          "target_regions": ["milan", "florence", "venice"],
+          "priority": 90,
+          "commitment": 76,
+          "min_year": 1311,
+          "readiness_regions": ["switzerland", "tyrol"]
         }
       ]
     },
@@ -2293,14 +2268,15 @@
           "commitment": 78
         },
         {
-          "id": "secure_algarve_frontier",
+          "id": "launch_moroccan_bridgehead_1415",
           "kind": "expand",
-          "target_factions": ["granada_emirate"],
-          "target_regions": ["algarve"],
-          "priority": 74,
-          "commitment": 48,
+          "target_factions": ["marinid_sultanate"],
+          "target_regions": ["morocco"],
+          "priority": 94,
+          "commitment": 80,
+          "min_year": 1415,
           "readiness_regions": ["portugal"],
-          "annex_region_ids": ["algarve"]
+          "annex_region_ids": ["morocco"]
         }
       ]
     },

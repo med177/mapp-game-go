@@ -35,9 +35,9 @@ func peaceTestState() *state.GameState {
 	return gs
 }
 
-func TestPeaceAssessmentBlocksFirstThreeTurnsWithoutEmergency(t *testing.T) {
+func TestPeaceAssessmentBlocksFirstQuarterWithoutEmergency(t *testing.T) {
 	gs := peaceTestState()
-	gs.Turn = 3
+	gs.Turn = 1
 	assessment := AssessPeaceDesire(gs, "a", "b")
 	if assessment.Emergency || assessment.Eligible || assessment.ShouldPropose() {
 		t.Fatalf("erken barış kapısı açık olmamalı: %+v", assessment)

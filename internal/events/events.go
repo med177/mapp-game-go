@@ -119,10 +119,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if !eventConditionsSatisfied(gs, e) {
 			continue
 		}
-		if gs.Year != e.HistoricalYear {
-			continue
-		}
-		if e.HistoricalMonth != 0 && gs.Month != e.HistoricalMonth {
+		if !historicalEventDueThisTurn(gs, e) {
 			continue
 		}
 		if e.OneShot {
@@ -154,6 +151,29 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		return e
 	}
 	return nil
+}
+
+// historicalEventDueThisTurn üç aylık takvim penceresine denk gelen olayları
+// tetikler. Bir turda yalnız ilk olay sunulabildiği için aynı penceredeki ikinci
+// tek seferlik olay, en fazla bir sonraki turda güvenli biçimde yakalanır.
+func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil {
+		return false
+	}
+	if gs.HistoricalDateOccursThisTurn(e.HistoricalYear, e.HistoricalMonth) {
+		return true
+	}
+	if e.HistoricalMonth <= 0 || e.HistoricalMonth > 12 || gs.Year <= 0 {
+		return false
+	}
+	startMonth := gs.Month
+	if startMonth < 1 || startMonth > 12 {
+		startMonth = 1
+	}
+	startAbs := gs.Year*12 + startMonth - 1
+	targetAbs := e.HistoricalYear*12 + e.HistoricalMonth - 1
+	graceMonths := gs.CalendarMonthsPerTurn() - 1
+	return targetAbs < startAbs && targetAbs >= startAbs-graceMonths
 }
 
 func (e *Event) BaseEffect() Effect {

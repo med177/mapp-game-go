@@ -96,12 +96,20 @@ geri çekilme kararı vermez. Bu varsayılan, güçlü düşman karşısında ge
 
 Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
 
+1300'de her stratejik tur üç ay kapsar; AI plan ufku ve savaş ilanı sıklığı bu
+takvim hızına göre yeniden ölçeklenmiştir. Normal zorluk iki tur (altı ay) ufukla
+planını sık günceller, dört tur (bir yıl) savaş ilanı aralığını korur. AI'nin
+toplanma, barış değerlendirmesi ve durgun savaş eşikleri de aynı gerçek zaman
+anlamını koruyacak biçimde tur bazında kısaltılmıştır. Bina, teknoloji ve birlik
+üretimi tur bazlı kalır; süreleri her senaryonun kendi `data/{buildings,technologies,units}.json`
+dosyasında doğrudan iki katına çıkarılmıştır. Runtime'da gizli bir süre çarpanı yoktur.
+
 `internal/game/scenario_balance_test.go`, yalnız `1300_ottoman_rise` için deterministik tempo harness'ıdır. `RUN_SCENARIO_TEMPO_REPORT=fast|medium|calibration` sırasıyla 12x2, 42x4 ve 120x8 kapsamını çalıştırır; `SCENARIO_TEMPO_TURNS/RUNS` ile kontrollü override, `SCENARIO_TEMPO_DIFFICULTY=1|2|3` ile zorluk karşılaştırması destekler. Go 1.25'in `rand.Seed` no-op varsayılanı test kapsamında `randseednop=0` ile kapatılır ve savaş zarları tur/fraksiyon/step scope'una ayrılır. Aynı seed'in iki turluk tam state replay testi ile benchmark da bu dosyadadır.
 
-Tempo raporu her profil için devlet bazında `wars_started`, aktif savaş-ay,
+Tempo raporu her profil için devlet bazında `wars_started`, aktif savaş-turu,
 tamamlanan savaşların ortalama süresi, fetih, barış ve stalemate sayaçlarını da
 çıkarır. Bu telemetry yalnız test harness'inde tutulur; `GameState` ve save formatı
-genişletilmez. 24 aylık tahıl bandı, 42 aylık medium tempo ve 120 aylık calibration
+genişletilmez. 12 turluk tahıl bandı, 42 turluk medium tempo ve 120 turluk calibration
 raporu aynı savaş davranış görünürlüğünü kullanır; 42 aylık altın bantları yalnız
 medium profilde doğrulanır.
 Hareket karar refactor'ı sonrasında replay testi yine geçti. CPU/allocasyon profiliyle
@@ -144,8 +152,8 @@ Kaynak/test: `internal/game/scenario_balance_test.go` içindeki
 
 ### 1300 Tahıl Ekonomisi Faz 6 Bantları
 
-`Test1300ScenarioGrainEconomyBands`, 24 turu iki seed ile erken (`1–8`), orta
-(`9–16`) ve savaş/ileri (`17–24`) pencerelerine ayırır. Her pencere ve büyük
+`Test1300ScenarioGrainEconomyBands`, 12 turu iki seed ile erken (`1–4`), orta
+(`5–8`) ve savaş/ileri (`9–12`) pencerelerine ayırır. Her pencere ve büyük
 fraksiyon için `production`, `civilian demand`, `army upkeep`, `net change`,
 `stockpile months` ve kıtlık oranı raporlanır. Kabul sözleşmesi:
 
@@ -221,9 +229,11 @@ sözleşmesi ve genel AI/scenario testleri.
 ### Venedik ve Ceneviz Deniz-Ticaret Profilleri
 
 Venedik `adriatic_merchant_thalassocracy` profiliyle Venedik, Girit, Kıbrıs ve kuzey
-Kıbrıs hattını aynı savunma objective'inde toplar; Doğu Roma'nın Konstantinopolis/Trakya
-kapısı ikinci yönelimdir. Ceneviz `western_merchant_network` profili Cenova, Korsika ve
-Kırım ticaret merkezlerini korur; Trabzon Karadeniz kapısı sonraki genişleme yönüdür.
+Kıbrıs hattını aynı savunma objective'inde toplar. Konstantinopolis/Trakya yönündeki
+`restore_eastern_mediterranean_trade_gate_1340` seferi ancak 1340'tan sonra açılır;
+böylece erken oyun ada savunması ve ticaret filosunu kurmadan uzak bir kuşatmaya
+dönüşmez. Ceneviz `western_merchant_network` profili Cenova, Korsika ve Kırım ticaret
+merkezlerini korur; Trabzon Karadeniz kapısı sonraki genişleme yönüdür.
 
 Bu objective'ler doğrudan bedava filo üretmez. Mevcut `merchant_trade.go` akışı aktif
 trade route'ları en az kapsanan merkezden doldurur, tehditli merkezde merchant gemisinden
@@ -246,10 +256,11 @@ nedeniyle sonsuza kadar kullanılmayan bir üretim bütçesine dönüşmez.
 
 ### Memlük ve İlhanlı Levant-Mezopotamya Cephesi
 
-Memlük `levant_sultanate_frontier` profili açılış savaşını Mosul-Bağdat-Malatya-
-Akkoyunlu hattına yöneltilmiş karşı taarruz objective'iyle yürütür; aynı planın
-readiness bölgeleri Şam ve Halep'tir. Savunma fallback'i Şam-Halep-Ürdün-Mısır
-koridorunu tutar ve Kahire ticaret merkezini cephe rezerviyle birlikte korur.
+Memlük `levant_sultanate_frontier` profili 1320'ye kadar Şam-Halep-Ürdün-Mısır
+koridorunu ve Kahire ticaret merkezini cephe rezerviyle korur. Ardından açılan
+`break_ilkhanate_mesopotamian_front_1320` karşı taarruzu Bağdat ve Musul'u hedefler;
+readiness bölgeleri Şam ve Halep'tir. Böylece başlangıç savaşı doğrudan, düşük maliyetli
+bir sınır baskınıyla sonuçlanmaz.
 
 İlhanlı `eastern_imperial_frontier` profili Şam/Halep/Ürdün yönünde baskı kurar;
 Bağdat, Musul, Malatya ve Azerbaycan savunma çekirdeğidir. Böylece başlangıçtaki
@@ -282,8 +293,9 @@ Test: `internal/game/scenario_balance_test.go` içindeki Balkan açılış plan 
 ### Rusya, Altın Orda ve Baltık Cephesi
 
 Rusya `moscow_consolidation` profiliyle Moskova, Nijni Novgorod, yeni doğu Rus
-çekirdeği ve Dağıstan hattını güvenceye alır; Altın Orda tehdidi sürerken Ukrayna
-bozkırına yalnız kontrollü bir konsolidasyon genişlemesi açar. Altın Orda
+çekirdeği ve Dağıstan hattını güvenceye alır. `gather_rus_and_reach_black_sea_1478`
+hedefi Novgorod ve Kırım'ı birlikte kapsar; 1478'e kadar kapalı olduğundan Rusya erken
+oyunda Altın Orda sınırına bedelsiz bir bozkır akınıyla yönelmez. Altın Orda
 `steppe_hegemony` profili Kiev-Ukrayna bozkırını ana cephe yapar, Rusya ve Litvanya
 yönündeki baskıyı önceliklendirir ve Moldova/Kiev hattını savunma rezerviyle tutar.
 
@@ -315,9 +327,10 @@ toparlamak, Fransa'nın ilk yönelimi ise Paris-Normandiya kraliyet çekirdeğin
 `hundred_years_war_1337` tarihsel olayı Mayıs 1337'de tetiklenir. Olayın otomatik veya
 oyuncu seçimiyle uygulanan kararı `hundred_years_war_started` bayrağını yazar ve
 İngiltere-Fransa ilişkisini savaşa çevirir. Sonraki stratejik plan değerlendirmesinde
-İngiltere'nin Fransız hak iddiası, Fransa'nın İngiliz karşı taarruzu objective'leri
-`min_year: 1337` ve event bayrağı hard gate'ini geçerek açılır. Hard-gate objective'leri
-açıldığında verilen aktivasyon bonusu, eski konsolidasyon planının yeni tarihsel cepheyi
+Fransa'nın Plantagenet Aquitaine'ini geri alma objective'i `min_year: 1337` ve event
+bayrağı hard gate'ini geçerek açılır. İngiltere'nin Normandiya-Anjou-Paris seferi ise
+aynı bayrağa ek olarak 1415'e kadar kapalıdır. Hard-gate objective'leri açıldığında
+verilen aktivasyon bonusu, eski konsolidasyon planının yeni tarihsel cepheyi
 gölgelemesini önler.
 
 Kaynak: `assets/scenarios/1300_ottoman_rise/data/events.json`,
@@ -326,6 +339,23 @@ Kaynak: `assets/scenarios/1300_ottoman_rise/data/events.json`,
 `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`.
 Test: `internal/game/scenario_balance_test.go` içindeki
 `Test1300EnglishFrenchWarWaitsFor1337Event`.
+
+### 1300 Büyük Devletlerde Uzak Hedef Eşikleri
+
+1300'deki ana devletlerin genişleme amaçları tek hamlede erişilebilen başlangıç
+komşularından çıkarıldı. Osmanlı önce Bitinya-Bilecik güç tabanını kurar, 1354'te
+Rumeli köprübaşını, 1453'te Konstantinopolis'i hedefler. Kutsal Roma İmparatorluğu
+1311'den itibaren Milano-Floransa-Venedik yönünde imparatorluk otoritesini; Aragon
+1416'dan itibaren Napoli-Apulya tacını; Portekiz de 1415'ten itibaren Fas köprübaşını
+hedefler. Safevîlerin mevcut 1501 İran çekirdeği hedefi aynı uzun dönem kuralını
+korur.
+
+Bu eşikler hedefe ulaşıldığını garanti etmez: normal zorlukta AI önce ekonomi,
+teknoloji, deniz lojistiği ve cephe gücünü kurar; hedef yılı geldikten sonra da savaş
+ilanı, kuşatma, yağma veya pusu kararı mevcut güç/risk kontrollerinden geçer.
+
+Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`.
+Test: `Test1300MajorPowersUseHistoricalLongHorizonObjectives`.
 
 ### Safevîler: Erken Survival, 1501 Sonrası Yükseliş
 
@@ -759,8 +789,8 @@ korunurken rota maliyetinin süre etkisi yaklaşık `%3` kaldı.
 
 ### AI Savaş Sonrası Düzen
 
-Osmanlı'nın `unite_anatolian_beyliks` objective'i hibrit sonuç kullanır. Son kara
-toprağında yenilen hedef:
+AI'nin `allow_vassalization` işaretli genişleme objective'i hibrit sonuç kullanır. Son
+kara toprağında yenilen hedef:
 
 - dış müttefiki yoksa,
 - saldıran belirgin askeri üstünlüğe sahipse,

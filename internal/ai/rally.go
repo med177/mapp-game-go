@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	aiRallyMaxWaitTurns      = 3
+	aiRallyMaxWaitTurns      = 1
 	aiRallyForceSharePercent = 60
 )
 

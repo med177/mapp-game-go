@@ -22,12 +22,12 @@ const (
 	aiTechReserve    = 100 // Teknoloji için ayırılacak minimum altın
 	aiReliefMoveBase = 35
 	aiWarThreshold   = 70
-	// Yeni bir cephe açılmadan önce en az iki aylık operasyonel tahıl stoğu
+	// Yeni bir cephe açılmadan önce en az iki turluk operasyonel tahıl stoğu
 	// korunur. Üç aylık stratejik rezerv ekonomi/ticaret sistemi içindir;
 	// savaş hazırlığı bu rezervin tamamını kilitlemez.
 	aiWarMinimumGrainReserveMonths = 2
 	aiWarMinimumGrainReserve       = 100
-	aiWarLogisticsActivationTurn   = 24
+	aiWarLogisticsActivationTurn   = 8
 )
 
 const (
@@ -547,8 +547,8 @@ func aiWarCadenceAllows(gs *state.GameState, fid faction.FactionID) bool {
 			interval -= 2
 		}
 	}
-	if interval < 4 {
-		interval = 4
+	if interval < 2 {
+		interval = 2
 	}
 	offset := 0
 	for _, ch := range string(fid) {

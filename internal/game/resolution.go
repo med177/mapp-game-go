@@ -544,7 +544,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			continue
 		}
 		landRegionCountByFaction[r.OwnerID]++
-		if gs.Month == 12 {
+		if gs.CurrentTurnIncludesMonth(12) {
 			satisfactionDeltaByRegion[r.ID] -= annualSatisfactionDecay
 		}
 		if gs.SiegeAt(r.ID) != nil {
@@ -891,11 +891,11 @@ func applyGrainFundedArmyReplenishment(gs *state.GameState) {
 	}
 }
 
-// applyGrainFundedPopulationGrowth yılda bir kez, yalnızca depolama kapasitesini
+// applyGrainFundedPopulationGrowth yılda bir kez Kasım ayını kapsayan turda, yalnızca depolama kapasitesini
 // aşan ve stabil rezervden tahıl harcayarak nüfusu büyütür. Bölge sırası ve
 // fraksiyon sırası deterministiktir; savaş rezervi kapasite tabanına kadar korunur.
 func applyGrainFundedPopulationGrowth(gs *state.GameState) {
-	if gs == nil || gs.Month != grainPopulationGrowthMonth || len(gs.GrainEconomy) == 0 {
+	if gs == nil || !gs.CurrentTurnIncludesMonth(grainPopulationGrowthMonth) || len(gs.GrainEconomy) == 0 {
 		return
 	}
 

@@ -109,6 +109,9 @@ type Scenario struct {
 	Author      string  `json:"author"`
 	Year        int     `json:"year"`
 	Month       int     `json:"month"`
+	// TurnMonths bir stratejik turun temsil ettiği takvim ayı sayısıdır.
+	// 0 değeri eski senaryolar için bir aylık uyumluluk davranışını korur.
+	TurnMonths int `json:"turn_months,omitempty"`
 
 	MapConfig         MapConfig          `json:"map"`
 	Music             MusicConfig        `json:"music"`
@@ -128,6 +131,29 @@ func (s *Scenario) AssetPath(subdir, filename string) string {
 	return filepath.Join(s.Path, subdir, filename)
 }
 
+// CalendarMonthsPerTurn senaryonun bir turda kaç takvim ayı ilerlettiğini
+// normalize eder. Eski senaryoların eksik alanı bir aylık davranışı korur.
+func (s Scenario) CalendarMonthsPerTurn() int {
+	if s.TurnMonths >= 1 && s.TurnMonths <= 12 {
+		return s.TurnMonths
+	}
+	return 1
+}
+
+// Load bir senaryo dizinindeki tanımı okur ve runtime path bilgisini doldurur.
+func Load(path string) (*Scenario, error) {
+	data, err := os.ReadFile(filepath.Join(path, "scenario.json"))
+	if err != nil {
+		return nil, fmt.Errorf("senaryo tanımı okunamadı: %w", err)
+	}
+	var definition Scenario
+	if err := json.Unmarshal(data, &definition); err != nil {
+		return nil, fmt.Errorf("senaryo tanımı parse edilemedi: %w", err)
+	}
+	definition.Path = path
+	return &definition, nil
+}
+
 // LoadAll baseDir/scenarios.json index dosyasını okuyarak senaryoları sırayla yükler.
 func LoadAll(baseDir string) ([]*Scenario, error) {
 	indexPath := filepath.Join(baseDir, "scenarios.json")
@@ -143,17 +169,11 @@ func LoadAll(baseDir string) ([]*Scenario, error) {
 
 	var scenarios []*Scenario
 	for _, id := range ids {
-		metaPath := filepath.Join(baseDir, id, "scenario.json")
-		data, err := os.ReadFile(metaPath)
+		s, err := Load(filepath.Join(baseDir, id))
 		if err != nil {
 			continue
 		}
-		var s Scenario
-		if err := json.Unmarshal(data, &s); err != nil {
-			continue
-		}
-		s.Path = filepath.Join(baseDir, id)
-		scenarios = append(scenarios, &s)
+		scenarios = append(scenarios, s)
 	}
 
 	if len(scenarios) == 0 {

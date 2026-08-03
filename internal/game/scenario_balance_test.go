@@ -194,14 +194,14 @@ func warTempoWasStalemate(gs *state.GameState, ledger state.WarLedger) bool {
 		return false
 	}
 	warTurns := gs.Turn - ledger.StartedTurn
-	if warTurns < 12 {
+	if warTurns < 4 {
 		return false
 	}
 	lastActionTurn := ledger.LastBattleTurn
 	if lastActionTurn == 0 {
 		lastActionTurn = ledger.StartedTurn
 	}
-	if gs.Turn-lastActionTurn < 8 {
+	if gs.Turn-lastActionTurn < 3 {
 		return false
 	}
 	for regionID, siege := range gs.Sieges {
@@ -290,13 +290,19 @@ func TestLoadScenarioDataLoads1300AIStrategyProfiles(t *testing.T) {
 	if _, ok := gs.AIStrategies["east_rome"]; !ok {
 		t.Fatal("Doğu Roma AI profili runtime state'e yüklenmedi")
 	}
+	if gs.MonthsPerTurn != 3 {
+		t.Fatalf("1300 senaryosu üç aylık tur temposuyla yüklenmeli: %d", gs.MonthsPerTurn)
+	}
+	if gs.TechTypes["iron_weapons"].TurnsRequired != 6 || gs.BuildingTypes["market"].TurnsRequired != 4 || gs.UnitTypes["militia"].TurnsRequired != 4 {
+		t.Fatalf("1300 süre verisi iki katına çıkarılmadı: tech=%d building=%d unit=%d", gs.TechTypes["iron_weapons"].TurnsRequired, gs.BuildingTypes["market"].TurnsRequired, gs.UnitTypes["militia"].TurnsRequired)
+	}
 	level, ok := gs.AIDifficultyPolicy.Level(2)
-	if !ok || !gs.AIDifficultyPolicy.FairMovement || level.PlanHorizonTurns != 6 || level.MinAttackPowerPercent != 115 {
+	if !ok || !gs.AIDifficultyPolicy.FairMovement || level.PlanHorizonTurns != 2 || level.MinAttackPowerPercent != 115 {
 		t.Fatalf("1300 AI zorluk politikası runtime state'e yüklenmedi: policy=%+v level=%+v", gs.AIDifficultyPolicy, level)
 	}
 }
 
-func Test1300OttomanOpeningPlanUsesBithynianDirection(t *testing.T) {
+func Test1300OttomanOpeningPlanBuildsAnatolianPowerBase(t *testing.T) {
 	gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
 	if err != nil {
 		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
@@ -305,8 +311,8 @@ func Test1300OttomanOpeningPlanUsesBithynianDirection(t *testing.T) {
 	ai.TakeTurn(gs, "ottoman")
 
 	plan := gs.AIPlans["ottoman"]
-	if plan == nil || plan.ObjectiveID != "secure_bithynia" || plan.TargetFactionID != "east_rome" {
-		t.Fatalf("Osmanlı açılış yönü Bitinya hattında kalmalıydı: %+v", plan)
+	if plan == nil || plan.ObjectiveID != "forge_anatolian_power_base" || plan.Kind != state.AIObjectiveConsolidate {
+		t.Fatalf("Osmanlı açılışta uzun vadeli Rumeli seferinden önce Anadolu güç tabanını kurmalıydı: %+v", plan)
 	}
 }
 
@@ -317,7 +323,7 @@ func Test1300LevantFrontPlansFollowOpeningWar(t *testing.T) {
 		targetID    faction.FactionID
 		firstRegion world.RegionID
 	}{
-		{factionID: "mamluk", objective: "break_ilkhanate_mesopotamian_front", targetID: "ilkhanate", firstRegion: "mosul"},
+		{factionID: "mamluk", objective: "hold_levant_cairo_corridor", targetID: "ilkhanate", firstRegion: "damascus"},
 		{factionID: "ilkhanate", objective: "press_levant_frontier", targetID: "mamluk", firstRegion: "damascus"},
 	} {
 		t.Run(string(test.factionID), func(t *testing.T) {
@@ -369,7 +375,7 @@ func Test1300EasternSteppeAndBalticPlansFollowRegionalObjectives(t *testing.T) {
 		objective string
 		kind      state.AIObjectiveKind
 	}{
-		"russia":         {"consolidate_eastern_rus_frontier", state.AIObjectiveExpand},
+		"russia":         {"hold_moscow_northern_frontier", state.AIObjectiveDefend},
 		"golden_horde":   {"press_rus_steppe", state.AIObjectiveExpand},
 		"teutonic_order": {"press_lithuanian_frontier", state.AIObjectiveExpand},
 		"novgorod_rep":   {"hold_novgorod_trade_gate", state.AIObjectiveDefend},
@@ -427,11 +433,18 @@ func Test1300EnglishFrenchWarWaitsFor1337Event(t *testing.T) {
 	gs.AIPlans = nil
 	ai.TakeTurn(gs, "england")
 	ai.TakeTurn(gs, "france")
-	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "resume_french_claims_1337" || plan.TargetFactionID != "france" {
-		t.Fatalf("1337 sonrası İngiltere Fransız cephe objective'ine geçmeli: %+v", plan)
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "secure_english_channel_and_isles" {
+		t.Fatalf("İngiltere 1415'e kadar kıta seferi yerine ada savunmasını sürdürmeli: %+v", plan)
 	}
-	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "recover_english_claims_1337" || plan.TargetFactionID != "england" {
+	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "recover_plantagenet_aquitaine_1337" || plan.TargetFactionID != "england" {
 		t.Fatalf("1337 sonrası Fransa İngiliz cephe objective'ine geçmeli: %+v", plan)
+	}
+
+	gs.Year = 1415
+	gs.AIPlans = nil
+	ai.TakeTurn(gs, "england")
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "renew_french_crown_campaign_1415" || plan.TargetFactionID != "france" {
+		t.Fatalf("İngiltere 1415'te Fransız tacı seferine geçmeli: %+v", plan)
 	}
 }
 
@@ -486,7 +499,7 @@ func Test1300HardDifficultyExtendsEastRomePlanningCoverage(t *testing.T) {
 	if len(normal.TargetRegionIDs) != 4 || len(hard.TargetRegionIDs) != 5 {
 		t.Fatalf("zor AI daha geniş objective kapsamalıydı: normal=%+v hard=%+v", normal.TargetRegionIDs, hard.TargetRegionIDs)
 	}
-	if normal.ReassessTurn-normal.StartedTurn != 6 || hard.ReassessTurn-hard.StartedTurn != 9 {
+	if normal.ReassessTurn-normal.StartedTurn != 2 || hard.ReassessTurn-hard.StartedTurn != 3 {
 		t.Fatalf("plan ufku zorlukla ölçeklenmedi: normal=%+v hard=%+v", normal, hard)
 	}
 }
@@ -664,14 +677,17 @@ func Test1300ScenarioTempoReport(t *testing.T) {
 
 func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 	enableScenarioTempoRandSeeding(t)
-	const turns = 24
+	const turns = 12
 	const runs = 2
+	// Uzun vadeli hedefler açılışta fetih yerine üretim yatırımı yaptırdığından,
+	// erken birikimin kabul edilen üst bandı fetih odaklı akıştan biraz yüksektir.
+	const maxProductionRatio = 4.1
 	majorFactions := []faction.FactionID{"ottoman", "venice", "mamluk", "england", "france"}
 	phaseName := func(turn int) string {
 		switch {
-		case turn <= 8:
+		case turn <= 4:
 			return "erken"
-		case turn <= 16:
+		case turn <= 8:
 			return "orta"
 		default:
 			return "savaş"
@@ -735,7 +751,7 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 			}
 			productionRatio := production / civilianDemand
 			netRatio := netChange / civilianDemand
-			if productionRatio < 0.75 || productionRatio > 4.0 {
+			if productionRatio < 0.75 || productionRatio > maxProductionRatio {
 				t.Fatalf("%s/%s üretim-tüketim bandı dışı: ratio=%.2f production=%.1f civilian=%.1f", fid, phase, productionRatio, production, civilianDemand)
 			}
 			if netRatio < -1.0 || netRatio > 2.5 {

@@ -8,7 +8,10 @@ import (
 	"sort"
 	"testing"
 
+	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/tech"
 )
 
 func TestVictoryOptionRegionTargetsPrefersRequiredRegions(t *testing.T) {
@@ -46,6 +49,54 @@ func TestFilterVictoryOptionsForFaction(t *testing.T) {
 	}
 	if got[0].ID != "shared" || got[1].ID != "ottoman_only" {
 		t.Fatalf("beklenmeyen filtre sonucu: %+v", got)
+	}
+}
+
+func TestCalendarMonthsPerTurnUsesScenarioValue(t *testing.T) {
+	sc := Scenario{TurnMonths: 3}
+	if got := sc.CalendarMonthsPerTurn(); got != 3 {
+		t.Fatalf("üç aylık takvim ayarı kayboldu: %d", got)
+	}
+	if got := (Scenario{}).CalendarMonthsPerTurn(); got != 1 {
+		t.Fatalf("eski senaryo uyumluluğu bir ay olmalı: %d", got)
+	}
+}
+
+func TestScenarioTurnDurationsAreExplicitlyScaledInData(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	for _, scenarioID := range []string{"1300_ottoman_rise", "1455_wars_of_the_roses"} {
+		scenarioPath := filepath.Join(root, "assets", "scenarios", scenarioID, "data")
+		buildings, err := city.LoadBuildings(filepath.Join(scenarioPath, "buildings.json"))
+		if err != nil {
+			t.Fatalf("%s binaları yüklenemedi: %v", scenarioID, err)
+		}
+		technologies, err := tech.LoadTechnologies(filepath.Join(scenarioPath, "technologies.json"))
+		if err != nil {
+			t.Fatalf("%s teknolojileri yüklenemedi: %v", scenarioID, err)
+		}
+		units, err := army.LoadUnitTypes(filepath.Join(scenarioPath, "units.json"))
+		if err != nil {
+			t.Fatalf("%s birlikleri yüklenemedi: %v", scenarioID, err)
+		}
+		for id, building := range buildings {
+			if building.TurnsRequired < 4 || building.TurnsRequired%2 != 0 {
+				t.Errorf("%s/%s bina süresi doğrudan iki katlı veri değil: %d", scenarioID, id, building.TurnsRequired)
+			}
+		}
+		for id, technology := range technologies {
+			if technology.TurnsRequired < 4 || technology.TurnsRequired%2 != 0 {
+				t.Errorf("%s/%s teknoloji süresi doğrudan iki katlı veri değil: %d", scenarioID, id, technology.TurnsRequired)
+			}
+		}
+		for id, unit := range units {
+			if unit.TurnsRequired < 4 || unit.TurnsRequired%2 != 0 {
+				t.Errorf("%s/%s birlik süresi doğrudan iki katlı veri değil: %d", scenarioID, id, unit.TurnsRequired)
+			}
+		}
 	}
 }
 

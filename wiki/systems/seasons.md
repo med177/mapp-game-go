@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [seasons, time, month, year, weather]
-last_updated: 2026-08-01
+last_updated: 2026-08-04
 related: [architecture/game-loop, systems/economy, systems/diplomacy]
 ---
 
@@ -11,11 +11,14 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 
 ## Zaman Yapısı
 
-- **1 tur = 1 ay**
-- **12 tur = 1 yıl**
-- Başlangıç: Mart 1300
+- 1300 ve 1455 senaryolarında **1 tur = 3 ay (bir mevsim)**
+- **4 tur = 1 yıl**; 1300 başlangıcı Mart olduğu için turlar sırasıyla
+  Mart-Mayıs, Haziran-Ağustos, Eylül-Kasım ve Aralık-Şubat aralıklarını kapsar.
+- `turn_months` içermeyen eski senaryo/save'ler geriye uyumluluk için **1 ay/tur**
+  davranışını korur.
 
-`gs.AdvanceTurn()` → `Month++`; Ocak geçince `Year++`
+`gs.AdvanceTurn()` → `Month += MonthsPerTurn`; yıl sınırı geçilince `Year++`.
+Mevsim, turun başlangıç ayından seçilir.
 
 ---
 
@@ -52,6 +55,8 @@ related: [architecture/game-loop, systems/economy, systems/diplomacy]
 - Sonbahar: Gelir çarpanı
 - Kış dışı turlar: Kara orduları kendi, müttefik veya aynı realm içindeki vassal devletin kara toprağında toparlanır; donanmalar ise kendi, müttefik veya vassal limanına bağlı (`DockedRegionID`) durumdaysa toparlanır. Kendi limanında gemiler ve taşınan kara birlikleri `+10 HP`, müttefik/vassal limanında ise `+5 HP` alır
 - Gemide kara birimi taşıyan filolar limana uğramadan uzun süre açık denizde kalırsa `turns_without_port` sayacı işler; 3 turluk emniyet penceresinden sonra taşınan birlikler her tur artan HP zayiatı alır ve limana bağlanınca sayaç sıfırlanır
+- Yıllık ekonomi etkileri takvim penceresiyle bağlıdır: nüfus büyümesi Kasımı,
+  memnuniyet eskimesi Aralığı kapsayan turda yalnız bir kez uygulanır.
 
 → Çözümleme sırası için [[architecture/game-loop]]
 

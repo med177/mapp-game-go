@@ -32,7 +32,7 @@ func TestRallyStatePersistsSafeBorderAndHoldsGatheredArmy(t *testing.T) {
 	plan := gs.AIPlans[faction.FactionID("ai")]
 
 	if plan.RallyRegionID != "front" || plan.RallyDeadlineTurn != gs.Turn+aiRallyMaxWaitTurns {
-		t.Fatalf("güvenli hedef sınırı üç turluk rally olmalıydı: %+v", plan)
+		t.Fatalf("güvenli hedef sınırı bir mevsimlik rally olmalıydı: %+v", plan)
 	}
 	if !ctx.RallyActive || ctx.RallyRegionID != "front" || ctx.RallyRequiredPower <= 0 {
 		t.Fatalf("rally hazırlığı runtime context'e yansımadı: %+v", ctx)
@@ -69,7 +69,7 @@ func TestRallyCompletesWhenTwoArmiesMeetPowerRequirement(t *testing.T) {
 	}
 }
 
-func TestRallyDeadlineReleasesIncompleteForceAfterThreeTurns(t *testing.T) {
+func TestRallyDeadlineReleasesIncompleteForceAfterOneSeason(t *testing.T) {
 	gs := aiRallyTestState()
 	first := prepareStrategicContext(gs, "ai")
 	deadline := first.RallyDeadlineTurn
@@ -77,7 +77,7 @@ func TestRallyDeadlineReleasesIncompleteForceAfterThreeTurns(t *testing.T) {
 
 	released := prepareStrategicContext(gs, "ai")
 	if released.RallyActive || !released.RallyReady || gs.AIPlans["ai"].RallyDeadlineTurn != deadline {
-		t.Fatalf("üç tur sonunda eksik kuvvet de serbest bırakılmalıydı: context=%+v plan=%+v", released, gs.AIPlans["ai"])
+		t.Fatalf("bir mevsim sonunda eksik kuvvet de serbest bırakılmalıydı: context=%+v plan=%+v", released, gs.AIPlans["ai"])
 	}
 }
 

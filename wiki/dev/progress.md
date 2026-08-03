@@ -7,6 +7,24 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: 1300 ve 1455 senaryoları üç aylık (mevsimlik) stratejik tura geçti:
+  dört tur bir yılı temsil ediyor. Bina, birlik ve teknoloji kuyrukları tur bazlı
+  kaldı; süreleri ilgili senaryo veri dosyalarında doğrudan iki katına çıkarıldı.
+  AI plan/savaş,
+  toplanma ve barış zamanlaması gerçek takvim temposunu koruyacak şekilde
+  ölçeklendi; yıllık ekonomi etkileri takvim penceresine bağlandı. Tarihsel olaylar
+  artık üç aylık pencereyi kullanıyor ve aynı penceredeki ikinci olay bir sonraki
+  turda güvenli biçimde işleniyor. Regression: `TestQuarterlyTurnCoversCalendarRangeAndAdvancesThreeMonths`,
+  `TestTickCarriesSecondHistoricalEventIntoNextQuarter`, `TestScenarioTurnDurationsAreExplicitlyScaledInData`.
+
+- 2026-08-04: 1300'deki büyük devletlerin AI genişleme hedefleri tarihsel uzun dönem
+  eşiklerine taşındı. Osmanlı 1354 Rumeli/1453 Konstantinopolis, İngiltere 1415 Fransız
+  tacı, Fransa 1337 Aquitaine, Kutsal Roma 1311 İtalya, Memlük 1320 Bağdat-Musul,
+  Rusya 1478 Novgorod-Kırım, Venedik 1340 Doğu Akdeniz, Aragon 1416 Napoli, Portekiz
+  1415 Fas ve Safevî 1501 İran çekirdeği ekseninde plan yapar. Açılışta konsolidasyon
+  veya savunma seçildiği ve her uzun hedefin yıl/bölge eşiği regression testinde
+  doğrulanır: `Test1300MajorPowersUseHistoricalLongHorizonObjectives`.
+
 - 2026-08-04: 1300 senaryosundaki tüm 72 devlet için AI strateji profili
   tanımlandı. Eksik İber, İtalya, Orta Avrupa, Kafkasya, Balkan ve Britanya
   devletleri kendi savunma çekirdekleri ile sınırlı genişleme hedeflerini aldı;

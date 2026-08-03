@@ -44,6 +44,39 @@ func TestTickReturnsEventWithoutApplyingEffects(t *testing.T) {
 	}
 }
 
+func TestTickTriggersHistoricalMonthInsideQuarterlyTurn(t *testing.T) {
+	gs := &state.GameState{Year: 1337, Month: 3, MonthsPerTurn: 3}
+	evts := []*Event{{
+		ID:              "hundred_years_war",
+		HistoricalYear:  1337,
+		HistoricalMonth: 5,
+		OneShot:         true,
+	}}
+
+	evt := Tick(gs, evts)
+	if evt == nil || evt.ID != "hundred_years_war" {
+		t.Fatalf("Mayıs olayı Mart-Mayıs stratejik turunda atlanmamalıydı: %+v", evt)
+	}
+	if !gs.FiredEventIDs["hundred_years_war"] {
+		t.Fatal("tek seferlik tarihsel olay işaretlenmeliydi")
+	}
+}
+
+func TestTickCarriesSecondHistoricalEventIntoNextQuarter(t *testing.T) {
+	gs := &state.GameState{Year: 1454, Month: 12, MonthsPerTurn: 3}
+	evts := []*Event{
+		{ID: "first", HistoricalYear: 1455, HistoricalMonth: 1, OneShot: true},
+		{ID: "second", HistoricalYear: 1455, HistoricalMonth: 1, OneShot: true},
+	}
+	if evt := Tick(gs, evts); evt == nil || evt.ID != "first" {
+		t.Fatalf("ilk çeyrek olayı bekleniyordu: %+v", evt)
+	}
+	gs.AdvanceTurn()
+	if evt := Tick(gs, evts); evt == nil || evt.ID != "second" {
+		t.Fatalf("aynı çeyrekteki ikinci olay sonraki turda atlanmamalıydı: %+v", evt)
+	}
+}
+
 func TestAffectedRegionIDsAllArmiesSkipsSeaRegions(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

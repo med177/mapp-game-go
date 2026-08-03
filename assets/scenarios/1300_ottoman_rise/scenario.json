@@ -6,6 +6,7 @@
   "author": "Mapp Team",
   "year": 1300,
   "month": 3,
+  "turn_months": 3,
   "map": {
     "world_width": 2892,
     "world_height": 1440,

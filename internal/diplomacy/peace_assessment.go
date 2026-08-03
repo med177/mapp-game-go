@@ -7,8 +7,8 @@ import (
 
 const (
 	peaceDesireThreshold     = 42
-	peaceMinimumWarTurns     = 3
-	peaceOfferCooldown       = 3
+	peaceMinimumWarTurns     = 1
+	peaceOfferCooldown       = 1
 	peaceEmergencyDiscount   = 10
 	peaceAcceptanceThreshold = 18
 )
@@ -267,14 +267,14 @@ func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledg
 		return false
 	}
 	warTurns := gs.Turn - ledger.StartedTurn
-	if warTurns < 12 {
+	if warTurns < 4 {
 		return false
 	}
 	lastActionTurn := ledger.LastBattleTurn
 	if lastActionTurn == 0 {
 		lastActionTurn = ledger.StartedTurn
 	}
-	if gs.Turn-lastActionTurn < 8 {
+	if gs.Turn-lastActionTurn < 3 {
 		return false
 	}
 	for regionID, siege := range gs.Sieges {

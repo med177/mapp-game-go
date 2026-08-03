@@ -823,13 +823,7 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 	x, y, w, h := topDateHudRect()
 	drawUIPanelFrame(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, panelBg, panelBorder, 1.5, 3)
 
-	months := [...]string{"", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-		"Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"}
-	month := ""
-	if gs.Month >= 1 && gs.Month <= 12 {
-		month = months[gs.Month]
-	}
-	dateStr := month + " " + itoa(gs.Year)
+	dateStr := strategicTurnDateTR(gs)
 	DrawText(screen, dateStr, float64(x)+12, float64(y)+13, FaceMed, ColorGold)
 	DrawText(screen, gs.CurrentSeason().DisplayName()+"  •  Tur "+itoa(gs.Turn),
 		float64(x)+12, float64(y)+42, FaceSmall, color.RGBA{160, 200, 100, 220})
@@ -840,6 +834,25 @@ func drawDateMenuHud(screen *ebiten.Image, gs *state.GameState, mapMode MapMode)
 
 	btn := buildTopDateHudMenuButton()
 	drawUIButtonWidget(screen, btn, dateMenuButtonStyle)
+}
+
+func strategicTurnDateTR(gs *state.GameState) string {
+	if gs == nil {
+		return ""
+	}
+	startMonth := monthName(gs.Month)
+	endYear, endMonth := gs.CurrentTurnEndDate()
+	endMonthName := monthName(endMonth)
+	if startMonth == "" || endMonthName == "" {
+		return itoa(gs.Year)
+	}
+	if gs.Year == endYear && gs.Month == endMonth {
+		return startMonth + " " + itoa(gs.Year)
+	}
+	if gs.Year == endYear {
+		return startMonth + "–" + endMonthName + " " + itoa(gs.Year)
+	}
+	return startMonth + " " + itoa(gs.Year) + "–" + endMonthName + " " + itoa(endYear)
 }
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────

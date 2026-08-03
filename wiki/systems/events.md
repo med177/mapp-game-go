@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-07-22
+last_updated: 2026-08-04
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -24,9 +24,16 @@ Deterministik simülasyon için `random_region` adayları ile `all_factions`, `a
 `events.Tick(gs, evts)` — tur çözümleme sırasında çağrılır.
 
 Tetikleme kriterleri:
-- **Yıl/ay:** `historical_year` + opsiyonel `historical_month`
+- **Yıl/ay:** `historical_year` + opsiyonel `historical_month`; üç aylık
+  senaryolarda `GameState.HistoricalDateOccursThisTurn()` olay ayını aktif
+  takvim penceresinde arar.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
+
+Bir turda yalnız bir tarihsel modal açılabildiği için aynı üç aylık pencerede
+birden fazla tek-seferlik olay uygun hale gelirse ilk olay hemen, ikincisi en
+fazla sonraki turda işlenir; olay kaybolmaz. Bu sınırlı bir tur telafisidir,
+uzun süre önce geçmiş olayları sonradan yeniden tetiklemez.
 
 ---
 

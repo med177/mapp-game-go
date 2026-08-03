@@ -858,6 +858,62 @@ func Test1300ScenarioAIStrategyReferencesExist(t *testing.T) {
 	}
 }
 
+func Test1300MajorPowersUseHistoricalLongHorizonObjectives(t *testing.T) {
+	scenarioPath, _, _ := load1300IntegrityData(t)
+	strategies, err := LoadAIStrategies(filepath.Join(scenarioPath, "data", "ai_strategies.json"))
+	if err != nil {
+		t.Fatalf("1300 AI stratejileri yüklenemedi: %v", err)
+	}
+
+	expected := map[string]struct {
+		objectiveID  string
+		minYear      int
+		targetRegion string
+	}{
+		"ottoman":  {"conquer_constantinople_1453", 1453, "constantinople"},
+		"venice":   {"restore_eastern_mediterranean_trade_gate_1340", 1340, "constantinople"},
+		"france":   {"recover_plantagenet_aquitaine_1337", 1337, "aquitaine"},
+		"england":  {"renew_french_crown_campaign_1415", 1415, "paris"},
+		"hre":      {"restore_imperial_authority_in_italy_1311", 1311, "milan"},
+		"mamluk":   {"break_ilkhanate_mesopotamian_front_1320", 1320, "baghdad"},
+		"russia":   {"gather_rus_and_reach_black_sea_1478", 1478, "crimea"},
+		"safavid":  {"rise_into_persian_heartland_1501", 1501, "azerbaijan"},
+		"aragon":   {"pursue_neapolitan_crown_1416", 1416, "naples"},
+		"portugal": {"launch_moroccan_bridgehead_1415", 1415, "morocco"},
+	}
+	for factionID, want := range expected {
+		strategy, ok := strategies[factionID]
+		if !ok {
+			t.Errorf("büyük devletin AI profili eksik: faction=%s", factionID)
+			continue
+		}
+		var objective *AIObjectiveDef
+		for i := range strategy.Objectives {
+			if strategy.Objectives[i].ID == want.objectiveID {
+				objective = &strategy.Objectives[i]
+				break
+			}
+		}
+		if objective == nil {
+			t.Errorf("uzun vadeli hedef eksik: faction=%s objective=%s", factionID, want.objectiveID)
+			continue
+		}
+		if objective.MinYear != want.minYear {
+			t.Errorf("uzun vadeli hedefin yıl eşiği yanlış: faction=%s got=%d want=%d", factionID, objective.MinYear, want.minYear)
+		}
+		foundRegion := false
+		for _, regionID := range objective.TargetRegions {
+			if regionID == want.targetRegion {
+				foundRegion = true
+				break
+			}
+		}
+		if !foundRegion {
+			t.Errorf("uzun vadeli hedefin zorlayıcı bölgesi eksik: faction=%s objective=%s region=%s", factionID, want.objectiveID, want.targetRegion)
+		}
+	}
+}
+
 func Test1300ScenarioProfilesCoverRegionalObjectives(t *testing.T) {
 	scenarioPath, _, factions := load1300IntegrityData(t)
 	strategies, err := LoadAIStrategies(filepath.Join(scenarioPath, "data", "ai_strategies.json"))
@@ -885,7 +941,7 @@ func Test1300ScenarioProfilesCoverRegionalObjectives(t *testing.T) {
 		"saruhan_bey":          {"aegean_interior_survival", "contest_aydinoglu_coast", "expand"},
 		"venice":               {"adriatic_merchant_thalassocracy", "protect_adriatic_and_island_trade", "defend"},
 		"genoa":                {"western_merchant_network", "protect_ligurian_and_black_sea_trade", "defend"},
-		"mamluk":               {"levant_sultanate_frontier", "break_ilkhanate_mesopotamian_front", "expand"},
+		"mamluk":               {"levant_sultanate_frontier", "break_ilkhanate_mesopotamian_front_1320", "expand"},
 		"ilkhanate":            {"eastern_imperial_frontier", "press_levant_frontier", "expand"},
 		"serbian_empire":       {"balkan_hegemony_buffer", "hold_serbian_mountain_core", "defend"},
 		"croatian_kingdom":     {"subic_adriatic_frontier", "hold_croatian_and_hum_core", "defend"},
@@ -896,7 +952,7 @@ func Test1300ScenarioProfilesCoverRegionalObjectives(t *testing.T) {
 		"arnavut_des":          {"albanian_mountain_survival", "hold_albanian_mountains", "defend"},
 		"athena_duk":           {"aegean_city_state_survival", "hold_athens_coast", "defend"},
 		"wallachia_prince":     {"danube_buffer_survival", "hold_wallachian_buffer", "defend"},
-		"russia":               {"moscow_consolidation", "consolidate_eastern_rus_frontier", "expand"},
+		"russia":               {"moscow_consolidation", "gather_rus_and_reach_black_sea_1478", "expand"},
 		"golden_horde":         {"steppe_hegemony", "press_rus_steppe", "expand"},
 		"teutonic_order":       {"baltic_crusader_frontier", "press_lithuanian_frontier", "expand"},
 		"novgorod_rep":         {"northern_trade_survival", "hold_novgorod_trade_gate", "defend"},

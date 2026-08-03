@@ -1395,6 +1395,9 @@ func monthsUntilHistoricalEvent(gs *state.GameState, evt *events.Event) int {
 	if gs == nil || evt == nil || evt.HistoricalYear == 0 {
 		return 0
 	}
+	if gs.HistoricalDateOccursThisTurn(evt.HistoricalYear, evt.HistoricalMonth) {
+		return 0
+	}
 	targetMonth := evt.HistoricalMonth
 	if targetMonth <= 0 {
 		targetMonth = 1
@@ -3079,6 +3082,13 @@ func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)
 
 func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool, setProgress func(int)) (*state.GameState, []*events.Event, error) {
 	sc := scenarioByPath(scenarioPath)
+	if sc == nil {
+		var err error
+		sc, err = scenario.Load(scenarioPath)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 	yield := func() { runtime.Gosched() }
 	progressTotal := 13
 	progressStep := 0
@@ -3187,11 +3197,13 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 
 	year := 1300
 	month := 3
+	monthsPerTurn := 1
 	var mapConfig scenario.MapConfig
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
 		month = sc.Month
+		monthsPerTurn = sc.CalendarMonthsPerTurn()
 		mapConfig = sc.MapConfig
 		victoryOpts = sc.VictoryConditions
 	}
@@ -3200,6 +3212,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		Turn:               1,
 		Year:               year,
 		Month:              month,
+		MonthsPerTurn:      monthsPerTurn,
 		StartYear:          year,
 		Phase:              state.PhaseFactionSelect,
 		Difficulty:         difficulty,

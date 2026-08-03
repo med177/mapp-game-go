@@ -9,7 +9,7 @@
     "id": "iron_weapons",
     "name_tr": "Demir Silahlar",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "military",
@@ -23,7 +23,7 @@
     "requires": [
       "iron_weapons"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -37,7 +37,7 @@
     "requires": [
       "iron_weapons"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -51,7 +51,7 @@
     "requires": [
       "steel_blades"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "military",
@@ -63,7 +63,7 @@
     "id": "cavalry_tactics",
     "name_tr": "Süvari Taktikleri",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "economy",
@@ -75,7 +75,7 @@
     "id": "trade_routes",
     "name_tr": "Ticaret Yolları",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "economy",
@@ -90,7 +90,7 @@
     "requires": [
       "trade_routes"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "economy",
@@ -102,7 +102,7 @@
     "id": "crop_rotation",
     "name_tr": "Nöbetleşe Ekim",
     "requires": [],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "economy",
@@ -116,7 +116,7 @@
     "requires": [
       "banking"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "diplomacy",
@@ -128,7 +128,7 @@
     "id": "diplomacy",
     "name_tr": "Diplomasi Sanatı",
     "requires": [],
-    "turns_required": 2
+    "turns_required": 4
   },
   {
     "category": "diplomacy",
@@ -142,7 +142,7 @@
     "requires": [
       "diplomacy"
     ],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "naval",
@@ -154,7 +154,7 @@
     "id": "navigation",
     "name_tr": "Denizcilik",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "naval",
@@ -168,7 +168,7 @@
     "requires": [
       "navigation"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "religion",
@@ -180,7 +180,7 @@
     "id": "theology",
     "name_tr": "İlahiyat",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "religion",
@@ -195,7 +195,7 @@
     "requires": [
       "theology"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -207,7 +207,7 @@
     "id": "horse_breeding",
     "name_tr": "At Yetiştiriciliği",
     "requires": [],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "military",
@@ -222,7 +222,7 @@
       "heavy_armor",
       "steel_blades"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "military",
@@ -236,7 +236,7 @@
     "requires": [
       "iron_weapons"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -251,7 +251,7 @@
       "siege_engines",
       "engineering_corps"
     ],
-    "turns_required": 6
+    "turns_required": 12
   },
   {
     "category": "military",
@@ -265,7 +265,7 @@
     "requires": [
       "gunpowder"
     ],
-    "turns_required": 7
+    "turns_required": 14
   },
   {
     "category": "naval",
@@ -280,7 +280,7 @@
     "requires": [
       "trade_routes"
     ],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "naval",
@@ -296,7 +296,7 @@
     "requires": [
       "navigation"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "naval",
@@ -312,7 +312,7 @@
       "harbor_administration",
       "cartography"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "economy",
@@ -327,7 +327,7 @@
     "requires": [
       "crop_rotation"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "economy",
@@ -341,7 +341,7 @@
     "requires": [
       "trade_routes"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "naval",
@@ -357,7 +357,7 @@
       "naval_doctrine",
       "harbor_administration"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "military",
@@ -373,7 +373,7 @@
       "steel_blades",
       "heavy_armor"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -387,7 +387,7 @@
     "requires": [
       "heavy_armor"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -402,7 +402,7 @@
       "horse_breeding",
       "cavalry_tactics"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "military",
@@ -417,7 +417,7 @@
     "requires": [
       "engineering_corps"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "military",
@@ -432,7 +432,7 @@
     "requires": [
       "cast_bronze_cannon"
     ],
-    "turns_required": 6
+    "turns_required": 12
   },
   {
     "category": "economy",
@@ -447,7 +447,7 @@
     "requires": [
       "trade_routes"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "economy",
@@ -462,7 +462,7 @@
       "banking",
       "tax_registers"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "economy",
@@ -477,7 +477,7 @@
     "requires": [
       "guilds"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "economy",
@@ -491,7 +491,7 @@
     "requires": [
       "harbor_administration"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "diplomacy",
@@ -505,7 +505,7 @@
     "requires": [
       "diplomacy"
     ],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "diplomacy",
@@ -521,7 +521,7 @@
       "diplomacy",
       "banking"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "diplomacy",
@@ -536,7 +536,7 @@
     "requires": [
       "espionage"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "naval",
@@ -551,7 +551,7 @@
     "requires": [
       "harbor_administration"
     ],
-    "turns_required": 4
+    "turns_required": 8
   },
   {
     "category": "naval",
@@ -567,7 +567,7 @@
       "naval_doctrine",
       "gunpowder"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "naval",
@@ -583,7 +583,7 @@
       "cartography",
       "open_sea_convoys"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "religion",
@@ -598,7 +598,7 @@
     "requires": [
       "theology"
     ],
-    "turns_required": 3
+    "turns_required": 6
   },
   {
     "category": "religion",
@@ -613,7 +613,7 @@
     "requires": [
       "proselytism"
     ],
-    "turns_required": 5
+    "turns_required": 10
   },
   {
     "category": "religion",
@@ -629,6 +629,6 @@
       "theology",
       "trade_routes"
     ],
-    "turns_required": 4
+    "turns_required": 8
   }
 ]

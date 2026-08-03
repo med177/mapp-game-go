@@ -177,10 +177,11 @@ type RegionEventStatus struct {
 // state'i yükleme sırasında yeniden kurar.
 type GameState struct {
 	// Zaman
-	Turn      int `json:"turn"`  // toplam tur sayısı (1'den başlar)
-	Year      int `json:"year"`  // 1300-1600
-	Month     int `json:"month"` // 1-12
-	StartYear int `json:"start_year"`
+	Turn          int `json:"turn"`  // toplam tur sayısı (1'den başlar)
+	Year          int `json:"year"`  // 1300-1600
+	Month         int `json:"month"` // 1-12
+	MonthsPerTurn int `json:"months_per_turn,omitempty"`
+	StartYear     int `json:"start_year"`
 
 	// Senaryo
 	ScenarioID   string             `json:"scenario_id"`   // aktif senaryo ID'si
@@ -663,13 +664,93 @@ func (s *GameState) CurrentSeason() season.Season {
 	return season.FromMonth(s.Month)
 }
 
-// AdvanceTurn turu bir ileri alır, ay/yıl günceller.
+// CalendarMonthsPerTurn bir stratejik turun temsil ettiği takvim ayı sayısını
+// döner. Eski save/test state'leri alanı taşımadığında bir aylık davranış korunur.
+func (s *GameState) CalendarMonthsPerTurn() int {
+	if s != nil && s.MonthsPerTurn > 0 && s.MonthsPerTurn <= 12 {
+		return s.MonthsPerTurn
+	}
+	return 1
+}
+
+// CurrentTurnEndDate aktif turun kapsadığı son takvim ayını döner.
+func (s *GameState) CurrentTurnEndDate() (year, month int) {
+	if s == nil {
+		return 0, 0
+	}
+	year, month = s.Year, s.Month
+	if month < 1 || month > 12 {
+		month = 1
+	}
+	for remaining := s.CalendarMonthsPerTurn() - 1; remaining > 0; remaining-- {
+		month++
+		if month > 12 {
+			month = 1
+			year++
+		}
+	}
+	return year, month
+}
+
+// HistoricalDateOccursThisTurn tarihsel yıl/ayın aktif stratejik turun kapsadığı
+// takvim aralığında olup olmadığını bildirir. month=0 aynı yılın herhangi bir
+// ayını temsil eder.
+func (s *GameState) HistoricalDateOccursThisTurn(year, month int) bool {
+	if s == nil || year <= 0 || s.Year > year {
+		return false
+	}
+	endYear, endMonth := s.CurrentTurnEndDate()
+	if year > endYear {
+		return false
+	}
+	if month <= 0 {
+		return year >= s.Year && year <= endYear
+	}
+	if month > 12 {
+		return false
+	}
+	startMonth := s.Month
+	if startMonth < 1 || startMonth > 12 {
+		startMonth = 1
+	}
+	startAbs := s.Year*12 + startMonth - 1
+	endAbs := endYear*12 + endMonth - 1
+	targetAbs := year*12 + month - 1
+	return targetAbs >= startAbs && targetAbs <= endAbs
+}
+
+// CurrentTurnIncludesMonth aktif turun takvim aralığının verilen ayı içerip
+// içermediğini döner. Yıllık etkiler, tur uzunluğundan bağımsız olarak bununla
+// yalnız bir kez uygulanır.
+func (s *GameState) CurrentTurnIncludesMonth(month int) bool {
+	if s == nil || month < 1 || month > 12 {
+		return false
+	}
+	currentMonth := s.Month
+	if currentMonth < 1 || currentMonth > 12 {
+		currentMonth = 1
+	}
+	for remaining := s.CalendarMonthsPerTurn(); remaining > 0; remaining-- {
+		if currentMonth == month {
+			return true
+		}
+		currentMonth++
+		if currentMonth > 12 {
+			currentMonth = 1
+		}
+	}
+	return false
+}
+
+// AdvanceTurn turu bir ileri alır, senaryonun takvim ayı hızına göre ay/yıl günceller.
 func (s *GameState) AdvanceTurn() {
 	s.Turn++
-	s.Month++
-	if s.Month > 12 {
-		s.Month = 1
-		s.Year++
+	for remaining := s.CalendarMonthsPerTurn(); remaining > 0; remaining-- {
+		s.Month++
+		if s.Month > 12 {
+			s.Month = 1
+			s.Year++
+		}
 	}
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil

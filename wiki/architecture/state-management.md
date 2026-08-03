@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
 ---
 
@@ -51,7 +51,7 @@ Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efe
 ```go
 type GameState struct {
     // Zaman
-    Turn, Year, Month, StartYear int
+    Turn, Year, Month, MonthsPerTurn, StartYear int
 
     // Senaryo
     ScenarioID   string   // ör. "1300_ottoman_rise"
@@ -292,7 +292,13 @@ Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 
 `CurrentSeason() Season` — `season.FromMonth(s.Month)` ile mevsimi döner → [[systems/seasons]]
 
-`AdvanceTurn()` — `Turn++`, `Month++`, Ocak geçince `Year++`
+`CalendarMonthsPerTurn()` / `CurrentTurnEndDate()` / `HistoricalDateOccursThisTurn()` —
+senaryonun takvim hızını ve aktif turun kapsadığı tarih aralığını ortak olarak
+hesaplar. Eksik `MonthsPerTurn` alanı eski save'lerde bir aylık davranışa düşer.
+
+`AdvanceTurn()` — `Turn++`, `Month += MonthsPerTurn`; yıl sınırı geçilince
+`Year++`. 1300 ve 1455 senaryoları `MonthsPerTurn=3` kullanır; üretim kuyruğu,
+araştırma ve ordu üretimi yine tur bazında birer adım ilerler.
 
 `SyncTimedRegionUnlocks() []RegionID` — `is_locked=true` ve `unlock_turn>0` olan bölgelerde aktif tur `unlock_turn` değerine ulaştıysa kilidi kaldırır; save/load ve tur ilerlemesinde senkron için kullanılır
 
