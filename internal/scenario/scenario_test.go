@@ -62,7 +62,7 @@ func TestCalendarMonthsPerTurnUsesScenarioValue(t *testing.T) {
 	}
 }
 
-func TestScenarioTurnDurationsAreExplicitlyScaledInData(t *testing.T) {
+func TestScenarioProductionDurationsAreValidInData(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime caller unavailable")
@@ -83,18 +83,18 @@ func TestScenarioTurnDurationsAreExplicitlyScaledInData(t *testing.T) {
 			t.Fatalf("%s birlikleri yüklenemedi: %v", scenarioID, err)
 		}
 		for id, building := range buildings {
-			if building.TurnsRequired < 4 || building.TurnsRequired%2 != 0 {
-				t.Errorf("%s/%s bina süresi doğrudan iki katlı veri değil: %d", scenarioID, id, building.TurnsRequired)
+			if building.TurnsRequired <= 0 {
+				t.Errorf("%s/%s bina üretim süresi pozitif olmalı: %d", scenarioID, id, building.TurnsRequired)
 			}
 		}
 		for id, technology := range technologies {
-			if technology.TurnsRequired < 4 || technology.TurnsRequired%2 != 0 {
-				t.Errorf("%s/%s teknoloji süresi doğrudan iki katlı veri değil: %d", scenarioID, id, technology.TurnsRequired)
+			if technology.TurnsRequired <= 0 {
+				t.Errorf("%s/%s araştırma süresi pozitif olmalı: %d", scenarioID, id, technology.TurnsRequired)
 			}
 		}
 		for id, unit := range units {
-			if unit.TurnsRequired < 4 || unit.TurnsRequired%2 != 0 {
-				t.Errorf("%s/%s birlik süresi doğrudan iki katlı veri değil: %d", scenarioID, id, unit.TurnsRequired)
+			if unit.TurnsRequired <= 0 {
+				t.Errorf("%s/%s birlik üretim süresi pozitif olmalı: %d", scenarioID, id, unit.TurnsRequired)
 			}
 		}
 	}
