@@ -353,7 +353,6 @@ func loadFromPath(path string) (*state.GameState, error) {
 	gs.RefreshArmyMovePoints(false)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
-	gs.EnsureTradeNetworkCoverage()
 	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(gs.ScenarioVictories, string(gs.PlayerFactionID))
 	diplomacy.NormalizeVassalage(gs)
 	gs.SyncWarLedgers()

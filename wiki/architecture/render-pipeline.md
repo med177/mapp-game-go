@@ -35,10 +35,16 @@ ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağl
 koridor hacmini ve fetihle devralınan bonusları aynı state helper üzerinden
 bildirir.
 
-Runtime'da oluşan bonus-sız `Ağ geçidi` düğümleri etiket ve tıklama bilgisinde
-tarihsel merkezden ayrı gösterilir. Böylece yeni kurulan veya tarihsel merkezini
-kaybetmiş devletin ticaret ağı erişimi görünür olur; oyuncu bunun bedelsiz
-kapasite/gümrük avantajı olmadığını da doğrudan görür.
+Ticaret haritası merkez grafiğini yalnız senaryo verisindeki ana ve ikincil
+merkezlerden kurar. Her aktif devletin başkenti en yakın bu merkeze ince,
+sabit bir çizgiyle bağlanır; başkentler yeni merkez düğümü veya ek merkez etiketi
+oluşturmaz. Böylece merkez ağı ve devlet bağlantıları birbirinden ayrışır.
+Hacmi sıfır olan merkez bağlantıları ince sürekli gri çizgi, aktif akışlar ise
+parlak çizgi olarak gösterilir. Ana merkez tabelası daha büyük, solda çerçeveli
+ticaret ikonu ile; ikincil merkez tabelası ise daha küçük ve düşük kontrastlıdır.
+Ticaret rotasına atanmış filo marker'ları rota ve öncelik rozetlerini korur;
+ticaret haritasında komutan portresi çizilmez, normal harita görünümünde ise
+aynı filonun portresi görünmeye devam eder.
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Böylece

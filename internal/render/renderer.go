@@ -594,6 +594,7 @@ func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string,
 
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
 func New(gs *state.GameState) *Renderer {
+	loadTradeCenterIcon()
 	x, y, w, _ := editInspectorRect()
 	dropW := float32(292)
 	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
@@ -2591,7 +2592,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 				}
 			}
 		}
-		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, siegeBadgeX)
+		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, true, siegeBadgeX)
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
@@ -2662,7 +2663,7 @@ const (
 	armyCommanderBadgeSize = float32(32)
 )
 
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, siegeBadgeX float32) {
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, showCommander bool, siegeBadgeX float32) {
 	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
 
 	if isNaval {
@@ -2689,9 +2690,12 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-	if commander, _ := armyPanelDisplayedCommander(a); commander != nil {
-		x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, a != nil && len(a.EmbarkedUnits) > 0)
-		drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
+	if showCommander {
+		commander, _ := armyPanelDisplayedCommander(a)
+		if commander != nil {
+			x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, a != nil && len(a.EmbarkedUnits) > 0)
+			drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
+		}
 	}
 	if isNaval {
 		if a != nil && len(a.EmbarkedUnits) > 0 {

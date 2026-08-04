@@ -3,12 +3,15 @@ package render
 import (
 	"image/color"
 	"math"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
@@ -27,20 +30,19 @@ type tradeRouteVisual struct {
 }
 
 type tradeCenterVisual struct {
-	id          world.RegionID
-	regionID    world.RegionID
-	nameTR      string
-	tier        world.TradeCenterTier
-	worldX      float64
-	worldY      float64
-	x           float64
-	y           float64
-	labelX      float64
-	labelY      float64
-	labelW      float64
-	labelH      float64
-	offMap      bool
-	networkOnly bool
+	id       world.RegionID
+	regionID world.RegionID
+	nameTR   string
+	tier     world.TradeCenterTier
+	worldX   float64
+	worldY   float64
+	x        float64
+	y        float64
+	labelX   float64
+	labelY   float64
+	labelW   float64
+	labelH   float64
+	offMap   bool
 }
 
 type tradeCorridorInfo struct {
@@ -63,13 +65,31 @@ type tradeCorridorInfo struct {
 
 var (
 	playerTradeRouteColor = color.RGBA{255, 145, 42, 235}
+	tradeCenterIconOnce   sync.Once
+	tradeCenterIcon       *ebiten.Image
 )
 
 const (
 	tradeRouteDashLength = 12.0
 	tradeRouteGapLength  = 10.0
 	tradeRouteDashParts  = 72
+	primaryTradeIconBox  = float32(42)
+	primaryTradeIconSize = float32(34)
 )
+
+func loadTradeCenterIcon() {
+	tradeCenterIconOnce.Do(func() {
+		for _, path := range []string{
+			"assets/ui/trade_center.png",
+			filepath.Join("..", "..", "assets", "ui", "trade_center.png"),
+		} {
+			if icon := tryLoadImage(path); icon != nil {
+				tradeCenterIcon = icon
+				break
+			}
+		}
+	})
+}
 
 func tradeRouteDisplayAmount(route *economy.TradeRoute) int {
 	if route == nil || route.SuspendedTurns > 0 {
@@ -144,33 +164,31 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 		if def.OffMap {
 			sx, sy := r.worldToScreen(float64(def.WorldX), float64(def.WorldY))
 			centers = append(centers, tradeCenterVisual{
-				id:          def.ID,
-				nameTR:      def.NameTR,
-				tier:        def.Tier,
-				worldX:      float64(def.WorldX),
-				worldY:      float64(def.WorldY),
-				x:           sx,
-				y:           sy,
-				offMap:      true,
-				networkOnly: def.NetworkOnly,
+				id:     def.ID,
+				nameTR: def.NameTR,
+				tier:   def.Tier,
+				worldX: float64(def.WorldX),
+				worldY: float64(def.WorldY),
+				x:      sx,
+				y:      sy,
+				offMap: true,
 			})
 			continue
 		}
 		reg := r.gs.Regions[def.ID]
-		if reg == nil || reg.IsSea || !def.NetworkOnly && reg.TradeCapacity <= 0 {
+		if reg == nil || reg.IsSea || reg.TradeCapacity <= 0 {
 			continue
 		}
 		sx, sy := r.regionScreenPos(reg)
 		centers = append(centers, tradeCenterVisual{
-			id:          reg.ID,
-			regionID:    reg.ID,
-			nameTR:      chooseRegionLabel(reg),
-			tier:        def.Tier,
-			worldX:      float64(reg.WorldX),
-			worldY:      float64(reg.WorldY),
-			x:           sx,
-			y:           sy,
-			networkOnly: def.NetworkOnly,
+			id:       reg.ID,
+			regionID: reg.ID,
+			nameTR:   chooseRegionLabel(reg),
+			tier:     def.Tier,
+			worldX:   float64(reg.WorldX),
+			worldY:   float64(reg.WorldY),
+			x:        sx,
+			y:        sy,
 		})
 	}
 	return centers
@@ -653,7 +671,7 @@ func (r *Renderer) drawTradeBonusFleetMarkers(screen *ebiten.Image) {
 		}
 		unitCount := len(fleet.Units)
 		fc := factionColor(r.gs, fleet.OwnerID)
-		r.drawArmyIcon(screen, fleet.ID, fleet.OwnerID, position.X, position.Y, fc, unitCount, false, true, position.X+armyIconInnerHalf+8)
+		r.drawArmyIcon(screen, fleet.ID, fleet.OwnerID, position.X, position.Y, fc, unitCount, false, true, false, position.X+armyIconInnerHalf+8)
 		r.drawNavalPriorityBadges(screen, fleet, position.X, position.Y)
 	}
 }
@@ -834,7 +852,6 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		routeKeys []string
 	}
 	centerLinkFlow := map[string]*linkAgg{}
-	centerSpokeFlow := map[string]int{}
 	mergedKeys := make([]string, 0, len(merged))
 	for key := range merged {
 		mergedKeys = append(mergedKeys, key)
@@ -857,12 +874,6 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if !ok {
 			cb = r.nearestTradeCenterIndex(factionHub[route.factionB], centers)
 			factionCenter[route.factionB] = cb
-		}
-		if ca >= 0 {
-			centerSpokeFlow[route.factionA] += route.amount
-		}
-		if cb >= 0 {
-			centerSpokeFlow[route.factionB] += route.amount
 		}
 		if ca < 0 || cb < 0 || ca == cb {
 			continue
@@ -895,38 +906,36 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 	}
 
-	// Faction -> trade center spokes (çok hafif)
+	// Başkent -> en yakın ticaret merkezi bağlantıları. Bunlar işlem hacminden
+	// bağımsız, her devlet için sabit ve ince görünür; merkezi grafiği büyütmez.
 	if r.camScale >= 0.95 {
-		factionIDs := make([]string, 0, len(factionHub))
-		for fid := range factionHub {
-			factionIDs = append(factionIDs, fid)
+		factionIDs := make([]string, 0, len(r.gs.Factions))
+		for factionID, currentFaction := range r.gs.Factions {
+			if currentFaction != nil && !currentFaction.IsEliminated {
+				factionIDs = append(factionIDs, string(factionID))
+			}
 		}
 		sort.Strings(factionIDs)
 		for _, fid := range factionIDs {
-			hub := factionHub[fid]
+			hub := r.factionPrimaryRegion(fid)
 			if hub == nil {
 				continue
 			}
-			centerIdx := factionCenter[fid]
+			centerIdx := r.nearestTradeCenterIndex(hub, centers)
 			if centerIdx < 0 || centerIdx >= len(centers) {
-				continue
-			}
-			flow := centerSpokeFlow[fid]
-			if flow <= 0 {
 				continue
 			}
 			hx, hy := r.regionScreenPos(hub)
 			c := centers[centerIdx]
-			w := float32(0.8)
-			if flow >= 12 {
-				w = 1.2
+			if hub.ID == c.regionID {
+				continue
 			}
-			col := color.RGBA{180, 195, 220, 62}
+			col := color.RGBA{168, 192, 220, 72}
 			if preFocusCenter >= 0 && centerIdx != preFocusCenter {
-				col = color.RGBA{120, 135, 160, 18}
+				col = color.RGBA{120, 135, 160, 28}
 			}
 			if !r.tradeOverlayOccludesSegment(hx, hy, c.x, c.y) {
-				vector.StrokeLine(screen, float32(hx), float32(hy), float32(c.x), float32(c.y), w, col, false)
+				vector.StrokeLine(screen, float32(hx), float32(hy), float32(c.x), float32(c.y), 0.75, col, false)
 			}
 		}
 	}
@@ -984,10 +993,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		cx := mx + px*curve
 		cy := my + py*curve
 
+		idleLink := amount == 0
 		glow := color.RGBA{120, 108, 86, 18}
 		core := color.RGBA{165, 150, 118, 42}
 		coreW := float32(1.0)
 		glowW := float32(2.8)
+		if idleLink {
+			glow = color.RGBA{}
+			core = color.RGBA{130, 136, 145, 112}
+			coreW = 0.9
+			glowW = 0
+		}
 		if amount > 0 {
 			alphaScale := min(uint8(80+(amount*12)), 255)
 			glow = color.RGBA{255, 224, 138, alphaScale}
@@ -1010,11 +1026,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				coreW = 1.1
 				glowW = 3.4
 			} else {
-				glow = color.RGBA{100, 94, 82, 8}
-				core = color.RGBA{120, 116, 104, 22}
+				core = color.RGBA{120, 126, 136, 46}
 			}
 		}
-		segments := 22
+		segments := 24
 		for i := 0; i < segments; i++ {
 			t1 := float64(i) / float64(segments)
 			t2 := float64(i+1) / float64(segments)
@@ -1023,7 +1038,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
 				continue
 			}
-			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+			if glowW > 0 {
+				vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+			}
 			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 		}
 		if amount > 0 && showLabels {
@@ -1080,6 +1097,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			dx:       dx,
 			dy:       dy,
 			hitWidth: float64(glowW) + 4,
+			dashed:   false,
 			routeKeys: func() []string {
 				if agg == nil {
 					return nil
@@ -1107,28 +1125,21 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		vol := 0
 		reg := r.gs.Regions[c.regionID]
 		if reg != nil && !c.offMap {
-			vol += r.gs.EffectiveRegionTradeCapacity(reg)
-		}
-		for _, tr := range r.gs.TradeRoutes {
-			if tr.ToFactionID != "" && tr.FromFactionID != "" {
-				fromHub := r.factionPrimaryRegion(tr.FromFactionID)
-				toHub := r.factionPrimaryRegion(tr.ToFactionID)
-				if fromHub != nil && toHub != nil {
-					ca := r.nearestTradeCenterIndex(fromHub, centers)
-					cb := r.nearestTradeCenterIndex(toHub, centers)
-					if ca == idx || cb == idx {
-						vol += tr.AmountPerTurn
-					}
-				}
-			}
+			vol = r.gs.TradeCenterVolume(reg)
 		}
 		centerVolume[idx] = vol
 	}
 
 	for i := range centers {
-		alphaBg := uint8(235)
-		alphaBorder := uint8(235)
-		alphaText := uint8(255)
+		primary := centers[i].tier == world.TradeCenterPrimary && !centers[i].offMap
+		alphaBg := uint8(170)
+		alphaBorder := uint8(155)
+		alphaText := uint8(205)
+		if primary {
+			alphaBg = 238
+			alphaBorder = 242
+			alphaText = 255
+		}
 		if focusCenter >= 0 {
 			isFocus := false
 			if i == focusCenter {
@@ -1150,17 +1161,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 
-		nameW := float32(MeasureText(centers[i].nameTR, FaceSmall))
+		nameFace := FaceSmall
+		if primary {
+			nameFace = FaceMed
+		}
+		nameW := float32(MeasureText(centers[i].nameTR, nameFace))
 		contentW := nameW
 		volStr := ""
 		if !centers[i].offMap {
 			capacityBonus, incomeBonus := r.tradeCenterBenefits(centers[i])
-			if centers[i].networkOnly {
-				volStr = "Ağ geçidi | Hacim: " + itoa(centerVolume[i])
-			} else {
-				volStr = "Hacim: " + itoa(centerVolume[i])
-			}
-			if !centers[i].networkOnly && (capacityBonus != 0 || incomeBonus != 0) {
+			volStr = "Hacim: " + itoa(centerVolume[i])
+			if capacityBonus != 0 || incomeBonus != 0 {
 				volStr += " | +" + itoa(capacityBonus) + " kap. | +" + itoa(incomeBonus) + " altın"
 			}
 			volW := float32(MeasureText(volStr, FaceSmall))
@@ -1168,11 +1179,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				contentW = volW
 			}
 		}
-		w := contentW + 40 // yatay padding + ikon/kenar payı
-		if w < 116 {
-			w = 116
+		w := contentW + 28
+		h := float32(36)
+		if primary {
+			w = contentW + primaryTradeIconBox + 30
+			if w < 178 {
+				w = 178
+			}
+			h = 54
+		} else if w < 102 {
+			w = 102
 		}
-		h := float32(38)
 		if centers[i].offMap {
 			h = 22
 		}
@@ -1200,16 +1217,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		bgColor := color.RGBA{18, 14, 10, alphaBg}
 		if centers[i].offMap {
 			bgColor = color.RGBA{14, 18, 22, alphaBg}
+		} else if !primary {
+			bgColor = color.RGBA{16, 13, 10, alphaBg}
 		}
 		vector.FillRect(screen, x, y, w, h, bgColor, false)
 
 		// Border: gold for primary, bronze for secondary
-		borderColor := color.RGBA{197, 160, 89, alphaBorder}
-		if centers[i].tier == world.TradeCenterPrimary {
+		borderColor := color.RGBA{122, 101, 75, alphaBorder}
+		if primary {
 			vector.StrokeRect(screen, x-1, y-1, w+2, h+2, 1.2, color.RGBA{235, 200, 110, alphaBorder}, false)
 			vector.StrokeRect(screen, x+1, y+1, w-2, h-2, 0.8, color.RGBA{150, 110, 50, alphaBorder}, false)
 		} else {
-			borderColor = color.RGBA{160, 130, 90, alphaBorder}
 			if centers[i].offMap {
 				borderColor = color.RGBA{118, 156, 188, alphaBorder}
 			}
@@ -1217,26 +1235,45 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
 
 		// Center Name
-		nameCol := color.RGBA{242, 226, 174, alphaText}
-		if centers[i].tier == world.TradeCenterPrimary {
+		nameCol := color.RGBA{204, 196, 172, alphaText}
+		if primary {
 			nameCol = color.RGBA{255, 235, 170, alphaText}
 		}
 		if centers[i].offMap {
 			nameCol = color.RGBA{210, 228, 245, alphaText}
 		}
-		DrawText(screen, centers[i].nameTR, float64(x)+20, float64(y)+4, FaceSmall, nameCol)
+		textX := float64(x) + 14
+		nameY := float64(y) + 4
+		volumeY := float64(y) + 20
+		if primary {
+			iconX := x + 6
+			iconY := y + (h-primaryTradeIconBox)/2
+			vector.FillRect(screen, iconX, iconY, primaryTradeIconBox, primaryTradeIconBox, color.RGBA{44, 34, 19, alphaBg}, false)
+			vector.StrokeRect(screen, iconX, iconY, primaryTradeIconBox, primaryTradeIconBox, 1, color.RGBA{224, 190, 102, alphaBorder}, false)
+			r.drawSettlementLabelSprite(screen, tradeCenterIcon, iconX+(primaryTradeIconBox-primaryTradeIconSize)/2, iconY+(primaryTradeIconBox-primaryTradeIconSize)/2, primaryTradeIconSize)
+			textX = float64(iconX + primaryTradeIconBox + 10)
+			nameY = float64(y) + 9
+			volumeY = float64(y) + 30
+		}
+		DrawText(screen, centers[i].nameTR, textX, nameY, nameFace, nameCol)
 
 		// Volume indicator
 		if !centers[i].offMap {
-			DrawText(screen, volStr, float64(x)+20, float64(y)+20, FaceSmall, color.RGBA{180, 180, 170, alphaText})
+			DrawText(screen, volStr, textX, volumeY, FaceSmall, color.RGBA{170, 170, 160, alphaText})
 		}
 	}
 	r.drawTradeBonusFleetMarkers(screen)
 }
 
-// factionPrimaryRegion bir fraksiyonun görsel temsili için ana bölgesini döner.
-// Önce başkent settlement'ı olan bölgeyi, yoksa ilk bulunan bölgeyi döner.
+// factionPrimaryRegion bir fraksiyonun görsel temsili için başkent bölgesini,
+// başkent tanımlı değilse deterministik ekonomik fallback bölgesini döner.
 func (r *Renderer) factionPrimaryRegion(factionID string) *world.Region {
+	if r == nil || r.gs == nil {
+		return nil
+	}
+	if capital, _, _, ok := r.gs.FactionCapital(faction.FactionID(factionID)); ok && capital != nil {
+		return capital
+	}
 	candidates := make([]*world.Region, 0, 16)
 	if len(r.gs.RegionOrder) > 0 {
 		for _, rid := range r.gs.RegionOrder {

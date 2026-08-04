@@ -565,10 +565,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 					total += c.amount
 				}
 			}
-			if center.networkOnly {
-				r.ShowCombatResult("Ağ geçidi: " + centerName + " | otomatik ticaret ağı bağlantısı | " + itoa(connected) + " koridor | " + itoa(total) + "/tur | merkez bonusu vermez")
-				return InputAction{}
-			}
 			capacityBonus, incomeBonus := r.tradeCenterBenefits(center)
 			r.ShowCombatResult("Merkez: " + centerName + " (" + tradeCenterTierLabel(center.tier) + ") | " + itoa(connected) + " koridor | " + itoa(total) + "/tur | +" + itoa(capacityBonus) + " kapasite | +" + itoa(incomeBonus) + " gümrük altını/tur")
 			return InputAction{}

@@ -852,7 +852,7 @@ func Test1300ScenarioTradeCenterReferencesExist(t *testing.T) {
 	}
 }
 
-func Test1300ActiveFactionsHaveConnectedTradeCenters(t *testing.T) {
+func Test1300PlayableFactionsOwnConnectedTradeCenters(t *testing.T) {
 	scenarioPath, regions, factions := load1300IntegrityData(t)
 	config, err := world.LoadTradeCenters(filepath.Join(scenarioPath, "data", "trade_centers.json"), regions)
 	if err != nil {

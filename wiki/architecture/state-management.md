@@ -22,21 +22,16 @@ Liste ve atama doğrulaması aynı aktiflik helper'ını kullanır.
 
 Ticaret kapasitesinin kanonik state hesabı `EffectiveRegionTradeCapacity()` ve
 `EffectiveFactionTradeCapacity()` içindedir (`internal/state/trade_capacity.go`).
-Ham bölge kapasitesi; bina çarpanları ile aktif, veri-tanımlı ticaret merkezi
-bonusundan türetilir. `TradeCenterBenefits()` aynı merkez için kapasite yanında
-veri tanımlı gümrük gelirini de döner; `BaseRegionTradeIncome()` bunu normal
+Ham bölge kapasitesi; bina çarpanları ile aktif, hacme göre büyüyen ticaret
+merkezi bonusundan türetilir. `TradeCenterVolume()` tabela ve ekonomi tarafından
+ortak kullanılan bina sonrası yerel kapasite + aktif rota hacmi değeridir.
+`TradeCenterBenefits()` aynı merkez için kapasite yanında veri tanımlı gümrük
+gelirini hacme göre büyüterek döner; `BaseRegionTradeIncome()` bunu normal
 pasif ticaret gelirinin tabanına ekler. Sahiplik değişiminde ayrı bir snapshot
 güncellemesi gerekmez: yardımcı yalnız güncel `Region.OwnerID` üzerinden toplar.
 `TradeCenterConfig.ApplyDefaultBonuses()` eski scenario JSON'larında bulunmayan
 root bonus alanlarını loader aşamasında tamamlar; campaign save bu senaryo bazlı
 konfigürasyonu ayrıca serialize etmez.
-
-`EnsureTradeNetworkCoverage()` ticaret merkezi config'ine yalnız runtime
-`NetworkOnly` geçitleri ekleyebilir. Bunlar her aktif kara devleti için
-tarihsel ağa erişimi garanti eder, en iyi sahipli bölgeden en yakın tarihsel
-merkezlere bağlanır ve bonus üretmez. Geçitler başlangıç/load ile sahiplik
-değiştiren fetih, isyan ve ardıl devlet akışlarından sonra yeniden türetilir;
-Edit Mode senaryo dışa aktarımında filtrelenir ve save'de kalıcı veri değildir.
 
 Aktif dış `TradeRoute` anlaşmalarının bu kapasiteyi nasıl paylaştığı
 `diplomacy.RebalanceTradeRouteCapacities()` ile türetilir; rota miktarları ayrı

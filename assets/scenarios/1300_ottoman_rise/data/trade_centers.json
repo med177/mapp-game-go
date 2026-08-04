@@ -4,7 +4,6 @@
       "region_id": "venice",
       "tier": "primary",
       "links": [
-        "crete",
         "dalmatia",
         "egypt",
         "flanders",
@@ -16,8 +15,6 @@
       "tier": "primary",
       "links": [
         "aleppo",
-        "bithynia",
-        "crete",
         "crimea",
         "dalmatia",
         "egypt",
@@ -26,21 +23,11 @@
       ]
     },
     {
-      "region_id": "bithynia",
-      "tier": "secondary",
-      "links": [
-        "constantinople"
-      ]
-    },
-    {
       "region_id": "flanders",
       "tier": "primary",
       "links": [
         "denmark",
         "genoa",
-        "holland",
-        "london",
-        "paris",
         "portugal",
         "silesia",
         "venice"
@@ -50,7 +37,7 @@
       "region_id": "genoa",
       "tier": "primary",
       "links": [
-        "catalonia",
+        "granada",
         "crimea",
         "flanders",
         "tunis",
@@ -58,7 +45,7 @@
       ]
     },
     {
-      "region_id": "catalonia",
+      "region_id": "granada",
       "tier": "secondary",
       "links": [
         "genoa",
@@ -66,25 +53,8 @@
       ]
     },
     {
-      "region_id": "london",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route",
-        "denmark",
-        "flanders",
-        "portugal"
-      ]
-    },
-    {
-      "region_id": "paris",
-      "tier": "secondary",
-      "links": [
-        "flanders"
-      ]
-    },
-    {
       "region_id": "aleppo",
-      "tier": "secondary",
+      "tier": "primary",
       "links": [
         "baghdad",
         "constantinople",
@@ -94,11 +64,10 @@
     },
     {
       "region_id": "egypt",
-      "tier": "secondary",
+      "tier": "primary",
       "links": [
         "aleppo",
         "constantinople",
-        "crete",
         "rhodes",
         "spice_route",
         "tunis",
@@ -107,7 +76,7 @@
     },
     {
       "region_id": "basra",
-      "tier": "secondary",
+      "tier": "primary",
       "links": [
         "baghdad",
         "southern_persia",
@@ -121,8 +90,7 @@
         "crimea",
         "denmark",
         "moscow",
-        "silesia",
-        "sweden"
+        "silesia"
       ]
     },
     {
@@ -130,25 +98,6 @@
       "tier": "secondary",
       "links": [
         "flanders",
-        "holland",
-        "london",
-        "novgorod",
-        "norway",
-        "sweden"
-      ]
-    },
-    {
-      "region_id": "norway",
-      "tier": "secondary",
-      "links": [
-        "denmark"
-      ]
-    },
-    {
-      "region_id": "sweden",
-      "tier": "secondary",
-      "links": [
-        "denmark",
         "novgorod"
       ]
     },
@@ -157,33 +106,14 @@
       "tier": "secondary",
       "links": [
         "atlantic_route",
-        "catalonia",
-        "flanders",
-        "london",
-        "morocco"
-      ]
-    },
-    {
-      "region_id": "morocco",
-      "tier": "secondary",
-      "links": [
-        "algiers",
-        "portugal"
-      ]
-    },
-    {
-      "region_id": "algiers",
-      "tier": "secondary",
-      "links": [
-        "morocco",
-        "tunis"
+        "granada",
+        "flanders"
       ]
     },
     {
       "region_id": "tunis",
       "tier": "secondary",
       "links": [
-        "algiers",
         "egypt",
         "genoa",
         "trans_saharan_route"
@@ -191,7 +121,7 @@
     },
     {
       "region_id": "crimea",
-      "tier": "secondary",
+      "tier": "primary",
       "links": [
         "constantinople",
         "genoa",
@@ -205,14 +135,6 @@
       "links": [
         "flanders",
         "novgorod"
-      ]
-    },
-    {
-      "region_id": "holland",
-      "tier": "secondary",
-      "links": [
-        "denmark",
-        "flanders"
       ]
     },
     {
@@ -231,33 +153,16 @@
       ]
     },
     {
-      "region_id": "crete",
-      "tier": "secondary",
-      "links": [
-        "constantinople",
-        "egypt",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "rhodes",
-      "tier": "secondary",
-      "links": [
-        "constantinople",
-        "egypt"
-      ]
-    },
-    {
       "region_id": "azerbaijan",
       "tier": "secondary",
       "links": [
         "silk_road",
         "trebizond",
-        "western_persia"
+        "northern_persia"
       ]
     },
     {
-      "region_id": "western_persia",
+      "region_id": "northern_persia",
       "tier": "secondary",
       "links": [
         "azerbaijan",
@@ -267,10 +172,10 @@
     },
     {
       "region_id": "southern_persia",
-      "tier": "secondary",
+      "tier": "primary",
       "links": [
         "basra",
-        "western_persia"
+        "northern_persia"
       ]
     },
     {
@@ -279,7 +184,7 @@
       "links": [
         "aleppo",
         "basra",
-        "western_persia"
+        "northern_persia"
       ]
     },
     {
@@ -320,7 +225,6 @@
       "name_tr": "Atlantik Yolu",
       "tier": "secondary",
       "links": [
-        "london",
         "north_america_route",
         "portugal",
         "south_america_route"

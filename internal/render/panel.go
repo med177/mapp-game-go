@@ -604,12 +604,12 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 			grainColor = ColorRed
 		}
 		drawResRow(screen, leftCol1, ry, leftColW, economy.ResourceNameTR(economy.ResourceGrain), grainValue, grainColor)
-		if grainCapacity > 0 {
-			drawResRow(screen, leftCol1, ry+rowGap*2, leftColW, "Ambar", formatNumberTR(grainCapacity), ColorGray)
-		}
+		drawResRow(screen, leftCol1, ry+rowGap, leftColW, economy.ResourceNameTR(economy.ResourceSpice), formatResourceHUDValue(f.Spice, production.Spice), resourceHUDChangeColor(production.Spice, color.RGBA{170, 170, 170, 255}))
+		drawResRow(screen, leftCol1, ry+rowGap*2, leftColW, economy.ResourceNameTR(economy.ResourceCloth), formatResourceHUDValue(f.Cloth, production.Cloth), resourceHUDChangeColor(production.Cloth, color.RGBA{170, 170, 170, 255}))
+
 		drawResRow(screen, leftCol2, ry, leftColW, economy.ResourceNameTR(economy.ResourceTimber), formatResourceHUDValue(f.Timber, production.Timber), resourceHUDChangeColor(production.Timber, color.RGBA{180, 140, 80, 255}))
-		drawResRow(screen, leftCol1, ry+rowGap, leftColW, economy.ResourceNameTR(economy.ResourceIron), formatResourceHUDValue(f.Iron, production.Iron), resourceHUDChangeColor(production.Iron, color.RGBA{180, 180, 220, 255}))
 		drawResRow(screen, leftCol2, ry+rowGap, leftColW, economy.ResourceNameTR(economy.ResourceStone), formatResourceHUDValue(f.Stone, production.Stone), resourceHUDChangeColor(production.Stone, color.RGBA{170, 170, 170, 255}))
+		drawResRow(screen, leftCol2, ry+rowGap*2, leftColW, economy.ResourceNameTR(economy.ResourceIron), formatResourceHUDValue(f.Iron, production.Iron), resourceHUDChangeColor(production.Iron, color.RGBA{180, 180, 220, 255}))
 
 		income := calcPlayerIncome(gs)
 		incCol := ColorGold
@@ -620,8 +620,11 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if income < 0 {
 			sign = ""
 		}
-		drawResRow(screen, rightCol, ry, rightColW, "Gelir", sign+formatNumberTR(income)+"/tur", incCol)
-		drawResRow(screen, rightCol, ry+rowGap, rightColW, economy.ResourceNameTR(economy.ResourceGold), formatNumberTR(f.Gold), ColorGold)
+		if grainCapacity > 0 {
+			drawResRow(screen, rightCol, ry, rightColW, "Ambar", formatNumberTR(grainCapacity), ColorGray)
+		}
+		drawResRow(screen, rightCol, ry+rowGap, rightColW, "Gelir", sign+formatNumberTR(income), incCol)
+		drawResRow(screen, rightCol, ry+rowGap*2, rightColW, "Hazine", formatNumberTR(f.Gold), ColorGold)
 	}
 
 	// Askeri kapasite göstergesi
@@ -3174,7 +3177,7 @@ func topResourceHUDColumns() (leftCol1, leftCol2, rightCol, leftColW, rightColW 
 }
 
 func formatResourceHUDValue(current, change int) string {
-	return formatSignedAmount(change) + "/" + formatNumberTR(current)
+	return formatSignedAmount(change) + " / " + formatNumberTR(current)
 }
 
 func formatSignedAmount(amount int) string {

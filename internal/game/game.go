@@ -2835,14 +2835,7 @@ func writeScenarioTradeCenters(gs *state.GameState) error {
 		return nil
 	}
 	path := filepath.Join(gs.ScenarioPath, "data", "trade_centers.json")
-	config := gs.TradeCenters
-	config.Centers = make([]world.TradeCenterDef, 0, len(gs.TradeCenters.Centers))
-	for _, center := range gs.TradeCenters.Centers {
-		if !center.NetworkOnly {
-			config.Centers = append(config.Centers, center)
-		}
-	}
-	data, err := json.MarshalIndent(config, "", "  ")
+	data, err := json.MarshalIndent(gs.TradeCenters, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -3330,7 +3323,6 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
-	gs.EnsureTradeNetworkCoverage()
 	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
@@ -4237,7 +4229,6 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	if targetRegion == nil {
 		return eliminationResult{}
 	}
-	defer g.gs.EnsureTradeNetworkCoverage()
 	g.clearSiege(targetRegion.ID)
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
@@ -4319,7 +4310,6 @@ func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID fact
 	}
 	g.gs.Armies[armyID] = newArmy
 	g.gs.NormalizeFactionCapitals()
-	g.gs.EnsureTradeNetworkCoverage()
 	return true
 }
 
@@ -4387,7 +4377,6 @@ func (g *Game) liberateSuccessor(regionID world.RegionID) {
 	// Ardıl devlet, onu özgürleştiren devletin müttefiki olarak başlar.
 	diplomacy.ForceRelation(g.gs, g.gs.PlayerFactionID, successorID, faction.StanceAllied, 50)
 	g.gs.NormalizeFactionCapitals()
-	g.gs.EnsureTradeNetworkCoverage()
 	g.gs.RefreshArmyMovePoints(false)
 	if g.renderer != nil {
 		name := successor.NameTR

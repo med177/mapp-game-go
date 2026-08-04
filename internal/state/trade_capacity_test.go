@@ -66,6 +66,26 @@ func TestEffectiveRegionTradeCapacityIgnoresBuildingsWithoutTradeModifier(t *tes
 	}
 }
 
+func TestTradeCenterBenefitsGrowWithVolumeWithoutUpperLimit(t *testing.T) {
+	region := &world.Region{ID: "large_center", OwnerID: "owner", TradeCapacity: 133}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{region.ID: region},
+		TradeCenters: world.TradeCenterConfig{
+			PrimaryTradeCapacityBonus: 2,
+			PrimaryTradeIncomeBonus:   4,
+			Centers:                   []world.TradeCenterDef{{ID: region.ID, Tier: world.TradeCenterPrimary}},
+		},
+	}
+
+	if got := gs.TradeCenterVolume(region); got != 133 {
+		t.Fatalf("merkez hacmi 133 olmalı: got=%d", got)
+	}
+	capacity, income := gs.TradeCenterBenefits(region)
+	if capacity != 6 || income != 12 {
+		t.Fatalf("hacim büyümesi sınırsız kademeli çalışmalı: got=%d/%d want=6/12", capacity, income)
+	}
+}
+
 func TestEffectiveFactionTradeCapacityFollowsConquest(t *testing.T) {
 	region := &world.Region{ID: "port", OwnerID: "old", TradeCapacity: 3, Buildings: []string{"market"}}
 	gs := &GameState{

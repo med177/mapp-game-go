@@ -366,9 +366,6 @@ func checkRegionUnlocks(gs *state.GameState) []world.RegionID {
 			}
 		}
 	}
-	if len(unlocked) > 0 {
-		gs.EnsureTradeNetworkCoverage()
-	}
 	return unlocked
 }
 
@@ -1429,7 +1426,6 @@ func applyTerrainSpecialization(
 
 // checkRebellions isyan riski olan bölgeleri kontrol eder.
 func checkRebellions(gs *state.GameState) {
-	changed := false
 	for _, r := range gs.Regions {
 		if !r.IsRebellionRisk() {
 			continue
@@ -1452,11 +1448,7 @@ func checkRebellions(gs *state.GameState) {
 			r.OwnerID = ""
 			gs.ClearProductionOrdersForRegion(r.ID)
 			r.Satisfaction = 50
-			changed = true
 		}
-	}
-	if changed {
-		gs.EnsureTradeNetworkCoverage()
 	}
 }
 

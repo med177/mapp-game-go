@@ -7,6 +7,23 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: Ticaret haritasındaki rota filosu marker'ları sadeleştirildi.
+  Ticaret gemisi ve görev rozetleri korunurken komutan portresi yalnız bu
+  overlay çağrısında kapatıldı; normal harita ordu/donanma görünümü portreyi
+  göstermeye devam ediyor.
+
+- 2026-08-05: Ticaret merkezi bonusları sabit `+2/+4` değerlerinde kalmıyor.
+  Hacim 50'yi aştığında primary merkez her 25, secondary merkez her 50 hacimde
+  kapasiteye +1 ve gümrük gelirine +2 ekliyor; üst sınır kaldırıldı. Tabela hacmi
+  ve ekonomi aynı `TradeCenterVolume()` hesabını kullanıyor. Regression:
+  `TestTradeCenterBenefitsGrowWithVolumeWithoutUpperLimit`.
+
+- 2026-08-04: Ticaret haritasında ana ve ikincil merkezlerin görsel hiyerarşisi
+  ayrıştırıldı. İkincil merkez tabelaları daha küçük/düşük kontrastlı; hacimsiz
+  merkez hatları ince sürekli gri; aktif hatlar parlak kalıyor. Ana merkez tabelası
+  96×96 kaynaklı `trade_center.png` ikonunu çerçeveli sol karede gösteriyor ve
+  daha büyük çiziliyor. Regression: `TestTradeCenterIconLoadsAtNativeResolution`.
+
 - 2026-08-04: 1300 senaryosundaki komutan şablonları artık `start_year` ve
   `end_year` ile tarihsel olarak ortaya çıkıyor. Aktif komutanlar seçim listesi
   ve atama state'i tarafından ortak aralık helper'ıyla filtreleniyor; `end_year`
@@ -15,15 +32,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Regression: `TestCommanderAvailabilityAddsArrivalsAndRetiresExpiredAssignments`,
   `TestCommanderActiveYearHasExclusiveEndBoundary`; doğrulama: `go test ./...`.
 
-- 2026-08-04: 1300 ticaret merkezi grafiği tüm başlangıçtaki aktif kara
-  devletleri kapsayacak şekilde denetlendi. Tarihsel bağlantılar çift yönlü
-  tutuluyor; merkezsiz kalan devletler için `EnsureTradeNetworkCoverage()` en
-  iyi sahipli bölgede bonus-sız runtime `Ağ geçidi` üretip en yakın tarihsel
-  merkezlere bağlıyor. Başlangıç, load, fetih, isyan ve ardıl devlet doğuşu bu
-  kapsamı yeniden kuruyor; geçitler Edit Mode dışa aktarımına yazılmıyor.
-  Regression: `Test1300ActiveFactionsHaveConnectedTradeCenters`,
-  `TestEnsureTradeNetworkCoverageCreatesBonusFreeGatewayForNewFaction`,
-  `TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance`.
+- 2026-08-04: 1300 ticaret merkezi grafiği denetlendi ve oynanabilir devlet
+  erişimi tamamlandı. Osmanlı için Bithynia, Aragon için Katalonya, HRE için
+  Hollanda ve Moskova için Moskova ikincil merkezleri ana ağa eklendi; eski
+  tek yönlü linkler karşılıklanarak graf tamamlandı. Ticaret haritası yalnız
+  ana/ikincil merkezleri etiketliyor; devlet başkentleri en yakın merkeze ince
+  sabit çizgiyle bağlanıyor. Regression:
+  `Test1300PlayableFactionsOwnConnectedTradeCenters`.
 
 - 2026-08-04: Norveç/Oslo ve İsveç/Stockholm bölgeleri 1300 ticaret haritasında
   düğümsüz kaldığı için görünür bağlantı oluşturmuyordu. Norveç `Danimarka`ya;

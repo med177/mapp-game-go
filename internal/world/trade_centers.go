@@ -30,9 +30,6 @@ type TradeCenterDef struct {
 	WorldY             int             `json:"world_y,omitempty"`
 	OffMap             bool            `json:"off_map,omitempty"`
 	UnlockYear         int             `json:"unlock_year,omitempty"`
-	// NetworkOnly oyun sırasında kapsam eksikliği için türetilen ağ geçididir.
-	// Senaryo verisine yazılmaz ve tarihsel merkez kapasite/gümrük bonusu vermez.
-	NetworkOnly bool `json:"-"`
 }
 
 type TradeCenterConfig struct {

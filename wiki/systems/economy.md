@@ -157,15 +157,18 @@ dönüştürülür. Aynı değer pasif gelir, diplomasi kapasitesi, rota hacmi, 
 ekonomi değerlendirmesi ve ticaret UI'ında kullanılır:
 
 ```
-effectiveCapacity = round(baseCapacity × binaTradeCapacityModlari) + merkezBonusu
+effectiveCapacity = round(baseCapacity × binaTradeCapacityModlari) + merkezHacimBonusu
 tradeIncome = (effectiveCapacity × 2 + merkezGümrüğü) × mevsim × abluka × marketTeknolojisi
 ```
 
 Pazar (`trade_capacity_mod: 1.45`) ve liman (`1.60`) ana büyütücülerdir. Ambar
 (`1.05`) ile ibadethane (`1.03`) küçük fakat gerçek ticaret katkısı sağlar;
 tekrar eden bina seviyeleri çarpanları üst üste uygular. 1300 ve 1455 senaryoları
-primary ticaret merkezine `+2`, secondary merkeze `+1` efektif kapasite verir.
-Ana merkez ayrıca `+4`, ikincil merkez `+2` taban gümrük geliri verir. Bu küçük
+primary ticaret merkezinin hacim 50'ye kadar tabanı `+2 kapasite / +4 altın`,
+secondary merkezin tabanı `+1 kapasite / +2 altın`dır. Hacim 50'yi aştığında
+primary merkez her 25, secondary merkez her 50 hacimde sınırsız olarak `+1
+kapasite / +2 altın` büyür. Hacim, bina sonrası yerel kapasite ile aktif rota
+hacimlerinin toplamıdır; merkez bonusu kendi hacmini yeniden büyütmez. Bu
 doğrudan gelir mevsim, abluka ve pazar teknolojisi çarpanlarından geçer; dolayısıyla
 merkezin kuşatılması/ablukası avantajı da azaltır. Tüm bonuslar bölgenin sahibi
 değiştiğinde otomatik olarak yeni devlete geçer. Eski `trade_centers.json`
@@ -181,14 +184,6 @@ Norveç (Oslo bölgesi) `Danimarka` üzerinden; İsveç (Stockholm bölgesi) ise
 `Danimarka` ve `Novgorod` üzerinden Kuzey Denizi-Baltık ticaret ağına bağlanır.
 Fas `Cezayir/Portekiz`, Girit `Venedik/Konstantiniyye/Mısır` ve Rodos
 `Konstantiniyye/Mısır` koridorlarıyla Akdeniz ve Atlantik ağına katılır.
-
-`GameState.EnsureTradeNetworkCoverage()` bu tarihsel grafiği oyun akışında da
-tam tutar. Başlangıç, kayıt yükleme, fetih, isyan ve ardıl devletin yeniden
-kurulması sonrasında; aktif kara toprağı bulunan her devlet kendi tarihsel
-merkezine sahip değilse en iyi kıyı/ekonomi bölgesinde bir `Ağ geçidi` üretir
-ve onu en yakın en fazla iki tarihsel merkeze bağlar. Ağ geçidi yalnız rota
-ve merchant lojistiği için runtime düğümüdür: kapasite ya da gümrük geliri
-vermez, senaryo JSON'ına yazılmaz ve tekrar kurulumda çoğalmaz.
 
 Efektif kapasite, aktif dış ticaret anlaşmaları arasında gerçek bir ortak havuzdur.
 `RebalanceTradeRouteCapacities()` her rota kurulumu, yükleme temizliği ve ekonomi
