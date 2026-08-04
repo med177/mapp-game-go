@@ -27,19 +27,20 @@ type tradeRouteVisual struct {
 }
 
 type tradeCenterVisual struct {
-	id       world.RegionID
-	regionID world.RegionID
-	nameTR   string
-	tier     world.TradeCenterTier
-	worldX   float64
-	worldY   float64
-	x        float64
-	y        float64
-	labelX   float64
-	labelY   float64
-	labelW   float64
-	labelH   float64
-	offMap   bool
+	id          world.RegionID
+	regionID    world.RegionID
+	nameTR      string
+	tier        world.TradeCenterTier
+	worldX      float64
+	worldY      float64
+	x           float64
+	y           float64
+	labelX      float64
+	labelY      float64
+	labelW      float64
+	labelH      float64
+	offMap      bool
+	networkOnly bool
 }
 
 type tradeCorridorInfo struct {
@@ -143,31 +144,33 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 		if def.OffMap {
 			sx, sy := r.worldToScreen(float64(def.WorldX), float64(def.WorldY))
 			centers = append(centers, tradeCenterVisual{
-				id:     def.ID,
-				nameTR: def.NameTR,
-				tier:   def.Tier,
-				worldX: float64(def.WorldX),
-				worldY: float64(def.WorldY),
-				x:      sx,
-				y:      sy,
-				offMap: true,
+				id:          def.ID,
+				nameTR:      def.NameTR,
+				tier:        def.Tier,
+				worldX:      float64(def.WorldX),
+				worldY:      float64(def.WorldY),
+				x:           sx,
+				y:           sy,
+				offMap:      true,
+				networkOnly: def.NetworkOnly,
 			})
 			continue
 		}
 		reg := r.gs.Regions[def.ID]
-		if reg == nil || reg.IsSea || reg.TradeCapacity <= 0 {
+		if reg == nil || reg.IsSea || !def.NetworkOnly && reg.TradeCapacity <= 0 {
 			continue
 		}
 		sx, sy := r.regionScreenPos(reg)
 		centers = append(centers, tradeCenterVisual{
-			id:       reg.ID,
-			regionID: reg.ID,
-			nameTR:   chooseRegionLabel(reg),
-			tier:     def.Tier,
-			worldX:   float64(reg.WorldX),
-			worldY:   float64(reg.WorldY),
-			x:        sx,
-			y:        sy,
+			id:          reg.ID,
+			regionID:    reg.ID,
+			nameTR:      chooseRegionLabel(reg),
+			tier:        def.Tier,
+			worldX:      float64(reg.WorldX),
+			worldY:      float64(reg.WorldY),
+			x:           sx,
+			y:           sy,
+			networkOnly: def.NetworkOnly,
 		})
 	}
 	return centers
@@ -1152,8 +1155,12 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		volStr := ""
 		if !centers[i].offMap {
 			capacityBonus, incomeBonus := r.tradeCenterBenefits(centers[i])
-			volStr = "Hacim: " + itoa(centerVolume[i])
-			if capacityBonus != 0 || incomeBonus != 0 {
+			if centers[i].networkOnly {
+				volStr = "Ağ geçidi | Hacim: " + itoa(centerVolume[i])
+			} else {
+				volStr = "Hacim: " + itoa(centerVolume[i])
+			}
+			if !centers[i].networkOnly && (capacityBonus != 0 || incomeBonus != 0) {
 				volStr += " | +" + itoa(capacityBonus) + " kap. | +" + itoa(incomeBonus) + " altın"
 			}
 			volW := float32(MeasureText(volStr, FaceSmall))

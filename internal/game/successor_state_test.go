@@ -23,14 +23,20 @@ func TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance(t *testing.T) {
 				OwnerID:            "liberator",
 				SuccessorFactionID: "successor",
 				NameTR:             "Eski Başkent",
+				TradeCapacity:      3,
+				WorldX:             120,
+				WorldY:             100,
 			},
-			"liberator_home": {ID: "liberator_home", OwnerID: "liberator"},
+			"liberator_home": {ID: "liberator_home", OwnerID: "liberator", TradeCapacity: 4, WorldX: 100, WorldY: 100},
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"invader": {ID: "invader", OwnerID: "liberator", RegionID: "former_capital", Units: army.MakeUnits("militia", 3)},
 		},
-		Relations:   map[string]*faction.Relation{},
-		UnitTypes:   map[string]*army.UnitType{"militia": {ID: "militia", MovementPoints: 2}},
+		Relations: map[string]*faction.Relation{},
+		UnitTypes: map[string]*army.UnitType{"militia": {ID: "militia", MovementPoints: 2}},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{{
+			ID: "liberator_home", Tier: world.TradeCenterPrimary,
+		}}},
 		NextArmySeq: 4,
 	}
 
@@ -63,4 +69,10 @@ func TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance(t *testing.T) {
 	if gs.Armies["invader"].RegionID == "former_capital" {
 		t.Fatal("özgürleştirici ordusu yeni ardıl toprağında bırakılmamalıydı")
 	}
+	for _, center := range gs.TradeCenters.Centers {
+		if center.ID == "former_capital" && center.NetworkOnly && len(center.Links) == 1 && center.Links[0] == "liberator_home" {
+			return
+		}
+	}
+	t.Fatalf("yeniden kurulan ardıl devlet ticaret ağına bağlanmadı: %+v", gs.TradeCenters.Centers)
 }

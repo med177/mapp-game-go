@@ -29,6 +29,11 @@ ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağl
 koridor hacmini ve fetihle devralınan bonusları aynı state helper üzerinden
 bildirir.
 
+Runtime'da oluşan bonus-sız `Ağ geçidi` düğümleri etiket ve tıklama bilgisinde
+tarihsel merkezden ayrı gösterilir. Böylece yeni kurulan veya tarihsel merkezini
+kaybetmiş devletin ticaret ağı erişimi görünür olur; oyuncu bunun bedelsiz
+kapasite/gümrük avantajı olmadığını da doğrudan görür.
+
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Böylece
 teklif reddi ile panel bilgisi kapasite veya partner sınırında ayrışmaz.

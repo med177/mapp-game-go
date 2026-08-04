@@ -172,6 +172,24 @@ değiştiğinde otomatik olarak yeni devlete geçer. Eski `trade_centers.json`
 dosyalarında bu root alanlar yoksa loader aynı `+2/+1` ve `+4/+2` kalibrasyonunu
 geriye uyumlu varsayılan olarak uygular.
 
+1300 başlangıç grafiğinde her oynanabilir devlet en az bir kendi ticaret merkezi
+düğümüne sahiptir. Osmanlı `Bithynia → Konstantiniyye`, Aragon `Katalonya →
+Ceneviz/Portekiz`, HRE `Hollanda → Flandre/Danimarka` ve Moskova `Moskova →
+Novgorod` bağlantılarıyla ana ağa girer. Tarihsel merkez linkleri çift yönlü
+saklanır; böylece data/export denetimi ile görsel rota grafiği ayrışmaz.
+Norveç (Oslo bölgesi) `Danimarka` üzerinden; İsveç (Stockholm bölgesi) ise
+`Danimarka` ve `Novgorod` üzerinden Kuzey Denizi-Baltık ticaret ağına bağlanır.
+Fas `Cezayir/Portekiz`, Girit `Venedik/Konstantiniyye/Mısır` ve Rodos
+`Konstantiniyye/Mısır` koridorlarıyla Akdeniz ve Atlantik ağına katılır.
+
+`GameState.EnsureTradeNetworkCoverage()` bu tarihsel grafiği oyun akışında da
+tam tutar. Başlangıç, kayıt yükleme, fetih, isyan ve ardıl devletin yeniden
+kurulması sonrasında; aktif kara toprağı bulunan her devlet kendi tarihsel
+merkezine sahip değilse en iyi kıyı/ekonomi bölgesinde bir `Ağ geçidi` üretir
+ve onu en yakın en fazla iki tarihsel merkeze bağlar. Ağ geçidi yalnız rota
+ve merchant lojistiği için runtime düğümüdür: kapasite ya da gümrük geliri
+vermez, senaryo JSON'ına yazılmaz ve tekrar kurulumda çoğalmaz.
+
 Efektif kapasite, aktif dış ticaret anlaşmaları arasında gerçek bir ortak havuzdur.
 `RebalanceTradeRouteCapacities()` her rota kurulumu, yükleme temizliği ve ekonomi
 tick'inde devletin kapasitesini partnerlerine eşit paylaştırır; bölünmeyen kalan

@@ -24,6 +24,13 @@ güncellemesi gerekmez: yardımcı yalnız güncel `Region.OwnerID` üzerinden t
 root bonus alanlarını loader aşamasında tamamlar; campaign save bu senaryo bazlı
 konfigürasyonu ayrıca serialize etmez.
 
+`EnsureTradeNetworkCoverage()` ticaret merkezi config'ine yalnız runtime
+`NetworkOnly` geçitleri ekleyebilir. Bunlar her aktif kara devleti için
+tarihsel ağa erişimi garanti eder, en iyi sahipli bölgeden en yakın tarihsel
+merkezlere bağlanır ve bonus üretmez. Geçitler başlangıç/load ile sahiplik
+değiştiren fetih, isyan ve ardıl devlet akışlarından sonra yeniden türetilir;
+Edit Mode senaryo dışa aktarımında filtrelenir ve save'de kalıcı veri değildir.
+
 Aktif dış `TradeRoute` anlaşmalarının bu kapasiteyi nasıl paylaştığı
 `diplomacy.RebalanceTradeRouteCapacities()` ile türetilir; rota miktarları ayrı
 bir kalıcı kapasite snapshot'ı değildir. Rota kurulumu, sanitize/load ve her

@@ -45,7 +45,7 @@ func (s *GameState) TradeCenterBenefits(region *world.Region) (capacityBonus, in
 		return 0, 0
 	}
 	for _, center := range s.TradeCenters.Centers {
-		if center.ID != region.ID || !center.ActiveInYear(s.Year) {
+		if center.NetworkOnly || center.ID != region.ID || !center.ActiveInYear(s.Year) {
 			continue
 		}
 		return s.tradeCenterCapacityBonus(center), s.tradeCenterIncomeBonus(center)

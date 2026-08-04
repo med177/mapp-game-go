@@ -852,6 +852,75 @@ func Test1300ScenarioTradeCenterReferencesExist(t *testing.T) {
 	}
 }
 
+func Test1300ActiveFactionsHaveConnectedTradeCenters(t *testing.T) {
+	scenarioPath, regions, factions := load1300IntegrityData(t)
+	config, err := world.LoadTradeCenters(filepath.Join(scenarioPath, "data", "trade_centers.json"), regions)
+	if err != nil {
+		t.Fatalf("ticaret merkezi verisi yüklenemedi: %v", err)
+	}
+
+	centers := make(map[world.RegionID]world.TradeCenterDef, len(config.Centers))
+	for _, center := range config.Centers {
+		centers[center.ID] = center
+	}
+
+	for _, center := range config.Centers {
+		for _, linkedID := range center.Links {
+			linked, ok := centers[linkedID]
+			if !ok {
+				t.Errorf("ticaret merkezi linki bilinmeyen düğüme gidiyor: %s -> %s", center.ID, linkedID)
+				continue
+			}
+			if !containsRegionID(linked.Links, center.ID) {
+				t.Errorf("ticaret merkezi linki çift yönlü değil: %s -> %s", center.ID, linkedID)
+			}
+		}
+	}
+
+	ownedCenters := make(map[faction.FactionID]int)
+	for _, center := range config.Centers {
+		if region := regions[center.ID]; region != nil && region.OwnerID != "" {
+			ownedCenters[faction.FactionID(region.OwnerID)]++
+		}
+	}
+	for factionID, f := range factions {
+		if f == nil || !f.IsPlayable {
+			continue
+		}
+		if ownedCenters[factionID] == 0 {
+			t.Errorf("oynanabilir devletin bağlı ticaret merkezi yok: faction=%s", factionID)
+		}
+	}
+
+	for centerID, expectedLinks := range map[world.RegionID][]world.RegionID{
+		"norway":  {"denmark"},
+		"sweden":  {"denmark", "novgorod"},
+		"morocco": {"algiers", "portugal"},
+		"crete":   {"constantinople", "egypt", "venice"},
+		"rhodes":  {"constantinople", "egypt"},
+	} {
+		center, ok := centers[centerID]
+		if !ok {
+			t.Errorf("beklenen ticaret merkezi eksik: center=%s", centerID)
+			continue
+		}
+		for _, linkedID := range expectedLinks {
+			if !containsRegionID(center.Links, linkedID) {
+				t.Errorf("beklenen ticaret hattı eksik: %s -> %s", centerID, linkedID)
+			}
+		}
+	}
+}
+
+func containsRegionID(ids []world.RegionID, want world.RegionID) bool {
+	for _, id := range ids {
+		if id == want {
+			return true
+		}
+	}
+	return false
+}
+
 func Test1300ScenarioAIStrategyReferencesExist(t *testing.T) {
 	scenarioPath, regions, factions := load1300IntegrityData(t)
 	strategies, err := LoadAIStrategies(filepath.Join(scenarioPath, "data", "ai_strategies.json"))

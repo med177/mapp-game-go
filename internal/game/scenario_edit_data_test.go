@@ -24,7 +24,10 @@ func TestWriteScenarioEditDataWritesAIStrategiesAndTradeCenters(t *testing.T) {
 			"faction_b": {FactionID: "faction_b"},
 			"faction_a": {FactionID: "faction_a", Objectives: []scenario.AIObjectiveDef{{TargetRegions: []string{"new_region"}}}},
 		},
-		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{{ID: "new_region", Links: []world.RegionID{"faction_a"}}}},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "new_region", Links: []world.RegionID{"faction_a"}},
+			{ID: "runtime_gateway", NetworkOnly: true, Links: []world.RegionID{"new_region"}},
+		}},
 	}
 
 	if err := writeScenarioAIStrategies(gs); err != nil {

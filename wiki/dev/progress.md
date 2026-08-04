@@ -7,6 +7,24 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: 1300 ticaret merkezi grafiği tüm başlangıçtaki aktif kara
+  devletleri kapsayacak şekilde denetlendi. Tarihsel bağlantılar çift yönlü
+  tutuluyor; merkezsiz kalan devletler için `EnsureTradeNetworkCoverage()` en
+  iyi sahipli bölgede bonus-sız runtime `Ağ geçidi` üretip en yakın tarihsel
+  merkezlere bağlıyor. Başlangıç, load, fetih, isyan ve ardıl devlet doğuşu bu
+  kapsamı yeniden kuruyor; geçitler Edit Mode dışa aktarımına yazılmıyor.
+  Regression: `Test1300ActiveFactionsHaveConnectedTradeCenters`,
+  `TestEnsureTradeNetworkCoverageCreatesBonusFreeGatewayForNewFaction`,
+  `TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance`.
+
+- 2026-08-04: Norveç/Oslo ve İsveç/Stockholm bölgeleri 1300 ticaret haritasında
+  düğümsüz kaldığı için görünür bağlantı oluşturmuyordu. Norveç `Danimarka`ya;
+  İsveç `Danimarka` ve `Novgorod`a bağlanan ikincil merkezler olarak eklendi.
+
+- 2026-08-04: Fas, Girit ve Rodos da ticaret merkezi grafiği dışında kalmıştı.
+  Fas `Cezayir/Portekiz`, Girit `Venedik/Konstantiniyye/Mısır`, Rodos ise
+  `Konstantiniyye/Mısır` koridorlarıyla ikincil merkez olarak bağlandı.
+
 - 2026-08-04: Edit Mode harita fırçasında yanlışlıkla yapılan sınır/bölge
   tıklamalarını düzeltmek için `Shift+sol tık` ve `Shift+drag` aktif boya/sil
   işlemini tersine çeviriyor. Cursor preview ve yardım metni de ters işlem
