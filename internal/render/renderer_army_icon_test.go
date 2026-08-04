@@ -112,6 +112,35 @@ func TestArmyCommanderBadgeAlignsAboveLandAndNavalIcons(t *testing.T) {
 	}
 }
 
+func TestArmySelectionIndicatorRectCoversCommanderAndMarkerForLandAndNaval(t *testing.T) {
+	for _, check := range []struct {
+		name    string
+		isNaval bool
+	}{
+		{name: "kara", isNaval: false},
+		{name: "deniz", isNaval: true},
+	} {
+		t.Run(check.name, func(t *testing.T) {
+			rect := armySelectionIndicatorRect(100, 100, check.isNaval, true)
+			portraitX, portraitY, portraitSize := armyCommanderBadgeRect(100, 100, check.isNaval, false)
+			if rect.X >= float64(portraitX) || rect.Y >= float64(portraitY) || rect.X+rect.W <= float64(portraitX+portraitSize) || rect.Y+rect.H <= float64(portraitY+portraitSize) {
+				t.Fatalf("seçim çerçevesi komutan portresini sarmalı: rect=%+v portrait=(%.1f, %.1f, %.1f)", rect, portraitX, portraitY, portraitSize)
+			}
+			if !rect.Hit(100, 100) {
+				t.Fatalf("seçim çerçevesi marker merkezini kapsamalı: %+v", rect)
+			}
+		})
+	}
+}
+
+func TestArmySelectionIndicatorRectWithoutCommanderStaysCompact(t *testing.T) {
+	withoutCommander := armySelectionIndicatorRect(100, 100, false, false)
+	withCommander := armySelectionIndicatorRect(100, 100, false, true)
+	if withoutCommander.H >= withCommander.H {
+		t.Fatalf("komutansız seçim çerçevesi portreli çerçeveden kısa olmalı: without=%+v with=%+v", withoutCommander, withCommander)
+	}
+}
+
 func TestNavalArmyBadgesShareUpperRightAnchor(t *testing.T) {
 	badge := navalEmbarkedArmyBadgeRect(100, 100)
 	if badge.X <= 100 || badge.Y >= 100 {

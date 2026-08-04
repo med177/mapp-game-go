@@ -7,6 +7,41 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: Seçili kara ordusu ve donanma marker'larına, komutan portresini
+  de kapsayan yuvarlatılmış köşeli kesik altın seçim çerçevesi eklendi. Çerçeve
+  görev ve deniz rozetlerinden sonra çizildiği için görünür kalıyor; input
+  alanları değişmedi. Regression:
+  `TestArmySelectionIndicatorRectCoversCommanderAndMarkerForLandAndNaval`,
+  `TestArmySelectionIndicatorRectWithoutCommanderStaysCompact`; doğrulama:
+  `go test ./internal/render -count=1`.
+
+- 2026-08-04: Kuşatma açlık teslim süresi tahkimat seviyesine göre 10/14/18
+  turdan 6/8/10 tura indirildi. Kuşatan ordu hedefin yanında kendi kara
+  bölgesine sahipse bakım yükü `%200` yerine `%150`; başkentten uzak ya da kara
+  ikmal hattı kopuksa bölgesel yıpranma talebi kademeli olarak daha yüksek.
+  Ortak hesap bölgesel yıpranma ve AI lojistiğine birlikte giriyor; fraksiyon
+  toplam tahıl gideri değişmiyor.
+  Regression: `TestSiegeSurrenderTurnsAreShorterByFortLevel`,
+  `TestEffectiveArmyGrainUpkeepUsesBorderSupplyAndCapitalDistance`.
+
+- 2026-08-04: Müttefik veya aynı realm içindeki vassal kara bölgesine bitişik
+  düşman cepheleri de ileri ikmal noktası sayılıyor. Bu sınır kuşatma yükünü
+  `%150`ye indiriyor; kendi başkentine kara hattı olmasa bile yakın dost sınırı
+  bölgesel yıpranma cezasını `%10`la sınırlandırıyor.
+
+- 2026-08-04: Müttefik/vassal ileri ikmali bedelli hale getirildi. Aynı realm
+  destekçi taban bakımın `%20`sini, bağımsız müttefik yaklaşık `%34`ünü tahıl
+  olarak harcar; bir aylık talep veya 20 tahıllık güvenlik rezervinin altına
+  düşmeye izin verilmez. Yetersiz stokta avantaj kapanır. Ordu/bölge lojistik
+  yüzeyleri ve `[IKMAL]` tur olayları kaynak devleti ile harcanan tahılı
+  gösterir. Regression: `TestFriendlyFrontlineSupplyCostsProviderGrainAndPrefersVassal`.
+
+- 2026-08-04: Tahkimli bölgeye doğrudan hareket emri, renderer karar modalını
+  atladığında artık genel uyarıda takılmıyor; `ShowSiegeDecision` üzerinden
+  Kuşatma Başlat / Genel Hücum seçeneklerini açıyor. Kuşatma birimi olmayan
+  orduların karar verilmeden hareket puanı veya konumu değişmiyor. Regression:
+  `TestMoveArmyToFortifiedRegionOpensSiegeDecisionWithoutSiegeUnit`.
+
 - 2026-08-04: 1300 senaryosunun zafer havuzu tarihsel dönüm noktalarına göre
   kalibre edildi. Oynanabilir 10 devletin her birine fraksiyona özel kart eklendi;
   genel havuz daha yüksek eşikli toprak, ekonomi, askerî, dinî ve 20 yıllık beka

@@ -278,10 +278,7 @@ func siegeBreachGainForForce(gs *state.GameState, attacker *army.Army, targetReg
 }
 
 func siegeSurrenderTurns(fortLevel int) int {
-	if fortLevel < 1 {
-		fortLevel = 1
-	}
-	return 6 + fortLevel*4
+	return state.SiegeSurrenderTurns(fortLevel)
 }
 
 func siegeAttritionDamage(progressGain, breachLevel, fortLevel int) int {

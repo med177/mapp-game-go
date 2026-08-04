@@ -1066,6 +1066,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 	}
 	gs.RegionLogistics = make(map[world.RegionID]state.RegionLogisticsStatus)
 	gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
+	friendlySupplies := allocateFriendlyFrontlineSupply(gs)
 
 	armiesByRegion := make(map[world.RegionID][]*army.Army)
 	for _, a := range gs.Armies {
@@ -1118,7 +1119,8 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		totalUnits := 0
 		peakTurns := 0
 		for _, a := range armiesInRegion {
-			totalDemand += gs.EffectiveArmyGrainUpkeep(a)
+			_, externalSupplyActive := friendlySupplies[a.ID]
+			totalDemand += gs.RegionalArmyGrainDemandWithExternalSupply(a, externalSupplyActive)
 			totalUnits += len(a.Units)
 			if a.OverCapacityTurns > peakTurns {
 				peakTurns = a.OverCapacityTurns
@@ -1162,10 +1164,19 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			Overload:         overload,
 			ArmyCount:        len(armiesInRegion),
 		}
+		for _, a := range armiesInRegion {
+			if supply, ok := friendlySupplies[a.ID]; ok {
+				regionStatus.FriendlySupplyArmies++
+				regionStatus.FriendlySupplyGrainSpent += supply.GrainSpent
+			}
+		}
 
 		if overload <= 0 {
 			for _, a := range armiesInRegion {
 				a.OverCapacityTurns = 0
+				if supply, ok := friendlySupplies[a.ID]; ok {
+					gs.ArmyLogistics[a.ID] = friendlySupplyArmyLogisticsStatus(a, regionStatus, supply)
+				}
 			}
 			gs.RegionLogistics[rid] = regionStatus
 			continue
@@ -1183,6 +1194,12 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 				Overload:          overload,
 				OverCapacityTurns: a.OverCapacityTurns,
 				DamagePerUnit:     damagePerUnit,
+			}
+			if supply, ok := friendlySupplies[a.ID]; ok {
+				armyStatus.FriendlySupplyFactionID = supply.ProviderFactionID
+				armyStatus.FriendlySupplyRegionID = supply.ProviderRegionID
+				armyStatus.FriendlySupplyGrainSpent = supply.GrainSpent
+				armyStatus.FriendlySupplySameRealm = supply.SameRealm
 			}
 			unitsBefore := len(a.Units)
 			totalDamage := 0
@@ -1218,6 +1235,79 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 	}
 
 	return alerts
+}
+
+// allocateFriendlyFrontlineSupply ikmal alan orduları ArmyID sırasıyla ele alır;
+// böylece aynı sınırlı müttefik/vassal rezervine birden fazla ordu talip olsa da
+// sonuç kayıt yükleme ve AI turu arasında deterministik kalır.
+func allocateFriendlyFrontlineSupply(gs *state.GameState) map[army.ArmyID]state.FriendlySupplySupport {
+	if gs == nil {
+		return nil
+	}
+	armyIDs := make([]army.ArmyID, 0, len(gs.Armies))
+	for aid, a := range gs.Armies {
+		if a != nil && !a.IsNaval && len(a.Units) > 0 {
+			armyIDs = append(armyIDs, aid)
+		}
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	supplies := make(map[army.ArmyID]state.FriendlySupplySupport)
+	for _, aid := range armyIDs {
+		a := gs.Armies[aid]
+		supply, ok := gs.ExternalFriendlySupplyQuote(a)
+		if !ok || supply.GrainSpent <= 0 {
+			continue
+		}
+		provider := gs.Factions[supply.ProviderFactionID]
+		if provider == nil || provider.IsEliminated {
+			continue
+		}
+		reserve := friendlySupplyReserve(gs, supply.ProviderFactionID)
+		if provider.Grain-supply.GrainSpent < reserve {
+			continue
+		}
+		provider.Grain -= supply.GrainSpent
+		if provider.Grain < 0 {
+			provider.Grain = 0
+		}
+		status := gs.GrainEconomy[supply.ProviderFactionID]
+		status.FriendlySupplyGrainSpent += supply.GrainSpent
+		status.Stockpile = provider.Grain
+		if status.TotalDemand > 0 {
+			status.MonthsOfSupply = status.Stockpile / status.TotalDemand
+		}
+		status.StrategicDemand = state.StrategicGrainDemandFromStockpile(status.Stockpile, status.TotalDemand)
+		gs.GrainEconomy[supply.ProviderFactionID] = status
+		supplies[aid] = supply
+	}
+	return supplies
+}
+
+func friendlySupplyReserve(gs *state.GameState, fid faction.FactionID) int {
+	const minimumReserve = 20
+	if gs == nil {
+		return minimumReserve
+	}
+	reserve := minimumReserve
+	if status, ok := gs.GrainEconomy[fid]; ok && status.TotalDemand > reserve {
+		reserve = status.TotalDemand
+	}
+	return reserve
+}
+
+func friendlySupplyArmyLogisticsStatus(a *army.Army, region state.RegionLogisticsStatus, supply state.FriendlySupplySupport) state.ArmyLogisticsStatus {
+	return state.ArmyLogisticsStatus{
+		ArmyID:                   a.ID,
+		RegionID:                 region.RegionID,
+		OwnerID:                  a.OwnerID,
+		Demand:                   region.Demand,
+		Capacity:                 region.Capacity,
+		Overload:                 region.Overload,
+		FriendlySupplyFactionID:  supply.ProviderFactionID,
+		FriendlySupplyRegionID:   supply.ProviderRegionID,
+		FriendlySupplyGrainSpent: supply.GrainSpent,
+		FriendlySupplySameRealm:  supply.SameRealm,
+	}
 }
 
 func regionSettlementLogisticsBuffer(gs *state.GameState, region *world.Region) int {

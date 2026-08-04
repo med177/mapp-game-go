@@ -199,7 +199,7 @@ func aiSafeRecoveryRegion(gs *state.GameState, fid faction.FactionID, armyRef *a
 	}
 	demand, capacity, overload := aiRegionLogistics(gs, region, string(fid))
 	if region.ID != armyRef.RegionID {
-		demand += gs.EffectiveArmyGrainUpkeep(armyRef)
+		demand += gs.RegionalArmyGrainDemand(armyRef)
 	}
 	return overload == 0 && demand <= capacity
 }
@@ -218,7 +218,7 @@ func aiRegionHasAdjacentHostileArmy(gs *state.GameState, fid faction.FactionID, 
 func aiRecoveryRegionScore(ctx *StrategicContext, armyRef *army.Army, region *world.Region) int {
 	demand, capacity, _ := aiRegionLogistics(ctx.gs, region, armyRef.OwnerID)
 	if region.ID != armyRef.RegionID {
-		demand += ctx.gs.EffectiveArmyGrainUpkeep(armyRef)
+		demand += ctx.gs.RegionalArmyGrainDemand(armyRef)
 	}
 	score := maxInt(0, capacity-demand) * 8
 	for _, candidate := range aiSortedArmies(ctx.gs) {

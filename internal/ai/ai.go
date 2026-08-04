@@ -2871,7 +2871,7 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 		if candidate == nil || candidate.IsNaval || candidate.OwnerID != ownerID || candidate.RegionID != region.ID {
 			continue
 		}
-		demand += gs.EffectiveArmyGrainUpkeep(candidate)
+		demand += gs.RegionalArmyGrainDemand(candidate)
 	}
 	overload = maxInt(0, demand-capacity)
 	return demand, capacity, overload

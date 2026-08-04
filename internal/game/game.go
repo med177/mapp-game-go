@@ -998,6 +998,7 @@ func (g *Game) resolveTurn() {
 	}
 
 	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
+	g.showFriendlySupplyEvents()
 	g.showGrainEconomyAlert(economyReport.PlayerGrainStatus)
 	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
 	g.handleCapitalMoveProgress(capitalMoveUpdates)
@@ -1111,6 +1112,38 @@ func (g *Game) showRegionalLogisticsAlerts(alerts []state.RegionLogisticsStatus)
 		if alert.PeakOverloadTurns >= 2 {
 			g.renderer.ShowCombatResult(regionName + ": ordular ikmal baskısı altında zayiat veriyor")
 		}
+	}
+}
+
+func (g *Game) showFriendlySupplyEvents() {
+	if g == nil || g.gs == nil || g.renderer == nil || g.gs.PlayerFactionID == "" {
+		return
+	}
+	armyIDs := make([]army.ArmyID, 0, len(g.gs.ArmyLogistics))
+	for aid, logistics := range g.gs.ArmyLogistics {
+		if logistics.FriendlySupplyGrainSpent > 0 && (logistics.OwnerID == string(g.gs.PlayerFactionID) || logistics.FriendlySupplyFactionID == g.gs.PlayerFactionID) {
+			armyIDs = append(armyIDs, aid)
+		}
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+	for _, aid := range armyIDs {
+		logistics := g.gs.ArmyLogistics[aid]
+		providerName := g.factionNameTR(string(logistics.FriendlySupplyFactionID))
+		providerRegion := string(logistics.FriendlySupplyRegionID)
+		if region := g.gs.Regions[logistics.FriendlySupplyRegionID]; region != nil {
+			providerRegion = region.NameTR
+		}
+		armyRegion := string(logistics.RegionID)
+		if region := g.gs.Regions[logistics.RegionID]; region != nil {
+			armyRegion = region.NameTR
+		}
+		kind := "Müttefik"
+		if logistics.FriendlySupplySameRealm {
+			kind = "Vassal"
+		}
+		message := fmt.Sprintf("%s ikmali: %s ordusu için -%d tahıl", kind, providerName, logistics.FriendlySupplyGrainSpent)
+		detail := fmt.Sprintf("%s bölgesindeki %s, %s bölgesinden %s ileri ikmal alıyor. Destekçi devletin tur sonu tahılından %d harcandı.", armyRegion, aid, providerRegion, providerName, logistics.FriendlySupplyGrainSpent)
+		g.renderer.AddEventDetail("[IKMAL] "+message, detail)
 	}
 }
 
@@ -4925,6 +4958,13 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		if targetSiege != nil && targetSiege.AttackerArmyID == aid {
+			// Hareket emri doğrudan oyun katmanına geldiyse (ör. renderer'ın
+			// hedef kararını atladığı eski kayıt/akış), aynı tahkimat kararını
+			// burada da aç. Böylece ordu sessizce hareketten düşmez ve mevcut
+			// kuşatma birimi olmasa bile Genel Hücum/Kuşatma seçenekleri görünür.
+			if g.renderer != nil && g.renderer.ShowSiegeDecision(aid, target) {
+				return
+			}
 			g.renderer.ShowCombatResult("Bu tahkimata girmek için kuşatma üzerinden genel hücum seçmelisin.")
 			return
 		}
@@ -4940,6 +4980,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 				if reason != "" {
 					g.renderer.ShowCombatResult(reason)
 				}
+				return
+			}
+			if g.renderer != nil && g.renderer.ShowSiegeDecision(aid, target) {
 				return
 			}
 			g.renderer.ShowCombatResult("Bu bölge tahkimli. Önce kuşatma başlatmalı veya genel hücum seçmelisin.")

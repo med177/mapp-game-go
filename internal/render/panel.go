@@ -2095,6 +2095,17 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		}
 		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d / %d", logistics.Capacity, logistics.Demand), meter, logisticsPressureColor(logistics))
 		ly += regionPanelStatRowGap
+		if logistics.FriendlySupplyGrainSpent > 0 {
+			drawUILabel(
+				screen,
+				gameui.Rect{X: lx, Y: ly, W: float64(sepW)},
+				fmt.Sprintf("Dost ikmali: %d ordu  •  -%d tahıl/tur", logistics.FriendlySupplyArmies, logistics.FriendlySupplyGrainSpent),
+				color.RGBA{137, 199, 141, 245},
+				gameui.TextSmall,
+				gameui.TextAlignStart,
+			)
+			ly += 14
+		}
 		if logistics.Overload > 0 {
 			drawUILabel(
 				screen,
@@ -2535,9 +2546,15 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Tahıl", itoa(grainNeed)+" / tur", ColorGray, color.RGBA{205, 185, 120, 235})
 		ly += 18
 	}
-	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
-		drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Lojistik", "-"+itoa(logistics.DamagePerUnit)+" HP / birim", ColorGray, ColorRed)
-		ly += 18
+	if logistics, ok := gs.ArmyLogistics[aid]; ok {
+		if logistics.FriendlySupplyGrainSpent > 0 {
+			drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Dost ikmali", "-"+itoa(logistics.FriendlySupplyGrainSpent)+" tahıl/tur", ColorGray, color.RGBA{137, 199, 141, 245})
+			ly += 18
+		}
+		if logistics.TotalHPDamage > 0 {
+			drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Lojistik", "-"+itoa(logistics.DamagePerUnit)+" HP / birim", ColorGray, ColorRed)
+			ly += 18
+		}
 	}
 
 	hint := "Sağ tık → hareket / saldırı"
@@ -4428,6 +4445,9 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 	ly += regionPanelStatRowGap * 2
 	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
 		ly += regionPanelStatRowGap
+		if logistics.FriendlySupplyGrainSpent > 0 {
+			ly += 14
+		}
 		if logistics.Overload > 0 {
 			ly += 14
 		}
@@ -4894,6 +4914,9 @@ func neighborBlockStartY(gs *state.GameState, region *world.Region) float64 {
 	ly += regionPanelStatRowGap * 2
 	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
 		ly += regionPanelStatRowGap
+		if logistics.FriendlySupplyGrainSpent > 0 {
+			ly += 14
+		}
 		if logistics.Overload > 0 {
 			ly += 14
 		}

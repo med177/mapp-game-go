@@ -1404,6 +1404,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawPendingNavalContactHighlight(screen, armyPositions)
 		r.drawCurrentRegionArmyTaskTarget(screen, armyPositions)
 		r.drawArmyTaskStatusBadges(screen, armyPositions)
+		// Seçim çerçevesi en üstte kalır; görev ve deniz rozetleri seçili
+		// ordunun/filonun okunabilir işaretini kapatmamalı.
+		r.drawSelectedArmyIndicator(screen, armyPositions)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		// Debug paneli ordu karelerinin altında kalmamalı; harita işaretleri
@@ -2580,6 +2583,29 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	}
 }
 
+// drawSelectedArmyIndicator seçili kara ordusunu veya donanmayı, varsa
+// komutan portresini de kapsayan yuvarlatılmış kesik altın çerçeveyle belirtir.
+// Çerçeve yalnızca görseldir; marker ve rozetlerin mevcut hit-test sözleşmesini
+// değiştirmez.
+func (r *Renderer) drawSelectedArmyIndicator(screen *ebiten.Image, positions []armyIconPos) {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" {
+		return
+	}
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil {
+		return
+	}
+	for _, pos := range positions {
+		if pos.ArmyID != r.SelectedArmy {
+			continue
+		}
+		commander, _ := armyPanelDisplayedCommander(a)
+		rect := armySelectionIndicatorRect(pos.X, pos.Y, a.IsNaval, commander != nil)
+		drawDashedRoundedRect(screen, rect, 8, 6, 4, 2, color.RGBA{255, 215, 0, 250})
+		return
+	}
+}
+
 func armyIconBorderColor(gs *state.GameState, ownerID string, selected bool) color.RGBA {
 	if selected {
 		return color.RGBA{255, 215, 0, 255}
@@ -2767,6 +2793,84 @@ func armyCommanderBadgeRect(cx, cy float32, isNaval, hasEmbarkedUnits bool) (x, 
 		iconTop = cy - 13
 	}
 	return cx - size/2, iconTop - size, size
+}
+
+// armySelectionIndicatorRect, komutan portresi ve ana ordu/donanma marker'ını
+// tek bir seçim yüzeyinde birleştirir. Aynı rect yalnızca görsel çerçeve için
+// kullanılır; click alanını bilinçli olarak büyütmez.
+func armySelectionIndicatorRect(cx, cy float32, isNaval, hasCommander bool) gameui.Rect {
+	iconHalf := armyIconInnerHalf + armyIconBorderWidth
+	if isNaval {
+		iconHalf = 13
+	}
+	left := cx - iconHalf
+	top := cy - iconHalf
+	right := cx + iconHalf
+	bottom := cy + iconHalf
+	if hasCommander {
+		portraitX, portraitY, portraitSize := armyCommanderBadgeRect(cx, cy, isNaval, false)
+		left = min(left, portraitX)
+		top = min(top, portraitY)
+		right = max(right, portraitX+portraitSize)
+		bottom = max(bottom, portraitY+portraitSize)
+	}
+	const padding = float32(8)
+	return gameui.Rect{
+		X: float64(left - padding),
+		Y: float64(top - padding),
+		W: float64(right - left + padding*2),
+		H: float64(bottom - top + padding*2),
+	}
+}
+
+// drawDashedRoundedRect, yuvarlatılmış seçim çerçevesinin düz kenarlarını ve
+// köşelerini aynı kesik desenle çizer. Sadece seçili marker için çağrıldığı
+// için harita draw döngüsünde ek bir buffer veya kalıcı geometri gerektirmez.
+func drawDashedRoundedRect(screen *ebiten.Image, rect gameui.Rect, radius, dash, gap float64, width float32, col color.RGBA) {
+	if screen == nil || rect.W <= 0 || rect.H <= 0 || dash <= 0 {
+		return
+	}
+	radius = min(radius, rect.W/2, rect.H/2)
+	x1, y1 := rect.X, rect.Y
+	x2, y2 := rect.X+rect.W, rect.Y+rect.H
+	drawDashedSelectionLine(screen, x1+radius, y1, x2-radius, y1, dash, gap, width, col)
+	drawDashedSelectionArc(screen, x2-radius, y1+radius, radius, -math.Pi/2, 0, dash, gap, width, col)
+	drawDashedSelectionLine(screen, x2, y1+radius, x2, y2-radius, dash, gap, width, col)
+	drawDashedSelectionArc(screen, x2-radius, y2-radius, radius, 0, math.Pi/2, dash, gap, width, col)
+	drawDashedSelectionLine(screen, x2-radius, y2, x1+radius, y2, dash, gap, width, col)
+	drawDashedSelectionArc(screen, x1+radius, y2-radius, radius, math.Pi/2, math.Pi, dash, gap, width, col)
+	drawDashedSelectionLine(screen, x1, y2-radius, x1, y1+radius, dash, gap, width, col)
+	drawDashedSelectionArc(screen, x1+radius, y1+radius, radius, math.Pi, math.Pi*1.5, dash, gap, width, col)
+}
+
+func drawDashedSelectionLine(screen *ebiten.Image, x1, y1, x2, y2, dash, gap float64, width float32, col color.RGBA) {
+	dx, dy := x2-x1, y2-y1
+	distance := math.Hypot(dx, dy)
+	if distance <= 0.01 {
+		return
+	}
+	ux, uy := dx/distance, dy/distance
+	for offset := 0.0; offset < distance; offset += dash + gap {
+		end := min(offset+dash, distance)
+		vector.StrokeLine(screen, float32(x1+ux*offset), float32(y1+uy*offset), float32(x1+ux*end), float32(y1+uy*end), width, col, true)
+	}
+}
+
+func drawDashedSelectionArc(screen *ebiten.Image, cx, cy, radius, start, end, dash, gap float64, width float32, col color.RGBA) {
+	if radius <= 0 {
+		return
+	}
+	arcLength := (end - start) * radius
+	for offset := 0.0; offset < arcLength; offset += dash + gap {
+		segmentEnd := min(offset+dash, arcLength)
+		startAngle := start + offset/radius
+		endAngle := start + segmentEnd/radius
+		vector.StrokeLine(screen,
+			float32(cx+math.Cos(startAngle)*radius), float32(cy+math.Sin(startAngle)*radius),
+			float32(cx+math.Cos(endAngle)*radius), float32(cy+math.Sin(endAngle)*radius),
+			width, col, true,
+		)
+	}
 }
 
 func navalEmbarkedArmyBadgeRect(cx, cy float32) gameui.Rect {

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-08-02
+last_updated: 2026-08-04
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -240,6 +240,7 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 14. Kuşatılan bölgede bölge sahibine veya onun müttefikine ait bir kara ordusu varsa, bu ordu komşu bölgeye çıkmadan önce kuşatan orduya karşı huruç savaşı yapmak zorundadır. Huruç kazanılırsa kuşatma kalkar ve uygun dost/sahipsiz hedefe ilerlenir; kaybedilirse kalan birlikler kuşatılan bölgede kalır ve hareket puanı tükenir.
 15. Saldıran oyuncu da kuşatma panelindeki `Teslimiyet Teklifi` düğmesiyle AI savunmacıya çağrı gönderebilir. AI kabulü kuşatma baskısı, gedik, süre ve güç dengesine göre çözülür; bu özel kuşatma teklifi oyuncu veya AI'ın normal elçi kotasını azaltmaz.
 16. AI kuşatan, kuşatma baskısı ve gedik ilerlemesi yeterli olduğunda oyuncuya teslimiyet talebi gönderebilir; AI savunmacı da ağır baskı koşulunda oyuncuya teslim olmayı teklif edebilir. Son kara toprağı için teslimiyet teklifi üretilmez ve eski/stale teklif merkezi çözümleyicide kabul edilmez. Teklifler `DiplomaticOffers` içinde bölge kimliğiyle saklanır, modal ve kuşatma paneli aynı çözümleyiciyi kullanır.
+17. Gedik açılamayan aç bırakma teslimiyeti tahkimat seviyesi 1/2/3 için sırasıyla 6/8/10 turda değerlendirilir. Kuşatan ordu hedefin yanında kendi, aynı realm/vassal veya müttefik kara bölgesine sahipse sınır ikmali, bölgesel lojistik talebini `%200` yerine `%150` sayar; başkente uzak veya kopuk kara hattı ise bu talebi artırır. Müttefik/vassal sınırının bu avantajı, destekçi devletin yeterli tahıl rezervinden ücretli konvoy göndermesine bağlıdır.
 
 Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
@@ -143,6 +144,35 @@ func TestStartSiegeCreatesStateWithoutSiegeUnit(t *testing.T) {
 	}
 	if gs.SiegeAt("dst") == nil {
 		t.Fatal("kuşatma kaydı oluşmalıydı")
+	}
+}
+
+func TestMoveArmyToFortifiedRegionOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID:            "atk",
+			OwnerID:       "p1",
+			RegionID:      "src",
+			MovePoints:    2,
+			MaxMovePoints: 2,
+			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	r := &render.Renderer{}
+	r.ReloadGameState(gs)
+	g := &Game{gs: gs, renderer: r}
+
+	g.moveArmyWithStance("atk", "dst", combat.BattleStanceBalanced)
+
+	if !r.ConfirmDialogVisible() {
+		t.Fatal("tahkimli hedefe doğrudan hareket emri kuşatma kararını açmalıydı")
+	}
+	if gs.Armies["atk"].RegionID != "src" || gs.Armies["atk"].MovePoints != 2 {
+		t.Fatalf("karar verilmeden ordu hareket etmemeli: %+v", gs.Armies["atk"])
+	}
+	if gs.SiegeAt("dst") != nil {
+		t.Fatal("karar verilmeden kuşatma başlatılmamalı")
 	}
 }
 

@@ -102,6 +102,12 @@ vergi/üretim değerlerini listeler (`internal/render/army_task_status.go`).
 Görev rozeti taşıyan yan yana kara orduları için marker spacing 38 px'e çıkarılır;
 aynı ekran koordinatına yeniden dağıtılan gruplar da bu spacing'i kullanır.
 
+Seçili kara ordusu ve donanma marker'ı, komutan portresi varsa onu da kapsayan
+yuvarlatılmış köşeli kesik altın çerçeveyle en üst marker katmanında belirtilir.
+`armySelectionIndicatorRect()` portre ve ana marker geometrisini ortak bir
+rect'te birleştirir; çerçeve yalnızca görseldir, mevcut marker/badge hit-test
+alanlarını genişletmez (`internal/render/renderer.go`).
+
 Panel satırları ve ortak `IconClose` düğmeleri `gameui.Button` hit-test'lerinden
 türetilir; `Button` içinde ayrı cursor alanı tutulmaz, OS pointer merkezi
 renderer cursor akışından güncellenir.

@@ -1267,6 +1267,55 @@ func TestRegionalLogisticsUsesProductionAfterCivilianDemand(t *testing.T) {
 	}
 }
 
+func TestFriendlyFrontlineSupplyCostsProviderGrainAndPrefersVassal(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"vassal": {ID: "vassal", OverlordID: "player", Grain: 30},
+			"ally":   {ID: "ally", Grain: 30},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"): {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"front":         {ID: "front", OwnerID: "enemy", Neighbors: []world.RegionID{"vassal_border", "ally_border"}},
+			"vassal_border": {ID: "vassal_border", OwnerID: "vassal", Neighbors: []world.RegionID{"front"}},
+			"ally_border":   {ID: "ally_border", OwnerID: "ally", Neighbors: []world.RegionID{"front"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: "front", Units: repeatedUnits("inf", 1, 100)},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{
+			"front": {RegionID: "front", AttackerArmyID: "army"},
+		},
+		GrainEconomy: map[faction.FactionID]state.GrainEconomyStatus{
+			"vassal": {FactionID: "vassal", TotalDemand: 10, Stockpile: 30},
+			"ally":   {FactionID: "ally", TotalDemand: 10, Stockpile: 30},
+		},
+	}
+
+	supplies := allocateFriendlyFrontlineSupply(gs)
+	supply, ok := supplies["army"]
+	if !ok {
+		t.Fatal("yeterli rezervli vassal sınırı ileri ikmal sağlamalıydı")
+	}
+	if supply.ProviderFactionID != "vassal" || !supply.SameRealm || supply.GrainSpent != 2 {
+		t.Fatalf("vassal ikmali tercih edilmeli ve 2 tahıl tutmalıydı, got=%+v", supply)
+	}
+	if got := gs.Factions["vassal"].Grain; got != 28 {
+		t.Fatalf("vassalın tahılı ikmal bedeli kadar düşmeliydi, got=%d", got)
+	}
+	if got := gs.Factions["ally"].Grain; got != 30 {
+		t.Fatalf("müttefik vassal varken tahıl harcamamalıydı, got=%d", got)
+	}
+	if got := gs.RegionalArmyGrainDemandWithExternalSupply(gs.Armies["army"], true); got >= gs.RegionalArmyGrainDemandWithExternalSupply(gs.Armies["army"], false) {
+		t.Fatalf("ödenmiş dost ikmali bölgesel talebi düşürmeliydi, with=%d without=%d", got, gs.RegionalArmyGrainDemandWithExternalSupply(gs.Armies["army"], false))
+	}
+}
+
 func TestRegionalLogisticsUsesExistingGrainThroughGranary(t *testing.T) {
 	gs := &state.GameState{
 		Month:           4,

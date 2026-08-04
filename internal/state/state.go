@@ -135,6 +135,15 @@ const (
 	grainUpkeepGarrisonPercent   = 75
 	grainUpkeepSiegeDefender     = 125
 	grainUpkeepSiegeAttacker     = 200
+	// Kendi toprağına bitişik kuşatmalar düzenli kara ikmalinden yararlanır.
+	grainUpkeepSuppliedSiegeAttacker = 150
+
+	capitalSupplyGraceDistance     = 2
+	capitalSupplyDistanceStep      = 2
+	capitalSupplyPenaltyPerStep    = 10
+	capitalSupplyMaxPenalty        = 50
+	capitalSupplyDisconnectedTax   = 50
+	capitalSupplyFriendlyBorderTax = 10
 )
 
 // SiegeSurrenderTurns tahkimat seviyesine göre kuşatmanın kaç turda teslim olacağını döner.
@@ -142,7 +151,7 @@ func SiegeSurrenderTurns(fortLevel int) int {
 	if fortLevel < 1 {
 		fortLevel = 1
 	}
-	return 6 + fortLevel*4
+	return 4 + fortLevel*2
 }
 
 // TurnsUntilSurrender kuşatmanın teslim olmasına kaç tur kaldığını döner.
@@ -462,35 +471,52 @@ func (s *GameState) RegionMilitaryGrainProduction(region *world.Region) int {
 }
 
 type RegionLogisticsStatus struct {
-	RegionID          world.RegionID
-	OwnerID           string
-	LocalProduction   int
-	SettlementBuffer  int
-	GranarySupport    int
-	ReserveSupport    int
-	BlockadePercent   int
-	Demand            int
-	Capacity          int
-	Overload          int
-	ArmyCount         int
-	UnitsAffected     int
-	UnitsLost         int
-	TotalHPDamage     int
-	PeakOverloadTurns int
+	RegionID                 world.RegionID
+	OwnerID                  string
+	LocalProduction          int
+	SettlementBuffer         int
+	GranarySupport           int
+	ReserveSupport           int
+	BlockadePercent          int
+	Demand                   int
+	Capacity                 int
+	Overload                 int
+	ArmyCount                int
+	UnitsAffected            int
+	UnitsLost                int
+	TotalHPDamage            int
+	PeakOverloadTurns        int
+	FriendlySupplyArmies     int
+	FriendlySupplyGrainSpent int
 }
 
 type ArmyLogisticsStatus struct {
+	ArmyID                   army.ArmyID
+	RegionID                 world.RegionID
+	OwnerID                  string
+	Demand                   int
+	Capacity                 int
+	Overload                 int
+	OverCapacityTurns        int
+	DamagePerUnit            int
+	UnitsAffected            int
+	UnitsLost                int
+	TotalHPDamage            int
+	FriendlySupplyFactionID  faction.FactionID
+	FriendlySupplyRegionID   world.RegionID
+	FriendlySupplyGrainSpent int
+	FriendlySupplySameRealm  bool
+}
+
+// FriendlySupplySupport bir dost devletin cephedeki orduya yaptığı ücretli
+// ileri ikmal katkısını taşır. Runtime-only durumdur; her ekonomi tick'inde
+// yeniden belirlenir.
+type FriendlySupplySupport struct {
 	ArmyID            army.ArmyID
-	RegionID          world.RegionID
-	OwnerID           string
-	Demand            int
-	Capacity          int
-	Overload          int
-	OverCapacityTurns int
-	DamagePerUnit     int
-	UnitsAffected     int
-	UnitsLost         int
-	TotalHPDamage     int
+	ProviderFactionID faction.FactionID
+	ProviderRegionID  world.RegionID
+	GrainSpent        int
+	SameRealm         bool
 }
 
 // GrainSupplyLevel fraksiyonun mevcut tahıl rezervinin şiddetini bildirir.
@@ -507,15 +533,16 @@ const (
 // GrainEconomyStatus ekonomi tick'inin tahıl üretim/tüketim sonucunu taşır.
 // Stockpile ve MonthsOfSupply tick sonrasındaki gerçek rezervi temsil eder.
 type GrainEconomyStatus struct {
-	FactionID               faction.FactionID
-	Production              int
-	CivilianDemand          int
-	ArmyUpkeep              int
-	StrategicDemand         int
-	ReplenishmentHP         int
-	ReplenishmentGrainSpent int
-	PopulationGrowth        int
-	GrowthGrainSpent        int
+	FactionID                faction.FactionID
+	Production               int
+	CivilianDemand           int
+	ArmyUpkeep               int
+	StrategicDemand          int
+	ReplenishmentHP          int
+	ReplenishmentGrainSpent  int
+	PopulationGrowth         int
+	GrowthGrainSpent         int
+	FriendlySupplyGrainSpent int
 	// ArmyMoraleDelta bu ekonomi tick'inde fraksiyon ordularında gerçekleşen
 	// toplam moral değişimidir; negatif değer ikmal kaynaklı kaybı gösterir.
 	ArmyMoraleDelta int
@@ -1436,10 +1463,28 @@ func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
 	return nil
 }
 
-// EffectiveArmyGrainUpkeep ordunun bu turdaki gerçek tahıl bakım ihtiyacını
-// hareket ve kuşatma yüküyle birlikte hesaplar. Aynı hesap ekonomi, bölgesel
-// lojistik ve AI kararlarında kullanılmalıdır.
+// EffectiveArmyGrainUpkeep ordunun bu turdaki temel tahıl bakım ihtiyacını
+// hareket ve kuşatma yüküyle birlikte hesaplar. Bu değer fraksiyon ekonomisi
+// ve toplam stok güvenliği için kullanılır.
 func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
+	return s.armyGrainUpkeep(a, false, false)
+}
+
+// RegionalArmyGrainDemand bölgesel ikmal baskısında kullanılan tahıl talebini
+// döner. Başkentten uzak/kopuk hatların ve sınır ikmali alan kuşatmaların
+// etkisi yalnız yerel yıpranmaya girer; fraksiyonun toplam tahıl giderini
+// yapay olarak şişirmez.
+func (s *GameState) RegionalArmyGrainDemand(a *army.Army) int {
+	return s.armyGrainUpkeep(a, true, s.ExternalFriendlySupplyAvailable(a))
+}
+
+// RegionalArmyGrainDemandWithExternalSupply gerçek tur çözümünde kullanılır.
+// Müttefik/vassal ikmali yalnız destekçi tahılı gerçekten ödediyse etkindir.
+func (s *GameState) RegionalArmyGrainDemandWithExternalSupply(a *army.Army, externalSupplyActive bool) int {
+	return s.armyGrainUpkeep(a, true, externalSupplyActive)
+}
+
+func (s *GameState) armyGrainUpkeep(a *army.Army, includeRegionalSupply, externalSupplyActive bool) int {
 	if s == nil || a == nil {
 		return 0
 	}
@@ -1451,6 +1496,9 @@ func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
 	percent := grainUpkeepStationaryPercent
 	if siege := s.SiegeByArmy(a.ID); siege != nil {
 		percent = grainUpkeepSiegeAttacker
+		if includeRegionalSupply && (s.HasOwnedLandSupplyBorder(siege.RegionID, a.OwnerID) || (externalSupplyActive && s.hasExternalFriendlyLandSupplyBorder(siege.RegionID, a.OwnerID))) {
+			percent = grainUpkeepSuppliedSiegeAttacker
+		}
 	} else {
 		for _, siege := range s.Sieges {
 			if siege == nil {
@@ -1477,12 +1525,231 @@ func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
 			percent = grainUpkeepMovingPercent
 		}
 	}
+	if includeRegionalSupply {
+		percent += s.capitalSupplyPenaltyPercent(a, externalSupplyActive)
+	}
 
 	upkeep := base * percent / 100
 	if upkeep < 1 {
 		return 1
 	}
 	return upkeep
+}
+
+// HasOwnedLandSupplyBorder hedef kara bölgesinin, belirtilen devlete ait bir
+// kara bölgesiyle doğrudan sınırı olup olmadığını döner. Kuşatmada bu sınır,
+// ordunun ülkesinden düzenli kara ikmali aldığı anlamına gelir.
+func (s *GameState) HasOwnedLandSupplyBorder(regionID world.RegionID, ownerID string) bool {
+	if s == nil || regionID == "" || ownerID == "" {
+		return false
+	}
+	region := s.Regions[regionID]
+	if region == nil || region.IsSea {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == ownerID {
+			return true
+		}
+	}
+	return false
+}
+
+// HasFriendlyLandSupplyBorder hedef kara bölgesinin belirtilen devlete ait,
+// aynı realm içindeki ya da ittifaklı bir kara bölgesiyle sınırı olup olmadığını
+// döner. Böyle bir bölge sahadaki ordu için ileri ikmal noktasıdır.
+func (s *GameState) HasFriendlyLandSupplyBorder(regionID world.RegionID, ownerID string) bool {
+	if s == nil || regionID == "" || ownerID == "" {
+		return false
+	}
+	region := s.Regions[regionID]
+	if region == nil || region.IsSea {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor != nil && !neighbor.IsSea && s.canFactionReplenishIn(ownerID, neighbor.OwnerID) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *GameState) hasExternalFriendlyLandSupplyBorder(regionID world.RegionID, ownerID string) bool {
+	if s == nil || regionID == "" || ownerID == "" {
+		return false
+	}
+	region := s.Regions[regionID]
+	if region == nil || region.IsSea {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" || neighbor.OwnerID == ownerID {
+			continue
+		}
+		if s.canFactionReplenishIn(ownerID, neighbor.OwnerID) {
+			return true
+		}
+	}
+	return false
+}
+
+// ExternalFriendlySupplyQuote komşu müttefik veya aynı realm vassal bölgesinin
+// sağlayabileceği ileri ikmalin kaynağını ve tur başı tahıl bedelini döner.
+// Aynı realm ikmali bağımsız müttefik ikmalinden daha verimlidir.
+func (s *GameState) ExternalFriendlySupplyQuote(a *army.Army) (FriendlySupplySupport, bool) {
+	if s == nil || a == nil || a.IsNaval || a.OwnerID == "" || a.RegionID == "" {
+		return FriendlySupplySupport{}, false
+	}
+	region := s.Regions[a.RegionID]
+	if region == nil || region.IsSea || region.OwnerID == a.OwnerID {
+		return FriendlySupplySupport{}, false
+	}
+	best := FriendlySupplySupport{ArmyID: a.ID}
+	found := false
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" || neighbor.OwnerID == a.OwnerID || !s.canFactionReplenishIn(a.OwnerID, neighbor.OwnerID) {
+			continue
+		}
+		sameRealm := stateSameRealm(s, faction.FactionID(a.OwnerID), faction.FactionID(neighbor.OwnerID))
+		candidate := FriendlySupplySupport{
+			ArmyID:            a.ID,
+			ProviderFactionID: faction.FactionID(neighbor.OwnerID),
+			ProviderRegionID:  neighbor.ID,
+			SameRealm:         sameRealm,
+		}
+		if !found || (candidate.SameRealm && !best.SameRealm) || (candidate.SameRealm == best.SameRealm && candidate.ProviderRegionID < best.ProviderRegionID) {
+			best = candidate
+			found = true
+		}
+	}
+	if !found {
+		return FriendlySupplySupport{}, false
+	}
+	base := a.TotalGrainUpkeep(s.UnitTypes)
+	if base <= 0 {
+		return FriendlySupplySupport{}, false
+	}
+	divisor := 3 // bağımsız müttefik kendi konvoyu/harcaması için daha fazla öder.
+	if best.SameRealm {
+		divisor = 5
+	}
+	best.GrainSpent = (base + divisor - 1) / divisor
+	if best.GrainSpent < 1 {
+		best.GrainSpent = 1
+	}
+	return best, true
+}
+
+// ExternalFriendlySupplyAvailable destekçinin kendi asgari tahıl rezervini
+// bozmadan bu tur bir ileri ikmal konvoyunu ödeyip ödeyemediğini döner. AI
+// tahminleri ile gerçek turn çözümlemesi aynı uygunluk kuralını kullanır.
+func (s *GameState) ExternalFriendlySupplyAvailable(a *army.Army) bool {
+	supply, ok := s.ExternalFriendlySupplyQuote(a)
+	if !ok || supply.GrainSpent <= 0 {
+		return false
+	}
+	provider := s.Factions[supply.ProviderFactionID]
+	if provider == nil || provider.IsEliminated {
+		return false
+	}
+	reserve := 20
+	if status, ok := s.GrainEconomy[supply.ProviderFactionID]; ok && status.TotalDemand > reserve {
+		reserve = status.TotalDemand
+	}
+	return provider.Grain-supply.GrainSpent >= reserve
+}
+
+// ArmySupplyDistanceFromCapital sadece aynı devlete ait kara bölgeleri
+// kullanarak başkentten orduya ulaşılan en kısa ikmal hattını döner. Düşman
+// bölgesindeki ordu, kendi toprağına komşuysa bu son sınır geçişi de hesaba
+// katılır. Geçerli başkent veya kara hattı yoksa ok false döner.
+func (s *GameState) ArmySupplyDistanceFromCapital(a *army.Army) (distance int, ok bool) {
+	if s == nil || a == nil || a.IsNaval || a.OwnerID == "" || a.RegionID == "" {
+		return 0, false
+	}
+	capital, _, _, capitalOK := s.FactionCapital(faction.FactionID(a.OwnerID))
+	current := s.Regions[a.RegionID]
+	if !capitalOK || capital == nil || current == nil || current.IsSea {
+		return 0, false
+	}
+
+	type supplyNode struct {
+		regionID world.RegionID
+		distance int
+	}
+	queue := []supplyNode{{regionID: capital.ID}}
+	visited := map[world.RegionID]bool{capital.ID: true}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = queue[1:]
+		if node.regionID == current.ID {
+			return node.distance, true
+		}
+		if current.OwnerID != a.OwnerID && regionsAreNeighbors(s.Regions[node.regionID], current.ID) {
+			return node.distance + 1, true
+		}
+		region := s.Regions[node.regionID]
+		if region == nil {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := s.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea || neighbor.OwnerID != a.OwnerID || visited[neighborID] {
+				continue
+			}
+			visited[neighborID] = true
+			queue = append(queue, supplyNode{regionID: neighborID, distance: node.distance + 1})
+		}
+	}
+	return 0, false
+}
+
+// CapitalSupplyPenaltyPercent uzak veya kopuk kara ikmalinin tahıl bakımına
+// eklediği yüzdeyi döner. Başkente yakın iki bölgelik hat cezasızdır; daha
+// uzun hatlar kademeli artar. Başkente kara bağlantısı olmayan ordular, ancak
+// geçerli bir başkent varsa, en yüksek ikmal cezasını alır.
+func (s *GameState) CapitalSupplyPenaltyPercent(a *army.Army) int {
+	return s.capitalSupplyPenaltyPercent(a, true)
+}
+
+func (s *GameState) capitalSupplyPenaltyPercent(a *army.Army, externalSupplyActive bool) int {
+	if s == nil || a == nil || a.IsNaval || a.OwnerID == "" {
+		return 0
+	}
+	if _, _, _, capitalOK := s.FactionCapital(faction.FactionID(a.OwnerID)); !capitalOK {
+		return 0
+	}
+	distance, connected := s.ArmySupplyDistanceFromCapital(a)
+	if !connected {
+		if externalSupplyActive && s.hasExternalFriendlyLandSupplyBorder(a.RegionID, a.OwnerID) {
+			return capitalSupplyFriendlyBorderTax
+		}
+		return capitalSupplyDisconnectedTax
+	}
+	if distance <= capitalSupplyGraceDistance {
+		return 0
+	}
+	penalty := ((distance - capitalSupplyGraceDistance + capitalSupplyDistanceStep - 1) / capitalSupplyDistanceStep) * capitalSupplyPenaltyPerStep
+	if penalty > capitalSupplyMaxPenalty {
+		return capitalSupplyMaxPenalty
+	}
+	return penalty
+}
+
+func regionsAreNeighbors(region *world.Region, neighborID world.RegionID) bool {
+	if region == nil || neighborID == "" {
+		return false
+	}
+	for _, id := range region.Neighbors {
+		if id == neighborID {
+			return true
+		}
+	}
+	return false
 }
 
 // CanJoinActiveSiege aktif bir kuşatmaya mevcut ordunun destek için katılıp katılamayacağını döner.

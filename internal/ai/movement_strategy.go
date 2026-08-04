@@ -87,7 +87,7 @@ func (ctx *moveScoreContext) regionLogistics(gs *state.GameState, region *world.
 	}
 	for _, candidate := range ctx.armiesByRegion[region.ID] {
 		if candidate.OwnerID == ctx.ownerID && !candidate.IsNaval {
-			demand += gs.EffectiveArmyGrainUpkeep(candidate)
+			demand += gs.RegionalArmyGrainDemand(candidate)
 		}
 	}
 	overload = maxInt(0, demand-capacity)
@@ -253,7 +253,7 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 func scoreMoveWithContext(gs *state.GameState, a *army.Army, target *world.Region, ctx *moveScoreContext) int {
 	source := gs.Regions[a.RegionID]
 	planBonus := aiPlanMoveScoreBonus(gs, faction.FactionID(a.OwnerID), target)
-	armyDemand := gs.EffectiveArmyGrainUpkeep(a)
+	armyDemand := gs.RegionalArmyGrainDemand(a)
 	if target.OwnerID == a.OwnerID {
 		score := 0
 		srcDemand, srcCap, srcOverload := ctx.regionLogistics(gs, source)

@@ -336,6 +336,10 @@ save/load ise alanı campaign state içinde korur.
 
 `GameState.ClearArmyLogisticsAfterRelocation()` — ordu veya filonun `LocationID()` değeri değiştiğinde eski konuma ait ordu yıpranma snapshot'ını temizler. Kara ordusunun bölgeye özgü `OverCapacityTurns` sayacı sıfırlanır; filonun açık deniz yolculuk süresini ifade eden `TurnsWithoutPort` korunur.
 
+`GameState.ArmySupplyDistanceFromCapital()` ve `CapitalSupplyPenaltyPercent()` — kara ordusunun başkentten kendi kara bölgeleri üzerinden en kısa ikmal hattını çözer; bu bilgi `RegionalArmyGrainDemand()` içinde kullanılarak uzak/kopuk cephelerin lojistik yıpranma baskısını merkezi biçimde üretir. `HasFriendlyLandSupplyBorder()` aynı modelde, düşman bölgesindeki kuşatmanın kendi, aynı realm/vassal veya müttefik kara sınırından ikmal alıp almadığını belirler.
+
+`FriendlySupplySupport` — ekonomi tick'inde yeniden üretilen runtime-only ileri ikmal kaydıdır. `ExternalFriendlySupplyQuote()` önce aynı realm vassal/overlord, ardından müttefik kara sınırını deterministik seçer; `applyRegionalLogisticsPressure()` yalnız destekçi tahıl rezervi ödeme yapabildiğinde kaydı etkinleştirir. Bu kayıt alıcı ordunun `ArmyLogisticsStatus` alanına, kaynak tüketimi ise destekçinin `GrainEconomyStatus.FriendlySupplyGrainSpent` alanına yansır.
+
 `GrainEconomyStatus` / `GameState.GrainEconomy` — son ekonomi tick'inde fraksiyon bazlı tahıl üretimi, sivil tüketimi, ordu bakımı, ordu yenilemesi, ordu `ArmyMoraleDelta` değişimi, stratejik ithalat ihtiyacı, nüfus büyümesi ve otomatik ihracat için harcanan tahıl, net değişim, stok-ay seviyesi ve açık bilgisini render/event bildirimlerine taşır; runtime-only olduğu için save'e yazılmaz.
 
 `GameState.TaxIncomeForFaction()` ve `GrainSaleGoldBudget()` — kuşatma dışı temel vergi gelirini ve o turda tahıl satışından kullanılabilecek kalan altın bütçesini hesaplar. Acil satış, otomatik ihracat ve oyuncunun doğrudan tahıl satışı aynı bütçeyi paylaşır; `GrainSaleGoldUsed` tur sonunda sıfırlanır ve save'e yazılmaz.

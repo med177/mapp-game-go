@@ -153,6 +153,13 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			float64(px)+float64(panelW)-float64(armyPanelPadX)-healW,
 			float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{110, 190, 120, 220})
 	}
+	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.FriendlySupplyGrainSpent > 0 {
+		supplyStr := "Dost ikmali: -" + itoa(logistics.FriendlySupplyGrainSpent) + " tahıl"
+		supplyW := MeasureText(supplyStr, FaceSmall)
+		DrawText(screen, supplyStr,
+			float64(px)+float64(panelW)-float64(armyPanelPadX)-supplyW,
+			float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{137, 199, 141, 245})
+	}
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
 		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
 			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{210, 96, 82, 235})
