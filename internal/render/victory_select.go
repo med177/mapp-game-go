@@ -63,14 +63,14 @@ func victoryLayout(total, historicalCount int, cardW, cardH, gap, headerH float6
 	totalH := 0.0
 	if historicalCount > 0 {
 		totalH += victoryGroupLabelH + 6
-		totalH += float64(historicalCount)*cardH + float64(maxScreenInt(historicalCount-1, 0))*gap
+		totalH += victoryGroupHeight(historicalCount, cardH, gap)
 	}
 	if generalCount > 0 {
 		if totalH > 0 {
 			totalH += victoryGroupGap
 		}
 		totalH += victoryGroupLabelH + 6
-		totalH += float64(generalCount)*cardH + float64(maxScreenInt(generalCount-1, 0))*gap
+		totalH += victoryGroupHeight(generalCount, cardH, gap)
 	}
 	stackX := ScreenWidth/2 - cardW/2
 	startY := ScreenHeight/2 - (totalH+headerH)/2 + headerH
@@ -79,7 +79,7 @@ func victoryLayout(total, historicalCount int, cardW, cardH, gap, headerH float6
 	if historicalCount > 0 {
 		layout.historicalLabel = gameui.Rect{X: stackX, Y: currentY, W: cardW, H: victoryGroupLabelH}
 		currentY += victoryGroupLabelH + 6
-		stackH := float64(historicalCount)*cardH + float64(maxScreenInt(historicalCount-1, 0))*gap
+		stackH := victoryGroupHeight(historicalCount, cardH, gap)
 		layout.historicalStack = gameui.Rect{X: stackX, Y: currentY, W: cardW, H: stackH}
 		currentY += stackH
 	}
@@ -89,18 +89,45 @@ func victoryLayout(total, historicalCount int, cardW, cardH, gap, headerH float6
 		}
 		layout.generalLabel = gameui.Rect{X: stackX, Y: currentY, W: cardW, H: victoryGroupLabelH}
 		currentY += victoryGroupLabelH + 6
-		stackH := float64(generalCount)*cardH + float64(maxScreenInt(generalCount-1, 0))*gap
+		stackH := victoryGroupHeight(generalCount, cardH, gap)
 		layout.generalStack = gameui.Rect{X: stackX, Y: currentY, W: cardW, H: stackH}
 	}
 	return layout
 }
 
+func victoryGroupColumns(count int) int {
+	if count >= 3 {
+		return 2
+	}
+	return 1
+}
+
+func victoryGroupHeight(count int, cardH, gap float64) float64 {
+	if count <= 0 {
+		return 0
+	}
+	columns := victoryGroupColumns(count)
+	rows := (count + columns - 1) / columns
+	return float64(rows)*cardH + float64(maxScreenInt(rows-1, 0))*gap
+}
+
+func victoryGroupItemRect(stack gameui.Rect, index, count int, cardH, gap float64) gameui.Rect {
+	columns := victoryGroupColumns(count)
+	itemW := (stack.W - float64(columns-1)*gap) / float64(columns)
+	return gameui.Rect{
+		X: stack.X + float64(index%columns)*(itemW+gap),
+		Y: stack.Y + float64(index/columns)*(cardH+gap),
+		W: itemW,
+		H: cardH,
+	}
+}
+
 func victoryCardRect(index, total, historicalCount int, cardW, cardH, gap, headerH float64) gameui.Rect {
 	layout := victoryLayout(total, historicalCount, cardW, cardH, gap, headerH)
 	if historicalCount > 0 && index < historicalCount {
-		return stackItemRect(layout.historicalStack, cardH, gap, index)
+		return victoryGroupItemRect(layout.historicalStack, index, historicalCount, cardH, gap)
 	}
-	return stackItemRect(layout.generalStack, cardH, gap, index-historicalCount)
+	return victoryGroupItemRect(layout.generalStack, index-historicalCount, total-historicalCount, cardH, gap)
 }
 
 func victoryAudienceBadge(opt scenario.VictoryOptionDef) (string, color.RGBA, color.RGBA) {

@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: 1300 senaryosunun zafer havuzu tarihsel dönüm noktalarına göre
+  kalibre edildi. Oynanabilir 10 devletin her birine fraksiyona özel kart eklendi;
+  genel havuz daha yüksek eşikli toprak, ekonomi, askerî, dinî ve 20 yıllık beka
+  koşullarıyla genişletildi. Eski ortak 1561 son tarihleri ilgili hedeflerin
+  1341–1517 aralığındaki tarihsel eşikleriyle değiştirildi. Üçten fazla kartlı
+  zafer grupları ortak kart rect'iyle iki sütunda çizilerek 1280×720'de seçilebilir
+  kaldı. Regression: `Test1300PlayableFactionsHaveHistoricalVictoryOption`,
+  `TestCoreUIGeometryFitsCommonViewports`.
+
 - 2026-08-04: 1300 ve 1455 senaryoları üç aylık (mevsimlik) stratejik tura geçti:
   dört tur bir yılı temsil ediyor. Bina, birlik ve teknoloji kuyrukları tur bazlı
   kaldı; süreleri ilgili senaryo veri dosyalarında doğrudan iki katına çıkarıldı.

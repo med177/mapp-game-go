@@ -1,11 +1,17 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
 ---
 
 # Render Pipeline
+
+Zafer koşulu seçimi, fraksiyona özel kartları üstte ve genel kartları altında
+gruplar. Bir grup üç veya daha fazla karta ulaştığında aynı `victoryCardRect()`
+geometrisinden iki sütunlu grid üretilir; çizim, hit-test ve klavye odağı bu
+rect'i paylaşır. Böylece zengin 1300 zafer havuzu 1280×720 görünümde de
+kesilmeden seçilebilir (`internal/render/victory_select.go`).
 
 Kuşatma teslimiyeti modalı, son kara toprağına ait stale bir teklif için vassallık
 sonucu vaat etmez; ortak teklif mesajı bunun kabul edilemeyeceğini açıklar. Modal

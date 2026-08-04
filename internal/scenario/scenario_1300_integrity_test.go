@@ -669,6 +669,34 @@ func Test1300ScenarioVictoryRegionReferencesExist(t *testing.T) {
 	}
 }
 
+func Test1300PlayableFactionsHaveHistoricalVictoryOption(t *testing.T) {
+	scenarioPath, _, factions := load1300IntegrityData(t)
+	var definition Scenario
+	read1300JSON(t, filepath.Join(scenarioPath, "scenario.json"), &definition)
+
+	historicalByFaction := make(map[string]VictoryOptionDef)
+	for _, option := range definition.VictoryConditions {
+		if len(option.AllowedFactions) != 1 {
+			continue
+		}
+		historicalByFaction[option.AllowedFactions[0]] = option
+	}
+
+	for factionID, definition := range factions {
+		if !definition.IsPlayable {
+			continue
+		}
+		option, ok := historicalByFaction[string(factionID)]
+		if !ok {
+			t.Errorf("oynanabilir devlet için tarihsel zafer hedefi eksik: faction=%s", factionID)
+			continue
+		}
+		if option.DeadlineYear < 1300 || option.DeadlineYear > 1517 {
+			t.Errorf("tarihsel zafer hedefinin bitiş tarihi dengeli değil: faction=%s victory=%s year=%d", factionID, option.ID, option.DeadlineYear)
+		}
+	}
+}
+
 func Test1300ScenarioFactionReferencesExist(t *testing.T) {
 	scenarioPath, _, factions := load1300IntegrityData(t)
 

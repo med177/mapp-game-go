@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-08-02
+last_updated: 2026-08-04
 related: [architecture/state-management, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -91,6 +91,20 @@ Senaryo `victory_conditions` kayıtları opsiyonel `allowed_factions` alanı ta�
 - Alan doluysa: yalnız listelenen fraksiyonlar `PhaseVictorySelect` ekranında bu kartı görür.
 
 Tam senaryo listesi `GameState.ScenarioVictories` içinde saklanır; seçim ekranına gösterilen filtrelenmiş kopya `GameState.AvailableVictories` alanına yazılır. Save/load sırasında `scenario.json` tekrar okunup filtre yeniden uygulanır.
+
+### 1300 Senaryosu Kalibrasyonu
+
+`1300_ottoman_rise`, her oynanabilir devlet için yalnız o devlete görünen bir
+tarihsel hedef taşır: Osmanlı (1453 Konstantinopolis), Aragon (1442 Napoli),
+İngiltere (1422 Fransız tacı iddiası), Fransa (1453 yeniden fetih), Kutsal Roma
+(1495 imparatorluk reformu), Memlük (1341 Levant-Hicaz savunması), Venedik
+(1453 ticaret üstünlüğü), Portekiz (1415 Atlantik açılımı), Moskova (1478
+Novgorod) ve Safevîler (1514 İran çekirdeği).
+
+Genel seçim havuzu ayrıca yüksek eşikli toprak, ekonomi ve askerî hedefler;
+Osmanlı/Memlük için kutsal yollar hedefi; bütün devletler için 20 yıllık beka
+hedefi içerir. Bu kartların tarihleri, 1561'e uzanan ortak son tarih yerine
+ilgili tarihsel dönüm noktasına göre tanımlanır.
 
 ## Zafer Popup
 

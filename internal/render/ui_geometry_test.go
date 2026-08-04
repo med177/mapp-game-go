@@ -523,13 +523,19 @@ func assertScreenStacksInside(t *testing.T, screenW, screenH float64) {
 		t.Fatalf("settings stack outside %.0fx%.0f viewport: %+v", screenW, screenH, settingsStack)
 	}
 	cardW, cardH := victoryCardDimensions()
-	victoryLayout := victoryLayout(4, 2, cardW, cardH, 12, 80)
+	victoryLayout := victoryLayout(6, 2, cardW, cardH, 12, 80)
 	victoryStack := victoryLayout.generalStack
 	if victoryLayout.historicalStack.W > victoryStack.W {
 		victoryStack = victoryLayout.historicalStack
 	}
 	if victoryStack.X < 0 || victoryLayout.historicalLabel.Y < 0 || victoryStack.X+victoryStack.W > screenW || victoryStack.Y+victoryStack.H > screenH {
 		t.Fatalf("victory stack outside %.0fx%.0f viewport: historical=%+v general=%+v", screenW, screenH, victoryLayout.historicalStack, victoryLayout.generalStack)
+	}
+	for i := 0; i < 6; i++ {
+		card := victoryCardRect(i, 6, 2, cardW, cardH, 12, 80)
+		if card.X < 0 || card.Y < 0 || card.X+card.W > screenW || card.Y+card.H > screenH {
+			t.Fatalf("victory karti outside %.0fx%.0f viewport: index=%d card=%+v", screenW, screenH, i, card)
+		}
 	}
 	loadStack := centeredStackRect(5, 480, 88, 14, 0)
 	if loadStack.X < 0 || loadStack.Y < 0 || loadStack.X+loadStack.W > screenW || loadStack.Y+loadStack.H > screenH {
