@@ -7,9 +7,13 @@ import (
 	"strings"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 )
 
 const InitialPlayerCommanderPool = 3
+
+var CommanderRecruitCost = economy.ResourceCost{Gold: 500, Grain: 100}
 
 // PlayerCommanderMaxNameRunes oyuncunun girdiği komutan adının üst sınırıdır.
 // UI ve domain aynı sınırı kullanır; böylece doğrudan action/save yolları uzun
@@ -213,7 +217,16 @@ func (s *GameState) InitializePlayerCommanders() {
 	if s == nil || s.PlayerFactionID == "" {
 		return
 	}
-	s.ensureCommanderPool(string(s.PlayerFactionID), InitialPlayerCommanderPool)
+	s.ensureCommanderPool(string(s.PlayerFactionID), InitialPlayerCommanderPool, false)
+}
+
+// CanAffordCommanderRecruitment fraksiyonun yeni bir runtime komutanı için
+// gereken ortak maliyeti karşılayıp karşılamadığını döner.
+func (s *GameState) CanAffordCommanderRecruitment(ownerID string) bool {
+	if s == nil || ownerID == "" {
+		return false
+	}
+	return CommanderRecruitCost.CanAfford(s.Factions[faction.FactionID(ownerID)])
 }
 
 // RecruitPlayerCommander oyuncunun verdiği adla boş komutan havuzuna yeni bir
@@ -226,6 +239,9 @@ func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) 
 	}
 	name = strings.TrimSpace(name)
 	if name == "" || len([]rune(name)) > PlayerCommanderMaxNameRunes {
+		return nil, false
+	}
+	if !s.CanAffordCommanderRecruitment(string(s.PlayerFactionID)) {
 		return nil, false
 	}
 	if s.Commanders == nil {
@@ -244,6 +260,7 @@ func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) 
 	commander.Experience = recruitedCommanderExperience(string(s.PlayerFactionID), s.NextCommanderSeq)
 	commander.Normalize()
 	s.Commanders[commander.ID] = commander
+	CommanderRecruitCost.Apply(s.Factions[s.PlayerFactionID])
 	return commander, true
 }
 
@@ -256,7 +273,7 @@ func recruitedCommanderExperience(ownerID string, sequence int) int {
 	return int(h.Sum32() % army.CommanderLevel5XP)
 }
 
-func (s *GameState) ensureCommanderPool(ownerID string, desired int) {
+func (s *GameState) ensureCommanderPool(ownerID string, desired int, chargeGenerated bool) {
 	if s == nil || ownerID == "" || desired <= 0 {
 		return
 	}
@@ -274,6 +291,9 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int) {
 			owned++
 			continue
 		}
+		if chargeGenerated && !s.CanAffordCommanderRecruitment(ownerID) {
+			return
+		}
 
 		s.NextCommanderSeq++
 		id := fmt.Sprintf("commander_%s_%d", ownerID, s.NextCommanderSeq)
@@ -287,6 +307,9 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int) {
 			Name:          name,
 			PortraitAsset: army.DefaultPortraitAsset,
 			Level:         army.CommanderStartingLevel,
+		}
+		if chargeGenerated {
+			CommanderRecruitCost.Apply(s.Factions[faction.FactionID(ownerID)])
 		}
 		owned++
 	}
@@ -357,7 +380,7 @@ func (s *GameState) EnsureFactionCommanders(ownerID string) {
 		armyIDs = append(armyIDs, aid)
 	}
 	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
-	s.ensureCommanderPool(ownerID, len(armyIDs))
+	s.ensureCommanderPool(ownerID, len(armyIDs), true)
 	available := s.AvailableCommanders(ownerID)
 	for _, aid := range armyIDs {
 		currentArmy := s.Armies[aid]

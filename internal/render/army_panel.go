@@ -25,13 +25,14 @@ const (
 	cardGap         = float32(5)
 	maxCols         = 10
 
-	armyPanelPadX  = float32(12)
-	armyPanelPadY  = float32(8)
-	armyPanelHdrH  = float32(46)
-	armyPanelTopY  = float32(6)
-	armyPanelInfoY = float32(20)
-	armyPanelBtnY  = float32(24)
-	siegeFooterH   = float32(30)
+	armyPanelPadX     = float32(12)
+	armyPanelPadY     = float32(10)
+	armyPanelHdrH     = float32(92)
+	armyPanelTopY     = float32(10)
+	armyPanelInfoY    = float32(32)
+	armyPanelInfoGapY = float32(18)
+	armyPanelBtnY     = float32(68)
+	siegeFooterH      = float32(30)
 
 	armyPanelCommanderW        = float32(260)
 	armyPanelCommanderExtraH   = float32(12)
@@ -146,19 +147,21 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	DrawText(screen, mpStr,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
+	rightStatusY := float64(py + armyPanelInfoY)
 	if armyCanRenderReplenishment(gs, a) {
 		healStr := "Takviye aktif"
 		healW := MeasureText(healStr, FaceSmall)
 		DrawText(screen, healStr,
 			float64(px)+float64(panelW)-float64(armyPanelPadX)-healW,
-			float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{110, 190, 120, 220})
+			rightStatusY, FaceSmall, color.RGBA{110, 190, 120, 220})
+		rightStatusY += float64(armyPanelInfoGapY)
 	}
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.FriendlySupplyGrainSpent > 0 {
 		supplyStr := "Dost ikmali: -" + itoa(logistics.FriendlySupplyGrainSpent) + " tahıl"
 		supplyW := MeasureText(supplyStr, FaceSmall)
 		DrawText(screen, supplyStr,
 			float64(px)+float64(panelW)-float64(armyPanelPadX)-supplyW,
-			float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{137, 199, 141, 245})
+			rightStatusY, FaceSmall, color.RGBA{137, 199, 141, 245})
 	}
 	if logistics, ok := gs.ArmyLogistics[aid]; ok && logistics.TotalHPDamage > 0 {
 		DrawText(screen, "Lojistik zayiat: -"+itoa(logistics.DamagePerUnit)+" HP / birim",
@@ -166,7 +169,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	if grainNeed := gs.EffectiveArmyGrainUpkeep(a); grainNeed > 0 {
 		DrawText(screen, "Tahıl ihtiyacı: "+itoa(grainNeed)+" / tur",
-			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+14), FaceSmall, color.RGBA{205, 185, 120, 235})
+			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY), FaceSmall, color.RGBA{205, 185, 120, 235})
 	}
 	if selectedCount > 0 {
 		selectedText := "Bölünecek: " + itoa(selectedCount)

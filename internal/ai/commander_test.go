@@ -12,7 +12,7 @@ import (
 func TestAITurnPreludeAssignsCommandersToFieldArmies(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
-			"ai": {ID: "ai", NameTR: "AI"},
+			"ai": {ID: "ai", NameTR: "AI", Gold: 1000, Grain: 200},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"r1": {ID: "r1", OwnerID: "ai"},

@@ -151,13 +151,36 @@ limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` bu lim
 arasında tek turuncu renkli, eşit uzunlukta çizgi/boşluklardan oluşan kesikli koridor ve liman uçlarındaki işaretlerle gösterilir
 (`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).
 
-Her bölgenin `TradeCapacity` değerine göre pasif ticaret geliri hesaplanır:
+Her bölgenin ham `TradeCapacity` değeri, `GameState.EffectiveRegionTradeCapacity()`
+ile önce bina çarpanları ve aktif ticaret merkezi bonusuyla ortak efektif değere
+dönüştürülür. Aynı değer pasif gelir, diplomasi kapasitesi, rota hacmi, AI
+ekonomi değerlendirmesi ve ticaret UI'ında kullanılır:
 
 ```
-tradeIncome = TradeCapacity × 2 × goldMod
+effectiveCapacity = round(baseCapacity × binaTradeCapacityModlari) + merkezBonusu
+tradeIncome = (effectiveCapacity × 2 + merkezGümrüğü) × mevsim × abluka × marketTeknolojisi
 ```
 
-Pazar (`gold_mod: 1.5`) ve Liman (`gold_mod: 1.3`) gibi binalar bu geliri artırır.
+Pazar (`trade_capacity_mod: 1.45`) ve liman (`1.60`) ana büyütücülerdir. Ambar
+(`1.05`) ile ibadethane (`1.03`) küçük fakat gerçek ticaret katkısı sağlar;
+tekrar eden bina seviyeleri çarpanları üst üste uygular. 1300 ve 1455 senaryoları
+primary ticaret merkezine `+2`, secondary merkeze `+1` efektif kapasite verir.
+Ana merkez ayrıca `+4`, ikincil merkez `+2` taban gümrük geliri verir. Bu küçük
+doğrudan gelir mevsim, abluka ve pazar teknolojisi çarpanlarından geçer; dolayısıyla
+merkezin kuşatılması/ablukası avantajı da azaltır. Tüm bonuslar bölgenin sahibi
+değiştiğinde otomatik olarak yeni devlete geçer. Eski `trade_centers.json`
+dosyalarında bu root alanlar yoksa loader aynı `+2/+1` ve `+4/+2` kalibrasyonunu
+geriye uyumlu varsayılan olarak uygular.
+
+Efektif kapasite, aktif dış ticaret anlaşmaları arasında gerçek bir ortak havuzdur.
+`RebalanceTradeRouteCapacities()` her rota kurulumu, yükleme temizliği ve ekonomi
+tick'inde devletin kapasitesini partnerlerine eşit paylaştırır; bölünmeyen kalan
+birimler faction ID sırasındaki ilk anlaşmalara gider. İki yönlü rotanın temel
+`AmountPerTurn` değeri iki tarafın paylarından düşük olanıdır ve anlaşma başına
+en fazla `4` kalır. Böylece daha fazla anlaşma imzalamak tek tek rotaları
+zayıflatır; bina, fetih veya merkez bonusu kapasiteyi artırdığında rota hacmi
+bir sonraki tick'te yeniden büyür. Merchant bonusu bu temel kapasite havuzunu
+tüketmez.
 
 ## Üretim Reçeteleri ve Lojistik
 

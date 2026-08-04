@@ -173,6 +173,20 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 	return centers
 }
 
+func (r *Renderer) tradeCenterBenefits(center tradeCenterVisual) (capacityBonus, incomeBonus int) {
+	if r == nil || r.gs == nil || center.offMap || center.regionID == "" {
+		return 0, 0
+	}
+	return r.gs.TradeCenterBenefits(r.gs.Regions[center.regionID])
+}
+
+func tradeCenterTierLabel(tier world.TradeCenterTier) string {
+	if tier == world.TradeCenterPrimary {
+		return "Ana merkez"
+	}
+	return "İkincil merkez"
+}
+
 func chooseRegionLabel(region *world.Region) string {
 	if region == nil {
 		return ""
@@ -1090,7 +1104,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		vol := 0
 		reg := r.gs.Regions[c.regionID]
 		if reg != nil && !c.offMap {
-			vol += reg.TradeCapacity
+			vol += r.gs.EffectiveRegionTradeCapacity(reg)
 		}
 		for _, tr := range r.gs.TradeRoutes {
 			if tr.ToFactionID != "" && tr.FromFactionID != "" {
@@ -1137,7 +1151,11 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		contentW := nameW
 		volStr := ""
 		if !centers[i].offMap {
+			capacityBonus, incomeBonus := r.tradeCenterBenefits(centers[i])
 			volStr = "Hacim: " + itoa(centerVolume[i])
+			if capacityBonus != 0 || incomeBonus != 0 {
+				volStr += " | +" + itoa(capacityBonus) + " kap. | +" + itoa(incomeBonus) + " altın"
+			}
 			volW := float32(MeasureText(volStr, FaceSmall))
 			if volW > contentW {
 				contentW = volW
@@ -1252,12 +1270,12 @@ func (r *Renderer) factionPrimaryRegion(factionID string) *world.Region {
 		if capital && !bestCapital {
 			best = region
 			bestCapital = true
-			bestScore = region.TradeCapacity
+			bestScore = r.gs.EffectiveRegionTradeCapacity(region)
 			continue
 		}
-		if capital == bestCapital && region.TradeCapacity > bestScore {
+		if capital == bestCapital && r.gs.EffectiveRegionTradeCapacity(region) > bestScore {
 			best = region
-			bestScore = region.TradeCapacity
+			bestScore = r.gs.EffectiveRegionTradeCapacity(region)
 		}
 	}
 	return best

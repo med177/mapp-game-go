@@ -1,4 +1,8 @@
 {
+  "primary_trade_capacity_bonus": 2,
+  "secondary_trade_capacity_bonus": 1,
+  "primary_trade_income_bonus": 4,
+  "secondary_trade_income_bonus": 2,
   "centers": [
     {
       "region_id": "london",

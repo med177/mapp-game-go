@@ -1974,12 +1974,10 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 
 	goldMod := 1.0
 	grainMod := 1.0
-	tradeCapMod := 1.0
 	for _, bid := range region.Buildings {
 		if b, ok := s.BuildingTypes[bid]; ok && b != nil {
 			goldMod *= b.GoldMod
 			grainMod *= b.GrainMod
-			tradeCapMod *= b.TradeCapacityMod
 		}
 	}
 
@@ -2002,8 +2000,12 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	out.Spice = scaleBlockadeOutput(out.Spice, blockadeRetention)
 	out.Cloth = scaleBlockadeOutput(out.Cloth, blockadeRetention)
 
-	tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod) * s.CurrentSeason().TradeMod() / 100
-	out.Gold += scaleBlockadeOutput(tradeIncome, blockadeRetention)
+	tradeIncome := s.BaseRegionTradeIncome(region) * s.CurrentSeason().TradeMod() / 100
+	tradeIncome = scaleBlockadeOutput(tradeIncome, blockadeRetention)
+	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
+		tradeIncome = int(float64(tradeIncome) * (1.0 + tech.ComputeEffects(fx.Research.Completed, s.TechTypes).MarketGoldMod))
+	}
+	out.Gold += tradeIncome
 
 	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
 		effects := tech.ComputeEffects(fx.Research.Completed, s.TechTypes)

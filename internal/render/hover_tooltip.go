@@ -352,6 +352,9 @@ func buildingEffectLines(b *city.Building) []string {
 	if b.GrainMod != 1 {
 		lines = append(lines, fmt.Sprintf("Tahıl üretimi: x%.1f", b.GrainMod))
 	}
+	if b.TradeCapacityMod != 1 {
+		lines = append(lines, fmt.Sprintf("Ticaret kapasitesi: x%.2f", b.TradeCapacityMod))
+	}
 	if b.SatBonus != 0 {
 		lines = append(lines, fmt.Sprintf("Memnuniyet: %+d", b.SatBonus))
 	}

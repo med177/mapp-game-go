@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -517,6 +518,81 @@ func TestEnsureTradeRoutesForActiveRelationsBuildsMissingRoutes(t *testing.T) {
 	if len(gs.TradeRoutes) != 2 {
 		t.Fatalf("trade stance için iki yönlü 2 rota kurulmalıydı, got=%d", len(gs.TradeRoutes))
 	}
+}
+
+func TestEnsureTradeRoutesForActiveRelationsEnforcesPartnerLimit(t *testing.T) {
+	gs := testGameState()
+	for _, partnerID := range []faction.FactionID{"p1", "p2", "p3", "p4", "p5"} {
+		regionID := world.RegionID(partnerID + "_cap")
+		gs.Factions[partnerID] = &faction.Faction{ID: partnerID, NameTR: string(partnerID), Religion: religion.Catholic}
+		gs.Regions[regionID] = &world.Region{
+			ID:            regionID,
+			OwnerID:       string(partnerID),
+			TaxRate:       50,
+			Satisfaction:  50,
+			TradeCapacity: 4,
+			Neighbors:     []world.RegionID{"a_cap"},
+		}
+		gs.Regions["a_cap"].Neighbors = append(gs.Regions["a_cap"].Neighbors, regionID)
+		rel := EnsureRelation(gs, "a", partnerID)
+		rel.Stance = faction.StanceTrade
+		rel.Score = 25
+	}
+
+	EnsureTradeRoutesForActiveRelations(gs)
+
+	if got := ActiveTradePartnerCount(gs, "a"); got != MaxTradePartners {
+		t.Fatalf("a için partner limiti %d olmalı, got=%d", MaxTradePartners, got)
+	}
+	if HasTradeRouteBetween(gs, "a", "p5") {
+		t.Fatalf("deterministik sınırdan sonra beşinci partner için rota kurulmamış olmalı")
+	}
+	if len(gs.TradeRoutes) != MaxTradePartners*2 {
+		t.Fatalf("partner limiti iki yönlü rota sayısını sınırlandırmalı, got=%d", len(gs.TradeRoutes))
+	}
+}
+
+func TestRebalanceTradeRouteCapacitiesSharesEffectiveCapacity(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Regions["a_cap"].TradeCapacity = 5
+	gs.Regions["b_cap"].TradeCapacity = 4
+	gs.Regions["c_cap"] = &world.Region{ID: "c_cap", OwnerID: "c", TaxRate: 50, Satisfaction: 50, TradeCapacity: 4}
+
+	ensureTradeRoutesBetween(gs, "a", "b")
+	ensureTradeRoutesBetween(gs, "a", "c")
+
+	if got := tradeAgreementAmountForTest(gs, "a", "b"); got != 3 {
+		t.Fatalf("5 kapasitenin ilk partner payı 3 olmalı, got=%d", got)
+	}
+	if got := tradeAgreementAmountForTest(gs, "a", "c"); got != 2 {
+		t.Fatalf("5 kapasitenin ikinci partner payı 2 olmalı, got=%d", got)
+	}
+	if got := TradeRouteCapacityUsage(gs, "a"); got != 5 {
+		t.Fatalf("rota kullanımı efektif kapasiteyi tüketmeli, got=%d", got)
+	}
+
+	gs.Regions["a_cap"].TradeCapacity = 2
+	RebalanceTradeRouteCapacities(gs)
+	if got := tradeAgreementAmountForTest(gs, "a", "b"); got != 1 {
+		t.Fatalf("kapasite düştüğünde ilk rota 1 olmalı, got=%d", got)
+	}
+	if got := tradeAgreementAmountForTest(gs, "a", "c"); got != 1 {
+		t.Fatalf("kapasite düştüğünde ikinci rota 1 olmalı, got=%d", got)
+	}
+}
+
+func tradeAgreementAmountForTest(gs *state.GameState, a, b faction.FactionID) int {
+	for _, route := range gs.TradeRoutes {
+		if route == nil {
+			continue
+		}
+		if (route.FromFactionID == string(a) && route.ToFactionID == string(b)) ||
+			(route.FromFactionID == string(b) && route.ToFactionID == string(a)) {
+			return route.AmountPerTurn
+		}
+	}
+	return -1
 }
 
 func TestBuildTradeRoutePrioritizesGrainForStrategicDemand(t *testing.T) {
@@ -1303,4 +1379,23 @@ func testGameState() *state.GameState {
 func enableABLandTrade(gs *state.GameState) {
 	gs.Regions["a_cap"].Neighbors = []world.RegionID{"b_cap"}
 	gs.Regions["b_cap"].Neighbors = []world.RegionID{"a_cap"}
+}
+
+func TestAssessTradeProposalUsesEffectiveBuildingCapacity(t *testing.T) {
+	gs := testGameState()
+	gs.Regions["a_cap"].TradeCapacity = 3
+	gs.Regions["b_cap"].TradeCapacity = 3
+	gs.Regions["a_cap"].Buildings = []string{"market"}
+	gs.Regions["b_cap"].Buildings = []string{"market"}
+	gs.BuildingTypes = map[string]*city.Building{
+		"market": {ID: "market", TradeCapacityMod: 1.45},
+	}
+	enableABLandTrade(gs)
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Score = 30
+
+	assessment := AssessTradeProposal(gs, rel, "a", "b")
+	if assessment.BlockReason != "" {
+		t.Fatalf("pazarın yükselttiği efektif kapasite ticareti açmalıydı: %+v", assessment)
+	}
 }

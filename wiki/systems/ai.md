@@ -20,6 +20,18 @@ related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
 `internal/ai/grain_procurement.go`
 
+Üretim tedarikinde askerî aday seçimi ile gerçek üretim önkoşulları birlikte
+değerlendirilir. Tedarik öncesi kaynak baskısı puanı uygulanmadığı için eksik
+demir, AI'yi demirsiz milise kaçırmaz; demir/kereste isteyen piyade veya kuşatma
+adayının maliyeti pazar talebine dönüşür. Geçerli askerî üretim bölgesi kışla
+eksikliği nedeniyle bulunamıyorsa ve stratejik kapasite/ordu limiti uygunsa,
+kışlanın `ResourceCost` içindeki tüm eksik girdileri de aynı turda satın alınır.
+`aiNeedsBarracksForMilitaryProduction()` bu kararı hem tedarik öncesi hem de
+kışla kuyruğa alma adımında paylaşır; böylece kışla maliyeti satın alınmadan
+kışla üretiminin kilitlenmesi önlenir. Tedarik hâlâ yalnız aktif ticaret
+rotalarının bağlı bileşenindeki, stok güvenlik payı bırakan tedarikçilerden ve
+`aiMinGoldReserve` korunarak yapılır.
+
 AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir.
 Ana fetih planındaki hedef bölge görevle geciktirilmez; AI normal taarruz/kuşatma
 akışına döner. Diğer bölgelerde karar deterministiktir: komşu düşman ordusunun

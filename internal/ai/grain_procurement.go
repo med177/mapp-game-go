@@ -130,6 +130,13 @@ func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx
 	if candidate, ok := aiBestBuildingInvestmentForProcurement(gs, fid, ctx); ok {
 		demand = aiMaxResourceCost(demand, candidate.Cost)
 	}
+	// Askerî üretim adayı henüz geçerli bir bölge bulamıyorsa bunun nedeni
+	// çoğunlukla üretim önkoşulu olan kışlanın eksik olmasıdır. Gerçek üretim
+	// adımıyla aynı helper kullanılarak kışlanın demir/kereste dahil tüm maliyeti
+	// önceden tedarik edilir.
+	if selfManpower := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid); aiNeedsBarracksForMilitaryProduction(gs, fid, ctx, gs.ManpowerCap(fid)-selfManpower) {
+		demand = aiMaxResourceCost(demand, aiBarracksResourceCost(gs))
+	}
 
 	// Deniz tehdidi veya aktif çıkarma görevi varsa, ilgili üretim maliyeti de
 	// aynı tedarik kararının parçasıdır. Teknoloji yoksa henüz savaş gemisi/

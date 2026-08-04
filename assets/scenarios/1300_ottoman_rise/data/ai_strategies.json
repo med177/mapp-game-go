@@ -41,6 +41,38 @@
   },
   "factions": [
     {
+      "faction_id": "achaea_principality",
+      "profile": "morean_latin_survival",
+      "objectives": [
+        {
+          "id": "hold_morean_principality",
+          "kind": "defend",
+          "target_factions": [
+            "athena_duk",
+            "epir"
+          ],
+          "target_regions": [
+            "morea"
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "contest_greek_corridor",
+          "kind": "expand",
+          "target_factions": [
+            "athena_duk"
+          ],
+          "target_regions": [
+            "greece"
+          ],
+          "priority": 66,
+          "commitment": 40,
+          "allow_vassalization": true
+        }
+      ]
+    },
+    {
       "faction_id": "ahiler",
       "profile": "central_buffer_survival",
       "objectives": [
@@ -57,6 +89,50 @@
           ],
           "priority": 96,
           "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "aragon",
+      "profile": "crown_of_aragon_maritime",
+      "objectives": [
+        {
+          "id": "hold_catalan_and_island_crown",
+          "kind": "defend",
+          "target_factions": [
+            "castile_kingdom",
+            "france",
+            "granada_emirate",
+            "naples_kingdom"
+          ],
+          "target_regions": [
+            "aragon",
+            "catalonia",
+            "sicily"
+          ],
+          "priority": 100,
+          "commitment": 76
+        },
+        {
+          "id": "pursue_neapolitan_crown_1416",
+          "kind": "expand",
+          "target_factions": [
+            "naples_kingdom"
+          ],
+          "target_regions": [
+            "naples",
+            "apulia"
+          ],
+          "priority": 94,
+          "commitment": 82,
+          "min_year": 1416,
+          "readiness_regions": [
+            "sicily"
+          ],
+          "annex_region_ids": [
+            "naples",
+            "apulia"
+          ]
         }
       ]
     },
@@ -327,6 +403,40 @@
       ]
     },
     {
+      "faction_id": "burgundy",
+      "profile": "burgundian_restoration",
+      "objectives": [
+        {
+          "id": "restore_burgundian_duchy",
+          "kind": "expand",
+          "target_factions": [
+            "france"
+          ],
+          "target_regions": [
+            "burgundy"
+          ],
+          "priority": 100,
+          "commitment": 72,
+          "annex_region_ids": [
+            "burgundy"
+          ]
+        },
+        {
+          "id": "hold_burgundian_heartland",
+          "kind": "defend",
+          "target_factions": [
+            "france",
+            "hre"
+          ],
+          "target_regions": [
+            "burgundy"
+          ],
+          "priority": 92,
+          "commitment": 78
+        }
+      ]
+    },
+    {
       "faction_id": "candar_bey",
       "profile": "black_sea_frontier",
       "objectives": [
@@ -405,6 +515,43 @@
       ]
     },
     {
+      "faction_id": "castile_kingdom",
+      "profile": "toledan_reconquista_frontier",
+      "objectives": [
+        {
+          "id": "hold_toledo_frontier",
+          "kind": "defend",
+          "target_factions": [
+            "leon_kingdom",
+            "aragon",
+            "granada_emirate",
+            "navarra"
+          ],
+          "target_regions": [
+            "toledo"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "press_granadan_approaches",
+          "kind": "expand",
+          "target_factions": [
+            "granada_emirate"
+          ],
+          "target_regions": [
+            "granada",
+            "murcia"
+          ],
+          "priority": 72,
+          "commitment": 48,
+          "readiness_regions": [
+            "toledo"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "croatian_kingdom",
       "profile": "subic_adriatic_frontier",
       "objectives": [
@@ -447,6 +594,43 @@
           "annex_region_ids": [
             "dalmatia"
           ]
+        }
+      ]
+    },
+    {
+      "faction_id": "denmark_kingdom",
+      "profile": "danish_sound_and_union",
+      "objectives": [
+        {
+          "id": "hold_sound_and_scania",
+          "kind": "defend",
+          "target_factions": [
+            "sweden_kingdom",
+            "hre",
+            "saxony_duchy"
+          ],
+          "target_regions": [
+            "denmark",
+            "scania"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "press_swedish_union",
+          "kind": "expand",
+          "target_factions": [
+            "sweden_kingdom"
+          ],
+          "target_regions": [
+            "sweden"
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "scania"
+          ],
+          "allow_vassalization": true
         }
       ]
     },
@@ -680,6 +864,42 @@
       ]
     },
     {
+      "faction_id": "florence_rep",
+      "profile": "tuscan_republican_trade",
+      "objectives": [
+        {
+          "id": "hold_tuscan_republics",
+          "kind": "defend",
+          "target_factions": [
+            "milan_duchy",
+            "papal_states_f",
+            "genoa"
+          ],
+          "target_regions": [
+            "florence",
+            "siena"
+          ],
+          "priority": 100,
+          "commitment": 76
+        },
+        {
+          "id": "secure_emilian_trade_route",
+          "kind": "expand",
+          "target_factions": [
+            "papal_states_f"
+          ],
+          "target_regions": [
+            "ferrara"
+          ],
+          "priority": 68,
+          "commitment": 42,
+          "readiness_regions": [
+            "florence"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "france",
       "profile": "royal_recovery_after_1337",
       "objectives": [
@@ -767,6 +987,42 @@
       ]
     },
     {
+      "faction_id": "georgia_kingdom",
+      "profile": "caucasian_mountain_restoration",
+      "objectives": [
+        {
+          "id": "hold_georgian_mountain_core",
+          "kind": "defend",
+          "target_factions": [
+            "ilkhanate",
+            "trebizond_emp",
+            "russia"
+          ],
+          "target_regions": [
+            "georgia"
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "recover_armenian_corridor",
+          "kind": "expand",
+          "target_factions": [
+            "ilkhanate"
+          ],
+          "target_regions": [
+            "armenia",
+            "erzurum"
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "georgia"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "germiyan_bey",
       "profile": "western_anatolian_rival",
       "objectives": [
@@ -844,6 +1100,45 @@
           ],
           "priority": 86,
           "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "granada_emirate",
+      "profile": "nasrid_andalusian_survival",
+      "objectives": [
+        {
+          "id": "hold_andalusian_emirate",
+          "kind": "defend",
+          "target_factions": [
+            "castile_kingdom",
+            "leon_kingdom",
+            "portugal",
+            "aragon",
+            "marinid_sultanate"
+          ],
+          "target_regions": [
+            "granada",
+            "murcia",
+            "algarve"
+          ],
+          "priority": 100,
+          "commitment": 84
+        },
+        {
+          "id": "recover_toledo_approach",
+          "kind": "expand",
+          "target_factions": [
+            "castile_kingdom"
+          ],
+          "target_regions": [
+            "toledo"
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "granada"
+          ]
         }
       ]
     },
@@ -961,6 +1256,89 @@
       ]
     },
     {
+      "faction_id": "hre",
+      "profile": "imperial_central_europe",
+      "objectives": [
+        {
+          "id": "hold_imperial_core",
+          "kind": "consolidate",
+          "target_regions": [
+            "westphalia",
+            "thuringia",
+            "switzerland",
+            "lorraine"
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "thuringia",
+            "switzerland"
+          ]
+        },
+        {
+          "id": "restore_imperial_authority_in_italy_1311",
+          "kind": "expand",
+          "target_factions": [
+            "milan_duchy",
+            "florence_rep",
+            "venice"
+          ],
+          "target_regions": [
+            "milan",
+            "florence",
+            "venice"
+          ],
+          "priority": 90,
+          "commitment": 76,
+          "min_year": 1311,
+          "readiness_regions": [
+            "switzerland",
+            "tyrol"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "hungarian_kingdom",
+      "profile": "danubian_royal_frontier",
+      "objectives": [
+        {
+          "id": "hold_hungarian_crownlands",
+          "kind": "defend",
+          "target_factions": [
+            "wallachia_prince",
+            "serbian_empire",
+            "polish_kingdom",
+            "hre",
+            "austria_duchy"
+          ],
+          "target_regions": [
+            "hungary",
+            "slovakia",
+            "transylvania"
+          ],
+          "priority": 100,
+          "commitment": 80
+        },
+        {
+          "id": "secure_lower_danube",
+          "kind": "expand",
+          "target_factions": [
+            "wallachia_prince"
+          ],
+          "target_regions": [
+            "wallachia",
+            "oltenia"
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "transylvania"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "ilkhanate",
       "profile": "eastern_imperial_frontier",
       "objectives": [
@@ -1073,6 +1451,41 @@
           "allow_vassalization": true,
           "annex_region_ids": [
             "saruhan"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "leon_kingdom",
+      "profile": "leonese_iberian_frontier",
+      "objectives": [
+        {
+          "id": "hold_castilian_crownland",
+          "kind": "defend",
+          "target_factions": [
+            "castile_kingdom",
+            "portugal",
+            "granada_emirate"
+          ],
+          "target_regions": [
+            "castile"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "press_granadan_frontier",
+          "kind": "expand",
+          "target_factions": [
+            "granada_emirate"
+          ],
+          "target_regions": [
+            "granada"
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "castile"
           ]
         }
       ]
@@ -1258,6 +1671,116 @@
       ]
     },
     {
+      "faction_id": "milan_duchy",
+      "profile": "visconti_lombard_power",
+      "objectives": [
+        {
+          "id": "hold_lombard_core",
+          "kind": "defend",
+          "target_factions": [
+            "florence_rep",
+            "papal_states_f",
+            "hre",
+            "venice",
+            "genoa"
+          ],
+          "target_regions": [
+            "milan",
+            "verona"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "secure_tuscan_corridor",
+          "kind": "expand",
+          "target_factions": [
+            "florence_rep"
+          ],
+          "target_regions": [
+            "florence"
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "milan",
+            "verona"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "naples_kingdom",
+      "profile": "angevin_southern_italy",
+      "objectives": [
+        {
+          "id": "hold_southern_italian_crown",
+          "kind": "defend",
+          "target_factions": [
+            "papal_states_f",
+            "aragon"
+          ],
+          "target_regions": [
+            "naples",
+            "apulia"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "secure_sicilian_strait",
+          "kind": "expand",
+          "target_factions": [
+            "aragon"
+          ],
+          "target_regions": [
+            "sicily"
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "naples"
+          ],
+          "allow_vassalization": true
+        }
+      ]
+    },
+    {
+      "faction_id": "navarra",
+      "profile": "pyrenean_buffer_kingdom",
+      "objectives": [
+        {
+          "id": "hold_pyrenean_passes",
+          "kind": "defend",
+          "target_factions": [
+            "aragon",
+            "castile_kingdom",
+            "england"
+          ],
+          "target_regions": [
+            "navarra"
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "press_toledo_corridor",
+          "kind": "expand",
+          "target_factions": [
+            "castile_kingdom"
+          ],
+          "target_regions": [
+            "toledo"
+          ],
+          "priority": 62,
+          "commitment": 40,
+          "readiness_regions": [
+            "navarra"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "norway_kingdom",
       "profile": "north_sea_kingdom",
       "objectives": [
@@ -1390,6 +1913,158 @@
           "required_event_flags": [
             "safavid_rise"
           ]
+        }
+      ]
+    },
+    {
+      "faction_id": "papal_states_f",
+      "profile": "papal_central_italy",
+      "objectives": [
+        {
+          "id": "hold_papal_territories",
+          "kind": "defend",
+          "target_factions": [
+            "florence_rep",
+            "milan_duchy",
+            "naples_kingdom",
+            "venice"
+          ],
+          "target_regions": [
+            "papal_states",
+            "ferrara"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "secure_tuscan_influence",
+          "kind": "expand",
+          "target_factions": [
+            "florence_rep"
+          ],
+          "target_regions": [
+            "siena",
+            "florence"
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "papal_states"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "polish_kingdom",
+      "profile": "polish_baltic_eastern_frontier",
+      "objectives": [
+        {
+          "id": "hold_polish_crownlands",
+          "kind": "defend",
+          "target_factions": [
+            "teutonic_order",
+            "lithuanian_gd",
+            "hungarian_kingdom",
+            "hre",
+            "bohemian_kingdom"
+          ],
+          "target_regions": [
+            "poland",
+            "silesia",
+            "mazovia",
+            "galicia_volhynia"
+          ],
+          "priority": 100,
+          "commitment": 80
+        },
+        {
+          "id": "press_teutonic_prussia",
+          "kind": "expand",
+          "target_factions": [
+            "teutonic_order"
+          ],
+          "target_regions": [
+            "konigsberg"
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "poland",
+            "mazovia"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "portugal",
+      "profile": "portuguese_atlantic_reconquista",
+      "objectives": [
+        {
+          "id": "hold_portuguese_atlantic_core",
+          "kind": "defend",
+          "target_factions": [
+            "granada_emirate",
+            "leon_kingdom"
+          ],
+          "target_regions": [
+            "portugal"
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "launch_moroccan_bridgehead_1415",
+          "kind": "expand",
+          "target_factions": [
+            "marinid_sultanate"
+          ],
+          "target_regions": [
+            "morocco"
+          ],
+          "priority": 94,
+          "commitment": 80,
+          "min_year": 1415,
+          "readiness_regions": [
+            "portugal"
+          ],
+          "annex_region_ids": [
+            "morocco"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "ragusa",
+      "profile": "ragusan_adriatic_restoration",
+      "objectives": [
+        {
+          "id": "restore_ragusan_port",
+          "kind": "expand",
+          "target_factions": [
+            "venice"
+          ],
+          "target_regions": [
+            "dalmatia"
+          ],
+          "priority": 100,
+          "commitment": 70,
+          "annex_region_ids": [
+            "dalmatia"
+          ]
+        },
+        {
+          "id": "hold_adriatic_city_state",
+          "kind": "defend",
+          "target_factions": [
+            "venice",
+            "croatian_kingdom",
+            "bosnian_banate"
+          ],
+          "target_regions": [
+            "dalmatia"
+          ],
+          "priority": 92,
+          "commitment": 80
         }
       ]
     },
@@ -1558,6 +2233,42 @@
       ]
     },
     {
+      "faction_id": "savoy_county",
+      "profile": "alpine_pass_survival",
+      "objectives": [
+        {
+          "id": "hold_alpine_passes",
+          "kind": "defend",
+          "target_factions": [
+            "france",
+            "hre",
+            "milan_duchy",
+            "genoa"
+          ],
+          "target_regions": [
+            "savoy"
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "secure_provençal_approach",
+          "kind": "expand",
+          "target_factions": [
+            "france"
+          ],
+          "target_regions": [
+            "provence"
+          ],
+          "priority": 60,
+          "commitment": 38,
+          "readiness_regions": [
+            "savoy"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "saxony_duchy",
       "profile": "saxon_electorate_frontier",
       "objectives": [
@@ -1575,6 +2286,40 @@
           "commitment": 68,
           "readiness_regions": [
             "saxony"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "scotland_kingdom",
+      "profile": "scottish_independence",
+      "objectives": [
+        {
+          "id": "hold_scottish_heartland",
+          "kind": "defend",
+          "target_factions": [
+            "england",
+            "norway_kingdom"
+          ],
+          "target_regions": [
+            "scotland"
+          ],
+          "priority": 100,
+          "commitment": 84
+        },
+        {
+          "id": "recover_northern_english_marches",
+          "kind": "expand",
+          "target_factions": [
+            "england"
+          ],
+          "target_regions": [
+            "lancashire"
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "scotland"
           ]
         }
       ]
@@ -1723,6 +2468,41 @@
           ],
           "priority": 84,
           "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "trebizond_emp",
+      "profile": "pontic_imperial_survival",
+      "objectives": [
+        {
+          "id": "hold_trebizond_coast",
+          "kind": "defend",
+          "target_factions": [
+            "ilkhanate",
+            "georgia_kingdom",
+            "canik_bey"
+          ],
+          "target_regions": [
+            "trebizond"
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "secure_erzurum_corridor",
+          "kind": "expand",
+          "target_factions": [
+            "ilkhanate"
+          ],
+          "target_regions": [
+            "erzurum"
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "trebizond"
+          ]
         }
       ]
     },
@@ -1879,496 +2659,6 @@
           "annex_region_ids": [
             "constantine"
           ]
-        }
-      ]
-    },
-    {
-      "faction_id": "achaea_principality",
-      "profile": "morean_latin_survival",
-      "objectives": [
-        {
-          "id": "hold_morean_principality",
-          "kind": "defend",
-          "target_factions": ["athena_duk", "epir"],
-          "target_regions": ["morea"],
-          "priority": 100,
-          "commitment": 82
-        },
-        {
-          "id": "contest_greek_corridor",
-          "kind": "expand",
-          "target_factions": ["athena_duk"],
-          "target_regions": ["greece"],
-          "priority": 66,
-          "commitment": 40,
-          "allow_vassalization": true
-        }
-      ]
-    },
-    {
-      "faction_id": "aragon",
-      "profile": "crown_of_aragon_maritime",
-      "objectives": [
-        {
-          "id": "hold_catalan_and_island_crown",
-          "kind": "defend",
-          "target_factions": ["castile_kingdom", "france", "granada_emirate", "naples_kingdom"],
-          "target_regions": ["aragon", "catalonia", "sicily"],
-          "priority": 100,
-          "commitment": 76
-        },
-        {
-          "id": "pursue_neapolitan_crown_1416",
-          "kind": "expand",
-          "target_factions": ["naples_kingdom"],
-          "target_regions": ["naples", "apulia"],
-          "priority": 94,
-          "commitment": 82,
-          "min_year": 1416,
-          "readiness_regions": ["sicily"],
-          "annex_region_ids": ["naples", "apulia"]
-        }
-      ]
-    },
-    {
-      "faction_id": "burgundy",
-      "profile": "burgundian_restoration",
-      "objectives": [
-        {
-          "id": "restore_burgundian_duchy",
-          "kind": "expand",
-          "target_factions": ["france"],
-          "target_regions": ["burgundy"],
-          "priority": 100,
-          "commitment": 72,
-          "annex_region_ids": ["burgundy"]
-        },
-        {
-          "id": "hold_burgundian_heartland",
-          "kind": "defend",
-          "target_factions": ["france", "hre"],
-          "target_regions": ["burgundy"],
-          "priority": 92,
-          "commitment": 78
-        }
-      ]
-    },
-    {
-      "faction_id": "castile_kingdom",
-      "profile": "toledan_reconquista_frontier",
-      "objectives": [
-        {
-          "id": "hold_toledo_frontier",
-          "kind": "defend",
-          "target_factions": ["leon_kingdom", "aragon", "granada_emirate", "navarra"],
-          "target_regions": ["toledo"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "press_granadan_approaches",
-          "kind": "expand",
-          "target_factions": ["granada_emirate"],
-          "target_regions": ["granada", "murcia"],
-          "priority": 72,
-          "commitment": 48,
-          "readiness_regions": ["toledo"]
-        }
-      ]
-    },
-    {
-      "faction_id": "denmark_kingdom",
-      "profile": "danish_sound_and_union",
-      "objectives": [
-        {
-          "id": "hold_sound_and_scania",
-          "kind": "defend",
-          "target_factions": ["sweden_kingdom", "hre", "saxony_duchy"],
-          "target_regions": ["denmark", "scania"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "press_swedish_union",
-          "kind": "expand",
-          "target_factions": ["sweden_kingdom"],
-          "target_regions": ["sweden"],
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": ["scania"],
-          "allow_vassalization": true
-        }
-      ]
-    },
-    {
-      "faction_id": "florence_rep",
-      "profile": "tuscan_republican_trade",
-      "objectives": [
-        {
-          "id": "hold_tuscan_republics",
-          "kind": "defend",
-          "target_factions": ["milan_duchy", "papal_states_f", "genoa"],
-          "target_regions": ["florence", "siena"],
-          "priority": 100,
-          "commitment": 76
-        },
-        {
-          "id": "secure_emilian_trade_route",
-          "kind": "expand",
-          "target_factions": ["papal_states_f"],
-          "target_regions": ["ferrara"],
-          "priority": 68,
-          "commitment": 42,
-          "readiness_regions": ["florence"]
-        }
-      ]
-    },
-    {
-      "faction_id": "georgia_kingdom",
-      "profile": "caucasian_mountain_restoration",
-      "objectives": [
-        {
-          "id": "hold_georgian_mountain_core",
-          "kind": "defend",
-          "target_factions": ["ilkhanate", "trebizond_emp", "russia"],
-          "target_regions": ["georgia"],
-          "priority": 100,
-          "commitment": 82
-        },
-        {
-          "id": "recover_armenian_corridor",
-          "kind": "expand",
-          "target_factions": ["ilkhanate"],
-          "target_regions": ["armenia", "erzurum"],
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": ["georgia"]
-        }
-      ]
-    },
-    {
-      "faction_id": "granada_emirate",
-      "profile": "nasrid_andalusian_survival",
-      "objectives": [
-        {
-          "id": "hold_andalusian_emirate",
-          "kind": "defend",
-          "target_factions": ["castile_kingdom", "leon_kingdom", "portugal", "aragon", "marinid_sultanate"],
-          "target_regions": ["granada", "murcia", "algarve"],
-          "priority": 100,
-          "commitment": 84
-        },
-        {
-          "id": "recover_toledo_approach",
-          "kind": "expand",
-          "target_factions": ["castile_kingdom"],
-          "target_regions": ["toledo"],
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": ["granada"]
-        }
-      ]
-    },
-    {
-      "faction_id": "hre",
-      "profile": "imperial_central_europe",
-      "objectives": [
-        {
-          "id": "hold_imperial_core",
-          "kind": "consolidate",
-          "target_regions": ["westphalia", "thuringia", "switzerland", "lorraine"],
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": ["thuringia", "switzerland"]
-        },
-        {
-          "id": "restore_imperial_authority_in_italy_1311",
-          "kind": "expand",
-          "target_factions": ["milan_duchy", "florence_rep", "venice"],
-          "target_regions": ["milan", "florence", "venice"],
-          "priority": 90,
-          "commitment": 76,
-          "min_year": 1311,
-          "readiness_regions": ["switzerland", "tyrol"]
-        }
-      ]
-    },
-    {
-      "faction_id": "hungarian_kingdom",
-      "profile": "danubian_royal_frontier",
-      "objectives": [
-        {
-          "id": "hold_hungarian_crownlands",
-          "kind": "defend",
-          "target_factions": ["wallachia_prince", "serbian_empire", "polish_kingdom", "hre", "austria_duchy"],
-          "target_regions": ["hungary", "slovakia", "transylvania"],
-          "priority": 100,
-          "commitment": 80
-        },
-        {
-          "id": "secure_lower_danube",
-          "kind": "expand",
-          "target_factions": ["wallachia_prince"],
-          "target_regions": ["wallachia", "oltenia"],
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": ["transylvania"]
-        }
-      ]
-    },
-    {
-      "faction_id": "leon_kingdom",
-      "profile": "leonese_iberian_frontier",
-      "objectives": [
-        {
-          "id": "hold_castilian_crownland",
-          "kind": "defend",
-          "target_factions": ["castile_kingdom", "portugal", "granada_emirate"],
-          "target_regions": ["castile"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "press_granadan_frontier",
-          "kind": "expand",
-          "target_factions": ["granada_emirate"],
-          "target_regions": ["granada"],
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": ["castile"]
-        }
-      ]
-    },
-    {
-      "faction_id": "milan_duchy",
-      "profile": "visconti_lombard_power",
-      "objectives": [
-        {
-          "id": "hold_lombard_core",
-          "kind": "defend",
-          "target_factions": ["florence_rep", "papal_states_f", "hre", "venice", "genoa"],
-          "target_regions": ["milan", "verona"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "secure_tuscan_corridor",
-          "kind": "expand",
-          "target_factions": ["florence_rep"],
-          "target_regions": ["florence"],
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": ["milan", "verona"]
-        }
-      ]
-    },
-    {
-      "faction_id": "naples_kingdom",
-      "profile": "angevin_southern_italy",
-      "objectives": [
-        {
-          "id": "hold_southern_italian_crown",
-          "kind": "defend",
-          "target_factions": ["papal_states_f", "aragon"],
-          "target_regions": ["naples", "apulia"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "secure_sicilian_strait",
-          "kind": "expand",
-          "target_factions": ["aragon"],
-          "target_regions": ["sicily"],
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": ["naples"],
-          "allow_vassalization": true
-        }
-      ]
-    },
-    {
-      "faction_id": "navarra",
-      "profile": "pyrenean_buffer_kingdom",
-      "objectives": [
-        {
-          "id": "hold_pyrenean_passes",
-          "kind": "defend",
-          "target_factions": ["aragon", "castile_kingdom", "england"],
-          "target_regions": ["navarra"],
-          "priority": 100,
-          "commitment": 82
-        },
-        {
-          "id": "press_toledo_corridor",
-          "kind": "expand",
-          "target_factions": ["castile_kingdom"],
-          "target_regions": ["toledo"],
-          "priority": 62,
-          "commitment": 40,
-          "readiness_regions": ["navarra"]
-        }
-      ]
-    },
-    {
-      "faction_id": "papal_states_f",
-      "profile": "papal_central_italy",
-      "objectives": [
-        {
-          "id": "hold_papal_territories",
-          "kind": "defend",
-          "target_factions": ["florence_rep", "milan_duchy", "naples_kingdom", "venice"],
-          "target_regions": ["papal_states", "ferrara"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "secure_tuscan_influence",
-          "kind": "expand",
-          "target_factions": ["florence_rep"],
-          "target_regions": ["siena", "florence"],
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": ["papal_states"]
-        }
-      ]
-    },
-    {
-      "faction_id": "polish_kingdom",
-      "profile": "polish_baltic_eastern_frontier",
-      "objectives": [
-        {
-          "id": "hold_polish_crownlands",
-          "kind": "defend",
-          "target_factions": ["teutonic_order", "lithuanian_gd", "hungarian_kingdom", "hre", "bohemian_kingdom"],
-          "target_regions": ["poland", "silesia", "mazovia", "galicia_volhynia"],
-          "priority": 100,
-          "commitment": 80
-        },
-        {
-          "id": "press_teutonic_prussia",
-          "kind": "expand",
-          "target_factions": ["teutonic_order"],
-          "target_regions": ["konigsberg"],
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": ["poland", "mazovia"]
-        }
-      ]
-    },
-    {
-      "faction_id": "portugal",
-      "profile": "portuguese_atlantic_reconquista",
-      "objectives": [
-        {
-          "id": "hold_portuguese_atlantic_core",
-          "kind": "defend",
-          "target_factions": ["granada_emirate", "leon_kingdom"],
-          "target_regions": ["portugal"],
-          "priority": 100,
-          "commitment": 78
-        },
-        {
-          "id": "launch_moroccan_bridgehead_1415",
-          "kind": "expand",
-          "target_factions": ["marinid_sultanate"],
-          "target_regions": ["morocco"],
-          "priority": 94,
-          "commitment": 80,
-          "min_year": 1415,
-          "readiness_regions": ["portugal"],
-          "annex_region_ids": ["morocco"]
-        }
-      ]
-    },
-    {
-      "faction_id": "ragusa",
-      "profile": "ragusan_adriatic_restoration",
-      "objectives": [
-        {
-          "id": "restore_ragusan_port",
-          "kind": "expand",
-          "target_factions": ["venice"],
-          "target_regions": ["dalmatia"],
-          "priority": 100,
-          "commitment": 70,
-          "annex_region_ids": ["dalmatia"]
-        },
-        {
-          "id": "hold_adriatic_city_state",
-          "kind": "defend",
-          "target_factions": ["venice", "croatian_kingdom", "bosnian_banate"],
-          "target_regions": ["dalmatia"],
-          "priority": 92,
-          "commitment": 80
-        }
-      ]
-    },
-    {
-      "faction_id": "savoy_county",
-      "profile": "alpine_pass_survival",
-      "objectives": [
-        {
-          "id": "hold_alpine_passes",
-          "kind": "defend",
-          "target_factions": ["france", "hre", "milan_duchy", "genoa"],
-          "target_regions": ["savoy"],
-          "priority": 100,
-          "commitment": 82
-        },
-        {
-          "id": "secure_provençal_approach",
-          "kind": "expand",
-          "target_factions": ["france"],
-          "target_regions": ["provence"],
-          "priority": 60,
-          "commitment": 38,
-          "readiness_regions": ["savoy"]
-        }
-      ]
-    },
-    {
-      "faction_id": "scotland_kingdom",
-      "profile": "scottish_independence",
-      "objectives": [
-        {
-          "id": "hold_scottish_heartland",
-          "kind": "defend",
-          "target_factions": ["england", "norway_kingdom"],
-          "target_regions": ["scotland"],
-          "priority": 100,
-          "commitment": 84
-        },
-        {
-          "id": "recover_northern_english_marches",
-          "kind": "expand",
-          "target_factions": ["england"],
-          "target_regions": ["lancashire"],
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": ["scotland"]
-        }
-      ]
-    },
-    {
-      "faction_id": "trebizond_emp",
-      "profile": "pontic_imperial_survival",
-      "objectives": [
-        {
-          "id": "hold_trebizond_coast",
-          "kind": "defend",
-          "target_factions": ["ilkhanate", "georgia_kingdom", "canik_bey"],
-          "target_regions": ["trebizond"],
-          "priority": 100,
-          "commitment": 82
-        },
-        {
-          "id": "secure_erzurum_corridor",
-          "kind": "expand",
-          "target_factions": ["ilkhanate"],
-          "target_regions": ["erzurum"],
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": ["trebizond"]
         }
       ]
     }

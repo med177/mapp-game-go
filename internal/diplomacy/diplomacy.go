@@ -40,6 +40,16 @@ type Result struct {
 const tradeAcceptanceThreshold = 45
 const tradeRelationThreshold = 15
 
+// MaxTradePartners dış ticaret anlaşmalarında devlet başına izin verilen aktif
+// partner sayısıdır. Aynı realm içindeki overlord-vassal rotaları bu kota ve
+// rota kapasitesi rezervinden muaftır.
+const MaxTradePartners = 4
+
+// MaxTradeRouteAmountPerTurn bir ikili ticaret anlaşmasının her yönü için
+// ulaşabileceği en yüksek temel hacimdir. Merchant filoları bunun üstüne kendi
+// sınırlı bonuslarını ekler.
+const MaxTradeRouteAmountPerTurn = 4
+
 // rejectedOfferRelationPenalty her reddedilen normal diplomasi teklifinin
 // ilişkiye uyguladığı küçük cezadır. Savaş çağrısı kendi özel sonucunu kullanır.
 const rejectedOfferRelationPenalty = 3
@@ -321,14 +331,15 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 		}
 		ensureTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
 	}
+	RebalanceTradeRouteCapacities(gs)
 }
 
 func SanitizeTradeRoutes(gs *state.GameState) {
 	if gs == nil || len(gs.TradeRoutes) == 0 {
 		return
 	}
-	filtered := gs.TradeRoutes[:0]
-	seen := make(map[string]struct{}, len(gs.TradeRoutes))
+	validByAgreement := make(map[string][]*economy.TradeRoute)
+	seenDirections := make(map[string]struct{}, len(gs.TradeRoutes))
 	for _, route := range gs.TradeRoutes {
 		if route == nil || route.FromFactionID == "" || route.ToFactionID == "" || route.FromFactionID == route.ToFactionID {
 			continue
@@ -346,15 +357,42 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		if !SameRealm(gs, fromID, toID) && !CanEstablishTradeRoute(gs, fromID, toID) {
 			continue
 		}
-		key := route.FromFactionID + "->" + route.ToFactionID
-		if _, exists := seen[key]; exists {
+		directionKey := route.AssignmentKey()
+		if _, exists := seenDirections[directionKey]; exists {
 			continue
 		}
-		seen[key] = struct{}{}
-		filtered = append(filtered, route)
+		seenDirections[directionKey] = struct{}{}
+		key, _, _ := tradeAgreementKey(fromID, toID)
+		validByAgreement[key] = append(validByAgreement[key], route)
+	}
+
+	agreementKeys := make([]string, 0, len(validByAgreement))
+	for key := range validByAgreement {
+		agreementKeys = append(agreementKeys, key)
+	}
+	sort.Strings(agreementKeys)
+	partnerCount := make(map[faction.FactionID]int)
+	filtered := make([]*economy.TradeRoute, 0, len(gs.TradeRoutes))
+	for _, key := range agreementKeys {
+		routes := validByAgreement[key]
+		if len(routes) == 0 {
+			continue
+		}
+		fromID := faction.FactionID(routes[0].FromFactionID)
+		toID := faction.FactionID(routes[0].ToFactionID)
+		_, left, right := tradeAgreementKey(fromID, toID)
+		if !SameRealm(gs, left, right) {
+			if partnerCount[left] >= MaxTradePartners || partnerCount[right] >= MaxTradePartners {
+				continue
+			}
+			partnerCount[left]++
+			partnerCount[right]++
+		}
+		filtered = append(filtered, routes...)
 	}
 	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
+	RebalanceTradeRouteCapacities(gs)
 }
 
 func sortTradeRoutes(routes []*economy.TradeRoute) {
@@ -853,13 +891,13 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 		assessment.BlockReason = "Hedefin ticaret kapasitesi 4 altı"
 		return assessment
 	}
-	actorPartners := activeTradePartners(gs, actor)
-	if actorPartners >= 4 {
+	actorPartners := ActiveTradePartnerCount(gs, actor)
+	if actorPartners >= MaxTradePartners {
 		assessment.BlockReason = "Senin aktif partner sınırın dolu"
 		return assessment
 	}
-	targetPartners := activeTradePartners(gs, target)
-	if targetPartners >= 4 {
+	targetPartners := ActiveTradePartnerCount(gs, target)
+	if targetPartners >= MaxTradePartners {
 		assessment.BlockReason = "Hedefin aktif partner sınırı dolu"
 		return assessment
 	}
@@ -906,11 +944,15 @@ func peaceTechBonus(gs *state.GameState, fid faction.FactionID) int {
 }
 
 func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
+	if gs == nil || a == "" || b == "" || a == b || !canMaintainOrAddTradePartner(gs, a, b) {
+		return
+	}
 	removeTradeRoutesBetween(gs, a, b)
 	routeAB := buildTradeRoute(gs, a, b)
 	routeBA := buildTradeRoute(gs, b, a)
 	gs.TradeRoutes = append(gs.TradeRoutes, routeAB, routeBA)
 	sortTradeRoutes(gs.TradeRoutes)
+	RebalanceTradeRouteCapacities(gs)
 }
 
 func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
@@ -932,6 +974,7 @@ func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	}
 	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
+	RebalanceTradeRouteCapacities(gs)
 }
 
 func HasTradeRouteBetween(gs *state.GameState, a, b faction.FactionID) bool {
@@ -1009,32 +1052,22 @@ func tradeAmount(gs *state.GameState, a, b faction.FactionID) int {
 	capA := totalTradeCapacity(gs, a)
 	capB := totalTradeCapacity(gs, b)
 	capacity := min(capA, capB)
-	switch {
-	case capacity <= 0:
-		return 1
-	case capacity >= 8:
-		return 4
-	case capacity >= 5:
-		return 3
-	case capacity >= 2:
-		return 2
-	default:
+	if capacity <= 0 {
 		return 1
 	}
+	if capacity > MaxTradeRouteAmountPerTurn {
+		return MaxTradeRouteAmountPerTurn
+	}
+	return capacity
 }
 
 func totalTradeCapacity(gs *state.GameState, fid faction.FactionID) int {
-	total := 0
-	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) {
-			continue
-		}
-		total += region.TradeCapacity
-	}
-	return total
+	return gs.EffectiveFactionTradeCapacity(fid)
 }
 
-func activeTradePartners(gs *state.GameState, fid faction.FactionID) int {
+// ActiveTradePartnerCount aynı realm dışındaki, askıya alınmamış rota
+// anlaşmalarından türeyen benzersiz partner sayısını döner.
+func ActiveTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
 	if gs == nil || len(gs.TradeRoutes) == 0 || fid == "" {
 		return 0
 	}
@@ -1046,12 +1079,166 @@ func activeTradePartners(gs *state.GameState, fid faction.FactionID) int {
 		}
 		switch {
 		case route.FromFactionID == self && route.ToFactionID != "":
-			partners[route.ToFactionID] = struct{}{}
+			partnerID := faction.FactionID(route.ToFactionID)
+			if !SameRealm(gs, fid, partnerID) {
+				partners[route.ToFactionID] = struct{}{}
+			}
 		case route.ToFactionID == self && route.FromFactionID != "":
-			partners[route.FromFactionID] = struct{}{}
+			partnerID := faction.FactionID(route.FromFactionID)
+			if !SameRealm(gs, fid, partnerID) {
+				partners[route.FromFactionID] = struct{}{}
+			}
 		}
 	}
 	return len(partners)
+}
+
+func canMaintainOrAddTradePartner(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b || SameRealm(gs, a, b) {
+		return gs != nil && a != "" && b != "" && a != b
+	}
+	if hasTradeRouteRecordBetween(gs, a, b) {
+		return true
+	}
+	return ActiveTradePartnerCount(gs, a) < MaxTradePartners && ActiveTradePartnerCount(gs, b) < MaxTradePartners
+}
+
+func hasTradeRouteRecordBetween(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	aStr := string(a)
+	bStr := string(b)
+	for _, route := range gs.TradeRoutes {
+		if route == nil {
+			continue
+		}
+		if (route.FromFactionID == aStr && route.ToFactionID == bStr) ||
+			(route.FromFactionID == bStr && route.ToFactionID == aStr) {
+			return true
+		}
+	}
+	return false
+}
+
+func tradeAgreementKey(a, b faction.FactionID) (string, faction.FactionID, faction.FactionID) {
+	if a < b {
+		return string(a) + "|" + string(b), a, b
+	}
+	return string(b) + "|" + string(a), b, a
+}
+
+// RebalanceTradeRouteCapacities dış ticaret anlaşmalarına bir devletin efektif
+// kapasitesini dengeli olarak paylaştırır. Her partner önce eşit kapasite
+// payını alır, kalan birimler ID sırasındaki ilk partnerlere dağıtılır ve tek
+// anlaşma hacmi 4 ile sınırlanır. İki yönlü rota aynı temel hacmi paylaşır.
+func RebalanceTradeRouteCapacities(gs *state.GameState) {
+	if gs == nil || len(gs.TradeRoutes) == 0 {
+		return
+	}
+	type agreement struct {
+		key                            string
+		left, right                    faction.FactionID
+		routes                         []*economy.TradeRoute
+		hasLeftToRight, hasRightToLeft bool
+		active                         bool
+	}
+	agreementsByKey := make(map[string]*agreement)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.FromFactionID == "" || route.ToFactionID == "" || route.FromFactionID == route.ToFactionID {
+			continue
+		}
+		fromID := faction.FactionID(route.FromFactionID)
+		toID := faction.FactionID(route.ToFactionID)
+		key, left, right := tradeAgreementKey(fromID, toID)
+		item := agreementsByKey[key]
+		if item == nil {
+			item = &agreement{key: key, left: left, right: right}
+			agreementsByKey[key] = item
+		}
+		item.routes = append(item.routes, route)
+		if fromID == left && toID == right {
+			item.hasLeftToRight = true
+		} else {
+			item.hasRightToLeft = true
+		}
+		if route.SuspendedTurns <= 0 {
+			item.active = true
+		}
+	}
+
+	partnersByFaction := make(map[faction.FactionID][]string)
+	for key, item := range agreementsByKey {
+		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || SameRealm(gs, item.left, item.right) {
+			continue
+		}
+		partnersByFaction[item.left] = append(partnersByFaction[item.left], key)
+		partnersByFaction[item.right] = append(partnersByFaction[item.right], key)
+	}
+	sharesByFaction := make(map[faction.FactionID]map[string]int, len(partnersByFaction))
+	for fid, keys := range partnersByFaction {
+		sort.Strings(keys)
+		capacity := totalTradeCapacity(gs, fid)
+		baseShare := 0
+		remainder := 0
+		if len(keys) > 0 && capacity > 0 {
+			baseShare = capacity / len(keys)
+			remainder = capacity % len(keys)
+		}
+		shares := make(map[string]int, len(keys))
+		for i, key := range keys {
+			share := baseShare
+			if i < remainder {
+				share++
+			}
+			if share > MaxTradeRouteAmountPerTurn {
+				share = MaxTradeRouteAmountPerTurn
+			}
+			shares[key] = share
+		}
+		sharesByFaction[fid] = shares
+	}
+
+	for _, item := range agreementsByKey {
+		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || SameRealm(gs, item.left, item.right) {
+			continue
+		}
+		amount := sharesByFaction[item.left][item.key]
+		if other := sharesByFaction[item.right][item.key]; other < amount {
+			amount = other
+		}
+		for _, route := range item.routes {
+			route.AmountPerTurn = amount
+		}
+	}
+}
+
+// TradeRouteCapacityUsage bir devletin dış ticaret anlaşmalarına ayırdığı
+// temel rota kapasitesini döner. Merchant bonusları kapasite rezervine girmez.
+func TradeRouteCapacityUsage(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" || len(gs.TradeRoutes) == 0 {
+		return 0
+	}
+	amountByAgreement := make(map[string]int)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.SuspendedTurns > 0 {
+			continue
+		}
+		fromID := faction.FactionID(route.FromFactionID)
+		toID := faction.FactionID(route.ToFactionID)
+		if (fromID != fid && toID != fid) || SameRealm(gs, fromID, toID) {
+			continue
+		}
+		key, _, _ := tradeAgreementKey(fromID, toID)
+		if route.AmountPerTurn > amountByAgreement[key] {
+			amountByAgreement[key] = route.AmountPerTurn
+		}
+	}
+	total := 0
+	for _, amount := range amountByAgreement {
+		total += amount
+	}
+	return total
 }
 
 func landRegionCount(gs *state.GameState, fid faction.FactionID) int {

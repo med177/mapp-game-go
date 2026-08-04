@@ -260,7 +260,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	} else if r.editShapeBrushMode == editShapeBrushErase {
 		modeLabel = "Sil"
 	}
-	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sol mouse drag", float64(x)+14, ly, FaceSmall, ColorGray)
+	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sol drag | Shift: ters", float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
 	if r.editShapeTool != editShapeToolNone {
@@ -555,7 +555,7 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	sx, sy := r.worldToScreen(cursorWX, cursorWY)
 	radius := float32(maxF(1, r.editShapeBrushRadius*r.camScale))
 	brushCol := color.RGBA{80, 235, 255, 180}
-	if r.editShapeBrushMode == editShapeBrushErase {
+	if !editShapeBrushFill(r.editShapeBrushMode, editModifierPressed()) {
 		brushCol = color.RGBA{255, 110, 110, 185}
 	}
 	vector.StrokeCircle(screen, float32(sx), float32(sy), radius, 2, brushCol, true)
@@ -590,13 +590,16 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	} else if r.editShapeBrushMode == editShapeBrushErase {
 		mode = "Sil"
 	}
+	if r.editShapeTool != editShapeToolNone && editModifierPressed() {
+		mode += " (ters)"
+	}
 	selectedLabel := string(region.ID)
 	if session != nil {
 		selectedLabel = session.ShapeID
 	}
 	actionLabel := "Shape/Bolge butonundan arac sec"
 	if r.editShapeTool != editShapeToolNone {
-		actionLabel = "Yesil=ekle  Kirmizi=sil  Sol tik=boya"
+		actionLabel = "Yesil=ekle Kirmizi=sil | Shift+sol=ters"
 	}
 	if region.IsSea {
 		actionLabel = "Deniz icin Bölge Boya/Sil kullan  Uygula ile kesinlestir"
@@ -788,12 +791,13 @@ func (r *Renderer) finishShapePaintStroke() {
 }
 
 func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
+	fill := editShapeBrushFill(r.editShapeBrushMode, editModifierPressed())
 	if r.editShapeTool == editShapeToolRegion {
 		if !r.canRegionPaintSelected() {
 			return
 		}
 		if !r.editShapeStrokeHasLast {
-			if r.applyRegionBrushCircle(x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+			if r.applyRegionBrushCircle(x, y, r.editShapeBrushRadius, fill) {
 				if session != nil {
 					session.Dirty = true
 				}
@@ -802,7 +806,7 @@ func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
 			r.editShapeStrokeLastX, r.editShapeStrokeLastY, r.editShapeStrokeHasLast = x, y, true
 			return
 		}
-		if r.applyRegionBrushLine(r.editShapeStrokeLastX, r.editShapeStrokeLastY, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+		if r.applyRegionBrushLine(r.editShapeStrokeLastX, r.editShapeStrokeLastY, x, y, r.editShapeBrushRadius, fill) {
 			if session != nil {
 				session.Dirty = true
 			}
@@ -815,16 +819,27 @@ func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
 		return
 	}
 	if !session.HasLast {
-		if r.applyShapeBrushCircle(session, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+		if r.applyShapeBrushCircle(session, x, y, r.editShapeBrushRadius, fill) {
 			session.Dirty = true
 		}
 		session.LastX, session.LastY, session.HasLast = x, y, true
 		return
 	}
-	if r.applyShapeBrushLine(session, session.LastX, session.LastY, x, y, r.editShapeBrushRadius, r.editShapeBrushMode == editShapeBrushPaint) {
+	if r.applyShapeBrushLine(session, session.LastX, session.LastY, x, y, r.editShapeBrushRadius, fill) {
 		session.Dirty = true
 	}
 	session.LastX, session.LastY = x, y
+}
+
+// editShapeBrushFill, Shift basılıyken aktif boya/sil aracının ters işlemini
+// seçer. Böylece yanlışlıkla boyanan bir alan aynı araçtan çıkmadan
+// Shift+sol tık veya Shift+drag ile geri alınabilir.
+func editShapeBrushFill(mode editShapeBrushMode, reverse bool) bool {
+	fill := mode == editShapeBrushPaint
+	if reverse {
+		return !fill
+	}
+	return fill
 }
 
 func editShapeBrushRadiusLabel(radius float64) string {

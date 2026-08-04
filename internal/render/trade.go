@@ -322,8 +322,8 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 	detailLines := []string{
 		"Hedef: " + name,
 		"Duruş: " + faction.DiplomaticStanceLabelTR(selected.Stance) + " | İlişki: " + itoa(selected.Score),
-		"Ticaret kapasitesi: Sen " + itoa(selected.PlayerTradeCap) + " / Onlar " + itoa(selected.TargetTradeCap),
-		"Aktif partner: Sen " + itoa(selected.PlayerPartners) + "/4 | Onlar " + itoa(selected.TargetPartners) + "/4",
+		"Rota kapasitesi: Sen " + itoa(selected.PlayerRouteCapacityUsed) + "/" + itoa(selected.PlayerTradeCap) + " | Onlar " + itoa(selected.TargetRouteCapacityUsed) + "/" + itoa(selected.TargetTradeCap),
+		"Aktif partner: Sen " + itoa(selected.PlayerPartners) + "/" + itoa(diplomacy.MaxTradePartners) + " | Onlar " + itoa(selected.TargetPartners) + "/" + itoa(diplomacy.MaxTradePartners),
 	}
 	detailColors := []color.Color{
 		color.RGBA{220, 205, 170, 230},
@@ -741,15 +741,17 @@ func factionDisplayName(gs *state.GameState, fid string) string {
 }
 
 type tradeAgreementCandidate struct {
-	ID             faction.FactionID
-	Stance         faction.DiplomaticStance
-	Score          int
-	PlayerTradeCap int
-	TargetTradeCap int
-	PlayerPartners int
-	TargetPartners int
-	Eligible       bool
-	BlockReason    string
+	ID                      faction.FactionID
+	Stance                  faction.DiplomaticStance
+	Score                   int
+	PlayerTradeCap          int
+	TargetTradeCap          int
+	PlayerRouteCapacityUsed int
+	TargetRouteCapacityUsed int
+	PlayerPartners          int
+	TargetPartners          int
+	Eligible                bool
+	BlockReason             string
 }
 
 func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandidate {
@@ -757,7 +759,8 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 		return nil
 	}
 	playerCap := tradeCapacityForFaction(gs, gs.PlayerFactionID)
-	playerPartners := activeTradePartnerCount(gs, gs.PlayerFactionID)
+	playerPartners := diplomacy.ActiveTradePartnerCount(gs, gs.PlayerFactionID)
+	playerRouteCapacityUsed := diplomacy.TradeRouteCapacityUsage(gs, gs.PlayerFactionID)
 	list := make([]tradeAgreementCandidate, 0, len(gs.Factions))
 	for fid, f := range gs.Factions {
 		if fid == gs.PlayerFactionID || f == nil || f.IsEliminated {
@@ -771,18 +774,21 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 			continue
 		}
 		targetCap := tradeCapacityForFaction(gs, fid)
-		targetPartners := activeTradePartnerCount(gs, fid)
+		targetPartners := diplomacy.ActiveTradePartnerCount(gs, fid)
+		targetRouteCapacityUsed := diplomacy.TradeRouteCapacityUsage(gs, fid)
 		reason := tradeAgreementBlockReason(gs, rel, gs.PlayerFactionID, fid)
 		list = append(list, tradeAgreementCandidate{
-			ID:             fid,
-			Stance:         rel.Stance,
-			Score:          rel.Score,
-			PlayerTradeCap: playerCap,
-			TargetTradeCap: targetCap,
-			PlayerPartners: playerPartners,
-			TargetPartners: targetPartners,
-			Eligible:       reason == "",
-			BlockReason:    reason,
+			ID:                      fid,
+			Stance:                  rel.Stance,
+			Score:                   rel.Score,
+			PlayerTradeCap:          playerCap,
+			TargetTradeCap:          targetCap,
+			PlayerRouteCapacityUsed: playerRouteCapacityUsed,
+			TargetRouteCapacityUsed: targetRouteCapacityUsed,
+			PlayerPartners:          playerPartners,
+			TargetPartners:          targetPartners,
+			Eligible:                reason == "",
+			BlockReason:             reason,
 		})
 	}
 	sort.Slice(list, func(i, j int) bool {
@@ -881,37 +887,10 @@ func tradeAgreementBlockReason(gs *state.GameState, rel *faction.Relation, actor
 }
 
 func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
-	total := 0
 	if gs == nil {
-		return total
-	}
-	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) {
-			continue
-		}
-		total += region.TradeCapacity
-	}
-	return total
-}
-
-func activeTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
-	if gs == nil || len(gs.TradeRoutes) == 0 || fid == "" {
 		return 0
 	}
-	partners := make(map[string]struct{})
-	self := string(fid)
-	for _, route := range gs.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 {
-			continue
-		}
-		switch {
-		case route.FromFactionID == self && route.ToFactionID != "":
-			partners[route.ToFactionID] = struct{}{}
-		case route.ToFactionID == self && route.FromFactionID != "":
-			partners[route.FromFactionID] = struct{}{}
-		}
-	}
-	return len(partners)
+	return gs.EffectiveFactionTradeCapacity(fid)
 }
 
 func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[faction.FactionID]int {

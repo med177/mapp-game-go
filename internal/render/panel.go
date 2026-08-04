@@ -4654,17 +4654,15 @@ func projectedFactionTributeIncome(gs *state.GameState, fid faction.FactionID) i
 		}
 
 		goldMod := 1.0
-		tradeCapMod := 1.0
 		for _, bid := range region.Buildings {
 			if building, ok := gs.BuildingTypes[bid]; ok && building != nil {
 				goldMod *= building.GoldMod
-				tradeCapMod *= building.TradeCapacityMod
 			}
 		}
 
 		retention := gs.RegionBlockadeOutputRetentionPercent(region)
 		regionIncome := state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
-		tradeIncome := economy.RegionTradeIncome(region.TradeCapacity, tradeCapMod)
+		tradeIncome := gs.BaseRegionTradeIncome(region)
 		tradeIncome = tradeIncome * tradeMod / 100
 		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
 		if fx.MarketGoldMod != 0 {

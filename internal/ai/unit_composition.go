@@ -96,7 +96,12 @@ func aiSelectStrategicLandUnitWithResourceCheck(gs *state.GameState, self *facti
 		if aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) == "" {
 			continue
 		}
-		candidate := aiScoreLandUnitCandidate(gs, self, unitType, target, composition, needs, economySnapshot)
+		// Tedarik öncesi aday ararken eksik kaynak cezası uygulanmaz. Aksi halde
+		// düşük demir, demir isteyen piyadeyi sistematik olarak cezalandırıp
+		// maliyeti demirsiz olan milisi seçtirir; böylece demir talebi hiç
+		// oluşmaz ve AI aynı darboğanda kalır. Gerçek üretim seçiminde mevcut
+		// stok baskısı korunur.
+		candidate := aiScoreLandUnitCandidate(gs, self, unitType, target, composition, needs, economySnapshot, requireResources)
 		if !found || aiUnitCandidateBetter(candidate, best) {
 			best = candidate
 			found = true
@@ -147,19 +152,29 @@ func aiCompositionTargetForStrategicContext(gs *state.GameState, fid faction.Fac
 	return target
 }
 
-func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitType *army.UnitType, target aiCompositionTarget, composition aiLandComposition, needs aiRecruitmentBattleNeeds, economySnapshot aiEconomySnapshot) aiUnitCandidate {
+func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitType *army.UnitType, target aiCompositionTarget, composition aiLandComposition, needs aiRecruitmentBattleNeeds, economySnapshot aiEconomySnapshot, includeResourcePressurePenalty bool) aiUnitCandidate {
 	compositionNeed := aiCategoryCompositionNeed(target, composition, unitType.Category)
 	combatValue := unitType.Attack*needs.AttackWeight + unitType.Defense*needs.DefenseWeight + unitType.Morale*needs.MoraleWeight
 	cost := aiUnitResourceCost(unitType)
 	effectiveCost := aiGoldEquivalentCost(gs, cost)
 	efficiency := combatValue * 100 / maxInt(1, effectiveCost)
-	resourcePenalty := aiUnitResourcePressurePenalty(self, cost)
+	resourcePenalty := 0
+	if includeResourcePressurePenalty {
+		resourcePenalty = aiUnitResourcePressurePenalty(self, cost)
+	}
 	upkeepMultiplier := 3
 	if aiGrainUtilityPercent(economySnapshot) >= 100 {
 		upkeepMultiplier = 10
 	}
 	turns := maxInt(1, unitType.TurnsRequired)
-	qualityScore := combatValue + efficiency*3 - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - turns*8
+	efficiencyWeight := 3
+	if !includeResourcePressurePenalty {
+		// Tedarik planı, kaynak açığını kapatacağı için mevcut altın-verim
+		// baskısını üretim kararındaki kadar ağır taşımamalı; aksi halde ucuz
+		// milis, daha güçlü ama demir isteyen piyadeyi her zaman bastırır.
+		efficiencyWeight = 1
+	}
+	qualityScore := combatValue + efficiency*efficiencyWeight - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - turns*8
 	score := compositionNeed*4 + qualityScore
 	if unitType.Category == army.CategorySiege && needs.FortifiedTarget {
 		if needs.SiegeShortfall > 0 {

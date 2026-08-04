@@ -166,6 +166,9 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 			t.Errorf("%s bina işçi iaşesi maliyeti kalibre değil: got=%d want=%d", buildingID, buildingGrainCost(building), wantGrainCost)
 		}
 	}
+	if buildings["granary"].TradeCapacityMod != 1.05 || buildings["temple"].TradeCapacityMod != 1.03 {
+		t.Fatalf("ambar ve ibadethane ticaret kapasitesi katkısı kalibre değil: ambar=%.2f ibadethane=%.2f", buildings["granary"].TradeCapacityMod, buildings["temple"].TradeCapacityMod)
+	}
 
 	units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
 	if err != nil {
@@ -812,8 +815,14 @@ func Test1300ScenarioLandSettlementCentersAreUnique(t *testing.T) {
 
 func Test1300ScenarioTradeCenterReferencesExist(t *testing.T) {
 	scenarioPath, regions, _ := load1300IntegrityData(t)
-	var config world.TradeCenterConfig
-	read1300JSON(t, filepath.Join(scenarioPath, "data", "trade_centers.json"), &config)
+	config, err := world.LoadTradeCenters(filepath.Join(scenarioPath, "data", "trade_centers.json"), regions)
+	if err != nil {
+		t.Fatalf("ticaret merkezi verisi yüklenemedi: %v", err)
+	}
+	if config.PrimaryTradeCapacityBonus != 2 || config.SecondaryTradeCapacityBonus != 1 ||
+		config.PrimaryTradeIncomeBonus != 4 || config.SecondaryTradeIncomeBonus != 2 {
+		t.Fatalf("ticaret merkezi bonusları kalibre değil: capacity=%d/%d income=%d/%d", config.PrimaryTradeCapacityBonus, config.SecondaryTradeCapacityBonus, config.PrimaryTradeIncomeBonus, config.SecondaryTradeIncomeBonus)
+	}
 
 	centers := make(map[world.RegionID]world.TradeCenterDef, len(config.Centers))
 	for _, center := range config.Centers {

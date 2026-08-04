@@ -2293,8 +2293,8 @@
       {
         "id": "georgia_batumi",
         "name_tr": "Batum",
-        "x": 1309,
-        "y": 443,
+        "x": 1311,
+        "y": 444,
         "type": "port",
         "population": 19
       },
@@ -2325,8 +2325,8 @@
       {
         "id": "georgia_poti",
         "name_tr": "Poti",
-        "x": 1310,
-        "y": 434,
+        "x": 1311,
+        "y": 433,
         "type": "port",
         "population": 16
       },
@@ -4270,8 +4270,8 @@
       {
         "id": "aleppo_antioch",
         "name_tr": "İskenderun",
-        "x": 1199,
-        "y": 539,
+        "x": 1200,
+        "y": 540,
         "type": "port",
         "population": 20
       },

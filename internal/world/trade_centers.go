@@ -12,21 +12,52 @@ type TradeCenterTier string
 const (
 	TradeCenterPrimary   TradeCenterTier = "primary"
 	TradeCenterSecondary TradeCenterTier = "secondary"
+
+	defaultPrimaryTradeCapacityBonus   = 2
+	defaultSecondaryTradeCapacityBonus = 1
+	defaultPrimaryTradeIncomeBonus     = 4
+	defaultSecondaryTradeIncomeBonus   = 2
 )
 
 type TradeCenterDef struct {
-	ID         RegionID        `json:"region_id"`
-	NameTR     string          `json:"name_tr,omitempty"`
-	Tier       TradeCenterTier `json:"tier,omitempty"`
-	Links      []RegionID      `json:"links,omitempty"`
-	WorldX     int             `json:"world_x,omitempty"`
-	WorldY     int             `json:"world_y,omitempty"`
-	OffMap     bool            `json:"off_map,omitempty"`
-	UnlockYear int             `json:"unlock_year,omitempty"`
+	ID                 RegionID        `json:"region_id"`
+	NameTR             string          `json:"name_tr,omitempty"`
+	Tier               TradeCenterTier `json:"tier,omitempty"`
+	TradeCapacityBonus int             `json:"trade_capacity_bonus,omitempty"`
+	TradeIncomeBonus   int             `json:"trade_income_bonus,omitempty"`
+	Links              []RegionID      `json:"links,omitempty"`
+	WorldX             int             `json:"world_x,omitempty"`
+	WorldY             int             `json:"world_y,omitempty"`
+	OffMap             bool            `json:"off_map,omitempty"`
+	UnlockYear         int             `json:"unlock_year,omitempty"`
 }
 
 type TradeCenterConfig struct {
-	Centers []TradeCenterDef `json:"centers"`
+	PrimaryTradeCapacityBonus   int              `json:"primary_trade_capacity_bonus,omitempty"`
+	SecondaryTradeCapacityBonus int              `json:"secondary_trade_capacity_bonus,omitempty"`
+	PrimaryTradeIncomeBonus     int              `json:"primary_trade_income_bonus,omitempty"`
+	SecondaryTradeIncomeBonus   int              `json:"secondary_trade_income_bonus,omitempty"`
+	Centers                     []TradeCenterDef `json:"centers"`
+}
+
+// ApplyDefaultBonuses eski senaryo verilerinde henüz bulunmayan merkez bonus
+// alanlarını oyun dengesiyle uyumlu varsayılanlara taşır. Sıfır, mevcut modelde
+// "tier varsayılanını kullan" anlamına geldiği için bu migration yalnız
+// tanımlanmamış alanları tamamlar; per-center override'lar korunur.
+func (c TradeCenterConfig) ApplyDefaultBonuses() TradeCenterConfig {
+	if c.PrimaryTradeCapacityBonus == 0 {
+		c.PrimaryTradeCapacityBonus = defaultPrimaryTradeCapacityBonus
+	}
+	if c.SecondaryTradeCapacityBonus == 0 {
+		c.SecondaryTradeCapacityBonus = defaultSecondaryTradeCapacityBonus
+	}
+	if c.PrimaryTradeIncomeBonus == 0 {
+		c.PrimaryTradeIncomeBonus = defaultPrimaryTradeIncomeBonus
+	}
+	if c.SecondaryTradeIncomeBonus == 0 {
+		c.SecondaryTradeIncomeBonus = defaultSecondaryTradeIncomeBonus
+	}
+	return c
 }
 
 func (c TradeCenterDef) ActiveInYear(year int) bool {
@@ -99,6 +130,7 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 		filtered[i].Links = links
 	}
 
+	out = payload.ApplyDefaultBonuses()
 	out.Centers = filtered
 	return out, nil
 }

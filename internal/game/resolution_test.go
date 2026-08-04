@@ -966,6 +966,35 @@ func TestApplyEconomyTickAppliesMarketGoldBonusToPassiveTrade(t *testing.T) {
 	}
 }
 
+func TestApplyEconomyTickAddsTradeCenterCustomsIncome(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"owner": {ID: "owner"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"center": {ID: "center", OwnerID: "owner", TaxRate: 50, Satisfaction: 50, TradeCapacity: 2},
+		},
+		TradeCenters: world.TradeCenterConfig{
+			PrimaryTradeCapacityBonus: 2,
+			PrimaryTradeIncomeBonus:   4,
+			Centers: []world.TradeCenterDef{{
+				ID: "center", Tier: world.TradeCenterPrimary,
+			}},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	// (2 ham kapasite + 2 merkez kapasitesi) × 2 + 4 gümrük = 12 altın;
+	// ilkbahar ticaret çarpanı ile 13 altına yuvarlanır.
+	if got := gs.Factions["owner"].Gold; got != 13 {
+		t.Fatalf("ticaret merkezi gümrük geliri ekonomi tick'ine eklenmeli, got=%d", got)
+	}
+}
+
 func TestApplyEconomyTickTransfersVassalTributeToOverlord(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,

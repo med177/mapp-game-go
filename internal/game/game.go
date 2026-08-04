@@ -346,7 +346,7 @@ func (g *Game) Update() error {
 			if commander, ok := g.gs.RecruitPlayerCommander(action.CommanderName); ok {
 				g.renderer.ShowCombatResult(fmt.Sprintf("%s komutan olarak katıldı. Seviye %d, %d XP.", commander.Name, commander.Level, commander.Experience))
 			} else {
-				g.renderer.ShowCombatResult("Komutan adı geçersiz.")
+				g.renderer.ShowCombatResult("Komutan oluşturulamadı. Gerekli: " + state.CommanderRecruitCost.ShortTR())
 			}
 		case render.ActionUnassignCommander:
 			if g.gs.UnassignCommanderFromArmy(action.ArmyID) {

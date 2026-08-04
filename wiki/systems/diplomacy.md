@@ -110,12 +110,12 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 - Savaştayken ittifak veya ticaret kurulamaz
 - İttifak için genel senaryolarda `Score >= 25`, `1300_ottoman_rise` senaryosunda ise `Score >= 40` gerekir; böylece aynı dinin varsayılan `25` puanı tek başına hemen ittifak açmaz. İki taraf arasında önceden değişmiş gerçek ilişki puanı, kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle diplomatik temas aranır. Buna ek olarak kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ gerekir. Doğrudan sınır tehdidi mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
 - Bir devletin mevcut müttefiki hedef devletle savaş halindeyse, `allianceWarConflictBetween()` ittifak teklifini engeller. Bu kontrol AI teklif üretiminde, doğrudan aksiyon geçidinde ve kuyruktaki teklifin kabulünde tekrar kullanılır.
-- Ticaret için `Score >= 15`, iki tarafın da kara bölgesi ve toplam `trade_capacity >= 4` olmalıdır
-- Ticaret için aktif partner limiti (`4`) dolu olmamalıdır; doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır
+- Ticaret için `Score >= 15`, iki tarafın da kara bölgesi ve ortak helper ile hesaplanan toplam efektif ticaret kapasitesi `>= 4` olmalıdır. Pazar/liman/ambar/ibadethane ve ele geçirilmiş ticaret merkezi bu eşiğe katkı verir. Ana/ikincil merkez fethedildiğinde gelen `+2/+1` kapasite, mevcut anlaşmaların paylaştırılmış rota hacmini de sonraki ekonomi tick'inde artırabilir.
+- Ticaret için aktif dış partner limiti (`4`) dolu olmamalıdır; bu limit yalnız teklif ekranında değil rota kurulumunda, aktif ilişki onarımında ve save/load temizliğinde de merkezi olarak zorlanır. Sıralama faction ID ile deterministiktir; limit aşan eski rota kayıtları aynı sırayla elenir. Doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır.
 - Ticaret anlaşması ayrıca bağlanabilir gerçek bir hat ister: ya iki realm arasında kesintisiz kara hattı, ya da her iki tarafta liman olup komşu deniz bölgeleri üzerinden bağlanabilen bir deniz hattı bulunmalıdır
 - `StanceAllied` ile `TradeRoutes` artık ayrı kavramlardır; müttefiklik otomatik ticaret açmaz, ama müttefikken ayrıca ticaret anlaşması kurulabilir
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
-- Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir
+- Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir. İç-realm rota, dış partner sayısına ve dış rota kapasitesi paylaşımına girmez.
 
 ---
 

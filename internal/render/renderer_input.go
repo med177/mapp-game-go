@@ -379,8 +379,8 @@ func (r *Renderer) HandleInput() InputAction {
 			return act
 		}
 	}
-	// S: kaydet, L: yükle
-	if r.keyJustPressed(ebiten.KeyS) {
+	// Ctrl+S: hızlı kaydet, L: yükle. Tek başına S kamera hareketi içindir.
+	if r.keyJustPressed(ebiten.KeyS) && controlKeyPressed() {
 		return InputAction{Kind: ActionSave}
 	}
 	if r.keyJustPressed(ebiten.KeyL) {
@@ -555,7 +555,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 		if cidx := r.tradeCenterAt(fx, fy); cidx >= 0 && cidx < len(r.tradeCenters) {
-			centerName := r.tradeCenters[cidx].nameTR
+			center := r.tradeCenters[cidx]
+			centerName := center.nameTR
 			connected := 0
 			total := 0
 			for _, c := range r.tradeCorridors {
@@ -564,7 +565,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 					total += c.amount
 				}
 			}
-			r.ShowCombatResult("Merkez: " + centerName + " | " + itoa(connected) + " koridor | " + itoa(total) + "/tur")
+			capacityBonus, incomeBonus := r.tradeCenterBenefits(center)
+			r.ShowCombatResult("Merkez: " + centerName + " (" + tradeCenterTierLabel(center.tier) + ") | " + itoa(connected) + " koridor | " + itoa(total) + "/tur | +" + itoa(capacityBonus) + " kapasite | +" + itoa(incomeBonus) + " gümrük altını/tur")
 			return InputAction{}
 		}
 	}
@@ -1436,7 +1438,8 @@ func (r *Renderer) handleCamera() {
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) || ebiten.IsKeyPressed(ebiten.KeyW) {
 		r.camY -= speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) || ebiten.IsKeyPressed(ebiten.KeyS) {
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) ||
+		(ebiten.IsKeyPressed(ebiten.KeyS) && !controlKeyPressed()) {
 		r.camY += speed
 	}
 
@@ -1511,6 +1514,12 @@ func (r *Renderer) clampEventLogScroll() {
 }
 
 // --- Input yardımcıları ---
+
+func controlKeyPressed() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyControl) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlRight)
+}
 
 func (r *Renderer) keyJustPressed(key ebiten.Key) bool {
 	pressed := ebiten.IsKeyPressed(key)

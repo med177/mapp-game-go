@@ -34,6 +34,27 @@ func TestPaintCoordinatesUseContainingCellAndItsCenter(t *testing.T) {
 	}
 }
 
+func TestEditShapeBrushShiftReversesPaintAction(t *testing.T) {
+	tests := []struct {
+		name    string
+		mode    editShapeBrushMode
+		reverse bool
+		want    bool
+	}{
+		{name: "boya", mode: editShapeBrushPaint, want: true},
+		{name: "boya shift", mode: editShapeBrushPaint, reverse: true, want: false},
+		{name: "sil", mode: editShapeBrushErase, want: false},
+		{name: "sil shift", mode: editShapeBrushErase, reverse: true, want: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := editShapeBrushFill(tt.mode, tt.reverse); got != tt.want {
+				t.Fatalf("brush fill=%v, want=%v: mode=%v reverse=%v", got, tt.want, tt.mode, tt.reverse)
+			}
+		})
+	}
+}
+
 func TestShapeOutlineUsesRasterizedWorldBoundary(t *testing.T) {
 	point := [2]float32{1016.49, 436.49}
 	gotX, gotY := shapeRasterWorldPoint(point)

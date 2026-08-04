@@ -399,13 +399,7 @@ func aiResearchTradeIncome(gs *state.GameState, fid faction.FactionID) int {
 		if region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
 			continue
 		}
-		tradeCapacityMod := 1.0
-		for _, buildingID := range region.Buildings {
-			if building := gs.BuildingTypes[buildingID]; building != nil {
-				tradeCapacityMod *= building.TradeCapacityMod
-			}
-		}
-		income := economy.RegionTradeIncome(region.TradeCapacity, tradeCapacityMod)
+		income := gs.BaseRegionTradeIncome(region)
 		total += income * gs.CurrentSeason().TradeMod() / 100
 	}
 	return total

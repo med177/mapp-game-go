@@ -2913,7 +2913,13 @@ func cloneTradeCenterConfig(src world.TradeCenterConfig) world.TradeCenterConfig
 	if src.Centers == nil {
 		return world.TradeCenterConfig{}
 	}
-	dst := world.TradeCenterConfig{Centers: make([]world.TradeCenterDef, len(src.Centers))}
+	dst := world.TradeCenterConfig{
+		PrimaryTradeCapacityBonus:   src.PrimaryTradeCapacityBonus,
+		SecondaryTradeCapacityBonus: src.SecondaryTradeCapacityBonus,
+		PrimaryTradeIncomeBonus:     src.PrimaryTradeIncomeBonus,
+		SecondaryTradeIncomeBonus:   src.SecondaryTradeIncomeBonus,
+		Centers:                     make([]world.TradeCenterDef, len(src.Centers)),
+	}
 	for i, center := range src.Centers {
 		dst.Centers[i] = center
 		dst.Centers[i].Links = cloneRegionIDSlice(center.Links)

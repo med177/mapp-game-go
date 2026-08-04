@@ -557,13 +557,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// Bina çarpanları
 		goldMod := 1.0
 		grainMod := 1.0
-		tradeCapMod := 1.0
 		satBonus := 0
 		for _, bid := range r.Buildings {
 			if b, ok := gs.BuildingTypes[bid]; ok {
 				goldMod *= b.GoldMod
 				grainMod *= b.GrainMod
-				tradeCapMod *= b.TradeCapacityMod
 				satBonus += b.SatBonus
 				storageCapacityByFaction[r.OwnerID] += b.StorageCapacity
 			}
@@ -585,9 +583,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		spice = state.ScaleBlockadeOutputForEconomy(spice, blockadeRetention)
 		cloth = state.ScaleBlockadeOutputForEconomy(cloth, blockadeRetention)
 
-		// Pasif ticaret geliri (TradeCapacity bazlı)
-		// TradeCapacityMod: pazar ve liman gibi binalar ticaret kapasitesini artırır
-		tradeIncome := economy.RegionTradeIncome(r.TradeCapacity, tradeCapMod)
+		// Pasif ticaret geliri ortak efektif kapasite üzerinden hesaplanır.
+		tradeIncome := gs.BaseRegionTradeIncome(r)
 		// Mevsimsel ticaret modu uygula
 		tradeIncome = tradeIncome * s.TradeMod() / 100
 		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, blockadeRetention)
@@ -642,6 +639,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
+	diplomacy.RebalanceTradeRouteCapacities(gs)
 	gs.RefreshTradeRouteBlockades()
 	gs.RefreshMerchantTradeBonuses()
 	tradeLogs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)

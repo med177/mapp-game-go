@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 )
 
 func TestCommanderPoolAssignsAndReleasesUniqueCommander(t *testing.T) {
@@ -36,7 +37,13 @@ func TestCommanderPoolAssignsAndReleasesUniqueCommander(t *testing.T) {
 }
 
 func TestRecruitPlayerCommanderUsesEnteredNameAndDeterministicProgression(t *testing.T) {
-	gs := &GameState{PlayerFactionID: "player", NextCommanderSeq: 8}
+	gs := &GameState{
+		PlayerFactionID:  "player",
+		NextCommanderSeq: 8,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Gold: 900, Grain: 180},
+		},
+	}
 	commander, ok := gs.RecruitPlayerCommander("  Aylin Hatun  ")
 	if !ok || commander == nil {
 		t.Fatal("oyuncu komutanı oluşturulamadı")
@@ -57,10 +64,13 @@ func TestRecruitPlayerCommanderUsesEnteredNameAndDeterministicProgression(t *tes
 	if commander.Level >= 4 && !commander.HasTrait(army.CommanderTraitDefender) {
 		t.Fatalf("XP'nin açtığı savunma uzmanlığı eksik: %+v", commander)
 	}
+	if got := gs.Factions["player"]; got.Gold != 400 || got.Grain != 80 {
+		t.Fatalf("komutan maliyeti uygulanmadı: %+v", got)
+	}
 }
 
 func TestRecruitPlayerCommanderRejectsBlankAndTooLongNames(t *testing.T) {
-	gs := &GameState{PlayerFactionID: "player"}
+	gs := &GameState{PlayerFactionID: "player", Factions: map[faction.FactionID]*faction.Faction{"player": {ID: "player", Gold: 500, Grain: 100}}}
 	if commander, ok := gs.RecruitPlayerCommander(" \t "); ok || commander != nil {
 		t.Fatal("boş komutan adı kabul edilmemeliydi")
 	}
@@ -69,8 +79,21 @@ func TestRecruitPlayerCommanderRejectsBlankAndTooLongNames(t *testing.T) {
 	}
 }
 
+func TestRecruitPlayerCommanderRequiresGoldAndGrain(t *testing.T) {
+	gs := &GameState{PlayerFactionID: "player", Factions: map[faction.FactionID]*faction.Faction{"player": {ID: "player", Gold: 500, Grain: 99}}}
+	if commander, ok := gs.RecruitPlayerCommander("Yetersiz Tahıl"); ok || commander != nil {
+		t.Fatal("yetersiz tahılla komutan oluşturulmamalı")
+	}
+	if got := gs.Factions["player"]; got.Gold != 500 || got.Grain != 99 {
+		t.Fatalf("başarısız üretim kaynak tüketmemeli: %+v", got)
+	}
+}
+
 func TestNormalizeEmptyArmiesRemovesOnlyEmptyStacks(t *testing.T) {
 	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Gold: 1000, Grain: 200},
+		},
 		Armies: map[army.ArmyID]*army.Army{
 			"empty":    {ID: "empty", OwnerID: "ai"},
 			"land":     {ID: "land", OwnerID: "ai", Units: []army.Unit{{TypeID: "inf"}}},
@@ -126,6 +149,9 @@ func TestSyncCommanderLinksUsesPoolAsCanonicalPointer(t *testing.T) {
 
 func TestEnsureFactionCommandersAssignsAIFieldArmies(t *testing.T) {
 	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Gold: 1000, Grain: 200},
+		},
 		Armies: map[army.ArmyID]*army.Army{
 			"a1": {ID: "a1", OwnerID: "ai", RegionID: "r1"},
 			"a2": {ID: "a2", OwnerID: "ai", RegionID: "r2"},
@@ -154,6 +180,20 @@ func TestEnsureFactionCommandersAssignsAIFieldArmies(t *testing.T) {
 		if commander.PortraitAsset != army.DefaultPortraitAsset {
 			t.Fatalf("AI fallback komutan portresi default olmaliydi: %+v", commander)
 		}
+	}
+	if got := gs.Factions["ai"]; got.Gold != 0 || got.Grain != 0 {
+		t.Fatalf("AI komutan maliyeti uygulanmadı: %+v", got)
+	}
+}
+
+func TestEnsureFactionCommandersLeavesAIArmiesUncommandedWithoutResources(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{"ai": {ID: "ai", Gold: 499, Grain: 100}},
+		Armies:   map[army.ArmyID]*army.Army{"a1": {ID: "a1", OwnerID: "ai"}},
+	}
+	gs.EnsureFactionCommanders("ai")
+	if gs.Armies["a1"].Commander != nil || len(gs.Commanders) != 0 {
+		t.Fatalf("yetersiz kaynaklı AI komutan üretmemeli: armies=%+v commanders=%+v", gs.Armies, gs.Commanders)
 	}
 }
 

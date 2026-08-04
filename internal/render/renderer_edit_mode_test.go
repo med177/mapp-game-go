@@ -188,6 +188,22 @@ func TestTradeCenterVisualFollowsEditedRegionMetadata(t *testing.T) {
 	}
 }
 
+func TestCloneTradeCenterConfigPreservesBonuses(t *testing.T) {
+	src := world.TradeCenterConfig{
+		PrimaryTradeCapacityBonus:   2,
+		SecondaryTradeCapacityBonus: 1,
+		PrimaryTradeIncomeBonus:     4,
+		SecondaryTradeIncomeBonus:   2,
+		Centers:                     []world.TradeCenterDef{{ID: "venice", TradeCapacityBonus: 3, TradeIncomeBonus: 5}},
+	}
+	got := cloneTradeCenterConfig(src)
+	if got.PrimaryTradeCapacityBonus != 2 || got.SecondaryTradeCapacityBonus != 1 ||
+		got.PrimaryTradeIncomeBonus != 4 || got.SecondaryTradeIncomeBonus != 2 ||
+		got.Centers[0].TradeCapacityBonus != 3 || got.Centers[0].TradeIncomeBonus != 5 {
+		t.Fatalf("ticaret merkezi bonusları editör snapshot'ında korunmalı: %+v", got)
+	}
+}
+
 func TestEditRegionIDButtonStartsRename(t *testing.T) {
 	r := newSeaEditRenderer()
 	r.editSelectedRegion = "sea_test"

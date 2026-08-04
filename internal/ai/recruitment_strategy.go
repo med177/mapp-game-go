@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -27,12 +28,8 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	}
 	cap := gs.ManpowerCap(fid)
 	deployed := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid)
-	barracksCost := economy.ResourceCost{Gold: 150}
-	if b, ok2 := gs.BuildingTypes["barracks"]; ok2 {
-		barracksCost = economy.ResourceCost{Gold: b.GoldCost, Grain: b.GrainCost, Iron: b.IronCost, Timber: b.TimberCost, Stone: b.StoneCost, Spice: b.SpiceCost, Cloth: b.ClothCost}
-	}
-	needsFirstBarracks := aiFactionBarracksCount(gs, fid) == 0
-	if (needsFirstBarracks || cap-deployed <= state.ManpowerPerRegion) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
+	barracksCost := aiBarracksResourceCost(gs)
+	if aiNeedsBarracksForMilitaryProduction(gs, fid, strategicContext, cap-deployed) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
 		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
 	}
 	for {
@@ -43,6 +40,104 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 			break
 		}
 	}
+}
+
+func aiBarracksResourceCost(gs *state.GameState) economy.ResourceCost {
+	if gs == nil || gs.BuildingTypes == nil {
+		return economy.ResourceCost{Gold: 150}
+	}
+	if btype := gs.BuildingTypes["barracks"]; btype != nil {
+		return aiBuildingResourceCost(btype)
+	}
+	return economy.ResourceCost{Gold: 150}
+}
+
+func aiHasBuildableBarracksRegion(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || gs.BuildingTypes == nil || gs.BuildingTypes["barracks"] == nil {
+		return false
+	}
+	btype := gs.BuildingTypes["barracks"]
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
+			continue
+		}
+		queued := aiQueuedBuildingCount(gs, region.ID, "barracks", fid)
+		if aiBuildingLevel(region, "barracks")+queued >= btype.MaxPerRegion || !aiBuildingAllowed(gs, region, "barracks", btype.RequiredTerrain) {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// aiPotentialRecruitmentRegionAfterBarracks, mevcut kışlası olmayan ancak
+// kışla tamamlandığında bir askerî üretim sırasına ev sahipliği yapabilecek
+// bölgeyi bulur. Bu yalnızca tedarik/önkoşul kararı içindir; gerçek sıra
+// seçimi yine aiFindStrategicRecruitRegion tarafından yapılır.
+func aiPotentialRecruitmentRegionAfterBarracks(gs *state.GameState, fid faction.FactionID, unitType *army.UnitType, ctx *StrategicContext) bool {
+	if gs == nil || unitType == nil || ctx == nil {
+		return false
+	}
+	requiredBuilding := unitType.RequiredBldg
+	if requiredBuilding != "" && requiredBuilding != "barracks" {
+		return false
+	}
+	requiredLevel := maxInt(1, unitType.RequiredBldgLevel)
+	btype := gs.BuildingTypes["barracks"]
+	if btype == nil {
+		return false
+	}
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
+			continue
+		}
+		queuedBuildings := aiQueuedBuildingCount(gs, region.ID, "barracks", fid)
+		level := aiBuildingLevel(region, "barracks")
+		if level+queuedBuildings >= btype.MaxPerRegion || level+1 < requiredLevel || !aiBuildingAllowed(gs, region, "barracks", btype.RequiredTerrain) {
+			continue
+		}
+		if aiPendingUnitCountByRegion(gs, region.ID, fid) >= aiMaxRegionQueue || !aiCanQueueLandUnit(gs, fid, region.ID, unitType) {
+			continue
+		}
+		if !aiRecruitmentRegionSecure(gs, fid, ctx, region) {
+			continue
+		}
+		demand, capacity, _ := aiProjectedRecruitRegionLogistics(gs, fid, region, unitType)
+		if demand > capacity {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// aiNeedsBarracksForMilitaryProduction tek bir karar sözleşmesi olarak hem
+// tedarik öncesi kışla maliyetini hem de gerçek askerî üretim adımını besler.
+// Böylece kışla için gereken demir/kereste satın alınmadan kışla üretimi bloke
+// olmaz; mevcut ordu limiti doluysa gereksiz kışla stoğu da kurulmaz.
+func aiNeedsBarracksForMilitaryProduction(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, spareManpower int) bool {
+	if gs == nil || gs.BuildingTypes == nil || gs.BuildingTypes["barracks"] == nil || !aiHasBuildableBarracksRegion(gs, fid) {
+		return false
+	}
+	if aiFactionBarracksCount(gs, fid) == 0 || spareManpower <= state.ManpowerPerRegion {
+		return true
+	}
+	if gs.CurrentLandArmies(fid) >= gs.MaxLandArmies(fid) {
+		return false
+	}
+	self := gs.Factions[fid]
+	if self == nil {
+		return false
+	}
+	for _, unitType := range gs.UnitTypes {
+		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !unitType.HasAllRequiredTechs(self.Research.Completed) || self.Gold-unitType.GoldCost < aiMinGoldReserve {
+			continue
+		}
+		if aiPotentialRecruitmentRegionAfterBarracks(gs, fid, unitType, ctx) {
+			return true
+		}
+	}
+	return false
 }
 
 func aiFactionBarracksCount(gs *state.GameState, fid faction.FactionID) int {

@@ -7,6 +7,32 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Edit Mode harita fırçasında aktif `Sınır Boya/Sil` veya `Bölge Boya/Sil`
+aracının işlemi `Shift+sol tık` ve `Shift+drag` ile tersine çevrilebilir.
+Bu davranış `editShapeBrushFill()` üzerinden tek ortak fırça yolunda
+uygulandığı için canlı preview rengi, tek hücre tıklaması ve sürükleme aynı
+boya/sil sonucunu gösterir (`internal/render/shape_editor.go`).
+
+Oyun haritasında tek başına `S` kamera hareketi için aşağı yönü taşır;
+hızlı kayıt aksiyonu yalnızca `Ctrl+S` ile üretilir. Böylece klavye kısayolu
+ile sürekli kamera kaydırma ve tek-seferlik kayıt input'u çakışmaz
+(`internal/render/renderer_input.go`).
+
+Ticaret panelindeki devlet kapasitesi ve Ticaret Haritasındaki merkez hacmi,
+`GameState.EffectiveFactionTradeCapacity()` / `EffectiveRegionTradeCapacity()`
+ile state çözümlemesiyle aynı değeri gösterir. Bina tooltip'i de `trade_capacity_mod`
+etkisini açıkça yazar; böylece pazar, liman, ambar ve ibadethane katkısı UI'da
+gizli kalmaz.
+
+Ticaret haritasındaki merkez etiketleri hacmin yanında merkezden gelen kapasite
+ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağlı
+koridor hacmini ve fetihle devralınan bonusları aynı state helper üzerinden
+bildirir.
+
+`Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
+aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Böylece
+teklif reddi ile panel bilgisi kapasite veya partner sınırında ayrışmaz.
+
 Zafer koşulu seçimi, fraksiyona özel kartları üstte ve genel kartları altında
 gruplar. Bir grup üç veya daha fazla karta ulaştığında aynı `victoryCardRect()`
 geometrisinden iki sütunlu grid üretilir; çizim, hit-test ve klavye odağı bu
@@ -61,6 +87,13 @@ paneli bu kurala istisnadır; harita ve ordu paneli aktif kalır. Bu görünürl
 kararı `armyPanelTooltipActive()` ile çizim sırasına bağlanır; kart
 geometri/hit-test sözleşmesi değişmez
 (`internal/render/renderer.go`, `hover_tooltip.go`).
+
+Seçili ordu panelinin üst bilgi alanı, başlık, lojistik/ikmal durumları ve
+BÖL/BİRLEŞTİR aksiyonları için ayrı dikey satırlara ayrılır. İki sağ durum mesajı
+aynı anda görünürse ikinci satıra iner; aksiyon düğmeleri de bu satırların altında
+kalır. `armyPanelHdrH`, `armyPanelInfoY`, `armyPanelInfoGapY` ve `armyPanelBtnY`
+aynı çizim/hit-test geometrisini paylaşır; panel yüksekliği alt bara göre
+ankorlanmaya devam eder (`internal/render/army_panel.go`, `ui_geometry_test.go`).
 
 Tahkimli bölgeye düşman kara ordusu hareketinde de temas popup'ı, kuşatma
 kararından önce gelir. Oyuncu `Çatış` seçerse tahkimli hedefte
@@ -318,10 +351,12 @@ görünür satırları tıklanabilir kabul eder; taşan içerikte scrollbar yaln
 gerektiğinde gösterilir (`internal/render/commander_panel.go`).
 
 Aynı modalın `Yeni Komutan` düğmesi, ortak `gameui.Modal`, `TextBox` ve
-`Button` bileşenleriyle ad girişini açar. İç modal önce inputu sahiplenir;
-çizim, hit-test ve cursor aynı canonical rect helper'larından gelir. Onay,
-adı `ActionRecruitCommander` ile game katmanına iletir; yeni aday boş komutan
-listesinde görünür ve normal atama seçimiyle orduya bağlanır.
+`Button` bileşenleriyle ad girişini açar. Düğme yalnız oyuncunun `500 altın +
+100 tahıl` maliyeti karşılayabildiğinde aktif olur ve iç modal aynı maliyeti
+gösterir. İç modal önce inputu sahiplenir; çizim, hit-test ve cursor aynı
+canonical rect helper'larından gelir. Onay, adı `ActionRecruitCommander` ile
+game katmanına iletir; yeni aday boş komutan listesinde görünür ve normal atama
+seçimiyle orduya bağlanır.
 
 Oyuncuya ait ordunun komutan kartında ana komutan mevcutsa kartın altına kırmızı
 `Komutanı Ayır` düğmesi çizilir. Düğmenin rect'i çizim, hit-test ve cursor için

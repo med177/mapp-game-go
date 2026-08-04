@@ -7,6 +7,62 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: Edit Mode harita fırçasında yanlışlıkla yapılan sınır/bölge
+  tıklamalarını düzeltmek için `Shift+sol tık` ve `Shift+drag` aktif boya/sil
+  işlemini tersine çeviriyor. Cursor preview ve yardım metni de ters işlem
+  durumunu gösteriyor; regression: `TestEditShapeBrushShiftReversesPaintAction`.
+
+- 2026-08-04: AI eksik üretim kaynağı tedariki askerî önkoşullarla eşlendi. Eksik
+  demir artık tedarik öncesi aday puanında piyadeyi cezalandırıp demirsiz milisin
+  seçilmesine yol açmıyor. Geçerli askerî üretim bölgesi kışla eksikliği nedeniyle
+  bulunamıyorsa, kışlanın demir/kereste dahil tüm `ResourceCost` girdileri aktif
+  ticaret ağından alınarak gerçek kışla kuyruğuyla aynı karar sözleşmesi kullanılıyor.
+  Regression: `TestAIProcuresBarracksInputsBeforeMilitaryProduction`,
+  `TestAIProcurementDoesNotChooseMilitiaToAvoidMissingIron`;
+  doğrulama: `go test ./internal/ai`.
+
+- 2026-08-04: Ticaret merkezleri fethedildiğinde kapasite bonusuna ek olarak
+  görünür ve veri tanımlı gümrük geliri sağlıyor: ana merkez `+2 kapasite,
+  +4 altın/tur`; ikincil merkez `+1 kapasite, +2 altın/tur`. Gümrük normal
+  mevsim, abluka ve pazar teknolojisi çarpanlarını izliyor. Eski merkez JSON'ları
+  aynı değerleri loader migration'ıyla alıyor. Ticaret haritası
+  etiket/tıklama bilgisi bu faydaları gösteriyor; Edit Mode snapshot'ı yeni
+  alanları koruyor. Regression: `TestApplyEconomyTickAddsTradeCenterCustomsIncome`.
+
+- 2026-08-04: Dış ticarette `4` partner sınırı artık yalnız teklif kontrolü
+  değil; rota kurma, ilişki onarma ve save/load sanitize yollarının ortak
+  kuralı. Efektif ticaret kapasitesi aktif dış anlaşmalara paylaştırılıyor,
+  rota başına taban hacim iki tarafın payından düşük olanla ve `4` üst sınırıyla
+  belirleniyor. Yeni rota paneli kullanılan/toplam kapasiteyi gösteriyor.
+  Regression: `TestEnsureTradeRoutesForActiveRelationsEnforcesPartnerLimit`,
+  `TestRebalanceTradeRouteCapacitiesSharesEffectiveCapacity`.
+
+- 2026-08-04: Harita input sözleşmesi düzeltildi. Tek başına `S` artık hızlı
+  kayıt almıyor ve kamerayı aşağı kaydırıyor; hızlı kayıt yalnızca `Ctrl+S`
+  ile tetikleniyor (`internal/render/renderer_input.go`).
+
+- 2026-08-04: Ticaret kapasitesi tek kanonik state hesabına taşındı.
+  Pazar/liman yanında ambar `x1.05` ve ibadethane `x1.03` katkı veriyor;
+  primary/secondary ticaret merkezleri senaryo verisinden sırasıyla `+2/+1`
+  efektif kapasite sağlıyor. Aynı değer pasif ticaret geliri, diplomasi eşiği,
+  rota hacmi, AI değerlendirmesi ve ticaret UI'ında kullanılıyor; merkez fethedilince
+  bonus yeni sahibine geçiyor. Regression: `TestEffectiveRegionTradeCapacityUsesBuildingsAndTradeCenter`,
+  `TestEffectiveFactionTradeCapacityFollowsConquest`,
+  `TestAssessTradeProposalUsesEffectiveBuildingCapacity`.
+
+- 2026-08-04: Komutan atama listesindeki satır seçimi, `Yeni Komutan`
+  düğmesinin fare edge state'ini erkenden tüketmesi nedeniyle çalışmıyordu.
+  Komutan paneli tıklamayı frame başına bir kez okuyup kapatma, üretim,
+  ayırma ve liste hit-test'lerinde aynı değeri kullanıyor; satır ataması yeniden
+  tetikleniyor.
+
+- 2026-08-04: Seçili ordu panelinin üst bilgi alanı ferahlatıldı. Başlık,
+  lojistik/tahıl ve takviye/ikmal satırları artık ayrı dikey aralıklarda; BÖL ve
+  BİRLEŞTİR düğmeleri bu satırların altına taşındı. Panel yüksekliği artırıldı,
+  çizim ve hit-test ortak geometri sabitlerini kullanmaya devam ediyor.
+  Regression: `TestCoreUIGeometryFitsCommonViewports` içindeki ordu paneli
+  aksiyon/üst durum aralığı kontrolleri; doğrulama: `go test ./internal/render`.
+
 - 2026-08-04: Kuşatılan bölgedeki ambar seviyesi savunma dayanıklılığına bağlandı.
   Her `granary` seviyesi savunucu ordunun doğrudan kuşatma HP yıpranmasını ve
   bölgesel ikmal açığı hasarını `%10` azaltıyor; toplam bonus `%30` ile sınırlı
@@ -17,8 +73,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   yazarak havuza yeni aday ekleyebiliyor. Yeni adaylar varsayılan portreyle,
   kalıcı sıra sayısından deterministik türetilen rastgele başlangıç XP'si ve
   buna bağlı Taktisyen/Savunma gibi uzmanlıklarla oluşuyor; save/load sonrası
-  profil değişmiyor. Ad girişi ortak `gameui.Modal`/`TextBox`/`Button`
-  bileşenleriyle modal önceliği, hit-test ve cursor sözleşmesini koruyor.
+  profil değişmiyor. Oyuncu ve AI runtime aday üretiminde aynı `500 altın +
+  100 tahıl` maliyetini öder; oyuncu düğmesi yetersiz kaynakta pasif kalır,
+  AI ise komutansız orduyu bekletir. Ad girişi ortak
+  `gameui.Modal`/`TextBox`/`Button` bileşenleriyle modal önceliği, hit-test ve
+  cursor sözleşmesini koruyor.
   Regression: `TestRecruitPlayerCommanderUsesEnteredNameAndDeterministicProgression`,
   `TestRecruitPlayerCommanderRejectsBlankAndTooLongNames`; doğrulama:
   `go test ./internal/state ./internal/render -count=1`.
@@ -1864,7 +1923,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi; saldırı duruşu (`agresif/dengeli/savunmacı`) gerçek savaş sonucu ve saldırı öncesi preview hesabında aynı combat helper'larıyla işlenir. `land/naval/amphibious` bağlamları ayrı stance çarpanları ve açıklama metinleri taşır; muhtemel kayıp paneli bu bağlama göre hesaplanır |
-| Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, oyuncunun isimli-rastgele XP aday üretimi ve ordu panelinden atama/ayırma, AI saha ordularına deterministik komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
+| Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, oyuncunun isimli-rastgele XP aday üretimi ve ordu panelinden atama/ayırma, `500 altın + 100 tahıl` maliyetli AI/oyuncu runtime komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
 | Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi, müttefik veya vassal realm toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi, müttefik veya vassal limanında onarım alır; birim kartındaki `+` rozeti aynı ortak uygunluk kuralını kullanır |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
 | Ordu birleşme | ✅ | Dost bölgede yalnızca panelden manuel birleşme, 20 birim limiti; hareket orduları otomatik birleşmez |

@@ -13,6 +13,23 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
 
+Ticaret kapasitesinin kanonik state hesabı `EffectiveRegionTradeCapacity()` ve
+`EffectiveFactionTradeCapacity()` içindedir (`internal/state/trade_capacity.go`).
+Ham bölge kapasitesi; bina çarpanları ile aktif, veri-tanımlı ticaret merkezi
+bonusundan türetilir. `TradeCenterBenefits()` aynı merkez için kapasite yanında
+veri tanımlı gümrük gelirini de döner; `BaseRegionTradeIncome()` bunu normal
+pasif ticaret gelirinin tabanına ekler. Sahiplik değişiminde ayrı bir snapshot
+güncellemesi gerekmez: yardımcı yalnız güncel `Region.OwnerID` üzerinden toplar.
+`TradeCenterConfig.ApplyDefaultBonuses()` eski scenario JSON'larında bulunmayan
+root bonus alanlarını loader aşamasında tamamlar; campaign save bu senaryo bazlı
+konfigürasyonu ayrıca serialize etmez.
+
+Aktif dış `TradeRoute` anlaşmalarının bu kapasiteyi nasıl paylaştığı
+`diplomacy.RebalanceTradeRouteCapacities()` ile türetilir; rota miktarları ayrı
+bir kalıcı kapasite snapshot'ı değildir. Rota kurulumu, sanitize/load ve her
+ekonomi tick'i bu dengelemeyi tekrarlar; aynı realm içi vassal rotaları dış
+partner havuzundan hariçtir.
+
 `PendingNavalContact` ve `PendingLandContact`, oyuncu kararını bekleyen geçici
 temas state'leridir ve `json:"-"` ile kayda girmez. AI-AI deniz temasları
 `ResolveAIOnlyNavalContact()` ile aynı AI adımında çözülüp temizlenir; bu alanın
@@ -219,9 +236,11 @@ havuzdaki nesnelere bağlar. Oyuncu havuzu ve ordu panelindeki atama/ayırma mod
 `AssignCommanderToArmy()` ve `UnassignCommanderFromArmy()` üzerinden çalışır.
 Oyuncu adıyla yeni bir komutan oluşturduğunda varsayılan portre kullanılır;
 başlangıç XP'si fraksiyon ve kalıcı sıra sayısından deterministik türetilir.
-Böylece adayın açtığı Taktisyen/Savunma uzmanlıkları rastgele görünür, fakat
-aynı save yeniden yüklendiğinde değişmez. AI tarafındaki otomatik seviye 1
-fallback üretimi bu oyuncu akışından ayrıdır.
+`CommanderRecruitCost` hem oyuncu hem AI için `500 altın + 100 tahıl` harcar;
+kaynak yetmiyorsa runtime aday üretilmez. Böylece adayın açtığı
+Taktisyen/Savunma uzmanlıkları rastgele görünür, fakat aynı save yeniden
+yüklendiğinde değişmez. Senaryodan gelen başlangıç şablonları başlangıç state'i
+olduğu için bu maliyeti ödemez.
 Senaryo başlangıç şablonları `data/commanders.json` dosyasından okunur. Her kayıt
 `id`, `owner_id`, `name`, başlangıç `level`/`experience`/`traits` ve ileride portre
 yüklemek için `portrait_asset` alanlarını taşıyabilir. Şablon runtime komutanına

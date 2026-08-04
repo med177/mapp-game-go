@@ -151,9 +151,11 @@ func commanderPanelUnassignEmbarkedButton(gs *state.GameState, aid army.ArmyID) 
 	return gameui.NewButton(panel.X+24, panel.Y+panel.H-54, commanderPanelButtonW, commanderPanelButtonH, "Taşınanı Ayır"), true
 }
 
-func commanderPanelRecruitButton() gameui.Button {
+func commanderPanelRecruitButton(gs *state.GameState) gameui.Button {
 	panel := commanderPanelRect()
-	return gameui.NewButton(panel.X+panel.W-190, panel.Y+58, 166, 28, "Yeni Komutan")
+	button := gameui.NewButton(panel.X+panel.W-190, panel.Y+58, 166, 28, "Yeni Komutan")
+	button.Enabled = gs != nil && gs.CanAffordCommanderRecruitment(string(gs.PlayerFactionID))
+	return button
 }
 
 // commanderRecruitButtonStyle, ortak positive buton temasını korur; ancak
@@ -340,7 +342,7 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	gameui.DrawButton(screen, commanderPanelCloseButton(), gameui.ButtonStyle{
 		BG: panelBg, Border: panelBorder, Text: ColorWhite, BorderWidth: 1,
 	}, sharedTextRenderer{})
-	gameui.DrawButton(screen, commanderPanelRecruitButton(), commanderRecruitButtonStyle(), sharedTextRenderer{})
+	gameui.DrawButton(screen, commanderPanelRecruitButton(r.gs), commanderRecruitButtonStyle(), sharedTextRenderer{})
 
 	vector.StrokeLine(screen, float32(panel.X+commanderPanelListW+48), float32(panel.Y+84), float32(panel.X+commanderPanelListW+48), float32(panel.Y+panel.H-24), 1, panelBorder, false)
 	DrawText(screen, "Boştaki Komutanlar — seçim için tıkla", panel.X+24, panel.Y+82, FaceMed, ColorGold)
@@ -397,7 +399,8 @@ func (r *Renderer) drawCommanderRecruitModal(screen *ebiten.Image) {
 	gameui.DrawModal(screen, modal, standardModalStyle, sharedTextRenderer{}, func() {
 		panel := modal.Panel.Rect
 		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 22, W: panel.W - 72}, "Yeni Komutan", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 58, W: panel.W - 48}, "Başlangıç XP'si ve uzmanlıkları rastgele belirlenir.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 58, W: panel.W - 48}, "Maliyet: "+state.CommanderRecruitCost.ShortTR(), ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 78, W: panel.W - 48}, "Başlangıç XP'si ve uzmanlıkları rastgele belirlenir.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		gameui.DrawTextBox(screen, r.commanderRecruitName, commanderRecruitTextBoxStyle(), sharedTextRenderer{})
 		if r.commanderRecruitError != "" {
 			drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 142, W: panel.W - 48}, r.commanderRecruitError, ColorRed, gameui.TextSmall, gameui.TextAlignStart)
@@ -566,11 +569,12 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	}
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
-	if commanderPanelCloseButton().HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	leftJustPressed := r.mouseJustPressed(ebiten.MouseButtonLeft)
+	if commanderPanelCloseButton().HitTest(fx, fy) && leftJustPressed {
 		r.CloseCommanderPanel()
 		return InputAction{}
 	}
-	if commanderPanelRecruitButton().HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if commanderPanelRecruitButton(r.gs).HandleInput(gameui.InputState{MouseX: fx, MouseY: fy, LeftJustPressed: leftJustPressed}) {
 		r.OpenCommanderRecruitModal()
 		return InputAction{}
 	}
@@ -579,10 +583,10 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 		r.CloseCommanderPanel()
 		return InputAction{}
 	}
-	if btn, ok := commanderPanelUnassignButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if btn, ok := commanderPanelUnassignButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) && leftJustPressed {
 		return InputAction{Kind: ActionUnassignCommander, ArmyID: current.ID}
 	}
-	if btn, ok := commanderPanelUnassignEmbarkedButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if btn, ok := commanderPanelUnassignEmbarkedButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) && leftJustPressed {
 		return InputAction{Kind: ActionUnassignEmbarkedCommander, ArmyID: current.ID}
 	}
 	available := r.gs.AvailableCommanders(current.OwnerID)
@@ -611,7 +615,7 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 		}
 		return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[r.commanderPanelFocus].ID}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+	if leftJustPressed {
 		if i := commanderPanelRowAt(fx, fy, len(available), r.commanderPanelScroll, viewport); i >= 0 {
 			r.commanderPanelFocus = i
 			return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[i].ID}
@@ -685,7 +689,7 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 	if commanderPanelCloseButton().HitTest(fx, fy) {
 		return true
 	}
-	if commanderPanelRecruitButton().HitTest(fx, fy) {
+	if commanderPanelRecruitButton(r.gs).Enabled && commanderPanelRecruitButton(r.gs).HitTest(fx, fy) {
 		return true
 	}
 	current := r.gs.Armies[r.commanderPanelArmy]

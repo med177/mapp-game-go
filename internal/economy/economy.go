@@ -339,15 +339,15 @@ func TaxSatisfactionDelta(taxRate int) int {
 	}
 }
 
-// RegionTradeIncome bir bölgenin ticaret kapasitesine göre pasif ticaret gelirini hesaplar.
-// TradeCapacity değeri kullanılır, goldMod çarpanı (pazar/liman binalarından gelir) uygulanır.
-// goldMod: 1.0 = normal, 1.5 = pazar bonusu, 1.3 = liman bonusu vb.
-func RegionTradeIncome(tradeCapacity int, tradeCapMod float64) int {
+// RegionTradeIncome kanonik efektif ticaret kapasitesine göre pasif ticaret
+// gelirini hesaplar. Bina ve ticaret merkezi etkileri çağıran tarafta
+// GameState.EffectiveRegionTradeCapacity ile tek kez uygulanır.
+func RegionTradeIncome(tradeCapacity int) int {
 	baseTradeIncome := tradeCapacity * 2 // her birim kapasite 2 altın
 	if baseTradeIncome < 0 {
 		baseTradeIncome = 0
 	}
-	return int(float64(baseTradeIncome) * tradeCapMod)
+	return baseTradeIncome
 }
 
 // ── Korsanlık ──────────────────────────────────────────────────────────

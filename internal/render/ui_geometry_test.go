@@ -376,6 +376,13 @@ func assertArmyPanelGeometry(t *testing.T, screenW, screenH float64) {
 	if mergeBtn.X+mergeBtn.W >= splitBtn.X {
 		t.Fatalf("BİRLEŞTİR solda, BÖL sağda olmalıydı: split=%+v merge=%+v", splitBtn, mergeBtn)
 	}
+	statusRowsBottom := float64(py) + float64(armyPanelInfoY+armyPanelInfoGapY) + 12
+	if statusRowsBottom > splitBtn.Y-4 {
+		t.Fatalf("üst durum satırları aksiyon düğmelerine fazla yaklaşıyor: statusBottom=%.1f splitY=%.1f", statusRowsBottom, splitBtn.Y)
+	}
+	if splitBtn.Y+splitBtn.H > float64(py)+float64(armyPanelHdrH)-4 {
+		t.Fatalf("aksiyon düğmesi ayırıcıya fazla yaklaşıyor: split=%+v headerBottom=%.1f", splitBtn, float64(py)+float64(armyPanelHdrH))
+	}
 	statusTextLeft := float64(px+panelW-armyPanelPadX) - MeasureText("Takviye aktif", FaceSmall)
 	if mergeBtn.X+mergeBtn.W > statusTextLeft-8 {
 		t.Fatalf("merge butonu sağ durum metnine giriyor: merge=%+v statusTextLeft=%.1f", mergeBtn, statusTextLeft)
