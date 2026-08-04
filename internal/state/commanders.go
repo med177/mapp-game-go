@@ -57,6 +57,15 @@ func (s *GameState) syncCommanderPointer(currentArmy *army.Army, aid army.ArmyID
 	if currentArmy == nil || commander == nil {
 		return
 	}
+	if !commander.ActiveInYear(s.Year) {
+		if embarked {
+			currentArmy.EmbarkedCommander = nil
+		} else {
+			currentArmy.Commander = nil
+		}
+		commander.AssignedArmyID = ""
+		return
+	}
 	commander.Normalize()
 	if commander.ID == "" {
 		commander.ID = fmt.Sprintf("commander_%s_%s", commander.OwnerID, aid)
@@ -217,7 +226,73 @@ func (s *GameState) InitializePlayerCommanders() {
 	if s == nil || s.PlayerFactionID == "" {
 		return
 	}
+	s.SyncCommanderAvailability()
 	s.ensureCommanderPool(string(s.PlayerFactionID), InitialPlayerCommanderPool, false)
+}
+
+// SyncCommanderAvailability senaryodaki tarih aralığına giren komutanları
+// runtime havuzuna alır, süresi dolanları emekli eder ve oyuncuya gösterilecek
+// yeni komutan bildirimlerini döner.
+func (s *GameState) SyncCommanderAvailability() []*army.Commander {
+	if s == nil {
+		return nil
+	}
+	s.RetireExpiredCommanders()
+	if s.Commanders == nil {
+		s.Commanders = make(map[string]*army.Commander)
+	}
+	if s.CommanderArrivalNotices == nil {
+		s.CommanderArrivalNotices = make(map[string]bool)
+	}
+	owners := make([]string, 0, len(s.CommanderTemplates))
+	for ownerID := range s.CommanderTemplates {
+		owners = append(owners, ownerID)
+	}
+	sort.Strings(owners)
+	arrivals := make([]*army.Commander, 0)
+	for _, ownerID := range owners {
+		for _, template := range s.CommanderTemplates[ownerID] {
+			if template == nil || !template.ActiveInYear(s.Year) {
+				continue
+			}
+			if _, exists := s.Commanders[template.ID]; exists {
+				continue
+			}
+			commander := cloneCommanderTemplate(template, ownerID)
+			s.Commanders[commander.ID] = commander
+			if ownerID == string(s.PlayerFactionID) && !s.CommanderArrivalNotices[commander.ID] {
+				s.CommanderArrivalNotices[commander.ID] = true
+				arrivals = append(arrivals, commander)
+			}
+		}
+	}
+	sort.Slice(arrivals, func(i, j int) bool { return arrivals[i].Name < arrivals[j].Name })
+	return arrivals
+}
+
+// RetireExpiredCommanders, EndYear başlayan komutanları ordularından ayırır
+// ve runtime havuzundan kaldırır. Tarihsiz/runtime komutanlar etkilenmez.
+func (s *GameState) RetireExpiredCommanders() {
+	if s == nil {
+		return
+	}
+	for id, commander := range s.Commanders {
+		if commander == nil || commander.ActiveInYear(s.Year) {
+			continue
+		}
+		for _, currentArmy := range s.Armies {
+			if currentArmy == nil {
+				continue
+			}
+			if currentArmy.Commander == commander {
+				currentArmy.Commander = nil
+			}
+			if currentArmy.EmbarkedCommander == commander {
+				currentArmy.EmbarkedCommander = nil
+			}
+		}
+		delete(s.Commanders, id)
+	}
 }
 
 // CanAffordCommanderRecruitment fraksiyonun yeni bir runtime komutanı için
@@ -320,7 +395,7 @@ func (s *GameState) nextCommanderTemplate(ownerID string) *army.Commander {
 		return nil
 	}
 	for _, template := range s.CommanderTemplates[ownerID] {
-		if template == nil || template.ID == "" {
+		if template == nil || template.ID == "" || !template.ActiveInYear(s.Year) {
 			continue
 		}
 		if _, exists := s.Commanders[template.ID]; !exists {
@@ -371,6 +446,7 @@ func (s *GameState) EnsureFactionCommanders(ownerID string) {
 	if s == nil || ownerID == "" {
 		return
 	}
+	s.SyncCommanderAvailability()
 	s.SyncCommanderLinks()
 	armyIDs := make([]army.ArmyID, 0)
 	for aid, currentArmy := range s.Armies {
@@ -403,7 +479,7 @@ func (s *GameState) AvailableCommanders(ownerID string) []*army.Commander {
 	s.SyncCommanderLinks()
 	available := make([]*army.Commander, 0, len(s.Commanders))
 	for _, commander := range s.Commanders {
-		if commander == nil || commander.OwnerID != ownerID || commander.AssignedArmyID != "" {
+		if commander == nil || commander.OwnerID != ownerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) {
 			continue
 		}
 		available = append(available, commander)
@@ -425,7 +501,7 @@ func (s *GameState) AssignCommanderToArmy(commanderID string, armyID army.ArmyID
 	s.SyncCommanderLinks()
 	currentArmy := s.Armies[armyID]
 	commander := s.Commanders[commanderID]
-	if currentArmy == nil || commander == nil || commander.OwnerID != currentArmy.OwnerID {
+	if currentArmy == nil || commander == nil || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) {
 		return false
 	}
 	if commander.AssignedArmyID != "" && commander.AssignedArmyID != armyID {

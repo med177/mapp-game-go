@@ -1,8 +1,8 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-07-29
-related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions]
+last_updated: 2026-08-04
+related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
 # JSON Veri Formatları
@@ -65,6 +65,25 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 ## Veri Dosyaları (`data/` klasörü)
 
 Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
+
+## commanders.json
+
+Komutan şablonlarında `start_year` zorunlu başlangıç yılını, `end_year` ise
+üst sınırı belirtir. Komutan `start_year` yılında aktif olur ve `end_year`
+başladığında emekli edilir; `end_year` eksikse yaşam süresi sınırsızdır.
+
+```json
+{
+  "id": "commander_ottoman_bayezid_i",
+  "owner_id": "ottoman",
+  "name": "Yıldırım Bayezid",
+  "portrait_asset": "ottoman_bayezid_i.png",
+  "level": 2,
+  "traits": ["aggressor"],
+  "start_year": 1389,
+  "end_year": 1403
+}
+```
 
 ### regions.json ardıl devlet alanı
 

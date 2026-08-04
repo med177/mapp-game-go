@@ -234,7 +234,9 @@ func (g *Game) Update() error {
 		case render.ActionSelectVictory:
 			g.applyVictoryChoice(action.BuildingID)
 			g.applyAIDifficultyStartBonus()
+			arrivals := g.gs.SyncCommanderAvailability()
 			g.gs.InitializePlayerCommanders()
+			g.showCommanderArrivals(arrivals)
 			g.gs.RefreshArmyMovePoints(true)
 			g.startPreparePlayerTurn()
 		case render.ActionBack:
@@ -1035,6 +1037,9 @@ func (g *Game) resolveTurn() {
 	events.TickActiveRegionEvents(g.gs)
 
 	g.gs.AdvanceTurn()
+	if arrivals := g.gs.SyncCommanderAvailability(); len(arrivals) > 0 {
+		g.showCommanderArrivals(arrivals)
+	}
 	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain == 0 &&
 		len(g.gs.AIDiagnosticHistory) > 0 && !g.aiDiagnosticReportSaved {
 		if g.saveToSlot("autosave", false, "") {
@@ -1268,6 +1273,18 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	}
 	g.pendingHistoricalEvt = evt
 	g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, evt.ChoicePromptTR, g.historicalChoiceViews(evt))
+}
+
+func (g *Game) showCommanderArrivals(arrivals []*army.Commander) {
+	if g == nil || g.gs == nil || g.renderer == nil || len(arrivals) == 0 {
+		return
+	}
+	g.renderer.ShowCommanderArrivals(arrivals)
+	for _, commander := range arrivals {
+		if commander != nil {
+			g.renderer.AddEvent(fmt.Sprintf("[KOMUTAN] %s göreve başladı.", commander.Name))
+		}
+	}
 }
 
 func (g *Game) resolveHistoricalChoice(idx int) {

@@ -2,7 +2,7 @@
 type: architecture
 tags: [state, gamestate, serialize, save-load]
 last_updated: 2026-08-04
-related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor]
+related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
 # State Yönetimi
@@ -12,6 +12,13 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 ## GameState Yapısı
 
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
+
+Komutan şablonları `CommanderTemplates` içinde tutulur ve `Commander.ActiveInYear`
+ile `start_year <= Year < end_year` aralığına göre runtime havuzuna alınır.
+`SyncCommanderAvailability()` yıl değişiminde yeni şablonları ekler ve oyuncu
+bildirimlerini `CommanderArrivalNotices` ile tekilleştirir; `RetireExpiredCommanders()`
+`end_year` başlayan komutanı atanmış olduğu kara ordusu veya filodan da çıkarır.
+Liste ve atama doğrulaması aynı aktiflik helper'ını kullanır.
 
 Ticaret kapasitesinin kanonik state hesabı `EffectiveRegionTradeCapacity()` ve
 `EffectiveFactionTradeCapacity()` içindedir (`internal/state/trade_capacity.go`).

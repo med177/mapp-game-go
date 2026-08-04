@@ -211,15 +211,16 @@ type GameState struct {
 	SelectedVictoryOptionID string           `json:"selected_victory_option_id"`
 
 	// Dünya verisi
-	Regions      map[world.RegionID]*world.Region       `json:"regions"`
-	RegionOrder  []world.RegionID                       `json:"-"`
-	LandPassages []world.LandPassage                    `json:"land_passages,omitempty"`
-	Factions     map[faction.FactionID]*faction.Faction `json:"factions"`
-	FactionOrder []faction.FactionID                    `json:"-"`
-	Armies       map[army.ArmyID]*army.Army             `json:"armies"`
-	ArmyOrder    []army.ArmyID                          `json:"-"`
-	Commanders   map[string]*army.Commander             `json:"commanders,omitempty"`
-	AIPlans      map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
+	Regions                 map[world.RegionID]*world.Region       `json:"regions"`
+	RegionOrder             []world.RegionID                       `json:"-"`
+	LandPassages            []world.LandPassage                    `json:"land_passages,omitempty"`
+	Factions                map[faction.FactionID]*faction.Faction `json:"factions"`
+	FactionOrder            []faction.FactionID                    `json:"-"`
+	Armies                  map[army.ArmyID]*army.Army             `json:"armies"`
+	ArmyOrder               []army.ArmyID                          `json:"-"`
+	Commanders              map[string]*army.Commander             `json:"commanders,omitempty"`
+	CommanderArrivalNotices map[string]bool                        `json:"commander_arrival_notices,omitempty"`
+	AIPlans                 map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
 	// Imperial, bağımsız üyelerin HRE çağrı/otorite state'ini taşır. Gerçek
 	// vassalların realm davranışı yine Faction.OverlordID ile belirlenir.
 	Imperial  *ImperialState         `json:"imperial,omitempty"`
@@ -779,6 +780,7 @@ func (s *GameState) AdvanceTurn() {
 			s.Year++
 		}
 	}
+	s.RetireExpiredCommanders()
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil
 	s.GrainSaleGoldUsed = nil

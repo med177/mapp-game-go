@@ -131,6 +131,49 @@ func TestCommanderPoolUsesScenarioTemplatesBeforeFallback(t *testing.T) {
 	}
 }
 
+func TestCommanderAvailabilityAddsArrivalsAndRetiresExpiredAssignments(t *testing.T) {
+	commander := &army.Commander{
+		ID:        "cmd_new",
+		OwnerID:   "player",
+		Name:      "Yeni Komutan",
+		StartYear: 1305,
+		EndYear:   1310,
+	}
+	gs := &GameState{
+		Year:               1305,
+		PlayerFactionID:    "player",
+		Commanders:         map[string]*army.Commander{},
+		CommanderTemplates: map[string][]*army.Commander{"player": {commander}},
+		Armies:             map[army.ArmyID]*army.Army{"a1": {ID: "a1", OwnerID: "player"}},
+	}
+	arrivals := gs.SyncCommanderAvailability()
+	if len(arrivals) != 1 || gs.Commanders["cmd_new"] == nil {
+		t.Fatalf("aktif komutan havuza/bildirime alınmadı: arrivals=%d commanders=%+v", len(arrivals), gs.Commanders)
+	}
+	if !gs.AssignCommanderToArmy("cmd_new", "a1") {
+		t.Fatal("aktif komutan atanamadı")
+	}
+
+	gs.Year = 1310
+	gs.RetireExpiredCommanders()
+	if gs.Commanders["cmd_new"] != nil || gs.Armies["a1"].Commander != nil {
+		t.Fatalf("süresi dolan komutan emekli olmadı: commanders=%+v army=%+v", gs.Commanders, gs.Armies["a1"])
+	}
+	if gs.AssignCommanderToArmy("cmd_new", "a1") {
+		t.Fatal("süresi dolan komutan yeniden atanabildi")
+	}
+}
+
+func TestCommanderActiveYearHasExclusiveEndBoundary(t *testing.T) {
+	commander := &army.Commander{StartYear: 1300, EndYear: 1310}
+	if !commander.ActiveInYear(1300) || !commander.ActiveInYear(1309) {
+		t.Fatal("komutan başlangıç ve bitişten önceki yılda aktif olmalı")
+	}
+	if commander.ActiveInYear(1299) || commander.ActiveInYear(1310) {
+		t.Fatal("komutan start_year öncesi veya end_year başlangıcında aktif olmamalı")
+	}
+}
+
 func TestSyncCommanderLinksUsesPoolAsCanonicalPointer(t *testing.T) {
 	armyCommander := army.NewCommander("c1", "Komutan")
 	pooledCommander := army.NewCommander("c1", "Havuz Komutanı")

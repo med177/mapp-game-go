@@ -2,7 +2,7 @@
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
 last_updated: 2026-08-04
-related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework]
+related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
 # Render Pipeline
@@ -17,6 +17,12 @@ Oyun haritasında tek başına `S` kamera hareketi için aşağı yönü taşır
 hızlı kayıt aksiyonu yalnızca `Ctrl+S` ile üretilir. Böylece klavye kısayolu
 ile sürekli kamera kaydırma ve tek-seferlik kayıt input'u çakışmaz
 (`internal/render/renderer_input.go`).
+
+Tarih aralığına yeni giren oyuncu komutanları, mevcut tarihsel modal katmanını
+ve aynı Enter/Escape/tıkla kapanış input'unu paylaşan komutan geliş popup'ında
+portre, seviye, trait ve görev yıllarıyla gösterilir. Popup kapalıyken komutan
+seçim paneli yalnız aktif şablonları listeler (`internal/render/renderer.go`,
+`internal/render/panel.go`).
 
 Ticaret panelindeki devlet kapasitesi ve Ticaret Haritasındaki merkez hacmi,
 `GameState.EffectiveFactionTradeCapacity()` / `EffectiveRegionTradeCapacity()`

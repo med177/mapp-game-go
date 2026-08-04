@@ -1583,9 +1583,7 @@ func (r *Renderer) handleHistoricalEventInput() InputAction {
 	if len(r.historicalEventChoices) == 0 {
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
 			r.keyJustPressed(ebiten.KeySpace) || r.mouseJustPressed(ebiten.MouseButtonLeft) {
-			r.showHistoricalEvent = false
-			r.historicalEventPrompt = ""
-			r.historicalEventChoices = r.historicalEventChoices[:0]
+			r.HideHistoricalEvent()
 		}
 		return InputAction{}
 	}

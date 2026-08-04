@@ -53,6 +53,21 @@ type Commander struct {
 	Battles        int              `json:"battles"`
 	Victories      int              `json:"victories"`
 	Traits         []CommanderTrait `json:"traits,omitempty"`
+	StartYear      int              `json:"start_year,omitempty"`
+	EndYear        int              `json:"end_year,omitempty"`
+}
+
+// ActiveInYear, senaryo komutanının verilen yılda tarihsel olarak görevde
+// olup olmadığını döner. EndYear doğum/ölüm aralığının üst sınırıdır; komutan
+// EndYear başladığında artık atanamaz.
+func (c *Commander) ActiveInYear(year int) bool {
+	if c == nil {
+		return false
+	}
+	if c.StartYear != 0 && year < c.StartYear {
+		return false
+	}
+	return c.EndYear == 0 || year < c.EndYear
 }
 
 // NewCommander yeni bir komutanı başlangıç seviyesiyle oluşturur.

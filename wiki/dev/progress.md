@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: 1300 senaryosundaki komutan şablonları artık `start_year` ve
+  `end_year` ile tarihsel olarak ortaya çıkıyor. Aktif komutanlar seçim listesi
+  ve atama state'i tarafından ortak aralık helper'ıyla filtreleniyor; `end_year`
+  başladığında atanmış komutan da ordudan emekli ediliyor. Oyuncu, ilk göründükleri
+  yılda portre, seviye, özellik ve görev aralığını gösteren ortak modal popup alıyor.
+  Regression: `TestCommanderAvailabilityAddsArrivalsAndRetiresExpiredAssignments`,
+  `TestCommanderActiveYearHasExclusiveEndBoundary`; doğrulama: `go test ./...`.
+
 - 2026-08-04: 1300 ticaret merkezi grafiği tüm başlangıçtaki aktif kara
   devletleri kapsayacak şekilde denetlendi. Tarihsel bağlantılar çift yönlü
   tutuluyor; merkezsiz kalan devletler için `EnsureTradeNetworkCoverage()` en

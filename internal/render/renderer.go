@@ -208,6 +208,7 @@ type Renderer struct {
 	historicalEventChoices []HistoricalEventChoice
 	historicalEventFocus   int
 	showHistoricalEvent    bool
+	commanderArrivals      []*army.Commander
 	battleReport           battleReportState
 	queuedBattleReport     battleReportState
 	warSummary             warSummaryState
@@ -1189,6 +1190,7 @@ func (r *Renderer) ShowCombatResult(msg string) {
 
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.
 func (r *Renderer) ShowHistoricalEvent(title, desc, prompt string, choices []HistoricalEventChoice) {
+	r.commanderArrivals = r.commanderArrivals[:0]
 	r.historicalEventTitle = title
 	r.historicalEventDesc = desc
 	r.historicalEventPrompt = prompt
@@ -1204,6 +1206,22 @@ func (r *Renderer) HideHistoricalEvent() {
 	r.historicalEventPrompt = ""
 	r.historicalEventChoices = r.historicalEventChoices[:0]
 	r.historicalEventFocus = 0
+	r.commanderArrivals = r.commanderArrivals[:0]
+}
+
+// ShowCommanderArrivals oyuncunun tarih aralığına giren komutanlarını, mevcut
+// tarihsel olay modalının input ve katman sözleşmesini koruyarak gösterir.
+func (r *Renderer) ShowCommanderArrivals(arrivals []*army.Commander) {
+	if r == nil || len(arrivals) == 0 {
+		return
+	}
+	r.commanderArrivals = append(r.commanderArrivals[:0], arrivals...)
+	r.historicalEventTitle = "Yeni Komutanlar Göreve Geldi"
+	r.historicalEventDesc = "Bu komutanlar artık komutan seçim listesinde atanabilir."
+	r.historicalEventPrompt = ""
+	r.historicalEventChoices = r.historicalEventChoices[:0]
+	r.historicalEventFocus = 0
+	r.showHistoricalEvent = true
 }
 
 // ShowTechPanel teknoloji panelini açar.
@@ -1549,7 +1567,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawAIDiagnostic(screen)
 	}
 	if r.showHistoricalEvent {
-		drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
+		if len(r.commanderArrivals) > 0 {
+			drawCommanderArrivalPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.commanderArrivals)
+		} else {
+			drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
+		}
 	}
 	if r.showCommanderPanel {
 		r.DrawCommanderPanel(screen)
