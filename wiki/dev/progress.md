@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: 1300 senaryosunda demir üretimi olmayan kara bölgelerine `2 demir/tur`
+  taban üretimi verildi. Böylece demir yatağı bulunmayan küçük ve kıyı devletleri
+  temel askerî birlikleri üretebilirken, mevcut 4–20 demirlik uzmanlaşmış bölgeler
+  yüksek üretim merkezleri olarak kaldı. Regression:
+  `Test1300LandRegionsHaveBaselineIronForMilitaryProduction`.
+
 - 2026-08-04: Ticaret haritasındaki rota filosu marker'ları sadeleştirildi.
   Ticaret gemisi ve görev rozetleri korunurken komutan portresi yalnız bu
   overlay çağrısında kapatıldı; normal harita ordu/donanma görünümü portreyi

@@ -179,6 +179,19 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	}
 }
 
+func Test1300LandRegionsHaveBaselineIronForMilitaryProduction(t *testing.T) {
+	_, regions, _ := load1300IntegrityData(t)
+
+	for regionID, region := range regions {
+		if region == nil || region.IsSea {
+			continue
+		}
+		if region.BaseIronOutput < 2 {
+			t.Errorf("1300 kara bölgesinde temel demir üretimi askerî üretim için yetersiz: region=%s iron=%d want>=2", regionID, region.BaseIronOutput)
+		}
+	}
+}
+
 func Test1300HistoricalUnownedRegionsAreAssignedToNewStates(t *testing.T) {
 	_, regions, factions := load1300IntegrityData(t)
 
