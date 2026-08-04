@@ -750,8 +750,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
-	if defender, _, siege, _, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
-		sortieBtn, surrenderBtn := buildDefensiveSiegeButtons()
+	if defender, _, siege, target, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
+		sortieBtn, surrenderBtn := buildDefensiveSiegeButtons(defensiveSiegeSettlementButtonLabel(r.gs, target))
 		if defender != nil && sortieBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionSortieSiege, ArmyID: defender.ID, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
 		}

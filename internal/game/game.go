@@ -342,6 +342,12 @@ func (g *Game) Update() error {
 			} else {
 				g.renderer.ShowCombatResult("Komutan bu orduya atanamadı.")
 			}
+		case render.ActionRecruitCommander:
+			if commander, ok := g.gs.RecruitPlayerCommander(action.CommanderName); ok {
+				g.renderer.ShowCombatResult(fmt.Sprintf("%s komutan olarak katıldı. Seviye %d, %d XP.", commander.Name, commander.Level, commander.Experience))
+			} else {
+				g.renderer.ShowCombatResult("Komutan adı geçersiz.")
+			}
 		case render.ActionUnassignCommander:
 			if g.gs.UnassignCommanderFromArmy(action.ArmyID) {
 				g.renderer.CloseCommanderPanel()
@@ -450,6 +456,15 @@ func (g *Game) Update() error {
 			g.resolveLandContactChoice(action.ChoiceIndex)
 		} else if action.Kind == render.ActionRespondDiplomacyOffer {
 			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
+		}
+		if contact := g.gs.PendingNavalContact; contact != nil && contact.PlayerArmyID == "" {
+			// AI-AI temasları oyuncu modalı açamaz; savaş/geri çekilme
+			// kararını hemen çözerek AI scheduler'ının kilitlenmesini önle.
+			step := ai.ResolveAIOnlyNavalContact(g.gs, contact)
+			if step.Message != "" && g.aiTurn != nil {
+				g.handleAITurnStep(step)
+				return nil
+			}
 		}
 		if g.gs.PendingNavalContact != nil {
 			g.presentPendingNavalContact()
@@ -2358,7 +2373,7 @@ func (g *Game) acceptSurrenderOfferForRegion(regionID world.RegionID) {
 		return
 	}
 	for index, offer := range g.gs.DiplomaticOffers {
-		if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.ToFactionID == g.gs.PlayerFactionID && offer.RegionID == regionID {
+		if isSiegeSettlementOfferAction(offer.Action) && offer.ToFactionID == g.gs.PlayerFactionID && offer.RegionID == regionID {
 			_, result, _ := g.resolveDiplomacyOffer(index, true)
 			if g.renderer != nil {
 				g.renderer.ShowCombatResult(result.Message)
@@ -2370,7 +2385,7 @@ func (g *Game) acceptSurrenderOfferForRegion(regionID world.RegionID) {
 		}
 	}
 	if g.renderer != nil {
-		g.renderer.ShowCombatResult("Bu kuşatma için geçerli bir teslimiyet teklifi yok.")
+		g.renderer.ShowCombatResult("Bu kuşatma için geçerli bir teslimiyet veya vassallık teklifi yok.")
 	}
 }
 
@@ -2390,9 +2405,18 @@ func (g *Game) proposeSiegeSurrender(aid army.ArmyID, regionID world.RegionID) {
 		}
 		return
 	}
-	if !diplomacy.QueueSurrenderOffer(g.gs, g.gs.PlayerFactionID, faction.FactionID(target.OwnerID), regionID, 180, "Kuşatma altında teslimiyet çağrısı") {
+	action := siegeSettlementOfferAction(g.gs, target)
+	reason := "Kuşatma altında teslimiyet çağrısı"
+	queued := false
+	if action == diplomacy.ActionProposeSiegeVassalization {
+		reason = "Son toprak için kuşatma vassallığı çağrısı"
+		queued = diplomacy.QueueSiegeVassalizationOffer(g.gs, g.gs.PlayerFactionID, faction.FactionID(target.OwnerID), regionID, 180, reason)
+	} else {
+		queued = diplomacy.QueueSurrenderOffer(g.gs, g.gs.PlayerFactionID, faction.FactionID(target.OwnerID), regionID, 180, reason)
+	}
+	if !queued {
 		if g.renderer != nil {
-			g.renderer.ShowCombatResult("Bu tur başka bir diplomasi teklifi gönderilemez veya bu kuşatma için teklif zaten mevcut.")
+			g.renderer.ShowCombatResult("Bu kuşatma için teklif gönderilemedi; hedef zaten bağlı olabilir veya teklif geçersiz hale gelmiş olabilir.")
 		}
 		return
 	}
@@ -2408,9 +2432,6 @@ func (g *Game) proposeSiegeSurrender(aid army.ArmyID, regionID world.RegionID) {
 
 func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Region, siege *state.SiegeState) bool {
 	if g == nil || g.gs == nil || attacker == nil || target == nil || siege == nil || target.OwnerID == string(g.gs.PlayerFactionID) {
-		return false
-	}
-	if len(g.gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
 		return false
 	}
 	if siege.BreachLevel >= 2 || siege.TurnsElapsed >= state.SiegeSurrenderTurns(siege.FortLevel) {
@@ -2456,7 +2477,7 @@ func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.Diplomatic
 	}
 	offer := g.gs.DiplomaticOffers[index]
 	var result diplomacy.Result
-	if offer.Action == string(diplomacy.ActionProposeSurrender) {
+	if isSiegeSettlementOfferAction(offer.Action) {
 		g.gs.DiplomaticOffers = append(g.gs.DiplomaticOffers[:index], g.gs.DiplomaticOffers[index+1:]...)
 		if !accepted {
 			if offer.RegionID != "" {
@@ -2464,9 +2485,13 @@ func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.Diplomatic
 			} else {
 				g.gs.MarkDiplomaticOfferRejected(string(offer.FromFactionID), string(offer.ToFactionID), offer.Action)
 			}
-			result = diplomacy.Result{Accepted: false, Message: g.factionNameTR(string(offer.FromFactionID)) + " teslimiyet teklifi reddedildi."}
+			result = diplomacy.Result{Accepted: false, Message: g.factionNameTR(string(offer.FromFactionID)) + " " + siegeSettlementOfferLabelTR(offer.Action) + " teklifini reddetti."}
 		} else {
-			result = g.applySurrenderOffer(offer)
+			if offer.Action == string(diplomacy.ActionProposeSiegeVassalization) {
+				result = g.applySiegeVassalizationOffer(offer)
+			} else {
+				result = g.applySurrenderOffer(offer)
+			}
 		}
 	} else {
 		result = diplomacy.ResolveOffer(g.gs, index, accepted)
@@ -4660,6 +4685,58 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 	}
 	g.announceElimination(collapse)
 	return diplomacy.Result{Accepted: true, Applied: true, Message: target.NameTR + " teslim oldu; kuşatma sona erdi."}
+}
+
+// applySiegeVassalizationOffer, son kara toprağı kuşatılan devletin kabul
+// ettiği vassallık teklifini uygular. Bölge sahibi değişmez; savaş ve kuşatma
+// biter, kuşatılan devlet kuşatanın realm'ine katılır.
+func (g *Game) applySiegeVassalizationOffer(offer state.DiplomaticOffer) diplomacy.Result {
+	if g == nil || g.gs == nil || offer.RegionID == "" {
+		return diplomacy.Result{Message: "Vassallık teklifi artık geçerli değil."}
+	}
+	target := g.gs.Regions[offer.RegionID]
+	siege := g.gs.SiegeAt(offer.RegionID)
+	if target == nil || siege == nil || target.IsSea {
+		return diplomacy.Result{Message: "Kuşatma artık geçerli değil."}
+	}
+	attacker := g.gs.Armies[siege.AttackerArmyID]
+	if attacker == nil || attacker.OwnerID != siege.AttackerFactionID || attacker.OwnerID == target.OwnerID || !gameFactionsAtWar(g.gs, attacker.OwnerID, target.OwnerID) {
+		return diplomacy.Result{Message: "Kuşatma artık geçerli değil."}
+	}
+	attackerID := faction.FactionID(attacker.OwnerID)
+	defenderID := faction.FactionID(target.OwnerID)
+	validDirection := (offer.FromFactionID == attackerID && offer.ToFactionID == defenderID) ||
+		(offer.FromFactionID == defenderID && offer.ToFactionID == attackerID)
+	if !validDirection {
+		return diplomacy.Result{Message: "Vassallık teklifinin tarafları değişti."}
+	}
+	if len(g.gs.LandRegionsOwnedBy(defenderID)) != 1 {
+		return diplomacy.Result{Message: fmt.Sprintf("%s devleti artık son toprağında değil; vassallık teklifi geçersiz.", g.factionNameTR(target.OwnerID))}
+	}
+	result := diplomacy.ForceVassalizeAfterWar(g.gs, attackerID, defenderID)
+	if !result.Applied {
+		return result
+	}
+	g.clearSiege(target.ID)
+	return diplomacy.Result{Accepted: true, Applied: true, Message: fmt.Sprintf("%s son toprağını korudu; %s devletinin vassalı oldu ve kuşatma sona erdi.", g.factionNameTR(target.OwnerID), g.factionNameTR(attacker.OwnerID))}
+}
+
+func isSiegeSettlementOfferAction(action string) bool {
+	return action == string(diplomacy.ActionProposeSurrender) || action == string(diplomacy.ActionProposeSiegeVassalization)
+}
+
+func siegeSettlementOfferAction(gs *state.GameState, target *world.Region) diplomacy.Action {
+	if gs != nil && target != nil && len(gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
+		return diplomacy.ActionProposeSiegeVassalization
+	}
+	return diplomacy.ActionProposeSurrender
+}
+
+func siegeSettlementOfferLabelTR(action string) string {
+	if action == string(diplomacy.ActionProposeSiegeVassalization) {
+		return "kuşatma vassallığı"
+	}
+	return "teslimiyet"
 }
 
 func (g *Game) withdrawDefendingArmiesForSurrender(target *world.Region) {

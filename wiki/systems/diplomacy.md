@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -51,6 +51,17 @@ type Relation struct {
 ```
 
 `RelationKey(a, b)` → her zaman sıralı `"a|b"` string'i üretir (çift kayıt önler).
+
+## Kuşatma Vassallığı
+
+Aktif bir kara kuşatmasında kuşatılan devletin yalnız bir kara bölgesi kaldıysa
+normal `propose_surrender` yerine bölge bağlı `propose_siege_vassalization`
+kullanılır. Teklif iki yönde de üretilebilir: kuşatılan devlet kendi son toprağı
+için vassal olmayı önerebilir veya kuşatan taraf vassallık isteyebilir. Kabul,
+`ForceVassalizeAfterWar()` ile savaşı koalisyonlar arasında kapatır; bölge sahibi
+değişmez, kuşatma temizlenir ve hedef devlet kuşatanın vassalı olur. Bu ayrı
+aksiyon normal diplomasi elçi kotasını tüketmez, `RegionID` bazlı ret cooldown'u
+ve teklif geçmişinde kendi sonucunu taşır.
 
 Özgürleştirilen ardıl devlet, özgürleştiren oyuncu devletiyle doğrudan
 `StanceAllied` relation'ı alır. Bu ilişki yeni devletin ilk diplomatik güvenlik

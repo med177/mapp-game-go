@@ -14,9 +14,11 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 `GameState` tüm oyun verisinin tek kaynağıdır. Ancak save/load artık bu struct'ın ham snapshot'ını yazmaz; senaryo tanımını yeniden kurup yalnız kampanya sırasında değişen delta state'i serialize eder.
 
 `PendingNavalContact` ve `PendingLandContact`, oyuncu kararını bekleyen geçici
-temas state'leridir ve `json:"-"` ile kayda girmez. Temas kararı iki taraf için
-de tamamlandığında state temizlenir; kara temasında ordular karar verilene kadar
-hedef bölgeye taşınmaz.
+temas state'leridir ve `json:"-"` ile kayda girmez. AI-AI deniz temasları
+`ResolveAIOnlyNavalContact()` ile aynı AI adımında çözülüp temizlenir; bu alanın
+oyuncu modalı olmadan scheduler'ı kilitlemesine izin verilmez. Temas kararı iki
+taraf için de tamamlandığında state temizlenir; kara temasında ordular karar
+verilene kadar hedef bölgeye taşınmaz.
 
 Temas sonrası `Pozisyonu Koru` seçen oyuncu ordusu düşman bölgesinde kalabilir.
 Hareket puanı bitmiş olsa bile aynı bölge görevleri için input kilidi kaldırılır:
@@ -193,7 +195,9 @@ görevin tekrar atanması yeni temas oluşturmaz. Oyuncuya ortak üç seçenekli
 modal açılır: `Çatış`, `Geri çekil`, `Pozisyonu koru`. Devriye ve görevsiz filo
 varsayılan olarak `Çatış`, abluka filosu `Pozisyonu koru` seçer; savaş yalnız iki tarafın
 kararı da `Çatış` olduğunda çözülür. Savaş açılışı temasında AI tarafı varsayılan
-olarak `Çatış` seçer. `QueueNavalContactForWar()` ve
+olarak `Çatış` seçer. Oyuncu filosu içermeyen AI-AI temasları
+`ResolveAIOnlyNavalContact()` ile hemen çözülür ve scheduler'ı bekletmez.
+`QueueNavalContactForWar()` ve
 `NavalContactDecisionForPlayer()` bu geçici kararı merkezi state kapısından yönetir.
 Oyuncu filosunun hareket puanı yoksa `Geri çekil` seçeneği modalda pasif kalır ve
 state katmanı da bu kararı kabul etmez. Geçerli bir geri çekilme, 2 hareket puanı
@@ -211,8 +215,13 @@ için edit-mode undo/redo ve save/load aynı komutan state'ini paylaşan yanlı�
 üretmez. `GameState.Commanders` aynı komutanın iki orduya atanmasını engelleyen
 canonical havuzdur; `SyncCommanderLinks()` yükleme sonrasında ordu pointer'larını bu
 havuzdaki nesnelere bağlar. Oyuncu havuzu ve ordu panelindeki atama/ayırma modalı
-`InitializePlayerCommanders()`, `AssignCommanderToArmy()` ve
-`UnassignCommanderFromArmy()` üzerinden çalışır.
+`InitializePlayerCommanders()`, `RecruitPlayerCommander()`,
+`AssignCommanderToArmy()` ve `UnassignCommanderFromArmy()` üzerinden çalışır.
+Oyuncu adıyla yeni bir komutan oluşturduğunda varsayılan portre kullanılır;
+başlangıç XP'si fraksiyon ve kalıcı sıra sayısından deterministik türetilir.
+Böylece adayın açtığı Taktisyen/Savunma uzmanlıkları rastgele görünür, fakat
+aynı save yeniden yüklendiğinde değişmez. AI tarafındaki otomatik seviye 1
+fallback üretimi bu oyuncu akışından ayrıdır.
 Senaryo başlangıç şablonları `data/commanders.json` dosyasından okunur. Her kayıt
 `id`, `owner_id`, `name`, başlangıç `level`/`experience`/`traits` ve ileride portre
 yüklemek için `portrait_asset` alanlarını taşıyabilir. Şablon runtime komutanına
@@ -363,6 +372,8 @@ save/load ise alanı campaign state içinde korur.
 `GameState.RegionMilitaryGrainProduction()` bölgesel efektif tahıl üretiminden aktif sivil talebi düşer. Oyun lojistiği ve AI hareket/recruitment lojistiği bu ortak helper'ı; ordu talebi için de `EffectiveArmyGrainUpkeep()` metodunu kullanır. Böylece oyuncu ve AI aynı tahıl tüketim kurallarından sapmaz.
 
 `applyRegionalLogisticsPressure()` bölgedeki ambar seviyesini, ekonomi tick'i sonrası fraksiyon stokundan bölgeye aktarılabilir rezerv olarak değerlendirir. Destek `min(kalan stok, ambar kapasitesi)` ile sınırlıdır; aynı fraksiyonun bölgeleri rezervi deterministik sırada paylaşır ve başkent önceliği kullanır. `RegionLogisticsStatus.GranarySupport` bu geçici katkıyı UI teşhisi için taşır.
+
+Kuşatma yıpranmasında `Region.BuildingLevel("granary")` aynı yerel ambar state'ini kullanır. Her seviye savunucu ordunun kuşatma HP hasarını ve ikmal açığı hasarını `%10` azaltır; azaltma `%30` ile sınırlıdır. `IsArmyDefendingSiegedRegion()` predicate'i sayesinde bu indirim kuşatan orduya uygulanmaz.
 
 `GrainStorageCapacity()` ve `GameState.GrainStorageCapacityForFaction()` sivil nüfus talebi, efektif ordu bakımı ve ambar bina bonusunu aynı `6 ay sivil + 3 ay ordu`, minimum 100 kapasite kuralında birleştirir. İkinci helper ekonomi tick'i oluşmadan HUD'un başlangıçta da doğru ambar kapasitesini gösterebilmesini sağlar.
 

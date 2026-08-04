@@ -2,6 +2,7 @@ package ai
 
 import (
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -30,6 +31,40 @@ func ResolveNavalContactDecision(gs *state.GameState, contact *state.NavalContac
 
 	setDecision(contact.AttackerArmyID, contact.DefenderArmyID, &contact.AttackerDecision, contact.AttackerFromRegionID)
 	setDecision(contact.DefenderArmyID, contact.AttackerArmyID, &contact.DefenderDecision, contact.AttackerFromRegionID)
+}
+
+// ResolveAIOnlyNavalContact immediately resolves a contact that contains no
+// player fleet. Such contacts must never remain in PendingNavalContact: the
+// game loop reserves that field for the player's decision modal.
+func ResolveAIOnlyNavalContact(gs *state.GameState, contact *state.NavalContact) TurnStep {
+	if gs == nil || contact == nil || contact.PlayerArmyID != "" {
+		return TurnStep{}
+	}
+	attacker := gs.Armies[contact.AttackerArmyID]
+	defender := gs.Armies[contact.DefenderArmyID]
+	if attacker == nil || defender == nil {
+		gs.ClearNavalContact()
+		return TurnStep{}
+	}
+	if !gs.NavalContactBothClash(contact) {
+		resolveAINavalContactWithoutBattle(gs, contact, attacker, defender)
+		gs.ClearNavalContact()
+		return TurnStep{
+			FactionID:    faction.FactionID(attacker.OwnerID),
+			Kind:         TurnStepMove,
+			ArmyID:       attacker.ID,
+			FromRegion:   contact.AttackerFromRegionID,
+			TargetRegion: contact.SeaRegionID,
+			FocusRegion:  contact.SeaRegionID,
+			Message:      "Deniz teması çatışmaya dönüşmeden sona erdi.",
+		}
+	}
+
+	// ResolveNavalContactBattle expects the contact to have already been
+	// accepted and only uses the fleets' current locations. Clear the transient
+	// prompt before resolving so a battle cannot leave a stale modal state.
+	gs.ClearNavalContact()
+	return ResolveNavalContactBattle(gs, attacker.ID, contact.SeaRegionID)
 }
 
 func aiNavalContactBaseDecision(fleet *army.Army) state.NavalContactDecision {

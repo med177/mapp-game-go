@@ -14,19 +14,20 @@ import (
 type Action string
 
 const (
-	ActionDeclareWar         Action = "declare_war"
-	ActionJoinWarCall        Action = "join_war_call"
-	ActionProposePeace       Action = "propose_peace"
-	ActionProposeAlliance    Action = "propose_alliance"
-	ActionProposeTrade       Action = "propose_trade"
-	ActionProposeSurrender   Action = "propose_surrender"
-	ActionCancelAlliance     Action = "cancel_alliance"
-	ActionCancelTrade        Action = "cancel_trade"
-	ActionImproveRelations   Action = "improve_relations"
-	ActionSendGift           Action = "send_gift"
-	ActionOfferVassalization Action = "offer_vassalization"
-	ActionReleaseVassal      Action = "release_vassal"
-	ActionAnnexVassal        Action = "annex_vassal"
+	ActionDeclareWar                Action = "declare_war"
+	ActionJoinWarCall               Action = "join_war_call"
+	ActionProposePeace              Action = "propose_peace"
+	ActionProposeAlliance           Action = "propose_alliance"
+	ActionProposeTrade              Action = "propose_trade"
+	ActionProposeSurrender          Action = "propose_surrender"
+	ActionProposeSiegeVassalization Action = "propose_siege_vassalization"
+	ActionCancelAlliance            Action = "cancel_alliance"
+	ActionCancelTrade               Action = "cancel_trade"
+	ActionImproveRelations          Action = "improve_relations"
+	ActionSendGift                  Action = "send_gift"
+	ActionOfferVassalization        Action = "offer_vassalization"
+	ActionReleaseVassal             Action = "release_vassal"
+	ActionAnnexVassal               Action = "annex_vassal"
 )
 
 type Result struct {

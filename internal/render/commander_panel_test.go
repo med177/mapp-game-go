@@ -64,6 +64,12 @@ func TestCommanderTraitBadgeUsesCompactLabels(t *testing.T) {
 	}
 }
 
+func TestCommanderRecruitButtonUsesCommonVerticalCentering(t *testing.T) {
+	if got := commanderRecruitButtonStyle().TextOffsetY; got != 0 {
+		t.Fatalf("komutan oluşturma butonu ortak dikey merkezlemeyi kullanmalı: offset=%v", got)
+	}
+}
+
 func TestCommanderOverflowBadgeUsesCountLabel(t *testing.T) {
 	if got := commanderOverflowBadge(3).Label; got != "+3" {
 		t.Fatalf("overflow badge etiketi yanlış: got=%q want=%q", got, "+3")

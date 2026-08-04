@@ -155,6 +155,7 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 		priority := 0
 		reason := ""
 		shouldOffer := false
+		offerAction := diplomacy.ActionProposeSurrender
 		switch {
 		case string(fid) == attacker.OwnerID && target.OwnerID == string(gs.PlayerFactionID):
 			// Kuşatan AI, savunma hattı çözüldüğünde oyuncudan teslim olmasını ister.
@@ -178,7 +179,7 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 				defenderPower = defender.TotalStrength(gs.UnitTypes)
 			}
 			attackerPower := attacker.TotalStrength(gs.UnitTypes)
-			shouldOffer = len(gs.LandRegionsOwnedBy(fid)) > 1 && siege.TurnsElapsed >= 3 && (siege.BreachLevel >= 1 || defenderPower*100 < attackerPower*80)
+			shouldOffer = siege.TurnsElapsed >= 3 && (siege.BreachLevel >= 1 || defenderPower*100 < attackerPower*80)
 			if shouldOffer && aiDiplomacyOfferRoll(gs, fid, gs.PlayerFactionID, diplomacy.ActionProposeSurrender) >= 60 {
 				shouldOffer = false
 			}
@@ -186,17 +187,31 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 			priority = 175
 			reason = "Kuşatma baskısı ve savunma çöküşü"
 		}
-		if !shouldOffer || from == "" || to == "" || !aiDiplomacyOfferRetryAllowedForRegion(gs, from, to, diplomacy.ActionProposeSurrender, target.ID) {
+		if len(gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
+			offerAction = diplomacy.ActionProposeSiegeVassalization
+			reason = "Son toprak için kuşatma vassallığı"
+		}
+		if !shouldOffer || from == "" || to == "" || !aiDiplomacyOfferRetryAllowedForRegion(gs, from, to, offerAction, target.ID) {
 			continue
 		}
-		if diplomacy.QueueSurrenderOffer(gs, from, to, target.ID, priority, reason) {
+		queued := false
+		if offerAction == diplomacy.ActionProposeSiegeVassalization {
+			queued = diplomacy.QueueSiegeVassalizationOffer(gs, from, to, target.ID, priority, reason)
+		} else {
+			queued = diplomacy.QueueSurrenderOffer(gs, from, to, target.ID, priority, reason)
+		}
+		if queued {
+			offerLabel := "teslimiyet"
+			if offerAction == diplomacy.ActionProposeSiegeVassalization {
+				offerLabel = "vassallık"
+			}
 			addTurnStep(steps, TurnStep{
 				FactionID:     fid,
 				Kind:          TurnStepDiplomacy,
 				TargetFaction: to,
 				TargetRegion:  target.ID,
 				FocusRegion:   target.ID,
-				Message:       turnFactionName(gs, fid) + " " + turnRegionName(gs, target.ID) + " için teslimiyet teklifi gönderdi.",
+				Message:       turnFactionName(gs, fid) + " " + turnRegionName(gs, target.ID) + " için " + offerLabel + " teklifi gönderdi.",
 			})
 		}
 	}

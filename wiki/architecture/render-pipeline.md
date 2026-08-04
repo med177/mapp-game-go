@@ -13,10 +13,11 @@ geometrisinden iki sütunlu grid üretilir; çizim, hit-test ve klavye odağı b
 rect'i paylaşır. Böylece zengin 1300 zafer havuzu 1280×720 görünümde de
 kesilmeden seçilebilir (`internal/render/victory_select.go`).
 
-Kuşatma teslimiyeti modalı, son kara toprağına ait stale bir teklif için vassallık
-sonucu vaat etmez; ortak teklif mesajı bunun kabul edilemeyeceğini açıklar. Modal
-ve kuşatma panelinin geçerlilik davranışı game katmanındaki `applySurrenderOffer`
-sonucuyla aynı sözleşmeyi izler (`internal/render/renderer_dialogs.go`).
+Kuşatma paneli ve teklif modalı son kara toprağında teslimiyet yerine ortak
+`propose_siege_vassalization` aksiyonunu kullanır: kuşatan tarafta `Vassallık
+Teklifi`, kuşatılan oyuncu tarafta `Vassallığı Kabul Et` görünür. Geometri,
+hit-test ve aktiflik aynı ortak button helper'ından gelir; modal metni bölgenin
+korunacağını, savaşın ve kuşatmanın biteceğini açıklar (`internal/render/renderer_dialogs.go`).
 
 Ana menü ve senaryo seçim ekranı ilk çizimde `assets/images/main_menu_bg.png`
 görselini bir kez cache'leyip ekran oranını koruyarak arka plana yerleştirir; görsel
@@ -315,6 +316,12 @@ ile panel dışına taşamaz; `commanderPanelScroll` tekerlek ve klavye focus'u 
 satır bazında güncellenir. Scroll clamp'i ve `commanderPanelRowAt()` yalnız
 görünür satırları tıklanabilir kabul eder; taşan içerikte scrollbar yalnızca
 gerektiğinde gösterilir (`internal/render/commander_panel.go`).
+
+Aynı modalın `Yeni Komutan` düğmesi, ortak `gameui.Modal`, `TextBox` ve
+`Button` bileşenleriyle ad girişini açar. İç modal önce inputu sahiplenir;
+çizim, hit-test ve cursor aynı canonical rect helper'larından gelir. Onay,
+adı `ActionRecruitCommander` ile game katmanına iletir; yeni aday boş komutan
+listesinde görünür ve normal atama seçimiyle orduya bağlanır.
 
 Oyuncuya ait ordunun komutan kartında ana komutan mevcutsa kartın altına kırmızı
 `Komutanı Ayır` düğmesi çizilir. Düğmenin rect'i çizim, hit-test ve cursor için

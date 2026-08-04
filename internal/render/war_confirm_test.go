@@ -390,8 +390,8 @@ func TestSelectedDefensiveSiegePanelFollowsArmyAndSettlementSelection(t *testing
 	if !ok || defender == nil || defender.ID != "defender" || attacker.ID != "besieger" {
 		t.Fatalf("yerleşim/bölge seçimi canlı savunma ordusunu bulmalıydı: defender=%+v attacker=%+v ok=%t", defender, attacker, ok)
 	}
-	sortie, surrender := buildDefensiveSiegeButtons()
-	if sortie.Label != "Huruç başlat" || surrender.Label != "Teslim ol" {
+	sortie, surrender := buildDefensiveSiegeButtons(defensiveSiegeSettlementButtonLabel(gs, gs.Regions["fort"]))
+	if sortie.Label != "Huruç başlat" || surrender.Label != "Vassallığı Kabul Et" {
 		t.Fatalf("savunma kuşatması düğmeleri yanlış: %q / %q", sortie.Label, surrender.Label)
 	}
 	assault, lift, offer := buildSelectedSiegeButtons()
@@ -410,11 +410,11 @@ func TestSelectedDefensiveSiegePanelFollowsArmyAndSettlementSelection(t *testing
 		t.Fatalf("teslimiyet teklifi yokken düğme aktif görünmemeli")
 	}
 	gs.DiplomaticOffers = []state.DiplomaticOffer{{
-		FromFactionID: "enemy", ToFactionID: "player", Action: string(diplomacy.ActionProposeSurrender), RegionID: "fort",
+		FromFactionID: "enemy", ToFactionID: "player", Action: string(diplomacy.ActionProposeSiegeVassalization), RegionID: "fort",
 	}}
 	_, _, _, _, surrenderOffered, ok = r.selectedDefensiveSiegePanelState()
 	if !ok || !surrenderOffered {
-		t.Fatalf("AI teslimiyet teklifi geldiğinde Teslim ol düğmesi aktif olmalı")
+		t.Fatalf("AI vassallık teklifi geldiğinde Vassallığı Kabul Et düğmesi aktif olmalı")
 	}
 }
 

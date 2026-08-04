@@ -2,12 +2,19 @@ package state
 
 import (
 	"fmt"
+	"hash/fnv"
 	"sort"
+	"strings"
 
 	"mapp-game-go/internal/army"
 )
 
 const InitialPlayerCommanderPool = 3
+
+// PlayerCommanderMaxNameRunes oyuncunun girdiği komutan adının üst sınırıdır.
+// UI ve domain aynı sınırı kullanır; böylece doğrudan action/save yolları uzun
+// veya boş isimli komutan oluşturamaz.
+const PlayerCommanderMaxNameRunes = 40
 
 var initialCommanderNames = []string{
 	"Murat Bey",
@@ -207,6 +214,46 @@ func (s *GameState) InitializePlayerCommanders() {
 		return
 	}
 	s.ensureCommanderPool(string(s.PlayerFactionID), InitialPlayerCommanderPool)
+}
+
+// RecruitPlayerCommander oyuncunun verdiği adla boş komutan havuzuna yeni bir
+// komutan ekler. Başlangıç XP'si sıraya ve fraksiyona bağlı deterministik bir
+// dağılımdan gelir; aynı kampanya state'i yeniden yüklendiğinde sonuç değişmez.
+// AI'nin otomatik, seviye 1 fallback üretimi bu akıştan bağımsız kalır.
+func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) {
+	if s == nil || s.PlayerFactionID == "" {
+		return nil, false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" || len([]rune(name)) > PlayerCommanderMaxNameRunes {
+		return nil, false
+	}
+	if s.Commanders == nil {
+		s.Commanders = make(map[string]*army.Commander)
+	}
+
+	s.NextCommanderSeq++
+	id := fmt.Sprintf("commander_%s_%d", s.PlayerFactionID, s.NextCommanderSeq)
+	for s.Commanders[id] != nil {
+		s.NextCommanderSeq++
+		id = fmt.Sprintf("commander_%s_%d", s.PlayerFactionID, s.NextCommanderSeq)
+	}
+	commander := army.NewCommander(id, name)
+	commander.OwnerID = string(s.PlayerFactionID)
+	commander.PortraitAsset = army.DefaultPortraitAsset
+	commander.Experience = recruitedCommanderExperience(string(s.PlayerFactionID), s.NextCommanderSeq)
+	commander.Normalize()
+	s.Commanders[commander.ID] = commander
+	return commander, true
+}
+
+// recruitedCommanderExperience 0..849 aralığında dağılım üretir. Bu aralık
+// adayın tecrübesiz kalmasına da Taktisyen/Savunma Uzmanı seviyesine ulaşmasına
+// da izin verir, ancak yeni alınan komutanı en üst seviye yapmaz.
+func recruitedCommanderExperience(ownerID string, sequence int) int {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(fmt.Sprintf("%s:%d", ownerID, sequence)))
+	return int(h.Sum32() % army.CommanderLevel5XP)
 }
 
 func (s *GameState) ensureCommanderPool(ownerID string, desired int) {

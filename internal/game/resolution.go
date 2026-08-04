@@ -1185,6 +1185,10 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		damagePerUnit := logisticsDamagePerUnit(totalDemand, capacity, overload, peakTurns+1)
 		for _, a := range armiesInRegion {
 			a.OverCapacityTurns++
+			armyDamagePerUnit := damagePerUnit
+			if gs.IsArmyDefendingSiegedRegion(a) {
+				armyDamagePerUnit = reduceAttritionDamageForGranary(armyDamagePerUnit, granaryAttritionReductionPercent(region))
+			}
 			armyStatus := state.ArmyLogisticsStatus{
 				ArmyID:            a.ID,
 				RegionID:          rid,
@@ -1193,7 +1197,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 				Capacity:          capacity,
 				Overload:          overload,
 				OverCapacityTurns: a.OverCapacityTurns,
-				DamagePerUnit:     damagePerUnit,
+				DamagePerUnit:     armyDamagePerUnit,
 			}
 			if supply, ok := friendlySupplies[a.ID]; ok {
 				armyStatus.FriendlySupplyFactionID = supply.ProviderFactionID
@@ -1205,8 +1209,8 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			totalDamage := 0
 			survivors := a.Units[:0]
 			for _, u := range a.Units {
-				u.CurrentHP -= damagePerUnit
-				totalDamage += damagePerUnit
+				u.CurrentHP -= armyDamagePerUnit
+				totalDamage += armyDamagePerUnit
 				if u.CurrentHP <= 0 {
 					armyStatus.UnitsLost++
 					continue

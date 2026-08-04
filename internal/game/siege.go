@@ -292,6 +292,44 @@ func siegeAttritionDamage(progressGain, breachLevel, fortLevel int) int {
 	return damage
 }
 
+const (
+	granaryAttritionReductionPerLevel = 10
+	granaryAttritionReductionMax      = 30
+)
+
+// granaryAttritionReductionPercent bölgedeki ambar seviyesinin kuşatılan
+// savunma ordusuna sağladığı yerel yıpranma azaltmasını döner. Ambar seviyesi
+// Region.BuildingLevel ile tutulduğu için ekonomi ve kuşatma aynı bina state'ini
+// kullanır; kuşatan ordu bu savunma bonusundan yararlanmaz.
+func granaryAttritionReductionPercent(region *world.Region) int {
+	if region == nil {
+		return 0
+	}
+	level := region.BuildingLevel("granary")
+	if level <= 0 {
+		return 0
+	}
+	percent := level * granaryAttritionReductionPerLevel
+	if percent > granaryAttritionReductionMax {
+		return granaryAttritionReductionMax
+	}
+	return percent
+}
+
+func reduceAttritionDamageForGranary(damage, reductionPercent int) int {
+	if damage <= 0 || reductionPercent <= 0 {
+		return damage
+	}
+	if reductionPercent > 100 {
+		reductionPercent = 100
+	}
+	damage = damage * (100 - reductionPercent) / 100
+	if damage < 1 {
+		damage = 1
+	}
+	return damage
+}
+
 func applyArmyFlatDamage(a *army.Army, damage int) (lostUnits int, totalHPDamage int) {
 	if a == nil || damage <= 0 || len(a.Units) == 0 {
 		return 0, 0
@@ -677,6 +715,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 
 		if defender != nil {
 			damage := siegeAttritionDamage(progressGain, siege.BreachLevel, siege.FortLevel)
+			damage = reduceAttritionDamageForGranary(damage, granaryAttritionReductionPercent(targetRegion))
 			lostUnits, totalHPDamage := applyArmyFlatDamage(defender, damage)
 			g.gs.RecordWarAttritionCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID), 0, lostUnits)
 			if len(defender.Units) == 0 {

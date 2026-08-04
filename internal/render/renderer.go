@@ -218,6 +218,9 @@ type Renderer struct {
 	commanderPanelArmy     army.ArmyID
 	commanderPanelFocus    int
 	commanderPanelScroll   int
+	showCommanderRecruit   bool
+	commanderRecruitName   gameui.TextBox
+	commanderRecruitError  string
 	showAIDiagnostic       bool
 	aiDiagnosticFaction    faction.FactionID
 	aiDiagnosticScroll     int

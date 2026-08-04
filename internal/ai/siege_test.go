@@ -188,7 +188,7 @@ func TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer(t *testing.T) {
 	t.Fatal("aynı savaşta barış ve kuşatma teslimiyeti tekliflerinin birlikte üretildiği tur bulunamadı")
 }
 
-func TestAILastRegionSiegeDoesNotOfferSurrender(t *testing.T) {
+func TestAILastRegionSiegeOffersVassalization(t *testing.T) {
 	gs := aiSiegeTestState(false)
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
 		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "ai_1", TurnsElapsed: 3, BreachLevel: 1, FortLevel: 2},
@@ -199,14 +199,20 @@ func TestAILastRegionSiegeDoesNotOfferSurrender(t *testing.T) {
 		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
 	}
 
-	var steps []TurnStep
-	aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
-
-	for _, offer := range gs.DiplomaticOffers {
-		if offer.Action == string(diplomacy.ActionProposeSurrender) && offer.RegionID == "fort" {
-			t.Fatalf("son toprağa teslimiyet teklifi üretilmemeliydi: %+v", offer)
+	for turn := 1; turn <= 100; turn++ {
+		gs.Turn = turn
+		gs.DiplomaticOffers = nil
+		gs.DiplomacyOfferCounts = nil
+		gs.OfferRejectionTurns = nil
+		var steps []TurnStep
+		aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+		for _, offer := range gs.DiplomaticOffers {
+			if offer.Action == string(diplomacy.ActionProposeSiegeVassalization) && offer.RegionID == "fort" {
+				return
+			}
 		}
 	}
+	t.Fatalf("son toprak için kuşatma vassallığı teklifi üretilmeliydi: %+v", gs.DiplomaticOffers)
 }
 
 func TestAISiegeSurrenderRetryCooldownIsRegionScoped(t *testing.T) {

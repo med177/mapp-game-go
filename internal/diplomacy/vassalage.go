@@ -472,7 +472,7 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 }
 
 // removePendingSurrenderOffersBetween, barış kabul edildiğinde aynı savaşın
-// artık geçersiz olan kuşatma teslimiyeti tekliflerini kuyruktan düşürür.
+// artık geçersiz olan kuşatma teslimiyeti ve vassallık tekliflerini kuyruktan düşürür.
 func removePendingSurrenderOffersBetween(gs *state.GameState, left, right []faction.FactionID) {
 	if gs == nil || len(gs.DiplomaticOffers) == 0 {
 		return
@@ -487,7 +487,7 @@ func removePendingSurrenderOffersBetween(gs *state.GameState, left, right []fact
 	}
 	offers := gs.DiplomaticOffers[:0]
 	for _, offer := range gs.DiplomaticOffers {
-		if offer.Action == string(ActionProposeSurrender) &&
+		if (offer.Action == string(ActionProposeSurrender) || offer.Action == string(ActionProposeSiegeVassalization)) &&
 			((containsFaction(leftSet, offer.FromFactionID) && containsFaction(rightSet, offer.ToFactionID)) ||
 				(containsFaction(rightSet, offer.FromFactionID) && containsFaction(leftSet, offer.ToFactionID))) {
 			continue

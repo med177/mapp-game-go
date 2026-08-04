@@ -87,6 +87,7 @@ const (
 	ActionSplitArmy                 ActionKind = "split_army"       // seçili orduyu ikiye böl
 	ActionMergeArmies               ActionKind = "merge_armies"     // ArmyID'yi TargetArmyID ile birleştir
 	ActionAssignCommander           ActionKind = "assign_commander"
+	ActionRecruitCommander          ActionKind = "recruit_commander"
 	ActionUnassignCommander         ActionKind = "unassign_commander"
 	ActionUnassignEmbarkedCommander ActionKind = "unassign_embarked_commander"
 	ActionSelectScenario            ActionKind = "select_scenario"                // BuildingID = senaryo klasör yolu
@@ -120,12 +121,13 @@ const (
 
 // InputAction renderer'ın bir çerçevede ürettiği tek oyun eylemi.
 type InputAction struct {
-	Kind         ActionKind
-	ArmyID       army.ArmyID
-	UnitIndices  []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
-	TargetArmyID army.ArmyID
-	CommanderID  string
-	TargetRegion world.RegionID
+	Kind          ActionKind
+	ArmyID        army.ArmyID
+	UnitIndices   []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
+	TargetArmyID  army.ArmyID
+	CommanderID   string
+	CommanderName string
+	TargetRegion  world.RegionID
 	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
 	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.
 	TargetSettlementID string

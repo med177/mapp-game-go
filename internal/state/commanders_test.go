@@ -1,6 +1,7 @@
 package state
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -31,6 +32,40 @@ func TestCommanderPoolAssignsAndReleasesUniqueCommander(t *testing.T) {
 	}
 	if !gs.UnassignCommanderFromArmy("a1") || len(gs.AvailableCommanders("player")) != InitialPlayerCommanderPool {
 		t.Fatal("komutan ayrılınca havuza dönmedi")
+	}
+}
+
+func TestRecruitPlayerCommanderUsesEnteredNameAndDeterministicProgression(t *testing.T) {
+	gs := &GameState{PlayerFactionID: "player", NextCommanderSeq: 8}
+	commander, ok := gs.RecruitPlayerCommander("  Aylin Hatun  ")
+	if !ok || commander == nil {
+		t.Fatal("oyuncu komutanı oluşturulamadı")
+	}
+	if commander.ID != "commander_player_9" || commander.OwnerID != "player" || commander.Name != "Aylin Hatun" {
+		t.Fatalf("oluşturulan komutanın kimliği yanlış: %+v", commander)
+	}
+	if commander.PortraitAsset != army.DefaultPortraitAsset || commander.Experience < 0 || commander.Experience >= army.CommanderLevel5XP {
+		t.Fatalf("rastgele başlangıç profili sınır dışında: %+v", commander)
+	}
+	expected := recruitedCommanderExperience("player", 9)
+	if commander.Experience != expected {
+		t.Fatalf("başlangıç XP deterministik değil: got=%d want=%d", commander.Experience, expected)
+	}
+	if commander.Level >= 3 && !commander.HasTrait(army.CommanderTraitTactician) {
+		t.Fatalf("XP'nin açtığı taktik uzmanlığı eksik: %+v", commander)
+	}
+	if commander.Level >= 4 && !commander.HasTrait(army.CommanderTraitDefender) {
+		t.Fatalf("XP'nin açtığı savunma uzmanlığı eksik: %+v", commander)
+	}
+}
+
+func TestRecruitPlayerCommanderRejectsBlankAndTooLongNames(t *testing.T) {
+	gs := &GameState{PlayerFactionID: "player"}
+	if commander, ok := gs.RecruitPlayerCommander(" \t "); ok || commander != nil {
+		t.Fatal("boş komutan adı kabul edilmemeliydi")
+	}
+	if commander, ok := gs.RecruitPlayerCommander(strings.Repeat("a", PlayerCommanderMaxNameRunes+1)); ok || commander != nil {
+		t.Fatal("fazla uzun komutan adı kabul edilmemeliydi")
 	}
 }
 

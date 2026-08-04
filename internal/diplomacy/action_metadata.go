@@ -14,6 +14,7 @@ var actionDefs = []ActionDef{
 	{Action: ActionProposeAlliance, LabelTR: "İttifak", Quick: true},
 	{Action: ActionProposeTrade, LabelTR: "Ticaret", Quick: true},
 	{Action: ActionProposeSurrender, LabelTR: "Teslimiyet", Contextual: true},
+	{Action: ActionProposeSiegeVassalization, LabelTR: "Kuşatma Vassallığı", Contextual: true},
 	{Action: ActionCancelAlliance, LabelTR: "İttifakı Bitir", Contextual: true},
 	{Action: ActionCancelTrade, LabelTR: "Ticareti Bitir", Contextual: true},
 	{Action: ActionImproveRelations, LabelTR: "Heyet"},

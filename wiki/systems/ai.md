@@ -94,6 +94,12 @@ rota düşmanın geldiği kaynak denizi de dışarıda bırakır; güvenli hedef
 geri çekilme kararı vermez. Bu varsayılan, güçlü düşman karşısında geri
 çekilme kararını engellemez.
 
+Oyuncu filosu içermeyen savaş açılışı veya deniz hareketi teması
+`PendingNavalContact` içinde bekletilmez. `ResolveAIOnlyNavalContact()` iki AI
+filosunun çatışma/geri çekilme kararını aynı AI turunda çözer ve geçici temas
+state'ini temizler; oyun scheduler'ı yalnız oyuncunun karar modalını gerektiren
+temaslarda bekler (`internal/ai/naval_contact.go`, `internal/game/game.go`).
+
 Hedef puanlama boyunca `moveScoreContext`, manpower doluluk durumunu, bölgedeki orduları ve lojistik özetlerini tek hareket kapsamında cache'ler. Hareket uygulandıktan sonra context atılır ve sonraki adım güncel state üzerinden yeniden kurulur.
 
 1300'de her stratejik tur üç ay kapsar; AI plan ufku ve savaş ilanı sıklığı bu
@@ -945,8 +951,8 @@ geçidinde ve kuyruk çözümünde de yeniden doğrulanır.
 - `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir
 - bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir; oyuncuya daha baskı altındaki teklif önce gösterilir ve prompt içinde tür ile kısa sebep bilgisi görünür. İttifak teklifinde AI ayrıca turn + taraf kimliğine bağlı deterministik hafif rastgelelik kullanır; böylece aynı uygun çerçevede her tur mekanik olarak sabit spam yerine bazen teklif açar, ama yüksek olasılıklı ortak tehdit senaryoları yine güvenilir biçimde görünür. Oyuncu bir teklifi reddettiğinde aktör-hedef-aksiyon bazında üç tur cooldown uygulanır; ardından aynı zar mekanizması %35 tekrar deneme şansı verir. Ret ayrıca ilişkiyi `-3` düşürür. Desteksiz dış ittifakların relation skoru ise artık her tur otomatik yükselmez; destek yoksa yavaşça aşınır.
-- Aynı oyuncuyla savaşta barış ve kuşatma teslimiyeti koşulları birlikte oluşursa önce barış teklifini kuyruğa alır; barış kabul edilirse geçersiz teslimiyet teklifi diplomasi kuyruğundan temizlenir, ret edilirse teslimiyet sonraki karar olarak kalır.
-- aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa oyuncuya teslim olmayı teklif eder. Son kara toprağı için teklif üretilmez; dışarıdan kalan teklif de game katmanındaki ortak çözümleyicide kabul edilmez. Teklif `RegionID` ile aktif kuşatmaya bağlanır, normal diplomasi elçi kotasını tüketmez ve ret cooldown'u bölge bazında tutulur. Oyuncu kabulünde savunmacı ordu geri çekilir.
+- Aynı oyuncuyla savaşta barış ve kuşatma anlaşması koşulları birlikte oluşursa önce barış teklifini kuyruğa alır; barış kabul edilirse geçersiz teslimiyet veya kuşatma vassallığı teklifi diplomasi kuyruğundan temizlenir, ret edilirse kuşatma teklifi sonraki karar olarak kalır.
+- Aktif kuşatmalarda AI, oyuncu hedefliyse iki yönlü `propose_surrender` teklifi değerlendirebilir: kuşatan AI yeterli gedik/baskı ve güç üstünlüğünde oyuncudan teslim ister; kuşatılan AI ağır baskıdaysa oyuncuya teslim olmayı teklif eder. Kuşatılanın son kara toprağı varsa aynı eşik `propose_siege_vassalization` üretir; kabulde bölge sahibi değişmez, devlet kuşatanın vassalı olur, savaş ve kuşatma biter. Teklif `RegionID` ile aktif kuşatmaya bağlanır, normal diplomasi elçi kotasını tüketmez ve ret cooldown'u bölge bazında tutulur. Normal teslimiyet kabulünde savunmacı ordu geri çekilir.
 
 Fırsatçı savaş kararı `aiEvaluateWarOpportunities()` ile sınırlanır:
 

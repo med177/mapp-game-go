@@ -16,14 +16,16 @@ import (
 )
 
 const (
-	commanderPanelW       = 760.0
-	commanderPanelH       = 500.0
-	commanderPanelRowH    = 88.0
-	commanderPanelListW   = 330.0
-	commanderPanelListTop = 104.0
-	commanderPanelListGap = 6.0
-	commanderPanelButtonW = 150.0
-	commanderPanelButtonH = 34.0
+	commanderPanelW        = 760.0
+	commanderPanelH        = 500.0
+	commanderPanelRowH     = 88.0
+	commanderPanelListW    = 330.0
+	commanderPanelListTop  = 104.0
+	commanderPanelListGap  = 6.0
+	commanderPanelButtonW  = 150.0
+	commanderPanelButtonH  = 34.0
+	commanderRecruitModalW = 500.0
+	commanderRecruitModalH = 250.0
 )
 
 var (
@@ -147,6 +149,69 @@ func commanderPanelUnassignEmbarkedButton(gs *state.GameState, aid army.ArmyID) 
 	}
 	panel := commanderPanelRect()
 	return gameui.NewButton(panel.X+24, panel.Y+panel.H-54, commanderPanelButtonW, commanderPanelButtonH, "Taşınanı Ayır"), true
+}
+
+func commanderPanelRecruitButton() gameui.Button {
+	panel := commanderPanelRect()
+	return gameui.NewButton(panel.X+panel.W-190, panel.Y+58, 166, 28, "Yeni Komutan")
+}
+
+// commanderRecruitButtonStyle, ortak positive buton temasını korur; ancak
+// gameui.Button'ın gerçek dikey merkezleme hesabını kullanır. applyTiny'nin
+// sabit ofseti 28 px yüksekliğindeki bu butonun metnini üstte bırakıyordu.
+func commanderRecruitButtonStyle() gameui.ButtonStyle {
+	style := applyTinyButtonStyle
+	style.TextOffsetY = 0
+	return style
+}
+
+func commanderRecruitModalPanel() gameui.Panel {
+	panel := gameui.AnchorRect(
+		gameui.Rect{W: ScreenWidth, H: ScreenHeight},
+		commanderRecruitModalW,
+		commanderRecruitModalH,
+		gameui.AnchorCenter,
+		gameui.AnchorMiddle,
+		0,
+		0,
+	)
+	return gameui.NewPanel(panel.X, panel.Y, panel.W, panel.H)
+}
+
+func commanderRecruitModalCloseButton() gameui.Button {
+	panel := commanderRecruitModalPanel().Rect
+	return gameui.NewButton(panel.X+panel.W-42, panel.Y+12, 28, 28, "").WithIcon(gameui.IconClose)
+}
+
+func commanderRecruitModalNameBox() gameui.TextBox {
+	panel := commanderRecruitModalPanel().Rect
+	box := gameui.NewTextBox(panel.X+24, panel.Y+94, panel.W-48, 38, "Komutan adı")
+	box.MaxLen = state.PlayerCommanderMaxNameRunes
+	return box
+}
+
+func commanderRecruitModalCreateButton() gameui.Button {
+	panel := commanderRecruitModalPanel().Rect
+	return gameui.NewButton(panel.X+panel.W-174, panel.Y+panel.H-54, 150, 32, "Komutan Oluştur")
+}
+
+func commanderRecruitModalCancelButton() gameui.Button {
+	panel := commanderRecruitModalPanel().Rect
+	return gameui.NewButton(panel.X+24, panel.Y+panel.H-54, 112, 32, "Vazgeç")
+}
+
+func commanderRecruitTextBoxStyle() gameui.TextBoxStyle {
+	return gameui.TextBoxStyle{
+		BG:          color.RGBA{28, 22, 14, 245},
+		Border:      panelBorder,
+		Focused:     ColorGold,
+		Text:        ColorWhite,
+		Placeholder: ColorGray,
+		BorderWidth: 1,
+		TextOffsetX: 12,
+		TextOffsetY: 10,
+		TextVariant: gameui.TextMedium,
+	}
 }
 
 func commanderUnassignButtonStyle() gameui.ButtonStyle {
@@ -275,6 +340,7 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	gameui.DrawButton(screen, commanderPanelCloseButton(), gameui.ButtonStyle{
 		BG: panelBg, Border: panelBorder, Text: ColorWhite, BorderWidth: 1,
 	}, sharedTextRenderer{})
+	gameui.DrawButton(screen, commanderPanelRecruitButton(), commanderRecruitButtonStyle(), sharedTextRenderer{})
 
 	vector.StrokeLine(screen, float32(panel.X+commanderPanelListW+48), float32(panel.Y+84), float32(panel.X+commanderPanelListW+48), float32(panel.Y+panel.H-24), 1, panelBorder, false)
 	DrawText(screen, "Boştaki Komutanlar — seçim için tıkla", panel.X+24, panel.Y+82, FaceMed, ColorGold)
@@ -318,6 +384,28 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	}
 
 	r.drawCommanderDetail(screen, current)
+	if r.showCommanderRecruit {
+		r.drawCommanderRecruitModal(screen)
+	}
+}
+
+func (r *Renderer) drawCommanderRecruitModal(screen *ebiten.Image) {
+	if r == nil || !r.showCommanderRecruit {
+		return
+	}
+	modal := gameui.NewModal(ScreenWidth, ScreenHeight, commanderRecruitModalPanel())
+	gameui.DrawModal(screen, modal, standardModalStyle, sharedTextRenderer{}, func() {
+		panel := modal.Panel.Rect
+		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 22, W: panel.W - 72}, "Yeni Komutan", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 58, W: panel.W - 48}, "Başlangıç XP'si ve uzmanlıkları rastgele belirlenir.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		gameui.DrawTextBox(screen, r.commanderRecruitName, commanderRecruitTextBoxStyle(), sharedTextRenderer{})
+		if r.commanderRecruitError != "" {
+			drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 142, W: panel.W - 48}, r.commanderRecruitError, ColorRed, gameui.TextSmall, gameui.TextAlignStart)
+		}
+		gameui.DrawButton(screen, commanderRecruitModalCloseButton(), gameui.ButtonStyle{BG: panelBg, Border: panelBorder, Text: ColorWhite, BorderWidth: 1}, sharedTextRenderer{})
+		gameui.DrawButton(screen, commanderRecruitModalCancelButton(), tinyButtonStyle, sharedTextRenderer{})
+		gameui.DrawButton(screen, commanderRecruitModalCreateButton(), commanderRecruitButtonStyle(), sharedTextRenderer{})
+	})
 }
 
 func (r *Renderer) drawCommanderDetail(screen *ebiten.Image, current *army.Army) {
@@ -469,6 +557,9 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	if r == nil || !r.showCommanderPanel {
 		return InputAction{}
 	}
+	if r.showCommanderRecruit {
+		return r.handleCommanderRecruitInput()
+	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.CloseCommanderPanel()
 		return InputAction{}
@@ -477,6 +568,10 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	fx, fy := float64(mx), float64(my)
 	if commanderPanelCloseButton().HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		r.CloseCommanderPanel()
+		return InputAction{}
+	}
+	if commanderPanelRecruitButton().HitTest(fx, fy) && r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		r.OpenCommanderRecruitModal()
 		return InputAction{}
 	}
 	current := r.gs.Armies[r.commanderPanelArmy]
@@ -525,6 +620,45 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	return InputAction{}
 }
 
+func (r *Renderer) handleCommanderRecruitInput() InputAction {
+	if r == nil || !r.showCommanderRecruit {
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.CloseCommanderRecruitModal()
+		return InputAction{}
+	}
+	mx, my := ebiten.CursorPosition()
+	input := gameui.InputState{
+		MouseX:               float64(mx),
+		MouseY:               float64(my),
+		LeftJustPressed:      r.mouseJustPressed(ebiten.MouseButtonLeft),
+		TextInput:            string(ebiten.AppendInputChars(nil)),
+		BackspaceJustPressed: r.keyJustPressed(ebiten.KeyBackspace),
+		EnterJustPressed:     r.keyJustPressed(ebiten.KeyEnter),
+	}
+	nameBox := commanderRecruitModalNameBox()
+	nameBox.Value = r.commanderRecruitName.Value
+	nameBox.Focused = r.commanderRecruitName.Focused
+	nameBox.HandleInput(input)
+	r.commanderRecruitName = nameBox
+
+	if commanderRecruitModalCloseButton().HandleInput(input) || commanderRecruitModalCancelButton().HandleInput(input) {
+		r.CloseCommanderRecruitModal()
+		return InputAction{}
+	}
+	if commanderRecruitModalCreateButton().HandleInput(input) || (input.EnterJustPressed && nameBox.Focused) {
+		name := strings.TrimSpace(r.commanderRecruitName.Value)
+		if name == "" {
+			r.commanderRecruitError = "Komutan için bir isim girin."
+			return InputAction{}
+		}
+		r.CloseCommanderRecruitModal()
+		return InputAction{Kind: ActionRecruitCommander, CommanderName: name}
+	}
+	return InputAction{}
+}
+
 func (r *Renderer) ensureCommanderPanelFocusVisible(count int, viewport gameui.Rect) {
 	if r == nil || count <= 0 {
 		return
@@ -542,7 +676,16 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 	if r == nil || !r.showCommanderPanel || r.gs == nil {
 		return false
 	}
+	if r.showCommanderRecruit {
+		return commanderRecruitModalCloseButton().HitTest(fx, fy) ||
+			commanderRecruitModalCancelButton().HitTest(fx, fy) ||
+			commanderRecruitModalCreateButton().HitTest(fx, fy) ||
+			r.commanderRecruitName.HitTest(fx, fy)
+	}
 	if commanderPanelCloseButton().HitTest(fx, fy) {
+		return true
+	}
+	if commanderPanelRecruitButton().HitTest(fx, fy) {
 		return true
 	}
 	current := r.gs.Armies[r.commanderPanelArmy]
@@ -583,7 +726,27 @@ func (r *Renderer) CloseCommanderPanel() {
 		return
 	}
 	r.showCommanderPanel = false
+	r.CloseCommanderRecruitModal()
 	r.commanderPanelArmy = ""
 	r.commanderPanelFocus = 0
 	r.commanderPanelScroll = 0
+}
+
+func (r *Renderer) OpenCommanderRecruitModal() {
+	if r == nil || !r.showCommanderPanel {
+		return
+	}
+	r.showCommanderRecruit = true
+	r.commanderRecruitName = commanderRecruitModalNameBox()
+	r.commanderRecruitName.Focused = true
+	r.commanderRecruitError = ""
+}
+
+func (r *Renderer) CloseCommanderRecruitModal() {
+	if r == nil {
+		return
+	}
+	r.showCommanderRecruit = false
+	r.commanderRecruitName = gameui.TextBox{}
+	r.commanderRecruitError = ""
 }

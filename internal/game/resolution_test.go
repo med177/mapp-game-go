@@ -1350,6 +1350,46 @@ func TestRegionalLogisticsUsesExistingGrainThroughGranary(t *testing.T) {
 	}
 }
 
+func TestSiegeGranaryReducesDefenderLogisticsAttrition(t *testing.T) {
+	buildState := func(withGranary bool) *state.GameState {
+		gs := &state.GameState{
+			PlayerFactionID: "p2",
+			Factions: map[faction.FactionID]*faction.Faction{
+				"p1": {ID: "p1"},
+				"p2": {ID: "p2", Grain: 0},
+			},
+			Regions: map[world.RegionID]*world.Region{
+				"fort": {ID: "fort", OwnerID: "p2", Buildings: []string{"walls"}},
+			},
+			Armies: map[army.ArmyID]*army.Army{
+				"besieger": {ID: "besieger", OwnerID: "p1", RegionID: "fort", Units: repeatedUnits("inf", 1, 100)},
+				"defender": {ID: "defender", OwnerID: "p2", RegionID: "fort", Units: repeatedUnits("inf", 1, 100)},
+			},
+			Sieges: map[world.RegionID]*state.SiegeState{
+				"fort": {RegionID: "fort", AttackerArmyID: "besieger", DefenderArmyID: "defender"},
+			},
+			UnitTypes: map[string]*army.UnitType{
+				"inf": {ID: "inf", GrainUpkeep: 10},
+			},
+		}
+		if withGranary {
+			gs.Regions["fort"].Buildings = append(gs.Regions["fort"].Buildings, "granary")
+		}
+		return gs
+	}
+
+	withoutGranary := buildState(false)
+	withGranary := buildState(true)
+	applyRegionalLogisticsPressure(withoutGranary)
+	applyRegionalLogisticsPressure(withGranary)
+
+	withoutDamage := withoutGranary.ArmyLogistics["defender"].DamagePerUnit
+	withDamage := withGranary.ArmyLogistics["defender"].DamagePerUnit
+	if withDamage >= withoutDamage {
+		t.Fatalf("ambar savunucu lojistik yıpranmasını azaltmalıydı: ambarsız=%d ambarlı=%d", withoutDamage, withDamage)
+	}
+}
+
 func TestRegionalLogisticsReducesPortBufferUnderBlockade(t *testing.T) {
 	gs := &state.GameState{
 		Month:           4,

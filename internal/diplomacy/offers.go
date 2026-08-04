@@ -93,6 +93,17 @@ func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy fact
 // QueueSurrenderOffer kuşatma ile ilişkili teslimiyet teklifini kuyruğa ekler.
 // Bölge kimliği teklifin hangi aktif kuşatmaya ait olduğunu ayırt eder.
 func QueueSurrenderOffer(gs *state.GameState, from, to faction.FactionID, regionID world.RegionID, priority int, reason string) bool {
+	return queueSiegeSettlementOffer(gs, from, to, regionID, priority, reason, ActionProposeSurrender)
+}
+
+// QueueSiegeVassalizationOffer kuşatma altındaki son kara toprağı için vassallık
+// teklifini kuyruğa ekler. Bu teklif kabul edilirse bölge el değiştirmez;
+// kuşatılan devlet kuşatanın vassalı olur.
+func QueueSiegeVassalizationOffer(gs *state.GameState, from, to faction.FactionID, regionID world.RegionID, priority int, reason string) bool {
+	return queueSiegeSettlementOffer(gs, from, to, regionID, priority, reason, ActionProposeSiegeVassalization)
+}
+
+func queueSiegeSettlementOffer(gs *state.GameState, from, to faction.FactionID, regionID world.RegionID, priority int, reason string, action Action) bool {
 	if gs == nil || from == "" || to == "" || from == to || regionID == "" {
 		return false
 	}
@@ -115,18 +126,25 @@ func QueueSurrenderOffer(gs *state.GameState, from, to faction.FactionID, region
 	if !validDirection {
 		return false
 	}
-	for _, offer := range gs.DiplomaticOffers {
-		if offer.Action == string(ActionProposeSurrender) && offer.FromFactionID == from && offer.ToFactionID == to && offer.RegionID == regionID {
+	defenderID := faction.FactionID(target.OwnerID)
+	attackerID := faction.FactionID(attacker.OwnerID)
+	if action == ActionProposeSiegeVassalization {
+		if len(gs.LandRegionsOwnedBy(defenderID)) != 1 || DirectOverlord(gs, attackerID) != "" || DirectOverlord(gs, defenderID) != "" {
 			return false
 		}
 	}
-	if gs.DiplomaticOfferRegionRetryBlocked(string(from), string(to), string(ActionProposeSurrender), regionID, 1) {
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(action) && offer.FromFactionID == from && offer.ToFactionID == to && offer.RegionID == regionID {
+			return false
+		}
+	}
+	if gs.DiplomaticOfferRegionRetryBlocked(string(from), string(to), string(action), regionID, 1) {
 		return false
 	}
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
 		FromFactionID:  from,
 		ToFactionID:    to,
-		Action:         string(ActionProposeSurrender),
+		Action:         string(action),
 		RegionID:       regionID,
 		CreatedTurn:    gs.Turn,
 		Priority:       priority,
@@ -183,7 +201,7 @@ func pendingOfferStage(action string) int {
 	switch Action(action) {
 	case ActionProposePeace:
 		return 2
-	case ActionProposeSurrender:
+	case ActionProposeSurrender, ActionProposeSiegeVassalization:
 		return 1
 	default:
 		return 0

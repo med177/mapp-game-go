@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-04: Kuşatılan bölgedeki ambar seviyesi savunma dayanıklılığına bağlandı.
+  Her `granary` seviyesi savunucu ordunun doğrudan kuşatma HP yıpranmasını ve
+  bölgesel ikmal açığı hasarını `%10` azaltıyor; toplam bonus `%30` ile sınırlı
+  ve kuşatan ordu bu bonusu almıyor. Regression: `TestResolveSiegesGranaryReducesDefenderAttrition`,
+  `TestSiegeGranaryReducesDefenderLogisticsAttrition`.
+
+- 2026-08-04: Oyuncu komutan atama modalından `Yeni Komutan` seçip adını
+  yazarak havuza yeni aday ekleyebiliyor. Yeni adaylar varsayılan portreyle,
+  kalıcı sıra sayısından deterministik türetilen rastgele başlangıç XP'si ve
+  buna bağlı Taktisyen/Savunma gibi uzmanlıklarla oluşuyor; save/load sonrası
+  profil değişmiyor. Ad girişi ortak `gameui.Modal`/`TextBox`/`Button`
+  bileşenleriyle modal önceliği, hit-test ve cursor sözleşmesini koruyor.
+  Regression: `TestRecruitPlayerCommanderUsesEnteredNameAndDeterministicProgression`,
+  `TestRecruitPlayerCommanderRejectsBlankAndTooLongNames`; doğrulama:
+  `go test ./internal/state ./internal/render -count=1`.
+
 - 2026-08-04: Seçili kara ordusu ve donanma marker'larına, komutan portresini
   de kapsayan yuvarlatılmış köşeli kesik altın seçim çerçevesi eklendi. Çerçeve
   görev ve deniz rozetlerinden sonra çizildiği için görünür kalıyor; input
@@ -95,14 +111,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `Test1300ScenarioHistoricalStrongholdsHaveExpectedWallLevels`; doğrulama:
   `go test ./...`.
 
-- 2026-08-03: Kuşatılan devletin son kara toprağı için teslimiyet teklifi artık
-  kabul edilmiyor. AI bu durumda teklif üretmiyor; stale veya oyuncunun AI'ya
-  gönderdiği teklif de merkezi `applySurrenderOffer` doğrulamasında reddedilip
-  kuşatmayı ve bölge sahipliğini koruyor. Regression: `TestAcceptedLastRegionSiegeSurrenderIsRejected`,
-  `TestPlayerCanSendSiegeSurrenderOfferAndAIRejectsLastRegion`,
-  `TestAILastRegionSiegeDoesNotOfferSurrender`; doğrulama: hedefli paket testleri
-  geçti, `go test ./...` mevcut Norway/Sweden capital settlement verisi nedeniyle
-  senaryo integrity testlerinde başarısız.
+- 2026-08-04: Son kara toprağı kuşatılan devlet için teslimiyet yerine bölgeye
+  bağlı `propose_siege_vassalization` akışı eklendi. AI aynı baskı eşiğinde
+  vassallık teklif ediyor; oyuncu da kuşatan tarafta `Vassallık Teklifi`,
+  kuşatılan tarafta `Vassallığı Kabul Et` görüyor. Kabulde bölge sahibi
+  değişmeden hedef devlet kuşatanın vassalı oluyor, savaş ve kuşatma bitiyor.
+  Regression: `TestAcceptedLastRegionSiegeVassalizationKeepsRegionAndEndsSiege`,
+  `TestPlayerCanOfferSiegeVassalizationToLastRegion`,
+  `TestAILastRegionSiegeOffersVassalization`; hedefli diplomasi/AI/game/render
+  testleri geçti.
 
 - 2026-08-03: Üst oyuncu HUD'unda Gelir/Altın sütunu sağa yaslanarak Kereste/Taş
   değerleriyle örtüşmesi giderildi. Kaynak, gelir, altın, ambar ve askeri güç
@@ -1847,7 +1864,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Amfibi savaş fazı | ✅ | Düşman kıyıya çıkarma savaş halinde aktif; çıkarma anı çatışması `combat` ile çözülür, başarılı çıkarma karaya ordu indirip sahiplik günceller, AI barışta çıkarma denemez |
 | Başlangıç orduları | ✅ | Her senaryonun `data/armies.json` dosyasından yükleniyor |
 | Çarpışma motoru | ✅ | Birim gücü, arazi, teknoloji modları ve rastgele sonuç etkisi; saldırı duruşu (`agresif/dengeli/savunmacı`) gerçek savaş sonucu ve saldırı öncesi preview hesabında aynı combat helper'larıyla işlenir. `land/naval/amphibious` bağlamları ayrı stance çarpanları ve açıklama metinleri taşır; muhtemel kayıp paneli bu bağlama göre hesaplanır |
-| Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, ordu panelinden atama/ayırma, AI saha ordularına deterministik komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
+| Komutan kariyeri | ✅ | `Army.Commander` çekirdeği, dengelenmiş XP/seviye/trait ilerlemesi, savaş gücüne saldırı-savunma etkisi, save/load, üç kişilik oyuncu havuzu, oyuncunun isimli-rastgele XP aday üretimi ve ordu panelinden atama/ayırma, AI saha ordularına deterministik komutan üretimi, birleşme-garnizon yaşam döngüsü ve savaş raporu/olay günlüğü kariyer bildirimi hazır |
 | Savaş sonrası toparlanma | ✅ | Savaş, lojistik ve diğer HP kayıpları artık kısmi hasar bırakır; kara orduları kendi, müttefik veya vassal realm toprağında tur başına `+10 HP` ile %100'e kadar toparlanır, limana bağlı donanmalar da kendi, müttefik veya vassal limanında onarım alır; birim kartındaki `+` rozeti aynı ortak uygunluk kuralını kullanır |
 | Ordu detay paneli | ✅ | 20 slot, HP/deneyim çubukları, bölme/birleştirme aksiyonları, dost toprakta toparlanan birimler için küçük `+` rozeti |
 | Ordu birleşme | ✅ | Dost bölgede yalnızca panelden manuel birleşme, 20 birim limiti; hareket orduları otomatik birleşmez |
