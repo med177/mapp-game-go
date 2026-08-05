@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Komutan geliş bildirimindeki çoklu kart listesi modal dışına
+  taşmayacak şekilde panel-local viewport'a alındı. İki görünür satırdan sonraki
+  komutanlar mouse wheel ve scrollbar ile kaydırılıyor; `SubImage` clipping ile
+  kartlar devam metnine veya modal sınırına çizilmiyor. Regression:
+  `TestCommanderArrivalScrollViewportAndClamp`; doğrulama:
+  `go test ./internal/render -count=1`.
+
 - 2026-08-05: Ana menüden devam et veya kayıt slotundan yükleme akışında, yükleme
   ekranı kayıt metadata'sından çözülen senaryonun `scenario_bg.png` görselini de
   kullanıyor. Senaryo seçimi akışındaki mevcut arka plan davranışı korunuyor.

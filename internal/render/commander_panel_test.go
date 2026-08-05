@@ -191,3 +191,31 @@ func TestCommanderPanelRowHitOnlyUsesVisibleRows(t *testing.T) {
 		t.Fatalf("viewport dışı satır tıklanabilir olmamalı: got=%d", got)
 	}
 }
+
+func TestCommanderArrivalScrollViewportAndClamp(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+	ScreenWidth, ScreenHeight = 1280, 720
+
+	viewport := commanderArrivalListViewport()
+	modal := buildHistoricalEventModal().Panel.Rect
+	if viewport.Y <= modal.Y || viewport.Y+viewport.H > modal.Y+modal.H-52 {
+		t.Fatalf("komutan geliş listesi modal sınırları içinde değil: viewport=%+v modal=%+v", viewport, modal)
+	}
+	if visible := commanderArrivalVisibleRows(viewport); visible != 2 {
+		t.Fatalf("beklenen görünür komutan satırı 2, got=%d viewport=%+v", visible, viewport)
+	}
+	if got := clampCommanderArrivalScroll(99, 8, viewport); got != 1 {
+		t.Fatalf("komutan geliş scroll üst sınırı yanlış: got=%d want=1", got)
+	}
+	if got := clampCommanderArrivalScroll(-1, 8, viewport); got != 0 {
+		t.Fatalf("komutan geliş scroll alt sınırı yanlış: got=%d want=0", got)
+	}
+	second := commanderArrivalCardRect(3, 0)
+	last := commanderArrivalCardRect(7, 1)
+	if second.Y != last.Y {
+		t.Fatalf("scroll sonrası son satır beklenen görünür satır konumuna gelmedi: second=%+v last=%+v", second, last)
+	}
+}

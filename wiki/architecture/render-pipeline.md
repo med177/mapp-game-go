@@ -32,8 +32,10 @@ ile sürekli kamera kaydırma ve tek-seferlik kayıt input'u çakışmaz
 Tarih aralığına yeni giren oyuncu komutanları, mevcut tarihsel modal katmanını
 ve aynı Enter/Escape/tıkla kapanış input'unu paylaşan komutan geliş popup'ında
 portre, seviye, trait ve görev yıllarıyla gösterilir. Popup kapalıyken komutan
-seçim paneli yalnız aktif şablonları listeler (`internal/render/renderer.go`,
-`internal/render/panel.go`).
+seçim paneli yalnız aktif şablonları listeler. Çoklu kartlar modal içindeki
+sabit viewport'ta iki satır olarak görünür; `SubImage` clipping, scrollbar ve
+mouse wheel yalnız bu viewport'ta çalışır, kartlar modal dışına taşmaz
+(`internal/render/{renderer.go,renderer_dialogs.go,panel.go}`).
 
 Ticaret panelindeki devlet kapasitesi ve Ticaret Haritasındaki merkez hacmi,
 `GameState.EffectiveFactionTradeCapacity()` / `EffectiveRegionTradeCapacity()`

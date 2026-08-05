@@ -2647,7 +2647,95 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 	}
 }
 
-func drawCommanderArrivalPopup(screen *ebiten.Image, title, desc string, arrivals []*army.Commander) {
+const (
+	commanderArrivalCardW   = 214.0
+	commanderArrivalCardH   = 110.0
+	commanderArrivalCardGap = 12.0
+)
+
+func commanderArrivalListViewport() gameui.Rect {
+	modal := buildHistoricalEventModal()
+	panel := modal.Panel.Rect
+	top := panel.Y + 126
+	bottom := panel.Y + panel.H - 52
+	if bottom < top {
+		bottom = top
+	}
+	return gameui.Rect{
+		X: panel.X + 24,
+		Y: top,
+		W: panel.W - 48,
+		H: bottom - top,
+	}
+}
+
+func commanderArrivalVisibleRows(viewport gameui.Rect) int {
+	rows := int((viewport.H + commanderArrivalCardGap) / (commanderArrivalCardH + commanderArrivalCardGap))
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func commanderArrivalMaxScroll(count int, viewport gameui.Rect) int {
+	rowCount := (count + 2) / 3
+	maxScroll := rowCount - commanderArrivalVisibleRows(viewport)
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func clampCommanderArrivalScroll(scroll, count int, viewport gameui.Rect) int {
+	if scroll < 0 {
+		return 0
+	}
+	if maxScroll := commanderArrivalMaxScroll(count, viewport); scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func commanderArrivalCardRect(index, scroll int) gameui.Rect {
+	modal := buildHistoricalEventModal()
+	panel := modal.Panel.Rect
+	totalW := commanderArrivalCardW*3 + commanderArrivalCardGap*2
+	startX := panel.X + (panel.W-totalW)/2
+	return gameui.Rect{
+		X: startX + float64(index%3)*(commanderArrivalCardW+commanderArrivalCardGap),
+		Y: commanderArrivalListViewport().Y + float64(index/3-scroll)*(commanderArrivalCardH+commanderArrivalCardGap),
+		W: commanderArrivalCardW,
+		H: commanderArrivalCardH,
+	}
+}
+
+func drawCommanderArrivalScrollbar(screen *ebiten.Image, viewport gameui.Rect, count, scroll int) {
+	maxScroll := commanderArrivalMaxScroll(count, viewport)
+	if maxScroll <= 0 {
+		return
+	}
+	scroll = clampCommanderArrivalScroll(scroll, count, viewport)
+	track := gameui.Rect{X: viewport.X + viewport.W + 8, Y: viewport.Y + 4, W: 5, H: viewport.H - 8}
+	if track.H <= 0 {
+		return
+	}
+	rowCount := (count + 2) / 3
+	thumbH := track.H * float64(commanderArrivalVisibleRows(viewport)) / float64(rowCount)
+	if thumbH < 18 {
+		thumbH = 18
+	}
+	if thumbH > track.H {
+		thumbH = track.H
+	}
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * float64(scroll) / float64(maxScroll)
+	}
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{70, 65, 55, 180})
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
+}
+
+func drawCommanderArrivalPopup(screen *ebiten.Image, title, desc string, arrivals []*army.Commander, scroll int) {
 	modal := buildHistoricalEventModal()
 	gameui.DrawModal(screen, modal, historicalEventModalStyle, nil, nil)
 	bx, by, bw, bh := float32(modal.Panel.Rect.X), float32(modal.Panel.Rect.Y), float32(modal.Panel.Rect.W), float32(modal.Panel.Rect.H)
@@ -2657,33 +2745,42 @@ func drawCommanderArrivalPopup(screen *ebiten.Image, title, desc string, arrival
 	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(by) + 54, W: ScreenWidth}, title, color.RGBA{255, 220, 80, 255}, gameui.TextLarge, gameui.TextAlignCenter)
 	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(by) + 88, W: ScreenWidth}, desc, color.RGBA{210, 200, 180, 230}, gameui.TextMedium, gameui.TextAlignCenter)
 
-	const cardW, cardH, gap = 214.0, 110.0, 12.0
-	columns := len(arrivals)
-	if columns > 3 {
-		columns = 3
+	viewport := commanderArrivalListViewport()
+	scroll = clampCommanderArrivalScroll(scroll, len(arrivals), viewport)
+	visibleRows := commanderArrivalVisibleRows(viewport)
+	start := scroll * 3
+	end := (scroll + visibleRows) * 3
+	if start > len(arrivals) {
+		start = len(arrivals)
 	}
-	totalW := float64(columns)*cardW + float64(max(0, columns-1))*gap
-	startX := (ScreenWidth - totalW) / 2
-	for i, commander := range arrivals {
-		if commander == nil {
-			continue
-		}
-		column := i % columns
-		row := i / columns
-		x := startX + float64(column)*(cardW+gap)
-		y := float64(by) + 126 + float64(row)*(cardH+gap)
-		vector.FillRect(screen, float32(x), float32(y), cardW, cardH, color.RGBA{35, 26, 14, 235}, false)
-		vector.StrokeRect(screen, float32(x), float32(y), cardW, cardH, 1, color.RGBA{150, 120, 68, 255}, false)
-		drawCommanderPortrait(screen, commander, x+8, y+8, 54, 62)
-		drawUILabel(screen, gameui.Rect{X: x + 70, Y: y + 12, W: cardW - 78}, commander.Name, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: x + 70, Y: y + 38, W: cardW - 78}, fmt.Sprintf("Seviye %d", commander.Level), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: x + 8, Y: y + 76, W: cardW - 16}, commanderArrivalTraits(commander), ColorGold, gameui.TextSmall, gameui.TextAlignStart)
-		date := fmt.Sprintf("Görev: %d", commander.StartYear)
-		if commander.EndYear != 0 {
-			date += fmt.Sprintf("–%d", commander.EndYear)
-		}
-		drawUILabel(screen, gameui.Rect{X: x + 70, Y: y + 62, W: cardW - 78}, date, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	if end > len(arrivals) {
+		end = len(arrivals)
 	}
+	left, top := int(viewport.X), int(viewport.Y)
+	right, bottom := int(viewport.X+viewport.W), int(viewport.Y+viewport.H)
+	if right > left && bottom > top {
+		body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+		for i := start; i < end; i++ {
+			commander := arrivals[i]
+			if commander == nil {
+				continue
+			}
+			row := commanderArrivalCardRect(i, scroll)
+			x, y := row.X, row.Y
+			vector.FillRect(body, float32(x), float32(y), commanderArrivalCardW, commanderArrivalCardH, color.RGBA{35, 26, 14, 235}, false)
+			vector.StrokeRect(body, float32(x), float32(y), commanderArrivalCardW, commanderArrivalCardH, 1, color.RGBA{150, 120, 68, 255}, false)
+			drawCommanderPortrait(body, commander, x+8, y+8, 54, 62)
+			drawUILabel(body, gameui.Rect{X: x + 70, Y: y + 12, W: commanderArrivalCardW - 78}, commander.Name, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(body, gameui.Rect{X: x + 70, Y: y + 38, W: commanderArrivalCardW - 78}, fmt.Sprintf("Seviye %d", commander.Level), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(body, gameui.Rect{X: x + 8, Y: y + 76, W: commanderArrivalCardW - 16}, commanderArrivalTraits(commander), ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+			date := fmt.Sprintf("Görev: %d", commander.StartYear)
+			if commander.EndYear != 0 {
+				date += fmt.Sprintf("–%d", commander.EndYear)
+			}
+			drawUILabel(body, gameui.Rect{X: x + 70, Y: y + 62, W: commanderArrivalCardW - 78}, date, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		}
+	}
+	drawCommanderArrivalScrollbar(screen, viewport, len(arrivals), scroll)
 	drawUILabel(screen, gameui.Rect{X: 0, Y: float64(by+bh) - 28, W: ScreenWidth}, "[Enter / Boşluk / Tıkla] Devam Et", color.RGBA{140, 130, 100, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
