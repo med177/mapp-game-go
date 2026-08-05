@@ -141,6 +141,47 @@ func TestAIStrategicRecruitmentUsesCostAndUpkeepWithinCategory(t *testing.T) {
 	}
 }
 
+func TestAIStrategicRecruitmentPrefersEliteWithSuperiorPowerPerGrain(t *testing.T) {
+	gs, ctx := aiUnitCompositionTestState(state.AIObjectiveDefend)
+	gs.UnitTypes = map[string]*army.UnitType{
+		"militia": aiTestLandUnitType("militia", army.CategoryInfantry, 6, 8, 40, 60, 6),
+		"elite":   aiTestLandUnitType("elite", army.CategoryInfantry, 24, 20, 85, 220, 10),
+	}
+	gs.UnitTypes["militia"].GrainCost = 12
+	gs.UnitTypes["elite"].GrainCost = 24
+
+	needs := aiBuildRecruitmentBattleNeeds(gs, "ai", ctx)
+	militia := aiScoreLandUnitCandidate(gs, gs.Factions["ai"], gs.UnitTypes["militia"], aiCompositionTargetForPlan(gs.AIPlans["ai"]), aiLandComposition{}, needs, aiBuildEconomySnapshot(gs, "ai"), true)
+	elite := aiScoreLandUnitCandidate(gs, gs.Factions["ai"], gs.UnitTypes["elite"], aiCompositionTargetForPlan(gs.AIPlans["ai"]), aiLandComposition{}, needs, aiBuildEconomySnapshot(gs, "ai"), true)
+	if elite.SustainedCombat <= militia.SustainedCombat || elite.Score <= militia.Score {
+		t.Fatalf("elit birim yakın bakım maliyetine karşı güç/tahıl veriminde öne çıkmalıydı: militia=%+v elite=%+v", militia, elite)
+	}
+	if got := aiSelectBestUnitForStrategicContext(gs, gs.Factions["ai"], nil, ctx); got != "elite" {
+		t.Fatalf("elit birim güç/tahıl verimiyle milise tercih edilmeliydi: got=%s", got)
+	}
+}
+
+func TestAIFortifiedCampaignBuildsSiegeCorpsForMultipleTargets(t *testing.T) {
+	gs, ctx := aiUnitCompositionTestState(state.AIObjectiveExpand)
+	gs.UnitTypes = map[string]*army.UnitType{
+		"inf":   aiTestLandUnitType("inf", army.CategoryInfantry, 14, 12, 60, 80, 2),
+		"siege": aiTestLandUnitType("siege", army.CategorySiege, 18, 4, 35, 100, 3),
+	}
+	gs.Regions["target"].Buildings = []string{"walls"}
+	gs.Regions["target_2"] = &world.Region{ID: "target_2", OwnerID: "enemy", Buildings: []string{"walls"}}
+	gs.Regions["target_3"] = &world.Region{ID: "target_3", OwnerID: "enemy", Buildings: []string{"walls"}}
+	gs.AIPlans["ai"].TargetRegionIDs = []world.RegionID{"target", "target_2", "target_3"}
+	gs.Armies["field"].Units = aiUnitsOfType("inf", 8)
+
+	needs := aiBuildRecruitmentBattleNeeds(gs, "ai", ctx)
+	if !needs.FortifiedTarget || needs.FortifiedTargetCount != 3 || needs.RequiredSiegeUnits != 3 || needs.SiegeShortfall != 3 {
+		t.Fatalf("çoklu tahkimli hedef için üç birliklik kuşatma kolu zorunlu olmalıydı: %+v", needs)
+	}
+	if got := aiSelectBestUnitForStrategicContext(gs, gs.Factions["ai"], nil, ctx); got != "siege" {
+		t.Fatalf("tahkimli sefer kuşatma açığını önce kapatmalıydı: got=%s", got)
+	}
+}
+
 func aiUnitCompositionTestState(kind state.AIObjectiveKind) (*state.GameState, *StrategicContext) {
 	gs := &state.GameState{
 		ScenarioID: "1300_ottoman_rise",

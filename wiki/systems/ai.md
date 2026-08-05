@@ -529,8 +529,11 @@ aktif stratejik plana bağlar:
 Kompozisyon hesabına haritadaki kara orduları, filolarda taşınan birlikler ve bekleyen
 kara üretim emirleri birlikte girer. Her uygun aday önce hedef orana göre kapatacağı
 açıkla, ardından saldırı/savunma/moral değeri, altın eşdeğeri toplam maliyet, hammadde
-stok baskısı, tahıl bakımı ve üretim süresiyle puanlanır. Mevcut teknoloji, gerekli bina
-ve ordu bütçesi kontrolleri aynen uygulanır.
+stok baskısı, tahıl bakımı, **güç/tahıl verimi** ve üretim süresiyle puanlanır. Böylece
+milisle yakın bakım taşıyan fakat çok daha yüksek savaş değeri veren elit birlik, gerekli
+teknoloji, üretim hattı ve bütçe varsa tercih edilir; tahıl krizi ise mutlak bakım cezasını
+artırmaya devam eder. Mevcut teknoloji, gerekli bina ve ordu bütçesi kontrolleri aynen
+uygulanır.
 
 Savaş bağlamı oyunun gerçek mekaniklerinden türetilir. Genişleme saldırıyı, savunma
 savunma değerini öne çıkarır; hedef dağ/geçit/orman ise saldıran tarafta saldırı ve
@@ -538,7 +541,10 @@ moral, dost savunma hedefinde savunma ve moral ağırlığı artar. Düşman ord
 saldırı/savunma profili karşı ağırlığı değiştirir. Birim kategorilerine oyunda olmayan
 arazi veya karşı-birim bonusları eklenmez. Tahkimli objective ya da aktif savaş hedefi
 varsa, kuşatma desteği olmayan `assault/siege` orduları ile kuyruktaki kuşatma üretimi
-karşılaştırılır; açık varsa kuşatma birimi güçlü öncelik alır.
+karşılaştırılır; açık varsa kuşatma birimi güçlü öncelik alır. Plan ve aktif cephelerdeki
+farklı tahkimli hedefler ayrıca sayılır: en fazla üç birliklik bir kuşatma kolu hedeflenir;
+bu sayı, sahadaki ve kuyruktaki kuşatma birimleriyle kapatılana kadar piyade/süvari
+oranından önce gelir.
 
 Seçim skor ve bağlayıcı alanlarla deterministiktir. Model runtime-only'dir; save şeması
 değişmez. Diğer senaryolar sabit elite piyade/ağır süvari/piyade sırasını kullanmaya

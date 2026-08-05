@@ -25,12 +25,14 @@ type aiLandComposition struct {
 }
 
 type aiRecruitmentBattleNeeds struct {
-	AttackWeight    int
-	DefenseWeight   int
-	MoraleWeight    int
-	TargetTerrain   world.TerrainType
-	FortifiedTarget bool
-	SiegeShortfall  int
+	AttackWeight         int
+	DefenseWeight        int
+	MoraleWeight         int
+	TargetTerrain        world.TerrainType
+	FortifiedTarget      bool
+	FortifiedTargetCount int
+	RequiredSiegeUnits   int
+	SiegeShortfall       int
 }
 
 type aiUnitCandidate struct {
@@ -40,6 +42,7 @@ type aiUnitCandidate struct {
 	CompositionNeed int
 	QualityScore    int
 	EffectiveCost   int
+	SustainedCombat int
 }
 
 func aiCompositionTargetForPlan(plan *state.AIPlanState) aiCompositionTarget {
@@ -162,10 +165,18 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 	if includeResourcePressurePenalty {
 		resourcePenalty = aiUnitResourcePressurePenalty(self, cost)
 	}
+	grainPressure := aiGrainUtilityPercent(economySnapshot)
 	upkeepMultiplier := 3
-	if aiGrainUtilityPercent(economySnapshot) >= 100 {
+	sustainedCombatWeight := 1
+	if grainPressure >= 100 {
 		upkeepMultiplier = 10
+		sustainedCombatWeight = 2
 	}
+	// Birliklerin mutlak tahıl bakımı tek başına doğru karar verdirmez:
+	// milis ile elit piyade arasındaki bakım farkı sınırlıyken savaş değeri
+	// çok büyüktür. Güç/tahıl verimi, altın maliyeti ve stok baskısıyla birlikte
+	// hesaba katılır; böylece AI kaynakları uygunsa elit kaliteye geçer.
+	sustainedCombat := combatValue * 100 / maxInt(1, unitType.GrainUpkeep)
 	turns := maxInt(1, unitType.TurnsRequired)
 	efficiencyWeight := 3
 	if !includeResourcePressurePenalty {
@@ -174,7 +185,7 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 		// milis, daha güçlü ama demir isteyen piyadeyi her zaman bastırır.
 		efficiencyWeight = 1
 	}
-	qualityScore := combatValue + efficiency*efficiencyWeight - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - turns*8
+	qualityScore := combatValue + efficiency*efficiencyWeight + sustainedCombat*sustainedCombatWeight/8 - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - turns*8
 	score := compositionNeed*4 + qualityScore
 	if unitType.Category == army.CategorySiege && needs.FortifiedTarget {
 		if needs.SiegeShortfall > 0 {
@@ -190,6 +201,7 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 		CompositionNeed: compositionNeed,
 		QualityScore:    qualityScore,
 		EffectiveCost:   effectiveCost,
+		SustainedCombat: sustainedCombat,
 	}
 }
 
@@ -289,7 +301,8 @@ func aiBuildRecruitmentBattleNeeds(gs *state.GameState, fid faction.FactionID, c
 			needs.DefenseWeight += terrainPressure
 		}
 	}
-	needs.FortifiedTarget = needs.FortifiedTarget || aiHasFortifiedHostileTarget(gs, fid, plan, ctx)
+	needs.FortifiedTargetCount = aiFortifiedOffensiveTargetCount(gs, fid, plan, ctx)
+	needs.FortifiedTarget = needs.FortifiedTarget || needs.FortifiedTargetCount > 0
 	enemyAttack, enemyDefense := aiRecruitmentEnemyProfile(gs, fid, plan, ctx)
 	if enemyAttack > enemyDefense {
 		needs.DefenseWeight++
@@ -297,24 +310,30 @@ func aiBuildRecruitmentBattleNeeds(gs *state.GameState, fid faction.FactionID, c
 		needs.AttackWeight++
 	}
 	if needs.FortifiedTarget {
-		needs.SiegeShortfall = aiOffensiveSiegeShortfall(gs, fid, ctx)
+		needs.RequiredSiegeUnits = minInt(3, maxInt(1, needs.FortifiedTargetCount))
+		needs.SiegeShortfall = aiOffensiveSiegeShortfall(gs, fid, ctx, needs.RequiredSiegeUnits)
 	}
 	return needs
 }
 
-func aiHasFortifiedHostileTarget(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState, ctx *StrategicContext) bool {
-	fortifiedHostile := func(regionID world.RegionID) bool {
+// aiFortifiedOffensiveTargetCount, aktif plan ve savaş cephelerindeki farklı
+// tahkimli düşman bölgelerini sayar. Bu sayı birden fazla kaleye karşı tek bir
+// mancınıkla yetinmek yerine küçük bir kuşatma kolu kurmak için kullanılır.
+func aiFortifiedOffensiveTargetCount(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState, ctx *StrategicContext) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	seen := make(map[world.RegionID]struct{})
+	add := func(regionID world.RegionID) {
 		region := gs.Regions[regionID]
-		if region == nil || region.IsSea || region.OwnerID == "" || region.FortificationLevel() <= 0 {
-			return false
+		if region == nil || region.IsSea || region.OwnerID == "" || region.FortificationLevel() <= 0 || diplomacy.SameRealm(gs, fid, faction.FactionID(region.OwnerID)) {
+			return
 		}
-		return !diplomacy.SameRealm(gs, fid, faction.FactionID(region.OwnerID))
+		seen[regionID] = struct{}{}
 	}
 	if plan != nil {
 		for _, regionID := range plan.TargetRegionIDs {
-			if fortifiedHostile(regionID) {
-				return true
-			}
+			add(regionID)
 		}
 	}
 	if ctx != nil {
@@ -322,24 +341,32 @@ func aiHasFortifiedHostileTarget(gs *state.GameState, fid faction.FactionID, pla
 			if !front.AtWar {
 				continue
 			}
-			if front.TargetRegionID != "" {
-				if fortifiedHostile(front.TargetRegionID) {
-					return true
-				}
-			}
+			add(front.TargetRegionID)
 			for _, regionID := range front.EnemyRegions {
-				if fortifiedHostile(regionID) {
-					return true
-				}
+				add(regionID)
 			}
 		}
 	}
-	return false
+	return len(seen)
 }
 
-func aiOffensiveSiegeShortfall(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) int {
+func aiOffensiveSiegeShortfall(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, requiredSiegeUnits int) int {
 	missing := 0
 	assignedOffense := 0
+	activeSiegeUnits := 0
+	if requiredSiegeUnits <= 0 {
+		requiredSiegeUnits = 1
+	}
+	for _, armyRef := range aiSortedArmies(gs) {
+		if armyRef == nil || armyRef.OwnerID != string(fid) || armyRef.IsNaval || armyRef.IsGarrison {
+			continue
+		}
+		for _, unit := range armyRef.Units {
+			if unitType := gs.UnitTypes[unit.TypeID]; unitType != nil && unitType.Category == army.CategorySiege {
+				activeSiegeUnits++
+			}
+		}
+	}
 	if ctx != nil {
 		for armyID, assignment := range ctx.ArmyAssignments {
 			if assignment.Role != AIArmyRoleAssault && assignment.Role != AIArmyRoleSiege {
@@ -356,7 +383,10 @@ func aiOffensiveSiegeShortfall(gs *state.GameState, fid faction.FactionID, ctx *
 		}
 	}
 	if assignedOffense == 0 {
-		missing = 1
+		missing = requiredSiegeUnits
+	}
+	if capacityShortfall := requiredSiegeUnits - activeSiegeUnits; capacityShortfall > missing {
+		missing = capacityShortfall
 	}
 	for _, order := range gs.ProductionQueue {
 		if missing <= 0 {

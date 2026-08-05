@@ -7,6 +7,18 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: 1300 AI kara birimi seçimi, mevcut plan kompozisyon oranlarını
+  (`expand %55/%25/%20`, `defend %75/%15/%10`, fallback `%65/%25/%10`) korurken
+  aynı kategori içindeki güç/tahıl verimini ayrıca puanlamaya başladı. Yakın tahıl
+  bakımı karşılığında belirgin savaş değeri veren elit piyade, teknoloji, üretim
+  hattı ve bütçe uygunsa milise tercih ediliyor; tahıl darlığında mutlak bakım
+  cezası korunuyor. Plan/cephe üzerindeki farklı tahkimli düşman bölgeleri
+  sayılıyor ve en fazla üç birliklik kuşatma kolu, sahadaki-bekleyen kuşatma
+  kapasitesi tamamlanana kadar zorunlu üretim açığı oluşturuyor. Regression:
+  `TestAIStrategicRecruitmentPrefersEliteWithSuperiorPowerPerGrain`,
+  `TestAIFortifiedCampaignBuildsSiegeCorpsForMultipleTargets`; doğrulama:
+  `go test ./internal/ai`.
+
 - 2026-08-05: Aktif tarihsel/stratejik `expand` hedefleri için savaş kararı
   yalnız tek devletin anlık toplam gücüne bağlanmaktan çıkarıldı. Hedefin
   vassal ve müttefiklerinden oluşan savunma koalisyonuna karşı, otomatik katılan
