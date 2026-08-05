@@ -8,34 +8,41 @@ import (
 )
 
 const (
-	aiWarSupportNearDistance = 1
-	aiWarSupportMidDistance  = 3
-	aiWarSupportFarDistance  = 5
-	aiWarSupportMaxDistance  = 8
+	aiWarSupportNearDistance    = 1
+	aiWarSupportMidDistance     = 3
+	aiWarSupportFarDistance     = 5
+	aiWarSupportMaxDistance     = 8
+	aiHistoricalWarThreshold    = 42
+	aiRapidConquestPowerPercent = 85
+	aiReliableAllyCallPercent   = 70
 )
 
 type aiWarCoalitionRisk struct {
-	TargetPower                    int
-	TargetVassalPower              int
-	AllyPower                      int
-	AllyVassalPower                int
-	AllySupportPower               int
-	DefenderPower                  int
-	AttackerPower                  int
-	AttackerVassalPower            int
-	CertainAttackerAllyPower       int
-	CertainAttackerAllyVassalPower int
-	CertainAttackerSupportPower    int
-	NearestAllyArmy                int
-	NearestAttackerAllyArmy        int
+	TargetPower                     int
+	TargetVassalPower               int
+	AllyPower                       int
+	AllyVassalPower                 int
+	AllySupportPower                int
+	DefenderPower                   int
+	AttackerPower                   int
+	AttackerVassalPower             int
+	CertainAttackerAllyPower        int
+	CertainAttackerAllyVassalPower  int
+	CertainAttackerSupportPower     int
+	ReliableAttackerAllyPower       int
+	ReliableAttackerAllyVassalPower int
+	ReliableAttackerSupportPower    int
+	NearestAllyArmy                 int
+	NearestAttackerAllyArmy         int
 }
 
 // aiWarCoalitionAssessment, savaş ilanı öncesinde iki tarafın etkin koalisyon
 // gücünü ölçer. Savunan tarafta hedefin dış müttefikleri, saldıran tarafta ise
-// AssessWarCall tarafından AutoJoin olarak işaretlenen kesin müttefikler
-// kullanılır. Müttefik katkısı, ordularının hedef ülke topraklarına olan rota
-// mesafesiyle ağırlıklandırılır; böylece haritanın diğer ucundaki kuvvet tam
-// cephe gücü gibi değerlendirilmez.
+// AssessWarCall tarafından AutoJoin olarak işaretlenen kesin müttefikler ile
+// çağrıyı güvenilir biçimde kabul edecek AI müttefikleri kullanılır. Müttefik
+// katkısı, ordularının hedef ülke topraklarına olan rota mesafesiyle
+// ağırlıklandırılır; böylece haritanın diğer ucundaki kuvvet tam cephe gücü
+// gibi değerlendirilmez.
 func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.FactionID) aiWarCoalitionRisk {
 	assessment := aiWarCoalitionRisk{NearestAllyArmy: -1, NearestAttackerAllyArmy: -1}
 	if gs == nil || target == "" {
@@ -62,7 +69,7 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 			continue
 		}
 		call := diplomacy.AssessWarCall(gs, actorRoot, allyRoot, targetRoot)
-		if !call.AutoJoin {
+		if !call.AutoJoin && call.Chance < aiReliableAllyCallPercent {
 			continue
 		}
 		allyPower, nearest := aiWarWeightedFactionPowerWithDistance(gs, allyRoot, battlefield)
@@ -70,9 +77,15 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		for _, vassalID := range diplomacy.VassalsOf(gs, allyRoot) {
 			vassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
 		}
-		assessment.CertainAttackerAllyPower += allyPower
-		assessment.CertainAttackerAllyVassalPower += vassalPower
-		assessment.CertainAttackerSupportPower += allyPower + vassalPower
+		if call.AutoJoin {
+			assessment.CertainAttackerAllyPower += allyPower
+			assessment.CertainAttackerAllyVassalPower += vassalPower
+			assessment.CertainAttackerSupportPower += allyPower + vassalPower
+		} else {
+			assessment.ReliableAttackerAllyPower += allyPower
+			assessment.ReliableAttackerAllyVassalPower += vassalPower
+			assessment.ReliableAttackerSupportPower += allyPower + vassalPower
+		}
 		assessment.AttackerPower += allyPower + vassalPower
 		if nearest >= 0 && (assessment.NearestAttackerAllyArmy < 0 || nearest < assessment.NearestAttackerAllyArmy) {
 			assessment.NearestAttackerAllyArmy = nearest
@@ -304,6 +317,9 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 	}
 
 	strategicContext := prepareStrategicContext(gs, fid)
+	if aiEvaluateHistoricalWarOpportunity(gs, fid, strategicContext, steps) {
+		return
+	}
 	bestScore := aiWarThresholdForDifficulty(gs)
 	bestTarget := faction.FactionID("")
 	for _, otherID := range aiSortedFactionIDs(gs) {
@@ -333,6 +349,35 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 		gs.QueueNavalContactForWar(fid, bestTarget)
 		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: bestTarget, Message: turnFactionName(gs, fid) + ": " + result.Message})
 	}
+}
+
+// aiEvaluateHistoricalWarOpportunity gives an active expansion plan a direct
+// path to war. Generic opportunity scanning still handles every other target,
+// but a historical objective may use a lower declaration threshold once its
+// coalition and frontier are genuinely ready.
+func aiEvaluateHistoricalWarOpportunity(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, steps *[]TurnStep) bool {
+	if gs == nil || fid == "" {
+		return false
+	}
+	plan := gs.AIPlans[fid]
+	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID == "" || plan.TargetFactionID == fid {
+		return false
+	}
+	target := plan.TargetFactionID
+	rel := diplomacy.Relation(gs, fid, target)
+	if rel == nil || rel.Stance != faction.StancePeace {
+		return false
+	}
+	if score := aiWarOpportunityScoreWithContext(gs, fid, target, rel, ctx); score < aiHistoricalWarThreshold {
+		return false
+	}
+	result := diplomacy.Execute(gs, fid, target, diplomacy.ActionDeclareWar)
+	if !result.Applied && !result.Accepted {
+		return false
+	}
+	gs.QueueNavalContactForWar(fid, target)
+	addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: target, Message: turnFactionName(gs, fid) + " tarihsel hedefi için " + result.Message})
+	return true
 }
 
 func aiWarOpportunityScore(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation) int {
@@ -370,7 +415,11 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	}
 
 	coalition := aiWarCoalitionAssessment(gs, actor, target)
-	if coalition.AttackerPower <= 0 || (coalition.DefenderPower > 0 && coalition.AttackerPower*100 < coalition.DefenderPower*aiMinAttackPowerPercent(gs)) || !aiStrategicWarReady(strategicContext, target) {
+	requiredPowerPercent := aiMinAttackPowerPercent(gs)
+	if isPlanTarget && aiRapidConquestOpportunity(gs, actor, target, coalition) {
+		requiredPowerPercent = aiRapidConquestPowerPercent
+	}
+	if coalition.AttackerPower <= 0 || (coalition.DefenderPower > 0 && coalition.AttackerPower*100 < coalition.DefenderPower*requiredPowerPercent) || !aiStrategicWarReady(strategicContext, target) {
 		return -1
 	}
 	frontierPower := aiFrontierPower(gs, actor, target)
@@ -443,6 +492,9 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 			commitment = plan.Commitment
 		}
 		score += minInt(36, 12+commitment/3)
+		if requiredPowerPercent == aiRapidConquestPowerPercent {
+			score += 16
+		}
 	}
 	if isVictoryTarget {
 		score += 12
@@ -457,4 +509,36 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 		score += aiPlayerTargetScoreBonus(gs)
 	}
 	return score
+}
+
+// aiRapidConquestOpportunity permits a bounded historical opening war even
+// when total coalition power is not yet 115%: the attacking state must already
+// dominate the actual border force and have a concrete plan region on that
+// border. It never bypasses logistics, rally, or defender-alliance checks.
+func aiRapidConquestOpportunity(gs *state.GameState, actor, target faction.FactionID, coalition aiWarCoalitionRisk) bool {
+	if gs == nil || !aiSharesLandBorder(gs, actor, target) || coalition.DefenderPower <= 0 {
+		return false
+	}
+	plan := gs.AIPlans[actor]
+	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != target {
+		return false
+	}
+	frontierPower := aiFrontierPower(gs, actor, target)
+	targetFrontierPower := aiFrontierPower(gs, target, actor)
+	if frontierPower <= 0 || (targetFrontierPower > 0 && frontierPower*100 < targetFrontierPower*125) {
+		return false
+	}
+	for _, regionID := range plan.TargetRegionIDs {
+		region := gs.Regions[regionID]
+		if region == nil || region.IsSea || region.OwnerID != string(target) {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == string(actor) {
+				return true
+			}
+		}
+	}
+	return false
 }

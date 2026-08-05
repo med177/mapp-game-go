@@ -8,7 +8,7 @@ import (
 
 func TestLoadAIStrategiesValidatesAndIndexesFactionProfiles(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "ai_strategies.json")
-	data := []byte(`{"factions":[{"faction_id":"ottoman","profile":"frontier_expansion","objectives":[{"id":"secure_bithynia","kind":"expand","target_factions":["east_rome"],"priority":100}]}]}`)
+	data := []byte(`{"factions":[{"faction_id":"ottoman","profile":"frontier_expansion","naval_focus":true,"objectives":[{"id":"secure_bithynia","kind":"expand","target_factions":["east_rome"],"priority":100}]}]}`)
 	if err := os.WriteFile(path, data, 0600); err != nil {
 		t.Fatalf("AI strateji fixture yazılamadı: %v", err)
 	}
@@ -18,7 +18,7 @@ func TestLoadAIStrategiesValidatesAndIndexesFactionProfiles(t *testing.T) {
 		t.Fatalf("AI stratejileri yüklenemedi: %v", err)
 	}
 	got := strategies["ottoman"]
-	if got.Profile != "frontier_expansion" || len(got.Objectives) != 1 || got.Objectives[0].ID != "secure_bithynia" {
+	if got.Profile != "frontier_expansion" || !got.NavalFocus || len(got.Objectives) != 1 || got.Objectives[0].ID != "secure_bithynia" {
 		t.Fatalf("AI strateji profili yanlış yüklendi: %+v", got)
 	}
 }

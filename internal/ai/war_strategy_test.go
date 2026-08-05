@@ -96,6 +96,101 @@ func TestAIWarAssessmentIncludesCertainAttackingAlly(t *testing.T) {
 	}
 }
 
+func TestAIHistoricalPlanCanOpenWarWithReliableNewAlly(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 70
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Hedef Karşıtı Müttefik", Religion: religion.Catholic}
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1", "ally_land"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1", "ally_land"}
+	gs.Regions["ally_land"] = &world.Region{ID: "ally_land", OwnerID: "ally", Neighbors: []world.RegionID{"a1", "b1"}}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -60
+	gs.Relations[faction.RelationKey("ai_1", "ally")] = &faction.Relation{FactionA: "ai_1", FactionB: "ally", Score: 80, Stance: faction.StancePeace}
+	gs.Relations[faction.RelationKey("ally", "ai_2")] = &faction.Relation{FactionA: "ally", FactionB: "ai_2", Score: -60, Stance: faction.StancePeace}
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ally_army"] = &army.Army{ID: "ally_army", OwnerID: "ally", RegionID: "ally_land", Units: []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}}
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai_1": {ObjectiveID: "history:recover", Kind: state.AIObjectiveExpand, TargetFactionID: "ai_2", TargetRegionIDs: []world.RegionID{"b1"}, Commitment: 80},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if rel := gs.Relations[faction.RelationKey("ai_1", "ally")]; rel == nil || rel.Stance != faction.StanceAllied {
+		t.Fatalf("tarihsel hedef için uygun müttefikle ittifak kurulmalıydı: %+v", rel)
+	}
+	if rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]; rel == nil || rel.Stance != faction.StanceWar {
+		t.Fatalf("güvenilir müttefik desteğiyle tarihsel hedefe savaş açılmalıydı: %+v", rel)
+	}
+}
+
+func TestAIHistoricalPlanUsesRapidConquestOnlyWithBorderSuperiority(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 70
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1", "b2"}
+	gs.Regions["b2"] = &world.Region{ID: "b2", OwnerID: "ai_2", Neighbors: []world.RegionID{"b1"}}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = -60
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["ai2_rear"] = &army.Army{ID: "ai2_rear", OwnerID: "ai_2", RegionID: "b2", Units: []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}}
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai_1": {ObjectiveID: "history:border", Kind: state.AIObjectiveExpand, TargetFactionID: "ai_2", TargetRegionIDs: []world.RegionID{"b1"}, Commitment: 80},
+	}
+
+	risk := aiWarCoalitionAssessment(gs, "ai_1", "ai_2")
+	if risk.AttackerPower*100 >= risk.DefenderPower*aiMinAttackPowerPercent(gs) {
+		t.Fatalf("test normal toplam güç eşiğinin altında kalmalıydı: %+v", risk)
+	}
+	if !aiRapidConquestOpportunity(gs, "ai_1", "ai_2", risk) {
+		t.Fatalf("doğrudan hedef sınırındaki yerel üstünlük hızlı fetih fırsatı üretmeliydi")
+	}
+
+	aiEvaluateWarOpportunities(gs, "ai_1")
+
+	if rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]; rel == nil || rel.Stance != faction.StanceWar {
+		t.Fatalf("hızlı fetih şartlarıyla tarihsel hedefe savaş açılmalıydı: %+v", rel)
+	}
+}
+
+func TestAIWarAssessmentIncludesReliableAttackingAlly(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Güvenilir Müttefik", Religion: religion.Catholic}
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1", "ally_land"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1", "ally_land"}
+	gs.Regions["ally_land"] = &world.Region{ID: "ally_land", OwnerID: "ally", Neighbors: []world.RegionID{"a1", "b1"}}
+	gs.Relations[faction.RelationKey("ai_1", "ally")] = &faction.Relation{FactionA: "ai_1", FactionB: "ally", Score: 80, Stance: faction.StanceAllied}
+	gs.Relations[faction.RelationKey("ally", "ai_2")] = &faction.Relation{FactionA: "ally", FactionB: "ai_2", Score: -60, Stance: faction.StancePeace}
+	gs.Armies["ally_army"] = &army.Army{ID: "ally_army", OwnerID: "ally", RegionID: "ally_land", Units: []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}}
+
+	call := diplomacy.AssessWarCall(gs, "ai_1", "ally", "ai_2")
+	if call.AutoJoin || call.Chance < aiReliableAllyCallPercent {
+		t.Fatalf("test müttefiki güvenilir ama otomatik olmayan savaş çağrısı olmalıydı: %+v", call)
+	}
+	risk := aiWarCoalitionAssessment(gs, "ai_1", "ai_2")
+	if risk.ReliableAttackerSupportPower <= 0 {
+		t.Fatalf("güvenilir saldıran müttefik gücü hesaba katılmadı: %+v", risk)
+	}
+}
+
 func TestAIWarDecisionUsesCertainAttackingAllyDistance(t *testing.T) {
 	closeState := aiWarCertainAttackerAllyState(false)
 	aiEvaluateWarOpportunities(closeState, "ai_1")

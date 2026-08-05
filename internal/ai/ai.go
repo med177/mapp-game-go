@@ -2299,6 +2299,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
 		aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
 		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
+		aiProduceNavalReserve(gs, fid, budget, strategicContext, steps)
 		return
 	}
 	f := gs.Factions[fid]
@@ -2462,6 +2463,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 
 	// Escort savaş gemisi üretimi — transport varsa ve savaş halinde veya deniz baskısı yüksekse
 	aiProduceEscortIfNeeded(gs, fid, coastalRegions, budget, steps)
+	aiProduceNavalReserve(gs, fid, budget, strategicContext, steps)
 }
 
 // aiProduceNavalDefenseAtThreatenedPort, somut bir çıkarma görevi olmasa bile

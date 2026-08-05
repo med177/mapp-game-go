@@ -708,6 +708,7 @@
     {
       "faction_id": "england",
       "profile": "continental_claim_awakening",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "secure_english_channel_and_isles",
@@ -951,6 +952,7 @@
     {
       "faction_id": "genoa",
       "profile": "western_merchant_network",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "protect_ligurian_and_black_sea_trade",
@@ -1998,6 +2000,7 @@
     {
       "faction_id": "portugal",
       "profile": "portuguese_atlantic_reconquista",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "hold_portuguese_atlantic_core",
@@ -2546,6 +2549,7 @@
     {
       "faction_id": "venice",
       "profile": "adriatic_merchant_thalassocracy",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "protect_adriatic_and_island_trade",

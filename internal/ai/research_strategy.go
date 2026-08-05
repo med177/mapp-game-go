@@ -13,22 +13,23 @@ import (
 const aiResearchProjectionTurns = 12
 
 type aiResearchSignals struct {
-	Plan                *state.AIPlanState
-	Context             *StrategicContext
-	Composition         aiLandComposition
-	CompositionTarget   aiCompositionTarget
-	BattleNeeds         aiRecruitmentBattleNeeds
-	Economy             aiEconomySnapshot
-	OwnedRegions        int
-	CoastalRegions      int
-	TradeIncome         int
-	LowSatisfaction     int
-	SatisfactionDeficit int
-	ReligionMismatch    int
-	ActiveWars          int
-	IronProduction      int
-	TimberProduction    int
-	StoneProduction     int
+	Plan                  *state.AIPlanState
+	Context               *StrategicContext
+	Composition           aiLandComposition
+	CompositionTarget     aiCompositionTarget
+	BattleNeeds           aiRecruitmentBattleNeeds
+	Economy               aiEconomySnapshot
+	OwnedRegions          int
+	CoastalRegions        int
+	TradeIncome           int
+	LowSatisfaction       int
+	SatisfactionDeficit   int
+	ReligionMismatch      int
+	ActiveWars            int
+	IronProduction        int
+	TimberProduction      int
+	StoneProduction       int
+	NavalReserveShortfall int
 }
 
 type aiResearchCandidate struct {
@@ -303,6 +304,9 @@ func aiResearchUnitUnlockScore(gs *state.GameState, self *faction.Faction, techn
 			} else if unitType.Category == army.CategoryNavalWar && signals.ActiveWars > 0 {
 				unlockValue += 180
 			}
+			if unitType.Category == army.CategoryNavalWar && signals.NavalReserveShortfall > 0 {
+				unlockValue += 160 + minInt(240, signals.NavalReserveShortfall*40)
+			}
 		}
 		score += unlockValue
 	}
@@ -358,13 +362,14 @@ func aiOtherTechRequirementsCompleted(self *faction.Faction, technology *tech.Te
 
 func aiBuildResearchSignals(gs *state.GameState, self *faction.Faction, ctx *StrategicContext) aiResearchSignals {
 	signals := aiResearchSignals{
-		Plan:         gs.AIPlans[self.ID],
-		Context:      ctx,
-		Composition:  aiFactionLandComposition(gs, self.ID),
-		Economy:      aiBuildEconomySnapshot(gs, self.ID),
-		OwnedRegions: len(gs.LandRegionsOwnedBy(self.ID)),
-		TradeIncome:  aiResearchTradeIncome(gs, self.ID),
-		ActiveWars:   len(ctx.WarEnemies),
+		Plan:                  gs.AIPlans[self.ID],
+		Context:               ctx,
+		Composition:           aiFactionLandComposition(gs, self.ID),
+		Economy:               aiBuildEconomySnapshot(gs, self.ID),
+		OwnedRegions:          len(gs.LandRegionsOwnedBy(self.ID)),
+		TradeIncome:           aiResearchTradeIncome(gs, self.ID),
+		NavalReserveShortfall: aiWarshipReserveShortfall(gs, self.ID, ctx),
+		ActiveWars:            len(ctx.WarEnemies),
 	}
 	signals.CompositionTarget = aiCompositionTargetForPlan(signals.Plan)
 	signals.BattleNeeds = aiBuildRecruitmentBattleNeeds(gs, self.ID, ctx)

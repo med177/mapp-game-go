@@ -56,8 +56,11 @@ type LoadedAIConfig struct {
 // AIFactionStrategy tek bir devletin uzun vadeli yönelimini ve sıralı
 // objective tanımlarını içerir.
 type AIFactionStrategy struct {
-	FactionID  string           `json:"faction_id"`
-	Profile    string           `json:"profile,omitempty"`
+	FactionID string `json:"faction_id"`
+	Profile   string `json:"profile,omitempty"`
+	// NavalFocus, denizci devletlerin kıyı sayısından bağımsız olarak büyük
+	// savaş filosu kurmasını sağlayan senaryo-verisi odak bayrağıdır.
+	NavalFocus bool             `json:"naval_focus,omitempty"`
 	Objectives []AIObjectiveDef `json:"objectives"`
 }
 

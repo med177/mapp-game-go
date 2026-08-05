@@ -59,6 +59,13 @@ func TestLandlockedBudgetRedistributesNavalShare(t *testing.T) {
 	}
 }
 
+func TestAINavalFocusBudgetPrioritizesFleetWithoutStarvingArmy(t *testing.T) {
+	allocation, _ := allocateAIBudget(100, aiNavalFocusBudgetWeights(state.AIObjectiveDefend, false))
+	if allocation[aiBudgetNaval] != 35 || allocation[aiBudgetArmy] != 45 {
+		t.Fatalf("denizci savunma profili beklenen 45/35 kara-deniz dağılımını vermeli: %+v", allocation)
+	}
+}
+
 func TestPrepareAIBudgetScalesEmergencyReserve(t *testing.T) {
 	gs := &state.GameState{
 		ScenarioID: "1300_ottoman_rise",

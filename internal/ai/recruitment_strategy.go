@@ -26,19 +26,20 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	if !ok || f.IsEliminated {
 		return
 	}
-	cap := gs.ManpowerCap(fid)
+	reserveShortfall := aiLandReserveShortfall(gs, fid, strategicContext)
 	deployed := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid)
 	barracksCost := aiBarracksResourceCost(gs)
-	if aiNeedsBarracksForMilitaryProduction(gs, fid, strategicContext, cap-deployed) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
+	if aiNeedsBarracksForMilitaryProduction(gs, fid, strategicContext, gs.ManpowerCap(fid)-deployed) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
 		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
 	}
-	for {
-		if gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) || !aiCanAffordForBudget(f, economy.ResourceCost{Gold: aiMilitiaCost}, budget, aiBudgetArmy) {
+	for reserveShortfall > 0 {
+		if !aiCanAffordForBudget(f, economy.ResourceCost{Gold: aiMilitiaCost}, budget, aiBudgetArmy) {
 			break
 		}
 		if !aiRecruitOneWithStrategicContextAndSteps(gs, fid, budget, strategicContext, steps) {
 			break
 		}
+		reserveShortfall = aiLandReserveShortfall(gs, fid, strategicContext)
 	}
 }
 
@@ -207,7 +208,11 @@ func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.F
 	if gs.UnitTypes == nil {
 		return false
 	}
+	reserveShortfall := aiLandReserveShortfall(gs, fid, strategicContext)
 	unitTypeID := aiSelectBestUnitForStrategicContext(gs, f, budget, strategicContext)
+	if reserveShortfall > 0 {
+		unitTypeID = aiSelectReserveLandUnit(gs, f, budget, strategicContext)
+	}
 	if unitTypeID == "" {
 		return false
 	}
@@ -220,6 +225,9 @@ func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.F
 		return false
 	}
 	recruitRegion := aiFindRecruitRegionForStrategicContext(gs, fid, utype, strategicContext)
+	if recruitRegion == "" && reserveShortfall > 0 {
+		recruitRegion = aiFindReserveRecruitRegion(gs, fid, utype, strategicContext)
+	}
 	if recruitRegion == "" || aiPendingUnitCountByRegion(gs, recruitRegion, fid) >= aiMaxRegionQueue || !aiCanQueueLandUnit(gs, fid, recruitRegion, utype) {
 		return false
 	}

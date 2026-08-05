@@ -100,6 +100,9 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 	spendable := maxInt(0, self.Gold-emergency)
 
 	weights := aiBudgetWeights(planKind, warCount > 0, hasCoast)
+	if aiHasNavalFocus(gs, fid) && hasCoast {
+		weights = aiNavalFocusBudgetWeights(planKind, warCount > 0)
+	}
 	allocation, _ := allocateAIBudget(spendable, weights)
 	remaining := make(map[aiBudgetCategory]int, len(allocation))
 	spent := make(map[aiBudgetCategory]int, len(allocation))
@@ -156,6 +159,20 @@ func aiBudgetWeights(planKind state.AIObjectiveKind, atWar, hasCoast bool) map[a
 		delete(weights, aiBudgetNaval)
 	}
 	return weights
+}
+
+// aiNavalFocusBudgetWeights keeps naval-oriented states from treating a large
+// warship reserve as a residual 10% expense. The profile itself remains in
+// scenario JSON; this helper only defines the common spending behaviour.
+func aiNavalFocusBudgetWeights(planKind state.AIObjectiveKind, atWar bool) map[aiBudgetCategory]int {
+	if atWar || planKind == state.AIObjectiveDefend {
+		return map[aiBudgetCategory]int{
+			aiBudgetArmy: 45, aiBudgetEconomy: 10, aiBudgetResearch: 10, aiBudgetNaval: 35,
+		}
+	}
+	return map[aiBudgetCategory]int{
+		aiBudgetArmy: 30, aiBudgetEconomy: 20, aiBudgetResearch: 15, aiBudgetNaval: 35,
+	}
 }
 
 func allocateAIBudget(spendable int, weights map[aiBudgetCategory]int) (map[aiBudgetCategory]int, []aiBudgetCategory) {

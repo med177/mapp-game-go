@@ -127,6 +127,11 @@ func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx
 	if unitID := aiSelectStrategicLandUnitForProcurement(gs, self, ctx); unitID != "" {
 		demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
 	}
+	if aiLandReserveShortfall(gs, fid, ctx) > 0 {
+		if unitID := aiSelectReserveLandUnitForProcurement(gs, self, ctx); unitID != "" {
+			demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
+		}
+	}
 	if candidate, ok := aiBestBuildingInvestmentForProcurement(gs, fid, ctx); ok {
 		demand = aiMaxResourceCost(demand, candidate.Cost)
 	}
@@ -149,6 +154,9 @@ func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx
 		if transportType := gs.UnitTypes["transport"]; transportType != nil && transportType.HasAllRequiredTechs(self.Research.Completed) && ctx.navalMission != nil && ctx.navalMission.MissingCapacity > 0 {
 			demand = aiMaxResourceCost(demand, aiUnitResourceCost(transportType))
 		}
+	}
+	if navalReserveCost := aiNavalReserveProcurementCost(gs, fid, ctx); navalReserveCost != (economy.ResourceCost{}) {
+		demand = aiMaxResourceCost(demand, navalReserveCost)
 	}
 	if reserve := aiMerchantTradeResourceReserve(gs, fid); reserve != (economy.ResourceCost{}) {
 		demand = aiMaxResourceCost(demand, reserve)

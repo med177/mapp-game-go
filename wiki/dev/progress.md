@@ -7,6 +7,35 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Aktif tarihsel/stratejik `expand` hedefleri için savaş kararı
+  yalnız tek devletin anlık toplam gücüne bağlanmaktan çıkarıldı. Hedefin
+  vassal ve müttefiklerinden oluşan savunma koalisyonuna karşı, otomatik katılan
+  ve savaş çağrısını en az `%70` olasılıkla kabul eden yakın AI müttefiklerinin
+  mesafe-ağırlıklı gücü sayılıyor. Yetersiz hedef sahibi önce hedefe baskı
+  yapabilecek devletle ittifak arıyor; ittifakın ardından ortak güç eşiği geçerse
+  aynı tur savaş açabiliyor. Doğrudan hedef bölgesinde `%125` yerel sınır
+  üstünlüğü bulunan planlar, lojistik ve diğer güvenlik kapıları korunarak `%85`
+  toplam koalisyon eşiğiyle hızlı fetih açılışı yapabiliyor. Regression:
+  `TestAIHistoricalPlanCanOpenWarWithReliableNewAlly`,
+  `TestAIHistoricalPlanUsesRapidConquestOnlyWithBorderSuperiority`,
+  `TestAIWarAssessmentIncludesReliableAttackingAlly`; doğrulama:
+  `go test ./internal/ai`.
+
+- 2026-08-05: AI askerî tabanı nüfus ve kıyı ölçeğine bağlandı. Kara rezervi
+  `1 birlik / 200 nüfus` temelinden, plan/savaş tehdidi çarpanlarıyla ve gerçek
+  manpower sınırıyla türetiliyor; eksik kuvvet, saldırı rotası henüz oluşmamış olsa
+  bile güvenli-ikmalli iç üretim hattından tamamlanıyor. Genel filo hedefi her iki
+  kıyı için bir savaş gemisi; `ai_strategies.json`daki `naval_focus` ile işaretlenen
+  denizci devletler kıyı başına iki savaş gemisi ve en az altı gemilik ana filo kurup
+  deniz bütçesine `%35` ayırıyor. Hedef teknoloji → liman → savaş gemisi zincirini ve
+  eksik reçete girdilerinin ticaret ağından alımını tetikliyor. `expand` planındaki
+  hedef devletin aktif+bekleyen kara gücünün `%135`i de ayrı bir kara birlik hedefi
+  üretiyor; hedef devlet güçlendikçe tarihsel fetih hazırlığı büyüyor. Regression:
+  `TestAIForceRequirementsScaleLandReserveWithPopulationAndPlan`,
+  `TestAIExpansionReserveExceedsHistoricalTargetProjectedLandPower`,
+  `TestAIReserveRecruitmentQueuesOnlyPopulationBasedShortfall`,
+  `TestAINavalReserveBuildsPortBeforeWarship`; doğrulama: `go test ./internal/ai`.
+
 - 2026-08-05: AI geri çekilme anchor'ları yeni ikmal-toparlanma modeline bağlandı.
   Kapasitesi aşılmayan adaylarda Çiftlik/Ambar seviyesinin gerçek toparlanma hızı
   puana katılıyor; kısa rota maliyetine rağmen ağır yıpranmış ordu daha hızlı

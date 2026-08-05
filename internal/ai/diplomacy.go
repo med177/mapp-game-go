@@ -17,6 +17,10 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 	if diplomacy.DirectOverlord(gs, fid) != "" {
 		return
 	}
+	// Tarihsel genişleme hedefi karşısında tek başına yeterli olmayan devlet,
+	// genel diplomasi taramasından önce aynı hedefe baskı yapabilecek müttefik
+	// arar. Kabul edilen AI-AI ittifakı bu turdaki savaş koalisyonuna da girer.
+	aiPursueHistoricalWarAlliance(gs, fid, steps)
 
 	for _, otherID := range aiSortedFactionIDs(gs) {
 		other := gs.Factions[otherID]
@@ -128,6 +132,75 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 	aiHandleSiegeSurrenderOffersWithSteps(gs, fid, steps)
 
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
+}
+
+func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	if gs == nil || fid == "" || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return
+	}
+	plan := gs.AIPlans[fid]
+	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID == "" || plan.TargetFactionID == fid {
+		return
+	}
+	target := plan.TargetFactionID
+	targetRelation := diplomacy.Relation(gs, fid, target)
+	if targetRelation == nil || targetRelation.Stance != faction.StancePeace {
+		return
+	}
+	coalition := aiWarCoalitionAssessment(gs, fid, target)
+	if coalition.DefenderPower <= 0 || coalition.AttackerPower*100 >= coalition.DefenderPower*aiMinAttackPowerPercent(gs) {
+		return
+	}
+	battlefield := aiWarBattlefieldRegions(gs, diplomacy.RealmRoot(gs, target))
+	if len(battlefield) == 0 {
+		battlefield = aiWarBattlefieldRegions(gs, target)
+	}
+
+	best := faction.FactionID("")
+	bestPower := 0
+	for _, candidateID := range aiSortedFactionIDs(gs) {
+		if candidateID == fid || candidateID == target || diplomacy.SameRealm(gs, fid, candidateID) || diplomacy.SameRealm(gs, target, candidateID) {
+			continue
+		}
+		candidate := gs.Factions[candidateID]
+		if candidate == nil || candidate.IsEliminated || diplomacy.DirectOverlord(gs, candidateID) != "" {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, candidateID)
+		if rel == nil || rel.Stance != faction.StancePeace || rel.Score < diplomacy.AllianceRelationThreshold(gs) || !aiDiplomacyOfferRetryAllowed(gs, fid, candidateID, diplomacy.ActionProposeAlliance) {
+			continue
+		}
+		// Hedefin mevcut müttefikiyle hedefe karşı ittifak aranmaz. Adayın
+		// hedefle sınırı veya aynı genişleme planı olmalı ki yardım gerçek olsun.
+		if targetRel := diplomacy.Relation(gs, candidateID, target); targetRel != nil && targetRel.Stance == faction.StanceAllied {
+			continue
+		}
+		if !diplomacy.HasDirectThreat(gs, candidateID, target) && !aiPlanTargetsFaction(gs, candidateID, target) {
+			continue
+		}
+		assessment := diplomacy.AssessAllianceProposal(gs, rel, fid, candidateID)
+		if assessment.BlockReason != "" || assessment.Chance < 45 {
+			continue
+		}
+		power := aiWarWeightedFactionPower(gs, candidateID, battlefield)
+		if power > bestPower || (power == bestPower && power > 0 && (best == "" || candidateID < best)) {
+			best, bestPower = candidateID, power
+		}
+	}
+	if best == "" {
+		return
+	}
+	if best == gs.PlayerFactionID {
+		priority, reason := aiDiplomacyOfferPriorityDetails(gs, fid, best, diplomacy.ActionProposeAlliance)
+		if diplomacy.QueueOfferWithMeta(gs, fid, best, diplomacy.ActionProposeAlliance, priority+30, "tarihsel hedef için ortak savaş hazırlığı: "+reason) {
+			addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: best, Message: turnFactionName(gs, fid) + " " + turnFactionName(gs, best) + " ile tarihsel hedef için ittifak arıyor."})
+		}
+		return
+	}
+	result := diplomacy.Execute(gs, fid, best, diplomacy.ActionProposeAlliance)
+	if result.Applied || result.Accepted {
+		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: best, Message: turnFactionName(gs, fid) + " " + turnFactionName(gs, best) + " ile " + turnFactionName(gs, target) + " hedefi için ittifak kurdu."})
+	}
 }
 
 // aiHandleSiegeSurrenderOffersWithSteps, oyuncu ile doğrudan ilişkili aktif

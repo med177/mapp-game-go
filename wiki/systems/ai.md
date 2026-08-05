@@ -77,12 +77,24 @@ gerçek AI karar context'inin aynısını kullanır.
 Savaş ilanı fırsatı yalnız hedef devletin askerî gücüyle değerlendirilmez.
 `internal/ai/war_strategy.go:aiWarCoalitionAssessment`, hedefin otomatik katılan
 vassallarını ve hedefin dış müttefiklerini savunma koalisyonuna ekler. Saldıran
-tarafta ise yalnız `AssessWarCall().AutoJoin` sonucu kesin olan dış müttefikler
-ve onların vassalları hesaba katılır; oyuncuya gönderilen bekleyen katılım teklifi
-kesin destek sayılmaz. Müttefik ve vassal ordularının katkısı, ordunun hedefin
-kara bölgelerine komşuluk grafiğindeki mesafesine göre `%100 / %75 / %50 / %25 / %10`
-ağırlıklandırılır. Ağırlıklı savunma koalisyonu gücü saldırı eşiğini yükseltir;
-kesin saldıran müttefik gücü ise saldırı gücünü artırır.
+tarafta `AssessWarCall().AutoJoin` sonucu kesin olanlar ile çağrıyı en az `%70`
+olasılıkla kabul edecek AI müttefikleri ve onların vassalları hesaba katılır;
+oyuncuya gönderilen bekleyen katılım teklifi destek sayılmaz. Müttefik ve vassal
+ordularının katkısı, ordunun hedefin kara bölgelerine komşuluk grafiğindeki
+mesafesine göre `%100 / %75 / %50 / %25 / %10` ağırlıklandırılır. Ağırlıklı
+savunma koalisyonu gücü saldırı eşiğini yükseltir; güvenilir saldıran müttefik
+gücü ise saldırı gücünü artırır.
+
+Aktif `expand` planı ayrıca doğrudan savaş yoludur: plan hedefiyle barıştaki AI,
+normal fırsat taramasını beklemeden hedefin koalisyonu ve kendi lojistiği hazırsa
+savaş açar. Toplam güç henüz normal `%115` eşiğinde değilse, yalnız hedeflenen
+bölge doğrudan kara sınırındaysa ve AI sınır kuvveti karşı tarafın sınır gücünün
+en az `%125`iyse sınırlı hızlı fetih için `%85` toplam güç eşiği uygulanır.
+Bu istisna tahıl krizi, rally, kritik tehdit, hedef müttefikleri ve cephe kuvveti
+kontrollerini atlamaz. Tek başına yetersiz hedef sahibi, önce hedefe sınırı veya
+aynı hedef planı bulunan; ilişki ve ittifak değerlendirmesini geçen devlete
+ittifak teklif eder. Kabul edilen AI ittifakı aynı turda güvenilir savaş çağrısı
+gücü olarak yeniden değerlendirilir.
 
 Barış döneminde savunma objective'i genişleme objective'ini otomatik olarak
 gölgelemez. Kritik tehdit yoksa erişilebilir `expand` hedeflerine stratejik
@@ -1303,6 +1315,35 @@ Testler:
 ## Birim Alımı (`aiRecruitAndBuild`)
 
 AI birim alımında sadece altın değil, birim reçetesindeki kaynakları da tüketir; `aiMinGoldReserve` korunurken diğer kaynaklar yetersizse alım yapılmaz. Birimler artık anında orduya eklenmez; `GameState.ProductionQueue` içine `kind=unit` emri yazılır ve çözümleme fazında tamamlanır.
+
+1300'de bu akışın başlangıç noktası artık yalnız mevcut ordu sayısı değildir.
+`aiForceRequirements()` her devletin sahip olduğu kara bölgelerinin toplam nüfusundan
+`1 birlik / 200 nüfus` temel kara rezervi çıkarır; genişleme planında hedef `%25`,
+savaş/kritik tehditte `%50` yükselir ve her durumda gerçek `ManpowerCap` ile sınırlanır.
+Bekleyen üretim emirleri hedefe dahil edilir. Devlet bu tabanın altındaysa AI önce
+güvenli, ikmali karşılanabilen bir kışla hattını bulur; saldırı rally rotası henüz
+kurulmadıysa bile iç bölgede rezerv yetiştirebilir. Uygun birim veya kışla maliyetinin
+tahıl, demir, kereste, taş, baharat ya da kumaş girdisi eksikse aynı ortak ticaret ağı
+tedarik zinciri bunu üretimden önce satın almaya çalışır.
+
+Aktif plan `expand` ve `target_faction_id` taşıyorsa nüfus tabanı tek başına yeterli
+sayılmaz. AI, hedef devletin aktif ve üretim kuyruğundaki **kara** gücünü hesaplar;
+kendi planlanan kara gücü bu değerin en az `%135`ine ulaşana kadar birlik hedefini
+yükseltir. Hedef devlet daha çok birlik yetiştirdikçe bu eşik sonraki AI turunda yeniden
+hesaplanır. Böylece örneğin Fransa'nın HRE topraklarına yönelik tarihsel planı, HRE'nin
+gerçek kara gücüne karşı hazırlık yapar. Deniz birimleri bu kara seferi hesabına dahil
+edilmez; deniz hazırlığı aşağıdaki ayrı filo hedefiyle yönetilir.
+
+Kıyı savunması da aynı şekilde coğrafi taban taşır: her iki kıyı bölgesi için en az bir
+`naval_war` birimi hedeflenir; savaş/deniz tehdidinde hedef iki katına çıkar. Merchant
+ve nakliye gemileri bu sayıyı karşılamaz. `ai_strategies.json` içindeki
+`naval_focus: true` ise bu genel oranı, kıyı başına iki savaş gemisi ve en az altı
+gemilik ana filo hedefiyle değiştirir; ayrıca deniz bütçesini `%35`e çıkarır. Böylece
+Venedik, Ceneviz, İngiltere ve Portekiz gibi devletler kodda hardcode edilmeden senaryo
+verisinden gerçek deniz gücü olarak davranır. Savaş gemisi eksikse AI önce gerekli deniz
+teknolojisini araştırma skorunda yükseltir, sonra uygun kıyıda gereken liman seviyesini
+kurar ve son olarak savaş gemisi kuyruğunu açar. Bu sıradaki ilk gerçek maliyet,
+`aiProcureStrategicResources()` için kaynak talebine dönüşür.
 
 Manpower sıkışıksa önce kışla inşa eder. Hiç kara birimi ve hiç kışlası olmayan devlet,
 manpower kapasitesi doluluğa yaklaşmamış olsa bile ilk kışlayı kuyruğa alır; böylece
