@@ -88,7 +88,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 		return nil
 	}
 	var planningContext *StrategicContext
-	if gs.ScenarioID == "1300_ottoman_rise" {
+	if aiStrategicPlanningEnabled(gs) {
 		planningContext = prepareStrategicContext(gs, fid)
 	}
 	// Difficulty 3: koalisyon mantığını çalıştır
@@ -141,7 +141,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 	// Yeni üretilen veya daha önce komutansız kalan AI ordularını kariyer havuzuna bağla.
 	gs.EnsureFactionCommanders(string(fid))
 
-	if gs.ScenarioID == "1300_ottoman_rise" {
+	if aiStrategicPlanningEnabled(gs) {
 		result := prepareStrategicContext(gs, fid)
 		result.budget = budget
 		return result

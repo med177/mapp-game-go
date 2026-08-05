@@ -1,8 +1,8 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-08-04
-related: [architecture/state-management, architecture/game-loop, architecture/render-pipeline]
+last_updated: 2026-08-05
+related: [systems/ai, architecture/state-management, architecture/game-loop, architecture/render-pipeline]
 ---
 
 # Zafer Sistemi
@@ -91,6 +91,13 @@ Senaryo `victory_conditions` kayıtları opsiyonel `allowed_factions` alanı ta�
 - Alan doluysa: yalnız listelenen fraksiyonlar `PhaseVictorySelect` ekranında bu kartı görür.
 
 Tam senaryo listesi `GameState.ScenarioVictories` içinde saklanır; seçim ekranına gösterilen filtrelenmiş kopya `GameState.AvailableVictories` alanına yazılır. Save/load sırasında `scenario.json` tekrar okunup filtre yeniden uygulanır.
+
+AI bu listeyi yalnız UI seçimi için kullanmaz. Fraksiyona özel tarihsel
+zaferin eksik, erişilebilir bölgeleri AI'nin genişleme yönünü; özel hedefi
+olmayan fraksiyonlarda genel hedefler alternatif yönü belirler. Ekonomik ve
+hayatta kalma seçenekleri AI'yi konsolidasyona, askerî seçenekler ise uygun
+kara komşusuna karşı proaktif genişlemeye iter. 1300'de mevcut profilin
+tarih/yıl/event açılış kapıları önce korunur. Detay: [[systems/ai]].
 
 ### 1300 Senaryosu Kalibrasyonu
 

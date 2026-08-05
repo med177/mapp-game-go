@@ -347,8 +347,14 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	}
 	isExpansionTarget := aiHasExpansionTarget(self, target)
 	isPlanTarget := aiPlanTargetsFaction(gs, actor, target)
+	isVictoryTarget := false
+	if plan := gs.AIPlans[actor]; plan != nil {
+		isVictoryTarget = plan.Kind == state.AIObjectiveExpand && plan.TargetFactionID == target && aiPlanIsVictoryObjective(plan)
+	}
 	maxPeaceScore := -20
-	if isPlanTarget {
+	if isVictoryTarget {
+		maxPeaceScore = 25
+	} else if isPlanTarget {
 		maxPeaceScore = 20
 	} else if isExpansionTarget {
 		maxPeaceScore = 10
@@ -437,6 +443,9 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 			commitment = plan.Commitment
 		}
 		score += minInt(36, 12+commitment/3)
+	}
+	if isVictoryTarget {
+		score += 12
 	}
 	if !sharesLandBorder {
 		// Deniz aşırı savaş kara sınırı puanını taşımadığı için, yalnızca

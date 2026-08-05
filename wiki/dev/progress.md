@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: `scenario.json` içindeki `victory_conditions` AI stratejik
+  planına bağlandı. Tarihsel fraksiyon hedefleri eksik/erişilebilir bölgelerin
+  sahibini öncelikli genişleme hedefi yapıyor; özel hedefi olmayan devletler
+  genel zafer koşullarını kullanıyor. Ekonomik ve hayatta kalma hedefleri
+  konsolidasyona, askerî hedefler uygun kara komşusuna yönlendiriyor. Bu plan
+  savaş fırsatı puanına ek proaktivite veriyor ve 1300 dışındaki, zafer verisi
+  yüklü senaryolarda da çalışıyor. 1300'de mevcut profilin tarih/yıl/event
+  açılış kapıları korunuyor. Regression:
+  `TestHistoricalVictoryConditionOverridesProfilePlan`,
+  `TestGeneralVictoryConditionGuidesFactionWithoutHistoricalGoal`,
+  `TestEnsureStrategicPlanUsesVictoryConditionsInAnyScenario`,
+  `TestVictoryPlanAllowsOpportunityWarOnMildPeace`.
+
 - 2026-08-05: AI barış dönemindeki pasiflik düzeltildi. Kritik tehdit yokken
   genişleme objective'leri savunma objective'leri tarafından tamamen
   gölgelenmiyor; savunma planındaki yeterli sınır orduları fırsat savaşı

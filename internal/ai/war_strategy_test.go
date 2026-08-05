@@ -45,6 +45,26 @@ func TestAIWarAssessmentIncludesAlliedAndVassalMilitaryPower(t *testing.T) {
 	}
 }
 
+func TestVictoryPlanAllowsOpportunityWarOnMildPeace(t *testing.T) {
+	gs := aiTestState()
+	gs.Difficulty = 2
+	gs.Month = 1
+	gs.Factions["ai_1"].AIAggressiveness = 60
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 21
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai_1": {ObjectiveID: "victory:frontier", Kind: state.AIObjectiveExpand, TargetFactionID: "ai_2", TargetRegionIDs: []world.RegionID{"b1"}, Commitment: 70},
+	}
+	gs.Armies["ai1_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100},
+	}
+
+	if score := aiWarOpportunityScore(gs, "ai_1", "ai_2", gs.Relations[faction.RelationKey("ai_1", "ai_2")]); score < 0 {
+		t.Fatalf("zafer planı hafif olumlu ilişkide fırsat savaşı değerlendirmesini kapatmamalıydı: %d", score)
+	}
+}
+
 func TestAIWarDecisionUsesAlliedDistanceAndCoalitionPower(t *testing.T) {
 	closeState := aiWarAlliedTargetState(false)
 	aiEvaluateWarOpportunities(closeState, "ai_1")

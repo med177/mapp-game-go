@@ -121,6 +121,32 @@ func TestEnsureStrategicPlanOnlyRunsFor1300Scenario(t *testing.T) {
 	}
 }
 
+func TestEnsureStrategicPlanUsesVictoryConditionsInAnyScenario(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.ScenarioID = "1455_wars_of_the_roses"
+	gs.ScenarioVictories = []scenario.VictoryOptionDef{
+		{ID: "general_hegemony", Type: "domination", RequiredRegions: []string{"germiyan_border"}},
+	}
+
+	plan := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
+	if plan == nil || plan.ObjectiveID != "victory:general_hegemony" || plan.TargetFactionID != "germiyan_bey" {
+		t.Fatalf("zafer koşulu olan her senaryoda AI planı üretilmeliydi: %+v", plan)
+	}
+}
+
+func TestTurnPreludeReturnsVictoryStrategicContextInAnyScenario(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.ScenarioID = "1455_wars_of_the_roses"
+	gs.ScenarioVictories = []scenario.VictoryOptionDef{
+		{ID: "general_hegemony", Type: "domination", RequiredRegions: []string{"germiyan_border"}},
+	}
+
+	ctx := runTurnPrelude(gs, "ottoman", nil)
+	if ctx == nil || gs.AIPlans["ottoman"] == nil || gs.AIPlans["ottoman"].ObjectiveID != "victory:general_hegemony" {
+		t.Fatalf("zafer planı 1300 dışı senaryoda AI hareket context'ine taşınmalıydı: context=%+v plan=%+v", ctx, gs.AIPlans["ottoman"])
+	}
+}
+
 func TestScenarioProfileCreatesSoftHistoricalObjectivePlan(t *testing.T) {
 	gs := strategicPlanTestState()
 	gs.Year = 1300
@@ -141,6 +167,65 @@ func TestScenarioProfileCreatesSoftHistoricalObjectivePlan(t *testing.T) {
 	}
 	if plan.Commitment != 74 || len(plan.AnnexRegionIDs) != 1 || plan.AnnexRegionIDs[0] != "constantinople" {
 		t.Fatalf("objective metadata'sı dinamik plana taşınmadı: %+v", plan)
+	}
+}
+
+func TestHistoricalVictoryConditionOverridesProfilePlan(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.ScenarioID = "1455_wars_of_the_roses"
+	gs.AIStrategies = map[string]scenario.AIFactionStrategy{
+		"ottoman": {
+			FactionID: "ottoman",
+			Objectives: []scenario.AIObjectiveDef{
+				{ID: "hold_frontier", Kind: "defend", TargetFactions: []string{"germiyan_bey"}, TargetRegions: []string{"ottoman_home"}, Priority: 100},
+			},
+		},
+	}
+	gs.ScenarioVictories = []scenario.VictoryOptionDef{
+		{ID: "ottoman_frontier_victory", Type: "conquer_city", RequiredRegions: []string{"germiyan_border"}, AllowedFactions: []string{"ottoman"}},
+		{ID: "general_hegemony", Type: "domination", RequiredRegions: []string{"constantinople"}},
+	}
+
+	plan := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
+	if plan == nil || plan.ObjectiveID != "victory:ottoman_frontier_victory" || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != "germiyan_bey" {
+		t.Fatalf("tarihsel zafer hedefi profil savunma planından önce seçilmeliydi: %+v", plan)
+	}
+}
+
+func TestScenarioProfileExpansionBiasStartsAfterHistoricalOpening(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.AIStrategies = map[string]scenario.AIFactionStrategy{
+		"ottoman": {
+			FactionID: "ottoman",
+			Objectives: []scenario.AIObjectiveDef{
+				{ID: "hold_frontier", Kind: "defend", TargetFactions: []string{"germiyan_bey"}, TargetRegions: []string{"ottoman_home"}, Priority: 96},
+				{ID: "press_border", Kind: "expand", TargetFactions: []string{"germiyan_bey"}, TargetRegions: []string{"germiyan_border"}, Priority: 70},
+			},
+		},
+	}
+	gs.Turn = 1
+
+	opening := chooseScenarioObjectivePlan(gs, gs.Factions["ottoman"], buildStrategicContext(gs, "ottoman"))
+	if opening == nil || opening.ObjectiveID != "hold_frontier" {
+		t.Fatalf("tarihsel açılışta savunma objective'i korunmalıydı: %+v", opening)
+	}
+
+	gs.Turn = aiWarLogisticsActivationTurn
+	postOpening := chooseScenarioObjectivePlan(gs, gs.Factions["ottoman"], buildStrategicContext(gs, "ottoman"))
+	if postOpening == nil || postOpening.ObjectiveID != "press_border" {
+		t.Fatalf("açılış sonrası genişleme objective'i proaktif bonus almalıydı: %+v", postOpening)
+	}
+}
+
+func TestGeneralVictoryConditionGuidesFactionWithoutHistoricalGoal(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.ScenarioVictories = []scenario.VictoryOptionDef{
+		{ID: "general_hegemony", Type: "domination", RequiredRegions: []string{"germiyan_border"}},
+	}
+
+	plan := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
+	if plan == nil || plan.ObjectiveID != "victory:general_hegemony" || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != "germiyan_bey" {
+		t.Fatalf("tarihsel hedefi olmayan fraksiyon genel zafer hedefine yönelmeliydi: %+v", plan)
 	}
 }
 

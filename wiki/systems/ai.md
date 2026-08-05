@@ -2,7 +2,7 @@
 type: system
 tags: [ai, strategy, coalition, difficulty]
 last_updated: 2026-08-05
-related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
+related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
@@ -42,6 +42,18 @@ Pusu orduları AI hedef seçimi ve normal bölge savunucu taramasında gizlidir;
 düşman ordu bölgeye girdiğinde `SelectAmbushDefender` ile özel temas tetiklenir.
 AI pusu tarafının çatışma bonusu da oyuncu ile aynı arazi `AmbushBonus`
 değerinden gelir.
+
+`scenario.json` içindeki `victory_conditions` de AI için stratejik girdidir.
+Bir fraksiyona `allowed_factions` ile özel tanımlanmış tarihsel hedef varsa,
+1300 dışı senaryolarda AI önce bu hedefin eksik ve kara sınırından erişilebilir
+bölgelerinin sahibini genişleme planı yapar. Böyle bir hedefi olmayan devletler,
+genel zafer koşullarındaki erişilebilir bölgesel hedefleri; sabit bölgesi olmayan
+askerî zaferde ise en uygun kara komşusunu kullanır. Ekonomik ve hayatta kalma
+hedefleri konsolidasyon planına dönüşür. 1300'de mevcut profil, erken dönem
+tarih/yıl/event kapılarını korur; victory hedefi profil yoksa yedek yön olur ve
+savaş fırsatı puanını besler. Bu niyet `victory:<option-id>` olarak save/load
+arasında korunur; koalisyon gücü, ateşkes, lojistik ve kritik tehdit kurallarını
+bypass etmez. `ScenarioVictories` yüklü tüm senaryolarda çalışır.
 
 `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`, başlangıçta
 elimine olan Ragusa ve Burgonya dahil senaryodaki her fraksiyon için profil

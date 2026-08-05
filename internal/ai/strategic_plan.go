@@ -144,7 +144,7 @@ func (ctx *StrategicContext) strategicRegionValue(region *world.Region) int {
 }
 
 func ensureStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) *state.AIPlanState {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" {
+	if !aiStrategicPlanningEnabled(gs) {
 		return nil
 	}
 	self := gs.Factions[fid]
@@ -170,6 +170,13 @@ func ensureStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	}
 	gs.AIPlans[fid] = plan
 	return plan
+}
+
+// aiStrategicPlanningEnabled, victory_conditions içeren her senaryoda kalıcı
+// AI planlarını açar. 1300'ün eski strateji profilleri, bu metadata olmadan
+// çalışan test/legacy başlangıçları için korunur.
+func aiStrategicPlanningEnabled(gs *state.GameState) bool {
+	return gs != nil && (gs.ScenarioID == "1300_ottoman_rise" || len(gs.ScenarioVictories) > 0)
 }
 
 func aiStrategicPlanValid(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState) bool {
@@ -207,8 +214,26 @@ func chooseStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	if self == nil {
 		return nil
 	}
-	if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
-		return plan
+	// 1300 profilleri, tarihsel hedeflerin kademeli açılışını ve sert yıl/event
+	// kapılarını içerir. Victory koşulu bu senaryoda profile yedek yön verir;
+	// diğer senaryolarda ise fraksiyona özel victory hedefi birincil niyettir.
+	if gs.ScenarioID == "1300_ottoman_rise" {
+		if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
+			return plan
+		}
+		if plan := chooseVictoryStrategicPlan(gs, self, ctx); plan != nil {
+			return plan
+		}
+	} else {
+		if plan := chooseHistoricalVictoryStrategicPlan(gs, self, ctx); plan != nil {
+			return plan
+		}
+		if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
+			return plan
+		}
+		if plan := chooseGeneralVictoryStrategicPlan(gs, self, ctx); plan != nil {
+			return plan
+		}
 	}
 	if targetID := aiBestExpansionPlanTarget(gs, self, ctx); targetID != "" {
 		return newStrategicPlan(gs, self, ctx, state.AIObjectiveExpand, targetID, "senaryo genişleme hedefi")
@@ -289,7 +314,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 			// sürekli gölgede bırakıp AI'yi kendi sınırlarında kilitliyordu.
 			// Genişleme hedefi hâlâ cephe/güç/erişilebilirlik kontrollerinden geçer;
 			// bonus yalnızca barış döneminde gerçek bir saldırı niyeti üretir.
-			if kind == state.AIObjectiveExpand && !ctx.CriticalThreat && len(ctx.WarEnemies) == 0 {
+			if kind == state.AIObjectiveExpand && gs.Turn >= aiWarLogisticsActivationTurn && !ctx.CriticalThreat && len(ctx.WarEnemies) == 0 {
 				score += 55
 			}
 			if rel := diplomacy.Relation(gs, self.ID, targetID); rel != nil && rel.Stance == faction.StanceWar {

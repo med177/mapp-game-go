@@ -61,7 +61,7 @@ type aiFrontBuilder struct {
 // cephe, rezerv ve ordu rolü snapshot'ını üretir.
 func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *StrategicContext {
 	ctx := buildStrategicContext(gs, fid)
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" {
+	if !aiStrategicPlanningEnabled(gs) {
 		return ctx
 	}
 	ensureStrategicPlan(gs, fid, ctx)
