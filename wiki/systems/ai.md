@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [systems/combat, systems/diplomacy, systems/economy, architecture/game-loop, architecture/state-management]
 ---
 
@@ -71,6 +71,17 @@ kesin destek sayılmaz. Müttefik ve vassal ordularının katkısı, ordunun hed
 kara bölgelerine komşuluk grafiğindeki mesafesine göre `%100 / %75 / %50 / %25 / %10`
 ağırlıklandırılır. Ağırlıklı savunma koalisyonu gücü saldırı eşiğini yükseltir;
 kesin saldıran müttefik gücü ise saldırı gücünü artırır.
+
+Barış döneminde savunma objective'i genişleme objective'ini otomatik olarak
+gölgelemez. Kritik tehdit yoksa erişilebilir `expand` hedeflerine stratejik
+öncelik bonusu verilir; savunma planında saldırı rolü atanmamış olsa bile sınır
+kuvveti, güç ve koalisyon kontrollerini geçerse fırsat savaşı için kullanılabilir.
+Lojistik uyarısı bu fırsat savaşlarını tamamen kilitlemez; yalnız gerçek tahıl
+krizi yeni saldırıyı durdurur. Böylece AI sınırlarında pasif beklemek yerine
+hazırlık, baskı ve sınırlı genişleme arasında geçiş yapar.
+
+Kaynak/test: `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`,
+`internal/ai/fronts_test.go`, `internal/ai/rally_test.go`
 
 Geliştirme modunda bu snapshot'lar `quicksave.debug.json` veya
 `autosave.debug.json` sidecar'ındaki `state.ai_diagnostics` alanına eklenir.

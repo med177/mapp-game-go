@@ -284,6 +284,14 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 			if objective.MinYear > 0 || len(objective.RequiredEventFlags) > 0 {
 				score += 10000
 			}
+			// Savunma objective'leri tarihsel profillerde genellikle daha yüksek
+			// önceliklidir. Tehdit yokken bu ham öncelik, genişleme objective'lerini
+			// sürekli gölgede bırakıp AI'yi kendi sınırlarında kilitliyordu.
+			// Genişleme hedefi hâlâ cephe/güç/erişilebilirlik kontrollerinden geçer;
+			// bonus yalnızca barış döneminde gerçek bir saldırı niyeti üretir.
+			if kind == state.AIObjectiveExpand && !ctx.CriticalThreat && len(ctx.WarEnemies) == 0 {
+				score += 55
+			}
 			if rel := diplomacy.Relation(gs, self.ID, targetID); rel != nil && rel.Stance == faction.StanceWar {
 				score += 50
 			}

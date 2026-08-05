@@ -852,10 +852,13 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 	if ctx == nil || ctx.gs == nil || ctx.gs.ScenarioID != "1300_ottoman_rise" {
 		return true
 	}
-	if aiWarLogisticsPolicyActive(ctx.gs) && !aiWarLogisticsReady(ctx.gs, ctx.FactionID) {
+	// Warning seviyesindeki rezerv eksikliği hazırlık ve saldırı temposunu
+	// düşürür, fakat yeni ve zayıf bir hedefe karşı tüm fırsat savaşlarını
+	// kilitlemez. Gerçek tahıl krizi ise saldırıyı hâlâ tamamen durdurur.
+	if aiWarLogisticsPolicyActive(ctx.gs) && !aiWarLogisticsReady(ctx.gs, ctx.FactionID) && aiWarSupplyCrisis(ctx.gs, ctx.FactionID) {
 		return false
 	}
-	if ctx.CriticalThreat || ctx.ReserveAssignedPower < ctx.ReserveTargetPower {
+	if ctx.CriticalThreat || (ctx.ReserveTargetPower > 0 && ctx.ReserveAssignedPower*100 < ctx.ReserveTargetPower*50) {
 		return false
 	}
 	if ctx.RallyActive {
@@ -874,7 +877,16 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 		attackPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
 	}
 	if attackPower <= 0 && !navalMissionReady {
-		return false
+		// Savunma/konsolidasyon planı düşük tehditli bir cephede saldırı rolü
+		// atamamış olabilir. Sınırda yeterli kuvvet varsa bu ordu fırsat savaşı
+		// için kullanılabilir; kritik tehditler yukarıdaki kapıda elenir.
+		if target == "" || ctx.CriticalThreat {
+			return false
+		}
+		attackPower = aiFrontierPower(ctx.gs, ctx.FactionID, target)
+		if attackPower <= 0 {
+			return false
+		}
 	}
 	if attackPower <= 0 && navalMissionReady {
 		if embarkArmy := ctx.gs.Armies[ctx.navalMission.EmbarkArmyID]; embarkArmy != nil {

@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: AI barış dönemindeki pasiflik düzeltildi. Kritik tehdit yokken
+  genişleme objective'leri savunma objective'leri tarafından tamamen
+  gölgelenmiyor; savunma planındaki yeterli sınır orduları fırsat savaşı
+  açabiliyor. Uyarı seviyesindeki lojistik eksikliği savaşı kilitlemiyor,
+  gerçek tahıl krizi hâlâ saldırıyı durduruyor. Regression:
+  `TestStrategicWarReadyUsesBorderForceDuringDefensivePlan`,
+  `TestStrategicWarLogisticsGatePreservesOpeningTempo`; doğrulama:
+  `go test ./...`.
+
 - 2026-08-05: 1300 senaryosunda demir üretimi olmayan kara bölgelerine `2 demir/tur`
   taban üretimi verildi. Böylece demir yatağı bulunmayan küçük ve kıyı devletleri
   temel askerî birlikleri üretebilirken, mevcut 4–20 demirlik uzmanlaşmış bölgeler

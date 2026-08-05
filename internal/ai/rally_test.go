@@ -144,8 +144,8 @@ func TestStrategicWarLogisticsGatePreservesOpeningTempo(t *testing.T) {
 	}
 
 	gs.Turn = aiWarLogisticsActivationTurn + 1
-	if aiStrategicWarReady(openingContext, "enemy") {
-		t.Fatal("açılış penceresinden sonra yetersiz rezerv yeni savaşı engellemeliydi")
+	if !aiStrategicWarReady(openingContext, "enemy") {
+		t.Fatal("kritik olmayan tek aylık rezerv, fırsat savaşını tamamen engellememeliydi")
 	}
 }
 

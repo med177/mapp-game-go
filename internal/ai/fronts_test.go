@@ -86,6 +86,23 @@ func TestDynamicReserveKeepsWeakStackBackAndStrongStackOnObjective(t *testing.T)
 	}
 }
 
+func TestStrategicWarReadyUsesBorderForceDuringDefensivePlan(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.AIPlans["ai"] = &state.AIPlanState{
+		ObjectiveID:     "hold_frontier",
+		Kind:            state.AIObjectiveDefend,
+		TargetFactionID: "enemy",
+		TargetRegionIDs: []world.RegionID{"capital"},
+		StartedTurn:     1,
+		ReassessTurn:    20,
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	if !aiStrategicWarReady(ctx, "enemy") {
+		t.Fatalf("düşük tehditli savunma planında sınır kuvveti fırsat savaşına hazır olmalıydı: %+v", ctx)
+	}
+}
+
 func TestAIDiagnosticSnapshotExposesFrontTargetAndRoles(t *testing.T) {
 	gs := aiFrontTestState()
 	gs.Turn = 30
