@@ -196,8 +196,28 @@ func TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea(t *testing.T) {
 	}
 }
 
+func TestMerchantRouteOptionDisabledWhenCapacityFull(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "player", ToFactionID: "partner", AmountPerTurn: 2}
+	gs := &state.GameState{
+		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
+		TradeRoutes: []*economy.TradeRoute{route},
+		Armies: map[army.ArmyID]*army.Army{
+			"assigned": {ID: "assigned", OwnerID: "player", IsNaval: true, TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}}},
+			"incoming": {ID: "incoming", OwnerID: "player", IsNaval: true, Units: []army.Unit{{TypeID: "merchant_ship"}}},
+		},
+	}
+	r := &Renderer{gs: gs, merchantRouteArmy: "incoming"}
+	if r.merchantRouteOptionEnabled(route) {
+		t.Fatal("kapasitesi dolu rota panelde etkin görünmemeliydi")
+	}
+	r.merchantRouteArmy = "assigned"
+	if !r.merchantRouteOptionEnabled(route) {
+		t.Fatal("mevcut filonun aktif rotası pasif görünmemeliydi")
+	}
+}
+
 func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
-	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction", GoldPerUnit: 5}
+	route := &economy.TradeRoute{FromFactionID: "from_faction", ToFactionID: "to_faction", AmountPerTurn: 2, GoldPerUnit: 5}
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
 			"from":    {ID: "from", OwnerID: "from_faction", Neighbors: []world.RegionID{"aegean"}},
@@ -221,6 +241,7 @@ func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
 	away := *active
 	away.ID = "away"
 	away.RegionID = "aegean"
+	away.TradeRouteKey = ""
 	gs.Armies = map[army.ArmyID]*army.Army{"active": active, "away": &away}
 	r := &Renderer{
 		gs: gs,
@@ -237,6 +258,12 @@ func TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus(t *testing.T) {
 	}
 	if got := r.merchantTradeBonusForArmy(&away); got != 0 {
 		t.Fatalf("hedef denizden uzaktaki filo bonus rozeti üretmemeliydi, got=%d", got)
+	}
+	pending := *active
+	pending.ID = "pending"
+	pending.RegionID = "aegean"
+	if !r.merchantTradeAssignmentPendingForArmy(&pending) {
+		t.Fatal("hedef denize ulaşmamış atanmış merchant filosu bekleyen görev olarak işaretlenmeliydi")
 	}
 	positions := r.armyIconPositions()
 	var activePos armyIconPos

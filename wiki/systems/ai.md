@@ -1199,9 +1199,9 @@ geçilmeden savaş fırsatı puanlanmaz.
 `internal/economy/economy.go` birlikte merchant gemisini gerçek ticaret rotası
 throughput'una bağlar:
 
-- Her merchant gemisi aktif `gönderen->alan` rotasına `+1` hacim ekler; temel rota
-  hacmi ile birlikte toplam `4/tur` sınırı uygulanır. Tek merchant filosu bu kapasiteye
-  kadar gemiyi birlikte taşıyabilir. Katkı `TradeRoute.MerchantAmountBonus` olarak
+- Her merchant gemisi aktif `gönderen->alan` rotasına `+1` hacim ekler; merchant
+  bonusunun üst sınırı rota panelinde görünen o rotanın hacmidir. Tek merchant filosu
+  bu kapasiteye kadar gemiyi birlikte taşıyabilir. Katkı `TradeRoute.MerchantAmountBonus` olarak
   runtime hesaplanır ve save'e yazılmaz.
 - Filo görevi `Army.TradeRouteKey` ile compact/legacy/debug save'lerde korunur.
   Rota yeniden kurulduğunda mal türü veya geçici rota nesnesi değil, yönlü fraksiyon

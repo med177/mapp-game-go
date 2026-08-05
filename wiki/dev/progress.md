@@ -14,10 +14,29 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   doğrulama: `go test ./...`.
 
 - 2026-08-05: Merchant bonusu artık filo başına sabit `+2` değil, gemi başına
-  `+1` hacim olarak hesaplanıyor. Toplam rota hacmi `4/tur` ile sınırlı; merchant
-  üretimi bu sınıra kadar tek filoya ekleniyor ve harita kalabalığı azalıyor.
+  `+1` hacim olarak hesaplanıyor. Bonus rota panelinde görünen ilgili rota
+  kapasitesiyle sınırlı; merchant üretimi bu kapasiteye kadar tek filoya ekleniyor
+  ve harita kalabalığı azalıyor.
   Regression: `TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap`,
   `TestNavalProductionKeepsMerchantAndMilitaryFleetsSeparate`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-05: Aynı rotanın merchant kapasitesi ortak atama sayısıyla dolduruluyor.
+  Kapasitesi dolu rota yeni filoya atanamıyor; merchant rota modalı dolu satırı
+  pasif gösterip tıklamayı engelliyor, mevcut aktif filo satırını koruyor.
+  Regression: `TestMerchantTradeRouteCapacityBlocksAdditionalFleetAssignment`,
+  `TestMerchantRouteOptionDisabledWhenCapacityFull`; doğrulama: `go test ./...`.
+
+- 2026-08-05: Merchant rota paneli ve ordu footer'ı artık bonusun verilen/maksimum
+  payını `+2/4` biçiminde gösteriyor. Böylece aynı rotadaki başka filoların
+  kapasiteyi tüketmesi görünür hale geliyor. Regression:
+  `TestMerchantFleetTradeRouteCapacityBonusShowsSharedRouteUsage`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-05: Görevi atanmış fakat hedef denize ulaşmamış merchant filoları
+  artık kapasiteyi tüketmiyor; marker üzerindeki bonus rozeti `+N` yerine `X`
+  göstererek görevin beklemede olduğunu belirtiyor. Regression:
+  `TestMerchantTradeBonusForArmyOnlyShowsActiveTargetSeaBonus`; doğrulama:
   `go test ./...`.
 
 - 2026-08-05: Kara ordusu toparlanması sabit `+10 HP` yerine bölgesel ikmal

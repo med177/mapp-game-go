@@ -12,7 +12,7 @@ import (
 func merchantTradeTestState() (*GameState, *economy.TradeRoute) {
 	route := &economy.TradeRoute{
 		FromFactionID: "venice", ToFactionID: "mamluk", Good: economy.GoodSpice,
-		AmountPerTurn: 1, GoldPerUnit: 5,
+		AmountPerTurn: 3, GoldPerUnit: 5,
 	}
 	return &GameState{
 		Year: 1300,
@@ -54,11 +54,11 @@ func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 		t.Fatalf("uygun konumdaki üç merchant gemisi gemi başına +1 bonus vermeliydi, got=%d", got)
 	}
 	gs.RefreshMerchantTradeBonuses()
-	if route.MerchantAmountBonus != 3 || route.EffectiveAmountPerTurn() != 4 {
-		t.Fatalf("üç merchant gemisi rota hacmini 4/tur sınırına kadar doldurmalıydı: %+v", route)
+	if route.MerchantAmountBonus != 3 || route.EffectiveAmountPerTurn() != 6 {
+		t.Fatalf("üç merchant gemisi rota kapasitesine kadar +3 hacim sağlamalıydı: %+v", route)
 	}
 	logs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
-	if len(logs) != 0 || gs.Factions["venice"].Spice != 6 || gs.Factions["venice"].Gold != 20 || gs.Factions["mamluk"].Spice != 4 || gs.Factions["mamluk"].Gold != 80 {
+	if len(logs) != 0 || gs.Factions["venice"].Spice != 4 || gs.Factions["venice"].Gold != 30 || gs.Factions["mamluk"].Spice != 6 || gs.Factions["mamluk"].Gold != 70 {
 		t.Fatalf("merchant hacmi gerçek mal ve altın transferi üretmeliydi: venice=%+v mamluk=%+v logs=%v", gs.Factions["venice"], gs.Factions["mamluk"], logs)
 	}
 }
@@ -89,6 +89,49 @@ func TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter(t *testing.T) 
 	}
 	if !gs.SetMerchantTradeRoute("merchant", "") || gs.Armies["merchant"].TradeRouteKey != "" {
 		t.Fatalf("boş rota anahtarı görevi kaldırmalıydı")
+	}
+}
+
+func TestMerchantTradeRouteCapacityBlocksAdditionalFleetAssignment(t *testing.T) {
+	gs, route := merchantTradeTestState()
+	gs.Armies["incoming"] = &army.Army{
+		ID: "incoming", OwnerID: "venice", RegionID: "med", IsNaval: true,
+		Units: []army.Unit{{TypeID: "merchant_ship", CurrentHP: 100}},
+	}
+
+	if !gs.MerchantTradeRouteHasCapacityForFleet(gs.Armies["merchant"], route) {
+		t.Fatal("mevcut filo kendi rotasını koruyabilmeli")
+	}
+	if gs.MerchantTradeRouteHasCapacityForFleet(gs.Armies["incoming"], route) {
+		t.Fatal("dolu rotaya yeni merchant filosu atanamamalı")
+	}
+	if gs.SetMerchantTradeRoute("incoming", route.AssignmentKey()) {
+		t.Fatal("kapasitesi dolu rota yeni filoya atanmayı kabul etmemeliydi")
+	}
+	gs.Armies["incoming"].TradeRouteKey = route.AssignmentKey()
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["incoming"], route); got != 0 {
+		t.Fatalf("kapasitesi dolu rotaya sonradan gelen filo bonus almamalıydı: got=%d", got)
+	}
+}
+
+func TestMerchantFleetTradeRouteCapacityBonusShowsSharedRouteUsage(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "venice", ToFactionID: "mamluk", AmountPerTurn: 4}
+	gs := &GameState{
+		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
+		TradeRoutes: []*economy.TradeRoute{route},
+		Armies: map[army.ArmyID]*army.Army{
+			"other": {
+				ID: "other", OwnerID: "venice", IsNaval: true, TradeRouteKey: route.AssignmentKey(),
+				Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
+			},
+			"selected": {
+				ID: "selected", OwnerID: "venice", IsNaval: true, TradeRouteKey: route.AssignmentKey(),
+				Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
+			},
+		},
+	}
+	if got := gs.MerchantFleetTradeRouteCapacityBonus(gs.Armies["selected"], route); got != 2 {
+		t.Fatalf("dört gemili filo, diğer filonun kullandığı iki kapasite sonrası +2/4 almalıydı: got=%d", got)
 	}
 }
 
@@ -204,12 +247,12 @@ func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 
 	gs.RefreshTradeRouteBlockades()
 	gs.RefreshMerchantTradeBonuses()
-	if route.BlockadePercent != 50 || route.EffectiveAmountPerTurn() != 2 {
+	if route.BlockadePercent != 50 || route.EffectiveAmountPerTurn() != 3 {
 		t.Fatalf("tek savaş gemisi rota hacmini yarıya indirmeliydi: route=%+v", route)
 	}
 
 	economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
-	if gs.Factions["venice"].Spice != 8 || gs.Factions["venice"].Gold != 10 || gs.Factions["mamluk"].Spice != 2 || gs.Factions["mamluk"].Gold != 90 {
+	if gs.Factions["venice"].Spice != 7 || gs.Factions["venice"].Gold != 15 || gs.Factions["mamluk"].Spice != 3 || gs.Factions["mamluk"].Gold != 85 {
 		t.Fatalf("abluka sonrası yarım rota hacmi uygulanmalıydı: venice=%+v mamluk=%+v", gs.Factions["venice"], gs.Factions["mamluk"])
 	}
 

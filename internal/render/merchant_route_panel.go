@@ -72,6 +72,20 @@ func merchantRoutePanelRowButton(rect gameui.Rect) gameui.Button {
 	return gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "")
 }
 
+func (r *Renderer) merchantRouteOptionEnabled(route *economy.TradeRoute) bool {
+	if r == nil || r.gs == nil || route == nil {
+		return false
+	}
+	fleet := r.gs.Armies[r.merchantRouteArmy]
+	if fleet == nil {
+		return false
+	}
+	if fleet.TradeRouteKey == route.AssignmentKey() {
+		return true
+	}
+	return r.gs.MerchantTradeRouteHasCapacityForFleet(fleet, route)
+}
+
 // merchantRoutePanelInteractiveHit, cursor ve input tarafında aynı görünür
 // satır/kapatma düğmesi geometry'sini kullanır. Satır araları ve panel içindeki
 // salt bilgi alanları etkileşimli kabul edilmez.
@@ -104,7 +118,13 @@ func merchantRoutePanelInteractiveHit(r *Renderer, fx, fy float64) bool {
 		return false
 	}
 	row := visibleRow + start
-	return row >= 0 && row < rowCount && merchantRoutePanelRowRect(layout, visibleRow).Hit(fx, fy)
+	if row < 0 || row >= rowCount || !merchantRoutePanelRowRect(layout, visibleRow).Hit(fx, fy) {
+		return false
+	}
+	if row == 0 {
+		return true
+	}
+	return r.merchantRouteOptionEnabled(r.merchantRouteOptions[row-1])
 }
 
 func merchantRouteAssignmentButtonRect(layout armyPanelLayout) gameui.Rect {
@@ -208,7 +228,8 @@ func merchantRouteFooterInfo(gs *state.GameState, a *army.Army) (label, bonusTex
 		return label, bonusText, bonusColor
 	}
 	bonus := gs.MerchantFleetTradeRouteBonus(a, route)
-	bonusText = "Gemi bonusu: +" + itoa(bonus) + " hacim/tur · " + itoa(shipCount) + " gemi"
+	bonusCapacity := economy.MerchantBonusCapacity(route)
+	bonusText = "Gemi bonusu: +" + itoa(bonus) + "/" + itoa(bonusCapacity) + " hacim/tur · " + itoa(shipCount) + " gemi"
 	if gs.MerchantFleetSupportsTradeRoute(a, route) {
 		bonusText += " · konum uygun"
 		bonusColor = color.RGBA{145, 220, 155, 240}
@@ -300,8 +321,13 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 			bg = color.RGBA{38, 29, 16, 230}
 		}
 		rowButton := merchantRoutePanelRowButton(rowRect)
+		if row > 0 {
+			rowButton.Enabled = r.merchantRouteOptionEnabled(r.merchantRouteOptions[row-1])
+		}
 		gameui.DrawButton(screen, rowButton, gameui.ButtonStyle{
-			BG: bg, Border: color.RGBA{92, 70, 34, 180}, Text: ColorWhite, BorderWidth: 1,
+			BG: bg, Border: color.RGBA{92, 70, 34, 180}, Text: ColorWhite,
+			DisabledBG: color.RGBA{24, 24, 24, 180}, DisabledBorder: color.RGBA{70, 70, 70, 150},
+			DisabledText: ColorGray, BorderWidth: 1,
 		}, sharedTextRenderer{})
 
 		if row == 0 {
@@ -319,9 +345,12 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 			current = merchantRouteForKey(r.gs, fleet.TradeRouteKey)
 		}
 		active := current != nil && current.AssignmentKey() == route.AssignmentKey()
+		enabled := active || r.merchantRouteOptionEnabled(route)
 		textColor := ColorWhite
 		if active {
 			textColor = color.RGBA{170, 235, 170, 255}
+		} else if !enabled {
+			textColor = ColorGray
 		}
 		seaX := rowRect.X + rowRect.W*0.56
 		seaRight := rowRect.X + rowRect.W - 14
@@ -331,7 +360,14 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		seaW := seaRight - seaX
 		nameW := seaX - rowRect.X - 28
 		name := trimTextToWidth(merchantRouteDisplayName(r.gs, route), FaceMed, nameW)
-		detail := trimTextToWidth(fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit), FaceSmall, rowRect.W-28)
+		detailText := fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit)
+		fleet := r.gs.Armies[r.merchantRouteArmy]
+		potentialBonus := r.gs.MerchantFleetTradeRouteCapacityBonus(fleet, route)
+		detailText += fmt.Sprintf(" · Bonus +%d/%d", potentialBonus, economy.MerchantBonusCapacity(route))
+		if !enabled {
+			detailText += " · KAPASİTE DOLU"
+		}
+		detail := trimTextToWidth(detailText, FaceSmall, rowRect.W-28)
 		drawUILabel(screen, gameui.Rect{X: rowRect.X + 14, Y: rowRect.Y + 7, W: nameW}, name, textColor, gameui.TextMedium, gameui.TextAlignStart)
 		seaLabel := "Bilinmiyor"
 		if routeIndex := row - 1; routeIndex >= 0 && routeIndex < len(r.merchantRouteSeaLabels) {
@@ -398,7 +434,7 @@ func (r *Renderer) handleMerchantRoutePanelInput() InputAction {
 		return InputAction{Kind: ActionClearMerchantRoute, ArmyID: aid}
 	}
 	route := r.merchantRouteOptions[row-1]
-	if route == nil {
+	if route == nil || !r.merchantRouteOptionEnabled(route) {
 		return InputAction{}
 	}
 	r.focusMerchantRouteTarget(route)

@@ -29,8 +29,10 @@ func TestNavalProductionKeepsMerchantAndMilitaryFleetsSeparate(t *testing.T) {
 	if !navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
 		t.Fatal("dördüncü merchant gemisi aynı görev filosuna eklenebilmeliydi")
 	}
-	merchantFleet.Units = append(merchantFleet.Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
+	for len(merchantFleet.Units) < army.MaxArmySize {
+		merchantFleet.Units = append(merchantFleet.Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
+	}
 	if navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
-		t.Fatal("rota sınırını aşan beşinci merchant gemisi eklenmemeliydi")
+		t.Fatal("ordu kapasitesini aşan merchant gemisi eklenmemeliydi")
 	}
 }

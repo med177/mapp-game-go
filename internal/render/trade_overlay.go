@@ -598,7 +598,7 @@ func (r *Renderer) tradeBonusFleetAtPosition(position armyIconPos) (*army.Army, 
 		return nil, false
 	}
 	fleet := r.gs.Armies[position.ArmyID]
-	return fleet, fleet != nil && r.merchantTradeBonusForArmy(fleet) > 0
+	return fleet, fleet != nil && (r.merchantTradeBonusForArmy(fleet) > 0 || r.merchantTradeAssignmentPendingForArmy(fleet))
 }
 
 func (r *Renderer) tradeBonusFleetVisuals() []tradeBonusFleetVisual {

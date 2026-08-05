@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/army"
-	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -457,8 +456,8 @@ func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID
 }
 
 // navalFleetAcceptsCompletedUnit merchant görev filolarını taşıma/savaş
-// filolarından ayrı tutar. Merchant filosu rota toplam hacmi kadar gemiyi
-// aynı stack içinde taşıyabilir; böylece rota bonusu için filo bölünmez.
+// filolarından ayrı tutar. Merchant filosu tek stack içinde büyüyebilir;
+// rota bonusu state katmanında rotanın kendi kapasitesine göre sınırlandırılır.
 func navalFleetAcceptsCompletedUnit(fleet *army.Army, completed *army.UnitType, unitTypes map[string]*army.UnitType) bool {
 	if fleet == nil || completed == nil || len(fleet.Units) >= army.MaxArmySize {
 		return false
@@ -475,7 +474,7 @@ func navalFleetAcceptsCompletedUnit(fleet *army.Army, completed *army.UnitType, 
 		}
 	}
 	if completedMerchant {
-		return nonMerchantCount == 0 && merchantCount < economy.MaxTradeRouteAmountPerTurn
+		return nonMerchantCount == 0 && merchantCount < army.MaxArmySize
 	}
 	return merchantCount == 0 && fleet.TradeRouteKey == ""
 }

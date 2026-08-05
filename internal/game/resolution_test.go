@@ -289,7 +289,7 @@ func TestApplySeasonEffectsPreservesMovementUsageForGrainEconomy(t *testing.T) {
 }
 
 func TestApplySeasonEffectsProtectsActiveMerchantShipsFromWinterAttrition(t *testing.T) {
-	route := &economy.TradeRoute{FromFactionID: "player", ToFactionID: "partner"}
+	route := &economy.TradeRoute{FromFactionID: "player", ToFactionID: "partner", AmountPerTurn: 1}
 	gs := &state.GameState{
 		Month: 12,
 		Regions: map[world.RegionID]*world.Region{

@@ -2765,6 +2765,15 @@ func drawGoldPlusBadge(screen *ebiten.Image, cx, cy float32, label string) {
 	DrawTextCentered(screen, label, float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})
 }
 
+func drawMerchantTradePendingBadge(screen *ebiten.Image, cx, cy float32) {
+	badgeRect := merchantTradeBonusBadgeRect(cx, cy)
+	badgeX := float32(badgeRect.X + badgeRect.W/2)
+	badgeY := float32(badgeRect.Y + badgeRect.H/2)
+	vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{25, 25, 25, 245}, false)
+	vector.StrokeCircle(screen, badgeX, badgeY, 7.5, 1.5, color.RGBA{185, 185, 185, 245}, true)
+	DrawTextCentered(screen, "X", float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{225, 225, 225, 255})
+}
+
 func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, cx, cy float32) {
 	if r == nil || r.gs == nil || a == nil || !a.IsNaval {
 		return
@@ -2791,6 +2800,8 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 	}
 	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
 		drawGoldPlusBadge(screen, cx, cy, "+"+itoa(bonus))
+	} else if r.merchantTradeAssignmentPendingForArmy(a) {
+		drawMerchantTradePendingBadge(screen, cx, cy)
 	}
 }
 
@@ -2803,6 +2814,14 @@ func (r *Renderer) merchantTradeBonusForArmy(a *army.Army) int {
 		return 0
 	}
 	return r.gs.MerchantFleetTradeRouteBonus(a, route)
+}
+
+func (r *Renderer) merchantTradeAssignmentPendingForArmy(a *army.Army) bool {
+	if r == nil || r.gs == nil || a == nil || !a.IsNaval || a.TradeRouteKey == "" {
+		return false
+	}
+	route := merchantRouteForKey(r.gs, a.TradeRouteKey)
+	return route != nil && !r.gs.MerchantFleetSupportsTradeRoute(a, route)
 }
 
 func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float32 {

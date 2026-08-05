@@ -203,18 +203,59 @@ func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *eco
 	return false
 }
 
+// MerchantTradeRouteAssignedMerchantShips rotaya atanmış merchant
+// gemilerinin toplamını döner. excludeFleetID, mevcut filonun kendi
+// atamasını kapasite kontrolünden çıkarmak için kullanılır.
+func (s *GameState) MerchantTradeRouteAssignedMerchantShips(route *economy.TradeRoute, excludeFleetID army.ArmyID) int {
+	if s == nil || route == nil || route.AssignmentKey() == "" {
+		return 0
+	}
+	count := 0
+	for fleetID, fleet := range s.Armies {
+		if fleetID == excludeFleetID || fleet == nil || fleet.TradeRouteKey != route.AssignmentKey() {
+			continue
+		}
+		count += s.merchantShipCount(fleet)
+	}
+	return count
+}
+
+// MerchantTradeRouteHasCapacityForFleet bildirir; seçili filo mevcut
+// atamasını koruyarak rotaya atanabilir ve bonus üretebilir mi?
+func (s *GameState) MerchantTradeRouteHasCapacityForFleet(fleet *army.Army, route *economy.TradeRoute) bool {
+	if s == nil || fleet == nil || route == nil {
+		return false
+	}
+	return s.MerchantTradeRouteAssignedMerchantShips(route, fleet.ID) < economy.MerchantBonusCapacity(route)
+}
+
+// MerchantFleetTradeRouteCapacityBonus, filonun rota kapasitesinden alabileceği
+// bonusu konumdan bağımsız döner. MerchantFleetTradeRouteBonus bunun konum
+// uygunluğu doğrulanmış halidir.
+func (s *GameState) MerchantFleetTradeRouteCapacityBonus(fleet *army.Army, route *economy.TradeRoute) int {
+	if s == nil || fleet == nil || route == nil {
+		return 0
+	}
+	count := s.merchantShipCount(fleet)
+	capacity := economy.MerchantBonusCapacity(route) - s.MerchantTradeRouteAssignedMerchantShips(route, fleet.ID)
+	if capacity < 0 {
+		return 0
+	}
+	if count > capacity {
+		return capacity
+	}
+	return count
+}
+
 // MerchantFleetTradeRouteBonus, seçili merchant filosunun mevcut konumunda
 // rotaya sağlayacağı hacim bonusunu döner. Her merchant gemisi +1 hacim
-// sağlar; toplam bonus rotanın hacim sınırını aşamaz.
+// sağlar; rotaya atanmış diğer filoların kullandığı kapasite düşüldükten sonra
+// kalan rota kapasitesini aşamaz.
 func (s *GameState) MerchantFleetTradeRouteBonus(fleet *army.Army, route *economy.TradeRoute) int {
 	if s == nil || fleet == nil || route == nil || !s.MerchantFleetSupportsTradeRoute(fleet, route) {
 		return 0
 	}
-	count := s.merchantShipCount(fleet)
-	if capacity := economy.MerchantBonusCapacity(route); count > capacity {
-		count = capacity
-	}
-	return count
+	return s.MerchantFleetTradeRouteCapacityBonus(fleet, route)
 }
 
 // MerchantTradeRoutesForFleet oyuncunun/AI'ın merchant filosuna atanabilecek
@@ -264,6 +305,9 @@ func (s *GameState) SetMerchantTradeRoute(fleetID army.ArmyID, routeKey string) 
 	}
 	for _, route := range s.MerchantTradeRoutesForFleet(fleet) {
 		if route.AssignmentKey() == routeKey {
+			if fleet.TradeRouteKey != routeKey && !s.MerchantTradeRouteHasCapacityForFleet(fleet, route) {
+				return false
+			}
 			fleet.TradeRouteKey = routeKey
 			return true
 		}
@@ -272,8 +316,8 @@ func (s *GameState) SetMerchantTradeRoute(fleetID army.ArmyID, routeKey string) 
 }
 
 // RefreshMerchantTradeBonuses runtime rota hacmini gerçek fleet assignment ve
-// konumundan yeniden türetir. Her gemi +1 hacim sağlar ve rota toplam hacim
-// sınırına ulaştığında sonraki filolar katkı vermez.
+// konumundan yeniden türetir. Her gemi +1 hacim sağlar ve rota kapasitesi
+// dolduğunda sonraki filolar katkı vermez.
 func (s *GameState) RefreshMerchantTradeBonuses() {
 	if s == nil {
 		return
@@ -288,7 +332,13 @@ func (s *GameState) RefreshMerchantTradeBonuses() {
 			routes[route.AssignmentKey()] = route
 		}
 	}
-	for _, fleet := range s.Armies {
+	fleetIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for fleetID := range s.Armies {
+		fleetIDs = append(fleetIDs, fleetID)
+	}
+	sort.Slice(fleetIDs, func(i, j int) bool { return fleetIDs[i] < fleetIDs[j] })
+	for _, fleetID := range fleetIDs {
+		fleet := s.Armies[fleetID]
 		if fleet == nil || !fleet.IsNaval || fleet.TradeRouteKey == "" {
 			continue
 		}
