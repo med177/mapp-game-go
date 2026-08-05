@@ -42,9 +42,23 @@ etkisini açıkça yazar; böylece pazar, liman, ambar ve ibadethane katkısı U
 gizli kalmaz.
 
 `Pazar` sekmesi, aktif rota bağlantısı aramadan savaşta olmayan tüm devletleri
-listeler; isim, fiyat veya stok sıralaması ve al/sat kartı bu ortak listeyle aynı
-seçim ve hit-test akışını kullanır. Savaştaki devletler listeden ve işlemden
-çıkarılır (`internal/render/trade.go`).
+listeler. Mal seçimi üstteki ortak filtre butonlarından yapılır; ikinci bir mal
+listesi yoktur. Tek devlet listesi seçili mal için devlet adını, bizdeki stoku,
+hedef stoku, satış arzını, alım talebini ve fiyatı aynı satırda gösterir.
+Al/sat kartındaki üst sınırlar aynı `MarketOrderBook` state helper'larından
+türetilir ve başarılı işlemler sonrasında kalan kotayı azaltır. İsim, fiyat veya
+stok sıralaması, mal filtresi ve al/sat kartı ortak rect/input akışını kullanır;
+savaştaki devletler listeden ve işlemden çıkarılır (`internal/render/trade.go`,
+`internal/state/state.go`).
+
+`Mevcut Rotalar` sekmesi `Tüm Rotalar` ve `Sadece Bize Ait` filtrelerini ortak
+buton rect'i üzerinden çizim, hit-test ve input dispatch ile paylaşır. Panel
+ilk açıldığında oyuncuya ait rotalar seçilidir; oyuncuya aitlik, rota uçlarından
+birinin `PlayerFactionID` olmasıyla türetilir. Rota başlığındaki gereksiz kırmızı
+`İptal` etiketi kaldırılmıştır. Oyuncu filtresinde alt özet, aktif rotaların
+kanonik `GoldEarned()` değerlerinden tur başına toplam gelir, gider ve net farkı
+gösterir; askıdaki rotalar işletilmediği için özete alınmaz
+(`internal/render/trade.go`, `internal/render/panel.go`).
 
 Ticaret haritasındaki merkez etiketleri hacmin yanında merkezden gelen kapasite
 ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağlı

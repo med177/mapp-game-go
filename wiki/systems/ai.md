@@ -32,6 +32,12 @@ kışla üretiminin kilitlenmesi önlenir. Tedarik, aktif rota gerektirmeyen aç
 pazarda savaşta olmayan, stok güvenlik payı bırakan tedarikçilerden ve
 `aiMinGoldReserve` korunarak yapılır.
 
+Her AI turunun başında `RefreshMarketOrders()` aynı kararları açık pazar emir
+defterine yazar. Satış arzı stratejik rezerv ve mevcut hedef maliyetleri
+üzerindeki stok fazlasıdır; alım talebi eksik hammaddeyi ve üç aylık tahıl
+rezerv açığını taşır. AI tedariki bu emirleri tükettiği için panelde görünen
+arz/talep ile gerçek alım üst sınırı aynı state değeridir.
+
 AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir.
 Ana fetih planındaki hedef bölge görevle geciktirilmez; AI normal taarruz/kuşatma
 akışına döner. Diğer bölgelerde karar deterministiktir: komşu düşman ordusunun

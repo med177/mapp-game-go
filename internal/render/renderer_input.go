@@ -895,6 +895,7 @@ func (r *Renderer) toggleTradePanel(tab TradeTab) {
 	r.tradeFactionFocus = 0
 	r.tradeGoodFocus = 0
 	r.tradeAmount = 5
+	r.tradeRouteFilter = TradeRouteFilterOwned
 	r.tradeListFilter = TradeListAll
 	r.tradeListSort = TradeSortDistance
 }

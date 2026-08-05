@@ -614,6 +614,10 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
+		if g.gs.MarketPrices == nil {
+			g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
+		}
+		ai.RefreshMarketOrders(g.gs)
 		g.pendingWarFollowUp = nil
 		g.warDeclarationContinuationPending = false
 		g.gs.AIDiagnosticHistory = nil
@@ -631,6 +635,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
+		ai.RefreshMarketOrders(g.gs)
 		g.pendingWarFollowUp = nil
 		g.warDeclarationContinuationPending = false
 		if g.gs.DevelopmentMode {
@@ -677,6 +682,7 @@ func (g *Game) startAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	ai.RefreshMarketOrders(g.gs)
 	camera := g.renderer.CameraSnapshot()
 	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain > 0 {
 		ai.RecordAIDiagnosticRound(g.gs)
@@ -2234,6 +2240,9 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 	if g.gs.MarketPrices == nil {
 		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
 	}
+	if len(g.gs.MarketOrders.SellOffers) == 0 && len(g.gs.MarketOrders.BuyOrders) == 0 {
+		ai.RefreshMarketOrders(g.gs)
+	}
 	price := g.gs.MarketPrices[good]
 	if price <= 0 {
 		g.renderer.ShowCombatResult("Geçerli piyasa fiyatı yok.")
@@ -2244,31 +2253,33 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 		target := g.gs.Factions[targetID]
 		player := g.gs.Factions[g.gs.PlayerFactionID]
 		maxByGold := player.Gold / price
-		maxByStock := tradeGoodAmount(target, good)
-		actualAmount = minTradeInt(amount, minTradeInt(maxByGold, maxByStock))
+		maxByOffer := g.gs.MarketSellOffer(targetID, good)
+		actualAmount = minTradeInt(amount, minTradeInt(maxByGold, maxByOffer))
 		if actualAmount <= 0 {
-			g.renderer.ShowCombatResult("Satın alma başarısız: altın yetersiz veya satıcıda stok yok.")
+			g.renderer.ShowCombatResult("Satın alma başarısız: altın yetersiz veya satıcının satış arzı tükendi.")
 			return
 		}
 		if economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, actualAmount, g.gs.MarketPrices) {
+			g.gs.ConsumeMarketSellOffer(targetID, good, actualAmount)
 			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
 	} else {
 		target := g.gs.Factions[targetID]
 		player := g.gs.Factions[g.gs.PlayerFactionID]
-		maxByBuyerGold := target.Gold / price
 		maxByStock := tradeGoodAmount(player, good)
-		actualAmount = minTradeInt(amount, minTradeInt(maxByBuyerGold, maxByStock))
+		maxByDemand := g.gs.MarketBuyOrder(targetID, good, price)
+		actualAmount = minTradeInt(amount, minTradeInt(maxByDemand, maxByStock))
 		if good == economy.GoodGrain {
 			maxBySaleBudget := g.gs.GrainSaleGoldBudget(g.gs.PlayerFactionID) / price
 			actualAmount = minTradeInt(actualAmount, maxBySaleBudget)
 		}
 		if actualAmount <= 0 {
-			g.renderer.ShowCombatResult("Satış başarısız: sende stok yok veya alıcıda altın yok.")
+			g.renderer.ShowCombatResult("Satış başarısız: sende stok yok veya alıcının alım talebi yok.")
 			return
 		}
 		if economy.TransferGoods(g.gs.Factions, g.gs.PlayerFactionID, targetID, good, actualAmount, g.gs.MarketPrices) {
+			g.gs.ConsumeMarketBuyOrder(targetID, good, actualAmount)
 			if good == economy.GoodGrain {
 				g.gs.RecordGrainSaleGold(g.gs.PlayerFactionID, actualAmount*price)
 			}
@@ -3032,6 +3043,10 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 }
 
 func (g *Game) startPreparePlayerTurn() {
+	if g.gs.MarketPrices == nil {
+		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
+	}
+	ai.RefreshMarketOrders(g.gs)
 	g.finishAITurnSequence()
 	g.startLoading(loadingWorldMap, "Harita hazırlanıyor...", func(setProgress func(int)) loadingResult {
 		worldMap := render.PrepareWorldMap(g.gs, "", render.MapModeNormal, setProgress)

@@ -32,6 +32,34 @@ func TestAIProcuresGrainFromOpenMarket(t *testing.T) {
 	}
 }
 
+func TestRefreshMarketOrdersPublishesAIGrainSurplusAndGoldBoundDemand(t *testing.T) {
+	gs := aiTestState()
+	gs.ScenarioID = "1300_ottoman_rise"
+	gs.Factions["ai_1"].Gold = 600
+	gs.Factions["ai_1"].Grain = 0
+	gs.Factions["ai_2"].Gold = 100
+	gs.Factions["ai_2"].Grain = 500
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"ai_1": {TotalDemand: 20},
+		"ai_2": {TotalDemand: 20},
+	}
+	gs.MarketPrices = economy.CurrentMarketPrice{economy.GoodGrain: 2}
+
+	RefreshMarketOrders(gs)
+	if got := gs.MarketSellOffer("ai_2", economy.GoodGrain); got != 400 {
+		t.Fatalf("AI satış arzı güvenli rezerv üstündeki fazlayı göstermeli: got=%d want=400", got)
+	}
+	if got := gs.MarketBuyOrder("ai_1", economy.GoodGrain, 2); got != 60 {
+		t.Fatalf("AI alım talebi stratejik üç aylık açığı göstermeli: got=%d want=60", got)
+	}
+
+	gs.Factions["ai_1"].Gold = 90
+	RefreshMarketOrders(gs)
+	if got := gs.MarketBuyOrder("ai_1", economy.GoodGrain, 2); got != 5 {
+		t.Fatalf("AI alım talebi altın rezervini koruyarak sınırlandırılmalı: got=%d want=5", got)
+	}
+}
+
 func TestAIOpenMarketNeverBuysFromEnemy(t *testing.T) {
 	gs := aiTestState()
 	gs.ScenarioID = "1300_ottoman_rise"

@@ -122,6 +122,20 @@ devletin güvenli rezervi korunur ve alıcının altını acil rezervin altına 
 
 Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur yeniden hesaplanır).
 
+## Açık Pazar Arz ve Talep Kotaları
+
+`GameState.MarketOrders` her AI devleti için tur başında iki kota taşır:
+`SellOffers` devletin stratejik rezervi ve hedef üretim maliyetleri üzerindeki
+satış fazlasıdır; `BuyOrders` ise eksik hammaddeyi üretim/askerî hedeflerine
+tamamlamak için istediği miktardır. Alım talebi, `aiMinGoldReserve` korunduktan
+sonra güncel altınla karşılanabilecek miktarı aşamaz (`internal/ai/market_orders.go`).
+
+Pazar işlemleri ham stok üzerinden sınırsız çalışmaz. Oyuncunun alımı satıcının
+kalan `SellOffers` kotasıyla, satışı hedefin kalan `BuyOrders` kotasıyla
+sınırlandırılır; başarılı transfer kotayı azaltır. Böylece bir devletin tüm
+hammadde stoğu altınla tek turda boşaltılamaz, ancak açıkça satışa koyduğu
+fazlanın tamamı satın alınabilir (`internal/state/state.go`, `internal/game/game.go`).
+
 ## Pasif Ticaret Geliri
 
 ### Merchant gemisi rota katkısı (1300)

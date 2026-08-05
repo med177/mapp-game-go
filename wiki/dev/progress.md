@@ -7,6 +7,35 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Pazar panelindeki ayrı mal listesi kaldırıldı. Tahıl, demir,
+  kereste, taş, baharat ve kumaş üstte ortak mal filtreleri olarak seçiliyor;
+  seçilen mala göre tek devlet listesi güncelleniyor. Her satırda `Sende`,
+  `Stok`, `Satış arzı`, `Alım talebi` ve `Fiyat` birlikte gösteriliyor; işlem
+  kartı aynı seçili malı kullanıyor. Regression:
+  `TestHandleTradePanelInputMarketSelectsFactionAndGoodOnClick`,
+  `TestCoreUIGeometryFitsCommonViewports`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-05: Açık pazar işlemleri AI devletlerinin tur başında belirlediği
+  satış fazlası ve alım talebi kotalarına bağlandı. Ticaret paneli ham stoktan
+  ayrı olarak `Satış arzı` ve `Alım talebi` gösteriyor; oyuncu yalnız satıcının
+  arzını satın alabiliyor veya hedefin altınla karşılayabileceği talebe satış
+  yapabiliyor. Başarılı transferler kota bakiyesini azaltıyor. Regression:
+  `TestMarketOrdersClampTransactionsToOfferAndGoldBackedDemand`,
+  `TestMarketOrdersCloneIsDeepCopy`; doğrulama: `go test ./internal/state
+  ./internal/ai ./internal/game ./internal/save`, ticaret render testleri.
+
+- 2026-08-05: Mevcut Rotalar sekmesine `Tüm Rotalar` / `Sadece Bize Ait`
+  filtreleri eklendi. Varsayılan görünüm oyuncunun rota uçlarından birine ait
+  olduğu rotaları gösteriyor; filtre butonları ortak ticaret paneli geometrisi,
+  hit-test ve input akışını kullanıyor. Gereksiz kırmızı `İptal` başlığı kaldırıldı.
+  Regression: `TestTradeRouteListFilterDefaultsToOwnedAndTogglesAllRoutes`;
+  doğrulama: `go test ./internal/render`.
+
+- 2026-08-05: `Sadece Bize Ait` rota görünümünün altına tur başına toplam
+  `Gelir`, `Gider` ve `Net Fark` özeti eklendi. Değerler rota yönü ve ortak
+  `GoldEarned()` hesabından türetiliyor; askıdaki rotalar dışarıda tutuluyor.
+  Regression: `TestFactionTradeStatsCalculatesRouteIncomeExpenseAndNet`.
+
 - 2026-08-05: Pazar erişimi Ticaret Haritası üst HUD'ından alt aksiyon HUD'ına
   taşındı. Alt bölüm `Ordu → Pazar → Diplomasi → Teknoloji → Tur Bitir` sırasıyla
   beş butona genişletildi; Pazar, Diplomasi'nin hemen solunda diğer alt HUD

@@ -229,6 +229,8 @@ func TestMapModeHudAndBottomMarketButtonGeometry(t *testing.T) {
 	buttons := buildBottomActionButtons(true)
 	market := buttons[1]
 	diplomacy := buttons[2]
+	technology := buttons[3]
+	endTurn := buttons[4]
 	if market.Label != "Pazar" {
 		t.Fatalf("alt HUD ikinci düğmesi Pazar olmalı: got=%q", market.Label)
 	}
@@ -237,6 +239,9 @@ func TestMapModeHudAndBottomMarketButtonGeometry(t *testing.T) {
 	}
 	if market.X+market.W+float64(actionHudGap) != diplomacy.X {
 		t.Fatalf("Pazar Diplomasi'nin hemen solunda olmalı: market=%+v diplomacy=%+v", market, diplomacy)
+	}
+	if endTurn.X-(technology.X+technology.W) != float64(actionHudGroupGap) {
+		t.Fatalf("Tur Bitir diğer aksiyon grubundan ayrılmalı: teknoloji=%+v tur=%+v", technology, endTurn)
 	}
 	if !bottomActionHudHit(market.X+market.W/2, market.Y+market.H/2) {
 		t.Fatal("Pazar düğmesi ortak HUD hit-test alanına dahil olmalı")
@@ -666,14 +671,23 @@ func assertTradePanelInside(t *testing.T, screenW, screenH float64) {
 	if layout.rightListRect.X+layout.rightListRect.W > layout.panelRect.X+layout.panelRect.W-8+eps {
 		t.Fatalf("trade panel right column overflow in %.0fx%.0f viewport: %+v", screenW, screenH, layout)
 	}
-	cardX, cardY, cardW, cardH := tradeActionCardRect(layout, len(tradeSelectableGoods()))
-	if float64(cardX) < layout.rightListRect.X-eps || float64(cardX+cardW) > layout.panelRect.X+layout.panelRect.W-8+eps {
+	contentY := float32(layout.leftTitleRect.Y)
+	contentH := float32(layout.panelRect.H) - (contentY - float32(layout.panelRect.Y)) - 18
+	summary := tradeRouteSummaryRect(layout, contentY, float32(layout.panelRect.W), contentH)
+	if summary.X < layout.panelRect.X || summary.Y < layout.panelRect.Y || summary.X+summary.W > layout.panelRect.X+layout.panelRect.W || summary.Y+summary.H > layout.panelRect.Y+layout.panelRect.H {
+		t.Fatalf("trade route summary panel outside %.0fx%.0f viewport: %+v", screenW, screenH, summary)
+	}
+	cardX, cardY, cardW, cardH := tradeMarketActionCardRect(layout)
+	if float64(cardX) < layout.marketListRect.X-eps || float64(cardX+cardW) > layout.panelRect.X+layout.panelRect.W-8+eps {
 		t.Fatalf("trade action card overflow in %.0fx%.0f viewport: layout=%+v card=(%.1f,%.1f,%.1f,%.1f)", screenW, screenH, layout, cardX, cardY, cardW, cardH)
 	}
-	if float64(cardY) < layout.rightListRect.Y+float64(tradeGoodsListHeight(len(tradeSelectableGoods())))-eps {
-		t.Fatalf("trade action card overlaps goods list in %.0fx%.0f viewport: layout=%+v card=(%.1f,%.1f,%.1f,%.1f)", screenW, screenH, layout, cardX, cardY, cardW, cardH)
+	if float64(cardY) < layout.marketListRect.Y+layout.marketListRect.H-eps {
+		t.Fatalf("trade action card overlaps market list in %.0fx%.0f viewport: layout=%+v card=(%.1f,%.1f,%.1f,%.1f)", screenW, screenH, layout, cardX, cardY, cardW, cardH)
 	}
 	for _, btn := range buildTradeTabButtons() {
+		assertButtonInside(t, screenW, screenH, btn.Button)
+	}
+	for _, btn := range buildTradeRouteFilterButtons(layout) {
 		assertButtonInside(t, screenW, screenH, btn.Button)
 	}
 	for _, btn := range buildTradeFilterButtons(layout) {
@@ -682,14 +696,17 @@ func assertTradePanelInside(t *testing.T, screenW, screenH float64) {
 	for _, btn := range buildTradeSortButtons(layout) {
 		assertButtonInside(t, screenW, screenH, btn.Button)
 	}
+	for _, btn := range buildTradeGoodFilterButtons(layout) {
+		assertButtonInside(t, screenW, screenH, btn.Button)
+	}
 	assertButtonInside(t, screenW, screenH, buildTradeAutoExportButton(layout, false))
-	qtyButtons, buyBtn, sellBtn := buildTradeActionButtons(layout, len(tradeSelectableGoods()))
+	qtyButtons, buyBtn, sellBtn := buildTradeActionButtonsAt(tradeMarketActionCardRect, layout)
 	for _, btn := range qtyButtons {
 		assertButtonInside(t, screenW, screenH, btn)
 	}
 	assertButtonInside(t, screenW, screenH, buyBtn)
 	assertButtonInside(t, screenW, screenH, sellBtn)
-	assertButtonInside(t, screenW, screenH, buildTradeEmergencyGrainSaleButton(layout, len(tradeSelectableGoods()), true))
+	assertButtonInside(t, screenW, screenH, buildTradeEmergencyGrainSaleButtonAt(tradeMarketActionCardRect, layout, true))
 }
 
 func TestTradeFilterPredicates(t *testing.T) {

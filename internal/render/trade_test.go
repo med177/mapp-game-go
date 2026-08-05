@@ -56,13 +56,14 @@ func TestHandleTradePanelInputMarketSelectsFactionAndGoodOnClick(t *testing.T) {
 	}
 
 	layout := tradePanelLayout()
-	factionClick := gameui.InputState{MouseX: layout.leftListRect.X + 16, MouseY: layout.leftListRect.Y + 28 + 8, LeftJustPressed: true}
+	factionClick := gameui.InputState{MouseX: layout.marketListRect.X + 16, MouseY: layout.marketListRect.Y + 28 + 8, LeftJustPressed: true}
 	handleTradePanelInput(r, factionClick)
 	if r.tradeFactionFocus != 1 {
 		t.Fatalf("ikinci fraksiyon satiri tiklaninca focus 1 olmali, got=%d", r.tradeFactionFocus)
 	}
 
-	goodClick := gameui.InputState{MouseX: layout.rightListRect.X + 16, MouseY: layout.rightListRect.Y + 28 + 8, LeftJustPressed: true}
+	goodButtons := buildTradeGoodFilterButtons(layout)
+	goodClick := gameui.InputState{MouseX: goodButtons[1].Button.X + goodButtons[1].Button.W/2, MouseY: goodButtons[1].Button.Y + goodButtons[1].Button.H/2, LeftJustPressed: true}
 	handleTradePanelInput(r, goodClick)
 	if r.tradeGoodFocus != 1 {
 		t.Fatalf("ikinci mal satiri tiklaninca focus 1 olmali, got=%d", r.tradeGoodFocus)
@@ -110,7 +111,7 @@ func TestHandleTradePanelInputMarketReturnsEmergencyGrainSale(t *testing.T) {
 	}
 
 	layout := tradePanelLayout()
-	btn := buildTradeEmergencyGrainSaleButton(layout, len(tradeSelectableGoods()), true)
+	btn := buildTradeEmergencyGrainSaleButtonAt(tradeMarketActionCardRect, layout, true)
 	action := handleTradePanelInput(r, gameui.InputState{
 		MouseX:          btn.X + btn.W/2,
 		MouseY:          btn.Y + btn.H/2,
@@ -165,5 +166,72 @@ func TestSortedFactionsForMarketListsUnlinkedPeacefulStatesButExcludesEnemies(t 
 	got := sortedFactionsForMarket(gs, 0, TradeListAll, TradeSortDistance)
 	if len(got) != 1 || got[0] != openMarketID {
 		t.Fatalf("rota olmadan barıştaki devlet listelenmeli, düşman dışarıda kalmalı: got=%v", got)
+	}
+}
+
+func TestTradeRouteListFilterDefaultsToOwnedAndTogglesAllRoutes(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	playerID := faction.FactionID("player")
+	gs := &state.GameState{
+		PlayerFactionID: playerID,
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: string(playerID), ToFactionID: "ally"},
+			{FromFactionID: "ally", ToFactionID: string(playerID)},
+			{FromFactionID: "foreign_a", ToFactionID: "foreign_b"},
+		},
+	}
+
+	owned := filteredTradeRoutes(gs, TradeRouteFilterOwned)
+	if len(owned) != 2 {
+		t.Fatalf("oyuncuya ait rota filtresi iki yönlü oyuncu rotalarını göstermeli, got=%d", len(owned))
+	}
+
+	all := filteredTradeRoutes(gs, TradeRouteFilterAll)
+	if len(all) != 3 {
+		t.Fatalf("tüm rotalar filtresi tüm rotaları göstermeli, got=%d", len(all))
+	}
+
+	r := &Renderer{gs: gs, showTrade: true, tradeTab: TradeTabRoutes}
+	if r.tradeRouteFilter != TradeRouteFilterOwned {
+		t.Fatalf("rota filtresinin sıfır değeri başlangıçta oyuncuya ait olmalı, got=%v", r.tradeRouteFilter)
+	}
+	layout := tradePanelLayout()
+	buttons := buildTradeRouteFilterButtons(layout)
+	action := handleTradePanelInput(r, gameui.InputState{
+		MouseX:          buttons[0].Button.X + buttons[0].Button.W/2,
+		MouseY:          buttons[0].Button.Y + buttons[0].Button.H/2,
+		LeftJustPressed: true,
+	})
+	if action.Kind != ActionNone || r.tradeRouteFilter != TradeRouteFilterAll {
+		t.Fatalf("tüm rotalar butonu filtreyi değiştirmeli, action=%+v filter=%v", action, r.tradeRouteFilter)
+	}
+}
+
+func TestFactionTradeStatsCalculatesRouteIncomeExpenseAndNet(t *testing.T) {
+	playerID := faction.FactionID("player")
+	gs := &state.GameState{
+		PlayerFactionID: playerID,
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: string(playerID), ToFactionID: "buyer", AmountPerTurn: 2, GoldPerUnit: 5},
+			{FromFactionID: "seller", ToFactionID: string(playerID), AmountPerTurn: 3, GoldPerUnit: 4},
+			{FromFactionID: string(playerID), ToFactionID: "suspended", AmountPerTurn: 9, GoldPerUnit: 9, SuspendedTurns: 2},
+		},
+	}
+
+	stats := factionTradeStats(gs, playerID)
+	if stats.ExportGold != 10 || stats.ImportGold != 12 || stats.NetGold != -2 {
+		t.Fatalf("rota finans özeti beklenmedik: %+v", stats)
+	}
+	income, expense := tradeRouteFinancialTotals(gs)
+	if income != 10 || expense != 12 {
+		t.Fatalf("rota finans toplamları beklenmedik: gelir=%d gider=%d", income, expense)
+	}
+	if stats.RouteCount != 2 || stats.SuspendedCount != 1 {
+		t.Fatalf("aktif/askıdaki rota sayısı beklenmedik: %+v", stats)
 	}
 }

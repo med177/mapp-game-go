@@ -116,6 +116,7 @@ type GameState struct {
     Imperial *ImperialState // HRE otoritesi, üyelik ve seçim state'i
     WarLedgers map[string]*WarLedger
     RecentTruces map[string]int // relation key -> ateşkes bitiş turu
+    MarketOrders MarketOrderBook  // AI açık pazar satış arzı ve alım talebi
     ShapeData CountryShapeJSON           // json:"-"
 
     // Runtime-only (json:"-")

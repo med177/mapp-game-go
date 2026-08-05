@@ -29,13 +29,14 @@ import (
 // ── Layout sabitleri ────────────────────────────────────────────────
 
 const (
-	bottomBarH   = float32(80)
-	topStatusW   = float32(1050)
-	topStatusH   = float32(82)
-	topDateHudW  = float32(255)
-	topDateHudH  = float32(80)
-	actionHudPad = float32(8)
-	actionHudGap = float32(5)
+	bottomBarH        = float32(80)
+	topStatusW        = float32(1050)
+	topStatusH        = float32(82)
+	topDateHudW       = float32(255)
+	topDateHudH       = float32(80)
+	actionHudPad      = float32(8)
+	actionHudGap      = float32(5)
+	actionHudGroupGap = float32(18)
 
 	minimapW = float32(240)
 	minimapH = float32(165)
@@ -269,7 +270,9 @@ func regionImperialEmpireID(gs *state.GameState, ownerID string) faction.Faction
 }
 
 func bottomActionHudRect() (x, y, w, h float32) {
-	w = btnW*5 + actionHudGap*4 + actionHudPad*2
+	// Tur Bitir, aksiyon grubundan görsel olarak ayrıldığı için aradaki
+	// normal buton boşluğuna ek bir grup aralığı kullanır.
+	w = btnW*5 + actionHudGap*3 + actionHudGroupGap + actionHudPad*2
 	h = btnH + actionHudPad*2
 	x = float32(ScreenWidth)/2 - w/2
 	y = float32(ScreenHeight) - h
@@ -379,7 +382,7 @@ func BottomButtonRects() [5][4]float32 {
 	marketX := armyX + btnW + actionHudGap
 	diplX := marketX + btnW + actionHudGap
 	techX := diplX + btnW + actionHudGap
-	endX := techX + btnW + actionHudGap
+	endX := techX + btnW + actionHudGroupGap
 	return [5][4]float32{
 		{armyX, by, btnW, btnH},
 		{marketX, by, btnW, btnH},
@@ -3536,6 +3539,8 @@ type factionTradeOverview struct {
 	SuspendedCount int
 	PartnerCount   int
 	ExportGold     int
+	ImportGold     int
+	NetGold        int
 }
 
 func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, scroll float64) {
@@ -3697,11 +3702,15 @@ func factionTradeStats(gs *state.GameState, fid faction.FactionID) factionTradeO
 				partners[route.ToFactionID] = struct{}{}
 			}
 		}
+		if route.ToFactionID == self {
+			stats.ImportGold += route.GoldEarned()
+		}
 		if route.ToFactionID == self && route.FromFactionID != "" {
 			partners[route.FromFactionID] = struct{}{}
 		}
 	}
 	stats.PartnerCount = len(partners)
+	stats.NetGold = stats.ExportGold - stats.ImportGold
 	return stats
 }
 

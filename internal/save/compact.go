@@ -131,6 +131,7 @@ type campaignSaveState struct {
 	DiplomacyOfferCounts    map[faction.FactionID]int                `json:"dq,omitempty"`
 	OfferRejectionTurns     map[string]int                           `json:"dr,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                    `json:"tr,omitempty"`
+	MarketOrders            *state.MarketOrderBook                   `json:"mo,omitempty"`
 	Sieges                  map[world.RegionID]*state.SiegeState     `json:"sg,omitempty"`
 	Raids                   map[world.RegionID]*state.RaidState      `json:"rd,omitempty"`
 	ProductionQueue         []state.ProductionOrder                  `json:"pq,omitempty"`
@@ -208,6 +209,7 @@ type legacyCampaignSaveState struct {
 	DiplomacyOfferCounts    map[faction.FactionID]int                      `json:"diplomacy_offer_counts,omitempty"`
 	OfferRejectionTurns     map[string]int                                 `json:"diplomatic_offer_last_rejected_turns,omitempty"`
 	TradeRoutes             []*economy.TradeRoute                          `json:"trade_routes"`
+	MarketOrders            *state.MarketOrderBook                         `json:"market_orders,omitempty"`
 	Sieges                  map[world.RegionID]*state.SiegeState           `json:"sieges,omitempty"`
 	Raids                   map[world.RegionID]*state.RaidState            `json:"raids,omitempty"`
 	ProductionQueue         []state.ProductionOrder                        `json:"production_queue"`
@@ -364,6 +366,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		DiplomacyOfferCounts:    cloneFactionIntMap(legacy.DiplomacyOfferCounts),
 		OfferRejectionTurns:     cloneStringIntMap(legacy.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(legacy.TradeRoutes),
+		MarketOrders:            cloneMarketOrders(legacy.MarketOrders),
 		Sieges:                  cloneSieges(legacy.Sieges),
 		Raids:                   cloneRaids(legacy.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
@@ -487,6 +490,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
+		MarketOrders:            gs.CloneMarketOrders(),
 		Sieges:                  cloneSieges(gs.Sieges),
 		Raids:                   cloneRaids(gs.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
@@ -581,6 +585,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
 		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
+		MarketOrders:            gs.CloneMarketOrders(),
 		Sieges:                  cloneSieges(gs.Sieges),
 		Raids:                   cloneRaids(gs.Raids),
 		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
@@ -655,6 +660,12 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.DiplomacyOfferCounts = cloneFactionIntMap(saved.DiplomacyOfferCounts)
 	gs.OfferRejectionTurns = cloneStringIntMap(saved.OfferRejectionTurns)
 	gs.TradeRoutes = cloneTradeRoutes(saved.TradeRoutes)
+	gs.MarketOrders = state.MarketOrderBook{}
+	if saved.MarketOrders != nil {
+		if cloned := cloneMarketOrders(saved.MarketOrders); cloned != nil {
+			gs.MarketOrders = *cloned
+		}
+	}
 	gs.Sieges = cloneSieges(saved.Sieges)
 	gs.Raids = cloneRaids(saved.Raids)
 	gs.ProductionQueue = append([]state.ProductionOrder(nil), saved.ProductionQueue...)
@@ -1342,6 +1353,38 @@ func cloneTradeRoutes(routes []*economy.TradeRoute) []*economy.TradeRoute {
 		out = append(out, &copyRoute)
 	}
 	return out
+}
+
+func cloneMarketOrders(orders *state.MarketOrderBook) *state.MarketOrderBook {
+	if orders == nil || (len(orders.SellOffers) == 0 && len(orders.BuyOrders) == 0) {
+		return nil
+	}
+	clone := &state.MarketOrderBook{}
+	if len(orders.SellOffers) > 0 {
+		clone.SellOffers = make(map[faction.FactionID]map[economy.GoodType]int, len(orders.SellOffers))
+		for fid, offers := range orders.SellOffers {
+			if len(offers) == 0 {
+				continue
+			}
+			clone.SellOffers[fid] = make(map[economy.GoodType]int, len(offers))
+			for good, amount := range offers {
+				clone.SellOffers[fid][good] = amount
+			}
+		}
+	}
+	if len(orders.BuyOrders) > 0 {
+		clone.BuyOrders = make(map[faction.FactionID]map[economy.GoodType]int, len(orders.BuyOrders))
+		for fid, requests := range orders.BuyOrders {
+			if len(requests) == 0 {
+				continue
+			}
+			clone.BuyOrders[fid] = make(map[economy.GoodType]int, len(requests))
+			for good, amount := range requests {
+				clone.BuyOrders[fid][good] = amount
+			}
+		}
+	}
+	return clone
 }
 
 func cloneSieges(sieges map[world.RegionID]*state.SiegeState) map[world.RegionID]*state.SiegeState {

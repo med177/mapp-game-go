@@ -140,6 +140,7 @@ type Renderer struct {
 	tradeFactionFocus      int
 	tradeGoodFocus         int
 	tradeAmount            int
+	tradeRouteFilter       TradeRouteListFilter
 	tradeListFilter        TradeListFilter
 	tradeListSort          TradeListSort
 	showMerchantRoutePanel bool
@@ -1540,7 +1541,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 13. Ticaret paneli (üst katman)
 	if r.showTrade {
-		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort)
+		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeRouteFilter, r.tradeListFilter, r.tradeListSort)
 	}
 
 	r.drawOverlayPanels(screen)

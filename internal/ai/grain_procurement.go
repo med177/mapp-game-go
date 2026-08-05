@@ -3,7 +3,6 @@ package ai
 import (
 	"sort"
 
-	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -48,6 +47,9 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 	if self == nil || self.IsEliminated {
 		return 0
 	}
+	if len(gs.MarketOrders.SellOffers) == 0 || len(gs.MarketOrders.BuyOrders) == 0 {
+		RefreshMarketOrders(gs)
+	}
 
 	totalDemand := aiFactionGrainDemand(gs, fid)
 	if totalDemand <= 0 {
@@ -87,43 +89,7 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 		return 0
 	}
 
-	suppliers := make([]aiResourceSupplier, 0, len(gs.Factions))
-	for _, supplierID := range aiSortedFactionIDs(gs) {
-		if supplierID == fid {
-			continue
-		}
-		if diplomacy.IsWar(gs, fid, supplierID) {
-			continue
-		}
-		supplier := gs.Factions[supplierID]
-		if supplier == nil || supplier.IsEliminated {
-			continue
-		}
-		surplus := aiGrainSupplierSurplus(gs, supplierID)
-		if surplus <= 0 {
-			continue
-		}
-		suppliers = append(suppliers, aiResourceSupplier{id: supplierID, surplus: surplus})
-	}
-	sort.Slice(suppliers, func(i, j int) bool {
-		if suppliers[i].surplus != suppliers[j].surplus {
-			return suppliers[i].surplus > suppliers[j].surplus
-		}
-		return suppliers[i].id < suppliers[j].id
-	})
-
-	purchased := 0
-	for _, candidate := range suppliers {
-		if purchased >= amount {
-			break
-		}
-		buy := minInt(amount-purchased, candidate.surplus)
-		if buy <= 0 || !economy.TransferGoods(gs.Factions, candidate.id, fid, economy.GoodGrain, buy, gs.MarketPrices) {
-			continue
-		}
-		purchased += buy
-	}
-	return purchased
+	return aiMarketPurchaseFromOrders(gs, fid, economy.GoodGrain, amount)
 }
 
 // aiProcureStrategicResources, AI'nin aynı turda gerçekten değerlendireceği
@@ -138,49 +104,10 @@ func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx
 	if self == nil || self.IsEliminated {
 		return economy.ResourceCost{}
 	}
-	if ctx == nil {
-		ctx = prepareStrategicContext(gs, fid)
+	if len(gs.MarketOrders.SellOffers) == 0 || len(gs.MarketOrders.BuyOrders) == 0 {
+		RefreshMarketOrders(gs)
 	}
-
-	demand := economy.ResourceCost{}
-	if unitID := aiSelectStrategicLandUnitForProcurement(gs, self, ctx); unitID != "" {
-		demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
-	}
-	if aiLandReserveShortfall(gs, fid, ctx) > 0 {
-		if unitID := aiSelectReserveLandUnitForProcurement(gs, self, ctx); unitID != "" {
-			demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
-		}
-	}
-	if candidate, ok := aiBestBuildingInvestmentForProcurement(gs, fid, ctx); ok {
-		demand = aiMaxResourceCost(demand, candidate.Cost)
-	}
-	// Askerî üretim adayı henüz geçerli bir bölge bulamıyorsa bunun nedeni
-	// çoğunlukla üretim önkoşulu olan kışlanın eksik olmasıdır. Gerçek üretim
-	// adımıyla aynı helper kullanılarak kışlanın demir/kereste dahil tüm maliyeti
-	// önceden tedarik edilir.
-	if selfManpower := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid); aiNeedsBarracksForMilitaryProduction(gs, fid, ctx, gs.ManpowerCap(fid)-selfManpower) {
-		demand = aiMaxResourceCost(demand, aiBarracksResourceCost(gs))
-	}
-
-	// Deniz tehdidi veya aktif çıkarma görevi varsa, ilgili üretim maliyeti de
-	// aynı tedarik kararının parçasıdır. Teknoloji yoksa henüz savaş gemisi/
-	// nakliye üretimi mümkün değildir; araştırma tamamlanana kadar satın alma
-	// yapılmaz.
-	if gs.UnitTypes != nil {
-		if warshipType := gs.UnitTypes["warship"]; warshipType != nil && warshipType.HasAllRequiredTechs(self.Research.Completed) && (len(ctx.NavalThreats) > 0 || len(ctx.ThreatenedPortIDs) > 0) {
-			demand = aiMaxResourceCost(demand, aiUnitResourceCost(warshipType))
-		}
-		if transportType := gs.UnitTypes["transport"]; transportType != nil && transportType.HasAllRequiredTechs(self.Research.Completed) && ctx.navalMission != nil && ctx.navalMission.MissingCapacity > 0 {
-			demand = aiMaxResourceCost(demand, aiUnitResourceCost(transportType))
-		}
-	}
-	if navalReserveCost := aiNavalReserveProcurementCost(gs, fid, ctx); navalReserveCost != (economy.ResourceCost{}) {
-		demand = aiMaxResourceCost(demand, navalReserveCost)
-	}
-	if reserve := aiMerchantTradeResourceReserve(gs, fid); reserve != (economy.ResourceCost{}) {
-		demand = aiMaxResourceCost(demand, reserve)
-	}
-
+	demand := aiStrategicResourceDemand(gs, fid, ctx)
 	return aiProcureMissingResources(gs, fid, demand)
 }
 
@@ -214,6 +141,9 @@ func aiProcureMissingResources(gs *state.GameState, fid faction.FactionID, deman
 	self := gs.Factions[fid]
 	if self == nil || self.IsEliminated {
 		return economy.ResourceCost{}
+	}
+	if len(gs.MarketOrders.SellOffers) == 0 || len(gs.MarketOrders.BuyOrders) == 0 {
+		RefreshMarketOrders(gs)
 	}
 
 	// Tahılın uzun dönemli rezerv kararı ayrı çalışır; burada yalnız üretim
@@ -270,6 +200,12 @@ func aiProcureMissingResources(gs *state.GameState, fid faction.FactionID, deman
 		if amount <= 0 {
 			continue
 		}
+		// Eski/doğrudan çağrıların (ör. askerî rezerv alımı) talebi
+		// stratejik plan snapshot'ında bulunmayabilir. Gerçek alım yine aynı
+		// emir defterine yazılarak gerçekleşsin.
+		if order := gs.MarketBuyOrder(fid, need.good, need.price); order < amount {
+			gs.SetMarketBuyOrder(fid, need.good, minInt(need.deficit, goldBudget/need.price))
+		}
 		bought := aiPurchaseResourceFromOpenMarket(gs, fid, need.good, amount)
 		if bought <= 0 {
 			continue
@@ -291,46 +227,7 @@ func aiPurchaseResourceFromOpenMarket(gs *state.GameState, fid faction.FactionID
 	if gs.MarketPrices[good] <= 0 {
 		gs.MarketPrices[good] = price
 	}
-	type supplier struct {
-		id      faction.FactionID
-		surplus int
-	}
-	suppliers := make([]supplier, 0)
-	kind, _ := economy.GoodToResourceKind(good)
-	for _, supplierID := range aiSortedFactionIDs(gs) {
-		if supplierID == fid {
-			continue
-		}
-		if diplomacy.IsWar(gs, fid, supplierID) {
-			continue
-		}
-		candidate := gs.Factions[supplierID]
-		if candidate == nil || candidate.IsEliminated {
-			continue
-		}
-		surplus := maxInt(0, economy.FactionResourceAmount(candidate, kind)-20)
-		if surplus > 0 {
-			suppliers = append(suppliers, supplier{id: supplierID, surplus: surplus})
-		}
-	}
-	sort.Slice(suppliers, func(i, j int) bool {
-		if suppliers[i].surplus != suppliers[j].surplus {
-			return suppliers[i].surplus > suppliers[j].surplus
-		}
-		return suppliers[i].id < suppliers[j].id
-	})
-
-	purchased := 0
-	for _, candidate := range suppliers {
-		if purchased >= amount {
-			break
-		}
-		buy := minInt(amount-purchased, candidate.surplus)
-		if buy > 0 && economy.TransferGoods(gs.Factions, candidate.id, fid, good, buy, gs.MarketPrices) {
-			purchased += buy
-		}
-	}
-	return purchased
+	return aiMarketPurchaseFromOrders(gs, fid, good, amount)
 }
 
 func setResourceCostAmount(cost *economy.ResourceCost, kind economy.ResourceKind, amount int) {
