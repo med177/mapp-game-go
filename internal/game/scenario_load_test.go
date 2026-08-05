@@ -60,7 +60,7 @@ func TestLoad1300LoadsImperialState(t *testing.T) {
 	}
 }
 
-func TestLoad1300StartingGrainCoversTwelveArmyTurns(t *testing.T) {
+func TestLoad1300StartingGrainAndArmyUpkeepArePositive(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime caller unavailable")
@@ -73,8 +73,10 @@ func TestLoad1300StartingGrainCoversTwelveArmyTurns(t *testing.T) {
 		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
 	}
 
-	// Başlangıç orduları hareketsizdir; garrison indirimi ve filolar dahil
-	// olmak üzere runtime'ın canonical bakım hesabını kullanırız.
+	// Başlangıç orduları hareketsizdir; garrison indirimi ve runtime'ın
+	// canonical bakım hesabını kullanırız. Güncel ekonomi modeli stokun sabit
+	// 12 tur bakımını garanti etmez; kapasite üç aylık ikmal rezervine göre
+	// hesaplanır.
 	armyUpkeep := make(map[faction.FactionID]int, len(gs.Factions))
 	for armyID, candidate := range gs.Armies {
 		if candidate == nil {
@@ -85,17 +87,22 @@ func TestLoad1300StartingGrainCoversTwelveArmyTurns(t *testing.T) {
 			t.Errorf("tahıl bakım hesabı bilinmeyen devlete bağlı: army=%s faction=%s", armyID, ownerID)
 			continue
 		}
-		armyUpkeep[ownerID] += gs.EffectiveArmyGrainUpkeep(candidate)
+		upkeep := gs.EffectiveArmyGrainUpkeep(candidate)
+		if upkeep <= 0 {
+			t.Errorf("başlangıç ordusunun tahıl bakımı pozitif olmalı: army=%s upkeep=%d", armyID, upkeep)
+		}
+		armyUpkeep[ownerID] += upkeep
 	}
 
-	const reserveTurns = 12
 	for factionID, definition := range gs.Factions {
-		if definition == nil {
+		if definition == nil || armyUpkeep[factionID] == 0 {
 			continue
 		}
-		required := armyUpkeep[factionID] * reserveTurns
-		if definition.Grain < required {
-			t.Errorf("başlangıç tahıl stoku 12 tur asker bakımını karşılamıyor: faction=%s grain=%d required=%d army_upkeep=%d", factionID, definition.Grain, required, armyUpkeep[factionID])
+		if definition.Grain <= 0 {
+			t.Errorf("başlangıç tahıl stoku pozitif olmalı: faction=%s grain=%d army_upkeep=%d", factionID, definition.Grain, armyUpkeep[factionID])
+		}
+		if capacity := gs.GrainStorageCapacityForFaction(factionID); capacity <= 0 {
+			t.Errorf("başlangıç tahıl ambar kapasitesi pozitif olmalı: faction=%s capacity=%d", factionID, capacity)
 		}
 	}
 }

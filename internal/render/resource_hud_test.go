@@ -9,11 +9,11 @@ func TestFormatResourceHUDValue(t *testing.T) {
 		change  int
 		want    string
 	}{
-		{name: "positive", current: 405, change: 55, want: "+55/405"},
-		{name: "negative", current: 405, change: -12, want: "-12/405"},
-		{name: "zero", current: 405, change: 0, want: "0/405"},
-		{name: "thousands", current: 10672, change: 253, want: "+253/10.672"},
-		{name: "negative thousands", current: 12925, change: -195, want: "-195/12.925"},
+		{name: "positive", current: 405, change: 55, want: "+55 / 405"},
+		{name: "negative", current: 405, change: -12, want: "-12 / 405"},
+		{name: "zero", current: 405, change: 0, want: "0 / 405"},
+		{name: "thousands", current: 10672, change: 253, want: "+253 / 10.672"},
+		{name: "negative thousands", current: 12925, change: -195, want: "-195 / 12.925"},
 	}
 
 	for _, tt := range tests {

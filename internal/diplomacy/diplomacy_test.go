@@ -680,6 +680,35 @@ func TestAcceptedPeaceEvacuatesNavalLandingSiege(t *testing.T) {
 	}
 }
 
+func TestAcceptedPeaceEvacuatesLandArmyRegardlessOfMovePoints(t *testing.T) {
+	gs := testGameState()
+	gs.Regions["a_cap"].WorldX = 0
+	gs.Regions["a_cap"].WorldY = 0
+	gs.Regions["b_cap"].WorldX = 100
+	gs.Regions["b_cap"].WorldY = 0
+	gs.Regions["vassal_land"] = &world.Region{ID: "vassal_land", OwnerID: "vassal", WorldX: 90, WorldY: 0}
+	gs.Factions["vassal"] = &faction.Faction{ID: "vassal", NameTR: "Vassal", Religion: religion.Catholic, OverlordID: "a"}
+	gs.Armies["a1"].RegionID = "b_cap"
+	gs.Armies["a1"].MovePoints = 0
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"b_cap": {RegionID: "b_cap", AttackerArmyID: "a1", AttackerFactionID: "a"},
+	}
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -100
+
+	result := Execute(gs, "a", "b", ActionProposePeace)
+	if !result.Applied {
+		t.Fatalf("barış uygulanmalıydı: %+v", result)
+	}
+	if got := gs.Armies["a1"].RegionID; got != "vassal_land" {
+		t.Fatalf("hareket puanı olmasa da ordu en yakın vassal bölgesine çekilmeli: %s", got)
+	}
+	if gs.SiegeAt("b_cap") != nil {
+		t.Fatal("barışla terk edilen düşman bölgesindeki kuşatma kaldırılmalı")
+	}
+}
+
 func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
 	gs := testGameState()
 	gs.Turn = 10

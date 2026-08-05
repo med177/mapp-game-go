@@ -1,11 +1,20 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-05: Barış kabul edildiğinde karşı tarafın kara bölgesinde bulunan
+  ordular artık hareket puanından bağımsız olarak en yakın kendi, vassal veya
+  müttefik bölgesine zorunlu çekiliyor. Terk edilen kuşatmalar ve geçersiz
+  bekleyen temaslar temizleniyor; deniz çıkarması için önce nakliye filosuna
+  binme tercihi korunuyor. Regression:
+  `TestAcceptedPeaceEvacuatesLandArmyRegardlessOfMovePoints`,
+  `TestEvacuateArmiesFromPeaceTerritoryUsesNearestAlliedLand`;
+  doğrulama: `go test ./...`.
 
 - 2026-08-05: `scenario.json` içindeki `victory_conditions` AI stratejik
   planına bağlandı. Tarihsel fraksiyon hedefleri eksik/erişilebilir bölgelerin

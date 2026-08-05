@@ -11,7 +11,8 @@ import (
 // EvacuateNavalLandingSiegesAfterPeace, barışla kapanan koalisyon savaşı
 // sırasında denizden başlatılmış aktif kuşatmaları güvenli biçimde sonlandırır.
 // Önce hedefe en yakın dost nakliye filolarının toplam boş kapasitesi denenir;
-// yeterli kapasite yoksa kara ordusu en yakın kendi kara bölgesine çekilir.
+// yeterli kapasite yoksa kara ordusu en yakın kendi, vassal veya müttefik
+// kara bölgesine çekilir.
 func (s *GameState) EvacuateNavalLandingSiegesAfterPeace(left, right []faction.FactionID) int {
 	if s == nil || len(s.Sieges) == 0 || len(left) == 0 || len(right) == 0 {
 		return 0
@@ -65,7 +66,7 @@ func (s *GameState) EvacuateNavalLandingSiegesAfterPeace(left, right []faction.F
 			}
 		}
 
-		if retreatRegion := s.nearestOwnedLandRegion(attacker.OwnerID, target); retreatRegion != "" {
+		if retreatRegion := s.nearestFriendlyLandRegion(attacker.OwnerID, target); retreatRegion != "" {
 			attacker.RegionID = retreatRegion
 			attacker.DockedRegionID = ""
 			attacker.DockedSettlementID = ""
@@ -79,6 +80,82 @@ func (s *GameState) EvacuateNavalLandingSiegesAfterPeace(left, right []faction.F
 		delete(s.Sieges, regionID)
 	}
 	return evacuated
+}
+
+// EvacuateArmiesFromPeaceTerritory, barış yapan iki koalisyonun birbirine ait
+// kara bölgelerinde kalan ordularını hareket puanından bağımsız olarak en yakın
+// güvenli kara bölgesine çeker. Güvenli bölge; ordunun kendi devleti, aynı
+// realm'deki vassal/overlord veya resmî müttefik tarafından yönetilebilir.
+func (s *GameState) EvacuateArmiesFromPeaceTerritory(left, right []faction.FactionID) int {
+	if s == nil || len(left) == 0 || len(right) == 0 {
+		return 0
+	}
+
+	leftSet := factionSet(left)
+	rightSet := factionSet(right)
+	armyIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for armyID := range s.Armies {
+		armyIDs = append(armyIDs, armyID)
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+
+	relocated := make(map[army.ArmyID]struct{})
+	for _, armyID := range armyIDs {
+		a := s.Armies[armyID]
+		if a == nil || a.IsNaval {
+			continue
+		}
+		current := s.Regions[a.RegionID]
+		if current == nil || current.IsSea || !opposingPeaceCoalitions(a.OwnerID, current.OwnerID, leftSet, rightSet) {
+			continue
+		}
+		destination := s.nearestFriendlyLandRegion(a.OwnerID, current)
+		if destination == "" {
+			continue
+		}
+		previousLocation := a.LocationID()
+		a.RegionID = destination
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+		a.InAmbush = false
+		s.ClearArmyLogisticsAfterRelocation(a, previousLocation)
+		relocated[a.ID] = struct{}{}
+	}
+
+	for regionID, siege := range s.Sieges {
+		if siege == nil {
+			continue
+		}
+		if _, ok := relocated[siege.AttackerArmyID]; ok {
+			delete(s.Sieges, regionID)
+		}
+	}
+	s.clearPeaceContacts(leftSet, rightSet, relocated)
+	return len(relocated)
+}
+
+func (s *GameState) clearPeaceContacts(left, right map[string]struct{}, relocated map[army.ArmyID]struct{}) {
+	if s == nil {
+		return
+	}
+	if contact := s.PendingLandContact; contact != nil && s.contactEndedByPeace(contact.AttackerArmyID, contact.DefenderArmyID, left, right, relocated) {
+		s.PendingLandContact = nil
+	}
+	if contact := s.PendingNavalContact; contact != nil && s.contactEndedByPeace(contact.AttackerArmyID, contact.DefenderArmyID, left, right, relocated) {
+		s.PendingNavalContact = nil
+	}
+}
+
+func (s *GameState) contactEndedByPeace(attackerID, defenderID army.ArmyID, left, right map[string]struct{}, relocated map[army.ArmyID]struct{}) bool {
+	if _, ok := relocated[attackerID]; ok {
+		return true
+	}
+	if _, ok := relocated[defenderID]; ok {
+		return true
+	}
+	attacker := s.Armies[attackerID]
+	defender := s.Armies[defenderID]
+	return attacker != nil && defender != nil && opposingPeaceCoalitions(attacker.OwnerID, defender.OwnerID, left, right)
 }
 
 type evacuationFleetCandidate struct {
@@ -125,14 +202,14 @@ func (s *GameState) nearestEvacuationFleets(ownerID string, target *world.Region
 	return nil
 }
 
-func (s *GameState) nearestOwnedLandRegion(ownerID string, reference *world.Region) world.RegionID {
+func (s *GameState) nearestFriendlyLandRegion(ownerID string, reference *world.Region) world.RegionID {
 	if s == nil || ownerID == "" || reference == nil {
 		return ""
 	}
 	var best *world.Region
 	var bestDist int64
 	for _, region := range s.Regions {
-		if region == nil || region.IsSea || region.OwnerID != ownerID || region.ID == reference.ID {
+		if region == nil || region.IsSea || region.ID == reference.ID || !s.canFactionReplenishIn(ownerID, region.OwnerID) {
 			continue
 		}
 		dx := int64(region.WorldX - reference.WorldX)

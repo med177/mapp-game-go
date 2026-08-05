@@ -160,8 +160,7 @@ func TestMoveArmyToFortifiedRegionOpensSiegeDecisionWithoutSiegeUnit(t *testing.
 			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}},
 		},
 	}
-	r := &render.Renderer{}
-	r.ReloadGameState(gs)
+	r := render.New(gs)
 	g := &Game{gs: gs, renderer: r}
 
 	g.moveArmyWithStance("atk", "dst", combat.BattleStanceBalanced)
@@ -701,6 +700,13 @@ func TestResolveSiegesUsesSiegeUnitArrivingAfterSiegeStarted(t *testing.T) {
 			ID: "support", OwnerID: "ally", RegionID: "ally_src", MovePoints: 2, MaxMovePoints: 2,
 			Units: []army.Unit{{TypeID: "siege", CurrentHP: 100}},
 		},
+		"def": {
+			ID: "def", OwnerID: "p3", RegionID: "dst",
+			Units: make([]army.Unit, 20),
+		},
+	}
+	for i := range gs.Armies["def"].Units {
+		gs.Armies["def"].Units[i] = army.Unit{TypeID: "inf", CurrentHP: 100}
 	}
 	g := &Game{gs: gs, renderer: &render.Renderer{}}
 
@@ -1202,6 +1208,13 @@ func TestResolveSiegesOpensBreachVerySlowlyWithInsufficientSiegeTier(t *testing.
 			MaxMovePoints: 2,
 			Units:         []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100}},
 		},
+		"def": {
+			ID: "def", OwnerID: "p2", RegionID: "dst",
+			Units: make([]army.Unit, 20),
+		},
+	}
+	for i := range gs.Armies["def"].Units {
+		gs.Armies["def"].Units[i] = army.Unit{TypeID: "inf", CurrentHP: 100}
 	}
 	minorThreshold, _ := siegeBreachThresholds(3)
 	gs.Sieges = map[world.RegionID]*state.SiegeState{
@@ -1209,6 +1222,7 @@ func TestResolveSiegesOpensBreachVerySlowlyWithInsufficientSiegeTier(t *testing.
 			RegionID:          "dst",
 			AttackerArmyID:    "atk",
 			AttackerFactionID: "p1",
+			DefenderArmyID:    "def",
 			StartedTurn:       4,
 			FortLevel:         3,
 		},

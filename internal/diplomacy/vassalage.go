@@ -469,6 +469,7 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 	}
 	removePendingSurrenderOffersBetween(gs, left, right)
 	gs.EvacuateNavalLandingSiegesAfterPeace(left, right)
+	gs.EvacuateArmiesFromPeaceTerritory(left, right)
 }
 
 // removePendingSurrenderOffersBetween, barış kabul edildiğinde aynı savaşın

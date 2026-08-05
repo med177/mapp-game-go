@@ -86,3 +86,24 @@ func TestEvacuateNavalLandingSiegeRetreatsToNearestOwnedRegionWithoutFleet(t *te
 		t.Fatal("geri çekilmede kuşatma kaldırılmalı")
 	}
 }
+
+func TestEvacuateArmiesFromPeaceTerritoryUsesNearestAlliedLand(t *testing.T) {
+	gs := navalLandingPeaceState(false)
+	gs.Regions["target"].WorldX = 100
+	gs.Regions["target"].WorldY = 0
+	gs.Regions["home"].WorldX = 0
+	gs.Regions["home"].WorldY = 0
+	gs.Regions["ally"] = &world.Region{ID: "ally", OwnerID: "ally", WorldX: 90, WorldY: 0}
+	gs.Factions["ally"] = &faction.Faction{ID: "ally"}
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("a", "ally"): {FactionA: "a", FactionB: "ally", Stance: faction.StanceAllied},
+	}
+	gs.Armies["landing"].MovePoints = 0
+
+	if got := gs.EvacuateArmiesFromPeaceTerritory([]faction.FactionID{"a"}, []faction.FactionID{"b"}); got != 1 {
+		t.Fatalf("tek düşman toprağındaki ordu tahliye edilmeli, got=%d", got)
+	}
+	if got := gs.Armies["landing"].RegionID; got != "ally" {
+		t.Fatalf("en yakın müttefik bölge seçilmeli: %s", got)
+	}
+}

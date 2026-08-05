@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -57,6 +57,14 @@ uygulanmaz. `Raids` kalıcı kampanya state'inde bölge başına tur kaydı tuta
 ekonomi çözümlemesine ertelenmiş vergi/üretim transferi olarak uygulanır;
 `RaidState.RaiderArmyID` görev rozetinin doğru orduya bağlanmasını sağlar ve
 `RaidLootPreview()` ekonomi öncesi kazancı ortak hesap olarak sunar.
+
+Barış sonrası konum temizliği `EvacuateArmiesFromPeaceTerritory()` tarafından
+state katmanında yapılır. İlgili iki savaş koalisyonunun karşı taraftaki kara
+bölgelerinde kalan her kara ordusu, hareket puanı harcamadan koordinat bazlı en
+yakın own/same-realm/allied bölgeye taşınır. Relocation, eski lojistik snapshot'ını
+temizler, pusuyu kapatır ve terk edilen attacker kuşatmalarını siler. Bekleyen
+kara veya deniz teması artık barışan tarafları içeriyorsa da temizlenir; böylece
+modal state eski savaşın muharebesini başlatamaz.
 `Army.InAmbush` save/load ile korunur; pusu yalnız hedefe giren düşman ordusunun
 özel temas seçiminde görünür hale gelir. `PendingLandContact.AmbushArmyID`
 geçici olarak temas modalının geri çekilme/pozisyon kurallarını taşır.

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -173,6 +173,15 @@ Savaş sırasında aynı oyuncuya hem barış hem de kuşatma teslimiyeti teklif
 temizler. Böylece teslimiyet yalnızca barış reddedildiğinde veya barış teklifi
 oluşmadığında sonraki karar olarak gösterilir. Regression:
 `TestPeaceOfferPrecedesSiegeSurrenderAndAcceptanceSkipsIt`.
+
+Barış kabul edildiğinde `setPeaceBetweenCoalitions()` yalnız relation ve ateşkes
+kayıtlarını güncellemez: iki koalisyonun birbirinin kara bölgesinde kalan tüm
+orduları, hareket puanına bakılmadan `EvacuateArmiesFromPeaceTerritory()` ile en
+yakın kendi, aynı realm veya resmî müttefik bölgesine çekilir. Terk edilen
+kuşatmalar ile bu savaşa ait bekleyen kara/deniz temasları da aynı anda temizlenir.
+Denizden başlayan kuşatmada önce nakliye filosuna yeniden binme tercihi korunur;
+nakliye yoksa aynı güvenli bölge seçimi uygulanır. Regression:
+`TestAcceptedPeaceEvacuatesLandArmyRegardlessOfMovePoints`.
 
 Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon akışı izler:
 
