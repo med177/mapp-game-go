@@ -635,6 +635,9 @@ func TestSaveToSlotWritesEnvelopeAndLoadSlotReadsIt(t *testing.T) {
 	if saved.Meta.Turn != 17 || saved.Meta.Year != 1455 || saved.Meta.FactionName != "Oyuncu" {
 		t.Fatalf("save meta beklenen metadata'yi tasimiyor: %+v", saved.Meta)
 	}
+	if got := ScenarioPathForSlot("quicksave"); got != scenarioPath {
+		t.Fatalf("loading ekrani icin scenario path cozulmedi: got=%q want=%q", got, scenarioPath)
+	}
 	if saved.StateEncoding != saveStateEncodingZstdBase64 || saved.StateZstd == "" {
 		t.Fatalf("save zstd formatinda yazilmadi: encoding=%q len=%d", saved.StateEncoding, len(saved.StateZstd))
 	}

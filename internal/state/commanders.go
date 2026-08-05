@@ -20,12 +20,6 @@ var CommanderRecruitCost = economy.ResourceCost{Gold: 500, Grain: 100}
 // veya boş isimli komutan oluşturamaz.
 const PlayerCommanderMaxNameRunes = 40
 
-var initialCommanderNames = []string{
-	"Murat Bey",
-	"Selim Bey",
-	"Ayşe Hanım",
-}
-
 // SyncCommanderLinks havuzdaki komutanlarla orduların pointer bağlantısını yeniden kurar.
 func (s *GameState) SyncCommanderLinks() {
 	if s == nil {
@@ -344,7 +338,7 @@ func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) 
 // da izin verir, ancak yeni alınan komutanı en üst seviye yapmaz.
 func recruitedCommanderExperience(ownerID string, sequence int) int {
 	h := fnv.New32a()
-	_, _ = h.Write([]byte(fmt.Sprintf("%s:%d", ownerID, sequence)))
+	_, _ = fmt.Fprintf(h, "%s:%d", ownerID, sequence)
 	return int(h.Sum32() % army.CommanderLevel5XP)
 }
 
@@ -372,10 +366,7 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int, chargeGener
 
 		s.NextCommanderSeq++
 		id := fmt.Sprintf("commander_%s_%d", ownerID, s.NextCommanderSeq)
-		name := fmt.Sprintf("Komutan %d", s.NextCommanderSeq)
-		if ownerID == string(s.PlayerFactionID) && owned < len(initialCommanderNames) {
-			name = initialCommanderNames[owned]
-		}
+		name := "Commander"
 		s.Commanders[id] = &army.Commander{
 			ID:            id,
 			OwnerID:       ownerID,

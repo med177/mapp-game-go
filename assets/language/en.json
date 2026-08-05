@@ -1,0 +1,10 @@
+{
+  "language": "en",
+  "description": "English language translations for the game.",
+  "dictionary": [
+    { "key": "greeting", "value": "Hello" },
+    { "key": "farewell", "value": "Goodbye" },
+    { "key": "thank_you", "value": "Thank you" },
+    { "key": "welcome", "value": "Welcome" }
+  ]
+}

@@ -262,7 +262,7 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// C: ticaret paneli (tech paneli açıkken ticareti açar)
 	if r.keyJustPressed(ebiten.KeyC) {
-		r.toggleTradePanel(TradeTabRoutes)
+		r.toggleTradePanel()
 		return InputAction{}
 	}
 
@@ -589,7 +589,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if bottomButtons[1].HitTest(fx, fy) {
-		r.toggleTradePanel(TradeTabNew)
+		r.toggleTradePanel()
 		return InputAction{}
 	}
 	if bottomButtons[2].HitTest(fx, fy) {
@@ -885,12 +885,17 @@ func (r *Renderer) handleLeftClick() InputAction {
 	return InputAction{}
 }
 
-func (r *Renderer) toggleTradePanel(tab TradeTab) {
+func (r *Renderer) toggleTradePanel() {
 	if r.showTech {
 		r.showTech = false
 	}
-	r.showTrade = !r.showTrade
-	r.tradeTab = tab
+	if r.showTrade {
+		r.showTrade = false
+		return
+	}
+	r.showTrade = true
+	// Ticaret paneli her yeni açılışta doğrudan işlem yapılabilen Pazar'ı gösterir.
+	r.tradeTab = TradeTabMarket
 	r.tradeScroll = 0
 	r.tradeFactionFocus = 0
 	r.tradeGoodFocus = 0

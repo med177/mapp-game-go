@@ -3019,6 +3019,9 @@ func (g *Game) loadSlot(slotName string) {
 }
 
 func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
+	// Kayıt state'i arka planda yüklenirken loading ekranı da aynı senaryonun
+	// arka planını gösterebilsin. Tam state yükleme yine loading job içinde kalır.
+	g.renderer.SetLoadingScenarioPath(save.ScenarioPathForSlot(slotName))
 	g.startLoading(loadingSave, "Kayıt yükleniyor...", func(setProgress func(int)) loadingResult {
 		setProgress(10)
 		gs, err := save.LoadSlot(slotName)

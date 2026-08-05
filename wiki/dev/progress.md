@@ -7,13 +7,38 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Ana menüden devam et veya kayıt slotundan yükleme akışında, yükleme
+  ekranı kayıt metadata'sından çözülen senaryonun `scenario_bg.png` görselini de
+  kullanıyor. Senaryo seçimi akışındaki mevcut arka plan davranışı korunuyor.
+  Regression: `ScenarioPathForSlot`, `TestLoadingBackgroundLoadsFromScenarioDirectory`;
+  doğrulama: `go test ./internal/save ./internal/game ./internal/render -count=1`.
+
+- 2026-08-05: Ticaret paneli görsel yerleşimi düzeltildi. Aday ve pazar listelerinde
+  yinelenen/taşan sayfalama satırı kaldırıldı ve ortak `ListView` sayfalaması için
+  footer boşluğu ayrıldı. Pazar işlem düğmeleri kart içinde kompakt bir gruba
+  taşındı; rota özeti değerleri etiketlerine yaklaştırıldı. Regression:
+  `TestTradeMarketActionButtonsStayGroupedInsideActionCard`,
+  `TestCoreUIGeometryFitsCommonViewports`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-05: Harita ordu çizimi iki geçişe ayrıldı; tüm komutan portreleri
+  marker ve görev rozetlerinden önce, ortak marker/rozet katmanı sonra çiziliyor.
+  Böylece yakın kara veya deniz marker'larında komutan resimleri rozetlerin
+  üstüne çıkmıyor. Regression: `go test ./internal/render`.
+
 - 2026-08-05: Pazar panelindeki ayrı mal listesi kaldırıldı. Tahıl, demir,
   kereste, taş, baharat ve kumaş üstte ortak mal filtreleri olarak seçiliyor;
-  seçilen mala göre tek devlet listesi güncelleniyor. Her satırda `Sende`,
-  `Stok`, `Satış arzı`, `Alım talebi` ve `Fiyat` birlikte gösteriliyor; işlem
+  seçilen mala göre tek devlet listesi güncelleniyor. Her satırda `Stok`,
+  `Satış arzı`, `Alım talebi` ve `Fiyat` birlikte gösteriliyor; işlem
   kartı aynı seçili malı kullanıyor. Regression:
   `TestHandleTradePanelInputMarketSelectsFactionAndGoodOnClick`,
   `TestCoreUIGeometryFitsCommonViewports`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-05: Ticaret paneli düğmeleri ortak dikey merkezleme hesabına alındı;
+  miktar kontrolü ikonsuz `-10` / `+10` adımlarına indirildi. İşlem kartındaki
+  `Miktar` / `Tutar` satırı büyütüldü, pazar satırlarından oyuncunun zaten HUD'da
+  görünen kendi stoku kaldırıldı ve panel yeni açılışta `Pazar` sekmesini gösteriyor.
+  Regression: `TestTradeQuantityButtonsUseOnlyTenStepsWithoutIcons`,
+  `TestTradeButtonsUseCommonVerticalCentering`, `TestTradePanelOpensOnMarketTab`.
 
 - 2026-08-05: Açık pazar işlemleri AI devletlerinin tur başında belirlediği
   satış fazlası ve alım talebi kotalarına bağlandı. Ticaret paneli ham stoktan

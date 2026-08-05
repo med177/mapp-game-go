@@ -210,6 +210,7 @@ type Renderer struct {
 	historicalEventFocus   int
 	showHistoricalEvent    bool
 	commanderArrivals      []*army.Commander
+	commanderArrivalScroll int
 	battleReport           battleReportState
 	queuedBattleReport     battleReportState
 	warSummary             warSummaryState
@@ -1193,6 +1194,7 @@ func (r *Renderer) ShowCombatResult(msg string) {
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.
 func (r *Renderer) ShowHistoricalEvent(title, desc, prompt string, choices []HistoricalEventChoice) {
 	r.commanderArrivals = r.commanderArrivals[:0]
+	r.commanderArrivalScroll = 0
 	r.historicalEventTitle = title
 	r.historicalEventDesc = desc
 	r.historicalEventPrompt = prompt
@@ -1209,6 +1211,7 @@ func (r *Renderer) HideHistoricalEvent() {
 	r.historicalEventChoices = r.historicalEventChoices[:0]
 	r.historicalEventFocus = 0
 	r.commanderArrivals = r.commanderArrivals[:0]
+	r.commanderArrivalScroll = 0
 }
 
 // ShowCommanderArrivals oyuncunun tarih aralığına giren komutanlarını, mevcut
@@ -1218,6 +1221,7 @@ func (r *Renderer) ShowCommanderArrivals(arrivals []*army.Commander) {
 		return
 	}
 	r.commanderArrivals = append(r.commanderArrivals[:0], arrivals...)
+	r.commanderArrivalScroll = 0
 	r.historicalEventTitle = "Yeni Komutanlar Göreve Geldi"
 	r.historicalEventDesc = "Bu komutanlar artık komutan seçim listesinde atanabilir."
 	r.historicalEventPrompt = ""
@@ -1570,7 +1574,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.showHistoricalEvent {
 		if len(r.commanderArrivals) > 0 {
-			drawCommanderArrivalPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.commanderArrivals)
+			drawCommanderArrivalPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.commanderArrivals, r.commanderArrivalScroll)
 		} else {
 			drawHistoricalEventPopup(screen, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices, r.historicalEventFocus)
 		}
@@ -2573,6 +2577,17 @@ func (r *Renderer) dockedSettlementAnchor(region *world.Region, settlementID str
 // drawArmies tüm orduları harita üzerinde çizer.
 func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	selectedArmy := r.gs.Armies[r.SelectedArmy]
+	// Tüm portreleri marker katmanından önce çiz. Portreleri her ordunun kendi
+	// marker'ıyla aynı döngüde çizmek, yakın bir sonraki ordunun portresinin
+	// önceki ordunun rozetini kapatmasına izin veriyordu.
+	for _, pos := range positions {
+		a, ok := r.gs.Armies[pos.ArmyID]
+		if !ok || a == nil {
+			continue
+		}
+		r.drawArmyCommanderPortrait(screen, a, pos.X, pos.Y, a.IsNaval)
+	}
+
 	for _, pos := range positions {
 		a, ok := r.gs.Armies[pos.ArmyID]
 		if !ok {
@@ -2593,7 +2608,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 				}
 			}
 		}
-		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, true, siegeBadgeX)
+		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
@@ -2666,6 +2681,10 @@ const (
 
 func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, showCommander bool, siegeBadgeX float32) {
 	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
+	a := r.gs.Armies[aid]
+	if showCommander {
+		r.drawArmyCommanderPortrait(screen, a, cx, cy, isNaval)
+	}
 
 	if isNaval {
 		// Dış daire (border) + iç daire (fraksiyon rengi)
@@ -2679,7 +2698,6 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 			armyIconInnerHalf*2, armyIconInnerHalf*2, col, false)
 	}
 
-	a := r.gs.Armies[aid]
 	// Filo birim sayısı dairesel marker'ın içinde her zaman görünür. Taşınan
 	// kara ordusunun sayısı bununla karıştırılmaması için ayrı kare rozettedir.
 	countStr := "?"
@@ -2691,13 +2709,6 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-	if showCommander {
-		commander, _ := armyPanelDisplayedCommander(a)
-		if commander != nil {
-			x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, a != nil && len(a.EmbarkedUnits) > 0)
-			drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
-		}
-	}
 	if isNaval {
 		if a != nil && len(a.EmbarkedUnits) > 0 {
 			badgeRect := navalEmbarkedArmyBadgeRect(cx, cy)
@@ -2723,6 +2734,18 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
+}
+
+func (r *Renderer) drawArmyCommanderPortrait(screen *ebiten.Image, a *army.Army, cx, cy float32, isNaval bool) {
+	if a == nil {
+		return
+	}
+	commander, _ := armyPanelDisplayedCommander(a)
+	if commander == nil {
+		return
+	}
+	x, y, size := armyCommanderBadgeRect(cx, cy, isNaval, len(a.EmbarkedUnits) > 0)
+	drawCommanderPortrait(screen, commander, float64(x), float64(y), float64(size), float64(size))
 }
 
 // drawPendingNavalContactHighlight, karar modalı açıkken temasın hangi deniz

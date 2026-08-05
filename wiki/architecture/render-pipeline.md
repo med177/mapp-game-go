@@ -51,6 +51,14 @@ stok sıralaması, mal filtresi ve al/sat kartı ortak rect/input akışını ku
 savaştaki devletler listeden ve işlemden çıkarılır (`internal/render/trade.go`,
 `internal/state/state.go`).
 
+Ticaret panelindeki aday ve pazar listeleri, `ListView` rect'inin altında ayrılmış
+footer boşluğunu kullanarak sayfalama bilgisini yalnızca bir kez çizer; böylece
+bilgi satırı alt kart veya panel çerçevesiyle çakışmaz. Pazar işlem kartındaki
+miktar, al/sat ve acil tahıl düğmeleri tek bir ortak kontrol grubunun rect'inden
+türetilir. Rota özeti de ortak `KeyValueRow` bileşeninde değerleri etiketlerine
+yakın hizalar (`internal/render/trade.go`, `internal/render/ui_compose.go`,
+`internal/ui/list_view.go`).
+
 `Mevcut Rotalar` sekmesi `Tüm Rotalar` ve `Sadece Bize Ait` filtrelerini ortak
 buton rect'i üzerinden çizim, hit-test ve input dispatch ile paylaşır. Panel
 ilk açıldığında oyuncuya ait rotalar seçilidir; oyuncuya aitlik, rota uçlarından
@@ -120,10 +128,12 @@ bayrak alanı bulunur; bayraklar ortak `drawFactionFlagBadge` helper'ı ve senar
 `sprites/flags/<factionID>.png` asset cache'i üzerinden çizilir
 (`internal/render/faction_select.go`, `panel.go`).
 
-Senaryo yükleme ekranı da seçilen senaryo yolunu geçici renderer loading state'inde
-taşır ve aynı kök dizindeki `scenario_bg.png` görselini arka plan olarak kullanır.
-Yükleme başarısız olursa düz koyu arka plan fallback'i korunur
-(`internal/render/loading.go`, `renderer.go`, `game.go`).
+Senaryo yükleme ekranı, yeni senaryo akışında seçilen senaryo yolunu; devam et veya
+kayıt slotundan yükleme akışında ise kayıt metadata'sından çözülen senaryo yolunu
+geçici renderer loading state'inde taşır ve aynı kök dizindeki `scenario_bg.png`
+görselini arka plan olarak kullanır. Yükleme başarısız olursa düz koyu arka plan
+fallback'i korunur (`internal/render/loading.go`, `renderer.go`, `game.go`,
+`internal/save/save.go`).
 
 Merchant rota, Donanma Görevi ve Aktif Savaşlar panelleri `overlayPanelOrder`
 stack'i üzerinden çizim, input ve cursor önceliğini paylaşır. Yeni açılan panel
@@ -187,6 +197,12 @@ Yağma tooltip'i `GameState.RaidLootPreview()` üzerinden ekonomi tick'inin ayn�
 vergi/üretim değerlerini listeler (`internal/render/army_task_status.go`).
 Görev rozeti taşıyan yan yana kara orduları için marker spacing 38 px'e çıkarılır;
 aynı ekran koordinatına yeniden dağıtılan gruplar da bu spacing'i kullanır.
+
+Harita ordu çizimi iki geçişlidir: önce tüm komutan portreleri, ardından tüm
+kara/donanma marker'ları ve bunlara ait sayı, taşıma, kuşatma, zayiat ve görev
+rozetleri çizilir. Böylece yakın marker gruplarında komutan resmi hiçbir rozetin
+üstüne çıkmaz; çizim sırası `drawArmyCommanderPortrait()` ve `drawArmyIcon()`
+üzerinden korunur (`internal/render/renderer.go`).
 
 Seçili kara ordusu ve donanma marker'ı, komutan portresi varsa onu da kapsayan
 yuvarlatılmış köşeli kesik altın çerçeveyle en üst marker katmanında belirtilir.
@@ -930,7 +946,7 @@ Trade overlay ayrıca HUD rect'lerini de saygılar. Alt aksiyon HUD'u, map-mode/
 
 Ticaret koridorları etkileşimlidir: koridor üzerine hover yapıldığında koridor focus moduna geçilir (arka ağ karartılır, seçili hat parlatılır) ve tooltip `merkez A ↔ merkez B`, `hacim/tur`, `bağlı fraksiyon` ve baskın emtia özeti gösterir; sol tık aynı bilgiyi kısa bildirim olarak yazar. Ticaret panel overlay'i artık viewport'a göre ölçeklenir; 4K hedefinde sekmeler, filtre/sıralama satırı, iki kolonlu liste alanı ve al/sat kartı sabit küçük pencere gibi kalmaz. `Yeni Rota` sekmesi gerçek anlaşma adaylarını ve engel nedenlerini gösterir; manuel al/sat akışı ayrı `Pazar` sekmesine taşınmıştır ve yalnız aktif ticaret ağına bağlı partnerleri listeler. Pazar listeleri tıklanan satırı press anında resolve eder ve trade panel input'u tam mouse state (`LeftPressed` / `LeftJustPressed` / `LeftJustReleased`) ile beslendiği için fraksiyon ve mal seçimleri release-state kaybetmeden çalışır. Geometri yalnız primitive button/list view üzerinde değil, `internal/ui/box.go` içindeki ortak cut/split layout akışı üzerinden draw ve hit-test tarafında aynı slotlardan türetilir. Aynı slot temelli yaklaşım diplomasi ve teknoloji overlay panellerine de uygulanmıştır; liste/teklif footer'ları, aktif araştırma satırı ve close alanları ortak rect akışından beslenir. Tam ekran menü/seçim yüzeylerinde de `internal/render/screen_layouts.go` centered stack/grid helper'ları kullanılır; pause, save/load, scenario, faction, victory ve settings ekranları aynı merkezleme ve aralık kurallarıyla yerleşir. Aynı ekran ailesinin chrome ve kart yüzeyi de `internal/render/ui_compose.go` altındaki ortak helper'larla çizilir; üst/alt bant, başlık, kart bordürü ve accent şeridi ekran bazında tekrar yazılmaz.
 Pazar sekmesinin kontrol satırındaki `Oto. İhracat: AÇIK/KAPALI` butonu aynı ticaret paneli rect/hit-test akışıyla `ActionToggleAutoGrainExport` üretir.
-Pazar mal listesinde tahıl seçiliyken hedef fraksiyonun pozitif `StrategicGrainDemand` değeri `İthalat ihtiyacı` etiketiyle gösterilir; değer state snapshot'ından okunur ve ayrı bir hit-test yüzeyi oluşturmaz.
+Pazar mal listesinde tahıl seçiliyken hedef fraksiyonun pozitif `StrategicGrainDemand` değeri `İthalat ihtiyacı` etiketiyle gösterilir; değer state snapshot'ından okunur ve ayrı bir hit-test yüzeyi oluşturmaz. Pazar içindeki mal seçimi üstteki ortak filtre düğmelerinden yapılır ve tek devlet listesi seçili mala göre güncellenir; satırlar hedef stok, satış arzı, alım talebi ve fiyatı gösterir. Tab/filtre/işlem düğmeleri `gameui.Button` ortak dikey merkezlemesini kullanır, miktar kontrolü ikonsuz `-10`/`+10` adımlarını sunar ve ticaret paneli yeni açılışta `Pazar` sekmesini seçer. İşlem kartında `Miktar`/`Tutar` satırı orta metin varyantıyla vurgulanır.
 
 Bu compose katmanı sadece tam ekran seçim yüzeylerinde kalmaz; oyun içi HUD/panel ailesi de aynı helper'lara bağlanır. `DrawBottomPanel`, event log, date/music/turn-tech mini kartları, recruit paneli ve region/army/sea/settlement bilgi panelleri ortak `drawUIPanelFrame`, `drawUICardRect` ve `drawUISeparator` çizimlerini kullanır. Böylece panel sınırı, üst accent çizgisi ve section separator'ları birden fazla dosyada elle tekrar edilmez.
 

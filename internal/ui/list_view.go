@@ -8,13 +8,14 @@ import (
 )
 
 type ListViewStyle struct {
-	RowBG          color.RGBA
-	SelectedRowBG  color.RGBA
-	TextColor      color.RGBA
-	SelectedText   color.RGBA
-	MutedText      color.RGBA
-	RowTextOffsetY float64
-	TextVariant    TextVariant
+	RowBG            color.RGBA
+	SelectedRowBG    color.RGBA
+	TextColor        color.RGBA
+	SelectedText     color.RGBA
+	MutedText        color.RGBA
+	RowTextOffsetY   float64
+	TextVariant      TextVariant
+	PaginationPrefix string
 }
 
 type ListView struct {
@@ -166,6 +167,9 @@ func DrawListView(screen *ebiten.Image, l ListView, style ListViewStyle, text Te
 	}
 	if len(l.Items) > l.VisibleRows {
 		info := itoa(l.Scroll+1) + "-" + itoa(end) + "/" + itoa(len(l.Items))
+		if style.PaginationPrefix != "" {
+			info = style.PaginationPrefix + " " + info
+		}
 		text.Draw(screen, info, l.Rect.X+8, l.Rect.Y+l.Rect.H+4, style.MutedText, style.TextVariant)
 	}
 }

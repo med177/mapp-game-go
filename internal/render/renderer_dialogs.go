@@ -1581,6 +1581,18 @@ func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.Inp
 
 func (r *Renderer) handleHistoricalEventInput() InputAction {
 	if len(r.historicalEventChoices) == 0 {
+		if len(r.commanderArrivals) > 0 {
+			mxi, myi := ebiten.CursorPosition()
+			mx, my := float64(mxi), float64(myi)
+			_, wheelY := ebiten.Wheel()
+			viewport := commanderArrivalListViewport()
+			if wheelY != 0 && viewport.Hit(mx, my) {
+				r.commanderArrivalScroll = clampCommanderArrivalScroll(
+					r.commanderArrivalScroll-int(wheelY), len(r.commanderArrivals), viewport,
+				)
+				return InputAction{}
+			}
+		}
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
 			r.keyJustPressed(ebiten.KeySpace) || r.mouseJustPressed(ebiten.MouseButtonLeft) {
 			r.HideHistoricalEvent()

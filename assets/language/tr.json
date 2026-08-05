@@ -1,0 +1,10 @@
+{
+  "language": "tr",
+  "description": "Oyun için Türkçe dil çevirisi.",
+  "dictionary": [
+    { "key": "greeting", "value": "Merhaba" },
+    { "key": "farewell", "value": "Hoşça kal" },
+    { "key": "thank_you", "value": "Teşekkürler" },
+    { "key": "welcome", "value": "Hoş geldin" }
+  ]
+}

@@ -684,6 +684,12 @@ func assertTradePanelInside(t *testing.T, screenW, screenH float64) {
 	if float64(cardY) < layout.marketListRect.Y+layout.marketListRect.H-eps {
 		t.Fatalf("trade action card overlaps market list in %.0fx%.0f viewport: layout=%+v card=(%.1f,%.1f,%.1f,%.1f)", screenW, screenH, layout, cardX, cardY, cardW, cardH)
 	}
+	if layout.leftListRect.Y+layout.leftListRect.H+16 > layout.panelRect.Y+layout.panelRect.H-8+eps {
+		t.Fatalf("trade aday listesi sayfalama satırına yeterli alt boşluk bırakmalı: layout=%+v", layout)
+	}
+	if layout.marketListRect.Y+layout.marketListRect.H+16 > float64(cardY)-eps {
+		t.Fatalf("trade pazar sayfalaması işlem kartına taşmamalı: layout=%+v cardY=%.1f", layout, cardY)
+	}
 	for _, btn := range buildTradeTabButtons() {
 		assertButtonInside(t, screenW, screenH, btn.Button)
 	}

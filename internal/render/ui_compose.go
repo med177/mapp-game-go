@@ -89,6 +89,14 @@ func drawUIKeyValueRow(screen *ebiten.Image, x, y, w float64, label, value strin
 }
 
 func drawUIKeyValueRowWithGap(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color, gap float64) {
+	drawUIKeyValueRowWithGapAlign(screen, x, y, w, label, value, labelColor, valueColor, gap, gameui.TextAlignEnd)
+}
+
+func drawUIKeyValueRowLeading(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color, gap float64) {
+	drawUIKeyValueRowWithGapAlign(screen, x, y, w, label, value, labelColor, valueColor, gap, gameui.TextAlignStart)
+}
+
+func drawUIKeyValueRowWithGapAlign(screen *ebiten.Image, x, y, w float64, label, value string, labelColor color.Color, valueColor color.Color, gap float64, valueAlign gameui.TextAlign) {
 	if labelColor == nil {
 		labelColor = ColorGray
 	}
@@ -102,6 +110,7 @@ func drawUIKeyValueRowWithGap(screen *ebiten.Image, x, y, w float64, label, valu
 	row.LabelVariant = gameui.TextSmall
 	row.ValueVariant = gameui.TextMedium
 	row.Gap = gap
+	row.ValueAlign = valueAlign
 	drawUIKeyValueWidget(screen, row)
 }
 

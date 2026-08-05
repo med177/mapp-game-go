@@ -268,6 +268,38 @@ func LoadSlot(slotName string) (*state.GameState, error) {
 	return loadFromPath(path)
 }
 
+// ScenarioPathForSlot kayıt yükleme ekranı için slotun senaryo asset yolunu
+// metadata'dan çözer. Tam oyun state'ini yüklemez; böylece loading ekranı ilk
+// çizildiğinde senaryo arka planı hazır olabilir.
+func ScenarioPathForSlot(slotName string) string {
+	path, ok := slotPath(slotName)
+	if !ok {
+		path = autoSavePath
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+
+	if meta, _, ok, err := readSaveMetadata(data); err == nil && ok {
+		if scenarioPath := resolveScenarioPath(meta.ScenarioID, meta.ScenarioPath); scenarioPath != "" {
+			return scenarioPath
+		}
+	}
+
+	// Eski, envelope içermeyen kayıtlar için senaryo bilgisi payload içinden
+	// okunur; bu da mevcut save uyumluluğunu korur.
+	payload, _, _, err := splitSavePayload(data)
+	if err != nil {
+		return ""
+	}
+	var meta metaFields
+	if err := json.Unmarshal(payload, &meta); err != nil {
+		return ""
+	}
+	return resolveScenarioPath(meta.ScenarioID, meta.ScenarioPath)
+}
+
 // LatestContinueSlot en yeni autosave/quicksave slotunu döner.
 func LatestContinueSlot() (string, bool) {
 	var newestName string

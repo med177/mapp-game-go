@@ -212,6 +212,71 @@ func TestTradeRouteListFilterDefaultsToOwnedAndTogglesAllRoutes(t *testing.T) {
 	}
 }
 
+func TestTradeQuantityButtonsUseOnlyTenStepsWithoutIcons(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	buttons, _, _ := buildTradeActionButtonsAt(tradeMarketActionCardRect, tradePanelLayout())
+	if len(buttons) != 2 {
+		t.Fatalf("miktar düğmeleri yalnızca -10 ve +10 içermeli, got=%d", len(buttons))
+	}
+	if buttons[0].Label != "-10" || buttons[1].Label != "+10" {
+		t.Fatalf("miktar düğmeleri beklenmedik: %q, %q", buttons[0].Label, buttons[1].Label)
+	}
+	for _, button := range buttons {
+		if button.Icon != gameui.IconNone {
+			t.Fatalf("miktar düğmelerinde ikon olmamalı: label=%q icon=%v", button.Label, button.Icon)
+		}
+	}
+}
+
+func TestTradeMarketActionButtonsStayGroupedInsideActionCard(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 2048, 1244
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	layout := tradePanelLayout()
+	cardX, cardY, cardW, cardH := tradeMarketActionCardRect(layout)
+	qty, buy, sell := buildTradeActionButtonsAt(tradeMarketActionCardRect, layout)
+	emergency := buildTradeEmergencyGrainSaleButtonAt(tradeMarketActionCardRect, layout, true)
+
+	if buy.X != qty[1].X+qty[1].W+18 {
+		t.Fatalf("al/sat grubu miktar kontrollerinden kopuk olmamalı: qty=%+v buy=%+v", qty, buy)
+	}
+	if sell.X != buy.X+buy.W+14 || emergency.X != buy.X {
+		t.Fatalf("işlem düğmeleri aynı kompakt kolon grubunda olmalı: buy=%+v sell=%+v emergency=%+v", buy, sell, emergency)
+	}
+	if qty[0].X <= float64(cardX+12) || sell.X+sell.W >= float64(cardX+cardW-12) {
+		t.Fatalf("işlem grubu kart içinde görünür iç boşlukla kalmalı: card=(%.1f,%.1f,%.1f,%.1f) qty=%+v sell=%+v", cardX, cardY, cardW, cardH, qty[0], sell)
+	}
+}
+
+func TestTradeButtonsUseCommonVerticalCentering(t *testing.T) {
+	if got := tradeButtonStyle(true).TextOffsetY; got != 0 {
+		t.Fatalf("ticaret sekmeleri ortak dikey merkezlemeyi kullanmalı: offset=%.1f", got)
+	}
+	if got := tradeButtonStyle(false).TextOffsetY; got != 0 {
+		t.Fatalf("pasif ticaret düğmeleri ortak dikey merkezlemeyi kullanmalı: offset=%.1f", got)
+	}
+}
+
+func TestTradePanelOpensOnMarketTab(t *testing.T) {
+	r := &Renderer{tradeTab: TradeTabRoutes}
+	r.toggleTradePanel()
+	if !r.showTrade || r.tradeTab != TradeTabMarket {
+		t.Fatalf("ticaret paneli ilk açılışta Pazar sekmesini göstermeli: show=%v tab=%v", r.showTrade, r.tradeTab)
+	}
+	r.toggleTradePanel()
+	if r.showTrade {
+		t.Fatal("ticaret paneli ikinci toggle'da kapanmalı")
+	}
+}
+
 func TestFactionTradeStatsCalculatesRouteIncomeExpenseAndNet(t *testing.T) {
 	playerID := faction.FactionID("player")
 	gs := &state.GameState{
