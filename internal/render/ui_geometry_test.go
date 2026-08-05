@@ -168,7 +168,6 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		for _, btn := range buildMapModeButtons() {
 			assertButtonInside(t, tc.w, tc.h, btn)
 		}
-		assertButtonInside(t, tc.w, tc.h, buildTradeToggleButton())
 		assertTradePanelInside(t, tc.w, tc.h)
 		assertDiplomacyPanelInside(t, tc.w, tc.h)
 		assertTechPanelInside(t, tc.w, tc.h)
@@ -212,7 +211,7 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 	}
 }
 
-func TestMapModeHudSitsAboveMinimapWithTradeToggle(t *testing.T) {
+func TestMapModeHudAndBottomMarketButtonGeometry(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
 	defer func() {
@@ -227,9 +226,17 @@ func TestMapModeHudSitsAboveMinimapWithTradeToggle(t *testing.T) {
 		t.Fatalf("harita modu HUD'ı minimap'in üstüne taşmamalı: bottom=%.1f minimapY=%.1f", mapY+mapH, minimapY())
 	}
 
-	market := buildTradeToggleButton()
-	if market.Y+market.H > float64(mapY) {
-		t.Fatalf("Pazar düğmesi harita modu HUD'ının üstünde kalmalı: bottom=%.1f mapY=%.1f", market.Y+market.H, mapY)
+	buttons := buildBottomActionButtons(true)
+	market := buttons[1]
+	diplomacy := buttons[2]
+	if market.Label != "Pazar" {
+		t.Fatalf("alt HUD ikinci düğmesi Pazar olmalı: got=%q", market.Label)
+	}
+	if market.W != float64(btnW) || market.H != float64(btnH) {
+		t.Fatalf("Pazar diğer alt HUD düğmeleriyle aynı boyutta olmalı: got=%.1fx%.1f expected=%.1fx%.1f", market.W, market.H, btnW, btnH)
+	}
+	if market.X+market.W+float64(actionHudGap) != diplomacy.X {
+		t.Fatalf("Pazar Diplomasi'nin hemen solunda olmalı: market=%+v diplomacy=%+v", market, diplomacy)
 	}
 	if !bottomActionHudHit(market.X+market.W/2, market.Y+market.H/2) {
 		t.Fatal("Pazar düğmesi ortak HUD hit-test alanına dahil olmalı")
@@ -883,7 +890,7 @@ func TestPanelFamilyRenderSmokeCommonViewports(t *testing.T) {
 		ScreenWidth = float64(tc.w)
 		ScreenHeight = float64(tc.h)
 		screen := ebiten.NewImage(tc.w, tc.h)
-		DrawBottomPanel(screen, gs, true, true, "", true, true, false, MapModeNormal)
+		DrawBottomPanel(screen, gs, true, true, "", false, true, true, false, MapModeNormal)
 		DrawRegionPanel(screen, gs, regionID)
 		DrawArmyPanel(screen, gs, "a1")
 		DrawSettlementPanel(screen, gs, gs.Regions[regionID], &gs.Regions[regionID].Settlements[0])

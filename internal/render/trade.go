@@ -20,7 +20,7 @@ type TradeTab int
 const (
 	TradeTabRoutes TradeTab = iota // mevcut rotalar
 	TradeTabNew                    // yeni ticaret anlaşması oluştur
-	TradeTabMarket                 // aktif ağ içinde manuel pazar işlemi
+	TradeTabMarket                 // açık pazarda manuel pazar işlemi
 	TradeTabPrices                 // piyasa fiyatları
 )
 
@@ -366,8 +366,8 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
 	drawTradeListControls(screen, layout, gs, listFilter, listSort)
 	if len(factions) == 0 {
-		DrawTextCentered(screen, "Aktif ticaret ağına bağlı pazar partneri yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
-		DrawTextCentered(screen, "Filtreyi değiştirin ya da Yeni Rota sekmesinden ticaret anlaşması açın.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
+		DrawTextCentered(screen, "Açık pazarda işlem yapılabilecek devlet yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
+		DrawTextCentered(screen, "Savaşta olmadığınız bir devlet veya uygun stok bulunmuyor.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
 		cardX, cardY, cardW, cardH := tradeActionCardRect(layout, 1)
 		vector.FillRect(screen, cardX, cardY, cardW, cardH, color.RGBA{16, 14, 10, 220}, false)
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, panelBorder, false)
@@ -527,7 +527,7 @@ func buildTradeFilterButtons(layout tradeLayout) []tradeChoiceButton {
 }
 
 func buildTradeSortButtons(layout tradeLayout) []tradeChoiceButton {
-	labels := []string{"Yakın", "Fiyat", "Stok"}
+	labels := []string{"İsim", "Fiyat", "Stok"}
 	out := make([]tradeChoiceButton, 0, len(labels))
 	for i, label := range labels {
 		r := layout.sortBtnRects[i]
@@ -803,7 +803,7 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 	return list
 }
 
-// sortedFactionsForMarket aktif ticaret ağı üzerinden pazar yapılabilecek partnerleri filtreler/sıralar.
+// sortedFactionsForMarket açık pazardaki savaş dışı partnerleri filtreler/sıralar.
 func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter TradeListFilter, listSort TradeListSort) []faction.FactionID {
 	goods := tradeSelectableGoods()
 	if focusGood < 0 || focusGood >= len(goods) {
@@ -812,11 +812,9 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 	selectedGood := goods[focusGood]
 	player := gs.Factions[gs.PlayerFactionID]
 	playerStock := getFactionGoodAmount(player, selectedGood)
-	distances := tradeNetworkDistances(gs, gs.PlayerFactionID)
 
 	type candidate struct {
 		id    faction.FactionID
-		dist  int
 		stock int
 		price int
 	}
@@ -825,12 +823,7 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 		if fid == gs.PlayerFactionID || f == nil || f.IsEliminated {
 			continue
 		}
-		rel := relationForTrade(gs, gs.PlayerFactionID, fid)
-		if rel == nil || !(rel.Stance == faction.StancePeace || rel.Stance == faction.StanceTrade || rel.Stance == faction.StanceAllied) {
-			continue
-		}
-		dist, linked := distances[fid]
-		if !linked {
+		if diplomacy.IsWar(gs, gs.PlayerFactionID, fid) {
 			continue
 		}
 		stock := getFactionGoodAmount(f, selectedGood)
@@ -846,7 +839,7 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 				continue
 			}
 		}
-		list = append(list, candidate{id: fid, dist: dist, stock: stock, price: price})
+		list = append(list, candidate{id: fid, stock: stock, price: price})
 	}
 	sort.Slice(list, func(i, j int) bool {
 		switch listSort {
@@ -857,10 +850,6 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 		case TradeSortStock:
 			if list[i].stock != list[j].stock {
 				return list[i].stock > list[j].stock
-			}
-		default:
-			if list[i].dist != list[j].dist {
-				return list[i].dist < list[j].dist
 			}
 		}
 		return list[i].id < list[j].id
@@ -891,36 +880,6 @@ func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
 		return 0
 	}
 	return gs.EffectiveFactionTradeCapacity(fid)
-}
-
-func tradeNetworkDistances(gs *state.GameState, src faction.FactionID) map[faction.FactionID]int {
-	dist := map[faction.FactionID]int{src: 0}
-	if gs == nil || len(gs.TradeRoutes) == 0 {
-		return dist
-	}
-	adj := make(map[faction.FactionID][]faction.FactionID)
-	for _, tr := range gs.TradeRoutes {
-		if tr == nil || tr.SuspendedTurns > 0 {
-			continue
-		}
-		a := faction.FactionID(tr.FromFactionID)
-		b := faction.FactionID(tr.ToFactionID)
-		adj[a] = append(adj[a], b)
-		adj[b] = append(adj[b], a)
-	}
-	q := []faction.FactionID{src}
-	for len(q) > 0 {
-		cur := q[0]
-		q = q[1:]
-		for _, nxt := range adj[cur] {
-			if _, seen := dist[nxt]; seen {
-				continue
-			}
-			dist[nxt] = dist[cur] + 1
-			q = append(q, nxt)
-		}
-	}
-	return dist
 }
 
 func buildTradeAutoExportButton(layout tradeLayout, enabled bool) gameui.Button {

@@ -7,7 +7,7 @@ related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, a
 
 # Yapay Zeka Sistemi
 
-1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır. Tahıl açığı yaşayan devletler stratejik rezerv alımı yapar; üretim kararındaki birim, bina, nakliye veya savaş gemisinin eksik tahıl, demir, kereste, taş, baharat ve kumaş maliyetleri `aiProcureStrategicResources()` tarafından otomatik çıkarılır ve yeterli altın kaldığı sürece aktif ticaret ağından tamamlanır. Abluka altındaki limanlar, somut çıkarma görevi olmasa bile deniz tehdidi snapshot'ından seçilir; gerekli liman seviyesi ve `%110` savunma gücü tamamlanana kadar savaş gemisi üretimi planlanır. Askerî bütçe ve ilk kışla kararı bu rezervleri koruyacak şekilde çalışır.
+1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır. Tahıl yatırımı, sivil tüketim ile ordu bakımının toplam açığına göre puanlanır; tamamlanmamış en fazla iki çiftlik aynı anda kuyruğa alınabilir. Tahıl açığı yaşayan devletler, açık pazarda savaşta olmadıkları ve kendi üç aylık rezervini koruyan satıcılardan tahıl alır; üretim kararındaki birim, bina, nakliye veya savaş gemisinin eksik tahıl, demir, kereste, taş, baharat ve kumaş maliyetleri `aiProcureStrategicResources()` tarafından otomatik çıkarılır ve yeterli altın kaldığı sürece aynı açık pazardan tamamlanır. Abluka altındaki limanlar, somut çıkarma görevi olmasa bile deniz tehdidi snapshot'ından seçilir; gerekli liman seviyesi ve `%110` savunma gücü tamamlanana kadar savaş gemisi üretimi planlanır. Askerî bütçe ve ilk kışla kararı bu rezervleri koruyacak şekilde çalışır.
 
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
 `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
@@ -28,8 +28,8 @@ eksikliği nedeniyle bulunamıyorsa ve stratejik kapasite/ordu limiti uygunsa,
 kışlanın `ResourceCost` içindeki tüm eksik girdileri de aynı turda satın alınır.
 `aiNeedsBarracksForMilitaryProduction()` bu kararı hem tedarik öncesi hem de
 kışla kuyruğa alma adımında paylaşır; böylece kışla maliyeti satın alınmadan
-kışla üretiminin kilitlenmesi önlenir. Tedarik hâlâ yalnız aktif ticaret
-rotalarının bağlı bileşenindeki, stok güvenlik payı bırakan tedarikçilerden ve
+kışla üretiminin kilitlenmesi önlenir. Tedarik, aktif rota gerektirmeyen açık
+pazarda savaşta olmayan, stok güvenlik payı bırakan tedarikçilerden ve
 `aiMinGoldReserve` korunarak yapılır.
 
 AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir.

@@ -33,10 +33,15 @@ type aiBuildingCandidate struct {
 type aiEconomySnapshot struct {
 	GoldProduction  int
 	GrainProduction int
-	GrainUpkeep     int
-	GrainStock      int
-	GrainCapacity   int
-	GranaryCount    int
+	// GrainDemand sivil tüketim ile ordu bakımının toplamıdır. Yatırım
+	// kararındaki tahıl baskısı ekonomi tick'indeki gerçek talebi izlemelidir;
+	// yalnız ordu bakımına bakmak kalabalık ama ordusuz devletlerin çiftliği
+	// gereksiz görmesine yol açar.
+	GrainDemand   int
+	GrainUpkeep   int
+	GrainStock    int
+	GrainCapacity int
+	GranaryCount  int
 }
 
 type aiRegionInvestmentSignals struct {
@@ -101,6 +106,10 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 	}
 	self := gs.Factions[fid]
 	snapshot := aiBuildEconomySnapshot(gs, fid)
+	// Tamamlanmamış çiftlikler ekonomi fotoğrafına henüz katılmaz. İki paralel
+	// yatırım kıtlığın hızla toparlanmasını sağlar; üçüncüsü ise sonucu görmeden
+	// aynı açığa aşırı yatırım olur.
+	queuedFarmCount := aiQueuedBuildingCountForFaction(gs, fid, "farm")
 	var best aiBuildingCandidate
 	found := false
 	for _, region := range aiSortedRegions(gs) {
@@ -109,6 +118,9 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 		}
 		signals := aiInvestmentSignals(gs, fid, region, ctx)
 		for _, buildingID := range aiEconomyBuildingIDs {
+			if buildingID == "farm" && queuedFarmCount >= 2 {
+				continue
+			}
 			btype := gs.BuildingTypes[buildingID]
 			if btype == nil || !aiBuildingAllowed(gs, region, buildingID, btype.RequiredTerrain) {
 				continue
@@ -175,13 +187,13 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 		if snapshot.GranaryCount == 0 {
 			bottleneckScore += 260
 		}
-		if snapshot.GrainStock < maxInt(120, snapshot.GrainUpkeep*aiGrainReserveMonths) {
+		if snapshot.GrainStock < maxInt(120, snapshot.GrainDemand*aiGrainReserveMonths) {
 			bottleneckScore += 180
 		}
-		if snapshot.GrainCapacity < maxInt(120, snapshot.GrainUpkeep*aiGrainReserveMonths) {
+		if snapshot.GrainCapacity < maxInt(120, snapshot.GrainDemand*aiGrainReserveMonths) {
 			bottleneckScore += 100
 		}
-		if snapshot.GrainProduction <= snapshot.GrainUpkeep {
+		if snapshot.GrainProduction <= snapshot.GrainDemand {
 			bottleneckScore += 70
 		}
 		if signals.AtWar {
@@ -223,6 +235,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 		production := gs.RegionProductionSummary(region)
 		snapshot.GoldProduction += production.Gold
 		snapshot.GrainProduction += production.Grain
+		snapshot.GrainDemand += gs.CivilianGrainDemandForRegion(region)
 		for _, buildingID := range region.Buildings {
 			if buildingID == "granary" {
 				snapshot.GranaryCount++
@@ -236,16 +249,18 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 	}
 	for _, armyRef := range aiSortedArmies(gs) {
 		if armyRef.OwnerID == string(fid) {
-			snapshot.GrainUpkeep += gs.EffectiveArmyGrainUpkeep(armyRef)
+			upkeep := gs.EffectiveArmyGrainUpkeep(armyRef)
+			snapshot.GrainUpkeep += upkeep
+			snapshot.GrainDemand += upkeep
 		}
 	}
 	return snapshot
 }
 
 func aiGrainUtilityPercent(snapshot aiEconomySnapshot) int {
-	target := maxInt(120, snapshot.GrainUpkeep*6)
+	target := maxInt(120, snapshot.GrainDemand*6)
 	switch {
-	case snapshot.GrainProduction <= snapshot.GrainUpkeep || snapshot.GrainStock < snapshot.GrainUpkeep*2:
+	case snapshot.GrainProduction <= snapshot.GrainDemand || snapshot.GrainStock < snapshot.GrainDemand*2:
 		return 150
 	case snapshot.GrainStock < target:
 		return 100
@@ -259,9 +274,9 @@ func aiGrainUtilityPercent(snapshot aiEconomySnapshot) int {
 func aiBuildingBottleneckScore(self *faction.Faction, buildingID string, cost economy.ResourceCost, snapshot aiEconomySnapshot) int {
 	score := 0
 	if buildingID == "farm" {
-		target := maxInt(120, snapshot.GrainUpkeep*6)
+		target := maxInt(120, snapshot.GrainDemand*6)
 		switch {
-		case snapshot.GrainProduction <= snapshot.GrainUpkeep || snapshot.GrainStock < snapshot.GrainUpkeep*2:
+		case snapshot.GrainProduction <= snapshot.GrainDemand || snapshot.GrainStock < snapshot.GrainDemand*2:
 			score += 140
 		case snapshot.GrainStock < target:
 			score += 90
@@ -468,6 +483,16 @@ func aiQueuedBuildingCountForRegion(gs *state.GameState, regionID world.RegionID
 	count := 0
 	for _, order := range gs.ProductionQueue {
 		if order.Kind == aiProductionKindBuilding && order.RegionID == regionID && order.FactionID == string(fid) {
+			count++
+		}
+	}
+	return count
+}
+
+func aiQueuedBuildingCountForFaction(gs *state.GameState, fid faction.FactionID, buildingID string) int {
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind == aiProductionKindBuilding && order.FactionID == string(fid) && order.TypeID == buildingID {
 			count++
 		}
 	}

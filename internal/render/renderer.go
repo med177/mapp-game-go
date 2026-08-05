@@ -1454,7 +1454,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
-		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
+		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)

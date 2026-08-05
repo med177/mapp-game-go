@@ -2220,10 +2220,6 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 		return
 	}
 	if !canPlayerOneTimeTradeWith(g.gs, targetID) {
-		g.renderer.ShowCombatResult("Bu fraksiyonla pazar işlemi için barış/ticaret ilişkisi ve aktif ticaret ağı bağlantısı gerekiyor.")
-		return
-	}
-	if rel := diplomacy.Relation(g.gs, g.gs.PlayerFactionID, targetID); rel != nil && rel.Stance == faction.StanceWar {
 		g.renderer.ShowCombatResult("Savaşta olduğun fraksiyonla pazar işlemi yapamazsın.")
 		return
 	}
@@ -2311,49 +2307,14 @@ func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) 
 	if gs == nil || targetID == "" || targetID == gs.PlayerFactionID {
 		return false
 	}
+	if gs.Factions[gs.PlayerFactionID] == nil {
+		return false
+	}
 	target := gs.Factions[targetID]
 	if target == nil || target.IsEliminated {
 		return false
 	}
-	rel := diplomacy.Relation(gs, gs.PlayerFactionID, targetID)
-	if rel == nil {
-		return false
-	}
-	if rel.Stance != faction.StancePeace && rel.Stance != faction.StanceTrade && rel.Stance != faction.StanceAllied {
-		return false
-	}
-	if len(gs.TradeRoutes) == 0 {
-		return false
-	}
-	seen := map[faction.FactionID]bool{gs.PlayerFactionID: true}
-	q := []faction.FactionID{gs.PlayerFactionID}
-	for len(q) > 0 {
-		cur := q[0]
-		q = q[1:]
-		if cur == targetID {
-			return true
-		}
-		for _, tr := range gs.TradeRoutes {
-			if tr == nil || tr.SuspendedTurns > 0 {
-				continue
-			}
-			var nxt faction.FactionID
-			switch faction.FactionID(tr.FromFactionID) {
-			case cur:
-				nxt = faction.FactionID(tr.ToFactionID)
-			default:
-				if faction.FactionID(tr.ToFactionID) == cur {
-					nxt = faction.FactionID(tr.FromFactionID)
-				}
-			}
-			if nxt == "" || seen[nxt] {
-				continue
-			}
-			seen[nxt] = true
-			q = append(q, nxt)
-		}
-	}
-	return false
+	return !diplomacy.IsWar(gs, gs.PlayerFactionID, targetID)
 }
 
 func tradeGoodLabelTR(good economy.GoodType) string {

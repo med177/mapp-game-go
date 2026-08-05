@@ -41,10 +41,20 @@ ile state çözümlemesiyle aynı değeri gösterir. Bina tooltip'i de `trade_ca
 etkisini açıkça yazar; böylece pazar, liman, ambar ve ibadethane katkısı UI'da
 gizli kalmaz.
 
+`Pazar` sekmesi, aktif rota bağlantısı aramadan savaşta olmayan tüm devletleri
+listeler; isim, fiyat veya stok sıralaması ve al/sat kartı bu ortak listeyle aynı
+seçim ve hit-test akışını kullanır. Savaştaki devletler listeden ve işlemden
+çıkarılır (`internal/render/trade.go`).
+
 Ticaret haritasındaki merkez etiketleri hacmin yanında merkezden gelen kapasite
 ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağlı
 koridor hacmini ve fetihle devralınan bonusları aynı state helper üzerinden
 bildirir.
+
+Alt aksiyon HUD'ı artık `Ordu → Pazar → Diplomasi → Teknoloji → Tur Bitir`
+sırasındaki beş ortak butondan oluşur. `Pazar`, Ticaret Haritası HUD'ından
+bağımsız olarak aynı alt HUD dikdörtgeni, çizim ve hit-test sözleşmesiyle ticaret
+panelini açar (`internal/render/panel.go`, `internal/render/renderer_input.go`).
 
 Ticaret haritası merkez grafiğini yalnız senaryo verisindeki ana ve ikincil
 merkezlerden kurar. Her aktif devletin başkenti en yakın bu merkeze ince,

@@ -3,6 +3,7 @@ package ai
 import (
 	"sort"
 
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -20,9 +21,25 @@ type aiResourceSupplier struct {
 	surplus int
 }
 
-// aiProcureGrain, aktif ticaret ağı üzerinden stratejik rezervi eksik AI
-// fraksiyonuna tahıl alır. Kaynakta da güvenli rezerv bırakılır; böylece büyük
-// devletler küçük devletleri satın alırken kendi ordularını kıtlığa sokmaz.
+// aiGrainSupplierSurplus, satıcının kendi üç aylık stratejik rezervini
+// korurken pazara sunabileceği tahılı döner. Depo kapasitesi sivil stok için
+// altı aya kadar büyüyebildiğinden onu satış eşiği yapmak, kıtlıktaki AI'ler
+// için pazarda hiç satıcı kalmamasına yol açıyordu.
+func aiGrainSupplierSurplus(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	supplier := gs.Factions[fid]
+	if supplier == nil || supplier.IsEliminated {
+		return 0
+	}
+	reserve := maxInt(100, aiFactionGrainDemand(gs, fid)*aiGrainReserveMonths)
+	return maxInt(0, supplier.Grain-reserve)
+}
+
+// aiProcureGrain, açık pazardan stratejik rezervi eksik AI fraksiyonuna tahıl
+// alır. Savaşta olmayan tüm devletler satıcı olabilir; kaynakta yine güvenli
+// rezerv bırakılır.
 func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
 		return 0
@@ -70,17 +87,19 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 		return 0
 	}
 
-	connected := aiTradeNetworkMembers(gs, fid)
-	suppliers := make([]aiResourceSupplier, 0, len(connected))
-	for supplierID := range connected {
+	suppliers := make([]aiResourceSupplier, 0, len(gs.Factions))
+	for _, supplierID := range aiSortedFactionIDs(gs) {
 		if supplierID == fid {
+			continue
+		}
+		if diplomacy.IsWar(gs, fid, supplierID) {
 			continue
 		}
 		supplier := gs.Factions[supplierID]
 		if supplier == nil || supplier.IsEliminated {
 			continue
 		}
-		surplus := gs.StrategicGrainSurplus(supplierID)
+		surplus := aiGrainSupplierSurplus(gs, supplierID)
 		if surplus <= 0 {
 			continue
 		}
@@ -109,8 +128,8 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 
 // aiProcureStrategicResources, AI'nin aynı turda gerçekten değerlendireceği
 // üretim adaylarının maliyetlerinden kaynak talebi çıkarır. Kaynak stoğu
-// yeterliyse alım yapmaz; eksik olan her ticari malı aktif ticaret ağı içinden,
-// altın rezervi korunabildiği sürece tamamlar.
+// yeterliyse alım yapmaz; eksik olan her ticari malı açık pazardan, altın
+// rezervi korunabildiği sürece tamamlar.
 func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) economy.ResourceCost {
 	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
 		return economy.ResourceCost{}
@@ -251,7 +270,7 @@ func aiProcureMissingResources(gs *state.GameState, fid faction.FactionID, deman
 		if amount <= 0 {
 			continue
 		}
-		bought := aiPurchaseResourceFromTradeNetwork(gs, fid, need.good, amount)
+		bought := aiPurchaseResourceFromOpenMarket(gs, fid, need.good, amount)
 		if bought <= 0 {
 			continue
 		}
@@ -261,7 +280,7 @@ func aiProcureMissingResources(gs *state.GameState, fid faction.FactionID, deman
 	return purchased
 }
 
-func aiPurchaseResourceFromTradeNetwork(gs *state.GameState, fid faction.FactionID, good economy.GoodType, amount int) int {
+func aiPurchaseResourceFromOpenMarket(gs *state.GameState, fid faction.FactionID, good economy.GoodType, amount int) int {
 	if amount <= 0 || good == "" {
 		return 0
 	}
@@ -278,8 +297,11 @@ func aiPurchaseResourceFromTradeNetwork(gs *state.GameState, fid faction.Faction
 	}
 	suppliers := make([]supplier, 0)
 	kind, _ := economy.GoodToResourceKind(good)
-	for supplierID := range aiTradeNetworkMembers(gs, fid) {
+	for _, supplierID := range aiSortedFactionIDs(gs) {
 		if supplierID == fid {
+			continue
+		}
+		if diplomacy.IsWar(gs, fid, supplierID) {
 			continue
 		}
 		candidate := gs.Factions[supplierID]
@@ -348,39 +370,4 @@ func aiFactionGrainDemand(gs *state.GameState, fid faction.FactionID) int {
 		}
 	}
 	return demand
-}
-
-// aiTradeNetworkMembers returns factions reachable through active trade
-// routes. AI procurement follows the same connected-network rule as the
-// player's one-time market trade, without requiring a direct bilateral route.
-func aiTradeNetworkMembers(gs *state.GameState, fid faction.FactionID) map[faction.FactionID]struct{} {
-	connected := map[faction.FactionID]struct{}{fid: {}}
-	queue := []faction.FactionID{fid}
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-		for _, route := range gs.TradeRoutes {
-			if route == nil || route.SuspendedTurns > 0 {
-				continue
-			}
-			var next faction.FactionID
-			switch faction.FactionID(route.FromFactionID) {
-			case current:
-				next = faction.FactionID(route.ToFactionID)
-			default:
-				if faction.FactionID(route.ToFactionID) == current {
-					next = faction.FactionID(route.FromFactionID)
-				}
-			}
-			if next == "" {
-				continue
-			}
-			if _, seen := connected[next]; seen {
-				continue
-			}
-			connected[next] = struct{}{}
-			queue = append(queue, next)
-		}
-	}
-	return connected
 }

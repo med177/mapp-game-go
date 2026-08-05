@@ -101,7 +101,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 		addTurnStep(steps, TurnStep{
 			FactionID: fid,
 			Kind:      TurnStepInfo,
-			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini ticaret ağı üzerinden tamamlıyor.",
+			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini açık pazardan tamamlıyor.",
 		})
 	}
 	if purchased := aiProcureStrategicResources(gs, fid, planningContext); purchased != (economy.ResourceCost{}) {

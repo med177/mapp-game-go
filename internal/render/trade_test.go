@@ -144,3 +144,26 @@ func TestHandleTradePanelInputTogglesAutomaticGrainExport(t *testing.T) {
 		t.Fatalf("otomatik ihracat toggle aksiyonu dönmeliydi, got=%+v", action)
 	}
 }
+
+func TestSortedFactionsForMarketListsUnlinkedPeacefulStatesButExcludesEnemies(t *testing.T) {
+	playerID := faction.FactionID("player")
+	openMarketID := faction.FactionID("open_market")
+	enemyID := faction.FactionID("enemy")
+	gs := &state.GameState{
+		PlayerFactionID: playerID,
+		Factions: map[faction.FactionID]*faction.Faction{
+			playerID:     {ID: playerID, Grain: 10},
+			openMarketID: {ID: openMarketID, Grain: 100},
+			enemyID:      {ID: enemyID, Grain: 100},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey(playerID, enemyID): {FactionA: playerID, FactionB: enemyID, Stance: faction.StanceWar},
+		},
+		MarketPrices: economy.CurrentMarketPrice{economy.GoodGrain: 2},
+	}
+
+	got := sortedFactionsForMarket(gs, 0, TradeListAll, TradeSortDistance)
+	if len(got) != 1 || got[0] != openMarketID {
+		t.Fatalf("rota olmadan barıştaki devlet listelenmeli, düşman dışarıda kalmalı: got=%v", got)
+	}
+}

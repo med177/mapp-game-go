@@ -281,6 +281,10 @@ type GameState struct {
 
 	// Dinamik piyasa fiyatları (her tur sonu güncellenir)
 	MarketPrices economy.CurrentMarketPrice `json:"-"`
+	// MarketOrders AI devletlerinin bu tur açık pazara koyduğu arz ve talep
+	// kotalarını taşır. Piyasa işlemleri ham stok yerine bu kotaları kullanır;
+	// böylece bir devletin bütün malı tek turda satın alınamaz.
+	MarketOrders MarketOrderBook `json:"market_orders,omitempty"`
 
 	// Tur çözümlemesinde MovePoints sıfırlanmadan önce yakalanan hareket bilgisi.
 	// Kalıcı değildir; yüklenen oyunda bir sonraki çözümleme başında yeniden üretilir.
@@ -313,6 +317,143 @@ type GameState struct {
 	PendingNavalContact *NavalContact `json:"-"`
 	// Geçici kara temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
 	PendingLandContact *LandContact `json:"-"`
+}
+
+// MarketOrderBook açık pazardaki devlet bazlı satış arzı ve alım talebidir.
+// Miktarlar tur başında AI planlamasından üretilir ve işlem oldukça azalır.
+type MarketOrderBook struct {
+	SellOffers map[faction.FactionID]map[economy.GoodType]int `json:"sell_offers,omitempty"`
+	BuyOrders  map[faction.FactionID]map[economy.GoodType]int `json:"buy_orders,omitempty"`
+}
+
+// MarketSellOffer bir devletin belirli mal için kalan satış arzını döner.
+// Eski/kayıttan gelen kota stoktan büyükse gerçek stokla sınırlandırılır.
+func (s *GameState) MarketSellOffer(fid faction.FactionID, good economy.GoodType) int {
+	if s == nil || fid == "" || good == "" {
+		return 0
+	}
+	offers := s.MarketOrders.SellOffers[fid]
+	offer := offers[good]
+	if offer <= 0 {
+		return 0
+	}
+	if stock := economy.FactionResourceAmount(s.Factions[fid], resourceKindForTradeGood(good)); stock < offer {
+		return maxStateInt(0, stock)
+	}
+	return offer
+}
+
+// MarketBuyOrder bir devletin belirli mal için kalan alım talebini döner.
+// Talep, güncel altınla karşılanabilecek miktardan büyük olamaz.
+func (s *GameState) MarketBuyOrder(fid faction.FactionID, good economy.GoodType, price int) int {
+	if s == nil || fid == "" || good == "" || price <= 0 {
+		return 0
+	}
+	orders := s.MarketOrders.BuyOrders[fid]
+	order := orders[good]
+	if order <= 0 {
+		return 0
+	}
+	f := s.Factions[fid]
+	if f == nil {
+		return 0
+	}
+	if byGold := f.Gold / price; byGold < order {
+		return byGold
+	}
+	return order
+}
+
+// SetMarketSellOffer açık pazardaki satış arzını yazar.
+func (s *GameState) SetMarketSellOffer(fid faction.FactionID, good economy.GoodType, amount int) {
+	if s == nil || fid == "" || good == "" {
+		return
+	}
+	if s.MarketOrders.SellOffers == nil {
+		s.MarketOrders.SellOffers = make(map[faction.FactionID]map[economy.GoodType]int)
+	}
+	if s.MarketOrders.SellOffers[fid] == nil {
+		s.MarketOrders.SellOffers[fid] = make(map[economy.GoodType]int)
+	}
+	if amount < 0 {
+		amount = 0
+	}
+	s.MarketOrders.SellOffers[fid][good] = amount
+}
+
+// SetMarketBuyOrder açık pazardaki alım talebini yazar.
+func (s *GameState) SetMarketBuyOrder(fid faction.FactionID, good economy.GoodType, amount int) {
+	if s == nil || fid == "" || good == "" {
+		return
+	}
+	if s.MarketOrders.BuyOrders == nil {
+		s.MarketOrders.BuyOrders = make(map[faction.FactionID]map[economy.GoodType]int)
+	}
+	if s.MarketOrders.BuyOrders[fid] == nil {
+		s.MarketOrders.BuyOrders[fid] = make(map[economy.GoodType]int)
+	}
+	if amount < 0 {
+		amount = 0
+	}
+	s.MarketOrders.BuyOrders[fid][good] = amount
+}
+
+// ConsumeMarketSellOffer başarılı bir alımdan sonra satış arzını azaltır.
+func (s *GameState) ConsumeMarketSellOffer(fid faction.FactionID, good economy.GoodType, amount int) {
+	if s == nil || amount <= 0 {
+		return
+	}
+	s.SetMarketSellOffer(fid, good, s.MarketOrders.SellOffers[fid][good]-amount)
+}
+
+// ConsumeMarketBuyOrder başarılı bir satıştan sonra alım talebini azaltır.
+func (s *GameState) ConsumeMarketBuyOrder(fid faction.FactionID, good economy.GoodType, amount int) {
+	if s == nil || amount <= 0 {
+		return
+	}
+	s.SetMarketBuyOrder(fid, good, s.MarketOrders.BuyOrders[fid][good]-amount)
+}
+
+// CloneMarketOrders save snapshot'ı için emir defterinin derin kopyasını döner.
+func (s *GameState) CloneMarketOrders() *MarketOrderBook {
+	if s == nil || (len(s.MarketOrders.SellOffers) == 0 && len(s.MarketOrders.BuyOrders) == 0) {
+		return nil
+	}
+	clone := &MarketOrderBook{
+		SellOffers: cloneMarketOrderMap(s.MarketOrders.SellOffers),
+		BuyOrders:  cloneMarketOrderMap(s.MarketOrders.BuyOrders),
+	}
+	return clone
+}
+
+func cloneMarketOrderMap(src map[faction.FactionID]map[economy.GoodType]int) map[faction.FactionID]map[economy.GoodType]int {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[faction.FactionID]map[economy.GoodType]int, len(src))
+	for fid, orders := range src {
+		if len(orders) == 0 {
+			continue
+		}
+		copyOrders := make(map[economy.GoodType]int, len(orders))
+		for good, amount := range orders {
+			copyOrders[good] = amount
+		}
+		dst[fid] = copyOrders
+	}
+	return dst
+}
+
+func resourceKindForTradeGood(good economy.GoodType) economy.ResourceKind {
+	kind, _ := economy.GoodToResourceKind(good)
+	return kind
+}
+
+func maxStateInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 // RegionProductionSummary bir bölgenin tur başı efektif ekonomik katkısını özetler.

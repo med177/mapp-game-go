@@ -52,6 +52,25 @@ func TestAIBuildingInvestmentPrioritizesFarmDuringGrainBottleneck(t *testing.T) 
 	}
 }
 
+func TestAIBuildingInvestmentCountsCivilianDemandForFarmPriority(t *testing.T) {
+	gs := aiBuildingInvestmentTestState()
+	gs.Factions["ai"].Grain = 200
+	gs.BuildingTypes = map[string]*city.Building{
+		"farm": {
+			ID: "farm", NameTR: "farm", GoldCost: 80, GoldMod: 1, GrainMod: 1.3,
+			TurnsRequired: 2, MaxPerRegion: 1,
+		},
+		"market": aiTestBuilding("market", 120, 1.5, 1, 1.45, 2, 2),
+	}
+	gs.Regions["heartland"] = aiTestEconomyRegion("heartland", 90, 30, 6, 70)
+	gs.Regions["heartland"].Population = 1000 // 56 sivil talep, üretim ise yalnız 30.
+
+	candidate, ok := aiBestBuildingInvestment(gs, "ai", nil, nil)
+	if !ok || candidate.BuildingID != "farm" {
+		t.Fatalf("sivil tahıl açığında çiftlik marketten önce gelmeliydi: ok=%v candidate=%+v", ok, candidate)
+	}
+}
+
 func TestAIBuildingInvestmentPrioritizesWallsForCriticalDefenseObjective(t *testing.T) {
 	gs := aiBuildingInvestmentTestState()
 	gs.BuildingTypes = map[string]*city.Building{

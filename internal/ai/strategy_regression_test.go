@@ -10,7 +10,7 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestAIProcuresGrainFromConnectedTradeNetwork(t *testing.T) {
+func TestAIProcuresGrainFromOpenMarket(t *testing.T) {
 	gs := aiTestState()
 	gs.ScenarioID = "1300_ottoman_rise"
 	gs.Factions["ai_1"].Gold = 600
@@ -21,10 +21,6 @@ func TestAIProcuresGrainFromConnectedTradeNetwork(t *testing.T) {
 		"ai_1": {TotalDemand: 20},
 	}
 	gs.MarketPrices = economy.CurrentMarketPrice{economy.GoodGrain: 2}
-	gs.TradeRoutes = []*economy.TradeRoute{{
-		FromFactionID: "ai_1", ToFactionID: "ai_2", Good: economy.GoodCloth, AmountPerTurn: 1,
-	}}
-
 	if got := aiProcureGrain(gs, "ai_1"); got != 40 {
 		t.Fatalf("AI iki aylık tahıl penceresini satın almalıydı: got=%d", got)
 	}
@@ -33,6 +29,51 @@ func TestAIProcuresGrainFromConnectedTradeNetwork(t *testing.T) {
 	}
 	if gs.Factions["ai_2"].Grain != 460 || gs.Factions["ai_2"].Gold != 180 {
 		t.Fatalf("tedarikçinin stoğu/geliri yanlış: %+v", gs.Factions["ai_2"])
+	}
+}
+
+func TestAIOpenMarketNeverBuysFromEnemy(t *testing.T) {
+	gs := aiTestState()
+	gs.ScenarioID = "1300_ottoman_rise"
+	gs.Factions["ai_1"].Gold = 600
+	gs.Factions["ai_1"].Grain = 0
+	gs.Factions["ai_2"].Grain = 500
+	gs.Factions["enemy"] = &faction.Faction{ID: "enemy", Grain: 1000}
+	gs.Relations[faction.RelationKey("ai_1", "enemy")] = &faction.Relation{FactionA: "ai_1", FactionB: "enemy", Stance: faction.StanceWar}
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"ai_1":  {TotalDemand: 20},
+		"ai_2":  {TotalDemand: 20},
+		"enemy": {TotalDemand: 20},
+	}
+	gs.MarketPrices = economy.CurrentMarketPrice{economy.GoodGrain: 2}
+
+	if got := aiProcureGrain(gs, "ai_1"); got != 40 {
+		t.Fatalf("barıştaki açık pazar satıcısından tahıl alınmalıydı: got=%d", got)
+	}
+	if got := gs.Factions["enemy"].Grain; got != 1000 {
+		t.Fatalf("AI düşman devletten açık pazar alımı yapmamalıydı: enemy_grain=%d", got)
+	}
+}
+
+func TestAIGrainProcurementUsesReserveInsteadOfStorageCapacityAsSupplierLimit(t *testing.T) {
+	gs := aiTestState()
+	gs.ScenarioID = "1300_ottoman_rise"
+	gs.Factions["ai_1"].Gold = 600
+	gs.Factions["ai_1"].Grain = 0
+	gs.Factions["ai_2"].Gold = 100
+	gs.Factions["ai_2"].Grain = 260
+	gs.GrainEconomy = map[faction.FactionID]state.GrainEconomyStatus{
+		"ai_1": {TotalDemand: 20},
+		// Altı aylık depolama hedefi 1.000 olsa da satıcının üç aylık
+		// ihtiyacı yalnız 180; kalan 80 tahıl piyasaya sunulabilmeli.
+		"ai_2": {TotalDemand: 60, StorageCapacity: 1000},
+	}
+	gs.MarketPrices = economy.CurrentMarketPrice{economy.GoodGrain: 2}
+	if got := aiProcureGrain(gs, "ai_1"); got != 40 {
+		t.Fatalf("satıcı kendi üç aylık rezervini korurken alıcıya tahıl satmalıydı: got=%d", got)
+	}
+	if got := gs.Factions["ai_2"].Grain; got != 220 {
+		t.Fatalf("satıcının tahıl bakiyesi yanlış: got=%d want=220", got)
 	}
 }
 

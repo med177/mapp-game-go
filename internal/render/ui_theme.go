@@ -164,17 +164,6 @@ func mapModeButtonStyle(active bool) gameui.ButtonStyle {
 	}
 }
 
-var tradeToggleButtonStyle = gameui.ButtonStyle{
-	BG:             color.RGBA{64, 82, 46, 235},
-	Border:         color.RGBA{150, 180, 120, 220},
-	Text:           ColorWhite,
-	DisabledBG:     color.RGBA{64, 82, 46, 235},
-	DisabledBorder: color.RGBA{150, 180, 120, 220},
-	DisabledText:   ColorWhite,
-	TextOffsetY:    6,
-	BorderWidth:    1,
-}
-
 var dateMenuButtonStyle = gameui.ButtonStyle{
 	BG:             color.RGBA{45, 38, 28, 230},
 	Border:         panelBorder,

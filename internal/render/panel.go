@@ -269,7 +269,7 @@ func regionImperialEmpireID(gs *state.GameState, ownerID string) faction.Faction
 }
 
 func bottomActionHudRect() (x, y, w, h float32) {
-	w = btnW*4 + actionHudGap*3 + actionHudPad*2
+	w = btnW*5 + actionHudGap*4 + actionHudPad*2
 	h = btnH + actionHudPad*2
 	x = float32(ScreenWidth)/2 - w/2
 	y = float32(ScreenHeight) - h
@@ -283,8 +283,7 @@ func mapModeHudRect() (x, y, w, h float32) {
 	w = 230
 	h = 30
 	// Harita modu düğmeleri minimap'in hemen üstünde, onunla aynı yatay
-	// eksende durur. Böylece Normal/Ticaret ve Ticaret modundaki Pazar
-	// düğmesi aynı minimap HUD kümesinde kalır.
+	// eksende durur.
 	x = minimapX() + minimapW/2 - w/2
 	y = minimapY() - h - 6
 	if x < 0 {
@@ -309,25 +308,14 @@ func mapModeButtonRects() [2][4]float32 {
 	}
 }
 
-// tradeToggleButtonRect ticaret haritasındayken pazar panelini aç/kapat butonu.
-func tradeToggleButtonRect() [4]float32 {
-	x, y, _, h := mapModeHudRect()
-	w := float32(86)
-	return [4]float32{x + 72, y - h - 6, w, h}
-}
-
-func tradeToggleButtonHit(fx, fy float64) bool {
-	return buildTradeToggleButton().HitTest(fx, fy)
-}
-
 func buttonFromRectF32(r [4]float32, label string) gameui.Button {
 	return gameui.NewButton(float64(r[0]), float64(r[1]), float64(r[2]), float64(r[3]), label)
 }
 
-func buildBottomActionButtons(recruitEnabled bool) [4]gameui.Button {
+func buildBottomActionButtons(recruitEnabled bool) [5]gameui.Button {
 	rects := BottomButtonRects()
-	labels := [4]string{"Ordu", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
-	var buttons [4]gameui.Button
+	labels := [5]string{"Ordu", "Pazar", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
+	var buttons [5]gameui.Button
 	for i, rect := range rects {
 		btn := buttonFromRectF32(rect, labels[i])
 		if i == 0 {
@@ -344,10 +332,6 @@ func buildMapModeButtons() [2]gameui.Button {
 		buttonFromRectF32(rects[0], "Normal"),
 		buttonFromRectF32(rects[1], "Ticaret"),
 	}
-}
-
-func buildTradeToggleButton() gameui.Button {
-	return buttonFromRectF32(tradeToggleButtonRect(), "Pazar")
 }
 
 func imperialPanelAvailable(gs *state.GameState) bool {
@@ -387,16 +371,18 @@ func imperialHUDButtonHit(fx, fy float64) bool {
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
-// [0]=Ordu [1]=Diplomasi [2]=Teknoloji [3]=Tur Bitir
-func BottomButtonRects() [4][4]float32 {
+// [0]=Ordu [1]=Pazar [2]=Diplomasi [3]=Teknoloji [4]=Tur Bitir
+func BottomButtonRects() [5][4]float32 {
 	hudX, hudY, _, _ := bottomActionHudRect()
 	by := hudY + actionHudPad
 	armyX := hudX + actionHudPad
-	diplX := armyX + btnW + actionHudGap
+	marketX := armyX + btnW + actionHudGap
+	diplX := marketX + btnW + actionHudGap
 	techX := diplX + btnW + actionHudGap
 	endX := techX + btnW + actionHudGap
-	return [4][4]float32{
+	return [5][4]float32{
 		{armyX, by, btnW, btnH},
+		{marketX, by, btnW, btnH},
 		{diplX, by, btnW, btnH},
 		{techX, by, btnW, btnH},
 		{endX, by, btnW, btnH},
@@ -412,7 +398,7 @@ func bottomActionHudHit(fx, fy float64) bool {
 	if fx >= float64(mx) && fx <= float64(mx+mw) && fy >= float64(my) && fy <= float64(my+mh) {
 		return true
 	}
-	return buildTradeToggleButton().HitTest(fx, fy)
+	return false
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
@@ -425,9 +411,6 @@ func bottomActionButtonHit(fx, fy float64) bool {
 		if btn.HitTest(fx, fy) {
 			return true
 		}
-	}
-	if buildTradeToggleButton().HitTest(fx, fy) {
-		return true
 	}
 	return false
 }
@@ -550,7 +533,7 @@ func turnTechHudTechHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -645,41 +628,40 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 	drawUIPanelFrame(screen, gameui.Rect{X: float64(hudX), Y: float64(hudY), W: float64(hudW), H: float64(hudH)}, panelBg, panelBorder, 1.5, 3)
 
 	rects := BottomButtonRects()
-	active := [4]bool{showRecruit, showDiplomacy, showTech, false}
-	enabled := [4]bool{recruitEnabled, true, true, true}
+	active := [5]bool{showRecruit, showTrade, showDiplomacy, showTech, false}
+	enabled := [5]bool{recruitEnabled, true, true, true, true}
 	buttons := buildBottomActionButtons(recruitEnabled)
-	bgNorm := [4]color.RGBA{
+	bgNorm := [5]color.RGBA{
 		{88, 62, 30, 220},
+		{64, 82, 46, 235},
 		{40, 65, 110, 215},
 		{60, 40, 95, 215},
-		{40, 90, 40, 230},
+		{105, 28, 28, 230},
 	}
-	bgAct := [4]color.RGBA{
+	bgAct := [5]color.RGBA{
 		{150, 106, 48, 245},
+		{92, 128, 62, 245},
 		{80, 130, 200, 240},
 		{110, 70, 170, 240},
-		{70, 150, 70, 255},
+		{165, 48, 48, 255},
 	}
 	for i, r := range rects {
-		bg := bgNorm[i]
-		txtCol := ColorWhite
-		if !enabled[i] {
-			bg = color.RGBA{34, 30, 24, 180}
-			txtCol = color.RGBA{120, 112, 96, 210}
-		}
+		style := solidButtonStyle(bgNorm[i], panelBorder, ColorWhite, 15)
 		if active[i] {
-			bg = bgAct[i]
+			style.BG = bgAct[i]
 		}
-		vector.FillRect(screen, r[0], r[1], r[2], r[3], bg, false)
-		vector.StrokeRect(screen, r[0], r[1], r[2], r[3], 1.5, panelBorder, false)
-		tw := MeasureText(buttons[i].Label, FaceMed)
-		labelX := float64(r[0]) + float64(r[2])/2 - tw/2
-		labelY := float64(r[1]) + 15
-		DrawText(screen, buttons[i].Label, labelX, labelY, FaceMed, txtCol)
+		if !enabled[i] {
+			style.DisabledBG = color.RGBA{34, 30, 24, 180}
+			style.DisabledBorder = panelBorder
+			style.DisabledText = color.RGBA{120, 112, 96, 210}
+		}
+		style.BorderWidth = 1.5
+		style.TextVariant = gameui.TextMedium
+		drawUIButtonWidget(screen, buttons[i], style)
 		if i == 0 && !enabled[i] && recruitReason != "" {
 			reason := trimTextToWidth(recruitReason, FaceTiny, float64(r[2])-10)
 			reasonW := MeasureText(reason, FaceTiny)
-			DrawText(screen, reason, float64(r[0])+float64(r[2])/2-reasonW/2, float64(r[1])+31, FaceTiny, txtCol)
+			DrawText(screen, reason, float64(r[0])+float64(r[2])/2-reasonW/2, float64(r[1])+31, FaceTiny, color.RGBA{120, 112, 96, 210})
 		}
 	}
 	drawMapModeHud(screen, mapMode)
@@ -745,10 +727,6 @@ func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 	for i, btn := range buttons {
 		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, mapModeButtonStyle(active))
-	}
-	if mapMode == MapModeTrade {
-		btn := buildTradeToggleButton()
-		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, true, tradeToggleButtonStyle)
 	}
 }
 

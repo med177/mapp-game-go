@@ -262,17 +262,7 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// C: ticaret paneli (tech paneli açıkken ticareti açar)
 	if r.keyJustPressed(ebiten.KeyC) {
-		if r.showTech {
-			r.showTech = false
-		}
-		r.showTrade = !r.showTrade
-		r.tradeTab = TradeTabRoutes
-		r.tradeScroll = 0
-		r.tradeFactionFocus = 0
-		r.tradeGoodFocus = 0
-		r.tradeAmount = 5
-		r.tradeListFilter = TradeListAll
-		r.tradeListSort = TradeSortDistance
+		r.toggleTradePanel(TradeTabRoutes)
 		return InputAction{}
 	}
 
@@ -536,18 +526,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.mapMode = MapModeTrade
 		return InputAction{}
 	}
-	if r.mapMode == MapModeTrade && tradeToggleButtonHit(fx, fy) {
-		r.showTech = false
-		r.showTrade = !r.showTrade
-		r.tradeTab = TradeTabNew
-		r.tradeScroll = 0
-		r.tradeFactionFocus = 0
-		r.tradeGoodFocus = 0
-		r.tradeAmount = 5
-		r.tradeListFilter = TradeListAll
-		r.tradeListSort = TradeSortDistance
-		return InputAction{}
-	}
 	if r.mapMode == MapModeTrade {
 		if idx := r.tradeCorridorAt(fx, fy); idx >= 0 && idx < len(r.tradeCorridors) {
 			c := r.tradeCorridors[idx]
@@ -611,6 +589,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if bottomButtons[1].HitTest(fx, fy) {
+		r.toggleTradePanel(TradeTabNew)
+		return InputAction{}
+	}
+	if bottomButtons[2].HitTest(fx, fy) {
 		r.showDiplomacy = !r.showDiplomacy
 		r.showRecruitPanel = false
 		r.showTech = false
@@ -622,14 +604,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
-	if bottomButtons[2].HitTest(fx, fy) {
+	if bottomButtons[3].HitTest(fx, fy) {
 		r.showTech = !r.showTech
 		r.showRecruitPanel = false
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
 	}
-	if bottomButtons[3].HitTest(fx, fy) {
+	if bottomButtons[4].HitTest(fx, fy) {
 		return InputAction{Kind: ActionEndTurn}
 	}
 
@@ -901,6 +883,20 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// teklif paneli açılır.
 	r.selectMapRegionFromMapClick(rid)
 	return InputAction{}
+}
+
+func (r *Renderer) toggleTradePanel(tab TradeTab) {
+	if r.showTech {
+		r.showTech = false
+	}
+	r.showTrade = !r.showTrade
+	r.tradeTab = tab
+	r.tradeScroll = 0
+	r.tradeFactionFocus = 0
+	r.tradeGoodFocus = 0
+	r.tradeAmount = 5
+	r.tradeListFilter = TradeListAll
+	r.tradeListSort = TradeSortDistance
 }
 
 func (r *Renderer) selectMapRegionFromMapClick(rid world.RegionID) bool {

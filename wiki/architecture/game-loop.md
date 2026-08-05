@@ -24,6 +24,10 @@ Layout()  → pencere boyutu bildirir
 - `renderer *render.Renderer` — görsel katman
 - `evts []*events.Event` — yüklenmiş tarihsel olaylar listesi
 
+`oneTimeTrade()` oyuncunun manuel pazar işlemini uygular. Bu akış aktif ticaret
+rotasından bağımsız açık pazarı kullanır: hedef devlet elenmemiş ve oyuncuyla
+savaşta değilse kaynak/altın transferi mevcut piyasa fiyatıyla doğrudan yapılır.
+
 ---
 
 ## Phase State Machine

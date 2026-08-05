@@ -7,6 +7,26 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Pazar erişimi Ticaret Haritası üst HUD'ından alt aksiyon HUD'ına
+  taşındı. Alt bölüm `Ordu → Pazar → Diplomasi → Teknoloji → Tur Bitir` sırasıyla
+  beş butona genişletildi; Pazar, Diplomasi'nin hemen solunda diğer alt HUD
+  butonlarıyla aynı ölçüyü ve ortak çizim/hit-test geometrisini kullanıyor.
+
+- 2026-08-05: 1300 AI tahıl yatırımı yalnız ordu bakımını değil sivil tüketimi
+  de hesaplamaya başladı; bu yüzden nüfusu yüksek fakat az ordulu devletler
+  çiftliği doğru zamanda pazarın önüne alıyor. Aynı kıtlığa aşırı bina kuyruğu
+  açılmaması için en fazla iki tamamlanmamış çiftlik tutuluyor. Stratejik tahıl
+  eksiğinde AI, aktif rota aramadan savaşta olmadığı ve satıcının üç aylık
+  rezervini koruyan tüm devletlerin açık pazarından aynı turda alım yapabiliyor.
+  Oyuncu da `Pazar` sekmesinde aktif rota şartı olmadan aynı savaş dışı devletlerle
+  alım/satım yapabiliyor. Regression:
+  `TestAIBuildingInvestmentCountsCivilianDemandForFarmPriority`,
+  `TestAIProcuresGrainFromOpenMarket`,
+  `TestAIOpenMarketNeverBuysFromEnemy`,
+  `TestCanPlayerOneTimeTradeWithUsesOpenMarketButExcludesEnemies`,
+  `TestAIGrainProcurementUsesReserveInsteadOfStorageCapacityAsSupplierLimit`;
+  doğrulama: `go test ./internal/ai ./internal/game ./internal/render`.
+
 - 2026-08-05: Diplomasi teklif panelinde pasif aksiyonların uzun blok sebebi
   satır içinden kaldırıldı; yalnız etiket ve `PASİF` göstergesi kalıyor. Ortak
   `Box` yerleşimi footer'ı önce ayırıyor; iki satırlı durum kartı ve aktif teklif
