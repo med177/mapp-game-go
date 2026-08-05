@@ -1904,6 +1904,23 @@ func (s *GameState) ReplenishArmyInFriendlyTerritory(a *army.Army, amount int) i
 	return a.Replenish(amount)
 }
 
+// ArmyReplenishmentHP, dost bir kara bölgesindeki bir ordunun ikmal yeterliyse
+// her hasarlı birimine uygulayabileceği ücretsiz toparlanma miktarını döner.
+// Çiftlik düzenli üretimi, ambar ise eldeki tahılın korunup dağıtılmasını
+// temsil eder; ikisi de aynı lineer toparlanma katkısını sağlar.
+func (s *GameState) ArmyReplenishmentHP(a *army.Army) int {
+	if s == nil || a == nil || a.IsNaval || !s.CanArmyReplenishIn(a) {
+		return 0
+	}
+	region := s.Regions[a.RegionID]
+	if region == nil || region.IsSea {
+		return 0
+	}
+	const baseHP = 2
+	const buildingLevelHP = 2
+	return baseHP + buildingLevelHP*(region.BuildingLevel("farm")+region.BuildingLevel("granary"))
+}
+
 // ClearArmyLogisticsAfterRelocation eski konumda üretilmiş lojistik yıpranma
 // snapshot'ını farklı konuma geçen ordudan ayırır. Kara ordusunun aşırı yük
 // sayacı da bölgeye özgü olduğu için hedef bölgede yeniden başlatılır; deniz

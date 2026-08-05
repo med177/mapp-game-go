@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -256,7 +256,7 @@ Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı
 
 `internal/game/resolution.go`
 
-- kara orduları kendi, müttefik veya aynı realm içindeki vassal devletin kara bölgesinde tur başına ücretsiz `+10 HP` toparlanır; ekonomi tick'inde depo kapasitesini aşan tahılla ordu başına ek `+10 HP`'ye kadar yenileme yapılabilir (`1 HP = 1 tahıl`),
+- kara ordularının toparlanması ekonomi tick'indeki gerçek bölgesel ikmal sonucuna bağlıdır: talep kapasiteyi aşıyorsa toparlanma sıfırdır ve lojistik yıpranması uygulanır. İkmal yeterliyse taban `+2 HP/birim/tur`a her Çiftlik ve Ambar seviyesi için `+2 HP` eklenir; kapasite üstü tahılla aynı bölgesel tavan kadar ek yenileme yapılabilir (`1 HP = 1 tahıl`),
 - toparlanma `CurrentHP < 100` olan birimlerde çalışır ve `%100`e kadar sürer,
 - kış turunda önce attrition uygulanır, aynı sweep içinde ek ücretsiz toparlanma verilmez,
 - donanmalar ve dost olmayan topraktaki kara orduları bu akıştan yararlanmaz. Dost bölge kararı `GameState.CanArmyReplenishIn()` ile kendi sahipliği, ittifak ve vassal realm bağını birlikte değerlendirir.

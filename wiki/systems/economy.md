@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-08-04
+last_updated: 2026-08-05
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -216,6 +216,7 @@ tüketmez.
 - Bölgesel lojistikte ambar, ekonomi tick'i sonrası elde kalan tahıldan `min(kalan stok, ambar kapasitesi)` kadarını bölgeye aktarılabilir askerî rezerv yapar. Bu tahıl ikinci kez tüketilmez; genel ordu bakımında zaten düşülmüş stokun bölgesel dağıtım kapasitesini temsil eder. Aynı fraksiyonun bölgeleri sınırlı rezervi deterministik sırayla paylaşır ve başkent önce gelir.
 - Kuşatılan bölgedeki her `granary` seviyesi savunucu ordunun kuşatma kaynaklı doğrudan HP hasarını ve bölgesel ikmal açığı hasarını `%10` azaltır; toplam azaltma `%30` ile sınırlıdır. Bu yerel ambar dayanıklılığı kuşatan orduya verilmez.
 - Kara orduları ayrıca bölge bazlı ikmal kapasitesine tabidir. Yerel askeri kapasite, bölge üretiminden önce sivil talep düşüldükten sonraki fazlalık + yerleşim/ticaret tamponu + fraksiyon stokundan sınırlı destek olarak hesaplanır. Yabancı/düşman bölgede yerel üretim desteği yoktur. Efektif ordu talebi kapasiteyi karşılamazsa aynı bölgede bekleyen ordular turdan tura artan HP zayiatı alır. AI hareket, geri çekilme, birleşme ve bina yatırımındaki lojistik tahminlerde `GameState.EffectiveArmyGrainUpkeep()` kullanır.
+- Kara ordusu toparlanması bu ikmal kararından sonra yapılır; talep kapasiteyi aşıyorsa hasarlı ordu aynı tur HP geri kazanmaz. Kapasite yeterliyse ücretsiz hız `2 + 2 × (Çiftlik seviyesi + Ambar seviyesi)` HP/birim/turdur. Depo kapasitesi üzerindeki tahılın bedelli yenileme tavanı da aynı bölgesel hızdır; böylece bina olmayan bölgede büyük fraksiyon stoğu hızlı toparlanma yaratmaz.
 - Ordu veya filo farklı konuma taşındığında eski konuma ait `ArmyLogisticsStatus` temizlenir. Kara ordusunun bölgeye özgü `OverCapacityTurns` sayacı hedef bölgede sıfırdan başlar; filonun açık deniz yolculuk süresini taşıyan `TurnsWithoutPort` sayacı korunur. Böylece harita marker'ındaki `!` yalnız mevcut konumdaki güncel yıpranma kaydını gösterir.
 - Kara ordusunun bölgesel ikmal talebi, başkentten yalnız kendi kara bölgeleri üzerinden kurulabilen ikmal hattına göre de ölçeklenir. Başkente yakın iki bölgelik hat cezasızdır; daha uzak hatlarda yerel yıpranma baskısı kademeli artar, geçerli başkente kara bağlantısı olmayan ordular en yüksek ek yükü alır. Düşman tahkimatını kendi, aynı realm/vassal ya da müttefik kara bölgesine bitişik yerde kuşatan ordu düzenli sınır ikmaliyle kuşatma bakımını `%200` yerine `%150` sayar.
 

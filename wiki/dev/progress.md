@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Kara ordusu toparlanması sabit `+10 HP` yerine bölgesel ikmal
+  sonucuna ve bina seviyelerine bağlandı. İkmal talebi kapasiteyi aştığında
+  toparlanma sıfır ve lojistik yıpranması sürer; yeterli ikmalde hız
+  `2 + 2 × (Çiftlik + Ambar seviyesi)` HP/birim/turdur. Kapasite üstü tahılla
+  gelen bedelli yenileme de aynı tavanı kullanır. Regression:
+  `TestApplyEconomyTickReplenishesFriendlyLandArmyByFarmAndGranaryLevel`,
+  `TestApplyEconomyTickDoesNotReplenishArmyWhenRegionalSupplyIsOverloaded`;
+  doğrulama: `go test ./internal/game ./internal/state ./internal/render`.
+
 - 2026-08-05: Barış kabul edildiğinde karşı tarafın kara bölgesinde bulunan
   ordular artık hareket puanından bağımsız olarak en yakın kendi, vassal veya
   müttefik bölgesine zorunlu çekiliyor. Terk edilen kuşatmalar ve geçersiz

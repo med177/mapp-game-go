@@ -40,7 +40,6 @@ const grainSpoilagePercent = 2
 const (
 	grainPopulationGrowthMonth = 11
 	grainPerPopulationGrowth   = 2
-	grainFundedReplenishHP     = 10
 )
 
 func grainStorageCapacity(civilianDemand, armyUpkeep, storageBonus int) int {
@@ -408,12 +407,8 @@ func applySeasonEffects(gs *state.GameState) {
 		if a.MaxMovePoints > 0 {
 			gs.ArmyMoveUsage[a.ID] = a.MovePoints >= 0 && a.MovePoints < a.MaxMovePoints
 		}
-		if !s.IsWinter() {
-			if a.IsNaval {
-				replenishDockedFleet(gs, a, friendlyReplenishHP)
-			} else if !gs.IsArmyDefendingSiegedRegion(a) {
-				gs.ReplenishArmyInFriendlyTerritory(a, friendlyReplenishHP)
-			}
+		if !s.IsWinter() && a.IsNaval {
+			replenishDockedFleet(gs, a, friendlyReplenishHP)
 		}
 		// Mevsim etkisi en yavaş birimin tabanına uygulanır; diğer hareket
 		// bonusları state katmanındaki ortak hesapta eklenir.
@@ -741,6 +736,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		delta += regionArmySatisfactionBonus(gs, r)
 		r.Satisfaction = clamp(r.Satisfaction+delta, 0, 100)
 	}
+	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
 	applyGrainFundedArmyReplenishment(gs)
 	if autoSold, autoGold := gs.ApplyAutomaticGrainExport(); autoSold > 0 {
 		fid := gs.PlayerFactionID
@@ -782,7 +778,6 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		overlord.Gold += tribute
 	}
 
-	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
 	if gs.PlayerFactionID != "" {
 		report.PlayerGrainStatus = gs.GrainEconomy[gs.PlayerFactionID]
 	}
@@ -812,7 +807,8 @@ func addProductionSummary(a, b state.RegionProductionSummary) state.RegionProduc
 // yalnızca depo kapasitesini aşan tahılla dost kara ordularını yeniler. Ordu ve
 // birim sırası deterministiktir; böylece sınırlı fazla tahıl her replay'de aynı
 // ordulara gider. Bir HP toparlanması bir tahıl tüketir ve ordu başına/turuna
-// en fazla friendlyReplenishHP kadar ek iyileşme yapılır.
+// en fazla o bölgenin çiftlik/ambar kaynaklı toparlanma hızı kadar ek iyileşme
+// yapılır.
 func applyGrainFundedArmyReplenishment(gs *state.GameState) {
 	if gs == nil || gs.CurrentSeason().IsWinter() || len(gs.GrainEconomy) == 0 {
 		return
@@ -847,11 +843,16 @@ func applyGrainFundedArmyReplenishment(gs *state.GameState) {
 			}
 			a := gs.Armies[aid]
 			if a == nil || a.OwnerID != string(fid) || a.IsNaval ||
-				!gs.CanArmyReplenishIn(a) || gs.IsArmyDefendingSiegedRegion(a) {
+				!gs.CanArmyReplenishIn(a) || gs.IsArmyDefendingSiegedRegion(a) ||
+				gs.ArmyReplenishmentHP(a) <= 0 {
+				continue
+			}
+			regionSupply, supplied := gs.RegionLogistics[a.RegionID]
+			if !supplied || regionSupply.Overload > 0 {
 				continue
 			}
 
-			armyBudget := grainFundedReplenishHP
+			armyBudget := gs.ArmyReplenishmentHP(a)
 			for i := range a.Units {
 				if budget <= 0 || armyBudget <= 0 {
 					break
@@ -1124,10 +1125,23 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 				peakTurns = a.OverCapacityTurns
 			}
 		}
-		if totalDemand <= 0 || totalUnits <= 0 {
+		if totalUnits <= 0 {
+			continue
+		}
+		if totalDemand <= 0 {
+			regionStatus := state.RegionLogisticsStatus{
+				RegionID:  rid,
+				OwnerID:   ownerID,
+				Capacity:  4,
+				ArmyCount: len(armiesInRegion),
+			}
 			for _, a := range armiesInRegion {
 				a.OverCapacityTurns = 0
+				if !gs.CurrentSeason().IsWinter() && !gs.IsArmyDefendingSiegedRegion(a) {
+					gs.ReplenishArmyInFriendlyTerritory(a, gs.ArmyReplenishmentHP(a))
+				}
 			}
+			gs.RegionLogistics[rid] = regionStatus
 			continue
 		}
 
@@ -1174,6 +1188,9 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 				a.OverCapacityTurns = 0
 				if supply, ok := friendlySupplies[a.ID]; ok {
 					gs.ArmyLogistics[a.ID] = friendlySupplyArmyLogisticsStatus(a, regionStatus, supply)
+				}
+				if !gs.CurrentSeason().IsWinter() && !gs.IsArmyDefendingSiegedRegion(a) {
+					gs.ReplenishArmyInFriendlyTerritory(a, gs.ArmyReplenishmentHP(a))
 				}
 			}
 			gs.RegionLogistics[rid] = regionStatus

@@ -629,20 +629,20 @@ func TestApplyEconomyTickFundsArmyReplenishmentOnlyFromCapacitySurplus(t *testin
 
 	applyEconomyTick(gs)
 
-	if got := gs.Armies["a-first"].Units[0].CurrentHP; got != 70 {
-		t.Fatalf("ilk ordu faction/army ID sırasına göre 10 HP almalıydı, got=%d", got)
+	if got := gs.Armies["a-first"].Units[0].CurrentHP; got != 64 {
+		t.Fatalf("binasız bölgedeki temel ve tahıl destekli toparlanma toplam 4 HP olmalıydı, got=%d", got)
 	}
-	if got := gs.Armies["z-last"].Units[0].CurrentHP; got != 63 {
-		t.Fatalf("kalan kapasite fazlası ikinci orduya gitmeli, got=%d", got)
+	if got := gs.Armies["z-last"].Units[0].CurrentHP; got != 64 {
+		t.Fatalf("binasız bölgedeki ikinci ordu da aynı bölgesel tavanla toparlanmalıydı, got=%d", got)
 	}
-	if got := gs.Factions["player"].Grain; got != 100 {
+	if got := gs.Factions["player"].Grain; got != 109 {
 		t.Fatalf("yenileme rezerv kapasite tabanının altına inmemeli, got=%d", got)
 	}
 	status := gs.GrainEconomy["player"]
-	if status.ReplenishmentHP != 13 || status.ReplenishmentGrainSpent != 13 {
+	if status.ReplenishmentHP != 4 || status.ReplenishmentGrainSpent != 4 {
 		t.Fatalf("yenileme miktarı ve tahıl harcaması raporlanmalıydı, got=%+v", status)
 	}
-	if status.NetChange != -15 || status.Stockpile != 100 {
+	if status.NetChange != -6 || status.Stockpile != 109 {
 		t.Fatalf("yenileme net değişim ve stoku güncellemeli, got=%+v", status)
 	}
 }
@@ -667,7 +667,7 @@ func TestApplyEconomyTickFundsArmyReplenishmentInVassalRegion(t *testing.T) {
 
 	applyEconomyTick(gs)
 
-	if got := gs.Armies["army"].Units[0].CurrentHP; got != 70 {
+	if got := gs.Armies["army"].Units[0].CurrentHP; got != 64 {
 		t.Fatalf("vassal bölgesindeki ordu kapasite üstü tahılla iyileşmeli, got=%d", got)
 	}
 }
@@ -691,11 +691,38 @@ func TestApplyEconomyTickDoesNotFundArmyReplenishmentBelowReserveCapacity(t *tes
 
 	applyEconomyTick(gs)
 
-	if got := gs.Armies["army"].Units[0].CurrentHP; got != 60 {
-		t.Fatalf("rezerv kapasitesi altındaki ordu ücretsiz ek yenileme almamalıydı, got=%d", got)
+	if got := gs.Armies["army"].Units[0].CurrentHP; got != 62 {
+		t.Fatalf("rezerv kapasitesi altındaki ordu yalnız temel toparlanmayı almalıydı, got=%d", got)
 	}
 	if status := gs.GrainEconomy["player"]; status.ReplenishmentGrainSpent != 0 {
 		t.Fatalf("rezerv kapasitesi altındayken tahıl harcanmamalıydı, got=%+v", status)
+	}
+}
+
+func TestApplyEconomyTickDoesNotReplenishArmyWhenRegionalSupplyIsOverloaded(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", OwnerID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: "home", Units: []army.Unit{{TypeID: "inf", CurrentHP: 80}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 8},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Armies["army"].Units[0].CurrentHP; got >= 80 {
+		t.Fatalf("ikmal aşımındaki ordu toparlanmamalı ve lojistik yıpranması almalıydı, got=%d", got)
+	}
+	if status := gs.RegionLogistics["home"]; status.Overload <= 0 {
+		t.Fatalf("test bölgesinde ikmal aşımı bekleniyordu, got=%+v", status)
 	}
 }
 
@@ -1584,7 +1611,7 @@ func TestCheckEliminationsRemovesSeaOnlyFactionWithFleets(t *testing.T) {
 	}
 }
 
-func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
+func TestApplyEconomyTickReplenishesFriendlyLandArmyByFarmAndGranaryLevel(t *testing.T) {
 	gs := &state.GameState{
 		Month:           4,
 		PlayerFactionID: "player",
@@ -1594,7 +1621,7 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 			"vassal": {ID: "vassal", OverlordID: "player"},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home":        {ID: "home", OwnerID: "player", Buildings: []string{"port"}},
+			"home":        {ID: "home", OwnerID: "player", Buildings: []string{"port", "farm", "farm", "farm", "granary", "granary"}},
 			"enemy":       {ID: "enemy", OwnerID: "enemy"},
 			"ally_land":   {ID: "ally_land", OwnerID: "ally"},
 			"ally_port":   {ID: "ally_port", OwnerID: "ally", Buildings: []string{"port"}},
@@ -1634,18 +1661,19 @@ func TestApplySeasonEffectsReplenishesFriendlyLandArmy(t *testing.T) {
 	}
 
 	applySeasonEffects(gs)
+	applyEconomyTick(gs)
 
-	if got := gs.Armies["home_army"].Units[0].CurrentHP; got != 75 {
-		t.Fatalf("dost topraktaki ordu iyilesmeli, got=%d", got)
+	if got := gs.Armies["home_army"].Units[0].CurrentHP; got != 77 {
+		t.Fatalf("seviye 3 çiftlik ve seviye 2 ambar +12 HP toparlanma vermeliydi, got=%d", got)
 	}
 	if got := gs.Armies["enemy_army"].Units[0].CurrentHP; got != 65 {
 		t.Fatalf("dost olmayan toprakta iyilesme olmamali, got=%d", got)
 	}
-	if got := gs.Armies["vassal_army"].Units[0].CurrentHP; got != 75 {
-		t.Fatalf("vassal bölgesindeki ordu iyileşmeli, got=%d", got)
+	if got := gs.Armies["vassal_army"].Units[0].CurrentHP; got != 67 {
+		t.Fatalf("binasız vassal bölgesindeki ordu yalnız +2 HP iyileşmeli, got=%d", got)
 	}
-	if got := gs.Armies["ally_army"].Units[0].CurrentHP; got != 75 {
-		t.Fatalf("müttefik bölgesindeki ordu iyileşmeli, got=%d", got)
+	if got := gs.Armies["ally_army"].Units[0].CurrentHP; got != 67 {
+		t.Fatalf("binasız müttefik bölgesindeki ordu yalnız +2 HP iyileşmeli, got=%d", got)
 	}
 	if got := gs.Armies["fleet"].Units[0].CurrentHP; got != 65 {
 		t.Fatalf("donanma kara takviyesi almamali, got=%d", got)
