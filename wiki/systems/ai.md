@@ -713,12 +713,15 @@ vardır:
 
 Recovery anchor, AI'nin kendi kara bölgesidir; kuşatma altında veya yabancı ordu
 barındıran, komşusunda savaş düşmanı bulunan ve ordunun varışından sonra ikmal
-kapasitesi aşılacak bölgeler aday olmaz. Önce graph mesafesi en kısa aday seçilir.
-Eşit mesafede ikmal boşluğu, aynı bölgedeki dost güç, tahkimat, başkent ve region ID
-deterministik bağ kırıcıdır. Rota yalnız AI'nin kendi, kuşatılmamış ve yabancı kara
-ordusu bulunmayan transit bölgelerinden geçer. Ordu anchor'a ulaşınca hareket etmez;
-mevcut konsolidasyon ve tur sonu takviye/iyileşme kuralları burada çalışır. Güvenli
-anchor veya dost rota yoksa mevcut görev korunur.
+kapasitesi aşılacak bölgeler aday olmaz. Aday puanı ikmal boşluğu, aynı bölgedeki
+dost güç, tahkimat, başkent ve gerçek toparlanma hızını birlikte içerir; hız
+`2 + 2 × (Çiftlik + Ambar seviyesi)` ile tur çözümlemesindeki ortak helper'dan gelir.
+Kısa rota maliyeti puandan düşülür; ancak ağır yıpranmış ordu, bir adım daha uzaktaki
+yüksek çiftlik/ambar seviyeli güvenli ikmal bölgesini seçebilir. AI kapasite tahmini
+ambarın yerel stok önceliğini de hesaba katar. Rota yalnız AI'nin kendi, kuşatılmamış
+ve yabancı kara ordusu bulunmayan transit bölgelerinden geçer. Ordu anchor'a ulaşınca
+hareket etmez; mevcut konsolidasyon ve tur sonu takviye/iyileşme kuralları burada
+çalışır. Güvenli anchor veya dost rota yoksa mevcut görev korunur.
 
 Aktif kuşatmanın terk edilmesi daha sıkıdır. Kuşatan ordunun bölgesel ikmal aşımı veya
 `OverCapacityTurns` kaydı bulunmalı ve kuşatma hedefinin komşularındaki savaş düşmanı
@@ -901,6 +904,7 @@ AI artık dost kara bölgelerini sadece diplomasi/savaş açısından değil, ik
 AI hareket executor'ü de konum değişiminde `GameState.ClearArmyLogisticsAfterRelocation()` çağırır; eski bölgenin `!` uyarısı ve kara ordusunun bölgeye özgü aşım sayacı yeni konuma taşınmaz.
 
 - Kaynak bölge aşırı doluysa (`grain_upkeep` toplamı bölgenin efektif tahıl + yerleşim tamponu + sınırlı stok desteğini aşıyorsa) `scoreMove()` dost komşular arasında baskıyı azaltan bölgeye pozitif puan verir.
+- Aynı canlı kapasite modeli ambarın bölgeye ayırdığı stok desteğini içerir; böylece AI, oyuncunun gördüğü ikmal aşımından kaçınır ve iyileşmek için yalnız güvenli değil, çiftlik/ambar seviyesi yüksek bölgeleri de tercih eder.
 - Komşu dost bölgeye geçiş sonrası aşım sıfırlanıyorsa ek bonus verilir; baskıyı daha kötü yapacak dost hedefler cezalandırılır.
 - Böylece AI küçük ve tahılı zayıf bölgede yığılmış orduları savaş yokken bile daha rahat komşu bölgelere dağıtabilir.
 - Aynı lojistik hesabı `aiConsolidateArmies()` ve hareket sonrası `tryMergeAIArmies()` için de kullanılır; aşırı dolu kara bölgede AI artık körlemesine ordu birleştirme yapmaz.

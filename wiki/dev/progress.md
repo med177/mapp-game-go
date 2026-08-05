@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: AI geri çekilme anchor'ları yeni ikmal-toparlanma modeline bağlandı.
+  Kapasitesi aşılmayan adaylarda Çiftlik/Ambar seviyesinin gerçek toparlanma hızı
+  puana katılıyor; kısa rota maliyetine rağmen ağır yıpranmış ordu daha hızlı
+  iyileşeceği güvenli bölgeyi seçebiliyor. AI ikmal tahmini, ambarın yerel stok
+  desteğini de tur çözümlemesindeki öncelikle hesaba katıyor. Regression:
+  `TestRecoveryAnchorPrefersFasterFarmAndGranaryRegion`; doğrulama:
+  `go test ./internal/ai ./internal/game ./internal/state`.
+
 - 2026-08-05: Merchant ticaret gemileri yalnızca kendi fraksiyonunun ihracat
   yönündeki rotalara atanabilir hale getirildi. Karşı tarafın ihracat rotası
   artık merchant panelinde görünmüyor ve elle/legacy atanmış olsa bile hacim

@@ -199,11 +199,21 @@ func TestMerchantRouteSeaDisplayNameHandlesMissingRouteSea(t *testing.T) {
 func TestMerchantRouteOptionDisabledWhenCapacityFull(t *testing.T) {
 	route := &economy.TradeRoute{FromFactionID: "player", ToFactionID: "partner", AmountPerTurn: 2}
 	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from":    {ID: "from", OwnerID: "player", Neighbors: []world.RegionID{"aegean"}},
+			"to":      {ID: "to", OwnerID: "partner", Neighbors: []world.RegionID{"marmara"}},
+			"aegean":  {ID: "aegean", IsSea: true},
+			"marmara": {ID: "marmara", IsSea: true},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from", Links: []world.RegionID{"to"}},
+			{ID: "to", Links: []world.RegionID{"from"}},
+		}},
 		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
 		TradeRoutes: []*economy.TradeRoute{route},
 		Armies: map[army.ArmyID]*army.Army{
-			"assigned": {ID: "assigned", OwnerID: "player", IsNaval: true, TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}}},
-			"incoming": {ID: "incoming", OwnerID: "player", IsNaval: true, Units: []army.Unit{{TypeID: "merchant_ship"}}},
+			"assigned": {ID: "assigned", OwnerID: "player", RegionID: "marmara", IsNaval: true, TradeRouteKey: route.AssignmentKey(), Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}}},
+			"incoming": {ID: "incoming", OwnerID: "player", RegionID: "aegean", IsNaval: true, Units: []army.Unit{{TypeID: "merchant_ship"}}},
 		},
 	}
 	r := &Renderer{gs: gs, merchantRouteArmy: "incoming"}

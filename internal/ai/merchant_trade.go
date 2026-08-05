@@ -119,9 +119,14 @@ func aiAssignMerchantTradeFleets(gs *state.GameState, fid faction.FactionID, rou
 		return
 	}
 	byKey := make(map[string]aiMerchantRoute, len(routes))
-	coverage := make(map[string]int, len(routes))
 	for _, candidate := range routes {
 		byKey[candidate.key] = candidate
+	}
+	coverage := make(map[string]int, len(routes))
+	for _, candidate := range routes {
+		// Atanılmış filolar yoldayken bonus üretmez, ancak AI yeni filoları
+		// aynı rotaya yığmamak için mevcut atamayı kapasite rezervi sayar.
+		coverage[candidate.key] = minInt(economy.MerchantBonusCapacity(candidate.route), gs.MerchantTradeRouteAssignedMerchantShips(candidate.route, ""))
 	}
 
 	var unassigned []*army.Army
@@ -141,7 +146,9 @@ func aiAssignMerchantTradeFleets(gs *state.GameState, fid faction.FactionID, rou
 			unassigned = append(unassigned, fleet)
 			continue
 		}
-		coverage[fleet.TradeRouteKey] = minInt(economy.MerchantBonusCapacity(byKey[fleet.TradeRouteKey].route), coverage[fleet.TradeRouteKey]+merchantCount)
+		// coverage yukarıda tüm geçerli atamaları zaten içerir; burada tekrar
+		// eklemek, filonun hedef denize ulaşmadığı durumda kapasiteyi iki kez
+		// tüketirdi.
 	}
 
 	for _, fleet := range unassigned {
@@ -368,9 +375,9 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 
 func aiLeastCoveredMerchantRoute(gs *state.GameState, routes []aiMerchantRoute) aiMerchantRoute {
 	coverage := make(map[string]int, len(routes))
-	for _, fleet := range aiSortedArmies(gs) {
-		if fleet.TradeRouteKey != "" {
-			coverage[fleet.TradeRouteKey] += aiMerchantShipCount(gs, fleet)
+	for _, candidate := range routes {
+		if candidate.route != nil {
+			coverage[candidate.key] = minInt(economy.MerchantBonusCapacity(candidate.route), gs.MerchantTradeRouteAssignedMerchantShips(candidate.route, ""))
 		}
 	}
 	best := routes[0]

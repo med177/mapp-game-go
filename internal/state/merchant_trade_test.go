@@ -115,23 +115,22 @@ func TestMerchantTradeRouteCapacityBlocksAdditionalFleetAssignment(t *testing.T)
 }
 
 func TestMerchantFleetTradeRouteCapacityBonusShowsSharedRouteUsage(t *testing.T) {
-	route := &economy.TradeRoute{FromFactionID: "venice", ToFactionID: "mamluk", AmountPerTurn: 4}
-	gs := &GameState{
-		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
-		TradeRoutes: []*economy.TradeRoute{route},
-		Armies: map[army.ArmyID]*army.Army{
-			"other": {
-				ID: "other", OwnerID: "venice", IsNaval: true, TradeRouteKey: route.AssignmentKey(),
-				Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
-			},
-			"selected": {
-				ID: "selected", OwnerID: "venice", IsNaval: true, TradeRouteKey: route.AssignmentKey(),
-				Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
-			},
-		},
+	gs, route := merchantTradeTestState()
+	route.AmountPerTurn = 4
+	gs.Armies["merchant"].Units = gs.Armies["merchant"].Units[:2]
+	gs.Armies["selected"] = &army.Army{
+		ID: "selected", OwnerID: "venice", RegionID: "med", IsNaval: true, TradeRouteKey: route.AssignmentKey(),
+		Units: []army.Unit{{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}},
 	}
 	if got := gs.MerchantFleetTradeRouteCapacityBonus(gs.Armies["selected"], route); got != 2 {
 		t.Fatalf("dört gemili filo, diğer filonun kullandığı iki kapasite sonrası +2/4 almalıydı: got=%d", got)
+	}
+	gs.Armies["selected"].RegionID = "adriatic"
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["selected"], route); got != 0 {
+		t.Fatalf("hedef denizde olmayan filo gerçek bonus almamalıydı: got=%d", got)
+	}
+	if !gs.MerchantTradeRouteHasCapacityForFleet(gs.Armies["selected"], route) {
+		t.Fatal("hedef denizde olmayan filo aktif kapasiteyi tüketmemeli ve rota hâlâ müsait olmalıydı")
 	}
 }
 

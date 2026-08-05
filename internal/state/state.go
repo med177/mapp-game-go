@@ -1912,8 +1912,14 @@ func (s *GameState) ArmyReplenishmentHP(a *army.Army) int {
 	if s == nil || a == nil || a.IsNaval || !s.CanArmyReplenishIn(a) {
 		return 0
 	}
-	region := s.Regions[a.RegionID]
-	if region == nil || region.IsSea {
+	return s.RegionArmyReplenishmentHP(s.Regions[a.RegionID])
+}
+
+// RegionArmyReplenishmentHP, ikmal yeterliyse bölgenin çiftlik ve ambar
+// seviyelerinden türeyen kara ordusu toparlanma hızını döner. AI hedef
+// değerlendirmesi ile tur çözümlemesi aynı katsayıyı bu helper üzerinden alır.
+func (s *GameState) RegionArmyReplenishmentHP(region *world.Region) int {
+	if s == nil || region == nil || region.IsSea {
 		return 0
 	}
 	const baseHP = 2

@@ -2861,8 +2861,7 @@ func aiRegionLogistics(gs *state.GameState, region *world.Region, ownerID string
 	settlementBuffer := aiRegionSettlementBuffer(gs, region)
 	blockadePercent := gs.RegionBlockadePercent(region, ownerID)
 	settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
-	reserveSupport := aiRegionReserveSupport(gs, ownerID, militaryProduction, settlementBuffer)
-	capacity = militaryProduction + settlementBuffer + reserveSupport
+	capacity = militaryProduction + settlementBuffer + aiRegionStockSupport(gs, region, ownerID, militaryProduction, settlementBuffer)
 	if capacity < 4 {
 		capacity = 4
 	}
@@ -2911,23 +2910,41 @@ func aiRegionSettlementBuffer(gs *state.GameState, region *world.Region) int {
 	return buffer
 }
 
-func aiRegionReserveSupport(gs *state.GameState, ownerID string, production, settlementBuffer int) int {
-	if gs == nil || ownerID == "" {
-		return 0
-	}
-	f := gs.Factions[faction.FactionID(ownerID)]
-	if f == nil || f.Grain <= 0 {
+func aiRegionReserveSupportForGrain(grain, production, settlementBuffer int) int {
+	if grain <= 0 {
 		return 0
 	}
 	cap := production/2 + settlementBuffer/2 + 4
 	if cap < 4 {
 		cap = 4
 	}
-	reserve := f.Grain / 10
+	reserve := grain / 10
 	if reserve > cap {
 		reserve = cap
 	}
 	return reserve
+}
+
+// aiRegionStockSupport, turn çözümlemesindeki ambar önceliğini AI tahminine
+// taşır: ambar önce yerel stok tutar, kalan tahıl ise genel rezerv desteğine
+// dönüşür. Bölgeler arası gerçek dağıtım çözümlemede deterministik yapılır;
+// bu tahmin AI'nin tek hedef bölgeyi karşılaştırması içindir.
+func aiRegionStockSupport(gs *state.GameState, region *world.Region, ownerID string, production, settlementBuffer int) int {
+	if gs == nil || region == nil || ownerID == "" {
+		return 0
+	}
+	f := gs.Factions[faction.FactionID(ownerID)]
+	if f == nil || f.Grain <= 0 {
+		return 0
+	}
+	granaryCapacity := 0
+	for _, buildingID := range region.Buildings {
+		if building := gs.BuildingTypes[buildingID]; building != nil && building.StorageCapacity > 0 {
+			granaryCapacity += building.StorageCapacity
+		}
+	}
+	granarySupport := minInt(f.Grain, granaryCapacity)
+	return granarySupport + aiRegionReserveSupportForGrain(f.Grain-granarySupport, production, settlementBuffer)
 }
 
 func minInt(a, b int) int {

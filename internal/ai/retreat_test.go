@@ -86,6 +86,18 @@ func TestWornArmyRetreatsThroughFriendlyLandToSafeSupply(t *testing.T) {
 	}
 }
 
+func TestRecoveryAnchorPrefersFasterFarmAndGranaryRegion(t *testing.T) {
+	gs := aiRetreatTestState()
+	gs.Armies["field"].Units = aiRetreatUnits(4, 40)
+	gs.Regions["safe"].Buildings = []string{"farm", "farm", "farm", "granary", "granary", "granary"}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	assignment := ctx.ArmyAssignments["field"]
+	if assignment.Role != AIArmyRoleRetreat || assignment.AnchorRegionID != "safe" {
+		t.Fatalf("AI, bir adım uzaktaki yüksek toparlanma hızlı bölgeyi seçmeliydi: %+v", assignment)
+	}
+}
+
 func TestHealthyArmyRetreatsWhenLocalEnemyPowerReachesOneThirtyFivePercent(t *testing.T) {
 	gs := aiRetreatTestState()
 	gs.Armies["field"].Units = aiRetreatUnits(2, army.MaxUnitHP)

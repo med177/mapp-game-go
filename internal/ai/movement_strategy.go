@@ -80,8 +80,7 @@ func (ctx *moveScoreContext) regionLogistics(gs *state.GameState, region *world.
 	settlementBuffer := aiRegionSettlementBuffer(gs, region)
 	blockadePercent := gs.RegionBlockadePercent(region, ctx.ownerID)
 	settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
-	reserveSupport := aiRegionReserveSupport(gs, ctx.ownerID, militaryProduction, settlementBuffer)
-	capacity = militaryProduction + settlementBuffer + reserveSupport
+	capacity = militaryProduction + settlementBuffer + aiRegionStockSupport(gs, region, ctx.ownerID, militaryProduction, settlementBuffer)
 	if capacity < 4 {
 		capacity = 4
 	}

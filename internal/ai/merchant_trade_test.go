@@ -95,6 +95,25 @@ func Test1300MerchantFleetMovesToAssignedTradeCenterSea(t *testing.T) {
 	}
 }
 
+func Test1300MerchantAIReservesOffRouteAssignmentWithoutStackingAnotherFleet(t *testing.T) {
+	gs := aiMerchantTradeTestState()
+	gs.Armies["merchant"].TradeRouteKey = "venice->mamluk"
+	gs.Armies["merchant"].RegionID = "adriatic"
+	gs.Armies["merchant"].Units = append(gs.Armies["merchant"].Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
+	gs.Armies["incoming"] = &army.Army{
+		ID: "incoming", OwnerID: "venice", RegionID: "adriatic", IsNaval: true,
+		Units: []army.Unit{{TypeID: "merchant_ship", CurrentHP: 100}},
+	}
+
+	aiExecuteMerchantTradeStrategy(gs, "venice", nil, nil, nil)
+	if gs.Armies["merchant"].TradeRouteKey != "venice->mamluk" {
+		t.Fatal("AI hedefe gitmekte olan merchant görevini korumalıydı")
+	}
+	if gs.Armies["incoming"].TradeRouteKey != "" {
+		t.Fatalf("AI yoldaki merchant kapasitesini ikinci filoyla doldurmamalıydı: got=%q", gs.Armies["incoming"].TradeRouteKey)
+	}
+}
+
 func Test1300DockedMerchantFleetUndocksBeforeTradeRouteMove(t *testing.T) {
 	gs := aiMerchantTradeTestState()
 	fleet := gs.Armies["merchant"]

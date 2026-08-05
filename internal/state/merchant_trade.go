@@ -220,13 +220,30 @@ func (s *GameState) MerchantTradeRouteAssignedMerchantShips(route *economy.Trade
 	return count
 }
 
+// MerchantTradeRouteActiveMerchantShips yalnızca hedef denizine ulaşmış ve
+// gerçek bonus üretebilen merchant gemilerini sayar. Atanmış fakat yoldaki
+// filolar kapasiteyi tüketmez.
+func (s *GameState) MerchantTradeRouteActiveMerchantShips(route *economy.TradeRoute, excludeFleetID army.ArmyID) int {
+	if s == nil || route == nil || route.AssignmentKey() == "" {
+		return 0
+	}
+	count := 0
+	for fleetID, fleet := range s.Armies {
+		if fleetID == excludeFleetID || fleet == nil || fleet.TradeRouteKey != route.AssignmentKey() || !s.MerchantFleetSupportsTradeRoute(fleet, route) {
+			continue
+		}
+		count += s.merchantShipCount(fleet)
+	}
+	return count
+}
+
 // MerchantTradeRouteHasCapacityForFleet bildirir; seçili filo mevcut
 // atamasını koruyarak rotaya atanabilir ve bonus üretebilir mi?
 func (s *GameState) MerchantTradeRouteHasCapacityForFleet(fleet *army.Army, route *economy.TradeRoute) bool {
 	if s == nil || fleet == nil || route == nil {
 		return false
 	}
-	return s.MerchantTradeRouteAssignedMerchantShips(route, fleet.ID) < economy.MerchantBonusCapacity(route)
+	return s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID) < economy.MerchantBonusCapacity(route)
 }
 
 // MerchantFleetTradeRouteCapacityBonus, filonun rota kapasitesinden alabileceği
@@ -237,7 +254,7 @@ func (s *GameState) MerchantFleetTradeRouteCapacityBonus(fleet *army.Army, route
 		return 0
 	}
 	count := s.merchantShipCount(fleet)
-	capacity := economy.MerchantBonusCapacity(route) - s.MerchantTradeRouteAssignedMerchantShips(route, fleet.ID)
+	capacity := economy.MerchantBonusCapacity(route) - s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID)
 	if capacity < 0 {
 		return 0
 	}

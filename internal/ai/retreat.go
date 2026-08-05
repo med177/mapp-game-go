@@ -161,7 +161,6 @@ func selectSafeRecoveryRegion(ctx *StrategicContext, armyRef *army.Army) world.R
 	}
 	routes := ctx.routesFor(armyRef, armyRef.RegionID, aiRouteFriendly, 0)
 	bestID := world.RegionID("")
-	bestDistance := int(^uint(0) >> 1)
 	bestScore := -int(^uint(0)>>1) - 1
 	for _, region := range aiSortedRegions(ctx.gs) {
 		if !aiSafeRecoveryRegion(ctx.gs, ctx.FactionID, armyRef, region) {
@@ -171,10 +170,9 @@ func selectSafeRecoveryRegion(ctx *StrategicContext, armyRef *army.Army) world.R
 		if !reachable {
 			continue
 		}
-		score := aiRecoveryRegionScore(ctx, armyRef, region)
-		if distance < bestDistance || (distance == bestDistance && (score > bestScore || (score == bestScore && (bestID == "" || region.ID < bestID)))) {
+		score := aiRecoveryRegionScore(ctx, armyRef, region) - distance*20
+		if score > bestScore || (score == bestScore && (bestID == "" || region.ID < bestID)) {
 			bestID = region.ID
-			bestDistance = distance
 			bestScore = score
 		}
 	}
@@ -221,6 +219,9 @@ func aiRecoveryRegionScore(ctx *StrategicContext, armyRef *army.Army, region *wo
 		demand += ctx.gs.RegionalArmyGrainDemand(armyRef)
 	}
 	score := maxInt(0, capacity-demand) * 8
+	// İkmal yeterliyse çiftlik ve ambar, gerçek tur çözümlemesindeki aynı
+	// toparlanma hızıyla daha iyi recovery anchor'larını öne çıkarır.
+	score += ctx.gs.RegionArmyReplenishmentHP(region) * 24
 	for _, candidate := range aiSortedArmies(ctx.gs) {
 		if candidate.ID != armyRef.ID && !candidate.IsNaval && candidate.OwnerID == armyRef.OwnerID && candidate.RegionID == region.ID {
 			score += candidate.TotalStrength(ctx.gs.UnitTypes)
