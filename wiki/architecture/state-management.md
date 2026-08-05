@@ -65,6 +65,11 @@ yakın own/same-realm/allied bölgeye taşınır. Relocation, eski lojistik snap
 temizler, pusuyu kapatır ve terk edilen attacker kuşatmalarını siler. Bekleyen
 kara veya deniz teması artık barışan tarafları içeriyorsa da temizlenir; böylece
 modal state eski savaşın muharebesini başlatamaz.
+Tur sonundaki `EvacuateArmiesWithoutLandAccess()` ise eski/hatalı save'den kalan
+barış, ticaret veya ilişkisiz devlet arazilerindeki kara ordularını aynı en yakın
+güvenli hedefe çeker. Savaş, resmî ittifak ve aynı realm geçerli konum sayılır.
+Henüz ayrı bir askerî geçiş izni diplomasi state'i yoktur; eklendiğinde bu iki
+state erişim helper'ına geçerli transit olarak bağlanmalıdır.
 `Army.InAmbush` save/load ile korunur; pusu yalnız hedefe giren düşman ordusunun
 özel temas seçiminde görünür hale gelir. `PendingLandContact.AmbushArmyID`
 geçici olarak temas modalının geri çekilme/pozisyon kurallarını taşır.
@@ -422,7 +427,7 @@ kayıtlarındaki boş ordu nesneleri AI manpower/komutan/UI hesaplarını kirlet
 
 `TradeRoute.BlockadePercent` — rota uçlarındaki denizlerde bulunan, açık denizdeki düşman savaş gemilerinden türetilen geçici hacim kesintisidir. `RefreshTradeRouteBlockades()` ve `RegionBlockadePercent()` konum/savaş state'inden her ekonomi tick'inde yeniden hesaplar; limana bağlı filo bu deniz bölgesinde sayılmaz ve save migration gerektirmez.
 
-Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeRoutesForFleet()` yalnız filonun sahibi olan fraksiyonun uçlarında bulunan, aktif ve geçerli ticaret merkezi denizine sahip rotaları döndürür; `SetMerchantTradeRoute()` oyuncu UI'sından gelen atamayı aynı state doğrulamasından geçirir. Rota anahtarı save/load ile korunur, merchant hacim bonusu ise ekonomi tick'inde gerçek filo konumu ve görevinden yeniden türetilir (`internal/state/merchant_trade.go`).
+Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeRoutesForFleet()` yalnız filonun sahibi `FromFactionID` olan, yani kendi ihracatını temsil eden, aktif ve geçerli ticaret merkezi denizine sahip rotaları döndürür; karşı tarafın ihracat rotası merchant görevine atanamaz. `SetMerchantTradeRoute()` oyuncu UI'sından gelen atamayı aynı state doğrulamasından geçirir. Rota anahtarı save/load ile korunur, merchant hacim bonusu ise ekonomi tick'inde gerçek filo konumu ve görevinden yeniden türetilir (`internal/state/merchant_trade.go`).
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 

@@ -1032,6 +1032,9 @@ func (g *Game) resolveTurn() {
 	if imperialReport.Pending {
 		g.renderer.ShowImperialPanel()
 	}
+	// Eski veya hatalı save'lerde ilişki değişiminden sonra yabancı bölgede
+	// kalmış orduları tur tamamlanmadan güvenli konuma geri çek.
+	g.gs.EvacuateArmiesWithoutLandAccess()
 
 	// Bölge event ikon sürelerini güncelle
 	events.TickActiveRegionEvents(g.gs)

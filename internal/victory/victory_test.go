@@ -131,7 +131,7 @@ func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 			"market": {ID: "market", GoldMod: 2, TradeCapacityMod: 1.5},
 		},
 		TradeRoutes: []*economy.TradeRoute{
-			{FromFactionID: "ottoman", ToFactionID: "venice", Good: economy.GoodSpice, AmountPerTurn: 10, GoldPerUnit: 10},
+			{FromFactionID: "ottoman", ToFactionID: "venice", Good: economy.GoodSpice, AmountPerTurn: 4, GoldPerUnit: 10},
 		},
 		TechTypes: map[string]*tech.Technology{
 			"tax_office": {ID: "tax_office", Effects: tech.Effects{GoldPerRegion: 5}},
@@ -140,10 +140,10 @@ func TestCurrentGoldIncomeIncludesRegionsTradeAndTech(t *testing.T) {
 
 	got := CurrentGoldIncome(gs)
 
-	if got != 280 {
-		t.Fatalf("beklenen gelir 280, got=%d", got)
+	if got != 220 {
+		t.Fatalf("beklenen gelir 220, got=%d", got)
 	}
-	if got := GoldIncomeForFaction(gs, "ottoman"); got != 280 {
+	if got := GoldIncomeForFaction(gs, "ottoman"); got != 220 {
 		t.Fatalf("seçilen devlet geliri mevcut gelirle aynı olmalı: got=%d", got)
 	}
 }

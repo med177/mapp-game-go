@@ -19,10 +19,18 @@ func TestNavalProductionKeepsMerchantAndMilitaryFleetsSeparate(t *testing.T) {
 		t.Fatal("savaş gemisi merchant görev filosuna eklenmemeliydi")
 	}
 	if !navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
-		t.Fatal("ikinci merchant gemisi aynı iki slotlu görev filosuna eklenebilmeliydi")
+		t.Fatal("ikinci merchant gemisi aynı görev filosuna eklenebilmeliydi")
+	}
+	merchantFleet.Units = append(merchantFleet.Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
+	if !navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
+		t.Fatal("üçüncü merchant gemisi aynı görev filosuna eklenebilmeliydi")
+	}
+	merchantFleet.Units = append(merchantFleet.Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
+	if !navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
+		t.Fatal("dördüncü merchant gemisi aynı görev filosuna eklenebilmeliydi")
 	}
 	merchantFleet.Units = append(merchantFleet.Units, army.Unit{TypeID: "merchant_ship", CurrentHP: 100})
 	if navalFleetAcceptsCompletedUnit(merchantFleet, unitTypes["merchant_ship"], unitTypes) {
-		t.Fatal("rota sınırını aşan üçüncü merchant gemisi için ayrı filo açılmalıydı")
+		t.Fatal("rota sınırını aşan beşinci merchant gemisi eklenmemeliydi")
 	}
 }

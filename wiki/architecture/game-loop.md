@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-01
+last_updated: 2026-08-05
 related: [state-management, render-pipeline]
 ---
 
@@ -107,7 +107,11 @@ Kamera kontrolleri normal harita ile aynıdır.
 11. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
 12. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]
 13. `events.Apply()` / `events.ApplyChoice()` — olayın anlık etkilerini uygula ve aktif bölge olayına üretim/tüketim modifiyerlerini taşı; bu geçici etkiler bir sonraki ekonomi tick'inde okunur
-14. `gs.AdvanceTurn()` — ay/yıl ilerlet
+14. `EvacuateArmiesWithoutLandAccess()` — eski/hatalı save veya ilişki değişiminden kalmış, savaş/ittifak/aynı-realm erişimi olmayan yabancı kara ordularını en yakın güvenli toprağa çeker
+15. `gs.AdvanceTurn()` — ay/yıl ilerlet
+
+Askerî geçiş izni için ayrı diplomasi state'i henüz yoktur. Eklendiğinde tur sonu
+erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir.
 
 ## AI Tur Akışı
 

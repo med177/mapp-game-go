@@ -45,10 +45,9 @@ const tradeRelationThreshold = 15
 // rota kapasitesi rezervinden muaftır.
 const MaxTradePartners = 4
 
-// MaxTradeRouteAmountPerTurn bir ikili ticaret anlaşmasının her yönü için
-// ulaşabileceği en yüksek temel hacimdir. Merchant filoları bunun üstüne kendi
-// sınırlı bonuslarını ekler.
-const MaxTradeRouteAmountPerTurn = 4
+// MaxTradeRouteAmountPerTurn ekonomi paketindeki toplam rota hacmi sınırının
+// diplomasi kapasite paylaşımı için kullanılan adıdır.
+const MaxTradeRouteAmountPerTurn = economy.MaxTradeRouteAmountPerTurn
 
 // rejectedOfferRelationPenalty her reddedilen normal diplomasi teklifinin
 // ilişkiye uyguladığı küçük cezadır. Savaş çağrısı kendi özel sonucunu kullanır.

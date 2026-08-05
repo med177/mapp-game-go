@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Merchant ticaret gemileri yalnızca kendi fraksiyonunun ihracat
+  yönündeki rotalara atanabilir hale getirildi. Karşı tarafın ihracat rotası
+  artık merchant panelinde görünmüyor ve elle/legacy atanmış olsa bile hacim
+  bonusu üretmiyor. Regression: `TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter`;
+  doğrulama: `go test ./...`.
+
+- 2026-08-05: Merchant bonusu artık filo başına sabit `+2` değil, gemi başına
+  `+1` hacim olarak hesaplanıyor. Toplam rota hacmi `4/tur` ile sınırlı; merchant
+  üretimi bu sınıra kadar tek filoya ekleniyor ve harita kalabalığı azalıyor.
+  Regression: `TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap`,
+  `TestNavalProductionKeepsMerchantAndMilitaryFleetsSeparate`; doğrulama:
+  `go test ./...`.
+
 - 2026-08-05: Kara ordusu toparlanması sabit `+10 HP` yerine bölgesel ikmal
   sonucuna ve bina seviyelerine bağlandı. İkmal talebi kapasiteyi aştığında
   toparlanma sıfır ve lojistik yıpranması sürer; yeterli ikmalde hız
@@ -20,9 +33,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ordular artık hareket puanından bağımsız olarak en yakın kendi, vassal veya
   müttefik bölgesine zorunlu çekiliyor. Terk edilen kuşatmalar ve geçersiz
   bekleyen temaslar temizleniyor; deniz çıkarması için önce nakliye filosuna
-  binme tercihi korunuyor. Regression:
+  binme tercihi korunuyor. Tur sonuna ayrıca hatalı/legacy save konumlarını
+  temizleyen erişim denetimi eklendi; savaş, ittifak ve aynı realm geçerli,
+  diğer yabancı kara konumları zorunlu tahliye ediliyor. Ayrı askerî geçiş izni
+  henüz plan notudur; eklendiğinde bu denetime dahil edilecek. Regression:
   `TestAcceptedPeaceEvacuatesLandArmyRegardlessOfMovePoints`,
-  `TestEvacuateArmiesFromPeaceTerritoryUsesNearestAlliedLand`;
+  `TestEvacuateArmiesFromPeaceTerritoryUsesNearestAlliedLand`,
+  `TestEvacuateArmiesWithoutLandAccessRepairsStalePeaceOccupation`;
   doğrulama: `go test ./...`.
 
 - 2026-08-05: `scenario.json` içindeki `victory_conditions` AI stratejik

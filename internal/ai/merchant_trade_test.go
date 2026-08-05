@@ -49,8 +49,8 @@ func Test1300MerchantAIKeepsAssignmentAndQueuesMissingShip(t *testing.T) {
 	gs := aiMerchantTradeTestState()
 	aiExecuteMerchantTradeStrategy(gs, "venice", nil, nil, nil)
 	fleet := gs.Armies["merchant"]
-	if fleet.TradeRouteKey != "mamluk->venice" {
-		t.Fatalf("ilk merchant filosu en değerli aktif rotaya atanmalıydı, got=%q", fleet.TradeRouteKey)
+	if fleet.TradeRouteKey != "venice->mamluk" {
+		t.Fatalf("merchant filosu yalnız kendi ihracat rotasına atanmalıydı, got=%q", fleet.TradeRouteKey)
 	}
 	if len(gs.ProductionQueue) != 1 || gs.ProductionQueue[0].TypeID != "merchant_ship" || gs.ProductionQueue[0].RegionID != "venice" {
 		t.Fatalf("eksik rota kapasitesi için bir merchant emri bekleniyordu: %+v", gs.ProductionQueue)
@@ -145,6 +145,11 @@ func Test1300WarshipPatrolMovesTowardActiveTradeSea(t *testing.T) {
 
 func Test1300ThreatenedTradeCenterQueuesEscortBeforeMerchant(t *testing.T) {
 	gs := aiMerchantTradeTestState()
+	// Yeni tek yönlü modelde Venice yalnızca kendi ihracat rotasını kullanır.
+	// Bu testte o rotanın hedef denizini Venice limanına taşıyarak escort
+	// önceliğini koru.
+	gs.Regions["egypt"].Neighbors = []world.RegionID{"adriatic"}
+	gs.Regions["adriatic"].Neighbors = append(gs.Regions["adriatic"].Neighbors, "egypt")
 	gs.Factions["venice"].Research.Completed["naval_doctrine"] = true
 	gs.Regions["venice"].Buildings = []string{"port", "port", "port"}
 	gs.Factions["enemy"] = &faction.Faction{ID: "enemy"}

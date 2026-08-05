@@ -134,6 +134,80 @@ func (s *GameState) EvacuateArmiesFromPeaceTerritory(left, right []faction.Facti
 	return len(relocated)
 }
 
+// EvacuateArmiesWithoutLandAccess, eski veya bozuk save'lerden kalmış geçersiz
+// kara konumlarını tur sonunda düzeltir. Savaş, resmî ittifak ve aynı realm
+// (vassal/overlord) yabancı bölgedeki varlık için geçerli erişim kabul edilir.
+// Ayrı bir askerî geçiş izni state'i henüz olmadığından bu denetim mevcut hareket
+// kurallarıyla aynı erişim sözleşmesini kullanır.
+func (s *GameState) EvacuateArmiesWithoutLandAccess() int {
+	if s == nil {
+		return 0
+	}
+
+	armyIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for armyID := range s.Armies {
+		armyIDs = append(armyIDs, armyID)
+	}
+	sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+
+	relocated := make(map[army.ArmyID]struct{})
+	for _, armyID := range armyIDs {
+		a := s.Armies[armyID]
+		if a == nil || a.IsNaval {
+			continue
+		}
+		current := s.Regions[a.RegionID]
+		if current == nil || current.IsSea || s.armyCanRemainInLandRegion(a, current) {
+			continue
+		}
+		destination := s.nearestFriendlyLandRegion(a.OwnerID, current)
+		if destination == "" {
+			continue
+		}
+		previousLocation := a.LocationID()
+		a.RegionID = destination
+		a.DockedRegionID = ""
+		a.DockedSettlementID = ""
+		a.InAmbush = false
+		s.ClearArmyLogisticsAfterRelocation(a, previousLocation)
+		relocated[a.ID] = struct{}{}
+	}
+
+	for regionID, siege := range s.Sieges {
+		if siege == nil {
+			continue
+		}
+		if _, ok := relocated[siege.AttackerArmyID]; ok {
+			delete(s.Sieges, regionID)
+		}
+	}
+	if contact := s.PendingLandContact; contact != nil {
+		if _, ok := relocated[contact.AttackerArmyID]; ok {
+			s.PendingLandContact = nil
+		} else if _, ok := relocated[contact.DefenderArmyID]; ok {
+			s.PendingLandContact = nil
+		}
+	}
+	return len(relocated)
+}
+
+func (s *GameState) armyCanRemainInLandRegion(a *army.Army, region *world.Region) bool {
+	if s == nil || a == nil || region == nil || a.OwnerID == "" {
+		return false
+	}
+	// Sahipsiz bölge başka bir devletin toprağı değildir. Tur çözümlemesinin
+	// başındaki neutral-occupation sanitizer bu konumu tek taraflı işgalse
+	// sahipliğe çevirir; burada orduyu yanlışlıkla geri çekmeyiz.
+	if region.OwnerID == "" {
+		return true
+	}
+	if s.canFactionReplenishIn(a.OwnerID, region.OwnerID) {
+		return true
+	}
+	rel := s.Relations[faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(region.OwnerID))]
+	return rel != nil && rel.Stance == faction.StanceWar
+}
+
 func (s *GameState) clearPeaceContacts(left, right map[string]struct{}, relocated map[army.ArmyID]struct{}) {
 	if s == nil {
 		return

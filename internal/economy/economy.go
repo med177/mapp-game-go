@@ -160,7 +160,9 @@ type TradeRoute struct {
 	BlockadePercent int `json:"-"`
 }
 
-const MaxMerchantAmountBonusPerRoute = 2
+// MaxTradeRouteAmountPerTurn bir ticaret rotasının merchant bonusu dahil
+// ulaşabileceği toplam hacimdir.
+const MaxTradeRouteAmountPerTurn = 4
 const MaxTradeRouteBlockadePercent = 100
 
 // TradeRouteAssignmentKey rota yeniden üretildiğinde de değişmeyen görev anahtarıdır.
@@ -187,10 +189,10 @@ func (t *TradeRoute) EffectiveAmountPerTurn() int {
 	if bonus < 0 {
 		bonus = 0
 	}
-	if bonus > MaxMerchantAmountBonusPerRoute {
-		bonus = MaxMerchantAmountBonusPerRoute
-	}
 	amount := t.AmountPerTurn + bonus
+	if amount > MaxTradeRouteAmountPerTurn {
+		amount = MaxTradeRouteAmountPerTurn
+	}
 	blockade := t.BlockadePercent
 	if blockade < 0 {
 		blockade = 0
@@ -199,6 +201,19 @@ func (t *TradeRoute) EffectiveAmountPerTurn() int {
 		blockade = MaxTradeRouteBlockadePercent
 	}
 	return amount * (MaxTradeRouteBlockadePercent - blockade) / MaxTradeRouteBlockadePercent
+}
+
+// MerchantBonusCapacity rotanın temel hacmi üzerinden kaç merchant gemisinin
+// daha +1 hacim sağlayabileceğini döner.
+func MerchantBonusCapacity(t *TradeRoute) int {
+	if t == nil {
+		return 0
+	}
+	remaining := MaxTradeRouteAmountPerTurn - t.AmountPerTurn
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
 }
 
 // GoldEarned bu güzergahtan tur başına altın kazancını döner (satan taraf için).

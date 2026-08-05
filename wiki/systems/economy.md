@@ -130,8 +130,10 @@ Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur 
 `GameState.RefreshMerchantTradeBonuses()` her ekonomi çözümünden önce merchant
 filolarını yeniden değerlendirir:
 
-- Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; rota başına üst sınır `+2`dir.
-- Filo, rotanın uç fraksiyonlarından birine ait olmalı ve yönlü liman çiftinin hedef
+- Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; temel rota hacmi dahil
+  toplam hacim `4/tur` ile sınırlıdır. Merchant filosu bu kapasiteye kadar tek stack'te
+  gemi taşıyabilir; ayrı iki gemilik filolara bölünmesi gerekmez.
+- Filo, rotanın `FromFactionID` ihracat fraksiyonuna ait olmalı ve yönlü liman çiftinin hedef
   denizinde bulunmalıdır. Gemlik → Özi gibi rotalarda hedef deniz, Özi tarafındaki
   gerçek liman denizidir; bağlı tüm denizler aynı anda geçerli sayılmaz.
 - Askıdaki rota `ApplyTradeRoutes()` tarafından atlanır. Kaynak mal ya da hedef altın

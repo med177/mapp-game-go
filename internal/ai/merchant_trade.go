@@ -47,7 +47,10 @@ func aiMerchantTradeResourceReserve(gs *state.GameState, fid faction.FactionID) 
 	if len(routes) == 0 {
 		return economy.ResourceCost{}
 	}
-	desired := len(routes) * economy.MaxMerchantAmountBonusPerRoute
+	desired := 0
+	for _, route := range routes {
+		desired += economy.MerchantBonusCapacity(route.route)
+	}
 	existing := 0
 	for _, fleet := range aiSortedArmies(gs) {
 		if fleet.OwnerID == string(fid) && fleet.IsNaval {
@@ -93,7 +96,7 @@ func aiEligibleMerchantRoutes(gs *state.GameState, fid faction.FactionID) []aiMe
 	fidString := string(fid)
 	result := make([]aiMerchantRoute, 0)
 	for _, route := range gs.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 || route.FromFactionID != fidString && route.ToFactionID != fidString {
+		if route == nil || route.SuspendedTurns > 0 || route.FromFactionID != fidString {
 			continue
 		}
 		seas := gs.MerchantTradeRouteSeaRegions(route)
@@ -138,15 +141,16 @@ func aiAssignMerchantTradeFleets(gs *state.GameState, fid faction.FactionID, rou
 			unassigned = append(unassigned, fleet)
 			continue
 		}
-		coverage[fleet.TradeRouteKey] = minInt(economy.MaxMerchantAmountBonusPerRoute, coverage[fleet.TradeRouteKey]+merchantCount)
+		coverage[fleet.TradeRouteKey] = minInt(economy.MerchantBonusCapacity(byKey[fleet.TradeRouteKey].route), coverage[fleet.TradeRouteKey]+merchantCount)
 	}
 
 	for _, fleet := range unassigned {
 		bestKey := ""
-		bestCoverage := economy.MaxMerchantAmountBonusPerRoute + 1
+		bestCoverage := int(^uint(0) >> 1)
 		for _, candidate := range routes {
 			current := coverage[candidate.key]
-			if current >= economy.MaxMerchantAmountBonusPerRoute {
+			capacity := economy.MerchantBonusCapacity(candidate.route)
+			if current >= capacity {
 				continue
 			}
 			if current < bestCoverage {
@@ -158,7 +162,7 @@ func aiAssignMerchantTradeFleets(gs *state.GameState, fid faction.FactionID, rou
 			continue
 		}
 		fleet.TradeRouteKey = bestKey
-		coverage[bestKey] = minInt(economy.MaxMerchantAmountBonusPerRoute, coverage[bestKey]+aiMerchantShipCount(gs, fleet))
+		coverage[bestKey] = minInt(economy.MerchantBonusCapacity(byKey[bestKey].route), coverage[bestKey]+aiMerchantShipCount(gs, fleet))
 	}
 }
 
@@ -176,7 +180,7 @@ func aiMerchantTradeFleetMove(gs *state.GameState, fleet *army.Army, ctx *Strate
 			break
 		}
 	}
-	if assigned == nil || fleet.OwnerID != assigned.FromFactionID && fleet.OwnerID != assigned.ToFactionID {
+	if assigned == nil || fleet.OwnerID != assigned.FromFactionID {
 		return "", true
 	}
 	seas := gs.MerchantTradeRouteSeaRegions(assigned)
@@ -229,7 +233,10 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	if self == nil || merchantType == nil || portType == nil || !merchantType.HasAllRequiredTechs(self.Research.Completed) {
 		return false
 	}
-	desired := len(routes) * economy.MaxMerchantAmountBonusPerRoute
+	desired := 0
+	for _, route := range routes {
+		desired += economy.MerchantBonusCapacity(route.route)
+	}
 	existing := 0
 	for _, fleet := range aiSortedArmies(gs) {
 		if fleet.OwnerID == string(fid) && fleet.IsNaval {

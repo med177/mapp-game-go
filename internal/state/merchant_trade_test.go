@@ -12,7 +12,7 @@ import (
 func merchantTradeTestState() (*GameState, *economy.TradeRoute) {
 	route := &economy.TradeRoute{
 		FromFactionID: "venice", ToFactionID: "mamluk", Good: economy.GoodSpice,
-		AmountPerTurn: 2, GoldPerUnit: 5,
+		AmountPerTurn: 1, GoldPerUnit: 5,
 	}
 	return &GameState{
 		Year: 1300,
@@ -50,12 +50,12 @@ func merchantTradeTestState() (*GameState, *economy.TradeRoute) {
 
 func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 	gs, route := merchantTradeTestState()
-	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 2 {
-		t.Fatalf("uygun konumdaki üç merchant gemisi +2 bonus vermeliydi, got=%d", got)
+	if got := gs.MerchantFleetTradeRouteBonus(gs.Armies["merchant"], route); got != 3 {
+		t.Fatalf("uygun konumdaki üç merchant gemisi gemi başına +1 bonus vermeliydi, got=%d", got)
 	}
 	gs.RefreshMerchantTradeBonuses()
-	if route.MerchantAmountBonus != 2 || route.EffectiveAmountPerTurn() != 4 {
-		t.Fatalf("üç merchant gemisi rota başına +2 sınırında kalmalıydı: %+v", route)
+	if route.MerchantAmountBonus != 3 || route.EffectiveAmountPerTurn() != 4 {
+		t.Fatalf("üç merchant gemisi rota hacmini 4/tur sınırına kadar doldurmalıydı: %+v", route)
 	}
 	logs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
 	if len(logs) != 0 || gs.Factions["venice"].Spice != 6 || gs.Factions["venice"].Gold != 20 || gs.Factions["mamluk"].Spice != 4 || gs.Factions["mamluk"].Gold != 80 {
@@ -66,6 +66,7 @@ func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 func TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter(t *testing.T) {
 	gs, route := merchantTradeTestState()
 	gs.TradeRoutes = append(gs.TradeRoutes,
+		&economy.TradeRoute{FromFactionID: "mamluk", ToFactionID: "venice", Good: economy.GoodSpice, AmountPerTurn: 1, GoldPerUnit: 6},
 		&economy.TradeRoute{FromFactionID: "genoa", ToFactionID: "mamluk", Good: economy.GoodCloth, AmountPerTurn: 1, GoldPerUnit: 6},
 		&economy.TradeRoute{FromFactionID: "venice", ToFactionID: "mamluk", Good: economy.GoodIron, AmountPerTurn: 1, GoldPerUnit: 9, SuspendedTurns: 1},
 	)
@@ -78,6 +79,11 @@ func TestMerchantTradeRoutesForFleetFiltersByOwnerAndActiveCenter(t *testing.T) 
 	if !gs.SetMerchantTradeRoute("merchant", route.AssignmentKey()) || gs.Armies["merchant"].TradeRouteKey != route.AssignmentKey() {
 		t.Fatalf("geçerli rota merchant filosuna atanmalıydı")
 	}
+	gs.Armies["merchant"].TradeRouteKey = gs.TradeRoutes[1].AssignmentKey()
+	if gs.MerchantFleetSupportsTradeRoute(gs.Armies["merchant"], gs.TradeRoutes[1]) {
+		t.Fatalf("merchant filosu karşı tarafın ihracat rotasını desteklememeli")
+	}
+	gs.Armies["merchant"].TradeRouteKey = route.AssignmentKey()
 	if gs.SetMerchantTradeRoute("merchant", "genoa->mamluk") {
 		t.Fatalf("başka fraksiyonun rotası merchant filosuna atanamamalıydı")
 	}
@@ -132,7 +138,7 @@ func TestMerchantTradeRouteUsesConnectedOwnedPortsWithoutHistoricalCenters(t *te
 func TestMerchantTradeRouteUsesDestinationPortSeaForGemlikOzi(t *testing.T) {
 	route := &economy.TradeRoute{
 		FromFactionID: "ottoman", ToFactionID: "golden_horde",
-		Good: economy.GoodGrain, AmountPerTurn: 4, GoldPerUnit: 2,
+		Good: economy.GoodGrain, AmountPerTurn: 3, GoldPerUnit: 2,
 	}
 	gs := &GameState{
 		Year: 1300,

@@ -184,13 +184,15 @@ func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) boo
 	return false
 }
 
-// MerchantFleetSupportsTradeRoute filonun rota ucundaki geçerli ticaret
-// merkezi veya liman denizinde bulunup bulunmadığını bildirir.
+// MerchantFleetSupportsTradeRoute filonun kendi ihracat rotasının ucundaki
+// geçerli ticaret merkezi veya liman denizinde bulunup bulunmadığını bildirir.
+// Merchant filoları yalnızca sahibi olduğu FromFactionID'nin mal sattığı
+// yönde çalışır; karşı tarafın ihracat rotası oyuncunun gelir rotası değildir.
 func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *economy.TradeRoute) bool {
 	if s == nil || fleet == nil || route == nil || !fleet.IsAtSea() || fleet.TradeRouteKey != route.AssignmentKey() {
 		return false
 	}
-	if fleet.OwnerID != route.FromFactionID && fleet.OwnerID != route.ToFactionID {
+	if fleet.OwnerID != route.FromFactionID {
 		return false
 	}
 	for _, seaID := range s.MerchantTradeRouteSeaRegions(route) {
@@ -202,22 +204,22 @@ func (s *GameState) MerchantFleetSupportsTradeRoute(fleet *army.Army, route *eco
 }
 
 // MerchantFleetTradeRouteBonus, seçili merchant filosunun mevcut konumunda
-// rotaya sağlayacağı hacim bonusunu döner. Her rota en fazla iki merchant
-// gemisinden yararlanır; filo rotanın hedef denizinde değilse bonus sıfırdır.
+// rotaya sağlayacağı hacim bonusunu döner. Her merchant gemisi +1 hacim
+// sağlar; toplam bonus rotanın hacim sınırını aşamaz.
 func (s *GameState) MerchantFleetTradeRouteBonus(fleet *army.Army, route *economy.TradeRoute) int {
 	if s == nil || fleet == nil || route == nil || !s.MerchantFleetSupportsTradeRoute(fleet, route) {
 		return 0
 	}
 	count := s.merchantShipCount(fleet)
-	if count > economy.MaxMerchantAmountBonusPerRoute {
-		count = economy.MaxMerchantAmountBonusPerRoute
+	if capacity := economy.MerchantBonusCapacity(route); count > capacity {
+		count = capacity
 	}
 	return count
 }
 
 // MerchantTradeRoutesForFleet oyuncunun/AI'ın merchant filosuna atanabilecek
-// aktif rotaları döner. Rota yalnızca filonun sahibi rota uçlarından biriyse
-// ve rota için kanonik bir hedef deniz bulunuyorsa listelenir.
+// aktif ihracat rotalarını döner. Rota yalnızca filonun sahibi FromFactionID
+// ise ve rota için kanonik bir hedef deniz bulunuyorsa listelenir.
 func (s *GameState) MerchantTradeRoutesForFleet(fleet *army.Army) []*economy.TradeRoute {
 	if s == nil || fleet == nil || !fleet.IsNaval || s.merchantShipCount(fleet) == 0 {
 		return nil
@@ -229,7 +231,7 @@ func (s *GameState) MerchantTradeRoutesForFleet(fleet *army.Army) []*economy.Tra
 		if route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 			continue
 		}
-		if route.FromFactionID != ownerID && route.ToFactionID != ownerID {
+		if route.FromFactionID != ownerID {
 			continue
 		}
 		if len(s.MerchantTradeRouteSeaRegions(route)) == 0 {
@@ -270,7 +272,8 @@ func (s *GameState) SetMerchantTradeRoute(fleetID army.ArmyID, routeKey string) 
 }
 
 // RefreshMerchantTradeBonuses runtime rota hacmini gerçek fleet assignment ve
-// konumundan yeniden türetir. Bir rota en fazla iki merchant gemisinden yararlanır.
+// konumundan yeniden türetir. Her gemi +1 hacim sağlar ve rota toplam hacim
+// sınırına ulaştığında sonraki filolar katkı vermez.
 func (s *GameState) RefreshMerchantTradeBonuses() {
 	if s == nil {
 		return
@@ -294,7 +297,7 @@ func (s *GameState) RefreshMerchantTradeBonuses() {
 			continue
 		}
 		count := s.MerchantFleetTradeRouteBonus(fleet, route)
-		remaining := economy.MaxMerchantAmountBonusPerRoute - route.MerchantAmountBonus
+		remaining := economy.MerchantBonusCapacity(route) - route.MerchantAmountBonus
 		if count > remaining {
 			count = remaining
 		}

@@ -107,3 +107,53 @@ func TestEvacuateArmiesFromPeaceTerritoryUsesNearestAlliedLand(t *testing.T) {
 		t.Fatalf("en yakın müttefik bölge seçilmeli: %s", got)
 	}
 }
+
+func TestEvacuateArmiesWithoutLandAccessRepairsStalePeaceOccupation(t *testing.T) {
+	gs := navalLandingPeaceState(false)
+	gs.Regions["target"].WorldX = 100
+	gs.Regions["target"].WorldY = 0
+	gs.Regions["nearland"].WorldX = 90
+	gs.Regions["nearland"].WorldY = 0
+	gs.Armies["landing"].MovePoints = 0
+	gs.Sieges["target"].NavalLanding = false
+
+	if got := gs.EvacuateArmiesWithoutLandAccess(); got != 1 {
+		t.Fatalf("izinsiz eski-save ordusu tahliye edilmeli, got=%d", got)
+	}
+	if got := gs.Armies["landing"].RegionID; got != "nearland" {
+		t.Fatalf("ordu en yakın güvenli bölgeye çekilmeli: %s", got)
+	}
+	if gs.SiegeAt("target") != nil {
+		t.Fatal("tahliye edilen ordunun kuşatması temizlenmeli")
+	}
+}
+
+func TestEvacuateArmiesWithoutLandAccessKeepsWarAndAlliedTransit(t *testing.T) {
+	for _, stance := range []faction.DiplomaticStance{faction.StanceWar, faction.StanceAllied} {
+		t.Run(string(stance), func(t *testing.T) {
+			gs := navalLandingPeaceState(false)
+			gs.Relations = map[string]*faction.Relation{
+				faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", Stance: stance},
+			}
+
+			if got := gs.EvacuateArmiesWithoutLandAccess(); got != 0 {
+				t.Fatalf("%s durumunda geçerli ordular çekilmemeli, got=%d", stance, got)
+			}
+			if got := gs.Armies["landing"].RegionID; got != "target" {
+				t.Fatalf("%s durumunda ordu mevcut bölgede kalmalı: %s", stance, got)
+			}
+		})
+	}
+}
+
+func TestEvacuateArmiesWithoutLandAccessKeepsNeutralOccupation(t *testing.T) {
+	gs := navalLandingPeaceState(false)
+	gs.Regions["target"].OwnerID = ""
+
+	if got := gs.EvacuateArmiesWithoutLandAccess(); got != 0 {
+		t.Fatalf("sahipsiz bölge yabancı toprak sayılmamalı, got=%d", got)
+	}
+	if got := gs.Armies["landing"].RegionID; got != "target" {
+		t.Fatalf("sahipsiz bölgedeki ordu geri çekilmemeli: %s", got)
+	}
+}
