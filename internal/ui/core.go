@@ -34,6 +34,8 @@ const (
 	TextSmall TextVariant = iota
 	TextMedium
 	TextLarge
+	// TextEmphasized, kritik değerler için büyük ve kalın metindir.
+	TextEmphasized
 )
 
 // TextRenderer UI paketinin render katmanından font bağımsız kalmasını sağlar.

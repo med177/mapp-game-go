@@ -136,6 +136,8 @@ func buttonTextY(b Button, style ButtonStyle) float64 {
 
 func buttonTextHeight(variant TextVariant) float64 {
 	switch variant {
+	case TextEmphasized:
+		return 18
 	case TextLarge:
 		return 18
 	case TextMedium:

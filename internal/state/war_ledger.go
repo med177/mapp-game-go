@@ -34,8 +34,13 @@ func (s *GameState) TruceRemaining(a, b faction.FactionID) int {
 // başlangıç durumunu ve iki taraflı sonuçlarını tutar. FactionA/FactionB,
 // RelationKey ile aynı alfabetik sıradadır.
 type WarLedger struct {
-	FactionA           faction.FactionID `json:"faction_a"`
-	FactionB           faction.FactionID `json:"faction_b"`
+	FactionA faction.FactionID `json:"faction_a"`
+	FactionB faction.FactionID `json:"faction_b"`
+	// DeclarerFactionID ve DefenderFactionID savaş ilanının yönünü korur.
+	// FactionA/FactionB ise kayıp ve bölge sayaçları için RelationKey ile
+	// uyumlu alfabetik sıralamayı sürdürür.
+	DeclarerFactionID  faction.FactionID `json:"declarer_faction_id,omitempty"`
+	DefenderFactionID  faction.FactionID `json:"defender_faction_id,omitempty"`
 	StartedTurn        int               `json:"started_turn"`
 	InitialRegionsA    int               `json:"initial_regions_a"`
 	InitialRegionsB    int               `json:"initial_regions_b"`
@@ -66,11 +71,13 @@ func (s *GameState) BeginWarLedger(a, b faction.FactionID) *WarLedger {
 		left, right = right, left
 	}
 	ledger := &WarLedger{
-		FactionA:        left,
-		FactionB:        right,
-		StartedTurn:     s.Turn,
-		InitialRegionsA: len(s.LandRegionsOwnedBy(left)),
-		InitialRegionsB: len(s.LandRegionsOwnedBy(right)),
+		FactionA:          left,
+		FactionB:          right,
+		DeclarerFactionID: a,
+		DefenderFactionID: b,
+		StartedTurn:       s.Turn,
+		InitialRegionsA:   len(s.LandRegionsOwnedBy(left)),
+		InitialRegionsB:   len(s.LandRegionsOwnedBy(right)),
 	}
 	s.WarLedgers[key] = ledger
 	return ledger

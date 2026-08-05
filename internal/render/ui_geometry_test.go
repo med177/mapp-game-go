@@ -583,6 +583,15 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 	if statusSecondLineY+14 > actionLabelY {
 		t.Fatalf("diplomacy offer status and action label overlap in %.0fx%.0f viewport: statusSecondLineY=%.1f actionLabelY=%.1f layout=%+v", screenW, screenH, statusSecondLineY, actionLabelY, offer)
 	}
+	if statusPaddingBottom := offer.statusRect.Y + offer.statusRect.H - (statusSecondLineY + 12); statusPaddingBottom < 8 {
+		t.Fatalf("diplomacy offer status text lacks bottom padding in %.0fx%.0f viewport: padding=%.1f layout=%+v", screenW, screenH, statusPaddingBottom, offer)
+	}
+	for _, btn := range buildDiplomacyActionButtons(nil, "") {
+		detailPaddingBottom := btn.Button.Y + btn.Button.H - (btn.Button.Y + 23 + 12)
+		if detailPaddingBottom < 7 {
+			t.Fatalf("diplomacy action detail lacks bottom padding in %.0fx%.0f viewport: index=%d padding=%.1f button=%+v", screenW, screenH, btn.Index, detailPaddingBottom, btn.Button)
+		}
+	}
 	assertButtonInside(t, screenW, screenH, buildDiplomacyCloseButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacyBackButton())
 	assertButtonInside(t, screenW, screenH, buildDiplomacySendButton())

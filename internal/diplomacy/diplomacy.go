@@ -400,19 +400,36 @@ func sortTradeRoutes(routes []*economy.TradeRoute) {
 	})
 }
 
-func MilitaryPower(gs *state.GameState, fid faction.FactionID) int {
-	total := 0
+// MilitaryPowerBreakdown kara ve deniz ordularının etkin güçlerini ayrı döner.
+// Birimin etkin saldırısı, can yüzdesi ve ordu morali Army.TotalStrength içinde
+// hesaba katılır. Donanma gücü de devletin toplam askerî gücünün parçasıdır.
+func MilitaryPowerBreakdown(gs *state.GameState, fid faction.FactionID) (land, naval int) {
+	if gs == nil || fid == "" {
+		return 0, 0
+	}
 	for _, a := range gs.Armies {
 		if a == nil || a.OwnerID != string(fid) {
 			continue
 		}
+		power := 0
 		if gs.UnitTypes != nil {
-			total += a.TotalStrength(gs.UnitTypes)
-			continue
+			power = a.TotalStrength(gs.UnitTypes)
+		} else {
+			power = len(a.Units) * 10
 		}
-		total += len(a.Units) * 10
+		if a.IsNaval {
+			naval += power
+		} else {
+			land += power
+		}
 	}
-	return total
+	return land, naval
+}
+
+// MilitaryPower devletin kara ve deniz etkin güçlerinin toplamını döner.
+func MilitaryPower(gs *state.GameState, fid faction.FactionID) int {
+	land, naval := MilitaryPowerBreakdown(gs, fid)
+	return land + naval
 }
 
 func HasCommonEnemy(gs *state.GameState, a, b faction.FactionID) bool {

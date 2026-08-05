@@ -103,6 +103,18 @@ func TestFactionMilitaryPowerStandingRanksSelectedFaction(t *testing.T) {
 	}
 }
 
+func TestFactionMilitaryPowerBreakdownLabelSeparatesLandAndNavalStrength(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"land":  {ID: "land", OwnerID: "selected", Units: []army.Unit{{}, {}}},
+			"fleet": {ID: "fleet", OwnerID: "selected", IsNaval: true, Units: []army.Unit{{}}},
+		},
+	}
+	if got := factionMilitaryPowerBreakdownLabel(gs, "selected"); got != "20 / 10" {
+		t.Fatalf("kara/deniz güç etiketi yanlış: %q", got)
+	}
+}
+
 func TestRegionGrainProductionDisplayShowsMilitaryRemainderAndTotal(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

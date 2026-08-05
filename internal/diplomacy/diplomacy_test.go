@@ -14,6 +14,23 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestMilitaryPowerBreakdownIncludesNavalStrength(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"land":  {ID: "land", OwnerID: "a", Units: []army.Unit{{}, {}}},
+			"fleet": {ID: "fleet", OwnerID: "a", IsNaval: true, Units: []army.Unit{{}, {}, {}}},
+		},
+	}
+
+	land, naval := MilitaryPowerBreakdown(gs, "a")
+	if land != 20 || naval != 30 {
+		t.Fatalf("kara/deniz gücü yanlış: land=%d naval=%d", land, naval)
+	}
+	if total := MilitaryPower(gs, "a"); total != 50 {
+		t.Fatalf("toplam askerî güce donanma dahil olmalı, got=%d", total)
+	}
+}
+
 func TestProposePeaceRejectedOutsideWar(t *testing.T) {
 	gs := testGameState()
 
@@ -1353,6 +1370,10 @@ func TestResolveAcceptedWarJoinOfferAddsPlayerToWar(t *testing.T) {
 	}
 	if !IsWar(gs, "player", "b") {
 		t.Fatal("oyuncu kabul sonrası hedefle savaşta olmalı")
+	}
+	ledger := gs.WarLedgerFor("player", "b")
+	if ledger == nil || ledger.DeclarerFactionID != "b" || ledger.DefenderFactionID != "player" {
+		t.Fatalf("savunan ittifaka katılım savaş ilanı yönünü korumalıydı: %+v", ledger)
 	}
 }
 

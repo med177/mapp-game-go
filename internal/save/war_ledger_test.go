@@ -15,6 +15,8 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 			"a|b": {
 				FactionA:           "a",
 				FactionB:           "b",
+				DeclarerFactionID:  "b",
+				DefenderFactionID:  "a",
 				StartedTurn:        3,
 				InitialRegionsA:    4,
 				InitialRegionsB:    3,
@@ -43,7 +45,7 @@ func TestCompactCampaignStatePreservesWarLedger(t *testing.T) {
 	restored := &state.GameState{}
 	applyCampaignSaveState(restored, decoded)
 	ledger := restored.WarLedgerFor("b", "a")
-	if ledger == nil || ledger.StartedTurn != 3 || ledger.CasualtiesA != 5 || ledger.RegionsCapturedA != 1 || ledger.LastPeaceOfferTurn != 7 || ledger.TargetRegionID != "b1" || ledger.TargetLockedTurn != 8 {
+	if ledger == nil || ledger.DeclarerFactionID != "b" || ledger.DefenderFactionID != "a" || ledger.StartedTurn != 3 || ledger.CasualtiesA != 5 || ledger.RegionsCapturedA != 1 || ledger.LastPeaceOfferTurn != 7 || ledger.TargetRegionID != "b1" || ledger.TargetLockedTurn != 8 {
 		t.Fatalf("war ledger save/load kaybı: %+v", ledger)
 	}
 	if restored.OfferRejectionTurns["a|b|propose_peace"] != 8 {

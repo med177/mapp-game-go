@@ -7,6 +7,27 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-05: Diplomasi teklif panelinde pasif aksiyonların uzun blok sebebi
+  satır içinden kaldırıldı; yalnız etiket ve `PASİF` göstergesi kalıyor. Ortak
+  `Box` yerleşimi footer'ı önce ayırıyor; iki satırlı durum kartı ve aktif teklif
+  ayrıntıları alt çerçevelerinden güvenli boşlukla çiziliyor. Regression:
+  `TestCoreUIGeometryFitsCommonViewports`; doğrulama: `go test ./internal/render`.
+
+- 2026-08-05: Seçili devlet detay panelinde güç sırası bölgelerin üstüne büyük,
+  kalın altın vurgu olarak taşındı. Askerî güç artık `Kara / Deniz Gücü` olarak
+  ayrı görünür; sıralama ikisinin toplamını kullanır. Devlet başlığı sabit
+  turkuaz, bayrak rozeti ise fraksiyon rengindedir. Regression:
+  `TestMilitaryPowerBreakdownIncludesNavalStrength`,
+  `TestFactionMilitaryPowerBreakdownLabelSeparatesLandAndNavalStrength`.
+
+- 2026-08-05: Aktif Savaşlar paneli alfabetik taraf düzeni yerine savaş ilanı
+  yönünü gösteriyor: ilk ilan eden solda, savunan sağda; kayıp/güç/ordu değerleri
+  aynı yönle eşleşiyor. Yön bilgisi `WarLedger` ile save/load'a eklendi ve savunan
+  ittifaka sonradan katılımda korunuyor. Eski save'ler yön metadata'sı taşımadığında
+  korunan ilişki taraf sırası kullanılır. Regression: `TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts`,
+  `TestResolveAcceptedWarJoinOfferAddsPlayerToWar`; doğrulama:
+  `go test ./internal/state ./internal/diplomacy ./internal/render ./internal/save`.
+
 - 2026-08-05: 1300 AI kara birimi seçimi, mevcut plan kompozisyon oranlarını
   (`expand %55/%25/%20`, `defend %75/%15/%10`, fallback `%65/%25/%10`) korurken
   aynı kategori içindeki güç/tahıl verimini ayrıca puanlamaya başladı. Yakın tahıl

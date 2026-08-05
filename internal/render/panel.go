@@ -88,6 +88,8 @@ const (
 	buildingGridRowGap         = float32(7)
 )
 
+var factionNameColor = color.RGBA{0, 152, 204, 255}
+
 // regionPanelTab seçili bölge panelindeki ortak içerik alanının görünümünü
 // belirler. Sıfır değer bilinçli olarak Binalar görünümüdür.
 type regionPanelTab int
@@ -3585,10 +3587,10 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 	if strings.TrimSpace(name) == "" {
 		name = string(fid)
 	}
-	nameCol := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
-	drawFactionFlagBadge(screen, fid, string([]rune(name)[:1]), lx, ly-2, factionPanelFlagSize, nameCol, panelBorder)
+	factionColor := color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+	drawFactionFlagBadge(screen, fid, string([]rune(name)[:1]), lx, ly-2, factionPanelFlagSize, factionColor, panelBorder)
 	nameX := lx + factionPanelFlagSize + 10
-	DrawText(screen, name, nameX, ly, FaceLarge, nameCol)
+	DrawText(screen, name, nameX, ly, FaceLarge, factionNameColor)
 	ly += 24
 
 	drawUIWrappedLabel(screen, gameui.Rect{X: nameX, Y: ly, W: sepW - (nameX - lx)}, factionPanelSubtitle(gs, fid, f), ColorGray, gameui.TextSmall, 16, 2)
@@ -3646,6 +3648,11 @@ func factionNavalArmyCount(gs *state.GameState, fid faction.FactionID) int {
 		}
 	}
 	return count
+}
+
+func factionMilitaryPowerBreakdownLabel(gs *state.GameState, fid faction.FactionID) string {
+	land, naval := diplomacy.MilitaryPowerBreakdown(gs, fid)
+	return itoa(land) + " / " + itoa(naval)
 }
 
 func factionActiveResearchLabel(gs *state.GameState, f *faction.Faction) string {
@@ -3964,7 +3971,8 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 	_ = width
 	y := 0.0
 	y += factionPanelSectionH
-	y += factionPanelRowH * 5
+	y += 24
+	y += factionPanelRowH * 4
 	y += 22
 
 	y += factionPanelSectionH
@@ -4027,20 +4035,25 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 
 	drawUISectionLabel(screen, 0, y, "Durum")
 	y += factionPanelSectionH
-	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
-	y += factionPanelRowH
-	drawUIKeyValueRow(screen, 0, y, width, "Kara Ordusu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
-	y += factionPanelRowH
-	militaryPower, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
-	drawUIKeyValueRow(screen, 0, y, width, "Askeri Güç", itoa(militaryPower), ColorGray, ColorWhite)
-	y += factionPanelRowH
+	_, militaryRank, _ := factionMilitaryPowerStanding(gs, fid)
 	rankValue := "Yok"
 	if militaryRank > 0 {
-		rankValue = itoa(militaryRank) + "/" + itoa(factionCount)
+		rankValue = itoa(militaryRank)
 	}
-	drawUIKeyValueRow(screen, 0, y, width, "Güç Sırası", rankValue, ColorGray, ColorWhite)
+	rankRow := gameui.NewKeyValueRow(gameui.Rect{X: 0, Y: y, W: width}, "Güç Sırası", rankValue)
+	rankRow.LabelColor = ColorGold
+	rankRow.ValueColor = ColorGold
+	rankRow.LabelVariant = gameui.TextMedium
+	rankRow.ValueVariant = gameui.TextEmphasized
+	drawUIKeyValueWidget(screen, rankRow)
+	y += 24
+	drawUIKeyValueRow(screen, 0, y, width, "Kara / Deniz Gücü", factionMilitaryPowerBreakdownLabel(gs, fid), ColorGray, ColorGold)
 	y += factionPanelRowH
-	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" ordu", ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Ordu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" Filo", ColorGray, ColorWhite)
 	y += 22
 
 	drawUISectionLabel(screen, 0, y, "Araştırma")

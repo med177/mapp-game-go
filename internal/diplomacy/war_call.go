@@ -116,7 +116,9 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 	}
 	for _, outcome := range defenderCalls {
 		if outcome.Joined {
-			setWarBetweenCoalitions(gs, outcome.FactionID, actorRoot)
+			// Savaş kaydında ilk ilan eden taraf solda kalır; savunanın
+			// çağırdığı müttefik bu yüzden hedef taraf olarak eklenir.
+			setWarBetweenCoalitions(gs, actorRoot, outcome.FactionID)
 		}
 	}
 

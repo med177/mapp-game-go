@@ -11,6 +11,8 @@ import (
 
 func textFace(variant gameui.TextVariant) *text.GoTextFace {
 	switch variant {
+	case gameui.TextEmphasized:
+		return FaceLargeBold
 	case gameui.TextLarge:
 		return FaceLarge
 	case gameui.TextMedium:

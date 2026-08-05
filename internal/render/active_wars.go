@@ -233,11 +233,11 @@ func collectActiveWarSummaries(gs *state.GameState, dst []ActiveWarSummary) []Ac
 		if rel == nil || rel.Stance != faction.StanceWar || rel.FactionA == "" || rel.FactionB == "" || rel.FactionA == rel.FactionB {
 			continue
 		}
+		ledger := gs.WarLedgerFor(rel.FactionA, rel.FactionB)
 		a, b := rel.FactionA, rel.FactionB
-		if b < a {
-			a, b = b, a
+		if ledger != nil && ledger.DeclarerFactionID != "" && ledger.DefenderFactionID != "" && ledger.DeclarerFactionID != ledger.DefenderFactionID {
+			a, b = ledger.DeclarerFactionID, ledger.DefenderFactionID
 		}
-		ledger := gs.WarLedgerFor(a, b)
 		startedTurn := gs.Turn
 		casualtiesA, casualtiesB := 0, 0
 		if ledger != nil {

@@ -314,6 +314,10 @@ func resolveAcceptedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffe
 	if callerRoot == "" || playerRoot == "" || enemyRoot == "" {
 		return Result{Message: "Savaş çağrısı artık geçerli değil."}
 	}
+	declarerRoot := realmRoot(gs, offer.WarDeclarerFactionID)
+	if declarerRoot == "" {
+		declarerRoot = offer.WarDeclarerFactionID
+	}
 	if IsWar(gs, playerRoot, enemyRoot) {
 		return Result{
 			Accepted: true,
@@ -324,7 +328,13 @@ func resolveAcceptedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffe
 	if assessment := AssessWarCall(gs, callerRoot, playerRoot, enemyRoot); assessment.BlockReason != "" {
 		return Result{Message: "Savaş çağrısı artık geçerli değil."}
 	}
-	setWarBetweenCoalitions(gs, playerRoot, enemyRoot)
+	if callerRoot == declarerRoot {
+		setWarBetweenCoalitions(gs, playerRoot, enemyRoot)
+	} else {
+		// Oyuncu savunan ittifaka katılıyorsa, savaş yönü ilk ilan edene
+		// göre korunur ve panelde ilan eden taraf solda kalır.
+		setWarBetweenCoalitions(gs, declarerRoot, playerRoot)
+	}
 	return Result{
 		Accepted: true,
 		Applied:  true,

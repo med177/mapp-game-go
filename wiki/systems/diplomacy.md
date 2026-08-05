@@ -9,6 +9,11 @@ related: [world/factions, systems/ai, architecture/state-management, dev/data-fo
 
 **Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`
 
+`MilitaryPowerBreakdown()` kara ve donanma ordularının etkin güçlerini ayrı
+hesaplar; `MilitaryPower()` bu iki değerin toplamıdır. Etkin güç, birimin saldırı
+değeri ile can yüzdesi ve ordu morali etkisini içerir. Diplomatik güç kıyasları
+ve devlet güç sıralaması bu toplamı kullanır.
+
 ## İmparatorluk Sistemi
 
 HRE, bağımsız prensliklerin doğrudan tek sahibi olarak değil, ayrı bir siyasi kurum
@@ -89,6 +94,11 @@ ayrı bir vassallık state'i ya da relation duruşu oluşturulmaz.
 ---
 
 ## Diplomatik Duruşlar (DiplomaticStance)
+
+Savaş ilanı `WarLedger`'a ilan eden ve savunan tarafı ayrı metadata olarak yazar.
+Koalisyonun savunan tarafına sonradan katılan müttefikler de ilk ilan eden tarafın
+yönünü değiştirmez; aktif savaş görünümünde ilan eden solda kalır
+(`internal/diplomacy/war_call.go`, `internal/diplomacy/offers.go`).
 
 | Duruş | Geçiş Koşulu | Puan Etkisi |
 |---|---|---|

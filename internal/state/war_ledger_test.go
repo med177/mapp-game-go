@@ -24,7 +24,7 @@ func TestWarLedgerTracksBothPerspectivesAndResetsPlanOnPeace(t *testing.T) {
 	}
 
 	ledger := gs.BeginWarLedger("b", "a")
-	if ledger == nil || ledger.FactionA != "a" || ledger.FactionB != "b" {
+	if ledger == nil || ledger.FactionA != "a" || ledger.FactionB != "b" || ledger.DeclarerFactionID != "b" || ledger.DefenderFactionID != "a" {
 		t.Fatalf("ledger taraf sırası hatalı: %+v", ledger)
 	}
 	if ledger.StartedTurn != 5 || ledger.InitialRegionsA != 2 || ledger.InitialRegionsB != 1 {

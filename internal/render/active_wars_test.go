@@ -29,7 +29,7 @@ func TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts(t *testing.T) 
 			faction.RelationKey("b", "a"): {FactionA: "b", FactionB: "a", Stance: faction.StanceWar},
 		},
 		WarLedgers: map[string]*state.WarLedger{
-			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", StartedTurn: 4, CasualtiesA: 3, CasualtiesB: 5},
+			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", DeclarerFactionID: "b", DefenderFactionID: "a", StartedTurn: 4, CasualtiesA: 3, CasualtiesB: 5},
 		},
 	}
 
@@ -38,14 +38,34 @@ func TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts(t *testing.T) 
 		t.Fatalf("tek aktif savaş bekleniyordu, got=%d", len(wars))
 	}
 	war := wars[0]
-	if war.FactionANameTR != "A Devleti" || war.FactionBNameTR != "B Devleti" {
+	if war.FactionANameTR != "B Devleti" || war.FactionBNameTR != "A Devleti" {
 		t.Fatalf("taraf adları yanlış: %+v", war)
 	}
 	if war.Turns != 5 || war.ArmiesA != 1 || war.ArmiesB != 1 || war.UnitsA != 2 || war.UnitsB != 2 {
 		t.Fatalf("savaş süresi/ordu sayıları yanlış: %+v", war)
 	}
-	if war.CasualtiesA != 3 || war.CasualtiesB != 5 {
+	if war.CasualtiesA != 5 || war.CasualtiesB != 3 {
 		t.Fatalf("kayıplar yanlış: %+v", war)
+	}
+}
+
+func TestCollectActiveWarSummariesUsesRelationDirectionForLegacyLedger(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a", NameTR: "A Devleti"},
+			"b": {ID: "b", NameTR: "B Devleti"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {FactionA: "b", FactionB: "a", Stance: faction.StanceWar},
+		},
+		WarLedgers: map[string]*state.WarLedger{
+			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b"},
+		},
+	}
+
+	wars := collectActiveWarSummaries(gs, nil)
+	if len(wars) != 1 || wars[0].FactionA != "b" || wars[0].FactionB != "a" {
+		t.Fatalf("legacy ilişki yönü korunmalıydı: %+v", wars)
 	}
 }
 

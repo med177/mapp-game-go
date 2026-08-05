@@ -24,6 +24,8 @@ const (
 	diplomHistoryPanelGap = 12.0
 	diplomOfferMainW      = 430.0
 	diplomHistoryPanelH   = 324.0
+	diplomActionButtonH   = 42.0
+	diplomActionGap       = 8.0
 )
 
 type diplomacyListSort int
@@ -243,11 +245,12 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 	panel := gameui.Rect{X: r.x, Y: r.y, W: r.w, H: r.h}
 	contentRect := gameui.Rect{X: panel.X + 16, Y: panel.Y + 16, W: diplomOfferMainW, H: panel.H - 32}
 	box := gameui.BoxFromRect(contentRect)
+	footerRect, box := box.CutBottom(40, 0)
 	headerRect, box := box.CutTop(28, 14)
-	statusRect, box := box.CutTop(78, 22)
-	actionsRect, box := box.CutTop(float64(len(diplomActions))*42+float64(len(diplomActions)-1)*12, 22)
-	selectedRect, box := box.CutTop(28, 18)
-	footerRect, _ := box.CutBottom(40, 0)
+	// İki satırlı durum metni için alt çerçeveye değmeyecek sabit iç boşluk.
+	statusRect, box := box.CutTop(86, 16)
+	actionsRect, box := box.CutTop(float64(len(diplomActions))*diplomActionButtonH+float64(len(diplomActions)-1)*diplomActionGap, 16)
+	selectedRect, _ := box.CutTop(28, 0)
 	footerCols := gameui.BoxFromRect(footerRect).SplitColumns(12, 1, 1)
 	return diplomacyOfferLayout{
 		panelRect:    panel,
@@ -639,8 +642,8 @@ func ensureDiplomFocusVisible(total, focus, scroll int) int {
 func diplomActionRect(i int) (x, y, w, h float32) {
 	layout := diplomacyOfferLayoutForScreen()
 	btnW := float32(layout.actionsRect.W)
-	btnH := float32(42)
-	gap := float32(12)
+	btnH := float32(diplomActionButtonH)
+	gap := float32(diplomActionGap)
 	x = float32(layout.actionsRect.X)
 	y = float32(layout.actionsRect.Y + float64(i)*(float64(btnH)+float64(gap)))
 	return x, y, btnW, btnH
@@ -1138,7 +1141,6 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		scoreColor(relScore),
 	})
 
-	drawUIMutedText(screen, layout.actionsRect.X, layout.actionsRect.Y-18, "Teklif Türü")
 	selectedDisabledReason := ""
 	for _, btn := range buildDiplomacyActionButtons(gs, target) {
 		i := btn.Index
@@ -1157,7 +1159,6 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		if disabledReason != "" {
 			bg.A = 110
 			textCol = ColorGray
-			status = disabledReason
 			if i == actionFocus {
 				selectedDisabledReason = disabledReason
 			}
@@ -1172,20 +1173,14 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 			chanceText = "PASİF"
 		}
 		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
-		drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 25, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+		if disabledReason == "" {
+			// Ayrıntı satırını alt kenardan en az 7 px içeride tut.
+			drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 23, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+		}
 	}
 
 	selectedAction := diplomacyActionForTarget(gs, target, actionFocus)
-	selectedPrefix := "Seçili teklif: "
-	if selectedAction == ActionCancelAlliance || selectedAction == ActionCancelTrade {
-		selectedPrefix = "Seçili işlem: "
-	}
-	selected := selectedPrefix + diplomacyActionLabel(gs, target, actionFocus)
 	drawUICardRect(screen, layout.selectedRect, color.RGBA{18, 14, 10, 215}, color.RGBA{78, 62, 34, 150}, 1)
-	slw := MeasureText(selected, FaceSmall)
-	selectedY := layout.selectedRect.Y + 6
-	drawUIMutedText(screen, layout.selectedRect.X+layout.selectedRect.W/2-slw/2, selectedY, selected)
-
 	drawDiplomacySidePanel(screen, gs, layout.historyRect, target, factions, historyVisible, 3, historyDirFilter, historyActionFilter)
 	if diplomacy.DirectOverlord(gs, target) == gs.PlayerFactionID {
 		drawDiplomacyVassalManagementPanel(screen, gs, target)

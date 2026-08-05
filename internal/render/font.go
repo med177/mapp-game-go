@@ -7,16 +7,19 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
 var (
-	FaceSmall *text.GoTextFace // 12px — yardımcı metinler
-	FaceTiny  *text.GoTextFace // 10px — sıkışık durum etiketleri
-	FaceMed   *text.GoTextFace // 14px — genel UI
-	FaceLarge *text.GoTextFace // 18px — başlıklar
+	FaceSmall     *text.GoTextFace // 12px — yardımcı metinler
+	FaceTiny      *text.GoTextFace // 10px — sıkışık durum etiketleri
+	FaceMed       *text.GoTextFace // 14px — genel UI
+	FaceLarge     *text.GoTextFace // 18px — başlıklar
+	FaceLargeBold *text.GoTextFace // 18px — kritik vurgular
 
-	fontSource *text.GoTextFaceSource
+	fontSource     *text.GoTextFaceSource
+	boldFontSource *text.GoTextFaceSource
 )
 
 func init() {
@@ -25,10 +28,15 @@ func init() {
 	if err != nil {
 		log.Fatalf("Font yüklenemedi: %v", err)
 	}
+	boldFontSource, err = text.NewGoTextFaceSource(bytes.NewReader(gobold.TTF))
+	if err != nil {
+		log.Fatalf("Kalın font yüklenemedi: %v", err)
+	}
 	FaceSmall = &text.GoTextFace{Source: fontSource, Size: 12}
 	FaceTiny = &text.GoTextFace{Source: fontSource, Size: 10}
 	FaceMed = &text.GoTextFace{Source: fontSource, Size: 14}
 	FaceLarge = &text.GoTextFace{Source: fontSource, Size: 18}
+	FaceLargeBold = &text.GoTextFace{Source: boldFontSource, Size: 18}
 }
 
 // DrawText ekrana renkli metin yazar.
