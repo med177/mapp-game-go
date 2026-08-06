@@ -353,6 +353,15 @@ func TestOpenSiegeDecisionIncludesCommanderOperationalSummary(t *testing.T) {
 	}
 }
 
+func TestSiegeElapsedLabelTRShowsDuration(t *testing.T) {
+	if got := siegeElapsedLabelTR(7); got != "Kuşatma süresi: 7 tur" {
+		t.Fatalf("kuşatma süresi etiketi yanlış: got=%q", got)
+	}
+	if got := siegeElapsedLabelTR(-1); got != "Kuşatma süresi: 0 tur" {
+		t.Fatalf("negatif kuşatma süresi sıfıra sabitlenmeli: got=%q", got)
+	}
+}
+
 func TestSelectedDefensiveSiegePanelFollowsArmyAndSettlementSelection(t *testing.T) {
 	gs := &state.GameState{
 		Phase:           state.PhasePlayerTurn,

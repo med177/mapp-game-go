@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Gedik oluşan kuşatmaların settlement marker'ı, marker seçili
+  olmasa da görülebilen yeşil dış halka ile işaretleniyor. Kapsam:
+  `internal/render/renderer.go`.
+
+- 2026-08-06: Saldıran ve savunan kuşatma panellerinde kuşatmanın kaç turdur
+  sürdüğü sağ üst durum etiketinde gösteriliyor. Kapsam:
+  `internal/render/renderer_dialogs.go`.
+
+- 2026-08-06: Seçili bölge ve devlet detay panellerinin ortak genişliği 305 px'den
+  315 px'e çıkarıldı. Bina kartları, sekmeler, aksiyon alanı ve devlet paneli
+  içeriği aynı ortak ölçüden türetilerek genişletildi; input/hit-test ve scroll
+  geometrisi korunuyor. Kapsam: `internal/render/panel.go`.
+
 - 2026-08-06: Edit Mode bina kuralları otomatikleştirildi. Kale yerleşimlerine
   `walls`, liman yerleşimlerine `port`, ulusal başkent bölgelerine
   `barracks/granary/temple/market` eksikse ekleniyor; yerleşim tipi, taşınması,

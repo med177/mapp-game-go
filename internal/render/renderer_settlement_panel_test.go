@@ -283,6 +283,30 @@ func TestSettlementMarkerSpriteSwitchesToSiegeAssetForPrimarySiegedSettlement(t 
 	}
 }
 
+func TestSettlementBreachBorderRequiresOpenedBreachAndIgnoresSelection(t *testing.T) {
+	region := &world.Region{ID: "home", Settlements: []world.Settlement{{ID: "home_center", IsCenter: true}}}
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{"home": region},
+			Sieges: map[world.RegionID]*state.SiegeState{
+				"home": {RegionID: "home", BreachProgress: 10, BreachLevel: 0},
+			},
+		},
+	}
+
+	if r.isSettlementBreachOpen(region) {
+		t.Fatal("gedik eşiğine ulaşmayan kuşatma yeşil border almamalı")
+	}
+	r.gs.Sieges["home"].BreachLevel = 1
+	if !r.isSettlementBreachOpen(region) {
+		t.Fatal("gedik oluşan kuşatma yeşil border almalı")
+	}
+	r.SelectedRegion = "home"
+	if !r.isSettlementBreachOpen(region) {
+		t.Fatal("seçim durumu gedik border'ını kapatmamalı")
+	}
+}
+
 func TestArmySiegeBadgeUsesSwordAsset(t *testing.T) {
 	if armySiegeBadgeImage() != settlementMarkerSwordImage() {
 		t.Fatal("kuşatan ordu badge'i sword.png sprite'ını kullanmalı")

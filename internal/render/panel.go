@@ -49,7 +49,7 @@ const (
 	eventCardGap       = float32(7)
 	maxEventLogEntries = 16
 
-	infoPanelW                  = float32(305)
+	infoPanelW                  = float32(315)
 	infoPanelH                  = float32(780)
 	factionPanelHeaderH         = 70.0
 	factionPanelBodyPadBottom   = 12.0
@@ -4365,7 +4365,7 @@ func drawFactionAIDebugSection(screen *ebiten.Image, gs *state.GameState, fid fa
 	if hasActiveObjective {
 		drawUIKeyValueRow(screen, x, y, width, "Tarih", factionAIDebugYearRange(activeObjective), ColorGray, ColorWhite)
 		y += factionPanelRowH
-		drawUISectionLabel(screen, x, y, "Claim hedefleri")
+		drawUISectionLabel(screen, x, y, "Bölge İddiaları (claims:"+itoa(len(claims))+")")
 		y += factionPanelSectionH
 		if len(claims) == 0 {
 			drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, "• Tanımlı claim yok", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
@@ -4378,7 +4378,7 @@ func drawFactionAIDebugSection(screen *ebiten.Image, gs *state.GameState, fid fa
 			}
 		}
 	} else if len(claims) > 0 {
-		drawUISectionLabel(screen, x, y, "Genel claim hedefleri")
+		drawUISectionLabel(screen, x, y, "Genel Bölge Hedefleri")
 		y += factionPanelSectionH
 		for _, claim := range claims {
 			label := trimTextToWidth(factionAIDebugClaimLabel(gs, claim), FaceSmall, width)
@@ -4393,7 +4393,7 @@ func drawFactionAIDebugSection(screen *ebiten.Image, gs *state.GameState, fid fa
 			continue
 		}
 		if otherObjectives == 0 {
-			drawUISectionLabel(screen, x, y, "Diğer objective'ler")
+			drawUISectionLabel(screen, x, y, "Muhtemel Hedefler (objectives:"+itoa(len(strategy.Objectives)-1)+")")
 			y += factionPanelSectionH
 		}
 		label := trimTextToWidth("• "+factionAIDebugObjectiveSummary(objective), FaceSmall, width)

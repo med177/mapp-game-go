@@ -28,6 +28,13 @@ func siegeBreachLabelTR(level int) string {
 	}
 }
 
+func siegeElapsedLabelTR(turns int) string {
+	if turns < 0 {
+		turns = 0
+	}
+	return fmt.Sprintf("Kuşatma süresi: %d tur", turns)
+}
+
 func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) {
 	if r == nil || r.gs == nil || attacker == nil || target == nil {
 		return
@@ -281,7 +288,7 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	})
 	vector.FillRect(screen, float32(panel.Rect.X), float32(panel.Rect.Y), float32(panel.Rect.W), 4, color.RGBA{205, 160, 66, 255}, false)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 11}, "Kuşatma Emri", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 120, Y: panel.Rect.Y + 15, W: 120}, "AKTİF KUŞATMA", color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 160, Y: panel.Rect.Y + 15, W: 160}, siegeElapsedLabelTR(siege.TurnsElapsed), color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
 
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42}, "Hedef", color.RGBA{164, 132, 76, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 74, Y: panel.Rect.Y + 40, W: panel.Rect.W - 92}, trimTextToWidth(target.NameTR, FaceMed, panel.Rect.W-92), color.RGBA{244, 238, 222, 255}, gameui.TextMedium, gameui.TextAlignStart)
@@ -347,7 +354,7 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 	})
 	vector.FillRect(screen, float32(panel.Rect.X), float32(panel.Rect.Y), float32(panel.Rect.W), 4, color.RGBA{205, 160, 66, 255}, false)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 11}, "Savunma Kuşatması", ColorYellow, gameui.TextLarge, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 140, Y: panel.Rect.Y + 15, W: 140}, "KUŞATMA ALTINDA", color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 160, Y: panel.Rect.Y + 15, W: 160}, siegeElapsedLabelTR(siege.TurnsElapsed), color.RGBA{220, 166, 72, 220}, gameui.TextSmall, gameui.TextAlignEnd)
 
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42}, "Yerleşim", color.RGBA{164, 132, 76, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 84, Y: panel.Rect.Y + 40, W: panel.Rect.W - 102}, trimTextToWidth(target.NameTR, FaceMed, panel.Rect.W-102), color.RGBA{244, 238, 222, 255}, gameui.TextMedium, gameui.TextAlignStart)

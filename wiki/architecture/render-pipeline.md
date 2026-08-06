@@ -7,6 +7,17 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Kuşatmada `SiegeState.BreachLevel >= 1` olduğunda kanonik settlement marker'ının
+etrafında seçimden bağımsız yeşil bir halka çizilir (`internal/render/renderer.go`).
+Seçim halkası korunur; iki gösterge farklı yarıçaplardan türetilir.
+Seçili kuşatma panellerinin sağ üst durum etiketi de `SiegeState.TurnsElapsed`
+değerini `Kuşatma süresi: N tur` biçiminde gösterir (`renderer_dialogs.go`).
+
+Seçili bölge ve devlet detay panelleri ortak `infoPanelW` ölçüsünü kullanır;
+panel gövdesi, bina kartı ızgarası, sekmeler, aksiyon bandı, fraksiyon kaynak
+ızgarası, scroll viewport'u ve ilgili hit-test rect'leri bu genişlikten türetilir
+(`internal/render/panel.go`).
+
 Edit Mode, yerleşim tipi ve başkent değişikliklerinden sonra
 `world.EnsureRequiredSettlementBuildings` ile minimum altyapıyı otomatik
 senkronize eder: kale yerleşimi `walls`, liman yerleşimi `port`, ulusal başkent

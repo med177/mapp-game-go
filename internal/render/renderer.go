@@ -2684,6 +2684,8 @@ const (
 	armyCommanderBadgeSize = float32(32)
 )
 
+var settlementBreachBorderColor = color.RGBA{80, 220, 120, 255}
+
 func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, showCommander bool, siegeBadgeX float32) {
 	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
 	a := r.gs.Armies[aid]
@@ -3294,6 +3296,11 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 			r.drawCityDot(screen, region, sx, sy)
 		}
 	}
+	if isPrimary && r.isSettlementBreachOpen(region) {
+		// Gedik halkası seçimden bağımsızdır ve seçili marker'ın altın
+		// halkasını kapatmaması için onun bir piksel dışından geçer.
+		vector.StrokeCircle(screen, sx, sy, settlementMarkerSpriteSize/2+5, 2.5, settlementBreachBorderColor, true)
+	}
 	if isPrimary {
 		r.drawVassalSettlementBadge(screen, region, sx, sy)
 	}
@@ -3330,6 +3337,14 @@ func (r *Renderer) isSettlementUnderSiege(region *world.Region) bool {
 	}
 	siege := r.gs.SiegeAt(region.ID)
 	return siege != nil
+}
+
+func (r *Renderer) isSettlementBreachOpen(region *world.Region) bool {
+	if r == nil || r.gs == nil || region == nil {
+		return false
+	}
+	siege := r.gs.SiegeAt(region.ID)
+	return siege != nil && siege.BreachLevel >= 1
 }
 
 func (r *Renderer) drawFortressMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
