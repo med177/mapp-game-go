@@ -620,7 +620,6 @@
         "x": 624,
         "y": 403,
         "type": "port",
-        "is_center": true,
         "population": 54
       },
       {
@@ -637,6 +636,7 @@
         "x": 584,
         "y": 404,
         "type": "fortress",
+        "is_center": true,
         "population": 28
       }
     ]
@@ -1015,7 +1015,7 @@
         "name_tr": "Lagos",
         "x": 301,
         "y": 528,
-        "type": "city",
+        "type": "port",
         "is_center": true,
         "population": 210
       },
@@ -1024,7 +1024,7 @@
         "name_tr": "Evora",
         "x": 317,
         "y": 502,
-        "type": "town",
+        "type": "fortress",
         "population": 105
       }
     ]
@@ -1984,7 +1984,7 @@
         "name_tr": "Tobruk",
         "x": 954,
         "y": 626,
-        "type": "city",
+        "type": "port",
         "population": 52
       }
     ]
@@ -2306,6 +2306,7 @@
         "x": 1295,
         "y": 480,
         "type": "town",
+        "is_center": true,
         "population": 38
       },
       {
@@ -2314,7 +2315,6 @@
         "x": 1304,
         "y": 479,
         "type": "fortress",
-        "is_center": true,
         "population": 19
       },
       {
@@ -2852,8 +2852,8 @@
       {
         "id": "hejaz_yanbu",
         "name_tr": "Yenbu",
-        "x": 1257,
-        "y": 796,
+        "x": 1252,
+        "y": 797,
         "type": "port",
         "population": 46
       }
@@ -3450,6 +3450,14 @@
         "y": 643,
         "type": "fortress",
         "population": 10
+      },
+      {
+        "id": "jordan_settlement_6",
+        "name_tr": "Akabe",
+        "x": 1176,
+        "y": 678,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -3842,7 +3850,6 @@
         "x": 666,
         "y": 426,
         "type": "port",
-        "is_center": true,
         "population": 17
       },
       {
@@ -3867,6 +3874,7 @@
         "x": 663,
         "y": 438,
         "type": "city",
+        "is_center": true,
         "population": 23
       }
     ]
@@ -3876,12 +3884,20 @@
     "settlements": [
       {
         "id": "crete_main",
-        "name_tr": "Girit",
+        "name_tr": "Kandiye",
         "x": 987,
         "y": 566,
         "type": "fortress",
         "is_center": true,
         "population": 122
+      },
+      {
+        "id": "crete_settlement_2",
+        "name_tr": "Hanya",
+        "x": 963,
+        "y": 563,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -3893,7 +3909,7 @@
         "name_tr": "Malta",
         "x": 764,
         "y": 553,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 52
       }
@@ -4028,6 +4044,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 87
+      },
+      {
+        "id": "rhodes_settlement_2",
+        "name_tr": "Rodos Limanı",
+        "x": 1043,
+        "y": 544,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -4163,7 +4187,7 @@
       {
         "id": "mentese_settlement_2",
         "name_tr": "Marmaris",
-        "x": 1040,
+        "x": 1038,
         "y": 537,
         "type": "port",
         "population": 27
@@ -4172,7 +4196,7 @@
         "id": "bodrum_mentese",
         "name_tr": "Bodrum",
         "x": 1025,
-        "y": 531,
+        "y": 533,
         "type": "port",
         "population": 27
       },
@@ -4280,6 +4304,7 @@
         "x": 1182,
         "y": 533,
         "type": "fortress",
+        "is_center": true,
         "population": 30
       },
       {
@@ -4312,7 +4337,6 @@
         "x": 1171,
         "y": 535,
         "type": "town",
-        "is_center": true,
         "population": 13
       },
       {
@@ -4524,8 +4548,8 @@
       {
         "id": "granada_malaga",
         "name_tr": "Malaga",
-        "x": 386,
-        "y": 537,
+        "x": 388,
+        "y": 539,
         "type": "port",
         "population": 33
       },
@@ -4646,8 +4670,8 @@
       {
         "id": "granada_almeria",
         "name_tr": "Almeria",
-        "x": 426,
-        "y": 534,
+        "x": 427,
+        "y": 535,
         "type": "port",
         "population": 82
       },
@@ -4720,7 +4744,7 @@
         "id": "fethiye_mentese",
         "name_tr": "Fethiye",
         "x": 1058,
-        "y": 540,
+        "y": 542,
         "type": "port",
         "population": 24
       },
@@ -4728,7 +4752,7 @@
         "id": "finike_teke",
         "name_tr": "Finike",
         "x": 1079,
-        "y": 546,
+        "y": 548,
         "type": "port",
         "population": 22
       },
@@ -4774,9 +4798,8 @@
         "id": "antalya",
         "name_tr": "Antalya / Attaleia",
         "x": 1091,
-        "y": 533,
-        "type": "city",
-        "is_center": true,
+        "y": 536,
+        "type": "port",
         "population": 31
       },
       {
@@ -4808,7 +4831,8 @@
         "name_tr": "Isparta",
         "x": 1091,
         "y": 517,
-        "type": "town",
+        "type": "fortress",
+        "is_center": true,
         "population": 15
       }
     ]
@@ -4998,6 +5022,14 @@
         "y": 522,
         "type": "town",
         "population": 19
+      },
+      {
+        "id": "karaman_settlement_8",
+        "name_tr": "Taşucu",
+        "x": 1153,
+        "y": 550,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -5194,6 +5226,7 @@
         "x": 1274,
         "y": 486,
         "type": "town",
+        "is_center": true,
         "population": 33
       },
       {
@@ -5226,7 +5259,6 @@
         "x": 1264,
         "y": 501,
         "type": "fortress",
-        "is_center": true,
         "population": 44
       }
     ]

@@ -694,6 +694,7 @@
     "name_tr": "Provence",
     "terrain": "forest",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "genoa",
       "gulf_of_genoa",
@@ -1296,7 +1297,9 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "barracks"
+      "barracks",
+      "walls",
+      "port"
     ]
   },
   {
@@ -2184,8 +2187,8 @@
       "tunis",
       "western_mediterranean"
     ],
-    "world_x": 630,
-    "world_y": 540,
+    "world_x": 624,
+    "world_y": 549,
     "shape_id": "DZA",
     "is_sea": false,
     "is_locked": false,
@@ -2327,7 +2330,8 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "port"
     ]
   },
   {
@@ -2581,6 +2585,7 @@
     "name_tr": "Erzurum",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
       "dulkadir",
@@ -4952,13 +4957,15 @@
     "name_tr": "Şeria Ötesi",
     "terrain": "desert",
     "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
     "neighbors": [
       "arabian_desert",
       "damascus",
       "hejaz",
       "israel",
       "mosul",
-      "palestine"
+      "palestine",
+      "red_open_2"
     ],
     "world_x": 1211,
     "world_y": 641,
@@ -4983,7 +4990,8 @@
     "buildings": [
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -5466,6 +5474,7 @@
     "name_tr": "Sicilya",
     "terrain": "coast",
     "owner_id": "aragon",
+    "successor_faction_id": "aragon",
     "neighbors": [
       "ionian_sea",
       "mediterranean_open_2",
@@ -5503,6 +5512,7 @@
     "name_tr": "Sardinya",
     "terrain": "mountain",
     "owner_id": "aragon",
+    "successor_faction_id": "aragon",
     "neighbors": [
       "gulf_of_genoa",
       "mediterranean_open_2",
@@ -5539,6 +5549,7 @@
     "name_tr": "Korsika",
     "terrain": "mountain",
     "owner_id": "genoa",
+    "successor_faction_id": "genoa",
     "neighbors": [
       "gulf_of_genoa",
       "northern_tyrrhenian_sea"
@@ -5574,6 +5585,7 @@
     "name_tr": "Girit",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "aegean_sea_shore",
       "eastern_mediterranean_shore",
@@ -5601,7 +5613,8 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -5610,6 +5623,7 @@
     "name_tr": "Malta",
     "terrain": "coast",
     "owner_id": "aragon",
+    "successor_faction_id": "aragon",
     "neighbors": [
       "ionian_sea"
     ],
@@ -5633,7 +5647,9 @@
     "rural_population": 98,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "israel",
@@ -5829,6 +5845,7 @@
     "name_tr": "Rodos",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "mediterranean_open_1"
     ],
@@ -5855,7 +5872,8 @@
     "buildings": [
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -6528,6 +6546,7 @@
     "name_tr": "Murcia",
     "terrain": "mountain",
     "owner_id": "granada_emirate",
+    "successor_faction_id": "granada_emirate",
     "neighbors": [
       "alboran_sea",
       "aragon",
@@ -6682,6 +6701,7 @@
     "name_tr": "Hamitoğulları",
     "terrain": "coast",
     "owner_id": "hamid_bey",
+    "successor_faction_id": "hamid_bey",
     "neighbors": [
       "aksaray",
       "beysehir",
@@ -6711,7 +6731,10 @@
     "rural_population": 169,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls"
+    ]
   },
   {
     "id": "hamideli",
@@ -6954,7 +6977,8 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "port"
     ]
   },
   {
@@ -7124,6 +7148,7 @@
     "name_tr": "Erzincan",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "dulkadir",
       "eretna",
@@ -8404,6 +8429,7 @@
     "name_tr": "Halep",
     "terrain": "plain",
     "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
     "neighbors": [
       "cilicia",
       "damascus",
@@ -10342,6 +10368,7 @@
     "neighbors": [
       "hejaz",
       "israel",
+      "jordan",
       "luxor",
       "red_sea"
     ],
