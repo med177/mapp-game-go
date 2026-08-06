@@ -379,11 +379,11 @@ func Test1300EnglishFrenchWarWaitsFor1337Event(t *testing.T) {
 	if relation := diplomacy.Relation(gs, "england", "france"); relation == nil || relation.Stance != faction.StancePeace {
 		t.Fatalf("İngiltere-Fransa 1300'de barışta başlamalı: %+v", relation)
 	}
-	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "secure_english_channel_and_isles" {
-		t.Fatalf("İngiltere erken dönemde kıta savaşına yönelmemeli: %+v", plan)
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "consolidate:england" {
+		t.Fatalf("İngiltere tamamlanan ada objective'ini yeniden seçmemeli, hazırlık planına geçmeli: %+v", plan)
 	}
-	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "protect_french_royal_core" {
-		t.Fatalf("Fransa erken dönemde İngiltere savaşına yönelmemeli: %+v", plan)
+	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "consolidate:france" {
+		t.Fatalf("Fransa tamamlanan çekirdek objective'ini yeniden seçmemeli: %+v", plan)
 	}
 
 	gs.Year = 1337
@@ -404,8 +404,8 @@ func Test1300EnglishFrenchWarWaitsFor1337Event(t *testing.T) {
 	gs.AIPlans = nil
 	ai.TakeTurn(gs, "england")
 	ai.TakeTurn(gs, "france")
-	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "secure_english_channel_and_isles" {
-		t.Fatalf("İngiltere 1415'e kadar kıta seferi yerine ada savunmasını sürdürmeli: %+v", plan)
+	if plan := gs.AIPlans["england"]; plan == nil || plan.ObjectiveID != "consolidate:england" {
+		t.Fatalf("İngiltere 1415'e kadar hazırlık planında kalmalı: %+v", plan)
 	}
 	if plan := gs.AIPlans["france"]; plan == nil || plan.ObjectiveID != "recover_plantagenet_aquitaine_1337" || plan.TargetFactionID != "england" {
 		t.Fatalf("1337 sonrası Fransa İngiliz cephe objective'ine geçmeli: %+v", plan)
@@ -426,8 +426,8 @@ func Test1300SafavidRiseWaitsFor1501Event(t *testing.T) {
 	}
 	gs.PlayerFactionID = ""
 	ai.TakeTurn(gs, "safavid")
-	if plan := gs.AIPlans["safavid"]; plan == nil || plan.ObjectiveID != "hold_southern_persian_core" || plan.Kind != state.AIObjectiveConsolidate {
-		t.Fatalf("Safevî 1300'de erken genişlememeli: %+v", plan)
+	if plan := gs.AIPlans["safavid"]; plan == nil || plan.ObjectiveID != "consolidate:safavid" || plan.Kind != state.AIObjectiveConsolidate {
+		t.Fatalf("Safevî tamamlanan çekirdek objective'ini yeniden seçmemeli: %+v", plan)
 	}
 
 	gs.Year = 1501

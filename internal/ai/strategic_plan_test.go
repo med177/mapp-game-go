@@ -339,6 +339,74 @@ func TestScenarioObjectiveMaxYearIsInclusiveHardGateAndAddsUrgency(t *testing.T)
 	}
 }
 
+func TestScenarioObjectiveCompletionUsesClaimsButKeepsDefendIntent(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"home":   {ID: "home", OwnerID: "ai"},
+			"border": {ID: "border", OwnerID: "enemy"},
+		},
+	}
+	claim := scenario.AITerritorialClaimDef{RegionID: "home", Value: 100}
+
+	if !scenarioObjectiveCompleted(gs, "ai", scenario.AIObjectiveDef{
+		Kind:              "consolidate",
+		TerritorialClaims: []scenario.AITerritorialClaimDef{claim},
+	}) {
+		t.Fatal("AI'nin elindeki tüm claim bölgeleri consolidate objective'ini tamamlamalı")
+	}
+	if scenarioObjectiveCompleted(gs, "ai", scenario.AIObjectiveDef{
+		Kind:              "defend",
+		TerritorialClaims: []scenario.AITerritorialClaimDef{claim},
+	}) {
+		t.Fatal("defend objective'i yalnız claim sahipliğiyle tamamlanmamalı")
+	}
+	if scenarioObjectiveCompleted(gs, "ai", scenario.AIObjectiveDef{
+		Kind:              "expand",
+		TerritorialClaims: []scenario.AITerritorialClaimDef{{RegionID: "border", Value: 100}},
+	}) {
+		t.Fatal("düşmanın elindeki expand claim'i tamamlanmış sayılmamalı")
+	}
+}
+
+func TestConsolidationObjectiveRecoversLostClaimFromCurrentOwner(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.AIStrategies = map[string]scenario.AIFactionStrategy{
+		"ottoman": {
+			FactionID: "ottoman",
+			Objectives: []scenario.AIObjectiveDef{{
+				ID:                "secure_anatolian_core",
+				Kind:              "consolidate",
+				Priority:          100,
+				TerritorialClaims: []scenario.AITerritorialClaimDef{{RegionID: "germiyan_border", Value: 100}},
+			}},
+		},
+	}
+	gs.Regions["germiyan_border"].OwnerID = "ottoman"
+
+	initialPlan := chooseScenarioObjectivePlan(gs, gs.Factions["ottoman"], buildStrategicContext(gs, "ottoman"))
+	if initialPlan == nil || initialPlan.ObjectiveID != "consolidate:ottoman" {
+		t.Fatalf("başlangıçta eldeki consolidate claim'i hazırlık planı olarak tamamlanmalıydı: %+v", initialPlan)
+	}
+	if !scenarioObjectiveWasCompleted(gs, "ottoman", "secure_anatolian_core") {
+		t.Fatal("başlangıçta tüm claim eldeyken objective tamamlanma geçmişi kaydedilmeliydi")
+	}
+
+	gs.Regions["germiyan_border"].OwnerID = "germiyan_bey"
+	plan := chooseScenarioObjectivePlan(gs, gs.Factions["ottoman"], buildStrategicContext(gs, "ottoman"))
+	if plan == nil || plan.ObjectiveID != "secure_anatolian_core" || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != "germiyan_bey" {
+		t.Fatalf("kaybedilen consolidate claim'i güncel sahibine karşı recovery expand planına dönüşmeliydi: %+v", plan)
+	}
+	if len(plan.TargetRegionIDs) != 1 || plan.TargetRegionIDs[0] != "germiyan_border" {
+		t.Fatalf("recovery planı kaybedilen claim bölgesini hedeflemeliydi: %+v", plan.TargetRegionIDs)
+	}
+
+	gs.Regions["germiyan_border"].OwnerID = "ottoman"
+	completedPlan := chooseScenarioObjectivePlan(gs, gs.Factions["ottoman"], buildStrategicContext(gs, "ottoman"))
+	if completedPlan == nil || completedPlan.ObjectiveID != "consolidate:ottoman" || completedPlan.Kind != state.AIObjectiveConsolidate {
+		t.Fatalf("claim geri alındığında tamamlanan objective hazırlık planına dönmeliydi: %+v", completedPlan)
+	}
+}
+
 func TestDefensivePlanPullsArmyTowardPriorityRegion(t *testing.T) {
 	gs := strategicPlanTestState()
 	gs.Regions["reserve"] = &world.Region{ID: "reserve", OwnerID: "ottoman"}

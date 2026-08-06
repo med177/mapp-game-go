@@ -221,6 +221,10 @@ type GameState struct {
 	Commanders              map[string]*army.Commander             `json:"commanders,omitempty"`
 	CommanderArrivalNotices map[string]bool                        `json:"commander_arrival_notices,omitempty"`
 	AIPlans                 map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
+	// AICompletedObjectives objective'in en az bir kez tamamlandığını taşır.
+	// Bu geçmiş, tamamlanmış bir consolidate objective'inin sonradan kaybedilen
+	// claim'leri recovery hedefi olarak yeniden açabilmesi için gereklidir.
+	AICompletedObjectives map[faction.FactionID]map[string]bool `json:"ai_completed_objectives,omitempty"`
 	// Imperial, bağımsız üyelerin HRE çağrı/otorite state'ini taşır. Gerçek
 	// vassalların realm davranışı yine Faction.OverlordID ile belirlenir.
 	Imperial  *ImperialState         `json:"imperial,omitempty"`

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -477,7 +477,10 @@ vassallık/stratejik ilhak tercihlerini save/load arasında korur. Buna karşıl
 `AIDifficultyPolicy`, `ai_strategies.json` dosyasından gelen statik senaryo verileridir
 ve runtime-only tutulur. Save yüklemesinde baz senaryoyla yeniden kurulurlar; böylece
 statik profil ile plan/risk/hareket politikası save payload'ında tekrar edilmez ve eski
-save'ler sonraki AI turunda güncel senaryo konfigürasyonunu kullanabilir.
+save'ler sonraki AI turunda güncel senaryo konfigürasyonunu kullanabilir. Bir objective'in
+daha önce tamamlandığını taşıyan `AICompletedObjectives` da campaign save'e yazılır;
+tamamlanmış `consolidate` objective'inin sonradan kaybedilen claim'leri yükleme sonrası
+da recovery hedefi olarak yeniden açılır.
 
 Save göçünde `difficulty` yalnız `1..3` aralığında geçerli kabul edilir. Eski kayıtlar
 bu alanı `0` taşıyabiliyorsa `internal/save/compact.go:applyCampaignSaveState()` değeri

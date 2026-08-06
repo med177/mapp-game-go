@@ -279,6 +279,17 @@ Konstantinopolis/Trakya ve Anadolu kıyı savunması ile Bitinya geri alma yön�
 Aktif objective hedef devleti savaş ilanı puanında, öncelikli bölgeleri ise yerel ve uzun
 menzilli hareket puanında bonus alır. Hedef bölge tamamlandığında, hedef vassal realm'e
 katıldığında, devlet elendiğinde veya `reassess_turn` geldiğinde plan yenilenir.
+`expand` ve `consolidate` objective'leri bütün `territorial_claims` bölgeleri AI'nin
+elindeyse tamamlanmış sayılır ve yeniden seçilmez. Sıradaki objective'in `min_year`,
+`max_year` veya event kapısı henüz açılmadıysa AI geçici `consolidate:<faction_id>`
+hazırlık planına geçer. `defend` objective'leri yalnız claim sahipliğine bakılarak
+bitirilmez; çekirdek savunma niyeti aktif kalır. Objective seçimi güç farkını puanlar,
+ancak seçimi tek başına güçle kilitlemez; savaş ilanı ve saldırı için güç, cephe ve
+lojistik eşikleri ayrıca uygulanır.
+Bir `consolidate` objective'i tamamlandıktan sonra claim bölgelerinden biri başka
+bir devlete geçerse objective yeniden açılır; kaybedilen claim'lerin güncel sahipleri
+dinamik hedef olarak seçilir ve plan `expand`/recovery türünde bu bölgeleri geri alma
+hazırlığı yapar. Claim geri alındığında recovery planı yeniden tamamlanmış sayılır.
 Profil bulunmayan 1300 devletleri `ai_expansion_targets`, aktif savaş ve konsolidasyon
 fallback'ini kullanmaya devam eder.
 

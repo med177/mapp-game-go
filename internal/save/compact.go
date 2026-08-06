@@ -116,6 +116,7 @@ type campaignSaveState struct {
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
+	AICompletedObjectives   map[faction.FactionID]map[string]bool    `json:"aco,omitempty"`
 	Imperial                *state.ImperialState                     `json:"im,omitempty"`
 	WarLedgers              map[string]*state.WarLedger              `json:"wl,omitempty"`
 	RecentTruces            map[string]int                           `json:"rt,omitempty"`
@@ -194,6 +195,7 @@ type legacyCampaignSaveState struct {
 	Armies                  map[army.ArmyID]*army.Army                     `json:"armies"`
 	Commanders              map[string]*army.Commander                     `json:"commanders,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
+	AICompletedObjectives   map[faction.FactionID]map[string]bool          `json:"ai_completed_objectives,omitempty"`
 	Imperial                *state.ImperialState                           `json:"imperial,omitempty"`
 	WarLedgers              map[string]*state.WarLedger                    `json:"war_ledgers,omitempty"`
 	RecentTruces            map[string]int                                 `json:"recent_truces,omitempty"`
@@ -351,6 +353,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
 		AIPlans:                 cloneAIPlans(legacy.AIPlans),
+		AICompletedObjectives:   cloneAICompletedObjectives(legacy.AICompletedObjectives),
 		Imperial:                legacy.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(legacy.WarLedgers),
 		RecentTruces:            cloneStringIntMap(legacy.RecentTruces),
@@ -475,6 +478,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
 		Imperial:                gs.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
@@ -570,6 +574,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
+		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
 		Imperial:                gs.Imperial.Clone(),
 		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
@@ -705,6 +710,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 	gs.Commanders = cloneCommanders(saved.Commanders)
 	gs.AIPlans = cloneAIPlans(saved.AIPlans)
+	gs.AICompletedObjectives = cloneAICompletedObjectives(saved.AICompletedObjectives)
 	if saved.Imperial != nil {
 		gs.Imperial = saved.Imperial.Clone()
 	}
@@ -1564,6 +1570,31 @@ func cloneAIPlans(src map[faction.FactionID]*state.AIPlanState) map[faction.Fact
 		copyPlan := *plan
 		copyPlan.TargetRegionIDs = append([]world.RegionID(nil), plan.TargetRegionIDs...)
 		out[fid] = &copyPlan
+	}
+	return out
+}
+
+func cloneAICompletedObjectives(src map[faction.FactionID]map[string]bool) map[faction.FactionID]map[string]bool {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]map[string]bool, len(src))
+	for fid, objectives := range src {
+		if len(objectives) == 0 {
+			continue
+		}
+		copied := make(map[string]bool, len(objectives))
+		for objectiveID, completed := range objectives {
+			if completed {
+				copied[objectiveID] = true
+			}
+		}
+		if len(copied) > 0 {
+			out[fid] = copied
+		}
+	}
+	if len(out) == 0 {
+		return nil
 	}
 	return out
 }

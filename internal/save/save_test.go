@@ -343,6 +343,9 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 	saved := campaignSaveState{
 		ScenarioID: "1300_ottoman_rise",
 		AIPlans:    map[faction.FactionID]*state.AIPlanState{"ottoman": original},
+		AICompletedObjectives: map[faction.FactionID]map[string]bool{
+			"ottoman": {"forge_anatolian_power_base": true},
+		},
 	}
 	payload, err := json.Marshal(saved)
 	if err != nil {
@@ -367,6 +370,9 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 	}
 	if !got.AllowVassalization {
 		t.Fatalf("AI plan savaş sonrası düzeni korunmadı: %+v", got)
+	}
+	if !restored.AICompletedObjectives["ottoman"]["forge_anatolian_power_base"] {
+		t.Fatalf("tamamlanan AI objective geçmişi save/load sonrasında kayboldu: %+v", restored.AICompletedObjectives)
 	}
 	if got == original || &got.TargetRegionIDs[0] == &original.TargetRegionIDs[0] {
 		t.Fatal("AI plan save/load kopyası bağımsız olmalı")

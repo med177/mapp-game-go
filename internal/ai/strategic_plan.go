@@ -59,6 +59,7 @@ type scenarioObjectiveCandidate struct {
 	regions   []world.RegionID
 	score     int
 	order     int
+	kind      state.AIObjectiveKind
 }
 
 func buildStrategicContext(gs *state.GameState, fid faction.FactionID) *StrategicContext {
@@ -157,8 +158,11 @@ func ensureStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	if ctx == nil {
 		ctx = buildStrategicContext(gs, fid)
 	}
-	if existing := gs.AIPlans[fid]; aiStrategicPlanValid(gs, fid, existing) {
-		return existing
+	if existing := gs.AIPlans[fid]; existing != nil {
+		recordCompletedScenarioObjective(gs, fid, existing.ObjectiveID)
+		if aiStrategicPlanValid(gs, fid, existing) {
+			return existing
+		}
 	}
 
 	plan := chooseStrategicPlan(gs, fid, ctx)
@@ -202,7 +206,17 @@ func aiStrategicPlanValid(gs *state.GameState, fid faction.FactionID, plan *stat
 	if strategy, ok := gs.AIStrategies[string(fid)]; ok {
 		for _, objective := range strategy.Objectives {
 			if objective.ID == plan.ObjectiveID {
-				return len(objectiveRelevantRegions(gs, fid, plan.TargetFactionID, objective)) > 0
+				if scenarioObjectiveCompleted(gs, fid, objective) {
+					return false
+				}
+				objectiveForPlan := objective
+				if objective.Kind == string(state.AIObjectiveConsolidate) && plan.Kind == state.AIObjectiveExpand {
+					// Bir consolidate claim'i kaybedildiyse plan recovery
+					// amacıyla expand'e çevrilir; doğrulama da hedef devletin
+					// tuttuğu kayıp claim'i aramalıdır.
+					objectiveForPlan.Kind = string(state.AIObjectiveExpand)
+				}
+				return len(objectiveRelevantRegions(gs, fid, plan.TargetFactionID, objectiveForPlan)) > 0
 			}
 		}
 	}
@@ -243,19 +257,7 @@ func chooseStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 		return newStrategicPlan(gs, self, ctx, state.AIObjectiveDefend, targetID, "aktif savaş cephesi")
 	}
 
-	targetRegions := append([]world.RegionID(nil), ctx.BorderRegionIDs...)
-	if len(targetRegions) == 0 && len(ctx.OwnedLandRegionIDs) > 0 {
-		targetRegions = append(targetRegions, ctx.OwnedLandRegionIDs[0])
-	}
-	return &state.AIPlanState{
-		ObjectiveID:     "consolidate:" + string(fid),
-		Kind:            state.AIObjectiveConsolidate,
-		TargetRegionIDs: targetRegions,
-		StartedTurn:     gs.Turn,
-		ReassessTurn:    gs.Turn + aiPlanHorizonTurns(gs),
-		Commitment:      aiPlanCommitment(self, state.AIObjectiveConsolidate),
-		Reason:          "yakın genişleme hedefi yok; iç konsolidasyon",
-	}
+	return newConsolidationPlan(gs, self, ctx, "yakın genişleme hedefi yok; iç konsolidasyon")
 }
 
 func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx *StrategicContext) *state.AIPlanState {
@@ -269,6 +271,10 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 
 	var best *scenarioObjectiveCandidate
 	for objectiveIndex, objective := range strategy.Objectives {
+		if scenarioObjectiveCompleted(gs, self.ID, objective) {
+			markScenarioObjectiveCompleted(gs, self.ID, objective.ID)
+			continue
+		}
 		if !scenarioObjectiveHardGateActive(gs, objective) {
 			continue
 		}
@@ -280,11 +286,42 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 		}
 		kind := state.AIObjectiveKind(objective.Kind)
 		if kind == state.AIObjectiveConsolidate {
+			recoveryObjective := objective
+			recoveryObjective.Kind = string(state.AIObjectiveExpand)
+			recoveryTargets := objectiveRecoveryTargetFactionIDs(gs, self.ID, objective)
+			if !scenarioObjectiveWasCompleted(gs, self.ID, objective.ID) {
+				recoveryTargets = nil
+			}
+			if len(recoveryTargets) > 0 {
+				// Bir claim dışarıda kaldıysa mevcut consolidate amacı artık
+				// yalnızca iç hazırlık değildir: kaybedilen claim'i geri alma
+				// planı olarak yeniden açılır.
+				for targetIndex, targetID := range recoveryTargets {
+					regions := objectiveRelevantRegions(gs, self.ID, targetID, recoveryObjective)
+					if len(regions) == 0 {
+						continue
+					}
+					score := objective.Priority*2 + 100 - objectiveIndex - targetIndex
+					current := scenarioObjectiveCandidate{
+						objective: recoveryObjective,
+						targetID:  targetID,
+						regions:   regions,
+						score:     score,
+						order:     objectiveIndex,
+						kind:      state.AIObjectiveExpand,
+					}
+					if betterObjectiveCandidate(&current, best) {
+						copy := current
+						best = &copy
+					}
+				}
+				continue
+			}
 			regions := objectiveRelevantRegions(gs, self.ID, "", objective)
 			if len(regions) == 0 {
 				continue
 			}
-			current := scenarioObjectiveCandidate{objective: objective, regions: regions, score: objective.Priority * 100, order: objectiveIndex}
+			current := scenarioObjectiveCandidate{objective: objective, regions: regions, score: objective.Priority * 100, order: objectiveIndex, kind: kind}
 			if betterObjectiveCandidate(&current, best) {
 				copy := current
 				best = &copy
@@ -337,7 +374,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 					score -= 10
 				}
 			}
-			current := scenarioObjectiveCandidate{objective: objective, targetID: targetID, regions: regions, score: score, order: objectiveIndex}
+			current := scenarioObjectiveCandidate{objective: objective, targetID: targetID, regions: regions, score: score, order: objectiveIndex, kind: kind}
 			if betterObjectiveCandidate(&current, best) {
 				copy := current
 				best = &copy
@@ -345,7 +382,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 		}
 	}
 	if best == nil {
-		return nil
+		return newConsolidationPlan(gs, self, ctx, "senaryo objective'i tamamlandı veya zaman/event bekliyor")
 	}
 
 	commitment := best.objective.Commitment
@@ -360,7 +397,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 	}
 	return &state.AIPlanState{
 		ObjectiveID:        best.objective.ID,
-		Kind:               state.AIObjectiveKind(best.objective.Kind),
+		Kind:               best.kind,
 		TargetFactionID:    best.targetID,
 		TargetRegionIDs:    best.regions,
 		StartedTurn:        gs.Turn,
@@ -382,6 +419,72 @@ func betterObjectiveCandidate(current, best *scenarioObjectiveCandidate) bool {
 		return current.order < best.order
 	}
 	return current.targetID < best.targetID
+}
+
+// scenarioObjectiveCompleted tamamlanabilir bölgesel objective'leri, bütün
+// claim bölgeleri devletin eline geçtiğinde bitmiş sayar. Savunma objective'i
+// bilerek bu kurala dahil değildir: kendi topraklarının elde olması savunma
+// niyetinin bitmesi değil, korunacak çekirdeğin mevcut olmasıdır.
+func scenarioObjectiveCompleted(gs *state.GameState, ownerID faction.FactionID, objective scenario.AIObjectiveDef) bool {
+	if gs == nil || ownerID == "" || (objective.Kind != string(state.AIObjectiveExpand) && objective.Kind != string(state.AIObjectiveConsolidate)) {
+		return false
+	}
+	regionIDs := objectiveClaimRegionIDs(objective)
+	if len(regionIDs) == 0 {
+		return false
+	}
+	for _, rawRegionID := range regionIDs {
+		region := gs.Regions[world.RegionID(rawRegionID)]
+		if region == nil || region.IsSea || region.OwnerID != string(ownerID) {
+			return false
+		}
+	}
+	return true
+}
+
+func scenarioObjectiveWasCompleted(gs *state.GameState, ownerID faction.FactionID, objectiveID string) bool {
+	if gs == nil || ownerID == "" || objectiveID == "" || gs.AICompletedObjectives == nil {
+		return false
+	}
+	return gs.AICompletedObjectives[ownerID][objectiveID]
+}
+
+func markScenarioObjectiveCompleted(gs *state.GameState, ownerID faction.FactionID, objectiveID string) {
+	if gs == nil || ownerID == "" || objectiveID == "" {
+		return
+	}
+	if gs.AICompletedObjectives == nil {
+		gs.AICompletedObjectives = make(map[faction.FactionID]map[string]bool)
+	}
+	if gs.AICompletedObjectives[ownerID] == nil {
+		gs.AICompletedObjectives[ownerID] = make(map[string]bool)
+	}
+	gs.AICompletedObjectives[ownerID][objectiveID] = true
+}
+
+func recordCompletedScenarioObjective(gs *state.GameState, ownerID faction.FactionID, objectiveID string) {
+	if gs == nil || ownerID == "" || objectiveID == "" || gs.AIStrategies == nil {
+		return
+	}
+	strategy, ok := gs.AIStrategies[string(ownerID)]
+	if !ok {
+		return
+	}
+	for _, objective := range strategy.Objectives {
+		if objective.ID == objectiveID && scenarioObjectiveCompleted(gs, ownerID, objective) {
+			markScenarioObjectiveCompleted(gs, ownerID, objectiveID)
+			return
+		}
+	}
+}
+
+func objectiveRecoveryTargetFactionIDs(gs *state.GameState, ownerID faction.FactionID, objective scenario.AIObjectiveDef) []faction.FactionID {
+	if objective.Kind != string(state.AIObjectiveConsolidate) {
+		return nil
+	}
+	recoveryObjective := objective
+	recoveryObjective.Kind = string(state.AIObjectiveExpand)
+	return objectiveTargetFactionIDs(gs, ownerID, recoveryObjective)
 }
 
 func scenarioObjectiveHardGateActive(gs *state.GameState, objective scenario.AIObjectiveDef) bool {
@@ -665,6 +768,22 @@ func newStrategicPlan(gs *state.GameState, self *faction.Faction, ctx *Strategic
 		StartedTurn:     gs.Turn,
 		ReassessTurn:    gs.Turn + aiPlanHorizonTurns(gs),
 		Commitment:      aiPlanCommitment(self, kind),
+		Reason:          reason,
+	}
+}
+
+func newConsolidationPlan(gs *state.GameState, self *faction.Faction, ctx *StrategicContext, reason string) *state.AIPlanState {
+	targetRegions := append([]world.RegionID(nil), ctx.BorderRegionIDs...)
+	if len(targetRegions) == 0 && len(ctx.OwnedLandRegionIDs) > 0 {
+		targetRegions = append(targetRegions, ctx.OwnedLandRegionIDs[0])
+	}
+	return &state.AIPlanState{
+		ObjectiveID:     "consolidate:" + string(self.ID),
+		Kind:            state.AIObjectiveConsolidate,
+		TargetRegionIDs: targetRegions,
+		StartedTurn:     gs.Turn,
+		ReassessTurn:    gs.Turn + aiPlanHorizonTurns(gs),
+		Commitment:      aiPlanCommitment(self, state.AIObjectiveConsolidate),
 		Reason:          reason,
 	}
 }

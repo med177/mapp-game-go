@@ -7,6 +7,20 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Tamamlanmış `consolidate` objective'lerinde claim kaybı recovery
+  akışına bağlandı. Başka devletin aldığı claim bölgeleri güncel sahiplerine göre
+  dinamik `expand` hedefi olur; AI aynı objective kimliğiyle geri alma planı kurar.
+  Claim geri alındığında recovery kapanır. Regression:
+  `TestConsolidationObjectiveRecoversLostClaimFromCurrentOwner`.
+
+- 2026-08-06: AI strateji objective tamamlanması eklendi. `expand` ve
+  `consolidate` objective'lerinin tüm claim bölgeleri AI devletinin elindeyse
+  objective tamamlanıyor ve tekrar seçilmiyor. Sonraki tarih/event kapısı henüz
+  açılmadıysa AI geçici `consolidate:<faction_id>` hazırlık planına geçiyor;
+  `defend` objective'leri yalnız claim sahipliğiyle kapanmıyor. Regression:
+  `TestScenarioObjectiveCompletionUsesClaimsButKeepsDefendIntent` ve 1300
+  İngiltere/Safevî senaryo plan testleri.
+
 - 2026-08-06: Gedik oluşan kuşatmaların settlement marker'ı, marker seçili
   olmasa da görülebilen yeşil dış halka ile işaretleniyor. Kapsam:
   `internal/render/renderer.go`.
