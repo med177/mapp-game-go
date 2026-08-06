@@ -283,14 +283,27 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
 
 Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
 
-`ai_expansion_targets` opsiyoneldir ve fraksiyon ID listesi taşır. Normal/zor zorlukta AI bu hedefleri fırsatçı savaş değerlendirmesinde önceliklendirir; hedefin yine kara sınırı paylaşması, ilişkinin `peace` olması ve güç kıyasından geçmesi gerekir.
+`ai_expansion_targets` artık senaryo runtime uyumluluğu için türetilen alandır.
+1300 senaryosunda kaynak liste `ai_strategies.json` içindeki `expansion_targets`
+alanıdır; bu hedefler base state kurulurken faction runtime'ına kopyalanır.
 
-`territorial_claims` opsiyoneldir. Her kayıt `region_id`, `value` (`1..100`) ve
-opsiyonel `core` alanını taşır. `core` bölgeleri, başkent tehdidi veya askerî
+`territorial_claims` opsiyoneldir. AI stratejisindeki her kayıt `region_id` ve
+`value` (`1..100`) taşır. `core` bilgisi stratejiye yazılmaz; başlangıçta sahip
+olunan kara bölgelerinden türetilir. Core bölgeleri, başkent tehdidi veya askerî
 çöküş gibi acil durum yoksa AI'nin o bölge düşmandayken olağan barışı kabul
 etmesini engeller. Normal claim değeri barış eşiğini yükseltir; aktif
 `AIPlanState.TargetRegionIDs`, `WarLedger.TargetRegionID` ve tarihsel
-`ai_expansion_targets` de veri yoksa geriye dönük claim kaynağı olarak kullanılır.
+`expansion_targets` claim kaynağı değildir; claim'ler bölge bazında strateji
+`territorial_claims` ve objective hedeflerinden üretilir.
+
+Senaryo base state'i yüklenirken sahibi olan her başlangıç kara bölgesi ilgili
+devlet için otomatik olarak `core: true` ve `value: 100` claim'ine eklenir.
+`ai_strategies.json` içindeki `territorial_claims` ve objective içindeki
+`territorial_claims` alanları ilgili devletin claim listesinde birleştirilir.
+Objective `territorial_claims` bölgeyi ve claim ağırlığını tek
+yerde taşır; bölgenin güncel sahibi dinamik hedef devlettir. Bu üretim yeni oyun
+ve save/load base state'inde aynıdır;
+fetih sonrası mevcut sahiplik değişikliği core listesini geriye dönük değiştirmez.
 
 `research.completed` teknoloji ID'lerini anahtar, tamamlanma durumunu `true` değer
 olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme sırasında
@@ -301,7 +314,8 @@ olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme
 ## ai_strategies.json
 
 Senaryoya özgü uzun vadeli AI yönlerini taşıyan opsiyonel dosyadır. Dosya yoksa
-fraksiyonlar `factions.json.ai_expansion_targets` ve genel AI fallback'ini kullanır.
+fraksiyonlar `ai_strategies.json.expansion_targets` ve genel AI fallback'ini kullanır;
+eski `factions.json.ai_expansion_targets` alanı runtime uyumluluğu için türetilir.
 İlk kullanım yalnız `1300_ottoman_rise` senaryosundadır.
 
 ```json
@@ -354,12 +368,17 @@ fraksiyonlar `factions.json.ai_expansion_targets` ve genel AI fallback'ini kulla
         {
           "id": "unite_anatolian_beyliks",
           "kind": "expand",
-          "target_factions": ["karesioglu_bey", "germiyan_bey", "ahiler"],
-          "target_regions": ["aydinoglu", "germiyan", "kutahya", "sivrihisar"],
+          "territorial_claims": [
+            { "region_id": "aydinoglu", "value": 92 },
+            { "region_id": "germiyan", "value": 92 },
+            { "region_id": "kutahya", "value": 92 },
+            { "region_id": "sivrihisar", "value": 92 }
+          ],
           "priority": 92,
           "commitment": 66,
-          "allow_vassalization": true,
-          "annex_region_ids": ["kutahya"]
+          "min_year": 1300,
+          "max_year": 1453,
+          "allow_vassalization": true
         }
       ]
     }
@@ -389,15 +408,20 @@ Alanlar:
 - `objectives[].id`: devlet içinde tekil kalıcı objective kimliği.
 - `kind`: `expand`, `defend`, `consolidate` veya diplomatik yönelim metadata'sı olan `ally`.
   `ally` objective'leri askeri stratejik plan üretmez; saldırı hedefi gibi yorumlanmaz.
-- `target_factions` / `target_regions`: soft yönelim verilecek hedefler.
+- `territorial_claims`: objective'in bölgesel hedefleri ve ağırlıkları. Hedef
+  devlet yazılmaz; AI her değerlendirmede claim bölgesinin güncel sahibini bulur.
 - `priority`: aynı anda uygulanabilir objective'ler arasındaki taban öncelik.
 - `commitment`: plan save state'ine taşınan `25..90` kararlılık değeri.
 - `readiness_regions`: sahip olunan her kayıt için hazırlık bonusu, eksikler için soft
   ceza üretir; objective'i tek başına kapatmaz.
 - `min_year`: geç/anakronik hedefi verilen yıla kadar kapatan hard gate.
+- `max_year`: objective'in geçerli olduğu son yıl. Verilen yılın tamamında
+  geçerlidir; sonraki yılda hard gate kapanır. Son yıllarda AI puanına zaman
+  baskısı eklenir.
 - `required_event_flags`: event motorunun `set_flags` etkileriyle açılan hard gate listesi.
-- `allow_vassalization`: son toprağında yenilen uygun hedefin vassal bırakılmasına izin verir.
-- `annex_region_ids`: vassallık açık olsa da stratejik sayılıp doğrudan ilhak edilecek bölgeler.
+- `allow_vassalization`: uygun son bölge ele geçirildiğinde vassallık zarının
+  kullanılmasına izin verir. Uygunluk kontrollerini geçen durumda zar başarılıysa
+  hedef vassal kalır; başarısızsa bölge doğrudan ilhak edilir.
 
 Statik config save'e yazılmaz. Senaryo başlangıcında ve save baz state'i kurulurken
 `scenario.LoadAIConfig()` ile yüklenir; seçilmiş dinamik objective ise

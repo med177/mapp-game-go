@@ -340,7 +340,13 @@ AI:
 - `Faction.TerritorialClaims` içindeki core bölgeleri ve claim değerleri mevcut
   sahiplikle karşılaştırılır. Düşmanın elindeki core, acil durum yoksa barış
   kapısını kapatır; normal claim'ler barış eşiğini yükseltir. Aktif expand planı,
-  savaş ledger hedefi ve `ai_expansion_targets` de aynı değerlendirmeye katılır.
+  savaş ledger hedefi ve strateji objective'lerinden materialize edilen claim'ler
+  aynı değerlendirmeye katılır. Claim'in hedef devleti sabit değildir; AI bölgenin
+  güncel sahibini savaş hedefi olarak kullanır.
+- Base state kurulurken başlangıçta sahip olunan tüm kara bölgeleri otomatik core'dur.
+  Strateji `territorial_claims` kayıtları ve objective içindeki `territorial_claims`/
+  ilhak listeleri claim'e eklenir; claim bölgeye aittir, o anki sahibine değil. Bu yüzden savaşta
+  yalnız başkent değil, devletin tanımlı hedef topraklarının tamamı barış kararını etkiler.
 - Savaş kapandığında ilişki `-20` ile nötrlenmez: çözüme ulaşmış hedefte `-45`,
   normal beyaz barışta `-60`, çözümsüz core varken `-70` tabanı kullanılır.
   Barıştaki doğal `+1/tur` iyileşmesi ve ücretli heyet/hediye aksiyonları bu

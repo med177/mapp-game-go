@@ -728,6 +728,17 @@ func Test1300ScenarioFactionReferencesExist(t *testing.T) {
 			}
 		}
 	}
+	strategies, err := LoadAIStrategies(filepath.Join(scenarioPath, "data", "ai_strategies.json"))
+	if err != nil {
+		t.Fatalf("AI stratejileri yüklenemedi: %v", err)
+	}
+	for factionID, strategy := range strategies {
+		for _, claim := range strategy.TerritorialClaims {
+			if regions[world.RegionID(claim.RegionID)] == nil {
+				t.Errorf("AI territorial claim bilinmeyen bölgeye bağlı: faction=%s region=%s", factionID, claim.RegionID)
+			}
+		}
+	}
 
 	var relations []*faction.Relation
 	read1300JSON(t, filepath.Join(scenarioPath, "data", "relations.json"), &relations)
@@ -745,6 +756,47 @@ func Test1300ScenarioFactionReferencesExist(t *testing.T) {
 		if relation.FactionA == relation.FactionB {
 			t.Errorf("ilişki aynı devleti iki tarafta kullanıyor: index=%d faction=%s", index, relation.FactionA)
 		}
+	}
+}
+
+func Test1300InitialOwnedRegionsBecomeCoresAndStrategyClaimsAreMaterialized(t *testing.T) {
+	scenarioPath, regions, factions := load1300IntegrityData(t)
+	aiConfig, err := LoadAIConfig(filepath.Join(scenarioPath, "data", "ai_strategies.json"))
+	if err != nil {
+		t.Fatalf("AI config yüklenemedi: %v", err)
+	}
+	ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
+
+	for regionID, region := range regions {
+		if region == nil || region.IsSea || region.OwnerID == "" {
+			continue
+		}
+		fx := factions[faction.FactionID(region.OwnerID)]
+		if fx == nil {
+			continue
+		}
+		foundCore := false
+		for _, claim := range fx.TerritorialClaims {
+			if claim.RegionID == string(regionID) && claim.Core && claim.Value == 100 {
+				foundCore = true
+				break
+			}
+		}
+		if !foundCore {
+			t.Errorf("başlangıç sahibi bölge core olarak materialize edilmedi: owner=%s region=%s", fx.ID, regionID)
+		}
+	}
+	ottomanClaims := make(map[string]bool)
+	for _, claim := range factions["ottoman"].TerritorialClaims {
+		ottomanClaims[claim.RegionID] = true
+	}
+	for _, regionID := range []string{"constantinople", "germiyan", "aydinoglu"} {
+		if !ottomanClaims[regionID] {
+			t.Errorf("Osmanlı strateji claim'i materialize edilmedi: region=%s", regionID)
+		}
+	}
+	if got := factions["ottoman"].AIExpansionTargets; len(got) != 4 {
+		t.Errorf("strateji genişleme hedefleri faction runtime'ına taşınmadı: got=%v", got)
 	}
 }
 
@@ -957,13 +1009,29 @@ func Test1300ScenarioAIStrategyReferencesExist(t *testing.T) {
 		if factions[faction.FactionID(factionID)] == nil {
 			t.Errorf("AI profili bilinmeyen devlete bağlı: faction=%s", factionID)
 		}
+		for _, targetID := range strategy.ExpansionTargets {
+			if factions[faction.FactionID(targetID)] == nil {
+				t.Errorf("AI genişleme hedefi bilinmeyen devlete bağlı: faction=%s target=%s", factionID, targetID)
+			}
+		}
 		for _, objective := range strategy.Objectives {
+			if len(objective.TargetFactions) > 0 || len(objective.TargetRegions) > 0 {
+				t.Errorf("1300 objective eski hedef alanlarını kullanıyor: faction=%s objective=%s", factionID, objective.ID)
+			}
+			for _, claim := range objective.TerritorialClaims {
+				if regions[world.RegionID(claim.RegionID)] == nil {
+					t.Errorf("AI objective territorial claim bilinmeyen bölgeye bağlı: objective=%s region=%s", objective.ID, claim.RegionID)
+				}
+				if claim.Value < 1 || claim.Value > 100 {
+					t.Errorf("AI objective territorial claim değeri geçersiz: objective=%s region=%s value=%d", objective.ID, claim.RegionID, claim.Value)
+				}
+			}
 			for _, targetID := range objective.TargetFactions {
 				if factions[faction.FactionID(targetID)] == nil {
 					t.Errorf("AI objective bilinmeyen devleti hedefliyor: objective=%s target=%s", objective.ID, targetID)
 				}
 			}
-			for _, regionIDs := range [][]string{objective.TargetRegions, objective.ReadinessRegions, objective.AnnexRegionIDs} {
+			for _, regionIDs := range [][]string{objective.TargetRegions, objective.ReadinessRegions} {
 				for _, regionID := range regionIDs {
 					if regions[world.RegionID(regionID)] == nil {
 						t.Errorf("AI objective bilinmeyen bölgeye bağlı: objective=%s region=%s", objective.ID, regionID)
@@ -1017,9 +1085,12 @@ func Test1300MajorPowersUseHistoricalLongHorizonObjectives(t *testing.T) {
 		if objective.MinYear != want.minYear {
 			t.Errorf("uzun vadeli hedefin yıl eşiği yanlış: faction=%s got=%d want=%d", factionID, objective.MinYear, want.minYear)
 		}
+		if objective.MaxYear < objective.MinYear {
+			t.Errorf("uzun vadeli hedefin max_year değeri min_year'dan önce: faction=%s objective=%s min=%d max=%d", factionID, objective.ID, objective.MinYear, objective.MaxYear)
+		}
 		foundRegion := false
-		for _, regionID := range objective.TargetRegions {
-			if regionID == want.targetRegion {
+		for _, claim := range objective.TerritorialClaims {
+			if claim.RegionID == want.targetRegion {
 				foundRegion = true
 				break
 			}

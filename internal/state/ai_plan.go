@@ -25,7 +25,6 @@ type AIPlanState struct {
 	Kind               AIObjectiveKind   `json:"kind"`
 	TargetFactionID    faction.FactionID `json:"target_faction_id,omitempty"`
 	TargetRegionIDs    []world.RegionID  `json:"target_region_ids,omitempty"`
-	AnnexRegionIDs     []world.RegionID  `json:"annex_region_ids,omitempty"`
 	StartedTurn        int               `json:"started_turn"`
 	ReassessTurn       int               `json:"reassess_turn"`
 	RallyRegionID      world.RegionID    `json:"rally_region_id,omitempty"`

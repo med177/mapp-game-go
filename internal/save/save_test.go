@@ -332,7 +332,6 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 		Kind:               state.AIObjectiveExpand,
 		TargetFactionID:    "germiyan_bey",
 		TargetRegionIDs:    []world.RegionID{"germiyan", "kutahya"},
-		AnnexRegionIDs:     []world.RegionID{"kutahya"},
 		StartedTurn:        7,
 		ReassessTurn:       13,
 		RallyRegionID:      "bithynia",
@@ -366,10 +365,10 @@ func TestAIPlanStateRoundTripKeepsDurableIntent(t *testing.T) {
 	if len(got.TargetRegionIDs) != 2 || got.TargetRegionIDs[0] != "germiyan" || got.TargetRegionIDs[1] != "kutahya" {
 		t.Fatalf("AI plan bölge öncelikleri korunmadı: %+v", got.TargetRegionIDs)
 	}
-	if len(got.AnnexRegionIDs) != 1 || got.AnnexRegionIDs[0] != "kutahya" || !got.AllowVassalization {
+	if !got.AllowVassalization {
 		t.Fatalf("AI plan savaş sonrası düzeni korunmadı: %+v", got)
 	}
-	if got == original || &got.TargetRegionIDs[0] == &original.TargetRegionIDs[0] || &got.AnnexRegionIDs[0] == &original.AnnexRegionIDs[0] {
+	if got == original || &got.TargetRegionIDs[0] == &original.TargetRegionIDs[0] {
 		t.Fatal("AI plan save/load kopyası bağımsız olmalı")
 	}
 }

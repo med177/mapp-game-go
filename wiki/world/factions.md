@@ -92,7 +92,9 @@ devlet düşük başlangıç kaynakları, aynı bölgede beş `militia` birimi v
 katılır. Ardıl fraksiyon hâlâ aktifse bu metadata vassallık/serbest bırakma
 seçeneği üretmez; fethedilen bölge doğrudan ilhak edilir.
 
-`ai_expansion_targets` opsiyoneldir. Tanımlandığında AI diplomasi safhasında yalnız kara sınırı paylaştığı ve hala `peace` durumunda olan bu fraksiyonlara daha yüksek öncelik verir; `trade` veya `allied` ilişkiyi yine savaş için bozmaz.
+`ai_expansion_targets` runtime uyumluluk alanıdır. 1300 senaryosunda kaynak
+`ai_strategies.json` içindeki `expansion_targets` alanıdır; AI'nin bölgesel savaş
+hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 
 ---
 
@@ -128,14 +130,18 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 
 `faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
 
-Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif savaş hedefleri ise fraksiyon kaydındaki `ai_expansion_targets` alanında tutulur; örneğin 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler hedeflenir.
+Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif genişleme hedefleri 1300'de `ai_strategies.json` içindeki `expansion_targets` alanından yüklenir; faction üzerindeki `AIExpansionTargets` yalnız runtime uyumluluk görünümüdür.
 
-`TerritorialClaims` aynı faction kaydındaki bölgesel talepleri taşır. `value` claim'in
-barış kararındaki stratejik ağırlığıdır; `core: true` başkent/homeland seviyesinde
-talep belirtir. Barış değerlendirmesi yalnız düşmanın hâlen tuttuğu claim'leri
-hesaba katar; ele geçirilen veya üçüncü tarafın elindeki bölgeler ilgili savaşta
-otomatik talep sayılmaz. 1300 Osmanlı kaydı Bitinya'yı core, Konstantiniyye,
-Bursa, Trakya ve Anadolu hedeflerini farklı claim değerleriyle taşır.
+`TerritorialClaims` aynı faction kaydındaki bölgesel talepleri taşır. Senaryo
+başlangıcında devletin sahip olduğu tüm kara bölgeleri otomatik `core: true`,
+`value: 100` olarak eklenir. `ai_strategies.json` içindeki `territorial_claims`
+ve objective içindeki `territorial_claims` normal claim olarak eklenir; açık strateji claim'i
+aynı bölgedeki otomatik objective değerini geçersiz kılar. Claim bölgeye aittir,
+o anki sahibine değil.
+`value` barış kararındaki stratejik ağırlıktır. Barış değerlendirmesi yalnız
+düşmanın hâlen tuttuğu claim'leri hesaba katar; fetih sonrası yeni sahiplik
+otomatik olarak yeni core üretmez. Üretim `internal/scenario/territorial_claims.go`
+ile hem yeni oyun hem save/load base state'inde uygulanır.
 
 Runtime'da vassallık kabul edilirse hedef fraksiyonun `overlord_id` alanı doldurulur; üçüncü taraf diplomasi kapatılır ve realm içindeki fraksiyonlar dost çizgiye normalize edilir.
 

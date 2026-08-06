@@ -108,7 +108,6 @@ func TestRenameRegionIDUpdatesEditorReferences(t *testing.T) {
 				Objectives: []scenario.AIObjectiveDef{{
 					TargetRegions:    []string{"old_region"},
 					ReadinessRegions: []string{"old_region"},
-					AnnexRegionIDs:   []string{"old_region"},
 				}},
 			},
 		},
@@ -143,7 +142,7 @@ func TestRenameRegionIDUpdatesEditorReferences(t *testing.T) {
 		t.Fatalf("ordu bölge referansları güncellenmedi")
 	}
 	objective := gs.AIStrategies["player"].Objectives[0]
-	if objective.TargetRegions[0] != "correct_region" || objective.ReadinessRegions[0] != "correct_region" || objective.AnnexRegionIDs[0] != "correct_region" {
+	if objective.TargetRegions[0] != "correct_region" || objective.ReadinessRegions[0] != "correct_region" {
 		t.Fatalf("AI strateji bölge referansları güncellenmedi: %+v", objective)
 	}
 	if gs.TradeCenters.Centers[0].ID != "correct_region" || gs.TradeCenters.Centers[0].Links[0] != "neighbor" || gs.TradeCenters.Centers[1].Links[0] != "correct_region" {

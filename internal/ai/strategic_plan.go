@@ -291,8 +291,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 			}
 			continue
 		}
-		for targetIndex, rawTargetID := range objective.TargetFactions {
-			targetID := faction.FactionID(rawTargetID)
+		for targetIndex, targetID := range objectiveTargetFactionIDs(gs, self.ID, objective) {
 			target := gs.Factions[targetID]
 			if targetID == "" || targetID == self.ID || target == nil || target.IsEliminated || diplomacy.SameRealm(gs, self.ID, targetID) {
 				continue
@@ -309,6 +308,7 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 			if objective.MinYear > 0 || len(objective.RequiredEventFlags) > 0 {
 				score += 10000
 			}
+			score += objectiveDeadlineUrgency(gs, objective)
 			// Savunma objective'leri tarihsel profillerde genellikle daha yüksek
 			// önceliklidir. Tehdit yokken bu ham öncelik, genişleme objective'lerini
 			// sürekli gölgede bırakıp AI'yi kendi sınırlarında kilitliyordu.
@@ -363,7 +363,6 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 		Kind:               state.AIObjectiveKind(best.objective.Kind),
 		TargetFactionID:    best.targetID,
 		TargetRegionIDs:    best.regions,
-		AnnexRegionIDs:     stringRegionIDs(best.objective.AnnexRegionIDs),
 		StartedTurn:        gs.Turn,
 		ReassessTurn:       gs.Turn + aiPlanHorizonTurns(gs),
 		Commitment:         commitment,
@@ -386,7 +385,7 @@ func betterObjectiveCandidate(current, best *scenarioObjectiveCandidate) bool {
 }
 
 func scenarioObjectiveHardGateActive(gs *state.GameState, objective scenario.AIObjectiveDef) bool {
-	if gs == nil || (objective.MinYear > 0 && gs.Year < objective.MinYear) {
+	if gs == nil || (objective.MinYear > 0 && gs.Year < objective.MinYear) || (objective.MaxYear > 0 && gs.Year > objective.MaxYear) {
 		return false
 	}
 	for _, flag := range objective.RequiredEventFlags {
@@ -398,6 +397,27 @@ func scenarioObjectiveHardGateActive(gs *state.GameState, objective scenario.AIO
 		}
 	}
 	return true
+}
+
+// objectiveDeadlineUrgency son geçerli yıl yaklaşırken objective'i öne alır.
+// MaxYear yılı içinde objective hâlâ geçerlidir; bir sonraki yılda hard gate kapanır.
+func objectiveDeadlineUrgency(gs *state.GameState, objective scenario.AIObjectiveDef) int {
+	if gs == nil || objective.MaxYear <= 0 {
+		return 0
+	}
+	yearsLeft := objective.MaxYear - gs.Year
+	switch {
+	case yearsLeft <= 0:
+		return 180
+	case yearsLeft == 1:
+		return 120
+	case yearsLeft <= 3:
+		return 70
+	case yearsLeft <= 5:
+		return 35
+	default:
+		return 0
+	}
 }
 
 func aiPlanHardGateActive(gs *state.GameState, fid faction.FactionID, objectiveID string) bool {
@@ -423,8 +443,16 @@ func objectiveRelevantRegions(gs *state.GameState, ownerID, targetID faction.Fac
 	if objective.Kind == string(state.AIObjectiveDefend) || objective.Kind == string(state.AIObjectiveConsolidate) {
 		wantedOwner = string(ownerID)
 	}
-	if len(objective.TargetRegions) > 0 {
-		for _, rawRegionID := range objective.TargetRegions {
+	targetRegionIDs := objectiveClaimRegionIDs(objective)
+	if len(targetRegionIDs) == 0 && objective.Kind == string(state.AIObjectiveExpand) {
+		if strategy, ok := gs.AIStrategies[string(ownerID)]; ok {
+			for _, claim := range strategy.TerritorialClaims {
+				targetRegionIDs = append(targetRegionIDs, claim.RegionID)
+			}
+		}
+	}
+	if len(targetRegionIDs) > 0 {
+		for _, rawRegionID := range targetRegionIDs {
 			regionID := world.RegionID(rawRegionID)
 			region := gs.Regions[regionID]
 			if region == nil || region.IsSea || region.OwnerID != wantedOwner {
@@ -449,17 +477,99 @@ func objectiveRelevantRegions(gs *state.GameState, ownerID, targetID faction.Fac
 	return regions
 }
 
-func stringRegionIDs(ids []string) []world.RegionID {
-	if len(ids) == 0 {
+// objectiveTargetFactionIDs hedef devlet metadata'sına değil, claim edilen
+// bölgelerin güncel sahiplerine göre hesaplanır. Böylece bir bölge fethedilince
+// AI aynı stratejik hedefi yeni sahibine karşı sürdürür.
+func objectiveTargetFactionIDs(gs *state.GameState, ownerID faction.FactionID, objective scenario.AIObjectiveDef) []faction.FactionID {
+	if gs == nil || ownerID == "" {
 		return nil
 	}
-	out := make([]world.RegionID, 0, len(ids))
-	for _, id := range ids {
-		if id != "" {
-			out = append(out, world.RegionID(id))
+	if objective.Kind == string(state.AIObjectiveDefend) {
+		regionIDs := objectiveClaimRegionIDs(objective)
+		if len(regionIDs) == 0 {
+			regionIDs = []string{stringRegionIDForFaction(gs, ownerID)}
+		}
+		seen := make(map[faction.FactionID]struct{})
+		owners := make([]faction.FactionID, 0, len(regionIDs))
+		for _, rawRegionID := range regionIDs {
+			region := gs.Regions[world.RegionID(rawRegionID)]
+			if region == nil || region.IsSea || region.OwnerID != string(ownerID) {
+				continue
+			}
+			for _, neighborID := range region.Neighbors {
+				neighbor := gs.Regions[neighborID]
+				if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" || neighbor.OwnerID == string(ownerID) {
+					continue
+				}
+				targetID := faction.FactionID(neighbor.OwnerID)
+				if gs.Factions[targetID] == nil {
+					continue
+				}
+				if _, duplicate := seen[targetID]; duplicate {
+					continue
+				}
+				seen[targetID] = struct{}{}
+				owners = append(owners, targetID)
+			}
+		}
+		sort.Slice(owners, func(i, j int) bool { return owners[i] < owners[j] })
+		return owners
+	}
+	if objective.Kind != string(state.AIObjectiveExpand) {
+		return nil
+	}
+	regionIDs := objectiveClaimRegionIDs(objective)
+	if len(regionIDs) == 0 {
+		if strategy, ok := gs.AIStrategies[string(ownerID)]; ok {
+			for _, claim := range strategy.TerritorialClaims {
+				regionIDs = append(regionIDs, claim.RegionID)
+			}
 		}
 	}
-	return out
+	seen := make(map[faction.FactionID]struct{}, len(regionIDs))
+	owners := make([]faction.FactionID, 0, len(regionIDs))
+	for _, rawRegionID := range regionIDs {
+		region := gs.Regions[world.RegionID(rawRegionID)]
+		if region == nil || region.IsSea || region.OwnerID == "" || region.OwnerID == string(ownerID) {
+			continue
+		}
+		targetID := faction.FactionID(region.OwnerID)
+		if gs.Factions[targetID] == nil {
+			continue
+		}
+		if _, duplicate := seen[targetID]; duplicate {
+			continue
+		}
+		seen[targetID] = struct{}{}
+		owners = append(owners, targetID)
+	}
+	sort.Slice(owners, func(i, j int) bool { return owners[i] < owners[j] })
+	return owners
+}
+
+func objectiveClaimRegionIDs(objective scenario.AIObjectiveDef) []string {
+	if len(objective.TerritorialClaims) > 0 {
+		ids := make([]string, 0, len(objective.TerritorialClaims))
+		for _, claim := range objective.TerritorialClaims {
+			if claim.RegionID != "" {
+				ids = append(ids, claim.RegionID)
+			}
+		}
+		return ids
+	}
+	return objective.TargetRegions
+}
+
+func stringRegionIDForFaction(gs *state.GameState, ownerID faction.FactionID) string {
+	if gs == nil || ownerID == "" {
+		return ""
+	}
+	for _, region := range aiSortedRegions(gs) {
+		if region != nil && !region.IsSea && region.OwnerID == string(ownerID) {
+			return string(region.ID)
+		}
+	}
+	return ""
 }
 
 func aiPlanTargetsFaction(gs *state.GameState, actor, target faction.FactionID) bool {

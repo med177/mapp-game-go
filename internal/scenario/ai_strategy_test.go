@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
 )
 
 func TestLoadAIStrategiesValidatesAndIndexesFactionProfiles(t *testing.T) {
@@ -60,5 +63,71 @@ func TestLoadAIConfigAllowsAllianceObjectiveMetadata(t *testing.T) {
 	}
 	if got := config.Strategies["york"].Objectives[0].Kind; got != "ally" {
 		t.Fatalf("ally objective türü korunmadı: %q", got)
+	}
+}
+
+func TestLoadAIConfigValidatesObjectiveTerritorialClaimsAndMaxYear(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ai_strategies.json")
+	data := []byte(`{"factions":[{"faction_id":"ottoman","objectives":[{"id":"recover_constantinople","kind":"expand","territorial_claims":[{"region_id":"constantinople","value":100}],"min_year":1453,"max_year":1454,"priority":100}]}]}`)
+	if err := os.WriteFile(path, data, 0600); err != nil {
+		t.Fatalf("AI objective fixture yazılamadı: %v", err)
+	}
+
+	config, err := LoadAIConfig(path)
+	if err != nil {
+		t.Fatalf("territorial claim ve max_year içeren objective reddedilmemeli: %v", err)
+	}
+	objective := config.Strategies["ottoman"].Objectives[0]
+	if len(objective.TerritorialClaims) != 1 || objective.TerritorialClaims[0].RegionID != "constantinople" || objective.MaxYear != 1454 {
+		t.Fatalf("objective bölgesel claim/yıl sınırı yanlış yüklendi: %+v", objective)
+	}
+}
+
+func TestApplyInitialTerritorialClaimsBuildsCoresAndTargetClaims(t *testing.T) {
+	regions := map[world.RegionID]*world.Region{
+		"home_a":           {ID: "home_a", OwnerID: "a"},
+		"home_b":           {ID: "home_b", OwnerID: "a"},
+		"target_home":      {ID: "target_home", OwnerID: "b"},
+		"strategic_target": {ID: "strategic_target", OwnerID: "c"},
+		"sea":              {ID: "sea", OwnerID: "b", IsSea: true},
+	}
+	factions := map[faction.FactionID]*faction.Faction{
+		"a": {ID: "a", AIExpansionTargets: []faction.FactionID{"b"}},
+		"b": {ID: "b"},
+		"c": {ID: "c"},
+	}
+	strategies := map[string]AIFactionStrategy{
+		"a": {
+			FactionID: "a",
+			Objectives: []AIObjectiveDef{{
+				Kind: "expand",
+				TerritorialClaims: []AITerritorialClaimDef{
+					{RegionID: "target_home", Value: 80},
+					{RegionID: "strategic_target", Value: 70},
+				},
+			}},
+		},
+	}
+
+	ApplyInitialTerritorialClaims(regions, factions, strategies)
+
+	claims := make(map[string]faction.TerritorialClaim)
+	for _, claim := range factions["a"].TerritorialClaims {
+		claims[claim.RegionID] = claim
+	}
+	for _, regionID := range []string{"home_a", "home_b"} {
+		claim, ok := claims[regionID]
+		if !ok || !claim.Core || claim.Value != defaultCoreClaimValue {
+			t.Errorf("başlangıç bölgesi core olarak üretilmedi: region=%s claim=%+v", regionID, claim)
+		}
+	}
+	for _, regionID := range []string{"target_home", "strategic_target"} {
+		claim, ok := claims[regionID]
+		if !ok || claim.Core {
+			t.Errorf("hedef bölge claim olarak üretilmedi: region=%s claim=%+v", regionID, claim)
+		}
+	}
+	if _, ok := claims["sea"]; ok {
+		t.Fatal("deniz bölgesi territorial claim listesine eklenmemeli")
 	}
 }

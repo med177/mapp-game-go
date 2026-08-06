@@ -225,11 +225,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28,
-    "territorial_claims": [
-      { "region_id": "bithynia", "value": 70 },
-      { "region_id": "bilecik_frontier", "value": 50 }
-    ]
+    "ai_aggressiveness": 28
   },
   {
     "id": "candar_bey",
@@ -316,10 +312,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60,
-    "ai_expansion_targets": [
-      "granada_emirate"
-    ]
+    "ai_aggressiveness": 60
   },
   {
     "id": "denmark_kingdom",
@@ -907,11 +900,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 38,
-    "ai_expansion_targets": [
-      "saxony_duchy",
-      "polish_kingdom"
-    ]
+    "ai_aggressiveness": 38
   },
   {
     "id": "hungarian_kingdom",
@@ -975,12 +964,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 54,
-    "ai_expansion_targets": [
-      "mamluk",
-      "georgia_kingdom",
-      "ramazan_bey"
-    ]
+    "ai_aggressiveness": 54
   },
   {
     "id": "karaman_bey",
@@ -1061,10 +1045,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
-    "ai_expansion_targets": [
-      "granada_emirate"
-    ]
+    "ai_aggressiveness": 50
   },
   {
     "id": "lithuanian_gd",
@@ -1091,11 +1072,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65,
-    "ai_expansion_targets": [
-      "golden_horde",
-      "novgorod_rep"
-    ]
+    "ai_aggressiveness": 65
   },
   {
     "id": "mamluk",
@@ -1127,11 +1104,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20,
-    "ai_expansion_targets": [
-      "ilkhanate",
-      "ramazan_bey"
-    ]
+    "ai_aggressiveness": 20
   },
   {
     "id": "mentese_bey",
@@ -1276,21 +1249,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62,
-    "ai_expansion_targets": [
-      "east_rome",
-      "germiyan_bey",
-      "karesioglu_bey",
-      "ahiler"
-    ],
-    "territorial_claims": [
-      { "region_id": "bithynia", "value": 100, "core": true },
-      { "region_id": "bursa", "value": 80 },
-      { "region_id": "constantinople", "value": 80 },
-      { "region_id": "thrace", "value": 60 },
-      { "region_id": "germiyan", "value": 55 },
-      { "region_id": "aydinoglu", "value": 50 }
-    ]
+    "ai_aggressiveness": 62
   },
   {
     "id": "papal_states_f",
@@ -1381,10 +1340,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45,
-    "ai_expansion_targets": [
-      "granada_emirate"
-    ]
+    "ai_aggressiveness": 45
   },
   {
     "id": "ramazan_bey",
@@ -1442,10 +1398,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
-    "ai_expansion_targets": [
-      "golden_horde"
-    ]
+    "ai_aggressiveness": 50
   },
   {
     "id": "safavid",
@@ -1586,11 +1539,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65,
-    "ai_expansion_targets": [
-      "arnavut_des",
-      "east_rome"
-    ]
+    "ai_aggressiveness": 65
   },
   {
     "id": "teutonic_order",
@@ -1621,11 +1570,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 70,
-    "ai_expansion_targets": [
-      "novgorod_rep",
-      "lithuanian_gd"
-    ]
+    "ai_aggressiveness": 70
   },
   {
     "id": "trebizond_emp",
@@ -1743,12 +1688,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 42,
-    "ai_expansion_targets": [
-      "zayyanid_tlemcen",
-      "granada_emirate",
-      "hafsid_sultanate"
-    ]
+    "ai_aggressiveness": 42
   },
   {
     "id": "zayyanid_tlemcen",
@@ -1779,11 +1719,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 48,
-    "ai_expansion_targets": [
-      "marinid_sultanate",
-      "hafsid_sultanate"
-    ]
+    "ai_aggressiveness": 48
   },
   {
     "id": "hafsid_sultanate",
@@ -1814,12 +1750,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35,
-    "ai_expansion_targets": [
-      "zayyanid_tlemcen",
-      "barqa_emirate",
-      "usfurid_emirate"
-    ]
+    "ai_aggressiveness": 35
   },
   {
     "id": "barqa_emirate",
@@ -1848,11 +1779,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28,
-    "ai_expansion_targets": [
-      "hafsid_sultanate",
-      "mamluk"
-    ]
+    "ai_aggressiveness": 28
   },
   {
     "id": "usfurid_emirate",
@@ -1882,11 +1809,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30,
-    "ai_expansion_targets": [
-      "hormuz_sultanate",
-      "hafsid_sultanate"
-    ]
+    "ai_aggressiveness": 30
   },
   {
     "id": "hormuz_sultanate",
@@ -1917,11 +1840,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 38,
-    "ai_expansion_targets": [
-      "usfurid_emirate",
-      "ilkhanate"
-    ]
+    "ai_aggressiveness": 38
   },
   {
     "id": "mecca_sharifate",
@@ -1984,11 +1903,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45,
-    "ai_expansion_targets": [
-      "venice",
-      "bosnian_banate"
-    ]
+    "ai_aggressiveness": 45
   },
   {
     "id": "bosnian_banate",
@@ -2051,11 +1966,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 24,
-    "ai_expansion_targets": [
-      "venice",
-      "hungarian_kingdom"
-    ]
+    "ai_aggressiveness": 24
   },
   {
     "id": "ragusa",

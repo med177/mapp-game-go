@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -55,16 +56,25 @@ func TestTryResolvePostWarVassalizationLeavesWeakIsolatedBeylikIntact(t *testing
 	}
 }
 
-func TestTryResolvePostWarVassalizationKeepsStrategicRegionForAnnexation(t *testing.T) {
-	gs := conquestPolicyTestState()
-	gs.AIPlans["ottoman"].AnnexRegionIDs = []world.RegionID{"beylik_last"}
+func TestTryResolvePostWarVassalizationRollCanChooseDirectConquest(t *testing.T) {
+	for index := 0; index < 100; index++ {
+		gs := conquestPolicyTestState()
+		regionID := world.RegionID(fmt.Sprintf("roll_region_%d", index))
+		targetRegion := gs.Regions["beylik_last"]
+		targetRegion.ID = regionID
 
-	if result := TryResolvePostWarVassalization(gs, "ottoman", gs.Regions["beylik_last"]); result.Applied {
-		t.Fatalf("stratejik bölge doğrudan ilhak için bırakılmalıydı: %+v", result)
+		if aiVassalizationRoll(gs, "ottoman", "beylik", regionID) >= aiVassalizationChancePercent {
+			result := TryResolvePostWarVassalization(gs, "ottoman", targetRegion)
+			if result.Applied {
+				t.Fatalf("başarısız vassallık zarında vassallık uygulanmamalıydı: region=%s result=%+v", regionID, result)
+			}
+			if gs.Factions["beylik"].OverlordID != "" {
+				t.Fatalf("başarısız vassallık zarında hedef vassal yapılmamalıydı: region=%s", regionID)
+			}
+			return
+		}
 	}
-	if gs.Factions["beylik"].OverlordID != "" {
-		t.Fatal("stratejik hedef yanlışlıkla vassal yapıldı")
-	}
+	t.Fatal("test için başarısız vassallık zarı üretilemedi")
 }
 
 func TestTryResolvePostWarVassalizationRejectsActiveSuccessorMetadata(t *testing.T) {

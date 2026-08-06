@@ -216,9 +216,9 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 }
 
 // territorialClaimPressure actor'un opponent'tan almak istediği, hâlen
-// opponent elinde bulunan bölgeleri toplar. Açık claim verisi yoksa mevcut
-// AI planı, savaş ledger'ındaki kilitli hedef ve faction seviyesindeki
-// ai_expansion_targets geriye dönük uyumlu hedef kaynağı olarak kullanılır.
+// opponent elinde bulunan bölgeleri toplar. Bölgesel hak iddiasının tek statik
+// kaynağı faction üzerinde materialize edilen TerritorialClaims listesidir;
+// hedef devlet listeleri claim yerine kullanılmaz.
 func territorialClaimPressure(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) (coreCount, value, count int) {
 	if gs == nil || actor == "" || opponent == "" {
 		return 0, 0, 0
@@ -257,13 +257,6 @@ func territorialClaimPressure(gs *state.GameState, actor, opponent faction.Facti
 		for _, claim := range actorFaction.TerritorialClaims {
 			add(claim.RegionID, claim.Value, claim.Core)
 		}
-		if aiHasExpansionTarget(actorFaction, opponent) {
-			if targetFaction := gs.Factions[opponent]; targetFaction != nil && targetFaction.CapitalSettlementID != "" {
-				if capitalRegion, _, _, ok := gs.FindSettlementByID(targetFaction.CapitalSettlementID); ok && capitalRegion != nil {
-					add(string(capitalRegion.ID), 50, false)
-				}
-			}
-		}
 	}
 	if plan := gs.AIPlans[actor]; plan != nil && plan.Kind == state.AIObjectiveExpand && plan.TargetFactionID == opponent {
 		for index, regionID := range plan.TargetRegionIDs {
@@ -282,18 +275,6 @@ func territorialClaimPressure(gs *state.GameState, actor, opponent faction.Facti
 		}
 	}
 	return coreCount, min(100, value), count
-}
-
-func aiHasExpansionTarget(actor *faction.Faction, target faction.FactionID) bool {
-	if actor == nil || target == "" {
-		return false
-	}
-	for _, targetID := range actor.AIExpansionTargets {
-		if targetID == target {
-			return true
-		}
-	}
-	return false
 }
 
 func warExhaustionFor(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger, warTurns, ownLosses, ownRegionsLost int) int {

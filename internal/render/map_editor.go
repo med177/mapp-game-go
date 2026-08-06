@@ -2562,10 +2562,19 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 		}
 	}
 	for factionID, strategy := range r.gs.AIStrategies {
+		for j := range strategy.TerritorialClaims {
+			if strategy.TerritorialClaims[j].RegionID == string(oldID) {
+				strategy.TerritorialClaims[j].RegionID = string(newID)
+			}
+		}
 		for i := range strategy.Objectives {
 			replaceRegionIDInStrings(strategy.Objectives[i].TargetRegions, oldID, newID)
 			replaceRegionIDInStrings(strategy.Objectives[i].ReadinessRegions, oldID, newID)
-			replaceRegionIDInStrings(strategy.Objectives[i].AnnexRegionIDs, oldID, newID)
+			for j := range strategy.Objectives[i].TerritorialClaims {
+				if strategy.Objectives[i].TerritorialClaims[j].RegionID == string(oldID) {
+					strategy.Objectives[i].TerritorialClaims[j].RegionID = string(newID)
+				}
+			}
 		}
 		r.gs.AIStrategies[factionID] = strategy
 	}
@@ -2894,14 +2903,15 @@ func cloneAIStrategyMap(src map[string]scenario.AIFactionStrategy) map[string]sc
 	dst := make(map[string]scenario.AIFactionStrategy, len(src))
 	for id, strategy := range src {
 		copyStrategy := strategy
+		copyStrategy.TerritorialClaims = append([]scenario.AITerritorialClaimDef(nil), strategy.TerritorialClaims...)
 		copyStrategy.Objectives = make([]scenario.AIObjectiveDef, len(strategy.Objectives))
 		for i, objective := range strategy.Objectives {
 			copyObjective := objective
 			copyObjective.TargetFactions = cloneStringSlice(objective.TargetFactions)
 			copyObjective.TargetRegions = cloneStringSlice(objective.TargetRegions)
+			copyObjective.TerritorialClaims = append([]scenario.AITerritorialClaimDef(nil), objective.TerritorialClaims...)
 			copyObjective.ReadinessRegions = cloneStringSlice(objective.ReadinessRegions)
 			copyObjective.RequiredEventFlags = cloneStringSlice(objective.RequiredEventFlags)
-			copyObjective.AnnexRegionIDs = cloneStringSlice(objective.AnnexRegionIDs)
 			copyStrategy.Objectives[i] = copyObjective
 		}
 		dst[id] = copyStrategy

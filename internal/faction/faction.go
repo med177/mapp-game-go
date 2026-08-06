@@ -15,8 +15,9 @@ type ResearchState struct {
 }
 
 // TerritorialClaim bir fraksiyonun belirli bir bölge üzerindeki tarihsel veya
-// stratejik talebini taşır. Claim'ler senaryo verisidir; barış değerlendirmesi
-// bunları mevcut sahiplik ve aktif AI planıyla birlikte yorumlar.
+// stratejik talebini taşır. Base state yüklenirken AI stratejisi ve başlangıç
+// sahipliğinden materialize edilir; barış değerlendirmesi bunu mevcut sahiplik
+// ve aktif AI planıyla birlikte yorumlar.
 type TerritorialClaim struct {
 	RegionID string `json:"region_id"`
 	Value    int    `json:"value"`

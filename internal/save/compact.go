@@ -1563,7 +1563,6 @@ func cloneAIPlans(src map[faction.FactionID]*state.AIPlanState) map[faction.Fact
 		}
 		copyPlan := *plan
 		copyPlan.TargetRegionIDs = append([]world.RegionID(nil), plan.TargetRegionIDs...)
-		copyPlan.AnnexRegionIDs = append([]world.RegionID(nil), plan.AnnexRegionIDs...)
 		out[fid] = &copyPlan
 	}
 	return out

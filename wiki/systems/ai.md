@@ -84,6 +84,14 @@ acil durum yoksa barış kabulünü kapatır; normal claim değeri eşik ve skor
 `-45`, `-60` veya `-70` olur; böylece AI savaşları bir-iki tur sonra barışla
 ve ilişki puanını hızlıca sıfırlayarak kapatamaz.
 
+Senaryo başında her devletin sahip olduğu bütün kara bölgeleri `core` kabul edilir.
+Strateji `territorial_claims` kayıtları ile objective içindeki
+`territorial_claims` bölgeleri kalıcı `TerritorialClaims` kayıtlarına dönüştürülür;
+`expansion_targets` yalnız genel
+AI savaş fallback'i için runtime uyumluluk hedeflerini sağlar;
+böylece AI bir hedefin yalnızca başkentini değil, tanımlı başlangıç topraklarının
+tamamını korumaya veya geri almaya çalışır.
+
 `BuildAIDiagnosticSnapshot` planı, cephe hedeflerini, güç/tehdit değerlerini,
 ordu rol dağılımını ve lojistik/yedek kuvvet bloklanma nedenlerini tek runtime
 çıktısında toplar. Normal save state'ine yazılmaz; debug paneli ve senaryo tempo raporu için
@@ -256,11 +264,14 @@ veya yabancı bölge yürüyüşü hedefi haline gelmez.
 1300 senaryosunun statik yönleri `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`
 dosyasından yüklenir. `GameState.AIStrategies` runtime-only'dir ve save'e yazılmaz;
 aynı dosyadaki `GameState.AIDifficultyPolicy` de runtime-only tutulur. İkisi save
-yüklenirken senaryo baz state'iyle yeniden kurulur. Her objective hedef devlet/bölge,
-öncelik, commitment, readiness bölgeleri ve savaş sonrası düzen tercihini taşıyabilir.
+yüklenirken senaryo baz state'iyle yeniden kurulur. Her objective bölgesel claim,
+öncelik, commitment, readiness bölgeleri ve savaş sonrası düzen tercihini taşıyabilir;
+claim bölgesinin güncel sahibi hedef devlet olarak çözülür.
 Tarihsel hedefler genel olarak soft yönelimdir: mevcut güç, kara sınırı, frontier gücü ve
-diplomasi güvenlik kontrollerini atlamaz. Yalnız geç veya anakronik hedefler `min_year`
-ve isteğe bağlı event flag hard gate'i arkasında tutulur.
+diplomasi güvenlik kontrollerini atlamaz. Yalnız geç veya anakronik hedefler `min_year`,
+`max_year` ve isteğe bağlı event flag hard gate'leri arkasında tutulur. `max_year`
+verilen yılın sonuna kadar kapsayıcıdır; son yıllarda objective puanına zaman baskısı
+eklenir, sonraki yılda hedef artık seçilmez.
 
 İlk dikey dilimde Osmanlı; Bitinya hattı, Anadolu beylikleri, Ankara koridoru,
 Trakya/Konstantinopolis ve 1501 sonrası Safevi rekabeti yönlerini kullanır. Doğu Roma;
@@ -283,9 +294,9 @@ beylik hedefi sürdüğü müddetçe ilgili sınır bölgesine yönelir.
 
 Yerel rakiplerin seçili başlangıç ilişkileri `-10` seviyesinde tutulur. Bu, aynı mezhep
 bonusunu tamamen silmeden Normal/Zor AI'nin objective hedefi için savaş eşiğini
-geçebilmesini sağlar. Genişleme objective'lerinde `allow_vassalization` ve stratejik
-`annex_region_ids` birlikte verilir; sonuç, `TryResolvePostWarVassalization` üzerinden
-hedefin gücü ve savaş planına göre vassal veya ilhak olur. Savunma objective'leri ise
+geçebilmesini sağlar. Genişleme objective'lerinde `allow_vassalization` vassallık
+zarını açar; sonuç, `TryResolvePostWarVassalization` üzerinden hedefin gücü, savaş
+planı ve fetih anındaki zar sonucuna göre vassal veya ilhak olur. Savunma objective'leri ise
 aktif savaş ve cephe rolleriyle birleşerek küçük devletlerin plansız uzak fetihlere
 gitmesini engeller.
 
@@ -872,11 +883,11 @@ kara toprağında yenilen hedef:
 - dış müttefiki yoksa,
 - saldıran belirgin askeri üstünlüğe sahipse,
 - hedef agresifliği direnç eşiğinin altındaysa,
-- hedef bölge objective'in `annex_region_ids` listesinde değilse
+- fetih anındaki vassallık zarı başarılıysa
 
 `diplomacy.ForceVassalizeAfterWar()` ile vassal bırakılır ve yerel bölge sahipliği
-korunur. Dirençli, diplomatik destekli veya stratejik bölge sahibi hedeflerde mevcut
-doğrudan fetih/ilhak akışı sürer. Bu karar açık arazi savaşı, savaşsız işgal, çıkarma,
+korunur. Zar başarısızsa veya uygunluk kontrollerinden biri geçmezse doğrudan
+fetih/ilhak akışı sürer. Bu karar açık arazi savaşı, savaşsız işgal, çıkarma,
 genel hücum ve kuşatma teslimi çıkışlarında aynı politika helper'ından geçer. Hedef
 bölgede ardıl fraksiyon hâlâ aktifse `CanRestoreSuccessorAtRegion()` false olur ve
 AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.

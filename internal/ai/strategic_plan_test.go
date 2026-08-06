@@ -109,6 +109,32 @@ func TestEnsureStrategicPlanReplacesInvalidTarget(t *testing.T) {
 	}
 }
 
+func TestScenarioObjectiveTargetsCurrentClaimOwner(t *testing.T) {
+	gs := strategicPlanTestState()
+	gs.AIStrategies = map[string]scenario.AIFactionStrategy{
+		"ottoman": {
+			FactionID: "ottoman",
+			Objectives: []scenario.AIObjectiveDef{{
+				ID:                "recover_constantinople",
+				Kind:              "expand",
+				TerritorialClaims: []scenario.AITerritorialClaimDef{{RegionID: "constantinople", Value: 100}},
+				Priority:          100,
+			}},
+		},
+	}
+	first := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
+	if first == nil || first.TargetFactionID != "east_rome" {
+		t.Fatalf("ilk claim sahibi hedefi yanlış: %+v", first)
+	}
+
+	gs.Regions["constantinople"].OwnerID = "germiyan_bey"
+	gs.Turn = first.ReassessTurn
+	retargeted := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
+	if retargeted == nil || retargeted.TargetFactionID != "germiyan_bey" {
+		t.Fatalf("claim bölgesi el değiştirince hedef yeni sahibine taşınmadı: %+v", retargeted)
+	}
+}
+
 func TestEnsureStrategicPlanOnlyRunsFor1300Scenario(t *testing.T) {
 	gs := strategicPlanTestState()
 	gs.ScenarioID = "other_scenario"
@@ -155,7 +181,7 @@ func TestScenarioProfileCreatesSoftHistoricalObjectivePlan(t *testing.T) {
 			FactionID: "ottoman",
 			Profile:   "frontier_expansion",
 			Objectives: []scenario.AIObjectiveDef{
-				{ID: "secure_bithynia", Kind: "expand", TargetFactions: []string{"east_rome"}, TargetRegions: []string{"constantinople"}, Priority: 100, Commitment: 74, AnnexRegionIDs: []string{"constantinople"}},
+				{ID: "secure_bithynia", Kind: "expand", TargetFactions: []string{"east_rome"}, TargetRegions: []string{"constantinople"}, Priority: 100, Commitment: 74},
 				{ID: "unite_anatolian_beyliks", Kind: "expand", TargetFactions: []string{"germiyan_bey"}, TargetRegions: []string{"germiyan_border"}, Priority: 70, AllowVassalization: true},
 			},
 		},
@@ -165,7 +191,7 @@ func TestScenarioProfileCreatesSoftHistoricalObjectivePlan(t *testing.T) {
 	if plan == nil || plan.ObjectiveID != "secure_bithynia" || plan.TargetFactionID != "east_rome" {
 		t.Fatalf("yüksek öncelikli tarihsel yön seçilmedi: %+v", plan)
 	}
-	if plan.Commitment != 74 || len(plan.AnnexRegionIDs) != 1 || plan.AnnexRegionIDs[0] != "constantinople" {
+	if plan.Commitment != 74 {
 		t.Fatalf("objective metadata'sı dinamik plana taşınmadı: %+v", plan)
 	}
 }
@@ -260,7 +286,8 @@ func TestScenarioObjectiveMinYearIsHardGate(t *testing.T) {
 	gs.Factions["ottoman"].AIExpansionTargets = nil
 	gs.AIStrategies = map[string]scenario.AIFactionStrategy{
 		"ottoman": {
-			FactionID: "ottoman",
+			FactionID:         "ottoman",
+			TerritorialClaims: []scenario.AITerritorialClaimDef{{RegionID: "ardabil", Value: 80}},
 			Objectives: []scenario.AIObjectiveDef{
 				{ID: "eastern_imperial_rivalry", Kind: "expand", TargetFactions: []string{"safavid"}, Priority: 100, MinYear: 1501, RequiredEventFlags: []string{"safavid_rise"}},
 			},
@@ -284,6 +311,31 @@ func TestScenarioObjectiveMinYearIsHardGate(t *testing.T) {
 	after := ensureStrategicPlan(gs, "ottoman", buildStrategicContext(gs, "ottoman"))
 	if after == nil || after.ObjectiveID != "eastern_imperial_rivalry" || after.TargetFactionID != "safavid" {
 		t.Fatalf("yıl eşiğinde geç hedef açılmalıydı: %+v", after)
+	}
+}
+
+func TestScenarioObjectiveMaxYearIsInclusiveHardGateAndAddsUrgency(t *testing.T) {
+	objective := scenario.AIObjectiveDef{MinYear: 1453, MaxYear: 1454}
+	gs := &state.GameState{Year: 1453}
+
+	if !scenarioObjectiveHardGateActive(gs, objective) {
+		t.Fatal("objective min_year ile max_year arasındaki yılda aktif olmalı")
+	}
+	if got := objectiveDeadlineUrgency(gs, objective); got != 120 {
+		t.Fatalf("son geçerli yıldan bir yıl önce aciliyet yanlış: got=%d want=120", got)
+	}
+
+	gs.Year = 1454
+	if !scenarioObjectiveHardGateActive(gs, objective) {
+		t.Fatal("max_year verilen yılın sonuna kadar objective aktif kalmalı")
+	}
+	if got := objectiveDeadlineUrgency(gs, objective); got != 180 {
+		t.Fatalf("son geçerli yılda aciliyet yanlış: got=%d want=180", got)
+	}
+
+	gs.Year = 1455
+	if scenarioObjectiveHardGateActive(gs, objective) {
+		t.Fatal("max_year sonrasındaki yılda objective kapanmalı")
 	}
 }
 

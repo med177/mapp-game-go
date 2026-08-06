@@ -16,6 +16,18 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestPeaceAssessmentBlocksUnresolvedCoreOutsideEmergency`, hedefli `internal/diplomacy`
   ve `internal/ai` testleri.
 
+- 2026-08-06: Bölgesel hedefler devlet adına sabitlenmekten çıkarıldı. Claim'ler
+  `ai_strategies.json` içindeki `territorial_claims` ve objective bölgelerinden
+  materialize ediliyor; AI hedef devleti her tur claim bölgesinin güncel
+  sahibinden dinamik seçiyor. `ai_expansion_targets` verileri de strateji
+  `expansion_targets` alanına taşındı ve runtime uyumluluk için faction state'ine
+  kopyalanıyor.
+
+- 2026-08-06: AI objective zaman sınırı eklendi. `min_year` başlangıç kapısı,
+  kapsayıcı `max_year` son geçerlilik yılıdır; son yıllarda objective puanına
+  zaman baskısı eklenir ve `max_year` sonrasında hedef kapanır. Bölgesel hedefler
+  objective içindeki `territorial_claims` alanında tek yerde tutulur.
+
 - 2026-08-05: Komutan geliş bildirimindeki çoklu kart listesi modal dışına
   taşmayacak şekilde panel-local viewport'a alındı. İki görünür satırdan sonraki
   komutanlar mouse wheel ve scrollbar ile kaydırılıyor; `SubImage` clipping ile
@@ -2094,15 +2106,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ölçümü `6.84 sn` sürdü ve Osmanlı iki seed'de de `2 → 5` kara bölgesine ulaştı.
   Kapsam: `internal/{scenario,ai,state,game,save}`, `data/ai_strategies.json`; hedef
   testler: `go test -count=1 ./internal/scenario ./internal/ai ./internal/state ./internal/game ./internal/save`.
+- 2026-08-06: AI objective'lerinden `annex_region_ids` kaldırıldı. Vassallık artık
+  `allow_vassalization` uygunluk kontrollerini geçen fetihte yüzde 50 deterministik
+  zarla kararlaştırılıyor; zar başarısızsa normal ilhak yapılıyor. Böylece bölge
+  stratejisi `territorial_claims` altında, savaş sonrası siyasi sonuç ise runtime
+  kararında tek akıştan yönetiliyor.
+
 - 2026-07-19: `1300_ottoman_rise` için veri güdümlü Osmanlı/Doğu Roma AI objective
   dikey dilimi eklendi. `data/ai_strategies.json`; Bitinya, Anadolu beylikleri, Ankara
   koridoru, Trakya/Konstantinopolis, 1501 sonrası Safevi rekabeti ve Doğu Roma Boğaz
   savunması/Bitinya geri alma yönlerini tanımlıyor. Tarihsel hedefler mevcut güç ve
   frontier kontrollerini atlamayan soft savaş/hareket bonusları verir; yalnız geç
   hedefler yıl/event hard gate'i kullanır. Anadolu beyliklerinde son toprak sonrası
-  sonuç hibrittir: zayıf ve dış müttefiksiz hedef vassal kalabilir, dirençli veya
-  `annex_region_ids` ile stratejik sayılan hedef doğrudan ilhak edilir. Politika açık
-  arazi, savaşsız işgal, çıkarma, genel hücum ve kuşatma tesliminde ortaktır. Yeni
+  sonuç hibrittir: uygunluk kontrollerini geçen hedef fetih anındaki yüzde 50 zarla
+  vassal kalabilir; zar başarısızsa doğrudan ilhak edilir. Politika açık arazi,
+  savaşsız işgal, çıkarma, genel hücum ve kuşatma tesliminde ortaktır. Yeni
   profil/reference, objective gate/puan, save alanı ve vassallık integration testleri
   eklendi; fast tempo 12x2 ölçümü `9.08 sn`, medium tempo 42x4 ölçümü `59.89 sn`
   geçti. Medium sonuçta Osmanlı ortalama `2.0 → 7.8` kara bölgesine çıktı.

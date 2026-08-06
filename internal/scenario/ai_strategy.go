@@ -60,25 +60,41 @@ type AIFactionStrategy struct {
 	Profile   string `json:"profile,omitempty"`
 	// NavalFocus, denizci devletlerin kıyı sayısından bağımsız olarak büyük
 	// savaş filosu kurmasını sağlayan senaryo-verisi odak bayrağıdır.
-	NavalFocus bool             `json:"naval_focus,omitempty"`
-	Objectives []AIObjectiveDef `json:"objectives"`
+	NavalFocus        bool                    `json:"naval_focus,omitempty"`
+	ExpansionTargets  []string                `json:"expansion_targets,omitempty"`
+	TerritorialClaims []AITerritorialClaimDef `json:"territorial_claims,omitempty"`
+	Objectives        []AIObjectiveDef        `json:"objectives"`
 }
 
-// AIObjectiveDef tarihsel yönü puanlamaya ekler. MinYear ve
-// RequiredEventFlags hard gate'tir; diğer alanlar AI'yi yönlendirir ama güç,
-// cephe ve diplomasi güvenlik kontrollerini geçersiz kılmaz.
+// AITerritorialClaimDef AI stratejisindeki tarihsel claim ağırlığını taşır.
+// Başlangıç core'ları burada tutulmaz; onlar başlangıç sahipliğinden türetilir.
+type AITerritorialClaimDef struct {
+	RegionID string `json:"region_id"`
+	Value    int    `json:"value"`
+}
+
+// AIObjectiveDef tarihsel yönü puanlamaya ekler. MinYear, MaxYear ve
+// RequiredEventFlags hard gate'tir; MaxYear verilen yılın sonuna kadar
+// geçerlidir. Diğer alanlar AI'yi yönlendirir ama güç, cephe ve diplomasi
+// güvenlik kontrollerini geçersiz kılmaz.
 type AIObjectiveDef struct {
-	ID                 string   `json:"id"`
-	Kind               string   `json:"kind"`
+	ID   string `json:"id"`
+	Kind string `json:"kind"`
+	// TerritorialClaims objective'in bölgesel hedeflerini ve ağırlıklarını tek
+	// yerde taşır. Bölgenin o anki sahibi ayrıca yazılmaz; AI bunu runtime'da
+	// bölgenin OwnerID değerinden bulur.
+	TerritorialClaims []AITerritorialClaimDef `json:"territorial_claims,omitempty"`
+	// Eski scenario verileri için geriye uyumluluk alanları. Yeni veride
+	// TerritorialClaims kullanılmalıdır.
 	TargetFactions     []string `json:"target_factions,omitempty"`
 	TargetRegions      []string `json:"target_regions,omitempty"`
 	Priority           int      `json:"priority"`
 	Commitment         int      `json:"commitment,omitempty"`
 	MinYear            int      `json:"min_year,omitempty"`
+	MaxYear            int      `json:"max_year,omitempty"`
 	RequiredEventFlags []string `json:"required_event_flags,omitempty"`
 	ReadinessRegions   []string `json:"readiness_regions,omitempty"`
 	AllowVassalization bool     `json:"allow_vassalization,omitempty"`
-	AnnexRegionIDs     []string `json:"annex_region_ids,omitempty"`
 }
 
 // LoadAIConfig opsiyonel ai_strategies.json dosyasını yükler. Dosya
@@ -116,8 +132,31 @@ func LoadAIConfig(path string) (LoadedAIConfig, error) {
 		if _, duplicate := strategies[strategy.FactionID]; duplicate {
 			return LoadedAIConfig{}, fmt.Errorf("AI stratejisi birden fazla tanımlanmış: %s", strategy.FactionID)
 		}
+		claimIDs := make(map[string]struct{}, len(strategy.TerritorialClaims))
+		for _, claim := range strategy.TerritorialClaims {
+			if claim.RegionID == "" || claim.Value < 1 || claim.Value > 100 {
+				return LoadedAIConfig{}, fmt.Errorf("AI territorial claim geçersiz: faction=%s region=%s value=%d", strategy.FactionID, claim.RegionID, claim.Value)
+			}
+			if _, duplicate := claimIDs[claim.RegionID]; duplicate {
+				return LoadedAIConfig{}, fmt.Errorf("AI territorial claim birden fazla tanımlanmış: faction=%s region=%s", strategy.FactionID, claim.RegionID)
+			}
+			claimIDs[claim.RegionID] = struct{}{}
+		}
 		objectiveIDs := make(map[string]struct{}, len(strategy.Objectives))
 		for _, objective := range strategy.Objectives {
+			if objective.MaxYear > 0 && objective.MinYear > 0 && objective.MaxYear < objective.MinYear {
+				return LoadedAIConfig{}, fmt.Errorf("AI objective max_year min_year'dan önce: faction=%s objective=%s", strategy.FactionID, objective.ID)
+			}
+			claimIDs := make(map[string]struct{}, len(objective.TerritorialClaims))
+			for _, claim := range objective.TerritorialClaims {
+				if claim.RegionID == "" || claim.Value < 1 || claim.Value > 100 {
+					return LoadedAIConfig{}, fmt.Errorf("AI objective territorial claim geçersiz: faction=%s objective=%s region=%s value=%d", strategy.FactionID, objective.ID, claim.RegionID, claim.Value)
+				}
+				if _, duplicate := claimIDs[claim.RegionID]; duplicate {
+					return LoadedAIConfig{}, fmt.Errorf("AI objective territorial claim birden fazla tanımlanmış: faction=%s objective=%s region=%s", strategy.FactionID, objective.ID, claim.RegionID)
+				}
+				claimIDs[claim.RegionID] = struct{}{}
+			}
 			if objective.ID == "" {
 				return LoadedAIConfig{}, fmt.Errorf("AI objective kimliği boş: faction=%s", strategy.FactionID)
 			}

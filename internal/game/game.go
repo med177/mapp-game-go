@@ -3190,6 +3190,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if err != nil {
 		return nil, nil, err
 	}
+	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
 	advance()
 	yield()
 	relations, err := faction.LoadRelations(dp("relations.json"), factions)

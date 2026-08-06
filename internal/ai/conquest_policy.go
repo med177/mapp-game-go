@@ -1,6 +1,9 @@
 package ai
 
 import (
+	"fmt"
+	"hash/fnv"
+
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -8,6 +11,13 @@ import (
 )
 
 const aiVassalResistanceAggressiveness = 65
+const aiVassalizationChancePercent = 50
+
+func aiVassalizationRoll(gs *state.GameState, attackerID, defenderID faction.FactionID, regionID world.RegionID) int {
+	hasher := fnv.New32a()
+	_, _ = fmt.Fprintf(hasher, "%d|%s|%s|%s|vassalization", gs.Turn, attackerID, defenderID, regionID)
+	return int(hasher.Sum32() % 100)
+}
 
 func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID string) {
 	if gs == nil || region == nil || newOwnerID == "" {
@@ -37,11 +47,6 @@ func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.Fact
 	if plan == nil || !plan.AllowVassalization || plan.TargetFactionID != defenderID {
 		return diplomacy.Result{}
 	}
-	for _, annexRegionID := range plan.AnnexRegionIDs {
-		if annexRegionID == targetRegion.ID {
-			return diplomacy.Result{}
-		}
-	}
 	attacker := gs.Factions[attackerID]
 	defender := gs.Factions[defenderID]
 	if attacker == nil || defender == nil || attacker.IsEliminated || defender.IsEliminated || defender.AIAggressiveness >= aiVassalResistanceAggressiveness {
@@ -60,6 +65,12 @@ func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.Fact
 	attackerPower := diplomacy.MilitaryPower(gs, attackerID)
 	defenderPower := diplomacy.MilitaryPower(gs, defenderID)
 	if attackerPower <= 0 || (defenderPower > 0 && attackerPower*100 < defenderPower*160) {
+		return diplomacy.Result{}
+	}
+	// Vassallık, bütün stratejik uygunluk kontrolleri geçildikten sonra
+	// bölgenin ele geçirildiği anda kararlaştırılır. Zar deterministik tutulur:
+	// aynı save, tur, bölge ve taraflar aynı sonucu üretir.
+	if aiVassalizationRoll(gs, attackerID, defenderID, targetRegion.ID) >= aiVassalizationChancePercent {
 		return diplomacy.Result{}
 	}
 	return diplomacy.ForceVassalizeAfterWar(gs, attackerID, defenderID)

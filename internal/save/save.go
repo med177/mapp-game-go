@@ -483,6 +483,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
 	relations, err := faction.LoadRelations(dp("relations.json"), factions)
 	if err != nil {
 		return nil, err
