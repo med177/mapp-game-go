@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
@@ -299,7 +300,8 @@ func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
 }
 
 func armyHasCapitalReplenishmentBonus(gs *state.GameState, a *army.Army) bool {
-	return gs != nil && a != nil && !a.IsNaval && gs.IsCapitalRegion(gs.Regions[a.RegionID])
+	return gs != nil && a != nil && !a.IsNaval &&
+		gs.IsFactionCapitalRegion(faction.FactionID(a.OwnerID), gs.Regions[a.RegionID])
 }
 
 func armyHasDamagedReplenishableUnits(a *army.Army) bool {

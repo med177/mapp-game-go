@@ -12,6 +12,7 @@ func TestArmyReplenishmentHPDoublesAtFactionCapital(t *testing.T) {
 	gs := &GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+			"vassal": {ID: "vassal", CapitalSettlementID: "vassal_city", OverlordID: "player"},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"capital": {
@@ -29,10 +30,20 @@ func TestArmyReplenishmentHPDoublesAtFactionCapital(t *testing.T) {
 					"farm", "farm", "granary",
 				},
 			},
+			"vassal_capital": {
+				ID:      "vassal_capital",
+				OwnerID: "vassal",
+				Buildings: []string{
+					"farm", "farm", "granary",
+				},
+				Settlements: []world.Settlement{{ID: "vassal_city", IsCenter: true}},
+			},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"capital_army": {ID: "capital_army", OwnerID: "player", RegionID: "capital"},
-			"field_army":   {ID: "field_army", OwnerID: "player", RegionID: "field"},
+			"capital_army":        {ID: "capital_army", OwnerID: "player", RegionID: "capital"},
+			"field_army":          {ID: "field_army", OwnerID: "player", RegionID: "field"},
+			"player_vassal_army":  {ID: "player_vassal_army", OwnerID: "player", RegionID: "vassal_capital"},
+			"vassal_capital_army": {ID: "vassal_capital_army", OwnerID: "vassal", RegionID: "vassal_capital"},
 		},
 	}
 
@@ -41,6 +52,12 @@ func TestArmyReplenishmentHPDoublesAtFactionCapital(t *testing.T) {
 	}
 	if got, want := gs.ArmyReplenishmentHP(gs.Armies["field_army"]), 8; got != want {
 		t.Fatalf("normal bölgenin toparlanma değeri değişmemeli, got=%d want=%d", got, want)
+	}
+	if got, want := gs.ArmyReplenishmentHP(gs.Armies["player_vassal_army"]), 8; got != want {
+		t.Fatalf("oyuncu ordusu vassal başkentinde başkent bonusu almamalı, got=%d want=%d", got, want)
+	}
+	if got, want := gs.ArmyReplenishmentHP(gs.Armies["vassal_capital_army"]), 16; got != want {
+		t.Fatalf("vassalın kendi ordusu kendi başkentinde bonus almalı, got=%d want=%d", got, want)
 	}
 }
 

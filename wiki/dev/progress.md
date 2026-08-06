@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Başkent toparlanma katsayısı bölge sahibinden ayrıştırılarak
+  `Army.OwnerID` faction'ına bağlandı. Oyuncu ordusu vassal başkentinde veya
+  vassal ordusu overlord başkentinde `×2` alamıyor; AI recovery skoru da aynı
+  owner-aware helper'ı kullanıyor. Regression: `TestArmyReplenishmentHPDoublesAtFactionCapital`,
+  `TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft`.
+
 - 2026-08-06: Aktif kuşatma altındaki bölgeye gelen AI müttefikinin savunmayı
   yendikten sonra bölgeyi kendi adına fethetmesi engellendi. İlk kuşatmacı
   bölgenin fetih hakkını koruyor; destek ordusu yalnız kuşatma desteği olarak

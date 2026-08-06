@@ -215,6 +215,7 @@ func TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
 			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+			"vassal": {ID: "vassal", CapitalSettlementID: "vassal_city", OverlordID: "player"},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"capital": {
@@ -223,10 +224,16 @@ func TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft(t *testing.T) {
 				Settlements: []world.Settlement{{ID: "capital_city", IsCenter: true}},
 			},
 			"field": {ID: "field", OwnerID: "player"},
+			"vassal_capital": {
+				ID:          "vassal_capital",
+				OwnerID:     "vassal",
+				Settlements: []world.Settlement{{ID: "vassal_city", IsCenter: true}},
+			},
 		},
 	}
 	capitalArmy := &army.Army{OwnerID: "player", RegionID: "capital"}
 	normalArmy := &army.Army{OwnerID: "player", RegionID: "field"}
+	playerVassalArmy := &army.Army{OwnerID: "player", RegionID: "vassal_capital"}
 	fleet := &army.Army{OwnerID: "player", IsNaval: true, DockedRegionID: "capital"}
 
 	if !armyHasCapitalReplenishmentBonus(gs, capitalArmy) {
@@ -234,6 +241,9 @@ func TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft(t *testing.T) {
 	}
 	if armyHasCapitalReplenishmentBonus(gs, normalArmy) {
 		t.Fatal("normal bölgedeki ordu ikinci toparlanma rozetini kullanmamalıydı")
+	}
+	if armyHasCapitalReplenishmentBonus(gs, playerVassalArmy) {
+		t.Fatal("oyuncu ordusu vassal başkentinde ikinci toparlanma rozetini kullanmamalıydı")
 	}
 	if armyHasCapitalReplenishmentBonus(gs, fleet) {
 		t.Fatal("donanma başkentte olsa da ikinci kara toparlanma rozetini kullanmamalıydı")

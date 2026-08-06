@@ -2091,7 +2091,7 @@ func (s *GameState) ArmyReplenishmentHP(a *army.Army) int {
 	if s == nil || a == nil || a.IsNaval || !s.CanArmyReplenishIn(a) {
 		return 0
 	}
-	return s.RegionArmyReplenishmentHP(s.Regions[a.RegionID])
+	return s.RegionArmyReplenishmentHPForFaction(faction.FactionID(a.OwnerID), s.Regions[a.RegionID])
 }
 
 // RegionArmyReplenishmentHP, ikmal yeterliyse bölgenin çiftlik ve ambar
@@ -2099,13 +2099,24 @@ func (s *GameState) ArmyReplenishmentHP(a *army.Army) int {
 // ulusal başkent bölgesinde normal hız ikiyle çarpılır. AI hedef değerlendirmesi
 // ile tur çözümlemesi aynı katsayıyı bu helper üzerinden alır.
 func (s *GameState) RegionArmyReplenishmentHP(region *world.Region) int {
+	if region == nil {
+		return 0
+	}
+	return s.RegionArmyReplenishmentHPForFaction(faction.FactionID(region.OwnerID), region)
+}
+
+// RegionArmyReplenishmentHPForFaction, belirli bir ordunun sahibi olan
+// faction için bölgedeki toparlanma hızını döner. Başkent çarpanı bölge
+// sahibinden değil ownerID'den türetilir; böylece vassal başkentinde duran
+// overlord ordusu başkent bonusu alamaz.
+func (s *GameState) RegionArmyReplenishmentHPForFaction(ownerID faction.FactionID, region *world.Region) int {
 	if s == nil || region == nil || region.IsSea {
 		return 0
 	}
 	const baseHP = 2
 	const buildingLevelHP = 2
 	replenishmentHP := baseHP + buildingLevelHP*(region.BuildingLevel("farm")+region.BuildingLevel("granary"))
-	if s.IsCapitalRegion(region) {
+	if s.IsFactionCapitalRegion(ownerID, region) {
 		replenishmentHP *= CapitalArmyReplenishmentMultiplier
 	}
 	return replenishmentHP

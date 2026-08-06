@@ -221,7 +221,7 @@ func aiRecoveryRegionScore(ctx *StrategicContext, armyRef *army.Army, region *wo
 	score := maxInt(0, capacity-demand) * 8
 	// İkmal yeterliyse çiftlik ve ambar, gerçek tur çözümlemesindeki aynı
 	// toparlanma hızıyla daha iyi recovery anchor'larını öne çıkarır.
-	score += ctx.gs.RegionArmyReplenishmentHP(region) * 24
+	score += ctx.gs.RegionArmyReplenishmentHPForFaction(faction.FactionID(armyRef.OwnerID), region) * 24
 	for _, candidate := range aiSortedArmies(ctx.gs) {
 		if candidate.ID != armyRef.ID && !candidate.IsNaval && candidate.OwnerID == armyRef.OwnerID && candidate.RegionID == region.ID {
 			score += candidate.TotalStrength(ctx.gs.UnitTypes)

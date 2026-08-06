@@ -69,7 +69,17 @@ func (s *GameState) IsCapitalRegion(region *world.Region) bool {
 	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {
 		return false
 	}
-	f := s.Factions[faction.FactionID(region.OwnerID)]
+	return s.IsFactionCapitalRegion(faction.FactionID(region.OwnerID), region)
+}
+
+// IsFactionCapitalRegion, verilen faction'ın kendi ulusal başkentinin bu
+// bölgede olup olmadığını döner. Bölge başka bir faction'a aitse başkent
+// settlement'ı aynı ID'yi taşısa bile false döner.
+func (s *GameState) IsFactionCapitalRegion(fid faction.FactionID, region *world.Region) bool {
+	if s == nil || fid == "" || region == nil || region.IsSea || region.OwnerID != string(fid) {
+		return false
+	}
+	f := s.Factions[fid]
 	if f == nil || f.CapitalSettlementID == "" {
 		return false
 	}
