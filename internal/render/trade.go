@@ -443,7 +443,7 @@ func drawTradeNewTab(screen *ebiten.Image, gs *state.GameState, layout tradeLayo
 		"Hedef: " + name,
 		"Duruş: " + faction.DiplomaticStanceLabelTR(selected.Stance) + " | İlişki: " + itoa(selected.Score),
 		"Rota kapasitesi: Sen " + itoa(selected.PlayerRouteCapacityUsed) + "/" + itoa(selected.PlayerTradeCap) + " | Onlar " + itoa(selected.TargetRouteCapacityUsed) + "/" + itoa(selected.TargetTradeCap),
-		"Aktif partner: Sen " + itoa(selected.PlayerPartners) + "/" + itoa(diplomacy.MaxTradePartners) + " | Onlar " + itoa(selected.TargetPartners) + "/" + itoa(diplomacy.MaxTradePartners),
+		"Aktif partner: Sen " + itoa(selected.PlayerPartners) + "/" + itoa(diplomacy.TradePartnerLimit(gs, gs.PlayerFactionID)) + " | Onlar " + itoa(selected.TargetPartners) + "/" + itoa(diplomacy.TradePartnerLimit(gs, selected.ID)),
 	}
 	detailColors := []color.Color{
 		color.RGBA{220, 205, 170, 230},
@@ -486,6 +486,8 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		focusGood = len(goods) - 1
 	}
 	selectedGood := goods[focusGood]
+	price := tradeMarketPrice(gs, selectedGood)
+	amount = clampTradeAmountToGold(amount, playerF, price)
 
 	px, y, w := float32(layout.panelRect.X), float32(layout.marketTitleRect.Y), float32(layout.panelRect.W)
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
@@ -536,7 +538,7 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		cardX, cardY, cardW, cardH := tradeMarketActionCardRect(layout)
 		vector.FillRect(screen, cardX, cardY, cardW, cardH, color.RGBA{16, 14, 10, 220}, false)
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, panelBorder, false)
-		qtyButtons, buyBtn, sellBtn := buildTradeActionButtonsAt(tradeMarketActionCardRect, layout)
+		qtyButtons, buyBtn, sellBtn := buildTradeMarketActionButtons(layout, amount, playerF, price)
 		for _, btn := range qtyButtons {
 			drawTradeButton(screen, btn, false)
 		}
@@ -580,7 +582,7 @@ func buildTradeCloseButton() gameui.Button {
 
 func buildTradeTabButtons() []tradeTabButton {
 	layout := tradePanelLayout()
-	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Pazar", "Piyasa Fiyatları"}
+	tabLabels := []string{"Mevcut Rotalar", "Yeni Rota", "Açık Pazar", "Piyasa Fiyatları"}
 	out := make([]tradeTabButton, 0, len(tabLabels))
 	for i, label := range tabLabels {
 		r := layout.tabRects[i]
@@ -694,6 +696,10 @@ func tradeActionControlsX(cardX, cardW float32) float32 {
 }
 
 func buildTradeActionButtonsAt(cardRect func(tradeLayout) (float32, float32, float32, float32), layout tradeLayout) ([]gameui.Button, gameui.Button, gameui.Button) {
+	return buildTradeActionButtonsAtWithPlusEnabled(cardRect, layout, true)
+}
+
+func buildTradeActionButtonsAtWithPlusEnabled(cardRect func(tradeLayout) (float32, float32, float32, float32), layout tradeLayout, plusEnabled bool) ([]gameui.Button, gameui.Button, gameui.Button) {
 	cardX, cardY, cardW, cardH := cardRect(layout)
 	controlsX := tradeActionControlsX(cardX, cardW)
 	btnY := cardY + cardH - tradeActBtnH - 18
@@ -701,10 +707,17 @@ func buildTradeActionButtonsAt(cardRect func(tradeLayout) (float32, float32, flo
 		gameui.NewButton(float64(controlsX), float64(btnY), 54, float64(tradeActBtnH), "-10"),
 		gameui.NewButton(float64(controlsX+64), float64(btnY), 54, float64(tradeActBtnH), "+10"),
 	}
+	qty[1].Enabled = plusEnabled
 	buyX := controlsX + 136
 	buyBtn := gameui.NewButton(float64(buyX), float64(btnY), 110, float64(tradeActBtnH), "AL").WithIcon(gameui.IconBuy)
 	sellBtn := gameui.NewButton(float64(buyX+124), float64(btnY), 110, float64(tradeActBtnH), "SAT").WithIcon(gameui.IconSell)
 	return qty, buyBtn, sellBtn
+}
+
+func buildTradeMarketActionButtons(layout tradeLayout, amount int, player *faction.Faction, price int) ([]gameui.Button, gameui.Button, gameui.Button) {
+	maxAffordable := tradeMaxAffordableAmount(player, price)
+	plusEnabled := amount+10 <= maxAffordable
+	return buildTradeActionButtonsAtWithPlusEnabled(tradeMarketActionCardRect, layout, plusEnabled)
 }
 
 func buildTradeEmergencyGrainSaleButton(layout tradeLayout, goodsRows int, enabled bool) gameui.Button {
@@ -800,8 +813,8 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 
 	// Başlıklar
 	colX := []float32{px + 10, px + w*0.30, px + w*0.55, px + w*0.75, px + w*0.90}
-	headers := []string{"Mal", "Base Fiyat", "Güncel Fiyat", "Değişim", "Toplam Arz"}
-	DrawText(screen, "Dinamik Piyasa Fiyatları (Arz-Talep):", float64(px)+10, float64(y)+4, FaceSmall, ColorGold)
+	headers := []string{"Mal", "Base Fiyat", "Güncel Fiyat", "Değişim", "Pazar Arzı"}
+	DrawText(screen, "Dinamik Piyasa Fiyatları (Açık Pazar Arz-Talep):", float64(px)+10, float64(y)+4, FaceSmall, ColorGold)
 	for i, hdr := range headers {
 		DrawText(screen, hdr, float64(colX[i]), float64(y)+20, FaceSmall, ColorGray)
 	}
@@ -833,9 +846,8 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 		DrawText(screen, itoa(currentPrice), float64(colX[2]), float64(ry)+3, FaceSmall, ColorYellow)
 		DrawText(screen, changeStr, float64(colX[3]), float64(ry)+3, FaceSmall, changeCol)
 
-		// Toplam arz (tüm fraksiyonların stokları)
-		totalSupply := totalGoodSupply(gs, good)
-		DrawText(screen, itoa(totalSupply), float64(colX[4]), float64(ry)+3, FaceSmall, color.RGBA{180, 180, 220, 255})
+		// Pazar arzı: rezervde tutulan toplam stok değil, açık satış emirleri.
+		DrawText(screen, itoa(gs.OpenMarketSupply(good)), float64(colX[4]), float64(ry)+3, FaceSmall, color.RGBA{180, 180, 220, 255})
 
 		ry += 24
 	}
@@ -1065,23 +1077,28 @@ func tradeMarketPrice(gs *state.GameState, good economy.GoodType) int {
 	return economy.BaseGoldValue[good]
 }
 
-// totalGoodSupply tüm aktif fraksiyonların belirli bir maldan toplam stokunu döner.
-func totalGoodSupply(gs *state.GameState, good economy.GoodType) int {
-	total := 0
-	for _, f := range gs.Factions {
-		if f == nil || f.IsEliminated {
-			continue
-		}
-		total += getFactionGoodAmount(f, good)
+func tradeMaxAffordableAmount(player *faction.Faction, price int) int {
+	if player == nil || price <= 0 || player.Gold <= 0 {
+		return 0
 	}
-	return total
+	return player.Gold / price
+}
+
+func clampTradeAmountToGold(amount int, player *faction.Faction, price int) int {
+	if amount < 1 {
+		amount = 1
+	}
+	if maxAffordable := tradeMaxAffordableAmount(player, price); maxAffordable > 0 && amount > maxAffordable {
+		return maxAffordable
+	}
+	return amount
 }
 
 func tradeMaxBuyAmount(gs *state.GameState, player, target *faction.Faction, good economy.GoodType, price int) int {
 	if gs == nil || player == nil || target == nil || price <= 0 {
 		return 0
 	}
-	maxByGold := player.Gold / price
+	maxByGold := tradeMaxAffordableAmount(player, price)
 	targetOffer := gs.MarketSellOffer(target.ID, good)
 	if maxByGold < targetOffer {
 		return maxByGold
@@ -1115,7 +1132,7 @@ func minTradeInt(a, b int) int {
 }
 
 // tradePanelPointerHit panel açıkken hangi bölgelerde pointer imleci gösterileceğini belirler.
-func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, focusFaction int, focusGood int, scroll int, listFilter TradeListFilter, listSort TradeListSort) bool {
+func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, focusFaction int, focusGood int, scroll int, amount int, listFilter TradeListFilter, listSort TradeListSort) bool {
 	if buildTradeCloseButton().HitTest(mx, my) {
 		return true
 	}
@@ -1201,9 +1218,11 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 	if buildTradeMarketFactionList(layout, visibleRows, factionItems, scroll, focusFaction).HitTest(mx, my) {
 		return true
 	}
-	qtyButtons, buyBtn, sellBtn := buildTradeActionButtonsAt(tradeMarketActionCardRect, layout)
+	player := gs.Factions[gs.PlayerFactionID]
+	amount = clampTradeAmountToGold(amount, player, price)
+	qtyButtons, buyBtn, sellBtn := buildTradeMarketActionButtons(layout, amount, player, price)
 	for _, btn := range qtyButtons {
-		if btn.HitTest(mx, my) {
+		if btn.Enabled && btn.HitTest(mx, my) {
 			return true
 		}
 	}
@@ -1331,6 +1350,8 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 		selectedGood = goods[r.tradeGoodFocus]
 	}
 	price := tradeMarketPrice(r.gs, selectedGood)
+	player := r.gs.Factions[r.gs.PlayerFactionID]
+	r.tradeAmount = clampTradeAmountToGold(r.tradeAmount, player, price)
 	for _, fid := range factions {
 		if f := r.gs.Factions[fid]; f != nil {
 			line := f.NameTR + " | Stok: " + itoa(getFactionGoodAmount(f, selectedGood)) + " | Satış arzı: " + itoa(r.gs.MarketSellOffer(fid, selectedGood)) + " | Alım talebi: " + itoa(r.gs.MarketBuyOrder(fid, selectedGood, price)) + " | Fiyat: " + itoa(price) + " altın"
@@ -1362,7 +1383,7 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 	if r.tradeFactionFocus >= len(factions) {
 		r.tradeFactionFocus = len(factions) - 1
 	}
-	qtyButtons, buyBtn, sellBtn := buildTradeActionButtonsAt(tradeMarketActionCardRect, layout)
+	qtyButtons, buyBtn, sellBtn := buildTradeMarketActionButtons(layout, r.tradeAmount, player, price)
 	deltas := []int{-10, 10}
 	for i, btn := range qtyButtons {
 		if btn.HandleInput(input) {
@@ -1370,6 +1391,7 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 			if r.tradeAmount < 1 {
 				r.tradeAmount = 1
 			}
+			r.tradeAmount = clampTradeAmountToGold(r.tradeAmount, player, price)
 			if r.tradeAmount > 999 {
 				r.tradeAmount = 999
 			}

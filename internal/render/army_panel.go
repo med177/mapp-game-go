@@ -41,6 +41,11 @@ const (
 	armyPanelCommanderCardPad  = float32(10)
 	armyPanelCommanderSectionY = float32(8)
 	armyPanelCommanderButtonY  = float32(10)
+
+	armyReplenishmentBadgeW          = float32(18)
+	armyReplenishmentBadgeH          = float32(12)
+	armyReplenishmentBadgeGap        = float32(3)
+	armyReplenishmentBadgeRightInset = float32(3)
 )
 
 type armyPanelLayout struct {
@@ -242,7 +247,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		// Sprite tam kart alanını kaplayabildiği için rozet sprite'tan sonra
 		// çizilmelidir; aksi halde zayiatlı birimdeki yeşil artı görünmez.
 		if isReplenishing {
-			drawArmyReplenishmentBadge(screen, cx, cy)
+			drawArmyReplenishmentBadges(screen, cx, cy, armyHasCapitalReplenishmentBonus(gs, a))
 		}
 
 		// Birim adı
@@ -293,6 +298,10 @@ func armyCanRenderReplenishment(gs *state.GameState, a *army.Army) bool {
 		!gs.IsArmyDefendingSiegedRegion(a) && armyHasDamagedReplenishableUnits(a)
 }
 
+func armyHasCapitalReplenishmentBonus(gs *state.GameState, a *army.Army) bool {
+	return gs != nil && a != nil && !a.IsNaval && gs.IsCapitalRegion(gs.Regions[a.RegionID])
+}
+
 func armyHasDamagedReplenishableUnits(a *army.Army) bool {
 	if a == nil {
 		return false
@@ -312,14 +321,32 @@ func armyHasDamagedReplenishableUnits(a *army.Army) bool {
 }
 
 func drawArmyReplenishmentBadge(screen *ebiten.Image, cx, cy float32) {
-	const (
-		badgeW = float32(18)
-		badgeH = float32(12)
-	)
-	badgeX := cx + cardW - badgeW - 3
-	badgeY := cy + 3
-	vector.FillRect(screen, badgeX, badgeY, badgeW, badgeH, color.RGBA{70, 150, 84, 235}, false)
-	DrawTextCentered(screen, "+", float64(badgeX)+float64(badgeW)/2, float64(badgeY)-1, FaceSmall, color.RGBA{245, 255, 245, 255})
+	drawArmyReplenishmentBadgeAt(screen, cx, cy, 0)
+}
+
+func drawArmyReplenishmentBadges(screen *ebiten.Image, cx, cy float32, capitalBonus bool) {
+	drawArmyReplenishmentBadge(screen, cx, cy)
+	if capitalBonus {
+		drawArmyReplenishmentBadgeAt(screen, cx, cy, 1)
+	}
+}
+
+func armyReplenishmentBadgeRect(cx, cy float32, index int) gameui.Rect {
+	if index < 0 {
+		index = 0
+	}
+	return gameui.Rect{
+		X: float64(cx + cardW - armyReplenishmentBadgeW - armyReplenishmentBadgeRightInset - float32(index)*(armyReplenishmentBadgeW+armyReplenishmentBadgeGap)),
+		Y: float64(cy + armyReplenishmentBadgeGap),
+		W: float64(armyReplenishmentBadgeW),
+		H: float64(armyReplenishmentBadgeH),
+	}
+}
+
+func drawArmyReplenishmentBadgeAt(screen *ebiten.Image, cx, cy float32, index int) {
+	badge := armyReplenishmentBadgeRect(cx, cy, index)
+	vector.FillRect(screen, float32(badge.X), float32(badge.Y), float32(badge.W), float32(badge.H), color.RGBA{70, 150, 84, 235}, false)
+	DrawTextCentered(screen, "+", badge.X+badge.W/2, badge.Y-1, FaceSmall, color.RGBA{245, 255, 245, 255})
 }
 
 // DrawEmbarkedArmyDetailPanel, filonun üzerindeki kara birliklerini mevcut

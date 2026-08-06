@@ -211,6 +211,44 @@ func TestArmyPanelReplenishmentBadgeActivatesInVassalRegion(t *testing.T) {
 	}
 }
 
+func TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {
+				ID:          "capital",
+				OwnerID:     "player",
+				Settlements: []world.Settlement{{ID: "capital_city", IsCenter: true}},
+			},
+			"field": {ID: "field", OwnerID: "player"},
+		},
+	}
+	capitalArmy := &army.Army{OwnerID: "player", RegionID: "capital"}
+	normalArmy := &army.Army{OwnerID: "player", RegionID: "field"}
+	fleet := &army.Army{OwnerID: "player", IsNaval: true, DockedRegionID: "capital"}
+
+	if !armyHasCapitalReplenishmentBonus(gs, capitalArmy) {
+		t.Fatal("başkentteki kara ordusu çift toparlanma rozeti kullanmalıydı")
+	}
+	if armyHasCapitalReplenishmentBonus(gs, normalArmy) {
+		t.Fatal("normal bölgedeki ordu ikinci toparlanma rozetini kullanmamalıydı")
+	}
+	if armyHasCapitalReplenishmentBonus(gs, fleet) {
+		t.Fatal("donanma başkentte olsa da ikinci kara toparlanma rozetini kullanmamalıydı")
+	}
+
+	right := armyReplenishmentBadgeRect(100, 200, 0)
+	left := armyReplenishmentBadgeRect(100, 200, 1)
+	if left.X+left.W+float64(armyReplenishmentBadgeGap) != right.X {
+		t.Fatalf("ikinci rozet mevcut rozetin solunda sabit boşlukla durmalı: left=%+v right=%+v", left, right)
+	}
+	if left.Y != right.Y || left.W != right.W || left.H != right.H {
+		t.Fatalf("iki toparlanma rozeti aynı ölçü ve dikey anchor'ı paylaşmalı: left=%+v right=%+v", left, right)
+	}
+}
+
 func TestSplitSelectionRequiresOneUnitToRemain(t *testing.T) {
 	a := &army.Army{Units: []army.Unit{{TypeID: "inf"}, {TypeID: "cav"}, {TypeID: "siege"}}}
 

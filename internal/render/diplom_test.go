@@ -145,8 +145,43 @@ func TestDiplomacyListSortButtonsUpdateRendererState(t *testing.T) {
 	if buttons[1].Button.Label != "İlişki" {
 		t.Fatalf("ikinci sıralama düğmesi İlişki olarak adlandırılmalı: got=%q", buttons[1].Button.Label)
 	}
+	if len(buttons) != 4 || buttons[3].Button.Label != "Ekonomik Sıralama" {
+		t.Fatalf("ekonomik sıralama düğmesi eksik: buttons=%d label=%q", len(buttons), buttons[3].Button.Label)
+	}
 	if r.diplomacyFocus != 0 || r.diplomacyScroll != 0 {
 		t.Fatalf("sıralama değişince liste odağı sıfırlanmalı: focus=%d scroll=%d", r.diplomacyFocus, r.diplomacyScroll)
+	}
+}
+
+func TestDiplomacyEconomicSortUsesIncomeThenTreasury(t *testing.T) {
+	gs := &state.GameState{
+		Month:           6,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":          {ID: "player"},
+			"income_leader":   {ID: "income_leader", Gold: 10},
+			"treasury_leader": {ID: "treasury_leader", Gold: 999},
+			"treasury_second": {ID: "treasury_second", Gold: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"income_leader_home":   {ID: "income_leader_home", OwnerID: "income_leader", BaseGoldIncome: 300, TaxRate: 100, Satisfaction: 50},
+			"treasury_leader_home": {ID: "treasury_leader_home", OwnerID: "treasury_leader", BaseGoldIncome: 200, TaxRate: 100, Satisfaction: 50},
+			"treasury_second_home": {ID: "treasury_second_home", OwnerID: "treasury_second", BaseGoldIncome: 200, TaxRate: 100, Satisfaction: 50},
+		},
+	}
+
+	got := sortedDiplomacyFactions(gs, diplomacyListSortEconomicRanking)
+	want := []faction.FactionID{"income_leader", "treasury_leader", "treasury_second"}
+	if len(got) != len(want) {
+		t.Fatalf("ekonomik sıralama hedef sayısı yanlış: got=%v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("ekonomik sıralama yanlış: got=%v want=%v", got, want)
+		}
+	}
+	if got := factionTreasuryLabel(gs, "income_leader"); got != "300/10" {
+		t.Fatalf("hazine etiketi gelir/altın biçiminde olmalı: got=%q", got)
 	}
 }
 
@@ -156,7 +191,12 @@ func TestDiplomacyListColumnRectsReserveSquareFactionFlag(t *testing.T) {
 	nameRect, relationRect := diplomacyListColumnRects(row)
 	contentX := row.X + 18
 	wantNameX := contentX + diplomFactionFlagSize + diplomFactionFlagGap
-	wantRelationX := contentX + diplomNameColumnW + diplomColumnGap
+	contentW := row.W - 36
+	wantNameW := contentW - diplomColumnGap - 380
+	if wantNameW > diplomNameColumnW {
+		wantNameW = diplomNameColumnW
+	}
+	wantRelationX := contentX + wantNameW + diplomColumnGap
 
 	if nameRect.X != wantNameX {
 		t.Fatalf("devlet adı bayrak sonrasından başlamalı: got=%.1f want=%.1f", nameRect.X, wantNameX)
@@ -164,7 +204,7 @@ func TestDiplomacyListColumnRectsReserveSquareFactionFlag(t *testing.T) {
 	if relationRect.X != wantRelationX {
 		t.Fatalf("ilişki kolonu bayrak eklenince kaymamalı: got=%.1f want=%.1f", relationRect.X, wantRelationX)
 	}
-	if nameRect.W != diplomNameColumnW-diplomFactionFlagSize-diplomFactionFlagGap {
+	if nameRect.W != wantNameW-diplomFactionFlagSize-diplomFactionFlagGap {
 		t.Fatalf("devlet adı genişliği bayrak alanını düşmeli: got=%.1f", nameRect.W)
 	}
 }

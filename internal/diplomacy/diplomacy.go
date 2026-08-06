@@ -40,14 +40,72 @@ type Result struct {
 const tradeAcceptanceThreshold = 45
 const tradeRelationThreshold = 15
 
-// MaxTradePartners dış ticaret anlaşmalarında devlet başına izin verilen aktif
-// partner sayısıdır. Aynı realm içindeki overlord-vassal rotaları bu kota ve
-// rota kapasitesi rezervinden muaftır.
+// MaxTradePartners dış ticaret anlaşmalarında devlet başına verilen temel aktif
+// partner sayısıdır. Tam geliştirilmiş liman+pazar bölgeleri bu tabana eklenir.
+// Aynı realm içindeki overlord-vassal rotaları bu kota ve rota kapasitesi
+// rezervinden muaftır.
 const MaxTradePartners = 4
 
-// MaxTradeRouteAmountPerTurn ekonomi paketindeki toplam rota hacmi sınırının
-// diplomasi kapasite paylaşımı için kullanılan adıdır.
+// MaxTradeRouteAmountPerTurn tam geliştirme bonusları öncesindeki temel rota
+// hacmi tavanıdır.
 const MaxTradeRouteAmountPerTurn = economy.MaxTradeRouteAmountPerTurn
+
+const maxTradeRouteMarketBonus = 2
+
+// TradePartnerLimit devletin sahip olduğu, hem limanı hem pazarı bina tanımındaki
+// maksimum seviyeye ulaşmış her bölge için bir ek dış ticaret partneri verir.
+func TradePartnerLimit(gs *state.GameState, fid faction.FactionID) int {
+	limit := MaxTradePartners
+	if gs == nil || fid == "" {
+		return limit
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) {
+			continue
+		}
+		if buildingAtMaxLevel(gs, region, "port") && buildingAtMaxLevel(gs, region, "market") {
+			limit++
+		}
+	}
+	return limit
+}
+
+// TradeRouteAmountLimit devletin her maksimum seviyedeki pazar bölgesi için
+// anlaşma başına temel rota tavanına iki hacim ekler.
+func TradeRouteAmountLimit(gs *state.GameState, fid faction.FactionID) int {
+	limit := MaxTradeRouteAmountPerTurn
+	if gs == nil || fid == "" {
+		return limit
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) {
+			continue
+		}
+		if buildingAtMaxLevel(gs, region, "market") {
+			limit += maxTradeRouteMarketBonus
+		}
+	}
+	return limit
+}
+
+// TradeAgreementAmountLimit iki tarafın da karşılayabildiği anlaşma hacmi
+// tavanını döner. Hacim, taraflardan zayıf olanın tavanını aşamaz.
+func TradeAgreementAmountLimit(gs *state.GameState, a, b faction.FactionID) int {
+	limitA := TradeRouteAmountLimit(gs, a)
+	limitB := TradeRouteAmountLimit(gs, b)
+	if limitA < limitB {
+		return limitA
+	}
+	return limitB
+}
+
+func buildingAtMaxLevel(gs *state.GameState, region *world.Region, buildingID string) bool {
+	if gs == nil || region == nil || buildingID == "" {
+		return false
+	}
+	building := gs.BuildingTypes[buildingID]
+	return building != nil && building.MaxPerRegion > 0 && region.BuildingLevel(buildingID) >= building.MaxPerRegion
+}
 
 // rejectedOfferRelationPenalty her reddedilen normal diplomasi teklifinin
 // ilişkiye uyguladığı küçük cezadır. Savaş çağrısı kendi özel sonucunu kullanır.
@@ -381,7 +439,7 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		toID := faction.FactionID(routes[0].ToFactionID)
 		_, left, right := tradeAgreementKey(fromID, toID)
 		if !SameRealm(gs, left, right) {
-			if partnerCount[left] >= MaxTradePartners || partnerCount[right] >= MaxTradePartners {
+			if partnerCount[left] >= TradePartnerLimit(gs, left) || partnerCount[right] >= TradePartnerLimit(gs, right) {
 				continue
 			}
 			partnerCount[left]++
@@ -881,12 +939,12 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 		return assessment
 	}
 	actorPartners := ActiveTradePartnerCount(gs, actor)
-	if actorPartners >= MaxTradePartners {
+	if actorPartners >= TradePartnerLimit(gs, actor) {
 		assessment.BlockReason = "Senin aktif partner sınırın dolu"
 		return assessment
 	}
 	targetPartners := ActiveTradePartnerCount(gs, target)
-	if targetPartners >= MaxTradePartners {
+	if targetPartners >= TradePartnerLimit(gs, target) {
 		assessment.BlockReason = "Hedefin aktif partner sınırı dolu"
 		return assessment
 	}
@@ -1041,11 +1099,12 @@ func tradeAmount(gs *state.GameState, a, b faction.FactionID) int {
 	capA := totalTradeCapacity(gs, a)
 	capB := totalTradeCapacity(gs, b)
 	capacity := min(capA, capB)
+	amountLimit := TradeAgreementAmountLimit(gs, a, b)
 	if capacity <= 0 {
 		return 1
 	}
-	if capacity > MaxTradeRouteAmountPerTurn {
-		return MaxTradeRouteAmountPerTurn
+	if capacity > amountLimit {
+		return amountLimit
 	}
 	return capacity
 }
@@ -1089,7 +1148,7 @@ func canMaintainOrAddTradePartner(gs *state.GameState, a, b faction.FactionID) b
 	if hasTradeRouteRecordBetween(gs, a, b) {
 		return true
 	}
-	return ActiveTradePartnerCount(gs, a) < MaxTradePartners && ActiveTradePartnerCount(gs, b) < MaxTradePartners
+	return ActiveTradePartnerCount(gs, a) < TradePartnerLimit(gs, a) && ActiveTradePartnerCount(gs, b) < TradePartnerLimit(gs, b)
 }
 
 func hasTradeRouteRecordBetween(gs *state.GameState, a, b faction.FactionID) bool {
@@ -1120,7 +1179,8 @@ func tradeAgreementKey(a, b faction.FactionID) (string, faction.FactionID, facti
 // RebalanceTradeRouteCapacities dış ticaret anlaşmalarına bir devletin efektif
 // kapasitesini dengeli olarak paylaştırır. Her partner önce eşit kapasite
 // payını alır, kalan birimler ID sırasındaki ilk partnerlere dağıtılır ve tek
-// anlaşma hacmi 4 ile sınırlanır. İki yönlü rota aynı temel hacmi paylaşır.
+// anlaşma hacmi tarafların dinamik tavanıyla sınırlanır. İki yönlü rota aynı
+// temel hacmi paylaşır.
 func RebalanceTradeRouteCapacities(gs *state.GameState) {
 	if gs == nil || len(gs.TradeRoutes) == 0 {
 		return
@@ -1180,8 +1240,9 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 			if i < remainder {
 				share++
 			}
-			if share > MaxTradeRouteAmountPerTurn {
-				share = MaxTradeRouteAmountPerTurn
+			amountLimit := TradeRouteAmountLimit(gs, fid)
+			if share > amountLimit {
+				share = amountLimit
 			}
 			shares[key] = share
 		}
@@ -1195,6 +1256,9 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 		amount := sharesByFaction[item.left][item.key]
 		if other := sharesByFaction[item.right][item.key]; other < amount {
 			amount = other
+		}
+		if agreementLimit := TradeAgreementAmountLimit(gs, item.left, item.right); amount > agreementLimit {
+			amount = agreementLimit
 		}
 		for _, route := range item.routes {
 			route.AmountPerTurn = amount

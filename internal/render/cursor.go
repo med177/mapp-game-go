@@ -156,7 +156,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showTrade {
-		if tradePanelPointerHit(fx, fy, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeListFilter, r.tradeListSort) {
+		if tradePanelPointerHit(fx, fy, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}

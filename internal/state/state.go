@@ -347,6 +347,40 @@ func (s *GameState) MarketSellOffer(fid faction.FactionID, good economy.GoodType
 	return offer
 }
 
+// OpenMarketSupplyByGood açık pazardaki gerçek, kalan satış arzını mal bazında
+// toplar. Devletlerin rezerv olarak tuttuğu stok bu toplama dahil değildir.
+func (s *GameState) OpenMarketSupplyByGood() map[economy.GoodType]int {
+	if s == nil || (len(s.MarketOrders.SellOffers) == 0 && len(s.MarketOrders.BuyOrders) == 0) {
+		return nil
+	}
+	supply := make(map[economy.GoodType]int, len(economy.TradeGoods()))
+	for fid, f := range s.Factions {
+		if f == nil || f.IsEliminated {
+			continue
+		}
+		for _, good := range economy.TradeGoods() {
+			supply[good] += s.MarketSellOffer(fid, good)
+		}
+	}
+	return supply
+}
+
+// OpenMarketSupply tek bir malın açık pazardaki kalan satış arzını döner.
+// Render katmanı için map oluşturmayan karşılıktır.
+func (s *GameState) OpenMarketSupply(good economy.GoodType) int {
+	if s == nil || good == "" {
+		return 0
+	}
+	total := 0
+	for fid, f := range s.Factions {
+		if f == nil || f.IsEliminated {
+			continue
+		}
+		total += s.MarketSellOffer(fid, good)
+	}
+	return total
+}
+
 // MarketBuyOrder bir devletin belirli mal için kalan alım talebini döner.
 // Talep, güncel altınla karşılanabilecek miktardan büyük olamaz.
 func (s *GameState) MarketBuyOrder(fid faction.FactionID, good economy.GoodType, price int) int {
@@ -2061,15 +2095,20 @@ func (s *GameState) ArmyReplenishmentHP(a *army.Army) int {
 }
 
 // RegionArmyReplenishmentHP, ikmal yeterliyse bölgenin çiftlik ve ambar
-// seviyelerinden türeyen kara ordusu toparlanma hızını döner. AI hedef
-// değerlendirmesi ile tur çözümlemesi aynı katsayıyı bu helper üzerinden alır.
+// seviyelerinden türeyen kara ordusu toparlanma hızını döner. Sahip olunan
+// ulusal başkent bölgesinde normal hız ikiyle çarpılır. AI hedef değerlendirmesi
+// ile tur çözümlemesi aynı katsayıyı bu helper üzerinden alır.
 func (s *GameState) RegionArmyReplenishmentHP(region *world.Region) int {
 	if s == nil || region == nil || region.IsSea {
 		return 0
 	}
 	const baseHP = 2
 	const buildingLevelHP = 2
-	return baseHP + buildingLevelHP*(region.BuildingLevel("farm")+region.BuildingLevel("granary"))
+	replenishmentHP := baseHP + buildingLevelHP*(region.BuildingLevel("farm")+region.BuildingLevel("granary"))
+	if s.IsCapitalRegion(region) {
+		replenishmentHP *= CapitalArmyReplenishmentMultiplier
+	}
+	return replenishmentHP
 }
 
 // ClearArmyLogisticsAfterRelocation eski konumda üretilmiş lojistik yıpranma

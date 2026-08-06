@@ -30,6 +30,46 @@ func TestAIBuildingInvestmentPrefersHigherROIRegion(t *testing.T) {
 	}
 }
 
+func TestAIBuildingInvestmentTargetsMaximumMarketTradeVolume(t *testing.T) {
+	gs := aiBuildingInvestmentTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"market": aiTestBuilding("market", 120, 1.5, 1, 1.45, 2, 2),
+		"port":   aiTestBuilding("port", 200, 1.35, 1, 1.6, 1, 2),
+	}
+	gs.Regions["trade"] = aiTestEconomyRegion("trade", 40, 30, 4, 70)
+	gs.Regions["trade"].Buildings = []string{"market", "market"}
+	gs.Regions["trade"].Neighbors = []world.RegionID{"sea"}
+	gs.Regions["sea"] = &world.Region{ID: "sea", IsSea: true, Neighbors: []world.RegionID{"trade"}}
+
+	candidate, ok := aiBestBuildingInvestment(gs, "ai", nil, nil)
+	if !ok || candidate.RegionID != "trade" || candidate.BuildingID != "market" {
+		t.Fatalf("AI maksimum pazar hacmi için son market seviyesini seçmeliydi: ok=%v candidate=%+v", ok, candidate)
+	}
+	if candidate.TradeScore < 260 {
+		t.Fatalf("maksimum pazarın +2 rota hacmi bonusu skora yansımadı: %+v", candidate)
+	}
+}
+
+func TestAIBuildingInvestmentTargetsMaximumPortForFullTradeRegion(t *testing.T) {
+	gs := aiBuildingInvestmentTestState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"market": aiTestBuilding("market", 120, 1.5, 1, 1.45, 2, 2),
+		"port":   aiTestBuilding("port", 200, 1.35, 1, 1.6, 1, 2),
+	}
+	gs.Regions["trade"] = aiTestEconomyRegion("trade", 40, 30, 4, 70)
+	gs.Regions["trade"].Buildings = []string{"market", "market", "market", "port", "port"}
+	gs.Regions["trade"].Neighbors = []world.RegionID{"sea"}
+	gs.Regions["sea"] = &world.Region{ID: "sea", IsSea: true, Neighbors: []world.RegionID{"trade"}}
+
+	candidate, ok := aiBestBuildingInvestment(gs, "ai", nil, nil)
+	if !ok || candidate.RegionID != "trade" || candidate.BuildingID != "port" {
+		t.Fatalf("AI maksimum pazar+liman partner bonusu için son liman seviyesini seçmeliydi: ok=%v candidate=%+v", ok, candidate)
+	}
+	if candidate.TradeScore < 300 {
+		t.Fatalf("tam ticaret bölgesinin +1 partner bonusu skora yansımadı: %+v", candidate)
+	}
+}
+
 func TestAIBuildingInvestmentPrioritizesFarmDuringGrainBottleneck(t *testing.T) {
 	gs := aiBuildingInvestmentTestState()
 	gs.Factions["ai"].Grain = 20

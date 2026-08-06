@@ -1462,3 +1462,57 @@ func TestAssessTradeProposalUsesEffectiveBuildingCapacity(t *testing.T) {
 		t.Fatalf("pazarın yükselttiği efektif kapasite ticareti açmalıydı: %+v", assessment)
 	}
 }
+
+func TestTradePartnerLimitGrowsPerFullyDevelopedPortMarketRegion(t *testing.T) {
+	gs := testGameState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"port":   {ID: "port", MaxPerRegion: 3},
+		"market": {ID: "market", MaxPerRegion: 3},
+	}
+	gs.Regions["a_cap"].Buildings = []string{"port", "port", "port", "market", "market", "market"}
+	gs.Regions["b_cap"].Buildings = []string{"port", "port", "market", "market", "market"}
+
+	if got := TradePartnerLimit(gs, "a"); got != MaxTradePartners+1 {
+		t.Fatalf("tam liman+pazar bölgesi başına bir partner eklenmeli: got=%d", got)
+	}
+	if got := TradePartnerLimit(gs, "b"); got != MaxTradePartners {
+		t.Fatalf("maksimuma ulaşmamış liman partner bonusu vermemeli: got=%d", got)
+	}
+
+	gs.Regions["a_trade_2"] = &world.Region{
+		ID: "a_trade_2", OwnerID: "a", Buildings: []string{"port", "port", "port", "market", "market", "market"},
+	}
+	if got := TradePartnerLimit(gs, "a"); got != MaxTradePartners+2 {
+		t.Fatalf("ikinci tam liman+pazar bölgesi ikinci partneri eklemeli: got=%d", got)
+	}
+}
+
+func TestTradeRouteAmountLimitGrowsPerFullyDevelopedMarketRegion(t *testing.T) {
+	gs := testGameState()
+	gs.BuildingTypes = map[string]*city.Building{
+		"market": {ID: "market", MaxPerRegion: 3},
+	}
+	gs.Regions["a_cap"].TradeCapacity = 20
+	gs.Regions["b_cap"].TradeCapacity = 20
+	gs.Regions["a_cap"].Buildings = []string{"market", "market", "market"}
+	gs.Regions["b_cap"].Buildings = []string{"market", "market", "market"}
+	gs.Regions["a_extra"] = &world.Region{
+		ID: "a_extra", OwnerID: "a", Buildings: []string{"market", "market", "market"},
+	}
+
+	if got := TradeRouteAmountLimit(gs, "a"); got != MaxTradeRouteAmountPerTurn+4 {
+		t.Fatalf("iki maksimum pazar bölgesi rota tavanını dört artırmalı: got=%d", got)
+	}
+	if got := TradeAgreementAmountLimit(gs, "a", "b"); got != MaxTradeRouteAmountPerTurn+2 {
+		t.Fatalf("anlaşma tavanı zayıf tarafın maksimum pazar bonusuyla sınırlanmalı: got=%d", got)
+	}
+
+	enableABLandTrade(gs)
+	EnsureRelation(gs, "a", "b").Stance = faction.StanceTrade
+	ensureTradeRoutesBetween(gs, "a", "b")
+	for _, route := range gs.TradeRoutes {
+		if route.AmountPerTurn != MaxTradeRouteAmountPerTurn+2 {
+			t.Fatalf("maksimum pazar bonusu anlaşma hacmine yansımadı: got=%d", route.AmountPerTurn)
+		}
+	}
+}

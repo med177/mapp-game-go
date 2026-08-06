@@ -56,3 +56,20 @@ func TestMarketOrdersCloneIsDeepCopy(t *testing.T) {
 		t.Fatalf("emir defteri kopyası kaynak state'i değiştirmemeli: got=%d", got)
 	}
 }
+
+func TestOpenMarketSupplyExcludesReservedFactionStock(t *testing.T) {
+	sellerID := faction.FactionID("seller")
+	otherSellerID := faction.FactionID("other_seller")
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			sellerID:      {ID: sellerID, Grain: 9000},
+			otherSellerID: {ID: otherSellerID, Grain: 500},
+		},
+	}
+	gs.SetMarketSellOffer(sellerID, economy.GoodGrain, 0)
+	gs.SetMarketSellOffer(otherSellerID, economy.GoodGrain, 25)
+
+	if got := gs.OpenMarketSupplyByGood()[economy.GoodGrain]; got != 25 {
+		t.Fatalf("pazar arzı toplam stok değil kalan satış emirleri olmalıydı: got=%d want=25", got)
+	}
+}

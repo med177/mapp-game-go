@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [state-management, render-pipeline]
 ---
 
@@ -27,6 +27,9 @@ Layout()  → pencere boyutu bildirir
 `oneTimeTrade()` oyuncunun manuel pazar işlemini uygular. Bu akış aktif ticaret
 rotasından bağımsız açık pazarı kullanır: hedef devlet elenmemiş ve oyuncuyla
 savaşta değilse kaynak/altın transferi mevcut piyasa fiyatıyla doğrudan yapılır.
+Piyasa fiyatı; save/yeni oyun hazırlığında, AI turu başlangıcında ve ekonomi
+tick'i sonunda `OpenMarketSupplyByGood()` ile gerçek açık satış arzından yeniden
+hesaplanır.
 
 ---
 
@@ -99,7 +102,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 `resolveTurn()` — `internal/game/game.go:230`
 
 1. `applySeasonEffects(gs)` — kış hasarı (hedef denizde bonus kazanan merchant gemileri hariç), ilkbahar bonusu → [[systems/seasons]]
-2. `applyEconomyTick(gs)` — vergi geliri, ticaret, abluka kesintili ticaret rotaları, bölge tahıl üretimi, nüfus bazlı sivil tahıl tüketimi ve hareket/kuşatma katsayılı ordu tahıl bakımı; stratejik tahıl talebi fiyat sinyaline yazılır, kapasite üstü tahılla kara ordusu yenilemesi ve açık tercihe göre otomatik ihracat işlenir; Kasım ayında stabil rezerv fazlası uygun bölgelere nüfus büyümesi olarak yatırılır; bölgesel ikmal baskısı da aynı efektif talep hesabını kullanır. Aralık turunda yıllık `-1` yıpranma uygulanır. Memnuniyetin vergi, bina, tahıl, teknoloji, savaş yorgunluğu, 20+ bölge yozlaşması, yıllık yıpranma ve yerel ordu gücü etkileri bu adımda tek delta olarak toplanır. Oyuncunun bölge panelindeki tahıl yardımı ayrı bir state mutasyonu olarak tur içinde uygulanır → [[systems/economy]]
+2. `applyEconomyTick(gs)` — vergi geliri, ticaret, abluka kesintili ticaret rotaları, bölge tahıl üretimi, nüfus bazlı sivil tahıl tüketimi ve hareket/kuşatma katsayılı ordu tahıl bakımı; stratejik tahıl talebi fiyat sinyaline yazılır, kapasite üstü tahılla kara ordusu yenilemesi ve açık tercihe göre otomatik ihracat işlenir; Kasım ayında stabil rezerv fazlası uygun bölgelere nüfus büyümesi olarak yatırılır; bölgesel ikmal baskısı da aynı efektif talep hesabını kullanır. Aralık turunda yıllık `-1` yıpranma uygulanır. Memnuniyetin vergi, bina, tahıl, teknoloji, savaş yorgunluğu, 20+ bölge yozlaşması, yıllık yıpranma ve yerel ordu gücü etkileri bu adımda tek delta olarak toplanır; ekonomi tick'i sonunda tahılı `0` olan fraksiyonun tüm kara bölgelerine ayrıca tur başına `-5` tahıl kıtlığı cezası uygulanır. Oyuncunun bölge panelindeki tahıl yardımı ayrı bir state mutasyonu olarak tur içinde uygulanır → [[systems/economy]]
 3. `applyTechTicks(gs)` — aktif araştırma ilerleme sayacı → [[systems/tech-tree]]
 4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; aktif kuşatma altındaki bölge emirleri duraklatılır, kuşatma kalkınca aynı `TurnsLeft` ile devam eder; bölge el değiştirince o bölgedeki üretim emirleri temizlenir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
 5. `applyReligionConversion(gs)` — ele geçirilmiş bölgelerde yavaş din dönüşümü

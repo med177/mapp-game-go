@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -51,6 +51,11 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 | Yüksek (60–100) | Fazla altın, memnuniyet düşer, isyan riski |
 
 **İsyan:** `checkRebellions()` memnuniyet eşiğini kontrol eder → bölge kontrolü kaybedilebilir.
+
+Tahıl stoku ekonomi tick'i sonunda sıfır olan fraksiyonun tüm kara bölgelerinde
+memnuniyet tur başına `-5` azalır. Bu delta diğer vergi, bina, savaş ve ordu
+etkileriyle birlikte uygulanır; ardından `checkRebellions()` düşük memnuniyetli
+bölgeleri kontrol eder.
 
 ---
 
@@ -113,14 +118,24 @@ devletin güvenli rezervi korunur ve alıcının altını acil rezervin altına 
 
 ## Dinamik Piyasa Fiyatlandırması
 
-`ComputeMarketPrices()` her tur sonu tüm fraksiyonların stoklarına göre fiyatları günceller:
+`ComputeMarketPricesWithMarketSupply()` her tur sonu açık pazardaki gerçek satış
+emirlerine ve stratejik tahıl talebine göre fiyatları günceller. `MarketOrders`
+henüz oluşturulmamış eski save/test akışlarında geriye dönük uyumluluk için toplam
+faction stoku fallback olarak kullanılabilir:
 
 - **Arz artışı → fiyat düşer** (bol mal değersizleşir)
 - **Arz azalışı → fiyat yükselir** (kıt mal pahalanır)
+- Rezervde tutulan stok pazar arzı değildir; `GameState.OpenMarketSupplyByGood()`
+  yalnızca kalan `SellOffers` miktarlarını toplar.
+- Açık satış arzı sıfırsa mal kıt kabul edilir ve fiyat taban fiyatın altına
+  düşmez; böylece satıcısız bir pazarda toplam depo stoku fiyatı yapay olarak
+  ucuzlatamaz.
 - Fiyat sınırları: basePrice × %25 (min) – basePrice × %300 (max)
 - Her aktif fraksiyon varsayılan talep üretir (10 birim/mal); tahıl için fraksiyonların stratejik rezerv açığı da ek talep sinyali olarak fiyat hesabına dahil edilir.
 
-Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur yeniden hesaplanır).
+Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur
+yeniden hesaplanır). Save yükleme, yeni oyun, AI turu başlangıcı ve ekonomi tick'i
+aynı arz/talep yardımcılarını kullanır.
 
 ## Açık Pazar Arz ve Talep Kotaları
 
@@ -135,6 +150,8 @@ kalan `SellOffers` kotasıyla, satışı hedefin kalan `BuyOrders` kotasıyla
 sınırlandırılır; başarılı transfer kotayı azaltır. Böylece bir devletin tüm
 hammadde stoğu altınla tek turda boşaltılamaz, ancak açıkça satışa koyduğu
 fazlanın tamamı satın alınabilir (`internal/state/state.go`, `internal/game/game.go`).
+Piyasa fiyat ekranındaki `Pazar Arzı` sütunu da bu kalan satış emirlerinin toplamını
+gösterir; devletlerin toplam rezerv stoku ayrı bir fiyat arzı değildir.
 
 ## Pasif Ticaret Geliri
 
@@ -205,11 +222,11 @@ Efektif kapasite, aktif dış ticaret anlaşmaları arasında gerçek bir ortak 
 `RebalanceTradeRouteCapacities()` her rota kurulumu, yükleme temizliği ve ekonomi
 tick'inde devletin kapasitesini partnerlerine eşit paylaştırır; bölünmeyen kalan
 birimler faction ID sırasındaki ilk anlaşmalara gider. İki yönlü rotanın temel
-`AmountPerTurn` değeri iki tarafın paylarından düşük olanıdır ve anlaşma başına
-en fazla `4` kalır. Böylece daha fazla anlaşma imzalamak tek tek rotaları
-zayıflatır; bina, fetih veya merkez bonusu kapasiteyi artırdığında rota hacmi
-bir sonraki tick'te yeniden büyür. Merchant bonusu bu temel kapasite havuzunu
-tüketmez.
+`AmountPerTurn` değeri iki tarafın paylarından düşük olanıdır. Temel anlaşma tavanı
+`4`tür; devletin sahip olduğu her maksimum seviyedeki pazar bölgesi bu devletin
+anlaşma tavanına `+2` ekler ve ikili rota iki tarafın düşük tavanını kullanır.
+Tam maksimum liman ve pazar seviyesine sahip her bölge ayrıca devletin dış partner
+limitine `+1` ekler. Merchant bonusu bu temel kapasite havuzunu tüketmez.
 
 ## Üretim Reçeteleri ve Lojistik
 
@@ -232,7 +249,7 @@ tüketmez.
 - Bölgesel lojistikte ambar, ekonomi tick'i sonrası elde kalan tahıldan `min(kalan stok, ambar kapasitesi)` kadarını bölgeye aktarılabilir askerî rezerv yapar. Bu tahıl ikinci kez tüketilmez; genel ordu bakımında zaten düşülmüş stokun bölgesel dağıtım kapasitesini temsil eder. Aynı fraksiyonun bölgeleri sınırlı rezervi deterministik sırayla paylaşır ve başkent önce gelir.
 - Kuşatılan bölgedeki her `granary` seviyesi savunucu ordunun kuşatma kaynaklı doğrudan HP hasarını ve bölgesel ikmal açığı hasarını `%10` azaltır; toplam azaltma `%30` ile sınırlıdır. Bu yerel ambar dayanıklılığı kuşatan orduya verilmez.
 - Kara orduları ayrıca bölge bazlı ikmal kapasitesine tabidir. Yerel askeri kapasite, bölge üretiminden önce sivil talep düşüldükten sonraki fazlalık + yerleşim/ticaret tamponu + fraksiyon stokundan sınırlı destek olarak hesaplanır. Yabancı/düşman bölgede yerel üretim desteği yoktur. Efektif ordu talebi kapasiteyi karşılamazsa aynı bölgede bekleyen ordular turdan tura artan HP zayiatı alır. AI hareket, geri çekilme, birleşme ve bina yatırımındaki lojistik tahminlerde `GameState.EffectiveArmyGrainUpkeep()` kullanır.
-- Kara ordusu toparlanması bu ikmal kararından sonra yapılır; talep kapasiteyi aşıyorsa hasarlı ordu aynı tur HP geri kazanmaz. Kapasite yeterliyse ücretsiz hız `2 + 2 × (Çiftlik seviyesi + Ambar seviyesi)` HP/birim/turdur. Depo kapasitesi üzerindeki tahılın bedelli yenileme tavanı da aynı bölgesel hızdır; böylece bina olmayan bölgede büyük fraksiyon stoğu hızlı toparlanma yaratmaz.
+- Kara ordusu toparlanması bu ikmal kararından sonra yapılır; talep kapasiteyi aşıyorsa hasarlı ordu aynı tur HP geri kazanmaz. Kapasite yeterliyse ücretsiz hız `2 + 2 × (Çiftlik seviyesi + Ambar seviyesi)` HP/birim/turdur; ordunun kendi devletinin başkent bölgesinde bu normal değer `×2` uygulanır. Depo kapasitesi üzerindeki tahılın bedelli yenileme tavanı da aynı bölgesel hızdır; böylece bina olmayan bölgede büyük fraksiyon stoğu hızlı toparlanma yaratmaz.
 - Ordu veya filo farklı konuma taşındığında eski konuma ait `ArmyLogisticsStatus` temizlenir. Kara ordusunun bölgeye özgü `OverCapacityTurns` sayacı hedef bölgede sıfırdan başlar; filonun açık deniz yolculuk süresini taşıyan `TurnsWithoutPort` sayacı korunur. Böylece harita marker'ındaki `!` yalnız mevcut konumdaki güncel yıpranma kaydını gösterir.
 - Kara ordusunun bölgesel ikmal talebi, başkentten yalnız kendi kara bölgeleri üzerinden kurulabilen ikmal hattına göre de ölçeklenir. Başkente yakın iki bölgelik hat cezasızdır; daha uzak hatlarda yerel yıpranma baskısı kademeli artar, geçerli başkente kara bağlantısı olmayan ordular en yüksek ek yükü alır. Düşman tahkimatını kendi, aynı realm/vassal ya da müttefik kara bölgesine bitişik yerde kuşatan ordu düzenli sınır ikmaliyle kuşatma bakımını `%200` yerine `%150` sayar.
 

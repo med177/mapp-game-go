@@ -797,11 +797,40 @@ func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
 	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 137 {
 		t.Fatalf("kritik rezerv etkileri uygulanmadı, faction=%+v", gs.Factions["player"])
 	}
-	if gs.Regions["home"].Satisfaction != 46 {
-		t.Fatalf("kıtlık tahıl rezervi memnuniyeti 4 azaltmalıydı, got=%d", gs.Regions["home"].Satisfaction)
+	if gs.Regions["home"].Satisfaction != 45 {
+		t.Fatalf("sıfır tahıl memnuniyeti 5 azaltmalıydı, got=%d", gs.Regions["home"].Satisfaction)
 	}
 	if report.PlayerGrainStatus.SupplyLevel != state.GrainSupplyFamine {
 		t.Fatalf("oyuncu tahıl raporu kritik durumu taşımadı, got=%+v", report.PlayerGrainStatus)
+	}
+}
+
+func TestApplyEconomyTickAppliesZeroGrainPenaltyToAllOwnedRegions(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 0},
+			"enemy":  {ID: "enemy", Grain: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home":  {ID: "home", OwnerID: "player", Satisfaction: 50, TaxRate: 50},
+			"front": {ID: "front", OwnerID: "player", Satisfaction: 23, TaxRate: 50},
+			"other": {ID: "other", OwnerID: "enemy", Satisfaction: 50, TaxRate: 50},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Regions["home"].Satisfaction; got != 45 {
+		t.Fatalf("oyuncunun tüm bölgelerinde sıfır tahıl cezası -5 olmalıydı, got=%d", got)
+	}
+	if got := gs.Regions["front"].Satisfaction; got != 18 {
+		t.Fatalf("ikinci oyuncu bölgesinde sıfır tahıl cezası -5 olmalıydı, got=%d", got)
+	}
+	if got := gs.Regions["other"].Satisfaction; got != 50 {
+		t.Fatalf("tahılı olan düşman bölgesi etkilenmemeliydi, got=%d", got)
 	}
 }
 
@@ -1689,6 +1718,41 @@ func TestApplyEconomyTickReplenishesFriendlyLandArmyByFarmAndGranaryLevel(t *tes
 	}
 	if got := gs.Armies["docked_ally"].EmbarkedUnits[0].CurrentHP; got != 77 {
 		t.Fatalf("müttefik limanındaki taşınan birlik yari hizda iyilesmeli, got=%d", got)
+	}
+}
+
+func TestApplyEconomyTickDoublesArmyReplenishmentAtFactionCapital(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city", Grain: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {
+				ID:          "capital",
+				OwnerID:     "player",
+				Population:  100,
+				Settlements: []world.Settlement{{ID: "capital_city", IsCenter: true}},
+			},
+			"field": {ID: "field", OwnerID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"capital_army": {ID: "capital_army", OwnerID: "player", RegionID: "capital", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+			"field_army":   {ID: "field_army", OwnerID: "player", RegionID: "field", Units: []army.Unit{{TypeID: "inf", CurrentHP: 60}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 1},
+		},
+	}
+
+	applySeasonEffects(gs)
+	applyEconomyTick(gs)
+
+	if got, want := gs.Armies["capital_army"].Units[0].CurrentHP, 64; got != want {
+		t.Fatalf("başkentte temel +2 toparlanma iki katına çıkıp +4 olmalıydı, got=%d want=%d", got, want)
+	}
+	if got, want := gs.Armies["field_army"].Units[0].CurrentHP, 62; got != want {
+		t.Fatalf("normal bölgede temel toparlanma +2 kalmalıydı, got=%d want=%d", got, want)
 	}
 }
 

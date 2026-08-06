@@ -233,6 +233,30 @@ func TestTradeQuantityButtonsUseOnlyTenStepsWithoutIcons(t *testing.T) {
 	}
 }
 
+func TestTradeMarketPlusTenStopsAtGoldValueLimit(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	player := &faction.Faction{Gold: 257}
+	layout := tradePanelLayout()
+
+	underLimit, _, _ := buildTradeMarketActionButtons(layout, 240, player, 1)
+	if !underLimit[1].Enabled {
+		t.Fatal("+10, altın sınırına ulaşılabiliyorsa etkin olmalı")
+	}
+
+	atLimit, _, _ := buildTradeMarketActionButtons(layout, 250, player, 1)
+	if atLimit[1].Enabled {
+		t.Fatal("+10, miktarın değeri mevcut altını aşacaksa pasif olmalı")
+	}
+	if got := clampTradeAmountToGold(315, player, 1); got != 257 {
+		t.Fatalf("miktar altınla karşılanabilecek üst sınıra kırpılmalı: got=%d want=257", got)
+	}
+}
+
 func TestTradeMarketActionButtonsStayGroupedInsideActionCard(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 2048, 1244

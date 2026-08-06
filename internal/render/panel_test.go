@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -37,6 +38,42 @@ func TestDiplomacyOfferQuotaHUDText(t *testing.T) {
 	}
 	if col != (color.RGBA{220, 90, 90, 255}) {
 		t.Fatalf("hak bitti rengi farklıydı, got=%v", col)
+	}
+}
+
+func TestTradeRouteHUDTextShowsOpenPartnerSlotsInRed(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "player"}
+
+	text, col := tradeRouteHUDText(gs)
+	if text != "Ticaret Rotası: 0/4" {
+		t.Fatalf("boş partner limiti görünmeliydi, got=%q", text)
+	}
+	if col != (color.RGBA{220, 90, 90, 255}) {
+		t.Fatalf("boş rota slotları kırmızı görünmeliydi, got=%v", col)
+	}
+}
+
+func TestTradeRouteHUDTextShowsFullPartnerLimitInGreen(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "player", ToFactionID: "a"},
+			{FromFactionID: "a", ToFactionID: "player"},
+			{FromFactionID: "player", ToFactionID: "b"},
+			{FromFactionID: "b", ToFactionID: "player"},
+			{FromFactionID: "player", ToFactionID: "c"},
+			{FromFactionID: "c", ToFactionID: "player"},
+			{FromFactionID: "player", ToFactionID: "d"},
+			{FromFactionID: "d", ToFactionID: "player"},
+		},
+	}
+
+	text, col := tradeRouteHUDText(gs)
+	if text != "Ticaret Rotası: 4/4" {
+		t.Fatalf("dolu partner limiti görünmeliydi, got=%q", text)
+	}
+	if col != (color.RGBA{100, 220, 100, 255}) {
+		t.Fatalf("dolu rota limiti yeşil görünmeliydi, got=%v", col)
 	}
 }
 

@@ -519,8 +519,9 @@ devletler üretim ve askerî harcama öncesi otomatik olarak stok toplamaya baş
 
 1300 senaryosunda ekonomi bütçesi artık sabit `farm → market → walls` taramasını
 kullanmaz. `internal/ai/building_investment.go`, her uygun bölgedeki ambar, pazar,
-çiftlik, sur ve ibadet yeri adayını aynı skorda karşılaştırır. Kışla ordu bütçesinde, liman ise
-donanma bütçesinde kalır.
+çiftlik, kıyı limanı, sur ve ibadet yeri adayını aynı skorda karşılaştırır.
+Kışla ordu bütçesinde kalır; liman hem genel ticaret yatırımı hem de özel donanma
+gereksinimleri tarafından değerlendirilebilir.
 
 Skorun bileşenleri:
 
@@ -539,6 +540,10 @@ Skorun bileşenleri:
   consolidate planı uzun vadeli pazar, çiftlik ve istikrar yatırımlarını destekler.
 - **İstikrar:** Bina memnuniyet bonusu mevcut açığa göre değerlenir; gerçek isyan
   eşiğindeki bölgede ibadet yeri acil bonus alır.
+- **Ticaret kapasitesi hedefi:** Maksimum seviyeye yaklaşan pazar yatırımları
+  kademeli ticaret skoru alır; son pazar seviyesi anlaşma başına `+2` hacim
+  tavanını açtığı için güçlü ek bonus alır. Kıyı limanı seviyeleri aynı bölgede
+  maksimum pazarla birlikte tamamlandığında `+1` dış partner limiti sağlar.
 - **Fırsat maliyeti:** Uzun inşa süresi, aynı binanın seviyesi ve bölgedeki mevcut bina
   kuyruğu skoru düşürür.
 

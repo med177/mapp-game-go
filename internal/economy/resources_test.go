@@ -109,3 +109,20 @@ func TestStrategicGrainDemandRaisesMarketPrice(t *testing.T) {
 		t.Fatalf("stratejik tahıl talebi piyasa fiyatını artırmalıydı, without=%d with=%d", withoutDemand, withDemand)
 	}
 }
+
+func TestMarketPriceUsesOpenMarketSupplyInsteadOfReservedStock(t *testing.T) {
+	factions := map[faction.FactionID]*faction.Faction{
+		"seller": {ID: "seller", Grain: 9000},
+		"buyer":  {ID: "buyer", Grain: 0},
+	}
+
+	withoutOpenSupply := ComputeMarketPricesWithMarketSupply(
+		factions,
+		map[GoodType]int{GoodGrain: 0},
+		nil,
+	)[GoodGrain]
+	withLegacyStockSupply := ComputeMarketPrices(factions)[GoodGrain]
+	if withoutOpenSupply <= withLegacyStockSupply || withoutOpenSupply != 6 {
+		t.Fatalf("açık satış arzı yokken fiyat düşmemeli, market=%d legacy=%d", withoutOpenSupply, withLegacyStockSupply)
+	}
+}

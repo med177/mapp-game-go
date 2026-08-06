@@ -9,6 +9,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/victory"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -34,6 +35,7 @@ const (
 	diplomacyListSortAlphabetical diplomacyListSort = iota
 	diplomacyListSortRelation
 	diplomacyListSortPowerRanking
+	diplomacyListSortEconomicRanking
 )
 
 type diplomacyListSortButton struct {
@@ -690,22 +692,25 @@ func diplomacyListSortLabelTR(sortMode diplomacyListSort) string {
 		return "İlişki"
 	case diplomacyListSortPowerRanking:
 		return "Güç Sıralaması"
+	case diplomacyListSortEconomicRanking:
+		return "Ekonomik Sıralama"
 	default:
 		return "Alfabetik"
 	}
 }
 
-func buildDiplomacyListSortButtons(layout diplomacyListLayout) [3]diplomacyListSortButton {
-	var buttons [3]diplomacyListSortButton
+func buildDiplomacyListSortButtons(layout diplomacyListLayout) [4]diplomacyListSortButton {
+	var buttons [4]diplomacyListSortButton
 	if layout.sortRect.W <= 0 || layout.sortRect.H <= 0 {
 		return buttons
 	}
 	const gap = 8.0
-	buttonW := (layout.sortRect.W - gap*2) / 3
+	buttonW := (layout.sortRect.W - gap*3) / 4
 	for i, sortMode := range [...]diplomacyListSort{
 		diplomacyListSortAlphabetical,
 		diplomacyListSortRelation,
 		diplomacyListSortPowerRanking,
+		diplomacyListSortEconomicRanking,
 	} {
 		buttons[i] = diplomacyListSortButton{
 			Sort: sortMode,
@@ -773,7 +778,9 @@ func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
 		H: 22,
 	}
 	nameW := diplomNameColumnW
-	maxNameW := content.W - diplomColumnGap - 220
+	// Yeni hazine kolonu için minimum metrik alanını da ayır. Dar listelerde
+	// devlet adı kısalabilir; metrik kolonları birbirinin üzerine binmemeli.
+	maxNameW := content.W - diplomColumnGap - 380
 	if nameW > maxNameW {
 		nameW = maxNameW
 	}
@@ -795,25 +802,32 @@ func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
 	return nameRect, relationRect
 }
 
-func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect, powerRect, rankRect gameui.Rect) {
+func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect, powerRect, rankRect, treasuryRect gameui.Rect) {
 	var metricsRect gameui.Rect
 	nameRect, metricsRect = diplomacyListColumnRects(rowRect)
 	const metricGap = 10.0
-	powerW := metricsRect.W * 0.24
+	powerW := metricsRect.W * 0.20
 	if powerW > 110 {
 		powerW = 110
 	}
 	if powerW < 78 {
 		powerW = 78
 	}
-	rankW := metricsRect.W * 0.24
+	rankW := metricsRect.W * 0.20
 	if rankW > 105 {
 		rankW = 105
 	}
 	if rankW < 78 {
 		rankW = 78
 	}
-	relationW := metricsRect.W - powerW - rankW - metricGap*2
+	treasuryW := metricsRect.W * 0.24
+	if treasuryW > 125 {
+		treasuryW = 125
+	}
+	if treasuryW < 94 {
+		treasuryW = 94
+	}
+	relationW := metricsRect.W - powerW - rankW - treasuryW - metricGap*3
 	if relationW < 0 {
 		relationW = 0
 	}
@@ -825,7 +839,10 @@ func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect
 	rankRect = powerRect
 	rankRect.X = powerRect.X + powerRect.W + metricGap
 	rankRect.W = rankW
-	return nameRect, relationRect, powerRect, rankRect
+	treasuryRect = rankRect
+	treasuryRect.X = rankRect.X + rankRect.W + metricGap
+	treasuryRect.W = treasuryW
+	return nameRect, relationRect, powerRect, rankRect, treasuryRect
 }
 
 func buildDiplomacyBackButton() gameui.Button {
@@ -1029,8 +1046,8 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		}
 		drawFactionFlagBadge(screen, fid, nameInitial, rowRect.X+18, rowRect.Y+4, diplomFactionFlagSize, fc, panelBorder)
 
-		regionCount := len(gs.RegionsOwnedBy(fid))
-		nameRect, relationRect, powerRect, rankRect := diplomacyListMetricColumnRects(rowRect)
+		regionCount := len(gs.LandRegionsOwnedBy(fid))
+		nameRect, relationRect, powerRect, rankRect, treasuryRect := diplomacyListMetricColumnRects(rowRect)
 		leftRow := gameui.NewTableRow(nameRect, []gameui.TableCell{
 			{Text: trimTextToWidth(f.NameTR, FaceMed, nameRect.W), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 		}, 0)
@@ -1066,11 +1083,11 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 			drawUITableRow(screen, neutralRow)
 		}
 
-		militaryPower, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
+		_, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
 		drawUILabel(screen, powerRect, "Askeri güç", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		powerValueRect := powerRect
 		powerValueRect.Y = rowRect.Y + 27
-		drawUILabel(screen, powerValueRect, itoa(militaryPower), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, powerValueRect, factionMilitaryPowerBreakdownLabel(gs, fid), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, rankRect, "Güç sırası", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		rankValueRect := rankRect
 		rankValueRect.Y = rowRect.Y + 27
@@ -1079,6 +1096,10 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 			rankText = itoa(militaryRank) + "/" + itoa(factionCount)
 		}
 		drawUILabel(screen, rankValueRect, rankText, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, treasuryRect, "Hazine", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		treasuryValueRect := treasuryRect
+		treasuryValueRect.Y = rowRect.Y + 27
+		drawUILabel(screen, treasuryValueRect, factionTreasuryLabel(gs, fid), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 	}
 	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
 	if layout.historyRect.W > 0 {
@@ -1644,6 +1665,18 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 	return diplomacyListLayoutForScreen().panelRect.Hit(mx, my)
 }
 
+func factionTreasuryLabel(gs *state.GameState, fid faction.FactionID) string {
+	if gs == nil || fid == "" {
+		return "0/0"
+	}
+	income := victory.GoldIncomeForFaction(gs, fid)
+	gold := 0
+	if f := gs.Factions[fid]; f != nil {
+		gold = f.Gold
+	}
+	return itoa(income) + "/" + itoa(gold)
+}
+
 func sortedFactions(gs *state.GameState) []faction.FactionID {
 	return sortedDiplomacyFactions(gs, diplomacyListSortAlphabetical)
 }
@@ -1664,12 +1697,22 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 	}
 	relationScores := make(map[faction.FactionID]int)
 	adjacentToPlayer := make(map[faction.FactionID]bool)
+	economicIncome := make(map[faction.FactionID]int)
+	economicGold := make(map[faction.FactionID]int)
 	if sortMode == diplomacyListSortRelation {
 		for _, fid := range fids {
 			if rel := diplomacy.Relation(gs, gs.PlayerFactionID, fid); rel != nil {
 				relationScores[fid] = rel.Score
 			}
 			adjacentToPlayer[fid] = factionsShareLandBorder(gs, gs.PlayerFactionID, fid)
+		}
+	}
+	if sortMode == diplomacyListSortEconomicRanking {
+		for _, fid := range fids {
+			economicIncome[fid] = victory.GoldIncomeForFaction(gs, fid)
+			if f := gs.Factions[fid]; f != nil {
+				economicGold[fid] = f.Gold
+			}
 		}
 	}
 	sort.Slice(fids, func(i, j int) bool {
@@ -1689,6 +1732,13 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 			_, rightRank, _ := factionMilitaryPowerStanding(gs, rightID)
 			if leftRank != rightRank {
 				return leftRank < rightRank
+			}
+		case diplomacyListSortEconomicRanking:
+			if economicIncome[leftID] != economicIncome[rightID] {
+				return economicIncome[leftID] > economicIncome[rightID]
+			}
+			if economicGold[leftID] != economicGold[rightID] {
+				return economicGold[leftID] > economicGold[rightID]
 			}
 		}
 

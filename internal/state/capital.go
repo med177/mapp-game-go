@@ -19,7 +19,8 @@ const (
 	CapitalRegionSpiceBonus  = 1
 	CapitalRegionClothBonus  = 1
 
-	CapitalRegionLogisticsBonus = 6
+	CapitalRegionLogisticsBonus        = 6
+	CapitalArmyReplenishmentMultiplier = 2
 )
 
 type CapitalMoveProgress struct {

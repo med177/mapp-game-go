@@ -614,10 +614,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	switch kind {
 	case loadingScenario:
 		g.gs = res.gs
-		if g.gs.MarketPrices == nil {
-			g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
-		}
-		ai.RefreshMarketOrders(g.gs)
+		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
 		g.warDeclarationContinuationPending = false
 		g.gs.AIDiagnosticHistory = nil
@@ -635,7 +632,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
-		ai.RefreshMarketOrders(g.gs)
+		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
 		g.warDeclarationContinuationPending = false
 		if g.gs.DevelopmentMode {
@@ -682,7 +679,7 @@ func (g *Game) startAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
-	ai.RefreshMarketOrders(g.gs)
+	refreshMarketOrdersAndPrices(g.gs)
 	camera := g.renderer.CameraSnapshot()
 	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain > 0 {
 		ai.RecordAIDiagnosticRound(g.gs)
@@ -695,6 +692,35 @@ func (g *Game) startAITurnSequence() {
 	}
 	g.gs.Phase = state.PhaseAITurn
 	g.renderer.ClearAITurnStatus()
+}
+
+// refreshMarketPrices açık pazar emirlerindeki gerçek satış arzını ve mevcut
+// stratejik tahıl açığını aynı fiyat hesabına bağlar.
+func refreshMarketPrices(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	grainDemandByFaction := make(map[faction.FactionID]int, len(gs.Factions))
+	for fid := range gs.Factions {
+		grainDemandByFaction[fid] = gs.StrategicGrainDemand(fid)
+	}
+	gs.MarketPrices = economy.ComputeMarketPricesWithMarketSupply(
+		gs.Factions,
+		gs.OpenMarketSupplyByGood(),
+		grainDemandByFaction,
+	)
+}
+
+// refreshMarketOrdersAndPrices önce emirleri mevcut fiyatla üretir, ardından
+// yeni açık pazar arzını fiyatlara uygular. Böylece yeni oyun ve save yükleme
+// akışlarında emir defteri ile fiyat birbirinden kopmaz.
+func refreshMarketOrdersAndPrices(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	refreshMarketPrices(gs)
+	ai.RefreshMarketOrders(gs)
+	refreshMarketPrices(gs)
 }
 
 func (g *Game) orderedAIFactions() []faction.FactionID {
@@ -2237,11 +2263,8 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 	if amount <= 0 {
 		return
 	}
-	if g.gs.MarketPrices == nil {
-		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
-	}
-	if len(g.gs.MarketOrders.SellOffers) == 0 && len(g.gs.MarketOrders.BuyOrders) == 0 {
-		ai.RefreshMarketOrders(g.gs)
+	if g.gs.MarketPrices == nil || (len(g.gs.MarketOrders.SellOffers) == 0 && len(g.gs.MarketOrders.BuyOrders) == 0) {
+		refreshMarketOrdersAndPrices(g.gs)
 	}
 	price := g.gs.MarketPrices[good]
 	if price <= 0 {
@@ -3046,10 +3069,7 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 }
 
 func (g *Game) startPreparePlayerTurn() {
-	if g.gs.MarketPrices == nil {
-		g.gs.MarketPrices = economy.ComputeMarketPrices(g.gs.Factions)
-	}
-	ai.RefreshMarketOrders(g.gs)
+	refreshMarketOrdersAndPrices(g.gs)
 	g.finishAITurnSequence()
 	g.startLoading(loadingWorldMap, "Harita hazırlanıyor...", func(setProgress func(int)) loadingResult {
 		worldMap := render.PrepareWorldMap(g.gs, "", render.MapModeNormal, setProgress)

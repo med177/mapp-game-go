@@ -771,8 +771,20 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 
 	phaseStr := trimTextToWidth(phaseLabel(gs.Phase), FaceSmall, float64(w)-20)
 	DrawText(screen, phaseStr, float64(x)+10, float64(y)+8, FaceSmall, ColorGray)
-	if quotaText, quotaColor := diplomacyOfferQuotaHUDText(gs); quotaText != "" {
-		quotaW := MeasureText(quotaText, FaceSmall)
+	quotaText, quotaColor := diplomacyOfferQuotaHUDText(gs)
+	quotaW := float64(0)
+	if quotaText != "" {
+		quotaW = MeasureText(quotaText, FaceSmall)
+	}
+	if routeText, routeColor := tradeRouteHUDText(gs); routeText != "" {
+		routeW := MeasureText(routeText, FaceSmall)
+		routeRight := float64(x+w) - 10
+		if quotaW > 0 {
+			routeRight -= quotaW + 12
+		}
+		DrawText(screen, routeText, routeRight-routeW, float64(y)+8, FaceSmall, routeColor)
+	}
+	if quotaText != "" {
 		DrawText(screen, quotaText, float64(x+w)-10-quotaW, float64(y)+8, FaceSmall, quotaColor)
 	}
 
@@ -786,6 +798,19 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 	}
 	techStr = trimTextToWidth(techStr, FaceSmall, float64(w)-20)
 	DrawText(screen, techStr, float64(x)+10, float64(y)+26, FaceSmall, techCol)
+}
+
+func tradeRouteHUDText(gs *state.GameState) (string, color.RGBA) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return "", color.RGBA{}
+	}
+	used := diplomacy.ActiveTradePartnerCount(gs, gs.PlayerFactionID)
+	limit := diplomacy.TradePartnerLimit(gs, gs.PlayerFactionID)
+	label := "Ticaret Rotası: " + itoa(used) + "/" + itoa(limit)
+	if used >= limit {
+		return label, color.RGBA{100, 220, 100, 255}
+	}
+	return label, color.RGBA{220, 90, 90, 255}
 }
 
 func diplomacyOfferQuotaHUDText(gs *state.GameState) (string, color.RGBA) {
@@ -2080,7 +2105,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		if meter > 1 {
 			meter = 1
 		}
-		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d / %d", logistics.Capacity, logistics.Demand), meter, logisticsPressureColor(logistics))
+		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d / %d", logistics.Demand, logistics.Capacity), meter, logisticsPressureColor(logistics))
 		ly += regionPanelStatRowGap
 		if logistics.FriendlySupplyGrainSpent > 0 {
 			drawUILabel(

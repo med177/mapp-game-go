@@ -57,7 +57,8 @@ func AutomaticExportUnitPrice(marketPrice int) int {
 }
 
 // CurrentMarketPrice tur başı güncellenen dinamik piyasa fiyatlarını tutar.
-// Fiyatlar, tüm fraksiyonların toplam stok miktarına göre dalgalanır.
+// Emir defteri mevcutsa fiyatlar açık pazar arzına, yoksa toplam faction
+// stokuna göre dalgalanır.
 type CurrentMarketPrice map[GoodType]int
 
 // ComputeMarketPrices arz-talep dengesine göre tüm malların güncel fiyatını hesaplar.
@@ -75,16 +76,38 @@ func ComputeMarketPricesWithStrategicDemand(
 	factions map[faction.FactionID]*faction.Faction,
 	demandByFaction map[faction.FactionID]int,
 ) CurrentMarketPrice {
+	return ComputeMarketPricesWithMarketSupply(factions, nil, demandByFaction)
+}
+
+// ComputeMarketPricesWithMarketSupply, fiyatı açık pazarda gerçekten satışa
+// konmuş stokla hesaplar. marketSupply nil ise geriye dönük uyumluluk için
+// toplam faction stoğu kullanılır; pazar emir defteri olan akışlar nil olmayan
+// haritayı vermelidir.
+func ComputeMarketPricesWithMarketSupply(
+	factions map[faction.FactionID]*faction.Faction,
+	marketSupply map[GoodType]int,
+	demandByFaction map[faction.FactionID]int,
+) CurrentMarketPrice {
 	prices := make(CurrentMarketPrice, len(BaseGoldValue))
 
-	// Toplam arzı hesapla (tüm fraksiyonların stokları)
+	// Açık pazar arzını hesapla. Emir defteri verilmiyorsa eski save/test
+	// davranışını korumak için tüm aktif fraksiyon stoklarına geri dön.
 	totalSupply := map[GoodType]int{}
-	for _, f := range factions {
-		if f == nil || f.IsEliminated {
-			continue
-		}
+	if marketSupply != nil {
 		for _, good := range TradeGoods() {
-			totalSupply[good] += getGoodAmount(f, good)
+			supply := marketSupply[good]
+			if supply > 0 {
+				totalSupply[good] = supply
+			}
+		}
+	} else {
+		for _, f := range factions {
+			if f == nil || f.IsEliminated {
+				continue
+			}
+			for _, good := range TradeGoods() {
+				totalSupply[good] += getGoodAmount(f, good)
+			}
 		}
 	}
 

@@ -137,6 +137,7 @@ const (
 	overextensionSatisfactionPenalty = 1
 	maxArmySatisfactionBonus         = 10
 	annualSatisfactionDecay          = 1
+	grainZeroSatisfactionPenalty     = 5
 )
 
 // factionAtWarByID savaşta olan fraksiyonları tek tur için önceden işaretler.
@@ -671,7 +672,13 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// devletin tahıl arz cezasından etkilenmez.
 		f.Gold += raidLoot.Gold
 		f.Grain = status.Stockpile
-		if grainPenalty := grainShortageSatisfactionPenalty(status.SupplyLevel); grainPenalty > 0 {
+		grainPenalty := grainShortageSatisfactionPenalty(status.SupplyLevel)
+		if f.Grain == 0 {
+			// Tahıl tamamen bittiyse kıtlık seviyesi ne olursa olsun devletin
+			// tüm kara bölgelerinde halk memnuniyeti tur başına 5 azalır.
+			grainPenalty = grainZeroSatisfactionPenalty
+		}
+		if grainPenalty > 0 {
 			for _, r := range gs.Regions {
 				if r == nil || r.IsSea || r.OwnerID != fidStr {
 					continue
@@ -783,12 +790,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 	gs.ArmyMoveUsage = nil
 
-	// --- Dinamik piyasa fiyatlarını stratejik tahıl talebiyle güncelle ---
-	grainDemandByFaction := make(map[faction.FactionID]int, len(gs.Factions))
-	for fid := range gs.Factions {
-		grainDemandByFaction[fid] = gs.StrategicGrainDemand(fid)
-	}
-	gs.MarketPrices = economy.ComputeMarketPricesWithStrategicDemand(gs.Factions, grainDemandByFaction)
+	// --- Dinamik piyasa fiyatlarını açık pazar arzı ve stratejik tahılla güncelle ---
+	refreshMarketPrices(gs)
 	return report
 }
 

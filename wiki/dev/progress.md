@@ -7,6 +7,72 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Diplomasi hedef listesine `Hazine` (`Gelir/Altın`) sütunu ve
+  `Ekonomik Sıralama` düğmesi eklendi. Ekonomik sıralama önce tur başı brüt
+  geliri, eşitlikte mevcut hazineyi kullanıyor. Regression:
+  `TestDiplomacyEconomicSortUsesIncomeThenTreasury`.
+
+- 2026-08-06: Diplomasi hedef listesindeki askerî güç değeri artık yalnız toplamı
+  değil `ordu/donanma` kırılımını gösteriyor; güç sıralaması toplam etkin güçten
+  hesaplanmaya devam ediyor. Ortak `MilitaryPowerBreakdown` helper'ı kullanıldı.
+
+- 2026-08-06: Başkentte `×2` toparlanma uygulanan kara ordularının birim
+  kartlarında, mevcut yeşil `+` rozetinin soluna ikinci aynı rozet eklendi.
+  Donanma kartları ve normal bölgeler tek rozet davranışını koruyor. Regression:
+  `TestArmyPanelCapitalReplenishmentUsesSecondBadgeOnTheLeft`.
+
+- 2026-08-06: Üst HUD'a `Ticaret Rotası: kullanılan/limit` göstergesi eklendi.
+  Çift yönlü rota kayıtları tek partner sayılır; açık partner slotu kırmızı,
+  partner limiti dolu durum yeşil görünür. Gösterge dinamik liman+pazar bonuslarını
+  da kullanır ve `Elçi` göstergesinin solundaki ortak banda sağdan hizalanır.
+  Regression: `TestTradeRouteHUDTextShowsOpenPartnerSlotsInRed`,
+  `TestTradeRouteHUDTextShowsFullPartnerLimitInGreen`.
+
+- 2026-08-06: AI bina yatırım puanlaması ticaret hedeflerini doğrudan dikkate
+  alıyor. Maksimum pazar seviyesi `+2` rota hacmi tavanı, maksimum liman+pazar
+  kombinasyonu `+1` partner bonusu olarak skorlanıyor; liman adayları yalnız kıyı
+  bölgelerinde açılıyor. Regression: `TestAIBuildingInvestmentTargetsMaximumMarketTradeVolume`,
+  `TestAIBuildingInvestmentTargetsMaximumPortForFullTradeRegion`; doğrulama:
+  `go test ./...`.
+
+- 2026-08-06: Ticaret partneri ve anlaşma hacmi bina gelişimine bağlandı. Temel `4`
+  dış partner limiti, aynı bölgede maksimum liman+pazar seviyesine ulaşan her bölge
+  için `+1`; temel `4` rota hacmi tavanı ise devletin her maksimum pazar bölgesi
+  için `+2` alıyor. Dinamik limitler rota kurulumu, teklif değerlendirmesi,
+  `SanitizeTradeRoutes()`, kapasite yeniden dengelemesi ve ticaret paneliyle ortak
+  kullanılıyor. Regression: `TestTradePartnerLimitGrowsPerFullyDevelopedPortMarketRegion`,
+  `TestTradeRouteAmountLimitGrowsPerFullyDevelopedMarketRegion`; doğrulama:
+  `go test ./internal/...`.
+
+- 2026-08-06: Sahip olunan ulusal başkent bölgesindeki kara ordusu toparlanması
+  normal bölgesel değerin `×2` katına çıkarıldı. Çiftlik/ambar tabanlı ücretsiz
+  toparlanma ve kapasite üzeri tahılla finanse edilen tavan aynı canonical helper'ı
+  kullandığı için başkent bonusu iki akışta da tutarlı; normal bölgeler ve AI
+  recovery skorları değişmedi. Regression:
+  `TestArmyReplenishmentHPDoublesAtFactionCapital`,
+  `TestApplyEconomyTickDoublesArmyReplenishmentAtFactionCapital`.
+
+- 2026-08-06: Piyasa fiyatındaki arz tanımı düzeltildi. `Toplam stok` artık açık
+  pazar arzı gibi kullanılmıyor; fiyat ve fiyat ekranındaki `Pazar Arzı` sütunu
+  kalan `SellOffers` toplamını kullanıyor. Satış arzı sıfırken tahıl fiyatı stok
+  fazlası nedeniyle taban fiyata düşmüyor; save/yeni oyun/AI turu/tur sonu
+  akışları ortak fiyat yenileme yardımcısını kullanıyor. Regression:
+  `TestMarketPriceUsesOpenMarketSupplyInsteadOfReservedStock`,
+  `TestOpenMarketSupplyExcludesReservedFactionStock`; doğrulama:
+  `go test ./... -count=1`.
+
+- 2026-08-06: Ekonomi tick'i sonunda tahılı sıfır olan fraksiyonların tüm kara
+  bölgelerinde memnuniyet tur başına `-5` azaltılıyor; düşük memnuniyet aynı tur
+  çözümünde isyan kontrolüne giriyor. Regression:
+  `TestApplyEconomyTickAppliesZeroGrainPenaltyToAllOwnedRegions`.
+
+- 2026-08-06: Pazar miktar kontrolü oyuncunun mevcut altın değerine bağlandı.
+  Seçili malın fiyatını aşacak `+10` artışı pasifleşiyor; eski miktar değeri de
+  altınla karşılanabilir üst sınıra kırpılıyor. Çizim, input ve cursor hit-test
+  aynı ortak buton durumunu kullanıyor. Regression:
+  `TestTradeMarketPlusTenStopsAtGoldValueLimit`; doğrulama:
+  `go test ./internal/render -count=1`.
+
 - 2026-08-06: Tamamlanmış `consolidate` objective'lerinde claim kaybı recovery
   akışına bağlandı. Başka devletin aldığı claim bölgeleri güncel sahiplerine göre
   dinamik `expand` hedefi olur; AI aynı objective kimliğiyle geri alma planı kurar.

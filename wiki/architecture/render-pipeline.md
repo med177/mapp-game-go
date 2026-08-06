@@ -40,6 +40,15 @@ bölgeler satırının üzerinde büyük, kalın, altın renkli ortak UI değeri
 çizilir. Devlet adı sabit turkuazdır, fraksiyon rengi yalnız bayrak rozetinde
 kalır (`internal/render/panel.go`, `internal/render/ui_bridge.go`).
 
+Diplomasi hedef listesinde askerî güç aynı kanonik kırılımı `ordu/donanma`
+biçiminde gösterir; `Güç sırası` ise kara ve deniz gücünün toplamına göre
+hesaplanmaya devam eder (`internal/render/diplom.go`, `internal/diplomacy/diplomacy.go`).
+
+Aynı listede `Hazine` sütunu devletin tur başı brüt altın geliri ile mevcut
+hazineyi `Gelir/Altın` biçiminde gösterir. Liste üstündeki `Ekonomik Sıralama`
+gelire, eşitlikte mevcut hazineye göre azalan sıralama uygular; gelir hesabı
+`victory.GoldIncomeForFaction` ile ortak tutulur (`internal/render/diplom.go`).
+
 Aktif Savaşlar paneli `WarLedger.DeclarerFactionID` ve `DefenderFactionID` yönünü
 kullanır: savaşı ilk açan devlet soldaki bayrak, ad, kayıp, güç ve ordu sütunudur;
 savunan bunların sağ karşılığıdır. Bu yön eski save'de bulunmuyorsa panel, korunan
@@ -80,6 +89,16 @@ stok sıralaması, mal filtresi ve al/sat kartı ortak rect/input akışını ku
 savaştaki devletler listeden ve işlemden çıkarılır (`internal/render/trade.go`,
 `internal/state/state.go`).
 
+Piyasa fiyatları sekmesindeki `Pazar Arzı` sütunu, toplam faction stoğunu değil
+`OpenMarketSupplyByGood()` ile kalan açık satış emirlerini gösterir; fiyat ve UI
+aynı arz tanımını kullanır (`internal/render/trade.go`, `internal/economy/economy.go`).
+
+Pazar işlem kartındaki miktar, oyuncunun mevcut altını ve seçili malın güncel
+birim fiyatıyla karşılanabilecek üst sınırı aşamaz. Miktar bu sınıra geldiğinde
+`+10` ortak butonunun `Enabled` durumu çizim, input ve imleç hit-test'inde aynı
+şekilde pasifleşir; eski veya sınır dışı miktarlar kartta altınla karşılanabilir
+üst sınıra kırpılır (`internal/render/trade.go`, `internal/render/cursor.go`).
+
 Ticaret panelindeki aday ve pazar listeleri, `ListView` rect'inin altında ayrılmış
 footer boşluğunu kullanarak sayfalama bilgisini yalnızca bir kez çizer; böylece
 bilgi satırı alt kart veya panel çerçevesiyle çakışmaz. Pazar işlem kartındaki
@@ -119,8 +138,15 @@ ticaret haritasında komutan portresi çizilmez, normal harita görünümünde i
 aynı filonun portresi görünmeye devam eder.
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
-aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Böylece
-teklif reddi ile panel bilgisi kapasite veya partner sınırında ayrışmaz.
+aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Partner
+toplamı maksimum liman+pazar bölgelerinden gelen `+1` bonusları, rota kapasitesi
+ise maksimum pazar bölgelerinden gelen `+2` anlaşma tavanı bonuslarını içerir.
+Böylece teklif reddi ile panel bilgisi kapasite veya partner sınırında ayrışmaz.
+
+Üst HUD'da `Ticaret Rotası: kullanılan/limit` etiketi `Elçi` göstergesinin hemen
+soluna sağdan hizalanır ve aynı aktif partner sayısını kullanır. Partner limiti
+dolmamışsa açık slotlar kırmızı, tüm partner slotları anlaşmalarla doluysa yeşil
+çizilir (`internal/render/panel.go`).
 
 Zafer koşulu seçimi, fraksiyona özel kartları üstte ve genel kartları altında
 gruplar. Bir grup üç veya daha fazla karta ulaştığında aynı `victoryCardRect()`
@@ -999,7 +1025,7 @@ Uzun sürebilen senaryo/kayıt yükleme işleri `PhaseLoading` ekranına geçer.
 
 Rakip orduları seçilebilir ama emir verilemez. Renderer rakip ordusu için hareket hedefi çizmez ve sağ/sol tık hareket aksiyonu üretmez. Oyuncu ordularından birinin mevcut hareket menzilindeki rakip ordularda ikon birim sayısını gösterir; detay panelinde birimlerin yaklaşık yarısı görünür, kalanları `Gizli` kartlarıyla saklanır. Menzil dışındaki rakip ordularda birim sayısı ve hareket/birim detayları gizli kalır.
 
-Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bina maliyetlerinde mevcut/gerekli kaynak formatı korunur; recruit birim popup'ında yalnız gerekli miktar gösterilir ve kaynak yetersizse satırın sonuna `eksik` uyarısı eklenir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez. Ordu detay paneli kendi, müttefik veya vassal realm toprağında toparlanan hasarlı birimler için başlıkta kısa durum metni ve kart sağ üstünde küçük `+` rozeti gösterir. Bu kural donanma için de geçerlidir: filo kendi, müttefik veya vassal limanına bağlıysa `DockedRegionID` üzerinden tamirat aktif kabul edilir ve hasarlı gemi kartlarının sağ üstünde aynı rozet çizilir; açık deniz, düşman limanı ve limansız kıyı bu göstergeden dışlanır (`internal/state/state.go`, `internal/army/army.go`, `internal/render/army_panel.go`).
+Bina ve birim kartlarında hover tooltip vardır. Tooltip maliyet, gereksinim, temel etki/istatistik ve kart görselini gösterir. Bina maliyetlerinde mevcut/gerekli kaynak formatı korunur; recruit birim popup'ında yalnız gerekli miktar gösterilir ve kaynak yetersizse satırın sonuna `eksik` uyarısı eklenir. Bölgeye uygun olmayan bina kartları render edilmez; liman son sıradadır ve kıyı olmayan bölgelerde görünmez. Ordu detay paneli kendi, müttefik veya vassal realm toprağında toparlanan hasarlı birimler için başlıkta kısa durum metni ve kart sağ üstünde küçük yeşil `+` rozeti gösterir; aktif ulusal başkent bölgesindeki kara ordularında mevcut rozetin soluna aynı rozetten bir tane daha eklenir. Bu kural donanma için de geçerlidir: filo kendi, müttefik veya vassal limanına bağlıysa `DockedRegionID` üzerinden tamirat aktif kabul edilir ve hasarlı gemi kartlarının sağ üstünde tek rozet çizilir; açık deniz, düşman limanı ve limansız kıyı bu göstergeden dışlanır (`internal/state/state.go`, `internal/army/army.go`, `internal/render/army_panel.go`).
 
 Bölge bilgi panelinde parmak imleci panelin tamamında değil, yalnızca kapatma düğmesi, vergi `-/+` düğmeleri, bina/olay sekmeleri, inşa edilebilir bina kartları ve olay satırları üzerinde gösterilir. Oyun içi HUD/panel cursor davranışı gerçek etkileşim alanlarına bağlıdır: sağ üstte yalnızca `Menü`, alt HUD'da yalnızca üç aksiyon butonu, olay logunda toggle/kart/X, birim panelinde yalnızca birim kartları pointer üretir. Boş panel alanları tıklamayı tüketmeye devam eder ama clickable cursor üretmez. Aynı panelde kaynak satırı ile memnuniyet/vergi çubukları artık ortak `regionPanelStatRowGap` ve `regionPanelBarYOffset` sabitleriyle yerleşir; böylece `Tahıl` satırı ile memnuniyet göstergesi üst üste binmez ve vergi düğmeleri de aynı geometriye bağlı kalır.
 

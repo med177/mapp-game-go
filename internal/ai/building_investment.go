@@ -14,7 +14,7 @@ const (
 	aiMinBuildingInvestmentScore = 80
 )
 
-var aiEconomyBuildingIDs = []string{"granary", "farm", "market", "temple", "walls"}
+var aiEconomyBuildingIDs = []string{"granary", "farm", "market", "port", "temple", "walls"}
 
 type aiBuildingCandidate struct {
 	RegionID        world.RegionID
@@ -27,6 +27,7 @@ type aiBuildingCandidate struct {
 	ThreatScore     int
 	ObjectiveScore  int
 	StabilityScore  int
+	TradeScore      int
 	QueuePenalty    int
 }
 
@@ -125,6 +126,9 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 			if btype == nil || !aiBuildingAllowed(gs, region, buildingID, btype.RequiredTerrain) {
 				continue
 			}
+			if buildingID == "port" && !region.IsCoastal(gs.Regions) {
+				continue
+			}
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
 			level := aiBuildingLevel(region, buildingID)
 			if btype.MaxPerRegion <= 0 || level+queued >= btype.MaxPerRegion {
@@ -178,6 +182,7 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	objectiveScore := aiBuildingObjectiveScore(btype.ID, signals, gs.AIPlans[self.ID])
 	stabilityNeed := maxInt(0, 70-region.Satisfaction)
 	stabilityScore := btype.SatBonus * stabilityNeed / 2
+	tradeScore := aiTradeBuildingScore(gs, self.ID, region, btype.ID, level, queued)
 	if btype.ID == "temple" && region.Satisfaction < 30 {
 		stabilityScore += 180
 	}
@@ -209,14 +214,66 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 		BuildingID:      btype.ID,
 		Cost:            cost,
 		Turns:           turns,
-		Score:           roiScore + bottleneckScore + threatScore + objectiveScore + stabilityScore - queuePenalty - durationPenalty - levelPenalty,
+		Score:           roiScore + bottleneckScore + threatScore + objectiveScore + stabilityScore + tradeScore - queuePenalty - durationPenalty - levelPenalty,
 		ROIScore:        roiScore,
 		BottleneckScore: bottleneckScore,
 		ThreatScore:     threatScore,
 		ObjectiveScore:  objectiveScore,
 		StabilityScore:  stabilityScore,
+		TradeScore:      tradeScore,
 		QueuePenalty:    queuePenalty,
 	}
+}
+
+// aiTradeBuildingScore, yeni ticaret limitlerinin bina yatırımı tarafından
+// doğrudan hedeflenmesini sağlar. Pazarın her maksimum seviyesi anlaşma
+// tavanına +2 hacim ekler; aynı bölgedeki maksimum liman+pazar çifti +1 partner
+// açar. Ara seviyeler de AI'nin son seviyeye ulaşmasını sağlayacak kademeli bir
+// skor alır; ancak kritik savaş/iaşe yatırımlarının önüne mutlak olarak geçmez.
+func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *world.Region, buildingID string, level, queued int) int {
+	if gs == nil || region == nil || fid == "" || (buildingID != "market" && buildingID != "port") {
+		return 0
+	}
+	marketType := gs.BuildingTypes["market"]
+	portType := gs.BuildingTypes["port"]
+	if marketType == nil || marketType.MaxPerRegion <= 0 {
+		return 0
+	}
+
+	marketBefore := aiBuildingLevel(region, "market") + aiQueuedBuildingCount(gs, region.ID, "market", fid)
+	portBefore := aiBuildingLevel(region, "port") + aiQueuedBuildingCount(gs, region.ID, "port", fid)
+	marketAfter := marketBefore
+	portAfter := portBefore
+	if buildingID == "market" {
+		marketAfter = level + queued + 1
+	}
+	if buildingID == "port" {
+		portAfter = level + queued + 1
+	}
+
+	score := 0
+	if buildingID == "market" && marketBefore < marketType.MaxPerRegion {
+		// Her ara seviye son seviyeye giden yolu korur; son seviye ayrıca
+		// TradeRouteAmountLimit'teki +2 hacim bonusunu açar.
+		score += 35 + marketBefore*15
+		if marketAfter >= marketType.MaxPerRegion {
+			score += 260
+		}
+	}
+	if portType != nil && buildingID == "port" && portBefore < portType.MaxPerRegion && region.IsCoastal(gs.Regions) {
+		// Partner bonusu için liman da maksimuma ulaşmalıdır. Liman ara
+		// seviyeleri merchant/deniz üretimiyle birlikte yine değer taşır.
+		score += 25 + portBefore*12
+	}
+
+	if portType != nil && portType.MaxPerRegion > 0 {
+		wasFullTradeRegion := marketBefore >= marketType.MaxPerRegion && portBefore >= portType.MaxPerRegion
+		isFullTradeRegion := marketAfter >= marketType.MaxPerRegion && portAfter >= portType.MaxPerRegion
+		if !wasFullTradeRegion && isFullTradeRegion {
+			score += 300
+		}
+	}
+	return score
 }
 
 func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconomySnapshot {

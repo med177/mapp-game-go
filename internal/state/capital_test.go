@@ -3,9 +3,46 @@ package state
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
+
+func TestArmyReplenishmentHPDoublesAtFactionCapital(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {
+				ID:      "capital",
+				OwnerID: "player",
+				Buildings: []string{
+					"farm", "farm", "granary",
+				},
+				Settlements: []world.Settlement{{ID: "capital_city", IsCenter: true}},
+			},
+			"field": {
+				ID:      "field",
+				OwnerID: "player",
+				Buildings: []string{
+					"farm", "farm", "granary",
+				},
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"capital_army": {ID: "capital_army", OwnerID: "player", RegionID: "capital"},
+			"field_army":   {ID: "field_army", OwnerID: "player", RegionID: "field"},
+		},
+	}
+
+	if got, want := gs.ArmyReplenishmentHP(gs.Armies["capital_army"]), 16; got != want {
+		t.Fatalf("başkent ordusu normal toparlanmanın iki katını almalıydı, got=%d want=%d", got, want)
+	}
+	if got, want := gs.ArmyReplenishmentHP(gs.Armies["field_army"]), 8; got != want {
+		t.Fatalf("normal bölgenin toparlanma değeri değişmemeli, got=%d want=%d", got, want)
+	}
+}
 
 func TestNormalizeFactionCapitalsChoosesBestOwnedSettlement(t *testing.T) {
 	gs := &GameState{
