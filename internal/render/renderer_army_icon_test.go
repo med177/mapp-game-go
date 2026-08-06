@@ -246,6 +246,25 @@ func TestArmyIconPositionsSeparateAdjacentTaskBadges(t *testing.T) {
 	}
 }
 
+func TestArmyIconSpacingSeparatesCommanderPortraitsAndBadges(t *testing.T) {
+	const (
+		leftX  = float32(100)
+		rightX = leftX + armyIconStep
+		cy     = float32(100)
+	)
+
+	leftPortraitX, leftPortraitY, leftPortraitSize := armyCommanderBadgeRect(leftX, cy, false, false)
+	rightPortraitX, rightPortraitY, rightPortraitSize := armyCommanderBadgeRect(rightX, cy, false, false)
+	if leftPortraitX+leftPortraitSize > rightPortraitX || leftPortraitY != rightPortraitY {
+		t.Fatalf("komutan portreleri yatayda boşluk bırakmalı: left=(%.1f,%.1f,%.1f) right=(%.1f,%.1f,%.1f)", leftPortraitX, leftPortraitY, leftPortraitSize, rightPortraitX, rightPortraitY, rightPortraitSize)
+	}
+
+	leftBadge := armyTaskStatusBadgeRect(leftX, cy)
+	if leftBadge.X+leftBadge.W > float64(rightPortraitX) {
+		t.Fatalf("sol ordunun rozeti sağ komutan portresine taşmamalı: badge=%+v portraitX=%.1f", leftBadge, rightPortraitX)
+	}
+}
+
 func TestArmyTaskStatusUsesRaidArmyIDAndShowsLootTooltip(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            4,

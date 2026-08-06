@@ -740,33 +740,6 @@ func acceptPeace(gs *state.GameState, actor, target faction.FactionID) bool {
 	return false
 }
 
-func peaceAcceptanceScore(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) int {
-	if gs == nil || rel == nil {
-		return 0
-	}
-	warPressure := 0
-	if rel.Score < -80 {
-		warPressure = -rel.Score - 80
-	}
-
-	actorPower := MilitaryPower(gs, actor)
-	targetPower := MilitaryPower(gs, target)
-	strengthPressure := 0
-	if actorPower > targetPower {
-		strengthPressure += min(25, (actorPower-targetPower)/8)
-	} else if targetPower > actorPower {
-		strengthPressure -= min(10, (targetPower-actorPower)/12)
-	}
-
-	actorRegions := len(gs.RegionsOwnedBy(actor))
-	targetRegions := len(gs.RegionsOwnedBy(target))
-	if actorRegions > targetRegions {
-		strengthPressure += min(20, (actorRegions-targetRegions)*4)
-	}
-
-	return warPressure + strengthPressure + economicStress(gs, target) + peaceTechBonus(gs, actor)
-}
-
 func acceptTrade(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) bool {
 	assessment := AssessTradeProposal(gs, rel, actor, target)
 	return assessment.Accepted()

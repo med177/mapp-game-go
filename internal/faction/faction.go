@@ -14,6 +14,15 @@ type ResearchState struct {
 	TurnsLeft   int             `json:"turns_left"`
 }
 
+// TerritorialClaim bir fraksiyonun belirli bir bölge üzerindeki tarihsel veya
+// stratejik talebini taşır. Claim'ler senaryo verisidir; barış değerlendirmesi
+// bunları mevcut sahiplik ve aktif AI planıyla birlikte yorumlar.
+type TerritorialClaim struct {
+	RegionID string `json:"region_id"`
+	Value    int    `json:"value"`
+	Core     bool   `json:"core,omitempty"`
+}
+
 // Faction oyundaki bir fraksiyonu temsil eder.
 type Faction struct {
 	ID           FactionID     `json:"id"`
@@ -45,8 +54,9 @@ type Faction struct {
 	// Teknoloji araştırma durumu
 	Research ResearchState `json:"research"`
 
-	AIAggressiveness   int         `json:"ai_aggressiveness"`
-	AIExpansionTargets []FactionID `json:"ai_expansion_targets,omitempty"`
+	AIAggressiveness   int                `json:"ai_aggressiveness"`
+	AIExpansionTargets []FactionID        `json:"ai_expansion_targets,omitempty"`
+	TerritorialClaims  []TerritorialClaim `json:"territorial_claims,omitempty"`
 }
 
 // DiplomaticStance iki fraksiyon arasındaki ilişki durumu.

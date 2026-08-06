@@ -1,11 +1,20 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-06: AI barış kararları tüm senaryolarda ortak savaş değerlendirmesine
+  bağlandı. İlk dört savaş turunda olağan barış kapatıldı; `TerritorialClaims`,
+  aktif expand hedefleri ve `WarLedger` hedefi düşmanın tuttuğu core/claim
+  bölgeleriyle karşılaştırılıyor. Core işgali acil durum dışı barışı engelliyor,
+  claim değeri barış eşiğini yükseltiyor. Savaş sonrası ilişki artık `-45/-60/-70`
+  tabanından toparlanıyor. Regression: `TestPeaceAssessmentRespectsUnresolvedTerritorialClaims`,
+  `TestPeaceAssessmentBlocksUnresolvedCoreOutsideEmergency`, hedefli `internal/diplomacy`
+  ve `internal/ai` testleri.
 
 - 2026-08-05: Komutan geliş bildirimindeki çoklu kart listesi modal dışına
   taşmayacak şekilde panel-local viewport'a alındı. İki görünür satırdan sonraki
@@ -2329,3 +2338,4 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 - 2026-08-01: Taşıma butonunun görünümü düzeltildi. `gameui.Button` ortak dikey merkezleme hesabı etkinleştirildi, sabit text offset kaldırıldı ve etiket çevresine 10 px yatay padding eklendi. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
 - 2026-08-01: Taşınan birlik içeren filolarda `Taşıma: X/Y` butonu yeşil aktif taşıma rengine alındı. Footer ile buton arasında üst-alt 4 px margin bırakıldı; boşluk merchant/görev footer butonlarıyla hizalandı. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
 - 2026-08-01: Filonun taşıdığı kara ordusu rozeti 16 px'e büyütüldü; çift siyah/sarı katman yerine yalnız sarı border ve siyah iç dolgu kullanılıyor. Birlik sayısı outlinesız beyaz metin olarak kalıyor. Regression: `TestNavalEmbarkedArmyBadgeStaysAtUpperRight`, `TestEmbarkedArmyBadgeHitSelectsTransportedArmyView`, `go test ./internal/render -count=1`.
+- 2026-08-06: Yan yana ordu marker'larının ortak merkez aralığı 40 px'e çıkarıldı; komutan portreleri artık bitişmiyor, üst görev/bonus rozetleri komşu portrelerin üzerine taşmıyor. Kuşatma, donanma ve farklı grupların yeniden dağıtım geometrileri aynı adımı kullanıyor. Regression: `TestArmyIconSpacingSeparatesCommanderPortraitsAndBadges`, `go test ./internal/render -run 'TestArmyIcon|TestArmyCommanderBadge|TestArmySelectionIndicator|TestNavalArmyBadges|TestNavalDamageBadge|TestArmyDamageBadge' -count=1`.

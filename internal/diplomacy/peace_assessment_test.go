@@ -44,6 +44,35 @@ func TestPeaceAssessmentBlocksFirstQuarterWithoutEmergency(t *testing.T) {
 	}
 }
 
+func TestPeaceAssessmentRespectsUnresolvedTerritorialClaims(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 12
+	gs.Factions["a"].TerritorialClaims = []faction.TerritorialClaim{
+		{RegionID: "b1", Value: 60},
+	}
+
+	assessment := AssessPeaceDesire(gs, "a", "b")
+	if assessment.UnresolvedClaimCount != 1 || assessment.UnresolvedClaimValue != 60 {
+		t.Fatalf("rakibin elindeki claim barış değerlendirmesine girmedi: %+v", assessment)
+	}
+	if assessment.ShouldPropose() {
+		t.Fatalf("çözümsüz claim varken AI kolay barış önermemeli: %+v", assessment)
+	}
+}
+
+func TestPeaceAssessmentBlocksUnresolvedCoreOutsideEmergency(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 12
+	gs.Factions["a"].TerritorialClaims = []faction.TerritorialClaim{
+		{RegionID: "b1", Value: 100, Core: true},
+	}
+
+	assessment := AssessPeaceDesire(gs, "a", "b")
+	if assessment.UnresolvedCoreClaims != 1 || assessment.Eligible {
+		t.Fatalf("core işgali acil durum dışında barış kapısını kapatmalı: %+v", assessment)
+	}
+}
+
 func TestPeaceAssessmentAllowsEarlyMilitaryCollapse(t *testing.T) {
 	gs := peaceTestState()
 	delete(gs.Armies, "aa")

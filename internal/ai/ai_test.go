@@ -21,10 +21,13 @@ func aiTestTransportType() *army.UnitType {
 
 func TestAIHandlesPeaceWhenWarPressureIsHigh(t *testing.T) {
 	gs := aiTestState()
+	gs.Turn = 8
 	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
 	rel.Stance = faction.StanceWar
 	rel.Score = -100
-	gs.Factions["ai_2"].Gold = 30
+	gs.BeginWarLedger("ai_1", "ai_2")
+	gs.WarLedgerFor("ai_1", "ai_2").StartedTurn = 0
+	gs.Factions["ai_1"].Gold = 30
 
 	aiHandleDiplomacy(gs, "ai_1")
 
@@ -35,11 +38,15 @@ func TestAIHandlesPeaceWhenWarPressureIsHigh(t *testing.T) {
 
 func TestAIQueuesPeaceOfferToPlayer(t *testing.T) {
 	gs := aiTestState()
+	gs.Turn = 8
 	gs.PlayerFactionID = "player"
 	rel := gs.Relations[faction.RelationKey("ai_1", "player")]
 	rel.Stance = faction.StanceWar
 	rel.Score = -100
-	gs.Factions["player"].Gold = 30
+	gs.BeginWarLedger("ai_1", "player")
+	gs.WarLedgerFor("ai_1", "player").StartedTurn = 0
+	gs.Factions["ai_1"].Gold = 30
+	gs.Armies["player_army"] = &army.Army{ID: "player_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
 
 	aiHandleDiplomacy(gs, "ai_1")
 
@@ -60,11 +67,15 @@ func TestAIQueuesPeaceOfferToPlayer(t *testing.T) {
 
 func TestAIDoesNotRepeatRejectedPeaceOfferDuringCooldown(t *testing.T) {
 	gs := aiTestState()
+	gs.Turn = 8
 	gs.PlayerFactionID = "player"
 	rel := gs.Relations[faction.RelationKey("ai_1", "player")]
 	rel.Stance = faction.StanceWar
 	rel.Score = -100
-	gs.Factions["player"].Gold = 30
+	gs.BeginWarLedger("ai_1", "player")
+	gs.WarLedgerFor("ai_1", "player").StartedTurn = 0
+	gs.Factions["ai_1"].Gold = 30
+	gs.Armies["player_army"] = &army.Army{ID: "player_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
 
 	aiHandleDiplomacy(gs, "ai_1")
 	if len(gs.DiplomaticOffers) != 1 {
@@ -83,10 +94,15 @@ func TestAIDoesNotRepeatRejectedPeaceOfferDuringCooldown(t *testing.T) {
 
 func TestAIPrioritizesPeaceOffersByThreatAndTechGap(t *testing.T) {
 	gs := aiTestState()
+	gs.Turn = 8
 	gs.Relations[faction.RelationKey("ai_1", "player")].Stance = faction.StanceWar
 	gs.Relations[faction.RelationKey("ai_1", "player")].Score = -100
 	gs.Relations[faction.RelationKey("ai_2", "player")].Stance = faction.StanceWar
 	gs.Relations[faction.RelationKey("ai_2", "player")].Score = -100
+	gs.BeginWarLedger("ai_1", "player")
+	gs.BeginWarLedger("ai_2", "player")
+	gs.WarLedgerFor("ai_1", "player").StartedTurn = 0
+	gs.WarLedgerFor("ai_2", "player").StartedTurn = 0
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Stance = faction.StancePeace
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
 	gs.Armies["player_army"] = &army.Army{
@@ -217,6 +233,7 @@ func TestAIQueuesAllianceAndTradeOffersWithPriority(t *testing.T) {
 
 func TestAIRespectsDiplomacyOfferQuotaPerTurn(t *testing.T) {
 	gs := &state.GameState{
+		Turn:       8,
 		Difficulty: 1,
 		Factions: map[faction.FactionID]*faction.Faction{
 			"ai": {ID: "ai", NameTR: "AI", Religion: religion.Catholic, AIAggressiveness: 20},
@@ -239,14 +256,7 @@ func TestAIRespectsDiplomacyOfferQuotaPerTurn(t *testing.T) {
 			faction.RelationKey("ai", "t4"): {FactionA: "ai", FactionB: "t4", Score: -100, Stance: faction.StanceWar},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"ai_army": {ID: "ai_army", OwnerID: "ai", RegionID: "ai_cap", Units: []army.Unit{
-				{TypeID: "inf", CurrentHP: 100},
-				{TypeID: "inf", CurrentHP: 100},
-				{TypeID: "inf", CurrentHP: 100},
-				{TypeID: "inf", CurrentHP: 100},
-				{TypeID: "inf", CurrentHP: 100},
-				{TypeID: "inf", CurrentHP: 100},
-			}},
+			"ai_army": {ID: "ai_army", OwnerID: "ai", RegionID: "ai_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
 			"t1_army": {ID: "t1_army", OwnerID: "t1", RegionID: "t1_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
 			"t2_army": {ID: "t2_army", OwnerID: "t2", RegionID: "t2_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
 			"t3_army": {ID: "t3_army", OwnerID: "t3", RegionID: "t3_cap", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
@@ -255,6 +265,10 @@ func TestAIRespectsDiplomacyOfferQuotaPerTurn(t *testing.T) {
 		UnitTypes: map[string]*army.UnitType{
 			"inf": {ID: "inf", Attack: 10, Defense: 10, Morale: 50},
 		},
+	}
+	for _, targetID := range []faction.FactionID{"t1", "t2", "t3", "t4"} {
+		gs.BeginWarLedger("ai", targetID)
+		gs.WarLedgerFor("ai", targetID).StartedTurn = 0
 	}
 
 	aiHandleDiplomacy(gs, "ai")

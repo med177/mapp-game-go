@@ -13,7 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-const armyTaskStatusIconStep = float32(38)
+const armyTaskStatusIconStep = armyIconStep
 
 func (r *Renderer) armyIconStepForTaskStatus(aids []army.ArmyID, fallback float32) float32 {
 	if r == nil || r.gs == nil {

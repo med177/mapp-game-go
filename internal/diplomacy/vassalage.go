@@ -458,8 +458,16 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			}
 			rel := EnsureRelation(gs, lhs, rhs)
 			wasWar := rel.Stance == faction.StanceWar
+			leftAssessment := PeaceAssessment{}
+			rightAssessment := PeaceAssessment{}
+			if wasWar {
+				leftAssessment = AssessPeaceDesire(gs, lhs, rhs)
+				rightAssessment = AssessPeaceDesire(gs, rhs, lhs)
+			}
 			rel.Stance = faction.StancePeace
-			rel.Score = -20
+			if wasWar {
+				rel.Score = postWarRelationScore(leftAssessment, rightAssessment)
+			}
 			removeTradeRoutesBetween(gs, lhs, rhs)
 			if wasWar {
 				gs.EndWarLedger(lhs, rhs)
@@ -470,6 +478,19 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 	removePendingSurrenderOffersBetween(gs, left, right)
 	gs.EvacuateNavalLandingSiegesAfterPeace(left, right)
 	gs.EvacuateArmiesFromPeaceTerritory(left, right)
+}
+
+// postWarRelationScore savaşın bitmesiyle düşmanlığın kaybolmadığını temsil
+// eder. Önceki -20 değeri, -80 savaş puanını tek anda nötrleştiriyor ve ilişkiyi
+// birkaç diplomatik işlemle gereğinden hızlı normale taşıyordu.
+func postWarRelationScore(left, right PeaceAssessment) int {
+	if left.UnresolvedCoreClaims > 0 || right.UnresolvedCoreClaims > 0 {
+		return -70
+	}
+	if left.ObjectiveDone || right.ObjectiveDone {
+		return -45
+	}
+	return -60
 }
 
 // removePendingSurrenderOffersBetween, barış kabul edildiğinde aynı savaşın

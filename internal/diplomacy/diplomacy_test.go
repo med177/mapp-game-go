@@ -652,9 +652,12 @@ func TestEnsureTradeRoutesForActiveRelationsRemovesStaleEliminatedRoutes(t *test
 
 func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	gs := testGameState()
+	gs.Turn = 8
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceWar
 	rel.Score = -100
+	gs.BeginWarLedger("a", "b")
+	gs.WarLedgerFor("a", "b").StartedTurn = 0
 	gs.Factions["b"].Gold = 40
 
 	result := Execute(gs, "a", "b", ActionProposePeace)
@@ -662,13 +665,16 @@ func TestProposePeaceAcceptedUnderWarPressure(t *testing.T) {
 	if !result.Accepted || !result.Applied {
 		t.Fatalf("yüksek savaş baskısında barış kabul edilmeliydi: %+v", result)
 	}
-	if rel.Stance != faction.StancePeace || rel.Score != -20 {
+	if rel.Stance != faction.StancePeace || rel.Score != -60 {
 		t.Fatalf("barış sonrası ilişki güncellenmedi: %+v", rel)
 	}
 }
 
 func TestAcceptedPeaceEvacuatesNavalLandingSiege(t *testing.T) {
 	gs := testGameState()
+	gs.Turn = 8
+	gs.BeginWarLedger("a", "b")
+	gs.WarLedgerFor("a", "b").StartedTurn = 0
 	gs.Regions["b_cap"].WorldX = 100
 	gs.Regions["b_cap"].WorldY = 0
 	gs.Regions["a_cap"].WorldX = 0
@@ -699,6 +705,9 @@ func TestAcceptedPeaceEvacuatesNavalLandingSiege(t *testing.T) {
 
 func TestAcceptedPeaceEvacuatesLandArmyRegardlessOfMovePoints(t *testing.T) {
 	gs := testGameState()
+	gs.Turn = 8
+	gs.BeginWarLedger("a", "b")
+	gs.WarLedgerFor("a", "b").StartedTurn = 0
 	gs.Regions["a_cap"].WorldX = 0
 	gs.Regions["a_cap"].WorldY = 0
 	gs.Regions["b_cap"].WorldX = 100
@@ -733,6 +742,7 @@ func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
 	rel.Stance = faction.StanceWar
 	rel.Score = -100
 	gs.BeginWarLedger("a", "b")
+	gs.WarLedgerFor("a", "b").StartedTurn = 0
 	gs.Factions["b"].Gold = 40
 
 	if result := Execute(gs, "a", "b", ActionProposePeace); !result.Applied {
@@ -753,9 +763,12 @@ func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
 
 func TestProposePeaceAcceptedWithPeaceTechBonus(t *testing.T) {
 	gs := testGameState()
+	gs.Turn = 8
 	rel := EnsureRelation(gs, "a", "b")
 	rel.Stance = faction.StanceWar
 	rel.Score = -88
+	gs.BeginWarLedger("a", "b")
+	gs.WarLedgerFor("a", "b").StartedTurn = 0
 	gs.Factions["a"].Research.Completed = map[string]bool{"diplomacy": true}
 	gs.TechTypes = map[string]*tech.Technology{
 		"diplomacy": {ID: "diplomacy", Effects: tech.Effects{PeaceRelationBonus: 10}},
@@ -813,7 +826,7 @@ func TestResolvePeaceOfferAcceptedByPlayerAlwaysApplies(t *testing.T) {
 	if !result.Accepted || !result.Applied {
 		t.Fatalf("oyuncu kabul ettiğinde barış kesin uygulanmalıydı: %+v", result)
 	}
-	if rel.Stance != faction.StancePeace || rel.Score != -20 {
+	if rel.Stance != faction.StancePeace || rel.Score != -60 {
 		t.Fatalf("barış kabulünde relation peace/-20 olmalıydı: %+v", rel)
 	}
 }

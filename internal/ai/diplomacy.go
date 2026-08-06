@@ -38,13 +38,10 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				break
 			}
 			shouldProposePeace := false
-			if gs.ScenarioID == "1300_ottoman_rise" {
-				shouldProposePeace = diplomacy.AssessPeaceDesire(gs, fid, otherID).ShouldPropose()
-			} else {
-				selfPower := diplomacy.MilitaryPower(gs, fid)
-				otherPower := diplomacy.MilitaryPower(gs, otherID)
-				shouldProposePeace = rel.Score <= -90 || selfPower < otherPower || len(gs.RegionsOwnedBy(fid)) < len(gs.RegionsOwnedBy(otherID))
-			}
+			// Tüm senaryolar aynı savaş yorgunluğu, claim/core ve acil durum
+			// değerlendirmesini kullanır. Eski güç/region karşılaştırması savaşı
+			// ilk turda bitirebildiği için burada özellikle kaldırılmıştır.
+			shouldProposePeace = diplomacy.AssessPeaceDesire(gs, fid, otherID).ShouldPropose()
 			if shouldProposePeace {
 				if !aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposePeace) {
 					continue

@@ -714,12 +714,17 @@ func Test1300PlayableFactionsHaveHistoricalVictoryOption(t *testing.T) {
 }
 
 func Test1300ScenarioFactionReferencesExist(t *testing.T) {
-	scenarioPath, _, factions := load1300IntegrityData(t)
+	scenarioPath, regions, factions := load1300IntegrityData(t)
 
 	for factionID, definition := range factions {
 		for _, targetID := range definition.AIExpansionTargets {
 			if factions[targetID] == nil {
 				t.Errorf("AI genişleme hedefi bilinmeyen devlete bağlı: faction=%s target=%s", factionID, targetID)
+			}
+		}
+		for _, claim := range definition.TerritorialClaims {
+			if regions[world.RegionID(claim.RegionID)] == nil {
+				t.Errorf("territorial claim bilinmeyen bölgeye bağlı: faction=%s region=%s", factionID, claim.RegionID)
 			}
 		}
 	}

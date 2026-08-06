@@ -225,7 +225,11 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28
+    "ai_aggressiveness": 28,
+    "territorial_claims": [
+      { "region_id": "bithynia", "value": 70 },
+      { "region_id": "bilecik_frontier", "value": 50 }
+    ]
   },
   {
     "id": "candar_bey",
@@ -1278,6 +1282,14 @@
       "germiyan_bey",
       "karesioglu_bey",
       "ahiler"
+    ],
+    "territorial_claims": [
+      { "region_id": "bithynia", "value": 100, "core": true },
+      { "region_id": "bursa", "value": 80 },
+      { "region_id": "constantinople", "value": 80 },
+      { "region_id": "thrace", "value": 60 },
+      { "region_id": "germiyan", "value": 55 },
+      { "region_id": "aydinoglu", "value": 50 }
     ]
   },
   {

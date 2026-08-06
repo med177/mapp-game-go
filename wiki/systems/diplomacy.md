@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -102,7 +102,7 @@ yönünü değiştirmez; aktif savaş görünümünde ilan eden solda kalır
 
 | Duruş | Geçiş Koşulu | Puan Etkisi |
 |---|---|---|
-| `StancePeace` | Varsayılan / barış sonrası | Score = -20 |
+| `StancePeace` | Varsayılan / barış sonrası | Başlangıç 0; savaş sonrası -45 / -60 / -70 |
 | `StanceWar` | Savaş ilan edildiğinde | Score = -80 |
 | `StanceTrade` | Ticaret anlaşması | Score +15 |
 | `StanceAllied` | İttifak | Score +20 |
@@ -230,7 +230,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Olay | Puan Değişimi |
 |---|---|
 | Savaş ilanı | -80 (sabit) |
-| Barış | -20 (sıfırlama) |
+| Barış | Savaş sonucuna göre -45 / -60 / -70; düşmanlık anında sıfırlanmaz |
 | Heyet | +8 |
 | Hediye | +15 |
 | Ticaret | +15 |
@@ -317,7 +317,7 @@ akışında uygulanır.
 
 AI:
 
-- 1300'de savaşın ilk üç turunda normal barış denemez; objective tamamlanması, toprak ve
+- Tüm senaryolarda savaşın ilk dört turunda normal barış denemez; objective tamamlanması, toprak ve
   birlik kaybı, süre/durgunluk, güç ve ekonomik stres, çoklu savaş ve başkent tehdidi
   barış baskısını belirler. Başkent tehdidi veya askerî çöküş erken kapıyı aşabilir;
   12 turu geçen ve son 8 turda muharebe/aktif kuşatma üretmeyen savaşlar otomatik
@@ -337,6 +337,14 @@ AI:
   açıklamasını taşır. Savaş süresi/kayıpları, mevcut altın ve tahıl seviyesi, sahipli
   bölgelerin ortalama memnuniyet açığı ve savaş ilişkisinin negatif skoru ayrı raporlanır;
   bunlar save'e yazılmaz, güncel state'ten türetilir.
+- `Faction.TerritorialClaims` içindeki core bölgeleri ve claim değerleri mevcut
+  sahiplikle karşılaştırılır. Düşmanın elindeki core, acil durum yoksa barış
+  kapısını kapatır; normal claim'ler barış eşiğini yükseltir. Aktif expand planı,
+  savaş ledger hedefi ve `ai_expansion_targets` de aynı değerlendirmeye katılır.
+- Savaş kapandığında ilişki `-20` ile nötrlenmez: çözüme ulaşmış hedefte `-45`,
+  normal beyaz barışta `-60`, çözümsüz core varken `-70` tabanı kullanılır.
+  Barıştaki doğal `+1/tur` iyileşmesi ve ücretli heyet/hediye aksiyonları bu
+  savaş hafızasını kademeli olarak onarır.
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar

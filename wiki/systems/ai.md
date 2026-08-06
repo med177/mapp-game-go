@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -74,6 +74,15 @@ memnuniyet ve ilişki baskılarını raporlar. `AssessPeaceSettlement` AI-AI
 barışını beyaz barış, bölge bırakma, tazminat veya vassallık sonucuna ayırır;
 `ExecuteAIPeace` sonucu uygular. Oyuncuya gelen bekleyen barış teklifi, açık
 seçim olmadan toprak veya altın kaybettirmez.
+
+Barış kararı artık tüm senaryolarda ortak `AssessPeaceDesire()` akışından geçer.
+İlk dört savaş turunda olağan teklif üretilmez; başkent tehdidi veya askerî
+çöküş acil durum istisnasıdır. AI, `TerritorialClaims`, aktif expand planı ve
+`WarLedger` hedefiyle düşmanın tuttuğu bölgeleri kontrol eder. Core işgali
+acil durum yoksa barış kabulünü kapatır; normal claim değeri eşik ve skor
+üzerinde baskı oluşturur. Savaş sonrası relation tabanı da hedef sonucuna göre
+`-45`, `-60` veya `-70` olur; böylece AI savaşları bir-iki tur sonra barışla
+ve ilişki puanını hızlıca sıfırlayarak kapatamaz.
 
 `BuildAIDiagnosticSnapshot` planı, cephe hedeflerini, güç/tehdit değerlerini,
 ordu rol dağılımını ve lojistik/yedek kuvvet bloklanma nedenlerini tek runtime

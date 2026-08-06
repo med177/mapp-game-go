@@ -3,14 +3,14 @@ package diplomacy
 import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 const (
-	peaceDesireThreshold     = 42
-	peaceMinimumWarTurns     = 1
-	peaceOfferCooldown       = 1
-	peaceEmergencyDiscount   = 10
-	peaceAcceptanceThreshold = 18
+	peaceDesireThreshold   = 42
+	peaceMinimumWarTurns   = 4
+	peaceOfferCooldown     = 1
+	peaceEmergencyDiscount = 10
 )
 
 // PeaceProposalAssessment, teklif ekranı ile gerçek barış kararının aynı
@@ -29,7 +29,7 @@ type PeaceProposalAssessment struct {
 // Hedefin kabul kararını hesapladığı için renderer'ın yaklaşık bir formülle
 // farklı sonuç göstermesini engeller.
 func AssessPeaceProposal(gs *state.GameState, actor, target faction.FactionID) PeaceProposalAssessment {
-	assessment := PeaceProposalAssessment{Threshold: peaceAcceptanceThreshold}
+	assessment := PeaceProposalAssessment{Threshold: peaceDesireThreshold}
 	if gs == nil || actor == "" || target == "" || actor == target {
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
@@ -40,18 +40,20 @@ func AssessPeaceProposal(gs *state.GameState, actor, target faction.FactionID) P
 		return assessment
 	}
 
-	if gs.ScenarioID == "1300_ottoman_rise" {
-		// AssessPeaceDesire hedefin (kabul edecek tarafın) perspektifindedir.
-		desire := AssessPeaceDesire(gs, target, actor)
-		assessment.Score = desire.Score
-		assessment.Threshold = desire.Threshold
-		assessment.Accepted = desire.ShouldPropose()
-		return finalizePeaceProposalAssessment(assessment)
-	}
-
-	assessment.Score = peaceAcceptanceScore(gs, rel, actor, target)
-	assessment.Accepted = assessment.Score >= assessment.Threshold
+	// Kabul kararı her senaryoda hedefin perspektifinden verilir. Teklif
+	// sahibinin barış teknolojisi, hedef için yapılan anlaşma teşviki olarak
+	// ayrıca değerlendirmeye eklenir.
+	desire := assessPeaceAcceptance(gs, actor, target)
+	assessment.Score = desire.Score
+	assessment.Threshold = desire.Threshold
+	assessment.Accepted = desire.ShouldPropose()
 	return finalizePeaceProposalAssessment(assessment)
+}
+
+func assessPeaceAcceptance(gs *state.GameState, proposer, responder faction.FactionID) PeaceAssessment {
+	assessment := AssessPeaceDesire(gs, responder, proposer)
+	assessment.Score += peaceTechBonus(gs, proposer)
+	return assessment
 }
 
 func finalizePeaceProposalAssessment(assessment PeaceProposalAssessment) PeaceProposalAssessment {
@@ -93,14 +95,23 @@ type PeaceAssessment struct {
 	RegionsGained        int
 	ObjectiveHeld        int
 	ObjectiveTotal       int
+	UnresolvedCoreClaims int
+	UnresolvedClaimValue int
+	UnresolvedClaimCount int
 }
 
 func (a PeaceAssessment) ShouldPropose() bool {
-	return a.Eligible && (a.Score >= a.Threshold || a.Stalemate)
+	if !a.Eligible {
+		return false
+	}
+	// Durgunluk, çözümsüz bir çekirdek/toprak talebini tek başına ortadan
+	// kaldırmaz. Aksi halde AI dört tur hareketsiz kaldığında hedef bölgesini
+	// almadan otomatik beyaz barışa döner.
+	return a.Score >= a.Threshold || (a.Stalemate && a.UnresolvedClaimValue == 0)
 }
 
-// AssessPeaceDesire aktif savaşı actor perspektifinden değerlendirir. Bu yeni
-// model yalnızca 1300_ottoman_rise için kullanılır.
+// AssessPeaceDesire aktif savaşı actor perspektifinden değerlendirir. Tüm
+// senaryolarda ortak savaş yorgunluğu, claim/core ve acil durum modelidir.
 func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) PeaceAssessment {
 	assessment := PeaceAssessment{Threshold: peaceDesireThreshold}
 	if gs == nil || actor == "" || opponent == "" || actor == opponent || !IsWar(gs, actor, opponent) {
@@ -155,6 +166,7 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	}
 
 	assessment.Score += economicStress(gs, actor)
+	assessment.Score += assessment.RelationshipPressure
 	if extraWars := activeWarCount(gs, actor) - 1; extraWars > 0 {
 		assessment.Score += min(24, extraWars*12)
 	}
@@ -165,6 +177,13 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	}
 	if capitalUnderWarThreat(gs, opponent, actor) {
 		assessment.Score -= 15
+	}
+
+	assessment.UnresolvedCoreClaims, assessment.UnresolvedClaimValue, assessment.UnresolvedClaimCount = territorialClaimPressure(gs, actor, opponent, ledger)
+	assessment.Score -= min(40, assessment.UnresolvedClaimValue/2)
+	assessment.Threshold += min(20, assessment.UnresolvedClaimValue/5)
+	if assessment.UnresolvedCoreClaims > 0 {
+		assessment.Score -= 25
 	}
 
 	assessment.ObjectiveDone = warObjectiveCompleted(gs, actor, opponent)
@@ -184,11 +203,97 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 		assessment.Threshold -= peaceEmergencyDiscount
 	}
 	assessment.Eligible = assessment.WarTurns >= peaceMinimumWarTurns || assessment.Emergency
+	// Başkent tehdidi veya askerî çöküş gerçek acil durumdur; bunun dışındaki
+	// durumda düşmanın elindeki core bölgesi için barış kapısı kapalı kalır.
+	if assessment.UnresolvedCoreClaims > 0 && !assessment.Emergency {
+		assessment.Eligible = false
+	}
 	if ledger.LastPeaceOfferTurn > 0 && gs.Turn-ledger.LastPeaceOfferTurn < peaceOfferCooldown {
 		assessment.Eligible = false
 	}
 	assessment.Stalemate = isWarStalemate(gs, actor, opponent, ledger)
 	return assessment
+}
+
+// territorialClaimPressure actor'un opponent'tan almak istediği, hâlen
+// opponent elinde bulunan bölgeleri toplar. Açık claim verisi yoksa mevcut
+// AI planı, savaş ledger'ındaki kilitli hedef ve faction seviyesindeki
+// ai_expansion_targets geriye dönük uyumlu hedef kaynağı olarak kullanılır.
+func territorialClaimPressure(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) (coreCount, value, count int) {
+	if gs == nil || actor == "" || opponent == "" {
+		return 0, 0, 0
+	}
+	claims := make(map[string]faction.TerritorialClaim, 8)
+	add := func(regionID string, claimValue int, core bool) {
+		if regionID == "" {
+			return
+		}
+		region := gs.Regions[world.RegionID(regionID)]
+		if region == nil || region.IsSea || region.OwnerID != string(opponent) {
+			return
+		}
+		if claimValue < 1 {
+			claimValue = 1
+		}
+		current, exists := claims[regionID]
+		if !exists || claimValue > current.Value || (core && !current.Core) {
+			if claimValue < current.Value {
+				claimValue = current.Value
+			}
+			claims[regionID] = faction.TerritorialClaim{
+				RegionID: regionID,
+				Value:    claimValue,
+				Core:     core || current.Core,
+			}
+		}
+	}
+
+	if actorFaction := gs.Factions[actor]; actorFaction != nil {
+		if actorFaction.CapitalSettlementID != "" {
+			if capitalRegion, _, _, ok := gs.FindSettlementByID(actorFaction.CapitalSettlementID); ok && capitalRegion != nil {
+				add(string(capitalRegion.ID), 100, true)
+			}
+		}
+		for _, claim := range actorFaction.TerritorialClaims {
+			add(claim.RegionID, claim.Value, claim.Core)
+		}
+		if aiHasExpansionTarget(actorFaction, opponent) {
+			if targetFaction := gs.Factions[opponent]; targetFaction != nil && targetFaction.CapitalSettlementID != "" {
+				if capitalRegion, _, _, ok := gs.FindSettlementByID(targetFaction.CapitalSettlementID); ok && capitalRegion != nil {
+					add(string(capitalRegion.ID), 50, false)
+				}
+			}
+		}
+	}
+	if plan := gs.AIPlans[actor]; plan != nil && plan.Kind == state.AIObjectiveExpand && plan.TargetFactionID == opponent {
+		for index, regionID := range plan.TargetRegionIDs {
+			add(string(regionID), max(30, 50-index*5), false)
+		}
+	}
+	if ledger != nil {
+		add(string(ledger.TargetRegionID), 55, false)
+	}
+
+	for _, claim := range claims {
+		count++
+		value += claim.Value
+		if claim.Core {
+			coreCount++
+		}
+	}
+	return coreCount, min(100, value), count
+}
+
+func aiHasExpansionTarget(actor *faction.Faction, target faction.FactionID) bool {
+	if actor == nil || target == "" {
+		return false
+	}
+	for _, targetID := range actor.AIExpansionTargets {
+		if targetID == target {
+			return true
+		}
+	}
+	return false
 }
 
 func warExhaustionFor(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger, warTurns, ownLosses, ownRegionsLost int) int {

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-08-04
+last_updated: 2026-08-06
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -273,13 +273,24 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
     "turns_left": 0
   },
   "ai_aggressiveness": 62,
-  "ai_expansion_targets": ["east_rome", "germiyan_bey"]
+  "ai_expansion_targets": ["east_rome", "germiyan_bey"],
+  "territorial_claims": [
+    { "region_id": "bithynia", "value": 100, "core": true },
+    { "region_id": "constantinople", "value": 80 }
+  ]
 }
 ```
 
 Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
 
 `ai_expansion_targets` opsiyoneldir ve fraksiyon ID listesi taşır. Normal/zor zorlukta AI bu hedefleri fırsatçı savaş değerlendirmesinde önceliklendirir; hedefin yine kara sınırı paylaşması, ilişkinin `peace` olması ve güç kıyasından geçmesi gerekir.
+
+`territorial_claims` opsiyoneldir. Her kayıt `region_id`, `value` (`1..100`) ve
+opsiyonel `core` alanını taşır. `core` bölgeleri, başkent tehdidi veya askerî
+çöküş gibi acil durum yoksa AI'nin o bölge düşmandayken olağan barışı kabul
+etmesini engeller. Normal claim değeri barış eşiğini yükseltir; aktif
+`AIPlanState.TargetRegionIDs`, `WarLedger.TargetRegionID` ve tarihsel
+`ai_expansion_targets` de veri yoksa geriye dönük claim kaynağı olarak kullanılır.
 
 `research.completed` teknoloji ID'lerini anahtar, tamamlanma durumunu `true` değer
 olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme sırasında

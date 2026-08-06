@@ -160,6 +160,9 @@ func TestAIBesiegerCanOfferPlayerSiegeSurrender(t *testing.T) {
 
 func TestAIPeaceOfferIsQueuedBeforeSiegeSurrenderOffer(t *testing.T) {
 	gs := aiSiegeTestState(false)
+	gs.Turn = 8
+	gs.BeginWarLedger("ai_1", "player")
+	gs.WarLedgerFor("ai_1", "player").StartedTurn = 0
 	gs.Regions["player_second"] = &world.Region{ID: "player_second", OwnerID: "player"}
 	gs.Relations[faction.RelationKey("ai_1", "player")].Score = -100
 	gs.Sieges = map[world.RegionID]*state.SiegeState{

@@ -60,10 +60,10 @@ func TestArmyIconPositionsKeepBesiegerLeftOfSplitPart(t *testing.T) {
 	if positions[0].ArmyID != "army_p1_9" || positions[1].ArmyID != "army_p1_10" {
 		t.Fatalf("kuşatan ordu solda, ayrılan parça sağda olmalıydı: %+v", positions)
 	}
-	if got := positions[1].X - positions[0].X; got != 52 {
+	if got := positions[1].X - positions[0].X; got != 80 {
 		t.Fatalf("kuşatma çiftinde kılıç rozeti için arada bir slot bırakılmalıydı: delta=%.1f", got)
 	}
-	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+26 {
+	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+40 {
 		t.Fatalf("kılıç rozeti kuşatan ile savunan ordunun ortasında olmalıydı: got=%.1f", got)
 	}
 }
@@ -122,15 +122,15 @@ func TestArmyIconPositionsKeepSiegePairOnFortressAnchor(t *testing.T) {
 	if positions[0].ArmyID != "besieger" || positions[1].ArmyID != "defender" {
 		t.Fatalf("kuşatma çifti kale anchor'ında kuşatan-savunmacı sırasını korumalıydı: %+v", positions)
 	}
-	if got := positions[1].X - positions[0].X; got != 52 {
-		t.Fatalf("kuşatma çifti tek ortak marker grubunda 52 px ayrılmalıydı: delta=%.1f", got)
+	if got := positions[1].X - positions[0].X; got != 80 {
+		t.Fatalf("kuşatma çifti tek ortak marker grubunda 80 px ayrılmalıydı: delta=%.1f", got)
 	}
-	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+26 {
+	if got := armySiegeBadgeCenterX(positions[0].X, positions[1].X, true); got != positions[0].X+40 {
 		t.Fatalf("kılıç rozeti kuşatma çiftinin ortak orta slotunda olmalıydı: got=%.1f", got)
 	}
 }
 
-func TestArmyIconPositionsLeaveThreePixelsBetweenNavalMarkers(t *testing.T) {
+func TestArmyIconPositionsSeparateNavalMarkers(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{
 			"sea": {ID: "sea", IsSea: true},
@@ -151,8 +151,8 @@ func TestArmyIconPositionsLeaveThreePixelsBetweenNavalMarkers(t *testing.T) {
 	if len(positions) != 2 {
 		t.Fatalf("iki donanma ikonu bekleniyordu, got=%d", len(positions))
 	}
-	if got := positions[1].X - positions[0].X; got != 29 {
-		t.Fatalf("yan yana donanma markerları arasında 3 px boşluk olmalıydı: delta=%.1f", got)
+	if got := positions[1].X - positions[0].X; got != 40 {
+		t.Fatalf("yan yana donanma markerları arasında komutan rozeti için boşluk olmalıydı: delta=%.1f", got)
 	}
 }
 
@@ -290,8 +290,8 @@ func TestArmyIconPositionsPutSiegeSupportLeftOfBesieger(t *testing.T) {
 	if positions[0].ArmyID != "support" || positions[1].ArmyID != "besieger" || positions[2].ArmyID != "defender" {
 		t.Fatalf("destek ordusu kuşatanın solunda, savunmacı sağında olmalıydı: %+v", positions)
 	}
-	if got := positions[1].X - positions[0].X; got != 26 {
-		t.Fatalf("destek ile kuşatan bitişik slotlarda olmalıydı: delta=%.1f", got)
+	if got := positions[1].X - positions[0].X; got != 40 {
+		t.Fatalf("destek ile kuşatan arasında marker boşluğu olmalıydı: delta=%.1f", got)
 	}
 }
 

@@ -93,7 +93,7 @@ func ExecuteAIPeace(gs *state.GameState, proposer, responder faction.FactionID) 
 	if !spendDiplomacyOfferQuota(gs, proposer) {
 		return Result{Message: diplomacyOfferQuotaBlockReasonTR}
 	}
-	if !acceptPeace(gs, proposer, responder) {
+	if !assessPeaceAcceptance(gs, proposer, responder).ShouldPropose() {
 		return Result{Message: factionLabel(gs, responder) + " barışı reddetti."}
 	}
 	settlement := AssessPeaceSettlement(gs, proposer, responder)

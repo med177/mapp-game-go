@@ -2226,6 +2226,14 @@ type screenRect struct {
 	X, Y, W, H float64
 }
 
+// Ordu gruplarında komutan portresi 32 px, görev/bonus rozetleri ise 20 px
+// genişliğindedir. 30 px merkez aralığı, marker'ların yanı sıra bu üst
+// katmanların da komşu orduya taşmamasını sağlar.
+const (
+	armyIconStep  = float32(32)
+	navalIconStep = float32(32)
+)
+
 func (r *Renderer) regionScreenPos(region *world.Region) (float64, float64) {
 	wx, wy := r.regionWorldPos(region)
 	return r.worldToScreen(wx, wy)
@@ -2249,11 +2257,6 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
-	const (
-		armyIconStep  = float32(26) // 26 px marker çapı/ölçüsü
-		navalIconStep = float32(29) // 26 px marker + 3 px donanma boşluğu
-	)
-
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {

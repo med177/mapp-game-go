@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-07-31
+last_updated: 2026-08-06
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -129,6 +129,13 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 `faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
 
 Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif savaş hedefleri ise fraksiyon kaydındaki `ai_expansion_targets` alanında tutulur; örneğin 1300 senaryosunda Osmanlı için Doğu Roma, Germiyan, Karesi ve Ahiler hedeflenir.
+
+`TerritorialClaims` aynı faction kaydındaki bölgesel talepleri taşır. `value` claim'in
+barış kararındaki stratejik ağırlığıdır; `core: true` başkent/homeland seviyesinde
+talep belirtir. Barış değerlendirmesi yalnız düşmanın hâlen tuttuğu claim'leri
+hesaba katar; ele geçirilen veya üçüncü tarafın elindeki bölgeler ilgili savaşta
+otomatik talep sayılmaz. 1300 Osmanlı kaydı Bitinya'yı core, Konstantiniyye,
+Bursa, Trakya ve Anadolu hedeflerini farklı claim değerleriyle taşır.
 
 Runtime'da vassallık kabul edilirse hedef fraksiyonun `overlord_id` alanı doldurulur; üçüncü taraf diplomasi kapatılır ve realm içindeki fraksiyonlar dost çizgiye normalize edilir.
 

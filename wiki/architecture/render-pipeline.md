@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-05
+last_updated: 2026-08-06
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -197,8 +197,10 @@ geometrisinden çizilir. Gri daire pusu görünmezliğini, altın `+` rozeti akt
 yağmayı gösterir; badge hit-test'i cursor ve tooltip akışıyla paylaşılır.
 Yağma tooltip'i `GameState.RaidLootPreview()` üzerinden ekonomi tick'inin aynı
 vergi/üretim değerlerini listeler (`internal/render/army_task_status.go`).
-Görev rozeti taşıyan yan yana kara orduları için marker spacing 38 px'e çıkarılır;
-aynı ekran koordinatına yeniden dağıtılan gruplar da bu spacing'i kullanır.
+Görev rozeti taşıyan yan yana kara orduları için marker spacing 40 px'e çıkarılır;
+aynı ekran koordinatına yeniden dağıtılan gruplar da bu spacing'i kullanır. Bu
+ortak merkez aralığı 32 px komutan portreleri ile 20 px üst rozetlerin komşu
+orduya taşmasını da engeller.
 
 Harita ordu çizimi iki geçişlidir: önce tüm komutan portreleri, ardından tüm
 kara/donanma marker'ları ve bunlara ait sayı, taşıma, kuşatma, zayiat ve görev
@@ -409,9 +411,11 @@ soldaki slota yerleşir; kuşatma çifti için kuşatanın solda, savunmacının
 kalması kuralı yalnızca doğrudan kuşatma çifti arasında önceliğini korur; sonradan
 gelen destek ordusu kuşatanın soluna yerleşebilir (`internal/render/renderer.go`).
 
-Yan yana aynı gruptaki donanma marker'ları 29 px merkez aralığıyla çizilir;
-26 px marker çapı korunduğu için aralarında 3 px görsel boşluk kalır. Kara ordu
-grupları mevcut 26 px merkez aralığını kullanmaya devam eder.
+Yan yana aynı gruptaki kara ve donanma marker'ları 40 px merkez aralığıyla
+çizilir. Marker gövdesinin yanı sıra komutan portresi ve üst rozetler de bu
+ortak adımla ayrıldığı için aynı gruptaki portreler bitişmez ve rozetler komşu
+portrelerin üzerine taşmaz (`internal/render/renderer.go`,
+`internal/render/army_task_status.go`).
 
 Komutan atama modalındaki boş komutan listesi `commanderPanelListViewport()` ile
 panel-local bir viewport içinde çizilir. Liste satırları `SubImage` clipping'i
