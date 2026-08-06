@@ -1,4 +1,8 @@
 {
+  "primary_trade_capacity_bonus": 2,
+  "secondary_trade_capacity_bonus": 1,
+  "primary_trade_income_bonus": 4,
+  "secondary_trade_income_bonus": 2,
   "centers": [
     {
       "region_id": "venice",
@@ -18,7 +22,6 @@
         "crimea",
         "dalmatia",
         "egypt",
-        "rhodes",
         "trebizond"
       ]
     },
@@ -37,9 +40,9 @@
       "region_id": "genoa",
       "tier": "primary",
       "links": [
-        "granada",
         "crimea",
         "flanders",
+        "granada",
         "tunis",
         "venice"
       ]
@@ -68,7 +71,6 @@
       "links": [
         "aleppo",
         "constantinople",
-        "rhodes",
         "spice_route",
         "tunis",
         "venice"
@@ -106,8 +108,8 @@
       "tier": "secondary",
       "links": [
         "atlantic_route",
-        "granada",
-        "flanders"
+        "flanders",
+        "granada"
       ]
     },
     {
@@ -156,9 +158,9 @@
       "region_id": "azerbaijan",
       "tier": "secondary",
       "links": [
+        "northern_persia",
         "silk_road",
-        "trebizond",
-        "northern_persia"
+        "trebizond"
       ]
     },
     {

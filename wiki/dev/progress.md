@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Edit Mode bina kuralları otomatikleştirildi. Kale yerleşimlerine
+  `walls`, liman yerleşimlerine `port`, ulusal başkent bölgelerine
+  `barracks/granary/temple/market` eksikse ekleniyor; yerleşim tipi, taşınması,
+  merkez/başkent değişimi ve Edit Mode yüklemesi bu ortak senkronizasyondan
+  geçiyor. 1300 senaryosundaki mevcut altyapı eksikleri tamamlandı. Regression:
+  `Test1300ScenarioSettlementInfrastructureHasMinimumBuildings`,
+  `TestEditModeSetsSelectedSettlementAsFactionCapital`,
+  `TestEditModeSettlementTypeFillsRequiredBuildingAndUndo`.
+
+- 2026-08-06: `DEV_MODE=true` iken devlet bilgi panelinin en altına AI strateji
+  teşhisi eklendi. Aktif objective, profil, min/max yıl aralığı ve claim
+  bölgelerinin güncel sahipleri gösteriliyor; diğer objective'ler de tarih ve
+  claim sayısıyla listeleniyor. Bölüm mevcut panel scroll'u ve ortak UI
+  yardımcılarını kullanıyor. Regression: `TestFactionAIDebugIsDevOnlyAndExcludesPlayer`,
+  `TestFactionAIDebugUsesActiveObjectiveAndDynamicClaimOwner`.
+
 - 2026-08-06: AI barış kararları tüm senaryolarda ortak savaş değerlendirmesine
   bağlandı. İlk dört savaş turunda olağan barış kapatıldı; `TerritorialClaims`,
   aktif expand hedefleri ve `WarLedger` hedefi düşmanın tuttuğu core/claim
@@ -1196,6 +1212,17 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `Test1300IberianSettlementOwnershipGraph`; doğrulama: `go test ./...`.
 
 - 2026-07-29: Edit Mode Harita sekmesine `Başkent Yap` aksiyonu eklendi. Seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında güncelliyor, bekleyen başkent taşımasını temizliyor ve undo/redo ile geri alınabiliyor; mevcut `Ana Yap` yalnızca bölgesel `is_capital` işaretini değiştirmeye devam ediyor. Regression: `TestEditModeSetsSelectedSettlementAsFactionCapital`.
+
+- 2026-08-06: Edit Mode'da bir settlement `Ana Yap` ile bölgesel merkez veya
+  `Başkent Yap` ile ulusal başkent seçildiğinde, bölge sahibi boş değilse
+  `successor_faction_id` otomatik olarak owner kimliğine eşitleniyor. Settlement
+  ekleme, silme ve bölge değiştirme sırasında oluşan yeni merkezler de aynı kuralı
+  kullanıyor; successor alanı settlement undo/redo snapshot'ında korunuyor.
+  Senaryo bütünlük testi artık her başkentte successor
+  zorunluluğu aramıyor; yalnızca mevcut successor referanslarının geçerli
+  fraksiyonlara işaret ettiğini denetliyor. Regression:
+  `TestEditModeSettlementCapitalAssignsOwnerAsSuccessorWithUndoRedo`,
+  `Test1300ScenarioSuccessorFactionReferencesAreOptionalAndValid`.
 
 - 2026-07-29: `1300_ottoman_rise` senaryosunda tüm 68 devletin başlangıç tahıl
   stokları, mevcut başlangıç ordularının canonical `EffectiveArmyGrainUpkeep`

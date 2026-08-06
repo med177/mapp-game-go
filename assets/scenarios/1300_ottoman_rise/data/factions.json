@@ -24,7 +24,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "territorial_claims": [
+      {
+        "region_id": "greece",
+        "value": 66
+      },
+      {
+        "region_id": "morea",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "ahiler",
@@ -51,7 +62,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "sivrihisar",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "aragon",
@@ -84,7 +102,47 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 52
+    "ai_aggressiveness": 52,
+    "territorial_claims": [
+      {
+        "region_id": "apulia",
+        "value": 94
+      },
+      {
+        "region_id": "aragon",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "catalonia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mallorca",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "malta",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "naples",
+        "value": 94
+      },
+      {
+        "region_id": "sardinia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sicily",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "arnavut_des",
@@ -111,7 +169,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "albania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "epirus",
+        "value": 76
+      }
+    ]
   },
   {
     "id": "athena_duk",
@@ -138,7 +207,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "greece",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "aydin_bey",
@@ -165,7 +241,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      {
+        "region_id": "izmir",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "saruhan",
+        "value": 92
+      }
+    ]
   },
   {
     "id": "bulgarian_empire",
@@ -179,7 +266,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "dobruja_constanta",
+    "capital_settlement_id": "sofia",
     "gold": 350,
     "grain": 408,
     "iron": 100,
@@ -192,7 +279,32 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "bulgaria",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dobruja",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "oltenia",
+        "value": 78
+      },
+      {
+        "region_id": "vidin",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "wallachia",
+        "value": 78
+      }
+    ]
   },
   {
     "id": "east_rome",
@@ -225,7 +337,67 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28
+    "ai_aggressiveness": 28,
+    "territorial_claims": [
+      {
+        "region_id": "bilecik_frontier",
+        "value": 50
+      },
+      {
+        "region_id": "bithynia",
+        "value": 70
+      },
+      {
+        "region_id": "bursa",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "chalcidice",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "chrysopolis",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "constantinople",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "gallipoli",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "nicomedia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "north_macedonia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "serres",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "thessaloniki_hinterland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "thrace",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "candar_bey",
@@ -252,7 +424,28 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "candaroglu",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "eretna",
+        "value": 88
+      },
+      {
+        "region_id": "paphlagonia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sinop",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "canik_bey",
@@ -279,7 +472,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      {
+        "region_id": "eretna",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "castile_kingdom",
@@ -312,7 +512,25 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "granada",
+        "value": 72
+      },
+      {
+        "region_id": "murcia",
+        "value": 72
+      },
+      {
+        "region_id": "toledo",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "denmark_kingdom",
@@ -339,7 +557,23 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "denmark",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "scania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sweden",
+        "value": 68
+      }
+    ]
   },
   {
     "id": "dulkadir_bey",
@@ -366,7 +600,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      {
+        "region_id": "cilicia",
+        "value": 86
+      },
+      {
+        "region_id": "dulkadir",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "england",
@@ -399,7 +644,80 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62
+    "ai_aggressiveness": 62,
+    "territorial_claims": [
+      {
+        "region_id": "anjou",
+        "value": 96
+      },
+      {
+        "region_id": "aquitaine",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "champagne",
+        "value": 96
+      },
+      {
+        "region_id": "east_anglia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lancashire",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "london",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mercia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "normandy",
+        "value": 96
+      },
+      {
+        "region_id": "paris",
+        "value": 96
+      },
+      {
+        "region_id": "the_pale",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "ulster",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "wales",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "welsh_marches",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "wessex",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "yorkshire",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "epir",
@@ -426,7 +744,23 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "epirus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "greece",
+        "value": 78
+      },
+      {
+        "region_id": "thessaly",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "esrefoglu_bey",
@@ -453,7 +787,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "beysehir",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "teke",
+        "value": 84
+      }
+    ]
   },
   {
     "id": "florence_rep",
@@ -480,7 +825,23 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30
+    "ai_aggressiveness": 30,
+    "territorial_claims": [
+      {
+        "region_id": "ferrara",
+        "value": 68
+      },
+      {
+        "region_id": "florence",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "siena",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "flanders_county",
@@ -514,7 +875,22 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 38
+    "ai_aggressiveness": 38,
+    "territorial_claims": [
+      {
+        "region_id": "flanders",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "friesland",
+        "value": 76
+      },
+      {
+        "region_id": "holland",
+        "value": 76
+      }
+    ]
   },
   {
     "id": "france",
@@ -547,7 +923,58 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 59
+    "ai_aggressiveness": 59,
+    "territorial_claims": [
+      {
+        "region_id": "anjou",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "aquitaine",
+        "value": 96
+      },
+      {
+        "region_id": "brittany",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "burgundy",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "champagne",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dijon",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "languedoc",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "normandy",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "paris",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "provence",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "genoa",
@@ -579,7 +1006,28 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 34
+    "ai_aggressiveness": 34,
+    "territorial_claims": [
+      {
+        "region_id": "corsica",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "crimea",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "genoa",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "trebizond",
+        "value": 76
+      }
+    ]
   },
   {
     "id": "georgia_kingdom",
@@ -606,7 +1054,22 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "armenia",
+        "value": 70
+      },
+      {
+        "region_id": "erzurum",
+        "value": 70
+      },
+      {
+        "region_id": "georgia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "germiyan_bey",
@@ -633,7 +1096,27 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "germiyan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "hamideli",
+        "value": 90
+      },
+      {
+        "region_id": "kutahya",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "teke",
+        "value": 90
+      }
+    ]
   },
   {
     "id": "golden_horde",
@@ -663,7 +1146,47 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 66
+    "ai_aggressiveness": 66,
+    "territorial_claims": [
+      {
+        "region_id": "kiev",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lower_ukrainian_steppe",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "moldova",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "moscow",
+        "value": 94
+      },
+      {
+        "region_id": "north_caucasus",
+        "value": 94
+      },
+      {
+        "region_id": "podolia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "ukrainian_steppe",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "upper_ukrainian_steppe",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "granada_emirate",
@@ -690,7 +1213,28 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "algarve",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "granada",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "murcia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "toledo",
+        "value": 66
+      }
+    ]
   },
   {
     "id": "hamid_bey",
@@ -717,7 +1261,27 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "hamideli",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mentese",
+        "value": 88
+      },
+      {
+        "region_id": "mentese_hinterland",
+        "value": 88
+      },
+      {
+        "region_id": "teke",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "hre",
@@ -751,7 +1315,86 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "alsace",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "florence",
+        "value": 90
+      },
+      {
+        "region_id": "friesland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "holland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lorraine",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "luxembourg",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "milan",
+        "value": 90
+      },
+      {
+        "region_id": "moravia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "palatinate",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "pomerania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "styria",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "switzerland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "thuringia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "tyrol",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "venice",
+        "value": 90
+      },
+      {
+        "region_id": "westphalia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "austria_duchy",
@@ -781,7 +1424,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 48
+    "ai_aggressiveness": 48,
+    "territorial_claims": [
+      {
+        "region_id": "austria",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "bohemian_kingdom",
@@ -811,7 +1461,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 42
+    "ai_aggressiveness": 42,
+    "territorial_claims": [
+      {
+        "region_id": "bohemia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "bavaria_duchy",
@@ -841,7 +1498,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 44
+    "ai_aggressiveness": 44,
+    "territorial_claims": [
+      {
+        "region_id": "bavaria",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "saxony_duchy",
@@ -871,7 +1535,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 40
+    "ai_aggressiveness": 40,
+    "territorial_claims": [
+      {
+        "region_id": "saxony",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "brandenburg_margraviate",
@@ -900,7 +1571,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 38
+    "ai_aggressiveness": 38,
+    "ai_expansion_targets": [
+      "saxony_duchy",
+      "polish_kingdom"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "brandenburg",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "hungarian_kingdom",
@@ -931,7 +1613,37 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      {
+        "region_id": "alfold",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "hungary",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "oltenia",
+        "value": 70
+      },
+      {
+        "region_id": "slovakia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "transylvania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "wallachia",
+        "value": 70
+      }
+    ]
   },
   {
     "id": "ilkhanate",
@@ -964,7 +1676,111 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 54
+    "ai_aggressiveness": 54,
+    "ai_expansion_targets": [
+      "mamluk",
+      "georgia_kingdom",
+      "ramazan_bey"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "akkoyunlu",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "aksaray",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "aleppo",
+        "value": 94
+      },
+      {
+        "region_id": "armenia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "azerbaijan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "baghdad",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "basra",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "cankiri",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "damascus",
+        "value": 94
+      },
+      {
+        "region_id": "erzincan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "erzurum",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "jordan",
+        "value": 94
+      },
+      {
+        "region_id": "kayseri",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "konya",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kuwait",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "malatya",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mosul",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "northern_persia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sivas",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "western_persia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "karaman_bey",
@@ -991,7 +1807,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "territorial_claims": [
+      {
+        "region_id": "cilicia",
+        "value": 92
+      },
+      {
+        "region_id": "karaman",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "karesioglu_bey",
@@ -1018,7 +1845,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "aydinoglu",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "saruhan",
+        "value": 82
+      }
+    ]
   },
   {
     "id": "leon_kingdom",
@@ -1045,7 +1883,21 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "castile",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "granada",
+        "value": 70
+      }
+    ]
   },
   {
     "id": "lithuanian_gd",
@@ -1072,7 +1924,31 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "ai_expansion_targets": [
+      "golden_horde",
+      "novgorod_rep"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "belarus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kiev",
+        "value": 88
+      },
+      {
+        "region_id": "lithuania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "ukrainian_steppe",
+        "value": 88
+      }
+    ]
   },
   {
     "id": "mamluk",
@@ -1104,7 +1980,66 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20
+    "ai_aggressiveness": 20,
+    "ai_expansion_targets": [
+      "ilkhanate",
+      "ramazan_bey"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "aleppo",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "baghdad",
+        "value": 94
+      },
+      {
+        "region_id": "damascus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "egypt",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "israel",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "jordan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lebanon",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "luxor",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mosul",
+        "value": 94
+      },
+      {
+        "region_id": "palestine",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "raqqa",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "mentese_bey",
@@ -1131,7 +2066,23 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "izmir",
+        "value": 88
+      },
+      {
+        "region_id": "mentese",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mentese_hinterland",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "milan_duchy",
@@ -1158,7 +2109,28 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "cremona",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "florence",
+        "value": 68
+      },
+      {
+        "region_id": "milan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "verona",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "naples_kingdom",
@@ -1172,7 +2144,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "puglia_main",
+    "capital_settlement_id": "naples_main",
     "gold": 450,
     "grain": 492,
     "iron": 80,
@@ -1191,7 +2163,23 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "apulia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "naples",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sicily",
+        "value": 68
+      }
+    ]
   },
   {
     "id": "novgorod_rep",
@@ -1218,7 +2206,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "territorial_claims": [
+      {
+        "region_id": "novgorod",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "ottoman",
@@ -1249,7 +2244,53 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 62
+    "ai_aggressiveness": 62,
+    "ai_expansion_targets": [
+      "east_rome",
+      "germiyan_bey",
+      "karesioglu_bey",
+      "ahiler"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "aydinoglu",
+        "value": 50
+      },
+      {
+        "region_id": "azerbaijan",
+        "value": 80
+      },
+      {
+        "region_id": "bilecik_frontier",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "bithynia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "bursa",
+        "value": 80
+      },
+      {
+        "region_id": "constantinople",
+        "value": 80
+      },
+      {
+        "region_id": "gallipoli",
+        "value": 94
+      },
+      {
+        "region_id": "germiyan",
+        "value": 55
+      },
+      {
+        "region_id": "thrace",
+        "value": 60
+      }
+    ]
   },
   {
     "id": "papal_states_f",
@@ -1263,7 +2304,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "ferrara_main",
+    "capital_settlement_id": "rome",
     "gold": 600,
     "grain": 150,
     "iron": 60,
@@ -1276,7 +2317,27 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20
+    "ai_aggressiveness": 20,
+    "territorial_claims": [
+      {
+        "region_id": "ferrara",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "florence",
+        "value": 66
+      },
+      {
+        "region_id": "papal_states",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "siena",
+        "value": 66
+      }
+    ]
   },
   {
     "id": "polish_kingdom",
@@ -1307,7 +2368,33 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "galicia_volhynia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "konigsberg",
+        "value": 70
+      },
+      {
+        "region_id": "mazovia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "poland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "silesia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "portugal",
@@ -1340,7 +2427,21 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "ai_expansion_targets": [
+      "granada_emirate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "morocco",
+        "value": 94
+      },
+      {
+        "region_id": "portugal",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "ramazan_bey",
@@ -1367,7 +2468,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "cilicia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dulkadir",
+        "value": 80
+      }
+    ]
   },
   {
     "id": "russia",
@@ -1398,7 +2510,40 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "golden_horde"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "crimea",
+        "value": 94
+      },
+      {
+        "region_id": "dagestan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "moscow",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "nizhny_novgorod",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "north_caucasus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "novgorod",
+        "value": 94
+      }
+    ]
   },
   {
     "id": "safavid",
@@ -1427,7 +2572,34 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35
+    "ai_aggressiveness": 35,
+    "territorial_claims": [
+      {
+        "region_id": "azerbaijan",
+        "value": 96
+      },
+      {
+        "region_id": "baghdad",
+        "value": 96
+      },
+      {
+        "region_id": "mosul",
+        "value": 96
+      },
+      {
+        "region_id": "northern_persia",
+        "value": 96
+      },
+      {
+        "region_id": "southern_persia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "western_persia",
+        "value": 96
+      }
+    ]
   },
   {
     "id": "saruhan_bey",
@@ -1454,7 +2626,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "izmir",
+        "value": 88
+      },
+      {
+        "region_id": "saruhan",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "savoy_county",
@@ -1481,7 +2664,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 40
+    "ai_aggressiveness": 40,
+    "territorial_claims": [
+      {
+        "region_id": "provence",
+        "value": 60
+      },
+      {
+        "region_id": "savoy",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "scotland_kingdom",
@@ -1512,7 +2706,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "lancashire",
+        "value": 68
+      },
+      {
+        "region_id": "scotland",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "serbian_empire",
@@ -1526,7 +2731,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "nis",
+    "capital_settlement_id": "serbia_belgrade",
     "gold": 400,
     "grain": 372,
     "iron": 120,
@@ -1539,7 +2744,37 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65
+    "ai_aggressiveness": 65,
+    "ai_expansion_targets": [
+      "arnavut_des",
+      "east_rome"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "albania",
+        "value": 55
+      },
+      {
+        "region_id": "kosovo",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "nis",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "rascia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "serbia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "teutonic_order",
@@ -1570,7 +2805,36 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 70
+    "ai_aggressiveness": 70,
+    "ai_expansion_targets": [
+      "novgorod_rep",
+      "lithuanian_gd"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "belarus",
+        "value": 92
+      },
+      {
+        "region_id": "estonia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "konigsberg",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "latvia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lithuania",
+        "value": 92
+      }
+    ]
   },
   {
     "id": "trebizond_emp",
@@ -1597,7 +2861,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35
+    "ai_aggressiveness": 35,
+    "territorial_claims": [
+      {
+        "region_id": "erzurum",
+        "value": 66
+      },
+      {
+        "region_id": "trebizond",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "venice",
@@ -1629,7 +2904,67 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 32
+    "ai_aggressiveness": 32,
+    "territorial_claims": [
+      {
+        "region_id": "constantinople",
+        "value": 92
+      },
+      {
+        "region_id": "crete",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "cyprus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dalmatia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "knin",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "montenegro",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "north_cyprus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "rhodes",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "rijeka",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "thrace",
+        "value": 92
+      },
+      {
+        "region_id": "venice",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "verona",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "wallachia_prince",
@@ -1643,7 +2978,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "bessarabia_settlement_2",
+    "capital_settlement_id": "wallachia_targoviste",
     "gold": 200,
     "grain": 180,
     "iron": 60,
@@ -1656,7 +2991,28 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "territorial_claims": [
+      {
+        "region_id": "bessarabia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dobruja",
+        "value": 74
+      },
+      {
+        "region_id": "oltenia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "wallachia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "marinid_sultanate",
@@ -1688,7 +3044,27 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 42
+    "ai_aggressiveness": 42,
+    "ai_expansion_targets": [
+      "zayyanid_tlemcen",
+      "granada_emirate",
+      "hafsid_sultanate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "algiers",
+        "value": 82
+      },
+      {
+        "region_id": "central_algeria",
+        "value": 82
+      },
+      {
+        "region_id": "morocco",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "zayyanid_tlemcen",
@@ -1719,7 +3095,31 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 48
+    "ai_aggressiveness": 48,
+    "ai_expansion_targets": [
+      "marinid_sultanate",
+      "hafsid_sultanate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "algiers",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "central_algeria",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "constantine",
+        "value": 78
+      },
+      {
+        "region_id": "tunis",
+        "value": 78
+      }
+    ]
   },
   {
     "id": "hafsid_sultanate",
@@ -1750,7 +3150,33 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 35
+    "ai_aggressiveness": 35,
+    "ai_expansion_targets": [
+      "zayyanid_tlemcen",
+      "barqa_emirate",
+      "usfurid_emirate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "constantine",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "cyrenaica",
+        "value": 72
+      },
+      {
+        "region_id": "tripolitania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "tunis",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "barqa_emirate",
@@ -1779,7 +3205,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28
+    "ai_aggressiveness": 28,
+    "ai_expansion_targets": [
+      "hafsid_sultanate",
+      "mamluk"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "cyrenaica",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "usfurid_emirate",
@@ -1809,7 +3246,27 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30
+    "ai_aggressiveness": 30,
+    "ai_expansion_targets": [
+      "hormuz_sultanate",
+      "hafsid_sultanate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "bahrain",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "qatar",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "uae",
+        "value": 68
+      }
+    ]
   },
   {
     "id": "hormuz_sultanate",
@@ -1840,7 +3297,26 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 38
+    "ai_aggressiveness": 38,
+    "ai_expansion_targets": [
+      "usfurid_emirate",
+      "ilkhanate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "bahrain",
+        "value": 76
+      },
+      {
+        "region_id": "qatar",
+        "value": 76
+      },
+      {
+        "region_id": "uae",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "mecca_sharifate",
@@ -1871,7 +3347,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 18
+    "ai_aggressiveness": 18,
+    "territorial_claims": [
+      {
+        "region_id": "hejaz",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "croatian_kingdom",
@@ -1903,7 +3386,37 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45
+    "ai_aggressiveness": 45,
+    "ai_expansion_targets": [
+      "venice",
+      "bosnian_banate"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "croatia",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dalmatia",
+        "value": 68
+      },
+      {
+        "region_id": "herzegovina",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "hum",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kvarner",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "bosnian_banate",
@@ -1934,7 +3447,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 30
+    "ai_aggressiveness": 30,
+    "territorial_claims": [
+      {
+        "region_id": "bosnia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "carniola_margraviate",
@@ -1966,7 +3486,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 24
+    "ai_aggressiveness": 24,
+    "ai_expansion_targets": [
+      "venice",
+      "hungarian_kingdom"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "slovenia",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "ragusa",
@@ -1992,7 +3523,13 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "dalmatia",
+        "value": 100
+      }
+    ]
   },
   {
     "id": "navarra",
@@ -2019,7 +3556,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "navarra",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "toledo",
+        "value": 62
+      }
+    ]
   },
   {
     "id": "burgundy",
@@ -2045,7 +3593,13 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "burgundy",
+        "value": 100
+      }
+    ]
   },
   {
     "id": "norway_kingdom",
@@ -2072,7 +3626,14 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "norway",
+        "value": 100,
+        "core": true
+      }
+    ]
   },
   {
     "id": "sweden_kingdom",
@@ -2099,6 +3660,21 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "novgorod",
+        "value": 86
+      },
+      {
+        "region_id": "scania",
+        "value": 82
+      },
+      {
+        "region_id": "sweden",
+        "value": 100,
+        "core": true
+      }
+    ]
   }
 ]

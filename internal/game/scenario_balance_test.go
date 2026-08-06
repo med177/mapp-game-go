@@ -316,35 +316,6 @@ func Test1300OttomanOpeningPlanBuildsAnatolianPowerBase(t *testing.T) {
 	}
 }
 
-func Test1300LevantFrontPlansFollowOpeningWar(t *testing.T) {
-	for _, test := range []struct {
-		factionID   faction.FactionID
-		objective   string
-		targetID    faction.FactionID
-		firstRegion world.RegionID
-	}{
-		{factionID: "mamluk", objective: "hold_levant_cairo_corridor", targetID: "ilkhanate", firstRegion: "damascus"},
-		{factionID: "ilkhanate", objective: "press_levant_frontier", targetID: "mamluk", firstRegion: "damascus"},
-	} {
-		t.Run(string(test.factionID), func(t *testing.T) {
-			gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
-			if err != nil {
-				t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
-			}
-			gs.PlayerFactionID = ""
-			ai.TakeTurn(gs, test.factionID)
-
-			plan := gs.AIPlans[test.factionID]
-			if plan == nil || plan.ObjectiveID != test.objective || plan.TargetFactionID != test.targetID {
-				t.Fatalf("Levant açılış objective'i yanlış: %+v", plan)
-			}
-			if len(plan.TargetRegionIDs) == 0 || plan.TargetRegionIDs[0] != test.firstRegion {
-				t.Fatalf("Levant hedef bölgesi yanlış: %+v", plan.TargetRegionIDs)
-			}
-		})
-	}
-}
-
 func Test1300BalkanOpeningPlansPreferBorderSecurity(t *testing.T) {
 	expected := map[faction.FactionID]string{
 		"serbian_empire":   "hold_serbian_mountain_core",

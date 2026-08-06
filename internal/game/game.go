@@ -3307,6 +3307,11 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
 	if editMode {
+		for _, region := range gs.Regions {
+			world.EnsureRequiredSettlementBuildings(region, gs.IsCapitalRegion(region))
+		}
+	}
+	if editMode {
 		gs.Phase = state.PhaseEditMode
 	}
 	advance()

@@ -1151,14 +1151,14 @@
     "neighbors": [
       "alsace",
       "burgundy",
+      "dijon",
       "genoa",
       "milan",
-      "savoy",
-      "dijon",
+      "cremona",
       "palatinate",
+      "savoy",
       "thuringia",
-      "tyrol",
-      "verona"
+      "tyrol"
     ],
     "world_x": 639,
     "world_y": 346,
@@ -1445,8 +1445,8 @@
       "tyrol",
       "verona"
     ],
-    "world_x": 727,
-    "world_y": 359,
+    "world_x": 723,
+    "world_y": 360,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -1480,6 +1480,7 @@
     "name_tr": "Papalık Devletleri",
     "terrain": "plain",
     "owner_id": "papal_states_f",
+    "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea",
       "adriatic_sea_dalmatia",
@@ -1488,8 +1489,8 @@
       "naples",
       "siena"
     ],
-    "world_x": 752,
-    "world_y": 444,
+    "world_x": 749,
+    "world_y": 442,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -1504,13 +1505,17 @@
     "trade_capacity": 3,
     "satisfaction": 78,
     "tax_rate": 20,
-    "population": 700,
+    "population": 651,
     "rural_population": 455,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1550,7 +1555,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1817,6 +1827,9 @@
     "buildings": [
       "barracks",
       "barracks",
+      "granary",
+      "temple",
+      "market",
       "walls",
       "walls",
       "walls"
@@ -1946,7 +1959,11 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -3246,7 +3263,9 @@
     "rural_population": 163,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "albania",
@@ -3798,16 +3817,16 @@
     "neighbors": [
       "adriatic_sea_dalmatia",
       "apulia",
+      "dalmatia",
       "herzegovina",
+      "knin",
       "montenegro",
       "naples",
-      "dalmatia",
       "otranto_strait",
-      "papal_states",
-      "knin"
+      "papal_states"
     ],
     "world_x": 818,
-    "world_y": 433,
+    "world_y": 434,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -3874,15 +3893,14 @@
     "owner_id": "",
     "neighbors": [
       "adriatic_sea",
-      "rijeka",
       "ferrara",
-      "knin",
       "papal_states",
+      "rijeka",
       "slovenia",
       "venice"
     ],
-    "world_x": 754,
-    "world_y": 393,
+    "world_x": 746,
+    "world_y": 388,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -5475,6 +5493,7 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
+      "walls",
       "port"
     ]
   },
@@ -6255,6 +6274,7 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
+      "cremona",
       "ferrara",
       "genoa",
       "milan",
@@ -6263,7 +6283,7 @@
       "verona"
     ],
     "world_x": 697,
-    "world_y": 413,
+    "world_y": 399,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -6307,7 +6327,7 @@
       "savoy",
       "switzerland"
     ],
-    "world_x": 645,
+    "world_x": 652,
     "world_y": 389,
     "shape_id": "ITA",
     "is_sea": false,
@@ -6344,13 +6364,13 @@
     "owner_id": "milan_duchy",
     "successor_faction_id": "milan_duchy",
     "neighbors": [
+      "cremona",
       "florence",
       "genoa",
-      "switzerland",
-      "verona"
+      "switzerland"
     ],
-    "world_x": 664,
-    "world_y": 365,
+    "world_x": 666,
+    "world_y": 369,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7172,6 +7192,10 @@
     "active_event_id": "",
     "buildings": [
       "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
       "walls",
       "walls"
     ]
@@ -7222,6 +7246,7 @@
     "owner_id": "hre",
     "neighbors": [
       "bavaria",
+      "cremona",
       "styria",
       "switzerland",
       "thuringia",
@@ -7512,17 +7537,16 @@
     "name": "Verona",
     "name_tr": "Verona",
     "terrain": "plain",
-    "owner_id": "milan_duchy",
+    "owner_id": "venice",
     "neighbors": [
+      "cremona",
       "ferrara",
       "florence",
-      "milan",
-      "switzerland",
       "tyrol",
       "venice"
     ],
-    "world_x": 697,
-    "world_y": 370,
+    "world_x": 699,
+    "world_y": 363,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7537,11 +7561,50 @@
     "trade_capacity": 4,
     "satisfaction": 66,
     "tax_rate": 35,
-    "population": 550,
+    "population": 454,
     "rural_population": 358,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
+  },
+  {
+    "id": "cremona",
+    "name": "Cremona",
+    "name_tr": "Cremona",
+    "terrain": "plain",
+    "owner_id": "milan_duchy",
+    "neighbors": [
+      "florence",
+      "milan",
+      "switzerland",
+      "tyrol",
+      "verona"
+    ],
+    "world_x": 684,
+    "world_y": 362,
+    "shape_id": "ITA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 70,
+    "base_grain_output": 45,
+    "base_iron_output": 2,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 5,
+    "base_cloth_output": 15,
+    "trade_capacity": 4,
+    "satisfaction": 66,
+    "tax_rate": 35,
+    "population": 454,
+    "rural_population": 358,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "ferrara",
@@ -7558,8 +7621,8 @@
       "venice",
       "verona"
     ],
-    "world_x": 735,
-    "world_y": 395,
+    "world_x": 719,
+    "world_y": 393,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7574,12 +7637,13 @@
     "trade_capacity": 3,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 420,
+    "population": 469,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
       "port",
+      "walls",
       "barracks",
       "granary",
       "temple",
@@ -7599,8 +7663,8 @@
       "northern_tyrrhenian_sea",
       "papal_states"
     ],
-    "world_x": 710,
-    "world_y": 432,
+    "world_x": 712,
+    "world_y": 435,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7619,7 +7683,10 @@
     "rural_population": 312,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "port"
+    ]
   },
   {
     "id": "apulia",
@@ -7655,6 +7722,7 @@
     "active_event_id": "",
     "buildings": [
       "port",
+      "walls",
       "barracks",
       "granary",
       "temple",
@@ -7695,7 +7763,8 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -7744,7 +7813,6 @@
     "owner_id": "venice",
     "neighbors": [
       "adriatic_sea",
-      "adriatic_sea_dalmatia",
       "bosnia",
       "dalmatia",
       "herzegovina",

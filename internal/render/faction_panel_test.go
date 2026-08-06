@@ -1,10 +1,12 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -108,5 +110,91 @@ func TestSyncFactionPanelToSelectedRegionKeepsPanelForSameOwner(t *testing.T) {
 
 	if r.selectedFactionPanel != "owner_a" || r.factionPanelScroll != 140 {
 		t.Fatalf("aynı devlet seçilince panel korunmalıydı: faction=%q scroll=%v", r.selectedFactionPanel, r.factionPanelScroll)
+	}
+}
+
+func TestFactionAIDebugIsDevOnlyAndExcludesPlayer(t *testing.T) {
+	strategy := scenario.AIFactionStrategy{FactionID: "ai", Profile: "frontier_expansion"}
+	gs := &state.GameState{
+		DevelopmentMode: true,
+		PlayerFactionID: "player",
+		AIStrategies:    map[string]scenario.AIFactionStrategy{"ai": strategy},
+	}
+
+	if !factionAIDebugVisible(gs, "ai") {
+		t.Fatal("DEV_MODE açıkken AI strateji bölümü görünür olmalı")
+	}
+	if factionAIDebugVisible(gs, "player") {
+		t.Fatal("oyuncu devletinde AI strateji bölümü görünmemeli")
+	}
+	gs.DevelopmentMode = false
+	if factionAIDebugVisible(gs, "ai") {
+		t.Fatal("DEV_MODE kapalıyken AI strateji bölümü görünmemeli")
+	}
+}
+
+func TestFactionAIDebugUsesActiveObjectiveAndDynamicClaimOwner(t *testing.T) {
+	strategy := scenario.AIFactionStrategy{
+		FactionID: "ai",
+		Profile:   "frontier_expansion",
+		Objectives: []scenario.AIObjectiveDef{
+			{
+				ID:      "take_border",
+				Kind:    "expand",
+				MinYear: 1400,
+				MaxYear: 1453,
+				TerritorialClaims: []scenario.AITerritorialClaimDef{
+					{RegionID: "border", Value: 85},
+				},
+			},
+		},
+	}
+	gs := &state.GameState{
+		DevelopmentMode: true,
+		PlayerFactionID: "player",
+		AIStrategies:    map[string]scenario.AIFactionStrategy{"ai": strategy},
+		AIPlans: map[faction.FactionID]*state.AIPlanState{
+			"ai": {ObjectiveID: "take_border", Kind: state.AIObjectiveExpand},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":    {ID: "ai", NameTR: "AI Devleti"},
+			"owner": {ID: "owner", NameTR: "Yeni Sahip"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"border": {ID: "border", NameTR: "Sınır Bölgesi", OwnerID: "owner"},
+		},
+	}
+
+	objective, ok := factionAIDebugActiveObjective(gs, "ai", strategy)
+	if !ok || objective.ID != "take_border" {
+		t.Fatalf("aktif objective bulunamadı: %+v, ok=%v", objective, ok)
+	}
+	if got, want := factionAIDebugYearRange(objective), "1400 - 1453"; got != want {
+		t.Fatalf("objective tarih aralığı yanlış: got=%q want=%q", got, want)
+	}
+	claims := factionAIDebugClaims(strategy, objective, true)
+	if len(claims) != 1 {
+		t.Fatalf("aktif objective claim'leri kullanılmalı: %+v", claims)
+	}
+	label := factionAIDebugClaimLabel(gs, claims[0])
+	if !strings.Contains(label, "Sınır Bölgesi") || !strings.Contains(label, "Yeni Sahip") {
+		t.Fatalf("claim satırı bölgenin güncel sahibini göstermeli: %q", label)
+	}
+}
+
+func TestFactionAIDebugSummaryIncludesOpenEndedDateAndClaimCount(t *testing.T) {
+	objective := scenario.AIObjectiveDef{
+		ID:   "hold_core",
+		Kind: "defend",
+		TerritorialClaims: []scenario.AITerritorialClaimDef{
+			{RegionID: "core", Value: 100},
+		},
+	}
+
+	summary := factionAIDebugObjectiveSummary(objective)
+	for _, expected := range []string{"hold_core", "savunma", "hemen - süresiz", "1 claim"} {
+		if !strings.Contains(summary, expected) {
+			t.Fatalf("objective özeti %q içermeli: got=%q", expected, summary)
+		}
 	}
 }

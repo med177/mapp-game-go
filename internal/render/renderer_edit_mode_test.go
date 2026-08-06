@@ -268,6 +268,14 @@ func TestEditModeSetsSelectedSettlementAsFactionCapital(t *testing.T) {
 	if got := gs.Factions["player"].CapitalSettlementID; got != "new_capital" {
 		t.Fatalf("ulusal başkent güncellenmedi: got=%q", got)
 	}
+	if got := gs.Regions["home"].SuccessorFactionID; got != "player" {
+		t.Fatalf("başkent bölgesinin ardıl devleti sahibine eşitlenmedi: got=%q", got)
+	}
+	for _, buildingID := range []string{"barracks", "granary", "temple", "market"} {
+		if !gs.Regions["home"].HasBuilding(buildingID) {
+			t.Fatalf("yeni başkentte zorunlu bina eklenmedi: %s", buildingID)
+		}
+	}
 	if gs.Factions["player"].PendingCapitalSettlementID != "" || gs.Factions["player"].PendingCapitalTurns != 0 {
 		t.Fatalf("eski başkent taşıma kuyruğu temizlenmedi: %+v", gs.Factions["player"])
 	}
@@ -278,9 +286,72 @@ func TestEditModeSetsSelectedSettlementAsFactionCapital(t *testing.T) {
 		r.gs.Factions["player"].PendingCapitalTurns != 3 {
 		t.Fatalf("ulusal başkent undo ile geri alınmadı: %+v", r.gs.Factions["player"])
 	}
+	if got := r.gs.Regions["home"].SuccessorFactionID; got != "" {
+		t.Fatalf("ardıl devlet undo ile geri alınmadı: got=%q", got)
+	}
 	r.redoEditCommand()
 	if got := r.gs.Factions["player"].CapitalSettlementID; got != "new_capital" {
 		t.Fatalf("ulusal başkent redo ile geri uygulanmadı: got=%q", got)
+	}
+	if got := r.gs.Regions["home"].SuccessorFactionID; got != "player" {
+		t.Fatalf("ardıl devlet redo ile geri uygulanmadı: got=%q", got)
+	}
+	for _, buildingID := range []string{"barracks", "granary", "temple", "market"} {
+		if !r.gs.Regions["home"].HasBuilding(buildingID) {
+			t.Fatalf("redo sonrası başkent binası kayboldu: %s", buildingID)
+		}
+	}
+}
+
+func TestEditModeSettlementTypeFillsRequiredBuildingAndUndo(t *testing.T) {
+	worldW := 64
+	worldH := 64
+	offset := 0.0
+	scale := 1.0
+	gs := &state.GameState{
+		MapConfig: scenario.MapConfig{
+			WorldWidth:   &worldW,
+			WorldHeight:  &worldH,
+			ShapeOffsetX: &offset,
+			ShapeOffsetY: &offset,
+			ShapeScaleX:  &scale,
+			ShapeScaleY:  &scale,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:      "home",
+				OwnerID: "player",
+				WorldX:  20,
+				WorldY:  20,
+				Settlements: []world.Settlement{
+					{ID: "home_city", Type: world.SettlementCity},
+				},
+			},
+		},
+	}
+	r := New(gs)
+	r.editSelectedRegion = "home"
+	r.editSelectedSettlement = 0
+
+	r.setSelectedSettlementType(string(world.SettlementFortress))
+	if !gs.Regions["home"].HasBuilding("walls") {
+		t.Fatal("kale yerleşimi seçilince sur eklenmedi")
+	}
+	r.undoEditCommand()
+	if gs.Regions["home"].HasBuilding("walls") || gs.Regions["home"].Settlements[0].Type != world.SettlementCity {
+		t.Fatal("yerleşim tipi değişikliği ve otomatik sur undo ile geri alınmadı")
+	}
+	r.redoEditCommand()
+	if !gs.Regions["home"].HasBuilding("walls") || gs.Regions["home"].Settlements[0].Type != world.SettlementFortress {
+		t.Fatal("yerleşim tipi değişikliği ve otomatik sur redo ile uygulanmadı")
+	}
+
+	r.setSelectedSettlementType(string(world.SettlementPort))
+	if !gs.Regions["home"].HasBuilding("port") {
+		t.Fatal("liman yerleşimi seçilince liman binası eklenmedi")
 	}
 }
 

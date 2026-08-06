@@ -15,6 +15,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
@@ -4052,7 +4053,6 @@ func buildFactionDiplomacySummary(gs *state.GameState, fid faction.FactionID) fa
 }
 
 func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *faction.Faction, summary factionDiplomacySummary, width float64) float64 {
-	_ = width
 	y := 0.0
 	y += factionPanelSectionH
 	y += 24
@@ -4101,16 +4101,8 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 	}
 
 	y += factionPanelSectionH
-	names, hidden := factionCompletedTechPreview(gs, f, 12)
-	if len(names) == 0 {
-		y += 18
-	} else {
-		rows := (len(names) + 1) / 2
-		y += float64(rows) * 16
-		if hidden > 0 {
-			y += 20
-		}
-	}
+	y += factionCompletedTechContentHeight(gs, f)
+	y += factionAIDebugContentHeight(gs, fid, width)
 	return y
 }
 
@@ -4204,6 +4196,211 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 	drawUISectionLabel(screen, 0, y, "Tamamlanan Teknolojiler")
 	y += factionPanelSectionH
 	drawFactionCompletedTechList(screen, gs, f, 0, y, width)
+	y += factionCompletedTechContentHeight(gs, f)
+	drawFactionAIDebugSection(screen, gs, fid, 0, y, width)
+}
+
+func factionCompletedTechContentHeight(gs *state.GameState, f *faction.Faction) float64 {
+	names, hidden := factionCompletedTechPreview(gs, f, 12)
+	if len(names) == 0 {
+		return 18
+	}
+	height := float64((len(names)+1)/2) * 16
+	if hidden > 0 {
+		height += 20
+	}
+	return height
+}
+
+func factionAIDebugVisible(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || !gs.DevelopmentMode || fid == "" || fid == gs.PlayerFactionID || gs.AIStrategies == nil {
+		return false
+	}
+	_, ok := gs.AIStrategies[string(fid)]
+	return ok
+}
+
+func factionAIDebugStrategy(gs *state.GameState, fid faction.FactionID) (scenario.AIFactionStrategy, bool) {
+	if !factionAIDebugVisible(gs, fid) {
+		return scenario.AIFactionStrategy{}, false
+	}
+	strategy, ok := gs.AIStrategies[string(fid)]
+	return strategy, ok
+}
+
+func factionAIDebugActiveObjective(gs *state.GameState, fid faction.FactionID, strategy scenario.AIFactionStrategy) (scenario.AIObjectiveDef, bool) {
+	if gs == nil || gs.AIPlans == nil {
+		return scenario.AIObjectiveDef{}, false
+	}
+	plan := gs.AIPlans[fid]
+	if plan == nil || plan.ObjectiveID == "" {
+		return scenario.AIObjectiveDef{}, false
+	}
+	for _, objective := range strategy.Objectives {
+		if objective.ID == plan.ObjectiveID {
+			return objective, true
+		}
+	}
+	return scenario.AIObjectiveDef{}, false
+}
+
+func factionAIDebugClaims(strategy scenario.AIFactionStrategy, objective scenario.AIObjectiveDef, hasObjective bool) []scenario.AITerritorialClaimDef {
+	if hasObjective && len(objective.TerritorialClaims) > 0 {
+		return objective.TerritorialClaims
+	}
+	return strategy.TerritorialClaims
+}
+
+func factionAIDebugYearRange(objective scenario.AIObjectiveDef) string {
+	minYear := "hemen"
+	if objective.MinYear > 0 {
+		minYear = itoa(objective.MinYear)
+	}
+	maxYear := "süresiz"
+	if objective.MaxYear > 0 {
+		maxYear = itoa(objective.MaxYear)
+	}
+	return minYear + " - " + maxYear
+}
+
+func factionAIDebugKindLabel(kind string) string {
+	switch kind {
+	case "expand":
+		return "genişleme"
+	case "defend":
+		return "savunma"
+	case "consolidate":
+		return "konsolidasyon"
+	case "ally":
+		return "ittifak"
+	default:
+		return kind
+	}
+}
+
+func factionAIDebugObjectiveSummary(objective scenario.AIObjectiveDef) string {
+	return objective.ID + " • " + factionAIDebugKindLabel(objective.Kind) + " • " + factionAIDebugYearRange(objective) + " • " + itoa(len(objective.TerritorialClaims)) + " claim"
+}
+
+func factionAIDebugClaimLabel(gs *state.GameState, claim scenario.AITerritorialClaimDef) string {
+	regionName := claim.RegionID
+	ownerName := "sahipsiz"
+	if gs != nil {
+		if region := gs.Regions[world.RegionID(claim.RegionID)]; region != nil {
+			regionName = region.NameTR
+			if strings.TrimSpace(regionName) == "" {
+				regionName = region.Name
+			}
+			if strings.TrimSpace(regionName) == "" {
+				regionName = claim.RegionID
+			}
+			if region.OwnerID != "" {
+				ownerName = factionDisplayName(gs, region.OwnerID)
+			}
+		}
+	}
+	return "• " + regionName + " → " + ownerName + " (" + itoa(claim.Value) + ")"
+}
+
+func factionAIDebugContentHeight(gs *state.GameState, fid faction.FactionID, _ float64) float64 {
+	strategy, ok := factionAIDebugStrategy(gs, fid)
+	if !ok {
+		return 0
+	}
+
+	height := factionPanelSectionH + factionPanelRowH*2
+	activeObjective, hasActiveObjective := factionAIDebugActiveObjective(gs, fid, strategy)
+	claims := factionAIDebugClaims(strategy, activeObjective, hasActiveObjective)
+	if hasActiveObjective {
+		height += factionPanelRowH + factionPanelSectionH
+		if len(claims) == 0 {
+			height += factionPanelRowH
+		} else {
+			height += float64(len(claims)) * factionPanelRowH
+		}
+	} else if len(claims) > 0 {
+		height += factionPanelSectionH + float64(len(claims))*factionPanelRowH
+	}
+
+	otherCount := 0
+	for _, objective := range strategy.Objectives {
+		if !hasActiveObjective || objective.ID != activeObjective.ID {
+			otherCount++
+		}
+	}
+	if otherCount > 0 {
+		height += factionPanelSectionH + float64(otherCount)*factionPanelRowH
+	}
+	return height + 4
+}
+
+func drawFactionAIDebugSection(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, x, y, width float64) {
+	strategy, ok := factionAIDebugStrategy(gs, fid)
+	if !ok {
+		return
+	}
+
+	drawUISectionLabel(screen, x, y, "AI Stratejisi (DEV)")
+	y += factionPanelSectionH
+	profile := strategy.Profile
+	if strings.TrimSpace(profile) == "" {
+		profile = "tanımsız"
+	}
+	drawUIKeyValueRow(screen, x, y, width, "Profil", profile, ColorGray, ColorWhite)
+	y += factionPanelRowH
+
+	plan := (*state.AIPlanState)(nil)
+	if gs.AIPlans != nil {
+		plan = gs.AIPlans[fid]
+	}
+	focus := "plan yok"
+	if plan != nil && plan.ObjectiveID != "" {
+		focus = plan.ObjectiveID + " [" + factionAIDebugKindLabel(string(plan.Kind)) + "]"
+	}
+	drawUIKeyValueRow(screen, x, y, width, "Odak", focus, ColorGray, ColorGold)
+	y += factionPanelRowH
+
+	activeObjective, hasActiveObjective := factionAIDebugActiveObjective(gs, fid, strategy)
+	claims := factionAIDebugClaims(strategy, activeObjective, hasActiveObjective)
+	if hasActiveObjective {
+		drawUIKeyValueRow(screen, x, y, width, "Tarih", factionAIDebugYearRange(activeObjective), ColorGray, ColorWhite)
+		y += factionPanelRowH
+		drawUISectionLabel(screen, x, y, "Claim hedefleri")
+		y += factionPanelSectionH
+		if len(claims) == 0 {
+			drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, "• Tanımlı claim yok", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			y += factionPanelRowH
+		} else {
+			for _, claim := range claims {
+				label := trimTextToWidth(factionAIDebugClaimLabel(gs, claim), FaceSmall, width)
+				drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, label, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+				y += factionPanelRowH
+			}
+		}
+	} else if len(claims) > 0 {
+		drawUISectionLabel(screen, x, y, "Genel claim hedefleri")
+		y += factionPanelSectionH
+		for _, claim := range claims {
+			label := trimTextToWidth(factionAIDebugClaimLabel(gs, claim), FaceSmall, width)
+			drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, label, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+			y += factionPanelRowH
+		}
+	}
+
+	otherObjectives := 0
+	for _, objective := range strategy.Objectives {
+		if hasActiveObjective && objective.ID == activeObjective.ID {
+			continue
+		}
+		if otherObjectives == 0 {
+			drawUISectionLabel(screen, x, y, "Diğer objective'ler")
+			y += factionPanelSectionH
+		}
+		label := trimTextToWidth("• "+factionAIDebugObjectiveSummary(objective), FaceSmall, width)
+		drawUILabel(screen, gameui.Rect{X: x, Y: y, W: width}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		y += factionPanelRowH
+		otherObjectives++
+	}
 }
 
 func drawFactionDiplomacyGroup(screen *ebiten.Image, x, y, width float64, title string, entries []factionDiplomacyEntry, suffix string, showScore bool, accent color.RGBA) float64 {

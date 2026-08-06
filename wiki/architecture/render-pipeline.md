@@ -7,6 +7,22 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Edit Mode, yerleşim tipi ve başkent değişikliklerinden sonra
+`world.EnsureRequiredSettlementBuildings` ile minimum altyapıyı otomatik
+senkronize eder: kale yerleşimi `walls`, liman yerleşimi `port`, ulusal başkent
+bölgesi ise `barracks`, `granary`, `temple` ve `market` ister. Yardımcı yalnız
+eksik binaları ekler; Edit Mode snapshot'ları bu otomatik eklemeleri de undo/redo
+ile birlikte taşır (`internal/world/infrastructure.go`,
+`internal/render/map_editor.go`).
+
+DEV_MODE etkinse seçili AI devletinin bilgi panelinin en altında `AI Stratejisi
+(DEV)` bölümü görünür. Profil ve aktif runtime objective'i; objective'in
+`min_year`/`max_year` aralığı; claim bölgeleri, ağırlıkları ve bölgelerin o anki
+sahipleri ortak panel gövdesi ve mevcut faction panel scroll'u üzerinden
+gösterilir. Diğer objective'ler kısa tarih ve claim sayısıyla listelenir. Bölüm
+`GameState.DevelopmentMode` ile kapatılır ve oyuncu devletinde gösterilmez
+(`internal/render/panel.go`, `internal/render/faction_panel_test.go`).
+
 Seçili devlet detay panelinin `Durum` bölümü, toplam askerî gücü oluşturan kara
 ve deniz gücünü ayrı gösterir; güç sırası bu toplam üzerinden hesaplanır ve
 bölgeler satırının üzerinde büyük, kalın, altın renkli ortak UI değeri olarak
@@ -454,6 +470,14 @@ Ardıl devlet elenmişse bölge aksiyon bandı hem solda `Tahıl Yardımı` hem 
 `Özgürleştir` düğmesini gösterir; iki düğmenin rect'i ortak çizim/hit-test
 geometrisinden türetilir. `Özgürleştir` hover'ı ardıl devletin görünen adını
 tooltip olarak gösterir (`internal/render/{panel.go,hover_tooltip.go}`).
+
+Yerleşim Birimi sekmesindeki `Ana Yap` aksiyonu bir settlement'ı bölgesel merkez,
+`Başkent Yap` aksiyonu da ulusal başkent olarak işaretlediğinde, kara bölgesinin
+sahibi boş değilse aynı owner kimliği `successor_faction_id` alanına otomatik
+yazılır. Bu eşleme settlement ekleme, silme veya bölgeler arası taşıma sonucunda
+yeni merkez oluştuğunda da uygulanır. Settlement snapshot'ı ardıl devlet alanını
+içerdiği için işlem undo/redo ile birlikte geri alınır
+(`internal/render/map_editor.go`, `internal/render/renderer.go`).
 
 Savaş raporu sonrasında ardıl metadata'sı için kullanılan üçlü karar paneli,
 `QueueThreeChoiceDialogAfterBattleReport()` ile rapor kapanana kadar kuyruğa alınır.

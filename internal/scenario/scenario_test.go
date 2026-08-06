@@ -68,35 +68,55 @@ func TestScenarioProductionDurationsAreValidInData(t *testing.T) {
 		t.Fatal("runtime caller unavailable")
 	}
 	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
-	for _, scenarioID := range []string{"1300_ottoman_rise", "1455_wars_of_the_roses"} {
-		scenarioPath := filepath.Join(root, "assets", "scenarios", scenarioID, "data")
-		buildings, err := city.LoadBuildings(filepath.Join(scenarioPath, "buildings.json"))
-		if err != nil {
-			t.Fatalf("%s binaları yüklenemedi: %v", scenarioID, err)
+	scenariosRoot := filepath.Join(root, "assets", "scenarios")
+	entries, err := os.ReadDir(scenariosRoot)
+	if err != nil {
+		t.Fatalf("senaryo dizini okunamadı: %v", err)
+	}
+	scenarioPaths := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			scenarioPaths = append(scenarioPaths, filepath.Join(scenariosRoot, entry.Name()))
 		}
-		technologies, err := tech.LoadTechnologies(filepath.Join(scenarioPath, "technologies.json"))
-		if err != nil {
-			t.Fatalf("%s teknolojileri yüklenemedi: %v", scenarioID, err)
-		}
-		units, err := army.LoadUnitTypes(filepath.Join(scenarioPath, "units.json"))
-		if err != nil {
-			t.Fatalf("%s birlikleri yüklenemedi: %v", scenarioID, err)
-		}
-		for id, building := range buildings {
-			if building.TurnsRequired <= 0 {
-				t.Errorf("%s/%s bina üretim süresi pozitif olmalı: %d", scenarioID, id, building.TurnsRequired)
+	}
+	sort.Strings(scenarioPaths)
+	if len(scenarioPaths) == 0 {
+		t.Fatal("test edilecek senaryo dizini bulunamadı")
+	}
+
+	for _, scenarioPath := range scenarioPaths {
+		scenarioID := filepath.Base(scenarioPath)
+		t.Run(scenarioID, func(t *testing.T) {
+			dataPath := filepath.Join(scenarioPath, "data")
+
+			buildings, err := city.LoadBuildings(filepath.Join(dataPath, "buildings.json"))
+			if err != nil {
+				t.Fatalf("%s binaları yüklenemedi: %v", scenarioID, err)
 			}
-		}
-		for id, technology := range technologies {
-			if technology.TurnsRequired <= 0 {
-				t.Errorf("%s/%s araştırma süresi pozitif olmalı: %d", scenarioID, id, technology.TurnsRequired)
+			technologies, err := tech.LoadTechnologies(filepath.Join(dataPath, "technologies.json"))
+			if err != nil {
+				t.Fatalf("%s teknolojileri yüklenemedi: %v", scenarioID, err)
 			}
-		}
-		for id, unit := range units {
-			if unit.TurnsRequired <= 0 {
-				t.Errorf("%s/%s birlik üretim süresi pozitif olmalı: %d", scenarioID, id, unit.TurnsRequired)
+			units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
+			if err != nil {
+				t.Fatalf("%s birlikleri yüklenemedi: %v", scenarioID, err)
 			}
-		}
+			for id, building := range buildings {
+				if building.TurnsRequired <= 0 {
+					t.Errorf("%s/%s bina üretim süresi pozitif olmalı: %d", scenarioID, id, building.TurnsRequired)
+				}
+			}
+			for id, technology := range technologies {
+				if technology.TurnsRequired <= 0 {
+					t.Errorf("%s/%s araştırma süresi pozitif olmalı: %d", scenarioID, id, technology.TurnsRequired)
+				}
+			}
+			for id, unit := range units {
+				if unit.TurnsRequired <= 0 {
+					t.Errorf("%s/%s birlik üretim süresi pozitif olmalı: %d", scenarioID, id, unit.TurnsRequired)
+				}
+			}
+		})
 	}
 }
 

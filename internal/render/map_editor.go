@@ -1132,8 +1132,10 @@ func (r *Renderer) settlementSnapshot(rid world.RegionID) editRegionSettlementsS
 		return editRegionSettlementsSnapshot{Region: rid}
 	}
 	return editRegionSettlementsSnapshot{
-		Region:      rid,
-		Settlements: cloneSettlements(region.Settlements),
+		Region:             rid,
+		Settlements:        cloneSettlements(region.Settlements),
+		Buildings:          cloneStringSlice(region.Buildings),
+		SuccessorFactionID: region.SuccessorFactionID,
 	}
 }
 
@@ -1161,6 +1163,8 @@ func (r *Renderer) restoreSettlementSnapshots(snaps []editRegionSettlementsSnaps
 			continue
 		}
 		region.Settlements = cloneSettlements(snap.Settlements)
+		region.Buildings = cloneStringSlice(snap.Buildings)
+		region.SuccessorFactionID = snap.SuccessorFactionID
 	}
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
@@ -1194,8 +1198,10 @@ func cloneSettlementSnapshots(snaps []editRegionSettlementsSnapshot) []editRegio
 	out := make([]editRegionSettlementsSnapshot, len(snaps))
 	for i, snap := range snaps {
 		out[i] = editRegionSettlementsSnapshot{
-			Region:      snap.Region,
-			Settlements: cloneSettlements(snap.Settlements),
+			Region:             snap.Region,
+			Settlements:        cloneSettlements(snap.Settlements),
+			Buildings:          cloneStringSlice(snap.Buildings),
+			SuccessorFactionID: snap.SuccessorFactionID,
 		}
 	}
 	return out
@@ -1206,7 +1212,22 @@ func settlementSnapshotsEqual(a, b []editRegionSettlementsSnapshot) bool {
 		return false
 	}
 	for i := range a {
-		if a[i].Region != b[i].Region || !settlementsEqual(a[i].Settlements, b[i].Settlements) {
+		if a[i].Region != b[i].Region ||
+			!settlementsEqual(a[i].Settlements, b[i].Settlements) ||
+			!stringSlicesEqual(a[i].Buildings, b[i].Buildings) ||
+			a[i].SuccessorFactionID != b[i].SuccessorFactionID {
+			return false
+		}
+	}
+	return true
+}
+
+func stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
 			return false
 		}
 	}
@@ -2190,6 +2211,8 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	}
 	region.Settlements = append(region.Settlements, settlement)
 	region.RecalculatePopulation()
+	syncRegionSuccessorToOwner(region)
+	world.EnsureRequiredSettlementBuildings(region, r.gs.IsCapitalRegion(region))
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = len(region.Settlements) - 1
 	r.editDraggingSettlement = false
@@ -2214,6 +2237,7 @@ func (r *Renderer) deleteSelectedSettlement() {
 	region.RecalculatePopulation()
 	if removedCapital {
 		ensurePrimarySettlement(region)
+		syncRegionSuccessorToOwner(region)
 	}
 	r.editSelectedSettlement = -1
 	r.editDraggingSettlement = false
@@ -2346,6 +2370,10 @@ func (r *Renderer) setSelectedSettlementCapital() {
 	}
 	if changed {
 		r.worldMap.RebuildSettlementAnchors(r.gs)
+	}
+	successorChanged := syncRegionSuccessorToOwner(region)
+	infrastructureChanged := world.EnsureRequiredSettlementBuildings(region, r.gs.IsCapitalRegion(region))
+	if changed || successorChanged || infrastructureChanged {
 		r.editDirty = true
 		after := []editRegionSettlementsSnapshot{r.settlementSnapshot(region.ID)}
 		r.pushSettlementSnapshots(before, after, region.ID, r.editSelectedSettlement)
@@ -2371,14 +2399,23 @@ func (r *Renderer) setSelectedFactionCapital() {
 	settlement := &region.Settlements[r.editSelectedSettlement]
 	fid := faction.FactionID(region.OwnerID)
 	f := r.gs.Factions[fid]
+	before := r.worldSnapshot()
 	if f.CapitalSettlementID == settlement.ID && f.PendingCapitalSettlementID == "" {
+		successorChanged := setRegionSuccessorToOwner(region)
+		infrastructureChanged := world.EnsureRequiredSettlementBuildings(region, true)
+		if !successorChanged && !infrastructureChanged {
+			return
+		}
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(before, after)
 		return
 	}
 
-	before := r.worldSnapshot()
 	if !r.gs.SetFactionCapital(fid, settlement.ID) {
 		return
 	}
+	setRegionSuccessorToOwner(region)
+	world.EnsureRequiredSettlementBuildings(region, true)
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 }
@@ -2415,18 +2452,11 @@ func (r *Renderer) setSelectedSettlementType(typ string) {
 	if settlement.Type == st {
 		return
 	}
-	rid := region.ID
-	idx := r.editSelectedSettlement
-	old := settlement.Type
+	before := r.worldSnapshot()
 	settlement.Type = st
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.setSettlementTypeValue(rid, idx, old)
-		},
-		redo: func(rr *Renderer) {
-			rr.setSettlementTypeValue(rid, idx, st)
-		},
-	})
+	world.EnsureRequiredSettlementBuildings(region, r.gs.IsCapitalRegion(region))
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
 }
 
@@ -4254,6 +4284,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	if settlement.IsCenter {
 		settlement.IsCenter = false
 		ensurePrimarySettlement(source)
+		syncRegionSuccessorToOwner(source)
 	}
 	if !hasCapitalSettlement(target) {
 		settlement.IsCenter = true
@@ -4261,6 +4292,9 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 
 	target.Settlements = append(target.Settlements, settlement)
 	target.RecalculatePopulation()
+	syncRegionSuccessorToOwner(target)
+	world.EnsureRequiredSettlementBuildings(source, r.gs.IsCapitalRegion(source))
+	world.EnsureRequiredSettlementBuildings(target, r.gs.IsCapitalRegion(target))
 	r.editSelectedRegion = targetID
 	r.editSelectedSettlement = len(target.Settlements) - 1
 	r.worldMap.RebuildSettlementAnchors(r.gs)
@@ -4278,6 +4312,21 @@ func hasCapitalSettlement(region *world.Region) bool {
 		}
 	}
 	return false
+}
+
+func syncRegionSuccessorToOwner(region *world.Region) bool {
+	if region == nil || !hasCapitalSettlement(region) {
+		return false
+	}
+	return setRegionSuccessorToOwner(region)
+}
+
+func setRegionSuccessorToOwner(region *world.Region) bool {
+	if region == nil || region.OwnerID == "" || region.SuccessorFactionID == region.OwnerID {
+		return false
+	}
+	region.SuccessorFactionID = region.OwnerID
+	return true
 }
 
 func ensurePrimarySettlement(region *world.Region) {

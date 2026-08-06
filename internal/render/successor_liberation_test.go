@@ -58,3 +58,48 @@ func TestEditModeAssignsSuccessorWithUndoRedo(t *testing.T) {
 		t.Fatalf("ardıl ataması redo ile geri gelmedi: %q", got)
 	}
 }
+
+func TestEditModeSettlementCapitalAssignsOwnerAsSuccessorWithUndoRedo(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"owner": {ID: "owner"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"region": {
+				ID:                 "region",
+				OwnerID:            "owner",
+				SuccessorFactionID: "previous_successor",
+				Terrain:            world.TerrainPlain,
+				Settlements: []world.Settlement{
+					{ID: "old_center", IsCenter: true},
+					{ID: "new_center"},
+				},
+			},
+		},
+	}
+	r := New(gs)
+	r.editSelectedRegion = "region"
+	r.editSelectedSettlement = 1
+	r.setSelectedSettlementCapital()
+
+	region := gs.Regions["region"]
+	if !region.Settlements[1].IsCenter || region.Settlements[0].IsCenter {
+		t.Fatal("seçili settlement bölgesel merkez yapılmadı")
+	}
+	if got := region.SuccessorFactionID; got != "owner" {
+		t.Fatalf("bölge sahibi ardıl devlet olarak yazılmadı: %q", got)
+	}
+
+	r.undoEditCommand()
+	if !region.Settlements[0].IsCenter || region.Settlements[1].IsCenter {
+		t.Fatal("settlement başkent değişikliği undo ile geri alınmadı")
+	}
+	if got := region.SuccessorFactionID; got != "previous_successor" {
+		t.Fatalf("ardıl devlet undo ile geri alınmadı: %q", got)
+	}
+
+	r.redoEditCommand()
+	if got := region.SuccessorFactionID; got != "owner" {
+		t.Fatalf("ardıl devlet redo ile geri gelmedi: %q", got)
+	}
+}

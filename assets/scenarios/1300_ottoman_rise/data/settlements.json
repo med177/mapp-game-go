@@ -942,7 +942,6 @@
         "x": 622,
         "y": 345,
         "type": "city",
-        "is_center": true,
         "population": 70
       },
       {
@@ -951,6 +950,7 @@
         "x": 653,
         "y": 334,
         "type": "city",
+        "is_center": true,
         "population": 70
       }
     ]
@@ -1118,16 +1118,16 @@
       {
         "id": "treviso",
         "name_tr": "Treviso",
-        "x": 728,
-        "y": 365,
+        "x": 727,
+        "y": 362,
         "type": "fortress",
         "population": 23
       },
       {
         "id": "venice_chioggia",
         "name_tr": "Chioggia",
-        "x": 722,
-        "y": 375,
+        "x": 721,
+        "y": 376,
         "type": "port",
         "population": 70
       },
@@ -1143,7 +1143,7 @@
         "id": "venice",
         "name_tr": "Venedik",
         "x": 725,
-        "y": 372,
+        "y": 373,
         "type": "city",
         "population": 93
       }
@@ -1156,7 +1156,7 @@
         "id": "papal_states_ostia",
         "name_tr": "Ostia",
         "x": 737,
-        "y": 451,
+        "y": 452,
         "type": "port",
         "population": 74
       },
@@ -1178,12 +1178,20 @@
         "population": 24
       },
       {
-        "id": "perugia",
-        "name_tr": "Perugia",
-        "x": 736,
+        "id": "papal_states_settlement_4",
+        "name_tr": "Lanciano",
+        "x": 768,
+        "y": 436,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "papal_states_settlement_5",
+        "name_tr": "Fermo",
+        "x": 752,
         "y": 422,
         "type": "town",
-        "population": 49
+        "population": 0
       }
     ]
   },
@@ -1192,7 +1200,7 @@
     "settlements": [
       {
         "id": "naples_main",
-        "name_tr": "Napoli Krallığı",
+        "name_tr": "Napoli",
         "x": 763,
         "y": 457,
         "type": "fortress",
@@ -1206,6 +1214,46 @@
         "y": 463,
         "type": "town",
         "population": 70
+      },
+      {
+        "id": "naples_settlement_3",
+        "name_tr": "Amalfi",
+        "x": 769,
+        "y": 465,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "naples_settlement_4",
+        "name_tr": "Capri",
+        "x": 760,
+        "y": 467,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "naples_settlement_5",
+        "name_tr": "Cotrona",
+        "x": 819,
+        "y": 488,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "naples_settlement_6",
+        "name_tr": "Reggio",
+        "x": 791,
+        "y": 513,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "naples_settlement_7",
+        "name_tr": "Cannae",
+        "x": 804,
+        "y": 453,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -1225,7 +1273,7 @@
         "name_tr": "Viyana",
         "x": 798,
         "y": 319,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 93
       },
@@ -1369,7 +1417,7 @@
         "name_tr": "Buda",
         "x": 855,
         "y": 336,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 63
       },
@@ -1455,7 +1503,7 @@
         "name_tr": "Belgrad",
         "x": 886,
         "y": 384,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 105
       }
@@ -1949,7 +1997,7 @@
         "name_tr": "Atina",
         "x": 953,
         "y": 514,
-        "type": "fortress",
+        "type": "city",
         "is_center": true,
         "population": 20
       },
@@ -1966,7 +2014,7 @@
         "name_tr": "Megara",
         "x": 945,
         "y": 511,
-        "type": "town",
+        "type": "fortress",
         "population": 38
       },
       {
@@ -2093,7 +2141,7 @@
       {
         "id": "cherson",
         "name_tr": "Hersones",
-        "x": 1154,
+        "x": 1151,
         "y": 391,
         "type": "port",
         "population": 28
@@ -2118,16 +2166,16 @@
         "id": "crimea_sudak",
         "name_tr": "Sudak",
         "x": 1173,
-        "y": 382,
+        "y": 384,
         "type": "port",
         "population": 24
       },
       {
         "id": "kaffa",
         "name_tr": "Kefe",
-        "x": 1182,
-        "y": 379,
-        "type": "port",
+        "x": 1181,
+        "y": 380,
+        "type": "city",
         "population": 24
       },
       {
@@ -2355,8 +2403,8 @@
       {
         "id": "alexandria",
         "name_tr": "İskenderiye",
-        "x": 1076,
-        "y": 642,
+        "x": 1079,
+        "y": 641,
         "type": "port",
         "population": 90
       },
@@ -2985,7 +3033,7 @@
         "name_tr": "Kosova",
         "x": 897,
         "y": 422,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 58
       },
@@ -3479,8 +3527,8 @@
       {
         "id": "lebanon_beirut",
         "name_tr": "Beyrut",
-        "x": 1186,
-        "y": 592,
+        "x": 1188,
+        "y": 593,
         "type": "port",
         "is_center": true,
         "population": 25
@@ -3497,15 +3545,15 @@
         "id": "tripoli_lebanon",
         "name_tr": "Trablusşam",
         "x": 1190,
-        "y": 583,
+        "y": 584,
         "type": "port",
         "population": 24
       },
       {
         "id": "sidon_lebanon",
         "name_tr": "Sayda",
-        "x": 1181,
-        "y": 599,
+        "x": 1182,
+        "y": 601,
         "type": "port",
         "population": 24
       },
@@ -3707,34 +3755,34 @@
       {
         "id": "sicily_catania",
         "name_tr": "Katanya",
-        "x": 778,
+        "x": 779,
         "y": 523,
         "type": "port",
         "population": 40
       },
       {
-        "id": "sicily_messina",
-        "name_tr": "Messina",
-        "x": 784,
-        "y": 510,
-        "type": "port",
-        "population": 39
-      },
-      {
         "id": "sicily_palermo",
         "name_tr": "Palermo",
         "x": 742,
-        "y": 511,
-        "type": "port",
+        "y": 508,
+        "type": "fortress",
         "population": 39
       },
       {
         "id": "sicily_syracuse",
         "name_tr": "Siraküza",
         "x": 781,
-        "y": 531,
+        "y": 533,
         "type": "port",
         "is_center": true,
+        "population": 39
+      },
+      {
+        "id": "sicily_messina",
+        "name_tr": "Messina",
+        "x": 787,
+        "y": 511,
+        "type": "port",
         "population": 39
       }
     ]
@@ -3745,8 +3793,8 @@
       {
         "id": "sardinia_alghero",
         "name_tr": "Alghero",
-        "x": 646,
-        "y": 468,
+        "x": 645,
+        "y": 469,
         "type": "port",
         "population": 27
       },
@@ -3784,7 +3832,7 @@
         "id": "corsica_ajaccio",
         "name_tr": "Ajaccio",
         "x": 652,
-        "y": 441,
+        "y": 443,
         "type": "port",
         "population": 20
       },
@@ -3857,8 +3905,8 @@
       {
         "id": "gaza",
         "name_tr": "Gazze",
-        "x": 1163,
-        "y": 640,
+        "x": 1161,
+        "y": 639,
         "type": "town",
         "population": 14
       },
@@ -3866,7 +3914,7 @@
         "id": "israel_main",
         "name_tr": "Han Yunus",
         "x": 1165,
-        "y": 638,
+        "y": 637,
         "type": "city",
         "is_center": true,
         "population": 28
@@ -3898,8 +3946,8 @@
       {
         "id": "palestine_jaffa",
         "name_tr": "Yafa",
-        "x": 1173,
-        "y": 622,
+        "x": 1174,
+        "y": 621,
         "type": "port",
         "population": 21
       }
@@ -4313,8 +4361,8 @@
       {
         "id": "florence_lucca",
         "name_tr": "Lucca",
-        "x": 688,
-        "y": 403,
+        "x": 687,
+        "y": 401,
         "type": "town",
         "population": 54
       },
@@ -4330,9 +4378,9 @@
       {
         "id": "florence_pisa",
         "name_tr": "Pisa",
-        "x": 684,
-        "y": 407,
-        "type": "port",
+        "x": 686,
+        "y": 406,
+        "type": "town",
         "population": 78
       },
       {
@@ -4342,6 +4390,14 @@
         "y": 401,
         "type": "fortress",
         "population": 26
+      },
+      {
+        "id": "florence_settlement_5",
+        "name_tr": "Livorno",
+        "x": 683,
+        "y": 411,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -4352,23 +4408,23 @@
         "id": "genoa_corsica_admin",
         "name_tr": "Capraia",
         "x": 638,
-        "y": 398,
+        "y": 396,
         "type": "fortress",
         "population": 21
       },
       {
         "id": "genoa_savona",
         "name_tr": "Savona",
-        "x": 643,
-        "y": 395,
+        "x": 647,
+        "y": 399,
         "type": "port",
         "population": 63
       },
       {
         "id": "genoa_main",
         "name_tr": "Cenova",
-        "x": 653,
-        "y": 389,
+        "x": 659,
+        "y": 392,
         "type": "city",
         "is_center": true,
         "population": 84
@@ -4376,18 +4432,34 @@
       {
         "id": "genoa_sanremo",
         "name_tr": "Sanremo",
-        "x": 633,
-        "y": 400,
+        "x": 634,
+        "y": 401,
         "type": "town",
         "population": 42
       },
       {
         "id": "genoa_la_spezia",
         "name_tr": "La Spezia",
-        "x": 665,
-        "y": 393,
+        "x": 672,
+        "y": 397,
         "type": "port",
         "population": 74
+      },
+      {
+        "id": "genoa_settlement_6",
+        "name_tr": "Turin",
+        "x": 630,
+        "y": 372,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "genoa_settlement_7",
+        "name_tr": "Saluzzo",
+        "x": 623,
+        "y": 385,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -4397,8 +4469,8 @@
       {
         "id": "milan_bergamo",
         "name_tr": "Bergamo",
-        "x": 669,
-        "y": 364,
+        "x": 670,
+        "y": 366,
         "type": "town",
         "population": 51
       },
@@ -4413,8 +4485,8 @@
       {
         "id": "milan_main",
         "name_tr": "Milano",
-        "x": 665,
-        "y": 369,
+        "x": 666,
+        "y": 371,
         "type": "city",
         "is_center": true,
         "population": 99
@@ -5441,19 +5513,41 @@
       {
         "id": "verona_main",
         "name_tr": "Verona",
-        "x": 702,
-        "y": 372,
+        "x": 699,
+        "y": 371,
         "type": "city",
         "is_center": true,
         "population": 96
       },
       {
+        "id": "verona_settlement_2",
+        "name_tr": "Trent",
+        "x": 695,
+        "y": 349,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "cremona",
+    "settlements": [
+      {
         "id": "milan_cremona",
         "name_tr": "Cremona",
         "x": 684,
-        "y": 377,
+        "y": 379,
         "type": "city",
+        "is_center": true,
         "population": 96
+      },
+      {
+        "id": "cremona_settlement_2",
+        "name_tr": "Brescia",
+        "x": 684,
+        "y": 368,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -5463,16 +5557,16 @@
       {
         "id": "ferrara_main",
         "name_tr": "Ferrara",
-        "x": 717,
-        "y": 387,
-        "type": "city",
+        "x": 716,
+        "y": 386,
+        "type": "fortress",
         "is_center": true,
         "population": 48
       },
       {
         "id": "venice_ravenna",
         "name_tr": "Ravenna",
-        "x": 722,
+        "x": 723,
         "y": 394,
         "type": "port",
         "population": 33
@@ -5480,18 +5574,26 @@
       {
         "id": "ancona",
         "name_tr": "Ancona",
-        "x": 747,
-        "y": 408,
+        "x": 748,
+        "y": 407,
         "type": "port",
         "population": 33
       },
       {
         "id": "papal_states_rimini",
         "name_tr": "Rimini",
-        "x": 727,
-        "y": 401,
+        "x": 735,
+        "y": 399,
         "type": "port",
         "population": 33
+      },
+      {
+        "id": "perugia",
+        "name_tr": "Perugia",
+        "x": 734,
+        "y": 416,
+        "type": "fortress",
+        "population": 49
       }
     ]
   },
@@ -5501,17 +5603,17 @@
       {
         "id": "siena_main",
         "name_tr": "Siena",
-        "x": 710,
-        "y": 425,
-        "type": "city",
+        "x": 709,
+        "y": 423,
+        "type": "fortress",
         "is_center": true,
         "population": 84
       },
       {
         "id": "florence_arezzo",
         "name_tr": "Arezzo",
-        "x": 715,
-        "y": 417,
+        "x": 723,
+        "y": 420,
         "type": "town",
         "population": 42
       },
@@ -5519,9 +5621,17 @@
         "id": "papal_states_viterbo",
         "name_tr": "Viterbo",
         "x": 729,
-        "y": 438,
+        "y": 437,
         "type": "town",
         "population": 42
+      },
+      {
+        "id": "siena_settlement_4",
+        "name_tr": "Piombino",
+        "x": 698,
+        "y": 430,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -5552,6 +5662,14 @@
         "y": 467,
         "type": "port",
         "population": 47
+      },
+      {
+        "id": "apulia_settlement_4",
+        "name_tr": "Otranto",
+        "x": 845,
+        "y": 474,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -5599,8 +5717,8 @@
       {
         "id": "dalmatia_zadar",
         "name_tr": "Zadar",
-        "x": 782,
-        "y": 398,
+        "x": 781,
+        "y": 397,
         "type": "port",
         "population": 23
       },
@@ -5841,7 +5959,7 @@
       },
       {
         "id": "thessaly_settlement_8",
-        "name_tr": "Tesalya 8",
+        "name_tr": "Teselya",
         "x": 917,
         "y": 498,
         "type": "city",
@@ -5884,7 +6002,7 @@
     "settlements": [
       {
         "id": "morea_main",
-        "name_tr": "Mora Prensliği",
+        "name_tr": "Mora",
         "x": 921,
         "y": 518,
         "type": "fortress",
@@ -6638,8 +6756,8 @@
       {
         "id": "thessaloniki_kavala",
         "name_tr": "Kavala",
-        "x": 961,
-        "y": 463,
+        "x": 960,
+        "y": 462,
         "type": "port",
         "population": 13
       },

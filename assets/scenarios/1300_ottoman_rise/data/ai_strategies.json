@@ -47,27 +47,27 @@
         {
           "id": "hold_morean_principality",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "morea",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 82
         },
         {
           "id": "contest_greek_corridor",
           "kind": "expand",
-          "priority": 66,
-          "commitment": 40,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "greece",
               "value": 66
             }
-          ]
+          ],
+          "priority": 66,
+          "commitment": 40,
+          "allow_vassalization": true
         }
       ]
     },
@@ -78,14 +78,14 @@
         {
           "id": "hold_sivrihisar_buffer",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "sivrihisar",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 78
         }
       ]
     },
@@ -96,8 +96,6 @@
         {
           "id": "hold_catalan_and_island_crown",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "aragon",
@@ -111,17 +109,13 @@
               "region_id": "sicily",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 76
         },
         {
           "id": "pursue_neapolitan_crown_1416",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 82,
-          "min_year": 1416,
-          "readiness_regions": [
-            "sicily"
-          ],
           "territorial_claims": [
             {
               "region_id": "apulia",
@@ -132,7 +126,13 @@
               "value": 94
             }
           ],
-          "max_year": 1442
+          "priority": 94,
+          "commitment": 82,
+          "min_year": 1416,
+          "max_year": 1442,
+          "readiness_regions": [
+            "sicily"
+          ]
         }
       ]
     },
@@ -143,27 +143,27 @@
         {
           "id": "hold_albanian_mountains",
           "kind": "defend",
-          "priority": 98,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "albania",
               "value": 98
             }
-          ]
+          ],
+          "priority": 98,
+          "commitment": 80
         },
         {
           "id": "press_epirus_passes",
           "kind": "expand",
-          "priority": 76,
-          "commitment": 48,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "epirus",
               "value": 76
             }
-          ]
+          ],
+          "priority": 76,
+          "commitment": 48,
+          "allow_vassalization": true
         }
       ]
     },
@@ -174,14 +174,14 @@
         {
           "id": "hold_athens_coast",
           "kind": "defend",
-          "priority": 98,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "greece",
               "value": 98
             }
-          ]
+          ],
+          "priority": 98,
+          "commitment": 76
         }
       ]
     },
@@ -192,16 +192,16 @@
         {
           "id": "hold_austrian_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": [
-            "austria"
-          ],
           "territorial_claims": [
             {
               "region_id": "austria",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "austria"
           ]
         }
       ]
@@ -213,51 +213,51 @@
         {
           "id": "contest_saruhan_coast",
           "kind": "expand",
-          "priority": 92,
-          "commitment": 62,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "saruhan",
               "value": 92
             }
-          ]
+          ],
+          "priority": 92,
+          "commitment": 62,
+          "allow_vassalization": true
         },
         {
           "id": "secure_aegean_survival",
           "kind": "defend",
-          "priority": 82,
-          "commitment": 72,
           "territorial_claims": [
             {
               "region_id": "izmir",
               "value": 82
             }
-          ]
+          ],
+          "priority": 82,
+          "commitment": 72
         }
       ]
     },
     {
       "faction_id": "barqa_emirate",
+      "profile": "barqa_survival",
       "expansion_targets": [
         "hafsid_sultanate",
         "mamluk"
       ],
-      "profile": "barqa_survival",
       "objectives": [
         {
           "id": "hold_barqa_coast",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": [
-            "cyrenaica"
-          ],
           "territorial_claims": [
             {
               "region_id": "cyrenaica",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "cyrenaica"
           ]
         }
       ]
@@ -269,16 +269,16 @@
         {
           "id": "hold_bavarian_core",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 70,
-          "readiness_regions": [
-            "bavaria"
-          ],
           "territorial_claims": [
             {
               "region_id": "bavaria",
               "value": 96
             }
+          ],
+          "priority": 96,
+          "commitment": 70,
+          "readiness_regions": [
+            "bavaria"
           ]
         }
       ]
@@ -290,16 +290,16 @@
         {
           "id": "hold_bohemian_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 74,
-          "readiness_regions": [
-            "bohemia"
-          ],
           "territorial_claims": [
             {
               "region_id": "bohemia",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 74,
+          "readiness_regions": [
+            "bohemia"
           ]
         }
       ]
@@ -311,41 +311,41 @@
         {
           "id": "hold_bosnian_banate",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
-          "readiness_regions": [
-            "bosnia"
-          ],
           "territorial_claims": [
             {
               "region_id": "bosnia",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": [
+            "bosnia"
           ]
         }
       ]
     },
     {
       "faction_id": "brandenburg_margraviate",
+      "profile": "brandenburg_eastern_march",
       "expansion_targets": [
         "saxony_duchy",
         "polish_kingdom"
       ],
-      "profile": "brandenburg_eastern_march",
       "objectives": [
         {
           "id": "hold_brandenburg_march",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 66,
-          "readiness_regions": [
-            "brandenburg"
-          ],
           "territorial_claims": [
             {
               "region_id": "brandenburg",
               "value": 96
             }
+          ],
+          "priority": 96,
+          "commitment": 66,
+          "readiness_regions": [
+            "brandenburg"
           ]
         }
       ]
@@ -357,8 +357,6 @@
         {
           "id": "hold_danube_balkan_line",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "bulgaria",
@@ -372,14 +370,13 @@
               "region_id": "vidin",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 80
         },
         {
           "id": "secure_lower_danube",
           "kind": "expand",
-          "priority": 78,
-          "commitment": 52,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "oltenia",
@@ -389,7 +386,10 @@
               "region_id": "wallachia",
               "value": 78
             }
-          ]
+          ],
+          "priority": 78,
+          "commitment": 52,
+          "allow_vassalization": true
         }
       ]
     },
@@ -400,26 +400,26 @@
         {
           "id": "restore_burgundian_duchy",
           "kind": "expand",
-          "priority": 100,
-          "commitment": 72,
           "territorial_claims": [
             {
               "region_id": "burgundy",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 72
         },
         {
           "id": "hold_burgundian_heartland",
           "kind": "defend",
-          "priority": 92,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "burgundy",
               "value": 92
             }
-          ]
+          ],
+          "priority": 92,
+          "commitment": 78
         }
       ]
     },
@@ -430,21 +430,19 @@
         {
           "id": "control_pontic_corridor",
           "kind": "expand",
-          "priority": 88,
-          "commitment": 58,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "eretna",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 58,
+          "allow_vassalization": true
         },
         {
           "id": "hold_sinop_paphlagonia",
           "kind": "defend",
-          "priority": 80,
-          "commitment": 70,
           "territorial_claims": [
             {
               "region_id": "candaroglu",
@@ -458,7 +456,9 @@
               "region_id": "sinop",
               "value": 80
             }
-          ]
+          ],
+          "priority": 80,
+          "commitment": 70
         }
       ]
     },
@@ -469,69 +469,64 @@
         {
           "id": "resist_candar_pressure",
           "kind": "defend",
-          "priority": 94,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "eretna",
               "value": 94
             }
-          ]
+          ],
+          "priority": 94,
+          "commitment": 76
         }
       ]
     },
     {
       "faction_id": "carniola_margraviate",
+      "profile": "carniolan_imperial_buffer",
       "expansion_targets": [
         "venice",
         "hungarian_kingdom"
       ],
-      "profile": "carniolan_imperial_buffer",
       "objectives": [
         {
           "id": "hold_carniola_passes",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 76,
-          "readiness_regions": [
-            "slovenia"
-          ],
           "territorial_claims": [
             {
               "region_id": "slovenia",
               "value": 96
             }
+          ],
+          "priority": 96,
+          "commitment": 76,
+          "readiness_regions": [
+            "slovenia"
           ]
         }
       ]
     },
     {
       "faction_id": "castile_kingdom",
+      "profile": "toledan_reconquista_frontier",
       "expansion_targets": [
         "granada_emirate"
       ],
-      "profile": "toledan_reconquista_frontier",
       "objectives": [
         {
           "id": "hold_toledo_frontier",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "toledo",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "press_granadan_approaches",
           "kind": "expand",
-          "priority": 72,
-          "commitment": 48,
-          "readiness_regions": [
-            "toledo"
-          ],
           "territorial_claims": [
             {
               "region_id": "granada",
@@ -541,27 +536,26 @@
               "region_id": "murcia",
               "value": 72
             }
+          ],
+          "priority": 72,
+          "commitment": 48,
+          "readiness_regions": [
+            "toledo"
           ]
         }
       ]
     },
     {
       "faction_id": "croatian_kingdom",
+      "profile": "subic_adriatic_frontier",
       "expansion_targets": [
         "venice",
         "bosnian_banate"
       ],
-      "profile": "subic_adriatic_frontier",
       "objectives": [
         {
           "id": "hold_croatian_and_hum_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": [
-            "croatia",
-            "hum"
-          ],
           "territorial_claims": [
             {
               "region_id": "croatia",
@@ -579,23 +573,29 @@
               "region_id": "kvarner",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "croatia",
+            "hum"
           ]
         },
         {
           "id": "contest_dalmatian_coast",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 48,
-          "readiness_regions": [
-            "kvarner"
-          ],
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "dalmatia",
               "value": 68
             }
-          ]
+          ],
+          "priority": 68,
+          "commitment": 48,
+          "readiness_regions": [
+            "kvarner"
+          ],
+          "allow_vassalization": true
         }
       ]
     },
@@ -606,8 +606,6 @@
         {
           "id": "hold_sound_and_scania",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "denmark",
@@ -617,23 +615,25 @@
               "region_id": "scania",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "press_swedish_union",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": [
-            "scania"
-          ],
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "sweden",
               "value": 68
             }
-          ]
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "scania"
+          ],
+          "allow_vassalization": true
         }
       ]
     },
@@ -644,27 +644,27 @@
         {
           "id": "hold_dulkadir_buffer",
           "kind": "defend",
-          "priority": 95,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "dulkadir",
               "value": 95
             }
-          ]
+          ],
+          "priority": 95,
+          "commitment": 78
         },
         {
           "id": "press_cilician_frontier",
           "kind": "expand",
-          "priority": 86,
-          "commitment": 55,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "cilicia",
               "value": 86
             }
-          ]
+          ],
+          "priority": 86,
+          "commitment": 55,
+          "allow_vassalization": true
         }
       ]
     },
@@ -675,8 +675,6 @@
         {
           "id": "hold_bosporus",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "bursa",
@@ -698,13 +696,13 @@
               "region_id": "thrace",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 76
         },
         {
           "id": "recover_bithynian_frontier",
           "kind": "expand",
-          "priority": 72,
-          "commitment": 55,
           "territorial_claims": [
             {
               "region_id": "bilecik_frontier",
@@ -714,7 +712,9 @@
               "region_id": "bithynia",
               "value": 70
             }
-          ]
+          ],
+          "priority": 72,
+          "commitment": 55
         }
       ]
     },
@@ -726,12 +726,6 @@
         {
           "id": "secure_english_channel_and_isles",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 76,
-          "readiness_regions": [
-            "london",
-            "lancashire"
-          ],
           "territorial_claims": [
             {
               "region_id": "east_anglia",
@@ -773,21 +767,17 @@
               "region_id": "yorkshire",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 76,
+          "readiness_regions": [
+            "london",
+            "lancashire"
           ]
         },
         {
           "id": "renew_french_crown_campaign_1415",
           "kind": "expand",
-          "priority": 96,
-          "commitment": 70,
-          "min_year": 1415,
-          "required_event_flags": [
-            "hundred_years_war_started"
-          ],
-          "readiness_regions": [
-            "london",
-            "lancashire"
-          ],
           "territorial_claims": [
             {
               "region_id": "anjou",
@@ -806,7 +796,17 @@
               "value": 96
             }
           ],
-          "max_year": 1422
+          "priority": 96,
+          "commitment": 70,
+          "min_year": 1415,
+          "max_year": 1422,
+          "required_event_flags": [
+            "hundred_years_war_started"
+          ],
+          "readiness_regions": [
+            "london",
+            "lancashire"
+          ]
         }
       ]
     },
@@ -817,8 +817,6 @@
         {
           "id": "hold_epirus_thessaly",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "epirus",
@@ -828,20 +826,22 @@
               "region_id": "thessaly",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 76
         },
         {
           "id": "contest_athens_corridor",
           "kind": "expand",
-          "priority": 78,
-          "commitment": 50,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "greece",
               "value": 78
             }
-          ]
+          ],
+          "priority": 78,
+          "commitment": 50,
+          "allow_vassalization": true
         }
       ]
     },
@@ -852,27 +852,27 @@
         {
           "id": "hold_beysehir_pass",
           "kind": "defend",
-          "priority": 94,
-          "commitment": 74,
           "territorial_claims": [
             {
               "region_id": "beysehir",
               "value": 94
             }
-          ]
+          ],
+          "priority": 94,
+          "commitment": 74
         },
         {
           "id": "contest_taurus_passes",
           "kind": "expand",
-          "priority": 84,
-          "commitment": 52,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "teke",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 52,
+          "allow_vassalization": true
         }
       ]
     },
@@ -883,20 +883,18 @@
         {
           "id": "hold_flanders_trade",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 68,
           "territorial_claims": [
             {
               "region_id": "flanders",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 68
         },
         {
           "id": "protect_low_country_trade",
           "kind": "consolidate",
-          "priority": 76,
-          "commitment": 55,
           "territorial_claims": [
             {
               "region_id": "flanders",
@@ -910,7 +908,9 @@
               "region_id": "holland",
               "value": 76
             }
-          ]
+          ],
+          "priority": 76,
+          "commitment": 55
         }
       ]
     },
@@ -921,8 +921,6 @@
         {
           "id": "hold_tuscan_republics",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "florence",
@@ -932,21 +930,23 @@
               "region_id": "siena",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 76
         },
         {
           "id": "secure_emilian_trade_route",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 42,
-          "readiness_regions": [
-            "florence"
-          ],
           "territorial_claims": [
             {
               "region_id": "ferrara",
               "value": 68
             }
+          ],
+          "priority": 68,
+          "commitment": 42,
+          "readiness_regions": [
+            "florence"
           ]
         }
       ]
@@ -958,12 +958,6 @@
         {
           "id": "protect_french_royal_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": [
-            "paris",
-            "normandy"
-          ],
           "territorial_claims": [
             {
               "region_id": "anjou",
@@ -997,28 +991,34 @@
               "region_id": "provence",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "paris",
+            "normandy"
           ]
         },
         {
           "id": "recover_plantagenet_aquitaine_1337",
           "kind": "expand",
-          "priority": 96,
-          "commitment": 72,
-          "min_year": 1337,
-          "required_event_flags": [
-            "hundred_years_war_started"
-          ],
-          "readiness_regions": [
-            "paris",
-            "normandy"
-          ],
           "territorial_claims": [
             {
               "region_id": "aquitaine",
               "value": 96
             }
           ],
-          "max_year": 1453
+          "priority": 96,
+          "commitment": 72,
+          "min_year": 1337,
+          "max_year": 1453,
+          "required_event_flags": [
+            "hundred_years_war_started"
+          ],
+          "readiness_regions": [
+            "paris",
+            "normandy"
+          ]
         }
       ]
     },
@@ -1030,8 +1030,6 @@
         {
           "id": "protect_ligurian_and_black_sea_trade",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 70,
           "territorial_claims": [
             {
               "region_id": "corsica",
@@ -1045,22 +1043,24 @@
               "region_id": "genoa",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 70
         },
         {
           "id": "secure_black_sea_trade_gate",
           "kind": "expand",
-          "priority": 76,
-          "commitment": 46,
-          "readiness_regions": [
-            "crimea",
-            "corsica"
-          ],
           "territorial_claims": [
             {
               "region_id": "trebizond",
               "value": 76
             }
+          ],
+          "priority": 76,
+          "commitment": 46,
+          "readiness_regions": [
+            "crimea",
+            "corsica"
           ]
         }
       ]
@@ -1072,23 +1072,18 @@
         {
           "id": "hold_georgian_mountain_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "georgia",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 82
         },
         {
           "id": "recover_armenian_corridor",
           "kind": "expand",
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": [
-            "georgia"
-          ],
           "territorial_claims": [
             {
               "region_id": "armenia",
@@ -1098,6 +1093,11 @@
               "region_id": "erzurum",
               "value": 70
             }
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "georgia"
           ]
         }
       ]
@@ -1109,9 +1109,6 @@
         {
           "id": "contest_hamid_frontier",
           "kind": "expand",
-          "priority": 90,
-          "commitment": 58,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "hamideli",
@@ -1121,13 +1118,14 @@
               "region_id": "teke",
               "value": 90
             }
-          ]
+          ],
+          "priority": 90,
+          "commitment": 58,
+          "allow_vassalization": true
         },
         {
           "id": "hold_kutahya_against_ottoman",
           "kind": "defend",
-          "priority": 84,
-          "commitment": 76,
           "territorial_claims": [
             {
               "region_id": "germiyan",
@@ -1137,7 +1135,9 @@
               "region_id": "kutahya",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 76
         }
       ]
     },
@@ -1148,12 +1148,6 @@
         {
           "id": "press_rus_steppe",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 72,
-          "readiness_regions": [
-            "ukrainian_steppe",
-            "kiev"
-          ],
           "territorial_claims": [
             {
               "region_id": "kiev",
@@ -1171,13 +1165,17 @@
               "region_id": "ukrainian_steppe",
               "value": 94
             }
+          ],
+          "priority": 94,
+          "commitment": 72,
+          "readiness_regions": [
+            "ukrainian_steppe",
+            "kiev"
           ]
         },
         {
           "id": "hold_kiev_black_sea_steppe",
           "kind": "defend",
-          "priority": 86,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "kiev",
@@ -1195,7 +1193,9 @@
               "region_id": "ukrainian_steppe",
               "value": 86
             }
-          ]
+          ],
+          "priority": 86,
+          "commitment": 82
         }
       ]
     },
@@ -1206,8 +1206,6 @@
         {
           "id": "hold_andalusian_emirate",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 84,
           "territorial_claims": [
             {
               "region_id": "algarve",
@@ -1221,42 +1219,39 @@
               "region_id": "murcia",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 84
         },
         {
           "id": "recover_toledo_approach",
           "kind": "expand",
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": [
-            "granada"
-          ],
           "territorial_claims": [
             {
               "region_id": "toledo",
               "value": 66
             }
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "granada"
           ]
         }
       ]
     },
     {
       "faction_id": "hafsid_sultanate",
+      "profile": "ifriqiya_coastal_sultanate",
       "expansion_targets": [
         "zayyanid_tlemcen",
         "barqa_emirate",
         "usfurid_emirate"
       ],
-      "profile": "ifriqiya_coastal_sultanate",
       "objectives": [
         {
           "id": "hold_ifriqiya_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 86,
-          "readiness_regions": [
-            "tunis"
-          ],
           "territorial_claims": [
             {
               "region_id": "constantine",
@@ -1270,21 +1265,26 @@
               "region_id": "tunis",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "tunis"
           ]
         },
         {
           "id": "restore_tripolitanian_influence",
           "kind": "expand",
-          "priority": 72,
-          "commitment": 48,
-          "readiness_regions": [
-            "tripolitania"
-          ],
           "territorial_claims": [
             {
               "region_id": "cyrenaica",
               "value": 72
             }
+          ],
+          "priority": 72,
+          "commitment": 48,
+          "readiness_regions": [
+            "tripolitania"
           ]
         }
       ]
@@ -1296,9 +1296,6 @@
         {
           "id": "secure_mentese_passes",
           "kind": "expand",
-          "priority": 88,
-          "commitment": 56,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "mentese",
@@ -1308,13 +1305,14 @@
               "region_id": "mentese_hinterland",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true
         },
         {
           "id": "hold_taurus_beylik",
           "kind": "defend",
-          "priority": 82,
-          "commitment": 72,
           "territorial_claims": [
             {
               "region_id": "hamideli",
@@ -1324,41 +1322,38 @@
               "region_id": "teke",
               "value": 82
             }
-          ]
+          ],
+          "priority": 82,
+          "commitment": 72
         }
       ]
     },
     {
       "faction_id": "hormuz_sultanate",
+      "profile": "gulf_maritime_hegemony",
       "expansion_targets": [
         "usfurid_emirate",
         "ilkhanate"
       ],
-      "profile": "gulf_maritime_hegemony",
       "objectives": [
         {
           "id": "hold_julfar_trade_gate",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 86,
-          "readiness_regions": [
-            "uae"
-          ],
           "territorial_claims": [
             {
               "region_id": "uae",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "uae"
           ]
         },
         {
           "id": "secure_lower_gulf_trade",
           "kind": "expand",
-          "priority": 76,
-          "commitment": 50,
-          "readiness_regions": [
-            "uae"
-          ],
           "territorial_claims": [
             {
               "region_id": "bahrain",
@@ -1368,6 +1363,11 @@
               "region_id": "qatar",
               "value": 76
             }
+          ],
+          "priority": 76,
+          "commitment": 50,
+          "readiness_regions": [
+            "uae"
           ]
         }
       ]
@@ -1379,12 +1379,6 @@
         {
           "id": "hold_imperial_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 78,
-          "readiness_regions": [
-            "thuringia",
-            "switzerland"
-          ],
           "territorial_claims": [
             {
               "region_id": "lorraine",
@@ -1402,18 +1396,17 @@
               "region_id": "westphalia",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 78,
+          "readiness_regions": [
+            "thuringia",
+            "switzerland"
           ]
         },
         {
           "id": "restore_imperial_authority_in_italy_1311",
           "kind": "expand",
-          "priority": 90,
-          "commitment": 76,
-          "min_year": 1311,
-          "readiness_regions": [
-            "switzerland",
-            "tyrol"
-          ],
           "territorial_claims": [
             {
               "region_id": "florence",
@@ -1428,7 +1421,14 @@
               "value": 90
             }
           ],
-          "max_year": 1495
+          "priority": 90,
+          "commitment": 76,
+          "min_year": 1311,
+          "max_year": 1495,
+          "readiness_regions": [
+            "switzerland",
+            "tyrol"
+          ]
         }
       ]
     },
@@ -1439,8 +1439,6 @@
         {
           "id": "hold_hungarian_crownlands",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "hungary",
@@ -1454,16 +1452,13 @@
               "region_id": "transylvania",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 80
         },
         {
           "id": "secure_lower_danube",
           "kind": "expand",
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": [
-            "transylvania"
-          ],
           "territorial_claims": [
             {
               "region_id": "oltenia",
@@ -1473,29 +1468,27 @@
               "region_id": "wallachia",
               "value": 70
             }
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "transylvania"
           ]
         }
       ]
     },
     {
       "faction_id": "ilkhanate",
+      "profile": "eastern_imperial_frontier",
       "expansion_targets": [
         "mamluk",
         "georgia_kingdom",
         "ramazan_bey"
       ],
-      "profile": "eastern_imperial_frontier",
       "objectives": [
         {
           "id": "press_levant_frontier",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 70,
-          "readiness_regions": [
-            "mosul",
-            "baghdad",
-            "malatya"
-          ],
           "territorial_claims": [
             {
               "region_id": "aleppo",
@@ -1509,13 +1502,18 @@
               "region_id": "jordan",
               "value": 94
             }
+          ],
+          "priority": 94,
+          "commitment": 70,
+          "readiness_regions": [
+            "mosul",
+            "baghdad",
+            "malatya"
           ]
         },
         {
           "id": "hold_mesopotamia_persia_core",
           "kind": "defend",
-          "priority": 88,
-          "commitment": 84,
           "territorial_claims": [
             {
               "region_id": "azerbaijan",
@@ -1533,7 +1531,9 @@
               "region_id": "mosul",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 84
         }
       ]
     },
@@ -1544,27 +1544,27 @@
         {
           "id": "press_cilician_frontier",
           "kind": "expand",
-          "priority": 92,
-          "commitment": 65,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "cilicia",
               "value": 92
             }
-          ]
+          ],
+          "priority": 92,
+          "commitment": 65,
+          "allow_vassalization": true
         },
         {
           "id": "hold_karaman_core",
           "kind": "defend",
-          "priority": 84,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "karaman",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 78
         }
       ]
     },
@@ -1575,83 +1575,77 @@
         {
           "id": "hold_marmara_bridgehead",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "aydinoglu",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 78
         },
         {
           "id": "contest_saruhan_interior",
           "kind": "expand",
-          "priority": 82,
-          "commitment": 52,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "saruhan",
               "value": 82
             }
-          ]
+          ],
+          "priority": 82,
+          "commitment": 52,
+          "allow_vassalization": true
         }
       ]
     },
     {
       "faction_id": "leon_kingdom",
+      "profile": "leonese_iberian_frontier",
       "expansion_targets": [
         "granada_emirate"
       ],
-      "profile": "leonese_iberian_frontier",
       "objectives": [
         {
           "id": "hold_castilian_crownland",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "castile",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "press_granadan_frontier",
           "kind": "expand",
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": [
-            "castile"
-          ],
           "territorial_claims": [
             {
               "region_id": "granada",
               "value": 70
             }
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "castile"
           ]
         }
       ]
     },
     {
       "faction_id": "lithuanian_gd",
+      "profile": "eastern_baltic_expansion",
       "expansion_targets": [
         "golden_horde",
         "novgorod_rep"
       ],
-      "profile": "eastern_baltic_expansion",
       "objectives": [
         {
           "id": "contest_kievan_steppe",
           "kind": "expand",
-          "priority": 88,
-          "commitment": 62,
-          "readiness_regions": [
-            "lithuania",
-            "belarus"
-          ],
           "territorial_claims": [
             {
               "region_id": "kiev",
@@ -1661,13 +1655,17 @@
               "region_id": "ukrainian_steppe",
               "value": 88
             }
+          ],
+          "priority": 88,
+          "commitment": 62,
+          "readiness_regions": [
+            "lithuania",
+            "belarus"
           ]
         },
         {
           "id": "hold_lithuanian_core",
           "kind": "defend",
-          "priority": 84,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "belarus",
@@ -1677,28 +1675,23 @@
               "region_id": "lithuania",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 80
         }
       ]
     },
     {
       "faction_id": "mamluk",
+      "profile": "levant_sultanate_frontier",
       "expansion_targets": [
         "ilkhanate",
         "ramazan_bey"
       ],
-      "profile": "levant_sultanate_frontier",
       "objectives": [
         {
           "id": "break_ilkhanate_mesopotamian_front_1320",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 76,
-          "min_year": 1320,
-          "readiness_regions": [
-            "damascus",
-            "aleppo"
-          ],
           "territorial_claims": [
             {
               "region_id": "baghdad",
@@ -1709,13 +1702,18 @@
               "value": 94
             }
           ],
-          "max_year": 1341
+          "priority": 94,
+          "commitment": 76,
+          "min_year": 1320,
+          "max_year": 1341,
+          "readiness_regions": [
+            "damascus",
+            "aleppo"
+          ]
         },
         {
           "id": "hold_levant_cairo_corridor",
           "kind": "defend",
-          "priority": 86,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "aleppo",
@@ -1733,42 +1731,39 @@
               "region_id": "jordan",
               "value": 86
             }
-          ]
+          ],
+          "priority": 86,
+          "commitment": 82
         }
       ]
     },
     {
       "faction_id": "marinid_sultanate",
+      "profile": "maghreb_dynastic_expansion",
       "expansion_targets": [
         "zayyanid_tlemcen",
         "granada_emirate",
         "hafsid_sultanate"
       ],
-      "profile": "maghreb_dynastic_expansion",
       "objectives": [
         {
           "id": "hold_marininid_morocco",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "morocco"
-          ],
           "territorial_claims": [
             {
               "region_id": "morocco",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "morocco"
           ]
         },
         {
           "id": "contest_tlemcen_frontier",
           "kind": "expand",
-          "priority": 82,
-          "commitment": 58,
-          "readiness_regions": [
-            "morocco"
-          ],
           "territorial_claims": [
             {
               "region_id": "algiers",
@@ -1778,6 +1773,11 @@
               "region_id": "central_algeria",
               "value": 82
             }
+          ],
+          "priority": 82,
+          "commitment": 58,
+          "readiness_regions": [
+            "morocco"
           ]
         }
       ]
@@ -1789,16 +1789,16 @@
         {
           "id": "protect_holy_cities",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "hejaz"
-          ],
           "territorial_claims": [
             {
               "region_id": "hejaz",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "hejaz"
           ]
         }
       ]
@@ -1810,21 +1810,19 @@
         {
           "id": "contest_aydin_coast",
           "kind": "expand",
-          "priority": 88,
-          "commitment": 56,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "izmir",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true
         },
         {
           "id": "hold_mugla_coast",
           "kind": "defend",
-          "priority": 82,
-          "commitment": 72,
           "territorial_claims": [
             {
               "region_id": "mentese",
@@ -1834,7 +1832,9 @@
               "region_id": "mentese_hinterland",
               "value": 82
             }
-          ]
+          ],
+          "priority": 82,
+          "commitment": 72
         }
       ]
     },
@@ -1845,8 +1845,6 @@
         {
           "id": "hold_lombard_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "milan",
@@ -1856,22 +1854,24 @@
               "region_id": "verona",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "secure_tuscan_corridor",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": [
-            "milan",
-            "verona"
-          ],
           "territorial_claims": [
             {
               "region_id": "florence",
               "value": 68
             }
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "milan",
+            "verona"
           ]
         }
       ]
@@ -1883,8 +1883,6 @@
         {
           "id": "hold_southern_italian_crown",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "apulia",
@@ -1894,23 +1892,25 @@
               "region_id": "naples",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "secure_sicilian_strait",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": [
-            "naples"
-          ],
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "sicily",
               "value": 68
             }
-          ]
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "naples"
+          ],
+          "allow_vassalization": true
         }
       ]
     },
@@ -1921,28 +1921,28 @@
         {
           "id": "hold_pyrenean_passes",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "navarra",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 82
         },
         {
           "id": "press_toledo_corridor",
           "kind": "expand",
-          "priority": 62,
-          "commitment": 40,
-          "readiness_regions": [
-            "navarra"
-          ],
           "territorial_claims": [
             {
               "region_id": "toledo",
               "value": 62
             }
+          ],
+          "priority": 62,
+          "commitment": 40,
+          "readiness_regions": [
+            "navarra"
           ]
         }
       ]
@@ -1954,36 +1954,35 @@
         {
           "id": "hold_norwegian_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "norway"
-          ],
           "territorial_claims": [
             {
               "region_id": "norway",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "norway"
           ]
         },
         {
           "id": "protect_north_sea_frontier",
           "kind": "defend",
-          "priority": 88,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "norway",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 78
         },
         {
           "id": "maintain_swedish_dynastic_ties",
           "kind": "ally",
           "priority": 76,
-          "commitment": 60,
-          "territorial_claims": []
+          "commitment": 60
         }
       ]
     },
@@ -1994,36 +1993,30 @@
         {
           "id": "hold_novgorod_trade_gate",
           "kind": "defend",
-          "priority": 98,
-          "commitment": 74,
           "territorial_claims": [
             {
               "region_id": "novgorod",
               "value": 98
             }
-          ]
+          ],
+          "priority": 98,
+          "commitment": 74
         }
       ]
     },
     {
       "faction_id": "ottoman",
+      "profile": "frontier_expansion",
       "expansion_targets": [
         "east_rome",
         "germiyan_bey",
         "karesioglu_bey",
         "ahiler"
       ],
-      "profile": "frontier_expansion",
       "objectives": [
         {
           "id": "forge_anatolian_power_base",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 82,
-          "readiness_regions": [
-            "bilecik_frontier",
-            "bithynia"
-          ],
           "territorial_claims": [
             {
               "region_id": "bilecik_frontier",
@@ -2049,17 +2042,17 @@
               "region_id": "germiyan",
               "value": 55
             }
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": [
+            "bilecik_frontier",
+            "bithynia"
           ]
         },
         {
           "id": "establish_rumelian_bridgehead_1354",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 84,
-          "min_year": 1354,
-          "readiness_regions": [
-            "bithynia"
-          ],
           "territorial_claims": [
             {
               "region_id": "gallipoli",
@@ -2070,25 +2063,31 @@
               "value": 60
             }
           ],
-          "max_year": 1453
+          "priority": 94,
+          "commitment": 84,
+          "min_year": 1354,
+          "max_year": 1453,
+          "readiness_regions": [
+            "bithynia"
+          ]
         },
         {
           "id": "conquer_constantinople_1453",
           "kind": "expand",
-          "priority": 100,
-          "commitment": 90,
-          "min_year": 1453,
-          "readiness_regions": [
-            "gallipoli",
-            "thrace"
-          ],
           "territorial_claims": [
             {
               "region_id": "constantinople",
               "value": 80
             }
           ],
-          "max_year": 1453
+          "priority": 100,
+          "commitment": 90,
+          "min_year": 1453,
+          "max_year": 1453,
+          "readiness_regions": [
+            "gallipoli",
+            "thrace"
+          ]
         },
         {
           "id": "eastern_imperial_rivalry",
@@ -2096,11 +2095,10 @@
           "priority": 80,
           "commitment": 75,
           "min_year": 1501,
+          "max_year": 1517,
           "required_event_flags": [
             "safavid_rise"
-          ],
-          "territorial_claims": [],
-          "max_year": 1517
+          ]
         }
       ]
     },
@@ -2111,8 +2109,6 @@
         {
           "id": "hold_papal_territories",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "ferrara",
@@ -2122,16 +2118,13 @@
               "region_id": "papal_states",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "secure_tuscan_influence",
           "kind": "expand",
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": [
-            "papal_states"
-          ],
           "territorial_claims": [
             {
               "region_id": "florence",
@@ -2141,6 +2134,11 @@
               "region_id": "siena",
               "value": 66
             }
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "papal_states"
           ]
         }
       ]
@@ -2152,8 +2150,6 @@
         {
           "id": "hold_polish_crownlands",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "galicia_volhynia",
@@ -2171,62 +2167,64 @@
               "region_id": "silesia",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 80
         },
         {
           "id": "press_teutonic_prussia",
           "kind": "expand",
-          "priority": 70,
-          "commitment": 46,
-          "readiness_regions": [
-            "poland",
-            "mazovia"
-          ],
           "territorial_claims": [
             {
               "region_id": "konigsberg",
               "value": 70
             }
+          ],
+          "priority": 70,
+          "commitment": 46,
+          "readiness_regions": [
+            "poland",
+            "mazovia"
           ]
         }
       ]
     },
     {
       "faction_id": "portugal",
+      "profile": "portuguese_atlantic_reconquista",
+      "naval_focus": true,
       "expansion_targets": [
         "granada_emirate"
       ],
-      "profile": "portuguese_atlantic_reconquista",
-      "naval_focus": true,
       "objectives": [
         {
           "id": "hold_portuguese_atlantic_core",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "portugal",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 78
         },
         {
           "id": "launch_moroccan_bridgehead_1415",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 80,
-          "min_year": 1415,
-          "readiness_regions": [
-            "portugal"
-          ],
           "territorial_claims": [
             {
               "region_id": "morocco",
               "value": 94
             }
           ],
-          "max_year": 1415
+          "priority": 94,
+          "commitment": 80,
+          "min_year": 1415,
+          "max_year": 1415,
+          "readiness_regions": [
+            "portugal"
+          ]
         }
       ]
     },
@@ -2237,26 +2235,26 @@
         {
           "id": "restore_ragusan_port",
           "kind": "expand",
-          "priority": 100,
-          "commitment": 70,
           "territorial_claims": [
             {
               "region_id": "dalmatia",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 70
         },
         {
           "id": "hold_adriatic_city_state",
           "kind": "defend",
-          "priority": 92,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "dalmatia",
               "value": 92
             }
-          ]
+          ],
+          "priority": 92,
+          "commitment": 80
         }
       ]
     },
@@ -2267,47 +2265,40 @@
         {
           "id": "hold_cilician_gate",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "cilicia",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 78
         },
         {
           "id": "press_northern_buffer",
           "kind": "expand",
-          "priority": 80,
-          "commitment": 50,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "dulkadir",
               "value": 80
             }
-          ]
+          ],
+          "priority": 80,
+          "commitment": 50,
+          "allow_vassalization": true
         }
       ]
     },
     {
       "faction_id": "russia",
+      "profile": "moscow_consolidation",
       "expansion_targets": [
         "golden_horde"
       ],
-      "profile": "moscow_consolidation",
       "objectives": [
         {
           "id": "gather_rus_and_reach_black_sea_1478",
           "kind": "expand",
-          "priority": 94,
-          "commitment": 82,
-          "min_year": 1478,
-          "readiness_regions": [
-            "moscow",
-            "north_caucasus"
-          ],
           "territorial_claims": [
             {
               "region_id": "crimea",
@@ -2318,13 +2309,18 @@
               "value": 94
             }
           ],
-          "max_year": 1478
+          "priority": 94,
+          "commitment": 82,
+          "min_year": 1478,
+          "max_year": 1478,
+          "readiness_regions": [
+            "moscow",
+            "north_caucasus"
+          ]
         },
         {
           "id": "hold_moscow_northern_frontier",
           "kind": "defend",
-          "priority": 84,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "dagestan",
@@ -2342,7 +2338,9 @@
               "region_id": "north_caucasus",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 78
         }
       ]
     },
@@ -2353,30 +2351,21 @@
         {
           "id": "hold_southern_persian_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 86,
-          "readiness_regions": [
-            "southern_persia"
-          ],
           "territorial_claims": [
             {
               "region_id": "southern_persia",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "southern_persia"
           ]
         },
         {
           "id": "rise_into_persian_heartland_1501",
           "kind": "expand",
-          "priority": 96,
-          "commitment": 74,
-          "min_year": 1501,
-          "required_event_flags": [
-            "safavid_rise"
-          ],
-          "readiness_regions": [
-            "southern_persia"
-          ],
           "territorial_claims": [
             {
               "region_id": "azerbaijan",
@@ -2399,7 +2388,16 @@
               "value": 96
             }
           ],
-          "max_year": 1514
+          "priority": 96,
+          "commitment": 74,
+          "min_year": 1501,
+          "max_year": 1514,
+          "required_event_flags": [
+            "safavid_rise"
+          ],
+          "readiness_regions": [
+            "southern_persia"
+          ]
         }
       ]
     },
@@ -2410,27 +2408,27 @@
         {
           "id": "contest_aydinoglu_coast",
           "kind": "expand",
-          "priority": 88,
-          "commitment": 56,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "izmir",
               "value": 88
             }
-          ]
+          ],
+          "priority": 88,
+          "commitment": 56,
+          "allow_vassalization": true
         },
         {
           "id": "hold_manisa_buffer",
           "kind": "defend",
-          "priority": 82,
-          "commitment": 70,
           "territorial_claims": [
             {
               "region_id": "saruhan",
               "value": 82
             }
-          ]
+          ],
+          "priority": 82,
+          "commitment": 70
         }
       ]
     },
@@ -2441,28 +2439,28 @@
         {
           "id": "hold_alpine_passes",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "savoy",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 82
         },
         {
           "id": "secure_provençal_approach",
           "kind": "expand",
-          "priority": 60,
-          "commitment": 38,
-          "readiness_regions": [
-            "savoy"
-          ],
           "territorial_claims": [
             {
               "region_id": "provence",
               "value": 60
             }
+          ],
+          "priority": 60,
+          "commitment": 38,
+          "readiness_regions": [
+            "savoy"
           ]
         }
       ]
@@ -2474,16 +2472,16 @@
         {
           "id": "hold_saxon_core",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 68,
-          "readiness_regions": [
-            "saxony"
-          ],
           "territorial_claims": [
             {
               "region_id": "saxony",
               "value": 96
             }
+          ],
+          "priority": 96,
+          "commitment": 68,
+          "readiness_regions": [
+            "saxony"
           ]
         }
       ]
@@ -2495,45 +2493,43 @@
         {
           "id": "hold_scottish_heartland",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 84,
           "territorial_claims": [
             {
               "region_id": "scotland",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 84
         },
         {
           "id": "recover_northern_english_marches",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 44,
-          "readiness_regions": [
-            "scotland"
-          ],
           "territorial_claims": [
             {
               "region_id": "lancashire",
               "value": 68
             }
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "readiness_regions": [
+            "scotland"
           ]
         }
       ]
     },
     {
       "faction_id": "serbian_empire",
+      "profile": "balkan_hegemony_buffer",
       "expansion_targets": [
         "arnavut_des",
         "east_rome"
       ],
-      "profile": "balkan_hegemony_buffer",
       "objectives": [
         {
           "id": "hold_serbian_mountain_core",
           "kind": "defend",
-          "priority": 96,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "kosovo",
@@ -2551,20 +2547,22 @@
               "region_id": "serbia",
               "value": 96
             }
-          ]
+          ],
+          "priority": 96,
+          "commitment": 82
         },
         {
           "id": "press_albanian_frontier",
           "kind": "expand",
-          "priority": 55,
-          "commitment": 45,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "albania",
               "value": 55
             }
-          ]
+          ],
+          "priority": 55,
+          "commitment": 45,
+          "allow_vassalization": true
         }
       ]
     },
@@ -2575,81 +2573,75 @@
         {
           "id": "hold_swedish_core",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "sweden"
-          ],
           "territorial_claims": [
             {
               "region_id": "sweden",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "sweden"
           ]
         },
         {
           "id": "hold_eastern_baltic_frontier",
           "kind": "defend",
-          "priority": 94,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "sweden",
               "value": 94
             }
-          ]
+          ],
+          "priority": 94,
+          "commitment": 80
         },
         {
           "id": "press_novgorod_baltic_frontier",
           "kind": "expand",
-          "priority": 86,
-          "commitment": 58,
-          "readiness_regions": [
-            "sweden"
-          ],
           "territorial_claims": [
             {
               "region_id": "novgorod",
               "value": 86
             }
+          ],
+          "priority": 86,
+          "commitment": 58,
+          "readiness_regions": [
+            "sweden"
           ]
         },
         {
           "id": "contest_scanian_bridgehead",
           "kind": "expand",
-          "priority": 82,
-          "commitment": 58,
-          "min_year": 1332,
-          "readiness_regions": [
-            "sweden"
-          ],
           "territorial_claims": [
             {
               "region_id": "scania",
               "value": 82
             }
           ],
-          "max_year": 1350
+          "priority": 82,
+          "commitment": 58,
+          "min_year": 1332,
+          "max_year": 1350,
+          "readiness_regions": [
+            "sweden"
+          ]
         }
       ]
     },
     {
       "faction_id": "teutonic_order",
+      "profile": "baltic_crusader_frontier",
       "expansion_targets": [
         "novgorod_rep",
         "lithuanian_gd"
       ],
-      "profile": "baltic_crusader_frontier",
       "objectives": [
         {
           "id": "press_lithuanian_frontier",
           "kind": "expand",
-          "priority": 92,
-          "commitment": 68,
-          "readiness_regions": [
-            "konigsberg",
-            "latvia"
-          ],
           "territorial_claims": [
             {
               "region_id": "belarus",
@@ -2659,13 +2651,17 @@
               "region_id": "lithuania",
               "value": 92
             }
+          ],
+          "priority": 92,
+          "commitment": 68,
+          "readiness_regions": [
+            "konigsberg",
+            "latvia"
           ]
         },
         {
           "id": "hold_baltic_ports",
           "kind": "defend",
-          "priority": 84,
-          "commitment": 80,
           "territorial_claims": [
             {
               "region_id": "estonia",
@@ -2679,7 +2675,9 @@
               "region_id": "latvia",
               "value": 84
             }
-          ]
+          ],
+          "priority": 84,
+          "commitment": 80
         }
       ]
     },
@@ -2690,48 +2688,43 @@
         {
           "id": "hold_trebizond_coast",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 82,
           "territorial_claims": [
             {
               "region_id": "trebizond",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 82
         },
         {
           "id": "secure_erzurum_corridor",
           "kind": "expand",
-          "priority": 66,
-          "commitment": 42,
-          "readiness_regions": [
-            "trebizond"
-          ],
           "territorial_claims": [
             {
               "region_id": "erzurum",
               "value": 66
             }
+          ],
+          "priority": 66,
+          "commitment": 42,
+          "readiness_regions": [
+            "trebizond"
           ]
         }
       ]
     },
     {
       "faction_id": "usfurid_emirate",
+      "profile": "eastern_arabian_pearl_trade",
       "expansion_targets": [
         "hormuz_sultanate",
         "hafsid_sultanate"
       ],
-      "profile": "eastern_arabian_pearl_trade",
       "objectives": [
         {
           "id": "hold_bahrain_qatar",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 82,
-          "readiness_regions": [
-            "bahrain"
-          ],
           "territorial_claims": [
             {
               "region_id": "bahrain",
@@ -2741,21 +2734,26 @@
               "region_id": "qatar",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": [
+            "bahrain"
           ]
         },
         {
           "id": "contest_hormuz_trade",
           "kind": "expand",
-          "priority": 68,
-          "commitment": 42,
-          "readiness_regions": [
-            "qatar"
-          ],
           "territorial_claims": [
             {
               "region_id": "uae",
               "value": 68
             }
+          ],
+          "priority": 68,
+          "commitment": 42,
+          "readiness_regions": [
+            "qatar"
           ]
         }
       ]
@@ -2768,8 +2766,6 @@
         {
           "id": "protect_adriatic_and_island_trade",
           "kind": "defend",
-          "priority": 100,
-          "commitment": 72,
           "territorial_claims": [
             {
               "region_id": "crete",
@@ -2787,18 +2783,13 @@
               "region_id": "venice",
               "value": 100
             }
-          ]
+          ],
+          "priority": 100,
+          "commitment": 72
         },
         {
           "id": "restore_eastern_mediterranean_trade_gate_1340",
           "kind": "expand",
-          "priority": 92,
-          "commitment": 76,
-          "min_year": 1340,
-          "readiness_regions": [
-            "venice",
-            "crete"
-          ],
           "territorial_claims": [
             {
               "region_id": "constantinople",
@@ -2809,7 +2800,14 @@
               "value": 92
             }
           ],
-          "max_year": 1453
+          "priority": 92,
+          "commitment": 76,
+          "min_year": 1340,
+          "max_year": 1453,
+          "readiness_regions": [
+            "venice",
+            "crete"
+          ]
         }
       ]
     },
@@ -2820,8 +2818,6 @@
         {
           "id": "hold_wallachian_buffer",
           "kind": "defend",
-          "priority": 98,
-          "commitment": 78,
           "territorial_claims": [
             {
               "region_id": "bessarabia",
@@ -2835,39 +2831,36 @@
               "region_id": "wallachia",
               "value": 98
             }
-          ]
+          ],
+          "priority": 98,
+          "commitment": 78
         },
         {
           "id": "press_dobruja_frontier",
           "kind": "expand",
-          "priority": 74,
-          "commitment": 46,
-          "allow_vassalization": true,
           "territorial_claims": [
             {
               "region_id": "dobruja",
               "value": 74
             }
-          ]
+          ],
+          "priority": 74,
+          "commitment": 46,
+          "allow_vassalization": true
         }
       ]
     },
     {
       "faction_id": "zayyanid_tlemcen",
+      "profile": "tlemcen_frontier_survival",
       "expansion_targets": [
         "marinid_sultanate",
         "hafsid_sultanate"
       ],
-      "profile": "tlemcen_frontier_survival",
       "objectives": [
         {
           "id": "hold_central_maghrib",
           "kind": "consolidate",
-          "priority": 100,
-          "commitment": 82,
-          "readiness_regions": [
-            "algiers"
-          ],
           "territorial_claims": [
             {
               "region_id": "algiers",
@@ -2877,16 +2870,16 @@
               "region_id": "central_algeria",
               "value": 100
             }
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": [
+            "algiers"
           ]
         },
         {
           "id": "contest_hafsid_algeria",
           "kind": "expand",
-          "priority": 78,
-          "commitment": 52,
-          "readiness_regions": [
-            "central_algeria"
-          ],
           "territorial_claims": [
             {
               "region_id": "constantine",
@@ -2896,6 +2889,11 @@
               "region_id": "tunis",
               "value": 78
             }
+          ],
+          "priority": 78,
+          "commitment": 52,
+          "readiness_regions": [
+            "central_algeria"
           ]
         }
       ]

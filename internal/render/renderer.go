@@ -378,8 +378,10 @@ const (
 )
 
 type editRegionSettlementsSnapshot struct {
-	Region      world.RegionID
-	Settlements []world.Settlement
+	Region             world.RegionID
+	Settlements        []world.Settlement
+	Buildings          []string
+	SuccessorFactionID string
 }
 
 type editWorldSnapshot struct {

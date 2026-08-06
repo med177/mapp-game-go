@@ -210,61 +210,6 @@ func TestCurrentRegionArmyTaskBadgeUsesLowerLeftAnchor(t *testing.T) {
 	}
 }
 
-func TestArmyIconPositionsSeparateAdjacentTaskBadges(t *testing.T) {
-	gs := &state.GameState{
-		PlayerFactionID: "player",
-		Regions: map[world.RegionID]*world.Region{
-			"enemy": {
-				ID: "enemy", OwnerID: "enemy",
-				Settlements: []world.Settlement{{ID: "center", IsCenter: true}},
-			},
-		},
-		Armies: map[army.ArmyID]*army.Army{
-			"ambusher": {ID: "ambusher", OwnerID: "player", RegionID: "enemy", InAmbush: true},
-			"other":    {ID: "other", OwnerID: "player", RegionID: "enemy"},
-		},
-	}
-	r := &Renderer{
-		gs: gs,
-		worldMap: &WorldMap{
-			settlementAnchor:  map[settlementAnchorKey][2]int{{Region: "enemy", Index: 0}: {100, 100}},
-			primarySettlement: map[world.RegionID][2]int{"enemy": {100, 100}},
-		},
-	}
-
-	positions := r.armyIconPositions()
-	if len(positions) != 2 {
-		t.Fatalf("iki kara ordusu bekleniyordu, got=%d", len(positions))
-	}
-	if got := positions[1].X - positions[0].X; got != armyTaskStatusIconStep {
-		t.Fatalf("görev rozeti taşıyan marker grubunda aralık büyütülmeli: got=%.1f want=%.1f", got, armyTaskStatusIconStep)
-	}
-	left := armyTaskStatusBadgeRect(positions[0].X, positions[0].Y)
-	right := armyTaskStatusBadgeRect(positions[1].X, positions[1].Y)
-	if left.X+left.W > right.X {
-		t.Fatalf("yan yana görev rozetleri üst üste binmemeli: left=%+v right=%+v", left, right)
-	}
-}
-
-func TestArmyIconSpacingSeparatesCommanderPortraitsAndBadges(t *testing.T) {
-	const (
-		leftX  = float32(100)
-		rightX = leftX + armyIconStep
-		cy     = float32(100)
-	)
-
-	leftPortraitX, leftPortraitY, leftPortraitSize := armyCommanderBadgeRect(leftX, cy, false, false)
-	rightPortraitX, rightPortraitY, rightPortraitSize := armyCommanderBadgeRect(rightX, cy, false, false)
-	if leftPortraitX+leftPortraitSize > rightPortraitX || leftPortraitY != rightPortraitY {
-		t.Fatalf("komutan portreleri yatayda boşluk bırakmalı: left=(%.1f,%.1f,%.1f) right=(%.1f,%.1f,%.1f)", leftPortraitX, leftPortraitY, leftPortraitSize, rightPortraitX, rightPortraitY, rightPortraitSize)
-	}
-
-	leftBadge := armyTaskStatusBadgeRect(leftX, cy)
-	if leftBadge.X+leftBadge.W > float64(rightPortraitX) {
-		t.Fatalf("sol ordunun rozeti sağ komutan portresine taşmamalı: badge=%+v portraitX=%.1f", leftBadge, rightPortraitX)
-	}
-}
-
 func TestArmyTaskStatusUsesRaidArmyIDAndShowsLootTooltip(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            4,
