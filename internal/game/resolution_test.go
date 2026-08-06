@@ -872,13 +872,58 @@ func TestApplyEconomyTickCombinesSatisfactionModifiers(t *testing.T) {
 
 	applyEconomyTick(gs)
 
-	// Bölge 1: bina +2 + savaş -1 + genişleme -1 + ordu gücü 100 => +10.
-	if got := gs.Regions["region-1"].Satisfaction; got != 60 {
-		t.Fatalf("toplam memnuniyet deltası bölge 1 için +10 olmalıydı, got=%d", got)
+	// Bölge 1: bina +2 + savaş -2 + genişleme -1 + ordu gücü 100 => +9.
+	if got := gs.Regions["region-1"].Satisfaction; got != 59 {
+		t.Fatalf("toplam memnuniyet deltası bölge 1 için +9 olmalıydı, got=%d", got)
 	}
 	// Diğer bölgeler yalnızca savaş yorgunluğu ve 20+ bölge cezasını alır.
-	if got := gs.Regions["region-2"].Satisfaction; got != 48 {
-		t.Fatalf("savaş ve genişleme cezaları toplam -2 olmalıydı, got=%d", got)
+	if got := gs.Regions["region-2"].Satisfaction; got != 47 {
+		t.Fatalf("savaş ve genişleme cezaları toplam -3 olmalıydı, got=%d", got)
+	}
+}
+
+func TestApplyEconomyTickWarFatigueCountsIndependentRealmsOnly(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":         {ID: "player"},
+			"enemy-a":        {ID: "enemy-a"},
+			"enemy-a-vassal": {ID: "enemy-a-vassal", OverlordID: "enemy-a"},
+			"enemy-b":        {ID: "enemy-b"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy-a"): {
+				FactionA: "player", FactionB: "enemy-a", Stance: faction.StanceWar,
+			},
+			faction.RelationKey("player", "enemy-a-vassal"): {
+				FactionA: "player", FactionB: "enemy-a-vassal", Stance: faction.StanceWar,
+			},
+			faction.RelationKey("player", "enemy-b"): {
+				FactionA: "player", FactionB: "enemy-b", Stance: faction.StanceWar,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player-region": {ID: "player-region", OwnerID: "player", Satisfaction: 50},
+			"vassal-region": {ID: "vassal-region", OwnerID: "enemy-a-vassal", Satisfaction: 50},
+		},
+	}
+
+	fatigue := factionWarFatigueByID(gs)
+	if got, want := fatigue["player"], 4; got != want {
+		t.Fatalf("iki bağımsız düşman realm için oyuncu cezası %d olmalıydı, got=%d", want, got)
+	}
+	if got, want := fatigue["enemy-a"], 2; got != want {
+		t.Fatalf("enemy-a tek bağımsız karşı realm için %d almalıydı, got=%d", want, got)
+	}
+	if got, want := fatigue["enemy-a-vassal"], 2; got != want {
+		t.Fatalf("enemy-a vassalı overlorduyla aynı realm cezasını almalıydı, got=%d", got)
+	}
+
+	applyEconomyTick(gs)
+	if got := gs.Regions["player-region"].Satisfaction; got != 46 {
+		t.Fatalf("oyuncunun iki bağımsız düşmana karşı memnuniyeti 46 olmalıydı, got=%d", got)
+	}
+	if got := gs.Regions["vassal-region"].Satisfaction; got != 48 {
+		t.Fatalf("vassal savaşı ayrı devlet sayılmamalı, got=%d", got)
 	}
 }
 

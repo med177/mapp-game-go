@@ -485,6 +485,68 @@ func TestAIStartsTradeOnHealthyPeace(t *testing.T) {
 	}
 }
 
+func TestAIUsesDelegationToReachTradeRelationThreshold(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 8 {
+		t.Fatalf("ticaret çıkarı için heyet ilişkiyi +8 artırmalıydı, got=%d", rel.Score)
+	}
+	if gs.Factions["ai_1"].Gold != 460 {
+		t.Fatalf("heyet maliyeti düşülmeli, got=%d", gs.Factions["ai_1"].Gold)
+	}
+}
+
+func TestAIUsesGiftForActiveTradeRelation(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Stance = faction.StanceTrade
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 15
+	gs.TradeRoutes = []*economy.TradeRoute{
+		{FromFactionID: "ai_1", ToFactionID: "ai_2", Good: economy.GoodCloth, AmountPerTurn: 2},
+	}
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 30 {
+		t.Fatalf("aktif ticaret çıkarı için hediye ilişkiyi +15 artırmalıydı, got=%d", rel.Score)
+	}
+	if gs.Factions["ai_1"].Gold != 380 || gs.Factions["ai_2"].Gold != 180 {
+		t.Fatalf("hediye altın transferi yanlış: sender=%d receiver=%d", gs.Factions["ai_1"].Gold, gs.Factions["ai_2"].Gold)
+	}
+}
+
+func TestAIQueuesGiftToPlayerAsDiplomacyNotification(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_2"].IsEliminated = true
+	gs.Regions["a1"].Neighbors = []world.RegionID{"p1"}
+	gs.Regions["p1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "player")].Score = 15
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	if len(gs.DiplomaticOffers) != 1 || gs.DiplomaticOffers[0].Action != string(diplomacy.ActionSendGift) {
+		t.Fatalf("oyuncuya hediye bildirimi kuyruğa alınmalıydı, got=%+v", gs.DiplomaticOffers)
+	}
+	if gs.Relations[faction.RelationKey("ai_1", "player")].Score != 15 {
+		t.Fatalf("oyuncu Tamam demeden ilişki değişmemeli, got=%d", gs.Relations[faction.RelationKey("ai_1", "player")].Score)
+	}
+	if result := diplomacy.ResolveOffer(gs, 0, true); !result.Applied {
+		t.Fatalf("bildirim Tamam ile uygulanmalıydı: %+v", result)
+	}
+	if got := gs.Relations[faction.RelationKey("ai_1", "player")].Score; got != 30 {
+		t.Fatalf("Tamam sonrası hediye ilişkisi uygulanmalıydı, got=%d", got)
+	}
+}
+
 func TestCoalitionUsesDiplomacyEngine(t *testing.T) {
 	gs := aiTestState()
 	gs.PlayerFactionID = "player"

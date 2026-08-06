@@ -1137,6 +1137,10 @@ func diplomacyOfferActionLabelTR(action string) string {
 		return "ittifak"
 	case "propose_trade":
 		return "ticaret"
+	case string(diplomacy.ActionImproveRelations):
+		return "heyet"
+	case string(diplomacy.ActionSendGift):
+		return "hediye"
 	case "propose_surrender":
 		return "teslimiyet"
 	case "propose_siege_vassalization":
@@ -1144,6 +1148,10 @@ func diplomacyOfferActionLabelTR(action string) string {
 	default:
 		return "teklif"
 	}
+}
+
+func diplomacyOfferIsNotification(offer state.DiplomaticOffer) bool {
+	return offer.Action == string(diplomacy.ActionImproveRelations) || offer.Action == string(diplomacy.ActionSendGift)
 }
 
 func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
@@ -1155,6 +1163,12 @@ func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
 	}
 	if offer.Action == string(diplomacy.ActionProposeSiegeVassalization) {
 		return "Kuşatma Vassallığı"
+	}
+	if offer.Action == string(diplomacy.ActionImproveRelations) {
+		return "Diplomatik Heyet"
+	}
+	if offer.Action == string(diplomacy.ActionSendGift) {
+		return "Diplomatik Hediye"
 	}
 	return "Anlaşma Teklifi"
 }
@@ -1190,6 +1204,12 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 			}
 		}
 		return fromName + " devleti " + regionName + " kuşatmasında vassallığını istiyor. Kabul edersen devletin onun vassalı olur, bölgeni korursun ve kuşatma sona erer."
+	}
+	if offer.Action == string(diplomacy.ActionImproveRelations) {
+		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +8 artacak."
+	}
+	if offer.Action == string(diplomacy.ActionSendGift) {
+		return fromName + " devleti size hediye gönderdi. İlişkiniz +15 artacak ve hazinenize 80 altın eklenecek."
 	}
 	if offer.Action != string(diplomacy.ActionJoinWarCall) {
 		return fromName + " devleti size " + diplomacyOfferActionLabelTR(offer.Action) + " teklif etti."
@@ -1544,15 +1564,25 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 		drawUIWrappedLabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + 214, W: leftRect.W - 28}, truceNotice, color.RGBA{235, 205, 110, 255}, gameui.TextSmall, 18, 2)
 		instructionY = 268
 	}
-	drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + instructionY, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	if diplomacyOfferIsNotification(offer) {
+		drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + instructionY, W: leftRect.W - 28}, "Bildirimi kapatmak için Enter veya Tamam düğmesine basın.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	} else {
+		drawUILabel(screen, gameui.Rect{X: leftRect.X + 14, Y: leftRect.Y + instructionY, W: leftRect.W - 28}, "Kabul etmek için Enter/Y, reddetmek için Esc/N kullanabilirsiniz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
 
 	r.drawDiplomacyOfferSummaryPanel(screen, modal, offer)
 
-	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
-	drawUIButtonWidget(screen, acceptBtn,
-		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
-	drawUIButtonWidget(screen, rejectBtn,
-		solidButtonStyle(color.RGBA{140, 70, 70, 240}, color.RGBA{190, 110, 110, 255}, ColorWhite, 10))
+	if diplomacyOfferIsNotification(offer) {
+		noticeBtn := buildDiplomacyOfferNoticeButton()
+		drawUIButtonWidget(screen, noticeBtn,
+			solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	} else {
+		acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
+		drawUIButtonWidget(screen, acceptBtn,
+			solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+		drawUIButtonWidget(screen, rejectBtn,
+			solidButtonStyle(color.RGBA{140, 70, 70, 240}, color.RGBA{190, 110, 110, 255}, ColorWhite, 10))
+	}
 }
 
 func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
@@ -1568,6 +1598,17 @@ func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 }
 
 func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.InputState) InputAction {
+	offer := r.gs.DiplomaticOffers[offerIdx]
+	if diplomacyOfferIsNotification(offer) {
+		noticeBtn := buildDiplomacyOfferNoticeButton()
+		if input.LeftJustPressed && noticeBtn.HitTest(input.MouseX, input.MouseY) {
+			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
+		}
+		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
+		}
+		return InputAction{}
+	}
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if input.LeftJustPressed {
 		if acceptBtn.HitTest(input.MouseX, input.MouseY) {

@@ -161,6 +161,17 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 	return diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, actionValue)
 }
 
+func diplomacyActionPaymentNote(action ActionKind) string {
+	switch action {
+	case ActionImproveRelations:
+		return "Karşı devlete ödeme gitmez"
+	case ActionSendGift:
+		return "Karşı devletin hazinesine 80 altın gider"
+	default:
+		return ""
+	}
+}
+
 func minF(a, b float64) float64 {
 	if a < b {
 		return a
@@ -1059,7 +1070,18 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		}, 0)
 		drawUITableRow(screen, subRow)
 
-		if rel != nil || diplomacy.DirectOverlord(gs, fid) != "" || diplomacy.DirectOverlord(gs, gs.PlayerFactionID) == fid {
+		if fid == gs.PlayerFactionID {
+			selfRow := gameui.NewTableRow(relationRect, []gameui.TableCell{
+				{Text: "Oyuncu", Color: ColorGold, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
+			}, 0)
+			drawUITableRow(screen, selfRow)
+			selfScoreRect := relationRect
+			selfScoreRect.Y = rowRect.Y + 29
+			selfScoreRow := gameui.NewTableRow(selfScoreRect, []gameui.TableCell{
+				{Text: "Kendi devletin", Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 1},
+			}, 0)
+			drawUITableRow(screen, selfScoreRow)
+		} else if rel != nil || diplomacy.DirectOverlord(gs, fid) != "" || diplomacy.DirectOverlord(gs, gs.PlayerFactionID) == fid {
 			stanceCol, stanceTR := diplomacyStatusDisplay(gs, gs.PlayerFactionID, fid, rel)
 			scoreValue := 0
 			if rel != nil {
@@ -1093,10 +1115,10 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		rankValueRect.Y = rowRect.Y + 27
 		rankText := "-"
 		if factionCount > 0 {
-			rankText = itoa(militaryRank) + "/" + itoa(factionCount)
+			rankText = itoa(militaryRank)
 		}
-		drawUILabel(screen, rankValueRect, rankText, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-		drawUILabel(screen, treasuryRect, "Hazine", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, rankValueRect, rankText, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, treasuryRect, "Hazine", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 		treasuryValueRect := treasuryRect
 		treasuryValueRect.Y = rowRect.Y + 27
 		drawUILabel(screen, treasuryValueRect, factionTreasuryLabel(gs, fid), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
@@ -1180,6 +1202,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		if disabledReason != "" {
 			bg.A = 110
 			textCol = ColorGray
+			status = disabledReason
 			if i == actionFocus {
 				selectedDisabledReason = disabledReason
 			}
@@ -1194,9 +1217,21 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 			chanceText = "PASİF"
 		}
 		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
-		if disabledReason == "" {
-			// Ayrıntı satırını alt kenardan en az 7 px içeride tut.
-			drawUILabel(screen, gameui.Rect{X: float64(bx) + 14, Y: float64(by) + 23, W: float64(bw - 28)}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+		// Aktif tekliflerde kabul olasılığı, pasif tekliflerde engel nedeni gösterilir.
+		// Ayrıntı satırını alt kenardan en az 7 px içeride tut.
+		detailX := float64(bx) + 14
+		detailW := float64(bw - 28)
+		paymentNote := diplomacyActionPaymentNote(action)
+		if paymentNote != "" {
+			paymentW := MeasureText(paymentNote, FaceSmall)
+			statusW := detailW - paymentW - 12
+			if statusW < 0 {
+				statusW = 0
+			}
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+		} else {
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 
@@ -1451,7 +1486,11 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		list := buildDiplomacyListViewForSort(r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyListSort)
 		if idx, ok := diplomacyListClickedIndex(list, input); ok {
 			if idx == r.diplomacyFocus && idx < len(factions) {
-				r.openDiplomacyTarget(diplomacyDoubleClickTarget(r.gs, factions[idx]), 0)
+				// Oyuncunun kendi satırı listede görünür; ancak teklif hedefi
+				// olamayacağı için çift tıklama teklif sayfası açmaz.
+				if factions[idx] != r.gs.PlayerFactionID {
+					r.openDiplomacyTarget(diplomacyDoubleClickTarget(r.gs, factions[idx]), 0)
+				}
 				return InputAction{}
 			}
 			r.diplomacyFocus = idx
@@ -1667,14 +1706,14 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 
 func factionTreasuryLabel(gs *state.GameState, fid faction.FactionID) string {
 	if gs == nil || fid == "" {
-		return "0/0"
+		return "0 / 0"
 	}
 	income := victory.GoldIncomeForFaction(gs, fid)
 	gold := 0
 	if f := gs.Factions[fid]; f != nil {
 		gold = f.Gold
 	}
-	return itoa(income) + "/" + itoa(gold)
+	return itoa(income) + " / " + itoa(gold)
 }
 
 func sortedFactions(gs *state.GameState) []faction.FactionID {
@@ -1687,9 +1726,6 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 	}
 	var fids []faction.FactionID
 	for fid := range gs.Factions {
-		if fid == gs.PlayerFactionID {
-			continue
-		}
 		if f := gs.Factions[fid]; f == nil || f.IsEliminated {
 			continue
 		}
@@ -1766,7 +1802,7 @@ func factionsShareLandBorder(gs *state.GameState, left, right faction.FactionID)
 }
 
 func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int) {
-	if r == nil || r.gs == nil || target == "" {
+	if r == nil || r.gs == nil || target == "" || target == r.gs.PlayerFactionID {
 		return
 	}
 	r.showDiplomacy = true

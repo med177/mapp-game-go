@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	relationImprovementCost     = 40
+	RelationImprovementGoldCost = 40
 	relationImprovementBonus    = 8
-	giftCost                    = 120
+	GiftGoldCost                = 120
 	giftReceiverGold            = 80
 	giftRelationBonus           = 15
 	vassalizationMinScore       = 55
@@ -338,7 +338,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken heyet gönderilemez."
 		}
-		if actorFaction.Gold < relationImprovementCost {
+		if actorFaction.Gold < RelationImprovementGoldCost {
 			return "Heyet göndermek için 40 altın gerekiyor."
 		}
 		if score >= 95 {
@@ -348,7 +348,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken hediye gönderilemez."
 		}
-		if actorFaction.Gold < giftCost {
+		if actorFaction.Gold < GiftGoldCost {
 			return "Hediye göndermek için 120 altın gerekiyor."
 		}
 		if score >= 98 {

@@ -15,7 +15,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
+func TestSortedFactionsIncludesPlayerAndSkipsEliminated(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -27,11 +27,11 @@ func TestSortedFactionsSkipsPlayerAndEliminated(t *testing.T) {
 	}
 
 	got := sortedFactions(gs)
-	if len(got) != 2 {
-		t.Fatalf("beklenen 2 aktif fraksiyon, got=%d (%v)", len(got), got)
+	if len(got) != 3 {
+		t.Fatalf("beklenen 3 aktif fraksiyon, got=%d (%v)", len(got), got)
 	}
-	if got[0] != "a" || got[1] != "c" {
-		t.Fatalf("beklenen [a c], got=%v", got)
+	if got[0] != "a" || got[1] != "c" || got[2] != "player" {
+		t.Fatalf("beklenen [a c player], got=%v", got)
 	}
 }
 
@@ -53,7 +53,7 @@ func TestDiplomacyFactionSortsByPowerRanking(t *testing.T) {
 		},
 	}
 
-	want := []faction.FactionID{"strong", "middle", "weak"}
+	want := []faction.FactionID{"strong", "middle", "weak", "player"}
 	got := sortedDiplomacyFactions(gs, diplomacyListSortPowerRanking)
 	if len(got) != len(want) {
 		t.Fatalf("aktif hedef sayısı yanlış: got=%v", got)
@@ -104,7 +104,7 @@ func TestDiplomacyFactionRelationSortPrefersAdjacentFactionOnScoreTie(t *testing
 	}
 
 	got := sortedDiplomacyFactions(gs, diplomacyListSortRelation)
-	want := []faction.FactionID{"friendly", "border", "remote"}
+	want := []faction.FactionID{"friendly", "border", "remote", "player"}
 	if len(got) != len(want) {
 		t.Fatalf("ilişki sıralamasında hedef sayısı yanlış: got=%v", got)
 	}
@@ -171,7 +171,7 @@ func TestDiplomacyEconomicSortUsesIncomeThenTreasury(t *testing.T) {
 	}
 
 	got := sortedDiplomacyFactions(gs, diplomacyListSortEconomicRanking)
-	want := []faction.FactionID{"income_leader", "treasury_leader", "treasury_second"}
+	want := []faction.FactionID{"income_leader", "treasury_leader", "treasury_second", "player"}
 	if len(got) != len(want) {
 		t.Fatalf("ekonomik sıralama hedef sayısı yanlış: got=%v", got)
 	}
@@ -467,6 +467,18 @@ func TestDiplomacyActionSelectionUsesHighlightedBorder(t *testing.T) {
 	}
 	if disabled := diplomacyActionButtonStyle(color.RGBA{50, 120, 180, 220}, true, true); disabled.Border == (color.RGBA{242, 198, 82, 255}) {
 		t.Fatal("pasif teklif seçili sarı border stilini kullanmamalı")
+	}
+}
+
+func TestDiplomacyActionPaymentNotes(t *testing.T) {
+	if got := diplomacyActionPaymentNote(ActionImproveRelations); got != "Karşı devlete ödeme gitmez" {
+		t.Fatalf("heyet ödeme notu yanlış: %q", got)
+	}
+	if got := diplomacyActionPaymentNote(ActionSendGift); got != "Karşı devletin hazinesine 80 altın gider" {
+		t.Fatalf("hediye ödeme notu yanlış: %q", got)
+	}
+	if got := diplomacyActionPaymentNote(ActionProposeTrade); got != "" {
+		t.Fatalf("diğer teklifler ödeme notu üretmemeli: %q", got)
 	}
 }
 
@@ -781,6 +793,23 @@ func TestOpenDiplomacyTargetSelectsOfferPage(t *testing.T) {
 	}
 }
 
+func TestOpenDiplomacyTargetRejectsPlayerFaction(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy"},
+		},
+	}
+	r := &Renderer{gs: gs}
+
+	r.openDiplomacyTarget("player", 0)
+
+	if r.showDiplomacy || r.diplomacyTargetFaction != "" {
+		t.Fatalf("oyuncu kendi satırından teklif paneli açamamalı: show=%t target=%q", r.showDiplomacy, r.diplomacyTargetFaction)
+	}
+}
+
 func TestHandleDiplomacyInputHistoryFiltersUpdateState(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720
@@ -955,6 +984,53 @@ func TestDiplomacyOfferSummaryListsReflectState(t *testing.T) {
 func TestDiplomacyOfferActionLabelTRWarJoinCall(t *testing.T) {
 	if got := diplomacyOfferActionLabelTR(string(diplomacy.ActionJoinWarCall)); got != "savaşa katılım" {
 		t.Fatalf("beklenmeyen savaş çağrısı etiketi: %q", got)
+	}
+}
+
+func TestDiplomacyRelationshipNotificationText(t *testing.T) {
+	if got := diplomacyOfferActionLabelTR(string(diplomacy.ActionImproveRelations)); got != "heyet" {
+		t.Fatalf("heyet teklif etiketi yanlış: %q", got)
+	}
+	if got := diplomacyOfferActionLabelTR(string(diplomacy.ActionSendGift)); got != "hediye" {
+		t.Fatalf("hediye teklif etiketi yanlış: %q", got)
+	}
+	if !diplomacyOfferIsNotification(state.DiplomaticOffer{Action: string(diplomacy.ActionSendGift)}) {
+		t.Fatal("hediye oyuncuya bildirim olarak işaretlenmeli")
+	}
+	if diplomacyOfferIsNotification(state.DiplomaticOffer{Action: string(diplomacy.ActionProposeTrade)}) {
+		t.Fatal("ticaret teklifi bildirim olarak işaretlenmemeli")
+	}
+}
+
+func TestDiplomacyRelationshipNotificationOnlyAcceptsNoticeButton(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai_1":   {ID: "ai_1"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{{
+			FromFactionID: "ai_1",
+			ToFactionID:   "player",
+			Action:        string(diplomacy.ActionSendGift),
+		}},
+	}
+	r := &Renderer{gs: gs, prevKeys: make(map[ebiten.Key]bool), prevMouse: make(map[ebiten.MouseButton]bool)}
+
+	_, rejectBtn := buildDiplomacyOfferButtons()
+	if act := r.handleDiplomacyOfferInputState(0, gameui.InputState{MouseX: rejectBtn.X + 1, MouseY: rejectBtn.Y + 1, LeftJustPressed: true}); act.Kind != ActionNone {
+		t.Fatalf("bildirimde Reddet alanı aksiyon üretmemeliydi, got=%s", act.Kind)
+	}
+	noticeBtn := buildDiplomacyOfferNoticeButton()
+	act := r.handleDiplomacyOfferInputState(0, gameui.InputState{MouseX: noticeBtn.X + 1, MouseY: noticeBtn.Y + 1, LeftJustPressed: true})
+	if act.Kind != ActionRespondDiplomacyOffer || !act.OfferAccepted {
+		t.Fatalf("Tamam bildirim çözümünü üretmeliydi, got=%+v", act)
 	}
 }
 

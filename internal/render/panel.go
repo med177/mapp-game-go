@@ -783,6 +783,17 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 			routeRight -= quotaW + 12
 		}
 		DrawText(screen, routeText, routeRight-routeW, float64(y)+8, FaceSmall, routeColor)
+		if fatigueText, fatigueColor := warFatigueHUDText(gs); fatigueText != "" {
+			fatigueW := MeasureText(fatigueText, FaceSmall)
+			DrawText(screen, fatigueText, routeRight-routeW-12-fatigueW, float64(y)+8, FaceSmall, fatigueColor)
+		}
+	} else if fatigueText, fatigueColor := warFatigueHUDText(gs); fatigueText != "" {
+		fatigueW := MeasureText(fatigueText, FaceSmall)
+		fatigueRight := float64(x+w) - 10
+		if quotaW > 0 {
+			fatigueRight -= quotaW + 12
+		}
+		DrawText(screen, fatigueText, fatigueRight-fatigueW, float64(y)+8, FaceSmall, fatigueColor)
 	}
 	if quotaText != "" {
 		DrawText(screen, quotaText, float64(x+w)-10-quotaW, float64(y)+8, FaceSmall, quotaColor)
@@ -808,6 +819,18 @@ func tradeRouteHUDText(gs *state.GameState) (string, color.RGBA) {
 	limit := diplomacy.TradePartnerLimit(gs, gs.PlayerFactionID)
 	label := "Ticaret Rotası: " + itoa(used) + "/" + itoa(limit)
 	if used >= limit {
+		return label, color.RGBA{100, 220, 100, 255}
+	}
+	return label, color.RGBA{220, 90, 90, 255}
+}
+
+func warFatigueHUDText(gs *state.GameState) (string, color.RGBA) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return "", color.RGBA{}
+	}
+	penalty := diplomacy.IndependentWarSatisfactionPenalty(gs, gs.PlayerFactionID)
+	label := "Savaş Yorgunluğu: " + itoa(-penalty)
+	if penalty == 0 {
 		return label, color.RGBA{100, 220, 100, 255}
 	}
 	return label, color.RGBA{220, 90, 90, 255}

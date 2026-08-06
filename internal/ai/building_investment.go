@@ -180,7 +180,8 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	bottleneckScore := aiBuildingBottleneckScore(self, btype.ID, cost, snapshot)
 	threatScore := aiBuildingThreatScore(btype.ID, signals)
 	objectiveScore := aiBuildingObjectiveScore(btype.ID, signals, gs.AIPlans[self.ID])
-	stabilityNeed := maxInt(0, 70-region.Satisfaction)
+	projectedWarPenalty := diplomacy.IndependentWarSatisfactionPenalty(gs, self.ID)
+	stabilityNeed := maxInt(0, 70-region.Satisfaction+projectedWarPenalty)
 	stabilityScore := btype.SatBonus * stabilityNeed / 2
 	tradeScore := aiTradeBuildingScore(gs, self.ID, region, btype.ID, level, queued)
 	if btype.ID == "temple" && region.Satisfaction < 30 {

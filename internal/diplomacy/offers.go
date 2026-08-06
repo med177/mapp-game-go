@@ -23,7 +23,8 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 	if gs == nil || from == "" || to == "" || from == to {
 		return false
 	}
-	if action != ActionProposePeace && action != ActionProposeAlliance && action != ActionProposeTrade {
+	if action != ActionProposePeace && action != ActionProposeAlliance && action != ActionProposeTrade &&
+		action != ActionImproveRelations && action != ActionSendGift {
 		return false
 	}
 	fromFaction := gs.Factions[from]

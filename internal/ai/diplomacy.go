@@ -66,6 +66,9 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 				break
 			}
+			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+				continue
+			}
 			var allianceAssessment diplomacy.AllianceProposalAssessment
 			if rel.Score >= diplomacy.AllianceRelationThreshold(gs) {
 				allianceAssessment = diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
@@ -100,7 +103,14 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 					}
 				}
 			}
+		case faction.StanceTrade:
+			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+				continue
+			}
 		case faction.StanceAllied:
+			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+				continue
+			}
 			if aiShouldCancelAlliance(gs, fid, otherID) {
 				activeObjectiveConflict := false
 				if gs.ScenarioID == "1300_ottoman_rise" {
@@ -198,6 +208,102 @@ func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, s
 	if result.Applied || result.Accepted {
 		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: best, Message: turnFactionName(gs, fid) + " " + turnFactionName(gs, best) + " ile " + turnFactionName(gs, target) + " hedefi için ittifak kurdu."})
 	}
+}
+
+// aiHandleRelationshipRepairWithSteps, AI'nin yalnız kendi stratejisine katkı
+// sağlayan barışçıl ilişkilerde kullandığı tek taraflı ilişki aksiyonlarını
+// uygular. AI-AI işlemleri hemen çözülür; oyuncuya giden işlemler ise oyuncunun
+// barış tekliflerinde gördüğü aynı modal kuyruğuna girer.
+func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, steps *[]TurnStep) bool {
+	action, reason, ok := aiRelationshipRepairAction(gs, fid, otherID, rel)
+	if !ok || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return false
+	}
+
+	actionLabel := "diplomatik heyet"
+	if action == diplomacy.ActionSendGift {
+		actionLabel = "hediye"
+	}
+	if otherID == gs.PlayerFactionID {
+		priority, _ := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, action)
+		if !diplomacy.QueueOfferWithMeta(gs, fid, otherID, action, priority+20, reason) {
+			return false
+		}
+		addTurnStep(steps, TurnStep{
+			FactionID:     fid,
+			Kind:          TurnStepDiplomacy,
+			TargetFaction: otherID,
+			Message:       turnFactionName(gs, fid) + " sana " + actionLabel + " gönderdi.",
+		})
+		return true
+	}
+
+	result := diplomacy.Execute(gs, fid, otherID, action)
+	if !result.Applied {
+		return false
+	}
+	addTurnStep(steps, TurnStep{
+		FactionID:     fid,
+		Kind:          TurnStepDiplomacy,
+		TargetFaction: otherID,
+		Message:       turnFactionName(gs, fid) + ": " + result.Message,
+	})
+	return true
+}
+
+// aiRelationshipRepairAction, ilişki aksiyonunu yalnızca somut ticari veya
+// güvenlik çıkarı varsa seçer. Önce ucuz heyetle ticaret eşiğine ulaşır; daha
+// yüksek ilişki hedefi gerekiyorsa ve altın rezervi uygunsa hediye kullanır.
+func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation) (diplomacy.Action, string, bool) {
+	if gs == nil || rel == nil || fid == "" || otherID == "" || fid == otherID || rel.Stance == faction.StanceWar || diplomacy.SameRealm(gs, fid, otherID) {
+		return "", "", false
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated || aiPlanTargetsFaction(gs, fid, otherID) {
+		return "", "", false
+	}
+
+	hasActiveTrade := diplomacy.HasTradeRouteBetween(gs, fid, otherID)
+	hasTradeInterest := hasActiveTrade || diplomacy.CanEstablishTradeRoute(gs, fid, otherID)
+	hasAllianceInterest := aiAllianceHasMeaningfulBenefit(gs, fid, otherID)
+	commonEnemy := diplomacy.HasCommonEnemy(gs, fid, otherID)
+	sharedThreat := diplomacy.HasSharedMajorThreat(gs, fid, otherID)
+	directThreat := diplomacy.HasDirectThreat(gs, fid, otherID)
+	if !hasTradeInterest && !hasAllianceInterest && !commonEnemy && !sharedThreat && !directThreat {
+		return "", "", false
+	}
+
+	desiredScore := 15
+	if hasActiveTrade {
+		desiredScore = 30
+	}
+	if hasAllianceInterest || commonEnemy || sharedThreat || directThreat {
+		desiredScore = maxInt(desiredScore, diplomacy.AllianceRelationThreshold(gs))
+	}
+	if rel.Score >= desiredScore {
+		return "", "", false
+	}
+
+	reason := "ticaret hattını güvenceye alma"
+	if hasAllianceInterest || commonEnemy || sharedThreat {
+		reason = "stratejik ortaklık hazırlığı"
+	} else if directThreat {
+		reason = "sınır gerilimini azaltma"
+	}
+
+	if rel.Score < 15 {
+		if self.Gold < diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+			return "", "", false
+		}
+		return diplomacy.ActionImproveRelations, reason, true
+	}
+	if self.Gold >= diplomacy.GiftGoldCost+aiMinGoldReserve {
+		return diplomacy.ActionSendGift, reason, true
+	}
+	if self.Gold >= diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+		return diplomacy.ActionImproveRelations, reason, true
+	}
+	return "", "", false
 }
 
 // aiHandleSiegeSurrenderOffersWithSteps, oyuncu ile doğrudan ilişkili aktif

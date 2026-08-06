@@ -44,10 +44,22 @@ Diplomasi hedef listesinde askerî güç aynı kanonik kırılımı `ordu/donanm
 biçiminde gösterir; `Güç sırası` ise kara ve deniz gücünün toplamına göre
 hesaplanmaya devam eder (`internal/render/diplom.go`, `internal/diplomacy/diplomacy.go`).
 
+Diplomasi teklif panelindeki pasif eylemler, sağdaki `PASİF` etiketinin altında
+aynı butonun küçük açıklama satırında kanonik `ActionBlockReason` metnini de
+gösterir. Aktif eylemler bu satırda kabul olasılığı açıklamasını korur; iki
+durum da ortak teklif butonu geometrisinden türetilir. Heyet ve Hediye
+açıklamalarında ödeme akışı ayrıca satırın sağında, sırasıyla `Karşı devlete
+ödeme gitmez` ve `Karşı devletin hazinesine 80 altın gider` olarak gösterilir
+(`internal/render/diplom.go`).
+
 Aynı listede `Hazine` sütunu devletin tur başı brüt altın geliri ile mevcut
 hazineyi `Gelir/Altın` biçiminde gösterir. Liste üstündeki `Ekonomik Sıralama`
 gelire, eşitlikte mevcut hazineye göre azalan sıralama uygular; gelir hesabı
 `victory.GoldIncomeForFaction` ile ortak tutulur (`internal/render/diplom.go`).
+
+Oyuncunun devleti de hedef listesinde kendi güç/ekonomi sırasıyla görünür;
+satırı `Oyuncu / Kendi devletin` olarak işaretlenir. Bu satıra çift tıklama ve
+genel diplomasi hedefi açma kapısı teklif sayfasını açmaz (`internal/render/diplom.go`).
 
 Aktif Savaşlar paneli `WarLedger.DeclarerFactionID` ve `DefenderFactionID` yönünü
 kullanır: savaşı ilk açan devlet soldaki bayrak, ad, kayıp, güç ve ordu sütunudur;
@@ -143,10 +155,13 @@ toplamı maksimum liman+pazar bölgelerinden gelen `+1` bonusları, rota kapasit
 ise maksimum pazar bölgelerinden gelen `+2` anlaşma tavanı bonuslarını içerir.
 Böylece teklif reddi ile panel bilgisi kapasite veya partner sınırında ayrışmaz.
 
-Üst HUD'da `Ticaret Rotası: kullanılan/limit` etiketi `Elçi` göstergesinin hemen
-soluna sağdan hizalanır ve aynı aktif partner sayısını kullanır. Partner limiti
-dolmamışsa açık slotlar kırmızı, tüm partner slotları anlaşmalarla doluysa yeşil
-çizilir (`internal/render/panel.go`).
+Üst HUD'da `Savaş Yorgunluğu: -N` etiketi `Ticaret Rotası: kullanılan/limit`
+etiketinin hemen soluna, rota yoksa aynı durum satırının sağ tarafına hizalanır.
+Savaş yorgunluğu `diplomacy.IndependentWarSatisfactionPenalty()` ile ortak
+state hesabından gelir; `0` yeşil, negatif değer kırmızı çizilir. Ticaret rotası
+etiketi de `Elçi` göstergesinin hemen soluna sağdan hizalanır ve aynı aktif
+partner sayısını kullanır. Partner limiti dolmamışsa açık slotlar kırmızı, tüm
+partner slotları anlaşmalarla doluysa yeşil çizilir (`internal/render/panel.go`).
 
 Zafer koşulu seçimi, fraksiyona özel kartları üstte ve genel kartları altında
 gruplar. Bir grup üç veya daha fazla karta ulaştığında aynı `victoryCardRect()`
@@ -820,7 +835,7 @@ kabul` olarak gösterilir (`internal/render/diplom.go`).
 Not: Diplomasi hedef listesindeki her satırın en solunda 40×40 px kare faction bayrağı çizilir; asset bulunamazsa devlet adının baş harfi fallback'i kullanılır. Devlet adı kolonu bayrak ve 10 px boşluk sonrasında toplam 340 px içinde çizilir; ilişki/durum kolonu aynı satır geometrisinden daha solda ve kalan genişlikte çizilir. Uzun durum etiketleri ilişki kolonunun genişliğine göre kırpılır (`internal/render/diplom.go`).
 Not: Edit mode region paint override'ları için `WorldMap` override öncesi `baseRegionAt` snapshot'ını saklar; böylece baseline hesabı ikinci bir tam `prepareWorldMapData` çağrısı yapmadan aynı build içinden alınır.
 Not: Senaryo ticaret ağı artık hem region tabanlı merkezleri hem de `trade_centers.json` içindeki `off_map=true` dış hat düğümlerini destekler; bu düğümler `name_tr`, `world_x`, `world_y` ve `links` ile tanımlanır, yalnız render etiketinde görünür ve nearest-center / trade-map tint hesabında dışarıda bırakılır. `unlock_year` verildiğinde düğüm ve ona bağlı koridorlar belirtilen yıl gelene kadar tamamen pasif kalır.
-Not: Oyuncuya gelen diplomasi teklifleri (ilk sürüm: barış) ortak modal/panel/button geometrisi kullanan anlaşma paneli ile `Kabul Et` / `Reddet` olarak yanıtlanır.
+Not: Oyuncuya gelen diplomasi teklifleri ortak modal/panel/button geometrisi kullanan anlaşma paneli ile yanıtlanır. Barış, ittifak ve ticaret gibi karşılıklı teklifler `Kabul Et` / `Reddet` düğmelerini kullanır; AI'nin tek taraflı `Heyet` veya `Hediye` bildirimi aynı modalda yalnız `Tamam` düğmesiyle kapanır ve çözümden önce ilişki/altın state'ini değiştirmez.
 Not: Diplomasi ekranı iki sayfadır: ilk sayfa devlet listesi, seçilen devlet için ikinci sayfa teklif paneli açılır; `Geri` ile listeye dönülür. Her iki sayfadaki sağ kolon seçili devletin aktif ilişkilerini esas alır; savaş ve ittifak `Relation.Stance`, ticaret ise ittifaktan bağımsız aktif `TradeRoutes` kayıtları üzerinden listelenir. Vassal realm içindeki zorunlu allied kayıtları dış ittifak listesine karıştırılmaz. Geçmiş sürekli açık tutulmaz; `Geçmiş / İlişkiler` düğmesi aynı kolonda görünüm değiştirir. Liste sayfası mouse wheel'i panel gövdesinde tüketir, görünür scrollbar çizer ve kart chrome'u ortak compose helper'larıyla render edilir. Liste seçimi press yerine release ile tamamlanır; drag eşiği aşılırsa satır seçimi iptal edilip liste row-height bazlı sürükleme scroll'una geçer. Vassal satırına ikinci kez tıklanınca dış overlord teklif paneli açılır; oyuncunun kendi vassalında mevcut vassal yönetim kartı korunur. Tam teklif paneli ile bölge panelindeki hızlı diplomasi butonları aynı validasyon helper'ını kullanır; geçersiz aksiyonlar yalnız etiket ve `PASİF` rozetiyle gösterilir, fare/klavye odağına alınmaz ve `Teklif Gönder` backend çağrısından önce de bloklanır. Durum kartı iki satırlı metin için alt iç boşluk taşır; teklif ayrıntısı olan aktif satırlar da alt kenardan içeride kalır. Doğrudan oyuncu vassalında standart tekliflerden ayrı yönetim kartı açılır; iki yönetim eylemi de genel confirm modalı üzerinden oyun katmanına iletilir. Ticaret teklifindeki yüzde gerçek kabul motoruyla aynı helper'dan gelir; yani panelde görülen olasılık, submit anındaki trade acceptance kuralından ayrı akmaz. Teklif paneli ayrıca `Heyet`, `Hediye` ve `Vassallık` aksiyonlarını taşır; vassal / overlord hedeflerinde durum satırı özel hiyerarşi etiketi gösterir.
 Not: Sağ tık savaş onayı deniz-donanma hareketinde düşman deniz bölgesine giriş için açılmaz; bu hareket savaştan bağımsız serbesttir. Ancak hedef deniz bölgesinde savaş halindeki düşman donanma varsa artık doğrudan move üretilmez; önce `Deniz Muharebesi Planı` modalı açılır ve seçilen duruş `ActionMoveArmy.BattleStance` alanıyla oyun katmanına taşınır. Kara ordusu savaş halindeki veya savaş ilanı sonrası çatışmaya gireceği düşman kara bölgesine sağ tıkladığında da aynı modal `Kara Muharebesi` başlığıyla açılır. Hedef kara bölgesi tahkimliyse savaş ilanı onayından sonra doğrudan move yerine `Kuşatma Kararı` modalına geçilir; kuşatma birimi olmayan ordu da kuşatma başlatabilir ve `Genel Hücum` düğmesini kullanabilir, ancak gedik yoksa tahkimat doğrudan düşmez. Aktif kuşatma yürüten bir ordu seçildiğinde ayrı `Kuşatma Emri` paneli açılır; panel ve kuşatma karar mesajı komutanın operasyon bonuslarını (`moral / hareket / kuşatma`) da açıkça yazar. Oyuncu bu panel açıkken başka komşu bölgeye sağ tıklarsa kuşatma ayrıca onay istemeden kaldırılmış sayılır ve hareket emri çözülür. Aynı aktif kuşatmaya aynı fraksiyon, müttefik fraksiyon veya aynı vassal zincirindeki realm üyeleri normal hareketle destek verebilir; ilgisiz üçüncü devletlerin ikinci kuşatma hamlesi render'da da bloklanır. Tahkimli ve zaten kuşatılmış kara bölgesinde enemy besieger ile savaş mümkünse sağ tık hareketi kuşatma kararına gitmez; battle plan / declare-war flow açılır ve kazanılan savaş kuşatmayı kaldırır ama yeni kuşatma oluşturmaz. Seçili nakliye filosu düşman kıyıya çıkarma yaparken savunan ordu varsa bu kez `Çıkarma Muharebesi Planı` açılır ve seçim `ActionDisembarkArmy.BattleStance` olarak iletilir; preview üst bandı bu durumda da gerçek çıkarma komutanını gösterir. Donanma ayrıca sahibi olunan, müttefik olunan veya aynı realm içinde olunan, port settlement içeren komşu kara bölgesine docking emri de alabilir; bu durumda savaş onayı açılmaz ve filo deniz bölgesi konumunu koruyup liman anchor'ına bağlanır. Seçili kara ordusu, komşu deniz bölgesindeki dost nakliye filosuna doğrudan sağ tıklarsa ayrı `Gemiye Bin` onay diyaloğu açılır; UI yalnız filonun kalan kapasitesi orduyu taşımaya yetiyorsa bu emri sunar ve uygun filo ikonu ayrıca `BIN` hedef rozeti ile vurgulanır. Seçili nakliye filosu gemide birlik taşırken dost, aynı realm veya boş kara bölgesine indirme yapabiliyorsa hedef bölge üstünde `IN` rozeti görünür ve sağ tık önce `Karaya In` onay diyaloğu açar; bu onay normal move değil zorunlu indirme aksiyonunu tetikler, yani liman uygunsa bile asker önce karaya iner ve filo denizde kalır.
 Not: Aynı denize giriş veya savaş açılışı sırasında tespit edilen düşman filo için

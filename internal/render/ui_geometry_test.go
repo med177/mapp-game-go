@@ -187,6 +187,11 @@ func TestCoreUIGeometryFitsCommonViewports(t *testing.T) {
 		}
 		assertButtonInside(t, tc.w, tc.h, acceptBtn)
 		assertButtonInside(t, tc.w, tc.h, rejectBtn)
+		noticeBtn := buildDiplomacyOfferNoticeButton()
+		if noticeBtn.Label != "Tamam" {
+			t.Fatalf("diplomasi bildiriminde Tamam düğmesi olmalı, got=%q", noticeBtn.Label)
+		}
+		assertButtonInside(t, tc.w, tc.h, noticeBtn)
 		if rejectBtn.X+rejectBtn.W > offerModal.Panel.Rect.X+offerModal.Panel.Rect.W/2 {
 			t.Fatalf("diplomacy offer buttons should stay on the left side: modal=%+v accept=%+v reject=%+v", offerModal.Panel.Rect, acceptBtn, rejectBtn)
 		}

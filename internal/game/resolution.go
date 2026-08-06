@@ -133,32 +133,37 @@ func grainShortageSatisfactionPenalty(level state.GrainSupplyLevel) int {
 }
 
 const (
-	warFatigueSatisfactionPenalty    = 1
 	overextensionSatisfactionPenalty = 1
 	maxArmySatisfactionBonus         = 10
 	annualSatisfactionDecay          = 1
 	grainZeroSatisfactionPenalty     = 5
 )
 
-// factionAtWarByID savaşta olan fraksiyonları tek tur için önceden işaretler.
-// Savaş yorgunluğu doğrudan savaşa giren devletin bütün kara bölgelerine uygulanır.
-func factionAtWarByID(gs *state.GameState) map[string]bool {
-	atWar := make(map[string]bool)
+// factionWarFatigueByID her faction için savaş yorgunluğu cezasını hesaplar.
+// Aynı realm içindeki overlord ve vassallar tek bağımsız devlet sayılır;
+// savaşan karşı realm sayısı başına ceza uygulanır.
+func factionWarFatigueByID(gs *state.GameState) map[string]int {
+	fatigueByFaction := make(map[string]int)
 	if gs == nil {
-		return atWar
+		return fatigueByFaction
 	}
+	for fid := range gs.Factions {
+		fatigueByFaction[string(fid)] = diplomacy.IndependentWarSatisfactionPenalty(gs, fid)
+	}
+	// Legacy/test state'lerinde ilişki tarafı Factions map'inde bulunmayabilir;
+	// bu durumda bölge sahibi ID'si için de sonucu erişilebilir tut.
 	for _, relation := range gs.Relations {
 		if relation == nil || relation.Stance != faction.StanceWar {
 			continue
 		}
-		if relation.FactionA != "" {
-			atWar[string(relation.FactionA)] = true
-		}
-		if relation.FactionB != "" {
-			atWar[string(relation.FactionB)] = true
+		for _, fid := range []faction.FactionID{relation.FactionA, relation.FactionB} {
+			if fid == "" {
+				continue
+			}
+			fatigueByFaction[string(fid)] = diplomacy.IndependentWarSatisfactionPenalty(gs, fid)
 		}
 	}
-	return atWar
+	return fatigueByFaction
 }
 
 // regionArmySatisfactionBonus bölgedeki sahibine ait kara ordularının toplam
@@ -728,15 +733,13 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 	// Vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkilerini tek
 	// delta içinde birleştir. Nihai değer yalnızca burada 0-100 aralığına çekilir.
-	atWarByFaction := factionAtWarByID(gs)
+	warFatigueByFaction := factionWarFatigueByID(gs)
 	for _, r := range gs.Regions {
 		if r == nil || r.IsSea || r.OwnerID == "" {
 			continue
 		}
 		delta := satisfactionDeltaByRegion[r.ID]
-		if atWarByFaction[r.OwnerID] {
-			delta -= warFatigueSatisfactionPenalty
-		}
+		delta -= warFatigueByFaction[r.OwnerID]
 		if landRegionCountByFaction[r.OwnerID] > 20 {
 			delta -= overextensionSatisfactionPenalty
 		}

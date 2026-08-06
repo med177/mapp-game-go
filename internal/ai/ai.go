@@ -97,6 +97,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 	}
 
 	aiHandleDiplomacyWithSteps(gs, fid, steps)
+	aiAdjustTaxesWithSteps(gs, fid, steps)
 	if purchased := aiProcureGrain(gs, fid); purchased > 0 {
 		addTurnStep(steps, TurnStep{
 			FactionID: fid,

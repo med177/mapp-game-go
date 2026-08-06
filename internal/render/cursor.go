@@ -432,6 +432,9 @@ func (r *Renderer) battleReportHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
+	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok && diplomacyOfferIsNotification(r.gs.DiplomaticOffers[offerIdx]) {
+		return buildDiplomacyOfferNoticeButton().HitTest(fx, fy)
+	}
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	return acceptBtn.HitTest(fx, fy) || rejectBtn.HitTest(fx, fy)
 }

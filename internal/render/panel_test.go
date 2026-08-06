@@ -77,6 +77,37 @@ func TestTradeRouteHUDTextShowsFullPartnerLimitInGreen(t *testing.T) {
 	}
 }
 
+func TestWarFatigueHUDTextUsesGreenZeroAndRedPenalty(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"enemy":  {ID: "enemy"},
+		},
+	}
+
+	text, col := warFatigueHUDText(gs)
+	if text != "Savaş Yorgunluğu: 0" {
+		t.Fatalf("barışta savaş yorgunluğu 0 görünmeliydi, got=%q", text)
+	}
+	if col != (color.RGBA{100, 220, 100, 255}) {
+		t.Fatalf("sıfır savaş yorgunluğu yeşil görünmeliydi, got=%v", col)
+	}
+
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("player", "enemy"): {
+			FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar,
+		},
+	}
+	text, col = warFatigueHUDText(gs)
+	if text != "Savaş Yorgunluğu: -2" {
+		t.Fatalf("tek bağımsız savaşta savaş yorgunluğu -2 görünmeliydi, got=%q", text)
+	}
+	if col != (color.RGBA{220, 90, 90, 255}) {
+		t.Fatalf("negatif savaş yorgunluğu kırmızı görünmeliydi, got=%v", col)
+	}
+}
+
 func TestPlayerMilitaryPowerStandingRanksActiveFactions(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

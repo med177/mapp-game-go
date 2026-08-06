@@ -18,7 +18,24 @@ related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, a
 `internal/ai/naval_threat.go`, `internal/ai/naval_patrol.go`, `internal/ai/merchant_trade.go`,
 `internal/ai/conquest_policy.go`,
 `internal/ai/difficulty_policy.go`, `internal/scenario/ai_strategy.go`,
-`internal/ai/grain_procurement.go`
+`internal/ai/grain_procurement.go`, `internal/ai/tax_policy.go`,
+`internal/diplomacy/war_fatigue.go`
+
+## Memnuniyet ve vergi politikası
+
+AI her tur başında bölgelerinin vergi oranını memnuniyet ve bağımsız savaş
+sayısına göre ayarlar. Savaş yorgunluğu projeksiyonu overlord/vassal realm'lerini
+tek devlet sayar ve ekonomi tick'indeki gerçek `-2 × bağımsız düşman` etkisini
+önceden hesaba katar. Projeksiyon 35'in altındaysa vergi `20` puan, 50'nin
+altındaysa `10` puan azaltılır; amaç `Satisfaction < 30` isyan kontrolüne
+gelmeden bölgeyi ve gelir tabanını korumaktır. Projeksiyon 75 veya üzerindeyse
+vergi `10` puan artırılır; böylece güvenli memnuniyet seviyelerinde gelir
+toplanır. Vergi değişimi yalnız AI'nin sahip olduğu kara bölgelerinde uygulanır.
+
+1300 bina yatırım skoru da aynı savaş yorgunluğu projeksiyonunu kullanır.
+Memnuniyet açığı büyüdükçe `temple` (`+10`) ve uygun savunma bölgelerinde
+`walls` (`+6`) gibi istikrar sağlayan binalar öne çıkar; ibadet yeri için
+`Satisfaction < 30` ek öncelik uygulanır.
 
 Üretim tedarikinde askerî aday seçimi ile gerçek üretim önkoşulları birlikte
 değerlendirilir. Tedarik öncesi kaynak baskısı puanı uygulanmadığı için eksik
@@ -1046,6 +1063,8 @@ geçidinde ve kuyruk çözümünde de yeniden doğrulanır.
   tur cooldown uygular. Diğer senaryolar mevcut legacy güç/bölge/skor kararını korur
 - `peace` ilişkisinde ittifak için artık sadece skor yetmez; 1300'de skorun `40` olması, kara sınırı, aktif ticaret, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ aranır. AI ayrıca küçük devletlerde düşük müttefik tavanı uygular, `ai_expansion_targets` ile çakışan hedeflere ortak tehdit yoksa ittifak teklif etmez, mevcut müttefikin savaş düşmanına teklif göndermez ve büyük gücün tek bölgeli/zayıf devlete attığı alliance teklifi için ayrıca gerçek askeri veya stratejik fayda arar
 - `peace` ilişkisinde skor yeterliyse ve bağlanabilir kara/deniz hattı varsa ticaret dener; salt uzak ve nötr devletlere sırf kapasite var diye trade açmaz
+- Somut ticaret çıkarı (aktif veya bağlanabilir hat), anlamlı ittifak faydası, ortak düşman/tehdit ya da sınır gerilimi olan ve genişleme hedefi olmayan barışçıl hedeflerde ilişkiyi ücretli olarak onarır. Skor `15` altındaysa altın rezervini koruyarak `Heyet` (`40` altın, `+8`) gönderir; aktif ticaret veya stratejik ittifak için daha yüksek skor gerekiyorsa `Hediye` (`120` altın, `+15`, alıcıya `80` altın) kullanır. Her aksiyon tur içi diplomasi kotasını tüketir.
+- Bu aksiyonlar AI-AI arasında doğrudan çözülür. Hedef oyuncuysa barış/ittifak teklifleriyle aynı `DiplomaticOffers` kuyruğuna girer; oyuncuya yalnız `Tamam` düğmesi olan bildirim modalı gösterilir ve onaylanana kadar ilişki ile altın state'i değişmez (`internal/ai/diplomacy.go`, `internal/render/renderer_dialogs.go`).
 - vassal durumundaki AI bağımsız diplomasi açmaz; overlord'u olmayan devletler ise başka bir overlord'a bağlı hedeflerle doğrudan müzakere başlatmaz
 - `allied` ilişkide ortak tehdit kalmamış, ticaret/sınır bağı yok olmuş, tarihsel genişleme hedefiyle çatışan ya da büyük güç için artık anlamlı katkı üretmeyen zayıf ittifaklar AI tarafından iptal edilebilir
 - normal/zor zorlukta, ticaret/ittifak ilişkisini bozmadan, sınır komşusu zayıf bir hedefe karşı güç ve cephe üstünlüğü varsa tek bir fırsat savaşı açabilir

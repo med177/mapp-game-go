@@ -356,6 +356,7 @@ AI:
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
+- AI, kendi çıkarı olan ve genişleme hedefi olmayan barışçıl ilişkilerde ticaret/ittifak/güvenlik eşiğini yükseltmek için aynı `Heyet` ve `Hediye` aksiyonlarını kullanır; heyet `40` altın karşılığında `+8`, hediye `120` altın karşılığında `+15` verir ve hediyenin `80` altını alıcıya aktarılır. AI-AI işlemleri anında, oyuncuya gönderilenler ise `DiplomaticOffers` kuyruğunda yalnız `Tamam` bildirimiyle çözülür.
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
 - barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde altı turluk
   save-backed ateşkes alır; bu sürede `ActionDeclareWar` engellenir, süre bitince
@@ -431,6 +432,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 
 - Panel iki adımdır: önce hedef devlet listesi, sonra teklif sayfası açılır.
 - Hedef devlet listesi her satırda `Askeri güç` değerini `ordu/donanma` biçiminde, `Hazine` değerini `Gelir/Altın` biçiminde ve aktif devletler arasındaki `Güç sırası` (`X/Y`) değerini gösterir. Güç sırası bu iki askerî değerin toplamına göre hesaplanır. Listenin üstündeki `Alfabetik`, `İlişki`, `Güç Sıralaması` ve `Ekonomik Sıralama` düğmeleri listeyi sırasıyla varsayılan ID alfabetiğine, oyuncuyla olan ilişki puanı azalan düzene, standing sırası artan düzene veya brüt gelir azalan ve eşitlikte hazine azalan düzene göre yeniden düzenler. `İlişki` sıralamasında aynı ilişki puanına sahip hedefler içinde oyuncuyla kara sınırı paylaşan devletler önce gelir; kalan eşitlik faction ID'siyle çözülür.
+- Oyuncunun oynadığı devlet de bu listede kendi güç/ekonomi sırasıyla görünür. Satır `Oyuncu / Kendi devletin` olarak gösterilir; kendi devleti teklif hedefi olmadığı için satır çift tıklaması teklif paneli açmaz.
 - Teklif paneli artık çekirdek aksiyonların yanında `Heyet`, `Hediye` ve `Vassallık` seçeneklerini de gösterir.
 - Teklif türü düğmelerine tıklanınca seçilen aksiyon `diplomacyActionFocus` ile korunur; seçili ve etkin düğme 2 px altın-sarı border ile vurgulanır, böylece `Teklif Gönder` öncesi hangi teklifin seçildiği net görünür.
 - Hedef listesi artık panel gövdesi üzerinde mouse wheel ile kaydırılır; scroll sadece dar satır alanına değil panel bağlamına da bağlıdır.

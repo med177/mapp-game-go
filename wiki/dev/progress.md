@@ -7,6 +7,36 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: AI'nin kendi çıkarına hizmet eden aktif/bağlanabilir ticaret, ittifak ve güvenlik ilişkilerinde `Heyet`/`Hediye` kullanması eklendi. Heyet ve hediye AI-AI arasında doğrudan çözülüyor; oyuncuya gönderildiğinde mevcut diplomasi modalı yalnız `Tamam` düğmeli bildirim olarak açılıyor. Altın rezervi ve tur içi diplomasi kotası korunuyor. Regression: `TestAIUsesDelegationToReachTradeRelationThreshold`, `TestAIUsesGiftForActiveTradeRelation`, `TestAIQueuesGiftToPlayerAsDiplomacyNotification`, `TestDiplomacyRelationshipNotificationText`.
+
+- 2026-08-06: Üst durum HUD'ına oyuncunun bağımsız savaş sayısından türetilen
+  `Savaş Yorgunluğu: -N` etiketi eklendi. Etiket `Ticaret Rotası` göstergesinin
+  soluna hizalanıyor; `0` yeşil, negatif değer kırmızı çiziliyor. Regression:
+  `TestWarFatigueHUDTextUsesGreenZeroAndRedPenalty`.
+
+- 2026-08-06: AI memnuniyet yönetimi eklendi. Bağımsız savaş realm'leri başına
+  `-2` savaş yorgunluğu AI bina ve vergi projeksiyonlarına bağlandı; memnuniyet
+  projeksiyonu `35` altına indiğinde vergi `20`, `50` altına indiğinde `10`
+  puan azaltılıyor. Memnuniyet `75+` seviyesinde vergi `10` puan artırılıyor.
+  Overlord/vassal realm'leri ayrı savaş sayılmıyor. Regression:
+  `TestAIAdjustTaxesProtectsUnrestAndRaisesHealthyRevenue`,
+  `TestAIAdjustTaxesAccountsForIndependentWarFatigue`.
+
+- 2026-08-06: Diplomasi hedef listesine oyuncunun oynadığı devlet de eklendi.
+  Kendi satırı teklif paneli açmıyor; güç ve ekonomik sıralamalara dahil olmaya
+  devam ediyor. Regression: `TestOpenDiplomacyTargetRejectsPlayerFaction`.
+
+- 2026-08-06: Diplomasi teklif panelinde pasif eylemlerin altında pasiflik
+  nedeni yeniden gösteriliyor. `ActionBlockReason` ile hesaplanan gerçek engel
+  metni, `PASİF` etiketinin altındaki ortak açıklama satırında çiziliyor;
+  aktif eylemlerin kabul olasılığı metinleri korunuyor. Doğrulama:
+  `go test ./internal/render`.
+
+- 2026-08-06: Diplomasi teklif butonlarının açıklama satırına Heyet ve Hediye
+  ödeme akışı sağa hizalı olarak eklendi: `Karşı devlete ödeme gitmez` ve
+  `Karşı devletin hazinesine 80 altın gider`. Metinler ortak buton geometrisinde
+  sol taraftaki ilişki/kabul açıklamasıyla çakışmayacak şekilde yerleştiriliyor.
+
 - 2026-08-06: Diplomasi hedef listesine `Hazine` (`Gelir/Altın`) sütunu ve
   `Ekonomik Sıralama` düğmesi eklendi. Ekonomik sıralama önce tur başı brüt
   geliri, eşitlikte mevcut hazineyi kullanıyor. Regression:

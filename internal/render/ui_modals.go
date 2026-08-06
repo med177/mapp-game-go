@@ -338,3 +338,10 @@ func buildDiplomacyOfferButtonsWithAcceptLabel(acceptLabel string) (gameui.Butto
 	return gameui.NewButton(acceptX, btnY, btnW, btnH, acceptLabel).WithIcon(gameui.IconCheck),
 		gameui.NewButton(rejectX, btnY, btnW, btnH, "Reddet").WithIcon(gameui.IconClose)
 }
+
+func buildDiplomacyOfferNoticeButton() gameui.Button {
+	const btnW, btnH = 120.0, 36.0
+	modal := buildDiplomacyOfferModal()
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 12
+	return gameui.NewButton(modal.Panel.Rect.X+16, btnY, btnW, btnH, "Tamam").WithIcon(gameui.IconCheck)
+}
