@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -17,6 +17,12 @@ Seçili bölge ve devlet detay panelleri ortak `infoPanelW` ölçüsünü kullan
 panel gövdesi, bina kartı ızgarası, sekmeler, aksiyon bandı, fraksiyon kaynak
 ızgarası, scroll viewport'u ve ilgili hit-test rect'leri bu genişlikten türetilir
 (`internal/render/panel.go`).
+
+Bölge panelindeki memnuniyet yüzdesi ve yüzde barı korunur; barın yanında
+`+N`/`-N` biçimindeki tur deltası, `internal/satisfaction` breakdown'ı üzerinden
+çizilir. Delta alanı ortak rect ile hit-test/cursor akışına bağlıdır; hover
+edildiğinde vergi, binalar, tahıl, teknoloji, savaş yorgunluğu, genişleme, ordu,
+yıllık yıpranma ve kuşatma bileşenlerini gösteren popup açılır.
 
 Edit Mode, yerleşim tipi ve başkent değişikliklerinden sonra
 `world.EnsureRequiredSettlementBuildings` ile minimum altyapıyı otomatik

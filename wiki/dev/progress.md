@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-07: Bölge panelindeki memnuniyet barının yüzde geometrisi korunarak
+  yanında tur başı `+N`/`-N` etkisi gösterildi. Etiket pozitifse yeşil, negatifse
+  kırmızı çiziliyor; hover cursor'ı parmağa dönüşüyor ve ortak breakdown popup'ı
+  vergi, bina, tahıl, teknoloji, savaş, genişleme, ordu, yıllık yıpranma ve
+  kuşatma bileşenlerini ayrıntılı gösteriyor.
+
 - 2026-08-07: AI'nin vergi artırma/azaltma ve `Heyet`/`Hediye` ilişki bakımı
   HAMLELER akışından çıkarıldı. State mutasyonları korunurken bu düşük öncelikli
   adımlar artık görsel bekleme üretmiyor. Regression:

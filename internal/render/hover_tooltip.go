@@ -98,6 +98,10 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 			}
 		}
 	}
+	if deltaRect, ok := regionSatisfactionDeltaRect(gs, rid); ok && deltaRect.Hit(fx, fy) {
+		drawSatisfactionTooltip(screen, gs, rid, fx, fy)
+		return
+	}
 
 	if regionDiplomacyButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)

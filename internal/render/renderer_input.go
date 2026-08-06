@@ -640,6 +640,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.resetRecruitSelection()
 			return InputAction{}
 		}
+		if deltaRect, ok := regionSatisfactionDeltaRect(r.gs, r.SelectedRegion); ok && deltaRect.Hit(fx, fy) {
+			return InputAction{}
+		}
 		if delta := regionTaxButtonHit(fx, fy, r.gs, r.SelectedRegion); delta != 0 {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}

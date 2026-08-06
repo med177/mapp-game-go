@@ -2107,7 +2107,12 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		ly += 16
 	}
 
-	drawRegionMeterRow(screen, lx, ly, sepW, "Memnuniyet", "%"+itoa(region.Satisfaction), float64(region.Satisfaction)/100, satisfactionColor(region.Satisfaction))
+	drawRegionMeterLabels(screen, lx, ly, "Memnuniyet", "%"+itoa(region.Satisfaction))
+	if deltaRect, ok := regionSatisfactionDeltaRect(gs, rid); ok {
+		drawSatisfactionDelta(screen, deltaRect, regionSatisfactionBreakdown(gs, rid).Total)
+	}
+	satisfactionBarX, satisfactionBarW := regionPanelTaxBarLayout(float32(lx), sepW)
+	drawBar(screen, satisfactionBarX, float32(ly)+regionPanelBarYOffset, satisfactionBarW, regionPanelBarH, float64(region.Satisfaction)/100, satisfactionColor(region.Satisfaction))
 	ly += regionPanelStatRowGap
 
 	taxBarX, taxBarW := regionPanelTaxBarLayout(float32(lx), sepW)
@@ -3494,6 +3499,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 		return true
 	}
 	if regionPanelCloseHit(mx, my) {
+		return true
+	}
+	if deltaRect, ok := regionSatisfactionDeltaRect(gs, rid); ok && deltaRect.Hit(mx, my) {
 		return true
 	}
 	if _, ok := regionOwnerNameHit(mx, my, gs, rid); ok {

@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
@@ -119,26 +120,6 @@ func grainGoldIncomePercent(level state.GrainSupplyLevel) int {
 	}
 }
 
-func grainShortageSatisfactionPenalty(level state.GrainSupplyLevel) int {
-	switch level {
-	case state.GrainSupplyFamine:
-		return 4
-	case state.GrainSupplyCritical:
-		return 2
-	case state.GrainSupplyWarning:
-		return 1
-	default:
-		return 0
-	}
-}
-
-const (
-	overextensionSatisfactionPenalty = 1
-	maxArmySatisfactionBonus         = 10
-	annualSatisfactionDecay          = 1
-	grainZeroSatisfactionPenalty     = 5
-)
-
 // factionWarFatigueByID her faction için savaş yorgunluğu cezasını hesaplar.
 // Aynı realm içindeki overlord ve vassallar tek bağımsız devlet sayılır;
 // savaşan karşı realm sayısı başına ceza uygulanır.
@@ -169,21 +150,7 @@ func factionWarFatigueByID(gs *state.GameState) map[string]int {
 // regionArmySatisfactionBonus bölgedeki sahibine ait kara ordularının toplam
 // gücünü istikrar bonusuna çevirir. 100 güç +10 verir; bonus +10 ile sınırlıdır.
 func regionArmySatisfactionBonus(gs *state.GameState, region *world.Region) int {
-	if gs == nil || region == nil || region.OwnerID == "" || gs.Armies == nil {
-		return 0
-	}
-	strength := 0
-	for _, currentArmy := range gs.Armies {
-		if currentArmy == nil || currentArmy.IsNaval || currentArmy.OwnerID != region.OwnerID || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
-			continue
-		}
-		strength += currentArmy.TotalStrength(gs.UnitTypes)
-	}
-	bonus := strength / 10
-	if bonus > maxArmySatisfactionBonus {
-		return maxArmySatisfactionBonus
-	}
-	return bonus
+	return satisfaction.ArmyStabilityBonus(gs, region)
 }
 
 func grainArmyMoraleDelta(level state.GrainSupplyLevel) int {
@@ -536,34 +503,25 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	clothByFaction := make(map[string]int)
 	raidLootByFaction := make(map[string]state.RegionProductionSummary)
 	storageCapacityByFaction := make(map[string]int)
-	landRegionCountByFaction := make(map[string]int)
-	satisfactionDeltaByRegion := make(map[world.RegionID]int, len(gs.Regions))
 	gs.GrainEconomy = make(map[faction.FactionID]state.GrainEconomyStatus, len(gs.Factions))
 
 	for _, r := range gs.Regions {
 		if r.IsSea || r.OwnerID == "" {
 			continue
 		}
-		landRegionCountByFaction[r.OwnerID]++
-		if gs.CurrentTurnIncludesMonth(12) {
-			satisfactionDeltaByRegion[r.ID] -= annualSatisfactionDecay
-		}
 		if gs.SiegeAt(r.ID) != nil {
 			// Kuşatma altındaki bölge devlete gelir/hammadde sağlamaz
 			// ve halkın memnuniyeti kuşatma stresinden her tur azalır
-			satisfactionDeltaByRegion[r.ID] -= 5
 			continue
 		}
 
 		// Bina çarpanları
 		goldMod := 1.0
 		grainMod := 1.0
-		satBonus := 0
 		for _, bid := range r.Buildings {
 			if b, ok := gs.BuildingTypes[bid]; ok {
 				goldMod *= b.GoldMod
 				grainMod *= b.GrainMod
-				satBonus += b.SatBonus
 				storageCapacityByFaction[r.OwnerID] += b.StorageCapacity
 			}
 		}
@@ -634,9 +592,6 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		grainByFaction[r.OwnerID] += grain
 
-		// Vergi memnuniyet etkisi + bina bonusu
-		delta := economy.TaxSatisfactionDelta(r.TaxRate) + satBonus
-		satisfactionDeltaByRegion[r.ID] += delta
 	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
@@ -677,35 +632,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// devletin tahıl arz cezasından etkilenmez.
 		f.Gold += raidLoot.Gold
 		f.Grain = status.Stockpile
-		grainPenalty := grainShortageSatisfactionPenalty(status.SupplyLevel)
-		if f.Grain == 0 {
-			// Tahıl tamamen bittiyse kıtlık seviyesi ne olursa olsun devletin
-			// tüm kara bölgelerinde halk memnuniyeti tur başına 5 azalır.
-			grainPenalty = grainZeroSatisfactionPenalty
-		}
-		if grainPenalty > 0 {
-			for _, r := range gs.Regions {
-				if r == nil || r.IsSea || r.OwnerID != fidStr {
-					continue
-				}
-				satisfactionDeltaByRegion[r.ID] -= grainPenalty
-			}
-		}
 		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron + raidLoot.Iron
 		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber + raidLoot.Timber
 		f.Stone += int(float64(stoneByFaction[fidStr])*(1.0+fx.StoneMod)) + loot.Stone + raidLoot.Stone
 		f.Spice += spiceByFaction[fidStr] + loot.Spice + raidLoot.Spice
 		f.Cloth += clothByFaction[fidStr] + loot.Cloth + raidLoot.Cloth
-
-		// Memnuniyet tech bonusu tüm bölgelere
-		if fx.SatisfactionBonus > 0 {
-			for _, r := range gs.Regions {
-				if r == nil || r.IsSea || r.OwnerID != fidStr {
-					continue
-				}
-				satisfactionDeltaByRegion[r.ID] += fx.SatisfactionBonus
-			}
-		}
 
 		if f.Gold < 0 {
 			f.Gold = 0
@@ -733,18 +664,13 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 	// Vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkilerini tek
 	// delta içinde birleştir. Nihai değer yalnızca burada 0-100 aralığına çekilir.
-	warFatigueByFaction := factionWarFatigueByID(gs)
+	satisfactionCalculator := satisfaction.NewCalculator(gs)
 	for _, r := range gs.Regions {
 		if r == nil || r.IsSea || r.OwnerID == "" {
 			continue
 		}
-		delta := satisfactionDeltaByRegion[r.ID]
-		delta -= warFatigueByFaction[r.OwnerID]
-		if landRegionCountByFaction[r.OwnerID] > 20 {
-			delta -= overextensionSatisfactionPenalty
-		}
-		delta += regionArmySatisfactionBonus(gs, r)
-		r.Satisfaction = clamp(r.Satisfaction+delta, 0, 100)
+		breakdown := satisfactionCalculator.ForRegion(r)
+		r.Satisfaction = clamp(r.Satisfaction+breakdown.Total, 0, 100)
 	}
 	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
 	applyGrainFundedArmyReplenishment(gs)
