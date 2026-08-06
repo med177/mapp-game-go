@@ -23,6 +23,19 @@ func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID strin
 	if gs == nil || region == nil || newOwnerID == "" {
 		return
 	}
+	// Aktif kuşatma başlatılmışsa fetih hakkı kuşatmacıdadır. Müttefik
+	// destek ordusu savunmayı yense bile bölgeyi kendi adına alamaz.
+	if siege := gs.SiegeAt(region.ID); siege != nil {
+		attackerFactionID := siege.AttackerFactionID
+		if attackerFactionID == "" {
+			if siegeArmy := gs.Armies[siege.AttackerArmyID]; siegeArmy != nil {
+				attackerFactionID = siegeArmy.OwnerID
+			}
+		}
+		if attackerFactionID != "" && attackerFactionID != newOwnerID {
+			return
+		}
+	}
 	gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(region.OwnerID))
 	region.ApplyConquest(newOwnerID, aiOwnerReligion(gs, newOwnerID))
 }

@@ -1693,6 +1693,12 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 		}
 	}
+	activeSiegeSupport := false
+	if !a.IsNaval {
+		if siege := gs.SiegeAt(target); siege != nil && siege.AttackerArmyID != a.ID {
+			activeSiegeSupport = gs.CanJoinActiveSiege(a, target)
+		}
+	}
 
 	var landContactEnemy *army.Army
 	if !a.IsNaval && targetRegion.CanLandEnter() && gs.SiegeAt(target) == nil && !contactResolved {
@@ -2178,7 +2184,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
 				vassalized := false
-				if !isAlliedTarget {
+				if !isAlliedTarget && !activeSiegeSupport {
 					vassalized = TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 					if !vassalized {
 						aiApplyConquest(gs, targetRegion, a.OwnerID)
@@ -2188,7 +2194,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					a.MovePoints--
 				}
 				message := actorName + " " + targetName + " bölgesindeki savaşı kazandı."
-				if isAlliedTarget && battleLiftsSiege {
+				if activeSiegeSupport {
+					message = actorName + " " + targetName + " savunmasını yardı; bölge mevcut kuşatmacıya bırakıldı."
+				} else if isAlliedTarget && battleLiftsSiege {
 					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve kuşatmayı kaldırdı."
 				} else if vassalized {
 					message = actorName + " " + targetName + " bölgesindeki savaşı kazandı ve devleti vassal bıraktı."
@@ -2252,7 +2260,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			isAlliedTarget = true
 		}
 	}
-	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget {
+	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget && !activeSiegeSupport {
 		vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 		if !vassalized {
 			aiApplyConquest(gs, targetRegion, a.OwnerID)
@@ -2263,6 +2271,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		} else {
 			msg = actorName + " " + targetName + " bölgesini savaşsız ele geçirdi."
 		}
+	} else if activeSiegeSupport {
+		stepKind = TurnStepBattle
+		msg = actorName + " " + targetName + " kuşatmasına destek verdi; bölge mevcut kuşatmacıya bırakıldı."
 	}
 
 	// Konsolidasyon (Dost orduyla birleşme)

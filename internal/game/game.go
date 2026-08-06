@@ -4234,8 +4234,22 @@ func (g *Game) canDockFleetAtRegion(fleet *army.Army, targetRegion *world.Region
 // eski sahip filolarını en yakın deniz bölgesine çıkarır. Eğer bu fetih eski
 // sahibi tamamen yıkarsa kalan ordular galibe devrolur.
 func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwnerID string) eliminationResult {
-	if targetRegion == nil {
+	if g == nil || g.gs == nil || targetRegion == nil || newOwnerID == "" {
 		return eliminationResult{}
+	}
+	// Aktif kuşatma varken bölgenin fetih hakkı ilk kuşatmacıya aittir.
+	// Destek ordusunun alternatif bir akıştan bu yardımcıya düşmesi halinde
+	// bile müttefik bölgeyi kendi adına alamaz.
+	if siege := g.gs.SiegeAt(targetRegion.ID); siege != nil {
+		attackerFactionID := siege.AttackerFactionID
+		if attackerFactionID == "" {
+			if siegeArmy := g.gs.Armies[siege.AttackerArmyID]; siegeArmy != nil {
+				attackerFactionID = siegeArmy.OwnerID
+			}
+		}
+		if attackerFactionID != "" && attackerFactionID != newOwnerID {
+			return eliminationResult{}
+		}
 	}
 	g.clearSiege(targetRegion.ID)
 	prevOwnerID := targetRegion.OwnerID

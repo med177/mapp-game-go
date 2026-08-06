@@ -21,6 +21,18 @@ related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, a
 `internal/ai/grain_procurement.go`, `internal/ai/tax_policy.go`,
 `internal/diplomacy/war_fatigue.go`
 
+## Aktif kuşatma desteği ve fetih hakkı
+
+Bir bölgeye ilk kuşatma kurulduktan sonra aynı bölge yeni bir kuşatma hedefi
+olarak kullanılamaz. Kuşatmacıyla müttefik veya aynı realm içindeki AI ordusu
+hedefe yalnız destek için katılabilir; savunmayı yense bile bölgenin sahibi
+olamaz. Fetih hakkı aktif `SiegeState.AttackerFactionID` tarafında kalır.
+`executeMoveWithNavalPatrolAndContact()` bu destek durumunu fetih akışından
+ayırır; `aiApplyConquest()` da eski veya beklenmedik bir akışın kuşatmacı
+dışındaki sahiplik değişikliğini güvenlik kontrolüyle reddeder.
+
+Regression: `TestExecuteMoveAlliedSiegeSupportCannotConquerBesiegedRegion`.
+
 ## Memnuniyet ve vergi politikası
 
 AI her tur başında bölgelerinin vergi oranını memnuniyet ve bağımsız savaş

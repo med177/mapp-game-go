@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-06: Aktif kuşatma altındaki bölgeye gelen AI müttefikinin savunmayı
+  yendikten sonra bölgeyi kendi adına fethetmesi engellendi. İlk kuşatmacı
+  bölgenin fetih hakkını koruyor; destek ordusu yalnız kuşatma desteği olarak
+  kaydediliyor ve aktif kuşatma kaydı değişmiyor. Regression:
+  `TestExecuteMoveAlliedSiegeSupportCannotConquerBesiegedRegion`; doğrulama:
+  `go test ./internal/ai ./internal/game ./internal/state -count=1`.
+
 - 2026-08-06: AI'nin kendi çıkarına hizmet eden aktif/bağlanabilir ticaret, ittifak ve güvenlik ilişkilerinde `Heyet`/`Hediye` kullanması eklendi. Heyet ve hediye AI-AI arasında doğrudan çözülüyor; oyuncuya gönderildiğinde mevcut diplomasi modalı yalnız `Tamam` düğmeli bildirim olarak açılıyor. Altın rezervi ve tur içi diplomasi kotası korunuyor. Regression: `TestAIUsesDelegationToReachTradeRelationThreshold`, `TestAIUsesGiftForActiveTradeRelation`, `TestAIQueuesGiftToPlayerAsDiplomacyNotification`, `TestDiplomacyRelationshipNotificationText`.
 
 - 2026-08-06: Üst durum HUD'ına oyuncunun bağımsız savaş sayısından türetilen

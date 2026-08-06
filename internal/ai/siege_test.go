@@ -437,6 +437,51 @@ func TestExecuteMoveBlocksAllyTransitIntoBesiegedRegionWithoutWarWithBesieger(t 
 	}
 }
 
+func TestExecuteMoveAlliedSiegeSupportCannotConquerBesiegedRegion(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Regions["src"].OwnerID = "ally"
+	gs.Factions["ally"] = &faction.Faction{ID: "ally", NameTR: "Müttefik", Religion: religion.Sunni}
+	gs.Armies["ai_army"].OwnerID = "ally"
+	gs.Armies["ai_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	gs.Armies["besieger"] = &army.Army{
+		ID: "besieger", OwnerID: "ai_1", RegionID: "src",
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+	gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "player", RegionID: "fort",
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "besieger", AttackerFactionID: "ai_1", FortLevel: 2},
+	}
+	gs.Relations[faction.RelationKey("ally", "player")] = &faction.Relation{
+		FactionA: "ally", FactionB: "player", Stance: faction.StanceWar,
+	}
+	gs.Relations[faction.RelationKey("ally", "ai_1")] = &faction.Relation{
+		FactionA: "ally", FactionB: "ai_1", Stance: faction.StanceAllied,
+	}
+	gs.Relations[faction.RelationKey("ai_1", "player")] = &faction.Relation{
+		FactionA: "ai_1", FactionB: "player", Stance: faction.StanceWar,
+	}
+
+	outcome := executeMove(gs, gs.Armies["ai_army"], "fort", "ally")
+
+	if !outcome.survived {
+		t.Fatal("müttefik destek ordusu savunma zaferinden sonra hayatta kalmalıydı")
+	}
+	if got := gs.Regions["fort"].OwnerID; got != "player" {
+		t.Fatalf("müttefik destek ordusu kuşatılmış bölgeyi fethetmemeliydi, got=%s", got)
+	}
+	if siege := gs.SiegeAt("fort"); siege == nil || siege.AttackerArmyID != "besieger" {
+		t.Fatalf("ilk kuşatma korunmalıydı, got=%+v", siege)
+	}
+}
+
 func TestExecuteMoveAlliedDefenderSortiesAndLeavesBesiegedRegionAfterVictory(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

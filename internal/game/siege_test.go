@@ -148,6 +148,33 @@ func TestStartSiegeCreatesStateWithoutSiegeUnit(t *testing.T) {
 	}
 }
 
+func TestStartSiegeRejectsSecondSiegeOnActiveTarget(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"besieger": {
+			ID: "besieger", OwnerID: "p1", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"second": {
+			ID: "second", OwnerID: "p1", RegionID: "src", MovePoints: 2, MaxMovePoints: 2,
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {RegionID: "dst", AttackerArmyID: "besieger", AttackerFactionID: "p1", FortLevel: 2},
+	}
+
+	if (&Game{gs: gs}).startSiegeForArmy("second", "dst", false) {
+		t.Fatal("aktif kuşatma altındaki hedefte ikinci kuşatma başlatılmamalıydı")
+	}
+	if gs.Armies["second"].RegionID != "src" {
+		t.Fatalf("ikinci kuşatma reddedilince ordu yer değiştirmemeliydi, got=%s", gs.Armies["second"].RegionID)
+	}
+	if siege := gs.SiegeAt("dst"); siege == nil || siege.AttackerArmyID != "besieger" {
+		t.Fatalf("ilk kuşatma korunmalıydı, got=%+v", siege)
+	}
+}
+
 func TestMoveArmyToFortifiedRegionOpensSiegeDecisionWithoutSiegeUnit(t *testing.T) {
 	gs := siegeTestState()
 	gs.Armies = map[army.ArmyID]*army.Army{
@@ -685,6 +712,29 @@ func TestMoveArmyWithStanceAllowsAlliedSiegeSupport(t *testing.T) {
 	}
 	if gs.Armies["def"] == nil || gs.Armies["def"].RegionID != "dst" {
 		t.Fatalf("savunan ordu yerinde kalmalıydı, got=%+v", gs.Armies["def"])
+	}
+}
+
+func TestApplyConquestRejectsNonBesiegerDuringActiveSiege(t *testing.T) {
+	gs := siegeSupportTestState()
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID:          "dst",
+			AttackerArmyID:    "atk",
+			AttackerFactionID: "p1",
+			StartedTurn:       5,
+			FortLevel:         2,
+		},
+	}
+	g := &Game{gs: gs}
+
+	g.applyConquestWithNavalEviction(gs.Regions["dst"], "ally")
+
+	if got := gs.Regions["dst"].OwnerID; got != "p3" {
+		t.Fatalf("aktif kuşatma varken destekçi bölgeyi alamamalıydı, got=%s", got)
+	}
+	if siege := gs.SiegeAt("dst"); siege == nil || siege.AttackerFactionID != "p1" {
+		t.Fatalf("ilk kuşatma korunmalıydı, got=%+v", siege)
 	}
 }
 
