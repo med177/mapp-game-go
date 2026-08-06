@@ -10,6 +10,7 @@ import (
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -173,15 +174,32 @@ func TestDiplomacyEconomicSortUsesIncomeThenTreasury(t *testing.T) {
 	got := sortedDiplomacyFactions(gs, diplomacyListSortEconomicRanking)
 	want := []faction.FactionID{"income_leader", "treasury_leader", "treasury_second", "player"}
 	if len(got) != len(want) {
-		t.Fatalf("ekonomik sıralama hedef sayısı yanlış: got=%v", got)
+		t.Fatalf("ekonomik sıralama hedef sayısı yanlış: got=%v (len=%d) want=%v (len=%d)", got, len(got), want, len(want))
 	}
 	for i := range want {
 		if got[i] != want[i] {
-			t.Fatalf("ekonomik sıralama yanlış: got=%v want=%v", got, want)
+			gotFaction := gs.Factions[got[i]]
+			wantFaction := gs.Factions[want[i]]
+			gotGold := 0
+			wantGold := 0
+			if gotFaction != nil {
+				gotGold = gotFaction.Gold
+			}
+			if wantFaction != nil {
+				wantGold = wantFaction.Gold
+			}
+			t.Fatalf("ekonomik sıralama yanlış: index=%d got=%q (gelir=%d hazine=%d) want=%q (gelir=%d hazine=%d) full_got=%v full_want=%v",
+				i,
+				got[i], victory.GoldIncomeForFaction(gs, got[i]), gotGold,
+				want[i], victory.GoldIncomeForFaction(gs, want[i]), wantGold,
+				got, want,
+			)
 		}
 	}
-	if got := factionTreasuryLabel(gs, "income_leader"); got != "300/10" {
-		t.Fatalf("hazine etiketi gelir/altın biçiminde olmalı: got=%q", got)
+	wantLabel := "300 / 10"
+	if gotLabel := factionTreasuryLabel(gs, "income_leader"); gotLabel != wantLabel {
+		t.Fatalf("hazine etiketi gelir / altın biçiminde olmalı: faction=%q gelir=%d hazine=%d got=%q want=%q",
+			"income_leader", victory.GoldIncomeForFaction(gs, "income_leader"), gs.Factions["income_leader"].Gold, gotLabel, wantLabel)
 	}
 }
 
