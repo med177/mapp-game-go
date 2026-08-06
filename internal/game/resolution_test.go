@@ -780,7 +780,7 @@ func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
 				OwnerID:         "player",
 				Population:      200,
 				Satisfaction:    50,
-				TaxRate:         50,
+				TaxRate:         30,
 				BaseGoldIncome:  100,
 				BaseGrainOutput: 0,
 			},
@@ -794,7 +794,7 @@ func TestApplyEconomyTickAppliesGrainShortageStabilityEffects(t *testing.T) {
 	if status.SupplyLevel != state.GrainSupplyFamine || status.MonthsOfSupply != 0 {
 		t.Fatalf("kıtlık tahıl durumu bekleniyordu, got=%+v", status)
 	}
-	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 137 {
+	if gs.Factions["player"].Grain != 0 || gs.Factions["player"].Gold != 122 {
 		t.Fatalf("kritik rezerv etkileri uygulanmadı, faction=%+v", gs.Factions["player"])
 	}
 	if gs.Regions["home"].Satisfaction != 45 {
@@ -813,9 +813,9 @@ func TestApplyEconomyTickAppliesZeroGrainPenaltyToAllOwnedRegions(t *testing.T) 
 			"enemy":  {ID: "enemy", Grain: 100},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home":  {ID: "home", OwnerID: "player", Satisfaction: 50, TaxRate: 50},
-			"front": {ID: "front", OwnerID: "player", Satisfaction: 23, TaxRate: 50},
-			"other": {ID: "other", OwnerID: "enemy", Satisfaction: 50, TaxRate: 50},
+			"home":  {ID: "home", OwnerID: "player", Satisfaction: 50, TaxRate: 30},
+			"front": {ID: "front", OwnerID: "player", Satisfaction: 23, TaxRate: 30},
+			"other": {ID: "other", OwnerID: "enemy", Satisfaction: 50, TaxRate: 30},
 		},
 		Armies:    map[army.ArmyID]*army.Army{},
 		UnitTypes: map[string]*army.UnitType{},
@@ -838,7 +838,7 @@ func TestApplyEconomyTickCombinesSatisfactionModifiers(t *testing.T) {
 	regions := make(map[world.RegionID]*world.Region, 21)
 	for i := 1; i <= 21; i++ {
 		rid := world.RegionID(fmt.Sprintf("region-%d", i))
-		regions[rid] = &world.Region{ID: rid, OwnerID: "player", Satisfaction: 50, TaxRate: 50}
+		regions[rid] = &world.Region{ID: rid, OwnerID: "player", Satisfaction: 50, TaxRate: 30}
 	}
 	regions["region-1"].Buildings = []string{"market", "farm", "barracks", "port"}
 
@@ -872,23 +872,23 @@ func TestApplyEconomyTickCombinesSatisfactionModifiers(t *testing.T) {
 
 	applyEconomyTick(gs)
 
-	// Bölge 1: bina +2 + savaş -2 + genişleme -1 + ordu gücü 100 => +9.
-	if got := gs.Regions["region-1"].Satisfaction; got != 59 {
-		t.Fatalf("toplam memnuniyet deltası bölge 1 için +9 olmalıydı, got=%d", got)
+	// Bölge 1: bina +2 + savaş -3 + genişleme -1 + ordu gücü 100 => +8.
+	if got := gs.Regions["region-1"].Satisfaction; got != 58 {
+		t.Fatalf("toplam memnuniyet deltası bölge 1 için +8 olmalıydı, got=%d", got)
 	}
 	// Diğer bölgeler yalnızca savaş yorgunluğu ve 20+ bölge cezasını alır.
-	if got := gs.Regions["region-2"].Satisfaction; got != 47 {
-		t.Fatalf("savaş ve genişleme cezaları toplam -3 olmalıydı, got=%d", got)
+	if got := gs.Regions["region-2"].Satisfaction; got != 46 {
+		t.Fatalf("savaş ve genişleme cezaları toplam -4 olmalıydı, got=%d", got)
 	}
 }
 
 func TestApplyEconomyTickWarFatigueCountsIndependentRealmsOnly(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
-			"player":         {ID: "player"},
-			"enemy-a":        {ID: "enemy-a"},
-			"enemy-a-vassal": {ID: "enemy-a-vassal", OverlordID: "enemy-a"},
-			"enemy-b":        {ID: "enemy-b"},
+			"player":         {ID: "player", Grain: 100},
+			"enemy-a":        {ID: "enemy-a", Grain: 100},
+			"enemy-a-vassal": {ID: "enemy-a-vassal", OverlordID: "enemy-a", Grain: 100},
+			"enemy-b":        {ID: "enemy-b", Grain: 100},
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("player", "enemy-a"): {
@@ -902,27 +902,27 @@ func TestApplyEconomyTickWarFatigueCountsIndependentRealmsOnly(t *testing.T) {
 			},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"player-region": {ID: "player-region", OwnerID: "player", Satisfaction: 50},
-			"vassal-region": {ID: "vassal-region", OwnerID: "enemy-a-vassal", Satisfaction: 50},
+			"player-region": {ID: "player-region", OwnerID: "player", Satisfaction: 50, TaxRate: 30},
+			"vassal-region": {ID: "vassal-region", OwnerID: "enemy-a-vassal", Satisfaction: 50, TaxRate: 30},
 		},
 	}
 
 	fatigue := factionWarFatigueByID(gs)
-	if got, want := fatigue["player"], 4; got != want {
+	if got, want := fatigue["player"], 6; got != want {
 		t.Fatalf("iki bağımsız düşman realm için oyuncu cezası %d olmalıydı, got=%d", want, got)
 	}
-	if got, want := fatigue["enemy-a"], 2; got != want {
+	if got, want := fatigue["enemy-a"], 3; got != want {
 		t.Fatalf("enemy-a tek bağımsız karşı realm için %d almalıydı, got=%d", want, got)
 	}
-	if got, want := fatigue["enemy-a-vassal"], 2; got != want {
+	if got, want := fatigue["enemy-a-vassal"], 3; got != want {
 		t.Fatalf("enemy-a vassalı overlorduyla aynı realm cezasını almalıydı, got=%d", got)
 	}
 
 	applyEconomyTick(gs)
-	if got := gs.Regions["player-region"].Satisfaction; got != 46 {
-		t.Fatalf("oyuncunun iki bağımsız düşmana karşı memnuniyeti 46 olmalıydı, got=%d", got)
+	if got := gs.Regions["player-region"].Satisfaction; got != 44 {
+		t.Fatalf("oyuncunun iki bağımsız düşmana karşı memnuniyeti 44 olmalıydı, got=%d", got)
 	}
-	if got := gs.Regions["vassal-region"].Satisfaction; got != 48 {
+	if got := gs.Regions["vassal-region"].Satisfaction; got != 47 {
 		t.Fatalf("vassal savaşı ayrı devlet sayılmamalı, got=%d", got)
 	}
 }
@@ -964,7 +964,7 @@ func TestApplyEconomyTickAppliesAnnualSatisfactionDecayAtYearEnd(t *testing.T) {
 					"player": {ID: "player", Grain: 100},
 				},
 				Regions: map[world.RegionID]*world.Region{
-					"home": {ID: "home", OwnerID: "player", TaxRate: 50, Satisfaction: 50},
+					"home": {ID: "home", OwnerID: "player", TaxRate: 30, Satisfaction: 50},
 				},
 				Armies:    map[army.ArmyID]*army.Army{},
 				UnitTypes: map[string]*army.UnitType{},

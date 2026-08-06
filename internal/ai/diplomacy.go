@@ -220,21 +220,11 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 		return false
 	}
 
-	actionLabel := "diplomatik heyet"
-	if action == diplomacy.ActionSendGift {
-		actionLabel = "hediye"
-	}
 	if otherID == gs.PlayerFactionID {
 		priority, _ := aiDiplomacyOfferPriorityDetails(gs, fid, otherID, action)
 		if !diplomacy.QueueOfferWithMeta(gs, fid, otherID, action, priority+20, reason) {
 			return false
 		}
-		addTurnStep(steps, TurnStep{
-			FactionID:     fid,
-			Kind:          TurnStepDiplomacy,
-			TargetFaction: otherID,
-			Message:       turnFactionName(gs, fid) + " sana " + actionLabel + " gönderdi.",
-		})
 		return true
 	}
 
@@ -242,12 +232,6 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 	if !result.Applied {
 		return false
 	}
-	addTurnStep(steps, TurnStep{
-		FactionID:     fid,
-		Kind:          TurnStepDiplomacy,
-		TargetFaction: otherID,
-		Message:       turnFactionName(gs, fid) + ": " + result.Message,
-	})
 	return true
 }
 

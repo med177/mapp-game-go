@@ -1,11 +1,25 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-07: AI'nin vergi artırma/azaltma ve `Heyet`/`Hediye` ilişki bakımı
+  HAMLELER akışından çıkarıldı. State mutasyonları korunurken bu düşük öncelikli
+  adımlar artık görsel bekleme üretmiyor. Regression:
+  `TestAIAdjustTaxesDoesNotCreateVisibleTurnSteps`,
+  `TestAIRelationRepairDoesNotCreateVisibleTurnStep`.
+
+- 2026-08-07: Vergi-memnuniyet dengesi yeniden kalibre edildi. %30 vergi nötr
+  bırakıldı; altındaki her tam 10 puan `+5`, üstündeki her tam 10 puan `-10`
+  memnuniyet etkisi veriyor. Böylece %100 vergi tur başına `-70` alıyor ve AI'nin
+  vergi düşürüp isyanı önleme davranışı gerçek bir maliyet sinyali görüyor. İbadet
+  yeri bonusu `+5`, kışla cezası `-2` olarak senaryo bina verisine güncellendi.
+  Bağımsız savaş başına savaş yorgunluğu da `-3`e yükseltildi; ekonomi, AI ve HUD
+  aynı ortak savaş sayımı üzerinden bu değeri kullanıyor.
 
 - 2026-08-06: Başkent toparlanma katsayısı bölge sahibinden ayrıştırılarak
   `Army.OwnerID` faction'ına bağlandı. Oyuncu ordusu vassal başkentinde veya

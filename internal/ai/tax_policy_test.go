@@ -63,6 +63,27 @@ func TestAIAdjustTaxesAccountsForIndependentWarFatigue(t *testing.T) {
 
 	aiAdjustTaxesWithSteps(gs, "ai", nil)
 	if got := gs.Regions["front"].TaxRate; got != 40 {
-		t.Fatalf("savaş cezası sonrası 74 projeksiyonunda vergi artmamalıydı, got=%d", got)
+		t.Fatalf("savaş cezası sonrası 73 projeksiyonunda vergi artmamalıydı, got=%d", got)
+	}
+}
+
+func TestAIAdjustTaxesDoesNotCreateVisibleTurnSteps(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"healthy": {ID: "healthy", OwnerID: "ai", Satisfaction: 80, TaxRate: 40},
+		},
+	}
+	steps := make([]TurnStep, 0, 1)
+
+	aiAdjustTaxesWithSteps(gs, "ai", &steps)
+
+	if len(steps) != 0 {
+		t.Fatalf("vergi ayarı HAMLELER için adım üretmemeli, got=%+v", steps)
+	}
+	if got := gs.Regions["healthy"].TaxRate; got != 50 {
+		t.Fatalf("vergi state'i değişmeye devam etmeli, got=%d", got)
 	}
 }

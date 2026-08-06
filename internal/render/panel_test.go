@@ -100,8 +100,8 @@ func TestWarFatigueHUDTextUsesGreenZeroAndRedPenalty(t *testing.T) {
 		},
 	}
 	text, col = warFatigueHUDText(gs)
-	if text != "Savaş Yorgunluğu: -2" {
-		t.Fatalf("tek bağımsız savaşta savaş yorgunluğu -2 görünmeliydi, got=%q", text)
+	if text != "Savaş Yorgunluğu: -3" {
+		t.Fatalf("tek bağımsız savaşta savaş yorgunluğu -3 görünmeliydi, got=%q", text)
 	}
 	if col != (color.RGBA{220, 90, 90, 255}) {
 		t.Fatalf("negatif savaş yorgunluğu kırmızı görünmeliydi, got=%v", col)

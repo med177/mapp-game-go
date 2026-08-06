@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -37,15 +37,23 @@ Regression: `TestExecuteMoveAlliedSiegeSupportCannotConquerBesiegedRegion`.
 
 AI her tur başında bölgelerinin vergi oranını memnuniyet ve bağımsız savaş
 sayısına göre ayarlar. Savaş yorgunluğu projeksiyonu overlord/vassal realm'lerini
-tek devlet sayar ve ekonomi tick'indeki gerçek `-2 × bağımsız düşman` etkisini
+tek devlet sayar ve ekonomi tick'indeki gerçek `-3 × bağımsız düşman` etkisini
 önceden hesaba katar. Projeksiyon 35'in altındaysa vergi `20` puan, 50'nin
 altındaysa `10` puan azaltılır; amaç `Satisfaction < 30` isyan kontrolüne
 gelmeden bölgeyi ve gelir tabanını korumaktır. Projeksiyon 75 veya üzerindeyse
 vergi `10` puan artırılır; böylece güvenli memnuniyet seviyelerinde gelir
 toplanır. Vergi değişimi yalnız AI'nin sahip olduğu kara bölgelerinde uygulanır.
 
+Vergi ayarı ile ilişki iyileştirme amaçlı `Heyet`/`Hediye` hamleleri state'i
+değiştirmeye devam eder, ancak `TurnStepper` için görünür HAMLELER adımı
+üretmez; böylece düşük öncelikli ekonomi ve ilişki bakımı AI akışını
+yavaşlatmaz. Oyuncuya gönderilen heyet/hediye, mevcut diplomasi bildirim
+kuyruğunda çözülür.
+
 1300 bina yatırım skoru da aynı savaş yorgunluğu projeksiyonunu kullanır.
-Memnuniyet açığı büyüdükçe `temple` (`+10`) ve uygun savunma bölgelerinde
+Vergi etkisinin %30 nötr tabanı ve yüksek vergideki `-10` kademeleri,
+AI'nin memnuniyet projeksiyonunda ekonomi tick'iyle birlikte uygulanır.
+Memnuniyet açığı büyüdükçe `temple` (`+5`) ve uygun savunma bölgelerinde
 `walls` (`+6`) gibi istikrar sağlayan binalar öne çıkar; ibadet yeri için
 `Satisfaction < 30` ek öncelik uygulanır.
 

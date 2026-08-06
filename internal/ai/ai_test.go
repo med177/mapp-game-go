@@ -503,6 +503,24 @@ func TestAIUsesDelegationToReachTradeRelationThreshold(t *testing.T) {
 	}
 }
 
+func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+	steps := make([]TurnStep, 0, 1)
+
+	aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+
+	if len(steps) != 0 {
+		t.Fatalf("heyet/hediye HAMLELER için adım üretmemeli, got=%+v", steps)
+	}
+	if got := gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score; got != 8 {
+		t.Fatalf("heyet state'i değiştirmeye devam etmeli, got=%d", got)
+	}
+}
+
 func TestAIUsesGiftForActiveTradeRelation(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500

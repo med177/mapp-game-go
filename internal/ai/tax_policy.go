@@ -1,8 +1,6 @@
 package ai
 
 import (
-	"fmt"
-
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -32,17 +30,13 @@ func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[
 
 		projectedSatisfaction := region.Satisfaction - warPenalty
 		delta := 0
-		reason := ""
 		switch {
 		case projectedSatisfaction < aiTaxEmergencySatisfactionThreshold:
 			delta = aiTaxEmergencyStep
-			reason = "isyan riskini azaltmak için"
 		case projectedSatisfaction < aiTaxReliefSatisfactionThreshold:
 			delta = aiTaxReliefStep
-			reason = "memnuniyet açığını kapatmak için"
 		case projectedSatisfaction >= aiTaxIncreaseSatisfactionThreshold:
 			delta = aiTaxIncreaseStep
-			reason = "yüksek memnuniyetten gelir sağlamak için"
 		default:
 			continue
 		}
@@ -52,14 +46,6 @@ func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[
 		if region.TaxRate == oldTax {
 			continue
 		}
-		addTurnStep(steps, TurnStep{
-			FactionID:    fid,
-			Kind:         TurnStepInfo,
-			TargetRegion: region.ID,
-			FocusRegion:  region.ID,
-			Message: fmt.Sprintf("%s %s bölgesinde vergiyi %%%d'den %%%d'e çekti (%s).",
-				turnFactionName(gs, fid), turnRegionName(gs, region.ID), oldTax, region.TaxRate, reason),
-		})
 	}
 }
 

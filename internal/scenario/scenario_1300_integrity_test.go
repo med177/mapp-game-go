@@ -169,6 +169,9 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	if buildings["granary"].TradeCapacityMod != 1.05 || buildings["temple"].TradeCapacityMod != 1.03 {
 		t.Fatalf("ambar ve ibadethane ticaret kapasitesi katkısı kalibre değil: ambar=%.2f ibadethane=%.2f", buildings["granary"].TradeCapacityMod, buildings["temple"].TradeCapacityMod)
 	}
+	if buildings["temple"].SatBonus != 5 || buildings["barracks"].SatBonus != -2 {
+		t.Fatalf("ibadethane/kışla memnuniyet etkisi kalibre değil: temple=%d barracks=%d", buildings["temple"].SatBonus, buildings["barracks"].SatBonus)
+	}
 
 	units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
 	if err != nil {

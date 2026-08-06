@@ -7,7 +7,7 @@ import (
 
 // WarFatigueSatisfactionPenalty bağımsız düşman realm başına ekonomi turunda
 // uygulanan memnuniyet cezasıdır.
-const WarFatigueSatisfactionPenalty = 2
+const WarFatigueSatisfactionPenalty = 3
 
 // IndependentWarCount, fid'nin savaş halinde olduğu bağımsız realm sayısını
 // döner. Overlord ve vassalları aynı realm içinde tek devlet sayılır.

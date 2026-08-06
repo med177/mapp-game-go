@@ -359,21 +359,15 @@ func TransferGoodsAtUnitPrice(
 	return true
 }
 
-// TaxLevel vergi oranından memnuniyet etkisini hesaplar.
-// Dönen değer: memnuniyet değişimi (negatif = düşüş).
+// TaxSatisfactionDelta vergi oranından memnuniyet etkisini hesaplar.
+// %30 nötr vergi seviyesidir. Bunun altındaki her tam 10 puan +5,
+// üstündeki her tam 10 puan -10 memnuniyet verir.
 func TaxSatisfactionDelta(taxRate int) int {
-	switch {
-	case taxRate <= 20:
-		return 5 // çok düşük vergi → halk mutlu
-	case taxRate <= 40:
-		return 2
-	case taxRate <= 60:
-		return 0 // dengeli
-	case taxRate <= 80:
-		return -3
-	default:
-		return -8 // yüksek vergi → isyan riski
+	const neutralTaxRate = 30
+	if taxRate < neutralTaxRate {
+		return (neutralTaxRate - taxRate) / 10 * 5
 	}
+	return -((taxRate - neutralTaxRate) / 10) * 10
 }
 
 // RegionTradeIncome kanonik efektif ticaret kapasitesine göre pasif ticaret
