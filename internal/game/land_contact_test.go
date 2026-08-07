@@ -47,7 +47,7 @@ func newLandContactGame(playerAttacker bool) *Game {
 	}
 }
 
-func TestPlayerLandMovementCreatesContactBeforeBattle(t *testing.T) {
+func TestPlayerLandContactBothHoldEndsWithoutBattle(t *testing.T) {
 	g := newLandContactGame(true)
 	g.moveArmyWithStance("attacker", "front", combat.BattleStanceBalanced)
 
@@ -59,9 +59,33 @@ func TestPlayerLandMovementCreatesContactBeforeBattle(t *testing.T) {
 		t.Fatal("kara temasında popup açılırken saldıran ordu hedef bölgede ve hareketi tüketilmiş görünmeli")
 	}
 
+	g.gs.PendingLandContact.DefenderDecision = state.LandContactHold
+	beforeAttackerHP := totalArmyHP(g.gs.Armies["attacker"])
+	beforeDefenderHP := totalArmyHP(g.gs.Armies["defender"])
 	g.resolveLandContactChoice(2)
 	if g.gs.PendingLandContact != nil || g.gs.Armies["attacker"].RegionID != "front" {
 		t.Fatalf("pozisyonu koru temasını savaşa çevirmeden emri sonlandırmalı: contact=%+v attacker=%+v", g.gs.PendingLandContact, g.gs.Armies["attacker"])
+	}
+	if totalArmyHP(g.gs.Armies["attacker"]) != beforeAttackerHP || totalArmyHP(g.gs.Armies["defender"]) != beforeDefenderHP {
+		t.Fatal("iki taraf da pozisyonunu koruduğunda kayıp oluşmamalı")
+	}
+}
+
+func TestPlayerLandContactHoldStillBattlesWhenEnemyClashes(t *testing.T) {
+	g := newLandContactGame(true)
+	g.moveArmyWithStance("attacker", "front", combat.BattleStanceBalanced)
+	if g.gs.PendingLandContact == nil {
+		t.Fatal("savaş öncesi kara teması oluşmalı")
+	}
+	beforeAttackerHP := totalArmyHP(g.gs.Armies["attacker"])
+	beforeDefenderHP := totalArmyHP(g.gs.Armies["defender"])
+	g.resolveLandContactChoice(2)
+
+	if g.gs.PendingLandContact != nil {
+		t.Fatal("koru + çatış kararından sonra temas kaydı temizlenmeli")
+	}
+	if totalArmyHP(g.gs.Armies["attacker"]) == beforeAttackerHP && totalArmyHP(g.gs.Armies["defender"]) == beforeDefenderHP {
+		t.Fatal("karşı taraf çatışmayı kabul ettiğinde pozisyonu koruyan taraf savaştan kaçamamalı")
 	}
 }
 
@@ -71,6 +95,7 @@ func TestPlayerLandContactClashResolvesBattle(t *testing.T) {
 	if g.gs.PendingLandContact == nil {
 		t.Fatal("savaş öncesi kara teması oluşmalı")
 	}
+	g.gs.PendingLandContact.DefenderDecision = state.LandContactHold
 	g.resolveLandContactChoice(0)
 
 	if g.gs.PendingLandContact != nil {
@@ -127,4 +152,15 @@ func TestPlayerLandDefenderCanWithdrawFromContact(t *testing.T) {
 	if got := g.gs.Armies["attacker"]; got.RegionID != "front" {
 		t.Fatalf("temas popup'ı açıldığında AI saldıranı hedefte görünmeli: %+v", got)
 	}
+}
+
+func totalArmyHP(a *army.Army) int {
+	if a == nil {
+		return 0
+	}
+	total := 0
+	for _, unit := range a.Units {
+		total += unit.CurrentHP
+	}
+	return total
 }

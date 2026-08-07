@@ -2,13 +2,26 @@ package ai
 
 import (
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
 
+const aiRelationshipRepairChancePercent = 60
+
 // aiHandleDiplomacyWithSteps resolves AI peace, alliance and trade decisions.
 // The public wrapper remains in ai.go; this file owns the diplomacy decision loop.
+// Direct callers retain the legacy all-in-one behaviour; the real turn prelude
+// disables relation spending and runs it after the economic priorities.
 func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	aiHandleDiplomacyWithStepsMode(gs, fid, steps, true)
+}
+
+func aiHandleDiplomacyForTurn(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	aiHandleDiplomacyWithStepsMode(gs, fid, steps, false)
+}
+
+func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep, allowRelationSpending bool) {
 	gs.SyncWarLedgers()
 	self := gs.Factions[fid]
 	if self == nil || self.IsEliminated {
@@ -66,7 +79,7 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 				break
 			}
-			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+			if allowRelationSpending && aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
 				continue
 			}
 			var allianceAssessment diplomacy.AllianceProposalAssessment
@@ -104,11 +117,11 @@ func aiHandleDiplomacyWithSteps(gs *state.GameState, fid faction.FactionID, step
 				}
 			}
 		case faction.StanceTrade:
-			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+			if allowRelationSpending && aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
 				continue
 			}
 		case faction.StanceAllied:
-			if aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+			if allowRelationSpending && aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
 				continue
 			}
 			if aiShouldCancelAlliance(gs, fid, otherID) {
@@ -215,8 +228,29 @@ func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, s
 // uygular. AI-AI işlemleri hemen çözülür; oyuncuya giden işlemler ise oyuncunun
 // barış tekliflerinde gördüğü aynı modal kuyruğuna girer.
 func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, steps *[]TurnStep) bool {
+	return aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, nil)
+}
+
+func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, budget *aiBudget) bool {
 	action, reason, ok := aiRelationshipRepairAction(gs, fid, otherID, rel)
 	if !ok || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return false
+	}
+	self := gs.Factions[fid]
+	if self == nil {
+		return false
+	}
+	cost := aiRelationshipActionCost(action)
+	if !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
+		if action != diplomacy.ActionSendGift || !aiCanAffordForBudget(self, economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCost}, budget, aiBudgetEconomy) {
+			return false
+		}
+		action = diplomacy.ActionImproveRelations
+		cost = aiRelationshipActionCost(action)
+	}
+	// İlişki onarımı uygun ve karşılanabilir olsa bile her tur otomatikleşmesin;
+	// aynı deterministik tur/faction/hedef zarı save ve replay akışını korur.
+	if aiDiplomacyOfferRoll(gs, fid, otherID, action) >= aiRelationshipRepairChancePercent {
 		return false
 	}
 
@@ -225,6 +259,9 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 		if !diplomacy.QueueOfferWithMeta(gs, fid, otherID, action, priority+20, reason) {
 			return false
 		}
+		if budget != nil {
+			budget.consume(aiBudgetEconomy, cost.Gold)
+		}
 		return true
 	}
 
@@ -232,7 +269,40 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 	if !result.Applied {
 		return false
 	}
+	if budget != nil {
+		budget.consume(aiBudgetEconomy, cost.Gold)
+	}
 	return true
+}
+
+// aiHandleRelationshipRepairsAfterBudget keeps gifts and envoys as the last
+// treasury-funded AI action. The 1300 budget exposes only the leftover
+// FlexibleGold after every priority category has been released.
+func aiHandleRelationshipRepairsAfterBudget(gs *state.GameState, fid faction.FactionID, budget *aiBudget) {
+	if gs == nil || fid == "" || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return
+	}
+	for _, otherID := range aiSortedFactionIDs(gs) {
+		if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+			return
+		}
+		other := gs.Factions[otherID]
+		if otherID == fid || other == nil || other.IsEliminated {
+			continue
+		}
+		if overlord := diplomacy.DirectOverlord(gs, otherID); overlord != "" && overlord != fid {
+			continue
+		}
+		rel := diplomacy.EnsureRelation(gs, fid, otherID)
+		aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, budget)
+	}
+}
+
+func aiRelationshipActionCost(action diplomacy.Action) economy.ResourceCost {
+	if action == diplomacy.ActionSendGift {
+		return economy.ResourceCost{Gold: diplomacy.GiftGoldCost}
+	}
+	return economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCost}
 }
 
 // aiRelationshipRepairAction, ilişki aksiyonunu yalnızca somut ticari veya

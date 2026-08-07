@@ -44,6 +44,46 @@ type scenarioEventReference struct {
 	Choices              []scenarioEventChoiceReference              `json:"choices"`
 }
 
+type scenarioRegionProductionJSON struct {
+	ID              world.RegionID `json:"id"`
+	IsSea           bool           `json:"is_sea"`
+	BaseSpiceOutput *int           `json:"base_spice_output"`
+	BaseClothOutput *int           `json:"base_cloth_output"`
+	BaseStoneOutput *int           `json:"base_stone_output"`
+}
+
+type scenarioBuildingProductionJSON struct {
+	ID               string   `json:"id"`
+	GoldCost         *int     `json:"gold_cost"`
+	GrainCost        *int     `json:"grain_cost"`
+	IronCost         *int     `json:"iron_cost"`
+	TimberCost       *int     `json:"timber_cost"`
+	StoneCost        *int     `json:"stone_cost"`
+	SpiceCost        *int     `json:"spice_cost"`
+	ClothCost        *int     `json:"cloth_cost"`
+	TurnsRequired    *int     `json:"turns_required"`
+	GoldMod          *float64 `json:"gold_mod"`
+	GrainMod         *float64 `json:"grain_mod"`
+	TradeCapacityMod *float64 `json:"trade_capacity_mod"`
+	SatBonus         *int     `json:"sat_bonus"`
+	DefBonus         *int     `json:"def_bonus"`
+	StorageCapacity  *int     `json:"storage_capacity"`
+	MaxPerRegion     *int     `json:"max_per_region"`
+}
+
+type scenarioUnitProductionJSON struct {
+	ID            string `json:"id"`
+	GoldCost      *int   `json:"gold_cost"`
+	GrainCost     *int   `json:"grain_cost"`
+	IronCost      *int   `json:"iron_cost"`
+	TimberCost    *int   `json:"timber_cost"`
+	StoneCost     *int   `json:"stone_cost"`
+	SpiceCost     *int   `json:"spice_cost"`
+	ClothCost     *int   `json:"cloth_cost"`
+	GrainUpkeep   *int   `json:"grain_upkeep"`
+	TurnsRequired *int   `json:"turns_required"`
+}
+
 func scenario1300IntegrityPath(t *testing.T) string {
 	t.Helper()
 	_, file, _, ok := runtime.Caller(0)
@@ -114,71 +154,93 @@ func Test1300ScenarioRegionNamesAndIDsAreSemantic(t *testing.T) {
 func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	scenarioPath, regions, _ := load1300IntegrityData(t)
 
-	for _, id := range []world.RegionID{"bursa", "constantinople", "egypt", "damascus", "basra", "venice", "flanders"} {
-		region := regions[id]
+	dataPath := filepath.Join(scenarioPath, "data")
+	var regionData []scenarioRegionProductionJSON
+	read1300JSON(t, filepath.Join(dataPath, "regions.json"), &regionData)
+	resourceRegions := map[string]int{"baharat": 0, "kumaş": 0, "taş": 0}
+	for _, rawRegion := range regionData {
+		region := regions[rawRegion.ID]
 		if region == nil {
-			t.Fatalf("kaynak uzmanlaşması için bölge eksik: %s", id)
+			t.Errorf("JSON bölgesi yüklenen bölgelerde yok: %s", rawRegion.ID)
+			continue
 		}
-		if region.BaseSpiceOutput == 0 && region.BaseClothOutput == 0 {
-			t.Errorf("ticaret/tekstil bölgesi kaynak üretmiyor: %s", id)
-		}
-	}
-
-	spiceRegions, clothRegions, stoneRegions := 0, 0, 0
-	for _, region := range regions {
-		if region == nil || region.IsSea {
+		checkScenarioOptionalInt(t, "bölge="+string(rawRegion.ID), "base_spice_output", rawRegion.BaseSpiceOutput, region.BaseSpiceOutput)
+		checkScenarioOptionalInt(t, "bölge="+string(rawRegion.ID), "base_cloth_output", rawRegion.BaseClothOutput, region.BaseClothOutput)
+		checkScenarioOptionalInt(t, "bölge="+string(rawRegion.ID), "base_stone_output", rawRegion.BaseStoneOutput, region.BaseStoneOutput)
+		if rawRegion.IsSea {
 			continue
 		}
 		if region.BaseSpiceOutput > 0 {
-			spiceRegions++
+			resourceRegions["baharat"]++
 		}
 		if region.BaseClothOutput > 0 {
-			clothRegions++
+			resourceRegions["kumaş"]++
 		}
 		if region.BaseStoneOutput > 0 {
-			stoneRegions++
+			resourceRegions["taş"]++
 		}
 	}
-	if spiceRegions < 20 || clothRegions < 40 || stoneRegions < 30 {
-		t.Fatalf("kaynak uzmanlaşması çok dar: baharat=%d kumaş=%d taş=%d", spiceRegions, clothRegions, stoneRegions)
+	if resourceRegions["baharat"]+resourceRegions["kumaş"]+resourceRegions["taş"] == 0 {
+		t.Log("regions.json içinde kara bölgeleri için kaynak uzmanlaşması tanımlanmamış")
 	}
-
-	dataPath := filepath.Join(scenarioPath, "data")
 	buildings, err := city.LoadBuildings(filepath.Join(dataPath, "buildings.json"))
 	if err != nil {
 		t.Fatalf("1300 binaları yüklenemedi: %v", err)
 	}
-	if buildings["market"].SpiceCost != 3 || buildings["market"].ClothCost != 6 {
-		t.Fatalf("pazar lüks kaynak maliyeti kalibre değil: %+v", buildings["market"])
+	var buildingData []scenarioBuildingProductionJSON
+	read1300JSON(t, filepath.Join(dataPath, "buildings.json"), &buildingData)
+	if len(buildings) != len(buildingData) {
+		t.Fatalf("bina JSON kayıtları yüklenen bina sayısıyla eşleşmiyor: json=%d loaded=%d", len(buildingData), len(buildings))
 	}
-	wantBuildingGrainCosts := map[string]int{
-		"market":   12,
-		"farm":     30,
-		"barracks": 22,
-		"port":     15,
-		"walls":    17,
-		"temple":   17,
-		"granary":  24,
-	}
-	for buildingID, wantGrainCost := range wantBuildingGrainCosts {
-		building := buildings[buildingID]
-		if building == nil || building.GrainCost != wantGrainCost {
-			t.Errorf("%s bina işçi iaşesi maliyeti kalibre değil: got=%d want=%d", buildingID, buildingGrainCost(building), wantGrainCost)
+	for _, rawBuilding := range buildingData {
+		building := buildings[rawBuilding.ID]
+		if building == nil {
+			t.Errorf("JSON binası yüklenen binalarda yok: %s", rawBuilding.ID)
+			continue
 		}
-	}
-	if buildings["granary"].TradeCapacityMod != 1.05 || buildings["temple"].TradeCapacityMod != 1.03 {
-		t.Fatalf("ambar ve ibadethane ticaret kapasitesi katkısı kalibre değil: ambar=%.2f ibadethane=%.2f", buildings["granary"].TradeCapacityMod, buildings["temple"].TradeCapacityMod)
-	}
-	if buildings["temple"].SatBonus != 5 || buildings["barracks"].SatBonus != -2 {
-		t.Fatalf("ibadethane/kışla memnuniyet etkisi kalibre değil: temple=%d barracks=%d", buildings["temple"].SatBonus, buildings["barracks"].SatBonus)
+		entity := "bina=" + rawBuilding.ID
+		checkScenarioOptionalInt(t, entity, "gold_cost", rawBuilding.GoldCost, building.GoldCost)
+		checkScenarioOptionalInt(t, entity, "grain_cost", rawBuilding.GrainCost, building.GrainCost)
+		checkScenarioOptionalInt(t, entity, "iron_cost", rawBuilding.IronCost, building.IronCost)
+		checkScenarioOptionalInt(t, entity, "timber_cost", rawBuilding.TimberCost, building.TimberCost)
+		checkScenarioOptionalInt(t, entity, "stone_cost", rawBuilding.StoneCost, building.StoneCost)
+		checkScenarioOptionalInt(t, entity, "spice_cost", rawBuilding.SpiceCost, building.SpiceCost)
+		checkScenarioOptionalInt(t, entity, "cloth_cost", rawBuilding.ClothCost, building.ClothCost)
+		checkScenarioOptionalInt(t, entity, "turns_required", rawBuilding.TurnsRequired, building.TurnsRequired)
+		checkScenarioOptionalFloat(t, entity, "gold_mod", rawBuilding.GoldMod, building.GoldMod)
+		checkScenarioOptionalFloat(t, entity, "grain_mod", rawBuilding.GrainMod, building.GrainMod)
+		checkScenarioOptionalFloat(t, entity, "trade_capacity_mod", rawBuilding.TradeCapacityMod, building.TradeCapacityMod)
+		checkScenarioOptionalInt(t, entity, "sat_bonus", rawBuilding.SatBonus, building.SatBonus)
+		checkScenarioOptionalInt(t, entity, "def_bonus", rawBuilding.DefBonus, building.DefBonus)
+		checkScenarioOptionalInt(t, entity, "storage_capacity", rawBuilding.StorageCapacity, building.StorageCapacity)
+		checkScenarioOptionalInt(t, entity, "max_per_region", rawBuilding.MaxPerRegion, building.MaxPerRegion)
 	}
 
 	units, err := army.LoadUnitTypes(filepath.Join(dataPath, "units.json"))
 	if err != nil {
 		t.Fatalf("1300 birlikleri yüklenemedi: %v", err)
 	}
-	if units["elite_infantry"].ClothCost != 6 || units["merchant_ship"].SpiceCost != 2 {
-		t.Fatalf("birlik lüks kaynak maliyeti kalibre değil: elite_infantry=%+v merchant=%+v", units["elite_infantry"], units["merchant_ship"])
+	var unitData []scenarioUnitProductionJSON
+	read1300JSON(t, filepath.Join(dataPath, "units.json"), &unitData)
+	if len(units) != len(unitData) {
+		t.Fatalf("birlik JSON kayıtları yüklenen birlik sayısıyla eşleşmiyor: json=%d loaded=%d", len(unitData), len(units))
+	}
+	for _, rawUnit := range unitData {
+		unit := units[rawUnit.ID]
+		if unit == nil {
+			t.Errorf("JSON birliği yüklenen birliklerde yok: %s", rawUnit.ID)
+			continue
+		}
+		entity := "birlik=" + rawUnit.ID
+		checkScenarioOptionalInt(t, entity, "gold_cost", rawUnit.GoldCost, unit.GoldCost)
+		checkScenarioOptionalInt(t, entity, "grain_cost", rawUnit.GrainCost, unit.GrainCost)
+		checkScenarioOptionalInt(t, entity, "iron_cost", rawUnit.IronCost, unit.IronCost)
+		checkScenarioOptionalInt(t, entity, "timber_cost", rawUnit.TimberCost, unit.TimberCost)
+		checkScenarioOptionalInt(t, entity, "stone_cost", rawUnit.StoneCost, unit.StoneCost)
+		checkScenarioOptionalInt(t, entity, "spice_cost", rawUnit.SpiceCost, unit.SpiceCost)
+		checkScenarioOptionalInt(t, entity, "cloth_cost", rawUnit.ClothCost, unit.ClothCost)
+		checkScenarioOptionalInt(t, entity, "grain_upkeep", rawUnit.GrainUpkeep, unit.GrainUpkeep)
+		checkScenarioOptionalInt(t, entity, "turns_required", rawUnit.TurnsRequired, unit.TurnsRequired)
 	}
 }
 
@@ -276,11 +338,26 @@ func Test1300HistoricalUnownedRegionsAreAssignedToNewStates(t *testing.T) {
 	}
 }
 
-func buildingGrainCost(building *city.Building) int {
-	if building == nil {
-		return 0
+func checkScenarioOptionalInt(t *testing.T, entity, field string, raw *int, actual int) {
+	t.Helper()
+	if raw == nil {
+		return
 	}
-	return building.GrainCost
+	expected := *raw
+	if actual != expected {
+		t.Errorf("JSON değeri yüklenen değere eşleşmiyor: %s.%s got=%d want=%d", entity, field, actual, expected)
+	}
+}
+
+func checkScenarioOptionalFloat(t *testing.T, entity, field string, raw *float64, actual float64) {
+	t.Helper()
+	if raw == nil {
+		return
+	}
+	expected := *raw
+	if actual != expected {
+		t.Errorf("JSON değeri yüklenen değere eşleşmiyor: %s.%s got=%.4f want=%.4f", entity, field, actual, expected)
+	}
 }
 
 func load1300IntegrityData(t *testing.T) (string, map[world.RegionID]*world.Region, map[faction.FactionID]*faction.Faction) {

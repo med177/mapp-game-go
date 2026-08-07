@@ -7,6 +7,28 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-07: `Test1300ScenarioResourceSpecializationsAndProductionCosts` sabit
+  bölge, bina, birlik ve maliyet beklentilerinden çıkarıldı. Test artık ilgili
+  JSON kayıtlarını keşfediyor; yalnız JSON'da mevcut olan kaynak, üretim maliyeti
+  ve mod alanlarını loader çıktısıyla karşılaştırıyor. Sabit kaynak sayısı
+  eşikleri ve belirli ID listeleri kaldırıldı.
+
+- 2026-08-07: Kara ve deniz temasında `Pozisyonu Koru` artık tek başına
+  çatışmayı iptal etmiyor. Taraflardan biri `Çatış` seçip diğeri `Geri Çekil`
+  seçmediyse muharebe çözülüyor; iki taraf da `Pozisyonu Koru` seçerse temas
+  savaşsız kapanıyor. Koru seçen tarafın temas savunma bonusu savaş planı
+  önizlemesine ve gerçek resolve hesabına taşındı. Regression:
+  `TestPlayerLandContactHoldStillBattlesWhenEnemyClashes`,
+  `TestNavalContactBattlesWhenEitherSideClashes`,
+  `TestBlockadeAndPlayerHoldCanShareSeaWithoutBattle`.
+
+- 2026-08-07: AI'nin `Heyet`/`Hediye` harcamaları hazinenin son önceliğine taşındı.
+  AI önce tahıl ve stratejik kaynak tedarikini, ardından araştırma, ekonomi,
+  donanma ve ordu yatırımlarını tamamlıyor; ilişki onarımı yalnız kalan bütçeyle
+  çalışıyor. `1300_ottoman_rise` bütçesinde bu harcama `FlexibleGold` ile sınırlı.
+  Uygun harcama kararından sonra AI'nin gönderim için deterministik `%60` başarı
+  zarı bulunuyor; başarısız sonuçta altın ve ilişki değişmiyor.
+
 - 2026-08-07: Bölge panelindeki memnuniyet barının yüzde geometrisi korunarak
   yanında tur başı `+N`/`-N` etkisi gösterildi. Etiket pozitifse yeşil, negatifse
   kırmızı çiziliyor; hover cursor'ı parmağa dönüşüyor ve ortak breakdown popup'ı

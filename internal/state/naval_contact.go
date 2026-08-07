@@ -110,6 +110,16 @@ func (s *GameState) NavalContactBothClash(contact *NavalContact) bool {
 	return contact != nil && contact.AttackerDecision == NavalContactClash && contact.DefenderDecision == NavalContactClash
 }
 
+// NavalContactWillClash, geri çekilmeyen taraflardan en az biri çatışmayı
+// kabul ettiğinde muharebenin başlayacağını belirtir. Pozisyonu koru,
+// çatışmadan kaçış değil savunma hazırlığıdır.
+func (s *GameState) NavalContactWillClash(contact *NavalContact) bool {
+	if contact == nil || contact.AttackerDecision == NavalContactWithdraw || contact.DefenderDecision == NavalContactWithdraw {
+		return false
+	}
+	return contact.AttackerDecision == NavalContactClash || contact.DefenderDecision == NavalContactClash
+}
+
 // NavalContactRetreatRegion, geri çekilen filoya düşman filosu olmayan deniz
 // komşusunu seçer. excludedRegions, düşmanın geldiği kaynak deniz gibi geri
 // dönülmemesi gereken bölgeleri belirtir. Güvenli hedef yoksa boş döner.

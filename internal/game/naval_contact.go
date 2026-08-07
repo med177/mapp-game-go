@@ -95,18 +95,20 @@ func (g *Game) resolveNavalContactChoice(choice int) {
 		g.gs.ClearNavalContact()
 		return
 	}
-	if g.gs.NavalContactBothClash(contact) {
+	if g.gs.NavalContactWillClash(contact) {
 		playerIsAttacker := attacker.OwnerID == string(g.gs.PlayerFactionID)
 		movementConsumed := contact.MovementConsumed
+		attackerHolding := contact.AttackerDecision == state.NavalContactHold
+		defenderHolding := contact.DefenderDecision == state.NavalContactHold
 		g.gs.ClearNavalContact()
 		if playerIsAttacker {
-			if g.renderer.ShowNavalContactBattlePlan(attacker.ID, defender.ID, contact.SeaRegionID, movementConsumed) {
+			if g.renderer.ShowNavalContactBattlePlan(attacker.ID, defender.ID, contact.SeaRegionID, movementConsumed, attackerHolding, defenderHolding) {
 				return
 			}
-			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.SeaRegionID, "", combat.BattleStanceBalanced, true, true, movementConsumed)
+			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.SeaRegionID, "", combat.BattleStanceBalanced, true, true, movementConsumed, attackerHolding, defenderHolding)
 			return
 		}
-		step := ai.ResolveNavalContactBattle(g.gs, attacker.ID, contact.SeaRegionID)
+		step := ai.ResolveNavalContactBattle(g.gs, attacker.ID, contact.SeaRegionID, movementConsumed, attackerHolding, defenderHolding)
 		if step.Message != "" {
 			g.renderer.ShowCombatResult(step.Message)
 			g.renderer.AddEvent("[DENİZ TEMASI] " + step.Message)

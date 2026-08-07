@@ -96,7 +96,10 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 		formCoalitionAgainstPlayer(gs, fid, steps)
 	}
 
-	aiHandleDiplomacyWithSteps(gs, fid, steps)
+	// Barış/ittifak/ticaret teklifleri diplomasi akışında değerlendirilir;
+	// hazineden çıkan heyet ve hediyeler ise tüm öncelikli harcamalardan sonra
+	// kalan bütçeyle gönderilir.
+	aiHandleDiplomacyForTurn(gs, fid, steps)
 	aiAdjustTaxesWithSteps(gs, fid, steps)
 	if purchased := aiProcureGrain(gs, fid); purchased > 0 {
 		addTurnStep(steps, TurnStep{
@@ -135,6 +138,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 			budget.release(category)
 		}
 	}
+	aiHandleRelationshipRepairsAfterBudget(gs, fid, budget)
 
 	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
 	aiConsolidateArmies(gs, fid)
@@ -1632,7 +1636,7 @@ func executeMoveWithNavalPatrol(gs *state.GameState, a *army.Army, target world.
 
 // ResolveNavalContactBattle, oyuncu temas kararında Çatış seçtiğinde AI
 // filosunun bekleyen teması savaş olarak sürdürmesini sağlar.
-func ResolveNavalContactBattle(gs *state.GameState, attackerID army.ArmyID, target world.RegionID) TurnStep {
+func ResolveNavalContactBattle(gs *state.GameState, attackerID army.ArmyID, target world.RegionID, contactFlags ...bool) TurnStep {
 	if gs == nil {
 		return TurnStep{}
 	}
@@ -1640,7 +1644,10 @@ func ResolveNavalContactBattle(gs *state.GameState, attackerID army.ArmyID, targ
 	if attacker == nil {
 		return TurnStep{}
 	}
-	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true, true)
+	movementConsumed := len(contactFlags) > 0 && contactFlags[0]
+	attackerHolding := len(contactFlags) > 1 && contactFlags[1]
+	defenderHolding := len(contactFlags) > 2 && contactFlags[2]
+	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true, movementConsumed, attackerHolding, defenderHolding)
 	return outcome.step
 }
 
@@ -1649,6 +1656,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	defer gs.ClearArmyLogisticsAfterRelocation(a, previousLocation)
 
 	contactMovementConsumed := len(movementConsumed) > 0 && movementConsumed[0]
+	contactAttackerHolding := len(movementConsumed) > 1 && movementConsumed[1]
+	contactDefenderHolding := len(movementConsumed) > 2 && movementConsumed[2]
 	targetRegion, ok := gs.Regions[target]
 	if !ok {
 		return moveOutcome{survived: true}
@@ -1711,6 +1720,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			contact := gs.BeginLandContact(a, landContactEnemy, target, contactFromRegion, state.LandContactMovement)
 			if contact != nil {
 				ResolveLandContactDecision(gs, contact)
+				if gs.LandContactWillClash(contact) {
+					contactAttackerHolding = contact.AttackerDecision == state.LandContactHold
+					contactDefenderHolding = contact.DefenderDecision == state.LandContactHold
+				}
 				if a.RegionID == contactFromRegion && a.MovePoints > 0 {
 					a.RegionID = target
 					a.DockedRegionID = ""
@@ -1730,7 +1743,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 						Message:      "Düşman ordusuyla kara teması kuruldu.",
 					}}
 				}
-				if !gs.LandContactBothClash(contact) {
+				if !gs.LandContactWillClash(contact) {
 					ResolveLandContactWithoutBattle(gs, contact, landContactEnemy)
 					gs.ClearLandContact()
 					return moveOutcome{survived: true, step: TurnStep{
@@ -2065,6 +2078,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			contact := gs.BeginNavalContact(a, contactEnemy, target, contactFromRegion, state.NavalContactMovement)
 			if contact != nil {
 				ResolveNavalContactDecision(gs, contact)
+				if gs.NavalContactWillClash(contact) {
+					contactAttackerHolding = contact.AttackerDecision == state.NavalContactHold
+					contactDefenderHolding = contact.DefenderDecision == state.NavalContactHold
+				}
 				if contact.AttackerArmyID == a.ID && contact.AttackerFromRegionID == contactFromRegion && a.RegionID == contactFromRegion {
 					a.RegionID = target
 					a.DockedRegionID = ""
@@ -2078,7 +2095,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 				if contact.PlayerArmyID != "" {
 					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: contactFromRegion, TargetRegion: target, FocusRegion: target, Message: "Düşman filo tespit edildi."}}
 				}
-				if !gs.NavalContactBothClash(contact) {
+				if !gs.NavalContactWillClash(contact) {
 					resolveAINavalContactWithoutBattle(gs, contact, a, contactEnemy)
 					gs.ClearNavalContact()
 					return moveOutcome{survived: true, step: TurnStep{FactionID: fid, Kind: TurnStepMove, ArmyID: a.ID, FromRegion: contactFromRegion, TargetRegion: target, FocusRegion: target, Message: "Deniz teması çatışmaya dönüşmeden sona erdi."}}
@@ -2089,8 +2106,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		}
 	}
 
-	// Hedefte düşman ordusu var mı? Temas çözüldüyse iki tarafın da Çatış
-	// kararını onayladığı doğrudan deniz savunması kullanılır.
+	// Hedefte düşman ordusu var mı? Temas çözüldüyse temas kararının savaşa
+	// dönüştüğü doğrudan deniz savunması kullanılır.
 	navalAutoEngagement := a.IsNaval && targetRegion.IsSea && navalPatrol && !contactResolved
 	var combinedDef *army.Army
 	var defSourceIDs []army.ArmyID
@@ -2145,7 +2162,11 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			ambushDefender.InAmbush = false
 		}
-		result := combat.ResolveBattleWithMods(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+		contactContext := combat.BattleContextLand
+		if a.IsNaval && targetRegion.IsSea {
+			contactContext = combat.BattleContextNaval
+		}
+		result := combat.ResolveBattleWithContactDefense(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, contactContext, combat.BattleStanceBalanced, contactAttackerHolding, contactDefenderHolding)
 		gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
 		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)
 		if result.AttackerWins {

@@ -488,6 +488,7 @@ func TestAIStartsTradeOnHealthyPeace(t *testing.T) {
 func TestAIUsesDelegationToReachTradeRelationThreshold(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
 	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
 	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
@@ -503,9 +504,40 @@ func TestAIUsesDelegationToReachTradeRelationThreshold(t *testing.T) {
 	}
 }
 
+func TestAIRelationRepairUsesOnlyReleasedTreasuryBudget(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	rel.Score = 0
+	budget := &aiBudget{
+		EmergencyGold: 80,
+		Remaining:     map[aiBudgetCategory]int{aiBudgetEconomy: 0},
+		Spent:         map[aiBudgetCategory]int{},
+	}
+
+	if aiHandleRelationshipRepairWithBudget(gs, "ai_1", "ai_2", rel, budget) {
+		t.Fatal("ilişki onarımı öncelik bütçesi serbest bırakılmadan çalışmamalıydı")
+	}
+	if rel.Score != 0 || gs.Factions["ai_1"].Gold != 500 {
+		t.Fatalf("serbest bütçe yokken state değişmemeli: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
+
+	budget.FlexibleGold = diplomacy.RelationImprovementGoldCost
+	if !aiHandleRelationshipRepairWithBudget(gs, "ai_1", "ai_2", rel, budget) {
+		t.Fatal("serbest kalan bütçe ilişki onarımını karşılayabilmeliydi")
+	}
+	if rel.Score != 8 || gs.Factions["ai_1"].Gold != 460 {
+		t.Fatalf("serbest bütçe sonrası heyet uygulanmalıydı: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
+}
+
 func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
 	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
 	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
@@ -524,6 +556,7 @@ func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {
 func TestAIUsesGiftForActiveTradeRelation(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionSendGift)
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Stance = faction.StanceTrade
 	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 15
 	gs.TradeRoutes = []*economy.TradeRoute{
@@ -544,6 +577,7 @@ func TestAIUsesGiftForActiveTradeRelation(t *testing.T) {
 func TestAIQueuesGiftToPlayerAsDiplomacyNotification(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "player", diplomacy.ActionSendGift)
 	gs.Factions["ai_2"].IsEliminated = true
 	gs.Regions["a1"].Neighbors = []world.RegionID{"p1"}
 	gs.Regions["p1"].Neighbors = []world.RegionID{"a1"}
@@ -563,6 +597,39 @@ func TestAIQueuesGiftToPlayerAsDiplomacyNotification(t *testing.T) {
 	if got := gs.Relations[faction.RelationKey("ai_1", "player")].Score; got != 30 {
 		t.Fatalf("Tamam sonrası hediye ilişkisi uygulanmalıydı, got=%d", got)
 	}
+}
+
+func setRelationshipRepairTestTurn(t *testing.T, gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) {
+	t.Helper()
+	for turn := 0; turn < 100; turn++ {
+		gs.Turn = turn
+		if aiDiplomacyOfferRoll(gs, from, to, action) < aiRelationshipRepairChancePercent {
+			return
+		}
+	}
+	t.Fatal("test için %60 ilişki onarım zarı bulunamadı")
+}
+
+func TestAIRelationshipRepairCanLoseSixtyPercentRoll(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	rel.Score = 0
+	for turn := 0; turn < 100; turn++ {
+		gs.Turn = turn
+		if aiDiplomacyOfferRoll(gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations) >= aiRelationshipRepairChancePercent {
+			if aiHandleRelationshipRepairWithBudget(gs, "ai_1", "ai_2", rel, nil) {
+				t.Fatal("başarısız %60 zarında ilişki onarımı uygulanmamalıydı")
+			}
+			if rel.Score != 0 || gs.Factions["ai_1"].Gold != 500 {
+				t.Fatalf("başarısız zar state'i değiştirmemeli: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+			}
+			return
+		}
+	}
+	t.Fatal("test için başarısız %60 ilişki onarım zarı bulunamadı")
 }
 
 func TestCoalitionUsesDiplomacyEngine(t *testing.T) {

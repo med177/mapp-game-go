@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
@@ -16,7 +17,11 @@ func TestSatisfactionDeltaPresentationUsesColoredDeltaAndSharedRect(t *testing.T
 			"player": {ID: "player", Grain: 100},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"home": {ID: "home", OwnerID: "player", TaxRate: 30},
+			"home": {ID: "home", OwnerID: "player", TaxRate: 30, Buildings: []string{"temple", "temple", "barracks"}},
+		},
+		BuildingTypes: map[string]*city.Building{
+			"temple":   {ID: "temple", NameTR: "İbadet Yeri", SatBonus: 6},
+			"barracks": {ID: "barracks", NameTR: "Kışla", SatBonus: -2},
 		},
 	}
 	region := gs.Regions["home"]
@@ -42,12 +47,12 @@ func TestSatisfactionDeltaPresentationUsesColoredDeltaAndSharedRect(t *testing.T
 	if satisfactionDeltaColor(8) == satisfactionDeltaColor(-5) {
 		t.Fatalf("pozitif ve negatif delta renkleri ayrılmalı")
 	}
-	lines := satisfactionBreakdownLines(region, positive)
+	lines := satisfactionBreakdownLines(gs, region, positive)
 	joined := ""
 	for _, line := range lines {
 		joined += line.text + "\n"
 	}
-	if !strings.Contains(joined, "Vergi (%30): +0") || !strings.Contains(joined, "Toplam: +8") {
+	if !strings.Contains(joined, "Vergi (%30): +0") || !strings.Contains(joined, "İbadet Yeri +12") || !strings.Contains(joined, "Kışla -2") || !strings.Contains(joined, "Toplam: +8") {
 		t.Fatalf("popup hesap satırları eksik: %s", joined)
 	}
 }

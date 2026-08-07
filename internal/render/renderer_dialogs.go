@@ -448,9 +448,10 @@ func (r *Renderer) openBattlePlan(attacker *army.Army, target *world.Region, def
 	r.openBattlePlanWithDestination(attacker, target, defender, actionKind, battleContext, target.ID)
 }
 
-// ShowNavalContactBattlePlan, temas kararı iki tarafta da Çatış olduktan
-// sonra oyuncunun deniz muharebesi duruşunu seçmesini sağlar.
-func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID, seaID world.RegionID, movementConsumed bool) bool {
+// ShowNavalContactBattlePlan, temas kararı sonrası oyuncunun deniz
+// muharebesi duruşunu seçmesini sağlar. contactHolding sırasıyla saldıran ve
+// savunan tarafın Pozisyonu Koru kararını taşır.
+func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID, seaID world.RegionID, movementConsumed bool, contactHolding ...bool) bool {
 	if r == nil || r.gs == nil {
 		return false
 	}
@@ -460,7 +461,7 @@ func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID
 	if attacker == nil || defender == nil || sea == nil || !attacker.IsNaval || !defender.IsNaval || !sea.IsSea {
 		return false
 	}
-	r.openBattlePlan(attacker, sea, defender, ActionMoveArmy, combat.BattleContextNaval)
+	r.openBattlePlanWithDestination(attacker, sea, defender, ActionMoveArmy, combat.BattleContextNaval, seaID, contactHolding...)
 	if !r.battlePlan.show {
 		return false
 	}
@@ -469,9 +470,10 @@ func (r *Renderer) ShowNavalContactBattlePlan(attackerID, defenderID army.ArmyID
 	return true
 }
 
-// ShowLandContactBattlePlan, kara temasında iki taraf da Çatış seçtikten
-// sonra oyuncunun kara muharebesi duruşunu seçmesini sağlar.
-func (r *Renderer) ShowLandContactBattlePlan(attackerID, defenderID army.ArmyID, landID world.RegionID) bool {
+// ShowLandContactBattlePlan, kara temasında geri çekilme olmadığında
+// oyuncunun kara muharebesi duruşunu seçmesini sağlar. contactHolding
+// sırasıyla saldıran ve savunan tarafın Pozisyonu Koru kararını taşır.
+func (r *Renderer) ShowLandContactBattlePlan(attackerID, defenderID army.ArmyID, landID world.RegionID, contactHolding ...bool) bool {
 	if r == nil || r.gs == nil {
 		return false
 	}
@@ -481,7 +483,7 @@ func (r *Renderer) ShowLandContactBattlePlan(attackerID, defenderID army.ArmyID,
 	if attacker == nil || defender == nil || land == nil || attacker.IsNaval || defender.IsNaval || !land.CanLandEnter() {
 		return false
 	}
-	r.openBattlePlan(attacker, land, defender, ActionMoveArmy, combat.BattleContextLand)
+	r.openBattlePlanWithDestination(attacker, land, defender, ActionMoveArmy, combat.BattleContextLand, landID, contactHolding...)
 	if !r.battlePlan.show {
 		return false
 	}
@@ -514,7 +516,7 @@ func (r *Renderer) ShowLandContactSiegeDecision(attackerID army.ArmyID, landID w
 // openBattlePlanWithDestination savaşın gerçekleştiği bölge ile zaferden
 // sonra ordunun ilerleyeceği bölge farklı olduğunda kullanılır. Huruçta savaş
 // kuşatılan bölgede gerçekleşir, ancak başarılı sonuçta seçilen hedefe çıkılır.
-func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext, destination world.RegionID) {
+func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *world.Region, defender *army.Army, actionKind ActionKind, battleContext combat.BattleContext, destination world.RegionID, contactHolding ...bool) {
 	if r == nil || r.gs == nil || attacker == nil || target == nil || defender == nil {
 		return
 	}
@@ -530,24 +532,28 @@ func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *wo
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
+	attackerHolding := len(contactHolding) > 0 && contactHolding[0]
+	defenderHolding := len(contactHolding) > 1 && contactHolding[1]
 	if defender.InAmbush {
 		defMods.DefenseMod += float64(world.TerrainData[target.Terrain].AmbushBonus) / 100.0
 	}
 	state := battlePlanState{
-		show:            true,
-		actionKind:      actionKind,
-		battleContext:   combat.NormalizeBattleContext(battleContext),
-		pendingArmy:     attacker.ID,
-		pendingEnemy:    defender.ID,
-		pendingDest:     destination,
-		regionName:      target.NameTR,
-		attackerSummary: commanderBattlePlanSummary("Saldıran komutan", previewCommander),
-		defenderSummary: commanderBattlePlanSummary("Savunan komutan", defender.Commander),
-		focus:           1,
-		navalAttack:     combat.NormalizeBattleContext(battleContext) == combat.BattleContextNaval,
+		show:                   true,
+		actionKind:             actionKind,
+		battleContext:          combat.NormalizeBattleContext(battleContext),
+		pendingArmy:            attacker.ID,
+		pendingEnemy:           defender.ID,
+		pendingDest:            destination,
+		regionName:             target.NameTR,
+		attackerSummary:        commanderBattlePlanSummary("Saldıran komutan", previewCommander),
+		defenderSummary:        commanderBattlePlanSummary("Savunan komutan", defender.Commander),
+		focus:                  1,
+		navalAttack:            combat.NormalizeBattleContext(battleContext) == combat.BattleContextNaval,
+		contactAttackerHolding: attackerHolding,
+		contactDefenderHolding: defenderHolding,
 	}
 	for i, stance := range battlePlanStances {
-		state.previews[i] = combat.PreviewBattleWithContextMods(previewAttacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, state.battleContext, stance)
+		state.previews[i] = combat.PreviewBattleWithContextContactDefense(previewAttacker, defender, target.Terrain, r.gs.UnitTypes, atkMods, defMods, state.battleContext, stance, attackerHolding, defenderHolding)
 	}
 	if factionInfo := r.gs.Factions[faction.FactionID(defender.OwnerID)]; factionInfo != nil {
 		state.defenderFaction = factionInfo.NameTR
@@ -1085,6 +1091,8 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 			NavalAttack:             bp.navalAttack,
 			ContactResolved:         bp.contactResolved,
 			ContactMovementConsumed: bp.contactMovementConsumed,
+			ContactAttackerHolding:  bp.contactAttackerHolding,
+			ContactDefenderHolding:  bp.contactDefenderHolding,
 		}
 	}
 
@@ -1111,6 +1119,8 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 				NavalAttack:             bp.navalAttack,
 				ContactResolved:         bp.contactResolved,
 				ContactMovementConsumed: bp.contactMovementConsumed,
+				ContactAttackerHolding:  bp.contactAttackerHolding,
+				ContactDefenderHolding:  bp.contactDefenderHolding,
 			}
 		}
 	}

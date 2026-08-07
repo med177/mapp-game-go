@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -237,8 +237,10 @@ aynı denizde bulunan filolar için temas üretilebilir. Filo zaten düşmanla a
 denizdeyken yeni `Devriye` veya `Abluka` görevi atanması da temas üretir; aynı
 görevin tekrar atanması yeni temas oluşturmaz. Oyuncuya ortak üç seçenekli
 modal açılır: `Çatış`, `Geri çekil`, `Pozisyonu koru`. Devriye ve görevsiz filo
-varsayılan olarak `Çatış`, abluka filosu `Pozisyonu koru` seçer; savaş yalnız iki tarafın
-kararı da `Çatış` olduğunda çözülür. Savaş açılışı temasında AI tarafı varsayılan
+varsayılan olarak `Çatış`, abluka filosu `Pozisyonu koru` seçer; savaş, taraflardan biri
+`Çatış` seçip diğeri `Geri Çekil` seçmediğinde çözülür. İki taraf da `Pozisyonu Koru`
+seçerse temas savaşsız kapanır; koruyan taraf temas savunma bonusu alır. Savaş açılışı
+temasında AI tarafı varsayılan
 olarak `Çatış` seçer. Oyuncu filosu içermeyen AI-AI temasları
 `ResolveAIOnlyNavalContact()` ile hemen çözülür ve scheduler'ı bekletmez.
 `QueueNavalContactForWar()` ve

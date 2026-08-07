@@ -144,6 +144,8 @@ type InputAction struct {
 	// NavalAttack yalnız savaş planından onaylanan açık filo saldırısında
 	// true olur. Görevlerin otomatik hareketi bu bayrağı taşımaz.
 	NavalAttack             bool
-	ContactResolved         bool // Temas modalında iki taraf da Çatış seçti.
+	ContactResolved         bool // Temas modalı sonrası muharebe kararı tamamlandı.
 	ContactMovementConsumed bool // Temas öncesi hareket puanı tüketildi.
+	ContactAttackerHolding  bool // Temas eden taraf Pozisyonu Koru seçti.
+	ContactDefenderHolding  bool // Karşı taraf Pozisyonu Koru seçti.
 }

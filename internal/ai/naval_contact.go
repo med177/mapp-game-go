@@ -46,7 +46,7 @@ func ResolveAIOnlyNavalContact(gs *state.GameState, contact *state.NavalContact)
 		gs.ClearNavalContact()
 		return TurnStep{}
 	}
-	if !gs.NavalContactBothClash(contact) {
+	if !gs.NavalContactWillClash(contact) {
 		resolveAINavalContactWithoutBattle(gs, contact, attacker, defender)
 		gs.ClearNavalContact()
 		return TurnStep{
@@ -60,11 +60,18 @@ func ResolveAIOnlyNavalContact(gs *state.GameState, contact *state.NavalContact)
 		}
 	}
 
-	// ResolveNavalContactBattle expects the contact to have already been
-	// accepted and only uses the fleets' current locations. Clear the transient
+// ResolveNavalContactBattle expects the contact to have already been
+// accepted for battle and only uses the fleets' current locations. Clear the transient
 	// prompt before resolving so a battle cannot leave a stale modal state.
 	gs.ClearNavalContact()
-	return ResolveNavalContactBattle(gs, attacker.ID, contact.SeaRegionID)
+	return ResolveNavalContactBattle(
+		gs,
+		attacker.ID,
+		contact.SeaRegionID,
+		contact.MovementConsumed,
+		contact.AttackerDecision == state.NavalContactHold,
+		contact.DefenderDecision == state.NavalContactHold,
+	)
 }
 
 func aiNavalContactBaseDecision(fleet *army.Army) state.NavalContactDecision {

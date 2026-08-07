@@ -88,7 +88,15 @@ func ResolveBattleWithPlan(atk, def *army.Army, terrain world.TerrainType, types
 
 // ResolveBattleWithContextPlan teknoloji, savaş tipi ve saldırı duruşu modlarını dahil ederek savaşı hesaplar.
 func ResolveBattleWithContextPlan(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) Result {
-	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, context, stance)
+	return ResolveBattleWithContactDefense(atk, def, terrain, types, atkMods, defMods, context, stance, false, false)
+}
+
+// ResolveBattleWithContactDefense, temas kararında Pozisyonu Koru seçen
+// tarafların savunma bonusunu muharebe hesabına dahil eder. Mevcut savaş
+// planlarındaki saldırı duruşu korunur; hold bonusu yalnız temas kaynaklı
+// ek savunmadır.
+func ResolveBattleWithContactDefense(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance, attackerHolding, defenderHolding bool) Result {
+	atkStr, defStr := battleStrengthsWithContactDefense(atk, def, terrain, types, atkMods, defMods, context, stance, attackerHolding, defenderHolding)
 	outcome := resolveOutcome(atkStr, defStr, context, stance)
 	atkHPBefore := 0
 	defHPBefore := 0
@@ -132,10 +140,16 @@ func PreviewBattleWithMods(atk, def *army.Army, terrain world.TerrainType, types
 
 // PreviewBattleWithContextMods saldırı başlamadan önce aynı matematikle muhtemel sonucu özetler.
 func PreviewBattleWithContextMods(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) Preview {
+	return PreviewBattleWithContextContactDefense(atk, def, terrain, types, atkMods, defMods, context, stance, false, false)
+}
+
+// PreviewBattleWithContextContactDefense, temas sırasında Pozisyonu Koru
+// seçiminin savunma bonusunu savaş planı tahminine de uygular.
+func PreviewBattleWithContextContactDefense(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance, attackerHolding, defenderHolding bool) Preview {
 	stance = NormalizeBattleStance(stance)
 	context = NormalizeBattleContext(context)
 	cfg := battleStanceSpec(context, stance)
-	atkStr, defStr := battleStrengths(atk, def, terrain, types, atkMods, defMods, context, stance)
+	atkStr, defStr := battleStrengthsWithContactDefense(atk, def, terrain, types, atkMods, defMods, context, stance, attackerHolding, defenderHolding)
 	buckets := previewOutcomeBuckets(atkStr, defStr, context, stance)
 
 	preview := Preview{
@@ -355,6 +369,10 @@ type outcomeBucket struct {
 }
 
 func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance) (float64, float64) {
+	return battleStrengthsWithContactDefense(atk, def, terrain, types, atkMods, defMods, context, stance, false, false)
+}
+
+func battleStrengthsWithContactDefense(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance, attackerHolding, defenderHolding bool) (float64, float64) {
 	atkAttackMod := atkMods.AttackMod
 	defDefenseMod := defMods.DefenseMod
 	commanderAttackMod, _ := atk.CommanderModifiers()
@@ -368,6 +386,12 @@ func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[s
 	cfg := battleStanceSpec(context, stance)
 	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod)
 	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod + defenderMoraleMod)
+	if attackerHolding {
+		atkStr *= 1 + ContactHoldDefenseBonus(context)
+	}
+	if defenderHolding {
+		defStr *= 1 + ContactHoldDefenseBonus(context)
+	}
 	if atkStr < 1 {
 		atkStr = 1
 	}
@@ -375,6 +399,19 @@ func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[s
 		defStr = 1
 	}
 	return atkStr, defStr
+}
+
+// ContactHoldDefenseBonus, temas sırasında yerini koruyan tarafın muharebe
+// gücüne uygulanan sınırlı savunma avantajıdır.
+func ContactHoldDefenseBonus(context BattleContext) float64 {
+	switch NormalizeBattleContext(context) {
+	case BattleContextNaval:
+		return 0.08
+	case BattleContextAmphibious:
+		return 0.12
+	default:
+		return 0.10
+	}
 }
 
 // terrainBonus savunucuya araziye göre güç çarpanı uygular.

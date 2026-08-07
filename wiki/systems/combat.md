@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-08-05
+last_updated: 2026-08-07
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -14,8 +14,8 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir. Kuşatılan devletin tek kara bölgesi kaldıysa aynı eşikte `propose_siege_vassalization` üretilir: UI `Vassallığı Kabul Et` gösterir, bölge sahibi değişmeden devlet kuşatanın vassalı olur, savaş ve kuşatma biter (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
 
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Düşman
-orduya hareket emri verildiğinde önce kara teması değerlendirilir; iki taraf da
-`Çatış` seçerse `ResolveBattleWithPlan()` veya
+orduya hareket emri verildiğinde önce kara teması değerlendirilir; taraflardan
+biri `Çatış` seçip diğeri `Geri Çekil` seçmediyse `ResolveBattleWithPlan()` veya
 `ResolveBattleWithContextPlan()` hattına geçilir. Oyuncu önce `Çatış / Geri
 çekil / Pozisyonu koru`, ardından çatışma seçildiyse kara duruşunu (`Agresif /
 Dengeli / Savunmacı`) seçer. Temas sırasında kara orduları hedef bölgeye
@@ -23,8 +23,9 @@ girer ve haritada görünür; hareket puanı bu girişte tüketilir. Saldıran g
 çekilirse kaynak bölgesine döner, savunmacı geri çekilirse güvenli dost/boş
 komşu kara bölgesine taşınır.
 Tahkimli kara bölgelerde de önce temas kararı alınır; bölgeye kuşatma başlatma
-veya genel hücum doğrudan tetiklenmez. Temas popup'ında iki taraf da `Çatış`
-seçerse mevcut `Kuşatma Kararı` akışı açılır ve normal kuşatma/genel hücum
+veya genel hücum doğrudan tetiklenmez. Temas popup'ında taraflardan biri
+`Çatış`, diğeri `Pozisyonu Koru` seçerse de mevcut `Kuşatma Kararı` akışı açılır
+ve normal kuşatma/genel hücum
 çözümüne devam edilir. Resolve tamamlanınca oyuncu tarafında render katmanı
 ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim
 / HP` önce-sonra kırılımı gösterilir.
@@ -32,7 +33,7 @@ ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Gü
 ## Deniz Teması
 
 İki düşman filo aynı açık denizde buluştuğunda önce temas kararı alınır;
-savaş yalnız iki taraf da `Çatış` seçerse çözülür. Oyuncu kararı modal üzerinden
+savaş, taraflardan biri `Çatış` seçip diğeri `Geri Çekil` seçmediyse çözülür. Oyuncu kararı modal üzerinden
 verir. AI, temas kurulmadan önce filo gücünü karşılaştırır: karşı taraf `%125`
 veya daha güçlü ise, hareket puanı varsa `Geri Çekil` seçer ve komşu bir denize
 döner. Geri çekilme 2 hareket puanı harcar; filonun kalan puanı daha azsa sıfıra
@@ -46,8 +47,10 @@ yoksa geri çekilme seçeneği kullanılamaz.
 
 İki düşman kara ordusu komşu bir bölgeye aynı hareket emri üzerinden karşı karşıya
 geldiğinde `PendingLandContact` geçici state'i oluşturulur. Oyuncuya donanma
-temasıyla aynı üç seçenek gösterilir. Savaş yalnız iki taraf da `Çatış` seçerse
-başlar; `Pozisyonu koru` temas emrini savaşsız sonlandırır. Saldıran ordunun
+temasıyla aynı üç seçenek gösterilir. Savaş, taraflardan biri `Çatış` seçip diğeri
+`Geri Çekil` seçmediyse başlar; iki taraf da `Pozisyonu Koru` seçerse temas
+savaşsız sonlanır. Koru seçen taraf muharebede temas savunma bonusu alır.
+Saldıran ordunun
 `Geri çekil` kararı hareketi iptal edip kaynak konumunda bırakır; savunmacının
 geri çekilmesi ise hareket puanı ve güvenli kara komşusu şartlarına bağlıdır.
 
@@ -293,8 +296,9 @@ doğrudan saldırı emriyle başlar. Bu çatışmalar için de iki fraksiyon ara
 `StanceWar` bulunması gerekir; barış/ittifak/trade durumunda savaş açılmaz.
 Pasif bir filo aynı düşman denizine girdiğinde veya savaş ilanı sırasında iki
 düşman filo zaten aynı açık denizdeyse `Düşman Filo Tespit Edildi` temas olayı
-açılır. Her iki tarafın kararı `Çatış` değilse savaş çözülmez; `Geri çekil` ve
-`Pozisyonu koru` sonuçları filoları savaşsız ayırır ya da aynı denizde bırakır.
+açılır. Taraflardan biri `Çatış` seçip diğeri `Geri Çekil` seçmediyse savaş
+çözülür; iki tarafın `Pozisyonu Koru` seçmesi filoları savaşsız aynı denizde
+bırakır. Koru seçen filo temas savunma bonusu alır.
 Filo zaten aynı denizdeyken yeni `Devriye` veya `Abluka` görevi atanması da aynı
 temas akışını başlatır; görev tekrar atanırsa aynı temas her tur tekrarlanmaz.
 Devriye ve görevsiz filo otomatik `Çatış`, abluka filosu otomatik

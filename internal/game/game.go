@@ -298,7 +298,7 @@ func (g *Game) Update() error {
 			}
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
-			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed)
+			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
 		case render.ActionResolveNavalContact:
 			g.resolveNavalContactChoice(action.ChoiceIndex)
 		case render.ActionResolveLandContact:
@@ -4904,12 +4904,13 @@ func (g *Game) moveArmyToSettlementWithStanceAndNavalAttack(aid army.ArmyID, tar
 	g.moveArmyToSettlementWithStanceAndContactResolved(aid, target, targetSettlementID, battleStance, navalAttack, contactResolved...)
 }
 
-// moveArmyToSettlementWithStanceAndContactResolved, temas kararı iki tarafta
-// da Çatış olduktan sonra kara veya deniz savaşını yeniden temas üretmeden
-// çalıştırır.
+// moveArmyToSettlementWithStanceAndContactResolved, temas kararı savaşa
+// dönüştükten sonra kara veya deniz savaşını yeniden temas üretmeden çalıştırır.
 func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID, target world.RegionID, targetSettlementID string, battleStance combat.BattleStance, navalAttack bool, contactResolved ...bool) {
 	resolved := len(contactResolved) > 0 && contactResolved[0]
 	contactMovementConsumed := len(contactResolved) > 1 && contactResolved[1]
+	contactAttackerHolding := len(contactResolved) > 2 && contactResolved[2]
+	contactDefenderHolding := len(contactResolved) > 3 && contactResolved[3]
 	battleStance = combat.NormalizeBattleStance(battleStance)
 	a, ok := g.gs.Armies[aid]
 	if !ok || a.OwnerID != string(g.gs.PlayerFactionID) {
@@ -5131,7 +5132,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			battleContext = combat.BattleContextNaval
 			defMods.NavalDefenseMod += g.gs.NavalEscortDefenseBonus(defSourceIDs, target)
 		}
-		result := combat.ResolveBattleWithContextPlan(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance)
+		result := combat.ResolveBattleWithContactDefense(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance, contactAttackerHolding, contactDefenderHolding)
 		g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
 		g.recordCommanderBattle(a, combinedDef, defSourceIDs, result.AttackerWins)
 		var collapse eliminationResult

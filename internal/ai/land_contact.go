@@ -52,10 +52,11 @@ func aiLandContactShouldRetreat(gs *state.GameState, current, opponent *army.Arm
 	return opponentPower*100 >= currentPower*aiLandContactRetreatThresholdPercent
 }
 
-// ResolveLandContactBattle, oyuncu kara temasında Çatış seçtiğinde AI
-// saldırısının iki tarafın karar verdiği normal hareket/savaş hattına
-// devam etmesini sağlar.
-func ResolveLandContactBattle(gs *state.GameState, attackerID army.ArmyID, target world.RegionID) TurnStep {
+// ResolveLandContactBattle, kara temasında geri çekilme olmadığında AI
+// saldırısının iki tarafın karar verdiği normal hareket/savaş hattına devam
+// etmesini sağlar. contactFlags sırasıyla hareket tüketildi, saldıran tuttu,
+// savunan tuttu bilgisini taşır.
+func ResolveLandContactBattle(gs *state.GameState, attackerID army.ArmyID, target world.RegionID, contactFlags ...bool) TurnStep {
 	if gs == nil {
 		return TurnStep{}
 	}
@@ -63,7 +64,10 @@ func ResolveLandContactBattle(gs *state.GameState, attackerID army.ArmyID, targe
 	if attacker == nil {
 		return TurnStep{}
 	}
-	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true)
+	movementConsumed := len(contactFlags) > 0 && contactFlags[0]
+	attackerHolding := len(contactFlags) > 1 && contactFlags[1]
+	defenderHolding := len(contactFlags) > 2 && contactFlags[2]
+	outcome := executeMoveWithNavalPatrolAndContact(gs, attacker, target, faction.FactionID(attacker.OwnerID), false, true, movementConsumed, attackerHolding, defenderHolding)
 	return outcome.step
 }
 

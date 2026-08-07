@@ -575,6 +575,8 @@ type battlePlanState struct {
 	navalAttack             bool
 	contactResolved         bool
 	contactMovementConsumed bool
+	contactAttackerHolding  bool
+	contactDefenderHolding  bool
 }
 
 func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext) {

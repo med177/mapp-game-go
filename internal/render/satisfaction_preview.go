@@ -67,14 +67,13 @@ func drawSatisfactionDelta(screen *ebiten.Image, rect gameui.Rect, delta int) {
 	drawUILabel(screen, rect, satisfactionDeltaText(delta), satisfactionDeltaColor(delta), gameui.TextSmall, gameui.TextAlignStart)
 }
 
-func satisfactionBreakdownLines(region *world.Region, breakdown satisfaction.Breakdown) []tooltipLine {
+func satisfactionBreakdownLines(gs *state.GameState, region *world.Region, breakdown satisfaction.Breakdown) []tooltipLine {
 	taxRate := 0
 	if region != nil {
 		taxRate = region.TaxRate
 	}
-	return []tooltipLine{
+	lines := []tooltipLine{
 		{text: fmt.Sprintf("Vergi (%%%d): %+d", taxRate, breakdown.Tax), col: satisfactionDeltaColor(breakdown.Tax)},
-		{text: fmt.Sprintf("Binalar: %+d", breakdown.Buildings), col: satisfactionDeltaColor(breakdown.Buildings)},
 		{text: fmt.Sprintf("Tahıl arzı: %+d", breakdown.Grain), col: satisfactionDeltaColor(breakdown.Grain)},
 		{text: fmt.Sprintf("Teknoloji: %+d", breakdown.Technology), col: satisfactionDeltaColor(breakdown.Technology)},
 		{text: fmt.Sprintf("Savaş yorgunluğu: %+d", breakdown.WarFatigue), col: satisfactionDeltaColor(breakdown.WarFatigue)},
@@ -84,6 +83,48 @@ func satisfactionBreakdownLines(region *world.Region, breakdown satisfaction.Bre
 		{text: fmt.Sprintf("Kuşatma: %+d", breakdown.Siege), col: satisfactionDeltaColor(breakdown.Siege)},
 		{text: fmt.Sprintf("Toplam: %+d", breakdown.Total), col: satisfactionDeltaColor(breakdown.Total)},
 	}
+	buildingLines := satisfactionBuildingLines(gs, region)
+	if len(buildingLines) == 0 {
+		buildingLines = append(buildingLines, tooltipLine{text: "Binalar +0", col: satisfactionDeltaColor(0)})
+	}
+	otherLines := lines[1:]
+	lines = append([]tooltipLine{lines[0]}, buildingLines...)
+	return append(lines, otherLines...)
+}
+
+func satisfactionBuildingLines(gs *state.GameState, region *world.Region) []tooltipLine {
+	if gs == nil || region == nil || len(region.Buildings) == 0 {
+		return nil
+	}
+	amountByID := make(map[string]int, len(region.Buildings))
+	order := make([]string, 0, len(region.Buildings))
+	for _, buildingID := range region.Buildings {
+		building := gs.BuildingTypes[buildingID]
+		if building == nil || building.SatBonus == 0 {
+			continue
+		}
+		if _, exists := amountByID[buildingID]; !exists {
+			order = append(order, buildingID)
+		}
+		amountByID[buildingID] += building.SatBonus
+	}
+	lines := make([]tooltipLine, 0, len(order))
+	for _, buildingID := range order {
+		building := gs.BuildingTypes[buildingID]
+		name := buildingID
+		if building != nil {
+			name = building.NameTR
+			if name == "" {
+				name = building.Name
+			}
+			if name == "" {
+				name = buildingID
+			}
+		}
+		amount := amountByID[buildingID]
+		lines = append(lines, tooltipLine{text: fmt.Sprintf("%s %+d", name, amount), col: satisfactionDeltaColor(amount)})
+	}
+	return lines
 }
 
 func drawSatisfactionTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, mx, my float64) {
@@ -92,12 +133,12 @@ func drawSatisfactionTooltip(screen *ebiten.Image, gs *state.GameState, rid worl
 		return
 	}
 	breakdown := regionSatisfactionBreakdown(gs, rid)
-	lines := satisfactionBreakdownLines(region, breakdown)
+	lines := satisfactionBreakdownLines(gs, region, breakdown)
 	w := 292.0
 	h := 54.0 + float64(len(lines))*16
 	x, y, ww, hh := tooltipRect(mx, my, w, h)
 	drawTooltipBox(screen, x, y, ww, hh)
-	DrawText(screen, "Memnuniyet hesabı", x+12, y+12, FaceMed, ColorGold)
-	DrawText(screen, "Tur başı değişim: "+satisfactionDeltaText(breakdown.Total), x+12, y+32, FaceSmall, satisfactionDeltaColor(breakdown.Total))
+	DrawText(screen, "Memnuniyet Hesabı", x+12, y+12, FaceMed, ColorGold)
+
 	drawUIRichTextBlock(screen, gameui.Rect{X: x + 12, Y: y + 48, W: w - 24, H: h - 48}, tooltipRichLines(lines), 16)
 }

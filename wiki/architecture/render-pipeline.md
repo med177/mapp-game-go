@@ -849,15 +849,16 @@ Not: Aynı denize giriş veya savaş açılışı sırasında tespit edilen dü�
 ve `Pozisyonu Koru` seçimleri `ActionResolveNavalContact` ile game katmanına
 taşınır. Temas eden oyuncu filosunun hareket puanı yoksa `Geri Çekil` butonu
 ortak disabled button stiliyle çizilir ve input alamaz. Modal açıkken alttaki
-harita hareketi ve diğer aksiyonlar input alamaz. İki taraf da `Çatış` seçerse
+harita hareketi ve diğer aksiyonlar input alamaz. Taraflardan biri `Çatış` seçip
+diğeri `Geri Çekil` seçmezse
 temas modalı kapanır ve aynı düşman/deniz hedefi için `Deniz Muharebesi Planı`
 ayrıca açılır; duruş seçilmeden savaş çözülmez.
 
 Not: Komşu kara bölgesindeki düşman orduya verilen hareket emri de aynı üçlü
 temas modalını kullanır. `Düşman Ordusu Tespit Edildi` popup'ı
-`ActionResolveLandContact` ile game katmanına iletilir; iki taraf da `Çatış`
-seçerse mevcut `Kara Muharebesi` planı açılır, diğer kararlar savaşsız temas
-çözümü üretir. Draw, input ve disabled `Geri Çekil` durumu ortak üçlü modal
+`ActionResolveLandContact` ile game katmanına iletilir; taraflardan biri `Çatış`
+seçip diğeri `Geri Çekil` seçmezse mevcut `Kara Muharebesi` planı açılır,
+iki taraf da `Pozisyonu Koru` seçerse savaşsız temas çözümü üretir. Draw, input ve disabled `Geri Çekil` durumu ortak üçlü modal
 buton helper'ından türetilir.
 
 Not: `Pozisyonu Koru` sonrası düşman bölgesinde kalan kara ordusu, hareket puanı

@@ -95,6 +95,25 @@ func TestPreviewBattleWithModsReflectsStanceTradeoff(t *testing.T) {
 	}
 }
 
+func TestPreviewBattleWithContactDefenseReflectsHoldingSide(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"inf": {ID: "inf", Attack: 12, Defense: 10, Morale: 50},
+	}
+	atk := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}}
+	def := &army.Army{Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}}
+
+	base := PreviewBattleWithContextContactDefense(atk, def, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced, false, false)
+	attackerHolding := PreviewBattleWithContextContactDefense(atk, def, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced, true, false)
+	defenderHolding := PreviewBattleWithContextContactDefense(atk, def, world.TerrainPlain, types, TechMods{}, TechMods{}, BattleContextLand, BattleStanceBalanced, false, true)
+
+	if attackerHolding.AttackStrength <= base.AttackStrength {
+		t.Fatalf("temas eden tarafın koru bonusu saldıran gücüne yansımadı: base=%d holding=%d", base.AttackStrength, attackerHolding.AttackStrength)
+	}
+	if defenderHolding.DefenseStrength <= base.DefenseStrength {
+		t.Fatalf("savunan tarafın koru bonusu savunma gücüne yansımadı: base=%d holding=%d", base.DefenseStrength, defenderHolding.DefenseStrength)
+	}
+}
+
 func TestPreviewBattleWithContextModsUsesContextSpecificModifiers(t *testing.T) {
 	types := map[string]*army.UnitType{
 		"inf":  {ID: "inf", NameTR: "Piyade", Attack: 12, Defense: 10, Morale: 50},

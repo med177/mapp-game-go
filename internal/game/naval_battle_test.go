@@ -112,10 +112,10 @@ func TestNavalBattleDefeatSinksDefenderFleetAndEmbarkedArmy(t *testing.T) {
 	}
 }
 
-func TestUnassignedNavalFleetsCanShareSeaWithoutBattle(t *testing.T) {
+func TestBlockadeAndPlayerHoldCanShareSeaWithoutBattle(t *testing.T) {
 	g := newNavalBattleGame(
 		&army.Army{ID: "attacker_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
-		&army.Army{ID: "defender_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+		&army.Army{ID: "defender_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
 	)
 
 	g.moveArmy("attacker_fleet", "sea_b")
@@ -127,7 +127,7 @@ func TestUnassignedNavalFleetsCanShareSeaWithoutBattle(t *testing.T) {
 	}
 	g.resolveNavalContactChoice(2)
 	if g.gs.Armies["attacker_fleet"].RegionID != "sea_b" || g.gs.Armies["defender_fleet"].RegionID != "sea_b" {
-		t.Fatal("görevsiz filolar aynı denizde savaşmadan birlikte kalabilmeliydi")
+		t.Fatal("iki taraf da pozisyonunu koruduğunda filolar aynı denizde savaşmadan kalabilmeli")
 	}
 }
 
@@ -176,7 +176,7 @@ func TestPatrolLetsOutmatchedEnemyBlockadeWithdraw(t *testing.T) {
 	}
 }
 
-func TestNavalContactBattlesOnlyWhenBothClash(t *testing.T) {
+func TestNavalContactBattlesWhenEitherSideClashes(t *testing.T) {
 	g := newNavalBattleGame(
 		&army.Army{
 			ID: "attacker_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true,
@@ -197,19 +197,39 @@ func TestNavalContactBattlesOnlyWhenBothClash(t *testing.T) {
 		t.Fatalf("devriye filosu temas varsayılanında çatışmayı seçmeli: %+v", contact)
 	}
 
-	g.resolveNavalContactChoice(0)
+	g.resolveNavalContactChoice(2)
 	if g.gs.PendingNavalContact != nil {
-		t.Fatal("iki taraf da çatışmayı seçtikten sonra temas kaydı temizlenmeli")
+		t.Fatal("koru + çatış kararından sonra temas kaydı temizlenmeli")
 	}
 	if len(g.gs.Armies) != 1 {
-		t.Fatalf("iki taraf da çatışmayı seçtiğinde savaş çözülmeli, filo sayısı=%d", len(g.gs.Armies))
+		t.Fatalf("karşı taraf çatışmayı seçtiğinde savaş çözülmeli, filo sayısı=%d", len(g.gs.Armies))
+	}
+}
+
+func TestNavalContactClashBattlesAgainstHoldingFleet(t *testing.T) {
+	g := newNavalBattleGame(
+		&army.Army{ID: "attacker_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+		&army.Army{ID: "defender_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+	)
+
+	g.moveArmy("attacker_fleet", "sea_b")
+	if g.gs.PendingNavalContact == nil || g.gs.PendingNavalContact.DefenderDecision != state.NavalContactHold {
+		t.Fatalf("abluka filosu pozisyonunu korumalıydı: %+v", g.gs.PendingNavalContact)
+	}
+	g.resolveNavalContactChoice(0)
+
+	if g.gs.PendingNavalContact != nil {
+		t.Fatal("çatış + koru kararından sonra temas kaydı temizlenmeli")
+	}
+	if len(g.gs.Armies) != 1 {
+		t.Fatalf("temas eden taraf çatışmayı seçtiğinde koruyan filo ile savaş çözülmeli, filo sayısı=%d", len(g.gs.Armies))
 	}
 }
 
 func TestAssigningPatrolOrBlockadeInOccupiedSeaCreatesContactOnce(t *testing.T) {
 	g := newNavalBattleGame(
 		&army.Army{ID: "player_fleet", OwnerID: "p1", RegionID: "sea_b", IsNaval: true, MovePoints: 0, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
-		&army.Army{ID: "enemy_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 0, MaxMovePoints: 1, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+		&army.Army{ID: "enemy_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 0, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
 	)
 
 	g.assignNavalMission("player_fleet", army.NavalMissionPatrol, "sea_b", "")

@@ -64,7 +64,7 @@ func (g *Game) presentPendingLandContact() {
 	if contact.PlayerArmyID == contact.DefenderArmyID {
 		defaultDecision = contact.AttackerDecision
 	}
-	message := opponentName + " " + landName + " bölgesinde temas etti. Savaş yalnız iki taraf da Çatış seçerse başlayacak. Karşı tarafın varsayılan tutumu: " + landContactDecisionLabel(defaultDecision) + "."
+	message := opponentName + " " + landName + " bölgesinde temas etti. Taraflardan biri Çatış seçip diğeri geri çekilmezse savaş başlayacak. Karşı tarafın varsayılan tutumu: " + landContactDecisionLabel(defaultDecision) + "."
 	thirdEnabled := g.gs.LandContactHasSafeWithdrawal(contact)
 	if contact.AmbushArmyID != "" {
 		message = opponentName + " " + landName + " bölgesine girdi ve pusuya düştü. Düşman ordusu geri çekilemez; pusu tarafı Çatış veya Geri Çekil seçebilir."
@@ -129,9 +129,11 @@ func (g *Game) resolveLandContactChoice(choice int) {
 		g.gs.ClearLandContact()
 		return
 	}
-	if g.gs.LandContactBothClash(contact) {
+	if g.gs.LandContactWillClash(contact) {
 		playerIsAttacker := attacker.OwnerID == string(g.gs.PlayerFactionID)
 		movementConsumed := contact.MovementConsumed
+		attackerHolding := contact.AttackerDecision == state.LandContactHold
+		defenderHolding := contact.DefenderDecision == state.LandContactHold
 		g.gs.ClearLandContact()
 		if playerIsAttacker {
 			if contact.AmbushArmyID == "" {
@@ -141,13 +143,13 @@ func (g *Game) resolveLandContactChoice(choice int) {
 					}
 				}
 			}
-			if g.renderer.ShowLandContactBattlePlan(attacker.ID, defender.ID, contact.LandRegionID) {
+			if g.renderer.ShowLandContactBattlePlan(attacker.ID, defender.ID, contact.LandRegionID, attackerHolding, defenderHolding) {
 				return
 			}
-			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.LandRegionID, "", combat.BattleStanceBalanced, false, true, movementConsumed)
+			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.LandRegionID, "", combat.BattleStanceBalanced, false, true, movementConsumed, attackerHolding, defenderHolding)
 			return
 		}
-		step := ai.ResolveLandContactBattle(g.gs, attacker.ID, contact.LandRegionID)
+		step := ai.ResolveLandContactBattle(g.gs, attacker.ID, contact.LandRegionID, movementConsumed, attackerHolding, defenderHolding)
 		if step.Message != "" {
 			g.renderer.ShowCombatResult(step.Message)
 			g.renderer.AddEvent("[KARA TEMASI] " + step.Message)
