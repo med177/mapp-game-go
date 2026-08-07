@@ -9,12 +9,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-08-07: AI'nin açık genişleme hedeflerine, aktif `expand` planı
   hedeflerine ve claim bölgelerinin güncel sahiplerine `Heyet`/`Hediye`
-  göndermesi engellendi. Böylece savaş hazırlığı yapılan devlete ilişki
-  puanı veya altın aktarılmıyor; stratejik hedef olmayan doğrudan tehditlerde
-  savunma amaçlı yatıştırma davranışı korunuyor. Regression:
+  göndermesi sınırlandı. Normal durumda ikisi de engelleniyor; AI doğrudan
+  tehdit altında ve müşkül durumdaysa yalnız `Heyet` gönderilebiliyor,
+  `Hediye` hiçbir zaman gönderilmiyor. Stratejik hedef olmayan doğrudan
+  tehditlerde savunma amaçlı yatıştırma davranışı korunuyor. Regression:
   `TestAIDoesNotRepairRelationsWithExpansionTarget`,
   `TestAIRejectsRelationRepairForCurrentClaimOwner`,
-  `TestAIRejectsRelationRepairForActiveExpansionPlanTarget`; kapsam:
+  `TestAIRejectsRelationRepairForActiveExpansionPlanTarget`,
+  `TestAISendsDelegationButNeverGiftToStrategicTargetUnderDirectThreat`;
+  kapsam:
   `internal/ai/{diplomacy.go,strategic_plan.go,ai_test.go}`.
 
 - 2026-08-07: Diplomasi teklif panelindeki `Aktif İlişkiler` listeleri artık her

@@ -60,11 +60,12 @@ kuyruğunda çözülür.
 İlişki onarımı stratejik savaş hedeflerini desteklemez: AI'nin açık
 `AIExpansionTargets` listesinde bulunan, aktif `expand` planının hedefi olan
 veya AI claim bölgelerinden birini elinde tutan devletlere heyet/hediye
-gönderilmez. Claim sahibi bölgenin güncel `OwnerID` değerinden hesaplandığı
-için hedef devlet fetih veya el değiştirme sonrasında da doğru güncellenir.
-Bu filtre yalnız ilişki bakımına uygulanır; savunma amacıyla doğrudan tehdit
-altındaki fakat stratejik hedef olmayan devletlere yatıştırma heyeti hâlâ
-gönderilebilir.
+normalde gönderilmez. Claim sahibi bölgenin güncel `OwnerID` değerinden
+hesaplandığı için hedef devlet fetih veya el değiştirme sonrasında da doğru
+güncellenir. Ancak hedef askeri olarak doğrudan tehdit oluşturuyor ve AI
+`HasDirectThreat` ile müşkül durumdaysa yalnız `Heyet` gönderilebilir; bu
+istisnada `Hediye` hiçbir zaman seçilmez. Stratejik hedef olmayan doğrudan
+tehditlerdeki mevcut yatıştırma heyeti davranışı korunur.
 
 Kaynak: `internal/ai/diplomacy.go:aiRelationshipRepairAction`,
 `internal/ai/strategic_plan.go:aiIsStrategicDiplomacyTarget`

@@ -587,6 +587,32 @@ func TestAIRejectsRelationRepairForActiveExpansionPlanTarget(t *testing.T) {
 	}
 }
 
+func TestAISendsDelegationButNeverGiftToStrategicTargetUnderDirectThreat(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].AIExpansionTargets = []faction.FactionID{"ai_2"}
+	gs.Armies["ai2_army"].Units = []army.Unit{
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+		{TypeID: "inf", CurrentHP: 100},
+	}
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 8 {
+		t.Fatalf("müşkül durumdaki stratejik hedefe heyet gönderilmeliydi: score=%d", rel.Score)
+	}
+	if gs.Factions["ai_1"].Gold != 460 || gs.Factions["ai_2"].Gold != 100 {
+		t.Fatalf("stratejik hedefe hediye gönderilmemeli, sender=%d receiver=%d", gs.Factions["ai_1"].Gold, gs.Factions["ai_2"].Gold)
+	}
+}
+
 func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500

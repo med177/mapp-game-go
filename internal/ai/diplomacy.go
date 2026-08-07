@@ -313,16 +313,24 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 		return "", "", false
 	}
 	self := gs.Factions[fid]
-	if self == nil || self.IsEliminated || aiIsStrategicDiplomacyTarget(gs, fid, otherID) {
+	if self == nil || self.IsEliminated {
 		return "", "", false
 	}
 
+	strategicTarget := aiIsStrategicDiplomacyTarget(gs, fid, otherID)
 	hasActiveTrade := diplomacy.HasTradeRouteBetween(gs, fid, otherID)
 	hasTradeInterest := hasActiveTrade || diplomacy.CanEstablishTradeRoute(gs, fid, otherID)
 	hasAllianceInterest := aiAllianceHasMeaningfulBenefit(gs, fid, otherID)
 	commonEnemy := diplomacy.HasCommonEnemy(gs, fid, otherID)
 	sharedThreat := diplomacy.HasSharedMajorThreat(gs, fid, otherID)
 	directThreat := diplomacy.HasDirectThreat(gs, fid, otherID)
+	// AI stratejik hedefinden vazgeçmiş değildir; ancak hedef sınırında askeri
+	// olarak müşkül durumdaysa zaman kazanmak için ucuz heyet kullanabilir.
+	// Hediye daha sonra seçilmesin diye bu istisna aşağıda doğrudan heyete
+	// yönlendirilir.
+	if strategicTarget && !directThreat {
+		return "", "", false
+	}
 	if !hasTradeInterest && !hasAllianceInterest && !commonEnemy && !sharedThreat && !directThreat {
 		return "", "", false
 	}
@@ -350,6 +358,12 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 			return "", "", false
 		}
 		return diplomacy.ActionImproveRelations, reason, true
+	}
+	if strategicTarget {
+		if self.Gold < diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+			return "", "", false
+		}
+		return diplomacy.ActionImproveRelations, "stratejik hedef karşısında sınır baskısını azaltma", true
 	}
 	if self.Gold >= diplomacy.GiftGoldCost+aiMinGoldReserve {
 		return diplomacy.ActionSendGift, reason, true
