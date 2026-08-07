@@ -612,11 +612,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if grainCapacity > 0 {
 			drawResRow(screen, rightCol, ry, rightColW, "Ambar", formatNumberTR(grainCapacity), ColorGray)
 		}
-		goldUpkeep := gs.FactionGoldUpkeep(f.ID)
 		incomeValue := sign + formatNumberTR(income)
-		if goldUpkeep > 0 {
-			incomeValue += " / -" + formatNumberTR(goldUpkeep)
-		}
 		drawResRow(screen, rightCol, ry+rowGap, rightColW, "Gelir", incomeValue, incCol)
 		drawResRow(screen, rightCol, ry+rowGap*2, rightColW, "Hazine", formatNumberTR(f.Gold), ColorGold)
 	}
@@ -3371,7 +3367,7 @@ func resourceHUDChangeColor(change int, normal color.RGBA) color.RGBA {
 }
 
 func calcPlayerIncome(gs *state.GameState) int {
-	return victory.CurrentGoldIncome(gs)
+	return playerGoldEconomyStatus(gs).NetChange
 }
 
 // drawBuildingGrid bölgedeki binaları kare sprite thumbnail'leri olarak 3 sütunlu ızgarada çizer.

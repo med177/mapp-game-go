@@ -139,6 +139,10 @@ func (r *Renderer) updateCursorShape() {
 		}
 		return
 	}
+	if r.goldIncomePopupHovering(fx, fy) {
+		ebiten.SetCursorShape(ebiten.CursorShapePointer)
+		return
+	}
 	if r.showDiplomacy {
 		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)

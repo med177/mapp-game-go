@@ -1038,6 +1038,12 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	if gs.Factions["b"].Spice != 2 {
 		t.Fatalf("ticaret rotası malı hedefe eklemeliydi, got=%d", gs.Factions["b"].Spice)
 	}
+	if status := gs.GoldEconomy["a"]; status.TradeRouteIncome != 24 || status.NetChange != 24 {
+		t.Fatalf("satıcı rota geliri snapshot'a yazılmalıydı: %+v", status)
+	}
+	if status := gs.GoldEconomy["b"]; status.TradeRouteExpense != 24 || status.NetChange != -24 {
+		t.Fatalf("alıcı rota ödemesi snapshot'a yazılmalıydı: %+v", status)
+	}
 }
 
 func TestApplyEconomyTickAppliesMarketGoldBonusToPassiveTrade(t *testing.T) {
@@ -1117,6 +1123,12 @@ func TestApplyEconomyTickTransfersVassalTributeToOverlord(t *testing.T) {
 	}
 	if got := gs.Factions["lord"].Gold; got != 52 {
 		t.Fatalf("overlord haracı almalıydı, got=%d", got)
+	}
+	if status := gs.GoldEconomy["vassal"]; status.TributePaid != 2 || status.NetChange != 8 {
+		t.Fatalf("vassal haraç snapshot'a yazılmalıydı: %+v", status)
+	}
+	if status := gs.GoldEconomy["lord"]; status.TributeIncome != 2 || status.NetChange != 2 {
+		t.Fatalf("overlord haraç snapshot'a yazılmalıydı: %+v", status)
 	}
 }
 

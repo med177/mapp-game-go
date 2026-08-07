@@ -183,6 +183,14 @@ type TradeRoute struct {
 	BlockadePercent int `json:"-"`
 }
 
+// TradeRouteGoldTransfer, bir turda başarıyla gerçekleşen rota altın
+// transferini taşır. Ekonomi HUD'u rota geliri ile rota ödemesini ayırır.
+type TradeRouteGoldTransfer struct {
+	FromFactionID faction.FactionID
+	ToFactionID   faction.FactionID
+	Amount        int
+}
+
 // MaxTradeRouteAmountPerTurn yeni ticaret anlaşmasının temel hacim paylaşım
 // sınırıdır. Merchant bonusu bu sabit ile sınırlandırılmaz; mevcut rotanın
 // kendi hacmi üzerinden hesaplanır.
@@ -248,7 +256,15 @@ func (t *TradeRoute) GoldEarned() int {
 // Hedef fraksiyondan altın çıkar, kaynak fraksiyona altın ekler.
 // Yetersiz mal veya altın durumunda rota o tur için atlanır.
 func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []*TradeRoute) []string {
+	logs, _ := ApplyTradeRoutesWithTransfers(factions, routes)
+	return logs
+}
+
+// ApplyTradeRoutesWithTransfers tüm aktif ticaret rotalarını işletir ve
+// başarıyla uygulanan altın transferlerini döner.
+func ApplyTradeRoutesWithTransfers(factions map[faction.FactionID]*faction.Faction, routes []*TradeRoute) ([]string, []TradeRouteGoldTransfer) {
 	var logs []string
+	var transfers []TradeRouteGoldTransfer
 
 	for _, tr := range routes {
 		if tr == nil || tr.SuspendedTurns > 0 {
@@ -289,9 +305,14 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 		// Altın transferi: hedeften çıkar, kaynağa ekle
 		dstFaction.Gold -= totalCost
 		srcFaction.Gold += totalCost
+		transfers = append(transfers, TradeRouteGoldTransfer{
+			FromFactionID: faction.FactionID(tr.FromFactionID),
+			ToFactionID:   faction.FactionID(tr.ToFactionID),
+			Amount:        totalCost,
+		})
 	}
 
-	return logs
+	return logs, transfers
 }
 
 // getGoodAmount fraksiyonun belirli bir maldan kaç birime sahip olduğunu döner.

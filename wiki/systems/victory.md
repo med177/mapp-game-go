@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-08-05
+last_updated: 2026-08-07
 related: [systems/ai, architecture/state-management, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -32,8 +32,9 @@ GoldHoldTurns    = 5    (bu geliri 5 tur boyunca koru)
 `EconomicVictoryTurns` sayacı `GameState`'te tutulur. Ekonomik zafer artık oyuncunun mevcut hazinesini değil, o turdaki toplam altın gelirini kontrol eder. Hesaba bölge vergi geliri, bina `gold_mod` çarpanları, aktif ticaret rotaları ve teknoloji `gold_per_region` bonusları dahildir.
 
 Bu toplam `victory.GoldIncomeForFaction()` ile seçilen herhangi bir devlet için de
-hesaplanabilir. Oyuncu HUD'u ve devlet bilgi panelindeki `Gelir +N/tur` satırı aynı
-yardımcıyı kullanır.
+hesaplanabilir. Devlet bilgi paneli ekonomik zaferle aynı brüt geliri gösterir;
+oyuncu üst HUD'u ise ordu bakımı düşülmüş net tur değişimini ve hover popup'ında
+ayrıştırılmış gelir hesabını gösterir.
 
 ### 3. Askeri Üstünlük (`military`)
 

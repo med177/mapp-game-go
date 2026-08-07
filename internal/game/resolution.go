@@ -495,6 +495,9 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	incomeByFaction := make(map[string]int)
+	taxIncomeByFaction := make(map[string]int)
+	tradeIncomeByFaction := make(map[string]int)
+	capitalIncomeByFaction := make(map[string]int)
 	grainByFaction := make(map[string]int)
 	civilianGrainDemandByFaction := make(map[string]int)
 	ironByFaction := make(map[string]int)
@@ -554,6 +557,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 
 		incomeByFaction[r.OwnerID] += income + tradeIncome
+		taxIncomeByFaction[r.OwnerID] += income
+		tradeIncomeByFaction[r.OwnerID] += tradeIncome
 		civilianGrainDemandByFaction[r.OwnerID] += gs.CivilianGrainDemandForRegion(r)
 		ironByFaction[r.OwnerID] += iron
 		timberByFaction[r.OwnerID] += timber
@@ -563,6 +568,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		capitalGrainBonus := 0
 		if bonus := gs.CapitalRegionBonus(r); bonus != (state.RegionProductionSummary{}) {
 			incomeByFaction[r.OwnerID] += bonus.Gold
+			capitalIncomeByFaction[r.OwnerID] += bonus.Gold
 			capitalGrainBonus = bonus.Grain
 			ironByFaction[r.OwnerID] += bonus.Iron
 			timberByFaction[r.OwnerID] += bonus.Timber
@@ -597,10 +603,22 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
+	goldBeforeEconomy := make(map[string]int, len(gs.Factions))
+	for fid, f := range gs.Factions {
+		if f != nil {
+			goldBeforeEconomy[string(fid)] = f.Gold
+		}
+	}
 	diplomacy.RebalanceTradeRouteCapacities(gs)
 	gs.RefreshTradeRouteBlockades()
 	gs.RefreshMerchantTradeBonuses()
-	tradeLogs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
+	tradeLogs, tradeTransfers := economy.ApplyTradeRoutesWithTransfers(gs.Factions, gs.TradeRoutes)
+	tradeRouteIncomeByFaction := make(map[string]int)
+	tradeRouteExpenseByFaction := make(map[string]int)
+	for _, transfer := range tradeTransfers {
+		tradeRouteIncomeByFaction[string(transfer.FromFactionID)] += transfer.Amount
+		tradeRouteExpenseByFaction[string(transfer.ToFactionID)] += transfer.Amount
+	}
 	for _, log := range tradeLogs {
 		// Ticaret logları oyuncuya aitse göster
 		if gs.PlayerFactionID != "" {
@@ -631,7 +649,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain + raidLoot.Grain
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
-		goldBefore := f.Gold
+		goldBefore := goldBeforeEconomy[fidStr]
 		goldIncome := (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
@@ -647,15 +665,27 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		f.Gold -= paidGoldUpkeep
 		goldStatus := state.GoldEconomyStatus{
-			FactionID:  fid,
-			Income:     goldIncome,
-			Upkeep:     goldUpkeep,
-			NetChange:  goldIncome - goldUpkeep,
-			GoldBefore: goldBefore,
-			GoldAfter:  f.Gold,
-			PaidUpkeep: paidGoldUpkeep,
-			Shortage:   goldUpkeep - paidGoldUpkeep,
+			FactionID:         fid,
+			Income:            goldIncome,
+			TaxIncome:         taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TradeIncome:       tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			CapitalIncome:     capitalIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TechnologyIncome:  techGold * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			BlockadeIncome:    loot.Gold * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			RaidIncome:        raidLoot.Gold,
+			TradeRouteIncome:  tradeRouteIncomeByFaction[fidStr],
+			TradeRouteExpense: tradeRouteExpenseByFaction[fidStr],
+			Upkeep:            goldUpkeep,
+			GoldBefore:        goldBefore,
+			GoldAfter:         f.Gold,
+			PaidUpkeep:        paidGoldUpkeep,
+			Shortage:          goldUpkeep - paidGoldUpkeep,
 		}
+		if ledger := gs.GoldTurnLedger[fid]; ledger.Turn == gs.Turn {
+			goldStatus.GiftIncome = ledger.GiftIncome
+			goldStatus.GiftExpense = ledger.GiftExpense
+		}
+		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense - goldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}
@@ -738,6 +768,14 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		f.Gold -= tribute
 		overlord.Gold += tribute
+		vassalStatus := gs.GoldEconomy[fid]
+		vassalStatus.TributePaid += tribute
+		vassalStatus.NetChange -= tribute
+		gs.GoldEconomy[fid] = vassalStatus
+		overlordStatus := gs.GoldEconomy[f.OverlordID]
+		overlordStatus.TributeIncome += tribute
+		overlordStatus.NetChange += tribute
+		gs.GoldEconomy[f.OverlordID] = overlordStatus
 	}
 	for fid, status := range gs.GoldEconomy {
 		if f := gs.Factions[fid]; f != nil {

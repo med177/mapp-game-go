@@ -243,6 +243,7 @@ type GameState struct {
 	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
 	GrainEconomy       map[faction.FactionID]GrainEconomyStatus `json:"-"`
 	GoldEconomy        map[faction.FactionID]GoldEconomyStatus  `json:"-"`
+	GoldTurnLedger     map[faction.FactionID]GoldTurnLedger     `json:"-"`
 	GrainSaleGoldUsed  map[faction.FactionID]int                `json:"-"`
 
 	// Zafer takibi
@@ -745,6 +746,18 @@ type GrainEconomyStatus struct {
 type GoldEconomyStatus struct {
 	FactionID         faction.FactionID
 	Income            int
+	TaxIncome         int
+	TradeIncome       int
+	CapitalIncome     int
+	TechnologyIncome  int
+	BlockadeIncome    int
+	RaidIncome        int
+	TradeRouteIncome  int
+	TradeRouteExpense int
+	TributeIncome     int
+	TributePaid       int
+	GiftIncome        int
+	GiftExpense       int
 	Upkeep            int
 	NetChange         int
 	GoldBefore        int
@@ -755,6 +768,39 @@ type GoldEconomyStatus struct {
 	UnitsLost         int
 	DesertedUnits     int
 	ArmyMoraleDelta   int
+}
+
+// GoldTurnLedger, tur içinde ekonomi tick'i dışında gerçekleşen diplomatik
+// altın hareketlerini taşır. Tek seferlik hediyeler, düzenli gelir hesabına
+// karıştırılmadan popup'ta ayrıca gösterilir.
+type GoldTurnLedger struct {
+	Turn        int
+	GiftIncome  int
+	GiftExpense int
+}
+
+// RecordGiftGold, bu turdaki hediye altın transferini runtime ledger'a yazar.
+func (s *GameState) RecordGiftGold(actor, receiver faction.FactionID, amount, receiverAmount int) {
+	if s == nil || amount <= 0 {
+		return
+	}
+	if s.GoldTurnLedger == nil {
+		s.GoldTurnLedger = make(map[faction.FactionID]GoldTurnLedger)
+	}
+	actorLedger := s.GoldTurnLedger[actor]
+	if actorLedger.Turn != s.Turn {
+		actorLedger = GoldTurnLedger{Turn: s.Turn}
+	}
+	actorLedger.GiftExpense += amount
+	s.GoldTurnLedger[actor] = actorLedger
+	if receiver != "" && receiverAmount > 0 {
+		receiverLedger := s.GoldTurnLedger[receiver]
+		if receiverLedger.Turn != s.Turn {
+			receiverLedger = GoldTurnLedger{Turn: s.Turn}
+		}
+		receiverLedger.GiftIncome += receiverAmount
+		s.GoldTurnLedger[receiver] = receiverLedger
+	}
 }
 
 const (

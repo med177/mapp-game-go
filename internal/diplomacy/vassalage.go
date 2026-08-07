@@ -555,6 +555,9 @@ func applyRelationImprovement(gs *state.GameState, actor, target faction.Faction
 	if receiverGold > 0 {
 		targetFaction.Gold += receiverGold
 	}
+	if receiverGold > 0 {
+		gs.RecordGiftGold(actor, target, cost, receiverGold)
+	}
 	rel := EnsureRelation(gs, actor, target)
 	rel.Score = clamp(rel.Score+delta, -100, 100)
 	return Result{

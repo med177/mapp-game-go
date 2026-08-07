@@ -111,9 +111,12 @@ kapsamında değildir.
 piyade `3`; hafif/orta/ağır süvari `2/3/4`; kuşatma `3/4/5`; savaş gemisi `4`,
 nakliye ve ticaret gemisi `2` altın/tur olacak şekilde kalibre edilmiştir.
 
-`GoldEconomy` runtime snapshot'ı brüt gelir, bakım, net değişim, ödenen bakım,
-ödenemeyen açık ve tur sonu hazineyi taşır. Bu gider ekonomik zaferin brüt gelir
-ölçümünden ayrı tutulur; HUD'da gelir satırı `+gelir / -bakım` biçiminde görünür.
+`GoldEconomy` runtime snapshot'ı vergi, pasif ticaret, rota transferleri,
+teknoloji, haraç, ganimet, bakım, ödenen bakım, ödenemeyen açık ve tur sonu
+hazineyi taşır. Bu gider ekonomik zaferin brüt gelir ölçümünden ayrı tutulur;
+HUD'daki Gelir satırı artık bakım düşülmüş net tur değişimini gösterir. Rakamın
+üzerine gelindiğinde açılan popup, bu net değerin hesabını kalem kalem gösterir.
+Hediye gibi tek seferlik diplomatik transferler aynı popup'ta ayrıca gösterilir.
 
 ## Ticaret Güzergahları
 

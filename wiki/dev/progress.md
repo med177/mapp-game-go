@@ -26,6 +26,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestApplyEconomyTickClampsUnpaidGoldUpkeepAtZero`,
   `TestGoldUpkeepShortageCausesAttritionAndDesertion`.
 
+- 2026-08-07: Üst HUD Gelir değeri bakım düşülmüş net tur değişimine bağlandı.
+  Vergi, pasif/rota ticareti, teknoloji, haraç, ganimet, ordu masrafı ve tur içi
+  hediye transferleri `GoldEconomy` snapshot'ında ayrıştırılıyor. Gelir rakamı
+  ortak hit-test rect'iyle pointer cursor alıyor ve hover popup'ında hesap
+  kalemlerini gösteriyor.
+
 - 2026-08-07: `Test1300ScenarioResourceSpecializationsAndProductionCosts` sabit
   bölge, bina, birlik ve maliyet beklentilerinden çıkarıldı. Test artık ilgili
   JSON kayıtlarını keşfediyor; yalnız JSON'da mevcut olan kaynak, üretim maliyeti

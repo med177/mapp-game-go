@@ -7,8 +7,8 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
-Üst kaynak HUD'ında gelir satırı brüt geliri ve mevcut orduların sabit altın
-bakımını `+gelir / -bakım` biçiminde birlikte gösterir. Birim tooltip'lerinde
+Üst kaynak HUD'ında gelir satırı mevcut orduların sabit altın bakımı düşülmüş net
+tur değişimini gösterir. Birim tooltip'lerinde
 de tahıl ve altın bakım giderleri aynı tur başı bakım satırında gösterilir;
 hesaplama doğrudan `UnitType` verisinden gelir.
 
@@ -337,9 +337,11 @@ turun abluka etkisini anında gösterir. Abluka varsa grid'in altında koyu turu
 anda oyuncu vergi, yerel ticaret ve üretim kaybını sonraki tur geliri olarak görür.
 
 Devlet bilgi panelindeki `Kaynaklar` grid'inin son satırı seçilen devletin brüt
-tur başı altın gelirini `Gelir +N/tur` biçiminde gösterir. Bu değer oyuncu HUD'undan
-ayrı hesaplanmaz; her iki görünüm `victory.GoldIncomeForFaction()` üzerinden aynı
-bölge, ticaret rotası, abluka, ganimet ve teknoloji gelir zincirini kullanır
+tur başı altın gelirini `Gelir +N/tur` biçiminde gösterir. Oyuncu üst HUD'u ise
+bakım düşülmüş net tur değişimini gösterir; rakama gelindiğinde pointer cursor ve
+hesap kalemlerini gösteren hover popup'ı açılır. Brüt devlet paneli oyuncu
+HUD'undan ayrı bir sunum olarak kalır; brüt hesap `victory.GoldIncomeForFaction()`
+üzerinden aynı bölge, ticaret rotası, abluka, ganimet ve teknoloji gelir zincirini kullanır
 (`internal/render/panel.go`, `internal/victory/victory.go`).
 
 Üst oyuncu HUD'unda Gelir/Altın sütunu zafer kartından önceki alana sağa yaslanır;
