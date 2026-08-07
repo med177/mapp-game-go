@@ -196,8 +196,8 @@ func TestEnsureFactionCommandersAssignsAIFieldArmies(t *testing.T) {
 			"ai": {ID: "ai", Gold: 1000, Grain: 200},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"a1": {ID: "a1", OwnerID: "ai", RegionID: "r1"},
-			"a2": {ID: "a2", OwnerID: "ai", RegionID: "r2"},
+			"a1": {ID: "a1", OwnerID: "ai", RegionID: "r1", Units: []army.Unit{{TypeID: "inf"}}},
+			"a2": {ID: "a2", OwnerID: "ai", RegionID: "r2", Units: []army.Unit{{TypeID: "inf"}}},
 			"g1": {ID: "g1", OwnerID: "ai", IsGarrison: true, RegionID: "r3"},
 			"p1": {ID: "p1", OwnerID: "player", RegionID: "r4"},
 		},
@@ -232,11 +232,83 @@ func TestEnsureFactionCommandersAssignsAIFieldArmies(t *testing.T) {
 func TestEnsureFactionCommandersLeavesAIArmiesUncommandedWithoutResources(t *testing.T) {
 	gs := &GameState{
 		Factions: map[faction.FactionID]*faction.Faction{"ai": {ID: "ai", Gold: 499, Grain: 100}},
-		Armies:   map[army.ArmyID]*army.Army{"a1": {ID: "a1", OwnerID: "ai"}},
+		Armies:   map[army.ArmyID]*army.Army{"a1": {ID: "a1", OwnerID: "ai", Units: []army.Unit{{TypeID: "inf"}}}},
 	}
 	gs.EnsureFactionCommanders("ai")
 	if gs.Armies["a1"].Commander != nil || len(gs.Commanders) != 0 {
 		t.Fatalf("yetersiz kaynaklı AI komutan üretmemeli: armies=%+v commanders=%+v", gs.Armies, gs.Commanders)
+	}
+}
+
+func TestEnsureFactionCommandersSkipsNonMilitaryFleetsAndReusesAvailableCommander(t *testing.T) {
+	commander := army.NewCommander("cmd_idle", "Boşta Komutan")
+	commander.OwnerID = "ai"
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Gold: 500, Grain: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"inf":       {ID: "inf", Category: army.CategoryInfantry},
+			"merchant":  {ID: "merchant", Category: army.CategoryNavalTrade},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+		Armies: map[army.ArmyID]*army.Army{
+			"land": {
+				ID: "land", OwnerID: "ai", Units: []army.Unit{{TypeID: "inf"}},
+			},
+			"merchant_fleet": {
+				ID: "merchant_fleet", OwnerID: "ai", IsNaval: true,
+				Units: []army.Unit{{TypeID: "merchant"}}, Commander: commander,
+			},
+			"transport_fleet": {
+				ID: "transport_fleet", OwnerID: "ai", IsNaval: true,
+				Units: []army.Unit{{TypeID: "transport"}},
+			},
+		},
+	}
+
+	gs.EnsureFactionCommanders("ai")
+
+	if gs.Armies["merchant_fleet"].Commander != nil || gs.Armies["transport_fleet"].Commander != nil {
+		t.Fatal("ticaret ve nakliye filolarına AI komutanı atanmamalı")
+	}
+	if gs.Armies["land"].Commander != commander {
+		t.Fatal("boşta kalan mevcut komutan askerî orduya atanmalı")
+	}
+	if got := gs.Factions["ai"]; got.Gold != 500 || got.Grain != 100 {
+		t.Fatalf("boşta komutan varken yeni üretim maliyeti uygulanmamalı: %+v", got)
+	}
+}
+
+func TestEnsureFactionCommandersAssignsWarshipButNotMerchantFleet(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Gold: 500, Grain: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship":  {ID: "warship", Category: army.CategoryNavalWar},
+			"merchant": {ID: "merchant", Category: army.CategoryNavalTrade},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"war_fleet": {
+				ID: "war_fleet", OwnerID: "ai", IsNaval: true,
+				Units: []army.Unit{{TypeID: "warship"}},
+			},
+			"merchant_fleet": {
+				ID: "merchant_fleet", OwnerID: "ai", IsNaval: true,
+				Units: []army.Unit{{TypeID: "merchant"}},
+			},
+		},
+	}
+
+	gs.EnsureFactionCommanders("ai")
+
+	if gs.Armies["war_fleet"].Commander == nil || gs.Armies["merchant_fleet"].Commander != nil {
+		t.Fatal("savaş filosu komutan almalı, ticaret filosu almamalı")
+	}
+	if got := gs.Factions["ai"]; got.Gold != 0 || got.Grain != 0 {
+		t.Fatalf("savaş filosu komutanının maliyeti uygulanmalı: %+v", got)
 	}
 }
 

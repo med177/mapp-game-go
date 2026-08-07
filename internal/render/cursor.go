@@ -139,6 +139,10 @@ func (r *Renderer) updateCursorShape() {
 		}
 		return
 	}
+	if r.grainEconomyPopupHovering(fx, fy) {
+		ebiten.SetCursorShape(ebiten.CursorShapePointer)
+		return
+	}
 	if r.goldIncomePopupHovering(fx, fy) {
 		ebiten.SetCursorShape(ebiten.CursorShapePointer)
 		return

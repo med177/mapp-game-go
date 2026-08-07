@@ -381,6 +381,53 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int, chargeGener
 	}
 }
 
+// armyNeedsCommander, AI komutanının gerçekten savaşabilecek bir kuvvete
+// atanması gerekip gerekmediğini döner. Kara ordusundaki birimler askerî kabul
+// edilir; donanmada ise yalnızca savaş gemileri filo komutanı gerektirir.
+// UnitTypes bulunmayan eski kara kayıtlarında, mevcut birimlerin askerî olduğu
+// varsayımı korunur. Deniz kayıtlarında bilinmeyen türler güvenli tarafta
+// kalmak için komutan ihtiyacı oluşturmaz.
+func (s *GameState) armyNeedsCommander(currentArmy *army.Army) bool {
+	if s == nil || currentArmy == nil || currentArmy.IsGarrison || len(currentArmy.Units) == 0 {
+		return false
+	}
+	for _, unit := range currentArmy.Units {
+		unitType := s.UnitTypes[unit.TypeID]
+		if unitType == nil {
+			if !currentArmy.IsNaval {
+				return true
+			}
+			continue
+		}
+		if currentArmy.IsNaval {
+			if unitType.Category == army.CategoryNavalWar {
+				return true
+			}
+			continue
+		}
+		switch unitType.Category {
+		case army.CategoryInfantry, army.CategoryCavalry, army.CategorySiege:
+			return true
+		}
+	}
+	return false
+}
+
+// releaseCommandersFromNonMilitaryArmies, AI'nin artık komutan gerektirmeyen
+// ticaret/nakliye filolarındaki ana komutanı havuza geri bırakır. Taşınan kara
+// ordusunun EmbarkedCommander bağlantısına dokunulmaz.
+func (s *GameState) releaseCommandersFromNonMilitaryArmies(ownerID string) {
+	if s == nil || ownerID == "" {
+		return
+	}
+	for _, currentArmy := range s.Armies {
+		if currentArmy == nil || currentArmy.OwnerID != ownerID || currentArmy.Commander == nil || s.armyNeedsCommander(currentArmy) {
+			continue
+		}
+		currentArmy.RemoveCommander()
+	}
+}
+
 func (s *GameState) nextCommanderTemplate(ownerID string) *army.Commander {
 	if s == nil || s.CommanderTemplates == nil {
 		return nil
@@ -439,9 +486,10 @@ func (s *GameState) EnsureFactionCommanders(ownerID string) {
 	}
 	s.SyncCommanderAvailability()
 	s.SyncCommanderLinks()
+	s.releaseCommandersFromNonMilitaryArmies(ownerID)
 	armyIDs := make([]army.ArmyID, 0)
 	for aid, currentArmy := range s.Armies {
-		if currentArmy == nil || currentArmy.OwnerID != ownerID || currentArmy.IsGarrison {
+		if currentArmy == nil || currentArmy.OwnerID != ownerID || !s.armyNeedsCommander(currentArmy) {
 			continue
 		}
 		armyIDs = append(armyIDs, aid)

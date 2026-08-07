@@ -20,8 +20,8 @@ func TestAITurnPreludeAssignsCommandersToFieldArmies(t *testing.T) {
 			"r3": {ID: "r3", OwnerID: "ai"},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"army_b":   {ID: "army_b", OwnerID: "ai", RegionID: "r2"},
-			"army_a":   {ID: "army_a", OwnerID: "ai", RegionID: "r1"},
+			"army_b":   {ID: "army_b", OwnerID: "ai", RegionID: "r2", Units: []army.Unit{{TypeID: "inf"}}},
+			"army_a":   {ID: "army_a", OwnerID: "ai", RegionID: "r1", Units: []army.Unit{{TypeID: "inf"}}},
 			"garrison": {ID: "garrison", OwnerID: "ai", RegionID: "r3", IsGarrison: true},
 		},
 	}

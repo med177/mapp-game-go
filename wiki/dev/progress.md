@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-07: AI komutan ataması askerî birim varlığına bağlandı. Boş kara
+  orduları ile yalnız ticaret/nakliye gemisi taşıyan filolar komutan almıyor;
+  savaş gemisi içeren filolar komutan almaya devam ediyor. Askerî olmayan filoda
+  eski komutan varsa havuza bırakılıyor ve yeni fallback üretmeden önce boşta
+  komutan yeniden kullanılıyor. Regression: `TestEnsureFactionCommandersSkipsNonMilitaryFleetsAndReusesAvailableCommander`,
+  `TestEnsureFactionCommandersAssignsWarshipButNotMerchantFleet`; doğrulama:
+  `go test ./... -count=1`.
+
+- 2026-08-07: Üst HUD Tahıl değeri altın gelir hesabına paralel hover popup'ına
+  bağlandı. Popup üretim, halk tüketimi, ordu tüketimi, toplam tüketim, gerçek
+  pazar satış arzı, otomatik ihracat ve net değişimi gösteriyor; Tahıl değeri ve
+  popup hit-test'i aynı rect'i kullanıyor ve hover sırasında pointer cursor alıyor.
+  Regression: `TestGrainHUDValueRectIsInteractive`,
+  `TestGrainEconomyPopupUsesCurrentSnapshot`; kapsam:
+  `internal/render/{income_popup.go,cursor.go,renderer.go}`.
+
 - 2026-08-07: AI'nin açık genişleme hedeflerine, aktif `expand` planı
   hedeflerine ve claim bölgelerinin güncel sahiplerine `Heyet`/`Hediye`
   göndermesi sınırlandı. Normal durumda ikisi de engelleniyor; AI doğrudan

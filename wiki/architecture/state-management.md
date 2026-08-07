@@ -27,6 +27,11 @@ ile `start_year <= Year < end_year` aralığına göre runtime havuzuna alınır
 bildirimlerini `CommanderArrivalNotices` ile tekilleştirir; `RetireExpiredCommanders()`
 `end_year` başlayan komutanı atanmış olduğu kara ordusu veya filodan da çıkarır.
 Liste ve atama doğrulaması aynı aktiflik helper'ını kullanır.
+AI tarafındaki `EnsureFactionCommanders()` yalnızca birim taşıyan kara ordularını
+ve en az bir `CategoryNavalWar` birimi taşıyan filoları komutan adayı sayar;
+ticaret/nakliye filoları komutan almaz. Böyle bir filoda eski bir ana komutan
+varsa havuza bırakılır. Yeni fallback üretiminden önce mevcut boşta komutanlar
+kullanılır; fallback üretimi `CommanderRecruitCost` ile kaynak tüketir.
 
 Ticaret kapasitesinin kanonik state hesabı `EffectiveRegionTradeCapacity()` ve
 `EffectiveFactionTradeCapacity()` içindedir (`internal/state/trade_capacity.go`).

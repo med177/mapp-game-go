@@ -356,6 +356,14 @@ HUD'undan ayrı bir sunum olarak kalır; brüt hesap `victory.GoldIncomeForFacti
 üzerinden aynı bölge, ticaret rotası, abluka, ganimet ve teknoloji gelir zincirini kullanır
 (`internal/render/panel.go`, `internal/victory/victory.go`).
 
+Üst oyuncu HUD'undaki Tahıl değeri de kendi rakam rect'i üzerinden pointer cursor
+alır ve hover edildiğinde `Tahıl hesabı / tur` popup'ı açar. Popup, mevcut
+`GrainEconomyStatus` snapshot'ından üretimi, halk tüketimini, ordu tüketimini,
+toplam tüketimi ve otomatik ihracatı; güncel `MarketSellOffer()` değerinden de
+pazara ayrılmış gerçek satış arzını gösterir. Ekonomi snapshot'ı henüz oluşmamışsa
+üretim ve tüketim, HUD ile aynı `GameState` helper'larından önizlenir
+(`internal/render/income_popup.go`, `cursor.go`, `renderer.go`, `internal/state/state.go`).
+
 Üst oyuncu HUD'unda Gelir/Altın sütunu zafer kartından önceki alana sağa yaslanır;
 kaynak satırları ortak `KeyValueRow` bileşeninin 8 px aralıklı varyantını kullanır.
 HUD miktarları `formatNumberTR()` ile Türkçe binlik ayıracıyla (`10.000`) çizilir;

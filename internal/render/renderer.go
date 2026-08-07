@@ -1469,6 +1469,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
+		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {

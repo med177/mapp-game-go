@@ -3,6 +3,7 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
@@ -14,6 +15,41 @@ func TestIncomeHUDValueRectIsInteractive(t *testing.T) {
 	}
 	if rect.Hit(rect.X-1, rect.Y+rect.H/2) {
 		t.Fatalf("gelir rakamı rect'i sol dış noktayı kapsamamalı: %+v", rect)
+	}
+}
+
+func TestGrainHUDValueRectIsInteractive(t *testing.T) {
+	rect := grainHUDValueRect()
+	if !rect.Hit(rect.X+rect.W/2, rect.Y+rect.H/2) {
+		t.Fatalf("tahıl rakamı rect'i kendi merkezini kapsamalı: %+v", rect)
+	}
+	if rect.Hit(rect.X-1, rect.Y+rect.H/2) {
+		t.Fatalf("tahıl rakamı rect'i sol dış noktayı kapsamamalı: %+v", rect)
+	}
+}
+
+func TestGrainEconomyPopupUsesCurrentSnapshot(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Grain: 100},
+		},
+		GrainEconomy: map[faction.FactionID]state.GrainEconomyStatus{
+			"player": {
+				FactionID:      "player",
+				Production:     113,
+				CivilianDemand: 42,
+				ArmyUpkeep:     19,
+				TotalDemand:    61,
+				NetChange:      52,
+				AutoExportSold: 7,
+			},
+		},
+	}
+	gs.SetMarketSellOffer("player", economy.GoodGrain, 23)
+	lines := grainEconomyPopupLines(gs, playerGrainEconomyStatus(gs))
+	if lines[0].value != 113 || lines[1].value != -42 || lines[2].value != -19 || lines[3].value != -61 || lines[4].value != 23 || lines[5].value != -7 {
+		t.Fatalf("tahıl popup satırları snapshot ile eşleşmiyor: %+v", lines)
 	}
 }
 
