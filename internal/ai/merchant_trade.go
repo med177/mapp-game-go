@@ -286,8 +286,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	if aiPendingUnitCountByRegion(gs, port.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, port.ID, fid, merchantType) <= 0 {
 		return false
 	}
-	cost := economy.ResourceCost{Gold: merchantType.GoldCost, Grain: merchantType.GrainCost, Iron: merchantType.IronCost, Timber: merchantType.TimberCost, Stone: merchantType.StoneCost, Spice: merchantType.SpiceCost, Cloth: merchantType.ClothCost}
-	if !aiCanAffordForBudget(self, cost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+	if !aiApplyUnitCostForBudget(self, merchantType, budget, aiBudgetNaval) {
 		return false
 	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, port.ID, merchantShipTypeID, merchantType.TurnsRequired)
@@ -353,13 +352,12 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 	if unitPower <= 0 {
 		return false
 	}
-	cost := economy.ResourceCost{Gold: warshipType.GoldCost, Grain: warshipType.GrainCost, Iron: warshipType.IronCost, Timber: warshipType.TimberCost, Stone: warshipType.StoneCost, Spice: warshipType.SpiceCost, Cloth: warshipType.ClothCost}
 	queued := false
 	for projectedPower < requiredPower {
 		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
 			break
 		}
-		if !aiCanAffordForBudget(self, cost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+		if !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)

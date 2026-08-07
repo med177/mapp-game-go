@@ -242,6 +242,7 @@ type GameState struct {
 	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
 	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
 	GrainEconomy       map[faction.FactionID]GrainEconomyStatus `json:"-"`
+	GoldEconomy        map[faction.FactionID]GoldEconomyStatus  `json:"-"`
 	GrainSaleGoldUsed  map[faction.FactionID]int                `json:"-"`
 
 	// Zafer takibi
@@ -736,6 +737,24 @@ type GrainEconomyStatus struct {
 	MonthsOfSupply  int
 	Shortage        int
 	SupplyLevel     GrainSupplyLevel
+}
+
+// GoldEconomyStatus ekonomi tick'inin altın geliri ve sabit ordu bakım
+// sonucunu taşır. GoldAfter tur sonundaki gerçek hazineyi, Shortage ise
+// ödenemeyen bakım miktarını gösterir.
+type GoldEconomyStatus struct {
+	FactionID         faction.FactionID
+	Income            int
+	Upkeep            int
+	NetChange         int
+	GoldBefore        int
+	GoldAfter         int
+	PaidUpkeep        int
+	Shortage          int
+	AttritionHPDamage int
+	UnitsLost         int
+	DesertedUnits     int
+	ArmyMoraleDelta   int
 }
 
 const (
@@ -1649,6 +1668,31 @@ func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
 // ve toplam stok güvenliği için kullanılır.
 func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
 	return s.armyGrainUpkeep(a, false, false)
+}
+
+// EffectiveArmyGoldUpkeep ordunun tur başı sabit altın bakımını döner.
+// Maaş gideri konumdan, hareketten, kuşatmadan veya ikmal hattından
+// etkilenmez; tüm birim tipleri aynı kanonik yardımcı üzerinden hesaplanır.
+func (s *GameState) EffectiveArmyGoldUpkeep(a *army.Army) int {
+	if s == nil || a == nil {
+		return 0
+	}
+	return a.TotalGoldUpkeep(s.UnitTypes)
+}
+
+// FactionGoldUpkeep bir fraksiyona ait tüm orduların tur başı sabit altın
+// bakımını döner.
+func (s *GameState) FactionGoldUpkeep(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, a := range s.Armies {
+		if a != nil && a.OwnerID == string(fid) {
+			total += s.EffectiveArmyGoldUpkeep(a)
+		}
+	}
+	return total
 }
 
 // RegionalArmyGrainDemand bölgesel ikmal baskısında kullanılan tahıl talebini

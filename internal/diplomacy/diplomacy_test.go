@@ -58,6 +58,7 @@ func TestProposeAllianceRejectedOnLowScore(t *testing.T) {
 
 func TestProposeAllianceRejectedAgainstCurrentAllyWarEnemy(t *testing.T) {
 	gs := testGameState()
+	gs.PlayerFactionID = "a"
 	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
 	ally := EnsureRelation(gs, "a", "b")
 	ally.Stance = faction.StanceAllied
@@ -74,6 +75,96 @@ func TestProposeAllianceRejectedAgainstCurrentAllyWarEnemy(t *testing.T) {
 	}
 	if result := Execute(gs, "a", "c", ActionProposeAlliance); result.Applied {
 		t.Fatalf("müttefikin savaş düşmanıyla ittifak uygulanmamalıydı: %+v", result)
+	}
+}
+
+func TestProposeAllianceRejectedWhenTargetAllyIsAtWarWithPlayer(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "a"
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	ally := EnsureRelation(gs, "b", "c")
+	ally.Stance = faction.StanceAllied
+	ally.Score = 60
+	war := EnsureRelation(gs, "a", "b")
+	war.Stance = faction.StanceWar
+	war.Score = -80
+	target := EnsureRelation(gs, "a", "c")
+	target.Score = 60
+
+	if result := Execute(gs, "a", "c", ActionProposeAlliance); result.Applied {
+		t.Fatalf("hedefin müttefikiyle savaş sürerken oyuncu ittifak kuramamalıydı: %+v", result)
+	}
+	if target.Stance != faction.StancePeace {
+		t.Fatalf("geçersiz oyuncu ittifakı ilişki stance'ini değiştirmemeliydi: %s", target.Stance)
+	}
+}
+
+func TestDeclareWarPenalizesTargetAlliesOnce(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	ally := EnsureRelation(gs, "b", "c")
+	ally.Stance = faction.StanceAllied
+	ally.Score = 0
+	relation := EnsureRelation(gs, "a", "c")
+	relation.Score = 40
+
+	result := ExecuteWarDeclaration(gs, "a", "b", nil)
+	if !result.Applied {
+		t.Fatalf("savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if relation.Stance != faction.StancePeace || relation.Score != 15 {
+		t.Fatalf("hedefin tarafsız kalan müttefiki -25 ceza almalıydı: %+v", relation)
+	}
+	if !strings.Contains(result.Message, "C ile ilişki -25") {
+		t.Fatalf("savaş mesajı ilişki cezasını göstermeliydi: %q", result.Message)
+	}
+
+	second := ExecuteWarDeclaration(gs, "a", "b", nil)
+	if second.Applied || relation.Score != 15 {
+		t.Fatalf("aynı savaş için ilişki cezası ikinci kez uygulanmamalıydı: result=%+v relation=%+v", second, relation)
+	}
+}
+
+func TestDeclareWarBreaksCrossAllianceWithTargetAlly(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	attackerAlly := EnsureRelation(gs, "a", "c")
+	attackerAlly.Stance = faction.StanceAllied
+	attackerAlly.Score = 60
+	targetAlly := EnsureRelation(gs, "b", "c")
+	targetAlly.Stance = faction.StanceAllied
+	targetAlly.Score = 0
+
+	result := ExecuteWarDeclaration(gs, "a", "b", nil)
+	if !result.Applied {
+		t.Fatalf("savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if attackerAlly.Stance != faction.StancePeace || attackerAlly.Score != 25 {
+		t.Fatalf("karşılıklı müttefiklik çatışmasında ittifak -35 ile bozulmalıydı: %+v", attackerAlly)
+	}
+	if IsWar(gs, "a", "c") {
+		t.Fatal("savaşa katılmayan eski müttefik doğrudan savaşa sokulmamalıydı")
+	}
+	if !strings.Contains(result.Message, "C ile ittifak bozuldu (ilişki -35)") {
+		t.Fatalf("savaş mesajı bozulan ittifakı göstermeliydi: %q", result.Message)
+	}
+}
+
+func TestDeclareWarAgainstTargetAllyThatJoinsUsesWarRelationOnly(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	targetAlly := EnsureRelation(gs, "b", "c")
+	targetAlly.Stance = faction.StanceAllied
+	targetAlly.Score = 100
+	relation := EnsureRelation(gs, "a", "c")
+	relation.Score = 40
+
+	result := ExecuteWarDeclaration(gs, "a", "b", nil)
+	if !result.Applied {
+		t.Fatalf("savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if relation.Stance != faction.StanceWar || relation.Score != -80 {
+		t.Fatalf("savaşa katılan müttefikte yalnız savaş ilişkisi kalmalıydı: %+v", relation)
 	}
 }
 

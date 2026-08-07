@@ -7,6 +7,25 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-07: Oyuncuya gelen `Heyet` ve `Hediye` bildirim modalı 3 saniye açık
+  kalıyor. Süre dolduğunda mevcut `Tamam` çözümü otomatik üretilerek bildirim
+  kabul edilmiş gibi akış devam ediyor; diğer diplomasi teklifleri seçim
+  beklemeye devam ediyor. Regression:
+  `TestDiplomacyRelationshipNotificationAutoClosesAfterThreeSeconds`.
+
+- 2026-08-07: İttifak-savaş çakışması iki yönlü ve oyuncu/AI ortak kural haline getirildi. Bir devlet, diğer tarafın doğrudan müttefikiyle savaş halindeyse ittifak kuramıyor. Bir devlete savaş ilan edildiğinde hedefin tarafsız kalan doğrudan müttefikleriyle ilişki `-25` düşüyor; saldıranın mevcut müttefiki olan hedef müttefikiyle ittifak bozulup ilişki `-35` düşüyor. Savaşa katılan müttefiklerde ek ceza uygulanmıyor. Regression: `TestProposeAllianceRejectedWhenTargetAllyIsAtWarWithPlayer`, `TestDeclareWarPenalizesTargetAlliesOnce`, `TestDeclareWarBreaksCrossAllianceWithTargetAlly`, `TestDeclareWarAgainstTargetAllyThatJoinsUsesWarRelationOnly`.
+
+- 2026-08-07: Askerî kara/deniz birimlerine JSON tabanlı sabit `gold_upkeep`
+  eklendi. Ekonomi tick'i her tur hazine gelirinden toplam ordu maaşını düşüyor;
+  yetersiz hazine `GoldEconomyStatus.Shortage` ile birlikte HP yıpranması,
+  moral kaybı ve tam açığa bağlı deterministik asker kaçağı üretiyor.
+  Recruit tooltip/HUD bakım bilgisini gösteriyor. AI mevcut ordunun üç turluk
+  maaş rezervini koruyor ve yeni birim seçiminde gelecekteki maaşı puanlıyor.
+  Regression: `TestTotalGoldUpkeepIncludesLandAndEmbarkedUnits`,
+  `TestApplyEconomyTickDeductsFixedGoldArmyUpkeep`,
+  `TestApplyEconomyTickClampsUnpaidGoldUpkeepAtZero`,
+  `TestGoldUpkeepShortageCausesAttritionAndDesertion`.
+
 - 2026-08-07: `Test1300ScenarioResourceSpecializationsAndProductionCosts` sabit
   bölge, bina, birlik ve maliyet beklentilerinden çıkarıldı. Test artık ilgili
   JSON kayıtlarını keşfediyor; yalnız JSON'da mevcut olan kaynak, üretim maliyeti

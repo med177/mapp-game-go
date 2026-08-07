@@ -1052,6 +1052,27 @@ func TestDiplomacyRelationshipNotificationOnlyAcceptsNoticeButton(t *testing.T) 
 	}
 }
 
+func TestDiplomacyRelationshipNotificationAutoClosesAfterThreeSeconds(t *testing.T) {
+	r := &Renderer{}
+	offer := state.DiplomaticOffer{
+		FromFactionID: "ai_1",
+		ToFactionID:   "player",
+		Action:        string(diplomacy.ActionSendGift),
+	}
+
+	for frame := 0; frame < diplomacyNotificationAutoCloseFrames-1; frame++ {
+		if r.diplomacyNotificationAutoCloseReady(offer) {
+			t.Fatalf("bildirim %d. kareden önce otomatik kapanmamalıydı: frame=%d", diplomacyNotificationAutoCloseFrames, frame+1)
+		}
+	}
+	if !r.diplomacyNotificationAutoCloseReady(offer) {
+		t.Fatalf("bildirim %d. karede Tamam'a basılmış gibi çözülmeliydi", diplomacyNotificationAutoCloseFrames)
+	}
+	if r.diplomacyNotificationTimerActive || r.diplomacyNotificationFrames != 0 {
+		t.Fatalf("otomatik kapanıştan sonra bildirim sayacı temizlenmeliydi: active=%t frames=%d", r.diplomacyNotificationTimerActive, r.diplomacyNotificationFrames)
+	}
+}
+
 func TestDiplomacyOfferMessageTRWarJoinCall(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

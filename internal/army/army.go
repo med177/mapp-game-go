@@ -384,6 +384,27 @@ func (a *Army) TotalGrainUpkeep(types map[string]*UnitType) int {
 	return total
 }
 
+// TotalGoldUpkeep ordudaki tüm kara/deniz birimlerinin tur başı altın bakım
+// yükünü döner. Altın bakımı sabit maaş gideridir; hareket, kuşatma veya
+// bölgesel ikmal çarpanlarından etkilenmez.
+func (a *Army) TotalGoldUpkeep(types map[string]*UnitType) int {
+	if a == nil {
+		return 0
+	}
+	total := 0
+	for _, u := range a.Units {
+		if t, ok := types[u.TypeID]; ok && t != nil {
+			total += t.GoldUpkeep
+		}
+	}
+	for _, u := range a.EmbarkedUnits {
+		if t, ok := types[u.TypeID]; ok && t != nil {
+			total += t.GoldUpkeep
+		}
+	}
+	return total
+}
+
 func (a *Army) SiegeUnitScore(types map[string]*UnitType) int {
 	if a == nil {
 		return 0

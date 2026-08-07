@@ -131,7 +131,7 @@ func aiNeedsBarracksForMilitaryProduction(gs *state.GameState, fid faction.Facti
 		return false
 	}
 	for _, unitType := range gs.UnitTypes {
-		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !unitType.HasAllRequiredTechs(self.Research.Completed) || self.Gold-unitType.GoldCost < aiMinGoldReserve {
+		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !unitType.HasAllRequiredTechs(self.Research.Completed) || self.Gold-unitType.GoldCost < aiMinGoldReserve+unitType.GoldUpkeep*aiGoldUpkeepReserveTurns {
 			continue
 		}
 		if aiPotentialRecruitmentRegionAfterBarracks(gs, fid, unitType, ctx) {
@@ -221,7 +221,7 @@ func aiRecruitOneWithStrategicContextAndSteps(gs *state.GameState, fid faction.F
 		return false
 	}
 	unitCost := economy.ResourceCost{Gold: utype.GoldCost, Grain: utype.GrainCost, Iron: utype.IronCost, Timber: utype.TimberCost, Stone: utype.StoneCost, Spice: utype.SpiceCost, Cloth: utype.ClothCost}
-	if !aiCanAffordForBudget(f, unitCost, budget, aiBudgetArmy) {
+	if !aiCanAffordUnitForBudget(f, utype, budget, aiBudgetArmy) {
 		return false
 	}
 	recruitRegion := aiFindRecruitRegionForStrategicContext(gs, fid, utype, strategicContext)

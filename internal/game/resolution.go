@@ -200,6 +200,7 @@ func applyGrainArmyMorale(gs *state.GameState, ownerID string, level state.Grain
 type economyTickReport struct {
 	PlayerLogisticsAlerts []state.RegionLogisticsStatus
 	PlayerGrainStatus     state.GrainEconomyStatus
+	PlayerGoldStatus      state.GoldEconomyStatus
 }
 
 type navalVoyageAlert struct {
@@ -504,6 +505,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	raidLootByFaction := make(map[string]state.RegionProductionSummary)
 	storageCapacityByFaction := make(map[string]int)
 	gs.GrainEconomy = make(map[faction.FactionID]state.GrainEconomyStatus, len(gs.Factions))
+	gs.GoldEconomy = make(map[faction.FactionID]state.GoldEconomyStatus, len(gs.Factions))
 
 	for _, r := range gs.Regions {
 		if r.IsSea || r.OwnerID == "" {
@@ -606,10 +608,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 	}
 
-	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep)
+	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep/GoldUpkeep)
 	upkeepByFaction := make(map[string]int)
+	goldUpkeepByFaction := make(map[string]int)
 	for _, a := range gs.Armies {
 		upkeepByFaction[a.OwnerID] += gs.EffectiveArmyGrainUpkeep(a)
+		goldUpkeepByFaction[a.OwnerID] += gs.EffectiveArmyGoldUpkeep(a)
 	}
 
 	for fid, f := range gs.Factions {
@@ -627,10 +631,35 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain + raidLoot.Grain
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
-		f.Gold += (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		goldBefore := f.Gold
+		goldIncome := (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
-		f.Gold += raidLoot.Gold
+		goldIncome += raidLoot.Gold
+		f.Gold += goldIncome
+		if f.Gold < 0 {
+			f.Gold = 0
+		}
+		goldUpkeep := goldUpkeepByFaction[fidStr]
+		paidGoldUpkeep := goldUpkeep
+		if paidGoldUpkeep > f.Gold {
+			paidGoldUpkeep = f.Gold
+		}
+		f.Gold -= paidGoldUpkeep
+		goldStatus := state.GoldEconomyStatus{
+			FactionID:  fid,
+			Income:     goldIncome,
+			Upkeep:     goldUpkeep,
+			NetChange:  goldIncome - goldUpkeep,
+			GoldBefore: goldBefore,
+			GoldAfter:  f.Gold,
+			PaidUpkeep: paidGoldUpkeep,
+			Shortage:   goldUpkeep - paidGoldUpkeep,
+		}
+		if goldStatus.Shortage > 0 {
+			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
+		}
+		gs.GoldEconomy[fid] = goldStatus
 		f.Grain = status.Stockpile
 		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron + raidLoot.Iron
 		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber + raidLoot.Timber
@@ -638,9 +667,6 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		f.Spice += spiceByFaction[fidStr] + loot.Spice + raidLoot.Spice
 		f.Cloth += clothByFaction[fidStr] + loot.Cloth + raidLoot.Cloth
 
-		if f.Gold < 0 {
-			f.Gold = 0
-		}
 		if status.Shortage > 0 {
 			applyGrainShortagePenalty(gs, fidStr, status.Shortage)
 		}
@@ -713,9 +739,16 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		f.Gold -= tribute
 		overlord.Gold += tribute
 	}
+	for fid, status := range gs.GoldEconomy {
+		if f := gs.Factions[fid]; f != nil {
+			status.GoldAfter = f.Gold
+			gs.GoldEconomy[fid] = status
+		}
+	}
 
 	if gs.PlayerFactionID != "" {
 		report.PlayerGrainStatus = gs.GrainEconomy[gs.PlayerFactionID]
+		report.PlayerGoldStatus = gs.GoldEconomy[gs.PlayerFactionID]
 	}
 	gs.ArmyMoveUsage = nil
 
@@ -989,6 +1022,130 @@ func applyGrainShortagePenalty(gs *state.GameState, ownerID string, shortage int
 			remaining--
 		}
 	}
+}
+
+// applyGoldUpkeepShortagePenalty, maaş ödenemediğinde önce tüm ordularda
+// yıpranma ve moral kaybı, ardından açığın şiddetine göre sınırlı asker kaçağı
+// uygular. Ordu ID sırası replay determinism'i korur; isyan bu aşamanın
+// kapsamı dışındadır.
+func applyGoldUpkeepShortagePenalty(gs *state.GameState, ownerID string, upkeep, shortage int, status *state.GoldEconomyStatus) {
+	if gs == nil || ownerID == "" || upkeep <= 0 || shortage <= 0 || status == nil {
+		return
+	}
+	severity := shortage * 100 / upkeep
+	if severity > 100 {
+		severity = 100
+	}
+	damage := 5 + severity/20 // kısmi açıkta 5, tam açıkta 10 HP/tur
+	moraleDelta := -5
+	if severity >= 50 {
+		moraleDelta = -10
+	}
+	if severity >= 100 {
+		moraleDelta = -15
+	}
+
+	armyIDs := sortedArmyIDsForOwner(gs, ownerID)
+	totalUnits := 0
+	for _, aid := range armyIDs {
+		a := gs.Armies[aid]
+		if a == nil {
+			continue
+		}
+		totalUnits += len(a.Units) + len(a.EmbarkedUnits)
+		status.ArmyMoraleDelta += a.ApplyMoraleDelta(moraleDelta)
+		lost, hpDamage := applyArmyFlatDamage(a, damage)
+		status.UnitsLost += lost
+		status.AttritionHPDamage += hpDamage
+		if len(a.EmbarkedUnits) > 0 {
+			remaining, embarkedLost, embarkedDamage := applyFlatDamageToUnits(a.EmbarkedUnits, damage)
+			a.EmbarkedUnits = remaining
+			status.UnitsLost += embarkedLost
+			status.AttritionHPDamage += embarkedDamage
+		}
+	}
+
+	// Tamamen ödenmeyen bir aylık maaş, gücün yaklaşık %10'unu kaçırabilir;
+	// kısmi açıklar aynı turda yalnız HP/moral yıpranması oluşturur. En az dört
+	// mevcut birimde tam açık bir kaçak garantilenir, tek kişilik ordular korunur.
+	desertions := totalUnits * severity / 1000
+	if severity >= 100 && totalUnits >= 4 && desertions == 0 {
+		desertions = 1
+	}
+	maxDesertions := totalUnits - 1
+	if desertions > maxDesertions {
+		desertions = maxDesertions
+	}
+	if desertions <= 0 {
+		return
+	}
+	for i := len(armyIDs) - 1; i >= 0 && desertions > 0; i-- {
+		a := gs.Armies[armyIDs[i]]
+		if a == nil {
+			continue
+		}
+		removed := removeArmyUnitsForDesertion(a, desertions)
+		desertions -= removed
+		status.DesertedUnits += removed
+		status.UnitsLost += removed
+	}
+}
+
+func sortedArmyIDsForOwner(gs *state.GameState, ownerID string) []army.ArmyID {
+	if gs == nil {
+		return nil
+	}
+	ids := make([]army.ArmyID, 0, len(gs.Armies))
+	for aid, a := range gs.Armies {
+		if a != nil && a.OwnerID == ownerID && (len(a.Units) > 0 || len(a.EmbarkedUnits) > 0) {
+			ids = append(ids, aid)
+		}
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
+}
+
+func applyFlatDamageToUnits(units []army.Unit, damage int) ([]army.Unit, int, int) {
+	if damage <= 0 || len(units) == 0 {
+		return units, 0, 0
+	}
+	survivors := units[:0]
+	lost := 0
+	totalDamage := 0
+	for _, unit := range units {
+		before := unit.CurrentHP
+		unit.CurrentHP -= damage
+		if unit.CurrentHP <= 0 {
+			lost++
+			totalDamage += before
+			continue
+		}
+		totalDamage += before - unit.CurrentHP
+		survivors = append(survivors, unit)
+	}
+	return survivors, lost, totalDamage
+}
+
+func removeArmyUnitsForDesertion(a *army.Army, count int) int {
+	if a == nil || count <= 0 {
+		return 0
+	}
+	removed := 0
+	landCount := count
+	if landCount > len(a.Units) {
+		landCount = len(a.Units)
+	}
+	a.Units = a.Units[:len(a.Units)-landCount]
+	removed += landCount
+	remaining := count - removed
+	if remaining > len(a.EmbarkedUnits) {
+		remaining = len(a.EmbarkedUnits)
+	}
+	if remaining > 0 {
+		a.EmbarkedUnits = a.EmbarkedUnits[:len(a.EmbarkedUnits)-remaining]
+		removed += remaining
+	}
+	return removed
 }
 
 func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogisticsStatus {

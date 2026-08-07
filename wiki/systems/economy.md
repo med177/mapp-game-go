@@ -91,6 +91,30 @@ de kaldırıldığında temizlenir; senaryo ile tanımlı port yerleşimleri kor
 
 ---
 
+## Sabit Altın Ordu Bakımı
+
+`UnitType.GoldUpkeep` (`gold_upkeep`) her kara ve deniz biriminin tur başı
+sabit maaş/bakım gideridir. `GoldCost` yalnızca üretim emrinin peşin maliyetidir;
+iki kavram birbirine karıştırılmaz. `GameState.EffectiveArmyGoldUpkeep()` ve
+`FactionGoldUpkeep()` kanonik toplamı üretir; hareket, kuşatma, garnizon veya
+bölgesel ikmal bu gideri değiştirmez.
+
+`applyEconomyTick()` önce normal altın gelirini uygular, sonra fraksiyonun tüm
+ordularının `GoldUpkeep` toplamını hazine bakiyesinden düşer. Hazine yetersizse
+ödeme mevcut bakiyeyle sınırlanır, hazine sıfıra iner ve ödenemeyen miktar
+`GoldEconomyStatus.Shortage` içinde raporlanır. Açığın şiddetine göre ordular
+HP yıpranması ve moral kaybı alır; tam maaş açığında mevcut kuvvetin yaklaşık
+%10'u deterministik asker kaçağıyla kaybedilebilir. İsyan bu aşamanın
+kapsamında değildir.
+
+1300 verisindeki başlangıç ölçeği temel olarak milis `1`, piyade `2`, elit
+piyade `3`; hafif/orta/ağır süvari `2/3/4`; kuşatma `3/4/5`; savaş gemisi `4`,
+nakliye ve ticaret gemisi `2` altın/tur olacak şekilde kalibre edilmiştir.
+
+`GoldEconomy` runtime snapshot'ı brüt gelir, bakım, net değişim, ödenen bakım,
+ödenemeyen açık ve tur sonu hazineyi taşır. Bu gider ekonomik zaferin brüt gelir
+ölçümünden ayrı tutulur; HUD'da gelir satırı `+gelir / -bakım` biçiminde görünür.
+
 ## Ticaret Güzergahları
 
 `TradeRoute` — `internal/economy/economy.go`

@@ -272,7 +272,7 @@ func aiSelectReserveLandUnit(gs *state.GameState, self *faction.Faction, budget 
 		return selected
 	}
 	selected := aiSelectReserveLandUnitForProcurement(gs, self, ctx)
-	if selected == "" || !aiCanAffordForBudget(self, aiUnitResourceCost(gs.UnitTypes[selected]), budget, aiBudgetArmy) {
+	if selected == "" || !aiUnitAvailableForBudget(gs, self, gs.UnitTypes[selected], budget) {
 		return ""
 	}
 	return selected
@@ -306,7 +306,7 @@ func aiSelectReserveLandUnitForProcurement(gs *state.GameState, self *faction.Fa
 	found := false
 	for _, unitID := range unitIDs {
 		unitType := gs.UnitTypes[unitID]
-		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !unitType.HasAllRequiredTechs(self.Research.Completed) || self.Gold-unitType.GoldCost < aiMinGoldReserve {
+		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !unitType.HasAllRequiredTechs(self.Research.Completed) || self.Gold-unitType.GoldCost < aiMinGoldReserve+unitType.GoldUpkeep*aiGoldUpkeepReserveTurns {
 			continue
 		}
 		if aiFindReserveRecruitRegion(gs, self.ID, unitType, ctx) == "" {

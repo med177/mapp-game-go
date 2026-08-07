@@ -42,7 +42,8 @@ type UnitType struct {
 	StoneCost     int `json:"stone_cost"`
 	SpiceCost     int `json:"spice_cost"`
 	ClothCost     int `json:"cloth_cost"`
-	GrainUpkeep   int `json:"grain_upkeep"` // tur başına bakım
+	GrainUpkeep   int `json:"grain_upkeep"` // tur başına tahıl bakımı
+	GoldUpkeep    int `json:"gold_upkeep"`  // tur başına altın maaş/bakımı
 	TurnsRequired int `json:"turns_required"`
 
 	// Gereksinimler

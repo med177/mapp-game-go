@@ -7,6 +7,12 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 
 # State Yönetimi
 
+Ekonomi çözümlemesi `GameState.GoldEconomy` içinde serialize edilmeyen runtime
+snapshot tutar. Her fraksiyon için brüt altın geliri, sabit ordu `GoldUpkeep`,
+ödenen/ödenemeyen bakım ve tur sonu hazine burada raporlanır; kalıcı hazine
+değeri yine `Faction.Gold` alanıdır. Böylece save formatına geçmiş tur raporu
+eklenmeden HUD ve oyuncu uyarıları aynı çözüm sonucu kullanır.
+
 **Kaynak:** `internal/state/state.go`, `internal/state/war_ledger.go`
 
 ## GameState Yapısı

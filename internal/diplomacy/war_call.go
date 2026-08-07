@@ -105,6 +105,7 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 		targetRoot = target
 	}
 
+	alliancePenalties := applyAllianceWarRelationPenalties(gs, actorRoot, targetRoot)
 	attackerCalls := resolveAttackerWarCalls(gs, actorRoot, targetRoot, calledAllies)
 	defenderCalls := resolveAutoWarCalls(gs, targetRoot, actorRoot, actorRoot)
 
@@ -122,7 +123,7 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 		}
 	}
 
-	message := buildWarDeclarationMessage(gs, actorRoot, targetRoot, attackerCalls, defenderCalls)
+	message := buildWarDeclarationMessage(gs, actorRoot, targetRoot, attackerCalls, defenderCalls, alliancePenalties)
 	return WarDeclarationResult{
 		Result: Result{
 			Accepted: true,
@@ -451,8 +452,11 @@ func breakAllianceForWarRefusal(gs *state.GameState, caller, ally faction.Factio
 	rel.Score = clamp(rel.Score-warCallRefusalScorePenalty, -100, 100)
 }
 
-func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome) string {
+func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome, alliancePenalties []AllianceWarRelationPenalty) string {
 	parts := []string{factionLabel(gs, actorRoot) + " ile " + factionLabel(gs, targetRoot) + " arasında savaş başladı."}
+	if penaltyText := allianceWarPenaltyMessage(gs, alliancePenalties); penaltyText != "" {
+		parts = append(parts, penaltyText)
+	}
 	if joined := joinedNames(attackerCalls); joined != "" {
 		parts = append(parts, factionLabel(gs, actorRoot)+" tarafına katılanlar: "+joined+".")
 	}
@@ -478,6 +482,22 @@ func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot facti
 		parts = append(parts, factionLabel(gs, targetRoot)+" tarafına sınırlı yardım gönderenler: "+limited+".")
 	}
 	return strings.Join(parts, " ")
+}
+
+func allianceWarPenaltyMessage(gs *state.GameState, penalties []AllianceWarRelationPenalty) string {
+	if gs == nil || len(penalties) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(penalties))
+	for _, penalty := range penalties {
+		name := factionLabel(gs, penalty.FactionID)
+		if penalty.AllianceBroken {
+			parts = append(parts, name+" ile ittifak bozuldu (ilişki -"+itoa(penalty.RelationPenalty)+")")
+			continue
+		}
+		parts = append(parts, name+" ile ilişki -"+itoa(penalty.RelationPenalty))
+	}
+	return "Müttefik saldırısı nedeniyle: " + strings.Join(parts, ", ") + "."
 }
 
 func joinedNames(outcomes []WarCallOutcome) string {

@@ -410,7 +410,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: reqY + 14}, tooltipRichLines(reqLines), 14)
 
 	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
-	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, upkeepY, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, upkeepY, FaceSmall, ColorGray)
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
@@ -456,7 +456,7 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
 	DrawText(screen, fmt.Sprintf("Birlik adedi: %d", unitCount), textX, y+38, FaceSmall, ColorWhite)
-	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl/tur", utype.GrainUpkeep), textX, y+56, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, y+56, FaceSmall, ColorGray)
 
 	statY := y + 80
 	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)

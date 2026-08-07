@@ -1596,6 +1596,10 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 }
 
 func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
+	offer := r.gs.DiplomaticOffers[offerIdx]
+	if diplomacyOfferIsNotification(offer) && r.diplomacyNotificationAutoCloseReady(offer) {
+		return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
+	}
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
 	input := gameui.InputState{
@@ -1607,14 +1611,42 @@ func (r *Renderer) handleDiplomacyOfferInput(offerIdx int) InputAction {
 	return r.handleDiplomacyOfferInputState(offerIdx, input)
 }
 
+func (r *Renderer) diplomacyNotificationAutoCloseReady(offer state.DiplomaticOffer) bool {
+	if r == nil || !diplomacyOfferIsNotification(offer) {
+		return false
+	}
+	if !r.diplomacyNotificationTimerActive || r.diplomacyNotificationOffer != offer {
+		r.diplomacyNotificationOffer = offer
+		r.diplomacyNotificationFrames = 0
+		r.diplomacyNotificationTimerActive = true
+	}
+	r.diplomacyNotificationFrames++
+	if r.diplomacyNotificationFrames < diplomacyNotificationAutoCloseFrames {
+		return false
+	}
+	r.resetDiplomacyNotificationTimer()
+	return true
+}
+
+func (r *Renderer) resetDiplomacyNotificationTimer() {
+	if r == nil {
+		return
+	}
+	r.diplomacyNotificationOffer = state.DiplomaticOffer{}
+	r.diplomacyNotificationFrames = 0
+	r.diplomacyNotificationTimerActive = false
+}
+
 func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.InputState) InputAction {
 	offer := r.gs.DiplomaticOffers[offerIdx]
 	if diplomacyOfferIsNotification(offer) {
 		noticeBtn := buildDiplomacyOfferNoticeButton()
 		if input.LeftJustPressed && noticeBtn.HitTest(input.MouseX, input.MouseY) {
+			r.resetDiplomacyNotificationTimer()
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
 		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+			r.resetDiplomacyNotificationTimer()
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
 		return InputAction{}

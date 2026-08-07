@@ -612,7 +612,12 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		if grainCapacity > 0 {
 			drawResRow(screen, rightCol, ry, rightColW, "Ambar", formatNumberTR(grainCapacity), ColorGray)
 		}
-		drawResRow(screen, rightCol, ry+rowGap, rightColW, "Gelir", sign+formatNumberTR(income), incCol)
+		goldUpkeep := gs.FactionGoldUpkeep(f.ID)
+		incomeValue := sign + formatNumberTR(income)
+		if goldUpkeep > 0 {
+			incomeValue += " / -" + formatNumberTR(goldUpkeep)
+		}
+		drawResRow(screen, rightCol, ry+rowGap, rightColW, "Gelir", incomeValue, incCol)
 		drawResRow(screen, rightCol, ry+rowGap*2, rightColW, "Hazine", formatNumberTR(f.Gold), ColorGold)
 	}
 

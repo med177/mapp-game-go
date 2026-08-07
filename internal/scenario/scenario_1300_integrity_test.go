@@ -81,6 +81,7 @@ type scenarioUnitProductionJSON struct {
 	SpiceCost     *int   `json:"spice_cost"`
 	ClothCost     *int   `json:"cloth_cost"`
 	GrainUpkeep   *int   `json:"grain_upkeep"`
+	GoldUpkeep    *int   `json:"gold_upkeep"`
 	TurnsRequired *int   `json:"turns_required"`
 }
 
@@ -240,6 +241,7 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 		checkScenarioOptionalInt(t, entity, "spice_cost", rawUnit.SpiceCost, unit.SpiceCost)
 		checkScenarioOptionalInt(t, entity, "cloth_cost", rawUnit.ClothCost, unit.ClothCost)
 		checkScenarioOptionalInt(t, entity, "grain_upkeep", rawUnit.GrainUpkeep, unit.GrainUpkeep)
+		checkScenarioOptionalInt(t, entity, "gold_upkeep", rawUnit.GoldUpkeep, unit.GoldUpkeep)
 		checkScenarioOptionalInt(t, entity, "turns_required", rawUnit.TurnsRequired, unit.TurnsRequired)
 	}
 }

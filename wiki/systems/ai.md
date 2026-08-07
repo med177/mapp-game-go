@@ -10,6 +10,13 @@ related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, a
 1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır. Tahıl yatırımı, sivil tüketim ile ordu bakımının toplam açığına göre puanlanır; tamamlanmamış en fazla iki çiftlik aynı anda kuyruğa alınabilir. Tahıl açığı yaşayan devletler, açık pazarda savaşta olmadıkları ve kendi üç aylık rezervini koruyan satıcılardan tahıl alır; üretim kararındaki birim, bina, nakliye veya savaş gemisinin eksik tahıl, demir, kereste, taş, baharat ve kumaş maliyetleri `aiProcureStrategicResources()` tarafından otomatik çıkarılır ve yeterli altın kaldığı sürece aynı açık pazardan tamamlanır. Abluka altındaki limanlar, somut çıkarma görevi olmasa bile deniz tehdidi snapshot'ından seçilir; gerekli liman seviyesi ve `%110` savunma gücü tamamlanana kadar savaş gemisi üretimi planlanır. Askerî bütçe ve ilk kışla kararı bu rezervleri koruyacak şekilde çalışır.
 
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
+
+Askerî üretim kararı mevcut ordunun sabit altın bakımını da hesaba katar.
+1300 bütçesi mevcut ordunun üç turluk `GoldUpkeep` giderini acil rezervde
+tutar; yeni birim seçimi ise peşin `GoldCost` sonrasında aynı üç turluk maaş
+rezervini koruyamıyorsa elenir. Birlik puanlamasında altın bakımı, altın geliri
+ve hazine baskısına göre artan ceza olarak kullanılır. Deniz, nakliye ve ticaret
+gemileri de aynı unit-cost/maaş rezervi yardımcısından geçer.
 `internal/ai/strategic_plan.go`, `internal/ai/fronts.go`, `internal/ai/rally.go`,
 `internal/ai/retreat.go`, `internal/ai/security.go`, `internal/ai/pathfinding.go`,
 `internal/ai/budget.go`, `internal/ai/building_investment.go`,

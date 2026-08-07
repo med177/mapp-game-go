@@ -108,16 +108,19 @@ type Renderer struct {
 	factionCursor int
 
 	// Diplomasi paneli
-	showDiplomacy                   bool
-	diplomacyFocus                  int
-	diplomacyScroll                 int
-	diplomacyListSort               diplomacyListSort
-	diplomacyActionFocus            int
-	diplomacyTargetFaction          faction.FactionID
-	diplomacyOfferHistoryBrowse     faction.FactionID
-	diplomacyHistoryVisible         bool
-	diplomacyHistoryDirectionFilter diplomacyHistoryDirectionFilter
-	diplomacyHistoryActionFilter    ActionKind
+	showDiplomacy                    bool
+	diplomacyFocus                   int
+	diplomacyScroll                  int
+	diplomacyListSort                diplomacyListSort
+	diplomacyActionFocus             int
+	diplomacyTargetFaction           faction.FactionID
+	diplomacyOfferHistoryBrowse      faction.FactionID
+	diplomacyHistoryVisible          bool
+	diplomacyHistoryDirectionFilter  diplomacyHistoryDirectionFilter
+	diplomacyHistoryActionFilter     ActionKind
+	diplomacyNotificationOffer       state.DiplomaticOffer
+	diplomacyNotificationFrames      int
+	diplomacyNotificationTimerActive bool
 
 	// HRE / imparatorluk paneli
 	showImperialPanel bool

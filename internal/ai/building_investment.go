@@ -33,6 +33,8 @@ type aiBuildingCandidate struct {
 
 type aiEconomySnapshot struct {
 	GoldProduction  int
+	GoldStock       int
+	GoldUpkeep      int
 	GrainProduction int
 	// GrainDemand sivil tüketim ile ordu bakımının toplamıdır. Yatırım
 	// kararındaki tahıl baskısı ekonomi tick'indeki gerçek talebi izlemelidir;
@@ -283,6 +285,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 		return snapshot
 	}
 	if self := gs.Factions[fid]; self != nil {
+		snapshot.GoldStock = self.Gold
 		snapshot.GrainStock = self.Grain
 	}
 	snapshot.GrainCapacity = gs.GrainStorageCapacityForFaction(fid)
@@ -307,6 +310,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 	}
 	for _, armyRef := range aiSortedArmies(gs) {
 		if armyRef.OwnerID == string(fid) {
+			snapshot.GoldUpkeep += gs.EffectiveArmyGoldUpkeep(armyRef)
 			upkeep := gs.EffectiveArmyGrainUpkeep(armyRef)
 			snapshot.GrainUpkeep += upkeep
 			snapshot.GrainDemand += upkeep

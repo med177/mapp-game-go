@@ -20,6 +20,10 @@ import (
 
 const mapRegionDoubleClickWindow = 400 * time.Millisecond
 
+// İlişki iyileştirme ve hediye bildirimleri mevcut 60 TPS akışında üç saniye
+// görünür kalır; süre dolunca Tamam'a basılmış gibi kabul edilir.
+const diplomacyNotificationAutoCloseFrames = 180
+
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()

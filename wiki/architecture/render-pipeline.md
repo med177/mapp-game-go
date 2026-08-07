@@ -7,6 +7,11 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Üst kaynak HUD'ında gelir satırı brüt geliri ve mevcut orduların sabit altın
+bakımını `+gelir / -bakım` biçiminde birlikte gösterir. Birim tooltip'lerinde
+de tahıl ve altın bakım giderleri aynı tur başı bakım satırında gösterilir;
+hesaplama doğrudan `UnitType` verisinden gelir.
+
 Kuşatmada `SiegeState.BreachLevel >= 1` olduğunda kanonik settlement marker'ının
 etrafında seçimden bağımsız yeşil bir halka çizilir (`internal/render/renderer.go`).
 Seçim halkası korunur; iki gösterge farklı yarıçaplardan türetilir.
@@ -57,6 +62,12 @@ durum da ortak teklif butonu geometrisinden türetilir. Heyet ve Hediye
 açıklamalarında ödeme akışı ayrıca satırın sağında, sırasıyla `Karşı devlete
 ödeme gitmez` ve `Karşı devletin hazinesine 80 altın gider` olarak gösterilir
 (`internal/render/diplom.go`).
+
+Oyuncuya gelen Heyet ve Hediye bildirimleri yalnız `Tamam` düğmeli modal olarak
+gösterilir; modal 60 TPS akışında 180 kare, yani 3 saniye sonra aynı kabul
+aksiyonunu otomatik üretir. Sayaç yalnız aktif bildirim modalı input katmanında
+tutulur; diğer diplomasi teklifleri ve bildirimlerin mevcut Enter/tıklama yolu
+değişmez (`internal/render/renderer_dialogs.go`, `renderer_input.go`).
 
 Aynı listede `Hazine` sütunu devletin tur başı brüt altın geliri ile mevcut
 hazineyi `Gelir/Altın` biçiminde gösterir. Liste üstündeki `Ekonomik Sıralama`

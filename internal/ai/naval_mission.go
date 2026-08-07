@@ -696,11 +696,6 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 	}
 
 	missingCapacity := maxInt(0, mission.RequiredCapacity-aiReachableTransportCapacity(gs, fid, mission.EmbarkSeaRegionID))
-	shipCost := economy.ResourceCost{
-		Gold: transportType.GoldCost, Grain: transportType.GrainCost, Iron: transportType.IronCost,
-		Timber: transportType.TimberCost, Stone: transportType.StoneCost,
-		Spice: transportType.SpiceCost, Cloth: transportType.ClothCost,
-	}
 	for missingCapacity > 0 {
 		if aiPendingUnitCountByRegion(gs, embarkRegion.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, embarkRegion.ID, fid, transportType) <= 0 {
 			break
@@ -714,7 +709,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		if currentUnits+aiPendingNavalUnitCount(gs, mission.EmbarkSeaRegionID, fid) >= army.MaxArmySize {
 			break
 		}
-		if !aiCanAffordForBudget(self, shipCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, shipCost, budget, aiBudgetNaval) {
+		if !aiApplyUnitCostForBudget(self, transportType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, embarkRegion.ID, "transport", transportType.TurnsRequired)
@@ -773,11 +768,6 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		return
 	}
 
-	warshipCost := economy.ResourceCost{
-		Gold: warshipType.GoldCost, Grain: warshipType.GrainCost, Iron: warshipType.IronCost,
-		Timber: warshipType.TimberCost, Stone: warshipType.StoneCost,
-		Spice: warshipType.SpiceCost, Cloth: warshipType.ClothCost,
-	}
 	unitPower := aiEffectiveNavalPower(gs, &army.Army{
 		OwnerID: string(fid), IsNaval: true, Units: []army.Unit{{TypeID: warshipType.ID, CurrentHP: army.MaxUnitHP}},
 	}, true)
@@ -797,7 +787,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		if currentUnits+aiPendingNavalUnitCount(gs, mission.EmbarkSeaRegionID, fid) >= army.MaxArmySize {
 			break
 		}
-		if !aiCanAffordForBudget(self, warshipCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, warshipCost, budget, aiBudgetNaval) {
+		if !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, embarkRegion.ID, warshipType.ID, warshipType.TurnsRequired)

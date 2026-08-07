@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -119,7 +119,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 **Geçiş kısıtları:**
 - Savaştayken ittifak veya ticaret kurulamaz
 - İttifak için genel senaryolarda `Score >= 25`, `1300_ottoman_rise` senaryosunda ise `Score >= 40` gerekir; böylece aynı dinin varsayılan `25` puanı tek başına hemen ittifak açmaz. İki taraf arasında önceden değişmiş gerçek ilişki puanı, kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle diplomatik temas aranır. Buna ek olarak kara sınırı, fiili ticaret erişimi, ortak düşman veya ortak büyük tehditten en az biriyle gerçek coğrafi/stratejik bağ gerekir. Doğrudan sınır tehdidi mutlak blok değil, kabul şansını düşüren bir cezadır. Ortak düşman veya ortak büyük tehdit bu cezayı kısmen/tamamen telafi edebilir. Aynı din ayrıca doğrudan kabul şansı bonusu verir; yakın mezhep küçük bonus, sert mezhep ayrımı ise ek ceza üretir.
-- Bir devletin mevcut müttefiki hedef devletle savaş halindeyse, `allianceWarConflictBetween()` ittifak teklifini engeller. Bu kontrol AI teklif üretiminde, doğrudan aksiyon geçidinde ve kuyruktaki teklifin kabulünde tekrar kullanılır.
+- İttifak asimetrik bir savaş çakışması oluşturamaz: teklif sahibi veya hedef devlet, diğer tarafın doğrudan müttefikiyle savaş halindeyse `allianceWarConflictBetween()` ittifak teklifini engeller. Bu kontrol oyuncu aksiyonunda, AI teklif üretiminde, doğrudan aksiyon geçidinde ve kuyruktaki teklifin kabulünde realm kökleri üzerinden tekrar kullanılır.
 - Ticaret için `Score >= 15`, iki tarafın da kara bölgesi ve ortak helper ile hesaplanan toplam efektif ticaret kapasitesi `>= 4` olmalıdır. Pazar/liman/ambar/ibadethane ve ele geçirilmiş ticaret merkezi bu eşiğe katkı verir. Ana/ikincil merkez fethedildiğinde gelen `+2/+1` kapasite, mevcut anlaşmaların paylaştırılmış rota hacmini de sonraki ekonomi tick'inde artırabilir.
 - Ticaret için aktif dış partner limiti (`4 + tam liman/pazar bölgeleri`) dolu olmamalıdır; tam maksimum liman ve pazar seviyesine sahip her sahip bölge `+1` partner verir. Bu limit yalnız teklif ekranında değil rota kurulumunda, aktif ilişki onarımında ve save/load temizliğinde de merkezi olarak zorlanır. Sıralama faction ID ile deterministiktir; limit aşan eski rota kayıtları aynı sırayla elenir. Doğrudan sınır tehdidi ise artık mutlak blok değil, kabul şansını düşüren bir cezadır.
 - Ticaret anlaşması ayrıca bağlanabilir gerçek bir hat ister: ya iki realm arasında kesintisiz kara hattı, ya da her iki tarafta liman olup komşu deniz bölgeleri üzerinden bağlanabilen bir deniz hattı bulunmalıdır
@@ -139,7 +139,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur. Teklif ekranı ve backend aynı `AssessPeaceProposal()` sonucunu kullanır |
 | Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
-| İttifak kur | `proposeAlliance()` | Savaşta değil + genel senaryolarda `Score >= 25`, 1300'de `Score >= 40`; mevcut müttefikin hedefle savaşıyorsa teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
+| İttifak kur | `proposeAlliance()` | Savaşta değil + genel senaryolarda `Score >= 25`, 1300'de `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
@@ -198,6 +198,7 @@ Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon ak
 - Hedefin mevcut vassalları savaşa kesin katılır.
 - Hem oyuncu hem AI tarafında dış müttefikler için ayrı `AssessWarCall()` değerlendirmesi yapılır.
 - Oyuncu, savaş önizleme modalında hangi müttefiklerini çağıracağını checkbox ile seçer.
+- Savaş ilanından önce hedefin doğrudan dış müttefikleri snapshot alınarak ilişki sonucu uygulanır. Tarafsız kalan her müttefikle ilişki `-25` düşer; saldıranın aynı zamanda müttefiki olan hedef müttefikiyle ittifak bozulur ve ilişki `-35` düşer. Savaşa katılan müttefiklerde bu ceza ikinci kez uygulanmaz; ilişki doğrudan `Savaş / -80` olur.
 - Seçilip de çağrıya gelmeyen müttefiğin ittifakı bozulur; ilişki puanı `-10` düşer.
 - Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
 - Savaş ilanı uygulandığı anda render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir. Özet kapanmadan hareket, temas ve diğer savaş devam akışları çalıştırılmaz; özet kapandıktan sonra bekleyen normal aksiyon sürdürülür.
@@ -230,6 +231,8 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Olay | Puan Değişimi |
 |---|---|
 | Savaş ilanı | -80 (sabit) |
+| Bir devletin doğrudan müttefikine savaş ilanı | Diğer doğrudan müttefiklerle -25 |
+| Mevcut müttefikin müttefikine savaş ilanı | İttifak bozulur, ilişki -35 |
 | Barış | Savaş sonucuna göre -45 / -60 / -70; düşmanlık anında sıfırlanmaz |
 | Heyet | +8 |
 | Hediye | +15 |

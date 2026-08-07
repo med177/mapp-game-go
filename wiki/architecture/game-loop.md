@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-06
+last_updated: 2026-08-07
 related: [state-management, render-pipeline]
 ---
 
@@ -57,6 +57,13 @@ PhaseTurnResolution                    │
 ```
 
 **Ayrıca:** `PhaseSettings` (ana menüden, ana menüye döner) · `PhasePauseMenu` (ESC ile) · `PhaseEditMode` (`.env` içinde `EDIT_MODE=true` ise senaryo seçildikten sonra açılır)
+
+Tur çözümlemesinde `applyEconomyTick()` bölge/ticaret gelirlerini uyguladıktan
+sonra tüm orduların sabit altın bakımını düşer. Ödeme ve açık sonucu
+`GoldEconomyStatus` ile tutulur; ödenemeyen bakım çözüm sonunda HP yıpranması,
+moral kaybı ve gerektiğinde asker kaçağına dönüştürülür. Sonuç olay günlüğü ve
+oyuncu uyarısında gösterilir. Üretim ve sonraki tur AI bütçesi güncel hazineyi
+kullanır.
 
 ## Edit Mode
 

@@ -121,7 +121,7 @@ func aiUnitCandidateAvailableForSelection(gs *state.GameState, self *faction.Fac
 		return false
 	}
 	if !requireResources {
-		return self.Gold-unitType.GoldCost >= aiMinGoldReserve && aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) != ""
+		return self.Gold-unitType.GoldCost >= aiMinGoldReserve+unitType.GoldUpkeep*aiGoldUpkeepReserveTurns && aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) != ""
 	}
 	return aiUnitAvailableForBudget(gs, self, unitType, budget)
 }
@@ -172,6 +172,10 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 		upkeepMultiplier = 10
 		sustainedCombatWeight = 2
 	}
+	goldUpkeepMultiplier := 4
+	if economySnapshot.GoldProduction <= economySnapshot.GoldUpkeep || economySnapshot.GoldStock < maxInt(120, economySnapshot.GoldUpkeep*3) {
+		goldUpkeepMultiplier = 10
+	}
 	// Birliklerin mutlak tahıl bakımı tek başına doğru karar verdirmez:
 	// milis ile elit piyade arasındaki bakım farkı sınırlıyken savaş değeri
 	// çok büyüktür. Güç/tahıl verimi, altın maliyeti ve stok baskısıyla birlikte
@@ -185,7 +189,7 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 		// milis, daha güçlü ama demir isteyen piyadeyi her zaman bastırır.
 		efficiencyWeight = 1
 	}
-	qualityScore := combatValue + efficiency*efficiencyWeight + sustainedCombat*sustainedCombatWeight/8 - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - turns*8
+	qualityScore := combatValue + efficiency*efficiencyWeight + sustainedCombat*sustainedCombatWeight/8 - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - unitType.GoldUpkeep*goldUpkeepMultiplier - turns*8
 	score := compositionNeed*4 + qualityScore
 	if unitType.Category == army.CategorySiege && needs.FortifiedTarget {
 		if needs.SiegeShortfall > 0 {

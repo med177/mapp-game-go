@@ -29,9 +29,8 @@ func aiProduceNavalReserve(gs *state.GameState, fid faction.FactionID, budget *a
 
 	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
 	if productionRegion, seaRegion := aiFindWarshipReserveProductionPort(gs, fid, warshipType); productionRegion != nil {
-		cost := aiUnitResourceCost(warshipType)
 		for aiWarshipReserveShortfall(gs, fid, ctx) > 0 {
-			if aiPendingUnitCountByRegion(gs, productionRegion.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, productionRegion.ID, fid, warshipType) <= 0 || !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+			if aiPendingUnitCountByRegion(gs, productionRegion.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, productionRegion.ID, fid, warshipType) <= 0 || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 				break
 			}
 			aiEnqueueProduction(gs, fid, aiProductionKindUnit, productionRegion.ID, warshipType.ID, warshipType.TurnsRequired)

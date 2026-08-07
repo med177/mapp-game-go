@@ -20,22 +20,116 @@ func allianceWarConflictBetween(gs *state.GameState, a, b faction.FactionID) (fa
 	if gs == nil || a == "" || b == "" || a == b {
 		return "", false
 	}
-	for _, rel := range gs.Relations {
-		if rel == nil || rel.Stance != faction.StanceAllied {
-			continue
+	aRoot := realmRoot(gs, a)
+	if aRoot == "" {
+		aRoot = a
+	}
+	bRoot := realmRoot(gs, b)
+	if bRoot == "" {
+		bRoot = b
+	}
+	if aRoot == bRoot {
+		return "", false
+	}
+
+	// İttifak ve savaş kayıtları realm kökleri üzerinden tutulabildiği için
+	// kontrolü yalnız ham faction ID çiftlerini tarayarak yapma. Bu yol hem
+	// oyuncu aksiyonunu hem de bekleyen AI teklifinin kabulünü aynı kurala bağlar.
+	for _, allyID := range directExternalAlliesOf(gs, aRoot) {
+		allyRoot := realmRoot(gs, allyID)
+		if allyRoot == "" {
+			allyRoot = allyID
 		}
-		switch {
-		case rel.FactionA == a && rel.FactionB != b && IsWar(gs, rel.FactionB, b):
-			return rel.FactionB, true
-		case rel.FactionB == a && rel.FactionA != b && IsWar(gs, rel.FactionA, b):
-			return rel.FactionA, true
-		case rel.FactionA == b && rel.FactionB != a && IsWar(gs, rel.FactionB, a):
-			return rel.FactionB, true
-		case rel.FactionB == b && rel.FactionA != a && IsWar(gs, rel.FactionA, a):
-			return rel.FactionA, true
+		if allyRoot != bRoot && IsWar(gs, allyRoot, bRoot) {
+			return allyRoot, true
+		}
+	}
+	for _, allyID := range directExternalAlliesOf(gs, bRoot) {
+		allyRoot := realmRoot(gs, allyID)
+		if allyRoot == "" {
+			allyRoot = allyID
+		}
+		if allyRoot != aRoot && IsWar(gs, allyRoot, aRoot) {
+			return allyRoot, true
 		}
 	}
 	return "", false
+}
+
+const (
+	// attackedAllyRelationPenalty tarafsız kalan doğrudan müttefike yönelik
+	// saldırının diplomatik itibar maliyetidir.
+	attackedAllyRelationPenalty = 25
+
+	// attackedExistingAllyPenalty saldıranın kendi müttefikinin müttefikine
+	// savaş açmasıyla oluşan doğrudan ittifak ihlalinin daha ağır maliyetidir.
+	attackedExistingAllyPenalty = 35
+)
+
+type AllianceWarRelationPenalty struct {
+	FactionID       faction.FactionID
+	RelationPenalty int
+	AllianceBroken  bool
+}
+
+// applyAllianceWarRelationPenalties savaş ilan edilmeden önce hedefin doğrudan
+// dış müttefiklerini snapshot olarak değerlendirir. Sadece savaş ilan eden
+// devlet cezalandırılır; savaş çağrısını kabul eden müttefikler zaten
+// setWarBetweenCoalitions tarafından doğrudan savaş ilişkisine geçirilir.
+//
+// Bu fonksiyon setWarBetweenCoalitions içine konulmaz: koalisyonun her üyesi
+// için çağrıldığında aynı ilişki cezası birden fazla kez uygulanabilir.
+func applyAllianceWarRelationPenalties(gs *state.GameState, attacker, target faction.FactionID) []AllianceWarRelationPenalty {
+	if gs == nil || attacker == "" || target == "" || attacker == target {
+		return nil
+	}
+	attackerRoot := realmRoot(gs, attacker)
+	if attackerRoot == "" {
+		attackerRoot = attacker
+	}
+	targetRoot := realmRoot(gs, target)
+	if targetRoot == "" {
+		targetRoot = target
+	}
+
+	allies := directExternalAlliesOf(gs, targetRoot)
+	penalties := make([]AllianceWarRelationPenalty, 0, len(allies))
+	for _, allyID := range allies {
+		allyRoot := realmRoot(gs, allyID)
+		if allyRoot == "" {
+			allyRoot = allyID
+		}
+		if allyRoot == attackerRoot || allyRoot == targetRoot || sameRealm(gs, attackerRoot, allyRoot) {
+			continue
+		}
+
+		rel := EnsureRelation(gs, attackerRoot, allyRoot)
+		if rel.Stance == faction.StanceWar {
+			// Mevcut savaş -80 ile zaten temsil ediliyor; ikinci bir olay cezası
+			// ilişkiyi aynı savaş başlangıcında tekrar değiştirmemeli.
+			continue
+		}
+
+		penalty := attackedAllyRelationPenalty
+		allianceBroken := rel.Stance == faction.StanceAllied
+		if allianceBroken {
+			penalty = attackedExistingAllyPenalty
+			// İttifak bozulur, mevcut ticaret anlaşması varsa korunur. Bu,
+			// savaş çağrısını reddeden müttefiklerin mevcut davranışıyla aynıdır.
+			if HasTradeRouteBetween(gs, attackerRoot, allyRoot) {
+				rel.Stance = faction.StanceTrade
+			} else {
+				rel.Stance = faction.StancePeace
+			}
+		}
+		rel.Score = clamp(rel.Score-penalty, -100, 100)
+		penalties = append(penalties, AllianceWarRelationPenalty{
+			FactionID:       allyRoot,
+			RelationPenalty: penalty,
+			AllianceBroken:  allianceBroken,
+		})
+	}
+	return penalties
 }
 
 const strategicAllianceAcceptanceFloor = 12

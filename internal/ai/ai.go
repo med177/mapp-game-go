@@ -1211,19 +1211,36 @@ func aiUnitAvailableForBudget(gs *state.GameState, f *faction.Faction, utype *ar
 	if !utype.HasAllRequiredTechs(f.Research.Completed) {
 		return false
 	}
-	cost := economy.ResourceCost{
-		Gold:   utype.GoldCost,
-		Grain:  utype.GrainCost,
-		Iron:   utype.IronCost,
-		Timber: utype.TimberCost,
-		Stone:  utype.StoneCost,
-		Spice:  utype.SpiceCost,
-		Cloth:  utype.ClothCost,
-	}
-	if !aiCanAffordForBudget(f, cost, budget, aiBudgetArmy) {
+	if !aiCanAffordUnitForBudget(f, utype, budget, aiBudgetArmy) {
 		return false
 	}
 	return aiFindRecruitRegion(gs, f.ID, utype) != ""
+}
+
+// aiCanAffordUnitForBudget, üretim maliyetinin yanında yeni birimin üç
+// turluk sabit maaş rezervini de korur. Maaş henüz bu noktada düşülmez;
+// yalnızca üretim kararının gelecekteki gideri hesaba katılır.
+func aiCanAffordUnitForBudget(f *faction.Faction, utype *army.UnitType, budget *aiBudget, category aiBudgetCategory) bool {
+	if f == nil || utype == nil {
+		return false
+	}
+	goldAfterPurchase := f.Gold - utype.GoldCost
+	reserve := utype.GoldUpkeep * aiGoldUpkeepReserveTurns
+	if budget == nil {
+		if goldAfterPurchase < aiMinGoldReserve+reserve {
+			return false
+		}
+	} else if goldAfterPurchase < budget.EmergencyGold+reserve {
+		return false
+	}
+	return aiCanAffordForBudget(f, aiUnitResourceCost(utype), budget, category)
+}
+
+func aiApplyUnitCostForBudget(f *faction.Faction, utype *army.UnitType, budget *aiBudget, category aiBudgetCategory) bool {
+	if !aiCanAffordUnitForBudget(f, utype, budget, category) {
+		return false
+	}
+	return aiApplyBudgetedCost(f, aiUnitResourceCost(utype), budget, category)
 }
 
 func aiUnitBudgetThresholdMet(f *faction.Faction, budget *aiBudget, gold int) bool {
@@ -2469,20 +2486,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 	}
 
 	// Altın kontrolü
-	shipCost := economy.ResourceCost{
-		Gold:   transportType.GoldCost,
-		Grain:  transportType.GrainCost,
-		Iron:   transportType.IronCost,
-		Timber: transportType.TimberCost,
-		Stone:  transportType.StoneCost,
-		Spice:  transportType.SpiceCost,
-		Cloth:  transportType.ClothCost,
-	}
-	if !aiCanAffordForBudget(f, shipCost, budget, aiBudgetNaval) {
-		return
-	}
-
-	if !aiApplyBudgetedCost(f, shipCost, budget, aiBudgetNaval) {
+	if !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
 		return
 	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
@@ -2580,12 +2584,11 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 		projectedPower += warshipPower
 	}
 	requiredPower := (threatPower*aiNavalMissionSafetyPercent + 99) / 100
-	cost := aiUnitResourceCost(warshipType)
 	for projectedPower < requiredPower {
 		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
 			break
 		}
-		if !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
+		if !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)
@@ -2699,10 +2702,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		if currentWarshipUnits+aiPendingNavalUnitCount(gs, candidate.seaID, fid) >= army.MaxArmySize {
 			continue
 		}
-		if !aiCanAffordForBudget(f, warshipCost, budget, aiBudgetNaval) {
-			break
-		}
-		if !aiApplyBudgetedCost(f, warshipCost, budget, aiBudgetNaval) {
+		if !aiApplyUnitCostForBudget(f, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, candidate.region.ID, "warship", warshipType.TurnsRequired)

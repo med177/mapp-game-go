@@ -1049,6 +1049,7 @@ func (g *Game) resolveTurn() {
 	g.showRegionalLogisticsAlerts(economyReport.PlayerLogisticsAlerts)
 	g.showFriendlySupplyEvents()
 	g.showGrainEconomyAlert(economyReport.PlayerGrainStatus)
+	g.showGoldEconomyAlert(economyReport.PlayerGoldStatus)
 	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
 	g.handleCapitalMoveProgress(capitalMoveUpdates)
 
@@ -1261,6 +1262,30 @@ func (g *Game) showGrainEconomyAlert(status state.GrainEconomyStatus) {
 	g.renderer.AddEventDetail("[TAHIL] "+msg, detail)
 	if status.SupplyLevel >= state.GrainSupplyCritical {
 		g.renderer.ShowCombatResult(msg)
+	}
+}
+
+func (g *Game) showGoldEconomyAlert(status state.GoldEconomyStatus) {
+	if g == nil || g.renderer == nil || status.FactionID == "" || status.Shortage <= 0 {
+		return
+	}
+	name := g.factionNameTR(string(status.FactionID))
+	message := fmt.Sprintf("%s: ordu bakımının %d altını ödenemedi; yıpranma ve asker kaçakları başladı.", name, status.Shortage)
+	detail := fmt.Sprintf(
+		"Gelir: %+d altın, sabit ordu bakımı: %d altın/tur, ödenen: %d, eksik kalan: %d, yıpranma: %d HP, kayıp birim: %d, asker kaçağı: %d, ordu morali: %+d, tur sonu hazine: %d.",
+		status.Income,
+		status.Upkeep,
+		status.PaidUpkeep,
+		status.Shortage,
+		status.AttritionHPDamage,
+		status.UnitsLost,
+		status.DesertedUnits,
+		status.ArmyMoraleDelta,
+		status.GoldAfter,
+	)
+	g.renderer.AddEventDetail("[ALTIN] "+message, detail)
+	if status.FactionID == g.gs.PlayerFactionID {
+		g.renderer.ShowCombatResult(message)
 	}
 }
 
