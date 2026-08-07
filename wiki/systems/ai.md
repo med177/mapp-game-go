@@ -57,6 +57,18 @@ değiştirmeye devam eder, ancak `TurnStepper` için görünür HAMLELER adımı
 yavaşlatmaz. Oyuncuya gönderilen heyet/hediye, mevcut diplomasi bildirim
 kuyruğunda çözülür.
 
+İlişki onarımı stratejik savaş hedeflerini desteklemez: AI'nin açık
+`AIExpansionTargets` listesinde bulunan, aktif `expand` planının hedefi olan
+veya AI claim bölgelerinden birini elinde tutan devletlere heyet/hediye
+gönderilmez. Claim sahibi bölgenin güncel `OwnerID` değerinden hesaplandığı
+için hedef devlet fetih veya el değiştirme sonrasında da doğru güncellenir.
+Bu filtre yalnız ilişki bakımına uygulanır; savunma amacıyla doğrudan tehdit
+altındaki fakat stratejik hedef olmayan devletlere yatıştırma heyeti hâlâ
+gönderilebilir.
+
+Kaynak: `internal/ai/diplomacy.go:aiRelationshipRepairAction`,
+`internal/ai/strategic_plan.go:aiIsStrategicDiplomacyTarget`
+
 1300 bina yatırım skoru da aynı savaş yorgunluğu projeksiyonunu kullanır.
 Vergi etkisinin %30 nötr tabanı ve yüksek vergideki `-10` kademeleri,
 AI'nin memnuniyet projeksiyonunda ekonomi tick'iyle birlikte uygulanır.

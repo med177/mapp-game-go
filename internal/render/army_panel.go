@@ -174,8 +174,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY), FaceSmall, color.RGBA{210, 96, 82, 235})
 	}
 	if grainNeed := gs.EffectiveArmyGrainUpkeep(a); grainNeed > 0 {
-		DrawText(screen, "Tahıl ihtiyacı: "+itoa(grainNeed)+" / tur",
-			float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY), FaceSmall, color.RGBA{205, 185, 120, 235})
+		drawArmyUpkeepSummary(screen, gs, a, float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY))
+	} else if gs.EffectiveArmyGoldUpkeep(a) > 0 {
+		drawArmyUpkeepSummary(screen, gs, a, float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY))
 	}
 	if selectedCount > 0 {
 		selectedText := "Bölünecek: " + itoa(selectedCount)
@@ -351,6 +352,35 @@ func drawArmyReplenishmentBadgeAt(screen *ebiten.Image, cx, cy float32, index in
 	DrawTextCentered(screen, "+", badge.X+badge.W/2, badge.Y-1, FaceSmall, color.RGBA{245, 255, 245, 255})
 }
 
+func armyUpkeepSummaryStrings(gs *state.GameState, a *army.Army) (grainText, goldText string) {
+	if gs == nil || a == nil {
+		return "", ""
+	}
+	grainNeed := gs.EffectiveArmyGrainUpkeep(a)
+	goldNeed := gs.EffectiveArmyGoldUpkeep(a)
+	if grainNeed > 0 {
+		grainText = "Tahıl ihtiyacı: " + itoa(grainNeed) + " / tur"
+	}
+	if goldNeed > 0 {
+		goldText = "Asker Maaşı: " + itoa(goldNeed) + "/tur"
+	}
+	return grainText, goldText
+}
+
+func drawArmyUpkeepSummary(screen *ebiten.Image, gs *state.GameState, a *army.Army, x, y float64) {
+	grainText, goldText := armyUpkeepSummaryStrings(gs, a)
+	if grainText == "" && goldText == "" {
+		return
+	}
+	if grainText != "" {
+		DrawText(screen, grainText, x, y, FaceSmall, color.RGBA{205, 185, 120, 235})
+		x += MeasureText(grainText, FaceSmall) + 24
+	}
+	if goldText != "" {
+		DrawText(screen, goldText, x, y, FaceSmall, ColorGold)
+	}
+}
+
 // DrawEmbarkedArmyDetailPanel, filonun üzerindeki kara birliklerini mevcut
 // ordu panelinin aynı geometri ve birim kartlarıyla gösterir. Bu panel yalnız
 // bilgilendirme içindir; hareket, bölme ve birleştirme gibi aksiyonlar hâlâ
@@ -413,6 +443,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	DrawText(screen, countText,
 		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
+	drawArmyUpkeepSummary(screen, gs, &displayArmy, float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY))
 
 	sepY := layout.headerY
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)

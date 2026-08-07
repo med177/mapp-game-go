@@ -318,7 +318,7 @@ func buttonFromRectF32(r [4]float32, label string) gameui.Button {
 
 func buildBottomActionButtons(recruitEnabled bool) [5]gameui.Button {
 	rects := BottomButtonRects()
-	labels := [5]string{"Ordu", "Pazar", "Diplomasi", "Teknoloji", "Tur Bitir ►►"}
+	labels := [5]string{"Ordu", "Pazar", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
 	var buttons [5]gameui.Button
 	for i, rect := range rects {
 		btn := buttonFromRectF32(rect, labels[i])

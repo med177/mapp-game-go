@@ -7,6 +7,23 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-07: AI'nin açık genişleme hedeflerine, aktif `expand` planı
+  hedeflerine ve claim bölgelerinin güncel sahiplerine `Heyet`/`Hediye`
+  göndermesi engellendi. Böylece savaş hazırlığı yapılan devlete ilişki
+  puanı veya altın aktarılmıyor; stratejik hedef olmayan doğrudan tehditlerde
+  savunma amaçlı yatıştırma davranışı korunuyor. Regression:
+  `TestAIDoesNotRepairRelationsWithExpansionTarget`,
+  `TestAIRejectsRelationRepairForCurrentClaimOwner`,
+  `TestAIRejectsRelationRepairForActiveExpansionPlanTarget`; kapsam:
+  `internal/ai/{diplomacy.go,strategic_plan.go,ai_test.go}`.
+
+- 2026-08-07: Diplomasi teklif panelindeki `Aktif İlişkiler` listeleri artık her
+  kategorideki tüm devletleri gösteriyor. Üç satırlık sabit kesme kaldırıldı;
+  kategori içerikleri ortak clipped viewport içinde çiziliyor, ihtiyaç halinde
+  scrollbar ve mouse-wheel ile bağımsız ilişki scroll'u kullanılıyor. Regression:
+  `TestDiplomacyRelationsPanelShowsAllEntriesWithIndependentScroll`; kapsam:
+  `internal/render/{diplom.go,renderer.go,diplom_test.go}`.
+
 - 2026-08-07: Oyuncuya gelen `Heyet` ve `Hediye` bildirim modalı 3 saniye açık
   kalıyor. Süre dolduğunda mevcut `Tamam` çözümü otomatik üretilerek bildirim
   kabul edilmiş gibi akış devam ediyor; diğer diplomasi teklifleri seçim
@@ -31,6 +48,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   hediye transferleri `GoldEconomy` snapshot'ında ayrıştırılıyor. Gelir rakamı
   ortak hit-test rect'iyle pointer cursor alıyor ve hover popup'ında hesap
   kalemlerini gösteriyor.
+
+- 2026-08-07: Seçili ordu/donanma panelinde tahıl ihtiyacının yanında toplam
+  `Asker Maaşı: N/tur` gösterildi. Kara birlikleri, gemiler ve taşınan birlikler
+  kanonik altın bakım hesabına dahil ediliyor. Regression:
+  `TestArmyUpkeepSummaryShowsGrainAndGoldSalary`.
 
 - 2026-08-07: `Test1300ScenarioResourceSpecializationsAndProductionCosts` sabit
   bölge, bina, birlik ve maliyet beklentilerinden çıkarıldı. Test artık ilgili

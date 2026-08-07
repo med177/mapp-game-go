@@ -7,10 +7,22 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Diplomasi teklif panelinin sağındaki `Aktif İlişkiler` bölümü artık ilişkili tüm
+devletleri tek bir clipped viewport içinde çizer. Kategori başlıkları ve satırlar
+viewport yüksekliğini aşarsa bağımsız `diplomacyRelationScroll` durumu mouse-wheel
+ile güncellenir ve ortak rect sözleşmesinden türetilen scrollbar gösterilir;
+ana diplomasi hedef listesinin `diplomacyScroll` değeriyle karışmaz
+(`internal/render/diplom.go`, `internal/render/renderer.go`).
+
 Üst kaynak HUD'ında gelir satırı mevcut orduların sabit altın bakımı düşülmüş net
 tur değişimini gösterir. Birim tooltip'lerinde
 de tahıl ve altın bakım giderleri aynı tur başı bakım satırında gösterilir;
 hesaplama doğrudan `UnitType` verisinden gelir.
+
+Seçili ordu/donanma panelindeki tahıl ihtiyacı satırının yanında toplam
+`Asker Maaşı: N/tur` değeri de gösterilir. Bu değer `EffectiveArmyGoldUpkeep()`
+üzerinden hesaplandığı için donanmanın gemileri ve taşıdığı kara birlikleri
+aynı toplamda görünür (`internal/render/army_panel.go`, `internal/state/state.go`).
 
 Kuşatmada `SiegeState.BreachLevel >= 1` olduğunda kanonik settlement marker'ının
 etrafında seçimden bağımsız yeşil bir halka çizilir (`internal/render/renderer.go`).

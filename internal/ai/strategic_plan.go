@@ -683,6 +683,31 @@ func aiPlanTargetsFaction(gs *state.GameState, actor, target faction.FactionID) 
 	return plan != nil && plan.Kind == state.AIObjectiveExpand && plan.TargetFactionID == target
 }
 
+// aiIsStrategicDiplomacyTarget ilişki onarımının savaş hazırlığıyla çelişeceği
+// devletleri tek bir yerde tanımlar. Açık genişleme hedefi veya aktif expand
+// planı yanında, bir claim bölgesini elinde tutan güncel sahibi de hedef sayılır.
+// Claim sahibi savaş sonrasında değişebildiği için burada faction metadata'sı
+// değil bölgenin anlık OwnerID değeri kullanılır.
+func aiIsStrategicDiplomacyTarget(gs *state.GameState, actor, target faction.FactionID) bool {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return false
+	}
+	self := gs.Factions[actor]
+	if self == nil {
+		return false
+	}
+	if aiHasExpansionTarget(self, target) || aiPlanTargetsFaction(gs, actor, target) {
+		return true
+	}
+	for _, claim := range self.TerritorialClaims {
+		region := gs.Regions[world.RegionID(claim.RegionID)]
+		if region != nil && !region.IsSea && region.OwnerID == string(target) {
+			return true
+		}
+	}
+	return false
+}
+
 func aiPlanMoveScoreBonus(gs *state.GameState, actor faction.FactionID, target *world.Region) int {
 	if gs == nil || target == nil {
 		return 0

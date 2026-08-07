@@ -262,6 +262,62 @@ func TestDiplomacyRelationCategoriesUseStanceTradeRoutesAndRealm(t *testing.T) {
 	}
 }
 
+func TestDiplomacyRelationsPanelShowsAllEntriesWithIndependentScroll(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":  {ID: "player", NameTR: "Oyuncu"},
+			"subject": {ID: "subject", NameTR: "Hedef"},
+		},
+		Relations: make(map[string]*faction.Relation),
+	}
+	for i := 0; i < 8; i++ {
+		id := faction.FactionID("ally_" + itoa(i))
+		gs.Factions[id] = &faction.Faction{ID: id, NameTR: "Müttefik " + itoa(i)}
+		gs.Relations[faction.RelationKey("subject", id)] = &faction.Relation{
+			FactionA: "subject",
+			FactionB: id,
+			Stance:   faction.StanceAllied,
+		}
+	}
+
+	factions := sortedFactions(gs)
+	if got := diplomacyRelationCategoryCount(gs, "subject", factions, diplomacyRelationAlliance); got != 8 {
+		t.Fatalf("ittifak listesinin tüm devletleri sayılmalı: got=%d want=8", got)
+	}
+	viewport := diplomacyRelationsPanelViewport(diplomacyOfferLayoutForScreen().historyRect)
+	totalRows := diplomacyRelationsContentRows(gs, "subject", factions)
+	maxScroll := diplomacyRelationsMaxScroll(totalRows, viewport)
+	if maxScroll <= 0 {
+		t.Fatalf("8 müttefik için sağ panel scroll gerektirmeli: rows=%d viewport=%+v", totalRows, viewport)
+	}
+	if got := clampDiplomacyRelationsScroll(totalRows, viewport, 99); got != maxScroll {
+		t.Fatalf("ilişki scroll üst sınırı clamp edilmeli: got=%d want=%d", got, maxScroll)
+	}
+
+	r := &Renderer{
+		gs:                     gs,
+		showDiplomacy:          true,
+		diplomacyTargetFaction: "subject",
+		diplomacyActionFocus:   0,
+	}
+	input := gameui.InputState{
+		MouseX: viewport.X + 20,
+		MouseY: viewport.Y + 20,
+		WheelY: -1,
+	}
+	r.handleDiplomacyInput(input)
+	if r.diplomacyRelationScroll != 1 {
+		t.Fatalf("sağ ilişki paneli kendi scroll durumunu değiştirmeli: got=%d", r.diplomacyRelationScroll)
+	}
+}
+
 func TestHandleDiplomacyInputScrollsOnPanelWheel(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720

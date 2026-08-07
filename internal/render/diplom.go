@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"sort"
 
@@ -27,6 +28,9 @@ const (
 	diplomHistoryPanelH   = 324.0
 	diplomActionButtonH   = 42.0
 	diplomActionGap       = 8.0
+	diplomRelationRowH    = 17.0
+	diplomRelationHeaderH = 20.0
+	diplomRelationGapH    = 12.0
 )
 
 type diplomacyListSort int
@@ -971,10 +975,14 @@ func nextEnabledDiplomacyAction(gs *state.GameState, target faction.FactionID, c
 
 // DrawDiplomacyPanel diplomasi panelini çizer.
 func DrawDiplomacyPanel(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
-	DrawDiplomacyPanelWithSort(screen, gs, focusIdx, scroll, actionFocus, target, browseTarget, historyVisible, historyDirFilter, historyActionFilter, diplomacyListSortAlphabetical)
+	drawDiplomacyPanelWithSortAndRelationScroll(screen, gs, focusIdx, scroll, actionFocus, target, browseTarget, historyVisible, historyDirFilter, historyActionFilter, diplomacyListSortAlphabetical, 0)
 }
 
 func DrawDiplomacyPanelWithSort(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort) {
+	drawDiplomacyPanelWithSortAndRelationScroll(screen, gs, focusIdx, scroll, actionFocus, target, browseTarget, historyVisible, historyDirFilter, historyActionFilter, sortMode, 0)
+}
+
+func drawDiplomacyPanelWithSortAndRelationScroll(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort, relationScroll int) {
 	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
 	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
@@ -990,9 +998,9 @@ func DrawDiplomacyPanelWithSort(screen *ebiten.Image, gs *state.GameState, focus
 	}
 
 	if target == "" {
-		drawDiplomacyListPage(screen, gs, factions, sortMode, focusIdx, start, end, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
+		drawDiplomacyListPage(screen, gs, factions, sortMode, focusIdx, start, end, browseTarget, historyVisible, historyDirFilter, historyActionFilter, relationScroll)
 	} else {
-		drawDiplomacyOfferPanel(screen, gs, factions, target, actionFocus, browseTarget, historyVisible, historyDirFilter, historyActionFilter)
+		drawDiplomacyOfferPanel(screen, gs, factions, target, actionFocus, browseTarget, historyVisible, historyDirFilter, historyActionFilter, relationScroll)
 	}
 
 	if target == "" && len(factions) > end-start {
@@ -1002,7 +1010,7 @@ func DrawDiplomacyPanelWithSort(screen *ebiten.Image, gs *state.GameState, focus
 	}
 }
 
-func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, sortMode diplomacyListSort, focusIdx, start, end int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, sortMode diplomacyListSort, focusIdx, start, end int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, relationScroll int) {
 	layout := diplomacyListLayoutForScreen()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{15, 12, 9, 235}, panelBorder, 1.2, 3)
 	DrawText(screen, "Diplomatik Hedef", layout.titleRect.X, layout.titleRect.Y, FaceLarge, ColorGold)
@@ -1129,11 +1137,11 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		if focusIdx >= 0 && focusIdx < len(factions) {
 			selected = factions[focusIdx]
 		}
-		drawDiplomacySidePanel(screen, gs, layout.historyRect, selected, factions, historyVisible, 4, historyDirFilter, historyActionFilter)
+		drawDiplomacySidePanel(screen, gs, layout.historyRect, selected, factions, historyVisible, 4, historyDirFilter, historyActionFilter, relationScroll)
 	}
 }
 
-func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, target faction.FactionID, actionFocus int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind) {
+func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions []faction.FactionID, target faction.FactionID, actionFocus int, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, relationScroll int) {
 	f := gs.Factions[target]
 	if f == nil {
 		return
@@ -1237,7 +1245,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 
 	selectedAction := diplomacyActionForTarget(gs, target, actionFocus)
 	drawUICardRect(screen, layout.selectedRect, color.RGBA{18, 14, 10, 215}, color.RGBA{78, 62, 34, 150}, 1)
-	drawDiplomacySidePanel(screen, gs, layout.historyRect, target, factions, historyVisible, 3, historyDirFilter, historyActionFilter)
+	drawDiplomacySidePanel(screen, gs, layout.historyRect, target, factions, historyVisible, 3, historyDirFilter, historyActionFilter, relationScroll)
 	if diplomacy.DirectOverlord(gs, target) == gs.PlayerFactionID {
 		drawDiplomacyVassalManagementPanel(screen, gs, target)
 	}
@@ -1330,28 +1338,84 @@ func diplomacyRelationCategoryCount(gs *state.GameState, subject faction.Faction
 		return 0
 	}
 	count := 0
+	playerIncluded := false
 	for _, other := range factions {
+		if other == gs.PlayerFactionID {
+			playerIncluded = true
+		}
 		if diplomacyRelationCategoryMatches(gs, subject, other, category) {
 			count++
 		}
 	}
-	if subject != gs.PlayerFactionID && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, category) {
+	if subject != gs.PlayerFactionID && !playerIncluded && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, category) {
 		count++
 	}
 	return count
 }
 
-func drawDiplomacySidePanel(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID, historyVisible bool, maxHistoryEntries int, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind) {
+func diplomacyRelationsPanelViewport(panelRect gameui.Rect) gameui.Rect {
+	return gameui.Rect{
+		X: panelRect.X + 10,
+		Y: panelRect.Y + 68,
+		W: panelRect.W - 20,
+		H: panelRect.H - 78,
+	}
+}
+
+func diplomacyRelationSectionRows(count int) int {
+	if count < 1 {
+		count = 1 // "Yok" satırı
+	}
+	sectionH := diplomRelationHeaderH + float64(count)*diplomRelationRowH + diplomRelationGapH
+	return int((sectionH + diplomRelationRowH - 1) / diplomRelationRowH)
+}
+
+func diplomacyRelationsContentRows(gs *state.GameState, subject faction.FactionID, factions []faction.FactionID) int {
+	rows := 0
+	for _, meta := range diplomacyRelationCategories {
+		rows += diplomacyRelationSectionRows(diplomacyRelationCategoryCount(gs, subject, factions, meta.Category))
+	}
+	return rows
+}
+
+func diplomacyRelationsVisibleRows(viewport gameui.Rect) int {
+	rows := int(viewport.H / diplomRelationRowH)
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func diplomacyRelationsMaxScroll(totalRows int, viewport gameui.Rect) int {
+	max := totalRows - diplomacyRelationsVisibleRows(viewport)
+	if max < 0 {
+		return 0
+	}
+	return max
+}
+
+func clampDiplomacyRelationsScroll(totalRows int, viewport gameui.Rect, scroll int) int {
+	if scroll < 0 {
+		return 0
+	}
+	max := diplomacyRelationsMaxScroll(totalRows, viewport)
+	if scroll > max {
+		return max
+	}
+	return scroll
+}
+
+func drawDiplomacySidePanel(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID, historyVisible bool, maxHistoryEntries int, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind, relationScroll int) {
 	if historyVisible {
 		drawDiplomacyOfferHistoryPanelRect(screen, gs, panelRect, maxHistoryEntries, dirFilter, actionFilter)
 	} else {
-		drawDiplomacyRelationsPanelRect(screen, gs, panelRect, subject, factions)
+		drawDiplomacyRelationsPanelRect(screen, gs, panelRect, subject, factions, relationScroll)
 	}
 	btn := buildDiplomacySideViewButton(panelRect, historyVisible)
 	drawDiplomacyButton(screen, btn, color.RGBA{74, 58, 28, 235}, color.RGBA{176, 142, 72, 220}, FaceSmall, 5)
 }
 
-func drawDiplomacyRelationsPanelRect(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID) {
+func drawDiplomacyRelationsPanelRect(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, subject faction.FactionID, factions []faction.FactionID, relationScroll int) {
 	if gs == nil || panelRect.W <= 0 || panelRect.H <= 0 {
 		return
 	}
@@ -1371,33 +1435,44 @@ func drawDiplomacyRelationsPanelRect(screen *ebiten.Image, gs *state.GameState, 
 	}
 	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+48, hierarchy)
 
-	for sectionIndex, meta := range diplomacyRelationCategories {
+	viewport := diplomacyRelationsPanelViewport(panelRect)
+	totalRows := diplomacyRelationsContentRows(gs, subject, factions)
+	relationScroll = clampDiplomacyRelationsScroll(totalRows, viewport, relationScroll)
+	left, top := int(viewport.X), int(viewport.Y)
+	right, bottom := int(viewport.X+viewport.W), int(viewport.Y+viewport.H)
+	if right <= left || bottom <= top {
+		return
+	}
+	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+	contentRow := -relationScroll
+	for _, meta := range diplomacyRelationCategories {
 		count := diplomacyRelationCategoryCount(gs, subject, factions, meta.Category)
-		sectionY := panelRect.Y + 70 + float64(sectionIndex)*80
-		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: sectionY, W: panelRect.W - 28}, meta.Label+" ("+itoa(count)+")", meta.Color, gameui.TextSmall, gameui.TextAlignStart)
+		sectionY := viewport.Y + float64(contentRow)*diplomRelationRowH
+		drawUILabel(body, gameui.Rect{X: viewport.X + 4, Y: sectionY, W: viewport.W - 12}, meta.Label+" ("+itoa(count)+")", meta.Color, gameui.TextSmall, gameui.TextAlignStart)
+		contentRow++
 		if count == 0 {
-			drawUIMutedText(screen, panelRect.X+24, sectionY+20, "Yok")
+			drawUIMutedText(body, viewport.X+14, viewport.Y+float64(contentRow)*diplomRelationRowH, "Yok")
+			contentRow += 2
 			continue
 		}
-		drawn := 0
+		playerIncluded := false
 		for _, other := range factions {
+			if other == gs.PlayerFactionID {
+				playerIncluded = true
+			}
 			if !diplomacyRelationCategoryMatches(gs, subject, other, meta.Category) {
 				continue
 			}
-			drawDiplomacyRelationName(screen, gs, panelRect, sectionY, drawn, other, meta.Color)
-			drawn++
-			if drawn == 3 {
-				break
-			}
+			drawDiplomacyRelationNameAt(body, gs, viewport, viewport.Y+float64(contentRow)*diplomRelationRowH, other, meta.Color)
+			contentRow++
 		}
-		if drawn < 3 && subject != gs.PlayerFactionID && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, meta.Category) {
-			drawDiplomacyRelationName(screen, gs, panelRect, sectionY, drawn, gs.PlayerFactionID, meta.Color)
-			drawn++
+		if subject != gs.PlayerFactionID && !playerIncluded && diplomacyRelationCategoryMatches(gs, subject, gs.PlayerFactionID, meta.Category) {
+			drawDiplomacyRelationNameAt(body, gs, viewport, viewport.Y+float64(contentRow)*diplomRelationRowH, gs.PlayerFactionID, meta.Color)
+			contentRow++
 		}
-		if count > drawn {
-			drawUILabel(screen, gameui.Rect{X: panelRect.X + panelRect.W - 68, Y: sectionY, W: 54}, "+"+itoa(count-drawn), ColorGray, gameui.TextSmall, gameui.TextAlignEnd)
-		}
+		contentRow++ // bölüm aralığı
 	}
+	drawDiplomacyRelationsScrollbar(screen, viewport, totalRows, relationScroll)
 }
 
 func directVassalCount(gs *state.GameState, overlord faction.FactionID) int {
@@ -1414,13 +1489,33 @@ func directVassalCount(gs *state.GameState, overlord faction.FactionID) int {
 }
 
 func drawDiplomacyRelationName(screen *ebiten.Image, gs *state.GameState, panelRect gameui.Rect, sectionY float64, row int, fid faction.FactionID, accent color.RGBA) {
+	drawDiplomacyRelationNameAt(screen, gs, gameui.Rect{X: panelRect.X + 10, Y: panelRect.Y, W: panelRect.W - 20, H: panelRect.H}, sectionY+20+float64(row)*diplomRelationRowH, fid, accent)
+}
+
+func drawDiplomacyRelationNameAt(screen *ebiten.Image, gs *state.GameState, viewport gameui.Rect, y float64, fid faction.FactionID, accent color.RGBA) {
 	name := factionDisplayName(gs, string(fid))
 	if name == "" {
 		name = string(fid)
 	}
-	y := sectionY + 20 + float64(row)*17
-	drawUICardRect(screen, gameui.Rect{X: panelRect.X + 18, Y: y + 4, W: 5, H: 5}, accent, accent, 1)
-	drawUILabel(screen, gameui.Rect{X: panelRect.X + 30, Y: y, W: panelRect.W - 44}, trimTextToWidth(name, FaceSmall, panelRect.W-44), color.RGBA{226, 220, 208, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUICardRect(screen, gameui.Rect{X: viewport.X + 8, Y: y + 4, W: 5, H: 5}, accent, accent, 1)
+	textW := viewport.W - 34
+	drawUILabel(screen, gameui.Rect{X: viewport.X + 20, Y: y, W: textW}, trimTextToWidth(name, FaceSmall, textW), color.RGBA{226, 220, 208, 255}, gameui.TextSmall, gameui.TextAlignStart)
+}
+
+func drawDiplomacyRelationsScrollbar(screen *ebiten.Image, viewport gameui.Rect, totalRows, scroll int) {
+	maxScroll := diplomacyRelationsMaxScroll(totalRows, viewport)
+	if maxScroll <= 0 {
+		return
+	}
+	track := gameui.Rect{X: viewport.X + viewport.W - 6, Y: viewport.Y + 2, W: 4, H: viewport.H - 4}
+	thumbH := track.H * float64(diplomacyRelationsVisibleRows(viewport)) / float64(totalRows)
+	if thumbH < 18 {
+		thumbH = 18
+	}
+	scroll = clampDiplomacyRelationsScroll(totalRows, viewport, scroll)
+	thumbY := track.Y + (track.H-thumbH)*float64(scroll)/float64(maxScroll)
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{70, 65, 55, 180})
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
@@ -1454,6 +1549,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				r.diplomacyListSort = sortMode
 				r.diplomacyFocus = 0
 				r.diplomacyScroll = 0
+				r.diplomacyRelationScroll = 0
 				return InputAction{}
 			}
 		}
@@ -1465,6 +1561,21 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if r.diplomacyHistoryVisible && input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(sideRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
+		if input.WheelY != 0 && !r.diplomacyHistoryVisible {
+			viewport := diplomacyRelationsPanelViewport(sideRect)
+			if viewport.Hit(input.MouseX, input.MouseY) {
+				relationSubject := faction.FactionID("")
+				if r.diplomacyFocus >= 0 && r.diplomacyFocus < len(factions) {
+					relationSubject = factions[r.diplomacyFocus]
+				}
+				r.diplomacyRelationScroll = clampDiplomacyRelationsScroll(
+					diplomacyRelationsContentRows(r.gs, relationSubject, factions),
+					viewport,
+					r.diplomacyRelationScroll-wheelToDiplomStep(input.WheelY),
+				)
+				return InputAction{}
+			}
+		}
 		if input.WheelY != 0 && diplomacyListLayoutForScreen().panelRect.Hit(input.MouseX, input.MouseY) {
 			r.diplomacyScroll = clampDiplomScroll(n, r.diplomacyScroll-wheelToDiplomStep(input.WheelY))
 			return InputAction{}
@@ -1472,6 +1583,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if r.diplomacyHistoryVisible && input.LeftJustPressed {
 			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, sideRect, input.MouseX, input.MouseY, 4, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
 				r.diplomacyTargetFaction = target
+				r.diplomacyRelationScroll = 0
 				r.diplomacyActionFocus = actionFocus
 				for i, fid := range factions {
 					if fid == target {
@@ -1494,6 +1606,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				return InputAction{}
 			}
 			r.diplomacyFocus = idx
+			r.diplomacyRelationScroll = 0
 			r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 			return InputAction{}
 		}
@@ -1501,6 +1614,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			r.diplomacyScroll = list.Scroll
 			if list.Selected >= 0 {
 				r.diplomacyFocus = list.Selected
+				r.diplomacyRelationScroll = 0
 				r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 			}
 			return InputAction{}
@@ -1514,13 +1628,26 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if r.diplomacyHistoryVisible && input.LeftJustPressed && r.applyDiplomacyHistoryFilterHit(sideRect, input.MouseX, input.MouseY) {
 			return InputAction{}
 		}
+		if input.WheelY != 0 && !r.diplomacyHistoryVisible {
+			viewport := diplomacyRelationsPanelViewport(sideRect)
+			if viewport.Hit(input.MouseX, input.MouseY) {
+				r.diplomacyRelationScroll = clampDiplomacyRelationsScroll(
+					diplomacyRelationsContentRows(r.gs, r.diplomacyTargetFaction, factions),
+					viewport,
+					r.diplomacyRelationScroll-wheelToDiplomStep(input.WheelY),
+				)
+				return InputAction{}
+			}
+		}
 		if buildDiplomacyBackButton().HandleInput(input) {
 			r.diplomacyTargetFaction = ""
+			r.diplomacyRelationScroll = 0
 			return InputAction{}
 		}
 		if r.diplomacyHistoryVisible && input.LeftJustPressed {
 			if target, actionFocus, ok := diplomacyOfferHistorySelection(r.gs, sideRect, input.MouseX, input.MouseY, 3, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter); ok {
 				r.diplomacyTargetFaction = target
+				r.diplomacyRelationScroll = 0
 				r.diplomacyActionFocus = actionFocus
 				for i, fid := range factions {
 					if fid == target {
@@ -1591,10 +1718,12 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) && r.diplomacyFocus < n-1 {
 		r.diplomacyFocus++
+		r.diplomacyRelationScroll = 0
 		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) && r.diplomacyFocus > 0 {
 		r.diplomacyFocus--
+		r.diplomacyRelationScroll = 0
 		r.diplomacyScroll = ensureDiplomFocusVisible(n, r.diplomacyFocus, r.diplomacyScroll)
 	}
 	if r.diplomacyTargetFaction != "" {
@@ -1807,6 +1936,7 @@ func (r *Renderer) openDiplomacyTarget(target faction.FactionID, actionFocus int
 	}
 	r.showDiplomacy = true
 	r.diplomacyTargetFaction = target
+	r.diplomacyRelationScroll = 0
 	r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, target, actionFocus)
 	r.diplomacyHistoryVisible = false
 	factions := sortedDiplomacyFactions(r.gs, r.diplomacyListSort)
@@ -1826,6 +1956,7 @@ func (r *Renderer) CloseDiplomacyPanel() {
 	}
 	r.showDiplomacy = false
 	r.diplomacyTargetFaction = ""
+	r.diplomacyRelationScroll = 0
 	r.diplomacyOfferHistoryBrowse = ""
 	r.diplomacyHistoryVisible = false
 }

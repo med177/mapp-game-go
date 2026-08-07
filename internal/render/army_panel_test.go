@@ -42,6 +42,25 @@ func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
 	}
 }
 
+func TestArmyUpkeepSummaryShowsGrainAndGoldSalary(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"inf": {ID: "inf", GrainUpkeep: 4, GoldUpkeep: 7},
+		},
+	}
+	a := &army.Army{
+		Units:         []army.Unit{{TypeID: "inf"}},
+		EmbarkedUnits: []army.Unit{{TypeID: "inf"}},
+	}
+	grainText, goldText := armyUpkeepSummaryStrings(gs, a)
+	if grainText != "Tahıl ihtiyacı: 4 / tur" {
+		t.Fatalf("tahıl etiketi hatalı: %q", grainText)
+	}
+	if goldText != "Asker Maaşı: 14/tur" {
+		t.Fatalf("kara + taşınan birlik maaşı birlikte gösterilmeli: %q", goldText)
+	}
+}
+
 func TestArmyPanelTransportFooterTextShowsLoadAndCapacity(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

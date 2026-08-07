@@ -534,6 +534,59 @@ func TestAIRelationRepairUsesOnlyReleasedTreasuryBudget(t *testing.T) {
 	}
 }
 
+func TestAIDoesNotRepairRelationsWithExpansionTarget(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].AIExpansionTargets = []faction.FactionID{"ai_2"}
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 0 || gs.Factions["ai_1"].Gold != 500 {
+		t.Fatalf("açık genişleme hedefi ilişki onarımı almamalıydı: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
+}
+
+func TestAIRejectsRelationRepairForCurrentClaimOwner(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.Factions["ai_1"].TerritorialClaims = []faction.TerritorialClaim{{RegionID: "b1", Value: 100}}
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 0 || gs.Factions["ai_1"].Gold != 500 {
+		t.Fatalf("claim sahibi devlete ilişki onarımı yapılmamalıydı: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
+}
+
+func TestAIRejectsRelationRepairForActiveExpansionPlanTarget(t *testing.T) {
+	gs := aiTestState()
+	gs.Factions["ai_1"].Gold = 500
+	gs.AIPlans = map[faction.FactionID]*state.AIPlanState{
+		"ai_1": {Kind: state.AIObjectiveExpand, TargetFactionID: "ai_2"},
+	}
+	setRelationshipRepairTestTurn(t, gs, "ai_1", "ai_2", diplomacy.ActionImproveRelations)
+	gs.Regions["a1"].Neighbors = []world.RegionID{"b1"}
+	gs.Regions["b1"].Neighbors = []world.RegionID{"a1"}
+	gs.Relations[faction.RelationKey("ai_1", "ai_2")].Score = 0
+
+	aiHandleDiplomacy(gs, "ai_1")
+
+	rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
+	if rel.Score != 0 || gs.Factions["ai_1"].Gold != 500 {
+		t.Fatalf("aktif expand plan hedefi ilişki onarımı almamalıydı: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
+}
+
 func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {
 	gs := aiTestState()
 	gs.Factions["ai_1"].Gold = 500

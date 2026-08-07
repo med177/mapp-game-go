@@ -313,7 +313,7 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 		return "", "", false
 	}
 	self := gs.Factions[fid]
-	if self == nil || self.IsEliminated || aiPlanTargetsFaction(gs, fid, otherID) {
+	if self == nil || self.IsEliminated || aiIsStrategicDiplomacyTarget(gs, fid, otherID) {
 		return "", "", false
 	}
 
