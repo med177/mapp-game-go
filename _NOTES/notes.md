@@ -1,0 +1,11 @@
+# Ekleneck ardıl devletler ve merkez yerleşimleri
+- artuklu devleti - mardin 1310-1409
+- eretna devleti - kayseri 1335-1381
+- kadı Burhaneddin devleti - sivas 1381-1398
+- karakoyunlu devleti - van erzurum 1380-1469
+- akkoyunlu devleti - diyarbekir 1378-1503
+- celayirli devleti - bağdat 1330-1410
+- muzafferiler devleti - isfahan 1314-1393
+- şirvanşahlar devleti - şamahı bakü 861-1538
+- timur imparatorluğu - semerkand 1370–1405
+- afşar beyliği - erzurum 1317

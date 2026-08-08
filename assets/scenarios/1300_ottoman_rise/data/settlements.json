@@ -2394,6 +2394,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 5
+      },
+      {
+        "id": "georgia_settlement_8",
+        "name_tr": "Seki",
+        "x": 1395,
+        "y": 447,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -2558,6 +2566,7 @@
         "x": 1360,
         "y": 592,
         "type": "city",
+        "is_center": true,
         "population": 63
       },
       {
@@ -2566,7 +2575,6 @@
         "x": 1345,
         "y": 606,
         "type": "fortress",
-        "is_center": true,
         "population": 14
       },
       {
@@ -2670,6 +2678,22 @@
         "y": 628,
         "type": "city",
         "population": 56
+      },
+      {
+        "id": "northern_persia_settlement_7",
+        "name_tr": "Semnan",
+        "x": 1546,
+        "y": 558,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "northern_persia_settlement_8",
+        "name_tr": "Türkmen Limanı",
+        "x": 1553,
+        "y": 533,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -2753,7 +2777,7 @@
         "id": "persia_south_isfahan",
         "name_tr": "İsfahan",
         "x": 1514,
-        "y": 604,
+        "y": 610,
         "type": "town",
         "population": 18
       },
@@ -3475,8 +3499,8 @@
       {
         "id": "azerbaijan_ganja",
         "name_tr": "Gence",
-        "x": 1413,
-        "y": 461,
+        "x": 1405,
+        "y": 465,
         "type": "city",
         "population": 48
       },
@@ -3504,6 +3528,22 @@
         "y": 491,
         "type": "town",
         "population": 18
+      },
+      {
+        "id": "azerbaijan_settlement_6",
+        "name_tr": "Şirvan",
+        "x": 1450,
+        "y": 477,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "azerbaijan_settlement_7",
+        "name_tr": "Mingeçevir",
+        "x": 1416,
+        "y": 458,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -3512,9 +3552,9 @@
     "settlements": [
       {
         "id": "armenia_main",
-        "name_tr": "Erivan",
-        "x": 1361,
-        "y": 462,
+        "name_tr": "Revan",
+        "x": 1373,
+        "y": 474,
         "type": "fortress",
         "is_center": true,
         "population": 105
@@ -3522,10 +3562,18 @@
       {
         "id": "azerbaijan_dvin",
         "name_tr": "Dvin",
-        "x": 1370,
+        "x": 1365,
         "y": 473,
         "type": "fortress",
         "population": 12
+      },
+      {
+        "id": "armenia_settlement_3",
+        "name_tr": "Lori",
+        "x": 1371,
+        "y": 452,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -4369,13 +4417,75 @@
     "region_id": "akkoyunlu",
     "settlements": [
       {
+        "id": "akkoyunlu_settlement_6",
+        "name_tr": "Muş",
+        "x": 1313,
+        "y": 498,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "akkoyunlu_settlement_7",
+        "name_tr": "Diyarbekir",
+        "x": 1311,
+        "y": 524,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "mosul_nisibis",
+        "name_tr": "Nusaybin",
+        "x": 1290,
+        "y": 529,
+        "type": "fortress",
+        "population": 44
+      }
+    ]
+  },
+  {
+    "region_id": "karakoyunlu",
+    "settlements": [
+      {
+        "id": "akkoyunlu_settlement_5",
+        "name_tr": "Hakkari",
+        "x": 1352,
+        "y": 526,
+        "type": "city",
+        "population": 0
+      },
+      {
         "id": "akkoyunlu_main",
         "name_tr": "Van",
-        "x": 1342,
+        "x": 1343,
         "y": 500,
         "type": "fortress",
         "is_center": true,
         "population": 147
+      },
+      {
+        "id": "akkoyunlu_settlement_3",
+        "name_tr": "Ahlat",
+        "x": 1334,
+        "y": 491,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "armenia_settlement_4",
+        "name_tr": "Doğubeyazıt",
+        "x": 1364,
+        "y": 484,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "akkoyunlu_settlement_4",
+        "name_tr": "Çaldıran",
+        "x": 1354,
+        "y": 491,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -4922,9 +5032,9 @@
       },
       {
         "id": "cubuk_ankara",
-        "name_tr": "Çubuk",
-        "x": 1134,
-        "y": 475,
+        "name_tr": "Kesikköprü",
+        "x": 1142,
+        "y": 487,
         "type": "town",
         "population": 17
       },
@@ -5206,14 +5316,6 @@
         "type": "fortress",
         "is_center": true,
         "population": 45
-      },
-      {
-        "id": "mosul_nisibis",
-        "name_tr": "Nusaybin",
-        "x": 1288,
-        "y": 529,
-        "type": "fortress",
-        "population": 44
       }
     ]
   },
@@ -6356,6 +6458,7 @@
         "x": 1338,
         "y": 542,
         "type": "city",
+        "is_center": true,
         "population": 38
       },
       {
@@ -6380,7 +6483,6 @@
         "x": 1349,
         "y": 578,
         "type": "fortress",
-        "is_center": true,
         "population": 9
       }
     ]

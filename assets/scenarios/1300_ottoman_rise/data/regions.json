@@ -2588,9 +2588,9 @@
     "successor_faction_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
-      "dulkadir",
-      "georgia",
       "erzincan",
+      "georgia",
+      "karakoyunlu",
       "trebizond"
     ],
     "world_x": 1300,
@@ -2625,11 +2625,11 @@
     "owner_id": "georgia_kingdom",
     "successor_faction_id": "georgia_kingdom",
     "neighbors": [
-      "akkoyunlu",
       "armenia",
       "azerbaijan",
       "black_sea_shore",
       "erzurum",
+      "karakoyunlu",
       "north_caucasus",
       "trebizond"
     ],
@@ -2823,6 +2823,7 @@
     "name_tr": "Bağdat",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "basra",
       "mosul",
@@ -2859,6 +2860,7 @@
     "name_tr": "Kuzey İran",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "caspian_sea",
       "dagestan",
@@ -2888,7 +2890,8 @@
     "buildings": [
       "barracks",
       "barracks",
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -2899,13 +2902,13 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "akkoyunlu",
       "armenia",
       "azerbaijan",
       "baghdad",
       "basra",
       "caspian_sea",
       "mosul",
+      "karakoyunlu",
       "northern_persia",
       "persian_open_2",
       "southern_persia"
@@ -5000,6 +5003,7 @@
     "name_tr": "Azerbaycan",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "armenia",
       "caspian_open_2",
@@ -5039,10 +5043,11 @@
     "name_tr": "Erivan",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "akkoyunlu",
       "azerbaijan",
       "georgia",
+      "karakoyunlu",
       "western_persia"
     ],
     "world_x": 1374,
@@ -6208,6 +6213,7 @@
     "successor_faction_id": "ramazan_bey",
     "neighbors": [
       "aleppo",
+      "dulkadir",
       "east_mediterranean",
       "gulf_of_iskenderun",
       "karaman",
@@ -6251,17 +6257,17 @@
     "name_tr": "Van",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "armenia",
       "dulkadir",
+      "erzincan",
       "erzurum",
-      "georgia",
+      "karakoyunlu",
       "mosul",
-      "raqqa",
-      "western_persia"
+      "raqqa"
     ],
-    "world_x": 1330,
-    "world_y": 494,
+    "world_x": 1302,
+    "world_y": 510,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -6271,6 +6277,45 @@
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 10,
+    "base_spice_output": 8,
+    "base_cloth_output": 6,
+    "trade_capacity": 2,
+    "satisfaction": 55,
+    "tax_rate": 25,
+    "population": 317,
+    "rural_population": 273,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls"
+    ]
+  },
+  {
+    "id": "karakoyunlu",
+    "name": "karakoyunlu",
+    "name_tr": "karakoyunlu",
+    "terrain": "mountain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "akkoyunlu",
+      "armenia",
+      "erzurum",
+      "georgia",
+      "mosul",
+      "western_persia"
+    ],
+    "world_x": 1347,
+    "world_y": 493,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 20,
+    "base_iron_output": 2,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
     "base_spice_output": 8,
     "base_cloth_output": 6,
     "trade_capacity": 2,
@@ -6744,9 +6789,10 @@
     "owner_id": "hamid_bey",
     "successor_faction_id": "hamid_bey",
     "neighbors": [
+      "aksaray",
+      "beysehir",
       "germiyan",
       "mentese",
-      "beysehir",
       "teke"
     ],
     "world_x": 1089,
@@ -6824,16 +6870,18 @@
     "name_tr": "Aksaray",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "sivrihisar",
       "beysehir",
       "cankiri",
+      "hamideli",
       "karaman",
       "kayseri",
+      "sivrihisar",
       "teke"
     ],
-    "world_x": 1120,
-    "world_y": 491,
+    "world_x": 1117,
+    "world_y": 501,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -7067,17 +7115,16 @@
     "name_tr": "Malatya",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "aleppo",
       "cilicia",
       "dulkadir",
       "eretna",
       "erzincan",
-      "raqqa",
       "sivas"
     ],
-    "world_x": 1247,
-    "world_y": 496,
+    "world_x": 1244,
+    "world_y": 494,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -7109,13 +7156,14 @@
     "successor_faction_id": "dulkadir_bey",
     "neighbors": [
       "akkoyunlu",
+      "aleppo",
+      "cilicia",
       "erzincan",
-      "erzurum",
       "malatya",
       "raqqa"
     ],
-    "world_x": 1277,
-    "world_y": 511,
+    "world_x": 1259,
+    "world_y": 523,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -7130,7 +7178,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 336,
+    "population": 292,
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
@@ -7150,6 +7198,7 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "ilkhanate",
     "neighbors": [
+      "akkoyunlu",
       "dulkadir",
       "eretna",
       "erzurum",
@@ -8433,10 +8482,10 @@
     "neighbors": [
       "cilicia",
       "damascus",
+      "dulkadir",
+      "gulf_of_iskenderun",
       "lebanon",
-      "malatya",
-      "raqqa",
-      "gulf_of_iskenderun"
+      "raqqa"
     ],
     "world_x": 1217,
     "world_y": 557,
@@ -8469,12 +8518,12 @@
     "name_tr": "Rakka Bölgesi",
     "terrain": "plain",
     "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
     "neighbors": [
       "akkoyunlu",
       "aleppo",
       "damascus",
       "dulkadir",
-      "malatya",
       "mosul"
     ],
     "world_x": 1252,
@@ -8508,13 +8557,15 @@
     "name_tr": "Musul",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "akkoyunlu",
+      "arabian_desert",
       "baghdad",
       "damascus",
       "jordan",
+      "karakoyunlu",
       "raqqa",
-      "arabian_desert",
       "western_persia"
     ],
     "world_x": 1344,
