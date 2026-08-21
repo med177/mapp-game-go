@@ -451,8 +451,9 @@ Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeR
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 
-`ManpowerCap(fid) int` — `MaxLandArmies(fid) × army.MaxArmySize`; her saha
-ordusu 20 birim taşıdığı için 10 ordu sınırı 200 savaşçı kapasitesi verir.
+`ManpowerCap(fid) int` — temel `ceil(kara_bölge_sayısı / 2) × army.MaxArmySize`;
+her saha ordusu 20 birim taşır. `MaxLandArmies` içindeki +1 bağımsız ordu slotu
+savaşçı kapasitesini artırmaz.
 
 `DeployedLandUnits(fid) int` — fraksiyonun aktif kara birim sayısı
 
@@ -464,7 +465,8 @@ kategorilerdeki üretim kuyruğunu da hesaba katar. Oyuncu ve AI üretim yollar�
 `NavalUnitsIncludingQueue(fid)` ile bu kapasiteyi aşamaz; mevcut save'lerde
 kapasite üstü filolar silinmez, yeni üretim kapasite artana kadar bekler.
 
-`MaxLandArmies(fid) int` — `ceil(kara_bölge_sayısı / 2)` (minimum 1)
+`MaxLandArmies(fid) int` — `ceil(kara_bölge_sayısı / 2) + 1`; mevcut bölge
+ölçeğine ek olarak 1 başlangıç ordusu verilir.
 
 `CurrentLandArmies(fid) int` — fraksiyonun aktif saha ordusu sayısı; `IsGarrison=true` kara orduları bu limite dahil edilmez
 

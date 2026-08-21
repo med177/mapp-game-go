@@ -35,7 +35,7 @@ func TestBarracksBuildingEffectLinesShowLandCapacityIncrease(t *testing.T) {
 	}}
 	lines := buildingLandCapacityEffectLines(gs, gs.Regions["barracks"], &city.Building{ID: "barracks", MaxPerRegion: 3})
 
-	if len(lines) != 2 || lines[0] != "Savaşçı sınırı: 20 (1 ordu × 20)" || lines[1] != "Kışla üretim limiti: 1 → 2 birim/tur" {
+	if len(lines) != 2 || lines[0] != "Savaşçı sınırı: 20 (1 temel ordu × 20)" || lines[1] != "Kışla üretim limiti: 1 → 2 birim/tur" {
 		t.Fatalf("kışla tooltip'i ordu başına savaşçı sınırını ve üretim etkisini göstermeli: %v", lines)
 	}
 }

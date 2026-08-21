@@ -15,10 +15,10 @@ func TestManpowerCapTracksMaxLandArmies(t *testing.T) {
 	regions["ra"].Buildings = []string{"barracks", "barracks"}
 	gs := &GameState{Regions: regions}
 
-	if got := gs.MaxLandArmies("p1"); got != 10 {
-		t.Fatalf("19 kara bölgesi 10 ordu sınırı vermeli, got=%d", got)
+	if got := gs.MaxLandArmies("p1"); got != 11 {
+		t.Fatalf("19 kara bölgesi +1 başlangıç bonusuyla 11 ordu sınırı vermeli, got=%d", got)
 	}
 	if got := gs.ManpowerCap("p1"); got != 200 {
-		t.Fatalf("10 ordu 200 savaşçı sınırı vermeli, got=%d", got)
+		t.Fatalf("+1 ordu slotu savaşçı sınırını artırmamalı; 200 bekleniyordu, got=%d", got)
 	}
 }

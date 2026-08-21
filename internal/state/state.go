@@ -2509,23 +2509,10 @@ func UnitProductionLimit(region *world.Region, unitType *army.UnitType) int {
 }
 
 // ManpowerCap bir fraksiyonun toplam kara birimi kapasitesini döner.
-// Her saha ordusu army.MaxArmySize kadar birim taşıdığı için savaşçı sınırı
-// doğrudan maksimum ordu sayısına paraleldir.
+// Savaşçı kapasitesi temel bölge ölçeğindeki ordu yuvalarına göre hesaplanır;
+// MaxLandArmies'in verdiği +1 bağımsız ordu slotu bu kapasiteyi büyütmez.
 func (s *GameState) ManpowerCap(fid faction.FactionID) int {
-	if s == nil || fid == "" {
-		return 0
-	}
-	landRegions := 0
-	for _, r := range s.Regions {
-		if r == nil || r.OwnerID != string(fid) || r.IsSea {
-			continue
-		}
-		landRegions++
-	}
-	if landRegions == 0 {
-		return 0
-	}
-	return s.MaxLandArmies(fid) * army.MaxArmySize
+	return s.baseLandArmyLimit(fid) * army.MaxArmySize
 }
 
 // NavalCap bir fraksiyonun sahip olabileceği toplam deniz birimi kapasitesini
@@ -2612,19 +2599,22 @@ func (s *GameState) DeployedLandUnits(fid faction.FactionID) int {
 }
 
 // MaxLandArmies bir fraksiyonun sahip olabileceği maksimum kara ordu sayısını döner.
-// Her 2 kara bölgesi için 1 ordu; minimum 1.
+// Mevcut bölge ölçeğine ek olarak 1 başlangıç ordusu verilir.
 func (s *GameState) MaxLandArmies(fid faction.FactionID) int {
+	return s.baseLandArmyLimit(fid) + 1
+}
+
+func (s *GameState) baseLandArmyLimit(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
 	landCount := 0
 	for _, r := range s.Regions {
-		if r.OwnerID == string(fid) && !r.IsSea {
+		if r != nil && r.OwnerID == string(fid) && !r.IsSea {
 			landCount++
 		}
 	}
-	max := (landCount + 1) / 2 // ceil(landCount/2)
-	if max < 1 {
-		max = 1
-	}
-	return max
+	return (landCount + 1) / 2 // ceil(landCount/2)
 }
 
 // CurrentLandArmies bir fraksiyonun aktif kara ordu sayısını döner.

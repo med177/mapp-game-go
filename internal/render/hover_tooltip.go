@@ -422,8 +422,8 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 		maxLevel = 1
 	}
 	ownerID := faction.FactionID(region.OwnerID)
-	armyCap := gs.MaxLandArmies(ownerID)
 	landCap := gs.ManpowerCap(ownerID)
+	baseArmyCap := landCap / army.MaxArmySize
 	productionLimit := state.LandUnitProductionLimit(region)
 	if level < maxLevel {
 		nextProductionLimit := level + 1
@@ -432,13 +432,13 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 		}
 		if nextProductionLimit > productionLimit {
 			return []string{
-				fmt.Sprintf("Savaşçı sınırı: %d (%d ordu × %d)", landCap, armyCap, army.MaxArmySize),
+				fmt.Sprintf("Savaşçı sınırı: %d (%d temel ordu × %d)", landCap, baseArmyCap, army.MaxArmySize),
 				fmt.Sprintf("Kışla üretim limiti: %d → %d birim/tur", productionLimit, nextProductionLimit),
 			}
 		}
 	}
 	return []string{
-		fmt.Sprintf("Savaşçı sınırı: %d (%d ordu × %d)", landCap, armyCap, army.MaxArmySize),
+		fmt.Sprintf("Savaşçı sınırı: %d (%d temel ordu × %d; +1 slot ayrı)", landCap, baseArmyCap, army.MaxArmySize),
 		fmt.Sprintf("Kışla üretim limiti: %d birim/tur", productionLimit),
 	}
 }
