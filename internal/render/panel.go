@@ -2975,12 +2975,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 			holdTurns = 5
 		}
 		goldIncome := victory.CurrentGoldIncome(gs)
-		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Gelir", itoa(goldIncome)+"/"+itoa(threshold), titleCol, ColorGold)
+		drawVictoryCompactSummary(screen, vx, vy, float64(barW), itoa(goldIncome)+"/"+itoa(threshold)+" · "+itoa(gs.EconomicVictoryTurns)+"/"+itoa(holdTurns)+" tur", ColorGold)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(goldIncome)/float64(threshold)), ColorGold)
-		vy += 12
-		turnsStr := itoa(gs.EconomicVictoryTurns) + "/" + itoa(holdTurns) + " tur korundu"
-		DrawText(screen, turnsStr, vx, vy, FaceSmall, ColorGray)
 
 	case state.VictoryMilitary:
 		targetStr := gs.Victory.TargetArmyStrength
@@ -3003,11 +3000,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				eliminated++
 			}
 		}
-		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Güç", itoa(totalStr)+"/"+itoa(targetStr), titleCol, ColorWhite)
+		drawVictoryCompactSummary(screen, vx, vy, float64(barW), itoa(totalStr)+"/"+itoa(targetStr)+" · "+itoa(eliminated)+"/"+itoa(targetDef), ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(totalStr)/float64(targetStr)), color.RGBA{200, 80, 80, 255})
-		vy += 12
-		DrawText(screen, "Yenilgi: "+itoa(eliminated)+"/"+itoa(targetDef), vx, vy, FaceSmall, ColorGray)
 
 	case state.VictoryReligious:
 		held := 0
@@ -3017,11 +3012,9 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 				held++
 			}
 		}
-		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Kutsal", itoa(held)+"/"+itoa(total), titleCol, color.RGBA{200, 160, 255, 255})
+		drawVictoryCompactSummary(screen, vx, vy, float64(barW), itoa(held)+"/"+itoa(total)+" · "+itoa(gs.ReligiousVictoryTurns)+"/12 tur", color.RGBA{200, 160, 255, 255})
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(held)/float64(total+1)), color.RGBA{160, 120, 255, 255})
-		vy += 12
-		DrawText(screen, itoa(gs.ReligiousVictoryTurns)+"/12 tur", vx, vy, FaceSmall, ColorGray)
 
 	case state.VictoryConquerCity:
 		held := 0
@@ -3051,6 +3044,14 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(current)/float64(target)), color.RGBA{120, 180, 255, 255})
 	}
+}
+
+// drawVictoryCompactSummary kartın sabit yüksekliğine sığmayan ikincil
+// ilerleme bilgisini tek satırda, kartın sağ iç kenarına hizalar. Hedef türü
+// etiketi bu satırda tekrarlanmadığı için özellikle dini hedefte alt satır
+// taşması oluşmaz.
+func drawVictoryCompactSummary(screen *ebiten.Image, x, y, w float64, summary string, col color.Color) {
+	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: w}, trimTextToWidth(summary, FaceMed, w), col, gameui.TextMedium, gameui.TextAlignEnd)
 }
 
 func victoryDetailProgressLines(gs *state.GameState) []string {
