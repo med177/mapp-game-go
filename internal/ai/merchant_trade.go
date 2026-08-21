@@ -286,7 +286,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	if aiPendingUnitCountByRegion(gs, port.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, port.ID, fid, merchantType) <= 0 {
 		return false
 	}
-	if !aiApplyUnitCostForBudget(self, merchantType, budget, aiBudgetNaval) {
+	if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, merchantType, budget, aiBudgetNaval) {
 		return false
 	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, port.ID, merchantShipTypeID, merchantType.TurnsRequired)
@@ -357,7 +357,7 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
 			break
 		}
-		if !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)

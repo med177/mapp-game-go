@@ -746,6 +746,13 @@ func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string
 	return order
 }
 
+// aiCanQueueNavalUnit, oyuncu üretimiyle aynı toplam donanma kapasitesini
+// kullanır. Farklı AI görevleri aynı turda ayrı ayrı karar verdiği için bu
+// kontrol her deniz emrinden hemen önce yapılmalıdır.
+func aiCanQueueNavalUnit(gs *state.GameState, fid faction.FactionID) bool {
+	return gs != nil && gs.NavalUnitsIncludingQueue(fid) < gs.NavalCap(fid)
+}
+
 func aiQueuedBuildingCount(gs *state.GameState, rid world.RegionID, buildingID string, fid faction.FactionID) int {
 	count := 0
 	for _, order := range gs.ProductionQueue {
@@ -2486,7 +2493,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 	}
 
 	// Altın kontrolü
-	if !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
+	if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
 		return
 	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
@@ -2588,7 +2595,7 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
 			break
 		}
-		if !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)
@@ -2702,7 +2709,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		if currentWarshipUnits+aiPendingNavalUnitCount(gs, candidate.seaID, fid) >= army.MaxArmySize {
 			continue
 		}
-		if !aiApplyUnitCostForBudget(f, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(f, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, candidate.region.ID, "warship", warshipType.TurnsRequired)

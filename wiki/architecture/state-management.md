@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-07
+last_updated: 2026-08-21
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -451,9 +451,18 @@ Merchant filo görevi `Army.TradeRouteKey` ile kalıcı tutulur. `MerchantTradeR
 
 `IsEliminated(fid) bool` — kara toprağı yoksa `true` (sadece deniz bölgesi kalan fraksiyonlar da elenir)
 
-`ManpowerCap(fid) int` — kara bölgesi başı 5 + kışla seviyesi başına +5 ek kapasite
+`ManpowerCap(fid) int` — `MaxLandArmies(fid) × army.MaxArmySize`; her saha
+ordusu 20 birim taşıdığı için 10 ordu sınırı 200 savaşçı kapasitesi verir.
 
 `DeployedLandUnits(fid) int` — fraksiyonun aktif kara birim sayısı
+
+`NavalCap(fid) int` — toplam donanma kapasitesi; sahip olunan kara bölgesi başına
+1, `Region.Buildings` içindeki her `port` seviyesi başına 2 ve her 1.000 toplam
+nüfus başına 1 gemi kapasitesi verir. `DeployedNavalUnits(fid)` aktif savaş,
+nakliye ve ticaret gemilerini birlikte sayar; `PendingNavalUnits(fid)` aynı
+kategorilerdeki üretim kuyruğunu da hesaba katar. Oyuncu ve AI üretim yolları
+`NavalUnitsIncludingQueue(fid)` ile bu kapasiteyi aşamaz; mevcut save'lerde
+kapasite üstü filolar silinmez, yeni üretim kapasite artana kadar bekler.
 
 `MaxLandArmies(fid) int` — `ceil(kara_bölge_sayısı / 2)` (minimum 1)
 

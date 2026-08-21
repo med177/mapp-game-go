@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-07
+last_updated: 2026-08-21
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -1451,6 +1451,12 @@ verisinden gerçek deniz gücü olarak davranır. Savaş gemisi eksikse AI önce
 teknolojisini araştırma skorunda yükseltir, sonra uygun kıyıda gereken liman seviyesini
 kurar ve son olarak savaş gemisi kuyruğunu açar. Bu sıradaki ilk gerçek maliyet,
 `aiProcureStrategicResources()` için kaynak talebine dönüşür.
+
+Bu hedef, toplam filo kapasitesinin yerine geçmez. `GameState.NavalCap()` devletin
+kara bölgesi, toplam nüfusu ve liman seviyelerinden kapasite üretir; AI'nin savaş,
+nakliye ve merchant üretim kararları `NavalUnitsIncludingQueue()` ile aktif ve
+bekleyen tüm gemileri aynı havuzda sayar. Kapasite doluysa görev üretimi kaynak
+harcamadan durur; liman, nüfus veya yeni bölge kazanımı kapasiteyi büyütür.
 
 Manpower sıkışıksa önce kışla inşa eder. Hiç kara birimi ve hiç kışlası olmayan devlet,
 manpower kapasitesi doluluğa yaklaşmamış olsa bile ilk kışlayı kuyruğa alır; böylece

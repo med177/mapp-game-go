@@ -152,3 +152,39 @@ func TestAINavalReserveBuildsPortBeforeWarship(t *testing.T) {
 		t.Fatalf("liman hazır olduğunda savaş gemisi kuyruğa alınmalıydı: %+v", gs.ProductionQueue)
 	}
 }
+
+func TestAINavalReserveHonorsTotalNavalCapacity(t *testing.T) {
+	gs := &state.GameState{
+		ScenarioID: "1300_ottoman_rise",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Gold: 5000, Grain: 500, Iron: 500, Timber: 500, Research: faction.ResearchState{Completed: map[string]bool{"navigation": true, "naval_doctrine": true}}},
+		},
+		AIStrategies: map[string]scenario.AIFactionStrategy{"ai": {FactionID: "ai", NavalFocus: true}},
+		Regions: map[world.RegionID]*world.Region{
+			"coast": {ID: "coast", OwnerID: "ai", Population: 1000, Buildings: []string{"port", "port", "port"}, Neighbors: []world.RegionID{"sea"}},
+			"sea":   {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"coast"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", OwnerID: "ai", RegionID: "sea", IsNaval: true, Units: []army.Unit{
+				{TypeID: "warship"},
+				{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"},
+				{TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"}, {TypeID: "merchant_ship"},
+			}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"warship":       {ID: "warship", Category: army.CategoryNavalWar, RequiredBldg: "port", RequiredBldgLevel: 3, RequiredTech: []string{"navigation", "naval_doctrine"}, GoldCost: 400, TurnsRequired: 2},
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade, RequiredBldg: "port"},
+		},
+		BuildingTypes: map[string]*city.Building{"port": {ID: "port", MaxPerRegion: 3}},
+	}
+
+	if got := gs.NavalCap("ai"); got != 8 || gs.DeployedNavalUnits("ai") != 8 {
+		t.Fatalf("fixture kapasiteyi tam doldurmalıydı: cap=%d ships=%d", gs.NavalCap("ai"), gs.DeployedNavalUnits("ai"))
+	}
+	goldBefore := gs.Factions["ai"].Gold
+	aiProduceNavalReserve(gs, "ai", nil, nil, nil)
+
+	if len(gs.ProductionQueue) != 0 || gs.Factions["ai"].Gold != goldBefore {
+		t.Fatalf("kapasite doluyken AI savaş gemisi kuyruğa almamalı veya kaynak harcamamalıydı: queue=%+v gold=%d", gs.ProductionQueue, gs.Factions["ai"].Gold)
+	}
+}

@@ -2888,13 +2888,15 @@ func victoryTypeLabel(vtype state.VictoryType) string {
 
 // ── Zafer İlerleme Göstergesi ─────────────────────────────────────────
 
-// drawManpowerDisplay savaşçı kapasitesini ve ordu sayısını gösterir.
+// drawManpowerDisplay savaşçı, ordu ve donanma kapasitesini gösterir.
 func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float64) {
 	pid := gs.PlayerFactionID
 	deployed := gs.DeployedLandUnits(pid)
 	cap := gs.ManpowerCap(pid)
 	armies := gs.CurrentLandArmies(pid)
 	maxArmies := gs.MaxLandArmies(pid)
+	navalDeployed := gs.DeployedNavalUnits(pid)
+	navalCap := gs.NavalCap(pid)
 
 	cardX := float32(908)
 	cardY := float32(panelY) + 7
@@ -2903,7 +2905,7 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
 
 	mx := float64(cardX) + 12
-	my := panelY + 16
+	my := panelY + 12
 
 	unitStr := itoa(deployed) + "/" + itoa(cap)
 	unitCol := ColorGold
@@ -2917,7 +2919,14 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	if armies >= maxArmies {
 		armyCol = ColorRed
 	}
-	drawUIKeyValueRow(screen, mx, my+28, float64(cardW)-24, "Ordu", armyStr, ColorGray, armyCol)
+	drawUIKeyValueRow(screen, mx, my+22, float64(cardW)-24, "Ordu", armyStr, ColorGray, armyCol)
+
+	navalStr := itoa(navalDeployed) + "/" + itoa(navalCap)
+	navalCol := ColorGold
+	if navalCap > 0 && navalDeployed >= navalCap {
+		navalCol = ColorRed
+	}
+	drawUIKeyValueRow(screen, mx, my+44, float64(cardW)-24, "Donanma", navalStr, ColorGray, navalCol)
 }
 
 // drawVictoryProgress seçilen zafer tipine göre ilerlemeyi gösterir.
@@ -3778,16 +3787,6 @@ func factionRelationToPlayer(gs *state.GameState, fid faction.FactionID) *factio
 	return gs.Relations[faction.RelationKey(gs.PlayerFactionID, fid)]
 }
 
-func factionNavalArmyCount(gs *state.GameState, fid faction.FactionID) int {
-	count := 0
-	for _, a := range gs.Armies {
-		if a != nil && a.OwnerID == string(fid) && a.IsNaval {
-			count++
-		}
-	}
-	return count
-}
-
 func factionMilitaryPowerBreakdownLabel(gs *state.GameState, fid faction.FactionID) string {
 	land, naval := diplomacy.MilitaryPowerBreakdown(gs, fid)
 	return itoa(land) + " / " + itoa(naval)
@@ -4113,7 +4112,7 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 	y := 0.0
 	y += factionPanelSectionH
 	y += 24
-	y += factionPanelRowH * 4
+	y += factionPanelRowH * 5
 	y += 22
 
 	y += factionPanelSectionH
@@ -4184,9 +4183,11 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 	y += factionPanelRowH
 	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
 	y += factionPanelRowH
-	drawUIKeyValueRow(screen, 0, y, width, "Ordu", itoa(gs.CurrentLandArmies(fid))+" / "+itoa(gs.DeployedLandUnits(fid))+" birim", ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, 0, y, width, "Ordu", itoa(gs.CurrentLandArmies(fid))+"/"+itoa(gs.MaxLandArmies(fid)), ColorGray, ColorWhite)
 	y += factionPanelRowH
-	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(factionNavalArmyCount(gs, fid))+" Filo", ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, 0, y, width, "Savaşçı", itoa(gs.DeployedLandUnits(fid))+"/"+itoa(gs.ManpowerCap(fid)), ColorGray, ColorWhite)
+	y += factionPanelRowH
+	drawUIKeyValueRow(screen, 0, y, width, "Donanma", itoa(gs.DeployedNavalUnits(fid))+"/"+itoa(gs.NavalCap(fid)), ColorGray, ColorWhite)
 	y += 22
 
 	drawUISectionLabel(screen, 0, y, "Araştırma")

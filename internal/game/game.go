@@ -3519,6 +3519,16 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		if quantity > seaFree {
 			quantity = seaFree
 		}
+		navalCap := g.gs.NavalCap(g.gs.PlayerFactionID)
+		navalUsed := g.gs.NavalUnitsIncludingQueue(g.gs.PlayerFactionID)
+		if navalUsed >= navalCap {
+			g.renderer.ShowCombatResult(fmt.Sprintf("Donanma kapasitesi dolu! (%d/%d) — liman, nüfus veya bölge sayısını artır.", navalUsed, navalCap))
+			return
+		}
+		navalFree := navalCap - navalUsed
+		if quantity > navalFree {
+			quantity = navalFree
+		}
 		pendingInRegion := g.pendingUnitCountByRegion(rid, g.gs.PlayerFactionID)
 		if pendingInRegion >= 20 {
 			g.renderer.ShowCombatResult("Eğitim sırası dolu! (max 20 emir)")

@@ -163,6 +163,16 @@ func TestNavalArmyBadgesShareUpperRightAnchor(t *testing.T) {
 	}
 }
 
+func TestMarkerBadgeCompactFaceFitsTwoDigitBonusValue(t *testing.T) {
+	badge := navalMissionBonusBadgeRect(100, 100)
+	if got := markerBadgeTextFace("+12", badge.W); got != FaceMicro {
+		t.Fatalf("iki haneli artı bonusu kompakt marker fontuna geçmeli: got=%p want=%p", got, FaceMicro)
+	}
+	if width := MeasureText("+12", FaceMicro); width > badge.W-5 {
+		t.Fatalf("+12 marker rozetinin iç genişliğine sığmalı: width=%.2f max=%.2f", width, badge.W-5)
+	}
+}
+
 func TestNavalDamageBadgeUsesUpperLeftAnchor(t *testing.T) {
 	x, y := navalDamageBadgeCenter(100, 100)
 	if x >= 100 || y >= 100 {

@@ -56,6 +56,7 @@ const (
 	activeEventIconSpacingY      = float32(24)
 	activeEventIconLiftY         = float32(48)
 	settlementMarkerSpriteSize   = float32(26)
+	settlementPortMarkerSize     = float32(22)
 	capitalLabelIconSmallSize    = float32(18)
 	capitalLabelIconMediumSize   = float32(20)
 	navalDockTargetRadius        = float32(18)
@@ -2736,7 +2737,7 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{8, 8, 8, 245}, true)
 			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1, color.RGBA{244, 195, 52, 255}, true)
 			embarkedStr := navalEmbarkedArmyBadgeText(a, unitCount >= 0)
-			DrawTextCentered(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2)-5, FaceTiny, ColorWhite)
+			drawMarkerBadgeText(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2), float64(badgeW), ColorWhite)
 		}
 	}
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {
@@ -2802,7 +2803,7 @@ func drawGoldPlusBadge(screen *ebiten.Image, cx, cy float32, label string) {
 	badgeY := float32(badgeRect.Y + badgeRect.H/2)
 	vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{35, 27, 12, 245}, false)
 	vector.FillCircle(screen, badgeX, badgeY, 7.5, color.RGBA{244, 195, 52, 255}, true)
-	DrawTextCentered(screen, label, float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{55, 38, 8, 255})
+	drawMarkerBadgeText(screen, label, float64(badgeX), float64(badgeY), badgeRect.W, color.RGBA{55, 38, 8, 255})
 }
 
 func drawMerchantTradePendingBadge(screen *ebiten.Image, cx, cy float32) {
@@ -2811,7 +2812,19 @@ func drawMerchantTradePendingBadge(screen *ebiten.Image, cx, cy float32) {
 	badgeY := float32(badgeRect.Y + badgeRect.H/2)
 	vector.FillCircle(screen, badgeX, badgeY, 9, color.RGBA{25, 25, 25, 245}, false)
 	vector.StrokeCircle(screen, badgeX, badgeY, 7.5, 1.5, color.RGBA{185, 185, 185, 245}, true)
-	DrawTextCentered(screen, "X", float64(badgeX), float64(badgeY)-5, FaceTiny, color.RGBA{225, 225, 225, 255})
+	drawMarkerBadgeText(screen, "X", float64(badgeX), float64(badgeY), badgeRect.W, color.RGBA{225, 225, 225, 255})
+}
+
+// drawMarkerBadgeText, marker rozetlerindeki kısa etiketleri rozetin iç
+// genişliğine sığacak yüzle çizer. Tek karakterli etiketler mevcut FaceTiny
+// görünümünü korur; "+12" ve "100" gibi değerler FaceMicro'a küçülür.
+func drawMarkerBadgeText(screen *ebiten.Image, label string, cx, cy, badgeWidth float64, col color.RGBA) {
+	face := markerBadgeTextFace(label, badgeWidth)
+	textY := cy - 5.0
+	if face == FaceMicro {
+		textY = cy - 4.0
+	}
+	DrawTextCentered(screen, label, cx, textY, face, col)
 }
 
 func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, cx, cy float32) {
@@ -2835,7 +2848,7 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 				vector.FillCircle(screen, bonusCX, bonusCY, 10, color.RGBA{22, 24, 30, 245}, false)
 				vector.FillCircle(screen, bonusCX, bonusCY, 8.5, bonusColor, false)
 			}
-			DrawTextCentered(screen, bonusText, float64(bonusCX), float64(bonusCY)-5, FaceTiny, navalMissionBonusBadgeTextColor(a.NavalMission.Kind))
+			drawMarkerBadgeText(screen, bonusText, float64(bonusCX), float64(bonusCY), bonusRect.W, navalMissionBonusBadgeTextColor(a.NavalMission.Kind))
 		}
 	}
 	if bonus := r.merchantTradeBonusForArmy(a); bonus > 0 {
@@ -3285,9 +3298,10 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 	if region == nil {
 		return
 	}
+	markerSize := r.settlementMarkerSize(region, settlement, isPrimary)
 	drawn := false
 	if img := r.settlementMarkerSprite(region, settlement, isPrimary); img != nil {
-		if r.drawSettlementMarkerSprite(screen, img, sx, sy, settlementMarkerSpriteSize) {
+		if r.drawSettlementMarkerSprite(screen, img, sx, sy, markerSize) {
 			drawn = true
 		}
 	}
@@ -3308,11 +3322,18 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 	if isPrimary && r.isSettlementBreachOpen(region) {
 		// Gedik halkası seçimden bağımsızdır ve seçili marker'ın altın
 		// halkasını kapatmaması için onun bir piksel dışından geçer.
-		vector.StrokeCircle(screen, sx, sy, settlementMarkerSpriteSize/2+5, 2.5, settlementBreachBorderColor, true)
+		vector.StrokeCircle(screen, sx, sy, markerSize/2+5, 2.5, settlementBreachBorderColor, true)
 	}
 	if isPrimary {
 		r.drawVassalSettlementBadge(screen, region, sx, sy)
 	}
+}
+
+func (r *Renderer) settlementMarkerSize(region *world.Region, settlement world.Settlement, isPrimary bool) float32 {
+	if settlement.Type == world.SettlementPort && !(isPrimary && r.isSettlementUnderSiege(region)) {
+		return settlementPortMarkerSize
+	}
+	return settlementMarkerSpriteSize
 }
 
 func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world.Settlement, isPrimary bool) *ebiten.Image {
@@ -3361,7 +3382,7 @@ func (r *Renderer) drawFortressMarkerSprite(screen *ebiten.Image, sx, sy float32
 }
 
 func (r *Renderer) drawPortMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
-	return r.drawSettlementMarkerSprite(screen, settlementMarkerHarbourImage(), sx, sy, settlementMarkerSpriteSize)
+	return r.drawSettlementMarkerSprite(screen, settlementMarkerHarbourImage(), sx, sy, settlementPortMarkerSize)
 }
 
 func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Settlement) bool {
@@ -3937,7 +3958,7 @@ func (r *Renderer) drawSettlementSelectionOverlay(screen *ebiten.Image, settleme
 		vector.StrokeRect(screen, sx-9, sy-8, 18, 16, 2, color.RGBA{255, 190, 45, 230}, true)
 		return
 	}
-	vector.StrokeCircle(screen, sx, sy, settlementMarkerSpriteSize/2+4, 2.5, color.RGBA{255, 220, 70, 245}, true)
+	vector.StrokeCircle(screen, sx, sy, r.settlementMarkerSize(region, settlement, true)/2+4, 2.5, color.RGBA{255, 220, 70, 245}, true)
 }
 
 func (r *Renderer) shouldDrawSettlementSelectionOverlay(region *world.Region, index int, settlement world.Settlement) bool {

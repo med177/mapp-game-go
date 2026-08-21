@@ -564,9 +564,15 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	DrawTextCentered(screen, "BİRİM OLUŞTUR", float64(px)+float64(pw)/2, float64(py)+8, FaceSmall, ColorGold)
 	queuedTotal := queuedUnitTotal(gs, rid)
 	landLimit := state.LandUnitProductionLimit(region)
-	infoStr := fmt.Sprintf("Kışla limiti: %d  |  Sırada: %d", landLimit, queuedTotal)
+	playerID := gs.PlayerFactionID
+	landUnits := gs.DeployedLandUnits(playerID) + pendingLandUnitCount(gs, playerID)
+	landCap := gs.ManpowerCap(playerID)
+	armyInfo := fmt.Sprintf("Ordu: %d/%d", gs.CurrentLandArmies(playerID), gs.MaxLandArmies(playerID))
+	landInfo := fmt.Sprintf("Savaşçı: %d/%d", landUnits, landCap)
+	navalInfo := fmt.Sprintf("Donanma: %d/%d", gs.NavalUnitsIncludingQueue(gs.PlayerFactionID), gs.NavalCap(gs.PlayerFactionID))
+	infoStr := fmt.Sprintf("Kışla limiti: %d  |  %s  |  %s  |  Sırada: %d", landLimit, armyInfo, landInfo, queuedTotal)
 	if region.IsCoastal(gs.Regions) {
-		infoStr = fmt.Sprintf("Kışla: %d  |  Liman: %d  |  Sırada: %d", landLimit, state.NavalUnitProductionLimit(region), queuedTotal)
+		infoStr = fmt.Sprintf("Kışla: %d  |  Liman: %d  |  %s  |  %s  |  %s  |  Sırada: %d", landLimit, state.NavalUnitProductionLimit(region), armyInfo, landInfo, navalInfo, queuedTotal)
 	}
 	infoW := MeasureText(infoStr, FaceSmall)
 	drawUIMutedText(screen, float64(px)+float64(pw)/2-infoW/2, float64(py)+24, infoStr)
@@ -750,6 +756,22 @@ func queuedUnitTotal(gs *state.GameState, rid world.RegionID) int {
 		}
 	}
 	return total
+}
+
+func pendingLandUnitCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	count := 0
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != "unit" || order.FactionID != string(fid) {
+			continue
+		}
+		if utype := gs.UnitTypes[order.TypeID]; utype != nil && utype.RequiredBldg != "port" {
+			count++
+		}
+	}
+	return count
 }
 
 func recruitUnitCardHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) string {

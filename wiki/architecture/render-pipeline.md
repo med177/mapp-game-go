@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-07
+last_updated: 2026-08-21
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -29,6 +29,16 @@ etrafında seçimden bağımsız yeşil bir halka çizilir (`internal/render/ren
 Seçim halkası korunur; iki gösterge farklı yarıçaplardan türetilir.
 Seçili kuşatma panellerinin sağ üst durum etiketi de `SiegeState.TurnsElapsed`
 değerini `Kuşatma süresi: N tur` biçiminde gösterir (`renderer_dialogs.go`).
+
+Harbour/liman settlement marker'ı `22 px` boyutunda çizilir; şehir, kasaba ve kale
+marker'ları `26 px` ortak boyutunu korur. Seçim ve gedik halkalarının yarıçapı
+marker tipinin gerçek boyutundan türetilir (`internal/render/renderer.go`).
+
+Ordu/donanma marker'larının sağ-üst görev, ticaret ve taşınan birlik rozetleri
+ortak anchor ve hit-test rect'ini paylaşır. Etiket `+12` veya `100` gibi dar
+rozete taşabilecek genişlikteyse yalnız metin `FaceMicro` (8 px) yüzüne küçülür;
+tek haneli etiketler mevcut `FaceTiny` görünümünü korur (`internal/render/font.go`,
+`internal/render/renderer.go`).
 
 Seçili bölge ve devlet detay panelleri ortak `infoPanelW` ölçüsünü kullanır;
 panel gövdesi, bina kartı ızgarası, sekmeler, aksiyon bandı, fraksiyon kaynak
@@ -734,7 +744,7 @@ ve mouse hit-test aynı aksiyon index'lerini kullanır (`internal/render/diplom.
 
 Harita üzerindeki dost nakliye filosunun `BIN` göstergesi, seçili kara ordusunun gerçekten yükleme emri verebilmesiyle aynı hareket hakkı kuralını kullanır. Seçili ordunun `MovePoints` değeri sıfırsa gösterge çizilmez; böylece görünür aksiyon ile sağ tık input kapısı ayrışmaz (`internal/render/renderer.go`).
 
-Alt HUD'daki `Ordu` butonunun etkinliği birim maliyetinin karşılanmasına bağlı değildir. Oyuncunun sahip olduğu uygun kara bölgesinde panel açılabiliyorsa buton açık kalır; kaynak yetersizliği recruit kartında gösterilir ve üretim emri oluşturulurken oyun katmanında yeniden doğrulanır (`internal/render/recruit_panel.go`, `internal/game/game.go`).
+Alt HUD'daki `Ordu` butonunun etkinliği birim maliyetinin karşılanmasına bağlı değildir. Oyuncunun sahip olduğu uygun kara bölgesinde panel açılabiliyorsa buton açık kalır; kaynak yetersizliği recruit kartında gösterilir ve üretim emri oluşturulurken oyun katmanında yeniden doğrulanır (`internal/render/recruit_panel.go`, `internal/game/game.go`). Üst durum HUD'ındaki askerî kapasite kartı `Savaşçı`, `Ordu` ve `Donanma` satırlarını ayrı ayrı `mevcut/limit` olarak gösterir. Recruit başlığı kara tarafında `Ordu: mevcut/maksimum` ve aktif + kuyruktaki `Savaşçı: mevcut/sınır`, kıyı bölgelerinde bunlara ek olarak aktif + kuyruktaki `Donanma: mevcut/sınır` bilgilerini gösterir. Savaşçı sınırı artık `maksimum ordu × 20` olarak hesaplanır; böylece ordu ve birim kapasitesi aynı ölçeği kullanır. Kışla tooltip'i bu bağı `Savaşçı sınırı: X (Y ordu × 20)` satırıyla, kışlanın seviyeye bağlı üretim etkisini de `Kışla üretim limiti` satırıyla açıklar. Liman bina tooltip'i bir sonraki seviyenin etkisini `Donanma kapasitesi: +2 gemi` ve `Donanma sınırı: mevcut → sonraki` satırlarıyla gösterir. Fraksiyon detayındaki askeri durum da `Ordu`, `Savaşçı` ve `Donanma` için aynı `mevcut/limit` formatını kullanır (`internal/render/{panel.go,recruit_panel.go,hover_tooltip.go}`).
 
 Bina kartlarının inşa edilebilirlik ve hover davranışı yalnızca oyuncunun sahibi olduğu, kilitli olmayan kara bölgelerinde aktiftir. Oyuncuya ait olmayan bölgelerde kartlar görünmeye devam eder ancak kaynak yeterli olsa bile bina etiketi altın sarısı kalır ve bina detay popup'ı açılmaz; bina tıklama hit-test'i de aynı sahiplik kontrolünü kullanır (`internal/render/building_card_component.go`, `panel.go`, `hover_tooltip.go`).
 

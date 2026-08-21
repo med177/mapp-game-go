@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -241,6 +242,8 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 	costLines := buildingCostRequirementLines(gs, b)
 	reqLines, reqMissing := buildingRequirementLines(region, b)
 	effectLines := buildingEffectLines(b)
+	effectLines = append(effectLines, buildingLandCapacityEffectLines(gs, region, b)...)
+	effectLines = append(effectLines, buildingNavalCapacityEffectLines(gs, region, b)...)
 	iconW, iconH := buildingTooltipImageSize, buildingTooltipImageSize
 	status, statusCol := buildingAvailabilityStatus(gs, region, b, reqMissing)
 	tooltipH := 146.0 + float64(len(costLines))*14 + float64(len(reqLines))*14 + float64(len(effectLines))*16
@@ -372,6 +375,72 @@ func buildingEffectLines(b *city.Building) []string {
 		lines = append(lines, "Yerel gelişim binası")
 	}
 	return lines
+}
+
+// buildingNavalCapacityEffectLines liman tooltip'inde mevcut kapasiteyi ve
+// bir sonraki liman seviyesinin devlet sınırına etkisini gösterir.
+func buildingNavalCapacityEffectLines(gs *state.GameState, region *world.Region, b *city.Building) []string {
+	if gs == nil || region == nil || b == nil || b.ID != "port" || region.OwnerID == "" {
+		return nil
+	}
+	level := 0
+	for _, buildingID := range region.Buildings {
+		if buildingID == b.ID {
+			level++
+		}
+	}
+	maxLevel := b.MaxPerRegion
+	if maxLevel <= 0 {
+		maxLevel = 1
+	}
+	ownerID := faction.FactionID(region.OwnerID)
+	currentCap := gs.NavalCap(ownerID)
+	if level >= maxLevel {
+		return []string{fmt.Sprintf("Donanma sınırı: %d (maksimum)", currentCap)}
+	}
+	nextCap := currentCap + state.NavalCapacityPerPortLevel
+	return []string{
+		fmt.Sprintf("Donanma kapasitesi: +%d gemi", state.NavalCapacityPerPortLevel),
+		fmt.Sprintf("Donanma sınırı: %d → %d", currentCap, nextCap),
+	}
+}
+
+// buildingLandCapacityEffectLines kışla tooltip'inde savaşçı sınırının ordu
+// sayısına bağlı olduğunu ve kışlanın üretim hattı etkisini gösterir.
+func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, b *city.Building) []string {
+	if gs == nil || region == nil || b == nil || b.ID != "barracks" || region.OwnerID == "" {
+		return nil
+	}
+	level := 0
+	for _, buildingID := range region.Buildings {
+		if buildingID == b.ID {
+			level++
+		}
+	}
+	maxLevel := b.MaxPerRegion
+	if maxLevel <= 0 {
+		maxLevel = 1
+	}
+	ownerID := faction.FactionID(region.OwnerID)
+	armyCap := gs.MaxLandArmies(ownerID)
+	landCap := gs.ManpowerCap(ownerID)
+	productionLimit := state.LandUnitProductionLimit(region)
+	if level < maxLevel {
+		nextProductionLimit := level + 1
+		if nextProductionLimit < 1 {
+			nextProductionLimit = 1
+		}
+		if nextProductionLimit > productionLimit {
+			return []string{
+				fmt.Sprintf("Savaşçı sınırı: %d (%d ordu × %d)", landCap, armyCap, army.MaxArmySize),
+				fmt.Sprintf("Kışla üretim limiti: %d → %d birim/tur", productionLimit, nextProductionLimit),
+			}
+		}
+	}
+	return []string{
+		fmt.Sprintf("Savaşçı sınırı: %d (%d ordu × %d)", landCap, armyCap, army.MaxArmySize),
+		fmt.Sprintf("Kışla üretim limiti: %d birim/tur", productionLimit),
+	}
 }
 
 func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, uid string, mx, my float64) {

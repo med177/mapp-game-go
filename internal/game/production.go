@@ -403,6 +403,12 @@ func (g *Game) completeUnit(region *world.Region, ownerID faction.FactionID, uni
 }
 
 func (g *Game) completeNavalUnit(region *world.Region, ownerID faction.FactionID, unitTypeID string) string {
+	if g == nil || g.gs == nil {
+		return "oyun durumu bulunamadı"
+	}
+	if g.gs.DeployedNavalUnits(ownerID) >= g.gs.NavalCap(ownerID) {
+		return "donanma kapasitesi dolu"
+	}
 	unitType := g.gs.UnitTypes[unitTypeID]
 	var seaRegion world.RegionID
 	for _, nid := range region.Neighbors {

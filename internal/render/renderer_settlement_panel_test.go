@@ -283,6 +283,24 @@ func TestSettlementMarkerSpriteSwitchesToSiegeAssetForPrimarySiegedSettlement(t 
 	}
 }
 
+func TestSettlementMarkerSizeShrinksPortsOnly(t *testing.T) {
+	r := &Renderer{}
+	region := &world.Region{ID: "coast"}
+
+	for _, settlementType := range []world.SettlementType{
+		world.SettlementCity,
+		world.SettlementTown,
+		world.SettlementFortress,
+	} {
+		if got := r.settlementMarkerSize(region, world.Settlement{Type: settlementType}, true); got != settlementMarkerSpriteSize {
+			t.Fatalf("%s marker boyutu değişmemeli: got=%.1f want=%.1f", settlementType, got, settlementMarkerSpriteSize)
+		}
+	}
+	if got := r.settlementMarkerSize(region, world.Settlement{Type: world.SettlementPort}, true); got != settlementPortMarkerSize {
+		t.Fatalf("liman marker'ı küçültülmeli: got=%.1f want=%.1f", got, settlementPortMarkerSize)
+	}
+}
+
 func TestSettlementBreachBorderRequiresOpenedBreachAndIgnoresSelection(t *testing.T) {
 	region := &world.Region{ID: "home", Settlements: []world.Settlement{{ID: "home_center", IsCenter: true}}}
 	r := &Renderer{

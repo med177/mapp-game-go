@@ -2458,8 +2458,12 @@ func (s *GameState) CanRestoreSuccessorAtRegion(region *world.Region) bool {
 // ── Askeri Kapasite ───────────────────────────────────────────────────────
 
 const (
-	ManpowerPerRegion   = 5 // kara bölgesi başına temel birim kapasitesi
-	ManpowerBarracksAdd = 5 // kışlası olan bölgenin ekstra kapasitesi
+	// NavalCapacityPerRegion, donanmanın kara hâkimiyeti ve bölgesel lojistik
+	// tabanından aldığı kapasitedir. NavalCapacityPerPortLevel, tekrar eden
+	// liman binalarının her seviyesinin filoya açtığı ek gemi yuvasıdır.
+	NavalCapacityPerRegion    = 1
+	NavalCapacityPerPortLevel = 2
+	NavalPopulationPerUnit    = 1000
 )
 
 func buildingLevel(region *world.Region, buildingID string) int {
@@ -2505,20 +2509,95 @@ func UnitProductionLimit(region *world.Region, unitType *army.UnitType) int {
 }
 
 // ManpowerCap bir fraksiyonun toplam kara birimi kapasitesini döner.
+// Her saha ordusu army.MaxArmySize kadar birim taşıdığı için savaşçı sınırı
+// doğrudan maksimum ordu sayısına paraleldir.
 func (s *GameState) ManpowerCap(fid faction.FactionID) int {
-	cap := 0
+	if s == nil || fid == "" {
+		return 0
+	}
+	landRegions := 0
 	for _, r := range s.Regions {
-		if r.OwnerID != string(fid) || r.IsSea {
+		if r == nil || r.OwnerID != string(fid) || r.IsSea {
 			continue
 		}
-		cap += ManpowerPerRegion
-		for _, bid := range r.Buildings {
-			if bid == "barracks" {
-				cap += ManpowerBarracksAdd
-			}
+		landRegions++
+	}
+	if landRegions == 0 {
+		return 0
+	}
+	return s.MaxLandArmies(fid) * army.MaxArmySize
+}
+
+// NavalCap bir fraksiyonun sahip olabileceği toplam deniz birimi kapasitesini
+// döner. Nüfus ve kara bölgesi devletin ölçeğini, liman seviyesi ise doğrudan
+// deniz altyapısını temsil eder. Port binaları Region.Buildings içinde tekrar
+// ederek seviye taşıdığı için her tekrar kapasiteye katkı verir.
+func (s *GameState) NavalCap(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	landRegions := 0
+	population := 0
+	portLevels := 0
+	for _, r := range s.Regions {
+		if r == nil || r.OwnerID != string(fid) || r.IsSea {
+			continue
+		}
+		landRegions++
+		if r.Population > 0 {
+			population += r.Population
+		}
+		portLevels += buildingLevel(r, "port")
+	}
+	if landRegions == 0 {
+		return 0
+	}
+	populationCapacity := 0
+	if NavalPopulationPerUnit > 0 {
+		populationCapacity = population / NavalPopulationPerUnit
+	}
+	return landRegions*NavalCapacityPerRegion + portLevels*NavalCapacityPerPortLevel + populationCapacity
+}
+
+// DeployedNavalUnits bir fraksiyonun aktif filolarındaki toplam gemi sayısını
+// döner. Ticaret ve nakliye gemileri de aynı liman/nüfus kapasitesini tüketir.
+func (s *GameState) DeployedNavalUnits(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, a := range s.Armies {
+		if a != nil && a.OwnerID == string(fid) && a.IsNaval {
+			total += len(a.Units)
 		}
 	}
-	return cap
+	return total
+}
+
+// PendingNavalUnits üretim kuyruğunda kapasiteyi tüketen deniz birimlerini
+// sayar. Böylece aynı turda birden fazla limandan verilen emirler kapasiteyi
+// aşamaz.
+func (s *GameState) PendingNavalUnits(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, order := range s.ProductionQueue {
+		if order.Kind != "unit" || order.FactionID != string(fid) {
+			continue
+		}
+		unitType := s.UnitTypes[order.TypeID]
+		if unitType != nil && (unitType.RequiredBldg == "port" || unitType.Category == army.CategoryNavalWar || unitType.Category == army.CategoryNavalTrans || unitType.Category == army.CategoryNavalTrade) {
+			total++
+		}
+	}
+	return total
+}
+
+// NavalUnitsIncludingQueue kapasite kontrolünde kullanılacak aktif + bekleyen
+// toplam deniz birimi sayısını verir.
+func (s *GameState) NavalUnitsIncludingQueue(fid faction.FactionID) int {
+	return s.DeployedNavalUnits(fid) + s.PendingNavalUnits(fid)
 }
 
 // DeployedLandUnits bir fraksiyonun aktif kara ordu birim sayısını döner.

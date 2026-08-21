@@ -1115,7 +1115,7 @@ func tradeMaxSellAmount(gs *state.GameState, player, target *faction.Faction, go
 	if maxByBuyerDemand < playerStock {
 		playerStock = maxByBuyerDemand
 	}
-	if good == economy.GoodGrain && gs != nil {
+	if good == economy.GoodGrain {
 		maxBySaleBudget := gs.GrainSaleGoldBudget(gs.PlayerFactionID) / price
 		if maxBySaleBudget < playerStock {
 			playerStock = maxBySaleBudget

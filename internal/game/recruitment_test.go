@@ -51,6 +51,34 @@ func TestRecruitSpecificAllowsQueueWhenExistingArmyIsFull(t *testing.T) {
 	}
 }
 
+func TestRecruitSpecificScalesNavalQueueToFactionNavalCap(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"port": {ID: "port", OwnerID: "p1", Population: 1000, Buildings: []string{"port"}, Neighbors: []world.RegionID{"sea"}},
+			"sea":  {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"port"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", OwnerID: "p1", RegionID: "sea", DockedRegionID: "port", IsNaval: true, Units: []army.Unit{{TypeID: "transport"}, {TypeID: "warship"}}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{"p1": {ID: "p1"}},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", NameTR: "Nakliye Gemisi", Category: army.CategoryNavalTrans, RequiredBldg: "port", RequiredBldgLevel: 1, TurnsRequired: 1},
+			"warship":   {ID: "warship", NameTR: "Savaş Gemisi", Category: army.CategoryNavalWar, RequiredBldg: "port", RequiredBldgLevel: 1, TurnsRequired: 1},
+		},
+		ProductionQueue: []state.ProductionOrder{{Kind: productionKindUnit, FactionID: "p1", RegionID: "port", TypeID: "transport", TurnsLeft: 1}},
+	}
+	// 1 bölge + 1.000 nüfus + 1 liman seviyesi * 2 = 4; aktif 2 + kuyruk 1
+	// varken üç emirlik istekten yalnız biri kuyruğa girebilir.
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.recruitSpecific("port", "transport", 3)
+
+	if got := len(gs.ProductionQueue); got != 2 {
+		t.Fatalf("donanma kapasitesi quantity'yi sınırlamalıydı, kuyruk=%+v", gs.ProductionQueue)
+	}
+}
+
 func TestApplyProductionTicksCreatesNewArmyWhenExistingArmyIsFull(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

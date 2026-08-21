@@ -14,6 +14,7 @@ import (
 var (
 	FaceSmall     *text.GoTextFace // 12px — yardımcı metinler
 	FaceTiny      *text.GoTextFace // 10px — sıkışık durum etiketleri
+	FaceMicro     *text.GoTextFace // 8px — dar marker rozetleri
 	FaceMed       *text.GoTextFace // 14px — genel UI
 	FaceLarge     *text.GoTextFace // 18px — başlıklar
 	FaceLargeBold *text.GoTextFace // 18px — kritik vurgular
@@ -34,6 +35,7 @@ func init() {
 	}
 	FaceSmall = &text.GoTextFace{Source: fontSource, Size: 12}
 	FaceTiny = &text.GoTextFace{Source: fontSource, Size: 10}
+	FaceMicro = &text.GoTextFace{Source: fontSource, Size: 8}
 	FaceMed = &text.GoTextFace{Source: fontSource, Size: 14}
 	FaceLarge = &text.GoTextFace{Source: fontSource, Size: 18}
 	FaceLargeBold = &text.GoTextFace{Source: boldFontSource, Size: 18}
@@ -51,6 +53,13 @@ func DrawText(screen *ebiten.Image, str string, x, y float64, face *text.GoTextF
 func MeasureText(str string, face *text.GoTextFace) float64 {
 	w, _ := text.Measure(str, face, 0)
 	return w
+}
+
+func markerBadgeTextFace(label string, badgeWidth float64) *text.GoTextFace {
+	if MeasureText(label, FaceTiny) > badgeWidth-5 {
+		return FaceMicro
+	}
+	return FaceTiny
 }
 
 // DrawTextCentered metni x konumuna göre ortalar.

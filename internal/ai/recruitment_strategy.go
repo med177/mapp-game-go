@@ -120,7 +120,7 @@ func aiNeedsBarracksForMilitaryProduction(gs *state.GameState, fid faction.Facti
 	if gs == nil || gs.BuildingTypes == nil || gs.BuildingTypes["barracks"] == nil || !aiHasBuildableBarracksRegion(gs, fid) {
 		return false
 	}
-	if aiFactionBarracksCount(gs, fid) == 0 || spareManpower <= state.ManpowerPerRegion {
+	if aiFactionBarracksCount(gs, fid) == 0 || spareManpower <= army.MaxArmySize {
 		return true
 	}
 	if gs.CurrentLandArmies(fid) >= gs.MaxLandArmies(fid) {

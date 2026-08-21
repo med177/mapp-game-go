@@ -159,6 +159,7 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 	var regionData []scenarioRegionProductionJSON
 	read1300JSON(t, filepath.Join(dataPath, "regions.json"), &regionData)
 	resourceRegions := map[string]int{"baharat": 0, "kumaş": 0, "taş": 0}
+	resourceTotals := map[string]int{"baharat": 0, "kumaş": 0, "taş": 0}
 	for _, rawRegion := range regionData {
 		region := regions[rawRegion.ID]
 		if region == nil {
@@ -174,15 +175,33 @@ func Test1300ScenarioResourceSpecializationsAndProductionCosts(t *testing.T) {
 		if region.BaseSpiceOutput > 0 {
 			resourceRegions["baharat"]++
 		}
+		resourceTotals["baharat"] += region.BaseSpiceOutput
 		if region.BaseClothOutput > 0 {
 			resourceRegions["kumaş"]++
 		}
+		resourceTotals["kumaş"] += region.BaseClothOutput
 		if region.BaseStoneOutput > 0 {
 			resourceRegions["taş"]++
 		}
+		resourceTotals["taş"] += region.BaseStoneOutput
 	}
 	if resourceRegions["baharat"]+resourceRegions["kumaş"]+resourceRegions["taş"] == 0 {
 		t.Log("regions.json içinde kara bölgeleri için kaynak uzmanlaşması tanımlanmamış")
+	}
+	expectedResourceBalance := map[string]struct{ regions, total int }{
+		"baharat": {regions: 20, total: 356},
+		"kumaş":   {regions: 32, total: 718},
+	}
+	for resource, expected := range expectedResourceBalance {
+		if got := resourceRegions[resource]; got != expected.regions {
+			t.Errorf("1300 %s üretici bölge sayısı değişti: got=%d want=%d", resource, got, expected.regions)
+		}
+		if got := resourceTotals[resource]; got != expected.total {
+			t.Errorf("1300 %s toplam üretimi değişti: got=%d want=%d", resource, got, expected.total)
+		}
+	}
+	if bilecik := regions["bilecik_frontier"]; bilecik == nil || bilecik.BaseClothOutput != 24 {
+		t.Errorf("Osmanlı erken asker üretimi için Bilecik kumaş üretimi korunmalı: got=%v want=24", bilecik)
 	}
 	buildings, err := city.LoadBuildings(filepath.Join(dataPath, "buildings.json"))
 	if err != nil {
