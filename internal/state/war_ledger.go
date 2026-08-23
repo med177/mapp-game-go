@@ -7,7 +7,7 @@ import (
 
 // PostPeaceTruceTurns kabul edilen barıştan sonra tarafların yeniden savaş
 // ilan edemeyeceği ateşkes süresidir.
-const PostPeaceTruceTurns = 6
+const PostPeaceTruceTurns = 5
 
 // RecordTruce barıştan sonra aynı tarafların hemen yeniden savaşa girmesini
 // önleyen save-backed ateşkes bitişini kaydeder.

@@ -7,6 +7,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Barış sonrası beş turluk ateşkes artık devletin barış yaptığı
+  düşmana karşı müttefik veya imparatorluk savaş çağrısıyla yeniden savaşa
+  girmesini de engelliyor. Doğrudan savaş ilanı, çağrı önizlemesi ve bekleyen
+  savaş çağrısı çözümlemesi aynı kuralı kullanıyor. Regression:
+  `TestWarCallBlockedByRecentPeaceWithEnemy`.
+
+- 2026-08-23: Diplomasi teklif modalının sağ özet kartında uzun teklif eden
+  devlet adları iki satıra kadar sarılıyor; durum ve ilişki satırları ek satır
+  kadar aşağı taşınarak kart dışına taşma önlendi (`internal/render/renderer_dialogs.go`).
+
 - 2026-08-23: Ordu bilgi paneline seçili birimleri `SİL` düğmesiyle terhis etme
   eklendi. Evet/Hayır modalı sonrasında birimler çıkarılıyor ve normal üretim
   maliyetlerinin kaynak bazında `%20`si iade ediliyor; boş ordular ile lojistik

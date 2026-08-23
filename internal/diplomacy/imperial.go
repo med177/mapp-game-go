@@ -89,6 +89,10 @@ func AssessImperialWarCall(gs *state.GameState, empire, memberID, enemy faction.
 		assessment.StatusTR = "Zaten savaşta"
 		return assessment
 	}
+	if remaining := gs.TruceRemaining(memberID, enemy); remaining > 0 {
+		assessment.BlockReason = factionLabel(gs, memberID) + " ile " + factionLabel(gs, enemy) + " arasındaki ateşkes sürüyor (" + itoa(remaining) + " tur)."
+		return assessment
+	}
 	if sameRealm(gs, empire, enemy) {
 		assessment.BlockReason = "Hedef imparatorluk realm'inde"
 		return assessment

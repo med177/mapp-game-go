@@ -499,10 +499,15 @@ türetilir.
 
 Oyuncuya gelen diplomasi teklif modalında barış teklifleri için kabul sonucunun
 oyuncuya etkisi ayrıca gösterilir: `diplomacyOfferTruceNoticeTR()` ortak
-`PostPeaceTruceTurns` değerini kullanarak kabul sonrası altı tur boyunca aynı
+`PostPeaceTruceTurns` değerini kullanarak kabul sonrası beş tur boyunca aynı
 devlete savaş ilan edilemeyeceğini bildirir. Bildirim yalnız
 `ActionProposePeace` tekliflerinde çizilir; diğer teklif türlerinin modal
 geometrisi ve metni değişmez (`internal/render/renderer_dialogs.go`).
+
+Diplomasi teklif modalının sağ özet kartındaki teklif eden devlet adı uzun
+olduğunda ortak `WrappedLabel` ile iki satıra kadar sarılır; durum özeti ve
+ilişki satırları ek satır kadar aşağı taşınarak kart sınırı içinde kalır
+(`internal/render/renderer_dialogs.go`).
 
 Filonun taşıdığı kara ordusu rozeti `navalEmbarkedArmyBadgeRect()` ile çizim ve
 hit-test'te aynı 16 px kare geometriyi kullanır. Bonus dairesi ve taşınan ordu

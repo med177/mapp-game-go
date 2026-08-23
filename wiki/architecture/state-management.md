@@ -202,7 +202,7 @@ temizler. `SyncWarLedgers()` eski save veya doğrudan stance düzenleyen legacy 
 aktif ilişkilerle uzlaştırır; ledger taşımayan eski save'deki savaş yükleme turunda sıfır
 sayaçla başlar.
 Barış çözümünde `RecordTruce()` `PostPeaceTruceTurns` sabitiyle aynı relation key
-için altı tur sonrasını `RecentTruces` içine yazar; bu alan compact save'e alınır
+için beş tur sonrasını `RecentTruces` içine yazar; bu alan compact save'e alınır
 ve eski save'lerde boş kabul edilir. `TruceRemaining()` süresi dolmuş kaydı etkisiz
 sayar. Render katmanı da aynı sabiti kullanarak barış teklifi modalında ateşkes
 süresini gösterir.

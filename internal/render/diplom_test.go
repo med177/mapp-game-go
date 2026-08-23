@@ -1153,7 +1153,7 @@ func TestDiplomacyOfferMessageTRWarJoinCall(t *testing.T) {
 }
 
 func TestDiplomacyOfferTruceNoticeTR(t *testing.T) {
-	if got := diplomacyOfferTruceNoticeTR(state.DiplomaticOffer{Action: string(diplomacy.ActionProposePeace)}); got != "Ateşkes: Barışı kabul ederseniz 6 tur boyunca bu devlete yeniden savaş ilan edemezsiniz." {
+	if got := diplomacyOfferTruceNoticeTR(state.DiplomaticOffer{Action: string(diplomacy.ActionProposePeace)}); got != "Ateşkes: Barışı kabul ederseniz 5 tur boyunca bu devlete yeniden savaş ilan edemezsiniz." {
 		t.Fatalf("beklenmeyen ateşkes bildirimi: %q", got)
 	}
 	if got := diplomacyOfferTruceNoticeTR(state.DiplomaticOffer{Action: string(diplomacy.ActionProposeTrade)}); got != "" {

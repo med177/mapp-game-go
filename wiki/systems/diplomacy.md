@@ -203,6 +203,7 @@ Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon ak
 - Savaş ilanından önce hedefin doğrudan dış müttefikleri snapshot alınarak ilişki sonucu uygulanır. Tarafsız kalan her müttefikle ilişki `-25` düşer; saldıranın aynı zamanda müttefiki olan hedef müttefikiyle ittifak bozulur ve ilişki `-35` düşer. Savaşa katılan müttefiklerde bu ceza ikinci kez uygulanmaz; ilişki doğrudan `Savaş / -80` olur.
 - Seçilip de çağrıya gelmeyen müttefiğin ittifakı bozulur; ilişki puanı `-10` düşer.
 - Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
+- Barıştan sonraki beş turluk `PostPeaceTruceTurns` ateşkesi, doğrudan savaş ilanının yanı sıra müttefik veya imparatorluk savaş çağrılarında da uygulanır; devlet barış yaptığı düşmana karşı başka bir müttefikinin savaşına katılamaz (`AssessWarCall()`, `AssessImperialWarCall()`).
 - Savaş ilanı uygulandığı anda render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir. Özet kapanmadan hareket, temas ve diğer savaş devam akışları çalıştırılmaz; özet kapandıktan sonra bekleyen normal aksiyon sürdürülür.
 
 AI savaş ilanı öncesinde iki tarafın koalisyon gücünü projekte eder. Hedefin
@@ -307,7 +308,7 @@ altın tazminatı veya vassallık olarak sınıflandırır. `ExecuteAIPeace` AI-
 barışlarında sonucu uygular. Oyuncunun mevcut barış aksiyonu ise seçim yapılmadan
 toprak veya altın kaybettirmemek için varsayılan olarak beyaz barıştır.
 
-Barış sonrası taraflara altı turluk save-backed ateşkes verilir. Bu bilgi
+Barış sonrası taraflara beş turluk save-backed ateşkes verilir. Bu bilgi
 `GameState.RecentTruces` içinde relation key ve bitiş turu olarak tutulur;
 `ActionDeclareWar` ateşkes bitene kadar bloklanır.
 
@@ -363,7 +364,7 @@ AI:
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
 - AI, kendi çıkarı olan ve genişleme hedefi olmayan barışçıl ilişkilerde ticaret/ittifak/güvenlik eşiğini yükseltmek için aynı `Heyet` ve `Hediye` aksiyonlarını kullanır; heyet `40` altın karşılığında `+8`, hediye `120` altın karşılığında `+15` verir ve hediyenin `80` altını alıcıya aktarılır. Bu harcamalar AI hazinesinde tahıl/kaynak tedariki ile araştırma, ekonomi, donanma ve ordu yatırımlarından sonra gelir; `1300_ottoman_rise` bütçesinde yalnız bu önceliklerden arta kalan altın kullanılabilir. Harcama kararı sonrasında deterministik `%60` başarı zarı atılır; başarısız zar teklif veya ödeme üretmez. AI-AI işlemleri anında, oyuncuya gönderilenler ise `DiplomaticOffers` kuyruğunda yalnız `Tamam` bildirimiyle çözülür.
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
-- barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde altı turluk
+- barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde beş turluk
   save-backed ateşkes alır; bu sürede `ActionDeclareWar` engellenir, süre bitince
   savaş ilanı yeniden açılır. Koalisyon barışı taraf çiftlerinin her biri için aynı
   kaydı üretir
@@ -418,7 +419,7 @@ AI artık oyuncuya doğrudan barış sonucu dayatmaz. Savaş baskısı şartı o
 Oyuncu teklif geldiğinde `Kabul Et` veya `Reddet` yanıtı verir; kabulde standart diplomasi motoru (`Execute`) çalışır, redde ise teklif kuyruktan düşer ve savaş sürer.
 
 Barış teklifi modalı kabulün ek sonucunu da açıkça belirtir: kabul edilirse
-`PostPeaceTruceTurns` değerine göre altı tur boyunca teklif gönderen devlete
+`PostPeaceTruceTurns` değerine göre beş tur boyunca teklif gönderen devlete
 yeniden savaş ilan edilemez. Bu bildirim yalnız barış tekliflerinde gösterilir;
 ittifak, ticaret ve savaşa katılım çağrılarında modal metni değişmez.
 

@@ -170,6 +170,10 @@ func AssessWarCall(gs *state.GameState, caller, ally, enemy faction.FactionID) W
 		assessment.BlockReason = "Hedefle aynı realm içinde"
 		return assessment
 	}
+	if remaining := gs.TruceRemaining(allyRoot, enemyRoot); remaining > 0 {
+		assessment.BlockReason = factionLabel(gs, allyRoot) + " ile " + factionLabel(gs, enemyRoot) + " arasındaki ateşkes sürüyor (" + itoa(remaining) + " tur)."
+		return assessment
+	}
 
 	rel := Relation(gs, callerRoot, allyRoot)
 	if rel == nil || rel.Stance != faction.StanceAllied {

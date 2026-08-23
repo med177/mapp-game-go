@@ -839,16 +839,38 @@ func TestAcceptedPeaceCreatesTemporaryTruce(t *testing.T) {
 	if result := Execute(gs, "a", "b", ActionProposePeace); !result.Applied {
 		t.Fatalf("barış uygulanmalıydı: %+v", result)
 	}
-	if remaining := gs.TruceRemaining("a", "b"); remaining != 6 {
-		t.Fatalf("barış sonrası altı turluk ateşkes bekleniyordu: remaining=%d", remaining)
+	if remaining := gs.TruceRemaining("a", "b"); remaining != 5 {
+		t.Fatalf("barış sonrası beş turluk ateşkes bekleniyordu: remaining=%d", remaining)
 	}
 	if result := Execute(gs, "a", "b", ActionDeclareWar); result.Applied {
 		t.Fatalf("ateşkes sürerken yeniden savaş ilan edilmemeliydi: %+v", result)
 	}
 
-	gs.Turn += 6
+	gs.Turn += 5
 	if result := Execute(gs, "a", "b", ActionDeclareWar); !result.Applied {
 		t.Fatalf("ateşkes bitince savaş ilanı yeniden açılmalıydı: %+v", result)
+	}
+}
+
+func TestWarCallBlockedByRecentPeaceWithEnemy(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	ally := EnsureRelation(gs, "a", "c")
+	ally.Stance = faction.StanceAllied
+	ally.Score = 60
+	gs.RecordTruce("c", "b")
+
+	assessment := AssessWarCall(gs, "a", "c", "b")
+	if assessment.BlockReason == "" {
+		t.Fatal("barış yaptığı düşmana karşı müttefik savaş çağrısı ateşkes sürerken engellenmeliydi")
+	}
+
+	result := ExecuteWarDeclaration(gs, "a", "b", nil)
+	if !result.Applied {
+		t.Fatalf("ana savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if IsWar(gs, "c", "b") {
+		t.Fatal("ateşkes altındaki müttefik savunma savaşına katılmamalıydı")
 	}
 }
 

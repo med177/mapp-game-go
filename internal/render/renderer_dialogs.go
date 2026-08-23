@@ -1498,12 +1498,18 @@ func drawDiplomacyOfferSummaryPanel(screen *ebiten.Image, gs *state.GameState, p
 		subjectName = string(subject)
 	}
 	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 10, W: panelRect.W - 28}, "Teklif Eden Devlet", color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 32, W: panelRect.W - 28}, trimTextToWidth(subjectName, FaceSmall, panelRect.W-28), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
-	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+48, "Karar vermek için anlık durum özeti")
+	nameRect := gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 32, W: panelRect.W - 28}
+	nameLines := 1
+	if MeasureText(subjectName, FaceSmall) > nameRect.W {
+		nameLines = 2
+	}
+	drawUIWrappedLabel(screen, nameRect, subjectName, ColorWhite, gameui.TextSmall, 16, nameLines)
+	nameBlockH := float64(nameLines-1) * 16
+	drawUIMutedText(screen, panelRect.X+14, panelRect.Y+48+nameBlockH, "Karar vermek için anlık durum özeti")
 
 	rel := diplomacy.Relation(gs, gs.PlayerFactionID, subject)
 	relationColor, relationLabel := diplomacyStatusDisplay(gs, gs.PlayerFactionID, subject, rel)
-	y := panelRect.Y + 72
+	y := panelRect.Y + 72 + nameBlockH
 	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Sizinle durum", relationLabel, ColorGray, relationColor)
 	y += 22
 
