@@ -84,6 +84,27 @@ func TestAIExpansionReserveExceedsHistoricalTargetProjectedLandPower(t *testing.
 	}
 }
 
+func TestAIAggressiveExpansionKeepsBuildingArmyAfterReserveFloor(t *testing.T) {
+	gs := &state.GameState{
+		ScenarioID: "1300_ottoman_rise",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", AIAggressiveness: 60},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"a": {ID: "a", OwnerID: "ai", Population: 800},
+			"b": {ID: "b", OwnerID: "ai", Population: 400},
+		},
+		AIPlans: map[faction.FactionID]*state.AIPlanState{
+			"ai": {Kind: state.AIObjectiveExpand},
+		},
+	}
+
+	requirement := aiForceRequirements(gs, "ai", nil)
+	if requirement.LandTarget <= 8 {
+		t.Fatalf("agresif genişleme AI'si yalnız nüfus tabanında durmamalıydı: %+v", requirement)
+	}
+}
+
 func TestAIReserveRecruitmentQueuesOnlyPopulationBasedShortfall(t *testing.T) {
 	gs := &state.GameState{
 		ScenarioID: "1300_ottoman_rise",

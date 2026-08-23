@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Agresif veya savaş halindeki 1300 AI, nüfus tabanlı kara rezervine
+  ulaştığında asker üretimini kesmiyor. Genişleme kuvveti hedefi agresifliğe göre
+  artırılıyor; mevcut `ManpowerCap`, bütçe, kaynak, lojistik ve güvenlik sınırları
+  korunuyor. Regression: `TestAIAggressiveExpansionKeepsBuildingArmyAfterReserveFloor`.
+
 - 2026-08-23: Barış sonrası beş turluk ateşkes artık devletin barış yaptığı
   düşmana karşı müttefik veya imparatorluk savaş çağrısıyla yeniden savaşa
   girmesini de engelliyor. Doğrudan savaş ilanı, çağrı önizlemesi ve bekleyen

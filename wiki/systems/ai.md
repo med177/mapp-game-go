@@ -12,6 +12,12 @@ related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, a
 **Kaynak:** `internal/ai/ai.go`, `internal/ai/turn_stepper.go`,
 
 Askerî üretim kararı mevcut ordunun sabit altın bakımını da hesaba katar.
+Nüfus tabanlı kara rezervi yalnızca asgarî kuvvet hedefidir: `expand` planındaki
+veya savaş halindeki agresiflik değeri `40` ve üzeri AI, bu tabana ulaştıktan
+sonra da genişleyen bir operasyon kuvveti hedefler. Hedef yine `ManpowerCap`,
+lojistik, üretim hattı, güvenli bölge ve bütçe kontrolleriyle sınırlıdır; zengin
+AI'nin kaynakları varken üretimin rezerv eşiğinde gereksiz yere durması böylece
+önlenir.
 1300 bütçesi mevcut ordunun üç turluk `GoldUpkeep` giderini acil rezervde
 tutar; yeni birim seçimi ise peşin `GoldCost` sonrasında aynı üç turluk maaş
 rezervini koruyamıyorsa elenir. Birlik puanlamasında altın bakımı, altın geliri

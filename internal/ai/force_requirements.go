@@ -18,6 +18,8 @@ const (
 	// Tarihsel fetih hedefi için AI, hedefin yalnız eşiti değil belirgin
 	// üstünlüğü olacak kadar kara gücü kurar.
 	aiExpansionPowerAdvantagePercent = 135
+	aiAggressiveForceThreshold       = 40
+	aiAggressiveForceBonusBase       = 15
 )
 
 // aiForceRequirement, kapasiteyi değil devletin ekonomik ve coğrafi ölçeğine
@@ -71,6 +73,16 @@ func aiForceRequirements(gs *state.GameState, fid faction.FactionID, ctx *Strate
 		requirement.LandTarget = (requirement.LandTarget*5 + 3) / 4
 	} else if planKind == state.AIObjectiveDefend {
 		requirement.LandTarget = (requirement.LandTarget*6 + 4) / 5
+	}
+	// Nüfus rezervi yalnızca asgarî kuvvet tabanıdır. Genişleme planı veya
+	// aktif savaş varken agresif AI bu tabana ulaştığında üretimi kesmemeli;
+	// hazine ve kaynakları uygunsa operasyon için ek kuvvet hazırlamalıdır.
+	// Agresiflik değeri olmayan eski/test fraksiyonlarında mevcut hedef aynen
+	// korunur.
+	if self := gs.Factions[fid]; self != nil && self.AIAggressiveness >= aiAggressiveForceThreshold && (planKind == state.AIObjectiveExpand || aiFactionAtWar(gs, string(fid))) {
+		bonusPercent := aiAggressiveForceBonusBase + self.AIAggressiveness - aiAggressiveForceThreshold
+		bonus := (requirement.LandTarget*bonusPercent + 99) / 100
+		requirement.LandTarget += maxInt(1, bonus)
 	}
 	requirement.LandTarget = minInt(requirement.LandTarget, gs.ManpowerCap(fid))
 	requirement.applyExpansionPowerTarget(gs, fid, planKind)
