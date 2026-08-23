@@ -7,6 +7,24 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Tek saha ordusunun kuşatıcıyı yenmeye yetmediği durumda AI artık
+  ulaşılabilir yakın orduları ortak `relief` rally noktasında topluyor. Toplam güç
+  kuşatıcı gücünün `%110`una ulaştığında ordular mevcut lojistik/kapasite kurallarıyla
+  birleşip sonraki tur kuşatmayı kaldırmaya çalışıyor. Regression:
+  `TestFriendlyReliefRalliesMultipleArmiesWhenOneIsInsufficient`; doğrulama:
+  `go test ./internal/ai`.
+
+- 2026-08-23: AI'nin kuşatma altındaki başkente yakın ordusuyla müdahale etmemesi
+  düzeltildi. `nearestReliefArmy()` artık yalnız ulaşılabilir ve kuşatıcıdan en az
+  `%110` güçlü orduları değerlendiriyor; kritik savunmada en güçlü/tek saha ordusu
+  da relief rolüne atanabiliyor. Üstün kuşatıcıya karşı zayıf ordu pasif savunmada
+  bırakılıyor. Regression: `TestFriendlyReliefUsesStrongestArmyWhenItIsTheOnlyViableForce`,
+  `TestFriendlyReliefDoesNotCommitToSuperiorBesieger`; doğrulama: `go test ./internal/ai`.
+
+- 2026-08-23: Gelir ve tahıl hesabı popup'larındaki header/footer ayırıcılarının
+  bitiş koordinatı popup genişliği yerine panelin mutlak X konumundan türetildi.
+  Böylece çizgiler panel dışına taşmıyor (`internal/render/income_popup.go`).
+
 - 2026-08-23: Ordu oluşturma paneli, alt ana aksiyon HUD'ının hemen üzerine
   `3 px` boşlukla hizalandı. Çizim ve hit-test aynı ortak Y geometrisini kullanıyor.
   Regression: `TestRecruitPanelSitsThreePixelsAboveBottomActionHUD`; doğrulama:

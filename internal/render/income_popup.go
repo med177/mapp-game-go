@@ -199,7 +199,7 @@ func (r *Renderer) drawGrainEconomyPopup(screen *ebiten.Image) {
 	drawUIPanelFrame(screen, popup, panelBg, panelBorder, 1.5, 5)
 	drawUILabel(screen, gameui.Rect{X: popup.X + 12, Y: popup.Y + 10}, "Tahıl hesabı / tur", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: popup.X + popup.W - 12, Y: popup.Y + 10, W: 0}, formatSignedAmount(status.NetChange), grainPopupNetColor(status.NetChange), gameui.TextSmall, gameui.TextAlignEnd)
-	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+32), float32(popup.W-20), 1, panelBorder)
+	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+32), float32(popup.X+popup.W-20), 1, panelBorder)
 
 	lines := grainEconomyPopupLines(r.gs, status)
 	y := popup.Y + 42
@@ -214,7 +214,7 @@ func (r *Renderer) drawGrainEconomyPopup(screen *ebiten.Image) {
 		drawUIKeyValueRowWithGap(screen, popup.X+12, y, popup.W-24, line.label, value, ColorGray, line.color, 8)
 		y += 21
 	}
-	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+popup.H-30), float32(popup.W-20), 1, panelBorder)
+	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+popup.H-30), float32(popup.X+popup.W-20), 1, panelBorder)
 	drawUILabel(screen, gameui.Rect{X: popup.X + 12, Y: popup.Y + popup.H - 22}, "Net değişim", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: popup.X + popup.W - 12, Y: popup.Y + popup.H - 22, W: 0}, formatSignedAmount(status.NetChange), grainPopupNetColor(status.NetChange), gameui.TextSmall, gameui.TextAlignEnd)
 }
@@ -240,7 +240,7 @@ func (r *Renderer) drawGoldIncomePopup(screen *ebiten.Image) {
 	drawUIPanelFrame(screen, popup, panelBg, panelBorder, 1.5, 5)
 	drawUILabel(screen, gameui.Rect{X: popup.X + 12, Y: popup.Y + 10}, "Gelir hesabı / tur", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: popup.X + popup.W - 12, Y: popup.Y + 10, W: 0}, formatSignedAmount(status.NetChange), ColorGold, gameui.TextSmall, gameui.TextAlignEnd)
-	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+32), float32(popup.W-20), 1, panelBorder)
+	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+32), float32(popup.X+popup.W-20), 1, panelBorder)
 
 	lines := goldIncomePopupLines(status)
 	y := popup.Y + 42
@@ -251,7 +251,7 @@ func (r *Renderer) drawGoldIncomePopup(screen *ebiten.Image) {
 		drawUIKeyValueRowWithGap(screen, popup.X+12, y, popup.W-24, line.label, formatSignedAmount(line.value), ColorGray, line.color, 8)
 		y += 21
 	}
-	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+popup.H-30), float32(popup.W-20), 1, panelBorder)
+	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+popup.H-30), float32(popup.X+popup.W-20), 1, panelBorder)
 	drawUILabel(screen, gameui.Rect{X: popup.X + 12, Y: popup.Y + popup.H - 22}, "Net değişim", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: popup.X + popup.W - 12, Y: popup.Y + popup.H - 22, W: 0}, formatSignedAmount(status.NetChange), ColorGold, gameui.TextSmall, gameui.TextAlignEnd)
 }

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-21
+last_updated: 2026-08-23
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -30,6 +30,14 @@ gemileri de aynı unit-cost/maaş rezervi yardımcısından geçer.
 
 ## Aktif kuşatma desteği ve fetih hakkı
 
+Kendi başkenti veya dost realm bölgesi kuşatıldığında AI, kuşatıcıyı yenme ihtimali
+olan ulaşılabilir en yakın mobil kara ordusunu `relief` rolüne atar. Yardım seçimi,
+ordunun etkin gücünün kuşatıcı gücünün en az `%110`u olmasını gerektirir; bu eşik
+sağlanmıyorsa AI zayıf orduyu kuşatmaya sürmez. Kritik savunma olduğu için en güçlü
+ordu ve tek saha ordusu da bu seçimde kullanılabilir. Yardım ordusu kuşatma bölgesine
+ulaştığında mevcut kuşatma destek/savaş akışı kuşatıcıyı yenmeyi ve başarılı olursa
+`SiegeState` kaydını kaldırmayı dener.
+
 Bir bölgeye ilk kuşatma kurulduktan sonra aynı bölge yeni bir kuşatma hedefi
 olarak kullanılamaz. Kuşatmacıyla müttefik veya aynı realm içindeki AI ordusu
 hedefe yalnız destek için katılabilir; savunmayı yense bile bölgenin sahibi
@@ -39,6 +47,12 @@ ayırır; `aiApplyConquest()` da eski veya beklenmedik bir akışın kuşatmacı
 dışındaki sahiplik değişikliğini güvenlik kontrolüyle reddeder.
 
 Regression: `TestExecuteMoveAlliedSiegeSupportCannotConquerBesiegedRegion`.
+
+Tek bir ordu kuşatıcıyı yenmeye yetmiyorsa AI, hedefe erişebilen yakın dost mobil
+orduları toplam güç kuşatıcı gücünün `%110`una ulaşana kadar ortak `relief` rally
+noktasında toplar. Ordular rally anchor'ına ilerler, erken saldırmaz ve mevcut
+lojistik/kapasite kuralları izin verdiğinde birleşir; birleşen kuvvet sonraki AI
+turunda kuşatmayı kaldırmayı dener.
 
 ## Memnuniyet ve vergi politikası
 

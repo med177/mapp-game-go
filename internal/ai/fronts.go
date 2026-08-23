@@ -293,6 +293,7 @@ func selectAIFrontTarget(ctx *StrategicContext, front AIFront) world.RegionID {
 				if siege := ctx.gs.SiegeAt(target.ID); siege != nil || ctx.gs.Turn-ledger.TargetLockedTurn < aiFrontTargetLockTurns {
 					return target.ID
 				}
+
 			}
 		}
 		if target := sharedAIWarTarget(ctx, front); target != "" {
@@ -458,11 +459,24 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 	}
 
 	for _, regionID := range aiFriendlyReliefTargets(ctx) {
-		candidate := nearestUnassignedArmy(ctx, mobile, regionID, strongest, false)
-		if candidate == nil {
+		candidate := nearestReliefArmy(ctx, mobile, regionID)
+		if candidate != nil {
+			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleRelief, AnchorRegionID: regionID, Reason: "dost kuşatmasını kaldır"}
 			continue
 		}
-		ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleRelief, AnchorRegionID: regionID, Reason: "dost kuşatmasını kaldır"}
+		group := selectReliefRallyGroup(ctx, mobile, regionID)
+		if len(group) == 0 {
+			continue
+		}
+		rallyRegionID := group[0].RegionID
+		for _, groupArmy := range group {
+			ctx.ArmyAssignments[groupArmy.ID] = AIArmyAssignment{
+				Role:           AIArmyRoleRelief,
+				AnchorRegionID: rallyRegionID,
+				Rallying:       true,
+				Reason:         "kuşatmayı kaldırmak için yardım kuvveti toplanıyor",
+			}
+		}
 	}
 
 	reserveAnchor := aiReserveAnchor(ctx)
@@ -707,6 +721,100 @@ func aiFriendlyReliefTargets(ctx *StrategicContext) []world.RegionID {
 	}
 	sort.Slice(targets, func(i, j int) bool { return targets[i] < targets[j] })
 	return targets
+}
+
+const aiReliefPowerMarginPercent = 110
+
+// nearestReliefArmy, kuşatmayı kaldırma ihtimali olan en yakın orduyu seçer.
+func nearestReliefArmy(ctx *StrategicContext, armies []*army.Army, target world.RegionID) *army.Army {
+	if ctx == nil || ctx.gs == nil {
+		return nil
+	}
+	var best *army.Army
+	bestDistance := int(^uint(0) >> 1)
+	for _, candidate := range armies {
+		if candidate == nil {
+			continue
+		}
+		if _, assigned := ctx.ArmyAssignments[candidate.ID]; assigned || !aiCanDefeatSiege(ctx, candidate, target) {
+			continue
+		}
+		distance := ctx.routeDistance(candidate, target, aiRouteGeneral)
+		if distance < 0 {
+			continue
+		}
+		if best == nil || distance < bestDistance || (distance == bestDistance && candidate.ID < best.ID) {
+			best = candidate
+			bestDistance = distance
+		}
+	}
+	return best
+}
+
+func aiCanDefeatSiege(ctx *StrategicContext, candidate *army.Army, target world.RegionID) bool {
+	if ctx == nil || ctx.gs == nil || candidate == nil || target == "" {
+		return false
+	}
+	siege := ctx.gs.SiegeAt(target)
+	if siege == nil || siege.AttackerArmyID == candidate.ID {
+		return false
+	}
+	siegeArmy := ctx.gs.Armies[siege.AttackerArmyID]
+	if siegeArmy == nil || len(candidate.Units) == 0 || len(siegeArmy.Units) == 0 {
+		return false
+	}
+	return candidate.TotalStrength(ctx.gs.UnitTypes)*100 >= siegeArmy.TotalStrength(ctx.gs.UnitTypes)*aiReliefPowerMarginPercent
+}
+
+// selectReliefRallyGroup, tek ordunun yetmediği durumda kuşatıcıyı yenebilecek
+// toplam güce ulaşana kadar hedefe en yakın erişilebilir orduları seçer.
+// Seçilen ordular ilk adayın bölgesinde toplanır; mevcut tur sonu birleşme
+// akışı onları kapasite elverdiği ölçüde tek orduya dönüştürür.
+func selectReliefRallyGroup(ctx *StrategicContext, armies []*army.Army, target world.RegionID) []*army.Army {
+	if ctx == nil || ctx.gs == nil {
+		return nil
+	}
+	siege := ctx.gs.SiegeAt(target)
+	if siege == nil {
+		return nil
+	}
+	siegeArmy := ctx.gs.Armies[siege.AttackerArmyID]
+	if siegeArmy == nil || len(siegeArmy.Units) == 0 {
+		return nil
+	}
+	candidates := make([]*army.Army, 0, len(armies))
+	distances := make(map[army.ArmyID]int, len(armies))
+	for _, candidate := range armies {
+		if candidate == nil || candidate.IsNaval || candidate.IsGarrison || len(candidate.Units) == 0 {
+			continue
+		}
+		if _, assigned := ctx.ArmyAssignments[candidate.ID]; assigned {
+			continue
+		}
+		distance := ctx.routeDistance(candidate, target, aiRouteGeneral)
+		if distance < 0 {
+			continue
+		}
+		candidates = append(candidates, candidate)
+		distances[candidate.ID] = distance
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if distances[candidates[i].ID] != distances[candidates[j].ID] {
+			return distances[candidates[i].ID] < distances[candidates[j].ID]
+		}
+		return candidates[i].ID < candidates[j].ID
+	})
+
+	group := make([]*army.Army, 0, len(candidates))
+	groupPower := 0
+	for _, candidate := range candidates {
+		group = append(group, candidate)
+		groupPower += candidate.TotalStrength(ctx.gs.UnitTypes)
+		if groupPower*100 >= siegeArmy.TotalStrength(ctx.gs.UnitTypes)*aiReliefPowerMarginPercent {
+			return group
+		}
+	}
+	return nil
 }
 
 func aiReserveAnchor(ctx *StrategicContext) world.RegionID {

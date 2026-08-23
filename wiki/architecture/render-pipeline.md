@@ -7,6 +7,11 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Gelir ve tahıl ekonomi popup'larının header/footer ayırıcıları, `drawUISeparator`
+helper'ının mutlak `x2` sözleşmesine uygun olarak panelin kendi X konumundan
+türetilir. Böylece popup ekranın sağ tarafında açıldığında ayırıcılar panel dışına
+taşmaz (`internal/render/income_popup.go`).
+
 Ordu oluşturma panelinin alt kenarı, alt aksiyon HUD'ının üst kenarından ortak
 `bottomActionHudRect()` geometrisi üzerinden `3 px` yukarıda konumlanır.
 Panelin çizim, kapatma düğmesi ve hit-test rect'leri aynı `recruitPanelY()`

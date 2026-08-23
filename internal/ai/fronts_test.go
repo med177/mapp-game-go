@@ -317,10 +317,66 @@ func TestActiveSiegeAndFriendlyReliefReceiveDedicatedRoles(t *testing.T) {
 		}
 		gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
 		ctx := prepareStrategicContext(gs, "ai")
-		if got := ctx.ArmyAssignments["weak"]; got.Role != AIArmyRoleRelief || got.AnchorRegionID != "capital" {
-			t.Fatalf("en yakın uygun ordu relief rolü almalıydı: %+v", got)
+		if got := ctx.ArmyAssignments["strong"]; got.Role != AIArmyRoleRelief || got.AnchorRegionID != "capital" {
+			t.Fatalf("en yakın ve yeterli ordu relief rolü almalıydı: %+v", got)
 		}
 	})
+}
+
+func TestFriendlyReliefUsesStrongestArmyWhenItIsTheOnlyViableForce(t *testing.T) {
+	gs := aiFrontTestState()
+	delete(gs.Armies, "weak")
+	gs.Armies["enemy"].RegionID = "capital"
+	gs.Armies["enemy"].Units = gs.Armies["enemy"].Units[:1]
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"capital": {RegionID: "capital", AttackerArmyID: "enemy", AttackerFactionID: "enemy"},
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	if got := ctx.ArmyAssignments["strong"]; got.Role != AIArmyRoleRelief || got.AnchorRegionID != "capital" {
+		t.Fatalf("tek ve yeterli saha ordusu başkenti kurtarmaya gönderilmeliydi: %+v", got)
+	}
+}
+
+func TestFriendlyReliefDoesNotCommitToSuperiorBesieger(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Armies["enemy"].RegionID = "capital"
+	gs.Armies["enemy"].Units = append(gs.Armies["enemy"].Units, gs.Armies["enemy"].Units...)
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"capital": {RegionID: "capital", AttackerArmyID: "enemy", AttackerFactionID: "enemy"},
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	if got := ctx.ArmyAssignments["weak"]; got.Role == AIArmyRoleRelief {
+		t.Fatalf("kuşatıcı üstünken zayıf ordu yardım için ayrılmamalıydı: %+v", got)
+	}
+}
+
+func TestFriendlyReliefRalliesMultipleArmiesWhenOneIsInsufficient(t *testing.T) {
+	gs := aiFrontTestState()
+	gs.Armies["strong"].Units = gs.Armies["strong"].Units[:3]
+	gs.Armies["weak"].Units = gs.Armies["weak"].Units[:3]
+	gs.Armies["enemy"].RegionID = "capital"
+	gs.Armies["enemy"].Units = append(gs.Armies["enemy"].Units, gs.Armies["enemy"].Units...)
+	gs.Armies["enemy"].Units = append(gs.Armies["enemy"].Units, army.Unit{TypeID: "inf", CurrentHP: 100})
+	gs.Relations[faction.RelationKey("ai", "enemy")].Stance = faction.StanceWar
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"capital": {RegionID: "capital", AttackerArmyID: "enemy", AttackerFactionID: "enemy"},
+	}
+
+	ctx := prepareStrategicContext(gs, "ai")
+	anchor := ctx.ArmyAssignments["strong"].AnchorRegionID
+	if anchor == "" {
+		t.Fatal("yardım kuvveti için rally noktası seçilmeliydi")
+	}
+	for _, armyID := range []army.ArmyID{"strong", "weak"} {
+		assignment := ctx.ArmyAssignments[armyID]
+		if assignment.Role != AIArmyRoleRelief || !assignment.Rallying || assignment.AnchorRegionID != anchor {
+			t.Fatalf("yetersiz tekil ordular ortak rally noktasında toplanmalıydı: %s %+v", armyID, assignment)
+		}
+	}
 }
 
 func TestStrategicWarReadinessBlocksNewFrontDuringCriticalThreat(t *testing.T) {
