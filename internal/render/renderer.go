@@ -2887,7 +2887,7 @@ func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float
 // armyCommanderBadgeRect, komutan portresini kara sayı karesinin veya deniz
 // ikonunun hemen üstüne yerleştirir. Nakliye rozeti varsa portre onun üstüne
 // taşınır.
-func armyCommanderBadgeRect(cx, cy float32, isNaval, hasEmbarkedUnits bool) (x, y, size float32) {
+func armyCommanderBadgeRect(cx, cy float32, isNaval, _ bool) (x, y, size float32) {
 	size = armyCommanderBadgeSize
 	iconTop := cy - armyIconInnerHalf - armyIconBorderWidth
 	if isNaval {

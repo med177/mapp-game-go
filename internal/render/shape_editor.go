@@ -249,9 +249,10 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	DrawText(screen, "Ring: "+itoa(ringCount), float64(x)+14, ly, FaceSmall, ColorGray)
 	ly += 18
 	toolLabel := "Kapalı"
-	if r.editShapeTool == editShapeToolShape {
+	switch r.editShapeTool {
+	case editShapeToolShape:
 		toolLabel = "Shape"
-	} else if r.editShapeTool == editShapeToolRegion {
+	case editShapeToolRegion:
 		toolLabel = "Bolge"
 	}
 	modeLabel := "Kapalı"

@@ -452,11 +452,12 @@ func (g *Game) Update() error {
 		}
 
 	case state.PhaseAITurn:
-		if action.Kind == render.ActionResolveNavalContact {
+		switch action.Kind {
+		case render.ActionResolveNavalContact:
 			g.resolveNavalContactChoice(action.ChoiceIndex)
-		} else if action.Kind == render.ActionResolveLandContact {
+		case render.ActionResolveLandContact:
 			g.resolveLandContactChoice(action.ChoiceIndex)
-		} else if action.Kind == render.ActionRespondDiplomacyOffer {
+		case render.ActionRespondDiplomacyOffer:
 			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
 		}
 		if contact := g.gs.PendingNavalContact; contact != nil && contact.PlayerArmyID == "" {
@@ -5156,7 +5157,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
 		defOwnerID := enemyArmy.OwnerID
 		defMods := techModsFor(g.gs, defOwnerID)
-		if !navalSeaMove && enemyArmy != nil && enemyArmy.InAmbush {
+		if !navalSeaMove && enemyArmy.InAmbush {
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			enemyArmy.InAmbush = false
 		}
@@ -5201,7 +5202,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 						break
 					}
 				}
-				if !battleLiftsSiege && enemyArmy != nil && enemyArmy.ID == targetSiege.AttackerArmyID {
+				if !battleLiftsSiege && enemyArmy.ID == targetSiege.AttackerArmyID {
 					battleLiftsSiege = true
 				}
 			}

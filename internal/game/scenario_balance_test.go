@@ -673,9 +673,9 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 	warReports := make(map[faction.FactionID]warTempoAggregate)
 	for _, fid := range majorFactions {
 		reports[fid] = map[string]*grainPhaseAggregate{
-			"erken": &grainPhaseAggregate{},
-			"orta":  &grainPhaseAggregate{},
-			"savaş": &grainPhaseAggregate{},
+			"erken": {},
+			"orta":  {},
+			"savaş": {},
 		}
 	}
 
@@ -944,7 +944,7 @@ func jsonDifferenceWindow(first, second []byte) string {
 
 func Benchmark1300AIRound(b *testing.B) {
 	scenarioPath := scenario1300Path(b)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		b.StopTimer()
 		rand.Seed(1)
 		gs, _, err := loadScenarioData(scenarioPath, 2, nil)

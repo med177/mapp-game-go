@@ -662,7 +662,7 @@ func techTreeViewOrigin(treeRect gameui.Rect, contentW float64) (x, y float64) {
 // alana yapılan tıklamayı yakalar. Tree viewport ekranın büyük bölümünü
 // kaplasa da içerik daha dar olduğunda flow ortalanır; bu yan boşluklar
 // teknoloji panelini kapatmak için kullanılabilir.
-func techTreeSideBlankHit(layout techPanelLayout, contentW, panX, panY, mx, my float64) bool {
+func techTreeSideBlankHit(layout techPanelLayout, contentW, panX, _, mx, my float64) bool {
 	if !layout.treeRect.Hit(mx, my) {
 		return false
 	}

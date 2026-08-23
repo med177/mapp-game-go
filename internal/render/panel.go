@@ -2266,7 +2266,7 @@ func regionPanelTabHit(mx, my float64, gs *state.GameState, rid world.RegionID) 
 	return regionPanelTabBuildings, false
 }
 
-func regionPanelTabContentEndY(gs *state.GameState, region *world.Region, startY, buildingEndY float32) float32 {
+func regionPanelTabContentEndY(_ *state.GameState, _ *world.Region, startY, buildingEndY float32) float32 {
 	endY := buildingEndY
 	minEndY := startY + regionPanelTabMinContentH
 	if endY < minEndY {

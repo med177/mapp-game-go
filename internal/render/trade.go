@@ -683,7 +683,7 @@ func tradeListClickedIndex(list gameui.ListView, input gameui.InputState) (int, 
 	return idx, true
 }
 
-func buildTradeActionButtons(layout tradeLayout, goodsRows int) ([]gameui.Button, gameui.Button, gameui.Button) {
+func buildTradeActionButtons(layout tradeLayout, _ int) ([]gameui.Button, gameui.Button, gameui.Button) {
 	return buildTradeActionButtonsAt(defaultTradeActionCardRect, layout)
 }
 
@@ -720,7 +720,7 @@ func buildTradeMarketActionButtons(layout tradeLayout, amount int, player *facti
 	return buildTradeActionButtonsAtWithPlusEnabled(tradeMarketActionCardRect, layout, plusEnabled)
 }
 
-func buildTradeEmergencyGrainSaleButton(layout tradeLayout, goodsRows int, enabled bool) gameui.Button {
+func buildTradeEmergencyGrainSaleButton(layout tradeLayout, _ int, enabled bool) gameui.Button {
 	return buildTradeEmergencyGrainSaleButtonAt(defaultTradeActionCardRect, layout, enabled)
 }
 

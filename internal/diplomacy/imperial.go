@@ -139,7 +139,7 @@ func AssessImperialWarCall(gs *state.GameState, empire, memberID, enemy faction.
 	return assessment
 }
 
-func imperialWarCallOutcome(gs *state.GameState, empire, memberID, enemy faction.FactionID, warDeclarer faction.FactionID) WarCallOutcome {
+func imperialWarCallOutcome(gs *state.GameState, empire, memberID, enemy faction.FactionID, _ faction.FactionID) WarCallOutcome {
 	assessment := AssessImperialWarCall(gs, empire, memberID, enemy)
 	outcome := WarCallOutcome{
 		FactionID:      memberID,
