@@ -6,6 +6,18 @@ import (
 	"mapp-game-go/internal/tech"
 )
 
+func techRequirementLabels(requirementIDs []string, allTechs map[string]*tech.Technology) string {
+	labels := make([]string, 0, len(requirementIDs))
+	for _, requirementID := range requirementIDs {
+		label := requirementID
+		if requiredTech, ok := allTechs[requirementID]; ok && requiredTech != nil && requiredTech.NameTR != "" {
+			label = requiredTech.NameTR
+		}
+		labels = append(labels, label)
+	}
+	return strings.Join(labels, ", ")
+}
+
 func techRequirementSummary(t *tech.Technology, currentYear int, ownedRegions map[string]bool, regionNames map[string]string) string {
 	if t == nil || (len(t.RequiredRegions) == 0 && t.MinYear <= 0) {
 		return ""

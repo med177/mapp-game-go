@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Teknoloji tooltip'inde önkoşul olarak gösterilen ham teknoloji ID'leri
+  yerelleştirilmiş `NameTR` etiketleriyle değiştirildi. Eksik teknoloji tanımları
+  için ID geri dönüşü korunuyor. Regression: `TestTechRequirementLabelsUseTechnologyNames`;
+  kapsam: `internal/render/tech_panel.go`, `tech_effect_summary.go`.
+
 - 2026-08-23: AI ilişki bakım spam'i sınırlandı. Her fraksiyon tur başına en fazla
   bir heyet/hediye aksiyonu yapıyor; başarılı veya oyuncuya kuyruğa alınan bakım
   aksiyonu ilgili ilişkiye dört tur cooldown uyguluyor. Oyuncuya bekleyen ilişki

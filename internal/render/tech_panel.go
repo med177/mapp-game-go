@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"sort"
-	"strings"
 
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -832,7 +831,7 @@ func (r *Renderer) drawTechHoverTooltip(screen *ebiten.Image, levels [][]techNod
 			if node.requirementText != "" {
 				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önkoşul: "+node.requirementText, techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
 			} else if len(node.t.Requires) > 0 {
-				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önce araştır: "+strings.Join(node.t.Requires, ", "), techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
+				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önce araştır: "+techRequirementLabels(node.t.Requires, r.gs.TechTypes), techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
 			} else {
 				drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 78, W: w - 24}, "Önkoşul: Yok", techTextCostLocked, gameui.TextSmall, gameui.TextAlignStart)
 			}

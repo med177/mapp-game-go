@@ -22,6 +22,18 @@ func TestTechRequirementSummaryShowsMissingRegionsAndYear(t *testing.T) {
 	}
 }
 
+func TestTechRequirementLabelsUseTechnologyNames(t *testing.T) {
+	labels := techRequirementLabels(
+		[]string{"agriculture", "missing"},
+		map[string]*tech.Technology{
+			"agriculture": {ID: "agriculture", NameTR: "Tarım"},
+		},
+	)
+	if labels != "Tarım, missing" {
+		t.Fatalf("önkoşul etiketleri teknoloji adlarını göstermeli: %q", labels)
+	}
+}
+
 func TestLayoutTechTreeWrapsAfterFourColumns(t *testing.T) {
 	levels := [][]techNode{{
 		{t: nil}, {t: nil}, {t: nil}, {t: nil}, {t: nil},

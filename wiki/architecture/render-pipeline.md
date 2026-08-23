@@ -7,6 +7,10 @@ related: [game-loop, state-management, shape-editor, systems/combat, architectur
 
 # Render Pipeline
 
+Teknoloji ağacı hover tooltip'inde teknoloji önkoşulları artık ham ID yerine
+`Technology.NameTR` etiketleriyle gösterilir; eksik veri için ID geri dönüşü
+korunur (`internal/render/tech_panel.go`, `tech_effect_summary.go`).
+
 Gelir ve tahıl ekonomi popup'larının header/footer ayırıcıları, `drawUISeparator`
 helper'ının mutlak `x2` sözleşmesine uygun olarak panelin kendi X konumundan
 türetilir. Böylece popup ekranın sağ tarafında açıldığında ayırıcılar panel dışına
