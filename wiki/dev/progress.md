@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: AI ilişki bakım spam'i sınırlandı. Her fraksiyon tur başına en fazla
+  bir heyet/hediye aksiyonu yapıyor; başarılı veya oyuncuya kuyruğa alınan bakım
+  aksiyonu ilgili ilişkiye dört tur cooldown uyguluyor. Oyuncuya bekleyen ilişki
+  bakım bildirimleri en fazla iki kayıtla sınırlanıyor. Regression:
+  `TestAISendsDelegationButNeverGiftToStrategicTargetUnderDirectThreat`,
+  `TestQueueOfferWithMetaLimitsPendingRelationshipNotifications`;
+  kapsam: `internal/ai/diplomacy.go`, `internal/diplomacy/offers.go`,
+  `internal/faction/faction.go`, `internal/save/compact.go`.
+
 - 2026-08-23: Düşük memnuniyetli bölgelerde isyan artık sahipsiz bir durumdan
   ibaret değil. Nüfus, yerleşim/bina gelişmişliği ve tahıl ikmal seviyesine göre
   1–20 milislik `IsRebel` ordusu doğuyor; eski sahibin ordusu bölgeye gelirse

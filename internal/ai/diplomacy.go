@@ -7,7 +7,10 @@ import (
 	"mapp-game-go/internal/state"
 )
 
-const aiRelationshipRepairChancePercent = 60
+const (
+	aiRelationshipRepairChancePercent = 60
+	aiRelationshipRepairCooldownTurns = 4
+)
 
 // aiHandleDiplomacyWithSteps resolves AI peace, alliance and trade decisions.
 // The public wrapper remains in ai.go; this file owns the diplomacy decision loop.
@@ -34,6 +37,7 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 	// genel diplomasi taramasından önce aynı hedefe baskı yapabilecek müttefik
 	// arar. Kabul edilen AI-AI ittifakı bu turdaki savaş koalisyonuna da girer.
 	aiPursueHistoricalWarAlliance(gs, fid, steps)
+	relationRepairUsed := false
 
 	for _, otherID := range aiSortedFactionIDs(gs) {
 		other := gs.Factions[otherID]
@@ -79,7 +83,8 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 			if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 				break
 			}
-			if allowRelationSpending && aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+			if allowRelationSpending && !relationRepairUsed && aiHandleRelationshipRepairWithSteps(gs, fid, otherID, rel, steps) {
+				relationRepairUsed = true
 				continue
 			}
 			var allianceAssessment diplomacy.AllianceProposalAssessment
@@ -232,6 +237,9 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 }
 
 func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, budget *aiBudget) bool {
+	if gs == nil || rel == nil || gs.Turn < rel.NextAIRelationRepairTurn {
+		return false
+	}
 	action, reason, ok := aiRelationshipRepairAction(gs, fid, otherID, rel)
 	if !ok || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 		return false
@@ -259,6 +267,7 @@ func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID fact
 		if !diplomacy.QueueOfferWithMeta(gs, fid, otherID, action, priority+20, reason) {
 			return false
 		}
+		rel.NextAIRelationRepairTurn = gs.Turn + aiRelationshipRepairCooldownTurns
 		if budget != nil {
 			budget.consume(aiBudgetEconomy, cost.Gold)
 		}
@@ -269,6 +278,7 @@ func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID fact
 	if !result.Applied {
 		return false
 	}
+	rel.NextAIRelationRepairTurn = gs.Turn + aiRelationshipRepairCooldownTurns
 	if budget != nil {
 		budget.consume(aiBudgetEconomy, cost.Gold)
 	}
@@ -294,7 +304,9 @@ func aiHandleRelationshipRepairsAfterBudget(gs *state.GameState, fid faction.Fac
 			continue
 		}
 		rel := diplomacy.EnsureRelation(gs, fid, otherID)
-		aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, budget)
+		if aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, budget) {
+			return
+		}
 	}
 }
 

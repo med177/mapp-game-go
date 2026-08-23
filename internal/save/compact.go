@@ -64,9 +64,10 @@ type factionSaveState struct {
 }
 
 type relationSaveState struct {
-	Score   *int   `json:"s,omitempty"`
-	Stance  *uint8 `json:"t,omitempty"`
-	Deleted bool   `json:"x,omitempty"`
+	Score                    *int   `json:"s,omitempty"`
+	Stance                   *uint8 `json:"t,omitempty"`
+	NextAIRelationRepairTurn *int   `json:"r,omitempty"`
+	Deleted                  bool   `json:"x,omitempty"`
 }
 
 type stackedUnitSaveState struct {
@@ -1080,7 +1081,8 @@ func makeRelationDelta(current, base map[string]*faction.Relation) map[string]re
 		case baseRel == nil:
 			score := currentRel.Score
 			stance := encodeStance(currentRel.Stance)
-			out[key] = relationSaveState{Score: &score, Stance: &stance}
+			nextRepairTurn := currentRel.NextAIRelationRepairTurn
+			out[key] = relationSaveState{Score: &score, Stance: &stance, NextAIRelationRepairTurn: &nextRepairTurn}
 		default:
 			var delta relationSaveState
 			if currentRel.Score != baseRel.Score {
@@ -1091,7 +1093,11 @@ func makeRelationDelta(current, base map[string]*faction.Relation) map[string]re
 				stance := encodeStance(currentRel.Stance)
 				delta.Stance = &stance
 			}
-			if delta.Score != nil || delta.Stance != nil {
+			if currentRel.NextAIRelationRepairTurn != baseRel.NextAIRelationRepairTurn {
+				nextRepairTurn := currentRel.NextAIRelationRepairTurn
+				delta.NextAIRelationRepairTurn = &nextRepairTurn
+			}
+			if delta.Score != nil || delta.Stance != nil || delta.NextAIRelationRepairTurn != nil {
 				out[key] = delta
 			}
 		}
@@ -1122,6 +1128,9 @@ func applyRelationDelta(gs *state.GameState, deltas map[string]relationSaveState
 		}
 		if delta.Stance != nil {
 			rel.Stance = decodeStance(*delta.Stance)
+		}
+		if delta.NextAIRelationRepairTurn != nil {
+			rel.NextAIRelationRepairTurn = *delta.NextAIRelationRepairTurn
 		}
 	}
 }

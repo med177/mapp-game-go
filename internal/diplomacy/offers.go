@@ -6,7 +6,10 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-const warJoinOfferPriority = 100
+const (
+	warJoinOfferPriority                = 100
+	maxPendingRelationshipNotifications = 2
+)
 
 // QueueOffer geçerli ve tekrar etmeyen diplomatik teklifi kuyruğa ekler.
 func QueueOffer(gs *state.GameState, from, to faction.FactionID, action Action) bool {
@@ -31,6 +34,17 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 	toFaction := gs.Factions[to]
 	if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
 		return false
+	}
+	if to == gs.PlayerFactionID && (action == ActionImproveRelations || action == ActionSendGift) {
+		pending := 0
+		for _, offer := range gs.DiplomaticOffers {
+			if offer.ToFactionID == to && (offer.Action == string(ActionImproveRelations) || offer.Action == string(ActionSendGift)) {
+				pending++
+			}
+		}
+		if pending >= maxPendingRelationshipNotifications {
+			return false
+		}
 	}
 	for _, offer := range gs.DiplomaticOffers {
 		if offer.FromFactionID == from && offer.ToFactionID == to && offer.Action == string(action) {

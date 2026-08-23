@@ -72,10 +72,11 @@ const (
 
 // Relation iki fraksiyon arasındaki tam ilişkiyi tutar.
 type Relation struct {
-	FactionA FactionID        `json:"faction_a"`
-	FactionB FactionID        `json:"faction_b"`
-	Score    int              `json:"score"`
-	Stance   DiplomaticStance `json:"stance"`
+	FactionA                 FactionID        `json:"faction_a"`
+	FactionB                 FactionID        `json:"faction_b"`
+	Score                    int              `json:"score"`
+	Stance                   DiplomaticStance `json:"stance"`
+	NextAIRelationRepairTurn int              `json:"next_ai_relation_repair_turn,omitempty"`
 }
 
 // RelationKey iki fraksiyon için sıralı anahtar üretir.

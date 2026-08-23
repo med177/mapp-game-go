@@ -611,6 +611,16 @@ func TestAISendsDelegationButNeverGiftToStrategicTargetUnderDirectThreat(t *test
 	if gs.Factions["ai_1"].Gold != 460 || gs.Factions["ai_2"].Gold != 100 {
 		t.Fatalf("stratejik hedefe hediye gönderilmemeli, sender=%d receiver=%d", gs.Factions["ai_1"].Gold, gs.Factions["ai_2"].Gold)
 	}
+	if rel.NextAIRelationRepairTurn != gs.Turn+aiRelationshipRepairCooldownTurns {
+		t.Fatalf("heyet sonrası ilişki cooldown'u ayarlanmalıydı, got=%d", rel.NextAIRelationRepairTurn)
+	}
+	goldAfterRepair := gs.Factions["ai_1"].Gold
+	if aiHandleRelationshipRepairWithBudget(gs, "ai_1", "ai_2", rel, nil) {
+		t.Fatal("cooldown sırasında ikinci ilişki onarımı gönderilmemeliydi")
+	}
+	if rel.Score != 8 || gs.Factions["ai_1"].Gold != goldAfterRepair {
+		t.Fatalf("cooldown sırasında ilişki ve altın değişmemeli: score=%d gold=%d", rel.Score, gs.Factions["ai_1"].Gold)
+	}
 }
 
 func TestAIRelationRepairDoesNotCreateVisibleTurnStep(t *testing.T) {

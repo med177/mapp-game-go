@@ -242,6 +242,26 @@ func TestQueueOfferWithMetaRespectsTurnQuota(t *testing.T) {
 	}
 }
 
+func TestQueueOfferWithMetaLimitsPendingRelationshipNotifications(t *testing.T) {
+	gs := testGameState()
+	gs.PlayerFactionID = "b"
+	gs.Factions["c"] = &faction.Faction{ID: "c", NameTR: "C", Religion: religion.Catholic}
+	gs.Factions["d"] = &faction.Faction{ID: "d", NameTR: "D", Religion: religion.Catholic}
+
+	if !QueueOfferWithMeta(gs, "a", "b", ActionImproveRelations, 20, "heyet") {
+		t.Fatal("ilk ilişki bildirimi kuyruğa düşmeliydi")
+	}
+	if !QueueOfferWithMeta(gs, "c", "b", ActionSendGift, 30, "hediye") {
+		t.Fatal("ikinci ilişki bildirimi kuyruğa düşmeliydi")
+	}
+	if QueueOfferWithMeta(gs, "d", "b", ActionSendGift, 40, "hediye") {
+		t.Fatal("üçüncü bekleyen ilişki bildirimi bastırılmalıydı")
+	}
+	if got := len(gs.DiplomaticOffers); got != 2 {
+		t.Fatalf("en fazla iki ilişki bildirimi bekleniyordu, got=%d", got)
+	}
+}
+
 func TestQueueSurrenderOfferDoesNotSpendDiplomacyQuota(t *testing.T) {
 	gs := testGameState()
 	gs.DiplomacyOfferCounts = map[faction.FactionID]int{
