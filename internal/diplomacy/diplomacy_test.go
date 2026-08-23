@@ -1013,6 +1013,28 @@ func TestImproveRelationsConsumesGoldAndRaisesScore(t *testing.T) {
 	}
 }
 
+func TestWartimeDelegationAndVassalizationRemainAvailable(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["a"].Gold = 100
+	rel := EnsureRelation(gs, "a", "b")
+	rel.Stance = faction.StanceWar
+	rel.Score = -80
+
+	if reason := ActionBlockReason(gs, "a", "b", ActionImproveRelations); reason != "" {
+		t.Fatalf("savaş halindeyken heyet gönderimi açık olmalıydı: %q", reason)
+	}
+	if result := Execute(gs, "a", "b", ActionImproveRelations); !result.Applied {
+		t.Fatalf("savaş halindeyken heyet gönderimi uygulanmalıydı: %+v", result)
+	}
+	if rel.Stance != faction.StanceWar || rel.Score != -72 {
+		t.Fatalf("heyet savaş duruşunu bozmadan ilişkiyi artırmalıydı: %+v", rel)
+	}
+
+	if reason := ActionBlockReason(gs, "a", "b", ActionOfferVassalization); reason != "" {
+		t.Fatalf("savaş halindeyken vassallık teklifi açık olmalıydı: %q", reason)
+	}
+}
+
 func TestApplyRelationDecayErodesUnsupportedAlliance(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")

@@ -1,11 +1,17 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-21
+last_updated: 2026-08-23
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
 # Render Pipeline
+
+Ordu oluşturma panelinin alt kenarı, alt aksiyon HUD'ının üst kenarından ortak
+`bottomActionHudRect()` geometrisi üzerinden `3 px` yukarıda konumlanır.
+Panelin çizim, kapatma düğmesi ve hit-test rect'leri aynı `recruitPanelY()`
+hesabını kullandığı için görsel ve etkileşim alanı birlikte taşınır
+(`internal/render/recruit_panel.go`, `panel.go`).
 
 Diplomasi teklif panelinin sağındaki `Aktif İlişkiler` bölümü artık ilişkili tüm
 devletleri tek bir clipped viewport içinde çizer. Kategori başlıkları ve satırlar
@@ -373,6 +379,8 @@ toplam tüketimi ve otomatik ihracatı; güncel `MarketSellOffer()` değerinden 
 pazara ayrılmış gerçek satış arzını gösterir. Ekonomi snapshot'ı henüz oluşmamışsa
 üretim ve tüketim, HUD ile aynı `GameState` helper'larından önizlenir
 (`internal/render/income_popup.go`, `cursor.go`, `renderer.go`, `internal/state/state.go`).
+Tahıl rakamının hit-test rect'i çizimdeki ilk kaynak satırından türetilir; böylece
+hover alanı bir alt satırdaki Baharat değerine kaymaz (`internal/render/income_popup.go`).
 
 Üst oyuncu HUD'unda Gelir/Altın sütunu zafer kartından önceki alana sağa yaslanır;
 kaynak satırları ortak `KeyValueRow` bileşeninin 8 px aralıklı varyantını kullanır.

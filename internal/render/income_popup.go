@@ -96,7 +96,7 @@ func grainHUDValueRect() gameui.Rect {
 	leftCol1, _, _, leftColW, _ := topResourceHUDColumns()
 	return gameui.Rect{
 		X: leftCol1 + 42,
-		Y: 12 + 22 - 5,
+		Y: 12 - 5,
 		W: leftColW - 42,
 		H: 20,
 	}

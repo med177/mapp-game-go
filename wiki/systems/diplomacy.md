@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-07
+last_updated: 2026-08-23
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -137,18 +137,20 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; 1300'de kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi değerlendirilir. Diğer senaryolarda legacy savaş baskısı + güç + ekonomik stres modeli korunur. Teklif ekranı ve backend aynı `AssessPeaceProposal()` sonucunu kullanır |
-| Heyet gönder | `improveRelations()` | Savaşta değil + `40` altın; ilişkiyi deterministik `+8` artırır |
+| Heyet gönder | `improveRelations()` | `40` altın; savaş sırasında da gönderilebilir ve ilişkiyi duruşu bozmadan deterministik `+8` artırır |
 | Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + genel senaryolarda `Score >= 25`, 1300'de `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
-| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse + hedef başka devlete bağlı değilse + `Score >= 55` + doğrudan sınır tehdidi veya birlikte belirgin askerî ve bölgesel üstünlük varsa |
+| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse ve hedef başka devlete bağlı değilse; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
 | Vasallığı bitir | `releaseVassal()` | Yalnız oyuncunun doğrudan vassalında; devlet bağımsızlaşır, overlord ile ticaret anlaşması devam eder |
 | Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
 
 Teklifler artık otomatik kabul edilmez; oyuncu ve AI aynı değerlendirme motorunu kullanır.
-Vassallıkta `Score >= 55` yalnızca teklifin ilişki ön koşuludur; hedef, teklif sahibinin
+Barışta vassallık için `Score >= 55` teklifin ilişki ön koşuludur; savaş sırasında bu
+ön koşul teklif gönderimini pasifleştirmez, kabul kararı yine
+`AssessVassalizationProposal()` ile değerlendirilir. Hedef, teklif sahibinin
 doğrudan sınır tehdidi altında değilse askerî gücün ve kara bölgesinin en az `5x` olmasını
 birlikte arar. Böylece ilişki puanı tek başına veya sınırlı üstünlükle uzak/zayıf hedefler
 otomatik olarak vassal olmaz (`internal/diplomacy/vassalage.go:136`).

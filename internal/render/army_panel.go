@@ -1046,7 +1046,7 @@ func armyPanelGeometry() armyPanelLayout {
 	panelW := gridW + armyPanelCommanderW + armyPanelColumnGap + armyPanelPadX*2
 	panelH := armyPanelHdrH + float32(rows)*(cardH+cardGap) - cardGap + armyPanelPadY*2 + siegeFooterH + armyPanelCommanderExtraH
 	px := float32(ScreenWidth)/2 - panelW/2
-	py := bottomBarTop() - panelH - 55
+	py := bottomBarTop() - panelH
 	headerY := py + armyPanelHdrH
 	gridY := headerY + armyPanelPadY/2
 	return armyPanelLayout{

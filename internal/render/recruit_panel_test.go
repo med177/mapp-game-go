@@ -10,6 +10,61 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func recruitPanelLayoutTestState(unitCount, queueCount int) *state.GameState {
+	gs := &state.GameState{
+		PlayerFactionID: "p1",
+		Regions: map[world.RegionID]*world.Region{
+			"r1":  {ID: "r1", OwnerID: "p1", Neighbors: []world.RegionID{"sea"}, Buildings: []string{"barracks", "port"}},
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Factions:  map[faction.FactionID]*faction.Faction{"p1": {ID: "p1"}},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+	for i := 0; i < unitCount && i < len(unitDisplayOrder); i++ {
+		uid := unitDisplayOrder[i]
+		gs.UnitTypes[uid] = &army.UnitType{ID: uid, RequiredBldg: "barracks"}
+	}
+	for i := 0; i < queueCount; i++ {
+		gs.ProductionQueue = append(gs.ProductionQueue, state.ProductionOrder{
+			ID: "order_" + itoa(i), Kind: "unit", FactionID: "p1", RegionID: "r1", TypeID: "militia", TurnsLeft: 1,
+		})
+	}
+	return gs
+}
+
+func TestRecruitPanelSitsThreePixelsAboveBottomActionHUD(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = oldW, oldH
+	}()
+
+	gs := recruitPanelLayoutTestState(9, 2)
+	for _, viewport := range [][2]float64{{1280, 720}, {1600, 900}, {1920, 1080}} {
+		ScreenWidth, ScreenHeight = viewport[0], viewport[1]
+		_, bottomHUDY, _, _ := bottomActionHudRect()
+		metrics := recruitPanelMetricsFor(gs, "r1")
+		panelBottom := recruitPanelY(gs, "r1") + metrics.panelH
+		if got := bottomHUDY - panelBottom; got != recruitPanelGap {
+			t.Fatalf("%.0fx%.0f ordu paneli alt HUD'dan %.1f px yukarida olmali: got=%.1f", viewport[0], viewport[1], recruitPanelGap, got)
+		}
+	}
+}
+
+func TestRecruitPanelHeightUsesOnlyRequiredCardRows(t *testing.T) {
+	singleRow := recruitPanelMetricsFor(recruitPanelLayoutTestState(9, 2), "r1")
+	doubleRow := recruitPanelMetricsFor(recruitPanelLayoutTestState(12, 11), "r1")
+
+	if singleRow.topSectionH != recruitCardRowsHeight(9) || singleRow.queueSectionH != recruitSectionHeight(2) {
+		t.Fatalf("tek satırlı bölümler beklenmedik: got top=%.1f queue=%.1f", singleRow.topSectionH, singleRow.queueSectionH)
+	}
+	if doubleRow.topSectionH != recruitCardRowsHeight(12) || doubleRow.queueSectionH != recruitSectionHeight(11) {
+		t.Fatalf("iki satırlı bölümler beklenmedik: got top=%.1f queue=%.1f", doubleRow.topSectionH, doubleRow.queueSectionH)
+	}
+	if singleRow.panelH >= doubleRow.panelH {
+		t.Fatalf("tek satırlı panel iki satırlı panelden kısa olmalı: single=%.1f double=%.1f", singleRow.panelH, doubleRow.panelH)
+	}
+}
+
 func TestUnitCostTooltipLinesShowRequiredAmountAndShortageOnly(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

@@ -495,3 +495,11 @@ Kod konumları: `internal/game/game.go:160` formatıyla belirt.
 - Yeni bağlantı eklersen hedef sayfanın `related` listesine de ekle
 - Tamamlanan özelliği `dev/progress.md`'de ✅ yap
 - Eksik/planlanan özelliği `dev/progress.md`'de ⬜ listesine ekle
+
+### Test Ekleme
+- Her basit UI veya görsel değişiklik için test eklemeye gerek yok
+- Senaryo verisi için özel testler kesinlikle ekleme
+- Yeni oyun mekaniği veya state değişikliği eklenirse, `internal/<paket>/` altında `*_test.go` dosyası oluştur ve temel testleri ekle
+- Testler, `go test ./...` ile çalıştırılabilir olmalı
+- Testler, oyun mekaniğinin doğru çalıştığını doğrulamalı (ör. çarpışma hesaplaması, ekonomi gelirleri, diplomasi ilişkileri)
+- Testler, oyun mekaniğinin performansını ve bellek kullanımını da kontrol etmeli (örn. büyük harita senaryolarında FPS düşüşü, GC stutter)

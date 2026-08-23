@@ -335,9 +335,6 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 			return "Bu devletle aktif bir ticaret anlaşması yok."
 		}
 	case ActionImproveRelations:
-		if stance == faction.StanceWar {
-			return "Savaş halindeyken heyet gönderilemez."
-		}
 		if actorFaction.Gold < RelationImprovementGoldCost {
 			return "Heyet göndermek için 40 altın gerekiyor."
 		}
@@ -358,11 +355,13 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if sameRealm(gs, actor, target) {
 			return "Aynı vassal zincirindeki devletlere vassallık teklif edilemez."
 		}
-		if stance == faction.StanceWar {
-			return "Savaş halindeyken vassallık teklif edilemez."
-		}
-		if assessment := AssessVassalizationProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
-			return assessment.BlockReason
+		// Savaşta da teklif gönderilebilir. İlişki/askerî uygunluk değerlendirmesi
+		// teklifin kabul edilip edilmeyeceğini belirler; savaş duruşu bu aksiyonu
+		// UI'da pasifleştirmemelidir. Barışta mevcut ön koşul kapısı korunur.
+		if stance != faction.StanceWar {
+			if assessment := AssessVassalizationProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
+				return assessment.BlockReason
+			}
 		}
 	case ActionReleaseVassal, ActionAnnexVassal:
 		if DirectOverlord(gs, target) != actor {

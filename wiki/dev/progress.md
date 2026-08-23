@@ -1,11 +1,27 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-21
+last_updated: 2026-08-23
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-23: Ordu oluşturma paneli, alt ana aksiyon HUD'ının hemen üzerine
+  `3 px` boşlukla hizalandı. Çizim ve hit-test aynı ortak Y geometrisini kullanıyor.
+  Regression: `TestRecruitPanelSitsThreePixelsAboveBottomActionHUD`; doğrulama:
+  `go test ./internal/render -count=1`.
+
+- 2026-08-23: Üst HUD Tahıl hover alanı, çizilen Tahıl satırıyla hizalandı;
+  önceki hit-test bir alt satırdaki Baharat alanına taşıyordu. Regression:
+  `TestGrainHUDValueRectIsInteractive`; doğrulama:
+  `go test ./internal/render -run 'Test(IncomeHUDValueRectIsInteractive|GrainHUDValueRectIsInteractive|GrainEconomyPopupUsesCurrentSnapshot|PlayerGoldEconomyStatusUsesNetChange)$' -count=1`.
+
+- 2026-08-23: Savaş halindeki devletlere `Heyet` gönderme ve `Vassallık` teklifi
+  diplomasi panelinde pasifleşmiyor. Heyet savaş duruşunu koruyarak ilişkiyi `+8`
+  artırıyor; vassallık teklifinde savaş durumu gönderim kapısı değil, mevcut kabul
+  değerlendirmesi korunuyor. Regression: `TestWartimeDelegationAndVassalizationRemainAvailable`;
+  doğrulama: `go test ./internal/diplomacy -count=1`.
 
 - 2026-08-21: Ordu/donanma marker'larının sağ-üst bonus rozetlerinde iki/üç
   karakterli değerlerin taşmasını önlemek için geniş etiketler 8 px `FaceMicro`

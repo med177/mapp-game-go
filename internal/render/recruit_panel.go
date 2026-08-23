@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"path/filepath"
 
 	"mapp-game-go/internal/army"
@@ -242,19 +243,70 @@ func legacyUnitSpriteRect(id string, sheet *ebiten.Image) image.Rectangle {
 const (
 	recruitMaxCards       = 20
 	recruitCardsPerRow    = 10
-	recruitMaxRows        = 2
 	recruitQueueMaxOrders = 20
 	recruitCardW          = float32(88)
 	recruitCardH          = recruitCardW * unitSpriteAspectH
 	recruitCardGap        = float32(6)
 	recruitPanelPad       = float32(14)
 	recruitHeaderH        = float32(52)
-	recruitSectionH       = float32(26) + recruitCardH*float32(recruitMaxRows) + recruitCardGap*float32(recruitMaxRows-1)
+	recruitSectionLabelH  = float32(26)
 	recruitSectionGap     = float32(10)
-	// İki satırın 210x360 oranlı kartlarını ve aralıklarını kapsar; küsurat yukarı yuvarlanır.
-	recruitPanelH    = 748
-	recruitBottomGap = float32(150)
+	// Bölüm yüksekliği, mevcut kart sayısının gerektirdiği satır sayısından türetilir.
+	recruitPanelBottomPad = float32(14)
+	recruitPanelGap       = float32(3)
 )
+
+type recruitPanelMetrics struct {
+	panelH        float32
+	topSectionH   float32
+	queueSectionH float32
+}
+
+func recruitSectionRows(cardCount int) int {
+	if cardCount <= 0 {
+		return 0
+	}
+	if cardCount > recruitMaxCards {
+		cardCount = recruitMaxCards
+	}
+	return (cardCount + recruitCardsPerRow - 1) / recruitCardsPerRow
+}
+
+func recruitCardRowsHeight(cardCount int) float32 {
+	rows := recruitSectionRows(cardCount)
+	if rows == 0 {
+		return 0
+	}
+	return recruitCardH*float32(rows) + recruitCardGap*float32(rows-1)
+}
+
+func recruitSectionHeight(cardCount int) float32 {
+	return recruitSectionLabelH + recruitCardRowsHeight(cardCount)
+}
+
+func recruitPanelMetricsFor(gs *state.GameState, rid world.RegionID) recruitPanelMetrics {
+	topCardCount := 0
+	queueCardCount := 0
+	if gs != nil {
+		if region := gs.Regions[rid]; region != nil {
+			topCardCount = len(visibleUnitIDs(gs, region))
+		}
+		queueCardCount = len(recruitQueueItems(gs, rid))
+	}
+	topSectionH := recruitCardRowsHeight(topCardCount)
+	queueSectionH := recruitSectionHeight(queueCardCount)
+	panelH := recruitHeaderH + 4 + topSectionH + recruitSectionGap + queueSectionH + recruitPanelBottomPad
+	return recruitPanelMetrics{
+		panelH:        float32(math.Ceil(float64(panelH))),
+		topSectionH:   topSectionH,
+		queueSectionH: queueSectionH,
+	}
+}
+
+func recruitPanelYForMetrics(metrics recruitPanelMetrics) float32 {
+	_, bottomHUDY, _, _ := bottomActionHudRect()
+	return bottomHUDY - recruitPanelGap - metrics.panelH
+}
 
 func recruitPanelX(slots int) float32 {
 	pw := recruitPanelW(slots)
@@ -264,8 +316,8 @@ func recruitPanelX(slots int) float32 {
 	}
 	return x
 }
-func recruitPanelY() float32 {
-	return float32(ScreenHeight) - float32(recruitPanelH) - recruitBottomGap
+func recruitPanelY(gs *state.GameState, rid world.RegionID) float32 {
+	return recruitPanelYForMetrics(recruitPanelMetricsFor(gs, rid))
 }
 func recruitPanelW(slots int) float32 {
 	slots = recruitCardsPerRow
@@ -300,7 +352,8 @@ func buildRecruitPanelCloseButton(gs *state.GameState, rid world.RegionID) (game
 	}
 	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
-	py := recruitPanelY()
+	metrics := recruitPanelMetricsFor(gs, rid)
+	py := recruitPanelYForMetrics(metrics)
 	pw := recruitPanelW(slots)
 	x, y, w, h := recruitPanelCloseRect(px, py, pw)
 	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
@@ -317,7 +370,8 @@ func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []game
 	if len(display) == 0 {
 		return nil
 	}
-	py := recruitPanelY()
+	metrics := recruitPanelMetricsFor(gs, rid)
+	py := recruitPanelYForMetrics(metrics)
 	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	topY := py + recruitHeaderH + 4
@@ -343,11 +397,12 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 	if !RecruitPanelVisible(gs, rid) {
 		return nil
 	}
-	py := recruitPanelY()
+	metrics := recruitPanelMetricsFor(gs, rid)
+	py := recruitPanelYForMetrics(metrics)
 	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	pw := recruitPanelW(slots)
-	queueY := py + recruitHeaderH + recruitSectionH + recruitSectionGap
+	queueY := py + recruitHeaderH + 4 + metrics.topSectionH + recruitSectionGap
 	items := recruitQueueItems(gs, rid)
 	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxItems := len(items)
@@ -538,9 +593,10 @@ func RecruitPanelBoundsHit(mx, my float64, gs *state.GameState, rid world.Region
 	}
 	slots := recruitPanelSlots()
 	px := float64(recruitPanelX(slots))
-	py := float64(recruitPanelY())
+	metrics := recruitPanelMetricsFor(gs, rid)
+	py := float64(recruitPanelYForMetrics(metrics))
 	pw := float64(recruitPanelW(slots))
-	ph := float64(recruitPanelH)
+	ph := float64(metrics.panelH)
 	return mx >= px && mx <= px+pw && my >= py && my <= py+ph
 }
 
@@ -553,9 +609,10 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	slots := recruitPanelSlots()
 
 	px := recruitPanelX(slots)
-	py := recruitPanelY()
+	metrics := recruitPanelMetricsFor(gs, rid)
+	py := recruitPanelYForMetrics(metrics)
 	pw := recruitPanelW(slots)
-	ph := float32(recruitPanelH)
+	ph := metrics.panelH
 	panelRect := gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}
 
 	drawUIPanelFrame(screen, panelRect, panelBg, panelBorder, 1.5, 3)
@@ -605,8 +662,8 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		drawRecruitCard(screen, gs, uid, barracksLevel, portLevel, x, y, cardW, cardH)
 	}
 
-	queueY := topY + recruitSectionH + recruitSectionGap
-	drawRecruitQueueSection(screen, gs, rid, px, queueY, pw, recruitSectionH)
+	queueY := topY + metrics.topSectionH + recruitSectionGap
+	drawRecruitQueueSection(screen, gs, rid, px, queueY, pw, metrics.queueSectionH)
 }
 
 func recruitPanelCloseRect(px, py, pw float32) (x, y, w, h float32) {
@@ -838,7 +895,7 @@ func drawRecruitQueueSection(screen *ebiten.Image, gs *state.GameState, rid worl
 	drawUISectionLabel(screen, float64(x)+16, float64(y)+6, "EGİTİM SIRASI")
 	items := recruitQueueItems(gs, rid)
 	cardW, cardH, gap := recruitCardMetrics(w)
-	cy := y + 26
+	cy := y + recruitSectionLabelH
 	maxItems := len(items)
 	if maxItems > recruitQueueMaxOrders {
 		maxItems = recruitQueueMaxOrders

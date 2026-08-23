@@ -26,6 +26,10 @@ func TestGrainHUDValueRectIsInteractive(t *testing.T) {
 	if rect.Hit(rect.X-1, rect.Y+rect.H/2) {
 		t.Fatalf("tahıl rakamı rect'i sol dış noktayı kapsamamalı: %+v", rect)
 	}
+	spiceRowY := 12.0 + 22.0
+	if rect.Hit(rect.X+rect.W/2, spiceRowY+rect.H/2) {
+		t.Fatalf("tahıl rakamı rect'i Baharat satırına taşmamalı: %+v", rect)
+	}
 }
 
 func TestGrainEconomyPopupUsesCurrentSnapshot(t *testing.T) {

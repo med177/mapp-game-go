@@ -2298,7 +2298,6 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 	}
 	actualAmount := amount
 	if delta > 0 {
-		target := g.gs.Factions[targetID]
 		player := g.gs.Factions[g.gs.PlayerFactionID]
 		maxByGold := player.Gold / price
 		maxByOffer := g.gs.MarketSellOffer(targetID, good)
@@ -2309,11 +2308,10 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 		}
 		if economy.TransferGoods(g.gs.Factions, targetID, g.gs.PlayerFactionID, good, actualAmount, g.gs.MarketPrices) {
 			g.gs.ConsumeMarketSellOffer(targetID, good, actualAmount)
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonundan %d %s satın alındı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s devletinden %d %s satın alındı. (%d altın)", g.factionNameTR(string(targetID)), actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
 	} else {
-		target := g.gs.Factions[targetID]
 		player := g.gs.Factions[g.gs.PlayerFactionID]
 		maxByStock := tradeGoodAmount(player, good)
 		maxByDemand := g.gs.MarketBuyOrder(targetID, good, price)
@@ -2331,7 +2329,7 @@ func (g *Game) oneTimeTrade(targetID faction.FactionID, goodID string, delta int
 			if good == economy.GoodGrain {
 				g.gs.RecordGrainSaleGold(g.gs.PlayerFactionID, actualAmount*price)
 			}
-			g.renderer.ShowCombatResult(fmt.Sprintf("%s fraksiyonuna %d %s satıldı. (%d altın)", target.Name, actualAmount, tradeGoodLabelTR(good), actualAmount*price))
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s devletine %d %s satıldı. (%d altın)", g.factionNameTR(string(targetID)), actualAmount, tradeGoodLabelTR(good), actualAmount*price))
 			return
 		}
 	}
